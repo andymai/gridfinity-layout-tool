@@ -9,53 +9,54 @@ import {
   sortBinsForPrint,
 } from '@/features/print-export/utils/printLayout';
 import type { Bin, Layer, Category, Drawer } from '@/core/types';
+import { binId, layerId, categoryId, gridUnits, heightUnits } from '@/core/types';
 import type { BinListSortOrder } from '@/core/store/settings';
 import { STAGING_ID } from '@/core/constants';
 
 describe('printLayout utilities', () => {
   // Test fixtures
   const createDrawer = (width: number, depth: number, height = 12): Drawer => ({
-    width,
-    depth,
-    height,
+    width: gridUnits(width),
+    depth: gridUnits(depth),
+    height: heightUnits(height),
   });
 
   const createLayer = (id: string, name: string, height = 3): Layer => ({
-    id,
+    id: layerId(id),
     name,
-    height,
+    height: heightUnits(height),
   });
 
   const createBin = (
     id: string,
-    layerId: string,
+    layer: string,
     category: string,
     x = 0,
     y = 0,
     width = 1,
     depth = 1
   ): Bin => ({
-    id,
-    layerId,
-    x,
-    y,
-    width,
-    depth,
-    height: 3,
-    category,
+    id: binId(id),
+    layerId: layerId(layer),
+    x: gridUnits(x),
+    y: gridUnits(y),
+    width: gridUnits(width),
+    depth: gridUnits(depth),
+    height: heightUnits(3),
+    category: categoryId(category),
     label: '',
     notes: '',
   });
 
   const createCategory = (id: string, name: string, color: string): Category => ({
-    id,
+    id: categoryId(id),
     name,
     color,
   });
 
   describe('getVisibleBinsForPrint', () => {
-    const layer1 = 'layer1';
-    const layer2 = 'layer2';
+    const layer1 = layerId('layer1');
+    const layer2 = layerId('layer2');
     const bins: Bin[] = [
       createBin('bin1', layer1, 'cat1'),
       createBin('bin2', layer2, 'cat1'),
@@ -224,7 +225,7 @@ describe('printLayout utilities', () => {
     // Helper to create bins with more options
     const createFullBin = (
       id: string,
-      layerId: string,
+      layer: string,
       category: string,
       x: number,
       y: number,
@@ -233,14 +234,14 @@ describe('printLayout utilities', () => {
       height: number,
       label: string
     ): Bin => ({
-      id,
-      layerId,
-      x,
-      y,
-      width,
-      depth,
-      height,
-      category,
+      id: binId(id),
+      layerId: layerId(layer),
+      x: gridUnits(x),
+      y: gridUnits(y),
+      width: gridUnits(width),
+      depth: gridUnits(depth),
+      height: heightUnits(height),
+      category: categoryId(category),
       label,
       notes: '',
     });

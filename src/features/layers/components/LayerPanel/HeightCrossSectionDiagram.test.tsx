@@ -2,12 +2,13 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { HeightCrossSectionDiagram } from './HeightCrossSectionDiagram';
 import type { Layer } from '@/core/types';
+import { heightUnits, layerId } from '@/core/types';
 
 const makeLayers = (...heights: number[]): Layer[] =>
   heights.map((h, i) => ({
-    id: `layer-${i + 1}`,
+    id: layerId(`layer-${i + 1}`),
     name: `Layer ${i + 1}`,
-    height: h,
+    height: heightUnits(h),
   }));
 
 const defaultProps = {
@@ -32,7 +33,7 @@ describe('HeightCrossSectionDiagram', () => {
       <HeightCrossSectionDiagram
         layers={layers}
         drawerHeight={10}
-        activeLayerId="layer-1"
+        activeLayerId={layerId('layer-1')}
         onLayerClick={vi.fn()}
         {...defaultProps}
       />
@@ -47,7 +48,7 @@ describe('HeightCrossSectionDiagram', () => {
       <HeightCrossSectionDiagram
         layers={layers}
         drawerHeight={10}
-        activeLayerId="layer-1"
+        activeLayerId={layerId('layer-1')}
         onLayerClick={vi.fn()}
         {...defaultProps}
       />
@@ -64,7 +65,7 @@ describe('HeightCrossSectionDiagram', () => {
       <HeightCrossSectionDiagram
         layers={layers}
         drawerHeight={10}
-        activeLayerId="layer-1"
+        activeLayerId={layerId('layer-1')}
         onLayerClick={onLayerClick}
         {...defaultProps}
       />
@@ -83,7 +84,7 @@ describe('HeightCrossSectionDiagram', () => {
       <HeightCrossSectionDiagram
         layers={layers}
         drawerHeight={10}
-        activeLayerId="layer-1"
+        activeLayerId={layerId('layer-1')}
         onLayerClick={vi.fn()}
         {...defaultProps}
       />
@@ -98,7 +99,7 @@ describe('HeightCrossSectionDiagram', () => {
       <HeightCrossSectionDiagram
         layers={layers}
         drawerHeight={10}
-        activeLayerId="layer-1"
+        activeLayerId={layerId('layer-1')}
         onLayerClick={vi.fn()}
         {...defaultProps}
       />
@@ -113,7 +114,7 @@ describe('HeightCrossSectionDiagram', () => {
       <HeightCrossSectionDiagram
         layers={layers}
         drawerHeight={10}
-        activeLayerId="layer-1"
+        activeLayerId={layerId('layer-1')}
         onLayerClick={vi.fn()}
         {...defaultProps}
       />
@@ -133,7 +134,7 @@ describe('HeightCrossSectionDiagram', () => {
       <HeightCrossSectionDiagram
         layers={layers}
         drawerHeight={10}
-        activeLayerId="layer-1"
+        activeLayerId={layerId('layer-1')}
         onLayerClick={onLayerClick}
         {...defaultProps}
       />
@@ -151,7 +152,7 @@ describe('HeightCrossSectionDiagram', () => {
       <HeightCrossSectionDiagram
         layers={makeLayers(10)}
         drawerHeight={10}
-        activeLayerId="layer-1"
+        activeLayerId={layerId('layer-1')}
         onLayerClick={vi.fn()}
         {...defaultProps}
       />
@@ -168,7 +169,7 @@ describe('HeightCrossSectionDiagram', () => {
       <HeightCrossSectionDiagram
         layers={makeLayers(2, 2, 2)}
         drawerHeight={10}
-        activeLayerId="layer-1"
+        activeLayerId={layerId('layer-1')}
         onLayerClick={vi.fn()}
         {...defaultProps}
       />
@@ -197,7 +198,7 @@ describe('HeightCrossSectionDiagram', () => {
         <HeightCrossSectionDiagram
           layers={layers}
           drawerHeight={10}
-          activeLayerId="layer-1"
+          activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
           hoveredLayerId={null}
@@ -219,7 +220,7 @@ describe('HeightCrossSectionDiagram', () => {
         <HeightCrossSectionDiagram
           layers={layers}
           drawerHeight={10}
-          activeLayerId="layer-1"
+          activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
           hoveredLayerId={null}
@@ -240,10 +241,10 @@ describe('HeightCrossSectionDiagram', () => {
         <HeightCrossSectionDiagram
           layers={layers}
           drawerHeight={10}
-          activeLayerId="layer-1"
+          activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
-          hoveredLayerId={'layer-2'}
+          hoveredLayerId={layerId('layer-2')}
           onLayerHover={vi.fn()}
         />
       );
@@ -258,10 +259,10 @@ describe('HeightCrossSectionDiagram', () => {
         <HeightCrossSectionDiagram
           layers={layers}
           drawerHeight={10}
-          activeLayerId="layer-1"
+          activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
-          hoveredLayerId={'layer-1'}
+          hoveredLayerId={layerId('layer-1')}
           onLayerHover={vi.fn()}
         />
       );
@@ -279,7 +280,7 @@ describe('HeightCrossSectionDiagram', () => {
         <HeightCrossSectionDiagram
           layers={layers}
           drawerHeight={10}
-          activeLayerId="layer-1"
+          activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
           onEditingStart={onEditingStart}
@@ -298,10 +299,10 @@ describe('HeightCrossSectionDiagram', () => {
         <HeightCrossSectionDiagram
           layers={layers}
           drawerHeight={10}
-          activeLayerId="layer-1"
+          activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
-          editingLayerId="layer-1"
+          editingLayerId={layerId('layer-1')}
         />
       );
 
@@ -315,10 +316,10 @@ describe('HeightCrossSectionDiagram', () => {
         <HeightCrossSectionDiagram
           layers={layers}
           drawerHeight={10}
-          activeLayerId="layer-1"
+          activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
-          editingLayerId="layer-1"
+          editingLayerId={layerId('layer-1')}
           onNameChange={onNameChange}
         />
       );
@@ -336,10 +337,10 @@ describe('HeightCrossSectionDiagram', () => {
         <HeightCrossSectionDiagram
           layers={layers}
           drawerHeight={10}
-          activeLayerId="layer-1"
+          activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
-          editingLayerId="layer-1"
+          editingLayerId={layerId('layer-1')}
           onEditingEnd={onEditingEnd}
         />
       );
@@ -357,10 +358,10 @@ describe('HeightCrossSectionDiagram', () => {
         <HeightCrossSectionDiagram
           layers={layers}
           drawerHeight={10}
-          activeLayerId="layer-1"
+          activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
-          editingLayerId="layer-1"
+          editingLayerId={layerId('layer-1')}
           onEditingEnd={onEditingEnd}
         />
       );
@@ -377,7 +378,7 @@ describe('HeightCrossSectionDiagram', () => {
         <HeightCrossSectionDiagram
           layers={layers}
           drawerHeight={10}
-          activeLayerId="layer-1"
+          activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
         />
@@ -395,7 +396,7 @@ describe('HeightCrossSectionDiagram', () => {
         <HeightCrossSectionDiagram
           layers={layers}
           drawerHeight={10}
-          activeLayerId="layer-1"
+          activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
           onHeightChange={onHeightChange}
@@ -423,7 +424,7 @@ describe('HeightCrossSectionDiagram', () => {
         <HeightCrossSectionDiagram
           layers={layers}
           drawerHeight={10}
-          activeLayerId="layer-1"
+          activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
         />
@@ -445,7 +446,7 @@ describe('HeightCrossSectionDiagram', () => {
         <HeightCrossSectionDiagram
           layers={layers}
           drawerHeight={3}
-          activeLayerId="layer-1"
+          activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
         />
@@ -460,7 +461,7 @@ describe('HeightCrossSectionDiagram', () => {
         <HeightCrossSectionDiagram
           layers={layers}
           drawerHeight={10}
-          activeLayerId="layer-1"
+          activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
         />
@@ -476,7 +477,7 @@ describe('HeightCrossSectionDiagram', () => {
         <HeightCrossSectionDiagram
           layers={layers}
           drawerHeight={10}
-          activeLayerId="layer-1"
+          activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
           onDeleteLayer={onDeleteLayer}
@@ -494,7 +495,7 @@ describe('HeightCrossSectionDiagram', () => {
         <HeightCrossSectionDiagram
           layers={layers}
           drawerHeight={10}
-          activeLayerId="layer-1"
+          activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
         />
@@ -509,10 +510,10 @@ describe('HeightCrossSectionDiagram', () => {
         <HeightCrossSectionDiagram
           layers={layers}
           drawerHeight={10}
-          activeLayerId="layer-1"
+          activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
-          editingLayerId="layer-1"
+          editingLayerId={layerId('layer-1')}
         />
       );
 
@@ -527,10 +528,10 @@ describe('HeightCrossSectionDiagram', () => {
         <HeightCrossSectionDiagram
           layers={layers}
           drawerHeight={10}
-          activeLayerId="layer-1"
+          activeLayerId={layerId('layer-1')}
           onLayerClick={onLayerClick}
           {...defaultProps}
-          editingLayerId="layer-1"
+          editingLayerId={layerId('layer-1')}
         />
       );
 
@@ -549,7 +550,7 @@ describe('HeightCrossSectionDiagram', () => {
         <HeightCrossSectionDiagram
           layers={layers}
           drawerHeight={10}
-          activeLayerId="layer-1"
+          activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
           canAddLayer={true}
@@ -571,7 +572,7 @@ describe('HeightCrossSectionDiagram', () => {
         <HeightCrossSectionDiagram
           layers={makeLayers(4)}
           drawerHeight={10}
-          activeLayerId="layer-1"
+          activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
           layerStats={{ 'layer-1': { coverage: 75, binCount: 12 } }}
@@ -589,7 +590,7 @@ describe('HeightCrossSectionDiagram', () => {
         <HeightCrossSectionDiagram
           layers={makeLayers(4)}
           drawerHeight={10}
-          activeLayerId="layer-1"
+          activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
           layerStats={{}}
@@ -608,7 +609,7 @@ describe('HeightCrossSectionDiagram', () => {
         <HeightCrossSectionDiagram
           layers={layers}
           drawerHeight={10}
-          activeLayerId="layer-1"
+          activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
         />
@@ -624,7 +625,7 @@ describe('HeightCrossSectionDiagram', () => {
         <HeightCrossSectionDiagram
           layers={layers}
           drawerHeight={10}
-          activeLayerId="layer-1"
+          activeLayerId={layerId('layer-1')}
           onLayerClick={vi.fn()}
           {...defaultProps}
         />

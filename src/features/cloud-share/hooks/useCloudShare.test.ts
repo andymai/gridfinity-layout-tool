@@ -8,6 +8,7 @@ import { createDefaultLayout } from '@/core/constants';
 import * as shareApi from '@/core/api/share';
 import * as storage from '@/core/storage';
 import type { LayoutLibrary, CloudShareInfo } from '@/core/types';
+import { gridUnits, heightUnits, layoutId } from '@/core/types';
 import { ok, err, apiRateLimited, apiNotFound } from '@/core/result';
 
 // Mock the share API module
@@ -38,7 +39,7 @@ vi.mock('@/shared/contexts/MutationsContext', () => ({
   }),
 }));
 
-const TEST_LAYOUT_ID = 'test-layout-id';
+const TEST_LAYOUT_ID = layoutId('test-layout-id');
 
 function createTestLibrary(cloudShare?: CloudShareInfo): LayoutLibrary {
   return {
@@ -52,9 +53,9 @@ function createTestLibrary(cloudShare?: CloudShareInfo): LayoutLibrary {
         createdAt: Date.now(),
         modifiedAt: Date.now(),
         preview: {
-          drawerWidth: 10,
-          drawerDepth: 8,
-          drawerHeight: 12,
+          drawerWidth: gridUnits(10),
+          drawerDepth: gridUnits(8),
+          drawerHeight: heightUnits(12),
           binCount: 0,
           layerCount: 1,
         },
@@ -87,7 +88,6 @@ describe('useCloudShare', () => {
     useLibraryStore.setState({
       library: createTestLibrary(),
       isLoaded: true,
-      showLayoutManager: false,
     });
 
     useInteractionStore.setState({

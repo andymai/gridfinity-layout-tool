@@ -2,7 +2,7 @@ import { afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import { expect } from 'vitest';
 import type { Bin, Layout, LayoutLibrary, BinId, LayoutId } from '@/core/types';
-import { binId, layerId, categoryId, layoutId, heightUnits } from '@/core/types';
+import { binId, layerId, categoryId, layoutId, gridUnits, heightUnits, mm } from '@/core/types';
 import type { Result } from '@/core/result/types';
 import { isOk, isErr } from '@/core/result';
 import { createDefaultLayout } from '@/core/constants';
@@ -137,18 +137,18 @@ export function getBinId(result: Result<BinId, unknown>): BinId {
  * @returns A new Bin object
  *
  * @example
- * const bin = createTestBin({ id: 'bin-1', x: 3, y: 5 });
- * const stagingBin = createTestBin({ layerId: '__staging__' });
+ * const bin = createTestBin({ id: binId('bin-1'), x: gridUnits(3), y: gridUnits(5) });
+ * const stagingBin = createTestBin({ layerId: STAGING_ID });
  */
 export function createTestBin(overrides: Partial<Bin> = {}): Bin {
   return {
     id: binId('test-bin'),
     layerId: layerId('layer1'),
-    x: 0,
-    y: 0,
-    width: 1,
-    depth: 1,
-    height: 3,
+    x: gridUnits(0),
+    y: gridUnits(0),
+    width: gridUnits(1),
+    depth: gridUnits(1),
+    height: heightUnits(3),
     category: categoryId('cat1'),
     label: '',
     notes: '',
@@ -210,9 +210,9 @@ export function createTestLibrary(id?: LayoutId): LayoutLibrary {
         createdAt: Date.now(),
         modifiedAt: Date.now(),
         preview: {
-          drawerWidth: 10,
-          drawerDepth: 8,
-          drawerHeight: 12,
+          drawerWidth: gridUnits(10),
+          drawerDepth: gridUnits(8),
+          drawerHeight: heightUnits(12),
           binCount: 0,
           layerCount: 1,
           binMap: [],
@@ -239,10 +239,10 @@ export function createTestLayout(overrides?: Partial<Layout>): Layout {
   const defaultLayout: Layout = {
     version: '1.0',
     name: 'Test Layout',
-    drawer: { width: 10, depth: 8, height: 12 },
-    printBedSize: 256,
-    gridUnitMm: 42,
-    heightUnitMm: 7,
+    drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
+    printBedSize: mm(256),
+    gridUnitMm: mm(42),
+    heightUnitMm: mm(7),
     categories: [{ id: categoryId('cat1'), name: 'General', color: '#3b82f6' }],
     layers: [{ id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) }],
     bins: [],

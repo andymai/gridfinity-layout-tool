@@ -6,21 +6,22 @@ import {
   applyFiltersAndSort,
 } from '@/features/print-export/utils/printListOperations';
 import type { EnhancedPrintRow, Category } from '@/core/types';
+import { binId, categoryId, gridUnits, heightUnits } from '@/core/types';
 
 // Helper to create test rows
 function createTestRow(overrides: Partial<EnhancedPrintRow> = {}): EnhancedPrintRow {
   return {
     size: '1x1',
-    height: 3,
+    height: heightUnits(3),
     binCount: 1,
-    pieces: [{ width: 1, depth: 1, count: 1 }],
+    pieces: [{ width: gridUnits(1), depth: gridUnits(1), count: 1 }],
     totalPieces: 1,
     needsSplit: false,
     filament: 2.3,
-    categoryIds: ['cat1'],
+    categoryIds: [categoryId('cat1')],
     labels: [],
     notes: '',
-    binIds: ['bin1'],
+    binIds: [binId('bin1')],
     area: 1,
     costEstimate: 0.1,
     spoolPercentage: 0.7,
@@ -30,17 +31,17 @@ function createTestRow(overrides: Partial<EnhancedPrintRow> = {}): EnhancedPrint
 
 // Test categories
 const testCategories: Category[] = [
-  { id: 'cat1', name: 'Tools', color: '#ff0000' },
-  { id: 'cat2', name: 'Parts', color: '#00ff00' },
-  { id: 'cat3', name: 'Hardware', color: '#0000ff' },
+  { id: categoryId('cat1'), name: 'Tools', color: '#ff0000' },
+  { id: categoryId('cat2'), name: 'Parts', color: '#00ff00' },
+  { id: categoryId('cat3'), name: 'Hardware', color: '#0000ff' },
 ];
 
 describe('printListOperations', () => {
   describe('filterByCategory', () => {
     it('returns all rows when no categories are hidden', () => {
       const rows = [
-        createTestRow({ categoryIds: ['cat1'] }),
-        createTestRow({ categoryIds: ['cat2'] }),
+        createTestRow({ categoryIds: [categoryId('cat1')] }),
+        createTestRow({ categoryIds: [categoryId('cat2')] }),
       ];
       const result = filterByCategory(rows, new Set());
       expect(result).toHaveLength(2);
@@ -48,36 +49,36 @@ describe('printListOperations', () => {
 
     it('filters out rows with all hidden categories', () => {
       const rows = [
-        createTestRow({ categoryIds: ['cat1'] }),
-        createTestRow({ categoryIds: ['cat2'] }),
-        createTestRow({ categoryIds: ['cat3'] }),
+        createTestRow({ categoryIds: [categoryId('cat1')] }),
+        createTestRow({ categoryIds: [categoryId('cat2')] }),
+        createTestRow({ categoryIds: [categoryId('cat3')] }),
       ];
-      const result = filterByCategory(rows, new Set(['cat2']));
+      const result = filterByCategory(rows, new Set([categoryId('cat2')]));
       expect(result).toHaveLength(2);
       expect(result.map((r) => r.categoryIds[0])).toEqual(['cat1', 'cat3']);
     });
 
     it('keeps rows with at least one visible category', () => {
       const rows = [
-        createTestRow({ categoryIds: ['cat1', 'cat2'] }), // has cat1 visible
-        createTestRow({ categoryIds: ['cat2'] }), // all hidden
+        createTestRow({ categoryIds: [categoryId('cat1'), categoryId('cat2')] }), // has cat1 visible
+        createTestRow({ categoryIds: [categoryId('cat2')] }), // all hidden
       ];
-      const result = filterByCategory(rows, new Set(['cat2']));
+      const result = filterByCategory(rows, new Set([categoryId('cat2')]));
       expect(result).toHaveLength(1);
       expect(result[0].categoryIds).toContain('cat1');
     });
 
     it('returns empty array when all categories hidden', () => {
       const rows = [
-        createTestRow({ categoryIds: ['cat1'] }),
-        createTestRow({ categoryIds: ['cat2'] }),
+        createTestRow({ categoryIds: [categoryId('cat1')] }),
+        createTestRow({ categoryIds: [categoryId('cat2')] }),
       ];
-      const result = filterByCategory(rows, new Set(['cat1', 'cat2']));
+      const result = filterByCategory(rows, new Set([categoryId('cat1'), categoryId('cat2')]));
       expect(result).toHaveLength(0);
     });
 
     it('handles empty rows array', () => {
-      const result = filterByCategory([], new Set(['cat1']));
+      const result = filterByCategory([], new Set([categoryId('cat1')]));
       expect(result).toHaveLength(0);
     });
 
@@ -85,7 +86,7 @@ describe('printListOperations', () => {
       const rows = [createTestRow({ categoryIds: [] })];
       // Row with empty categoryIds is filtered out because every() on empty array returns true
       // (vacuously true - all 0 elements satisfy any condition)
-      const result = filterByCategory(rows, new Set(['cat1']));
+      const result = filterByCategory(rows, new Set([categoryId('cat1')]));
       expect(result).toHaveLength(0);
     });
   });
@@ -123,9 +124,9 @@ describe('printListOperations', () => {
 
     it('sorts by height ascending', () => {
       const rows = [
-        createTestRow({ height: 6 }),
-        createTestRow({ height: 3 }),
-        createTestRow({ height: 9 }),
+        createTestRow({ height: heightUnits(6) }),
+        createTestRow({ height: heightUnits(3) }),
+        createTestRow({ height: heightUnits(9) }),
       ];
       const result = sortRows(rows, 'height', 'asc');
       expect(result.map((r) => r.height)).toEqual([3, 6, 9]);
@@ -133,9 +134,9 @@ describe('printListOperations', () => {
 
     it('sorts by height descending', () => {
       const rows = [
-        createTestRow({ height: 3 }),
-        createTestRow({ height: 9 }),
-        createTestRow({ height: 6 }),
+        createTestRow({ height: heightUnits(3) }),
+        createTestRow({ height: heightUnits(9) }),
+        createTestRow({ height: heightUnits(6) }),
       ];
       const result = sortRows(rows, 'height', 'desc');
       expect(result.map((r) => r.height)).toEqual([9, 6, 3]);
@@ -182,9 +183,9 @@ describe('printListOperations', () => {
 
     it('handles equal values (stable sort behavior)', () => {
       const rows = [
-        createTestRow({ area: 4, binIds: ['a'] }),
-        createTestRow({ area: 4, binIds: ['b'] }),
-        createTestRow({ area: 4, binIds: ['c'] }),
+        createTestRow({ area: 4, binIds: [binId('a')] }),
+        createTestRow({ area: 4, binIds: [binId('b')] }),
+        createTestRow({ area: 4, binIds: [binId('c')] }),
       ];
       const result = sortRows(rows, 'area', 'asc');
       expect(result).toHaveLength(3);
@@ -196,9 +197,9 @@ describe('printListOperations', () => {
   describe('groupByCategory', () => {
     it('groups rows by primary category', () => {
       const rows = [
-        createTestRow({ categoryIds: ['cat1'], binCount: 2 }),
-        createTestRow({ categoryIds: ['cat1'], binCount: 3 }),
-        createTestRow({ categoryIds: ['cat2'], binCount: 1 }),
+        createTestRow({ categoryIds: [categoryId('cat1')], binCount: 2 }),
+        createTestRow({ categoryIds: [categoryId('cat1')], binCount: 3 }),
+        createTestRow({ categoryIds: [categoryId('cat2')], binCount: 1 }),
       ];
       const groups = groupByCategory(rows, testCategories);
 
@@ -213,8 +214,18 @@ describe('printListOperations', () => {
 
     it('calculates group totals correctly', () => {
       const rows = [
-        createTestRow({ categoryIds: ['cat1'], filament: 2, costEstimate: 0.1, binCount: 2 }),
-        createTestRow({ categoryIds: ['cat1'], filament: 3, costEstimate: 0.15, binCount: 3 }),
+        createTestRow({
+          categoryIds: [categoryId('cat1')],
+          filament: 2,
+          costEstimate: 0.1,
+          binCount: 2,
+        }),
+        createTestRow({
+          categoryIds: [categoryId('cat1')],
+          filament: 3,
+          costEstimate: 0.15,
+          binCount: 3,
+        }),
       ];
       const groups = groupByCategory(rows, testCategories);
 
@@ -225,7 +236,7 @@ describe('printListOperations', () => {
     });
 
     it('handles uncategorized rows', () => {
-      const rows = [createTestRow({ categoryIds: ['unknown-cat'], binCount: 1 })];
+      const rows = [createTestRow({ categoryIds: [categoryId('unknown-cat')], binCount: 1 })];
       const groups = groupByCategory(rows, testCategories);
 
       expect(groups).toHaveLength(1);
@@ -234,7 +245,7 @@ describe('printListOperations', () => {
     });
 
     it('uses primary category (first in array)', () => {
-      const rows = [createTestRow({ categoryIds: ['cat2', 'cat1'] })];
+      const rows = [createTestRow({ categoryIds: [categoryId('cat2'), categoryId('cat1')] })];
       const groups = groupByCategory(rows, testCategories);
 
       expect(groups).toHaveLength(1);
@@ -244,9 +255,9 @@ describe('printListOperations', () => {
 
     it('sorts groups by total bins (most first)', () => {
       const rows = [
-        createTestRow({ categoryIds: ['cat1'], binCount: 5 }),
-        createTestRow({ categoryIds: ['cat2'], binCount: 10 }),
-        createTestRow({ categoryIds: ['cat3'], binCount: 3 }),
+        createTestRow({ categoryIds: [categoryId('cat1')], binCount: 5 }),
+        createTestRow({ categoryIds: [categoryId('cat2')], binCount: 10 }),
+        createTestRow({ categoryIds: [categoryId('cat3')], binCount: 3 }),
       ];
       const groups = groupByCategory(rows, testCategories);
 
@@ -261,7 +272,7 @@ describe('printListOperations', () => {
     });
 
     it('handles empty categories array', () => {
-      const rows = [createTestRow({ categoryIds: ['cat1'] })];
+      const rows = [createTestRow({ categoryIds: [categoryId('cat1')] })];
       const groups = groupByCategory(rows, []);
 
       expect(groups).toHaveLength(1);
@@ -279,8 +290,8 @@ describe('printListOperations', () => {
 
     it('rounds totals correctly', () => {
       const rows = [
-        createTestRow({ categoryIds: ['cat1'], filament: 1.111, costEstimate: 0.111 }),
-        createTestRow({ categoryIds: ['cat1'], filament: 2.222, costEstimate: 0.222 }),
+        createTestRow({ categoryIds: [categoryId('cat1')], filament: 1.111, costEstimate: 0.111 }),
+        createTestRow({ categoryIds: [categoryId('cat1')], filament: 2.222, costEstimate: 0.222 }),
       ];
       const groups = groupByCategory(rows, testCategories);
 
@@ -294,11 +305,11 @@ describe('printListOperations', () => {
   describe('applyFiltersAndSort', () => {
     it('applies filter then sort', () => {
       const rows = [
-        createTestRow({ categoryIds: ['cat1'], area: 9 }),
-        createTestRow({ categoryIds: ['cat2'], area: 1 }),
-        createTestRow({ categoryIds: ['cat1'], area: 4 }),
+        createTestRow({ categoryIds: [categoryId('cat1')], area: 9 }),
+        createTestRow({ categoryIds: [categoryId('cat2')], area: 1 }),
+        createTestRow({ categoryIds: [categoryId('cat1')], area: 4 }),
       ];
-      const result = applyFiltersAndSort(rows, new Set(['cat2']), 'area', 'asc');
+      const result = applyFiltersAndSort(rows, new Set([categoryId('cat2')]), 'area', 'asc');
 
       expect(result).toHaveLength(2);
       expect(result.map((r) => r.area)).toEqual([4, 9]);
@@ -313,8 +324,8 @@ describe('printListOperations', () => {
     });
 
     it('returns empty array when all filtered out', () => {
-      const rows = [createTestRow({ categoryIds: ['cat1'] })];
-      const result = applyFiltersAndSort(rows, new Set(['cat1']), 'area', 'asc');
+      const rows = [createTestRow({ categoryIds: [categoryId('cat1')] })];
+      const result = applyFiltersAndSort(rows, new Set([categoryId('cat1')]), 'area', 'asc');
 
       expect(result).toHaveLength(0);
     });

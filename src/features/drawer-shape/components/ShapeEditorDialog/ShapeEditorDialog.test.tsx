@@ -2,7 +2,8 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { useLayoutStore } from '@/core/store';
 import { resetAllStores, createTestBin } from '@/test/testUtils';
-import { gridUnits } from '@/core/types';
+import { binId, gridUnits } from '@/core/types';
+import type { DrawerOutline } from '@/core/types';
 import { ShapeEditorDialog } from './ShapeEditorDialog';
 
 vi.mock('@/i18n', () => ({
@@ -10,7 +11,10 @@ vi.mock('@/i18n', () => ({
     params ? `${key}:${JSON.stringify(params)}` : key,
 }));
 
-const mockSetDrawerOutline = vi.fn(() => ({ ok: true, value: undefined }));
+const mockSetDrawerOutline = vi.fn((_outline: DrawerOutline | null) => ({
+  ok: true,
+  value: undefined,
+}));
 vi.mock('@/shared/contexts/MutationsContext', () => ({
   useMutations: () => ({ setDrawerOutline: mockSetDrawerOutline }),
 }));
@@ -56,10 +60,8 @@ describe('ShapeEditorDialog', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'drawerShape.editor.apply' }));
     expect(mockSetDrawerOutline).toHaveBeenCalledTimes(1);
-    const outline = mockSetDrawerOutline.mock.calls[0][0] as {
-      vertices: { x: number; y: number }[];
-      authoring?: { kind: string };
-    };
+    const outline = mockSetDrawerOutline.mock.calls[0][0];
+    if (outline === null) throw new Error('expected an outline, got null');
     expect(outline.vertices).toHaveLength(6);
     expect(outline.authoring).toEqual({ kind: 'cells' });
     expect(onClose).toHaveBeenCalled();
@@ -80,7 +82,15 @@ describe('ShapeEditorDialog', () => {
     useLayoutStore.setState((s) => ({
       layout: {
         ...s.layout,
-        bins: [createTestBin({ id: 'a', x: 0, y: 0, width: 1, depth: 1 })],
+        bins: [
+          createTestBin({
+            id: binId('a'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(1),
+            depth: gridUnits(1),
+          }),
+        ],
       },
     }));
     render(<ShapeEditorDialog open onClose={() => {}} />);

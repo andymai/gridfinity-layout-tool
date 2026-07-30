@@ -30,11 +30,11 @@ function makeBins(count: number, overrides: Partial<ReturnType<typeof createTest
   return Array.from({ length: count }, (_, i) =>
     createTestBin({
       id: binId(`bin-${i}`),
-      x: i,
-      y: 0,
-      width: 1,
-      depth: 1,
-      height: 3,
+      x: gridUnits(i),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+      height: heightUnits(3),
       layerId: layerId('layer1'),
       ...overrides,
     })
@@ -47,13 +47,16 @@ function makeBins(count: number, overrides: Partial<ReturnType<typeof createTest
 
 describe('assessLayoutQuality', () => {
   it('returns skip when bin count is 0', () => {
-    const layout = createTestLayout({ drawer: { width: 10, depth: 10, height: 12 }, bins: [] });
+    const layout = createTestLayout({
+      drawer: { width: gridUnits(10), depth: gridUnits(10), height: heightUnits(12) },
+      bins: [],
+    });
     expect(assessLayoutQuality(layout)).toBe('skip');
   });
 
   it('returns skip when bin count is 1', () => {
     const layout = createTestLayout({
-      drawer: { width: 10, depth: 10, height: 12 },
+      drawer: { width: gridUnits(10), depth: gridUnits(10), height: heightUnits(12) },
       bins: makeBins(1),
     });
     expect(assessLayoutQuality(layout)).toBe('skip');
@@ -61,7 +64,7 @@ describe('assessLayoutQuality', () => {
 
   it('returns skip when bin count is 2 (below threshold of 3)', () => {
     const layout = createTestLayout({
-      drawer: { width: 10, depth: 10, height: 12 },
+      drawer: { width: gridUnits(10), depth: gridUnits(10), height: heightUnits(12) },
       bins: makeBins(2),
     });
     expect(assessLayoutQuality(layout)).toBe('skip');
@@ -70,7 +73,7 @@ describe('assessLayoutQuality', () => {
   it('returns skip when fill is below 15% even with 3+ bins', () => {
     // Drawer is 10x10 = 100 area. 3 bins of 1x1 = 3% fill.
     const layout = createTestLayout({
-      drawer: { width: 10, depth: 10, height: 12 },
+      drawer: { width: gridUnits(10), depth: gridUnits(10), height: heightUnits(12) },
       bins: makeBins(3),
     });
     expect(assessLayoutQuality(layout)).toBe('skip');
@@ -79,7 +82,7 @@ describe('assessLayoutQuality', () => {
   it('returns low when fill >= 15% and bin count >= 3 (no variety or labels)', () => {
     // Drawer 4x4 = 16 area. 3 bins of 1x1 = 3/16 ≈ 18.75% fill.
     const layout = createTestLayout({
-      drawer: { width: 4, depth: 4, height: 12 },
+      drawer: { width: gridUnits(4), depth: gridUnits(4), height: heightUnits(12) },
       bins: makeBins(3),
     });
     expect(assessLayoutQuality(layout)).toBe('low');
@@ -88,7 +91,7 @@ describe('assessLayoutQuality', () => {
   it('returns medium when fill >= 30% and bins >= 4 (without labels)', () => {
     // Drawer 4x4 = 16. 5 bins of 1x1 = 31.25% fill.
     const layout = createTestLayout({
-      drawer: { width: 4, depth: 4, height: 12 },
+      drawer: { width: gridUnits(4), depth: gridUnits(4), height: heightUnits(12) },
       bins: makeBins(5),
     });
     expect(assessLayoutQuality(layout)).toBe('medium');
@@ -100,36 +103,36 @@ describe('assessLayoutQuality', () => {
     const bins = [
       createTestBin({
         id: binId('b1'),
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         layerId: layerId('layer1'),
       }),
       createTestBin({
         id: binId('b2'),
-        x: 2,
-        y: 0,
-        width: 1,
-        depth: 2,
-        height: 3,
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         layerId: layerId('layer1'),
       }),
       createTestBin({
         id: binId('b3'),
-        x: 3,
-        y: 0,
-        width: 1,
-        depth: 2,
-        height: 3,
+        x: gridUnits(3),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         layerId: layerId('layer1'),
       }),
     ];
     // total area: 4+2+2 = 8 / 16 = 50% — but only 3 bins, not >= 5, so not 'high'
     // size variety (2x2x3 and 1x2x3) >= 2 unique sizes, fill >= 30% → medium
     const layout = createTestLayout({
-      drawer: { width: 4, depth: 4, height: 12 },
+      drawer: { width: gridUnits(4), depth: gridUnits(4), height: heightUnits(12) },
       bins,
     });
     expect(assessLayoutQuality(layout)).toBe('medium');
@@ -139,7 +142,7 @@ describe('assessLayoutQuality', () => {
     // Drawer 4x4 = 16. 8 bins of 1x1 = 50% fill, 5+ bins, with labels.
     const bins = makeBins(8, { label: 'tool' });
     const layout = createTestLayout({
-      drawer: { width: 4, depth: 4, height: 12 },
+      drawer: { width: gridUnits(4), depth: gridUnits(4), height: heightUnits(12) },
       bins,
     });
     expect(assessLayoutQuality(layout)).toBe('high');
@@ -150,53 +153,53 @@ describe('assessLayoutQuality', () => {
     const bins = [
       createTestBin({
         id: binId('b1'),
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         layerId: layerId('layer1'),
       }),
       createTestBin({
         id: binId('b2'),
-        x: 2,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         layerId: layerId('layer1'),
       }),
       createTestBin({
         id: binId('b3'),
-        x: 0,
-        y: 2,
-        width: 1,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(2),
+        width: gridUnits(1),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         layerId: layerId('layer1'),
       }),
       createTestBin({
         id: binId('b4'),
-        x: 1,
-        y: 2,
-        width: 1,
-        depth: 2,
-        height: 3,
+        x: gridUnits(1),
+        y: gridUnits(2),
+        width: gridUnits(1),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         layerId: layerId('layer1'),
       }),
       createTestBin({
         id: binId('b5'),
-        x: 2,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(2),
+        y: gridUnits(2),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         layerId: layerId('layer1'),
       }),
     ];
     // areas: 4+4+2+2+4 = 16/16 = 100% fill, 5 bins, has variety
     const layout = createTestLayout({
-      drawer: { width: 4, depth: 4, height: 12 },
+      drawer: { width: gridUnits(4), depth: gridUnits(4), height: heightUnits(12) },
       bins,
     });
     expect(assessLayoutQuality(layout)).toBe('high');
@@ -206,10 +209,10 @@ describe('assessLayoutQuality', () => {
     // 3 staging bins and 2 on-grid bins → effectively 2 on-grid → skip
     const onGridBins = makeBins(2);
     const stagingBins = makeBins(3).map((b, i) =>
-      createTestBin({ id: binId(`staging-${i}`), layerId: layerId('__staging__') })
+      createTestBin({ id: binId(`staging-${i}`), layerId: STAGING_ID })
     );
     const layout = createTestLayout({
-      drawer: { width: 4, depth: 4, height: 12 },
+      drawer: { width: gridUnits(4), depth: gridUnits(4), height: heightUnits(12) },
       bins: [...onGridBins, ...stagingBins],
     });
     expect(assessLayoutQuality(layout)).toBe('skip');
@@ -220,48 +223,48 @@ describe('assessLayoutQuality', () => {
     const bins = [
       createTestBin({
         id: binId('b1'),
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         layerId: layerId('layer1'),
         label: 'a',
       }),
       createTestBin({
         id: binId('b2'),
-        x: 2,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         layerId: layerId('layer1'),
         label: 'b',
       }),
       createTestBin({
         id: binId('b3'),
-        x: 0,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(2),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         layerId: layerId('layer1'),
         label: 'c',
       }),
       createTestBin({
         id: binId('b4'),
-        x: 2,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
+        x: gridUnits(2),
+        y: gridUnits(2),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
         layerId: layerId('layer1'),
         label: 'd',
       }),
     ];
     // area: 4*4 = 16, fill 16/16 = 100%, has labels, but only 4 bins
     const layout = createTestLayout({
-      drawer: { width: 4, depth: 4, height: 12 },
+      drawer: { width: gridUnits(4), depth: gridUnits(4), height: heightUnits(12) },
       bins,
     });
     // medium: fill >= 30%, bins >= 4, has size variety (all same size, so variety=false)
@@ -283,7 +286,7 @@ describe('isSubstantialLayout', () => {
   it('returns true for layouts that are low, medium, or high quality', () => {
     // 3 bins on a 4x4 drawer = ~19% fill → 'low'
     const layout = createTestLayout({
-      drawer: { width: 4, depth: 4, height: 12 },
+      drawer: { width: gridUnits(4), depth: gridUnits(4), height: heightUnits(12) },
       bins: makeBins(3),
     });
     expect(isSubstantialLayout(layout)).toBe(true);
@@ -300,7 +303,7 @@ describe('isSubstantialLayout', () => {
     // We can't mock assessLayoutQuality easily, so we just verify behaviourally.
     // A 4x4 drawer with 8 labeled bins should be high quality → true.
     const highLayout = createTestLayout({
-      drawer: { width: 4, depth: 4, height: 12 },
+      drawer: { width: gridUnits(4), depth: gridUnits(4), height: heightUnits(12) },
       bins: makeBins(8, { label: 'test' }),
     });
     expect(isSubstantialLayout(highLayout)).toBe(true);
@@ -321,7 +324,7 @@ describe('computeLayoutHash', () => {
 
   it('is deterministic: same layout produces same hash', () => {
     const layout = createTestLayout({
-      drawer: { width: 6, depth: 4, height: 12 },
+      drawer: { width: gridUnits(6), depth: gridUnits(4), height: heightUnits(12) },
       bins: makeBins(4),
     });
     expect(computeLayoutHash(layout)).toBe(computeLayoutHash(layout));
@@ -330,20 +333,20 @@ describe('computeLayoutHash', () => {
   it('is order-independent: same bins in different order produce same hash', () => {
     const bin1 = createTestBin({
       id: binId('b1'),
-      x: 0,
-      y: 0,
-      width: 1,
-      depth: 1,
-      height: 3,
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+      height: heightUnits(3),
       layerId: layerId('layer1'),
     });
     const bin2 = createTestBin({
       id: binId('b2'),
-      x: 1,
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 6,
+      x: gridUnits(1),
+      y: gridUnits(0),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+      height: heightUnits(6),
       layerId: layerId('layer1'),
     });
 
@@ -355,18 +358,36 @@ describe('computeLayoutHash', () => {
 
   it('produces different hashes for different drawer sizes', () => {
     const bins = makeBins(3);
-    const layoutA = createTestLayout({ drawer: { width: 6, depth: 4, height: 12 }, bins });
-    const layoutB = createTestLayout({ drawer: { width: 8, depth: 4, height: 12 }, bins });
+    const layoutA = createTestLayout({
+      drawer: { width: gridUnits(6), depth: gridUnits(4), height: heightUnits(12) },
+      bins,
+    });
+    const layoutB = createTestLayout({
+      drawer: { width: gridUnits(8), depth: gridUnits(4), height: heightUnits(12) },
+      bins,
+    });
 
     expect(computeLayoutHash(layoutA)).not.toBe(computeLayoutHash(layoutB));
   });
 
   it('produces different hashes for different bin compositions', () => {
     const binsA = [
-      createTestBin({ id: binId('b1'), width: 1, depth: 1, height: 3, layerId: layerId('layer1') }),
+      createTestBin({
+        id: binId('b1'),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
+        layerId: layerId('layer1'),
+      }),
     ];
     const binsB = [
-      createTestBin({ id: binId('b2'), width: 2, depth: 2, height: 3, layerId: layerId('layer1') }),
+      createTestBin({
+        id: binId('b2'),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        layerId: layerId('layer1'),
+      }),
     ];
 
     const layoutA = createTestLayout({ bins: binsA });
@@ -379,7 +400,7 @@ describe('computeLayoutHash', () => {
     const gridBins = makeBins(2);
     const layoutWithoutStaging = createTestLayout({ bins: gridBins });
 
-    const stagingBin = createTestBin({ id: binId('s1'), layerId: layerId('__staging__') });
+    const stagingBin = createTestBin({ id: binId('s1'), layerId: STAGING_ID });
     const layoutWithStaging = createTestLayout({ bins: [...gridBins, stagingBin] });
 
     expect(computeLayoutHash(layoutWithoutStaging)).toBe(computeLayoutHash(layoutWithStaging));
@@ -421,22 +442,46 @@ describe('computeSizeDistribution', () => {
 
   it('counts bins by their WxDxH size string', () => {
     const bins = [
-      createTestBin({ id: binId('b1'), width: 1, depth: 1, height: 3, layerId: layerId('layer1') }),
-      createTestBin({ id: binId('b2'), width: 1, depth: 1, height: 3, layerId: layerId('layer1') }),
-      createTestBin({ id: binId('b3'), width: 2, depth: 2, height: 6, layerId: layerId('layer1') }),
+      createTestBin({
+        id: binId('b1'),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
+        layerId: layerId('layer1'),
+      }),
+      createTestBin({
+        id: binId('b2'),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
+        layerId: layerId('layer1'),
+      }),
+      createTestBin({
+        id: binId('b3'),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(6),
+        layerId: layerId('layer1'),
+      }),
     ];
     expect(computeSizeDistribution(bins)).toEqual({ '1x1x3': 2, '2x2x6': 1 });
   });
 
   it('excludes staging bins', () => {
     const bins = [
-      createTestBin({ id: binId('b1'), width: 1, depth: 1, height: 3, layerId: layerId('layer1') }),
+      createTestBin({
+        id: binId('b1'),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
+        layerId: layerId('layer1'),
+      }),
       createTestBin({
         id: binId('s1'),
-        width: 2,
-        depth: 2,
-        height: 3,
-        layerId: layerId('__staging__'),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        layerId: STAGING_ID,
       }),
     ];
     expect(computeSizeDistribution(bins)).toEqual({ '1x1x3': 1 });
@@ -444,17 +489,35 @@ describe('computeSizeDistribution', () => {
 
   it('handles all-staging input', () => {
     const bins = [
-      createTestBin({ id: binId('s1'), layerId: layerId('__staging__') }),
-      createTestBin({ id: binId('s2'), layerId: layerId('__staging__') }),
+      createTestBin({ id: binId('s1'), layerId: STAGING_ID }),
+      createTestBin({ id: binId('s2'), layerId: STAGING_ID }),
     ];
     expect(computeSizeDistribution(bins)).toEqual({});
   });
 
   it('counts many distinct sizes independently', () => {
     const bins = [
-      createTestBin({ id: binId('b1'), width: 1, depth: 2, height: 3, layerId: layerId('layer1') }),
-      createTestBin({ id: binId('b2'), width: 3, depth: 2, height: 6, layerId: layerId('layer1') }),
-      createTestBin({ id: binId('b3'), width: 1, depth: 1, height: 3, layerId: layerId('layer1') }),
+      createTestBin({
+        id: binId('b1'),
+        width: gridUnits(1),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        layerId: layerId('layer1'),
+      }),
+      createTestBin({
+        id: binId('b2'),
+        width: gridUnits(3),
+        depth: gridUnits(2),
+        height: heightUnits(6),
+        layerId: layerId('layer1'),
+      }),
+      createTestBin({
+        id: binId('b3'),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
+        layerId: layerId('layer1'),
+      }),
     ];
     const result = computeSizeDistribution(bins);
     expect(result['1x2x3']).toBe(1);
@@ -495,7 +558,7 @@ describe('computeCategoryDistribution', () => {
       createTestBin({
         id: binId('s1'),
         category: categoryId('cat-b'),
-        layerId: layerId('__staging__'),
+        layerId: STAGING_ID,
       }),
     ];
     expect(computeCategoryDistribution(bins)).toEqual({ 'cat-a': 1 });
@@ -552,7 +615,7 @@ describe('computeDomainDistribution', () => {
   it('excludes staging bins', () => {
     const bins = [
       createTestBin({ id: binId('b1'), label: 'screwdriver', layerId: layerId('layer1') }),
-      createTestBin({ id: binId('s1'), label: 'hammer', layerId: layerId('__staging__') }),
+      createTestBin({ id: binId('s1'), label: 'hammer', layerId: STAGING_ID }),
     ];
     expect(computeDomainDistribution(bins, processLabel)).toEqual({ tools: 1 });
   });
@@ -625,7 +688,7 @@ describe('computeTopLabelHashes', () => {
   it('excludes staging bins', () => {
     const bins = [
       createTestBin({ id: binId('b1'), label: 'a', layerId: layerId('layer1') }),
-      createTestBin({ id: binId('s1'), label: 'b', layerId: layerId('__staging__') }),
+      createTestBin({ id: binId('s1'), label: 'b', layerId: STAGING_ID }),
     ];
     const result = computeTopLabelHashes(bins, 5, processLabel);
     expect(result).toEqual(['hash-a']);
@@ -699,7 +762,7 @@ describe('computeLabelSizePairs', () => {
   it('excludes staging bins', () => {
     const bins = [
       createTestBin({ id: binId('b1'), label: 'a', layerId: layerId('layer1') }),
-      createTestBin({ id: binId('s1'), label: 'b', layerId: layerId(STAGING_ID) }),
+      createTestBin({ id: binId('s1'), label: 'b', layerId: STAGING_ID }),
     ];
     const result = computeLabelSizePairs(bins, processLabel);
     expect(result).toEqual([{ hash: 'hash-a', size: '1x1x3' }]);
@@ -714,7 +777,7 @@ describe('computeLabelSizePairs', () => {
           layerId: layerId('layer1'),
         })
       ),
-      createTestBin({ id: binId('staged'), label: 'ignored', layerId: layerId(STAGING_ID) }),
+      createTestBin({ id: binId('staged'), label: 'ignored', layerId: STAGING_ID }),
       createTestBin({ id: binId('blank'), label: '   ', layerId: layerId('layer1') }),
     ];
     const result = computeLabelSizePairs(bins, processLabel);
@@ -729,14 +792,17 @@ describe('computeLabelSizePairs', () => {
 
 describe('computeFillPercentage', () => {
   it('returns 0 for empty layout', () => {
-    const layout = createTestLayout({ drawer: { width: 10, depth: 8, height: 12 }, bins: [] });
+    const layout = createTestLayout({
+      drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
+      bins: [],
+    });
     expect(computeFillPercentage(layout)).toBe(0);
   });
 
   it('calculates fill as a rounded percentage', () => {
     // Drawer 4x4 = 16 area. 4 bins of 1x1 = 25%.
     const layout = createTestLayout({
-      drawer: { width: 4, depth: 4, height: 12 },
+      drawer: { width: gridUnits(4), depth: gridUnits(4), height: heightUnits(12) },
       bins: makeBins(4),
     });
     expect(computeFillPercentage(layout)).toBe(25);
@@ -747,43 +813,43 @@ describe('computeFillPercentage', () => {
     const bins = [
       createTestBin({
         id: binId('b1'),
-        x: 0,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         layerId: layerId('layer1'),
       }),
       createTestBin({
         id: binId('b2'),
-        x: 1,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
+        x: gridUnits(1),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         layerId: layerId('layer1'),
       }),
       createTestBin({
         id: binId('b3'),
-        x: 0,
-        y: 1,
-        width: 1,
-        depth: 1,
-        height: 3,
+        x: gridUnits(0),
+        y: gridUnits(1),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         layerId: layerId('layer1'),
       }),
       createTestBin({
         id: binId('b4'),
-        x: 1,
-        y: 1,
-        width: 1,
-        depth: 1,
-        height: 3,
+        x: gridUnits(1),
+        y: gridUnits(1),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
         layerId: layerId('layer1'),
       }),
     ];
     const layout = createTestLayout({
-      drawer: { width: 2, depth: 2, height: 12 },
+      drawer: { width: gridUnits(2), depth: gridUnits(2), height: heightUnits(12) },
       bins,
     });
     expect(computeFillPercentage(layout)).toBe(100);
@@ -793,10 +859,10 @@ describe('computeFillPercentage', () => {
     // Drawer 4x4=16. 2 grid bins (2 area = 12.5%) + 10 staging bins.
     const gridBins = makeBins(2);
     const stagingBins = makeBins(10).map((b, i) =>
-      createTestBin({ id: binId(`s-${i}`), layerId: layerId('__staging__') })
+      createTestBin({ id: binId(`s-${i}`), layerId: STAGING_ID })
     );
     const layout = createTestLayout({
-      drawer: { width: 4, depth: 4, height: 12 },
+      drawer: { width: gridUnits(4), depth: gridUnits(4), height: heightUnits(12) },
       bins: [...gridBins, ...stagingBins],
     });
     expect(computeFillPercentage(layout)).toBe(13); // Math.round(2/16*100) = Math.round(12.5) = 13
@@ -805,15 +871,15 @@ describe('computeFillPercentage', () => {
   it('rounds to the nearest integer', () => {
     // Drawer 3x1 = 3 area. 1 bin of 1x1 = 33.33%. Round to 33.
     const layout = createTestLayout({
-      drawer: { width: 3, depth: 1, height: 12 },
+      drawer: { width: gridUnits(3), depth: gridUnits(1), height: heightUnits(12) },
       bins: [
         createTestBin({
           id: binId('b1'),
-          x: 0,
-          y: 0,
-          width: 1,
-          depth: 1,
-          height: 3,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(1),
+          depth: gridUnits(1),
+          height: heightUnits(3),
           layerId: layerId('layer1'),
         }),
       ],
@@ -824,23 +890,29 @@ describe('computeFillPercentage', () => {
   it('uses bin width*depth (not height) for area calculation', () => {
     // Two bins same footprint but different heights — fill is identical.
     const binsShort = [
-      createTestBin({ id: binId('b1'), width: 2, depth: 2, height: 1, layerId: layerId('layer1') }),
+      createTestBin({
+        id: binId('b1'),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(1),
+        layerId: layerId('layer1'),
+      }),
     ];
     const binsTall = [
       createTestBin({
         id: binId('b2'),
-        width: 2,
-        depth: 2,
-        height: 10,
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(10),
         layerId: layerId('layer1'),
       }),
     ];
     const layoutShort = createTestLayout({
-      drawer: { width: 4, depth: 4, height: 12 },
+      drawer: { width: gridUnits(4), depth: gridUnits(4), height: heightUnits(12) },
       bins: binsShort,
     });
     const layoutTall = createTestLayout({
-      drawer: { width: 4, depth: 4, height: 12 },
+      drawer: { width: gridUnits(4), depth: gridUnits(4), height: heightUnits(12) },
       bins: binsTall,
     });
     expect(computeFillPercentage(layoutShort)).toBe(computeFillPercentage(layoutTall));
@@ -880,7 +952,7 @@ describe('computeLabeledPercentage', () => {
     const bins = [
       createTestBin({ id: binId('b1'), label: 'labeled', layerId: layerId('layer1') }),
       createTestBin({ id: binId('b2'), label: '', layerId: layerId('layer1') }),
-      createTestBin({ id: binId('s1'), label: 'also labeled', layerId: layerId('__staging__') }),
+      createTestBin({ id: binId('s1'), label: 'also labeled', layerId: STAGING_ID }),
     ];
     // Only 2 on-grid bins: 1 labeled → 50%
     expect(computeLabeledPercentage(bins)).toBe(50);
@@ -895,9 +967,7 @@ describe('computeLabeledPercentage', () => {
   });
 
   it('returns 0 when only staging bins are provided', () => {
-    const bins = [
-      createTestBin({ id: binId('s1'), label: 'labeled', layerId: layerId('__staging__') }),
-    ];
+    const bins = [createTestBin({ id: binId('s1'), label: 'labeled', layerId: STAGING_ID })];
     expect(computeLabeledPercentage(bins)).toBe(0);
   });
 });

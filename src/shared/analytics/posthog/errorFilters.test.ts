@@ -62,7 +62,10 @@ describe('shouldIgnoreError — source patterns', () => {
 
 describe('filterExceptionForPosthog', () => {
   it('passes non-$exception events through unchanged', () => {
-    const e = { event: '$pageview', properties: { url: '/baseplate' } };
+    const e = {
+      event: '$pageview',
+      properties: { url: '/baseplate', $exception_list: undefined },
+    };
     expect(filterExceptionForPosthog(e)).toBe(e);
   });
 

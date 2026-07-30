@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ExpandedFootprint } from './ExpandedFootprint';
 import { createTestBin, createTestLayout } from '@/test/testUtils';
-import { gridUnits } from '@/core/types';
+import { gridUnits, mm } from '@/core/types';
 import type { Bin, Layout, OverhangConfig } from '@/core/types';
 
 const updateBin = vi.fn();
@@ -11,11 +11,17 @@ vi.mock('@/shared/contexts/MutationsContext', () => ({
 }));
 
 function layout(overrides: Partial<Layout> = {}): Layout {
-  return { ...createTestLayout(), gridUnitMm: 42, ...overrides } as Layout;
+  return createTestLayout({ gridUnitMm: mm(42), ...overrides });
 }
 
 function bin(overhang?: OverhangConfig): Bin {
-  return createTestBin({ x: gridUnits(0), y: gridUnits(0), width: 2, depth: 12, overhang });
+  return createTestBin({
+    x: gridUnits(0),
+    y: gridUnits(0),
+    width: gridUnits(2),
+    depth: gridUnits(12),
+    overhang,
+  });
 }
 
 describe('ExpandedFootprint', () => {
@@ -61,7 +67,7 @@ describe('ExpandedFootprint', () => {
     render(
       <ExpandedFootprint
         bin={bin({ enabled: true, left: 0, right: 14, front: 0, back: 0 })}
-        layout={layout({ gridUnitMmY: 21 })}
+        layout={layout({ gridUnitMmY: mm(21) })}
       />
     );
     expect(screen.getByText('98 × 252 mm')).toBeInTheDocument();

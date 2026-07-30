@@ -2,9 +2,14 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { PrintModal } from '@/features/print-export/components/PrintModal';
 import { useLayoutStore } from '@/core/store/layout';
-import { useSettingsStore, DEFAULT_PRINT_VIEW_SETTINGS } from '@/core/store/settings';
+import {
+  useSettingsStore,
+  DEFAULT_PRINT_VIEW_SETTINGS,
+  DEFAULT_SETTINGS,
+} from '@/core/store/settings';
 import { createDefaultLayout } from '@/core/constants';
 import type { Layout } from '@/core/types';
+import { binId, layerId, gridUnits, heightUnits } from '@/core/types';
 
 // Mock ResizeObserver
 class MockResizeObserver {
@@ -51,29 +56,33 @@ function createTestLayout(): Layout {
     ...base,
     name: 'Test Layout',
     layers: [
-      { id: 'layer-1', name: 'Layer 1', height: 3 },
-      { id: 'layer-2', name: 'Layer 2', height: 3 },
+      { id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(3) },
+      { id: layerId('layer-2'), name: 'Layer 2', height: heightUnits(3) },
     ],
     bins: [
       {
-        id: 'bin-1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        layerId: 'layer-1',
+        id: binId('bin-1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        layerId: layerId('layer-1'),
         category: base.categories[0].id,
+        label: '',
+        notes: '',
       },
       {
-        id: 'bin-2',
-        x: 2,
-        y: 0,
-        width: 3,
-        depth: 2,
-        height: 3,
-        layerId: 'layer-2',
+        id: binId('bin-2'),
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(3),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        layerId: layerId('layer-2'),
         category: base.categories[0].id,
+        label: '',
+        notes: '',
       },
     ],
   };
@@ -86,6 +95,7 @@ describe('PrintModal', () => {
     useLayoutStore.setState({ layout: testLayout });
     useSettingsStore.setState({
       settings: {
+        ...DEFAULT_SETTINGS,
         stlSearchSites: [],
         printViewSettings: { ...DEFAULT_PRINT_VIEW_SETTINGS },
       },
@@ -392,6 +402,7 @@ describe('PrintModal', () => {
       // Start with header disabled
       useSettingsStore.setState({
         settings: {
+          ...DEFAULT_SETTINGS,
           stlSearchSites: [],
           printViewSettings: { ...DEFAULT_PRINT_VIEW_SETTINGS, showHeader: false },
         },
