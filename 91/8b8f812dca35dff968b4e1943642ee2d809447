@@ -1,0 +1,23 @@
+src/features/generation/worker/generators/__kernel-tests__/gomaLogCapture.test.ts
+  s_bb8f1233002a7e::t_9762bb27f0280c 1-95
+src/features/generation/worker/generators/__kernel-tests__/kumikoBoundaryDiag.test.ts
+  s_bb8f1233002a7e::t_7e64cbbae7203c 1-144
+src/features/generation/worker/generators/__kernel-tests__/kumikoCornerCapture.test.ts
+  s_bb8f1233002a7e::t_bd53cc84e176c3 1-159
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "918b8f812dca35dff968b4e1943642ee2d809447",
+  "prompts": {},
+  "sessions": {
+    "s_bb8f1233002a7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6fc3935a-5ef6-4af4-95ab-e869e5faa058",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
