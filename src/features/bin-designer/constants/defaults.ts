@@ -14,6 +14,7 @@ import type {
   SlotConfig,
   DividerPieceConfig,
   WallPatternConfig,
+  WallPatternSides,
   WallPatternType,
   FloorPatternType,
   CutoutConfig,
@@ -53,12 +54,21 @@ export const DEFAULT_DIVIDER_PIECE_CONFIG: DividerPieceConfig = {
 /** Valid wall pattern members — used to coerce crafted/removed values on load. */
 export const VALID_WALL_PATTERNS = new Set<WallPatternType>(WALL_PATTERN_TYPES);
 
+/** All four outer walls patterned — the pre-#2966 behaviour. */
+export const DEFAULT_WALL_PATTERN_SIDES: WallPatternSides = {
+  left: true,
+  right: true,
+  front: true,
+  back: true,
+} as const;
+
 /** Default wall pattern configuration: disabled */
 export const DEFAULT_WALL_PATTERN_CONFIG: WallPatternConfig = {
   enabled: false,
   pattern: 'honeycomb',
   scale: DEFAULT_PATTERN_SCALE,
   dividers: false,
+  sides: DEFAULT_WALL_PATTERN_SIDES,
 } as const;
 
 /** Valid floor pattern members — used to coerce crafted/removed values on load. */

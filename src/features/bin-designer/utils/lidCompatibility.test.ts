@@ -105,6 +105,31 @@ describe('checkLidCompatibility', () => {
       expect(issue?.severity).toBe('warning');
     });
 
+    it('still flags when only one wall is patterned (#2966)', () => {
+      const params = withOverrides({
+        wallPattern: {
+          ...DEFAULT_BIN_PARAMS.wallPattern,
+          enabled: true,
+          sides: { left: false, right: false, front: true, back: false },
+        },
+      });
+      expect(checkLidCompatibility(params).find((i) => i.id === 'wallPattern')?.severity).toBe(
+        'warning'
+      );
+    });
+
+    it('skips a divider-only pattern — the lip is never perforated (#2966)', () => {
+      const params = withOverrides({
+        wallPattern: {
+          ...DEFAULT_BIN_PARAMS.wallPattern,
+          enabled: true,
+          dividers: true,
+          sides: { left: false, right: false, front: false, back: false },
+        },
+      });
+      expect(checkLidCompatibility(params).find((i) => i.id === 'wallPattern')).toBeUndefined();
+    });
+
     it('skips on polygon bins — wall pattern is gated off by FeatureGate', () => {
       const cells = Array<number>(64).fill(1);
       cells[0] = 0;
@@ -659,7 +684,10 @@ describe('checkLidCompatibility — magnetic attachment (#2694)', () => {
   it('blocks when the bin is too small to fit corner magnets', () => {
     // A 0.5-unit-wide bin (half-width 10.5mm) can't hold the 6mm magnet's
     // corner pads (need >= 5 + diameter = 11mm half-extent).
-    const params = magnetic({ width: 0.5 }, { retentionMagnet: { diameter: 6, depth: 2, edgeMagnets: 0 } });
+    const params = magnetic(
+      { width: 0.5 },
+      { retentionMagnet: { diameter: 6, depth: 2, edgeMagnets: 0 } }
+    );
     const issue = checkLidCompatibility(params).find((i) => i.id === 'magnetBinTooSmall');
     expect(issue?.severity).toBe('blocker');
   });
@@ -681,7 +709,10 @@ describe('checkLidCompatibility — magnetic attachment (#2694)', () => {
   });
 
   it('blocks when the retention magnet is deeper than the bin interior', () => {
-    const params = magnetic({ height: 1 }, { retentionMagnet: { diameter: 6, depth: 6, edgeMagnets: 0 } });
+    const params = magnetic(
+      { height: 1 },
+      { retentionMagnet: { diameter: 6, depth: 6, edgeMagnets: 0 } }
+    );
     const issues = checkLidCompatibility(params);
     const issue = issues.find((i) => i.id === 'magnetTooDeepForBin');
     expect(issue?.severity).toBe('blocker');
@@ -689,7 +720,10 @@ describe('checkLidCompatibility — magnetic attachment (#2694)', () => {
 
   it('warns when the retaining floor under the magnet gets marginal', () => {
     // 1U bin interior ≈ 2mm; a 1.5mm magnet leaves only ~0.5mm floor (< 0.6mm).
-    const params = magnetic({ height: 1 }, { retentionMagnet: { diameter: 6, depth: 1.5, edgeMagnets: 0 } });
+    const params = magnetic(
+      { height: 1 },
+      { retentionMagnet: { diameter: 6, depth: 1.5, edgeMagnets: 0 } }
+    );
     const issue = checkLidCompatibility(params).find((i) => i.id === 'magnetTooDeepForBin');
     expect(issue?.severity).toBe('warning');
   });

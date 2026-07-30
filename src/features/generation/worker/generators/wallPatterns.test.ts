@@ -8,7 +8,7 @@ import {
   getExpandedCutoutDimensions,
 } from './wallPatterns';
 import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
-import type { BinParams } from '@/shared/types/bin';
+import type { BinParams, WallPatternSides } from '@/shared/types/bin';
 import type { CellMask } from '@/shared/utils/cellMask';
 import { DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
 
@@ -138,6 +138,106 @@ describe('getPatternDescriptors — side field', () => {
     expect(result).not.toBeNull();
     const sides = result!.descriptors.map((d) => d.side);
     expect(sides).toEqual(['front', 'back']);
+  });
+});
+
+describe('getPatternDescriptors — per-side selection (#2966)', () => {
+  const innerW = 42 - 2 * 1.2;
+  const innerD = 42 - 2 * 1.2;
+  const wallHeight = 5 * 7;
+
+  const sidesParams = (sides: Partial<WallPatternSides>): BinParams =>
+    makeParams({
+      height: 5,
+      wallPattern: {
+        enabled: true,
+        pattern: 'honeycomb',
+        sides: { left: true, right: true, front: true, back: true, ...sides },
+      },
+    });
+
+  it('emits only the selected walls', () => {
+    const result = getPatternDescriptors(
+      sidesParams({ back: false, left: false, right: false }),
+      innerW,
+      innerD,
+      wallHeight
+    );
+    expect(result).not.toBeNull();
+    expect(result!.descriptors.map((d) => d.side)).toEqual(['front']);
+  });
+
+  it('returns null when every wall is deselected', () => {
+    const result = getPatternDescriptors(
+      sidesParams({ front: false, back: false, left: false, right: false }),
+      innerW,
+      innerD,
+      wallHeight
+    );
+    expect(result).toBeNull();
+  });
+
+  it('intersects with the slot-free gate rather than overriding it', () => {
+    // Left/right are slot-blocked; the user picked front + left. Only front survives.
+    const params = makeParams({
+      height: 5,
+      style: 'slotted',
+      slotConfig: {
+        x: { enabled: true, pitch: 20 },
+        y: { enabled: false, pitch: 20 },
+      },
+      wallPattern: {
+        enabled: true,
+        pattern: 'honeycomb',
+        sides: { left: true, right: false, front: true, back: false },
+      },
+    });
+    const result = getPatternDescriptors(params, innerW, innerD, wallHeight);
+    expect(result).not.toBeNull();
+    expect(result!.descriptors.map((d) => d.side)).toEqual(['front']);
+  });
+
+  it('filters every polygon edge mapped to a deselected cardinal', () => {
+    // 3×3 L-shape (half-bin mask, bottom-right 1u empty): the front cardinal
+    // owns two outer edges — the long arm and the notch step.
+    const cells: (0 | 1)[] = (
+      [
+        [1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 0, 0],
+        [1, 1, 1, 1, 0, 0],
+      ] as (0 | 1)[][]
+    )
+      .reverse()
+      .flat();
+    const params = makeParams({
+      width: 3,
+      depth: 3,
+      height: 5,
+      cellMask: { cols: 6, rows: 6, cells },
+      wallPattern: {
+        enabled: true,
+        pattern: 'honeycomb',
+        sides: { left: false, right: false, front: true, back: false },
+      },
+    });
+    const result = getPatternDescriptors(params, 42 * 3 - 2 * 1.2, 42 * 3 - 2 * 1.2, wallHeight);
+    expect(result).not.toBeNull();
+    const sides = new Set(result!.descriptors.map((d) => d.side));
+    expect([...sides]).toEqual(['front']);
+  });
+
+  it('treats a design saved without `sides` as all four walls', () => {
+    const result = getPatternDescriptors(
+      makeParams({ height: 5, wallPattern: { enabled: true, pattern: 'honeycomb' } }),
+      innerW,
+      innerD,
+      wallHeight
+    );
+    expect(result).not.toBeNull();
+    expect(result!.descriptors.map((d) => d.side)).toEqual(['front', 'back', 'left', 'right']);
   });
 });
 

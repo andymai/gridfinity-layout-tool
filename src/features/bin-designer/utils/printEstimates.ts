@@ -36,6 +36,7 @@ import {
 } from '@/shared/utils/scoopCalculations';
 import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 import { countFilled, isPartialMask } from '@/shared/utils/cellMask';
+import { resolveWallPatternSides } from '@/shared/utils/wallPatternSides';
 import { FLOOR_PATTERN_BORDER, floorWindowSpan } from '@/shared/generation/floorPatternMetrics';
 import { stampPatternOpenArea } from '@/shared/generation/wallPatternMetrics';
 export interface PrintEstimate {
@@ -556,17 +557,22 @@ function computeWallPatternReduction(
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
 
-  // Compute actual slot-free wall length based on which axes have slots
-  let slotFreeWallLength = 0;
-  if (params.style !== 'slotted' || !params.slotConfig.y.enabled) {
-    slotFreeWallLength += 2 * innerW; // front + back
+  // Patterned wall length: slot-free walls (front/back seat y-axis dividers,
+  // left/right seat x-axis) intersected with the per-side selection (#2966).
+  const sides = resolveWallPatternSides(params.wallPattern);
+  const yFree = params.style !== 'slotted' || !params.slotConfig.y.enabled;
+  const xFree = params.style !== 'slotted' || !params.slotConfig.x.enabled;
+  let patternedWallLength = 0;
+  if (yFree) {
+    if (sides.front) patternedWallLength += innerW;
+    if (sides.back) patternedWallLength += innerW;
   }
-  if (params.style !== 'slotted' || !params.slotConfig.x.enabled) {
-    slotFreeWallLength += 2 * innerD; // left + right
+  if (xFree) {
+    if (sides.left) patternedWallLength += innerD;
+    if (sides.right) patternedWallLength += innerD;
   }
-  if (slotFreeWallLength === 0) return 0;
 
-  const wallFaceArea = slotFreeWallLength * patternHeight;
+  const wallFaceArea = patternedWallLength * patternHeight;
 
   // Pattern open-area fraction, modulated by scale (0.5 = neutral, factor 1.0).
   const scale = params.wallPattern.scale ?? DEFAULT_PATTERN_SCALE;
