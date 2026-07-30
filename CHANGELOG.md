@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.329.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.329.3...gridfinity-layout-tool-v4.329.4) (2026-07-30)
+
+
+### Bug Fixes
+
+* **cqrs:** derive baseplate connectorStyle enum from one source ([#2982](https://github.com/andymai/gridfinity-layout-tool/issues/2982)) ([#2990](https://github.com/andymai/gridfinity-layout-tool/issues/2990)) ([8c0978a](https://github.com/andymai/gridfinity-layout-tool/commit/8c0978a4c5c58dfdaf0a803843d5c3d6d4ca66e9))
+
 ## [4.329.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.329.2...gridfinity-layout-tool-v4.329.3) (2026-07-30)
 
 
