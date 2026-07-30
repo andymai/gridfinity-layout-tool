@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, act } from '@testing-library/react';
 import { DragPreview } from './DragPreview';
 import type { Bin, Category } from '@/core/types';
+import { binId, categoryId, gridUnits, heightUnits, layerId } from '@/core/types';
 
 // Mock state - use explicit type instead of importing Interaction
 let mockInteractionState: { interaction: { type: string; [key: string]: unknown } | null };
@@ -36,14 +37,14 @@ vi.mock('@/core/constants', () => ({
 // Helper to create test bin
 function makeBin(overrides: Partial<Bin> = {}): Bin {
   return {
-    id: 'bin-1',
-    x: 0,
-    y: 0,
-    width: 2,
-    depth: 3,
-    height: 4,
-    layerId: 'layer-1',
-    category: 'cat-1',
+    id: binId('bin-1'),
+    x: gridUnits(0),
+    y: gridUnits(0),
+    width: gridUnits(2),
+    depth: gridUnits(3),
+    height: heightUnits(4),
+    layerId: layerId('layer-1'),
+    category: categoryId('cat-1'),
     label: '',
     notes: '',
     ...overrides,
@@ -53,7 +54,7 @@ function makeBin(overrides: Partial<Bin> = {}): Bin {
 // Helper to create test category
 function makeCategory(overrides: Partial<Category> = {}): Category {
   return {
-    id: 'cat-1',
+    id: categoryId('cat-1'),
     name: 'Category 1',
     color: '#ff0000',
     ...overrides,
@@ -97,9 +98,18 @@ describe('DragPreview', () => {
   describe('drag interaction', () => {
     beforeEach(() => {
       mockLayoutState.layout.bins = [
-        makeBin({ id: 'bin-1', x: 0, y: 0, width: 2, depth: 3, category: 'cat-1' }),
+        makeBin({
+          id: binId('bin-1'),
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(3),
+          category: categoryId('cat-1'),
+        }),
       ];
-      mockLayoutState.layout.categories = [makeCategory({ id: 'cat-1', color: '#ff0000' })];
+      mockLayoutState.layout.categories = [
+        makeCategory({ id: categoryId('cat-1'), color: '#ff0000' }),
+      ];
     });
 
     it('renders nothing when mouse position not set yet', () => {
@@ -166,7 +176,9 @@ describe('DragPreview', () => {
     });
 
     it('uses default color when category not found', () => {
-      mockLayoutState.layout.bins = [makeBin({ id: 'bin-1', category: 'nonexistent-category' })];
+      mockLayoutState.layout.bins = [
+        makeBin({ id: binId('bin-1'), category: categoryId('nonexistent-category') }),
+      ];
       mockInteractionState.interaction = { type: 'drag', binIds: ['bin-1'] };
       const { container, rerender } = render(<DragPreview />);
 
@@ -180,7 +192,7 @@ describe('DragPreview', () => {
     });
 
     it('renders bin label when present', () => {
-      mockLayoutState.layout.bins = [makeBin({ id: 'bin-1', label: 'Test Label' })];
+      mockLayoutState.layout.bins = [makeBin({ id: binId('bin-1'), label: 'Test Label' })];
       mockInteractionState.interaction = { type: 'drag', binIds: ['bin-1'] };
       const { getByText, rerender } = render(<DragPreview />);
 
@@ -193,7 +205,7 @@ describe('DragPreview', () => {
     });
 
     it('does not render label when bin has no label', () => {
-      mockLayoutState.layout.bins = [makeBin({ id: 'bin-1', label: '' })];
+      mockLayoutState.layout.bins = [makeBin({ id: binId('bin-1'), label: '' })];
       mockInteractionState.interaction = { type: 'drag', binIds: ['bin-1'] };
       const { container, rerender } = render(<DragPreview />);
 
@@ -207,7 +219,9 @@ describe('DragPreview', () => {
     });
 
     it('rotates label for tall bins', () => {
-      mockLayoutState.layout.bins = [makeBin({ id: 'bin-1', width: 1, depth: 3, label: 'Tall' })];
+      mockLayoutState.layout.bins = [
+        makeBin({ id: binId('bin-1'), width: gridUnits(1), depth: gridUnits(3), label: 'Tall' }),
+      ];
       mockInteractionState.interaction = { type: 'drag', binIds: ['bin-1'] };
       const { container, rerender } = render(<DragPreview />);
 
@@ -221,7 +235,9 @@ describe('DragPreview', () => {
     });
 
     it('does not rotate label for wide bins', () => {
-      mockLayoutState.layout.bins = [makeBin({ id: 'bin-1', width: 3, depth: 1, label: 'Wide' })];
+      mockLayoutState.layout.bins = [
+        makeBin({ id: binId('bin-1'), width: gridUnits(3), depth: gridUnits(1), label: 'Wide' }),
+      ];
       mockInteractionState.interaction = { type: 'drag', binIds: ['bin-1'] };
       const { container, rerender } = render(<DragPreview />);
 
@@ -238,8 +254,20 @@ describe('DragPreview', () => {
   describe('multiple bins drag', () => {
     beforeEach(() => {
       mockLayoutState.layout.bins = [
-        makeBin({ id: 'bin-1', x: 0, y: 0, width: 2, depth: 2 }),
-        makeBin({ id: 'bin-2', x: 2, y: 0, width: 2, depth: 2 }),
+        makeBin({
+          id: binId('bin-1'),
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+        }),
+        makeBin({
+          id: binId('bin-2'),
+          x: gridUnits(2),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+        }),
       ];
       mockLayoutState.layout.categories = [makeCategory()];
     });
@@ -266,7 +294,7 @@ describe('DragPreview', () => {
       });
 
       rerender(<DragPreview />);
-      const binElements = container.querySelectorAll('.absolute.flex');
+      const binElements = container.querySelectorAll<HTMLElement>('.absolute.flex');
       expect(binElements[0].style.left).not.toBe(binElements[1].style.left);
     });
 
@@ -286,7 +314,9 @@ describe('DragPreview', () => {
 
   describe('staging drag', () => {
     beforeEach(() => {
-      mockLayoutState.layout.bins = [makeBin({ id: 'bin-1', x: 0, y: 0 })];
+      mockLayoutState.layout.bins = [
+        makeBin({ id: binId('bin-1'), x: gridUnits(0), y: gridUnits(0) }),
+      ];
       mockLayoutState.layout.categories = [makeCategory()];
     });
 
@@ -317,7 +347,9 @@ describe('DragPreview', () => {
 
   describe('zoom handling', () => {
     beforeEach(() => {
-      mockLayoutState.layout.bins = [makeBin({ id: 'bin-1', width: 2, depth: 2 })];
+      mockLayoutState.layout.bins = [
+        makeBin({ id: binId('bin-1'), width: gridUnits(2), depth: gridUnits(2) }),
+      ];
       mockLayoutState.layout.categories = [makeCategory()];
       mockInteractionState.interaction = { type: 'drag', binIds: ['bin-1'] };
     });
@@ -341,7 +373,7 @@ describe('DragPreview', () => {
     it('cleans up pointer event listener on unmount', () => {
       const removeEventListenerSpy = vi.spyOn(document, 'removeEventListener');
       mockInteractionState.interaction = { type: 'drag', binIds: ['bin-1'] };
-      mockLayoutState.layout.bins = [makeBin({ id: 'bin-1' })];
+      mockLayoutState.layout.bins = [makeBin({ id: binId('bin-1') })];
 
       const { unmount } = render(<DragPreview />);
       unmount();
@@ -350,7 +382,7 @@ describe('DragPreview', () => {
     });
 
     it('resets mouse position when drag ends', () => {
-      mockLayoutState.layout.bins = [makeBin({ id: 'bin-1' })];
+      mockLayoutState.layout.bins = [makeBin({ id: binId('bin-1') })];
       mockInteractionState.interaction = { type: 'drag', binIds: ['bin-1'] };
 
       const { container, rerender } = render(<DragPreview />);

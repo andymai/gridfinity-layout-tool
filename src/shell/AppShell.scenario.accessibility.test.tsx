@@ -86,15 +86,15 @@ beforeEach(() => {
     leftPanelCollapsed: false,
     rightPanelCollapsed: false,
     contextMenu: null,
+    showIsometricPreview: true,
+    isometricRotation: 0,
+    layerViewMode: 'focus',
+    isPreviewExpanded: false,
   });
   useInteractionStore.setState({
     interaction: null,
     dropTarget: null,
     paintSize: null,
-    showIsometricPreview: true,
-    isometricRotation: 0,
-    layerViewMode: 'focus',
-    isPreviewExpanded: false,
   });
   useMobileStore.setState({
     activeMobilePanel: null,

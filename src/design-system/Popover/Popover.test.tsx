@@ -4,7 +4,7 @@ import { Popover } from './Popover';
 import { createRef } from 'react';
 
 describe('Popover', () => {
-  let anchorRef: React.RefObject<HTMLButtonElement>;
+  let anchorRef: React.RefObject<HTMLButtonElement | null>;
   let anchorEl: HTMLButtonElement;
 
   beforeEach(() => {

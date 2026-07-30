@@ -73,7 +73,7 @@ describe('Checkbox', () => {
 
     it('syncs indeterminate property to DOM', () => {
       render(<Checkbox checked={false} onChange={vi.fn()} indeterminate aria-label="Test" />);
-      const input = screen.getByRole('checkbox');
+      const input = screen.getByRole<HTMLInputElement>('checkbox');
       expect(input.indeterminate).toBe(true);
     });
   });
