@@ -7,32 +7,9 @@ import {
   calculateMetrics,
   buildInspirationLayout,
 } from './layoutBuilder';
-import type { Layout } from '@/core/types';
-
-/**
- * Helper to create a minimal valid Layout for testing.
- */
-function createTestLayout(overrides: Partial<Layout> = {}): Layout {
-  const defaultLayer = { id: 'layer-1', name: 'Layer 1', height: 3 };
-  const defaultCategory = { id: 'cat-1', name: 'General', color: '#6b7280' };
-
-  return {
-    version: '1.0',
-    name: 'Test Layout',
-    drawer: {
-      width: 10,
-      depth: 8,
-      height: 12,
-    },
-    layers: [defaultLayer],
-    categories: [defaultCategory],
-    bins: [],
-    gridUnitMm: 42,
-    heightUnitMm: 7,
-    printBedSize: 256,
-    ...overrides,
-  };
-}
+import { gridUnits, heightUnits, binId, layerId, categoryId } from '@/core/types';
+import { STAGING_ID } from '@/core/constants';
+import { createTestLayout, createTestBin } from '@/test/testUtils';
 
 describe('layoutBuilder', () => {
   describe('createBin', () => {
@@ -159,7 +136,7 @@ describe('layoutBuilder', () => {
   describe('computePreview', () => {
     it('computes drawer dimensions from layout', () => {
       const layout = createTestLayout({
-        drawer: { width: 12, depth: 10, height: 15 },
+        drawer: { width: gridUnits(12), depth: gridUnits(10), height: heightUnits(15) },
       });
 
       const preview = computePreview(layout);
@@ -173,43 +150,39 @@ describe('layoutBuilder', () => {
       // binCount represents total bins in the layout (including staged)
       // binMap excludes staged bins (for visual thumbnail only)
       const layout = createTestLayout({
+        layers: [{ id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(3) }],
+        categories: [{ id: categoryId('cat-1'), name: 'General', color: '#6b7280' }],
         bins: [
-          {
-            id: 'b1',
-            x: 0,
-            y: 0,
-            width: 1,
-            depth: 1,
-            height: 3,
-            layerId: 'layer-1',
-            category: 'cat-1',
-            label: '',
-            notes: '',
-          },
-          {
-            id: 'b2',
-            x: 1,
-            y: 0,
-            width: 1,
-            depth: 1,
-            height: 3,
-            layerId: 'layer-1',
-            category: 'cat-1',
-            label: '',
-            notes: '',
-          },
-          {
-            id: 'b3',
-            x: 0,
-            y: 0,
-            width: 1,
-            depth: 1,
-            height: 3,
-            layerId: '__staging__',
-            category: 'cat-1',
-            label: '',
-            notes: '',
-          },
+          createTestBin({
+            id: binId('b1'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(1),
+            depth: gridUnits(1),
+            height: heightUnits(3),
+            layerId: layerId('layer-1'),
+            category: categoryId('cat-1'),
+          }),
+          createTestBin({
+            id: binId('b2'),
+            x: gridUnits(1),
+            y: gridUnits(0),
+            width: gridUnits(1),
+            depth: gridUnits(1),
+            height: heightUnits(3),
+            layerId: layerId('layer-1'),
+            category: categoryId('cat-1'),
+          }),
+          createTestBin({
+            id: binId('b3'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(1),
+            depth: gridUnits(1),
+            height: heightUnits(3),
+            layerId: STAGING_ID,
+            category: categoryId('cat-1'),
+          }),
         ],
       });
 
@@ -222,9 +195,9 @@ describe('layoutBuilder', () => {
     it('counts layers correctly', () => {
       const layout = createTestLayout({
         layers: [
-          { id: 'l1', name: 'Layer 1', height: 3 },
-          { id: 'l2', name: 'Layer 2', height: 3 },
-          { id: 'l3', name: 'Layer 3', height: 6 },
+          { id: layerId('l1'), name: 'Layer 1', height: heightUnits(3) },
+          { id: layerId('l2'), name: 'Layer 2', height: heightUnits(3) },
+          { id: layerId('l3'), name: 'Layer 3', height: heightUnits(6) },
         ],
       });
 
@@ -235,35 +208,32 @@ describe('layoutBuilder', () => {
 
     it('creates binMap with correct positions and colors', () => {
       const layout = createTestLayout({
+        layers: [{ id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(3) }],
         categories: [
-          { id: 'tools', name: 'Tools', color: '#ff0000' },
-          { id: 'parts', name: 'Parts', color: '#00ff00' },
+          { id: categoryId('tools'), name: 'Tools', color: '#ff0000' },
+          { id: categoryId('parts'), name: 'Parts', color: '#00ff00' },
         ],
         bins: [
-          {
-            id: 'b1',
-            x: 0,
-            y: 0,
-            width: 2,
-            depth: 3,
-            height: 3,
-            layerId: 'layer-1',
-            category: 'tools',
-            label: '',
-            notes: '',
-          },
-          {
-            id: 'b2',
-            x: 2,
-            y: 0,
-            width: 1,
-            depth: 2,
-            height: 3,
-            layerId: 'layer-1',
-            category: 'parts',
-            label: '',
-            notes: '',
-          },
+          createTestBin({
+            id: binId('b1'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(2),
+            depth: gridUnits(3),
+            height: heightUnits(3),
+            layerId: layerId('layer-1'),
+            category: categoryId('tools'),
+          }),
+          createTestBin({
+            id: binId('b2'),
+            x: gridUnits(2),
+            y: gridUnits(0),
+            width: gridUnits(1),
+            depth: gridUnits(2),
+            height: heightUnits(3),
+            layerId: layerId('layer-1'),
+            category: categoryId('parts'),
+          }),
         ],
       });
 
@@ -276,20 +246,19 @@ describe('layoutBuilder', () => {
 
     it('uses fallback color for unknown category', () => {
       const layout = createTestLayout({
-        categories: [{ id: 'known', name: 'Known', color: '#ff0000' }],
+        layers: [{ id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(3) }],
+        categories: [{ id: categoryId('known'), name: 'Known', color: '#ff0000' }],
         bins: [
-          {
-            id: 'b1',
-            x: 0,
-            y: 0,
-            width: 1,
-            depth: 1,
-            height: 3,
-            layerId: 'layer-1',
-            category: 'unknown',
-            label: '',
-            notes: '',
-          },
+          createTestBin({
+            id: binId('b1'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(1),
+            depth: gridUnits(1),
+            height: heightUnits(3),
+            layerId: layerId('layer-1'),
+            category: categoryId('unknown'),
+          }),
         ],
       });
 
@@ -300,31 +269,29 @@ describe('layoutBuilder', () => {
 
     it('excludes staging bins from binMap', () => {
       const layout = createTestLayout({
+        layers: [{ id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(3) }],
+        categories: [{ id: categoryId('cat-1'), name: 'General', color: '#6b7280' }],
         bins: [
-          {
-            id: 'b1',
-            x: 0,
-            y: 0,
-            width: 1,
-            depth: 1,
-            height: 3,
-            layerId: 'layer-1',
-            category: 'cat-1',
-            label: '',
-            notes: '',
-          },
-          {
-            id: 'b2',
-            x: 0,
-            y: 0,
-            width: 2,
-            depth: 2,
-            height: 3,
-            layerId: '__staging__',
-            category: 'cat-1',
-            label: '',
-            notes: '',
-          },
+          createTestBin({
+            id: binId('b1'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(1),
+            depth: gridUnits(1),
+            height: heightUnits(3),
+            layerId: layerId('layer-1'),
+            category: categoryId('cat-1'),
+          }),
+          createTestBin({
+            id: binId('b2'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(2),
+            depth: gridUnits(2),
+            height: heightUnits(3),
+            layerId: STAGING_ID,
+            category: categoryId('cat-1'),
+          }),
         ],
       });
 
@@ -339,43 +306,30 @@ describe('layoutBuilder', () => {
   describe('calculateMetrics', () => {
     it('counts bins excluding staging', () => {
       const layout = createTestLayout({
+        layers: [{ id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(3) }],
+        categories: [{ id: categoryId('cat-1'), name: 'General', color: '#6b7280' }],
         bins: [
-          {
-            id: 'b1',
-            x: 0,
-            y: 0,
-            width: 1,
-            depth: 1,
-            height: 3,
-            layerId: 'layer-1',
-            category: 'cat-1',
-            label: '',
-            notes: '',
-          },
-          {
-            id: 'b2',
-            x: 1,
-            y: 0,
-            width: 1,
-            depth: 1,
-            height: 3,
-            layerId: 'layer-1',
-            category: 'cat-1',
-            label: '',
-            notes: '',
-          },
-          {
-            id: 'b3',
-            x: 0,
-            y: 0,
-            width: 1,
-            depth: 1,
-            height: 3,
-            layerId: '__staging__',
-            category: 'cat-1',
-            label: '',
-            notes: '',
-          },
+          createTestBin({
+            id: binId('b1'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            layerId: layerId('layer-1'),
+            category: categoryId('cat-1'),
+          }),
+          createTestBin({
+            id: binId('b2'),
+            x: gridUnits(1),
+            y: gridUnits(0),
+            layerId: layerId('layer-1'),
+            category: categoryId('cat-1'),
+          }),
+          createTestBin({
+            id: binId('b3'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            layerId: STAGING_ID,
+            category: categoryId('cat-1'),
+          }),
         ],
       });
 
@@ -387,8 +341,8 @@ describe('layoutBuilder', () => {
     it('counts layers', () => {
       const layout = createTestLayout({
         layers: [
-          { id: 'l1', name: 'Layer 1', height: 3 },
-          { id: 'l2', name: 'Layer 2', height: 6 },
+          { id: layerId('l1'), name: 'Layer 1', height: heightUnits(3) },
+          { id: layerId('l2'), name: 'Layer 2', height: heightUnits(6) },
         ],
       });
 
@@ -400,9 +354,9 @@ describe('layoutBuilder', () => {
     it('counts categories', () => {
       const layout = createTestLayout({
         categories: [
-          { id: 'c1', name: 'Cat 1', color: '#ff0000' },
-          { id: 'c2', name: 'Cat 2', color: '#00ff00' },
-          { id: 'c3', name: 'Cat 3', color: '#0000ff' },
+          { id: categoryId('c1'), name: 'Cat 1', color: '#ff0000' },
+          { id: categoryId('c2'), name: 'Cat 2', color: '#00ff00' },
+          { id: categoryId('c3'), name: 'Cat 3', color: '#0000ff' },
         ],
       });
 
@@ -413,43 +367,32 @@ describe('layoutBuilder', () => {
 
     it('counts labeled bins', () => {
       const layout = createTestLayout({
+        layers: [{ id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(3) }],
+        categories: [{ id: categoryId('cat-1'), name: 'General', color: '#6b7280' }],
         bins: [
-          {
-            id: 'b1',
-            x: 0,
-            y: 0,
-            width: 1,
-            depth: 1,
-            height: 3,
-            layerId: 'layer-1',
-            category: 'cat-1',
+          createTestBin({
+            id: binId('b1'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            layerId: layerId('layer-1'),
+            category: categoryId('cat-1'),
             label: 'Has label',
-            notes: '',
-          },
-          {
-            id: 'b2',
-            x: 1,
-            y: 0,
-            width: 1,
-            depth: 1,
-            height: 3,
-            layerId: 'layer-1',
-            category: 'cat-1',
-            label: '',
-            notes: '',
-          },
-          {
-            id: 'b3',
-            x: 2,
-            y: 0,
-            width: 1,
-            depth: 1,
-            height: 3,
-            layerId: 'layer-1',
-            category: 'cat-1',
+          }),
+          createTestBin({
+            id: binId('b2'),
+            x: gridUnits(1),
+            y: gridUnits(0),
+            layerId: layerId('layer-1'),
+            category: categoryId('cat-1'),
+          }),
+          createTestBin({
+            id: binId('b3'),
+            x: gridUnits(2),
+            y: gridUnits(0),
+            layerId: layerId('layer-1'),
+            category: categoryId('cat-1'),
             label: 'Another',
-            notes: '',
-          },
+          }),
         ],
       });
 
@@ -460,19 +403,17 @@ describe('layoutBuilder', () => {
 
     it('does not count whitespace-only labels', () => {
       const layout = createTestLayout({
+        layers: [{ id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(3) }],
+        categories: [{ id: categoryId('cat-1'), name: 'General', color: '#6b7280' }],
         bins: [
-          {
-            id: 'b1',
-            x: 0,
-            y: 0,
-            width: 1,
-            depth: 1,
-            height: 3,
-            layerId: 'layer-1',
-            category: 'cat-1',
+          createTestBin({
+            id: binId('b1'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            layerId: layerId('layer-1'),
+            category: categoryId('cat-1'),
             label: '  ',
-            notes: '',
-          },
+          }),
         ],
       });
 
@@ -483,7 +424,7 @@ describe('layoutBuilder', () => {
 
     it('includes drawer size', () => {
       const layout = createTestLayout({
-        drawer: { width: 15, depth: 12, height: 18 },
+        drawer: { width: gridUnits(15), depth: gridUnits(12), height: heightUnits(18) },
       });
 
       const metrics = calculateMetrics(layout);
@@ -495,29 +436,28 @@ describe('layoutBuilder', () => {
   describe('buildInspirationLayout', () => {
     it('builds complete InspirationLayout with all fields', () => {
       const layout = createTestLayout({
-        drawer: { width: 8, depth: 6, height: 10 },
+        drawer: { width: gridUnits(8), depth: gridUnits(6), height: heightUnits(10) },
         layers: [
-          { id: 'l1', name: 'Layer 1', height: 3 },
-          { id: 'l2', name: 'Layer 2', height: 3 },
+          { id: layerId('l1'), name: 'Layer 1', height: heightUnits(3) },
+          { id: layerId('l2'), name: 'Layer 2', height: heightUnits(3) },
         ],
         categories: [
-          { id: 'c1', name: 'Tools', color: '#ff0000' },
-          { id: 'c2', name: 'Parts', color: '#00ff00' },
-          { id: 'c3', name: 'Other', color: '#0000ff' },
+          { id: categoryId('c1'), name: 'Tools', color: '#ff0000' },
+          { id: categoryId('c2'), name: 'Parts', color: '#00ff00' },
+          { id: categoryId('c3'), name: 'Other', color: '#0000ff' },
         ],
         bins: [
-          {
-            id: 'b1',
-            x: 0,
-            y: 0,
-            width: 2,
-            depth: 2,
-            height: 3,
-            layerId: 'l1',
-            category: 'c1',
+          createTestBin({
+            id: binId('b1'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(2),
+            depth: gridUnits(2),
+            height: heightUnits(3),
+            layerId: layerId('l1'),
+            category: categoryId('c1'),
             label: 'Screws',
-            notes: '',
-          },
+          }),
         ],
       });
 
@@ -541,37 +481,28 @@ describe('layoutBuilder', () => {
 
     it('calculates metrics correctly', () => {
       const layout = createTestLayout({
-        drawer: { width: 10, depth: 8, height: 12 },
-        layers: [{ id: 'l1', name: 'Layer 1', height: 3 }],
+        drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
+        layers: [{ id: layerId('l1'), name: 'Layer 1', height: heightUnits(3) }],
         categories: [
-          { id: 'c1', name: 'Cat 1', color: '#ff0000' },
-          { id: 'c2', name: 'Cat 2', color: '#00ff00' },
+          { id: categoryId('c1'), name: 'Cat 1', color: '#ff0000' },
+          { id: categoryId('c2'), name: 'Cat 2', color: '#00ff00' },
         ],
         bins: [
-          {
-            id: 'b1',
-            x: 0,
-            y: 0,
-            width: 1,
-            depth: 1,
-            height: 3,
-            layerId: 'l1',
-            category: 'c1',
+          createTestBin({
+            id: binId('b1'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            layerId: layerId('l1'),
+            category: categoryId('c1'),
             label: 'Test',
-            notes: '',
-          },
-          {
-            id: 'b2',
-            x: 1,
-            y: 0,
-            width: 1,
-            depth: 1,
-            height: 3,
-            layerId: 'l1',
-            category: 'c2',
-            label: '',
-            notes: '',
-          },
+          }),
+          createTestBin({
+            id: binId('b2'),
+            x: gridUnits(1),
+            y: gridUnits(0),
+            layerId: layerId('l1'),
+            category: categoryId('c2'),
+          }),
         ],
       });
 
@@ -593,20 +524,20 @@ describe('layoutBuilder', () => {
 
     it('computes preview correctly', () => {
       const layout = createTestLayout({
-        drawer: { width: 5, depth: 4, height: 6 },
+        drawer: { width: gridUnits(5), depth: gridUnits(4), height: heightUnits(6) },
+        layers: [{ id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(3) }],
+        categories: [{ id: categoryId('cat-1'), name: 'General', color: '#6b7280' }],
         bins: [
-          {
-            id: 'b1',
-            x: 0,
-            y: 0,
-            width: 2,
-            depth: 2,
-            height: 3,
-            layerId: 'layer-1',
-            category: 'cat-1',
-            label: '',
-            notes: '',
-          },
+          createTestBin({
+            id: binId('b1'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(2),
+            depth: gridUnits(2),
+            height: heightUnits(3),
+            layerId: layerId('layer-1'),
+            category: categoryId('cat-1'),
+          }),
         ],
       });
 

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { SharedWithMeItem } from '@/features/layout-library/components/LayoutManagerModal/SharedWithMeItem';
 import type { SharedWithMeEntry } from '@/core/types';
+import { gridUnits, heightUnits } from '@/core/types';
 
 // Mock LayoutThumbnail since it's visual-only
 vi.mock('@/shell/LayoutThumbnail', () => ({
@@ -16,17 +17,20 @@ describe('SharedWithMeItem', () => {
   const mockOnFocus = vi.fn();
 
   const baseEntry: SharedWithMeEntry = {
+    id: 'shared-1',
     sourceShareId: 'share-123',
     name: 'Test Layout',
     permission: 'view',
-    status: 'active',
+    status: 'available',
     authorName: 'John Doe',
+    addedAt: Date.now(),
     lastAccessedAt: Date.now(),
     preview: {
-      drawerWidth: 10,
-      drawerDepth: 8,
-      drawerHeight: 5,
-      bins: [],
+      drawerWidth: gridUnits(10),
+      drawerDepth: gridUnits(8),
+      drawerHeight: heightUnits(5),
+      binCount: 0,
+      layerCount: 1,
     },
   };
 

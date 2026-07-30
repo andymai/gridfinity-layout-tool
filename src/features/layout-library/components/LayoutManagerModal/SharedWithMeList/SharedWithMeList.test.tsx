@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { SharedWithMeList } from './SharedWithMeList';
 import { resetAllStores } from '@/test/testUtils';
 import type { SharedWithMeEntry } from '@/core/types';
+import { gridUnits, heightUnits } from '@/core/types';
 import { useSharedWithMe } from '@/shared/hooks';
 
 // Mock hooks
@@ -52,6 +53,7 @@ describe('SharedWithMeList', () => {
       status: 'idle',
       openSharedLayout: vi.fn(),
       removeSharedLayout: vi.fn(),
+      error: null,
     });
   });
 
@@ -62,6 +64,7 @@ describe('SharedWithMeList', () => {
       status: 'idle',
       openSharedLayout: vi.fn(),
       removeSharedLayout: vi.fn(),
+      error: null,
     });
 
     render(<SharedWithMeList onOpenLayout={mockOnOpenLayout} />);
@@ -83,10 +86,12 @@ describe('SharedWithMeList', () => {
         authorName: 'Author 1',
         permission: 'view',
         lastAccessedAt: 2000000,
+        addedAt: 2000000,
+        status: 'available',
         preview: {
-          drawerWidth: 10,
-          drawerDepth: 8,
-          drawerHeight: 12,
+          drawerWidth: gridUnits(10),
+          drawerDepth: gridUnits(8),
+          drawerHeight: heightUnits(12),
           binCount: 5,
           layerCount: 2,
           binMap: [],
@@ -99,10 +104,12 @@ describe('SharedWithMeList', () => {
         authorName: 'Author 2',
         permission: 'edit',
         lastAccessedAt: 1000000,
+        addedAt: 1000000,
+        status: 'available',
         preview: {
-          drawerWidth: 12,
-          drawerDepth: 10,
-          drawerHeight: 15,
+          drawerWidth: gridUnits(12),
+          drawerDepth: gridUnits(10),
+          drawerHeight: heightUnits(15),
           binCount: 8,
           layerCount: 3,
           binMap: [],
@@ -116,6 +123,7 @@ describe('SharedWithMeList', () => {
       status: 'idle',
       openSharedLayout: vi.fn(),
       removeSharedLayout: vi.fn(),
+      error: null,
     });
 
     render(<SharedWithMeList onOpenLayout={mockOnOpenLayout} />);
@@ -134,10 +142,12 @@ describe('SharedWithMeList', () => {
         name: 'Old Layout',
         permission: 'view',
         lastAccessedAt: 1000000,
+        addedAt: 1000000,
+        status: 'available',
         preview: {
-          drawerWidth: 10,
-          drawerDepth: 8,
-          drawerHeight: 12,
+          drawerWidth: gridUnits(10),
+          drawerDepth: gridUnits(8),
+          drawerHeight: heightUnits(12),
           binCount: 5,
           layerCount: 2,
           binMap: [],
@@ -149,10 +159,12 @@ describe('SharedWithMeList', () => {
         name: 'New Layout',
         permission: 'view',
         lastAccessedAt: 3000000,
+        addedAt: 3000000,
+        status: 'available',
         preview: {
-          drawerWidth: 10,
-          drawerDepth: 8,
-          drawerHeight: 12,
+          drawerWidth: gridUnits(10),
+          drawerDepth: gridUnits(8),
+          drawerHeight: heightUnits(12),
           binCount: 5,
           layerCount: 2,
           binMap: [],
@@ -166,6 +178,7 @@ describe('SharedWithMeList', () => {
       status: 'idle',
       openSharedLayout: vi.fn(),
       removeSharedLayout: vi.fn(),
+      error: null,
     });
 
     const { container } = render(<SharedWithMeList onOpenLayout={mockOnOpenLayout} />);
@@ -184,10 +197,12 @@ describe('SharedWithMeList', () => {
         name: 'Layout 1',
         permission: 'view',
         lastAccessedAt: 1000000,
+        addedAt: 1000000,
+        status: 'available',
         preview: {
-          drawerWidth: 10,
-          drawerDepth: 8,
-          drawerHeight: 12,
+          drawerWidth: gridUnits(10),
+          drawerDepth: gridUnits(8),
+          drawerHeight: heightUnits(12),
           binCount: 5,
           layerCount: 2,
           binMap: [],
@@ -199,10 +214,12 @@ describe('SharedWithMeList', () => {
         name: 'Layout 2',
         permission: 'view',
         lastAccessedAt: 2000000,
+        addedAt: 2000000,
+        status: 'available',
         preview: {
-          drawerWidth: 10,
-          drawerDepth: 8,
-          drawerHeight: 12,
+          drawerWidth: gridUnits(10),
+          drawerDepth: gridUnits(8),
+          drawerHeight: heightUnits(12),
           binCount: 5,
           layerCount: 2,
           binMap: [],
@@ -216,6 +233,7 @@ describe('SharedWithMeList', () => {
       status: 'idle',
       openSharedLayout: vi.fn(),
       removeSharedLayout: vi.fn(),
+      error: null,
     });
 
     render(<SharedWithMeList onOpenLayout={mockOnOpenLayout} />);
@@ -230,10 +248,12 @@ describe('SharedWithMeList', () => {
         name: 'Layout 1',
         permission: 'view',
         lastAccessedAt: 1000000,
+        addedAt: 1000000,
+        status: 'available',
         preview: {
-          drawerWidth: 10,
-          drawerDepth: 8,
-          drawerHeight: 12,
+          drawerWidth: gridUnits(10),
+          drawerDepth: gridUnits(8),
+          drawerHeight: heightUnits(12),
           binCount: 5,
           layerCount: 2,
           binMap: [],
@@ -247,6 +267,7 @@ describe('SharedWithMeList', () => {
       status: 'error',
       openSharedLayout: vi.fn(),
       removeSharedLayout: vi.fn(),
+      error: null,
     });
 
     render(<SharedWithMeList onOpenLayout={mockOnOpenLayout} />);

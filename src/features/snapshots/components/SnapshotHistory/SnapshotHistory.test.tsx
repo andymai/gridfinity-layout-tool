@@ -5,8 +5,8 @@ import { useSnapshotStore } from '@/core/store/snapshots';
 import { useLayoutStore } from '@/core/store/layout';
 import { useToastStore } from '@/core/store/toast';
 import { resetAllStores, createTestLayout } from '@/test/testUtils';
-import { layoutId } from '@/core/types';
-import type { Snapshot } from '@/core/types';
+import { gridUnits, heightUnits, binId, layerId, categoryId, layoutId } from '@/core/types';
+import type { Snapshot, Layout } from '@/core/types';
 
 // Mock SnapshotService to prevent real IndexedDB calls
 vi.mock('@/core/storage/SnapshotService');
@@ -17,9 +17,9 @@ function makeSnapshot(overrides: Partial<Snapshot> = {}): Snapshot {
     layoutId: 'layout-1',
     timestamp: Date.now() - 120_000, // 2 min ago
     preview: {
-      drawerWidth: 10,
-      drawerDepth: 8,
-      drawerHeight: 12,
+      drawerWidth: gridUnits(10),
+      drawerDepth: gridUnits(8),
+      drawerHeight: heightUnits(12),
       binCount: 5,
       layerCount: 2,
     },
@@ -28,8 +28,10 @@ function makeSnapshot(overrides: Partial<Snapshot> = {}): Snapshot {
 }
 
 describe('SnapshotHistory', () => {
-  let addSnapshotSpy: ReturnType<typeof vi.fn>;
-  let softRemoveSpy: ReturnType<typeof vi.fn>;
+  let addSnapshotSpy: ReturnType<
+    typeof vi.fn<(layoutId: string, layout: Layout, label?: string) => Promise<void>>
+  >;
+  let softRemoveSpy: ReturnType<typeof vi.fn<(snapshotId: string) => void>>;
 
   beforeEach(() => {
     resetAllStores();
@@ -37,14 +39,14 @@ describe('SnapshotHistory', () => {
       layout: createTestLayout({
         bins: [
           {
-            id: 'bin-1' as never,
-            x: 0,
-            y: 0,
-            width: 1,
-            depth: 1,
-            height: 3,
-            layerId: 'layer1' as never,
-            category: 'cat1' as never,
+            id: binId('bin-1'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(1),
+            depth: gridUnits(1),
+            height: heightUnits(3),
+            layerId: layerId('layer1'),
+            category: categoryId('cat1'),
             label: '',
             notes: '',
           },
@@ -53,8 +55,10 @@ describe('SnapshotHistory', () => {
       activeLayoutId: layoutId('layout-1'),
     });
 
-    addSnapshotSpy = vi.fn().mockResolvedValue(undefined);
-    softRemoveSpy = vi.fn();
+    addSnapshotSpy = vi
+      .fn<(layoutId: string, layout: Layout, label?: string) => Promise<void>>()
+      .mockResolvedValue(undefined);
+    softRemoveSpy = vi.fn<(snapshotId: string) => void>();
 
     useSnapshotStore.setState({
       snapshots: [],

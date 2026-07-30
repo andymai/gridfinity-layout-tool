@@ -4,9 +4,11 @@ import { LayoutManagerModal } from '@/features/layout-library/components/LayoutM
 import { useLibraryStore } from '@/core/store/library';
 import { useLayoutStore } from '@/core/store/layout';
 import { useInteractionStore } from '@/core/store/interaction';
+import { useViewStore } from '@/core/store/view';
 import { createDefaultLayout } from '@/core/constants';
 import * as storage from '@/core/storage';
 import type { LayoutLibrary, LayoutEntry } from '@/core/types';
+import { gridUnits, heightUnits, layoutId } from '@/core/types';
 
 // Mock the storage module
 vi.mock('@/core/storage', () => {
@@ -204,14 +206,14 @@ const SECOND_LAYOUT_ID = 'second-layout-id';
 
 function createTestEntry(id: string, name: string): LayoutEntry {
   return {
-    id,
+    id: layoutId(id),
     name,
     createdAt: Date.now(),
     modifiedAt: Date.now(),
     preview: {
-      drawerWidth: 10,
-      drawerDepth: 8,
-      drawerHeight: 12,
+      drawerWidth: gridUnits(10),
+      drawerDepth: gridUnits(8),
+      drawerHeight: heightUnits(12),
       binCount: 0,
       layerCount: 1,
     },
@@ -221,7 +223,7 @@ function createTestEntry(id: string, name: string): LayoutEntry {
 function createTestLibrary(entries: LayoutEntry[]): LayoutLibrary {
   return {
     version: '1.0',
-    activeLayoutId: entries[0]?.id || '',
+    activeLayoutId: entries[0]?.id || layoutId(''),
     settings: {},
     entries,
   };
@@ -236,7 +238,7 @@ describe('LayoutManagerModal Accessibility', () => {
     const defaultLayout = createDefaultLayout();
     useLayoutStore.setState({
       layout: defaultLayout,
-      activeLayoutId: TEST_LAYOUT_ID,
+      activeLayoutId: layoutId(TEST_LAYOUT_ID),
     });
 
     useLibraryStore.setState({
@@ -245,6 +247,9 @@ describe('LayoutManagerModal Accessibility', () => {
         createTestEntry(SECOND_LAYOUT_ID, 'Second Layout'),
       ]),
       isLoaded: true,
+    });
+
+    useViewStore.setState({
       showLayoutManager: false,
     });
 

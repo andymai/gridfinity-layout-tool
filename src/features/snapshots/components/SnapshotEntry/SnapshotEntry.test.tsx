@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { SnapshotEntry } from './SnapshotEntry';
 import type { Snapshot } from '@/core/types';
+import { gridUnits, heightUnits } from '@/core/types';
 
 function makeSnapshot(overrides: Partial<Snapshot> = {}): Snapshot {
   return {
@@ -9,9 +10,9 @@ function makeSnapshot(overrides: Partial<Snapshot> = {}): Snapshot {
     layoutId: 'layout-1',
     timestamp: Date.now() - 120_000,
     preview: {
-      drawerWidth: 10,
-      drawerDepth: 8,
-      drawerHeight: 12,
+      drawerWidth: gridUnits(10),
+      drawerDepth: gridUnits(8),
+      drawerHeight: heightUnits(12),
       binCount: 5,
       layerCount: 2,
     },

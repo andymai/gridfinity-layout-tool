@@ -4,6 +4,7 @@ import { useOnboarding, resetOnboarding, syncOnboardingFlags } from './useOnboar
 import { useLayoutStore, useLibraryStore } from '@/core/store';
 import { createDefaultLibrary } from '@/core/store/library';
 import { createDefaultLayout } from '@/core/constants';
+import { gridUnits, layoutId } from '@/core/types';
 
 // Mock analytics
 vi.mock('@/shared/analytics/posthog', () => ({
@@ -21,11 +22,11 @@ function setFlags(flags: Record<string, string>) {
 }
 
 function initStoresAsNewUser() {
-  const library = createDefaultLibrary('test-layout-id', 'Untitled layout');
+  const library = createDefaultLibrary(layoutId('test-layout-id'), 'Untitled layout');
   useLibraryStore.getState().initLibrary(library);
 
   const layout = createDefaultLayout();
-  useLayoutStore.getState().importLayout(layout, 'test-layout-id', 'init');
+  useLayoutStore.getState().importLayout(layout, layoutId('test-layout-id'), 'init');
 }
 
 function initStoresWithBins(binCount: number) {
@@ -33,13 +34,15 @@ function initStoresWithBins(binCount: number) {
   const layout = useLayoutStore.getState().layout;
   for (let i = 0; i < binCount; i++) {
     useLayoutStore.getState().addBin({
-      x: i,
-      y: 0,
-      width: 1,
-      depth: 1,
+      x: gridUnits(i),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(1),
       height: layout.layers[0].height,
       layerId: layout.layers[0].id,
-      categoryId: layout.categories[0].id,
+      category: layout.categories[0].id,
+      label: '',
+      notes: '',
     });
   }
 }
@@ -121,13 +124,15 @@ describe('useOnboarding', () => {
       const layout = useLayoutStore.getState().layout;
       act(() => {
         useLayoutStore.getState().addBin({
-          x: 0,
-          y: 0,
-          width: 1,
-          depth: 1,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(1),
+          depth: gridUnits(1),
           height: layout.layers[0].height,
           layerId: layout.layers[0].id,
-          categoryId: layout.categories[0].id,
+          category: layout.categories[0].id,
+          label: '',
+          notes: '',
         });
       });
 
@@ -159,13 +164,15 @@ describe('useOnboarding', () => {
       for (let i = 0; i < 3; i++) {
         act(() => {
           useLayoutStore.getState().addBin({
-            x: i,
-            y: 0,
-            width: 1,
-            depth: 1,
+            x: gridUnits(i),
+            y: gridUnits(0),
+            width: gridUnits(1),
+            depth: gridUnits(1),
             height: layout.layers[0].height,
             layerId: layout.layers[0].id,
-            categoryId: layout.categories[0].id,
+            category: layout.categories[0].id,
+            label: '',
+            notes: '',
           });
         });
       }

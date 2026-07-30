@@ -9,6 +9,8 @@ import * as storage from '@/core/storage';
 import * as url from '@/shared/utils/url';
 import * as validation from '@/shared/utils/validation';
 import { SHARED_PREVIEW_ID } from '@/core/constants';
+import { gridUnits, heightUnits, mm, binId, layerId, categoryId, layoutId } from '@/core/types';
+import type { LayoutPreview } from '@/core/types';
 
 // Mock storage module
 vi.mock('@/core/storage', () => ({
@@ -33,21 +35,30 @@ describe('useLayoutRouting', () => {
   const mockLayout = {
     version: '1.0',
     name: 'Test Layout',
-    drawer: { width: 10, depth: 8, height: 12 },
-    printBedSize: 256,
-    gridUnitMm: 42,
-    heightUnitMm: 7,
-    categories: [{ id: 'coral', name: 'Coral', color: '#FF6B6B' }],
-    layers: [{ id: 'layer1', name: 'Layer 1', height: 3 }],
+    drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
+    printBedSize: mm(256),
+    gridUnitMm: mm(42),
+    heightUnitMm: mm(7),
+    categories: [{ id: categoryId('coral'), name: 'Coral', color: '#FF6B6B' }],
+    layers: [{ id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) }],
     bins: [],
   };
 
+  const mockPreview: LayoutPreview = {
+    drawerWidth: gridUnits(10),
+    drawerDepth: gridUnits(8),
+    drawerHeight: heightUnits(12),
+    binCount: 0,
+    layerCount: 1,
+    binMap: [],
+  };
+
   const mockEntry = {
-    id: 'layout123test',
+    id: layoutId('layout123test'),
     name: 'Test Layout',
     createdAt: Date.now(),
-    updatedAt: Date.now(),
-    preview: null,
+    modifiedAt: Date.now(),
+    preview: mockPreview,
   };
 
   beforeEach(() => {
@@ -68,7 +79,7 @@ describe('useLayoutRouting', () => {
       isLoaded: true,
       library: {
         version: '1.0',
-        activeLayoutId: 'layout123test',
+        activeLayoutId: layoutId('layout123test'),
         settings: {},
         entries: [mockEntry],
       },
@@ -77,13 +88,13 @@ describe('useLayoutRouting', () => {
     // Set up layout store
     useLayoutStore.setState({
       layout: mockLayout,
-      activeLayoutId: 'layout123test',
+      activeLayoutId: layoutId('layout123test'),
     });
 
     // Set up selection store
     useSelectionStore.setState({
-      activeLayerId: 'layer1',
-      activeCategoryId: 'coral',
+      activeLayerId: layerId('layer1'),
+      activeCategoryId: categoryId('coral'),
     });
   });
 
@@ -119,7 +130,7 @@ describe('useLayoutRouting', () => {
     it('returns false when layout validation fails', async () => {
       vi.mocked(validation.validateLayoutIntegrity).mockReturnValue({
         valid: false,
-        errors: ['Missing layers'],
+        error: 'Missing layers',
       });
 
       const { result } = renderHook(() => useLayoutRouting());
@@ -139,7 +150,7 @@ describe('useLayoutRouting', () => {
     });
 
     it('clears selection when navigating', async () => {
-      useSelectionStore.setState({ selectedBinIds: ['bin1', 'bin2'] });
+      useSelectionStore.setState({ selectedBinIds: [binId('bin1'), binId('bin2')] });
 
       const { result } = renderHook(() => useLayoutRouting());
       await result.current.navigateToLayout('layout123test');
@@ -222,23 +233,23 @@ describe('useLayoutRouting', () => {
         layoutId: 'layout123test',
         slug: 'test-layout',
       });
-      useLayoutStore.setState({ activeLayoutId: 'other-layout' });
+      useLayoutStore.setState({ activeLayoutId: layoutId('other-layout') });
 
       // Add the other layout to library too
       useLibraryStore.setState({
         isLoaded: true,
         library: {
           version: '1.0',
-          activeLayoutId: 'other-layout',
+          activeLayoutId: layoutId('other-layout'),
           settings: {},
           entries: [
             mockEntry,
             {
-              id: 'other-layout',
+              id: layoutId('other-layout'),
               name: 'Other',
               createdAt: Date.now(),
-              updatedAt: Date.now(),
-              preview: null,
+              modifiedAt: Date.now(),
+              preview: mockPreview,
             },
           ],
         },

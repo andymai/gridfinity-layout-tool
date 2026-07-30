@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { LayoutPreviewOverlay } from '.';
 import { resetAllStores } from '@/test/testUtils';
 import { useLayoutStore } from '@/core/store/layout';
+import { gridUnits, heightUnits, mm, binId, layerId, categoryId } from '@/core/types';
 import type { InspirationLayout } from '../../types';
 
 // Mock useResponsive hook
@@ -93,69 +94,68 @@ const createMockLayout = (overrides: Partial<InspirationLayout> = {}): Inspirati
   theme: 'workshop',
   description: 'A detailed description of the test layout for organizing workshop items.',
   shortDescription: 'A short description',
-  complexity: 'beginner',
-  features: [],
   metrics: {
     binCount: 12,
     layerCount: 2,
     categoryCount: 3,
     labeledBinCount: 8,
-    drawerSize: { width: 10, depth: 8, height: 12 },
+    drawerSize: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
   },
   preview: {
-    drawerWidth: 10,
-    drawerDepth: 8,
-    drawerHeight: 12,
+    drawerWidth: gridUnits(10),
+    drawerDepth: gridUnits(8),
+    drawerHeight: heightUnits(12),
     binCount: 12,
     layerCount: 2,
     binMap: [],
   },
   layout: {
+    version: '1.0',
     name: 'Test',
-    drawer: { width: 10, depth: 8, height: 12 },
-    layers: [{ id: 'l1', name: 'Layer 1', height: 3 }],
-    categories: [{ id: 'c1', name: 'Cat', color: '#ff0000' }],
+    drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
+    layers: [{ id: layerId('l1'), name: 'Layer 1', height: heightUnits(3) }],
+    categories: [{ id: categoryId('c1'), name: 'Cat', color: '#ff0000' }],
     bins: [
       {
-        id: 'b1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        layerId: 'l1',
-        category: 'c1',
+        id: binId('b1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        layerId: layerId('l1'),
+        category: categoryId('c1'),
         label: 'Screws',
         notes: '',
       },
       {
-        id: 'b2',
-        x: 2,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        layerId: 'l1',
-        category: 'c1',
+        id: binId('b2'),
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        layerId: layerId('l1'),
+        category: categoryId('c1'),
         label: 'Nuts',
         notes: '',
       },
       {
-        id: 'b3',
-        x: 4,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        layerId: 'l1',
-        category: 'c1',
+        id: binId('b3'),
+        x: gridUnits(4),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        layerId: layerId('l1'),
+        category: categoryId('c1'),
         label: 'Bolts',
         notes: '',
       },
     ],
-    gridUnitMm: 42,
-    heightUnitMm: 7,
-    printBedSize: 256,
+    gridUnitMm: mm(42),
+    heightUnitMm: mm(7),
+    printBedSize: mm(256),
   },
   tags: ['test'],
   ...overrides,
@@ -175,7 +175,7 @@ describe('LayoutPreviewOverlay', () => {
     vi.clearAllMocks();
     // Set a default drawer size
     const layout = useLayoutStore.getState().layout;
-    layout.drawer = { width: 10, depth: 8, height: 12 };
+    layout.drawer = { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) };
     useLayoutStore.setState({ layout });
   });
 
@@ -249,7 +249,7 @@ describe('LayoutPreviewOverlay', () => {
     it('shows size info when drawer sizes differ', () => {
       // Change store drawer to different size
       const layout = useLayoutStore.getState().layout;
-      layout.drawer = { width: 12, depth: 10, height: 15 };
+      layout.drawer = { width: gridUnits(12), depth: gridUnits(10), height: heightUnits(15) };
       useLayoutStore.setState({ layout });
 
       render(<LayoutPreviewOverlay {...defaultProps} />);
@@ -262,7 +262,7 @@ describe('LayoutPreviewOverlay', () => {
 
     it('shows comparison when sizes differ', () => {
       const layout = useLayoutStore.getState().layout;
-      layout.drawer = { width: 15, depth: 12, height: 18 };
+      layout.drawer = { width: gridUnits(15), depth: gridUnits(12), height: heightUnits(18) };
       useLayoutStore.setState({ layout });
 
       render(<LayoutPreviewOverlay {...defaultProps} />);
@@ -288,14 +288,14 @@ describe('LayoutPreviewOverlay', () => {
 
     it('limits display to 8 items', () => {
       const manyBins = Array.from({ length: 12 }, (_, i) => ({
-        id: `b${i}`,
-        x: 0,
-        y: 0,
-        width: 1,
-        depth: 1,
-        height: 3,
-        layerId: 'l1',
-        category: 'c1',
+        id: binId(`b${i}`),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
+        layerId: layerId('l1'),
+        category: categoryId('c1'),
         label: `Item ${i + 1}`,
         notes: '',
       }));
@@ -318,14 +318,14 @@ describe('LayoutPreviewOverlay', () => {
           ...createMockLayout().layout,
           bins: [
             {
-              id: 'b1',
-              x: 0,
-              y: 0,
-              width: 2,
-              depth: 2,
-              height: 3,
-              layerId: 'l1',
-              category: 'c1',
+              id: binId('b1'),
+              x: gridUnits(0),
+              y: gridUnits(0),
+              width: gridUnits(2),
+              depth: gridUnits(2),
+              height: heightUnits(3),
+              layerId: layerId('l1'),
+              category: categoryId('c1'),
               label: '',
               notes: '',
             },

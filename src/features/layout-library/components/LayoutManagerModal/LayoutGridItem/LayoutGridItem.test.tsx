@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { LayoutGridItem } from './LayoutGridItem';
 import type { LayoutEntry } from '@/core/types';
+import { gridUnits, heightUnits, layoutId } from '@/core/types';
 
 // Mock components
 vi.mock('@/shell/LayoutThumbnail', () => ({
@@ -46,14 +47,14 @@ vi.mock('@/i18n', () => ({
 
 describe('LayoutGridItem', () => {
   const mockEntry: LayoutEntry = {
-    id: 'layout-1',
+    id: layoutId('layout-1'),
     name: 'Test Layout',
     createdAt: 1000000,
     modifiedAt: 2000000,
     preview: {
-      drawerWidth: 10,
-      drawerDepth: 8,
-      drawerHeight: 12,
+      drawerWidth: gridUnits(10),
+      drawerDepth: gridUnits(8),
+      drawerHeight: heightUnits(12),
       binCount: 5,
       layerCount: 2,
       binMap: [],
