@@ -150,13 +150,6 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      # src/i18n/en.json is generated from en.ts and gitignored. Without it the
-      # test-types check reports src/i18n/context.tsx as a new TS2307 that no
-      # local run reproduces. Not continue-on-error: if this fails, every check
-      # below is meaningless, and the aggregator counts skipped as failed.
-      - name: Generate en locale
-        run: pnpm run build:en-locale
-
       - name: Lint
         id: lint
         continue-on-error: true

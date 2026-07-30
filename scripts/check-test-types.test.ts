@@ -144,6 +144,20 @@ describe('diffAgainstBaseline', () => {
     expect(hasDrift(drift)).toBe(true);
   });
 
+  // What --update consults before agreeing to rewrite the baseline: a file
+  // that got worse must block, while pure improvements must not.
+  it('reports nothing worse when every file improved', () => {
+    const drift = diffAgainstBaseline({ 'a.test.ts': 5, 'b.test.ts': 2 }, { 'a.test.ts': 1 });
+    expect(drift.regressed).toEqual([]);
+    expect(drift.appeared).toEqual([]);
+  });
+
+  it('reports a newly-broken file as worse even though it has no baseline entry', () => {
+    const drift = diffAgainstBaseline({ 'a.test.ts': 5 }, { 'a.test.ts': 5, 'new.test.ts': 1 });
+    expect(drift.regressed).toEqual([]);
+    expect(drift.appeared).toEqual([{ file: 'new.test.ts', to: 1 }]);
+  });
+
   it('separates a regression from an improvement in the same run', () => {
     const drift = diffAgainstBaseline(
       { 'a.test.ts': 5, 'b.test.ts': 2 },
