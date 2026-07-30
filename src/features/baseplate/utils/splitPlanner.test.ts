@@ -244,15 +244,42 @@ describe('computeBaseplateTiling', () => {
     expect(tiling.bedLoads).toBe(1);
   });
 
-  it('chooses a finer split to save a build-plate load when the trade is cheap', () => {
-    // 10×8: the coarse 2×2 (4 pieces) prints 1-per-bed = 4 loads, but a 2×3
-    // (6 pieces) packs its shallower pieces two-per-bed → 3 loads. Saving a
-    // load for 2 extra pieces is within the per-load piece budget, so the
-    // packing-aware planner picks the 2×3.
+  it('prefers fewer pieces over saving a load when the trade costs 2+ pieces (#2988)', () => {
+    // 10×8: the coarse 2×2 (4 pieces) prints 1-per-bed = 4 loads; a 2×3
+    // (6 pieces) packs two-per-bed → 3 loads. Saving that one load costs 2 extra
+    // pieces, which exceeds the tightened per-load budget (2), so the planner
+    // keeps the coarser 2×2 — fewer seams to print/align/glue, and the finer
+    // split's load saving is only realized via a non-obvious cross-row bed pack.
     const tiling = computeBaseplateTiling(makeParams({ width: 10, depth: 8 }), 256);
     expect(tiling.cols).toBe(2);
-    expect(tiling.rows).toBe(3);
-    expect(tiling.bedLoads).toBe(3);
+    expect(tiling.rows).toBe(2);
+    expect(tiling.pieces).toHaveLength(4);
+  });
+
+  it('splits an 11×8 plate into 4 pieces, not 6, on a 270mm bed (#2988)', () => {
+    // The reported case: 11×8 with 15mm L/R and 19.5mm F/B padding on a 270mm
+    // bed. A 2×2 (4 pieces: 267/225mm wide × 187.5mm deep) fits the bed and is
+    // what the user expects; the old planner instead emitted a 2×3 (6 pieces) to
+    // shave one bed load. With the tightened budget it stays 2×2.
+    const tiling = computeBaseplateTiling(
+      makeParams({
+        width: 11,
+        depth: 8,
+        paddingLeft: 15,
+        paddingRight: 15,
+        paddingFront: 19.5,
+        paddingBack: 19.5,
+      }),
+      270
+    );
+    expect(tiling.cols).toBe(2);
+    expect(tiling.rows).toBe(2);
+    expect(tiling.pieces).toHaveLength(4);
+    // Every piece must still physically fit the bed.
+    for (const p of tiling.pieces) {
+      expect(p.widthUnits * 42 + p.paddingLeft + p.paddingRight).toBeLessThanOrEqual(270);
+      expect(p.depthUnits * 42 + p.paddingFront + p.paddingBack).toBeLessThanOrEqual(270);
+    }
   });
 
   it('does not over-fragment when finer pieces would not pack better', () => {
