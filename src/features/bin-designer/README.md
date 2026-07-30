@@ -46,7 +46,9 @@ graph TB
 - `components/panel/WallsSection/` — wall thickness, pattern picker + scale, the "Patterned walls"
   spatial side selector (`wallPattern.sides`, #2966 — shares `panel/shared/SideSelector` with the
   cutout and handle sections; a slot-blocked wall renders disabled so the stored selection survives
-  the slots), wall text, and the
+  the slots; suppressed entirely with a reason when a kumiko pattern can't render on
+  this bin at all, since `buildKumikoWallPatterns` bails on a polygon footprint or any
+  slotted wall and the chips would be claiming walls that export solid), wall text, and the
   "Pattern divider walls" opt-in (`wallPattern.dividers`, #2811) that carries the same pattern and
   scale through the compartment dividers. Deselecting every wall is a valid "dividers only" config,
   not an error, so the panel explains it rather than forcing a minimum selection. Its availability/too-small copy comes from

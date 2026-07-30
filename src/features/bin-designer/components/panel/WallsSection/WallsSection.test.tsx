@@ -196,8 +196,13 @@ describe('WallsSection', () => {
     });
 
     it('explains an all-deselected pattern instead of silently doing nothing', () => {
+      // Compartments present, so the divider checkbox IS available — only then
+      // is pointing the user at it actionable.
       useDesignerStore.setState({
-        params: patterned({ left: false, right: false, front: false, back: false }),
+        params: {
+          ...patterned({ left: false, right: false, front: false, back: false }),
+          compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 },
+        },
       });
       render(<WallsSection />);
       expect(
@@ -222,6 +227,69 @@ describe('WallsSection', () => {
       expect(
         screen.getByText('Outer walls stay solid — only the dividers are patterned')
       ).toBeInTheDocument();
+    });
+
+    it('does not point at the divider checkbox when it is disabled', () => {
+      // A 1×1 compartment bin has no dividers to pattern, so "or pattern the
+      // divider walls below" would send the user to a control they can't enable.
+      useDesignerStore.setState({
+        params: patterned({ left: false, right: false, front: false, back: false }),
+      });
+      render(<WallsSection />);
+      expect(screen.getByText('Nothing is patterned — pick at least one wall')).toBeInTheDocument();
+      expect(
+        screen.queryByText('Pick a wall, or pattern the divider walls below')
+      ).not.toBeInTheDocument();
+    });
+
+    it('replaces the selector with a reason when kumiko cannot render on this bin', () => {
+      // Custom shape: buildKumikoWallPatterns bails on a polygon footprint, so
+      // every wall exports solid — the chips must not claim otherwise.
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          cellMask: { cols: 2, rows: 2, cells: [1, 1, 1, 0] },
+          wallPattern: { ...DEFAULT_BIN_PARAMS.wallPattern, enabled: true, pattern: 'mitsukude' },
+        },
+      });
+      const { unmount } = render(<WallsSection />);
+      expect(screen.queryByRole('switch', { name: 'Front' })).not.toBeInTheDocument();
+      expect(
+        screen.getByText('Kumiko patterns need a rectangular bin, so these walls stay solid')
+      ).toBeInTheDocument();
+      unmount();
+
+      // Slotted on one axis: the wrap needs all four walls slot-free.
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          style: 'slotted',
+          slotConfig: {
+            ...DEFAULT_BIN_PARAMS.slotConfig,
+            x: { enabled: true, pitch: 20 },
+            y: { enabled: false, pitch: 20 },
+          },
+          wallPattern: { ...DEFAULT_BIN_PARAMS.wallPattern, enabled: true, pattern: 'mitsukude' },
+        },
+      });
+      render(<WallsSection />);
+      expect(screen.queryByRole('switch', { name: 'Front' })).not.toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'Kumiko patterns need all four walls free of divider slots, so these walls stay solid'
+        )
+      ).toBeInTheDocument();
+    });
+
+    it('keeps the selector for a kumiko pattern on a plain rectangular bin', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          wallPattern: { ...DEFAULT_BIN_PARAMS.wallPattern, enabled: true, pattern: 'mitsukude' },
+        },
+      });
+      render(<WallsSection />);
+      expect(screen.getByRole('switch', { name: 'Front' })).toBeInTheDocument();
     });
 
     it('disables a slot-blocked wall and explains why', () => {
