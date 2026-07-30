@@ -1,0 +1,22 @@
+diff --git a/dist/ts-morph-common.js b/dist/ts-morph-common.js
+index 5026b0032bfaaa7b291b4750df5abffc7c7edc17..6f4d3f50a4f9f093c4cc2bb115c283af935b63ef 100644
+--- a/dist/ts-morph-common.js
++++ b/dist/ts-morph-common.js
+@@ -849,7 +849,7 @@ class BrowserRuntime {
+         return "\n";
+     }
+     getPathMatchesPattern(path, pattern) {
+-        return minimatch__default["default"](path, pattern);
++        return minimatch.minimatch(path, pattern);
+     }
+ }
+ class BrowserRuntimePath {
+@@ -995,7 +995,7 @@ class NodeRuntime {
+         return os__namespace.EOL;
+     }
+     getPathMatchesPattern(path, pattern) {
+-        return minimatch__default["default"](path, pattern);
++        return minimatch.minimatch(path, pattern);
+     }
+ }
+ class NodeRuntimePath {
