@@ -12,6 +12,7 @@ import {
   userIndexUpdatedAtKey,
   userProfileKey,
   userSessionsKey,
+  userTombstoneSweptAtKey,
 } from '../lib/redisKeys.js';
 
 /**
@@ -22,7 +23,8 @@ import {
  *   1. Sessions   — DEL session:{token} for every token in the user's set
  *                   (so other tabs/devices flip to anonymous on next sync)
  *   2. Blobs      — del() each layouts/{id}.json, designs/{id}.json, baseplates/{id}.json
- *   3. KV keys    — drop indexes, profile, sessions set, indexUpdatedAt
+ *   3. KV keys    — drop indexes, profile, sessions set, indexUpdatedAt,
+ *                   tombstoneSweptAt
  *   4. Cookie     — clear the session cookie on the responding device
  *
  * Idempotent on partial-failure replay: each step uses unconditional DEL,
@@ -80,7 +82,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       userIndexKey(userId, 'baseplates'),
       userIndexUpdatedAtKey(userId),
       userProfileKey(userId),
-      userSessionsKey(userId)
+      userSessionsKey(userId),
+      userTombstoneSweptAtKey(userId)
     );
 
     // 4. Clear the session cookie on the device making this request.

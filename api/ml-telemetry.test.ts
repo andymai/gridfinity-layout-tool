@@ -3,11 +3,38 @@
  * telemetry must NEVER fail the client — without Redis it discards events
  * with a 200, and only genuine rate limiting produces a non-200. The
  * aggregation/validation internals are covered by the api/lib/mlTelemetry
- * tests; this file pins the handler's entry behavior.
+ * tests; this file pins the handler's entry behavior and its TTL policy.
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { ML_AGGREGATE_TTL_SECONDS, ML_LIFETIME_KEYS } from './lib/mlTelemetry/retention.js';
+
+interface Recorded {
+  cmd: string;
+  args: unknown[];
+}
+
+const recorded: Recorded[] = [];
+
+vi.mock('ioredis', () => {
+  const makePipeline = (): Record<string, unknown> => {
+    const pipeline: Record<string, unknown> = { exec: async () => [] };
+    for (const cmd of ['hincrby', 'expire', 'incrby', 'set', 'zadd', 'zremrangebyscore']) {
+      pipeline[cmd] = (...args: unknown[]) => {
+        recorded.push({ cmd, args });
+        return pipeline;
+      };
+    }
+    return pipeline;
+  };
+  const client = { pipeline: makePipeline, zcount: async () => 0 };
+  // Must be `new`-able: the handler constructs its own client.
+  function Ctor(): typeof client {
+    return client;
+  }
+  return { Redis: Ctor, default: Ctor };
+});
 
 function createResponse() {
   const res = {
@@ -38,9 +65,39 @@ async function handle(method: string, body: unknown = []) {
   return res;
 }
 
+const BIN_PLACED = {
+  type: 'bin_placed',
+  bin_size: '2x3x4',
+  prev_bin_size: null,
+  drawer_size: '6x8x6',
+  position: '0,0',
+  layer_index: 0,
+  largest_gap: '4x5',
+  fill_pct: 50,
+  gap_fit: 'exact',
+  label_hash: 'a1b2c3d4',
+  label_normalized: null,
+  label_domain: null,
+  label_embedding_bucket: null,
+  category_id: 'cat-01',
+  adjacent_label_hashes: [],
+  adjacent_sizes: [],
+  adjacent_count: 0,
+  recent_sizes: [],
+  time_since_last_ms: null,
+  is_first_of_label: false,
+  method: 'draw',
+  session_index: 0,
+  vocab_version: 'v1',
+};
+
+const cmds = (name: string) => recorded.filter((r) => r.cmd === name);
+const keysOf = (name: string) => new Set(cmds(name).map((r) => r.args[0] as string));
+
 describe('ml-telemetry', () => {
   beforeEach(() => {
     vi.resetModules();
+    recorded.length = 0;
     delete process.env.REDIS_URL;
     delete process.env.VERCEL_ENV;
   });
@@ -65,5 +122,51 @@ describe('ml-telemetry', () => {
     const res = await handle('POST', [{ v: 1 }]);
     expect(res._status).toBe(200);
     expect(res._body).toEqual({ ok: true, processed: 0 });
+  });
+
+  describe('retention', () => {
+    beforeEach(() => {
+      process.env.REDIS_URL = 'redis://localhost:6379';
+    });
+
+    it('expires every aggregate it increments', async () => {
+      const res = await handle('POST', [BIN_PLACED]);
+      expect(res._body).toEqual({ ok: true, processed: 1, failed: 0 });
+
+      const incremented = [...keysOf('hincrby')].filter((k) => !ML_LIFETIME_KEYS.has(k));
+      const expired = keysOf('expire');
+
+      expect(incremented.length).toBeGreaterThan(5);
+      expect(incremented.filter((k) => !expired.has(k))).toEqual([]);
+    });
+
+    // The bug this replaces: an allowlist covered 4 of ~32 key shapes, so
+    // ml:label_hash:* and friends accumulated with no expiry at all.
+    it('expires the high-cardinality shapes that previously leaked', async () => {
+      await handle('POST', [BIN_PLACED]);
+      const expired = keysOf('expire');
+      expect(expired).toContain('ml:label_hash:a1b2c3d4');
+      expect(expired).toContain('ml:cat:cat-01');
+      expect(expired).toContain('ml:drawer:6x8x6');
+      expect(expired).toContain('ml:sizes');
+    });
+
+    // Sliding, not create-once: NX would delete a hot counter 90 days after
+    // it first appeared regardless of how much signal it had accumulated.
+    it('refreshes the TTL on every write rather than setting it once', async () => {
+      await handle('POST', [BIN_PLACED]);
+      const expires = cmds('expire').filter((r) => (r.args[0] as string).startsWith('ml:'));
+      expect(expires.length).toBeGreaterThan(0);
+      for (const { args } of expires) {
+        expect(args[1]).toBe(ML_AGGREGATE_TTL_SECONDS);
+        expect(args).toHaveLength(2);
+      }
+    });
+
+    it('never expires the running totals', async () => {
+      await handle('POST', [BIN_PLACED]);
+      const expired = keysOf('expire');
+      for (const key of ML_LIFETIME_KEYS) expect(expired).not.toContain(key);
+    });
   });
 });

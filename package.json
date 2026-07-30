@@ -61,6 +61,7 @@
     "check:component-structure": "./scripts/check-component-structure.sh",
     "seed-supporters": "tsx scripts/seed-supporters.ts",
     "sync-admin": "tsx scripts/sync-admin/index.ts",
+    "backfill-ml-ttls": "tsx scripts/backfill-ml-ttls.ts",
     "gen:example-thumbnails": "tsx --tsconfig tsconfig.app.json scripts/gen-example-thumbnails.ts",
     "bench": "vitest bench",
     "bench:json": "vitest bench --outputJson benchmarks/latest.json",
