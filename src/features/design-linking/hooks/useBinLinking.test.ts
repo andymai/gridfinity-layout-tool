@@ -12,9 +12,11 @@ import * as DesignerStorage from '@/features/bin-designer/storage/DesignerStorag
 import * as CustomBinRegistry from '@/features/bin-designer/store/customBinRegistry';
 import * as MutationsContext from '@/shared/contexts/MutationsContext';
 import * as UseCustomBins from '@/features/bin-designer/hooks/useCustomBins';
-import { ok, err } from '@/core/result';
+import { ok, err, storageNotFound, storageUnavailable } from '@/core/result';
 import type { Bin, Layout } from '@/core/types';
+import { binId, designId, layerId, categoryId, gridUnits, heightUnits, mm } from '@/core/types';
 import type { BinParams } from '@/features/bin-designer';
+import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 
 // Mock modules
 vi.mock('@/features/bin-designer/storage/DesignerStorage', () => ({
@@ -49,14 +51,14 @@ beforeEach(() => {
 // Helper to create test bin
 function makeBin(overrides: Partial<Bin> = {}): Bin {
   return {
-    id: 'bin-1',
-    x: 0,
-    y: 0,
-    width: 2,
-    depth: 3,
-    height: 4,
-    layerId: 'layer-1',
-    category: 'cat-1',
+    id: binId('bin-1'),
+    x: gridUnits(0),
+    y: gridUnits(0),
+    width: gridUnits(2),
+    depth: gridUnits(3),
+    height: heightUnits(4),
+    layerId: layerId('layer-1'),
+    category: categoryId('cat-1'),
     label: '',
     notes: '',
     ...overrides,
@@ -68,13 +70,22 @@ function makeLayout(bins: Bin[]): Layout {
   return {
     version: '1.0',
     name: 'Test Layout',
-    drawer: { width: 10, depth: 10, height: 5 },
-    layers: [{ id: 'layer-1', name: 'Layer 1', height: 1 }],
-    categories: [{ id: 'cat-1', name: 'Category 1', color: '#ff0000' }],
+    drawer: { width: gridUnits(10), depth: gridUnits(10), height: heightUnits(5) },
+    layers: [{ id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(1) }],
+    categories: [{ id: categoryId('cat-1'), name: 'Category 1', color: '#ff0000' }],
     bins,
-    gridUnitMm: 42,
-    heightUnitMm: 7,
-    printBedSize: 256,
+    gridUnitMm: mm(42),
+    heightUnitMm: mm(7),
+    printBedSize: mm(256),
+  };
+}
+
+// Helper to build a valid BinParams fixture for design-linking tests, which
+// only care about width/depth/height (and occasionally wallThickness).
+function makeDesignParams(overrides: Partial<BinParams> = {}): BinParams {
+  return {
+    ...DEFAULT_BIN_PARAMS,
+    ...overrides,
   };
 }
 
@@ -122,7 +133,7 @@ describe('useBinLinking', () => {
 
   describe('linkBin', () => {
     it('links a bin to a design', () => {
-      const { mockUpdateBin } = setupStores([makeBin({ id: 'bin-1' })]);
+      const { mockUpdateBin } = setupStores([makeBin({ id: binId('bin-1') })]);
       vi.mocked(UseCustomBins.useCustomBins).mockReturnValue([
         { id: 'design-1', name: 'Test Design' } as never,
       ]);
@@ -130,14 +141,14 @@ describe('useBinLinking', () => {
       const { result } = renderHook(() => useBinLinking());
 
       act(() => {
-        result.current.linkBin('bin-1', 'design-1');
+        result.current.linkBin(binId('bin-1'), designId('design-1'));
       });
 
       expect(mockUpdateBin).toHaveBeenCalledWith('bin-1', { linkedDesignId: 'design-1' });
     });
 
     it('shows success toast when design is found in registry', () => {
-      const { mockAddToast } = setupStores([makeBin({ id: 'bin-1' })]);
+      const { mockAddToast } = setupStores([makeBin({ id: binId('bin-1') })]);
       vi.mocked(UseCustomBins.useCustomBins).mockReturnValue([
         { id: 'design-1', name: 'Test Design' } as never,
       ]);
@@ -145,7 +156,7 @@ describe('useBinLinking', () => {
       const { result } = renderHook(() => useBinLinking());
 
       act(() => {
-        result.current.linkBin('bin-1', 'design-1');
+        result.current.linkBin(binId('bin-1'), designId('design-1'));
       });
 
       expect(mockAddToast).toHaveBeenCalledWith({
@@ -161,7 +172,7 @@ describe('useBinLinking', () => {
       const { result } = renderHook(() => useBinLinking());
 
       act(() => {
-        result.current.linkBin('nonexistent-bin', 'design-1');
+        result.current.linkBin(binId('nonexistent-bin'), designId('design-1'));
       });
 
       expect(mockUpdateBin).not.toHaveBeenCalled();
@@ -170,24 +181,28 @@ describe('useBinLinking', () => {
 
   describe('unlinkBin', () => {
     it('unlinks a bin from its design', () => {
-      const { mockUpdateBin } = setupStores([makeBin({ id: 'bin-1', linkedDesignId: 'design-1' })]);
+      const { mockUpdateBin } = setupStores([
+        makeBin({ id: binId('bin-1'), linkedDesignId: designId('design-1') }),
+      ]);
 
       const { result } = renderHook(() => useBinLinking());
 
       act(() => {
-        result.current.unlinkBin('bin-1');
+        result.current.unlinkBin(binId('bin-1'));
       });
 
       expect(mockUpdateBin).toHaveBeenCalledWith('bin-1', { linkedDesignId: undefined });
     });
 
     it('shows info toast when unlinking', () => {
-      const { mockAddToast } = setupStores([makeBin({ id: 'bin-1', linkedDesignId: 'design-1' })]);
+      const { mockAddToast } = setupStores([
+        makeBin({ id: binId('bin-1'), linkedDesignId: designId('design-1') }),
+      ]);
 
       const { result } = renderHook(() => useBinLinking());
 
       act(() => {
-        result.current.unlinkBin('bin-1');
+        result.current.unlinkBin(binId('bin-1'));
       });
 
       expect(mockAddToast).toHaveBeenCalledWith({
@@ -203,19 +218,19 @@ describe('useBinLinking', () => {
       const { result } = renderHook(() => useBinLinking());
 
       act(() => {
-        result.current.unlinkBin('nonexistent-bin');
+        result.current.unlinkBin(binId('nonexistent-bin'));
       });
 
       expect(mockUpdateBin).not.toHaveBeenCalled();
     });
 
     it('does nothing if bin has no linkedDesignId', () => {
-      const { mockUpdateBin } = setupStores([makeBin({ id: 'bin-1' })]);
+      const { mockUpdateBin } = setupStores([makeBin({ id: binId('bin-1') })]);
 
       const { result } = renderHook(() => useBinLinking());
 
       act(() => {
-        result.current.unlinkBin('bin-1');
+        result.current.unlinkBin(binId('bin-1'));
       });
 
       expect(mockUpdateBin).not.toHaveBeenCalled();
@@ -225,14 +240,14 @@ describe('useBinLinking', () => {
   describe('unlinkBins', () => {
     it('unlinks multiple bins', () => {
       const { mockUpdateBin } = setupStores([
-        makeBin({ id: 'bin-1', linkedDesignId: 'design-1' }),
-        makeBin({ id: 'bin-2', linkedDesignId: 'design-1' }),
+        makeBin({ id: binId('bin-1'), linkedDesignId: designId('design-1') }),
+        makeBin({ id: binId('bin-2'), linkedDesignId: designId('design-1') }),
       ]);
 
       const { result } = renderHook(() => useBinLinking());
 
       act(() => {
-        result.current.unlinkBins(['bin-1', 'bin-2']);
+        result.current.unlinkBins([binId('bin-1'), binId('bin-2')]);
       });
 
       expect(mockUpdateBin).toHaveBeenCalledWith('bin-1', { linkedDesignId: undefined });
@@ -259,7 +274,7 @@ describe('useBinLinking', () => {
       const { result } = renderHook(() => useBinLinking());
 
       act(() => {
-        result.current.editLinkedDesign('design-1');
+        result.current.editLinkedDesign(designId('design-1'));
       });
 
       expect(pushStateSpy).toHaveBeenCalledWith(
@@ -276,7 +291,7 @@ describe('useBinLinking', () => {
       const { result } = renderHook(() => useBinLinking());
 
       act(() => {
-        result.current.editLinkedDesign('design with spaces');
+        result.current.editLinkedDesign(designId('design with spaces'));
       });
 
       expect(pushStateSpy).toHaveBeenCalledWith(
@@ -289,14 +304,22 @@ describe('useBinLinking', () => {
 
   describe('showCreateDesignDialog', () => {
     it('shows create dialog with bin dimensions', () => {
-      setupStores([makeBin({ id: 'bin-1', width: 2, depth: 3, height: 4, label: 'Test Bin' })]);
+      setupStores([
+        makeBin({
+          id: binId('bin-1'),
+          width: gridUnits(2),
+          depth: gridUnits(3),
+          height: heightUnits(4),
+          label: 'Test Bin',
+        }),
+      ]);
       const mockShowCreateDialog = vi.fn();
       useLinkingStore.setState({ showCreateDesignDialog: mockShowCreateDialog });
 
       const { result } = renderHook(() => useBinLinking());
 
       act(() => {
-        result.current.showCreateDesignDialog('bin-1');
+        result.current.showCreateDesignDialog(binId('bin-1'));
       });
 
       expect(mockShowCreateDialog).toHaveBeenCalledWith(
@@ -308,14 +331,14 @@ describe('useBinLinking', () => {
     });
 
     it('passes undefined label when bin has no label', () => {
-      setupStores([makeBin({ id: 'bin-1', label: '' })]);
+      setupStores([makeBin({ id: binId('bin-1'), label: '' })]);
       const mockShowCreateDialog = vi.fn();
       useLinkingStore.setState({ showCreateDesignDialog: mockShowCreateDialog });
 
       const { result } = renderHook(() => useBinLinking());
 
       act(() => {
-        result.current.showCreateDesignDialog('bin-1');
+        result.current.showCreateDesignDialog(binId('bin-1'));
       });
 
       expect(mockShowCreateDialog).toHaveBeenCalledWith(
@@ -334,7 +357,7 @@ describe('useBinLinking', () => {
       const { result } = renderHook(() => useBinLinking());
 
       act(() => {
-        result.current.showCreateDesignDialog('nonexistent-bin');
+        result.current.showCreateDesignDialog(binId('nonexistent-bin'));
       });
 
       expect(mockShowCreateDialog).not.toHaveBeenCalled();
@@ -343,13 +366,13 @@ describe('useBinLinking', () => {
 
   describe('promptSyncIfNeeded', () => {
     it('shows error toast if design fails to load', async () => {
-      const { mockAddToast } = setupStores([makeBin({ id: 'bin-1' })]);
-      vi.mocked(DesignerStorage.loadDesign).mockResolvedValue(err({ type: 'not_found' }));
+      const { mockAddToast } = setupStores([makeBin({ id: binId('bin-1') })]);
+      vi.mocked(DesignerStorage.loadDesign).mockResolvedValue(err(storageNotFound('design-1')));
 
       const { result } = renderHook(() => useBinLinking());
 
       await act(async () => {
-        await result.current.promptSyncIfNeeded(['bin-1'], 'design-1');
+        await result.current.promptSyncIfNeeded([binId('bin-1')], designId('design-1'));
       });
 
       expect(mockAddToast).toHaveBeenCalledWith({
@@ -361,22 +384,25 @@ describe('useBinLinking', () => {
 
     it('shows info toast when dimensions match', async () => {
       const { mockAddToast } = setupStores([
-        makeBin({ id: 'bin-1', width: 2, depth: 3, height: 4 }),
+        makeBin({
+          id: binId('bin-1'),
+          width: gridUnits(2),
+          depth: gridUnits(3),
+          height: heightUnits(4),
+        }),
       ]);
-      const mockParams: BinParams = {
+      const mockParams: BinParams = makeDesignParams({
         width: 2,
         depth: 3,
         height: 4,
         wallThickness: 0.8,
-        baseStyle: 'plain',
-        baseHeight: 4,
-      };
+      });
       vi.mocked(DesignerStorage.loadDesign).mockResolvedValue(ok({ params: mockParams } as never));
 
       const { result } = renderHook(() => useBinLinking());
 
       await act(async () => {
-        await result.current.promptSyncIfNeeded(['bin-1'], 'design-1');
+        await result.current.promptSyncIfNeeded([binId('bin-1')], designId('design-1'));
       });
 
       expect(mockAddToast).toHaveBeenCalledWith({
@@ -387,15 +413,20 @@ describe('useBinLinking', () => {
     });
 
     it('shows sync dialog when dimensions differ', async () => {
-      setupStores([makeBin({ id: 'bin-1', width: 2, depth: 3, height: 4 })]);
-      const mockParams: BinParams = {
+      setupStores([
+        makeBin({
+          id: binId('bin-1'),
+          width: gridUnits(2),
+          depth: gridUnits(3),
+          height: heightUnits(4),
+        }),
+      ]);
+      const mockParams: BinParams = makeDesignParams({
         width: 3,
         depth: 3,
         height: 4,
         wallThickness: 0.8,
-        baseStyle: 'plain',
-        baseHeight: 4,
-      };
+      });
       vi.mocked(DesignerStorage.loadDesign).mockResolvedValue(ok({ params: mockParams } as never));
       const mockShowSyncDialog = vi.fn();
       useLinkingStore.setState({ showSyncDialog: mockShowSyncDialog });
@@ -403,7 +434,7 @@ describe('useBinLinking', () => {
       const { result } = renderHook(() => useBinLinking());
 
       await act(async () => {
-        await result.current.promptSyncIfNeeded(['bin-1'], 'design-1');
+        await result.current.promptSyncIfNeeded([binId('bin-1')], designId('design-1'));
       });
 
       expect(mockShowSyncDialog).toHaveBeenCalledWith(
@@ -418,17 +449,25 @@ describe('useBinLinking', () => {
 
     it('detects varying dimensions in multi-bin selection', async () => {
       setupStores([
-        makeBin({ id: 'bin-1', width: 2, depth: 3, height: 4 }),
-        makeBin({ id: 'bin-2', width: 3, depth: 3, height: 4 }),
+        makeBin({
+          id: binId('bin-1'),
+          width: gridUnits(2),
+          depth: gridUnits(3),
+          height: heightUnits(4),
+        }),
+        makeBin({
+          id: binId('bin-2'),
+          width: gridUnits(3),
+          depth: gridUnits(3),
+          height: heightUnits(4),
+        }),
       ]);
-      const mockParams: BinParams = {
+      const mockParams: BinParams = makeDesignParams({
         width: 2,
         depth: 3,
         height: 4,
         wallThickness: 0.8,
-        baseStyle: 'plain',
-        baseHeight: 4,
-      };
+      });
       vi.mocked(DesignerStorage.loadDesign).mockResolvedValue(ok({ params: mockParams } as never));
       const mockShowSyncDialog = vi.fn();
       useLinkingStore.setState({ showSyncDialog: mockShowSyncDialog });
@@ -436,7 +475,10 @@ describe('useBinLinking', () => {
       const { result } = renderHook(() => useBinLinking());
 
       await act(async () => {
-        await result.current.promptSyncIfNeeded(['bin-1', 'bin-2'], 'design-1');
+        await result.current.promptSyncIfNeeded(
+          [binId('bin-1'), binId('bin-2')],
+          designId('design-1')
+        );
       });
 
       expect(mockShowSyncDialog).toHaveBeenCalledWith(
@@ -457,7 +499,7 @@ describe('useBinLinking', () => {
       const { result } = renderHook(() => useBinLinking());
 
       await act(async () => {
-        await result.current.promptSyncIfNeeded([], 'design-1');
+        await result.current.promptSyncIfNeeded([], designId('design-1'));
       });
 
       expect(mockShowSyncDialog).not.toHaveBeenCalled();
@@ -467,23 +509,31 @@ describe('useBinLinking', () => {
   describe('executeSyncFromDesign', () => {
     it('syncs bins with matching dimensions', async () => {
       const { mockUpdateBin } = setupStores([
-        makeBin({ id: 'bin-1', width: 2, depth: 3, height: 4, x: 0, y: 0 }),
+        makeBin({
+          id: binId('bin-1'),
+          width: gridUnits(2),
+          depth: gridUnits(3),
+          height: heightUnits(4),
+          x: gridUnits(0),
+          y: gridUnits(0),
+        }),
       ]);
-      const mockParams: BinParams = {
+      const mockParams: BinParams = makeDesignParams({
         width: 3,
         depth: 3,
         height: 5,
         wallThickness: 0.8,
-        baseStyle: 'plain',
-        baseHeight: 4,
-      };
+      });
       vi.mocked(DesignerStorage.loadDesign).mockResolvedValue(ok({ params: mockParams } as never));
 
       const { result } = renderHook(() => useBinLinking());
 
       let syncResult: Awaited<ReturnType<typeof result.current.executeSyncFromDesign>>;
       await act(async () => {
-        syncResult = await result.current.executeSyncFromDesign(['bin-1'], 'design-1');
+        syncResult = await result.current.executeSyncFromDesign(
+          [binId('bin-1')],
+          designId('design-1')
+        );
       });
 
       expect(mockUpdateBin).toHaveBeenCalledWith(
@@ -500,23 +550,35 @@ describe('useBinLinking', () => {
 
     it('unlinks bins that cannot sync due to collision', async () => {
       const { mockUpdateBin } = setupStores([
-        makeBin({ id: 'bin-1', width: 2, depth: 3, height: 4, x: 0, y: 0 }),
-        makeBin({ id: 'bin-2', width: 2, depth: 3, height: 4, x: 2, y: 0 }), // Adjacent
+        makeBin({
+          id: binId('bin-1'),
+          width: gridUnits(2),
+          depth: gridUnits(3),
+          height: heightUnits(4),
+          x: gridUnits(0),
+          y: gridUnits(0),
+        }),
+        makeBin({
+          id: binId('bin-2'),
+          width: gridUnits(2),
+          depth: gridUnits(3),
+          height: heightUnits(4),
+          x: gridUnits(2),
+          y: gridUnits(0),
+        }), // Adjacent
       ]);
-      const mockParams: BinParams = {
+      const mockParams: BinParams = makeDesignParams({
         width: 5, // Too wide, would collide with bin-2
         depth: 3,
         height: 5,
         wallThickness: 0.8,
-        baseStyle: 'plain',
-        baseHeight: 4,
-      };
+      });
       vi.mocked(DesignerStorage.loadDesign).mockResolvedValue(ok({ params: mockParams } as never));
 
       const { result } = renderHook(() => useBinLinking());
 
       const syncResult = await act(async () => {
-        return await result.current.executeSyncFromDesign(['bin-1'], 'design-1');
+        return await result.current.executeSyncFromDesign([binId('bin-1')], designId('design-1'));
       });
 
       // Bin should be unlinked because it can't fit
@@ -526,13 +588,13 @@ describe('useBinLinking', () => {
     });
 
     it('returns empty result if design fails to load', async () => {
-      setupStores([makeBin({ id: 'bin-1' })]);
-      vi.mocked(DesignerStorage.loadDesign).mockResolvedValue(err({ type: 'not_found' }));
+      setupStores([makeBin({ id: binId('bin-1') })]);
+      vi.mocked(DesignerStorage.loadDesign).mockResolvedValue(err(storageNotFound('design-1')));
 
       const { result } = renderHook(() => useBinLinking());
 
       const syncResult = await act(async () => {
-        return await result.current.executeSyncFromDesign(['bin-1'], 'design-1');
+        return await result.current.executeSyncFromDesign([binId('bin-1')], designId('design-1'));
       });
 
       expect(syncResult).toEqual({
@@ -544,22 +606,27 @@ describe('useBinLinking', () => {
 
     it('shows success toast when all bins synced', async () => {
       const { mockAddToast } = setupStores([
-        makeBin({ id: 'bin-1', width: 2, depth: 3, height: 4, x: 0, y: 0 }),
+        makeBin({
+          id: binId('bin-1'),
+          width: gridUnits(2),
+          depth: gridUnits(3),
+          height: heightUnits(4),
+          x: gridUnits(0),
+          y: gridUnits(0),
+        }),
       ]);
-      const mockParams: BinParams = {
+      const mockParams: BinParams = makeDesignParams({
         width: 2,
         depth: 3,
         height: 5,
         wallThickness: 0.8,
-        baseStyle: 'plain',
-        baseHeight: 4,
-      };
+      });
       vi.mocked(DesignerStorage.loadDesign).mockResolvedValue(ok({ params: mockParams } as never));
 
       const { result } = renderHook(() => useBinLinking());
 
       await act(async () => {
-        await result.current.executeSyncFromDesign(['bin-1'], 'design-1');
+        await result.current.executeSyncFromDesign([binId('bin-1')], designId('design-1'));
       });
 
       expect(mockAddToast).toHaveBeenCalledWith({
@@ -579,7 +646,7 @@ describe('useBinLinking', () => {
       const { result } = renderHook(() => useBinLinking());
 
       act(() => {
-        result.current.navigateToCreateDesign('bin-1', 'Test Design', 2, 3, 4);
+        result.current.navigateToCreateDesign(binId('bin-1'), 'Test Design', 2, 3, 4);
       });
 
       expect(mockHideCreateDialog).toHaveBeenCalled();
@@ -599,7 +666,7 @@ describe('useBinLinking', () => {
       const { result } = renderHook(() => useBinLinking());
 
       act(() => {
-        result.current.navigateToCreateDesign('bin-1', 'Test', 2, 3, 4);
+        result.current.navigateToCreateDesign(binId('bin-1'), 'Test', 2, 3, 4);
       });
 
       expect(dispatchEventSpy).toHaveBeenCalledWith(expect.any(PopStateEvent));
@@ -615,7 +682,7 @@ describe('useBinLinking', () => {
       const { result } = renderHook(() => useBinLinking());
 
       act(() => {
-        result.current.navigateToCreateDesign('bin-1', 'Half', 1.5, 3, 4);
+        result.current.navigateToCreateDesign(binId('bin-1'), 'Half', 1.5, 3, 4);
       });
 
       expect(pushStateSpy.mock.calls[0][2]).toContain('fractionalEdgeX=start');
@@ -631,7 +698,7 @@ describe('useBinLinking', () => {
       const { result } = renderHook(() => useBinLinking());
 
       act(() => {
-        result.current.navigateToCreateDesign('bin-1', 'Whole', 2, 3, 4);
+        result.current.navigateToCreateDesign(binId('bin-1'), 'Whole', 2, 3, 4);
       });
 
       expect(pushStateSpy.mock.calls[0][2]).not.toContain('fractionalEdgeX');
@@ -641,7 +708,7 @@ describe('useBinLinking', () => {
   describe('deleteLinkedDesign', () => {
     it('unlinks bin and deletes design successfully', async () => {
       const { mockUpdateBin, mockAddToast } = setupStores([
-        makeBin({ id: 'bin-1', linkedDesignId: 'design-1' }),
+        makeBin({ id: binId('bin-1'), linkedDesignId: designId('design-1') }),
       ]);
       vi.mocked(DesignerStorage.deleteDesign).mockResolvedValue(ok(undefined));
 
@@ -649,7 +716,11 @@ describe('useBinLinking', () => {
 
       let success: boolean;
       await act(async () => {
-        success = await result.current.deleteLinkedDesign('bin-1', 'design-1', 'Test Design');
+        success = await result.current.deleteLinkedDesign(
+          binId('bin-1'),
+          designId('design-1'),
+          'Test Design'
+        );
       });
 
       expect(mockUpdateBin).toHaveBeenCalledWith('bin-1', { linkedDesignId: undefined });
@@ -664,13 +735,21 @@ describe('useBinLinking', () => {
     });
 
     it('shows error toast if deletion fails', async () => {
-      const { mockAddToast } = setupStores([makeBin({ id: 'bin-1', linkedDesignId: 'design-1' })]);
-      vi.mocked(DesignerStorage.deleteDesign).mockResolvedValue(err({ type: 'unknown' }));
+      const { mockAddToast } = setupStores([
+        makeBin({ id: binId('bin-1'), linkedDesignId: designId('design-1') }),
+      ]);
+      vi.mocked(DesignerStorage.deleteDesign).mockResolvedValue(
+        err(storageUnavailable('indexedDB'))
+      );
 
       const { result } = renderHook(() => useBinLinking());
 
       const success = await act(async () => {
-        return await result.current.deleteLinkedDesign('bin-1', 'design-1', 'Test Design');
+        return await result.current.deleteLinkedDesign(
+          binId('bin-1'),
+          designId('design-1'),
+          'Test Design'
+        );
       });
 
       expect(mockAddToast).toHaveBeenCalledWith({
@@ -682,13 +761,21 @@ describe('useBinLinking', () => {
     });
 
     it('still unlinks bin even if deletion fails', async () => {
-      const { mockUpdateBin } = setupStores([makeBin({ id: 'bin-1', linkedDesignId: 'design-1' })]);
-      vi.mocked(DesignerStorage.deleteDesign).mockResolvedValue(err({ type: 'unknown' }));
+      const { mockUpdateBin } = setupStores([
+        makeBin({ id: binId('bin-1'), linkedDesignId: designId('design-1') }),
+      ]);
+      vi.mocked(DesignerStorage.deleteDesign).mockResolvedValue(
+        err(storageUnavailable('indexedDB'))
+      );
 
       const { result } = renderHook(() => useBinLinking());
 
       await act(async () => {
-        await result.current.deleteLinkedDesign('bin-1', 'design-1', 'Test Design');
+        await result.current.deleteLinkedDesign(
+          binId('bin-1'),
+          designId('design-1'),
+          'Test Design'
+        );
       });
 
       expect(mockUpdateBin).toHaveBeenCalledWith('bin-1', { linkedDesignId: undefined });
@@ -721,7 +808,7 @@ describe('useBinLinking', () => {
 
       const { result } = renderHook(() => useBinLinking());
       await act(async () => {
-        await result.current.matchDesignEdgesToDrawer('design-1');
+        await result.current.matchDesignEdgesToDrawer(designId('design-1'));
       });
 
       expect(DesignerStorage.updateDesignParams).toHaveBeenCalledWith(
@@ -733,11 +820,11 @@ describe('useBinLinking', () => {
 
     it('shows an error toast when the design fails to load', async () => {
       const { mockAddToast } = withDrawerEdge();
-      vi.mocked(DesignerStorage.loadDesign).mockResolvedValue(err({ type: 'not_found' } as never));
+      vi.mocked(DesignerStorage.loadDesign).mockResolvedValue(err(storageNotFound('design-1')));
 
       const { result } = renderHook(() => useBinLinking());
       await act(async () => {
-        await result.current.matchDesignEdgesToDrawer('design-1');
+        await result.current.matchDesignEdgesToDrawer(designId('design-1'));
       });
 
       expect(DesignerStorage.updateDesignParams).not.toHaveBeenCalled();
@@ -749,12 +836,12 @@ describe('useBinLinking', () => {
       const mockParams = { width: 1.5, depth: 2, height: 3, fractionalEdgeX: 'end' };
       vi.mocked(DesignerStorage.loadDesign).mockResolvedValue(ok({ params: mockParams } as never));
       vi.mocked(DesignerStorage.updateDesignParams).mockResolvedValue(
-        err({ type: 'unknown' } as never)
+        err(storageUnavailable('indexedDB'))
       );
 
       const { result } = renderHook(() => useBinLinking());
       await act(async () => {
-        await result.current.matchDesignEdgesToDrawer('design-1');
+        await result.current.matchDesignEdgesToDrawer(designId('design-1'));
       });
 
       expect(mockAddToast).toHaveBeenCalledWith(expect.objectContaining({ type: 'error' }));

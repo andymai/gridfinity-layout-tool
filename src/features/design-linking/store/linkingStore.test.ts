@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useLinkingStore } from './linkingStore';
+import { binId, designId } from '@/core/types';
 import type { DimensionComparison, SyncEligibility, SyncableDimensions } from '../types';
 
 describe('linkingStore', () => {
@@ -29,11 +30,18 @@ describe('linkingStore', () => {
         bin: { width: 2, depth: 2, height: 4 },
         differences: { width: true, depth: true, height: false },
       };
-      const eligibility: SyncEligibility[] = [{ binId: 'bin-1', canSync: true }];
+      const eligibility: SyncEligibility[] = [{ binId: binId('bin-1'), canSync: true }];
 
       useLinkingStore
         .getState()
-        .showSyncDialog(['bin-1'], 'design-1', 'Test Design', comparison, eligibility);
+        .showSyncDialog(
+          [binId('bin-1')],
+          designId('design-1'),
+          'Test Design',
+          comparison,
+          eligibility,
+          true
+        );
 
       const state = useLinkingStore.getState();
       expect(state.pendingSync).not.toBeNull();
@@ -42,6 +50,7 @@ describe('linkingStore', () => {
       expect(state.pendingSync?.designName).toBe('Test Design');
       expect(state.pendingSync?.comparison).toEqual(comparison);
       expect(state.pendingSync?.eligibility).toEqual(eligibility);
+      expect(state.pendingSync?.binsHaveVaryingDimensions).toBe(true);
     });
 
     it('showSyncDialog supports multiple bin IDs', () => {
@@ -52,13 +61,20 @@ describe('linkingStore', () => {
         differences: { width: true, depth: true, height: false },
       };
       const eligibility: SyncEligibility[] = [
-        { binId: 'bin-1', canSync: true },
-        { binId: 'bin-2', canSync: false, blockReason: 'collision' },
+        { binId: binId('bin-1'), canSync: true },
+        { binId: binId('bin-2'), canSync: false, blockReason: 'collision' },
       ];
 
       useLinkingStore
         .getState()
-        .showSyncDialog(['bin-1', 'bin-2'], 'design-1', 'Test Design', comparison, eligibility);
+        .showSyncDialog(
+          [binId('bin-1'), binId('bin-2')],
+          designId('design-1'),
+          'Test Design',
+          comparison,
+          eligibility,
+          false
+        );
 
       expect(useLinkingStore.getState().pendingSync?.binIds).toEqual(['bin-1', 'bin-2']);
     });
@@ -74,7 +90,14 @@ describe('linkingStore', () => {
 
       useLinkingStore
         .getState()
-        .showSyncDialog(['bin-1'], 'design-1', 'Test Design', comparison, []);
+        .showSyncDialog(
+          [binId('bin-1')],
+          designId('design-1'),
+          'Test Design',
+          comparison,
+          [],
+          false
+        );
 
       expect(useLinkingStore.getState().pendingSync).not.toBeNull();
 
@@ -91,7 +114,13 @@ describe('linkingStore', () => {
 
       useLinkingStore
         .getState()
-        .showDeleteWarning('design-1', 'My Design', ['bin-1', 'bin-2'], onConfirm, onCancel);
+        .showDeleteWarning(
+          designId('design-1'),
+          'My Design',
+          [binId('bin-1'), binId('bin-2')],
+          onConfirm,
+          onCancel
+        );
 
       const state = useLinkingStore.getState();
       expect(state.pendingDeleteWarning).not.toBeNull();
@@ -106,7 +135,7 @@ describe('linkingStore', () => {
       // First show the dialog
       useLinkingStore
         .getState()
-        .showDeleteWarning('design-1', 'My Design', ['bin-1'], vi.fn(), vi.fn());
+        .showDeleteWarning(designId('design-1'), 'My Design', [binId('bin-1')], vi.fn(), vi.fn());
 
       expect(useLinkingStore.getState().pendingDeleteWarning).not.toBeNull();
 
@@ -121,7 +150,13 @@ describe('linkingStore', () => {
 
       useLinkingStore
         .getState()
-        .showDeleteWarning('design-1', 'My Design', ['bin-1'], onConfirm, onCancel);
+        .showDeleteWarning(
+          designId('design-1'),
+          'My Design',
+          [binId('bin-1')],
+          onConfirm,
+          onCancel
+        );
 
       const warning = useLinkingStore.getState().pendingDeleteWarning;
       expect(warning).not.toBeNull();
@@ -142,7 +177,7 @@ describe('linkingStore', () => {
 
       useLinkingStore
         .getState()
-        .showCreateDesignDialog('bin-1', '2×3×4 Bin', dimensions, 'My Label');
+        .showCreateDesignDialog(binId('bin-1'), '2×3×4 Bin', dimensions, 'My Label');
 
       const state = useLinkingStore.getState();
       expect(state.pendingCreateDesign).not.toBeNull();
@@ -155,7 +190,7 @@ describe('linkingStore', () => {
     it('showCreateDesignDialog works without binLabel', () => {
       const dimensions: SyncableDimensions = { width: 2, depth: 3, height: 4 };
 
-      useLinkingStore.getState().showCreateDesignDialog('bin-1', '2×3×4 Bin', dimensions);
+      useLinkingStore.getState().showCreateDesignDialog(binId('bin-1'), '2×3×4 Bin', dimensions);
 
       const state = useLinkingStore.getState();
       expect(state.pendingCreateDesign?.binLabel).toBeUndefined();
@@ -164,7 +199,7 @@ describe('linkingStore', () => {
     it('hideCreateDesignDialog clears pendingCreateDesign state', () => {
       const dimensions: SyncableDimensions = { width: 2, depth: 3, height: 4 };
 
-      useLinkingStore.getState().showCreateDesignDialog('bin-1', '2×3×4 Bin', dimensions);
+      useLinkingStore.getState().showCreateDesignDialog(binId('bin-1'), '2×3×4 Bin', dimensions);
       expect(useLinkingStore.getState().pendingCreateDesign).not.toBeNull();
 
       useLinkingStore.getState().hideCreateDesignDialog();
@@ -183,17 +218,24 @@ describe('linkingStore', () => {
       };
 
       // Show create design dialog
-      useLinkingStore.getState().showCreateDesignDialog('bin-1', '2×3×4 Bin', dimensions);
+      useLinkingStore.getState().showCreateDesignDialog(binId('bin-1'), '2×3×4 Bin', dimensions);
 
       // Show delete warning dialog
       useLinkingStore
         .getState()
-        .showDeleteWarning('design-1', 'My Design', ['bin-2'], vi.fn(), vi.fn());
+        .showDeleteWarning(designId('design-1'), 'My Design', [binId('bin-2')], vi.fn(), vi.fn());
 
       // Show sync dialog
       useLinkingStore
         .getState()
-        .showSyncDialog(['bin-3'], 'design-2', 'Other Design', comparison, []);
+        .showSyncDialog(
+          [binId('bin-3')],
+          designId('design-2'),
+          'Other Design',
+          comparison,
+          [],
+          false
+        );
 
       // All three should be set
       const state = useLinkingStore.getState();
@@ -206,10 +248,10 @@ describe('linkingStore', () => {
       const dimensions: SyncableDimensions = { width: 2, depth: 3, height: 4 };
 
       // Show two dialogs
-      useLinkingStore.getState().showCreateDesignDialog('bin-1', '2×3×4 Bin', dimensions);
+      useLinkingStore.getState().showCreateDesignDialog(binId('bin-1'), '2×3×4 Bin', dimensions);
       useLinkingStore
         .getState()
-        .showDeleteWarning('design-1', 'My Design', ['bin-2'], vi.fn(), vi.fn());
+        .showDeleteWarning(designId('design-1'), 'My Design', [binId('bin-2')], vi.fn(), vi.fn());
 
       // Hide only the create design dialog
       useLinkingStore.getState().hideCreateDesignDialog();

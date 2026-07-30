@@ -15,6 +15,7 @@ import { emitSyncEvent } from '@/shared/events/syncEventBus';
 import * as MutationsContext from '@/shared/contexts/MutationsContext';
 import * as UseCustomBins from '@/features/bin-designer/hooks/useCustomBins';
 import type { Bin, Layout } from '@/core/types';
+import { binId, designId, layerId, categoryId, gridUnits, heightUnits, mm } from '@/core/types';
 import type { CustomBinRef } from '@/features/bin-designer';
 
 vi.mock('@/shared/contexts/MutationsContext', () => ({
@@ -27,14 +28,14 @@ vi.mock('@/features/bin-designer/hooks/useCustomBins', () => ({
 
 function makeBin(overrides: Partial<Bin> = {}): Bin {
   return {
-    id: 'bin-1',
-    x: 0,
-    y: 0,
-    width: 2,
-    depth: 3,
-    height: 4,
-    layerId: 'layer-1',
-    category: 'cat-1',
+    id: binId('bin-1'),
+    x: gridUnits(0),
+    y: gridUnits(0),
+    width: gridUnits(2),
+    depth: gridUnits(3),
+    height: heightUnits(4),
+    layerId: layerId('layer-1'),
+    category: categoryId('cat-1'),
     label: '',
     notes: '',
     ...overrides,
@@ -45,19 +46,19 @@ function makeLayout(bins: Bin[]): Layout {
   return {
     version: '1.0',
     name: 'Test Layout',
-    drawer: { width: 10, depth: 10, height: 5 },
-    layers: [{ id: 'layer-1', name: 'Layer 1', height: 1 }],
-    categories: [{ id: 'cat-1', name: 'Category 1', color: '#ff0000' }],
+    drawer: { width: gridUnits(10), depth: gridUnits(10), height: heightUnits(5) },
+    layers: [{ id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(1) }],
+    categories: [{ id: categoryId('cat-1'), name: 'Category 1', color: '#ff0000' }],
     bins,
-    gridUnitMm: 42,
-    heightUnitMm: 7,
-    printBedSize: 256,
+    gridUnitMm: mm(42),
+    heightUnitMm: mm(7),
+    printBedSize: mm(256),
   };
 }
 
 function makeRegistryEntry(overrides: Partial<CustomBinRef> = {}): CustomBinRef {
   return {
-    id: 'design-1',
+    id: designId('design-1'),
     name: 'Test Design',
     width: 2,
     depth: 3,
@@ -112,9 +113,17 @@ describe('useDesignSavedListener', () => {
   describe('mount-time reconciliation', () => {
     it('auto-syncs bins whose dimensions differ from registry', () => {
       const bins = [
-        makeBin({ id: 'bin-1', width: 2, depth: 3, height: 4, linkedDesignId: 'design-1' }),
+        makeBin({
+          id: binId('bin-1'),
+          width: gridUnits(2),
+          depth: gridUnits(3),
+          height: heightUnits(4),
+          linkedDesignId: designId('design-1'),
+        }),
       ];
-      const registry = [makeRegistryEntry({ id: 'design-1', width: 3, depth: 3, height: 5 })];
+      const registry = [
+        makeRegistryEntry({ id: designId('design-1'), width: 3, depth: 3, height: 5 }),
+      ];
       const { mockUpdateBin, mockAddToast } = setupStores(bins, registry);
 
       renderHook(() => useDesignSavedListener());
@@ -128,9 +137,17 @@ describe('useDesignSavedListener', () => {
 
     it('does nothing when bin dimensions already match registry', () => {
       const bins = [
-        makeBin({ id: 'bin-1', width: 2, depth: 3, height: 4, linkedDesignId: 'design-1' }),
+        makeBin({
+          id: binId('bin-1'),
+          width: gridUnits(2),
+          depth: gridUnits(3),
+          height: heightUnits(4),
+          linkedDesignId: designId('design-1'),
+        }),
       ];
-      const registry = [makeRegistryEntry({ id: 'design-1', width: 2, depth: 3, height: 4 })];
+      const registry = [
+        makeRegistryEntry({ id: designId('design-1'), width: 2, depth: 3, height: 4 }),
+      ];
       const { mockUpdateBin, mockShowSyncDialog } = setupStores(bins, registry);
 
       renderHook(() => useDesignSavedListener());
@@ -140,8 +157,10 @@ describe('useDesignSavedListener', () => {
     });
 
     it('does nothing when there are no linked bins', () => {
-      const bins = [makeBin({ id: 'bin-1' })]; // No linkedDesignId
-      const registry = [makeRegistryEntry({ id: 'design-1', width: 5, depth: 5, height: 5 })];
+      const bins = [makeBin({ id: binId('bin-1') })]; // No linkedDesignId
+      const registry = [
+        makeRegistryEntry({ id: designId('design-1'), width: 5, depth: 5, height: 5 }),
+      ];
       const { mockUpdateBin, mockShowSyncDialog } = setupStores(bins, registry);
 
       renderHook(() => useDesignSavedListener());
@@ -151,7 +170,7 @@ describe('useDesignSavedListener', () => {
     });
 
     it('does nothing when linked design is not in registry', () => {
-      const bins = [makeBin({ id: 'bin-1', linkedDesignId: 'design-missing' })];
+      const bins = [makeBin({ id: binId('bin-1'), linkedDesignId: designId('design-missing') })];
       const { mockUpdateBin, mockShowSyncDialog } = setupStores(bins, []);
 
       renderHook(() => useDesignSavedListener());
@@ -163,18 +182,25 @@ describe('useDesignSavedListener', () => {
     it('shows sync dialog when bins cannot fit new dimensions', () => {
       const bins = [
         makeBin({
-          id: 'bin-1',
-          width: 2,
-          depth: 3,
-          height: 4,
-          x: 0,
-          y: 0,
-          linkedDesignId: 'design-1',
+          id: binId('bin-1'),
+          width: gridUnits(2),
+          depth: gridUnits(3),
+          height: heightUnits(4),
+          x: gridUnits(0),
+          y: gridUnits(0),
+          linkedDesignId: designId('design-1'),
         }),
-        makeBin({ id: 'bin-2', width: 2, depth: 3, height: 4, x: 2, y: 0 }), // Adjacent, blocks expansion
+        makeBin({
+          id: binId('bin-2'),
+          width: gridUnits(2),
+          depth: gridUnits(3),
+          height: heightUnits(4),
+          x: gridUnits(2),
+          y: gridUnits(0),
+        }), // Adjacent, blocks expansion
       ];
       const registry = [
-        makeRegistryEntry({ id: 'design-1', width: 5, depth: 3, height: 4 }), // Too wide
+        makeRegistryEntry({ id: designId('design-1'), width: 5, depth: 3, height: 4 }), // Too wide
       ];
       const { mockShowSyncDialog } = setupStores(bins, registry);
 
@@ -192,20 +218,26 @@ describe('useDesignSavedListener', () => {
 
     it('reconciles multiple design IDs independently', () => {
       const bins = [
-        makeBin({ id: 'bin-1', width: 2, depth: 3, height: 4, linkedDesignId: 'design-1' }),
         makeBin({
-          id: 'bin-2',
-          width: 1,
-          depth: 1,
-          height: 2,
-          x: 5,
-          y: 5,
-          linkedDesignId: 'design-2',
+          id: binId('bin-1'),
+          width: gridUnits(2),
+          depth: gridUnits(3),
+          height: heightUnits(4),
+          linkedDesignId: designId('design-1'),
+        }),
+        makeBin({
+          id: binId('bin-2'),
+          width: gridUnits(1),
+          depth: gridUnits(1),
+          height: heightUnits(2),
+          x: gridUnits(5),
+          y: gridUnits(5),
+          linkedDesignId: designId('design-2'),
         }),
       ];
       const registry = [
-        makeRegistryEntry({ id: 'design-1', width: 3, depth: 3, height: 4 }),
-        makeRegistryEntry({ id: 'design-2', width: 2, depth: 2, height: 3 }),
+        makeRegistryEntry({ id: designId('design-1'), width: 3, depth: 3, height: 4 }),
+        makeRegistryEntry({ id: designId('design-2'), width: 2, depth: 2, height: 3 }),
       ];
       const { mockUpdateBin } = setupStores(bins, registry);
 
@@ -225,9 +257,17 @@ describe('useDesignSavedListener', () => {
   describe('real-time event handling', () => {
     it('auto-syncs bins when design-saved event is emitted', () => {
       const bins = [
-        makeBin({ id: 'bin-1', width: 2, depth: 3, height: 4, linkedDesignId: 'design-1' }),
+        makeBin({
+          id: binId('bin-1'),
+          width: gridUnits(2),
+          depth: gridUnits(3),
+          height: heightUnits(4),
+          linkedDesignId: designId('design-1'),
+        }),
       ];
-      const registry = [makeRegistryEntry({ id: 'design-1', width: 2, depth: 3, height: 4 })];
+      const registry = [
+        makeRegistryEntry({ id: designId('design-1'), width: 2, depth: 3, height: 4 }),
+      ];
       const { mockUpdateBin } = setupStores(bins, registry);
 
       renderHook(() => useDesignSavedListener());
@@ -238,7 +278,7 @@ describe('useDesignSavedListener', () => {
       // Now emit an event with changed dimensions
       emitSyncEvent({
         type: 'design-saved',
-        designId: 'design-1',
+        designId: designId('design-1'),
         dimensions: { width: 3, depth: 4, height: 5 },
       });
 
@@ -250,9 +290,17 @@ describe('useDesignSavedListener', () => {
 
     it('unsubscribes on unmount', () => {
       const bins = [
-        makeBin({ id: 'bin-1', width: 2, depth: 3, height: 4, linkedDesignId: 'design-1' }),
+        makeBin({
+          id: binId('bin-1'),
+          width: gridUnits(2),
+          depth: gridUnits(3),
+          height: heightUnits(4),
+          linkedDesignId: designId('design-1'),
+        }),
       ];
-      const registry = [makeRegistryEntry({ id: 'design-1', width: 2, depth: 3, height: 4 })];
+      const registry = [
+        makeRegistryEntry({ id: designId('design-1'), width: 2, depth: 3, height: 4 }),
+      ];
       const { mockUpdateBin } = setupStores(bins, registry);
 
       const { unmount } = renderHook(() => useDesignSavedListener());
@@ -260,7 +308,7 @@ describe('useDesignSavedListener', () => {
 
       emitSyncEvent({
         type: 'design-saved',
-        designId: 'design-1',
+        designId: designId('design-1'),
         dimensions: { width: 5, depth: 5, height: 5 },
       });
 

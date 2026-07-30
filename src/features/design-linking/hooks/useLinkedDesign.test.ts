@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useLinkedDesign } from './useLinkedDesign';
 import type { CustomBinRef } from '@/features/bin-designer';
+import { designId } from '@/core/types';
 
 // Mock useCustomBins
 const mockRegistry: CustomBinRef[] = [];
@@ -12,7 +13,7 @@ vi.mock('@/features/bin-designer/hooks/useCustomBins', () => ({
 
 function makeDesignRef(overrides: Partial<CustomBinRef> = {}): CustomBinRef {
   return {
-    id: 'design-1',
+    id: designId('design-1'),
     name: 'Test Design',
     width: 2,
     depth: 3,
@@ -47,22 +48,22 @@ describe('useLinkedDesign', () => {
 
   describe('when linked design exists in registry', () => {
     beforeEach(() => {
-      mockRegistry.push(makeDesignRef({ id: 'design-1', name: 'My Design' }));
+      mockRegistry.push(makeDesignRef({ id: designId('design-1'), name: 'My Design' }));
     });
 
     it('returns the linked design', () => {
-      const { result } = renderHook(() => useLinkedDesign('design-1'));
+      const { result } = renderHook(() => useLinkedDesign(designId('design-1')));
       expect(result.current.linkedDesign).not.toBeNull();
       expect(result.current.linkedDesign?.name).toBe('My Design');
     });
 
     it('returns hasLink as true', () => {
-      const { result } = renderHook(() => useLinkedDesign('design-1'));
+      const { result } = renderHook(() => useLinkedDesign(designId('design-1')));
       expect(result.current.hasLink).toBe(true);
     });
 
     it('returns isStale as false', () => {
-      const { result } = renderHook(() => useLinkedDesign('design-1'));
+      const { result } = renderHook(() => useLinkedDesign(designId('design-1')));
       expect(result.current.isStale).toBe(false);
     });
   });
@@ -70,21 +71,21 @@ describe('useLinkedDesign', () => {
   describe('when linked design does not exist (stale link)', () => {
     beforeEach(() => {
       // Registry has design-2 but not design-1
-      mockRegistry.push(makeDesignRef({ id: 'design-2' }));
+      mockRegistry.push(makeDesignRef({ id: designId('design-2') }));
     });
 
     it('returns null linkedDesign', () => {
-      const { result } = renderHook(() => useLinkedDesign('design-1'));
+      const { result } = renderHook(() => useLinkedDesign(designId('design-1')));
       expect(result.current.linkedDesign).toBeNull();
     });
 
     it('returns hasLink as true', () => {
-      const { result } = renderHook(() => useLinkedDesign('design-1'));
+      const { result } = renderHook(() => useLinkedDesign(designId('design-1')));
       expect(result.current.hasLink).toBe(true);
     });
 
     it('returns isStale as true', () => {
-      const { result } = renderHook(() => useLinkedDesign('design-1'));
+      const { result } = renderHook(() => useLinkedDesign(designId('design-1')));
       expect(result.current.isStale).toBe(true);
     });
   });
@@ -92,25 +93,25 @@ describe('useLinkedDesign', () => {
   describe('with multiple designs in registry', () => {
     beforeEach(() => {
       mockRegistry.push(
-        makeDesignRef({ id: 'design-1', name: 'Design One' }),
-        makeDesignRef({ id: 'design-2', name: 'Design Two' }),
-        makeDesignRef({ id: 'design-3', name: 'Design Three' })
+        makeDesignRef({ id: designId('design-1'), name: 'Design One' }),
+        makeDesignRef({ id: designId('design-2'), name: 'Design Two' }),
+        makeDesignRef({ id: designId('design-3'), name: 'Design Three' })
       );
     });
 
     it('returns correct design when multiple exist', () => {
-      const { result } = renderHook(() => useLinkedDesign('design-2'));
+      const { result } = renderHook(() => useLinkedDesign(designId('design-2')));
       expect(result.current.linkedDesign?.name).toBe('Design Two');
     });
   });
 
   describe('memoization', () => {
     beforeEach(() => {
-      mockRegistry.push(makeDesignRef({ id: 'design-1' }));
+      mockRegistry.push(makeDesignRef({ id: designId('design-1') }));
     });
 
     it('returns stable reference when inputs unchanged', () => {
-      const { result, rerender } = renderHook(() => useLinkedDesign('design-1'));
+      const { result, rerender } = renderHook(() => useLinkedDesign(designId('design-1')));
       const firstResult = result.current;
 
       rerender();
