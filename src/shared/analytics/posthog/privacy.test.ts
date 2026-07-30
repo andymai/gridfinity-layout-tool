@@ -11,12 +11,12 @@ describe('isTrackingOptOut', () => {
     if (originalDoNotTrack) {
       Object.defineProperty(Navigator.prototype, 'doNotTrack', originalDoNotTrack);
     } else {
-      delete (Navigator.prototype as Record<string, unknown>).doNotTrack;
+      Reflect.deleteProperty(Navigator.prototype, 'doNotTrack');
     }
     if (originalGPC) {
       Object.defineProperty(Navigator.prototype, 'globalPrivacyControl', originalGPC);
     } else {
-      delete (Navigator.prototype as Record<string, unknown>).globalPrivacyControl;
+      Reflect.deleteProperty(Navigator.prototype, 'globalPrivacyControl');
     }
   });
 
@@ -35,7 +35,7 @@ describe('isTrackingOptOut', () => {
   }
 
   it('returns false when no signals are set', () => {
-    delete (Navigator.prototype as Record<string, unknown>).globalPrivacyControl;
+    Reflect.deleteProperty(Navigator.prototype, 'globalPrivacyControl');
     setDNT(null);
     expect(isTrackingOptOut()).toBe(false);
   });
@@ -53,19 +53,19 @@ describe('isTrackingOptOut', () => {
   });
 
   it('returns true when legacy DNT is "1"', () => {
-    delete (Navigator.prototype as Record<string, unknown>).globalPrivacyControl;
+    Reflect.deleteProperty(Navigator.prototype, 'globalPrivacyControl');
     setDNT('1');
     expect(isTrackingOptOut()).toBe(true);
   });
 
   it('returns false when DNT is "0"', () => {
-    delete (Navigator.prototype as Record<string, unknown>).globalPrivacyControl;
+    Reflect.deleteProperty(Navigator.prototype, 'globalPrivacyControl');
     setDNT('0');
     expect(isTrackingOptOut()).toBe(false);
   });
 
   it('returns false when DNT is "unspecified"', () => {
-    delete (Navigator.prototype as Record<string, unknown>).globalPrivacyControl;
+    Reflect.deleteProperty(Navigator.prototype, 'globalPrivacyControl');
     setDNT('unspecified');
     expect(isTrackingOptOut()).toBe(false);
   });
