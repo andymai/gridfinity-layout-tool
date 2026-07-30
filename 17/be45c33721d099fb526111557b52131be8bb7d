@@ -1,0 +1,129 @@
+src/features/generation/worker/generators/binGenerator.scenario.wallText.test.ts
+  s_bb8f1233002a7e::t_4f92de2eba487c 21
+  s_bb8f1233002a7e::t_1879273fe6af8b 188
+src/features/generation/worker/generators/__kernel-tests__/dualKernelInit.ts
+  s_bb8f1233002a7e::t_d6cd8d1c2078d2 12-18
+  s_bb8f1233002a7e::t_bebb10f59712ed 107,138
+src/features/generation/worker/generators/handleBuilder.test.ts
+  s_bb8f1233002a7e::t_f2d7230e09c7bf 9,12-19
+src/features/generation/worker/generators/slotBuilder.test.ts
+  s_bb8f1233002a7e::t_b95fe65610c50c 54
+src/features/generation/worker/generators/__kernel-tests__/occtWasmKernelLifecycle.test.ts
+  s_bb8f1233002a7e::t_cde168fc84e2ac 36-37
+src/features/generation/worker/generators/__kernel-tests__/wasmInit.ts
+  s_bb8f1233002a7e::t_3224a0ddb6c133 56-59
+  s_bb8f1233002a7e::t_2945d6f578c738 20-21
+src/features/generation/worker/generators/__kernel-tests__/diagnoseShell.test.ts
+  s_bb8f1233002a7e::t_85bbb677f76015 35-40
+  s_bb8f1233002a7e::t_94642aa5f25481 11-12
+  s_bb8f1233002a7e::t_25cc3643a118e3 63,120,159,186-187
+src/features/generation/worker/generators/kernelPerfStats.test.ts
+  s_bb8f1233002a7e::t_5e1bdcbcaa33f3 12
+  s_bb8f1233002a7e::t_b64fbbfb9c0c58 47
+src/features/generation/worker/generators/socketMeshCache.kernel.test.ts
+  s_bb8f1233002a7e::t_e95f838e45eedf 52,57
+src/features/generation/worker/generators/utils/outerShell.test.ts
+  s_bb8f1233002a7e::t_e2ca90623d9a9b 50
+src/features/generation/worker/generators/wallPatterns.test.ts
+  s_bb8f1233002a7e::t_a6554ae9225a50 13,17,26,31
+  s_bb8f1233002a7e::t_7993f280507beb 129,183
+src/features/generation/worker/generators/pipeline/collectOrigins.test.ts
+  s_bb8f1233002a7e::t_1a6a7637e813b7 11
+  s_bb8f1233002a7e::t_a55ed7496d26f5 13
+  s_bb8f1233002a7e::t_a2297b393bf50c 3
+  s_bb8f1233002a7e::t_7caf0406dbb3b7 40
+  s_bb8f1233002a7e::t_cd6736f46cdccc 24
+  s_bb8f1233002a7e::t_0324e22a51b0e6 67,91
+src/features/generation/worker/generators/__kernel-tests__/profileBin.test.ts
+  s_bb8f1233002a7e::t_85d454a3f55ba7 14
+  s_bb8f1233002a7e::t_994fd281d1d446 190
+  s_bb8f1233002a7e::t_35589ec6d7c09d 229,236-237,246,254
+  s_bb8f1233002a7e::t_c9fe9427030d6f 191-198,262,268
+src/features/generation/worker/generators/dividerBlendBuilder.test.ts
+  s_bb8f1233002a7e::t_4ec64bbce1dae7 10,13,38
+  s_bb8f1233002a7e::t_d7c26800f5f077 99,106,122,133,155,184,199,225,243,278,291
+src/features/generation/worker/generators/pipeline/runner.test.ts
+  s_bb8f1233002a7e::t_6ca3f93414ddc3 11-12,16-18
+src/features/generation/worker/generators/snapClipPullApart.test.ts
+  s_bb8f1233002a7e::t_bbed34134e8329 74
+src/features/generation/worker/generators/__kernel-tests__/kumikoWrapSpike.test.ts
+  s_bb8f1233002a7e::t_b82e65dbed31cf 61,63-67
+  s_bb8f1233002a7e::t_c1c39d28f18c08 33-34,36-37,42
+  s_bb8f1233002a7e::t_644f0ce24bb831 43
+src/features/generation/worker/generators/__kernel-tests__/exportIntegrityRunner.ts
+  s_bb8f1233002a7e::t_43210f7f763c81 104-108
+src/features/generation/worker/generators/featureTags.test.ts
+  s_bb8f1233002a7e::t_bd42dff2a0f790 6-8
+src/features/generation/worker/generators/baseplateMarginKey.scenario.test.ts
+  s_bb8f1233002a7e::t_d6b69a03a85ac3 13
+  s_bb8f1233002a7e::t_c6f195f974206a 93-104,108
+src/features/generation/worker/wasmInstantiator.test.ts
+  s_bb8f1233002a7e::t_7f04cbc48388c1 46-47
+  s_bb8f1233002a7e::t_9d5cf786da3c81 32-33,36
+src/features/generation/worker/generators/baseplateMarginConnector.scenario.test.ts
+  s_bb8f1233002a7e::t_2de3c051e6e338 114,116-130
+  s_bb8f1233002a7e::t_08085ad85c2cb1 9
+src/features/generation/worker/generators/featureBuilder.test.ts
+  s_bb8f1233002a7e::t_a336c187652b6d 274
+  s_bb8f1233002a7e::t_d1023d954dc8be 295
+  s_bb8f1233002a7e::t_2b0848147ae5f8 11
+  s_bb8f1233002a7e::t_ed38a2058b5fc4 275-282,303,589,610,629,650,670,691
+src/features/generation/bridge/GenerationBridge.test.ts
+  s_bb8f1233002a7e::t_3019f6dea6e0b1 944
+  s_6f4ad9a9e23cae::t_6cfaa18fda730e 172,213,277,313,397,430,611
+src/features/generation/worker/generators/pipeline/context.test.ts
+  s_bb8f1233002a7e::t_808a536a975163 183-184
+  s_bb8f1233002a7e::t_620dfacab2c3ba 40
+scripts/test-type-baseline.json
+  s_bb8f1233002a7e::t_1cec92130c3a2f 3
+src/features/generation/worker/generators/__kernel-tests__/compartments.perf.test.ts
+  s_bb8f1233002a7e::t_a346e25b867468 62
+src/features/generation/worker/generators/__kernel-tests__/deferCorrectness.test.ts
+  s_bb8f1233002a7e::t_3963e538c41954 61
+src/features/generation/worker/generators/__kernel-tests__/deferStress.test.ts
+  s_bb8f1233002a7e::t_e240881b08850d 57
+src/features/generation/worker/generators/__kernel-tests__/disposalRegression.test.ts
+  s_bb8f1233002a7e::t_71377061189ca8 36-38,45-47,61-62,80-81,93,118,145,173-174,181-182,189-190,197-198,205-206,213-214,223-224,270-271,297,327-328,361-362
+src/features/generation/worker/generators/__kernel-tests__/exportCache.test.ts
+  s_bb8f1233002a7e::t_8bb304a18fa70a 25
+src/features/generation/worker/generators/__kernel-tests__/previewPerfBreakdown.test.ts
+  s_bb8f1233002a7e::t_0f988210429606 139
+src/features/generation/worker/generators/__kernel-tests__/splitPerfBreakdown.test.ts
+  s_bb8f1233002a7e::t_a69b300ca01920 90
+src/features/generation/worker/generators/binGenerator.scenario.split-connectors.test.ts
+  s_bb8f1233002a7e::t_9219b36ab35240 39
+src/features/generation/worker/generators/binGenerator.scenario.split-overhang-connectors.test.ts
+  s_bb8f1233002a7e::t_736c5df19837ee 37
+src/features/generation/worker/generators/binGenerator.scenario.split-range.test.ts
+  s_bb8f1233002a7e::t_c490b5447e01a2 31,101
+src/features/generation/worker/generators/binGenerator.scenario.split-slotted-lip.test.ts
+  s_bb8f1233002a7e::t_40f08752eae699 57,95,136
+src/features/generation/worker/generators/binGenerator.scenario.split-wall-locking.test.ts
+  s_bb8f1233002a7e::t_ab0053bfaa96a1 56
+src/features/generation/worker/generators/tessellation.perf.test.ts
+  s_bb8f1233002a7e::t_27a0a3c46519b6 65,79,93
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "17be45c33721d099fb526111557b52131be8bb7d",
+  "prompts": {},
+  "sessions": {
+    "s_6f4ad9a9e23cae": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a1a8e8990faa9ca4d",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_bb8f1233002a7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6fc3935a-5ef6-4af4-95ab-e869e5faa058",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
