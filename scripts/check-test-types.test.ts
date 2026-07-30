@@ -30,6 +30,11 @@ describe('parseDiagnostics', () => {
     expect(parseDiagnostics(output)).toEqual({ 'src/features/a.test.ts': 1 });
   });
 
+  it('handles a path containing parentheses — the non-greedy group expands until the rest matches', () => {
+    const output = 'src/foo (copy).test.ts(10,5): error TS2304: Cannot find name Foo.';
+    expect(parseDiagnostics(output)).toEqual({ 'src/foo (copy).test.ts': 1 });
+  });
+
   it('returns an empty map for clean output', () => {
     expect(parseDiagnostics('')).toEqual({});
   });
@@ -81,6 +86,21 @@ describe('readBaseline', () => {
 
   it('rejects non-numeric file counts, which would silently disable the ratchet', () => {
     expect(readBaseline(JSON.stringify({ total: 1, files: { 'a.test.ts': 'lots' } }))).toBeNull();
+  });
+
+  it('rejects NaN counts — every comparison against NaN is false, so the file would read as matching', () => {
+    // NaN has no JSON literal, so build the string directly.
+    expect(readBaseline('{"total":1,"files":{"a.test.ts":NaN}}')).toBeNull();
+  });
+
+  it('rejects negative and fractional counts', () => {
+    expect(readBaseline(JSON.stringify({ total: 1, files: { 'a.test.ts': -1 } }))).toBeNull();
+    expect(readBaseline(JSON.stringify({ total: 1, files: { 'a.test.ts': 1.5 } }))).toBeNull();
+  });
+
+  it('rejects arrays, which pass a bare typeof-object check', () => {
+    expect(readBaseline(JSON.stringify({ total: 0, files: [] }))).toBeNull();
+    expect(readBaseline('[]')).toBeNull();
   });
 
   it('rejects a JSON scalar', () => {

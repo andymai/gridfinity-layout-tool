@@ -51,6 +51,10 @@ export function parseDiagnostics(output: string): Record<string, number> {
   return counts;
 }
 
+function isCount(n: unknown): n is number {
+  return typeof n === 'number' && Number.isInteger(n) && n >= 0;
+}
+
 /** Returns null for malformed JSON or a shape the ratchet can't compare against. */
 export function readBaseline(raw: string): Baseline | null {
   let parsed: unknown;
@@ -59,11 +63,14 @@ export function readBaseline(raw: string): Baseline | null {
   } catch {
     return null;
   }
-  if (typeof parsed !== 'object' || parsed === null) return null;
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return null;
   const { total, files } = parsed as Partial<Baseline>;
-  if (typeof total !== 'number') return null;
-  if (typeof files !== 'object' || files === null) return null;
-  if (Object.values(files).some((n) => typeof n !== 'number')) return null;
+  if (!isCount(total)) return null;
+  if (typeof files !== 'object' || files === null || Array.isArray(files)) return null;
+  // NaN would be the worst outcome to admit: every comparison against it is
+  // false, so a file with a NaN count reads as matching and its ratchet
+  // silently switches off.
+  if (!Object.values(files).every(isCount)) return null;
   return parsed as Baseline;
 }
 
@@ -112,10 +119,12 @@ export interface CompilerRun {
 }
 
 /**
- * A compiler that runs and finds errors exits non-zero with `status` set — the
- * normal path here. A compiler that never starts (ENOENT, EACCES) throws with
- * no status at all. Only the latter may be treated as "the gate could not run";
- * conflating them would let a missing `tsgo` read as a clean compile.
+ * A compiler that runs to completion and finds errors exits non-zero with
+ * `status` set — the normal path here. Anything that stops it reaching an exit
+ * code leaves `status` null: it never started (ENOENT, EACCES), or it was
+ * killed by a signal or by exceeding maxBuffer. All of those make the captured
+ * output untrustworthy, so only a numeric `status` counts as a real run;
+ * conflating the two would let a missing `tsgo` read as a clean compile.
  */
 export function classifyRun(error: unknown): CompilerRun {
   const result = error as {
