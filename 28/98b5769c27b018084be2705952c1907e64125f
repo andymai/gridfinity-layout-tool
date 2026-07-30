@@ -1,0 +1,70 @@
+src/core/labs/features.test.ts
+  s_bb8f1233002a7e::t_8edec6267459d4 2,4,12-19
+  s_bb8f1233002a7e::t_e583541a01abbb 20
+src/core/constants.test.ts
+  s_bb8f1233002a7e::t_2364320ddb01f7 139,161,179,197,215,233
+CLAUDE.md
+  s_bb8f1233002a7e::t_4c8d830ba07bdf 54
+src/shared/events/syncEventBus.test.ts
+  s_bb8f1233002a7e::t_e34859bd1db824 13,29,44,63
+  s_bb8f1233002a7e::t_e8b322df46340f 2
+src/shared/generation/stlParser.test.ts
+  s_bb8f1233002a7e::t_c5ff76e0ca6540 4,7-21,104,115,126,210,225,237
+src/features/labs/components/LabsButton/LabsButton.test.tsx
+  s_bb8f1233002a7e::t_12db534499e6f1 6,41,46-48,98-104
+src/shared/scanTrace/traceScene.test.ts
+  s_bb8f1233002a7e::t_8f4e1915e31471 4
+  s_bb8f1233002a7e::t_643ab8d131042a 157
+src/core/result/resultAsync.test.ts
+  s_bb8f1233002a7e::t_4af4b6b67ae04d 282-283,297
+src/shared/items/registry.test.ts
+  s_bb8f1233002a7e::t_764075d832ec75 5-16,54
+src/features/bin-recommender/components/BinSizeSuggestion/BinSizeSuggestion.test.tsx
+  s_bb8f1233002a7e::t_c4a4804faf450d 10,41-44,62-81
+  s_bb8f1233002a7e::t_d766aaf01e45ff 4,24-28,54
+  s_bb8f1233002a7e::t_577e19af529e03 82
+package.json
+  s_bb8f1233002a7e::t_aab0a00a041b79 69
+src/features/engagement/useLayoutPromotion.test.ts
+  s_bb8f1233002a7e::t_ea51007fbcd9fc 45-46,48
+src/features/labs/components/LabsDrawer/LabsDrawer.test.tsx
+  s_bb8f1233002a7e::t_276d5700410e26 19-20,28-29
+  s_bb8f1233002a7e::t_12db534499e6f1 7,84,87-92
+src/core/result/utils.test.ts
+  s_bb8f1233002a7e::t_4af4b6b67ae04d 513-514,516-517
+src/features/scan-capture/components/ScanPage/ScanPage.test.tsx
+  s_bb8f1233002a7e::t_8bf4eb4641bd1e 13
+src/features/labs/components/GraduatedSection/GraduatedSection.test.tsx
+  s_bb8f1233002a7e::t_276d5700410e26 23-24,32-33
+src/features/labs/components/FeatureCard/FeatureCard.test.tsx
+  s_bb8f1233002a7e::t_276d5700410e26 33-34
+src/features/labs/labs.testUtils.ts
+  s_bb8f1233002a7e::t_66e0f0a247c070 4,7-20
+  s_bb8f1233002a7e::t_ee4f8bbf322899 1-3,5-6,21-46
+src/core/api/share.test.ts
+  s_bb8f1233002a7e::t_e34859bd1db824 11,17-22
+src/shared/contexts/MutationsContext.test.tsx
+  s_bb8f1233002a7e::t_e34859bd1db824 32-36
+  s_bb8f1233002a7e::t_e8b322df46340f 3
+src/shared/scanTrace/traceScene.segmented.test.ts
+  s_bb8f1233002a7e::t_8f4e1915e31471 4-5
+  s_bb8f1233002a7e::t_643ab8d131042a 84,86,123-127
+tsconfig.json
+  s_bb8f1233002a7e::t_b692247ca804ff 7-8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "2898b5769c27b018084be2705952c1907e64125f",
+  "prompts": {},
+  "sessions": {
+    "s_bb8f1233002a7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6fc3935a-5ef6-4af4-95ab-e869e5faa058",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
