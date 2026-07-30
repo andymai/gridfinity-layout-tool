@@ -98,6 +98,11 @@ describe('readBaseline', () => {
     expect(readBaseline(JSON.stringify({ total: 1, files: { 'a.test.ts': 1.5 } }))).toBeNull();
   });
 
+  it('normalizes a total that disagrees with the file counts', () => {
+    const raw = JSON.stringify({ total: 999, files: { 'a.test.ts': 3, 'b.test.ts': 4 } });
+    expect(readBaseline(raw)?.total).toBe(7);
+  });
+
   it('rejects arrays, which pass a bare typeof-object check', () => {
     expect(readBaseline(JSON.stringify({ total: 0, files: [] }))).toBeNull();
     expect(readBaseline('[]')).toBeNull();

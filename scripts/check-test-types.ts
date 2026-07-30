@@ -29,8 +29,13 @@ const PROJECT = 'tsconfig.test.json';
 
 export interface Baseline {
   readonly note: string;
+  /** Human-readable summary only. `sumCounts(files)` is the authority — see readBaseline. */
   readonly total: number;
   readonly files: Record<string, number>;
+}
+
+export function sumCounts(files: Record<string, number>): number {
+  return Object.values(files).reduce((sum, n) => sum + n, 0);
 }
 
 const ERROR_LINE = /^(.+?)\((\d+),(\d+)\): error TS\d+:/;
@@ -71,7 +76,10 @@ export function readBaseline(raw: string): Baseline | null {
   // false, so a file with a NaN count reads as matching and its ratchet
   // silently switches off.
   if (!Object.values(files).every(isCount)) return null;
-  return parsed as Baseline;
+  // A hand-edit or merge conflict can leave `total` disagreeing with `files`.
+  // Rather than reject an otherwise usable baseline, normalize it: `files` is
+  // what the ratchet compares, so a stale `total` may only mislead the report.
+  return { ...(parsed as Baseline), total: sumCounts(files) };
 }
 
 export interface Drift {
@@ -165,7 +173,7 @@ function main(): void {
   }
 
   const current = parseDiagnostics(output);
-  const total = Object.values(current).reduce((sum, n) => sum + n, 0);
+  const total = sumCounts(current);
 
   // The compiler ran but emitted something unparseable. Without this guard the
   // gate would read that as "zero errors" and pass vacuously.
