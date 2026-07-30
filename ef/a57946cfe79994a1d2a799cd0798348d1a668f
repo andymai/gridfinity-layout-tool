@@ -1,0 +1,91 @@
+src/core/types/layout.ts
+  s_04e0eea2db2b69::t_75df7e92936317 113-117,122
+src/core/cqrs/v2/domain/bin/updateBin.ts
+  s_04e0eea2db2b69::t_95eb09b406a9a0 57
+src/features/bin-designer/components/panel/OverhangSection/OverhangSliderRow.test.tsx
+  s_04e0eea2db2b69::t_f0f0b62a0cf497 25-26,30-32
+src/features/bin-inspector/components/Inspector/ExtendToMarginToggle/ExtendToMarginToggle.tsx
+  s_04e0eea2db2b69::t_8211626617d4e7 37-39
+  s_04e0eea2db2b69::t_e16c163a86fcec 116-127
+  s_04e0eea2db2b69::t_61dbf4aeb9e578 12-16
+src/i18n/locales/fr.json
+  s_04e0eea2db2b69::t_9154af92b6f3c9 3001,3007-3008,3014-3015
+src/features/bin-designer/components/panel/OverhangSection/OverhangSliderRow.tsx
+  s_04e0eea2db2b69::t_9efe84dd85a4d9 81-85
+src/features/bin-designer/components/panel/OverhangSection/OverhangSection.test.tsx
+  s_04e0eea2db2b69::t_8b959fc6ae9711 117,123,130,139-142,145,148,154,170-176,179,188-207,217-227
+  s_04e0eea2db2b69::t_581e7193439962 208-216
+  s_04e0eea2db2b69::t_84400da076f458 160,162
+src/i18n/locales/en.ts
+  s_04e0eea2db2b69::t_969d989cffd8a2 454-456
+  s_04e0eea2db2b69::t_a661a1732d5427 1937,1945-1946
+src/i18n/locales/ko.json
+  s_04e0eea2db2b69::t_9154af92b6f3c9 3001,3007-3008,3014-3015
+src/i18n/locales/nb.json
+  s_04e0eea2db2b69::t_9154af92b6f3c9 3001,3007-3008,3014-3015
+src/i18n/locales/nl.json
+  s_04e0eea2db2b69::t_9154af92b6f3c9 3001,3007-3008,3014-3015
+src/features/bin-designer/components/panel/OverhangSection/OverhangSection.tsx
+  s_04e0eea2db2b69::t_bcac5e05aa97ce 71
+  s_04e0eea2db2b69::t_4bec96752dca83 7-11,15-16
+  s_04e0eea2db2b69::t_6976fc0b696768 170-190
+  s_04e0eea2db2b69::t_be210e66644ec1 39
+src/core/cqrs/validation/schemas.ts
+  s_04e0eea2db2b69::t_7ec6af16ccbf0d 97
+src/i18n/locales/cs.json
+  s_04e0eea2db2b69::t_9154af92b6f3c9 3001,3007-3008,3014-3015
+src/i18n/locales/pl.json
+  s_04e0eea2db2b69::t_9154af92b6f3c9 3001,3007-3008,3014-3015
+src/features/bin-designer/components/panel/OverhangSection/useOverhangSection.ts
+  s_04e0eea2db2b69::t_43b8fc258ff94b 50
+  s_04e0eea2db2b69::t_a03afca0bae4a5 1
+  s_04e0eea2db2b69::t_5c61ed16acfa48 58-70
+  s_04e0eea2db2b69::t_32c9c751fb6efa 16-28,47-49,51-57,74,76,94-95,126-145,147-156,159,162-165,167-170,176,179,198,202-204,210-211,214
+  s_04e0eea2db2b69::t_d08222be648a5c 71
+src/shared/utils/drawerMargin.test.ts
+  s_04e0eea2db2b69::t_71154b366d5506 176,180,184-186,188,195,197,203-223
+  s_04e0eea2db2b69::t_a4fbf527b57ab9 224
+src/i18n/locales/uk.json
+  s_04e0eea2db2b69::t_9154af92b6f3c9 3001,3007-3008,3014-3015
+src/shared/utils/drawerMargin.ts
+  s_04e0eea2db2b69::t_71997015e30cab 117-118,127
+  s_04e0eea2db2b69::t_92b46851db852f 15-16
+  s_04e0eea2db2b69::t_54812b46719c4b 121-122,124
+  s_04e0eea2db2b69::t_695e11b4e8ee10 55-63,70,72-75
+  s_04e0eea2db2b69::t_3c8dd9942b7efd 159-161
+  s_04e0eea2db2b69::t_88040d6d233ea2 111-116,119-120,128-132,137
+  s_04e0eea2db2b69::t_5fbffef9d8f4ef 138-140
+  s_04e0eea2db2b69::t_b668be4ac0f558 162-164
+src/features/bin-designer/constants/gridfinity.ts
+  s_04e0eea2db2b69::t_d42cc7d1e047f1 121-123
+src/i18n/locales/de.json
+  s_04e0eea2db2b69::t_9154af92b6f3c9 3001,3007-3008,3014-3015
+src/i18n/locales/ja.json
+  s_04e0eea2db2b69::t_9154af92b6f3c9 3001,3007-3008,3014-3015
+src/i18n/locales/pt-BR.json
+  s_04e0eea2db2b69::t_9154af92b6f3c9 3001,3007-3008,3014-3015
+src/i18n/locales/sv.json
+  s_04e0eea2db2b69::t_9154af92b6f3c9 3001,3007-3008,3014-3015
+src/i18n/locales/zh-CN.json
+  s_04e0eea2db2b69::t_9154af92b6f3c9 3001,3007-3008,3014-3015
+src/i18n/locales/it.json
+  s_04e0eea2db2b69::t_9154af92b6f3c9 3001,3007-3008,3014-3015
+src/i18n/locales/es.json
+  s_04e0eea2db2b69::t_9154af92b6f3c9 3001,3007-3008,3014-3015
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "efa57946cfe79994a1d2a799cd0798348d1a668f",
+  "prompts": {},
+  "sessions": {
+    "s_04e0eea2db2b69": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "219bf8ef-fd99-4092-9a71-9a4313a3fff2",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
