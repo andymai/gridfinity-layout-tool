@@ -9,6 +9,7 @@ import {
   useHalfGridModeStore,
 } from '@/core/store';
 import { resetAllStores, createTestLayout } from '@/test/testUtils';
+import { binId, categoryId, gridUnits, heightUnits, layerId } from '@/core/types';
 
 // Mock all lazy-loaded components
 vi.mock('./IsometricPreview', () => ({
@@ -176,17 +177,17 @@ vi.mock('@/shared/hooks/useCollabPresence', () => ({
 
 describe('Grid', () => {
   const testLayout = createTestLayout({
-    drawer: { width: 10, depth: 8, height: 12 },
+    drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
     bins: [
       {
-        id: 'bin1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        layerId: 'layer1',
-        category: 'cat1',
+        id: binId('bin1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        layerId: layerId('layer1'),
+        category: categoryId('cat1'),
         label: '',
         notes: '',
       },
@@ -199,7 +200,7 @@ describe('Grid', () => {
 
     useLayoutStore.setState({ layout: testLayout });
     useSelectionStore.setState({
-      activeLayerId: 'layer1',
+      activeLayerId: layerId('layer1'),
       selectedBinIds: [],
       setSelectedBins: vi.fn(),
     });
@@ -315,13 +316,13 @@ describe('Grid', () => {
     it('renders empty state on non-first layers', () => {
       const layoutWithMultipleLayers = createTestLayout({
         layers: [
-          { id: 'layer1', name: 'Layer 1', height: 3 },
-          { id: 'layer2', name: 'Layer 2', height: 3 },
+          { id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) },
+          { id: layerId('layer2'), name: 'Layer 2', height: heightUnits(3) },
         ],
         bins: [], // Empty
       });
       useLayoutStore.setState({ layout: layoutWithMultipleLayers });
-      useSelectionStore.setState({ activeLayerId: 'layer2' });
+      useSelectionStore.setState({ activeLayerId: layerId('layer2') });
 
       const { container } = render(<Grid />);
 
@@ -384,8 +385,8 @@ describe('Grid', () => {
       useInteractionStore.setState({
         interaction: {
           type: 'draw',
-          start: { x: 0, y: 0 },
-          current: { x: 1, y: 1 },
+          start: { x: gridUnits(0), y: gridUnits(0) },
+          current: { x: gridUnits(1), y: gridUnits(1) },
         },
       });
 

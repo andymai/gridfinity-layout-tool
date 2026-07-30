@@ -1,14 +1,23 @@
 import { describe, it, expect } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useGridAxisLabels } from './useGridAxisLabels';
-import type { Drawer } from '@/core/types';
+import { gridUnits, heightUnits } from '@/core/types';
+import type { Drawer, FractionalEdge } from '@/core/types';
 
-function makeDrawer(overrides: Partial<Drawer> = {}): Drawer {
+interface DrawerSpec {
+  width?: number;
+  depth?: number;
+  height?: number;
+  fractionalEdgeX?: FractionalEdge;
+  fractionalEdgeY?: FractionalEdge;
+}
+
+function makeDrawer({ width = 10, depth = 8, height = 12, ...rest }: DrawerSpec = {}): Drawer {
   return {
-    width: 10,
-    depth: 8,
-    height: 12,
-    ...overrides,
+    width: gridUnits(width),
+    depth: gridUnits(depth),
+    height: heightUnits(height),
+    ...rest,
   };
 }
 
