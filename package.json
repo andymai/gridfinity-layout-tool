@@ -57,6 +57,7 @@
     "check:design-system:staged": "./scripts/check-design-system-usage.sh --staged",
     "check:readme-reminders": "./scripts/check-readme-reminders.sh",
     "check:missing-tests": "./scripts/check-missing-tests.sh",
+    "check:test-types": "tsx scripts/check-test-types.ts",
     "check:component-structure": "./scripts/check-component-structure.sh",
     "seed-supporters": "tsx scripts/seed-supporters.ts",
     "sync-admin": "tsx scripts/sync-admin/index.ts",
@@ -66,7 +67,8 @@
     "knip": "knip",
     "knip:fix": "knip --fix",
     "typecheck": "tsgo -b --noEmit",
-    "quality": "pnpm run typecheck && pnpm run lint && pnpm run knip",
+    "typecheck:tests": "tsgo -p tsconfig.test.json --noEmit",
+    "quality": "pnpm run typecheck && pnpm run check:test-types && pnpm run lint && pnpm run knip",
     "test:profile": "pnpm run build:en-locale && tsx scripts/profile-tests.ts"
   },
   "size-limit": [

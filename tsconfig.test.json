@@ -15,6 +15,7 @@
     "src/test/**/*.tsx",
     "src/**/__kernel-tests__/**/*.ts",
     "api/**/*.test.ts",
+    "scripts/**/*.test.ts",
     "vitest.config.ts"
   ],
   "exclude": []
