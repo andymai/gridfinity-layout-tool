@@ -8,6 +8,7 @@ import {
   getSpoolEstimate,
 } from '@/features/print-export/utils/split';
 import type { Bin, PrintRow } from '@/core/types';
+import { binId, layerId, categoryId, designId, gridUnits, heightUnits } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
 
@@ -16,23 +17,23 @@ describe('splitBinSize', () => {
 
   it('returns single piece for small bins', () => {
     const pieces = splitBinSize(3, 3, maxSize);
-    expect(pieces).toEqual([{ width: 3, depth: 3, count: 1 }]);
+    expect(pieces).toEqual([{ width: gridUnits(3), depth: gridUnits(3), count: 1 }]);
   });
 
   it('splits width only when needed', () => {
     const pieces = splitBinSize(5, 3, maxSize);
     // 5×3 → 3×3 + 2×3
     expect(pieces).toHaveLength(2);
-    expect(pieces).toContainEqual({ width: 3, depth: 3, count: 1 });
-    expect(pieces).toContainEqual({ width: 2, depth: 3, count: 1 });
+    expect(pieces).toContainEqual({ width: gridUnits(3), depth: gridUnits(3), count: 1 });
+    expect(pieces).toContainEqual({ width: gridUnits(2), depth: gridUnits(3), count: 1 });
   });
 
   it('splits depth only when needed', () => {
     const pieces = splitBinSize(3, 5, maxSize);
     // 3×5 → 3×3 + 3×2
     expect(pieces).toHaveLength(2);
-    expect(pieces).toContainEqual({ width: 3, depth: 3, count: 1 });
-    expect(pieces).toContainEqual({ width: 3, depth: 2, count: 1 });
+    expect(pieces).toContainEqual({ width: gridUnits(3), depth: gridUnits(3), count: 1 });
+    expect(pieces).toContainEqual({ width: gridUnits(3), depth: gridUnits(2), count: 1 });
   });
 
   it('handles PRD example: 9×3 with max 4', () => {
@@ -56,7 +57,7 @@ describe('splitBinSize', () => {
 
   it('handles exact max size', () => {
     const pieces = splitBinSize(4, 4, maxSize);
-    expect(pieces).toEqual([{ width: 4, depth: 4, count: 1 }]);
+    expect(pieces).toEqual([{ width: gridUnits(4), depth: gridUnits(4), count: 1 }]);
   });
 
   it('splits width of 1 without creating zero-width pieces', () => {
@@ -76,7 +77,7 @@ describe('splitBinSize', () => {
   it('handles both dimensions being 1 and over max', () => {
     // Edge case: 1×1 always fits
     const pieces = splitBinSize(1, 1, maxSize);
-    expect(pieces).toEqual([{ width: 1, depth: 1, count: 1 }]);
+    expect(pieces).toEqual([{ width: gridUnits(1), depth: gridUnits(1), count: 1 }]);
   });
 
   it('handles odd splits correctly', () => {
@@ -120,7 +121,7 @@ describe('splitBinSize', () => {
 describe('splitBinSize with fractional dimensions (half-bin mode)', () => {
   it('does not split 1.5×1.5 when maxSize is 2', () => {
     const pieces = splitBinSize(1.5, 1.5, 2);
-    expect(pieces).toEqual([{ width: 1.5, depth: 1.5, count: 1 }]);
+    expect(pieces).toEqual([{ width: gridUnits(1.5), depth: gridUnits(1.5), count: 1 }]);
   });
 
   it('handles 1.5×1.5 with maxSize 1', () => {
@@ -140,7 +141,7 @@ describe('splitBinSize with fractional dimensions (half-bin mode)', () => {
   it('handles 0.5×0.5 without creating zero-dimension pieces', () => {
     // Smallest half-bin should not split further
     const pieces = splitBinSize(0.5, 0.5, 1);
-    expect(pieces).toEqual([{ width: 0.5, depth: 0.5, count: 1 }]);
+    expect(pieces).toEqual([{ width: gridUnits(0.5), depth: gridUnits(0.5), count: 1 }]);
   });
 
   it('preserves fractional dimensions in output', () => {
@@ -154,7 +155,7 @@ describe('splitBinSize with fractional dimensions (half-bin mode)', () => {
   it('does not split when bin fits with half-unit max (6.5 max)', () => {
     // A 6.5-unit bin should not split when maxWidth is 6.5
     const pieces = splitBinSize(6.5, 3, 6.5);
-    expect(pieces).toEqual([{ width: 6.5, depth: 3, count: 1 }]);
+    expect(pieces).toEqual([{ width: gridUnits(6.5), depth: gridUnits(3), count: 1 }]);
   });
 
   it('splits correctly when exceeding half-unit max', () => {
@@ -169,26 +170,26 @@ describe('generatePrintList', () => {
   it('groups identical bins', () => {
     const bins: Bin[] = [
       {
-        id: '1',
-        layerId: 'l1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'c1',
+        id: binId('1'),
+        layerId: layerId('l1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: '',
         notes: '',
       },
       {
-        id: '2',
-        layerId: 'l1',
-        x: 2,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'c1',
+        id: binId('2'),
+        layerId: layerId('l1'),
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: '',
         notes: '',
       },
@@ -201,39 +202,39 @@ describe('generatePrintList', () => {
 
   it('does not merge bins linked to different designs even with identical dims', () => {
     const base = {
-      layerId: 'l1',
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: 'c1',
+      layerId: layerId('l1'),
+      y: gridUnits(0),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+      height: heightUnits(3),
+      category: categoryId('c1'),
       label: '',
       notes: '',
     };
     const bins = [
-      { ...base, id: '1', x: 0, linkedDesignId: 'design-a' },
-      { ...base, id: '2', x: 2, linkedDesignId: 'design-b' },
-      { ...base, id: '3', x: 4 }, // unlinked
-    ] as unknown as Bin[];
+      { ...base, id: binId('1'), x: gridUnits(0), linkedDesignId: designId('design-a') },
+      { ...base, id: binId('2'), x: gridUnits(2), linkedDesignId: designId('design-b') },
+      { ...base, id: binId('3'), x: gridUnits(4) }, // unlinked
+    ];
     const rows = generatePrintList(bins, 4);
     expect(rows).toHaveLength(3);
   });
 
   it('still merges bins linked to the same design', () => {
     const base = {
-      layerId: 'l1',
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: 'c1',
+      layerId: layerId('l1'),
+      y: gridUnits(0),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+      height: heightUnits(3),
+      category: categoryId('c1'),
       label: '',
       notes: '',
     };
     const bins = [
-      { ...base, id: '1', x: 0, linkedDesignId: 'design-a' },
-      { ...base, id: '2', x: 2, linkedDesignId: 'design-a' },
-    ] as unknown as Bin[];
+      { ...base, id: binId('1'), x: gridUnits(0), linkedDesignId: designId('design-a') },
+      { ...base, id: binId('2'), x: gridUnits(2), linkedDesignId: designId('design-a') },
+    ];
     const rows = generatePrintList(bins, 4);
     expect(rows).toHaveLength(1);
     expect(rows[0].binCount).toBe(2);
@@ -241,19 +242,19 @@ describe('generatePrintList', () => {
 
   it('carries the linked design id onto the row', () => {
     const base = {
-      layerId: 'l1',
-      y: 0,
-      width: 2,
-      depth: 2,
-      height: 3,
-      category: 'c1',
+      layerId: layerId('l1'),
+      y: gridUnits(0),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+      height: heightUnits(3),
+      category: categoryId('c1'),
       label: '',
       notes: '',
     };
     const bins = [
-      { ...base, id: '1', x: 0, linkedDesignId: 'design-a' },
-      { ...base, id: '2', x: 2 },
-    ] as unknown as Bin[];
+      { ...base, id: binId('1'), x: gridUnits(0), linkedDesignId: designId('design-a') },
+      { ...base, id: binId('2'), x: gridUnits(2) },
+    ];
     const rows = generatePrintList(bins, 4);
     const linked = rows.find((r) => r.linkedDesignId !== undefined);
     const unlinked = rows.find((r) => r.linkedDesignId === undefined);
@@ -264,26 +265,26 @@ describe('generatePrintList', () => {
   it('excludes staging bins', () => {
     const bins: Bin[] = [
       {
-        id: '1',
-        layerId: 'l1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'c1',
+        id: binId('1'),
+        layerId: layerId('l1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: '',
         notes: '',
       },
       {
-        id: '2',
+        id: binId('2'),
         layerId: STAGING_ID,
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'c1',
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: '',
         notes: '',
       },
@@ -296,26 +297,26 @@ describe('generatePrintList', () => {
   it('separates bins with different heights', () => {
     const bins: Bin[] = [
       {
-        id: '1',
-        layerId: 'l1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'c1',
+        id: binId('1'),
+        layerId: layerId('l1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: '',
         notes: '',
       },
       {
-        id: '2',
-        layerId: 'l1',
-        x: 2,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 6,
-        category: 'c1',
+        id: binId('2'),
+        layerId: layerId('l1'),
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(6),
+        category: categoryId('c1'),
         label: '',
         notes: '',
       },
@@ -327,14 +328,14 @@ describe('generatePrintList', () => {
   it('calculates split pieces correctly', () => {
     const bins: Bin[] = [
       {
-        id: '1',
-        layerId: 'l1',
-        x: 0,
-        y: 0,
-        width: 5,
-        depth: 3,
-        height: 3,
-        category: 'c1',
+        id: binId('1'),
+        layerId: layerId('l1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(5),
+        depth: gridUnits(3),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: '',
         notes: '',
       },
@@ -349,26 +350,26 @@ describe('generatePrintList', () => {
     // Two identical 9x3 bins should result in merged piece counts
     const bins: Bin[] = [
       {
-        id: '1',
-        layerId: 'l1',
-        x: 0,
-        y: 0,
-        width: 9,
-        depth: 3,
-        height: 3,
-        category: 'c1',
+        id: binId('1'),
+        layerId: layerId('l1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(9),
+        depth: gridUnits(3),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: '',
         notes: '',
       },
       {
-        id: '2',
-        layerId: 'l1',
-        x: 0,
-        y: 3,
-        width: 9,
-        depth: 3,
-        height: 3,
-        category: 'c1',
+        id: binId('2'),
+        layerId: layerId('l1'),
+        x: gridUnits(0),
+        y: gridUnits(3),
+        width: gridUnits(9),
+        depth: gridUnits(3),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: '',
         notes: '',
       },
@@ -385,14 +386,14 @@ describe('generatePrintList', () => {
     // A 6x6 bin splits into 4 identical 3x3 pieces (split both dimensions)
     const bins: Bin[] = [
       {
-        id: '1',
-        layerId: 'l1',
-        x: 0,
-        y: 0,
-        width: 6,
-        depth: 6,
-        height: 3,
-        category: 'c1',
+        id: binId('1'),
+        layerId: layerId('l1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(6),
+        depth: gridUnits(6),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: '',
         notes: '',
       },
@@ -407,26 +408,26 @@ describe('generatePrintList', () => {
   it('keeps labeled bins with DIFFERENT labels separate', () => {
     const bins: Bin[] = [
       {
-        id: '1',
-        layerId: 'l1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'c1',
+        id: binId('1'),
+        layerId: layerId('l1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: 'Screws',
         notes: '',
       },
       {
-        id: '2',
-        layerId: 'l1',
-        x: 2,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'c1',
+        id: binId('2'),
+        layerId: layerId('l1'),
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: 'Bolts',
         notes: '',
       },
@@ -441,26 +442,26 @@ describe('generatePrintList', () => {
   it('consolidates labeled bins with SAME label', () => {
     const bins: Bin[] = [
       {
-        id: '1',
-        layerId: 'l1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'c1',
+        id: binId('1'),
+        layerId: layerId('l1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: 'Screws',
         notes: '',
       },
       {
-        id: '2',
-        layerId: 'l1',
-        x: 2,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'c1',
+        id: binId('2'),
+        layerId: layerId('l1'),
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: 'Screws',
         notes: '',
       },
@@ -475,38 +476,38 @@ describe('generatePrintList', () => {
   it('groups unlabeled bins with same dimensions', () => {
     const bins: Bin[] = [
       {
-        id: '1',
-        layerId: 'l1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'c1',
+        id: binId('1'),
+        layerId: layerId('l1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: '',
         notes: '',
       },
       {
-        id: '2',
-        layerId: 'l1',
-        x: 2,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'c1',
+        id: binId('2'),
+        layerId: layerId('l1'),
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: '',
         notes: '',
       },
       {
-        id: '3',
-        layerId: 'l1',
-        x: 0,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'c1',
+        id: binId('3'),
+        layerId: layerId('l1'),
+        x: gridUnits(0),
+        y: gridUnits(2),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: 'Special',
         notes: '',
       },
@@ -519,27 +520,27 @@ describe('generatePrintList', () => {
   it('consolidates bins with custom properties (merges values)', () => {
     const bins: Bin[] = [
       {
-        id: '1',
-        layerId: 'l1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'c1',
+        id: binId('1'),
+        layerId: layerId('l1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: '',
         notes: '',
         customProperties: { SKU: 'A1' },
       },
       {
-        id: '2',
-        layerId: 'l1',
-        x: 2,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'c1',
+        id: binId('2'),
+        layerId: layerId('l1'),
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: '',
         notes: '',
         customProperties: { SKU: 'B2' },
@@ -555,27 +556,27 @@ describe('generatePrintList', () => {
   it('consolidates bins with custom properties - same values are deduplicated', () => {
     const bins: Bin[] = [
       {
-        id: '1',
-        layerId: 'l1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'c1',
+        id: binId('1'),
+        layerId: layerId('l1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: '',
         notes: '',
         customProperties: { Color: 'Red' },
       },
       {
-        id: '2',
-        layerId: 'l1',
-        x: 2,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'c1',
+        id: binId('2'),
+        layerId: layerId('l1'),
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: '',
         notes: '',
         customProperties: { Color: 'Red' },
@@ -591,38 +592,38 @@ describe('generatePrintList', () => {
   it('consolidates notes from multiple bins (unique values joined)', () => {
     const bins: Bin[] = [
       {
-        id: '1',
-        layerId: 'l1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'c1',
+        id: binId('1'),
+        layerId: layerId('l1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: '',
         notes: 'Note 1',
       },
       {
-        id: '2',
-        layerId: 'l1',
-        x: 2,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'c1',
+        id: binId('2'),
+        layerId: layerId('l1'),
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: '',
         notes: 'Note 2',
       },
       {
-        id: '3',
-        layerId: 'l1',
-        x: 0,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'c1',
+        id: binId('3'),
+        layerId: layerId('l1'),
+        x: gridUnits(0),
+        y: gridUnits(2),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: '',
         notes: 'Note 1', // Duplicate
       },
@@ -637,38 +638,38 @@ describe('generatePrintList', () => {
   it('groups bins without custom properties together', () => {
     const bins: Bin[] = [
       {
-        id: '1',
-        layerId: 'l1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'c1',
+        id: binId('1'),
+        layerId: layerId('l1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: '',
         notes: '',
       },
       {
-        id: '2',
-        layerId: 'l1',
-        x: 2,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'c1',
+        id: binId('2'),
+        layerId: layerId('l1'),
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: '',
         notes: '',
       },
       {
-        id: '3',
-        layerId: 'l1',
-        x: 0,
-        y: 2,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'c1',
+        id: binId('3'),
+        layerId: layerId('l1'),
+        x: gridUnits(0),
+        y: gridUnits(2),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: '',
         notes: '',
         customProperties: { SKU: 'C3' },
@@ -685,27 +686,27 @@ describe('generatePrintList', () => {
   it('treats empty customProperties object as no custom properties', () => {
     const bins: Bin[] = [
       {
-        id: '1',
-        layerId: 'l1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'c1',
+        id: binId('1'),
+        layerId: layerId('l1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: '',
         notes: '',
         customProperties: {},
       },
       {
-        id: '2',
-        layerId: 'l1',
-        x: 2,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'c1',
+        id: binId('2'),
+        layerId: layerId('l1'),
+        x: gridUnits(2),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: '',
         notes: '',
       },
@@ -719,14 +720,14 @@ describe('generatePrintList', () => {
   it('filament estimate is independent of nozzle size (bin geometry is fixed)', () => {
     const bins: Bin[] = [
       {
-        id: '1',
-        layerId: 'l1',
-        x: 0,
-        y: 0,
-        width: 2,
-        depth: 2,
-        height: 3,
-        category: 'c1',
+        id: binId('1'),
+        layerId: layerId('l1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('c1'),
         label: '',
         notes: '',
       },
@@ -750,7 +751,7 @@ describe('getTotalPieces', () => {
     const rows: PrintRow[] = [
       {
         size: '2×2',
-        height: 3,
+        height: heightUnits(3),
         binCount: 2,
         pieces: [],
         totalPieces: 2,
@@ -763,7 +764,7 @@ describe('getTotalPieces', () => {
       },
       {
         size: '4×4',
-        height: 3,
+        height: heightUnits(3),
         binCount: 1,
         pieces: [],
         totalPieces: 4,
@@ -788,7 +789,7 @@ describe('getTotalBins', () => {
     const rows: PrintRow[] = [
       {
         size: '2×2',
-        height: 3,
+        height: heightUnits(3),
         binCount: 3,
         pieces: [],
         totalPieces: 3,
@@ -801,7 +802,7 @@ describe('getTotalBins', () => {
       },
       {
         size: '4×4',
-        height: 3,
+        height: heightUnits(3),
         binCount: 5,
         pieces: [],
         totalPieces: 5,
@@ -826,7 +827,7 @@ describe('getTotalFilament', () => {
     const rows: PrintRow[] = [
       {
         size: '2×2',
-        height: 3,
+        height: heightUnits(3),
         binCount: 1,
         pieces: [],
         totalPieces: 1,
@@ -839,7 +840,7 @@ describe('getTotalFilament', () => {
       },
       {
         size: '4×4',
-        height: 3,
+        height: heightUnits(3),
         binCount: 1,
         pieces: [],
         totalPieces: 1,
@@ -858,7 +859,7 @@ describe('getTotalFilament', () => {
     const rows: PrintRow[] = [
       {
         size: '2×2',
-        height: 3,
+        height: heightUnits(3),
         binCount: 1,
         pieces: [],
         totalPieces: 1,
@@ -871,7 +872,7 @@ describe('getTotalFilament', () => {
       },
       {
         size: '4×4',
-        height: 3,
+        height: heightUnits(3),
         binCount: 1,
         pieces: [],
         totalPieces: 1,

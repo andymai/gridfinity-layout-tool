@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { designId } from '@/core/types';
+import { designId, gridUnits } from '@/core/types';
 import type { Bin } from '@/core/types';
 import { createTestBin } from '@/test/testUtils';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
@@ -98,10 +98,10 @@ describe('planLabelPlateExport', () => {
 
   it('multiplies per-compartment plates by placed-bin quantity and collapses manifest duplicates', () => {
     const loaded: LoadedDesign[] = [{ id: designId('d1'), design: socketDesign('d1', 'Hardware') }];
-    const bins = [
+    const bins: Bin[] = [
       linkedBin('d1'),
-      { ...linkedBin('d1'), id: createTestBin({ x: 3 }).id, x: 3 },
-    ] as Bin[];
+      { ...linkedBin('d1'), id: createTestBin({ x: gridUnits(3) }).id, x: gridUnits(3) },
+    ];
 
     const plan = planLabelPlateExport(bins, loaded, BED, BED, 0.4);
     expect(plan.totalPlates).toBe(4);
@@ -178,10 +178,14 @@ describe('planLabelPlateExport', () => {
         }),
       },
     ];
-    const bins = [
+    const bins: Bin[] = [
       linkedBin('d1', { label: 'Nails' }),
-      { ...linkedBin('d1', { label: '' }), id: createTestBin({ x: 3 }).id, x: 3 },
-    ] as Bin[];
+      {
+        ...linkedBin('d1', { label: '' }),
+        id: createTestBin({ x: gridUnits(3) }).id,
+        x: gridUnits(3),
+      },
+    ];
 
     const plan = planLabelPlateExport(bins, loaded, BED, BED, 0.4);
     expect(plan.totalPlates).toBe(2);
@@ -195,11 +199,11 @@ describe('planLabelPlateExport', () => {
 
   it('packs plates within the usable bed and centers each sheet', () => {
     const loaded: LoadedDesign[] = [{ id: designId('d1'), design: socketDesign('d1', 'Hardware') }];
-    const bins = Array.from({ length: 6 }, (_, i) => ({
+    const bins: Bin[] = Array.from({ length: 6 }, (_, i) => ({
       ...linkedBin('d1'),
-      id: createTestBin({ x: i }).id,
-      x: i,
-    })) as Bin[];
+      id: createTestBin({ x: gridUnits(i) }).id,
+      x: gridUnits(i),
+    }));
 
     const plan = planLabelPlateExport(bins, loaded, BED, BED, 0.4);
     const sheets = plan.groups[0].sheets;
@@ -215,11 +219,11 @@ describe('planLabelPlateExport', () => {
 
   it('splits onto multiple sheets when the bed is small', () => {
     const loaded: LoadedDesign[] = [{ id: designId('d1'), design: socketDesign('d1', 'Hardware') }];
-    const bins = Array.from({ length: 10 }, (_, i) => ({
+    const bins: Bin[] = Array.from({ length: 10 }, (_, i) => ({
       ...linkedBin('d1'),
-      id: createTestBin({ x: i }).id,
-      x: i,
-    })) as Bin[];
+      id: createTestBin({ x: gridUnits(i) }).id,
+      x: gridUnits(i),
+    }));
 
     // Tiny 60mm bed: one 1U plate per row, few rows per sheet.
     const plan = planLabelPlateExport(bins, loaded, 60, 60, 0.4);
