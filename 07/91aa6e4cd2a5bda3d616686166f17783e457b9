@@ -1,0 +1,158 @@
+src/features/bin-inspector/components/Inspector/MultiBinInspector/MultiBinInspector.test.tsx
+  s_bb8f1233002a7e::t_49ec4eacd217d9 263-264
+  s_bb8f1233002a7e::t_c06d6f87967676 5-7,11-19,22-32,35-36,39,41-42,45-46,48
+  s_bb8f1233002a7e::t_4cdf0a887eebce 55
+  s_bb8f1233002a7e::t_c3ce0344e2dbea 297
+  s_bb8f1233002a7e::t_984fee22fb4ca8 58,64-65
+  s_bb8f1233002a7e::t_802d16dfa78b62 181-182
+  s_bb8f1233002a7e::t_54f9227819e597 205-206
+  s_bb8f1233002a7e::t_619d899f3617fa 130-131
+  s_bb8f1233002a7e::t_4d17d7ae0139c3 274-275
+  s_bb8f1233002a7e::t_a3ea8d8961523e 84
+  s_bb8f1233002a7e::t_170d1e1078f2ef 252-253
+  s_bb8f1233002a7e::t_c7a7d9a28ea656 71-72,82-83,85-87
+  s_bb8f1233002a7e::t_63bd66141fce83 348-349
+  s_bb8f1233002a7e::t_f00605ed992fff 165
+src/features/layers/components/LayerPanel/HeightCrossSectionDiagram.test.tsx
+  s_bb8f1233002a7e::t_445ee79e557fd0 247
+  s_bb8f1233002a7e::t_f0a73d5eb3e501 36,51,68,87,102,117,137,155,172,201,223,244,262,283,302,319,340,361,381,399,427,449,464,480,498,513,531,553,575,593,612,628
+  s_bb8f1233002a7e::t_e7c42b0580c0a6 305,322,343,364,516,534
+  s_bb8f1233002a7e::t_0c2b0aa455a072 5,9,11
+  s_bb8f1233002a7e::t_6a05d42e4c6c41 265
+src/features/cloud-share/components/SharedLayoutBanner/SharedLayoutBanner.test.tsx
+  s_bb8f1233002a7e::t_d415727f31d49a 142-147
+  s_bb8f1233002a7e::t_55a52a2369b453 10
+  s_bb8f1233002a7e::t_1e16654de35719 7
+  s_bb8f1233002a7e::t_2d6d9115dd9104 168,171,176-178
+  s_bb8f1233002a7e::t_0c75ca33ae3084 103
+src/features/bin-inspector/components/Inspector/BinLabelField/BinLabelField.test.tsx
+  s_bb8f1233002a7e::t_092232f472bafb 3-4,13,16-17
+src/features/command-palette/components/CommandPalette/CommandPalette.test.tsx
+  s_bb8f1233002a7e::t_329111d835a668 13-14
+  s_bb8f1233002a7e::t_c7208357504f08 49-50
+  s_bb8f1233002a7e::t_f71c74006de066 67
+  s_bb8f1233002a7e::t_6547424ee397b0 105-106
+  s_bb8f1233002a7e::t_9d7e11c49acd2c 29-36
+  s_bb8f1233002a7e::t_eda1831b7f8ee7 119
+src/features/categories/hooks/useCategoryManager.test.ts
+  s_bb8f1233002a7e::t_691a4babc09f2e 77,80
+  s_bb8f1233002a7e::t_390b5719ed5773 54-55,58
+  s_bb8f1233002a7e::t_2b98f162f4f20c 10-11
+  s_bb8f1233002a7e::t_7734e5302ccf27 36
+src/features/layers/components/ActiveLayerPanel/ActiveLayerPanel.test.tsx
+  s_bb8f1233002a7e::t_c7b1f9d7719ec5 358
+  s_bb8f1233002a7e::t_5cac424cb6e37d 225-231,248-254,284-290,303-309
+  s_bb8f1233002a7e::t_377cffce2070ea 95
+  s_bb8f1233002a7e::t_d96cc965f1bdd0 214
+  s_bb8f1233002a7e::t_76776264ae8ad5 52-57,63-64
+  s_bb8f1233002a7e::t_b0927a712a9983 8-9
+  s_bb8f1233002a7e::t_e8b451b8437eeb 259-265
+src/features/cloud-share/components/ShareButton/SharePopover.test.tsx
+  s_bb8f1233002a7e::t_d67a5a941bd646 5
+  s_bb8f1233002a7e::t_c485e1f55dec95 26
+  s_bb8f1233002a7e::t_6d01246c686cdb 75-80
+  s_bb8f1233002a7e::t_fd0f66744a9386 90
+  s_bb8f1233002a7e::t_3765cf66e0e9cc 54
+  s_bb8f1233002a7e::t_8d75da7b3396aa 36
+src/features/cloud-share/utils/cloudShare.test.ts
+  s_bb8f1233002a7e::t_3c55f62f056bc3 4,8-9,14-15,20-21
+src/features/drawer-shape/components/CornerCutsDialog/CornerCutsDialog.test.tsx
+  s_bb8f1233002a7e::t_00af40c6d58e2c 40-41
+  s_bb8f1233002a7e::t_69ea8fd6709348 13-16
+  s_bb8f1233002a7e::t_52c6cf47d9efbb 127-128
+src/features/cloud-share/components/ShareModal/ShareModal.test.tsx
+  s_bb8f1233002a7e::t_f8dc1103cfb651 8-9
+  s_bb8f1233002a7e::t_2114a87838aea1 71
+  s_bb8f1233002a7e::t_5245e203d3018a 35,38-43,46-53
+src/features/bin-inspector/hooks/useBinInspector.test.ts
+  s_bb8f1233002a7e::t_11ad0d41eddc54 10-18,27-34,50-51,56,80,96,126,128,138,141-142,144,159,175,191,207,222,224,236-240,243,245,270-274,277,279,296-300,303,305,321,323,336,340,357,361,381,384,411,413-414,417,432-433,435,448,450-455,458,479,481-490,493,510,512-521,524,543,561,576,596,621,640,657,659,674,676,702-707,710,731,734,755-762,764,790,809-810,814
+  s_bb8f1233002a7e::t_acf10ddb2833d0 829,846-847,851,867-868
+src/features/layers/components/LayerPanel/LayerPanel.test.tsx
+  s_bb8f1233002a7e::t_1d841d1c5c7c44 371
+  s_bb8f1233002a7e::t_bcbe453d38e0ee 7-8
+  s_bb8f1233002a7e::t_88c4dd27e811fb 133
+  s_bb8f1233002a7e::t_662bfb04e1787e 155-159,164,176-177,180,204-205,209,298-299,303,339-340,344,369-370,372,375
+src/features/bin-inspector/components/Inspector/ExtendToMarginToggle/ExtendToMarginToggle.test.tsx
+  s_bb8f1233002a7e::t_73576eecbfd009 48,50
+  s_bb8f1233002a7e::t_8165bdec06cb1b 18-23
+  s_bb8f1233002a7e::t_7b8614c2e67c8d 5
+  s_bb8f1233002a7e::t_dfd27251d5a478 31-34
+  s_bb8f1233002a7e::t_776e7b9209112a 61,73-77,88
+src/features/categories/components/CategoriesPanel/CategoriesPanel.test.tsx
+  s_bb8f1233002a7e::t_c6d4623bc9e06d 307
+  s_bb8f1233002a7e::t_73ce32355e2d6c 63-66,68-69,71,77
+  s_bb8f1233002a7e::t_b977040b136c1c 8
+  s_bb8f1233002a7e::t_1e3ecb5b6e0636 337-343
+  s_bb8f1233002a7e::t_dea305a8fced5e 124-130,281-287,326-332
+src/features/drawer-shape/utils/traceBinFootprint.test.ts
+  s_bb8f1233002a7e::t_ffc76fcf6f7dd7 4,10,12-13,16-31,40-50,58-67
+src/features/drawer-shape/components/ShapeEditorDialog/ShapeEditorDialog.test.tsx
+  s_bb8f1233002a7e::t_39aa4fe8ff14cb 63-64
+  s_bb8f1233002a7e::t_eabc87e757a904 5-6,14-17
+  s_bb8f1233002a7e::t_10e6b84a7ceb10 85-93
+src/features/command-palette/components/CommandPaletteFooter/CommandPaletteFooter.test.tsx
+  s_bb8f1233002a7e::t_035e15b487f35f 27-28
+src/features/cloud-share/hooks/useOwnedShareSync.test.ts
+  s_bb8f1233002a7e::t_9313407956574c 33-35
+  s_bb8f1233002a7e::t_192c6353442271 50
+  s_bb8f1233002a7e::t_9ea971eb759d53 389
+  s_bb8f1233002a7e::t_bddca78f009656 10
+  s_bb8f1233002a7e::t_e46001c7675846 73,75
+  s_bb8f1233002a7e::t_538019160f3ee1 408
+  s_bb8f1233002a7e::t_239da6359d608c 74
+src/features/layers/hooks/useLayerFillActions.test.ts
+  s_bb8f1233002a7e::t_bcc7bf564d1c50 10-11
+  s_bb8f1233002a7e::t_d282374742b6bf 25
+  s_bb8f1233002a7e::t_4156ff62ff41b9 92
+src/features/bin-inspector/components/Inspector/ExpandedFootprint/ExpandedFootprint.test.tsx
+  s_bb8f1233002a7e::t_b70f51c090dafd 18-24
+  s_bb8f1233002a7e::t_4e4db48b09d82f 70
+  s_bb8f1233002a7e::t_73fe081db96197 5
+  s_bb8f1233002a7e::t_edd22dcf2773c2 14
+src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.test.tsx
+  s_bb8f1233002a7e::t_d45c411fe33711 415
+  s_bb8f1233002a7e::t_818a853782aa3a 295
+  s_bb8f1233002a7e::t_c0bd0d97d3e0fe 76-77,87-88,90-92
+  s_bb8f1233002a7e::t_bcb6383529a9be 172-173
+  s_bb8f1233002a7e::t_3144b34cc60ffd 5,7-9
+  s_bb8f1233002a7e::t_a309be9515fdbf 32-40,43-51,53
+  s_bb8f1233002a7e::t_abee5ab301b625 60
+  s_bb8f1233002a7e::t_768949205361b2 63,69-70
+  s_bb8f1233002a7e::t_01eb10f645a303 320
+  s_bb8f1233002a7e::t_5685bb4706d786 426,435
+  s_bb8f1233002a7e::t_2532690c3c6b66 217
+  s_bb8f1233002a7e::t_6a33cad71873c0 311
+  s_bb8f1233002a7e::t_bb2edc2fe9aadb 89
+src/features/bin-inspector/hooks/useLabelSuggestions.test.tsx
+  s_bb8f1233002a7e::t_af3f47976ba049 3-4,8,11-12
+src/features/cloud-share/hooks/useCloudShare.test.ts
+  s_bb8f1233002a7e::t_f0513545867b7e 56-58
+  s_bb8f1233002a7e::t_bf897f609cc2b1 42
+  s_bb8f1233002a7e::t_314ab28cc48892 11
+src/features/layers/utils/layerAutoExpansion.test.ts
+  s_bb8f1233002a7e::t_8fa762c6707b01 3,8-14
+  s_bb8f1233002a7e::t_c20e66166337e3 15,23,33,47,61,77,92,105,119,132,145,159,170,184,194,196,206
+src/features/cloud-share/components/ShareButton/ShareButton.test.tsx
+  s_bb8f1233002a7e::t_cebfeb44b76fef 61
+  s_bb8f1233002a7e::t_8872123413154d 122
+  s_bb8f1233002a7e::t_b307f03de0cf81 4
+  s_bb8f1233002a7e::t_4376b02389c465 42
+scripts/test-type-baseline.json
+  s_bb8f1233002a7e::t_20eed128e84415 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "0791aa6e4cd2a5bda3d616686166f17783e457b9",
+  "prompts": {},
+  "sessions": {
+    "s_bb8f1233002a7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6fc3935a-5ef6-4af4-95ab-e869e5faa058",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
