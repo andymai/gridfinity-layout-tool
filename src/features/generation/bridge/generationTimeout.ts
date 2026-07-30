@@ -13,6 +13,7 @@
 import type { ResolvedBaseplateParams, BinParams } from '@/shared/types/bin';
 import { isKumikoPattern } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
+import { resolveOverhang } from '@/shared/utils/overhang';
 
 /** Minimum timeout for trivial bins (no heavy features). */
 export const BASE_TIMEOUT_MS = 30_000;
@@ -299,10 +300,14 @@ function binRawBudgetMs(params: BinParams): number {
     timeout += Math.ceil(safeWidth) * Math.ceil(safeDepth) * FLOOR_PATTERN_MS_PER_CELL;
   }
 
-  // Mirrors the worker's gate: the taper only reaches the expensive multi-cavity
-  // path on a hollow bin with more than one compartment.
+  // The taper only reaches the expensive multi-cavity path on a hollow bin with
+  // more than one compartment. Resolved through the same helper the worker uses
+  // rather than re-read off the raw config: that is what makes a polygon mask
+  // (which drops the overhang entirely) and a legacy taper with `enabled`
+  // absent-but-active agree with what actually gets built.
   const compartmentCount = new Set(params.compartments.cells).size;
-  const taperOn = params.overhang?.taper?.enabled === true && params.overhang.enabled !== false;
+  const taperOn =
+    resolveOverhang(isPartialMask(params.cellMask) ? undefined : params.overhang).taper !== null;
   if (taperOn && !params.base.solid && compartmentCount > 1) {
     timeout += TAPER_MULTI_COMPARTMENT_BONUS_MS;
     timeout += compartmentCount * TAPER_MS_PER_COMPARTMENT;
