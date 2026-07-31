@@ -3017,5 +3017,5 @@
   "inspector.taper.height": "Висота звуження",
   "inspector.taper.flare": "Розширення",
   "inspector.taper.flare.hint": "Додаткова ширина біля верхнього краю, поза межами відступу шухляди, щоб контейнер сягав вигнутих стінок шухляди.",
-  "binDesigner.overhang.taper.singleHollowOnly": "Звуження доступне лише для порожніх контейнерів з одним відділенням."
+  "binDesigner.overhang.taper.hollowOnly": "Звуження доступне лише для порожнистих контейнерів."
 }

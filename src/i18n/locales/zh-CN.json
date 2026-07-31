@@ -3017,5 +3017,5 @@
   "inspector.taper.height": "锥化高度",
   "inspector.taper.flare": "外扩",
   "inspector.taper.flare.hint": "在抽屉边距之外增加顶部宽度，让收纳盒延伸至抽屉的弧形侧壁。",
-  "binDesigner.overhang.taper.singleHollowOnly": "锥化仅适用于中空的单隔层收纳盒。"
+  "binDesigner.overhang.taper.hollowOnly": "倾斜仅适用于中空收纳盒。"
 }

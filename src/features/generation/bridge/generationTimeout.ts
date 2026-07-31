@@ -13,6 +13,7 @@
 import type { ResolvedBaseplateParams, BinParams } from '@/shared/types/bin';
 import { isKumikoPattern } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
+import { resolveOverhang } from '@/shared/utils/overhang';
 
 /** Minimum timeout for trivial bins (no heavy features). */
 export const BASE_TIMEOUT_MS = 30_000;
@@ -90,6 +91,26 @@ export const FLOOR_PATTERN_BONUS_MS = 15_000;
  * footprint area directly with no floor — even a 1x1 bin pays for its panel.
  */
 export const FLOOR_PATTERN_MS_PER_CELL = 2_000;
+
+/**
+ * Bonus for a wall taper on a multi-compartment bin (#3017).
+ *
+ * The multi-cavity path cuts compartments out of a *lofted* outer rather than a
+ * prism, and the perimeter ones are clipped to the tapered inner envelope
+ * first — both more expensive than the flat path. Measured on a 4x4u bin with a
+ * 12x12 grid: 1.9s flat, 5.1s chamfer, 10.9s fillet (fillet samples up to 16
+ * sections against chamfer's 2, so it is the worst case).
+ *
+ * That already fits the base budget; this is headroom for larger footprints,
+ * where the loft grows with the perimeter.
+ *
+ * Single-cavity tapers get nothing — they build one loft and are not measurably
+ * slower than the shelled path.
+ */
+export const TAPER_MULTI_COMPARTMENT_BONUS_MS = 10_000;
+
+/** Per-compartment bonus for a tapered multi-compartment bin. */
+export const TAPER_MS_PER_COMPARTMENT = 100;
 
 /**
  * Bonus per 2 height units above the reference height.
@@ -277,6 +298,19 @@ function binRawBudgetMs(params: BinParams): number {
   ) {
     timeout += FLOOR_PATTERN_BONUS_MS;
     timeout += Math.ceil(safeWidth) * Math.ceil(safeDepth) * FLOOR_PATTERN_MS_PER_CELL;
+  }
+
+  // The taper only reaches the expensive multi-cavity path on a hollow bin with
+  // more than one compartment. Resolved through the same helper the worker uses
+  // rather than re-read off the raw config: that is what makes a polygon mask
+  // (which drops the overhang entirely) and a legacy taper with `enabled`
+  // absent-but-active agree with what actually gets built.
+  const compartmentCount = new Set(params.compartments.cells).size;
+  const taperOn =
+    resolveOverhang(isPartialMask(params.cellMask) ? undefined : params.overhang).taper !== null;
+  if (taperOn && !params.base.solid && compartmentCount > 1) {
+    timeout += TAPER_MULTI_COMPARTMENT_BONUS_MS;
+    timeout += compartmentCount * TAPER_MS_PER_COMPARTMENT;
   }
 
   const heightOverFloor = Math.max(0, safeHeight - HEIGHT_BONUS_FLOOR_UNITS);

@@ -18,6 +18,8 @@ import {
   DIVIDER_PATTERN_MS_PER_SEGMENT,
   KUMIKO_DIVIDER_MS_PER_SEGMENT,
   FLOOR_PATTERN_BONUS_MS,
+  TAPER_MULTI_COMPARTMENT_BONUS_MS,
+  TAPER_MS_PER_COMPARTMENT,
   FLOOR_PATTERN_MS_PER_CELL,
   MAX_TIMEOUT_MS,
   EXPORT_TIMEOUT_MULTIPLIER,
@@ -321,6 +323,100 @@ describe('computeGenerationTimeoutMs', () => {
       })
     );
     expect(on - off).toBe(FLOOR_PATTERN_BONUS_MS + 6 * FLOOR_PATTERN_MS_PER_CELL);
+  });
+
+  it('grants a flat plus per-compartment bonus for a tapered multi-compartment bin', () => {
+    const compartments = {
+      ...DEFAULT_BIN_PARAMS.compartments,
+      cols: 2,
+      rows: 2,
+      cells: [0, 1, 2, 3],
+    };
+    const taper = {
+      enabled: true,
+      profile: 'chamfer' as const,
+      bandHeight: 8,
+      left: 5,
+      right: 5,
+      front: 5,
+      back: 5,
+    };
+    const off = computeGenerationTimeoutMs(params({ compartments }));
+    const on = computeGenerationTimeoutMs(
+      params({
+        compartments,
+        overhang: { left: 5, right: 5, front: 5, back: 5, taper },
+      })
+    );
+    expect(on - off).toBe(TAPER_MULTI_COMPARTMENT_BONUS_MS + 4 * TAPER_MS_PER_COMPARTMENT);
+  });
+
+  it('grants the taper bonus to a legacy config with `enabled` absent but sides set', () => {
+    const compartments = {
+      ...DEFAULT_BIN_PARAMS.compartments,
+      cols: 2,
+      rows: 1,
+      cells: [0, 1],
+    };
+    const off = computeGenerationTimeoutMs(params({ compartments }));
+    const on = computeGenerationTimeoutMs(
+      params({
+        compartments,
+        overhang: {
+          left: 5,
+          right: 5,
+          front: 5,
+          back: 5,
+          // No `enabled` — resolveTaper treats a non-zero side as active.
+          taper: { profile: 'chamfer', bandHeight: 8, left: 5, right: 5, front: 5, back: 5 },
+        },
+      })
+    );
+    expect(on - off).toBe(TAPER_MULTI_COMPARTMENT_BONUS_MS + 2 * TAPER_MS_PER_COMPARTMENT);
+  });
+
+  it('grants no taper bonus to a polygon-mask bin, which drops the overhang', () => {
+    const compartments = {
+      ...DEFAULT_BIN_PARAMS.compartments,
+      cols: 2,
+      rows: 1,
+      cells: [0, 1],
+    };
+    const taper = {
+      enabled: true,
+      profile: 'chamfer' as const,
+      bandHeight: 8,
+      left: 5,
+      right: 5,
+      front: 5,
+      back: 5,
+    };
+    const overhang = { left: 5, right: 5, front: 5, back: 5, taper };
+    const cellMask = {
+      cols: 4,
+      rows: 4,
+      cells: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0] as (0 | 1)[],
+    };
+    const off = computeGenerationTimeoutMs(params({ compartments, cellMask }));
+    const on = computeGenerationTimeoutMs(params({ compartments, cellMask, overhang }));
+    expect(on).toBe(off);
+  });
+
+  it('grants no taper bonus to a single-cavity bin, which builds only one loft', () => {
+    const taper = {
+      enabled: true,
+      profile: 'chamfer' as const,
+      bandHeight: 8,
+      left: 5,
+      right: 5,
+      front: 5,
+      back: 5,
+    };
+    const off = computeGenerationTimeoutMs(params({}));
+    const on = computeGenerationTimeoutMs(
+      params({ overhang: { left: 5, right: 5, front: 5, back: 5, taper } })
+    );
+    expect(on).toBe(off);
   });
 
   it('grants no floor-pattern bonus for bases the worker never patterns', () => {

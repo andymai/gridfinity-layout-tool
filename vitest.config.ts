@@ -42,6 +42,12 @@ const domIncludes = [
 // still executes all three projects.
 const generatorIncludes = ['src/features/generation/worker/generators/**/*.test.ts'];
 
+// Tests that need a real Redis rather than a hand-rolled ioredis mock — a Lua
+// script's behaviour cannot be asserted against a mock. Isolated into their own
+// project so the default `unit` run stays dependency-free; CI supplies
+// REDIS_TEST_URL from a service container.
+const integrationIncludes = ['api/**/*.integration.test.ts'];
+
 export default defineConfig({
   plugins: [react()],
   // Build-time version constants (provided by versionPlugin in the real build).
@@ -110,7 +116,7 @@ export default defineConfig({
             'scripts/**/*.test.ts',
             'packages/**/*.test.ts',
           ],
-          exclude: [...sharedExclude, ...domIncludes, ...generatorIncludes],
+          exclude: [...sharedExclude, ...domIncludes, ...generatorIncludes, ...integrationIncludes],
         },
       },
       {
@@ -130,6 +136,16 @@ export default defineConfig({
           environment: 'node',
           setupFiles: ['./src/test/setup.ts'],
           include: generatorIncludes,
+          exclude: sharedExclude,
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'integration',
+          environment: 'node',
+          setupFiles: ['./src/test/setup.ts'],
+          include: integrationIncludes,
           exclude: sharedExclude,
         },
       },

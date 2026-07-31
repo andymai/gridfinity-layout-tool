@@ -3017,5 +3017,5 @@
   "inspector.taper.height": "Altura del estrechamiento",
   "inspector.taper.flare": "Ensanche",
   "inspector.taper.flare.hint": "Anchura adicional en el borde superior, más allá del margen del cajón, para que la caja alcance los lados curvos del cajón.",
-  "binDesigner.overhang.taper.singleHollowOnly": "El estrechamiento solo está disponible en compartimentos huecos de un solo compartimento."
+  "binDesigner.overhang.taper.hollowOnly": "El estrechamiento solo está disponible en cajas huecas."
 }

@@ -81,8 +81,53 @@ interface RateLimitResult {
   retryAfterSeconds?: number;
 }
 
+/**
+ * Sliding-window check-and-consume as a single command.
+ *
+ * This previously ran as four sequential awaits (ZCOUNT, ZADD,
+ * ZREMRANGEBYSCORE, EXPIRE). Beyond the four round trips, the gap between
+ * reading the count and writing the entry let concurrent callers each observe
+ * a below-limit count and all be admitted. A script closes that window.
+ *
+ * The denial branch reads the oldest entry *inside* the window rather than the
+ * oldest overall: cleanup only runs on the allow path, so a key under sustained
+ * denial retains entries older than `windowStart`, and using one of those would
+ * produce a resetAt in the past.
+ *
+ * The window floor is exclusive so it agrees with the inclusive prune below.
+ * Counting an entry at exactly `windowStart` while the same call deletes it
+ * would let a scope be denied on the strength of a slot it just gave up.
+ *
+ * Returns [allowed, remaining, oldestScoreInWindow].
+ */
+const SLIDING_WINDOW_LUA = `
+local floor = '(' .. ARGV[1]
+local count = redis.call('ZCOUNT', KEYS[1], floor, '+inf')
+local limit = tonumber(ARGV[2])
+if count >= limit then
+  local oldest = redis.call('ZRANGEBYSCORE', KEYS[1], floor, '+inf', 'WITHSCORES', 'LIMIT', 0, 1)
+  return {0, 0, oldest[2] or '0'}
+end
+redis.call('ZADD', KEYS[1], ARGV[3], ARGV[4])
+redis.call('ZREMRANGEBYSCORE', KEYS[1], 0, ARGV[1])
+redis.call('EXPIRE', KEYS[1], ARGV[5])
+return {1, limit - count - 1, '0'}
+`;
+
+/** `defineCommand` attaches the script as a method; declare its shape for callers. */
+interface RateLimitRedis extends Redis {
+  slidingWindowRateLimit(
+    key: string,
+    windowStart: string,
+    limit: string,
+    now: string,
+    entryId: string,
+    ttlSeconds: string
+  ): Promise<[number, number, string]>;
+}
+
 // Lazy-initialize Redis connection
-let redis: Redis | null = null;
+let redis: RateLimitRedis | null = null;
 
 export function getRedis(): Redis | null {
   if (!process.env.REDIS_URL) {
@@ -90,12 +135,19 @@ export function getRedis(): Redis | null {
   }
   if (!redis) {
     const urlConfig = parseRedisUrl(process.env.REDIS_URL);
-    redis = new Redis({
+    const client = new Redis({
       ...urlConfig,
       maxRetriesPerRequest: 1,
       connectTimeout: 5000,
       commandTimeout: 5000,
     });
+    // ioredis sends EVALSHA and transparently re-loads the body on NOSCRIPT,
+    // so a Redis restart or SCRIPT FLUSH recovers without any handling here.
+    client.defineCommand('slidingWindowRateLimit', {
+      numberOfKeys: 1,
+      lua: SLIDING_WINDOW_LUA,
+    });
+    redis = client as RateLimitRedis;
   }
   return redis;
 }
@@ -132,16 +184,22 @@ export async function checkRateLimit(
   }
 
   try {
-    // Get current count within window
-    const count = await client.zcount(key, windowStart, '+inf');
+    const entryId = `${now}:${Math.random().toString(36).slice(2, 8)}`;
+    const [allowed, remaining, oldestScore] = await (
+      client as RateLimitRedis
+    ).slidingWindowRateLimit(
+      key,
+      String(windowStart),
+      String(config.limit),
+      String(now),
+      entryId,
+      String(config.windowSeconds + 60)
+    );
 
-    if (count >= config.limit) {
-      // Get oldest entry to calculate reset time
-      const oldest = await client.zrange(key, 0, 0, 'WITHSCORES');
+    if (allowed === 0) {
+      const oldest = Number(oldestScore);
       const resetAt =
-        oldest.length > 1
-          ? Math.ceil(Number(oldest[1]) + config.windowSeconds)
-          : now + config.windowSeconds;
+        oldest > 0 ? Math.ceil(oldest + config.windowSeconds) : now + config.windowSeconds;
 
       return {
         allowed: false,
@@ -151,17 +209,9 @@ export async function checkRateLimit(
       };
     }
 
-    // Add new entry with current timestamp as score
-    const entryId = `${now}:${Math.random().toString(36).slice(2, 8)}`;
-    await client.zadd(key, now, entryId);
-
-    // Clean up old entries and set TTL
-    await client.zremrangebyscore(key, 0, windowStart);
-    await client.expire(key, config.windowSeconds + 60);
-
     return {
       allowed: true,
-      remaining: config.limit - count - 1,
+      remaining,
       resetAt: now + config.windowSeconds,
     };
   } catch (error) {

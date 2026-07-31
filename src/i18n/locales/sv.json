@@ -3017,5 +3017,5 @@
   "inspector.taper.height": "Fashöjd",
   "inspector.taper.flare": "Utvidgning",
   "inspector.taper.flare.hint": "Extra bredd vid överkanten, utöver lådmarginalen, så att facket når in i lådans böjda sidor.",
-  "binDesigner.overhang.taper.singleHollowOnly": "Fasning är endast tillgänglig för ihåliga fack med ett enda fack."
+  "binDesigner.overhang.taper.hollowOnly": "Avfasning är endast tillgänglig för ihåliga fack."
 }

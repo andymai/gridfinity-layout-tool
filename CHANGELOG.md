@@ -1,5 +1,26 @@
 # Changelog
 
+## [4.332.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.332.1...gridfinity-layout-tool-v4.332.2) (2026-07-31)
+
+
+### Performance
+
+* **rate-limit:** collapse the sliding window into one atomic Lua call ([#3022](https://github.com/andymai/gridfinity-layout-tool/issues/3022)) ([9901991](https://github.com/andymai/gridfinity-layout-tool/commit/9901991fe9b6fe8ffdbee004ad3a507ce6541a8c))
+
+## [4.332.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.332.0...gridfinity-layout-tool-v4.332.1) (2026-07-30)
+
+
+### Bug Fixes
+
+* print fit-sample coupon labels on a 0.4mm nozzle (connector + label-plate) ([#3019](https://github.com/andymai/gridfinity-layout-tool/issues/3019)) ([0618a07](https://github.com/andymai/gridfinity-layout-tool/commit/0618a071dc48d12892cbc685d50a301eccd4f4c4))
+
+## [4.332.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.331.1...gridfinity-layout-tool-v4.332.0) (2026-07-30)
+
+
+### Features
+
+* support the wall taper on multi-compartment bins ([#3017](https://github.com/andymai/gridfinity-layout-tool/issues/3017)) ([#3021](https://github.com/andymai/gridfinity-layout-tool/issues/3021)) ([c499894](https://github.com/andymai/gridfinity-layout-tool/commit/c49989464cff3cea2df3fdc442e605c7dfbd6ffd))
+
 ## [4.331.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.331.0...gridfinity-layout-tool-v4.331.1) (2026-07-30)
 
 
