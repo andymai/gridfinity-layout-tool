@@ -174,3 +174,7 @@ Share creation uses `put({ allowOverwrite: false })` as an atomic CAS lock — c
 7. **Liveblocks optional** — fails gracefully if `LIVEBLOCKS_SECRET_KEY` not set
 8. **Content filter minimal** — ~30 term blocklist; production should supplement with external service
 9. **IP hashing for privacy** — rate limiter hashes IP with SHA-256 before using as Redis key
+10. **Rate limiting is one atomic call** — check-and-consume runs as a Lua script, so concurrent
+    requests can't each read a below-limit count and all be admitted. Its behaviour is covered by
+    `api/lib/rateLimit.integration.test.ts` against a real Redis; a mocked ioredis cannot execute
+    the script, so changes to it are unverified by the unit suites.
