@@ -52,9 +52,19 @@ export interface ScoopPlacement {
   readonly runSign: 1 | -1;
 }
 
-/** Normalize a possibly-legacy scoop config to a concrete side. */
+const SCOOP_SIDES: readonly ScoopSide[] = ['front', 'back', 'left', 'right'];
+
+/**
+ * Normalize a scoop config to a concrete side.
+ *
+ * Legacy designs carry no `side` and were all front-scooped. The server passes
+ * `scoop` through without deep validation, so an unknown value can reach here
+ * from a corrupt or crafted payload; it falls back to 'front' rather than
+ * dropping out of `resolveScoopPlacement`'s switch as undefined.
+ */
 export function resolveScoopSide(scoop: ScoopConfig): ScoopSide {
-  return scoop.side ?? 'front';
+  const side = scoop.side;
+  return side !== undefined && SCOOP_SIDES.includes(side) ? side : 'front';
 }
 
 /**

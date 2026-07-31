@@ -245,6 +245,20 @@ describe('resolveScoopSide', () => {
   it('honors an explicit side', () => {
     expect(resolveScoopSide(scoop({ side: 'left' }))).toBe('left');
   });
+
+  it('falls back to front for a value the server never validated', () => {
+    // `scoop` is passed through the API without deep validation, so an
+    // arbitrary string can reach here and must not fall out of the switch.
+    const corrupt = { enabled: true, radius: 'auto', side: 'sideways' } as unknown as ScoopConfig;
+    expect(resolveScoopSide(corrupt)).toBe('front');
+    expect(
+      resolveScoopPlacement(
+        resolveScoopSide(corrupt),
+        { minCol: 0, maxCol: 0, minRow: 0, maxRow: 0 },
+        { cols: 1, rows: 1, innerW: 40, innerD: 40 }
+      )
+    ).toBeDefined();
+  });
 });
 
 describe('resolveScoopPlacement', () => {
