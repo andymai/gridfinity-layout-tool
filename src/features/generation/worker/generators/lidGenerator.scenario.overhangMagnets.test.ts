@@ -165,11 +165,11 @@ describe('magnetic lid with asymmetric overhang (#3048)', () => {
 
   it('leaves the un-overhung lid geometry unchanged', async () => {
     const { generateLid } = await import('./lidOrchestrator');
-    const off = generateLid({ ...makeParams(), overhang: makeParams().overhang });
-    const zeroed = generateLid(makeParams({ enabled: false }));
-    expect(off).not.toBeNull();
-    expect(zeroed).not.toBeNull();
-    expect(zeroed?.triangleCount).toBe(off?.triangleCount);
+    const enabledAllZero = generateLid(makeParams());
+    const disabled = generateLid(makeParams({ enabled: false }));
+    expect(enabledAllZero).not.toBeNull();
+    expect(disabled).not.toBeNull();
+    expect(enabledAllZero?.triangleCount).toBe(disabled?.triangleCount);
   });
 
   it('builds a valid bin whose retention pads survive the overhang', async () => {
