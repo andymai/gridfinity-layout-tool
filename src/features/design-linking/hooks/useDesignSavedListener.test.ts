@@ -89,6 +89,7 @@ function setupStores(bins: Bin[], registryEntries: CustomBinRef[] = []) {
     pendingCreateDesign: null,
     pendingLinkDesign: null,
     pendingDeleteWarning: null,
+    declinedSyncs: {},
   });
 
   vi.mocked(MutationsContext.useMutations).mockReturnValue({
@@ -313,6 +314,114 @@ describe('useDesignSavedListener', () => {
       });
 
       expect(mockUpdateBin).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('rotation and declines (#3040)', () => {
+    it('leaves a bin alone when the design is its transpose', () => {
+      // The reporter's case: an 11.5x1.5 design against a 1.5x11.5 bin. The
+      // preview draws it rotated, so nothing needs syncing.
+      const bins = [
+        makeBin({
+          id: binId('bin-1'),
+          width: gridUnits(1.5),
+          depth: gridUnits(11.5),
+          height: heightUnits(7),
+          linkedDesignId: designId('design-1'),
+        }),
+      ];
+      const registry = [
+        makeRegistryEntry({ id: designId('design-1'), width: 11.5, depth: 1.5, height: 7 }),
+      ];
+      const { mockUpdateBin, mockShowSyncDialog } = setupStores(bins, registry);
+
+      renderHook(() => useDesignSavedListener());
+
+      expect(mockUpdateBin).not.toHaveBeenCalled();
+      expect(mockShowSyncDialog).not.toHaveBeenCalled();
+    });
+
+    it('never offers a rotation-fitting bin for sync alongside a mismatched one', () => {
+      // Syncing rewrites a bin to the design's axis order, so including a bin
+      // that already fits rotated could resize it out of the drawer and unlink
+      // it. Only genuinely mismatched bins may reach the prompt.
+      const bins = [
+        makeBin({
+          id: binId('rotated-fits'),
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(1.5),
+          depth: gridUnits(9),
+          height: heightUnits(7),
+          linkedDesignId: designId('design-1'),
+        }),
+        makeBin({
+          id: binId('needs-sync'),
+          x: gridUnits(4),
+          y: gridUnits(4),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(7),
+          linkedDesignId: designId('design-1'),
+        }),
+      ];
+      const registry = [
+        makeRegistryEntry({ id: designId('design-1'), width: 9, depth: 1.5, height: 7 }),
+      ];
+      const { mockShowSyncDialog } = setupStores(bins, registry);
+
+      renderHook(() => useDesignSavedListener());
+
+      expect(mockShowSyncDialog).toHaveBeenCalledTimes(1);
+      const [binIds, , , , eligibility] = mockShowSyncDialog.mock.calls[0];
+      expect(binIds).toEqual([binId('needs-sync')]);
+      expect(eligibility).toHaveLength(1);
+    });
+
+    it('skips the prompt for a design + dimensions already declined', () => {
+      const bins = [
+        makeBin({
+          id: binId('bin-1'),
+          x: gridUnits(8),
+          y: gridUnits(8),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(4),
+          linkedDesignId: designId('design-1'),
+        }),
+      ];
+      const registry = [
+        makeRegistryEntry({ id: designId('design-1'), width: 5, depth: 5, height: 4 }),
+      ];
+      const { mockShowSyncDialog } = setupStores(bins, registry);
+      useLinkingStore.setState({ declinedSyncs: { 'design-1': '5x5x4' } });
+
+      renderHook(() => useDesignSavedListener());
+
+      expect(mockShowSyncDialog).not.toHaveBeenCalled();
+    });
+
+    it('still prompts when the design moved on from the declined dimensions', () => {
+      const bins = [
+        makeBin({
+          id: binId('bin-1'),
+          x: gridUnits(8),
+          y: gridUnits(8),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(4),
+          linkedDesignId: designId('design-1'),
+        }),
+      ];
+      const registry = [
+        makeRegistryEntry({ id: designId('design-1'), width: 5, depth: 5, height: 4 }),
+      ];
+      const { mockShowSyncDialog } = setupStores(bins, registry);
+      useLinkingStore.setState({ declinedSyncs: { 'design-1': '6x6x4' } });
+
+      renderHook(() => useDesignSavedListener());
+
+      expect(mockShowSyncDialog).toHaveBeenCalledTimes(1);
     });
   });
 });

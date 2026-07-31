@@ -91,13 +91,17 @@ export function useDesignSavedListener(): void {
         event.dimensions,
         extractBinDimensions(binsNeedingSync[0])
       );
-      const binIds = linkedBins.map((b) => b.id);
+      // Scope the prompt to the bins that actually need it. A bin that already
+      // fits rotated must not be offered up: syncing rewrites it to the design's
+      // axis order, which is a real resize that can fail eligibility and unlink
+      // a bin that was fine (#3040).
+      const binIds = binsNeedingSync.map((b) => b.id);
 
       const binsHaveVaryingDimensions =
-        linkedBins.length > 1 &&
-        linkedBins.some((bin) => {
+        binsNeedingSync.length > 1 &&
+        binsNeedingSync.some((bin) => {
           const dims = extractBinDimensions(bin);
-          const first = extractBinDimensions(linkedBins[0]);
+          const first = extractBinDimensions(binsNeedingSync[0]);
           return (
             dims.width !== first.width || dims.depth !== first.depth || dims.height !== first.height
           );
@@ -111,8 +115,7 @@ export function useDesignSavedListener(): void {
         event.designId,
         designName,
         comparison,
-        // Re-check all linked bins (not just those needing sync) for the dialog
-        checkBatchSyncEligibility(linkedBins, event.dimensions, layout),
+        checkBatchSyncEligibility(binsNeedingSync, event.dimensions, layout),
         binsHaveVaryingDimensions
       );
     }
