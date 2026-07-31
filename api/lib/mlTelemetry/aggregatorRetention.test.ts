@@ -378,5 +378,6 @@ describe('aggregator retention coverage', () => {
     expect(unresolved).toEqual(['key']);
     expect(resolved.length).toBeGreaterThan(0);
     expect(resolved.filter((key) => !key.startsWith('ml:'))).toEqual([]);
+    expect(resolved.filter((key) => ML_LIFETIME_KEYS.has(key))).toEqual([]);
   });
 });
