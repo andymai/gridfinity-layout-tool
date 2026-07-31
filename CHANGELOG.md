@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.336.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.335.0...gridfinity-layout-tool-v4.336.0) (2026-07-31)
+
+
+### Features
+
+* **scan:** enter the reference card's measured size ([#3038](https://github.com/andymai/gridfinity-layout-tool/issues/3038)) ([#3047](https://github.com/andymai/gridfinity-layout-tool/issues/3047)) ([4633e3d](https://github.com/andymai/gridfinity-layout-tool/commit/4633e3d550da93830b45078aae37c950cfd51d4d))
+
 ## [4.335.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.334.1...gridfinity-layout-tool-v4.335.0) (2026-07-31)
 
 
