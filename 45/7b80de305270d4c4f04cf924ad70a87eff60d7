@@ -1,0 +1,79 @@
+src/features/generation/worker/generators/boxBuilder.ts
+  s_e7a4c2a1dceca8::t_11fb1f001745cb 283-301,303-335,339-348
+  s_e7a4c2a1dceca8::t_0e30e8a47c9b48 17
+  s_e7a4c2a1dceca8::t_e90f43d8d0f8d7 49-54
+  s_e7a4c2a1dceca8::t_2cdd3c23f51136 302
+  s_e7a4c2a1dceca8::t_e1fdfc3983431a 336-338
+src/i18n/locales/ja.json
+  s_e7a4c2a1dceca8::t_f89d6c061f554e 3019
+src/features/generation/worker/generators/taperedOuter.ts
+  s_e7a4c2a1dceca8::t_ca8886f3f18616 50-67,75,128,134-155
+  s_e7a4c2a1dceca8::t_c99e9aa94f1739 190-253
+  s_e7a4c2a1dceca8::t_942266fa67fab2 156
+src/i18n/locales/sv.json
+  s_e7a4c2a1dceca8::t_f89d6c061f554e 3019
+src/features/generation/worker/generators/pipeline/context.ts
+  s_e7a4c2a1dceca8::t_be9ea517aea883 203-209
+  s_e7a4c2a1dceca8::t_5ccc1138091de0 80
+src/features/bin-designer/components/panel/OverhangSection/OverhangSection.test.tsx
+  s_e7a4c2a1dceca8::t_3cc655b753902c 276,286
+src/i18n/locales/pt-BR.json
+  s_e7a4c2a1dceca8::t_f89d6c061f554e 3019
+src/i18n/locales/it.json
+  s_e7a4c2a1dceca8::t_f89d6c061f554e 3019
+src/i18n/locales/fr.json
+  s_e7a4c2a1dceca8::t_f89d6c061f554e 3019
+src/features/generation/worker/generators/binGenerator.scenario.taperSolidCutouts.test.ts
+  s_e7a4c2a1dceca8::t_8c9cb5aed51ad6 30,187-195
+  s_e7a4c2a1dceca8::t_7a0fadedf2c866 16-18
+  s_e7a4c2a1dceca8::t_3bbc35fd2993bf 1-15,19-29,31-71,73,79,106,108,125-147,153-174,176-186,196,198-214
+  s_e7a4c2a1dceca8::t_89e270f4e1bda7 104,124,148-152,175,197
+  s_e7a4c2a1dceca8::t_209915c48f6dfc 72,74-78,80-103,105,107,109-123
+src/i18n/locales/pl.json
+  s_e7a4c2a1dceca8::t_f89d6c061f554e 3019
+src/i18n/locales/cs.json
+  s_e7a4c2a1dceca8::t_f89d6c061f554e 3019
+src/i18n/locales/nl.json
+  s_e7a4c2a1dceca8::t_f89d6c061f554e 3019
+src/i18n/locales/de.json
+  s_e7a4c2a1dceca8::t_f89d6c061f554e 3019
+src/features/bin-designer/components/panel/OverhangSection/OverhangSection.tsx
+  s_e7a4c2a1dceca8::t_325d2f6d4c8623 112,114,122,124,127,129-131,133
+src/features/generation/worker/generators/pipeline/stages/featuresStage.ts
+  s_e7a4c2a1dceca8::t_2fad7fdadbfdc6 66
+  s_e7a4c2a1dceca8::t_23935dae66269c 47-60,65
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_e7a4c2a1dceca8::t_c8a8c41900b8b5 64-65
+  s_e7a4c2a1dceca8::t_2db2a550129ada 996-997,1003-1004
+  s_e7a4c2a1dceca8::t_866edf8fd9a70d 965-980
+  s_e7a4c2a1dceca8::t_2e18208fa3d81b 1171-1172,1177-1198
+  s_e7a4c2a1dceca8::t_4caa11bb1077de 1142,1150-1151
+src/i18n/locales/nb.json
+  s_e7a4c2a1dceca8::t_f89d6c061f554e 3019
+src/i18n/locales/zh-CN.json
+  s_e7a4c2a1dceca8::t_f89d6c061f554e 3019
+src/i18n/locales/ko.json
+  s_e7a4c2a1dceca8::t_f89d6c061f554e 3019
+src/i18n/locales/es.json
+  s_e7a4c2a1dceca8::t_f89d6c061f554e 3019
+src/i18n/locales/uk.json
+  s_e7a4c2a1dceca8::t_f89d6c061f554e 3019
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.solidCutouts.test.ts.snap
+  s_e7a4c2a1dceca8::t_b5acc9215be92d 55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "457b80de305270d4c4f04cf924ad70a87eff60d7",
+  "prompts": {},
+  "sessions": {
+    "s_e7a4c2a1dceca8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2da63a85-7bd0-4938-85fe-1d95dde9d086",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
