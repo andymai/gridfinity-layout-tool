@@ -10,6 +10,7 @@ describe('linkingStore', () => {
       pendingSync: null,
       pendingDeleteWarning: null,
       pendingCreateDesign: null,
+      declinedSyncs: {},
     });
   });
 
@@ -260,6 +261,79 @@ describe('linkingStore', () => {
       const state = useLinkingStore.getState();
       expect(state.pendingCreateDesign).toBeNull();
       expect(state.pendingDeleteWarning).not.toBeNull();
+    });
+  });
+
+  describe('declineSyncDialog (#3040)', () => {
+    const comparison: DimensionComparison = {
+      matched: false,
+      design: { width: 3, depth: 3, height: 4 },
+      bin: { width: 2, depth: 2, height: 4 },
+      differences: { width: true, depth: true, height: false },
+    };
+    const eligibility: SyncEligibility[] = [
+      { binId: binId('bin-1'), canSync: false, blockReason: 'collision' },
+    ];
+
+    function openPrompt(): void {
+      useLinkingStore
+        .getState()
+        .showSyncDialog(
+          [binId('bin-1')],
+          designId('design-1'),
+          'My Design',
+          comparison,
+          eligibility,
+          false
+        );
+    }
+
+    it('closes the prompt and records the declined design + dimensions', () => {
+      openPrompt();
+      useLinkingStore.getState().declineSyncDialog();
+
+      const state = useLinkingStore.getState();
+      expect(state.pendingSync).toBeNull();
+      expect(state.declinedSyncs['design-1']).toBe('3x3x4');
+    });
+
+    it('records the DESIGN dimensions, not the bin dimensions', () => {
+      // The reconciliation looks the decline up by the incoming design dims, so
+      // keying it off the bin would never match and the prompt would return.
+      openPrompt();
+      useLinkingStore.getState().declineSyncDialog();
+      expect(useLinkingStore.getState().declinedSyncs['design-1']).not.toBe('2x2x4');
+    });
+
+    it('leaves earlier declines intact', () => {
+      openPrompt();
+      useLinkingStore.getState().declineSyncDialog();
+      useLinkingStore
+        .getState()
+        .showSyncDialog(
+          [binId('bin-2')],
+          designId('design-2'),
+          'Other',
+          comparison,
+          eligibility,
+          false
+        );
+      useLinkingStore.getState().declineSyncDialog();
+
+      const { declinedSyncs } = useLinkingStore.getState();
+      expect(Object.keys(declinedSyncs).sort()).toEqual(['design-1', 'design-2']);
+    });
+
+    it('accepting instead of declining records nothing', () => {
+      openPrompt();
+      useLinkingStore.getState().hideSyncDialog();
+      expect(useLinkingStore.getState().declinedSyncs).toEqual({});
+    });
+
+    it('is a no-op with no prompt open', () => {
+      useLinkingStore.getState().declineSyncDialog();
+      expect(useLinkingStore.getState().declinedSyncs).toEqual({});
+      expect(useLinkingStore.getState().pendingSync).toBeNull();
     });
   });
 });

@@ -7,7 +7,7 @@
 import type { Bin } from '@/core/types';
 import type { BinId, DesignId, DesignLinkedBinsSummary, SyncableDimensions } from '../types';
 import type { CustomBinRef } from '@/features/bin-designer';
-import { dimensionsMatch } from './linkingRules';
+import { dimensionsFitAllowingRotation } from './linkingRules';
 
 // Single Entity Queries
 
@@ -85,10 +85,11 @@ export function getLinkedBins(bins: Bin[]): Bin[] {
 // Dimension Mismatch Queries
 
 /**
- * Check if a bin's dimensions match its linked design.
+ * Check if a bin's dimensions match its linked design, allowing a 90° placement
+ * (#3040) — the preview renders a transposed design rotated, so it fits.
  */
 export function binMatchesDesign(bin: Bin, designDimensions: SyncableDimensions): boolean {
-  return dimensionsMatch(
+  return dimensionsFitAllowingRotation(
     { width: bin.width, depth: bin.depth, height: bin.height },
     designDimensions
   );

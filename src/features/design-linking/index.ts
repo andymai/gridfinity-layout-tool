@@ -35,6 +35,7 @@ export type {
 export {
   // Linking rules
   dimensionsMatch,
+  dimensionsFitAllowingRotation,
   compareDimensions,
   checkSyncEligibility,
   checkBatchSyncEligibility,

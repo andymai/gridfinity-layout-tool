@@ -37,6 +37,7 @@ describe('SyncDimensionsDialog', () => {
     vi.mocked(useLinkingStore).mockReturnValue({
       pendingSync: null,
       hideSyncDialog: vi.fn(),
+      declineSyncDialog: vi.fn(),
     });
   });
 
@@ -62,6 +63,7 @@ describe('SyncDimensionsDialog', () => {
         binsHaveVaryingDimensions: false,
       },
       hideSyncDialog: vi.fn(),
+      declineSyncDialog: vi.fn(),
     });
 
     render(<SyncDimensionsDialog />);
@@ -82,6 +84,7 @@ describe('SyncDimensionsDialog', () => {
         binsHaveVaryingDimensions: false,
       },
       hideSyncDialog: vi.fn(),
+      declineSyncDialog: vi.fn(),
     });
 
     render(<SyncDimensionsDialog />);
@@ -102,6 +105,7 @@ describe('SyncDimensionsDialog', () => {
         binsHaveVaryingDimensions: false,
       },
       hideSyncDialog: vi.fn(),
+      declineSyncDialog: vi.fn(),
     });
 
     render(<SyncDimensionsDialog />);
@@ -126,6 +130,7 @@ describe('SyncDimensionsDialog', () => {
         binsHaveVaryingDimensions: false,
       },
       hideSyncDialog: vi.fn(),
+      declineSyncDialog: vi.fn(),
     });
 
     render(<SyncDimensionsDialog />);
@@ -150,14 +155,19 @@ describe('SyncDimensionsDialog', () => {
         binsHaveVaryingDimensions: true,
       },
       hideSyncDialog: vi.fn(),
+      declineSyncDialog: vi.fn(),
     });
 
     render(<SyncDimensionsDialog />);
     expect(screen.getByText(/designLinking.syncDialog.binsToUnlink/)).toBeInTheDocument();
   });
 
-  it('calls hideSyncDialog on cancel', () => {
+  it('records the decline on cancel rather than just closing (#3040)', () => {
+    // Cancel has to be remembered: the mount reconciliation re-checks every
+    // linked design, so a plain close re-opened this prompt on every return to
+    // the layout editor.
     const mockHide = vi.fn();
+    const mockDecline = vi.fn();
     vi.mocked(useLinkingStore).mockReturnValue({
       pendingSync: {
         designName: 'Test Design',
@@ -171,11 +181,13 @@ describe('SyncDimensionsDialog', () => {
         binsHaveVaryingDimensions: false,
       },
       hideSyncDialog: mockHide,
+      declineSyncDialog: mockDecline,
     });
 
     render(<SyncDimensionsDialog />);
     fireEvent.click(screen.getByText('common.cancel'));
 
-    expect(mockHide).toHaveBeenCalled();
+    expect(mockDecline).toHaveBeenCalled();
+    expect(mockHide).not.toHaveBeenCalled();
   });
 });

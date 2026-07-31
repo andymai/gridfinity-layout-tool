@@ -15,10 +15,11 @@ import { useTranslation } from '@/i18n';
 
 export function SyncDimensionsDialog() {
   const t = useTranslation();
-  const { pendingSync, hideSyncDialog } = useLinkingStore(
+  const { pendingSync, hideSyncDialog, declineSyncDialog } = useLinkingStore(
     useShallow((s) => ({
       pendingSync: s.pendingSync,
       hideSyncDialog: s.hideSyncDialog,
+      declineSyncDialog: s.declineSyncDialog,
     }))
   );
   const { executeSyncFromDesign } = useBinLinking();
@@ -26,9 +27,12 @@ export function SyncDimensionsDialog() {
   const dialogRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
+  // Declining is remembered for this design at these dimensions (#3040), so the
+  // mount reconciliation stops re-opening the prompt on every return to the
+  // layout editor.
   const handleCancel = useCallback(() => {
-    hideSyncDialog();
-  }, [hideSyncDialog]);
+    declineSyncDialog();
+  }, [declineSyncDialog]);
 
   // Focus management
   useEffect(() => {
