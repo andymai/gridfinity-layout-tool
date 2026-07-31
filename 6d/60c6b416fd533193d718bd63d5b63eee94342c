@@ -1,0 +1,19 @@
+api/lib/mlTelemetry/aggregatorRetention.test.ts
+  s_965615833a8cab::t_198376180e7587 332-333,335-352,356-381
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "6d60c6b416fd533193d718bd63d5b63eee94342c",
+  "prompts": {},
+  "sessions": {
+    "s_965615833a8cab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d55cf7e3-0bdb-43b7-afe9-aef90fafc8c8",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
