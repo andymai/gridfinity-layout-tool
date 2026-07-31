@@ -540,6 +540,7 @@
   "binDesigner.cutouts.importStl": "导入 STL",
   "binDesigner.cutouts.importSvg": "导入 SVG",
   "binDesigner.cutouts.instructions": "在实心收纳盒顶部绘制长方形、圆形和自定义钢笔路径，作为按工具形状的凹槽。",
+  "binDesigner.cutouts.taperBandHint": "斜纹区域：延伸到底部的挖槽会在此处被裁掉，以保证外扩的侧壁保持实心。",
   "binDesigner.cutouts.instructionsWorkspaceHint": "打开完整编辑器以获得精确控制、标尺和对齐工具。",
   "binDesigner.cutouts.nSelected": "已选中 {count} 个挖槽",
   "binDesigner.cutouts.paste": "粘贴",

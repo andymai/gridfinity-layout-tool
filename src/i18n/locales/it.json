@@ -540,6 +540,7 @@
   "binDesigner.cutouts.importStl": "Importa STL",
   "binDesigner.cutouts.importSvg": "Importa SVG",
   "binDesigner.cutouts.instructions": "Disegna rettangoli, cerchi e tracciati personalizzati come incavi a forma di utensile nella parte superiore piena del bin.",
+  "binDesigner.cutouts.taperBandHint": "Bordo tratteggiato: un ritaglio che arriva al fondo viene rifilato qui, così la parete svasata resta piena.",
   "binDesigner.cutouts.instructionsWorkspaceHint": "Apri l'editor completo per un controllo preciso, righelli e strumenti di allineamento.",
   "binDesigner.cutouts.nSelected": "{count} ritagli selezionati",
   "binDesigner.cutouts.paste": "Incolla",

@@ -540,6 +540,7 @@
   "binDesigner.cutouts.importStl": "Імпортувати STL",
   "binDesigner.cutouts.importSvg": "Імпортувати SVG",
   "binDesigner.cutouts.instructions": "Малюйте прямокутники, кола та користувацькі контури як ніші у формі інструмента у верхній частині суцільного біна.",
+  "binDesigner.cutouts.taperBandHint": "Заштрихований край: виріз, що сягає дна, тут обрізається, щоб розширена стінка залишалася суцільною.",
   "binDesigner.cutouts.instructionsWorkspaceHint": "Відкрийте повний редактор для точного керування, лінійок і інструментів вирівнювання.",
   "binDesigner.cutouts.nSelected": "{count} вирізів виділено",
   "binDesigner.cutouts.paste": "Вставити",

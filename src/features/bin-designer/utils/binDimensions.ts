@@ -17,6 +17,7 @@ import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import type { BinParams, OverhangConfig } from '@/features/bin-designer/types';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import type { CellMask } from '@/shared/utils/cellMask';
+import { resolveOverhang } from '@/shared/utils/overhang';
 
 export interface BinDimensions {
   /** Outer bin width in mm (XY footprint, includes tolerance) */
@@ -67,6 +68,14 @@ export function binDimensions(params: BinParams): BinDimensions {
   return { outerW, outerD, innerW, innerD, totalH, wallHeight, floorZ, isFlat };
 }
 
+/** Per-side mm a full-depth cutout loses to the tapered wall. */
+export interface TaperBandSides {
+  readonly left: number;
+  readonly right: number;
+  readonly front: number;
+  readonly back: number;
+}
+
 export interface CutoutInterior {
   /** Interior cavity width in mm, overhang folded in. */
   readonly innerW: number;
@@ -101,6 +110,28 @@ export interface CutoutInterior {
 export function cutoutInterior(params: BinParams): CutoutInterior {
   const { innerW, innerD } = binDimensions(params);
   return expandInteriorForOverhang(innerW, innerD, params.overhang, params.cellMask);
+}
+
+/**
+ * Per-side width, in mm, of the strip along each interior edge that a
+ * full-depth cutout gets trimmed out of — or `null` when no taper applies.
+ *
+ * {@link cutoutInterior} is rim-anchored, which is correct at the fill surface:
+ * the wall is full width up there and a shallow pocket really can use the whole
+ * frame. Lower down the tapered wall retracts, and the generator clips cutout
+ * tools to an envelope holding `wallThickness` at every height, so a pocket
+ * reaching the floor loses this much on each flared side.
+ *
+ * Delegates to the generator's own `resolveOverhang` rather than re-deriving,
+ * so the clamp rules (disabled overhang, partial mask, outward-only, taper
+ * clamped per side) can't drift from the geometry the clip actually uses.
+ */
+export function cutoutTaperBand(
+  params: Pick<BinParams, 'overhang' | 'cellMask'>
+): TaperBandSides | null {
+  const { taper } = resolveOverhang(isPartialMask(params.cellMask) ? undefined : params.overhang);
+  if (!taper) return null;
+  return { left: taper.left, right: taper.right, front: taper.front, back: taper.back };
 }
 
 /**

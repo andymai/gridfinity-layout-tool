@@ -16,6 +16,7 @@ import type {
   PathPoint,
 } from '@/features/bin-designer/types';
 import type { CellMask } from '@/shared/utils/cellMask';
+import type { TaperBandSides } from '@/features/bin-designer/utils/binDimensions';
 import type { ResizeHandle, InteractionMode, PreviewMap } from '../useCutoutInteraction';
 import type { FitCue } from '../cutoutSectionVisibility';
 import type { SegmentHoverInfo } from '../handlers';
@@ -60,6 +61,8 @@ export interface CutoutCanvas3DProps {
   readonly binDepth: number;
   /** Non-rectangular footprint mask — when present the background renders the polygon shape. */
   readonly cellMask?: CellMask;
+  /** Per-side strip a full-depth cutout is trimmed out of; null when untapered. */
+  readonly taperBand?: TaperBandSides | null;
   readonly canvasWidth: number;
   readonly canvasHeight: number;
   readonly selection: ReadonlySet<string>;
@@ -119,6 +122,7 @@ export function CutoutCanvas3D({
   binWidth,
   binDepth,
   cellMask,
+  taperBand,
   canvasWidth,
   canvasHeight,
   selection,
@@ -303,6 +307,7 @@ export function CutoutCanvas3D({
         binWidth={binWidth}
         binDepth={binDepth}
         cellMask={cellMask}
+        taperBand={taperBand}
         binColor={binColor}
         selection={selection}
         offBoardIds={offBoardIds}

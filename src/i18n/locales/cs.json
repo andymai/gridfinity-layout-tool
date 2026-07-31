@@ -540,6 +540,7 @@
   "binDesigner.cutouts.importStl": "Importovat STL",
   "binDesigner.cutouts.importSvg": "Importovat SVG",
   "binDesigner.cutouts.instructions": "Kresli obdélníky, kruhy a vlastní perové cesty jako prohlubně ve tvaru nástroje v plné horní ploše binu.",
+  "binDesigner.cutouts.taperBandHint": "Šrafovaný okraj: výřez sahající až ke dnu se zde ořízne, aby rozšířená stěna zůstala pevná.",
   "binDesigner.cutouts.instructionsWorkspaceHint": "Otevři plný editor pro přesné ovládání, pravítka a nástroje zarovnání.",
   "binDesigner.cutouts.nSelected": "{count} vybraných výřezů",
   "binDesigner.cutouts.paste": "Vložit",

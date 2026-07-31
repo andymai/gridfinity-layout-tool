@@ -12,15 +12,19 @@ import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog/ConfirmDialog';
 import { CutoutEditor } from './CutoutEditor';
+import { cutoutTaperBand } from '@/features/bin-designer/utils/binDimensions';
 
 export function CutoutsSection() {
   const t = useTranslation();
-  const { cutoutCount, clearCutouts } = useDesignerStore(
+  const { cutoutCount, clearCutouts, overhang, cellMask } = useDesignerStore(
     useShallow((s) => ({
       cutoutCount: s.params.cutouts.length,
       clearCutouts: s.clearCutouts,
+      overhang: s.params.overhang,
+      cellMask: s.params.cellMask,
     }))
   );
+  const taperBand = cutoutTaperBand({ overhang, cellMask });
   const [clearConfirm, setClearConfirm] = useState(false);
 
   return (
@@ -35,6 +39,12 @@ export function CutoutsSection() {
       </div>
 
       <CutoutEditor />
+
+      {taperBand && (
+        <p className="text-[10px] text-content-disabled leading-relaxed">
+          {t('binDesigner.cutouts.taperBandHint')}
+        </p>
+      )}
 
       {cutoutCount > 0 && (
         <Button

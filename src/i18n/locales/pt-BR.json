@@ -540,6 +540,7 @@
   "binDesigner.cutouts.importStl": "Importar STL",
   "binDesigner.cutouts.importSvg": "Importar SVG",
   "binDesigner.cutouts.instructions": "Desenhe retângulos, círculos e caminhos personalizados com a caneta como recortes no formato de ferramentas no topo do compartimento sólido.",
+  "binDesigner.cutouts.taperBandHint": "Borda hachurada: um recorte que chega ao fundo é aparado aqui para que a parede alargada continue sólida.",
   "binDesigner.cutouts.instructionsWorkspaceHint": "Abra o editor completo para controle preciso, réguas e ferramentas de alinhamento.",
   "binDesigner.cutouts.nSelected": "{count} recortes selecionados",
   "binDesigner.cutouts.paste": "Colar",

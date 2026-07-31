@@ -540,6 +540,7 @@
   "binDesigner.cutouts.importStl": "Importar STL",
   "binDesigner.cutouts.importSvg": "Importar SVG",
   "binDesigner.cutouts.instructions": "Dibuja rectángulos, círculos y trazados de lápiz personalizados como ranuras con forma de herramienta en la parte superior del contenedor sólido.",
+  "binDesigner.cutouts.taperBandHint": "Borde rayado: un recorte que llega al fondo se recorta aquí para que la pared abocinada siga siendo sólida.",
   "binDesigner.cutouts.instructionsWorkspaceHint": "Abre el editor completo para control preciso, reglas y herramientas de alineación.",
   "binDesigner.cutouts.nSelected": "{count} recortes seleccionados",
   "binDesigner.cutouts.paste": "Pegar",

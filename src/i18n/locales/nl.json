@@ -540,6 +540,7 @@
   "binDesigner.cutouts.importStl": "STL importeren",
   "binDesigner.cutouts.importSvg": "SVG importeren",
   "binDesigner.cutouts.instructions": "Teken rechthoeken, cirkels en aangepaste penpaden als gereedschapsvormige uitsparingen in de bovenkant van de massieve bak.",
+  "binDesigner.cutouts.taperBandHint": "Gearceerde rand: een uitsparing die de bodem raakt wordt hier bijgesneden, zodat de uitlopende wand massief blijft.",
   "binDesigner.cutouts.instructionsWorkspaceHint": "Open de volledige editor voor nauwkeurige controle, linialen en uitlijngereedschappen.",
   "binDesigner.cutouts.nSelected": "{count} uitsparingen geselecteerd",
   "binDesigner.cutouts.paste": "Plakken",

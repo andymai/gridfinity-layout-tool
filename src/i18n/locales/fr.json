@@ -540,6 +540,7 @@
   "binDesigner.cutouts.importStl": "Importer un STL",
   "binDesigner.cutouts.importSvg": "Importer SVG",
   "binDesigner.cutouts.instructions": "Dessinez des rectangles, des cercles et des tracés libres comme des empreintes d'outils dans le dessus du bac plein.",
+  "binDesigner.cutouts.taperBandHint": "Bord hachuré : une découpe qui atteint le fond est rognée ici afin que la paroi évasée reste pleine.",
   "binDesigner.cutouts.instructionsWorkspaceHint": "Ouvrez l'éditeur complet pour un contrôle précis, des règles et des outils d'alignement.",
   "binDesigner.cutouts.nSelected": "{count} découpes sélectionnées",
   "binDesigner.cutouts.paste": "Coller",

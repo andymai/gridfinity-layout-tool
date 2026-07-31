@@ -540,6 +540,7 @@
   "binDesigner.cutouts.importStl": "STL 가져오기",
   "binDesigner.cutouts.importSvg": "SVG 가져오기",
   "binDesigner.cutouts.instructions": "직사각형, 원, 맞춤 펜 경로를 솔리드 수납통 윗면에 공구 모양 오목부로 그리세요.",
+  "binDesigner.cutouts.taperBandHint": "빗금 영역: 바닥까지 닿는 컷아웃은 여기서 잘려 벌어진 벽이 꽉 찬 상태로 유지됩니다.",
   "binDesigner.cutouts.instructionsWorkspaceHint": "정밀한 제어, 눈금자, 정렬 도구를 사용하려면 전체 편집기를 여세요.",
   "binDesigner.cutouts.nSelected": "컷아웃 {count}개 선택됨",
   "binDesigner.cutouts.paste": "붙여넣기",

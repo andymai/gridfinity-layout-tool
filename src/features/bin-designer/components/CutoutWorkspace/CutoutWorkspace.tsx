@@ -16,7 +16,11 @@
 import { useCallback, useState, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { binDimensions, cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
+import {
+  binDimensions,
+  cutoutInterior,
+  cutoutTaperBand,
+} from '@/features/bin-designer/utils/binDimensions';
 import { useCutoutInteraction } from '../panel/CutoutsSection/useCutoutInteraction';
 import {
   getOffBoardCutoutIds,
@@ -92,6 +96,7 @@ export function CutoutWorkspace() {
   // unaffected (overhang is outward-only).
   const { wallHeight } = binDimensions(params);
   const { innerW: binWidth, innerD: binDepth } = cutoutInterior(params);
+  const taperBand = cutoutTaperBand(params);
   // See CutoutEditor for rationale — separate X/Y cell sizes keep validator and
   // polygon rendering aligned for non-square bins. Memoized so the off-board
   // hooks below keep a stable dependency across renders.
@@ -435,6 +440,7 @@ export function CutoutWorkspace() {
                 binWidth={binWidth}
                 binDepth={binDepth}
                 cellMask={params.cellMask}
+                taperBand={taperBand}
                 canvasWidth={canvasWidth}
                 canvasHeight={canvasHeight}
                 selection={selection}
