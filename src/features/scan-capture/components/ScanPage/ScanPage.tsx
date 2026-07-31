@@ -141,7 +141,9 @@ export function ScanPage({ token }: ScanPageProps) {
         return;
       }
       const image = imageDataFromCanvas(canvas);
-      const seed = computeAutoSeed(image);
+      // Same card options as the trace: the seed picks the largest blob that
+      // isn't the card, so a card it fails to detect becomes a candidate tool.
+      const seed = computeAutoSeed(image, cardOptions(cardSize));
       const traced = await traceAt(canvas, image, seed, cardSize);
       if (!traced) {
         setStatus({ kind: 'error', messageKey: 'scan.error.noObject' });

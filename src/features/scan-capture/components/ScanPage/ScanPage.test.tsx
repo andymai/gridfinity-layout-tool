@@ -311,6 +311,20 @@ describe('ScanPage', () => {
       );
     });
 
+    it('seeds against the same card, so an undetected card cannot become the tool', async () => {
+      await openEditor();
+
+      fireEvent.change(screen.getByLabelText('scan.cardSize.longSide'), {
+        target: { value: '100' },
+      });
+      fireEvent.click(screen.getByText('scan.retake'));
+      selectPhoto();
+
+      await waitFor(() =>
+        expect(mockAutoSeed).toHaveBeenLastCalledWith(IMAGE, { widthMm: 100, heightMm: 53.98 })
+      );
+    });
+
     it('offers a way back to a standard card only once one is measured', async () => {
       await openEditor();
       expect(screen.queryByText('scan.cardSize.useStandard')).toBeNull();
