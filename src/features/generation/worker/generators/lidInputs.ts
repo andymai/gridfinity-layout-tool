@@ -170,14 +170,27 @@ export interface LidInputs {
   readonly text: LidTextInputs | null;
   /**
    * Outer-perimeter shift (mm) caused by asymmetric overhang. The lid's
-   * perimeter, mating shell, floor, and click rails translate by this amount
-   * so they wrap the bin's overhang-shifted outer body, while the stack grid
-   * and magnet holes stay on the nominal socket grid (origin) to keep mating
-   * with the bin's base sockets. Zero for symmetric/absent overhang and for
-   * polygon bins (which suppress overhang, mirroring the box builder).
+   * perimeter, mating shell, floor, click rails, and retention magnets
+   * translate by this amount so they wrap the bin's overhang-shifted outer
+   * body, while the stack grid and its magnet holes stay on the nominal socket
+   * grid (origin) to keep mating with the bin's base sockets. Zero for
+   * symmetric/absent overhang and for polygon bins (which suppress overhang,
+   * mirroring the box builder).
+   *
+   * The split is about what each feature mates with: retention magnets hug this
+   * lid's own lip, so they follow it (#3048); stack sockets mate with a
+   * different bin's base, so they must not.
    */
   readonly outerOffsetX: number;
   readonly outerOffsetY: number;
+  /**
+   * Overhang footprint growth (mm), already folded into `lidOuterW`/`lidOuterD`.
+   * Exposed separately because the retention magnets inset from the EXPANDED
+   * footprint corner rather than the nominal one (#3048) — they hug the
+   * stacking lip, and overhang moves it.
+   */
+  readonly overhangAddW: number;
+  readonly overhangAddD: number;
 }
 
 export function resolveLidInputs(params: BinParams): LidInputs {
@@ -330,6 +343,8 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     cellMask,
     text,
     outerOffsetX,
+    overhangAddW: addW,
+    overhangAddD: addD,
     outerOffsetY,
   };
 }

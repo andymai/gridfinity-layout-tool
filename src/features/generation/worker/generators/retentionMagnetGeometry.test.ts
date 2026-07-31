@@ -168,3 +168,70 @@ describe('usesMagneticLid', () => {
     expect(usesMagneticLid(withLid({ attachment: 'magnetic' }, { cellMask: mask }))).toBe(false);
   });
 });
+
+describe('retentionMagnetPositions with overhang (#3048)', () => {
+  // The repro design: 1.5 x 4.5 bin, 9mm of overhang on the left only.
+  const INSET = retentionMagnetInset(6);
+  const BOSS_R = retentionBossRadius(6);
+  const GRID = 42;
+  const EXPANSION = { addW: 9, addD: 0, offsetX: -4.5, offsetY: 0 };
+
+  /** Distance from each magnet to the lip edge it sits inboard of. */
+  function lipClearances(
+    positions: ReadonlyArray<{ x: number; y: number }>,
+    expansion: { addW: number; offsetX: number }
+  ): { left: number; right: number } {
+    const halfW = (1.5 * GRID + expansion.addW) / 2;
+    const lipLeft = expansion.offsetX - halfW;
+    const lipRight = expansion.offsetX + halfW;
+    const xs = positions.map((p) => p.x);
+    return {
+      left: Math.min(...xs) - BOSS_R - lipLeft,
+      right: lipRight - (Math.max(...xs) + BOSS_R),
+    };
+  }
+
+  it('keeps every magnet the same distance inboard of the lip it hugs', () => {
+    const positions = retentionMagnetPositions(1.5, 4.5, GRID, GRID, INSET, 0, BOSS_R, EXPANSION);
+    const { left, right } = lipClearances(positions, EXPANSION);
+    expect(left).toBeCloseTo(LID_MAGNET_LIP_CLEARANCE, 6);
+    expect(right).toBeCloseTo(LID_MAGNET_LIP_CLEARANCE, 6);
+  });
+
+  it('tracks the overhung wall outward instead of staying on the nominal corner', () => {
+    const positions = retentionMagnetPositions(1.5, 4.5, GRID, GRID, INSET, 0, BOSS_R, EXPANSION);
+    const xs = [...new Set(positions.map((p) => p.x))].sort((a, b) => a - b);
+    // Nominal would be ±24; the left pair follows the 9mm overhang out to -33.
+    expect(xs).toEqual([-33, 24]);
+  });
+
+  it('leaves the unexpanded axis exactly where it was', () => {
+    const positions = retentionMagnetPositions(1.5, 4.5, GRID, GRID, INSET, 0, BOSS_R, EXPANSION);
+    const nominal = retentionMagnetPositions(1.5, 4.5, GRID, GRID, INSET, 0, BOSS_R);
+    expect([...new Set(positions.map((p) => p.y))].sort()).toEqual(
+      [...new Set(nominal.map((p) => p.y))].sort()
+    );
+  });
+
+  it('is a no-op for symmetric overhang beyond growing the span', () => {
+    const symmetric = { addW: 12, addD: 0, offsetX: 0, offsetY: 0 };
+    const positions = retentionMagnetPositions(1.5, 4.5, GRID, GRID, INSET, 0, BOSS_R, symmetric);
+    const xs = [...new Set(positions.map((p) => p.x))].sort((a, b) => a - b);
+    expect(xs).toEqual([-(1.5 * GRID + 12) / 2 + INSET, (1.5 * GRID + 12) / 2 - INSET]);
+  });
+
+  it('shifts edge magnets with the corners so they stay on the moved wall', () => {
+    const positions = retentionMagnetPositions(1.5, 4.5, GRID, GRID, INSET, 1, BOSS_R, EXPANSION);
+    // The 63mm X span fits no edge magnets (min spacing is a grid pitch), so
+    // the long Y walls are the ones to check. They ride the shifted X corners.
+    const edge = positions.filter((p) => p.anchor === 'x');
+    expect(edge.length).toBeGreaterThan(0);
+    for (const p of edge) expect([-33, 24]).toContain(p.x);
+  });
+
+  it('is unchanged when no expansion is supplied', () => {
+    const positions = retentionMagnetPositions(1.5, 4.5, GRID, GRID, INSET, 0, BOSS_R);
+    const xs = [...new Set(positions.map((p) => p.x))].sort((a, b) => a - b);
+    expect(xs).toEqual([-(1.5 * GRID) / 2 + INSET, (1.5 * GRID) / 2 - INSET]);
+  });
+});

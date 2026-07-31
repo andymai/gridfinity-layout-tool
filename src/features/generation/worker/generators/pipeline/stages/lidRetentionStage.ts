@@ -47,6 +47,7 @@ import {
   retentionSeatPlanes,
   usesMagneticLid,
 } from '../../retentionMagnetGeometry';
+import { hasOverhang, overhangExpansion } from '../../overhang';
 
 /** Volumetric overlap (mm) of the gusset into the interior walls, so the fuse
  *  weld is solid rather than a boolean-hostile coplanar face. */
@@ -74,6 +75,9 @@ export const lidRetentionStage: PipelineStage = {
     const magnetRadius = diameter / 2;
     const bossRadius = retentionBossRadius(diameter);
     const inset = retentionMagnetInset(diameter);
+    // Overhang moves the stacking lip the pads hug, so the pads move with it —
+    // otherwise a one-sided overhang strands the gusset away from the interior
+    // wall it welds into (#3048). The lid boss applies the same shift.
     const positions = retentionMagnetPositions(
       params.width,
       params.depth,
@@ -81,7 +85,8 @@ export const lidRetentionStage: PipelineStage = {
       dim.gridUnitMmY,
       inset,
       params.lid.retentionMagnet.edgeMagnets,
-      bossRadius
+      bossRadius,
+      hasOverhang(dim.overhang) ? overhangExpansion(dim.overhang) : null
     );
 
     // Both magnet faces come from the shared seat-plane helper so the bin pad
@@ -106,6 +111,11 @@ export const lidRetentionStage: PipelineStage = {
 
     const innerHalfW = dim.innerW / 2;
     const innerHalfD = dim.innerD / 2;
+    // The cavity is centred on the overhang-shifted centre, not the origin, so
+    // every wall/arc coordinate below is measured from it (#3048). Zero without
+    // overhang, leaving the un-overhung geometry byte-identical.
+    const innerCx = dim.innerOffsetX;
+    const innerCy = dim.innerOffsetY;
 
     // The cavity's corner arc (boxBuilder's inner footprint) is concentric with
     // the outer wall's BOX_CORNER_RADIUS arc, so the wall keeps a uniform
@@ -133,10 +143,10 @@ export const lidRetentionStage: PipelineStage = {
       // a left/right wall (constant X, free in Y).
       if (anchor !== 'corner') {
         const alongY = anchor === 'x'; // free along Y when anchored to an X wall
-        const perpSign = alongY ? Math.sign(px) : Math.sign(py);
+        const perpSign = alongY ? Math.sign(px - innerCx) : Math.sign(py - innerCy);
         const wallPerp = alongY
-          ? perpSign * (innerHalfW + GUSSET_WALL_OVERLAP)
-          : perpSign * (innerHalfD + GUSSET_WALL_OVERLAP);
+          ? innerCx + perpSign * (innerHalfW + GUSSET_WALL_OVERLAP)
+          : innerCy + perpSign * (innerHalfD + GUSSET_WALL_OVERLAP);
         const magnetPerp = alongY ? px : py;
         const tipPerp = magnetPerp - perpSign * bossRadius; // inboard pad tip
         const freeCoord = alongY ? py : px;
@@ -207,10 +217,10 @@ export const lidRetentionStage: PipelineStage = {
         continue;
       }
 
-      const sx = Math.sign(px);
-      const sy = Math.sign(py);
-      const wallX = sx * (innerHalfW + GUSSET_WALL_OVERLAP);
-      const wallY = sy * (innerHalfD + GUSSET_WALL_OVERLAP);
+      const sx = Math.sign(px - innerCx);
+      const sy = Math.sign(py - innerCy);
+      const wallX = innerCx + sx * (innerHalfW + GUSSET_WALL_OVERLAP);
+      const wallY = innerCy + sy * (innerHalfD + GUSSET_WALL_OVERLAP);
       const innerX = px - sx * bossRadius;
       const innerY = py - sy * bossRadius;
       const sizeX = Math.abs(wallX - innerX);
@@ -241,8 +251,8 @@ export const lidRetentionStage: PipelineStage = {
       // (#2929). The arc is tangent to both wall lines, so the two remaining
       // square corners stay buried where the flats meet the tongue.
       const padCornerR = cavityCornerR + GUSSET_WALL_OVERLAP;
-      const arcCx = sx * (innerHalfW - cavityCornerR);
-      const arcCy = sy * (innerHalfD - cavityCornerR);
+      const arcCx = innerCx + sx * (innerHalfW - cavityCornerR);
+      const arcCy = innerCy + sy * (innerHalfD - cavityCornerR);
       // Bows outward toward the removed corner on all four corners, hence a
       // fixed sign — unlike the tongue, whose traversal direction is the same
       // in both branches.

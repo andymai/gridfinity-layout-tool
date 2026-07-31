@@ -45,13 +45,18 @@ export function addLidRetentionMagnets(
     retentionMagnetEdgeMagnets,
     topThickness,
     cavityExtraMm,
+    outerOffsetX,
+    outerOffsetY,
+    overhangAddW,
+    overhangAddD,
   } = inputs;
 
   const magnetRadius = retentionMagnetDiameter / 2;
   const bossRadius = retentionBossRadius(retentionMagnetDiameter);
   const inset = retentionMagnetInset(retentionMagnetDiameter);
   // Same placement as the bin pads (edge magnets included), so every lid boss
-  // lands coaxial with its mating bin post.
+  // lands coaxial with its mating bin post — overhang expansion included, since
+  // both sides inset from the same overhang-shifted footprint (#3048).
   const positions = retentionMagnetPositions(
     cellsX,
     cellsY,
@@ -59,7 +64,8 @@ export function addLidRetentionMagnets(
     gridUnitMmY,
     inset,
     retentionMagnetEdgeMagnets,
-    bossRadius
+    bossRadius,
+    { addW: overhangAddW, addD: overhangAddD, offsetX: outerOffsetX, offsetY: outerOffsetY }
   );
 
   // The boss is anchored to the BOTTOM of the cavity, not to the floor plate.
