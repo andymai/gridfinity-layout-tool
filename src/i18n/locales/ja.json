@@ -3016,6 +3016,5 @@
   "inspector.taper.fillet": "フィレット",
   "inspector.taper.height": "テーパー高さ",
   "inspector.taper.flare": "広がり",
-  "inspector.taper.flare.hint": "引き出しの余白を超えて上端を広げ、引き出しの曲がった側面まで届かせます。",
-  "binDesigner.overhang.taper.hollowOnly": "テーパーは中空のビンでのみ使用できます。"
+  "inspector.taper.flare.hint": "引き出しの余白を超えて上端を広げ、引き出しの曲がった側面まで届かせます。"
 }

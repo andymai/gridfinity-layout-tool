@@ -3016,6 +3016,5 @@
   "inspector.taper.fillet": "Zaokrąglenie",
   "inspector.taper.height": "Wysokość zwężenia",
   "inspector.taper.flare": "Rozszerzenie",
-  "inspector.taper.flare.hint": "Dodatkowa szerokość przy górnej krawędzi, poza marginesem szuflady, aby pojemnik sięgał zakrzywionych boków szuflady.",
-  "binDesigner.overhang.taper.hollowOnly": "Zwężenie jest dostępne tylko w pojemnikach wydrążonych."
+  "inspector.taper.flare.hint": "Dodatkowa szerokość przy górnej krawędzi, poza marginesem szuflady, aby pojemnik sięgał zakrzywionych boków szuflady."
 }

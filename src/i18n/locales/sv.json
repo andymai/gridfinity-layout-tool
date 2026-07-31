@@ -3016,6 +3016,5 @@
   "inspector.taper.fillet": "Rundning",
   "inspector.taper.height": "Fashöjd",
   "inspector.taper.flare": "Utvidgning",
-  "inspector.taper.flare.hint": "Extra bredd vid överkanten, utöver lådmarginalen, så att facket når in i lådans böjda sidor.",
-  "binDesigner.overhang.taper.hollowOnly": "Avfasning är endast tillgänglig för ihåliga fack."
+  "inspector.taper.flare.hint": "Extra bredd vid överkanten, utöver lådmarginalen, så att facket når in i lådans böjda sidor."
 }

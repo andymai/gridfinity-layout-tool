@@ -3016,6 +3016,5 @@
   "inspector.taper.fillet": "Afronding",
   "inspector.taper.height": "Taps hoogte",
   "inspector.taper.flare": "Verwijding",
-  "inspector.taper.flare.hint": "Extra breedte aan de bovenrand, voorbij de lademarge, zodat de bak tot in de gebogen zijkanten van de lade reikt.",
-  "binDesigner.overhang.taper.hollowOnly": "Taps toelopende wanden zijn alleen beschikbaar bij holle bakken."
+  "inspector.taper.flare.hint": "Extra breedte aan de bovenrand, voorbij de lademarge, zodat de bak tot in de gebogen zijkanten van de lade reikt."
 }

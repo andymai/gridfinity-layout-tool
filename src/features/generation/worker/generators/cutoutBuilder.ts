@@ -61,6 +61,8 @@ import {
 import { sketch } from './meshUtils';
 import { buildTextSolid } from './textBuilder';
 import { offsetClosedPolygon } from './polygonOffset';
+import { buildTaperedInnerEnvelope } from './taperedOuter';
+import type { ResolvedTaper } from './overhang';
 import { FeatureTag } from './featureTags';
 import {
   enumerateCutoutColorUnits,
@@ -960,6 +962,22 @@ export interface CutoutTools {
   readonly fuseTools: Shape3D[];
 }
 
+/**
+ * Everything the interior clip needs to follow a tapered outer wall (#3033).
+ *
+ * Passed only when a taper actually applies; absent, the clip stays the plain
+ * rim-sized prism it has always been.
+ */
+export interface InteriorTaper {
+  /** Overhang-expanded outer footprint at the rim, in mm. */
+  readonly outerW: number;
+  readonly outerD: number;
+  /** Wall height the band is clamped against — must match the box builder's. */
+  readonly wallHeight: number;
+  readonly wallThickness: number;
+  readonly taper: ResolvedTaper;
+}
+
 /** Lift the emboss clip ceiling a hair above the raised text so it isn't grazed. */
 const CUTOUT_BOOLEAN_EPSILON = 0.1;
 
@@ -975,12 +993,15 @@ const CUTOUT_BOOLEAN_EPSILON = 0.1;
  * @param innerW - Interior width in mm (outer - 2*wall)
  * @param innerD - Interior depth in mm (outer - 2*wall)
  * @param wallHeight - Wall height in mm (Z extent from floor to wall top)
+ * @param interiorTaper - Present when the outer wall tapers, so the interior
+ *   clip follows the narrowing wall instead of a rim-sized prism (#3033)
  */
 export function buildCutoutCuts(
   params: BinParams,
   innerW: number,
   innerD: number,
-  wallHeight: number
+  wallHeight: number,
+  interiorTaper?: InteriorTaper
 ): CutoutTools {
   // Color ordinals MUST come from the full cutout list — the paint layer
   // enumerates ALL cutouts (incl. mesh imprints), so filtering first would
@@ -1118,7 +1139,7 @@ export function buildCutoutCuts(
   // so a box spanning the fill height contains them. Embossed text rises ABOVE
   // the top, so its clip box must be tall enough to keep the raised geometry —
   // an interior-height box would shear it off.
-  const cutTools = clipToInterior(rawShapes, innerW, innerD, solidSurfaceZ, rawTags);
+  const cutTools = clipToInterior(rawShapes, innerW, innerD, solidSurfaceZ, rawTags, interiorTaper);
   const fuseTools =
     rawFuseShapes.length > 0
       ? clipToInterior(
@@ -1126,7 +1147,8 @@ export function buildCutoutCuts(
           innerW,
           innerD,
           solidSurfaceZ + params.textDefaults.depth + CUTOUT_BOOLEAN_EPSILON,
-          rawFuseShapes.map(() => FeatureTag.TEXT)
+          rawFuseShapes.map(() => FeatureTag.TEXT),
+          interiorTaper
         )
       : [];
   return { cutTools, fuseTools };
@@ -1146,12 +1168,34 @@ function clipToInterior(
   innerW: number,
   innerD: number,
   boxHeight: number,
-  tags?: readonly number[]
+  tags?: readonly number[],
+  taper?: InteriorTaper
 ): Shape3D[] {
   if (shapes.length === 0) return [];
   let clipBoundary: Shape3D;
   try {
-    clipBoundary = box(innerW, innerD, boxHeight, { at: [0, 0, boxHeight / 2] });
+    // A tapered bin's wall narrows toward the floor, so the prism below is the
+    // wrong boundary: `innerW`/`innerD` are rim-anchored, leaving a pocket
+    // flush with the interior edge only `wallThickness - flare` of material at
+    // the base — negative for any flare wider than the wall. The lofted
+    // envelope holds `wallThickness` at EVERY height instead, and is identical
+    // to the prism above the band, so untapered bins are unaffected.
+    //
+    // Built at the origin because featuresStage translates the finished tools
+    // by the asymmetric-overhang offset afterwards — baking the offset in here
+    // too would shift the clip twice.
+    clipBoundary = taper
+      ? buildTaperedInnerEnvelope(
+          taper.outerW,
+          taper.outerD,
+          taper.wallHeight,
+          taper.wallThickness,
+          taper.taper,
+          boxHeight,
+          0,
+          0
+        )
+      : box(innerW, innerD, boxHeight, { at: [0, 0, boxHeight / 2] });
   } catch (e) {
     for (const s of shapes) s.delete();
     throw e;

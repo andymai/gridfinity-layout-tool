@@ -3016,6 +3016,5 @@
   "inspector.taper.fillet": "Raccordo",
   "inspector.taper.height": "Altezza rastremazione",
   "inspector.taper.flare": "Svasatura",
-  "inspector.taper.flare.hint": "Larghezza aggiuntiva sul bordo superiore, oltre il margine del cassetto, così il contenitore raggiunge i lati curvi del cassetto.",
-  "binDesigner.overhang.taper.hollowOnly": "La svasatura è disponibile solo sui contenitori cavi."
+  "inspector.taper.flare.hint": "Larghezza aggiuntiva sul bordo superiore, oltre il margine del cassetto, così il contenitore raggiunge i lati curvi del cassetto."
 }

@@ -14,6 +14,7 @@ import {
   drawRoundedRectangle,
   drawRectangle,
   unwrap,
+  clone,
   fuse,
   cut,
   cutAll,
@@ -45,7 +46,12 @@ import { buildCacheKey, quantize } from './cacheKeyUtils';
 import { resolvePitch, pitchKeySegments, type GridUnitInput } from './gridPitch';
 import { hashMask, isPartialMask, type CellMask } from '@/shared/utils/cellMask';
 import { hasOverhang, overhangExpansion, overhangKey, type ResolvedOverhang } from './overhang';
-import { buildTaperedBox, buildTaperedLofts } from './taperedOuter';
+import {
+  buildTaperedBox,
+  buildTaperedInnerEnvelope,
+  buildTaperedLofts,
+  buildTaperedOuter,
+} from './taperedOuter';
 import { createLogger } from '@/core/logger';
 import { buildMaskDrawing, buildMaskDrawingInset, buildMaskHoleDrawings } from './maskPolygon';
 
@@ -274,6 +280,72 @@ export function buildBinBox(
 
     // Solid mode: return the raw extrusion, optionally with lowered interior fill
     if (solid) {
+      // A tapered solid bin (#3033) is the outer loft with nothing removed —
+      // there is no cavity, so the prism `box` is simply the wrong body. A
+      // lowered fill surface becomes a recess CUT from that loft rather than
+      // shell+fill+fuse: one solid, no coincident-face seam (#1753), and the
+      // recess never has to be reconciled with a wall that narrows below it.
+      if (ov?.taper) {
+        try {
+          const outer = buildTaperedOuter(
+            scope,
+            outerW,
+            outerD,
+            wallHeight,
+            wallThickness,
+            ov.taper,
+            offX,
+            offY
+          );
+          const fillHeight = wallHeight - cutoutTopOffset;
+          if (cutoutTopOffset <= 0 || fillHeight <= 0) {
+            scope.register(box); // unused on the taper path
+            return setBoxCache(boxKey, unwrap(clone(outer)));
+          }
+          // The recess spans fillHeight→past the rim. Above the band the wall is
+          // prismatic, so a rim-sized inner footprint is exact there; a recess
+          // reaching INTO the band would breach the narrowing wall, so clip it
+          // to the inner envelope in that case.
+          const rawRecess = scope.register(
+            sketch(makeInnerFootprint(), 'XY', fillHeight).extrude(
+              cutoutTopOffset + COPLANAR_MARGIN
+            )
+          );
+          const recess =
+            fillHeight < Math.min(ov.taper.bandHeight, wallHeight)
+              ? scope.register(
+                  unwrap(
+                    intersect(
+                      rawRecess as ValidSolid,
+                      scope.register(
+                        buildTaperedInnerEnvelope(
+                          outerW,
+                          outerD,
+                          wallHeight,
+                          wallThickness,
+                          ov.taper,
+                          wallHeight + COPLANAR_MARGIN,
+                          offX,
+                          offY
+                        )
+                      ) as ValidSolid
+                    )
+                  )
+                )
+              : rawRecess;
+          const body = unwrap(cut(outer as ValidSolid, recess as ValidSolid));
+          scope.register(box); // unused on the taper path
+          return setBoxCache(boxKey, body);
+        } catch (e: unknown) {
+          // Mirror the hollow taper branch: never lose the bin, but surface the
+          // regression instead of silently shipping an untapered body.
+          logger.warn('[buildBinBox] solid taper build failed; falling back to a plain box', {
+            err: e instanceof Error ? e.message : String(e),
+            width: gridW,
+            depth: gridD,
+          });
+        }
+      }
       if (cutoutTopOffset > 0) {
         let hollowWalls: Shape3D;
         if (polygon) {

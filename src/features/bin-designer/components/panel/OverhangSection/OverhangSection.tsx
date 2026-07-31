@@ -40,11 +40,7 @@ export function OverhangSection() {
   // Feet need base overhang to stand on, but stay togglable while already on —
   // otherwise dragging the base to 0 strands them checked and un-uncheckable.
   const feetEnabled = state.hasBaseOverhang || state.feet;
-  const taperToggleEnabled = taper.canTaper;
   const stacked = meta.stackedSliders;
-
-  let taperHintKey = 'binDesigner.overhang.taper.hint';
-  if (!taper.availableForBin) taperHintKey = 'binDesigner.overhang.taper.hollowOnly';
 
   return (
     <FeatureToggle
@@ -113,29 +109,28 @@ export function OverhangSection() {
           <div className="mt-3 flex flex-col gap-2 border-t border-border pt-3">
             <div
               className="group flex cursor-pointer items-center justify-between"
-              onClick={taperToggleEnabled ? handlers.toggleTaper : undefined}
+              onClick={handlers.toggleTaper}
               onKeyDown={(e) => {
-                if (taperToggleEnabled && (e.key === 'Enter' || e.key === ' ')) {
+                if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
                   handlers.toggleTaper();
                 }
               }}
               role="checkbox"
               aria-checked={taper.enabled}
-              aria-disabled={!taperToggleEnabled}
               aria-label={t('binDesigner.overhang.taper.title')}
-              tabIndex={taperToggleEnabled ? 0 : -1}
+              tabIndex={0}
             >
-              <span
-                className={`text-xs leading-none ${taperToggleEnabled ? 'text-content-secondary' : 'text-content-disabled'}`}
-              >
+              <span className="text-xs leading-none text-content-secondary">
                 {t('binDesigner.overhang.taper.title')}
               </span>
-              <Checkbox checked={taper.enabled} disabled={!taperToggleEnabled} />
+              <Checkbox checked={taper.enabled} />
             </div>
-            <p className="text-[11px] leading-relaxed text-content-tertiary">{t(taperHintKey)}</p>
+            <p className="text-[11px] leading-relaxed text-content-tertiary">
+              {t('binDesigner.overhang.taper.hint')}
+            </p>
 
-            {taper.enabled && taper.canTaper && (
+            {taper.enabled && (
               <>
                 <TaperProfileCards
                   value={taper.profile}
