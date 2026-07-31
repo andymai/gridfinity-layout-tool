@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.333.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.332.2...gridfinity-layout-tool-v4.333.0) (2026-07-31)
+
+
+### Features
+
+* **generation:** outer-wall taper on solid (cutout) bins ([#3032](https://github.com/andymai/gridfinity-layout-tool/issues/3032)) ([af7dd04](https://github.com/andymai/gridfinity-layout-tool/commit/af7dd04a998e75674238e624d767842fbd706e6a))
+
 ## [4.332.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.332.1...gridfinity-layout-tool-v4.332.2) (2026-07-31)
 
 
