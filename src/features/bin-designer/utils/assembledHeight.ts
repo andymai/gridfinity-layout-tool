@@ -14,6 +14,7 @@
  */
 
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import type { BaseStyle } from '@/features/bin-designer/types/base';
 import {
   LID_FIT_CLEARANCE,
   lidAnchorZ,
@@ -62,8 +63,9 @@ export interface AssembledHeight {
   /** The baseplate's own printed height (mm) — what comes off the bed. */
   readonly baseplatePrintedMm: number;
   /**
-   * How far the bin's base sinks into the plate (mm). `SOCKET_HEIGHT` for a
-   * socketed bin, 0 for a flat base, which rests on the plate's top face.
+   * How far the bin's base sinks into the plate (mm). `SOCKET_HEIGHT` when the
+   * bin seats on one, 0 otherwise — a flat base has no socket and a bare bin
+   * has no plate to sink into.
    */
   readonly nestedMm: number;
 }
@@ -78,7 +80,7 @@ export interface AssembledHeightSource {
   readonly heightUnitMm: number;
   readonly extraWallHeightMm?: number;
   readonly base: {
-    readonly style: string;
+    readonly style: BaseStyle;
     readonly stackingLip: boolean;
     readonly magnetDepth: number;
   };
