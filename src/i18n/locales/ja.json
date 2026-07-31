@@ -540,6 +540,7 @@
   "binDesigner.cutouts.importStl": "STLをインポート",
   "binDesigner.cutouts.importSvg": "SVGをインポート",
   "binDesigner.cutouts.instructions": "長方形、円、カスタムペンパスを描画して、無垢ビン上部に道具の形をした凹みを作ります。",
+  "binDesigner.cutouts.taperBandHint": "ハッチング部分: 底まで届く切り欠きはここで削られ、広がった壁が中身の詰まった状態に保たれます。",
   "binDesigner.cutouts.instructionsWorkspaceHint": "フルエディターを開くと、精密な制御、ルーラー、整列ツールが利用できます。",
   "binDesigner.cutouts.nSelected": "{count}個の切り欠きを選択中",
   "binDesigner.cutouts.paste": "貼り付け",

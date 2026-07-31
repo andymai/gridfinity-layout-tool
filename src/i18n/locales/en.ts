@@ -2137,6 +2137,8 @@ const en: Record<string, string> = {
   'binDesigner.splitExploded': 'Exploded',
   'binDesigner.cutouts.instructions':
     'Draw rectangles, circles, and custom pen paths as tool-shaped recesses in the solid bin top.',
+  'binDesigner.cutouts.taperBandHint':
+    'Hatched edge: a cutout that reaches the floor is trimmed here so the flared wall stays solid.',
   'binDesigner.cutouts.instructionsWorkspaceHint':
     'Open the full editor for precise control, rulers, and alignment tools.',
   'binDesigner.cutouts.pointerTool': 'Select',

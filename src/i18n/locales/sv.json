@@ -540,6 +540,7 @@
   "binDesigner.cutouts.importStl": "Importera STL",
   "binDesigner.cutouts.importSvg": "Importera SVG",
   "binDesigner.cutouts.instructions": "Rita rektanglar, cirklar och anpassade pennstigar som verktygsformade urtag i den massiva facköverdelen.",
+  "binDesigner.cutouts.taperBandHint": "Skrafferad kant: en urtagning som når botten beskärs här så att den utsvängda väggen förblir massiv.",
   "binDesigner.cutouts.instructionsWorkspaceHint": "Öppna fullredigeraren för exakt kontroll, linjaler och justeringsverktyg.",
   "binDesigner.cutouts.nSelected": "{count} urtag markerade",
   "binDesigner.cutouts.paste": "Klistra in",

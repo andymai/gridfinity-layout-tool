@@ -540,6 +540,7 @@
   "binDesigner.cutouts.importStl": "STL importieren",
   "binDesigner.cutouts.importSvg": "SVG importieren",
   "binDesigner.cutouts.instructions": "Zeichnen Sie Rechtecke, Kreise und eigene Stiftpfade als werkzeugförmige Aussparungen in der massiven Behälteroberseite.",
+  "binDesigner.cutouts.taperBandHint": "Schraffierter Rand: Ein Ausschnitt, der bis zum Boden reicht, wird hier beschnitten, damit die ausgestellte Wand massiv bleibt.",
   "binDesigner.cutouts.instructionsWorkspaceHint": "Öffnen Sie den vollständigen Editor für präzise Steuerung, Lineale und Ausrichtungswerkzeuge.",
   "binDesigner.cutouts.nSelected": "{count} Ausschnitte ausgewählt",
   "binDesigner.cutouts.paste": "Einfügen",

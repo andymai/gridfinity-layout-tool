@@ -5,6 +5,8 @@
 /** Render order layers (higher = drawn later = on top) */
 export const RENDER_ORDER = {
   BACKGROUND: 0,
+  /** Above the bin surface and its dot grid, below every cutout shape. */
+  TAPER_BAND: 1,
   SHAPES: 10,
   GROUP_FILL: 11,
   GROUP_STROKE: 12,
@@ -31,6 +33,12 @@ export const HANDLE_COLOR = '#fbbf24';
 export const HANDLE_STROKE_COLOR = '#ffffff';
 /** Off-board warning frame — red to stay distinct from the amber selection. */
 export const OFF_BOARD_COLOR = '#ef4444'; // --color-error
+/**
+ * Taper band — slate rather than a warning colour. Nothing is wrong when it
+ * shows; it marks where a deep cutout gets trimmed, and it must not compete
+ * with the amber selection or the red off-board frame.
+ */
+export const TAPER_BAND_COLOR = '#94a3b8';
 
 /** Handle sizes in screen pixels */
 export const CORNER_HANDLE_SIZE = 10;

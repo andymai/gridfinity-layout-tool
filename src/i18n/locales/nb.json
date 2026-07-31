@@ -540,6 +540,7 @@
   "binDesigner.cutouts.importStl": "Importer STL",
   "binDesigner.cutouts.importSvg": "Importer SVG",
   "binDesigner.cutouts.instructions": "Tegn rektangler, sirkler og egendefinerte stier som verktøyformede fordypninger i den solide beholdertoppen.",
+  "binDesigner.cutouts.taperBandHint": "Skravert kant: et utsnitt som når bunnen, beskjæres her slik at den utsvingte veggen forblir massiv.",
   "binDesigner.cutouts.instructionsWorkspaceHint": "Åpne den fullstendige editoren for presis kontroll, linjaler og justeringsverktøy.",
   "binDesigner.cutouts.nSelected": "{count} utskjæringer valgt",
   "binDesigner.cutouts.paste": "Lim inn",

@@ -540,6 +540,7 @@
   "binDesigner.cutouts.importStl": "Importuj STL",
   "binDesigner.cutouts.importSvg": "Importuj SVG",
   "binDesigner.cutouts.instructions": "Rysuj prostokąty, koła i własne ścieżki piórem jako wgłębienia w kształcie narzędzi w litej górze bina.",
+  "binDesigner.cutouts.taperBandHint": "Kreskowana krawędź: wycięcie sięgające dna jest tutaj przycinane, aby rozszerzona ścianka pozostała pełna.",
   "binDesigner.cutouts.instructionsWorkspaceHint": "Otwórz pełny edytor dla precyzyjnej kontroli, linijek i narzędzi wyrównywania.",
   "binDesigner.cutouts.nSelected": "Zaznaczono {count} wycięć",
   "binDesigner.cutouts.paste": "Wklej",

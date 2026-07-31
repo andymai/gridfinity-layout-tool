@@ -14,10 +14,12 @@ import type {
   PathPoint,
 } from '@/features/bin-designer/types';
 import type { CellMask } from '@/shared/utils/cellMask';
+import type { TaperBandSides } from '@/features/bin-designer/utils/binDimensions';
 import type { ResizeHandle, InteractionMode, PreviewMap } from '../useCutoutInteraction';
 import type { SegmentHoverInfo } from '../handlers';
 import type { AlignmentGuide } from '../geometry';
 import { EditorBackground3D } from './EditorBackground3D';
+import { TaperBand3D } from './TaperBand3D';
 import { CutoutShapeMesh } from './CutoutShapeMesh';
 import { OffBoardFrames3D } from './OffBoardFrames3D';
 import { CutoutLabel3D } from './CutoutLabel3D';
@@ -82,6 +84,8 @@ export interface SceneContentProps {
   readonly binDepth: number;
   /** Non-rectangular footprint mask — when present background renders the polygon. */
   readonly cellMask?: CellMask;
+  /** Per-side strip a full-depth cutout is trimmed out of; null when untapered. */
+  readonly taperBand?: TaperBandSides | null;
   readonly binColor: string;
   readonly selection: ReadonlySet<string>;
   /** Cutouts stranded past the board edge — framed with a red warning outline. */
@@ -143,6 +147,7 @@ export function SceneContent({
   binWidth,
   binDepth,
   cellMask,
+  taperBand,
   binColor,
   selection,
   offBoardIds = EMPTY_IDS,
@@ -225,6 +230,9 @@ export function SceneContent({
         zoom={camera.zoom}
         binColor={binColor}
       />
+
+      {/* Where a full-depth cutout gets trimmed by the tapered wall */}
+      {taperBand && <TaperBand3D binWidth={binWidth} binDepth={binDepth} band={taperBand} />}
 
       {/* Interaction plane for background clicks and pointer tracking */}
       <InteractionPlane
