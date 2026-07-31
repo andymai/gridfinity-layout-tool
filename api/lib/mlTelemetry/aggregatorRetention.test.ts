@@ -368,8 +368,12 @@ describe('aggregator retention coverage', () => {
     const unresolved: string[] = [];
     const resolved: string[] = [];
     for (const name of names) {
+      // `$` is a valid identifier character, so unescaped it would anchor the
+      // pattern and a name like `$key` would never resolve against its own
+      // declaration.
+      const escaped = name.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&');
       const decl = source.match(
-        new RegExp(`\\bconst ${name}\\s*(?::[^=]+)?=\\s*(['"\`])([^'"\`]*)`)
+        new RegExp(`\\bconst ${escaped}\\s*(?::[^=]+)?=\\s*(['"\`])([^'"\`]*)`)
       );
       if (decl) resolved.push(decl[2]);
       else unresolved.push(name);
