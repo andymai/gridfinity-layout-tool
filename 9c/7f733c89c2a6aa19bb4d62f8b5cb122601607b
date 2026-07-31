@@ -1,0 +1,31 @@
+src/features/bin-designer/utils/assembledHeight.test.ts
+  s_847f99eb10e239::t_6f499ede331739 94-96,103-118
+src/features/bin-designer/components/preview/BinDimensions/BinDimensions.tsx
+  s_847f99eb10e239::t_17df0c81434743 217
+  s_847f99eb10e239::t_16ddd6b4d3de58 324-332
+  s_847f99eb10e239::t_a61b6354605210 189-194,199-200,203-204,207
+src/features/bin-designer/components/preview/BinDimensions/BinDimensions.test.tsx
+  s_847f99eb10e239::t_52e47cc5c9f846 141-164
+  s_847f99eb10e239::t_921d000d524b9c 165
+src/features/bin-designer/utils/assembledHeight.ts
+  s_847f99eb10e239::t_69e39675cab659 120-124,126-130
+  s_847f99eb10e239::t_e03c469fa5c782 147,149
+src/shared/printSettings/baseplateHeight.test.ts
+  s_847f99eb10e239::t_f629b35fef2ac1 4,32-35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "9c7f733c89c2a6aa19bb4d62f8b5cb122601607b",
+  "prompts": {},
+  "sessions": {
+    "s_847f99eb10e239": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0ec9dcc4-62aa-4e7a-9a1c-d33ce8fd5f4b",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
