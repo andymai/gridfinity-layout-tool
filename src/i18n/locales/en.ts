@@ -912,6 +912,19 @@ const en: Record<string, string> = {
   'stackSolver.apply': 'Use {unit}mm/unit',
   'stackSolver.outOfRange': 'Unit would fall outside {min}–{max}mm',
   'stackSolver.overlayPitch': 'stacks +{pitch}mm',
+
+  // Assembled height breakdown (#3037)
+  'assembledHeight.title': 'Assembled height',
+  'assembledHeight.segmentLabel': '{label} {mm}mm',
+  'assembledHeight.baseplate': 'Baseplate',
+  'assembledHeight.bin': 'Bin',
+  'assembledHeight.stackingLip': 'Stacking lip',
+  'assembledHeight.lid': 'Lid above lip',
+  'assembledHeight.lidStackGrid': 'Stack grid',
+  'assembledHeight.nestedNote': '{plate}mm plate, bin sinks {nested}mm into it',
+  'assembledHeight.fits': 'Fits drawer, {slack}mm to spare',
+  'assembledHeight.overflows': '{over}mm taller than drawer',
+
   'settings.copiedFromLayout': 'Defaults copied from current layout',
   'settings.confirmResetAll': 'Reset all settings to their defaults? This cannot be undone.',
   'settings.resetAllConfirmed': 'All settings reset',

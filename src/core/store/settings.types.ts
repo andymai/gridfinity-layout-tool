@@ -243,6 +243,14 @@ export interface UserSettings {
   showBananaScale: boolean;
 
   /**
+   * Expand the bin designer's height dimension into its per-component bands
+   * (baseplate / bin / stacking lip / lid) instead of a single total.
+   * Persisted because drawer planning is a whole-session activity — someone
+   * checking clearance wants it expanded every time, not re-toggled on reload.
+   */
+  showAssembledHeightBreakdown: boolean;
+
+  /**
    * Print estimation settings (filament cost, layer height, infill %).
    * Used by both bin designer and print export for time/cost estimates.
    */
@@ -358,6 +366,9 @@ export const DEFAULT_SETTINGS: UserSettings = {
 
   // 3D preview - banana for scale
   showBananaScale: false,
+
+  // Bin designer - collapsed to a single assembled-height total by default
+  showAssembledHeightBreakdown: false,
 
   // Print estimation settings
   printSettings: { ...DEFAULT_PRINT_SETTINGS },

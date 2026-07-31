@@ -11,6 +11,7 @@ import { Checkbox, IconButton, Stepper } from '@/design-system';
 import { ArrowLeftRightIcon, RulerIcon } from '@/design-system/Icon';
 import { FractionalEdgeToggle } from '@/shared/components/FractionalEdgeToggle';
 import { useResponsive } from '@/shared/hooks/useResponsive';
+import { AssembledHeightBreakdown } from '../AssembledHeightBreakdown';
 import { useDimensionsSection } from './useDimensionsSection';
 
 export function DimensionsSection() {
@@ -67,13 +68,16 @@ export function DimensionsSection() {
         </div>
       </div>
 
-      {/* Physical dimensions display */}
+      {/* Physical dimensions display — the printed body, excluding the stacking
+          lip. AssembledHeightBreakdown below gives the seated height. */}
       <div className="flex items-center justify-center gap-1.5 text-xs text-content-tertiary">
         <RulerIcon size="xs" />
         <span className="tabular-nums">
           {state.widthMm.toFixed(0)} × {state.depthMm.toFixed(0)} × {state.heightMm.toFixed(0)} mm
         </span>
       </div>
+
+      <AssembledHeightBreakdown />
 
       {/* Half-unit foot placement — shown when a dimension is fractional. Lets a
           2.5×2 bin put its half foot on either side without rotating the print. */}

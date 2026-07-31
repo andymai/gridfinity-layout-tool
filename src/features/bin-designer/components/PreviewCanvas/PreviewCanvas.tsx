@@ -55,6 +55,8 @@ import { FootprintGrid } from '../preview/FootprintGrid';
 import { useDesignerKeyboard } from '../../hooks/useDesignerKeyboard';
 import { useDoubleTapReset } from '../../hooks/useDoubleTapReset';
 import { useSplitPreview } from '../../hooks/useSplitPreview';
+import { useAssembledHeight } from '../../hooks/useAssembledHeight';
+import { ASSEMBLED_SEGMENT_LABEL_KEYS, type AssembledSegment } from '../../utils/assembledHeight';
 import { setPreviewCanvas, setPreviewContext, clearPreviewCanvas } from '../../utils/thumbnail';
 import { describeBin, getStatusAnnouncement } from '../../utils/a11y';
 import { useResponsive } from '@/shared/hooks/useResponsive';
@@ -242,6 +244,15 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
   // Ghost overlays read bin sub-configs (compartments, scoop, dividers, …);
   // gate them off for non-bin item kinds.
   const isBinKind = useDesignerStore((s) => s.itemKind === 'bin');
+  const { breakdown: assembled, expanded: assembledExpanded } = useAssembledHeight();
+  const assembledSegmentLabel = useCallback(
+    (segment: AssembledSegment) =>
+      t('assembledHeight.segmentLabel', {
+        label: t(ASSEMBLED_SEGMENT_LABEL_KEYS[segment.kind]),
+        mm: String(Math.round(segment.mm * 10) / 10),
+      }),
+    [t]
+  );
   const addToast = useToastStore((s) => s.addToast);
   const { navigateToPlanner } = useDesignerRouting();
 
@@ -497,11 +508,12 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
                       <BinDimensions
                         width={width}
                         depth={depth}
-                        height={height}
                         gridUnitMm={params.gridUnitMm}
                         gridUnitMmY={params.gridUnitMmY}
-                        heightUnitMm={params.heightUnitMm}
-                        stackingLip={params.base.stackingLip}
+                        segments={assembled.segments}
+                        totalMm={assembled.totalMm}
+                        expanded={assembledExpanded}
+                        segmentLabel={assembledSegmentLabel}
                         stackPitchLabel={
                           params.base.stackingLip
                             ? t('stackSolver.overlayPitch', {
