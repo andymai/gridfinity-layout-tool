@@ -8,8 +8,9 @@
  * Requires REDIS_TEST_URL (CI supplies a redis:7-alpine service container).
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest';
 import { Redis } from 'ioredis';
+import type * as RateLimitModule from './rateLimit.js';
 
 const REDIS_TEST_URL = process.env.REDIS_TEST_URL;
 
@@ -20,6 +21,7 @@ if (!REDIS_TEST_URL && process.env.CI) {
 
 describe.skipIf(!REDIS_TEST_URL)('rate limiter (real Redis)', () => {
   let probe: Redis;
+  let loaded: typeof RateLimitModule | null = null;
 
   beforeAll(() => {
     process.env.REDIS_URL = REDIS_TEST_URL;
@@ -35,9 +37,17 @@ describe.skipIf(!REDIS_TEST_URL)('rate limiter (real Redis)', () => {
     vi.resetModules();
   });
 
+  // Each reset orphans the previous module's memoized client. Left open they
+  // accumulate one connection per test and can hang the run on open handles.
+  afterEach(async () => {
+    await loaded?.getRedis()?.quit();
+    loaded = null;
+  });
+
   // Fresh module per test: getRedis() memoizes its client and the script.
   async function limiter() {
-    return await import('./rateLimit.js');
+    loaded = await import('./rateLimit.js');
+    return loaded;
   }
 
   it('admits up to the limit and denies past it', async () => {
@@ -104,6 +114,34 @@ describe.skipIf(!REDIS_TEST_URL)('rate limiter (real Redis)', () => {
     expect((await checkRateLimit('ages-out', 'auth.start')).allowed).toBe(true);
     // The consume pass also prunes what it just aged past.
     expect(await probe.zcard(key)).toBe(1);
+  });
+
+  // The count floor is exclusive and the prune inclusive, so an entry sitting
+  // exactly on the boundary is not counted by the same call that deletes it.
+  // Date is frozen because at real time this passes either way once the clock
+  // ticks past the boundary, which would make it useless as a regression test.
+  it('excludes an entry sitting exactly on the window floor', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      const fixedMs = 1_800_000_000_000;
+      vi.setSystemTime(fixedMs);
+      const now = Math.floor(fixedMs / 1000);
+
+      const { checkRateLimit } = await limiter();
+      const { rateLimitKey } = await import('./redisKeys.js');
+      const { createHash } = await import('crypto');
+      const scope = createHash('sha256').update('boundary').digest('hex').slice(0, 16);
+      const key = rateLimitKey('auth.start', scope);
+
+      // A full budget parked exactly on the floor; an inclusive count denies.
+      for (let i = 0; i < 30; i++) await probe.zadd(key, now - 60, `boundary-${i}`);
+
+      expect((await checkRateLimit('boundary', 'auth.start')).allowed).toBe(true);
+      // The same call prunes them, so only the entry just written survives.
+      expect(await probe.zcard(key)).toBe(1);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('reports a retry-after that is never in the past', async () => {

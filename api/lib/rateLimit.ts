@@ -94,13 +94,18 @@ interface RateLimitResult {
  * denial retains entries older than `windowStart`, and using one of those would
  * produce a resetAt in the past.
  *
+ * The window floor is exclusive so it agrees with the inclusive prune below.
+ * Counting an entry at exactly `windowStart` while the same call deletes it
+ * would let a scope be denied on the strength of a slot it just gave up.
+ *
  * Returns [allowed, remaining, oldestScoreInWindow].
  */
 const SLIDING_WINDOW_LUA = `
-local count = redis.call('ZCOUNT', KEYS[1], ARGV[1], '+inf')
+local floor = '(' .. ARGV[1]
+local count = redis.call('ZCOUNT', KEYS[1], floor, '+inf')
 local limit = tonumber(ARGV[2])
 if count >= limit then
-  local oldest = redis.call('ZRANGEBYSCORE', KEYS[1], ARGV[1], '+inf', 'WITHSCORES', 'LIMIT', 0, 1)
+  local oldest = redis.call('ZRANGEBYSCORE', KEYS[1], floor, '+inf', 'WITHSCORES', 'LIMIT', 0, 1)
   return {0, 0, oldest[2] or '0'}
 end
 redis.call('ZADD', KEYS[1], ARGV[3], ARGV[4])
