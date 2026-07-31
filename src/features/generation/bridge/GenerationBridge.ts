@@ -100,6 +100,14 @@ export type {
 } from './bridgeTypes';
 export { ExportTimeoutError } from './bridgeTypes';
 
+/**
+ * Ceiling on a single worker init attempt. Generous on purpose: this is a
+ * last-resort "the worker is hung" guard, not a performance budget, and a cold
+ * occt-wasm start on a slow connection is legitimately slow. `init()` retries
+ * once, so a genuine hang surfaces as an error after at most twice this.
+ */
+const INIT_TIMEOUT_MS = 60_000;
+
 export class GenerationBridge {
   private readonly kernel: KernelName;
   worker: Worker | null = null;
@@ -188,41 +196,70 @@ export class GenerationBridge {
   /** Single init attempt: create worker, send INIT, wait for INIT_READY. */
   private tryInit(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
+      let timer: ReturnType<typeof setTimeout> | null = null;
+
+      const teardown = (): void => {
+        if (timer !== null) {
+          clearTimeout(timer);
+          timer = null;
+        }
+        this.worker?.removeEventListener('message', onInitMessage);
+        this.worker?.removeEventListener('error', onInitError);
+      };
+
+      const onInitError = (e: ErrorEvent): void => {
+        // Rejecting below handles this, so stop it also surfacing as an uncaught
+        // window-level error (same reason bridgeMessageHandler does).
+        e.preventDefault();
+        // When a worker script fails to load (network error, CSP block, missing module),
+        // the ErrorEvent.message is often empty. Build a diagnostic message from whatever
+        // fields are available so the error is actionable in telemetry.
+        const detail =
+          e.message ||
+          (e.filename ? `loading ${e.filename}${e.lineno ? `:${e.lineno}` : ''}` : '') ||
+          'script failed to load (possible network error, CSP restriction, or unsupported browser)';
+        teardown();
+        reject(new Error(`Worker failed to initialize: ${detail}`));
+      };
+
+      const onInitMessage = (event: MessageEvent<WorkerResponse>): void => {
+        if (event.data.type === 'INIT_READY') {
+          teardown();
+          this.threadingInfo = extractThreadingInfo(event.data);
+          this.setupMessageHandler();
+          resolve();
+        } else if (event.data.type === 'ERROR') {
+          teardown();
+          reject(new Error(event.data.error));
+        }
+      };
+
       try {
         this.worker = new Worker(new URL('../worker/generation.worker.ts', import.meta.url), {
           type: 'module',
         });
 
-        const onInitError = (e: ErrorEvent): void => {
-          // When a worker script fails to load (network error, CSP block, missing module),
-          // the ErrorEvent.message is often empty. Build a diagnostic message from whatever
-          // fields are available so the error is actionable in telemetry.
-          const detail =
-            e.message ||
-            (e.filename ? `loading ${e.filename}${e.lineno ? `:${e.lineno}` : ''}` : '') ||
-            'script failed to load (possible network error, CSP restriction, or unsupported browser)';
-          reject(new Error(`Worker failed to initialize: ${detail}`));
-        };
-
-        const onInitMessage = (event: MessageEvent<WorkerResponse>) => {
-          if (event.data.type === 'INIT_READY') {
-            this.worker?.removeEventListener('message', onInitMessage);
-            this.worker?.removeEventListener('error', onInitError);
-            this.threadingInfo = extractThreadingInfo(event.data);
-            this.setupMessageHandler();
-            resolve();
-          } else if (event.data.type === 'ERROR') {
-            this.worker?.removeEventListener('message', onInitMessage);
-            this.worker?.removeEventListener('error', onInitError);
-            reject(new Error(event.data.error));
-          }
-        };
+        // A worker that loads but then stalls inside WASM init emits neither a
+        // message nor an error event, so without this the promise never settles:
+        // wasmStatus stays 'loading' and the preview sits on a bare spinner with
+        // no error text and no retry affordance (#3035).
+        timer = setTimeout(() => {
+          teardown();
+          reject(
+            new Error(
+              `Worker failed to initialize: kernel '${this.kernel}' did not report ready within ${
+                INIT_TIMEOUT_MS / 1000
+              }s`
+            )
+          );
+        }, INIT_TIMEOUT_MS);
 
         this.worker.addEventListener('message', onInitMessage);
         this.worker.addEventListener('error', onInitError);
 
         this.postMessage({ type: 'INIT', kernel: this.kernel });
       } catch (e) {
+        teardown();
         reject(e instanceof Error ? e : new Error(String(e)));
       }
     });
