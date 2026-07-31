@@ -30,14 +30,47 @@ export function dimensionsMatch(
 }
 
 /**
+ * Check if a design fits a bin's footprint, allowing a 90° placement (#3040).
+ *
+ * The isometric preview has always rendered a linked design rotated when the
+ * bin's footprint is the design's transpose (`isRotatedPlacement`), so an
+ * 11.5×1.5 design genuinely fits a 1.5×11.5 bin — you print it once and drop it
+ * in turned. The sync layer used to compare strictly, so swapping a design's
+ * width and depth made every linked bin look mismatched and offered to unlink
+ * the ones the rotated footprint couldn't be resized into.
+ *
+ * Height is never interchangeable, and a square footprint is its own transpose,
+ * so both fall out of the plain comparison.
+ */
+export function dimensionsFitAllowingRotation(
+  a: SyncableDimensions,
+  b: SyncableDimensions,
+  tolerance = DIMENSION_TOLERANCE
+): boolean {
+  return (
+    dimensionsMatch(a, b, tolerance) ||
+    dimensionsMatch(a, { width: b.depth, depth: b.width, height: b.height }, tolerance)
+  );
+}
+
+/** Stable key for a dimension triple, used to remember a declined sync. */
+export function syncDeclineKey(d: SyncableDimensions): string {
+  return `${d.width}x${d.depth}x${d.height}`;
+}
+
+/**
  * Compare dimensions and identify which ones differ.
+ *
+ * `matched` is the "does this design fit the bin" verdict and so allows a 90°
+ * placement (#3040); `differences` stays a literal per-axis report, because it
+ * drives the dialog's read-out of what actually changed.
  */
 export function compareDimensions(
   design: SyncableDimensions,
   bin: SyncableDimensions
 ): DimensionComparison {
   return {
-    matched: dimensionsMatch(design, bin),
+    matched: dimensionsFitAllowingRotation(design, bin),
     design,
     bin,
     differences: {

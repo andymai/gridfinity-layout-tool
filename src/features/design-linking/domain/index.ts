@@ -7,6 +7,8 @@
 // Linking rules and validation
 export {
   dimensionsMatch,
+  dimensionsFitAllowingRotation,
+  syncDeclineKey,
   compareDimensions,
   checkSyncEligibility,
   checkBatchSyncEligibility,

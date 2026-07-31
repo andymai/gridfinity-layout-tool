@@ -26,11 +26,12 @@ import { useLinkingStore } from '../store';
 import {
   getLinkedDesignIds,
   getBinsLinkedToDesign,
-  dimensionsMatch,
+  dimensionsFitAllowingRotation,
   extractBinDimensions,
   compareDimensions,
   checkBatchSyncEligibility,
   createBinSyncUpdate,
+  syncDeclineKey,
 } from '../domain';
 
 export function useDesignSavedListener(): void {
@@ -38,6 +39,7 @@ export function useDesignSavedListener(): void {
   const { updateBin } = useMutations();
   const addToast = useToastStore((s) => s.addToast);
   const showSyncDialog = useLinkingStore((s) => s.showSyncDialog);
+  const declinedSyncs = useLinkingStore((s) => s.declinedSyncs);
   const registry = useCustomBins();
 
   const layoutRef = useLayoutRef();
@@ -45,6 +47,7 @@ export function useDesignSavedListener(): void {
   const updateBinRef = useLatestRef(updateBin);
   const addToastRef = useLatestRef(addToast);
   const showSyncDialogRef = useLatestRef(showSyncDialog);
+  const declinedSyncsRef = useLatestRef(declinedSyncs);
   const registryRef = useLatestRef(registry);
 
   useEffect(() => {
@@ -54,7 +57,7 @@ export function useDesignSavedListener(): void {
       if (linkedBins.length === 0) return;
 
       const binsNeedingSync = linkedBins.filter(
-        (bin) => !dimensionsMatch(extractBinDimensions(bin), event.dimensions)
+        (bin) => !dimensionsFitAllowingRotation(extractBinDimensions(bin), event.dimensions)
       );
       if (binsNeedingSync.length === 0) return;
 
@@ -79,7 +82,11 @@ export function useDesignSavedListener(): void {
         return;
       }
 
-      // Some bins can't fit -- show the sync dialog
+      // Some bins can't fit -- show the sync dialog, unless the user already
+      // declined this exact design + dimensions (#3040). Without the guard the
+      // mount reconciliation below re-opens it on every return to the layout.
+      if (declinedSyncsRef.current[event.designId] === syncDeclineKey(event.dimensions)) return;
+
       const comparison = compareDimensions(
         event.dimensions,
         extractBinDimensions(binsNeedingSync[0])
@@ -114,7 +121,7 @@ export function useDesignSavedListener(): void {
     const unsubscribe = onSyncEvent<DesignSavedEvent>('design-saved', handleDesignSaved);
 
     // Reconcile on mount: catch design changes that happened while the listener was unmounted.
-    // Safe to run after subscribing because handleDesignSaved is idempotent (dimensionsMatch guard).
+    // Safe to run after subscribing because handleDesignSaved is idempotent (fit guard).
     const layout = layoutRef.current;
     const designIds = getLinkedDesignIds(layout.bins);
     for (const designId of designIds) {
@@ -128,5 +135,13 @@ export function useDesignSavedListener(): void {
     }
 
     return unsubscribe;
-  }, [layoutRef, tRef, updateBinRef, addToastRef, showSyncDialogRef, registryRef]);
+  }, [
+    layoutRef,
+    tRef,
+    updateBinRef,
+    addToastRef,
+    showSyncDialogRef,
+    registryRef,
+    declinedSyncsRef,
+  ]);
 }

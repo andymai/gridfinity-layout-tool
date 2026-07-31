@@ -5,6 +5,8 @@ import {
   checkSyncEligibility,
   checkBatchSyncEligibility,
   generateDefaultDesignName,
+  dimensionsFitAllowingRotation,
+  syncDeclineKey,
 } from './linkingRules';
 import type { Bin, Layout } from '@/core/types';
 import { binId, layerId, categoryId, gridUnits, heightUnits, mm } from '@/core/types';
@@ -321,5 +323,73 @@ describe('linkingRules', () => {
       const dims: SyncableDimensions = { width: 1, depth: 1, height: 1 };
       expect(generateDefaultDesignName(dims)).toBe('1×1×1 Bin');
     });
+  });
+});
+
+describe('dimensionsFitAllowingRotation (#3040)', () => {
+  it('accepts identical dimensions', () => {
+    expect(
+      dimensionsFitAllowingRotation(
+        { width: 2, depth: 5, height: 6 },
+        { width: 2, depth: 5, height: 6 }
+      )
+    ).toBe(true);
+  });
+
+  it('accepts a transposed footprint — the preview renders it rotated', () => {
+    // The reporter's case: an 11.5x1.5 design against a 1.5x11.5 bin (#3040).
+    expect(
+      dimensionsFitAllowingRotation(
+        { width: 11.5, depth: 1.5, height: 7 },
+        { width: 1.5, depth: 11.5, height: 7 }
+      )
+    ).toBe(true);
+  });
+
+  it('rejects a transpose whose height differs — height never rotates', () => {
+    expect(
+      dimensionsFitAllowingRotation(
+        { width: 11.5, depth: 1.5, height: 7 },
+        { width: 1.5, depth: 11.5, height: 3 }
+      )
+    ).toBe(false);
+  });
+
+  it('rejects a genuinely different footprint', () => {
+    expect(
+      dimensionsFitAllowingRotation(
+        { width: 3, depth: 3, height: 6 },
+        { width: 2, depth: 2, height: 6 }
+      )
+    ).toBe(false);
+  });
+
+  it('stays within tolerance on half-grid values', () => {
+    expect(
+      dimensionsFitAllowingRotation(
+        { width: 1.5, depth: 11.5, height: 7 },
+        { width: 11.5, depth: 1.5, height: 7 }
+      )
+    ).toBe(true);
+  });
+});
+
+describe('syncDeclineKey', () => {
+  it('is stable for the same dimensions', () => {
+    expect(syncDeclineKey({ width: 1.5, depth: 11.5, height: 7 })).toBe(
+      syncDeclineKey({ width: 1.5, depth: 11.5, height: 7 })
+    );
+  });
+
+  it('changes when any dimension changes, so a re-edit asks again', () => {
+    expect(syncDeclineKey({ width: 1.5, depth: 11.5, height: 7 })).not.toBe(
+      syncDeclineKey({ width: 1.5, depth: 11.5, height: 8 })
+    );
+  });
+
+  it('distinguishes a footprint from its transpose', () => {
+    expect(syncDeclineKey({ width: 2, depth: 5, height: 6 })).not.toBe(
+      syncDeclineKey({ width: 5, depth: 2, height: 6 })
+    );
   });
 });

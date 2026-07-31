@@ -33,7 +33,7 @@ import {
   hasComplexGeometry,
   getComplexityReasons,
   getBinsLinkedToDesign,
-  dimensionsMatch,
+  dimensionsFitAllowingRotation,
   compareDimensions,
   extractBinDimensions,
   checkBatchSyncEligibility,
@@ -155,7 +155,7 @@ export function useBinResizedListener(): void {
 
         // Only cascade to siblings whose dimensions actually differ
         const siblingBins = allSiblings.filter(
-          (b) => !dimensionsMatch(extractBinDimensions(b), newDimensions)
+          (b) => !dimensionsFitAllowingRotation(extractBinDimensions(b), newDimensions)
         );
 
         if (siblingBins.length === 0) {

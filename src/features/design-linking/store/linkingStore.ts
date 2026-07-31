@@ -20,6 +20,7 @@ import type {
   SyncableDimensions,
 } from '../types';
 import type { ComplexityReason } from '../domain/complexGeometry';
+import { syncDeclineKey } from '../domain/linkingRules';
 
 interface LinkingStoreState {
   // Dialog states
@@ -29,6 +30,16 @@ interface LinkingStoreState {
   pendingLinkDesign: PendingLinkDesignState | null;
   pendingBlockedResize: PendingBlockedResizeState | null;
   pendingDesignerUpdated: PendingDesignerUpdatedState | null;
+
+  /**
+   * Sync prompts the user has already declined, as designId -> dimension key
+   * (#3040). `useDesignSavedListener` re-reconciles on every mount, so without
+   * this a design whose linked bins can't be resized re-opens the modal every
+   * time the layout editor is returned to, with no way to say "I know".
+   * Cleared implicitly: the key includes the dimensions, so changing the design
+   * again asks afresh. Session-scoped on purpose — not persisted.
+   */
+  declinedSyncs: Record<string, string>;
 
   // Sync dialog actions
   showSyncDialog: (
@@ -40,6 +51,8 @@ interface LinkingStoreState {
     binsHaveVaryingDimensions: boolean
   ) => void;
   hideSyncDialog: () => void;
+  /** Record the open prompt as declined, then close it. */
+  declineSyncDialog: () => void;
 
   // Delete warning actions
   showDeleteWarning: (
@@ -86,6 +99,7 @@ export const useLinkingStore = create<LinkingStoreState>()((set) => ({
   pendingLinkDesign: null,
   pendingBlockedResize: null,
   pendingDesignerUpdated: null,
+  declinedSyncs: {},
 
   // Sync dialog
   showSyncDialog: (
@@ -107,6 +121,18 @@ export const useLinkingStore = create<LinkingStoreState>()((set) => ({
       },
     }),
   hideSyncDialog: () => set({ pendingSync: null }),
+  declineSyncDialog: () =>
+    set((state) =>
+      state.pendingSync
+        ? {
+            pendingSync: null,
+            declinedSyncs: {
+              ...state.declinedSyncs,
+              [state.pendingSync.designId]: syncDeclineKey(state.pendingSync.comparison.design),
+            },
+          }
+        : { pendingSync: null }
+    ),
 
   // Delete warning
   showDeleteWarning: (designId, designName, linkedBinIds, onConfirm, onCancel) =>
