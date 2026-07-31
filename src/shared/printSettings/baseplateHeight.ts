@@ -4,8 +4,10 @@
  * Kept out of `gridfinityGeometry.ts` so that near-leaf constants module does
  * not pick up `@/core/constants` — it is pulled into the WASM worker bundle and
  * into `shared/constants/labelPlates`, neither of which needs layout defaults.
- * Split out of the worker's `generatorConstants` (which imports brepjs) so
- * main-thread features can derive plate heights without crossing a boundary.
+ * Split out of the worker's `generatorConstants`, which owned this math but sits
+ * under `features/generation`: any other feature importing it is a cross-feature
+ * boundary violation (`check-module-boundaries.sh`). Living in `shared/` lets the
+ * designer and the worker derive plate heights from one definition.
  */
 
 import { SOLID_FLOOR_DEFAULT_MM } from '@/core/constants';
