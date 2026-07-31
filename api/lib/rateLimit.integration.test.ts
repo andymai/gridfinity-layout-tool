@@ -23,12 +23,15 @@ describe.skipIf(!REDIS_TEST_URL)('rate limiter (real Redis)', () => {
   let probe: Redis;
   let loaded: typeof RateLimitModule | null = null;
 
+  // Stubbed rather than assigned: process.env is process-wide, so a bare
+  // assignment leaks this URL into any suite sharing the run.
   beforeAll(() => {
-    process.env.REDIS_URL = REDIS_TEST_URL;
+    vi.stubEnv('REDIS_URL', REDIS_TEST_URL);
     probe = new Redis(REDIS_TEST_URL as string);
   });
 
   afterAll(async () => {
+    vi.unstubAllEnvs();
     await probe.quit();
   });
 
