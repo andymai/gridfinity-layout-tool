@@ -1,0 +1,26 @@
+src/features/generation/bridge/GenerationBridge.test.ts
+  s_902c2a5ae512a3::t_f925e92eaccf89 102
+  s_902c2a5ae512a3::t_2df225790336be 39-41
+  s_902c2a5ae512a3::t_0f5277dee4929d 77-78
+  s_902c2a5ae512a3::t_0d17b75915cc70 132-154
+src/features/generation/bridge/GenerationBridge.ts
+  s_902c2a5ae512a3::t_dea6a7337facce 199,202-207,232-233,243,252
+  s_902c2a5ae512a3::t_10d2a682866763 103-110
+  s_902c2a5ae512a3::t_d9be10d3385361 200-201,208-231,239-242,244-251,259
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "b6a1a581a32f63e2300f101ea6d6924bd2a9f33a",
+  "prompts": {},
+  "sessions": {
+    "s_902c2a5ae512a3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7c2b0714-dbcd-4214-878f-f24d2ca078b3",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
