@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.336.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.336.0...gridfinity-layout-tool-v4.336.1) (2026-07-31)
+
+
+### Bug Fixes
+
+* **generation:** follow the overhang when placing lid retention magnets ([#3048](https://github.com/andymai/gridfinity-layout-tool/issues/3048)) ([#3051](https://github.com/andymai/gridfinity-layout-tool/issues/3051)) ([09966e5](https://github.com/andymai/gridfinity-layout-tool/commit/09966e5538f795c3632f54ee476a2c5dd315224c))
+
 ## [4.336.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.335.0...gridfinity-layout-tool-v4.336.0) (2026-07-31)
 
 
