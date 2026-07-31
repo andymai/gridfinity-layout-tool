@@ -208,6 +208,9 @@ export class GenerationBridge {
       };
 
       const onInitError = (e: ErrorEvent): void => {
+        // Rejecting below handles this, so stop it also surfacing as an uncaught
+        // window-level error (same reason bridgeMessageHandler does).
+        e.preventDefault();
         // When a worker script fails to load (network error, CSP block, missing module),
         // the ErrorEvent.message is often empty. Build a diagnostic message from whatever
         // fields are available so the error is actionable in telemetry.
