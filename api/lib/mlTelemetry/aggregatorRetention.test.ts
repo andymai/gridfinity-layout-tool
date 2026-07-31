@@ -329,21 +329,54 @@ describe('aggregator retention coverage', () => {
     expect(collisions).toEqual([]);
   });
 
-  // Fixtures only reach the branches they happen to trigger. Reading the
-  // source catches key shapes behind conditions no fixture satisfies.
+  // Fixtures only reach the branches they happen to trigger, so the source is
+  // read as well to cover key shapes behind conditions no fixture satisfies.
   //
-  // Both write styles must be matched: eleven key shapes assign `inc[...]`
-  // directly rather than going through the `incr()` helper, and a scan that
-  // only knew about `incr()` would silently pass over every one of them.
-  it('writes only ml:-prefixed keys on every branch, reachable or not', () => {
-    const source = readFileSync(new URL('./aggregators.ts', import.meta.url), 'utf8');
-    const viaHelper = [...source.matchAll(/incr\(\s*inc\s*,\s*(['"`])([^'"`]*)/g)].map((m) => m[2]);
-    const viaAssignment = [...source.matchAll(/\binc\[\s*(['"`])([^'"`]*)/g)].map((m) => m[2]);
-    const written = [...viaHelper, ...viaAssignment];
+  // Three write styles exist and all three must be matched. Most keys go
+  // through `incr()`; eleven assign `inc['ml:...']` directly; three more
+  // subscript a variable (`inc[purposeKey]`), which is resolved back to its
+  // declaration below. A scan that knew only about `incr()` would pass
+  // silently over the other fourteen.
+  const readSource = () => readFileSync(new URL('./aggregators.ts', import.meta.url), 'utf8');
+  const literalKeys = (source: string) => ({
+    viaHelper: [...source.matchAll(/incr\(\s*inc\s*,\s*(['"`])([^'"`]*)/g)].map((m) => m[2]),
+    viaSubscript: [...source.matchAll(/\binc\[\s*(['"`])([^'"`]*)/g)].map((m) => m[2]),
+  });
 
-    expect(viaHelper.length).toBeGreaterThan(50);
-    expect(viaAssignment.length).toBeGreaterThan(0);
+  it('writes only ml:-prefixed literal keys', () => {
+    const { viaHelper, viaSubscript } = literalKeys(readSource());
+    const written = [...viaHelper, ...viaSubscript];
+
+    // Anchored on known keys rather than counts, which drift on any refactor.
+    expect(viaHelper).toContain('ml:sizes');
+    expect(viaSubscript).toContain('ml:session:totals');
     expect(written.filter((key) => !key.startsWith('ml:'))).toEqual([]);
     expect(written.filter((key) => ML_LIFETIME_KEYS.has(key))).toEqual([]);
+  });
+
+  // The literal scan cannot see `inc[someKey]`. Rather than leave that as an
+  // unstated gap, resolve each computed subscript to its `const` declaration
+  // and assert the template it is built from. `key` is the parameter of the
+  // `incr()` helper itself, whose call sites the literal scan already covers —
+  // any *other* unresolved name means a new computed key slipped past both.
+  it('writes only ml:-prefixed computed keys', () => {
+    const source = readSource();
+    const names = new Set(
+      [...source.matchAll(/\binc\[\s*([A-Za-z_$][\w$]*)\s*\]/g)].map((m) => m[1])
+    );
+
+    const unresolved: string[] = [];
+    const resolved: string[] = [];
+    for (const name of names) {
+      const decl = source.match(
+        new RegExp(`\\bconst ${name}\\s*(?::[^=]+)?=\\s*(['"\`])([^'"\`]*)`)
+      );
+      if (decl) resolved.push(decl[2]);
+      else unresolved.push(name);
+    }
+
+    expect(unresolved).toEqual(['key']);
+    expect(resolved.length).toBeGreaterThan(0);
+    expect(resolved.filter((key) => !key.startsWith('ml:'))).toEqual([]);
   });
 });
