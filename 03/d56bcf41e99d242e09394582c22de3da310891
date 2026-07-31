@@ -1,0 +1,21 @@
+src/features/scan-capture/components/ScanPage/ScanPage.test.tsx
+  s_94ccc8709fbafc::t_d737ae638158a1 314-327
+src/features/scan-capture/components/ScanPage/ScanPage.tsx
+  s_94ccc8709fbafc::t_5acff3e1b9c07f 144-146
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "03d56bcf41e99d242e09394582c22de3da310891",
+  "prompts": {},
+  "sessions": {
+    "s_94ccc8709fbafc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c61994fc-7e45-4173-9cbb-a47e0bda1452",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
