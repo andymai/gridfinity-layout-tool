@@ -1,0 +1,77 @@
+src/features/bin-designer/components/panel/CutoutsSection/CutoutEditor.tsx
+  s_e7a4c2a1dceca8::t_2e9d2c95c690a3 11-15,88,515
+src/i18n/locales/pt-BR.json
+  s_e7a4c2a1dceca8::t_2e9d2c95c690a3 543
+src/features/bin-designer/components/CutoutWorkspace/CutoutWorkspace.tsx
+  s_e7a4c2a1dceca8::t_2e9d2c95c690a3 19-23,99,443
+src/i18n/locales/uk.json
+  s_e7a4c2a1dceca8::t_2e9d2c95c690a3 543
+src/features/bin-designer/components/panel/CutoutsSection/renderer/taperBandGeometry.ts
+  s_e7a4c2a1dceca8::t_2e9d2c95c690a3 1-46
+src/i18n/locales/de.json
+  s_e7a4c2a1dceca8::t_2e9d2c95c690a3 543
+src/i18n/locales/it.json
+  s_e7a4c2a1dceca8::t_2e9d2c95c690a3 543
+src/i18n/locales/nb.json
+  s_e7a4c2a1dceca8::t_2e9d2c95c690a3 543
+src/features/bin-designer/components/panel/CutoutsSection/renderer/CutoutCanvas3D.tsx
+  s_e7a4c2a1dceca8::t_2e9d2c95c690a3 19,64-65,125,310
+src/features/bin-designer/utils/binDimensions.ts
+  s_e7a4c2a1dceca8::t_2e9d2c95c690a3 20,71-78,115-135
+  s_e7a4c2a1dceca8::t_a73522e3323e9a 136
+src/i18n/locales/ja.json
+  s_e7a4c2a1dceca8::t_2e9d2c95c690a3 543
+src/features/bin-designer/components/panel/CutoutsSection/CutoutsSection.tsx
+  s_e7a4c2a1dceca8::t_2e9d2c95c690a3 15,19,23-24,27,43-47
+  s_e7a4c2a1dceca8::t_9ed934170241a8 48
+src/i18n/locales/ko.json
+  s_e7a4c2a1dceca8::t_2e9d2c95c690a3 543
+src/i18n/locales/pl.json
+  s_e7a4c2a1dceca8::t_2e9d2c95c690a3 543
+src/features/bin-designer/components/panel/CutoutsSection/renderer/constants.ts
+  s_e7a4c2a1dceca8::t_2e9d2c95c690a3 8-9,36-41
+src/i18n/locales/sv.json
+  s_e7a4c2a1dceca8::t_2e9d2c95c690a3 543
+src/i18n/locales/fr.json
+  s_e7a4c2a1dceca8::t_2e9d2c95c690a3 543
+src/features/bin-designer/components/panel/CutoutsSection/renderer/TaperBand3D.tsx
+  s_e7a4c2a1dceca8::t_2e9d2c95c690a3 1-126
+src/features/bin-designer/components/panel/CutoutsSection/renderer/SceneContent.tsx
+  s_e7a4c2a1dceca8::t_2e9d2c95c690a3 17,22,87-88,150,234-235
+  s_e7a4c2a1dceca8::t_baed85fd06efd1 236
+src/i18n/locales/cs.json
+  s_e7a4c2a1dceca8::t_2e9d2c95c690a3 543
+src/i18n/locales/es.json
+  s_e7a4c2a1dceca8::t_2e9d2c95c690a3 543
+src/i18n/locales/nl.json
+  s_e7a4c2a1dceca8::t_2e9d2c95c690a3 543
+src/features/bin-designer/components/panel/CutoutsSection/renderer/TaperBand3D.test.tsx
+  s_e7a4c2a1dceca8::t_2e9d2c95c690a3 1-22
+src/i18n/locales/zh-CN.json
+  s_e7a4c2a1dceca8::t_2e9d2c95c690a3 543
+src/i18n/locales/en.ts
+  s_e7a4c2a1dceca8::t_2e9d2c95c690a3 2140
+  s_e7a4c2a1dceca8::t_3d0412fb404e88 2141
+src/features/bin-designer/README.md
+  s_e7a4c2a1dceca8::t_6729b5f0836bbc 454
+src/features/bin-designer/components/panel/CutoutsSection/renderer/taperBandGeometry.test.ts
+  s_e7a4c2a1dceca8::t_2e9d2c95c690a3 1-54
+src/features/bin-designer/utils/cutoutTaperBand.contract.test.ts
+  s_e7a4c2a1dceca8::t_2e9d2c95c690a3 1-127
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "2c5fc3fc779a8722abef6d27ff5e6f527965a097",
+  "prompts": {},
+  "sessions": {
+    "s_e7a4c2a1dceca8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2da63a85-7bd0-4938-85fe-1d95dde9d086",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
