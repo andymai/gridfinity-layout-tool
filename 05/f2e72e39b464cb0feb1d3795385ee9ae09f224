@@ -1,0 +1,19 @@
+src/features/generation/bridge/GenerationBridge.ts
+  s_902c2a5ae512a3::t_86b43a5b31628e 211-213
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "05f2e72e39b464cb0feb1d3795385ee9ae09f224",
+  "prompts": {},
+  "sessions": {
+    "s_902c2a5ae512a3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7c2b0714-dbcd-4214-878f-f24d2ca078b3",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
