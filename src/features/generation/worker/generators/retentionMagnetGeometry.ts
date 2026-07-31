@@ -11,13 +11,16 @@
  * The bin and the lid MUST place their magnets at the SAME XY or they won't
  * mate, so both callers derive positions from this single helper (the same
  * discipline `baseplateMagnets.magnetPositionsForCell` uses for stack magnets).
- * Positions are on the NOMINAL grid footprint (not the per-part clearance-
- * adjusted footprint) so the bin's slightly-larger body and the lid's
- * slightly-smaller cavity still line up.
+ * Positions ignore the per-part clearance so the bin's slightly-larger body and
+ * the lid's slightly-smaller cavity still line up, but they DO follow the
+ * overhang-expanded footprint (#3048) — the magnets hug the stacking lip, and
+ * overhang moves it. Unlike the stack sockets, which stay on the nominal grid
+ * because they mate with a neighbouring bin's base rather than with this lip.
  */
 
 import type { BinParams } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
+import type { OverhangExpansion } from './overhang';
 import {
   LID_MAGNET_BOSS_WALL,
   LID_MAGNET_LIP_CLEARANCE,
@@ -87,10 +90,16 @@ function edgeMagnetOffsets(span: number, requested: number, minSpacing: number):
 }
 
 /**
- * Magnet XY positions, centred on the origin like both the bin body and the
- * lid, inset from the NOMINAL footprint corner by {@link retentionMagnetInset}.
- * Nominal (not per-part) so the bin's slightly-larger body and the lid's
- * slightly-smaller cavity keep the magnets coaxial.
+ * Magnet XY positions, inset from the footprint corner by
+ * {@link retentionMagnetInset}. Nominal (not per-part) so the bin's
+ * slightly-larger body and the lid's slightly-smaller cavity keep the magnets
+ * coaxial.
+ *
+ * `expansion` is the bin's overhang footprint growth/shift. The magnets hug the
+ * stacking lip, and overhang moves the lip, so they have to move with it (#3048)
+ * — otherwise a one-sided overhang leaves the magnets `overhang`mm inboard of
+ * the corner on the overhung side, stranding the bin's corner gusset away from
+ * the interior wall it welds into. Omit it for the un-overhung footprint.
  *
  * Always the four corners; plus, when `edgeMagnets >= 1`, that many magnets
  * spread along each edge long enough to space them clear of the corners (issue
@@ -104,17 +113,28 @@ export function retentionMagnetPositions(
   gridUnitMmY: number,
   inset: number,
   edgeMagnets = 0,
-  bossRadius = 0
+  bossRadius = 0,
+  expansion?: OverhangExpansion | null
 ): ReadonlyArray<RetentionMagnetPlacement> {
-  const halfW = (width * gridUnitMmX) / 2;
-  const halfD = (depth * gridUnitMmY) / 2;
+  const cx = expansion?.offsetX ?? 0;
+  const cy = expansion?.offsetY ?? 0;
+  const halfW = (width * gridUnitMmX + (expansion?.addW ?? 0)) / 2;
+  const halfD = (depth * gridUnitMmY + (expansion?.addD ?? 0)) / 2;
   const x = halfW - inset;
   const y = halfD - inset;
+  // Local (footprint-centred) coords translated onto the overhang-shifted
+  // centre, so every placement below reads as if the footprint were centred.
+  const at = (
+    lx: number,
+    ly: number,
+    anchor: RetentionMagnetPlacement['anchor']
+  ): RetentionMagnetPlacement => ({ x: lx + cx, y: ly + cy, anchor });
+
   const placements: RetentionMagnetPlacement[] = [
-    { x: -x, y: -y, anchor: 'corner' },
-    { x, y: -y, anchor: 'corner' },
-    { x: -x, y, anchor: 'corner' },
-    { x, y, anchor: 'corner' },
+    at(-x, -y, 'corner'),
+    at(x, -y, 'corner'),
+    at(-x, y, 'corner'),
+    at(x, y, 'corner'),
   ];
   if (edgeMagnets >= 1) {
     // Space edge magnets at least one grid pitch apart (and never closer than
@@ -126,11 +146,11 @@ export function retentionMagnetPositions(
     const minSpacingY = Math.max(gridUnitMmY, minGap);
     // Front/back walls (constant Y = ±y) run along X → distribute along X.
     for (const ox of edgeMagnetOffsets(2 * x, edgeMagnets, minSpacingX)) {
-      placements.push({ x: ox, y: -y, anchor: 'y' }, { x: ox, y, anchor: 'y' });
+      placements.push(at(ox, -y, 'y'), at(ox, y, 'y'));
     }
     // Left/right walls (constant X = ±x) run along Y → distribute along Y.
     for (const oy of edgeMagnetOffsets(2 * y, edgeMagnets, minSpacingY)) {
-      placements.push({ x: -x, y: oy, anchor: 'x' }, { x, y: oy, anchor: 'x' });
+      placements.push(at(-x, oy, 'x'), at(x, oy, 'x'));
     }
   }
   return placements;
