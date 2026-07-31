@@ -18,6 +18,7 @@ export type {
   CompartmentConfig,
   ScoopConfig,
   ScoopStyle,
+  ScoopSide,
   LabelTabConfig,
   LabelTabAlignment,
   LabelTabEdges,

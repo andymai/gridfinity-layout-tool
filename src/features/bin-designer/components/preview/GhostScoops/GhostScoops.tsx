@@ -1,9 +1,9 @@
 /**
  * Renders ghost scoop ramps in the 3D preview during mesh regeneration.
  *
- * Shows translucent quarter-cylinder shapes at the front edge of each
+ * Shows translucent quarter-cylinder shapes at the scooped edge of each
  * compartment where scoops will appear. Provides immediate visual feedback
- * when the user toggles scoops or changes radius.
+ * when the user toggles scoops or changes radius/side.
  *
  * Position math mirrors binGenerator.ts buildScoopRamps.
  */
@@ -17,6 +17,8 @@ import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { getCompartmentBounds } from '@/features/bin-designer/utils/compartments';
 import {
   resolveScoopProfile,
+  resolveScoopPlacement,
+  resolveScoopSide,
   computeLipOffset,
   computeInteriorHeight,
 } from '@/shared/utils/scoopCalculations';
@@ -80,9 +82,7 @@ export function GhostScoops() {
   const geometry = useMemo(() => {
     if (!shouldShow) return null;
 
-    const cellW = innerW / cols;
-    const cellD = innerD / rows;
-
+    const side = resolveScoopSide(scoop);
     const processedCompartments = new Set<number>();
     const allPositions: number[] = [];
     const allIndices: number[] = [];
@@ -97,19 +97,15 @@ export function GhostScoops() {
         const bounds = getCompartmentBounds(compartments, compId);
         if (!bounds) continue;
 
-        const { minCol, maxCol, minRow, maxRow } = bounds;
-        const compCols = maxCol - minCol + 1;
-        const compRows = maxRow - minRow + 1;
-        const compW = compCols * cellW;
-        const compD = compRows * cellD;
+        const placement = resolveScoopPlacement(side, bounds, { cols, rows, innerW, innerD });
+        const { span, depth, isOuter, alongCenter, edge, runsAlongY, runSign } = placement;
 
-        const isMinRow = minRow === 0;
-        const lipOffset = computeLipOffset(hasLip, isMinRow, lipTaperWidth, wallThickness);
+        const lipOffset = computeLipOffset(hasLip, isOuter, lipTaperWidth, wallThickness);
         const profile = resolveScoopProfile(
           scoop,
-          compW,
-          compD,
-          isMinRow,
+          span,
+          depth,
+          isOuter,
           hasLip,
           wallHeight,
           interiorHeight,
@@ -118,14 +114,10 @@ export function GhostScoops() {
         if (!profile) continue;
         const { run, height, style } = profile;
 
-        // Compartment position
-        const compCenterX = -innerW / 2 + (minCol + compCols / 2) * cellW;
-        const frontEdgeY = -innerD / 2 + minRow * cellD;
-
-        // Build the ramp surface as a triangle strip.
-        // Two rows of vertices: left edge and right edge of the compartment.
-        const leftX = compCenterX - compW / 2;
-        const rightX = compCenterX + compW / 2;
+        // Build the ramp surface as a triangle strip: two rows of vertices, one
+        // at each end of the compartment along the scooped wall.
+        const alongMin = alongCenter - span / 2;
+        const alongMax = alongCenter + span / 2;
 
         // Ramp profile points (offset by lipOffset so the scoop top meets the
         // lip): a concave quarter-ellipse for 'curved', a single bevel edge for
@@ -144,11 +136,15 @@ export function GhostScoops() {
           profilePoints.push([lipOffset + run, 0]);
         }
 
-        for (const [dy, dz] of profilePoints) {
-          // Left vertex
-          allPositions.push(leftX, frontEdgeY + dy, dz);
-          // Right vertex
-          allPositions.push(rightX, frontEdgeY + dy, dz);
+        for (const [dRun, dz] of profilePoints) {
+          const runCoord = edge + runSign * dRun;
+          if (runsAlongY) {
+            allPositions.push(alongMin, runCoord, dz);
+            allPositions.push(alongMax, runCoord, dz);
+          } else {
+            allPositions.push(runCoord, alongMin, dz);
+            allPositions.push(runCoord, alongMax, dz);
+          }
         }
 
         // Build triangle indices for the strip

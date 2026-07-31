@@ -1,7 +1,7 @@
 /**
  * Finger scoop ramp builder for Gridfinity bins.
  *
- * Generates concave quarter-cylinder ramps at the front edge of each compartment
+ * Generates concave quarter-cylinder ramps at the chosen edge of each compartment
  * to help slide items out of the bin.
  */
 
@@ -9,6 +9,7 @@ import {
   draw,
   drawRoundedRectangle,
   translate,
+  rotate,
   withScope,
   clone,
   unwrap,
@@ -20,6 +21,8 @@ import type { BinParams } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import {
   resolveScoopProfile,
+  resolveScoopPlacement,
+  resolveScoopSide,
   computeLipOffset,
   computeInteriorHeight,
 } from '@/shared/utils/scoopCalculations';
@@ -27,19 +30,18 @@ import { LIP_SMALL_TAPER, LIP_TAPER_WIDTH, BOX_CORNER_RADIUS } from './generator
 import { findCompartmentBounds } from './compartmentBuilder';
 import { compartmentHasTiltedEdge } from '@/shared/types/bin';
 /**
- * Build finger scoop ramps that curve from the bin floor up to the front wall.
+ * Build finger scoop ramps that curve from the bin floor up to `scoop.side`.
  *
  * Each scoop is a solid ramp with a concave quarter-cylinder inner surface,
- * fused into the bin interior at the front edge of each compartment. The
+ * fused into the bin interior at the chosen edge of each compartment. The
  * ramp fills the wall-floor junction and the concave curve helps slide
  * items out of the bin.
  *
- * Scoops are placed at the front edge of every compartment row.
- * For merged compartments spanning multiple columns, a single scoop spans
- * the full merged width.
+ * Scoops are placed on the same wall of every compartment. For merged
+ * compartments a single scoop spans the full merged extent along that wall.
  *
- * When the bin has a stacking lip and the scoop is at the outer front wall
- * (row 0), the scoop is offset inward by the lip overhang so its top edge
+ * When the bin has a stacking lip and the compartment touches the outer wall
+ * on that side, the scoop is offset inward by the lip overhang so its top edge
  * meets the lip's protruding inner face, providing a smooth exit path.
  *
  * @param params - Bin parameters (scoop config, compartments)
@@ -78,9 +80,7 @@ function buildScoopRampsInScope(
   const interiorHeight = computeInteriorHeight(wallHeight, hasLip, LIP_SMALL_TAPER);
 
   const { cols, rows, cells } = params.compartments;
-
-  const cellW = innerW / cols;
-  const cellD = innerD / rows;
+  const side = resolveScoopSide(params.scoop);
 
   const processedCompartments = new Set<number>();
   const scoopShapes: Shape3D[] = [];
@@ -100,19 +100,15 @@ function buildScoopRampsInScope(
       const bounds = findCompartmentBounds(compId, cols, rows, cells);
       if (!bounds) continue;
 
-      const { minCol, maxCol, minRow, maxRow } = bounds;
-      const compCols = maxCol - minCol + 1;
-      const compRows = maxRow - minRow + 1;
-      const compW = compCols * cellW;
-      const compD = compRows * cellD;
+      const placement = resolveScoopPlacement(side, bounds, { cols, rows, innerW, innerD });
+      const { span, depth, isOuter } = placement;
 
-      const isMinRow = minRow === 0;
-      const lipOffset = computeLipOffset(hasLip, isMinRow, LIP_TAPER_WIDTH, wallThickness);
+      const lipOffset = computeLipOffset(hasLip, isOuter, LIP_TAPER_WIDTH, wallThickness);
       const scoopProfile = resolveScoopProfile(
         params.scoop,
-        compW,
-        compD,
-        isMinRow,
+        span,
+        depth,
+        isOuter,
         hasLip,
         wallHeight,
         interiorHeight,
@@ -173,13 +169,21 @@ function buildScoopRampsInScope(
       // tangent to the wall and floor at those points, so the edges sit at
       // polygon cusps — brepjs `fillet()` returns Ok but produces degenerate
       // topology that fails STL export.
-      const scoopSolid = scope.register(sketch(profile, 'YZ', -compW / 2).extrude(compW));
+      const scoopSolid = scope.register(sketch(profile, 'YZ', -span / 2).extrude(span));
 
-      // Position: center X at compartment center, Y at front edge of compartment
-      const compCenterX = -innerW / 2 + (minCol + compCols / 2) * cellW;
-      const frontEdgeY = -innerD / 2 + minRow * cellD;
+      // The profile above is authored facing front (wall at Y=0, ramp running
+      // toward +Y). Rotating about +Z maps it onto whichever wall was chosen,
+      // then the translation drops it on that compartment's edge.
+      const oriented =
+        placement.rotationDeg === 0
+          ? scoopSolid
+          : scope.register(rotate(scoopSolid, placement.rotationDeg, { axis: [0, 0, 1] }));
 
-      scoopShapes.push(scope.register(translate(scoopSolid, [compCenterX, frontEdgeY, 0])));
+      const offset: [number, number, number] = placement.runsAlongY
+        ? [placement.alongCenter, placement.edge, 0]
+        : [placement.edge, placement.alongCenter, 0];
+
+      scoopShapes.push(scope.register(translate(oriented, offset)));
     }
   }
 

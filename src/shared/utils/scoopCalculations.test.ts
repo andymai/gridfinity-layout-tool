@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { DESIGNER_CONSTRAINTS } from '@/shared/constants/bin';
 import type { ScoopConfig } from '@/shared/types/bin';
-import { resolveScoopProfile, computeLipOffset, computeInteriorHeight } from './scoopCalculations';
+import {
+  resolveScoopProfile,
+  resolveScoopPlacement,
+  resolveScoopSide,
+  computeLipOffset,
+  computeInteriorHeight,
+} from './scoopCalculations';
 
 const scoop = (overrides: Partial<ScoopConfig> = {}): ScoopConfig => ({
   enabled: true,
@@ -228,5 +234,94 @@ describe('computeInteriorHeight', () => {
 
   it('returns full wall height without lip', () => {
     expect(computeInteriorHeight(16, false, 0.7)).toBe(16);
+  });
+});
+
+describe('resolveScoopSide', () => {
+  it('defaults to front when the design predates the side selector', () => {
+    expect(resolveScoopSide(scoop())).toBe('front');
+  });
+
+  it('honors an explicit side', () => {
+    expect(resolveScoopSide(scoop({ side: 'left' }))).toBe('left');
+  });
+});
+
+describe('resolveScoopPlacement', () => {
+  // 2 cols x 2 rows over a 40x60 interior: cells are 20 wide, 30 deep.
+  const grid = { cols: 2, rows: 2, innerW: 40, innerD: 60 };
+  const topLeft = { minCol: 0, maxCol: 0, minRow: 0, maxRow: 0 };
+
+  it('measures span along the wall and depth away from it', () => {
+    // Front/back sit on an X-aligned wall: span is the 20mm column width.
+    expect(resolveScoopPlacement('front', topLeft, grid)).toMatchObject({
+      span: 20,
+      depth: 30,
+    });
+    // Left/right sit on a Y-aligned wall, so the two axes swap.
+    expect(resolveScoopPlacement('left', topLeft, grid)).toMatchObject({
+      span: 30,
+      depth: 20,
+    });
+  });
+
+  it('places each side on its own wall plane', () => {
+    expect(resolveScoopPlacement('front', topLeft, grid).edge).toBe(-30);
+    expect(resolveScoopPlacement('back', topLeft, grid).edge).toBe(0);
+    expect(resolveScoopPlacement('left', topLeft, grid).edge).toBe(-20);
+    expect(resolveScoopPlacement('right', topLeft, grid).edge).toBe(0);
+  });
+
+  it('runs inward from every wall', () => {
+    // edge + runSign * run must always head toward the bin center.
+    expect(resolveScoopPlacement('front', topLeft, grid).runSign).toBe(1);
+    expect(resolveScoopPlacement('back', topLeft, grid).runSign).toBe(-1);
+    expect(resolveScoopPlacement('left', topLeft, grid).runSign).toBe(1);
+    expect(resolveScoopPlacement('right', topLeft, grid).runSign).toBe(-1);
+  });
+
+  it('flags outer walls only for compartments that touch them', () => {
+    // The top-left compartment touches front and left, not back or right.
+    expect(resolveScoopPlacement('front', topLeft, grid).isOuter).toBe(true);
+    expect(resolveScoopPlacement('left', topLeft, grid).isOuter).toBe(true);
+    expect(resolveScoopPlacement('back', topLeft, grid).isOuter).toBe(false);
+    expect(resolveScoopPlacement('right', topLeft, grid).isOuter).toBe(false);
+
+    const bottomRight = { minCol: 1, maxCol: 1, minRow: 1, maxRow: 1 };
+    expect(resolveScoopPlacement('back', bottomRight, grid).isOuter).toBe(true);
+    expect(resolveScoopPlacement('right', bottomRight, grid).isOuter).toBe(true);
+    expect(resolveScoopPlacement('front', bottomRight, grid).isOuter).toBe(false);
+  });
+
+  it('spans the full extent of a merged compartment', () => {
+    const merged = { minCol: 0, maxCol: 1, minRow: 0, maxRow: 0 };
+    const placement = resolveScoopPlacement('front', merged, grid);
+    expect(placement.span).toBe(40);
+    expect(placement.alongCenter).toBe(0);
+  });
+
+  it('centers each compartment along its wall', () => {
+    expect(resolveScoopPlacement('front', topLeft, grid).alongCenter).toBe(-10);
+    // Left/right measure the center along Y instead.
+    expect(resolveScoopPlacement('left', topLeft, grid).alongCenter).toBe(-15);
+  });
+
+  it('rotates the front-facing profile onto the chosen wall', () => {
+    expect(resolveScoopPlacement('front', topLeft, grid)).toMatchObject({
+      rotationDeg: 0,
+      runsAlongY: true,
+    });
+    expect(resolveScoopPlacement('back', topLeft, grid)).toMatchObject({
+      rotationDeg: 180,
+      runsAlongY: true,
+    });
+    expect(resolveScoopPlacement('left', topLeft, grid)).toMatchObject({
+      rotationDeg: -90,
+      runsAlongY: false,
+    });
+    expect(resolveScoopPlacement('right', topLeft, grid)).toMatchObject({
+      rotationDeg: 90,
+      runsAlongY: false,
+    });
   });
 });

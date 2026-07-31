@@ -29,6 +29,39 @@ export const scoopTwoVariable: ScenarioCase[] = [
   }),
 ];
 
+export const scoopSides: ScenarioCase[] = [
+  defineScenario('scoop side', 'scoop on the back wall', {
+    params: { scoop: { enabled: true, radius: 'auto' as const, side: 'back' as const } },
+  }),
+  defineScenario('scoop side', 'scoop on the left wall', {
+    params: { scoop: { enabled: true, radius: 'auto' as const, side: 'left' as const } },
+  }),
+  defineScenario('scoop side', 'scoop on the right wall', {
+    params: { scoop: { enabled: true, radius: 'auto' as const, side: 'right' as const } },
+  }),
+  // The long-skinny case from #3039: the scoop belongs on the long wall, which
+  // is only reachable once the side is selectable.
+  defineScenario('scoop side', '6×1 bin scooped on the long wall', {
+    params: {
+      width: 6,
+      depth: 1,
+      scoop: { enabled: true, radius: 'auto' as const, side: 'back' as const },
+    },
+  }),
+  defineScenario('scoop side', 'side scoop with lip (outer-wall offset active)', {
+    params: {
+      scoop: { enabled: true, radius: 'auto' as const, side: 'right' as const },
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+    },
+  }),
+  defineScenario('scoop side', 'left scoop across 2 columns (outer vs interior)', {
+    params: {
+      scoop: { enabled: true, radius: 'auto' as const, side: 'left' as const },
+      compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 0.8 },
+    },
+  }),
+];
+
 export const scoopLipInteraction: ScenarioCase[] = [
   defineScenario(
     'scoop + lip interaction',
