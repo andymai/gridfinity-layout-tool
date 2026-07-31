@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/lidGenerator.scenario.overhangMagnets.test.ts
+  s_94ccc8709fbafc::t_5c38c1fd7a4147 168-172
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "df65a850317c8395eb722f5c84b50d15ba462464",
+  "prompts": {},
+  "sessions": {
+    "s_94ccc8709fbafc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c61994fc-7e45-4173-9cbb-a47e0bda1452",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
