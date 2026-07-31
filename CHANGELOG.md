@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.335.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.334.1...gridfinity-layout-tool-v4.335.0) (2026-07-31)
+
+
+### Features
+
+* **bin-designer:** choose which wall the finger scoop rises to ([#3039](https://github.com/andymai/gridfinity-layout-tool/issues/3039)) ([#3044](https://github.com/andymai/gridfinity-layout-tool/issues/3044)) ([2ec564c](https://github.com/andymai/gridfinity-layout-tool/commit/2ec564cde97b5a772a49ed04a278427b14539a1f))
+
 ## [4.334.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.334.0...gridfinity-layout-tool-v4.334.1) (2026-07-31)
 
 
