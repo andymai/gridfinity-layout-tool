@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.334.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.334.0...gridfinity-layout-tool-v4.334.1) (2026-07-31)
+
+
+### Bug Fixes
+
+* **generation:** time out a worker init that never reports ready ([#3035](https://github.com/andymai/gridfinity-layout-tool/issues/3035)) ([#3043](https://github.com/andymai/gridfinity-layout-tool/issues/3043)) ([0ea1e34](https://github.com/andymai/gridfinity-layout-tool/commit/0ea1e34e7b84e99f4aa6d6105625a08c50a481a5))
+
 ## [4.334.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.333.0...gridfinity-layout-tool-v4.334.0) (2026-07-31)
 
 
