@@ -44,11 +44,26 @@ export const featuresStage: PipelineStage = {
       // booleanStage early-returns when ctx.solid is null; building tools
       // we'd never apply would just leak their WASM shapes.
       if (!ctx.solid) return ctx;
+      // A tapered outer wall narrows toward the floor, so the interior clip has
+      // to narrow with it or a pocket near a flared side cuts straight through
+      // (#3033). Dimensions must match the box builder's: it extrudes to
+      // `wallHeight + collarHeight`, and the band is clamped against that.
+      const { taper } = dim.overhang;
+      const interiorTaper = taper
+        ? {
+            outerW: dim.innerW + 2 * params.wallThickness,
+            outerD: dim.innerD + 2 * params.wallThickness,
+            wallHeight: dim.wallHeight + dim.collarHeight,
+            wallThickness: params.wallThickness,
+            taper,
+          }
+        : undefined;
       const { cutTools, fuseTools } = buildCutoutCuts(
         params,
         dim.innerW,
         dim.innerD,
-        dim.wallHeight
+        dim.wallHeight,
+        interiorTaper
       );
       const { innerOffsetX, innerOffsetY } = dim;
       const shiftToInterior = (tool: (typeof cutTools)[number]): (typeof cutTools)[number] => {

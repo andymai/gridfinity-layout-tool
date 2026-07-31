@@ -77,13 +77,7 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // per-side addW/addD expansion.
   // Overhang is suppressed for polygon masks (the mask defines its own footprint).
   const { cellMask } = params;
-  const resolvedOverhang = resolveOverhang(isPartialMask(cellMask) ? undefined : params.overhang);
-  // A solid bin has no cavity for the taper's inner loft to cut, so the control
-  // would silently no-op — strip it. Multi-compartment bins are handled: the
-  // multi-cavity path builds a lofted outer and clips each compartment to the
-  // inner envelope (#3017).
-  const overhang =
-    resolvedOverhang.taper && solid ? { ...resolvedOverhang, taper: null } : resolvedOverhang;
+  const overhang = resolveOverhang(isPartialMask(cellMask) ? undefined : params.overhang);
   const ovhExp = hasOverhang(overhang) ? overhangExpansion(overhang) : null;
 
   const innerW = outerW + (ovhExp?.addW ?? 0) - 2 * params.wallThickness;
@@ -206,6 +200,13 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
       // Spacer punches the floor through, so it must never share a cached body
       // with the lite bin it otherwise looks like. Appended for the same reason.
       ...(isSpacer ? ['spacer'] : []),
+      // A solid bin's fill surface is part of its BODY (shellStage folds it into
+      // `cutoutTopOffset`), so two bins differing only in the top offset are two
+      // different shells. Without this the second one silently reuses the first
+      // one's cached body and the recess never appears.
+      ...(solid && params.cutoutConfig.topOffset > 0
+        ? [`ctop${quantize(params.cutoutConfig.topOffset)}`]
+        : []),
       // Shell-baked dividers get clipped where a spanning label shelf crosses
       // them (#2897), so that clip is part of the shell. Appended only when it
       // applies, keeping every other bin's v7 key byte-identical.

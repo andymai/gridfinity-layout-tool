@@ -52,6 +52,6 @@ exports[`solid cutouts > 2×2 solid with slot (stadium) cutout 1`] = `2746`;
 
 exports[`solid cutouts > 2×2 solid with staggered hex array 1`] = `2748`;
 
-exports[`solid cutouts > 2×2 solid with topOffset 1`] = `2544`;
+exports[`solid cutouts > 2×2 solid with topOffset 1`] = `2884`;
 
 exports[`solid cutouts > 2×2 solid with triangular path cutout 1`] = `2544`;

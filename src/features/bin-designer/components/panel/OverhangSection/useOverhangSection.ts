@@ -40,10 +40,6 @@ export function useOverhangSection() {
   const overhang = params.overhang ?? ZERO_OVERHANG;
   const isCustomShape = isPartialMask(params.cellMask);
   const { wallHeight } = binDimensions(params);
-  // A solid bin has no cavity for the taper to cut against, so the generator
-  // strips it; gate the control to match rather than let it silently no-op.
-  // Multi-compartment bins are supported (#3017).
-  const taperAvailable = !params.base.solid;
 
   const taper = overhang.taper;
   // Mirror resolveTaper / the OverhangConfig.enabled pattern: a legacy config
@@ -210,8 +206,6 @@ export function useOverhangSection() {
         sides: flare,
         maxPerSide: DESIGNER_CONSTRAINTS.MAX_TAPER,
         maxBand: Math.max(DESIGNER_CONSTRAINTS.TAPER_BAND_STEP, Math.round(wallHeight)),
-        availableForBin: taperAvailable,
-        canTaper: taperAvailable,
       },
     },
     handlers: {

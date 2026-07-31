@@ -3016,6 +3016,5 @@
   "inspector.taper.fillet": "Congé",
   "inspector.taper.height": "Hauteur du biseau",
   "inspector.taper.flare": "Évasement",
-  "inspector.taper.flare.hint": "Largeur supplémentaire au bord supérieur, au-delà de la marge du tiroir, pour que le bac atteigne les côtés incurvés du tiroir.",
-  "binDesigner.overhang.taper.hollowOnly": "Le biseau est disponible uniquement sur les bacs creux."
+  "inspector.taper.flare.hint": "Largeur supplémentaire au bord supérieur, au-delà de la marge du tiroir, pour que le bac atteigne les côtés incurvés du tiroir."
 }

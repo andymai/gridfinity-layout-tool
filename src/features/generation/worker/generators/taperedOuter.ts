@@ -47,8 +47,24 @@ export interface TaperedLofts {
   readonly narrowestInner: { minX: number; maxX: number; minY: number; maxY: number };
 }
 
-export function buildTaperedLofts(
-  scope: DisposalScope,
+/**
+ * The band sampler shared by every loft cut from one taper.
+ *
+ * Callers must take their z-levels from `bandLevels` rather than subdividing
+ * again: a concave fillet bulges outside its own chord, so two lofts sampled at
+ * different heights end up with non-parallel piecewise-linear faces and the
+ * inner one breaches the outer.
+ */
+interface TaperSampler {
+  /** `taper.bandHeight` clamped to the wall. */
+  readonly band: number;
+  /** The shared z-nodes spanning the band, ascending. */
+  readonly bandLevels: readonly number[];
+  readonly insetAt: (side: number, z: number) => number;
+  readonly loft: (zs: readonly number[], shrink: number) => Shape3D;
+}
+
+function taperSampler(
   outerW: number,
   outerD: number,
   wallHeight: number,
@@ -56,7 +72,7 @@ export function buildTaperedLofts(
   taper: ResolvedTaper,
   offX: number,
   offY: number
-): TaperedLofts {
+): TaperSampler {
   const band = Math.min(taper.bandHeight, wallHeight);
 
   // Per-side inset at height z: full at the base, zero at/above the band top.
@@ -109,11 +125,34 @@ export function buildTaperedLofts(
       ? [...curveLevels, wallThickness].sort((a, b) => a - b)
       : curveLevels;
 
-  const loft = (zs: number[], shrink: number): Shape3D => {
+  const loft = (zs: readonly number[], shrink: number): Shape3D => {
     const uniq = zs.filter((z, i) => i === 0 || z - zs[i - 1] > 1e-6);
     const sections = uniq.map((z) => section(z, shrink));
     return sections[0].loftWith(sections.slice(1), { ruled: true });
   };
+
+  return { band, bandLevels, insetAt, loft };
+}
+
+export function buildTaperedLofts(
+  scope: DisposalScope,
+  outerW: number,
+  outerD: number,
+  wallHeight: number,
+  wallThickness: number,
+  taper: ResolvedTaper,
+  offX: number,
+  offY: number
+): TaperedLofts {
+  const { bandLevels, insetAt, loft } = taperSampler(
+    outerW,
+    outerD,
+    wallHeight,
+    wallThickness,
+    taper,
+    offX,
+    offY
+  );
 
   // Outer runs floor→rim. The cavity reuses the shared band nodes above the
   // floor (keeping its face parallel to the outer), starts a floor-thickness up,
@@ -146,6 +185,70 @@ export function buildTaperedLofts(
       maxY: ncy + nd / 2,
     },
   };
+}
+
+/**
+ * The tapered outer body alone, floor→rim, with nothing removed.
+ *
+ * This is the whole body for a solid bin (#3033): there is no cavity to cut, so
+ * the loft that {@link buildTaperedLofts} would discard is never built.
+ */
+export function buildTaperedOuter(
+  scope: DisposalScope,
+  outerW: number,
+  outerD: number,
+  wallHeight: number,
+  wallThickness: number,
+  taper: ResolvedTaper,
+  offX: number,
+  offY: number
+): Shape3D {
+  const { bandLevels, loft } = taperSampler(
+    outerW,
+    outerD,
+    wallHeight,
+    wallThickness,
+    taper,
+    offX,
+    offY
+  );
+  return scope.register(loft([...bandLevels, wallHeight], 0));
+}
+
+/**
+ * The inner envelope as a standalone solid spanning z=0→`zTop`: the most
+ * material any hollow may claim, at every height.
+ *
+ * Unlike {@link buildTaperedLofts}'s `cavity` this reaches the floor plane, so
+ * it can serve as a clip boundary for tools that start at z=0 — a solid bin's
+ * cutout pockets (#3033). Clipping against it is what keeps `wallThickness` of
+ * material outside every pocket: the stored overhang is rim-anchored, so a
+ * pocket flush with the interior edge has only `wallThickness - flare` left at
+ * the floor, which goes negative for any flare wider than the wall.
+ *
+ * `zTop` may exceed the wall — sections at/above the band repeat, so the loft
+ * is prismatic up there and embossed text clips the same as it always did.
+ */
+export function buildTaperedInnerEnvelope(
+  outerW: number,
+  outerD: number,
+  wallHeight: number,
+  wallThickness: number,
+  taper: ResolvedTaper,
+  zTop: number,
+  offX: number,
+  offY: number
+): Shape3D {
+  const { bandLevels, loft } = taperSampler(
+    outerW,
+    outerD,
+    wallHeight,
+    wallThickness,
+    taper,
+    offX,
+    offY
+  );
+  return loft([...bandLevels.filter((z) => z < zTop), zTop], wallThickness);
 }
 
 /** Hollow tapered body for a single-cavity bin: the whole inner envelope removed. */

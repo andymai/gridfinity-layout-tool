@@ -3016,6 +3016,5 @@
   "inspector.taper.fillet": "Zaoblení",
   "inspector.taper.height": "Výška zkosení",
   "inspector.taper.flare": "Rozšíření",
-  "inspector.taper.flare.hint": "Extra šířka u horního okraje nad rámec okrajů zásuvky, aby zásobník dosáhl do zaoblených stěn zásuvky.",
-  "binDesigner.overhang.taper.hollowOnly": "Zkosení je dostupné pouze u dutých zásobníků."
+  "inspector.taper.flare.hint": "Extra šířka u horního okraje nad rámec okrajů zásuvky, aby zásobník dosáhl do zaoblených stěn zásuvky."
 }

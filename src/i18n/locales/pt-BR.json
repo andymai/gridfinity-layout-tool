@@ -3016,6 +3016,5 @@
   "inspector.taper.fillet": "Arredondamento",
   "inspector.taper.height": "Altura do afunilamento",
   "inspector.taper.flare": "Alargamento",
-  "inspector.taper.flare.hint": "Largura extra na borda superior, além da margem da gaveta, para que o compartimento alcance as laterais curvas da gaveta.",
-  "binDesigner.overhang.taper.hollowOnly": "O afunilamento está disponível apenas em compartimentos ocos."
+  "inspector.taper.flare.hint": "Largura extra na borda superior, além da margem da gaveta, para que o compartimento alcance as laterais curvas da gaveta."
 }
