@@ -1287,6 +1287,16 @@ const en: Record<string, string> = {
   'scan.capture.label.topDown': 'Straight down',
   'scan.capture.privacy': 'Your photo stays on your phone — only the outline is sent.',
   'scan.cardMeasured': 'Measured to scale from your card.',
+  'scan.cardSize.label': 'Card size',
+  'scan.cardSize.value': '{long} × {short} mm',
+  'scan.cardSize.change': 'Change',
+  'scan.cardSize.close': 'Close',
+  'scan.cardSize.longSide': 'Long side (mm)',
+  'scan.cardSize.shortSide': 'Short side (mm)',
+  'scan.cardSize.hint':
+    'Measured your card with calipers? Enter it here and this phone will reuse it for every scan.',
+  'scan.cardSize.range': 'Enter {min}–{max} mm',
+  'scan.cardSize.useStandard': 'Back to a standard card',
   'scan.cardSteepAngle': 'Steep angle — shoot straighter for accurate sizing.',
   'scan.noCardTitle': 'No card detected',
   'scan.noCardHint':

@@ -25,12 +25,15 @@ import {
   preloadSegmenter,
   pointsToSvgPath,
   cardPerspectiveSkew,
+  withCardSize,
   STEEP_CARD_SKEW,
   type ImageDataLike,
   type SoftMask,
   type Point,
   type SceneTrace,
 } from '@/shared/scanTrace';
+import { loadCardSize, saveCardSize, type CardSizeMm } from '@/features/scan-capture/cardSize';
+import { CardSizeEditor } from '@/features/scan-capture/components/CardSizeEditor';
 
 interface ScanPageProps {
   readonly token: string;
@@ -79,20 +82,31 @@ function svgFromPoints(points: readonly Point[], units: 'mm' | 'px'): string {
   );
 }
 
+/**
+ * Card size as the tracer's detect options. It steers the aspect ratio the
+ * detector looks for as well as the metric map, so a non-standard card is
+ * recognised as readily as an ID-1 one.
+ */
+function cardOptions(size: CardSizeMm): { widthMm: number; heightMm: number } {
+  return { widthMm: size.longMm, heightMm: size.shortMm };
+}
+
 /** Trace the object at `seed`: ML segmenter first, classical Otsu as fallback. */
 async function traceAt(
   canvas: HTMLCanvasElement,
   image: ImageDataLike,
-  seed: Point
+  seed: Point,
+  cardSize: CardSizeMm
 ): Promise<{ scene: SceneTrace; toolMask: SoftMask | null } | null> {
+  const options = cardOptions(cardSize);
   try {
     const toolMask = await segmentAt(canvas, seed);
-    const traced = traceSceneSegmented(image, toolMask);
+    const traced = traceSceneSegmented(image, toolMask, options);
     if (isOk(traced)) return { scene: traced.value, toolMask };
   } catch {
     // Model failed to load/run — fall through to the classical tracer.
   }
-  const classical = traceScene(image);
+  const classical = traceScene(image, options);
   return isOk(classical) ? { scene: classical.value, toolMask: null } : null;
 }
 
@@ -101,6 +115,7 @@ export function ScanPage({ token }: ScanPageProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const imageBoxRef = useRef<HTMLDivElement | null>(null);
   const [status, setStatus] = useState<Status>({ kind: 'capture' });
+  const [cardSize, setCardSize] = useState<CardSizeMm>(loadCardSize);
 
   // Warm the model while the user reads the guidance and frames the shot, so
   // the first segmentation isn't gated on the download.
@@ -115,72 +130,92 @@ export function ScanPage({ token }: ScanPageProps) {
     return () => URL.revokeObjectURL(photoUrl);
   }, [photoUrl]);
 
-  const handleFile = useCallback(async (file: File) => {
-    setStatus({ kind: 'processing' });
-    let canvas: HTMLCanvasElement;
-    try {
-      canvas = await decodeImageToCanvas(file);
-    } catch {
-      setStatus({ kind: 'error', messageKey: 'scan.error.decode' });
-      return;
-    }
-    const image = imageDataFromCanvas(canvas);
-    const seed = computeAutoSeed(image);
-    const traced = await traceAt(canvas, image, seed);
-    if (!traced) {
-      setStatus({ kind: 'error', messageKey: 'scan.error.noObject' });
-      return;
-    }
-    setStatus({
-      kind: 'review',
-      canvas,
-      image,
-      toolMask: traced.toolMask,
-      scene: traced.scene,
-      photoUrl: URL.createObjectURL(file),
-      seed,
-      resegmenting: false,
-      sending: false,
-    });
-  }, []);
+  const handleFile = useCallback(
+    async (file: File) => {
+      setStatus({ kind: 'processing' });
+      let canvas: HTMLCanvasElement;
+      try {
+        canvas = await decodeImageToCanvas(file);
+      } catch {
+        setStatus({ kind: 'error', messageKey: 'scan.error.decode' });
+        return;
+      }
+      const image = imageDataFromCanvas(canvas);
+      // Same card options as the trace: the seed picks the largest blob that
+      // isn't the card, so a card it fails to detect becomes a candidate tool.
+      const seed = computeAutoSeed(image, cardOptions(cardSize));
+      const traced = await traceAt(canvas, image, seed, cardSize);
+      if (!traced) {
+        setStatus({ kind: 'error', messageKey: 'scan.error.noObject' });
+        return;
+      }
+      setStatus({
+        kind: 'review',
+        canvas,
+        image,
+        toolMask: traced.toolMask,
+        scene: traced.scene,
+        photoUrl: URL.createObjectURL(file),
+        seed,
+        resegmenting: false,
+        sending: false,
+      });
+    },
+    [cardSize]
+  );
 
   // Re-segment around the point the user tapped on the photo.
-  const handleTap = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    const box = imageBoxRef.current;
-    setStatus((prev) => {
-      if (prev.kind !== 'review' || !box || prev.toolMask === null || prev.resegmenting)
-        return prev;
-      const rect = box.getBoundingClientRect();
-      if (rect.width === 0 || rect.height === 0) return prev;
-      const seed: Point = {
-        x: (e.clientX - rect.left) / rect.width,
-        y: (e.clientY - rect.top) / rect.height,
-      };
-      const { canvas, image } = prev;
-      void (async () => {
-        try {
-          const toolMask = await segmentAt(canvas, seed);
-          const traced = traceSceneSegmented(image, toolMask);
-          if (isOk(traced)) {
-            setStatus((s) =>
-              s.kind === 'review'
-                ? { ...s, scene: traced.value, toolMask, seed, resegmenting: false }
-                : s
-            );
-            return;
+  const handleTap = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      const box = imageBoxRef.current;
+      setStatus((prev) => {
+        if (prev.kind !== 'review' || !box || prev.toolMask === null || prev.resegmenting)
+          return prev;
+        const rect = box.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) return prev;
+        const seed: Point = {
+          x: (e.clientX - rect.left) / rect.width,
+          y: (e.clientY - rect.top) / rect.height,
+        };
+        const { canvas, image } = prev;
+        void (async () => {
+          try {
+            const toolMask = await segmentAt(canvas, seed);
+            const traced = traceSceneSegmented(image, toolMask, cardOptions(cardSize));
+            if (isOk(traced)) {
+              setStatus((s) =>
+                s.kind === 'review'
+                  ? { ...s, scene: traced.value, toolMask, seed, resegmenting: false }
+                  : s
+              );
+              return;
+            }
+          } catch {
+            // Keep the previous outline on failure.
           }
-        } catch {
-          // Keep the previous outline on failure.
-        }
-        setStatus((s) => (s.kind === 'review' ? { ...s, resegmenting: false } : s));
-      })();
-      return { ...prev, seed, resegmenting: true };
-    });
+          setStatus((s) => (s.kind === 'review' ? { ...s, resegmenting: false } : s));
+        })();
+        return { ...prev, seed, resegmenting: true };
+      });
+    },
+    [cardSize]
+  );
+
+  const handleCardSize = useCallback((next: CardSizeMm) => {
+    setCardSize(next);
+    saveCardSize(next);
   }, []);
+
+  // Applied at the point of use rather than baked into the traced scene: the
+  // card's corners are already solved, so a new card size only re-solves the
+  // image→mm map. Editing the size stays instant and can't reshape the outline.
+  const scene =
+    status.kind === 'review' ? withCardSize(status.scene, cardSize.longMm, cardSize.shortMm) : null;
 
   const handleUse = useCallback(async () => {
     if (status.kind !== 'review') return;
-    const svg = svgFromPoints(status.scene.outputPoints, status.scene.units);
+    const rectified = withCardSize(status.scene, cardSize.longMm, cardSize.shortMm);
+    const svg = svgFromPoints(rectified.outputPoints, rectified.units);
     setStatus({ ...status, sending: true });
     try {
       const res = await fetch(`/api/scan-session/${token}`, {
@@ -198,7 +233,7 @@ export function ScanPage({ token }: ScanPageProps) {
     } catch {
       setStatus({ kind: 'error', messageKey: 'scan.error.send' });
     }
-  }, [status, token]);
+  }, [status, token, cardSize]);
 
   const reset = useCallback(() => setStatus({ kind: 'capture' }), []);
   // window.close() only works on script-opened tabs, so fall through to a
@@ -215,15 +250,12 @@ export function ScanPage({ token }: ScanPageProps) {
         ? 'review'
         : 'capture';
 
-  const measured =
-    status.kind === 'review' && status.scene.units === 'mm'
-      ? bounds(status.scene.outputPoints)
-      : null;
+  const measured = scene && scene.units === 'mm' ? bounds(scene.outputPoints) : null;
 
   const cardSteep =
-    status.kind === 'review' &&
-    status.scene.card !== null &&
-    cardPerspectiveSkew(status.scene.card.corners) > STEEP_CARD_SKEW;
+    scene !== null &&
+    scene.card !== null &&
+    cardPerspectiveSkew(scene.card.corners) > STEEP_CARD_SKEW;
 
   return (
     <div
@@ -249,7 +281,7 @@ export function ScanPage({ token }: ScanPageProps) {
             </div>
           )}
 
-          {status.kind === 'review' && (
+          {status.kind === 'review' && scene && (
             <div className="flex w-full max-w-md flex-col items-center gap-3">
               <div
                 ref={imageBoxRef}
@@ -270,9 +302,9 @@ export function ScanPage({ token }: ScanPageProps) {
                   preserveAspectRatio="none"
                   fill="none"
                 >
-                  {status.scene.card && (
+                  {scene.card && (
                     <polygon
-                      points={status.scene.card.corners.map((p) => `${p.x},${p.y}`).join(' ')}
+                      points={scene.card.corners.map((p) => `${p.x},${p.y}`).join(' ')}
                       className="stroke-success"
                       strokeWidth={2}
                       strokeDasharray="6 4"
@@ -280,7 +312,7 @@ export function ScanPage({ token }: ScanPageProps) {
                     />
                   )}
                   <polygon
-                    points={status.scene.imagePoints.map((p) => `${p.x},${p.y}`).join(' ')}
+                    points={scene.imagePoints.map((p) => `${p.x},${p.y}`).join(' ')}
                     className="fill-accent/15 stroke-accent"
                     strokeWidth={3}
                     vectorEffect="non-scaling-stroke"
@@ -319,6 +351,8 @@ export function ScanPage({ token }: ScanPageProps) {
                   </div>
                 )}
               </div>
+
+              {scene.card && <CardSizeEditor size={cardSize} onChange={handleCardSize} />}
 
               {status.toolMask ? (
                 <div className="flex w-full items-start gap-2.5 rounded-lg border border-accent/40 bg-accent/10 px-3 py-2.5 text-left">

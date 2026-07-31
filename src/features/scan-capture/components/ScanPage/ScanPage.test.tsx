@@ -11,6 +11,7 @@ const mockTraceSegmented = vi.fn();
 const mockTrace = vi.fn();
 const mockPreload = vi.fn();
 const mockCardSkew = vi.fn((..._args: unknown[]) => 0);
+const mockWithCardSize = vi.fn((...args: unknown[]) => args[0]);
 
 vi.mock('@/shared/scanTrace', () => ({
   decodeImageToCanvas: (...args: unknown[]) => mockDecodeCanvas(...args),
@@ -22,7 +23,10 @@ vi.mock('@/shared/scanTrace', () => ({
   preloadSegmenter: (...args: unknown[]) => mockPreload(...args),
   pointsToSvgPath: () => 'M0 0 L10 0 L10 10',
   cardPerspectiveSkew: (...args: unknown[]) => mockCardSkew(...args),
+  withCardSize: (...args: unknown[]) => mockWithCardSize(...args),
   STEEP_CARD_SKEW: 0.2,
+  CARD_WIDTH_MM: 85.6,
+  CARD_HEIGHT_MM: 53.98,
 }));
 
 vi.mock('@/i18n', () => ({
@@ -65,6 +69,8 @@ function selectPhoto(): void {
 describe('ScanPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
+    mockWithCardSize.mockImplementation((...args: unknown[]) => args[0]);
     URL.createObjectURL = vi.fn(() => 'blob:mock');
     URL.revokeObjectURL = vi.fn();
     mockDecodeCanvas.mockResolvedValue(document.createElement('canvas'));
@@ -237,5 +243,99 @@ describe('ScanPage', () => {
 
     expect(await screen.findByText('scan.error.expired')).toBeInTheDocument();
     vi.unstubAllGlobals();
+  });
+
+  describe('reference card size', () => {
+    async function openEditor(): Promise<void> {
+      mockTraceSegmented.mockReturnValue(ok(SCENE_MM));
+      render(<ScanPage token={TOKEN} />);
+      selectPhoto();
+      fireEvent.click(await screen.findByText('scan.cardSize.change'));
+    }
+
+    it('is offered only when a card was actually detected', async () => {
+      mockTraceSegmented.mockReturnValue(ok(SCENE_PX));
+      render(<ScanPage token={TOKEN} />);
+      selectPhoto();
+
+      expect(await screen.findByText('scan.noCardTitle')).toBeInTheDocument();
+      expect(screen.queryByText('scan.cardSize.label')).toBeNull();
+    });
+
+    it('starts collapsed on the nominal ID-1 card', async () => {
+      mockTraceSegmented.mockReturnValue(ok(SCENE_MM));
+      render(<ScanPage token={TOKEN} />);
+      selectPhoto();
+
+      expect(await screen.findByText('scan.cardSize.label')).toBeInTheDocument();
+      expect(screen.queryByLabelText('scan.cardSize.longSide')).toBeNull();
+      expect(mockWithCardSize).toHaveBeenLastCalledWith(SCENE_MM, 85.6, 53.98);
+    });
+
+    it('re-rectifies the outline against a caliper-measured side', async () => {
+      await openEditor();
+
+      fireEvent.change(screen.getByLabelText('scan.cardSize.longSide'), {
+        target: { value: '85.9' },
+      });
+
+      expect(mockWithCardSize).toHaveBeenLastCalledWith(SCENE_MM, 85.9, 53.98);
+    });
+
+    it('holds the last good value while a side is half-typed or out of range', async () => {
+      await openEditor();
+      const longSide = screen.getByLabelText('scan.cardSize.longSide');
+
+      fireEvent.change(longSide, { target: { value: '' } });
+      expect(screen.queryByText('scan.cardSize.range')).toBeNull();
+
+      fireEvent.change(longSide, { target: { value: '8' } });
+      expect(screen.getByText('scan.cardSize.range')).toBeInTheDocument();
+      expect(mockWithCardSize).toHaveBeenLastCalledWith(SCENE_MM, 85.6, 53.98);
+    });
+
+    it('reuses the measured card for the next scan on this phone', async () => {
+      await openEditor();
+
+      fireEvent.change(screen.getByLabelText('scan.cardSize.shortSide'), {
+        target: { value: '54.1' },
+      });
+      fireEvent.click(screen.getByText('scan.retake'));
+      selectPhoto();
+
+      await waitFor(() =>
+        expect(mockTraceSegmented).toHaveBeenLastCalledWith(IMAGE, MASK, {
+          widthMm: 85.6,
+          heightMm: 54.1,
+        })
+      );
+    });
+
+    it('seeds against the same card, so an undetected card cannot become the tool', async () => {
+      await openEditor();
+
+      fireEvent.change(screen.getByLabelText('scan.cardSize.longSide'), {
+        target: { value: '100' },
+      });
+      fireEvent.click(screen.getByText('scan.retake'));
+      selectPhoto();
+
+      await waitFor(() =>
+        expect(mockAutoSeed).toHaveBeenLastCalledWith(IMAGE, { widthMm: 100, heightMm: 53.98 })
+      );
+    });
+
+    it('offers a way back to a standard card only once one is measured', async () => {
+      await openEditor();
+      expect(screen.queryByText('scan.cardSize.useStandard')).toBeNull();
+
+      fireEvent.change(screen.getByLabelText('scan.cardSize.longSide'), {
+        target: { value: '85.9' },
+      });
+      fireEvent.click(screen.getByText('scan.cardSize.useStandard'));
+
+      expect(mockWithCardSize).toHaveBeenLastCalledWith(SCENE_MM, 85.6, 53.98);
+      expect(screen.queryByText('scan.cardSize.useStandard')).toBeNull();
+    });
   });
 });

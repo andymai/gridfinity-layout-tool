@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { isOk } from '@/core/result';
-import { traceScene, traceSceneSegmented, detectCard, buildToolTraceSoft } from './traceScene';
+import {
+  traceScene,
+  traceSceneSegmented,
+  detectCard,
+  buildToolTraceSoft,
+  withCardSize,
+} from './traceScene';
+import { CARD_WIDTH_MM, CARD_HEIGHT_MM } from './cardDetect';
 import { binarize } from './softContour';
 import type { SoftMask } from './softContour';
 import type { ImageDataLike, Point } from './types';
@@ -106,6 +113,49 @@ describe('traceScene', () => {
     expect(result.value.units).toBe('px');
     expect(result.value.card).toBeNull();
     expect(result.value.outputPoints).toEqual(result.value.imagePoints);
+  });
+});
+
+describe('withCardSize', () => {
+  const traced = (): ReturnType<typeof traceScene> => traceScene(render(true), { smooth: false });
+
+  it('rescales the outline when the card is measured larger than nominal', () => {
+    const result = traced();
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+
+    const base = bbox(result.value.outputPoints);
+    const bigger = withCardSize(result.value, CARD_WIDTH_MM * 1.1, CARD_HEIGHT_MM * 1.1);
+
+    const out = bbox(bigger.outputPoints);
+    expect(out.w / base.w).toBeCloseTo(1.1, 5);
+    expect(out.h / base.h).toBeCloseTo(1.1, 5);
+    expect(bigger.units).toBe('mm');
+    // Only the metric map changes — the on-photo overlay is untouched.
+    expect(bigger.imagePoints).toBe(result.value.imagePoints);
+  });
+
+  it('scales each axis independently, so a wrong side only skews that side', () => {
+    const result = traced();
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+
+    const base = bbox(result.value.outputPoints);
+    const longer = withCardSize(result.value, CARD_WIDTH_MM * 1.1, CARD_HEIGHT_MM);
+
+    const out = bbox(longer.outputPoints);
+    expect(out.w / base.w).toBeCloseTo(1.1, 5);
+    expect(out.h / base.h).toBeCloseTo(1, 5);
+  });
+
+  it('leaves a card-less trace in pixel units', () => {
+    const result = traceScene(render(false));
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+
+    const rescaled = withCardSize(result.value, 100, 60);
+    expect(rescaled).toBe(result.value);
+    expect(rescaled.units).toBe('px');
   });
 });
 

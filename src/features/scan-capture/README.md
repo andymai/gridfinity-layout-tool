@@ -27,8 +27,15 @@ It picks the cleanest quadrilateral whose perspective-corrected aspect ratio is
 ≈1.586, so a rectangular tool isn't mistaken for it. That ratio is the **ISO/IEC
 7810 ID-1** format (85.6 × 53.98 mm), which virtually every wallet card shares —
 bank/credit, transit, ID, driver's licence, gift, hotel key — so any of them work
-as the reference, with or without printing on the front. A card that isn't ID-1
-sized would scale wrong; the homography assumes those exact millimetres.
+as the reference, with or without printing on the front.
+
+Those millimetres are an assumption, and the review screen lets you replace it
+with a measurement (`CardSizeEditor` → `cardSize.ts`, persisted per device). The
+entered size feeds `CardDetectOptions.widthMm/heightMm`, which steers both the
+aspect ratio detection looks for and the metric map, so a non-ID-1 reference
+works too. Because the card's corners are already solved by the time the editor
+is on screen, an edit only re-solves the homography (`withCardSize`) — it never
+re-detects or re-segments, so the measured size updates as you type.
 
 With no card, the outline falls back to pixels and the desktop asks for one real
 dimension. The card must be a _separate_ object beside the tool (not underneath
@@ -72,6 +79,10 @@ and the fit fully tunable on the desktop.
   Imported by `main.tsx` (cheap route detection) and `shell/scanBoot.tsx`.
 - `components/ScanPage.tsx` — the capture UI: guided capture → segment → review (tap to
   redo) → upload. App-like full-bleed layout with safe-area handling and a fixed action bar.
+- `cardSize.ts` — the reference card's real dimensions (long/short, not width/height,
+  because that is what `cardHomography` consumes), validated and remembered per device.
+- `components/CardSizeEditor/` — collapsed readout + caliper entry for that size, shown on
+  the review screen only when a card was actually detected.
 
 ## Boot path & bundle isolation
 

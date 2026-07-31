@@ -151,6 +151,20 @@ function finishTrace(
   return ok({ imagePoints, outputPoints: imagePoints, units: 'px', card: null });
 }
 
+/**
+ * Re-rectify a finished trace against different reference-card dimensions.
+ *
+ * The card's image corners are already solved, so only the image→mm map
+ * changes: no re-detection and no re-segmentation. Cheap enough to re-run on
+ * every keystroke while the user types a caliper-measured card size.
+ */
+export function withCardSize(scene: SceneTrace, widthMm: number, heightMm: number): SceneTrace {
+  if (!scene.card) return scene;
+  const h = cardHomography(scene.card.corners, widthMm, heightMm);
+  if (!h) return scene;
+  return { ...scene, outputPoints: rectifyPoints(scene.imagePoints, h), units: 'mm' };
+}
+
 export function buildToolTrace(
   toolMask: Mask,
   card: SceneCard | null,
