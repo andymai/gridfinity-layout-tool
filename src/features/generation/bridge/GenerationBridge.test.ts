@@ -36,6 +36,9 @@ class MockWorker {
     const msgType = (data as { type: string }).type;
     // Auto-respond to INIT
     if (msgType === 'INIT') {
+      // Simulates a worker that loads but hangs inside WASM init: no INIT_READY,
+      // no error event, nothing (#3035).
+      if (stallInit) return;
       const kernel = (data as { kernel?: string }).kernel ?? 'occt-wasm';
       setTimeout(() => {
         this.simulateResponse({
@@ -71,6 +74,8 @@ class MockWorker {
 }
 
 let mockWorkerInstance: MockWorker | null = null;
+/** When true, MockWorker swallows INIT instead of replying — see #3035. */
+let stallInit = false;
 
 // Mock the Worker constructor globally
 function createMockWorkerClass() {
@@ -94,6 +99,7 @@ describe('GenerationBridge', () => {
 
   beforeEach(() => {
     mockWorkerInstance = null;
+    stallInit = false;
     bridge = new GenerationBridge();
     vi.useFakeTimers();
   });
@@ -121,6 +127,29 @@ describe('GenerationBridge', () => {
 
       expect(getWorker().messages[0]).toEqual({ type: 'INIT', kernel: 'brepkit' });
       brepkitBridge.destroy();
+    });
+
+    it('rejects instead of hanging when the worker never reports ready', async () => {
+      stallInit = true;
+      const initPromise = bridge.init();
+      const assertion = expect(initPromise).rejects.toThrow(/did not report ready within 60s/);
+
+      // Two attempts: init() retries once, and the retry stalls the same way.
+      await vi.advanceTimersByTimeAsync(60_000);
+      await vi.advanceTimersByTimeAsync(60_000);
+
+      await assertion;
+    });
+
+    it('does not fire the init timeout once the worker reports ready', async () => {
+      const initPromise = bridge.init();
+      await vi.advanceTimersByTimeAsync(10);
+      await expect(initPromise).resolves.toBeUndefined();
+
+      // Past the timeout the resolved promise must stay resolved, and the timer
+      // must not leave a dangling rejection behind.
+      await vi.advanceTimersByTimeAsync(120_000);
+      await expect(bridge.init()).resolves.toBeUndefined();
     });
 
     it('returns cached promise on multiple init calls', async () => {
