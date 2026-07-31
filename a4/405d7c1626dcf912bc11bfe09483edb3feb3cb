@@ -1,0 +1,95 @@
+src/i18n/locales/nb.json
+  s_94ccc8709fbafc::t_78eb1ef9294061 2474-2482
+src/shared/scanTrace/traceScene.ts
+  s_94ccc8709fbafc::t_c61764d9e3eeca 154-167
+scripts/i18n-values-allowlist.json
+  s_94ccc8709fbafc::t_bc88d114f9f441 52
+src/features/scan-capture/components/CardSizeEditor/index.ts
+  s_94ccc8709fbafc::t_0f51c43497f1ed 1-2
+src/i18n/locales/pt-BR.json
+  s_94ccc8709fbafc::t_78eb1ef9294061 2474-2482
+src/i18n/locales/ja.json
+  s_94ccc8709fbafc::t_78eb1ef9294061 2474-2482
+src/i18n/locales/en.ts
+  s_94ccc8709fbafc::t_f13dd6873cf008 1290-1299
+src/features/scan-capture/cardSize.ts
+  s_94ccc8709fbafc::t_4945e83117576e 1-8,13-42,49-63,65-80
+  s_94ccc8709fbafc::t_f6adb93e95cd03 9-12,43-48,64
+src/i18n/locales/ko.json
+  s_94ccc8709fbafc::t_78eb1ef9294061 2474-2482
+src/shared/scanTrace/index.ts
+  s_94ccc8709fbafc::t_98cd78ea669070 8,12
+src/features/scan-capture/components/ScanPage/ScanPage.tsx
+  s_94ccc8709fbafc::t_3a27361583e4d9 85-93,98-99,101,104,109
+  s_94ccc8709fbafc::t_2c2b21561c7263 234
+  s_94ccc8709fbafc::t_94043236271ed3 133-163,166-183
+  s_94ccc8709fbafc::t_ae37a7450d5aee 35-36
+  s_94ccc8709fbafc::t_32b6478b7a76ee 118
+  s_94ccc8709fbafc::t_4bdcff2e786298 28
+  s_94ccc8709fbafc::t_84b37b4287923c 254
+  s_94ccc8709fbafc::t_35bc0234866299 196-204,207-212,215-216
+  s_94ccc8709fbafc::t_ae36e3ad510ad1 303
+  s_94ccc8709fbafc::t_5daa4a8132b040 251
+  s_94ccc8709fbafc::t_c67a1f7633a169 184-186
+  s_94ccc8709fbafc::t_3e20608a623865 194-195
+  s_94ccc8709fbafc::t_205b26bcacafe2 255-256
+  s_94ccc8709fbafc::t_30a0e1947d5ddd 187-192,282,305,313,353-354
+src/features/scan-capture/components/CardSizeEditor/CardSizeEditor.test.tsx
+  s_94ccc8709fbafc::t_7ea4acbc314f4e 1-86
+src/i18n/locales/de.json
+  s_94ccc8709fbafc::t_78eb1ef9294061 2474-2482
+src/features/scan-capture/README.md
+  s_94ccc8709fbafc::t_86b37bd8af30f9 82-85
+  s_94ccc8709fbafc::t_8d160f8603c1b7 30-38
+src/i18n/locales/cs.json
+  s_94ccc8709fbafc::t_78eb1ef9294061 2474-2482
+src/i18n/locales/sv.json
+  s_94ccc8709fbafc::t_78eb1ef9294061 2474-2482
+src/i18n/locales/fr.json
+  s_94ccc8709fbafc::t_78eb1ef9294061 2474-2482
+src/i18n/locales/it.json
+  s_94ccc8709fbafc::t_78eb1ef9294061 2474-2482
+src/i18n/locales/pl.json
+  s_94ccc8709fbafc::t_78eb1ef9294061 2474-2482
+src/shared/scanTrace/traceScene.test.ts
+  s_94ccc8709fbafc::t_55453446eb2b16 3-10
+  s_94ccc8709fbafc::t_be6ee69302f9c0 119-161
+src/i18n/locales/es.json
+  s_94ccc8709fbafc::t_78eb1ef9294061 2474-2482
+src/features/scan-capture/cardSize.test.ts
+  s_94ccc8709fbafc::t_038ef26b25e8fd 1-88,90-94
+  s_94ccc8709fbafc::t_45bed0d2035bdb 89
+src/i18n/locales/uk.json
+  s_94ccc8709fbafc::t_78eb1ef9294061 2474-2482
+src/i18n/locales/zh-CN.json
+  s_94ccc8709fbafc::t_78eb1ef9294061 2474-2482
+src/features/scan-capture/components/CardSizeEditor/CardSizeEditor.tsx
+  s_94ccc8709fbafc::t_f6f39c15c98ab4 27-29
+  s_94ccc8709fbafc::t_29be00f23e6aef 67-70
+  s_94ccc8709fbafc::t_3b5ec0af335ca3 1-26,30-66,71-122
+src/features/scan-capture/components/ScanPage/ScanPage.test.tsx
+  s_94ccc8709fbafc::t_5b9856bfa3c2a6 72
+  s_94ccc8709fbafc::t_09a85e56f1fe43 28-29
+  s_94ccc8709fbafc::t_7fcc818e41e10a 73
+  s_94ccc8709fbafc::t_1aac07a7714a98 247-326
+  s_94ccc8709fbafc::t_fb7565a56e333d 14
+  s_94ccc8709fbafc::t_970ca33d099bf3 26
+src/i18n/locales/nl.json
+  s_94ccc8709fbafc::t_78eb1ef9294061 2474-2482
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "a4405d7c1626dcf912bc11bfe09483edb3feb3cb",
+  "prompts": {},
+  "sessions": {
+    "s_94ccc8709fbafc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c61994fc-7e45-4173-9cbb-a47e0bda1452",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
