@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.332.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.332.1...gridfinity-layout-tool-v4.332.2) (2026-07-31)
+
+
+### Performance
+
+* **rate-limit:** collapse the sliding window into one atomic Lua call ([#3022](https://github.com/andymai/gridfinity-layout-tool/issues/3022)) ([9901991](https://github.com/andymai/gridfinity-layout-tool/commit/9901991fe9b6fe8ffdbee004ad3a507ce6541a8c))
+
 ## [4.332.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.332.0...gridfinity-layout-tool-v4.332.1) (2026-07-30)
 
 
