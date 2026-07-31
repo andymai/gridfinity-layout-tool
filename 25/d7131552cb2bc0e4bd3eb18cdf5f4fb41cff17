@@ -1,0 +1,19 @@
+api/lib/rateLimit.integration.test.ts
+  s_2e6b0a1ac785a2::t_573995c29ae14f 26-27,29,34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "25d7131552cb2bc0e4bd3eb18cdf5f4fb41cff17",
+  "prompts": {},
+  "sessions": {
+    "s_2e6b0a1ac785a2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "509ea49c-c569-4749-b838-4a54c8efb704",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
