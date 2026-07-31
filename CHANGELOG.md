@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.334.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.333.0...gridfinity-layout-tool-v4.334.0) (2026-07-31)
+
+
+### Features
+
+* **bin-designer:** show the taper band in the cutout editor ([#3034](https://github.com/andymai/gridfinity-layout-tool/issues/3034)) ([531b13b](https://github.com/andymai/gridfinity-layout-tool/commit/531b13b2135ab1c2ea7a5f62d3cac84dbcc8a911))
+
+
+### Bug Fixes
+
+* **design-linking:** accept a rotated linked design, and let Cancel stick ([#3041](https://github.com/andymai/gridfinity-layout-tool/issues/3041)) ([36395af](https://github.com/andymai/gridfinity-layout-tool/commit/36395af1a665d75222c3e31d2363ae562f747779))
+
 ## [4.333.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.332.2...gridfinity-layout-tool-v4.333.0) (2026-07-31)
 
 
