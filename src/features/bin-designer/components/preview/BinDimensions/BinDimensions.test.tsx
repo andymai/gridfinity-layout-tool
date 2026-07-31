@@ -138,7 +138,31 @@ describe('BinDimensions', () => {
       const expanded = renderDims({ expanded: true }).container.querySelectorAll(
         '[data-testid="line"]'
       ).length;
-      expect(expanded).toBe(collapsed + SEGMENTS.length);
+      // The first band's boundary coincides with the bottom end cap, so only the
+      // interior boundaries add lines.
+      expect(expanded).toBe(collapsed + SEGMENTS.length - 1);
+    });
+
+    it('draws one mark per Z when a zero-height band shares a boundary', () => {
+      // The default case: a plain plate the bin fully nests into. Plate start,
+      // bin start and the bottom end cap all land on Z=0, and these lines are
+      // semi-transparent, so stacking them would darken that rule.
+      const nested = [
+        { kind: 'baseplate', mm: 0, startMm: 0 },
+        { kind: 'bin', mm: 42, startMm: 0 },
+        { kind: 'stackingLip', mm: 4.3, startMm: 42 },
+      ] as const;
+      const collapsed = renderDims({
+        segments: [...nested],
+        totalMm: 46.3,
+      }).container.querySelectorAll('[data-testid="line"]').length;
+      const expanded = renderDims({
+        segments: [...nested],
+        totalMm: 46.3,
+        expanded: true,
+      }).container.querySelectorAll('[data-testid="line"]').length;
+      // Only the stacking-lip boundary at Z=42 is new.
+      expect(expanded).toBe(collapsed + 1);
     });
   });
 

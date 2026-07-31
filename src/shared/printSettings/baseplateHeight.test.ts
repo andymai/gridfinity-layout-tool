@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { baseplateFloorDepth, baseplateTotalHeight } from './baseplateHeight';
 import { GRIDFINITY_SPEC, MAGNET_FLOOR } from './gridfinityGeometry';
+import { SOLID_FLOOR_DEFAULT_MM } from '@/core/constants';
 
 const SOCKET = GRIDFINITY_SPEC.SOCKET_HEIGHT;
 
@@ -28,8 +29,10 @@ describe('baseplateFloorDepth', () => {
     ).toBe(MAGNET_FLOOR + 2 + 3);
   });
 
-  it('defaults an unset solid-floor thickness to 0.8mm', () => {
-    expect(baseplateFloorDepth({ magnetHoles: false, magnetDepth: 2, solidFloor: true })).toBe(0.8);
+  it('defaults an unset solid-floor thickness to the shared default', () => {
+    expect(baseplateFloorDepth({ magnetHoles: false, magnetDepth: 2, solidFloor: true })).toBe(
+      SOLID_FLOOR_DEFAULT_MM
+    );
   });
 
   it('ignores the thickness when the solid floor is off', () => {

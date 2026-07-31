@@ -117,14 +117,17 @@ export function assembledHeight(
   params: AssembledHeightSource,
   plate?: BaseplateHeightParams
 ): AssembledHeight {
-  const isFlat = params.base.style === 'flat';
-  const nestedMm = isFlat ? 0 : GRIDFINITY.SOCKET_HEIGHT;
+  // A flat base has no socket, so it does not seat on a baseplate at all — it
+  // sits directly in the drawer. Counting a plate under it would overstate
+  // clearance by the plate's full height, the same class of error this readout
+  // exists to prevent.
+  const seatedOnPlate = plate !== undefined && params.base.style !== 'flat';
 
-  const baseplatePrintedMm = plate ? baseplateTotalHeight(plate) : 0;
-  // A socketed bin drops its base into the pockets, so only the solid floor
-  // under them lifts the bin. A flat base has nothing to nest and rests on the
-  // plate's top face, so the whole plate counts.
-  const plateBandMm = plate ? (isFlat ? baseplatePrintedMm : baseplateFloorDepth(plate)) : 0;
+  const baseplatePrintedMm = seatedOnPlate ? baseplateTotalHeight(plate) : 0;
+  // The bin drops its base into the pockets, so only the solid floor under them
+  // lifts it — zero for the common no-magnet, no-solid-floor plate.
+  const plateBandMm = seatedOnPlate ? baseplateFloorDepth(plate) : 0;
+  const nestedMm = seatedOnPlate ? GRIDFINITY.SOCKET_HEIGHT : 0;
 
   const binMm = params.height * params.heightUnitMm + Math.max(0, params.extraWallHeightMm ?? 0);
   const lipMm = params.base.stackingLip ? GRIDFINITY.LIP_HEIGHT - GRIDFINITY.LIP_OVERLAP : 0;
@@ -141,9 +144,9 @@ export function assembledHeight(
     z += mm;
   };
 
-  // The plate band is emitted even at 0mm when a plate is present: "adds 0mm"
+  // The plate band is emitted even at 0mm when the bin seats on one: "adds 0mm"
   // is the answer to the question this feature exists to settle.
-  if (plate) push('baseplate', plateBandMm);
+  if (seatedOnPlate) push('baseplate', plateBandMm);
   push('bin', binMm);
   if (lipMm > 0) push('stackingLip', lipMm);
   if (lidMm > 0) push('lid', lidMm);

@@ -91,15 +91,31 @@ describe('assembledHeight', () => {
       expect(bandOf('baseplate', seated)).toBeCloseTo(5.5, 6);
     });
 
-    it('counts the whole plate for a flat base, which cannot nest', () => {
+    it('ignores the plate for a flat base, which does not seat on one', () => {
+      // No socket means nothing nests, and a flat-base bin sits straight in the
+      // drawer — charging it a plate would overstate clearance by 5mm.
       const flat = params({
         height: 6,
         base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat', stackingLip: false },
       });
       const seated = assembledHeight(flat, PLAIN_PLATE);
       expect(seated.nestedMm).toBe(0);
-      expect(bandOf('baseplate', seated)).toBe(GRIDFINITY.SOCKET_HEIGHT);
-      expect(seated.totalMm).toBeCloseTo(GRIDFINITY.SOCKET_HEIGHT + 6 * 7, 6);
+      expect(seated.baseplatePrintedMm).toBe(0);
+      expect(seated.segments.some((s) => s.kind === 'baseplate')).toBe(false);
+      expect(seated.totalMm).toBeCloseTo(6 * 7, 6);
+    });
+
+    it('ignores a magnet plate for a flat base too', () => {
+      const flat = params({
+        height: 6,
+        base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat', stackingLip: false },
+      });
+      const seated = assembledHeight(flat, { magnetHoles: true, magnetDepth: 2 });
+      expect(seated.totalMm).toBeCloseTo(6 * 7, 6);
+    });
+
+    it('reports no nesting for a socketed bin measured without a plate', () => {
+      expect(assembledHeight(params({ height: 6 })).nestedMm).toBe(0);
     });
   });
 

@@ -186,14 +186,25 @@ export function BinDimensions({
    * above the top cap instead to keep the midpoints clear. Zero-height bands (a
    * plate the bin fully nests into) get a mark but no label — the sidebar row
    * explains those.
+   *
+   * A zero-height band shares its boundary with the next one, and the first
+   * boundary always coincides with the bottom end cap, so marks are drawn at
+   * most once per Z. These lines are semi-transparent and stack: without the
+   * de-dupe the default plain-plate case paints three at Z=0 and the annotation
+   * reads as a heavier rule than the rest of the drawing.
    */
   const bands = useMemo(() => {
     if (!expanded) return [];
     const { x, y } = dimensions.height;
+    const key = (z: number): number => Math.round(z * 1000);
+    const markedZ = new Set<number>([key(bottomZ)]);
     return segments.map((segment) => {
       const startZ = segment.startMm - originOffset;
+      const showTick = !markedZ.has(key(startZ));
+      markedZ.add(key(startZ));
       return {
         kind: segment.kind,
+        showTick,
         tick: [
           [x - BAND_TICK, y, startZ],
           [x + BAND_TICK, y, startZ],
@@ -203,7 +214,7 @@ export function BinDimensions({
         showLabel: segment.mm >= MIN_LABELLED_BAND_MM,
       };
     });
-  }, [expanded, segments, originOffset, dimensions.height, segmentLabel]);
+  }, [expanded, segments, originOffset, bottomZ, dimensions.height, segmentLabel]);
 
   return (
     <group>
@@ -310,13 +321,15 @@ export function BinDimensions({
       {/* Per-band boundary marks and labels */}
       {bands.map((band) => (
         <group key={band.kind}>
-          <Line
-            points={band.tick}
-            color={colors.lineColor}
-            lineWidth={1}
-            transparent
-            opacity={LINE_OPACITY}
-          />
+          {band.showTick && (
+            <Line
+              points={band.tick}
+              color={colors.lineColor}
+              lineWidth={1}
+              transparent
+              opacity={LINE_OPACITY}
+            />
+          )}
           {band.showLabel && (
             <Text
               position={band.labelPos}
