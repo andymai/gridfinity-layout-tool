@@ -8,10 +8,12 @@ import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { getCompartmentBounds } from '@/features/bin-designer/utils/compartments';
 import {
   resolveScoopProfile,
+  resolveScoopPlacement,
+  resolveScoopSide,
   computeLipOffset,
   computeInteriorHeight,
 } from '@/shared/utils/scoopCalculations';
-import type { ScoopStyle } from '@/shared/types/bin';
+import type { ScoopStyle, ScoopSide } from '@/shared/types/bin';
 import { getFeatureStatus } from '@/shared/constraints';
 
 const DEFAULT_MANUAL_RADIUS = 10;
@@ -30,6 +32,7 @@ export function useScoopSection() {
   const isUnavailable = !scoopStatus.available;
   const isAutoRadius = scoop.radius === 'auto';
   const style: ScoopStyle = scoop.style ?? 'curved';
+  const side: ScoopSide = resolveScoopSide(scoop);
   const manualHeight = typeof scoop.radius === 'number' ? scoop.radius : DEFAULT_MANUAL_RADIUS;
   const manualRun = scoop.run ?? manualHeight;
   const autoMaxHeight = scoop.autoMaxHeight ?? DESIGNER_CONSTRAINTS.MAX_SCOOP_RADIUS;
@@ -37,27 +40,29 @@ export function useScoopSection() {
   // Steppers bound to the bin's real geometry; the generator clamps precisely
   // per compartment, so these are generous UI ceilings, not hard limits.
   const bounds = useMemo(() => {
-    const { innerD, wallHeight } = binDimensions(params);
+    const { innerW, innerD, wallHeight } = binDimensions(params);
     const interiorHeight = computeInteriorHeight(
       wallHeight,
       params.base.stackingLip,
       GRIDFINITY.LIP_SMALL_TAPER
     );
     const min = DESIGNER_CONSTRAINTS.MIN_SCOOP_RADIUS;
+    // The run travels away from the scooped wall, so its ceiling comes from the
+    // compartment extent on that axis — depth for front/back, width for left/right.
+    const runsAlongY = side === 'front' || side === 'back';
+    const runExtent = runsAlongY
+      ? innerD / params.compartments.rows
+      : innerW / params.compartments.cols;
     return {
       heightMax: clamp(Math.round(wallHeight), min, DESIGNER_CONSTRAINTS.MAX_SCOOP_HEIGHT),
-      runMax: clamp(
-        Math.round(innerD / params.compartments.rows),
-        min,
-        DESIGNER_CONSTRAINTS.MAX_SCOOP_RUN
-      ),
+      runMax: clamp(Math.round(runExtent), min, DESIGNER_CONSTRAINTS.MAX_SCOOP_RUN),
       autoMaxHeightMax: clamp(
         Math.round(interiorHeight),
         min,
         DESIGNER_CONSTRAINTS.MAX_SCOOP_HEIGHT
       ),
     };
-  }, [params]);
+  }, [params, side]);
 
   // Very steep scoops (tall rise, short run) print with rough overhangs and are
   // awkward to reach into. Warn (non-blocking) only in custom mode; auto stays
@@ -72,8 +77,6 @@ export function useScoopSection() {
 
     const { base, compartments } = params;
     const { innerW, innerD, wallHeight } = binDimensions(params);
-    const cellW = innerW / compartments.cols;
-    const cellD = innerD / compartments.rows;
 
     const hasLip = base.stackingLip;
     const interiorHeight = computeInteriorHeight(wallHeight, hasLip, GRIDFINITY.LIP_SMALL_TAPER);
@@ -91,17 +94,19 @@ export function useScoopSection() {
         const compBounds = getCompartmentBounds(compartments, compId);
         if (!compBounds) continue;
 
-        const { minCol, maxCol, minRow, maxRow } = compBounds;
-        const compW = (maxCol - minCol + 1) * cellW;
-        const compD = (maxRow - minRow + 1) * cellD;
-        const isMinRow = minRow === 0;
-        const lipOffset = computeLipOffset(hasLip, isMinRow, lipTaperWidth, params.wallThickness);
+        const { span, depth, isOuter } = resolveScoopPlacement(side, compBounds, {
+          cols: compartments.cols,
+          rows: compartments.rows,
+          innerW,
+          innerD,
+        });
+        const lipOffset = computeLipOffset(hasLip, isOuter, lipTaperWidth, params.wallThickness);
 
         const profile = resolveScoopProfile(
           scoop,
-          compW,
-          compD,
-          isMinRow,
+          span,
+          depth,
+          isOuter,
           hasLip,
           wallHeight,
           interiorHeight,
@@ -121,7 +126,7 @@ export function useScoopSection() {
       return t('binDesigner.scoopRadiusAutoValue', { value: String(min) });
     }
     return t('binDesigner.scoopRadiusAutoRange', { min: String(min), max: String(max) });
-  }, [isAutoRadius, params, scoop, t]);
+  }, [isAutoRadius, params, scoop, side, t]);
 
   const toggleScoop = useCallback(() => {
     updateScoop({ enabled: !scoop.enabled });
@@ -154,6 +159,13 @@ export function useScoopSection() {
     [updateScoop]
   );
 
+  const setSide = useCallback(
+    (next: ScoopSide) => {
+      updateScoop({ side: next });
+    },
+    [updateScoop]
+  );
+
   const setAutoMaxHeight = useCallback(
     (value: number) => {
       updateScoop({ autoMaxHeight: value });
@@ -181,6 +193,7 @@ export function useScoopSection() {
       scoop,
       isAutoRadius,
       style,
+      side,
       manualHeight,
       manualRun,
       autoMaxHeight,
@@ -194,6 +207,7 @@ export function useScoopSection() {
       setHeight,
       setRun,
       setStyle,
+      setSide,
       setAutoMaxHeight,
     },
     meta,

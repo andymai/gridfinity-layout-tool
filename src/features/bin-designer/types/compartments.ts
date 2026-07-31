@@ -124,9 +124,17 @@ export interface DividerOverride {
 /** Profile shape of a finger-scoop ramp: concave fillet or flat chamfer. */
 export type ScoopStyle = 'curved' | 'straight';
 
+/** Which interior wall the scoop ramps up to. */
+export type ScoopSide = 'front' | 'back' | 'left' | 'right';
+
 /** Scoop ramp configuration for compartment accessibility */
 export interface ScoopConfig {
   readonly enabled: boolean;
+  /**
+   * Wall the ramp rises to. Omitted on designs saved before the side was
+   * selectable, which were all front-scooped — treat undefined as 'front'.
+   */
+  readonly side?: ScoopSide;
   /**
    * Scoop rise up the wall in mm, or 'auto'. In auto mode the ramp is
    * proportional (run === height); 'auto' = min(compartmentSize/3, 15mm, …).

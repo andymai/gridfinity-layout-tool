@@ -31,6 +31,7 @@ import {
 } from '@/shared/printSettings';
 import {
   resolveScoopProfile,
+  resolveScoopSide,
   computeLipOffset,
   computeInteriorHeight,
 } from '@/shared/utils/scoopCalculations';
@@ -475,14 +476,21 @@ function computeScoopVolume(
   const interiorHeight = computeInteriorHeight(wallHeight, hasLip, GRIDFINITY.LIP_SMALL_TAPER);
   const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
 
-  // Use representative compartment (single-row bins are front row, multi-row are not)
-  const isRepresentativeMinRow = rows === 1;
-  const lipOffset = computeLipOffset(hasLip, isRepresentativeMinRow, lipTaperWidth, wallThickness);
+  // Front/back scoops run along the row axis, left/right along the column axis.
+  const side = resolveScoopSide(params.scoop);
+  const runsAlongY = side === 'front' || side === 'back';
+  const span = runsAlongY ? colWidth : rowDepth;
+  const depth = runsAlongY ? rowDepth : colWidth;
+
+  // Use a representative compartment: it only touches the outer wall on the
+  // scoop's axis when the bin is a single track along that axis.
+  const isRepresentativeOuter = runsAlongY ? rows === 1 : cols === 1;
+  const lipOffset = computeLipOffset(hasLip, isRepresentativeOuter, lipTaperWidth, wallThickness);
   const profile = resolveScoopProfile(
     params.scoop,
-    colWidth,
-    rowDepth,
-    isRepresentativeMinRow,
+    span,
+    depth,
+    isRepresentativeOuter,
     hasLip,
     wallHeight,
     interiorHeight,
@@ -492,13 +500,13 @@ function computeScoopVolume(
 
   const numScoops = cols * rows;
 
-  // Cross-section area × width. Curved: quarter-ellipse (π/4 × run × height);
+  // Cross-section area × span. Curved: quarter-ellipse (π/4 × run × height);
   // straight: right triangle (½ × run × height).
   const area =
     profile.style === 'curved'
       ? (Math.PI / 4) * profile.run * profile.height
       : 0.5 * profile.run * profile.height;
-  const volumePerScoop = area * colWidth;
+  const volumePerScoop = area * span;
 
   return numScoops * volumePerScoop;
 }

@@ -1,14 +1,15 @@
 /**
- * Finger scoop section: ramp from bin floor to front wall.
+ * Finger scoop section: ramp from bin floor to a chosen wall.
  *
- * Controls: toggle on/off, profile style (curved/straight), and either an auto
+ * Controls: toggle on/off, which wall the ramp rises to, profile style
+ * (curved/straight), and either an auto
  * height (with a raisable max) or independent height + run steppers for a
  * custom steep/shallow profile. Available only in standard compartment mode.
  */
 
 import { Button, SegmentedControl, Stepper } from '@/design-system';
 import type { SegmentedControlOption } from '@/design-system';
-import type { ScoopStyle } from '@/shared/types/bin';
+import type { ScoopStyle, ScoopSide } from '@/shared/types/bin';
 import { FeatureToggle } from '../FeatureToggle';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import { useScoopSection } from './useScoopSection';
@@ -27,6 +28,13 @@ export function ScoopSection() {
     { value: 'straight', label: t('binDesigner.scoopStyleStraight') },
   ];
 
+  const sideOptions: SegmentedControlOption<ScoopSide>[] = [
+    { value: 'front', label: t('binDesigner.scoopSideFront') },
+    { value: 'back', label: t('binDesigner.scoopSideBack') },
+    { value: 'left', label: t('binDesigner.scoopSideLeft') },
+    { value: 'right', label: t('binDesigner.scoopSideRight') },
+  ];
+
   return (
     <FeatureToggle
       label={t('binDesigner.fingerScoop')}
@@ -35,6 +43,21 @@ export function ScoopSection() {
       disabledReason={meta.disabledReason}
       valueSummary={meta.summary}
     >
+      {/* Which wall the ramp rises to */}
+      <div className="mb-3">
+        <span className="mb-1 block text-xs text-content-tertiary">
+          {t('binDesigner.scoopSide')}
+        </span>
+        <SegmentedControl
+          options={sideOptions}
+          value={state.side}
+          onChange={handlers.setSide}
+          aria-label={t('binDesigner.scoop.sideAria')}
+          size="sm"
+          fullWidth
+        />
+      </div>
+
       {/* Profile style: curved fillet vs straight chamfer */}
       <div className="mb-3">
         <span className="mb-1 block text-xs text-content-tertiary">
