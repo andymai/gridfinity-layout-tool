@@ -16,6 +16,7 @@ import type { Cutout } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
+import type { GrowTarget } from '../panel/CutoutsSection/growBinToFit';
 import { InspectorContent, type BoardSettings } from './InspectorContent';
 import {
   INSPECTOR_MAX_WIDTH,
@@ -42,6 +43,10 @@ interface InspectorDockProps {
   readonly offBoardCount?: number;
   /** Clamp every off-board cutout back inside the board. */
   readonly onClampOffBoard?: () => void;
+  /** Bin size that would fit every stray, or `null` when growing can't clear it. */
+  readonly growTarget?: GrowTarget | null;
+  /** Resize the bin to {@link growTarget}. */
+  readonly onGrowToFit?: () => void;
   /** Editor-level settings shown when nothing is selected. */
   readonly board?: BoardSettings;
   /** Duplicate the current selection. */

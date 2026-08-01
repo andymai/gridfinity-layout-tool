@@ -452,6 +452,8 @@
   "binDesigner.cutoutEditor.boardSettings": "Pannello",
   "binDesigner.cutoutEditor.boardSize": "Dimensione pannello",
   "binDesigner.cutoutEditor.bringBackIn": "Riporta dentro",
+  "binDesigner.cutoutEditor.growBinToFit": "Ingrandisci il contenitore a {width} × {depth}",
+  "binDesigner.cutoutEditor.growBinUnavailable": "Il contenitore non può crescere abbastanza da contenerli.",
   "binDesigner.cutoutEditor.delete": "Elimina selezione",
   "binDesigner.cutoutEditor.done": "Fatto",
   "binDesigner.cutoutEditor.duplicate": "Duplica selezione",

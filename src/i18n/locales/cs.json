@@ -452,6 +452,8 @@
   "binDesigner.cutoutEditor.boardSettings": "Deska",
   "binDesigner.cutoutEditor.boardSize": "Velikost desky",
   "binDesigner.cutoutEditor.bringBackIn": "Vrátit dovnitř",
+  "binDesigner.cutoutEditor.growBinToFit": "Zvětšit box na {width} × {depth}",
+  "binDesigner.cutoutEditor.growBinUnavailable": "Box nelze zvětšit natolik, aby se sem vešly.",
   "binDesigner.cutoutEditor.delete": "Smazat výběr",
   "binDesigner.cutoutEditor.done": "Hotovo",
   "binDesigner.cutoutEditor.duplicate": "Duplikovat výběr",

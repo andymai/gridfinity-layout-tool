@@ -8,24 +8,38 @@ vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string) => key,
 }));
 
+// Mirrors the real input's commit clamp (CompactNumberInput.tsx `clampTyped`).
+// A pass-through mock would report 156 whether or not `softMax` is wired, so the
+// oversize-W test below would pass against the old truncating behaviour too.
 vi.mock('@/shared/components/CompactNumberInput', () => ({
   CompactNumberInput: ({
     label,
     value,
     indeterminate,
     onChange,
+    min = 0,
+    max = Infinity,
+    softMax = false,
   }: {
     label: string;
     value: number;
     indeterminate?: boolean;
     onChange?: (value: number) => void;
+    min?: number;
+    max?: number;
+    softMax?: boolean;
   }) => (
     <input
       data-testid={`compact-input-${label}`}
       data-label={label}
       data-indeterminate={indeterminate ? 'true' : 'false'}
       value={value}
-      onChange={(e) => onChange?.(Number(e.target.value))}
+      onChange={(e) => {
+        const v = Number(e.target.value);
+        // `Math.max(max, value)` mirrors the real ceiling: it never falls below
+        // the value already held, so focusing a field cannot destroy it.
+        onChange?.(Math.max(min, Math.min(softMax ? Infinity : Math.max(max, value), v)));
+      }}
     />
   ),
 }));
@@ -343,6 +357,41 @@ describe('InspectorContent multi-select editing', () => {
 
     const updates = onUpdateBatch.mock.calls[0][0] as Map<string, Partial<Cutout>>;
     expect(updates.get('pinned')?.cutDepth).toBe(8);
+  });
+
+  it('keeps a batch W past the board instead of truncating the measurement (#3061)', () => {
+    const onUpdateBatch = renderMulti([
+      createCutout({ id: 'a' }),
+      createCutout({ id: 'b', width: 40 }),
+    ]);
+
+    // binWidth is 100 — the old behaviour silently rewrote this to 100.
+    fireEvent.change(screen.getByTestId('compact-input-W'), { target: { value: '156' } });
+
+    const updates = onUpdateBatch.mock.calls[0][0] as Map<string, Partial<Cutout>>;
+    expect(updates.get('a')?.width).toBe(156);
+    expect(updates.get('b')?.width).toBe(156);
+  });
+
+  it('still floors a batch W at the minimum cutout size', () => {
+    const onUpdateBatch = renderMulti([createCutout({ id: 'a' }), createCutout({ id: 'b' })]);
+
+    fireEvent.change(screen.getByTestId('compact-input-W'), { target: { value: '0.5' } });
+
+    const updates = onUpdateBatch.mock.calls[0][0] as Map<string, Partial<Cutout>>;
+    expect(updates.get('a')?.width).toBe(2);
+  });
+
+  it('pins a batch X to 0 for a cutout wider than the board', () => {
+    const onUpdateBatch = renderMulti([
+      createCutout({ id: 'oversize', width: 156 }),
+      createCutout({ id: 'normal' }),
+    ]);
+
+    fireEvent.change(screen.getByTestId('compact-input-X'), { target: { value: '20' } });
+
+    const updates = onUpdateBatch.mock.calls[0][0] as Map<string, Partial<Cutout>>;
+    expect(updates.get('oversize')?.x).toBe(0);
   });
 
   it('skips meshes when batch-resizing, since their geometry is baked', () => {

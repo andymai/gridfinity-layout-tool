@@ -105,12 +105,15 @@ export function SingleCutoutInspector({
       <div className="-mx-4 border-b border-stroke-subtle px-4 pt-2 pb-3">
         <Collapsible title={t('binDesigner.cutouts.section.transform')} size="sm">
           <div className="grid grid-cols-2 gap-1">
+            {/* A cutout wider than the board leaves no valid offset, and a
+                negative ceiling would report a nonsense aria-valuemax — pin the
+                axis to 0 until the board grows or the cutout shrinks. */}
             <CompactNumberInput
               label="X"
               value={getEffective(cutout, preview, 'x')}
               onChange={(x) => onUpdate(cutout.id, { x })}
               min={0}
-              max={binWidth - cutout.width}
+              max={Math.max(0, binWidth - cutout.width)}
               step={0.5}
               unit="mm"
               disabled={disabled}
@@ -120,17 +123,21 @@ export function SingleCutoutInspector({
               value={getEffective(cutout, preview, 'y')}
               onChange={(y) => onUpdate(cutout.id, { y })}
               min={0}
-              max={binDepth - cutout.depth}
+              max={Math.max(0, binDepth - cutout.depth)}
               step={0.5}
               unit="mm"
               disabled={disabled}
             />
+            {/* softMax: W/H hold a measured dimension, so a typed value past the
+                board is kept and the off-board banner offers to grow the bin
+                (#3061) — truncating it silently shipped wrong-sized pockets. */}
             <CompactNumberInput
               label="W"
               value={getEffective(cutout, preview, 'width')}
               onChange={(width) => onUpdate(cutout.id, { width })}
               min={2}
               max={binWidth}
+              softMax
               step={0.5}
               unit="mm"
               disabled={disabled || cutout.shape === 'mesh'}
@@ -141,6 +148,7 @@ export function SingleCutoutInspector({
               onChange={(depth) => onUpdate(cutout.id, { depth })}
               min={2}
               max={binDepth}
+              softMax
               step={0.5}
               unit="mm"
               disabled={disabled || cutout.shape === 'mesh'}

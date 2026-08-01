@@ -667,6 +667,14 @@ describe('geometry', () => {
       const result = clampRotationToBounds(cutout, 90, 100, 50);
       expect(result).toBeCloseTo(0, 0);
     });
+
+    // A typed W/H past the board is kept rather than truncated (#3061), so the
+    // cutout can already be out of bounds. Freezing its angle would make the
+    // rotation field a silent no-op — the exact failure this issue is about.
+    it('lets rotation through for a cutout already outside the board', () => {
+      const cutout = createCutout({ x: 0, y: 0, width: 156, depth: 20, rotation: 0 });
+      expect(clampRotationToBounds(cutout, 45, 100, 100)).toBe(45);
+    });
   });
 
   describe('flipCutoutHorizontal', () => {

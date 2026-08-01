@@ -2397,6 +2397,8 @@ const en: Record<string, string> = {
   'binDesigner.cutoutEditor.binSize': 'Bin size',
   'binDesigner.cutoutEditor.offBoardWarning': '{count} cutout(s) outside the board',
   'binDesigner.cutoutEditor.bringBackIn': 'Bring back in',
+  'binDesigner.cutoutEditor.growBinToFit': 'Grow bin to {width} × {depth}',
+  'binDesigner.cutoutEditor.growBinUnavailable': "The bin can't grow far enough to fit these.",
   'binDesigner.cutoutEditor.duplicate': 'Duplicate selection',
   'binDesigner.cutoutEditor.delete': 'Delete selection',
   'binDesigner.cutoutEditor.selectedCount': '{count} selected',

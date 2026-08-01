@@ -452,6 +452,8 @@
   "binDesigner.cutoutEditor.boardSettings": "Bräda",
   "binDesigner.cutoutEditor.boardSize": "Brädstorlek",
   "binDesigner.cutoutEditor.bringBackIn": "Flytta in igen",
+  "binDesigner.cutoutEditor.growBinToFit": "Förstora lådan till {width} × {depth}",
+  "binDesigner.cutoutEditor.growBinUnavailable": "Lådan kan inte bli tillräckligt stor för att rymma dessa.",
   "binDesigner.cutoutEditor.delete": "Ta bort markering",
   "binDesigner.cutoutEditor.done": "Klar",
   "binDesigner.cutoutEditor.duplicate": "Duplicera markering",

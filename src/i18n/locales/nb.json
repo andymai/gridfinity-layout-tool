@@ -452,6 +452,8 @@
   "binDesigner.cutoutEditor.boardSettings": "Brett",
   "binDesigner.cutoutEditor.boardSize": "Brettstørrelse",
   "binDesigner.cutoutEditor.bringBackIn": "Hent inn igjen",
+  "binDesigner.cutoutEditor.growBinToFit": "Utvid kassen til {width} × {depth}",
+  "binDesigner.cutoutEditor.growBinUnavailable": "Kassen kan ikke bli stor nok til å romme disse.",
   "binDesigner.cutoutEditor.delete": "Slett utvalg",
   "binDesigner.cutoutEditor.done": "Ferdig",
   "binDesigner.cutoutEditor.duplicate": "Dupliser utvalg",

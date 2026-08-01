@@ -27,6 +27,16 @@ interface CompactNumberInputProps {
   readonly highlight?: boolean;
   /** Selected items have differing values — show a "mixed" placeholder until edited. */
   readonly indeterminate?: boolean;
+  /**
+   * Treat `max` as a soft ceiling for typed entries only, so a field holding a
+   * real-world measurement can't silently truncate it (#3061). The caller owns
+   * what happens next.
+   *
+   * Overflow stays typed-only: scrubbing and arrow keys still stop at `max`,
+   * and past it they stop at whatever is currently in the field, so no gesture
+   * can raise a value beyond what the user entered.
+   */
+  readonly softMax?: boolean;
 }
 
 /** Placeholder glyph shown when a multi-selection has mixed values (en dash). */
@@ -56,26 +66,75 @@ export function CompactNumberInput({
   info,
   highlight = false,
   indeterminate = false,
+  softMax = false,
 }: CompactNumberInputProps) {
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
   const [scrubbing, setScrubbing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const clamp = useCallback((v: number) => clampRange(v, min, max), [min, max]);
+  /**
+   * Ceiling applied to a typed entry. `softMax` lifts it entirely; otherwise it
+   * is `max`, but never below the value already held — a field must not destroy
+   * its own contents just by being focused and blurred, which is what a `max`
+   * that has dropped below `value` would otherwise do (an oversize cutout pins
+   * X's max to 0 while X still reads its stored offset).
+   */
+  const clampTyped = useCallback(
+    (v: number) => clampRange(v, min, softMax ? Infinity : Math.max(max, value)),
+    [softMax, min, max, value]
+  );
 
-  const formatValue = useCallback((v: number) => {
-    const rounded = Math.round(v * 100) / 100;
-    return rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toString();
+  /**
+   * Ceiling for a nudge or drag, given the highest content the field has held.
+   *
+   * Two different things can sit above `max`, and only one of them may raise
+   * this. A committed `value` can, because `max` itself may have fallen beneath
+   * it (an oversize cutout pins X's ceiling to 0 while X keeps its offset), and
+   * such a value still has to be nudgeable. Text the user has *typed* may only
+   * raise it under `softMax` — otherwise a hard-max field could be walked past
+   * its own limit one arrow key at a time.
+   */
+  const stepCeiling = useCallback(
+    (peak: number) => (softMax ? Math.max(max, peak) : Math.max(max, value)),
+    [softMax, max, value]
+  );
+
+  /**
+   * Highest content the field has held this visit. Held so a nudge can't ratchet
+   * its own ceiling down — ArrowDown from 156 to 155 must leave ArrowUp able to
+   * return — and reset on typing so a smaller entry lowers it again. The ceiling
+   * is derived from it against live props, so a `max` that drops mid-edit binds
+   * immediately rather than leaving a stale ceiling behind.
+   */
+  const [editPeak, setEditPeak] = useState(0);
+
+  /**
+   * Round to 2dp, keeping accumulated scrub/nudge deltas free of float noise.
+   * Guarded: `v * 100` overflows to Infinity past ~9e306, which would render a
+   * committed finite entry as "Infinity" and wedge the field, since that string
+   * no longer parses back to anything committable.
+   */
+  const round2 = useCallback((v: number) => {
+    const scaled = v * 100;
+    return Number.isFinite(scaled) ? Math.round(scaled) / 100 : v;
   }, []);
 
-  /** Round to 2dp to keep accumulated scrub/nudge deltas free of float noise. */
-  const tidy = useCallback((v: number) => Math.round(v * 100) / 100, []);
+  const formatValue = useCallback(
+    (v: number) => {
+      const rounded = round2(v);
+      return rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toString();
+    },
+    [round2]
+  );
+
+  const tidy = round2;
 
   const startEditing = useCallback(() => {
     if (disabled) return;
     // Mixed selection: start from an empty field so a typed value unifies all.
     setEditValue(indeterminate ? '' : formatValue(value));
+    setEditPeak(value);
     setEditing(true);
   }, [disabled, indeterminate, value, formatValue]);
 
@@ -89,10 +148,18 @@ export function CompactNumberInput({
   const commit = useCallback(
     (raw: string) => {
       const parsed = parseFloat(raw);
-      if (!isNaN(parsed)) onChange(clamp(parsed));
+      // Finite, not merely non-NaN: `parseFloat` maps "Infinity" and any
+      // overflowing exponent to Infinity. `softMax` has no ceiling to absorb
+      // that, and downstream geometry must never see a non-finite dimension.
+      //
+      // Deliberately app-wide rather than gated on `softMax`. A hard `max` did
+      // absorb it, but by silently committing the ceiling — so "Infinity" set a
+      // rotation field to 359 while "abc" left it alone. Non-finite input is
+      // unparseable garbage, not a big number, and now reverts like any other.
+      if (Number.isFinite(parsed)) onChange(clampTyped(parsed));
       setEditing(false);
     },
-    [onChange, clamp]
+    [onChange, clampTyped]
   );
 
   const handleKeyDown = useCallback(
@@ -104,12 +171,20 @@ export function CompactNumberInput({
       } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
         e.preventDefault();
         const delta = effectiveStep(step, e) * (e.key === 'ArrowUp' ? 1 : -1);
-        const next = clamp(tidy(value + delta));
+        // Nudge from what the field shows, not the last committed value: typing
+        // 156 over a committed 10 and pressing ArrowDown must reach 155, not 9.5.
+        // (`editValue` is empty for an untouched mixed selection, hence the
+        // fallback.)
+        const typed = parseFloat(editValue);
+        const base = Number.isFinite(typed) ? typed : value;
+        const peak = Math.max(editPeak, base);
+        if (peak !== editPeak) setEditPeak(peak);
+        const next = clampRange(tidy(base + delta), min, stepCeiling(peak));
         onChange(next);
         setEditValue(formatValue(next));
       }
     },
-    [editValue, commit, value, clamp, onChange, formatValue, tidy, step]
+    [editValue, commit, value, min, editPeak, stepCeiling, onChange, formatValue, tidy, step]
   );
 
   const handleScrubStart = useCallback(
@@ -118,6 +193,8 @@ export function CompactNumberInput({
       e.preventDefault();
       const startX = e.clientX;
       const startValue = value;
+      // Fixed for the drag, so the ceiling can't drift as the value moves.
+      const ceiling = stepCeiling(startValue);
       let moved = false;
 
       const handleMove = (moveEvent: PointerEvent) => {
@@ -128,7 +205,11 @@ export function CompactNumberInput({
         }
         if (!moved) return;
         const steps = Math.round(dx / PIXELS_PER_STEP);
-        const next = clamp(tidy(startValue + steps * effectiveStep(step, moveEvent)));
+        const next = clampRange(
+          tidy(startValue + steps * effectiveStep(step, moveEvent)),
+          min,
+          ceiling
+        );
         onChange(next);
       };
 
@@ -142,7 +223,7 @@ export function CompactNumberInput({
       document.addEventListener('pointermove', handleMove);
       document.addEventListener('pointerup', handleUp);
     },
-    [disabled, editing, value, clamp, onChange, tidy, startEditing, step]
+    [disabled, editing, value, min, stepCeiling, onChange, tidy, startEditing, step]
   );
 
   return (
@@ -170,7 +251,11 @@ export function CompactNumberInput({
         aria-label={label}
         aria-valuenow={value}
         aria-valuemin={min}
-        aria-valuemax={max === Infinity ? undefined : max}
+        // The announced range always contains the value: publishing valuenow >
+        // valuemax is an invalid slider state. Independent of `softMax` — a hard
+        // ceiling can also sit below the value (an oversize cutout leaves no
+        // valid X offset, so X's max is 0 while it still reads its old offset).
+        aria-valuemax={max === Infinity ? undefined : Math.max(max, value)}
       >
         {label}
       </span>
@@ -180,7 +265,13 @@ export function CompactNumberInput({
           type="text"
           inputMode="decimal"
           value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
+          onChange={(e) => {
+            setEditValue(e.target.value);
+            // Reset rather than raise, so typing 100 over a committed 156 lowers
+            // the ceiling instead of leaving arrows free to climb back to 156.
+            const typed = parseFloat(e.target.value);
+            setEditPeak(Number.isFinite(typed) ? typed : value);
+          }}
           onBlur={() => commit(editValue)}
           onKeyDown={handleKeyDown}
           className="min-w-0 flex-1 bg-transparent pr-1 text-right text-xs text-content outline-none"

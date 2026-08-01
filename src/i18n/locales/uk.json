@@ -452,6 +452,8 @@
   "binDesigner.cutoutEditor.boardSettings": "Дошка",
   "binDesigner.cutoutEditor.boardSize": "Розмір дошки",
   "binDesigner.cutoutEditor.bringBackIn": "Повернути всередину",
+  "binDesigner.cutoutEditor.growBinToFit": "Збільшити контейнер до {width} × {depth}",
+  "binDesigner.cutoutEditor.growBinUnavailable": "Контейнер не може вирости настільки, щоб вмістити їх.",
   "binDesigner.cutoutEditor.delete": "Видалити вибране",
   "binDesigner.cutoutEditor.done": "Готово",
   "binDesigner.cutoutEditor.duplicate": "Дублювати вибране",

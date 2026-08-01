@@ -452,6 +452,8 @@
   "binDesigner.cutoutEditor.boardSettings": "보드",
   "binDesigner.cutoutEditor.boardSize": "보드 크기",
   "binDesigner.cutoutEditor.bringBackIn": "안으로 되돌리기",
+  "binDesigner.cutoutEditor.growBinToFit": "빈을 {width} × {depth}(으)로 확대",
+  "binDesigner.cutoutEditor.growBinUnavailable": "이들을 담을 만큼 빈을 키울 수 없습니다.",
   "binDesigner.cutoutEditor.delete": "선택 항목 삭제",
   "binDesigner.cutoutEditor.done": "완료",
   "binDesigner.cutoutEditor.duplicate": "선택 항목 복제",

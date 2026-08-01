@@ -452,6 +452,8 @@
   "binDesigner.cutoutEditor.boardSettings": "画板",
   "binDesigner.cutoutEditor.boardSize": "画板尺寸",
   "binDesigner.cutoutEditor.bringBackIn": "移回画板内",
+  "binDesigner.cutoutEditor.growBinToFit": "将收纳盒扩大到 {width} × {depth}",
+  "binDesigner.cutoutEditor.growBinUnavailable": "收纳盒无法扩大到足以容纳它们。",
   "binDesigner.cutoutEditor.delete": "删除选中项",
   "binDesigner.cutoutEditor.done": "完成",
   "binDesigner.cutoutEditor.duplicate": "复制选中项",
