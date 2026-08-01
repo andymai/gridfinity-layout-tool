@@ -189,8 +189,11 @@ describe('baseplate outline geometry', () => {
     // Cells fully inside keep their sockets, and the plate keeps its extent —
     // this drops sockets, it does not shrink the plate.
     expect(countVerticesIn(whole.vertices, -84, -84, -44, -44)).toBeGreaterThan(0);
+    // Both axes: the chamfer trims the +Y side, so an X-only check would miss
+    // a regression that shrank the plate's depth.
     const bb = boundingBox(whole.vertices);
     expect(bb.maxX - bb.minX).toBeCloseTo(4 * U, 0);
+    expect(bb.maxY - bb.minY).toBeCloseTo(4 * U, 0);
   });
 
   it('leaves a rectangular plate untouched when fitting whole cells', { timeout: 240_000 }, () => {
