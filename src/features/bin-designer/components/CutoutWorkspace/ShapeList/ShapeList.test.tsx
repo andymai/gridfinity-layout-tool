@@ -181,6 +181,66 @@ describe('ShapeList', () => {
     });
   });
 
+  describe('accessibility', () => {
+    it('exposes the rows as a multi-select listbox', () => {
+      setup([cutout({ id: 'a' })]);
+      const box = screen.getByRole('listbox');
+      expect(box).toHaveAttribute('aria-multiselectable');
+      expect(screen.getAllByRole('option')).toHaveLength(1);
+    });
+
+    it('marks the selected row as selected', () => {
+      setup([cutout({ id: 'a' }), cutout({ id: 'b', zIndex: 1 })], ['a']);
+      const selected = screen
+        .getAllByRole('option')
+        .filter((o) => o.getAttribute('aria-selected') === 'true');
+      expect(selected).toHaveLength(1);
+    });
+
+    it('moves the roving focus with the arrow keys', async () => {
+      const user = userEvent.setup();
+      setup([
+        cutout({ id: 'a', zIndex: 0, width: 10, depth: 10 }),
+        cutout({ id: 'b', zIndex: 1, width: 30, depth: 30 }),
+      ]);
+      const options = screen.getAllByRole('option');
+      // Roving tabIndex: exactly one stop for the whole list.
+      expect(options.filter((o) => o.getAttribute('tabindex') === '0')).toHaveLength(1);
+
+      options[0].focus();
+      await user.keyboard('{ArrowDown}');
+      expect(options[1]).toHaveFocus();
+      await user.keyboard('{ArrowUp}');
+      expect(options[0]).toHaveFocus();
+    });
+
+    it('jumps to the ends with Home and End', async () => {
+      const user = userEvent.setup();
+      setup([
+        cutout({ id: 'a', zIndex: 0, width: 10, depth: 10 }),
+        cutout({ id: 'b', zIndex: 1, width: 20, depth: 20 }),
+        cutout({ id: 'c', zIndex: 2, width: 30, depth: 30 }),
+      ]);
+      const options = screen.getAllByRole('option');
+      options[0].focus();
+      await user.keyboard('{End}');
+      expect(options[2]).toHaveFocus();
+      await user.keyboard('{Home}');
+      expect(options[0]).toHaveFocus();
+    });
+
+    it('keeps lock and hide reachable on focus, not only on hover', () => {
+      // Every other panel in the app pairs the hover reveal with a focus
+      // variant; without it a keyboard user focuses an invisible control.
+      setup([cutout({ id: 'a' })]);
+      for (const name of [/^hide/i, /^lock$/i]) {
+        expect(screen.getByRole('button', { name }).className).toContain(
+          'focus-visible:opacity-100'
+        );
+      }
+    });
+  });
+
   describe('drag', () => {
     /** Row body = reparent target; the strip above it = reorder target. */
     const zones = (title: string) => {

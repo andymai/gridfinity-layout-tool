@@ -39,9 +39,12 @@ interface ShapeListRowProps {
   readonly onDragEnd: () => void;
   /** Highlight state driven by the parent while a drag is in flight. */
   readonly dropHint: DropKind | null;
+  /** True when this row holds the list's roving focus. */
+  readonly active: boolean;
 }
 
-const ROW = 'group flex w-full items-center gap-1 rounded px-1 py-1 text-left text-[11px]';
+const ROW =
+  'group flex w-full cursor-grab items-center gap-1 rounded px-1 py-1 text-left text-[11px] active:cursor-grabbing';
 
 function EyeIcon({ off }: { readonly off: boolean }) {
   return (
@@ -85,6 +88,7 @@ export function ShapeListRow({
   onDrop,
   onDragEnd,
   dropHint,
+  active,
 }: ShapeListRowProps) {
   const t = useTranslation();
   const [editing, setEditing] = useState(false);
@@ -153,6 +157,11 @@ export function ShapeListRow({
       />
       <div
         draggable
+        role="option"
+        aria-selected={selected}
+        // Roving tabIndex: one stop for the whole list, then arrow keys.
+        tabIndex={active ? 0 : -1}
+        data-shape-row
         onDragStart={(e) => {
           // Firefox refuses to start an HTML5 drag unless dataTransfer carries
           // something; without this the whole reorder/reparent interaction is
@@ -232,7 +241,7 @@ export function ShapeListRow({
           aria-pressed={hidden}
           aria-label={t(hidden ? 'binDesigner.shapeList.show' : 'binDesigner.shapeList.hide')}
           title={t(hidden ? 'binDesigner.shapeList.show' : 'binDesigner.shapeList.hide')}
-          className={`px-0.5 py-0 ${hidden ? 'text-content' : 'text-content-tertiary opacity-0 group-hover:opacity-100'}`}
+          className={`px-0.5 py-0 ${hidden ? 'text-content' : 'text-content-tertiary opacity-0 group-hover:opacity-100 focus-visible:opacity-100'}`}
         >
           <EyeIcon off={hidden} />
         </Button>
@@ -243,7 +252,7 @@ export function ShapeListRow({
           aria-pressed={locked}
           aria-label={t(locked ? 'binDesigner.shapeList.unlock' : 'binDesigner.shapeList.lock')}
           title={t(locked ? 'binDesigner.shapeList.unlock' : 'binDesigner.shapeList.lock')}
-          className={`px-0.5 py-0 ${locked ? 'text-content' : 'text-content-tertiary opacity-0 group-hover:opacity-100'}`}
+          className={`px-0.5 py-0 ${locked ? 'text-content' : 'text-content-tertiary opacity-0 group-hover:opacity-100 focus-visible:opacity-100'}`}
         >
           <LockIcon locked={locked} />
         </Button>

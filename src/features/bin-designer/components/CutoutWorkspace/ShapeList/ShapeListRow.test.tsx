@@ -39,6 +39,7 @@ function renderRow(c: Cutout, overrides: Partial<RowProps> = {}) {
     onDrop: vi.fn(),
     onDragEnd: vi.fn(),
     dropHint: null,
+    active: false,
   };
   // Spread in JSX rather than merging first: spreading a Partial into the
   // object literal widens every prop to `| undefined`.
