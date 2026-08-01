@@ -38,11 +38,17 @@ export function usePenView(widthMm: number, depthMm: number, session: unknown): 
   // both together, and splitting them would let a render observe half a step.
   const [view, setView] = useState({ zoom: 1, x: 0, y: 0 });
   // A new session, or a resized drawer, must start in the default framing: the
-  // dialog stays mounted, so the previous session's zoom and pan would
-  // otherwise be inherited by a shape they were never framed for.
-  const [viewSession, setViewSession] = useState<unknown>(session);
-  if (viewSession !== session) {
-    setViewSession(session);
+  // dialog stays mounted, so the previous zoom and pan would otherwise be
+  // inherited by a shape they were never framed for. The frame dimensions are
+  // part of the identity because a resize changes the frame itself, leaving a
+  // pan that can sit outside it or hide the area that just appeared.
+  const identity = `${String(frameW)}x${String(frameH)}`;
+  const [viewIdentity, setViewIdentity] = useState<{ session: unknown; frame: string }>({
+    session,
+    frame: identity,
+  });
+  if (viewIdentity.session !== session || viewIdentity.frame !== identity) {
+    setViewIdentity({ session, frame: identity });
     setView({ zoom: 1, x: 0, y: 0 });
   }
   const { zoom } = view;

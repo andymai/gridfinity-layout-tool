@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import type { DrawerOutline } from '@/core/types';
 import { ok } from '@/core/result';
 import { useLayoutStore } from '@/core/store';
@@ -289,6 +289,41 @@ describe('PenShapeDialog', () => {
       expect(vb[2]).toBeLessThan(448);
       expect(vb[0]).toBeGreaterThan(0);
       expect(screen.getByText('drawerShape.penResetView')).toBeInTheDocument();
+    });
+
+    // A resize changes the frame itself, so a pan chosen for the old one can
+    // sit outside it or hide the area that just appeared.
+    it('re-frames when the drawer is resized while open', () => {
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      const svg = canvas();
+      svg.getBoundingClientRect = rect;
+      fireEvent.wheel(svg, { deltaY: -100, clientX: 224, clientY: 182 });
+      expect(svg.getAttribute('viewBox')).not.toBe('0 0 448 364');
+
+      act(() => {
+        useLayoutStore.setState((state) => ({
+          layout: { ...state.layout, drawer: { ...state.layout.drawer, width: 12 } },
+        }));
+      });
+
+      expect(canvas().getAttribute('viewBox')).toBe('0 0 532 364');
+    });
+
+    // Focus can leave while Space is held, and the keyup then never arrives —
+    // leaving every later drag stuck in pan mode.
+    it('releases space-pan when the canvas loses focus', () => {
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      const svg = canvas();
+      svg.getBoundingClientRect = rect;
+      fireEvent.keyDown(svg, { key: ' ' });
+      fireEvent.blur(svg);
+
+      // A background drag should now marquee, not pan: the view must not move.
+      const before = svg.getAttribute('viewBox');
+      fireEvent.pointerDown(svg, { clientX: 200, clientY: 200 });
+      fireEvent.pointerMove(svg, { clientX: 150, clientY: 150 });
+      fireEvent.pointerUp(svg);
+      expect(svg.getAttribute('viewBox')).toBe(before);
     });
 
     it('restores the default framing from the reset control', () => {

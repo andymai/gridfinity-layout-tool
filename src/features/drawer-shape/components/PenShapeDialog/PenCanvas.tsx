@@ -32,6 +32,7 @@ export interface PenCanvasProps {
   readonly onDoubleClick: (e: ReactPointerEvent<SVGSVGElement>) => void;
   readonly onKeyDown: (e: ReactKeyboardEvent<SVGSVGElement>) => void;
   readonly onKeyUp: (e: ReactKeyboardEvent<SVGSVGElement>) => void;
+  readonly onBlur: () => void;
   readonly onWheel: (e: React.WheelEvent<SVGSVGElement>) => void;
 }
 
@@ -55,6 +56,7 @@ export function PenCanvas({
   onDoubleClick,
   onKeyDown,
   onKeyUp,
+  onBlur,
   onWheel,
 }: PenCanvasProps) {
   return (
@@ -70,6 +72,7 @@ export function PenCanvas({
       onDoubleClick={onDoubleClick}
       onKeyDown={onKeyDown}
       onKeyUp={onKeyUp}
+      onBlur={onBlur}
       // Role before tabIndex: it declares what the element is before how it is
       // reached, which is also the order the a11y check reads the pair in.
       role="application"
