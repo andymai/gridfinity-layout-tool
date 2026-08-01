@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.342.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.342.2...gridfinity-layout-tool-v4.342.3) (2026-08-01)
+
+
+### Bug Fixes
+
+* **baseplate:** collapse split pieces on the Y pitch for non-square grids ([#3089](https://github.com/andymai/gridfinity-layout-tool/issues/3089)) ([#3093](https://github.com/andymai/gridfinity-layout-tool/issues/3093)) ([92ccd67](https://github.com/andymai/gridfinity-layout-tool/commit/92ccd67a00cb65bfd7af0f3494e153f0a20c49ea))
+
 ## [4.342.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.342.1...gridfinity-layout-tool-v4.342.2) (2026-08-01)
 
 
