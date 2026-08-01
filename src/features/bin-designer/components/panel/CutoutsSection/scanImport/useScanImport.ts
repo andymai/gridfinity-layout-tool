@@ -12,6 +12,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { defaultEntryChamfer } from '@/features/bin-designer/types';
 import { specToCutout, DEFAULT_CUT_DEPTH } from '../svgImport/specToCutout';
 import type { ParsedCutoutSpec } from '../svgImport/types';
+import { byDescendingArea } from '../importStackOrder';
 
 /** Default insertion clearance (mm) applied to a scanned tool outline. */
 const SCAN_DEFAULT_CLEARANCE_MM = 0.4;
@@ -36,7 +37,9 @@ export function useScanImport(): UseScanImportReturn {
 
       startTransaction();
       try {
-        for (const spec of specs) {
+        // Same stacking rule as the SVG path (#3073): a scan can trace an
+        // outer silhouette around smaller detail.
+        for (const spec of byDescendingArea(specs)) {
           const cutout = specToCutout(spec, hydrationOptions);
           // Scanned outlines default to a fit clearance + self-centering entry
           // chamfer (both applied at generation time, like parametric cutouts, and

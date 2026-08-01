@@ -10,6 +10,10 @@ import {
   LID_TOP_THICKNESS_MAX_MM,
   LID_TOP_THICKNESS_STEP_MM,
   resolveLidFootprintClearance,
+  resolveLidPlateThickness,
+  resolveLidTrayBreakdown,
+  LID_MAGNET_CEILING,
+  LID_TRAY_FLOOR,
   LID_EXTRA_HEIGHT_MIN_MM,
   LID_EXTRA_HEIGHT_MAX_MM,
   LID_EXTRA_HEIGHT_STEP_MM,
@@ -150,5 +154,90 @@ describe('LID_EXTRA_HEIGHT bounds', () => {
   it('uses a whole-millimetre step', () => {
     expect(LID_EXTRA_HEIGHT_STEP_MM).toBeGreaterThan(0);
     expect(Number.isInteger(LID_EXTRA_HEIGHT_STEP_MM)).toBe(true);
+  });
+});
+
+describe('resolveLidPlateThickness', () => {
+  const params = (lid: Partial<BinParams['lid']>, rest: Partial<BinParams> = {}): BinParams => ({
+    ...DEFAULT_BIN_PARAMS,
+    ...rest,
+    lid: { ...DEFAULT_BIN_PARAMS.lid, ...lid },
+  });
+  const tray = (depthMm: number) => ({ enabled: true, depthMm, wallMm: 2 });
+
+  it('is the plate itself on a lid with no tray', () => {
+    expect(resolveLidPlateThickness(params({ topThicknessMm: 2.4 }))).toBe(2.4);
+  });
+
+  it('never drops below the base thickness', () => {
+    expect(resolveLidPlateThickness(params({ topThicknessMm: 0 }))).toBe(LID_TOP_THICKNESS_BASE);
+  });
+
+  it('keeps material above a stack magnet pocket', () => {
+    const plate = resolveLidPlateThickness(
+      params(
+        { stackableTop: true, magnetHoles: true, topThicknessMm: 0.8 },
+        { base: { ...DEFAULT_BIN_PARAMS.base, magnetDepth: 2.5 } }
+      )
+    );
+    expect(plate).toBeCloseTo(2.5 + LID_MAGNET_CEILING, 6);
+  });
+
+  // #3072: the knob used to be `max(plate, recess + floor)`, which pinned a
+  // default 4mm tray at 4.8mm — every value under that changed nothing the
+  // user could see, and the tray floor was always the bare minimum.
+  it('adds the tray recess on top of the requested floor', () => {
+    expect(resolveLidPlateThickness(params({ tray: tray(4), topThicknessMm: 3 }))).toBeCloseTo(
+      7,
+      6
+    );
+  });
+
+  it('moves with the knob instead of sitting inert below a threshold', () => {
+    const thin = resolveLidPlateThickness(params({ tray: tray(4), topThicknessMm: 2 }));
+    const thick = resolveLidPlateThickness(params({ tray: tray(4), topThicknessMm: 3 }));
+    expect(thick - thin).toBeCloseTo(1, 6);
+  });
+
+  it('holds the minimum floor under the recess when the knob is lower', () => {
+    const plate = resolveLidPlateThickness(params({ tray: tray(4), topThicknessMm: 0.8 }));
+    expect(plate - 4).toBeCloseTo(LID_TRAY_FLOOR, 6);
+  });
+
+  it('ignores the tray when the top is stackable — they cannot share the face', () => {
+    expect(
+      resolveLidPlateThickness(params({ tray: tray(4), stackableTop: true, topThicknessMm: 1.2 }))
+    ).toBe(1.2);
+  });
+});
+
+describe('resolveLidTrayBreakdown', () => {
+  const params = (lid: Partial<BinParams['lid']>): BinParams => ({
+    ...DEFAULT_BIN_PARAMS,
+    lid: { ...DEFAULT_BIN_PARAMS.lid, ...lid },
+  });
+
+  it('is null when there is no tray to break down', () => {
+    expect(resolveLidTrayBreakdown(params({ topThicknessMm: 2 }))).toBeNull();
+    expect(
+      resolveLidTrayBreakdown(
+        params({ tray: { enabled: true, depthMm: 4, wallMm: 2 }, stackableTop: true })
+      )
+    ).toBeNull();
+  });
+
+  it('splits the plate into recess and floor, summing to the whole', () => {
+    const b = resolveLidTrayBreakdown(
+      params({ tray: { enabled: true, depthMm: 4, wallMm: 2 }, topThicknessMm: 2.4 })
+    );
+    expect(b).not.toBeNull();
+    expect(b?.recessMm).toBeCloseTo(4, 6);
+    expect(b?.floorMm).toBeCloseTo(2.4, 6);
+    expect(b?.overallMm).toBeCloseTo(6.4, 6);
+  });
+
+  it('reports the same total the geometry builds from', () => {
+    const p = params({ tray: { enabled: true, depthMm: 3, wallMm: 2 }, topThicknessMm: 1 });
+    expect(resolveLidTrayBreakdown(p)?.overallMm).toBe(resolveLidPlateThickness(p));
   });
 });

@@ -16,6 +16,7 @@ import { parseSvgString } from './svgParser';
 import { specToCutout, DEFAULT_CUT_DEPTH } from './specToCutout';
 import { MAX_SVG_FILE_SIZE } from './types';
 import type { SvgImportErrorCode } from './types';
+import { byDescendingArea } from '../importStackOrder';
 
 /** Maps error codes to i18n toast keys. */
 const ERROR_TOAST_KEYS: Record<SvgImportErrorCode, string> = {
@@ -85,7 +86,9 @@ export function useSvgImport(): UseSvgImportReturn {
         // Wrap all additions in a single undo transaction
         startTransaction();
         try {
-          for (const spec of specs) {
+          // Largest first so big outlines land underneath the detail they
+          // enclose — `addCutout` stacks each new shape on top (#3073).
+          for (const spec of byDescendingArea(specs)) {
             addCutout(specToCutout(spec, hydrationOptions));
           }
         } finally {

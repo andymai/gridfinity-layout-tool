@@ -79,6 +79,7 @@ export {
   LID_MAGNETIC_EXTRA_CLEARANCE,
   resolveLidFootprintClearance,
   resolveLidPlateThickness,
+  resolveLidTrayBreakdown,
   resolveLidCavityExtraMm,
   LID_EXTRA_HEIGHT,
   LID_MAGNET_SEAT_GAP,

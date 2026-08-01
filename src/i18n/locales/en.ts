@@ -1862,7 +1862,14 @@ const en: Record<string, string> = {
   'binDesigner.lid.topThicknessHint':
     'Thickness of the lid’s flat top. Raise it for a stiffer, more opaque lid on large bins.',
   'binDesigner.lid.topThicknessRaisedHint':
-    'Top is {thickness}mm here — magnet pockets or the tray recess need the extra material.',
+    'Top is {thickness}mm here — magnet pockets need the extra material.',
+  'binDesigner.lid.trayFloorThickness': 'Tray floor',
+  'binDesigner.lid.trayFloorThicknessAria': 'Material left under the tray recess, in millimeters',
+  'binDesigner.lid.trayFloorThicknessHint':
+    'Material left under the tray recess. Raise it for a floor that holds weight instead of flexing.',
+  'binDesigner.lid.trayBreakdownRecess': 'Tray recess depth',
+  'binDesigner.lid.trayBreakdownFloor': 'Remaining tray floor',
+  'binDesigner.lid.trayBreakdownOverall': 'Overall lid thickness',
   'binDesigner.lid.magneticClearanceHint':
     'Magnetic lids are made {clearance}mm smaller per side so the magnets pull them shut instead of fighting a friction fit.',
   'binDesigner.lid.clickRailCoverage': 'Rail coverage',

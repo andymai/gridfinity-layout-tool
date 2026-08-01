@@ -177,6 +177,12 @@ export function LidSection() {
   const showCoverageAdvanced = state.attachment === 'clickRails' && state.anyRail;
   const showTrayAdvanced = state.topSurface === 'tray';
 
+  // On a tray lid the geometry holds the floor at LID_TRAY_FLOOR even if the
+  // design stored something thinner, so the field reads back from the resolver
+  // rather than the raw param — otherwise it would sit directly above the
+  // breakdown showing a number the part does not use.
+  const shownThickness = state.trayBreakdown ? state.trayBreakdown.floorMm : state.topThicknessMm;
+
   return (
     <div className="space-y-4">
       {/* Master enable. Disabled (with a reason) when the bin has no stacking
@@ -399,26 +405,62 @@ export function LidSection() {
             <div className="space-y-3 pt-2">
               <div className="space-y-1">
                 <StepperField
-                  label={t('binDesigner.lid.topThickness')}
+                  label={
+                    state.trayBreakdown
+                      ? t('binDesigner.lid.trayFloorThickness')
+                      : t('binDesigner.lid.topThickness')
+                  }
                   unit="mm"
-                  value={state.topThicknessMm}
+                  value={shownThickness}
                   onChange={handlers.setTopThickness}
+                  // Step from the SHOWN value, not the stored one. They differ
+                  // on a tray lid whose design stored less than the geometry
+                  // uses, and stepping from the stored value made the first
+                  // click compute a number that clamped straight back to what
+                  // was already displayed — a control that looked dead.
                   onStep={(delta) =>
-                    handlers.setTopThickness(state.topThicknessMm + delta * state.topThicknessStep)
+                    handlers.setTopThickness(shownThickness + delta * state.topThicknessStep)
                   }
                   min={state.topThicknessMin}
                   max={state.topThicknessMax}
                   step={state.topThicknessStep}
                   size="md"
-                  aria-label={t('binDesigner.lid.topThicknessAria')}
+                  aria-label={
+                    state.trayBreakdown
+                      ? t('binDesigner.lid.trayFloorThicknessAria')
+                      : t('binDesigner.lid.topThicknessAria')
+                  }
                   commitMode="deferred"
                 />
+                {/* A tray splits the plate into recess + floor, and the field
+                    sets the floor — without the arithmetic spelled out, the
+                    overall thickness looks unrelated to what was typed (#3072). */}
+                {state.trayBreakdown && (
+                  <dl className="text-content-tertiary space-y-0.5 text-xs">
+                    <div className="flex justify-between gap-2">
+                      <dt>{t('binDesigner.lid.trayBreakdownRecess')}</dt>
+                      <dd className="tabular-nums">{state.trayBreakdown.recessMm.toFixed(1)} mm</dd>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <dt>{t('binDesigner.lid.trayBreakdownFloor')}</dt>
+                      <dd className="tabular-nums">{state.trayBreakdown.floorMm.toFixed(1)} mm</dd>
+                    </div>
+                    <div className="text-content-secondary flex justify-between gap-2 font-medium">
+                      <dt>{t('binDesigner.lid.trayBreakdownOverall')}</dt>
+                      <dd className="tabular-nums">
+                        {state.trayBreakdown.overallMm.toFixed(1)} mm
+                      </dd>
+                    </div>
+                  </dl>
+                )}
                 <Hint>
-                  {state.topThicknessEffective > state.topThicknessMm
-                    ? t('binDesigner.lid.topThicknessRaisedHint', {
-                        thickness: state.topThicknessEffective.toFixed(1),
-                      })
-                    : t('binDesigner.lid.topThicknessHint')}
+                  {state.trayBreakdown
+                    ? t('binDesigner.lid.trayFloorThicknessHint')
+                    : state.topThicknessEffective > state.topThicknessMm
+                      ? t('binDesigner.lid.topThicknessRaisedHint', {
+                          thickness: state.topThicknessEffective.toFixed(1),
+                        })
+                      : t('binDesigner.lid.topThicknessHint')}
                 </Hint>
               </div>
 
