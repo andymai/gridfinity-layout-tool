@@ -1,0 +1,21 @@
+src/shared/components/CompactNumberInput/CompactNumberInput.tsx
+  s_8fb9c547edb3b7::t_147a1629596fc6 89,91-108,110,137,139,180-182,187,197,226,270-271,273
+src/shared/components/CompactNumberInput/CompactNumberInput.test.tsx
+  s_8fb9c547edb3b7::t_c86623cf8a0101 435-467
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "36dbfcda3b19e0fe899454e04a816577b82e100d",
+  "prompts": {},
+  "sessions": {
+    "s_8fb9c547edb3b7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8fc9a64f-8d00-4acb-9c91-3f304e2087ad",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
