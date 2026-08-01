@@ -62,7 +62,13 @@ export const tessellateStage: PipelineStage = {
     // Stamping the params lets `exportBin` tell this solid apart from one left
     // behind by a different design on the same worker (GH #3074). Only meaningful
     // for export passes — a preview solid is regenerated regardless.
-    setLastSolid(solid, forExport, forExport ? paramsFingerprint(ctx.params) : null);
+    //
+    // A still-deferred socket on an export pass means the fuse above failed:
+    // this solid is the body WITHOUT its base, complete only in the merged mesh
+    // built below. Leaving it unidentified makes the next export rebuild (and
+    // retry the fuse) instead of reusing a socket-less BREP.
+    const identified = forExport && !ctx.deferredSolid;
+    setLastSolid(solid, forExport, identified ? paramsFingerprint(ctx.params) : null);
 
     const { tolerance, angularTolerance } = computeTessellationTolerances(
       forExport,

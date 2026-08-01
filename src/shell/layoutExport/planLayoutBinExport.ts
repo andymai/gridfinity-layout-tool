@@ -95,6 +95,12 @@ export interface LayoutBinExportPlan {
  * Cut planes for `params` against the layout's print bed, or null when the bin
  * fits whole. Mirrors the bin designer's `downloadSplit` so a bin exported from
  * the layout ZIP arrives in the same pieces it would from the designer.
+ *
+ * An overhang is charged against the bed before the grid capacity is derived.
+ * It extends the part in millimetres beyond its nominal footprint, so a bin
+ * that just fits on nominal dimensions can still overrun the plate — and unlike
+ * the designer, layout bins routinely carry one (`resolveBinOverhang` grows
+ * them into the drawer margin).
  */
 function binSplitPlan(
   params: BinParams,
@@ -103,10 +109,11 @@ function binSplitPlan(
 ): LayoutSplitPlan | null {
   if (format === 'step') return null;
   const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
+  const over = resolveOverhang(params.overhang ?? undefined);
   const maxGrid = calcMaxGridUnits(
-    printBed.widthMm,
+    Math.max(0, printBed.widthMm - over.left - over.right),
     params.gridUnitMm,
-    printBed.depthMm,
+    Math.max(0, printBed.depthMm - over.front - over.back),
     gridUnitMmY
   );
   if (params.width <= maxGrid.width && params.depth <= maxGrid.depth) return null;
@@ -347,7 +354,15 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
       filamentGrams: est.gramsFilament,
       printTimeMinutes: est.printTimeMinutes,
       companions: companions[i],
-      ...(split ? { splitPieces: split.totalPieceCount } : {}),
+      ...(split
+        ? {
+            splitPieces: split.totalPieceCount,
+            splitConnectors: u.params.splitConnectors?.enabled ?? true,
+            // Only the body is cut; a lid or divider set on an oversized design
+            // still ships whole and may not fit the bed.
+            ...(companions[i].length > 0 ? { oversizedCompanions: companions[i] } : {}),
+          }
+        : {}),
       ...(u.extended ? { atPositions: u.positions } : {}),
     };
   });

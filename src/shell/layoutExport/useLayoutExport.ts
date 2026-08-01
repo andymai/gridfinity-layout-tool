@@ -151,11 +151,18 @@ async function combinedFiles(
 /**
  * Cut one oversized bin into bed-sized pieces and flatten them into ZIP files.
  *
- * Every piece becomes its own file (`<base>_<label>`) — including under 3MF,
- * unlike `combinedFiles`. The pieces are separate prints that get joined after
- * printing, so packing them into one multi-object 3MF would put parts on top of
- * each other on the plate. Companion parts (lid, dividers) come from a second,
- * combined pass because the split export emits body pieces only.
+ * Every piece becomes its own file — including under 3MF, unlike
+ * `combinedFiles`. The pieces are separate prints that get joined afterwards,
+ * so packing them into one multi-object 3MF would stack parts on the plate.
+ * Companion parts (lid, dividers) come from a second, combined pass because the
+ * split export emits body pieces only.
+ *
+ * Pieces go in their own `bins/<design>/` folder rather than sharing `bins/`
+ * with a `_<label>` suffix. Names are deduped before suffixes exist, so a flat
+ * `<base>_A1.stl` could collide with another design that generates exactly that
+ * name — and `packageFilesAsZip` keys by path, so the loser would vanish from
+ * the archive silently. A folder can't collide with a sibling file name, and it
+ * also groups the parts a user prints as one job.
  */
 async function splitFiles(
   bridge: GenerationBridge,
@@ -192,9 +199,13 @@ async function splitFiles(
 
   const files: ZipBinaryFile[] = [];
   for (const piece of pieces) {
-    const path = `${baseNoExt}_${piece.label}.${format}`;
+    const path = `${baseNoExt}/${piece.label}.${format}`;
+    // Name the 3MF model after the design plus the piece, not the bare label —
+    // "A1" alone in a slicer's object list says nothing about which bin it is.
     const data =
-      format === '3mf' ? await stlTo3mf(piece.data, baseNameOf(path), printSettings) : piece.data;
+      format === '3mf'
+        ? await stlTo3mf(piece.data, `${baseNameOf(baseNoExt)}_${piece.label}`, printSettings)
+        : piece.data;
     files.push({ path, data });
   }
   return files;
