@@ -106,6 +106,28 @@ describe('cutoutSlice - consolidated actions', () => {
       expect(stackOrder()).toEqual(['cutout-2', 'cutout-1']);
     });
 
+    it('gives each new cutout its own layer so nothing ties', () => {
+      // Equal layer AND equal area would leave the renderer with identical
+      // scene Z and renderOrder, and the two channels break that tie by
+      // different rules (raycast traversal vs object id).
+      const { addCutout } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b' }));
+      addCutout(createTestCutout({ id: 'c' }));
+
+      const zs = useDesignerStore.getState().params.cutouts.map((c) => c.zIndex);
+      expect(new Set(zs).size).toBe(3);
+      expect(zs).toEqual([0, 1, 2]);
+    });
+
+    it('honours an explicit zIndex on the incoming cutout', () => {
+      const { addCutout } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b', zIndex: 9 }));
+
+      expect(useDesignerStore.getState().params.cutouts.map((c) => c.zIndex)).toEqual([0, 9]);
+    });
+
     it('back and forward work from an all-default stack (#3053)', () => {
       // Every cutout defaults to zIndex 0. The old absolute-value maths made
       // `back` write 0 over 0 and `backward` clamp to max(-1, 0), so neither

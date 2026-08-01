@@ -101,6 +101,24 @@ function zOrderAffectsGeometry(state: Draft<DesignerState>): boolean {
   return state.params.cutouts.some((c) => c.groupId !== null);
 }
 
+/**
+ * Put a new cutout on its own layer at the top of the stack.
+ *
+ * Two purposes: a freshly drawn shape should land on top, and giving every
+ * cutout a distinct `zIndex` keeps the renderer's stacking key strict. Two
+ * shapes sharing a layer AND an area would otherwise have identical scene Z and
+ * `renderOrder`, leaving the tie to be broken by raycast traversal order on one
+ * side and object id on the other — which can disagree.
+ *
+ * An explicit `zIndex` on the incoming cutout is honoured (paste/duplicate
+ * carry their own ordering).
+ */
+function withTopZIndex(state: Draft<DesignerState>, cutout: Cutout): Cutout {
+  if (cutout.zIndex !== undefined) return cutout;
+  const maxZ = state.params.cutouts.reduce((m, c) => Math.max(m, c.zIndex ?? 0), -1);
+  return { ...cutout, zIndex: maxZ + 1 };
+}
+
 export function createCutoutSlice(set: Set) {
   // Core actions
 
@@ -304,7 +322,7 @@ export function createCutoutSlice(set: Set) {
     addCutout: (cutout: Cutout) => {
       set((state) => {
         pushHistoryEntry(state);
-        state.params.cutouts = [...state.params.cutouts, cutout];
+        state.params.cutouts = [...state.params.cutouts, withTopZIndex(state, cutout)];
       });
     },
 

@@ -31,7 +31,9 @@ describe('DesignerStore - cutout actions', () => {
 
       const { params } = useDesignerStore.getState();
       expect(params.cutouts).toHaveLength(1);
-      expect(params.cutouts[0]).toEqual(cutout);
+      // A new cutout is assigned its own layer so it lands on top and the
+      // renderer's stacking key stays strict (#3053).
+      expect(params.cutouts[0]).toEqual({ ...cutout, zIndex: 0 });
     });
 
     it('adds multiple cutouts in order', () => {
@@ -334,7 +336,7 @@ describe('DesignerStore - cutout actions', () => {
       redo();
 
       const { params } = useDesignerStore.getState();
-      expect(params.cutouts).toEqual([cutout]);
+      expect(params.cutouts).toEqual([{ ...cutout, zIndex: 0 }]);
     });
 
     it('undo after removeCutout restores cutout', () => {
@@ -346,7 +348,7 @@ describe('DesignerStore - cutout actions', () => {
       undo();
 
       const { params } = useDesignerStore.getState();
-      expect(params.cutouts).toEqual([cutout]);
+      expect(params.cutouts).toEqual([{ ...cutout, zIndex: 0 }]);
     });
   });
 });

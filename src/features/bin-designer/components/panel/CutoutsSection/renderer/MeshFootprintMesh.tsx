@@ -109,6 +109,9 @@ export const MeshFootprintMesh = memo(function MeshFootprintMesh({
   const groupX = effective.x + effective.width / 2;
   const groupY = effective.y + effective.depth / 2;
   const rotationZ = -(effective.rotation * Math.PI) / 180;
+  // Same key as the other renderers so a footprint takes part in the
+  // smaller-shape-wins tiebreaker instead of pinning to its layer floor.
+  const area = effective.width * effective.depth;
 
   const strokeColor = isSelected
     ? STROKE_SELECTED
@@ -137,13 +140,13 @@ export const MeshFootprintMesh = memo(function MeshFootprintMesh({
 
   return (
     <group
-      position={[groupX, groupY, shapePosZ(cutout.zIndex, Number.POSITIVE_INFINITY)]}
+      position={[groupX, groupY, shapePosZ(cutout.zIndex, area)]}
       rotation={[0, 0, rotationZ]}
-      renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES, cutout.zIndex, Number.POSITIVE_INFINITY)}
+      renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES, cutout.zIndex, area)}
     >
       <mesh
         geometry={fillGeometry}
-        renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES, cutout.zIndex, Number.POSITIVE_INFINITY)}
+        renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES, cutout.zIndex, area)}
         onPointerDown={handlePointerDown}
         onDoubleClick={handleDoubleClick}
         onPointerEnter={() => {
