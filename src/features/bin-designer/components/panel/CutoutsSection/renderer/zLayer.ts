@@ -5,14 +5,26 @@
  * independent channels:
  *   - scene Z decides which shape wins the click (raycast distance),
  *   - `renderOrder` decides which fill draws on top.
- * They have to move together, or "bring to front" looks right and clicks wrong.
+ *
+ * Both are derived from the SAME ordering key — layer first, then smaller-area
+ * first — so what you see on top is what you click. Feeding only one channel
+ * the tiebreaker is how a shape could paint above its neighbour while the click
+ * went to the other one.
  *
  * Shared by all four shape renderers (SDF, path, polygon, mesh footprint) so a
- * new shape kind can't silently opt out of z-ordering — which is how the SDF
- * renderer ended up as the only one anybody would have patched.
+ * new shape kind can't silently opt out of z-ordering.
  */
 
 import { Z_LAYER_MAX, Z_LAYER_RENDER_STEP, Z_LAYER_STEP } from './constants';
+
+/** Scene-Z span reserved for the within-layer tiebreaker. */
+const AREA_Z_SPAN = 0.01;
+/**
+ * `renderOrder` span for the same tiebreaker. Strictly less than
+ * {@link Z_LAYER_RENDER_STEP} so a tiebreak can never promote a shape past the
+ * next layer.
+ */
+const AREA_RENDER_SPAN = 0.0009;
 
 /** Clamped stacking layer for a cutout. Absent `zIndex` is the bottom (0). */
 export function zLayerOf(zIndex: number | undefined): number {
@@ -20,23 +32,32 @@ export function zLayerOf(zIndex: number | undefined): number {
 }
 
 /**
- * Scene Z for a shape's quad.
+ * Within-layer rank in `(0, 1]`: smaller shapes rank higher.
  *
- * Explicit z-order dominates; the original smaller-shape-wins heuristic is kept
- * as the tiebreaker, since it is what lets you click a small shape sitting on a
- * large one before anyone has touched the ordering. `Z_LAYER_STEP` exceeds the
- * tiebreaker's 0.01 ceiling so the two can never fight.
+ * This is the original smaller-shape-wins heuristic, and it is worth keeping —
+ * it is what lets you click a small shape sitting on a large one before anyone
+ * has touched the ordering. Explicit z-order simply outranks it.
  */
-export function shapePosZ(zIndex: number | undefined, area: number): number {
-  return 0.02 + zLayerOf(zIndex) * Z_LAYER_STEP + 0.01 / Math.max(area, 1);
+function areaRank(area: number): number {
+  return 1 / Math.max(area, 1);
 }
 
 /**
- * `renderOrder` for a shape, offset within its band.
- *
- * The offset stays below 1 (see `Z_LAYER_MAX`), so a shape in `SHAPES` (10)
- * can never bleed into `GROUP_FILL` (11).
+ * Scene Z for a shape's quad. Higher is closer to the camera, so it wins the
+ * raycast. `Z_LAYER_STEP` exceeds {@link AREA_Z_SPAN} so an explicit layer
+ * always beats the area tiebreaker.
  */
-export function shapeRenderOrder(band: number, zIndex: number | undefined): number {
-  return band + zLayerOf(zIndex) * Z_LAYER_RENDER_STEP;
+export function shapePosZ(zIndex: number | undefined, area: number): number {
+  return 0.02 + zLayerOf(zIndex) * Z_LAYER_STEP + AREA_Z_SPAN * areaRank(area);
+}
+
+/**
+ * `renderOrder` for a shape, offset within its band by the same key
+ * {@link shapePosZ} uses.
+ *
+ * The total offset stays below 1 (see `Z_LAYER_MAX`), so a shape in `SHAPES`
+ * (10) can never bleed into `GROUP_FILL` (11).
+ */
+export function shapeRenderOrder(band: number, zIndex: number | undefined, area: number): number {
+  return band + zLayerOf(zIndex) * Z_LAYER_RENDER_STEP + AREA_RENDER_SPAN * areaRank(area);
 }

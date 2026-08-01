@@ -241,14 +241,14 @@ export const PathShapeMesh = memo(function PathShapeMesh({
     <group
       position={[groupX, groupY, posZ]}
       rotation={[0, 0, rotationZ]}
-      renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES, cutout.zIndex)}
+      renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES, cutout.zIndex, area)}
     >
       {/* Depth-shaded fill mesh */}
       {fillGeometry && fillMaterial && (
         <mesh
           geometry={fillGeometry}
           material={fillMaterial}
-          renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES, cutout.zIndex)}
+          renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES, cutout.zIndex, area)}
           onPointerDown={handlePointerDown}
           onDoubleClick={handleDoubleClick}
           onPointerEnter={handlePointerEnter}
@@ -260,7 +260,7 @@ export const PathShapeMesh = memo(function PathShapeMesh({
       {strokeGeometry && !disablePointerEvents && (
         <lineLoop
           geometry={strokeGeometry}
-          renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES + 1, cutout.zIndex)}
+          renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES + 1, cutout.zIndex, area)}
         >
           <lineBasicMaterial color={strokeColor} transparent opacity={1} depthTest={false} />
         </lineLoop>

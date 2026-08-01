@@ -75,12 +75,26 @@ describe('cutoutSlice - consolidated actions', () => {
   });
 
   describe('reorderCutouts', () => {
-    /** Ids from bottom of the stack to top. The contract is the ORDER; the
-     *  concrete zIndex values are an implementation detail of the restack. */
-    const stackOrder = (): string[] =>
-      [...useDesignerStore.getState().params.cutouts]
-        .sort((a, b) => (a.zIndex ?? 0) - (b.zIndex ?? 0))
+    /**
+     * Ids from bottom of the stack to top. The contract is the ORDER; the
+     * concrete zIndex values are an implementation detail of the restack.
+     *
+     * Mirrors `stackBottomToTop`'s explicit array-order tiebreak rather than
+     * leaning on `Array.sort` stability, so an all-default stack (every zIndex
+     * absent, i.e. equal) asserts the documented contract instead of an
+     * incidental property of the sort.
+     */
+    const stackOrder = (): string[] => {
+      const cutouts = useDesignerStore.getState().params.cutouts;
+      const indexById = new Map(cutouts.map((c, i) => [c.id, i]));
+      return [...cutouts]
+        .sort(
+          (a, b) =>
+            (a.zIndex ?? 0) - (b.zIndex ?? 0) ||
+            (indexById.get(a.id) ?? 0) - (indexById.get(b.id) ?? 0)
+        )
         .map((c) => c.id);
+    };
 
     it('forward: swaps with the shape above', () => {
       const { addCutout, reorderCutouts } = useDesignerStore.getState();
@@ -529,6 +543,31 @@ describe('cutoutSlice - consolidated actions', () => {
       setCutoutProperty(['c-1'], { locked: true });
 
       expect(useDesignerStore.getState().generation.epoch).toBe(epochBefore);
+    });
+
+    it('setCutoutProperty is a no-op when the value is already set', () => {
+      const { addCutout, setCutoutProperty } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'c-1', hidden: true }));
+      const epochBefore = useDesignerStore.getState().generation.epoch;
+      const historyBefore = useDesignerStore.getState().history.past.length;
+
+      setCutoutProperty(['c-1'], { hidden: true });
+
+      // Re-hiding an already-hidden cutout must not cost a worker rebuild.
+      expect(useDesignerStore.getState().generation.epoch).toBe(epochBefore);
+      expect(useDesignerStore.getState().history.past.length).toBe(historyBefore);
+    });
+
+    it('setCutoutProperty is a no-op for unknown ids', () => {
+      const { addCutout, setCutoutProperty } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'c-1' }));
+      const epochBefore = useDesignerStore.getState().generation.epoch;
+      const historyBefore = useDesignerStore.getState().history.past.length;
+
+      setCutoutProperty(['nope'], { hidden: true });
+
+      expect(useDesignerStore.getState().generation.epoch).toBe(epochBefore);
+      expect(useDesignerStore.getState().history.past.length).toBe(historyBefore);
     });
 
     it('setCutoutProperty (hide) DOES bump epoch — the worker drops hidden cutouts (#3053)', () => {

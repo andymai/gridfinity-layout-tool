@@ -180,13 +180,13 @@ export const PolygonShapeMesh = memo(function PolygonShapeMesh({
     <group
       position={[centerX, centerY, posZ]}
       rotation={[0, 0, rotationZ]}
-      renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES, cutout.zIndex)}
+      renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES, cutout.zIndex, area)}
     >
       {fillGeometry && fillMaterial && (
         <mesh
           geometry={fillGeometry}
           material={fillMaterial}
-          renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES, cutout.zIndex)}
+          renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES, cutout.zIndex, area)}
           onPointerDown={handlePointerDown}
           onDoubleClick={handleDoubleClick}
           onPointerEnter={() => !isSelected && setIsHovered(true)}
@@ -196,7 +196,7 @@ export const PolygonShapeMesh = memo(function PolygonShapeMesh({
       {strokeGeometry && (
         <lineLoop
           geometry={strokeGeometry}
-          renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES + 1, cutout.zIndex)}
+          renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES + 1, cutout.zIndex, area)}
         >
           <lineBasicMaterial color={strokeColor} transparent opacity={1} depthTest={false} />
         </lineLoop>

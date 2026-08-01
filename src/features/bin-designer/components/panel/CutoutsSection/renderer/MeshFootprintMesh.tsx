@@ -139,11 +139,11 @@ export const MeshFootprintMesh = memo(function MeshFootprintMesh({
     <group
       position={[groupX, groupY, shapePosZ(cutout.zIndex, Number.POSITIVE_INFINITY)]}
       rotation={[0, 0, rotationZ]}
-      renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES, cutout.zIndex)}
+      renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES, cutout.zIndex, Number.POSITIVE_INFINITY)}
     >
       <mesh
         geometry={fillGeometry}
-        renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES, cutout.zIndex)}
+        renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES, cutout.zIndex, Number.POSITIVE_INFINITY)}
         onPointerDown={handlePointerDown}
         onDoubleClick={handleDoubleClick}
         onPointerEnter={() => {
@@ -163,7 +163,11 @@ export const MeshFootprintMesh = memo(function MeshFootprintMesh({
         <lineLoop
           key={i}
           geometry={geo}
-          renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES + 1, cutout.zIndex)}
+          renderOrder={shapeRenderOrder(
+            RENDER_ORDER.SHAPES + 1,
+            cutout.zIndex,
+            Number.POSITIVE_INFINITY
+          )}
         >
           <lineBasicMaterial color={strokeColor} transparent opacity={1} depthTest={false} />
         </lineLoop>

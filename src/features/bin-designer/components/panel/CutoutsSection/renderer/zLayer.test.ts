@@ -41,18 +41,57 @@ describe('shapePosZ', () => {
 
 describe('shapeRenderOrder', () => {
   it('raises a higher layer within its band', () => {
-    expect(shapeRenderOrder(RENDER_ORDER.SHAPES, 3)).toBeGreaterThan(
-      shapeRenderOrder(RENDER_ORDER.SHAPES, 1)
+    expect(shapeRenderOrder(RENDER_ORDER.SHAPES, 3, 100)).toBeGreaterThan(
+      shapeRenderOrder(RENDER_ORDER.SHAPES, 1, 100)
     );
   });
 
   it('never bleeds a SHAPES-band offset into GROUP_FILL', () => {
-    expect(shapeRenderOrder(RENDER_ORDER.SHAPES, Z_LAYER_MAX)).toBeLessThan(
+    // Worst case: top layer AND the largest possible tiebreak.
+    expect(shapeRenderOrder(RENDER_ORDER.SHAPES, Z_LAYER_MAX, 1)).toBeLessThan(
       RENDER_ORDER.GROUP_FILL
     );
   });
 
-  it('keeps the band floor for the bottom layer', () => {
-    expect(shapeRenderOrder(RENDER_ORDER.SHAPES, 0)).toBe(RENDER_ORDER.SHAPES);
+  it('a tiebreak never promotes a shape past the next layer', () => {
+    const topOfLayer = shapeRenderOrder(RENDER_ORDER.SHAPES, 1, 1);
+    const bottomOfNext = shapeRenderOrder(RENDER_ORDER.SHAPES, 2, Number.POSITIVE_INFINITY);
+    expect(topOfLayer).toBeLessThan(bottomOfNext);
+  });
+
+  it('lets z-order beat the area tiebreaker', () => {
+    expect(shapeRenderOrder(RENDER_ORDER.SHAPES, 1, 10_000)).toBeGreaterThan(
+      shapeRenderOrder(RENDER_ORDER.SHAPES, 0, 1)
+    );
+  });
+
+  it('keeps the band floor for a zero-area-rank shape at the bottom layer', () => {
+    expect(shapeRenderOrder(RENDER_ORDER.SHAPES, 0, Number.POSITIVE_INFINITY)).toBe(
+      RENDER_ORDER.SHAPES
+    );
+  });
+});
+
+describe('paint order matches click order', () => {
+  // The whole point of deriving both channels from one key: whichever shape
+  // wins the raycast must also be the one drawn on top, or you click a shape
+  // that is visually underneath.
+  const cases: [string, number | undefined, number][] = [
+    ['bottom layer, large', 0, 10_000],
+    ['bottom layer, small', 0, 4],
+    ['bottom layer, tiny', 0, 1],
+    ['upper layer, large', 2, 10_000],
+    ['upper layer, small', 2, 4],
+    ['no zIndex, medium', undefined, 250],
+  ];
+
+  it.each(cases)('ranks %s consistently in both channels', (_label, z, area) => {
+    for (const [, otherZ, otherArea] of cases) {
+      const zWins = shapePosZ(z, area) > shapePosZ(otherZ, otherArea);
+      const paintWins =
+        shapeRenderOrder(RENDER_ORDER.SHAPES, z, area) >
+        shapeRenderOrder(RENDER_ORDER.SHAPES, otherZ, otherArea);
+      expect(zWins).toBe(paintWins);
+    }
   });
 });

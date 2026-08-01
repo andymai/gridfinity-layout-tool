@@ -118,8 +118,18 @@ export function createCutoutSlice(set: Set) {
   const setCutoutProperty = (ids: readonly string[], partial: CutoutToggleProperties): void => {
     if (ids.length === 0) return;
     set((state) => {
-      pushHistoryEntry(state, { affectsGeometry: togglePropertyAffectsGeometry(partial) });
       const idSet = new Set(ids);
+      const keys = Object.keys(partial) as (keyof CutoutToggleProperties)[];
+      // Bail on a no-op: unknown ids, or the property already holds the wanted
+      // value. Now that `hidden` bumps the generation epoch, re-hiding an
+      // already-hidden cutout would otherwise cost a full worker rebuild on top
+      // of a redundant undo entry.
+      const changed = state.params.cutouts.some(
+        (c) => idSet.has(c.id) && keys.some((k) => c[k] !== partial[k])
+      );
+      if (!changed) return;
+
+      pushHistoryEntry(state, { affectsGeometry: togglePropertyAffectsGeometry(partial) });
       state.params.cutouts = state.params.cutouts.map((c) =>
         idSet.has(c.id) ? { ...c, ...partial } : c
       );

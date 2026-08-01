@@ -250,11 +250,8 @@ const SDFShapeMesh = memo(function SDFShapeMesh({
 
   // Higher Z → closer to camera → wins raycasting on overlap. Since depthTest
   // is false, Z only affects raycasting; `renderOrder` below drives what draws
-  // on top, and both read the same zIndex so click and paint agree.
-  //
-  // Explicit z-order dominates, with the original smaller-shape heuristic kept
-  // as the tiebreaker — that heuristic is what lets you click a small shape
-  // sitting on a large one before anyone has touched the ordering.
+  // on top. Both are derived from the same (layer, area) key in `zLayer.ts`, so
+  // the shape you see on top is the one you click.
   const area = effective.width * effective.depth;
   const posZ = shapePosZ(cutout.zIndex, area);
 
@@ -296,7 +293,7 @@ const SDFShapeMesh = memo(function SDFShapeMesh({
       : renderMode === 'stroke'
         ? RENDER_ORDER.GROUP_STROKE
         : RENDER_ORDER.SHAPES;
-  const renderOrder = shapeRenderOrder(renderBand, cutout.zIndex);
+  const renderOrder = shapeRenderOrder(renderBand, cutout.zIndex, area);
 
   // Stroke pass is visual-only — no pointer interaction
   if (renderMode === 'stroke') {
