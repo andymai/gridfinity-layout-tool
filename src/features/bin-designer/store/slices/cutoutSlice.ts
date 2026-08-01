@@ -115,8 +115,12 @@ function zOrderAffectsGeometry(state: Draft<DesignerState>): boolean {
  */
 function withTopZIndex(state: Draft<DesignerState>, cutout: Cutout): Cutout {
   if (cutout.zIndex !== undefined) return cutout;
-  const maxZ = state.params.cutouts.reduce((m, c) => Math.max(m, c.zIndex ?? 0), -1);
-  return { ...cutout, zIndex: maxZ + 1 };
+  return { ...cutout, zIndex: nextTopZIndex(state) };
+}
+
+/** One past the highest occupied layer. */
+function nextTopZIndex(state: Draft<DesignerState>): number {
+  return state.params.cutouts.reduce((m, c) => Math.max(m, c.zIndex ?? 0), -1) + 1;
 }
 
 export function createCutoutSlice(set: Set) {
@@ -341,7 +345,7 @@ export function createCutoutSlice(set: Set) {
         }
         pushHistoryEntry(state);
         state.params.meshAssets = { ...existing, [meshId]: asset };
-        state.params.cutouts = [...state.params.cutouts, cutout];
+        state.params.cutouts = [...state.params.cutouts, withTopZIndex(state, cutout)];
       });
     },
 
@@ -382,7 +386,8 @@ export function createCutoutSlice(set: Set) {
         const toDuplicate = state.params.cutouts.filter((c) => cutoutIds.includes(c.id));
         // Map old groupId -> new groupId so groups are preserved
         const groupMap = new Map<string, string>();
-        const duplicated = toDuplicate.map((c) => {
+        const topZ = nextTopZIndex(state);
+        const duplicated = toDuplicate.map((c, i) => {
           let newGroupId: string | null = null;
           if (c.groupId) {
             if (!groupMap.has(c.groupId)) {
@@ -399,6 +404,11 @@ export function createCutoutSlice(set: Set) {
             x: c.x + 5,
             y: c.y + 5,
             groupId: newGroupId,
+            // Copies land above the originals, keeping their relative order.
+            // Inheriting `c.zIndex` would put a duplicate on the same layer as
+            // its source with an identical area — a tie neither stacking
+            // channel can break consistently.
+            zIndex: topZ + i,
             ...(translatedPath ? { path: translatedPath } : {}),
           };
         });

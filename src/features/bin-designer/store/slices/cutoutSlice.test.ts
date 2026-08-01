@@ -120,6 +120,21 @@ describe('cutoutSlice - consolidated actions', () => {
       expect(zs).toEqual([0, 1, 2]);
     });
 
+    it('stacks duplicates above their sources instead of tying with them', () => {
+      // `...c` used to carry the source zIndex, so a duplicate shared a layer
+      // AND an area with its original — the one tie neither stacking channel
+      // can break consistently.
+      const { addCutout, duplicateCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b' }));
+
+      duplicateCutouts(['a', 'b']);
+
+      const zs = useDesignerStore.getState().params.cutouts.map((c) => c.zIndex);
+      expect(new Set(zs).size).toBe(zs.length);
+      expect(zs).toEqual([0, 1, 2, 3]);
+    });
+
     it('honours an explicit zIndex on the incoming cutout', () => {
       const { addCutout } = useDesignerStore.getState();
       addCutout(createTestCutout({ id: 'a' }));
