@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.340.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.340.3...gridfinity-layout-tool-v4.340.4) (2026-08-01)
+
+
+### Bug Fixes
+
+* **bin-designer:** make lid thickness control the tray floor, stack imports by size ([#3078](https://github.com/andymai/gridfinity-layout-tool/issues/3078)) ([fae5c58](https://github.com/andymai/gridfinity-layout-tool/commit/fae5c58cfb93f6a5382a1bd5aa4926cfb11e0fd4))
+
 ## [4.340.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.340.2...gridfinity-layout-tool-v4.340.3) (2026-08-01)
 
 
