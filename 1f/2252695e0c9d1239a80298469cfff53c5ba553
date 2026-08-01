@@ -1,0 +1,69 @@
+src/features/generation/worker/generators/shapeCache.ts
+  s_0fc02d8d0f29b4::t_daf9b86b0feea7 99-100
+  s_0fc02d8d0f29b4::t_a8ea1efca9c66f 263-287
+  s_0fc02d8d0f29b4::t_eac53d825a7cfe 353
+  s_0fc02d8d0f29b4::t_c8eddc1d0794f7 302
+src/features/generation/worker/generators/binExporter.test.ts
+  s_0fc02d8d0f29b4::t_65c9540d6d73ce 136-138
+  s_0fc02d8d0f29b4::t_91e58b3a15b562 125-135,139-142
+  s_0fc02d8d0f29b4::t_b7be21683425db 20-21,31-52
+  s_0fc02d8d0f29b4::t_7bfa001a5651f5 53
+src/features/generation/worker/generators/__kernel-tests__/exportIntegrityRunner.ts
+  s_0fc02d8d0f29b4::t_c116f31a9d82f5 201-205
+src/shared/generation/paramsFingerprint.ts
+  s_0fc02d8d0f29b4::t_16da4b552ffa34 1-29
+src/features/generation/worker/generators/binExporter.ts
+  s_0fc02d8d0f29b4::t_7dd7fdcd1fb333 69
+  s_0fc02d8d0f29b4::t_6c4c933e28ab9b 28-29
+  s_0fc02d8d0f29b4::t_48fb233777c76a 11-12
+  s_0fc02d8d0f29b4::t_96e4ed35447693 121-126
+src/shell/layoutExport/planLayoutBinExport.test.ts
+  s_0fc02d8d0f29b4::t_a0b3ad34a7d8f7 43-44,58,61-67,85,88-94,110,113-119,129,132-138,146,149-155,164,167-173,197,199-206,227,229-236,250-259,265,267-274,284,286-290,293-294,301,303-310,361,364-370,385,387-394,409,412-418,425,427-434,443,445-452
+  s_0fc02d8d0f29b4::t_e731de70b22efc 291-292
+  s_0fc02d8d0f29b4::t_2913e39b7ceb1a 457-532
+src/shell/layoutExport/useLayoutExport.ts
+  s_0fc02d8d0f29b4::t_974cee123c1869 23
+  s_0fc02d8d0f29b4::t_7e99f49e1fa8bb 258,262,264-271
+  s_0fc02d8d0f29b4::t_fc3f3ab4beb5da 52-54
+  s_0fc02d8d0f29b4::t_a95479fdcf192c 151-160,162-177,184-187,191-202
+  s_0fc02d8d0f29b4::t_da3b38f3a1d7d2 283-291
+  s_0fc02d8d0f29b4::t_ddeda4a03c8d13 178-183,188-190
+  s_0fc02d8d0f29b4::t_25aa520707f01e 332-343
+  s_0fc02d8d0f29b4::t_cfd68c8cccb039 161
+src/shared/generation/paramsFingerprint.test.ts
+  s_0fc02d8d0f29b4::t_23df22ddf51550 1-36
+src/features/generation/worker/generators/pipeline/stages/tessellateStage.ts
+  s_0fc02d8d0f29b4::t_f6705dc9596e02 62-65
+  s_0fc02d8d0f29b4::t_211bc71ac871ce 17
+src/features/generation/bridge/bridgeHelpers.ts
+  s_0fc02d8d0f29b4::t_6d682ba627afdf 9-11
+src/shell/layoutExport/planLayoutBinExport.ts
+  s_0fc02d8d0f29b4::t_74da4ea271c2fc 350
+  s_0fc02d8d0f29b4::t_0e685aac155891 45-51,61-67
+  s_0fc02d8d0f29b4::t_c251efac078c51 339
+  s_0fc02d8d0f29b4::t_bad4c12f9b787a 80-85
+  s_0fc02d8d0f29b4::t_4c869d785d0eec 23-24
+  s_0fc02d8d0f29b4::t_bd3d1b5505669e 176-200
+  s_0fc02d8d0f29b4::t_6720ca89e2673a 94-119
+  s_0fc02d8d0f29b4::t_b655556ad01b5a 322
+src/shell/layoutExport/buildLayoutManifest.ts
+  s_0fc02d8d0f29b4::t_e1c54c71e9c2aa 153-158
+  s_0fc02d8d0f29b4::t_2f4f705f2b844e 25-28
+  s_0fc02d8d0f29b4::t_e77a77c8cc94ae 24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "1f2252695e0c9d1239a80298469cfff53c5ba553",
+  "prompts": {},
+  "sessions": {
+    "s_0fc02d8d0f29b4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4aff0d70-e312-459f-84ab-c0dd3cec1347",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
