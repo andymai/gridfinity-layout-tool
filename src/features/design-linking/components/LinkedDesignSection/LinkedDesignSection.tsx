@@ -125,7 +125,7 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
   // edge so we can flag it here (#2518, #3070).
   const edgeMismatch =
     linkedDesign !== null &&
-    hasFractionalEdgeMismatch(linkedDesign, drawer, { x: bin.x, y: bin.y });
+    hasFractionalEdgeMismatch(linkedDesign, drawer, [{ x: bin.x, y: bin.y }]);
 
   // No link - show Create Design and Link Existing buttons
   if (!hasLink) {

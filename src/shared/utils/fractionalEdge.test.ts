@@ -8,7 +8,8 @@ const FRAC_START = { width: 5.5, depth: 4, fractionalEdgeX: 'start' as const };
 /** A whole-number drawer — no fractional column exists on either axis. */
 const WHOLE = { width: 5, depth: 4 };
 
-const at = (x: number, y = 0): { x: number; y: number } => ({ x, y });
+/** One placement, as the array the helpers take. */
+const at = (x: number, y = 0): { x: number; y: number }[] => [{ x, y }];
 
 describe('edgeForPosition', () => {
   it('puts the half cell last for a bin starting on a cell boundary', () => {
@@ -130,6 +131,74 @@ describe('hasFractionalEdgeMismatch', () => {
 
   it('does not flag when the design edge is unknown (legacy registry entry)', () => {
     expect(hasFractionalEdgeMismatch({ width: 1.5, depth: 2 }, FRAC_START, at(0))).toBe(false);
+  });
+
+  it('does not flag a half-socket design — its edge has no geometric effect', () => {
+    // Every cell is a uniform 0.5 unit, so there is no odd half foot to align
+    // and `forEachCell`'s reverse() is a no-op.
+    expect(
+      hasFractionalEdgeMismatch(
+        { width: 1.5, depth: 2, fractionalEdgeX: 'start', halfSockets: true },
+        WHOLE,
+        at(0)
+      )
+    ).toBe(false);
+  });
+
+  describe('a design placed more than once', () => {
+    const design = { width: 1.5, depth: 2, fractionalEdgeX: 'end' as const };
+
+    it('flags when every placement agrees the edge is wrong', () => {
+      // Both at half-offsets in a whole-number drawer → both want 'start'.
+      expect(
+        hasFractionalEdgeMismatch(design, WHOLE, [
+          { x: 0.5, y: 0 },
+          { x: 2.5, y: 0 },
+        ])
+      ).toBe(true);
+    });
+
+    it('stays quiet when the placements want opposite edges', () => {
+      // No single value satisfies both, so this is an inherent conflict of
+      // sharing one design — a one-click "fix" would just move the problem.
+      expect(
+        hasFractionalEdgeMismatch(design, WHOLE, [
+          { x: 0, y: 0 },
+          { x: 0.5, y: 0 },
+        ])
+      ).toBe(false);
+    });
+
+    it('stays quiet when every placement already agrees with the design', () => {
+      expect(
+        hasFractionalEdgeMismatch(design, WHOLE, [
+          { x: 0, y: 0 },
+          { x: 2, y: 0 },
+        ])
+      ).toBe(false);
+    });
+
+    it('resolves each axis independently', () => {
+      // X agrees across both placements, Y disagrees — only X is actionable.
+      const both = {
+        width: 1.5,
+        depth: 1.5,
+        fractionalEdgeX: 'end' as const,
+        fractionalEdgeY: 'end' as const,
+      };
+      const patch = computeMatchedEdges(both, WHOLE, [
+        { x: 0.5, y: 0 },
+        { x: 2.5, y: 0.5 },
+      ]);
+      expect(patch.fractionalEdgeX).toBe('start');
+      expect(patch.fractionalEdgeY).toBeUndefined();
+    });
+  });
+
+  it('has nothing to say about a design that is not placed anywhere', () => {
+    expect(
+      hasFractionalEdgeMismatch({ width: 1.5, depth: 2, fractionalEdgeX: 'start' }, WHOLE, [])
+    ).toBe(false);
   });
 });
 

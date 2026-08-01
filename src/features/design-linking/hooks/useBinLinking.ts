@@ -337,13 +337,6 @@ export function useBinLinking(): UseBinLinkingReturn {
   // Realign a linked design's fractional edge to where its bin sits
   const matchDesignEdgesToDrawer = useCallback(
     async (designId: DesignId, binId: BinId): Promise<void> => {
-      // Match against the bin the user is acting on, not just any bin on this
-      // design. One design can be placed several times with the half cell
-      // landing on different sides; picking the first would "fix" the design to
-      // a placement elsewhere in the drawer and leave the clicked bin wrong.
-      const placed = layout.bins.find((b) => b.id === binId);
-      if (!placed) return;
-
       const designResult = await loadDesign(designId);
       if (isErr(designResult) || !designResult.value.params) {
         addToast({
@@ -354,10 +347,22 @@ export function useBinLinking(): UseBinLinkingReturn {
         return;
       }
 
+      // Read the placement AFTER the load, and from the live store rather than
+      // the render-time snapshot: the bin can be dragged while IndexedDB is
+      // being read, and matching it to where it used to sit would leave the
+      // design mismatched the moment the success toast appears.
+      //
+      // The bin the user is acting on, not just any bin on this design — one
+      // design can be placed several times with the half cell landing on
+      // different sides, and picking the first would leave the clicked one wrong.
+      const live = useLayoutStore.getState().layout;
+      const placed = live.bins.find((b) => b.id === binId);
+      if (!placed) return;
+
       const params = designResult.value.params;
       const newParams = {
         ...params,
-        ...computeMatchedEdges(params, layout.drawer, { x: placed.x, y: placed.y }),
+        ...computeMatchedEdges(params, live.drawer, [{ x: placed.x, y: placed.y }]),
       };
 
       const updateResult = await updateDesignParams(designId, newParams);
@@ -386,7 +391,7 @@ export function useBinLinking(): UseBinLinkingReturn {
         duration: 2000,
       });
     },
-    [layout.drawer, layout.bins, addToast, t]
+    [addToast, t]
   );
 
   // Delete a design and unlink the bin

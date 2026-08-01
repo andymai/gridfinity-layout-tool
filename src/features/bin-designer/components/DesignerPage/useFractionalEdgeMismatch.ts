@@ -30,6 +30,7 @@ export function useFractionalEdgeMismatch(): FractionalEdgeMismatch {
     fractionalEdgeY,
     fractionalEdgeManualX,
     fractionalEdgeManualY,
+    halfSockets,
     setParams,
   } = useDesignerStore(
     useShallow((s) => ({
@@ -40,6 +41,7 @@ export function useFractionalEdgeMismatch(): FractionalEdgeMismatch {
       fractionalEdgeY: s.params.fractionalEdgeY,
       fractionalEdgeManualX: s.params.fractionalEdgeManualX,
       fractionalEdgeManualY: s.params.fractionalEdgeManualY,
+      halfSockets: s.params.base.halfSockets,
       setParams: s.setParams,
     }))
   );
@@ -55,8 +57,17 @@ export function useFractionalEdgeMismatch(): FractionalEdgeMismatch {
       fractionalEdgeY,
       fractionalEdgeManualX,
       fractionalEdgeManualY,
+      halfSockets,
     }),
-    [width, depth, fractionalEdgeX, fractionalEdgeY, fractionalEdgeManualX, fractionalEdgeManualY]
+    [
+      width,
+      depth,
+      fractionalEdgeX,
+      fractionalEdgeY,
+      fractionalEdgeManualX,
+      fractionalEdgeManualY,
+      halfSockets,
+    ]
   );
 
   const placements = useMemo(
@@ -67,21 +78,17 @@ export function useFractionalEdgeMismatch(): FractionalEdgeMismatch {
     [currentDesignId, bins]
   );
 
+  // One design can be placed several times. The helpers resolve each axis
+  // across every placement and stay silent when they disagree, so a conflict no
+  // single edge could fix never offers a one-click "fix" that just moves the
+  // problem to a sibling bin.
   const show = useMemo(
-    () =>
-      placements.length > 0 &&
-      // One design can be placed several times. Only warn when NO placement
-      // agrees — otherwise a design that is correct for the spot the user is
-      // thinking about would nag because a sibling copy sits on the other side.
-      placements.every((p) => hasFractionalEdgeMismatch(design, drawer, p)),
+    () => hasFractionalEdgeMismatch(design, drawer, placements),
     [placements, design, drawer]
   );
 
   const matchDrawer = useCallback(() => {
-    // `.at` rather than `[0]` so the empty case is a type the guard can see.
-    const target = placements.at(0);
-    if (!target) return;
-    setParams(computeMatchedEdges(design, drawer, target));
+    setParams(computeMatchedEdges(design, drawer, placements));
   }, [setParams, design, drawer, placements]);
 
   return { show, matchDrawer };
