@@ -1,0 +1,21 @@
+src/features/drawer-shape/components/PenShapeDialog/PenCanvas.tsx
+  s_8fb9c547edb3b7::t_57317ea80561de 10-14,39
+src/features/drawer-shape/components/PenShapeDialog/PenShapeDialog.test.tsx
+  s_8fb9c547edb3b7::t_57317ea80561de 318-320
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "51bbbd6c829067f6636c479cd2578636f3b74b61",
+  "prompts": {},
+  "sessions": {
+    "s_8fb9c547edb3b7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8fc9a64f-8d00-4acb-9c91-3f304e2087ad",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
