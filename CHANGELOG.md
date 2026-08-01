@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.340.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.340.0...gridfinity-layout-tool-v4.340.1) (2026-08-01)
+
+
+### Bug Fixes
+
+* **drawer-shape:** re-frame the pen canvas on resize, release space-pan on blur ([#3068](https://github.com/andymai/gridfinity-layout-tool/issues/3068)) ([e325ce5](https://github.com/andymai/gridfinity-layout-tool/commit/e325ce5514c506211fcb1321822296cb6bdb3254))
+
 ## [4.340.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.339.0...gridfinity-layout-tool-v4.340.0) (2026-08-01)
 
 
