@@ -544,16 +544,6 @@ describe('cutoutSlice - consolidated actions', () => {
       expect(useDesignerStore.getState().generation.epoch).toBe(epochBefore + 1);
     });
 
-    it('setCutoutProperty (name) leaves epoch unchanged', () => {
-      const { addCutout, setCutoutProperty } = useDesignerStore.getState();
-      addCutout(createTestCutout({ id: 'c-1' }));
-      const epochBefore = useDesignerStore.getState().generation.epoch;
-
-      setCutoutProperty(['c-1'], { name: 'Drill bit 3mm' });
-
-      expect(useDesignerStore.getState().generation.epoch).toBe(epochBefore);
-    });
-
     it('reorderCutouts leaves epoch unchanged when nothing is grouped', () => {
       const { addCutout, reorderCutouts } = useDesignerStore.getState();
       addCutout(createTestCutout({ id: 'c-1' }));

@@ -83,8 +83,8 @@ type Set = (fn: (state: Draft<DesignerState>) => void) => void;
  * Whether a toggle-property edit changes the generated part.
  *
  * Only `hidden` does: the worker drops hidden cutouts (`cutoutBuilder.ts`), so
- * toggling it changes the geometry. `locked` and `name` are editor state the
- * worker never reads.
+ * toggling it changes the geometry. `locked` is editor state the worker
+ * never reads.
  */
 function togglePropertyAffectsGeometry(partial: CutoutToggleProperties): boolean {
   return partial.hidden !== undefined;
@@ -105,7 +105,7 @@ export function createCutoutSlice(set: Set) {
   // Core actions
 
   /**
-   * `locked` and `name` are editor-only, but `hidden` is NOT: the worker skips
+   * `locked` is editor-only, but `hidden` is NOT: the worker skips
    * hidden cutouts (`cutoutBuilder.ts`), so toggling it changes the generated
    * part and has to bump the generation epoch. Suppressing that regeneration
    * left the preview showing a pocket the export would not cut — a silent
