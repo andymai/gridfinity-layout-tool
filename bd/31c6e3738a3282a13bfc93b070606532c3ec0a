@@ -1,0 +1,26 @@
+src/i18n/locales/ko.json
+  s_0fc02d8d0f29b4::t_fa4b3118b429a4 928-930
+src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
+  s_0fc02d8d0f29b4::t_6904ae977f46e4 226-228,244-245
+  s_0fc02d8d0f29b4::t_9e23639df4c9b5 1,229-243
+src/features/bin-designer/components/panel/CutoutsSection/importStackOrder.test.ts
+  s_0fc02d8d0f29b4::t_b9ba612bbd4b16 19-20
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_0fc02d8d0f29b4::t_b9ba612bbd4b16 180-185,414,416-420
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "bd31c6e3738a3282a13bfc93b070606532c3ec0a",
+  "prompts": {},
+  "sessions": {
+    "s_0fc02d8d0f29b4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4aff0d70-e312-459f-84ab-c0dd3cec1347",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
