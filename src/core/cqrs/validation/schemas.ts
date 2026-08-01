@@ -265,6 +265,7 @@ const baseplateParamsSchema = z.object({
   paddingFront: z.number().min(0).max(100),
   paddingBack: z.number().min(0).max(100),
   paddingAnchor: z.enum(['tl', 'tc', 'tr', 'ml', 'c', 'mr', 'bl', 'bc', 'br', 'custom']).optional(),
+  wholeCellsOnly: z.boolean().optional(),
   connectorNubs: z.boolean().optional(),
   invertDovetails: z.boolean().optional(),
   connectorStyle: z.enum(BASEPLATE_CONNECTOR_STYLES).optional(),

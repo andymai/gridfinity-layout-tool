@@ -155,6 +155,8 @@
   "baseplate.maxPrintHeightTooltip": "你的打印机最大 Z 高度。堆叠打印会在此允许范围内尽量多地叠放底板。",
   "baseplate.nozzleSizeTooltip": "你的打印机喷嘴直径。连接键和卡扣会按它缩放，让它们在更粗的喷嘴上仍可打印。在 0.4mm 时几何体不变。",
   "baseplate.overTile": "用网格拼块填充留边",
+  "baseplate.wholeCellsOnly": "仅嵌入完整单元",
+  "baseplate.wholeCellsOnlyHint": "舍弃被形状切到的插槽，让底板以实心边缘收尾，而不是留下被切开的插槽。",
   "baseplate.overTileFills": "网格填充：{sides}",
   "baseplate.overTileHint": "用裁剪过的网格拼块逐边替换实心的留边。",
   "baseplate.overTileKeptSolid": "太小，保持实心：{sides}",

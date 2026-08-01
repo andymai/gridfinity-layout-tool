@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { mm, gridUnits } from '@gridfinity/branded-types';
-import { buildFullParams, maxCornerRadiusMm, plainRoundingLimit } from './buildFullParams';
+import {
+  buildFullParams,
+  hasEffectivePerimeter,
+  maxCornerRadiusMm,
+  plainRoundingLimit,
+} from './buildFullParams';
 import { cornerCutVertices } from '@/shared/utils/cornerCutOutline';
 import type { CornerCutParams, DrawerOutline } from '@/core/types';
 
@@ -82,6 +87,87 @@ describe('buildFullParams', () => {
       'end'
     );
     expect(orphaned.overTileHalfGridSolidLeftover).toBeUndefined();
+  });
+
+  // The panel, the regeneration trigger and the resolver must agree on whether
+  // a plate has a perimeter. They disagreed once: the control appeared for
+  // radius-cut plates while the trigger still called them rectangular, so a
+  // toggle changed the mesh without regenerating it.
+  describe('hasEffectivePerimeter', () => {
+    /** L-shape inside the 10x8 unit drawer these tests use (420 x 336mm). */
+    const outline: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 420, y: 0 },
+        { x: 420, y: 168 },
+        { x: 168, y: 168 },
+        { x: 168, y: 336 },
+        { x: 0, y: 336 },
+      ],
+    };
+
+    /** Same arguments buildFullParams is called with throughout this file. */
+    const perimeter = (
+      stored: Parameters<typeof hasEffectivePerimeter>[0],
+      drawerOutline?: DrawerOutline,
+      stackingOverride?: boolean
+    ): boolean => hasEffectivePerimeter(stored, 10, 8, 42, drawerOutline, 42, stackingOverride);
+
+    it('is false for a plain rectangle', () => {
+      expect(perimeter(storedBase)).toBe(false);
+    });
+
+    it('is true for a drawer shape while the outline applies', () => {
+      expect(perimeter(storedBase, outline)).toBe(true);
+      expect(perimeter({ ...storedBase, syncWithLayout: false }, outline)).toBe(false);
+    });
+
+    it('is true for a radius the resolver converts to an outline', () => {
+      expect(perimeter({ ...storedBase, cornerRadius: mm(40) })).toBe(true);
+      expect(perimeter({ ...storedBase, cornerRadius: mm(10) })).toBe(false);
+    });
+
+    // Stacking needs uniform rectangular tiles, so the resolver drops every
+    // perimeter. Checking only the drawer-shape half would leave a stored
+    // radius claiming a perimeter generation never produces.
+    it('is false under stacking, whatever is stored', () => {
+      const stacked = { ...storedBase, stackPrint: { enabled: true, gapMm: mm(0.2) } };
+      expect(perimeter(stacked, outline)).toBe(false);
+      expect(perimeter({ ...stacked, cornerRadius: mm(40) })).toBe(false);
+    });
+
+    it('honours the format-aware override for a STEP export', () => {
+      const stacked = { ...storedBase, stackPrint: { enabled: true, gapMm: mm(0.2) } };
+      // STEP clears stackPrint before the resolver runs, so the caller says so.
+      expect(perimeter(stacked, outline, false)).toBe(true);
+    });
+
+    // It runs the resolver rather than restating its rules, so this walks a
+    // matrix and asserts it always matches what generation actually produced.
+    it('agrees with the resolver across radii, padding, sync and stacking', () => {
+      for (const r of [0, 10, 22, 30, 60]) {
+        for (const stacking of [false, true]) {
+          for (const synced of [true, false]) {
+            for (const pad of [0, 1, 20]) {
+              const stored = {
+                ...storedBase,
+                paddingLeft: mm(pad),
+                paddingRight: mm(pad),
+                paddingFront: mm(pad),
+                paddingBack: mm(pad),
+                cornerRadius: mm(r),
+                syncWithLayout: synced,
+                ...(stacking ? { stackPrint: { enabled: true, gapMm: mm(0.2) } } : {}),
+              };
+              const resolved = buildFullParams(stored, 10, 8, 42, 'end', 'end', undefined, outline);
+              expect(hasEffectivePerimeter(stored, 10, 8, 42, outline, 42)).toBe(
+                resolved.outline !== undefined
+              );
+            }
+          }
+        }
+      }
+    });
   });
 
   it('maps drawerWidth to width', () => {
@@ -446,6 +532,50 @@ describe('drawer outline handling', () => {
       { x: 0, y: 336 },
     ],
   };
+
+  // #3054: the flag only has meaning against a perimeter, so an orphaned one
+  // must not fragment caches or trigger a regeneration on a plain rectangle.
+  it('forwards wholeCellsOnly only when there is an outline', () => {
+    const shaped = buildFullParams(
+      { ...storedBase, wholeCellsOnly: true },
+      10,
+      8,
+      42,
+      'end',
+      'end',
+      undefined,
+      outline
+    );
+    expect(shaped.wholeCellsOnly).toBe(true);
+
+    const rectangular = buildFullParams(
+      { ...storedBase, wholeCellsOnly: true },
+      10,
+      8,
+      42,
+      'end',
+      'end'
+    );
+    expect(rectangular.outline).toBeUndefined();
+    expect(rectangular.wholeCellsOnly).toBeUndefined();
+  });
+
+  // Resolved params are what split pieces inherit, and the key is allowlisted
+  // server-side without a type check, so a malformed synced value must not get
+  // this far.
+  it('narrows wholeCellsOnly to a literal true', () => {
+    const malformed = buildFullParams(
+      { ...storedBase, wholeCellsOnly: 'yes' as unknown as boolean },
+      10,
+      8,
+      42,
+      'end',
+      'end',
+      undefined,
+      outline
+    );
+    expect(malformed.wholeCellsOnly).toBeUndefined();
+  });
 
   it('composes padding into a rectilinear shape and zeroes the subsumed params', () => {
     const stored = {

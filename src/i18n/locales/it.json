@@ -155,6 +155,8 @@
   "baseplate.maxPrintHeightTooltip": "L'altezza Z massima della tua stampante. La stampa a pila inserisce tante baseplate per pila quante ne consente questo valore.",
   "baseplate.nozzleSizeTooltip": "Il diametro dell'ugello della tua stampante. Le chiavi a coda di rondine e le clip a incastro si adattano a esso per restare stampabili con ugelli più larghi. La geometria resta invariata a 0.4mm.",
   "baseplate.overTile": "Riempi il margine con tessere di griglia",
+  "baseplate.wholeCellsOnly": "Inserisci solo celle intere",
+  "baseplate.wholeCellsOnlyHint": "Elimina ogni alloggiamento tagliato dalla forma, così la piastra termina con un bordo pieno invece che con un alloggiamento tranciato.",
   "baseplate.overTileFills": "Riempimenti griglia: {sides}",
   "baseplate.overTileHint": "Sostituisce il margine pieno con tessere di griglia ritagliate, bordo per bordo.",
   "baseplate.overTileKeptSolid": "Troppo piccolo, mantenuto pieno: {sides}",

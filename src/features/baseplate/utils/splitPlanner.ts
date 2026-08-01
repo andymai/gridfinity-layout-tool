@@ -1155,6 +1155,9 @@ export function pieceToBaseplateParams(
     overTile: parentParams.overTile,
     overTileHalfGrid: parentParams.overTileHalfGrid,
     overTileHalfGridSolidLeftover: parentParams.overTileHalfGridSolidLeftover,
+    // Rides along for the same reason half-grid does: without it a split shaped
+    // plate falls back to sliced sockets on every piece.
+    wholeCellsOnly: parentParams.wholeCellsOnly,
     connectorNubs: parentParams.connectorNubs,
     // Dovetail key seams are symmetric, so connectorStyle is rotation-invariant —
     // copy it straight through (unlike padding/edges, which rotate with `rot`).

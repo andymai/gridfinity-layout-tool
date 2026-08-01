@@ -83,6 +83,14 @@ export interface StoredBaseplateParams {
    * Default false (leftover rendered as a clipped tile).
    */
   readonly overTileHalfGridSolidLeftover?: boolean;
+  /**
+   * Fit the grid to a custom perimeter by whole cells only: a cell the outline
+   * crosses is dropped and the solid plate fills the margin, instead of keeping
+   * a socket sliced to the outline. Sliced sockets hold nothing and leave the
+   * boundary unfinished (#3054). Only meaningful with an `outline`.
+   * Default false (sliced sockets kept).
+   */
+  readonly wholeCellsOnly?: boolean;
   /** Enable registration nubs/holes on split piece join edges (default false). */
   readonly connectorNubs?: boolean;
   /** Remove center floor material, keeping only magnet pads (default true). */

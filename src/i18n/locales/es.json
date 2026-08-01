@@ -155,6 +155,8 @@
   "baseplate.maxPrintHeightTooltip": "La altura Z máxima de tu impresora. El apilado encaja tantas placas por pila como esto permita.",
   "baseplate.nozzleSizeTooltip": "Diámetro de la boquilla de tu impresora. Las llaves de cola de milano y los clips a presión se escalan según él para que sigan siendo imprimibles con boquillas más anchas. La geometría no cambia a 0,4 mm.",
   "baseplate.overTile": "Rellenar el margen con celdas de rejilla",
+  "baseplate.wholeCellsOnly": "Ajustar solo celdas completas",
+  "baseplate.wholeCellsOnlyHint": "Descarta cualquier alojamiento que la forma corte, para que la placa termine en un borde macizo en vez de un alojamiento cortado.",
   "baseplate.overTileFills": "Rejilla rellena: {sides}",
   "baseplate.overTileHint": "Sustituye el margen sólido por celdas de rejilla recortadas, borde a borde.",
   "baseplate.overTileKeptSolid": "Demasiado pequeño, queda sólido: {sides}",

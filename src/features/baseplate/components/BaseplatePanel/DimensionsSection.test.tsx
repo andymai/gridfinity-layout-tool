@@ -82,4 +82,78 @@ describe('DimensionsSection', () => {
       expect(storedConnector()).toBe(true);
     });
   });
+
+  // #3054. The control only makes sense against a perimeter, so it stays hidden
+  // on a plain rectangle where no cell can be crossed.
+  describe('whole-cell fitting', () => {
+    /** An L-shaped drawer, which is what puts crossed cells on the plate. */
+    function shapedDrawer(): void {
+      const { width, depth } = useLayoutStore.getState().layout.drawer;
+      const w = width * 42;
+      const d = depth * 42;
+      useLayoutStore.setState((state) => ({
+        layout: {
+          ...state.layout,
+          drawer: {
+            ...state.layout.drawer,
+            outline: {
+              vertices: [
+                { x: 0, y: 0 },
+                { x: w, y: 0 },
+                { x: w, y: d / 2 },
+                { x: w / 2, y: d / 2 },
+                { x: w / 2, y: d },
+                { x: 0, y: d },
+              ],
+            },
+          },
+        },
+      }));
+    }
+
+    const row = () => screen.queryByRole('checkbox', { name: 'baseplate.wholeCellsOnly' });
+
+    it('is hidden for a rectangular plate', () => {
+      render(<DimensionsSection />);
+      expect(row()).not.toBeInTheDocument();
+    });
+
+    // A radius past the plain-rounding limit becomes a radius-cut outline at
+    // generation time, so those plates get a curved perimeter slicing sockets
+    // even with no drawer shape — the control has to reach them.
+    it('appears for a corner radius large enough to become an outline', () => {
+      const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+      useLayoutStore.getState().setBaseplateParams({ ...current, cornerRadius: mm(40) });
+      render(<DimensionsSection />);
+      expect(row()).toBeInTheDocument();
+    });
+
+    it('stays hidden for a small radius the plain rounding path handles', () => {
+      const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+      useLayoutStore.getState().setBaseplateParams({ ...current, cornerRadius: mm(4) });
+      render(<DimensionsSection />);
+      expect(row()).not.toBeInTheDocument();
+    });
+
+    it('appears once the drawer has a perimeter', () => {
+      shapedDrawer();
+      render(<DimensionsSection />);
+      expect(row()).toBeInTheDocument();
+    });
+
+    it('stores undefined rather than false when turned back off', () => {
+      shapedDrawer();
+      render(<DimensionsSection />);
+      const checkbox = row();
+      expect(checkbox).not.toBeNull();
+      if (checkbox === null) return;
+
+      fireEvent.click(checkbox);
+      expect(useLayoutStore.getState().layout.baseplateParams?.wholeCellsOnly).toBe(true);
+
+      fireEvent.click(checkbox);
+      // Undefined, not false: identical geometry keeps one stored identity.
+      expect(useLayoutStore.getState().layout.baseplateParams?.wholeCellsOnly).toBeUndefined();
+    });
+  });
 });
