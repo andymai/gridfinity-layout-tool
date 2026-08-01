@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { computePiecePlacement, type PiecePlacement } from './pieceLayout';
+import { EXPLODE_GAP_MM } from '../../constants';
 import type { PieceMeshEntry } from '../../store/baseplatePageStore';
 
 type PieceFixture = Pick<
@@ -166,14 +167,14 @@ describe('computePiecePlacement', () => {
     const assembled = placeAll(pieces, GU, GUY, 'assembled');
     const exploded = placeAll(pieces, GU, GUY, 'exploded');
 
-    it('offsets each piece by exactly col*10 and row*10 relative to assembled', () => {
+    it('offsets each piece by exactly col and row × EXPLODE_GAP_MM relative to assembled', () => {
       for (const piece of pieces) {
         const key = `${piece.col},${piece.row}`;
         const asm = assembled.get(key);
         const exp = exploded.get(key);
         if (!asm || !exp) throw new Error('missing piece');
-        expect(exp.x - asm.x).toBeCloseTo(piece.col * 10, 10);
-        expect(exp.y - asm.y).toBeCloseTo(piece.row * 10, 10);
+        expect(exp.x - asm.x).toBeCloseTo(piece.col * EXPLODE_GAP_MM, 10);
+        expect(exp.y - asm.y).toBeCloseTo(piece.row * EXPLODE_GAP_MM, 10);
       }
     });
 
