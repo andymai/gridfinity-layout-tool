@@ -48,6 +48,13 @@ describe('PenControls', () => {
     expect(screen.getByLabelText('drawerShape.penFilletSelected')).toHaveValue(0);
   });
 
+  // Outline coords carry 0.01mm precision; the radius field must not re-round a
+  // typed decimal down to 1dp on display (#3090). At 1dp this reads 2.6.
+  it('displays a radius to two decimals so typed decimals survive', () => {
+    renderControls({ filletValue: 2.55 });
+    expect(screen.getByLabelText('drawerShape.penFillet')).toHaveValue(2.55);
+  });
+
   it('shows the coordinate fields only for a single selected corner', () => {
     const { unmount } = renderControls();
     expect(screen.queryByText(/^drawerShape\.penCorner/)).not.toBeInTheDocument();

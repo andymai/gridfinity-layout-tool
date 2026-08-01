@@ -113,6 +113,10 @@ export function PenControls({
           min={0}
           max={maxFillet}
           step={1}
+          // Outline coords are quantized to 0.01mm; without this the field's
+          // default 1dp formatter re-rounds a typed radius (e.g. 2.55 → 2.6),
+          // so decimals silently vanish on the display (#3090).
+          inputDecimals={2}
           size="sm"
           aria-label={filletLabel}
         />
