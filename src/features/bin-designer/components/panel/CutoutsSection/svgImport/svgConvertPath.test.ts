@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { convertPath } from './svgConvertPath';
-import { IDENTITY } from './svgTransform';
-import type { Matrix } from './svgTransform';
+import { IDENTITY, type Matrix } from '@/shared/utils/svg';
 import type { ViewBox } from './types';
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────

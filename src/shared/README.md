@@ -66,6 +66,7 @@ graph TB
 | `uuid.ts`                 | Layout ID generation and validation                                                           |
 | `wallPatternSides.ts`     | `resolveWallPatternSides()` — which outer walls a pattern covers; absent side means ON        |
 | `throttle.ts` / `idle.ts` | RAF throttle, idle scheduling utilities                                                       |
+| `svg/`                    | SVG units, transforms and viewBox framing — shared by every importer so they agree on scale   |
 
 ## Contexts (`contexts/`)
 

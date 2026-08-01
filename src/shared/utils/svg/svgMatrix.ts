@@ -8,6 +8,9 @@
  * The matrix tuple is `[a, b, c, d, e, f]` matching SVG's
  * `matrix(a,b,c,d,e,f)` convention; multiplication is column-major
  * (m1 ∘ m2 means "first apply m2, then m1").
+ *
+ * Shared rather than owned by one importer: the cutout editor and the drawer
+ * perimeter both read the same SVG files and must agree on where a point lands.
  */
 
 import type { ViewBox } from './types';
@@ -113,7 +116,11 @@ export function resolveTransformChain(el: Element, svgRoot: Element): Matrix {
   return result;
 }
 
-/** Apply a transform plus the viewBox + Y-flip needed for cutout coords. */
+/**
+ * Apply a transform, then map into a Y-up frame whose origin is the viewBox's
+ * bottom-left — the convention both the cutout editor and the drawer outline
+ * store their geometry in.
+ */
 export function transformPoint(
   x: number,
   y: number,

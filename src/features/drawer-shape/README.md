@@ -30,6 +30,13 @@ hatching, baseplate generation/splitting) derives from it.
   Sketch state lives in `usePenSketch`, which owns the `radii` parallel array —
   inserting and deleting are hook methods precisely so no call site can shift
   vertex indices without moving the radii with them.
+- `utils/outlineImport/` — SVG/DXF file → perimeter. Both parsers land on the
+  same shape (closed loops of `OutlineVertex` in mm, Y-up), so loop selection,
+  fitting and simplification are written once. DXF group code 42 **is**
+  `OutlineVertex.bulge` (same `tan(sweep/4)` convention), so a CAD arc imports
+  as an arc. Loaded through a dynamic `import()` from `useOutlineImport` —
+  `DrawerShapeSection` is eager, so a static import would put both parsers in
+  the eager bundle.
 - `utils/traceBinFootprint.ts` — bins → editor grid (all layers, staging
   excluded).
 
@@ -48,7 +55,13 @@ hatching, baseplate generation/splitting) derives from it.
    what keeps a radius adjustable without persisting a second copy of the shape
    alongside the outline. A hand-drawn arc is not tangent to its neighbours, so
    it survives as drawn.
-5. The corner-cut vertex geometry lives in
+5. **An import is never silently rescaled** — true scale is the point of
+   importing a drawer measured in CAD, so an oversized perimeter raises
+   `PenImportNotice` and the user picks between scaling it down and growing the
+   drawer. The grow path fits the loop against the drawer it is _about_ to
+   have, so the resize and the outline land in one commit instead of racing.
+   Loops dropped and points thinned are always toasted, never silent.
+6. The corner-cut vertex geometry lives in
    `@/shared/utils/cornerCutOutline` (not here) so the baseplate's
    `buildFullParams` can re-inscribe the same cuts on the padded plate
    rectangle (issue #2612). `cornersToOutline` is a thin wrapper that adds

@@ -3404,6 +3404,11 @@ const en: Record<string, string> = {
   'drawerShape.penFillet': 'Round corners (mm)',
   'drawerShape.penFilletSelected': 'Round {count} corner(s) (mm)',
   'drawerShape.penFilletMixed': 'Mixed',
+  'drawerShape.penImport': 'Import SVG/DXF…',
+  'drawerShape.penImportOversize':
+    'The imported shape measures {width} × {depth} mm, which is larger than this drawer.',
+  'drawerShape.penImportGrow': 'Grow drawer to {width} × {depth} u',
+  'drawerShape.penImportScale': 'Scale to fit',
   'drawerShape.penSnapOff': 'Off',
   'drawerShape.penDeletePoint': 'Delete corner',
   'drawerShape.penReset': 'Reset to rectangle',
@@ -3423,6 +3428,16 @@ const en: Record<string, string> = {
   'drawerShape.editor.invalidEmpty': 'The shape needs at least one cell.',
   'drawerShape.editor.invalidDisconnected': 'The shape must be one connected piece.',
   'toast.binsDisplacedByShape': '{count} bin(s) moved to the stash (outside the new shape)',
+  'toast.outlineImport.parseFailed': "That file couldn't be read as an SVG or DXF drawing.",
+  'toast.outlineImport.noClosedLoop':
+    'No closed shape found. The perimeter needs to join up all the way round.',
+  'toast.outlineImport.tooComplex': 'That shape has too many points, even after simplifying.',
+  'toast.outlineImport.tooSmall': 'That shape encloses no usable area.',
+  'toast.outlineImport.fileTooLarge': 'That file is too large (max 5 MB).',
+  'toast.outlineImport.binaryDxf': 'That is a binary DXF. Re-export it as ASCII DXF.',
+  'toast.outlineImport.unsupported': 'That file type is not supported.',
+  'toast.outlineImport.droppedLoops': 'Kept the largest shape; {count} smaller one(s) ignored.',
+  'toast.outlineImport.simplified': 'Removed {count} point(s) to fit the shape limit.',
 
   'drawerShape.corners.open': 'Corner cuts…',
   'drawerShape.corners.title': 'Corner cuts',
