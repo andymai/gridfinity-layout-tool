@@ -1,0 +1,37 @@
+src/shell/layoutExport/useLayoutExport.ts
+  s_0fc02d8d0f29b4::t_6ef296e6f594d9 283-289
+src/shared/generation/paramsFingerprint.test.ts
+  s_0fc02d8d0f29b4::t_06c134744cc162 25,29-35
+  s_a987f4164debdd::t_85faec121ea8f4 36-37
+src/shared/generation/paramsFingerprint.ts
+  s_0fc02d8d0f29b4::t_1609dce4183b8a 14-19
+src/shell/layoutExport/buildLayoutManifest.ts
+  s_0fc02d8d0f29b4::t_83a35f6eb6bac3 109-115
+  s_0fc02d8d0f29b4::t_6b445275df5026 148-151
+src/shell/layoutExport/buildLayoutManifest.test.ts
+  s_0fc02d8d0f29b4::t_7393ba937b6def 58-72
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "d0aea7fe0adba9373f08c231cacf4be5c6d0c197",
+  "prompts": {},
+  "sessions": {
+    "s_0fc02d8d0f29b4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4aff0d70-e312-459f-84ab-c0dd3cec1347",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_a987f4164debdd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c43b63b2-33d3-4f4f-bb86-5acade1bb6d8",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
