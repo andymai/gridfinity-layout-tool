@@ -315,6 +315,9 @@ describe('PenShapeDialog', () => {
       render(<PenShapeDialog open onClose={vi.fn()} />);
       const svg = canvas();
       svg.getBoundingClientRect = rect;
+      // Zoom in first: at 1x the window fills the frame and panning has no room,
+      // so the view would hold still whether or not blur cleared the flag.
+      fireEvent.wheel(svg, { deltaY: -100, clientX: 224, clientY: 182 });
       fireEvent.keyDown(svg, { key: ' ' });
       fireEvent.blur(svg);
 
