@@ -99,17 +99,20 @@ async function isPublishedBy(userId: string, designId: string): Promise<boolean>
 /**
  * Moderation flips (admin hide/restore, denylist sweeps) write status to the
  * Redis card hash only; the record blob keeps its publish-time 'live'. The
- * hash is therefore the source of truth for every moderation gate, with the
- * blob's own status as the fallback when the hash is unreadable.
+ * hash is therefore the source of truth for every moderation gate. When the
+ * hash is unreadable a blob-live design fails closed to 'hidden' so a lost
+ * or corrupt hash can never resurrect a moderated design; a blob status of
+ * 'hidden'/'removed' is already restrictive and is kept as-is.
  */
 async function readModerationStatus(
   id: string,
   fallback: CommunityDesignStatus
 ): Promise<CommunityDesignStatus> {
+  const failClosed: CommunityDesignStatus = fallback === 'live' ? 'hidden' : fallback;
   const redis = getRedis();
-  if (!redis) return fallback;
+  if (!redis) return failClosed;
   const status = await redis.hget(communityDesignKey(id), 'status');
-  return status === 'live' || status === 'hidden' || status === 'removed' ? status : fallback;
+  return status === 'live' || status === 'hidden' || status === 'removed' ? status : failClosed;
 }
 
 async function handleGet(req: VercelRequest, res: VercelResponse, id: string) {

@@ -128,7 +128,7 @@ function createRedis(): { redis: FakeRedis; pipeline: FakePipeline } {
   const redis: FakeRedis = {
     sismember: vi.fn(async (key: string) => (key === communityDenylistKey() ? 0 : 1)),
     smembers: vi.fn(async () => [] as string[]),
-    hget: vi.fn(async () => null),
+    hget: vi.fn(async (_key: string, field: string) => (field === 'status' ? 'live' : null)),
     hgetall: vi.fn(async (): Promise<Record<string, string>> => ({})),
     hset: vi.fn(async () => 1),
     pipeline: vi.fn(() => pipeline),
@@ -268,6 +268,7 @@ describe('community/[id]', () => {
     });
 
     it('makes a hidden design indistinguishable from not-found for a stranger', async () => {
+      redis.hget.mockResolvedValue('hidden');
       mocks.readCommunityDesignBlob.mockResolvedValue(designRecord({ status: 'hidden' }));
       const hiddenRes = await handle('GET');
 
@@ -280,6 +281,7 @@ describe('community/[id]', () => {
     });
 
     it('hides a hidden design from a signed-in non-owner', async () => {
+      redis.hget.mockResolvedValue('hidden');
       mocks.readCommunityDesignBlob.mockResolvedValue(designRecord({ status: 'hidden' }));
       mocks.readSessionCookie.mockReturnValue('session-token');
       mocks.readSession.mockResolvedValue(session);
@@ -289,6 +291,7 @@ describe('community/[id]', () => {
     });
 
     it('returns a hidden design to its owner', async () => {
+      redis.hget.mockResolvedValue('hidden');
       mocks.readCommunityDesignBlob.mockResolvedValue(designRecord({ status: 'hidden' }));
       mocks.readSessionCookie.mockReturnValue('session-token');
       mocks.readSession.mockResolvedValue(session);
@@ -314,6 +317,13 @@ describe('community/[id]', () => {
       const res = await handle('GET');
       expect(res._status).toBe(404);
       expect(redis.hget).toHaveBeenCalledWith(communityDesignKey(VALID_ID), 'status');
+    });
+
+    it('fails closed to hidden when the card hash has no readable status', async () => {
+      mocks.readCommunityDesignBlob.mockResolvedValue(designRecord({ status: 'live' }));
+      redis.hget.mockResolvedValue(null);
+      const res = await handle('GET');
+      expect(res._status).toBe(404);
     });
 
     it('serves the hash-derived status to the owner of a card-hidden design', async () => {
@@ -388,6 +398,7 @@ describe('community/[id]', () => {
     });
 
     it('rejects updates to a hidden design without uploading new assets', async () => {
+      redis.hget.mockResolvedValue('hidden');
       mocks.readCommunityDesignBlob.mockResolvedValue(designRecord({ status: 'hidden' }));
       const res = await handle('PUT', { body: { ...publishPayload(), status: 'live' } });
       expect(res._status).toBe(403);
@@ -397,6 +408,7 @@ describe('community/[id]', () => {
     });
 
     it('rejects updates to a removed design', async () => {
+      redis.hget.mockResolvedValue('removed');
       mocks.readCommunityDesignBlob.mockResolvedValue(designRecord({ status: 'removed' }));
       const res = await handle('PUT', { body: publishPayload() });
       expect(res._status).toBe(403);
