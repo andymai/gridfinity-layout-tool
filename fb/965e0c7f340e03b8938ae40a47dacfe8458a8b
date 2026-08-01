@@ -1,0 +1,34 @@
+src/features/bin-designer/components/panel/CutoutsSection/offBoardCutouts.ts
+  s_8fb9c547edb3b7::t_c5cb242efe9dbd 26-32
+src/features/bin-designer/components/panel/CutoutsSection/growBinToFit.ts
+  s_8fb9c547edb3b7::t_c5cb242efe9dbd 21,23-24
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.test.tsx
+  s_8fb9c547edb3b7::t_504b4d09bb77dd 57,64
+  s_8fb9c547edb3b7::t_49af55de9eadcd 50-56,58-63,65-66
+src/shared/components/CompactNumberInput/CompactNumberInput.test.tsx
+  s_8fb9c547edb3b7::t_fc12f0d19de2e5 270-282
+src/features/bin-designer/components/CutoutWorkspace/BinSizeSection.test.tsx
+  s_8fb9c547edb3b7::t_504b4d09bb77dd 66-70
+src/features/bin-designer/components/CutoutWorkspace/InspectorContent.test.tsx
+  s_8fb9c547edb3b7::t_aed56ea3ceff25 11-13,20-22,28-30,37-40
+src/shared/components/CompactNumberInput/CompactNumberInput.tsx
+  s_8fb9c547edb3b7::t_10690e6ab12ea7 201-205
+  s_8fb9c547edb3b7::t_38fe5d4edf2d07 116-120
+  s_8fb9c547edb3b7::t_1b0587655020fe 78-79
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "fb965e0c7f340e03b8938ae40a47dacfe8458a8b",
+  "prompts": {},
+  "sessions": {
+    "s_8fb9c547edb3b7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8fc9a64f-8d00-4acb-9c91-3f304e2087ad",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
