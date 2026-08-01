@@ -14,6 +14,7 @@ import { toIndexedMeshData, mergeShapeMeshes, concatFloat32 } from '../../utils/
 import { creaseEdges } from '../../utils';
 import { computeTessellationTolerances } from '../../utils/tolerances';
 import { setLastSolid } from '../../shapeCache';
+import { paramsFingerprint } from '@/shared/generation/paramsFingerprint';
 import { getSocketMesh, setSocketMesh, socketMeshKey } from '../../socketMeshCache';
 import { keepOuterShell } from '../../utils/outerShell';
 import { EDGE_ANGULAR_TOLERANCE_RAD } from '@/shared/constants/tessellation';
@@ -58,7 +59,16 @@ export const tessellateStage: PipelineStage = {
     const solid = forExport ? keepOuterShell(rawSolid) : rawSolid;
     if (solid !== rawSolid) rawSolid.delete();
 
-    setLastSolid(solid, forExport);
+    // Stamping the params lets `exportBin` tell this solid apart from one left
+    // behind by a different design on the same worker (GH #3074). Only meaningful
+    // for export passes — a preview solid is regenerated regardless.
+    //
+    // A still-deferred socket on an export pass means the fuse above failed:
+    // this solid is the body WITHOUT its base, complete only in the merged mesh
+    // built below. Leaving it unidentified makes the next export rebuild (and
+    // retry the fuse) instead of reusing a socket-less BREP.
+    const identified = forExport && !ctx.deferredSolid;
+    setLastSolid(solid, forExport, identified ? paramsFingerprint(ctx.params) : null);
 
     const { tolerance, angularTolerance } = computeTessellationTolerances(
       forExport,

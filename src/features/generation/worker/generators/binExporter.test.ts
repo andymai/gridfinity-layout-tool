@@ -17,6 +17,8 @@
  */
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import { isOk } from '@/core/result';
+import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { exportBin } from './binExporter';
 import { generateBin } from './binOrchestrator';
@@ -25,6 +27,29 @@ import { clearAllCaches, getLastSolid, isLastSolidExportQuality } from './shapeC
 beforeAll(async () => {
   await initBrepjs();
 }, 30000);
+
+/**
+ * Footprint of an exported STL in whole grid units, read back from its bounding
+ * box. Identifies WHICH design a buffer actually holds — byte length alone
+ * would not catch two different designs that happen to tessellate similarly.
+ */
+function spanOf(stl: ArrayBuffer): { x: number; y: number } {
+  const parsed = parseSTLBinary(stl);
+  if (!isOk(parsed)) throw new Error('exported STL did not parse');
+  const { vertices } = parsed.value;
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  for (let i = 0; i < vertices.length; i += 3) {
+    minX = Math.min(minX, vertices[i]);
+    maxX = Math.max(maxX, vertices[i]);
+    minY = Math.min(minY, vertices[i + 1]);
+    maxY = Math.max(maxY, vertices[i + 1]);
+  }
+  const unit = DEFAULT_BIN_PARAMS.gridUnitMm;
+  return { x: Math.round((maxX - minX) / unit), y: Math.round((maxY - minY) / unit) };
+}
 
 describe('exportBin: full-fidelity regeneration guard', () => {
   beforeEach(() => {
@@ -96,6 +121,24 @@ describe('exportBin: full-fidelity regeneration guard', () => {
     expect(isLastSolidExportQuality()).toBe(true);
     expect(getLastSolid()).not.toBeNull();
   }, 60000);
+
+  it('regenerates when the cached export-quality solid is a different design', async () => {
+    // GH #3074: a whole-layout export runs many designs through one worker
+    // back to back with no preview pass in between, so every design after the
+    // first met an export-quality cached solid — and shipped its predecessor's
+    // geometry under its own filename.
+    const small = { ...DEFAULT_BIN_PARAMS, width: 1, depth: 1 };
+    const large = { ...DEFAULT_BIN_PARAMS, width: 3, depth: 2 };
+
+    const smallStl = await exportBin(small, 'stl');
+    const largeStl = await exportBin(large, 'stl');
+
+    // Asserting on geometry rather than the cached Shape3D reference: the
+    // regeneration disposes the previous handle, so touching it here would
+    // throw instead of failing with a useful message.
+    expect(spanOf(smallStl.data)).toEqual({ x: 1, y: 1 });
+    expect(spanOf(largeStl.data)).toEqual({ x: 3, y: 2 });
+  }, 90000);
 
   it('STEP export also regenerates when cache is preview-quality', async () => {
     generateBin(DEFAULT_BIN_PARAMS, undefined, false);

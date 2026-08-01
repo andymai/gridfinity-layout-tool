@@ -96,6 +96,8 @@ interface CacheEntry {
 let patternTemplateCache: CacheEntry | null = null;
 let lastSolid: Shape3D | null = null;
 let lastSolidIsExportQuality = false;
+/** Fingerprint of the params `lastSolid` was built from; null when unknown. */
+let lastSolidIdentity: string | null = null;
 
 /**
  * Feature tool caches — created lazily by builder name.
@@ -258,7 +260,31 @@ export function isLastSolidExportQuality(): boolean {
   return lastSolid !== null && lastSolidIsExportQuality;
 }
 
-export function setLastSolid(shape: Shape3D | null, isExportQuality = false): void {
+/**
+ * Whether `lastSolid` can be exported as-is for `identity`.
+ *
+ * Export quality alone is NOT enough. A worker exports many different designs
+ * in sequence during a whole-layout export, so a solid left behind by the
+ * previous design is export-quality but is the wrong shape — that is how bins
+ * shipped carrying their neighbour's geometry under the right filename
+ * (GH #3074). An unidentified solid (`null`) never qualifies, so any producer
+ * that doesn't record what it built forces a regeneration rather than a guess.
+ */
+export function isLastSolidReusableFor(identity: string): boolean {
+  return lastSolid !== null && lastSolidIsExportQuality && lastSolidIdentity === identity;
+}
+
+/**
+ * Cache `shape` as the latest solid. `identity` is the fingerprint of the
+ * params it was built from — omit it only when the producer genuinely cannot
+ * say, which costs a regeneration on the next export rather than risking a
+ * wrong one.
+ */
+export function setLastSolid(
+  shape: Shape3D | null,
+  isExportQuality = false,
+  identity: string | null = null
+): void {
   if (lastSolid && lastSolid !== shape) {
     // Defensive: the prior solid may already be disposed or in a corrupt
     // state (e.g. after an export retry path), in which case .delete()
@@ -273,6 +299,7 @@ export function setLastSolid(shape: Shape3D | null, isExportQuality = false): vo
   }
   lastSolid = shape;
   lastSolidIsExportQuality = shape !== null && isExportQuality;
+  lastSolidIdentity = shape !== null ? identity : null;
 }
 
 export function getFeatureCache(feature: string, key: string): Shape3D | null {
@@ -323,6 +350,7 @@ export function clearAllCaches(): void {
     lastSolid = null;
   }
   lastSolidIsExportQuality = false;
+  lastSolidIdentity = null;
 }
 
 /** Collect stats from all shape LRU caches. */

@@ -22,6 +22,19 @@ export interface ManifestBinEntry {
   /** Companion parts included alongside the body (e.g. `lid`, `dividers`). */
   readonly companions?: readonly string[];
   /**
+   * Number of pieces this bin ships as when it exceeds the print bed (#3074).
+   * Absent for a bin that prints whole.
+   */
+  readonly splitPieces?: number;
+  /** Whether those pieces carry printed alignment connectors. */
+  readonly splitConnectors?: boolean;
+  /**
+   * Companion parts (lid, dividers) that ship at full size even though the body
+   * was cut — they are not split, so an oversized design's lid may not fit the
+   * bed. Absent when there is nothing to warn about.
+   */
+  readonly oversizedCompanions?: readonly string[];
+  /**
    * Every grid position this entry's mesh is placed at, present only for an
    * extended variant. Several bins on one design can resolve to different
    * overhangs, so the file name alone can't say which goes where — this is the
@@ -101,6 +114,13 @@ function positionLabel(positions: readonly { readonly x: number; readonly y: num
   return positions.length === 1 ? `Position:  ${coords[0]}` : `Positions: ${coords.join(', ')}`;
 }
 
+/** `bins/box_2x2x3.stl` → `bins/box_2x2x3/`, the folder a split bin's pieces
+ *  are written into instead of that single file. */
+function splitPathPattern(path: string): string {
+  const dot = path.lastIndexOf('.');
+  return `${dot === -1 ? path : path.slice(0, dot)}/`;
+}
+
 function formatTime(minutes: number): string {
   const rounded = Math.round(minutes);
   if (rounded < 60) return `${rounded}m`;
@@ -133,7 +153,10 @@ export function buildLayoutManifest(input: LayoutManifestInput): string {
     lines.push('  (no linked bin designs to export)', '');
   } else {
     for (const b of bins) {
-      lines.push(`  ${b.path}`);
+      // A split bin ships as `<base>_<piece>.<ext>` — the unsplit path is never
+      // written, so printing it verbatim would send the reader hunting for a
+      // file the archive doesn't contain.
+      lines.push(`  ${b.splitPieces && b.splitPieces > 1 ? splitPathPattern(b.path) : b.path}`);
       lines.push(`    Design:    ${b.designName}`);
       lines.push(`    Size:      ${b.widthUnits} × ${b.depthUnits} × ${b.heightUnits} units`);
       lines.push(`    Quantity:  ${b.quantity}`);
@@ -144,6 +167,22 @@ export function buildLayoutManifest(input: LayoutManifestInput): string {
       }
       if (b.companions && b.companions.length > 0) {
         lines.push(`    Includes:  ${b.companions.join(', ')}`);
+      }
+      if (b.splitPieces && b.splitPieces > 1) {
+        lines.push(
+          `    Split:     ${b.splitPieces} pieces — too large for the print bed.`,
+          b.splitConnectors === false
+            ? '               Print all pieces and join them at the cut faces.'
+            : '               Print all pieces and join them with the printed connectors.'
+        );
+        // The body was cut to fit; its lid and dividers were not, so on a very
+        // large design they may still overrun the bed.
+        if (b.oversizedCompanions && b.oversizedCompanions.length > 0) {
+          lines.push(
+            `               ${b.oversizedCompanions.join(' and ')} ship at full size and may need`,
+            '               splitting separately in the bin designer.'
+          );
+        }
       }
       lines.push(
         `    Estimate:  ~${b.filamentGrams.toFixed(1)} g, ~${formatTime(b.printTimeMinutes)} each`

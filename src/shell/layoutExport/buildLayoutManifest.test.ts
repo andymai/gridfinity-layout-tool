@@ -55,6 +55,51 @@ describe('buildLayoutManifest', () => {
     expect(text).toContain('Includes:  lid, dividers');
   });
 
+  it('points at the folder a split bin writes, not the unwritten whole path', () => {
+    const text = buildLayoutManifest(base({ bins: [{ ...base().bins[0], splitPieces: 4 }] }));
+    // The archive holds `bins/box_1x1x6/<piece>.stl`; the unsplit name is never
+    // written, so pointing at it would send the reader after a missing file.
+    expect(text).toContain('bins/box_1x1x6/');
+    expect(text).not.toContain('  bins/box_1x1x6.stl\n');
+    expect(text).toContain('Split:     4 pieces');
+  });
+
+  it('does not promise printed connectors when the design turned them off', () => {
+    const withConnectors = buildLayoutManifest(
+      base({ bins: [{ ...base().bins[0], splitPieces: 2, splitConnectors: true }] })
+    );
+    expect(withConnectors).toContain('join them with the printed connectors');
+
+    const without = buildLayoutManifest(
+      base({ bins: [{ ...base().bins[0], splitPieces: 2, splitConnectors: false }] })
+    );
+    expect(without).toContain('join them at the cut faces');
+    expect(without).not.toContain('printed connectors');
+  });
+
+  it('warns that a split bin ships its companions at full size', () => {
+    // Only the body is cut, so a big design's lid can still overrun the bed.
+    const text = buildLayoutManifest(
+      base({
+        bins: [
+          {
+            ...base().bins[0],
+            splitPieces: 4,
+            companions: ['lid'],
+            oversizedCompanions: ['lid'],
+          },
+        ],
+      })
+    );
+    expect(text).toContain('lid ship at full size');
+  });
+
+  it('keeps the plain path for a bin that prints whole', () => {
+    const text = buildLayoutManifest(base({ bins: [{ ...base().bins[0], splitPieces: 1 }] }));
+    expect(text).toContain('bins/box_1x1x6.stl');
+    expect(text).not.toContain('Split:');
+  });
+
   it('references the baseplate guide and piece count', () => {
     const text = buildLayoutManifest(base());
     expect(text).toContain('4 files in the baseplate/ folder');
@@ -184,5 +229,4 @@ describe('buildLayoutManifest', () => {
   it('omits the position line for a plain (non-extended) bin', () => {
     expect(buildLayoutManifest(base())).not.toContain('Position:');
   });
-
 });

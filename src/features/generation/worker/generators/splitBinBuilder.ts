@@ -39,6 +39,7 @@ import { resolveOverhang } from './overhang';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { imprintPieceArrays } from './meshImprint';
 import { deriveDimensions } from './pipeline/context';
+import { splitConnectorsSuppressedByBase } from '@/shared/generation/splitUtils';
 
 /** Result of a split export: array of piece buffers with grid labels */
 export interface SplitExportResult {
@@ -203,9 +204,13 @@ function splitSolidIntoPieces(
   // walls and are unaffected).
   const rawConnectorConfig = splitConnectorConfig ?? params.splitConnectors;
   // A spacer has no floor whatsoever, so it needs the same treatment as lite.
-  const liteBase = (params.base.lightweight || params.base.spacer) && params.base.style !== 'flat';
+  // Only the BASE rule applies here — an explicit `splitConnectorConfig` from
+  // the caller must still be able to turn connectors on, so this must not also
+  // consult the persisted `params.splitConnectors` flag it overrides.
   const connectorConfig =
-    rawConnectorConfig && liteBase ? { ...rawConnectorConfig, enabled: false } : rawConnectorConfig;
+    rawConnectorConfig && splitConnectorsSuppressedByBase(params.base)
+      ? { ...rawConnectorConfig, enabled: false }
+      : rawConnectorConfig;
 
   // Bin geometry context for connector placement
   const isFlat = params.base.style === 'flat';

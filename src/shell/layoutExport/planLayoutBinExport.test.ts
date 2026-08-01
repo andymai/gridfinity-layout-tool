@@ -40,6 +40,8 @@ function linkedBin(idStr: string, overrides: Partial<Bin> = {}): Bin {
 }
 
 const CONFIG = { style: 'descriptive', customName: '', format: 'stl' } as const;
+/** Large enough that nothing in these cases splits; split cases set their own. */
+const PRINT_BED = { widthMm: 256, depthMm: 256 };
 
 describe('planLayoutBinExport', () => {
   it('dedupes by design and counts quantity per design', () => {
@@ -53,15 +55,16 @@ describe('planLayoutBinExport', () => {
       { id: designId('d2'), design: design('d2', 'Tray', { width: 2, depth: 2, height: 3 }) },
     ];
 
-    const plan = planLayoutBinExport(
+    const plan = planLayoutBinExport({
       bins,
       loaded,
-      'stl',
-      CONFIG,
-      DEFAULT_PRINT_SETTINGS,
-      DRAWER,
-      undefined
-    );
+      format: 'stl',
+      fileNameConfig: CONFIG,
+      printSettings: DEFAULT_PRINT_SETTINGS,
+      drawer: DRAWER,
+      baseplate: undefined,
+      printBed: PRINT_BED,
+    });
 
     expect(plan.exportable).toHaveLength(2);
     expect(plan.manifestBins.find((b) => b.designName === 'Box')?.quantity).toBe(2);
@@ -79,15 +82,16 @@ describe('planLayoutBinExport', () => {
       { id: designId('d3'), design: null }, // missing
     ];
 
-    const plan = planLayoutBinExport(
+    const plan = planLayoutBinExport({
       bins,
       loaded,
-      'stl',
-      CONFIG,
-      DEFAULT_PRINT_SETTINGS,
-      DRAWER,
-      undefined
-    );
+      format: 'stl',
+      fileNameConfig: CONFIG,
+      printSettings: DEFAULT_PRINT_SETTINGS,
+      drawer: DRAWER,
+      baseplate: undefined,
+      printBed: PRINT_BED,
+    });
 
     expect(plan.skipped.unlinkedBins).toBe(1);
     expect(plan.skipped.nonBinDesigns).toBe(1);
@@ -103,15 +107,16 @@ describe('planLayoutBinExport', () => {
       { id: designId('d2'), design: design('d2', 'Box', { width: 1, depth: 1, height: 6 }) },
     ];
 
-    const plan = planLayoutBinExport(
+    const plan = planLayoutBinExport({
       bins,
       loaded,
-      'stl',
-      CONFIG,
-      DEFAULT_PRINT_SETTINGS,
-      DRAWER,
-      undefined
-    );
+      format: 'stl',
+      fileNameConfig: CONFIG,
+      printSettings: DEFAULT_PRINT_SETTINGS,
+      drawer: DRAWER,
+      baseplate: undefined,
+      printBed: PRINT_BED,
+    });
     const paths = plan.exportable.map((e) => e.path);
     expect(new Set(paths).size).toBe(2);
   });
@@ -121,15 +126,16 @@ describe('planLayoutBinExport', () => {
     const loaded: LoadedDesign[] = [
       { id: designId('d1'), design: design('d1', 'Slotted', { style: 'slotted' }) },
     ];
-    const plan = planLayoutBinExport(
+    const plan = planLayoutBinExport({
       bins,
       loaded,
-      'stl',
-      CONFIG,
-      DEFAULT_PRINT_SETTINGS,
-      DRAWER,
-      undefined
-    );
+      format: 'stl',
+      fileNameConfig: CONFIG,
+      printSettings: DEFAULT_PRINT_SETTINGS,
+      drawer: DRAWER,
+      baseplate: undefined,
+      printBed: PRINT_BED,
+    });
     expect(plan.exportable[0].companions).toContain('dividers');
     expect(plan.manifestBins[0].companions).toContain('dividers');
   });
@@ -137,15 +143,16 @@ describe('planLayoutBinExport', () => {
   it('marks plain designs as having no companions', () => {
     const bins: Bin[] = [linkedBin('d1')];
     const loaded: LoadedDesign[] = [{ id: designId('d1'), design: design('d1', 'Box') }];
-    const plan = planLayoutBinExport(
+    const plan = planLayoutBinExport({
       bins,
       loaded,
-      'stl',
-      CONFIG,
-      DEFAULT_PRINT_SETTINGS,
-      DRAWER,
-      undefined
-    );
+      format: 'stl',
+      fileNameConfig: CONFIG,
+      printSettings: DEFAULT_PRINT_SETTINGS,
+      drawer: DRAWER,
+      baseplate: undefined,
+      printBed: PRINT_BED,
+    });
     expect(plan.exportable[0].companions).toEqual([]);
   });
 
@@ -154,15 +161,16 @@ describe('planLayoutBinExport', () => {
     const loaded: LoadedDesign[] = [
       { id: designId('d1'), design: design('d1', 'Box', { width: 1, depth: 1, height: 6 }) },
     ];
-    const plan = planLayoutBinExport(
+    const plan = planLayoutBinExport({
       bins,
       loaded,
-      'stl',
-      CONFIG,
-      DEFAULT_PRINT_SETTINGS,
-      DRAWER,
-      undefined
-    );
+      format: 'stl',
+      fileNameConfig: CONFIG,
+      printSettings: DEFAULT_PRINT_SETTINGS,
+      drawer: DRAWER,
+      baseplate: undefined,
+      printBed: PRINT_BED,
+    });
     const per = plan.manifestBins[0];
     expect(plan.totals.filamentGrams).toBeCloseTo(per.filamentGrams * 2, 5);
   });
@@ -186,15 +194,16 @@ describe('planLayoutBinExport', () => {
         extendedUnitBin(0, 0), // abuts left → extends
         unitBin(0, 2), // plain sibling
       ];
-      const plan = planLayoutBinExport(
+      const plan = planLayoutBinExport({
         bins,
-        [{ id: designId('d1'), design: box() }],
-        'stl',
-        CONFIG,
-        DEFAULT_PRINT_SETTINGS,
-        DRAWER,
-        baseplate({ paddingLeft: mm(3) })
-      );
+        loaded: [{ id: designId('d1'), design: box() }],
+        format: 'stl',
+        fileNameConfig: CONFIG,
+        printSettings: DEFAULT_PRINT_SETTINGS,
+        drawer: DRAWER,
+        baseplate: baseplate({ paddingLeft: mm(3) }),
+        printBed: PRINT_BED,
+      });
 
       expect(plan.exportable).toHaveLength(2);
       const ext = plan.exportable.find((e) => e.path.includes('_pos'));
@@ -215,15 +224,16 @@ describe('planLayoutBinExport', () => {
     // The manifest has to carry all of them, sorted, or it misreports placement.
     it('records every position of a shared extended variant, sorted', () => {
       const bins: Bin[] = [extendedUnitBin(0, 2), extendedUnitBin(0, 0), extendedUnitBin(0, 1)];
-      const plan = planLayoutBinExport(
+      const plan = planLayoutBinExport({
         bins,
-        [{ id: designId('d1'), design: box() }],
-        'stl',
-        CONFIG,
-        DEFAULT_PRINT_SETTINGS,
-        DRAWER,
-        baseplate({ paddingLeft: mm(3) })
-      );
+        loaded: [{ id: designId('d1'), design: box() }],
+        format: 'stl',
+        fileNameConfig: CONFIG,
+        printSettings: DEFAULT_PRINT_SETTINGS,
+        drawer: DRAWER,
+        baseplate: baseplate({ paddingLeft: mm(3) }),
+        printBed: PRINT_BED,
+      });
 
       expect(plan.manifestBins).toHaveLength(1);
       expect(plan.manifestBins[0].quantity).toBe(3);
@@ -237,29 +247,31 @@ describe('planLayoutBinExport', () => {
     });
 
     it('leaves atPositions off a plain (non-extended) entry', () => {
-      const plan = planLayoutBinExport(
-        [unitBin(1, 1)],
-        [{ id: designId('d1'), design: box() }],
-        'stl',
-        CONFIG,
-        DEFAULT_PRINT_SETTINGS,
-        DRAWER,
-        baseplate({ paddingLeft: mm(3) })
-      );
+      const plan = planLayoutBinExport({
+        bins: [unitBin(1, 1)],
+        loaded: [{ id: designId('d1'), design: box() }],
+        format: 'stl',
+        fileNameConfig: CONFIG,
+        printSettings: DEFAULT_PRINT_SETTINGS,
+        drawer: DRAWER,
+        baseplate: baseplate({ paddingLeft: mm(3) }),
+        printBed: PRINT_BED,
+      });
       expect(plan.manifestBins[0].atPositions).toBeUndefined();
     });
 
     it('dedupes two identically-extended bins into one group', () => {
       const bins: Bin[] = [extendedUnitBin(0, 0), extendedUnitBin(0, 1)];
-      const plan = planLayoutBinExport(
+      const plan = planLayoutBinExport({
         bins,
-        [{ id: designId('d1'), design: box() }],
-        'stl',
-        CONFIG,
-        DEFAULT_PRINT_SETTINGS,
-        DRAWER,
-        baseplate({ paddingLeft: mm(3) })
-      );
+        loaded: [{ id: designId('d1'), design: box() }],
+        format: 'stl',
+        fileNameConfig: CONFIG,
+        printSettings: DEFAULT_PRINT_SETTINGS,
+        drawer: DRAWER,
+        baseplate: baseplate({ paddingLeft: mm(3) }),
+        printBed: PRINT_BED,
+      });
       expect(plan.exportable).toHaveLength(1);
       expect(plan.manifestBins[0].quantity).toBe(2);
     });
@@ -269,30 +281,33 @@ describe('planLayoutBinExport', () => {
         extendedUnitBin(1, 1), // interior
         unitBin(2, 1),
       ];
-      const plan = planLayoutBinExport(
+      const plan = planLayoutBinExport({
         bins,
-        [{ id: designId('d1'), design: box() }],
-        'stl',
-        CONFIG,
-        DEFAULT_PRINT_SETTINGS,
-        DRAWER,
-        baseplate({ paddingBack: mm(3) }) // padding only on an edge this bin doesn't touch
-      );
+        loaded: [{ id: designId('d1'), design: box() }],
+        format: 'stl',
+        fileNameConfig: CONFIG,
+        printSettings: DEFAULT_PRINT_SETTINGS,
+        drawer: DRAWER,
+        // padding only on an edge this bin doesn't touch
+        baseplate: baseplate({ paddingBack: mm(3) }),
+        printBed: PRINT_BED,
+      });
       expect(plan.exportable).toHaveLength(1);
       expect(plan.exportable[0].path).not.toContain('_extended');
     });
 
     it('is inert without a baseplate', () => {
       const bins: Bin[] = [extendedUnitBin(0, 0)];
-      const plan = planLayoutBinExport(
+      const plan = planLayoutBinExport({
         bins,
-        [{ id: designId('d1'), design: box() }],
-        'stl',
-        CONFIG,
-        DEFAULT_PRINT_SETTINGS,
-        DRAWER,
-        undefined
-      );
+        loaded: [{ id: designId('d1'), design: box() }],
+        format: 'stl',
+        fileNameConfig: CONFIG,
+        printSettings: DEFAULT_PRINT_SETTINGS,
+        drawer: DRAWER,
+        baseplate: undefined,
+        printBed: PRINT_BED,
+      });
       expect(plan.exportable[0].path).not.toContain('_extended');
     });
   });
@@ -343,15 +358,16 @@ describe('planLayoutBinExport', () => {
       ];
       const loaded: LoadedDesign[] = [{ id: designId('m1'), design: meshDesign('m1', 'widget') }];
 
-      const plan = planLayoutBinExport(
+      const plan = planLayoutBinExport({
         bins,
         loaded,
-        'stl',
-        CONFIG,
-        DEFAULT_PRINT_SETTINGS,
-        DRAWER,
-        undefined
-      );
+        format: 'stl',
+        fileNameConfig: CONFIG,
+        printSettings: DEFAULT_PRINT_SETTINGS,
+        drawer: DRAWER,
+        baseplate: undefined,
+        printBed: PRINT_BED,
+      });
 
       expect(plan.skipped.nonBinDesigns).toBe(0);
       expect(plan.meshExportable).toHaveLength(1);
@@ -366,15 +382,16 @@ describe('planLayoutBinExport', () => {
 
     it('uses the measured volume for the estimate when present', () => {
       const bins: Bin[] = [linkedBin('m1')];
-      const withVolume = planLayoutBinExport(
+      const withVolume = planLayoutBinExport({
         bins,
-        [{ id: designId('m1'), design: meshDesign('m1', 'widget', 10_000) }],
-        'stl',
-        CONFIG,
-        DEFAULT_PRINT_SETTINGS,
-        DRAWER,
-        undefined
-      );
+        loaded: [{ id: designId('m1'), design: meshDesign('m1', 'widget', 10_000) }],
+        format: 'stl',
+        fileNameConfig: CONFIG,
+        printSettings: DEFAULT_PRINT_SETTINGS,
+        drawer: DRAWER,
+        baseplate: undefined,
+        printBed: PRINT_BED,
+      });
       // 10 cm³ of PLA ≈ 12.4 g — clearly distinct from the standard-bin model.
       const entry = withVolume.manifestBins[0];
       expect(entry.filamentGrams).toBeCloseTo(12.4, 0);
@@ -389,30 +406,32 @@ describe('planLayoutBinExport', () => {
         { id: designId('d1'), design: design('d1', 'widget') },
         { id: designId('m1'), design: meshDesign('m1', 'widget') },
       ];
-      const plan = planLayoutBinExport(
+      const plan = planLayoutBinExport({
         bins,
         loaded,
-        'stl',
-        CONFIG,
-        DEFAULT_PRINT_SETTINGS,
-        DRAWER,
-        undefined
-      );
+        format: 'stl',
+        fileNameConfig: CONFIG,
+        printSettings: DEFAULT_PRINT_SETTINGS,
+        drawer: DRAWER,
+        baseplate: undefined,
+        printBed: PRINT_BED,
+      });
       const allPaths = [...plan.exportable.map((e) => e.path), plan.meshExportable[0].path];
       expect(new Set(allPaths).size).toBe(allPaths.length);
     });
 
     it('skips mesh designs under STEP with a dedicated tally', () => {
       const bins: Bin[] = [linkedBin('m1')];
-      const plan = planLayoutBinExport(
+      const plan = planLayoutBinExport({
         bins,
-        [{ id: designId('m1'), design: meshDesign('m1', 'widget') }],
-        'step',
-        { ...CONFIG, format: 'step' },
-        DEFAULT_PRINT_SETTINGS,
-        DRAWER,
-        undefined
-      );
+        loaded: [{ id: designId('m1'), design: meshDesign('m1', 'widget') }],
+        format: 'step',
+        fileNameConfig: { ...CONFIG, format: 'step' },
+        printSettings: DEFAULT_PRINT_SETTINGS,
+        drawer: DRAWER,
+        baseplate: undefined,
+        printBed: PRINT_BED,
+      });
       expect(plan.meshExportable).toHaveLength(0);
       expect(plan.skipped.meshDesignsStepSkipped).toBe(1);
       expect(plan.manifestBins).toHaveLength(0);
@@ -421,17 +440,135 @@ describe('planLayoutBinExport', () => {
     it('still tallies tool racks (non-mesh paramsless designs) as nonBinDesigns', () => {
       const bins: Bin[] = [linkedBin('r1')];
       const rack: SavedDesign = { ...design('r1', 'Rack'), params: undefined, kind: 'toolRack' };
-      const plan = planLayoutBinExport(
+      const plan = planLayoutBinExport({
         bins,
-        [{ id: designId('r1'), design: rack }],
-        'stl',
-        CONFIG,
-        DEFAULT_PRINT_SETTINGS,
-        DRAWER,
-        undefined
-      );
+        loaded: [{ id: designId('r1'), design: rack }],
+        format: 'stl',
+        fileNameConfig: CONFIG,
+        printSettings: DEFAULT_PRINT_SETTINGS,
+        drawer: DRAWER,
+        baseplate: undefined,
+        printBed: PRINT_BED,
+      });
       expect(plan.skipped.nonBinDesigns).toBe(1);
       expect(plan.meshExportable).toHaveLength(0);
+    });
+  });
+
+  describe('oversized bins (#3074)', () => {
+    // 256mm bed at the stock 42mm pitch fits 6 units per axis.
+    const bigBin = (w: number, d: number): LoadedDesign => ({
+      id: designId('big'),
+      design: design('big', 'Long', { width: w, depth: d, height: 3 }),
+    });
+
+    it('plans cut planes for a bin wider than the print bed', () => {
+      const plan = planLayoutBinExport({
+        bins: [linkedBin('big')],
+        loaded: [bigBin(11, 2)],
+        format: 'stl',
+        fileNameConfig: CONFIG,
+        printSettings: DEFAULT_PRINT_SETTINGS,
+        drawer: DRAWER,
+        baseplate: undefined,
+        printBed: PRINT_BED,
+      });
+
+      const split = plan.exportable[0].split;
+      expect(split).not.toBeNull();
+      expect(split?.totalPieceCount).toBeGreaterThan(1);
+      expect(split?.cutPlanesX.length).toBeGreaterThan(0);
+      expect(split?.cutPlanesY).toEqual([]);
+      expect(plan.manifestBins[0].splitPieces).toBe(split?.totalPieceCount);
+    });
+
+    it('charges an overhang against the bed before deciding the fit', () => {
+      // 6 units at the 42mm pitch is 252mm — inside a 256mm bed on nominal
+      // dimensions, but a 9mm overhang pushes the printed part past the plate.
+      const overhung: LoadedDesign = {
+        id: designId('big'),
+        design: design('big', 'Wide', {
+          width: 6,
+          depth: 2,
+          height: 3,
+          overhang: { left: 9, right: 0, front: 0, back: 0, feet: false },
+        }),
+      };
+      const plan = planLayoutBinExport({
+        bins: [linkedBin('big')],
+        loaded: [overhung],
+        format: 'stl',
+        fileNameConfig: CONFIG,
+        printSettings: DEFAULT_PRINT_SETTINGS,
+        drawer: DRAWER,
+        baseplate: undefined,
+        printBed: PRINT_BED,
+      });
+
+      expect(plan.exportable[0].split).not.toBeNull();
+    });
+
+    it('leaves the same bin whole without the overhang', () => {
+      const plan = planLayoutBinExport({
+        bins: [linkedBin('big')],
+        loaded: [bigBin(6, 2)],
+        format: 'stl',
+        fileNameConfig: CONFIG,
+        printSettings: DEFAULT_PRINT_SETTINGS,
+        drawer: DRAWER,
+        baseplate: undefined,
+        printBed: PRINT_BED,
+      });
+
+      expect(plan.exportable[0].split).toBeNull();
+    });
+
+    it('leaves a bin that fits unsplit', () => {
+      const plan = planLayoutBinExport({
+        bins: [linkedBin('big')],
+        loaded: [bigBin(2, 2)],
+        format: 'stl',
+        fileNameConfig: CONFIG,
+        printSettings: DEFAULT_PRINT_SETTINGS,
+        drawer: DRAWER,
+        baseplate: undefined,
+        printBed: PRINT_BED,
+      });
+
+      expect(plan.exportable[0].split).toBeNull();
+      expect(plan.manifestBins[0].splitPieces).toBeUndefined();
+    });
+
+    it('never splits under STEP — that format ships exact BREP for downstream CAD', () => {
+      const plan = planLayoutBinExport({
+        bins: [linkedBin('big')],
+        loaded: [bigBin(11, 2)],
+        format: 'step',
+        fileNameConfig: { ...CONFIG, format: 'step' },
+        printSettings: DEFAULT_PRINT_SETTINGS,
+        drawer: DRAWER,
+        baseplate: undefined,
+        printBed: PRINT_BED,
+      });
+
+      expect(plan.exportable[0].split).toBeNull();
+    });
+
+    it('splits on the depth axis against a non-square bed', () => {
+      const plan = planLayoutBinExport({
+        bins: [linkedBin('big')],
+        loaded: [bigBin(2, 8)],
+        format: 'stl',
+        fileNameConfig: CONFIG,
+        printSettings: DEFAULT_PRINT_SETTINGS,
+        drawer: DRAWER,
+        baseplate: undefined,
+        printBed: { widthMm: 256, depthMm: 128 },
+      });
+
+      const split = plan.exportable[0].split;
+      expect(split?.cutPlanesX).toEqual([]);
+      expect(split?.cutPlanesY.length).toBeGreaterThan(0);
     });
   });
 });

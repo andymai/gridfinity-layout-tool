@@ -20,6 +20,9 @@ import { generateFileName } from '@/features/bin-designer';
 // Deep import (not the barrel): the bin-designer barrel is eagerly loaded by App,
 // and this code only runs inside the lazy layout-export chunk.
 import { shouldGenerateLid } from '@/features/bin-designer/utils/lidCompatibility';
+import { calcMaxGridUnits } from '@/core/constants';
+import { getSplitPieceCount, getSplitPlanePositionsMm } from '@/shared/utils/splitPositions';
+import { splitHasConnectors } from '@/shared/generation/splitUtils';
 import { resolveBinOverhang } from '@/shared/utils/drawerMargin';
 import { overhangKey as resolvedOverhangKey, resolveOverhang } from '@/shared/utils/overhang';
 import type { ExportFileFormat, ExportFileNameConfig } from '@/shared/types/bin';
@@ -40,6 +43,13 @@ export interface LoadedDesign {
   readonly design: SavedDesign | null;
 }
 
+/** Cut planes for a bin too large to print in one piece. */
+export interface LayoutSplitPlan {
+  readonly cutPlanesX: number[];
+  readonly cutPlanesY: number[];
+  readonly totalPieceCount: number;
+}
+
 export interface LayoutExportable {
   readonly params: BinParams;
   /** ZIP path for the design's main body, e.g. `bins/box_1x1x6.stl`. */
@@ -49,6 +59,13 @@ export interface LayoutExportable {
    * design is exported via the combined flow so those parts are included.
    */
   readonly companions: readonly string[];
+  /**
+   * Set when the bin exceeds the print bed and has to ship as several pieces
+   * (#3074). Null for a bin that fits, and always null under STEP — that format
+   * carries exact BREP for downstream CAD, which the split path can't produce
+   * (the bin designer refuses split STEP for the same reason).
+   */
+  readonly split: LayoutSplitPlan | null;
 }
 
 /** An imported-mesh design to export: the stored asset IS the geometry —
@@ -61,12 +78,51 @@ export interface LayoutMeshExportable {
   readonly designName: string;
 }
 
+/** The layout's print bed, used to decide which bins have to be split. */
+export interface PrintBedSize {
+  readonly widthMm: number;
+  readonly depthMm: number;
+}
+
 export interface LayoutBinExportPlan {
   readonly exportable: readonly LayoutExportable[];
   readonly meshExportable: readonly LayoutMeshExportable[];
   readonly manifestBins: ManifestBinEntry[];
   readonly skipped: ManifestSkipped;
   readonly totals: { readonly filamentGrams: number; readonly printTimeMinutes: number };
+}
+
+/**
+ * Cut planes for `params` against the layout's print bed, or null when the bin
+ * fits whole. Mirrors the bin designer's `downloadSplit` so a bin exported from
+ * the layout ZIP arrives in the same pieces it would from the designer.
+ *
+ * An overhang is charged against the bed before the grid capacity is derived.
+ * It extends the part in millimetres beyond its nominal footprint, so a bin
+ * that just fits on nominal dimensions can still overrun the plate — and unlike
+ * the designer, layout bins routinely carry one (`resolveBinOverhang` grows
+ * them into the drawer margin).
+ */
+function binSplitPlan(
+  params: BinParams,
+  printBed: PrintBedSize,
+  format: ExportFileFormat
+): LayoutSplitPlan | null {
+  if (format === 'step') return null;
+  const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
+  const over = resolveOverhang(params.overhang ?? undefined);
+  const maxGrid = calcMaxGridUnits(
+    Math.max(0, printBed.widthMm - over.left - over.right),
+    params.gridUnitMm,
+    Math.max(0, printBed.depthMm - over.front - over.back),
+    gridUnitMmY
+  );
+  if (params.width <= maxGrid.width && params.depth <= maxGrid.depth) return null;
+  return {
+    cutPlanesX: getSplitPlanePositionsMm(params.width, maxGrid.width, params.gridUnitMm),
+    cutPlanesY: getSplitPlanePositionsMm(params.depth, maxGrid.depth, gridUnitMmY),
+    totalPieceCount: getSplitPieceCount(params.width, params.depth, maxGrid.width, maxGrid.depth),
+  };
 }
 
 /** Printable companion parts (lid, removable dividers) a bin design ships beyond its body. */
@@ -125,16 +181,31 @@ interface BinExportGroup {
   positions: { x: number; y: number }[];
 }
 
-export function planLayoutBinExport(
-  bins: Bin[],
-  loaded: readonly LoadedDesign[],
-  format: ExportFileFormat,
-  fileNameConfig: ExportFileNameConfig,
-  printSettings: PrintSettings,
-  drawer: Pick<Drawer, 'width' | 'depth'>,
-  baseplate: StoredBaseplateParams | undefined,
-  magnetAnchor?: MagnetAnchor
-): LayoutBinExportPlan {
+export interface LayoutBinExportInput {
+  readonly bins: Bin[];
+  readonly loaded: readonly LoadedDesign[];
+  readonly format: ExportFileFormat;
+  readonly fileNameConfig: ExportFileNameConfig;
+  readonly printSettings: PrintSettings;
+  readonly drawer: Pick<Drawer, 'width' | 'depth'>;
+  readonly baseplate: StoredBaseplateParams | undefined;
+  /** Decides which bins have to ship as several pieces. */
+  readonly printBed: PrintBedSize;
+  readonly magnetAnchor?: MagnetAnchor;
+}
+
+export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExportPlan {
+  const {
+    bins,
+    loaded,
+    format,
+    fileNameConfig,
+    printSettings,
+    drawer,
+    baseplate,
+    printBed,
+    magnetAnchor,
+  } = input;
   const unlinkedBins = bins.filter((b) => b.linkedDesignId === undefined).length;
 
   // Design-level skip tally + lookups of usable designs. Imported-mesh
@@ -256,6 +327,7 @@ export function planLayoutBinExport(
     params: u.params,
     path: paths[i],
     companions: companions[i],
+    split: binSplitPlan(u.params, printBed, format),
   }));
 
   let totalGrams = 0;
@@ -272,6 +344,7 @@ export function planLayoutBinExport(
     );
     totalGrams += est.gramsFilament * u.quantity;
     totalMinutes += est.printTimeMinutes * u.quantity;
+    const split = exportable[i].split;
     return {
       path: paths[i],
       designName: u.design.name,
@@ -282,6 +355,15 @@ export function planLayoutBinExport(
       filamentGrams: est.gramsFilament,
       printTimeMinutes: est.printTimeMinutes,
       companions: companions[i],
+      ...(split
+        ? {
+            splitPieces: split.totalPieceCount,
+            splitConnectors: splitHasConnectors(u.params),
+            // Only the body is cut; a lid or divider set on an oversized design
+            // still ships whole and may not fit the bed.
+            ...(companions[i].length > 0 ? { oversizedCompanions: companions[i] } : {}),
+          }
+        : {}),
       ...(u.extended ? { atPositions: u.positions } : {}),
     };
   });

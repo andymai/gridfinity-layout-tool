@@ -198,14 +198,11 @@ export function runExportIntegrity(scenarios: readonly ScenarioCase[]): void {
   }, 120_000);
 
   describe('export integrity: scenario matrix → binary STL', () => {
-    // Reset the last-solid pointer so each scenario actually builds and exports
-    // its OWN solid. `exportBin` skips regeneration whenever the cached solid is
-    // export-quality (isLastSolidExportQuality), and that flag is param-blind —
-    // without this reset the first scenario's export-quality solid would be
-    // re-exported for every later one, making every assertion vacuous. In
-    // production a preview pass (forExport=false) clears the flag on every param
-    // change; this loop never previews, so we clear it explicitly. The
-    // param-keyed intermediate LRU caches (socket/lip/box) stay warm for speed.
+    // Reset the last-solid pointer between scenarios. `exportBin` now keys
+    // reuse on a params fingerprint (GH #3074), so this is belt-and-braces
+    // rather than load-bearing: it keeps a scenario from depending on the
+    // previous one's cache state at all. The param-keyed intermediate LRU
+    // caches (socket/lip/box) stay warm for speed.
     beforeEach(async () => {
       setLastSolid(null);
       // Recover if the prior scenario stranded the kernel — detected by the
