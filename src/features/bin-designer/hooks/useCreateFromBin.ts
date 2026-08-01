@@ -154,9 +154,9 @@ export function useCreateFromBin(): void {
     // export time from its `extendToMargin` flag (`resolveBinOverhang`), not
     // stored on the design.
     //
-    // Infer the half-unit edge from the drawer so a fractional bin's foot lands
-    // on the same side as the drawer's fractional slot (issue #2518). Left as a
-    // non-manual choice so a later drawer change surfaces a mismatch warning.
+    // The half-unit edge arrives on the URL, already resolved from where the
+    // source bin's half cell lands in the drawer (#2518, #3070). Left as a
+    // non-manual choice so moving the bin later surfaces a mismatch warning.
     const binParams = {
       ...defaultsForNewDesign(),
       width: urlParams.width,

@@ -68,8 +68,8 @@ interface UseBinLinkingReturn {
     height: number
   ) => void;
 
-  /** Realign a linked design's fractional edge to the active layout's drawer (#2518). */
-  matchDesignEdgesToDrawer: (designId: DesignId) => Promise<void>;
+  /** Realign a linked design's fractional edge to where `binId` sits (#2518, #3070). */
+  matchDesignEdgesToDrawer: (designId: DesignId, binId: BinId) => Promise<void>;
 }
 
 /**
@@ -334,9 +334,16 @@ export function useBinLinking(): UseBinLinkingReturn {
     [hideCreateDesignDialog, layout.drawer, layout.bins]
   );
 
-  // Realign a linked design's fractional edge to the active layout's drawer
+  // Realign a linked design's fractional edge to where its bin sits
   const matchDesignEdgesToDrawer = useCallback(
-    async (designId: DesignId): Promise<void> => {
+    async (designId: DesignId, binId: BinId): Promise<void> => {
+      // Match against the bin the user is acting on, not just any bin on this
+      // design. One design can be placed several times with the half cell
+      // landing on different sides; picking the first would "fix" the design to
+      // a placement elsewhere in the drawer and leave the clicked bin wrong.
+      const placed = layout.bins.find((b) => b.id === binId);
+      if (!placed) return;
+
       const designResult = await loadDesign(designId);
       if (isErr(designResult) || !designResult.value.params) {
         addToast({
@@ -346,11 +353,6 @@ export function useBinLinking(): UseBinLinkingReturn {
         });
         return;
       }
-
-      // The correct edge depends on where the bin sits, so a design that isn't
-      // placed anywhere has nothing to match against (#3070).
-      const placed = layout.bins.find((b) => b.linkedDesignId === designId);
-      if (!placed) return;
 
       const params = designResult.value.params;
       const newParams = {

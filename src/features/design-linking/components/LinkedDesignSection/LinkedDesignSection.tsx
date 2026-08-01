@@ -114,11 +114,11 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
     if (!linkedDesign) return;
     setMatchingEdges(true);
     try {
-      await matchDesignEdgesToDrawer(linkedDesign.id);
+      await matchDesignEdgesToDrawer(linkedDesign.id, bin.id);
     } finally {
       setMatchingEdges(false);
     }
-  }, [linkedDesign, matchDesignEdgesToDrawer]);
+  }, [linkedDesign, bin.id, matchDesignEdgesToDrawer]);
 
   // A fractional bin whose design's half foot points away from where this bin's
   // half cell lands is oriented wrong; the registry ref carries the design's
