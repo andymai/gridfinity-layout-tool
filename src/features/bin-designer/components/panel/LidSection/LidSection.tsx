@@ -399,7 +399,11 @@ export function LidSection() {
             <div className="space-y-3 pt-2">
               <div className="space-y-1">
                 <StepperField
-                  label={t('binDesigner.lid.topThickness')}
+                  label={
+                    state.trayBreakdown
+                      ? t('binDesigner.lid.trayFloorThickness')
+                      : t('binDesigner.lid.topThickness')
+                  }
                   unit="mm"
                   value={state.topThicknessMm}
                   onChange={handlers.setTopThickness}
@@ -410,15 +414,42 @@ export function LidSection() {
                   max={state.topThicknessMax}
                   step={state.topThicknessStep}
                   size="md"
-                  aria-label={t('binDesigner.lid.topThicknessAria')}
+                  aria-label={
+                    state.trayBreakdown
+                      ? t('binDesigner.lid.trayFloorThicknessAria')
+                      : t('binDesigner.lid.topThicknessAria')
+                  }
                   commitMode="deferred"
                 />
+                {/* A tray splits the plate into recess + floor, and the field
+                    sets the floor — without the arithmetic spelled out, the
+                    overall thickness looks unrelated to what was typed (#3072). */}
+                {state.trayBreakdown && (
+                  <dl className="text-content-tertiary space-y-0.5 text-xs">
+                    <div className="flex justify-between gap-2">
+                      <dt>{t('binDesigner.lid.trayBreakdownRecess')}</dt>
+                      <dd className="tabular-nums">{state.trayBreakdown.recessMm.toFixed(1)} mm</dd>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <dt>{t('binDesigner.lid.trayBreakdownFloor')}</dt>
+                      <dd className="tabular-nums">{state.trayBreakdown.floorMm.toFixed(1)} mm</dd>
+                    </div>
+                    <div className="text-content-secondary flex justify-between gap-2 font-medium">
+                      <dt>{t('binDesigner.lid.trayBreakdownOverall')}</dt>
+                      <dd className="tabular-nums">
+                        {state.trayBreakdown.overallMm.toFixed(1)} mm
+                      </dd>
+                    </div>
+                  </dl>
+                )}
                 <Hint>
-                  {state.topThicknessEffective > state.topThicknessMm
-                    ? t('binDesigner.lid.topThicknessRaisedHint', {
-                        thickness: state.topThicknessEffective.toFixed(1),
-                      })
-                    : t('binDesigner.lid.topThicknessHint')}
+                  {state.trayBreakdown
+                    ? t('binDesigner.lid.trayFloorThicknessHint')
+                    : state.topThicknessEffective > state.topThicknessMm
+                      ? t('binDesigner.lid.topThicknessRaisedHint', {
+                          thickness: state.topThicknessEffective.toFixed(1),
+                        })
+                      : t('binDesigner.lid.topThicknessHint')}
                 </Hint>
               </div>
 

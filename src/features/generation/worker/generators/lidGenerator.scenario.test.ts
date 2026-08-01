@@ -182,6 +182,14 @@ describe('lid generation and export scenarios', () => {
         { base: { ...DEFAULT_BIN_PARAMS.base, magnetDepth: 2.5 } },
       ],
       ['tray recess', { tray: { enabled: true, depthMm: 4, wallMm: 2 } }, {}],
+      // The tray floor is now a knob (#3072), so the plate can grow well past
+      // any earlier value — the anchor has to keep tracking it.
+      [
+        'tray recess + thick floor',
+        { tray: { enabled: true, depthMm: 4, wallMm: 2 }, topThicknessMm: 5 },
+        {},
+      ],
+      ['deep tray recess', { tray: { enabled: true, depthMm: 30, wallMm: 2 } }, { height: 8 }],
       ['magnetic retention', { attachment: 'magnetic', topThicknessMm: 2 }, {}],
     ];
 

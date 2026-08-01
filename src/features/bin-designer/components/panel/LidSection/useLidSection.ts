@@ -16,6 +16,7 @@ import {
   LID_MAGNETIC_EXTRA_CLEARANCE,
   resolveLidFootprintClearance,
   resolveLidPlateThickness,
+  resolveLidTrayBreakdown,
   resolveLidCavityExtraMm,
   LID_MAGNET_DIAMETER_MIN_MM,
   LID_MAGNET_DIAMETER_MAX_MM,
@@ -717,13 +718,17 @@ export function useLidSection() {
       extraHeightMax: LID_EXTRA_HEIGHT_MAX_MM,
       extraHeightStep: LID_EXTRA_HEIGHT_STEP_MM,
       // Floor-plate thickness knob (#2761). `topThicknessEffective` reflects
-      // what the worker will actually build — magnet pockets and a tray recess
-      // can raise the plate above the user's value.
+      // what the worker will actually build — magnet pockets can raise the
+      // plate above the user's value.
       topThicknessMm: lid.topThicknessMm,
       topThicknessEffective: lidDimensions.topThickness,
       topThicknessMin: LID_TOP_THICKNESS_MIN_MM,
       topThicknessMax: LID_TOP_THICKNESS_MAX_MM,
       topThicknessStep: LID_TOP_THICKNESS_STEP_MM,
+      // On a tray lid the knob measures the floor under the recess, so the
+      // plate and the value differ by the recess depth. Null for every other
+      // lid, where the two are the same number and a breakdown says nothing.
+      trayBreakdown: resolveLidTrayBreakdown(params),
       // Magnetic lids get extra footprint clearance so the magnets aren't
       // fighting a friction fit; surfaced as a hint next to the mode. Derived
       // from the resolver rather than re-testing the predicate, so the hint

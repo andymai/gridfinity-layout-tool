@@ -163,6 +163,51 @@ describe('LidSection', () => {
     });
   });
 
+  // #3072: with a tray the field sets the floor under the recess, so the
+  // overall plate is a derived number the user never typed. Spelling out the
+  // arithmetic is what makes the knob legible.
+  describe('tray thickness breakdown (#3072)', () => {
+    function renderTrayLid(topThicknessMm: number) {
+      resetStore({
+        lid: {
+          ...DEFAULT_BIN_PARAMS.lid,
+          enabled: true,
+          stackableTop: false,
+          tray: { enabled: true, depthMm: 4, wallMm: 2 },
+          topThicknessMm,
+        },
+      });
+      render(<LidSection />);
+      fireEvent.click(screen.getByRole('button', { name: 'Advanced' }));
+    }
+
+    it('breaks the plate into recess, floor and overall', () => {
+      renderTrayLid(2.4);
+      expect(screen.getByText('Tray recess depth')).toBeInTheDocument();
+      expect(screen.getByText('Remaining tray floor')).toBeInTheDocument();
+      expect(screen.getByText('Overall lid thickness')).toBeInTheDocument();
+      expect(screen.getByText('4.0 mm')).toBeInTheDocument();
+      expect(screen.getByText('2.4 mm')).toBeInTheDocument();
+      expect(screen.getByText('6.4 mm')).toBeInTheDocument();
+    });
+
+    it('relabels the field as the tray floor it actually sets', () => {
+      renderTrayLid(2.4);
+      expect(
+        screen.getByRole('spinbutton', {
+          name: 'Material left under the tray recess, in millimeters',
+        })
+      ).toBeInTheDocument();
+    });
+
+    it('shows no breakdown on a lid without a tray', () => {
+      resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } });
+      render(<LidSection />);
+      fireEvent.click(screen.getByRole('button', { name: 'Advanced' }));
+      expect(screen.queryByText('Overall lid thickness')).not.toBeInTheDocument();
+    });
+  });
+
   describe('magnetic fit relief (#2761)', () => {
     it('explains the extra clearance in magnetic mode', () => {
       resetStore({
@@ -494,7 +539,7 @@ describe('LidSection', () => {
         surfaceText: { lidText: 'Cables' },
       });
       render(<LidSection />);
-      expect(screen.getByText(/tray floor/)).toBeInTheDocument();
+      expect(screen.getByText(/Text is placed on the tray floor/)).toBeInTheDocument();
     });
   });
 

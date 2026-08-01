@@ -80,7 +80,9 @@ describe('resolveLidInputs', () => {
     expect(inputs.topThickness).toBeCloseTo(3.1, 4);
   });
 
-  it('keeps the tray floor requirement when it exceeds the user thickness', () => {
+  // With a tray the knob measures the floor UNDER the recess, so the plate is
+  // recess + floor rather than the larger of the two (#3072).
+  it('stacks the tray recess on top of the minimum floor', () => {
     const inputs = resolveLidInputs(
       makeParams({
         enabled: true,
@@ -89,7 +91,20 @@ describe('resolveLidInputs', () => {
         topThicknessMm: 1.2,
       })
     );
-    expect(inputs.topThickness).toBeCloseTo(4.8, 4);
+    // 1.2 is below the 1.6mm minimum floor, so the floor wins: 4 + 1.6.
+    expect(inputs.topThickness).toBeCloseTo(5.6, 4);
+  });
+
+  it('grows the plate with the requested tray floor', () => {
+    const inputs = resolveLidInputs(
+      makeParams({
+        enabled: true,
+        stackableTop: false,
+        tray: { enabled: true, depthMm: 4, wallMm: 2 },
+        topThicknessMm: 3,
+      })
+    );
+    expect(inputs.topThickness).toBeCloseTo(7, 4);
   });
 
   it('gives a magnetic lid extra footprint clearance without moving the seated plane', () => {

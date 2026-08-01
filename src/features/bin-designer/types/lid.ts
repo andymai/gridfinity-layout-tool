@@ -91,9 +91,15 @@ export const LID_TOP_THICKNESS_STEP_MM = 0.2;
  *  through to the cavity face. */
 export const LID_MAGNET_CEILING = 0.6;
 
-/** Minimum solid floor kept below a tray recess (mm) so the recess can't
- *  break through into the mating cavity. */
-export const LID_TRAY_FLOOR = 0.8;
+/**
+ * Minimum solid floor kept below a tray recess (mm) so the recess can't break
+ * through into the mating cavity, and the default that floor sits at.
+ *
+ * 1.6mm is eight layers at 0.2 — a tray holds things, so its floor is a load
+ * path, not a bridge to close over. The original 0.8mm matched the plain-lid
+ * plate and printed as a floor people described as extremely thin (#3072).
+ */
+export const LID_TRAY_FLOOR = 1.6;
 
 /** Minimum rail length (mm) below which the worker drops the rail. */
 export const LID_MIN_RAIL_LENGTH = 4;
@@ -208,19 +214,55 @@ export interface LidTrayConfig {
 }
 
 /**
- * Effective floor-plate thickness (mm) — the largest of the four competing
- * demands. A FLOOR, never a cap, so no combination of settings can punch a
- * magnet pocket into the cavity or break through a tray recess.
+ * Effective floor-plate thickness (mm) — a FLOOR, never a cap, so no
+ * combination of settings can punch a magnet pocket into the cavity or break
+ * through a tray recess.
  *
  * The single source of truth: the worker, the preview, the thumbnail, and the
  * export assembly all size and position the lid from this.
+ *
+ * `topThicknessMm` measures a different surface depending on whether a tray is
+ * cut into the top. Without one it is the whole plate. With one it is the
+ * material left UNDER the recess — the dimension a user actually cares about,
+ * since that is the tray's own floor. Treating it as the whole plate made the
+ * knob inert: `max(plate, recess + floor)` pinned a default 4mm tray at 4.8mm,
+ * so every value below that changed nothing visible and the floor was always
+ * the bare minimum (#3072).
  */
 export function resolveLidPlateThickness(params: LidGeometrySource): number {
   const { lid, base } = params;
+  if (lid.tray.enabled && !lid.stackableTop) {
+    // A tray forces `stackableTop` off, so magnet pockets can't also apply.
+    return Math.max(
+      LID_TOP_THICKNESS_BASE,
+      lid.tray.depthMm + Math.max(lid.topThicknessMm, LID_TRAY_FLOOR)
+    );
+  }
   const magnetNeed =
     lid.magnetHoles && lid.stackableTop ? base.magnetDepth + LID_MAGNET_CEILING : 0;
-  const trayNeed = lid.tray.enabled && !lid.stackableTop ? lid.tray.depthMm + LID_TRAY_FLOOR : 0;
-  return Math.max(LID_TOP_THICKNESS_BASE, lid.topThicknessMm, magnetNeed, trayNeed);
+  return Math.max(LID_TOP_THICKNESS_BASE, lid.topThicknessMm, magnetNeed);
+}
+
+/**
+ * The thickness breakdown a tray lid's UI reports: what the user set, what the
+ * recess takes, and what the plate ends up at. Derived from the same resolver
+ * the geometry uses so the readout can't drift from the printed part.
+ */
+export function resolveLidTrayBreakdown(params: LidGeometrySource): {
+  /** Solid material left below the recess. */
+  readonly floorMm: number;
+  /** Depth of the recess cut into the top face. */
+  readonly recessMm: number;
+  /** Total plate thickness — floor plus recess. */
+  readonly overallMm: number;
+} | null {
+  if (!params.lid.tray.enabled || params.lid.stackableTop) return null;
+  const overallMm = resolveLidPlateThickness(params);
+  return {
+    floorMm: overallMm - params.lid.tray.depthMm,
+    recessMm: params.lid.tray.depthMm,
+    overallMm,
+  };
 }
 
 /**
