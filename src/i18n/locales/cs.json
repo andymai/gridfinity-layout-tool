@@ -155,6 +155,8 @@
   "baseplate.maxPrintHeightTooltip": "Maximální výška Z tvé tiskárny. Stohový tisk se vejde do každého stohu tolik základních desek, kolik toto umožní.",
   "baseplate.nozzleSizeTooltip": "Průměr trysky tvé tiskárny. Klíče spojek a zaklapávací klipy se tomu přizpůsobí, aby zůstaly tisknutelné na širších tryskách. Při 0,4 mm je geometrie beze změny.",
   "baseplate.overTile": "Vyplnit odsazení dlaždicemi mřížky",
+  "baseplate.wholeCellsOnly": "Vkládat jen celé buňky",
+  "baseplate.wholeCellsOnlyHint": "Vynechá každé lůžko, které tvar protíná, takže deska končí pevnou hranou místo rozříznutého lůžka.",
   "baseplate.overTileFills": "Mřížka vyplní: {sides}",
   "baseplate.overTileHint": "Nahraď plný okraj odsazení oříznutými dlaždicemi mřížky, hranu po hraně.",
   "baseplate.overTileKeptSolid": "Příliš malé, ponecháno plné: {sides}",

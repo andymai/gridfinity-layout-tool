@@ -163,6 +163,39 @@ describe('baseplate outline geometry', () => {
     expect(countVerticesIn(result.vertices, -84, -84, 0, 0)).toBeGreaterThan(0);
   });
 
+  // #3054: a cell the outline crosses keeps a socket sliced open along the cut,
+  // which holds nothing and leaves the boundary unfinished. Whole-cell fitting
+  // drops those cells so the solid plate carries the edge instead.
+  it('drops sockets the outline crosses when fitting whole cells', { timeout: 240_000 }, () => {
+    const gen = getGenerateBaseplate();
+    const trimmed = gen(defaults({ outline: CHAMFER }), NO_OP, true);
+    const whole = gen(defaults({ outline: CHAMFER, wholeCellsOnly: true }), NO_OP, true);
+    assertStructurallyValid(whole, 'chamfer whole-cells');
+
+    // The diagonal runs from plate-local (4u, 2u) to (2u, 4u), crossing the two
+    // cells either side of the corner. In the mesh frame that corner cell spans
+    // roughly [42,84]×[0,42]; trimming leaves a sliced pocket there, whole-cell
+    // fitting leaves solid plate.
+    const slicedRegion = [44, 2, 82, 40] as const;
+    expect(countVerticesIn(trimmed.vertices, ...slicedRegion)).toBeGreaterThan(0);
+    expect(countVerticesIn(whole.vertices, ...slicedRegion)).toBe(0);
+
+    // Cells fully inside keep their sockets, and the plate keeps its extent —
+    // this drops sockets, it does not shrink the plate.
+    expect(countVerticesIn(whole.vertices, -84, -84, -44, -44)).toBeGreaterThan(0);
+    const bb = boundingBox(whole.vertices);
+    expect(bb.maxX - bb.minX).toBeCloseTo(4 * U, 0);
+  });
+
+  it('leaves a rectangular plate untouched when fitting whole cells', { timeout: 240_000 }, () => {
+    // No outline means no crossed cell, so the flag must be inert rather than
+    // quietly changing every rectangular plate.
+    const gen = getGenerateBaseplate();
+    const plain = gen(defaults(), NO_OP, true);
+    const flagged = gen(defaults({ wholeCellsOnly: true }), NO_OP, true);
+    expect(flagged.triangleCount).toBe(plain.triangleCount);
+  });
+
   it('follows a curved back edge', { timeout: 240_000 }, () => {
     const gen = getGenerateBaseplate();
     const result = gen(defaults({ outline: CURVED_BACK }), NO_OP, true);

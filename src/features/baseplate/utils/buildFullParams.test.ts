@@ -447,6 +447,33 @@ describe('drawer outline handling', () => {
     ],
   };
 
+  // #3054: the flag only has meaning against a perimeter, so an orphaned one
+  // must not fragment caches or trigger a regeneration on a plain rectangle.
+  it('forwards wholeCellsOnly only when there is an outline', () => {
+    const shaped = buildFullParams(
+      { ...storedBase, wholeCellsOnly: true },
+      10,
+      8,
+      42,
+      'end',
+      'end',
+      undefined,
+      outline
+    );
+    expect(shaped.wholeCellsOnly).toBe(true);
+
+    const rectangular = buildFullParams(
+      { ...storedBase, wholeCellsOnly: true },
+      10,
+      8,
+      42,
+      'end',
+      'end'
+    );
+    expect(rectangular.outline).toBeUndefined();
+    expect(rectangular.wholeCellsOnly).toBeUndefined();
+  });
+
   it('composes padding into a rectilinear shape and zeroes the subsumed params', () => {
     const stored = {
       ...storedBase,

@@ -102,6 +102,13 @@ export function DimensionsSection() {
   }, []);
   const leftoverMode: LeftoverMode =
     halfGridOn && baseplateParams.overTileHalfGridSolidLeftover === true ? 'solid' : 'grid';
+  // Whole-cell fitting (#3054). Stored undefined (not false) for the default so
+  // identical geometry keeps one serialized/cache identity, matching the flags
+  // above. Gated on an outline: a rectangle has no crossed cell to drop.
+  const wholeCellsOn = baseplateParams.wholeCellsOnly === true;
+  const setWholeCells = useCallback((checked: boolean) => {
+    updateParam('wholeCellsOnly', checked ? true : undefined);
+  }, []);
   const setLeftoverMode = useCallback((mode: LeftoverMode) => {
     // Store undefined (not false) for the default Grid so identical geometry
     // keeps one serialized/cache identity — matches overTileHalfGrid above.
@@ -334,6 +341,18 @@ export function DimensionsSection() {
                   : 'baseplate.shapedPaddingTooLarge'
               )}
             </p>
+          )}
+          {outlineActive && (
+            <div className="space-y-1">
+              <CheckboxRow
+                label={t('baseplate.wholeCellsOnly')}
+                checked={wholeCellsOn}
+                onChange={setWholeCells}
+              />
+              <p className="text-[11px] leading-relaxed text-content-tertiary">
+                {t('baseplate.wholeCellsOnlyHint')}
+              </p>
+            </div>
           )}
           <PaddingSchematic
             baseplateParams={baseplateParams}

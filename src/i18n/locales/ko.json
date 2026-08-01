@@ -155,6 +155,8 @@
   "baseplate.maxPrintHeightTooltip": "프린터의 최대 Z 높이입니다. 적층 인쇄는 이 높이가 허용하는 한 최대한 많은 베이스플레이트를 한 적층에 넣습니다.",
   "baseplate.nozzleSizeTooltip": "프린터 노즐 지름입니다. 커넥터 키와 스냅 클립이 이에 맞춰져 넓은 노즐에서도 인쇄됩니다. 0.4mm에서는 형상이 변하지 않습니다.",
   "baseplate.overTile": "여백을 그리드 타일로 채우기",
+  "baseplate.wholeCellsOnly": "완전한 셀만 배치",
+  "baseplate.wholeCellsOnlyHint": "형상이 가로지르는 소켓을 제거해 잘린 소켓 대신 solid 가장자리로 플레이트가 끝나도록 합니다.",
   "baseplate.overTileFills": "그리드 채움: {sides}",
   "baseplate.overTileHint": "솔리드 여백을 가장자리마다 잘린 그리드 타일로 대체합니다.",
   "baseplate.overTileKeptSolid": "너무 작아 솔리드 유지: {sides}",

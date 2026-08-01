@@ -211,3 +211,27 @@ describe('cache keys with outlines (issue #2528)', () => {
     expect(slabPocketsCacheKey(base(), true, 'abc123')).toBe(maskAKey);
   });
 });
+
+describe('meshCacheKey — whole-cell fitting (issue #3054)', () => {
+  const SHAPE = {
+    vertices: [
+      { x: 0, y: 0 },
+      { x: 168, y: 0 },
+      { x: 168, y: 84 },
+      { x: 84, y: 168 },
+      { x: 0, y: 168 },
+    ],
+  };
+
+  it('separates a shaped plate that drops crossed sockets from one that slices them', () => {
+    const trimmed = meshCacheKey(base({ outline: SHAPE }), false);
+    const whole = meshCacheKey(base({ outline: SHAPE, wholeCellsOnly: true }), false);
+    expect(whole).not.toBe(trimmed);
+  });
+
+  it('keeps a rectangular plate on its existing key, since no cell is crossed', () => {
+    const plain = meshCacheKey(base(), false);
+    const flagged = meshCacheKey(base({ wholeCellsOnly: true }), false);
+    expect(flagged).toBe(plain);
+  });
+});

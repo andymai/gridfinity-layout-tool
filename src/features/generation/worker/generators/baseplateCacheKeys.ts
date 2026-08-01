@@ -108,6 +108,9 @@ export function meshCacheKey(
     params.overTile === true && params.overTileHalfGrid === true
       ? (params.overTileHalfGridSolidLeftover ?? false)
       : false,
+    // Only meaningful with an outline: a rectangular plate has no crossed cell
+    // to drop, so folding it out keeps every existing rectangle's cache identity.
+    params.outline !== undefined ? (params.wholeCellsOnly ?? false) : false,
     params.edges?.left ?? '',
     params.edges?.right ?? '',
     params.edges?.front ?? '',

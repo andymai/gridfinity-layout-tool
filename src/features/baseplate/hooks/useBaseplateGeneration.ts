@@ -199,6 +199,7 @@ export function selectGenerationTriggers(state: LayoutStoreState) {
       bp.overTile === true && bp.overTileHalfGrid === true
         ? (bp.overTileHalfGridSolidLeftover ?? false)
         : false,
+    wholeCellsOnly: bp.wholeCellsOnly ?? false,
     magnetHoles: bp.magnetHoles,
     magnetDiameter: bp.magnetDiameter,
     magnetDepth: bp.magnetDepth,

@@ -39,6 +39,7 @@ const ALLOWED_PARAM_KEYS = new Set<string>([
   'overTile',
   'overTileHalfGrid',
   'overTileHalfGridSolidLeftover',
+  'wholeCellsOnly',
   'connectorNubs',
   'lightweight',
   'solidFloor',

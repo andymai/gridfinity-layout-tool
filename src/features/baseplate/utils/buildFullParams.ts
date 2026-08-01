@@ -247,6 +247,10 @@ export function buildFullParams(
       stored.overTile === true && stored.overTileHalfGrid === true
         ? stored.overTileHalfGridSolidLeftover
         : undefined,
+    // Whole-cell fitting only has meaning against a perimeter — a rectangle has
+    // no crossed cell to drop. Same normalization contract as the flags above,
+    // so an orphaned flag can't fragment caches or force a regeneration.
+    wholeCellsOnly: outline !== undefined ? stored.wholeCellsOnly : undefined,
     connectorNubs: stripConnectors ? false : stored.connectorNubs,
     invertDovetails: stored.invertDovetails,
     preferIdenticalPieces: stored.preferIdenticalPieces,

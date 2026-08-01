@@ -332,10 +332,16 @@ export function buildBaseplateSolid(
   // as MIN_PRINTABLE_TILE_MM, expressed as an area fraction. Applies to
   // nominal cells and over-tile margin tiles alike, so a large corner arc
   // trims sockets progressively instead of deleting whole corner cells.
+  const wholeCellsOnly = params.wholeCellsOnly ?? false;
   const pocketDecision = (cell: CellInfo): 'full' | 'clipped' | 'none' => {
     const cls = classifyCell(cell);
     if (cls === 'inside') return 'full';
     if (cls === 'outside') return 'none';
+    // Whole-cell fitting (#3054): only cells entirely inside the perimeter get
+    // a socket. A crossed cell is dropped so the solid plate fills the margin,
+    // which is what gives the boundary a finished edge instead of a socket
+    // sliced open along the outline.
+    if (wholeCellsOnly) return 'none';
     const w = cell.widthUnits * gridUnitMm;
     const d = cell.depthUnits * gridUnitMmY;
     const x0 = cell.centerX - w / 2 + totalW / 2 - slabOffsetX;

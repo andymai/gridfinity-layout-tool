@@ -155,6 +155,8 @@
   "baseplate.maxPrintHeightTooltip": "Die maximale Z-Höhe deines Druckers. Der Stapeldruck passt so viele Grundplatten pro Stapel ein, wie das zulässt.",
   "baseplate.nozzleSizeTooltip": "Düsendurchmesser deines Druckers. Schwalbenschwanz-Keile und Schnappclips skalieren damit, damit sie auf breiteren Düsen druckbar bleiben. Bei 0,4 mm bleibt die Geometrie unverändert.",
   "baseplate.overTile": "Polsterung mit Rasterkacheln füllen",
+  "baseplate.wholeCellsOnly": "Nur ganze Zellen einpassen",
+  "baseplate.wholeCellsOnlyHint": "Lässt jede vom Umriss durchschnittene Aufnahme weg, damit die Platte mit einer massiven Kante endet statt mit einer angeschnittenen Aufnahme.",
   "baseplate.overTileFills": "Raster füllt: {sides}",
   "baseplate.overTileHint": "Ersetzt den massiven Polsterrand kantenweise durch zugeschnittene Rasterkacheln.",
   "baseplate.overTileKeptSolid": "Zu klein, bleibt massiv: {sides}",
