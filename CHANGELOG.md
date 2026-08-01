@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.339.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.338.1...gridfinity-layout-tool-v4.339.0) (2026-08-01)
+
+
+### Features
+
+* **baseplate:** fit whole cells to a custom perimeter ([#3064](https://github.com/andymai/gridfinity-layout-tool/issues/3064)) ([c9c3751](https://github.com/andymai/gridfinity-layout-tool/commit/c9c3751f308f6eaa78e52f806ad2fb15018a67f1))
+
 ## [4.338.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.338.0...gridfinity-layout-tool-v4.338.1) (2026-08-01)
 
 
