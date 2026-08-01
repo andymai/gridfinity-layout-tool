@@ -11,7 +11,7 @@
  */
 
 import { useCallback, useRef, useState, type ReactNode } from 'react';
-import { Button, IconButton } from '@/design-system';
+import { IconButton, Tabs } from '@/design-system';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
@@ -67,7 +67,7 @@ function Icon({ paths }: { readonly paths: readonly string[] }) {
 
 type DockTab = 'properties' | 'shapes';
 
-/** Tab ids (not user-facing copy — labels come from the i18n keys below). */
+/** Tab ids (not user-facing copy — labels come from these i18n keys). */
 const DOCK_TABS: readonly { readonly id: DockTab; readonly labelKey: string }[] = [
   { id: 'properties', labelKey: 'binDesigner.shapeList.tabProperties' },
   { id: 'shapes', labelKey: 'binDesigner.shapeList.tabShapes' },
@@ -235,46 +235,42 @@ export function InspectorDock({
         </div>
       </div>
 
-      {/* Tab strip — only when there is a shape list to switch to. */}
-      {shapeList && (
+      {/* Body. With a shape list present the dock becomes tabbed; the design
+          system's Tabs owns the full ARIA pattern (tab/panel ids, roving
+          tabIndex, arrow-key navigation) so this doesn't hand-roll a partial
+          one. */}
+      {shapeList ? (
+        <Tabs.Root>
+          <div className="flex-shrink-0 border-b border-stroke-subtle px-2 pb-1">
+            <Tabs.List
+              tabs={DOCK_TABS.map(({ id, labelKey }) => ({ id, label: t(labelKey) }))}
+              activeTab={tab}
+              onChange={setTab}
+              aria-label={t('binDesigner.cutoutEditor.inspectorTitle')}
+            />
+          </div>
+          <div
+            onScroll={handleScroll}
+            className="flex min-h-0 flex-1 flex-col overflow-y-auto scrollbar-thin pt-0 pb-3"
+          >
+            <Tabs.Panel tabId="properties" activeTab={tab}>
+              <div className="px-4">
+                <InspectorContent {...content} board={board} />
+              </div>
+            </Tabs.Panel>
+            <Tabs.Panel tabId="shapes" activeTab={tab}>
+              {shapeList}
+            </Tabs.Panel>
+          </div>
+        </Tabs.Root>
+      ) : (
         <div
-          className="flex flex-shrink-0 gap-1 border-b border-stroke-subtle px-2 pb-1"
-          role="tablist"
+          onScroll={handleScroll}
+          className="flex min-h-0 flex-1 flex-col overflow-y-auto scrollbar-thin px-4 pt-0 pb-3"
         >
-          {DOCK_TABS.map(({ id, labelKey }) => (
-            <Button
-              key={id}
-              type="button"
-              variant="ghost"
-              role="tab"
-              aria-selected={tab === id}
-              onClick={() => setTab(id)}
-              className={`flex-1 rounded px-2 py-1 text-[11px] ${
-                tab === id
-                  ? 'bg-surface text-content'
-                  : 'text-content-tertiary hover:text-content-secondary'
-              }`}
-            >
-              {t(labelKey)}
-            </Button>
-          ))}
+          <InspectorContent {...content} board={board} />
         </div>
       )}
-
-      {/* Scrollable body */}
-      <div
-        onScroll={handleScroll}
-        className={`flex min-h-0 flex-1 flex-col overflow-y-auto scrollbar-thin pt-0 pb-3 ${
-          tab === 'shapes' && shapeList ? 'px-0' : 'px-4'
-        }`}
-        role={shapeList ? 'tabpanel' : undefined}
-      >
-        {tab === 'shapes' && shapeList ? (
-          shapeList
-        ) : (
-          <InspectorContent {...content} board={board} />
-        )}
-      </div>
     </aside>
   );
 }

@@ -33,6 +33,8 @@ interface ShapeListRowProps {
   readonly onToggleHidden: (ids: readonly string[], hidden: boolean) => void;
   readonly onRename: (id: string, name: string) => void;
   readonly onDragStart: (node: ShapeListNode) => void;
+  /** Report which half of the row the pointer is over, for the drop hint. */
+  readonly onDragOverKind: (node: ShapeListNode, kind: DropKind) => void;
   readonly onDrop: (node: ShapeListNode, kind: DropKind) => void;
   readonly onDragEnd: () => void;
   /** Highlight state driven by the parent while a drag is in flight. */
@@ -79,6 +81,7 @@ export function ShapeListRow({
   onToggleHidden,
   onRename,
   onDragStart,
+  onDragOverKind,
   onDrop,
   onDragEnd,
   dropHint,
@@ -124,10 +127,14 @@ export function ShapeListRow({
     <div className="relative" onDragEnd={onDragEnd}>
       {/* Reorder strip: a drop here places the dragged rows above this one. */}
       <div
-        className={`absolute inset-x-0 -top-0.5 z-10 h-1.5 ${
-          dropHint === 'above' ? 'bg-accent' : ''
+        className={`absolute inset-x-0 -top-1 z-10 h-2 ${
+          dropHint === 'above' ? 'border-t-2 border-accent' : ''
         }`}
-        onDragOver={allowDrop}
+        onDragOver={(e) => {
+          allowDrop(e);
+          e.stopPropagation();
+          onDragOverKind(node, 'above');
+        }}
         onDrop={(e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -136,8 +143,18 @@ export function ShapeListRow({
       />
       <div
         draggable
-        onDragStart={() => onDragStart(node)}
-        onDragOver={allowDrop}
+        onDragStart={(e) => {
+          // Firefox refuses to start an HTML5 drag unless dataTransfer carries
+          // something; without this the whole reorder/reparent interaction is
+          // dead there while working fine in Chromium.
+          e.dataTransfer.setData('text/plain', node.id);
+          e.dataTransfer.effectAllowed = 'move';
+          onDragStart(node);
+        }}
+        onDragOver={(e) => {
+          allowDrop(e);
+          onDragOverKind(node, 'into');
+        }}
         onDrop={(e) => {
           e.preventDefault();
           onDrop(node, 'into');

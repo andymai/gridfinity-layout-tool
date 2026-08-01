@@ -219,7 +219,10 @@ export interface PathPoint {
 /** Direction for z-order reordering of cutouts */
 export type ReorderDirection = 'forward' | 'backward' | 'front' | 'back';
 
-/** Narrowed property subset for bulk cutout toggling (lock/hide) */
+/**
+ * The per-cutout editor properties the shape list and context menu toggle:
+ * lock, hide, and the display name. All are set through `setCutoutProperty`.
+ */
 export type CutoutToggleProperties = Partial<Pick<Cutout, 'locked' | 'hidden' | 'name'>>;
 
 /** Global cutout configuration for solid bins */

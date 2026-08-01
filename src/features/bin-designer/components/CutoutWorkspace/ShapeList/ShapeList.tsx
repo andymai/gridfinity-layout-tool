@@ -136,6 +136,9 @@ export function ShapeList({
       onRename: (id: string, name: string) =>
         onSetProperty([id], { name: name === '' ? undefined : name }),
       onDragStart: handleDragStart,
+      onDragOverKind: (n: ShapeListNode, kind: DropKind) => {
+        setHover((h) => (h?.id === n.id && h.kind === kind ? h : { id: n.id, kind }));
+      },
       onDrop: handleDrop,
       onDragEnd: handleDragEnd,
       dropHint: hover?.id === node.id ? hover.kind : null,
@@ -170,27 +173,12 @@ export function ShapeList({
         {t('binDesigner.shapeList.countLabel', { count: String(cutouts.length) })}
       </div>
       {nodes.map((node) => (
-        <div
-          key={node.id}
-          onDragOver={(e) => {
-            e.preventDefault();
-            if (hover?.id !== node.id || hover.kind !== 'into') {
-              setHover({ id: node.id, kind: 'into' });
-            }
-          }}
-          onDragLeave={() => setHover((h) => (h?.id === node.id ? null : h))}
-        >
+        <div key={node.id} onDragLeave={() => setHover((h) => (h?.id === node.id ? null : h))}>
           <ShapeListRow {...rowProps(node)} />
           {node.kind === 'group' && !collapsed.has(node.id) && (
             <div className="flex flex-col gap-px">
               {node.members.map((member) => (
-                <div
-                  key={member.id}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                  }}
-                >
+                <div key={member.id}>
                   <ShapeListRow {...rowProps(member)} />
                 </div>
               ))}
