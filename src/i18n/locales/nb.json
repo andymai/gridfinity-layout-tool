@@ -1702,7 +1702,7 @@
   "drawerShape.editor.title": "Skuffeform",
   "drawerShape.penOpen": "Tegn form…",
   "drawerShape.penTitle": "Tegn skuffeformen",
-  "drawerShape.penHint": "Dra et hjørne for å flytte det, hold Shift for å holde det i vinkel. Dra håndtaket på en kant for å bue den. Dobbeltklikk en kant for å legge til et hjørne. Rull for å zoome, dra bakgrunnen for å panorere.",
+  "drawerShape.penHint": "Dra et hjørne for å flytte det, hold Shift for å holde det i vinkel. Shift-klikk eller dra en ramme for å velge flere. Dra et kanthåndtak for å bue, dobbeltklikk for å legge til et hjørne. Rull for å zoome, Alt-dra eller Mellomrom for å panorere.",
   "drawerShape.penCanvas": "Skuffekontur",
   "drawerShape.penSnap": "Fest",
   "drawerShape.penResetView": "Tilbakestill visning",

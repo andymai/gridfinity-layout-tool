@@ -19,6 +19,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { Button, Dialog, SegmentedControl, Stepper } from '@/design-system';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
+import { PenCanvas } from './PenCanvas';
 import { usePenSketch } from './usePenSketch';
 import { usePenView, VIEW_PAD_MM } from './usePenView';
 import { useLayoutStore, useToastStore } from '@/core/store';
@@ -31,12 +32,14 @@ import { filletOutline } from '@/shared/utils/filletOutline';
 import {
   bulgeThroughPoint,
   clampToDrawer,
+  alignmentGuides,
   hitSegmentMidpoint,
   hitVertex,
   insertVertex,
   moveVertex,
+  moveVertices,
+  verticesInRect,
   rectangleSketch,
-  segmentHandle,
   setBulge,
   sketchPathD,
   sketchToOutline,
@@ -60,7 +63,13 @@ type Drag =
       readonly from: { readonly x: number; readonly y: number };
     }
   | { readonly kind: 'bulge'; readonly index: number }
-  | { readonly kind: 'pan'; readonly last: { x: number; y: number } };
+  | { readonly kind: 'pan'; readonly last: { x: number; y: number } }
+  | {
+      readonly kind: 'marquee';
+      readonly from: { x: number; y: number };
+      to: { x: number; y: number };
+      readonly add: boolean;
+    };
 
 export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
   const t = useTranslation();
@@ -93,6 +102,14 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
   // Divided by the zoom so the grab area matches the drawn handle at any zoom.
   const hitR = hitRadiusMm(widthMm, depthMm) / view.zoom;
   const { verts, selected, setSelected } = sketch;
+  const [marquee, setMarquee] = useState<{ x0: number; y0: number; x1: number; y1: number } | null>(
+    null
+  );
+  const [guides, setGuides] = useState<{ x: number | null; y: number | null }>({
+    x: null,
+    y: null,
+  });
+  const spaceRef = useRef(false);
   const nudgeBounds = useMemo(
     () => ({ widthMm, depthMm, pitchX: layout.gridUnitMm, pitchY: gridUnitMmY, snap }),
     [widthMm, depthMm, layout.gridUnitMm, gridUnitMmY, snap]
@@ -139,37 +156,46 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
     (e: ReactPointerEvent<SVGSVGElement>) => {
       const p = toMm(e);
       if (p === null) return;
+      e.currentTarget.setPointerCapture(e.pointerId);
+
+      // Pan is an explicit gesture (space, middle button or Alt), leaving a
+      // plain background drag free for the marquee — the Figma mapping.
+      if (spaceRef.current || e.button === 1 || e.altKey) {
+        dragRef.current = { kind: 'pan', last: { x: e.clientX, y: e.clientY } };
+        return;
+      }
+
       // Vertices win ties with segment handles: on a short segment the two
       // overlap, and moving a corner is the more common intent.
       const v = hitVertex(verts, p.x, p.y, hitR);
       if (v >= 0) {
+        if (e.shiftKey) sketch.toggleSelected(v);
+        else if (!selected.has(v)) setSelected([v]);
         dragRef.current = { kind: 'vertex', index: v, from: { x: verts[v].x, y: verts[v].y } };
-        setSelected(v);
         sketch.beginGesture();
-        e.currentTarget.setPointerCapture(e.pointerId);
         return;
       }
+
       const seg = hitSegmentMidpoint(verts, p.x, p.y, hitR);
       if (seg >= 0) {
         dragRef.current = { kind: 'bulge', index: seg };
-        setSelected(null);
+        setSelected([]);
         sketch.beginGesture();
-        e.currentTarget.setPointerCapture(e.pointerId);
         return;
       }
-      // Nothing under the pointer: drag the view. There is no marquee here, so
-      // empty space is free for the more useful gesture.
-      setSelected(null);
-      dragRef.current = { kind: 'pan', last: { x: e.clientX, y: e.clientY } };
-      e.currentTarget.setPointerCapture(e.pointerId);
+
+      if (!e.shiftKey) setSelected([]);
+      dragRef.current = { kind: 'marquee', from: p, to: p, add: e.shiftKey };
+      setMarquee({ x0: p.x, y0: p.y, x1: p.x, y1: p.y });
     },
-    [verts, toMm, hitR, setSelected, sketch]
+    [verts, toMm, hitR, setSelected, selected, sketch]
   );
 
   const handlePointerMove = useCallback(
     (e: ReactPointerEvent<SVGSVGElement>) => {
       const drag = dragRef.current;
       if (drag === null) return;
+
       if (drag.kind === 'pan') {
         const svg = svgRef.current;
         if (svg === null) return;
@@ -179,8 +205,16 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
         dragRef.current = { kind: 'pan', last: { x: e.clientX, y: e.clientY } };
         return;
       }
+
       const p = toMm(e);
       if (p === null) return;
+
+      if (drag.kind === 'marquee') {
+        drag.to = p;
+        setMarquee({ x0: drag.from.x, y0: drag.from.y, x1: p.x, y1: p.y });
+        return;
+      }
+
       if (drag.kind === 'vertex') {
         const s = snapPoint(p);
         // Shift locks to whichever axis has moved further from where the drag
@@ -191,21 +225,39 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
             : e.shiftKey
               ? { x: s.x, y: drag.from.y }
               : s;
-        sketch.preview(moveVertex(verts, drag.index, c.x, c.y));
-      } else {
-        // Bulge is a curvature, not a position, so it is never snapped.
-        const clamped = clampToDrawer(p.x, p.y, widthMm, depthMm);
-        sketch.preview(
-          setBulge(verts, drag.index, bulgeThroughPoint(verts, drag.index, clamped.x, clamped.y))
-        );
+        // Every selected corner travels together, so a whole edge can be moved
+        // by grabbing either end of it.
+        const moving = selected.has(drag.index) ? selected : new Set([drag.index]);
+        // Tolerance is in mm but should feel constant on screen, so it shrinks
+        // as the view zooms in.
+        const g = alignmentGuides(verts, moving, c, hitR);
+        setGuides({ x: g.x, y: g.y });
+        const dx = g.point.x - verts[drag.index].x;
+        const dy = g.point.y - verts[drag.index].y;
+        sketch.preview(moveVertices(verts, moving, dx, dy));
+        return;
       }
+
+      // Bulge is a curvature, not a position, so it is never snapped.
+      const clamped = clampToDrawer(p.x, p.y, widthMm, depthMm);
+      sketch.preview(
+        setBulge(verts, drag.index, bulgeThroughPoint(verts, drag.index, clamped.x, clamped.y))
+      );
     },
-    [toMm, snapPoint, verts, widthMm, depthMm, sketch, view]
+    [toMm, snapPoint, verts, widthMm, depthMm, sketch, view, selected, hitR]
   );
 
   const endDrag = useCallback(() => {
+    const drag = dragRef.current;
     dragRef.current = null;
-  }, []);
+    setGuides({ x: null, y: null });
+    setMarquee(null);
+    if (drag?.kind !== 'marquee') return;
+    const hit = verticesInRect(verts, drag.from.x, drag.from.y, drag.to.x, drag.to.y);
+    // A click that never moved is a deselect, which pointer-down already did.
+    if (hit.length === 0 && !drag.add) return;
+    setSelected(drag.add ? [...selected, ...hit] : hit);
+  }, [verts, selected, setSelected]);
 
   const handleWheel = useCallback(
     (e: React.WheelEvent<SVGSVGElement>) => {
@@ -225,7 +277,7 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
       const seg = hitSegmentMidpoint(verts, p.x, p.y, hitR * 2);
       if (seg >= 0) {
         sketch.commit(insertVertex(verts, seg));
-        setSelected(seg + 1);
+        setSelected([seg + 1]);
       }
     },
     [verts, toMm, hitR, setSelected, sketch]
@@ -246,13 +298,26 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<SVGSVGElement>) => {
       const key = e.key;
+      if (key === ' ') {
+        // Held space turns a background drag into a pan, as it does everywhere
+        // else that has both a marquee and a pan on the same button.
+        spaceRef.current = true;
+        e.preventDefault();
+        return;
+      }
       if ((e.ctrlKey || e.metaKey) && key.toLowerCase() === 'z') {
         e.preventDefault();
         sketch.undo();
         return;
       }
       if (key === 'Escape') {
-        setSelected(null);
+        setSelected([]);
+        return;
+      }
+      // Select every corner, the usual companion to a marquee.
+      if ((e.ctrlKey || e.metaKey) && key.toLowerCase() === 'a') {
+        e.preventDefault();
+        setSelected(verts.map((_, i) => i));
         return;
       }
       if (key === 'Delete' || key === 'Backspace') {
@@ -276,23 +341,26 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
       e.preventDefault();
       sketch.nudge(delta[0], delta[1], nudgeBounds);
     },
-    [sketch, setSelected, nudgeBounds]
+    [sketch, setSelected, nudgeBounds, verts]
   );
+
+  /** The one selected corner, or null when the selection is empty or multiple. */
+  const lone = selected.size === 1 ? [...selected][0] : null;
 
   /** Type an exact coordinate for the selected corner. */
   const setSelectedCoord = useCallback(
     (axis: 'x' | 'y', value: number) => {
-      if (selected === null) return;
-      const v = verts[selected];
+      if (lone === null) return;
+      const v = verts[lone];
       const p = clampToDrawer(
         axis === 'x' ? value : v.x,
         axis === 'y' ? value : v.y,
         widthMm,
         depthMm
       );
-      sketch.commit(moveVertex(verts, selected, p.x, p.y));
+      sketch.commit(moveVertex(verts, lone, p.x, p.y));
     },
-    [selected, verts, widthMm, depthMm, sketch]
+    [lone, verts, widthMm, depthMm, sketch]
   );
 
   const handleReset = useCallback(() => {
@@ -323,8 +391,6 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
 
   if (!open) return null;
 
-  const vw = widthMm + VIEW_PAD_MM * 2;
-  const vh = depthMm + VIEW_PAD_MM * 2;
   // Drawn in mm, so divide by the zoom to keep handles a constant size on
   // screen — otherwise zooming in inflates them until they cover the shape.
   const handleR = baseHandleR / view.zoom;
@@ -337,68 +403,30 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
           <p className="text-xs text-content-tertiary">{t('drawerShape.penHint')}</p>
 
           <div className="rounded-md border border-stroke-subtle bg-surface-secondary p-2">
-            <svg
-              ref={svgRef}
+            <PenCanvas
+              svgRef={svgRef}
+              verts={verts}
+              selected={selected}
+              pathD={outline !== null ? sketchPathD(outline.vertices) : sketchPathD(verts)}
+              widthMm={widthMm}
+              depthMm={depthMm}
               viewBox={view.viewBox}
-              className="h-auto w-full cursor-crosshair touch-none select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-              style={{ aspectRatio: `${vw} / ${vh}` }}
+              padMm={VIEW_PAD_MM}
+              handleR={handleR}
+              valid={error === null}
+              guides={guides}
+              marquee={marquee}
+              ariaLabel={t('drawerShape.penCanvas')}
               onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
-              onPointerUp={endDrag}
-              onPointerCancel={endDrag}
-              onWheel={handleWheel}
+              onPointerEnd={endDrag}
               onDoubleClick={handleDoubleClick}
               onKeyDown={handleKeyDown}
-              tabIndex={0}
-              role="application"
-              aria-label={t('drawerShape.penCanvas')}
-            >
-              {/* Y-up data in a Y-down viewport: flip once here so the canvas
-                reads like the layout grid without touching stored coordinates. */}
-              <g transform={`translate(${VIEW_PAD_MM} ${depthMm + VIEW_PAD_MM}) scale(1 -1)`}>
-                <rect
-                  x={0}
-                  y={0}
-                  width={widthMm}
-                  height={depthMm}
-                  className="fill-surface stroke-stroke-subtle"
-                  strokeWidth={handleR / 3}
-                />
-                <path
-                  d={outline !== null ? sketchPathD(outline.vertices) : sketchPathD(verts)}
-                  className={
-                    error === null ? 'fill-accent/15 stroke-accent' : 'fill-error/10 stroke-error'
-                  }
-                  strokeWidth={handleR / 2}
-                  strokeLinejoin="round"
-                />
-                {verts.map((_, i) => {
-                  const h = segmentHandle(verts, i);
-                  return (
-                    <circle
-                      key={`seg-${i}`}
-                      cx={h.x}
-                      cy={h.y}
-                      r={handleR * 0.6}
-                      className="cursor-grab fill-surface-elevated stroke-content-tertiary"
-                      strokeWidth={handleR / 4}
-                    />
-                  );
-                })}
-                {verts.map((v, i) => (
-                  <circle
-                    key={`vert-${i}`}
-                    cx={v.x}
-                    cy={v.y}
-                    r={handleR}
-                    className={
-                      selected === i ? 'fill-accent stroke-accent' : 'fill-surface stroke-accent'
-                    }
-                    strokeWidth={handleR / 3}
-                  />
-                ))}
-              </g>
-            </svg>
+              onKeyUp={(e) => {
+                if (e.key === ' ') spaceRef.current = false;
+              }}
+              onWheel={handleWheel}
+            />
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -415,14 +443,14 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
                 onChange={(v) => setSnap(Number(v) as SnapFraction)}
               />
             </div>
-            {selected !== null && selected < verts.length && (
+            {lone !== null && lone < verts.length && (
               <div className="flex items-center gap-1.5">
                 <span className="text-xs text-content-secondary">
-                  {t('drawerShape.penCorner', { n: selected + 1 })}
+                  {t('drawerShape.penCorner', { n: lone + 1 })}
                 </span>
                 <CompactNumberInput
                   label="X"
-                  value={verts[selected].x}
+                  value={verts[lone].x}
                   onChange={(v) => setSelectedCoord('x', v)}
                   min={0}
                   max={widthMm}
@@ -431,7 +459,7 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
                 />
                 <CompactNumberInput
                   label="Y"
-                  value={verts[selected].y}
+                  value={verts[lone].y}
                   onChange={(v) => setSelectedCoord('y', v)}
                   min={0}
                   max={depthMm}
@@ -459,7 +487,7 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
                 variant="secondary"
                 size="sm"
                 onClick={sketch.deleteSelected}
-                disabled={selected === null || verts.length <= 3}
+                disabled={selected.size === 0 || verts.length - selected.size < 3}
               >
                 {t('drawerShape.penDeletePoint')}
               </Button>

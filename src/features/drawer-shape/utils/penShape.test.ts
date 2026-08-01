@@ -12,8 +12,12 @@ import {
   removeVertex,
   reverseWinding,
   setBulge,
+  alignmentGuides,
+  moveVertices,
+  removeVertices,
   segmentHandle,
   sketchPathD,
+  verticesInRect,
   sketchToOutline,
   snapMm,
 } from './penShape';
@@ -215,5 +219,67 @@ describe('segmentHandle', () => {
     expect(hitSegmentMidpoint(bowed, h.x, h.y, 6)).toBe(0);
     // The chord midpoint is now far from the handle, so it must not hit.
     expect(hitSegmentMidpoint(bowed, W / 2, 0, 6)).toBe(-1);
+  });
+});
+
+describe('alignmentGuides', () => {
+  const verts = rectangleSketch(W, D);
+
+  it('reports no guide when nothing is near', () => {
+    const g = alignmentGuides(verts, new Set([0]), { x: 100, y: 100 }, 5);
+    expect(g.x).toBeNull();
+    expect(g.y).toBeNull();
+    expect(g.point).toEqual({ x: 100, y: 100 });
+  });
+
+  it('snaps to a neighbour on each axis independently', () => {
+    // Near vertex 1's x (=W) and vertex 3's y (=D), which are different corners.
+    const g = alignmentGuides(verts, new Set([2]), { x: W - 2, y: D - 2 }, 5);
+    expect(g.x).toBe(W);
+    expect(g.y).toBe(D);
+    expect(g.point).toEqual({ x: W, y: D });
+  });
+
+  // A dragged corner aligning to itself would pin it in place.
+  it('ignores the corners being dragged', () => {
+    const g = alignmentGuides(verts, new Set([0, 1, 2, 3]), { x: 1, y: 1 }, 5);
+    expect(g.x).toBeNull();
+    expect(g.y).toBeNull();
+  });
+
+  it('respects the tolerance', () => {
+    expect(alignmentGuides(verts, new Set([2]), { x: W - 9, y: 0 }, 5).x).toBeNull();
+    expect(alignmentGuides(verts, new Set([2]), { x: W - 4, y: 0 }, 5).x).toBe(W);
+  });
+});
+
+describe('verticesInRect', () => {
+  const verts = rectangleSketch(W, D);
+
+  it('finds the corners a sweep encloses, in any drag direction', () => {
+    expect(verticesInRect(verts, -10, -10, W + 10, 10)).toEqual([0, 1]);
+    // Dragged the other way, the same rectangle selects the same corners.
+    expect(verticesInRect(verts, W + 10, 10, -10, -10)).toEqual([0, 1]);
+  });
+
+  it('returns nothing for an empty sweep', () => {
+    expect(verticesInRect(verts, 100, 100, 120, 120)).toEqual([]);
+  });
+});
+
+describe('multi-vertex edits', () => {
+  const verts = rectangleSketch(W, D);
+
+  it('translates only the given corners, leaving arcs alone', () => {
+    const bowed = setBulge(verts, 0, 0.3);
+    const moved = moveVertices(bowed, new Set([0, 1]), 5, -5);
+    expect(moved[0]).toMatchObject({ x: 5, y: -5, bulge: 0.3 });
+    expect(moved[1]).toMatchObject({ x: W + 5, y: -5 });
+    expect(moved[2]).toEqual(verts[2]);
+  });
+
+  it('removes several corners but never below a triangle', () => {
+    expect(removeVertices(verts, new Set([0]))).toHaveLength(3);
+    expect(removeVertices(verts, new Set([0, 1]))).toHaveLength(4);
   });
 });

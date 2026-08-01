@@ -1702,7 +1702,7 @@
   "drawerShape.editor.title": "Kształt szuflady",
   "drawerShape.penOpen": "Narysuj kształt…",
   "drawerShape.penTitle": "Narysuj kształt szuflady",
-  "drawerShape.penHint": "Przeciągnij narożnik, aby go przesunąć; z Shift pozostanie pod kątem prostym. Przeciągnij uchwyt krawędzi, aby ją wygiąć. Kliknij dwukrotnie krawędź, aby dodać narożnik. Kółko przybliża, przeciąganie tła przesuwa widok.",
+  "drawerShape.penHint": "Przeciągnij narożnik, aby go przesunąć; z Shift pozostanie pod kątem prostym. Shift-klik lub zaznaczenie ramką wybiera kilka. Przeciągnij uchwyt krawędzi, aby ją wygiąć, kliknij dwukrotnie, aby dodać narożnik. Kółko przybliża, Alt-przeciąganie lub Spacja przesuwa.",
   "drawerShape.penCanvas": "Obrys szuflady",
   "drawerShape.penSnap": "Przyciąganie",
   "drawerShape.penResetView": "Zresetuj widok",

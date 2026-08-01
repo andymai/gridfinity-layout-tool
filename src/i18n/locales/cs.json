@@ -1702,7 +1702,7 @@
   "drawerShape.editor.title": "Tvar zásuvky",
   "drawerShape.penOpen": "Nakreslit tvar…",
   "drawerShape.penTitle": "Nakreslit tvar zásuvky",
-  "drawerShape.penHint": "Přetažením rohu jej přesunete, se Shift zůstane v pravém úhlu. Přetažením úchytu na hraně ji prohnete. Dvojklikem na hranu přidáte roh. Kolečkem přiblížíte, tažením pozadí posunete zobrazení.",
+  "drawerShape.penHint": "Přetažením rohu jej přesunete, se Shift zůstane v pravém úhlu. Shift-klik nebo tažení rámečku vybere více rohů. Přetažením úchytu na hraně ji prohnete, dvojklikem přidáte roh. Kolečkem přiblížíte, Alt-tažením nebo mezerníkem posunete.",
   "drawerShape.penCanvas": "Obrys zásuvky",
   "drawerShape.penSnap": "Přichytávání",
   "drawerShape.penResetView": "Obnovit zobrazení",

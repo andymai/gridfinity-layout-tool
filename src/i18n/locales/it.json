@@ -1702,7 +1702,7 @@
   "drawerShape.editor.title": "Forma del cassetto",
   "drawerShape.penOpen": "Disegna forma…",
   "drawerShape.penTitle": "Disegna la forma del cassetto",
-  "drawerShape.penHint": "Trascina un angolo per spostarlo, con Maiusc resta in squadra. Trascina la maniglia di un bordo per curvarlo. Doppio clic su un bordo per aggiungere un angolo. Rotella per lo zoom, trascina lo sfondo per spostarti.",
+  "drawerShape.penHint": "Trascina un angolo per spostarlo, con Maiusc resta in squadra. Maiusc-clic o selezione a rettangolo per sceglierne più di uno. Trascina la maniglia di un bordo per curvarlo, doppio clic per aggiungere un angolo. Rotella per lo zoom, Alt-trascina o Spazio per spostarti.",
   "drawerShape.penCanvas": "Contorno del cassetto",
   "drawerShape.penSnap": "Aggancio",
   "drawerShape.penResetView": "Reimposta vista",

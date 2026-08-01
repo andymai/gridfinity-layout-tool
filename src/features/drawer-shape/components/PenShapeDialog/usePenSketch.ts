@@ -9,13 +9,7 @@
 
 import { useCallback, useMemo, useRef, useState } from 'react';
 import type { OutlineVertex } from '@/core/types';
-import {
-  clampToDrawer,
-  moveVertex,
-  rectangleSketch,
-  removeVertex,
-  snapMm,
-} from '../../utils/penShape';
+import { clampToDrawer, moveVertices, rectangleSketch, removeVertices } from '../../utils/penShape';
 import type { SnapFraction } from '../../utils/penShape';
 
 /** Undo depth. Deep enough for a long editing session, bounded so a drag can't grow it without limit. */
@@ -23,9 +17,13 @@ const MAX_HISTORY = 50;
 
 export interface PenSketch {
   readonly verts: readonly OutlineVertex[];
-  readonly selected: number | null;
+  /** Selected corner indices. Empty when nothing is selected. */
+  readonly selected: ReadonlySet<number>;
   readonly canUndo: boolean;
-  setSelected: (index: number | null) => void;
+  /** Replace the selection outright. */
+  setSelected: (indices: Iterable<number>) => void;
+  /** Add or remove one corner, for Shift-click. */
+  toggleSelected: (index: number) => void;
   /** Replace the sketch and push the previous state onto the undo stack. */
   commit: (next: readonly OutlineVertex[]) => void;
   /**
@@ -37,7 +35,7 @@ export interface PenSketch {
   beginGesture: () => void;
   undo: () => void;
   reset: (widthMm: number, depthMm: number) => void;
-  /** Move the selected corner by a snapped step, for arrow-key nudging. */
+  /** Move every selected corner by a snapped step, for arrow-key nudging. */
   nudge: (dx: number, dy: number, bounds: NudgeBounds) => void;
   deleteSelected: () => void;
 }
@@ -52,7 +50,18 @@ export interface NudgeBounds {
 
 export function usePenSketch(seeded: readonly OutlineVertex[] | null): PenSketch {
   const [verts, setVerts] = useState<readonly OutlineVertex[] | null>(null);
-  const [selected, setSelected] = useState<number | null>(null);
+  const [selected, setSelectedState] = useState<ReadonlySet<number>>(() => new Set());
+  const setSelected = useCallback(
+    (indices: Iterable<number>) => setSelectedState(new Set(indices)),
+    []
+  );
+  const toggleSelected = useCallback((index: number) => {
+    setSelectedState((prev) => {
+      const next = new Set(prev);
+      if (!next.delete(index)) next.add(index);
+      return next;
+    });
+  }, []);
   const [history, setHistory] = useState<readonly (readonly OutlineVertex[])[]>([]);
   // Set at pointer-down so the whole drag collapses into one undo entry.
   const gestureRef = useRef(false);
@@ -90,10 +99,10 @@ export function usePenSketch(seeded: readonly OutlineVertex[] | null): PenSketch
       if (h.length === 0) return h;
       const restored = h[h.length - 1];
       setVerts(restored);
-      // Keep the selection across an undo when the corner still exists, so the
+      // Keep the selection across an undo where the corners still exist, so the
       // coordinate fields do not blink out from under an edit. Undoing an
-      // insert or delete can shorten the list, hence the bound check.
-      setSelected((sel) => (sel !== null && sel < restored.length ? sel : null));
+      // insert or delete can shorten the list, hence the bound filter.
+      setSelectedState((sel) => new Set([...sel].filter((i) => i < restored.length)));
       return h.slice(0, -1);
     });
   }, []);
@@ -102,38 +111,40 @@ export function usePenSketch(seeded: readonly OutlineVertex[] | null): PenSketch
     (widthMm: number, depthMm: number) => {
       push(active);
       setVerts(rectangleSketch(widthMm, depthMm));
-      setSelected(null);
+      setSelectedState(new Set());
     },
     [active, push]
   );
 
   const nudge = useCallback(
     (dx: number, dy: number, bounds: NudgeBounds) => {
-      // A stale selection can outlive the vertex it pointed at (a delete, or a
-      // reseed), so bound-check rather than trusting the index.
-      if (selected === null || selected >= active.length) return;
-      const v = active[selected];
+      if (selected.size === 0) return;
       // Step by the active snap increment so keyboard and pointer editing land
       // on the same coordinates; 1mm when snapping is off.
       const stepX = bounds.snap === 0 ? 1 : bounds.pitchX * bounds.snap;
       const stepY = bounds.snap === 0 ? 1 : bounds.pitchY * bounds.snap;
-      const p = clampToDrawer(v.x + dx * stepX, v.y + dy * stepY, bounds.widthMm, bounds.depthMm);
-      commit(
-        moveVertex(
-          active,
-          selected,
-          snapMm(p.x, bounds.pitchX, bounds.snap),
-          snapMm(p.y, bounds.pitchY, bounds.snap)
-        )
-      );
+      // One shared delta, clamped so the whole selection stops together at the
+      // wall rather than collapsing onto it corner by corner.
+      let mx = dx * stepX;
+      let my = dy * stepY;
+      for (const i of selected) {
+        // A stale index can outlive its vertex (a delete, or a reseed).
+        if (i >= active.length) continue;
+        const v = active[i];
+        const c = clampToDrawer(v.x + mx, v.y + my, bounds.widthMm, bounds.depthMm);
+        mx = c.x - v.x;
+        my = c.y - v.y;
+      }
+      if (mx === 0 && my === 0) return;
+      commit(moveVertices(active, selected, mx, my));
     },
     [selected, active, commit]
   );
 
   const deleteSelected = useCallback(() => {
-    if (selected === null || active.length <= 3) return;
-    commit(removeVertex(active, selected));
-    setSelected(null);
+    if (selected.size === 0 || active.length - selected.size < 3) return;
+    commit(removeVertices(active, selected));
+    setSelectedState(new Set());
   }, [selected, active, commit]);
 
   return {
@@ -141,6 +152,7 @@ export function usePenSketch(seeded: readonly OutlineVertex[] | null): PenSketch
     selected,
     canUndo: history.length > 0,
     setSelected,
+    toggleSelected,
     commit,
     preview,
     beginGesture,

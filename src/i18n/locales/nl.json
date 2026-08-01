@@ -1702,7 +1702,7 @@
   "drawerShape.editor.title": "Ladevorm",
   "drawerShape.penOpen": "Vorm tekenen…",
   "drawerShape.penTitle": "Ladevorm tekenen",
-  "drawerShape.penHint": "Sleep een hoek om die te verplaatsen, met Shift blijft die haaks. Sleep de greep op een rand om die te buigen. Dubbelklik op een rand om een hoek toe te voegen. Scrollen zoomt, sleep de achtergrond om te pannen.",
+  "drawerShape.penHint": "Sleep een hoek om die te verplaatsen, met Shift blijft die haaks. Shift-klik of sleep een kader om er meerdere te kiezen. Sleep een randgreep om te buigen, dubbelklik om een hoek toe te voegen. Scrollen zoomt, Alt-slepen of Spatie pant.",
   "drawerShape.penCanvas": "Ladecontour",
   "drawerShape.penSnap": "Uitlijnen",
   "drawerShape.penResetView": "Weergave herstellen",

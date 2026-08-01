@@ -1702,7 +1702,7 @@
   "drawerShape.editor.title": "抽屉形状",
   "drawerShape.penOpen": "绘制形状…",
   "drawerShape.penTitle": "绘制抽屉形状",
-  "drawerShape.penHint": "拖动角点可移动，按住 Shift 可保持方正。拖动边上的手柄可使其弯曲。双击边可添加角点。滚动缩放，拖动背景平移。",
+  "drawerShape.penHint": "拖动角点可移动，按住 Shift 保持方正。Shift 点击或框选可选中多个。拖动边上的手柄使其弯曲，双击边可添加角点。滚动缩放，Alt 拖动或按住空格平移。",
   "drawerShape.penCanvas": "抽屉轮廓",
   "drawerShape.penSnap": "吸附",
   "drawerShape.penResetView": "重置视图",

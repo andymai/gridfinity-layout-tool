@@ -1702,7 +1702,7 @@
   "drawerShape.editor.title": "Forma del cajón",
   "drawerShape.penOpen": "Dibujar forma…",
   "drawerShape.penTitle": "Dibujar la forma del cajón",
-  "drawerShape.penHint": "Arrastra una esquina para moverla, con Mayús para mantenerla en escuadra. Arrastra el tirador de un borde para curvarlo. Haz doble clic en un borde para añadir una esquina. Rueda para acercar, arrastra el fondo para desplazar.",
+  "drawerShape.penHint": "Arrastra una esquina para moverla, con Mayús para mantenerla en escuadra. Mayús-clic o recuadro para seleccionar varias. Arrastra el tirador de un borde para curvarlo, haz doble clic para añadir una esquina. Rueda para acercar, Alt-arrastrar o Espacio para desplazar.",
   "drawerShape.penCanvas": "Contorno del cajón",
   "drawerShape.penSnap": "Ajuste",
   "drawerShape.penResetView": "Restablecer vista",

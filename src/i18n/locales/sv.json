@@ -1702,7 +1702,7 @@
   "drawerShape.editor.title": "Lådans form",
   "drawerShape.penOpen": "Rita form…",
   "drawerShape.penTitle": "Rita lådans form",
-  "drawerShape.penHint": "Dra ett hörn för att flytta det, håll Skift för att hålla det i vinkel. Dra handtaget på en kant för att böja den. Dubbelklicka på en kant för att lägga till ett hörn. Skrolla för att zooma, dra bakgrunden för att panorera.",
+  "drawerShape.penHint": "Dra ett hörn för att flytta det, håll Skift för att hålla det i vinkel. Skift-klicka eller dra en ram för att välja flera. Dra ett kanthandtag för att böja, dubbelklicka för att lägga till ett hörn. Skrolla för att zooma, Alt-dra eller Blanksteg för att panorera.",
   "drawerShape.penCanvas": "Lådans kontur",
   "drawerShape.penSnap": "Fäst",
   "drawerShape.penResetView": "Återställ vyn",

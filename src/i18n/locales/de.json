@@ -1702,7 +1702,7 @@
   "drawerShape.editor.title": "Schubladenform",
   "drawerShape.penOpen": "Form zeichnen…",
   "drawerShape.penTitle": "Schubladenform zeichnen",
-  "drawerShape.penHint": "Ecke ziehen zum Verschieben, mit Umschalt bleibt sie rechtwinklig. Griff an einer Kante ziehen, um sie zu wölben. Doppelklick auf eine Kante fügt eine Ecke hinzu. Scrollen zum Zoomen, Hintergrund ziehen zum Verschieben.",
+  "drawerShape.penHint": "Ecke ziehen zum Verschieben, mit Umschalt bleibt sie rechtwinklig. Umschalt-Klick oder Aufziehen wählt mehrere. Kantengriff ziehen wölbt sie, Doppelklick auf eine Kante fügt eine Ecke hinzu. Scrollen zoomt, Alt-Ziehen oder Leertaste verschiebt.",
   "drawerShape.penCanvas": "Schubladenumriss",
   "drawerShape.penSnap": "Raster",
   "drawerShape.penResetView": "Ansicht zurücksetzen",

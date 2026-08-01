@@ -3386,7 +3386,7 @@ const en: Record<string, string> = {
   'drawerShape.penOpen': 'Draw shape…',
   'drawerShape.penTitle': 'Draw drawer shape',
   'drawerShape.penHint':
-    'Drag a corner to move it, holding Shift to keep it square. Drag the small handle on an edge to curve it. Double-click an edge to add a corner. Scroll to zoom, drag the background to pan.',
+    'Drag a corner to move it, holding Shift to keep it square. Shift-click or sweep to select several. Drag an edge handle to curve it, double-click an edge to add a corner. Scroll to zoom, Alt-drag or hold Space to pan.',
   'drawerShape.penCanvas': 'Drawer perimeter',
   'drawerShape.penSnap': 'Snap',
   'drawerShape.penResetView': 'Reset view',

@@ -261,7 +261,9 @@ describe('PenShapeDialog', () => {
       expect(svg).toHaveAttribute('viewBox', '0 0 448 364');
     });
 
-    it('pans when the background is dragged', () => {
+    // Background drag is the marquee, as in Figma, so panning is an explicit
+    // gesture: Alt (or space, or the middle button).
+    it('pans on an Alt drag', () => {
       render(<PenShapeDialog open onClose={vi.fn()} />);
       const svg = canvas();
       svg.getBoundingClientRect = rect;
@@ -269,8 +271,7 @@ describe('PenShapeDialog', () => {
       fireEvent.wheel(svg, { deltaY: -100, clientX: 224, clientY: 182 });
       const before = svg.getAttribute('viewBox');
 
-      // Press well away from any handle, so this is a background drag.
-      fireEvent.pointerDown(svg, { clientX: 224, clientY: 182 });
+      fireEvent.pointerDown(svg, { clientX: 224, clientY: 182, altKey: true });
       fireEvent.pointerMove(svg, { clientX: 180, clientY: 150 });
       fireEvent.pointerUp(svg);
 
@@ -296,5 +297,71 @@ describe('PenShapeDialog', () => {
     // X moved further than Y, so Y is pinned back to where the drag started.
     expect(v?.y).toBe(0);
     expect(v?.x).toBeGreaterThan(0);
+  });
+
+  describe('multi-select', () => {
+    const canvas = () => screen.getByRole('application');
+    const rect = () => ({ left: 0, top: 0, width: 448, height: 364 }) as DOMRect;
+    /** Screen point for a drawer-local mm coordinate, in the default view. */
+    const at = (x: number, y: number) => ({ clientX: x + 14, clientY: 364 - 14 - y });
+
+    function setup() {
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      const svg = canvas();
+      svg.getBoundingClientRect = rect;
+      return svg;
+    }
+
+    it('adds a second corner with Shift-click', () => {
+      const svg = setup();
+      fireEvent.pointerDown(svg, at(0, 0));
+      fireEvent.pointerUp(svg);
+      fireEvent.pointerDown(svg, { ...at(420, 0), shiftKey: true });
+      fireEvent.pointerUp(svg);
+
+      // Two selected: the single-corner coordinate panel gives way, and delete
+      // is refused because two of four would leave less than a triangle.
+      expect(screen.queryByText(/^drawerShape\.penCorner/)).not.toBeInTheDocument();
+      expect(screen.getByText('drawerShape.penDeletePoint')).toBeDisabled();
+    });
+
+    it('moves every selected corner together', () => {
+      const svg = setup();
+      fireEvent.pointerDown(svg, at(0, 0));
+      fireEvent.pointerUp(svg);
+      fireEvent.pointerDown(svg, { ...at(420, 0), shiftKey: true });
+      fireEvent.pointerUp(svg);
+      // Drag one of the pair upward; both should rise.
+      fireEvent.pointerDown(svg, at(420, 0));
+      fireEvent.pointerMove(svg, at(420, 42));
+      fireEvent.pointerUp(svg);
+      fireEvent.click(screen.getByText('drawerShape.editor.apply'));
+
+      const v = setDrawerOutline.mock.calls[0][0]?.vertices ?? [];
+      expect(v[0].y).toBeGreaterThan(0);
+      expect(v[1].y).toBeGreaterThan(0);
+    });
+
+    it('selects the corners a marquee encloses', () => {
+      const svg = setup();
+      // Start clear of every corner, or the press would grab one and drag it
+      // instead of opening a marquee, then sweep the two corners at y = 0.
+      fireEvent.pointerDown(svg, at(-10, 60));
+      fireEvent.pointerMove(svg, at(430, -10));
+      fireEvent.pointerUp(svg);
+
+      fireEvent.keyDown(canvas(), { key: 'Delete' });
+      fireEvent.click(screen.getByText('drawerShape.editor.apply'));
+      // Four corners minus the two swept leaves two, which is below the
+      // triangle floor, so the delete is refused and all four remain.
+      expect(setDrawerOutline.mock.calls[0][0]?.vertices).toHaveLength(4);
+    });
+
+    it('selects everything with Ctrl+A', () => {
+      const svg = setup();
+      fireEvent.keyDown(svg, { key: 'a', ctrlKey: true });
+      // All four selected, so deleting would breach the floor and is refused.
+      expect(screen.getByText('drawerShape.penDeletePoint')).toBeDisabled();
+    });
   });
 });

@@ -1702,7 +1702,7 @@
   "drawerShape.editor.title": "서랍 모양",
   "drawerShape.penOpen": "형상 그리기…",
   "drawerShape.penTitle": "서랍 형상 그리기",
-  "drawerShape.penHint": "모서리를 끌어 이동합니다. Shift를 누르면 직각을 유지합니다. 변의 핸들을 끌면 휘어집니다. 변을 두 번 클릭하면 모서리가 추가됩니다. 스크롤로 확대/축소하고 배경을 끌어 이동합니다.",
+  "drawerShape.penHint": "모서리를 끌어 이동합니다. Shift로 직각을 유지합니다. Shift 클릭 또는 드래그 선택으로 여러 개를 고를 수 있습니다. 변의 핸들을 끌면 휘어지고, 두 번 클릭하면 모서리가 추가됩니다. 스크롤로 확대/축소, Alt 드래그 또는 Space로 이동합니다.",
   "drawerShape.penCanvas": "서랍 외곽선",
   "drawerShape.penSnap": "스냅",
   "drawerShape.penResetView": "보기 초기화",

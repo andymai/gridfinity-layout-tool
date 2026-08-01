@@ -305,3 +305,87 @@ export function sketchPathD(vertices: readonly OutlineVertex[]): string {
   parts.push('Z');
   return parts.join(' ');
 }
+
+/** A guide line the drag has snapped to, in drawer-local mm. */
+export interface AlignGuides {
+  /** Vertical guide: the shared x, or null when nothing aligned. */
+  readonly x: number | null;
+  /** Horizontal guide: the shared y, or null. */
+  readonly y: number | null;
+  /** The point after snapping to whichever guides matched. */
+  readonly point: { readonly x: number; readonly y: number };
+}
+
+/**
+ * Nearest alignment of `point` to the x or y of any vertex not being dragged.
+ *
+ * Each axis resolves independently, so a corner can align vertically with one
+ * neighbour and horizontally with another — which is what makes a drawn shape
+ * come out square without the user aiming for it. Vertices under the drag are
+ * excluded, or a multi-corner drag would align to itself and stick.
+ */
+export function alignmentGuides(
+  vertices: readonly OutlineVertex[],
+  moving: ReadonlySet<number>,
+  point: { x: number; y: number },
+  toleranceMm: number
+): AlignGuides {
+  let bestX: number | null = null;
+  let bestY: number | null = null;
+  let dx = toleranceMm;
+  let dy = toleranceMm;
+  for (let i = 0; i < vertices.length; i++) {
+    if (moving.has(i)) continue;
+    const v = vertices[i];
+    const ax = Math.abs(v.x - point.x);
+    if (ax <= dx) {
+      dx = ax;
+      bestX = v.x;
+    }
+    const ay = Math.abs(v.y - point.y);
+    if (ay <= dy) {
+      dy = ay;
+      bestY = v.y;
+    }
+  }
+  return { x: bestX, y: bestY, point: { x: bestX ?? point.x, y: bestY ?? point.y } };
+}
+
+/** Indices whose vertex falls inside the marquee rectangle (drawer-local mm). */
+export function verticesInRect(
+  vertices: readonly OutlineVertex[],
+  x0: number,
+  y0: number,
+  x1: number,
+  y1: number
+): number[] {
+  const minX = Math.min(x0, x1);
+  const maxX = Math.max(x0, x1);
+  const minY = Math.min(y0, y1);
+  const maxY = Math.max(y0, y1);
+  const out: number[] = [];
+  for (let i = 0; i < vertices.length; i++) {
+    const v = vertices[i];
+    if (v.x >= minX && v.x <= maxX && v.y >= minY && v.y <= maxY) out.push(i);
+  }
+  return out;
+}
+
+/** Translate the given vertices, leaving the rest and every bulge untouched. */
+export function moveVertices(
+  vertices: readonly OutlineVertex[],
+  indices: ReadonlySet<number>,
+  dx: number,
+  dy: number
+): OutlineVertex[] {
+  return vertices.map((v, i) => (indices.has(i) ? { ...v, x: v.x + dx, y: v.y + dy } : v));
+}
+
+/** Remove several vertices at once, refusing to drop below a triangle. */
+export function removeVertices(
+  vertices: readonly OutlineVertex[],
+  indices: ReadonlySet<number>
+): OutlineVertex[] {
+  if (vertices.length - indices.size < 3) return [...vertices];
+  return vertices.filter((_, i) => !indices.has(i));
+}
