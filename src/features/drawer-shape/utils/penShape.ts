@@ -129,6 +129,35 @@ export function hitVertex(
   return best;
 }
 
+/** Chord shorter than this has no defined direction, so no arc can be built on it. */
+const MIN_CHORD_MM = 1e-9;
+
+/**
+ * Point at the middle of a segment's actual path: the chord midpoint for a
+ * straight segment, lifted onto the arc by the sagitta for a bowed one.
+ *
+ * The single source for that offset — `segmentHandle` needs it to draw the
+ * handle where it can be grabbed and `insertVertex` needs it to put a new
+ * corner on the curve, and the two must stay sign- and scale-identical or a
+ * split would move the arc. Returns null for a degenerate chord, which is
+ * reachable mid-drag when two corners are dragged onto each other.
+ */
+function arcMidpoint(
+  a: OutlineVertex,
+  b: OutlineVertex
+): { x: number; y: number; chord: number } | null {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const chord = Math.hypot(dx, dy);
+  if (chord < MIN_CHORD_MM) return null;
+  const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+  const bulge = a.bulge ?? 0;
+  if (bulge === 0) return { ...mid, chord };
+  // Right of travel is (dy, -dx)/chord — the side a positive bulge bows.
+  const sagitta = (bulge * chord) / 2;
+  return { x: mid.x + (dy / chord) * sagitta, y: mid.y - (dx / chord) * sagitta, chord };
+}
+
 /** Midpoint of a segment along its actual path, which is the arc handle's home. */
 export function segmentHandle(
   vertices: readonly OutlineVertex[],
@@ -136,15 +165,8 @@ export function segmentHandle(
 ): { x: number; y: number } {
   const a = vertices[index];
   const b = vertices[(index + 1) % vertices.length];
-  const bulge = a.bulge ?? 0;
-  const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
-  if (bulge === 0) return mid;
-  const dx = b.x - a.x;
-  const dy = b.y - a.y;
-  const chord = Math.hypot(dx, dy);
-  if (chord < 1e-9) return mid;
-  const sagitta = (bulge * chord) / 2;
-  return { x: mid.x + (dy / chord) * sagitta, y: mid.y - (dx / chord) * sagitta };
+  const m = arcMidpoint(a, b);
+  return m === null ? { x: a.x, y: a.y } : { x: m.x, y: m.y };
 }
 
 /**
@@ -235,24 +257,18 @@ export function setBulge(
 export function insertVertex(vertices: readonly OutlineVertex[], index: number): OutlineVertex[] {
   const a = vertices[index];
   const b = vertices[(index + 1) % vertices.length];
+  const mid = arcMidpoint(a, b);
+  // Two corners dragged onto each other leave a zero-length segment. Splitting
+  // it would divide by the chord and write NaN into the sketch, which is not
+  // recoverable by editing; refusing the split leaves it fixable.
+  if (mid === null) return [...vertices];
   const bulge = a.bulge ?? 0;
-  const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
-  if (bulge !== 0) {
-    // Offset the new point onto the arc, then halve the sweep on both sides.
-    const dx = b.x - a.x;
-    const dy = b.y - a.y;
-    const chord = Math.hypot(dx, dy);
-    const sagitta = (bulge * chord) / 2;
-    // Right of travel is (dy, -dx)/chord — the same side a positive bulge bows.
-    mid.x += (dy / chord) * sagitta;
-    mid.y -= (dx / chord) * sagitta;
-  }
   const half = bulge === 0 ? 0 : Math.tan(Math.atan(bulge) / 2);
   const out: OutlineVertex[] = [];
   for (let i = 0; i < vertices.length; i++) {
     if (i === index) {
       out.push(half === 0 ? { x: a.x, y: a.y } : { x: a.x, y: a.y, bulge: half });
-      out.push(half === 0 ? mid : { ...mid, bulge: half });
+      out.push(half === 0 ? { x: mid.x, y: mid.y } : { x: mid.x, y: mid.y, bulge: half });
     } else {
       out.push(vertices[i]);
     }
@@ -260,10 +276,16 @@ export function insertVertex(vertices: readonly OutlineVertex[], index: number):
   return out;
 }
 
-/** Remove a vertex. Returns the input unchanged when it would leave a triangle. */
+/**
+ * Remove a vertex. Returns the input unchanged when it would leave a triangle.
+ *
+ * The predecessor's bulge described an arc ending at the removed corner; after
+ * the join it would describe a different arc, to a different endpoint, so the
+ * segment spanning the gap is straightened rather than left curving somewhere
+ * nobody asked for.
+ */
 export function removeVertex(vertices: readonly OutlineVertex[], index: number): OutlineVertex[] {
-  if (vertices.length <= 3) return [...vertices];
-  return vertices.filter((_, i) => i !== index);
+  return removeVertices(vertices, new Set([index]));
 }
 
 /** The drawer rectangle as a CCW loop, the starting point for a new sketch. */
@@ -381,11 +403,29 @@ export function moveVertices(
   return vertices.map((v, i) => (indices.has(i) ? { ...v, x: v.x + dx, y: v.y + dy } : v));
 }
 
-/** Remove several vertices at once, refusing to drop below a triangle. */
+/**
+ * Remove several vertices at once, refusing to drop below a triangle.
+ *
+ * Every survivor whose successor is being removed has its bulge cleared: that
+ * bulge described an arc to the corner going away, and after the join it would
+ * curve to a different endpoint entirely.
+ */
 export function removeVertices(
   vertices: readonly OutlineVertex[],
   indices: ReadonlySet<number>
 ): OutlineVertex[] {
-  if (vertices.length - indices.size < 3) return [...vertices];
-  return vertices.filter((_, i) => !indices.has(i));
+  const n = vertices.length;
+  if (n - indices.size < 3) return [...vertices];
+  const out: OutlineVertex[] = [];
+  for (let i = 0; i < n; i++) {
+    if (indices.has(i)) continue;
+    const v = vertices[i];
+    if (indices.has((i + 1) % n) && (v.bulge ?? 0) !== 0) {
+      const { bulge: _drop, ...straight } = v;
+      out.push(straight);
+    } else {
+      out.push(v);
+    }
+  }
+  return out;
 }

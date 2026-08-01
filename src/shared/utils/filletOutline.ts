@@ -12,6 +12,8 @@
  */
 
 import type { DrawerOutline, OutlineVertex } from '@/core/types';
+import { BULGE_EPS } from './drawerOutlineGeometry';
+import { OUTLINE_MAX_VERTICES } from './drawerOutline';
 
 /** Below this a corner is treated as straight and left alone. */
 const MIN_TURN_RAD = 1e-4;
@@ -76,7 +78,9 @@ function cornerAt(
  * can apply it unconditionally.
  *
  * The per-corner setback is capped at half of each adjacent edge, so adjacent
- * fillets cannot overrun one another however large the radius.
+ * fillets cannot overrun one another however large the radius, and the total
+ * is budgeted against `OUTLINE_MAX_VERTICES` so rounding a detailed perimeter
+ * cannot push it past the model ceiling and block Apply.
  */
 export function filletOutline(outline: DrawerOutline, radiusMm: number): DrawerOutline {
   if (radiusMm < MIN_RADIUS_MM) return outline;
@@ -86,6 +90,10 @@ export function filletOutline(outline: DrawerOutline, radiusMm: number): DrawerO
 
   const out: OutlineVertex[] = [];
   let changed = false;
+  // Each fillet costs one extra vertex. Past the model's ceiling the outline
+  // would fail validation and Apply would be blocked with no way back except
+  // undoing the radius, so the remaining corners stay sharp instead.
+  let budget = OUTLINE_MAX_VERTICES - n;
 
   for (let i = 0; i < n; i++) {
     const prev = verts[(i - 1 + n) % n];
@@ -94,9 +102,13 @@ export function filletOutline(outline: DrawerOutline, radiusMm: number): DrawerO
 
     // The construction is tangent to straight edges; an arc arriving at or
     // leaving the corner has its own curvature, so leave it alone.
-    const straightIn = (prev.bulge ?? 0) === 0;
-    const straightOut = (v.bulge ?? 0) === 0;
-    const corner = straightIn && straightOut ? cornerAt(prev, v, next, radiusMm) : null;
+    // `BULGE_EPS`, not `=== 0`: arcGeometry, flattenOutline and the validator
+    // all treat anything below it as straight, and a corner they consider
+    // straight must be filletable here too.
+    const straightIn = Math.abs(prev.bulge ?? 0) < BULGE_EPS;
+    const straightOut = Math.abs(v.bulge ?? 0) < BULGE_EPS;
+    const corner =
+      straightIn && straightOut && budget > 0 ? cornerAt(prev, v, next, radiusMm) : null;
 
     if (corner === null) {
       out.push(v);
@@ -118,6 +130,7 @@ export function filletOutline(outline: DrawerOutline, radiusMm: number): DrawerO
     // which puts a concave corner's arc on the correct side automatically.
     out.push({ ...start, bulge: Math.tan(turn / 4) });
     out.push(end);
+    budget--;
     changed = true;
   }
 

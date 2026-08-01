@@ -283,3 +283,45 @@ describe('multi-vertex edits', () => {
     expect(removeVertices(verts, new Set([0, 1]))).toHaveLength(4);
   });
 });
+
+describe('degenerate and arc-adjacent edits', () => {
+  const verts = rectangleSketch(W, D);
+
+  // Two corners dragged onto each other leave a zero-length segment. Splitting
+  // it would divide by the chord and write NaN into the live sketch, which no
+  // further editing could recover.
+  it('refuses to split a zero-length bowed segment', () => {
+    const degenerate = setBulge(moveVertex(verts, 1, 0, 0), 0, 0.5);
+    const split = insertVertex(degenerate, 0);
+    expect(split).toHaveLength(degenerate.length);
+    expect(split.every((v) => Number.isFinite(v.x) && Number.isFinite(v.y))).toBe(true);
+  });
+
+  it('keeps the handle on a degenerate segment finite', () => {
+    const degenerate = setBulge(moveVertex(verts, 1, 0, 0), 0, 0.5);
+    const h = segmentHandle(degenerate, 0);
+    expect(Number.isFinite(h.x) && Number.isFinite(h.y)).toBe(true);
+  });
+
+  // The predecessor's bulge described an arc ending at the removed corner. Left
+  // in place it would curve to a different endpoint entirely.
+  it('straightens the segment that spans a removed corner', () => {
+    const bowed = setBulge(rectangleSketch(W, D), 1, 0.5);
+    // Vertex 1 owns the arc; removing vertex 2 makes it span 1 to 3 instead.
+    const after = removeVertex(bowed, 2);
+    expect(after).toHaveLength(3);
+    expect(after[1]).not.toHaveProperty('bulge');
+  });
+
+  it('leaves an arc alone when the removed corner is elsewhere', () => {
+    const bowed = setBulge(rectangleSketch(W, D), 1, 0.5);
+    expect(removeVertex(bowed, 3)[1].bulge).toBe(0.5);
+  });
+
+  it('straightens every span a multi-delete opens', () => {
+    const bowed = setBulge(setBulge(rectangleSketch(W, D), 0, 0.4), 2, 0.4);
+    // Removing 1 and 3 makes both arcs span new endpoints.
+    const after = removeVertices([...bowed, { x: 10, y: 10 }, { x: 20, y: 10 }], new Set([1, 3]));
+    expect(after.every((v) => (v.bulge ?? 0) === 0)).toBe(true);
+  });
+});

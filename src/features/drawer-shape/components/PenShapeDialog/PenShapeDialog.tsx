@@ -27,6 +27,7 @@ import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
 import { useMutations } from '@/shared/contexts/MutationsContext';
 import { computeDisplacedBins } from '@/core/cqrs/v2/domain/drawer/displacement';
+import { trackDrawerShapeApplied } from '@/shared/analytics/posthog';
 import { validateOutline } from '@/shared/utils/drawerOutline';
 import { filletOutline } from '@/shared/utils/filletOutline';
 import {
@@ -377,6 +378,15 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
       gridUnitMmY
     ).length;
     if (!isOk(mutations.setDrawerOutline(outline))) return;
+    // Read the post-commit store: a shape equivalent to the plain rectangle is
+    // normalized to "no outline" by the mutation, so `cleared` has to reflect
+    // what actually landed rather than what was sent.
+    trackDrawerShapeApplied({
+      editor: 'pen',
+      displaced_bins: displaced,
+      used_trace: false,
+      cleared: useLayoutStore.getState().layout.drawer.outline === undefined,
+    });
     if (displaced > 0) {
       addToast(t('toast.binsDisplacedByShape', { count: displaced }), 'info');
     }

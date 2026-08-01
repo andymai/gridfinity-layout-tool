@@ -60,6 +60,42 @@ describe('PenShapeDialog', () => {
     );
   });
 
+  // The dialog stays mounted while closed, so nothing unmounts the sketch. A
+  // reopen must show what is stored, not the last session's edits.
+  it('reseeds from the store when reopened rather than keeping stale vertices', () => {
+    const { w, d } = extent();
+    const { rerender } = render(<PenShapeDialog open onClose={vi.fn()} />);
+    const svg = screen.getByRole('application');
+    svg.getBoundingClientRect = () => ({ left: 0, top: 0, width: 448, height: 364 }) as DOMRect;
+
+    // Edit, then close without applying.
+    fireEvent.pointerDown(svg, { clientX: 14, clientY: 350 });
+    fireEvent.pointerMove(svg, { clientX: 120, clientY: 300 });
+    fireEvent.pointerUp(svg);
+    const edited = document.querySelector('path')?.getAttribute('d');
+    expect(edited).not.toBe(`M 0 0 L ${w} 0 L ${w} ${d} L 0 ${d} Z`);
+    rerender(<PenShapeDialog open={false} onClose={vi.fn()} />);
+
+    rerender(<PenShapeDialog open onClose={vi.fn()} />);
+    expect(document.querySelector('path')?.getAttribute('d')).toBe(
+      `M 0 0 L ${w} 0 L ${w} ${d} L 0 ${d} Z`
+    );
+  });
+
+  it('clears the undo history on reopen, so it cannot reach a past session', () => {
+    const { rerender } = render(<PenShapeDialog open onClose={vi.fn()} />);
+    const svg = screen.getByRole('application');
+    svg.getBoundingClientRect = () => ({ left: 0, top: 0, width: 448, height: 364 }) as DOMRect;
+    fireEvent.pointerDown(svg, { clientX: 14, clientY: 350 });
+    fireEvent.pointerMove(svg, { clientX: 120, clientY: 300 });
+    fireEvent.pointerUp(svg);
+    expect(screen.getByText('common.undo')).toBeEnabled();
+
+    rerender(<PenShapeDialog open={false} onClose={vi.fn()} />);
+    rerender(<PenShapeDialog open onClose={vi.fn()} />);
+    expect(screen.getByText('common.undo')).toBeDisabled();
+  });
+
   it('applies the sketch as a pen-authored outline and closes', () => {
     const onClose = vi.fn();
     render(<PenShapeDialog open onClose={onClose} />);
@@ -194,9 +230,14 @@ describe('PenShapeDialog', () => {
     it('drops a selection an undo has invalidated', () => {
       render(<PenShapeDialog open onClose={vi.fn()} />);
       selectFirstCorner();
-      // Delete leaves three corners, so undoing back to four is fine, but the
-      // reverse case (selection past the end) must clear.
-      fireEvent.keyDown(canvas(), { key: 'Delete' });
+      // Insert on the LAST segment, so the new corner takes the final index.
+      // Undoing then shortens the list past that index, which is the case the
+      // bound filter has to catch; inserting earlier would leave the index
+      // valid and the selection would rightly survive.
+      fireEvent.doubleClick(canvas(), { clientX: 14, clientY: 182 });
+      fireEvent.keyDown(canvas(), { key: 'z', ctrlKey: true });
+
+      // Selection cleared, so delete has nothing to act on.
       expect(screen.getByText('drawerShape.penDeletePoint')).toBeDisabled();
     });
 

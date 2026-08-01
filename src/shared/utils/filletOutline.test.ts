@@ -120,4 +120,34 @@ describe('filletOutline', () => {
     const o: DrawerOutline = { ...rect(), authoring: { kind: 'pen' } };
     expect(filletOutline(o, 12).authoring).toEqual({ kind: 'pen' });
   });
+
+  // Each fillet adds a vertex. Past the model ceiling the outline fails
+  // validation and Apply is blocked with no way out but undoing the radius.
+  it('stops filleting before the vertex ceiling rather than blocking apply', () => {
+    // 200 corners on a circle: every one is eligible, so an unbudgeted pass
+    // would emit 400 and the validator caps at 256.
+    const n = 200;
+    const cx = W / 2;
+    const cy = D / 2;
+    const r = Math.min(W, D) / 2 - 1;
+    const many: DrawerOutline = {
+      vertices: Array.from({ length: n }, (_, i) => {
+        const a = (i / n) * Math.PI * 2;
+        return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+      }),
+    };
+    const filleted = filletOutline(many, 2);
+    expect(filleted.vertices.length).toBeLessThanOrEqual(256);
+    expect(validateOutline(filleted, W, D, U)).toBeNull();
+  });
+
+  // The rest of the outline geometry treats |bulge| < BULGE_EPS as straight, so
+  // a corner they consider straight has to be filletable here too.
+  it('treats a sub-epsilon bulge as straight', () => {
+    const almost: DrawerOutline = {
+      vertices: rect().vertices.map((v, i) => (i === 0 ? { ...v, bulge: 1e-12 } : v)),
+    };
+    // All four corners round, as they would with the bulge absent entirely.
+    expect(filletOutline(almost, 20).vertices.filter((v) => (v.bulge ?? 0) !== 0)).toHaveLength(4);
+  });
 });

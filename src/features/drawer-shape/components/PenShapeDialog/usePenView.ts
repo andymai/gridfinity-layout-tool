@@ -63,6 +63,9 @@ export function usePenView(widthMm: number, depthMm: number): PenView {
 
   const zoomAt = useCallback(
     (deltaY: number, clientX: number, clientY: number, rect: DOMRect) => {
+      // A horizontal trackpad swipe reports deltaY 0, which would otherwise
+      // take the zoom-out branch and drift the view sideways-into-out.
+      if (deltaY === 0) return;
       setView((v) => {
         const next = Math.min(
           MAX_ZOOM,

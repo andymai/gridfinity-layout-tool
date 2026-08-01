@@ -66,6 +66,17 @@ export function usePenSketch(seeded: readonly OutlineVertex[] | null): PenSketch
   // Set at pointer-down so the whole drag collapses into one undo entry.
   const gestureRef = useRef(false);
 
+  // The dialog stays mounted while closed, so nothing unmounts this state. A
+  // new seed means a new session, and without dropping the old sketch reopening
+  // would show the previous session's vertices rather than what is stored.
+  const [seedIdentity, setSeedIdentity] = useState(seeded);
+  if (seedIdentity !== seeded) {
+    setSeedIdentity(seeded);
+    setVerts(null);
+    setHistory([]);
+    setSelectedState(new Set());
+  }
+
   const active = useMemo(() => verts ?? seeded ?? [], [verts, seeded]);
 
   const push = useCallback((prev: readonly OutlineVertex[]) => {
@@ -80,32 +91,43 @@ export function usePenSketch(seeded: readonly OutlineVertex[] | null): PenSketch
     [active, push]
   );
 
-  const preview = useCallback((next: readonly OutlineVertex[]) => {
-    setVerts(next);
-  }, []);
+  const preview = useCallback(
+    (next: readonly OutlineVertex[]) => {
+      if (gestureRef.current) {
+        gestureRef.current = false;
+        push(active);
+      }
+      setVerts(next);
+    },
+    [active, push]
+  );
 
+  /**
+   * Arm a history entry for a drag about to start, without spending one yet.
+   *
+   * A press that only selects a corner, or a double-click that inserts one,
+   * would otherwise push a state identical to the current one and cost an extra
+   * undo press to get past. The entry is written on the first actual movement
+   * instead, so one gesture is one undo step and a gesture that moved nothing
+   * is none.
+   */
   const beginGesture = useCallback(() => {
-    if (gestureRef.current) return;
     gestureRef.current = true;
-    push(active);
-    // Cleared on the next tick so a second pointer-down opens a new entry.
-    queueMicrotask(() => {
-      gestureRef.current = false;
-    });
-  }, [active, push]);
-
-  const undo = useCallback(() => {
-    setHistory((h) => {
-      if (h.length === 0) return h;
-      const restored = h[h.length - 1];
-      setVerts(restored);
-      // Keep the selection across an undo where the corners still exist, so the
-      // coordinate fields do not blink out from under an edit. Undoing an
-      // insert or delete can shorten the list, hence the bound filter.
-      setSelectedState((sel) => new Set([...sel].filter((i) => i < restored.length)));
-      return h.slice(0, -1);
-    });
   }, []);
+
+  // Reads `history` directly rather than from inside a `setHistory` updater: an
+  // updater must be pure, and React may run it more than once under StrictMode
+  // or concurrent rendering, which would apply the restore twice.
+  const undo = useCallback(() => {
+    if (history.length === 0) return;
+    const restored = history[history.length - 1];
+    setHistory(history.slice(0, -1));
+    setVerts(restored);
+    // Keep the selection across an undo where the corners still exist, so the
+    // coordinate fields do not blink out from under an edit. Undoing an insert
+    // or delete can shorten the list, hence the bound filter.
+    setSelectedState((sel) => new Set([...sel].filter((i) => i < restored.length)));
+  }, [history]);
 
   const reset = useCallback(
     (widthMm: number, depthMm: number) => {
