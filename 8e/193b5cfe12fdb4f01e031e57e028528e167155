@@ -1,0 +1,42 @@
+api/lib/communityStore.ts
+  s_48a510eaef7c22::t_68cd331a6971ae 161-164
+  s_48a510eaef7c22::t_1e6deec259d017 223
+  s_48a510eaef7c22::t_bc76aeb512ec3b 191
+api/community/[id].ts
+  s_48a510eaef7c22::t_970676fd71387d 382-385
+  s_48a510eaef7c22::t_563c5370ceb69a 281
+scripts/community-admin/lib/banner.ts
+  s_48a510eaef7c22::t_d0647908fe7795 17-19
+api/community.ts
+  s_48a510eaef7c22::t_e71bdb0291326e 156
+api/lib/communityValidation.ts
+  s_48a510eaef7c22::t_dd659816d9193b 210-213
+api/community/[id].test.ts
+  s_48a510eaef7c22::t_44767f62bd15c6 639-653
+api/community.test.ts
+  s_48a510eaef7c22::t_aad726fc73ea98 267
+api/lib/communityStore.test.ts
+  s_48a510eaef7c22::t_d067cb506f6c84 90
+scripts/community-admin/__tests__/list.test.ts
+  s_48a510eaef7c22::t_96b4be29b4bd75 30
+scripts/community-admin/__tests__/purge.test.ts
+  s_48a510eaef7c22::t_66db69f9e1453d 103
+scripts/community-admin/__tests__/purgePlan.test.ts
+  s_48a510eaef7c22::t_140f1cbd85aad8 43
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "8e193b5cfe12fdb4f01e031e57e028528e167155",
+  "prompts": {},
+  "sessions": {
+    "s_48a510eaef7c22": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fda9511-153c-4dd5-bba7-05895a1e12c3",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
