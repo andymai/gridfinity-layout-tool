@@ -290,7 +290,10 @@ export function buildFullParams(
     // Whole-cell fitting only has meaning against a perimeter — a rectangle has
     // no crossed cell to drop. Same normalization contract as the flags above,
     // so an orphaned flag can't fragment caches or force a regeneration.
-    wholeCellsOnly: outline !== undefined ? stored.wholeCellsOnly : undefined,
+    // `=== true` here as well as in the generator and the cache key: the key is
+    // allowlisted server-side without a type check, and resolved params are what
+    // split pieces inherit, so a malformed value must not travel that far.
+    wholeCellsOnly: outline !== undefined && stored.wholeCellsOnly === true ? true : undefined,
     connectorNubs: stripConnectors ? false : stored.connectorNubs,
     invertDovetails: stored.invertDovetails,
     preferIdenticalPieces: stored.preferIdenticalPieces,

@@ -538,6 +538,23 @@ describe('drawer outline handling', () => {
     expect(rectangular.wholeCellsOnly).toBeUndefined();
   });
 
+  // Resolved params are what split pieces inherit, and the key is allowlisted
+  // server-side without a type check, so a malformed synced value must not get
+  // this far.
+  it('narrows wholeCellsOnly to a literal true', () => {
+    const malformed = buildFullParams(
+      { ...storedBase, wholeCellsOnly: 'yes' as unknown as boolean },
+      10,
+      8,
+      42,
+      'end',
+      'end',
+      undefined,
+      outline
+    );
+    expect(malformed.wholeCellsOnly).toBeUndefined();
+  });
+
   it('composes padding into a rectilinear shape and zeroes the subsumed params', () => {
     const stored = {
       ...storedBase,

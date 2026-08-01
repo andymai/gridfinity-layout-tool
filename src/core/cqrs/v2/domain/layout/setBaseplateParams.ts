@@ -28,6 +28,7 @@ const payloadSchema = z.object({
     paddingAnchor: z
       .enum(['tl', 'tc', 'tr', 'ml', 'c', 'mr', 'bl', 'bc', 'br', 'custom'])
       .optional(),
+    wholeCellsOnly: z.boolean().optional(),
     connectorNubs: z.boolean().optional(),
     connectorStyle: z.enum(BASEPLATE_CONNECTOR_STYLES).optional(),
     lightweight: z.boolean().optional(),

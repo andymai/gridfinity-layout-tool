@@ -384,6 +384,27 @@ describe('migrateBaseplateParams', () => {
     expect(migrateBaseplateParams(base).overTile).toBeUndefined();
   });
 
+  // Without this an imported or migrated layout reverts a shaped plate to
+  // sliced sockets, silently changing geometry the user had already printed.
+  it('preserves wholeCellsOnly across a save/load round-trip', () => {
+    const base = {
+      magnetHoles: false,
+      magnetDiameter: 6.5,
+      magnetDepth: 2,
+      paddingLeft: 6,
+      paddingRight: 6,
+      paddingFront: 0,
+      paddingBack: 0,
+    };
+    expect(migrateBaseplateParams({ ...base, wholeCellsOnly: true }).wholeCellsOnly).toBe(true);
+    expect(migrateBaseplateParams({ ...base, wholeCellsOnly: false }).wholeCellsOnly).toBe(false);
+    expect(migrateBaseplateParams(base).wholeCellsOnly).toBeUndefined();
+    // A non-boolean from an untrusted payload is dropped, not coerced.
+    expect(
+      migrateBaseplateParams({ ...base, wholeCellsOnly: 'yes' }).wholeCellsOnly
+    ).toBeUndefined();
+  });
+
   it('preserves overTileHalfGrid across a save/load round-trip', () => {
     const base = {
       magnetHoles: false,

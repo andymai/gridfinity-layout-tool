@@ -332,6 +332,7 @@ export function migrateBaseplateParams(stored: unknown): StoredBaseplateParams {
     ...(typeof obj.overTileHalfGridSolidLeftover === 'boolean'
       ? { overTileHalfGridSolidLeftover: obj.overTileHalfGridSolidLeftover }
       : {}),
+    ...(typeof obj.wholeCellsOnly === 'boolean' ? { wholeCellsOnly: obj.wholeCellsOnly } : {}),
     ...(typeof obj.connectorNubs === 'boolean' ? { connectorNubs: obj.connectorNubs } : {}),
     ...(typeof obj.invertDovetails === 'boolean' ? { invertDovetails: obj.invertDovetails } : {}),
     ...(typeof obj.preferIdenticalPieces === 'boolean'
