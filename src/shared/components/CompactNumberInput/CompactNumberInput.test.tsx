@@ -432,6 +432,39 @@ describe('CompactNumberInput', () => {
     });
   });
 
+  // Only `softMax` may let typed text raise the nudge ceiling. Without the
+  // distinction a hard-max field can be walked past its own limit: type 500
+  // into a max-359 field, then arrow, and the nudge clamps to 500 not 359.
+  it('does not let a typed over-max entry raise the nudge ceiling on a hard-max field', () => {
+    const onChange = vi.fn();
+    render(
+      <CompactNumberInput label="R" value={10} onChange={onChange} min={0} max={359} step={1} />
+    );
+
+    fireEvent.click(screen.getByRole('button'));
+    const input = screen.getByRole('textbox');
+    fireEvent.change(input, { target: { value: '500' } });
+    fireEvent.keyDown(input, { key: 'ArrowDown' });
+
+    expect(onChange).toHaveBeenLastCalledWith(359);
+  });
+
+  it('binds a max that drops while the field is open', () => {
+    const onChange = vi.fn();
+    const { rerender } = render(
+      <CompactNumberInput label="R" value={200} onChange={onChange} min={0} max={359} step={1} />
+    );
+    fireEvent.click(screen.getByRole('button'));
+
+    // The ceiling is derived from live props, not captured on entry.
+    rerender(
+      <CompactNumberInput label="R" value={200} onChange={onChange} min={0} max={100} step={1} />
+    );
+    fireEvent.keyDown(screen.getByRole('textbox'), { key: 'ArrowUp' });
+
+    expect(onChange).toHaveBeenLastCalledWith(200);
+  });
+
   it('prevents decrement below min with arrow keys', async () => {
     const onChange = vi.fn();
     const user = userEvent.setup();

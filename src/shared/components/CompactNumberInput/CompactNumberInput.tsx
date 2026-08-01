@@ -86,19 +86,28 @@ export function CompactNumberInput({
   );
 
   /**
-   * Step ceiling for a gesture — a drag, or the current contents of the text
-   * field. `max`, or the starting value when that already sits above it.
+   * Ceiling for a nudge or drag, given the highest content the field has held.
    *
-   * Independent of `softMax`, which governs typed commits only: a hard `max`
-   * can also fall below the value, and a nudge must be able to move such a
-   * value without being yanked to the ceiling first.
-   *
-   * Held for the gesture rather than recomputed per keystroke, because a
-   * per-keystroke ceiling follows the value down — ArrowDown from 156 to 155
-   * would drop the ceiling to 155 and ArrowUp could never get back.
+   * Two different things can sit above `max`, and only one of them may raise
+   * this. A committed `value` can, because `max` itself may have fallen beneath
+   * it (an oversize cutout pins X's ceiling to 0 while X keeps its offset), and
+   * such a value still has to be nudgeable. Text the user has *typed* may only
+   * raise it under `softMax` — otherwise a hard-max field could be walked past
+   * its own limit one arrow key at a time.
    */
-  const ceilingFrom = useCallback((start: number) => Math.max(max, start), [max]);
-  const [editCeiling, setEditCeiling] = useState(max);
+  const stepCeiling = useCallback(
+    (peak: number) => (softMax ? Math.max(max, peak) : Math.max(max, value)),
+    [softMax, max, value]
+  );
+
+  /**
+   * Highest content the field has held this visit. Held so a nudge can't ratchet
+   * its own ceiling down — ArrowDown from 156 to 155 must leave ArrowUp able to
+   * return — and reset on typing so a smaller entry lowers it again. The ceiling
+   * is derived from it against live props, so a `max` that drops mid-edit binds
+   * immediately rather than leaving a stale ceiling behind.
+   */
+  const [editPeak, setEditPeak] = useState(0);
 
   /**
    * Round to 2dp, keeping accumulated scrub/nudge deltas free of float noise.
@@ -125,9 +134,9 @@ export function CompactNumberInput({
     if (disabled) return;
     // Mixed selection: start from an empty field so a typed value unifies all.
     setEditValue(indeterminate ? '' : formatValue(value));
-    setEditCeiling(ceilingFrom(value));
+    setEditPeak(value);
     setEditing(true);
-  }, [disabled, indeterminate, value, formatValue, ceilingFrom]);
+  }, [disabled, indeterminate, value, formatValue]);
 
   useEffect(() => {
     if (editing && inputRef.current) {
@@ -168,16 +177,14 @@ export function CompactNumberInput({
         // fallback.)
         const typed = parseFloat(editValue);
         const base = Number.isFinite(typed) ? typed : value;
-        // A typed value can sit above the ceiling captured on entry, so raise it
-        // — upward only, which is what keeps a nudge from ratcheting back down.
-        const ceiling = Math.max(editCeiling, ceilingFrom(base));
-        if (ceiling !== editCeiling) setEditCeiling(ceiling);
-        const next = clampRange(tidy(base + delta), min, ceiling);
+        const peak = Math.max(editPeak, base);
+        if (peak !== editPeak) setEditPeak(peak);
+        const next = clampRange(tidy(base + delta), min, stepCeiling(peak));
         onChange(next);
         setEditValue(formatValue(next));
       }
     },
-    [editValue, commit, value, min, editCeiling, ceilingFrom, onChange, formatValue, tidy, step]
+    [editValue, commit, value, min, editPeak, stepCeiling, onChange, formatValue, tidy, step]
   );
 
   const handleScrubStart = useCallback(
@@ -187,7 +194,7 @@ export function CompactNumberInput({
       const startX = e.clientX;
       const startValue = value;
       // Fixed for the drag, so the ceiling can't drift as the value moves.
-      const ceiling = ceilingFrom(startValue);
+      const ceiling = stepCeiling(startValue);
       let moved = false;
 
       const handleMove = (moveEvent: PointerEvent) => {
@@ -216,7 +223,7 @@ export function CompactNumberInput({
       document.addEventListener('pointermove', handleMove);
       document.addEventListener('pointerup', handleUp);
     },
-    [disabled, editing, value, min, ceilingFrom, onChange, tidy, startEditing, step]
+    [disabled, editing, value, min, stepCeiling, onChange, tidy, startEditing, step]
   );
 
   return (
@@ -260,12 +267,10 @@ export function CompactNumberInput({
           value={editValue}
           onChange={(e) => {
             setEditValue(e.target.value);
-            // Re-derive the nudge ceiling from what is now in the field. Without
-            // this it only ever rises, so typing 100 over a committed 156 would
-            // leave arrows free to climb back to 156, past both `max` and the
-            // number actually entered.
+            // Reset rather than raise, so typing 100 over a committed 156 lowers
+            // the ceiling instead of leaving arrows free to climb back to 156.
             const typed = parseFloat(e.target.value);
-            setEditCeiling(ceilingFrom(Number.isFinite(typed) ? typed : value));
+            setEditPeak(Number.isFinite(typed) ? typed : value);
           }}
           onBlur={() => commit(editValue)}
           onKeyDown={handleKeyDown}
