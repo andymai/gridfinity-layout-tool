@@ -245,6 +245,11 @@ export function createCutoutSlice(set: Set) {
    */
   const commitStack = (state: Draft<DesignerState>, bottomToTop: readonly Cutout[]): void => {
     const cutouts = state.params.cutouts;
+    // Compare ORDER, not the stored values: a legacy design has every zIndex at
+    // the default 0, so renumbering would rewrite each one and push an undo
+    // entry for a drag that moved nothing.
+    const current = stackBottomToTop(cutouts);
+    if (current.every((c, i) => c.id === bottomToTop[i]?.id)) return;
     const zById = new Map(bottomToTop.map((c, i) => [c.id, i]));
     const restacked = cutouts.map((c) => {
       const z = zById.get(c.id) ?? 0;

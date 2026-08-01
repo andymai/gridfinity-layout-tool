@@ -40,11 +40,22 @@ export function nodeIds(node: ShapeListNode): readonly string[] {
   return node.kind === 'group' ? node.members.map((m) => m.id) : [node.id];
 }
 
-/** Stack position, topmost first. Mirrors the store's array-order tiebreak. */
+/**
+ * Stack position, topmost first.
+ *
+ * Same-layer ties break by area (smaller on top), which is how the RENDERER
+ * resolves them — see `renderer/zLayer.ts`. Mirroring the store's array-order
+ * tiebreak instead would let the list show one shape above another while the
+ * canvas drew and clicked the opposite, defeating the point of the list. Array
+ * order is the final tiebreak so equal-area shapes still sort deterministically.
+ */
 function byStackDesc(cutouts: readonly Cutout[]): (a: Cutout, b: Cutout) => number {
   const indexById = new Map(cutouts.map((c, i) => [c.id, i]));
+  const area = (c: Cutout): number => Math.max(c.width * c.depth, 1);
   return (a, b) =>
-    (b.zIndex ?? 0) - (a.zIndex ?? 0) || (indexById.get(b.id) ?? 0) - (indexById.get(a.id) ?? 0);
+    (b.zIndex ?? 0) - (a.zIndex ?? 0) ||
+    area(a) - area(b) ||
+    (indexById.get(b.id) ?? 0) - (indexById.get(a.id) ?? 0);
 }
 
 /**

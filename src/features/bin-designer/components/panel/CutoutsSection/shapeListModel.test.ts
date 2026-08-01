@@ -38,9 +38,19 @@ describe('buildShapeList', () => {
     expect(ids(list)).toEqual(['top', 'middle', 'bottom']);
   });
 
-  it('breaks ties on array order, like the store', () => {
+  it('breaks same-layer ties by area, like the renderer', () => {
+    // zLayer.ts puts the smaller shape on top within a layer, so the list has to
+    // agree or it would show one order while the canvas drew another.
+    const list = buildShapeList([
+      cutout({ id: 'big', width: 40, depth: 40 }),
+      cutout({ id: 'small', width: 5, depth: 5 }),
+      cutout({ id: 'mid', width: 20, depth: 20 }),
+    ]);
+    expect(ids(list)).toEqual(['small', 'mid', 'big']);
+  });
+
+  it('falls back to array order for equal-area shapes', () => {
     const list = buildShapeList([cutout({ id: 'a' }), cutout({ id: 'b' }), cutout({ id: 'c' })]);
-    // All default to layer 0; later in the array is higher in the stack.
     expect(ids(list)).toEqual(['c', 'b', 'a']);
   });
 

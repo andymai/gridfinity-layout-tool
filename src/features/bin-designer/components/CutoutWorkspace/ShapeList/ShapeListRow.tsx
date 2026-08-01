@@ -89,11 +89,17 @@ export function ShapeListRow({
   const t = useTranslation();
   const [editing, setEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  // Escape unmounts the input, and browsers fire blur on removal — without this
+  // flag that blur would commit the very edit Escape just abandoned.
+  const cancelledRef = useRef(false);
 
   // Focus on entry without `autoFocus`, which the a11y lint rejects for
   // reducing control over where focus lands.
   useEffect(() => {
-    if (editing) inputRef.current?.select();
+    if (editing) {
+      cancelledRef.current = false;
+      inputRef.current?.select();
+    }
   }, [editing]);
   const isGroup = node.kind === 'group';
   const ids = nodeIds(node);
@@ -113,12 +119,16 @@ export function ShapeListRow({
 
   const commitRename = (value: string): void => {
     setEditing(false);
+    if (cancelledRef.current) return;
     if (cutout && value.trim() !== (cutout.name ?? '')) onRename(cutout.id, value.trim());
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>): void => {
     if (e.key === 'Enter') commitRename(e.currentTarget.value);
-    if (e.key === 'Escape') setEditing(false);
+    if (e.key === 'Escape') {
+      cancelledRef.current = true;
+      setEditing(false);
+    }
   };
 
   const allowDrop = (e: DragEvent): void => e.preventDefault();

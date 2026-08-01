@@ -404,6 +404,15 @@ describe('cutoutSlice - consolidated actions', () => {
       expect(useDesignerStore.getState().history.past.length).toBe(historyBefore);
     });
 
+    it('creates no undo entry when a legacy default stack does not move', () => {
+      // Every zIndex is still the default 0 here; renumbering would rewrite them
+      // all and push history for a drag that changed nothing.
+      seed();
+      const historyBefore = useDesignerStore.getState().history.past.length;
+      useDesignerStore.getState().moveCutoutsAbove(['b'], 'a');
+      expect(useDesignerStore.getState().history.past.length).toBe(historyBefore);
+    });
+
     it('renumbers onto contiguous layers', () => {
       seed();
       useDesignerStore.getState().moveCutoutsAbove(['a'], 'c');

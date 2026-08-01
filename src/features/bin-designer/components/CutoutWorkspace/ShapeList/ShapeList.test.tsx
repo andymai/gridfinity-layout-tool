@@ -166,11 +166,17 @@ describe('ShapeList', () => {
       expect(h.onSetProperty).toHaveBeenCalledWith(['a'], { name: undefined });
     });
 
-    it('abandons the edit on Escape', async () => {
+    it('abandons the edit on Escape, even with the blur a browser fires', async () => {
       const user = userEvent.setup();
       const h = setup([cutout({ id: 'a' })]);
       await user.dblClick(screen.getByTitle('Rectangle 20×15'));
-      await user.type(screen.getByRole('textbox', { name: /rename/i }), 'nope{Escape}');
+      const input = screen.getByRole('textbox', { name: /rename/i });
+      await user.type(input, 'nope');
+      // Real browsers blur the focused input when Escape unmounts it, which used
+      // to commit the abandoned edit. jsdom omits that blur, so fire it here or
+      // this test passes while the behaviour is broken where users are.
+      fireEvent.keyDown(input, { key: 'Escape' });
+      fireEvent.blur(input);
       expect(h.onSetProperty).not.toHaveBeenCalled();
     });
   });
