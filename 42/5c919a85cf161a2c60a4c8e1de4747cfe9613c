@@ -1,0 +1,28 @@
+src/features/generation/worker/generators/__kernel-tests__/floorOversizedProbe.test.ts
+  s_4d29bdcd922200::t_93d83884765bfc 1-64,78-103
+  s_4d29bdcd922200::t_1d5efa4bf4f8f3 65-67,75-77
+src/features/generation/worker/generators/__kernel-tests__/wallThickCapture.test.ts
+  s_4d29bdcd922200::t_39d4b2ced49abf 1-36,66-87
+  s_4d29bdcd922200::t_a7c958dac963d0 37-39,63-65
+  s_4d29bdcd922200::t_7620b8153bc2fe 88-90
+src/features/generation/worker/generators/__kernel-tests__/gomaBoundaryProbe.test.ts
+  s_4d29bdcd922200::t_6d11f943f9e4ad 23,33-34,60-76,81
+src/features/generation/worker/generators/__kernel-tests__/wallThickLogCapture.test.ts
+  s_4d29bdcd922200::t_02d82cb105deff 1-97
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "425c919a85cf161a2c60a4c8e1de4747cfe9613c",
+  "prompts": {},
+  "sessions": {
+    "s_4d29bdcd922200": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e911a193-bda2-4dfa-8b36-a1ed3a295646",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
