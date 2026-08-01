@@ -404,7 +404,7 @@
   "binDesigner.shapeList.tabShapes": "Former",
   "binDesigner.shapeList.tabProperties": "Egenskaper",
   "binDesigner.shapeList.empty": "Ingen former ennå. Tegn en for å komme i gang.",
-  "binDesigner.shapeList.countLabel": "{count} former",
+  "binDesigner.shapeList.countLabel": "Former: {count}",
   "binDesigner.shapeList.group": "Gruppe på {count}",
   "binDesigner.shapeList.expandGroup": "Utvid gruppe",
   "binDesigner.shapeList.collapseGroup": "Skjul gruppe",

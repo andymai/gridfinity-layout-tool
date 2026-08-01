@@ -2268,7 +2268,7 @@ const en: Record<string, string> = {
   'binDesigner.shapeList.tabShapes': 'Shapes',
   'binDesigner.shapeList.tabProperties': 'Properties',
   'binDesigner.shapeList.empty': 'No shapes yet. Draw one to get started.',
-  'binDesigner.shapeList.countLabel': '{count} shapes',
+  'binDesigner.shapeList.countLabel': 'Shapes: {count}',
   'binDesigner.shapeList.group': 'Group of {count}',
   'binDesigner.shapeList.expandGroup': 'Expand group',
   'binDesigner.shapeList.collapseGroup': 'Collapse group',

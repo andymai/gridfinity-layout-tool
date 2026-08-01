@@ -404,7 +404,7 @@
   "binDesigner.shapeList.tabShapes": "形状",
   "binDesigner.shapeList.tabProperties": "属性",
   "binDesigner.shapeList.empty": "还没有形状。绘制一个开始吧。",
-  "binDesigner.shapeList.countLabel": "{count} 个形状",
+  "binDesigner.shapeList.countLabel": "形状：{count}",
   "binDesigner.shapeList.group": "{count} 个的组",
   "binDesigner.shapeList.expandGroup": "展开组",
   "binDesigner.shapeList.collapseGroup": "折叠组",

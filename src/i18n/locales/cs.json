@@ -404,7 +404,7 @@
   "binDesigner.shapeList.tabShapes": "Tvary",
   "binDesigner.shapeList.tabProperties": "Vlastnosti",
   "binDesigner.shapeList.empty": "Zatím žádné tvary. Začněte nakreslením.",
-  "binDesigner.shapeList.countLabel": "Tvarů: {count}",
+  "binDesigner.shapeList.countLabel": "Tvary: {count}",
   "binDesigner.shapeList.group": "Skupina ({count})",
   "binDesigner.shapeList.expandGroup": "Rozbalit skupinu",
   "binDesigner.shapeList.collapseGroup": "Sbalit skupinu",

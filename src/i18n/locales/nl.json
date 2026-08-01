@@ -404,7 +404,7 @@
   "binDesigner.shapeList.tabShapes": "Vormen",
   "binDesigner.shapeList.tabProperties": "Eigenschappen",
   "binDesigner.shapeList.empty": "Nog geen vormen. Teken er een om te beginnen.",
-  "binDesigner.shapeList.countLabel": "{count} vormen",
+  "binDesigner.shapeList.countLabel": "Vormen: {count}",
   "binDesigner.shapeList.group": "Groep van {count}",
   "binDesigner.shapeList.expandGroup": "Groep uitklappen",
   "binDesigner.shapeList.collapseGroup": "Groep inklappen",

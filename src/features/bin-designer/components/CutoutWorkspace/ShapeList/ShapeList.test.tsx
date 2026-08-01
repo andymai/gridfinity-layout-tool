@@ -59,7 +59,7 @@ describe('ShapeList', () => {
 
   it('reports the shape count', () => {
     setup([cutout({ id: 'a' }), cutout({ id: 'b' })]);
-    expect(screen.getByText('2 shapes')).toBeInTheDocument();
+    expect(screen.getByText('Shapes: 2')).toBeInTheDocument();
   });
 
   describe('selection', () => {

@@ -404,7 +404,7 @@
   "binDesigner.shapeList.tabShapes": "도형",
   "binDesigner.shapeList.tabProperties": "속성",
   "binDesigner.shapeList.empty": "아직 도형이 없습니다. 하나 그려서 시작하세요.",
-  "binDesigner.shapeList.countLabel": "도형 {count}개",
+  "binDesigner.shapeList.countLabel": "도형: {count}",
   "binDesigner.shapeList.group": "{count}개 그룹",
   "binDesigner.shapeList.expandGroup": "그룹 펼치기",
   "binDesigner.shapeList.collapseGroup": "그룹 접기",

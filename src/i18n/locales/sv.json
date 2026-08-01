@@ -404,7 +404,7 @@
   "binDesigner.shapeList.tabShapes": "Former",
   "binDesigner.shapeList.tabProperties": "Egenskaper",
   "binDesigner.shapeList.empty": "Inga former än. Rita en för att börja.",
-  "binDesigner.shapeList.countLabel": "{count} former",
+  "binDesigner.shapeList.countLabel": "Former: {count}",
   "binDesigner.shapeList.group": "Grupp med {count}",
   "binDesigner.shapeList.expandGroup": "Expandera grupp",
   "binDesigner.shapeList.collapseGroup": "Fäll ihop grupp",

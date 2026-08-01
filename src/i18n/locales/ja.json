@@ -404,7 +404,7 @@
   "binDesigner.shapeList.tabShapes": "シェイプ",
   "binDesigner.shapeList.tabProperties": "プロパティ",
   "binDesigner.shapeList.empty": "シェイプがまだありません。描いて始めましょう。",
-  "binDesigner.shapeList.countLabel": "{count} 個のシェイプ",
+  "binDesigner.shapeList.countLabel": "シェイプ: {count}",
   "binDesigner.shapeList.group": "{count} 個のグループ",
   "binDesigner.shapeList.expandGroup": "グループを展開",
   "binDesigner.shapeList.collapseGroup": "グループを折りたたむ",

@@ -404,7 +404,7 @@
   "binDesigner.shapeList.tabShapes": "Фігури",
   "binDesigner.shapeList.tabProperties": "Властивості",
   "binDesigner.shapeList.empty": "Фігур ще немає. Намалюйте одну, щоб почати.",
-  "binDesigner.shapeList.countLabel": "Фігур: {count}",
+  "binDesigner.shapeList.countLabel": "Фігури: {count}",
   "binDesigner.shapeList.group": "Група з {count}",
   "binDesigner.shapeList.expandGroup": "Розгорнути групу",
   "binDesigner.shapeList.collapseGroup": "Згорнути групу",

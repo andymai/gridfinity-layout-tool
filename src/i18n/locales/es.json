@@ -404,7 +404,7 @@
   "binDesigner.shapeList.tabShapes": "Formas",
   "binDesigner.shapeList.tabProperties": "Propiedades",
   "binDesigner.shapeList.empty": "Aún no hay formas. Dibuja una para empezar.",
-  "binDesigner.shapeList.countLabel": "{count} formas",
+  "binDesigner.shapeList.countLabel": "Formas: {count}",
   "binDesigner.shapeList.group": "Grupo de {count}",
   "binDesigner.shapeList.expandGroup": "Expandir grupo",
   "binDesigner.shapeList.collapseGroup": "Contraer grupo",
