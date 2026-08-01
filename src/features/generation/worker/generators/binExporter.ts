@@ -8,7 +8,8 @@ import type { ExportFormat, FaceGroupData } from '../../bridge/types';
 
 import { generateBin } from './binOrchestrator';
 import { FeatureTag } from './featureTags';
-import { getLastSolid, isLastSolidExportQuality, setLastSolid } from './shapeCache';
+import { getLastSolid, isLastSolidReusableFor, setLastSolid } from './shapeCache';
+import { paramsFingerprint } from '@/shared/generation/paramsFingerprint';
 import { EXPORT_ANGULAR_TOLERANCE, EXPORT_TOLERANCE } from './utils/tolerances';
 import { unwrapExportBlob } from './utils/exportUnwrap';
 import { exportSolidToStl } from './utils/stlMeshFallback';
@@ -24,7 +25,8 @@ export interface ExportResult {
 
 /**
  * Run a single export attempt against the current cached solid, regenerating
- * first if the cache is missing or preview-quality.
+ * first unless the cache holds an export-quality solid built from these exact
+ * params.
  *
  * `faceGroups` is captured so 3MF callers can map each STL triangle to a
  * feature tag. The match relies on brepjs's shape+tolerance mesh cache: the
@@ -64,7 +66,7 @@ async function runExportAttempt(
   }
 
   let faceGroups: readonly FaceGroupData[] | undefined;
-  if (!isLastSolidExportQuality()) {
+  if (!isLastSolidReusableFor(paramsFingerprint(params))) {
     // Generation is the bulk of export → map its stage progress to 2%–85%.
     const meshData = generateBin(params, (_stage, p) => onProgress?.(0.02 + p * 0.83), true);
     faceGroups = meshData.faceGroups;
@@ -116,10 +118,12 @@ async function runExportAttempt(
  *
  * Strategy for robustness against intermittent kernel failures (GH #1339):
  *
- * 1. **Regenerate when stale**: if the cached solid is missing or was
- *    produced by a preview pass, rebuild with `forExport=true` first.
- *    Preview passes run `mesh()` at coarse tolerance, which attaches stale
- *    triangulation to the solid that `StlAPI.Write` may then reject.
+ * 1. **Regenerate when stale**: if the cached solid is missing, was produced
+ *    by a preview pass, or belongs to a different design, rebuild with
+ *    `forExport=true` first. Preview passes run `mesh()` at coarse tolerance,
+ *    which attaches stale triangulation to the solid that `StlAPI.Write` may
+ *    then reject; a different design's solid is simply the wrong shape, which
+ *    is what shipped mismatched bins in whole-layout ZIPs (GH #3074).
  *
  * 2. **Retry once on failure**: if the first export attempt throws (e.g.
  *    `StlAPI.Write` returns false, WASM handle corruption, any other

@@ -20,6 +20,7 @@ import { useTranslation } from '@/i18n';
 import { trackEvent, trackToolConverted } from '@/shared/analytics/posthog';
 import { getErrorMessage } from '@/shared/utils/errors';
 import { bridgeManager, workerPoolManager } from '@/shared/generation/bridge';
+import type { GenerationBridge } from '@/shared/generation/bridge';
 import type { ExportFormat, CombinedExportResult } from '@/shared/generation/bridge';
 import { withSocketNozzle } from '@/shared/generation/socketNozzle';
 import { export3MF } from '@/shared/generation/export';
@@ -48,7 +49,9 @@ import {
 } from '@/features/bin-designer/utils/binDownloadHelpers';
 import { getLinkedDesignIds } from '@/features/design-linking';
 import { planLayoutBinExport } from './planLayoutBinExport';
-import type { LoadedDesign } from './planLayoutBinExport';
+import type { LoadedDesign, LayoutExportable, LayoutSplitPlan } from './planLayoutBinExport';
+// Deep import (not the barrel): same lazy-chunk rationale as the helpers above.
+import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import { planLabelPlateExport } from './planLabelPlateExport';
 import { dedupeFileNames } from './dedupeFileNames';
 import { snapTextDepthToLayers } from '@/shared/constants/labelPlates';
@@ -145,6 +148,58 @@ async function combinedFiles(
   return [{ path: basePath, data: await blob.arrayBuffer() }];
 }
 
+/**
+ * Cut one oversized bin into bed-sized pieces and flatten them into ZIP files.
+ *
+ * Every piece becomes its own file (`<base>_<label>`) — including under 3MF,
+ * unlike `combinedFiles`. The pieces are separate prints that get joined after
+ * printing, so packing them into one multi-object 3MF would put parts on top of
+ * each other on the plate. Companion parts (lid, dividers) come from a second,
+ * combined pass because the split export emits body pieces only.
+ */
+async function splitFiles(
+  bridge: GenerationBridge,
+  exportable: LayoutExportable,
+  split: LayoutSplitPlan,
+  format: ExportFileFormat,
+  printSettings: { layerHeightMm: number; infillPercent: number; nozzleSizeMm: number },
+  workerFormat: ExportFormat
+): Promise<ZipBinaryFile[]> {
+  const params = withSocketNozzle(exportable.params, printSettings.nozzleSizeMm);
+  const connectorConfig = {
+    ...(exportable.params.splitConnectors ?? DEFAULT_SPLIT_CONNECTOR_CONFIG),
+    nozzleSizeMm: printSettings.nozzleSizeMm,
+  };
+  const result = await bridge.exportSplitBin(params, split.cutPlanesX, split.cutPlanesY, {
+    splitConnectorConfig: connectorConfig,
+  });
+
+  const baseNoExt = exportable.path.replace(/\.[^.]+$/, '');
+  // Split and combined pieces carry different metadata (grid col/row vs none);
+  // packaging only needs the bytes and the label.
+  const pieces: { data: ArrayBuffer; label: string }[] = result.pieces.map((p) => ({
+    data: p.data,
+    label: p.label,
+  }));
+
+  if (exportable.companions.length > 0) {
+    const combined = await bridge.exportCombined(params, workerFormat);
+    // The body is already covered by the split pieces — take only the extras.
+    for (const p of combined.pieces) {
+      if (p.label !== 'bin') pieces.push({ data: p.data, label: p.label });
+    }
+  }
+
+  const files: ZipBinaryFile[] = [];
+  for (const piece of pieces) {
+    const path = `${baseNoExt}_${piece.label}.${format}`;
+    const data =
+      format === '3mf' ? await stlTo3mf(piece.data, baseNameOf(path), printSettings) : piece.data;
+    files.push({ path, data });
+  }
+  return files;
+}
+
 export function useLayoutExport(): UseLayoutExportReturn {
   const t = useTranslation();
   const [isExporting, setIsExporting] = useState(false);
@@ -200,16 +255,20 @@ export function useLayoutExport(): UseLayoutExportReturn {
           fileNameConfig.style === 'custom'
             ? { style: 'descriptive', customName: '', format }
             : fileNameConfig;
-        const plan = planLayoutBinExport(
+        const plan = planLayoutBinExport({
           bins,
           loaded,
           format,
-          innerConfig,
+          fileNameConfig: innerConfig,
           printSettings,
-          layout.drawer,
-          layout.baseplateParams,
-          layout.magnetAnchor
-        );
+          drawer: layout.drawer,
+          baseplate: layout.baseplateParams,
+          printBed: {
+            widthMm: layout.printBedSize,
+            depthMm: layout.printBedDepth ?? layout.printBedSize,
+          },
+          magnetAnchor: layout.magnetAnchor,
+        });
 
         // Phase 1 — bins. The bridge emits STL/STEP only; 3MF + companion parts
         // are packaged here. Worker format: STEP stays STEP, STL and 3MF both
@@ -221,10 +280,15 @@ export function useLayoutExport(): UseLayoutExportReturn {
         setExportProgress({ current: 0, total: binTotal, label: binLabel(0) });
 
         const binFiles: ZipBinaryFile[] = [];
-        // Body-only designs export in parallel via the pool; designs with a lid
-        // or removable dividers go through the (non-poolable) combined flow.
-        const simple = plan.exportable.filter((e) => e.companions.length === 0);
-        const companions = plan.exportable.filter((e) => e.companions.length > 0);
+        // Three routes. Bins too large for the bed must be cut first, so they
+        // claim their designs before the other two buckets (a split design with
+        // a lid gets its companions from a second, combined pass). Of what's
+        // left, body-only designs export in parallel via the pool; designs with
+        // a lid or removable dividers go through the (non-poolable) combined flow.
+        const splits = plan.exportable.filter((e) => e.split !== null);
+        const whole = plan.exportable.filter((e) => e.split === null);
+        const simple = whole.filter((e) => e.companions.length === 0);
+        const companions = whole.filter((e) => e.companions.length > 0);
         let done = 0;
 
         if (simple.length > 0) {
@@ -261,6 +325,18 @@ export function useLayoutExport(): UseLayoutExportReturn {
             workerFormat
           );
           binFiles.push(...(await combinedFiles(result, format, e.path, e.params, printSettings)));
+          done++;
+          setExportProgress({ current: done, total: binTotal, label: binLabel(done) });
+        }
+
+        // Oversized bins — cut into bed-sized pieces the same way the bin
+        // designer's split export does, so the ZIP ships something printable
+        // instead of one part that doesn't fit the machine (#3074).
+        for (const e of splits) {
+          if (!e.split) continue;
+          binFiles.push(
+            ...(await splitFiles(bridge, e, e.split, format, printSettings, workerFormat))
+          );
           done++;
           setExportProgress({ current: done, total: binTotal, label: binLabel(done) });
         }

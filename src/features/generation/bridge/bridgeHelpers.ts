@@ -6,24 +6,9 @@
 import type { KernelName } from './types';
 import type { DedupCache, ThreadingInfo } from './bridgeTypes';
 
-/**
- * Deterministic fingerprint for generation params.
- *
- * Uses JSON.stringify with sorted keys to ensure identical params always
- * produce the same string, regardless of property insertion order.
- */
-export function paramsFingerprint(params: unknown): string {
-  return JSON.stringify(params, (_, value: unknown) => {
-    if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
-      const sorted: Record<string, unknown> = {};
-      for (const key of Object.keys(value).sort()) {
-        sorted[key] = (value as Record<string, unknown>)[key];
-      }
-      return sorted;
-    }
-    return value;
-  });
-}
+// Re-exported rather than defined here: the worker needs the same encoding for
+// its `lastSolid` identity, and worker → bridge value imports are not allowed.
+export { paramsFingerprint } from '@/shared/generation/paramsFingerprint';
 
 /** Extract threading info from INIT_READY with defensive validation. */
 export function extractThreadingInfo(data: {

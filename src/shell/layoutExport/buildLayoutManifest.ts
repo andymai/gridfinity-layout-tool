@@ -22,6 +22,11 @@ export interface ManifestBinEntry {
   /** Companion parts included alongside the body (e.g. `lid`, `dividers`). */
   readonly companions?: readonly string[];
   /**
+   * Number of pieces this bin ships as when it exceeds the print bed (#3074).
+   * Absent for a bin that prints whole.
+   */
+  readonly splitPieces?: number;
+  /**
    * Every grid position this entry's mesh is placed at, present only for an
    * extended variant. Several bins on one design can resolve to different
    * overhangs, so the file name alone can't say which goes where — this is the
@@ -144,6 +149,12 @@ export function buildLayoutManifest(input: LayoutManifestInput): string {
       }
       if (b.companions && b.companions.length > 0) {
         lines.push(`    Includes:  ${b.companions.join(', ')}`);
+      }
+      if (b.splitPieces && b.splitPieces > 1) {
+        lines.push(
+          `    Split:     ${b.splitPieces} pieces — too large for the print bed.`,
+          '               Print all pieces and join them with the printed connectors.'
+        );
       }
       lines.push(
         `    Estimate:  ~${b.filamentGrams.toFixed(1)} g, ~${formatTime(b.printTimeMinutes)} each`
