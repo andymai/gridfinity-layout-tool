@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.342.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.342.1...gridfinity-layout-tool-v4.342.2) (2026-08-01)
+
+
+### Bug Fixes
+
+* **drawer-shape:** show pen-editor corner radius to 2 decimals ([#3090](https://github.com/andymai/gridfinity-layout-tool/issues/3090)) ([#3094](https://github.com/andymai/gridfinity-layout-tool/issues/3094)) ([05070c7](https://github.com/andymai/gridfinity-layout-tool/commit/05070c780d9fcbba817391b3b5cfce5d1c760640))
+
 ## [4.342.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.342.0...gridfinity-layout-tool-v4.342.1) (2026-08-01)
 
 
