@@ -452,6 +452,8 @@
   "binDesigner.cutoutEditor.boardSettings": "Plateau",
   "binDesigner.cutoutEditor.boardSize": "Taille du plateau",
   "binDesigner.cutoutEditor.bringBackIn": "Replacer à l’intérieur",
+  "binDesigner.cutoutEditor.growBinToFit": "Agrandir le bac à {width} × {depth}",
+  "binDesigner.cutoutEditor.growBinUnavailable": "Le bac ne peut pas s’agrandir assez pour les contenir.",
   "binDesigner.cutoutEditor.delete": "Supprimer la sélection",
   "binDesigner.cutoutEditor.done": "Terminé",
   "binDesigner.cutoutEditor.duplicate": "Dupliquer la sélection",

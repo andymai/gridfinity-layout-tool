@@ -452,6 +452,8 @@
   "binDesigner.cutoutEditor.boardSettings": "Platte",
   "binDesigner.cutoutEditor.boardSize": "Plattengröße",
   "binDesigner.cutoutEditor.bringBackIn": "Wieder einpassen",
+  "binDesigner.cutoutEditor.growBinToFit": "Behälter auf {width} × {depth} vergrößern",
+  "binDesigner.cutoutEditor.growBinUnavailable": "Der Behälter kann nicht groß genug werden, um diese aufzunehmen.",
   "binDesigner.cutoutEditor.delete": "Auswahl löschen",
   "binDesigner.cutoutEditor.done": "Fertig",
   "binDesigner.cutoutEditor.duplicate": "Auswahl duplizieren",

@@ -108,6 +108,14 @@ export function clampRotationToBounds(
     return normalize(proposedAngle);
   }
 
+  // Already off the board (a typed oversize W/H, #3061) — no angle fits, so the
+  // search below would converge back onto the current rotation and the control
+  // would silently do nothing. The guard exists to stop a rotation pushing a
+  // fitting cutout out, not to freeze one that is already out.
+  if (!fitsInBounds(cutout.rotation)) {
+    return normalize(proposedAngle);
+  }
+
   // Unwrap proposed angle relative to current rotation so the binary search
   // follows the shortest arc (handles 350° → 10° wrap-around correctly)
   let delta = proposedAngle - cutout.rotation;

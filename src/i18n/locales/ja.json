@@ -452,6 +452,8 @@
   "binDesigner.cutoutEditor.boardSettings": "ボード",
   "binDesigner.cutoutEditor.boardSize": "ボードサイズ",
   "binDesigner.cutoutEditor.bringBackIn": "内側に戻す",
+  "binDesigner.cutoutEditor.growBinToFit": "ビンを {width} × {depth} に拡大",
+  "binDesigner.cutoutEditor.growBinUnavailable": "これらを収めるほどビンを大きくできません。",
   "binDesigner.cutoutEditor.delete": "選択を削除",
   "binDesigner.cutoutEditor.done": "完了",
   "binDesigner.cutoutEditor.duplicate": "選択を複製",

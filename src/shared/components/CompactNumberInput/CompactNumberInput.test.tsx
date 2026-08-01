@@ -178,6 +178,74 @@ describe('CompactNumberInput', () => {
     expect(onChange).toHaveBeenCalledWith(15);
   });
 
+  describe('softMax', () => {
+    it('commits a typed value past max instead of truncating it', () => {
+      const onChange = vi.fn();
+      render(<CompactNumberInput label="W" value={10} onChange={onChange} max={123.1} softMax />);
+
+      fireEvent.click(screen.getByRole('button'));
+      fireEvent.change(screen.getByRole('textbox'), { target: { value: '156' } });
+      fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Enter' });
+
+      expect(onChange).toHaveBeenCalledWith(156);
+    });
+
+    it('still enforces min on a typed value', () => {
+      const onChange = vi.fn();
+      render(<CompactNumberInput label="W" value={10} onChange={onChange} min={2} softMax />);
+
+      fireEvent.click(screen.getByRole('button'));
+      fireEvent.change(screen.getByRole('textbox'), { target: { value: '-5' } });
+      fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Enter' });
+
+      expect(onChange).toHaveBeenCalledWith(2);
+    });
+
+    it('still caps arrow keys at max while the value is under it', async () => {
+      const onChange = vi.fn();
+      const user = userEvent.setup();
+      render(
+        <CompactNumberInput label="W" value={15} onChange={onChange} max={15} step={1} softMax />
+      );
+
+      await user.click(screen.getByRole('button'));
+      await user.keyboard('{ArrowUp}');
+
+      expect(onChange).toHaveBeenCalledWith(15);
+    });
+
+    it('steps down from an over-max value rather than snapping back to max', async () => {
+      const onChange = vi.fn();
+      const user = userEvent.setup();
+      render(
+        <CompactNumberInput
+          label="W"
+          value={156}
+          onChange={onChange}
+          max={123.1}
+          step={1}
+          softMax
+        />
+      );
+
+      await user.click(screen.getByRole('button'));
+      await user.keyboard('{ArrowDown}');
+
+      expect(onChange).toHaveBeenCalledWith(155);
+    });
+
+    it('leaves the default (hard max) behaviour untouched', () => {
+      const onChange = vi.fn();
+      render(<CompactNumberInput label="W" value={10} onChange={onChange} max={123.1} />);
+
+      fireEvent.click(screen.getByRole('button'));
+      fireEvent.change(screen.getByRole('textbox'), { target: { value: '156' } });
+      fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Enter' });
+
+      expect(onChange).toHaveBeenCalledWith(123.1);
+    });
+  });
+
   it('prevents decrement below min with arrow keys', async () => {
     const onChange = vi.fn();
     const user = userEvent.setup();

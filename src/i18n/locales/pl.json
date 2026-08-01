@@ -452,6 +452,8 @@
   "binDesigner.cutoutEditor.boardSettings": "Płyta",
   "binDesigner.cutoutEditor.boardSize": "Rozmiar płyty",
   "binDesigner.cutoutEditor.bringBackIn": "Przywróć do środka",
+  "binDesigner.cutoutEditor.growBinToFit": "Powiększ pojemnik do {width} × {depth}",
+  "binDesigner.cutoutEditor.growBinUnavailable": "Pojemnik nie może urosnąć na tyle, aby je pomieścić.",
   "binDesigner.cutoutEditor.delete": "Usuń zaznaczenie",
   "binDesigner.cutoutEditor.done": "Gotowe",
   "binDesigner.cutoutEditor.duplicate": "Duplikuj zaznaczenie",

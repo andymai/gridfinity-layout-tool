@@ -452,6 +452,8 @@
   "binDesigner.cutoutEditor.boardSettings": "Bord",
   "binDesigner.cutoutEditor.boardSize": "Bordgrootte",
   "binDesigner.cutoutEditor.bringBackIn": "Terugzetten",
+  "binDesigner.cutoutEditor.growBinToFit": "Bak vergroten naar {width} × {depth}",
+  "binDesigner.cutoutEditor.growBinUnavailable": "De bak kan niet groot genoeg worden om deze te bevatten.",
   "binDesigner.cutoutEditor.delete": "Selectie verwijderen",
   "binDesigner.cutoutEditor.done": "Klaar",
   "binDesigner.cutoutEditor.duplicate": "Selectie dupliceren",

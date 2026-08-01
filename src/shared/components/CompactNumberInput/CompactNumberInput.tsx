@@ -27,6 +27,13 @@ interface CompactNumberInputProps {
   readonly highlight?: boolean;
   /** Selected items have differing values — show a "mixed" placeholder until edited. */
   readonly indeterminate?: boolean;
+  /**
+   * Treat `max` as a soft ceiling for typed entries only. Scrubbing and arrow
+   * keys still stop at it — dragging past a limit is meaningless — but a typed
+   * number commits as written, so a field holding a real-world measurement
+   * can't silently truncate it (#3061). The caller owns what happens next.
+   */
+  readonly softMax?: boolean;
 }
 
 /** Placeholder glyph shown when a multi-selection has mixed values (en dash). */
@@ -56,13 +63,24 @@ export function CompactNumberInput({
   info,
   highlight = false,
   indeterminate = false,
+  softMax = false,
 }: CompactNumberInputProps) {
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
   const [scrubbing, setScrubbing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const clamp = useCallback((v: number) => clampRange(v, min, max), [min, max]);
+  const clampTyped = useCallback(
+    (v: number) => (softMax ? Math.max(min, v) : clampRange(v, min, max)),
+    [softMax, min, max]
+  );
+  // Scrub/arrow ceiling. Under `softMax` a value typed past `max` raises the
+  // ceiling to itself, so nudging an over-max measurement steps down from where
+  // it is instead of snapping back to `max` on the first keypress.
+  const clampStep = useCallback(
+    (v: number) => clampRange(v, min, softMax ? Math.max(max, value) : max),
+    [softMax, min, max, value]
+  );
 
   const formatValue = useCallback((v: number) => {
     const rounded = Math.round(v * 100) / 100;
@@ -89,10 +107,10 @@ export function CompactNumberInput({
   const commit = useCallback(
     (raw: string) => {
       const parsed = parseFloat(raw);
-      if (!isNaN(parsed)) onChange(clamp(parsed));
+      if (!isNaN(parsed)) onChange(clampTyped(parsed));
       setEditing(false);
     },
-    [onChange, clamp]
+    [onChange, clampTyped]
   );
 
   const handleKeyDown = useCallback(
@@ -104,12 +122,12 @@ export function CompactNumberInput({
       } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
         e.preventDefault();
         const delta = effectiveStep(step, e) * (e.key === 'ArrowUp' ? 1 : -1);
-        const next = clamp(tidy(value + delta));
+        const next = clampStep(tidy(value + delta));
         onChange(next);
         setEditValue(formatValue(next));
       }
     },
-    [editValue, commit, value, clamp, onChange, formatValue, tidy, step]
+    [editValue, commit, value, clampStep, onChange, formatValue, tidy, step]
   );
 
   const handleScrubStart = useCallback(
@@ -128,7 +146,7 @@ export function CompactNumberInput({
         }
         if (!moved) return;
         const steps = Math.round(dx / PIXELS_PER_STEP);
-        const next = clamp(tidy(startValue + steps * effectiveStep(step, moveEvent)));
+        const next = clampStep(tidy(startValue + steps * effectiveStep(step, moveEvent)));
         onChange(next);
       };
 
@@ -142,7 +160,7 @@ export function CompactNumberInput({
       document.addEventListener('pointermove', handleMove);
       document.addEventListener('pointerup', handleUp);
     },
-    [disabled, editing, value, clamp, onChange, tidy, startEditing, step]
+    [disabled, editing, value, clampStep, onChange, tidy, startEditing, step]
   );
 
   return (

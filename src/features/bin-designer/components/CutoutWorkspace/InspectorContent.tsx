@@ -11,6 +11,7 @@ import { useTranslation } from '@/i18n';
 import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
 import { CHAMFER_SHAPES, MAX_CUTOUT_CHAMFER, maxEntryChamfer } from '@/features/bin-designer/types';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
+import type { GrowTarget } from '../panel/CutoutsSection/growBinToFit';
 import { alignSelection, distributeSelection } from '../panel/CutoutsSection/geometryAlign';
 import type { AlignMode, DistributeAxis } from '../panel/CutoutsSection/geometryAlign';
 import { SingleCutoutInspector } from './SingleCutoutInspector';
@@ -47,6 +48,10 @@ interface InspectorContentProps {
   readonly offBoardCount?: number;
   /** Clamp every off-board cutout back inside the board. */
   readonly onClampOffBoard?: () => void;
+  /** Bin size that would fit every stray, or `null` when growing can't clear it. */
+  readonly growTarget?: GrowTarget | null;
+  /** Resize the bin to {@link growTarget}. */
+  readonly onGrowToFit?: () => void;
 }
 
 /** Effective field value, merging this cutout's live preview override. */
@@ -107,6 +112,8 @@ export function InspectorContent({
   board,
   offBoardCount = 0,
   onClampOffBoard,
+  growTarget,
+  onGrowToFit,
 }: InspectorContentProps) {
   const t = useTranslation();
 
@@ -118,7 +125,12 @@ export function InspectorContent({
   // Bin-size controls stay visible across every selection state so the user can
   // resize without leaving the editor.
   const binSize = (
-    <BinSizeSection offBoardCount={offBoardCount} onClampOffBoard={onClampOffBoard} />
+    <BinSizeSection
+      offBoardCount={offBoardCount}
+      onClampOffBoard={onClampOffBoard}
+      growTarget={growTarget}
+      onGrowToFit={onGrowToFit}
+    />
   );
 
   if (selectedCutouts.length === 0) {
@@ -176,26 +188,24 @@ export function InspectorContent({
     if (updates.size > 0) onUpdateBatch(updates);
   };
 
-  // Position and size are per-cutout clamped: an X that fits a 10mm hole runs a
-  // 40mm one past the wall, so each shape gets its own ceiling rather than the
-  // control refusing the whole edit.
+  // Position is per-cutout clamped: an X that fits a 10mm hole runs a 40mm one
+  // past the wall, so each shape gets its own ceiling rather than the control
+  // refusing the whole edit. Size is not — a typed W/H is a measurement, and it
+  // is kept past the board for the grow-to-fit action to resolve (#3061).
   const handleGeometryBatch = (key: 'x' | 'y' | 'width' | 'depth', value: number) => {
     if (!onUpdateBatch || selectedCutouts.length <= 1) return;
     const updates = new Map<string, Partial<Cutout>>();
     for (const c of selectedCutouts) {
       if (c.locked) continue;
-      // Meshes carry baked geometry — resizing them would desync the asset.
-      if ((key === 'width' || key === 'depth') && c.shape === 'mesh') continue;
-      const limit =
-        key === 'x'
-          ? binWidth - c.width
-          : key === 'y'
-            ? binDepth - c.depth
-            : key === 'width'
-              ? binWidth
-              : binDepth;
-      const floor = key === 'x' || key === 'y' ? 0 : MIN_CUTOUT_SIZE_MM;
-      updates.set(c.id, { [key]: Math.max(floor, Math.min(value, limit)) });
+      if (key === 'width' || key === 'depth') {
+        // Meshes carry baked geometry — resizing them would desync the asset.
+        if (c.shape === 'mesh') continue;
+        updates.set(c.id, { [key]: Math.max(MIN_CUTOUT_SIZE_MM, value) });
+        continue;
+      }
+      // An oversize cutout leaves no valid offset on this axis; pin it to 0.
+      const limit = Math.max(0, key === 'x' ? binWidth - c.width : binDepth - c.depth);
+      updates.set(c.id, { [key]: Math.max(0, Math.min(value, limit)) });
     }
     if (updates.size > 0) onUpdateBatch(updates);
   };
@@ -297,6 +307,7 @@ export function InspectorContent({
               onChange={(width) => handleGeometryBatch('width', width)}
               min={MIN_CUTOUT_SIZE_MM}
               max={binWidth}
+              softMax
               step={0.5}
               unit="mm"
               disabled={disabled}
@@ -308,6 +319,7 @@ export function InspectorContent({
               onChange={(depth) => handleGeometryBatch('depth', depth)}
               min={MIN_CUTOUT_SIZE_MM}
               max={binDepth}
+              softMax
               step={0.5}
               unit="mm"
               disabled={disabled}

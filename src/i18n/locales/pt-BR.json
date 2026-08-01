@@ -452,6 +452,8 @@
   "binDesigner.cutoutEditor.boardSettings": "Placa",
   "binDesigner.cutoutEditor.boardSize": "Tamanho da placa",
   "binDesigner.cutoutEditor.bringBackIn": "Trazer de volta",
+  "binDesigner.cutoutEditor.growBinToFit": "Aumentar caixa para {width} × {depth}",
+  "binDesigner.cutoutEditor.growBinUnavailable": "A caixa não pode crescer o suficiente para caberem.",
   "binDesigner.cutoutEditor.delete": "Excluir seleção",
   "binDesigner.cutoutEditor.done": "Concluído",
   "binDesigner.cutoutEditor.duplicate": "Duplicar seleção",

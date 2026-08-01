@@ -345,6 +345,41 @@ describe('InspectorContent multi-select editing', () => {
     expect(updates.get('pinned')?.cutDepth).toBe(8);
   });
 
+  it('keeps a batch W past the board instead of truncating the measurement (#3061)', () => {
+    const onUpdateBatch = renderMulti([
+      createCutout({ id: 'a' }),
+      createCutout({ id: 'b', width: 40 }),
+    ]);
+
+    // binWidth is 100 — the old behaviour silently rewrote this to 100.
+    fireEvent.change(screen.getByTestId('compact-input-W'), { target: { value: '156' } });
+
+    const updates = onUpdateBatch.mock.calls[0][0] as Map<string, Partial<Cutout>>;
+    expect(updates.get('a')?.width).toBe(156);
+    expect(updates.get('b')?.width).toBe(156);
+  });
+
+  it('still floors a batch W at the minimum cutout size', () => {
+    const onUpdateBatch = renderMulti([createCutout({ id: 'a' }), createCutout({ id: 'b' })]);
+
+    fireEvent.change(screen.getByTestId('compact-input-W'), { target: { value: '0.5' } });
+
+    const updates = onUpdateBatch.mock.calls[0][0] as Map<string, Partial<Cutout>>;
+    expect(updates.get('a')?.width).toBe(2);
+  });
+
+  it('pins a batch X to 0 for a cutout wider than the board', () => {
+    const onUpdateBatch = renderMulti([
+      createCutout({ id: 'oversize', width: 156 }),
+      createCutout({ id: 'normal' }),
+    ]);
+
+    fireEvent.change(screen.getByTestId('compact-input-X'), { target: { value: '20' } });
+
+    const updates = onUpdateBatch.mock.calls[0][0] as Map<string, Partial<Cutout>>;
+    expect(updates.get('oversize')?.x).toBe(0);
+  });
+
   it('skips meshes when batch-resizing, since their geometry is baked', () => {
     const onUpdateBatch = renderMulti([
       createCutout({ id: 'rect' }),

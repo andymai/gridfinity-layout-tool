@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { SingleCutoutInspector } from './SingleCutoutInspector';
 import type { Cutout } from '@/features/bin-designer/types';
 
@@ -45,6 +45,40 @@ describe('SingleCutoutInspector', () => {
     expect(screen.getByText('binDesigner.cutouts.section.transform')).toBeInTheDocument();
     expect(screen.getByText('binDesigner.cutouts.section.shape')).toBeInTheDocument();
     expect(screen.getByText('binDesigner.cutouts.section.label')).toBeInTheDocument();
+  });
+
+  // #3061: W/H hold a measurement, so the field must not rewrite it to the board
+  // size. X/Y still clamp, but their ceiling can't go negative once W > board.
+  it('marks W/H as soft-capped and keeps the X/Y ceilings non-negative', () => {
+    renderit(makeCutout({ shape: 'rectangle', width: 156, depth: 156 }));
+    for (const label of ['W', 'H']) {
+      expect(screen.getByRole('slider', { name: label })).not.toHaveAttribute('aria-valuemax', '0');
+    }
+    for (const label of ['X', 'Y']) {
+      expect(screen.getByRole('slider', { name: label })).toHaveAttribute('aria-valuemax', '0');
+    }
+  });
+
+  it('commits a typed W past the board instead of truncating it', () => {
+    const onUpdate = vi.fn();
+    render(
+      <SingleCutoutInspector
+        cutout={makeCutout({ shape: 'rectangle' })}
+        preview={new Map()}
+        binWidth={123.1}
+        binDepth={123.1}
+        maxCutDepth={20}
+        onUpdate={onUpdate}
+        disabled={false}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'W: 10 mm' }));
+    const input = screen.getByRole('textbox', { name: 'W' });
+    fireEvent.change(input, { target: { value: '156' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    expect(onUpdate).toHaveBeenCalledWith('c1', { width: 156 });
   });
 
   it('shows the Array section for an arrayable shape but not for a path', () => {

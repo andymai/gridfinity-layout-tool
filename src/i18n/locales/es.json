@@ -452,6 +452,8 @@
   "binDesigner.cutoutEditor.boardSettings": "Tablero",
   "binDesigner.cutoutEditor.boardSize": "Tamaño del tablero",
   "binDesigner.cutoutEditor.bringBackIn": "Traer de vuelta",
+  "binDesigner.cutoutEditor.growBinToFit": "Ampliar contenedor a {width} × {depth}",
+  "binDesigner.cutoutEditor.growBinUnavailable": "El contenedor no puede crecer lo suficiente para que quepan.",
   "binDesigner.cutoutEditor.delete": "Eliminar selección",
   "binDesigner.cutoutEditor.done": "Listo",
   "binDesigner.cutoutEditor.duplicate": "Duplicar selección",

@@ -26,6 +26,7 @@ import {
   getOffBoardCutoutIds,
   clampOffBoardCutouts,
 } from '../panel/CutoutsSection/offBoardCutouts';
+import { computeGrowToFit } from '../panel/CutoutsSection/growBinToFit';
 import { CutoutCanvas3D } from '../panel/CutoutsSection/renderer';
 import { WorkspaceHeader } from './WorkspaceHeader';
 import { CutoutShapeToolbar } from '../panel/CutoutsSection/CutoutShapeToolbar';
@@ -70,6 +71,8 @@ export function CutoutWorkspace() {
     canRedo,
     lockCutouts,
     unlockCutouts,
+    halfGridMode,
+    setParams,
   } = useDesignerStore(
     useShallow((s) => ({
       params: s.params,
@@ -93,6 +96,8 @@ export function CutoutWorkspace() {
       canRedo: s.history.future.length > 0,
       lockCutouts: s.lockCutouts,
       unlockCutouts: s.unlockCutouts,
+      halfGridMode: s.ui.halfGridMode,
+      setParams: s.setParams,
     }))
   );
 
@@ -179,6 +184,21 @@ export function CutoutWorkspace() {
     (id: string) => applyFlattenArray(id, cutouts, updateCutout, addCutout),
     [cutouts, updateCutout, addCutout]
   );
+
+  // Grow-to-fit companion to the clamp: a typed W/H past the board is kept
+  // rather than truncated (#3061), so the warning offers to move the board to
+  // the cutouts as well as the cutouts to the board. `null` = growing can't
+  // clear the warning, and the action is hidden rather than half-applied.
+  const growTarget = useMemo(
+    () => computeGrowToFit(params, cutouts, halfGridMode),
+    [params, cutouts, halfGridMode]
+  );
+
+  const handleGrowToFit = useCallback(() => {
+    if (!growTarget) return;
+    // One setParams, so growing both axes is a single undo step.
+    setParams({ width: growTarget.width, depth: growTarget.depth });
+  }, [growTarget, setParams]);
 
   const handleClampOffBoard = useCallback(() => {
     const updates = clampOffBoardCutouts(
@@ -516,6 +536,8 @@ export function CutoutWorkspace() {
           onFlattenArray={handleFlattenArray}
           offBoardCount={offBoardIds.size}
           onClampOffBoard={handleClampOffBoard}
+          growTarget={growTarget}
+          onGrowToFit={handleGrowToFit}
           onDuplicate={duplicateSelected}
           onDelete={deleteSelected}
           board={{
