@@ -12,9 +12,14 @@
 
 import type { PathPoint } from '@/features/bin-designer/types';
 import type { ParsedCutoutSpec } from './types';
-import type { Matrix } from './svgTransform';
+
 import type { ViewBox } from './types';
-import { applyMatrix, isIdentityOrTranslate, transformPoint } from './svgTransform';
+import {
+  applyMatrix,
+  isIdentityOrTranslate,
+  transformPoint,
+  type Matrix,
+} from '@/shared/utils/svg';
 import { getPathBounds } from '../pathGeometry';
 import { dropCoincidentPoints } from '@/shared/utils/polyline';
 
