@@ -1,0 +1,91 @@
+src/i18n/locales/nl.json
+  s_6408112f89d849::t_8c1a678edc6692 1719-1720
+src/features/drawer-shape/components/PenShapeDialog/usePenSketch.test.ts
+  s_6408112f89d849::t_8214c30c82891f 1-107
+src/i18n/locales/uk.json
+  s_6408112f89d849::t_8c1a678edc6692 1719-1720
+src/features/drawer-shape/components/PenShapeDialog/PenShapeDialog.test.tsx
+  s_6408112f89d849::t_757832c9357806 272-274
+  s_6408112f89d849::t_380c041af56a8b 7
+  s_6408112f89d849::t_fd30ac25a4c3ea 180-271,275-277
+src/i18n/locales/zh-CN.json
+  s_6408112f89d849::t_8c1a678edc6692 1719-1720
+src/i18n/locales/pt-BR.json
+  s_6408112f89d849::t_8c1a678edc6692 1719-1720
+src/i18n/locales/ja.json
+  s_6408112f89d849::t_8c1a678edc6692 1719-1720
+src/features/drawer-shape/components/PenShapeDialog/usePenSketch.ts
+  s_6408112f89d849::t_d0cb767a9a1376 2-3,8-13,18-24,30-31,33-37,46,51,61-64,75-78,91,101,106,108,113,119,125,130,159,163,169-170,189-190,196,202-206,210-216,220-238,240-241,254-255
+  s_6408112f89d849::t_fb2b411879f807 217-219
+src/i18n/locales/en.ts
+  s_6408112f89d849::t_3369ed328e90b7 3405-3406
+src/features/drawer-shape/README.md
+  s_6408112f89d849::t_a21157202f74bd 27-32
+  s_6408112f89d849::t_fb6d0fcd90e4e9 45-51
+src/i18n/locales/ko.json
+  s_6408112f89d849::t_8c1a678edc6692 1719-1720
+src/i18n/locales/es.json
+  s_6408112f89d849::t_8c1a678edc6692 1719-1720
+src/shared/utils/filletOutline.test.ts
+  s_6408112f89d849::t_980f4903965982 3-4
+  s_6408112f89d849::t_86288bf8e37787 163-290
+src/features/drawer-shape/components/PenShapeDialog/PenCanvas.tsx
+  s_6408112f89d849::t_272a202348e825 151-171
+  s_6408112f89d849::t_c74fec2220db74 22-23
+  s_6408112f89d849::t_162d83d21df6a0 48
+src/i18n/locales/fr.json
+  s_6408112f89d849::t_8c1a678edc6692 1719-1720
+src/i18n/locales/cs.json
+  s_6408112f89d849::t_8c1a678edc6692 1719-1720
+src/i18n/locales/de.json
+  s_6408112f89d849::t_8c1a678edc6692 1719-1720
+src/shared/utils/filletOutline.ts
+  s_6408112f89d849::t_6a50d635c12442 119-120,122
+  s_6408112f89d849::t_3ec3fb02e3ae1e 15
+  s_6408112f89d849::t_1213e66edbbf8d 153-223,228-291
+  s_6408112f89d849::t_062b64d230995b 16
+  s_6408112f89d849::t_9a617eac39b371 224-227
+  s_6408112f89d849::t_27ffcbec2f84c2 72-76,89-95
+src/features/drawer-shape/components/PenShapeDialog/PenShapeDialog.tsx
+  s_6408112f89d849::t_943eb4fb2a6df0 591
+  s_6408112f89d849::t_cd4e97cfefef77 307,314-318,325-327,329-333,335-336
+  s_6408112f89d849::t_efb3fa1f0811d8 528-532,534-535,541-545,547-551
+  s_6408112f89d849::t_d7671f45f83733 89-91,99-100
+  s_6408112f89d849::t_ae0ddf02e21661 112
+  s_6408112f89d849::t_f4f65c2fa03f8f 448
+  s_6408112f89d849::t_c32c0d807de9e0 458
+  s_6408112f89d849::t_71764539318a51 258,264-271,273
+  s_6408112f89d849::t_eafaab434daaf5 32
+  s_6408112f89d849::t_358dc0a87fa834 130-136
+  s_6408112f89d849::t_46721582193e8c 408,410
+  s_6408112f89d849::t_c61e231a2cd52e 95-98
+  s_6408112f89d849::t_0f256c6558dab5 319-324,328
+src/i18n/locales/it.json
+  s_6408112f89d849::t_8c1a678edc6692 1719-1720
+src/i18n/locales/pl.json
+  s_6408112f89d849::t_8c1a678edc6692 1719-1720
+src/i18n/locales/nb.json
+  s_6408112f89d849::t_8c1a678edc6692 1719-1720
+src/features/drawer-shape/components/PenShapeDialog/PenCanvas.test.tsx
+  s_6408112f89d849::t_2666a6bf7211c2 83
+  s_6408112f89d849::t_5586b15b0c81ac 64-73
+  s_6408112f89d849::t_c6caff78cfeacc 17
+src/i18n/locales/sv.json
+  s_6408112f89d849::t_8c1a678edc6692 1719-1720
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "471da7c86ca96cb9896e24785fae261a2165195f",
+  "prompts": {},
+  "sessions": {
+    "s_6408112f89d849": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2be08d83-e088-44ca-953c-c21b200826a4",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
