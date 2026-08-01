@@ -1705,6 +1705,7 @@
   "drawerShape.penHint": "Faites glisser un coin pour le déplacer. Faites glisser la poignée d’un bord pour le courber. Double-cliquez sur un bord pour ajouter un coin.",
   "drawerShape.penCanvas": "Contour du tiroir",
   "drawerShape.penSnap": "Aimant",
+  "drawerShape.penCorner": "Coin {n}",
   "drawerShape.penFillet": "Arrondir les coins (mm)",
   "drawerShape.penSnapOff": "Désactivé",
   "drawerShape.penDeletePoint": "Supprimer le coin",

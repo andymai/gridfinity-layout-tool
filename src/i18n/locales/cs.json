@@ -1705,6 +1705,7 @@
   "drawerShape.penHint": "Přetažením rohu jej přesunete. Přetažením úchytu na hraně ji prohnete. Dvojklikem na hranu přidáte roh.",
   "drawerShape.penCanvas": "Obrys zásuvky",
   "drawerShape.penSnap": "Přichytávání",
+  "drawerShape.penCorner": "Roh {n}",
   "drawerShape.penFillet": "Zaoblit rohy (mm)",
   "drawerShape.penSnapOff": "Vypnuto",
   "drawerShape.penDeletePoint": "Odstranit roh",

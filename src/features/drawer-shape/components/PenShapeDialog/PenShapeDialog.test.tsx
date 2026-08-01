@@ -139,4 +139,90 @@ describe('PenShapeDialog', () => {
     expect(applied?.vertices).toHaveLength(8);
     expect(applied?.vertices.filter((v) => (v.bulge ?? 0) !== 0)).toHaveLength(4);
   });
+
+  // role="application" tells assistive technology the canvas handles its own
+  // keys, so it has to actually do so — and a vector editor is expected to be
+  // driveable from the keyboard regardless.
+  describe('keyboard editing', () => {
+    const canvas = () => screen.getByRole('application');
+
+    /** Select the first corner by pressing on it, which pointer tests also do. */
+    function selectFirstCorner(): void {
+      const svg = canvas();
+      svg.getBoundingClientRect = () => ({ left: 0, top: 0, width: 448, height: 364 }) as DOMRect;
+      fireEvent.pointerDown(svg, { clientX: 14, clientY: 350 });
+      fireEvent.pointerUp(svg);
+    }
+
+    it('is focusable', () => {
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      expect(canvas()).toHaveAttribute('tabindex', '0');
+    });
+
+    it('nudges the selected corner with an arrow key', () => {
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      selectFirstCorner();
+      const before = document.querySelector('path')?.getAttribute('d');
+
+      fireEvent.keyDown(canvas(), { key: 'ArrowRight' });
+
+      expect(document.querySelector('path')?.getAttribute('d')).not.toBe(before);
+    });
+
+    it('undoes the nudge with Ctrl+Z', () => {
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      selectFirstCorner();
+      const before = document.querySelector('path')?.getAttribute('d');
+
+      fireEvent.keyDown(canvas(), { key: 'ArrowRight' });
+      fireEvent.keyDown(canvas(), { key: 'z', ctrlKey: true });
+
+      expect(document.querySelector('path')?.getAttribute('d')).toBe(before);
+    });
+
+    // Figma keeps your selection through an undo; losing it makes the
+    // coordinate fields blink out mid-edit.
+    it('keeps the selected corner through an undo', () => {
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      selectFirstCorner();
+      fireEvent.keyDown(canvas(), { key: 'ArrowRight' });
+      fireEvent.keyDown(canvas(), { key: 'z', ctrlKey: true });
+
+      expect(screen.getByText('drawerShape.penDeletePoint')).toBeEnabled();
+    });
+
+    it('drops a selection an undo has invalidated', () => {
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      selectFirstCorner();
+      // Delete leaves three corners, so undoing back to four is fine, but the
+      // reverse case (selection past the end) must clear.
+      fireEvent.keyDown(canvas(), { key: 'Delete' });
+      expect(screen.getByText('drawerShape.penDeletePoint')).toBeDisabled();
+    });
+
+    it('clears the selection on Escape', () => {
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      selectFirstCorner();
+      expect(screen.getByText('drawerShape.penDeletePoint')).toBeEnabled();
+
+      fireEvent.keyDown(canvas(), { key: 'Escape' });
+
+      expect(screen.getByText('drawerShape.penDeletePoint')).toBeDisabled();
+    });
+
+    it('removes the selected corner with Delete', () => {
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      selectFirstCorner();
+
+      fireEvent.keyDown(canvas(), { key: 'Delete' });
+      fireEvent.click(screen.getByText('drawerShape.editor.apply'));
+
+      expect(setDrawerOutline.mock.calls[0][0]?.vertices).toHaveLength(3);
+    });
+  });
+
+  it('keeps undo unavailable until something has been edited', () => {
+    render(<PenShapeDialog open onClose={vi.fn()} />);
+    expect(screen.getByText('common.undo')).toBeDisabled();
+  });
 });

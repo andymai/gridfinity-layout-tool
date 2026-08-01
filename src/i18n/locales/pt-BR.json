@@ -1705,6 +1705,7 @@
   "drawerShape.penHint": "Arraste um canto para movê-lo. Arraste a alça de uma borda para curvá-la. Clique duas vezes em uma borda para adicionar um canto.",
   "drawerShape.penCanvas": "Contorno da gaveta",
   "drawerShape.penSnap": "Encaixe",
+  "drawerShape.penCorner": "Canto {n}",
   "drawerShape.penFillet": "Arredondar cantos (mm)",
   "drawerShape.penSnapOff": "Desligado",
   "drawerShape.penDeletePoint": "Excluir canto",

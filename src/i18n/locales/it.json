@@ -1705,6 +1705,7 @@
   "drawerShape.penHint": "Trascina un angolo per spostarlo. Trascina la maniglia di un bordo per curvarlo. Doppio clic su un bordo per aggiungere un angolo.",
   "drawerShape.penCanvas": "Contorno del cassetto",
   "drawerShape.penSnap": "Aggancio",
+  "drawerShape.penCorner": "Angolo {n}",
   "drawerShape.penFillet": "Arrotonda angoli (mm)",
   "drawerShape.penSnapOff": "Disattivato",
   "drawerShape.penDeletePoint": "Elimina angolo",

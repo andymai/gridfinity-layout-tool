@@ -1705,6 +1705,7 @@
   "drawerShape.penHint": "Dra et hjørne for å flytte det. Dra håndtaket på en kant for å bue den. Dobbeltklikk en kant for å legge til et hjørne.",
   "drawerShape.penCanvas": "Skuffekontur",
   "drawerShape.penSnap": "Fest",
+  "drawerShape.penCorner": "Hjørne {n}",
   "drawerShape.penFillet": "Avrund hjørner (mm)",
   "drawerShape.penSnapOff": "Av",
   "drawerShape.penDeletePoint": "Slett hjørne",

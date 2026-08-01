@@ -3389,6 +3389,7 @@ const en: Record<string, string> = {
     'Drag a corner to move it. Drag the small handle on an edge to curve it. Double-click an edge to add a corner.',
   'drawerShape.penCanvas': 'Drawer perimeter',
   'drawerShape.penSnap': 'Snap',
+  'drawerShape.penCorner': 'Corner {n}',
   'drawerShape.penFillet': 'Round corners (mm)',
   'drawerShape.penSnapOff': 'Off',
   'drawerShape.penDeletePoint': 'Delete corner',

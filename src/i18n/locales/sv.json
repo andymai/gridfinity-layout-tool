@@ -1705,6 +1705,7 @@
   "drawerShape.penHint": "Dra ett hörn för att flytta det. Dra handtaget på en kant för att böja den. Dubbelklicka på en kant för att lägga till ett hörn.",
   "drawerShape.penCanvas": "Lådans kontur",
   "drawerShape.penSnap": "Fäst",
+  "drawerShape.penCorner": "Hörn {n}",
   "drawerShape.penFillet": "Runda hörn (mm)",
   "drawerShape.penSnapOff": "Av",
   "drawerShape.penDeletePoint": "Ta bort hörn",

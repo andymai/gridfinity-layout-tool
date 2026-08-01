@@ -1705,6 +1705,7 @@
   "drawerShape.penHint": "Przeciągnij narożnik, aby go przesunąć. Przeciągnij uchwyt krawędzi, aby ją wygiąć. Kliknij dwukrotnie krawędź, aby dodać narożnik.",
   "drawerShape.penCanvas": "Obrys szuflady",
   "drawerShape.penSnap": "Przyciąganie",
+  "drawerShape.penCorner": "Narożnik {n}",
   "drawerShape.penFillet": "Zaokrąglij narożniki (mm)",
   "drawerShape.penSnapOff": "Wyłączone",
   "drawerShape.penDeletePoint": "Usuń narożnik",

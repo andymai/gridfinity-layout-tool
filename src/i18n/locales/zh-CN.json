@@ -1705,6 +1705,7 @@
   "drawerShape.penHint": "拖动角点可移动。拖动边上的手柄可使其弯曲。双击边可添加角点。",
   "drawerShape.penCanvas": "抽屉轮廓",
   "drawerShape.penSnap": "吸附",
+  "drawerShape.penCorner": "角点 {n}",
   "drawerShape.penFillet": "圆角 (mm)",
   "drawerShape.penSnapOff": "关闭",
   "drawerShape.penDeletePoint": "删除角点",

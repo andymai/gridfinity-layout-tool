@@ -1705,6 +1705,7 @@
   "drawerShape.penHint": "角をドラッグして移動します。辺のハンドルをドラッグすると湾曲します。辺をダブルクリックすると角を追加します。",
   "drawerShape.penCanvas": "引き出しの輪郭",
   "drawerShape.penSnap": "スナップ",
+  "drawerShape.penCorner": "角 {n}",
   "drawerShape.penFillet": "角を丸める (mm)",
   "drawerShape.penSnapOff": "オフ",
   "drawerShape.penDeletePoint": "角を削除",

@@ -1705,6 +1705,7 @@
   "drawerShape.penHint": "Ecke ziehen zum Verschieben. Griff an einer Kante ziehen, um sie zu wölben. Doppelklick auf eine Kante fügt eine Ecke hinzu.",
   "drawerShape.penCanvas": "Schubladenumriss",
   "drawerShape.penSnap": "Raster",
+  "drawerShape.penCorner": "Ecke {n}",
   "drawerShape.penFillet": "Ecken abrunden (mm)",
   "drawerShape.penSnapOff": "Aus",
   "drawerShape.penDeletePoint": "Ecke löschen",

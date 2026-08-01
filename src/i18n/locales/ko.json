@@ -1705,6 +1705,7 @@
   "drawerShape.penHint": "모서리를 끌어 이동합니다. 변의 핸들을 끌면 휘어집니다. 변을 두 번 클릭하면 모서리가 추가됩니다.",
   "drawerShape.penCanvas": "서랍 외곽선",
   "drawerShape.penSnap": "스냅",
+  "drawerShape.penCorner": "모서리 {n}",
   "drawerShape.penFillet": "모서리 둥글리기 (mm)",
   "drawerShape.penSnapOff": "끄기",
   "drawerShape.penDeletePoint": "모서리 삭제",

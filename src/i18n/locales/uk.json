@@ -1705,6 +1705,7 @@
   "drawerShape.penHint": "Перетягніть кут, щоб перемістити його. Перетягніть маркер на ребрі, щоб вигнути його. Подвійний клік на ребрі додає кут.",
   "drawerShape.penCanvas": "Контур шухляди",
   "drawerShape.penSnap": "Прив’язка",
+  "drawerShape.penCorner": "Кут {n}",
   "drawerShape.penFillet": "Заокруглити кути (мм)",
   "drawerShape.penSnapOff": "Вимкнено",
   "drawerShape.penDeletePoint": "Видалити кут",
