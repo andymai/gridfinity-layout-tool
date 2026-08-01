@@ -1,0 +1,27 @@
+src/features/baseplate/utils/buildFullParams.ts
+  s_8fb9c547edb3b7::t_6c7d314946eba5 293-296
+src/core/constants.test.ts
+  s_8fb9c547edb3b7::t_cafb44d5b78053 387-407
+src/core/cqrs/v2/domain/layout/setBaseplateParams.ts
+  s_8fb9c547edb3b7::t_6c7d314946eba5 31
+src/core/constants.ts
+  s_8fb9c547edb3b7::t_6c7d314946eba5 335
+src/features/baseplate/utils/buildFullParams.test.ts
+  s_8fb9c547edb3b7::t_d036956efe7833 541-557
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "9ff3b201944ff6fe92155c705dccb2b2fcfcdc20",
+  "prompts": {},
+  "sessions": {
+    "s_8fb9c547edb3b7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8fc9a64f-8d00-4acb-9c91-3f304e2087ad",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
