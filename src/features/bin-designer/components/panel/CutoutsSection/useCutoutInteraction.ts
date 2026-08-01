@@ -137,6 +137,28 @@ export function useCutoutInteraction({
     setSelection(new Set([id]));
   }, []);
 
+  /**
+   * Select an explicit set of ids, for the shape list.
+   *
+   * Unlike {@link selectCutout} this does NOT skip hidden cutouts and does not
+   * expand to the whole group: the list already decides what a row stands for
+   * (a group row passes every member), and reaching a hidden shape to unhide it
+   * is one of the reasons the list exists.
+   */
+  const selectIds = useCallback((ids: readonly string[], additive: boolean) => {
+    setSelection((prev) => {
+      if (!additive) return new Set(ids);
+      const next = new Set(prev);
+      // Toggle as a block: a fully-selected row clears, anything else adds.
+      const allOn = ids.length > 0 && ids.every((id) => next.has(id));
+      for (const id of ids) {
+        if (allOn) next.delete(id);
+        else next.add(id);
+      }
+      return next;
+    });
+  }, []);
+
   const deselectAll = useCallback(() => {
     setSelection(new Set());
     setActiveGuides([]);
@@ -407,6 +429,7 @@ export function useCutoutInteraction({
     selection: effectiveSelection,
     selectCutout,
     selectIndividual,
+    selectIds,
     deselectAll,
     selectAll,
     deleteSelected,

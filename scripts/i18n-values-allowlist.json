@@ -98,6 +98,7 @@
     "binDesigner.shape.preset.rectangle",
     "binDesigner.shape.preset.t",
     "binDesigner.shape.preset.u",
+    "binDesigner.shapeList.derived.rectangle",
     "binDesigner.slotDirection",
     "binDesigner.slotHorizontal",
     "binDesigner.slotVertical",

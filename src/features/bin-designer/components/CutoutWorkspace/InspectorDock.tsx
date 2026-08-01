@@ -10,8 +10,8 @@
  * header, shared icon set, ghost icon buttons) for visual consistency.
  */
 
-import { useCallback, useRef, useState } from 'react';
-import { IconButton } from '@/design-system';
+import { useCallback, useRef, useState, type ReactNode } from 'react';
+import { Button, IconButton } from '@/design-system';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
@@ -48,6 +48,8 @@ interface InspectorDockProps {
   readonly onDuplicate?: () => void;
   /** Delete the current selection. */
   readonly onDelete?: () => void;
+  /** Shape-list tab (#3053). Omitted in contexts without one. */
+  readonly shapeList?: ReactNode;
 }
 
 const ICON_BTN =
@@ -63,11 +65,26 @@ function Icon({ paths }: { readonly paths: readonly string[] }) {
   );
 }
 
-export function InspectorDock({ board, onDuplicate, onDelete, ...content }: InspectorDockProps) {
+type DockTab = 'properties' | 'shapes';
+
+/** Tab ids (not user-facing copy — labels come from the i18n keys below). */
+const DOCK_TABS: readonly { readonly id: DockTab; readonly labelKey: string }[] = [
+  { id: 'properties', labelKey: 'binDesigner.shapeList.tabProperties' },
+  { id: 'shapes', labelKey: 'binDesigner.shapeList.tabShapes' },
+];
+
+export function InspectorDock({
+  board,
+  onDuplicate,
+  onDelete,
+  shapeList,
+  ...content
+}: InspectorDockProps) {
   const t = useTranslation();
   const [width, setWidth] = useState(loadInspectorWidth);
   const [collapsed, setCollapsed] = useState(loadInspectorCollapsed);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [tab, setTab] = useState<DockTab>('properties');
   const dockRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef(false);
   const hasSelection = content.selection.size > 0;
@@ -218,12 +235,45 @@ export function InspectorDock({ board, onDuplicate, onDelete, ...content }: Insp
         </div>
       </div>
 
+      {/* Tab strip — only when there is a shape list to switch to. */}
+      {shapeList && (
+        <div
+          className="flex flex-shrink-0 gap-1 border-b border-stroke-subtle px-2 pb-1"
+          role="tablist"
+        >
+          {DOCK_TABS.map(({ id, labelKey }) => (
+            <Button
+              key={id}
+              type="button"
+              variant="ghost"
+              role="tab"
+              aria-selected={tab === id}
+              onClick={() => setTab(id)}
+              className={`flex-1 rounded px-2 py-1 text-[11px] ${
+                tab === id
+                  ? 'bg-surface text-content'
+                  : 'text-content-tertiary hover:text-content-secondary'
+              }`}
+            >
+              {t(labelKey)}
+            </Button>
+          ))}
+        </div>
+      )}
+
       {/* Scrollable body */}
       <div
         onScroll={handleScroll}
-        className="flex min-h-0 flex-1 flex-col overflow-y-auto scrollbar-thin px-4 pt-0 pb-3"
+        className={`flex min-h-0 flex-1 flex-col overflow-y-auto scrollbar-thin pt-0 pb-3 ${
+          tab === 'shapes' && shapeList ? 'px-0' : 'px-4'
+        }`}
+        role={shapeList ? 'tabpanel' : undefined}
       >
-        <InspectorContent {...content} board={board} />
+        {tab === 'shapes' && shapeList ? (
+          shapeList
+        ) : (
+          <InspectorContent {...content} board={board} />
+        )}
       </div>
     </aside>
   );

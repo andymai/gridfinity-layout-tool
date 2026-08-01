@@ -34,6 +34,7 @@ import { useStlImport, StlImportDialog } from '../panel/CutoutsSection/stlImport
 import { ScanWithPhoneDialog } from '../panel/CutoutsSection/scanImport';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { InspectorDock } from './InspectorDock';
+import { ShapeList } from './ShapeList';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import { applyFlattenArray } from '../panel/CutoutsSection/cutoutHelpers';
 import { CutoutContextMenu } from '../panel/CutoutsSection/CutoutContextMenu';
@@ -60,6 +61,8 @@ export function CutoutWorkspace() {
     updateCutoutsBatch,
     removeCutoutsBatch,
     reorderCutouts,
+    moveCutoutsAbove,
+    setCutoutProperty,
     undo,
     redo,
     canUndo,
@@ -80,6 +83,8 @@ export function CutoutWorkspace() {
       updateCutoutsBatch: s.updateCutoutsBatch,
       removeCutoutsBatch: s.removeCutoutsBatch,
       reorderCutouts: s.reorderCutouts,
+      moveCutoutsAbove: s.moveCutoutsAbove,
+      setCutoutProperty: s.setCutoutProperty,
       undo: s.undo,
       redo: s.redo,
       canUndo: s.history.past.length > 0,
@@ -198,6 +203,7 @@ export function CutoutWorkspace() {
     setMode,
     selection,
     selectCutout,
+    selectIds,
     selectIndividual,
     deselectAll,
     selectAll,
@@ -485,6 +491,17 @@ export function CutoutWorkspace() {
 
         {/* Right: docked properties inspector */}
         <InspectorDock
+          shapeList={
+            <ShapeList
+              cutouts={cutouts}
+              selection={selection}
+              onSelect={selectIds}
+              onSetProperty={setCutoutProperty}
+              onMoveAbove={moveCutoutsAbove}
+              onGroupWith={(ids, targetId) => groupCutouts([...ids, targetId])}
+              onUngroup={ungroupCutouts}
+            />
+          }
           cutouts={cutouts}
           selection={selection}
           preview={preview}
