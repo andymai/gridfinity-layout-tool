@@ -39,7 +39,7 @@ import { resolveOverhang } from './overhang';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { imprintPieceArrays } from './meshImprint';
 import { deriveDimensions } from './pipeline/context';
-import { splitHasConnectors } from '@/shared/generation/splitUtils';
+import { splitConnectorsSuppressedByBase } from '@/shared/generation/splitUtils';
 
 /** Result of a split export: array of piece buffers with grid labels */
 export interface SplitExportResult {
@@ -204,10 +204,11 @@ function splitSolidIntoPieces(
   // walls and are unaffected).
   const rawConnectorConfig = splitConnectorConfig ?? params.splitConnectors;
   // A spacer has no floor whatsoever, so it needs the same treatment as lite.
-  // `splitHasConnectors` is the shared statement of that rule, so anything that
-  // describes a split reaches the same verdict this build does.
+  // Only the BASE rule applies here — an explicit `splitConnectorConfig` from
+  // the caller must still be able to turn connectors on, so this must not also
+  // consult the persisted `params.splitConnectors` flag it overrides.
   const connectorConfig =
-    rawConnectorConfig && !splitHasConnectors(params)
+    rawConnectorConfig && splitConnectorsSuppressedByBase(params.base)
       ? { ...rawConnectorConfig, enabled: false }
       : rawConnectorConfig;
 

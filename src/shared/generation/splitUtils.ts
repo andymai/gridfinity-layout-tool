@@ -8,12 +8,28 @@ export function computePinPositions(edgeLengthMm: number, spacingMm: number): nu
 }
 
 /**
- * Whether a split of this bin actually gets printed alignment connectors.
+ * Whether this base can host split connectors at all.
  *
  * `splitBinBuilder` forces them off on a lightweight or spacer base: neither
  * has a solid floor for the 45° floor scarf to bite into, so cut planes land
  * over hollow cup recesses and the scarf loft comes out fragmented, weak, or
  * fails outright. A flat base has a real floor and is exempt.
+ *
+ * Separate from the user's own on/off choice so the builder can apply just this
+ * rule to whatever config it was handed, without a stale persisted flag
+ * overriding an explicit caller argument.
+ */
+export function splitConnectorsSuppressedByBase(base: {
+  readonly lightweight: boolean;
+  readonly spacer: boolean;
+  readonly style: string;
+}): boolean {
+  return (base.lightweight || base.spacer) && base.style !== 'flat';
+}
+
+/**
+ * Whether a split of this bin actually ships printed alignment connectors —
+ * the user asked for them AND the base can host them.
  *
  * Shared so anything that *describes* a split — the layout export manifest,
  * say — can't promise joinery the geometry never built.
@@ -27,6 +43,5 @@ export function splitHasConnectors(params: {
   readonly splitConnectors?: { readonly enabled: boolean };
 }): boolean {
   if (params.splitConnectors?.enabled === false) return false;
-  const liteBase = (params.base.lightweight || params.base.spacer) && params.base.style !== 'flat';
-  return !liteBase;
+  return !splitConnectorsSuppressedByBase(params.base);
 }
