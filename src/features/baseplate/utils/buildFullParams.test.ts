@@ -94,55 +94,77 @@ describe('buildFullParams', () => {
   // radius-cut plates while the trigger still called them rectangular, so a
   // toggle changed the mesh without regenerating it.
   describe('hasEffectivePerimeter', () => {
-    const on = { synced: true, stacking: false };
+    /** L-shape inside the 10x8 unit drawer these tests use (420 x 336mm). */
+    const outline: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 420, y: 0 },
+        { x: 420, y: 168 },
+        { x: 168, y: 168 },
+        { x: 168, y: 336 },
+        { x: 0, y: 336 },
+      ],
+    };
+
+    /** Same arguments buildFullParams is called with throughout this file. */
+    const perimeter = (
+      stored: Parameters<typeof hasEffectivePerimeter>[0],
+      drawerOutline?: DrawerOutline,
+      stackingOverride?: boolean
+    ): boolean => hasEffectivePerimeter(stored, 10, 8, 42, drawerOutline, 42, stackingOverride);
 
     it('is false for a plain rectangle', () => {
-      expect(hasEffectivePerimeter(storedBase, undefined, 42, on)).toBe(false);
+      expect(perimeter(storedBase)).toBe(false);
     });
 
     it('is true for a drawer shape while the outline applies', () => {
-      const o = { vertices: [{ x: 0, y: 0 }] };
-      expect(hasEffectivePerimeter(storedBase, o, 42, on)).toBe(true);
-      // Not synced: the resolver ignores the shape, so this must too.
-      expect(hasEffectivePerimeter(storedBase, o, 42, { synced: false, stacking: false })).toBe(
-        false
-      );
+      expect(perimeter(storedBase, outline)).toBe(true);
+      expect(perimeter({ ...storedBase, syncWithLayout: false }, outline)).toBe(false);
     });
 
     it('is true for a radius the resolver converts to an outline', () => {
-      // Limit is half a grid unit plus the smallest padding (21 + 1 = 22mm).
-      expect(
-        hasEffectivePerimeter({ ...storedBase, cornerRadius: mm(40) }, undefined, 42, on)
-      ).toBe(true);
-      expect(
-        hasEffectivePerimeter({ ...storedBase, cornerRadius: mm(10) }, undefined, 42, on)
-      ).toBe(false);
+      expect(perimeter({ ...storedBase, cornerRadius: mm(40) })).toBe(true);
+      expect(perimeter({ ...storedBase, cornerRadius: mm(10) })).toBe(false);
     });
 
     // Stacking needs uniform rectangular tiles, so the resolver drops every
     // perimeter. Checking only the drawer-shape half would leave a stored
     // radius claiming a perimeter generation never produces.
     it('is false under stacking, whatever is stored', () => {
-      const stacked = { synced: true, stacking: true };
-      const o = { vertices: [{ x: 0, y: 0 }] };
-      expect(hasEffectivePerimeter(storedBase, o, 42, stacked)).toBe(false);
-      expect(
-        hasEffectivePerimeter({ ...storedBase, cornerRadius: mm(40) }, undefined, 42, stacked)
-      ).toBe(false);
+      const stacked = { ...storedBase, stackPrint: { enabled: true, gapMm: mm(0.2) } };
+      expect(perimeter(stacked, outline)).toBe(false);
+      expect(perimeter({ ...stacked, cornerRadius: mm(40) })).toBe(false);
     });
 
-    it('agrees with the resolver across radii, synced and stacked alike', () => {
+    it('honours the format-aware override for a STEP export', () => {
+      const stacked = { ...storedBase, stackPrint: { enabled: true, gapMm: mm(0.2) } };
+      // STEP clears stackPrint before the resolver runs, so the caller says so.
+      expect(perimeter(stacked, outline, false)).toBe(true);
+    });
+
+    // It runs the resolver rather than restating its rules, so this walks a
+    // matrix and asserts it always matches what generation actually produced.
+    it('agrees with the resolver across radii, padding, sync and stacking', () => {
       for (const r of [0, 10, 22, 30, 60]) {
         for (const stacking of [false, true]) {
-          const stored = {
-            ...storedBase,
-            cornerRadius: mm(r),
-            ...(stacking ? { stackPrint: { enabled: true, gapMm: mm(0.2) } } : {}),
-          };
-          const resolved = buildFullParams(stored, 10, 8, 42, 'end', 'end');
-          expect(hasEffectivePerimeter(stored, undefined, 42, { synced: true, stacking })).toBe(
-            resolved.outline !== undefined
-          );
+          for (const synced of [true, false]) {
+            for (const pad of [0, 1, 20]) {
+              const stored = {
+                ...storedBase,
+                paddingLeft: mm(pad),
+                paddingRight: mm(pad),
+                paddingFront: mm(pad),
+                paddingBack: mm(pad),
+                cornerRadius: mm(r),
+                syncWithLayout: synced,
+                ...(stacking ? { stackPrint: { enabled: true, gapMm: mm(0.2) } } : {}),
+              };
+              const resolved = buildFullParams(stored, 10, 8, 42, 'end', 'end', undefined, outline);
+              expect(hasEffectivePerimeter(stored, 10, 8, 42, outline, 42)).toBe(
+                resolved.outline !== undefined
+              );
+            }
+          }
         }
       }
     });

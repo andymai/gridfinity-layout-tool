@@ -210,10 +210,14 @@ export function selectGenerationTriggers(state: LayoutStoreState) {
     // on the raw drawer outline would leave those plates stale on a toggle.
     wholeCellsOnly:
       bp.wholeCellsOnly === true &&
-      hasEffectivePerimeter(bp, state.layout.drawer.outline, state.layout.gridUnitMm, {
-        synced: bp.syncWithLayout !== false,
-        stacking: bp.stackPrint?.enabled === true,
-      }),
+      hasEffectivePerimeter(
+        bp,
+        state.layout.drawer.width,
+        state.layout.drawer.depth,
+        state.layout.gridUnitMm,
+        state.layout.drawer.outline,
+        effectiveGridUnitMmY(state.layout)
+      ),
     magnetHoles: bp.magnetHoles,
     magnetDiameter: bp.magnetDiameter,
     magnetDepth: bp.magnetDepth,
