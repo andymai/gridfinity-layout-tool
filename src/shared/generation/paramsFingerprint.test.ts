@@ -35,6 +35,15 @@ describe('paramsFingerprint', () => {
     );
   });
 
+  it('keeps a __proto__ map key in the fingerprint', () => {
+    // Assigning it to a plain `{}` would set the prototype instead of an own
+    // property, dropping the key and letting two different maps match.
+    const withKey = JSON.parse('{"compartmentTexts":{"__proto__":"A"}}') as unknown;
+    const empty = JSON.parse('{"compartmentTexts":{}}') as unknown;
+    expect(paramsFingerprint(withKey)).not.toBe(paramsFingerprint(empty));
+    expect(paramsFingerprint(withKey)).toContain('__proto__');
+  });
+
   it('separates dimensions that would collide under naive concatenation', () => {
     // The whole point of the worker-side identity check: `1x11` and `11x1` are
     // different bins and must never share a cached solid (GH #3074).

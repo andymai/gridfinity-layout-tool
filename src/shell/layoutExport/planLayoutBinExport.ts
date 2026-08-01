@@ -22,6 +22,7 @@ import { generateFileName } from '@/features/bin-designer';
 import { shouldGenerateLid } from '@/features/bin-designer/utils/lidCompatibility';
 import { calcMaxGridUnits } from '@/core/constants';
 import { getSplitPieceCount, getSplitPlanePositionsMm } from '@/shared/utils/splitPositions';
+import { splitHasConnectors } from '@/shared/generation/splitUtils';
 import { resolveBinOverhang } from '@/shared/utils/drawerMargin';
 import { overhangKey as resolvedOverhangKey, resolveOverhang } from '@/shared/utils/overhang';
 import type { ExportFileFormat, ExportFileNameConfig } from '@/shared/types/bin';
@@ -357,7 +358,7 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
       ...(split
         ? {
             splitPieces: split.totalPieceCount,
-            splitConnectors: u.params.splitConnectors?.enabled ?? true,
+            splitConnectors: splitHasConnectors(u.params),
             // Only the body is cut; a lid or divider set on an oversized design
             // still ships whole and may not fit the bed.
             ...(companions[i].length > 0 ? { oversizedCompanions: companions[i] } : {}),

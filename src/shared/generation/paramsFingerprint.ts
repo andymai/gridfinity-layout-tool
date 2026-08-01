@@ -21,7 +21,12 @@
 export function paramsFingerprint(params: unknown): string {
   return JSON.stringify(params, (_, value: unknown) => {
     if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
-      const sorted: Record<string, unknown> = {};
+      // Null prototype rather than `{}`: assigning a `__proto__` key to a plain
+      // object sets the prototype instead of creating an own property, so that
+      // key would vanish from the output and two different maps could
+      // fingerprint identically. Params carry map-like objects whose keys come
+      // from persisted data, so the key set is not fully ours to control.
+      const sorted = Object.create(null) as Record<string, unknown>;
       for (const key of Object.keys(value).sort()) {
         sorted[key] = (value as Record<string, unknown>)[key];
       }
