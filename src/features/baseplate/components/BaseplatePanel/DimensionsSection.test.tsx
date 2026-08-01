@@ -118,6 +118,23 @@ describe('DimensionsSection', () => {
       expect(row()).not.toBeInTheDocument();
     });
 
+    // A radius past the plain-rounding limit becomes a radius-cut outline at
+    // generation time, so those plates get a curved perimeter slicing sockets
+    // even with no drawer shape — the control has to reach them.
+    it('appears for a corner radius large enough to become an outline', () => {
+      const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+      useLayoutStore.getState().setBaseplateParams({ ...current, cornerRadius: mm(40) });
+      render(<DimensionsSection />);
+      expect(row()).toBeInTheDocument();
+    });
+
+    it('stays hidden for a small radius the plain rounding path handles', () => {
+      const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+      useLayoutStore.getState().setBaseplateParams({ ...current, cornerRadius: mm(4) });
+      render(<DimensionsSection />);
+      expect(row()).not.toBeInTheDocument();
+    });
+
     it('appears once the drawer has a perimeter', () => {
       shapedDrawer();
       render(<DimensionsSection />);

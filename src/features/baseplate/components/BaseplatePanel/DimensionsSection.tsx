@@ -52,6 +52,7 @@ export function DimensionsSection() {
     totalDepthMm,
     hasPadding,
     outlineActive,
+    perimeterShaped,
     cornerShaped,
     freeformShaped,
   } = useBaseplatePanelDerived();
@@ -342,7 +343,7 @@ export function DimensionsSection() {
               )}
             </p>
           )}
-          {outlineActive && (
+          {perimeterShaped && (
             <div className="space-y-1">
               <CheckboxRow
                 label={t('baseplate.wholeCellsOnly')}

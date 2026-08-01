@@ -332,7 +332,10 @@ export function buildBaseplateSolid(
   // as MIN_PRINTABLE_TILE_MM, expressed as an area fraction. Applies to
   // nominal cells and over-tile margin tiles alike, so a large corner arc
   // trims sockets progressively instead of deleting whole corner cells.
-  const wholeCellsOnly = params.wholeCellsOnly ?? false;
+  // `=== true`, not `?? false`: the key is allowlisted server-side without a
+  // type check, so a non-boolean from a shared or synced payload would be
+  // nullish-coalesced into truthiness and silently change geometry.
+  const wholeCellsOnly = params.wholeCellsOnly === true;
   const pocketDecision = (cell: CellInfo): 'full' | 'clipped' | 'none' => {
     const cls = classifyCell(cell);
     if (cls === 'inside') return 'full';

@@ -199,7 +199,10 @@ export function selectGenerationTriggers(state: LayoutStoreState) {
       bp.overTile === true && bp.overTileHalfGrid === true
         ? (bp.overTileHalfGridSolidLeftover ?? false)
         : false,
-    wholeCellsOnly: bp.wholeCellsOnly ?? false,
+    // Folded out without a perimeter, matching buildFullParams and the mesh
+    // cache key: a stored flag on a rectangular plate cannot alter geometry, so
+    // toggling it must not trigger a regeneration.
+    wholeCellsOnly: state.layout.drawer.outline !== undefined && bp.wholeCellsOnly === true,
     magnetHoles: bp.magnetHoles,
     magnetDiameter: bp.magnetDiameter,
     magnetDepth: bp.magnetDepth,
