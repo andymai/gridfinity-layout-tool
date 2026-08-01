@@ -22,8 +22,17 @@ describe('paramsFingerprint', () => {
     );
   });
 
-  it('distinguishes a missing key from an explicit undefined-valued sibling', () => {
+  it('separates params that differ by an extra field', () => {
     expect(paramsFingerprint({ width: 2 })).not.toBe(paramsFingerprint({ width: 2, depth: 3 }));
+  });
+
+  it('treats an explicitly undefined member as absent — both mean unset', () => {
+    // Documented lossiness, and safe: every consumer of an optional param
+    // reads `undefined` and "not present" the same way, so the two build the
+    // same solid and sharing a cache entry is correct.
+    expect(paramsFingerprint({ width: 2, gridUnitMmY: undefined })).toBe(
+      paramsFingerprint({ width: 2 })
+    );
   });
 
   it('separates dimensions that would collide under naive concatenation', () => {

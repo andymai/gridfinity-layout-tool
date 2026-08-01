@@ -280,11 +280,13 @@ export function useLayoutExport(): UseLayoutExportReturn {
         setExportProgress({ current: 0, total: binTotal, label: binLabel(0) });
 
         const binFiles: ZipBinaryFile[] = [];
-        // Three routes. Bins too large for the bed must be cut first, so they
-        // claim their designs before the other two buckets (a split design with
-        // a lid gets its companions from a second, combined pass). Of what's
-        // left, body-only designs export in parallel via the pool; designs with
-        // a lid or removable dividers go through the (non-poolable) combined flow.
+        // Three routes, in priority order: needing a cut wins over having
+        // companions, since a split design gets its companions from a second
+        // combined pass anyway. Of the bins that fit whole, body-only designs
+        // export in parallel via the pool while designs with a lid or removable
+        // dividers go through the (non-poolable) combined flow. Execution order
+        // below is pool-first — the parallel batch should not wait behind the
+        // sequential ones.
         const splits = plan.exportable.filter((e) => e.split !== null);
         const whole = plan.exportable.filter((e) => e.split === null);
         const simple = whole.filter((e) => e.companions.length === 0);

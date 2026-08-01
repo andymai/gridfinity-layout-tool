@@ -11,9 +11,12 @@
  * Stable JSON encoding with sorted object keys, so identical params always
  * produce the same string regardless of property insertion order.
  *
- * Collision-free by construction: distinct params always encode differently, so
- * a comparison can only err toward recomputing, never toward reusing the wrong
- * result.
+ * Distinguishes any two parameter sets that differ in a value JSON can carry,
+ * which is every field generation params actually hold. The encoding is lossy
+ * in two places, and neither can hide a geometric difference: an explicitly
+ * `undefined` member encodes the same as an absent one (both mean "unset" to
+ * every consumer, so they build the same solid), and `NaN`/`Infinity` collapse
+ * to `null` (a param already invalid upstream — no solid is built from it).
  */
 export function paramsFingerprint(params: unknown): string {
   return JSON.stringify(params, (_, value: unknown) => {

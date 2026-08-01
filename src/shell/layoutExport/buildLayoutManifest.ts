@@ -106,6 +106,13 @@ function positionLabel(positions: readonly { readonly x: number; readonly y: num
   return positions.length === 1 ? `Position:  ${coords[0]}` : `Positions: ${coords.join(', ')}`;
 }
 
+/** `bins/box_2x2x3.stl` → `bins/box_2x2x3_*.stl`, the shape of the files a
+ *  split bin actually writes. */
+function splitPathPattern(path: string): string {
+  const dot = path.lastIndexOf('.');
+  return dot === -1 ? `${path}_*` : `${path.slice(0, dot)}_*${path.slice(dot)}`;
+}
+
 function formatTime(minutes: number): string {
   const rounded = Math.round(minutes);
   if (rounded < 60) return `${rounded}m`;
@@ -138,7 +145,10 @@ export function buildLayoutManifest(input: LayoutManifestInput): string {
     lines.push('  (no linked bin designs to export)', '');
   } else {
     for (const b of bins) {
-      lines.push(`  ${b.path}`);
+      // A split bin ships as `<base>_<piece>.<ext>` — the unsplit path is never
+      // written, so printing it verbatim would send the reader hunting for a
+      // file the archive doesn't contain.
+      lines.push(`  ${b.splitPieces && b.splitPieces > 1 ? splitPathPattern(b.path) : b.path}`);
       lines.push(`    Design:    ${b.designName}`);
       lines.push(`    Size:      ${b.widthUnits} × ${b.depthUnits} × ${b.heightUnits} units`);
       lines.push(`    Quantity:  ${b.quantity}`);
