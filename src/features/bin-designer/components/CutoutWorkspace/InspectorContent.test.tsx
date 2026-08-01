@@ -36,7 +36,9 @@ vi.mock('@/shared/components/CompactNumberInput', () => ({
       value={value}
       onChange={(e) => {
         const v = Number(e.target.value);
-        onChange?.(softMax ? Math.max(min, v) : Math.max(min, Math.min(max, v)));
+        // `Math.max(max, value)` mirrors the real ceiling: it never falls below
+        // the value already held, so focusing a field cannot destroy it.
+        onChange?.(Math.max(min, Math.min(softMax ? Infinity : Math.max(max, value), v)));
       }}
     />
   ),

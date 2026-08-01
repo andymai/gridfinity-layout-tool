@@ -330,6 +330,45 @@ describe('CompactNumberInput', () => {
       expect(onChange).toHaveBeenLastCalledWith(155);
     });
 
+    it('re-derives the nudge ceiling when a smaller value is typed over an over-max one', () => {
+      const onChange = vi.fn();
+      render(
+        <CompactNumberInput
+          label="W"
+          value={156}
+          onChange={onChange}
+          max={123.1}
+          step={1}
+          softMax
+        />
+      );
+
+      fireEvent.click(screen.getByRole('button'));
+      const input = screen.getByRole('textbox');
+      fireEvent.change(input, { target: { value: '100' } });
+      for (let i = 0; i < 5; i++) fireEvent.keyDown(input, { key: 'ArrowUp' });
+
+      // 100 + 5 would be 105; the point is it may not climb toward the old 156.
+      expect(onChange.mock.calls.every(([v]) => v <= 123.1)).toBe(true);
+    });
+
+    it('keeps a large finite entry legible instead of rendering it as Infinity', () => {
+      const onChange = vi.fn();
+      const { rerender } = render(
+        <CompactNumberInput label="W" value={10} onChange={onChange} softMax />
+      );
+
+      fireEvent.click(screen.getByRole('button'));
+      fireEvent.change(screen.getByRole('textbox'), { target: { value: '1e307' } });
+      fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Enter' });
+      expect(onChange).toHaveBeenLastCalledWith(1e307);
+
+      // `v * 100` overflows here, so an unguarded round would display "Infinity"
+      // — a string that no longer parses back to a committable value.
+      rerender(<CompactNumberInput label="W" value={1e307} onChange={onChange} softMax />);
+      expect(screen.queryByText('Infinity')).not.toBeInTheDocument();
+    });
+
     it('reports a valid ARIA range while the value sits past max', () => {
       render(<CompactNumberInput label="W" value={156} onChange={vi.fn()} max={123.1} softMax />);
       const slider = screen.getByRole('slider', { name: 'W' });
@@ -351,6 +390,45 @@ describe('CompactNumberInput', () => {
       fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Enter' });
 
       expect(onChange).toHaveBeenCalledWith(123.1);
+    });
+  });
+
+  // A `max` can drop below the value it governs — an oversize cutout pins its
+  // X ceiling to 0 while X still holds its stored offset. Focusing such a field
+  // and leaving must not rewrite what the user is looking at.
+  describe('when max has fallen below the value', () => {
+    it('does not destroy the value on focus and blur', () => {
+      const onChange = vi.fn();
+      render(<CompactNumberInput label="X" value={20} onChange={onChange} min={0} max={0} />);
+
+      fireEvent.click(screen.getByRole('button'));
+      fireEvent.blur(screen.getByRole('textbox'));
+
+      expect(onChange).toHaveBeenLastCalledWith(20);
+    });
+
+    it('still refuses a typed value above it', () => {
+      const onChange = vi.fn();
+      render(<CompactNumberInput label="X" value={20} onChange={onChange} min={0} max={0} />);
+
+      fireEvent.click(screen.getByRole('button'));
+      fireEvent.change(screen.getByRole('textbox'), { target: { value: '50' } });
+      fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Enter' });
+
+      expect(onChange).toHaveBeenLastCalledWith(20);
+    });
+
+    it('lets an arrow key move the value back toward range', async () => {
+      const onChange = vi.fn();
+      const user = userEvent.setup();
+      render(
+        <CompactNumberInput label="X" value={20} onChange={onChange} min={0} max={0} step={0.5} />
+      );
+
+      await user.click(screen.getByRole('button'));
+      await user.keyboard('{ArrowDown}');
+
+      expect(onChange).toHaveBeenLastCalledWith(19.5);
     });
   });
 

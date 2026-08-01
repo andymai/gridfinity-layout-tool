@@ -33,8 +33,8 @@ interface CompactNumberInputProps {
    * what happens next.
    *
    * Overflow stays typed-only: scrubbing and arrow keys still stop at `max`,
-   * and past it they stop at whatever was typed, so no gesture can raise a
-   * value beyond what the user entered.
+   * and past it they stop at whatever is currently in the field, so no gesture
+   * can raise a value beyond what the user entered.
    */
   readonly softMax?: boolean;
 }
@@ -73,34 +73,53 @@ export function CompactNumberInput({
   const [scrubbing, setScrubbing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  /**
+   * Ceiling applied to a typed entry. `softMax` lifts it entirely; otherwise it
+   * is `max`, but never below the value already held — a field must not destroy
+   * its own contents just by being focused and blurred, which is what a `max`
+   * that has dropped below `value` would otherwise do (an oversize cutout pins
+   * X's max to 0 while X still reads its stored offset).
+   */
   const clampTyped = useCallback(
-    (v: number) => (softMax ? Math.max(min, v) : clampRange(v, min, max)),
-    [softMax, min, max]
+    (v: number) => clampRange(v, min, softMax ? Infinity : Math.max(max, value)),
+    [softMax, min, max, value]
   );
 
   /**
-   * Step ceiling for a whole gesture — a drag, or one visit to the text field.
+   * Step ceiling for a gesture — a drag, or the current contents of the text
+   * field. `max`, or the starting value when that already sits above it.
    *
-   * Normally `max`, so scrubbing can never carry a value that fits past the
-   * limit. A `softMax` value already typed above it raises the ceiling to
-   * itself, which keeps the overflow typed-only without freezing the field:
-   * recomputing this per keystroke instead would let it follow the value down,
-   * so ArrowDown from 156 to 155 would drop the ceiling to 155 and ArrowUp
-   * could never get back. Fixing it for the gesture gives both.
+   * Independent of `softMax`, which governs typed commits only: a hard `max`
+   * can also fall below the value, and a nudge must be able to move such a
+   * value without being yanked to the ceiling first.
+   *
+   * Held for the gesture rather than recomputed per keystroke, because a
+   * per-keystroke ceiling follows the value down — ArrowDown from 156 to 155
+   * would drop the ceiling to 155 and ArrowUp could never get back.
    */
-  const ceilingFrom = useCallback(
-    (start: number) => (softMax ? Math.max(max, start) : max),
-    [softMax, max]
-  );
+  const ceilingFrom = useCallback((start: number) => Math.max(max, start), [max]);
   const [editCeiling, setEditCeiling] = useState(max);
 
-  const formatValue = useCallback((v: number) => {
-    const rounded = Math.round(v * 100) / 100;
-    return rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toString();
+  /**
+   * Round to 2dp, keeping accumulated scrub/nudge deltas free of float noise.
+   * Guarded: `v * 100` overflows to Infinity past ~9e306, which would render a
+   * committed finite entry as "Infinity" and wedge the field, since that string
+   * no longer parses back to anything committable.
+   */
+  const round2 = useCallback((v: number) => {
+    const scaled = v * 100;
+    return Number.isFinite(scaled) ? Math.round(scaled) / 100 : v;
   }, []);
 
-  /** Round to 2dp to keep accumulated scrub/nudge deltas free of float noise. */
-  const tidy = useCallback((v: number) => Math.round(v * 100) / 100, []);
+  const formatValue = useCallback(
+    (v: number) => {
+      const rounded = round2(v);
+      return rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toString();
+    },
+    [round2]
+  );
+
+  const tidy = round2;
 
   const startEditing = useCallback(() => {
     if (disabled) return;
@@ -239,7 +258,15 @@ export function CompactNumberInput({
           type="text"
           inputMode="decimal"
           value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
+          onChange={(e) => {
+            setEditValue(e.target.value);
+            // Re-derive the nudge ceiling from what is now in the field. Without
+            // this it only ever rises, so typing 100 over a committed 156 would
+            // leave arrows free to climb back to 156, past both `max` and the
+            // number actually entered.
+            const typed = parseFloat(e.target.value);
+            setEditCeiling(ceilingFrom(Number.isFinite(typed) ? typed : value));
+          }}
           onBlur={() => commit(editValue)}
           onKeyDown={handleKeyDown}
           className="min-w-0 flex-1 bg-transparent pr-1 text-right text-xs text-content outline-none"
