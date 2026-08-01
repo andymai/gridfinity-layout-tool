@@ -14,7 +14,6 @@ import * as THREE from 'three';
 import { useShallow } from 'zustand/react/shallow';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
-import { EXPLODE_GAP_MM } from '../../constants';
 import {
   MESH_MATERIAL_PROPS,
   EDGE_MATERIAL_PROPS,
@@ -22,6 +21,7 @@ import {
   desaturateColor,
 } from './materialProps';
 import { useMeshGeometry } from './useMeshGeometry';
+import { computePiecePlacement } from './pieceLayout';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 import { useSettingsStore } from '@/core/store';
 import { getAccentHex } from '@/shared/utils/color';
@@ -35,8 +35,7 @@ interface PieceMeshProps {
   readonly totalWidthMm: number;
   readonly totalDepthMm: number;
   readonly gridUnitMm: number;
-  readonly explodeX: number;
-  readonly explodeY: number;
+  readonly gridUnitMmY: number;
   readonly splitViewMode: SplitViewMode;
   readonly hoveredPieceLabel: string | null;
   readonly selectedPieceLabel: string | null;
@@ -50,8 +49,7 @@ function PieceMesh({
   totalWidthMm,
   totalDepthMm,
   gridUnitMm,
-  explodeX,
-  explodeY,
+  gridUnitMmY,
   splitViewMode,
   hoveredPieceLabel,
   selectedPieceLabel,
@@ -114,10 +112,19 @@ function PieceMesh({
     setSelectedPieceLabel(selectedPieceLabel === entry.label ? null : entry.label);
   }, [entry.label, selectedPieceLabel, setSelectedPieceLabel]);
 
+  // Single source of truth for placement + footprint. Depth uses the Y pitch so
+  // pieces collapse without a residual per-row gap on non-square grids (#3089).
+  const placement = computePiecePlacement(entry, {
+    totalWidthMm,
+    totalDepthMm,
+    gridUnitMm,
+    gridUnitMmY,
+    splitViewMode,
+  });
+
   // Invisible hit-test plane covering the full piece footprint.
   // Catches pointer events over socket holes and empty areas within the piece.
-  const pieceWidthMm = entry.widthUnits * gridUnitMm;
-  const pieceDepthMm = entry.depthUnits * gridUnitMm;
+  const { widthMm: pieceWidthMm, depthMm: pieceDepthMm } = placement;
 
   const hitPlaneGeometry = useMemo(
     () => new THREE.PlaneGeometry(pieceWidthMm, pieceDepthMm),
@@ -132,12 +139,7 @@ function PieceMesh({
 
   if (!geometry) return null;
 
-  // Position: piece's grid center relative to the total baseplate center
-  const pieceCenterX = entry.offsetX * gridUnitMm + pieceWidthMm / 2 - totalWidthMm / 2;
-  const pieceCenterY = entry.offsetY * gridUnitMm + pieceDepthMm / 2 - totalDepthMm / 2;
-
-  const x = pieceCenterX + explodeX;
-  const y = pieceCenterY + explodeY;
+  const { x, y } = placement;
 
   // 180°-rotated placement keeps a single canonical mesh shared between
   // opposite-corner pieces (preferIdenticalPieces). Rotation is around the
@@ -199,6 +201,7 @@ interface SplitBaseplateMeshesProps {
   readonly totalWidthUnits: number;
   readonly totalDepthUnits: number;
   readonly gridUnitMm: number;
+  readonly gridUnitMmY: number;
   readonly isPreview?: boolean;
   readonly xray?: boolean;
 }
@@ -210,6 +213,7 @@ export function SplitBaseplateMeshes({
   totalWidthUnits,
   totalDepthUnits,
   gridUnitMm,
+  gridUnitMmY,
   isPreview = false,
   xray = false,
 }: SplitBaseplateMeshesProps) {
@@ -224,31 +228,25 @@ export function SplitBaseplateMeshes({
     );
 
   const totalWidthMm = totalWidthUnits * gridUnitMm;
-  const totalDepthMm = totalDepthUnits * gridUnitMm;
+  const totalDepthMm = totalDepthUnits * gridUnitMmY;
 
   return (
     <>
-      {pieceMeshes.map((entry) => {
-        const explodeX = splitViewMode === 'exploded' ? entry.col * EXPLODE_GAP_MM : 0;
-        const explodeY = splitViewMode === 'exploded' ? entry.row * EXPLODE_GAP_MM : 0;
-
-        return (
-          <PieceMesh
-            key={entry.label}
-            entry={entry}
-            totalWidthMm={totalWidthMm}
-            totalDepthMm={totalDepthMm}
-            gridUnitMm={gridUnitMm}
-            explodeX={explodeX}
-            explodeY={explodeY}
-            splitViewMode={splitViewMode}
-            hoveredPieceLabel={hoveredPieceLabel}
-            selectedPieceLabel={selectedPieceLabel}
-            isPreview={isPreview}
-            xray={xray}
-          />
-        );
-      })}
+      {pieceMeshes.map((entry) => (
+        <PieceMesh
+          key={entry.label}
+          entry={entry}
+          totalWidthMm={totalWidthMm}
+          totalDepthMm={totalDepthMm}
+          gridUnitMm={gridUnitMm}
+          gridUnitMmY={gridUnitMmY}
+          splitViewMode={splitViewMode}
+          hoveredPieceLabel={hoveredPieceLabel}
+          selectedPieceLabel={selectedPieceLabel}
+          isPreview={isPreview}
+          xray={xray}
+        />
+      ))}
     </>
   );
 }
