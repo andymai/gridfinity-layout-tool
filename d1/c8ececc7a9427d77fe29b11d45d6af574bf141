@@ -1,0 +1,36 @@
+src/features/bin-designer/components/panel/CutoutsSection/renderer/zLayer.ts
+  s_847f99eb10e239::t_b9f43bb08c83a9 9-12,15,20-28,35,37-48,51,55-56,58-59,61-62
+  s_847f99eb10e239::t_df7d9cf1aae7ce 8
+src/features/bin-designer/components/panel/CutoutsSection/renderer/CutoutShapeMesh.tsx
+  s_847f99eb10e239::t_9a433f36a0cf7a 253-254,296
+src/features/bin-designer/components/panel/CutoutsSection/renderer/PathShapeMesh.tsx
+  s_847f99eb10e239::t_9a433f36a0cf7a 244,251,263
+src/features/bin-designer/store/slices/cutoutSlice.ts
+  s_847f99eb10e239::t_83307a496182ec 122-132
+src/features/bin-designer/store/slices/cutoutSlice.test.ts
+  s_847f99eb10e239::t_5303beab3b452c 78-95,97,548-571
+  s_847f99eb10e239::t_b2967e0025f6c3 572
+src/features/bin-designer/components/panel/CutoutsSection/renderer/PolygonShapeMesh.tsx
+  s_847f99eb10e239::t_9a433f36a0cf7a 183,189,199
+src/features/bin-designer/components/panel/CutoutsSection/renderer/MeshFootprintMesh.tsx
+  s_847f99eb10e239::t_9a433f36a0cf7a 142,146,166
+  s_847f99eb10e239::t_8163939fe91a2b 167-169
+src/features/bin-designer/components/panel/CutoutsSection/renderer/zLayer.test.ts
+  s_847f99eb10e239::t_c48b57a46a78d5 44-45,50-51,56-95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "d1c8ececc7a9427d77fe29b11d45d6af574bf141",
+  "prompts": {},
+  "sessions": {
+    "s_847f99eb10e239": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0ec9dcc4-62aa-4e7a-9a1c-d33ce8fd5f4b",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
