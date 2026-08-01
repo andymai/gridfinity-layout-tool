@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.340.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.340.1...gridfinity-layout-tool-v4.340.2) (2026-08-01)
+
+
+### Bug Fixes
+
+* **design-linking:** derive the half-unit foot edge from where the bin sits ([#3077](https://github.com/andymai/gridfinity-layout-tool/issues/3077)) ([c2600cf](https://github.com/andymai/gridfinity-layout-tool/commit/c2600cf0bf524396aead8a70850da79d67d053f6))
+
 ## [4.340.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.340.0...gridfinity-layout-tool-v4.340.1) (2026-08-01)
 
 
