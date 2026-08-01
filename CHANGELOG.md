@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.342.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.342.0...gridfinity-layout-tool-v4.342.1) (2026-08-01)
+
+
+### Bug Fixes
+
+* **baseplate:** offer split-into-pieces for STEP export ([#3088](https://github.com/andymai/gridfinity-layout-tool/issues/3088)) ([#3091](https://github.com/andymai/gridfinity-layout-tool/issues/3091)) ([a562881](https://github.com/andymai/gridfinity-layout-tool/commit/a5628813fb9ecdad3cf44ea3bf2df422ad13b052))
+
 ## [4.342.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.341.0...gridfinity-layout-tool-v4.342.0) (2026-08-01)
 
 
