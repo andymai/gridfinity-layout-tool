@@ -1,0 +1,188 @@
+src/i18n/locales/nl.json
+  s_6408112f89d849::t_8c1a678edc6692 1719-1720
+  s_6408112f89d849::t_b7fb82b311370d 1721-1724,2935-2943
+src/features/drawer-shape/components/PenShapeDialog/usePenSketch.test.ts
+  s_6408112f89d849::t_8214c30c82891f 1-107
+src/i18n/locales/uk.json
+  s_6408112f89d849::t_8c1a678edc6692 1719-1720
+  s_6408112f89d849::t_b7fb82b311370d 1721-1724,2935-2943
+src/features/drawer-shape/components/PenShapeDialog/PenShapeDialog.test.tsx
+  s_6408112f89d849::t_757832c9357806 272-274
+  s_6408112f89d849::t_380c041af56a8b 7
+  s_6408112f89d849::t_fd30ac25a4c3ea 180-271,275-277
+src/i18n/locales/zh-CN.json
+  s_6408112f89d849::t_8c1a678edc6692 1719-1720
+  s_6408112f89d849::t_b7fb82b311370d 1721-1724,2935-2943
+src/i18n/locales/pt-BR.json
+  s_6408112f89d849::t_8c1a678edc6692 1719-1720
+  s_6408112f89d849::t_b7fb82b311370d 1721-1724,2935-2943
+src/i18n/locales/ja.json
+  s_6408112f89d849::t_8c1a678edc6692 1719-1720
+  s_6408112f89d849::t_b7fb82b311370d 1721-1724,2935-2943
+src/features/drawer-shape/components/PenShapeDialog/usePenSketch.ts
+  s_6408112f89d849::t_d0cb767a9a1376 2-3,8-13,18-24,30-31,33-37,46,51,61-64,75-78,91,101,106,108,113,119,125,130,159,163,169-170,189-190,196,202-206,210-216,220-238,240-241,254-255
+  s_6408112f89d849::t_fb2b411879f807 217-219
+src/i18n/locales/en.ts
+  s_6408112f89d849::t_3369ed328e90b7 3405-3406
+  s_6408112f89d849::t_4b67b81ec2a3b9 3407-3411
+  s_6408112f89d849::t_595bc4f22fd920 3431-3440
+src/features/drawer-shape/README.md
+  s_6408112f89d849::t_a21157202f74bd 27-32
+  s_6408112f89d849::t_fb6d0fcd90e4e9 52-57
+  s_6408112f89d849::t_fa532fd6046e33 33-39
+  s_6408112f89d849::t_e23603439cb2b8 58-64
+src/i18n/locales/ko.json
+  s_6408112f89d849::t_8c1a678edc6692 1719-1720
+  s_6408112f89d849::t_b7fb82b311370d 1721-1724,2935-2943
+src/i18n/locales/es.json
+  s_6408112f89d849::t_8c1a678edc6692 1719-1720
+  s_6408112f89d849::t_b7fb82b311370d 1721-1724,2935-2943
+src/shared/utils/filletOutline.test.ts
+  s_6408112f89d849::t_980f4903965982 3-4
+  s_6408112f89d849::t_86288bf8e37787 163-290
+src/features/drawer-shape/components/PenShapeDialog/PenCanvas.tsx
+  s_6408112f89d849::t_272a202348e825 151-171
+  s_6408112f89d849::t_c74fec2220db74 22-23
+  s_6408112f89d849::t_162d83d21df6a0 48
+src/i18n/locales/fr.json
+  s_6408112f89d849::t_8c1a678edc6692 1719-1720
+  s_6408112f89d849::t_b7fb82b311370d 1721-1724,2935-2943
+src/i18n/locales/cs.json
+  s_6408112f89d849::t_8c1a678edc6692 1719-1720
+  s_6408112f89d849::t_b7fb82b311370d 1721-1724,2935-2943
+src/i18n/locales/de.json
+  s_6408112f89d849::t_8c1a678edc6692 1719-1720
+  s_6408112f89d849::t_b7fb82b311370d 1721-1724,2935-2943
+src/shared/utils/filletOutline.ts
+  s_6408112f89d849::t_6a50d635c12442 119-120,122
+  s_6408112f89d849::t_3ec3fb02e3ae1e 15
+  s_6408112f89d849::t_1213e66edbbf8d 153-223,228-291
+  s_6408112f89d849::t_062b64d230995b 16
+  s_6408112f89d849::t_9a617eac39b371 224-227
+  s_6408112f89d849::t_27ffcbec2f84c2 72-76,89-95
+src/features/drawer-shape/components/PenShapeDialog/PenShapeDialog.tsx
+  s_6408112f89d849::t_943eb4fb2a6df0 550
+  s_6408112f89d849::t_cd4e97cfefef77 309,316-320,327-329,331-335,337-338
+  s_6408112f89d849::t_d7671f45f83733 91-93,101-102
+  s_6408112f89d849::t_ae0ddf02e21661 114
+  s_6408112f89d849::t_f4f65c2fa03f8f 476
+  s_6408112f89d849::t_c32c0d807de9e0 490
+  s_6408112f89d849::t_71764539318a51 260,266-273,275
+  s_6408112f89d849::t_eafaab434daaf5 35
+  s_6408112f89d849::t_358dc0a87fa834 132-138
+  s_6408112f89d849::t_46721582193e8c 412,414
+  s_6408112f89d849::t_c61e231a2cd52e 97-100
+  s_6408112f89d849::t_0f256c6558dab5 321-326,330
+  s_6408112f89d849::t_8e1bf21bce6598 482,484-485
+  s_6408112f89d849::t_bef5fdc3a87d22 27,397-399,520-540
+  s_6408112f89d849::t_d24f45781658fd 21
+  s_6408112f89d849::t_f96166adbe6abe 432
+  s_6408112f89d849::t_25e2e40ab26786 19
+  s_6408112f89d849::t_f6a8874b08322b 421-431,433-444
+  s_6408112f89d849::t_ac3f0ed586d8e6 25
+  s_6408112f89d849::t_737c08ac391529 26,483
+  s_6408112f89d849::t_0e2d13d28a135a 20
+src/i18n/locales/it.json
+  s_6408112f89d849::t_8c1a678edc6692 1719-1720
+  s_6408112f89d849::t_b7fb82b311370d 1721-1724,2935-2943
+src/i18n/locales/pl.json
+  s_6408112f89d849::t_8c1a678edc6692 1719-1720
+  s_6408112f89d849::t_b7fb82b311370d 1721-1724,2935-2943
+src/i18n/locales/nb.json
+  s_6408112f89d849::t_8c1a678edc6692 1719-1720
+  s_6408112f89d849::t_b7fb82b311370d 1721-1724,2935-2943
+src/features/drawer-shape/components/PenShapeDialog/PenCanvas.test.tsx
+  s_6408112f89d849::t_2666a6bf7211c2 83
+  s_6408112f89d849::t_5586b15b0c81ac 64-73
+  s_6408112f89d849::t_c6caff78cfeacc 17
+src/i18n/locales/sv.json
+  s_6408112f89d849::t_8c1a678edc6692 1719-1720
+  s_6408112f89d849::t_b7fb82b311370d 1721-1724,2935-2943
+src/features/drawer-shape/components/PenShapeDialog/useOutlineImport.ts
+  s_6408112f89d849::t_6abbe0bfd86c5e 157-164
+  s_6408112f89d849::t_2b2edb5bdd7267 1-56,60-63,66-67,70,74-76,78-79,87-88,90,94-95,97,99-102,107,110-111,137-138,146-148,153-154,156,165-170,174-175,187-189,191-197,199-200,202-212,214-218
+  s_6408112f89d849::t_854ca89d1b6103 57-59,64-65,68-69,71-73,77,80-86,89,91-93,96,98,103-106,108-109,112-136,139-145,149-152,155,171-173,176-186,190,198,201,213
+src/features/drawer-shape/utils/outlineImport/index.ts
+  s_6408112f89d849::t_04f2c62a921129 1-94
+src/features/bin-designer/components/panel/CutoutsSection/svgImport/svgConvertPath.test.ts
+  s_6408112f89d849::t_181bb0a017db0f 3
+src/features/drawer-shape/utils/outlineImport/svgOutlineParser.ts
+  s_6408112f89d849::t_d75852115c357e 28
+  s_6408112f89d849::t_5a9ebeaab5e442 123-130,132
+  s_6408112f89d849::t_07fee943e9dc0a 194-199,202-207,210-217
+  s_6408112f89d849::t_ab62e535aa3be7 101-103
+  s_6408112f89d849::t_45939201e7fdeb 1-27,29-100,104-122,131,133-193,200-201,208-209,218-317,322-351
+  s_6408112f89d849::t_f7effdc1130660 318-321
+src/shared/utils/svg/svgMatrix.ts
+  s_6408112f89d849::t_b59ff63c23b989 1,14,119-123
+  s_6408112f89d849::t_a40071bb33f091 3,7,11-13
+src/features/bin-designer/components/panel/CutoutsSection/svgImport/types.ts
+  s_6408112f89d849::t_f656782ea3ea08 44
+src/features/drawer-shape/components/PenShapeDialog/useOutlineImport.test.ts
+  s_6408112f89d849::t_43960e1b4b9bf0 1-6,8-165,171,176-185
+  s_6408112f89d849::t_e117a941a21a30 166-170,172-175
+  s_6408112f89d849::t_86cc5b960ca2c9 7
+src/shared/utils/svg/svgViewBox.ts
+  s_6408112f89d849::t_f2ef444f696a5b 1-70
+src/shared/utils/svg/types.ts
+  s_6408112f89d849::t_1874a31eb208df 1-7
+src/features/drawer-shape/utils/outlineImport/chainEdges.ts
+  s_6408112f89d849::t_f7aa9117df33be 1-84
+src/features/drawer-shape/utils/outlineImport/svgOutlineParser.test.ts
+  s_6408112f89d849::t_3cf5f0c8c7948d 1-8
+  s_6408112f89d849::t_349b362f357223 9-125
+src/features/drawer-shape/utils/outlineImport/simplifyLoop.ts
+  s_6408112f89d849::t_7037e55baa1c9e 1-106
+src/features/bin-designer/components/panel/CutoutsSection/svgImport/svgConvertPath.ts
+  s_6408112f89d849::t_585d0413519df9 14
+src/features/drawer-shape/components/PenShapeDialog/PenImportNotice.tsx
+  s_6408112f89d849::t_de5c94c383dad3 1-51
+src/shared/README.md
+  s_6408112f89d849::t_c95fac978a814c 69
+src/features/drawer-shape/components/PenShapeDialog/PenImportNotice.test.tsx
+  s_6408112f89d849::t_4281dedb197b5d 1-43
+src/features/drawer-shape/components/PenShapeDialog/PenControls.test.tsx
+  s_6408112f89d849::t_8694039aedbc53 1-80
+src/features/drawer-shape/utils/outlineImport/fitLoop.ts
+  s_6408112f89d849::t_64d00a16ab077a 1-123
+src/features/drawer-shape/utils/outlineImport/fitLoop.test.ts
+  s_6408112f89d849::t_926982e64f6d63 84-85,88,91
+  s_6408112f89d849::t_80326bdc8f2273 1-28,31-32,34-38,42-83,86-87,89-90,92-130
+  s_6408112f89d849::t_8c1d2eb86f58fc 29-30,33,39-41
+src/features/drawer-shape/components/PenShapeDialog/PenControls.tsx
+  s_6408112f89d849::t_8a55e000e54f82 1-150
+src/features/bin-designer/components/panel/CutoutsSection/svgImport/svgConvertShapes.ts
+  s_6408112f89d849::t_585d0413519df9 15,17-22
+src/features/bin-designer/components/panel/CutoutsSection/svgImport/svgParser.ts
+  s_6408112f89d849::t_585d0413519df9 21-25
+  s_6408112f89d849::t_e3efecbcb0b5a9 20
+src/shared/utils/svg/index.ts
+  s_6408112f89d849::t_e635cf39271bbb 1-21
+src/features/drawer-shape/utils/outlineImport/dxfParser.test.ts
+  s_6408112f89d849::t_ceaa06da875c61 1-144,152-202
+  s_6408112f89d849::t_d63bf88c442d39 145-151
+src/features/drawer-shape/utils/outlineImport/dxfParser.ts
+  s_6408112f89d849::t_8d58456543f7ed 86-89
+  s_6408112f89d849::t_092ee849e25322 1-81,83-85,90-244
+  s_6408112f89d849::t_cd51a4e077f420 82
+src/features/drawer-shape/utils/outlineImport/types.ts
+  s_6408112f89d849::t_61cad3c97aaaf6 1-38
+src/features/drawer-shape/utils/outlineImport/simplifyLoop.test.ts
+  s_6408112f89d849::t_8e30b03673611a 1-64
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "b666c179a86f13b5ae83cc37b69a68c30316998c",
+  "prompts": {},
+  "sessions": {
+    "s_6408112f89d849": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2be08d83-e088-44ca-953c-c21b200826a4",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
