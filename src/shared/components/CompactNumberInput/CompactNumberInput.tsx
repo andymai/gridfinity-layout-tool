@@ -143,12 +143,22 @@ export function CompactNumberInput({
       } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
         e.preventDefault();
         const delta = effectiveStep(step, e) * (e.key === 'ArrowUp' ? 1 : -1);
-        const next = clampRange(tidy(value + delta), min, editCeiling);
+        // Nudge from what the field shows, not the last committed value: typing
+        // 156 over a committed 10 and pressing ArrowDown must reach 155, not 9.5.
+        // (`editValue` is empty for an untouched mixed selection, hence the
+        // fallback.)
+        const typed = parseFloat(editValue);
+        const base = Number.isFinite(typed) ? typed : value;
+        // A typed value can sit above the ceiling captured on entry, so raise it
+        // — upward only, which is what keeps a nudge from ratcheting back down.
+        const ceiling = Math.max(editCeiling, ceilingFrom(base));
+        if (ceiling !== editCeiling) setEditCeiling(ceiling);
+        const next = clampRange(tidy(base + delta), min, ceiling);
         onChange(next);
         setEditValue(formatValue(next));
       }
     },
-    [editValue, commit, value, min, editCeiling, onChange, formatValue, tidy, step]
+    [editValue, commit, value, min, editCeiling, ceilingFrom, onChange, formatValue, tidy, step]
   );
 
   const handleScrubStart = useCallback(

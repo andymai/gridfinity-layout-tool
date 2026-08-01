@@ -314,6 +314,22 @@ describe('CompactNumberInput', () => {
       expect(onChange).toHaveBeenLastCalledWith(156);
     });
 
+    // Arrows used to nudge from the last committed value, so a typed-then-nudged
+    // entry was discarded — the same truncation this PR exists to remove.
+    it('nudges from a typed but uncommitted value, not the committed one', () => {
+      const onChange = vi.fn();
+      render(
+        <CompactNumberInput label="W" value={10} onChange={onChange} max={123.1} step={1} softMax />
+      );
+
+      fireEvent.click(screen.getByRole('button'));
+      const input = screen.getByRole('textbox');
+      fireEvent.change(input, { target: { value: '156' } });
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+
+      expect(onChange).toHaveBeenLastCalledWith(155);
+    });
+
     it('reports a valid ARIA range while the value sits past max', () => {
       render(<CompactNumberInput label="W" value={156} onChange={vi.fn()} max={123.1} softMax />);
       const slider = screen.getByRole('slider', { name: 'W' });
