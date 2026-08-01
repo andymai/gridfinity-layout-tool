@@ -74,12 +74,19 @@ export function CompactNumberInput({
     (v: number) => (softMax ? Math.max(min, v) : clampRange(v, min, max)),
     [softMax, min, max]
   );
-  // Scrub/arrow ceiling. Under `softMax` a value typed past `max` raises the
-  // ceiling to itself, so nudging an over-max measurement steps down from where
-  // it is instead of snapping back to `max` on the first keypress.
+  /**
+   * True once a `softMax` field holds a typed value past its ceiling. `max` then
+   * describes the recommended range rather than the field's limit, so both the
+   * step clamp and the ARIA range have to follow the value instead.
+   */
+  const overSoftMax = softMax && value > max;
+  // Scrub/arrow ceiling. `max` still caps a value that is inside the range, so
+  // dragging can't take a legal value past it. Above the range the cap lifts
+  // entirely — pinning it to the current value instead would ratchet downward,
+  // letting ArrowDown leave 156 for 155 and then refusing to go back up.
   const clampStep = useCallback(
-    (v: number) => clampRange(v, min, softMax ? Math.max(max, value) : max),
-    [softMax, min, max, value]
+    (v: number) => (overSoftMax ? Math.max(min, v) : clampRange(v, min, max)),
+    [overSoftMax, min, max]
   );
 
   const formatValue = useCallback((v: number) => {
@@ -188,7 +195,9 @@ export function CompactNumberInput({
         aria-label={label}
         aria-valuenow={value}
         aria-valuemin={min}
-        aria-valuemax={max === Infinity ? undefined : max}
+        // Reporting the prop's `max` here while `value` sits above it would
+        // publish valuenow > valuemax, which is an invalid slider state.
+        aria-valuemax={max === Infinity ? undefined : overSoftMax ? value : max}
       >
         {label}
       </span>

@@ -234,6 +234,51 @@ describe('CompactNumberInput', () => {
       expect(onChange).toHaveBeenCalledWith(155);
     });
 
+    it('can nudge an over-max value back up after stepping it down', async () => {
+      const onChange = vi.fn();
+      const user = userEvent.setup();
+      // Re-render with the new value, as the real parent does — a ceiling
+      // pinned to `value` would ratchet down and strand ArrowUp at 155.
+      const { rerender } = render(
+        <CompactNumberInput
+          label="W"
+          value={156}
+          onChange={onChange}
+          max={123.1}
+          step={1}
+          softMax
+        />
+      );
+      await user.click(screen.getByRole('button'));
+      await user.keyboard('{ArrowDown}');
+      expect(onChange).toHaveBeenLastCalledWith(155);
+
+      rerender(
+        <CompactNumberInput
+          label="W"
+          value={155}
+          onChange={onChange}
+          max={123.1}
+          step={1}
+          softMax
+        />
+      );
+      await user.keyboard('{ArrowUp}');
+      expect(onChange).toHaveBeenLastCalledWith(156);
+    });
+
+    it('reports a valid ARIA range while the value sits past max', () => {
+      render(<CompactNumberInput label="W" value={156} onChange={vi.fn()} max={123.1} softMax />);
+      const slider = screen.getByRole('slider', { name: 'W' });
+      expect(slider).toHaveAttribute('aria-valuenow', '156');
+      expect(slider).toHaveAttribute('aria-valuemax', '156');
+    });
+
+    it('still reports the prop max while the value is inside the range', () => {
+      render(<CompactNumberInput label="W" value={40} onChange={vi.fn()} max={123.1} softMax />);
+      expect(screen.getByRole('slider', { name: 'W' })).toHaveAttribute('aria-valuemax', '123.1');
+    });
+
     it('leaves the default (hard max) behaviour untouched', () => {
       const onChange = vi.fn();
       render(<CompactNumberInput label="W" value={10} onChange={onChange} max={123.1} />);
