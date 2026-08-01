@@ -34,6 +34,8 @@ export interface PenSketch {
   /** Open a history entry for a drag about to start. */
   beginGesture: () => void;
   undo: () => void;
+  /** Disarm a gesture that ended without moving anything. */
+  endGesture: () => void;
   reset: (widthMm: number, depthMm: number) => void;
   /** Move every selected corner by a snapped step, for arrow-key nudging. */
   nudge: (dx: number, dy: number, bounds: NudgeBounds) => void;
@@ -85,6 +87,10 @@ export function usePenSketch(seeded: readonly OutlineVertex[] | null): PenSketch
 
   const commit = useCallback(
     (next: readonly OutlineVertex[]) => {
+      // A commit is a completed edit, so it also disarms: a press that armed a
+      // gesture and then committed without moving would otherwise leave the
+      // flag set, and the next drag would spend a second entry on it.
+      gestureRef.current = false;
       push(active);
       setVerts(next);
     },
@@ -118,6 +124,10 @@ export function usePenSketch(seeded: readonly OutlineVertex[] | null): PenSketch
   // Reads `history` directly rather than from inside a `setHistory` updater: an
   // updater must be pure, and React may run it more than once under StrictMode
   // or concurrent rendering, which would apply the restore twice.
+  const endGesture = useCallback(() => {
+    gestureRef.current = false;
+  }, []);
+
   const undo = useCallback(() => {
     if (history.length === 0) return;
     const restored = history[history.length - 1];
@@ -178,6 +188,7 @@ export function usePenSketch(seeded: readonly OutlineVertex[] | null): PenSketch
     commit,
     preview,
     beginGesture,
+    endGesture,
     undo,
     reset,
     nudge,

@@ -124,8 +124,10 @@ describe('filletOutline', () => {
   // Each fillet adds a vertex. Past the model ceiling the outline fails
   // validation and Apply is blocked with no way out but undoing the radius.
   it('stops filleting before the vertex ceiling rather than blocking apply', () => {
-    // 200 corners on a circle: every one is eligible, so an unbudgeted pass
-    // would emit 400 and the validator caps at 256.
+    // 200 corners on a circle whose edges are long enough, and a radius small
+    // enough, that every corner is genuinely eligible — a tighter polygon puts
+    // the setback under MIN_RADIUS_MM and nothing rounds, which would make this
+    // pass while exercising none of the budget.
     const n = 200;
     const cx = W / 2;
     const cy = D / 2;
@@ -136,8 +138,16 @@ describe('filletOutline', () => {
         return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
       }),
     };
-    const filleted = filletOutline(many, 2);
-    expect(filleted.vertices.length).toBeLessThanOrEqual(256);
+    // Sanity: unbudgeted this geometry really does round every corner.
+    const edge = Math.hypot(
+      many.vertices[1].x - many.vertices[0].x,
+      many.vertices[1].y - many.vertices[0].y
+    );
+    const filleted = filletOutline(many, edge);
+
+    // 200 + 56 available = 256, so the budget must stop it exactly at the cap.
+    expect(filleted.vertices).toHaveLength(256);
+    expect(filleted.vertices.filter((v) => (v.bulge ?? 0) !== 0)).toHaveLength(56);
     expect(validateOutline(filleted, W, D, U)).toBeNull();
   });
 

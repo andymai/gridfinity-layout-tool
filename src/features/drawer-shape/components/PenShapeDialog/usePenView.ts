@@ -24,11 +24,6 @@ export interface PenView {
   readonly viewBox: string;
   /** True once the view has moved off its default framing. */
   readonly moved: boolean;
-  /**
-   * Scale factor to divide screen-constant sizes by. Handles are drawn in mm,
-   * so without this they would grow with the zoom instead of staying put.
-   */
-  readonly handleScale: number;
   /** Frame-local mm for a client point, honouring the current view. */
   toFrame: (clientX: number, clientY: number, rect: DOMRect) => { x: number; y: number };
   zoomAt: (deltaY: number, clientX: number, clientY: number, rect: DOMRect) => void;
@@ -36,12 +31,20 @@ export interface PenView {
   reset: () => void;
 }
 
-export function usePenView(widthMm: number, depthMm: number): PenView {
+export function usePenView(widthMm: number, depthMm: number, session: unknown): PenView {
   const frameW = widthMm + VIEW_PAD_MM * 2;
   const frameH = depthMm + VIEW_PAD_MM * 2;
   // One object rather than separate zoom/origin state: a wheel zoom changes
   // both together, and splitting them would let a render observe half a step.
   const [view, setView] = useState({ zoom: 1, x: 0, y: 0 });
+  // A new session, or a resized drawer, must start in the default framing: the
+  // dialog stays mounted, so the previous session's zoom and pan would
+  // otherwise be inherited by a shape they were never framed for.
+  const [viewSession, setViewSession] = useState<unknown>(session);
+  if (viewSession !== session) {
+    setViewSession(session);
+    setView({ zoom: 1, x: 0, y: 0 });
+  }
   const { zoom } = view;
 
   /** Keep the visible window inside the frame, so the drawer can't be lost. */
@@ -107,7 +110,6 @@ export function usePenView(widthMm: number, depthMm: number): PenView {
     zoom,
     viewBox,
     moved: view.zoom !== 1 || view.x !== 0 || view.y !== 0,
-    handleScale: zoom,
     toFrame,
     zoomAt,
     panBy,

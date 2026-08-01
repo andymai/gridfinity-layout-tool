@@ -195,11 +195,14 @@ export function hitSegmentMidpoint(
 }
 
 /**
- * Bulge that bows segment `index` through the given point.
+ * Bulge for the arc from a segment's endpoints that actually passes through the
+ * given point.
  *
- * Sagitta is the perpendicular offset of the point from the chord, signed by
- * which side it falls on; `bulge = 2·sagitta / chord` is the DXF relation.
- * Clamped to ±1 because the model caps arcs at a half circle.
+ * Derived from the circle through the three points rather than from the
+ * point's perpendicular offset alone: an offset-only formula ignores where
+ * along the chord the pointer sits, so dragging a handle sideways produced a
+ * curve that missed the cursor. Clamped to ±1 because the model caps arcs at a
+ * half circle.
  */
 export function bulgeThroughPoint(
   vertices: readonly OutlineVertex[],
@@ -209,16 +212,29 @@ export function bulgeThroughPoint(
 ): number {
   const a = vertices[index];
   const b = vertices[(index + 1) % vertices.length];
-  const dx = b.x - a.x;
-  const dy = b.y - a.y;
-  const chord = Math.hypot(dx, dy);
-  if (chord < 1e-9) return 0;
-  // Signed perpendicular offset from the chord. A positive bulge bows RIGHT of
-  // travel, which on this CCW loop is away from the interior, so a point on
-  // that side must yield a positive bulge.
-  const cross = ((x - a.x) * dy - (y - a.y) * dx) / chord;
-  const bulge = (2 * cross) / chord;
-  return Math.min(Math.max(bulge, -1), 1);
+  // Circumcentre of a, p, b. The determinant is twice the signed triangle area,
+  // so it vanishes exactly when the three are collinear — a straight segment.
+  const ax = a.x - x;
+  const ay = a.y - y;
+  const bx = b.x - x;
+  const by = b.y - y;
+  const d = 2 * (ax * by - ay * bx);
+  if (Math.abs(d) < 1e-12) return 0;
+  const aLen = ax * ax + ay * ay;
+  const bLen = bx * bx + by * by;
+  const cx = x + (by * aLen - ay * bLen) / d;
+  const cy = y + (ax * bLen - bx * aLen) / d;
+
+  const angA = Math.atan2(a.y - cy, a.x - cx);
+  const angB = Math.atan2(b.y - cy, b.x - cx);
+  const angP = Math.atan2(y - cy, x - cx);
+  const TAU = Math.PI * 2;
+  const norm = (t: number): number => ((t % TAU) + TAU) % TAU;
+  // Travel counter-clockwise from a to b; if the pointer is not on that arc,
+  // the intended sweep is the clockwise one instead.
+  const ccw = norm(angB - angA);
+  const sweep = norm(angP - angA) <= ccw ? ccw : ccw - TAU;
+  return Math.min(Math.max(Math.tan(sweep / 4), -1), 1);
 }
 
 /** Replace one vertex, returning a fresh array (outlines are never mutated). */
@@ -391,6 +407,36 @@ export function verticesInRect(
     if (v.x >= minX && v.x <= maxX && v.y >= minY && v.y <= maxY) out.push(i);
   }
   return out;
+}
+
+/**
+ * Largest translation of `indices` that keeps every one of them in the drawer.
+ *
+ * Clamping only the grabbed corner is not enough: the same delta applies to the
+ * whole selection, so dragging a selected edge sideways would carry its far
+ * corner straight through the wall and leave the outline unappliable.
+ */
+export function clampGroupDelta(
+  vertices: readonly OutlineVertex[],
+  indices: ReadonlySet<number>,
+  dx: number,
+  dy: number,
+  widthMm: number,
+  depthMm: number
+): { dx: number; dy: number } {
+  let lo = { x: Infinity, y: Infinity };
+  let hi = { x: -Infinity, y: -Infinity };
+  for (const i of indices) {
+    const v = vertices[i];
+    if (v === undefined) continue;
+    lo = { x: Math.min(lo.x, v.x), y: Math.min(lo.y, v.y) };
+    hi = { x: Math.max(hi.x, v.x), y: Math.max(hi.y, v.y) };
+  }
+  if (!Number.isFinite(lo.x)) return { dx: 0, dy: 0 };
+  return {
+    dx: Math.min(Math.max(dx, -lo.x), widthMm - hi.x),
+    dy: Math.min(Math.max(dy, -lo.y), depthMm - hi.y),
+  };
 }
 
 /** Translate the given vertices, leaving the rest and every bulge untouched. */

@@ -391,18 +391,39 @@ describe('PenShapeDialog', () => {
       fireEvent.pointerMove(svg, at(430, -10));
       fireEvent.pointerUp(svg);
 
-      fireEvent.keyDown(canvas(), { key: 'Delete' });
+      // Nudge and read the result: asserting only that delete is refused would
+      // hold just as well if the sweep had selected nothing at all.
+      fireEvent.keyDown(svg, { key: 'ArrowUp' });
       fireEvent.click(screen.getByText('drawerShape.editor.apply'));
-      // Four corners minus the two swept leaves two, which is below the
-      // triangle floor, so the delete is refused and all four remain.
-      expect(setDrawerOutline.mock.calls[0][0]?.vertices).toHaveLength(4);
+
+      const v = setDrawerOutline.mock.calls[0][0]?.vertices ?? [];
+      expect(v[0].y).toBeGreaterThan(0);
+      expect(v[1].y).toBeGreaterThan(0);
+      // The two corners the sweep missed stay where they were.
+      expect(v[2].y).toBe(336);
+      expect(v[3].y).toBe(336);
     });
 
     it('selects everything with Ctrl+A', () => {
+      // Inset from the walls, so a nudge has somewhere to go: the default
+      // rectangle spans the drawer and the group clamp rightly refuses to move
+      // it, which would make this pass whatever Ctrl+A selected.
+      setOutline([
+        { x: 42, y: 42 },
+        { x: 210, y: 42 },
+        { x: 210, y: 210 },
+        { x: 42, y: 210 },
+      ]);
       const svg = setup();
       fireEvent.keyDown(svg, { key: 'a', ctrlKey: true });
-      // All four selected, so deleting would breach the floor and is refused.
-      expect(screen.getByText('drawerShape.penDeletePoint')).toBeDisabled();
+      fireEvent.keyDown(svg, { key: 'ArrowRight' });
+      fireEvent.click(screen.getByText('drawerShape.editor.apply'));
+
+      // Every corner moved by the same step, which only happens if all four
+      // were selected — a delete-disabled assertion would pass on none.
+      const v = setDrawerOutline.mock.calls[0][0]?.vertices ?? [];
+      expect(v).toHaveLength(4);
+      expect(v.every((c) => c.x > 42)).toBe(true);
     });
   });
 });

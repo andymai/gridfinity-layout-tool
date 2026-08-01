@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { validateOutline } from '@/shared/utils/drawerOutline';
+import { arcGeometry } from '@/shared/utils/drawerOutlineGeometry';
 import {
   bulgeThroughPoint,
   clampToDrawer,
@@ -18,6 +19,7 @@ import {
   segmentHandle,
   sketchPathD,
   verticesInRect,
+  clampGroupDelta,
   sketchToOutline,
   snapMm,
 } from './penShape';
@@ -131,6 +133,28 @@ describe('bulgeThroughPoint', () => {
     // Segment 0 runs left to right along y=0; the interior is above it.
     expect(bulgeThroughPoint(verts, 0, W / 2, -10)).toBeGreaterThan(0);
     expect(bulgeThroughPoint(verts, 0, W / 2, 10)).toBeLessThan(0);
+  });
+
+  // The whole point of the handle: the curve must land under the cursor. An
+  // offset-only formula ignores where along the chord the pointer sits, so a
+  // sideways drag produced a curve that missed it.
+  it('produces an arc that passes through the dragged point', () => {
+    for (const p of [
+      { x: W / 2, y: -20 },
+      { x: W / 4, y: -30 },
+      { x: (3 * W) / 4, y: 25 },
+    ]) {
+      const bulge = bulgeThroughPoint(verts, 0, p.x, p.y);
+      const arc = arcGeometry(verts[0], verts[1], bulge);
+      expect(arc).not.toBeNull();
+      if (arc === null) continue;
+      // On the circle: distance from the centre equals the radius.
+      expect(Math.hypot(p.x - arc.cx, p.y - arc.cy)).toBeCloseTo(arc.r, 6);
+    }
+  });
+
+  it('stays zero for a point on the chord', () => {
+    expect(bulgeThroughPoint(verts, 0, W / 4, 0)).toBe(0);
   });
 
   it('caps at a half circle', () => {
@@ -323,5 +347,31 @@ describe('degenerate and arc-adjacent edits', () => {
     // Removing 1 and 3 makes both arcs span new endpoints.
     const after = removeVertices([...bowed, { x: 10, y: 10 }, { x: 20, y: 10 }], new Set([1, 3]));
     expect(after.every((v) => (v.bulge ?? 0) === 0)).toBe(true);
+  });
+
+  // Clamping only the grabbed corner is not enough: the same delta applies to
+  // the whole selection, so a selected edge would carry its far corner through
+  // the wall and leave the outline unappliable.
+  it('clamps a group delta against the whole selection, not one corner', () => {
+    const all = new Set([0, 1, 2, 3]);
+    // The rectangle already spans the drawer, so it cannot move at all.
+    const pinned = clampGroupDelta(verts, all, 10, 10, W, D);
+    expect(pinned.dx).toBeCloseTo(0, 9);
+    expect(pinned.dy).toBeCloseTo(0, 9);
+
+    // The front edge alone can rise, but only to the back wall.
+    const front = new Set([0, 1]);
+    expect(clampGroupDelta(verts, front, 0, 1000, W, D).dy).toBe(D);
+    // Negative zero when the edge is already on the wall, hence toBeCloseTo.
+    expect(clampGroupDelta(verts, front, 0, -5, W, D).dy).toBeCloseTo(0, 9);
+  });
+
+  it('allows a full move when the selection has room', () => {
+    const inset = [
+      { x: 50, y: 50 },
+      { x: 100, y: 50 },
+      { x: 100, y: 100 },
+    ];
+    expect(clampGroupDelta(inset, new Set([0, 1, 2]), 10, 10, W, D)).toEqual({ dx: 10, dy: 10 });
   });
 });

@@ -38,6 +38,7 @@ import {
   hitVertex,
   insertVertex,
   moveVertex,
+  clampGroupDelta,
   moveVertices,
   verticesInRect,
   rectangleSketch,
@@ -99,7 +100,8 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
   const dragRef = useRef<Drag | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const sketch = usePenSketch(seeded);
-  const view = usePenView(widthMm, depthMm);
+  // `seeded` is a fresh array per open, so it doubles as the session token.
+  const view = usePenView(widthMm, depthMm, seeded);
   // Divided by the zoom so the grab area matches the drawn handle at any zoom.
   const hitR = hitRadiusMm(widthMm, depthMm) / view.zoom;
   const { verts, selected, setSelected } = sketch;
@@ -233,8 +235,16 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
         // as the view zooms in.
         const g = alignmentGuides(verts, moving, c, hitR);
         setGuides({ x: g.x, y: g.y });
-        const dx = g.point.x - verts[drag.index].x;
-        const dy = g.point.y - verts[drag.index].y;
+        // The whole selection shares one delta, so it has to be clamped for
+        // the group rather than for the grabbed corner alone.
+        const { dx, dy } = clampGroupDelta(
+          verts,
+          moving,
+          g.point.x - verts[drag.index].x,
+          g.point.y - verts[drag.index].y,
+          widthMm,
+          depthMm
+        );
         sketch.preview(moveVertices(verts, moving, dx, dy));
         return;
       }
@@ -251,6 +261,8 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
   const endDrag = useCallback(() => {
     const drag = dragRef.current;
     dragRef.current = null;
+    // A press that selected without moving leaves no history entry behind.
+    sketch.endGesture();
     setGuides({ x: null, y: null });
     setMarquee(null);
     if (drag?.kind !== 'marquee') return;
@@ -258,7 +270,7 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
     // A click that never moved is a deselect, which pointer-down already did.
     if (hit.length === 0 && !drag.add) return;
     setSelected(drag.add ? [...selected, ...hit] : hit);
-  }, [verts, selected, setSelected]);
+  }, [verts, selected, setSelected, sketch]);
 
   const handleWheel = useCallback(
     (e: React.WheelEvent<SVGSVGElement>) => {
