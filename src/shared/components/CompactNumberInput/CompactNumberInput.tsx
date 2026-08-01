@@ -28,10 +28,13 @@ interface CompactNumberInputProps {
   /** Selected items have differing values — show a "mixed" placeholder until edited. */
   readonly indeterminate?: boolean;
   /**
-   * Treat `max` as a soft ceiling for typed entries only. Scrubbing and arrow
-   * keys still stop at it — dragging past a limit is meaningless — but a typed
-   * number commits as written, so a field holding a real-world measurement
-   * can't silently truncate it (#3061). The caller owns what happens next.
+   * Treat `max` as a soft ceiling for typed entries only, so a field holding a
+   * real-world measurement can't silently truncate it (#3061). The caller owns
+   * what happens next.
+   *
+   * Overflow stays typed-only: scrubbing and arrow keys still stop at `max`,
+   * and past it they stop at whatever was typed, so no gesture can raise a
+   * value beyond what the user entered.
    */
   readonly softMax?: boolean;
 }
@@ -74,19 +77,22 @@ export function CompactNumberInput({
     (v: number) => (softMax ? Math.max(min, v) : clampRange(v, min, max)),
     [softMax, min, max]
   );
+
   /**
-   * True once a `softMax` field holds a typed value past its ceiling — `max`
-   * then describes the recommended range rather than the field's limit.
+   * Step ceiling for a whole gesture — a drag, or one visit to the text field.
+   *
+   * Normally `max`, so scrubbing can never carry a value that fits past the
+   * limit. A `softMax` value already typed above it raises the ceiling to
+   * itself, which keeps the overflow typed-only without freezing the field:
+   * recomputing this per keystroke instead would let it follow the value down,
+   * so ArrowDown from 156 to 155 would drop the ceiling to 155 and ArrowUp
+   * could never get back. Fixing it for the gesture gives both.
    */
-  const overSoftMax = softMax && value > max;
-  // Scrub/arrow ceiling. `max` still caps a value that is inside the range, so
-  // dragging can't take a legal value past it. Above the range the cap lifts
-  // entirely — pinning it to the current value instead would ratchet downward,
-  // letting ArrowDown leave 156 for 155 and then refusing to go back up.
-  const clampStep = useCallback(
-    (v: number) => (overSoftMax ? Math.max(min, v) : clampRange(v, min, max)),
-    [overSoftMax, min, max]
+  const ceilingFrom = useCallback(
+    (start: number) => (softMax ? Math.max(max, start) : max),
+    [softMax, max]
   );
+  const [editCeiling, setEditCeiling] = useState(max);
 
   const formatValue = useCallback((v: number) => {
     const rounded = Math.round(v * 100) / 100;
@@ -100,8 +106,9 @@ export function CompactNumberInput({
     if (disabled) return;
     // Mixed selection: start from an empty field so a typed value unifies all.
     setEditValue(indeterminate ? '' : formatValue(value));
+    setEditCeiling(ceilingFrom(value));
     setEditing(true);
-  }, [disabled, indeterminate, value, formatValue]);
+  }, [disabled, indeterminate, value, formatValue, ceilingFrom]);
 
   useEffect(() => {
     if (editing && inputRef.current) {
@@ -136,12 +143,12 @@ export function CompactNumberInput({
       } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
         e.preventDefault();
         const delta = effectiveStep(step, e) * (e.key === 'ArrowUp' ? 1 : -1);
-        const next = clampStep(tidy(value + delta));
+        const next = clampRange(tidy(value + delta), min, editCeiling);
         onChange(next);
         setEditValue(formatValue(next));
       }
     },
-    [editValue, commit, value, clampStep, onChange, formatValue, tidy, step]
+    [editValue, commit, value, min, editCeiling, onChange, formatValue, tidy, step]
   );
 
   const handleScrubStart = useCallback(
@@ -150,6 +157,8 @@ export function CompactNumberInput({
       e.preventDefault();
       const startX = e.clientX;
       const startValue = value;
+      // Fixed for the drag, so the ceiling can't drift as the value moves.
+      const ceiling = ceilingFrom(startValue);
       let moved = false;
 
       const handleMove = (moveEvent: PointerEvent) => {
@@ -160,7 +169,11 @@ export function CompactNumberInput({
         }
         if (!moved) return;
         const steps = Math.round(dx / PIXELS_PER_STEP);
-        const next = clampStep(tidy(startValue + steps * effectiveStep(step, moveEvent)));
+        const next = clampRange(
+          tidy(startValue + steps * effectiveStep(step, moveEvent)),
+          min,
+          ceiling
+        );
         onChange(next);
       };
 
@@ -174,7 +187,7 @@ export function CompactNumberInput({
       document.addEventListener('pointermove', handleMove);
       document.addEventListener('pointerup', handleUp);
     },
-    [disabled, editing, value, clampStep, onChange, tidy, startEditing, step]
+    [disabled, editing, value, min, ceilingFrom, onChange, tidy, startEditing, step]
   );
 
   return (

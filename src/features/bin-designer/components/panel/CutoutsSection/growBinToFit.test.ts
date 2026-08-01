@@ -88,6 +88,16 @@ describe('computeGrowToFit', () => {
     expect(computeGrowToFit(p, [cutout({ width: 130 })], false)).toEqual({ width: 3.5, depth: 3 });
   });
 
+  // Half-grid on is 0.5 granularity, not "stay fractional": landing on a whole
+  // unit is the smallest size that fits and is a size the user has opted into.
+  // Off, the same start can only step by 1 and so stays fractional.
+  it('may land on a whole unit from a fractional start when half-grid mode is on', () => {
+    // 2.5u interior is 102.1mm and 3u is 123.1mm, so 110mm needs exactly 3u.
+    const p = params({ width: 2.5 });
+    expect(computeGrowToFit(p, [cutout({ width: 110 })], true)).toEqual({ width: 3, depth: 3 });
+    expect(computeGrowToFit(p, [cutout({ width: 110 })], false)).toEqual({ width: 3.5, depth: 3 });
+  });
+
   it('grows each axis independently', () => {
     const p = params();
     expect(computeGrowToFit(p, [cutout({ width: 156, depth: 200 })], false)).toEqual({

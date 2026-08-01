@@ -293,6 +293,27 @@ describe('CompactNumberInput', () => {
       expect(onChange).not.toHaveBeenCalled();
     });
 
+    // Overflow is typed-only: a nudge may not push a value further past the
+    // ceiling than the number the user actually entered.
+    it('will not nudge an over-max value any higher', async () => {
+      const onChange = vi.fn();
+      const user = userEvent.setup();
+      render(
+        <CompactNumberInput
+          label="W"
+          value={156}
+          onChange={onChange}
+          max={123.1}
+          step={1}
+          softMax
+        />
+      );
+      await user.click(screen.getByRole('button'));
+      await user.keyboard('{ArrowUp}');
+
+      expect(onChange).toHaveBeenLastCalledWith(156);
+    });
+
     it('reports a valid ARIA range while the value sits past max', () => {
       render(<CompactNumberInput label="W" value={156} onChange={vi.fn()} max={123.1} softMax />);
       const slider = screen.getByRole('slider', { name: 'W' });
