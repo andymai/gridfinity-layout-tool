@@ -1716,6 +1716,8 @@
   "drawerShape.penResetView": "Скинути вигляд",
   "drawerShape.penCorner": "Кут {n}",
   "drawerShape.penFillet": "Заокруглити кути (мм)",
+  "drawerShape.penFilletSelected": "Заокруглити {count} кут(и) (мм)",
+  "drawerShape.penFilletMixed": "Різні",
   "drawerShape.penSnapOff": "Вимкнено",
   "drawerShape.penDeletePoint": "Видалити кут",
   "drawerShape.penReset": "Повернути прямокутник",

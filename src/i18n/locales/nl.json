@@ -1716,6 +1716,8 @@
   "drawerShape.penResetView": "Weergave herstellen",
   "drawerShape.penCorner": "Hoek {n}",
   "drawerShape.penFillet": "Hoeken afronden (mm)",
+  "drawerShape.penFilletSelected": "{count} hoek(en) afronden (mm)",
+  "drawerShape.penFilletMixed": "Gemengd",
   "drawerShape.penSnapOff": "Uit",
   "drawerShape.penDeletePoint": "Hoek verwijderen",
   "drawerShape.penReset": "Terug naar rechthoek",

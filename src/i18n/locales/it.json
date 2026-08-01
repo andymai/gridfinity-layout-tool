@@ -1716,6 +1716,8 @@
   "drawerShape.penResetView": "Reimposta vista",
   "drawerShape.penCorner": "Angolo {n}",
   "drawerShape.penFillet": "Arrotonda angoli (mm)",
+  "drawerShape.penFilletSelected": "Arrotonda {count} angolo/i (mm)",
+  "drawerShape.penFilletMixed": "Vari",
   "drawerShape.penSnapOff": "Disattivato",
   "drawerShape.penDeletePoint": "Elimina angolo",
   "drawerShape.penReset": "Ripristina rettangolo",

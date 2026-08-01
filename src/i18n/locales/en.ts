@@ -3402,6 +3402,8 @@ const en: Record<string, string> = {
   'drawerShape.penResetView': 'Reset view',
   'drawerShape.penCorner': 'Corner {n}',
   'drawerShape.penFillet': 'Round corners (mm)',
+  'drawerShape.penFilletSelected': 'Round {count} corner(s) (mm)',
+  'drawerShape.penFilletMixed': 'Mixed',
   'drawerShape.penSnapOff': 'Off',
   'drawerShape.penDeletePoint': 'Delete corner',
   'drawerShape.penReset': 'Reset to rectangle',

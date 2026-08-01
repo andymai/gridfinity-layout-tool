@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { DrawerOutline } from '@/core/types';
-import { filletOutline } from './filletOutline';
-import { validateOutline } from './drawerOutline';
+import { filletOutline, unfilletOutline } from './filletOutline';
+import { quantizeOutline, validateOutline } from './drawerOutline';
 import { arcGeometry, flattenOutline, outlineSignedArea } from './drawerOutlineGeometry';
 
 const U = 42;
@@ -159,5 +159,133 @@ describe('filletOutline', () => {
     };
     // All four corners round, as they would with the bulge absent entirely.
     expect(filletOutline(almost, 20).vertices.filter((v) => (v.bulge ?? 0) !== 0)).toHaveLength(4);
+  });
+
+  describe('per-corner radii', () => {
+    it('rounds only the corners the array gives a radius', () => {
+      const filleted = filletOutline(rect(), [20, 0, 20, 0]);
+      expect(filleted.vertices).toHaveLength(6);
+      expect(filleted.vertices.filter((v) => (v.bulge ?? 0) !== 0)).toHaveLength(2);
+    });
+
+    it('gives each corner its own radius', () => {
+      const filleted = filletOutline(rect(), [10, 30, 0, 0]);
+      const radii = filleted.vertices
+        .map((v, i) =>
+          arcGeometry(v, filleted.vertices[(i + 1) % filleted.vertices.length], v.bulge ?? 0)
+        )
+        .filter((a) => a !== null)
+        .map((a) => a.r);
+      expect(radii).toHaveLength(2);
+      expect(radii[0]).toBeCloseTo(10, 6);
+      expect(radii[1]).toBeCloseTo(30, 6);
+    });
+
+    it('leaves the outline untouched when every radius is zero', () => {
+      const o = rect();
+      expect(filletOutline(o, [0, 0, 0, 0])).toBe(o);
+    });
+
+    it('treats a short array as zero for the corners it does not reach', () => {
+      const filleted = filletOutline(rect(), [20]);
+      expect(filleted.vertices.filter((v) => (v.bulge ?? 0) !== 0)).toHaveLength(1);
+    });
+  });
+});
+
+/** Assert two vertex lists describe the same corners, ignoring where the loop starts. */
+function expectSameCorners(actual: DrawerOutline['vertices'], expected: DrawerOutline['vertices']) {
+  expect(actual).toHaveLength(expected.length);
+  const offset = actual.findIndex(
+    (v) => Math.abs(v.x - expected[0].x) < 1e-6 && Math.abs(v.y - expected[0].y) < 1e-6
+  );
+  expect(offset).toBeGreaterThanOrEqual(0);
+  for (let i = 0; i < expected.length; i++) {
+    const v = actual[(offset + i) % actual.length];
+    expect(v.x).toBeCloseTo(expected[i].x, 6);
+    expect(v.y).toBeCloseTo(expected[i].y, 6);
+  }
+}
+
+describe('unfilletOutline', () => {
+  it('returns an unrounded outline as drawn, with no radii', () => {
+    const o = rect();
+    const { vertices, radii } = unfilletOutline(o);
+    expect(vertices).toEqual(o.vertices);
+    expect(radii).toEqual([0, 0, 0, 0]);
+  });
+
+  it('recovers the corners and the radius a uniform fillet was built from', () => {
+    const original = rect();
+    const { vertices, radii } = unfilletOutline(filletOutline(original, 20));
+    expectSameCorners(vertices, original.vertices);
+    expect(radii.every((r) => Math.abs(r - 20) < 1e-6)).toBe(true);
+  });
+
+  it('recovers per-corner radii, including a concave one', () => {
+    const original = lShape();
+    const asked = [10, 25, 0, 15, 0, 20];
+    const { vertices, radii } = unfilletOutline(filletOutline(original, asked));
+    expectSameCorners(vertices, original.vertices);
+    const offset = vertices.findIndex(
+      (v) => Math.abs(v.x - original.vertices[0].x) < 1e-6 && Math.abs(v.y) < 1e-6
+    );
+    for (let i = 0; i < asked.length; i++) {
+      expect(radii[(offset + i) % radii.length]).toBeCloseTo(asked[i], 6);
+    }
+  });
+
+  // The pen editor seeds from a stored outline, which has been quantized to
+  // 0.01mm — an exact tangency test would find no fillets at all after a save.
+  it('still recognises a fillet after the outline is quantized', () => {
+    const original = rect();
+    const stored = quantizeOutline(filletOutline(original, 17.5));
+    const { vertices, radii } = unfilletOutline(stored);
+    expect(vertices).toHaveLength(4);
+    for (const r of radii) expect(r).toBeCloseTo(17.5, 1);
+  });
+
+  // The setback cap can clip a radius well below the one asked for. Reporting
+  // the request would show a number the shape does not have.
+  it('reports the radius that was applied, not the one requested', () => {
+    const { radii } = unfilletOutline(filletOutline(rect(), 10_000));
+    // 0.49 of the shorter (D = 252mm) edge, which a 90 degree turn sets back 1:1.
+    const capped = D * 0.49;
+    expect(radii).toHaveLength(4);
+    for (const r of radii) expect(r).toBeCloseTo(capped, 6);
+  });
+
+  it('leaves a hand-drawn arc alone rather than reading it as a fillet', () => {
+    // The bowed segment is not tangent to its neighbours, so collapsing it
+    // would move geometry the user drew on purpose.
+    const drawn: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: W, y: 0, bulge: 0.4 },
+        { x: W, y: D },
+        { x: 0, y: D },
+      ],
+    };
+    const { vertices, radii } = unfilletOutline(drawn);
+    expect(vertices).toEqual(drawn.vertices);
+    expect(radii).toEqual([0, 0, 0, 0]);
+  });
+
+  it('round-trips back to the same geometry', () => {
+    const filleted = filletOutline(lShape(), [12, 12, 0, 12, 0, 12]);
+    const { vertices, radii } = unfilletOutline(filleted);
+    const again = filletOutline({ vertices }, radii);
+    expect(again.vertices).toHaveLength(filleted.vertices.length);
+    expectSameCorners(again.vertices, filleted.vertices);
+  });
+
+  it('keeps a fillet that wraps the end of the vertex array', () => {
+    // Rotating the loop puts one fillet's two vertices across index 0, which a
+    // non-cyclic scan would miss.
+    const filleted = filletOutline(rect(), 20);
+    const rotated: DrawerOutline = {
+      vertices: [...filleted.vertices.slice(-1), ...filleted.vertices.slice(0, -1)],
+    };
+    expect(unfilletOutline(rotated).vertices).toHaveLength(4);
   });
 });

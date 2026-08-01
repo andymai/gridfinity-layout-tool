@@ -1716,6 +1716,8 @@
   "drawerShape.penResetView": "Zresetuj widok",
   "drawerShape.penCorner": "Narożnik {n}",
   "drawerShape.penFillet": "Zaokrąglij narożniki (mm)",
+  "drawerShape.penFilletSelected": "Zaokrąglij {count} narożnik(ów) (mm)",
+  "drawerShape.penFilletMixed": "Różne",
   "drawerShape.penSnapOff": "Wyłączone",
   "drawerShape.penDeletePoint": "Usuń narożnik",
   "drawerShape.penReset": "Przywróć prostokąt",

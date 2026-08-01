@@ -1716,6 +1716,8 @@
   "drawerShape.penResetView": "表示をリセット",
   "drawerShape.penCorner": "角 {n}",
   "drawerShape.penFillet": "角を丸める (mm)",
+  "drawerShape.penFilletSelected": "{count} 個の角を丸める (mm)",
+  "drawerShape.penFilletMixed": "混在",
   "drawerShape.penSnapOff": "オフ",
   "drawerShape.penDeletePoint": "角を削除",
   "drawerShape.penReset": "長方形に戻す",

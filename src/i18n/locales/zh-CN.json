@@ -1716,6 +1716,8 @@
   "drawerShape.penResetView": "重置视图",
   "drawerShape.penCorner": "角点 {n}",
   "drawerShape.penFillet": "圆角 (mm)",
+  "drawerShape.penFilletSelected": "{count} 个角点圆角 (mm)",
+  "drawerShape.penFilletMixed": "不一致",
   "drawerShape.penSnapOff": "关闭",
   "drawerShape.penDeletePoint": "删除角点",
   "drawerShape.penReset": "恢复为矩形",

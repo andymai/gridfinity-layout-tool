@@ -1716,6 +1716,8 @@
   "drawerShape.penResetView": "Ansicht zurücksetzen",
   "drawerShape.penCorner": "Ecke {n}",
   "drawerShape.penFillet": "Ecken abrunden (mm)",
+  "drawerShape.penFilletSelected": "{count} Ecke(n) abrunden (mm)",
+  "drawerShape.penFilletMixed": "Gemischt",
   "drawerShape.penSnapOff": "Aus",
   "drawerShape.penDeletePoint": "Ecke löschen",
   "drawerShape.penReset": "Auf Rechteck zurücksetzen",

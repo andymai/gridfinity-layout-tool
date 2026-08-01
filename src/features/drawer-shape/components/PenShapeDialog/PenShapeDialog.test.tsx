@@ -4,6 +4,7 @@ import type { DrawerOutline } from '@/core/types';
 import { ok } from '@/core/result';
 import { useLayoutStore } from '@/core/store';
 import { resetAllStores } from '@/test/testUtils';
+import { filletOutline } from '@/shared/utils/filletOutline';
 import { PenShapeDialog } from './PenShapeDialog';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
@@ -174,6 +175,104 @@ describe('PenShapeDialog', () => {
     // A rounded rectangle is eight points, four of them carrying an arc.
     expect(applied?.vertices).toHaveLength(8);
     expect(applied?.vertices.filter((v) => (v.bulge ?? 0) !== 0)).toHaveLength(4);
+  });
+
+  // A drawer moulding is rarely uniform, so the radius control follows the
+  // selection rather than always rounding the whole shape (#3054).
+  describe('per-corner rounding', () => {
+    const rect = () => ({ left: 0, top: 0, width: 448, height: 364 }) as DOMRect;
+    /** Screen point for a drawer-local mm coordinate, in the default view. */
+    const at = (x: number, y: number) => ({ clientX: x + 14, clientY: 364 - 14 - y });
+
+    function selectCorner(x: number, y: number, shiftKey = false): void {
+      const svg = screen.getByRole('application');
+      svg.getBoundingClientRect = rect;
+      fireEvent.pointerDown(svg, { ...at(x, y), shiftKey });
+      fireEvent.pointerUp(svg);
+    }
+
+    function setRadius(label: string, value: string): void {
+      const stepper = screen.getByLabelText(label);
+      fireEvent.change(stepper, { target: { value } });
+      fireEvent.blur(stepper);
+    }
+
+    it('rounds only the selected corner', () => {
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      selectCorner(0, 0);
+
+      setRadius('drawerShape.penFilletSelected', '20');
+      fireEvent.click(screen.getByText('drawerShape.editor.apply'));
+
+      const applied = setDrawerOutline.mock.calls[0][0];
+      // One corner became two points joined by a single arc; the rest stay sharp.
+      expect(applied?.vertices).toHaveLength(5);
+      expect(applied?.vertices.filter((v) => (v.bulge ?? 0) !== 0)).toHaveLength(1);
+    });
+
+    it('gives each corner its own radius', () => {
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      selectCorner(0, 0);
+      setRadius('drawerShape.penFilletSelected', '20');
+      selectCorner(420, 0);
+      setRadius('drawerShape.penFilletSelected', '40');
+      fireEvent.click(screen.getByText('drawerShape.editor.apply'));
+
+      const applied = setDrawerOutline.mock.calls[0][0];
+      expect(applied?.vertices).toHaveLength(6);
+      expect(applied?.vertices.filter((v) => (v.bulge ?? 0) !== 0)).toHaveLength(2);
+    });
+
+    // Without an inverse, a saved radius is unreachable: reopening shows arcs,
+    // and filletOutline skips arc-adjacent corners, so the stepper does nothing.
+    it('recovers the radius of a saved shape so it stays adjustable', () => {
+      const { w, d } = extent();
+      setOutline(
+        filletOutline(
+          {
+            vertices: [
+              { x: 0, y: 0 },
+              { x: w, y: 0 },
+              { x: w, y: d },
+              { x: 0, y: d },
+            ],
+          },
+          25
+        ).vertices
+      );
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+
+      // Four corners again, not the eight points the stored outline has.
+      expect(screen.getByLabelText('drawerShape.penFillet')).toHaveValue(25);
+      selectCorner(0, 0);
+      setRadius('drawerShape.penFilletSelected', '5');
+      fireEvent.click(screen.getByText('drawerShape.editor.apply'));
+
+      const applied = setDrawerOutline.mock.calls[0][0];
+      expect(applied?.vertices.filter((v) => (v.bulge ?? 0) !== 0)).toHaveLength(4);
+    });
+
+    it('reports a mixed radius rather than a wrong one', () => {
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      selectCorner(0, 0);
+      setRadius('drawerShape.penFilletSelected', '20');
+      selectCorner(420, 0, true);
+
+      expect(screen.getByText('drawerShape.penFilletMixed')).toBeInTheDocument();
+      expect(screen.getByLabelText('drawerShape.penFilletSelected')).toHaveValue(0);
+    });
+
+    it('drops every radius when the sketch is reset', () => {
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      setRadius('drawerShape.penFillet', '20');
+
+      fireEvent.click(screen.getByText('drawerShape.penReset'));
+      fireEvent.click(screen.getByText('drawerShape.editor.apply'));
+
+      const applied = setDrawerOutline.mock.calls[0][0];
+      expect(applied?.vertices).toHaveLength(4);
+      expect(applied?.vertices.filter((v) => (v.bulge ?? 0) !== 0)).toHaveLength(0);
+    });
   });
 
   // role="application" tells assistive technology the canvas handles its own
