@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { mm, gridUnits } from '@gridfinity/branded-types';
-import { buildFullParams, maxCornerRadiusMm, plainRoundingLimit } from './buildFullParams';
+import {
+  buildFullParams,
+  hasEffectivePerimeter,
+  maxCornerRadiusMm,
+  plainRoundingLimit,
+} from './buildFullParams';
 import { cornerCutVertices } from '@/shared/utils/cornerCutOutline';
 import type { CornerCutParams, DrawerOutline } from '@/core/types';
 
@@ -82,6 +87,43 @@ describe('buildFullParams', () => {
       'end'
     );
     expect(orphaned.overTileHalfGridSolidLeftover).toBeUndefined();
+  });
+
+  // The panel, the regeneration trigger and the resolver must agree on whether
+  // a plate has a perimeter. They disagreed once: the control appeared for
+  // radius-cut plates while the trigger still called them rectangular, so a
+  // toggle changed the mesh without regenerating it.
+  describe('hasEffectivePerimeter', () => {
+    it('is false for a plain rectangle', () => {
+      expect(hasEffectivePerimeter(storedBase, undefined, 42, true)).toBe(false);
+    });
+
+    it('is true for a drawer shape while the outline applies', () => {
+      const o = { vertices: [{ x: 0, y: 0 }] };
+      expect(hasEffectivePerimeter(storedBase, o, 42, true)).toBe(true);
+      // Not synced, or stacking: the resolver ignores the shape, so this must too.
+      expect(hasEffectivePerimeter(storedBase, o, 42, false)).toBe(false);
+    });
+
+    it('is true for a radius the resolver converts to an outline', () => {
+      // Limit is half a grid unit plus the smallest padding (21 + 1 = 22mm).
+      expect(
+        hasEffectivePerimeter({ ...storedBase, cornerRadius: mm(40) }, undefined, 42, true)
+      ).toBe(true);
+      expect(
+        hasEffectivePerimeter({ ...storedBase, cornerRadius: mm(10) }, undefined, 42, true)
+      ).toBe(false);
+    });
+
+    it('agrees with the resolver on the same inputs', () => {
+      for (const r of [0, 10, 22, 30, 60]) {
+        const stored = { ...storedBase, cornerRadius: mm(r) };
+        const resolved = buildFullParams(stored, 10, 8, 42, 'end', 'end');
+        expect(hasEffectivePerimeter(stored, undefined, 42, true)).toBe(
+          resolved.outline !== undefined
+        );
+      }
+    });
   });
 
   it('maps drawerWidth to width', () => {

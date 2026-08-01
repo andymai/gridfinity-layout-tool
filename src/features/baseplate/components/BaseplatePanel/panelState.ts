@@ -15,7 +15,7 @@ import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import type { StoredBaseplateParams, DrawerOutline, FractionalEdge } from '@/core/types';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { cornerCutsMatchVertices } from '@/shared/utils/cornerCutOutline';
-import { plainRoundingLimit } from '../../utils/buildFullParams';
+import { hasEffectivePerimeter } from '../../utils/buildFullParams';
 import { trackToolActivated } from '@/shared/analytics/posthog/conversionEvents';
 import { dismissBaseplateQuickstartOnEdit } from '../../hooks/useBaseplateFirstRun';
 
@@ -130,24 +130,15 @@ export function useBaseplatePanelDerived(): BaseplatePanelDerived {
 
   // A corner radius past the plain-rounding limit is converted to a radius-cut
   // outline in buildFullParams, so the plate really does get a curved perimeter
-  // slicing sockets — exactly what whole-cell fitting is for. Keying its
-  // visibility on `drawerOutline` alone would hide the control on the plates
-  // that need it most.
-  const radii = baseplateParams.cornerRadii ?? {
-    tl: baseplateParams.cornerRadius ?? 0,
-    tr: baseplateParams.cornerRadius ?? 0,
-    bl: baseplateParams.cornerRadius ?? 0,
-    br: baseplateParams.cornerRadius ?? 0,
-  };
-  const minPadding = Math.min(
-    Math.min(baseplateParams.paddingLeft, baseplateParams.paddingRight),
-    Math.min(baseplateParams.paddingFront, baseplateParams.paddingBack)
-  );
-  const radiusShaped =
-    !stackEnabled &&
-    Math.max(radii.tl, radii.tr, radii.bl, radii.br) > plainRoundingLimit(gridUnitMm, minPadding);
+  // slicing sockets. Asking the resolver's own predicate rather than repeating
+  // its threshold keeps the panel, the trigger and the resolver from drifting.
   /** The plate has a curved or angled perimeter that can slice sockets. */
-  const perimeterShaped = outlineActive || radiusShaped;
+  const perimeterShaped = hasEffectivePerimeter(
+    baseplateParams,
+    drawerOutline,
+    gridUnitMm,
+    outlineActive
+  );
 
   return {
     baseplateParams,

@@ -28,6 +28,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { useTranslation } from '@/i18n';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { hasEffectivePerimeter } from '../utils/buildFullParams';
 import { bridgeManager, workerPoolManager, createDraftSkipGate } from '@/shared/generation/bridge';
 import type { GenerationBridge } from '@/shared/generation/bridge';
 import type { WorkerPool } from '@/shared/generation/bridge';
@@ -202,7 +203,19 @@ export function selectGenerationTriggers(state: LayoutStoreState) {
     // Folded out without a perimeter, matching buildFullParams and the mesh
     // cache key: a stored flag on a rectangular plate cannot alter geometry, so
     // toggling it must not trigger a regeneration.
-    wholeCellsOnly: state.layout.drawer.outline !== undefined && bp.wholeCellsOnly === true,
+    // Folded out without a perimeter, matching buildFullParams and the mesh
+    // cache key: a stored flag on a rectangular plate cannot alter geometry, so
+    // toggling it must not trigger a regeneration. Uses the resolver's own
+    // predicate, since a large corner radius also yields a perimeter — keying
+    // on the raw drawer outline would leave those plates stale on a toggle.
+    wholeCellsOnly:
+      bp.wholeCellsOnly === true &&
+      hasEffectivePerimeter(
+        bp,
+        state.layout.drawer.outline,
+        state.layout.gridUnitMm,
+        bp.syncWithLayout !== false && bp.stackPrint?.enabled !== true
+      ),
     magnetHoles: bp.magnetHoles,
     magnetDiameter: bp.magnetDiameter,
     magnetDepth: bp.magnetDepth,

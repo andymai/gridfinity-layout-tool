@@ -40,6 +40,41 @@ export function maxCornerRadiusMm(totalW: number, totalD: number): number {
 }
 
 /**
+ * Whether the plate ends up with a non-rectangular perimeter at generation
+ * time — a drawer shape, or a corner radius large enough that `resolveOutline`
+ * converts it to a radius-cut outline.
+ *
+ * Exported because the panel and the regeneration trigger both need the same
+ * answer as the resolver. Deriving it independently in each place is what let
+ * the control appear for radius-cut plates while the trigger still considered
+ * them rectangular, so a toggle changed the mesh without regenerating it.
+ */
+export function hasEffectivePerimeter(
+  stored: Pick<
+    StoredBaseplateParams,
+    'cornerRadius' | 'cornerRadii' | 'paddingLeft' | 'paddingRight' | 'paddingFront' | 'paddingBack'
+  >,
+  drawerOutline: DrawerOutline | undefined,
+  gridUnitMm: number,
+  outlineApplies: boolean
+): boolean {
+  if (outlineApplies && drawerOutline !== undefined) return true;
+  const radii = stored.cornerRadii ?? {
+    tl: stored.cornerRadius ?? 0,
+    tr: stored.cornerRadius ?? 0,
+    bl: stored.cornerRadius ?? 0,
+    br: stored.cornerRadius ?? 0,
+  };
+  const minPadding = Math.min(
+    Math.min(stored.paddingLeft, stored.paddingRight),
+    Math.min(stored.paddingFront, stored.paddingBack)
+  );
+  return (
+    Math.max(radii.tl, radii.tr, radii.bl, radii.br) > plainRoundingLimit(gridUnitMm, minPadding)
+  );
+}
+
+/**
  * The resolved outline (plate-local mm, spanning the padded extent) plus the
  * paddings it permits. Corner-cut drawer shapes re-inscribe their cuts on the
  * padded rectangle; every other shape offsets its edges outward (`padOutline`).
