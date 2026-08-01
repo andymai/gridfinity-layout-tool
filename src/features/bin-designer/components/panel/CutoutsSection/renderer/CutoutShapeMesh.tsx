@@ -25,6 +25,7 @@ import {
   STROKE_WIDTH_HOVER_PX,
   STROKE_WIDTH_GROUPED_PX,
 } from './constants';
+import { shapePosZ, shapeRenderOrder } from './zLayer';
 import { PathShapeMesh } from './PathShapeMesh';
 import { PolygonShapeMesh } from './PolygonShapeMesh';
 import { MeshFootprintMesh } from './MeshFootprintMesh';
@@ -247,10 +248,15 @@ const SDFShapeMesh = memo(function SDFShapeMesh({
   const posX = effective.x + effective.width / 2;
   const posY = effective.y + effective.depth / 2;
 
-  // Smaller shapes get higher Z → closer to camera → win raycasting on overlap.
-  // Since depthTest is false, Z only affects raycasting, not visual rendering.
+  // Higher Z → closer to camera → wins raycasting on overlap. Since depthTest
+  // is false, Z only affects raycasting; `renderOrder` below drives what draws
+  // on top, and both read the same zIndex so click and paint agree.
+  //
+  // Explicit z-order dominates, with the original smaller-shape heuristic kept
+  // as the tiebreaker — that heuristic is what lets you click a small shape
+  // sitting on a large one before anyone has touched the ordering.
   const area = effective.width * effective.depth;
-  const posZ = 0.02 + 0.01 / Math.max(area, 1);
+  const posZ = shapePosZ(cutout.zIndex, area);
 
   // Rotation in radians around Z axis
   // SVG used clockwise degrees; Three.js uses counter-clockwise radians
@@ -284,12 +290,13 @@ const SDFShapeMesh = memo(function SDFShapeMesh({
     setIsHovered(false);
   };
 
-  const renderOrder =
+  const renderBand =
     renderMode === 'fill'
       ? RENDER_ORDER.GROUP_FILL
       : renderMode === 'stroke'
         ? RENDER_ORDER.GROUP_STROKE
         : RENDER_ORDER.SHAPES;
+  const renderOrder = shapeRenderOrder(renderBand, cutout.zIndex);
 
   // Stroke pass is visual-only — no pointer interaction
   if (renderMode === 'stroke') {

@@ -12,6 +12,7 @@ import type { ThreeEvent } from '@react-three/fiber';
 import type { Cutout } from '@/features/bin-designer/types';
 import { flattenPath, triangulatePath, getPathBounds, MIN_PATH_POINTS } from '../pathGeometry';
 import { RENDER_ORDER, ACCENT_COLOR_HEX } from './constants';
+import { shapePosZ, shapeRenderOrder } from './zLayer';
 import {
   outlineVertexShader as pathVertexShader,
   outlineFragmentShader as pathFragmentShader,
@@ -206,7 +207,7 @@ export const PathShapeMesh = memo(function PathShapeMesh({
         ? strokeGrouped
         : strokeDefault;
   const rotationZ = -(effective.rotation * Math.PI) / 180;
-  const posZ = 0.02 + 0.01 / Math.max(area, 1);
+  const posZ = shapePosZ(cutout.zIndex, area);
 
   const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
     if (e.nativeEvent.button !== 0) return;
@@ -240,14 +241,14 @@ export const PathShapeMesh = memo(function PathShapeMesh({
     <group
       position={[groupX, groupY, posZ]}
       rotation={[0, 0, rotationZ]}
-      renderOrder={RENDER_ORDER.SHAPES}
+      renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES, cutout.zIndex)}
     >
       {/* Depth-shaded fill mesh */}
       {fillGeometry && fillMaterial && (
         <mesh
           geometry={fillGeometry}
           material={fillMaterial}
-          renderOrder={RENDER_ORDER.SHAPES}
+          renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES, cutout.zIndex)}
           onPointerDown={handlePointerDown}
           onDoubleClick={handleDoubleClick}
           onPointerEnter={handlePointerEnter}
@@ -257,7 +258,10 @@ export const PathShapeMesh = memo(function PathShapeMesh({
 
       {/* Solid stroke outline (matches rect/circle styling) — hidden during vertex editing */}
       {strokeGeometry && !disablePointerEvents && (
-        <lineLoop geometry={strokeGeometry} renderOrder={RENDER_ORDER.SHAPES + 1}>
+        <lineLoop
+          geometry={strokeGeometry}
+          renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES + 1, cutout.zIndex)}
+        >
           <lineBasicMaterial color={strokeColor} transparent opacity={1} depthTest={false} />
         </lineLoop>
       )}

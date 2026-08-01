@@ -13,6 +13,7 @@ import type { ThreeEvent } from '@react-three/fiber';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { RENDER_ORDER, ACCENT_COLOR_HEX } from './constants';
+import { shapePosZ, shapeRenderOrder } from './zLayer';
 
 const STROKE_SELECTED = new THREE.Color(ACCENT_COLOR_HEX);
 
@@ -136,13 +137,13 @@ export const MeshFootprintMesh = memo(function MeshFootprintMesh({
 
   return (
     <group
-      position={[groupX, groupY, 0.02]}
+      position={[groupX, groupY, shapePosZ(cutout.zIndex, Number.POSITIVE_INFINITY)]}
       rotation={[0, 0, rotationZ]}
-      renderOrder={RENDER_ORDER.SHAPES}
+      renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES, cutout.zIndex)}
     >
       <mesh
         geometry={fillGeometry}
-        renderOrder={RENDER_ORDER.SHAPES}
+        renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES, cutout.zIndex)}
         onPointerDown={handlePointerDown}
         onDoubleClick={handleDoubleClick}
         onPointerEnter={() => {
@@ -159,7 +160,11 @@ export const MeshFootprintMesh = memo(function MeshFootprintMesh({
         />
       </mesh>
       {strokeGeometries.map((geo, i) => (
-        <lineLoop key={i} geometry={geo} renderOrder={RENDER_ORDER.SHAPES + 1}>
+        <lineLoop
+          key={i}
+          geometry={geo}
+          renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES + 1, cutout.zIndex)}
+        >
           <lineBasicMaterial color={strokeColor} transparent opacity={1} depthTest={false} />
         </lineLoop>
       ))}

@@ -19,6 +19,24 @@ export const RENDER_ORDER = {
   MARQUEE: 50,
 } as const;
 
+/**
+ * Stacking (`Cutout.zIndex`) applied on top of a RENDER_ORDER band.
+ *
+ * Two separate channels, because the editor draws with `depthTest: false`:
+ * scene Z decides which shape wins the click (raycast distance), `renderOrder`
+ * decides which fill draws on top. Both have to move together or "bring to
+ * front" would look right but click wrong, or vice versa.
+ *
+ * `Z_LAYER_STEP` exceeds the area tiebreaker's 0.01 ceiling so explicit
+ * z-order always beats the smaller-shape heuristic, and `Z_LAYER_MAX` keeps
+ * the stack under 50mm — well inside the camera (z=100, near 0.1). The
+ * render-order offset stays below 1 so a shape in SHAPES (10) can never bleed
+ * into GROUP_FILL (11).
+ */
+export const Z_LAYER_STEP = 0.05;
+export const Z_LAYER_MAX = 900;
+export const Z_LAYER_RENDER_STEP = 0.001;
+
 /** Camera zoom limits (zoom = pixels per mm for the orthographic camera) */
 export const MIN_ZOOM = 0.5;
 export const MAX_ZOOM = 50;

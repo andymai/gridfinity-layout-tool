@@ -220,7 +220,7 @@ export interface PathPoint {
 export type ReorderDirection = 'forward' | 'backward' | 'front' | 'back';
 
 /** Narrowed property subset for bulk cutout toggling (lock/hide) */
-export type CutoutToggleProperties = Partial<Pick<Cutout, 'locked' | 'hidden'>>;
+export type CutoutToggleProperties = Partial<Pick<Cutout, 'locked' | 'hidden' | 'name'>>;
 
 /** Global cutout configuration for solid bins */
 export interface CutoutConfig {
@@ -274,11 +274,24 @@ export interface Cutout {
    * Applies only to ungrouped rectangle cutouts; ignored for circles/paths and grouped cutouts.
    */
   readonly scoopEdges?: CutoutScoopEdges;
+  /**
+   * Editor-only display name shown in the shape list (issue #3053). Optional —
+   * when unset the list derives a label from the shape and size, so most
+   * designs never carry one.
+   *
+   * Deliberately NOT {@link label}: that is the text physically engraved on the
+   * bin, so renaming a row must not change what gets cut into the part.
+   */
+  readonly name?: string;
   /** When true, the cutout cannot be moved, resized, or rotated */
   readonly locked?: boolean;
   /** When true, the cutout is not rendered or selectable (faint ghost only) */
   readonly hidden?: boolean;
-  /** Z-order for rendering layering (higher = rendered on top) */
+  /**
+   * Z-order: higher draws on top and wins the click on overlap. Also orders
+   * boolean ops within a group (`cutoutGroupOps.ts`). Absent = 0; the editor
+   * re-stacks to contiguous 0..n-1 whenever anything is reordered.
+   */
   readonly zIndex?: number;
   /** Path vertices for pen tool shapes (required when shape === 'path') */
   readonly path?: PathPoint[];

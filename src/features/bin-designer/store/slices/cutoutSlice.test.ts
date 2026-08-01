@@ -75,32 +75,70 @@ describe('cutoutSlice - consolidated actions', () => {
   });
 
   describe('reorderCutouts', () => {
-    it('forward: increments zIndex by 1', () => {
+    /** Ids from bottom of the stack to top. The contract is the ORDER; the
+     *  concrete zIndex values are an implementation detail of the restack. */
+    const stackOrder = (): string[] =>
+      [...useDesignerStore.getState().params.cutouts]
+        .sort((a, b) => (a.zIndex ?? 0) - (b.zIndex ?? 0))
+        .map((c) => c.id);
+
+    it('forward: swaps with the shape above', () => {
       const { addCutout, reorderCutouts } = useDesignerStore.getState();
       addCutout(createTestCutout({ id: 'cutout-1', zIndex: 0 }));
       addCutout(createTestCutout({ id: 'cutout-2', zIndex: 1 }));
 
       reorderCutouts(['cutout-1'], 'forward');
 
-      const { params } = useDesignerStore.getState();
-      expect(params.cutouts[0].zIndex).toBe(1);
-      expect(params.cutouts[1].zIndex).toBe(1);
+      expect(stackOrder()).toEqual(['cutout-2', 'cutout-1']);
     });
 
-    it('backward: decrements zIndex, clamped to 0', () => {
+    it('back and forward work from an all-default stack (#3053)', () => {
+      // Every cutout defaults to zIndex 0. The old absolute-value maths made
+      // `back` write 0 over 0 and `backward` clamp to max(-1, 0), so neither
+      // moved anything until some other shape had been sent forward first.
+      const { addCutout, reorderCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b' }));
+      addCutout(createTestCutout({ id: 'c' }));
+      expect(stackOrder()).toEqual(['a', 'b', 'c']);
+
+      reorderCutouts(['c'], 'back');
+      expect(stackOrder()).toEqual(['c', 'a', 'b']);
+
+      reorderCutouts(['a'], 'front');
+      expect(stackOrder()).toEqual(['c', 'b', 'a']);
+
+      reorderCutouts(['a'], 'backward');
+      expect(stackOrder()).toEqual(['c', 'a', 'b']);
+    });
+
+    it('restacks onto contiguous zIndex values', () => {
+      const { addCutout, reorderCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'cutout-1', zIndex: 0 }));
+      addCutout(createTestCutout({ id: 'cutout-2', zIndex: 40 }));
+      addCutout(createTestCutout({ id: 'cutout-3', zIndex: 7 }));
+
+      reorderCutouts(['cutout-1'], 'front');
+
+      const zs = [...useDesignerStore.getState().params.cutouts]
+        .map((c) => c.zIndex)
+        .sort((a, b) => (a ?? 0) - (b ?? 0));
+      expect(zs).toEqual([0, 1, 2]);
+    });
+
+    it('backward: swaps with the shape below, and the bottom one stays put', () => {
       const { addCutout, reorderCutouts } = useDesignerStore.getState();
       addCutout(createTestCutout({ id: 'cutout-1', zIndex: 2 }));
       addCutout(createTestCutout({ id: 'cutout-2', zIndex: 0 }));
 
       reorderCutouts(['cutout-1'], 'backward');
-      reorderCutouts(['cutout-2'], 'backward');
+      expect(stackOrder()).toEqual(['cutout-1', 'cutout-2']);
 
-      const { params } = useDesignerStore.getState();
-      expect(params.cutouts[0].zIndex).toBe(1);
-      expect(params.cutouts[1].zIndex).toBe(0);
+      reorderCutouts(['cutout-1'], 'backward');
+      expect(stackOrder()).toEqual(['cutout-1', 'cutout-2']);
     });
 
-    it('front: sets zIndex to maxZ + 1', () => {
+    it('front: moves to the top of the stack', () => {
       const { addCutout, reorderCutouts } = useDesignerStore.getState();
       addCutout(createTestCutout({ id: 'cutout-1', zIndex: 0 }));
       addCutout(createTestCutout({ id: 'cutout-2', zIndex: 5 }));
@@ -108,22 +146,17 @@ describe('cutoutSlice - consolidated actions', () => {
 
       reorderCutouts(['cutout-1'], 'front');
 
-      const { params } = useDesignerStore.getState();
-      expect(params.cutouts[0].zIndex).toBe(6);
-      expect(params.cutouts[1].zIndex).toBe(5);
-      expect(params.cutouts[2].zIndex).toBe(3);
+      expect(stackOrder()).toEqual(['cutout-3', 'cutout-2', 'cutout-1']);
     });
 
-    it('back: sets zIndex to 0', () => {
+    it('back: moves to the bottom of the stack', () => {
       const { addCutout, reorderCutouts } = useDesignerStore.getState();
       addCutout(createTestCutout({ id: 'cutout-1', zIndex: 5 }));
       addCutout(createTestCutout({ id: 'cutout-2', zIndex: 3 }));
 
       reorderCutouts(['cutout-1'], 'back');
 
-      const { params } = useDesignerStore.getState();
-      expect(params.cutouts[0].zIndex).toBe(0);
-      expect(params.cutouts[1].zIndex).toBe(3);
+      expect(stackOrder()).toEqual(['cutout-1', 'cutout-2']);
     });
 
     it('no-op on empty ids', () => {
@@ -137,7 +170,7 @@ describe('cutoutSlice - consolidated actions', () => {
       expect(afterHistoryLength).toBe(beforeHistoryLength);
     });
 
-    it('multiple cutouts reorder simultaneously', () => {
+    it('multiple cutouts reorder simultaneously, keeping their relative order', () => {
       const { addCutout, reorderCutouts } = useDesignerStore.getState();
       addCutout(createTestCutout({ id: 'cutout-1', zIndex: 1 }));
       addCutout(createTestCutout({ id: 'cutout-2', zIndex: 2 }));
@@ -145,10 +178,7 @@ describe('cutoutSlice - consolidated actions', () => {
 
       reorderCutouts(['cutout-1', 'cutout-3'], 'front');
 
-      const { params } = useDesignerStore.getState();
-      expect(params.cutouts[0].zIndex).toBe(3);
-      expect(params.cutouts[1].zIndex).toBe(2);
-      expect(params.cutouts[2].zIndex).toBe(3);
+      expect(stackOrder()).toEqual(['cutout-2', 'cutout-3', 'cutout-1']);
     });
   });
 
@@ -501,17 +531,30 @@ describe('cutoutSlice - consolidated actions', () => {
       expect(useDesignerStore.getState().generation.epoch).toBe(epochBefore);
     });
 
-    it('setCutoutProperty (hide) leaves epoch unchanged', () => {
+    it('setCutoutProperty (hide) DOES bump epoch — the worker drops hidden cutouts (#3053)', () => {
       const { addCutout, setCutoutProperty } = useDesignerStore.getState();
       addCutout(createTestCutout({ id: 'c-1' }));
       const epochBefore = useDesignerStore.getState().generation.epoch;
 
       setCutoutProperty(['c-1'], { hidden: true });
 
+      // `cutoutBuilder.ts` skips hidden cutouts, so hiding changes the part.
+      // Suppressing regeneration here left the preview showing a pocket the
+      // export would not cut.
+      expect(useDesignerStore.getState().generation.epoch).toBe(epochBefore + 1);
+    });
+
+    it('setCutoutProperty (name) leaves epoch unchanged', () => {
+      const { addCutout, setCutoutProperty } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'c-1' }));
+      const epochBefore = useDesignerStore.getState().generation.epoch;
+
+      setCutoutProperty(['c-1'], { name: 'Drill bit 3mm' });
+
       expect(useDesignerStore.getState().generation.epoch).toBe(epochBefore);
     });
 
-    it('reorderCutouts leaves epoch unchanged', () => {
+    it('reorderCutouts leaves epoch unchanged when nothing is grouped', () => {
       const { addCutout, reorderCutouts } = useDesignerStore.getState();
       addCutout(createTestCutout({ id: 'c-1' }));
       addCutout(createTestCutout({ id: 'c-2' }));
@@ -522,14 +565,25 @@ describe('cutoutSlice - consolidated actions', () => {
       expect(useDesignerStore.getState().generation.epoch).toBe(epochBefore);
     });
 
-    it('showAllCutouts leaves epoch unchanged', () => {
+    it('reorderCutouts bumps epoch when a group exists — z-order drives boolean ops', () => {
+      const { addCutout, reorderCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'c-1', groupId: 'g-1' }));
+      addCutout(createTestCutout({ id: 'c-2', groupId: 'g-1' }));
+      const epochBefore = useDesignerStore.getState().generation.epoch;
+
+      reorderCutouts(['c-1'], 'forward');
+
+      expect(useDesignerStore.getState().generation.epoch).toBe(epochBefore + 1);
+    });
+
+    it('showAllCutouts DOES bump epoch — it restores dropped cuts (#3053)', () => {
       const { addCutout, showAllCutouts } = useDesignerStore.getState();
       addCutout(createTestCutout({ id: 'c-1', hidden: true }));
       const epochBefore = useDesignerStore.getState().generation.epoch;
 
       showAllCutouts();
 
-      expect(useDesignerStore.getState().generation.epoch).toBe(epochBefore);
+      expect(useDesignerStore.getState().generation.epoch).toBe(epochBefore + 1);
     });
 
     it('addCutout still bumps epoch (geometric)', () => {
