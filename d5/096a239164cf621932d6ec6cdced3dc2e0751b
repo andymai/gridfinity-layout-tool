@@ -1,0 +1,34 @@
+src/features/generation/worker/generators/pipeline/stages/tessellateStage.ts
+  s_0fc02d8d0f29b4::t_a21ed06f5582c1 65-71
+src/shell/layoutExport/buildLayoutManifest.ts
+  s_0fc02d8d0f29b4::t_bc0dfe6bc1612b 117-118,121
+  s_0fc02d8d0f29b4::t_5a91ef712b9ee9 174-176,178-185
+  s_0fc02d8d0f29b4::t_44f92ce537f392 29-36
+src/shell/layoutExport/buildLayoutManifest.test.ts
+  s_0fc02d8d0f29b4::t_655aa9e1361f8b 58,60,62,67-95
+  s_0fc02d8d0f29b4::t_1a1e6880d80aac 96
+src/shell/layoutExport/planLayoutBinExport.test.ts
+  s_0fc02d8d0f29b4::t_b9f592c73e55ed 485-525
+src/shell/layoutExport/planLayoutBinExport.ts
+  s_0fc02d8d0f29b4::t_4fb7be10715a89 98-103,112,114,116
+  s_0fc02d8d0f29b4::t_9cc7fc83ab7f69 357-365
+src/shell/layoutExport/useLayoutExport.ts
+  s_0fc02d8d0f29b4::t_739f613cb4f4d8 154-165
+  s_0fc02d8d0f29b4::t_8a7ea8ad781d9b 202-204,206-208
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "d5096a239164cf621932d6ec6cdced3dc2e0751b",
+  "prompts": {},
+  "sessions": {
+    "s_0fc02d8d0f29b4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4aff0d70-e312-459f-84ab-c0dd3cec1347",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
