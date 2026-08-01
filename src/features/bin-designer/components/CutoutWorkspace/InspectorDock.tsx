@@ -10,8 +10,8 @@
  * header, shared icon set, ghost icon buttons) for visual consistency.
  */
 
-import { useCallback, useRef, useState } from 'react';
-import { IconButton } from '@/design-system';
+import { useCallback, useRef, useState, type ReactNode } from 'react';
+import { IconButton, Tabs } from '@/design-system';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
@@ -48,6 +48,8 @@ interface InspectorDockProps {
   readonly onDuplicate?: () => void;
   /** Delete the current selection. */
   readonly onDelete?: () => void;
+  /** Shape-list tab (#3053). Omitted in contexts without one. */
+  readonly shapeList?: ReactNode;
 }
 
 const ICON_BTN =
@@ -63,11 +65,26 @@ function Icon({ paths }: { readonly paths: readonly string[] }) {
   );
 }
 
-export function InspectorDock({ board, onDuplicate, onDelete, ...content }: InspectorDockProps) {
+type DockTab = 'properties' | 'shapes';
+
+/** Tab ids (not user-facing copy — labels come from these i18n keys). */
+const DOCK_TABS: readonly { readonly id: DockTab; readonly labelKey: string }[] = [
+  { id: 'properties', labelKey: 'binDesigner.shapeList.tabProperties' },
+  { id: 'shapes', labelKey: 'binDesigner.shapeList.tabShapes' },
+];
+
+export function InspectorDock({
+  board,
+  onDuplicate,
+  onDelete,
+  shapeList,
+  ...content
+}: InspectorDockProps) {
   const t = useTranslation();
   const [width, setWidth] = useState(loadInspectorWidth);
   const [collapsed, setCollapsed] = useState(loadInspectorCollapsed);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [tab, setTab] = useState<DockTab>('properties');
   const dockRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef(false);
   const hasSelection = content.selection.size > 0;
@@ -218,13 +235,43 @@ export function InspectorDock({ board, onDuplicate, onDelete, ...content }: Insp
         </div>
       </div>
 
-      {/* Scrollable body */}
-      <div
-        onScroll={handleScroll}
-        className="flex min-h-0 flex-1 flex-col overflow-y-auto scrollbar-thin px-4 pt-0 pb-3"
-      >
-        <InspectorContent {...content} board={board} />
-      </div>
+      {/* Body. With a shape list present the dock becomes tabbed; the design
+          system's Tabs owns the full ARIA pattern (tab/panel ids, roving
+          tabIndex, arrow-key navigation) so this doesn't hand-roll a partial
+          one. */}
+      {shapeList ? (
+        <Tabs.Root>
+          <div className="flex-shrink-0 border-b border-stroke-subtle px-2 pb-1">
+            <Tabs.List
+              tabs={DOCK_TABS.map(({ id, labelKey }) => ({ id, label: t(labelKey) }))}
+              activeTab={tab}
+              onChange={setTab}
+              aria-label={t('binDesigner.cutoutEditor.inspectorTitle')}
+            />
+          </div>
+          <div
+            onScroll={handleScroll}
+            className="flex min-h-0 flex-1 flex-col overflow-y-auto scrollbar-thin pt-0 pb-3"
+          >
+            <Tabs.Panel tabId="properties" activeTab={tab} keepMounted>
+              <div className="px-4">
+                <InspectorContent {...content} board={board} />
+              </div>
+            </Tabs.Panel>
+            {/* keepMounted so expanded/collapsed groups survive tab switches. */}
+            <Tabs.Panel tabId="shapes" activeTab={tab} keepMounted>
+              {shapeList}
+            </Tabs.Panel>
+          </div>
+        </Tabs.Root>
+      ) : (
+        <div
+          onScroll={handleScroll}
+          className="flex min-h-0 flex-1 flex-col overflow-y-auto scrollbar-thin px-4 pt-0 pb-3"
+        >
+          <InspectorContent {...content} board={board} />
+        </div>
+      )}
     </aside>
   );
 }

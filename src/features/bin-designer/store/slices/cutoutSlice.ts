@@ -235,15 +235,57 @@ export function createCutoutSlice(set: Set) {
           break;
       }
 
-      const zById = new Map(next.map((c, i) => [c.id, i]));
-      const restacked = cutouts.map((c) => {
-        const z = zById.get(c.id) ?? 0;
-        return c.zIndex === z ? c : { ...c, zIndex: z };
-      });
-      if (restacked.every((c, i) => c === cutouts[i])) return;
+      commitStack(state, next);
+    });
+  };
 
-      pushHistoryEntry(state, { affectsGeometry: zOrderAffectsGeometry(state) });
-      state.params.cutouts = restacked;
+  /**
+   * Renumber onto contiguous `zIndex` values from a bottom-to-top order and
+   * commit, skipping history entirely when nothing actually moved.
+   */
+  const commitStack = (state: Draft<DesignerState>, bottomToTop: readonly Cutout[]): void => {
+    const cutouts = state.params.cutouts;
+    // Compare ORDER, not the stored values: a legacy design has every zIndex at
+    // the default 0, so renumbering would rewrite each one and push an undo
+    // entry for a drag that moved nothing.
+    const current = stackBottomToTop(cutouts);
+    if (current.every((c, i) => c.id === bottomToTop[i]?.id)) return;
+    const zById = new Map(bottomToTop.map((c, i) => [c.id, i]));
+    const restacked = cutouts.map((c) => {
+      const z = zById.get(c.id) ?? 0;
+      return c.zIndex === z ? c : { ...c, zIndex: z };
+    });
+    if (restacked.every((c, i) => c === cutouts[i])) return;
+
+    pushHistoryEntry(state, { affectsGeometry: zOrderAffectsGeometry(state) });
+    state.params.cutouts = restacked;
+  };
+
+  /**
+   * Drag-and-drop reorder: lift `ids` out of the stack and drop them directly
+   * above `targetId`, or onto the bottom when it is null.
+   *
+   * The moved shapes keep their order among themselves, and a target inside the
+   * moved set is ignored (dropping a selection onto itself is a no-op rather
+   * than a reshuffle).
+   */
+  const moveCutoutsAbove = (ids: readonly string[], targetId: string | null): void => {
+    if (ids.length === 0) return;
+    set((state) => {
+      const idSet = new Set(ids);
+      if (targetId !== null && idSet.has(targetId)) return;
+
+      const order = stackBottomToTop(state.params.cutouts);
+      const moved = order.filter((c) => idSet.has(c.id));
+      if (moved.length === 0) return;
+      const rest = order.filter((c) => !idSet.has(c.id));
+
+      const at = targetId === null ? 0 : rest.findIndex((c) => c.id === targetId) + 1;
+      // An unknown target would splice at 0 and silently send the selection to
+      // the bottom; leave the stack alone instead.
+      if (targetId !== null && at === 0) return;
+
+      commitStack(state, [...rest.slice(0, at), ...moved, ...rest.slice(at)]);
     });
   };
 
@@ -310,6 +352,7 @@ export function createCutoutSlice(set: Set) {
     setCutoutProperty,
     setCutoutColor,
     reorderCutouts,
+    moveCutoutsAbove,
     showAllCutouts,
 
     // Convenience wrappers for backward compatibility
@@ -413,6 +456,57 @@ export function createCutoutSlice(set: Set) {
           };
         });
         state.params.cutouts = [...state.params.cutouts, ...duplicated];
+      });
+    },
+
+    /**
+     * Reparent for drag-and-drop (#3053).
+     *
+     * `groupCutouts` cannot express this: it reuses whichever member happens to
+     * be grouped FIRST IN ARRAY ORDER, so dragging a grouped shape onto another
+     * group could absorb the destination into the source instead of the other
+     * way round. Here the destination always wins, and the dragged shapes
+     * always leave whatever group they were in.
+     *
+     * - `targetId` null: pull `ids` out of any group.
+     * - target is grouped: join exactly that group, inheriting its op.
+     * - target is loose: form a fresh group of `ids` + the target.
+     */
+    reparentCutouts: (ids: readonly string[], targetId: string | null) => {
+      if (ids.length === 0) return;
+      set((state) => {
+        const moving = new Set(ids);
+        if (targetId !== null && moving.has(targetId)) return;
+        const target =
+          targetId === null ? null : (state.params.cutouts.find((c) => c.id === targetId) ?? null);
+        if (targetId !== null && !target) return;
+
+        const destGroupId = target?.groupId ?? (target ? generateLayoutId() : null);
+        // Forming a fresh pair means the target joins too.
+        if (target && target.groupId === null) moving.add(target.id);
+
+        const noChange = state.params.cutouts.every(
+          (c) => !moving.has(c.id) || c.groupId === destGroupId
+        );
+        if (noChange) return;
+
+        const destOp: GroupOp =
+          (target?.groupId
+            ? state.params.cutouts.find((c) => c.groupId === target.groupId)?.groupOp
+            : undefined) ?? DEFAULT_GROUP_OP;
+
+        pushHistoryEntry(state);
+        state.params.cutouts = state.params.cutouts.map((c) =>
+          moving.has(c.id)
+            ? {
+                ...c,
+                groupId: destGroupId,
+                ...(destGroupId === null ? {} : { groupOp: destOp }),
+              }
+            : c
+        );
+        // Pulling members out can strand a one-member group behind.
+        state.params.cutouts = dissolveSingletonGroups(state.params.cutouts);
       });
     },
 
