@@ -1,0 +1,6 @@
+services:
+  gridfinity-layout-tool:
+    image: ghcr.io/${GHCR_OWNER:?Set GHCR_OWNER to your GitHub username or org}/gridfinity-layout-tool:${IMAGE_TAG:-latest}
+    ports:
+      - "${PORT:-8080}:80"
+    restart: unless-stopped

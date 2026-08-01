@@ -1,0 +1,86 @@
+name: Docker Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      upstream_ref:
+        description: 'Upstream branch, tag, or commit to build'
+        required: false
+        default: main
+  schedule:
+    - cron: '17 3 * * *'
+  push:
+    branches:
+      - main
+    paths:
+      - Dockerfile
+      - nginx.conf
+      - docker-compose.yml
+      - docker-compose.prod.yml
+      - .dockerignore
+      - .github/workflows/docker-image.yml
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: docker-image-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and Publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Docker config
+        uses: actions/checkout@v4
+        with:
+          path: docker-config
+
+      - name: Check out upstream source
+        uses: actions/checkout@v4
+        with:
+          repository: andymai/gridfinity-layout-tool
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.upstream_ref || 'main' }}
+          path: source
+
+      - name: Prepare build context
+        shell: bash
+        run: |
+          cp docker-config/Dockerfile source/Dockerfile
+          cp docker-config/nginx.conf source/nginx.conf
+          cp docker-config/.dockerignore source/.dockerignore
+
+          upstream_sha="$(git -C source rev-parse --short=12 HEAD)"
+          image_name="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/gridfinity-layout-tool"
+
+          echo "UPSTREAM_SHA=${upstream_sha}" >> "$GITHUB_ENV"
+          echo "IMAGE_NAME=${image_name}" >> "$GITHUB_ENV"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: source
+          file: source/Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:upstream-${{ env.UPSTREAM_SHA }}
+          labels: |
+            org.opencontainers.image.title=Gridfinity Layout Tool
+            org.opencontainers.image.source=https://github.com/andymai/gridfinity-layout-tool
+            org.opencontainers.image.revision=${{ env.UPSTREAM_SHA }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
