@@ -11,10 +11,28 @@
  */
 
 import type { DrawerOutline, OutlineVertex } from '@/core/types';
-import { flattenOutline, polylineSignedArea } from '@/shared/utils/drawerOutlineGeometry';
+import {
+  arcGeometry,
+  flattenOutline,
+  polylineSignedArea,
+} from '@/shared/utils/drawerOutlineGeometry';
 
-/** Pointer-to-vertex hit radius, in mm. Scaled by the caller for zoom. */
-export const VERTEX_HIT_MM = 6;
+/**
+ * Radius (mm) of a drawn handle, as a fraction of the drawer's longest side, so
+ * handles stay the same apparent size whatever the drawer measures.
+ */
+export function handleRadiusMm(widthMm: number, depthMm: number): number {
+  return Math.max(widthMm, depthMm) / 110;
+}
+
+/**
+ * Grab radius for a handle. Comfortably larger than the drawn handle rather
+ * than a fixed millimetre value: on a 420mm drawer a fixed 6mm radius lands at
+ * roughly 6px on screen, which is smaller than the dot it is meant to catch.
+ */
+export function hitRadiusMm(widthMm: number, depthMm: number): number {
+  return handleRadiusMm(widthMm, depthMm) * 2.4;
+}
 
 /**
  * Snap increments offered in the editor, in grid-unit fractions. A quarter unit
@@ -111,6 +129,24 @@ export function hitVertex(
   return best;
 }
 
+/** Midpoint of a segment along its actual path, which is the arc handle's home. */
+export function segmentHandle(
+  vertices: readonly OutlineVertex[],
+  index: number
+): { x: number; y: number } {
+  const a = vertices[index];
+  const b = vertices[(index + 1) % vertices.length];
+  const bulge = a.bulge ?? 0;
+  const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+  if (bulge === 0) return mid;
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const chord = Math.hypot(dx, dy);
+  if (chord < 1e-9) return mid;
+  const sagitta = (bulge * chord) / 2;
+  return { x: mid.x + (dy / chord) * sagitta, y: mid.y - (dx / chord) * sagitta };
+}
+
 /**
  * Index of the segment whose midpoint is within `radiusMm` of the point.
  * Midpoints are the arc handles: dragging one bows that segment.
@@ -124,9 +160,10 @@ export function hitSegmentMidpoint(
   let best = -1;
   let bestD = radiusMm * radiusMm;
   for (let i = 0; i < vertices.length; i++) {
-    const a = vertices[i];
-    const b = vertices[(i + 1) % vertices.length];
-    const d = dist2(x, y, (a.x + b.x) / 2, (a.y + b.y) / 2);
+    // Hit-test where the handle is drawn, which is on the arc, not the chord —
+    // otherwise a bowed segment's handle cannot be grabbed where it appears.
+    const h = segmentHandle(vertices, i);
+    const d = dist2(x, y, h.x, h.y);
     if (d <= bestD) {
       best = i;
       bestD = d;
@@ -237,4 +274,34 @@ export function rectangleSketch(widthMm: number, depthMm: number): OutlineVertex
     { x: widthMm, y: depthMm },
     { x: 0, y: depthMm },
   ];
+}
+
+/**
+ * SVG path data for a sketch, in the same drawer-local mm the vertices use —
+ * the caller supplies the viewBox, so no scaling happens here.
+ *
+ * Bowed segments become real SVG arcs rather than flattened polylines, so the
+ * curve stays smooth at any zoom. `sweep-flag` is 1 for a CCW sweep, matching
+ * the sign of `bulge`; `large-arc-flag` is always 0 because the model caps
+ * arcs at a half circle.
+ */
+export function sketchPathD(vertices: readonly OutlineVertex[]): string {
+  if (vertices.length < 2) return '';
+  const n = vertices.length;
+  const parts: string[] = [`M ${vertices[0].x} ${vertices[0].y}`];
+  for (let i = 0; i < n; i++) {
+    const a = vertices[i];
+    const b = vertices[(i + 1) % n];
+    const arc = arcGeometry(a, b, a.bulge ?? 0);
+    if (arc !== null) {
+      parts.push(`A ${arc.r} ${arc.r} 0 0 ${arc.sweep > 0 ? 1 : 0} ${b.x} ${b.y}`);
+      continue;
+    }
+    // `Z` already draws the straight closing segment, so emitting it too would
+    // duplicate the line. A bowed closing segment still needs its arc, which is
+    // why the skip is only for the straight case.
+    if (i < n - 1) parts.push(`L ${b.x} ${b.y}`);
+  }
+  parts.push('Z');
+  return parts.join(' ');
 }

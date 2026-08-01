@@ -12,6 +12,8 @@ import {
   removeVertex,
   reverseWinding,
   setBulge,
+  segmentHandle,
+  sketchPathD,
   sketchToOutline,
   snapMm,
 } from './penShape';
@@ -171,5 +173,47 @@ describe('editing', () => {
   it('removes a vertex but never below a triangle', () => {
     expect(removeVertex(verts, 0)).toHaveLength(3);
     expect(removeVertex(rectangleSketch(W, D).slice(0, 3), 0)).toHaveLength(3);
+  });
+});
+
+describe('sketchPathD', () => {
+  it('emits straight segments as lines and closes the loop', () => {
+    const d = sketchPathD(rectangleSketch(W, D));
+    // `Z` draws the straight closing segment, so it is not also emitted as a line.
+    expect(d).toBe(`M 0 0 L ${W} 0 L ${W} ${D} L 0 ${D} Z`);
+  });
+
+  it('still emits the closing segment when it is bowed', () => {
+    // Segment 3 is the one `Z` would otherwise straight-line.
+    const d = sketchPathD(setBulge(rectangleSketch(W, D), 3, 0.4));
+    expect(d.split('A ')).toHaveLength(2);
+    expect(d.endsWith('Z')).toBe(true);
+  });
+
+  it('emits a bowed segment as a real arc, not a flattened polyline', () => {
+    const d = sketchPathD(setBulge(rectangleSketch(W, D), 0, 0.5));
+    expect(d).toContain('A ');
+    // Half circle at most, so the large-arc flag is never set.
+    expect(d).not.toMatch(/A [^ ]+ [^ ]+ 0 1 /);
+  });
+
+  it('returns nothing for a sketch too short to draw', () => {
+    expect(sketchPathD([{ x: 0, y: 0 }])).toBe('');
+  });
+});
+
+describe('segmentHandle', () => {
+  it('sits on the chord midpoint for a straight segment', () => {
+    expect(segmentHandle(rectangleSketch(W, D), 0)).toEqual({ x: W / 2, y: 0 });
+  });
+
+  // The handle has to render where it can be grabbed, so it rides the arc.
+  it('rides the arc for a bowed segment, and hit testing follows it', () => {
+    const bowed = setBulge(rectangleSketch(W, D), 0, 0.5);
+    const h = segmentHandle(bowed, 0);
+    expect(h.y).toBeLessThan(0);
+    expect(hitSegmentMidpoint(bowed, h.x, h.y, 6)).toBe(0);
+    // The chord midpoint is now far from the handle, so it must not hit.
+    expect(hitSegmentMidpoint(bowed, W / 2, 0, 6)).toBe(-1);
   });
 });
