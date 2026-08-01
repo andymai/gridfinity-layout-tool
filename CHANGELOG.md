@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.341.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.340.4...gridfinity-layout-tool-v4.341.0) (2026-08-01)
+
+
+### Features
+
+* **drawer-shape:** round each corner to its own radius ([#3082](https://github.com/andymai/gridfinity-layout-tool/issues/3082)) ([24b3e33](https://github.com/andymai/gridfinity-layout-tool/commit/24b3e33a5a470fb03da913f11ecc7d630cae7d28)), closes [#3054](https://github.com/andymai/gridfinity-layout-tool/issues/3054)
+
 ## [4.340.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.340.3...gridfinity-layout-tool-v4.340.4) (2026-08-01)
 
 
