@@ -34,10 +34,11 @@ export interface ShapeListProps {
   ) => void;
   /** Drag reorder: move `ids` above `targetId`, or to the bottom when null. */
   readonly onMoveAbove: (ids: readonly string[], targetId: string | null) => void;
-  /** Drag reparent: pull `ids` into the group `targetId` belongs to. */
-  readonly onGroupWith: (ids: readonly string[], targetId: string) => void;
-  /** Drag out of a group. */
-  readonly onUngroup: (ids: readonly string[]) => void;
+  /**
+   * Drag reparent: move `ids` onto `targetId`'s group, forming a new group when
+   * the target is loose, or out of any group when `targetId` is null.
+   */
+  readonly onReparent: (ids: readonly string[], targetId: string | null) => void;
 }
 
 interface DragState {
@@ -51,8 +52,7 @@ export function ShapeList({
   onSelect,
   onSetProperty,
   onMoveAbove,
-  onGroupWith,
-  onUngroup,
+  onReparent,
 }: ShapeListProps) {
   const t = useTranslation();
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(() => new Set());
@@ -108,16 +108,12 @@ export function ShapeList({
 
       // Into: reparent. A group can't nest inside another group.
       if (active.isGroup) return;
-      if (node.kind === 'group') {
-        const anchor = node.members[0]?.id;
-        if (anchor) onGroupWith(active.ids, anchor);
-        return;
-      }
-      // Dropping onto a loose shape pulls both into a group together; dropping
-      // onto a grouped shape joins that group.
-      onGroupWith(active.ids, node.id);
+      // Anchoring on a member is enough — `reparentCutouts` resolves the
+      // destination group from it and always lets the destination win.
+      const anchor = node.kind === 'group' ? node.members[0]?.id : node.id;
+      if (anchor) onReparent(active.ids, anchor);
     },
-    [drag, onMoveAbove, onGroupWith]
+    [drag, onMoveAbove, onReparent]
   );
 
   const rowProps = (node: ShapeListNode) => {
@@ -166,7 +162,11 @@ export function ShapeList({
         const active = drag;
         setDrag(null);
         setHover(null);
-        if (active) onMoveAbove(active.ids, null);
+        if (!active) return;
+        // Same semantics as the dashed zone below, so the two adjacent
+        // "drop at the bottom" targets can't disagree.
+        if (!active.isGroup) onReparent(active.ids, null);
+        onMoveAbove(active.ids, null);
       }}
     >
       <div className="px-1 pb-1 text-[10px] uppercase tracking-wider text-content-tertiary">
@@ -198,13 +198,13 @@ export function ShapeList({
           const active = drag;
           setDrag(null);
           setHover(null);
-          if (active) {
-            if (active.isGroup) onMoveAbove(active.ids, null);
-            else {
-              onUngroup(active.ids);
-              onMoveAbove(active.ids, null);
-            }
-          }
+          if (!active) return;
+          // Dragging a whole group to the bottom moves it intact. Dragging
+          // loose rows there also pulls them out of any group — but only the
+          // rows actually dragged, never other selected groups, which an
+          // `onUngroup(active.ids)` over the whole selection used to dissolve.
+          if (!active.isGroup) onReparent(active.ids, null);
+          onMoveAbove(active.ids, null);
         }}
       />
     </div>

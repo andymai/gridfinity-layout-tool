@@ -417,7 +417,7 @@
   "binDesigner.shapeList.derived.rectangle": "Prostokąt {w}×{d}",
   "binDesigner.shapeList.derived.circle": "Okrąg ⌀{d}",
   "binDesigner.shapeList.derived.slot": "Szczelina {w}×{d}",
-  "binDesigner.shapeList.derived.polygon": "{sides}-kąt {w}",
+  "binDesigner.shapeList.derived.polygon": "Wielokąt ({sides}) {w}",
   "binDesigner.shapeList.derived.path": "Ścieżka {w}×{d}",
   "binDesigner.shapeList.derived.mesh": "Odcisk {w}×{d}",
   "binDesigner.tabSpanFullWidth": "Na całą szerokość",

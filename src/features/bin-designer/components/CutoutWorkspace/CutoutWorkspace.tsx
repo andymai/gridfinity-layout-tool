@@ -63,6 +63,7 @@ export function CutoutWorkspace() {
     reorderCutouts,
     moveCutoutsAbove,
     setCutoutProperty,
+    reparentCutouts,
     undo,
     redo,
     canUndo,
@@ -85,6 +86,7 @@ export function CutoutWorkspace() {
       reorderCutouts: s.reorderCutouts,
       moveCutoutsAbove: s.moveCutoutsAbove,
       setCutoutProperty: s.setCutoutProperty,
+      reparentCutouts: s.reparentCutouts,
       undo: s.undo,
       redo: s.redo,
       canUndo: s.history.past.length > 0,
@@ -498,8 +500,7 @@ export function CutoutWorkspace() {
               onSelect={selectIds}
               onSetProperty={setCutoutProperty}
               onMoveAbove={moveCutoutsAbove}
-              onGroupWith={(ids, targetId) => groupCutouts([...ids, targetId])}
-              onUngroup={ungroupCutouts}
+              onReparent={reparentCutouts}
             />
           }
           cutouts={cutouts}

@@ -253,12 +253,13 @@ export function InspectorDock({
             onScroll={handleScroll}
             className="flex min-h-0 flex-1 flex-col overflow-y-auto scrollbar-thin pt-0 pb-3"
           >
-            <Tabs.Panel tabId="properties" activeTab={tab}>
+            <Tabs.Panel tabId="properties" activeTab={tab} keepMounted>
               <div className="px-4">
                 <InspectorContent {...content} board={board} />
               </div>
             </Tabs.Panel>
-            <Tabs.Panel tabId="shapes" activeTab={tab}>
+            {/* keepMounted so expanded/collapsed groups survive tab switches. */}
+            <Tabs.Panel tabId="shapes" activeTab={tab} keepMounted>
               {shapeList}
             </Tabs.Panel>
           </div>

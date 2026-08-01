@@ -417,7 +417,7 @@
   "binDesigner.shapeList.derived.rectangle": "Obdélník {w}×{d}",
   "binDesigner.shapeList.derived.circle": "Kruh ⌀{d}",
   "binDesigner.shapeList.derived.slot": "Drážka {w}×{d}",
-  "binDesigner.shapeList.derived.polygon": "{sides}úhelník {w}",
+  "binDesigner.shapeList.derived.polygon": "Mnohoúhelník ({sides}) {w}",
   "binDesigner.shapeList.derived.path": "Křivka {w}×{d}",
   "binDesigner.shapeList.derived.mesh": "Otisk {w}×{d}",
   "binDesigner.tabSpanFullWidth": "Přes celou šířku",

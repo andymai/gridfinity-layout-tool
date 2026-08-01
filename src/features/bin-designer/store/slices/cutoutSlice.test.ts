@@ -233,6 +233,107 @@ describe('cutoutSlice - consolidated actions', () => {
     });
   });
 
+  describe('reparentCutouts', () => {
+    const groupOf = (id: string): string | null =>
+      useDesignerStore.getState().params.cutouts.find((c) => c.id === id)?.groupId ?? null;
+
+    it('lets the DESTINATION group win, not whichever is first in the array', () => {
+      // groupCutouts picks the first grouped member in array order, so composing
+      // it absorbed the destination into the source depending on ordering.
+      const { addCutout, reparentCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'src-a', groupId: 'src' }));
+      addCutout(createTestCutout({ id: 'src-b', groupId: 'src' }));
+      addCutout(createTestCutout({ id: 'dst-a', groupId: 'dst' }));
+      addCutout(createTestCutout({ id: 'dst-b', groupId: 'dst' }));
+
+      reparentCutouts(['src-a'], 'dst-a');
+
+      expect(groupOf('src-a')).toBe('dst');
+      expect(groupOf('dst-a')).toBe('dst');
+      expect(groupOf('dst-b')).toBe('dst');
+    });
+
+    it('forms a fresh group when the target is loose', () => {
+      const { addCutout, reparentCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b' }));
+
+      reparentCutouts(['a'], 'b');
+
+      expect(groupOf('a')).not.toBeNull();
+      expect(groupOf('a')).toBe(groupOf('b'));
+    });
+
+    it('pulls a grouped shape onto a loose one without dragging its old group along', () => {
+      const { addCutout, reparentCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'g-a', groupId: 'g1' }));
+      addCutout(createTestCutout({ id: 'g-b', groupId: 'g1' }));
+      addCutout(createTestCutout({ id: 'g-c', groupId: 'g1' }));
+      addCutout(createTestCutout({ id: 'loose' }));
+
+      reparentCutouts(['g-a'], 'loose');
+
+      expect(groupOf('g-a')).toBe(groupOf('loose'));
+      expect(groupOf('g-a')).not.toBe('g1');
+      expect(groupOf('g-b')).toBe('g1');
+    });
+
+    it('ungroups on a null target', () => {
+      const { addCutout, reparentCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a', groupId: 'g1' }));
+      addCutout(createTestCutout({ id: 'b', groupId: 'g1' }));
+      addCutout(createTestCutout({ id: 'c', groupId: 'g1' }));
+
+      reparentCutouts(['a'], null);
+
+      expect(groupOf('a')).toBeNull();
+      expect(groupOf('b')).toBe('g1');
+    });
+
+    it('dissolves a group left with one member', () => {
+      const { addCutout, reparentCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a', groupId: 'g1' }));
+      addCutout(createTestCutout({ id: 'b', groupId: 'g1' }));
+
+      reparentCutouts(['a'], null);
+
+      expect(groupOf('a')).toBeNull();
+      expect(groupOf('b')).toBeNull();
+    });
+
+    it('ignores a drop onto a shape being dragged', () => {
+      const { addCutout, reparentCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b' }));
+      const historyBefore = useDesignerStore.getState().history.past.length;
+
+      reparentCutouts(['a', 'b'], 'a');
+
+      expect(useDesignerStore.getState().history.past.length).toBe(historyBefore);
+    });
+
+    it('is a no-op when already in the destination group', () => {
+      const { addCutout, reparentCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a', groupId: 'g1' }));
+      addCutout(createTestCutout({ id: 'b', groupId: 'g1' }));
+      const historyBefore = useDesignerStore.getState().history.past.length;
+
+      reparentCutouts(['a'], 'b');
+
+      expect(useDesignerStore.getState().history.past.length).toBe(historyBefore);
+    });
+
+    it('ignores an unknown target', () => {
+      const { addCutout, reparentCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      const historyBefore = useDesignerStore.getState().history.past.length;
+
+      reparentCutouts(['a'], 'nope');
+
+      expect(useDesignerStore.getState().history.past.length).toBe(historyBefore);
+    });
+  });
+
   describe('moveCutoutsAbove', () => {
     const stackOrder = (): string[] => {
       const cutouts = useDesignerStore.getState().params.cutouts;

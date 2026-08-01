@@ -454,6 +454,57 @@ export function createCutoutSlice(set: Set) {
       });
     },
 
+    /**
+     * Reparent for drag-and-drop (#3053).
+     *
+     * `groupCutouts` cannot express this: it reuses whichever member happens to
+     * be grouped FIRST IN ARRAY ORDER, so dragging a grouped shape onto another
+     * group could absorb the destination into the source instead of the other
+     * way round. Here the destination always wins, and the dragged shapes
+     * always leave whatever group they were in.
+     *
+     * - `targetId` null: pull `ids` out of any group.
+     * - target is grouped: join exactly that group, inheriting its op.
+     * - target is loose: form a fresh group of `ids` + the target.
+     */
+    reparentCutouts: (ids: readonly string[], targetId: string | null) => {
+      if (ids.length === 0) return;
+      set((state) => {
+        const moving = new Set(ids);
+        if (targetId !== null && moving.has(targetId)) return;
+        const target =
+          targetId === null ? null : (state.params.cutouts.find((c) => c.id === targetId) ?? null);
+        if (targetId !== null && !target) return;
+
+        const destGroupId = target?.groupId ?? (target ? generateLayoutId() : null);
+        // Forming a fresh pair means the target joins too.
+        if (target && target.groupId === null) moving.add(target.id);
+
+        const noChange = state.params.cutouts.every(
+          (c) => !moving.has(c.id) || c.groupId === destGroupId
+        );
+        if (noChange) return;
+
+        const destOp: GroupOp =
+          (target?.groupId
+            ? state.params.cutouts.find((c) => c.groupId === target.groupId)?.groupOp
+            : undefined) ?? DEFAULT_GROUP_OP;
+
+        pushHistoryEntry(state);
+        state.params.cutouts = state.params.cutouts.map((c) =>
+          moving.has(c.id)
+            ? {
+                ...c,
+                groupId: destGroupId,
+                ...(destGroupId === null ? {} : { groupOp: destOp }),
+              }
+            : c
+        );
+        // Pulling members out can strand a one-member group behind.
+        state.params.cutouts = dissolveSingletonGroups(state.params.cutouts);
+      });
+    },
+
     groupCutouts: (cutoutIds: readonly string[], op?: GroupOp) => {
       if (cutoutIds.length < 2) return;
       set((state) => {

@@ -189,6 +189,12 @@ export interface DesignerState {
   duplicateCutouts: (cutoutIds: readonly string[]) => void;
   groupCutouts: (cutoutIds: readonly string[], op?: GroupOp) => void;
   ungroupCutouts: (cutoutIds: readonly string[]) => void;
+  /**
+   * Drag-and-drop reparent: move `ids` onto `targetId`'s group (creating one
+   * when the target is loose), or out of any group when `targetId` is null.
+   * Unlike `groupCutouts` the destination always wins.
+   */
+  reparentCutouts: (ids: readonly string[], targetId: string | null) => void;
   setGroupOp: (groupId: string, op: GroupOp) => void;
 
   // Transaction + batch cutout actions

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, within, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ShapeList } from './ShapeList';
 import type { Cutout } from '@/features/bin-designer/types';
@@ -26,8 +26,7 @@ function setup(cutouts: Cutout[], selection: string[] = []) {
     onSelect: vi.fn(),
     onSetProperty: vi.fn(),
     onMoveAbove: vi.fn(),
-    onGroupWith: vi.fn(),
-    onUngroup: vi.fn(),
+    onReparent: vi.fn(),
   };
   render(<ShapeList cutouts={cutouts} selection={new Set(selection)} {...handlers} />);
   return handlers;
@@ -173,6 +172,100 @@ describe('ShapeList', () => {
       await user.dblClick(screen.getByTitle('Rectangle 20×15'));
       await user.type(screen.getByRole('textbox', { name: /rename/i }), 'nope{Escape}');
       expect(h.onSetProperty).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('drag', () => {
+    /** Row body = reparent target; the strip above it = reorder target. */
+    const zones = (title: string) => {
+      const body = screen.getByTitle(title).closest('[draggable="true"]') as HTMLElement;
+      const strip = body.parentElement?.firstElementChild as HTMLElement;
+      return { body, strip };
+    };
+    const startDrag = (el: HTMLElement) =>
+      fireEvent.dragStart(el, { dataTransfer: { setData: vi.fn(), effectAllowed: '' } });
+
+    it('reorders above the row whose strip receives the drop', () => {
+      const h = setup([
+        cutout({ id: 'a', zIndex: 0, width: 10, depth: 10 }),
+        cutout({ id: 'b', zIndex: 1, width: 30, depth: 30 }),
+      ]);
+      startDrag(zones('Rectangle 10×10').body);
+      fireEvent.drop(zones('Rectangle 30×30').strip);
+      expect(h.onMoveAbove).toHaveBeenCalledWith(['a'], 'b');
+      expect(h.onReparent).not.toHaveBeenCalled();
+    });
+
+    it('reparents onto the row body', () => {
+      const h = setup([
+        cutout({ id: 'a', zIndex: 0, width: 10, depth: 10 }),
+        cutout({ id: 'b', zIndex: 1, width: 30, depth: 30 }),
+      ]);
+      startDrag(zones('Rectangle 10×10').body);
+      fireEvent.drop(zones('Rectangle 30×30').body);
+      expect(h.onReparent).toHaveBeenCalledWith(['a'], 'b');
+      expect(h.onMoveAbove).not.toHaveBeenCalled();
+    });
+
+    it('anchors a drop onto a group row on one of its members', () => {
+      const h = setup([
+        cutout({ id: 'loose', zIndex: 5, width: 10, depth: 10 }),
+        cutout({ id: 'g-a', groupId: 'g1', zIndex: 1 }),
+        cutout({ id: 'g-b', groupId: 'g1', zIndex: 0 }),
+      ]);
+      startDrag(zones('Rectangle 10×10').body);
+      fireEvent.drop(zones('Group of 2').body);
+      expect(h.onReparent).toHaveBeenCalledWith(['loose'], 'g-a');
+    });
+
+    it('refuses to nest a group inside another group', () => {
+      const h = setup([
+        cutout({ id: 'g-a', groupId: 'g1', zIndex: 3 }),
+        cutout({ id: 'g-b', groupId: 'g1', zIndex: 2 }),
+        cutout({ id: 'h-a', groupId: 'g2', zIndex: 1 }),
+        cutout({ id: 'h-b', groupId: 'g2', zIndex: 0 }),
+      ]);
+      const groups = screen.getAllByTitle('Group of 2');
+      const bodyOf = (el: Element) => el.closest('[draggable="true"]') as HTMLElement;
+      startDrag(bodyOf(groups[0]));
+      fireEvent.drop(bodyOf(groups[1]));
+      expect(h.onReparent).not.toHaveBeenCalled();
+    });
+
+    it('ignores a drop onto the dragged row itself', () => {
+      const h = setup([cutout({ id: 'a' })]);
+      const { body } = zones('Rectangle 20×15');
+      startDrag(body);
+      fireEvent.drop(body);
+      expect(h.onReparent).not.toHaveBeenCalled();
+      expect(h.onMoveAbove).not.toHaveBeenCalled();
+    });
+
+    it('drags the whole selection when the grabbed row is part of it', () => {
+      const h = setup(
+        [
+          cutout({ id: 'a', zIndex: 0, width: 10, depth: 10 }),
+          cutout({ id: 'b', zIndex: 1, width: 20, depth: 20 }),
+          cutout({ id: 'c', zIndex: 2, width: 30, depth: 30 }),
+        ],
+        ['a', 'b']
+      );
+      startDrag(zones('Rectangle 10×10').body);
+      fireEvent.drop(zones('Rectangle 30×30').strip);
+      expect(h.onMoveAbove).toHaveBeenCalledWith(expect.arrayContaining(['a', 'b']), 'c');
+    });
+
+    it('drags only the grabbed row when it is outside the selection', () => {
+      const h = setup(
+        [
+          cutout({ id: 'a', zIndex: 0, width: 10, depth: 10 }),
+          cutout({ id: 'c', zIndex: 2, width: 30, depth: 30 }),
+        ],
+        ['c']
+      );
+      startDrag(zones('Rectangle 10×10').body);
+      fireEvent.drop(zones('Rectangle 30×30').strip);
+      expect(h.onMoveAbove).toHaveBeenCalledWith(['a'], 'c');
     });
   });
 });
