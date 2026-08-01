@@ -1,0 +1,27 @@
+src/shared/components/CompactNumberInput/CompactNumberInput.tsx
+  s_8fb9c547edb3b7::t_948a09d4c71965 80,82-89,91-93,95
+  s_8fb9c547edb3b7::t_7e464379f657fd 31-37
+  s_8fb9c547edb3b7::t_5c7aa6ac9d2c98 109,111,146,151,160-161,172-176,190
+src/features/bin-designer/components/panel/CutoutsSection/growBinToFit.test.ts
+  s_8fb9c547edb3b7::t_73e9788d0364ae 91-100
+src/shared/components/CompactNumberInput/CompactNumberInput.test.tsx
+  s_8fb9c547edb3b7::t_77adfb468fddd5 296-309,315
+  s_8fb9c547edb3b7::t_6486aa6b7cd9b2 310-314
+  s_8fb9c547edb3b7::t_385048b9ff2d8d 316
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "e0608a992e172291e4fefe0c447bf6d62da37e76",
+  "prompts": {},
+  "sessions": {
+    "s_8fb9c547edb3b7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8fc9a64f-8d00-4acb-9c91-3f304e2087ad",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
