@@ -112,6 +112,32 @@ describe('buildBaseplateExportPieces', () => {
     expect(result.guideText).toContain('Gridfinity Baseplate Print Guide');
   });
 
+  it('splits a large STEP plate into labelled pieces, same as STL/3MF (#3088)', async () => {
+    const { bridge, exportBaseplate } = makeBridge();
+    // 8×8u (336mm) plate on a 256mm bed forces a 2×2 split.
+    const result = await buildBaseplateExportPieces(
+      bridge,
+      null,
+      input({
+        format: 'step',
+        fileNameConfig: { style: 'descriptive', customName: '', format: 'step' },
+        drawerWidth: 8,
+        drawerDepth: 8,
+        printBedWidthMm: 256,
+        printBedDepthMm: 256,
+      })
+    );
+
+    expect(result.extension).toBe('.step');
+    expect(result.splitStats).toBeDefined();
+    expect(result.pieces.length).toBe(result.splitStats?.totalPieces);
+    expect(result.pieces.length).toBeGreaterThan(1);
+    expect(result.pieces.every((p) => p.label.length > 0)).toBe(true);
+    // Each unique tile is exported as a native STEP solid — never rerouted to STL.
+    expect(exportBaseplate).toHaveBeenCalledWith(expect.anything(), 'step');
+    expect(exportBaseplate).not.toHaveBeenCalledWith(expect.anything(), 'stl');
+  });
+
   it('ships rail pieces and a combined guide alongside a stacked tower (#2641)', async () => {
     const { bridge, exportMargin } = makeBridge();
     const result = await buildBaseplateExportPieces(
