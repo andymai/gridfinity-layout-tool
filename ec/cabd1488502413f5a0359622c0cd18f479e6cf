@@ -1,0 +1,49 @@
+src/features/bin-designer/components/panel/CutoutsSection/renderer/zLayer.ts
+  s_847f99eb10e239::t_0e67b850bae6d9 1-42
+src/features/bin-designer/components/panel/CutoutsSection/renderer/PolygonShapeMesh.tsx
+  s_847f99eb10e239::t_ebed5fdf2275f6 17,160,183,189,197
+  s_847f99eb10e239::t_2bc194c4e4f739 198-200
+src/features/bin-designer/components/panel/CutoutsSection/renderer/PathShapeMesh.tsx
+  s_847f99eb10e239::t_ebed5fdf2275f6 15,210,244,251,261
+  s_847f99eb10e239::t_8a1ab4f6b6b1b0 262-264
+src/features/bin-designer/components/panel/CutoutsSection/renderer/CutoutShapeMesh.tsx
+  s_847f99eb10e239::t_ebed5fdf2275f6 28,259,299
+  s_847f99eb10e239::t_09ac09ecbfdce4 293
+  s_847f99eb10e239::t_9966d585176e0f 251-257
+src/features/bin-designer/store/slices/cutoutSlice.test.ts
+  s_847f99eb10e239::t_4d89225720da03 78-85,92-112,115-129,135,137-138,141,149,152,159,173,181,534,541-553,557,568-579,586
+src/features/bin-designer/components/panel/CutoutsSection/renderer/MeshFootprintMesh.tsx
+  s_847f99eb10e239::t_ebed5fdf2275f6 16,140,142,146,163
+  s_847f99eb10e239::t_62eae969d250a4 164-166
+src/features/bin-designer/store/slices/cutoutSlice.ts
+  s_847f99eb10e239::t_09ee03be4f089f 121
+  s_847f99eb10e239::t_4c2f578cf900a2 85-87,89-101
+  s_847f99eb10e239::t_6640c359624918 107-117
+  s_847f99eb10e239::t_c05af0c79acf77 82-84,88,102-103
+  s_847f99eb10e239::t_5c715e77eb7145 130-134,136-142,145-175,184-185,188-191,193-194,196-198,200-202,205,207-212
+  s_847f99eb10e239::t_db5d87529c109f 129,135,143-144,181-182,206,213-214,222-223
+  s_847f99eb10e239::t_ec60dbc71cd423 180
+  s_847f99eb10e239::t_f26524879b3bf9 183
+src/features/bin-designer/types/cutout.ts
+  s_847f99eb10e239::t_d8ee01606fbeb8 223,277-285,290-294
+src/features/bin-designer/components/panel/CutoutsSection/renderer/constants.ts
+  s_847f99eb10e239::t_25ff0323b8ffba 22-39
+src/features/bin-designer/components/panel/CutoutsSection/renderer/zLayer.test.ts
+  s_847f99eb10e239::t_157aa98f565af2 1-58
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "eccabd1488502413f5a0359622c0cd18f479e6cf",
+  "prompts": {},
+  "sessions": {
+    "s_847f99eb10e239": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0ec9dcc4-62aa-4e7a-9a1c-d33ce8fd5f4b",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
