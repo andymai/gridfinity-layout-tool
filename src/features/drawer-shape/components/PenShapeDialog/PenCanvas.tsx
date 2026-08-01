@@ -19,6 +19,8 @@ import { segmentHandle } from '../../utils/penShape';
 export interface PenCanvasProps {
   readonly svgRef: RefObject<SVGSVGElement | null>;
   readonly verts: readonly OutlineVertex[];
+  /** Fillet radius per corner; a rounded one is drawn differently. */
+  readonly radii: readonly number[];
   readonly selected: ReadonlySet<number>;
   readonly pathD: string;
   readonly widthMm: number;
@@ -43,6 +45,7 @@ export interface PenCanvasProps {
 export function PenCanvas({
   svgRef,
   verts,
+  radii,
   selected,
   pathD,
   widthMm,
@@ -145,20 +148,27 @@ export function PenCanvas({
             />
           );
         })}
-        {verts.map((v, i) => (
-          <circle
-            key={`vert-${i}`}
-            cx={v.x}
-            cy={v.y}
-            r={handleR}
-            className={
-              selected.has(i)
-                ? 'cursor-move fill-accent stroke-accent'
-                : 'cursor-move fill-surface stroke-accent'
-            }
-            strokeWidth={handleR / 3}
-          />
-        ))}
+        {verts.map((v, i) => {
+          // A rounded corner reads as a ring rather than a dot, so which
+          // corners carry a radius is visible without selecting them one by one.
+          const rounded = (radii[i] ?? 0) > 0;
+          return (
+            <circle
+              key={`vert-${i}`}
+              cx={v.x}
+              cy={v.y}
+              r={handleR}
+              className={
+                selected.has(i)
+                  ? 'cursor-move fill-accent stroke-accent'
+                  : rounded
+                    ? 'cursor-move fill-surface stroke-content-secondary'
+                    : 'cursor-move fill-surface stroke-accent'
+              }
+              strokeWidth={rounded ? handleR / 1.6 : handleR / 3}
+            />
+          );
+        })}
       </g>
     </svg>
   );

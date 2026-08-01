@@ -1716,6 +1716,8 @@
   "drawerShape.penResetView": "Återställ vyn",
   "drawerShape.penCorner": "Hörn {n}",
   "drawerShape.penFillet": "Runda hörn (mm)",
+  "drawerShape.penFilletSelected": "Runda {count} hörn (mm)",
+  "drawerShape.penFilletMixed": "Blandat",
   "drawerShape.penSnapOff": "Av",
   "drawerShape.penDeletePoint": "Ta bort hörn",
   "drawerShape.penReset": "Återställ till rektangel",

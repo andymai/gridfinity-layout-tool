@@ -14,6 +14,7 @@ function renderCanvas(overrides: Partial<Parameters<typeof PenCanvas>[0]> = {}) 
   const props = {
     svgRef: createRef<SVGSVGElement>(),
     verts: VERTS,
+    radii: [0, 0, 0, 0],
     selected: new Set<number>(),
     pathD: 'M 0 0 L 100 0 L 100 80 L 0 80 Z',
     widthMm: 100,
@@ -60,6 +61,16 @@ describe('PenCanvas', () => {
     expect(filled).toHaveLength(2);
   });
 
+  // Which corners carry a radius has to be readable without clicking each one,
+  // now that rounding is per corner rather than one value for the shape.
+  it('draws a rounded corner differently from a sharp one', () => {
+    const { container } = renderCanvas({ radii: [12, 0, 0, 0] });
+    const rings = [...container.querySelectorAll('circle')].filter((c) =>
+      (c.getAttribute('class') ?? '').includes('stroke-content-secondary')
+    );
+    expect(rings).toHaveLength(1);
+  });
+
   it('colours the outline by validity', () => {
     const { container, rerender } = renderCanvas();
     expect(container.querySelector('path')?.getAttribute('class')).toContain('stroke-accent');
@@ -69,6 +80,7 @@ describe('PenCanvas', () => {
         {...{
           svgRef: createRef<SVGSVGElement>(),
           verts: VERTS,
+          radii: [0, 0, 0, 0],
           selected: new Set<number>(),
           pathD: 'M 0 0 Z',
           widthMm: 100,

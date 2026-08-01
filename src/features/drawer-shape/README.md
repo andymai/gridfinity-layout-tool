@@ -24,6 +24,12 @@ hatching, baseplate generation/splitting) derives from it.
   boundary; the outer loop scales by the per-axis grid pitch (`gridUnitMm` /
   `gridUnitMmY`, issue #2733) into outline mm. Enclosed holes are filled
   (single-loop model); empty/disconnected grids error.
+- `components/PenShapeDialog` — freeform perimeter editor. Drag corners and bow
+  segments into arcs; per-corner rounding comes from `@/shared/utils/filletOutline`
+  and is baked into the stored vertices, so every consumer sees the same shape.
+  Sketch state lives in `usePenSketch`, which owns the `radii` parallel array —
+  inserting and deleting are hook methods precisely so no call site can shift
+  vertex indices without moving the radii with them.
 - `utils/traceBinFootprint.ts` — bins → editor grid (all layers, staging
   excluded).
 
@@ -36,7 +42,13 @@ hatching, baseplate generation/splitting) derives from it.
 3. Reopening the editor rasterizes the stored outline back to cells with the
    same `classifyRect` predicate placement uses — a cell is filled iff bins
    may occupy it.
-4. The corner-cut vertex geometry lives in
+4. **Rounding is stored as geometry, not as a parameter** — so the pen editor
+   reopens a saved shape through `unfilletOutline`, which collapses each tangent
+   arc back to the corner it was built from plus its radius. That inverse is
+   what keeps a radius adjustable without persisting a second copy of the shape
+   alongside the outline. A hand-drawn arc is not tangent to its neighbours, so
+   it survives as drawn.
+5. The corner-cut vertex geometry lives in
    `@/shared/utils/cornerCutOutline` (not here) so the baseplate's
    `buildFullParams` can re-inscribe the same cuts on the padded plate
    rectangle (issue #2612). `cornersToOutline` is a thin wrapper that adds

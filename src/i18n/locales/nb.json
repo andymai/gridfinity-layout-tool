@@ -1716,6 +1716,8 @@
   "drawerShape.penResetView": "Tilbakestill visning",
   "drawerShape.penCorner": "Hjørne {n}",
   "drawerShape.penFillet": "Avrund hjørner (mm)",
+  "drawerShape.penFilletSelected": "Avrund {count} hjørne(r) (mm)",
+  "drawerShape.penFilletMixed": "Blandet",
   "drawerShape.penSnapOff": "Av",
   "drawerShape.penDeletePoint": "Slett hjørne",
   "drawerShape.penReset": "Tilbakestill til rektangel",

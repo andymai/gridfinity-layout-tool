@@ -1,22 +1,40 @@
 /**
- * Sketch state for the pen editor: the vertex list, the selection, and a
- * bounded undo stack.
+ * Sketch state for the pen editor: the vertex list, the per-corner radii, the
+ * selection, and a bounded undo stack.
  *
  * Split from the component because the editor is judged against a real vector
  * tool, where undo and keyboard editing are not extras — a drag that overshoots
  * is otherwise only recoverable by cancelling and starting the shape again.
+ *
+ * `radii` is a per-index parallel array, so every operation that shifts vertex
+ * indices has to move it in lockstep. That is why inserting and deleting live
+ * here rather than in the component: `commit` only accepts a whole sketch, and
+ * the two index-shifting edits are the hook's own methods, so there is no call
+ * site that can update one array and forget the other.
  */
 
 import { useCallback, useMemo, useRef, useState } from 'react';
 import type { OutlineVertex } from '@/core/types';
-import { clampToDrawer, moveVertices, rectangleSketch, removeVertices } from '../../utils/penShape';
+import {
+  clampToDrawer,
+  insertVertex,
+  moveVertices,
+  rectangleSketch,
+  removeVertices,
+} from '../../utils/penShape';
 import type { SnapFraction } from '../../utils/penShape';
 
 /** Undo depth. Deep enough for a long editing session, bounded so a drag can't grow it without limit. */
 const MAX_HISTORY = 50;
 
-export interface PenSketch {
+/** A sketch and the corner radii that go with it, index for index. */
+export interface Sketch {
   readonly verts: readonly OutlineVertex[];
+  /** Fillet radius (mm) per corner; 0 leaves it sharp. */
+  readonly radii: readonly number[];
+}
+
+export interface PenSketch extends Sketch {
   /** Selected corner indices. Empty when nothing is selected. */
   readonly selected: ReadonlySet<number>;
   readonly canUndo: boolean;
@@ -25,12 +43,12 @@ export interface PenSketch {
   /** Add or remove one corner, for Shift-click. */
   toggleSelected: (index: number) => void;
   /** Replace the sketch and push the previous state onto the undo stack. */
-  commit: (next: readonly OutlineVertex[]) => void;
+  commit: (next: Sketch) => void;
   /**
    * Replace the sketch without a history entry. For the continuous part of a
    * drag: one pointer gesture should undo as one step, not fifty.
    */
-  preview: (next: readonly OutlineVertex[]) => void;
+  preview: (next: Sketch) => void;
   /** Open a history entry for a drag about to start. */
   beginGesture: () => void;
   undo: () => void;
@@ -40,6 +58,10 @@ export interface PenSketch {
   /** Move every selected corner by a snapped step, for arrow-key nudging. */
   nudge: (dx: number, dy: number, bounds: NudgeBounds) => void;
   deleteSelected: () => void;
+  /** Split segment `index` at its midpoint, returning the new corner's index. */
+  insertAt: (index: number) => number;
+  /** Set the radius of the given corners, leaving the rest alone. */
+  setRadii: (indices: Iterable<number>, radiusMm: number) => void;
 }
 
 export interface NudgeBounds {
@@ -50,8 +72,10 @@ export interface NudgeBounds {
   readonly snap: SnapFraction;
 }
 
-export function usePenSketch(seeded: readonly OutlineVertex[] | null): PenSketch {
-  const [verts, setVerts] = useState<readonly OutlineVertex[] | null>(null);
+const EMPTY: Sketch = { verts: [], radii: [] };
+
+export function usePenSketch(seeded: Sketch | null): PenSketch {
+  const [sketch, setSketch] = useState<Sketch | null>(null);
   const [selected, setSelectedState] = useState<ReadonlySet<number>>(() => new Set());
   const setSelected = useCallback(
     (indices: Iterable<number>) => setSelectedState(new Set(indices)),
@@ -64,7 +88,7 @@ export function usePenSketch(seeded: readonly OutlineVertex[] | null): PenSketch
       return next;
     });
   }, []);
-  const [history, setHistory] = useState<readonly (readonly OutlineVertex[])[]>([]);
+  const [history, setHistory] = useState<readonly Sketch[]>([]);
   // Set at pointer-down so the whole drag collapses into one undo entry.
   const gestureRef = useRef(false);
 
@@ -74,36 +98,36 @@ export function usePenSketch(seeded: readonly OutlineVertex[] | null): PenSketch
   const [seedIdentity, setSeedIdentity] = useState(seeded);
   if (seedIdentity !== seeded) {
     setSeedIdentity(seeded);
-    setVerts(null);
+    setSketch(null);
     setHistory([]);
     setSelectedState(new Set());
   }
 
-  const active = useMemo(() => verts ?? seeded ?? [], [verts, seeded]);
+  const active = useMemo(() => sketch ?? seeded ?? EMPTY, [sketch, seeded]);
 
-  const push = useCallback((prev: readonly OutlineVertex[]) => {
+  const push = useCallback((prev: Sketch) => {
     setHistory((h) => [...h.slice(-(MAX_HISTORY - 1)), prev]);
   }, []);
 
   const commit = useCallback(
-    (next: readonly OutlineVertex[]) => {
+    (next: Sketch) => {
       // A commit is a completed edit, so it also disarms: a press that armed a
       // gesture and then committed without moving would otherwise leave the
       // flag set, and the next drag would spend a second entry on it.
       gestureRef.current = false;
       push(active);
-      setVerts(next);
+      setSketch(next);
     },
     [active, push]
   );
 
   const preview = useCallback(
-    (next: readonly OutlineVertex[]) => {
+    (next: Sketch) => {
       if (gestureRef.current) {
         gestureRef.current = false;
         push(active);
       }
-      setVerts(next);
+      setSketch(next);
     },
     [active, push]
   );
@@ -132,17 +156,18 @@ export function usePenSketch(seeded: readonly OutlineVertex[] | null): PenSketch
     if (history.length === 0) return;
     const restored = history[history.length - 1];
     setHistory(history.slice(0, -1));
-    setVerts(restored);
+    setSketch(restored);
     // Keep the selection across an undo where the corners still exist, so the
     // coordinate fields do not blink out from under an edit. Undoing an insert
     // or delete can shorten the list, hence the bound filter.
-    setSelectedState((sel) => new Set([...sel].filter((i) => i < restored.length)));
+    setSelectedState((sel) => new Set([...sel].filter((i) => i < restored.verts.length)));
   }, [history]);
 
   const reset = useCallback(
     (widthMm: number, depthMm: number) => {
       push(active);
-      setVerts(rectangleSketch(widthMm, depthMm));
+      const verts = rectangleSketch(widthMm, depthMm);
+      setSketch({ verts, radii: verts.map(() => 0) });
       setSelectedState(new Set());
     },
     [active, push]
@@ -161,26 +186,59 @@ export function usePenSketch(seeded: readonly OutlineVertex[] | null): PenSketch
       let my = dy * stepY;
       for (const i of selected) {
         // A stale index can outlive its vertex (a delete, or a reseed).
-        if (i >= active.length) continue;
-        const v = active[i];
+        if (i >= active.verts.length) continue;
+        const v = active.verts[i];
         const c = clampToDrawer(v.x + mx, v.y + my, bounds.widthMm, bounds.depthMm);
         mx = c.x - v.x;
         my = c.y - v.y;
       }
       if (mx === 0 && my === 0) return;
-      commit(moveVertices(active, selected, mx, my));
+      commit({ verts: moveVertices(active.verts, selected, mx, my), radii: active.radii });
     },
     [selected, active, commit]
   );
 
   const deleteSelected = useCallback(() => {
-    if (selected.size === 0 || active.length - selected.size < 3) return;
-    commit(removeVertices(active, selected));
+    if (selected.size === 0 || active.verts.length - selected.size < 3) return;
+    commit({
+      verts: removeVertices(active.verts, selected),
+      radii: active.radii.filter((_, i) => !selected.has(i)),
+    });
     setSelectedState(new Set());
   }, [selected, active, commit]);
 
+  const insertAt = useCallback(
+    (index: number) => {
+      const verts = insertVertex(active.verts, index);
+      // insertVertex refuses a degenerate split, in which case nothing moved and
+      // the radii must not shift either.
+      if (verts.length === active.verts.length) return index;
+      const radii = [...active.radii];
+      // The new corner lands at index + 1 and starts sharp. The split corner
+      // keeps its radius: the midpoint sits on the segment it already had, so
+      // the angle the fillet was built from has not moved.
+      radii.splice(index + 1, 0, 0);
+      commit({ verts, radii });
+      return index + 1;
+    },
+    [active, commit]
+  );
+
+  const setRadii = useCallback(
+    (indices: Iterable<number>, radiusMm: number) => {
+      const targets = new Set(indices);
+      if (targets.size === 0) return;
+      commit({
+        verts: active.verts,
+        radii: active.radii.map((r, i) => (targets.has(i) ? radiusMm : r)),
+      });
+    },
+    [active, commit]
+  );
+
   return {
-    verts: active,
+    verts: active.verts,
+    radii: active.radii,
     selected,
     canUndo: history.length > 0,
     setSelected,
@@ -193,5 +251,7 @@ export function usePenSketch(seeded: readonly OutlineVertex[] | null): PenSketch
     reset,
     nudge,
     deleteSelected,
+    insertAt,
+    setRadii,
   };
 }

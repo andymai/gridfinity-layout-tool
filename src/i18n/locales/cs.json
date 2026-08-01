@@ -1716,6 +1716,8 @@
   "drawerShape.penResetView": "Obnovit zobrazení",
   "drawerShape.penCorner": "Roh {n}",
   "drawerShape.penFillet": "Zaoblit rohy (mm)",
+  "drawerShape.penFilletSelected": "Zaoblit {count} roh(ů) (mm)",
+  "drawerShape.penFilletMixed": "Různé",
   "drawerShape.penSnapOff": "Vypnuto",
   "drawerShape.penDeletePoint": "Odstranit roh",
   "drawerShape.penReset": "Zpět na obdélník",

@@ -1716,6 +1716,8 @@
   "drawerShape.penResetView": "Réinitialiser la vue",
   "drawerShape.penCorner": "Coin {n}",
   "drawerShape.penFillet": "Arrondir les coins (mm)",
+  "drawerShape.penFilletSelected": "Arrondir {count} coin(s) (mm)",
+  "drawerShape.penFilletMixed": "Variable",
   "drawerShape.penSnapOff": "Désactivé",
   "drawerShape.penDeletePoint": "Supprimer le coin",
   "drawerShape.penReset": "Revenir au rectangle",

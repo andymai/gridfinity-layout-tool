@@ -1716,6 +1716,8 @@
   "drawerShape.penResetView": "보기 초기화",
   "drawerShape.penCorner": "모서리 {n}",
   "drawerShape.penFillet": "모서리 둥글리기 (mm)",
+  "drawerShape.penFilletSelected": "모서리 {count}개 둥글리기 (mm)",
+  "drawerShape.penFilletMixed": "혼합",
   "drawerShape.penSnapOff": "끄기",
   "drawerShape.penDeletePoint": "모서리 삭제",
   "drawerShape.penReset": "직사각형으로 되돌리기",

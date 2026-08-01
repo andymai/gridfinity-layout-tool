@@ -1716,6 +1716,8 @@
   "drawerShape.penResetView": "Redefinir visualização",
   "drawerShape.penCorner": "Canto {n}",
   "drawerShape.penFillet": "Arredondar cantos (mm)",
+  "drawerShape.penFilletSelected": "Arredondar {count} canto(s) (mm)",
+  "drawerShape.penFilletMixed": "Variado",
   "drawerShape.penSnapOff": "Desligado",
   "drawerShape.penDeletePoint": "Excluir canto",
   "drawerShape.penReset": "Voltar ao retângulo",

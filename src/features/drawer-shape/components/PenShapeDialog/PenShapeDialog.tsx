@@ -29,14 +29,13 @@ import { useMutations } from '@/shared/contexts/MutationsContext';
 import { computeDisplacedBins } from '@/core/cqrs/v2/domain/drawer/displacement';
 import { trackDrawerShapeApplied } from '@/shared/analytics/posthog';
 import { validateOutline } from '@/shared/utils/drawerOutline';
-import { filletOutline } from '@/shared/utils/filletOutline';
+import { filletOutline, unfilletOutline } from '@/shared/utils/filletOutline';
 import {
   bulgeThroughPoint,
   clampToDrawer,
   alignmentGuides,
   hitSegmentMidpoint,
   hitVertex,
-  insertVertex,
   moveVertex,
   clampGroupDelta,
   moveVertices,
@@ -87,16 +86,22 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
 
   // Reseed only when the dialog opens: an existing outline becomes the starting
   // sketch (any authoring surface, so a painted shape can be refined freehand),
-  // otherwise start from the drawer rectangle.
+  // otherwise start from the drawer rectangle. `unfilletOutline` collapses a
+  // rounded corner back to a sharp one plus its radius, so a saved shape reopens
+  // with its rounding still adjustable rather than as arcs made of extra points.
   const seeded = useMemo(() => {
     if (!open) return null;
     const existing = layout.drawer.outline;
-    return existing !== undefined ? [...existing.vertices] : rectangleSketch(widthMm, depthMm);
+    if (existing !== undefined) {
+      const { vertices, radii } = unfilletOutline(existing);
+      return { verts: vertices, radii };
+    }
+    const verts = rectangleSketch(widthMm, depthMm);
+    return { verts, radii: verts.map(() => 0) };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reseed only on open
   }, [open]);
 
   const [snap, setSnap] = useState<SnapFraction>(0.5);
-  const [fillet, setFillet] = useState(0);
   const dragRef = useRef<Drag | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const sketch = usePenSketch(seeded);
@@ -104,7 +109,7 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
   const view = usePenView(widthMm, depthMm, seeded);
   // Divided by the zoom so the grab area matches the drawn handle at any zoom.
   const hitR = hitRadiusMm(widthMm, depthMm) / view.zoom;
-  const { verts, selected, setSelected } = sketch;
+  const { verts, radii, selected, setSelected } = sketch;
   const [marquee, setMarquee] = useState<{ x0: number; y0: number; x1: number; y1: number } | null>(
     null
   );
@@ -122,8 +127,13 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
     if (verts.length < 3) return null;
     // Baked into the stored geometry rather than kept as a parameter, so every
     // consumer — plate, hatching, placement — sees the same rounded shape.
-    return filletOutline(sketchToOutline(verts), fillet);
-  }, [verts, fillet]);
+    //
+    // Fillet BEFORE normalizing the winding: `sketchToOutline` reverses a
+    // clockwise loop, which reorders vertices and would leave every radius
+    // describing a different corner than the one it was set on. `cornerAt`'s
+    // turn is signed, so an unnormalized loop still rounds on the correct side.
+    return sketchToOutline(filletOutline({ vertices: [...verts] }, radii).vertices);
+  }, [verts, radii]);
   const error = useMemo(
     () =>
       outline === null
@@ -245,17 +255,22 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
           widthMm,
           depthMm
         );
-        sketch.preview(moveVertices(verts, moving, dx, dy));
+        sketch.preview({ verts: moveVertices(verts, moving, dx, dy), radii });
         return;
       }
 
       // Bulge is a curvature, not a position, so it is never snapped.
       const clamped = clampToDrawer(p.x, p.y, widthMm, depthMm);
-      sketch.preview(
-        setBulge(verts, drag.index, bulgeThroughPoint(verts, drag.index, clamped.x, clamped.y))
-      );
+      sketch.preview({
+        verts: setBulge(
+          verts,
+          drag.index,
+          bulgeThroughPoint(verts, drag.index, clamped.x, clamped.y)
+        ),
+        radii,
+      });
     },
-    [toMm, snapPoint, verts, widthMm, depthMm, sketch, view, selected, hitR]
+    [toMm, snapPoint, verts, radii, widthMm, depthMm, sketch, view, selected, hitR]
   );
 
   const endDrag = useCallback(() => {
@@ -289,17 +304,36 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
       if (p === null) return;
       const seg = hitSegmentMidpoint(verts, p.x, p.y, hitR * 2);
       if (seg >= 0) {
-        sketch.commit(insertVertex(verts, seg));
-        setSelected([seg + 1]);
+        setSelected([sketch.insertAt(seg)]);
       }
     },
     [verts, toMm, hitR, setSelected, sketch]
   );
 
   const maxFillet = Math.round(Math.min(widthMm, depthMm) / 4);
+  /** Corners the radius control edits: the selection, or the whole shape. */
+  const filletTargets = useMemo(
+    () => (selected.size > 0 ? [...selected] : radii.map((_, i) => i)),
+    [selected, radii]
+  );
+  /**
+   * Their shared radius, or null when they disagree. Compared with a tolerance
+   * rather than exactly: radii recovered from a stored shape come off
+   * coordinates already quantized to 0.01mm, so corners rounded together can
+   * land a few hundredths apart and would otherwise report as mixed.
+   */
+  const filletValue = useMemo(() => {
+    if (filletTargets.length === 0) return 0;
+    const first = radii[filletTargets[0]] ?? 0;
+    return filletTargets.every((i) => Math.abs((radii[i] ?? 0) - first) <= 0.05) ? first : null;
+  }, [filletTargets, radii]);
+  const applyFillet = useCallback(
+    (r: number) => sketch.setRadii(filletTargets, Math.min(maxFillet, Math.max(0, r))),
+    [sketch, filletTargets, maxFillet]
+  );
   const stepFillet = useCallback(
-    (delta: number) => setFillet((r) => Math.min(maxFillet, Math.max(0, r + delta))),
-    [maxFillet]
+    (delta: number) => applyFillet((filletValue ?? 0) + delta),
+    [applyFillet, filletValue]
   );
 
   /**
@@ -371,14 +405,13 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
         widthMm,
         depthMm
       );
-      sketch.commit(moveVertex(verts, lone, p.x, p.y));
+      sketch.commit({ verts: moveVertex(verts, lone, p.x, p.y), radii });
     },
-    [lone, verts, widthMm, depthMm, sketch]
+    [lone, verts, radii, widthMm, depthMm, sketch]
   );
 
   const handleReset = useCallback(() => {
     sketch.reset(widthMm, depthMm);
-    setFillet(0);
   }, [widthMm, depthMm, sketch]);
 
   const handleApply = useCallback(() => {
@@ -402,14 +435,8 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
     if (displaced > 0) {
       addToast(t('toast.binsDisplacedByShape', { count: displaced }), 'info');
     }
-    setFillet(0);
     onClose();
   }, [outline, error, layout, gridUnitMmY, mutations, addToast, t, onClose]);
-
-  const handleClose = useCallback(() => {
-    setFillet(0);
-    onClose();
-  }, [onClose]);
 
   if (!open) return null;
 
@@ -418,7 +445,7 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
   const handleR = baseHandleR / view.zoom;
 
   return (
-    <Dialog.Root open={open} onClose={handleClose} size="lg">
+    <Dialog.Root open={open} onClose={onClose} size="lg">
       <Dialog.Header title={t('drawerShape.penTitle')} />
       <Dialog.Body>
         <div className="space-y-3">
@@ -428,6 +455,7 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
             <PenCanvas
               svgRef={svgRef}
               verts={verts}
+              radii={radii}
               selected={selected}
               pathD={outline !== null ? sketchPathD(outline.vertices) : sketchPathD(verts)}
               widthMm={widthMm}
@@ -497,17 +525,30 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
               </div>
             )}
             <div className="flex items-center gap-2">
-              <span className="text-xs text-content-secondary">{t('drawerShape.penFillet')}</span>
+              <span className="text-xs text-content-secondary">
+                {selected.size > 0
+                  ? t('drawerShape.penFilletSelected', { count: selected.size })
+                  : t('drawerShape.penFillet')}
+              </span>
               <Stepper
-                value={fillet}
-                onChange={setFillet}
+                value={filletValue ?? 0}
+                onChange={applyFillet}
                 onStep={stepFillet}
                 min={0}
                 max={maxFillet}
                 step={1}
                 size="sm"
-                aria-label={t('drawerShape.penFillet')}
+                aria-label={
+                  selected.size > 0
+                    ? t('drawerShape.penFilletSelected', { count: selected.size })
+                    : t('drawerShape.penFillet')
+                }
               />
+              {filletValue === null && (
+                <span className="text-xs text-content-tertiary">
+                  {t('drawerShape.penFilletMixed')}
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -547,7 +588,7 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
         </div>
       </Dialog.Body>
       <Dialog.Footer>
-        <Button type="button" variant="secondary" onClick={handleClose}>
+        <Button type="button" variant="secondary" onClick={onClose}>
           {t('common.cancel')}
         </Button>
         <Button type="button" variant="primary" onClick={handleApply} disabled={error !== null}>

@@ -1716,6 +1716,8 @@
   "drawerShape.penResetView": "Restablecer vista",
   "drawerShape.penCorner": "Esquina {n}",
   "drawerShape.penFillet": "Redondear esquinas (mm)",
+  "drawerShape.penFilletSelected": "Redondear {count} esquina(s) (mm)",
+  "drawerShape.penFilletMixed": "Variado",
   "drawerShape.penSnapOff": "Desactivado",
   "drawerShape.penDeletePoint": "Eliminar esquina",
   "drawerShape.penReset": "Restablecer a rectángulo",
