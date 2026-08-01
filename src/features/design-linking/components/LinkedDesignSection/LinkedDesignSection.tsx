@@ -120,9 +120,12 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
     }
   }, [linkedDesign, matchDesignEdgesToDrawer]);
 
-  // A fractional bin whose design points at a different drawer edge is oriented
-  // wrong; the registry ref carries the design's edge so we can flag it here (#2518).
-  const edgeMismatch = linkedDesign !== null && hasFractionalEdgeMismatch(linkedDesign, drawer);
+  // A fractional bin whose design's half foot points away from where this bin's
+  // half cell lands is oriented wrong; the registry ref carries the design's
+  // edge so we can flag it here (#2518, #3070).
+  const edgeMismatch =
+    linkedDesign !== null &&
+    hasFractionalEdgeMismatch(linkedDesign, drawer, { x: bin.x, y: bin.y });
 
   // No link - show Create Design and Link Existing buttons
   if (!hasLink) {

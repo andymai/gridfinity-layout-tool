@@ -59,15 +59,30 @@ export function useFractionalEdgeMismatch(): FractionalEdgeMismatch {
     [width, depth, fractionalEdgeX, fractionalEdgeY, fractionalEdgeManualX, fractionalEdgeManualY]
   );
 
-  const show = useMemo(() => {
-    const linkedHere =
-      currentDesignId !== null && bins.some((b) => b.linkedDesignId === currentDesignId);
-    return linkedHere && hasFractionalEdgeMismatch(design, drawer);
-  }, [currentDesignId, bins, design, drawer]);
+  const placements = useMemo(
+    () =>
+      currentDesignId === null
+        ? []
+        : bins.filter((b) => b.linkedDesignId === currentDesignId).map((b) => ({ x: b.x, y: b.y })),
+    [currentDesignId, bins]
+  );
+
+  const show = useMemo(
+    () =>
+      placements.length > 0 &&
+      // One design can be placed several times. Only warn when NO placement
+      // agrees — otherwise a design that is correct for the spot the user is
+      // thinking about would nag because a sibling copy sits on the other side.
+      placements.every((p) => hasFractionalEdgeMismatch(design, drawer, p)),
+    [placements, design, drawer]
+  );
 
   const matchDrawer = useCallback(() => {
-    setParams(computeMatchedEdges(design, drawer));
-  }, [setParams, design, drawer]);
+    // `.at` rather than `[0]` so the empty case is a type the guard can see.
+    const target = placements.at(0);
+    if (!target) return;
+    setParams(computeMatchedEdges(design, drawer, target));
+  }, [setParams, design, drawer, placements]);
 
   return { show, matchDrawer };
 }

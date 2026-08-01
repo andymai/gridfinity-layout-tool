@@ -672,13 +672,26 @@ describe('useBinLinking', () => {
       expect(dispatchEventSpy).toHaveBeenCalledWith(expect.any(PopStateEvent));
     });
 
-    it('threads the drawer edge into the URL for a fractional dimension', () => {
-      setupStores([]);
+    /** Place `bin-1` at `x` in a drawer of `drawerWidth`, half column on the left. */
+    function withPlacedBin(x: number, drawerWidth: number) {
+      setupStores([makeBin({ id: binId('bin-1'), x: gridUnits(x), width: gridUnits(1.5) })]);
       const layout = useLayoutStore.getState().layout;
       useLayoutStore.setState({
-        layout: { ...layout, drawer: { ...layout.drawer, fractionalEdgeX: 'start' } },
+        layout: {
+          ...layout,
+          drawer: {
+            ...layout.drawer,
+            width: gridUnits(drawerWidth),
+            fractionalEdgeX: 'start',
+          },
+        },
       });
+    }
 
+    it('threads the edge implied by the placement into the URL', () => {
+      // Cells start at 0.5 in a 10.5-wide start-fractional drawer, so a bin at
+      // x=0 opens with its half cell.
+      withPlacedBin(0, 10.5);
       const { result } = renderHook(() => useBinLinking());
 
       act(() => {
@@ -688,13 +701,21 @@ describe('useBinLinking', () => {
       expect(pushStateSpy.mock.calls[0][2]).toContain('fractionalEdgeX=start');
     });
 
-    it('omits the drawer edge for an integer dimension', () => {
-      setupStores([]);
-      const layout = useLayoutStore.getState().layout;
-      useLayoutStore.setState({
-        layout: { ...layout, drawer: { ...layout.drawer, fractionalEdgeX: 'start' } },
+    it('reads the position, not the drawer edge, in a whole-number drawer (#3070)', () => {
+      // No half column exists on X here, so the drawer's 'start' setting is
+      // meaningless — a bin at x=0 carries its half cell at the end.
+      withPlacedBin(0, 10);
+      const { result } = renderHook(() => useBinLinking());
+
+      act(() => {
+        result.current.navigateToCreateDesign(binId('bin-1'), 'Half', 1.5, 3, 4);
       });
 
+      expect(pushStateSpy.mock.calls[0][2]).toContain('fractionalEdgeX=end');
+    });
+
+    it('omits the edge for an integer dimension', () => {
+      withPlacedBin(0, 10.5);
       const { result } = renderHook(() => useBinLinking());
 
       act(() => {
@@ -783,11 +804,26 @@ describe('useBinLinking', () => {
   });
 
   describe('matchDesignEdgesToDrawer', () => {
+    /**
+     * A 10.5-wide drawer with its half column on the left (cells start at 0.5)
+     * and `design-1` placed at x=0, so the bin's half cell lands at 'start'.
+     * The design has to be PLACED — the edge follows the bin's position, not
+     * the drawer's own fractional slot (#3070).
+     */
     function withDrawerEdge() {
-      const stores = setupStores([]);
+      const stores = setupStores([
+        makeBin({
+          id: binId('bin-1'),
+          width: gridUnits(1.5),
+          linkedDesignId: designId('design-1'),
+        }),
+      ]);
       const layout = useLayoutStore.getState().layout;
       useLayoutStore.setState({
-        layout: { ...layout, drawer: { ...layout.drawer, fractionalEdgeX: 'start' } },
+        layout: {
+          ...layout,
+          drawer: { ...layout.drawer, width: gridUnits(10.5), fractionalEdgeX: 'start' },
+        },
       });
       return stores;
     }
@@ -816,6 +852,33 @@ describe('useBinLinking', () => {
         expect.objectContaining({ fractionalEdgeX: 'start', fractionalEdgeManualX: false })
       );
       expect(mockAddToast).toHaveBeenCalledWith(expect.objectContaining({ type: 'success' }));
+    });
+
+    it('does not reverse a correct foot in a whole-number drawer (#3070)', async () => {
+      withDrawerEdge();
+      const layout = useLayoutStore.getState().layout;
+      // Whole-number width: no half column, so the drawer's 'start' setting
+      // says nothing. The bin at x=0 carries its half cell at the end, which is
+      // what the design already has — matching must leave it alone.
+      useLayoutStore.setState({
+        layout: { ...layout, drawer: { ...layout.drawer, width: gridUnits(10) } },
+      });
+      vi.mocked(DesignerStorage.loadDesign).mockResolvedValue(
+        ok({ params: { width: 1.5, depth: 2, height: 3, fractionalEdgeX: 'end' } } as never)
+      );
+      vi.mocked(DesignerStorage.updateDesignParams).mockResolvedValue(
+        ok({ id: 'design-1', name: 'Design', updatedAt: '2026-01-01T00:00:00.000Z' } as never)
+      );
+
+      const { result } = renderHook(() => useBinLinking());
+      await act(async () => {
+        await result.current.matchDesignEdgesToDrawer(designId('design-1'));
+      });
+
+      expect(DesignerStorage.updateDesignParams).toHaveBeenCalledWith(
+        'design-1',
+        expect.objectContaining({ fractionalEdgeX: 'end' })
+      );
     });
 
     it('shows an error toast when the design fails to load', async () => {

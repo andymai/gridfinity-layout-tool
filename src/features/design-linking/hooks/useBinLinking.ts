@@ -19,7 +19,7 @@ import {
   upsertRegistryEntry,
   registryEdgeFields,
 } from '@/features/bin-designer';
-import { computeMatchedEdges } from '@/shared/utils/fractionalEdge';
+import { computeMatchedEdges, edgeForPosition } from '@/shared/utils/fractionalEdge';
 import { isFractional } from '@/core/constants';
 import { useLinkingStore } from '../store';
 import {
@@ -308,20 +308,30 @@ export function useBinLinking(): UseBinLinkingReturn {
         height: String(height),
       });
 
-      // Carry the drawer's half-unit edge so the new design infers the correct
-      // orientation for a fractional bin instead of defaulting to 'end' (#2518).
-      const { fractionalEdgeX, fractionalEdgeY } = layout.drawer;
-      if (isFractional(width) && fractionalEdgeX) {
-        params.set('fractionalEdgeX', fractionalEdgeX);
-      }
-      if (isFractional(depth) && fractionalEdgeY) {
-        params.set('fractionalEdgeY', fractionalEdgeY);
+      // Carry the edge the bin's half cell actually lands on, so the new design
+      // opens oriented the way the layout draws it (#2518, #3070). Derived from
+      // the bin's position rather than the drawer's own fractional slot — those
+      // differ whenever the drawer's size on that axis is a whole number.
+      const bin = layout.bins.find((b) => b.id === binId);
+      if (bin) {
+        if (isFractional(width)) {
+          params.set(
+            'fractionalEdgeX',
+            edgeForPosition(bin.x, layout.drawer.width, layout.drawer.fractionalEdgeX)
+          );
+        }
+        if (isFractional(depth)) {
+          params.set(
+            'fractionalEdgeY',
+            edgeForPosition(bin.y, layout.drawer.depth, layout.drawer.fractionalEdgeY)
+          );
+        }
       }
 
       window.history.pushState(null, '', `/designer?${params.toString()}`);
       window.dispatchEvent(new PopStateEvent('popstate'));
     },
-    [hideCreateDesignDialog, layout.drawer]
+    [hideCreateDesignDialog, layout.drawer, layout.bins]
   );
 
   // Realign a linked design's fractional edge to the active layout's drawer
@@ -337,8 +347,16 @@ export function useBinLinking(): UseBinLinkingReturn {
         return;
       }
 
+      // The correct edge depends on where the bin sits, so a design that isn't
+      // placed anywhere has nothing to match against (#3070).
+      const placed = layout.bins.find((b) => b.linkedDesignId === designId);
+      if (!placed) return;
+
       const params = designResult.value.params;
-      const newParams = { ...params, ...computeMatchedEdges(params, layout.drawer) };
+      const newParams = {
+        ...params,
+        ...computeMatchedEdges(params, layout.drawer, { x: placed.x, y: placed.y }),
+      };
 
       const updateResult = await updateDesignParams(designId, newParams);
       if (isErr(updateResult)) {
@@ -366,7 +384,7 @@ export function useBinLinking(): UseBinLinkingReturn {
         duration: 2000,
       });
     },
-    [layout.drawer, addToast, t]
+    [layout.drawer, layout.bins, addToast, t]
   );
 
   // Delete a design and unlink the bin

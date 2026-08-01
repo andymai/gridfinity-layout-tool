@@ -1,49 +1,103 @@
 import { describe, it, expect } from 'vitest';
-import { hasFractionalEdgeMismatch, computeMatchedEdges } from './fractionalEdge';
+import { hasFractionalEdgeMismatch, computeMatchedEdges, edgeForPosition } from './fractionalEdge';
+
+/** A 5.5-wide drawer with its half column on the right (the default). */
+const FRAC_END = { width: 5.5, depth: 4, fractionalEdgeX: 'end' as const };
+/** The same drawer with its half column on the left, so cells start at 0.5. */
+const FRAC_START = { width: 5.5, depth: 4, fractionalEdgeX: 'start' as const };
+/** A whole-number drawer — no fractional column exists on either axis. */
+const WHOLE = { width: 5, depth: 4 };
+
+const at = (x: number, y = 0): { x: number; y: number } => ({ x, y });
+
+describe('edgeForPosition', () => {
+  it('puts the half cell last for a bin starting on a cell boundary', () => {
+    expect(edgeForPosition(4, 5.5, 'end')).toBe('end');
+  });
+
+  it('puts the half cell first when the drawer cells start at the half offset', () => {
+    // Cells are [0,0.5] [0.5,1.5] …, so a bin at 0 opens with the half cell.
+    expect(edgeForPosition(0, 5.5, 'start')).toBe('start');
+    expect(edgeForPosition(0.5, 5.5, 'start')).toBe('end');
+  });
+
+  it('reads the position, not the drawer, when the drawer axis is a whole number', () => {
+    // A 1.5-wide bin in a 5-wide drawer is free to sit either way; the layout
+    // grid draws whichever its position implies (#3070).
+    expect(edgeForPosition(0, 5, undefined)).toBe('end');
+    expect(edgeForPosition(0.5, 5, undefined)).toBe('start');
+    expect(edgeForPosition(2, 5, undefined)).toBe('end');
+    expect(edgeForPosition(2.5, 5, undefined)).toBe('start');
+  });
+
+  it('treats an unset or invalid drawer edge as the default end edge', () => {
+    expect(edgeForPosition(0, 5.5, undefined)).toBe('end');
+  });
+});
 
 describe('hasFractionalEdgeMismatch', () => {
-  it('flags a fractional-width design whose edge disagrees with the drawer', () => {
+  it('flags a fractional-width design whose foot points the wrong way', () => {
+    // Bin at 0 in a start-fractional drawer opens with its half cell → 'start'.
     expect(
       hasFractionalEdgeMismatch(
         { width: 1.5, depth: 2, fractionalEdgeX: 'end', fractionalEdgeManualX: false },
-        { fractionalEdgeX: 'start' }
+        FRAC_START,
+        at(0)
       )
+    ).toBe(true);
+  });
+
+  it('accepts the bin that fills a right-hand half column', () => {
+    // 5.5-wide drawer, half column on the right: a 1.5-wide bin at x=4 spans
+    // [4,5.5], so its half cell is the last one.
+    expect(
+      hasFractionalEdgeMismatch({ width: 1.5, depth: 2, fractionalEdgeX: 'end' }, FRAC_END, at(4))
+    ).toBe(false);
+    expect(
+      hasFractionalEdgeMismatch({ width: 1.5, depth: 2, fractionalEdgeX: 'start' }, FRAC_END, at(4))
+    ).toBe(true);
+  });
+
+  it('does not flag when the design agrees with the placement', () => {
+    expect(
+      hasFractionalEdgeMismatch(
+        { width: 1.5, depth: 2, fractionalEdgeX: 'start' },
+        FRAC_START,
+        at(0)
+      )
+    ).toBe(false);
+  });
+
+  it('does not flag a correct foot in a whole-number drawer (#3070)', () => {
+    // The reported bug: no fractional column exists on X, the unset drawer edge
+    // normalized to 'end', and a correct 'start' foot was flagged and reversed.
+    expect(
+      hasFractionalEdgeMismatch({ width: 1.5, depth: 2, fractionalEdgeX: 'start' }, WHOLE, at(0.5))
+    ).toBe(false);
+    expect(
+      hasFractionalEdgeMismatch({ width: 1.5, depth: 2, fractionalEdgeX: 'end' }, WHOLE, at(0))
+    ).toBe(false);
+  });
+
+  it('still flags a genuinely reversed foot in a whole-number drawer', () => {
+    expect(
+      hasFractionalEdgeMismatch({ width: 1.5, depth: 2, fractionalEdgeX: 'start' }, WHOLE, at(0))
     ).toBe(true);
   });
 
   it('flags a fractional-depth mismatch independently of width', () => {
     expect(
       hasFractionalEdgeMismatch(
-        { width: 2, depth: 2.5, fractionalEdgeY: 'end' },
-        { fractionalEdgeY: 'start' }
+        { width: 2, depth: 2.5, fractionalEdgeY: 'start' },
+        { width: 5, depth: 4 },
+        at(0, 0)
       )
     ).toBe(true);
   });
 
-  it('does not flag when the edges agree', () => {
-    expect(
-      hasFractionalEdgeMismatch(
-        { width: 1.5, depth: 2, fractionalEdgeX: 'start' },
-        { fractionalEdgeX: 'start' }
-      )
-    ).toBe(false);
-  });
-
-  it('treats an unset drawer edge as the default end edge', () => {
-    expect(hasFractionalEdgeMismatch({ width: 1.5, depth: 2, fractionalEdgeX: 'end' }, {})).toBe(
-      false
-    );
-    expect(hasFractionalEdgeMismatch({ width: 1.5, depth: 2, fractionalEdgeX: 'start' }, {})).toBe(
-      true
-    );
-  });
-
   it('never flags an integer dimension', () => {
     expect(
-      hasFractionalEdgeMismatch(
-        { width: 2, depth: 2, fractionalEdgeX: 'end' },
-        { fractionalEdgeX: 'start' }
-      )
+      hasFractionalEdgeMismatch({ width: 2, depth: 2, fractionalEdgeX: 'end' }, FRAC_START, at(0))
     ).toBe(false);
   });
 
@@ -51,7 +105,8 @@ describe('hasFractionalEdgeMismatch', () => {
     expect(
       hasFractionalEdgeMismatch(
         { width: 1.5, depth: 2, fractionalEdgeX: 'end', fractionalEdgeManualX: true },
-        { fractionalEdgeX: 'start' }
+        FRAC_START,
+        at(0)
       )
     ).toBe(false);
   });
@@ -64,27 +119,27 @@ describe('hasFractionalEdgeMismatch', () => {
           depth: 1.5,
           fractionalEdgeX: 'end',
           fractionalEdgeManualX: true,
-          fractionalEdgeY: 'end',
+          fractionalEdgeY: 'start',
           fractionalEdgeManualY: false,
         },
-        { fractionalEdgeX: 'start', fractionalEdgeY: 'start' }
+        { width: 5.5, depth: 4, fractionalEdgeX: 'start' },
+        at(0, 0)
       )
     ).toBe(true);
   });
 
   it('does not flag when the design edge is unknown (legacy registry entry)', () => {
-    expect(hasFractionalEdgeMismatch({ width: 1.5, depth: 2 }, { fractionalEdgeX: 'start' })).toBe(
-      false
-    );
+    expect(hasFractionalEdgeMismatch({ width: 1.5, depth: 2 }, FRAC_START, at(0))).toBe(false);
   });
 });
 
 describe('computeMatchedEdges', () => {
-  it('aligns only the fractional axes to the drawer and clears that axis manual flag', () => {
+  it('aligns only the fractional axes to the placement and clears that manual flag', () => {
     expect(
       computeMatchedEdges(
         { width: 1.5, depth: 2, fractionalEdgeX: 'end', fractionalEdgeManualX: true },
-        { fractionalEdgeX: 'start', fractionalEdgeY: 'start' }
+        FRAC_START,
+        at(0)
       )
     ).toEqual({ fractionalEdgeX: 'start', fractionalEdgeManualX: false });
   });
@@ -93,7 +148,8 @@ describe('computeMatchedEdges', () => {
     expect(
       computeMatchedEdges(
         { width: 1.5, depth: 2.5 },
-        { fractionalEdgeX: 'start', fractionalEdgeY: 'end' }
+        { width: 5.5, depth: 4.5, fractionalEdgeX: 'start', fractionalEdgeY: 'end' },
+        at(0, 2)
       )
     ).toEqual({
       fractionalEdgeX: 'start',
@@ -103,8 +159,15 @@ describe('computeMatchedEdges', () => {
     });
   });
 
+  it('leaves a correctly placed foot alone instead of reversing it (#3070)', () => {
+    expect(computeMatchedEdges({ width: 1.5, depth: 2 }, WHOLE, at(0.5))).toEqual({
+      fractionalEdgeX: 'start',
+      fractionalEdgeManualX: false,
+    });
+  });
+
   it('defaults an unset drawer edge to end', () => {
-    expect(computeMatchedEdges({ width: 1.5, depth: 2 }, {})).toEqual({
+    expect(computeMatchedEdges({ width: 1.5, depth: 2 }, { width: 5.5, depth: 4 }, at(4))).toEqual({
       fractionalEdgeX: 'end',
       fractionalEdgeManualX: false,
     });
