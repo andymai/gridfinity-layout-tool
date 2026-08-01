@@ -40,6 +40,7 @@ function makeCard(overrides: Partial<CommunityCardRecord> = {}): CommunityCardRe
   return {
     id: DESIGN_ID,
     name: 'Screwdriver tray',
+    parentId: '',
     authorPublicId: 'author-pub-id',
     authorName: 'Jane',
     category: 'tools',

@@ -278,6 +278,7 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string) {
       gridUnitMm: updated.metrics.gridUnitMm,
       thumbnailUrl: thumbnailUrls.length > 0 ? thumbnailUrls[0] : '',
       isRemix: updated.lineage !== null,
+      parentId: updated.lineage?.parentId ?? '',
       featured: updated.featured,
       createdAt: updated.createdAt,
       updatedAt: updated.updatedAt,
@@ -378,7 +379,10 @@ async function handleDelete(req: VercelRequest, res: VercelResponse, id: string)
     }
 
     const authorPublicId = record?.authorPublicId ?? cardFields?.authorPublicId ?? '';
-    const parentId = record?.lineage?.parentId;
+    const cardParentId = cardFields?.parentId;
+    const parentId =
+      record?.lineage?.parentId ??
+      (cardParentId !== undefined && cardParentId !== '' ? cardParentId : undefined);
 
     // Blobs before Redis, assets before the record JSON: any failure leaves
     // enough state (record blob, then card hash) for a retry to find and

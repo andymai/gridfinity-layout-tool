@@ -636,5 +636,20 @@ describe('community/[id]', () => {
       expect(sremCalls).toContainEqual([communityAuthorKey('author-public-id'), VALID_ID]);
       expect(sremCalls).toContainEqual([communityPublishedKey(USER_ID), VALID_ID]);
     });
+
+    it('removes the child from its parent children set on a card-hash-only retry', async () => {
+      mocks.readCommunityDesignBlob.mockResolvedValue(null);
+      redis.hgetall.mockResolvedValue({
+        id: VALID_ID,
+        authorPublicId: 'author-public-id',
+        parentId: 'parentabc123',
+      });
+      const res = await handle('DELETE');
+      expect(res._status).toBe(200);
+      expect(pipeline.srem.mock.calls).toContainEqual([
+        communityChildrenKey('parentabc123'),
+        VALID_ID,
+      ]);
+    });
   });
 });

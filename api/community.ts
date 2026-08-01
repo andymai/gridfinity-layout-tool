@@ -153,6 +153,7 @@ function cardFromRecord(record: CommunityDesignRecord): CommunityCardMetadata {
     gridUnitMm: record.metrics.gridUnitMm,
     thumbnailUrl: record.thumbnails[0] ?? '',
     isRemix: record.lineage !== null,
+    parentId: record.lineage?.parentId ?? '',
     featured: record.featured,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,

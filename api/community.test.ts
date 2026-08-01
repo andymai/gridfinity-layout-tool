@@ -264,6 +264,7 @@ async function seedCard(
 ): Promise<void> {
   const card: CommunityCardMetadata = {
     name: 'Seeded Design',
+    parentId: '',
     authorPublicId: 'a'.repeat(32),
     authorName: 'Seeder',
     category: 'tools',

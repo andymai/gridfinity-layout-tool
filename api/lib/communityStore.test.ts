@@ -87,6 +87,7 @@ const DESIGN: CommunityDesignRecord = {
 const CARD: CommunityCardMetadata = {
   id: 'abc123def456',
   name: 'Socket Organizer',
+  parentId: '',
   authorPublicId: 'a'.repeat(32),
   authorName: 'Andy',
   category: 'tools',

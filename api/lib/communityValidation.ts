@@ -207,7 +207,10 @@ function checkThumbnail(value: unknown, index: number): AssetCheck {
     }
     base64 = base64.slice(WEBP_DATA_URL_PREFIX.length);
   }
-  if (base64.length === 0 || base64.length > maxEncodedLength(MAX_COMMUNITY_THUMBNAIL_BYTES)) {
+  if (base64.length === 0) {
+    return { ok: false, message: `thumbnails[${index}] is empty` };
+  }
+  if (base64.length > maxEncodedLength(MAX_COMMUNITY_THUMBNAIL_BYTES)) {
     return {
       ok: false,
       message: `thumbnails[${index}] exceeds ${MAX_COMMUNITY_THUMBNAIL_BYTES} decoded bytes`,

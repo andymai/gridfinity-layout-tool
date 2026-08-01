@@ -100,6 +100,7 @@ const RECORD: CommunityDesignRecord = {
 const CARD: CommunityCardRecord = {
   id: 'abc123DEF456',
   name: 'Screwdriver tray',
+  parentId: 'parentabc123',
   authorPublicId: 'author-pub-id',
   authorName: 'Jane',
   category: 'tools',

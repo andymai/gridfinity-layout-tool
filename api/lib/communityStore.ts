@@ -158,6 +158,10 @@ export interface CommunityCardMetadata {
   gridUnitMm: number;
   thumbnailUrl: string;
   isRemix: boolean;
+  /** Lineage parent id, or '' when not a remix. Duplicated from the blob
+   *  record so a retried DELETE can clean the parent's children set after
+   *  the blob is already gone. */
+  parentId: string;
   featured: boolean;
   createdAt: number;
   updatedAt: number;
@@ -184,6 +188,7 @@ export async function writeCommunityCard(redis: Redis, card: CommunityCardMetada
     gridUnitMm: String(card.gridUnitMm),
     thumbnailUrl: card.thumbnailUrl,
     isRemix: card.isRemix ? '1' : '0',
+    parentId: card.parentId,
     featured: card.featured ? '1' : '0',
     createdAt: String(card.createdAt),
     updatedAt: String(card.updatedAt),
@@ -215,6 +220,7 @@ function parseCard(fields: Record<string, string | undefined>): CommunityCardRec
     gridUnitMm: Number(fields.gridUnitMm ?? 0),
     thumbnailUrl: fields.thumbnailUrl ?? '',
     isRemix: fields.isRemix === '1',
+    parentId: fields.parentId ?? '',
     featured: fields.featured === '1',
     createdAt: Number(fields.createdAt ?? 0),
     updatedAt: Number(fields.updatedAt ?? 0),

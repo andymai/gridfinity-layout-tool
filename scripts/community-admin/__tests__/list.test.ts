@@ -27,6 +27,7 @@ function card(id: string, status: CommunityCardRecord['status']): CommunityCardR
   return {
     id,
     name: `Design ${id}`,
+    parentId: '',
     authorPublicId: 'author-pub-id',
     authorName: 'Jane',
     category: 'tools',

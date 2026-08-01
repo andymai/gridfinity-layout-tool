@@ -14,6 +14,8 @@ export function printBanner(): void {
   stream.write(`  Blob token fingerprint: ${tokenFp}\n`);
   // Unlike sync-admin, every mutating command below writes to production
   // immediately (README.md, "Deviation from sync-admin").
-  stream.write('  \x1b[33mDIRECT WRITE: mutations apply immediately, no dry-run\x1b[0m\n');
+  const warning = 'DIRECT WRITE: mutations apply immediately, no dry-run';
+  const color = stream.isTTY === true && process.env.NO_COLOR === undefined;
+  stream.write(color ? `  \x1b[33m${warning}\x1b[0m\n` : `  ${warning}\n`);
   stream.write('────────────────────────────────────────────────\n');
 }
