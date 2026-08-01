@@ -133,12 +133,12 @@ export function useBaseplatePanelDerived(): BaseplatePanelDerived {
   // slicing sockets. Asking the resolver's own predicate rather than repeating
   // its threshold keeps the panel, the trigger and the resolver from drifting.
   /** The plate has a curved or angled perimeter that can slice sockets. */
-  const perimeterShaped = hasEffectivePerimeter(
-    baseplateParams,
-    drawerOutline,
-    gridUnitMm,
-    outlineActive
-  );
+  const perimeterShaped = hasEffectivePerimeter(baseplateParams, drawerOutline, gridUnitMm, {
+    synced,
+    // The format-aware flag, so a STEP export — which clears stackPrint before
+    // buildFullParams — keeps its perimeter and its controls.
+    stacking: stackEnabled,
+  });
 
   return {
     baseplateParams,

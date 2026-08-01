@@ -56,9 +56,14 @@ export function hasEffectivePerimeter(
   >,
   drawerOutline: DrawerOutline | undefined,
   gridUnitMm: number,
-  outlineApplies: boolean
+  opts: { readonly synced: boolean; readonly stacking: boolean }
 ): boolean {
-  if (outlineApplies && drawerOutline !== undefined) return true;
+  // Stacking needs uniform rectangular tiles, so buildFullParams short-circuits
+  // the resolver and drops every perimeter — the drawer shape and the radius
+  // conversion alike. Checking only the drawer-shape half here would leave a
+  // stored radius claiming a perimeter that generation never produces.
+  if (opts.stacking) return false;
+  if (opts.synced && drawerOutline !== undefined) return true;
   const radii = stored.cornerRadii ?? {
     tl: stored.cornerRadius ?? 0,
     tr: stored.cornerRadius ?? 0,

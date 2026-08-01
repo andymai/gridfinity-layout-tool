@@ -94,34 +94,56 @@ describe('buildFullParams', () => {
   // radius-cut plates while the trigger still called them rectangular, so a
   // toggle changed the mesh without regenerating it.
   describe('hasEffectivePerimeter', () => {
+    const on = { synced: true, stacking: false };
+
     it('is false for a plain rectangle', () => {
-      expect(hasEffectivePerimeter(storedBase, undefined, 42, true)).toBe(false);
+      expect(hasEffectivePerimeter(storedBase, undefined, 42, on)).toBe(false);
     });
 
     it('is true for a drawer shape while the outline applies', () => {
       const o = { vertices: [{ x: 0, y: 0 }] };
-      expect(hasEffectivePerimeter(storedBase, o, 42, true)).toBe(true);
-      // Not synced, or stacking: the resolver ignores the shape, so this must too.
-      expect(hasEffectivePerimeter(storedBase, o, 42, false)).toBe(false);
+      expect(hasEffectivePerimeter(storedBase, o, 42, on)).toBe(true);
+      // Not synced: the resolver ignores the shape, so this must too.
+      expect(hasEffectivePerimeter(storedBase, o, 42, { synced: false, stacking: false })).toBe(
+        false
+      );
     });
 
     it('is true for a radius the resolver converts to an outline', () => {
       // Limit is half a grid unit plus the smallest padding (21 + 1 = 22mm).
       expect(
-        hasEffectivePerimeter({ ...storedBase, cornerRadius: mm(40) }, undefined, 42, true)
+        hasEffectivePerimeter({ ...storedBase, cornerRadius: mm(40) }, undefined, 42, on)
       ).toBe(true);
       expect(
-        hasEffectivePerimeter({ ...storedBase, cornerRadius: mm(10) }, undefined, 42, true)
+        hasEffectivePerimeter({ ...storedBase, cornerRadius: mm(10) }, undefined, 42, on)
       ).toBe(false);
     });
 
-    it('agrees with the resolver on the same inputs', () => {
+    // Stacking needs uniform rectangular tiles, so the resolver drops every
+    // perimeter. Checking only the drawer-shape half would leave a stored
+    // radius claiming a perimeter generation never produces.
+    it('is false under stacking, whatever is stored', () => {
+      const stacked = { synced: true, stacking: true };
+      const o = { vertices: [{ x: 0, y: 0 }] };
+      expect(hasEffectivePerimeter(storedBase, o, 42, stacked)).toBe(false);
+      expect(
+        hasEffectivePerimeter({ ...storedBase, cornerRadius: mm(40) }, undefined, 42, stacked)
+      ).toBe(false);
+    });
+
+    it('agrees with the resolver across radii, synced and stacked alike', () => {
       for (const r of [0, 10, 22, 30, 60]) {
-        const stored = { ...storedBase, cornerRadius: mm(r) };
-        const resolved = buildFullParams(stored, 10, 8, 42, 'end', 'end');
-        expect(hasEffectivePerimeter(stored, undefined, 42, true)).toBe(
-          resolved.outline !== undefined
-        );
+        for (const stacking of [false, true]) {
+          const stored = {
+            ...storedBase,
+            cornerRadius: mm(r),
+            ...(stacking ? { stackPrint: { enabled: true, gapMm: mm(0.2) } } : {}),
+          };
+          const resolved = buildFullParams(stored, 10, 8, 42, 'end', 'end');
+          expect(hasEffectivePerimeter(stored, undefined, 42, { synced: true, stacking })).toBe(
+            resolved.outline !== undefined
+          );
+        }
       }
     });
   });

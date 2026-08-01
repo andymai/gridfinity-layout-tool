@@ -172,13 +172,19 @@ describe('baseplate outline geometry', () => {
     const whole = gen(defaults({ outline: CHAMFER, wholeCellsOnly: true }), NO_OP, true);
     assertStructurallyValid(whole, 'chamfer whole-cells');
 
-    // The diagonal runs from plate-local (4u, 2u) to (2u, 4u), crossing the two
-    // cells either side of the corner. In the mesh frame that corner cell spans
-    // roughly [42,84]×[0,42]; trimming leaves a sliced pocket there, whole-cell
-    // fitting leaves solid plate.
-    const slicedRegion = [44, 2, 82, 40] as const;
-    expect(countVerticesIn(trimmed.vertices, ...slicedRegion)).toBeGreaterThan(0);
-    expect(countVerticesIn(whole.vertices, ...slicedRegion)).toBe(0);
+    // The diagonal runs from plate-local (4u, 2u) to (2u, 4u), so in the mesh
+    // frame it runs (84, 0) to (0, 84) and the corner cell at [42,84]×[0,42] is
+    // exactly bisected. Compare how much geometry that cell holds rather than
+    // demanding an empty window: both meshes carry the slab's own cut edge
+    // along the diagonal, so an absolute count would be measuring the cut, and
+    // a window inside the cell would sit where a pocket has no vertices anyway.
+    // A pocket is geometry, so dropping it must cost some.
+    const crossedCell = [43, 1, 83, 41] as const;
+    expect(countVerticesIn(whole.vertices, ...crossedCell)).toBeLessThan(
+      countVerticesIn(trimmed.vertices, ...crossedCell)
+    );
+    // Independent signal that does not depend on where vertices land.
+    expect(whole.triangleCount).toBeLessThan(trimmed.triangleCount);
 
     // Cells fully inside keep their sockets, and the plate keeps its extent —
     // this drops sockets, it does not shrink the plate.
