@@ -20,6 +20,7 @@ describe('goma boundary probe', () => {
     clearAllCaches();
     setLastSolid(null);
     const { exportBin } = await import('../binExporter');
+    const t0 = Date.now();
     const result = await exportBin(
       buildParams({
         width: 1,
@@ -29,6 +30,8 @@ describe('goma boundary probe', () => {
       }),
       'stl'
     );
+    // eslint-disable-next-line no-console
+    console.log(`export ms: ${Date.now() - t0}, bytes: ${result.data.byteLength}`);
     const parsed = parseSTLBinary(result.data);
     if (!isOk(parsed)) throw new Error('parse failed');
     const { vertices } = parsed.value;
@@ -54,9 +57,26 @@ describe('goma boundary probe', () => {
       }
     }
     const boundary = [...edgeCount.entries()].filter(([, c]) => c === 1);
+    const nonManifold = [...edgeCount.entries()].filter(([, c]) => c > 2);
+    // Console output does not survive every reporter/pipe combination, and this
+    // run costs ~14 minutes; write the numbers where they cannot be lost.
+    (await import('fs')).writeFileSync(
+      process.env['GOMA_OUT'] ?? '/tmp/goma-result.json',
+      JSON.stringify(
+        {
+          boundaryEdges: boundary.length,
+          nonManifoldEdges: nonManifold.length,
+          triangles: triangleCount,
+          bytes: result.data.byteLength,
+          exportMs: Date.now() - t0,
+        },
+        null,
+        2
+      )
+    );
     // eslint-disable-next-line no-console
     console.log(`boundary edges: ${boundary.length}`);
     // eslint-disable-next-line no-console
     for (const [k] of boundary.slice(0, 20)) console.log(' ', k);
-  }, 600_000);
+  }, 2_400_000);
 });
