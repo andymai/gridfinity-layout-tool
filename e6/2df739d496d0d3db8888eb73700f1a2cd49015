@@ -1,0 +1,29 @@
+src/shared/generation/splitUtils.ts
+  s_0fc02d8d0f29b4::t_448441547f8e63 9-28
+  s_0fc02d8d0f29b4::t_490f86ae79ccf3 29-31
+src/shell/layoutExport/planLayoutBinExport.ts
+  s_0fc02d8d0f29b4::t_355e5348d87a13 25,361
+src/features/generation/worker/generators/splitBinBuilder.ts
+  s_0fc02d8d0f29b4::t_448441547f8e63 207-208,210-212
+  s_0fc02d8d0f29b4::t_8a28ff3dd9f7df 42
+src/shared/generation/paramsFingerprint.test.ts
+  s_0fc02d8d0f29b4::t_0c7bcf99343dc2 38-46
+src/shared/generation/paramsFingerprint.ts
+  s_0fc02d8d0f29b4::t_eb89e74dd03a59 24-29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "e62df739d496d0d3db8888eb73700f1a2cd49015",
+  "prompts": {},
+  "sessions": {
+    "s_0fc02d8d0f29b4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4aff0d70-e312-459f-84ab-c0dd3cec1347",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
