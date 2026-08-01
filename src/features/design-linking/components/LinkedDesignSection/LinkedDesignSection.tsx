@@ -7,13 +7,14 @@
  * - Stale (design deleted): Warning + Unlink button
  */
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useLinkedDesign, useBinLinking, useQuickExport } from '../../hooks';
 import { useLinkingStore } from '../../store';
 import { ConfirmDialog } from '@/shared/components';
 import { useDesignThumbnail } from '@/features/bin-designer';
 import { Button, IconButton, PlusIcon, AlertTriangleIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { hasFractionalEdgeMismatch } from '@/shared/utils/fractionalEdge';
 import type { Bin } from '@/core/types';
@@ -37,6 +38,7 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
   const { isExporting, exportToSTL } = useQuickExport();
   const showLinkDesignDialog = useLinkingStore((s) => s.showLinkDesignDialog);
   const drawer = useLayoutStore((s) => s.layout.drawer);
+  const bins = useLayoutStore(useShallow((s) => s.layout.bins));
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmUnlink, setConfirmUnlink] = useState(false);
@@ -120,12 +122,23 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
     }
   }, [linkedDesign, bin.id, matchDesignEdgesToDrawer]);
 
-  // A fractional bin whose design's half foot points away from where this bin's
-  // half cell lands is oriented wrong; the registry ref carries the design's
-  // edge so we can flag it here (#2518, #3070).
+  // A fractional bin whose design's half foot points away from where its half
+  // cell lands is oriented wrong; the registry ref carries the design's edge so
+  // we can flag it here (#2518, #3070).
+  //
+  // Every placement of the design, not just this bin: the helper resolves each
+  // axis across all of them and stays quiet when they disagree, so a design
+  // shared between two bins that want opposite edges doesn't offer a fix that
+  // would only move the problem to the sibling.
+  const placements = useMemo(
+    () =>
+      linkedDesign === null
+        ? []
+        : bins.filter((b) => b.linkedDesignId === linkedDesign.id).map((b) => ({ x: b.x, y: b.y })),
+    [bins, linkedDesign]
+  );
   const edgeMismatch =
-    linkedDesign !== null &&
-    hasFractionalEdgeMismatch(linkedDesign, drawer, [{ x: bin.x, y: bin.y }]);
+    linkedDesign !== null && hasFractionalEdgeMismatch(linkedDesign, drawer, placements);
 
   // No link - show Create Design and Link Existing buttons
   if (!hasLink) {

@@ -347,23 +347,26 @@ export function useBinLinking(): UseBinLinkingReturn {
         return;
       }
 
-      // Read the placement AFTER the load, and from the live store rather than
-      // the render-time snapshot: the bin can be dragged while IndexedDB is
-      // being read, and matching it to where it used to sit would leave the
-      // design mismatched the moment the success toast appears.
-      //
-      // The bin the user is acting on, not just any bin on this design — one
-      // design can be placed several times with the half cell landing on
-      // different sides, and picking the first would leave the clicked one wrong.
+      // Read placements AFTER the load, and from the live store rather than the
+      // render-time snapshot: bins can be moved, re-linked or unlinked while
+      // IndexedDB is being read, and matching against where things used to be
+      // would leave the design mismatched the moment the success toast appears.
       const live = useLayoutStore.getState().layout;
-      const placed = live.bins.find((b) => b.id === binId);
-      if (!placed) return;
+      // The originating bin must still be linked to this design — otherwise the
+      // user unlinked or re-pointed it mid-read and we would be editing a
+      // design on the strength of a placement that no longer belongs to it.
+      if (!live.bins.some((b) => b.id === binId && b.linkedDesignId === designId)) return;
+
+      // Every placement, not just the originating bin: `computeMatchedEdges`
+      // resolves each axis across all of them and patches nothing when they
+      // disagree, so a design shared by bins wanting opposite edges is left
+      // alone rather than flipped toward whichever one was clicked.
+      const placements = live.bins
+        .filter((b) => b.linkedDesignId === designId)
+        .map((b) => ({ x: b.x, y: b.y }));
 
       const params = designResult.value.params;
-      const newParams = {
-        ...params,
-        ...computeMatchedEdges(params, live.drawer, [{ x: placed.x, y: placed.y }]),
-      };
+      const newParams = { ...params, ...computeMatchedEdges(params, live.drawer, placements) };
 
       const updateResult = await updateDesignParams(designId, newParams);
       if (isErr(updateResult)) {

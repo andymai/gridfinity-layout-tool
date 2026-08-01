@@ -341,7 +341,11 @@ describe('useCreateFromBin', () => {
 
     await waitFor(() => {
       const { params } = useDesignerStore.getState();
+      // depth/height differ from the seeded state, so these actually prove the
+      // URL dimensions were applied rather than carried over.
       expect(params.width).toBe(2);
+      expect(params.depth).toBe(3);
+      expect(params.height).toBe(4);
       expect(params.overhang).toEqual(DEFAULT_BIN_PARAMS.overhang);
       expect(params.wallThickness).toBe(DEFAULT_BIN_PARAMS.wallThickness);
     });

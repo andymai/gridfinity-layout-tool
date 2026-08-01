@@ -176,13 +176,17 @@ export function useCreateFromBin(): void {
 
     // Set the dimensions (don't use setParams as it pushes to history)
     // We want a clean slate, not an undo state with default params
-    useDesignerStore.setState({
+    useDesignerStore.setState((state) => ({
       params: binParams,
       designName: urlParams.name,
       currentDesignId: null, // Will be set after save
       saveStatus: 'saving',
       history: { past: [], future: [] }, // Clear history for fresh start
-    });
+      // These params are a fresh rectangular bin with no `cellMask`, so a shape
+      // editor left open by the previous design would be editing a mask that no
+      // longer exists. `loadDesign` and history restore normalise the same way.
+      ui: { ...state.ui, shapeEditorOpen: false },
+    }));
 
     // Trigger mesh regeneration
     useDesignerStore.setState((state) => ({

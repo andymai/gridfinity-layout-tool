@@ -89,9 +89,10 @@ describe('useFractionalEdgeMismatch', () => {
     expect(result.current.show).toBe(true);
   });
 
-  it('stays quiet while any placement of the design agrees', () => {
+  it('stays quiet when two placements of the design want opposite edges', () => {
     // One design, two spots. The half cell lands on opposite sides, so no
-    // single edge can satisfy both — nagging about it would be noise.
+    // single edge can satisfy both — the conflict is inherent to sharing one
+    // design, and a one-click fix would only move it to the sibling.
     useLayoutStore.setState({
       layout: makeLayout([linkedBin(0), linkedBin(0.5, 'bin-2')], 'start', 10),
     });

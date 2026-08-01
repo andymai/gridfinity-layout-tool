@@ -857,7 +857,7 @@ describe('useBinLinking', () => {
     it('matches the bin the user clicked, not the first placement of the design', async () => {
       // Two bins on one design, half a unit apart, so their half cells land on
       // opposite sides. Acting from bin-2's inspector has to use bin-2.
-      const stores = setupStores([
+      setupStores([
         makeBin({
           id: binId('bin-1'),
           x: gridUnits(0),
@@ -871,7 +871,6 @@ describe('useBinLinking', () => {
           linkedDesignId: designId('design-1'),
         }),
       ]);
-      expect(stores).toBeDefined();
       const layout = useLayoutStore.getState().layout;
       useLayoutStore.setState({
         layout: { ...layout, drawer: { ...layout.drawer, width: gridUnits(10) } },
@@ -888,12 +887,69 @@ describe('useBinLinking', () => {
         await result.current.matchDesignEdgesToDrawer(designId('design-1'), binId('bin-2'));
       });
 
-      // bin-2 sits at x=0.5, so its half cell opens the span → 'start'.
-      // bin-1 (x=0) would have said 'end'.
+      // bin-1 (x=0) wants 'end', bin-2 (x=0.5) wants 'start' — no consensus,
+      // so the stored edge is written back untouched.
+      expect(DesignerStorage.updateDesignParams).toHaveBeenCalledWith(
+        'design-1',
+        expect.objectContaining({ fractionalEdgeX: 'end' })
+      );
+    });
+
+    it('matches every placement when they all agree', async () => {
+      setupStores([
+        makeBin({
+          id: binId('bin-1'),
+          x: gridUnits(0.5),
+          width: gridUnits(1.5),
+          linkedDesignId: designId('design-1'),
+        }),
+        makeBin({
+          id: binId('bin-2'),
+          x: gridUnits(2.5),
+          width: gridUnits(1.5),
+          linkedDesignId: designId('design-1'),
+        }),
+      ]);
+      const layout = useLayoutStore.getState().layout;
+      useLayoutStore.setState({
+        layout: { ...layout, drawer: { ...layout.drawer, width: gridUnits(10) } },
+      });
+      vi.mocked(DesignerStorage.loadDesign).mockResolvedValue(
+        ok({ params: { width: 1.5, depth: 2, height: 3, fractionalEdgeX: 'end' } } as never)
+      );
+      vi.mocked(DesignerStorage.updateDesignParams).mockResolvedValue(
+        ok({ id: 'design-1', name: 'Design', updatedAt: '2026-01-01T00:00:00.000Z' } as never)
+      );
+
+      const { result } = renderHook(() => useBinLinking());
+      await act(async () => {
+        await result.current.matchDesignEdgesToDrawer(designId('design-1'), binId('bin-1'));
+      });
+
+      // Both sit at half offsets, so both want 'start'.
       expect(DesignerStorage.updateDesignParams).toHaveBeenCalledWith(
         'design-1',
         expect.objectContaining({ fractionalEdgeX: 'start' })
       );
+    });
+
+    it('does nothing when the bin was unlinked while the design was loading', async () => {
+      withDrawerEdge();
+      vi.mocked(DesignerStorage.loadDesign).mockImplementation(async () => {
+        // Simulate the user unlinking mid-read.
+        const l = useLayoutStore.getState().layout;
+        useLayoutStore.setState({
+          layout: { ...l, bins: l.bins.map((b) => ({ ...b, linkedDesignId: undefined })) },
+        });
+        return ok({ params: { width: 1.5, depth: 2, height: 3, fractionalEdgeX: 'end' } } as never);
+      });
+
+      const { result } = renderHook(() => useBinLinking());
+      await act(async () => {
+        await result.current.matchDesignEdgesToDrawer(designId('design-1'), binId('bin-1'));
+      });
+
+      expect(DesignerStorage.updateDesignParams).not.toHaveBeenCalled();
     });
 
     it('does not reverse a correct foot in a whole-number drawer (#3070)', async () => {
