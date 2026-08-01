@@ -280,6 +280,19 @@ describe('CompactNumberInput', () => {
       expect(onChange).not.toHaveBeenCalled();
     });
 
+    // The guard is app-wide on purpose: a hard-max field used to commit the
+    // ceiling for "Infinity" while leaving "abc" alone. Both revert now.
+    it('rejects a non-finite entry on a hard-max field too', () => {
+      const onChange = vi.fn();
+      render(<CompactNumberInput label="R" value={10} onChange={onChange} max={359} />);
+
+      fireEvent.click(screen.getByRole('button'));
+      fireEvent.change(screen.getByRole('textbox'), { target: { value: '1e309' } });
+      fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Enter' });
+
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
     it('reports a valid ARIA range while the value sits past max', () => {
       render(<CompactNumberInput label="W" value={156} onChange={vi.fn()} max={123.1} softMax />);
       const slider = screen.getByRole('slider', { name: 'W' });

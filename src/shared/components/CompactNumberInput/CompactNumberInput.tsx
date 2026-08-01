@@ -114,9 +114,13 @@ export function CompactNumberInput({
     (raw: string) => {
       const parsed = parseFloat(raw);
       // Finite, not merely non-NaN: `parseFloat` maps "Infinity" and any
-      // overflowing exponent to Infinity, which a hard `max` used to absorb.
-      // `softMax` has no ceiling to absorb it, and downstream geometry must
-      // never see a non-finite dimension.
+      // overflowing exponent to Infinity. `softMax` has no ceiling to absorb
+      // that, and downstream geometry must never see a non-finite dimension.
+      //
+      // Deliberately app-wide rather than gated on `softMax`. A hard `max` did
+      // absorb it, but by silently committing the ceiling — so "Infinity" set a
+      // rotation field to 359 while "abc" left it alone. Non-finite input is
+      // unparseable garbage, not a big number, and now reverts like any other.
       if (Number.isFinite(parsed)) onChange(clampTyped(parsed));
       setEditing(false);
     },
