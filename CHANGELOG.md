@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.337.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.337.0...gridfinity-layout-tool-v4.337.1) (2026-08-01)
+
+
+### Bug Fixes
+
+* **bin-designer:** make cutout z-order and hide actually do something ([#3057](https://github.com/andymai/gridfinity-layout-tool/issues/3057)) ([b31a624](https://github.com/andymai/gridfinity-layout-tool/commit/b31a6241225c03e3a30784d3ee3fad232c0acdca))
+
 ## [4.337.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.336.1...gridfinity-layout-tool-v4.337.0) (2026-08-01)
 
 
