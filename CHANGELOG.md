@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.338.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.338.0...gridfinity-layout-tool-v4.338.1) (2026-08-01)
+
+
+### Bug Fixes
+
+* **bin-designer:** keep a typed cutout size instead of truncating it to the bin ([#3062](https://github.com/andymai/gridfinity-layout-tool/issues/3062)) ([ed15276](https://github.com/andymai/gridfinity-layout-tool/commit/ed1527654e370823b7dfcfcee9adc4b2a8da20df))
+
 ## [4.338.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.337.1...gridfinity-layout-tool-v4.338.0) (2026-08-01)
 
 
