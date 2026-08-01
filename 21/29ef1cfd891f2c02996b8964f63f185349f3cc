@@ -1,0 +1,42 @@
+src/features/design-linking/components/LinkedDesignSection/LinkedDesignSection.tsx
+  s_0fc02d8d0f29b4::t_3a3e7437aa344f 128
+src/features/bin-designer/components/DesignerPage/useFractionalEdgeMismatch.ts
+  s_0fc02d8d0f29b4::t_a8d0889dfec5df 33,44,60,62-70
+  s_0fc02d8d0f29b4::t_2fc3bbb1c5f4d3 81-84,86,91
+src/shared/utils/fractionalEdge.test.ts
+  s_0fc02d8d0f29b4::t_d5273bc54705f6 145
+  s_0fc02d8d0f29b4::t_3a3e7437aa344f 11-12
+  s_0fc02d8d0f29b4::t_5ba5249cfb9069 135-144,146-155,157-166,168-175,177-186,188-202
+  s_0fc02d8d0f29b4::t_1479c0d55a49e3 156
+  s_0fc02d8d0f29b4::t_10e4457b70ebbd 167
+  s_0fc02d8d0f29b4::t_f0ebbe82b4d342 176
+  s_0fc02d8d0f29b4::t_cf204603accb3f 187
+src/i18n/locales/es.json
+  s_0fc02d8d0f29b4::t_2026bed4725b9b 744,1618,1650
+src/shared/utils/fractionalEdge.ts
+  s_0fc02d8d0f29b4::t_720c3fdc691538 147-149,163-164
+  s_0fc02d8d0f29b4::t_2e55b131eb0774 2,12,14-19,34-40,57-64,102-121,129,144-146,154-162,165-178,180-181
+  s_0fc02d8d0f29b4::t_d34db95cee1461 122-124,131,137,140
+  s_0fc02d8d0f29b4::t_8cd26e1d30aa7d 132-136,138-139
+src/i18n/locales/nl.json
+  s_0fc02d8d0f29b4::t_2026bed4725b9b 744,1618,1650
+src/features/design-linking/hooks/useBinLinking.ts
+  s_0fc02d8d0f29b4::t_570f2875a69d7e 350-361,365
+  s_0fc02d8d0f29b4::t_94a92c80a642fd 394
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "2129ef1cfd891f2c02996b8964f63f185349f3cc",
+  "prompts": {},
+  "sessions": {
+    "s_0fc02d8d0f29b4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4aff0d70-e312-459f-84ab-c0dd3cec1347",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
