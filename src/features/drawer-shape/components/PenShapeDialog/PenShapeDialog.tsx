@@ -20,6 +20,7 @@ import { Button, Dialog, SegmentedControl, Stepper } from '@/design-system';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
 import { usePenSketch } from './usePenSketch';
+import { usePenView, VIEW_PAD_MM } from './usePenView';
 import { useLayoutStore, useToastStore } from '@/core/store';
 import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
@@ -51,12 +52,15 @@ interface PenShapeDialogProps {
   onClose: () => void;
 }
 
-/** Padding around the drawer inside the viewBox, so edge handles stay grabbable. */
-const VIEW_PAD_MM = 14;
-
 type Drag =
-  | { readonly kind: 'vertex'; readonly index: number }
-  | { readonly kind: 'bulge'; readonly index: number };
+  | {
+      readonly kind: 'vertex';
+      readonly index: number;
+      /** Where the corner sat at pointer-down, the anchor Shift constrains to. */
+      readonly from: { readonly x: number; readonly y: number };
+    }
+  | { readonly kind: 'bulge'; readonly index: number }
+  | { readonly kind: 'pan'; readonly last: { x: number; y: number } };
 
 export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
   const t = useTranslation();
@@ -68,8 +72,7 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
 
   const widthMm = layout.drawer.width * layout.gridUnitMm;
   const depthMm = layout.drawer.depth * gridUnitMmY;
-  const handleR = handleRadiusMm(widthMm, depthMm);
-  const hitR = hitRadiusMm(widthMm, depthMm);
+  const baseHandleR = handleRadiusMm(widthMm, depthMm);
 
   // Reseed only when the dialog opens: an existing outline becomes the starting
   // sketch (any authoring surface, so a painted shape can be refined freehand),
@@ -86,6 +89,9 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
   const dragRef = useRef<Drag | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const sketch = usePenSketch(seeded);
+  const view = usePenView(widthMm, depthMm);
+  // Divided by the zoom so the grab area matches the drawn handle at any zoom.
+  const hitR = hitRadiusMm(widthMm, depthMm) / view.zoom;
   const { verts, selected, setSelected } = sketch;
   const nudgeBounds = useMemo(
     () => ({ widthMm, depthMm, pitchX: layout.gridUnitMm, pitchY: gridUnitMmY, snap }),
@@ -107,19 +113,15 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
     [outline, widthMm, depthMm, layout.gridUnitMm, gridUnitMmY]
   );
 
-  /** Pointer position in drawer-local mm, undoing the flipped Y of the view. */
+  /** Pointer position in drawer-local mm, undoing the padding and the flipped Y. */
   const toMm = useCallback(
     (e: ReactPointerEvent): { x: number; y: number } | null => {
       const svg = svgRef.current;
       if (svg === null) return null;
-      const rect = svg.getBoundingClientRect();
-      const vw = widthMm + VIEW_PAD_MM * 2;
-      const vh = depthMm + VIEW_PAD_MM * 2;
-      const x = ((e.clientX - rect.left) / rect.width) * vw - VIEW_PAD_MM;
-      const y = depthMm - (((e.clientY - rect.top) / rect.height) * vh - VIEW_PAD_MM);
-      return { x, y };
+      const f = view.toFrame(e.clientX, e.clientY, svg.getBoundingClientRect());
+      return { x: f.x - VIEW_PAD_MM, y: depthMm - (f.y - VIEW_PAD_MM) };
     },
-    [widthMm, depthMm]
+    [depthMm, view]
   );
 
   const snapPoint = useCallback(
@@ -141,7 +143,7 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
       // overlap, and moving a corner is the more common intent.
       const v = hitVertex(verts, p.x, p.y, hitR);
       if (v >= 0) {
-        dragRef.current = { kind: 'vertex', index: v };
+        dragRef.current = { kind: 'vertex', index: v, from: { x: verts[v].x, y: verts[v].y } };
         setSelected(v);
         sketch.beginGesture();
         e.currentTarget.setPointerCapture(e.pointerId);
@@ -153,7 +155,13 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
         setSelected(null);
         sketch.beginGesture();
         e.currentTarget.setPointerCapture(e.pointerId);
+        return;
       }
+      // Nothing under the pointer: drag the view. There is no marquee here, so
+      // empty space is free for the more useful gesture.
+      setSelected(null);
+      dragRef.current = { kind: 'pan', last: { x: e.clientX, y: e.clientY } };
+      e.currentTarget.setPointerCapture(e.pointerId);
     },
     [verts, toMm, hitR, setSelected, sketch]
   );
@@ -162,11 +170,28 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
     (e: ReactPointerEvent<SVGSVGElement>) => {
       const drag = dragRef.current;
       if (drag === null) return;
+      if (drag.kind === 'pan') {
+        const svg = svgRef.current;
+        if (svg === null) return;
+        const rect = svg.getBoundingClientRect();
+        const scale = (widthMm + VIEW_PAD_MM * 2) / view.zoom / rect.width;
+        view.panBy((e.clientX - drag.last.x) * scale, (e.clientY - drag.last.y) * scale);
+        dragRef.current = { kind: 'pan', last: { x: e.clientX, y: e.clientY } };
+        return;
+      }
       const p = toMm(e);
       if (p === null) return;
       if (drag.kind === 'vertex') {
         const s = snapPoint(p);
-        sketch.preview(moveVertex(verts, drag.index, s.x, s.y));
+        // Shift locks to whichever axis has moved further from where the drag
+        // began, so an edge can be dragged without drifting off square.
+        const c =
+          e.shiftKey && Math.abs(s.x - drag.from.x) < Math.abs(s.y - drag.from.y)
+            ? { x: drag.from.x, y: s.y }
+            : e.shiftKey
+              ? { x: s.x, y: drag.from.y }
+              : s;
+        sketch.preview(moveVertex(verts, drag.index, c.x, c.y));
       } else {
         // Bulge is a curvature, not a position, so it is never snapped.
         const clamped = clampToDrawer(p.x, p.y, widthMm, depthMm);
@@ -175,12 +200,22 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
         );
       }
     },
-    [toMm, snapPoint, verts, widthMm, depthMm, sketch]
+    [toMm, snapPoint, verts, widthMm, depthMm, sketch, view]
   );
 
   const endDrag = useCallback(() => {
     dragRef.current = null;
   }, []);
+
+  const handleWheel = useCallback(
+    (e: React.WheelEvent<SVGSVGElement>) => {
+      const svg = svgRef.current;
+      if (svg === null) return;
+      e.preventDefault();
+      view.zoomAt(e.deltaY, e.clientX, e.clientY, svg.getBoundingClientRect());
+    },
+    [view]
+  );
 
   /** Double-click a segment to add a corner at its midpoint. */
   const handleDoubleClick = useCallback(
@@ -290,6 +325,9 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
 
   const vw = widthMm + VIEW_PAD_MM * 2;
   const vh = depthMm + VIEW_PAD_MM * 2;
+  // Drawn in mm, so divide by the zoom to keep handles a constant size on
+  // screen — otherwise zooming in inflates them until they cover the shape.
+  const handleR = baseHandleR / view.zoom;
 
   return (
     <Dialog.Root open={open} onClose={handleClose} size="lg">
@@ -301,13 +339,14 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
           <div className="rounded-md border border-stroke-subtle bg-surface-secondary p-2">
             <svg
               ref={svgRef}
-              viewBox={`0 0 ${vw} ${vh}`}
+              viewBox={view.viewBox}
               className="h-auto w-full cursor-crosshair touch-none select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               style={{ aspectRatio: `${vw} / ${vh}` }}
               onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
               onPointerUp={endDrag}
               onPointerCancel={endDrag}
+              onWheel={handleWheel}
               onDoubleClick={handleDoubleClick}
               onKeyDown={handleKeyDown}
               tabIndex={0}
@@ -424,6 +463,11 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
               >
                 {t('drawerShape.penDeletePoint')}
               </Button>
+              {view.moved && (
+                <Button type="button" variant="secondary" size="sm" onClick={view.reset}>
+                  {t('drawerShape.penResetView')}
+                </Button>
+              )}
               <Button
                 type="button"
                 variant="secondary"

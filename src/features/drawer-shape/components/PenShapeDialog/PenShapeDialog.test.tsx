@@ -225,4 +225,76 @@ describe('PenShapeDialog', () => {
     render(<PenShapeDialog open onClose={vi.fn()} />);
     expect(screen.getByText('common.undo')).toBeDisabled();
   });
+
+  describe('view', () => {
+    const canvas = () => screen.getByRole('application');
+    const rect = () => ({ left: 0, top: 0, width: 448, height: 364 }) as DOMRect;
+
+    it('starts at the default framing with no reset offered', () => {
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      expect(canvas()).toHaveAttribute('viewBox', '0 0 448 364');
+      expect(screen.queryByText('drawerShape.penResetView')).not.toBeInTheDocument();
+    });
+
+    it('zooms toward the pointer on scroll', () => {
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      const svg = canvas();
+      svg.getBoundingClientRect = rect;
+
+      fireEvent.wheel(svg, { deltaY: -100, clientX: 224, clientY: 182 });
+
+      const vb = svg.getAttribute('viewBox')?.split(' ').map(Number) ?? [];
+      // Narrower window means zoomed in, and it stays centred on the anchor.
+      expect(vb[2]).toBeLessThan(448);
+      expect(vb[0]).toBeGreaterThan(0);
+      expect(screen.getByText('drawerShape.penResetView')).toBeInTheDocument();
+    });
+
+    it('restores the default framing from the reset control', () => {
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      const svg = canvas();
+      svg.getBoundingClientRect = rect;
+      fireEvent.wheel(svg, { deltaY: -100, clientX: 224, clientY: 182 });
+
+      fireEvent.click(screen.getByText('drawerShape.penResetView'));
+
+      expect(svg).toHaveAttribute('viewBox', '0 0 448 364');
+    });
+
+    it('pans when the background is dragged', () => {
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      const svg = canvas();
+      svg.getBoundingClientRect = rect;
+      // Pan only has room once zoomed in; at 1x the window fills the frame.
+      fireEvent.wheel(svg, { deltaY: -100, clientX: 224, clientY: 182 });
+      const before = svg.getAttribute('viewBox');
+
+      // Press well away from any handle, so this is a background drag.
+      fireEvent.pointerDown(svg, { clientX: 224, clientY: 182 });
+      fireEvent.pointerMove(svg, { clientX: 180, clientY: 150 });
+      fireEvent.pointerUp(svg);
+
+      expect(svg.getAttribute('viewBox')).not.toBe(before);
+    });
+  });
+
+  // Shift locks the drag to one axis, so an edge can be moved without drifting
+  // off square — the constraint every vector editor offers.
+  it('constrains a corner drag to one axis with Shift', () => {
+    render(<PenShapeDialog open onClose={vi.fn()} />);
+    const svg = screen.getByRole('application');
+    svg.getBoundingClientRect = () => ({ left: 0, top: 0, width: 448, height: 364 }) as DOMRect;
+
+    // Grab the front-left corner, then drag diagonally with Shift held.
+    fireEvent.pointerDown(svg, { clientX: 14, clientY: 350 });
+    fireEvent.pointerMove(svg, { clientX: 120, clientY: 300, shiftKey: true });
+    fireEvent.pointerUp(svg);
+    fireEvent.click(screen.getByText('drawerShape.editor.apply'));
+
+    const v = setDrawerOutline.mock.calls[0][0]?.vertices[0];
+    expect(v).toBeDefined();
+    // X moved further than Y, so Y is pinned back to where the drag started.
+    expect(v?.y).toBe(0);
+    expect(v?.x).toBeGreaterThan(0);
+  });
 });
