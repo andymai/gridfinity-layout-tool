@@ -7,7 +7,7 @@ schema: Article
 
 # Privacy Policy
 
-**Last updated:** May 2026
+**Last updated:** August 2026
 
 Gridfinity Layout Tool is a free, open-source web application maintained by Andy Aragon. This policy explains what data we collect and how we use it.
 
@@ -17,6 +17,7 @@ Gridfinity Layout Tool is a free, open-source web application maintained by Andy
 - Layouts you create are stored **locally in your browser** unless you choose to share them or sign in
 - When you share a layout, it's stored on our servers with a shareable link
 - **Sign-in is optional.** If you sign in to sync across devices, we collect your name and email from Google or GitHub
+- **Publishing is optional.** If you publish a bin design to the community showcase, the design and the public display name you choose become public under a CC BY 4.0 license
 - We don't sell your data or use it for advertising
 
 ## Data We Collect
@@ -54,7 +55,7 @@ When you use the collaboration feature, your presence data (cursor position and 
 
 ### Sign-in and Multi-Device Sync (Optional)
 
-The app is fully usable without an account. If you choose to sign in — currently behind the **Cloud Sync** opt-in in Labs settings — we use Google or GitHub as the identity provider and collect:
+The app is fully usable without an account. If you choose to sign in (for cloud sync or to publish to the community showcase), we use Google or GitHub as the identity provider and collect:
 
 - A **stable account identifier** issued by the provider (so we can recognize you on return visits without storing a password)
 - Your **email address** (must be verified by the provider)
@@ -69,12 +70,13 @@ We use this information solely to:
 
 - Identify your account so we can return your synced layouts and bin designs to you on any device
 - Display your name in the in-app account UI
+- Associate designs you publish, likes you give, and reports you submit with your account
 
 We do not use your email for marketing and do not share your account information with third parties.
 
 #### Synced layouts and designs
 
-When you're signed in, layouts and bin designs you create are uploaded to our [Vercel Blob](https://vercel.com/docs/storage/vercel-blob) storage under per-account paths that aren't listed publicly. Reads and writes go through our authenticated server endpoints, which check your session cookie before returning data — clients don't access blob URLs directly. Per-account limits currently apply: up to 100 layouts and 100 bin designs, with each layout up to 500 KB, each design up to 100 KB, and 10 MB total per kind.
+When you're signed in, layouts and bin designs you create are uploaded to our [Vercel Blob](https://vercel.com/docs/storage/vercel-blob) storage under per-account paths that aren't listed publicly. Reads and writes go through our authenticated server endpoints, which check your session cookie before returning data. Clients don't access blob URLs directly. Per-account limits currently apply: up to 100 layouts and 100 bin designs, with each layout up to 500 KB, each design up to 100 KB, and 10 MB total per kind.
 
 #### Authentication cookies
 
@@ -91,9 +93,29 @@ You can delete your account at any time from **Settings > Account > Delete accou
 
 1. Signs you out on every device
 2. Deletes every synced layout and bin design from our servers
-3. Deletes your account profile from our servers
+3. Removes your published designs from the community showcase
+4. Removes your likes from published designs
+5. Deletes reports you've submitted
+6. Deletes your account profile from our servers
 
-Local data in your browser is unaffected — your locally-stored layouts remain on your device.
+Local data in your browser is unaffected: your locally-stored layouts remain on your device.
+
+### Published Designs (Optional)
+
+If you sign in and publish a bin design to the community showcase, the following becomes public:
+
+- The design itself (its editable configuration)
+- The name you give it and any description you add
+- Preview images and a 3D preview model
+- The public display name you choose when publishing
+
+Published designs are visible to anyone, can be indexed by search engines, and can be downloaded and remixed by others under the CC BY 4.0 license described in our [Terms of Service](/terms).
+
+You can unpublish a design at any time from the app, which removes it from the showcase. Copies and remixes others already made are not recalled.
+
+#### Reporting a design
+
+Signed-in users can report a published design, whether or not they have published anything themselves. If you report a design, we record the report (its reason and any note you add) with your account so we can review the design and prevent duplicate reports.
 
 ## Data We Don't Collect
 
@@ -101,17 +123,17 @@ Local data in your browser is unaffected — your locally-stored layouts remain 
 - Precise location
 - Contacts, calendar, files, or anything outside the OAuth scopes listed above
 - Cookies for advertising or tracking across sites
-- Personal information (name, email) **unless you sign in for cloud sync**
+- Personal information (name, email) **unless you sign in for cloud sync or publish to the community showcase**
 
 ## Third-Party Services
 
-| Service    | Purpose                                | Privacy Policy                                                                                                                                                         |
-| ---------- | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| PostHog    | Analytics                              | [posthog.com/privacy](https://posthog.com/privacy)                                                                                                                     |
-| Vercel     | Hosting & storage                      | [vercel.com/legal/privacy-policy](https://vercel.com/legal/privacy-policy)                                                                                             |
-| Liveblocks | Real-time collaboration                | [liveblocks.io/privacy](https://liveblocks.io/privacy)                                                                                                                 |
-| Google     | Sign-in for sync (only if you sign in) | [policies.google.com/privacy](https://policies.google.com/privacy)                                                                                                     |
-| GitHub     | Sign-in for sync (only if you sign in) | [docs.github.com/site-policy/privacy-policies/github-general-privacy-statement](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement) |
+| Service    | Purpose                                               | Privacy Policy                                                                                                                                                         |
+| ---------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PostHog    | Analytics                                             | [posthog.com/privacy](https://posthog.com/privacy)                                                                                                                     |
+| Vercel     | Hosting & storage                                     | [vercel.com/legal/privacy-policy](https://vercel.com/legal/privacy-policy)                                                                                             |
+| Liveblocks | Real-time collaboration                               | [liveblocks.io/privacy](https://liveblocks.io/privacy)                                                                                                                 |
+| Google     | Sign-in for sync and publishing (only if you sign in) | [policies.google.com/privacy](https://policies.google.com/privacy)                                                                                                     |
+| GitHub     | Sign-in for sync and publishing (only if you sign in) | [docs.github.com/site-policy/privacy-policies/github-general-privacy-statement](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement) |
 
 ## Your Rights
 
@@ -120,8 +142,10 @@ You can:
 - **Opt out of analytics** in Settings > Privacy
 - **Use your browser's privacy setting** (Global Privacy Control or Do Not Track) to disable analytics automatically
 - **Delete your shared layouts** using the share modal
+- **Unpublish your published designs** from the community showcase at any time
+- **Export your synced data**, including your published designs, as a downloadable archive while signed in
 - **Sign out** from Settings > Account at any time
-- **Delete your account** (and all synced data) from Settings > Account > Delete account
+- **Delete your account** (including all synced data and your published designs) from Settings > Account > Delete account
 - **Clear all local data** by clearing your browser's site data for this domain
 
 ## Data Retention
@@ -132,6 +156,8 @@ You can:
 - **Account session cookies:** 30 days from sign-in
 - **Account profile (name, email, provider account ID):** 1 year, refreshed on every sign-in. Profiles for accounts that don't sign in for a year are automatically deleted
 - **Synced layouts and designs:** Retained until you delete them, or until you delete your account
+- **Published designs:** Retained in the showcase until you unpublish them, delete your account, or we remove them under our [Terms of Service](/terms)
+- **Design reports:** Retained until you delete your account
 
 ## Children's Privacy
 
