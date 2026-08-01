@@ -63,9 +63,11 @@ describe('BinSizeSection', () => {
       />
     );
     const labels = screen.getAllByRole('button').map((b) => b.textContent);
-    expect(labels.indexOf('binDesigner.cutoutEditor.growBinToFit')).toBeLessThan(
-      labels.indexOf('binDesigner.cutoutEditor.bringBackIn')
-    );
+    const grow = labels.indexOf('binDesigner.cutoutEditor.growBinToFit');
+    // Assert presence first: a missing button indexes to -1, which would pass
+    // the ordering comparison on its own.
+    expect(grow).toBeGreaterThanOrEqual(0);
+    expect(grow).toBeLessThan(labels.indexOf('binDesigner.cutoutEditor.bringBackIn'));
   });
 
   it('explains why instead of offering a grow that cannot clear the warning', () => {

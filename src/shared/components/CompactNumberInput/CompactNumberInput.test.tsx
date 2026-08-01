@@ -267,6 +267,19 @@ describe('CompactNumberInput', () => {
       expect(onChange).toHaveBeenLastCalledWith(156);
     });
 
+    // A hard `max` used to absorb these; softMax has no ceiling to absorb them,
+    // and a non-finite dimension would poison bounds and geometry downstream.
+    it.each(['Infinity', '-Infinity', '1e309'])('rejects %s instead of committing it', (raw) => {
+      const onChange = vi.fn();
+      render(<CompactNumberInput label="W" value={10} onChange={onChange} min={2} softMax />);
+
+      fireEvent.click(screen.getByRole('button'));
+      fireEvent.change(screen.getByRole('textbox'), { target: { value: raw } });
+      fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Enter' });
+
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
     it('reports a valid ARIA range while the value sits past max', () => {
       render(<CompactNumberInput label="W" value={156} onChange={vi.fn()} max={123.1} softMax />);
       const slider = screen.getByRole('slider', { name: 'W' });

@@ -23,8 +23,13 @@ import { translatePathPoints } from './pathGeometry';
 import { getCutoutBounds, cutoutFitsInMask, type MaskCellSize } from './maskFit';
 import type { Bounds } from './geometryCore';
 
-/** Tolerance (mm) — mirrors the interaction clamps so a flush edge isn't flagged. */
-const EPSILON = 0.01;
+/**
+ * Tolerance (mm) — mirrors the interaction clamps so a flush edge isn't flagged.
+ * Exported because `growBinToFit` must size against the same tolerance: if the
+ * two drift, a grow can return a bin that still leaves the warning up.
+ */
+export const OFF_BOARD_EPSILON = 0.01;
+const EPSILON = OFF_BOARD_EPSILON;
 
 function boundsOutsideRect(b: Bounds, binWidth: number, binDepth: number): boolean {
   return (

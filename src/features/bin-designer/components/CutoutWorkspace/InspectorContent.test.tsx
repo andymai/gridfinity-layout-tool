@@ -8,24 +8,36 @@ vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string) => key,
 }));
 
+// Mirrors the real input's commit clamp (CompactNumberInput.tsx `clampTyped`).
+// A pass-through mock would report 156 whether or not `softMax` is wired, so the
+// oversize-W test below would pass against the old truncating behaviour too.
 vi.mock('@/shared/components/CompactNumberInput', () => ({
   CompactNumberInput: ({
     label,
     value,
     indeterminate,
     onChange,
+    min = 0,
+    max = Infinity,
+    softMax = false,
   }: {
     label: string;
     value: number;
     indeterminate?: boolean;
     onChange?: (value: number) => void;
+    min?: number;
+    max?: number;
+    softMax?: boolean;
   }) => (
     <input
       data-testid={`compact-input-${label}`}
       data-label={label}
       data-indeterminate={indeterminate ? 'true' : 'false'}
       value={value}
-      onChange={(e) => onChange?.(Number(e.target.value))}
+      onChange={(e) => {
+        const v = Number(e.target.value);
+        onChange?.(softMax ? Math.max(min, v) : Math.max(min, Math.min(max, v)));
+      }}
     />
   ),
 }));

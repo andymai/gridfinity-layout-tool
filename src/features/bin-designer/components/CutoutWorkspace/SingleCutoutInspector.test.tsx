@@ -47,15 +47,23 @@ describe('SingleCutoutInspector', () => {
     expect(screen.getByText('binDesigner.cutouts.section.label')).toBeInTheDocument();
   });
 
-  // #3061: W/H hold a measurement, so the field must not rewrite it to the board
-  // size. X/Y still clamp, but their ceiling can't go negative once W > board.
-  it('marks W/H as soft-capped and keeps the X/Y ceilings non-negative', () => {
-    renderit(makeCutout({ shape: 'rectangle', width: 156, depth: 156 }));
-    for (const label of ['W', 'H']) {
-      expect(screen.getByRole('slider', { name: label })).not.toHaveAttribute('aria-valuemax', '0');
-    }
-    for (const label of ['X', 'Y']) {
-      expect(screen.getByRole('slider', { name: label })).toHaveAttribute('aria-valuemax', '0');
+  // An oversize cutout (#3061) puts every transform field past its ceiling: W/H
+  // hold a measurement the board can't contain, and X/Y have no valid offset
+  // left at all, so their max collapses to 0 while the stored offset stands.
+  // Every slider must still announce a range that contains its own value.
+  // (That `softMax` is wired is covered by the commit test below, not here —
+  // these values come from the cutout, not from the field.)
+  it('announces a valid slider range for a cutout larger than the board', () => {
+    renderit(makeCutout({ shape: 'rectangle', x: 20, y: 20, width: 156, depth: 156 }));
+    for (const [label, now] of [
+      ['W', '156'],
+      ['H', '156'],
+      ['X', '20'],
+      ['Y', '20'],
+    ] as const) {
+      const slider = screen.getByRole('slider', { name: label });
+      expect(slider).toHaveAttribute('aria-valuenow', now);
+      expect(slider).toHaveAttribute('aria-valuemax', now);
     }
   });
 

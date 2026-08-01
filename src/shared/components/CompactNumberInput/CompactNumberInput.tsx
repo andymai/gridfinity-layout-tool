@@ -75,9 +75,8 @@ export function CompactNumberInput({
     [softMax, min, max]
   );
   /**
-   * True once a `softMax` field holds a typed value past its ceiling. `max` then
-   * describes the recommended range rather than the field's limit, so both the
-   * step clamp and the ARIA range have to follow the value instead.
+   * True once a `softMax` field holds a typed value past its ceiling — `max`
+   * then describes the recommended range rather than the field's limit.
    */
   const overSoftMax = softMax && value > max;
   // Scrub/arrow ceiling. `max` still caps a value that is inside the range, so
@@ -114,7 +113,11 @@ export function CompactNumberInput({
   const commit = useCallback(
     (raw: string) => {
       const parsed = parseFloat(raw);
-      if (!isNaN(parsed)) onChange(clampTyped(parsed));
+      // Finite, not merely non-NaN: `parseFloat` maps "Infinity" and any
+      // overflowing exponent to Infinity, which a hard `max` used to absorb.
+      // `softMax` has no ceiling to absorb it, and downstream geometry must
+      // never see a non-finite dimension.
+      if (Number.isFinite(parsed)) onChange(clampTyped(parsed));
       setEditing(false);
     },
     [onChange, clampTyped]
@@ -195,9 +198,11 @@ export function CompactNumberInput({
         aria-label={label}
         aria-valuenow={value}
         aria-valuemin={min}
-        // Reporting the prop's `max` here while `value` sits above it would
-        // publish valuenow > valuemax, which is an invalid slider state.
-        aria-valuemax={max === Infinity ? undefined : overSoftMax ? value : max}
+        // The announced range always contains the value: publishing valuenow >
+        // valuemax is an invalid slider state. Independent of `softMax` — a hard
+        // ceiling can also sit below the value (an oversize cutout leaves no
+        // valid X offset, so X's max is 0 while it still reads its old offset).
+        aria-valuemax={max === Infinity ? undefined : Math.max(max, value)}
       >
         {label}
       </span>

@@ -18,9 +18,10 @@ import { cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
 import { getCutoutBounds } from './maskFit';
+import { OFF_BOARD_EPSILON } from './offBoardCutouts';
 
-/** Matches the off-board detector's tolerance so a flush edge doesn't grow the bin. */
-const EPSILON = 0.01;
+/** The detector's own tolerance, so a flush edge can't grow the bin. */
+const EPSILON = OFF_BOARD_EPSILON;
 
 /** Grid units (width × depth) a bin must be to hold every cutout. */
 export interface GrowTarget {
