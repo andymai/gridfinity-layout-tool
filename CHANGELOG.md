@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.342.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.341.0...gridfinity-layout-tool-v4.342.0) (2026-08-01)
+
+
+### Features
+
+* **drawer-shape:** import a drawer perimeter from SVG or DXF ([#3085](https://github.com/andymai/gridfinity-layout-tool/issues/3085)) ([9abf72b](https://github.com/andymai/gridfinity-layout-tool/commit/9abf72b1a19746aa67ee36392a637ba79fa7c943))
+
 ## [4.341.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.340.4...gridfinity-layout-tool-v4.341.0) (2026-08-01)
 
 
