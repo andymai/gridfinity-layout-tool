@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.338.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.337.1...gridfinity-layout-tool-v4.338.0) (2026-08-01)
+
+
+### Features
+
+* **bin-designer:** add the cutout shape list ([#3059](https://github.com/andymai/gridfinity-layout-tool/issues/3059)) ([61601c3](https://github.com/andymai/gridfinity-layout-tool/commit/61601c3841100e533c14b56f75f8280458fc29f9))
+
 ## [4.337.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.337.0...gridfinity-layout-tool-v4.337.1) (2026-08-01)
 
 
