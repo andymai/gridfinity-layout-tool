@@ -8,6 +8,7 @@ import { useMutations } from '@/shared/contexts/MutationsContext';
 import { trackDrawerShapeEditorOpened, trackDrawerShapeReset } from '@/shared/analytics/posthog';
 import { ShapeEditorDialog } from '../ShapeEditorDialog/ShapeEditorDialog';
 import { CornerCutsDialog } from '../CornerCutsDialog/CornerCutsDialog';
+import { PenShapeDialog } from '../PenShapeDialog/PenShapeDialog';
 
 interface DrawerShapeSectionProps {
   /** Platform variant, forwarded to the toggle row's sizing. */
@@ -31,6 +32,7 @@ export function DrawerShapeSection({ variant = 'desktop' }: DrawerShapeSectionPr
   );
   const [editorOpen, setEditorOpen] = useState(false);
   const [cornersOpen, setCornersOpen] = useState(false);
+  const [penOpen, setPenOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
 
   const handleToggle = useCallback(() => {
@@ -41,6 +43,11 @@ export function DrawerShapeSection({ variant = 'desktop' }: DrawerShapeSectionPr
       setEditorOpen(true);
     }
   }, [hasOutline]);
+
+  const handleOpenPen = useCallback(() => {
+    trackDrawerShapeEditorOpened('pen');
+    setPenOpen(true);
+  }, []);
 
   const handleOpenCorners = useCallback(() => {
     trackDrawerShapeEditorOpened('corners');
@@ -79,6 +86,15 @@ export function DrawerShapeSection({ variant = 'desktop' }: DrawerShapeSectionPr
         >
           {t('drawerShape.corners.open')}
         </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          type="button"
+          onClick={handleOpenPen}
+          className={actionClass}
+        >
+          {t('drawerShape.penOpen')}
+        </Button>
         {hasOutline && (
           <Button
             variant="ghost"
@@ -93,6 +109,7 @@ export function DrawerShapeSection({ variant = 'desktop' }: DrawerShapeSectionPr
       </div>
       <ShapeEditorDialog open={editorOpen} onClose={() => setEditorOpen(false)} />
       <CornerCutsDialog open={cornersOpen} onClose={() => setCornersOpen(false)} />
+      <PenShapeDialog open={penOpen} onClose={() => setPenOpen(false)} />
       <ConfirmDialog
         isOpen={confirmReset}
         title={t('drawerShape.resetConfirmTitle')}

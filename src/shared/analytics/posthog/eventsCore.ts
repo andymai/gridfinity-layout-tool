@@ -136,7 +136,7 @@ export function trackBinCreated(props: BinCreatedProperties): void {
 }
 
 /** Which drawer-shape authoring surface an event refers to. */
-export type DrawerShapeEditor = 'cells' | 'corners';
+export type DrawerShapeEditor = 'cells' | 'corners' | 'pen';
 
 /** Track a drawer-shape editor being opened. */
 export function trackDrawerShapeEditorOpened(editor: DrawerShapeEditor): void {
