@@ -155,6 +155,8 @@
   "baseplate.maxPrintHeightTooltip": "プリンターの最大Z高さ。積み重ね印刷はこの範囲でできるだけ多くのベースプレートを1スタックに収めます。",
   "baseplate.nozzleSizeTooltip": "プリンターのノズル径。アリ溝キーとスナップクリップがこれに合わせて拡大され、太いノズルでも印刷できます。0.4mmでは形状は変わりません。",
   "baseplate.overTile": "余白をグリッドタイルで埋める",
+  "baseplate.wholeCellsOnly": "完全なセルのみ配置",
+  "baseplate.wholeCellsOnlyHint": "形状が横切るソケットを除外し、切断されたソケットではなく中実の縁でプレートが終わるようにします。",
   "baseplate.overTileFills": "グリッドで埋める辺：{sides}",
   "baseplate.overTileHint": "ソリッドな余白を、辺ごとに切り取ったグリッドタイルに置き換えます。",
   "baseplate.overTileKeptSolid": "小さすぎてソリッドのまま：{sides}",

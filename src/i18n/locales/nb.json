@@ -155,6 +155,8 @@
   "baseplate.maxPrintHeightTooltip": "Skriverens maks Z-høyde. Stabling får plass til så mange grunnplater per stabel som dette tillater.",
   "baseplate.nozzleSizeTooltip": "Dysediameteren til skriveren din. Svalehalenøkler og smekklåser skaleres etter den så de forblir utskrivbare med bredere dyser. Geometrien er uendret ved 0,4 mm.",
   "baseplate.overTile": "Fyll polstring med rutenettfliser",
+  "baseplate.wholeCellsOnly": "Tilpass bare hele celler",
+  "baseplate.wholeCellsOnlyHint": "Utelater alle sokler formen skjærer gjennom, slik at platen ender i en massiv kant i stedet for en oppskåret sokkel.",
   "baseplate.overTileFills": "Rutenett fyller: {sides}",
   "baseplate.overTileHint": "Erstatter den massive polstringskanten kant for kant med tilskårne rutefliser.",
   "baseplate.overTileKeptSolid": "For liten, forblir massiv: {sides}",

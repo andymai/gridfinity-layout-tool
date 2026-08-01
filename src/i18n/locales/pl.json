@@ -155,6 +155,8 @@
   "baseplate.maxPrintHeightTooltip": "Maksymalna wysokość Z Twojej drukarki. Druk w stosie mieści tyle płyt bazowych na stos, na ile to pozwala.",
   "baseplate.nozzleSizeTooltip": "Średnica dyszy Twojej drukarki. Klucze łączników i zatrzaski skalują się do niej, aby pozostawały drukowalne na szerszych dyszach. Przy 0,4 mm geometria pozostaje bez zmian.",
   "baseplate.overTile": "Wypełnij margines kafelkami siatki",
+  "baseplate.wholeCellsOnly": "Dopasuj tylko całe komórki",
+  "baseplate.wholeCellsOnlyHint": "Pomija każde gniazdo przecięte przez kształt, dzięki czemu płyta kończy się litą krawędzią zamiast rozciętego gniazda.",
   "baseplate.overTileFills": "Siatka wypełnia: {sides}",
   "baseplate.overTileHint": "Zastąp lity margines przyciętymi kafelkami siatki, krawędź po krawędzi.",
   "baseplate.overTileKeptSolid": "Za małe, pozostawiono lite: {sides}",

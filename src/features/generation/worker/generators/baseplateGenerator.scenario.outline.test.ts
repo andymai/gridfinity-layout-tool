@@ -163,6 +163,48 @@ describe('baseplate outline geometry', () => {
     expect(countVerticesIn(result.vertices, -84, -84, 0, 0)).toBeGreaterThan(0);
   });
 
+  // #3054: a cell the outline crosses keeps a socket sliced open along the cut,
+  // which holds nothing and leaves the boundary unfinished. Whole-cell fitting
+  // drops those cells so the solid plate carries the edge instead.
+  it('drops sockets the outline crosses when fitting whole cells', { timeout: 240_000 }, () => {
+    const gen = getGenerateBaseplate();
+    const trimmed = gen(defaults({ outline: CHAMFER }), NO_OP, true);
+    const whole = gen(defaults({ outline: CHAMFER, wholeCellsOnly: true }), NO_OP, true);
+    assertStructurallyValid(whole, 'chamfer whole-cells');
+
+    // The diagonal runs from plate-local (4u, 2u) to (2u, 4u), so in the mesh
+    // frame it runs (84, 0) to (0, 84) and the corner cell at [42,84]×[0,42] is
+    // exactly bisected. Compare how much geometry that cell holds rather than
+    // demanding an empty window: both meshes carry the slab's own cut edge
+    // along the diagonal, so an absolute count would be measuring the cut, and
+    // a window inside the cell would sit where a pocket has no vertices anyway.
+    // A pocket is geometry, so dropping it must cost some.
+    const crossedCell = [43, 1, 83, 41] as const;
+    expect(countVerticesIn(whole.vertices, ...crossedCell)).toBeLessThan(
+      countVerticesIn(trimmed.vertices, ...crossedCell)
+    );
+    // Independent signal that does not depend on where vertices land.
+    expect(whole.triangleCount).toBeLessThan(trimmed.triangleCount);
+
+    // Cells fully inside keep their sockets, and the plate keeps its extent —
+    // this drops sockets, it does not shrink the plate.
+    expect(countVerticesIn(whole.vertices, -84, -84, -44, -44)).toBeGreaterThan(0);
+    // Both axes: the chamfer trims the +Y side, so an X-only check would miss
+    // a regression that shrank the plate's depth.
+    const bb = boundingBox(whole.vertices);
+    expect(bb.maxX - bb.minX).toBeCloseTo(4 * U, 0);
+    expect(bb.maxY - bb.minY).toBeCloseTo(4 * U, 0);
+  });
+
+  it('leaves a rectangular plate untouched when fitting whole cells', { timeout: 240_000 }, () => {
+    // No outline means no crossed cell, so the flag must be inert rather than
+    // quietly changing every rectangular plate.
+    const gen = getGenerateBaseplate();
+    const plain = gen(defaults(), NO_OP, true);
+    const flagged = gen(defaults({ wholeCellsOnly: true }), NO_OP, true);
+    expect(flagged.triangleCount).toBe(plain.triangleCount);
+  });
+
   it('follows a curved back edge', { timeout: 240_000 }, () => {
     const gen = getGenerateBaseplate();
     const result = gen(defaults({ outline: CURVED_BACK }), NO_OP, true);

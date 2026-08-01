@@ -155,6 +155,8 @@
   "baseplate.maxPrintHeightTooltip": "La hauteur Z maximale de votre imprimante. L’empilage place autant de plaques par pile que cela permet.",
   "baseplate.nozzleSizeTooltip": "Diamètre de la buse de votre imprimante. Les clés en queue d'aronde et les clips à encliqueter s'y adaptent pour rester imprimables avec des buses plus larges. La géométrie reste inchangée à 0,4 mm.",
   "baseplate.overTile": "Remplir la marge avec des tuiles de grille",
+  "baseplate.wholeCellsOnly": "N’ajuster que des cellules entières",
+  "baseplate.wholeCellsOnlyHint": "Supprime tout logement coupé par la forme, afin que la plaque se termine par un bord plein plutôt qu’un logement tranché.",
   "baseplate.overTileFills": "Grille remplit : {sides}",
   "baseplate.overTileHint": "Remplace la marge pleine par des tuiles de grille rognées, bord par bord.",
   "baseplate.overTileKeptSolid": "Trop petit, reste plein : {sides}",

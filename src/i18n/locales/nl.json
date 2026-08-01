@@ -155,6 +155,8 @@
   "baseplate.maxPrintHeightTooltip": "De maximale Z-hoogte van je printer. Stapelen past zoveel grondplaten per stapel als dit toelaat.",
   "baseplate.nozzleSizeTooltip": "Nozzlediameter van je printer. Zwaluwstaartsleutels en snapclips schalen hiermee mee zodat ze met bredere nozzles printbaar blijven. Bij 0,4 mm blijft de geometrie ongewijzigd.",
   "baseplate.overTile": "Marge met rastertegels vullen",
+  "baseplate.wholeCellsOnly": "Alleen hele cellen passen",
+  "baseplate.wholeCellsOnlyHint": "Laat elke uitsparing weg die de vorm doorsnijdt, zodat de plaat eindigt in een massieve rand in plaats van een doorgesneden uitsparing.",
   "baseplate.overTileFills": "Raster vult: {sides}",
   "baseplate.overTileHint": "Vervangt de massieve marge rand voor rand door bijgesneden rastertegels.",
   "baseplate.overTileKeptSolid": "Te klein, blijft massief: {sides}",

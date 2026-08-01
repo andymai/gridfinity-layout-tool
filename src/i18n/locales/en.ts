@@ -2770,6 +2770,9 @@ const en: Record<string, string> = {
   'baseplate.shapedPaddingTooLarge':
     'Padding is too large for this shape, so it is ignored. Reduce it to fit around the outline.',
   'baseplate.overTile': 'Fill padding with grid tiles',
+  'baseplate.wholeCellsOnly': 'Fit whole cells only',
+  'baseplate.wholeCellsOnlyHint':
+    'Drop any socket the shape cuts through, so the plate ends in a solid edge instead of a sliced socket.',
   'baseplate.preferHalfGrid': 'Prefer half-grid cells',
   'baseplate.overTileHint':
     'Replace the solid padding margin with clipped grid tiles, edge by edge.',

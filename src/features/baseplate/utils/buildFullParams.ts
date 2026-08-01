@@ -40,6 +40,82 @@ export function maxCornerRadiusMm(totalW: number, totalD: number): number {
 }
 
 /**
+ * The inputs the outline resolution depends on, derived once.
+ *
+ * Both `buildFullParams` and {@link hasEffectivePerimeter} read these, so the
+ * rules for which dimensions apply, whether the drawer shape is in play, and
+ * whether stacking suppresses everything exist in one place. Restating them
+ * per caller is what let the panel and the regeneration trigger disagree about
+ * radius-cut plates once already.
+ */
+function outlineInputs(
+  stored: StoredBaseplateParams,
+  drawerWidth: number,
+  drawerDepth: number,
+  gridUnitMm: number,
+  gridUnitMmY: number,
+  drawerOutline: DrawerOutline | undefined
+): { stackingOn: boolean; outlineOn: boolean; widthMm: number; depthMm: number; synced: boolean } {
+  const synced = stored.syncWithLayout !== false;
+  const width = synced ? drawerWidth : (stored.baseplateWidth ?? drawerWidth);
+  const depth = synced ? drawerDepth : (stored.baseplateDepth ?? drawerDepth);
+  const stackingOn = stored.stackPrint?.enabled === true;
+  return {
+    synced,
+    stackingOn,
+    outlineOn: drawerOutline !== undefined && synced && !stackingOn,
+    widthMm: width * gridUnitMm,
+    depthMm: depth * gridUnitMmY,
+  };
+}
+
+/**
+ * Whether the plate ends up with a non-rectangular perimeter at generation
+ * time — a drawer shape, or a corner radius large enough that the resolver
+ * converts it to a radius-cut outline.
+ *
+ * Runs the resolver rather than restating its rules, so the panel and the
+ * regeneration trigger cannot drift from what generation actually produces.
+ * They did drift once, keyed on the raw drawer outline while the resolver also
+ * made outlines from large radii, which showed the whole-cell control on plates
+ * the trigger considered rectangular.
+ *
+ * `stackingOverride` exists for the one caller that needs a different answer:
+ * the panel keeps controls live for a STEP export, which clears `stackPrint`
+ * before this resolver ever runs.
+ */
+export function hasEffectivePerimeter(
+  stored: StoredBaseplateParams,
+  drawerWidth: number,
+  drawerDepth: number,
+  gridUnitMm: number,
+  drawerOutline: DrawerOutline | undefined,
+  gridUnitMmY: number = gridUnitMm,
+  stackingOverride?: boolean
+): boolean {
+  const inputs = outlineInputs(
+    stored,
+    drawerWidth,
+    drawerDepth,
+    gridUnitMm,
+    gridUnitMmY,
+    drawerOutline
+  );
+  const stacking = stackingOverride ?? inputs.stackingOn;
+  if (stacking) return false;
+  return (
+    resolveOutline(
+      drawerOutline,
+      drawerOutline !== undefined && inputs.synced,
+      stored,
+      inputs.widthMm,
+      inputs.depthMm,
+      gridUnitMm
+    ).outline !== undefined
+  );
+}
+
+/**
  * The resolved outline (plate-local mm, spanning the padded extent) plus the
  * paddings it permits. Corner-cut drawer shapes re-inscribe their cuts on the
  * padded rectangle; every other shape offsets its edges outward (`padOutline`).
@@ -163,7 +239,13 @@ export function buildFullParams(
   // Depth-axis pitch for a non-square grid; defaults to the X pitch (square).
   gridUnitMmY: number = gridUnitMm
 ): ResolvedBaseplateParams {
-  const synced = stored.syncWithLayout !== false;
+  const {
+    synced,
+    stackingOn,
+    outlineOn,
+    widthMm: outlineWidthMm,
+    depthMm: outlineDepthMm,
+  } = outlineInputs(stored, drawerWidth, drawerDepth, gridUnitMm, gridUnitMmY, drawerOutline);
   const width = synced ? drawerWidth : (stored.baseplateWidth ?? drawerWidth);
   const depth = synced ? drawerDepth : (stored.baseplateDepth ?? drawerDepth);
 
@@ -176,20 +258,11 @@ export function buildFullParams(
   // floor + undercut ledge) inverts into a downward bridge/overhang — so it
   // alone is stripped. Done here rather than by mutating stored params, so the
   // user's settings return intact when stacking is turned off.
-  const stackingOn = stored.stackPrint?.enabled === true;
   const stripConnectors = stackingOn && stored.connectorStyle === 'snapClip';
-  const outlineOn = drawerOutline !== undefined && synced && !stackingOn;
 
   const { outline, paddingOn } = stackingOn
     ? { outline: undefined, paddingOn: true }
-    : resolveOutline(
-        drawerOutline,
-        outlineOn,
-        stored,
-        width * gridUnitMm,
-        depth * gridUnitMmY,
-        gridUnitMm
-      );
+    : resolveOutline(drawerOutline, outlineOn, stored, outlineWidthMm, outlineDepthMm, gridUnitMm);
   // An outline carries its own corner geometry as arcs and shares the same
   // post-cache intersect slot, so rounding is zeroed whenever one is active —
   // whether it came from the drawer shape or from the radius conversion above.
@@ -247,6 +320,13 @@ export function buildFullParams(
       stored.overTile === true && stored.overTileHalfGrid === true
         ? stored.overTileHalfGridSolidLeftover
         : undefined,
+    // Whole-cell fitting only has meaning against a perimeter — a rectangle has
+    // no crossed cell to drop. Same normalization contract as the flags above,
+    // so an orphaned flag can't fragment caches or force a regeneration.
+    // `=== true` here as well as in the generator and the cache key: the key is
+    // allowlisted server-side without a type check, and resolved params are what
+    // split pieces inherit, so a malformed value must not travel that far.
+    wholeCellsOnly: outline !== undefined && stored.wholeCellsOnly === true ? true : undefined,
     connectorNubs: stripConnectors ? false : stored.connectorNubs,
     invertDovetails: stored.invertDovetails,
     preferIdenticalPieces: stored.preferIdenticalPieces,

@@ -212,6 +212,36 @@ describe('validationMiddleware', () => {
     expect(next).toHaveBeenCalledOnce();
   });
 
+  // The v2 command file carries its own payload schema that the runtime never
+  // parses, so a field has to be added here to actually be validated.
+  it('accepts wholeCellsOnly and rejects a non-boolean', () => {
+    const params = {
+      magnetHoles: false,
+      magnetDiameter: 6.5 as never,
+      magnetDepth: 2 as never,
+      paddingLeft: 0 as never,
+      paddingRight: 0 as never,
+      paddingFront: 0 as never,
+      paddingBack: 0 as never,
+    };
+
+    const good = validationMiddleware(
+      createCommand('layout.setBaseplateParams', {
+        params: { ...params, wholeCellsOnly: true },
+      }),
+      createSuccessNext()
+    );
+    expect(isOk(good)).toBe(true);
+
+    const bad = validationMiddleware(
+      createCommand('layout.setBaseplateParams', {
+        params: { ...params, wholeCellsOnly: 'yes' as never },
+      }),
+      createSuccessNext()
+    );
+    expect(isOk(bad)).toBe(false);
+  });
+
   it('error result has the command type as operation name', () => {
     const next = createSuccessNext();
     const cmd = createCommand('bin.delete', { id: '' as never });

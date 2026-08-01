@@ -15,6 +15,7 @@ import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import type { StoredBaseplateParams, DrawerOutline, FractionalEdge } from '@/core/types';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { cornerCutsMatchVertices } from '@/shared/utils/cornerCutOutline';
+import { hasEffectivePerimeter } from '../../utils/buildFullParams';
 import { trackToolActivated } from '@/shared/analytics/posthog/conversionEvents';
 import { dismissBaseplateQuickstartOnEdit } from '../../hooks/useBaseplateFirstRun';
 
@@ -52,6 +53,8 @@ export interface BaseplatePanelDerived {
   outlineActive: boolean;
   cornerShaped: boolean;
   freeformShaped: boolean;
+  /** Plate has a curved/angled perimeter, from a drawer shape or a large radius. */
+  perimeterShaped: boolean;
 }
 
 export function useBaseplatePanelDerived(): BaseplatePanelDerived {
@@ -125,6 +128,24 @@ export function useBaseplatePanelDerived(): BaseplatePanelDerived {
   // live — only corner rounding and detached margins (both outline-unaware) hide.
   const freeformShaped = outlineActive && !cornerShaped;
 
+  // A corner radius past the plain-rounding limit is converted to a radius-cut
+  // outline in buildFullParams, so the plate really does get a curved perimeter
+  // slicing sockets. Asking the resolver's own predicate rather than repeating
+  // its threshold keeps the panel, the trigger and the resolver from drifting.
+  /** The plate has a curved or angled perimeter that can slice sockets. */
+  const perimeterShaped = hasEffectivePerimeter(
+    baseplateParams,
+    drawerWidth,
+    drawerDepth,
+    gridUnitMm,
+    drawerOutline,
+    gridUnitMmY,
+    // Format-aware override: a STEP export clears stackPrint before the
+    // resolver runs, so its controls stay live the way every other
+    // stacking-stripped control already does.
+    stackEnabled
+  );
+
   return {
     baseplateParams,
     drawerOutline,
@@ -144,5 +165,6 @@ export function useBaseplatePanelDerived(): BaseplatePanelDerived {
     outlineActive,
     cornerShaped,
     freeformShaped,
+    perimeterShaped,
   };
 }
