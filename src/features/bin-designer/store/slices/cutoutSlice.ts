@@ -79,57 +79,171 @@ function gcMeshAssets(state: Draft<DesignerState>): void {
 
 type Set = (fn: (state: Draft<DesignerState>) => void) => void;
 
+/**
+ * Whether a toggle-property edit changes the generated part.
+ *
+ * Only `hidden` does: the worker drops hidden cutouts (`cutoutBuilder.ts`), so
+ * toggling it changes the geometry. `locked` is editor state the worker
+ * never reads.
+ */
+function togglePropertyAffectsGeometry(partial: CutoutToggleProperties): boolean {
+  return partial.hidden !== undefined;
+}
+
+/**
+ * Whether a z-order change reaches the geometry.
+ *
+ * `zIndex`'s only geometry consumer is boolean-op ordering inside a group
+ * (`cutoutGroupOps.ts`), so a design with nothing grouped can reorder purely
+ * visually and skip the worker.
+ */
+function zOrderAffectsGeometry(state: Draft<DesignerState>): boolean {
+  return state.params.cutouts.some((c) => c.groupId !== null);
+}
+
+/**
+ * Put a new cutout on its own layer at the top of the stack.
+ *
+ * Two purposes: a freshly drawn shape should land on top, and giving every
+ * cutout a distinct `zIndex` keeps the renderer's stacking key strict. Two
+ * shapes sharing a layer AND an area would otherwise have identical scene Z and
+ * `renderOrder`, leaving the tie to be broken by raycast traversal order on one
+ * side and object id on the other — which can disagree.
+ *
+ * An explicit `zIndex` on the incoming cutout is honoured (paste/duplicate
+ * carry their own ordering).
+ */
+function withTopZIndex(state: Draft<DesignerState>, cutout: Cutout): Cutout {
+  if (cutout.zIndex !== undefined) return cutout;
+  return { ...cutout, zIndex: nextTopZIndex(state) };
+}
+
+/** One past the highest occupied layer. */
+function nextTopZIndex(state: Draft<DesignerState>): number {
+  return state.params.cutouts.reduce((m, c) => Math.max(m, c.zIndex ?? 0), -1) + 1;
+}
+
 export function createCutoutSlice(set: Set) {
   // Core actions
 
-  // locked/hidden/zIndex are editor-only state — the worker reads neither
-  // (see cutoutBuilder.ts), so these mutations get history but skip the
-  // generation epoch.
+  /**
+   * `locked` is editor-only, but `hidden` is NOT: the worker skips
+   * hidden cutouts (`cutoutBuilder.ts`), so toggling it changes the generated
+   * part and has to bump the generation epoch. Suppressing that regeneration
+   * left the preview showing a pocket the export would not cut — a silent
+   * preview-vs-export divergence.
+   *
+   * `zIndex` only reorders boolean ops within a group, so it regenerates too
+   * whenever the design has any grouped cutouts; a flat design's ordering is
+   * purely visual and can skip the worker.
+   */
   const setCutoutProperty = (ids: readonly string[], partial: CutoutToggleProperties): void => {
     if (ids.length === 0) return;
     set((state) => {
-      pushHistoryEntry(state, { affectsGeometry: false });
       const idSet = new Set(ids);
+      const keys = Object.keys(partial) as (keyof CutoutToggleProperties)[];
+      // Bail on a no-op: unknown ids, or the property already holds the wanted
+      // value. Now that `hidden` bumps the generation epoch, re-hiding an
+      // already-hidden cutout would otherwise cost a full worker rebuild on top
+      // of a redundant undo entry.
+      const changed = state.params.cutouts.some(
+        (c) => idSet.has(c.id) && keys.some((k) => c[k] !== partial[k])
+      );
+      if (!changed) return;
+
+      pushHistoryEntry(state, { affectsGeometry: togglePropertyAffectsGeometry(partial) });
       state.params.cutouts = state.params.cutouts.map((c) =>
         idSet.has(c.id) ? { ...c, ...partial } : c
       );
     });
   };
 
+  /**
+   * Current stack, bottom to top.
+   *
+   * Ties break on array order so an all-default design (every `zIndex` absent,
+   * i.e. 0) still has a stable, predictable starting stack rather than an
+   * arbitrary one.
+   */
+  const stackBottomToTop = (cutouts: readonly Cutout[]): Cutout[] => {
+    const indexById = new Map(cutouts.map((c, i) => [c.id, i]));
+    return [...cutouts].sort(
+      (a, b) =>
+        (a.zIndex ?? 0) - (b.zIndex ?? 0) || (indexById.get(a.id) ?? 0) - (indexById.get(b.id) ?? 0)
+    );
+  };
+
+  /**
+   * Move the selection one slot through an ordered stack, as a block.
+   *
+   * Walks from the far end so a contiguous run of selected shapes shifts
+   * together instead of collapsing onto itself, and a selection already at the
+   * end simply stays put.
+   */
+  const shiftOneSlot = (order: Cutout[], isSelected: (c: Cutout) => boolean, up: boolean): void => {
+    if (up) {
+      for (let i = order.length - 2; i >= 0; i--) {
+        if (isSelected(order[i]) && !isSelected(order[i + 1])) {
+          [order[i], order[i + 1]] = [order[i + 1], order[i]];
+        }
+      }
+    } else {
+      for (let i = 1; i < order.length; i++) {
+        if (isSelected(order[i]) && !isSelected(order[i - 1])) {
+          [order[i], order[i - 1]] = [order[i - 1], order[i]];
+        }
+      }
+    }
+  };
+
+  /**
+   * Re-stack the selection and renumber onto contiguous `zIndex` values 0..n-1.
+   *
+   * Reordering positions rather than doing arithmetic on `zIndex` is what makes
+   * "send to back" mean anything: the old code wrote absolute values against a
+   * field that defaults to 0 for every cutout, so `back` set 0 on something
+   * already at 0 and `backward` clamped to `max(-1, 0)`. Both silently did
+   * nothing until some other shape had been sent forward first (#3053).
+   */
   const reorderCutouts = (ids: readonly string[], direction: ReorderDirection): void => {
     if (ids.length === 0) return;
     set((state) => {
-      pushHistoryEntry(state, { affectsGeometry: false });
       const idSet = new Set(ids);
+      const cutouts = state.params.cutouts;
+      if (!cutouts.some((c) => idSet.has(c.id))) return;
+
+      const isSelected = (c: Cutout): boolean => idSet.has(c.id);
+      const order = stackBottomToTop(cutouts);
+      let next: Cutout[];
 
       switch (direction) {
-        case 'forward': {
-          const maxZ = Math.max(0, ...state.params.cutouts.map((c) => c.zIndex ?? 0));
-          state.params.cutouts = state.params.cutouts.map((c) =>
-            idSet.has(c.id) ? { ...c, zIndex: Math.min((c.zIndex ?? 0) + 1, maxZ + 1) } : c
-          );
+        // Front/back preserve the selection's own internal order — bringing two
+        // shapes forward together must not shuffle them relative to each other.
+        case 'front':
+          next = [...order.filter((c) => !isSelected(c)), ...order.filter(isSelected)];
           break;
-        }
-        case 'backward': {
-          state.params.cutouts = state.params.cutouts.map((c) =>
-            idSet.has(c.id) ? { ...c, zIndex: Math.max((c.zIndex ?? 0) - 1, 0) } : c
-          );
+        case 'back':
+          next = [...order.filter(isSelected), ...order.filter((c) => !isSelected(c))];
           break;
-        }
-        case 'front': {
-          const maxZ = Math.max(0, ...state.params.cutouts.map((c) => c.zIndex ?? 0));
-          state.params.cutouts = state.params.cutouts.map((c) =>
-            idSet.has(c.id) ? { ...c, zIndex: maxZ + 1 } : c
-          );
+        case 'forward':
+          next = order;
+          shiftOneSlot(next, isSelected, true);
           break;
-        }
-        case 'back': {
-          state.params.cutouts = state.params.cutouts.map((c) =>
-            idSet.has(c.id) ? { ...c, zIndex: 0 } : c
-          );
+        case 'backward':
+          next = order;
+          shiftOneSlot(next, isSelected, false);
           break;
-        }
       }
+
+      const zById = new Map(next.map((c, i) => [c.id, i]));
+      const restacked = cutouts.map((c) => {
+        const z = zById.get(c.id) ?? 0;
+        return c.zIndex === z ? c : { ...c, zIndex: z };
+      });
+      if (restacked.every((c, i) => c === cutouts[i])) return;
+
+      pushHistoryEntry(state, { affectsGeometry: zOrderAffectsGeometry(state) });
+      state.params.cutouts = restacked;
     });
   };
 
@@ -137,7 +251,8 @@ export function createCutoutSlice(set: Set) {
     set((state) => {
       const hasHidden = state.params.cutouts.some((c) => c.hidden);
       if (!hasHidden) return;
-      pushHistoryEntry(state, { affectsGeometry: false });
+      // Unhiding restores cuts the worker had dropped, so this regenerates.
+      pushHistoryEntry(state, { affectsGeometry: true });
       state.params.cutouts = state.params.cutouts.map((c) =>
         c.hidden ? { ...c, hidden: false } : c
       );
@@ -211,7 +326,7 @@ export function createCutoutSlice(set: Set) {
     addCutout: (cutout: Cutout) => {
       set((state) => {
         pushHistoryEntry(state);
-        state.params.cutouts = [...state.params.cutouts, cutout];
+        state.params.cutouts = [...state.params.cutouts, withTopZIndex(state, cutout)];
       });
     },
 
@@ -230,7 +345,7 @@ export function createCutoutSlice(set: Set) {
         }
         pushHistoryEntry(state);
         state.params.meshAssets = { ...existing, [meshId]: asset };
-        state.params.cutouts = [...state.params.cutouts, cutout];
+        state.params.cutouts = [...state.params.cutouts, withTopZIndex(state, cutout)];
       });
     },
 
@@ -271,7 +386,8 @@ export function createCutoutSlice(set: Set) {
         const toDuplicate = state.params.cutouts.filter((c) => cutoutIds.includes(c.id));
         // Map old groupId -> new groupId so groups are preserved
         const groupMap = new Map<string, string>();
-        const duplicated = toDuplicate.map((c) => {
+        const topZ = nextTopZIndex(state);
+        const duplicated = toDuplicate.map((c, i) => {
           let newGroupId: string | null = null;
           if (c.groupId) {
             if (!groupMap.has(c.groupId)) {
@@ -288,6 +404,11 @@ export function createCutoutSlice(set: Set) {
             x: c.x + 5,
             y: c.y + 5,
             groupId: newGroupId,
+            // Copies land above the originals, keeping their relative order.
+            // Inheriting `c.zIndex` would put a duplicate on the same layer as
+            // its source with an identical area — a tie neither stacking
+            // channel can break consistently.
+            zIndex: topZ + i,
             ...(translatedPath ? { path: translatedPath } : {}),
           };
         });

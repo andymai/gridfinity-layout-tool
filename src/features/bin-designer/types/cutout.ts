@@ -278,7 +278,11 @@ export interface Cutout {
   readonly locked?: boolean;
   /** When true, the cutout is not rendered or selectable (faint ghost only) */
   readonly hidden?: boolean;
-  /** Z-order for rendering layering (higher = rendered on top) */
+  /**
+   * Z-order: higher draws on top and wins the click on overlap. Also orders
+   * boolean ops within a group (`cutoutGroupOps.ts`). Absent = 0; the editor
+   * re-stacks to contiguous 0..n-1 whenever anything is reordered.
+   */
   readonly zIndex?: number;
   /** Path vertices for pen tool shapes (required when shape === 'path') */
   readonly path?: PathPoint[];

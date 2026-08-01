@@ -13,6 +13,7 @@ import type { ThreeEvent } from '@react-three/fiber';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { RENDER_ORDER, ACCENT_COLOR_HEX } from './constants';
+import { shapePosZ, shapeRenderOrder } from './zLayer';
 
 const STROKE_SELECTED = new THREE.Color(ACCENT_COLOR_HEX);
 
@@ -108,6 +109,9 @@ export const MeshFootprintMesh = memo(function MeshFootprintMesh({
   const groupX = effective.x + effective.width / 2;
   const groupY = effective.y + effective.depth / 2;
   const rotationZ = -(effective.rotation * Math.PI) / 180;
+  // Same key as the other renderers so a footprint takes part in the
+  // smaller-shape-wins tiebreaker instead of pinning to its layer floor.
+  const area = effective.width * effective.depth;
 
   const strokeColor = isSelected
     ? STROKE_SELECTED
@@ -136,13 +140,13 @@ export const MeshFootprintMesh = memo(function MeshFootprintMesh({
 
   return (
     <group
-      position={[groupX, groupY, 0.02]}
+      position={[groupX, groupY, shapePosZ(cutout.zIndex, area)]}
       rotation={[0, 0, rotationZ]}
-      renderOrder={RENDER_ORDER.SHAPES}
+      renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES, cutout.zIndex, area)}
     >
       <mesh
         geometry={fillGeometry}
-        renderOrder={RENDER_ORDER.SHAPES}
+        renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES, cutout.zIndex, area)}
         onPointerDown={handlePointerDown}
         onDoubleClick={handleDoubleClick}
         onPointerEnter={() => {
@@ -159,7 +163,15 @@ export const MeshFootprintMesh = memo(function MeshFootprintMesh({
         />
       </mesh>
       {strokeGeometries.map((geo, i) => (
-        <lineLoop key={i} geometry={geo} renderOrder={RENDER_ORDER.SHAPES + 1}>
+        <lineLoop
+          key={i}
+          geometry={geo}
+          renderOrder={shapeRenderOrder(
+            RENDER_ORDER.SHAPES + 1,
+            cutout.zIndex,
+            Number.POSITIVE_INFINITY
+          )}
+        >
           <lineBasicMaterial color={strokeColor} transparent opacity={1} depthTest={false} />
         </lineLoop>
       ))}

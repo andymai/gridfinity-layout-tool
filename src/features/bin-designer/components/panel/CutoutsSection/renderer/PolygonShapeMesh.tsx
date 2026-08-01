@@ -14,6 +14,7 @@ import { DEFAULT_POLYGON_SIDES } from '@/features/bin-designer/types';
 import { regularPolygonPoints, clampPolygonSides } from '@/shared/utils/cutoutPolygon';
 import { triangulatePath } from '../pathGeometry';
 import { RENDER_ORDER, ACCENT_COLOR_HEX } from './constants';
+import { shapePosZ, shapeRenderOrder } from './zLayer';
 import {
   outlineVertexShader,
   outlineFragmentShader,
@@ -156,7 +157,7 @@ export const PolygonShapeMesh = memo(function PolygonShapeMesh({
         ? strokeGrouped
         : strokeDefault;
   const rotationZ = -(effective.rotation * Math.PI) / 180;
-  const posZ = 0.02 + 0.01 / Math.max(area, 1);
+  const posZ = shapePosZ(cutout.zIndex, area);
 
   const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
     if (e.nativeEvent.button !== 0) return;
@@ -179,13 +180,13 @@ export const PolygonShapeMesh = memo(function PolygonShapeMesh({
     <group
       position={[centerX, centerY, posZ]}
       rotation={[0, 0, rotationZ]}
-      renderOrder={RENDER_ORDER.SHAPES}
+      renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES, cutout.zIndex, area)}
     >
       {fillGeometry && fillMaterial && (
         <mesh
           geometry={fillGeometry}
           material={fillMaterial}
-          renderOrder={RENDER_ORDER.SHAPES}
+          renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES, cutout.zIndex, area)}
           onPointerDown={handlePointerDown}
           onDoubleClick={handleDoubleClick}
           onPointerEnter={() => !isSelected && setIsHovered(true)}
@@ -193,7 +194,10 @@ export const PolygonShapeMesh = memo(function PolygonShapeMesh({
         />
       )}
       {strokeGeometry && (
-        <lineLoop geometry={strokeGeometry} renderOrder={RENDER_ORDER.SHAPES + 1}>
+        <lineLoop
+          geometry={strokeGeometry}
+          renderOrder={shapeRenderOrder(RENDER_ORDER.SHAPES + 1, cutout.zIndex, area)}
+        >
           <lineBasicMaterial color={strokeColor} transparent opacity={1} depthTest={false} />
         </lineLoop>
       )}
