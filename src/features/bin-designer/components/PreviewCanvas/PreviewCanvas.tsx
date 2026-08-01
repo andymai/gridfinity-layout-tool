@@ -29,7 +29,7 @@ import {
   LidExplodeSlider,
   LID_OFFSET_DEFAULT,
   BinAxisLabels,
-  BinDimensions,
+  AssembledBinDimensions,
   CompartmentDimensions,
   BinNameLabel,
   PreviewControls,
@@ -494,14 +494,11 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
                   <BinAxisLabels width={width} depth={depth} gridUnitMm={params.gridUnitMm} />
                   {isBinKind && (
                     <>
-                      <BinDimensions
+                      <AssembledBinDimensions
                         width={width}
                         depth={depth}
-                        height={height}
                         gridUnitMm={params.gridUnitMm}
                         gridUnitMmY={params.gridUnitMmY}
-                        heightUnitMm={params.heightUnitMm}
-                        stackingLip={params.base.stackingLip}
                         stackPitchLabel={
                           params.base.stackingLip
                             ? t('stackSolver.overlayPitch', {

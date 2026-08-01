@@ -10,7 +10,7 @@ export {
   LID_OFFSET_DEFAULT,
 } from './LidExplodeSlider';
 export { BinAxisLabels } from '@/shared/components/preview/BinAxisLabels';
-export { BinDimensions } from './BinDimensions';
+export { BinDimensions, AssembledBinDimensions } from './BinDimensions';
 export { CompartmentDimensions } from './CompartmentDimensions/CompartmentDimensions';
 export { BinNameLabel } from '@/shared/components/preview/BinNameLabel';
 export { PreviewControls, type CameraPreset } from './PreviewControls';

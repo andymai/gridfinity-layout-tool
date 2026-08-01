@@ -2,6 +2,7 @@
   "maxShortValueLength": 3,
   "keys": [
     "account.identity.heading",
+    "assembledHeight.segmentLabel",
     "auth.providerGithub",
     "auth.providerGoogle",
     "baseplate.connectorStyle.dovetail",
@@ -49,7 +50,6 @@
     "binDesigner.cutouts.pathfinder.title",
     "binDesigner.cutouts.rotation",
     "binDesigner.cutouts.scanImport.resultSize",
-    "scan.cardSize.value",
     "binDesigner.cutouts.scoopUniform",
     "binDesigner.cutouts.section.color",
     "binDesigner.cutouts.section.label",
@@ -218,6 +218,7 @@
     "rightPanel.filamentAbbrev",
     "rightPanel.inspector",
     "rightPanel.inspectorTab",
+    "scan.cardSize.value",
     "settings.accentColor.amber",
     "settings.accentColor.fuchsia",
     "settings.accentColor.rose",

@@ -7,11 +7,15 @@
  *
  * The bin mesh is centered at origin (0,0) in XY with base at Z≈0.
  * All coordinates are in millimeters (scene unit = mm).
+ *
+ * The height dimension is driven by the assembled-height bands (issue #3037)
+ * rather than re-deriving from height units here, so this drawing, the sidebar
+ * readout, and the generated mesh cannot disagree.
  */
 
 import { Line, Text } from '@react-three/drei';
 import { useMemo } from 'react';
-import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import type { AssembledSegment } from '@/features/bin-designer/utils/assembledHeight';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 
 interface BinDimensionsProps {
@@ -19,16 +23,25 @@ interface BinDimensionsProps {
   width: number;
   /** Bin depth in grid units */
   depth: number;
-  /** Bin height in height units */
-  height: number;
   /** Grid unit size in mm along X / width (for label text) */
   gridUnitMm: number;
   /** Optional grid unit size in mm along Y / depth (non-square grid); defaults to gridUnitMm */
   gridUnitMmY?: number;
-  /** Height unit size in mm (for label text) */
-  heightUnitMm: number;
-  /** Whether stacking lip is enabled (adds LIP_HEIGHT to total height) */
-  stackingLip: boolean;
+  /**
+   * Assembled height bands, bottom to top. Disjoint and summing to
+   * {@link totalMm}; `startMm` is measured from the underside of the assembly.
+   */
+  segments: readonly AssembledSegment[];
+  /** Bottom of the baseplate to the highest point, in mm. */
+  totalMm: number;
+  /** Annotate each band separately instead of showing only the total. */
+  expanded: boolean;
+  /**
+   * Pre-translated label for one band, e.g. "Stacking lip 4.3mm". Passed in
+   * rather than translated here so this stays a pure drawing component (same
+   * contract as {@link stackPitchLabel}).
+   */
+  segmentLabel: (segment: AssembledSegment) => string;
   /**
    * Pre-translated secondary label shown under the height dimension, e.g.
    * "stacks +21mm". Conveys that stacked bins advance by body height (the lip
@@ -41,23 +54,39 @@ interface BinDimensionsProps {
 // (planner: OFFSET=0.8, END_CAP=0.15, FONT_SIZE=0.32, label_gap=0.3)
 const OFFSET = 14; // Distance from bin edge to dimension line
 const END_CAP = 1; // Length of end cap markers (half-length, extends both directions)
+const BAND_TICK = 0.6; // Shorter mark at an interior band boundary
 const LABEL_GAP = 4; // Additional offset from line to label text
 const LINE_OPACITY = 0.5;
 const TEXT_OPACITY = 0.7;
 const FONT_SIZE = 4.5;
+/** Band labels render smaller than the total so they read as subordinate. */
+const BAND_FONT_SCALE = 0.62;
+/**
+ * A band shorter than its own label's line height cannot hold one without
+ * overlapping its neighbour, so it gets a boundary mark only. Derived from the
+ * font size so the two can't drift. The sidebar list stays complete — it is
+ * where every band, however thin, is accounted for.
+ */
+const MIN_LABELLED_BAND_MM = FONT_SIZE * BAND_FONT_SCALE;
+
+/** Format mm for display: nearest 0.1, no trailing zeros. */
+function fmt(mm: number): string {
+  return String(Math.round(mm * 10) / 10);
+}
 
 /**
- * Dimension lines showing bin width, depth, and height in mm.
+ * Dimension lines showing bin width, depth, and assembled height in mm.
  * Matches the architectural drawing style from the layout planner.
  */
 export function BinDimensions({
   width,
   depth,
-  height,
   gridUnitMm,
   gridUnitMmY,
-  heightUnitMm,
-  stackingLip,
+  segments,
+  totalMm,
+  expanded,
+  segmentLabel,
   stackPitchLabel,
 }: BinDimensionsProps) {
   const colors = useThreeColors();
@@ -66,16 +95,20 @@ export function BinDimensions({
   // Bin extents in mm (mesh is centered at origin)
   const outerW = width * gridUnitMm;
   const outerD = depth * gridUnitMmYEff;
-  // The lip nests LIP_OVERLAP into the wall, so its real contribution to total
-  // height is LIP_HEIGHT − LIP_OVERLAP — matching the generated mesh, not LIP_HEIGHT.
-  const lipHeight = stackingLip ? GRIDFINITY.LIP_HEIGHT - GRIDFINITY.LIP_OVERLAP : 0;
-  const totalH = height * heightUnitMm + lipHeight;
 
   // Display labels use the user's configured unit sizes
   const widthMm = Math.round(width * gridUnitMm);
   const depthMm = Math.round(depth * gridUnitMmYEff);
-  const heightMmRaw = height * heightUnitMm + lipHeight;
-  const heightMm = Number.isInteger(heightMmRaw) ? heightMmRaw : heightMmRaw.toFixed(1);
+
+  /**
+   * Bands are measured from the underside of the baseplate, but the mesh puts
+   * the bin's own bottom at scene Z=0. Shifting by where the bin band starts
+   * maps one frame onto the other, and correctly drops the dimension below the
+   * bin whenever the plate has solid material under its pockets.
+   */
+  const originOffset = segments.find((s) => s.kind === 'bin')?.startMm ?? 0;
+  const bottomZ = -originOffset;
+  const topZ = totalMm - originOffset;
 
   const dimensions = useMemo(() => {
     const halfW = outerW / 2;
@@ -118,27 +151,70 @@ export function BinDimensions({
       },
       // Height: vertical at back-left corner, offset from both edges
       height: {
-        start: [-halfW - OFFSET, halfD + OFFSET, 0] as [number, number, number],
-        end: [-halfW - OFFSET, halfD + OFFSET, totalH] as [number, number, number],
-        labelPos: [-halfW - OFFSET - LABEL_GAP, halfD + OFFSET, totalH / 2] as [
-          number,
-          number,
-          number,
-        ],
-        label: `${heightMm}mm`,
+        x: -halfW - OFFSET,
+        y: halfD + OFFSET,
+        start: [-halfW - OFFSET, halfD + OFFSET, bottomZ] as [number, number, number],
+        end: [-halfW - OFFSET, halfD + OFFSET, topZ] as [number, number, number],
+        // Expanded, the band labels own the midpoints, so the total moves above
+        // the top cap rather than fighting them for the same space.
+        labelPos: [
+          -halfW - OFFSET - LABEL_GAP,
+          halfD + OFFSET,
+          expanded ? topZ + FONT_SIZE * 2.2 : (bottomZ + topZ) / 2,
+        ] as [number, number, number],
+        label: `${fmt(totalMm)}mm`,
         endCaps: {
           bottom: [
-            [-halfW - OFFSET - END_CAP, halfD + OFFSET, 0],
-            [-halfW - OFFSET + END_CAP, halfD + OFFSET, 0],
+            [-halfW - OFFSET - END_CAP, halfD + OFFSET, bottomZ],
+            [-halfW - OFFSET + END_CAP, halfD + OFFSET, bottomZ],
           ] as [[number, number, number], [number, number, number]],
           top: [
-            [-halfW - OFFSET - END_CAP, halfD + OFFSET, totalH],
-            [-halfW - OFFSET + END_CAP, halfD + OFFSET, totalH],
+            [-halfW - OFFSET - END_CAP, halfD + OFFSET, topZ],
+            [-halfW - OFFSET + END_CAP, halfD + OFFSET, topZ],
           ] as [[number, number, number], [number, number, number]],
         },
       },
     };
-  }, [outerW, outerD, totalH, widthMm, depthMm, heightMm]);
+  }, [outerW, outerD, bottomZ, topZ, widthMm, depthMm, totalMm, expanded]);
+
+  /**
+   * Interior boundary marks plus a label per band.
+   *
+   * Band labels sit outboard, on the same side as the total. The inboard side
+   * looks free in the layout but is exactly where the bin mesh is, so labels
+   * placed there render over the model and are unreadable; the total moves
+   * above the top cap instead to keep the midpoints clear. Zero-height bands (a
+   * plate the bin fully nests into) get a mark but no label — the sidebar row
+   * explains those.
+   *
+   * A zero-height band shares its boundary with the next one, and the first
+   * boundary always coincides with the bottom end cap, so marks are drawn at
+   * most once per Z. These lines are semi-transparent and stack: without the
+   * de-dupe the default plain-plate case paints three at Z=0 and the annotation
+   * reads as a heavier rule than the rest of the drawing.
+   */
+  const bands = useMemo(() => {
+    if (!expanded) return [];
+    const { x, y } = dimensions.height;
+    const key = (z: number): number => Math.round(z * 1000);
+    const markedZ = new Set<number>([key(bottomZ)]);
+    return segments.map((segment) => {
+      const startZ = segment.startMm - originOffset;
+      const showTick = !markedZ.has(key(startZ));
+      markedZ.add(key(startZ));
+      return {
+        kind: segment.kind,
+        showTick,
+        tick: [
+          [x - BAND_TICK, y, startZ],
+          [x + BAND_TICK, y, startZ],
+        ] as [[number, number, number], [number, number, number]],
+        labelPos: [x - LABEL_GAP, y, startZ + segment.mm / 2] as [number, number, number],
+        label: segmentLabel(segment),
+        showLabel: segment.mm >= MIN_LABELLED_BAND_MM,
+      };
+    });
+  }, [expanded, segments, originOffset, bottomZ, dimensions.height, segmentLabel]);
 
   return (
     <group>
@@ -209,7 +285,7 @@ export function BinDimensions({
         {dimensions.depth.label}
       </Text>
 
-      {/* Height dimension line */}
+      {/* Height dimension line — spans the whole assembled stack */}
       <Line
         points={[dimensions.height.start, dimensions.height.end]}
         color={colors.lineColor}
@@ -241,6 +317,34 @@ export function BinDimensions({
       >
         {dimensions.height.label}
       </Text>
+
+      {/* Per-band boundary marks and labels */}
+      {bands.map((band) => (
+        <group key={band.kind}>
+          {band.showTick && (
+            <Line
+              points={band.tick}
+              color={colors.lineColor}
+              lineWidth={1}
+              transparent
+              opacity={LINE_OPACITY}
+            />
+          )}
+          {band.showLabel && (
+            <Text
+              position={band.labelPos}
+              fontSize={FONT_SIZE * BAND_FONT_SCALE}
+              color={colors.lineColor}
+              fillOpacity={TEXT_OPACITY * 0.85}
+              anchorX="right"
+              anchorY="middle"
+            >
+              {band.label}
+            </Text>
+          )}
+        </group>
+      ))}
+
       {stackPitchLabel && (
         <Text
           position={[
