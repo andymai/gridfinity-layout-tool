@@ -52,6 +52,11 @@ function tokenize(text: string): Pair[] | null {
   // position is a hard failure, not something to step over.
   while (lines.length > 0 && lines[lines.length - 1].trim() === '') lines.pop();
 
+  // Strictly two lines per pair, so an odd count means a code with no value —
+  // a truncated file. Stopping one line short would parse most of it and hand
+  // back geometry that is quietly missing its tail.
+  if (lines.length % 2 !== 0) return null;
+
   const pairs: Pair[] = [];
   for (let i = 0; i + 1 < lines.length; i += 2) {
     const raw = lines[i].trim();

@@ -214,6 +214,14 @@ describe('parseDxfString', () => {
     expect(isErr(r) && r.error.code).toBe('PARSE_FAILED');
   });
 
+  // Stopping one line short would parse most of a truncated file and hand back
+  // geometry quietly missing its tail.
+  it('rejects a truncated file whose last group code has no value', () => {
+    const truncated = square().trimEnd() + '\n10';
+    const r = parseDxfString(truncated);
+    expect(isErr(r) && r.error.code).toBe('PARSE_FAILED');
+  });
+
   it('tolerates a trailing newline, which every writer emits', () => {
     expect(isOk(parseDxfString(square() + '\n\n'))).toBe(true);
   });

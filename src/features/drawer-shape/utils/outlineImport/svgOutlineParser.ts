@@ -39,19 +39,41 @@ interface Pt {
   y: number;
 }
 
+/** Most points one bezier may flatten to. `simplifyLoop` thins the excess. */
+const MAX_BEZIER_STEPS = 256;
+
 /**
  * Subdivisions a cubic bezier needs to stay within the flattening tolerance.
  *
  * Bounded by the control polygon, which is never shorter than the curve, so
- * the estimate is conservative — and capped, because a pathological curve
- * would otherwise blow straight through the outline's vertex ceiling.
+ * the estimate is conservative.
+ *
+ * `toleranceUu` is the mm tolerance expressed in this element's own user units.
+ * Curves are flattened before the transform and the unit scale are applied, so
+ * comparing a raw user-unit distance against a millimetre tolerance would make
+ * accuracy depend on how the file happens to be scaled — a drawing declared at
+ * 9mm per user unit would come out nine times coarser than the same drawing
+ * declared at 1mm per unit.
  */
-function bezierSteps(p0: Pt, c1: Pt, c2: Pt, p1: Pt): number {
+function bezierSteps(p0: Pt, c1: Pt, c2: Pt, p1: Pt, toleranceUu: number): number {
   const hull =
     Math.hypot(c1.x - p0.x, c1.y - p0.y) +
     Math.hypot(c2.x - c1.x, c2.y - c1.y) +
     Math.hypot(p1.x - c2.x, p1.y - c2.y);
-  return Math.min(64, Math.max(2, Math.ceil(Math.sqrt(hull / ARC_FLATTEN_TOLERANCE))));
+  return Math.min(MAX_BEZIER_STEPS, Math.max(2, Math.ceil(Math.sqrt(hull / toleranceUu))));
+}
+
+/**
+ * The mm tolerance in an element's user units.
+ *
+ * The matrix's isotropic scale is the square root of its determinant — an area
+ * ratio, so it averages a non-uniform scale rather than favouring either axis.
+ */
+function toleranceInUserUnits(m: Matrix, unitToMm: number): number {
+  const det = Math.abs(m[0] * m[3] - m[1] * m[2]);
+  const scale = Math.sqrt(det) * unitToMm;
+  if (!Number.isFinite(scale) || scale <= 1e-9) return ARC_FLATTEN_TOLERANCE;
+  return ARC_FLATTEN_TOLERANCE / scale;
 }
 
 function cubicAt(p0: Pt, c1: Pt, c2: Pt, p1: Pt, t: number): Pt {
@@ -129,7 +151,7 @@ interface Contour {
 }
 
 /** One `<path>` sub-contour → vertices, in the SVG's own user units. */
-function contourVertices(commands: readonly SVGCommand[]): Contour | null {
+function contourVertices(commands: readonly SVGCommand[], toleranceUu: number): Contour | null {
   const verts: { x: number; y: number; bulge: number }[] = [];
   const push = (x: number, y: number, bulge = 0): void => {
     verts.push({ x, y, bulge });
@@ -150,7 +172,7 @@ function contourVertices(commands: readonly SVGCommand[]): Contour | null {
         const p1 = { x: c.x, y: c.y };
         const c1 = { x: c.x1, y: c.y1 };
         const c2 = { x: c.x2, y: c.y2 };
-        const steps = bezierSteps(cur, c1, c2, p1);
+        const steps = bezierSteps(cur, c1, c2, p1, toleranceUu);
         for (let i = 1; i <= steps; i++) {
           const p = cubicAt(cur, c1, c2, p1, i / steps);
           push(p.x, p.y);
@@ -163,7 +185,7 @@ function contourVertices(commands: readonly SVGCommand[]): Contour | null {
         // Elevate to cubic so one flattener covers both.
         const c1 = { x: cur.x + (2 / 3) * (c.x1 - cur.x), y: cur.y + (2 / 3) * (c.y1 - cur.y) };
         const c2 = { x: p1.x + (2 / 3) * (c.x1 - p1.x), y: p1.y + (2 / 3) * (c.y1 - p1.y) };
-        const steps = bezierSteps(cur, c1, c2, p1);
+        const steps = bezierSteps(cur, c1, c2, p1, toleranceUu);
         for (let i = 1; i <= steps; i++) {
           const p = cubicAt(cur, c1, c2, p1, i / steps);
           push(p.x, p.y);
@@ -294,6 +316,7 @@ export function parseSvgOutline(svgString: string): Result<ImportedLoop[], Outli
 
   for (const el of root.querySelectorAll(GEOMETRIC_SELECTOR)) {
     const matrix = resolveTransformChain(el, root);
+    const toleranceUu = toleranceInUserUnits(matrix, scale);
     const collect = (verts: OutlineVertex[], closed: boolean): void => {
       const out = verts.map((v) => mapped(v, matrix, viewBox, scale));
       if (closed && out.length >= 3) loops.push({ vertices: out });
@@ -315,7 +338,7 @@ export function parseSvgOutline(svgString: string): Result<ImportedLoop[], Outli
       let run: SVGCommand[] = [];
       const finish = (): void => {
         if (run.length === 0) return;
-        const contour = contourVertices(run);
+        const contour = contourVertices(run, toleranceUu);
         // An unclosed sub-path is not discarded: it joins the chainer, so a
         // perimeter split across several path segments still comes together.
         if (contour !== null) collect(contour.vertices, contour.closed);

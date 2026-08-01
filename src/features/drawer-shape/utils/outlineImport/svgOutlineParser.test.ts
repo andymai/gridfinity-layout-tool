@@ -72,6 +72,36 @@ describe('parseSvgOutline', () => {
     expect(area(r.value[0].vertices)).toBeCloseTo(20000, 3);
   });
 
+  // Curves are flattened before the transform and the unit scale are applied,
+  // so a millimetre tolerance compared against raw user units would make
+  // accuracy depend on how the file happens to express its units.
+  it('samples the same physical curve equally at any declared unit scale', () => {
+    const curve = (vb: number) =>
+      `<svg xmlns="http://www.w3.org/2000/svg" width="900mm" height="900mm" viewBox="0 0 ${vb} ${vb}">` +
+      `<path d="M 0 0 C ${vb * 0.3} ${vb * 0.6} ${vb * 0.7} ${vb * 0.6} ${vb} 0 Z" /></svg>`;
+    const counts = [900, 100, 10].map((vb) => {
+      const r = parseSvgOutline(curve(vb));
+      return isOk(r) ? r.value[0].vertices.length : -1;
+    });
+    expect(counts[0]).toBeGreaterThan(3);
+    expect(counts[1]).toBe(counts[0]);
+    expect(counts[2]).toBe(counts[0]);
+  });
+
+  it('accounts for an element transform in the flattening tolerance too', () => {
+    const plain =
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">' +
+      '<path d="M 0 0 C 30 60 70 60 100 0 Z" /></svg>';
+    const scaled =
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">' +
+      '<g transform="scale(10)"><path d="M 0 0 C 3 6 7 6 10 0 Z" /></g></svg>';
+    const a = parseSvgOutline(plain);
+    const b = parseSvgOutline(scaled);
+    expect(isOk(a) && isOk(b)).toBe(true);
+    if (!isOk(a) || !isOk(b)) return;
+    expect(b.value[0].vertices.length).toBe(a.value[0].vertices.length);
+  });
+
   it('applies a transform on the element', () => {
     const r = parseSvgOutline(
       svg('<g transform="scale(2)"><path d="M 0 0 L 50 0 L 50 25 L 0 25 Z" /></g>')
