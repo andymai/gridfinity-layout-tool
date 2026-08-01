@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.340.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.340.2...gridfinity-layout-tool-v4.340.3) (2026-08-01)
+
+
+### Bug Fixes
+
+* **layout-export:** export each bin's own geometry, and split oversized bins ([#3076](https://github.com/andymai/gridfinity-layout-tool/issues/3076)) ([c000a29](https://github.com/andymai/gridfinity-layout-tool/commit/c000a29661f49d2d87792fbc9944df233f62b492))
+
 ## [4.340.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.340.1...gridfinity-layout-tool-v4.340.2) (2026-08-01)
 
 
