@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { LidSection } from './LidSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -221,6 +221,26 @@ describe('LidSection', () => {
       fireEvent.change(input, { target: { value: '0.8' } });
       fireEvent.blur(input);
       expect(useDesignerStore.getState().params.lid.topThicknessMm).toBe(1.6);
+    });
+
+    // The field shows the resolver-clamped floor; stepping from the raw stored
+    // value made the first click compute a number that clamped straight back to
+    // what was already on screen, so the control looked dead.
+    it('moves on the first step up from a design storing less than the minimum', async () => {
+      vi.useFakeTimers();
+      try {
+        renderTrayLid(0.8);
+        fireEvent.click(
+          screen.getByLabelText('Increase Material left under the tray recess, in millimeters')
+        );
+        // The stepper commits deferred clicks on an idle timer.
+        await act(async () => {
+          vi.advanceTimersByTime(1000);
+        });
+        expect(useDesignerStore.getState().params.lid.topThicknessMm).toBe(1.8);
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
     it('shows no breakdown on a lid without a tray', () => {

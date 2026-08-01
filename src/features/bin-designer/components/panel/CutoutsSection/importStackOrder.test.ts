@@ -16,7 +16,8 @@ describe('byDescendingArea', () => {
   });
 
   it('compares bounding-box area, matching the renderer stacking key', () => {
-    // 10x1 (10) sorts below 3x3 (9) despite being longer on one axis.
+    // A 10x1 sliver (area 10) outranks a 3x3 square (area 9) and so is added
+    // first — area decides, not the longest axis.
     const order = byDescendingArea([spec('square', 3, 3), spec('sliver', 10, 1)]);
     expect(order.map((s) => s.id)).toEqual(['sliver', 'square']);
   });

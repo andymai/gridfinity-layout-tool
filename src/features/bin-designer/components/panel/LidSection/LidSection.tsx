@@ -177,6 +177,12 @@ export function LidSection() {
   const showCoverageAdvanced = state.attachment === 'clickRails' && state.anyRail;
   const showTrayAdvanced = state.topSurface === 'tray';
 
+  // On a tray lid the geometry holds the floor at LID_TRAY_FLOOR even if the
+  // design stored something thinner, so the field reads back from the resolver
+  // rather than the raw param — otherwise it would sit directly above the
+  // breakdown showing a number the part does not use.
+  const shownThickness = state.trayBreakdown ? state.trayBreakdown.floorMm : state.topThicknessMm;
+
   return (
     <div className="space-y-4">
       {/* Master enable. Disabled (with a reason) when the bin has no stacking
@@ -405,14 +411,15 @@ export function LidSection() {
                       : t('binDesigner.lid.topThickness')
                   }
                   unit="mm"
-                  // On a tray lid the geometry holds the floor at LID_TRAY_FLOOR
-                  // even if a design stored something thinner, so read the field
-                  // back from the resolver — otherwise it could sit above the
-                  // breakdown showing a number the part does not use.
-                  value={state.trayBreakdown ? state.trayBreakdown.floorMm : state.topThicknessMm}
+                  value={shownThickness}
                   onChange={handlers.setTopThickness}
+                  // Step from the SHOWN value, not the stored one. They differ
+                  // on a tray lid whose design stored less than the geometry
+                  // uses, and stepping from the stored value made the first
+                  // click compute a number that clamped straight back to what
+                  // was already displayed — a control that looked dead.
                   onStep={(delta) =>
-                    handlers.setTopThickness(state.topThicknessMm + delta * state.topThicknessStep)
+                    handlers.setTopThickness(shownThickness + delta * state.topThicknessStep)
                   }
                   min={state.topThicknessMin}
                   max={state.topThicknessMax}
