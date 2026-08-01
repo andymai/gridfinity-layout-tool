@@ -447,6 +447,12 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
               onKeyUp={(e) => {
                 if (e.key === ' ') spaceRef.current = false;
               }}
+              // Focus can leave while Space is held, and the keyup then never
+              // reaches this element — leaving the canvas stuck in pan mode for
+              // every later drag, including in a new session.
+              onBlur={() => {
+                spaceRef.current = false;
+              }}
               onWheel={handleWheel}
             />
           </div>

@@ -31,6 +31,7 @@ function renderCanvas(overrides: Partial<Parameters<typeof PenCanvas>[0]> = {}) 
     onDoubleClick: vi.fn(),
     onKeyDown: vi.fn(),
     onKeyUp: vi.fn(),
+    onBlur: vi.fn(),
     onWheel: vi.fn(),
     ...overrides,
   };
@@ -85,6 +86,7 @@ describe('PenCanvas', () => {
           onDoubleClick: vi.fn(),
           onKeyDown: vi.fn(),
           onKeyUp: vi.fn(),
+          onBlur: vi.fn(),
           onWheel: vi.fn(),
         }}
       />

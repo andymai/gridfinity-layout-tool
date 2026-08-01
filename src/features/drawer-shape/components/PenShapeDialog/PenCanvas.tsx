@@ -7,7 +7,11 @@
  * now that it carries history, keyboard editing, a view and a selection model.
  */
 
-import type { PointerEvent as ReactPointerEvent, KeyboardEvent as ReactKeyboardEvent } from 'react';
+import type {
+  PointerEvent as ReactPointerEvent,
+  KeyboardEvent as ReactKeyboardEvent,
+  FocusEvent as ReactFocusEvent,
+} from 'react';
 import type { RefObject } from 'react';
 import type { OutlineVertex } from '@/core/types';
 import { segmentHandle } from '../../utils/penShape';
@@ -32,6 +36,7 @@ export interface PenCanvasProps {
   readonly onDoubleClick: (e: ReactPointerEvent<SVGSVGElement>) => void;
   readonly onKeyDown: (e: ReactKeyboardEvent<SVGSVGElement>) => void;
   readonly onKeyUp: (e: ReactKeyboardEvent<SVGSVGElement>) => void;
+  readonly onBlur: (e: ReactFocusEvent<SVGSVGElement>) => void;
   readonly onWheel: (e: React.WheelEvent<SVGSVGElement>) => void;
 }
 
@@ -55,6 +60,7 @@ export function PenCanvas({
   onDoubleClick,
   onKeyDown,
   onKeyUp,
+  onBlur,
   onWheel,
 }: PenCanvasProps) {
   return (
@@ -70,6 +76,7 @@ export function PenCanvas({
       onDoubleClick={onDoubleClick}
       onKeyDown={onKeyDown}
       onKeyUp={onKeyUp}
+      onBlur={onBlur}
       // Role before tabIndex: it declares what the element is before how it is
       // reached, which is also the order the a11y check reads the pair in.
       role="application"
