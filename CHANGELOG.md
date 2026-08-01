@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.340.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.339.0...gridfinity-layout-tool-v4.340.0) (2026-08-01)
+
+
+### Features
+
+* **drawer-shape:** draw a freeform drawer perimeter, with rounded corners ([#3065](https://github.com/andymai/gridfinity-layout-tool/issues/3065)) ([a89756f](https://github.com/andymai/gridfinity-layout-tool/commit/a89756f60efc3c5b980e452943e5cdcbadd96f12))
+
 ## [4.339.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.338.1...gridfinity-layout-tool-v4.339.0) (2026-08-01)
 
 
