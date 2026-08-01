@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.337.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.336.1...gridfinity-layout-tool-v4.337.0) (2026-08-01)
+
+
+### Features
+
+* **bin-designer:** show assembled height so you can check drawer clearance ([#3055](https://github.com/andymai/gridfinity-layout-tool/issues/3055)) ([1da5f7c](https://github.com/andymai/gridfinity-layout-tool/commit/1da5f7cce1a8207e8adad4a6ef8fa439286c03ac)), closes [#3037](https://github.com/andymai/gridfinity-layout-tool/issues/3037)
+
 ## [4.336.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.336.0...gridfinity-layout-tool-v4.336.1) (2026-07-31)
 
 
