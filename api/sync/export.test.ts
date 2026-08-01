@@ -1,8 +1,10 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { communityDesignBlobPath } from '../lib/communityStore';
 
 let redisStore: Map<string, string>;
 let redisHashes: Map<string, Map<string, string>>;
+let redisSets: Map<string, Set<string>>;
 const blobStore = new Map<string, unknown>();
 
 const mockRedis = {
@@ -15,6 +17,7 @@ const mockRedis = {
     const h = redisHashes.get(k);
     return h ? Object.fromEntries(h) : {};
   }),
+  smembers: vi.fn(async (k: string) => Array.from(redisSets.get(k) ?? [])),
   pipeline: vi.fn(() => {
     const queue: Array<() => [Error | null, unknown]> = [];
     const pipe = {
@@ -157,8 +160,14 @@ async function seedItem(
 beforeEach(() => {
   redisStore = new Map();
   redisHashes = new Map();
+  redisSets = new Map();
   blobStore.clear();
   vi.clearAllMocks();
+  vi.stubEnv('TOKEN_SALT', 'test-salt');
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
 });
 
 describe('GET /api/sync/export', () => {
@@ -171,11 +180,69 @@ describe('GET /api/sync/export', () => {
     expect(res._headers['Content-Disposition']).toMatch(/^attachment; filename=/);
     expect(Buffer.isBuffer(res._body)).toBe(true);
 
-    const { unzipSync } = await import('fflate');
+    const { unzipSync, strFromU8 } = await import('fflate');
     const zip = unzipSync(new Uint8Array(res._body as Buffer));
     const names = Object.keys(zip);
     expect(names).toContain('manifest.json');
     expect(names.filter((n) => n.startsWith('layouts/'))).toEqual([]);
+    expect(names.filter((n) => n.startsWith('community/'))).toEqual([]);
+
+    const manifest = JSON.parse(strFromU8(zip['manifest.json']));
+    expect(manifest.community).toEqual([]);
+  });
+
+  it('includes published community designs in the manifest and as files', async () => {
+    redisSets.set('community:published:user-1', new Set(['cd-2', 'cd-1']));
+    const recordOne = {
+      id: 'cd-1',
+      authorPublicId: 'pub-1',
+      name: 'Socket tray',
+      params: { width: 2 },
+      status: 'live',
+    };
+    const recordTwo = {
+      id: 'cd-2',
+      authorPublicId: 'pub-1',
+      name: 'Bit holder',
+      params: { width: 1 },
+      status: 'hidden',
+    };
+    blobStore.set(communityDesignBlobPath('cd-1'), recordOne);
+    blobStore.set(communityDesignBlobPath('cd-2'), recordTwo);
+
+    const { default: handler } = await import('./export');
+    const res = makeRes();
+    await handler(makeReq(), res as unknown as VercelResponse);
+    expect(res._status).toBe(200);
+
+    const { unzipSync, strFromU8 } = await import('fflate');
+    const zip = unzipSync(new Uint8Array(res._body as Buffer));
+    expect(Object.keys(zip).sort()).toEqual([
+      'community/cd-1.json',
+      'community/cd-2.json',
+      'manifest.json',
+    ]);
+
+    const manifest = JSON.parse(strFromU8(zip['manifest.json']));
+    expect(manifest.community).toEqual(['cd-1', 'cd-2']);
+    expect(JSON.parse(strFromU8(zip['community/cd-1.json']))).toEqual(recordOne);
+    expect(JSON.parse(strFromU8(zip['community/cd-2.json']))).toEqual(recordTwo);
+  });
+
+  it('skips a published design whose record blob is missing', async () => {
+    redisSets.set('community:published:user-1', new Set(['cd-1', 'cd-gone']));
+    blobStore.set(communityDesignBlobPath('cd-1'), { id: 'cd-1', status: 'live' });
+
+    const { default: handler } = await import('./export');
+    const res = makeRes();
+    await handler(makeReq(), res as unknown as VercelResponse);
+
+    const { unzipSync, strFromU8 } = await import('fflate');
+    const zip = unzipSync(new Uint8Array(res._body as Buffer));
+    expect(zip).toHaveProperty('community/cd-1.json');
+    expect(zip).not.toHaveProperty('community/cd-gone.json');
+    const manifest = JSON.parse(strFromU8(zip['manifest.json']));
+    expect(manifest.community).toEqual(['cd-1', 'cd-gone']);
   });
 
   it('packages live layouts and designs into separate folders', async () => {

@@ -19,9 +19,22 @@
  *   supporters:donors               → HASH of donorId → JSON {n,t,m} record (legacy: bare name)
  *   supporters:totals               → HASH of currency → received minor units (collect-only)
  *   supporters:msg:{messageId}      → Ko-fi webhook dedupe marker
+ *   community:design:{id}           → HASH of card metadata + status + counters for a published design
+ *   community:index:{sort}          → ZSET of design ids scored for one sort (newest|remixes|likes)
+ *   community:likes:{id}            → SET of userIds who liked a design
+ *   community:liked:{uid}           → SET of design ids a user liked (reverse index for heart state + deletion cascade)
+ *   community:children:{id}         → SET of published direct-remix design ids
+ *   community:author:{publicId}     → SET of design ids published under one author publicId
+ *   community:published:{uid}       → SET of design ids a user has published (quota via SCARD)
+ *   community:reports:{id}          → SET of userIds who reported a design (per-account dedupe)
+ *   community:reported:{uid}        → SET of design ids a user reported (reverse index for the account-deletion cascade)
+ *   community:denylist              → SET of userIds barred from publishing
  */
 
 export type SyncItemKind = 'layouts' | 'designs' | 'baseplates';
+
+export const COMMUNITY_INDEX_SORTS = ['newest', 'remixes', 'likes'] as const;
+export type CommunityIndexSort = (typeof COMMUNITY_INDEX_SORTS)[number];
 
 /** Delete-token hash for an anonymous share. */
 export function shareHashKey(shareId: string): string {
@@ -94,4 +107,58 @@ export function supportersTotalsKey(): string {
 /** Dedupe marker for a Ko-fi webhook delivery (their retries reuse `message_id`). */
 export function supportersMessageKey(messageId: string): string {
   return `supporters:msg:${messageId}`;
+}
+
+/** Card metadata + status + counters for a published community design. */
+export function communityDesignKey(designId: string): string {
+  return `community:design:${designId}`;
+}
+
+/** Sorted set of live design ids for one gallery sort mode. */
+export function communityIndexKey(sort: CommunityIndexSort): string {
+  return `community:index:${sort}`;
+}
+
+/** SET of userIds who liked a design (like counts derive from its card hash, not SCARD). */
+export function communityLikesKey(designId: string): string {
+  return `community:likes:${designId}`;
+}
+
+/** Reverse index: SET of design ids a user liked (heart state + account-deletion cascade). */
+export function communityLikedKey(userId: string): string {
+  return `community:liked:${userId}`;
+}
+
+/** SET of published design ids that are direct remixes of a design. */
+export function communityChildrenKey(designId: string): string {
+  return `community:children:${designId}`;
+}
+
+/** SET of design ids published under one pseudonymous author publicId. */
+export function communityAuthorKey(authorPublicId: string): string {
+  return `community:author:${authorPublicId}`;
+}
+
+/** SET of design ids a user has published; publish quota is SCARD over this. */
+export function communityPublishedKey(userId: string): string {
+  return `community:published:${userId}`;
+}
+
+/** SET of userIds who reported a design (per-account dedupe for the auto-hide threshold). */
+export function communityReportsKey(designId: string): string {
+  return `community:reports:${designId}`;
+}
+
+/**
+ * Reverse index: SET of design ids a user reported. Whatever records a report
+ * must SADD here too, or the account-deletion cascade cannot find and remove
+ * the user's entries from each design's reports set.
+ */
+export function communityReportedKey(userId: string): string {
+  return `community:reported:${userId}`;
+}
+
+/** SET of userIds barred from publishing to the community showcase. */
+export function communityDenylistKey(): string {
+  return 'community:denylist';
 }

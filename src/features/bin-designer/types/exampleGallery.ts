@@ -1,15 +1,5 @@
 import type { BinParams } from '@/shared/types/bin';
-
-export type ExampleTechnique =
-  | 'compartments'
-  | 'wallCutouts'
-  | 'scoop'
-  | 'labelTab'
-  | 'slotted'
-  | 'lid'
-  | 'handles'
-  | 'customShape'
-  | 'wallPattern';
+import type { ExampleTechnique } from '@/shared/types/exampleTechniques';
 
 export interface ExampleDesign {
   readonly id: string;
@@ -29,15 +19,3 @@ export interface ExampleDesign {
   /** Whether this example uses multi-color feature colors (selective color). */
   readonly colored?: boolean;
 }
-
-export const TECHNIQUE_CONFIG: Record<ExampleTechnique, { readonly labelKey: string }> = {
-  compartments: { labelKey: 'binExamples.technique.compartments' },
-  wallCutouts: { labelKey: 'binExamples.technique.wallCutouts' },
-  scoop: { labelKey: 'binExamples.technique.scoop' },
-  labelTab: { labelKey: 'binExamples.technique.labelTab' },
-  slotted: { labelKey: 'binExamples.technique.slotted' },
-  lid: { labelKey: 'binExamples.technique.lid' },
-  handles: { labelKey: 'binExamples.technique.handles' },
-  customShape: { labelKey: 'binExamples.technique.customShape' },
-  wallPattern: { labelKey: 'binExamples.technique.wallPattern' },
-};

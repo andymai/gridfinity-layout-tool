@@ -131,8 +131,9 @@ export {
 /** Auto-save status indicator. Defined in shared — the baseplate page uses it too. */
 export type { SaveStatus };
 
-export type { ExampleDesign, ExampleTechnique } from './exampleGallery';
-export { TECHNIQUE_CONFIG } from './exampleGallery';
+export type { ExampleDesign } from './exampleGallery';
+export type { ExampleTechnique } from '@/shared/types/exampleTechniques';
+export { TECHNIQUE_CONFIG } from '@/shared/types/exampleTechniques';
 
 export * from './base';
 export * from './dividers';

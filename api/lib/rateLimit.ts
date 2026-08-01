@@ -20,7 +20,10 @@ export type RateLimitAction =
   | 'scan.upload'
   | 'scan.poll'
   | 'kofi.webhook'
-  | 'supporters.read';
+  | 'supporters.read'
+  | 'community.read'
+  | 'community.publish'
+  | 'community.manage';
 
 /**
  * Parse Redis URL using WHATWG URL API to avoid deprecated url.parse().
@@ -72,6 +75,18 @@ const RATE_LIMITS: Record<RateLimitAction, RateLimitConfig> = {
   'kofi.webhook': { limit: 60, windowSeconds: 60 }, // 60/minute per IP
   // Public supporters read — cached at the edge, so this only sees cache misses.
   'supporters.read': { limit: 120, windowSeconds: 60 }, // 120/minute per IP
+  // Community showcase: browsing is anonymous so reads are keyed by IP with
+  // sync.read-level headroom (index pages + detail fetches). Publishing is
+  // keyed by userId and deliberately scarce: nobody legitimately publishes
+  // more than a handful of designs a day, and the 25-live quota makes a
+  // bigger budget pointless.
+  'community.read': { limit: 240, windowSeconds: 60 }, // 240/minute per IP
+  'community.publish': { limit: 10, windowSeconds: 24 * 60 * 60 }, // 10/day per user
+  // Remediation on existing designs (update, unpublish, admin purge) has its
+  // own budget: sharing the scarce publish budget would lock a user who
+  // published 10 times out of deleting their own designs, and cap an admin's
+  // moderation sweeps at 10/day per IP.
+  'community.manage': { limit: 60, windowSeconds: 24 * 60 * 60 }, // 60/day per user (admin path: per IP)
 };
 
 interface RateLimitResult {

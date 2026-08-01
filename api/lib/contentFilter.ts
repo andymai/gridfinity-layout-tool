@@ -185,8 +185,13 @@ export function filterDisplayName(name: string): ContentFilterResult {
 
 /**
  * Check a single text string for offensive content.
+ *
+ * Exported for free-text fields (e.g. a community design description) that
+ * aren't display names. Callers must bound the string's length BEFORE calling:
+ * the harmful-pattern regexes are only safe on capped input (see the ReDoS
+ * note above HARMFUL_PATTERNS).
  */
-function checkText(text: string): ContentFilterResult {
+export function checkText(text: string): ContentFilterResult {
   const normalized = normalizeForBlocklist(text);
 
   // Check blocklist against the normalized form so Unicode tricks

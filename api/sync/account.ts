@@ -7,6 +7,16 @@ import { requireSession } from '../lib/session.js';
 import { clearSessionCookie } from '../lib/cookies.js';
 import { deleteBlob } from '../lib/blobStore.js';
 import {
+  COMMUNITY_INDEX_SORTS,
+  communityAuthorKey,
+  communityChildrenKey,
+  communityDesignKey,
+  communityIndexKey,
+  communityLikedKey,
+  communityLikesKey,
+  communityPublishedKey,
+  communityReportedKey,
+  communityReportsKey,
   sessionKey,
   userIndexKey,
   userIndexUpdatedAtKey,
@@ -14,26 +24,45 @@ import {
   userSessionsKey,
   userTombstoneSweptAtKey,
 } from '../lib/redisKeys.js';
+import {
+  communityDesignBlobPath,
+  readCommunityDesignBlob,
+  type CommunityDesignRecord,
+} from '../lib/communityStore.js';
+import { deriveAuthorPublicId } from '../lib/communityIds.js';
 
 /**
  * DELETE /api/sync/account
  *
  * Hard-delete the signed-in user's account. The cascade order matters:
  *
- *   1. Sessions   — DEL session:{token} for every token in the user's set
+ *   1. Sessions   : DEL session:{token} for every token in the user's set
  *                   (so other tabs/devices flip to anonymous on next sync)
- *   2. Blobs      — del() each layouts/{id}.json, designs/{id}.json, baseplates/{id}.json
- *   3. KV keys    — drop indexes, profile, sessions set, indexUpdatedAt,
- *                   tombstoneSweptAt
- *   4. Cookie     — clear the session cookie on the responding device
+ *   2. Blobs      : del() each layouts/{id}.json, designs/{id}.json, baseplates/{id}.json
+ *   3. Community  : delete each published design (record/thumbnail/mesh blobs,
+ *                   card hash, per-design sets, membership in the parent's
+ *                   children set, every liker's reverse liked set, sort-index
+ *                   memberships), un-like everything
+ *                   in the reverse liked set, un-report everything in the
+ *                   reverse reported set
+ *   4. KV keys    : drop indexes, profile, sessions set, indexUpdatedAt,
+ *                   tombstoneSweptAt, liked/published/reported sets, author set
+ *   5. Cookie     : clear the session cookie on the responding device
+ *
+ * Deny-list membership survives deletion on purpose: the userId is a
+ * deterministic hash of the OAuth identity, so deleting the account and
+ * signing back in would otherwise reset a publishing ban. The set stores
+ * only that pseudonymous hash.
  *
  * Idempotent on partial-failure replay: each step uses unconditional DEL,
  * so repeating after a timeout/cold-start just no-ops on already-cleared
- * keys. The blob loop catches per-blob errors and continues — a stuck
+ * keys. The blob loop catches per-blob errors and continues, so a stuck
  * blob won't block the rest of the cascade.
  *
- * Vercel function timeout is 60s. With max 100 layouts + 100 designs +
- * 100 baseplates × ~50ms per Blob delete = ~15s worst case, within budget.
+ * Vercel function timeout is 60s. Max 100 layouts + 100 designs +
+ * 100 baseplates plus 25 published community designs at up to 5 blobs each
+ * (record + 3 thumbnails + mesh) is 425 Blob deletes x ~50ms = ~21s worst
+ * case, within budget.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   if (!requireMethod(req, res, ['DELETE'])) return;
@@ -63,7 +92,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     }
 
     // 2. Delete every blob this user owns. Errors per-blob are logged but
-    //    don't block the cascade — leftover blobs are storage cost only,
+    //    don't block the cascade: leftover blobs are storage cost only,
     //    not a correctness issue, and re-issuing the request will retry.
     const layoutIds = await redis.hkeys(userIndexKey(userId, 'layouts'));
     const designIds = await redis.hkeys(userIndexKey(userId, 'designs'));
@@ -75,7 +104,81 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       ...baseplateIds.map((id) => deleteBlobSafe(`users/${userId}/baseplates/${id}.json`, userId)),
     ]);
 
-    // 3. Drop all per-user KV state in one DEL.
+    // 3. Community cascade. The record blob is read first because it is the
+    //    only place the revision-stamped thumbnail/mesh blob URLs live; a
+    //    failed read only costs that design's asset deletes, not the cascade.
+    const publishedIds = await redis.smembers(communityPublishedKey(userId));
+    const records = await Promise.all(
+      publishedIds.map((id) => readCommunityDesignSafe(id, userId))
+    );
+
+    await Promise.all(
+      publishedIds.flatMap((id, i) => {
+        const record = records[i];
+        const assetUrls = record ? [...record.thumbnails, record.meshUrl] : [];
+        return [
+          deleteBlobSafe(communityDesignBlobPath(id), userId),
+          ...assetUrls.map((url) => deleteBlobSafe(url, userId)),
+        ];
+      })
+    );
+
+    if (publishedIds.length > 0) {
+      // Mirrors the single-design DELETE handler: each liker's reverse liked
+      // set must drop these ids before the likes sets are deleted, or other
+      // users keep phantom hearts pointing at dead designs forever.
+      const likerSets = await Promise.all(
+        publishedIds.map((id) => redis.smembers(communityLikesKey(id)))
+      );
+      await Promise.all(
+        publishedIds.flatMap((id, i) =>
+          likerSets[i].map((liker) => redis.srem(communityLikedKey(liker), id))
+        )
+      );
+      await Promise.all(
+        COMMUNITY_INDEX_SORTS.map((sort) => redis.zrem(communityIndexKey(sort), ...publishedIds))
+      );
+      // A remix must also leave its parent's children set, mirroring the
+      // single-design DELETE handler; otherwise a live parent keeps a
+      // dangling child id forever.
+      await Promise.all(
+        publishedIds.flatMap((id, i) => {
+          const parentId = records[i]?.lineage?.parentId;
+          return parentId === undefined ? [] : [redis.srem(communityChildrenKey(parentId), id)];
+        })
+      );
+      await redis.del(
+        ...publishedIds.flatMap((id) => [
+          communityDesignKey(id),
+          communityLikesKey(id),
+          communityChildrenKey(id),
+          communityReportsKey(id),
+        ])
+      );
+    }
+
+    const likedIds = await redis.smembers(communityLikedKey(userId));
+    for (const likedId of likedIds) {
+      const removed = await redis.srem(communityLikesKey(likedId), userId);
+      // The SREM result gates the decrement so a replayed cascade can't
+      // double-decrement a surviving design's like count.
+      if (removed > 0 && (await redis.hexists(communityDesignKey(likedId), 'likes')) === 1) {
+        await redis.hincrby(communityDesignKey(likedId), 'likes', -1);
+      }
+    }
+
+    const reportedIds = await redis.smembers(communityReportedKey(userId));
+    for (const reportedId of reportedIds) {
+      await redis.srem(communityReportsKey(reportedId), userId);
+    }
+
+    // 4. Drop all per-user KV state in one DEL. The author set falls back to
+    //    the publicId stored on a published record so the key still clears if
+    //    TOKEN_SALT was rotated out since publish.
+    const authorPublicId =
+      deriveAuthorPublicId(userId) ??
+      records.find((record) => record !== null)?.authorPublicId ??
+      null;
     await redis.del(
       userIndexKey(userId, 'layouts'),
       userIndexKey(userId, 'designs'),
@@ -83,10 +186,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       userIndexUpdatedAtKey(userId),
       userProfileKey(userId),
       userSessionsKey(userId),
-      userTombstoneSweptAtKey(userId)
+      userTombstoneSweptAtKey(userId),
+      communityLikedKey(userId),
+      communityPublishedKey(userId),
+      communityReportedKey(userId),
+      ...(authorPublicId === null ? [] : [communityAuthorKey(authorPublicId)])
     );
 
-    // 4. Clear the session cookie on the device making this request.
+    // 5. Clear the session cookie on the device making this request.
     clearSessionCookie(res);
     res.status(204).end();
   } catch (error) {
@@ -98,6 +205,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   }
 }
 
+async function readCommunityDesignSafe(
+  designId: string,
+  userId: string
+): Promise<CommunityDesignRecord | null> {
+  try {
+    return await readCommunityDesignBlob(designId);
+  } catch (error) {
+    logger.error('account-delete: community record read failed', {
+      userId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return null;
+  }
+}
+
 async function deleteBlobSafe(path: string, userId: string): Promise<void> {
   try {
     await deleteBlob(path);
@@ -106,6 +228,6 @@ async function deleteBlobSafe(path: string, userId: string): Promise<void> {
       userId,
       error: error instanceof Error ? error.message : String(error),
     });
-    // Continue — leftover blobs are storage cost, not a correctness issue.
+    // Continue: leftover blobs are storage cost, not a correctness issue.
   }
 }

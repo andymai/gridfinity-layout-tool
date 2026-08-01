@@ -24,6 +24,9 @@ declare -A UNION_TYPES=(
   ["DropTarget"]="trash,staging"
   ["EditSource"]="local,remote,init"
   ["MobileLayersTab"]="layers,tools"
+  ["CommunityCategory"]="tools,hardware,kitchen,office,crafts,electronics,toys-games,other"
+  ["CommunityDesignStatus"]="live,hidden,removed"
+  ["CommunityIndexSort"]="newest,remixes,likes"
 )
 
 # Get files to check

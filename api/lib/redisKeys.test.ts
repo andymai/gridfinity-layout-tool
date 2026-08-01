@@ -9,6 +9,17 @@ import {
   userProfileKey,
   userIndexKey,
   userIndexUpdatedAtKey,
+  COMMUNITY_INDEX_SORTS,
+  communityDesignKey,
+  communityIndexKey,
+  communityLikesKey,
+  communityLikedKey,
+  communityChildrenKey,
+  communityAuthorKey,
+  communityPublishedKey,
+  communityReportsKey,
+  communityReportedKey,
+  communityDenylistKey,
 } from './redisKeys';
 
 describe('redisKeys', () => {
@@ -53,6 +64,68 @@ describe('redisKeys', () => {
 
     it('userIndexUpdatedAtKey produces users:{uid}:indexUpdatedAt', () => {
       expect(userIndexUpdatedAtKey('user-1')).toBe('users:user-1:indexUpdatedAt');
+    });
+  });
+
+  describe('community keys', () => {
+    it('communityDesignKey produces community:design:{id}', () => {
+      expect(communityDesignKey('abc123def456')).toBe('community:design:abc123def456');
+    });
+
+    it('communityIndexKey produces community:index:{sort} for every sort', () => {
+      expect(COMMUNITY_INDEX_SORTS).toEqual(['newest', 'remixes', 'likes']);
+      expect(communityIndexKey('newest')).toBe('community:index:newest');
+      expect(communityIndexKey('remixes')).toBe('community:index:remixes');
+      expect(communityIndexKey('likes')).toBe('community:index:likes');
+    });
+
+    it('communityLikesKey produces community:likes:{id}', () => {
+      expect(communityLikesKey('abc123def456')).toBe('community:likes:abc123def456');
+    });
+
+    it('communityLikedKey produces community:liked:{uid}', () => {
+      expect(communityLikedKey('user-1')).toBe('community:liked:user-1');
+    });
+
+    it('communityChildrenKey produces community:children:{id}', () => {
+      expect(communityChildrenKey('abc123def456')).toBe('community:children:abc123def456');
+    });
+
+    it('communityAuthorKey produces community:author:{publicId}', () => {
+      expect(communityAuthorKey('deadbeef')).toBe('community:author:deadbeef');
+    });
+
+    it('communityPublishedKey produces community:published:{uid}', () => {
+      expect(communityPublishedKey('user-1')).toBe('community:published:user-1');
+    });
+
+    it('communityReportsKey produces community:reports:{id}', () => {
+      expect(communityReportsKey('abc123def456')).toBe('community:reports:abc123def456');
+    });
+
+    it('communityReportedKey produces community:reported:{uid}', () => {
+      expect(communityReportedKey('user-1')).toBe('community:reported:user-1');
+    });
+
+    it('communityDenylistKey produces community:denylist', () => {
+      expect(communityDenylistKey()).toBe('community:denylist');
+    });
+
+    it('community keys never collide with each other for a shared id segment', () => {
+      const id = 'a';
+      const keys = [
+        communityDesignKey(id),
+        communityIndexKey('newest'),
+        communityLikesKey(id),
+        communityLikedKey(id),
+        communityChildrenKey(id),
+        communityAuthorKey(id),
+        communityPublishedKey(id),
+        communityReportsKey(id),
+        communityReportedKey(id),
+        communityDenylistKey(),
+      ];
+      expect(new Set(keys).size).toBe(keys.length);
     });
   });
 

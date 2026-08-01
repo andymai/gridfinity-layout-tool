@@ -1,4 +1,5 @@
-import type { ExampleDesign, ExampleTechnique } from '@/features/bin-designer/types/exampleGallery';
+import type { ExampleDesign } from '@/features/bin-designer/types/exampleGallery';
+import type { ExampleTechnique } from '@/shared/types/exampleTechniques';
 import { WALL_CUTOUT_EXAMPLES } from './cutouts';
 import { SCOOP_EXAMPLES } from './scoops';
 import { LID_EXAMPLES } from './lids';

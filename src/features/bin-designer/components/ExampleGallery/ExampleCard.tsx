@@ -1,6 +1,6 @@
 import { thumbnailUrl } from '@/features/bin-designer/data/examples/thumbnails';
 import type { ExampleDesign } from '@/features/bin-designer/types/exampleGallery';
-import { TECHNIQUE_CONFIG } from '@/features/bin-designer/types/exampleGallery';
+import { TECHNIQUE_CONFIG } from '@/shared/types/exampleTechniques';
 import { useTranslation } from '@/i18n';
 
 interface ExampleCardProps {
