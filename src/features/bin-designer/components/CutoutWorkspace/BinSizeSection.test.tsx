@@ -86,4 +86,36 @@ describe('BinSizeSection', () => {
     render(<BinSizeSection offBoardCount={0} growTarget={{ width: 4, depth: 3 }} />);
     expect(screen.queryByText('binDesigner.cutoutEditor.growBinToFit')).not.toBeInTheDocument();
   });
+
+  // Screen readers got nothing when a cutout went off-board before this.
+  it('announces the warning assertively', () => {
+    render(<BinSizeSection offBoardCount={1} onClampOffBoard={vi.fn()} />);
+    expect(screen.getByRole('alert')).toHaveTextContent('binDesigner.cutoutEditor.offBoardWarning');
+  });
+
+  it('puts the unavailable reason above the actions, not after them', () => {
+    render(<BinSizeSection offBoardCount={1} onClampOffBoard={vi.fn()} growTarget={null} />);
+    const alert = screen.getByRole('alert');
+    const order = [...alert.querySelectorAll('p, button')].map((n) => n.textContent);
+    expect(order.indexOf('binDesigner.cutoutEditor.growBinUnavailable')).toBeLessThan(
+      order.indexOf('binDesigner.cutoutEditor.bringBackIn')
+    );
+  });
+
+  // The dock narrows to 220px and 7 of 15 locales overrun the label there, so a
+  // fixed-height button would clip the second line.
+  it('lets the action labels wrap instead of clipping', () => {
+    render(
+      <BinSizeSection
+        offBoardCount={1}
+        onClampOffBoard={vi.fn()}
+        growTarget={{ width: 4, depth: 3 }}
+        onGrowToFit={vi.fn()}
+      />
+    );
+    for (const name of ['growBinToFit', 'bringBackIn']) {
+      const btn = screen.getByText(`binDesigner.cutoutEditor.${name}`);
+      expect(btn).toHaveClass('h-auto', 'whitespace-normal');
+    }
+  });
 });

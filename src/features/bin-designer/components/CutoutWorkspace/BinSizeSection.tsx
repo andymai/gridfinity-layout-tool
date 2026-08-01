@@ -7,10 +7,17 @@
  */
 
 import type { GrowTarget } from '../panel/CutoutsSection/growBinToFit';
-import { Button } from '@/design-system';
+import { Alert, Button } from '@/design-system';
 import { AlertTriangleIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 import { DimensionsSection } from '../panel/DimensionsSection/DimensionsSection';
+
+/**
+ * The dock narrows to 220px and the action names a bin size, so verbose locales
+ * (it/uk/de and four others measure past the content box) need a second line.
+ * `h-6` would clip it, so the button sizes to its content instead.
+ */
+const WRAPPING_ACTION = 'h-auto min-h-6 whitespace-normal py-1 leading-tight';
 
 interface BinSizeSectionProps {
   /** Count of cutouts stranded past the board after a resize (0 = none). */
@@ -43,32 +50,49 @@ export function BinSizeSection({
       <DimensionsSection />
 
       {offBoardCount > 0 && (
-        <div className="space-y-2 rounded-md border border-error/40 bg-error-muted p-2">
-          <div className="flex items-start gap-1.5">
-            <AlertTriangleIcon size="xs" className="mt-0.5 shrink-0 text-error" />
-            <span className="text-[11px] leading-snug text-error">
-              {t('binDesigner.cutoutEditor.offBoardWarning', { count: offBoardCount })}
-            </span>
-          </div>
-          {growTarget && onGrowToFit && (
-            <Button type="button" variant="primary" size="sm" fullWidth onClick={onGrowToFit}>
-              {t('binDesigner.cutoutEditor.growBinToFit', {
-                width: growTarget.width,
-                depth: growTarget.depth,
-              })}
-            </Button>
-          )}
-          {onClampOffBoard && (
-            <Button type="button" variant="secondary" size="sm" fullWidth onClick={onClampOffBoard}>
-              {t('binDesigner.cutoutEditor.bringBackIn')}
-            </Button>
-          )}
+        // Alert carries role="alert", so the warning now announces when a cutout
+        // is stranded; the hand-rolled box it replaces was silent.
+        <Alert intent="error" icon={<AlertTriangleIcon size="xs" className="mt-0.5" />}>
+          <p className="leading-snug text-error">
+            {t('binDesigner.cutoutEditor.offBoardWarning', { count: offBoardCount })}
+          </p>
+          {/* Reads as the reason the grow action is absent, so it belongs with
+              the warning rather than below the buttons. */}
           {growTarget === null && (
-            <span className="block text-[10px] leading-snug text-content-tertiary">
+            <p className="mt-1 leading-snug text-error/80">
               {t('binDesigner.cutoutEditor.growBinUnavailable')}
-            </span>
+            </p>
           )}
-        </div>
+          <div className="mt-2 space-y-2">
+            {growTarget && onGrowToFit && (
+              <Button
+                type="button"
+                variant="primary"
+                size="sm"
+                fullWidth
+                className={WRAPPING_ACTION}
+                onClick={onGrowToFit}
+              >
+                {t('binDesigner.cutoutEditor.growBinToFit', {
+                  width: growTarget.width,
+                  depth: growTarget.depth,
+                })}
+              </Button>
+            )}
+            {onClampOffBoard && (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                fullWidth
+                className={WRAPPING_ACTION}
+                onClick={onClampOffBoard}
+              >
+                {t('binDesigner.cutoutEditor.bringBackIn')}
+              </Button>
+            )}
+          </div>
+        </Alert>
       )}
     </div>
   );
