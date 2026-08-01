@@ -220,7 +220,7 @@ export interface PathPoint {
 export type ReorderDirection = 'forward' | 'backward' | 'front' | 'back';
 
 /** Narrowed property subset for bulk cutout toggling (lock/hide) */
-export type CutoutToggleProperties = Partial<Pick<Cutout, 'locked' | 'hidden'>>;
+export type CutoutToggleProperties = Partial<Pick<Cutout, 'locked' | 'hidden' | 'name'>>;
 
 /** Global cutout configuration for solid bins */
 export interface CutoutConfig {
@@ -274,6 +274,15 @@ export interface Cutout {
    * Applies only to ungrouped rectangle cutouts; ignored for circles/paths and grouped cutouts.
    */
   readonly scoopEdges?: CutoutScoopEdges;
+  /**
+   * Editor-only display name shown in the shape list (issue #3053). Optional —
+   * unset rows fall back to a label derived from the shape and its size, so
+   * most designs never carry one.
+   *
+   * Deliberately NOT {@link label}: that is the text physically engraved on the
+   * bin, so renaming a row must never change what gets cut into the part.
+   */
+  readonly name?: string;
   /** When true, the cutout cannot be moved, resized, or rotated */
   readonly locked?: boolean;
   /** When true, the cutout is not rendered or selectable (faint ghost only) */

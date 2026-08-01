@@ -235,15 +235,52 @@ export function createCutoutSlice(set: Set) {
           break;
       }
 
-      const zById = new Map(next.map((c, i) => [c.id, i]));
-      const restacked = cutouts.map((c) => {
-        const z = zById.get(c.id) ?? 0;
-        return c.zIndex === z ? c : { ...c, zIndex: z };
-      });
-      if (restacked.every((c, i) => c === cutouts[i])) return;
+      commitStack(state, next);
+    });
+  };
 
-      pushHistoryEntry(state, { affectsGeometry: zOrderAffectsGeometry(state) });
-      state.params.cutouts = restacked;
+  /**
+   * Renumber onto contiguous `zIndex` values from a bottom-to-top order and
+   * commit, skipping history entirely when nothing actually moved.
+   */
+  const commitStack = (state: Draft<DesignerState>, bottomToTop: readonly Cutout[]): void => {
+    const cutouts = state.params.cutouts;
+    const zById = new Map(bottomToTop.map((c, i) => [c.id, i]));
+    const restacked = cutouts.map((c) => {
+      const z = zById.get(c.id) ?? 0;
+      return c.zIndex === z ? c : { ...c, zIndex: z };
+    });
+    if (restacked.every((c, i) => c === cutouts[i])) return;
+
+    pushHistoryEntry(state, { affectsGeometry: zOrderAffectsGeometry(state) });
+    state.params.cutouts = restacked;
+  };
+
+  /**
+   * Drag-and-drop reorder: lift `ids` out of the stack and drop them directly
+   * above `targetId`, or onto the bottom when it is null.
+   *
+   * The moved shapes keep their order among themselves, and a target inside the
+   * moved set is ignored (dropping a selection onto itself is a no-op rather
+   * than a reshuffle).
+   */
+  const moveCutoutsAbove = (ids: readonly string[], targetId: string | null): void => {
+    if (ids.length === 0) return;
+    set((state) => {
+      const idSet = new Set(ids);
+      if (targetId !== null && idSet.has(targetId)) return;
+
+      const order = stackBottomToTop(state.params.cutouts);
+      const moved = order.filter((c) => idSet.has(c.id));
+      if (moved.length === 0) return;
+      const rest = order.filter((c) => !idSet.has(c.id));
+
+      const at = targetId === null ? 0 : rest.findIndex((c) => c.id === targetId) + 1;
+      // An unknown target would splice at 0 and silently send the selection to
+      // the bottom; leave the stack alone instead.
+      if (targetId !== null && at === 0) return;
+
+      commitStack(state, [...rest.slice(0, at), ...moved, ...rest.slice(at)]);
     });
   };
 
@@ -310,6 +347,7 @@ export function createCutoutSlice(set: Set) {
     setCutoutProperty,
     setCutoutColor,
     reorderCutouts,
+    moveCutoutsAbove,
     showAllCutouts,
 
     // Convenience wrappers for backward compatibility

@@ -206,6 +206,11 @@ export interface DesignerState {
     patch: { color?: string | null; colorScope?: CutoutColorScope }
   ) => void;
   reorderCutouts: (ids: readonly string[], direction: ReorderDirection) => void;
+  /**
+   * Drag-and-drop reorder: move `ids` directly above `targetId` in the stack,
+   * or to the bottom when it is null. Moved shapes keep their relative order.
+   */
+  moveCutoutsAbove: (ids: readonly string[], targetId: string | null) => void;
   showAllCutouts: () => void;
 
   // Convenience wrappers (delegate to setCutoutProperty/reorderCutouts)

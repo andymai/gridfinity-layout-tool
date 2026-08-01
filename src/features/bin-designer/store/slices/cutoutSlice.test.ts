@@ -233,6 +233,87 @@ describe('cutoutSlice - consolidated actions', () => {
     });
   });
 
+  describe('moveCutoutsAbove', () => {
+    const stackOrder = (): string[] => {
+      const cutouts = useDesignerStore.getState().params.cutouts;
+      const indexById = new Map(cutouts.map((c, i) => [c.id, i]));
+      return [...cutouts]
+        .sort(
+          (a, b) =>
+            (a.zIndex ?? 0) - (b.zIndex ?? 0) ||
+            (indexById.get(a.id) ?? 0) - (indexById.get(b.id) ?? 0)
+        )
+        .map((c) => c.id);
+    };
+
+    const seed = (): void => {
+      const { addCutout } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b' }));
+      addCutout(createTestCutout({ id: 'c' }));
+    };
+
+    it('drops the shape directly above the target', () => {
+      seed(); // bottom -> top: a, b, c
+      useDesignerStore.getState().moveCutoutsAbove(['a'], 'b');
+      expect(stackOrder()).toEqual(['b', 'a', 'c']);
+    });
+
+    it('drops to the bottom for a null target', () => {
+      seed();
+      useDesignerStore.getState().moveCutoutsAbove(['c'], null);
+      expect(stackOrder()).toEqual(['c', 'a', 'b']);
+    });
+
+    it('keeps the moved shapes in their own order', () => {
+      seed();
+      useDesignerStore.getState().moveCutoutsAbove(['a', 'b'], 'c');
+      expect(stackOrder()).toEqual(['c', 'a', 'b']);
+    });
+
+    it('is a no-op when dropping a selection onto itself', () => {
+      seed();
+      const before = stackOrder();
+      const historyBefore = useDesignerStore.getState().history.past.length;
+
+      useDesignerStore.getState().moveCutoutsAbove(['a', 'b'], 'a');
+
+      expect(stackOrder()).toEqual(before);
+      expect(useDesignerStore.getState().history.past.length).toBe(historyBefore);
+    });
+
+    it('leaves the stack alone for an unknown target', () => {
+      seed();
+      const before = stackOrder();
+      useDesignerStore.getState().moveCutoutsAbove(['a'], 'nope');
+      expect(stackOrder()).toEqual(before);
+    });
+
+    it('is a no-op when the shape is already there', () => {
+      seed();
+      const historyBefore = useDesignerStore.getState().history.past.length;
+      useDesignerStore.getState().moveCutoutsAbove(['b'], 'a');
+      expect(useDesignerStore.getState().history.past.length).toBe(historyBefore);
+    });
+
+    it('ignores empty ids', () => {
+      seed();
+      const historyBefore = useDesignerStore.getState().history.past.length;
+      useDesignerStore.getState().moveCutoutsAbove([], 'a');
+      expect(useDesignerStore.getState().history.past.length).toBe(historyBefore);
+    });
+
+    it('renumbers onto contiguous layers', () => {
+      seed();
+      useDesignerStore.getState().moveCutoutsAbove(['a'], 'c');
+      const zs = useDesignerStore
+        .getState()
+        .params.cutouts.map((c) => c.zIndex)
+        .sort((x, y) => (x ?? 0) - (y ?? 0));
+      expect(zs).toEqual([0, 1, 2]);
+    });
+  });
+
   describe('showAllCutouts', () => {
     it('unhides all hidden cutouts', () => {
       const { addCutout, showAllCutouts } = useDesignerStore.getState();
