@@ -22,8 +22,13 @@ export interface Edge {
   readonly bulge: number;
 }
 
+/**
+ * True distance, not per-axis: comparing each axis separately describes a
+ * square, which accepts a diagonal gap of `tol * sqrt(2)` — 41% wider than the
+ * tolerance claims.
+ */
 function near(p: Pt, q: Pt, tol: number): boolean {
-  return Math.abs(p.x - q.x) <= tol && Math.abs(p.y - q.y) <= tol;
+  return Math.hypot(p.x - q.x, p.y - q.y) <= tol;
 }
 
 /** Reverse travel along an edge. A bulge bows right of travel, so it flips. */

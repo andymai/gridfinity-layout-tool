@@ -61,6 +61,19 @@ describe('chainEdges', () => {
     expect(chainEdges(sloppy)).toHaveLength(1);
   });
 
+  // Per-axis comparison describes a square, which would accept a diagonal gap
+  // of tol * sqrt(2) — wider than the tolerance claims to allow.
+  it('measures the gap as a distance, not per axis', () => {
+    // (0.04, 0.04) is 0.0566mm apart: inside the tolerance on either axis
+    // alone, outside it as an actual distance.
+    const diagonal = [edge(0, 0, 100, 0), edge(100.04, 0.04, 100, 80), SQUARE[2], SQUARE[3]];
+    expect(chainEdges(diagonal)).toHaveLength(0);
+
+    // (0.03, 0.03) is 0.0424mm apart, genuinely within tolerance.
+    const inside = [edge(0, 0, 100, 0), edge(100.03, 0.03, 100, 80), SQUARE[2], SQUARE[3]];
+    expect(chainEdges(inside)).toHaveLength(1);
+  });
+
   it('refuses to join a gap wider than the tolerance', () => {
     const gapped = [edge(0, 0, 100, 0), edge(105, 0, 100, 80), SQUARE[2], SQUARE[3]];
     expect(chainEdges(gapped)).toHaveLength(0);
