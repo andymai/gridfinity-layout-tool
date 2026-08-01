@@ -1,0 +1,34 @@
+src/features/design-linking/components/LinkedDesignSection/LinkedDesignSection.tsx
+  s_0fc02d8d0f29b4::t_73befa51a169b7 10,17
+  s_0fc02d8d0f29b4::t_44596abc069982 41,125-139,141
+src/features/design-linking/hooks/useBinLinking.ts
+  s_0fc02d8d0f29b4::t_ca069f6c2f2404 350-353,355-366,369
+src/features/design-linking/hooks/useBinLinking.test.ts
+  s_0fc02d8d0f29b4::t_519baa482678c7 860,899
+  s_0fc02d8d0f29b4::t_65162bac736aac 890-898,900-929,936-954
+src/features/bin-designer/components/DesignerPage/useFractionalEdgeMismatch.test.ts
+  s_0fc02d8d0f29b4::t_519baa482678c7 92,94-95
+src/features/bin-designer/store/customBinRegistry.ts
+  s_0fc02d8d0f29b4::t_75adc5ed548b42 53-58,79,82-86,93,117,144
+  s_0fc02d8d0f29b4::t_69a475eacc18a9 52
+src/features/bin-designer/hooks/useCreateFromBin.ts
+  s_0fc02d8d0f29b4::t_323d6938b6f088 179,185-189
+src/features/bin-designer/hooks/useCreateFromBin.test.ts
+  s_0fc02d8d0f29b4::t_519baa482678c7 344-345,347-348
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "eae417ca699187ee2e9e0682ccd82467c8f35a9d",
+  "prompts": {},
+  "sessions": {
+    "s_0fc02d8d0f29b4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4aff0d70-e312-459f-84ab-c0dd3cec1347",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
