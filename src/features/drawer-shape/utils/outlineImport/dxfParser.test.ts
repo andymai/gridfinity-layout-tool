@@ -5,6 +5,7 @@ import {
   flattenOutline,
   polylineSignedArea,
 } from '@/shared/utils/drawerOutlineGeometry';
+import { validateOutline } from '@/shared/utils/drawerOutline';
 import { parseDxfString } from './dxfParser';
 
 /** Build a group-code stream from (code, value) pairs. */
@@ -139,10 +140,14 @@ describe('parseDxfString', () => {
     if (!isOk(r)) return;
     // The rectangle and the circle are two separate loops.
     expect(r.value).toHaveLength(2);
-    const circle = r.value.find((l) => l.vertices.length === 2);
+    const circle = r.value.find((l) => l.vertices.length === 4);
     expect(circle).toBeDefined();
-    // A full turn splits into two half circles, each |bulge| = tan(45°) = 1.
-    expect(circle?.vertices.every((v) => Math.abs(Math.abs(v.bulge ?? 0) - 1) < 1e-9)).toBe(true);
+    // Quarter arcs, each |bulge| = tan(90°/4). Halves would describe the same
+    // circle in two vertices, which is below the outline model's floor.
+    const quarter = Math.tan(Math.PI / 8);
+    expect(circle?.vertices.every((v) => Math.abs(Math.abs(v.bulge ?? 0) - quarter) < 1e-9)).toBe(
+      true
+    );
     // Area is read off the flattened polyline, whose chords cut just inside the
     // arc, so it lands a fraction under the true circle rather than exactly on.
     const exact = Math.PI * 100;
@@ -188,6 +193,29 @@ describe('parseDxfString', () => {
   it('rejects a binary DXF with a reason rather than garbage', () => {
     const r = parseDxfString('AutoCAD Binary DXF\r\n\u0000\u0001');
     expect(isErr(r) && r.error.code).toBe('BINARY_DXF');
+  });
+
+  // A circle is the whole perimeter for a round drawer, and two half-arcs
+  // describe it perfectly while sitting below the model's three-vertex floor.
+  it('imports a DXF whose only entity is a circle', () => {
+    const r = parseDxfString(entities([0, 'CIRCLE'], [10, 50], [20, 50], [40, 40]));
+    expect(isOk(r)).toBe(true);
+    if (!isOk(r)) return;
+    expect(r.value).toHaveLength(1);
+    expect(r.value[0].vertices.length).toBeGreaterThanOrEqual(3);
+    expect(validateOutline({ vertices: r.value[0].vertices }, 420, 336, 42)).toBeNull();
+  });
+
+  // Skipping a blank would advance past its partner too, shifting every pair
+  // after it — so it fails outright rather than misreading the rest.
+  it('rejects a blank line in a group-code position', () => {
+    const withBlank = square().replace('0\nLWPOLYLINE', '\n0\nLWPOLYLINE');
+    const r = parseDxfString(withBlank);
+    expect(isErr(r) && r.error.code).toBe('PARSE_FAILED');
+  });
+
+  it('tolerates a trailing newline, which every writer emits', () => {
+    expect(isOk(parseDxfString(square() + '\n\n'))).toBe(true);
   });
 
   it('rejects a file that is not a group-code stream', () => {

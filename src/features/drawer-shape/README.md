@@ -34,7 +34,11 @@ hatching, baseplate generation/splitting) derives from it.
   same shape (closed loops of `OutlineVertex` in mm, Y-up), so loop selection,
   fitting and simplification are written once. DXF group code 42 **is**
   `OutlineVertex.bulge` (same `tan(sweep/4)` convention), so a CAD arc imports
-  as an arc. Loaded through a dynamic `import()` from `useOutlineImport` —
+  as an arc. Routing is by content, not by extension — the two formats are
+  trivially distinguishable and a renamed drawing is still what it is. Curves
+  can close a loop in two vertices (a circle is two half-arcs), below the
+  model's floor, so `ensureMinVertices` subdivides arcs until it clears.
+  Loaded through a dynamic `import()` from `useOutlineImport` —
   `DrawerShapeSection` is eager, so a static import would put both parsers in
   the eager bundle.
 - `utils/traceBinFootprint.ts` — bins → editor grid (all layers, staging

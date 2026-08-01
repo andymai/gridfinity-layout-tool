@@ -46,10 +46,18 @@ interface Pair {
  */
 function tokenize(text: string): Pair[] | null {
   const lines = text.split(/\r\n|\r|\n/);
+  // A trailing newline leaves empty elements behind; those are the only blanks
+  // a well-formed file has. Skipping a blank ANYWHERE else would advance past
+  // its partner too, shifting every pair after it — so a blank in a code
+  // position is a hard failure, not something to step over.
+  while (lines.length > 0 && lines[lines.length - 1].trim() === '') lines.pop();
+
   const pairs: Pair[] = [];
   for (let i = 0; i + 1 < lines.length; i += 2) {
     const raw = lines[i].trim();
-    if (raw === '') continue;
+    // `Number('')` is 0, which is a perfectly good group code, so the empty
+    // case has to be rejected before the numeric test rather than by it.
+    if (raw === '') return null;
     const code = Number(raw);
     if (!Number.isInteger(code)) return null;
     pairs.push({ code, value: lines[i + 1].trim() });
@@ -75,8 +83,14 @@ function insUnitsScale(pairs: readonly Pair[]): number {
   return 1;
 }
 
-/** Bulge for an arc sweeping `sweep` radians, halved while it exceeds 180°. */
-function arcEdges(center: Pt, r: number, startDeg: number, endDeg: number): Edge[] {
+/**
+ * An arc as one or more edges, split so no sub-arc exceeds a half circle.
+ *
+ * `minParts` forces a finer split than the bulge cap requires — a full circle
+ * would otherwise be two vertices, which is a valid curve but below the
+ * outline model's three-vertex floor.
+ */
+function arcEdges(center: Pt, r: number, startDeg: number, endDeg: number, minParts = 1): Edge[] {
   const TAU = Math.PI * 2;
   const start = (startDeg * Math.PI) / 180;
   let sweep = (((((endDeg - startDeg) * Math.PI) / 180) % TAU) + TAU) % TAU;
@@ -86,7 +100,7 @@ function arcEdges(center: Pt, r: number, startDeg: number, endDeg: number): Edge
   // into equal sub-arcs rather than rejected. The slack goes on the ratio, not
   // the divisor: 2π/(π−ε) is just over 2, which would split a full circle into
   // three arcs instead of two.
-  const parts = Math.max(1, Math.ceil(sweep / Math.PI - 1e-9));
+  const parts = Math.max(minParts, Math.ceil(sweep / Math.PI - 1e-9));
   const step = sweep / parts;
   const at = (t: number): Pt => ({
     x: center.x + r * Math.cos(start + t),
@@ -209,7 +223,10 @@ export function parseDxfString(text: string): Result<ImportedLoop[], OutlineImpo
         const r = num(body, 40);
         if (cx === undefined || cy === undefined || r === undefined || r <= 0) break;
         // A full turn is its own closed loop, so it never reaches the chainer.
-        const edges = arcEdges({ x: cx, y: cy }, r, 0, 360);
+        // Quartered rather than halved: two vertices describe the circle
+        // perfectly well but sit below the outline model's three-vertex floor,
+        // which would make a circle-only DXF import as "no closed loop".
+        const edges = arcEdges({ x: cx, y: cy }, r, 0, 360, 4);
         loops.push({
           vertices: edges.map((e) => ({ x: e.a.x, y: e.a.y, bulge: e.bulge })),
         });

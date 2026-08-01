@@ -43,7 +43,10 @@ export function largestLoop(loops: readonly ImportedLoop[]): ImportedLoop | null
   let best: ImportedLoop | null = null;
   let bestArea = 0;
   for (const loop of loops) {
-    if (loop.vertices.length < 3) continue;
+    // Two vertices is enough when both segments are arcs (a circle, or a D
+    // profile chained from a line and an arc). `ensureMinVertices` raises it to
+    // the model's floor later; rejecting it here would lose the shape outright.
+    if (loop.vertices.length < 2) continue;
     const area = Math.abs(polylineSignedArea(flattenOutline({ vertices: [...loop.vertices] })));
     if (area > bestArea) {
       bestArea = area;

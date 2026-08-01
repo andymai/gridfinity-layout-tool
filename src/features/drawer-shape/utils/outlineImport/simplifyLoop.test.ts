@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import type { OutlineVertex } from '@/core/types';
 import { OUTLINE_MAX_VERTICES } from '@/shared/utils/drawerOutline';
-import { simplifyLoop } from './simplifyLoop';
+import { flattenOutline, polylineSignedArea } from '@/shared/utils/drawerOutlineGeometry';
+import { ensureMinVertices, simplifyLoop } from './simplifyLoop';
 
 /** `n` points sampled around a circle — the shape a flattened curve produces. */
 function circle(n: number, r = 200): OutlineVertex[] {
@@ -60,5 +61,52 @@ describe('simplifyLoop', () => {
     }));
     const r = simplifyLoop(jagged);
     expect(r.vertices.length).toBeLessThanOrEqual(OUTLINE_MAX_VERTICES);
+  });
+});
+
+// The outline model needs three vertices, but a curve can close a loop in two:
+// a circle is two half-arcs, a D profile is one line plus one arc. Both enclose
+// real area and would otherwise be rejected as `too_few_vertices`.
+describe('ensureMinVertices', () => {
+  /** Circle as two half-arcs — geometrically fine, structurally illegal. */
+  const twoArcCircle: OutlineVertex[] = [
+    { x: 0, y: 0, bulge: 1 },
+    { x: 100, y: 0, bulge: 1 },
+  ];
+
+  it('leaves a loop that already clears the floor untouched', () => {
+    const v: OutlineVertex[] = [
+      { x: 0, y: 0 },
+      { x: 10, y: 0 },
+      { x: 10, y: 10 },
+    ];
+    expect(ensureMinVertices(v)).toEqual(v);
+  });
+
+  it('subdivides arcs until the loop clears the floor', () => {
+    const out = ensureMinVertices(twoArcCircle);
+    expect(out.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('changes no geometry, only how it is described', () => {
+    const before = Math.abs(polylineSignedArea(flattenOutline({ vertices: twoArcCircle })));
+    const after = Math.abs(
+      polylineSignedArea(flattenOutline({ vertices: ensureMinVertices(twoArcCircle) }))
+    );
+    expect(after).toBeCloseTo(before, 4);
+  });
+
+  it('keeps every sub-arc inside the bulge cap', () => {
+    for (const v of ensureMinVertices(twoArcCircle)) {
+      expect(Math.abs(v.bulge ?? 0)).toBeLessThanOrEqual(1 + 1e-9);
+    }
+  });
+
+  it('gives up on a loop with no arc to split rather than inventing corners', () => {
+    const straight: OutlineVertex[] = [
+      { x: 0, y: 0 },
+      { x: 10, y: 0 },
+    ];
+    expect(ensureMinVertices(straight)).toEqual(straight);
   });
 });

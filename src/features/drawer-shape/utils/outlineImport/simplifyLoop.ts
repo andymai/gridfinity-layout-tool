@@ -8,7 +8,12 @@
  */
 
 import type { OutlineVertex } from '@/core/types';
-import { BULGE_EPS } from '@/shared/utils/drawerOutlineGeometry';
+import {
+  arcGeometry,
+  arcPointAt,
+  bulgeForSweep,
+  BULGE_EPS,
+} from '@/shared/utils/drawerOutlineGeometry';
 import { OUTLINE_MAX_VERTICES } from '@/shared/utils/drawerOutline';
 
 /** Perpendicular distance from `p` to the segment `a`–`b`. */
@@ -103,4 +108,58 @@ export function simplifyLoop(
   }
 
   return { vertices: best, removed: vertices.length - best.length };
+}
+
+/** Halve the widest-sweeping arc, or null when the loop has no arc to split. */
+function splitWidestArc(vertices: readonly OutlineVertex[]): OutlineVertex[] | null {
+  let widest = -1;
+  let widestBulge = BULGE_EPS;
+  for (let i = 0; i < vertices.length; i++) {
+    const b = Math.abs(vertices[i].bulge ?? 0);
+    if (b > widestBulge) {
+      widestBulge = b;
+      widest = i;
+    }
+  }
+  if (widest === -1) return null;
+
+  const a = vertices[widest];
+  const b = vertices[(widest + 1) % vertices.length];
+  const arc = arcGeometry(a, b, a.bulge ?? 0);
+  if (arc === null) return null;
+  const mid = arcPointAt(arc, 0.5);
+  const half = bulgeForSweep(arc.sweep / 2);
+
+  const out: OutlineVertex[] = [];
+  for (let i = 0; i < vertices.length; i++) {
+    if (i !== widest) {
+      out.push(vertices[i]);
+      continue;
+    }
+    out.push({ x: a.x, y: a.y, bulge: half });
+    out.push({ x: mid.x, y: mid.y, bulge: half });
+  }
+  return out;
+}
+
+/**
+ * Raise a loop to the outline model's three-vertex floor by subdividing arcs.
+ *
+ * Curves make loops that are geometrically fine and structurally illegal: a
+ * circle is two half-arcs, and a D-profile chained from one line and one arc is
+ * two vertices. Both would be rejected as `too_few_vertices` despite enclosing
+ * real area. Splitting an arc changes no geometry — the same curve, described
+ * with one more point.
+ *
+ * Returns the input unchanged when there is no arc left to split, which is a
+ * genuinely degenerate loop the caller must reject.
+ */
+export function ensureMinVertices(vertices: readonly OutlineVertex[], min = 3): OutlineVertex[] {
+  let out = [...vertices];
+  while (out.length < min) {
+    const split = splitWidestArc(out);
+    if (split === null) return out;
+    out = split;
+  }
+  return out;
 }

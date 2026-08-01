@@ -82,7 +82,7 @@ export function useOutlineImport(deps: OutlineImportDeps): UseOutlineImportRetur
 
       // Measure first, at true scale against the current drawer, so the sizes
       // the prompt reports are the file's own.
-      const measured = importOutline(text, name, {
+      const measured = importOutline(text, {
         ...common,
         drawerWidthMm: d.drawerWidthMm,
         drawerDepthMm: d.drawerDepthMm,
@@ -116,7 +116,7 @@ export function useOutlineImport(deps: OutlineImportDeps): UseOutlineImportRetur
       // then land in the same commit instead of racing it.
       let final = m;
       if (mode.kind === 'grow') {
-        const grown = importOutline(text, name, {
+        const grown = importOutline(text, {
           ...common,
           drawerWidthMm: m.requiredWidthUnits * d.gridUnitMm,
           drawerDepthMm: m.requiredDepthUnits * d.gridUnitMmY,
@@ -126,7 +126,7 @@ export function useOutlineImport(deps: OutlineImportDeps): UseOutlineImportRetur
         final = grown.value;
         d.onGrowDrawer(m.requiredWidthUnits, m.requiredDepthUnits);
       } else if (mode.kind === 'scaleToFit') {
-        const scaled = importOutline(text, name, {
+        const scaled = importOutline(text, {
           ...common,
           drawerWidthMm: d.drawerWidthMm,
           drawerDepthMm: d.drawerDepthMm,
@@ -145,7 +145,8 @@ export function useOutlineImport(deps: OutlineImportDeps): UseOutlineImportRetur
       }
       trackEvent('drawer_outline_import', {
         success: true,
-        format: name.toLowerCase().endsWith('.dxf') ? 'dxf' : 'svg',
+        // Detected from the content, not from what the file was named.
+        format: final.format,
         vertex_count: final.vertices.length,
         fit_mode: mode.kind,
         dropped_loops: final.droppedLoops,
