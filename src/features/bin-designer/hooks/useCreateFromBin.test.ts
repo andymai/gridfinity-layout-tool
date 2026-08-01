@@ -315,6 +315,42 @@ describe('useCreateFromBin', () => {
     expect(useDesignerStore.getState().pendingBinLink).toBeNull();
   });
 
+  it('does not inherit the previously open design (#3071)', async () => {
+    // The store still holds whatever design the user was just editing —
+    // navigating Layout → "create design from bin" is a client-side pushState,
+    // so nothing resets it. An inherited overhang in particular makes the new
+    // bin no longer fit the footprint it was created from.
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        overhang: { left: 9, right: 0, front: 0, back: 0, feet: false },
+        wallThickness: 2.4,
+      },
+    });
+
+    setUrlParams({
+      createFrom: 'bin',
+      linkBin: 'bin-123',
+      name: 'Fresh Bin',
+      width: '2',
+      depth: '3',
+      height: '4',
+    });
+
+    renderHook(() => useCreateFromBin());
+
+    await waitFor(() => {
+      const { params } = useDesignerStore.getState();
+      // depth/height differ from the seeded state, so these actually prove the
+      // URL dimensions were applied rather than carried over.
+      expect(params.width).toBe(2);
+      expect(params.depth).toBe(3);
+      expect(params.height).toBe(4);
+      expect(params.overhang).toEqual(DEFAULT_BIN_PARAMS.overhang);
+      expect(params.wallThickness).toBe(DEFAULT_BIN_PARAMS.wallThickness);
+    });
+  });
+
   it('should decode URL-encoded name', async () => {
     setUrlParams({
       createFrom: 'bin',

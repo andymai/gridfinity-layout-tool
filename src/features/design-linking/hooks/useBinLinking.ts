@@ -19,7 +19,7 @@ import {
   upsertRegistryEntry,
   registryEdgeFields,
 } from '@/features/bin-designer';
-import { computeMatchedEdges } from '@/shared/utils/fractionalEdge';
+import { computeMatchedEdges, edgeForPosition } from '@/shared/utils/fractionalEdge';
 import { isFractional } from '@/core/constants';
 import { useLinkingStore } from '../store';
 import {
@@ -68,8 +68,8 @@ interface UseBinLinkingReturn {
     height: number
   ) => void;
 
-  /** Realign a linked design's fractional edge to the active layout's drawer (#2518). */
-  matchDesignEdgesToDrawer: (designId: DesignId) => Promise<void>;
+  /** Realign a linked design's fractional edge to where `binId` sits (#2518, #3070). */
+  matchDesignEdgesToDrawer: (designId: DesignId, binId: BinId) => Promise<void>;
 }
 
 /**
@@ -308,25 +308,35 @@ export function useBinLinking(): UseBinLinkingReturn {
         height: String(height),
       });
 
-      // Carry the drawer's half-unit edge so the new design infers the correct
-      // orientation for a fractional bin instead of defaulting to 'end' (#2518).
-      const { fractionalEdgeX, fractionalEdgeY } = layout.drawer;
-      if (isFractional(width) && fractionalEdgeX) {
-        params.set('fractionalEdgeX', fractionalEdgeX);
-      }
-      if (isFractional(depth) && fractionalEdgeY) {
-        params.set('fractionalEdgeY', fractionalEdgeY);
+      // Carry the edge the bin's half cell actually lands on, so the new design
+      // opens oriented the way the layout draws it (#2518, #3070). Derived from
+      // the bin's position rather than the drawer's own fractional slot — those
+      // differ whenever the drawer's size on that axis is a whole number.
+      const bin = layout.bins.find((b) => b.id === binId);
+      if (bin) {
+        if (isFractional(width)) {
+          params.set(
+            'fractionalEdgeX',
+            edgeForPosition(bin.x, layout.drawer.width, layout.drawer.fractionalEdgeX)
+          );
+        }
+        if (isFractional(depth)) {
+          params.set(
+            'fractionalEdgeY',
+            edgeForPosition(bin.y, layout.drawer.depth, layout.drawer.fractionalEdgeY)
+          );
+        }
       }
 
       window.history.pushState(null, '', `/designer?${params.toString()}`);
       window.dispatchEvent(new PopStateEvent('popstate'));
     },
-    [hideCreateDesignDialog, layout.drawer]
+    [hideCreateDesignDialog, layout.drawer, layout.bins]
   );
 
-  // Realign a linked design's fractional edge to the active layout's drawer
+  // Realign a linked design's fractional edge to where its bin sits
   const matchDesignEdgesToDrawer = useCallback(
-    async (designId: DesignId): Promise<void> => {
+    async (designId: DesignId, binId: BinId): Promise<void> => {
       const designResult = await loadDesign(designId);
       if (isErr(designResult) || !designResult.value.params) {
         addToast({
@@ -337,8 +347,26 @@ export function useBinLinking(): UseBinLinkingReturn {
         return;
       }
 
+      // Read placements AFTER the load, and from the live store rather than the
+      // render-time snapshot: bins can be moved, re-linked or unlinked while
+      // IndexedDB is being read, and matching against where things used to be
+      // would leave the design mismatched the moment the success toast appears.
+      const live = useLayoutStore.getState().layout;
+      // The originating bin must still be linked to this design — otherwise the
+      // user unlinked or re-pointed it mid-read and we would be editing a
+      // design on the strength of a placement that no longer belongs to it.
+      if (!live.bins.some((b) => b.id === binId && b.linkedDesignId === designId)) return;
+
+      // Every placement, not just the originating bin: `computeMatchedEdges`
+      // resolves each axis across all of them and patches nothing when they
+      // disagree, so a design shared by bins wanting opposite edges is left
+      // alone rather than flipped toward whichever one was clicked.
+      const placements = live.bins
+        .filter((b) => b.linkedDesignId === designId)
+        .map((b) => ({ x: b.x, y: b.y }));
+
       const params = designResult.value.params;
-      const newParams = { ...params, ...computeMatchedEdges(params, layout.drawer) };
+      const newParams = { ...params, ...computeMatchedEdges(params, live.drawer, placements) };
 
       const updateResult = await updateDesignParams(designId, newParams);
       if (isErr(updateResult)) {
@@ -366,7 +394,7 @@ export function useBinLinking(): UseBinLinkingReturn {
         duration: 2000,
       });
     },
-    [layout.drawer, addToast, t]
+    [addToast, t]
   );
 
   // Delete a design and unlink the bin

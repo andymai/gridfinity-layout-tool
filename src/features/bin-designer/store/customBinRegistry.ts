@@ -50,6 +50,13 @@ export interface CustomBinRef {
   readonly fractionalEdgeManualX?: boolean;
   readonly fractionalEdgeManualY?: boolean;
   /**
+   * Half-socket base, carried for the same reason as the edges: such a bin is
+   * built from uniform 0.5-unit cells, so its fractional edge has no geometric
+   * effect and must not be flagged as mismatched (issue #3073... see #3070).
+   * Optional — entries saved before this omit it until the design is re-saved.
+   */
+  readonly halfSockets?: boolean;
+  /**
    * Item kind of the design; absent = parametric bin (pre-kind registry
    * entries and every bin save omit it). `importedMesh` designs are immutable
    * meshes — the planner/inspector use this to suppress resize affordances.
@@ -69,15 +76,21 @@ export function registryEdgeFields(params: {
   readonly fractionalEdgeY?: 'start' | 'end';
   readonly fractionalEdgeManualX?: boolean;
   readonly fractionalEdgeManualY?: boolean;
+  readonly base?: { readonly halfSockets?: boolean };
 }): Pick<
   CustomBinRef,
-  'fractionalEdgeX' | 'fractionalEdgeY' | 'fractionalEdgeManualX' | 'fractionalEdgeManualY'
+  | 'fractionalEdgeX'
+  | 'fractionalEdgeY'
+  | 'fractionalEdgeManualX'
+  | 'fractionalEdgeManualY'
+  | 'halfSockets'
 > {
   return {
     fractionalEdgeX: params.fractionalEdgeX,
     fractionalEdgeY: params.fractionalEdgeY,
     fractionalEdgeManualX: params.fractionalEdgeManualX,
     fractionalEdgeManualY: params.fractionalEdgeManualY,
+    halfSockets: params.base?.halfSockets,
   };
 }
 
@@ -101,6 +114,7 @@ function parseEntry(raw: unknown): CustomBinRef | null {
     fractionalEdgeY,
     fractionalEdgeManualX,
     fractionalEdgeManualY,
+    halfSockets,
     kind,
   } = raw as Record<string, unknown>;
   if (
@@ -127,6 +141,7 @@ function parseEntry(raw: unknown): CustomBinRef | null {
     ...(edgeY ? { fractionalEdgeY: edgeY } : {}),
     ...(typeof fractionalEdgeManualX === 'boolean' ? { fractionalEdgeManualX } : {}),
     ...(typeof fractionalEdgeManualY === 'boolean' ? { fractionalEdgeManualY } : {}),
+    ...(typeof halfSockets === 'boolean' ? { halfSockets } : {}),
     ...(kind === 'bin' || kind === 'toolRack' || kind === 'importedMesh' ? { kind } : {}),
     updatedAt,
   };

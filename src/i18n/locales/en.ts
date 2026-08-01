@@ -2592,8 +2592,8 @@ const en: Record<string, string> = {
   'binDesigner.loading': 'Loading',
   'binDesigner.loadingSharedDesign': 'Loading shared design',
   'binDesigner.fractionalEdgeMismatch':
-    "This design's half-unit foot is on a different edge than the drawer it's linked to.",
-  'binDesigner.fractionalEdgeMatchDrawer': 'Match drawer',
+    "This design's half-unit foot is on a different edge than where the linked bin sits in the drawer.",
+  'binDesigner.fractionalEdgeMatchDrawer': 'Match layout',
   'binDesigner.loadingMessage.0': 'Reticulating splines...',
   'binDesigner.loadingMessage.1': 'Tessellating surfaces...',
   'binDesigner.loadingMessage.2': 'Calibrating geometry...',
@@ -3260,8 +3260,8 @@ const en: Record<string, string> = {
   'designLinking.inspector.linkExistingTooltip': 'Link to an existing saved design',
   'designLinking.inspector.clickToEdit': 'Click to open in designer',
   'designLinking.inspector.deleteDesign': 'Delete Bin Design',
-  'designLinking.inspector.edgeMismatch': "Half-unit foot doesn't match this drawer's edge.",
-  'designLinking.inspector.matchDrawer': 'Match drawer',
+  'designLinking.inspector.edgeMismatch': "Half-unit foot doesn't match where this bin sits.",
+  'designLinking.inspector.matchDrawer': 'Match layout',
 
   // Confirmation dialogs
   'designLinking.confirm.unlinkTitle': 'Unlink Bin Design',
@@ -3328,7 +3328,7 @@ const en: Record<string, string> = {
   'designLinking.toast.autoSynced': 'Auto-synced {count} bin(s) from design',
   'designLinking.toast.designUpdated': 'Updated design "{name}"',
   'designLinking.toast.designUpdateFailed': 'Failed to update linked design',
-  'designLinking.toast.edgeMatched': 'Matched half-unit edge to drawer',
+  'designLinking.toast.edgeMatched': 'Matched half-unit edge to the layout',
   'designLinking.toast.cascadedResize': 'Updated design + {count} linked bin(s)',
 
   // Blocked resize dialog

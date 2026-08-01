@@ -30,6 +30,7 @@ export function useFractionalEdgeMismatch(): FractionalEdgeMismatch {
     fractionalEdgeY,
     fractionalEdgeManualX,
     fractionalEdgeManualY,
+    halfSockets,
     setParams,
   } = useDesignerStore(
     useShallow((s) => ({
@@ -40,6 +41,7 @@ export function useFractionalEdgeMismatch(): FractionalEdgeMismatch {
       fractionalEdgeY: s.params.fractionalEdgeY,
       fractionalEdgeManualX: s.params.fractionalEdgeManualX,
       fractionalEdgeManualY: s.params.fractionalEdgeManualY,
+      halfSockets: s.params.base.halfSockets,
       setParams: s.setParams,
     }))
   );
@@ -55,19 +57,39 @@ export function useFractionalEdgeMismatch(): FractionalEdgeMismatch {
       fractionalEdgeY,
       fractionalEdgeManualX,
       fractionalEdgeManualY,
+      halfSockets,
     }),
-    [width, depth, fractionalEdgeX, fractionalEdgeY, fractionalEdgeManualX, fractionalEdgeManualY]
+    [
+      width,
+      depth,
+      fractionalEdgeX,
+      fractionalEdgeY,
+      fractionalEdgeManualX,
+      fractionalEdgeManualY,
+      halfSockets,
+    ]
   );
 
-  const show = useMemo(() => {
-    const linkedHere =
-      currentDesignId !== null && bins.some((b) => b.linkedDesignId === currentDesignId);
-    return linkedHere && hasFractionalEdgeMismatch(design, drawer);
-  }, [currentDesignId, bins, design, drawer]);
+  const placements = useMemo(
+    () =>
+      currentDesignId === null
+        ? []
+        : bins.filter((b) => b.linkedDesignId === currentDesignId).map((b) => ({ x: b.x, y: b.y })),
+    [currentDesignId, bins]
+  );
+
+  // One design can be placed several times. The helpers resolve each axis
+  // across every placement and stay silent when they disagree, so a conflict no
+  // single edge could fix never offers a one-click "fix" that just moves the
+  // problem to a sibling bin.
+  const show = useMemo(
+    () => hasFractionalEdgeMismatch(design, drawer, placements),
+    [placements, design, drawer]
+  );
 
   const matchDrawer = useCallback(() => {
-    setParams(computeMatchedEdges(design, drawer));
-  }, [setParams, design, drawer]);
+    setParams(computeMatchedEdges(design, drawer, placements));
+  }, [setParams, design, drawer, placements]);
 
   return { show, matchDrawer };
 }

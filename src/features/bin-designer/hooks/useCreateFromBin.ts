@@ -23,6 +23,7 @@ import {
   registryEdgeFields,
 } from '@/features/bin-designer/store/customBinRegistry';
 import { useLayoutStore } from '@/core/store/layout';
+import { defaultsForNewDesign } from '@/features/bin-designer/store/helpers';
 
 interface CreateFromBinParams {
   createFrom: 'bin';
@@ -142,11 +143,22 @@ export function useCreateFromBin(): void {
     // Build the bin params for saving — inherit physical units from layout store
     const designerState = useDesignerStore.getState();
     const layoutState = useLayoutStore.getState();
-    // Infer the half-unit edge from the drawer so a fractional bin's foot lands
-    // on the same side as the drawer's fractional slot (issue #2518). Left as a
-    // non-manual choice so a later drawer change surfaces a mismatch warning.
+    // Start from a fresh bin, NOT the store's live params. Those still hold
+    // whichever design was open a moment ago, so the new design silently
+    // inherited that one's overhang, cutouts, lid and everything else — an
+    // overhang in particular makes the bin no longer fit the footprint it was
+    // created from (issue #3071). `defaultsForNewDesign` is what `newDesign`
+    // uses, so a saved "default for new bins" style still applies.
+    //
+    // Overhang is right to leave off: a layout bin's overhang is resolved at
+    // export time from its `extendToMargin` flag (`resolveBinOverhang`), not
+    // stored on the design.
+    //
+    // The half-unit edge arrives on the URL, already resolved from where the
+    // source bin's half cell lands in the drawer (#2518, #3070). Left as a
+    // non-manual choice so moving the bin later surfaces a mismatch warning.
     const binParams = {
-      ...designerState.params,
+      ...defaultsForNewDesign(),
       width: urlParams.width,
       depth: urlParams.depth,
       height: urlParams.height,
@@ -164,13 +176,17 @@ export function useCreateFromBin(): void {
 
     // Set the dimensions (don't use setParams as it pushes to history)
     // We want a clean slate, not an undo state with default params
-    useDesignerStore.setState({
+    useDesignerStore.setState((state) => ({
       params: binParams,
       designName: urlParams.name,
       currentDesignId: null, // Will be set after save
       saveStatus: 'saving',
       history: { past: [], future: [] }, // Clear history for fresh start
-    });
+      // These params are a fresh rectangular bin with no `cellMask`, so a shape
+      // editor left open by the previous design would be editing a mask that no
+      // longer exists. `loadDesign` and history restore normalise the same way.
+      ui: { ...state.ui, shapeEditorOpen: false },
+    }));
 
     // Trigger mesh regeneration
     useDesignerStore.setState((state) => ({

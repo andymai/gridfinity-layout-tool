@@ -10,12 +10,22 @@ import { mm, gridUnits, heightUnits, binId, layerId, categoryId, designId } from
 
 const DESIGN_ID = designId('design-1');
 
-function makeLayout(bins: Bin[], drawerEdgeX: 'start' | 'end' = 'start'): Layout {
+/**
+ * A 10.5-wide drawer with its half column on the left, so cell boundaries land
+ * on `n + 0.5` and a bin at x=0 opens with its half cell ('start'). The drawer
+ * width has to be fractional for its edge setting to mean anything — an
+ * integer-width drawer has no half column at all (#3070).
+ */
+function makeLayout(
+  bins: Bin[],
+  drawerEdgeX: 'start' | 'end' = 'start',
+  drawerWidth = 10.5
+): Layout {
   return {
     version: '1.0',
     name: 'Test Layout',
     drawer: {
-      width: gridUnits(10),
+      width: gridUnits(drawerWidth),
       depth: gridUnits(10),
       height: heightUnits(5),
       fractionalEdgeX: drawerEdgeX,
@@ -29,10 +39,10 @@ function makeLayout(bins: Bin[], drawerEdgeX: 'start' | 'end' = 'start'): Layout
   };
 }
 
-function linkedBin(): Bin {
+function linkedBin(x = 0, id = 'bin-1'): Bin {
   return {
-    id: binId('bin-1'),
-    x: gridUnits(0),
+    id: binId(id),
+    x: gridUnits(x),
     y: gridUnits(0),
     width: gridUnits(1.5),
     depth: gridUnits(2),
@@ -58,9 +68,36 @@ describe('useFractionalEdgeMismatch', () => {
     useLayoutStore.setState({ layout: makeLayout([linkedBin()]) });
   });
 
-  it('flags a mismatch when the linked design disagrees with the drawer', () => {
+  it('flags a mismatch when the linked design disagrees with its placement', () => {
     const { result } = renderHook(() => useFractionalEdgeMismatch());
     expect(result.current.show).toBe(true);
+  });
+
+  it('does not flag a correct foot in a whole-number drawer (#3070)', () => {
+    // No half column exists on X, so the drawer's edge setting is meaningless
+    // and a bin at x=0 correctly carries its half cell at the end. Comparing
+    // against the drawer edge flagged this, then reversed it.
+    useLayoutStore.setState({ layout: makeLayout([linkedBin()], 'start', 10) });
+    const { result } = renderHook(() => useFractionalEdgeMismatch());
+    expect(result.current.show).toBe(false);
+  });
+
+  it('still flags a genuinely reversed foot in a whole-number drawer', () => {
+    setDesign({ fractionalEdgeX: 'start' });
+    useLayoutStore.setState({ layout: makeLayout([linkedBin()], 'start', 10) });
+    const { result } = renderHook(() => useFractionalEdgeMismatch());
+    expect(result.current.show).toBe(true);
+  });
+
+  it('stays quiet when two placements of the design want opposite edges', () => {
+    // One design, two spots. The half cell lands on opposite sides, so no
+    // single edge can satisfy both — the conflict is inherent to sharing one
+    // design, and a one-click fix would only move it to the sibling.
+    useLayoutStore.setState({
+      layout: makeLayout([linkedBin(0), linkedBin(0.5, 'bin-2')], 'start', 10),
+    });
+    const { result } = renderHook(() => useFractionalEdgeMismatch());
+    expect(result.current.show).toBe(false);
   });
 
   it('does not flag when the design is not linked to any bin in the layout', () => {
@@ -75,7 +112,7 @@ describe('useFractionalEdgeMismatch', () => {
     expect(result.current.show).toBe(false);
   });
 
-  it('matchDrawer aligns the design edge to the drawer and clears the manual flag', () => {
+  it('matchDrawer aligns the design edge to the placement and clears the manual flag', () => {
     const { result } = renderHook(() => useFractionalEdgeMismatch());
 
     act(() => {
