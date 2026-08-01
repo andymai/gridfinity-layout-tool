@@ -171,39 +171,67 @@ describe('lid generation and export scenarios', () => {
   // cannot seat — a solid block that `assertStructurallyValid` happily accepts,
   // which is how the magnet-pocket and tray paths shipped broken (#2761).
   describe('floor plate never intrudes into the lip cavity (#2761)', () => {
-    const CASES: ReadonlyArray<readonly [string, Partial<LidConfig>, Partial<BinParams>]> = [
-      ['baseline', {}, {}],
-      ['thick plate', { topThicknessMm: 2.4 }, {}],
-      ['max plate', { topThicknessMm: 5 }, {}],
-      ['extra height + thick plate', { topThicknessMm: 3, extraHeightMm: 10 }, {}],
+    // The last element is the expected plate thickness. Required, not optional:
+    // the cavity-gap assertion below is algebraically independent of the plate
+    // (`topThickness` cancels), so without it a case added to cover a thickness
+    // rule would assert nothing about that rule (#3072).
+    const CASES: ReadonlyArray<readonly [string, Partial<LidConfig>, Partial<BinParams>, number]> =
       [
-        'stack magnet pockets',
-        { stackableTop: true, magnetHoles: true },
-        { base: { ...DEFAULT_BIN_PARAMS.base, magnetDepth: 2.5 } },
-      ],
-      ['tray recess', { tray: { enabled: true, depthMm: 4, wallMm: 2 } }, {}],
-      // The tray floor is now a knob (#3072), so the plate can grow well past
-      // any earlier value — the anchor has to keep tracking it.
-      [
-        'tray recess + thick floor',
-        { tray: { enabled: true, depthMm: 4, wallMm: 2 }, topThicknessMm: 5 },
-        {},
-      ],
-      ['deep tray recess', { tray: { enabled: true, depthMm: 30, wallMm: 2 } }, { height: 8 }],
-      ['magnetic retention', { attachment: 'magnetic', topThicknessMm: 2 }, {}],
-    ];
+        ['baseline', {}, {}, 0.8],
+        ['thick plate', { topThicknessMm: 2.4 }, {}, 2.4],
+        ['max plate', { topThicknessMm: 5 }, {}, 5],
+        ['extra height + thick plate', { topThicknessMm: 3, extraHeightMm: 10 }, {}, 3],
+        [
+          // 2.5mm magnet + the 0.6mm sealed ceiling.
+          'stack magnet pockets',
+          { stackableTop: true, magnetHoles: true },
+          { base: { ...DEFAULT_BIN_PARAMS.base, magnetDepth: 2.5 } },
+          3.1,
+        ],
+        // 4mm recess + the 1.6mm minimum floor.
+        ['tray recess', { tray: { enabled: true, depthMm: 4, wallMm: 2 } }, {}, 5.6],
+        // 4mm recess + a 5mm floor: the knob moves the plate, and the anchor
+        // has to keep tracking it well past any pre-#3072 value.
+        [
+          'tray recess + thick floor',
+          { tray: { enabled: true, depthMm: 4, wallMm: 2 }, topThicknessMm: 5 },
+          {},
+          9,
+        ],
+        [
+          'deep tray recess',
+          { tray: { enabled: true, depthMm: 30, wallMm: 2 } },
+          { height: 8 },
+          31.6,
+        ],
+        ['magnetic retention', { attachment: 'magnetic', topThicknessMm: 2 }, {}, 2],
+      ];
 
-    it.each(CASES)('%s', async (label, lid, extra) => {
-      const { resolveLidInputs } = await import('./lidBuilder');
-      const inputs = resolveLidInputs(makeParams(lid, { width: 4, depth: 3, height: 5, ...extra }));
-      // The plate underside must clear the anchor plane with room to spare —
-      // 1.293mm on a stock lid, plus whatever `extraHeightMm` deepened the
-      // cavity. The anchor moves in lockstep with the plate, so that margin
-      // holds no matter how thick the plate gets.
-      const extraHeightMm = lid.extraHeightMm ?? 0;
-      expect(-inputs.topThickness).toBeGreaterThan(inputs.anchorZ);
-      expect(-inputs.topThickness - inputs.anchorZ).toBeCloseTo(1.293 + extraHeightMm, 3);
-    });
+    it.each(CASES)(
+      '%s',
+      async (
+        label: string,
+        lid: Partial<LidConfig>,
+        extra: Partial<BinParams>,
+        expectedPlate: number
+      ) => {
+        const { resolveLidInputs } = await import('./lidBuilder');
+        const inputs = resolveLidInputs(
+          makeParams(lid, { width: 4, depth: 3, height: 5, ...extra })
+        );
+        // The plate underside must clear the anchor plane with room to spare —
+        // 1.293mm on a stock lid, plus whatever `extraHeightMm` deepened the
+        // cavity. The anchor moves in lockstep with the plate, so that margin
+        // holds no matter how thick the plate gets.
+        const extraHeightMm = lid.extraHeightMm ?? 0;
+        expect(-inputs.topThickness).toBeGreaterThan(inputs.anchorZ);
+        expect(-inputs.topThickness - inputs.anchorZ).toBeCloseTo(1.293 + extraHeightMm, 3);
+        // The gap above holds for ANY plate the anchor tracks — `topThickness`
+        // cancels out of it — so pin the plate itself as well, or a case added to
+        // cover a thickness rule would assert nothing about that rule (#3072).
+        expect(inputs.topThickness).toBeCloseTo(expectedPlate, 3);
+      }
+    );
   });
 
   it('lid XY footprint is approximately the bin outer footprint', async () => {

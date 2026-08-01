@@ -200,6 +200,29 @@ describe('LidSection', () => {
       ).toBeInTheDocument();
     });
 
+    // The whole point of the breakdown is that the field and the geometry agree.
+    // The field bound was 0.8 while LID_TRAY_FLOOR is 1.6, so a tray lid could
+    // show "Tray floor 0.8" directly above "Remaining tray floor 1.6 mm".
+    it('never shows a floor the geometry will not use', () => {
+      renderTrayLid(0.8);
+      const input = screen.getByRole('spinbutton', {
+        name: 'Material left under the tray recess, in millimeters',
+      });
+      expect(input).toHaveValue(1.6);
+      expect(screen.getByText('1.6 mm')).toBeInTheDocument();
+      expect(screen.getByText('5.6 mm')).toBeInTheDocument();
+    });
+
+    it('clamps a typed floor up to the minimum the geometry enforces', () => {
+      renderTrayLid(2.4);
+      const input = screen.getByRole('spinbutton', {
+        name: 'Material left under the tray recess, in millimeters',
+      });
+      fireEvent.change(input, { target: { value: '0.8' } });
+      fireEvent.blur(input);
+      expect(useDesignerStore.getState().params.lid.topThicknessMm).toBe(1.6);
+    });
+
     it('shows no breakdown on a lid without a tray', () => {
       resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } });
       render(<LidSection />);

@@ -405,7 +405,11 @@ export function LidSection() {
                       : t('binDesigner.lid.topThickness')
                   }
                   unit="mm"
-                  value={state.topThicknessMm}
+                  // On a tray lid the geometry holds the floor at LID_TRAY_FLOOR
+                  // even if a design stored something thinner, so read the field
+                  // back from the resolver — otherwise it could sit above the
+                  // breakdown showing a number the part does not use.
+                  value={state.trayBreakdown ? state.trayBreakdown.floorMm : state.topThicknessMm}
                   onChange={handlers.setTopThickness}
                   onStep={(delta) =>
                     handlers.setTopThickness(state.topThicknessMm + delta * state.topThicknessStep)

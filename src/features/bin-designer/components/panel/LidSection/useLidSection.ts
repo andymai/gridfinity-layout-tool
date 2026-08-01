@@ -11,6 +11,7 @@ import {
   LID_FIT_CLEARANCE,
   LID_MIN_RAIL_LENGTH,
   LID_TOP_THICKNESS_MIN_MM,
+  LID_TRAY_FLOOR,
   LID_TOP_THICKNESS_MAX_MM,
   LID_TOP_THICKNESS_STEP_MM,
   LID_MAGNETIC_EXTRA_CLEARANCE,
@@ -437,14 +438,16 @@ export function useLidSection() {
     [updateLid]
   );
 
+  // With a tray the knob measures the floor under the recess, which the
+  // geometry will not take below LID_TRAY_FLOOR. The input has to enforce the
+  // same floor or the field would display a value the part never uses.
+  const topThicknessMin = topSurface === 'tray' ? LID_TRAY_FLOOR : LID_TOP_THICKNESS_MIN_MM;
+
   const setTopThickness = useCallback(
     (topThicknessMm: number) => {
       // Clamp defensively; the stepper bounds input but keyboard entry can't be
       // trusted. Rounding to the step keeps the plate a whole number of layers.
-      const clamped = Math.min(
-        LID_TOP_THICKNESS_MAX_MM,
-        Math.max(LID_TOP_THICKNESS_MIN_MM, topThicknessMm)
-      );
+      const clamped = Math.min(LID_TOP_THICKNESS_MAX_MM, Math.max(topThicknessMin, topThicknessMm));
       const stepped = Math.round(clamped / LID_TOP_THICKNESS_STEP_MM) * LID_TOP_THICKNESS_STEP_MM;
       // 0.2 isn't representable in binary, so the multiply lands on values like
       // 2.4000000000000004 — harmless for geometry, but it would persist into
@@ -453,7 +456,7 @@ export function useLidSection() {
       // exactly 25 x 0.2 === 5, so the server bound stays strict.)
       updateLid({ topThicknessMm: Math.round(stepped * 10) / 10 });
     },
-    [updateLid]
+    [updateLid, topThicknessMin]
   );
 
   const toggleClickRailSide = useCallback(
@@ -718,11 +721,12 @@ export function useLidSection() {
       extraHeightMax: LID_EXTRA_HEIGHT_MAX_MM,
       extraHeightStep: LID_EXTRA_HEIGHT_STEP_MM,
       // Floor-plate thickness knob (#2761). `topThicknessEffective` reflects
-      // what the worker will actually build — magnet pockets can raise the
-      // plate above the user's value.
+      // what the worker will actually build: magnet pockets raise the plate
+      // above the user's value, and on a tray lid the value IS the floor under
+      // the recess, so the plate is deeper by the recess depth (`trayBreakdown`).
       topThicknessMm: lid.topThicknessMm,
       topThicknessEffective: lidDimensions.topThickness,
-      topThicknessMin: LID_TOP_THICKNESS_MIN_MM,
+      topThicknessMin,
       topThicknessMax: LID_TOP_THICKNESS_MAX_MM,
       topThicknessStep: LID_TOP_THICKNESS_STEP_MM,
       // On a tray lid the knob measures the floor under the recess, so the
