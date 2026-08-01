@@ -70,6 +70,7 @@ interface BaseplatePreviewProps {
   width: number;
   depth: number;
   gridUnitMm: number;
+  gridUnitMmY: number;
   paddingLeft: number;
   paddingRight: number;
   paddingFront: number;
@@ -80,6 +81,7 @@ export function BaseplatePreview({
   width,
   depth,
   gridUnitMm,
+  gridUnitMmY,
   paddingLeft,
   paddingRight,
   paddingFront,
@@ -352,6 +354,7 @@ export function BaseplatePreview({
                       totalWidthUnits={width}
                       totalDepthUnits={depth}
                       gridUnitMm={gridUnitMm}
+                      gridUnitMmY={gridUnitMmY}
                       isPreview={hasDirectPreview}
                       xray={xray}
                     />

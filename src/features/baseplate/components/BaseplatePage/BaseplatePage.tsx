@@ -236,6 +236,7 @@ export function BaseplatePage() {
       width={effectiveWidth}
       depth={effectiveDepth}
       gridUnitMm={gridUnitMm}
+      gridUnitMmY={gridUnitMmY}
       paddingLeft={paddingLeft}
       paddingRight={paddingRight}
       paddingFront={paddingFront}
