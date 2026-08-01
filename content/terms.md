@@ -7,7 +7,7 @@ schema: Article
 
 # Terms of Service
 
-**Last updated:** May 2026
+**Last updated:** August 2026
 
 By using Gridfinity Layout Tool, you agree to these terms.
 
@@ -15,13 +15,13 @@ By using Gridfinity Layout Tool, you agree to these terms.
 
 Gridfinity Layout Tool is a free, open-source web application for planning storage layouts for 3D-printed Gridfinity drawer organizers. The source code is available under the [AGPL-3.0 license](https://github.com/andymai/gridfinity-layout-tool/blob/main/LICENSE).
 
-The app is fully usable anonymously. Optional sign-in unlocks multi-device sync of your layouts and bin designs.
+The app is fully usable anonymously. Optional sign-in unlocks multi-device sync of your layouts and bin designs, and publishing to the community showcase.
 
 ## Your Layouts
 
-**You own your content.** Layouts you create belong to you. We don't claim ownership of your drawer designs, bin configurations, labels, or notes.
+**You own your content.** Layouts you create belong to you. We don't claim ownership of your drawer designs, bin configurations, labels, or notes. Designs you publish to the community showcase are covered by Published Designs below.
 
-**Local storage.** Your layouts are stored in your browser by default. We don't have access to them unless you share or sign in for sync.
+**Local storage.** Your layouts are stored in your browser by default. We don't have access to them unless you share, publish, or sign in for sync.
 
 **Shared layouts.** When you share a layout, it becomes accessible via a public link. Anyone with the link can view it. You're responsible for not sharing content that:
 
@@ -31,7 +31,23 @@ The app is fully usable anonymously. Optional sign-in unlocks multi-device sync 
 
 We reserve the right to remove shared content that violates these terms.
 
-**Synced layouts and designs.** When you're signed in, your layouts and bin designs are uploaded to per-account storage tied to your account. Sync paths aren't listed publicly, and reads and writes go through our authenticated server endpoints — your session cookie is required to access your synced data. The public sharing flow above is separate and still requires you to explicitly create a share link.
+**Synced layouts and designs.** When you're signed in, your layouts and bin designs are uploaded to per-account storage tied to your account. Sync paths aren't listed publicly, and reads and writes go through our authenticated server endpoints: your session cookie is required to access your synced data. The public sharing flow above is separate and still requires you to explicitly create a share link.
+
+## Published Designs
+
+You can publish a bin design to the public community showcase. Publishing is optional and requires signing in.
+
+**License.** When you publish a design, you grant us and the public a [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/) (CC BY 4.0) license to the published design, including its name, description, preview images, and 3D preview model. Anyone may view, download, modify, and republish derivative designs, in this app or elsewhere, as long as they credit you (remixes published in the app include this credit).
+
+**You keep ownership.** Publishing grants the license above. It does not transfer ownership of your design to us or to anyone else.
+
+**Your responsibility.** By publishing, you confirm you have the rights to share everything in the design (including its name, description, and images) under this license.
+
+**Unpublishing.** You can unpublish a design at any time. This removes it from the showcase, but copies and remixes others already made are not recalled, and the CC BY 4.0 license on those copies stays in effect.
+
+**Account deletion.** Deleting your account removes your published designs from the showcase, with the same effect as unpublishing.
+
+**Reports and takedowns.** Signed-in users can report a published design, and we may hide or remove designs that violate these terms. If you believe a published design infringes your intellectual property (including copyright complaints under the DMCA), open an issue on our [GitHub repository](https://github.com/andymai/gridfinity-layout-tool/issues). We review IP complaints and may remove content we determine to be infringing.
 
 ## Accounts
 
@@ -40,7 +56,7 @@ Sign-in is optional. If you choose to sign in via Google or GitHub:
 - You're responsible for keeping your linked Google or GitHub account secure. We rely on the upstream provider for authentication.
 - One person, one account. Don't create accounts under another person's identity.
 - You can sign out from any device at **Settings > Account**.
-- You can permanently delete your account and all synced data at **Settings > Account > Delete account**. This signs you out on every device, removes your account profile, and deletes every synced layout and bin design.
+- You can permanently delete your account and all synced data at **Settings > Account > Delete account**. This signs you out on every device, removes your account profile, deletes every synced layout and bin design, and removes your published designs from the community showcase.
 - We may suspend or terminate accounts that violate these terms or are used to abuse the service.
 
 We may impose per-account limits. Currently: up to 100 layouts and 100 bin designs, with each layout up to 500 KB, each design up to 100 KB, and 10 MB total per kind. Limits exist to keep the service free and may change.
@@ -85,6 +101,9 @@ Don't use this app to:
 - Overload our servers with automated requests
 - Scrape or harvest data from shared layouts
 - Use credentials or accounts that aren't yours
+- Publish designs or content you don't have the rights to
+- Put offensive or abusive content in design names, descriptions, or your public display name
+- Spam the community showcase or artificially manipulate its statistics
 - Violate any applicable laws
 
 ## Changes to Terms
