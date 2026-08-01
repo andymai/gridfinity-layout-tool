@@ -16,12 +16,15 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { Button, Dialog, SegmentedControl, Stepper } from '@/design-system';
-import { effectiveGridUnitMmY } from '@/core/types';
-import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
+import { Button, Dialog } from '@/design-system';
+import type { OutlineVertex } from '@/core/types';
+import { effectiveGridUnitMmY, gridUnits } from '@/core/types';
 import { PenCanvas } from './PenCanvas';
 import { usePenSketch } from './usePenSketch';
 import { usePenView, VIEW_PAD_MM } from './usePenView';
+import { useOutlineImport } from './useOutlineImport';
+import { PenImportNotice } from './PenImportNotice';
+import { PenControls } from './PenControls';
 import { useLayoutStore, useToastStore } from '@/core/store';
 import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
@@ -47,7 +50,6 @@ import {
   snapMm,
   handleRadiusMm,
   hitRadiusMm,
-  SNAP_FRACTIONS,
   type SnapFraction,
 } from '../../utils/penShape';
 
@@ -392,7 +394,9 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
   );
 
   /** The one selected corner, or null when the selection is empty or multiple. */
-  const lone = selected.size === 1 ? [...selected][0] : null;
+  const loneIndex = selected.size === 1 ? [...selected][0] : null;
+  // A stale index can outlive its vertex (a delete, or an import replacing the sketch).
+  const lone = loneIndex !== null && loneIndex < verts.length ? loneIndex : null;
 
   /** Type an exact coordinate for the selected corner. */
   const setSelectedCoord = useCallback(
@@ -413,6 +417,30 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
   const handleReset = useCallback(() => {
     sketch.reset(widthMm, depthMm);
   }, [widthMm, depthMm, sketch]);
+
+  /** Imported geometry replaces the sketch through the history, so Undo works. */
+  const handleImported = useCallback(
+    (vertices: OutlineVertex[]) => {
+      sketch.commit({ verts: vertices, radii: vertices.map(() => 0) });
+      setSelected([]);
+      view.reset();
+    },
+    [sketch, setSelected, view]
+  );
+
+  const handleGrowDrawer = useCallback(
+    (w: number, d: number) => mutations.updateDrawer({ width: gridUnits(w), depth: gridUnits(d) }),
+    [mutations]
+  );
+
+  const importer = useOutlineImport({
+    drawerWidthMm: widthMm,
+    drawerDepthMm: depthMm,
+    gridUnitMm: layout.gridUnitMm,
+    gridUnitMmY,
+    onImported: handleImported,
+    onGrowDrawer: handleGrowDrawer,
+  });
 
   const handleApply = useCallback(() => {
     if (outline === null || error !== null) return;
@@ -451,6 +479,10 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
         <div className="space-y-3">
           <p className="text-xs text-content-tertiary">{t('drawerShape.penHint')}</p>
 
+          {importer.oversize !== null && (
+            <PenImportNotice prompt={importer.oversize} onResolve={importer.resolveOversize} />
+          )}
+
           <div className="rounded-md border border-stroke-subtle bg-surface-secondary p-2">
             <PenCanvas
               svgRef={svgRef}
@@ -485,100 +517,27 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
             />
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-content-secondary">{t('drawerShape.penSnap')}</span>
-              <SegmentedControl
-                aria-label={t('drawerShape.penSnap')}
-                size="sm"
-                options={SNAP_FRACTIONS.map((f) => ({
-                  value: String(f),
-                  label: f === 0 ? t('drawerShape.penSnapOff') : `${f}u`,
-                }))}
-                value={String(snap)}
-                onChange={(v) => setSnap(Number(v) as SnapFraction)}
-              />
-            </div>
-            {lone !== null && lone < verts.length && (
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs text-content-secondary">
-                  {t('drawerShape.penCorner', { n: lone + 1 })}
-                </span>
-                <CompactNumberInput
-                  label="X"
-                  value={verts[lone].x}
-                  onChange={(v) => setSelectedCoord('x', v)}
-                  min={0}
-                  max={widthMm}
-                  step={1}
-                  unit="mm"
-                />
-                <CompactNumberInput
-                  label="Y"
-                  value={verts[lone].y}
-                  onChange={(v) => setSelectedCoord('y', v)}
-                  min={0}
-                  max={depthMm}
-                  step={1}
-                  unit="mm"
-                />
-              </div>
-            )}
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-content-secondary">
-                {selected.size > 0
-                  ? t('drawerShape.penFilletSelected', { count: selected.size })
-                  : t('drawerShape.penFillet')}
-              </span>
-              <Stepper
-                value={filletValue ?? 0}
-                onChange={applyFillet}
-                onStep={stepFillet}
-                min={0}
-                max={maxFillet}
-                step={1}
-                size="sm"
-                aria-label={
-                  selected.size > 0
-                    ? t('drawerShape.penFilletSelected', { count: selected.size })
-                    : t('drawerShape.penFillet')
-                }
-              />
-              {filletValue === null && (
-                <span className="text-xs text-content-tertiary">
-                  {t('drawerShape.penFilletMixed')}
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                onClick={sketch.deleteSelected}
-                disabled={selected.size === 0 || verts.length - selected.size < 3}
-              >
-                {t('drawerShape.penDeletePoint')}
-              </Button>
-              {view.moved && (
-                <Button type="button" variant="secondary" size="sm" onClick={view.reset}>
-                  {t('drawerShape.penResetView')}
-                </Button>
-              )}
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                onClick={sketch.undo}
-                disabled={!sketch.canUndo}
-              >
-                {t('common.undo')}
-              </Button>
-              <Button type="button" variant="secondary" size="sm" onClick={handleReset}>
-                {t('drawerShape.penReset')}
-              </Button>
-            </div>
-          </div>
+          <PenControls
+            snap={snap}
+            onSnapChange={setSnap}
+            lone={lone === null ? null : { index: lone, x: verts[lone].x, y: verts[lone].y }}
+            widthMm={widthMm}
+            depthMm={depthMm}
+            onCoordChange={setSelectedCoord}
+            selectedCount={selected.size}
+            filletValue={filletValue}
+            maxFillet={maxFillet}
+            onFilletChange={applyFillet}
+            onFilletStep={stepFillet}
+            canDelete={selected.size > 0 && verts.length - selected.size >= 3}
+            onDelete={sketch.deleteSelected}
+            canUndo={sketch.canUndo}
+            onUndo={sketch.undo}
+            viewMoved={view.moved}
+            onResetView={view.reset}
+            onImport={importer.triggerImport}
+            onReset={handleReset}
+          />
 
           {error !== null && (
             <p role="alert" className="text-xs leading-relaxed text-error">
