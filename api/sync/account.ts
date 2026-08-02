@@ -16,6 +16,7 @@ import {
   communityLikesKey,
   communityPublishedKey,
   communityReportedKey,
+  communityReportReasonKey,
   communityReportsKey,
   sessionKey,
   userIndexKey,
@@ -153,6 +154,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
           communityLikesKey(id),
           communityChildrenKey(id),
           communityReportsKey(id),
+          communityReportReasonKey(id),
         ])
       );
     }

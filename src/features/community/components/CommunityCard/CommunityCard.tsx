@@ -42,7 +42,7 @@ export function HeartGlyph({
   );
 }
 
-function RemixGlyph() {
+export function RemixGlyph() {
   return (
     <svg
       aria-hidden="true"

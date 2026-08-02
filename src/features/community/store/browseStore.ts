@@ -33,6 +33,12 @@ export interface BrowseFilters {
   readonly author: BrowseAuthorFilter | null;
   readonly likedOnly: boolean;
   readonly recentOnly: boolean;
+  /**
+   * Not a predicate over the public `items` like the other filters: the
+   * public index hard-excludes hidden designs, so while active the gallery
+   * sources its cards from mineStore (the `mine=1` list) instead.
+   */
+  readonly mineOnly: boolean;
 }
 
 export const INITIAL_BROWSE_FILTERS: BrowseFilters = {
@@ -43,6 +49,7 @@ export const INITIAL_BROWSE_FILTERS: BrowseFilters = {
   author: null,
   likedOnly: false,
   recentOnly: false,
+  mineOnly: false,
 };
 
 interface BrowseState {
@@ -74,6 +81,12 @@ interface BrowseActions {
   refreshIndex: () => Promise<void>;
   /** Optimistic single-card like patch; rollback re-applies the pre-toggle values. */
   patchCardLike: (id: string, patch: CardLikePatch) => void;
+  /**
+   * Drops a card the owner just unpublished. The cached public index would
+   * otherwise keep showing it until the next staleness refresh, and
+   * selecting it lands on a 404 detail.
+   */
+  removeItem: (id: string) => void;
   setSearchText: (searchText: string) => void;
   setCategory: (category: CommunityCategory | null) => void;
   setTechnique: (technique: ExampleTechnique | null) => void;
@@ -81,6 +94,7 @@ interface BrowseActions {
   setAuthor: (author: BrowseAuthorFilter | null) => void;
   setLikedOnly: (likedOnly: boolean) => void;
   setRecentOnly: (recentOnly: boolean) => void;
+  setMineOnly: (mineOnly: boolean) => void;
   clearFilters: () => void;
   setScrollTop: (scrollTop: number) => void;
   showMore: () => void;
@@ -189,6 +203,9 @@ export const useBrowseStore = create<BrowseStore>((set, get) => {
         ),
       }));
     },
+    removeItem: (id) => {
+      set((state) => ({ items: state.items.filter((card) => card.id !== id) }));
+    },
     setSearchText: (searchText) => {
       set((state) => ({
         filters: { ...state.filters, searchText },
@@ -234,6 +251,13 @@ export const useBrowseStore = create<BrowseStore>((set, get) => {
     setRecentOnly: (recentOnly) => {
       set((state) => ({
         filters: { ...state.filters, recentOnly },
+        scrollTop: 0,
+        visibleCount: GALLERY_PAGE_SIZE,
+      }));
+    },
+    setMineOnly: (mineOnly) => {
+      set((state) => ({
+        filters: { ...state.filters, mineOnly },
         scrollTop: 0,
         visibleCount: GALLERY_PAGE_SIZE,
       }));

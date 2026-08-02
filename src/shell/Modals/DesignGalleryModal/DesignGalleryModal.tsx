@@ -2,10 +2,12 @@ import { Suspense } from 'react';
 import { Dialog } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { useCommunityDetailStore } from '@/core/store/communityDetail';
+import { useCommunityDigestStore } from '@/core/store/communityDigest';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import {
+  clearLocalPublishedId,
   editOriginalCommunityDesign,
   openPublishForActiveDesign,
   remixCommunityDesign,
@@ -40,6 +42,9 @@ export function DesignGalleryModal({ onClose }: DesignGalleryModalProps) {
   const { activeTab, setActiveTab, showNewDot } = useGalleryTab();
   const effectiveTab: GalleryTabId = communityEnabled ? activeTab : 'examples';
   const detailOpen = useCommunityDetailStore((s) => s.request !== null);
+  // The one-shot "never opened" dot and the unseen-digest dot share the tab
+  // bar's single indicator; either signal lights it.
+  const hasUnseenDigest = useCommunityDigestStore((s) => s.hasUnseenDeltas);
 
   return (
     <>
@@ -61,7 +66,7 @@ export function DesignGalleryModal({ onClose }: DesignGalleryModalProps) {
             <GalleryTabBar
               activeTab={effectiveTab}
               onTabChange={setActiveTab}
-              showNewDot={showNewDot}
+              showNewDot={showNewDot || hasUnseenDigest}
             />
           </Dialog.SubHeader>
         )}
@@ -81,6 +86,8 @@ export function DesignGalleryModal({ onClose }: DesignGalleryModalProps) {
                 <CommunityTabContent
                   onRequestClose={onClose}
                   onRequestPublish={openPublishForActiveDesign}
+                  onEditOwnDesign={editOriginalCommunityDesign}
+                  onOwnDesignUnpublished={clearLocalPublishedId}
                 />
               ) : (
                 <ExamplesTabContent onRequestClose={onClose} />

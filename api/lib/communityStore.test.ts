@@ -275,7 +275,15 @@ describe('readCommunityCards', () => {
       { command: 'hgetall', args: ['community:design:errored00000'] },
     ]);
     expect(cards).toHaveLength(3);
-    expect(cards[0]).toEqual({ ...CARD, featured: true, likes: 7, remixes: 2, exports: 31 });
+    expect(cards[0]).toEqual({
+      ...CARD,
+      featured: true,
+      likes: 7,
+      remixes: 2,
+      exports: 31,
+      opens: 0,
+      views: 0,
+    });
     expect(cards[1]).toBeNull();
     expect(cards[2]).toBeNull();
   });

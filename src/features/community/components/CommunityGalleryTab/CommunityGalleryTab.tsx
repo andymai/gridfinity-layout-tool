@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Button, EmptyState } from '@/design-system';
 import { AlertTriangleIcon, LayoutGridIcon, SearchIcon } from '@/design-system/Icon';
 import { useCommunityDetailStore } from '@/core/store/communityDetail';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
+import { useSessionStore } from '@/core/sync/session/useSession';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { useRetryOnReconnect } from '@/shared/hooks/useRetryOnReconnect';
 import type { CommunityCard as CommunityCardData } from '@/shared/types/community';
@@ -12,16 +13,21 @@ import type { CommunityGalleryTabProps } from '@/shared/types/communityGalleryTa
 import { TECHNIQUE_CONFIG } from '@/shared/types/exampleTechniques';
 import { COMMUNITY_INDEX_CAP } from '../../api/client';
 import { filterAndSortCards, useBrowseStore } from '../../store/browseStore';
+import { useMineStore } from '../../store/mineStore';
 import { CATEGORY_LABEL_KEYS } from '../../utils/categoryLabels';
 import { loadRecentlyViewedIds } from '../../utils/recentlyViewed';
 import { CommunityCard } from '../CommunityCard';
 import { HeartGlyph } from '../CommunityCard/CommunityCard';
+import { MineCard } from '../CommunityCard/MineCard';
+import { MineDigestSummary } from '../MineDigestSummary';
 import { GalleryToolbar } from './GalleryToolbar';
 import { hasLocalDesigns } from './hasLocalDesigns';
 
 export { GALLERY_PAGE_SIZE } from '../../store/browseStore';
 
 const SKELETON_COUNT = 10;
+
+const NO_ITEMS: readonly CommunityCardData[] = [];
 
 const GRID_CLASS = 'grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-4';
 
@@ -42,6 +48,8 @@ function GallerySkeletons() {
 export function CommunityGalleryTab({
   onRequestClose,
   onRequestPublish,
+  onEditOwnDesign,
+  onOwnDesignUnpublished,
   surface = 'tab',
 }: CommunityGalleryTabProps) {
   const t = useTranslation();
@@ -60,10 +68,37 @@ export function CommunityGalleryTab({
   const refreshIndex = useBrowseStore((s) => s.refreshIndex);
   const clearFilters = useBrowseStore((s) => s.clearFilters);
   const setAuthor = useBrowseStore((s) => s.setAuthor);
+  const setMineOnly = useBrowseStore((s) => s.setMineOnly);
   const showMore = useBrowseStore((s) => s.showMore);
+  const {
+    status: mineStatus,
+    items: mineItems,
+    error: mineError,
+    forUserId: mineForUserId,
+  } = useMineStore(
+    useShallow((s) => ({
+      status: s.status,
+      items: s.items,
+      error: s.error,
+      forUserId: s.forUserId,
+    }))
+  );
+  const ensureMineIndex = useMineStore((s) => s.ensureIndex);
+  const refreshMineIndex = useMineStore((s) => s.refreshIndex);
   const openDetail = useCommunityDetailStore((s) => s.open);
   const detailRequest = useCommunityDetailStore((s) => s.request);
   const addToast = useToastStore((s) => s.addToast);
+  const sessionStatus = useSessionStore((s) => s.status);
+  const sessionUserId = useSessionStore((s) =>
+    s.status === 'authenticated' ? (s.user?.userId ?? null) : null
+  );
+
+  // The Mine chip is only rendered while authenticated; gating the branch on
+  // the session too means a mid-session sign-out falls back to the public
+  // view instead of stranding an empty filter with no visible chip.
+  const mineActive = filters.mineOnly && sessionStatus === 'authenticated';
+
+  const [mineEditBusy, setMineEditBusy] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -75,10 +110,31 @@ export function CommunityGalleryTab({
     void ensureIndex();
   }, [ensureIndex]);
 
-  const reconnectAttempt = useRetryOnReconnect(status === 'error');
   useEffect(() => {
-    if (reconnectAttempt > 0) void refreshIndex();
-  }, [reconnectAttempt, refreshIndex]);
+    if (mineActive) {
+      trackEvent('community_mine_viewed', { surface });
+      void ensureMineIndex();
+    }
+  }, [mineActive, ensureMineIndex, surface]);
+
+  useEffect(() => {
+    if (sessionStatus === 'anonymous' && filters.mineOnly) setMineOnly(false);
+  }, [sessionStatus, filters.mineOnly, setMineOnly]);
+
+  // An account switch that never passed through the anonymous state (another
+  // tab's sign-in broadcast) leaves the previous owner's cards cached until
+  // ensureMineIndex clears them; gating on the stamped owner keeps them from
+  // painting for the wrong account even for that first render.
+  const mineOwnedByViewer = mineForUserId === null || mineForUserId === sessionUserId;
+  const activeStatus = mineActive ? (mineOwnedByViewer ? mineStatus : 'loading') : status;
+  const activeError = mineActive ? (mineOwnedByViewer ? mineError : null) : error;
+  const activeItems = mineActive ? (mineOwnedByViewer ? mineItems : NO_ITEMS) : items;
+  const refreshActive = mineActive ? refreshMineIndex : refreshIndex;
+
+  const reconnectAttempt = useRetryOnReconnect(activeStatus === 'error');
+  useEffect(() => {
+    if (reconnectAttempt > 0) void refreshActive();
+  }, [reconnectAttempt, refreshActive]);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -117,6 +173,34 @@ export function CommunityGalleryTab({
     [setAuthor]
   );
 
+  const handleMineEdit = useCallback(
+    (card: CommunityCardData) => {
+      if (onEditOwnDesign === undefined || mineEditBusy) return;
+      setMineEditBusy(true);
+      void onEditOwnDesign({ id: card.id })
+        .then((outcome) => {
+          if (outcome === 'opened') {
+            window.dispatchEvent(new Event('switch-to-designer'));
+            onRequestClose();
+            return;
+          }
+          if (outcome === 'missing') {
+            // The lost-local-design trap: no local copy carries this
+            // publishedId. The detail view's owner actions (Duplicate as new)
+            // are the recovery path, so open it instead of a dead end.
+            addToast(t('community.mine.editMissing'), 'info');
+            openDetail(card.id, card);
+            return;
+          }
+          addToast(t('community.detail.editOriginalFailed'), 'error');
+        })
+        .finally(() => {
+          setMineEditBusy(false);
+        });
+    },
+    [addToast, mineEditBusy, onEditOwnDesign, onRequestClose, openDetail, t]
+  );
+
   const handleGoToDesigner = useCallback(() => {
     // Capture before closing: hasLocalDesigns reads localStorage.
     const publish = hasLocalDesigns() ? onRequestPublish : undefined;
@@ -144,21 +228,24 @@ export function CommunityGalleryTab({
     return loadRecentlyViewedIds();
   }, [detailRequest]);
 
+  // The toolbar's search/category/technique filters still apply within Mine;
+  // mineOnly itself is not a predicate (the source switch above handles it).
   const filtered = useMemo(
-    () => filterAndSortCards(items, filters, searchLabels, recentIds),
-    [items, filters, searchLabels, recentIds]
+    () => filterAndSortCards(activeItems, filters, searchLabels, recentIds),
+    [activeItems, filters, searchLabels, recentIds]
   );
   const visible = filtered.slice(0, visibleCount);
 
-  const isInitialLoading = status === 'loading' && items.length === 0;
-  const isEmptyLibrary = status === 'ready' && items.length === 0;
-  const isNoMatches = status === 'ready' && items.length > 0 && filtered.length === 0;
+  const isInitialLoading = activeStatus === 'loading' && activeItems.length === 0;
+  const isEmptyLibrary = !mineActive && status === 'ready' && items.length === 0;
+  const isMineEmpty = mineActive && mineStatus === 'ready' && mineItems.length === 0;
+  const isNoMatches = activeStatus === 'ready' && activeItems.length > 0 && filtered.length === 0;
   const isLikedEmpty = isNoMatches && filters.likedOnly;
   const isAuthorEmpty = isNoMatches && !filters.likedOnly && filters.author !== null;
-  const isBlockingError = status === 'error' && items.length === 0;
+  const isBlockingError = activeStatus === 'error' && activeItems.length === 0;
   const isOffline =
     isBlockingError &&
-    error?.kind === 'network' &&
+    activeError?.kind === 'network' &&
     typeof navigator !== 'undefined' &&
     !navigator.onLine;
 
@@ -171,7 +258,12 @@ export function CommunityGalleryTab({
         data-testid="community-gallery-scroll"
         className="flex-1 overflow-y-auto scrollbar-thin p-3 md:p-4"
       >
-        {status === 'error' && items.length > 0 && (
+        {/* Opening Mine is what consumes the since-last-visit digest, so the
+            summary mounts only inside the Mine branch: browsing the public
+            grid keeps the deltas unseen. */}
+        {mineActive && <MineDigestSummary />}
+
+        {activeStatus === 'error' && activeItems.length > 0 && (
           <div
             role="alert"
             className="mb-3 flex items-center justify-between gap-2 rounded-lg border border-warning/30 bg-warning-muted px-3 py-2 text-sm text-content-secondary"
@@ -179,7 +271,7 @@ export function CommunityGalleryTab({
             <span>{t('community.gallery.error.refresh')}</span>
             <Button
               variant="ghost"
-              onClick={() => void refreshIndex()}
+              onClick={() => void refreshActive()}
               className="shrink-0 text-sm"
             >
               {t('community.gallery.error.retry')}
@@ -204,7 +296,7 @@ export function CommunityGalleryTab({
             title={t('community.gallery.offline.title')}
             description={t('community.gallery.offline.subtitle')}
             actions={
-              <Button variant="secondary" className="min-h-11" onClick={() => void refreshIndex()}>
+              <Button variant="secondary" className="min-h-11" onClick={() => void refreshActive()}>
                 {t('community.gallery.error.retry')}
               </Button>
             }
@@ -218,7 +310,7 @@ export function CommunityGalleryTab({
             tint="error"
             title={t('community.gallery.error.title')}
             actions={
-              <Button variant="secondary" className="min-h-11" onClick={() => void refreshIndex()}>
+              <Button variant="secondary" className="min-h-11" onClick={() => void refreshActive()}>
                 {t('community.gallery.error.retry')}
               </Button>
             }
@@ -233,6 +325,27 @@ export function CommunityGalleryTab({
             description={t('community.gallery.empty.subtitle')}
             actions={
               <Button variant="primary" className="min-h-11" onClick={handleGoToDesigner}>
+                {hasLocalDesigns()
+                  ? t('community.gallery.empty.publishCta')
+                  : t('community.gallery.empty.designCta')}
+              </Button>
+            }
+          />
+        )}
+
+        {isMineEmpty && (
+          <EmptyState
+            icon={<LayoutGridIcon />}
+            iconStyle="circle"
+            title={t('community.gallery.mineEmpty.title')}
+            description={t('community.gallery.mineEmpty.subtitle')}
+            actions={
+              <Button
+                variant="primary"
+                className="min-h-11"
+                onClick={handleGoToDesigner}
+                data-testid="community-mine-empty-cta"
+              >
                 {hasLocalDesigns()
                   ? t('community.gallery.empty.publishCta')
                   : t('community.gallery.empty.designCta')}
@@ -290,12 +403,23 @@ export function CommunityGalleryTab({
             <ul role="list" className={GRID_CLASS} aria-label={t('community.gallery.gridLabel')}>
               {visible.map((card, index) => (
                 <li key={card.id}>
-                  <CommunityCard
-                    card={card}
-                    onSelect={handleSelect}
-                    onSelectAuthor={handleSelectAuthor}
-                    index={index}
-                  />
+                  {mineActive ? (
+                    <MineCard
+                      card={card}
+                      onSelect={handleSelect}
+                      onEdit={handleMineEdit}
+                      onUnpublished={onOwnDesignUnpublished}
+                      editBusy={mineEditBusy}
+                      index={index}
+                    />
+                  ) : (
+                    <CommunityCard
+                      card={card}
+                      onSelect={handleSelect}
+                      onSelectAuthor={handleSelectAuthor}
+                      index={index}
+                    />
+                  )}
                 </li>
               ))}
             </ul>
@@ -310,13 +434,13 @@ export function CommunityGalleryTab({
         )}
       </div>
 
-      {(status === 'ready' || items.length > 0) && (
+      {(activeStatus === 'ready' || activeItems.length > 0) && (
         <div
           aria-live="polite"
           className="flex shrink-0 items-center justify-between gap-2 border-t border-stroke-subtle px-3 py-1.5 text-xs text-content-tertiary"
         >
           <span>{t('community.gallery.countLabel', { count: filtered.length })}</span>
-          {capped && (
+          {!mineActive && capped && (
             <span>
               {t('community.gallery.capNotice', { count: COMMUNITY_INDEX_CAP.toLocaleString() })}
             </span>

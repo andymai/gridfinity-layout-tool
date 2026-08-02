@@ -30,7 +30,7 @@ function baseArgs(positional: string[]): Args {
 }
 
 function createRedis() {
-  return { quit: vi.fn(async () => undefined) };
+  return { hset: vi.fn(async () => 1), quit: vi.fn(async () => undefined) };
 }
 
 beforeEach(() => {
@@ -56,16 +56,22 @@ describe('hide command', () => {
 
     expect(await hide(baseArgs(['abc123DEF456']))).toBe(1);
     expect(mocks.setCommunityDesignStatus).not.toHaveBeenCalled();
+    expect(redis.hset).not.toHaveBeenCalled();
     expect(redis.quit).toHaveBeenCalledTimes(1);
   });
 
-  it('sets the status to hidden', async () => {
+  it('sets the status to hidden with a moderation reason', async () => {
     mocks.readCommunityCards.mockResolvedValue([CARD]);
     const redis = createRedis();
     mocks.connect.mockReturnValue(redis);
 
     expect(await hide(baseArgs(['abc123DEF456']))).toBe(0);
     expect(mocks.setCommunityDesignStatus).toHaveBeenCalledWith(redis, 'abc123DEF456', 'hidden');
+    // A reason-less hidden design reads as a pending report auto-hide in the
+    // owner's Mine view; the manual hide must write its own reason.
+    expect(redis.hset).toHaveBeenCalledWith(expect.stringContaining('abc123DEF456'), {
+      hiddenReason: 'moderation',
+    });
     expect(redis.quit).toHaveBeenCalledTimes(1);
   });
 });

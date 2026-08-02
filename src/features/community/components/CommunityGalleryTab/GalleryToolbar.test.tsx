@@ -112,6 +112,33 @@ describe('GalleryToolbar filter chips', () => {
     expect(useBrowseStore.getState().filters.likedOnly).toBe(false);
   });
 
+  it('does not render the Mine chip for signed-out visitors', () => {
+    // Unlike Liked there is no sign-in prompt branch: a signed-out visitor
+    // structurally has no published designs.
+    render(<GalleryToolbar />);
+    expect(screen.queryByTestId('community-mine-chip')).not.toBeInTheDocument();
+  });
+
+  it('toggles mineOnly for a signed-in user', () => {
+    signIn();
+    render(<GalleryToolbar />);
+    const chip = screen.getByTestId('community-mine-chip');
+    expect(chip).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(chip);
+    expect(useBrowseStore.getState().filters.mineOnly).toBe(true);
+    expect(screen.getByTestId('community-mine-chip')).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByTestId('community-mine-chip'));
+    expect(useBrowseStore.getState().filters.mineOnly).toBe(false);
+  });
+
+  it('counts mineOnly toward the clear-filters affordance', () => {
+    signIn();
+    render(<GalleryToolbar />);
+    fireEvent.click(screen.getByTestId('community-mine-chip'));
+    fireEvent.click(screen.getByRole('button', { name: 'community.gallery.clearFilters' }));
+    expect(useBrowseStore.getState().filters.mineOnly).toBe(false);
+  });
+
   it('toggles recentOnly regardless of session (local-only feature)', () => {
     render(<GalleryToolbar />);
     const chip = screen.getByTestId('community-recent-chip');

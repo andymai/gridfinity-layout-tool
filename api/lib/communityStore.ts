@@ -23,6 +23,14 @@ import {
 
 export type CommunityDesignStatus = 'live' | 'hidden' | 'removed';
 
+/**
+ * Why a hidden design is hidden, written on the card hash by the hide paths
+ * (report auto-hide, deny-list sweep, manual moderation hide) and surfaced
+ * only to the owner.
+ * MIRROR: must match `CommunityHiddenReason` in `src/shared/types/community.ts`.
+ */
+export type CommunityHiddenReason = 'reports' | 'denylist' | 'moderation';
+
 export interface CommunityLineage {
   parentId: string;
   rootId: string;
@@ -192,6 +200,16 @@ export interface CommunityCardRecord extends CommunityCardMetadata {
   likes: number;
   remixes: number;
   exports: number;
+  /**
+   * Owner-only stat: how many times the design was opened for remixing.
+   * Never served publicly. Optional in the type for fixture ergonomics;
+   * parseCard always yields a number.
+   */
+  opens?: number;
+  /** Owner-only stat: deduped detail views. Never served publicly. Optional like `opens`. */
+  views?: number;
+  /** Present only after a hide; consulted only while status is 'hidden'. */
+  hiddenReason?: CommunityHiddenReason;
 }
 
 export async function writeCommunityCard(redis: Redis, card: CommunityCardMetadata): Promise<void> {
@@ -248,6 +266,13 @@ function parseCard(fields: Record<string, string | undefined>): CommunityCardRec
     likes: Number(fields.likes ?? 0),
     remixes: Number(fields.remixes ?? 0),
     exports: Number(fields.exports ?? 0),
+    opens: Number(fields.opens ?? 0),
+    views: Number(fields.views ?? 0),
+    ...((fields.hiddenReason === 'reports' ||
+      fields.hiddenReason === 'denylist' ||
+      fields.hiddenReason === 'moderation') && {
+      hiddenReason: fields.hiddenReason,
+    }),
   };
 }
 

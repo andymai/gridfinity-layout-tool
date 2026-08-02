@@ -52,6 +52,7 @@ import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
 import { useSupportersRouting } from '@/shared/hooks/useSupportersRouting';
 import { useCommunityRouting } from '@/shared/hooks/useCommunityRouting';
 import {
+  clearLocalPublishedId,
   editOriginalCommunityDesign,
   openPublishForActiveDesign,
   remixCommunityDesign,
@@ -61,6 +62,7 @@ import { useBackgroundThumbnailRegen } from '@/features/bin-designer';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useCommunityPublishReturn } from '@/shared/hooks/useCommunityPublishReturn';
 import { useCommunityLikeReturn } from '@/shared/hooks/useCommunityLikeReturn';
+import { useCommunityDigestCheck } from '@/shared/hooks/useCommunityDigestCheck';
 import { SHORTCUTS } from '@/core/constants';
 
 // Lazy-loaded so the sync chunk only fetches when the user opts into the
@@ -244,6 +246,7 @@ export default function App() {
   useBackgroundThumbnailRegen();
   useCommunityPublishReturn();
   useCommunityLikeReturn();
+  useCommunityDigestCheck();
 
   useEffect(() => {
     return initLayoutAnalytics();
@@ -417,6 +420,8 @@ export default function App() {
             onRequestPublish={openPublishForActiveDesign}
             onRemixDesign={remixCommunityDesign}
             onEditOriginal={editOriginalCommunityDesign}
+            onEditOwnDesign={editOriginalCommunityDesign}
+            onOwnDesignUnpublished={clearLocalPublishedId}
           />
         </Suspense>
       );

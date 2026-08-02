@@ -13,8 +13,10 @@ import {
   communityLikesKey,
   communityOpenedKey,
   communityPublishedKey,
+  communityReportReasonKey,
   communityReportedKey,
   communityReportsKey,
+  communityViewedKey,
 } from '../lib/redisKeys.js';
 import { checkRateLimit, getClientIP, getRedis } from '../lib/rateLimit.js';
 import { readSession, requireSession } from '../lib/session.js';
@@ -43,7 +45,11 @@ import {
   writeCommunityCard,
   writeCommunityDesignBlob,
 } from '../lib/communityStore.js';
-import type { CommunityDesignRecord, CommunityDesignStatus } from '../lib/communityStore.js';
+import type {
+  CommunityDesignRecord,
+  CommunityDesignStatus,
+  CommunityHiddenReason,
+} from '../lib/communityStore.js';
 import {
   COMMUNITY_REPORT_NOTE_MAX_LENGTH,
   COMMUNITY_REPORT_REASONS,
@@ -133,6 +139,61 @@ async function readModerationStatus(
   return status === 'live' || status === 'hidden' || status === 'removed' ? status : failClosed;
 }
 
+/**
+ * Cardinality ceiling for one dedupe set (one design, one 7-day bucket).
+ * Memory defense in depth on a small Redis instance: past this many distinct
+ * members the set stops growing and counting for the rest of the window.
+ */
+const COMMUNITY_DEDUPE_MAX_MEMBERS = 20_000;
+
+/**
+ * Dominant reported-reason category for the owner-facing hidden explanation.
+ * Ties resolve in COMMUNITY_REPORT_REASONS order; null when nothing was
+ * tallied (pre-tally hides, admin hides).
+ */
+async function readTopReportReason(
+  redis: Redis,
+  id: string
+): Promise<CommunityReportReason | null> {
+  const tallies = await redis.hgetall(communityReportReasonKey(id));
+  let top: CommunityReportReason | null = null;
+  let topCount = 0;
+  for (const reason of COMMUNITY_REPORT_REASONS) {
+    const count = Number(tallies[reason] ?? 0);
+    if (count > topCount) {
+      top = reason;
+      topCount = count;
+    }
+  }
+  return top;
+}
+
+/**
+ * Owner-only "views" counter, bumped on public detail GETs of live designs.
+ * Dedupes on the hashed caller IP per weekly bucket (GET has no request body,
+ * so there is no clientId to pair it with the way open/export do) and shares
+ * their cardinality ceiling. Best-effort: a Redis hiccup here must not fail
+ * the read that already succeeded.
+ */
+async function recordCommunityView(redis: Redis, id: string, clientIP: string): Promise<void> {
+  try {
+    const dedupeKey = communityViewedKey(id, communityDedupeBucket(Date.now()));
+    if ((await redis.scard(dedupeKey)) >= COMMUNITY_DEDUPE_MAX_MEMBERS) return;
+    const ipAdded = await redis.sadd(
+      dedupeKey,
+      `ip:${createHash('sha256').update(clientIP).digest('hex').slice(0, 16)}`
+    );
+    if (ipAdded !== 1) return;
+    await redis.expire(dedupeKey, COMMUNITY_DEDUPE_TTL_SECONDS);
+    await redis.hincrby(communityDesignKey(id), 'views', 1);
+  } catch (error) {
+    logger.warn('Community view counter failed', {
+      id,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
 async function handleGet(req: VercelRequest, res: VercelResponse, id: string) {
   try {
     const clientIP = getClientIP(req);
@@ -161,28 +222,55 @@ async function handleGet(req: VercelRequest, res: VercelResponse, id: string) {
     // depend on the capped browse index: a design past the client's index cap
     // (or any index fetch failure) still gets a heart and counters.
     const redis = getRedis();
-    let counts: { likes: number; remixes: number; exports: number } | null = null;
+    let counts: {
+      likes: number;
+      remixes: number;
+      exports: number;
+      opens?: number;
+      views?: number;
+    } | null = null;
     let likedByMe = false;
+    let hiddenReason: CommunityHiddenReason | null = null;
+    let hiddenReasonCategory: CommunityReportReason | null = null;
     if (redis) {
-      const [likes, remixes, exports] = await redis.hmget(
+      const [likes, remixes, exports, opens, views, storedHiddenReason] = await redis.hmget(
         communityDesignKey(id),
         'likes',
         'remixes',
-        'exports'
+        'exports',
+        'opens',
+        'views',
+        'hiddenReason'
       );
       counts = {
         likes: Number(likes ?? 0),
         remixes: Number(remixes ?? 0),
         exports: Number(exports ?? 0),
+        // Opens/views are owner-only stats and must never reach a public
+        // response, so they are attached only on the owns branch.
+        ...(owns && { opens: Number(opens ?? 0), views: Number(views ?? 0) }),
       };
       if (session !== null) {
         likedByMe = (await redis.sismember(communityLikesKey(id), session.userId)) === 1;
       }
+      if (owns && status === 'hidden') {
+        if (storedHiddenReason === 'reports' || storedHiddenReason === 'denylist') {
+          hiddenReason = storedHiddenReason;
+        }
+        hiddenReasonCategory = await readTopReportReason(redis, id);
+      }
+      if (status === 'live' && !owns) {
+        await recordCommunityView(redis, id, clientIP);
+      }
     }
 
-    return res
-      .status(200)
-      .json({ design: { ...record, status }, isOwner: owns, counts, likedByMe });
+    return res.status(200).json({
+      design: { ...record, status },
+      isOwner: owns,
+      counts,
+      likedByMe,
+      ...(owns && status === 'hidden' && { hiddenReason, hiddenReasonCategory }),
+    });
   } catch (error) {
     logger.error('Community design fetch error', {
       error: error instanceof Error ? error.message : String(error),
@@ -449,6 +537,7 @@ async function handleDelete(req: VercelRequest, res: VercelResponse, id: string)
       communityDesignKey(id),
       communityLikesKey(id),
       communityReportsKey(id),
+      communityReportReasonKey(id),
       communityChildrenKey(id)
     );
     if (authorPublicId !== '') {
@@ -580,6 +669,9 @@ async function handleLikeAction(
 async function autoHideCommunityDesign(redis: Redis, id: string): Promise<boolean> {
   const record = await readCommunityDesignBlob(id);
   await setCommunityDesignStatus(redis, id, 'hidden');
+  // Distinguishes this hide from a deny-list sweep in the owner's Mine view;
+  // everyone else keeps seeing a plain 404 either way.
+  await redis.hset(communityDesignKey(id), { hiddenReason: 'reports' });
   if (record) {
     const assetUrls = [...record.thumbnails, record.meshUrl].filter((url) => url !== '');
     if (assetUrls.length > 0) {
@@ -673,6 +765,9 @@ async function handleReportAction(
   // from the same account (SADD returns 0) cannot push the count further and
   // would just redo the purge work.
   if (added === 1) {
+    // Tallied only for genuinely new reporters, mirroring the dedupe above,
+    // so one account cannot skew the owner-facing dominant reason.
+    await redis.hincrby(communityReportReasonKey(id), reportReason, 1);
     const distinctReporters = await redis.scard(communityReportsKey(id));
     logger.warn('Community design reported', {
       id,
@@ -687,13 +782,6 @@ async function handleReportAction(
 
   return res.status(200).json({ success: true, autoHidden });
 }
-
-/**
- * Cardinality ceiling for one dedupe set (one design, one 7-day bucket).
- * Memory defense in depth on a small Redis instance: past this many distinct
- * members the set stops growing and counting for the rest of the window.
- */
-const COMMUNITY_DEDUPE_MAX_MEMBERS = 20_000;
 
 async function handleCounterAction(
   req: VercelRequest,

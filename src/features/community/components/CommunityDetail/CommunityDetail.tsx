@@ -28,7 +28,7 @@ import { recordRecentlyViewed } from '../../utils/recentlyViewed';
 import { ReportDialog } from '../ReportDialog';
 import { CommunitySignInPrompt } from '../SignInPrompt';
 import { CommunityDetailContent } from './CommunityDetailContent';
-import type { ParentResolution } from './CommunityDetailContent';
+import type { OwnerModeration, ParentResolution } from './CommunityDetailContent';
 import { useDetailHistoryTrap } from './useDetailHistoryTrap';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useRetryOnReconnect } from '@/shared/hooks/useRetryOnReconnect';
@@ -108,6 +108,7 @@ function CommunityDetailDialog({
   const [design, setDesign] = useState<CommunityDesign | null>(null);
   const [detailStats, setDetailStats] = useState<DetailStats | null>(null);
   const [isOwner, setIsOwner] = useState(false);
+  const [ownerModeration, setOwnerModeration] = useState<OwnerModeration | null>(null);
   const [offline, setOffline] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const [busy, setBusy] = useState<BusyAction>(null);
@@ -219,6 +220,14 @@ function CommunityDetailDialog({
             : null
         );
         setIsOwner(result.value.isOwner);
+        setOwnerModeration(
+          result.value.isOwner && result.value.design.status === 'hidden'
+            ? {
+                hiddenReason: result.value.hiddenReason,
+                hiddenReasonCategory: result.value.hiddenReasonCategory,
+              }
+            : null
+        );
         setPhase('ready');
         if (!hasTrackedViewRef.current) {
           hasTrackedViewRef.current = true;
@@ -416,6 +425,7 @@ function CommunityDetailDialog({
                 : null
             }
             onFilterByAuthor={handleFilterByAuthor}
+            ownerModeration={ownerModeration}
           />
         )}
       </Dialog.Body>
@@ -470,7 +480,13 @@ function CommunityDetailDialog({
                 variant="primary"
                 touchTarget={isMobile}
                 loading={busy === 'edit'}
-                disabled={busy !== null && busy !== 'edit'}
+                // Hidden designs reject updates server-side (PUT 403s while
+                // non-live); disabling up front spares the owner a publish
+                // flow guaranteed to fail at submit.
+                disabled={(busy !== null && busy !== 'edit') || design.status !== 'live'}
+                title={
+                  design.status !== 'live' ? t('community.detail.editDisabledHidden') : undefined
+                }
                 onClick={() => void handleEditOriginal()}
               >
                 {t('community.detail.editOriginal')}

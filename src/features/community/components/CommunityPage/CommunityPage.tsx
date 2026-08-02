@@ -13,8 +13,10 @@ import { Button, IconButton } from '@/design-system';
 import { ArrowLeftIcon, XIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 import { useCommunityDetailStore } from '@/core/store/communityDetail';
+import { useCommunityDigestStore } from '@/core/store/communityDigest';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import type { CommunityDetailProps } from '@/shared/types/communityDetail';
+import type { CommunityGalleryTabProps } from '@/shared/types/communityGalleryTab';
 import {
   getCommunityDesignIdFromUrl,
   syncCommunityAuthorParam,
@@ -45,12 +47,16 @@ export interface CommunityPageProps {
   onRequestPublish: () => Promise<boolean>;
   onRemixDesign: CommunityDetailProps['onRemixDesign'];
   onEditOriginal: CommunityDetailProps['onEditOriginal'];
+  onEditOwnDesign?: CommunityGalleryTabProps['onEditOwnDesign'];
+  onOwnDesignUnpublished?: CommunityGalleryTabProps['onOwnDesignUnpublished'];
 }
 
 export function CommunityPage({
   onRequestPublish,
   onRemixDesign,
   onEditOriginal,
+  onEditOwnDesign,
+  onOwnDesignUnpublished,
 }: CommunityPageProps) {
   const t = useTranslation();
   const {
@@ -61,6 +67,7 @@ export function CommunityPage({
     closeCommunityDesignUrl,
   } = useCommunityRouting();
   const request = useCommunityDetailStore((s) => s.request);
+  const hasUnseenDigest = useCommunityDigestStore((s) => s.hasUnseenDeltas);
   const sessionStatus = useSessionStore((s) => s.status);
   const setAuthor = useBrowseStore((s) => s.setAuthor);
   const authorFilterId = useBrowseStore((s) => s.filters.author?.id ?? null);
@@ -160,7 +167,21 @@ export function CommunityPage({
           <ArrowLeftIcon size="sm" />
           {t('community.page.back')}
         </Button>
-        <h2 className="text-base font-semibold">{t('community.page.title')}</h2>
+        <h2 className="text-base font-semibold">
+          {t('community.page.title')}
+          {hasUnseenDigest && (
+            <>
+              <span
+                aria-hidden="true"
+                data-testid="community-digest-dot"
+                className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-accent"
+              />
+              {/* The dot is aria-hidden; without this the news signal is
+                  visual-only (GalleryTabBar folds it into the tab label). */}
+              <span className="sr-only">{` ${t('binExamples.gallery.tabs.newBadge')}`}</span>
+            </>
+          )}
+        </h2>
       </header>
 
       {showStrip && (
@@ -187,6 +208,8 @@ export function CommunityPage({
       <CommunityGalleryTab
         onRequestClose={noopClose}
         onRequestPublish={onRequestPublish}
+        onEditOwnDesign={onEditOwnDesign}
+        onOwnDesignUnpublished={onOwnDesignUnpublished}
         surface="route"
       />
 

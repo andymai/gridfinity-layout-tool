@@ -36,8 +36,10 @@ import {
   communityLikesKey,
   communityOpenedKey,
   communityPublishedKey,
+  communityReportReasonKey,
   communityReportedKey,
   communityReportsKey,
+  communityViewedKey,
 } from '../lib/redisKeys.js';
 
 const mocks = vi.hoisted(() => ({
@@ -141,6 +143,7 @@ interface FakeRedis {
   sadd: ReturnType<typeof vi.fn>;
   scard: ReturnType<typeof vi.fn>;
   exists: ReturnType<typeof vi.fn>;
+  expire: ReturnType<typeof vi.fn>;
   hget: ReturnType<typeof vi.fn>;
   hgetall: ReturnType<typeof vi.fn>;
   hmget: ReturnType<typeof vi.fn>;
@@ -170,6 +173,7 @@ function createRedis(): { redis: FakeRedis; pipeline: FakePipeline } {
     sadd: vi.fn(async () => 1),
     scard: vi.fn(async () => 0),
     exists: vi.fn(async () => 1),
+    expire: vi.fn(async () => 1),
     hget: vi.fn(async (_key: string, field: string) => (field === 'status' ? 'live' : null)),
     hgetall: vi.fn(async (): Promise<Record<string, string>> => ({})),
     hmget: vi.fn(async () => [null, null, null] as (string | null)[]),
@@ -312,18 +316,53 @@ describe('community/[id]', () => {
     it('ships card-hash counts and anonymous like-state with the detail', async () => {
       // The stats row must not depend on the capped browse index: a design
       // past the client's 2,000-card cap still needs counts and a heart.
-      redis.hmget.mockResolvedValue(['4', '2', '9']);
+      redis.hmget.mockResolvedValue(['4', '2', '9', '7', '31', null]);
       const res = await handle('GET');
       expect(res._status).toBe(200);
       expect(redis.hmget).toHaveBeenCalledWith(
         communityDesignKey(VALID_ID),
         'likes',
         'remixes',
-        'exports'
+        'exports',
+        'opens',
+        'views',
+        'hiddenReason'
       );
       const body = res._body as { counts: unknown; likedByMe: boolean };
+      // Opens/views are owner-only stats: an anonymous detail response must
+      // not even carry the keys.
       expect(body.counts).toEqual({ likes: 4, remixes: 2, exports: 9 });
       expect(body.likedByMe).toBe(false);
+    });
+
+    it('includes owner-only opens/views counts for the owner', async () => {
+      redis.hmget.mockResolvedValue(['4', '2', '9', '7', '31', null]);
+      mocks.readSessionCookie.mockReturnValue('session-token');
+      mocks.readSession.mockResolvedValue(session);
+      redis.sismember.mockResolvedValue(1);
+      const res = await handle('GET');
+      expect(res._status).toBe(200);
+      expect((res._body as { counts: unknown }).counts).toEqual({
+        likes: 4,
+        remixes: 2,
+        exports: 9,
+        opens: 7,
+        views: 31,
+      });
+    });
+
+    it('excludes opens/views for a signed-in non-owner', async () => {
+      redis.hmget.mockResolvedValue(['4', '2', '9', '7', '31', null]);
+      mocks.readSessionCookie.mockReturnValue('session-token');
+      mocks.readSession.mockResolvedValue(session);
+      redis.sismember.mockResolvedValue(0);
+      const res = await handle('GET');
+      expect(res._status).toBe(200);
+      expect((res._body as { counts: unknown }).counts).toEqual({
+        likes: 4,
+        remixes: 2,
+        exports: 9,
+      });
     });
 
     it('defaults never-incremented counters to zero', async () => {
@@ -418,6 +457,79 @@ describe('community/[id]', () => {
       const res = await handle('GET');
       expect(res._status).toBe(429);
       expect(mocks.checkRateLimit).toHaveBeenCalledWith('203.0.113.1', 'community.read');
+    });
+
+    it('explains a hidden design to its owner with the hide reason and dominant report category', async () => {
+      redis.hget.mockResolvedValue('hidden');
+      mocks.readCommunityDesignBlob.mockResolvedValue(designRecord({ status: 'hidden' }));
+      redis.hmget.mockResolvedValue(['0', '0', '0', '1', '2', 'reports']);
+      redis.hgetall.mockResolvedValue({ spam: '3', inappropriate: '1' });
+      mocks.readSessionCookie.mockReturnValue('session-token');
+      mocks.readSession.mockResolvedValue(session);
+      redis.sismember.mockResolvedValue(1);
+      const res = await handle('GET');
+      expect(res._status).toBe(200);
+      expect(redis.hgetall).toHaveBeenCalledWith(communityReportReasonKey(VALID_ID));
+      const body = res._body as { hiddenReason: string; hiddenReasonCategory: string };
+      expect(body.hiddenReason).toBe('reports');
+      expect(body.hiddenReasonCategory).toBe('spam');
+    });
+
+    it('marks a deny-list hide distinctly for the owner, with no report category', async () => {
+      redis.hget.mockResolvedValue('hidden');
+      mocks.readCommunityDesignBlob.mockResolvedValue(designRecord({ status: 'hidden' }));
+      redis.hmget.mockResolvedValue(['0', '0', '0', '0', '0', 'denylist']);
+      mocks.readSessionCookie.mockReturnValue('session-token');
+      mocks.readSession.mockResolvedValue(session);
+      redis.sismember.mockResolvedValue(1);
+      const res = await handle('GET');
+      expect(res._status).toBe(200);
+      const body = res._body as { hiddenReason: string; hiddenReasonCategory: string | null };
+      expect(body.hiddenReason).toBe('denylist');
+      expect(body.hiddenReasonCategory).toBeNull();
+    });
+
+    it('never sends hidden-reason fields on a live design', async () => {
+      mocks.readSessionCookie.mockReturnValue('session-token');
+      mocks.readSession.mockResolvedValue(session);
+      redis.sismember.mockResolvedValue(1);
+      const res = await handle('GET');
+      expect(res._status).toBe(200);
+      expect(res._body as object).not.toHaveProperty('hiddenReason');
+      expect(res._body as object).not.toHaveProperty('hiddenReasonCategory');
+    });
+
+    it('counts a view once per hashed IP for a non-owner GET of a live design', async () => {
+      const res = await handle('GET');
+      expect(res._status).toBe(200);
+      const viewedKey = communityViewedKey(VALID_ID, communityDedupeBucket(Date.now()));
+      expect(redis.sadd).toHaveBeenCalledWith(viewedKey, expect.stringMatching(/^ip:/));
+      expect(redis.expire).toHaveBeenCalledWith(viewedKey, COMMUNITY_DEDUPE_TTL_SECONDS);
+      expect(redis.hincrby).toHaveBeenCalledWith(communityDesignKey(VALID_ID), 'views', 1);
+    });
+
+    it('does not recount a repeat view from the same IP', async () => {
+      redis.sadd.mockResolvedValue(0);
+      const res = await handle('GET');
+      expect(res._status).toBe(200);
+      expect(redis.hincrby).not.toHaveBeenCalled();
+    });
+
+    it('never counts the owner viewing their own design', async () => {
+      mocks.readSessionCookie.mockReturnValue('session-token');
+      mocks.readSession.mockResolvedValue(session);
+      redis.sismember.mockResolvedValue(1);
+      const res = await handle('GET');
+      expect(res._status).toBe(200);
+      expect(redis.sadd).not.toHaveBeenCalled();
+      expect(redis.hincrby).not.toHaveBeenCalled();
+    });
+
+    it('still returns the detail when the view counter write fails', async () => {
+      redis.sadd.mockRejectedValue(new Error('redis flaked'));
+      const res = await handle('GET');
+      expect(res._status).toBe(200);
+      expect((res._body as { design: CommunityDesignRecord }).design.id).toBe(VALID_ID);
     });
 
     it('hides a design whose card hash says hidden even when the blob still says live', async () => {
@@ -662,6 +774,7 @@ describe('community/[id]', () => {
         communityDesignKey(VALID_ID),
         communityLikesKey(VALID_ID),
         communityReportsKey(VALID_ID),
+        communityReportReasonKey(VALID_ID),
         communityChildrenKey(VALID_ID)
       );
       const sremCalls = pipeline.srem.mock.calls;
@@ -898,6 +1011,23 @@ describe('community/[id]', () => {
         expect(mocks.del).not.toHaveBeenCalled();
       });
 
+      it('tallies the reason once per new reporter for the owner-facing aggregate', async () => {
+        redis.scard.mockResolvedValue(2);
+        const res = await handle('POST', { body: reportBody });
+        expect(res._status).toBe(200);
+        expect(redis.hincrby).toHaveBeenCalledWith(communityReportReasonKey(VALID_ID), 'spam', 1);
+      });
+
+      it('does not tally the reason for a repeat reporter', async () => {
+        pipeline.exec.mockResolvedValue([
+          [null, 0],
+          [null, 1],
+        ]);
+        const res = await handle('POST', { body: reportBody });
+        expect(res._status).toBe(200);
+        expect(redis.hincrby).not.toHaveBeenCalled();
+      });
+
       it('dedupes a repeat report from the same account (no threshold re-check)', async () => {
         pipeline.exec.mockResolvedValue([
           [null, 0],
@@ -919,6 +1049,9 @@ describe('community/[id]', () => {
         expect(res._status).toBe(200);
         expect(res._body).toEqual({ success: true, autoHidden: true });
         expect(mocks.setCommunityDesignStatus).toHaveBeenCalledWith(redis, VALID_ID, 'hidden');
+        expect(redis.hset).toHaveBeenCalledWith(communityDesignKey(VALID_ID), {
+          hiddenReason: 'reports',
+        });
         expect(mocks.del).toHaveBeenCalledWith([...record.thumbnails, record.meshUrl]);
       });
 
@@ -944,7 +1077,9 @@ describe('community/[id]', () => {
         expect(res._status).toBe(200);
         expect(res._body).toEqual({ success: true, autoHidden: true });
         expect(mocks.del).toHaveBeenCalledTimes(2);
-        expect(redis.hset).not.toHaveBeenCalled();
+        expect(redis.hset).not.toHaveBeenCalledWith(communityDesignKey(VALID_ID), {
+          purgePending: '1',
+        });
       });
 
       it('works with the publish kill switch off', async () => {

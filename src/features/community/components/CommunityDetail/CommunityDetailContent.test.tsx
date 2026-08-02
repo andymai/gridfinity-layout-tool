@@ -295,3 +295,66 @@ describe('CommunityDetailContent', () => {
     expect(screen.getByText('Other Bin')).toBeInTheDocument();
   });
 });
+
+describe('CommunityDetailContent owner hidden-state notice', () => {
+  it('renders nothing moderation-related without ownerModeration', () => {
+    renderContent({ status: 'hidden' });
+    expect(screen.queryByTestId('community-detail-hidden-notice')).not.toBeInTheDocument();
+  });
+
+  it('explains a report hide with the dominant reason category', () => {
+    renderContent(
+      { status: 'hidden' },
+      { ownerModeration: { hiddenReason: 'reports', hiddenReasonCategory: 'spam' } }
+    );
+    expect(screen.getByTestId('community-detail-hidden-notice')).toBeInTheDocument();
+    expect(screen.getByTestId('community-hidden-badge')).toHaveTextContent('Hidden after reports');
+    expect(
+      screen.getByText(
+        'This design was hidden after reports (Spam) and is no longer publicly visible.'
+      )
+    ).toBeInTheDocument();
+    expect(screen.getByText('A moderator will review it.')).toBeInTheDocument();
+  });
+
+  it('falls back to the reasonless explanation when nothing was tallied', () => {
+    renderContent(
+      { status: 'hidden' },
+      { ownerModeration: { hiddenReason: null, hiddenReasonCategory: null } }
+    );
+    expect(screen.getByTestId('community-hidden-badge')).toBeInTheDocument();
+    expect(
+      screen.getByText('This design was hidden after reports and is no longer publicly visible.')
+    ).toBeInTheDocument();
+  });
+
+  it('explains a manual moderation hide without promising a future review', () => {
+    renderContent(
+      { status: 'hidden' },
+      { ownerModeration: { hiddenReason: 'moderation', hiddenReasonCategory: null } }
+    );
+    expect(screen.getByTestId('community-moderation-badge')).toHaveTextContent(
+      'Hidden by moderation'
+    );
+    expect(
+      screen.getByText('This design was hidden by the moderation team and is not publicly visible.')
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId('community-hidden-badge')).not.toBeInTheDocument();
+    expect(screen.queryByText('A moderator will review it.')).not.toBeInTheDocument();
+  });
+
+  it('marks a deny-list hide distinctly, without the moderator review note', () => {
+    renderContent(
+      { status: 'hidden' },
+      { ownerModeration: { hiddenReason: 'denylist', hiddenReasonCategory: null } }
+    );
+    expect(screen.getByTestId('community-denylisted-badge')).toHaveTextContent(
+      'Publishing restricted'
+    );
+    expect(
+      screen.getByText('This design is hidden. Publishing is not available for this account.')
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId('community-hidden-badge')).not.toBeInTheDocument();
+    expect(screen.queryByText('A moderator will review it.')).not.toBeInTheDocument();
+  });
+});

@@ -295,7 +295,14 @@ function seedRecordBlob(id: string, overrides: Partial<CommunityDesignRecord> = 
 
 async function seedCard(
   overrides: Partial<CommunityCardMetadata> & { id: string },
-  counters: { likes?: number; remixes?: number; exports?: number } = {}
+  counters: {
+    likes?: number;
+    remixes?: number;
+    exports?: number;
+    opens?: number;
+    views?: number;
+  } = {},
+  hiddenReason?: 'reports' | 'denylist'
 ): Promise<void> {
   const card: CommunityCardMetadata = {
     name: 'Seeded Design',
@@ -321,6 +328,9 @@ async function seedCard(
     likes: String(counters.likes ?? 0),
     remixes: String(counters.remixes ?? 0),
     exports: String(counters.exports ?? 0),
+    opens: String(counters.opens ?? 0),
+    views: String(counters.views ?? 0),
+    ...(hiddenReason !== undefined && { hiddenReason }),
   });
   if (card.status === 'live') {
     await fake.zadd(communityIndexKey('newest'), card.createdAt, card.id);
@@ -854,6 +864,47 @@ describe('GET /api/community (list)', () => {
     const res = await handle({ method: 'GET' });
     expect(res._status).toBe(200);
     expect((res._body as { likedIds: string[] }).likedIds).toEqual([]);
+  });
+
+  it('mine items carry owner-only opens/views counts and the hide reason', async () => {
+    await seedCard({ id: 'mine-stats00', createdAt: 3_000 }, { likes: 4, opens: 7, views: 31 });
+    await seedCard(
+      { id: 'mine-denied0', status: 'hidden', createdAt: 2_000 },
+      { exports: 2 },
+      'denylist'
+    );
+    await seedCard({ id: 'mine-report0', status: 'hidden', createdAt: 1_000 }, {}, 'reports');
+    for (const id of ['mine-stats00', 'mine-denied0', 'mine-report0']) {
+      await fake.sadd(communityPublishedKey('user-1'), id);
+    }
+
+    const res = await handle({ method: 'GET', query: { mine: '1' } });
+    expect(res._status).toBe(200);
+    const body = res._body as {
+      items: Array<{
+        id: string;
+        counts: Record<string, number>;
+        hiddenReason?: string;
+      }>;
+    };
+    expect(body.items.map((item) => item.id)).toEqual([
+      'mine-stats00',
+      'mine-denied0',
+      'mine-report0',
+    ]);
+    expect(body.items[0].counts).toEqual({ likes: 4, remixes: 0, exports: 0, opens: 7, views: 31 });
+    expect(body.items[0].hiddenReason).toBeUndefined();
+    expect(body.items[1].hiddenReason).toBe('denylist');
+    expect(body.items[2].hiddenReason).toBe('reports');
+  });
+
+  it('public list items never carry opens/views or a hide reason', async () => {
+    await seedCard({ id: 'public-stats' }, { likes: 4, opens: 7, views: 31 });
+    const res = await handle({ method: 'GET' });
+    expect(res._status).toBe(200);
+    const body = res._body as { items: Array<Record<string, unknown>> };
+    expect(body.items[0].counts).toEqual({ likes: 4, remixes: 0, exports: 0 });
+    expect(body.items[0]).not.toHaveProperty('hiddenReason');
   });
 
   it('mine returns likedIds for the session user too', async () => {

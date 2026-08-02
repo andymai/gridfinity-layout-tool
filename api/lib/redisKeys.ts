@@ -27,10 +27,12 @@
  *   community:author:{publicId}     → SET of design ids published under one author publicId
  *   community:published:{uid}       → SET of design ids a user has published (quota via SCARD)
  *   community:reports:{id}          → SET of userIds who reported a design (per-account dedupe)
+ *   community:reportReasons:{id}    → HASH of report reason → distinct-reporter count (owner-facing aggregate)
  *   community:reported:{uid}        → SET of design ids a user reported (reverse index for the account-deletion cascade)
  *   community:denylist              → SET of userIds barred from publishing
  *   community:opened:{id}           → SET of clientId dedupe tokens for the "open" (remix) counter, 7d TTL
  *   community:exported:{id}         → SET of clientId dedupe tokens for the "export" (printed) counter, 7d TTL
+ *   community:viewed:{id}           → SET of hashed-IP dedupe tokens for the "views" counter, 7d TTL
  */
 
 export type SyncItemKind = 'layouts' | 'designs' | 'baseplates';
@@ -152,6 +154,16 @@ export function communityReportsKey(designId: string): string {
 }
 
 /**
+ * HASH of report reason → distinct-reporter count for a design. Bumped once
+ * per new reporter alongside communityReportsKey, so the owner-facing
+ * "hidden after reports" explanation can name the dominant reason category
+ * without persisting individual reports.
+ */
+export function communityReportReasonKey(designId: string): string {
+  return `community:reportReasons:${designId}`;
+}
+
+/**
  * Reverse index: SET of design ids a user reported. Whatever records a report
  * must SADD here too, or the account-deletion cascade cannot find and remove
  * the user's entries from each design's reports set.
@@ -181,4 +193,9 @@ export function communityOpenedKey(designId: string, bucket: number): string {
 /** SET of dedupe members that already triggered the export ("printed") counter for a design. Same weekly-bucket rationale as communityOpenedKey. */
 export function communityExportedKey(designId: string, bucket: number): string {
   return `community:exported:${designId}:${bucket}`;
+}
+
+/** SET of hashed-IP dedupe members that already triggered the owner-only "views" counter for a design. Same weekly-bucket rationale as communityOpenedKey. */
+export function communityViewedKey(designId: string, bucket: number): string {
+  return `community:viewed:${designId}:${bucket}`;
 }

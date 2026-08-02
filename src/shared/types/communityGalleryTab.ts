@@ -7,6 +7,8 @@
  * (e.g. after a successful import into the designer).
  */
 
+import type { CommunityEditOriginalOutcome } from '@/shared/types/communityDetail';
+
 /** Which host surface is showing community content; used as the analytics `surface` property. */
 export type CommunityGallerySurface = 'tab' | 'route';
 
@@ -19,6 +21,18 @@ export interface CommunityGalleryTabProps {
    * exists, in which case the CTA has already fallen back to a plain switch.
    */
   onRequestPublish?: () => Promise<boolean>;
+  /**
+   * Mine-card Edit action: loads the owner's local original for this
+   * published id and opens the publish dialog in update mode. Implemented by
+   * the shell (it crosses into bin-designer); only the id is needed, unlike
+   * the detail view's full-record onEditOriginal.
+   */
+  onEditOwnDesign?: (design: { id: string }) => Promise<CommunityEditOriginalOutcome>;
+  /**
+   * Best-effort local cleanup after a Mine-card unpublish: clears the local
+   * design's dangling publishedId pointer. Implemented by the shell.
+   */
+  onOwnDesignUnpublished?: (publishedId: string) => Promise<void>;
   /** @default 'tab' */
   surface?: CommunityGallerySurface;
 }

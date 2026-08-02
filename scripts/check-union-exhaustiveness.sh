@@ -26,7 +26,9 @@ declare -A UNION_TYPES=(
   ["MobileLayersTab"]="layers,tools"
   ["CommunityCategory"]="tools,hardware,kitchen,office,crafts,electronics,toys-games,other"
   ["CommunityDesignStatus"]="live,hidden,removed"
+  ["CommunityHiddenReason"]="reports,denylist,moderation"
   ["CommunityIndexSort"]="newest,remixes,likes"
+  ["CommunityMilestoneKind"]="first_publish,first_remix_of_yours,ten_published_remixes,hundred_prints"
   ["CommunityReportReason"]="inappropriate,spam,broken,stolen"
 )
 
