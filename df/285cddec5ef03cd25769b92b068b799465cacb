@@ -1,0 +1,20 @@
+src/features/bin-designer/components/DesignerPage/DesignerHeader.tsx
+  s_48a510eaef7c22::t_fcd0cac7c1a142 161-164
+  s_48a510eaef7c22::t_aecc8c8ae66da3 68,114,134
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "df285cddec5ef03cd25769b92b068b799465cacb",
+  "prompts": {},
+  "sessions": {
+    "s_48a510eaef7c22": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fda9511-153c-4dd5-bba7-05895a1e12c3",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
