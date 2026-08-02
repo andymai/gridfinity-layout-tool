@@ -76,6 +76,8 @@ export function BaseplatePage() {
     magnetAnchor,
     fractionalEdgeX,
     fractionalEdgeY,
+    gridShiftX,
+    gridShiftY,
     baseplateParams,
     defaultPrintBedSize,
   } = useLayoutStore(
@@ -88,6 +90,8 @@ export function BaseplatePage() {
       magnetAnchor: state.layout.magnetAnchor,
       fractionalEdgeX: state.layout.drawer.fractionalEdgeX ?? 'end',
       fractionalEdgeY: state.layout.drawer.fractionalEdgeY ?? 'end',
+      gridShiftX: state.layout.drawer.gridShiftX ?? 0,
+      gridShiftY: state.layout.drawer.gridShiftY ?? 0,
       baseplateParams: state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
       defaultPrintBedSize: state.layout.printBedSize,
     }))
@@ -152,7 +156,9 @@ export function BaseplatePage() {
         nozzleSizeMm,
         drawerOutline,
         magnetAnchor,
-        gridUnitMmY
+        gridUnitMmY,
+        gridShiftX,
+        gridShiftY
       ),
     [
       baseplateParams,
@@ -164,6 +170,8 @@ export function BaseplatePage() {
       magnetAnchor,
       fractionalEdgeX,
       fractionalEdgeY,
+      gridShiftX,
+      gridShiftY,
       nozzleSizeMm,
     ]
   );

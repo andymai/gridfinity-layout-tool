@@ -8,10 +8,12 @@
 import { z } from 'zod';
 import { ok } from '@/core/result';
 import { clamp } from '@/shared/utils/validation';
-import { SOLID_FLOOR_MIN_MM, SOLID_FLOOR_MAX_MM } from '@/core/constants';
+import { SOLID_FLOOR_MIN_MM, SOLID_FLOOR_MAX_MM, STAGING_ID } from '@/core/constants';
 import type { StoredBaseplateParams, GridUnits, Mm } from '@/core/types';
+import { effectiveGridUnitMmY } from '@/core/types';
 import { BASEPLATE_CONNECTOR_STYLES } from '@/shared/types/bin';
 import { defineCommand } from '../../defineCommand';
+import { computeDisplacedBins } from '../drawer/displacement';
 
 // StoredBaseplateParams has many fields, most optional; the schema is permissive
 // (passes shape through). Validation focuses on the required boolean +
@@ -92,12 +94,35 @@ export const setBaseplateParams = defineCommand({
         : {}),
     } as StoredBaseplateParams;
 
+    // Padding (and sync mode) participates in the grid↔perimeter frame
+    // (#3157): recompute displacement against the NEW params so bins whose
+    // sockets the re-based plate loses move to staging, undoably, exactly
+    // like a resize. A rectangle drawer has no frame, so this is a no-op.
+    const layout = ctx.aggregate;
+    const displacedBinIds =
+      layout.drawer.outline !== undefined
+        ? computeDisplacedBins(
+            layout.bins,
+            layout.drawer,
+            params,
+            layout.gridUnitMm,
+            effectiveGridUnitMmY(layout)
+          )
+        : [];
+
     return ok({
       value: undefined,
-      event: { payload: { params, previousParams } },
+      event: { payload: { params, previousParams, displacedBinIds } },
     });
   },
   apply: (event, draft) => {
     draft.baseplateParams = event.payload.params;
+    const displaced = event.payload.displacedBinIds ?? [];
+    if (displaced.length > 0) {
+      const idSet = new Set(displaced);
+      for (const bin of draft.bins) {
+        if (idSet.has(bin.id)) bin.layerId = STAGING_ID;
+      }
+    }
   },
 });

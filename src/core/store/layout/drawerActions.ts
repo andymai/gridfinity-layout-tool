@@ -58,7 +58,13 @@ export function createDrawerActions(setLocal: SetLocal) {
           delete drawer.outline;
         }
         const displaced = new Set(
-          computeDisplacedBins(state.layout.bins, drawer, state.layout.gridUnitMm, gridUnitMmY)
+          computeDisplacedBins(
+            state.layout.bins,
+            drawer,
+            state.layout.baseplateParams,
+            state.layout.gridUnitMm,
+            gridUnitMmY
+          )
         );
         if (displaced.size > 0) {
           state.layout.bins = state.layout.bins.map((bin) =>

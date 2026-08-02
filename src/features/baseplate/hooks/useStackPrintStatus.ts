@@ -42,6 +42,8 @@ export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
     gridUnitMmY,
     fractionalEdgeX,
     fractionalEdgeY,
+    gridShiftX,
+    gridShiftY,
     baseplateParams,
   } = useLayoutStore(
     useShallow((s) => ({
@@ -55,6 +57,8 @@ export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
       gridUnitMmY: effectiveGridUnitMmY(s.layout),
       fractionalEdgeX: s.layout.drawer.fractionalEdgeX ?? 'end',
       fractionalEdgeY: s.layout.drawer.fractionalEdgeY ?? 'end',
+      gridShiftX: s.layout.drawer.gridShiftX ?? 0,
+      gridShiftY: s.layout.drawer.gridShiftY ?? 0,
       baseplateParams: s.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
     }))
   );
@@ -75,7 +79,9 @@ export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
       nozzleSizeMm,
       drawerOutline,
       undefined,
-      gridUnitMmY
+      gridUnitMmY,
+      gridShiftX,
+      gridShiftY
     );
     const groups = stackGroupsFromTiling(tiling, fullParams, copies);
     const cap = stackHeightCap(maxPrintHeightMm, GRIDFINITY_SPEC.SOCKET_HEIGHT, gapMm);
@@ -92,6 +98,8 @@ export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
     gridUnitMmY,
     fractionalEdgeX,
     fractionalEdgeY,
+    gridShiftX,
+    gridShiftY,
     nozzleSizeMm,
     maxPrintHeightMm,
     tiling,

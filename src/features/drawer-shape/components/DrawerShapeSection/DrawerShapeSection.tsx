@@ -6,6 +6,7 @@ import { useLayoutStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
 import { useMutations } from '@/shared/contexts/MutationsContext';
 import { trackDrawerShapeEditorOpened, trackDrawerShapeReset } from '@/shared/analytics/posthog';
+import { GridAlignmentControls } from '../GridAlignmentControls/GridAlignmentControls';
 import { ShapeEditorDialog } from '../ShapeEditorDialog/ShapeEditorDialog';
 import { CornerCutsDialog } from '../CornerCutsDialog/CornerCutsDialog';
 import { PenShapeDialog } from '../PenShapeDialog/PenShapeDialog';
@@ -107,6 +108,7 @@ export function DrawerShapeSection({ variant = 'desktop' }: DrawerShapeSectionPr
           </Button>
         )}
       </div>
+      {hasOutline && <GridAlignmentControls variant={variant} />}
       <ShapeEditorDialog open={editorOpen} onClose={() => setEditorOpen(false)} />
       <CornerCutsDialog open={cornersOpen} onClose={() => setCornersOpen(false)} />
       <PenShapeDialog open={penOpen} onClose={() => setPenOpen(false)} />

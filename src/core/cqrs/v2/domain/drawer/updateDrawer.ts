@@ -21,7 +21,7 @@ import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { clamp } from '@/shared/utils/validation';
 import { drawerSizeFloors, isOutlineFullRectangle } from '@/shared/utils/drawerOutline';
 import type { BinId, Drawer, GridUnits, MeasuredDrawerMm } from '@/core/types';
-import { effectiveGridUnitMmY, gridUnits, heightUnits } from '@/core/types';
+import { effectiveGridUnitMmY, gridUnits, heightUnits, mm } from '@/core/types';
 import { defineCommand } from '../../defineCommand';
 import { computeDisplacedBins } from './displacement';
 
@@ -37,6 +37,16 @@ const payloadSchema = z
     height: z.number().min(0),
     fractionalEdgeX: z.enum(['start', 'end']),
     fractionalEdgeY: z.enum(['start', 'end']),
+    // Static bound = half the largest legal pitch; handle() re-clamps to the
+    // layout's actual ±pitch/2 per axis.
+    gridShiftX: z
+      .number()
+      .min(-CONSTRAINTS.GRID_UNIT_MM_MAX / 2)
+      .max(CONSTRAINTS.GRID_UNIT_MM_MAX / 2),
+    gridShiftY: z
+      .number()
+      .min(-CONSTRAINTS.GRID_UNIT_MM_MAX / 2)
+      .max(CONSTRAINTS.GRID_UNIT_MM_MAX / 2),
     // null clears the stored measurement (same present-key-undefined dance
     // as the outline: apply() deletes it from the draft).
     measuredMm: z
@@ -116,6 +126,18 @@ export const updateDrawer = defineCommand({
     }
     if (payload.fractionalEdgeX !== undefined) changes.fractionalEdgeX = payload.fractionalEdgeX;
     if (payload.fractionalEdgeY !== undefined) changes.fractionalEdgeY = payload.fractionalEdgeY;
+    // Zero offset is stored as an absent key (same dance as outline /
+    // measuredMm) so untouched layouts stay byte-identical.
+    if (payload.gridShiftX !== undefined) {
+      const half = (layout.gridUnitMm as number) / 2;
+      const v = clamp(payload.gridShiftX, -half, half);
+      changes.gridShiftX = v === 0 ? undefined : mm(v);
+    }
+    if (payload.gridShiftY !== undefined) {
+      const half = (gridUnitMmY as number) / 2;
+      const v = clamp(payload.gridShiftY, -half, half);
+      changes.gridShiftY = v === 0 ? undefined : mm(v);
+    }
     if (payload.measuredMm !== undefined) {
       changes.measuredMm =
         payload.measuredMm === null ? undefined : clampMeasuredMm(payload.measuredMm);
@@ -135,13 +157,21 @@ export const updateDrawer = defineCommand({
       isOutlineFullRectangle(drawer.outline, newWidth * layout.gridUnitMm, newDepth * gridUnitMmY);
     if (outlineBecameRectangle) changes.outline = undefined;
 
+    // Displacement runs against the POST-change frame: fractional-edge and
+    // grid-shift updates move the registered frame, so they displace exactly
+    // like a resize does.
     const displacedBinIds = computeDisplacedBins(
       layout.bins,
       {
         width: newWidth,
         depth: newDepth,
         outline: outlineBecameRectangle ? undefined : drawer.outline,
+        fractionalEdgeX: changes.fractionalEdgeX ?? drawer.fractionalEdgeX,
+        fractionalEdgeY: changes.fractionalEdgeY ?? drawer.fractionalEdgeY,
+        gridShiftX: 'gridShiftX' in changes ? changes.gridShiftX : drawer.gridShiftX,
+        gridShiftY: 'gridShiftY' in changes ? changes.gridShiftY : drawer.gridShiftY,
       },
+      layout.baseplateParams,
       layout.gridUnitMm,
       gridUnitMmY
     );
@@ -170,6 +200,12 @@ export const updateDrawer = defineCommand({
     }
     if ('measuredMm' in event.payload.changes && event.payload.changes.measuredMm === undefined) {
       delete draft.drawer.measuredMm;
+    }
+    if ('gridShiftX' in event.payload.changes && event.payload.changes.gridShiftX === undefined) {
+      delete draft.drawer.gridShiftX;
+    }
+    if ('gridShiftY' in event.payload.changes && event.payload.changes.gridShiftY === undefined) {
+      delete draft.drawer.gridShiftY;
     }
     if (event.payload.displacedBinIds.length > 0) {
       const idSet = new Set(event.payload.displacedBinIds);

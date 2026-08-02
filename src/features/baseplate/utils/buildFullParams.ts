@@ -13,48 +13,9 @@ import type {
 import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { isSeatedConnectorStyle } from '@/shared/types/bin';
-import {
-  clampCornerCuts,
-  cornerCutVertices,
-  cornerCutsMatchVertices,
-} from '@/shared/utils/cornerCutOutline';
-import { padOutline } from '@/shared/utils/padOutline';
+import { clampCornerCuts, cornerCutVertices } from '@/shared/utils/cornerCutOutline';
 import { translateOutline } from '@/shared/utils/drawerOutline';
-import { outlineLatticeShift, type OutlineLatticeAxis } from '@/shared/utils/drawerOutlineGeometry';
-
-/** Keeps regenerated cuts off degenerate geometry (mirrors the generator's
- * own geometric radius clamp). */
-const CUT_GEOMETRY_MARGIN_MM = 0.1;
-
-/** Below this the outline is treated as already lattice-registered (no
- * re-base) — well under the 0.01mm outline-hash quantum, so it only absorbs
- * float noise, never a real pen auto-grow drift. */
-const RECENTER_EPS_MM = 1e-6;
-
-/** Keeps a whole cell from being lost to float noise in `spanMm / pitchMm`. */
-const CELL_COUNT_EPS = 1e-9;
-
-/**
- * The whole-cell socket lattice of one plate axis. A 'start' fractional edge
- * puts the half cell FIRST (cellDecomposition reverses the cell array), so the
- * whole-cell lattice begins after it.
- */
-function latticeAxis(
-  spanMm: number,
-  pitchMm: number,
-  padLeadMm: number,
-  padTrailMm: number,
-  fractionalEdge: 'start' | 'end'
-): OutlineLatticeAxis {
-  const wholeCells = Math.floor(spanMm / pitchMm + CELL_COUNT_EPS);
-  const fractionalMm = spanMm - wholeCells * pitchMm;
-  return {
-    extentMm: spanMm + padLeadMm + padTrailMm,
-    originMm: padLeadMm + (fractionalEdge === 'start' ? fractionalMm : 0),
-    pitchMm,
-    wholeCells,
-  };
-}
+import { CUT_GEOMETRY_MARGIN_MM, resolveOutlineFrame } from '@/shared/utils/outlineFrame';
 
 /**
  * Largest corner radius the plain rounding path may cut: the arc can enter
@@ -137,29 +98,28 @@ export function hasEffectivePerimeter(
     gridUnitMmY,
     drawerOutline
   );
-  // Presence only: the lattice re-base translates an outline but never adds
-  // or removes one, so the raw resolution answers without the frame inputs.
+  // Presence only: the frame re-base translates an outline but never adds
+  // or removes one, so a synced drawer shape always yields a perimeter and
+  // only the radius conversion needs resolving.
+  if (inputs.outlineOn) return true;
   return (
-    resolveOutlineRaw(
-      drawerOutline,
-      inputs.outlineOn,
-      stored,
-      inputs.widthMm,
-      inputs.depthMm,
-      gridUnitMm
-    ).outline !== undefined
+    resolveRadiusOutline(stored, inputs.widthMm, inputs.depthMm, gridUnitMm).outline !== undefined
   );
 }
 
 /**
  * The resolved outline (plate-local mm, spanning the padded extent) plus the
- * paddings it permits. Corner-cut drawer shapes re-inscribe their cuts on the
- * padded rectangle; every other shape offsets its edges outward (`padOutline`).
- * Either way padding composes, unless it would fold the loop (then it's zeroed).
+ * paddings it permits (see `resolveOutlineFrame` for the padding rules).
  *
- * A final step re-bases the outline onto the socket lattice (see below) so the
- * plate's socket/seam grid sits registered and centred on the perimeter rather
- * than corner-anchored to the extent (#3108/#3109/#3149).
+ * A drawer shape is re-based onto the socket lattice — plus the user's manual
+ * grid shift — via the shared frame (`outlineFrame.ts`, #3157): the shift
+ * happens here, once, on the one derived outline the generator, the split
+ * planner, and every piece all consume, and the layout side derives the same
+ * translation from the same module, so the two frames are identical by
+ * construction. Radius-converted outlines span the full padded extent (zero
+ * registration by construction) and take no manual shift — a rectangle
+ * drawer's grid is its own frame — so they skip the re-base and keep their
+ * exact vertices, cache-stable.
  */
 function resolveOutline(
   drawerOutline: DrawerOutline | undefined,
@@ -170,97 +130,42 @@ function resolveOutline(
   gridUnitMm: number,
   gridUnitMmY: number,
   fractionalEdgeX: 'start' | 'end',
-  fractionalEdgeY: 'start' | 'end'
+  fractionalEdgeY: 'start' | 'end',
+  gridShiftX: number,
+  gridShiftY: number
 ): { outline: DrawerOutline | undefined; paddingOn: boolean } {
-  const resolved = resolveOutlineRaw(
-    drawerOutline,
-    outlineOn,
-    stored,
-    widthMm,
-    depthMm,
-    gridUnitMm
-  );
-  if (resolved.outline === undefined) return resolved;
-
-  // Re-base the plate's grid onto the perimeter. Since the pen editor auto-grows
-  // the drawer to the max extent only (#3092), a custom outline usually sits in a
-  // corner-offset sub-rectangle of `[0,totalW]×[0,totalD]`; anchoring the socket/
-  // seam grid to that extent misclassifies boundary seams (#3109) and leaves it
-  // off-centre (#3108). The shift happens here — once, on the one derived outline
-  // the generator, the split planner, and every piece all consume — so the two
-  // frames are identical by construction. It is lattice-registered, never raw
-  // bbox centring: a sub-cell shift breaks whole-cell registration and cost the
-  // #3149 reporter an entire row and column of sockets. Zero-shift outlines
-  // (corner-cut / radius / registered freeform) keep their exact vertices, so
-  // square and full-extent plates stay cache-stable.
-  const padL = resolved.paddingOn ? stored.paddingLeft : 0;
-  const padR = resolved.paddingOn ? stored.paddingRight : 0;
-  const padF = resolved.paddingOn ? stored.paddingFront : 0;
-  const padB = resolved.paddingOn ? stored.paddingBack : 0;
-  const shift = outlineLatticeShift(resolved.outline, {
-    x: latticeAxis(widthMm, gridUnitMm, padL, padR, fractionalEdgeX),
-    y: latticeAxis(depthMm, gridUnitMmY, padF, padB, fractionalEdgeY),
-  });
-  if (Math.abs(shift.x) < RECENTER_EPS_MM && Math.abs(shift.y) < RECENTER_EPS_MM) return resolved;
-  return {
-    outline: translateOutline(resolved.outline, shift.x, shift.y),
-    paddingOn: resolved.paddingOn,
-  };
+  if (outlineOn && drawerOutline !== undefined) {
+    const frame = resolveOutlineFrame(drawerOutline, {
+      widthMm,
+      depthMm,
+      gridUnitMm,
+      gridUnitMmY,
+      paddingLeft: stored.paddingLeft,
+      paddingRight: stored.paddingRight,
+      paddingFront: stored.paddingFront,
+      paddingBack: stored.paddingBack,
+      fractionalEdgeX,
+      fractionalEdgeY,
+      gridShiftX,
+      gridShiftY,
+    });
+    if (frame.shiftX === 0 && frame.shiftY === 0) {
+      return { outline: frame.outline, paddingOn: frame.paddingOn };
+    }
+    return {
+      outline: translateOutline(frame.outline, frame.shiftX, frame.shiftY),
+      paddingOn: frame.paddingOn,
+    };
+  }
+  return resolveRadiusOutline(stored, widthMm, depthMm, gridUnitMm);
 }
 
-function resolveOutlineRaw(
-  drawerOutline: DrawerOutline | undefined,
-  outlineOn: boolean,
+function resolveRadiusOutline(
   stored: StoredBaseplateParams,
   widthMm: number,
   depthMm: number,
   gridUnitMm: number
 ): { outline: DrawerOutline | undefined; paddingOn: boolean } {
-  if (outlineOn && drawerOutline !== undefined) {
-    // The authoring echo is a round-trip hint, never trusted blindly: only
-    // regenerate from it when it provably reproduces the stored vertices.
-    const cuts =
-      drawerOutline.authoring?.kind === 'corners' ? drawerOutline.authoring.corners : undefined;
-    const cornerShaped =
-      cuts !== undefined && cornerCutsMatchVertices(drawerOutline.vertices, widthMm, depthMm, cuts);
-    if (!cornerShaped) {
-      // Freeform shapes (painted cells, traced footprints, pen shapes with
-      // arcs/diagonals) have no parametric resize, so padding is composed
-      // edge-by-edge: every boundary edge — including a concave notch's walls —
-      // offsets outward onto the padded plate extent. Only paddings that would
-      // fold the loop (a collapsed notch/slot) yield null, leaving the shape to
-      // subsume padding (stored values untouched, functionally zeroed).
-      const padded = padOutline(drawerOutline, {
-        left: stored.paddingLeft,
-        right: stored.paddingRight,
-        front: stored.paddingFront,
-        back: stored.paddingBack,
-      });
-      return padded !== null
-        ? { outline: padded, paddingOn: true }
-        : { outline: drawerOutline, paddingOn: false };
-    }
-
-    const totalW = widthMm + stored.paddingLeft + stored.paddingRight;
-    const totalD = depthMm + stored.paddingFront + stored.paddingBack;
-    if (totalW === widthMm && totalD === depthMm) {
-      // Zero padding: the stored outline IS the padded outline — reuse it so
-      // the cache identity stays byte-stable.
-      return { outline: drawerOutline, paddingOn: true };
-    }
-    return {
-      outline: {
-        vertices: cornerCutVertices(
-          totalW,
-          totalD,
-          clampCornerCuts(cuts, totalW, totalD, CUT_GEOMETRY_MARGIN_MM)
-        ),
-        authoring: drawerOutline.authoring,
-      },
-      paddingOn: true,
-    };
-  }
-
   // No active drawer shape: corner radii beyond the plain rounding limit become
   // a radius-cut outline, so the generator's cell classification handles the
   // sockets the arc consumes (the plain path must never orphan a pocket, which is
@@ -329,7 +234,11 @@ export function buildFullParams(
   drawerOutline?: DrawerOutline,
   magnetAnchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR,
   // Depth-axis pitch for a non-square grid; defaults to the X pitch (square).
-  gridUnitMmY: number = gridUnitMm
+  gridUnitMmY: number = gridUnitMm,
+  // Manual grid shift within the perimeter (drawer.gridShiftX/Y, #3108) —
+  // folded into the frame re-base; only meaningful with a synced drawer shape.
+  gridShiftX: number = 0,
+  gridShiftY: number = 0
 ): ResolvedBaseplateParams {
   const {
     synced,
@@ -369,7 +278,9 @@ export function buildFullParams(
     gridUnitMm,
     gridUnitMmY,
     effFractionalEdgeX,
-    effFractionalEdgeY
+    effFractionalEdgeY,
+    gridShiftX,
+    gridShiftY
   );
   // An outline carries its own corner geometry as arcs and shares the same
   // post-cache intersect slot, so rounding is zeroed whenever one is active —

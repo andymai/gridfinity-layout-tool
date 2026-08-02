@@ -257,6 +257,17 @@ export function selectGenerationTriggers(state: LayoutStoreState) {
       bp.syncWithLayout !== false
         ? (state.layout.drawer.fractionalEdgeY ?? 'end')
         : (bp.fractionalEdgeY ?? 'end'),
+    // Manual grid shift moves the frame re-base, so it must re-trigger BREP.
+    // Folded out unless a synced drawer shape is active — the resolver ignores
+    // it otherwise, so it cannot change the mesh.
+    gridShiftX:
+      state.layout.drawer.outline !== undefined && bp.syncWithLayout !== false
+        ? (state.layout.drawer.gridShiftX ?? 0)
+        : 0,
+    gridShiftY:
+      state.layout.drawer.outline !== undefined && bp.syncWithLayout !== false
+        ? (state.layout.drawer.gridShiftY ?? 0)
+        : 0,
     overTile: bp.overTile ?? false,
     overTileHalfGrid: bp.overTile === true ? (bp.overTileHalfGrid ?? false) : false,
     overTileHalfGridSolidLeftover:
@@ -381,6 +392,8 @@ export function useBaseplateGeneration(): void {
     printBedDepth,
     fractionalEdgeX,
     fractionalEdgeY,
+    gridShiftX,
+    gridShiftY,
   } = generationTriggers;
 
   // Nozzle lives in the settings store (not the layout triggers). Subscribe to it
@@ -938,7 +951,9 @@ export function useBaseplateGeneration(): void {
           useSettingsStore.getState().settings.printSettings.nozzleSizeMm,
           layoutState.layout.drawer.outline,
           layoutState.layout.magnetAnchor,
-          effectiveGridUnitMmY(layoutState.layout)
+          effectiveGridUnitMmY(layoutState.layout),
+          layoutState.layout.drawer.gridShiftX ?? 0,
+          layoutState.layout.drawer.gridShiftY ?? 0
         );
         const bedW = layoutState.layout.printBedSize;
         const bedD = layoutState.layout.printBedDepth ?? layoutState.layout.printBedSize;
@@ -993,7 +1008,9 @@ export function useBaseplateGeneration(): void {
       nozzleSizeMm,
       drawerOutline,
       magnetAnchor,
-      gridUnitMmY
+      gridUnitMmY,
+      gridShiftX,
+      gridShiftY
     );
     runGeneration(params, printBedSize, printBedDepth ?? printBedSize);
     // `generationTriggers` carries the trigger-only params (connectorStyle,
@@ -1011,6 +1028,8 @@ export function useBaseplateGeneration(): void {
     printBedDepth,
     fractionalEdgeX,
     fractionalEdgeY,
+    gridShiftX,
+    gridShiftY,
     nozzleSizeMm,
     runGeneration,
   ]);

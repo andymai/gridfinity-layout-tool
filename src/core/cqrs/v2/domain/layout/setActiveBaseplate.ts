@@ -8,9 +8,11 @@
 
 import { z } from 'zod';
 import { ok } from '@/core/result';
-import { baseplateDesignId } from '@/core/types';
+import { baseplateDesignId, effectiveGridUnitMmY } from '@/core/types';
 import type { BaseplateDesignId, StoredBaseplateParams } from '@/core/types';
+import { STAGING_ID } from '@/core/constants';
 import { defineCommand } from '../../defineCommand';
+import { computeDisplacedBins } from '../drawer/displacement';
 
 const payloadSchema = z.object({
   designId: z.string().min(1).nullable(),
@@ -45,15 +47,36 @@ export const setActiveBaseplate = defineCommand({
       payload.designId === null ? null : baseplateDesignId(payload.designId);
     const params = payload.params as StoredBaseplateParams;
 
+    // The swapped design's padding participates in the grid↔perimeter frame
+    // (#3157) — same displacement rule as setBaseplateParams.
+    const layout = ctx.aggregate;
+    const displacedBinIds =
+      layout.drawer.outline !== undefined
+        ? computeDisplacedBins(
+            layout.bins,
+            layout.drawer,
+            params,
+            layout.gridUnitMm,
+            effectiveGridUnitMmY(layout)
+          )
+        : [];
+
     return ok({
       value: undefined,
       event: {
-        payload: { designId, params, previousActiveBaseplateId, previousParams },
+        payload: { designId, params, previousActiveBaseplateId, previousParams, displacedBinIds },
       },
     });
   },
   apply: (event, draft) => {
     draft.activeBaseplateId = event.payload.designId;
     draft.baseplateParams = event.payload.params;
+    const displaced = event.payload.displacedBinIds ?? [];
+    if (displaced.length > 0) {
+      const idSet = new Set(displaced);
+      for (const bin of draft.bins) {
+        if (idSet.has(bin.id)) bin.layerId = STAGING_ID;
+      }
+    }
   },
 });

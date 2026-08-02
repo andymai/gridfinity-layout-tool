@@ -121,6 +121,7 @@ export function CornerCutsDialog({ open, onClose }: CornerCutsDialogProps) {
         : computeDisplacedBins(
             layout.bins,
             { ...layout.drawer, outline },
+            layout.baseplateParams,
             layout.gridUnitMm,
             gridUnitMmY
           ).length;

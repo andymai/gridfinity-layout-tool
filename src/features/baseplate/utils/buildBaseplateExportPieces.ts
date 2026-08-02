@@ -63,6 +63,9 @@ export interface BuildBaseplateExportInput {
   readonly magnetAnchor?: MagnetAnchor;
   readonly fractionalEdgeX: 'start' | 'end';
   readonly fractionalEdgeY: 'start' | 'end';
+  /** Manual grid shift within the perimeter (drawer.gridShiftX/Y). Default 0. */
+  readonly gridShiftX?: number;
+  readonly gridShiftY?: number;
   readonly printBedWidthMm: number;
   readonly printBedDepthMm: number;
   readonly format: ExportFileFormat;
@@ -185,6 +188,8 @@ export async function buildBaseplateExportPieces(
     onProgress,
   } = input;
   const splitEnabled = input.splitEnabled ?? true;
+  const gridShiftX = input.gridShiftX ?? 0;
+  const gridShiftY = input.gridShiftY ?? 0;
   const nozzleMm = printSettings.nozzleSizeMm;
 
   // Tiling mirrors what the preview computed from the stored params (not the
@@ -200,7 +205,9 @@ export async function buildBaseplateExportPieces(
     nozzleMm,
     drawerOutline,
     magnetAnchor,
-    gridUnitMmY
+    gridUnitMmY,
+    gridShiftX,
+    gridShiftY
   );
   const tiling = computeBaseplateTiling(previewParams, printBedWidthMm, printBedDepthMm);
 
@@ -227,7 +234,9 @@ export async function buildBaseplateExportPieces(
     nozzleMm,
     drawerOutline,
     magnetAnchor,
-    gridUnitMmY
+    gridUnitMmY,
+    gridShiftX,
+    gridShiftY
   );
 
   const baseName = generateBaseplateFileName(toNamingParams(fullParams), format, fileNameConfig);

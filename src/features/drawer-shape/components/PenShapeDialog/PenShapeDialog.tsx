@@ -474,6 +474,7 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
     const displaced = computeDisplacedBins(
       layout.bins,
       { ...layout.drawer, outline },
+      layout.baseplateParams,
       layout.gridUnitMm,
       gridUnitMmY
     ).length;

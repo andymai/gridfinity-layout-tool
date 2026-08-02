@@ -224,6 +224,14 @@ const drawerUpdateSchema = z
     height: z.number().min(CONSTRAINTS.MIN_LAYER_HEIGHT),
     fractionalEdgeX: z.union([z.literal('start'), z.literal('end')]),
     fractionalEdgeY: z.union([z.literal('start'), z.literal('end')]),
+    gridShiftX: z
+      .number()
+      .min(-CONSTRAINTS.GRID_UNIT_MM_MAX / 2)
+      .max(CONSTRAINTS.GRID_UNIT_MM_MAX / 2),
+    gridShiftY: z
+      .number()
+      .min(-CONSTRAINTS.GRID_UNIT_MM_MAX / 2)
+      .max(CONSTRAINTS.GRID_UNIT_MM_MAX / 2),
     // null clears the stored measurement
     measuredMm: z
       .object({

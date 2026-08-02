@@ -21,6 +21,7 @@ import type {
   LayerId,
 } from '@/core/types';
 import { isFootprintInsideOutline } from './drawerOutlineGeometry';
+import { drawerFrameOutline } from './outlineFrame';
 import { binId as toBinId, categoryId as toCategoryId, effectiveGridUnitMmY } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import { isOk } from '@/core/result';
@@ -59,9 +60,17 @@ export function canPlaceBin(
   // Non-rectangular drawers: the footprint must sit fully inside the outline
   // (boundary-flush placements count as inside). One check here covers every
   // interaction — draw, drag, resize, staging drop, paint, fill, import.
+  // The outline is read through the shared grid↔perimeter frame (#3157) so a
+  // placeable cell here is exactly a socket the printed plate keeps.
+  const frameOutline = drawerFrameOutline(
+    drawer,
+    layout.baseplateParams,
+    layout.gridUnitMm,
+    effectiveGridUnitMmY(layout)
+  );
   if (
-    drawer.outline !== undefined &&
-    !isFootprintInsideOutline(rect, drawer.outline, layout.gridUnitMm, effectiveGridUnitMmY(layout))
+    frameOutline !== undefined &&
+    !isFootprintInsideOutline(rect, frameOutline, layout.gridUnitMm, effectiveGridUnitMmY(layout))
   ) {
     return { valid: false, reason: 'outside_drawer' };
   }
