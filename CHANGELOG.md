@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.348.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.347.3...gridfinity-layout-tool-v4.348.0) (2026-08-02)
+
+
+### Features
+
+* **community:** likes, reports with auto-hide, print counts, and discovery ([#3127](https://github.com/andymai/gridfinity-layout-tool/issues/3127)) ([eeb32bf](https://github.com/andymai/gridfinity-layout-tool/commit/eeb32bfc37f8b64d0c94c0fd664eaa4b86c8bf56))
+
 ## [4.347.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.347.2...gridfinity-layout-tool-v4.347.3) (2026-08-02)
 
 
