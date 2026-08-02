@@ -16,11 +16,11 @@ import {
   restoreSharedDesigns,
 } from '@/core/storage';
 import type { Layout } from '@/core/types';
-import { binId, categoryId, designId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
+import { binId, categoryId, designId, gridUnits, heightUnits, layerId } from '@/core/types';
 import { getUserMessage, ok, err, storageNotFound } from '@/core/result';
 import type { Result, ValidationError, ValidationImportError } from '@/core/result';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
-import { expectOk, expectErr } from '@/test/testUtils';
+import { expectOk, expectErr, createTestLayout as baseCreateTestLayout } from '@/test/testUtils';
 
 // Mock clipboard API
 const mockClipboard = {
@@ -57,30 +57,25 @@ function expectImportError(result: Result<unknown, ValidationError>): Validation
 
 describe('storage-share', () => {
   // Create a test layout
-  const createTestLayout = (): Layout => ({
-    version: '1.0',
-    name: 'Test Layout',
-    drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
-    printBedSize: mm(256),
-    gridUnitMm: mm(42),
-    heightUnitMm: mm(7),
-    categories: [{ id: categoryId('cat-1'), name: 'Red', color: '#ff0000' }],
-    layers: [{ id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(3) }],
-    bins: [
-      {
-        id: binId('bin-1'),
-        x: gridUnits(0),
-        y: gridUnits(0),
-        width: gridUnits(2),
-        depth: gridUnits(2),
-        height: heightUnits(3),
-        layerId: layerId('layer-1'),
-        category: categoryId('cat-1'),
-        label: '',
-        notes: '',
-      },
-    ],
-  });
+  const createTestLayout = (): Layout =>
+    baseCreateTestLayout({
+      categories: [{ id: categoryId('cat-1'), name: 'Red', color: '#ff0000' }],
+      layers: [{ id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(3) }],
+      bins: [
+        {
+          id: binId('bin-1'),
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
+          layerId: layerId('layer-1'),
+          category: categoryId('cat-1'),
+          label: '',
+          notes: '',
+        },
+      ],
+    });
 
   describe('encodeLayoutForURL', () => {
     it('encodes a layout to a URL-safe string', () => {

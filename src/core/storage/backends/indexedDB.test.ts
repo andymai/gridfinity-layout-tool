@@ -18,21 +18,15 @@ import {
 } from '@/core/storage/backends/indexedDB';
 import type { Bin, Layout, SharedWithMeEntry } from '@/core/types';
 import { binId, categoryId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
+import { createTestLayout as baseCreateTestLayout } from '@/test/testUtils';
 
 // Test fixtures
 function createTestLayout(overrides: Partial<Layout> = {}): Layout {
-  return {
-    version: '1.0',
-    name: 'Test Layout',
-    drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
+  return baseCreateTestLayout({
     layers: [{ id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(3) }],
-    bins: [],
     categories: [{ id: categoryId('default'), name: 'Default', color: '#3b82f6' }],
-    gridUnitMm: mm(42),
-    heightUnitMm: mm(7),
-    printBedSize: mm(256),
     ...overrides,
-  };
+  });
 }
 
 describe('indexedDB backend', () => {
