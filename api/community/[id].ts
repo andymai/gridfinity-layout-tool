@@ -254,7 +254,11 @@ async function handleGet(req: VercelRequest, res: VercelResponse, id: string) {
         likedByMe = (await redis.sismember(communityLikesKey(id), session.userId)) === 1;
       }
       if (owns && status === 'hidden') {
-        if (storedHiddenReason === 'reports' || storedHiddenReason === 'denylist') {
+        if (
+          storedHiddenReason === 'reports' ||
+          storedHiddenReason === 'denylist' ||
+          storedHiddenReason === 'moderation'
+        ) {
           hiddenReason = storedHiddenReason;
         }
         hiddenReasonCategory = await readTopReportReason(redis, id);

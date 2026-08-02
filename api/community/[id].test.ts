@@ -475,6 +475,19 @@ describe('community/[id]', () => {
       expect(body.hiddenReasonCategory).toBe('spam');
     });
 
+    it('surfaces a manual moderation hide distinctly for the owner', async () => {
+      redis.hget.mockResolvedValue('hidden');
+      mocks.readCommunityDesignBlob.mockResolvedValue(designRecord({ status: 'hidden' }));
+      redis.hmget.mockResolvedValue(['0', '0', '0', '0', '0', 'moderation']);
+      mocks.readSessionCookie.mockReturnValue('session-token');
+      mocks.readSession.mockResolvedValue(session);
+      redis.sismember.mockResolvedValue(1);
+      const res = await handle('GET');
+      expect(res._status).toBe(200);
+      const body = res._body as { hiddenReason: string };
+      expect(body.hiddenReason).toBe('moderation');
+    });
+
     it('marks a deny-list hide distinctly for the owner, with no report category', async () => {
       redis.hget.mockResolvedValue('hidden');
       mocks.readCommunityDesignBlob.mockResolvedValue(designRecord({ status: 'hidden' }));
