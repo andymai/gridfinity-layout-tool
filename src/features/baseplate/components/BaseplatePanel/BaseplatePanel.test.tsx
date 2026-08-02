@@ -1142,6 +1142,19 @@ describe('shaped drawer (outline present)', () => {
     render(<BaseplatePanel />);
     expect(screen.getByText('baseplate.shapedPaddingNotice')).toBeInTheDocument();
   });
+
+  it('shows the compose notice for a stacked shaped drawer on STL too (#3113)', () => {
+    // Stacking keeps the custom perimeter now, so the shaped tiles print as the
+    // shape — the panel must show it for every format, not only the STEP export
+    // that clears stackPrint.
+    mockLayoutState.layout.drawer = { width: 4, depth: 6, outline: ARC_OUTLINE } as never;
+    mockLayoutState.layout.baseplateParams = {
+      ...DEFAULT_BASEPLATE_PARAMS,
+      stackPrint: { enabled: true, gapMm: 0.2 },
+    } as never;
+    render(<BaseplatePanel />);
+    expect(screen.getByText('baseplate.shapedPaddingNotice')).toBeInTheDocument();
+  });
 });
 
 describe('corner-cut shaped drawer (padding composes, issue #2612)', () => {

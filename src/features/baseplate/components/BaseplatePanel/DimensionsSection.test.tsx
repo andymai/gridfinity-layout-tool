@@ -135,6 +135,20 @@ describe('DimensionsSection', () => {
       expect(row()).not.toBeInTheDocument();
     });
 
+    // A large radius shapes the plate under stacking too (#3113): the rounded
+    // perimeter survives and its tiles stack, so the whole-cell control must reach
+    // them (the removed stacking override used to hide it).
+    it('appears for a large radius even while stacking (#3113)', () => {
+      const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+      useLayoutStore.getState().setBaseplateParams({
+        ...current,
+        cornerRadius: mm(40),
+        stackPrint: { enabled: true, gapMm: mm(0.2) },
+      });
+      render(<DimensionsSection />);
+      expect(row()).toBeInTheDocument();
+    });
+
     it('appears once the drawer has a perimeter', () => {
       shapedDrawer();
       render(<DimensionsSection />);

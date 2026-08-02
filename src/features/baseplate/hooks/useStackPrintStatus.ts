@@ -37,6 +37,7 @@ export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
   const {
     drawerWidth,
     drawerDepth,
+    drawerOutline,
     gridUnitMm,
     gridUnitMmY,
     fractionalEdgeX,
@@ -46,6 +47,10 @@ export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
     useShallow((s) => ({
       drawerWidth: s.layout.drawer.width,
       drawerDepth: s.layout.drawer.depth,
+      // A custom perimeter now stacks (#3113); pass it so the shaped tiles
+      // fingerprint the same way generation grouped them, keeping the status
+      // (ok vs nothing-to-stack) honest.
+      drawerOutline: s.layout.drawer.outline,
       gridUnitMm: s.layout.gridUnitMm,
       gridUnitMmY: effectiveGridUnitMmY(s.layout),
       fractionalEdgeX: s.layout.drawer.fractionalEdgeX ?? 'end',
@@ -68,7 +73,7 @@ export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
       fractionalEdgeX,
       fractionalEdgeY,
       nozzleSizeMm,
-      undefined,
+      drawerOutline,
       undefined,
       gridUnitMmY
     );
@@ -82,6 +87,7 @@ export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
     baseplateParams,
     drawerWidth,
     drawerDepth,
+    drawerOutline,
     gridUnitMm,
     gridUnitMmY,
     fractionalEdgeX,

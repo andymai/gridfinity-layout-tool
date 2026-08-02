@@ -103,6 +103,46 @@ describe('useStackPrintStatus', () => {
     expect(result.current.railCount).toBe(1);
   });
 
+  it('does not stack differently-shaped partial tiles (threads the outline, #3113)', () => {
+    // Two partial tiles whose only difference is where the plate outline crosses
+    // them. With the outline threaded into buildFullParams they fingerprint
+    // distinctly, so the status reports "nothing to stack" instead of the
+    // outline-blind "ok" that used to merge them into one deceptive tower.
+    const U = 42;
+    useLayoutStore.setState((state) => ({
+      layout: {
+        ...state.layout,
+        drawer: {
+          ...state.layout.drawer,
+          outline: {
+            vertices: [
+              { x: 0, y: 0 },
+              { x: 8 * U, y: 0 },
+              { x: 8 * U, y: 4 * U },
+              { x: 4 * U, y: 4 * U },
+              { x: 4 * U, y: 8 * U },
+              { x: 0, y: 8 * U },
+            ],
+          },
+        },
+      },
+    }));
+    useLayoutStore.getState().setBaseplateParams({
+      ...DEFAULT_BASEPLATE_PARAMS,
+      stackPrint: { enabled: true, gapMm: mm(0.2), copies: 1 },
+    });
+    useBaseplatePageStore
+      .getState()
+      .setTiling(
+        tiling([
+          piece('A1', { outlineWindowOriginMm: { x: 0, y: 0 } }),
+          piece('B1', { outlineWindowOriginMm: { x: 4 * U, y: 0 } }),
+        ])
+      );
+    const { result } = renderHook(() => useStackPrintStatus(0.2));
+    expect(result.current.status).toEqual({ kind: 'singlePlate' });
+  });
+
   it('clears singlePlate and reports the plan when copies ≥ 2 on an unsplit drawer', () => {
     // resetAllStores() doesn't touch the baseplate page store, so clear any
     // tiling a previous test left behind to assert the true unsplit path.
