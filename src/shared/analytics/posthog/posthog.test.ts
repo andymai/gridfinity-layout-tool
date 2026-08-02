@@ -28,6 +28,7 @@ import {
 import { useLayoutStore } from '@/core/store/layout';
 import { createDefaultLabsPreferences } from '@/core/labs';
 import { STAGING_ID } from '@/core/constants';
+import { createTestLayout as baseCreateTestLayout } from '@/test/testUtils';
 
 const coord = (x: number, y: number): Coord => ({ x: gridUnits(x), y: gridUnits(y) });
 
@@ -90,21 +91,15 @@ const setEnabledFeatures = (enabledFeatures: Record<string, boolean>): void => {
 };
 
 // Helper to create a test layout
-const createTestLayout = (overrides?: Partial<Layout>): Layout => ({
-  version: '1.0',
-  name: 'Test Layout',
-  drawer: makeDrawer(10, 8, 12),
-  printBedSize: mm(256),
-  gridUnitMm: mm(42),
-  heightUnitMm: mm(7),
-  categories: [
-    makeCategory('coral', 'Coral', '#FF6B6B'),
-    makeCategory('custom1', 'My Custom Category', '#00FF00'),
-  ],
-  layers: [makeLayer('layer1', 'Layer 1', 3)],
-  bins: [],
-  ...overrides,
-});
+const createTestLayout = (overrides?: Partial<Layout>): Layout =>
+  baseCreateTestLayout({
+    categories: [
+      makeCategory('coral', 'Coral', '#FF6B6B'),
+      makeCategory('custom1', 'My Custom Category', '#00FF00'),
+    ],
+    layers: [makeLayer('layer1', 'Layer 1', 3)],
+    ...overrides,
+  });
 
 describe('computeLayoutMetrics', () => {
   describe('drawer configuration', () => {

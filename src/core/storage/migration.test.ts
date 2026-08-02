@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { expectOk, expectErr } from '@/test/testUtils';
+import { expectOk, expectErr, createTestLayout } from '@/test/testUtils';
 import { ok } from '@/core/result';
 
 // Mock all dependencies before importing the module under test
@@ -38,25 +38,6 @@ import {
   migrateAllLayoutsToIndexedDBResult,
   getMigrationStatusResult,
 } from '@/core/storage/migration';
-
-import type { Layout } from '@/core/types';
-import { gridUnits, heightUnits, mm, layerId, categoryId } from '@/core/types';
-
-// Test fixtures
-function createTestLayout(overrides: Partial<Layout> = {}): Layout {
-  return {
-    version: '1.0',
-    name: 'Test Layout',
-    drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
-    layers: [{ id: layerId('layer-1'), name: 'Layer 1', height: heightUnits(3) }],
-    bins: [],
-    categories: [{ id: categoryId('default'), name: 'Default', color: '#3b82f6' }],
-    gridUnitMm: mm(42),
-    heightUnitMm: mm(7),
-    printBedSize: mm(256),
-    ...overrides,
-  };
-}
 
 describe('migration.ts', () => {
   const MIGRATION_FLAG_KEY = 'gridfinity-indexeddb-migrated';

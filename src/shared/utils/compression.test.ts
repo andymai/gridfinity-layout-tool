@@ -13,20 +13,15 @@ import {
   getCompressionRatio,
 } from '@/shared/utils';
 import type { Bin, Layout } from '@/core/types';
-import { binId, categoryId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
+import { binId, categoryId, gridUnits, heightUnits, layerId } from '@/core/types';
+import { createTestLayout as baseCreateTestLayout } from '@/test/testUtils';
 
 const LAYER = layerId('layer1');
 const CATEGORY = categoryId('cat1');
 
 // Helper to create a test layout
 function createTestLayout(overrides?: Partial<Layout>): Layout {
-  return {
-    version: '1.0',
-    name: 'Test Layout',
-    drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
-    printBedSize: mm(256),
-    gridUnitMm: mm(42),
-    heightUnitMm: mm(7),
+  return baseCreateTestLayout({
     categories: [{ id: CATEGORY, name: 'Default', color: '#3b82f6' }],
     layers: [{ id: LAYER, name: 'Layer 1', height: heightUnits(3) }],
     bins: [
@@ -44,7 +39,7 @@ function createTestLayout(overrides?: Partial<Layout>): Layout {
       },
     ],
     ...overrides,
-  };
+  });
 }
 
 function expectLayout(decompressed: Layout | null): Layout {
