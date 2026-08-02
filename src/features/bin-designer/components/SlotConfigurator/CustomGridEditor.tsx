@@ -16,7 +16,12 @@ import { useCallback, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { Button, Stepper } from '@/design-system';
-import { mergeCells, normalizeIds, isRectangularSelection } from '@/features/bin-designer/utils';
+import {
+  mergeCells,
+  normalizeIds,
+  isRectangularSelection,
+  previewSplitCells,
+} from '@/features/bin-designer/utils';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { deriveWallSegments } from '@/shared/utils/compartmentGeometry';
 import { computeAuthoredDividers } from '@/shared/utils/authoredDividerMath';
@@ -130,9 +135,11 @@ export function CustomGridEditor() {
     // normalize once. Splitting compartment-by-compartment would be unstable —
     // each split renumbers ids, invalidating the remaining targets.
     const targets = new Set(selectionIndices.map((i) => cells[i]));
-    let nextId = Math.max(...cells) + 1;
-    const split = cells.map((id) => (targets.has(id) ? nextId++ : id));
-    commitGrid({ cols, rows, cells: normalizeIds(split) });
+    const targetIndices: number[] = [];
+    for (let i = 0; i < cells.length; i++) {
+      if (targets.has(cells[i])) targetIndices.push(i);
+    }
+    commitGrid({ cols, rows, cells: normalizeIds(previewSplitCells(cells, targetIndices)) });
   }, [cells, cols, rows, selectionIndices, commitGrid]);
 
   // Grid preview sizing: keep the interior aspect ratio, cap the long edge.

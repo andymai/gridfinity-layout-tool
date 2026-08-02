@@ -18,6 +18,8 @@ import {
   validateCompartmentGrid,
   mergeCells,
   splitCompartment,
+  previewMergeCells,
+  previewSplitCells,
   normalizeIds,
   normalizeIdsWithRemap,
   remapCompartmentTexts,
@@ -645,6 +647,72 @@ describe('compartments', () => {
 
       // Should create 6 separate compartments
       expect(getCompartmentCount(result)).toBe(6);
+    });
+  });
+
+  describe('previewMergeCells', () => {
+    it('assigns every selected cell to the first selection ID', () => {
+      const cells = [0, 1, 2, 3];
+      const result = previewMergeCells(cells, [1, 2]);
+      expect(result).toEqual([0, 1, 1, 3]);
+    });
+
+    it('uses the first supplied index for the target ID (not the minimum)', () => {
+      // Unlike committed mergeCells (Math.min), the preview shows the first
+      // selected cell's ID so the ghost matches the drag anchor.
+      const cells = [5, 2, 7, 9];
+      const result = previewMergeCells(cells, [2, 0]);
+      expect(result).toEqual([5, 2, 7, 9].map((id, i) => (i === 2 || i === 0 ? 7 : id)));
+      expect(result[0]).toBe(7);
+      expect(result[2]).toBe(7);
+    });
+
+    it('does not normalize or mutate the input', () => {
+      const cells = [3, 3, 5, 8];
+      const result = previewMergeCells(cells, [2, 3]);
+      // ID 5 is carried onto index 3; nothing is renumbered to be contiguous.
+      expect(result).toEqual([3, 3, 5, 5]);
+      expect(cells).toEqual([3, 3, 5, 8]);
+      expect(result).not.toBe(cells);
+    });
+
+    it('returns a copy unchanged for an empty selection', () => {
+      const cells = [0, 1, 2, 3];
+      const result = previewMergeCells(cells, []);
+      expect(result).toEqual(cells);
+      expect(result).not.toBe(cells);
+    });
+  });
+
+  describe('previewSplitCells', () => {
+    it('gives each selected cell a fresh ID counting up from the max', () => {
+      const cells = [0, 0, 0, 1];
+      const result = previewSplitCells(cells, [1, 2]);
+      // max is 1, so fresh IDs start at 2 in index order.
+      expect(result).toEqual([0, 2, 3, 1]);
+    });
+
+    it('leaves unselected cells untouched and does not normalize', () => {
+      const cells = [0, 0, 5];
+      const result = previewSplitCells(cells, [0]);
+      expect(result).toEqual([6, 0, 5]);
+      expect(cells).toEqual([0, 0, 5]);
+      expect(result).not.toBe(cells);
+    });
+
+    it('normalizes cleanly to per-cell compartments when wrapped in normalizeIds', () => {
+      // The commit path (CustomGridEditor) composes previewSplitCells with
+      // normalizeIds; every fully-split cell becomes its own compartment.
+      const cells = [0, 0, 0, 0];
+      const split = previewSplitCells(cells, [0, 1, 2, 3]);
+      expect(normalizeIds(split)).toEqual([0, 1, 2, 3]);
+    });
+
+    it('returns a copy unchanged for an empty selection', () => {
+      const cells = [0, 1, 2, 3];
+      const result = previewSplitCells(cells, []);
+      expect(result).toEqual(cells);
+      expect(result).not.toBe(cells);
     });
   });
 

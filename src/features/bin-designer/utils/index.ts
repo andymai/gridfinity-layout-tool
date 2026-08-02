@@ -12,6 +12,8 @@ export {
   validateCompartmentGrid,
   mergeCells,
   splitCompartment,
+  previewMergeCells,
+  previewSplitCells,
   normalizeIds,
   deriveWallSegments,
   fromDividerConfig,
