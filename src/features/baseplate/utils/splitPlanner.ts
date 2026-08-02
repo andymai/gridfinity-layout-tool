@@ -944,8 +944,10 @@ export function computeBaseplateTiling(
  * corner tiles (TL↔BR, TR↔BL) share one canonical mesh placed rotated 180° —
  * their piece-local outlines are 180° rotations of each other, which the
  * cyclic-start-canonical outline hash (see pieceFingerprint) collapses to one
- * fingerprint. On a non-symmetric outline the rotated partner's outline differs,
- * so the fingerprints diverge and the pieces stay single (rotation 0).
+ * fingerprint. `placementRotationDeg` follows the edge layout, not the outline,
+ * so a non-symmetric piece may still be placed at 180 — but its rotated outline
+ * differs from any partner's, so the fingerprints diverge and it never shares a
+ * tower (it stays in its own group; the rotation only affects placement).
  *
  * The outline is plate-local mm over the padded extent (corner-cut shapes
  * compose with padding), so windows are the pieces' padded slab extents:
