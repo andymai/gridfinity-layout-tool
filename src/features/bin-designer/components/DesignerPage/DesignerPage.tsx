@@ -32,6 +32,7 @@ import { DesignerMainContent } from './DesignerMainContent';
 import { MobileTitleBar } from './MobileTitleBar';
 import { ShareLoadingBanner } from './ShareLoadingBanner';
 import { FractionalEdgeMismatchBanner } from './FractionalEdgeMismatchBanner';
+import { RemixBanner } from './RemixBanner';
 import { useDesignNameEditor } from './useDesignNameEditor';
 import { useShareLoading } from './useShareLoading';
 import { useFractionalEdgeMismatch } from './useFractionalEdgeMismatch';
@@ -114,6 +115,9 @@ export function DesignerPage() {
       {fractionalEdge.show && (
         <FractionalEdgeMismatchBanner onMatchDrawer={fractionalEdge.matchDrawer} />
       )}
+
+      {/* Post-remix continuation banner (renders null unless the design has lineage) */}
+      <RemixBanner />
 
       {/* Main content - responsive layout */}
       <DesignerMainContent

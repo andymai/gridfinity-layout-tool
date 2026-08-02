@@ -7,6 +7,7 @@ import {
   peekPendingPublishAction,
 } from '@/shared/utils/communityPendingAction';
 import { useFeatureFlag } from './useFeatureFlag';
+import { dispatchSyntheticPopstate } from './useDesignerRouting';
 
 function onDesignerRoute(designId: string): boolean {
   const path = window.location.pathname;
@@ -45,6 +46,6 @@ export function useCommunityPublishReturn(): void {
     if (onDesignerRoute(pending.designId)) return;
     const url = `/designer?id=${encodeURIComponent(pending.designId)}`;
     window.history.pushState({ designId: pending.designId }, '', url);
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    dispatchSyntheticPopstate();
   }, [enabled, sessionStatus, t]);
 }

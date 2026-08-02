@@ -91,13 +91,14 @@
   <!-- Main Content -->
   <main id="main-content" class="content-page content-body">
 <h1 class="content-h1">Privacy Policy</h1>
-<p><strong>Last updated:</strong> May 2026</p>
+<p><strong>Last updated:</strong> August 2026</p>
 <p>Gridfinity Layout Tool is a free, open-source web application maintained by Andy Aragon. This policy explains what data we collect and how we use it.</p>
 <h2 class="content-h2">Summary</h2>
 <ul class="content-list"><li>We collect <strong>anonymous analytics</strong> to improve the app (you can opt out)</li>
 <li>Layouts you create are stored <strong>locally in your browser</strong> unless you choose to share them or sign in</li>
 <li>When you share a layout, it&#39;s stored on our servers with a shareable link</li>
 <li><strong>Sign-in is optional.</strong> If you sign in to sync across devices, we collect your name and email from Google or GitHub</li>
+<li><strong>Publishing is optional.</strong> If you publish a bin design to the community showcase, the design and the public display name you choose become public under a CC BY 4.0 license</li>
 <li>We don&#39;t sell your data or use it for advertising</li>
 </ul>
 <h2 class="content-h2">Data We Collect</h2>
@@ -122,7 +123,7 @@
 <h3 class="content-h3">Real-time Collaboration</h3>
 <p>When you use the collaboration feature, your presence data (cursor position and display name) is shared with other participants via <a href="https://liveblocks.io" target="_blank" rel="noopener">Liveblocks</a>. The display name is the author name you set in library settings, or an auto-generated guest name if you haven&#39;t set one. This data is only transmitted while you&#39;re actively collaborating and is not stored permanently.</p>
 <h3 class="content-h3">Sign-in and Multi-Device Sync (Optional)</h3>
-<p>The app is fully usable without an account. If you choose to sign in — currently behind the <strong>Cloud Sync</strong> opt-in in Labs settings — we use Google or GitHub as the identity provider and collect:</p>
+<p>The app is fully usable without an account. If you choose to sign in (for cloud sync or to publish to the community showcase), we use Google or GitHub as the identity provider and collect:</p>
 <ul class="content-list"><li>A <strong>stable account identifier</strong> issued by the provider (so we can recognize you on return visits without storing a password)</li>
 <li>Your <strong>email address</strong> (must be verified by the provider)</li>
 <li>Your <strong>display name</strong> (shown as your account label in-app)</li>
@@ -134,10 +135,11 @@
 <p>We use this information solely to:</p>
 <ul class="content-list"><li>Identify your account so we can return your synced layouts and bin designs to you on any device</li>
 <li>Display your name in the in-app account UI</li>
+<li>Associate designs you publish, likes you give, and reports you submit with your account</li>
 </ul>
 <p>We do not use your email for marketing and do not share your account information with third parties.</p>
 <h4 class="content-h4">Synced layouts and designs</h4>
-<p>When you&#39;re signed in, layouts and bin designs you create are uploaded to our <a href="https://vercel.com/docs/storage/vercel-blob" target="_blank" rel="noopener">Vercel Blob</a> storage under per-account paths that aren&#39;t listed publicly. Reads and writes go through our authenticated server endpoints, which check your session cookie before returning data — clients don&#39;t access blob URLs directly. Per-account limits currently apply: up to 100 layouts and 100 bin designs, with each layout up to 500 KB, each design up to 100 KB, and 10 MB total per kind.</p>
+<p>When you&#39;re signed in, layouts and bin designs you create are uploaded to our <a href="https://vercel.com/docs/storage/vercel-blob" target="_blank" rel="noopener">Vercel Blob</a> storage under per-account paths that aren&#39;t listed publicly. Reads and writes go through our authenticated server endpoints, which check your session cookie before returning data. Clients don&#39;t access blob URLs directly. Per-account limits currently apply: up to 100 layouts and 100 bin designs, with each layout up to 500 KB, each design up to 100 KB, and 10 MB total per kind.</p>
 <h4 class="content-h4">Authentication cookies</h4>
 <table>
 <thead>
@@ -163,15 +165,29 @@
 <p>You can delete your account at any time from <strong>Settings &gt; Account &gt; Delete account</strong>. This irreversibly:</p>
 <ol class="content-list"><li>Signs you out on every device</li>
 <li>Deletes every synced layout and bin design from our servers</li>
+<li>Removes your published designs from the community showcase</li>
+<li>Removes your likes from published designs</li>
+<li>Deletes reports you&#39;ve submitted</li>
 <li>Deletes your account profile from our servers</li>
 </ol>
-<p>Local data in your browser is unaffected — your locally-stored layouts remain on your device.</p>
+<p>Local data in your browser is unaffected: your locally-stored layouts remain on your device.</p>
+<h3 class="content-h3">Published Designs (Optional)</h3>
+<p>If you sign in and publish a bin design to the community showcase, the following becomes public:</p>
+<ul class="content-list"><li>The design itself (its editable configuration)</li>
+<li>The name you give it and any description you add</li>
+<li>Preview images and a 3D preview model</li>
+<li>The public display name you choose when publishing</li>
+</ul>
+<p>Published designs are visible to anyone, can be indexed by search engines, and can be downloaded and remixed by others under the CC BY 4.0 license described in our <a href="/terms">Terms of Service</a>.</p>
+<p>You can unpublish a design at any time from the app, which removes it from the showcase. Copies and remixes others already made are not recalled.</p>
+<h4 class="content-h4">Reporting a design</h4>
+<p>Signed-in users can report a published design, whether or not they have published anything themselves. If you report a design, we record the report (its reason and any note you add) with your account so we can review the design and prevent duplicate reports.</p>
 <h2 class="content-h2">Data We Don&#39;t Collect</h2>
 <ul class="content-list"><li>Payment information</li>
 <li>Precise location</li>
 <li>Contacts, calendar, files, or anything outside the OAuth scopes listed above</li>
 <li>Cookies for advertising or tracking across sites</li>
-<li>Personal information (name, email) <strong>unless you sign in for cloud sync</strong></li>
+<li>Personal information (name, email) <strong>unless you sign in for cloud sync or publish to the community showcase</strong></li>
 </ul>
 <h2 class="content-h2">Third-Party Services</h2>
 <table>
@@ -199,12 +215,12 @@
 </tr>
 <tr>
 <td>Google</td>
-<td>Sign-in for sync (only if you sign in)</td>
+<td>Sign-in for sync and publishing (only if you sign in)</td>
 <td><a href="https://policies.google.com/privacy" target="_blank" rel="noopener">policies.google.com/privacy</a></td>
 </tr>
 <tr>
 <td>GitHub</td>
-<td>Sign-in for sync (only if you sign in)</td>
+<td>Sign-in for sync and publishing (only if you sign in)</td>
 <td><a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">docs.github.com/site-policy/privacy-policies/github-general-privacy-statement</a></td>
 </tr>
 </tbody></table>
@@ -213,8 +229,10 @@
 <ul class="content-list"><li><strong>Opt out of analytics</strong> in Settings &gt; Privacy</li>
 <li><strong>Use your browser&#39;s privacy setting</strong> (Global Privacy Control or Do Not Track) to disable analytics automatically</li>
 <li><strong>Delete your shared layouts</strong> using the share modal</li>
+<li><strong>Unpublish your published designs</strong> from the community showcase at any time</li>
+<li><strong>Export your synced data</strong>, including your published designs, as a downloadable archive while signed in</li>
 <li><strong>Sign out</strong> from Settings &gt; Account at any time</li>
-<li><strong>Delete your account</strong> (and all synced data) from Settings &gt; Account &gt; Delete account</li>
+<li><strong>Delete your account</strong> (including all synced data and your published designs) from Settings &gt; Account &gt; Delete account</li>
 <li><strong>Clear all local data</strong> by clearing your browser&#39;s site data for this domain</li>
 </ul>
 <h2 class="content-h2">Data Retention</h2>
@@ -224,6 +242,8 @@
 <li><strong>Account session cookies:</strong> 30 days from sign-in</li>
 <li><strong>Account profile (name, email, provider account ID):</strong> 1 year, refreshed on every sign-in. Profiles for accounts that don&#39;t sign in for a year are automatically deleted</li>
 <li><strong>Synced layouts and designs:</strong> Retained until you delete them, or until you delete your account</li>
+<li><strong>Published designs:</strong> Retained in the showcase until you unpublish them, delete your account, or we remove them under our <a href="/terms">Terms of Service</a></li>
+<li><strong>Design reports:</strong> Retained until you delete your account</li>
 </ul>
 <h2 class="content-h2">Children&#39;s Privacy</h2>
 <p>This app is not directed at children under 13. We don&#39;t knowingly collect data from children.</p>

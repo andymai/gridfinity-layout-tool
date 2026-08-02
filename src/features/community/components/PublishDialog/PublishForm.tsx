@@ -7,22 +7,12 @@ import type { BinParams } from '@/shared/types/bin';
 import type { CommunityCategory, CommunityDesignLineage } from '@/shared/types/community';
 import { TECHNIQUE_CONFIG } from '@/shared/types/exampleTechniques';
 import { deriveTechniques } from '@/shared/utils/communityTechniques';
+import { CATEGORY_LABEL_KEYS } from '../../utils/categoryLabels';
 import type { PublishDialogMode, PublishPrefill } from '../../store/publishStore';
 
 /** Mirrors COMMUNITY_NAME_MAX_LENGTH / COMMUNITY_DESCRIPTION_MAX_LENGTH in api/lib/communityValidation.ts. */
 const PUBLISH_NAME_MAX_LENGTH = 60;
 const PUBLISH_DESCRIPTION_MAX_LENGTH = 500;
-
-const CATEGORY_LABEL_KEYS: Record<CommunityCategory, string> = {
-  tools: 'community.category.tools',
-  hardware: 'community.category.hardware',
-  kitchen: 'community.category.kitchen',
-  office: 'community.category.office',
-  crafts: 'community.category.crafts',
-  electronics: 'community.category.electronics',
-  'toys-games': 'community.category.toysGames',
-  other: 'community.category.other',
-};
 
 export interface PublishFormFields {
   name: string;

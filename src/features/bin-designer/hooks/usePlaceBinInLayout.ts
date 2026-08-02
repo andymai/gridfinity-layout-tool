@@ -13,6 +13,7 @@ import { useToastStore } from '@/core/store/toast';
 import { isOk } from '@/core/result';
 import { categoryId, gridUnits, heightUnits } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
+import { dispatchSyntheticPopstate } from '@/shared/hooks/useDesignerRouting';
 
 /**
  * Open the Layout Planner with a preselected bin described by dimensions and an optional name.
@@ -34,7 +35,7 @@ export function navigateToPlaceInLayout(
     url.searchParams.set('binName', name);
   }
   window.history.pushState(null, '', url.pathname + url.search);
-  window.dispatchEvent(new PopStateEvent('popstate'));
+  dispatchSyntheticPopstate();
 }
 
 /**

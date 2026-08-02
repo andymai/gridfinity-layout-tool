@@ -64,8 +64,9 @@ const LIST_MAX_SCAN = 960;
 const AUTHOR_PUBLIC_ID_REGEX = /^[a-f0-9]{32}$/;
 const CURSOR_REGEX = /^\d{1,9}$/;
 
+// Matches the client's publicDesignUrl: /community/d/<id> is the canonical route.
 function communityDesignUrl(designId: string): string {
-  return `${getBaseUrl()}/community/${designId}`;
+  return `${getBaseUrl()}/community/d/${designId}`;
 }
 
 function badRequest(res: VercelResponse, message: string): void {

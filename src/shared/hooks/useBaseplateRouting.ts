@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { dispatchSyntheticPopstate } from './useDesignerRouting';
 
 /**
  * Check if the current URL is the baseplate route.
@@ -62,7 +63,7 @@ export function useBaseplateRouting() {
     window.history.pushState(layoutId ? { layoutId } : null, '', url);
     setIsBaseplateRoute(true);
     setLayoutIdFromUrl(layoutId ?? null);
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    dispatchSyntheticPopstate();
   }, []);
 
   /**
@@ -73,7 +74,7 @@ export function useBaseplateRouting() {
     setIsBaseplateRoute(false);
     setLayoutIdFromUrl(null);
     setIsStandalone(false);
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    dispatchSyntheticPopstate();
   }, []);
 
   return {

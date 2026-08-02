@@ -10,6 +10,25 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
+// The routing helpers re-dispatch popstate after pushState so route listeners
+// re-read the URL. Overlays that trap a history entry (community detail) must
+// tell these app-constructed events apart from a real browser Back, or the
+// synthetic dispatch would consume their trap and strand the entry.
+let syntheticPopstateDepth = 0;
+
+export function dispatchSyntheticPopstate(): void {
+  syntheticPopstateDepth += 1;
+  try {
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  } finally {
+    syntheticPopstateDepth -= 1;
+  }
+}
+
+export function isSyntheticPopstate(): boolean {
+  return syntheticPopstateDepth > 0;
+}
+
 /**
  * Check if the current URL is the designer route.
  */
@@ -64,7 +83,7 @@ export function useDesignerRouting() {
     window.history.pushState({ designId: null }, '', '/designer');
     setIsDesignerRoute(true);
     setDesignIdFromUrl(null);
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    dispatchSyntheticPopstate();
   }, []);
 
   /**
@@ -76,7 +95,7 @@ export function useDesignerRouting() {
     window.history.pushState({ designId }, '', url);
     setIsDesignerRoute(true);
     setDesignIdFromUrl(designId);
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    dispatchSyntheticPopstate();
   }, []);
 
   /**
@@ -98,7 +117,7 @@ export function useDesignerRouting() {
     window.history.pushState(null, '', '/');
     setIsDesignerRoute(false);
     setDesignIdFromUrl(null);
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    dispatchSyntheticPopstate();
   }, []);
 
   return {

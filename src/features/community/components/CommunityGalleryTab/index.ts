@@ -1,0 +1,1 @@
+export { CommunityGalleryTab } from './CommunityGalleryTab';

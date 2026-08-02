@@ -114,8 +114,8 @@ const MobileLayout = lazyWithRetry(() =>
 const CollabProvider = lazyWithRetry(() =>
   import('@/shell/Collab/CollabProvider').then(namedExport('CollabProvider'))
 );
-const BinExampleGallery = lazyWithRetry(() =>
-  import('@/features/bin-designer/components/ExampleGallery').then(namedExport('ExampleGallery'))
+const DesignGalleryModal = lazyWithRetry(() =>
+  import('@/shell/Modals/DesignGalleryModal').then(namedExport('DesignGalleryModal'))
 );
 const CommunityPublishDialog = lazyWithRetry(() =>
   import('@/features/community/components/PublishDialog').then(namedExport('PublishDialog'))
@@ -572,7 +572,7 @@ export default function App() {
       <ToastContainer />
       {binExampleGalleryOpen && (
         <Suspense fallback={null}>
-          <BinExampleGallery onClose={closeBinExampleGallery} />
+          <DesignGalleryModal onClose={closeBinExampleGallery} />
         </Suspense>
       )}
       {communityShowcaseEnabled && communityPublishOpen && (

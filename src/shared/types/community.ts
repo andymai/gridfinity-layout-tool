@@ -24,6 +24,15 @@ export const COMMUNITY_CATEGORIES = [
 export type CommunityCategory = (typeof COMMUNITY_CATEGORIES)[number];
 
 /**
+ * MIRROR: must match `COMMUNITY_INDEX_SORTS`/`CommunityIndexSort` in
+ * `api/lib/redisKeys.ts` (one Redis sorted-set index per mode). Guarded by
+ * the cross-boundary equality test in `community.test.ts`.
+ */
+export const COMMUNITY_INDEX_SORTS = ['newest', 'remixes', 'likes'] as const;
+
+export type CommunityIndexSort = (typeof COMMUNITY_INDEX_SORTS)[number];
+
+/**
  * `hidden` = auto-hidden after the report threshold or a deny-listed author;
  * `removed` = owner unpublish / admin purge. Updating a design never changes
  * its status (community-showcase-plan.md §1 "Updates").
@@ -53,26 +62,36 @@ export interface CommunityDesignLineage {
   readonly rootAuthorName: string;
 }
 
+/** Public counters on a card; rendered as plain text pre-PR-6 (no like/report actions). */
+export interface CommunityDesignCounts {
+  readonly likes: number;
+  readonly remixes: number;
+  readonly exports: number;
+}
+
 /**
  * Lightweight card-metadata shape served by the paginated list index
  * (`GET /api/community`): powers gallery grids, search, filters, and
  * shelves entirely client-side. Omits `params`/`description`/`lineage`
  * detail/`meshUrl`/`photos`, which only the detail fetch needs.
+ *
+ * MIRROR: field-for-field the server's `CommunityListItem`
+ * (`api/community.ts` `toListItem`); note `thumbnailUrl` is the first
+ * capture angle only, unlike the detail record's `thumbnails` array.
  */
-export interface CommunityDesignSummary {
+export interface CommunityCard {
   readonly id: string;
-  readonly authorPublicId: string;
-  readonly authorName: string;
   readonly name: string;
+  readonly authorName: string;
+  readonly authorPublicId: string;
   readonly category: CommunityCategory;
   readonly techniques: readonly ExampleTechnique[];
   readonly metrics: CommunityDesignMetrics;
-  readonly thumbnails: readonly string[];
+  readonly thumbnailUrl: string;
   /** True when `lineage` is non-null on the full record; drives the card's corner remix glyph. */
   readonly isRemix: boolean;
-  readonly likeCount: number;
-  readonly remixCount: number;
   readonly featured: boolean;
+  readonly counts: CommunityDesignCounts;
   readonly createdAt: number;
   readonly updatedAt: number;
   readonly status: CommunityDesignStatus;

@@ -459,7 +459,7 @@ describe('POST /api/community (publish)', () => {
     expect(res._status).toBe(201);
     const body = res._body as { id: string; url: string };
     expect(body.id).toMatch(/^[A-Za-z0-9]{12}$/);
-    expect(body.url).toContain(`/community/${body.id}`);
+    expect(body.url).toContain(`/community/d/${body.id}`);
 
     const [designCall] = designBlobCalls();
     expect(designCall[0]).toBe(communityDesignBlobPath(body.id));

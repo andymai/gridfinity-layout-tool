@@ -35,7 +35,7 @@ export function ExampleCard({ example, onSelect, index, tabIndex = 0, onFocus }:
         border-2 border-transparent hover:border-accent/50
         transition-colors
         focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2
-        animate-fade-in-up cursor-pointer
+        motion-safe:animate-fade-in-up cursor-pointer
       "
       style={{ animationDelay }}
       aria-label={`${t(example.nameKey)}. ${techniqueLabel}.`}

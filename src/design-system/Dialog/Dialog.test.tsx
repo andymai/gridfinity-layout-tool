@@ -291,6 +291,24 @@ describe('Dialog', () => {
     });
   });
 
+  describe('focus restore', () => {
+    it('restores focus to the opener when the dialog unmounts while still open', () => {
+      const opener = document.createElement('button');
+      document.body.appendChild(opener);
+      opener.focus();
+      const { unmount } = render(
+        <Dialog.Root open={true} onClose={vi.fn()}>
+          <Dialog.Header title="Test" />
+          <Dialog.Body>Content</Dialog.Body>
+        </Dialog.Root>
+      );
+      expect(opener).not.toHaveFocus();
+      unmount();
+      expect(opener).toHaveFocus();
+      opener.remove();
+    });
+  });
+
   describe('initial focus', () => {
     it('focuses the first focusable element by default', () => {
       render(

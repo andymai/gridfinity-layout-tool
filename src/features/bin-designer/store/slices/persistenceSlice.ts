@@ -74,6 +74,8 @@ export function createPersistenceSlice(set: Set) {
         state.itemKind = kind;
         state.ui.shapeEditorOpen = false;
 
+        state.lineage = null;
+
         if (kind === 'bin') {
           state.params = { ...defaultsForNewDesign() };
           state.envelope = null;
@@ -111,6 +113,7 @@ export function createPersistenceSlice(set: Set) {
           state.envelope = savedEnvelope;
           state.currentDesignId = design.id;
           state.designName = design.name;
+          state.lineage = design.lineage ?? null;
           state.exportFileNameConfig = design.exportFileNameConfig ?? {
             ...DEFAULT_EXPORT_FILE_NAME_CONFIG,
           };
@@ -143,6 +146,7 @@ export function createPersistenceSlice(set: Set) {
         state.structure = null;
         state.currentDesignId = design.id;
         state.designName = design.name;
+        state.lineage = design.lineage ?? null;
         state.exportFileNameConfig = design.exportFileNameConfig ?? {
           ...DEFAULT_EXPORT_FILE_NAME_CONFIG,
         };
