@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeInteriorDividerCutouts } from './wallCutoutBuilder';
+import { autoCornerRadius, computeInteriorDividerCutouts } from './wallCutoutBuilder';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams, DividerOverride } from '@/features/bin-designer/types';
 
@@ -220,5 +220,16 @@ describe('computeInteriorDividerCutouts', () => {
       WALL_HEIGHT
     );
     expect(cut.cutW).toBeCloseTo(10, 6);
+  });
+});
+
+describe('autoCornerRadius', () => {
+  it('derives from the cutout width alone — bin height must not move it (#3162)', () => {
+    // The regression: a height term (min(width, height) * 0.15) made raising
+    // the bin height balloon the corner radius of an untouched cutout
+    // (~2.8mm at 3u → the 5mm clamp at 6u). Width-only keeps it stable.
+    expect(autoCornerRadius(98)).toBe(5); // wide slot hits the 5mm cap
+    expect(autoCornerRadius(20)).toBeCloseTo(3, 9); // 15% slope in range
+    expect(autoCornerRadius(1)).toBe(0.5); // floor for tiny slots
   });
 });
