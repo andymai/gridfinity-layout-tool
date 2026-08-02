@@ -6,6 +6,7 @@ import {
   COMMUNITY_INDEX_CAP,
   fetchCommunityDesign,
   fetchCommunityIndex,
+  fetchMineIndex,
   fetchOwnDesign,
   publishDesign,
   reportDesign,
@@ -416,6 +417,72 @@ describe('fetchCommunityIndex', () => {
   });
 });
 
+describe('fetchMineIndex', () => {
+  it('requests the mine list and pages through it', async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        jsonResponse(200, { items: [card('a'), card('b')], nextCursor: '48', likedIds: ['b'] })
+      )
+      .mockResolvedValueOnce(jsonResponse(200, { items: [card('c')], nextCursor: null }));
+    const result = await fetchMineIndex();
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) {
+      expect(result.value.items.map((item) => item.id)).toEqual(['a', 'b', 'c']);
+      expect(result.value.items[1]?.likedByMe).toBe(true);
+      expect(result.value.capped).toBe(false);
+    }
+    expect(requestedUrl(0)).toBe('/api/community?sort=newest&mine=1');
+    expect(requestedUrl(1)).toBe('/api/community?sort=newest&mine=1&cursor=48');
+  });
+
+  it('includes the caller-owned hidden designs the public list excludes', async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(200, { items: [card('a', { status: 'hidden' })], nextCursor: null })
+    );
+    const result = await fetchMineIndex();
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) expect(result.value.items[0]?.status).toBe('hidden');
+  });
+
+  it('accepts owner-only opens/views counts and the hiddenReason field', async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(200, {
+        items: [
+          card('a', {
+            status: 'hidden',
+            hiddenReason: 'denylist',
+            counts: { likes: 1, remixes: 2, exports: 3, opens: 7, views: 31 },
+          }),
+        ],
+        nextCursor: null,
+      })
+    );
+    const result = await fetchMineIndex();
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) {
+      expect(result.value.items[0]?.hiddenReason).toBe('denylist');
+      expect(result.value.items[0]?.counts.opens).toBe(7);
+      expect(result.value.items[0]?.counts.views).toBe(31);
+    }
+  });
+
+  it('maps 401 to needsAuth for a signed-out caller', async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(401, { error: 'Sign in required', code: 'UNAUTHORIZED' })
+    );
+    const result = await fetchMineIndex();
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) expect(result.error).toEqual({ kind: 'needsAuth' });
+  });
+
+  it('maps a fetch rejection to network', async () => {
+    fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    const result = await fetchMineIndex();
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) expect(result.error).toEqual({ kind: 'network' });
+  });
+});
+
 describe('fetchOwnDesign', () => {
   it('GETs the design record', async () => {
     fetchMock.mockResolvedValue(jsonResponse(200, { design }));
@@ -474,6 +541,61 @@ describe('fetchCommunityDesign', () => {
     if (isOk(result)) {
       expect(result.value.counts).toEqual({ likes: 4, remixes: 2, exports: 9 });
       expect(result.value.likedByMe).toBe(true);
+    }
+  });
+
+  it('parses owner-only opens/views counts and hidden moderation fields', async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse(200, {
+        design: { ...design, status: 'hidden' },
+        isOwner: true,
+        counts: { likes: 4, remixes: 2, exports: 9, opens: 7, views: 31 },
+        likedByMe: false,
+        hiddenReason: 'reports',
+        hiddenReasonCategory: 'spam',
+      })
+    );
+    const result = await fetchCommunityDesign('AbCdEf123456');
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) {
+      expect(result.value.counts).toEqual({
+        likes: 4,
+        remixes: 2,
+        exports: 9,
+        opens: 7,
+        views: 31,
+      });
+      expect(result.value.hiddenReason).toBe('reports');
+      expect(result.value.hiddenReasonCategory).toBe('spam');
+    }
+  });
+
+  it('parses a manual moderation hide reason', async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse(200, {
+        design: { ...design, status: 'hidden' },
+        isOwner: true,
+        hiddenReason: 'moderation',
+        hiddenReasonCategory: null,
+      })
+    );
+    const result = await fetchCommunityDesign('AbCdEf123456');
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) {
+      expect(result.value.hiddenReason).toBe('moderation');
+      expect(result.value.hiddenReasonCategory).toBeNull();
+    }
+  });
+
+  it('nulls unknown moderation values instead of trusting them', async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse(200, { design, hiddenReason: 'because', hiddenReasonCategory: 'ugly' })
+    );
+    const result = await fetchCommunityDesign('AbCdEf123456');
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) {
+      expect(result.value.hiddenReason).toBeNull();
+      expect(result.value.hiddenReasonCategory).toBeNull();
     }
   });
 

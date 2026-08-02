@@ -1,12 +1,18 @@
 import { useCallback, useState } from 'react';
-import { Button, IconButton, cn } from '@/design-system';
+import { Badge, Button, IconButton, cn } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { GlbViewer } from '@/shared/components/GlbViewer';
 import { GradientBackground } from '@/shared/components/preview/GradientBackground';
-import type { CommunityDesign, CommunityDesignCounts } from '@/shared/types/community';
+import type {
+  CommunityDesign,
+  CommunityDesignCounts,
+  CommunityHiddenReason,
+  CommunityReportReason,
+} from '@/shared/types/community';
 import { TECHNIQUE_CONFIG } from '@/shared/types/exampleTechniques';
 import { HeartGlyph } from '../CommunityCard/CommunityCard';
 import { CATEGORY_LABEL_KEYS } from '../../utils/categoryLabels';
+import { REPORT_REASON_LABEL_KEYS } from '../../utils/reportReasonLabels';
 import { DirectRemixList } from './DirectRemixList';
 import { SimilarRail } from './SimilarRail';
 
@@ -24,6 +30,16 @@ export interface DetailLikeState {
   onToggle: () => void;
 }
 
+/**
+ * Owner-facing hidden-state explanation, passed only when the caller owns
+ * the design and it is hidden. `hiddenReason` null reads as a report
+ * auto-hide (the pre-field default).
+ */
+export interface OwnerModeration {
+  hiddenReason: CommunityHiddenReason | null;
+  hiddenReasonCategory: CommunityReportReason | null;
+}
+
 interface CommunityDetailContentProps {
   design: CommunityDesign;
   /** Read-only counts from the browse card; null when opened by bare id. */
@@ -34,6 +50,8 @@ interface CommunityDetailContentProps {
   like?: DetailLikeState | null;
   /** Filters the gallery to this design's author (the author-view entry point). */
   onFilterByAuthor?: () => void;
+  /** Present only for the owner of a hidden design; renders the hidden-state notice. */
+  ownerModeration?: OwnerModeration | null;
 }
 
 function formatMm(value: number): string {
@@ -55,6 +73,7 @@ export function CommunityDetailContent({
   parentResolution,
   like = null,
   onFilterByAuthor,
+  ownerModeration = null,
 }: CommunityDetailContentProps) {
   const t = useTranslation();
   const [angleIndex, setAngleIndex] = useState(0);
@@ -121,6 +140,58 @@ export function CommunityDetailContent({
 
       {/* Details rail */}
       <div className="space-y-4 p-4 md:w-80 md:shrink-0 md:overflow-y-auto md:border-l md:border-stroke-subtle">
+        {ownerModeration !== null &&
+          (ownerModeration.hiddenReason === 'denylist' ? (
+            <div
+              role="status"
+              className="space-y-1 rounded-lg border border-error/30 bg-error/5 px-3 py-2"
+              data-testid="community-detail-hidden-notice"
+            >
+              <Badge tone="error" data-testid="community-denylisted-badge">
+                {t('community.mine.badge.accountRestricted')}
+              </Badge>
+              <p className="text-sm text-content-secondary">
+                {t('community.detail.hidden.restricted')}
+              </p>
+            </div>
+          ) : ownerModeration.hiddenReason === 'moderation' ? (
+            // A manual takedown already had its review: no report reason and
+            // no "a moderator will review it" promise.
+            <div
+              role="status"
+              className="space-y-1 rounded-lg border border-warning/30 bg-warning-muted px-3 py-2"
+              data-testid="community-detail-hidden-notice"
+            >
+              <Badge tone="warning" data-testid="community-moderation-badge">
+                {t('community.mine.badge.hiddenModeration')}
+              </Badge>
+              <p className="text-sm text-content-secondary">
+                {t('community.detail.hidden.moderation')}
+              </p>
+            </div>
+          ) : (
+            <div
+              role="status"
+              className="space-y-1 rounded-lg border border-warning/30 bg-warning-muted px-3 py-2"
+              data-testid="community-detail-hidden-notice"
+            >
+              <Badge tone="warning" data-testid="community-hidden-badge">
+                {t('community.mine.badge.hiddenReports')}
+              </Badge>
+              <p className="text-sm text-content-secondary">
+                {ownerModeration.hiddenReasonCategory !== null
+                  ? t('community.detail.hidden.explanationWithReason', {
+                      reason: t(REPORT_REASON_LABEL_KEYS[ownerModeration.hiddenReasonCategory]),
+                    })
+                  : t('community.detail.hidden.explanation')}
+              </p>
+              {/* Deliberately no ETA or imminence: "A moderator will review it." verbatim. */}
+              <p className="text-xs text-content-tertiary">
+                {t('community.detail.hidden.reviewNote')}
+              </p>
+            </div>
+          ))}
+
         <div>
           {onFilterByAuthor !== undefined ? (
             <Button

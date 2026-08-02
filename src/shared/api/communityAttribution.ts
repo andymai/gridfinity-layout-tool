@@ -59,3 +59,22 @@ export async function recordCommunityExport(designId: string): Promise<void> {
     // block the download that already completed.
   }
 }
+
+/**
+ * Credit a community design with one "open" (remix opened into the designer).
+ * Owner-only stat: it never renders publicly, only in the Mine view's stats
+ * row. Same fire-and-forget contract as recordCommunityExport.
+ */
+export async function recordCommunityOpen(designId: string): Promise<void> {
+  try {
+    await apiFetch(`/api/community/${designId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'open', clientId: getCommunityClientId() }),
+      suppressForcedSignOut: true,
+    });
+  } catch {
+    // A failed attribution ping must never surface to the remixing user or
+    // block the copy that was already created.
+  }
+}

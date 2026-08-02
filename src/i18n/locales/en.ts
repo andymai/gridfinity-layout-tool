@@ -3378,6 +3378,27 @@ const en: Record<string, string> = {
   'community.card.remixesLabel': '{count} published remixes',
   'community.card.remixBadge': 'Remix',
 
+  // Mine view (own published designs, incl. hidden)
+  'community.gallery.mineFilter': 'Mine',
+  'community.gallery.mineEmpty.title': "You haven't published anything yet",
+  'community.gallery.mineEmpty.subtitle':
+    'Publish a design and it will show up here with its stats.',
+  'community.mine.badge.hiddenReports': 'Hidden after reports',
+  'community.mine.badge.accountRestricted': 'Publishing restricted',
+  'community.mine.badge.hiddenModeration': 'Hidden by moderation',
+  'community.mine.cardHiddenAria': '{name} (hidden from the gallery)',
+  'community.mine.stats.opens': 'Opens',
+  'community.mine.stats.views': 'Views',
+  'community.mine.printsLabel': '{count} prints',
+  'community.mine.edit': 'Edit',
+  'community.mine.editAria': 'Edit {name}',
+  'community.mine.unpublish': 'Unpublish',
+  'community.mine.unpublishAria': 'Unpublish {name}',
+  'community.mine.editDisabledHidden': "This design is hidden and can't be updated.",
+  'community.mine.editMissing':
+    'No local copy of this design was found on this device. Use Duplicate as new to keep editing.',
+  'community.mine.unpublishFailed': "Couldn't unpublish the design. Try again.",
+
   // Public /community route (full-page host)
   'community.page.back': 'Back to the app',
   'community.page.title': 'Community designs',
@@ -3429,6 +3450,16 @@ const en: Record<string, string> = {
   'community.detail.similarItemAria': '{name} by {author}',
   'community.detail.buildsOnThis': '{count} designs build on this',
   'community.detail.buildsOnEmpty': 'The designs that build on this are not in the loaded gallery.',
+  'community.detail.hidden.explanation':
+    'This design was hidden after reports and is no longer publicly visible.',
+  'community.detail.hidden.explanationWithReason':
+    'This design was hidden after reports ({reason}) and is no longer publicly visible.',
+  'community.detail.hidden.reviewNote': 'A moderator will review it.',
+  'community.detail.hidden.restricted':
+    'This design is hidden. Publishing is not available for this account.',
+  'community.detail.hidden.moderation':
+    'This design was hidden by the moderation team and is not publicly visible.',
+  'community.detail.editDisabledHidden': "Hidden designs can't be updated.",
   'community.like.like': 'Like this design',
   'community.like.unlike': 'Unlike this design',
   'community.signin.title': 'Sign in to continue',
@@ -3454,6 +3485,19 @@ const en: Record<string, string> = {
   'community.report.error.contentBlocked':
     'The note contains blocked content. Reword it and try again.',
   'community.report.error.offline': 'You appear to be offline. Try again once reconnected.',
+
+  // Since-last-visit digest (Mine) and one-time milestones
+  'community.mine.digest.summary': '{parts} since your last visit',
+  'community.mine.digest.likes': '+{count} likes',
+  'community.mine.digest.likesOne': '+1 like',
+  'community.mine.digest.remixes': '+{count} remixes',
+  'community.mine.digest.remixesOne': '+1 remix',
+  'community.mine.digest.prints': '+{count} prints',
+  'community.mine.digest.printsOne': '+1 print',
+  'community.milestone.firstPublish': 'You published your first design to the community!',
+  'community.milestone.firstRemix': 'Your design just got its first published remix!',
+  'community.milestone.tenRemixes': 'Your designs have reached 10 published remixes!',
+  'community.milestone.hundredPrints': 'Your designs have been printed 100 times!',
 
   // Post-remix continuation banner (bin designer)
   'binDesigner.remixBanner.text':

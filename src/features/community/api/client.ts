@@ -9,9 +9,14 @@ import type {
   CommunityDesign,
   CommunityDesignCounts,
   CommunityDesignLineage,
+  CommunityHiddenReason,
   CommunityReportReason,
 } from '@/shared/types/community';
-import { COMMUNITY_CATEGORIES, COMMUNITY_REPORT_NOTE_MAX_LENGTH } from '@/shared/types/community';
+import {
+  COMMUNITY_CATEGORIES,
+  COMMUNITY_REPORT_NOTE_MAX_LENGTH,
+  COMMUNITY_REPORT_REASONS,
+} from '@/shared/types/community';
 import { TECHNIQUE_CONFIG } from '@/shared/types/exampleTechniques';
 
 const COMMUNITY_ENDPOINT = '/api/community';
@@ -122,10 +127,22 @@ export interface CommunityDesignDetail {
   /**
    * Card-hash counters shipped with the detail so the stats row works for
    * designs beyond the capped browse index; null when the server degraded
-   * (no Redis) or predates the field.
+   * (no Redis) or predates the field. Includes the owner-only opens/views
+   * fields when the caller owns the design.
    */
   counts: CommunityDesignCounts | null;
   likedByMe: boolean;
+  /**
+   * Owner-only, non-null only when the caller owns the design and it is
+   * hidden; null reads as a report auto-hide (the pre-field default).
+   */
+  hiddenReason: CommunityHiddenReason | null;
+  /** Dominant reported reason category; owner-only, null when nothing was tallied. */
+  hiddenReasonCategory: CommunityReportReason | null;
+}
+
+function isOptionalNumber(value: unknown): boolean {
+  return value === undefined || typeof value === 'number';
 }
 
 function isCountsShape(value: unknown): value is CommunityDesignCounts {
@@ -133,8 +150,21 @@ function isCountsShape(value: unknown): value is CommunityDesignCounts {
     isRecord(value) &&
     typeof value.likes === 'number' &&
     typeof value.remixes === 'number' &&
-    typeof value.exports === 'number'
+    typeof value.exports === 'number' &&
+    isOptionalNumber(value.opens) &&
+    isOptionalNumber(value.views)
   );
+}
+
+function parseHiddenReason(value: unknown): CommunityHiddenReason | null {
+  return value === 'reports' || value === 'denylist' || value === 'moderation' ? value : null;
+}
+
+function parseReportReason(value: unknown): CommunityReportReason | null {
+  return typeof value === 'string' &&
+    (COMMUNITY_REPORT_REASONS as readonly string[]).includes(value)
+    ? (value as CommunityReportReason)
+    : null;
 }
 
 function isDetailResponse(value: unknown): value is {
@@ -142,6 +172,8 @@ function isDetailResponse(value: unknown): value is {
   isOwner?: boolean;
   counts?: unknown;
   likedByMe?: unknown;
+  hiddenReason?: unknown;
+  hiddenReasonCategory?: unknown;
 } {
   return isDesignResponse(value) && (!('isOwner' in value) || typeof value.isOwner === 'boolean');
 }
@@ -181,9 +213,12 @@ function isCommunityCard(value: unknown): value is CommunityCard {
     typeof counts.likes === 'number' &&
     typeof counts.remixes === 'number' &&
     typeof counts.exports === 'number' &&
+    isOptionalNumber(counts.opens) &&
+    isOptionalNumber(counts.views) &&
     typeof value.createdAt === 'number' &&
     typeof value.updatedAt === 'number' &&
-    (value.status === 'live' || value.status === 'hidden' || value.status === 'removed')
+    (value.status === 'live' || value.status === 'hidden' || value.status === 'removed') &&
+    (value.hiddenReason === undefined || parseHiddenReason(value.hiddenReason) !== null)
   );
 }
 
@@ -282,10 +317,12 @@ export interface CommunityIndexResult {
 
 async function fetchCommunityPage(
   cursor: string | null,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  mine = false
 ): Promise<Result<CommunityListPage, CommunityClientError>> {
   try {
     const params = new URLSearchParams({ sort: 'newest' });
+    if (mine) params.set('mine', '1');
     if (cursor !== null) params.set('cursor', cursor);
     const response = await communityFetch(`${COMMUNITY_ENDPOINT}?${params.toString()}`, {
       method: 'GET',
@@ -339,6 +376,34 @@ export async function fetchCommunityIndex(
   });
 }
 
+/**
+ * Fetches the session user's own published designs via `mine=1`, which is the
+ * only list that includes the caller's hidden designs (removed ones are
+ * excluded server-side). Requires an authenticated session (401 → needsAuth).
+ * Same paging/dedupe contract as `fetchCommunityIndex`; the cap is a
+ * defensive bound only, since one user's set is quota-limited far below it.
+ */
+export async function fetchMineIndex(
+  signal?: AbortSignal
+): Promise<Result<CommunityIndexResult, CommunityClientError>> {
+  const items: CommunityCard[] = [];
+  const seenIds = new Set<string>();
+  let cursor: string | null = null;
+  for (let request = 0; request < INDEX_MAX_REQUESTS; request++) {
+    const page = await fetchCommunityPage(cursor, signal, true);
+    if (isErr(page)) return page;
+    const likedIds = new Set(page.value.likedIds ?? []);
+    for (const card of page.value.items) {
+      if (seenIds.has(card.id)) continue;
+      seenIds.add(card.id);
+      items.push({ ...card, likedByMe: likedIds.has(card.id) });
+    }
+    cursor = page.value.nextCursor;
+    if (cursor === null || items.length >= COMMUNITY_INDEX_CAP) break;
+  }
+  return ok({ items: items.slice(0, COMMUNITY_INDEX_CAP), capped: false });
+}
+
 export async function fetchCommunityDesign(
   id: string
 ): Promise<Result<CommunityDesignDetail, CommunityClientError>> {
@@ -354,6 +419,8 @@ export async function fetchCommunityDesign(
         isOwner: data.isOwner === true,
         counts: isCountsShape(data.counts) ? data.counts : null,
         likedByMe: data.likedByMe === true,
+        hiddenReason: parseHiddenReason(data.hiddenReason),
+        hiddenReasonCategory: parseReportReason(data.hiddenReasonCategory),
       });
     }
     return err({ kind: 'server' });

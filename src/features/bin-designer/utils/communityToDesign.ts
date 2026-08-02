@@ -5,6 +5,7 @@ import { remixHintId } from '@/features/bin-designer/utils/remixHintId';
 import { isOk } from '@/core/result';
 import type { Result, StorageError } from '@/core/result';
 import { useSettingsStore } from '@/core/store';
+import { recordCommunityOpen } from '@/shared/api/communityAttribution';
 import type { CommunityDesign, CommunityDesignLineage } from '@/shared/types/community';
 
 /**
@@ -53,6 +54,11 @@ export async function communityToDesign(
     }
     setActiveDesignId(result.value.id);
     useDesignerStore.getState().loadDesign(result.value);
+    if (options?.ownDuplicate !== true) {
+      // Owner-only "opens" stat (plan §2.4): a genuine remix open counts, an
+      // owner duplicating their own design does not. Fire-and-forget.
+      void recordCommunityOpen(design.id);
+    }
   }
   return result;
 }

@@ -41,6 +41,7 @@ import type {
   CommunityDesignMetrics,
   CommunityDesignRecord,
   CommunityDesignStatus,
+  CommunityHiddenReason,
   CommunityLineage,
 } from './lib/communityStore.js';
 import {
@@ -372,10 +373,13 @@ interface CommunityListItem {
   /** Direct-remix lineage pointer, '' for originals: powers the detail view's builds-on-this list. */
   parentId: string;
   featured: boolean;
-  counts: { likes: number; remixes: number; exports: number };
+  /** `opens`/`views` are owner-only stats, present only on `mine=1` items. */
+  counts: { likes: number; remixes: number; exports: number; opens?: number; views?: number };
   createdAt: number;
   updatedAt: number;
   status: CommunityDesignStatus;
+  /** Owner-only: why a hidden design is hidden. Present only on `mine=1` items with status 'hidden'. */
+  hiddenReason?: CommunityHiddenReason;
 }
 
 function toListItem(card: CommunityCardRecord): CommunityListItem {
@@ -400,6 +404,21 @@ function toListItem(card: CommunityCardRecord): CommunityListItem {
     createdAt: card.createdAt,
     updatedAt: card.updatedAt,
     status: card.status,
+  };
+}
+
+/**
+ * Mine-branch item shape: the public card plus the owner-only stats and, for
+ * hidden designs, the hide reason. Only reachable behind requireSession, so
+ * these fields never leak into the public list.
+ */
+function toOwnerListItem(card: CommunityCardRecord): CommunityListItem {
+  const item = toListItem(card);
+  return {
+    ...item,
+    counts: { ...item.counts, opens: card.opens ?? 0, views: card.views ?? 0 },
+    ...(card.status === 'hidden' &&
+      card.hiddenReason !== undefined && { hiddenReason: card.hiddenReason }),
   };
 }
 
@@ -489,7 +508,7 @@ async function listMine(
   const page = matching.slice(cursor, cursor + LIST_PAGE_SIZE);
   const nextOffset = cursor + page.length;
   return {
-    items: page.map(toListItem),
+    items: page.map(toOwnerListItem),
     nextCursor: nextOffset < matching.length ? String(nextOffset) : null,
   };
 }

@@ -194,7 +194,10 @@ function seedCommunityDesign(
   setHash(`community:design:${id}`, { id, likes: String(opts.likes?.length ?? 0), status: 'live' });
   if (opts.likes) setSet(`community:likes:${id}`, opts.likes);
   if (opts.children) setSet(`community:children:${id}`, opts.children);
-  if (opts.reports) setSet(`community:reports:${id}`, opts.reports);
+  if (opts.reports) {
+    setSet(`community:reports:${id}`, opts.reports);
+    setHash(`community:reportReasons:${id}`, { spam: String(opts.reports.length) });
+  }
 }
 
 beforeEach(() => {
@@ -336,6 +339,7 @@ describe('DELETE /api/sync/account', () => {
       expect(redisSets.has(`community:likes:${id}`)).toBe(false);
       expect(redisSets.has(`community:children:${id}`)).toBe(false);
       expect(redisSets.has(`community:reports:${id}`)).toBe(false);
+      expect(redisHashes.has(`community:reportReasons:${id}`)).toBe(false);
     }
 
     // Sort-index memberships removed, other designs untouched.

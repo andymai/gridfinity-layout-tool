@@ -1,6 +1,10 @@
 import { deriveAuthorPublicId } from '../../../api/lib/communityIds.js';
 import { readCommunityCards, setCommunityDesignStatus } from '../../../api/lib/communityStore.js';
-import { communityAuthorKey, communityDenylistKey } from '../../../api/lib/redisKeys.js';
+import {
+  communityAuthorKey,
+  communityDenylistKey,
+  communityDesignKey,
+} from '../../../api/lib/redisKeys.js';
 import type { Args } from '../lib/args.js';
 import { colors } from '../lib/output.js';
 import { connect } from '../lib/redis.js';
@@ -30,7 +34,14 @@ export async function denylist(args: Args): Promise<number> {
     for (const card of cards) {
       if (card && card.status === 'live') liveIds.push(card.id);
     }
-    await Promise.all(liveIds.map((id) => setCommunityDesignStatus(redis, id, 'hidden')));
+    // hiddenReason drives the owner's Mine badge: a deny-list hide must read
+    // differently from a report auto-hide (community-showcase-plan.md §2.6).
+    await Promise.all(
+      liveIds.map(async (id) => {
+        await setCommunityDesignStatus(redis, id, 'hidden');
+        await redis.hset(communityDesignKey(id), { hiddenReason: 'denylist' });
+      })
+    );
 
     console.log(colors.cyan(`denylisted: ${userId}`));
     console.log(`hid ${liveIds.length} live design(s): ${liveIds.join(', ') || '(none)'}`);

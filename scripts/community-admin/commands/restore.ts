@@ -1,5 +1,6 @@
 import { isValidShareId } from '../../../api/lib/shared.js';
 import { readCommunityCards, setCommunityDesignStatus } from '../../../api/lib/communityStore.js';
+import { communityDesignKey } from '../../../api/lib/redisKeys.js';
 import type { Args } from '../lib/args.js';
 import { colors } from '../lib/output.js';
 import { connect } from '../lib/redis.js';
@@ -23,6 +24,9 @@ export async function restore(args: Args): Promise<number> {
       return 1;
     }
     await setCommunityDesignStatus(redis, id, 'live');
+    // A stale reason would mislabel the owner badge if the design is later
+    // hidden again through a path that does not write its own reason.
+    await redis.hdel(communityDesignKey(id), 'hiddenReason');
     console.log(colors.cyan(`restored to live: ${id} (was ${card.status})`));
     return 0;
   } finally {

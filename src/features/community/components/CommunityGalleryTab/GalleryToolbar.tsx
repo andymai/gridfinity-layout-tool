@@ -19,6 +19,25 @@ import {
   sortOptions,
 } from './galleryFilterOptions';
 
+function UserGlyph() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-3 w-3"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M5.121 17.804A9 9 0 0112 15a9 9 0 016.879 2.804M15 10a3 3 0 11-6 0 3 3 0 016 0z"
+      />
+    </svg>
+  );
+}
+
 function ClockGlyph() {
   return (
     <svg
@@ -49,6 +68,7 @@ export function GalleryToolbar() {
   const setAuthor = useBrowseStore((s) => s.setAuthor);
   const setLikedOnly = useBrowseStore((s) => s.setLikedOnly);
   const setRecentOnly = useBrowseStore((s) => s.setRecentOnly);
+  const setMineOnly = useBrowseStore((s) => s.setMineOnly);
   const clearFilters = useBrowseStore((s) => s.clearFilters);
   const sessionStatus = useSessionStore((s) => s.status);
   const signedIn = sessionStatus === 'authenticated';
@@ -62,7 +82,8 @@ export function GalleryToolbar() {
     filters.sort !== INITIAL_BROWSE_FILTERS.sort ||
     filters.author !== null ||
     filters.likedOnly ||
-    filters.recentOnly;
+    filters.recentOnly ||
+    filters.mineOnly;
 
   const chipClass = (active: boolean): string =>
     cn(
@@ -79,6 +100,21 @@ export function GalleryToolbar() {
 
   const filterChips = (
     <div className="flex flex-wrap items-center gap-2">
+      {/* No signed-out prompt branch, unlike Liked: a signed-out visitor
+          structurally has no published designs, so the chip simply is not
+          rendered. */}
+      {signedIn && (
+        <Button
+          variant="ghost"
+          aria-pressed={filters.mineOnly}
+          onClick={() => setMineOnly(!filters.mineOnly)}
+          className={chipClass(filters.mineOnly)}
+          data-testid="community-mine-chip"
+        >
+          <UserGlyph />
+          {t('community.gallery.mineFilter')}
+        </Button>
+      )}
       <Button
         variant="ghost"
         aria-pressed={filters.likedOnly}

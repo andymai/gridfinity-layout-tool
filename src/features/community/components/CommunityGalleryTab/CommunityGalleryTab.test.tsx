@@ -9,8 +9,10 @@ import {
 } from '@/core/store/communityDetail';
 import { useToastStore } from '@/core/store/toast';
 import type { CommunityCard } from '@/shared/types/community';
-import { fetchCommunityIndex } from '../../api/client';
+import { useSessionStore } from '@/core/sync/session/useSession';
+import { fetchCommunityIndex, fetchMineIndex } from '../../api/client';
 import { INITIAL_BROWSE_STATE, useBrowseStore } from '../../store/browseStore';
+import { INITIAL_MINE_STATE, useMineStore } from '../../store/mineStore';
 import { CommunityGalleryTab, GALLERY_PAGE_SIZE } from './CommunityGalleryTab';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
@@ -25,10 +27,11 @@ vi.mock('@/shared/hooks/useResponsive', () => ({
 
 vi.mock('../../api/client', async (importOriginal) => {
   const actual = await importOriginal<object>();
-  return { ...actual, fetchCommunityIndex: vi.fn() };
+  return { ...actual, fetchCommunityIndex: vi.fn(), fetchMineIndex: vi.fn() };
 });
 
 const indexMock = vi.mocked(fetchCommunityIndex);
+const mineIndexMock = vi.mocked(fetchMineIndex);
 
 function card(id: string, overrides: Partial<CommunityCard> = {}): CommunityCard {
   return {
@@ -58,16 +61,27 @@ function setOnline(value: boolean): void {
   Object.defineProperty(window.navigator, 'onLine', { value, configurable: true });
 }
 
+function signIn(): void {
+  useSessionStore.setState({
+    status: 'authenticated',
+    user: { userId: 'u1', provider: 'github', email: 'andy@example.com' },
+  });
+}
+
 beforeEach(() => {
   indexMock.mockReset();
+  mineIndexMock.mockReset();
   localStorage.clear();
   setOnline(true);
   useBrowseStore.setState({ ...INITIAL_BROWSE_STATE });
+  useMineStore.setState({ ...INITIAL_MINE_STATE });
   useCommunityDetailStore.setState({ ...INITIAL_COMMUNITY_DETAIL_STATE });
   useToastStore.setState({ toasts: [] });
+  useSessionStore.setState({ status: 'anonymous', user: null });
 });
 
 afterEach(() => {
+  useSessionStore.setState({ status: 'unknown', user: null });
   vi.restoreAllMocks();
 });
 
@@ -390,6 +404,163 @@ describe('CommunityGalleryTab', () => {
     expect(trackEvent).toHaveBeenCalledWith('community_gallery_opened', { surface: 'route' });
     await waitFor(() => {
       expect(screen.queryByTestId('community-gallery-skeletons')).not.toBeInTheDocument();
+    });
+  });
+});
+
+describe('CommunityGalleryTab Mine view', () => {
+  function activateMine(): void {
+    signIn();
+    useBrowseStore.getState().setMineOnly(true);
+  }
+
+  it('sources cards from the mine list, including hidden designs with their badges', async () => {
+    indexMock.mockResolvedValue(ok({ items: [card('public000001')], capped: false }));
+    mineIndexMock.mockResolvedValue(
+      ok({
+        items: [
+          card('mylive000001'),
+          card('myhidden0001', { status: 'hidden', hiddenReason: 'reports' }),
+          card('mydenied0001', { status: 'hidden', hiddenReason: 'denylist' }),
+        ],
+        capped: false,
+      })
+    );
+    activateMine();
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.getByText('Bin mylive000001')).toBeInTheDocument();
+    });
+    expect(screen.getByText('Bin myhidden0001')).toBeInTheDocument();
+    expect(screen.getByTestId('community-hidden-badge')).toBeInTheDocument();
+    expect(screen.getByTestId('community-denylisted-badge')).toBeInTheDocument();
+    expect(screen.queryByText('Bin public000001')).not.toBeInTheDocument();
+    expect(screen.getAllByTestId('community-mine-card')).toHaveLength(3);
+    expect(trackEvent).toHaveBeenCalledWith('community_mine_viewed', { surface: 'tab' });
+  });
+
+  it('shows the mine empty state with a publish CTA when nothing is published', async () => {
+    localStorage.setItem('gridfinity-designer-active-v1', 'design-id');
+    indexMock.mockResolvedValue(ok({ items: [], capped: false }));
+    mineIndexMock.mockResolvedValue(ok({ items: [], capped: false }));
+    const onRequestClose = vi.fn();
+    const onRequestPublish = vi.fn().mockResolvedValue(true);
+    activateMine();
+    render(
+      <CommunityGalleryTab onRequestClose={onRequestClose} onRequestPublish={onRequestPublish} />
+    );
+    await waitFor(() => {
+      expect(screen.getByText('community.gallery.mineEmpty.title')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByTestId('community-mine-empty-cta'));
+    expect(onRequestClose).toHaveBeenCalled();
+    expect(onRequestPublish).toHaveBeenCalled();
+  });
+
+  it('falls back to the public grid when the session signs out mid-visit', async () => {
+    indexMock.mockResolvedValue(ok({ items: [card('public000001')], capped: false }));
+    mineIndexMock.mockResolvedValue(ok({ items: [card('mylive000001')], capped: false }));
+    activateMine();
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.getByText('Bin mylive000001')).toBeInTheDocument();
+    });
+    useSessionStore.setState({ status: 'anonymous', user: null });
+    await waitFor(() => {
+      expect(screen.getByText('Bin public000001')).toBeInTheDocument();
+    });
+    expect(useBrowseStore.getState().filters.mineOnly).toBe(false);
+    expect(screen.queryByText('Bin mylive000001')).not.toBeInTheDocument();
+  });
+
+  it('applies the toolbar search within Mine', async () => {
+    indexMock.mockResolvedValue(ok({ items: [], capped: false }));
+    mineIndexMock.mockResolvedValue(
+      ok({ items: [card('myscrews0001'), card('mybolts00001')], capped: false })
+    );
+    activateMine();
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.getByText('Bin myscrews0001')).toBeInTheDocument();
+    });
+    fireEvent.change(screen.getByLabelText('community.gallery.searchLabel'), {
+      target: { value: 'myscrews' },
+    });
+    expect(screen.getByText('Bin myscrews0001')).toBeInTheDocument();
+    expect(screen.queryByText('Bin mybolts00001')).not.toBeInTheDocument();
+  });
+
+  it('switches to the designer and closes when a mine edit opens', async () => {
+    indexMock.mockResolvedValue(ok({ items: [], capped: false }));
+    mineIndexMock.mockResolvedValue(ok({ items: [card('mylive000001')], capped: false }));
+    const onRequestClose = vi.fn();
+    const onEditOwnDesign = vi.fn().mockResolvedValue('opened');
+    const dispatched = vi.fn();
+    window.addEventListener('switch-to-designer', dispatched);
+    activateMine();
+    render(
+      <CommunityGalleryTab onRequestClose={onRequestClose} onEditOwnDesign={onEditOwnDesign} />
+    );
+    await waitFor(() => {
+      expect(screen.getByText('Bin mylive000001')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByTestId('community-mine-edit'));
+    await waitFor(() => {
+      expect(onRequestClose).toHaveBeenCalled();
+    });
+    expect(onEditOwnDesign).toHaveBeenCalledWith({ id: 'mylive000001' });
+    expect(dispatched).toHaveBeenCalled();
+    window.removeEventListener('switch-to-designer', dispatched);
+  });
+
+  it('toasts and opens the detail as the recovery path when no local copy exists', async () => {
+    indexMock.mockResolvedValue(ok({ items: [], capped: false }));
+    mineIndexMock.mockResolvedValue(ok({ items: [card('mylive000001')], capped: false }));
+    const onEditOwnDesign = vi.fn().mockResolvedValue('missing');
+    activateMine();
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} onEditOwnDesign={onEditOwnDesign} />);
+    await waitFor(() => {
+      expect(screen.getByText('Bin mylive000001')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByTestId('community-mine-edit'));
+    await waitFor(() => {
+      expect(useToastStore.getState().toasts.map((toast) => toast.message)).toContain(
+        'community.mine.editMissing'
+      );
+    });
+    expect(useCommunityDetailStore.getState().request?.designId).toBe('mylive000001');
+  });
+
+  it('toasts the failure copy when the mine edit errors', async () => {
+    indexMock.mockResolvedValue(ok({ items: [], capped: false }));
+    mineIndexMock.mockResolvedValue(ok({ items: [card('mylive000001')], capped: false }));
+    const onEditOwnDesign = vi.fn().mockResolvedValue('error');
+    activateMine();
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} onEditOwnDesign={onEditOwnDesign} />);
+    await waitFor(() => {
+      expect(screen.getByText('Bin mylive000001')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByTestId('community-mine-edit'));
+    await waitFor(() => {
+      expect(useToastStore.getState().toasts.map((toast) => toast.message)).toContain(
+        'community.detail.editOriginalFailed'
+      );
+    });
+    expect(useCommunityDetailStore.getState().request).toBeNull();
+  });
+
+  it('shows the mine error state and retries against the mine index', async () => {
+    indexMock.mockResolvedValue(ok({ items: [], capped: false }));
+    mineIndexMock.mockResolvedValueOnce(err({ kind: 'server' }));
+    activateMine();
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.getByText('community.gallery.error.title')).toBeInTheDocument();
+    });
+    mineIndexMock.mockResolvedValueOnce(ok({ items: [card('mylive000001')], capped: false }));
+    fireEvent.click(screen.getByRole('button', { name: 'community.gallery.error.retry' }));
+    await waitFor(() => {
+      expect(screen.getByText('Bin mylive000001')).toBeInTheDocument();
     });
   });
 });

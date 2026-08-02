@@ -30,7 +30,7 @@ function baseArgs(positional: string[]): Args {
 }
 
 function createRedis() {
-  return { quit: vi.fn(async () => undefined) };
+  return { hdel: vi.fn(async () => 1), quit: vi.fn(async () => undefined) };
 }
 
 beforeEach(() => {
@@ -66,6 +66,11 @@ describe('restore command', () => {
 
     expect(await restore(baseArgs(['abc123DEF456']))).toBe(0);
     expect(mocks.setCommunityDesignStatus).toHaveBeenCalledWith(redis, 'abc123DEF456', 'live');
+    // A stale hiddenReason would mislabel the owner badge on a later hide.
+    expect(redis.hdel).toHaveBeenCalledWith(
+      expect.stringContaining('abc123DEF456'),
+      'hiddenReason'
+    );
     expect(redis.quit).toHaveBeenCalledTimes(1);
   });
 });

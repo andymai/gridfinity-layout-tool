@@ -36,6 +36,7 @@ import { useLidGroupSummary } from './useLidGroupSummary';
 import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
+import { useCommunityDigestStore } from '@/core/store/communityDigest';
 import { useSplitOptionsSection } from '../panel/SplitOptionsSection/useSplitOptionsSection';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { isPartialMask } from '@/shared/utils/cellMask';
@@ -66,6 +67,7 @@ function BinParameterPanel() {
   );
   const { needsSplit } = useSplitOptionsSection();
   const openExampleGallery = useBinExampleGalleryStore((s) => s.open);
+  const hasUnseenDigest = useCommunityDigestStore((s) => s.hasUnseenDeltas);
   const cloudSyncEnabled = useFeatureFlag('cloud_sync');
   const itemKindsEnabled = useFeatureFlag('item_kinds');
   const newDesign = useDesignerStore((s) => s.newDesign);
@@ -224,6 +226,18 @@ function BinParameterPanel() {
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium text-content">
                 {t('binExamples.sidebarEntry')}
+                {hasUnseenDigest && (
+                  <>
+                    <span
+                      aria-hidden="true"
+                      data-testid="community-digest-dot"
+                      className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-accent"
+                    />
+                    {/* The dot is aria-hidden; without this the news signal is
+                        visual-only (GalleryTabBar folds it into the tab label). */}
+                    <span className="sr-only">{` ${t('binExamples.gallery.tabs.newBadge')}`}</span>
+                  </>
+                )}
               </div>
               <div className="text-xs text-content-tertiary">{t('binExamples.sidebarHint')}</div>
             </div>

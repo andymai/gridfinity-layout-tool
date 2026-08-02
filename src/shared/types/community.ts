@@ -40,6 +40,15 @@ export type CommunityIndexSort = (typeof COMMUNITY_INDEX_SORTS)[number];
 export type CommunityDesignStatus = 'live' | 'hidden' | 'removed';
 
 /**
+ * Why a hidden design is hidden; owner-only, served on `mine=1` list items
+ * and owner detail fetches so the Mine view can badge a report auto-hide
+ * differently from a deny-list sweep or a manual moderation takedown.
+ * MIRROR: must match `CommunityHiddenReason` in `api/lib/communityStore.ts`.
+ * Registered in scripts/check-union-exhaustiveness.sh.
+ */
+export type CommunityHiddenReason = 'reports' | 'denylist' | 'moderation';
+
+/**
  * MIRROR: must match `COMMUNITY_REPORT_REASONS`/`CommunityReportReason` and
  * `COMMUNITY_REPORT_NOTE_MAX_LENGTH` in `api/lib/communityValidation.ts`
  * (api/ cannot import from src/, so the members are duplicated, not shared).
@@ -50,6 +59,20 @@ export const COMMUNITY_REPORT_REASONS = ['inappropriate', 'spam', 'broken', 'sto
 export type CommunityReportReason = (typeof COMMUNITY_REPORT_REASONS)[number];
 
 export const COMMUNITY_REPORT_NOTE_MAX_LENGTH = 500;
+
+/**
+ * One-time local celebrations derived from the owner's mine-list counts.
+ * The values double as the `kind` property of the `community_milestone`
+ * analytics event. Registered in scripts/check-union-exhaustiveness.sh.
+ */
+export const COMMUNITY_MILESTONE_KINDS = [
+  'first_publish',
+  'first_remix_of_yours',
+  'ten_published_remixes',
+  'hundred_prints',
+] as const;
+
+export type CommunityMilestoneKind = (typeof COMMUNITY_MILESTONE_KINDS)[number];
 
 export interface CommunityDesignMetrics {
   readonly width: number;
@@ -79,6 +102,10 @@ export interface CommunityDesignCounts {
   readonly likes: number;
   readonly remixes: number;
   readonly exports: number;
+  /** Owner-only stat (remix opens); present only on `mine=1` items and owner detail fetches. */
+  readonly opens?: number;
+  /** Owner-only stat (deduped detail views); present only on `mine=1` items and owner detail fetches. */
+  readonly views?: number;
 }
 
 /**
@@ -120,6 +147,12 @@ export interface CommunityCard {
   readonly createdAt: number;
   readonly updatedAt: number;
   readonly status: CommunityDesignStatus;
+  /**
+   * Owner-only: why a hidden design is hidden. Present only on `mine=1`
+   * items with status 'hidden'; absent on a hidden card reads as a report
+   * auto-hide (the only automated path that predates the field).
+   */
+  readonly hiddenReason?: CommunityHiddenReason;
 }
 
 /** Full published-design record, as returned by `GET /api/community/[id]`. */

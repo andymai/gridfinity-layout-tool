@@ -19,6 +19,8 @@ import { trackEvent } from '@/shared/analytics/posthog';
 import { hashBinParams } from '@/shared/utils/binParamsHash';
 import { savePendingPublishAction } from '@/shared/utils/communityPendingAction';
 import { fetchOwnDesign, publishDesign, unpublishDesign, updateDesign } from '../../api/client';
+import { useBrowseStore } from '../../store/browseStore';
+import { useMineStore } from '../../store/mineStore';
 import type {
   CommunityClientError,
   CommunityPublishInput,
@@ -26,6 +28,7 @@ import type {
 } from '../../api/client';
 import { usePublishDialogStore } from '../../store/publishStore';
 import type { PublishPrefill } from '../../store/publishStore';
+import { claimMilestone } from '../../utils/communityMilestones';
 import { IdentityStep } from './IdentityStep';
 import { PublishForm } from './PublishForm';
 import type { PublishFormFields } from './PublishForm';
@@ -39,6 +42,9 @@ function goTo(url: string): void {
 // The dialog is non-dismissable while publishing, so a hung connection must
 // resolve into the network-error state instead of trapping the user.
 const PUBLISH_TIMEOUT_MS = 60_000;
+
+/** Matches useCommunityDigestCheck: a milestone gets more read time than a routine toast. */
+const MILESTONE_TOAST_DURATION_MS = 8000;
 
 const VALIDATION_CODE_KEYS: Partial<Record<string, string>> = {
   INVALID_NAME: 'community.publish.error.invalidName',
@@ -238,6 +244,17 @@ export function PublishDialog() {
           is_remix: context.lineage !== null,
           is_update: isUpdate,
         });
+        if (!isUpdate) {
+          const publisherId = useSessionStore.getState().user?.userId ?? null;
+          if (publisherId !== null && claimMilestone(publisherId, 'first_publish')) {
+            trackEvent('community_milestone', { kind: 'first_publish' });
+            useToastStore.getState().addToast({
+              message: t('community.milestone.firstPublish'),
+              type: 'success',
+              duration: MILESTONE_TOAST_DURATION_MS,
+            });
+          }
+        }
         const onPublished = useCommunityPublishStore.getState().handlers?.onPublished;
         if (onPublished) {
           void onPublished(result.value.id).then((saved) => {
@@ -288,12 +305,18 @@ export function PublishDialog() {
 
   const handleUnpublishConfirm = () => {
     if (context.publishedId === null || unpublishBusy) return;
+    const publishedId = context.publishedId;
     setUnpublishBusy(true);
     setUnpublishError(undefined);
-    void unpublishDesign(context.publishedId).then((result) => {
+    void unpublishDesign(publishedId).then((result) => {
       setUnpublishBusy(false);
       if (isOk(result)) {
         trackEvent('community_unpublish');
+        // Both gallery caches still hold the card; drop it from each so the
+        // unpublished design does not linger as a dead entry until the next
+        // staleness refresh.
+        useMineStore.getState().removeItem(publishedId);
+        useBrowseStore.getState().removeItem(publishedId);
         useCommunityPublishStore.getState().handlers?.onUnpublished();
         useToastStore.getState().addToast({
           message: t('community.toast.unpublished'),

@@ -51,7 +51,9 @@ export async function openPublishForActiveDesign(): Promise<boolean> {
 }
 
 export async function editOriginalCommunityDesign(
-  design: CommunityDesign
+  // Only the published id is consulted, so Mine cards (which have no full
+  // record) can share this path with the detail view's owner action.
+  design: Pick<CommunityDesign, 'id'>
 ): Promise<CommunityEditOriginalOutcome> {
   try {
     const { findLocalDesignByPublishedId } =
@@ -74,5 +76,27 @@ export async function editOriginalCommunityDesign(
     return 'opened';
   } catch {
     return 'error';
+  }
+}
+
+/**
+ * Best-effort cleanup after an unpublish performed outside the publish
+ * dialog (the Mine card action): without it the local design keeps a
+ * dangling publishedId and would reopen the publish dialog in update mode
+ * against a deleted record.
+ */
+export async function clearLocalPublishedId(publishedId: string): Promise<void> {
+  try {
+    const [{ findLocalDesignByPublishedId }, { clearDesignPublishedId }] = await Promise.all([
+      import('@/features/bin-designer/utils/findLocalDesignByPublishedId'),
+      import('@/features/bin-designer/storage/DesignerStorage'),
+    ]);
+    const local = await findLocalDesignByPublishedId(publishedId);
+    if (local !== null) {
+      await clearDesignPublishedId(local.id);
+    }
+  } catch {
+    // The published record is already gone server-side; the reconcile pass
+    // (publishedIdReconcile) self-heals any pointer this failed to clear.
   }
 }

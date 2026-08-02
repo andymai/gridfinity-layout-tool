@@ -197,6 +197,19 @@ describe('filters', () => {
     expect(state.scrollTop).toBe(0);
   });
 
+  it('setMineOnly toggles the mine source switch and resets scroll and paging', () => {
+    const store = useBrowseStore.getState();
+    store.setScrollTop(300);
+    store.showMore();
+    store.setMineOnly(true);
+    const state = useBrowseStore.getState();
+    expect(state.filters.mineOnly).toBe(true);
+    expect(state.scrollTop).toBe(0);
+    expect(state.visibleCount).toBe(GALLERY_PAGE_SIZE);
+    store.setMineOnly(false);
+    expect(useBrowseStore.getState().filters.mineOnly).toBe(false);
+  });
+
   it('setAuthor(null) clears the author view', () => {
     const store = useBrowseStore.getState();
     store.setAuthor({ id: 'f'.repeat(32), name: 'Alice' });
@@ -213,6 +226,7 @@ describe('filters', () => {
     store.setAuthor({ id: 'f'.repeat(32), name: 'Alice' });
     store.setLikedOnly(true);
     store.setRecentOnly(true);
+    store.setMineOnly(true);
     store.clearFilters();
     expect(useBrowseStore.getState().filters).toEqual(INITIAL_BROWSE_FILTERS);
   });
@@ -434,5 +448,13 @@ describe('patchCardLike', () => {
     const before = useBrowseStore.getState().items;
     useBrowseStore.getState().patchCardLike('missing', { likedByMe: true, likes: 1 });
     expect(useBrowseStore.getState().items).toEqual(before);
+  });
+});
+
+describe('removeItem', () => {
+  it('drops only the unpublished card from the cached index', () => {
+    useBrowseStore.setState({ ...INITIAL_BROWSE_STATE, items: [card('a'), card('b')] });
+    useBrowseStore.getState().removeItem('a');
+    expect(useBrowseStore.getState().items.map((item) => item.id)).toEqual(['b']);
   });
 });

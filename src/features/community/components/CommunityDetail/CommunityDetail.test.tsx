@@ -104,6 +104,8 @@ function detail(overrides: Partial<CommunityDesignDetail> = {}): CommunityDesign
     isOwner: false,
     counts: null,
     likedByMe: false,
+    hiddenReason: null,
+    hiddenReasonCategory: null,
     ...overrides,
   };
 }
