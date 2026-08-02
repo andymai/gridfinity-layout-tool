@@ -185,6 +185,16 @@ class FakeRedis {
     return removed;
   }
 
+  // Minimal eval supporting the publish-lock compare-and-delete script only:
+  // delete KEYS[1] iff its stored value equals ARGV[1].
+  async eval(_script: string, _numKeys: number, key: string, token: string): Promise<number> {
+    if (this.strings.get(key) === token) {
+      this.strings.delete(key);
+      return 1;
+    }
+    return 0;
+  }
+
   async zrevrange(key: string, start: number, stop: number): Promise<string[]> {
     const entries = [...(this.zsets.get(key) ?? new Map<string, number>()).entries()].sort(
       (a, b) => b[1] - a[1] || (a[0] < b[0] ? 1 : -1)
@@ -809,6 +819,19 @@ describe('POST /api/community — hardening guards', () => {
     expect(res._status).toBe(201);
     // A second publish of new content is not blocked by a leaked lock.
     expect(await fake.get(communityPublishLockKey('user-1'))).toBeNull();
+  });
+
+  it('lock release is compare-and-delete: a stale release cannot free a re-acquired lock (A9 fencing)', async () => {
+    const key = communityPublishLockKey('user-1');
+    // Our publish overran its TTL; a second request now holds the lock under a
+    // fresh token. Our release must not delete that newer lock.
+    await fake.set(key, 'newer-token');
+    const cad =
+      "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
+    expect(await fake.eval(cad, 1, key, 'our-stale-token')).toBe(0);
+    expect(await fake.get(key)).toBe('newer-token');
+    expect(await fake.eval(cad, 1, key, 'newer-token')).toBe(1);
+    expect(await fake.get(key)).toBeNull();
   });
 
   it("rejects a duplicate of another author's live design (B3)", async () => {

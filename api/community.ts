@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { del, put } from '@vercel/blob';
 import { requireMethod } from './lib/method.js';
@@ -284,8 +285,12 @@ async function handlePublish(req: VercelRequest, res: VercelResponse): Promise<v
 
     // A9: serialize one user's overlapping publishes so the check->write
     // sequence cannot interleave into a duplicate mint or a quota overshoot.
+    // The value is a unique token: if this publish outlives PUBLISH_LOCK_TTL_MS
+    // and a second acquires the lock, our release must not delete the second
+    // request's lock (fencing), so release is a compare-and-delete on the token.
     const lockKey = communityPublishLockKey(session.userId);
-    const lockAcquired = await redis.set(lockKey, '1', 'PX', PUBLISH_LOCK_TTL_MS, 'NX');
+    const lockToken = randomUUID();
+    const lockAcquired = await redis.set(lockKey, lockToken, 'PX', PUBLISH_LOCK_TTL_MS, 'NX');
     if (lockAcquired !== 'OK') {
       res.status(409).json({
         error: 'Another publish is already in progress. Try again in a moment.',
@@ -478,9 +483,18 @@ async function handlePublish(req: VercelRequest, res: VercelResponse): Promise<v
 
       res.status(201).json({ id, url: communityDesignUrl(id) });
     } finally {
-      await redis.del(lockKey).catch(() => {
-        // The lock self-heals via its PX TTL; a failed release is not fatal.
-      });
+      // Compare-and-delete: only release the lock if we still hold it, so a
+      // publish that overran the TTL cannot delete a newer publish's lock.
+      await redis
+        .eval(
+          "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end",
+          1,
+          lockKey,
+          lockToken
+        )
+        .catch(() => {
+          // The lock self-heals via its PX TTL; a failed release is not fatal.
+        });
     }
   } catch (error) {
     logger.error('Community publish error', {
