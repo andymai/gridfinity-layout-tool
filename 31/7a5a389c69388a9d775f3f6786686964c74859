@@ -1,0 +1,23 @@
+src/features/community/api/client.ts
+  s_48a510eaef7c22::t_3a9a9cc74e2b8f 12-13,97,99-100,126-135,145,147
+src/features/community/components/CommunityGalleryTab/galleryFilterOptions.ts
+  s_48a510eaef7c22::t_762910f3ae19af 7
+src/shell/Modals/DesignGalleryModal/useGalleryTab.ts
+  s_48a510eaef7c22::t_e41e4f5b5c9ed2 52-56
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "317a5a389c69388a9d775f3f6786686964c74859",
+  "prompts": {},
+  "sessions": {
+    "s_48a510eaef7c22": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fda9511-153c-4dd5-bba7-05895a1e12c3",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
