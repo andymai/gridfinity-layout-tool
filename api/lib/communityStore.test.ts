@@ -309,6 +309,16 @@ describe('index helpers', () => {
     expect(pipeline.exec).toHaveBeenCalledTimes(1);
   });
 
+  it('throws when the card-read pipeline loses the connection (exec returns null)', async () => {
+    const pipeline = createPipeline();
+    pipeline.exec.mockResolvedValue(null as unknown as Array<[Error | null, unknown]>);
+    const { redis } = createRedis(pipeline);
+
+    await expect(readCommunityCards(redis, ['abc123def456'])).rejects.toThrow(
+      'redis connection lost'
+    );
+  });
+
   it('throws when the index pipeline loses the connection (exec returns null)', async () => {
     const pipeline = createPipeline();
     pipeline.exec.mockResolvedValue(null as unknown as Array<[Error | null, unknown]>);

@@ -245,7 +245,12 @@ export async function readCommunityCards(
   for (const id of designIds) {
     pipeline.hgetall(communityDesignKey(id));
   }
-  const results = (await pipeline.exec()) ?? [];
+  const results = await pipeline.exec();
+  // A null exec would otherwise read as an empty page while ids exist, which
+  // stalls list pagination (offset only advances per returned card).
+  if (results === null) {
+    throw new Error('Community card read failed: redis connection lost');
+  }
   return results.map(([error, value]) => {
     if (error || typeof value !== 'object' || value === null) return null;
     return parseCard(value as Record<string, string | undefined>);
