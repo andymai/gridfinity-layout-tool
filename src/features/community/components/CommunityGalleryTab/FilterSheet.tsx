@@ -3,6 +3,7 @@ import { Button, Dialog, Select } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { useBrowseStore } from '../../store/browseStore';
 import { CommunityTechniquePills } from './CommunityTechniquePills';
+import { DimensionFilters } from './DimensionFilters';
 import { CATEGORY_ALL, categoryOptions, isCommunityCategory } from './galleryFilterOptions';
 
 interface FilterSheetProps {
@@ -17,6 +18,11 @@ export function FilterSheet({ open, onClose }: FilterSheetProps) {
   );
   const setCategory = useBrowseStore((s) => s.setCategory);
   const setTechnique = useBrowseStore((s) => s.setTechnique);
+  const setWidthMin = useBrowseStore((s) => s.setWidthMin);
+  const setWidthMax = useBrowseStore((s) => s.setWidthMax);
+  const setDepthMin = useBrowseStore((s) => s.setDepthMin);
+  const setDepthMax = useBrowseStore((s) => s.setDepthMax);
+  const setMaxHeight = useBrowseStore((s) => s.setMaxHeight);
 
   if (!open) return null;
 
@@ -52,6 +58,7 @@ export function FilterSheet({ open, onClose }: FilterSheetProps) {
             </div>
             <CommunityTechniquePills selected={technique} onChange={setTechnique} touchSize />
           </div>
+          <DimensionFilters variant="sheet" />
         </div>
       </Dialog.Body>
       <Dialog.Footer justify="between">
@@ -61,6 +68,11 @@ export function FilterSheet({ open, onClose }: FilterSheetProps) {
           onClick={() => {
             setCategory(null);
             setTechnique(null);
+            setWidthMin(null);
+            setWidthMax(null);
+            setDepthMin(null);
+            setDepthMax(null);
+            setMaxHeight(null);
           }}
         >
           {t('community.gallery.clearAll')}

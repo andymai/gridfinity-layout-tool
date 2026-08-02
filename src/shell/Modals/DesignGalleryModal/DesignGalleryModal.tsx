@@ -1,15 +1,18 @@
-import { Suspense } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import { Dialog } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { useCommunityDetailStore } from '@/core/store/communityDetail';
 import { useCommunityDigestStore } from '@/core/store/communityDigest';
+import { useGapFitStore } from '@/core/store/gapFit';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
+import type { CommunityGallerySurface } from '@/shared/types/communityGalleryTab';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import {
   clearLocalPublishedId,
   editOriginalCommunityDesign,
   openPublishForActiveDesign,
+  placeCommunityDesignInLayout,
   remixCommunityDesign,
 } from './communityDesignerBridge';
 import { GalleryTabBar } from './GalleryTabBar';
@@ -46,11 +49,30 @@ export function DesignGalleryModal({ onClose }: DesignGalleryModalProps) {
   // bar's single indicator; either signal lights it.
   const hasUnseenDigest = useCommunityDigestStore((s) => s.hasUnseenDeltas);
 
+  // Captured once at mount: the fits-gap entry sets the constraint before
+  // opening this modal, and later clears (banner X, placement) must not flip
+  // the surface of an already-open gallery.
+  const [openedForFitsGap] = useState(() => useGapFitStore.getState().constraint !== null);
+  const communitySurface: CommunityGallerySurface = openedForFitsGap ? 'fits_gap' : 'tab';
+
+  // A fits-gap open lands on the Community tab regardless of the stored
+  // last-used tab; the user can still switch away afterwards.
+  useEffect(() => {
+    if (openedForFitsGap && communityEnabled) setActiveTab('community');
+  }, [openedForFitsGap, communityEnabled, setActiveTab]);
+
+  // Closing the gallery ends the fits-gap context: without this, the next
+  // manual gallery open would silently re-enter it.
+  const handleClose = useCallback(() => {
+    useGapFitStore.getState().clear();
+    onClose();
+  }, [onClose]);
+
   return (
     <>
       <Dialog.Root
         open
-        onClose={onClose}
+        onClose={handleClose}
         size="5xl"
         height="fixed"
         fullScreen="mobile"
@@ -84,13 +106,14 @@ export function DesignGalleryModal({ onClose }: DesignGalleryModalProps) {
             <Suspense fallback={<LoadingFallback variant="panel" label={t('loading.gallery')} />}>
               {effectiveTab === 'community' ? (
                 <CommunityTabContent
-                  onRequestClose={onClose}
+                  onRequestClose={handleClose}
                   onRequestPublish={openPublishForActiveDesign}
                   onEditOwnDesign={editOriginalCommunityDesign}
                   onOwnDesignUnpublished={clearLocalPublishedId}
+                  surface={communitySurface}
                 />
               ) : (
-                <ExamplesTabContent onRequestClose={onClose} />
+                <ExamplesTabContent onRequestClose={handleClose} />
               )}
             </Suspense>
           </div>
@@ -100,9 +123,11 @@ export function DesignGalleryModal({ onClose }: DesignGalleryModalProps) {
       {communityEnabled && detailOpen && (
         <Suspense fallback={null}>
           <CommunityDetail
-            onRequestCloseGallery={onClose}
+            onRequestCloseGallery={handleClose}
             onRemixDesign={remixCommunityDesign}
             onEditOriginal={editOriginalCommunityDesign}
+            onPlaceInLayout={placeCommunityDesignInLayout}
+            surface={communitySurface}
           />
         </Suspense>
       )}

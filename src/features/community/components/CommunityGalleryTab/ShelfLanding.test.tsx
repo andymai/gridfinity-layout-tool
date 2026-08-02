@@ -1,0 +1,142 @@
+// @vitest-environment jsdom
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import type { CommunityCard } from '@/shared/types/community';
+import { INITIAL_BROWSE_STATE, useBrowseStore } from '../../store/browseStore';
+import { ShelfLanding } from './ShelfLanding';
+import { SHELF_LANDING_MIN_DESIGNS } from './shelfData';
+
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
+
+vi.mock('@/shared/hooks/useResponsive', () => ({
+  useResponsive: () => ({ isMobile: false }),
+}));
+
+function card(id: string, overrides: Partial<CommunityCard> = {}): CommunityCard {
+  return {
+    id,
+    name: `Bin ${id}`,
+    authorName: 'Andy',
+    authorPublicId: 'a'.repeat(32),
+    category: 'hardware',
+    techniques: ['compartments'],
+    metrics: { width: 83.5, depth: 125.5, height: 42, gridUnitMm: 42 },
+    thumbnailUrl: '',
+    isRemix: false,
+    featured: false,
+    counts: { likes: 0, remixes: 0, exports: 0 },
+    createdAt: 1000,
+    updatedAt: 1000,
+    status: 'live',
+    ...overrides,
+  };
+}
+
+function manyCards(
+  count: number,
+  overrides: (index: number) => Partial<CommunityCard> = () => ({})
+): CommunityCard[] {
+  return Array.from({ length: count }, (_, i) =>
+    card(`design${String(i).padStart(3, '0')}`, { createdAt: 1000 + i, ...overrides(i) })
+  );
+}
+
+beforeEach(() => {
+  useBrowseStore.setState({ ...INITIAL_BROWSE_STATE });
+});
+
+describe('ShelfLanding', () => {
+  it('renders nothing below the landing threshold', () => {
+    render(
+      <ShelfLanding
+        items={manyCards(SHELF_LANDING_MIN_DESIGNS - 1)}
+        onSelect={vi.fn()}
+        onSelectAuthor={vi.fn()}
+      />
+    );
+    expect(screen.queryByTestId('community-shelves')).not.toBeInTheDocument();
+  });
+
+  it('renders shelf sections with accessible headings and cards', () => {
+    render(
+      <ShelfLanding
+        items={manyCards(20, (i) => ({ featured: i === 3 }))}
+        onSelect={vi.fn()}
+        onSelectAuthor={vi.fn()}
+      />
+    );
+    expect(screen.getByText('community.shelves.staffPicks')).toBeInTheDocument();
+    expect(screen.getByText('community.shelves.newThisWeek')).toBeInTheDocument();
+    expect(screen.getByRole('list', { name: 'community.shelves.staffPicks' })).toBeInTheDocument();
+    expect(screen.getByText('Bin design003')).toBeInTheDocument();
+  });
+
+  it('disables snap scrolling under reduced motion via the motion-reduce classes', () => {
+    render(<ShelfLanding items={manyCards(12)} onSelect={vi.fn()} onSelectAuthor={vi.fn()} />);
+    const rail = screen.getByRole('list', { name: 'community.shelves.newThisWeek' });
+    expect(rail.className).toContain('snap-x');
+    expect(rail.className).toContain('motion-reduce:snap-none');
+    expect(rail.className).toContain('motion-reduce:scroll-auto');
+    expect(rail.className).toContain('overflow-x-auto');
+  });
+
+  it('see all on staff picks applies the featured-only filter', () => {
+    render(
+      <ShelfLanding
+        items={manyCards(12, (i) => ({ featured: i === 0 }))}
+        onSelect={vi.fn()}
+        onSelectAuthor={vi.fn()}
+      />
+    );
+    fireEvent.click(screen.getByTestId('community-shelf-see-all-staff-picks'));
+    const { filters } = useBrowseStore.getState();
+    expect(filters.featuredOnly).toBe(true);
+    expect(filters.sort).toBe('newest');
+  });
+
+  it('new this week has no see-all button (the grid below is already newest-first)', () => {
+    render(<ShelfLanding items={manyCards(12)} onSelect={vi.fn()} onSelectAuthor={vi.fn()} />);
+    expect(screen.getByText('community.shelves.newThisWeek')).toBeInTheDocument();
+    expect(screen.queryByTestId('community-shelf-see-all-new-this-week')).not.toBeInTheDocument();
+  });
+
+  it('see-all buttons use the per-shelf label key', () => {
+    render(
+      <ShelfLanding
+        items={manyCards(12, (i) => ({
+          featured: i === 0,
+          counts: { likes: 0, remixes: i === 1 ? 2 : 0, exports: 0 },
+        }))}
+        onSelect={vi.fn()}
+        onSelectAuthor={vi.fn()}
+      />
+    );
+    // The echo mock returns the key itself; the real label interpolates the
+    // shelf title ('See all: {shelf}'), giving each button a distinct name.
+    expect(screen.getByTestId('community-shelf-see-all-staff-picks').textContent).toBe(
+      'community.shelves.seeAll'
+    );
+    expect(screen.getByTestId('community-shelf-see-all-most-remixed').textContent).toBe(
+      'community.shelves.seeAll'
+    );
+  });
+
+  it('see all on most remixed applies the remixes sort', () => {
+    render(
+      <ShelfLanding
+        items={manyCards(12, () => ({ counts: { likes: 0, remixes: 2, exports: 0 } }))}
+        onSelect={vi.fn()}
+        onSelectAuthor={vi.fn()}
+      />
+    );
+    fireEvent.click(screen.getByTestId('community-shelf-see-all-most-remixed'));
+    expect(useBrowseStore.getState().filters.sort).toBe('remixes');
+  });
+
+  it('shelf cards select through the shared handler', () => {
+    const onSelect = vi.fn();
+    render(<ShelfLanding items={manyCards(12)} onSelect={onSelect} onSelectAuthor={vi.fn()} />);
+    fireEvent.click(screen.getAllByRole('button', { name: /Bin design011/ })[0]);
+    expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ id: 'design011' }));
+  });
+});

@@ -11,6 +11,7 @@ import type {
   Rect,
   ResizeHandle,
   Interaction,
+  FitsGapSource,
 } from '@/core/types';
 import type { Result } from '@/core/result';
 import type { ValidationError, LayoutError } from '@/core/result';
@@ -105,9 +106,10 @@ export interface ModeHandlers<TStart extends unknown[] = []> {
 }
 
 /**
- * Draw mode start parameters.
+ * Draw mode start parameters. `fitsGap` marks a gap selection for the
+ * community "find bins that fit" flow instead of a bin-creating draw.
  */
-export type DrawStartArgs = [coord: Coord, pointerId?: number];
+export type DrawStartArgs = [coord: Coord, pointerId?: number, fitsGap?: FitsGapSource];
 
 /**
  * Drag mode start parameters.

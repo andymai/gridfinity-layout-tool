@@ -104,6 +104,41 @@ describe('interaction store', () => {
     });
   });
 
+  describe('gap-select mode', () => {
+    it('setGapSelectArmed toggles the armed flag', () => {
+      getState().setGapSelectArmed(true);
+      expect(getState().gapSelectArmed).toBe(true);
+      getState().setGapSelectArmed(false);
+      expect(getState().gapSelectArmed).toBe(false);
+    });
+
+    it('arming exits paint mode', () => {
+      getState().setPaintSize({ width: 2, depth: 2 });
+      getState().setGapSelectArmed(true);
+      expect(getState().paintSize).toBeNull();
+      expect(getState().gapSelectArmed).toBe(true);
+    });
+
+    it('entering paint mode disarms gap selection', () => {
+      getState().setGapSelectArmed(true);
+      getState().setPaintSize({ width: 2, depth: 2 });
+      expect(getState().gapSelectArmed).toBe(false);
+      expect(getState().paintSize).toEqual({ width: 2, depth: 2 });
+    });
+
+    it('toggling paint on disarms gap selection, toggling off keeps it off', () => {
+      getState().setGapSelectArmed(true);
+      getState().togglePaintSize({ width: 2, depth: 2 });
+      expect(getState().gapSelectArmed).toBe(false);
+      expect(getState().paintSize).toEqual({ width: 2, depth: 2 });
+    });
+
+    it('clearing paint mode does not arm gap selection', () => {
+      getState().setPaintSize(null);
+      expect(getState().gapSelectArmed).toBe(false);
+    });
+  });
+
   describe('keyboard modes', () => {
     it('setKeyboardDragMode enables drag mode', () => {
       getState().setKeyboardDragMode(true);

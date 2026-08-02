@@ -32,13 +32,34 @@ vi.mock('@/features/bin-designer/hooks/useCommunityPublish', () => ({
   openCommunityPublish: (...a: unknown[]) => openCommunityPublish(...a),
 }));
 
+const upsertRegistryEntry = vi.fn();
+const registryEdgeFields = vi.fn((_params: unknown) => ({}));
+vi.mock('@/features/bin-designer/store/customBinRegistry', () => ({
+  upsertRegistryEntry: (...a: unknown[]) => upsertRegistryEntry(...a),
+  registryEdgeFields: (params: unknown) => registryEdgeFields(params),
+}));
+
 import {
   editOriginalCommunityDesign,
   openPublishForActiveDesign,
+  placeCommunityDesignInLayout,
   remixCommunityDesign,
 } from './communityDesignerBridge';
+import { createDefaultLayout } from '@/core/constants';
+import { useLayoutStore } from '@/core/store/layout';
+import { useSelectionStore, INITIAL_SELECTION_STATE } from '@/core/store/selection';
+import { useGapFitStore } from '@/core/store/gapFit';
+import { binId, gridUnits, heightUnits } from '@/core/types';
+import type { Bin } from '@/core/types';
+import type { GapFitConstraint } from '@/core/store/gapFit';
 
-const params = { width: 2, depth: 3, height: 6 } as unknown as BinParams;
+const params = {
+  width: 2,
+  depth: 3,
+  height: 6,
+  gridUnitMm: 42,
+  heightUnitMm: 7,
+} as unknown as BinParams;
 
 const design: CommunityDesign = {
   id: 'Abc123456789',
@@ -109,6 +130,156 @@ describe('communityDesignerBridge', () => {
     it('returns error when any step throws', async () => {
       findLocalDesignByPublishedId.mockRejectedValue(new Error('boom'));
       await expect(editOriginalCommunityDesign(design)).resolves.toBe('error');
+    });
+  });
+
+  describe('placeCommunityDesignInLayout', () => {
+    const constraintFor = (layout = useLayoutStore.getState().layout): GapFitConstraint => ({
+      maxWidth: gridUnits(3),
+      maxDepth: gridUnits(3),
+      maxHeight: heightUnits(12),
+      gridUnitMm: layout.gridUnitMm,
+      gridUnitMmY: layout.gridUnitMmY ?? layout.gridUnitMm,
+      heightUnitMm: layout.heightUnitMm,
+      targetPosition: { x: gridUnits(0), y: gridUnits(0), layerId: layout.layers[0].id },
+    });
+
+    const blockerAt = (x: number, y: number, width: number, depth: number): Bin => {
+      const layout = useLayoutStore.getState().layout;
+      return {
+        id: binId('blocker'),
+        layerId: layout.layers[0].id,
+        x: gridUnits(x),
+        y: gridUnits(y),
+        width: gridUnits(width),
+        depth: gridUnits(depth),
+        height: heightUnits(3),
+        category: layout.categories[0].id,
+        label: '',
+        notes: '',
+      };
+    };
+
+    beforeEach(() => {
+      upsertRegistryEntry.mockReset();
+      registryEdgeFields.mockReset();
+      registryEdgeFields.mockReturnValue({});
+      const layout = createDefaultLayout();
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({
+        ...INITIAL_SELECTION_STATE,
+        activeLayerId: layout.layers[0].id,
+        activeCategoryId: layout.categories[0].id,
+      });
+      useGapFitStore.setState({ constraint: null });
+      communityToDesign.mockResolvedValue(
+        ok({ id: 'design_new', name: 'Screw Bin', updatedAt: '2026-08-02T00:00:00.000Z' })
+      );
+    });
+
+    it('places the design at the gap, links it, selects it, and clears the handoff', async () => {
+      useGapFitStore.getState().setConstraint(constraintFor());
+
+      await expect(placeCommunityDesignInLayout(design)).resolves.toBe('placed');
+
+      expect(communityToDesign).toHaveBeenCalledWith(design);
+      expect(upsertRegistryEntry).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'design_new', width: 2, depth: 3, height: 6 })
+      );
+      const bins = useLayoutStore.getState().layout.bins;
+      expect(bins).toHaveLength(1);
+      expect(bins[0]).toMatchObject({
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 3,
+        height: 6,
+        linkedDesignId: 'design_new',
+      });
+      expect(useSelectionStore.getState().selectedBinIds).toEqual([bins[0].id]);
+      expect(useGapFitStore.getState().constraint).toBeNull();
+    });
+
+    it('falls back to the swapped orientation when only the rotation fits', async () => {
+      // Blocks the as-published 2w x 3d footprint at (0,0) but not 3w x 2d:
+      // the blocker sits at y >= 2, which only the deeper orientation reaches.
+      const layout = useLayoutStore.getState().layout;
+      useLayoutStore.setState({ layout: { ...layout, bins: [blockerAt(0, 2, 2, 1)] } });
+      useGapFitStore.getState().setConstraint(constraintFor());
+
+      await expect(placeCommunityDesignInLayout(design)).resolves.toBe('placed');
+
+      const placedBin = useLayoutStore.getState().layout.bins.find((b) => b.id !== 'blocker');
+      expect(placedBin).toMatchObject({ x: 0, y: 0, width: 3, depth: 2 });
+    });
+
+    it('returns no-fit without saving anything when neither orientation fits', async () => {
+      const layout = useLayoutStore.getState().layout;
+      useLayoutStore.setState({ layout: { ...layout, bins: [blockerAt(0, 0, 1, 1)] } });
+      useGapFitStore.getState().setConstraint(constraintFor());
+
+      await expect(placeCommunityDesignInLayout(design)).resolves.toBe('no-fit');
+
+      expect(communityToDesign).not.toHaveBeenCalled();
+      expect(upsertRegistryEntry).not.toHaveBeenCalled();
+      expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
+      // The handoff survives a no-fit so the user can pick another design.
+      expect(useGapFitStore.getState().constraint).not.toBeNull();
+    });
+
+    it('returns error when opened outside a fits-gap context', async () => {
+      await expect(placeCommunityDesignInLayout(design)).resolves.toBe('error');
+      expect(communityToDesign).not.toHaveBeenCalled();
+    });
+
+    it('returns error and places nothing when the local save fails', async () => {
+      communityToDesign.mockResolvedValue(err({ code: 'STORAGE_WRITE_FAILED', message: 'nope' }));
+      useGapFitStore.getState().setConstraint(constraintFor());
+
+      await expect(placeCommunityDesignInLayout(design)).resolves.toBe('error');
+
+      expect(upsertRegistryEntry).not.toHaveBeenCalled();
+      expect(useLayoutStore.getState().layout.bins).toHaveLength(0);
+    });
+
+    it('returns error-copy-saved when a step after the local save throws', async () => {
+      upsertRegistryEntry.mockImplementation(() => {
+        throw new Error('registry boom');
+      });
+      useGapFitStore.getState().setConstraint(constraintFor());
+
+      await expect(placeCommunityDesignInLayout(design)).resolves.toBe('error-copy-saved');
+
+      expect(communityToDesign).toHaveBeenCalledTimes(1);
+      expect(useLayoutStore.getState().layout.bins).toHaveLength(0);
+      // The handoff survives so the user can place the saved copy manually.
+      expect(useGapFitStore.getState().constraint).not.toBeNull();
+    });
+
+    it('returns no-fit without saving when the design uses a different height unit scale', async () => {
+      const scaled: CommunityDesign = {
+        ...design,
+        params: { ...params, heightUnitMm: 10 },
+      };
+      useGapFitStore.getState().setConstraint(constraintFor());
+
+      await expect(placeCommunityDesignInLayout(scaled)).resolves.toBe('no-fit');
+
+      expect(communityToDesign).not.toHaveBeenCalled();
+      expect(useLayoutStore.getState().layout.bins).toHaveLength(0);
+    });
+
+    it('returns no-fit without saving when the design uses a different grid unit scale', async () => {
+      const scaled: CommunityDesign = {
+        ...design,
+        params: { ...params, gridUnitMm: 22 },
+      };
+      useGapFitStore.getState().setConstraint(constraintFor());
+
+      await expect(placeCommunityDesignInLayout(scaled)).resolves.toBe('no-fit');
+
+      expect(communityToDesign).not.toHaveBeenCalled();
+      expect(useLayoutStore.getState().layout.bins).toHaveLength(0);
     });
   });
 

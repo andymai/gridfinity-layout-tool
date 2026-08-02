@@ -2,7 +2,7 @@ import type * as DesignSystem from '@/design-system';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { GridToolbar } from './GridToolbar';
-import { useViewStore, useInteractionStore } from '@/core/store';
+import { useViewStore, useInteractionStore, useLabsStore } from '@/core/store';
 import { resetAllStores } from '@/test/testUtils';
 import { heightUnits, layerId } from '@/core/types';
 import type { Layer } from '@/core/types';
@@ -432,6 +432,37 @@ describe('GridToolbar', () => {
 
       const status = screen.getByRole('status');
       expect(status).toHaveAttribute('aria-live', 'polite');
+    });
+  });
+
+  describe('find bins that fit (community_showcase flag)', () => {
+    const enableCommunityFlag = () => {
+      useLabsStore.setState((s) => ({
+        preferences: {
+          ...s.preferences,
+          enabledFeatures: { ...s.preferences.enabledFeatures, community_showcase: true },
+        },
+      }));
+    };
+
+    it('is hidden while the flag is off', () => {
+      render(<GridToolbar {...defaultProps} />);
+      expect(screen.queryByTestId('toolbar-find-bins-that-fit')).not.toBeInTheDocument();
+    });
+
+    it('toggles the armed gap-select mode', () => {
+      enableCommunityFlag();
+      render(<GridToolbar {...defaultProps} />);
+
+      const button = screen.getByTestId('toolbar-find-bins-that-fit');
+      expect(button).toHaveAttribute('aria-pressed', 'false');
+
+      fireEvent.click(button);
+      expect(useInteractionStore.getState().gapSelectArmed).toBe(true);
+      expect(button).toHaveAttribute('aria-pressed', 'true');
+
+      fireEvent.click(button);
+      expect(useInteractionStore.getState().gapSelectArmed).toBe(false);
     });
   });
 });

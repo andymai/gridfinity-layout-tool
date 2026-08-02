@@ -7,8 +7,13 @@
  */
 
 import { isOk } from '@/core/result';
+import type { GridUnits, HeightUnits } from '@/core/types';
+import { effectiveGridUnitMmY } from '@/core/types';
 import type { CommunityDesign } from '@/shared/types/community';
-import type { CommunityEditOriginalOutcome } from '@/shared/types/communityDetail';
+import type {
+  CommunityEditOriginalOutcome,
+  CommunityPlaceOutcome,
+} from '@/shared/types/communityDetail';
 
 export async function remixCommunityDesign(
   design: CommunityDesign,
@@ -74,6 +79,116 @@ export async function editOriginalCommunityDesign(
     // publishedId; no mode is passed anywhere in the dialog-open path.
     await openCommunityPublish(null);
     return 'opened';
+  } catch {
+    return 'error';
+  }
+}
+
+/**
+ * Fits-gap placement: saves a local copy of the design (lineage + open
+ * counter, same as a remix), registers it as a custom bin, and places a
+ * linked bin at the gap recorded in the core gapFit store. Tries the
+ * as-published orientation first, then width/depth swapped (mirrors
+ * rotateAll's explicit two-probe pattern; canPlaceBin never rotates).
+ */
+export async function placeCommunityDesignInLayout(
+  design: CommunityDesign
+): Promise<CommunityPlaceOutcome> {
+  try {
+    const [{ useGapFitStore }, { useLayoutStore, useSelectionStore }, { canPlaceBin }] =
+      await Promise.all([
+        import('@/core/store/gapFit'),
+        import('@/core/store'),
+        import('@/shared/utils/validation'),
+      ]);
+    const constraint = useGapFitStore.getState().constraint;
+    if (constraint === null) return 'error';
+
+    const layout = useLayoutStore.getState().layout;
+    const { x, y, layerId } = constraint.targetPosition;
+    if (!layout.layers.some((layer) => layer.id === layerId)) return 'error';
+
+    const { width, depth, height } = design.params;
+    // The placed bin carries raw unit counts into the layout's unit system,
+    // so a design authored on different mm-per-unit scales would come out a
+    // different physical size than published. Treat that as unplaceable.
+    const designGridUnitMmY = design.params.gridUnitMmY ?? design.params.gridUnitMm;
+    if (
+      design.params.gridUnitMm !== layout.gridUnitMm ||
+      designGridUnitMmY !== effectiveGridUnitMmY(layout) ||
+      design.params.heightUnitMm !== layout.heightUnitMm
+    ) {
+      return 'no-fit';
+    }
+    const orientations =
+      width === depth
+        ? [{ width, depth }]
+        : [
+            { width, depth },
+            { width: depth, depth: width },
+          ];
+    const fitting = orientations.find(
+      (orientation) =>
+        canPlaceBin(
+          {
+            x,
+            y,
+            width: orientation.width as GridUnits,
+            depth: orientation.depth as GridUnits,
+            height: height as HeightUnits,
+          },
+          layerId,
+          layout
+        ).valid
+    );
+    if (fitting === undefined) return 'no-fit';
+
+    const { communityToDesign } = await import('@/features/bin-designer/utils/communityToDesign');
+    const saved = await communityToDesign(design);
+    if (!isOk(saved)) return 'error';
+
+    // From here on the remix copy exists in the library (and the open
+    // counter fired), so any failure must say so rather than pretend
+    // nothing happened.
+    try {
+      const { upsertRegistryEntry, registryEdgeFields } =
+        await import('@/features/bin-designer/store/customBinRegistry');
+      // saveDesign never registers a design (only the mounted Designer page's
+      // auto-save hooks do), so register explicitly or the placed bin would
+      // link to an id the planner palette cannot resolve.
+      upsertRegistryEntry({
+        id: saved.value.id,
+        name: saved.value.name,
+        width,
+        depth,
+        height,
+        ...registryEdgeFields(design.params),
+        updatedAt: saved.value.updatedAt,
+      });
+
+      const { commandBus, createCqrsMutations } = await import('@/core/cqrs');
+      const result = createCqrsMutations(commandBus).addBin({
+        layerId,
+        x,
+        y,
+        width: fitting.width as GridUnits,
+        depth: fitting.depth as GridUnits,
+        height: height as HeightUnits,
+        category: useSelectionStore.getState().activeCategoryId,
+        label: '',
+        notes: '',
+        linkedDesignId: saved.value.id,
+      });
+      if (!isOk(result)) return 'error-copy-saved';
+
+      const selection = useSelectionStore.getState();
+      selection.setActiveLayer(layerId);
+      selection.setSelectedBin(result.value);
+      useGapFitStore.getState().clear();
+      return 'placed';
+    } catch {
+      return 'error-copy-saved';
+    }
   } catch {
     return 'error';
   }

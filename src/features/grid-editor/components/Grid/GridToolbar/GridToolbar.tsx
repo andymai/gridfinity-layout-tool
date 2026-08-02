@@ -12,6 +12,7 @@ import {
   XIcon,
 } from '@/design-system';
 import { trackEvent } from '@/shared/analytics/posthog';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useTranslation } from '@/i18n';
 import type { Layer } from '@/core/types';
 import type { GridZoomState } from '@/features/grid-editor/hooks/useGridZoom';
@@ -65,6 +66,13 @@ export const GridToolbar = memo(function GridToolbar({
         setKeyboardResizeMode: state.setKeyboardResizeMode,
       }))
     );
+  const { gapSelectArmed, setGapSelectArmed } = useInteractionStore(
+    useShallow((state) => ({
+      gapSelectArmed: state.gapSelectArmed,
+      setGapSelectArmed: state.setGapSelectArmed,
+    }))
+  );
+  const fitsGapEnabled = useFeatureFlag('community_showcase');
   const { showIsometricPreview, toggleIsometricPreview } = useViewStore(
     useShallow((state) => ({
       showIsometricPreview: state.showIsometricPreview,
@@ -116,6 +124,25 @@ export const GridToolbar = memo(function GridToolbar({
             <span className="text-sm font-medium">{activeLayer.name}</span>
             <span className="text-xs text-content-tertiary">{activeLayer.height}u</span>
             {leftPanelCollapsed && <ChevronDownIcon className="w-3 h-3 text-content-tertiary" />}
+          </Button>
+        )}
+
+        {/* Community "find bins that fit": arms a one-shot gap selection so
+            the flow is reachable without the right-drag shortcut (and at all
+            on touch). */}
+        {fitsGapEnabled && (
+          <Button
+            variant={gapSelectArmed ? 'primary' : 'secondary'}
+            aria-pressed={gapSelectArmed}
+            onClick={() => {
+              if (!gapSelectArmed) trackEvent('community_gap_select_armed', { surface: 'toolbar' });
+              setGapSelectArmed(!gapSelectArmed);
+            }}
+            className="px-3 py-1.5 text-sm"
+            title={t(gapSelectArmed ? 'toolbar.findBinsArmedHint' : 'toolbar.findBinsHint')}
+            data-testid="toolbar-find-bins-that-fit"
+          >
+            {t('toolbar.findBins')}
           </Button>
         )}
 

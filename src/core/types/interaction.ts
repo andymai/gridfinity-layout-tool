@@ -49,8 +49,23 @@ export interface SwapTarget {
   };
 }
 
+/**
+ * How a fits-gap selection was initiated. 'right-drag' (the power-user
+ * shortcut) only commits after real drag movement, so a plain right-click
+ * falls through to the browser context menu; 'armed' (the toolbar's
+ * find-bins mode, the touch-reachable path) lets a single tap select a
+ * minimum-size gap.
+ */
+export type FitsGapSource = 'right-drag' | 'armed';
+
 export type Interaction =
-  | { type: 'draw'; start: Coord; current: Coord }
+  | {
+      type: 'draw';
+      start: Coord;
+      current: Coord;
+      /** Gap selection for the community "find bins that fit" flow: release hands off a constraint instead of creating a bin. */
+      fitsGap?: FitsGapSource;
+    }
   | {
       type: 'drag';
       binIds: BinId[];

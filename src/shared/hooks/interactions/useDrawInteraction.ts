@@ -1,14 +1,32 @@
 import { useCallback } from 'react';
-import { useLayoutStore, useInteractionStore, useHalfGridModeStore } from '@/core/store';
-import { canPlaceBin } from '@/shared/utils/validation';
+import {
+  useLayoutStore,
+  useInteractionStore,
+  useHalfGridModeStore,
+  useToastStore,
+} from '@/core/store';
+import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
+import { useGapFitStore } from '@/core/store/gapFit';
+import { canPlaceBin, getPlacementErrorMessage } from '@/shared/utils/validation';
+import { getLayerZStartResult } from '@/shared/utils/collision';
 import { snapToGrid } from '@/core/constants';
+import { effectiveGridUnitMmY } from '@/core/types';
 import { snapDrawRect } from '@/shared/utils/snap';
 import { capturePointer } from './interaction';
 import { isOk } from '@/core/result';
+import { useTranslation } from '@/i18n';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { trackBinCreated, trackPaintMode } from '@/shared/analytics/posthog';
 import type { InteractionContext, ModeHandlers, DrawStartArgs } from './types';
-import type { BinId, Coord, GridUnits, Bin } from '@/core/types';
+import type {
+  BinId,
+  Coord,
+  FitsGapSource,
+  GridUnits,
+  HeightUnits,
+  Bin,
+  ValidationResult,
+} from '@/core/types';
 
 /**
  * Hook for draw mode interactions: creating new bins by dragging a rectangle.
@@ -49,12 +67,15 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
     ctrlKeyRef,
   } = context;
 
+  const t = useTranslation();
+  const addToast = useToastStore((state) => state.addToast);
+
   /**
    * Start a draw or paint interaction.
    * If paintSize is set in UI state, starts paint mode; otherwise draw mode.
    */
   const start = useCallback(
-    (coord: Coord, pointerId?: number) => {
+    (coord: Coord, pointerId?: number, fitsGap?: FitsGapSource) => {
       // Capture pointer for reliable event delivery during draw
       capturePointer(pointerId, activePointerIdRef, capturedPointerRef);
 
@@ -74,6 +95,7 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
         type: 'draw',
         start: coord,
         current: coord,
+        ...(fitsGap !== undefined ? { fitsGap } : {}),
       });
     },
     [paintSize, setInteraction, activePointerIdRef, capturedPointerRef]
@@ -123,6 +145,69 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
 
       const layer = layout.layers.find((l) => l.id === activeLayerId);
       if (layer) {
+        if (interaction.fitsGap !== undefined) {
+          // A bare right-click is not a gap selection: without movement it
+          // must not silently open the gallery over a minimum-size gap. The
+          // armed toolbar mode keeps single-tap selection (deliberate mode
+          // entry).
+          if (
+            interaction.fitsGap === 'right-drag' &&
+            start.x === current.x &&
+            start.y === current.y
+          ) {
+            return;
+          }
+          // Gap selection: hand the drawn empty region to the community
+          // gallery instead of creating a bin. Clamp to the empty area first
+          // so dragging across a bin still yields a usable gap.
+          const snapped = snapDrawRect(
+            x1,
+            y1,
+            width,
+            depth,
+            layer.height,
+            activeLayerId,
+            layout,
+            minSizeNow
+          );
+          const zStartResult = getLayerZStartResult(activeLayerId, layout.layers);
+          if (!isOk(zStartResult)) return;
+          const maxHeight = (layout.drawer.height - zStartResult.value) as HeightUnits;
+          // Probe with the full remaining stack budget: confirms the clamped
+          // footprint itself is placeable (blocked zones included) before the
+          // gallery ever opens.
+          const probe: ValidationResult =
+            maxHeight > 0
+              ? canPlaceBin(
+                  {
+                    x: x1 as GridUnits,
+                    y: y1 as GridUnits,
+                    width: snapped.width as GridUnits,
+                    depth: snapped.depth as GridUnits,
+                    height: maxHeight,
+                  },
+                  activeLayerId,
+                  layout
+                )
+              : { valid: false, reason: 'exceeds_height' };
+          if (!probe.valid) {
+            addToast(getPlacementErrorMessage(t, probe.reason, probe.blockingInfo), 'error');
+            return;
+          }
+          useGapFitStore.getState().setConstraint({
+            maxWidth: snapped.width as GridUnits,
+            maxDepth: snapped.depth as GridUnits,
+            maxHeight,
+            gridUnitMm: layout.gridUnitMm,
+            gridUnitMmY: effectiveGridUnitMmY(layout),
+            heightUnitMm: layout.heightUnitMm,
+            targetPosition: { x: x1 as GridUnits, y: y1 as GridUnits, layerId: activeLayerId },
+          });
+          useInteractionStore.getState().setGapSelectArmed(false);
+          useBinExampleGalleryStore.getState().open();
+          return;
+        }
+
         // Smart snap: clamp drawn rect to avoid collision (unless Ctrl held)
         if (!ctrlKeyRef.current) {
           const snapped = snapDrawRect(
@@ -297,10 +382,12 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
     activeLayerId,
     activeCategoryId,
     addBin,
+    addToast,
     execute,
     setSelectedBin,
     setSelectedBins,
     ctrlKeyRef,
+    t,
   ]);
 
   return { start, handleMove, handleUp };

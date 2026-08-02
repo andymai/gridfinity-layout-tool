@@ -32,6 +32,9 @@ interface InteractionState {
 
   paintSize: PaintSize | null;
 
+  /** One-shot "find bins that fit" mode: the next draw on empty space selects a gap for the community gallery instead of creating a bin. */
+  gapSelectArmed: boolean;
+
   // Keyboard modes
   keyboardDragMode: boolean;
   keyboardResizeMode: boolean;
@@ -48,6 +51,8 @@ interface InteractionActions {
   setPaintSize: (size: PaintSize | null) => void;
   togglePaintSize: (size: PaintSize) => void;
 
+  setGapSelectArmed: (armed: boolean) => void;
+
   // Keyboard modes
   setKeyboardDragMode: (enabled: boolean) => void;
   setKeyboardResizeMode: (enabled: boolean) => void;
@@ -62,6 +67,7 @@ export const INITIAL_INTERACTION_STATE = {
   interaction: null as Interaction | null,
   dropTarget: null as DropTarget,
   paintSize: null as PaintSize | null,
+  gapSelectArmed: false,
   keyboardDragMode: false,
   keyboardResizeMode: false,
   liveMessage: null as string | null,
@@ -78,14 +84,20 @@ export const useInteractionStore = create<InteractionStore>((set) => ({
   setInteraction: (interaction) => set({ interaction }),
   setDropTarget: (target) => set({ dropTarget: target }),
 
-  // Paint mode actions
-  setPaintSize: (size) => set({ paintSize: size }),
+  // Paint mode and gap-select mode are mutually exclusive: both claim the
+  // next empty-space draw, so entering either exits the other.
+  setPaintSize: (size) =>
+    set(size !== null ? { paintSize: size, gapSelectArmed: false } : { paintSize: null }),
   togglePaintSize: (size) => {
     set((state) => ({
       paintSize:
         state.paintSize?.width === size.width && state.paintSize.depth === size.depth ? null : size,
+      ...(state.paintSize === null ? { gapSelectArmed: false } : {}),
     }));
   },
+
+  setGapSelectArmed: (armed) =>
+    set(armed ? { gapSelectArmed: true, paintSize: null } : { gapSelectArmed: false }),
 
   // Keyboard mode actions
   setKeyboardDragMode: (enabled) =>

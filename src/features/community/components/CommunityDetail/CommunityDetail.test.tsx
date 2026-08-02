@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { ok, err } from '@/core/result';
 import type { BinParams } from '@/shared/types/bin';
 import type { CommunityCard, CommunityDesign } from '@/shared/types/community';
+import type { CommunityPlaceOutcome } from '@/shared/types/communityDetail';
 import {
   INITIAL_COMMUNITY_DETAIL_STATE,
   useCommunityDetailStore,
@@ -44,6 +45,8 @@ import {
 import type { CommunityDesignDetail } from '../../api/client';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { useSessionStore } from '@/core/sync/session/useSession';
+import { useGapFitStore } from '@/core/store/gapFit';
+import { gridUnits, heightUnits, layerId } from '@/core/types';
 import { INITIAL_BROWSE_STATE, useBrowseStore } from '../../store/browseStore';
 import { loadRecentlyViewedIds } from '../../utils/recentlyViewed';
 import { CommunityDetail } from './CommunityDetail';
@@ -117,7 +120,8 @@ interface RenderOptions {
     options?: { ownDuplicate?: boolean }
   ) => Promise<boolean>;
   onEditOriginal?: (design: CommunityDesign) => Promise<'opened' | 'missing' | 'error'>;
-  surface?: 'tab' | 'route';
+  onPlaceInLayout?: (design: CommunityDesign) => Promise<CommunityPlaceOutcome>;
+  surface?: 'tab' | 'route' | 'fits_gap';
 }
 
 function renderDetail(options: RenderOptions = {}) {
@@ -125,6 +129,7 @@ function renderDetail(options: RenderOptions = {}) {
     onRequestCloseGallery: options.onRequestCloseGallery ?? vi.fn(),
     onRemixDesign: options.onRemixDesign ?? vi.fn().mockResolvedValue(true),
     onEditOriginal: options.onEditOriginal ?? vi.fn().mockResolvedValue('opened' as const),
+    onPlaceInLayout: options.onPlaceInLayout,
     surface: options.surface,
   };
   return { ...render(<CommunityDetail {...props} />), props };
@@ -146,6 +151,7 @@ describe('CommunityDetail', () => {
     vi.mocked(trackEvent).mockClear();
     useCommunityDetailStore.setState({ ...INITIAL_COMMUNITY_DETAIL_STATE });
     useToastStore.setState({ toasts: [] });
+    useGapFitStore.setState({ constraint: null });
     // status ready + fresh fetchedAt: the similar rail's ensureIndex must not
     // start a load over the seeded items.
     useBrowseStore.setState({
@@ -641,5 +647,158 @@ describe('CommunityDetail', () => {
     });
     // Both openings recorded, most recent first.
     expect(loadRecentlyViewedIds()).toEqual(['Similar12345', 'Abc123456789']);
+  });
+
+  describe('fits-gap placement', () => {
+    function setGapConstraint(): void {
+      useGapFitStore.getState().setConstraint({
+        maxWidth: gridUnits(3),
+        maxDepth: gridUnits(3),
+        maxHeight: heightUnits(6),
+        targetPosition: { x: gridUnits(0), y: gridUnits(0), layerId: layerId('layer_1') },
+      });
+    }
+
+    it('swaps the primary action to Place in layout while the gap context is active', async () => {
+      fetchMock.mockResolvedValue(ok(detail()));
+      setGapConstraint();
+      openDetail();
+      renderDetail({ onPlaceInLayout: vi.fn() });
+      await screen.findByText('by Jo');
+
+      expect(screen.getByTestId('community-place-in-layout')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Open in designer' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Remix' })).not.toBeInTheDocument();
+    });
+
+    it('keeps Remix primary when the place bridge is wired but no gap is active', async () => {
+      fetchMock.mockResolvedValue(ok(detail()));
+      openDetail();
+      renderDetail({ onPlaceInLayout: vi.fn() });
+      await screen.findByText('by Jo');
+
+      expect(screen.queryByTestId('community-place-in-layout')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Remix' })).toBeInTheDocument();
+    });
+
+    it('placed: tracks the event, closes the detail and the whole gallery', async () => {
+      fetchMock.mockResolvedValue(ok(detail()));
+      setGapConstraint();
+      openDetail();
+      const onPlaceInLayout = vi.fn().mockResolvedValue('placed' as const);
+      const onRequestCloseGallery = vi.fn();
+      renderDetail({ onPlaceInLayout, onRequestCloseGallery });
+      await screen.findByText('by Jo');
+
+      fireEvent.click(screen.getByTestId('community-place-in-layout'));
+
+      await waitFor(() => {
+        expect(onRequestCloseGallery).toHaveBeenCalledTimes(1);
+      });
+      expect(onPlaceInLayout).toHaveBeenCalledTimes(1);
+      expect(trackEvent).toHaveBeenCalledWith('community_place_in_layout');
+      expect(useCommunityDetailStore.getState().request).toBeNull();
+      expect(
+        useToastStore.getState().toasts.some((t) => t.message === 'Placed in your layout.')
+      ).toBe(true);
+    });
+
+    it('no-fit: toasts and keeps the detail and gallery open', async () => {
+      fetchMock.mockResolvedValue(ok(detail()));
+      setGapConstraint();
+      openDetail();
+      const onPlaceInLayout = vi.fn().mockResolvedValue('no-fit' as const);
+      const onRequestCloseGallery = vi.fn();
+      renderDetail({ onPlaceInLayout, onRequestCloseGallery });
+      await screen.findByText('by Jo');
+
+      fireEvent.click(screen.getByTestId('community-place-in-layout'));
+
+      await waitFor(() => {
+        expect(
+          useToastStore
+            .getState()
+            .toasts.some((t) => t.message === "This design doesn't fit the selected gap.")
+        ).toBe(true);
+      });
+      expect(onRequestCloseGallery).not.toHaveBeenCalled();
+      expect(useCommunityDetailStore.getState().request).not.toBeNull();
+      expect(trackEvent).not.toHaveBeenCalledWith('community_place_in_layout');
+    });
+
+    it('error: toasts the failure and stays open', async () => {
+      fetchMock.mockResolvedValue(ok(detail()));
+      setGapConstraint();
+      openDetail();
+      const onPlaceInLayout = vi.fn().mockResolvedValue('error' as const);
+      const onRequestCloseGallery = vi.fn();
+      renderDetail({ onPlaceInLayout, onRequestCloseGallery });
+      await screen.findByText('by Jo');
+
+      fireEvent.click(screen.getByTestId('community-place-in-layout'));
+
+      await waitFor(() => {
+        expect(
+          useToastStore
+            .getState()
+            .toasts.some((t) => t.message === "Couldn't place this design in the layout.")
+        ).toBe(true);
+      });
+      expect(onRequestCloseGallery).not.toHaveBeenCalled();
+      expect(useCommunityDetailStore.getState().request).not.toBeNull();
+    });
+
+    it('error-copy-saved: the failure toast owns the saved library copy', async () => {
+      fetchMock.mockResolvedValue(ok(detail()));
+      setGapConstraint();
+      openDetail();
+      const onPlaceInLayout = vi.fn().mockResolvedValue('error-copy-saved' as const);
+      const onRequestCloseGallery = vi.fn();
+      renderDetail({ onPlaceInLayout, onRequestCloseGallery });
+      await screen.findByText('by Jo');
+
+      fireEvent.click(screen.getByTestId('community-place-in-layout'));
+
+      await waitFor(() => {
+        expect(
+          useToastStore
+            .getState()
+            .toasts.some(
+              (t) =>
+                t.message === "Couldn't place this design, but a copy was saved to your library."
+            )
+        ).toBe(true);
+      });
+      expect(onRequestCloseGallery).not.toHaveBeenCalled();
+      expect(useCommunityDetailStore.getState().request).not.toBeNull();
+    });
+
+    it('owners in the gap flow still get Place in layout as the primary action', async () => {
+      fetchMock.mockResolvedValue(ok(detail({ isOwner: true })));
+      setGapConstraint();
+      openDetail();
+      const onPlaceInLayout = vi.fn().mockResolvedValue('placed' as const);
+      renderDetail({ onPlaceInLayout });
+      await screen.findByText('by Jo');
+
+      expect(screen.getByTestId('community-place-in-layout')).toBeInTheDocument();
+      // Owner actions stay available in secondary slots.
+      expect(screen.getByRole('button', { name: 'Edit original' })).toBeInTheDocument();
+
+      fireEvent.click(screen.getByTestId('community-place-in-layout'));
+      await waitFor(() => {
+        expect(onPlaceInLayout).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    it('owners without a gap context keep the plain owner footer', async () => {
+      fetchMock.mockResolvedValue(ok(detail({ isOwner: true })));
+      openDetail();
+      renderDetail({ onPlaceInLayout: vi.fn() });
+      await screen.findByText('by Jo');
+
+      expect(screen.queryByTestId('community-place-in-layout')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Edit original' })).toBeInTheDocument();
+    });
   });
 });

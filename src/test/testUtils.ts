@@ -22,6 +22,11 @@ import { useSharedPreviewStore, INITIAL_SHARED_PREVIEW_STATE } from '@/core/stor
 import { useSharePopoverStore, INITIAL_SHARE_POPOVER_STATE } from '@/core/store/sharePopover';
 import { useSharedWithMeStore, INITIAL_SHARED_WITH_ME_STATE } from '@/core/store/sharedWithMe';
 import { useSnapshotStore, INITIAL_SNAPSHOT_STATE } from '@/core/store/snapshots';
+import { useGapFitStore, INITIAL_GAP_FIT_STATE } from '@/core/store/gapFit';
+import {
+  useBinExampleGalleryStore,
+  INITIAL_BIN_EXAMPLE_GALLERY_STATE,
+} from '@/core/store/binExampleGallery';
 
 /**
  * Reset individual stores for tests that only need partial isolation.
@@ -115,6 +120,10 @@ export function resetAllStores(): void {
   });
 
   useSnapshotStore.setState(INITIAL_SNAPSHOT_STATE);
+
+  useGapFitStore.setState(INITIAL_GAP_FIT_STATE);
+
+  useBinExampleGalleryStore.setState(INITIAL_BIN_EXAMPLE_GALLERY_STATE);
 }
 
 /**

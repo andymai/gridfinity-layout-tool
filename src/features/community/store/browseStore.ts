@@ -8,6 +8,7 @@ import type {
 import type { ExampleTechnique } from '@/shared/types/exampleTechniques';
 import type { CommunityClientError } from '../api/client';
 import { fetchCommunityIndex } from '../api/client';
+import { cardDimensionUnits } from '../components/CommunityCard/cardDims';
 
 export const BROWSE_INDEX_STALE_MS = 5 * 60 * 1000;
 
@@ -25,14 +26,48 @@ export interface BrowseAuthorFilter {
   readonly name: string;
 }
 
+/**
+ * Client-only sort union: 'best-fit' never crosses the wire (the fetch layer
+ * always requests 'newest'), so it must not widen the server-mirrored
+ * CommunityIndexSort type.
+ */
+export type BrowseSort = CommunityIndexSort | 'best-fit';
+
+/**
+ * Ambient dimension bounds set by an external entry point (the layout
+ * editor's "find bins that fit" flow), in grid/height units. Not part of
+ * `filters`: it is not toolbar-editable and survives clearFilters().
+ */
+export interface FitsGapContext {
+  readonly widthMax: number;
+  readonly depthMax: number;
+  readonly maxHeight: number | null;
+  /**
+   * The layout's mm-per-unit scales, mirrored from the gapFit handoff:
+   * placement hard-rejects scale mismatches, so the gap filter must exclude
+   * cards the placement path could never place.
+   */
+  readonly gridUnitMm: number;
+  readonly gridUnitMmY: number;
+  readonly heightUnitMm: number;
+}
+
 export interface BrowseFilters {
   readonly searchText: string;
   readonly category: CommunityCategory | null;
   readonly technique: ExampleTechnique | null;
-  readonly sort: CommunityIndexSort;
+  readonly sort: BrowseSort;
   readonly author: BrowseAuthorFilter | null;
   readonly likedOnly: boolean;
   readonly recentOnly: boolean;
+  readonly featuredOnly: boolean;
+  /** Grid units at half-grid steps; bounds are inclusive. `null` = unset. */
+  readonly widthMin: number | null;
+  readonly widthMax: number | null;
+  readonly depthMin: number | null;
+  readonly depthMax: number | null;
+  /** Height units at half steps; inclusive upper bound only. `null` = unset. */
+  readonly maxHeight: number | null;
   /**
    * Not a predicate over the public `items` like the other filters: the
    * public index hard-excludes hidden designs, so while active the gallery
@@ -49,8 +84,39 @@ export const INITIAL_BROWSE_FILTERS: BrowseFilters = {
   author: null,
   likedOnly: false,
   recentOnly: false,
+  featuredOnly: false,
+  widthMin: null,
+  widthMax: null,
+  depthMin: null,
+  depthMax: null,
+  maxHeight: null,
   mineOnly: false,
 };
+
+export function hasDimensionConstraints(filters: BrowseFilters): boolean {
+  return (
+    filters.widthMin !== null ||
+    filters.widthMax !== null ||
+    filters.depthMin !== null ||
+    filters.depthMax !== null ||
+    filters.maxHeight !== null
+  );
+}
+
+export function hasActiveBrowseFilters(filters: BrowseFilters): boolean {
+  return (
+    filters.searchText !== INITIAL_BROWSE_FILTERS.searchText ||
+    filters.category !== INITIAL_BROWSE_FILTERS.category ||
+    filters.technique !== INITIAL_BROWSE_FILTERS.technique ||
+    filters.sort !== INITIAL_BROWSE_FILTERS.sort ||
+    filters.author !== null ||
+    filters.likedOnly ||
+    filters.recentOnly ||
+    filters.featuredOnly ||
+    filters.mineOnly ||
+    hasDimensionConstraints(filters)
+  );
+}
 
 interface BrowseState {
   status: BrowseLoadStatus;
@@ -60,6 +126,7 @@ interface BrowseState {
   error: CommunityClientError | null;
   fetchedAt: number | null;
   filters: BrowseFilters;
+  fitsGapContext: FitsGapContext | null;
   /** Gallery scroll offset, restored on return from the detail view. */
   scrollTop: number;
   /**
@@ -90,10 +157,17 @@ interface BrowseActions {
   setSearchText: (searchText: string) => void;
   setCategory: (category: CommunityCategory | null) => void;
   setTechnique: (technique: ExampleTechnique | null) => void;
-  setSort: (sort: CommunityIndexSort) => void;
+  setSort: (sort: BrowseSort) => void;
   setAuthor: (author: BrowseAuthorFilter | null) => void;
   setLikedOnly: (likedOnly: boolean) => void;
   setRecentOnly: (recentOnly: boolean) => void;
+  setFeaturedOnly: (featuredOnly: boolean) => void;
+  setWidthMin: (widthMin: number | null) => void;
+  setWidthMax: (widthMax: number | null) => void;
+  setDepthMin: (depthMin: number | null) => void;
+  setDepthMax: (depthMax: number | null) => void;
+  setMaxHeight: (maxHeight: number | null) => void;
+  setFitsGapContext: (fitsGapContext: FitsGapContext | null) => void;
   setMineOnly: (mineOnly: boolean) => void;
   clearFilters: () => void;
   setScrollTop: (scrollTop: number) => void;
@@ -110,6 +184,7 @@ export const INITIAL_BROWSE_STATE: BrowseState = {
   error: null,
   fetchedAt: null,
   filters: INITIAL_BROWSE_FILTERS,
+  fitsGapContext: null,
   scrollTop: 0,
   visibleCount: GALLERY_PAGE_SIZE,
   requestId: 0,
@@ -122,9 +197,34 @@ function matchesSearch(card: CommunityCard, searchText: string, extraHaystack: s
   return query.split(/\s+/).every((term) => haystack.includes(term));
 }
 
+interface BestFitBounds {
+  readonly widthMax: number | null;
+  readonly depthMax: number | null;
+}
+
+const NO_BOUNDS: BestFitBounds = { widthMax: null, depthMax: null };
+
+// With no target box to normalize against (height-only constraint), raw
+// footprint area still yields a well-defined largest-first order.
+function coverageScore(card: CommunityCard, bounds: BestFitBounds): number {
+  const { width, depth } = cardDimensionUnits(card.metrics);
+  const area = width * depth;
+  if (bounds.widthMax === null || bounds.depthMax === null) return area;
+  return area / (bounds.widthMax * bounds.depthMax);
+}
+
 // Mirrors the server's compareCards tie-breaking (api/community.ts): count
 // sorts fall back to recency on ties, so local re-sorts match server order.
-function compareCards(a: CommunityCard, b: CommunityCard, sort: CommunityIndexSort): number {
+function compareCards(
+  a: CommunityCard,
+  b: CommunityCard,
+  sort: BrowseSort,
+  bounds: BestFitBounds = NO_BOUNDS
+): number {
+  if (sort === 'best-fit') {
+    const diff = coverageScore(b, bounds) - coverageScore(a, bounds);
+    if (diff !== 0) return diff;
+  }
   if (sort === 'likes' && b.counts.likes !== a.counts.likes) {
     return b.counts.likes - a.counts.likes;
   }
@@ -138,28 +238,81 @@ export function filterAndSortCards(
   items: readonly CommunityCard[],
   filters: BrowseFilters,
   searchLabels?: (card: CommunityCard) => string,
-  recentIds: readonly string[] = []
+  recentIds: readonly string[] = [],
+  fitsGapContext: FitsGapContext | null = null
 ): CommunityCard[] {
   const recentRank = filters.recentOnly ? new Map(recentIds.map((id, index) => [id, index])) : null;
-  const matched = items.filter(
-    (card) =>
+  // An explicit toolbar bound always wins over the ambient gap context: it is
+  // the more specific, more recent signal.
+  const effectiveWidthMax = filters.widthMax ?? fitsGapContext?.widthMax ?? null;
+  const effectiveDepthMax = filters.depthMax ?? fitsGapContext?.depthMax ?? null;
+  const effectiveMaxHeight = filters.maxHeight ?? fitsGapContext?.maxHeight ?? null;
+  const fitsFootprintMax = (width: number, depth: number): boolean =>
+    (effectiveWidthMax === null || width <= effectiveWidthMax) &&
+    (effectiveDepthMax === null || depth <= effectiveDepthMax);
+  const matched = items.filter((card) => {
+    const dims = cardDimensionUnits(card.metrics);
+    // With a gap context, placement probes both orientations
+    // (placeCommunityDesignInLayout), so the filter must too: a 1x3 design
+    // does fit a 3x1 gap. Toolbar-only bounds stay literal.
+    const footprintOk =
+      fitsGapContext !== null
+        ? fitsFootprintMax(dims.width, dims.depth) || fitsFootprintMax(dims.depth, dims.width)
+        : fitsFootprintMax(dims.width, dims.depth);
+    // Placement hard-rejects scale mismatches. The card index only carries the
+    // X grid scale, so this screens what it can; a rare Y/height-unit
+    // mismatch still surfaces through the placement failure toast.
+    const scaleOk =
+      fitsGapContext === null || card.metrics.gridUnitMm === fitsGapContext.gridUnitMm;
+    return (
+      scaleOk &&
       (filters.category === null || card.category === filters.category) &&
       (filters.technique === null || card.techniques.includes(filters.technique)) &&
       (filters.author === null || card.authorPublicId === filters.author.id) &&
       (!filters.likedOnly || card.likedByMe === true) &&
+      (!filters.featuredOnly || card.featured) &&
+      (filters.widthMin === null || dims.width >= filters.widthMin) &&
+      (filters.depthMin === null || dims.depth >= filters.depthMin) &&
+      footprintOk &&
+      (effectiveMaxHeight === null || dims.height <= effectiveMaxHeight) &&
       (recentRank === null || recentRank.has(card.id)) &&
       matchesSearch(card, filters.searchText, searchLabels?.(card) ?? '')
-  );
+    );
+  });
   if (recentRank !== null) {
     // Most-recent-first is the point of the recently-viewed chip, so it
     // overrides the sort control while active.
     return matched.sort((a, b) => (recentRank.get(a.id) ?? 0) - (recentRank.get(b.id) ?? 0));
   }
-  return matched.sort((a, b) => compareCards(a, b, filters.sort));
+  const bounds: BestFitBounds = { widthMax: effectiveWidthMax, depthMax: effectiveDepthMax };
+  return matched.sort((a, b) => compareCards(a, b, filters.sort, bounds));
 }
 
 export function isIndexStale(fetchedAt: number | null, now: number): boolean {
   return fetchedAt === null || now - fetchedAt >= BROWSE_INDEX_STALE_MS;
+}
+
+// Best-fit only has something to score against while a dimension constraint
+// (toolbar or gap context) is active; when the last one clears, silently
+// keeping the best-fit order would be an unexplained, unlabeled sort.
+function withBestFitFallback(
+  filters: BrowseFilters,
+  fitsGapContext: FitsGapContext | null
+): BrowseFilters {
+  if (filters.sort !== 'best-fit') return filters;
+  if (hasDimensionConstraints(filters) || fitsGapContext !== null) return filters;
+  return { ...filters, sort: 'newest' };
+}
+
+function withDimensionPatch(
+  state: Pick<BrowseState, 'filters' | 'fitsGapContext'>,
+  patch: Partial<BrowseFilters>
+): Pick<BrowseState, 'filters' | 'scrollTop' | 'visibleCount'> {
+  return {
+    filters: withBestFitFallback({ ...state.filters, ...patch }, state.fitsGapContext),
+    scrollTop: 0,
+    visibleCount: GALLERY_PAGE_SIZE,
+  };
 }
 
 export const useBrowseStore = create<BrowseStore>((set, get) => {
@@ -251,6 +404,74 @@ export const useBrowseStore = create<BrowseStore>((set, get) => {
     setRecentOnly: (recentOnly) => {
       set((state) => ({
         filters: { ...state.filters, recentOnly },
+        scrollTop: 0,
+        visibleCount: GALLERY_PAGE_SIZE,
+      }));
+    },
+    setFeaturedOnly: (featuredOnly) => {
+      set((state) => ({
+        filters: { ...state.filters, featuredOnly },
+        scrollTop: 0,
+        visibleCount: GALLERY_PAGE_SIZE,
+      }));
+    },
+    // Crossed bounds (min > max) would silently empty the grid, so picking a
+    // crossing value drags the opposing bound along with it.
+    setWidthMin: (widthMin) => {
+      set((state) =>
+        withDimensionPatch(state, {
+          widthMin,
+          ...(widthMin !== null &&
+          state.filters.widthMax !== null &&
+          widthMin > state.filters.widthMax
+            ? { widthMax: widthMin }
+            : {}),
+        })
+      );
+    },
+    setWidthMax: (widthMax) => {
+      set((state) =>
+        withDimensionPatch(state, {
+          widthMax,
+          ...(widthMax !== null &&
+          state.filters.widthMin !== null &&
+          widthMax < state.filters.widthMin
+            ? { widthMin: widthMax }
+            : {}),
+        })
+      );
+    },
+    setDepthMin: (depthMin) => {
+      set((state) =>
+        withDimensionPatch(state, {
+          depthMin,
+          ...(depthMin !== null &&
+          state.filters.depthMax !== null &&
+          depthMin > state.filters.depthMax
+            ? { depthMax: depthMin }
+            : {}),
+        })
+      );
+    },
+    setDepthMax: (depthMax) => {
+      set((state) =>
+        withDimensionPatch(state, {
+          depthMax,
+          ...(depthMax !== null &&
+          state.filters.depthMin !== null &&
+          depthMax < state.filters.depthMin
+            ? { depthMin: depthMax }
+            : {}),
+        })
+      );
+    },
+    setMaxHeight: (maxHeight) => {
+      set((state) => withDimensionPatch(state, { maxHeight }));
+    },
+    setFitsGapContext: (fitsGapContext) => {
+      set((state) => ({
+        fitsGapContext,
+        filters: withBestFitFallback(state.filters, fitsGapContext),
         scrollTop: 0,
         visibleCount: GALLERY_PAGE_SIZE,
       }));

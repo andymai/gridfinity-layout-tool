@@ -37,6 +37,7 @@ export interface KeyboardContext {
   // Interaction
   setInteraction: (interaction: null) => void;
   setPaintSize: (size: null) => void;
+  setGapSelectArmed: (armed: false) => void;
 
   // View
   zoomIn: () => void;

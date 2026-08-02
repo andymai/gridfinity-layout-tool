@@ -1,5 +1,5 @@
-import type { RefObject, PointerEvent, JSX } from 'react';
-import { useMemo } from 'react';
+import type { RefObject, PointerEvent, MouseEvent, JSX } from 'react';
+import { useMemo, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore, useSelectionStore, useViewStore, useInteractionStore } from '@/core/store';
 import { getCellSizeY } from '@/core/constants';
@@ -10,9 +10,10 @@ import { Bin } from '../Bin';
 import { BrushHoverGhost } from '../BrushHoverGhost';
 import { getBlockedZones } from '@/shared/utils/collision';
 import { getLayerBins } from '@/shared/utils/bins';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
-import type { Coord, ResizeHandle, BinId, LayerId } from '@/core/types';
+import type { Coord, FitsGapSource, ResizeHandle, BinId, LayerId } from '@/core/types';
 import { useTranslation } from '@/i18n';
 import { DrawerOutlineOverlay } from '../DrawerOutlineOverlay';
 
@@ -25,7 +26,7 @@ interface GridCanvasProps {
   gridRef: RefObject<HTMLDivElement | null>;
   cellSize: number;
   gap: number;
-  onStartDraw: (coord: Coord, pointerId?: number) => void;
+  onStartDraw: (coord: Coord, pointerId?: number, fitsGap?: FitsGapSource) => void;
   onStartDrag: (
     binId: BinId,
     clientX: number,
@@ -76,8 +77,16 @@ export function GridCanvas({
   const showOtherLayers = useViewStore((state) => state.showOtherLayers);
 
   const paintSize = useInteractionStore((state) => state.paintSize);
+  const gapSelectArmed = useInteractionStore((state) => state.gapSelectArmed);
+
+  const fitsGapEnabled = useFeatureFlag('community_showcase');
 
   const { getGridCoords } = useGridCoords(gridRef);
+
+  // Grid cell where the last right-button press landed; lets onContextMenu
+  // tell a completed gap drag (suppress the menu) from a plain right-click
+  // (let the native menu through).
+  const rightDownCoordRef = useRef<Coord | null>(null);
 
   // Memoized: Filter bins for current layer
   const activeBins = useMemo(() => getLayerBins(bins, activeLayerId), [bins, activeLayerId]);
@@ -127,16 +136,57 @@ export function GridCanvas({
 
   // Bubble phase handler for normal draw mode
   const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
-    // Only start draw on left click on empty space (paint mode handled in capture)
-    if (e.button !== 0 || paintSize) return;
+    if (paintSize) return;
+    // Gap selection for the community "find bins that fit" flow (labs-gated):
+    // the toolbar's armed mode claims the primary button (touch/pen included),
+    // and a right-button drag stays available as a desktop shortcut.
+    const fitsGap: FitsGapSource | undefined = !fitsGapEnabled
+      ? undefined
+      : e.button === 2
+        ? 'right-drag'
+        : e.button === 0 && gapSelectArmed
+          ? 'armed'
+          : undefined;
+    if (e.button !== 0 && fitsGap === undefined) return;
     // Ignore non-primary pointer (second finger) - allow two-finger pan
     if (!e.isPrimary) return;
     if ((e.target as HTMLElement).closest('[data-bin-id]')) return;
 
     const coords = getGridCoords(e.clientX, e.clientY);
     if (coords) {
-      onStartDraw(coords, e.pointerId);
+      if (fitsGap === 'right-drag') rightDownCoordRef.current = coords;
+      if (fitsGap !== undefined) {
+        onStartDraw(coords, e.pointerId, fitsGap);
+      } else {
+        onStartDraw(coords, e.pointerId);
+      }
     }
+  };
+
+  const handleContextMenu = (e: MouseEvent<HTMLDivElement>) => {
+    // Long-press context menus would interrupt an armed touch selection.
+    if (gapSelectArmed) {
+      e.preventDefault();
+      return;
+    }
+    const down = rightDownCoordRef.current;
+    rightDownCoordRef.current = null;
+    if (down === null) return;
+    // contextmenu timing is platform-split (mouseup on Windows, mousedown on
+    // Linux/macOS), so movement cannot distinguish click from drag here. The
+    // press started on empty canvas (bins return before setting the ref), and
+    // a native menu over empty cells has no value while the flag is on, so
+    // always suppress.
+    e.preventDefault();
+  };
+
+  // pointerup precedes contextmenu in the dispatch sequence, so the ref must
+  // outlive the up event for Windows suppression; a deferred clear still
+  // prevents a release outside the canvas from leaving a stale press behind.
+  const clearRightDownDeferred = () => {
+    window.setTimeout(() => {
+      rightDownCoordRef.current = null;
+    }, 0);
   };
 
   const handleBlockedZoneClick = (id: BinId, layer: LayerId) => {
@@ -250,6 +300,11 @@ export function GridCanvas({
       className="absolute inset-0"
       onPointerDownCapture={handlePointerDownCapture}
       onPointerDown={handlePointerDown}
+      // Right-button release must not pop the browser menu over a fresh gap
+      // selection; only wired while the labs gesture can fire at all.
+      onContextMenu={fitsGapEnabled ? handleContextMenu : undefined}
+      onPointerUp={fitsGapEnabled ? clearRightDownDeferred : undefined}
+      onPointerCancel={fitsGapEnabled ? clearRightDownDeferred : undefined}
       style={{
         cursor: paintSize ? BRUSH_CURSOR : 'crosshair',
         // Always disable native touch actions on the grid canvas.

@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react';
 import type { RefObject } from 'react';
-import type { BinId, Coord, ResizeHandle } from '@/core/types';
+import type { BinId, Coord, FitsGapSource, ResizeHandle } from '@/core/types';
 import { useLayoutStore, useSelectionStore, useInteractionStore } from '@/core/store';
 import { batch } from '@/core/cqrs';
 import { useMutations } from '@/shared/contexts';
@@ -175,10 +175,11 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
     stagingDragModeRef.current = stagingDragMode;
   });
 
-  // Start drawing a new bin (or start paint drag if paint mode active)
+  // Start drawing a new bin (or start paint drag if paint mode active).
+  // fitsGap marks a gap selection for the community "find bins that fit" flow.
   // Uses ref to always access current drawMode handlers
-  const startDraw = useCallback((coord: Coord, pointerId?: number) => {
-    drawModeRef.current.start(coord, pointerId);
+  const startDraw = useCallback((coord: Coord, pointerId?: number, fitsGap?: FitsGapSource) => {
+    drawModeRef.current.start(coord, pointerId, fitsGap);
   }, []);
 
   // Start dragging bins (single or multiple)
@@ -329,12 +330,30 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
       setInteraction(null);
     };
 
+    // Without this the browser context menu pops on release even when the
+    // pointer ends outside the grid canvas (whose own onContextMenu can't
+    // see it). Engaged for armed draws and for right-drags that actually
+    // moved: a stationary right-click must keep the native menu.
+    const suppressContextMenu = (e: Event) => e.preventDefault();
+    const isFitsGapDraw =
+      interaction.type === 'draw' &&
+      interaction.fitsGap !== undefined &&
+      (interaction.fitsGap === 'armed' ||
+        interaction.start.x !== interaction.current.x ||
+        interaction.start.y !== interaction.current.y);
+    if (isFitsGapDraw) {
+      document.addEventListener('contextmenu', suppressContextMenu);
+    }
+
     document.addEventListener('pointerdown', handlePointerDown);
     document.addEventListener('pointermove', handlePointerMove);
     document.addEventListener('pointerup', handlePointerUp);
     document.addEventListener('pointercancel', handlePointerCancel);
 
     return () => {
+      if (isFitsGapDraw) {
+        document.removeEventListener('contextmenu', suppressContextMenu);
+      }
       document.removeEventListener('pointerdown', handlePointerDown);
       document.removeEventListener('pointermove', handlePointerMove);
       document.removeEventListener('pointerup', handlePointerUp);
