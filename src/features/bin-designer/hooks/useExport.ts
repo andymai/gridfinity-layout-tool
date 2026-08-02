@@ -52,8 +52,10 @@ import {
 import {
   trackBinExportFailure,
   trackBinExportSucceeded,
+  trackEvent,
   captureException,
 } from '@/shared/analytics/posthog';
+import { recordCommunityExport } from '@/shared/api/communityAttribution';
 import { useTranslation } from '@/i18n';
 import { usePlannerBridge } from './usePlannerBridge';
 
@@ -117,10 +119,11 @@ interface QueuedExport {
 export function useExport(): UseExportReturn {
   const t = useTranslation();
   const offerPlannerBridge = usePlannerBridge();
-  const { params, mesh } = useDesignerStore(
+  const { params, mesh, lineage } = useDesignerStore(
     useShallow((state) => ({
       params: state.params,
       mesh: state.generation.mesh,
+      lineage: state.lineage,
     }))
   );
 
@@ -311,6 +314,21 @@ export function useExport(): UseExportReturn {
   );
 
   /**
+   * Credit the community parent of a remixed design after a completed export.
+   * Attributes to the immediate parent only: the server walks that design's
+   * own lineage, so the root is credited transitively. Fire-and-forget, so
+   * attribution can never affect the download that already succeeded.
+   */
+  const attributeExport = useCallback(
+    (isSplit: boolean) => {
+      if (lineage === null) return;
+      void recordCommunityExport(lineage.parentId);
+      trackEvent('community_export_attributed', { is_split: isSplit });
+    },
+    [lineage]
+  );
+
+  /**
    * Download bin + dividers (if present) in the specified format.
    *
    * Uses the combined export worker message to get all pieces in one call.
@@ -397,6 +415,7 @@ export function useExport(): UseExportReturn {
             false
           )
         );
+        attributeExport(false);
         offerPlannerBridge();
         return true;
       } catch (err) {
@@ -416,7 +435,14 @@ export function useExport(): UseExportReturn {
         setIsExportingBin(false);
       }
     },
-    [params, engineReady, buildExportTelemetry, handleExportError, offerPlannerBridge]
+    [
+      params,
+      engineReady,
+      buildExportTelemetry,
+      handleExportError,
+      attributeExport,
+      offerPlannerBridge,
+    ]
   );
 
   /**
@@ -542,6 +568,7 @@ export function useExport(): UseExportReturn {
             true
           )
         );
+        attributeExport(true);
         offerPlannerBridge();
         return true;
       } catch (err) {
@@ -569,6 +596,7 @@ export function useExport(): UseExportReturn {
       engineReady,
       buildExportTelemetry,
       handleExportError,
+      attributeExport,
       offerPlannerBridge,
     ]
   );

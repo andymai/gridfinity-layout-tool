@@ -13,7 +13,13 @@ import { createHash } from 'node:crypto';
 import type { ChainableCommander, Redis } from 'ioredis';
 import { deleteBlob, getJson, putJson } from './blobStore.js';
 import type { CommunityCategory, CommunityTechnique } from './communityValidation.js';
-import { COMMUNITY_INDEX_SORTS, communityDesignKey, communityIndexKey } from './redisKeys.js';
+import {
+  COMMUNITY_INDEX_SORTS,
+  communityDesignKey,
+  communityIndexKey,
+  communityLikedKey,
+  communityLikesKey,
+} from './redisKeys.js';
 
 export type CommunityDesignStatus = 'live' | 'hidden' | 'removed';
 
@@ -41,6 +47,20 @@ export interface CommunityDesignMetrics {
 const DEFAULT_GRID_UNIT_MM = 42;
 const DEFAULT_HEIGHT_UNIT_MM = 7;
 const BIN_TOLERANCE_MM = 0.5;
+
+/**
+ * Anonymous dedupe window for the open/export counters. Dedupe sets are keyed
+ * by 7-day bucket (redisKeys.ts) and expire this long after their last write,
+ * so a genuine repeat print/remix still accrues credit each new window
+ * instead of capping at "unique clients ever", while no key outlives its
+ * bucket by more than one window or grows unboundedly.
+ */
+export const COMMUNITY_DEDUPE_TTL_SECONDS = 7 * 24 * 60 * 60;
+
+/** The 7-day window index used to key the open/export dedupe sets. */
+export function communityDedupeBucket(nowMs: number): number {
+  return Math.floor(nowMs / (COMMUNITY_DEDUPE_TTL_SECONDS * 1000));
+}
 
 function positiveNumber(value: unknown, fallback: number): number {
   return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : fallback;
@@ -331,6 +351,107 @@ export async function setCommunityDesignStatus(
   } else {
     await removeFromCommunityIndexes(redis, designId);
   }
+}
+
+/**
+ * Atomic like/unlike: SADD/SREM the per-design likes set, mirror into the
+ * user's reverse "liked" set, HINCRBY the card hash counter, and re-score the
+ * likes sort index, all inside one Lua script so two racing requests (double
+ * tap, two open tabs) cannot leave the set and the counter disagreeing the
+ * way four sequential awaits could.
+ *
+ * ZADD uses XX (update-score-only, never add) so a like on a hidden/removed
+ * design, already ZREM'd from the index by `removeFromCommunityIndexes`,
+ * cannot resurrect it into the "likes" sort. The caller still gates on
+ * `status === 'live'` before invoking this; XX is defense in depth.
+ *
+ * The below-zero clamp covers drifted state (counter behind the set): an
+ * unlike must never publish a negative count.
+ *
+ * Returns [likes, likedByMe] as Lua numbers (0/1 for the boolean).
+ */
+const COMMUNITY_LIKE_TOGGLE_LUA = `
+local likesSet = KEYS[1]
+local likedSet = KEYS[2]
+local designHash = KEYS[3]
+local likesIndex = KEYS[4]
+local userId = ARGV[1]
+local designId = ARGV[2]
+local like = ARGV[3]
+
+local isMember = redis.call('SISMEMBER', likesSet, userId)
+local likes = tonumber(redis.call('HGET', designHash, 'likes') or '0')
+
+if like == '1' then
+  if isMember == 1 then
+    return {likes, 1}
+  end
+  redis.call('SADD', likesSet, userId)
+  redis.call('SADD', likedSet, designId)
+  likes = redis.call('HINCRBY', designHash, 'likes', 1)
+  redis.call('ZADD', likesIndex, 'XX', likes, designId)
+  return {likes, 1}
+else
+  if isMember == 0 then
+    return {likes, 0}
+  end
+  redis.call('SREM', likesSet, userId)
+  redis.call('SREM', likedSet, designId)
+  likes = redis.call('HINCRBY', designHash, 'likes', -1)
+  if likes < 0 then
+    redis.call('HSET', designHash, 'likes', 0)
+    likes = 0
+  end
+  redis.call('ZADD', likesIndex, 'XX', likes, designId)
+  return {likes, 0}
+end
+`;
+
+/** `defineCommand` attaches the script as a method; declare its shape for callers. */
+interface CommunityRedis extends Redis {
+  communityLikeToggle(
+    likesKey: string,
+    likedKey: string,
+    designKey: string,
+    likesIndexKey: string,
+    userId: string,
+    designId: string,
+    like: string
+  ): Promise<[number, number]>;
+}
+
+// The like-toggle script registers lazily on the client `getRedis()` hands
+// back: rateLimit.ts owns that singleton and should stay scoped to rate
+// limiting. Re-registration is guarded per instance (not per module) so tests
+// that hand in fresh clients each register their own.
+function ensureLikeToggle(redis: Redis): CommunityRedis {
+  const client = redis as CommunityRedis;
+  if (typeof client.communityLikeToggle !== 'function') {
+    client.defineCommand('communityLikeToggle', {
+      numberOfKeys: 4,
+      lua: COMMUNITY_LIKE_TOGGLE_LUA,
+    });
+  }
+  return client;
+}
+
+export async function toggleCommunityLike(
+  redis: Redis,
+  userId: string,
+  designId: string,
+  like: boolean
+): Promise<{ likes: number; likedByMe: boolean }> {
+  const client = ensureLikeToggle(redis);
+  const [likes, likedByMe] = await client.communityLikeToggle(
+    communityLikesKey(designId),
+    communityLikedKey(userId),
+    communityDesignKey(designId),
+    communityIndexKey('likes'),
+    userId,
+    designId,
+    like ? '1' : '0'
+  );
+  return { likes, likedByMe: likedByMe === 1 };
 }
 
 function stableStringify(value: unknown): string {

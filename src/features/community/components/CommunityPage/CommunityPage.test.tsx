@@ -214,4 +214,59 @@ describe('CommunityPage', () => {
       expect(screen.queryByTestId('community-visitor-strip')).not.toBeInTheDocument();
     });
   });
+
+  describe('shareable author view (?author=)', () => {
+    const AUTHOR_ID = 'a'.repeat(32);
+
+    function authorCard(id: string): CommunityCard {
+      return { ...card(id), authorPublicId: AUTHOR_ID, authorName: 'Alice' };
+    }
+
+    it('cold visit applies the author filter from the URL and resolves the display name', () => {
+      useBrowseStore.setState({ status: 'ready', items: [authorCard('DesignAAAAAA')] });
+      window.history.replaceState(null, '', `/community?author=${AUTHOR_ID}`);
+      renderPage();
+      expect(useBrowseStore.getState().filters.author).toEqual({
+        id: AUTHOR_ID,
+        name: 'Alice',
+      });
+    });
+
+    it('cold visit before the index loads stores the id and resolves the name later', () => {
+      window.history.replaceState(null, '', `/community?author=${AUTHOR_ID}`);
+      renderPage();
+      expect(useBrowseStore.getState().filters.author).toEqual({ id: AUTHOR_ID, name: '' });
+      act(() => {
+        useBrowseStore.setState({ status: 'ready', items: [authorCard('DesignAAAAAA')] });
+      });
+      expect(useBrowseStore.getState().filters.author).toEqual({
+        id: AUTHOR_ID,
+        name: 'Alice',
+      });
+    });
+
+    it('applying the author filter writes the shareable query param in place', () => {
+      renderPage();
+      act(() => {
+        useBrowseStore.getState().setAuthor({ id: AUTHOR_ID, name: 'Alice' });
+      });
+      expect(window.location.pathname).toBe('/community');
+      expect(window.location.search).toBe(`?author=${AUTHOR_ID}`);
+    });
+
+    it('clearing the author filter removes the query param', () => {
+      window.history.replaceState(null, '', `/community?author=${AUTHOR_ID}`);
+      renderPage();
+      act(() => {
+        useBrowseStore.getState().setAuthor(null);
+      });
+      expect(window.location.search).toBe('');
+    });
+
+    it('an invalid author value is ignored', () => {
+      window.history.replaceState(null, '', '/community?author=not-valid');
+      renderPage();
+      expect(useBrowseStore.getState().filters.author).toBeNull();
+    });
+  });
 });

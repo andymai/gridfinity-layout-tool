@@ -17,6 +17,7 @@ import { useSessionStore } from '@/core/sync/session/useSession';
 import type { CommunityDetailProps } from '@/shared/types/communityDetail';
 import {
   getCommunityDesignIdFromUrl,
+  syncCommunityAuthorParam,
   useCommunityRouting,
 } from '@/shared/hooks/useCommunityRouting';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
@@ -54,12 +55,17 @@ export function CommunityPage({
   const t = useTranslation();
   const {
     communityDesignIdFromUrl,
+    communityAuthorIdFromUrl,
     navigateHome,
     openCommunityDesignUrl,
     closeCommunityDesignUrl,
   } = useCommunityRouting();
   const request = useCommunityDetailStore((s) => s.request);
   const sessionStatus = useSessionStore((s) => s.status);
+  const setAuthor = useBrowseStore((s) => s.setAuthor);
+  const authorFilterId = useBrowseStore((s) => s.filters.author?.id ?? null);
+  const authorFilterName = useBrowseStore((s) => s.filters.author?.name ?? null);
+  const items = useBrowseStore((s) => s.items);
 
   const [stripDismissed, setStripDismissed] = useState(isStripDismissed);
   const [hadLocalDesigns] = useState(hasLocalDesigns);
@@ -97,6 +103,32 @@ export function CommunityPage({
       closeCommunityDesignUrl();
     }
   }, [request, openCommunityDesignUrl, closeCommunityDesignUrl]);
+
+  // URL -> store: a shared /community?author= link applies the filter. The
+  // display name is unknown on a cold visit ('' placeholder); the effect
+  // below resolves it once the index holds one of the author's cards.
+  useEffect(() => {
+    if (communityAuthorIdFromUrl === null) return;
+    const current = useBrowseStore.getState().filters.author;
+    if (current?.id === communityAuthorIdFromUrl) return;
+    const match = useBrowseStore
+      .getState()
+      .items.find((c) => c.authorPublicId === communityAuthorIdFromUrl);
+    setAuthor({ id: communityAuthorIdFromUrl, name: match?.authorName ?? '' });
+  }, [communityAuthorIdFromUrl, setAuthor]);
+
+  useEffect(() => {
+    if (authorFilterId === null || authorFilterName !== '') return;
+    const match = items.find((c) => c.authorPublicId === authorFilterId);
+    if (match !== undefined) setAuthor({ id: authorFilterId, name: match.authorName });
+  }, [items, authorFilterId, authorFilterName, setAuthor]);
+
+  // Store -> URL: keeps the author view shareable. Skipped while a detail
+  // deep link owns the path; re-runs when it closes back to /community.
+  useEffect(() => {
+    if (communityDesignIdFromUrl !== null) return;
+    syncCommunityAuthorParam(authorFilterId);
+  }, [authorFilterId, communityDesignIdFromUrl]);
 
   const handleDesignYourOwn = useCallback(() => {
     window.dispatchEvent(new Event('switch-to-designer'));

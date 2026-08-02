@@ -20,6 +20,8 @@ import {
   communityReportsKey,
   communityReportedKey,
   communityDenylistKey,
+  communityOpenedKey,
+  communityExportedKey,
 } from './redisKeys';
 
 describe('redisKeys', () => {
@@ -111,6 +113,16 @@ describe('redisKeys', () => {
       expect(communityDenylistKey()).toBe('community:denylist');
     });
 
+    it('communityOpenedKey produces community:opened:{id}:{bucket}', () => {
+      expect(communityOpenedKey('abc123def456', 2953)).toBe('community:opened:abc123def456:2953');
+    });
+
+    it('communityExportedKey produces community:exported:{id}:{bucket}', () => {
+      expect(communityExportedKey('abc123def456', 2953)).toBe(
+        'community:exported:abc123def456:2953'
+      );
+    });
+
     it('community keys never collide with each other for a shared id segment', () => {
       const id = 'a';
       const keys = [
@@ -124,6 +136,8 @@ describe('redisKeys', () => {
         communityReportsKey(id),
         communityReportedKey(id),
         communityDenylistKey(),
+        communityOpenedKey(id, 0),
+        communityExportedKey(id, 0),
       ];
       expect(new Set(keys).size).toBe(keys.length);
     });

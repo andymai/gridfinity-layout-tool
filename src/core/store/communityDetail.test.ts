@@ -46,4 +46,40 @@ describe('communityDetail store', () => {
     useCommunityDetailStore.getState().close();
     expect(useCommunityDetailStore.getState().request).toBeNull();
   });
+
+  it('syncLike lands only on the open design', () => {
+    useCommunityDetailStore.getState().open(card.id, card);
+    useCommunityDetailStore
+      .getState()
+      .syncLike({ designId: 'Other1234567', likes: 9, likedByMe: true });
+    expect(useCommunityDetailStore.getState().likeSync).toBeNull();
+    useCommunityDetailStore.getState().syncLike({ designId: card.id, likes: 4, likedByMe: true });
+    expect(useCommunityDetailStore.getState().likeSync).toEqual({
+      designId: card.id,
+      likes: 4,
+      likedByMe: true,
+    });
+  });
+
+  it('syncLike is dropped when no detail is open', () => {
+    useCommunityDetailStore.getState().syncLike({ designId: card.id, likes: 4, likedByMe: true });
+    expect(useCommunityDetailStore.getState().likeSync).toBeNull();
+  });
+
+  it('clearLikeSync consumes the record and open/close reset it', () => {
+    useCommunityDetailStore.getState().open(card.id, card);
+    useCommunityDetailStore.getState().syncLike({ designId: card.id, likes: 4, likedByMe: true });
+    useCommunityDetailStore.getState().clearLikeSync();
+    expect(useCommunityDetailStore.getState().likeSync).toBeNull();
+
+    useCommunityDetailStore.getState().syncLike({ designId: card.id, likes: 5, likedByMe: true });
+    useCommunityDetailStore.getState().open('Xyz987654321');
+    expect(useCommunityDetailStore.getState().likeSync).toBeNull();
+
+    useCommunityDetailStore
+      .getState()
+      .syncLike({ designId: 'Xyz987654321', likes: 1, likedByMe: true });
+    useCommunityDetailStore.getState().close();
+    expect(useCommunityDetailStore.getState().likeSync).toBeNull();
+  });
 });

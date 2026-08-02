@@ -39,10 +39,10 @@ export function useDetailHistoryTrap(
 
   const trapRef = useRef<TrapHandle | null>(null);
 
-  // TODO: reuse the existing trap entry for detail-to-detail transitions when
-  // in-detail navigation (the similar-designs rail) ships. The dialog is
-  // keyed by designId, so opening detail B over detail A runs A's cleanup
-  // back() concurrently with B's mount pushState and can pop B's fresh trap.
+  // Mount this hook ABOVE any designId-keyed component (CommunityDetailHost
+  // does): detail-to-detail transitions (the similar rail) then reuse one
+  // trapped entry. Trapping inside the keyed dialog would run A's cleanup
+  // back() concurrently with B's mount pushState and could pop B's fresh trap.
   useEffect(() => {
     if (!enabled) return;
     let consumed = false;

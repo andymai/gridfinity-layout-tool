@@ -1,17 +1,29 @@
 /**
- * Tests for community design GET/PUT/DELETE. The load-bearing invariants:
+ * Tests for community design GET/PUT/DELETE/POST. The load-bearing invariants:
  *  - hidden/removed designs are indistinguishable from missing ones for
- *    everyone but their owner
+ *    everyone but their owner (POST actions 404 on non-live too)
  *  - PUT/DELETE authorize via the server-side published set, never a
  *    client-sent publishedId, and PUT can never change moderation status
  *  - PUT rewrites assets under a bumped rev and deletes the replaced rev
  *  - DELETE cleans blobs plus every Redis membership; the admin path needs
  *    a constant-time token match and is disabled without the env var
+ *  - like/unlike/report require a session; open/export never consult one
+ *  - report dedupes per account, auto-hides + purges assets at the
+ *    threshold, and always writes the reverse index for the deletion cascade
+ *  - open/export dedupe on clientId AND caller IP per weekly bucket; export
+ *    credits parent and root lineage
+ *  - the publish kill switch never gates actions on already-live designs
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { communityMeshBlobPath, communityThumbBlobPath } from '../lib/communityStore.js';
+import { createHash } from 'node:crypto';
+import {
+  COMMUNITY_DEDUPE_TTL_SECONDS,
+  communityDedupeBucket,
+  communityMeshBlobPath,
+  communityThumbBlobPath,
+} from '../lib/communityStore.js';
 import type { CommunityDesignRecord } from '../lib/communityStore.js';
 import type { SessionRecord } from '../lib/session.js';
 import {
@@ -19,9 +31,12 @@ import {
   communityChildrenKey,
   communityDenylistKey,
   communityDesignKey,
+  communityExportedKey,
   communityLikedKey,
   communityLikesKey,
+  communityOpenedKey,
   communityPublishedKey,
+  communityReportedKey,
   communityReportsKey,
 } from '../lib/redisKeys.js';
 
@@ -40,6 +55,8 @@ const mocks = vi.hoisted(() => ({
   writeCommunityCard: vi.fn(),
   removeFromCommunityIndexes: vi.fn(),
   deleteCommunityDesignBlob: vi.fn(),
+  setCommunityDesignStatus: vi.fn(),
+  toggleCommunityLike: vi.fn(),
 }));
 
 vi.mock('../lib/rateLimit.js', () => ({
@@ -62,9 +79,13 @@ vi.mock('@vercel/blob', () => ({
   del: mocks.del,
 }));
 
-vi.mock('../lib/communityValidation.js', () => ({
-  validateCommunityPublish: mocks.validateCommunityPublish,
-}));
+vi.mock('../lib/communityValidation.js', async (importOriginal) => {
+  const actual = await importOriginal<Record<string, unknown>>();
+  return {
+    ...actual,
+    validateCommunityPublish: mocks.validateCommunityPublish,
+  };
+});
 
 vi.mock('../lib/communityQuota.js', () => ({
   checkCommunityPublishQuota: mocks.checkCommunityPublishQuota,
@@ -79,6 +100,8 @@ vi.mock('../lib/communityStore.js', async (importOriginal) => {
     writeCommunityCard: mocks.writeCommunityCard,
     removeFromCommunityIndexes: mocks.removeFromCommunityIndexes,
     deleteCommunityDesignBlob: mocks.deleteCommunityDesignBlob,
+    setCommunityDesignStatus: mocks.setCommunityDesignStatus,
+    toggleCommunityLike: mocks.toggleCommunityLike,
   };
 });
 
@@ -107,30 +130,51 @@ function createResponse() {
 interface FakePipeline {
   del: ReturnType<typeof vi.fn>;
   srem: ReturnType<typeof vi.fn>;
+  sadd: ReturnType<typeof vi.fn>;
+  expire: ReturnType<typeof vi.fn>;
   exec: ReturnType<typeof vi.fn>;
 }
 
 interface FakeRedis {
   sismember: ReturnType<typeof vi.fn>;
   smembers: ReturnType<typeof vi.fn>;
+  sadd: ReturnType<typeof vi.fn>;
+  scard: ReturnType<typeof vi.fn>;
+  exists: ReturnType<typeof vi.fn>;
   hget: ReturnType<typeof vi.fn>;
   hgetall: ReturnType<typeof vi.fn>;
+  hmget: ReturnType<typeof vi.fn>;
   hset: ReturnType<typeof vi.fn>;
+  hincrby: ReturnType<typeof vi.fn>;
   pipeline: ReturnType<typeof vi.fn>;
 }
 
 function createRedis(): { redis: FakeRedis; pipeline: FakePipeline } {
+  // Default exec answers [err=null, result=1] per queued command, so a
+  // pipelined SADD reads as "newly added" unless a test overrides exec.
+  let queuedOps = 0;
+  const queue = () => {
+    queuedOps += 1;
+    return pipeline;
+  };
   const pipeline: FakePipeline = {
-    del: vi.fn(() => pipeline),
-    srem: vi.fn(() => pipeline),
-    exec: vi.fn(async () => [] as [null, unknown][]),
+    del: vi.fn(queue),
+    srem: vi.fn(queue),
+    sadd: vi.fn(queue),
+    expire: vi.fn(queue),
+    exec: vi.fn(async () => Array.from({ length: queuedOps }, () => [null, 1] as [null, unknown])),
   };
   const redis: FakeRedis = {
     sismember: vi.fn(async (key: string) => (key === communityDenylistKey() ? 0 : 1)),
     smembers: vi.fn(async () => [] as string[]),
+    sadd: vi.fn(async () => 1),
+    scard: vi.fn(async () => 0),
+    exists: vi.fn(async () => 1),
     hget: vi.fn(async (_key: string, field: string) => (field === 'status' ? 'live' : null)),
     hgetall: vi.fn(async (): Promise<Record<string, string>> => ({})),
+    hmget: vi.fn(async () => [null, null, null] as (string | null)[]),
     hset: vi.fn(async () => 1),
+    hincrby: vi.fn(async () => 1),
     pipeline: vi.fn(() => pipeline),
   };
   return { redis, pipeline };
@@ -230,6 +274,11 @@ describe('community/[id]', () => {
     );
     mocks.del.mockResolvedValue(undefined);
     mocks.validateCommunityPublish.mockReturnValue({ valid: true, payload: publishPayload() });
+    mocks.setCommunityDesignStatus.mockResolvedValue(undefined);
+    mocks.toggleCommunityLike.mockImplementation(async (...args: unknown[]) => ({
+      likes: 13,
+      likedByMe: args[3] === true,
+    }));
   });
 
   afterEach(() => {
@@ -246,7 +295,7 @@ describe('community/[id]', () => {
     });
 
     it('rejects unsupported methods', async () => {
-      const res = await handle('POST');
+      const res = await handle('PATCH');
       expect(res._status).toBe(405);
     });
   });
@@ -258,6 +307,43 @@ describe('community/[id]', () => {
       const body = res._body as { design: CommunityDesignRecord };
       expect(body.design.id).toBe(VALID_ID);
       expect(body.design.params).toEqual({ width: 2, depth: 3, height: 6, gridUnitMm: 42 });
+    });
+
+    it('ships card-hash counts and anonymous like-state with the detail', async () => {
+      // The stats row must not depend on the capped browse index: a design
+      // past the client's 2,000-card cap still needs counts and a heart.
+      redis.hmget.mockResolvedValue(['4', '2', '9']);
+      const res = await handle('GET');
+      expect(res._status).toBe(200);
+      expect(redis.hmget).toHaveBeenCalledWith(
+        communityDesignKey(VALID_ID),
+        'likes',
+        'remixes',
+        'exports'
+      );
+      const body = res._body as { counts: unknown; likedByMe: boolean };
+      expect(body.counts).toEqual({ likes: 4, remixes: 2, exports: 9 });
+      expect(body.likedByMe).toBe(false);
+    });
+
+    it('defaults never-incremented counters to zero', async () => {
+      const res = await handle('GET');
+      expect((res._body as { counts: unknown }).counts).toEqual({
+        likes: 0,
+        remixes: 0,
+        exports: 0,
+      });
+    });
+
+    it('reports likedByMe from the likes set for a signed-in caller', async () => {
+      mocks.readSessionCookie.mockReturnValue('session-token');
+      mocks.readSession.mockResolvedValue(session);
+      // First sismember answers ownership (non-owner), second the likes set.
+      redis.sismember.mockResolvedValueOnce(0).mockResolvedValueOnce(1);
+      const res = await handle('GET');
+      expect(res._status).toBe(200);
+      expect((res._body as { likedByMe: boolean }).likedByMe).toBe(true);
+      expect(redis.sismember).toHaveBeenCalledWith(communityLikesKey(VALID_ID), USER_ID);
     });
 
     it('returns 404 when the design does not exist', async () => {
@@ -687,6 +773,361 @@ describe('community/[id]', () => {
         communityChildrenKey('parentabc123'),
         VALID_ID,
       ]);
+    });
+  });
+
+  describe('POST actions', () => {
+    const CLIENT_ID = 'client-0123456789abcdef';
+    const ROOT_ID = 'RootDesign12';
+
+    function withSessionRejected() {
+      mocks.requireSession.mockImplementation((_req: VercelRequest, res: VercelResponse) => {
+        res.status(401).json({ error: 'Not signed in', code: 'UNAUTHORIZED' });
+        return Promise.resolve(null);
+      });
+    }
+
+    describe('dispatcher', () => {
+      it('rejects a body without an action', async () => {
+        const res = await handle('POST', { body: {} });
+        expect(res._status).toBe(400);
+        expect((res._body as { code: string }).code).toBe('VALIDATION_ERROR');
+      });
+
+      it('rejects an unknown action', async () => {
+        const res = await handle('POST', { body: { action: 'boost' } });
+        expect(res._status).toBe(400);
+        expect((res._body as { code: string }).code).toBe('VALIDATION_ERROR');
+      });
+    });
+
+    describe('like/unlike', () => {
+      it('rejects an anonymous like without touching the toggle', async () => {
+        withSessionRejected();
+        const res = await handle('POST', { body: { action: 'like' } });
+        expect(res._status).toBe(401);
+        expect(mocks.toggleCommunityLike).not.toHaveBeenCalled();
+      });
+
+      it('likes via the atomic toggle and returns { likes, likedByMe }', async () => {
+        const res = await handle('POST', { body: { action: 'like' } });
+        expect(res._status).toBe(200);
+        expect(res._body).toEqual({ likes: 13, likedByMe: true });
+        expect(mocks.checkRateLimit).toHaveBeenCalledWith(USER_ID, 'community.like');
+        expect(mocks.toggleCommunityLike).toHaveBeenCalledWith(redis, USER_ID, VALID_ID, true);
+      });
+
+      it('unlikes via the same toggle with likedByMe false', async () => {
+        const res = await handle('POST', { body: { action: 'unlike' } });
+        expect(res._status).toBe(200);
+        expect(res._body).toEqual({ likes: 13, likedByMe: false });
+        expect(mocks.toggleCommunityLike).toHaveBeenCalledWith(redis, USER_ID, VALID_ID, false);
+      });
+
+      it('404s a like on a hidden design without toggling', async () => {
+        redis.hget.mockResolvedValue('hidden');
+        const res = await handle('POST', { body: { action: 'like' } });
+        expect(res._status).toBe(404);
+        expect(mocks.toggleCommunityLike).not.toHaveBeenCalled();
+      });
+
+      it('404s a like on a never-published design (missing card hash)', async () => {
+        redis.hget.mockResolvedValue(null);
+        const res = await handle('POST', { body: { action: 'like' } });
+        expect(res._status).toBe(404);
+        expect(mocks.toggleCommunityLike).not.toHaveBeenCalled();
+      });
+
+      it('rate limits likes on the community.like budget', async () => {
+        mocks.checkRateLimit.mockResolvedValue({ allowed: false, retryAfterSeconds: 9 });
+        const res = await handle('POST', { body: { action: 'like' } });
+        expect(res._status).toBe(429);
+        expect(mocks.checkRateLimit).toHaveBeenCalledWith(USER_ID, 'community.like');
+      });
+
+      it('works with the publish kill switch off (actions are not publishing)', async () => {
+        delete process.env.COMMUNITY_PUBLISH_ENABLED;
+        const res = await handle('POST', { body: { action: 'like' } });
+        expect(res._status).toBe(200);
+        expect(res._body).toEqual({ likes: 13, likedByMe: true });
+      });
+    });
+
+    describe('report', () => {
+      const reportBody = { action: 'report', reason: 'spam' };
+
+      it('requires a session', async () => {
+        withSessionRejected();
+        const res = await handle('POST', { body: reportBody });
+        expect(res._status).toBe(401);
+        expect(pipeline.exec).not.toHaveBeenCalled();
+      });
+
+      it('rejects an unknown reason before touching Redis', async () => {
+        const res = await handle('POST', { body: { action: 'report', reason: 'ugly' } });
+        expect(res._status).toBe(400);
+        expect((res._body as { code: string }).code).toBe('VALIDATION_ERROR');
+        expect(mocks.getRedis).not.toHaveBeenCalled();
+      });
+
+      it('rejects a note that fails the content filter', async () => {
+        const res = await handle('POST', {
+          body: { action: 'report', reason: 'spam', note: 'see <script here' },
+        });
+        expect(res._status).toBe(400);
+        expect((res._body as { code: string }).code).toBe('CONTENT_BLOCKED');
+        expect(pipeline.exec).not.toHaveBeenCalled();
+      });
+
+      it('404s a report on a non-live design', async () => {
+        redis.hget.mockResolvedValue('removed');
+        const res = await handle('POST', { body: reportBody });
+        expect(res._status).toBe(404);
+        expect(pipeline.exec).not.toHaveBeenCalled();
+      });
+
+      it('records the report in both the design set and the reverse index', async () => {
+        redis.scard.mockResolvedValue(2);
+        const res = await handle('POST', { body: reportBody });
+        expect(res._status).toBe(200);
+        expect(res._body).toEqual({ success: true, autoHidden: false });
+        expect(mocks.checkRateLimit).toHaveBeenCalledWith(USER_ID, 'community.report');
+        expect(pipeline.sadd.mock.calls).toContainEqual([communityReportsKey(VALID_ID), USER_ID]);
+        expect(pipeline.sadd.mock.calls).toContainEqual([communityReportedKey(USER_ID), VALID_ID]);
+        expect(mocks.setCommunityDesignStatus).not.toHaveBeenCalled();
+        expect(mocks.del).not.toHaveBeenCalled();
+      });
+
+      it('dedupes a repeat report from the same account (no threshold re-check)', async () => {
+        pipeline.exec.mockResolvedValue([
+          [null, 0],
+          [null, 1],
+        ]);
+        const res = await handle('POST', { body: reportBody });
+        expect(res._status).toBe(200);
+        expect(res._body).toEqual({ success: true, autoHidden: false });
+        expect(redis.scard).not.toHaveBeenCalled();
+        expect(mocks.setCommunityDesignStatus).not.toHaveBeenCalled();
+        expect(mocks.del).not.toHaveBeenCalled();
+      });
+
+      it('auto-hides and purges CDN assets at the distinct-account threshold', async () => {
+        const record = designRecord();
+        mocks.readCommunityDesignBlob.mockResolvedValue(record);
+        redis.scard.mockResolvedValue(5);
+        const res = await handle('POST', { body: reportBody });
+        expect(res._status).toBe(200);
+        expect(res._body).toEqual({ success: true, autoHidden: true });
+        expect(mocks.setCommunityDesignStatus).toHaveBeenCalledWith(redis, VALID_ID, 'hidden');
+        expect(mocks.del).toHaveBeenCalledWith([...record.thumbnails, record.meshUrl]);
+      });
+
+      it('still hides when the asset purge fails, after a retry, and flags the pending purge', async () => {
+        redis.scard.mockResolvedValue(5);
+        mocks.del.mockRejectedValue(new Error('blob store flaked'));
+        const res = await handle('POST', { body: reportBody });
+        expect(res._status).toBe(200);
+        expect(res._body).toEqual({ success: true, autoHidden: true });
+        expect(mocks.setCommunityDesignStatus).toHaveBeenCalledWith(redis, VALID_ID, 'hidden');
+        expect(mocks.del).toHaveBeenCalledTimes(2);
+        expect(redis.hset).toHaveBeenCalledWith(communityDesignKey(VALID_ID), {
+          purgePending: '1',
+        });
+      });
+
+      it('purges on the retry without flagging when the first delete flakes', async () => {
+        redis.scard.mockResolvedValue(5);
+        mocks.del
+          .mockRejectedValueOnce(new Error('blob store flaked'))
+          .mockResolvedValueOnce(undefined);
+        const res = await handle('POST', { body: reportBody });
+        expect(res._status).toBe(200);
+        expect(res._body).toEqual({ success: true, autoHidden: true });
+        expect(mocks.del).toHaveBeenCalledTimes(2);
+        expect(redis.hset).not.toHaveBeenCalled();
+      });
+
+      it('works with the publish kill switch off', async () => {
+        delete process.env.COMMUNITY_PUBLISH_ENABLED;
+        redis.scard.mockResolvedValue(1);
+        const res = await handle('POST', { body: reportBody });
+        expect(res._status).toBe(200);
+        expect(res._body).toEqual({ success: true, autoHidden: false });
+      });
+    });
+
+    describe('open/export', () => {
+      const CLIENT_MEMBER = `c:${CLIENT_ID}`;
+      const IP_MEMBER = `ip:${createHash('sha256').update('203.0.113.1').digest('hex').slice(0, 16)}`;
+      const openedKey = () => communityOpenedKey(VALID_ID, communityDedupeBucket(Date.now()));
+      const exportedKey = () => communityExportedKey(VALID_ID, communityDedupeBucket(Date.now()));
+
+      it('never consults the session', async () => {
+        const res = await handle('POST', { body: { action: 'open', clientId: CLIENT_ID } });
+        expect(res._status).toBe(200);
+        expect(mocks.requireSession).not.toHaveBeenCalled();
+      });
+
+      it('rate limits by client IP on the community.action budget', async () => {
+        mocks.checkRateLimit.mockResolvedValue({ allowed: false, retryAfterSeconds: 30 });
+        const res = await handle('POST', { body: { action: 'export', clientId: CLIENT_ID } });
+        expect(res._status).toBe(429);
+        expect(mocks.checkRateLimit).toHaveBeenCalledWith('203.0.113.1', 'community.action');
+      });
+
+      it.each([
+        ['missing', undefined],
+        ['too short', 'shortid'],
+        ['bad charset', 'client!0123456789abcdef'],
+        ['too long', 'x'.repeat(65)],
+      ])('rejects a %s clientId before touching Redis', async (_label, clientId) => {
+        const res = await handle('POST', { body: { action: 'open', clientId } });
+        expect(res._status).toBe(400);
+        expect((res._body as { code: string }).code).toBe('VALIDATION_ERROR');
+        expect(mocks.getRedis).not.toHaveBeenCalled();
+      });
+
+      it('404s on a non-live design', async () => {
+        redis.hget.mockResolvedValue(null);
+        const res = await handle('POST', { body: { action: 'open', clientId: CLIENT_ID } });
+        expect(res._status).toBe(404);
+        expect(redis.hincrby).not.toHaveBeenCalled();
+      });
+
+      it('open counts once per new clientId + IP with a bucketed, TTLd dedupe set', async () => {
+        const res = await handle('POST', { body: { action: 'open', clientId: CLIENT_ID } });
+        expect(res._status).toBe(200);
+        expect(res._body).toEqual({ success: true });
+        expect(redis.sadd.mock.calls).toEqual([[openedKey(), IP_MEMBER]]);
+        expect(pipeline.sadd.mock.calls).toEqual([[openedKey(), CLIENT_MEMBER]]);
+        expect(pipeline.expire).toHaveBeenCalledWith(openedKey(), COMMUNITY_DEDUPE_TTL_SECONDS);
+        expect(redis.hincrby).toHaveBeenCalledTimes(1);
+        expect(redis.hincrby).toHaveBeenCalledWith(communityDesignKey(VALID_ID), 'opens', 1);
+      });
+
+      it('open dedupes a repeat clientId without incrementing', async () => {
+        pipeline.exec.mockResolvedValue([
+          [null, 0],
+          [null, 1],
+        ]);
+        const res = await handle('POST', { body: { action: 'open', clientId: CLIENT_ID } });
+        expect(res._status).toBe(200);
+        expect(res._body).toEqual({ success: true });
+        expect(redis.hincrby).not.toHaveBeenCalled();
+      });
+
+      it('open never counts nor stores a fresh clientId from an already-counted IP', async () => {
+        // The rotation attack: a bot minting a new clientId per request. The
+        // IP member SADDs as already present, so no count, and the minted
+        // clientId is never written: otherwise one IP at the rate limit could
+        // fill the set to the cardinality ceiling and freeze counting for the
+        // rest of the window (counter-freeze DoS on a targeted design).
+        redis.sadd.mockResolvedValue(0);
+        const res = await handle('POST', { body: { action: 'open', clientId: CLIENT_ID } });
+        expect(res._status).toBe(200);
+        expect(res._body).toEqual({ success: true });
+        expect(pipeline.sadd).not.toHaveBeenCalled();
+        expect(redis.hincrby).not.toHaveBeenCalled();
+      });
+
+      it('stops growing and counting past the dedupe cardinality ceiling', async () => {
+        redis.scard.mockResolvedValue(20_000);
+        const res = await handle('POST', { body: { action: 'open', clientId: CLIENT_ID } });
+        expect(res._status).toBe(200);
+        expect(res._body).toEqual({ success: true });
+        expect(redis.sadd).not.toHaveBeenCalled();
+        expect(pipeline.sadd).not.toHaveBeenCalled();
+        expect(redis.hincrby).not.toHaveBeenCalled();
+      });
+
+      it('export increments and echoes the design counter for a lineage-free design', async () => {
+        redis.hincrby.mockResolvedValue(8);
+        const res = await handle('POST', { body: { action: 'export', clientId: CLIENT_ID } });
+        expect(res._status).toBe(200);
+        expect(res._body).toEqual({ success: true, exports: 8 });
+        expect(redis.sadd.mock.calls).toEqual([[exportedKey(), IP_MEMBER]]);
+        expect(pipeline.sadd.mock.calls).toEqual([[exportedKey(), CLIENT_MEMBER]]);
+        expect(redis.hincrby).toHaveBeenCalledTimes(1);
+        expect(redis.hincrby).toHaveBeenCalledWith(communityDesignKey(VALID_ID), 'exports', 1);
+      });
+
+      it('export dedupes a repeat clientId and echoes the stored count', async () => {
+        pipeline.exec.mockResolvedValue([
+          [null, 0],
+          [null, 1],
+        ]);
+        // First hget answers the live gate, second answers the exports echo.
+        redis.hget.mockResolvedValueOnce('live').mockResolvedValueOnce('7');
+        const res = await handle('POST', { body: { action: 'export', clientId: CLIENT_ID } });
+        expect(res._status).toBe(200);
+        expect(res._body).toEqual({ success: true, exports: 7 });
+        expect(redis.hincrby).not.toHaveBeenCalled();
+      });
+
+      it('export credits the parent AND the root from the blob lineage', async () => {
+        mocks.readCommunityDesignBlob.mockResolvedValue(
+          designRecord({
+            lineage: {
+              parentId: PARENT_ID,
+              rootId: ROOT_ID,
+              parentName: 'Parent bin',
+              parentAuthorName: 'Ada',
+              rootAuthorName: 'Root Rita',
+            },
+          })
+        );
+        const res = await handle('POST', { body: { action: 'export', clientId: CLIENT_ID } });
+        expect(res._status).toBe(200);
+        expect(redis.hincrby.mock.calls).toEqual([
+          [communityDesignKey(VALID_ID), 'exports', 1],
+          [communityDesignKey(PARENT_ID), 'exports', 1],
+          [communityDesignKey(ROOT_ID), 'exports', 1],
+        ]);
+      });
+
+      it('export credits a direct remix of the root once, not twice', async () => {
+        mocks.readCommunityDesignBlob.mockResolvedValue(
+          designRecord({
+            lineage: {
+              parentId: PARENT_ID,
+              rootId: PARENT_ID,
+              parentName: 'Parent bin',
+              parentAuthorName: 'Ada',
+              rootAuthorName: 'Ada',
+            },
+          })
+        );
+        const res = await handle('POST', { body: { action: 'export', clientId: CLIENT_ID } });
+        expect(res._status).toBe(200);
+        expect(redis.hincrby.mock.calls).toEqual([
+          [communityDesignKey(VALID_ID), 'exports', 1],
+          [communityDesignKey(PARENT_ID), 'exports', 1],
+        ]);
+      });
+
+      it('export never resurrects a deleted ancestor hash', async () => {
+        mocks.readCommunityDesignBlob.mockResolvedValue(
+          designRecord({
+            lineage: {
+              parentId: PARENT_ID,
+              rootId: ROOT_ID,
+              parentName: 'Parent bin',
+              parentAuthorName: 'Ada',
+              rootAuthorName: 'Root Rita',
+            },
+          })
+        );
+        redis.exists.mockResolvedValue(0);
+        const res = await handle('POST', { body: { action: 'export', clientId: CLIENT_ID } });
+        expect(res._status).toBe(200);
+        expect(redis.hincrby.mock.calls).toEqual([[communityDesignKey(VALID_ID), 'exports', 1]]);
+      });
+
+      it('works with the publish kill switch off', async () => {
+        delete process.env.COMMUNITY_PUBLISH_ENABLED;
+        const res = await handle('POST', { body: { action: 'open', clientId: CLIENT_ID } });
+        expect(res._status).toBe(200);
+      });
     });
   });
 });

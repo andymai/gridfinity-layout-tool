@@ -7,9 +7,11 @@ import type {
   CommunityCard,
   CommunityCategory,
   CommunityDesign,
+  CommunityDesignCounts,
   CommunityDesignLineage,
+  CommunityReportReason,
 } from '@/shared/types/community';
-import { COMMUNITY_CATEGORIES } from '@/shared/types/community';
+import { COMMUNITY_CATEGORIES, COMMUNITY_REPORT_NOTE_MAX_LENGTH } from '@/shared/types/community';
 import { TECHNIQUE_CONFIG } from '@/shared/types/exampleTechniques';
 
 const COMMUNITY_ENDPOINT = '/api/community';
@@ -117,9 +119,30 @@ export interface CommunityDesignDetail {
   design: CommunityDesign;
   /** Server-verified against the session's published set, never a client-sent id. */
   isOwner: boolean;
+  /**
+   * Card-hash counters shipped with the detail so the stats row works for
+   * designs beyond the capped browse index; null when the server degraded
+   * (no Redis) or predates the field.
+   */
+  counts: CommunityDesignCounts | null;
+  likedByMe: boolean;
 }
 
-function isDetailResponse(value: unknown): value is { design: CommunityDesign; isOwner?: boolean } {
+function isCountsShape(value: unknown): value is CommunityDesignCounts {
+  return (
+    isRecord(value) &&
+    typeof value.likes === 'number' &&
+    typeof value.remixes === 'number' &&
+    typeof value.exports === 'number'
+  );
+}
+
+function isDetailResponse(value: unknown): value is {
+  design: CommunityDesign;
+  isOwner?: boolean;
+  counts?: unknown;
+  likedByMe?: unknown;
+} {
   return isDesignResponse(value) && (!('isOwner' in value) || typeof value.isOwner === 'boolean');
 }
 
@@ -152,6 +175,7 @@ function isCommunityCard(value: unknown): value is CommunityCard {
     typeof metrics.gridUnitMm === 'number' &&
     typeof value.thumbnailUrl === 'string' &&
     typeof value.isRemix === 'boolean' &&
+    (value.parentId === undefined || typeof value.parentId === 'string') &&
     typeof value.featured === 'boolean' &&
     isRecord(counts) &&
     typeof counts.likes === 'number' &&
@@ -166,6 +190,8 @@ function isCommunityCard(value: unknown): value is CommunityCard {
 interface CommunityListPage {
   items: CommunityCard[];
   nextCursor: string | null;
+  /** Ids on this page the session user has liked; empty for anonymous callers. */
+  likedIds?: string[];
 }
 
 function isListPage(value: unknown): value is CommunityListPage {
@@ -173,7 +199,9 @@ function isListPage(value: unknown): value is CommunityListPage {
     isRecord(value) &&
     Array.isArray(value.items) &&
     value.items.every(isCommunityCard) &&
-    (value.nextCursor === null || typeof value.nextCursor === 'string')
+    (value.nextCursor === null || typeof value.nextCursor === 'string') &&
+    (value.likedIds === undefined ||
+      (Array.isArray(value.likedIds) && value.likedIds.every((id) => typeof id === 'string')))
   );
 }
 
@@ -291,10 +319,11 @@ export async function fetchCommunityIndex(
   for (let request = 0; request < INDEX_MAX_REQUESTS; request++) {
     const page = await fetchCommunityPage(cursor, signal);
     if (isErr(page)) return page;
+    const likedIds = new Set(page.value.likedIds ?? []);
     for (const card of page.value.items) {
       if (seenIds.has(card.id)) continue;
       seenIds.add(card.id);
-      items.push(card);
+      items.push({ ...card, likedByMe: likedIds.has(card.id) });
     }
     cursor = page.value.nextCursor;
     if (cursor === null) return ok({ items, capped: false });
@@ -320,8 +349,67 @@ export async function fetchCommunityDesign(
     const data: unknown = await response.json();
     if (!response.ok) return err(errorFromResponse(response.status, data));
     if (isDetailResponse(data)) {
-      return ok({ design: data.design, isOwner: data.isOwner === true });
+      return ok({
+        design: data.design,
+        isOwner: data.isOwner === true,
+        counts: isCountsShape(data.counts) ? data.counts : null,
+        likedByMe: data.likedByMe === true,
+      });
     }
+    return err({ kind: 'server' });
+  } catch {
+    return err({ kind: 'network' });
+  }
+}
+
+export interface CommunityLikeResult {
+  /** Authoritative post-toggle count, replacing the optimistic value. */
+  likes: number;
+  likedByMe: boolean;
+}
+
+function isLikeResult(value: unknown): value is CommunityLikeResult {
+  return isRecord(value) && typeof value.likes === 'number' && typeof value.likedByMe === 'boolean';
+}
+
+export async function setDesignLiked(
+  id: string,
+  liked: boolean
+): Promise<Result<CommunityLikeResult, CommunityClientError>> {
+  try {
+    const response = await communityFetch(`${COMMUNITY_ENDPOINT}/${id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: liked ? 'like' : 'unlike' }),
+    });
+    const data: unknown = await response.json();
+    if (!response.ok) return err(errorFromResponse(response.status, data));
+    if (isLikeResult(data)) return ok(data);
+    return err({ kind: 'server' });
+  } catch {
+    return err({ kind: 'network' });
+  }
+}
+
+export async function reportDesign(
+  id: string,
+  reason: CommunityReportReason,
+  note: string
+): Promise<Result<{ success: true }, CommunityClientError>> {
+  try {
+    const trimmed = note.trim().slice(0, COMMUNITY_REPORT_NOTE_MAX_LENGTH);
+    const response = await communityFetch(`${COMMUNITY_ENDPOINT}/${id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'report',
+        reason,
+        ...(trimmed !== '' && { note: trimmed }),
+      }),
+    });
+    const data: unknown = await response.json();
+    if (!response.ok) return err(errorFromResponse(response.status, data));
+    if (isDeleteResponse(data)) return ok({ success: true });
     return err({ kind: 'server' });
   } catch {
     return err({ kind: 'network' });

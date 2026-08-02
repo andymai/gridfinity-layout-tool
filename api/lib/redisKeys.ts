@@ -29,6 +29,8 @@
  *   community:reports:{id}          → SET of userIds who reported a design (per-account dedupe)
  *   community:reported:{uid}        → SET of design ids a user reported (reverse index for the account-deletion cascade)
  *   community:denylist              → SET of userIds barred from publishing
+ *   community:opened:{id}           → SET of clientId dedupe tokens for the "open" (remix) counter, 7d TTL
+ *   community:exported:{id}         → SET of clientId dedupe tokens for the "export" (printed) counter, 7d TTL
  */
 
 export type SyncItemKind = 'layouts' | 'designs' | 'baseplates';
@@ -161,4 +163,22 @@ export function communityReportedKey(userId: string): string {
 /** SET of userIds barred from publishing to the community showcase. */
 export function communityDenylistKey(): string {
   return 'community:denylist';
+}
+
+/**
+ * SET of dedupe members (client tokens + hashed IPs) that already triggered
+ * the "open" (remix) counter for a design, keyed by 7-day bucket. Bucketing
+ * gives every key a fixed expiry and bounded growth: refreshing one key's TTL
+ * on each hit would keep any weekly-active design's set alive (and growing)
+ * forever. A new bucket starts a fresh window, so an anonymous client's
+ * repeat open re-counts the next week instead of capping a design's lifetime
+ * count at "unique visitors ever".
+ */
+export function communityOpenedKey(designId: string, bucket: number): string {
+  return `community:opened:${designId}:${bucket}`;
+}
+
+/** SET of dedupe members that already triggered the export ("printed") counter for a design. Same weekly-bucket rationale as communityOpenedKey. */
+export function communityExportedKey(designId: string, bucket: number): string {
+  return `community:exported:${designId}:${bucket}`;
 }

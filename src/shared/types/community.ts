@@ -39,6 +39,18 @@ export type CommunityIndexSort = (typeof COMMUNITY_INDEX_SORTS)[number];
  */
 export type CommunityDesignStatus = 'live' | 'hidden' | 'removed';
 
+/**
+ * MIRROR: must match `COMMUNITY_REPORT_REASONS`/`CommunityReportReason` and
+ * `COMMUNITY_REPORT_NOTE_MAX_LENGTH` in `api/lib/communityValidation.ts`
+ * (api/ cannot import from src/, so the members are duplicated, not shared).
+ * Registered in scripts/check-union-exhaustiveness.sh.
+ */
+export const COMMUNITY_REPORT_REASONS = ['inappropriate', 'spam', 'broken', 'stolen'] as const;
+
+export type CommunityReportReason = (typeof COMMUNITY_REPORT_REASONS)[number];
+
+export const COMMUNITY_REPORT_NOTE_MAX_LENGTH = 500;
+
 export interface CommunityDesignMetrics {
   readonly width: number;
   readonly depth: number;
@@ -90,8 +102,21 @@ export interface CommunityCard {
   readonly thumbnailUrl: string;
   /** True when `lineage` is non-null on the full record; drives the card's corner remix glyph. */
   readonly isRemix: boolean;
+  /**
+   * Direct-remix lineage pointer, '' for originals: powers the detail view's
+   * builds-on-this list. Optional so fixtures and pre-field snapshots keep
+   * compiling; absent reads as no known parent.
+   */
+  readonly parentId?: string;
   readonly featured: boolean;
   readonly counts: CommunityDesignCounts;
+  /**
+   * Whether the session user has liked this design, seeded client-side from
+   * the list response's per-page `likedIds`. Optional so fixtures and
+   * anonymous-era snapshots without the field keep compiling; absent reads
+   * as not-liked.
+   */
+  readonly likedByMe?: boolean;
   readonly createdAt: number;
   readonly updatedAt: number;
   readonly status: CommunityDesignStatus;

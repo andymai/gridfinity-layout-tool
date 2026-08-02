@@ -8,6 +8,13 @@ import {
   DEFAULT_GENERATION_STATE,
 } from '@/features/bin-designer/constants/defaults';
 import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
+import { recordCommunityExport } from '@/shared/api/communityAttribution';
+import type { CommunityDesignLineage } from '@/shared/types/community';
+
+vi.mock('@/shared/api/communityAttribution', () => ({
+  recordCommunityExport: vi.fn().mockResolvedValue(undefined),
+}));
+const mockRecordCommunityExport = vi.mocked(recordCommunityExport);
 
 // Mock the bridge module
 const mockExportBin = vi.fn();
@@ -59,6 +66,7 @@ describe('useExport', () => {
     // Reset store to defaults
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS },
+      lineage: null,
       generation: {
         ...DEFAULT_GENERATION_STATE,
         status: 'idle',
@@ -483,5 +491,144 @@ describe('useExport', () => {
     createElementSpy.mockRestore();
     appendChildSpy.mockRestore();
     removeChildSpy.mockRestore();
+  });
+
+  // ─── Export attribution tests ────────────────────────────────────────────
+
+  describe('export attribution', () => {
+    const TEST_LINEAGE: CommunityDesignLineage = {
+      parentId: 'parent-design-id',
+      rootId: 'root-design-id',
+      parentName: 'Parent design',
+      parentAuthorName: 'Parent Author',
+      rootAuthorName: 'Root Author',
+    };
+
+    /** Stub the download DOM plumbing; returns a restore function. */
+    function mockDownloadDom(): () => void {
+      const mockAnchor = {
+        href: '',
+        download: '',
+        click: vi.fn(),
+        parentNode: document.body,
+      };
+      const originalCreateElement = document.createElement.bind(document);
+      const createElementSpy = vi
+        .spyOn(document, 'createElement')
+        .mockImplementation((tag: string) => {
+          if (tag === 'a') return mockAnchor as unknown as HTMLAnchorElement;
+          return originalCreateElement(tag);
+        });
+      const appendChildSpy = vi
+        .spyOn(document.body, 'appendChild')
+        .mockImplementation((node) => node);
+      const removeChildSpy = vi
+        .spyOn(document.body, 'removeChild')
+        .mockImplementation((node) => node);
+      return () => {
+        createElementSpy.mockRestore();
+        appendChildSpy.mockRestore();
+        removeChildSpy.mockRestore();
+      };
+    }
+
+    const EXPORT_CONFIG = {
+      style: 'descriptive',
+      customName: '',
+      format: 'stl',
+    } as const;
+
+    it('credits the lineage parent exactly once per completed export', async () => {
+      useDesignerStore.setState({ lineage: TEST_LINEAGE });
+      mockExportCombined.mockResolvedValue({
+        pieces: [{ data: new ArrayBuffer(100), label: 'bin' }],
+        format: 'stl',
+      });
+      const restoreDom = mockDownloadDom();
+
+      const { result } = renderHook(() => useExport());
+
+      await act(async () => {
+        const succeeded = await result.current.downloadBin('stl', EXPORT_CONFIG);
+        expect(succeeded).toBe(true);
+      });
+
+      expect(mockRecordCommunityExport).toHaveBeenCalledTimes(1);
+      expect(mockRecordCommunityExport).toHaveBeenCalledWith('parent-design-id');
+
+      // A second completed export attributes again: dedupe is server-side.
+      await act(async () => {
+        await result.current.downloadBin('stl', EXPORT_CONFIG);
+      });
+      expect(mockRecordCommunityExport).toHaveBeenCalledTimes(2);
+
+      restoreDom();
+    });
+
+    it('does not attribute when the design has no lineage', async () => {
+      mockExportCombined.mockResolvedValue({
+        pieces: [{ data: new ArrayBuffer(100), label: 'bin' }],
+        format: 'stl',
+      });
+      const restoreDom = mockDownloadDom();
+
+      const { result } = renderHook(() => useExport());
+
+      await act(async () => {
+        const succeeded = await result.current.downloadBin('stl', EXPORT_CONFIG);
+        expect(succeeded).toBe(true);
+      });
+
+      expect(mockRecordCommunityExport).not.toHaveBeenCalled();
+
+      restoreDom();
+    });
+
+    it('does not attribute when the export fails', async () => {
+      // The failure toast builds a report-issue URL via `new URL(...)`, which
+      // the suite-wide createObjectURL mock (a plain object) cannot construct.
+      Object.defineProperty(globalThis, 'URL', { value: originalURL, writable: true });
+      useDesignerStore.setState({ lineage: TEST_LINEAGE });
+      // Non-retryable error code so exportWithResilience fails immediately.
+      mockExportCombined.mockRejectedValue(new Error('invalid params'));
+      const restoreDom = mockDownloadDom();
+
+      const { result } = renderHook(() => useExport());
+
+      await act(async () => {
+        const succeeded = await result.current.downloadBin('stl', EXPORT_CONFIG);
+        expect(succeeded).toBe(false);
+      });
+
+      expect(mockRecordCommunityExport).not.toHaveBeenCalled();
+
+      restoreDom();
+    });
+
+    it('credits the lineage parent on a completed split export', async () => {
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, width: 8, depth: 3 },
+        lineage: TEST_LINEAGE,
+      });
+      mockExportSplitBin.mockResolvedValue({
+        pieces: [
+          { data: new ArrayBuffer(50), label: 'piece-1x1', col: 1, row: 1 },
+          { data: new ArrayBuffer(50), label: 'piece-2x1', col: 2, row: 1 },
+        ],
+      });
+      const restoreDom = mockDownloadDom();
+
+      const { result } = renderHook(() => useExport());
+
+      await act(async () => {
+        const succeeded = await result.current.downloadSplit('stl', EXPORT_CONFIG);
+        expect(succeeded).toBe(true);
+      });
+
+      expect(mockRecordCommunityExport).toHaveBeenCalledTimes(1);
+      expect(mockRecordCommunityExport).toHaveBeenCalledWith('parent-design-id');
+
+      restoreDom();
+    });
   });
 });

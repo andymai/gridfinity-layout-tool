@@ -1,7 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { del, put } from '@vercel/blob';
 import { requireMethod } from './lib/method.js';
-import { requireSession } from './lib/session.js';
+import { readSessionCookie } from './lib/cookies.js';
+import { readSession, requireSession } from './lib/session.js';
+import type { SessionRecord } from './lib/session.js';
 import { checkRateLimit, getClientIP, getRedis } from './lib/rateLimit.js';
 import { logger } from './lib/logger.js';
 import {
@@ -48,6 +50,7 @@ import {
   communityDenylistKey,
   communityDesignKey,
   communityIndexKey,
+  communityLikedKey,
   communityPublishedKey,
 } from './lib/redisKeys.js';
 import type { CommunityIndexSort } from './lib/redisKeys.js';
@@ -366,6 +369,8 @@ interface CommunityListItem {
   metrics: CommunityDesignMetrics;
   thumbnailUrl: string;
   isRemix: boolean;
+  /** Direct-remix lineage pointer, '' for originals: powers the detail view's builds-on-this list. */
+  parentId: string;
   featured: boolean;
   counts: { likes: number; remixes: number; exports: number };
   createdAt: number;
@@ -389,6 +394,7 @@ function toListItem(card: CommunityCardRecord): CommunityListItem {
     },
     thumbnailUrl: card.thumbnailUrl,
     isRemix: card.isRemix,
+    parentId: card.parentId,
     featured: card.featured,
     counts: { likes: card.likes, remixes: card.remixes, exports: card.exports },
     createdAt: card.createdAt,
@@ -433,13 +439,46 @@ function isCommunityTechnique(value: string): value is CommunityTechnique {
   return (COMMUNITY_TECHNIQUES as readonly string[]).includes(value);
 }
 
+interface ListPage {
+  items: CommunityListItem[];
+  nextCursor: string | null;
+}
+
+/**
+ * Resolve the caller's session without sending any response. The list is a
+ * public surface: an absent, expired, or unreadable session must degrade to
+ * the anonymous view (no likedIds), never 401.
+ */
+async function readOptionalSession(req: VercelRequest): Promise<SessionRecord | null> {
+  const token = readSessionCookie(req);
+  if (!token) return null;
+  const redis = getRedis();
+  if (!redis) return null;
+  try {
+    return await readSession(redis, token);
+  } catch {
+    return null;
+  }
+}
+
+/** Ids on this page the session user has liked, for heart state without a second request. */
+async function resolveLikedIds(
+  redis: RedisClient,
+  userId: string,
+  items: CommunityListItem[]
+): Promise<string[]> {
+  if (items.length === 0) return [];
+  const ids = items.map((item) => item.id);
+  const flags = await redis.smismember(communityLikedKey(userId), ...ids);
+  return ids.filter((_, index) => flags[index] === 1);
+}
+
 async function listMine(
-  res: VercelResponse,
   redis: RedisClient,
   userId: string,
   filters: ListFilters,
   cursor: number
-): Promise<void> {
+): Promise<ListPage> {
   const ids = await redis.smembers(communityPublishedKey(userId));
   const cards = (await readCommunityCards(redis, ids)).filter(
     (card): card is CommunityCardRecord => card !== null && card.status !== 'removed'
@@ -449,18 +488,17 @@ async function listMine(
     .sort((a, b) => compareCards(a, b, filters.sort));
   const page = matching.slice(cursor, cursor + LIST_PAGE_SIZE);
   const nextOffset = cursor + page.length;
-  res.status(200).json({
+  return {
     items: page.map(toListItem),
     nextCursor: nextOffset < matching.length ? String(nextOffset) : null,
-  });
+  };
 }
 
 async function listPublic(
-  res: VercelResponse,
   redis: RedisClient,
   filters: ListFilters,
   cursor: number
-): Promise<void> {
+): Promise<ListPage> {
   const items: CommunityListItem[] = [];
   let offset = cursor;
   let scanned = 0;
@@ -491,7 +529,7 @@ async function listPublic(
     if (!full && ids.length < LIST_SCAN_BATCH) reachedEnd = true;
   }
 
-  res.status(200).json({ items, nextCursor: reachedEnd ? null : String(offset) });
+  return { items, nextCursor: reachedEnd ? null : String(offset) };
 }
 
 async function handleList(req: VercelRequest, res: VercelResponse): Promise<void> {
@@ -555,11 +593,17 @@ async function handleList(req: VercelRequest, res: VercelResponse): Promise<void
     if (mine) {
       const session = await requireSession(req, res);
       if (!session) return;
-      await listMine(res, redis, session.userId, filters, cursor);
+      const page = await listMine(redis, session.userId, filters, cursor);
+      const likedIds = await resolveLikedIds(redis, session.userId, page.items);
+      res.status(200).json({ ...page, likedIds });
       return;
     }
 
-    await listPublic(res, redis, filters, cursor);
+    const page = await listPublic(redis, filters, cursor);
+    const session = await readOptionalSession(req);
+    const likedIds =
+      session === null ? [] : await resolveLikedIds(redis, session.userId, page.items);
+    res.status(200).json({ ...page, likedIds });
   } catch (error) {
     logger.error('Community list error', {
       error: error instanceof Error ? error.message : String(error),

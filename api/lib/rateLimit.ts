@@ -23,7 +23,10 @@ export type RateLimitAction =
   | 'supporters.read'
   | 'community.read'
   | 'community.publish'
-  | 'community.manage';
+  | 'community.manage'
+  | 'community.like'
+  | 'community.action'
+  | 'community.report';
 
 /**
  * Parse Redis URL using WHATWG URL API to avoid deprecated url.parse().
@@ -87,6 +90,18 @@ const RATE_LIMITS: Record<RateLimitAction, RateLimitConfig> = {
   // published 10 times out of deleting their own designs, and cap an admin's
   // moderation sweeps at 10/day per IP.
   'community.manage': { limit: 60, windowSeconds: 24 * 60 * 60 }, // 60/day per user (admin path: per IP)
+  // Like/unlike: session-scoped, generous. Hearting while browsing a page of
+  // cards is a light, repeated action, not a scarce resource like publish.
+  'community.like': { limit: 60, windowSeconds: 60 }, // 60/minute per user
+  // Open/export: anonymous, keyed by IP. Headroom for a legitimate burst
+  // (opening several designs while browsing). Counter inflation is bounded
+  // separately, in the handler's dedupe set (one count per IP per window per
+  // design; the clientId alone is attacker-mintable); this limit only bounds
+  // raw request volume and Redis write pressure.
+  'community.action': { limit: 60, windowSeconds: 60 }, // 60/minute per IP
+  // Report: session-scoped. Mirrors the anonymous 'report' action's budget
+  // (10/hour), same abuse shape but keyed by account instead of IP.
+  'community.report': { limit: 10, windowSeconds: 3600 }, // 10/hour per user
 };
 
 interface RateLimitResult {
