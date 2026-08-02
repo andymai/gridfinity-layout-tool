@@ -22,9 +22,10 @@ const SHARE_CONSTRAINTS = {
   // Server <-> client divergence would let a peer persist height=1 that the
   // recipient's CQRS schema rejects on the next mutation.
   HEIGHT_MIN: 2,
-  // Mirrors client `CONSTRAINTS.GRID_UNIT_MM_MAX / 2` — largest legal
-  // half-pitch grid shift within a custom perimeter.
-  GRID_SHIFT_MM_MAX: 30,
+  // Mirrors client `GRID_PITCH_MM_MAX / 2` (drawerOutline.ts) — half the
+  // largest settable grid pitch, i.e. the largest legal grid shift within a
+  // custom perimeter. NOT `GRID_UNIT_MM_MAX / 2`: the pitch ceiling is 200mm.
+  GRID_SHIFT_MM_MAX: 100,
   VALID_EXPIRATIONS: [30, 60, 90, 365] as const,
   // Custom properties constraints
   CUSTOM_PROPERTY_MAX_COUNT: 50,

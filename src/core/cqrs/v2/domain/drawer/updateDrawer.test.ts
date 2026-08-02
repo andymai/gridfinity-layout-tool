@@ -301,6 +301,15 @@ describe('v2 drawer.update with an outline', () => {
       expect(result.value.event.payload.changes.gridShiftY).toBe(-21);
     });
 
+    it('keeps a large shift on a large-pitch layout (pitch ceiling, not 42mm)', () => {
+      const layout = { ...makeLayout(), gridUnitMm: mm(200) };
+      const result = updateDrawer.handle({ gridShiftX: 90 }, { aggregate: layout });
+
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      expect(result.value.event.payload.changes.gridShiftX).toBe(90);
+    });
+
     it('stores a zero shift as an absent key', () => {
       const layout = {
         ...makeLayout(),

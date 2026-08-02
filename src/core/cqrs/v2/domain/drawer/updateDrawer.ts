@@ -19,7 +19,11 @@ import type { Result, LayoutError } from '@/core/result';
 import { ok } from '@/core/result';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { clamp } from '@/shared/utils/validation';
-import { drawerSizeFloors, isOutlineFullRectangle } from '@/shared/utils/drawerOutline';
+import {
+  drawerSizeFloors,
+  isOutlineFullRectangle,
+  GRID_PITCH_MM_MAX,
+} from '@/shared/utils/drawerOutline';
 import type { BinId, Drawer, GridUnits, MeasuredDrawerMm } from '@/core/types';
 import { effectiveGridUnitMmY, gridUnits, heightUnits, mm } from '@/core/types';
 import { defineCommand } from '../../defineCommand';
@@ -37,16 +41,17 @@ const payloadSchema = z
     height: z.number().min(0),
     fractionalEdgeX: z.enum(['start', 'end']),
     fractionalEdgeY: z.enum(['start', 'end']),
-    // Static bound = half the largest legal pitch; handle() re-clamps to the
-    // layout's actual ±pitch/2 per axis.
+    // Static bound = half the largest settable pitch (GRID_PITCH_MM_MAX via
+    // setGridUnitMm, NOT the smaller GRID_UNIT_MM_MAX); handle() re-clamps to
+    // the layout's actual ±pitch/2 per axis.
     gridShiftX: z
       .number()
-      .min(-CONSTRAINTS.GRID_UNIT_MM_MAX / 2)
-      .max(CONSTRAINTS.GRID_UNIT_MM_MAX / 2),
+      .min(-GRID_PITCH_MM_MAX / 2)
+      .max(GRID_PITCH_MM_MAX / 2),
     gridShiftY: z
       .number()
-      .min(-CONSTRAINTS.GRID_UNIT_MM_MAX / 2)
-      .max(CONSTRAINTS.GRID_UNIT_MM_MAX / 2),
+      .min(-GRID_PITCH_MM_MAX / 2)
+      .max(GRID_PITCH_MM_MAX / 2),
     // null clears the stored measurement (same present-key-undefined dance
     // as the outline: apply() deletes it from the draft).
     measuredMm: z

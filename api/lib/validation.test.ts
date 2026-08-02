@@ -715,18 +715,19 @@ describe('drawer outline validation (issue #2528)', () => {
 
   it('preserves an in-range grid shift and drops a zero one (#3157)', () => {
     const layout = createValidLayout();
-    layout.drawer.gridShiftX = 7.5;
+    // 90mm is legal on a large-pitch layout (pitch ceiling 200mm → half 100).
+    layout.drawer.gridShiftX = 90;
     layout.drawer.gridShiftY = 0;
     const result = validateOutline(layout);
     expect(result.valid).toBe(true);
     if (!result.valid) return;
-    expect(result.layout.drawer.gridShiftX).toBe(7.5);
+    expect(result.layout.drawer.gridShiftX).toBe(90);
     expect('gridShiftY' in result.layout.drawer).toBe(false);
   });
 
-  it('rejects a grid shift beyond half the largest pitch', () => {
+  it('rejects a grid shift beyond half the largest settable pitch', () => {
     const layout = createValidLayout();
-    layout.drawer.gridShiftX = 31;
+    layout.drawer.gridShiftX = 101;
     expect(validateOutline(layout).valid).toBe(false);
   });
 
