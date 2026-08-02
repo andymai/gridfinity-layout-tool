@@ -26,6 +26,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { effectiveGridUnitMmY } from '@/core/types';
+import type { StoredBaseplateParams, DrawerOutline } from '@/core/types';
 import { useTranslation } from '@/i18n';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { hasEffectivePerimeter } from '../utils/buildFullParams';
@@ -47,7 +48,7 @@ import { generateBaseplateDirect } from '@/shared/generation/directMesh';
 import { useBaseplatePageStore } from '../store/baseplatePageStore';
 import { buildFullParams } from '../utils/buildFullParams';
 import { computeBaseplateTiling, bodyParamsForDetach } from '../utils/splitPlanner';
-import { shouldDeferBrepPreview } from '../utils/previewComplexity';
+import { shouldDeferBrepPreview, shouldSkipManifoldDraft } from '../utils/previewComplexity';
 import { groupPiecesByFingerprint } from '../utils/pieceFingerprint';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { isSeatedConnectorStyle } from '@/shared/types/bin';
@@ -167,6 +168,68 @@ const NO_OP_PROGRESS = (_stage: string, _progress: number): void => {};
 type LayoutStoreState = ReturnType<typeof useLayoutStore.getState>;
 
 /**
+ * Single-slot memo for {@link hasEffectivePerimeter}, which resolves and pads
+ * the outline — a per-vertex pass that is wasted on unrelated store ticks.
+ *
+ * `selectGenerationTriggers` runs on EVERY layout-store update (bin edits,
+ * camera, any slider), so without this the outline resolve+pad ran per frame of
+ * every drag whenever whole-cell fitting was on. Baseplate params, drawer dims,
+ * and the outline are replaced-never-mutated, so the key is a straight
+ * identity/value compare of the six resolver inputs — unrelated ticks (which
+ * touch none of them) hit the cache. The cache is correctness-neutral: the key
+ * fully determines the result, so a stale slot at worst forces a recompute.
+ */
+let perimeterMemo: {
+  bp: StoredBaseplateParams;
+  drawerWidth: number;
+  drawerDepth: number;
+  gridUnitMm: number;
+  drawerOutline: DrawerOutline | undefined;
+  gridUnitMmY: number;
+  result: boolean;
+} | null = null;
+
+function hasEffectivePerimeterMemoized(
+  bp: StoredBaseplateParams,
+  drawerWidth: number,
+  drawerDepth: number,
+  gridUnitMm: number,
+  drawerOutline: DrawerOutline | undefined,
+  gridUnitMmY: number
+): boolean {
+  const cached = perimeterMemo;
+  if (
+    cached !== null &&
+    cached.bp === bp &&
+    cached.drawerWidth === drawerWidth &&
+    cached.drawerDepth === drawerDepth &&
+    cached.gridUnitMm === gridUnitMm &&
+    cached.drawerOutline === drawerOutline &&
+    cached.gridUnitMmY === gridUnitMmY
+  ) {
+    return cached.result;
+  }
+  const result = hasEffectivePerimeter(
+    bp,
+    drawerWidth,
+    drawerDepth,
+    gridUnitMm,
+    drawerOutline,
+    gridUnitMmY
+  );
+  perimeterMemo = {
+    bp,
+    drawerWidth,
+    drawerDepth,
+    gridUnitMm,
+    drawerOutline,
+    gridUnitMmY,
+    result,
+  };
+  return result;
+}
+
+/**
  * The layout fields whose change must trigger a baseplate regeneration. Used as
  * the single source of truth for BOTH the `useShallow` selection and the regen
  * effect's dependency — they previously duplicated this list, and a geometry
@@ -202,15 +265,14 @@ export function selectGenerationTriggers(state: LayoutStoreState) {
         : false,
     // Folded out without a perimeter, matching buildFullParams and the mesh
     // cache key: a stored flag on a rectangular plate cannot alter geometry, so
-    // toggling it must not trigger a regeneration.
-    // Folded out without a perimeter, matching buildFullParams and the mesh
-    // cache key: a stored flag on a rectangular plate cannot alter geometry, so
     // toggling it must not trigger a regeneration. Uses the resolver's own
     // predicate, since a large corner radius also yields a perimeter — keying
-    // on the raw drawer outline would leave those plates stale on a toggle.
+    // on the raw drawer outline would leave those plates stale on a toggle. The
+    // `&&` short-circuits the (memoized) resolve+pad away entirely unless the
+    // flag is set, and the memo spares the rest of the drags.
     wholeCellsOnly:
       bp.wholeCellsOnly === true &&
-      hasEffectivePerimeter(
+      hasEffectivePerimeterMemoized(
         bp,
         state.layout.drawer.width,
         state.layout.drawer.depth,
@@ -746,7 +808,19 @@ export function useBaseplateGeneration(): void {
       }
 
       const preview = previewBridgeRef.current;
-      if (preview && !preview.isDestroyed) {
+      if (shouldSkipManifoldDraft(fullParams)) {
+        // Shaped plates clip the slab against the outline with the same
+        // expensive coplanar boolean the exact BREP runs, so a Manifold draft
+        // would do that heavy work twice per edit for an identical-looking
+        // result — and the procedural direct-mesh only draws rectangles, so it
+        // can't stand in either. Skip both drafts: keep the last good mesh on
+        // screen (never blank to EMPTY_MESH mid-edit) and let the single exact
+        // BREP replace it when it lands. Still publish the tiling/progress so
+        // the split overlay tracks the new piece layout while the exact runs.
+        setTiling(tiling);
+        setSplitProgress(null);
+        setDedupStats(null);
+      } else if (preview && !preview.isDestroyed) {
         // manifold_preview on: draft with the Manifold kernel (real generator,
         // draft quality) instead of the procedural direct-mesh.
         setTiling(tiling);
