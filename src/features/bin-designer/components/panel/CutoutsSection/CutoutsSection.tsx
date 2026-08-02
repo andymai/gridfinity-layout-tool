@@ -8,14 +8,26 @@
 import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { Button } from '@/design-system';
+import { Alert, Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog/ConfirmDialog';
 import { CutoutEditor } from './CutoutEditor';
 import { cutoutTaperBand } from '@/features/bin-designer/utils/binDimensions';
 
+const COMMUNITY_CUTOUT_HINT_DISMISSED_KEY = 'gridfinity-community-cutout-hint-dismissed-v1';
+
+function isCommunityCutoutHintDismissed(): boolean {
+  try {
+    return localStorage.getItem(COMMUNITY_CUTOUT_HINT_DISMISSED_KEY) !== null;
+  } catch {
+    return false;
+  }
+}
+
 export function CutoutsSection() {
   const t = useTranslation();
+  const communityShowcaseEnabled = useFeatureFlag('community_showcase');
   const { cutoutCount, clearCutouts, overhang, cellMask } = useDesignerStore(
     useShallow((s) => ({
       cutoutCount: s.params.cutouts.length,
@@ -26,6 +38,16 @@ export function CutoutsSection() {
   );
   const taperBand = cutoutTaperBand({ overhang, cellMask });
   const [clearConfirm, setClearConfirm] = useState(false);
+  const [cutoutHintDismissed, setCutoutHintDismissed] = useState(isCommunityCutoutHintDismissed);
+
+  const dismissCutoutHint = () => {
+    setCutoutHintDismissed(true);
+    try {
+      localStorage.setItem(COMMUNITY_CUTOUT_HINT_DISMISSED_KEY, '1');
+    } catch {
+      // Session-only dismissal when storage is unavailable.
+    }
+  };
 
   return (
     <div className="space-y-3">
@@ -37,6 +59,18 @@ export function CutoutsSection() {
           {t('binDesigner.cutouts.instructionsWorkspaceHint')}
         </p>
       </div>
+
+      {communityShowcaseEnabled && !cutoutHintDismissed && (
+        <Alert
+          intent="info"
+          size="sm"
+          onDismiss={dismissCutoutHint}
+          dismissAriaLabel={t('common.dismiss')}
+          data-testid="community-cutout-hint"
+        >
+          {t('community.publish.needsCutout.hint')}
+        </Alert>
+      )}
 
       <CutoutEditor />
 

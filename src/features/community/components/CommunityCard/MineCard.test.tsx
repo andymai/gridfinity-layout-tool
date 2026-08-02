@@ -13,6 +13,11 @@ vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string) => key,
 }));
 
+let mockIsMobile = false;
+vi.mock('@/shared/hooks/useResponsive', () => ({
+  useResponsive: () => ({ isMobile: mockIsMobile }),
+}));
+
 vi.mock('../../api/client', async (importOriginal) => {
   const actual = await importOriginal<object>();
   return { ...actual, unpublishDesign: vi.fn() };
@@ -63,6 +68,7 @@ function renderCard(
 }
 
 beforeEach(() => {
+  mockIsMobile = false;
   unpublishMock.mockReset();
   useMineStore.setState({ ...INITIAL_MINE_STATE });
   useBrowseStore.setState({ ...INITIAL_BROWSE_STATE });
@@ -178,6 +184,19 @@ describe('MineCard actions', () => {
   it('disables Edit while another edit is in flight', () => {
     renderCard({}, { editBusy: true });
     expect(screen.getByTestId('community-mine-edit')).toBeDisabled();
+  });
+
+  it('grows Edit/Unpublish to the 44px touch target on mobile', () => {
+    mockIsMobile = true;
+    renderCard();
+    expect(screen.getByTestId('community-mine-edit').className).toContain('min-h-[44px]');
+    expect(screen.getByTestId('community-mine-unpublish').className).toContain('min-h-[44px]');
+  });
+
+  it('does not grow Edit/Unpublish beyond their compact size on desktop', () => {
+    renderCard();
+    expect(screen.getByTestId('community-mine-edit').className).not.toContain('min-h-[44px]');
+    expect(screen.getByTestId('community-mine-unpublish').className).not.toContain('min-h-[44px]');
   });
 
   it('unpublishes through the confirm dialog and cleans up on success', async () => {

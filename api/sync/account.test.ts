@@ -67,10 +67,30 @@ const mockRedis = {
     return next;
   }),
   hkeys: vi.fn(async (k: string) => Array.from(redisHashes.get(k)?.keys() ?? [])),
-  hset: vi.fn(async (k: string, f: string, v: string) => {
+  hget: vi.fn(async (k: string, f: string) => redisHashes.get(k)?.get(f) ?? null),
+  hset: vi.fn(async (k: string, f: string | Record<string, string>, v?: string) => {
     const h = redisHashes.get(k) ?? new Map<string, string>();
-    h.set(f, v);
+    if (typeof f === 'object') {
+      for (const [field, value] of Object.entries(f)) h.set(field, value);
+    } else {
+      h.set(f, String(v));
+    }
     redisHashes.set(k, h);
+    return 1;
+  }),
+  exists: vi.fn(async (...keys: string[]) => {
+    let count = 0;
+    for (const k of keys) {
+      if (redisHashes.has(k) || redisSets.has(k) || redisZsets.has(k) || redisStore.has(k)) {
+        count++;
+      }
+    }
+    return count;
+  }),
+  zadd: vi.fn(async (k: string, score: number, m: string) => {
+    const z = redisZsets.get(k) ?? new Map<string, number>();
+    z.set(m, score);
+    redisZsets.set(k, z);
     return 1;
   }),
 };
@@ -457,6 +477,41 @@ describe('DELETE /api/sync/account', () => {
     await handler(makeReq(), replayRes as unknown as VercelResponse);
     expect(replayRes._status).toBe(204);
     expect(redisHashes.get('community:design:oth-1')?.get('likes')).toBe('2');
+  });
+
+  it('rescores the likes index and clamps at zero on the like decrement (A13)', async () => {
+    setSet('community:liked:user-1', ['live-1', 'drift-1']);
+    setHash('community:design:live-1', { id: 'live-1', likes: '3', status: 'live' });
+    setSet('community:likes:live-1', ['user-1']);
+    setZset('community:index:likes', { 'live-1': 3 });
+    // Counter already behind the set (drift): the decrement must clamp at 0.
+    setHash('community:design:drift-1', { id: 'drift-1', likes: '0', status: 'live' });
+    setSet('community:likes:drift-1', ['user-1']);
+    setZset('community:index:likes', { 'live-1': 3, 'drift-1': 0 });
+
+    const { default: handler } = await import('./account');
+    const res = makeRes();
+    await handler(makeReq(), res as unknown as VercelResponse);
+    expect(res._status).toBe(204);
+
+    expect(redisHashes.get('community:design:live-1')?.get('likes')).toBe('2');
+    expect(redisZsets.get('community:index:likes')?.get('live-1')).toBe(2);
+    // Clamped, never negative, in both the hash and the index.
+    expect(redisHashes.get('community:design:drift-1')?.get('likes')).toBe('0');
+    expect(redisZsets.get('community:index:likes')?.get('drift-1')).toBe(0);
+  });
+
+  it('does not rescore a hidden design into the likes index on account deletion (A13)', async () => {
+    setSet('community:liked:user-1', ['hidden-1']);
+    setHash('community:design:hidden-1', { id: 'hidden-1', likes: '2', status: 'hidden' });
+    setSet('community:likes:hidden-1', ['user-1']);
+    // A hidden design is de-indexed; a plain ZADD would resurrect it.
+    const { default: handler } = await import('./account');
+    const res = makeRes();
+    await handler(makeReq(), res as unknown as VercelResponse);
+    expect(res._status).toBe(204);
+    expect(redisHashes.get('community:design:hidden-1')?.get('likes')).toBe('1');
+    expect(redisZsets.get('community:index:likes')?.has('hidden-1')).not.toBe(true);
   });
 
   it('returns 405 for non-DELETE methods', async () => {

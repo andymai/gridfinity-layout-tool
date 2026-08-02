@@ -78,8 +78,15 @@ describe('feature/unfeature commands', () => {
       { allowOverwrite: boolean },
     ];
     expect(written[0].featured).toBe(true);
+    // A15: featuring is not a content edit, so updatedAt must not move on
+    // either the blob or the card hash (no updatedAt written to the hash).
+    expect(written[0].updatedAt).toBe(RECORD.updatedAt);
     expect(written[1]).toEqual({ allowOverwrite: true });
     expect(redis.hset).toHaveBeenCalledWith('community:design:abc123DEF456', { featured: '1' });
+    expect(redis.hset).not.toHaveBeenCalledWith(
+      'community:design:abc123DEF456',
+      expect.objectContaining({ updatedAt: expect.anything() })
+    );
   });
 
   it('unfeature clears the flag on both writers', async () => {

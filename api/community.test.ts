@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import type * as DesignerValidationModule from './lib/designerValidation.js';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import type { Redis } from 'ioredis';
 
@@ -51,6 +52,7 @@ vi.mock('./lib/blobStore.js', async (importOriginal) => {
 import {
   communityDesignBlobPath,
   communityMeshBlobPath,
+  communityParamsFingerprint,
   communityThumbBlobPath,
   setCommunityDesignStatus,
   writeCommunityCard,
@@ -64,13 +66,16 @@ import {
   communityDesignKey,
   communityIndexKey,
   communityLikedKey,
+  communityParamsHashKey,
   communityPublishedKey,
+  communityPublishLockKey,
 } from './lib/redisKeys.js';
 
 class FakeRedis {
   hashes = new Map<string, Map<string, string>>();
   sets = new Map<string, Set<string>>();
   zsets = new Map<string, Map<string, number>>();
+  strings = new Map<string, string>();
 
   async hset(key: string, fields: Record<string, string | number>): Promise<number> {
     const hash = this.hashes.get(key) ?? new Map<string, string>();
@@ -81,6 +86,46 @@ class FakeRedis {
 
   async hget(key: string, field: string): Promise<string | null> {
     return this.hashes.get(key)?.get(field) ?? null;
+  }
+
+  async hmget(key: string, ...fields: string[]): Promise<(string | null)[]> {
+    const hash = this.hashes.get(key);
+    return fields.map((field) => hash?.get(field) ?? null);
+  }
+
+  async hincrby(key: string, field: string, delta: number): Promise<number> {
+    const hash = this.hashes.get(key) ?? new Map<string, string>();
+    const next = Number(hash.get(field) ?? 0) + delta;
+    hash.set(field, String(next));
+    this.hashes.set(key, hash);
+    return next;
+  }
+
+  // Mirrors ioredis SET key value [PX ms] [NX]: returns 'OK' when written, null
+  // when NX and the key already exists. PX (TTL) is not simulated.
+  async set(key: string, value: string, ...args: unknown[]): Promise<'OK' | null> {
+    if (args.includes('NX') && this.strings.has(key)) return null;
+    this.strings.set(key, value);
+    return 'OK';
+  }
+
+  async get(key: string): Promise<string | null> {
+    return this.strings.get(key) ?? null;
+  }
+
+  async exists(...keys: string[]): Promise<number> {
+    let count = 0;
+    for (const key of keys) {
+      if (
+        this.hashes.has(key) ||
+        this.sets.has(key) ||
+        this.zsets.has(key) ||
+        this.strings.has(key)
+      ) {
+        count += 1;
+      }
+    }
+    return count;
   }
 
   async hgetall(key: string): Promise<Record<string, string>> {
@@ -130,10 +175,24 @@ class FakeRedis {
   async del(...keys: string[]): Promise<number> {
     let removed = 0;
     for (const key of keys) {
-      const had = this.hashes.delete(key) || this.sets.delete(key) || this.zsets.delete(key);
+      const had =
+        this.hashes.delete(key) ||
+        this.sets.delete(key) ||
+        this.zsets.delete(key) ||
+        this.strings.delete(key);
       if (had) removed += 1;
     }
     return removed;
+  }
+
+  // Minimal eval supporting the publish-lock compare-and-delete script only:
+  // delete KEYS[1] iff its stored value equals ARGV[1].
+  async eval(_script: string, _numKeys: number, key: string, token: string): Promise<number> {
+    if (this.strings.get(key) === token) {
+      this.strings.delete(key);
+      return 1;
+    }
+    return 0;
   }
 
   async zrevrange(key: string, start: number, stop: number): Promise<string[]> {
@@ -246,7 +305,15 @@ function publishBody(overrides: Record<string, unknown> = {}): Record<string, un
     description: 'Holds 24 sockets.',
     authorName: 'Andy',
     category: 'tools',
-    params: { width: 2, depth: 3, height: 6, gridUnitMm: 42, heightUnitMm: 7 },
+    // A tool cutout so the default publish clears the B1 cutout-only gate.
+    params: {
+      width: 2,
+      depth: 3,
+      height: 6,
+      gridUnitMm: 42,
+      heightUnitMm: 7,
+      cutouts: [{ shape: 'circle' }],
+    },
     thumbnails: [webpBase64()],
     glb: glbBase64(),
     ...overrides,
@@ -369,6 +436,7 @@ beforeEach(() => {
 afterEach(() => {
   delete process.env.TOKEN_SALT;
   delete process.env.COMMUNITY_PUBLISH_ENABLED;
+  delete process.env.COMMUNITY_REQUIRE_CUTOUTS;
   delete process.env.VERCEL_ENV;
 });
 
@@ -719,6 +787,170 @@ describe('POST /api/community (publish)', () => {
         expect.stringContaining('community/meshes/'),
       ])
     );
+  });
+});
+
+describe('POST /api/community — hardening guards', () => {
+  const noCutoutParams = { width: 2, depth: 3, height: 6, gridUnitMm: 42, heightUnitMm: 7 };
+
+  it('rejects a publish without a tool cutout under the default cutout-only policy (B1)', async () => {
+    const res = await handle({ body: publishBody({ params: noCutoutParams }) });
+    expect(res._status).toBe(400);
+    expect((res._body as { code: string }).code).toBe('CUTOUT_REQUIRED');
+    expect(mocks.put).not.toHaveBeenCalled();
+  });
+
+  it('allows a cutout-free publish when COMMUNITY_REQUIRE_CUTOUTS=false (B1 relax lever)', async () => {
+    process.env.COMMUNITY_REQUIRE_CUTOUTS = 'false';
+    const res = await handle({ body: publishBody({ params: noCutoutParams }) });
+    expect(res._status).toBe(201);
+  });
+
+  it('returns a soft retry when the per-user publish lock is held (A9)', async () => {
+    await fake.set(communityPublishLockKey('user-1'), '1');
+    const res = await handle({ body: publishBody() });
+    expect(res._status).toBe(409);
+    expect((res._body as { code: string }).code).toBe('PUBLISH_IN_PROGRESS');
+    expect(mocks.put).not.toHaveBeenCalled();
+  });
+
+  it('releases the publish lock after a successful publish (A9)', async () => {
+    const res = await handle({ body: publishBody() });
+    expect(res._status).toBe(201);
+    // A second publish of new content is not blocked by a leaked lock.
+    expect(await fake.get(communityPublishLockKey('user-1'))).toBeNull();
+  });
+
+  it('lock release is compare-and-delete: a stale release cannot free a re-acquired lock (A9 fencing)', async () => {
+    const key = communityPublishLockKey('user-1');
+    // Our publish overran its TTL; a second request now holds the lock under a
+    // fresh token. Our release must not delete that newer lock.
+    await fake.set(key, 'newer-token');
+    const cad =
+      "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
+    expect(await fake.eval(cad, 1, key, 'our-stale-token')).toBe(0);
+    expect(await fake.get(key)).toBe('newer-token');
+    expect(await fake.eval(cad, 1, key, 'newer-token')).toBe(1);
+    expect(await fake.get(key)).toBeNull();
+  });
+
+  it("rejects a duplicate of another author's live design (B3)", async () => {
+    const fp = communityParamsFingerprint(publishBody().params as Record<string, unknown>);
+    await fake.set(communityParamsHashKey(fp), 'otherDesign0');
+    await fake.hset(communityDesignKey('otherDesign0'), {
+      status: 'live',
+      authorPublicId: 'b'.repeat(32),
+    });
+    const res = await handle({ body: publishBody() });
+    expect(res._status).toBe(409);
+    expect((res._body as { code: string }).code).toBe('DUPLICATE_DESIGN');
+    expect(mocks.put).not.toHaveBeenCalled();
+  });
+
+  it("does not treat the author's own live design as a duplicate (B3)", async () => {
+    const fp = communityParamsFingerprint(publishBody().params as Record<string, unknown>);
+    const authorPublicId = (await import('./lib/communityIds.js')).deriveAuthorPublicId(
+      'user-1'
+    ) as string;
+    await fake.set(communityParamsHashKey(fp), 'ownDesign000');
+    await fake.hset(communityDesignKey('ownDesign000'), { status: 'live', authorPublicId });
+    // Different name -> different content hash, so idempotency does not short
+    // circuit; the params match but same-author is not a duplicate.
+    const res = await handle({ body: publishBody({ name: 'A Fresh Take' }) });
+    expect(res._status).toBe(201);
+  });
+
+  it('rejects a verbatim re-upload of a built-in example (B3)', async () => {
+    process.env.COMMUNITY_REQUIRE_CUTOUTS = 'false';
+    const { EXAMPLE_DESIGNS } = await import('@/features/bin-designer/data/examples');
+    // importActual bypasses the top-level designerValidation mock so the params
+    // fingerprint matches the committed example-hash set (built from
+    // real-sanitized params).
+    const { validateDesignerShare } = await vi.importActual<typeof DesignerValidationModule>(
+      './lib/designerValidation.js'
+    );
+    mocks.validateDesignerShare.mockImplementation(
+      (body: { params: Record<string, unknown> }, size: number) =>
+        validateDesignerShare({ type: 'designer', version: 1, params: body.params }, size)
+    );
+    const res = await handle({ body: publishBody({ params: EXAMPLE_DESIGNS[0].params }) });
+    expect(res._status).toBe(409);
+    expect((res._body as { code: string }).code).toBe('DUPLICATE_DESIGN');
+  });
+
+  it('does not resurface a hidden own design as an idempotency hit (A8)', async () => {
+    const first = await handle({ body: publishBody() });
+    const firstId = (first._body as { id: string }).id;
+    await fake.hset(communityDesignKey(firstId), { status: 'hidden' });
+    const second = await handle({ body: publishBody() });
+    expect(second._status).toBe(201);
+    expect((second._body as { id: string }).id).not.toBe(firstId);
+  });
+
+  it('bumps the parent (== root) remix count and rescores the index on remix publish (A1)', async () => {
+    await seedCard({ id: LINEAGE.parentId, name: 'Parent', authorName: 'PA' });
+    seedRecordBlob(LINEAGE.parentId, { name: 'Parent', authorName: 'PA' });
+    const res = await handle({
+      body: publishBody({ lineage: { ...LINEAGE, rootId: LINEAGE.parentId } }),
+    });
+    expect(res._status).toBe(201);
+    expect(await fake.hget(communityDesignKey(LINEAGE.parentId), 'remixes')).toBe('1');
+    expect(fake.zsets.get(communityIndexKey('remixes'))?.get(LINEAGE.parentId)).toBe(1);
+  });
+
+  it('bumps both parent and root when they differ (A1)', async () => {
+    await seedCard({ id: LINEAGE.parentId, name: 'Parent', authorName: 'PA' });
+    await seedCard({ id: LINEAGE.rootId, name: 'Root', authorName: 'RA' });
+    seedRecordBlob(LINEAGE.parentId, {
+      lineage: {
+        parentId: LINEAGE.rootId,
+        rootId: LINEAGE.rootId,
+        parentName: 'Root',
+        parentAuthorName: 'RA',
+        rootAuthorName: 'RA',
+      },
+    });
+    const res = await handle({ body: publishBody({ lineage: LINEAGE }) });
+    expect(res._status).toBe(201);
+    expect(await fake.hget(communityDesignKey(LINEAGE.parentId), 'remixes')).toBe('1');
+    expect(await fake.hget(communityDesignKey(LINEAGE.rootId), 'remixes')).toBe('1');
+  });
+
+  it('rejects a remix whose params are identical to the parent (B4)', async () => {
+    await seedCard({ id: LINEAGE.parentId, name: 'Parent', authorName: 'PA' });
+    seedRecordBlob(LINEAGE.parentId, {
+      name: 'Parent',
+      authorName: 'PA',
+      params: publishBody().params as Record<string, unknown>,
+    });
+    const res = await handle({
+      body: publishBody({ lineage: { ...LINEAGE, rootId: LINEAGE.parentId } }),
+    });
+    expect(res._status).toBe(409);
+    expect((res._body as { code: string }).code).toBe('REMIX_UNCHANGED');
+    expect(mocks.put).not.toHaveBeenCalled();
+  });
+
+  it('records the params-hash duplicate index on a successful publish (B3)', async () => {
+    const res = await handle({ body: publishBody() });
+    expect(res._status).toBe(201);
+    const id = (res._body as { id: string }).id;
+    const fp = communityParamsFingerprint(publishBody().params as Record<string, unknown>);
+    expect(await fake.get(communityParamsHashKey(fp))).toBe(id);
+  });
+});
+
+describe('POST /api/community — deterministic mine pagination', () => {
+  it('breaks tied timestamps by id for a stable total order (A12)', async () => {
+    await seedCard({ id: 'zzz111111111', createdAt: 5_000 });
+    await seedCard({ id: 'aaa111111111', createdAt: 5_000 });
+    await seedCard({ id: 'mmm111111111', createdAt: 5_000 });
+    for (const id of ['zzz111111111', 'aaa111111111', 'mmm111111111']) {
+      await fake.sadd(communityPublishedKey('user-1'), id);
+    }
+    const res = await handle({ method: 'GET', query: { mine: '1' } });
+    const ids = (res._body as { items: Array<{ id: string }> }).items.map((item) => item.id);
+    expect(ids).toEqual(['aaa111111111', 'mmm111111111', 'zzz111111111']);
   });
 });
 

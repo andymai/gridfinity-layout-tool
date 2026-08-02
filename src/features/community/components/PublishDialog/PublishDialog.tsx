@@ -12,7 +12,7 @@ import { isOk, ok } from '@/core/result';
 import type { Result } from '@/core/result';
 import { useCommunityPublishStore } from '@/core/store/communityPublish';
 import { useToastStore } from '@/core/store/toast';
-import { signInUrl } from '@/core/sync/session/sessionApi';
+import { getMe, signInUrl } from '@/core/sync/session/sessionApi';
 import type { AuthProvider } from '@/core/sync/session/sessionApi';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { trackEvent } from '@/shared/analytics/posthog';
@@ -51,6 +51,31 @@ const VALIDATION_CODE_KEYS: Partial<Record<string, string>> = {
   INVALID_DESCRIPTION: 'community.publish.error.invalidDescription',
   INVALID_AUTHOR_NAME: 'community.publish.error.invalidAuthorName',
   INVALID_CATEGORY: 'community.publish.error.invalidCategory',
+  NAME_TOO_SHORT: 'community.publish.error.nameTooShort',
+  NAME_PLACEHOLDER: 'community.publish.error.namePlaceholder',
+  NAME_LOW_EFFORT: 'community.publish.error.nameLowEffort',
+  CUTOUT_REQUIRED: 'community.publish.error.cutoutRequired',
+  DUPLICATE_DESIGN: 'community.publish.error.duplicate',
+  REMIX_UNCHANGED: 'community.publish.error.remixUnchanged',
+  INVALID_LINEAGE: 'community.publish.error.invalidLineage',
+  UNDER_REVIEW: 'community.publish.error.underReview',
+  PUBLISH_IN_PROGRESS: 'community.publish.error.inProgress',
+};
+
+/** A transient conflict the user can simply retry. */
+const RETRYABLE_CODE = 'PUBLISH_IN_PROGRESS';
+
+/** Validation codes whose only recovery is to drop the remix link and retry. */
+const INVALID_LINEAGE_CODE = 'INVALID_LINEAGE';
+
+/** Screen-reader announcement per phase; the dialog stays mounted across phases. */
+const PHASE_ANNOUNCE_KEYS: Partial<Record<string, string>> = {
+  signin: 'community.publish.announce.signin',
+  identity: 'community.publish.announce.identity',
+  form: 'community.publish.announce.form',
+  publishing: 'community.publish.announce.publishing',
+  success: 'community.publish.announce.success',
+  error: 'community.publish.announce.error',
 };
 
 function publicDesignUrl(id: string): string {
@@ -107,9 +132,29 @@ export function PublishDialog() {
     }
   }, [phase, errorKind]);
 
+  // The Dialog focus trap places initial focus once at mount, but this dialog
+  // stays open while `phase` swaps its whole body (signin -> identity -> form
+  // -> publishing -> success/error). Move focus into each new phase so keyboard
+  // and screen-reader users land on the fresh content instead of a detached
+  // <body>. The aria-live region below announces the transition.
+  useEffect(() => {
+    if (phase === 'closed') return;
+    const raf = requestAnimationFrame(() => {
+      const dialogEl = document.querySelector('[role="dialog"]');
+      const focusable = dialogEl?.querySelector<HTMLElement>(
+        'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
+      );
+      focusable?.focus();
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [phase]);
+
   const publishedId = context?.publishedId ?? null;
   useEffect(() => {
     if (publishedId === null) return;
+    // Prefill/reconcile only makes sense for a recognized owner. Skipping the
+    // signin phase avoids a 404 (expected while signed out) severing the link.
+    if (sessionStatus !== 'authenticated') return;
     let cancelled = false;
     void fetchOwnDesign(publishedId).then((result) => {
       if (cancelled) return;
@@ -119,26 +164,43 @@ export function PublishDialog() {
           description: result.value.description,
           category: result.value.category,
         });
-      } else if (result.error.kind === 'notFound') {
-        const publish = useCommunityPublishStore.getState();
-        publish.handlers?.onUnpublished();
-        publish.clearContextPublishedId();
-        usePublishDialogStore.getState().switchToCreate();
-        useToastStore.getState().addToast({
-          message: t('community.publish.error.republishAsNew'),
-          type: 'info',
-        });
-      } else {
-        // Without the live record, submitting would overwrite the published
-        // name/description with local defaults; block the form instead.
-        setUpdateFetchFailed(true);
+        setUpdateFetchPending(false);
+        return;
       }
+      if (result.error.kind === 'notFound') {
+        // A 404 is definitive only from a recognized owner: the API also 404s
+        // a hidden-but-recoverable design to an expired cookie. Confirm the
+        // session is live before severing the local publishedId link, mirroring
+        // publishedIdReconcile. On an unconfirmed session, keep the link and
+        // block the form rather than mint a duplicate.
+        void getMe().then((me) => {
+          if (cancelled) return;
+          if (me === null) {
+            setUpdateFetchFailed(true);
+            setUpdateFetchPending(false);
+            return;
+          }
+          const publish = useCommunityPublishStore.getState();
+          publish.handlers?.onUnpublished();
+          publish.clearContextPublishedId();
+          usePublishDialogStore.getState().switchToCreate();
+          useToastStore.getState().addToast({
+            message: t('community.publish.error.republishAsNew'),
+            type: 'info',
+          });
+          setUpdateFetchPending(false);
+        });
+        return;
+      }
+      // Without the live record, submitting would overwrite the published
+      // name/description with local defaults; block the form instead.
+      setUpdateFetchFailed(true);
       setUpdateFetchPending(false);
     });
     return () => {
       cancelled = true;
     };
-  }, [publishedId, updateFetchAttempt, t]);
+  }, [publishedId, updateFetchAttempt, sessionStatus, t]);
 
   const parentId = context?.lineage?.parentId ?? null;
   useEffect(() => {
@@ -226,6 +288,10 @@ export function PublishDialog() {
       glb: publishCaptures.glb,
     };
     const isUpdate = mode === 'update' && context.publishedId !== null;
+    // Read lineage fresh so an INVALID_LINEAGE retry that dropped the remix
+    // link (clearContextLineage) publishes standalone instead of re-sending
+    // the stale parent from this closure.
+    const currentLineage = useCommunityPublishStore.getState().context?.lineage ?? null;
     const controller = new AbortController();
     const timeoutId = window.setTimeout(() => controller.abort(), PUBLISH_TIMEOUT_MS);
     const request: Promise<Result<CommunityPublishResult, CommunityClientError>> =
@@ -235,13 +301,13 @@ export function PublishDialog() {
               ? ok({ id: result.value.id, url: publicDesignUrl(result.value.id) })
               : result
           )
-        : publishDesign(input, context.lineage, controller.signal);
+        : publishDesign(input, currentLineage, controller.signal);
     void request.then((result) => {
       window.clearTimeout(timeoutId);
       const dialog = usePublishDialogStore.getState();
       if (isOk(result)) {
         trackEvent('community_publish', {
-          is_remix: context.lineage !== null,
+          is_remix: currentLineage !== null,
           is_update: isUpdate,
         });
         if (!isUpdate) {
@@ -302,6 +368,18 @@ export function PublishDialog() {
       doPublish(fields);
     }
   };
+
+  const handlePublishWithoutRemix = () => {
+    useCommunityPublishStore.getState().clearContextLineage();
+    const fields = lastFields;
+    usePublishDialogStore.getState().backToForm();
+    if (fields) {
+      doPublish(fields);
+    }
+  };
+
+  const errorCode =
+    error?.kind === 'validation' && typeof error.code === 'string' ? error.code : null;
 
   const handleUnpublishConfirm = () => {
     if (context.publishedId === null || unpublishBusy) return;
@@ -370,6 +448,10 @@ export function PublishDialog() {
         dismissable={phase !== 'publishing' && !unpublishBusy}
       >
         <Dialog.Header title={title} closeAriaLabel={t('common.closeDialog')} />
+
+        <div className="sr-only" role="status" aria-live="polite">
+          {PHASE_ANNOUNCE_KEYS[phase] ? t(PHASE_ANNOUNCE_KEYS[phase]) : ''}
+        </div>
 
         {phase === 'signin' && (
           <Dialog.Body>
@@ -534,9 +616,20 @@ export function PublishDialog() {
               >
                 {t('community.publish.error.back')}
               </Button>
-              {(error.kind === 'network' || error.kind === 'server') && (
+              {(error.kind === 'network' ||
+                error.kind === 'server' ||
+                errorCode === RETRYABLE_CODE) && (
                 <Button variant="primary" className="min-h-11 md:min-h-0" onClick={handleTryAgain}>
                   {t('community.publish.error.tryAgain')}
+                </Button>
+              )}
+              {errorCode === INVALID_LINEAGE_CODE && (
+                <Button
+                  variant="primary"
+                  className="min-h-11 md:min-h-0"
+                  onClick={handlePublishWithoutRemix}
+                >
+                  {t('community.publish.error.publishWithoutRemix')}
                 </Button>
               )}
             </Dialog.Footer>

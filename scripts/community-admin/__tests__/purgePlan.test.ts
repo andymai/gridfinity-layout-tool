@@ -89,6 +89,8 @@ describe('planPurgeCleanup', () => {
     );
     expect(plan.likesKey).toBe('community:likes:abc123DEF456');
     expect(plan.reportsKey).toBe('community:reports:abc123DEF456');
+    // A15: the reason-tally hash is enumerated so a purge doesn't orphan it.
+    expect(plan.reportReasonKey).toBe('community:reportReasons:abc123DEF456');
     expect(plan.childrenKey).toBe('community:children:abc123DEF456');
   });
 

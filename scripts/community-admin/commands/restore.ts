@@ -1,6 +1,10 @@
 import { isValidShareId } from '../../../api/lib/shared.js';
 import { readCommunityCards, setCommunityDesignStatus } from '../../../api/lib/communityStore.js';
-import { communityDesignKey } from '../../../api/lib/redisKeys.js';
+import {
+  communityDesignKey,
+  communityReportReasonKey,
+  communityReportsKey,
+} from '../../../api/lib/redisKeys.js';
 import type { Args } from '../lib/args.js';
 import { colors } from '../lib/output.js';
 import { connect } from '../lib/redis.js';
@@ -27,6 +31,10 @@ export async function restore(args: Args): Promise<number> {
     // A stale reason would mislabel the owner badge if the design is later
     // hidden again through a path that does not write its own reason.
     await redis.hdel(communityDesignKey(id), 'hiddenReason');
+    // A5: clear the reports set and the reason tallies too. Without this, the
+    // reports that crossed the auto-hide threshold survive the restore and a
+    // single fresh report instantly re-hides the just-restored design.
+    await redis.del(communityReportsKey(id), communityReportReasonKey(id));
     console.log(colors.cyan(`restored to live: ${id} (was ${card.status})`));
     return 0;
   } finally {

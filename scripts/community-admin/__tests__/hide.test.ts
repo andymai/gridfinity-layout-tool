@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   readCommunityCards: vi.fn(),
   setCommunityDesignStatus: vi.fn(),
   connect: vi.fn(),
+  purgeCommunityAssets: vi.fn(),
 }));
 
 vi.mock('../../../api/lib/communityStore.js', async (importOriginal) => {
@@ -19,6 +20,10 @@ vi.mock('../../../api/lib/communityStore.js', async (importOriginal) => {
 
 vi.mock('../lib/redis.js', () => ({
   connect: mocks.connect,
+}));
+
+vi.mock('../lib/assets.js', () => ({
+  purgeCommunityAssets: mocks.purgeCommunityAssets,
 }));
 
 const { hide } = await import('../commands/hide.js');
@@ -36,6 +41,7 @@ function createRedis() {
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.setCommunityDesignStatus.mockResolvedValue(undefined);
+  mocks.purgeCommunityAssets.mockResolvedValue(undefined);
 });
 
 describe('hide command', () => {
@@ -72,6 +78,20 @@ describe('hide command', () => {
     expect(redis.hset).toHaveBeenCalledWith(expect.stringContaining('abc123DEF456'), {
       hiddenReason: 'moderation',
     });
+    // A10: hide is a takedown, so it deletes the design's CDN assets.
+    expect(mocks.purgeCommunityAssets).toHaveBeenCalledWith('abc123DEF456');
+    expect(redis.quit).toHaveBeenCalledTimes(1);
+  });
+
+  it('fails loud when the asset purge errors (A10)', async () => {
+    mocks.readCommunityCards.mockResolvedValue([CARD]);
+    const redis = createRedis();
+    mocks.connect.mockReturnValue(redis);
+    mocks.purgeCommunityAssets.mockRejectedValue(new Error('blob store down'));
+
+    await expect(hide(baseArgs(['abc123DEF456']))).rejects.toThrow('blob store down');
+    // Status is flipped before the (failing) purge, so a retry re-runs cleanly.
+    expect(mocks.setCommunityDesignStatus).toHaveBeenCalledWith(redis, 'abc123DEF456', 'hidden');
     expect(redis.quit).toHaveBeenCalledTimes(1);
   });
 });

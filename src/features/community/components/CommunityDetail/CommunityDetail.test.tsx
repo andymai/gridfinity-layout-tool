@@ -509,6 +509,37 @@ describe('CommunityDetail', () => {
     });
   });
 
+  it('keeps unlike enabled on a design that is no longer live (server permits unlike, only new likes)', async () => {
+    // The owner viewing their own hidden design with a pre-existing like:
+    // the heart must stay enabled to withdraw it even though the design
+    // is not 'live'. No browse-store card, so the fetched detail stats
+    // (not the stale card snapshot) drive likedByMe.
+    useBrowseStore.setState({ ...INITIAL_BROWSE_STATE, items: [] });
+    fetchMock.mockResolvedValue(
+      ok(
+        detail({
+          design: communityDesign({ status: 'hidden' }),
+          isOwner: true,
+          counts: { likes: 12, remixes: 4, exports: 9 },
+          likedByMe: true,
+        })
+      )
+    );
+    likeMock.mockResolvedValue(ok({ likes: 11, likedByMe: false }));
+    openDetail();
+    renderDetail();
+    const heart = await screen.findByTestId('community-detail-like');
+    expect(heart).toHaveAttribute('aria-pressed', 'true');
+    expect(heart).not.toBeDisabled();
+
+    fireEvent.click(heart);
+
+    expect(likeMock).toHaveBeenCalledWith('Abc123456789', false);
+    await waitFor(() => {
+      expect(screen.getByTestId('community-detail-like')).toHaveAttribute('aria-pressed', 'false');
+    });
+  });
+
   it('opens the sign-in prompt for a signed-out heart tap', async () => {
     useSessionStore.setState({ status: 'anonymous', user: null });
     fetchMock.mockResolvedValue(ok(detail()));

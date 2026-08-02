@@ -379,6 +379,36 @@ export async function setCommunityDesignStatus(
 }
 
 /**
+ * Move a remix's credit on its parent and root by `delta` (+1 on publish, -1
+ * when the remix is deleted/unpublished). The counter is HINCRBY'd on the card
+ * hash and clamped at zero; the `remixes` sort index is rescored only for a
+ * still-live design, because a plain ZADD would otherwise resurrect a
+ * hidden/removed parent into the gallery. A parent whose hash no longer exists
+ * (deleted) is skipped, matching the export-credit guard.
+ *
+ * parentId === rootId (a direct remix of the root) credits once, not twice.
+ */
+export async function adjustRemixCredit(
+  redis: Redis,
+  parentId: string,
+  rootId: string,
+  delta: number
+): Promise<void> {
+  const ids = rootId === parentId ? [parentId] : [parentId, rootId];
+  for (const id of ids) {
+    if ((await redis.exists(communityDesignKey(id))) !== 1) continue;
+    let next = await redis.hincrby(communityDesignKey(id), 'remixes', delta);
+    if (next < 0) {
+      await redis.hset(communityDesignKey(id), { remixes: '0' });
+      next = 0;
+    }
+    if ((await redis.hget(communityDesignKey(id), 'status')) === 'live') {
+      await redis.zadd(communityIndexKey('remixes'), next, id);
+    }
+  }
+}
+
+/**
  * Atomic like/unlike: SADD/SREM the per-design likes set, mirror into the
  * user's reverse "liked" set, HINCRBY the card hash counter, and re-score the
  * likes sort index, all inside one Lua script so two racing requests (double
@@ -501,6 +531,13 @@ export interface CommunityContentHashInput {
   name: string;
   description: string;
   category: string;
+  authorName: string;
+  /**
+   * Only the identifying fields of the lineage participate: display snapshots
+   * (parentName/authorName) are server-derived and would make otherwise
+   * identical remixes hash differently.
+   */
+  lineage: { parentId: string; rootId: string } | null;
 }
 
 /**
@@ -508,6 +545,11 @@ export interface CommunityContentHashInput {
  * identical content maps to the same hash, so the handler can return the
  * existing id instead of minting a duplicate. Object keys are sorted
  * recursively so serialization order can't defeat the match.
+ *
+ * Lineage is part of the hash so an author's own remix of their design does not
+ * alias to the non-remix original (they are distinct publishable designs), and
+ * authorName is included so a name-correction retry mints/updates rather than
+ * returning the stale pre-correction id.
  */
 export function communityContentHash(content: CommunityContentHashInput): string {
   const canonical = stableStringify({
@@ -515,6 +557,21 @@ export function communityContentHash(content: CommunityContentHashInput): string
     name: content.name,
     description: content.description,
     category: content.category,
+    authorName: content.authorName,
+    lineage:
+      content.lineage === null
+        ? null
+        : { parentId: content.lineage.parentId, rootId: content.lineage.rootId },
   });
   return createHash('sha256').update(canonical).digest('hex').slice(0, 32);
+}
+
+/**
+ * Params-only canonical fingerprint, used by the exact-duplicate guard to
+ * detect a re-upload of a built-in example regardless of the name/description
+ * the uploader chose. Runs over the sanitized params (post `validateDesignerShare`)
+ * so it matches the same funnel the example-hash generator uses.
+ */
+export function communityParamsFingerprint(params: Record<string, unknown>): string {
+  return createHash('sha256').update(stableStringify(params)).digest('hex').slice(0, 32);
 }

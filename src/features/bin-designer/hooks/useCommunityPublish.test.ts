@@ -64,9 +64,23 @@ function savedDesign(overrides: Partial<SavedDesign> = {}): SavedDesign {
   } as SavedDesign;
 }
 
+const qualifyingCutout = {
+  id: 'c1',
+  shape: 'rectangle',
+  x: 0,
+  y: 0,
+  width: 10,
+  depth: 10,
+  cutDepth: 5,
+  rotation: 0,
+  cornerRadius: 0,
+  label: '',
+  groupId: null,
+} as unknown as (typeof DEFAULT_BIN_PARAMS.cutouts)[number];
+
 function setDesignerReady(): void {
   useDesignerStore.setState({
-    params: DEFAULT_BIN_PARAMS,
+    params: { ...DEFAULT_BIN_PARAMS, cutouts: [qualifyingCutout] },
     itemKind: 'bin',
     currentDesignId: 'design-1',
     designName: 'Screw Bin',
@@ -106,7 +120,9 @@ describe('useCommunityPublish', () => {
       expect(state.isOpen).toBe(true);
       expect(state.context?.designId).toBe('design-1');
       expect(state.context?.designName).toBe('Screw Bin');
-      expect(state.context?.paramsHash).toBe(hashBinParams(DEFAULT_BIN_PARAMS));
+      expect(state.context?.paramsHash).toBe(
+        hashBinParams({ ...DEFAULT_BIN_PARAMS, cutouts: [qualifyingCutout] })
+      );
       expect(state.context?.publishedId).toBeNull();
       await waitFor(() =>
         expect(useCommunityPublishStore.getState().captures).toEqual({
@@ -239,10 +255,11 @@ describe('useCommunityPublish', () => {
   });
 
   describe('useCommunityPublishEntry', () => {
-    it('is visible with the flag on and publishable with a ready mesh', () => {
+    it('is visible with the flag on and publishable with a ready mesh and a qualifying cutout', () => {
       const { result } = renderHook(() => useCommunityPublishEntry());
       expect(result.current.publishVisible).toBe(true);
       expect(result.current.canPublish).toBe(true);
+      expect(result.current.needsCutout).toBe(false);
     });
 
     it('is hidden when the flag is off', () => {
@@ -255,6 +272,35 @@ describe('useCommunityPublish', () => {
       useDesignerStore.setState({ generation: { ...DEFAULT_GENERATION_STATE, mesh: null } });
       const { result } = renderHook(() => useCommunityPublishEntry());
       expect(result.current.canPublish).toBe(false);
+    });
+
+    it('cannot publish a bin with no tool cutout, and reports the reason', () => {
+      useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS, cutouts: [] } });
+      const { result } = renderHook(() => useCommunityPublishEntry());
+      expect(result.current.canPublish).toBe(false);
+      expect(result.current.needsCutout).toBe(true);
+    });
+
+    it('does not gate wall cutouts as a qualifying cutout', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          cutouts: [],
+          walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: true },
+        },
+      });
+      const { result } = renderHook(() => useCommunityPublishEntry());
+      expect(result.current.needsCutout).toBe(true);
+    });
+
+    it('can publish once a qualifying cutout is added', () => {
+      useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS, cutouts: [] } });
+      const { result, rerender } = renderHook(() => useCommunityPublishEntry());
+      expect(result.current.canPublish).toBe(false);
+      useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS, cutouts: [qualifyingCutout] } });
+      rerender();
+      expect(result.current.canPublish).toBe(true);
+      expect(result.current.needsCutout).toBe(false);
     });
   });
 

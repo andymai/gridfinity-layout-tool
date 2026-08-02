@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
   validateDesignerShare: vi.fn(),
@@ -16,6 +16,7 @@ import {
   COMMUNITY_REPORT_REASONS,
   COMMUNITY_TECHNIQUES,
   MAX_COMMUNITY_THUMBNAIL_BYTES,
+  communityRequiresCutouts,
   deriveCommunityTechniques,
   parseCommunityLineage,
   validateCommunityPublish,
@@ -86,6 +87,18 @@ describe('validateCommunityPublish', () => {
     expectError(validBody({ name: undefined }), 'INVALID_NAME');
     expectError(validBody({ name: '   ' }), 'INVALID_NAME');
     expectError(validBody({ name: 'x'.repeat(COMMUNITY_NAME_MAX_LENGTH + 1) }), 'INVALID_NAME');
+  });
+
+  it('rejects low-effort names with specific codes (B2)', () => {
+    expectError(validBody({ name: 'ab' }), 'NAME_TOO_SHORT');
+    expectError(validBody({ name: 'Untitled Bin' }), 'NAME_PLACEHOLDER');
+    expectError(validBody({ name: '  untitled  ' }), 'NAME_PLACEHOLDER');
+    expectError(validBody({ name: '1234' }), 'NAME_LOW_EFFORT');
+    expectError(validBody({ name: 'aaaa' }), 'NAME_LOW_EFFORT');
+  });
+
+  it('accepts a descriptive name in a non-Latin script', () => {
+    expect(validateCommunityPublish(validBody({ name: '工具盒' })).valid).toBe(true);
   });
 
   it('defaults an absent description to empty and caps its length', () => {
@@ -221,6 +234,25 @@ describe('validateCommunityPublish', () => {
     const oversize = glbBase64(2_000_000);
     const message = expectError(validBody({ glb: oversize }), 'INVALID_GLB');
     expect(message).toContain('decoded bytes');
+  });
+});
+
+describe('communityRequiresCutouts (B1 config flag)', () => {
+  afterEach(() => {
+    delete process.env.COMMUNITY_REQUIRE_CUTOUTS;
+  });
+
+  it('defaults ON when the flag is unset', () => {
+    expect(communityRequiresCutouts()).toBe(true);
+  });
+
+  it('is only relaxed by the literal string "false"', () => {
+    process.env.COMMUNITY_REQUIRE_CUTOUTS = 'false';
+    expect(communityRequiresCutouts()).toBe(false);
+    process.env.COMMUNITY_REQUIRE_CUTOUTS = 'true';
+    expect(communityRequiresCutouts()).toBe(true);
+    process.env.COMMUNITY_REQUIRE_CUTOUTS = '0';
+    expect(communityRequiresCutouts()).toBe(true);
   });
 });
 

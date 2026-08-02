@@ -20,23 +20,34 @@ function byNewest(a: CommunityCard, b: CommunityCard): number {
 export function buildShelves(items: readonly CommunityCard[], now: number): Shelf[] {
   if (items.length < SHELF_LANDING_MIN_DESIGNS) return [];
   const shelves: Shelf[] = [];
+  // A design already surfaced in an upper shelf is skipped in every lower
+  // shelf, so a small library doesn't show the same card three times.
+  const shownIds = new Set<string>();
 
   const staffPicks = items
     .filter((card) => card.featured)
     .sort(byNewest)
     .slice(0, SHELF_CARD_LIMIT);
-  if (staffPicks.length > 0) shelves.push({ id: 'staff-picks', cards: staffPicks });
+  if (staffPicks.length > 0) {
+    shelves.push({ id: 'staff-picks', cards: staffPicks });
+    for (const card of staffPicks) shownIds.add(card.id);
+  }
 
   const newest = [...items].sort(byNewest);
-  const thisWeek = newest.filter((card) => now - card.createdAt <= SEVEN_DAYS_MS);
+  const thisWeek = newest.filter(
+    (card) => now - card.createdAt <= SEVEN_DAYS_MS && !shownIds.has(card.id)
+  );
   // Only genuinely-new designs belong under the "New this week" heading: a
   // thin week shows a short shelf, a dead week shows none, never months-old
   // designs relabeled as new.
   if (thisWeek.length > 0) {
-    shelves.push({ id: 'new-this-week', cards: thisWeek.slice(0, SHELF_CARD_LIMIT) });
+    const cards = thisWeek.slice(0, SHELF_CARD_LIMIT);
+    shelves.push({ id: 'new-this-week', cards });
+    for (const card of cards) shownIds.add(card.id);
   }
 
   const mostRemixed = [...items]
+    .filter((card) => !shownIds.has(card.id))
     .sort((a, b) =>
       b.counts.remixes !== a.counts.remixes ? b.counts.remixes - a.counts.remixes : byNewest(a, b)
     )

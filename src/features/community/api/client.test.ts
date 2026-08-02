@@ -183,6 +183,17 @@ describe('publishDesign', () => {
     }
   });
 
+  it('routes coded 409 conflicts (duplicate, unchanged remix, in-progress) through validation', async () => {
+    for (const code of ['DUPLICATE_DESIGN', 'REMIX_UNCHANGED', 'PUBLISH_IN_PROGRESS']) {
+      fetchMock.mockResolvedValue(jsonResponse(409, { error: 'conflict', code }));
+      const result = await publishDesign(input);
+      expect(isErr(result)).toBe(true);
+      if (isErr(result)) {
+        expect(result.error).toEqual({ kind: 'validation', code, message: 'conflict' });
+      }
+    }
+  });
+
   it('maps 403 to forbidden with the neutral server message', async () => {
     fetchMock.mockResolvedValue(
       jsonResponse(403, {
@@ -371,6 +382,52 @@ describe('fetchCommunityIndex', () => {
     const result = await fetchCommunityIndex();
     expect(isOk(result)).toBe(true);
     if (isOk(result)) expect(result.value.capped).toBe(false);
+  });
+
+  it('reports the cap when the index reaches it and a page still overflows in one response', async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(200, {
+        items: Array.from({ length: COMMUNITY_INDEX_CAP + 1 }, (_, i) => card(`d${i}`)),
+        nextCursor: null,
+      })
+    );
+    const result = await fetchCommunityIndex();
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) {
+      expect(result.value.items).toHaveLength(COMMUNITY_INDEX_CAP);
+      expect(result.value.capped).toBe(true);
+    }
+  });
+
+  it('reports the cap when the index ends exactly at the cap but the server still hands back a cursor', async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(200, {
+        items: Array.from({ length: COMMUNITY_INDEX_CAP }, (_, i) => card(`d${i}`)),
+        nextCursor: 'still-more',
+      })
+    );
+    const result = await fetchCommunityIndex();
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) {
+      expect(result.value.items).toHaveLength(COMMUNITY_INDEX_CAP);
+      expect(result.value.capped).toBe(true);
+    }
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not claim the cap when under it', async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(200, {
+        items: Array.from({ length: COMMUNITY_INDEX_CAP - 1 }, (_, i) => card(`d${i}`)),
+        nextCursor: null,
+      })
+    );
+    const result = await fetchCommunityIndex();
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) {
+      expect(result.value.items).toHaveLength(COMMUNITY_INDEX_CAP - 1);
+      expect(result.value.capped).toBe(false);
+    }
   });
 
   it('does not claim the cap when the request budget runs out below it', async () => {

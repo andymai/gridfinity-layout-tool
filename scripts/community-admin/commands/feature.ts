@@ -32,11 +32,12 @@ async function setFeatured(args: Args, featured: boolean): Promise<number> {
       console.error(`community design not found: ${id}`);
       return 1;
     }
+    // A15: featuring is a moderation flag, not a content edit, so updatedAt is
+    // left untouched on both the blob and the card hash. Bumping it would
+    // reorder the design in any updatedAt-derived view and misreport it as
+    // freshly edited.
     await Promise.all([
-      writeCommunityDesignBlob(
-        { ...record, featured, updatedAt: Date.now() },
-        { allowOverwrite: true }
-      ),
+      writeCommunityDesignBlob({ ...record, featured }, { allowOverwrite: true }),
       redis.hset(communityDesignKey(id), { featured: featured ? '1' : '0' }),
     ]);
     console.log(colors.cyan(`${featured ? 'featured' : 'unfeatured'}: ${id}`));
