@@ -78,6 +78,16 @@ export function computePieceFingerprint(params: ResolvedBaseplateParams): string
     parts.push(`ol:${hashOutline(canonicalStartOutline(params.outline))}`);
   }
 
+  // Per-seam connector gating (#3163): pieces whose seams carry different
+  // allowed-connector subsets cut different grooves and must never dedupe.
+  // Already expressed in the piece's canonical (post-rotation) frame.
+  if (params.connectorFilter !== undefined) {
+    const cf = params.connectorFilter;
+    const fmt = (side: 'left' | 'right' | 'front' | 'back'): string =>
+      cf[side] === undefined ? '' : cf[side].map((v) => v.toFixed(2)).join(',');
+    parts.push(`cf:${(['left', 'right', 'front', 'back'] as const).map(fmt).join(';')}`);
+  }
+
   // Edge classification (exterior vs join) affects geometry through two
   // independent channels — and keying on the raw labels over-distinguishes
   // pieces that are actually identical:

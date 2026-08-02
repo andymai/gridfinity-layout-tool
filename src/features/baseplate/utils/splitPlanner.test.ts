@@ -1743,17 +1743,86 @@ describe('shaped plates (outline-aware splitting)', () => {
     expect(b2Params.outline?.vertices).toContainEqual({ x: 0, y: 4 * U });
   });
 
-  it('butts a seam the outline crosses (partial seam)', () => {
+  it('keeps a crossed seam joined at the junctions inside the outline (#3163)', () => {
     const tiling = computeBaseplateTiling(shapedParams(CHAMFER_OUTLINE), BED);
     const byLabel = new Map(tiling.pieces.map((p) => [p.label, p]));
-    // The diagonal crosses both of B2's join seams → butt joints on both sides.
+    // The diagonal (x + y = 12u) crosses both of B2's join seams, but the
+    // junctions whose one-cell bands sit fully inside keep their connectors —
+    // the old whole-span rule butted the entire seam. On B2's left seam
+    // (x = 4U, span y 4U..8U, center 6U) the junctions at y = 5U and 6U are
+    // inside (piece-centered offsets −U and 0); y = 7U is crossed.
+    const b2 = byLabel.get('B2');
+    expect(b2?.edges.left).toBe('join');
+    expect(b2?.connectorFilter?.left).toEqual([-U, 0]);
+    expect(b2?.edges.front).toBe('join');
+    expect(b2?.connectorFilter?.front).toEqual([-U, 0]);
+    // Both flanks of each seam gate identically, so grooves stay paired.
+    const a2 = byLabel.get('A2');
+    const b1 = byLabel.get('B1');
+    expect(a2?.edges.right).toBe('join');
+    expect(a2?.connectorFilter?.right).toEqual([-U, 0]);
+    expect(b1?.edges.back).toBe('join');
+    expect(b1?.connectorFilter?.back).toEqual([-U, 0]);
+    // The body seams away from the diagonal keep every connector — no filter,
+    // byte-stable with unshaped plates.
+    const a1 = byLabel.get('A1');
+    expect(a1?.edges.right).toBe('join');
+    expect(a1?.edges.back).toBe('join');
+    expect(a1?.connectorFilter).toBeUndefined();
+  });
+
+  it('still butts a seam with no inside junction at all', () => {
+    // A step notch leaves B2 only a half-cell sliver (x ∈ [4U, 4.5U]) along
+    // its left seam: every junction's right-hand band crosses the outline, so
+    // the seam demotes to exterior on BOTH flanks, exactly like before.
+    const step: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 8 * U, y: 0 },
+        { x: 8 * U, y: 4 * U },
+        { x: 4.5 * U, y: 4 * U },
+        { x: 4.5 * U, y: 8 * U },
+        { x: 0, y: 8 * U },
+      ],
+    };
+    const tiling = computeBaseplateTiling(shapedParams(step), BED);
+    const byLabel = new Map(tiling.pieces.map((p) => [p.label, p]));
     expect(byLabel.get('B2')?.edges.left).toBe('exterior');
-    expect(byLabel.get('B2')?.edges.front).toBe('exterior');
     expect(byLabel.get('A2')?.edges.right).toBe('exterior');
-    expect(byLabel.get('B1')?.edges.back).toBe('exterior');
-    // The body seams away from the diagonal keep connectors.
-    expect(byLabel.get('A1')?.edges.right).toBe('join');
-    expect(byLabel.get('A1')?.edges.back).toBe('join');
+  });
+
+  it('rotates the connector filter alongside the other positional fields', () => {
+    const parent = shapedParams(CHAMFER_OUTLINE, { preferIdenticalPieces: true });
+    const tiling = computeBaseplateTiling(parent, BED);
+    const rotated = tiling.pieces.find(
+      (p) => p.placementRotationDeg === 180 && p.connectorFilter !== undefined
+    );
+    if (rotated === undefined || rotated.connectorFilter === undefined) {
+      // The canonicalization may orient the filtered pieces at 0° — then the
+      // pass-through branch is covered by the assertions above; only assert
+      // the rotation math when a rotated filtered piece exists.
+      return;
+    }
+    const gen = pieceToBaseplateParams(rotated, parent);
+    const sides = ['left', 'right', 'front', 'back'] as const;
+    const opposite = { left: 'right', right: 'left', front: 'back', back: 'front' } as const;
+    for (const side of sides) {
+      const worldFilter = rotated.connectorFilter[side];
+      if (worldFilter === undefined) continue;
+      expect(gen.connectorFilter?.[opposite[side]]).toEqual(
+        [...worldFilter].map((v) => -v).sort((x, y) => x - y)
+      );
+    }
+  });
+
+  it('distinguishes fingerprints by connector gating (#3163)', () => {
+    const parent = shapedParams(CHAMFER_OUTLINE);
+    const tiling = computeBaseplateTiling(parent, BED);
+    const byLabel = new Map(tiling.pieces.map((p) => [p.label, p]));
+    const b1 = byLabel.get('B1') as BaseplatePiece;
+    const ungated = pieceToBaseplateParams({ ...b1, connectorFilter: undefined }, parent);
+    const gated = pieceToBaseplateParams(b1, parent);
+    expect(computePieceFingerprint(gated)).not.toBe(computePieceFingerprint(ungated));
   });
 
   // Point-symmetric radius cut on all four corners: a 1-unit arc trims each

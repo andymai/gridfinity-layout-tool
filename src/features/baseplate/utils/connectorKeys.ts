@@ -39,7 +39,7 @@ export interface SeamJunction {
  * (rather than imported) to avoid a cross-feature dependency on the generation
  * worker; parity is guarded by unit tests.
  */
-function interiorBoundaryOffsetsMm(
+export function interiorBoundaryOffsetsMm(
   units: number,
   gridUnitMm: number,
   fractionalEdge: 'start' | 'end' | 'none'
@@ -107,15 +107,23 @@ export function computeSeamJunctions(
       const centerX = piece.gridOffsetX * gx + pieceWmm / 2 - totalWmm / 2;
       const centerY = piece.gridOffsetY * gy + pieceDmm / 2 - totalDmm / 2;
 
+      // A shaped plate can gate a seam's connectors to a sub-span (#3163) —
+      // a key only exists where the pieces actually cut grooves.
+      const allowed = (side: 'right' | 'back', off: number): boolean => {
+        const filter = piece.connectorFilter?.[side];
+        return filter === undefined || filter.some((a) => Math.abs(a - off) < 0.05);
+      };
       if (piece.edges.right === 'join') {
         const seamX = piece.gridOffsetX * gx + pieceWmm - totalWmm / 2;
         for (const off of interiorBoundaryOffsetsMm(piece.depthUnits, gy, piece.fractionalEdgeY)) {
+          if (!allowed('right', off)) continue;
           junctions.push({ xMm: seamX, yMm: centerY + off, axis: 'x' });
         }
       }
       if (piece.edges.back === 'join') {
         const seamY = piece.gridOffsetY * gy + pieceDmm - totalDmm / 2;
         for (const off of interiorBoundaryOffsetsMm(piece.widthUnits, gx, piece.fractionalEdgeX)) {
+          if (!allowed('back', off)) continue;
           junctions.push({ xMm: centerX + off, yMm: seamY, axis: 'y' });
         }
       }

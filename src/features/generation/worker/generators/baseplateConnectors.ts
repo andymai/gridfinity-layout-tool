@@ -392,8 +392,13 @@ export function buildConnectors(
       if (!edgeCarriesSlot(edges[def.side], allEdgeSlots, def.paddingMm)) continue;
       if (def.boundaries.length === 0) continue;
       const pt = ptFor(def);
+      // A shaped plate can gate this seam's connectors to the sub-span whose
+      // bands sit inside the perimeter (#3163) — positions come from the
+      // planner in the same piece-centered mm as `def.boundaries`.
+      const allowed = params.connectorFilter?.[def.side];
 
       for (const bp of def.boundaries) {
+        if (allowed !== undefined && !allowed.some((a) => Math.abs(a - bp) < 0.05)) continue;
         const w = def.wallPos;
         const d = def.protrudeDir;
 

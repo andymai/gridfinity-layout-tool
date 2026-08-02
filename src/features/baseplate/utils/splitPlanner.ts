@@ -16,8 +16,13 @@
  * fit, otherwise become a separate piece.
  */
 
-import type { BaseplateEdgeKind, ResolvedBaseplateParams } from '@/shared/types/bin';
+import type {
+  BaseplateEdgeKind,
+  ConnectorBoundaryFilter,
+  ResolvedBaseplateParams,
+} from '@/shared/types/bin';
 import { isExteriorEdge, isMarginSeamStyle } from '@/shared/types/bin';
+import { interiorBoundaryOffsetsMm } from './connectorKeys';
 // The fit checker subtracts the tongue protrusion from the bed budget on male
 // join edges — otherwise pieces that compute to exactly the bed width on paper
 // exceed it as STLs (#1498).
@@ -984,26 +989,50 @@ function applyOutlineToTiling(
   const classAt = (col: number, row: number): RegionClass =>
     classByKey.get(`${col},${row}`) ?? 'outside';
 
-  // A seam keeps its connector only when the one-cell band on BOTH sides of
-  // the entire shared span is fully inside the outline. Bands are pure GRID
-  // extents (seams are interior, padding-free), offset into plate-local mm.
-  const fullSeam = (piece: BaseplatePiece, side: 'left' | 'right' | 'front' | 'back'): boolean => {
+  // Per-junction connector gating (#3163). A junction keeps its connector when
+  // the one-cell band on BOTH sides of its along-seam cell pair is fully
+  // inside the outline — the same insideness rule the old whole-span check
+  // used, but applied per cell boundary instead of all-or-nothing: a seam that
+  // merely grazes the shaped boundary used to lose every connector along it.
+  // Windows are pure GRID extents (seams are interior, padding-free), offset
+  // into plate-local mm.
+  //
+  // Returns 'all' (every junction inside → no filter, byte-stable with
+  // unshaped plates), 'none' (no junction survives → the seam demotes to
+  // exterior, as before), or the allowed subset in piece-centered mm along
+  // the seam's boundary axis — the exact coordinate `buildConnectors` and
+  // `computeSeamJunctions` place connectors at.
+  const seamGate = (
+    piece: BaseplatePiece,
+    side: 'left' | 'right' | 'front' | 'back'
+  ): 'all' | 'none' | number[] => {
     const gx0 = padL + piece.gridOffsetX * u;
     const gx1 = padL + (piece.gridOffsetX + piece.widthUnits) * u;
     const gy0 = padF + piece.gridOffsetY * uy;
     const gy1 = padF + (piece.gridOffsetY + piece.depthUnits) * uy;
-    if (side === 'left' || side === 'right') {
-      const xB = side === 'left' ? gx0 : gx1;
-      return (
-        classifyRect(outline, xB - u, gy0, xB, gy1) === 'inside' &&
-        classifyRect(outline, xB, gy0, xB + u, gy1) === 'inside'
-      );
-    }
-    const yB = side === 'front' ? gy0 : gy1;
-    return (
-      classifyRect(outline, gx0, yB - uy, gx1, yB) === 'inside' &&
-      classifyRect(outline, gx0, yB, gx1, yB + uy) === 'inside'
-    );
+    const vertical = side === 'left' || side === 'right';
+    const alongPitch = vertical ? uy : u;
+    const offsets = vertical
+      ? interiorBoundaryOffsetsMm(piece.depthUnits, uy, piece.fractionalEdgeY)
+      : interiorBoundaryOffsetsMm(piece.widthUnits, u, piece.fractionalEdgeX);
+    // A 1-cell span has no junctions, so there is nothing to gate — the seam
+    // stays a friction-fit butt joint exactly like its unshaped counterpart.
+    if (offsets.length === 0) return 'all';
+
+    const seam = vertical ? (side === 'left' ? gx0 : gx1) : side === 'front' ? gy0 : gy1;
+    const centerAlong = vertical ? (gy0 + gy1) / 2 : (gx0 + gx1) / 2;
+    const allowed = offsets.filter((off) => {
+      const lo = centerAlong + off - alongPitch / 2;
+      const hi = centerAlong + off + alongPitch / 2;
+      return vertical
+        ? classifyRect(outline, seam - u, lo, seam, hi) === 'inside' &&
+            classifyRect(outline, seam, lo, seam + u, hi) === 'inside'
+        : classifyRect(outline, lo, seam - uy, hi, seam) === 'inside' &&
+            classifyRect(outline, lo, seam, hi, seam + uy) === 'inside';
+    });
+    if (allowed.length === 0) return 'none';
+    if (allowed.length === offsets.length) return 'all';
+    return allowed;
   };
 
   const NEIGHBOR: Record<'left' | 'right' | 'front' | 'back', readonly [number, number]> = {
@@ -1023,11 +1052,22 @@ function applyOutlineToTiling(
     if (cls === 'outside') continue;
 
     const edges = { ...piece.edges };
+    const filter: Partial<Record<'left' | 'right' | 'front' | 'back', number[]>> = {};
+    let hasFilter = false;
     for (const side of ['left', 'right', 'front', 'back'] as const) {
       if (edges[side] !== 'join') continue;
       const [dc, dr] = NEIGHBOR[side];
-      const neighborDropped = classAt(piece.col + dc, piece.row + dr) === 'outside';
-      if (neighborDropped || !fullSeam(piece, side)) edges[side] = 'exterior';
+      if (classAt(piece.col + dc, piece.row + dr) === 'outside') {
+        edges[side] = 'exterior';
+        continue;
+      }
+      const gate = seamGate(piece, side);
+      if (gate === 'none') {
+        edges[side] = 'exterior';
+      } else if (gate !== 'all') {
+        filter[side] = gate;
+        hasFilter = true;
+      }
     }
 
     // Canonicalize from the RECLASSIFIED edges: the 180° share only applies once
@@ -1040,6 +1080,7 @@ function applyOutlineToTiling(
       edges,
       placementRotationDeg: needs180 ? 180 : 0,
       ...(cls === 'partial' ? { outlineWindowOriginMm: { x: w.x0, y: w.y0 } } : {}),
+      ...(hasFilter ? { connectorFilter: filter } : {}),
     });
   }
 
@@ -1158,6 +1199,22 @@ export function pieceToBaseplateParams(
     return rotateOutline180(local, windowW, windowD);
   })();
 
+  // Like the outline, the connector filter is positional: under `rot` the
+  // sides swap (L↔R, F↔B) and the piece-centered along-seam offsets negate
+  // (a 180° turn about the center). Sorted so equal gatings hash equal.
+  const connectorFilter = ((): ConnectorBoundaryFilter | undefined => {
+    const f = piece.connectorFilter;
+    if (f === undefined) return undefined;
+    if (!rot) return f;
+    const neg = (a: readonly number[]): number[] => a.map((v) => -v).sort((x, y) => x - y);
+    return {
+      ...(f.right !== undefined ? { left: neg(f.right) } : {}),
+      ...(f.left !== undefined ? { right: neg(f.left) } : {}),
+      ...(f.back !== undefined ? { front: neg(f.back) } : {}),
+      ...(f.front !== undefined ? { back: neg(f.front) } : {}),
+    };
+  })();
+
   return {
     width: piece.widthUnits,
     depth: piece.depthUnits,
@@ -1166,6 +1223,7 @@ export function pieceToBaseplateParams(
     // axis identity, so the parent's X/Y pitch carries straight through.
     gridUnitMmY: parentParams.gridUnitMmY,
     outline: pieceOutline,
+    connectorFilter,
     magnetHoles: parentParams.magnetHoles,
     magnetDiameter: parentParams.magnetDiameter,
     magnetDepth: parentParams.magnetDepth,

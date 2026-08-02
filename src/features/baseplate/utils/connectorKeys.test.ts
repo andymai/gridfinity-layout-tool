@@ -272,3 +272,37 @@ describe('keyed margin seams (issue #2866)', () => {
     expect(countConnectorKeys(tiling, params)).toBe(splitKeys + marginJunctions(params).length);
   });
 });
+
+describe('shaped-plate seam gating (#3163)', () => {
+  it('skips the junctions the planner gated off a crossed seam', () => {
+    const U = 42;
+    // Diagonal chamfer across the top-right quadrant (x + y = 12u): the seams
+    // into B2 stay joined but lose their junction nearest the diagonal.
+    const chamfer = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 8 * U, y: 0 },
+        { x: 8 * U, y: 4 * U },
+        { x: 4 * U, y: 8 * U },
+        { x: 0, y: 8 * U },
+      ],
+    };
+    const params = makeParams({
+      width: 8,
+      depth: 8,
+      connectorNubs: true,
+      connectorStyle: 'dovetailKey',
+      outline: chamfer,
+    });
+    const tiling = computeBaseplateTiling(params, 4.5 * U);
+    const junctions = computeSeamJunctions(tiling, params);
+    // 12 ungated junctions minus the two the diagonal crosses (y = 126 on the
+    // vertical seam, x = 126 on the horizontal one).
+    expect(junctions).toHaveLength(10);
+    const verticalSeam = junctions
+      .filter((j) => j.axis === 'x' && Math.abs(j.xMm) < 1e-6)
+      .map((j) => j.yMm)
+      .sort((a, b) => a - b);
+    expect(verticalSeam).toEqual([-126, -84, -42, 42, 84]);
+  });
+});
