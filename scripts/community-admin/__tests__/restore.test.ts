@@ -30,7 +30,11 @@ function baseArgs(positional: string[]): Args {
 }
 
 function createRedis() {
-  return { hdel: vi.fn(async () => 1), quit: vi.fn(async () => undefined) };
+  return {
+    hdel: vi.fn(async () => 1),
+    del: vi.fn(async () => 1),
+    quit: vi.fn(async () => undefined),
+  };
 }
 
 beforeEach(() => {
@@ -70,6 +74,12 @@ describe('restore command', () => {
     expect(redis.hdel).toHaveBeenCalledWith(
       expect.stringContaining('abc123DEF456'),
       'hiddenReason'
+    );
+    // A5: clear the reports set and reason tallies so a single fresh report
+    // can't instantly re-hide the just-restored design.
+    expect(redis.del).toHaveBeenCalledWith(
+      'community:reports:abc123DEF456',
+      'community:reportReasons:abc123DEF456'
     );
     expect(redis.quit).toHaveBeenCalledTimes(1);
   });

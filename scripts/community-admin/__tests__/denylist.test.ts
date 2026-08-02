@@ -3,10 +3,15 @@ import type { Args } from '../lib/args';
 
 const mocks = vi.hoisted(() => ({
   connect: vi.fn(),
+  purgeCommunityAssets: vi.fn(),
 }));
 
 vi.mock('../lib/redis.js', () => ({
   connect: mocks.connect,
+}));
+
+vi.mock('../lib/assets.js', () => ({
+  purgeCommunityAssets: mocks.purgeCommunityAssets,
 }));
 
 const { denylist } = await import('../commands/denylist.js');
@@ -124,6 +129,7 @@ function baseArgs(positional: string[]): Args {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.purgeCommunityAssets.mockResolvedValue(undefined);
   vi.stubEnv('TOKEN_SALT', 'test-salt');
 });
 
@@ -169,6 +175,10 @@ describe('denylist command', () => {
       expect(zset?.has('liveAAAAAAAA')).toBe(false);
       expect(zset?.has('otherCCCCCCC')).toBe(true);
     }
+    // A10: the deny-list sweep is a takedown, so each newly hidden design's
+    // CDN assets are deleted (the already-hidden one is left untouched).
+    expect(mocks.purgeCommunityAssets).toHaveBeenCalledWith('liveAAAAAAAA');
+    expect(mocks.purgeCommunityAssets).not.toHaveBeenCalledWith('otherCCCCCCC');
     expect(redis.quit).toHaveBeenCalledTimes(1);
   });
 

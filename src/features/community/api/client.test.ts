@@ -373,6 +373,52 @@ describe('fetchCommunityIndex', () => {
     if (isOk(result)) expect(result.value.capped).toBe(false);
   });
 
+  it('reports the cap when the index reaches it and a page still overflows in one response', async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(200, {
+        items: Array.from({ length: COMMUNITY_INDEX_CAP + 1 }, (_, i) => card(`d${i}`)),
+        nextCursor: null,
+      })
+    );
+    const result = await fetchCommunityIndex();
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) {
+      expect(result.value.items).toHaveLength(COMMUNITY_INDEX_CAP);
+      expect(result.value.capped).toBe(true);
+    }
+  });
+
+  it('reports the cap when the index ends exactly at the cap but the server still hands back a cursor', async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(200, {
+        items: Array.from({ length: COMMUNITY_INDEX_CAP }, (_, i) => card(`d${i}`)),
+        nextCursor: 'still-more',
+      })
+    );
+    const result = await fetchCommunityIndex();
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) {
+      expect(result.value.items).toHaveLength(COMMUNITY_INDEX_CAP);
+      expect(result.value.capped).toBe(true);
+    }
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not claim the cap when under it', async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(200, {
+        items: Array.from({ length: COMMUNITY_INDEX_CAP - 1 }, (_, i) => card(`d${i}`)),
+        nextCursor: null,
+      })
+    );
+    const result = await fetchCommunityIndex();
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) {
+      expect(result.value.items).toHaveLength(COMMUNITY_INDEX_CAP - 1);
+      expect(result.value.capped).toBe(false);
+    }
+  });
+
   it('does not claim the cap when the request budget runs out below it', async () => {
     fetchMock.mockImplementation((url: string) => {
       const cursor = new URL(url, 'https://x').searchParams.get('cursor') ?? '0';

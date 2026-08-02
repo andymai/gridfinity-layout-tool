@@ -178,6 +178,28 @@ export function communityDenylistKey(): string {
 }
 
 /**
+ * STRING of the live design id that currently owns a given params fingerprint
+ * (`communityParamsFingerprint`), used by the exact-duplicate guard to detect a
+ * re-upload of another author's design. Keyed on params alone (not the full
+ * content hash, which includes authorName) so a rename cannot dodge the guard.
+ * Set on publish, moved on update, cleared on owner delete. Stale entries are
+ * harmless: the guard verifies the pointed-at design is still live and owned by
+ * a different author before rejecting.
+ */
+export function communityParamsHashKey(paramsFingerprint: string): string {
+  return `community:paramshash:${paramsFingerprint}`;
+}
+
+/**
+ * Short-lived per-user publish lock (SET NX PX). Serializes one user's
+ * overlapping publishes so the idempotency+quota+duplicate checks and the write
+ * cannot interleave into a duplicate mint or a quota overshoot.
+ */
+export function communityPublishLockKey(userId: string): string {
+  return `community:publock:${userId}`;
+}
+
+/**
  * SET of dedupe members (client tokens + hashed IPs) that already triggered
  * the "open" (remix) counter for a design, keyed by 7-day bucket. Bucketing
  * gives every key a fixed expiry and bounded growth: refreshing one key's TTL

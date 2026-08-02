@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useLabsStore } from '@/core/store';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { CutoutsSection } from './CutoutsSection';
 
@@ -15,10 +16,21 @@ vi.mock('./CutoutEditor', () => ({
   CutoutEditor: () => <div data-testid="cutout-editor" />,
 }));
 
+function setCommunityFlag(enabled: boolean): void {
+  useLabsStore.setState((s) => ({
+    preferences: {
+      ...s.preferences,
+      enabledFeatures: { ...s.preferences.enabledFeatures, community_showcase: enabled },
+    },
+  }));
+}
+
 describe('CutoutsSection', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
     useDesignerStore.setState(useDesignerStore.getInitialState());
+    setCommunityFlag(false);
   });
 
   it('renders instructions and editor', () => {
@@ -131,5 +143,44 @@ describe('CutoutsSection', () => {
 
     const { params } = useDesignerStore.getState();
     expect(params.cutouts).toEqual([]);
+  });
+});
+
+describe('CutoutsSection community cutout hint', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+    useDesignerStore.setState(useDesignerStore.getInitialState());
+  });
+
+  it('is hidden while the community showcase flag is off', () => {
+    setCommunityFlag(false);
+    render(<CutoutsSection />);
+    expect(screen.queryByTestId('community-cutout-hint')).not.toBeInTheDocument();
+  });
+
+  it('renders when the flag is on and not yet dismissed', () => {
+    setCommunityFlag(true);
+    render(<CutoutsSection />);
+    expect(screen.getByTestId('community-cutout-hint')).toHaveTextContent(
+      'community.publish.needsCutout.hint'
+    );
+  });
+
+  it('dismisses and persists the dismissal in localStorage', () => {
+    setCommunityFlag(true);
+    render(<CutoutsSection />);
+    expect(screen.getByTestId('community-cutout-hint')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText('common.dismiss'));
+    expect(screen.queryByTestId('community-cutout-hint')).not.toBeInTheDocument();
+    expect(localStorage.getItem('gridfinity-community-cutout-hint-dismissed-v1')).not.toBeNull();
+  });
+
+  it('stays dismissed across remounts once persisted', () => {
+    setCommunityFlag(true);
+    localStorage.setItem('gridfinity-community-cutout-hint-dismissed-v1', '1');
+    render(<CutoutsSection />);
+    expect(screen.queryByTestId('community-cutout-hint')).not.toBeInTheDocument();
   });
 });

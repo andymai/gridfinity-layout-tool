@@ -21,6 +21,26 @@ vi.mock('@/shared/components/HeaderSupportLinks', () => ({
   HeaderSupportLinks: () => <div data-testid="header-support-links" />,
 }));
 
+const qualifyingCutout = {
+  id: 'c1',
+  shape: 'rectangle',
+  x: 0,
+  y: 0,
+  width: 10,
+  depth: 10,
+  cutDepth: 5,
+  rotation: 0,
+  cornerRadius: 0,
+  label: '',
+  groupId: null,
+} as unknown as (typeof DEFAULT_BIN_PARAMS.cutouts)[number];
+
+const readyMesh = {
+  error: null,
+  vertices: new Float32Array([0, 0, 0]),
+  normals: new Float32Array([0, 0, 1]),
+} as unknown as (typeof DEFAULT_GENERATION_STATE)['mesh'];
+
 function createMockNameEditor(overrides: Partial<DesignNameEditor> = {}): DesignNameEditor {
   return {
     isEditingName: false,
@@ -126,23 +146,46 @@ describe('DesignerHeader', () => {
       expect(screen.getByLabelText('Publish to the community showcase')).toBeDisabled();
     });
 
-    it('enables Publish once the mesh is ready, on desktop and mobile', () => {
+    it('enables Publish once the mesh is ready and a qualifying cutout exists, on desktop and mobile', () => {
       setCommunityFlag(true);
       useDesignerStore.setState({
-        generation: {
-          ...DEFAULT_GENERATION_STATE,
-          mesh: {
-            error: null,
-            vertices: new Float32Array([0, 0, 0]),
-            normals: new Float32Array([0, 0, 1]),
-          } as unknown as (typeof DEFAULT_GENERATION_STATE)['mesh'],
-        },
+        params: { ...DEFAULT_BIN_PARAMS, cutouts: [qualifyingCutout] },
+        generation: { ...DEFAULT_GENERATION_STATE, mesh: readyMesh },
       });
       const desktop = render(<DesignerHeader isDesktop nameEditor={createMockNameEditor()} />);
       expect(screen.getByLabelText('Publish to the community showcase')).not.toBeDisabled();
       desktop.unmount();
       render(<DesignerHeader isDesktop={false} nameEditor={createMockNameEditor()} />);
       expect(screen.getByLabelText('Publish to the community showcase')).not.toBeDisabled();
+    });
+
+    it('keeps Publish disabled with the cutout reason when the mesh is ready but no cutout exists, on desktop and mobile', () => {
+      setCommunityFlag(true);
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, cutouts: [] },
+        generation: { ...DEFAULT_GENERATION_STATE, mesh: readyMesh },
+      });
+      const desktop = render(<DesignerHeader isDesktop nameEditor={createMockNameEditor()} />);
+      const desktopButton = screen.getByLabelText('Publish to the community showcase');
+      expect(desktopButton).toBeDisabled();
+      expect(desktopButton).toHaveAttribute(
+        'title',
+        'The community showcase is open to bins with tool cutouts to start. Add a cutout to share this one.'
+      );
+      expect(
+        screen.getByText(
+          'The community showcase is open to bins with tool cutouts to start. Add a cutout to share this one.'
+        )
+      ).toBeInTheDocument();
+      desktop.unmount();
+
+      render(<DesignerHeader isDesktop={false} nameEditor={createMockNameEditor()} />);
+      const mobileButton = screen.getByLabelText('Publish to the community showcase');
+      expect(mobileButton).toBeDisabled();
+      expect(mobileButton).toHaveAttribute(
+        'title',
+        'The community showcase is open to bins with tool cutouts to start. Add a cutout to share this one.'
+      );
     });
   });
 });

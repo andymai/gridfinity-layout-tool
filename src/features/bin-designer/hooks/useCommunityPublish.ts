@@ -15,6 +15,7 @@ import { designId } from '@/core/types';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { hashBinParams } from '@/shared/utils/binParamsHash';
+import { hasQualifyingCutout } from '@/shared/utils/communityLowEffort';
 import { loadPendingPublishAction } from '@/shared/utils/communityPendingAction';
 import type { PendingPublishAction } from '@/shared/utils/communityPendingAction';
 import { useDesignerStore } from '../store/designer';
@@ -114,16 +115,22 @@ export async function openCommunityPublish(draft: CommunityPublishDraft | null):
 export interface CommunityPublishEntry {
   publishVisible: boolean;
   canPublish: boolean;
+  /** True when the launch cutout-only policy is the reason Publish is disabled. */
+  needsCutout: boolean;
   openPublish: () => void;
 }
 
 export function useCommunityPublishEntry(): CommunityPublishEntry {
   const publishVisible = useFeatureFlag('community_showcase');
-  const canPublish = useDesignerStore((s) => s.itemKind === 'bin' && isMeshReady(s));
+  const meshReady = useDesignerStore((s) => s.itemKind === 'bin' && isMeshReady(s));
+  const needsCutout = useDesignerStore(
+    (s) => s.itemKind === 'bin' && !hasQualifyingCutout(s.params)
+  );
+  const canPublish = meshReady && !needsCutout;
   const openPublish = useCallback(() => {
     void openCommunityPublish(null);
   }, []);
-  return { publishVisible, canPublish, openPublish };
+  return { publishVisible, canPublish, needsCutout, openPublish };
 }
 
 /**

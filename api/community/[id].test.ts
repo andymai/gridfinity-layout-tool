@@ -144,6 +144,10 @@ interface FakeRedis {
   scard: ReturnType<typeof vi.fn>;
   exists: ReturnType<typeof vi.fn>;
   expire: ReturnType<typeof vi.fn>;
+  get: ReturnType<typeof vi.fn>;
+  set: ReturnType<typeof vi.fn>;
+  del: ReturnType<typeof vi.fn>;
+  zadd: ReturnType<typeof vi.fn>;
   hget: ReturnType<typeof vi.fn>;
   hgetall: ReturnType<typeof vi.fn>;
   hmget: ReturnType<typeof vi.fn>;
@@ -174,6 +178,11 @@ function createRedis(): { redis: FakeRedis; pipeline: FakePipeline } {
     scard: vi.fn(async () => 0),
     exists: vi.fn(async () => 1),
     expire: vi.fn(async () => 1),
+    // The params-hash duplicate index is empty by default: no other-author dup.
+    get: vi.fn(async () => null),
+    set: vi.fn(async () => 'OK'),
+    del: vi.fn(async () => 1),
+    zadd: vi.fn(async () => 1),
     hget: vi.fn(async (_key: string, field: string) => (field === 'status' ? 'live' : null)),
     hgetall: vi.fn(async (): Promise<Record<string, string>> => ({})),
     hmget: vi.fn(async () => [null, null, null] as (string | null)[]),
@@ -227,7 +236,8 @@ function publishPayload(overrides: Record<string, unknown> = {}) {
     description: 'Now with a scoop',
     authorName: 'Jo',
     category: 'tools',
-    params: { width: 4, depth: 2, height: 9, gridUnitMm: 42 },
+    // A tool cutout so updates clear the B1 cutout-only gate.
+    params: { width: 4, depth: 2, height: 9, gridUnitMm: 42, cutouts: [{ shape: 'circle' }] },
     techniques: ['scoop'],
     thumbnails: ['dGh1bWItMA==', 'dGh1bWItMQ=='],
     glb: 'Z2xURgAAAAA=',
@@ -237,14 +247,19 @@ function publishPayload(overrides: Record<string, unknown> = {}) {
 
 async function handle(
   method: string,
-  over: { id?: unknown; body?: unknown; headers?: Record<string, string> } = {}
+  over: {
+    id?: unknown;
+    body?: unknown;
+    headers?: Record<string, string>;
+    query?: Record<string, string>;
+  } = {}
 ) {
   const res = createResponse();
   const mod = await import('./[id].js');
   await mod.default(
     {
       method,
-      query: { id: over.id ?? VALID_ID },
+      query: { id: over.id ?? VALID_ID, ...over.query },
       headers: over.headers ?? {},
       body: over.body ?? {},
     } as unknown as VercelRequest,
@@ -528,6 +543,13 @@ describe('community/[id]', () => {
       expect(redis.hincrby).not.toHaveBeenCalled();
     });
 
+    it('does not record a view for a lineage/publish-dialog fetch with ?view=0 (A15)', async () => {
+      const res = await handle('GET', { query: { view: '0' } });
+      expect(res._status).toBe(200);
+      expect(redis.sadd).not.toHaveBeenCalled();
+      expect(redis.hincrby).not.toHaveBeenCalled();
+    });
+
     it('never counts the owner viewing their own design', async () => {
       mocks.readSessionCookie.mockReturnValue('session-token');
       mocks.readSession.mockResolvedValue(session);
@@ -760,6 +782,53 @@ describe('community/[id]', () => {
       expect(res._status).toBe(200);
       expect((res._body as { design: CommunityDesignRecord }).design.name).toBe('Updated bin');
     });
+
+    it('preserves a hide that lands during the update instead of resurrecting to live (A4)', async () => {
+      // First status read (admission gate) sees live; the re-read just before
+      // the card write sees the hide that landed during asset upload.
+      redis.hget.mockResolvedValueOnce('live').mockResolvedValueOnce('hidden');
+      const res = await handle('PUT', { body: publishPayload() });
+      expect(res._status).toBe(200);
+      expect(mocks.writeCommunityCard).toHaveBeenCalledWith(
+        redis,
+        expect.objectContaining({ status: 'hidden' })
+      );
+    });
+
+    it('rejects an update without a tool cutout under the cutout-only policy (B1)', async () => {
+      mocks.validateCommunityPublish.mockReturnValue({
+        valid: true,
+        payload: publishPayload({ params: { width: 4, depth: 2, height: 9, gridUnitMm: 42 } }),
+      });
+      const res = await handle('PUT', { body: publishPayload() });
+      expect(res._status).toBe(400);
+      expect((res._body as { code: string }).code).toBe('CUTOUT_REQUIRED');
+      expect(mocks.put).not.toHaveBeenCalled();
+    });
+
+    it('rejects an update that makes a remix identical to its parent (B4)', async () => {
+      mocks.readCommunityDesignBlob
+        .mockResolvedValueOnce(
+          designRecord({
+            lineage: {
+              parentId: PARENT_ID,
+              rootId: PARENT_ID,
+              parentName: 'P',
+              parentAuthorName: 'PA',
+              rootAuthorName: 'PA',
+            },
+          })
+        )
+        .mockResolvedValueOnce(
+          designRecord({
+            id: PARENT_ID,
+            params: publishPayload().params,
+          })
+        );
+      const res = await handle('PUT', { body: publishPayload() });
+      expect(res._status).toBe(409);
+      expect((res._body as { code: string }).code).toBe('REMIX_UNCHANGED');
+    });
   });
 
   describe('DELETE', () => {
@@ -900,6 +969,57 @@ describe('community/[id]', () => {
         VALID_ID,
       ]);
     });
+
+    it('rejects an owner unpublish of a moderated (hidden) design (A2)', async () => {
+      redis.hget.mockImplementation((_key: string, field: string) =>
+        field === 'status' ? 'hidden' : null
+      );
+      const res = await handle('DELETE');
+      expect(res._status).toBe(403);
+      expect((res._body as { code: string }).code).toBe('UNDER_REVIEW');
+      expect(mocks.del).not.toHaveBeenCalled();
+      expect(mocks.deleteCommunityDesignBlob).not.toHaveBeenCalled();
+      expect(pipeline.exec).not.toHaveBeenCalled();
+    });
+
+    it('lets an admin purge a hidden design despite the owner gate (A2)', async () => {
+      process.env.COMMUNITY_ADMIN_TOKEN = 'admin-secret';
+      redis.hget.mockImplementation((_key: string, field: string) =>
+        field === 'status' ? 'hidden' : null
+      );
+      const res = await handle('DELETE', { headers: { 'x-admin-token': 'admin-secret' } });
+      expect(res._status).toBe(200);
+      expect(mocks.deleteCommunityDesignBlob).toHaveBeenCalledWith(VALID_ID);
+    });
+
+    it("clears each reporter's reverse reported set before deleting the reports set (A15)", async () => {
+      redis.smembers.mockImplementation((key: string) =>
+        key === communityReportsKey(VALID_ID) ? ['reporter-1', 'reporter-2'] : []
+      );
+      const res = await handle('DELETE');
+      expect(res._status).toBe(200);
+      const sremCalls = pipeline.srem.mock.calls;
+      expect(sremCalls).toContainEqual([communityReportedKey('reporter-1'), VALID_ID]);
+      expect(sremCalls).toContainEqual([communityReportedKey('reporter-2'), VALID_ID]);
+    });
+
+    it('returns remix credit to the parent and root when a remix is deleted (A1)', async () => {
+      mocks.readCommunityDesignBlob.mockResolvedValue(
+        designRecord({
+          lineage: {
+            parentId: PARENT_ID,
+            rootId: 'RootDesign01',
+            parentName: 'P',
+            parentAuthorName: 'PA',
+            rootAuthorName: 'RA',
+          },
+        })
+      );
+      const res = await handle('DELETE');
+      expect(res._status).toBe(200);
+      expect(redis.hincrby).toHaveBeenCalledWith(communityDesignKey(PARENT_ID), 'remixes', -1);
+      expect(redis.hincrby).toHaveBeenCalledWith(communityDesignKey('RootDesign01'), 'remixes', -1);
+    });
   });
 
   describe('POST actions', () => {
@@ -976,6 +1096,23 @@ describe('community/[id]', () => {
         const res = await handle('POST', { body: { action: 'like' } });
         expect(res._status).toBe(200);
         expect(res._body).toEqual({ likes: 13, likedByMe: true });
+      });
+
+      it('rejects a like from a deny-listed account (A3)', async () => {
+        redis.sismember.mockResolvedValue(1);
+        const res = await handle('POST', { body: { action: 'like' } });
+        expect(res._status).toBe(403);
+        expect((res._body as { code: string }).code).toBe('UNAUTHORIZED');
+        expect(mocks.toggleCommunityLike).not.toHaveBeenCalled();
+      });
+
+      it('allows an unlike on a hidden design (A15 withdrawal always works)', async () => {
+        redis.hget.mockImplementation((_key: string, field: string) =>
+          field === 'status' ? 'hidden' : null
+        );
+        const res = await handle('POST', { body: { action: 'unlike' } });
+        expect(res._status).toBe(200);
+        expect(mocks.toggleCommunityLike).toHaveBeenCalledWith(redis, USER_ID, VALID_ID, false);
       });
     });
 
@@ -1054,7 +1191,7 @@ describe('community/[id]', () => {
         expect(mocks.del).not.toHaveBeenCalled();
       });
 
-      it('auto-hides and purges CDN assets at the distinct-account threshold', async () => {
+      it('auto-hides at the distinct-account threshold WITHOUT deleting assets (reversible soft-hide)', async () => {
         const record = designRecord();
         mocks.readCommunityDesignBlob.mockResolvedValue(record);
         redis.scard.mockResolvedValue(5);
@@ -1065,31 +1202,10 @@ describe('community/[id]', () => {
         expect(redis.hset).toHaveBeenCalledWith(communityDesignKey(VALID_ID), {
           hiddenReason: 'reports',
         });
-        expect(mocks.del).toHaveBeenCalledWith([...record.thumbnails, record.meshUrl]);
-      });
-
-      it('still hides when the asset purge fails, after a retry, and flags the pending purge', async () => {
-        redis.scard.mockResolvedValue(5);
-        mocks.del.mockRejectedValue(new Error('blob store flaked'));
-        const res = await handle('POST', { body: reportBody });
-        expect(res._status).toBe(200);
-        expect(res._body).toEqual({ success: true, autoHidden: true });
-        expect(mocks.setCommunityDesignStatus).toHaveBeenCalledWith(redis, VALID_ID, 'hidden');
-        expect(mocks.del).toHaveBeenCalledTimes(2);
-        expect(redis.hset).toHaveBeenCalledWith(communityDesignKey(VALID_ID), {
-          purgePending: '1',
-        });
-      });
-
-      it('purges on the retry without flagging when the first delete flakes', async () => {
-        redis.scard.mockResolvedValue(5);
-        mocks.del
-          .mockRejectedValueOnce(new Error('blob store flaked'))
-          .mockResolvedValueOnce(undefined);
-        const res = await handle('POST', { body: reportBody });
-        expect(res._status).toBe(200);
-        expect(res._body).toEqual({ success: true, autoHidden: true });
-        expect(mocks.del).toHaveBeenCalledTimes(2);
+        // A report threshold is a signal, not a verdict: assets stay intact so
+        // an admin restore brings the design back whole. Asset deletion is the
+        // admin takedown path's job, not auto-hide's.
+        expect(mocks.del).not.toHaveBeenCalled();
         expect(redis.hset).not.toHaveBeenCalledWith(communityDesignKey(VALID_ID), {
           purgePending: '1',
         });
@@ -1101,6 +1217,14 @@ describe('community/[id]', () => {
         const res = await handle('POST', { body: reportBody });
         expect(res._status).toBe(200);
         expect(res._body).toEqual({ success: true, autoHidden: false });
+      });
+
+      it('rejects a report from a deny-listed account (A3)', async () => {
+        redis.sismember.mockResolvedValue(1);
+        const res = await handle('POST', { body: reportBody });
+        expect(res._status).toBe(403);
+        expect((res._body as { code: string }).code).toBe('UNAUTHORIZED');
+        expect(pipeline.exec).not.toHaveBeenCalled();
       });
     });
 

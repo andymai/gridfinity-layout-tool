@@ -584,6 +584,8 @@ describe('communityContentHash', () => {
     name: 'Socket Organizer',
     description: 'Holds 24 sockets.',
     category: 'tools',
+    authorName: 'Andy',
+    lineage: null,
   };
 
   it('is a 32-char hex digest', () => {
@@ -596,6 +598,8 @@ describe('communityContentHash', () => {
       description: 'Holds 24 sockets.',
       name: 'Socket Organizer',
       params: { compartments: { cells: [0, 1], cols: 2 }, width: 2 },
+      lineage: null,
+      authorName: 'Andy',
     };
     expect(communityContentHash(reordered)).toBe(communityContentHash(content));
   });
@@ -606,6 +610,26 @@ describe('communityContentHash', () => {
     expect(communityContentHash({ ...content, description: '' })).not.toBe(base);
     expect(communityContentHash({ ...content, category: 'other' })).not.toBe(base);
     expect(communityContentHash({ ...content, params: { width: 3 } })).not.toBe(base);
+  });
+
+  it('changes with authorName so a name-correction retry does not alias (A8)', () => {
+    expect(communityContentHash({ ...content, authorName: 'Different' })).not.toBe(
+      communityContentHash(content)
+    );
+  });
+
+  it('changes with lineage so an own remix does not alias to the original (A8)', () => {
+    const remix = {
+      ...content,
+      lineage: { parentId: 'parentAAAAAA', rootId: 'rootBBBBBBBB' },
+    };
+    expect(communityContentHash(remix)).not.toBe(communityContentHash(content));
+    // Only the identifying ids matter; display snapshots are server-derived.
+    const remixSameIds = {
+      ...content,
+      lineage: { parentId: 'parentAAAAAA', rootId: 'rootBBBBBBBB' },
+    };
+    expect(communityContentHash(remixSameIds)).toBe(communityContentHash(remix));
   });
 
   it('is sensitive to array order (cells are positional)', () => {

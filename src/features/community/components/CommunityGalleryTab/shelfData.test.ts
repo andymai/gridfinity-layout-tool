@@ -116,4 +116,48 @@ describe('buildShelves', () => {
     const shelves = buildShelves(manyCards(20), NOW);
     expect(shelves.find((shelf) => shelf.id === 'most-remixed')).toBeUndefined();
   });
+
+  it('de-duplicates designs that would otherwise qualify for more than one shelf', () => {
+    // Group A (0-7): staff picks, old, no remixes.
+    // Group B (8-14): published this week AND the highest remix counts, so
+    // without dedup it would also dominate "Most remixed".
+    // Group C (15-19): old, lower remix counts, the only pool left for
+    // "Most remixed" once A and B are excluded.
+    const items = manyCards(20, (i) => {
+      if (i < 8) {
+        return {
+          featured: true,
+          createdAt: NOW - 30 * DAY_MS - i,
+          counts: { likes: 0, remixes: 0, exports: 0 },
+        };
+      }
+      if (i < 15) {
+        return {
+          featured: false,
+          createdAt: NOW - (i - 8) * 3600_000,
+          counts: { likes: 0, remixes: 50, exports: 0 },
+        };
+      }
+      return {
+        featured: false,
+        createdAt: NOW - 40 * DAY_MS - i,
+        counts: { likes: 0, remixes: 10, exports: 0 },
+      };
+    });
+    const shelves = buildShelves(items, NOW);
+    expect(shelves.map((shelf) => shelf.id)).toEqual([
+      'staff-picks',
+      'new-this-week',
+      'most-remixed',
+    ]);
+    const [staffPicks, newThisWeek, mostRemixed] = shelves;
+    expect(staffPicks.cards).toHaveLength(8);
+    expect(newThisWeek.cards).toHaveLength(7);
+    expect(mostRemixed.cards).toHaveLength(5);
+    // The highest-remix group was already shown under "New this week" and
+    // must not resurface under "Most remixed".
+    expect(mostRemixed.cards.every((c) => c.counts.remixes === 10)).toBe(true);
+    const allIds = shelves.flatMap((shelf) => shelf.cards.map((c) => c.id));
+    expect(new Set(allIds).size).toBe(allIds.length);
+  });
 });

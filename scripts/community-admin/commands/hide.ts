@@ -2,6 +2,7 @@ import { isValidShareId } from '../../../api/lib/shared.js';
 import { readCommunityCards, setCommunityDesignStatus } from '../../../api/lib/communityStore.js';
 import { communityDesignKey } from '../../../api/lib/redisKeys.js';
 import type { Args } from '../lib/args.js';
+import { purgeCommunityAssets } from '../lib/assets.js';
 import { colors } from '../lib/output.js';
 import { connect } from '../lib/redis.js';
 
@@ -28,6 +29,9 @@ export async function hide(args: Args): Promise<number> {
     // must not read as a pending report auto-hide (the reason-less default),
     // which promises a moderator review that already happened.
     await redis.hset(communityDesignKey(id), { hiddenReason: 'moderation' });
+    // A10: this is the takedown path, so it deletes the CDN assets (fail loud).
+    // Status is flipped first, so a retry after a delete error re-runs cleanly.
+    await purgeCommunityAssets(id);
     console.log(colors.cyan(`hidden: ${id} (was ${card.status})`));
     return 0;
   } finally {

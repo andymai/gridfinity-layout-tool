@@ -128,6 +128,10 @@ export function PublishForm({
               id="community-publish-name"
               value={name}
               maxLength={PUBLISH_NAME_MAX_LENGTH}
+              aria-describedby={
+                showErrors && nameError ? 'community-publish-name-error' : undefined
+              }
+              aria-invalid={showErrors && nameError !== undefined}
               onChange={(e) => setName(e.target.value)}
             />
           </Field>
@@ -158,6 +162,9 @@ export function PublishForm({
               value={category}
               placeholder={t('community.publish.form.categoryPlaceholder')}
               error={showErrors && categoryError !== undefined}
+              aria-describedby={
+                showErrors && categoryError ? 'community-publish-category-error' : undefined
+              }
               onValueChange={(value) => setCategory(value as CommunityCategory)}
             />
           </Field>

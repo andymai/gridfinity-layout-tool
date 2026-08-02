@@ -112,7 +112,7 @@ export const Field = forwardRef<HTMLDivElement, FieldProps>(
         )}
 
         {error && (
-          <div id={errorId} className={cn('mt-1', sizeText.sm, 'text-error')}>
+          <div id={errorId} role="alert" className={cn('mt-1', sizeText.sm, 'text-error')}>
             {error}
           </div>
         )}

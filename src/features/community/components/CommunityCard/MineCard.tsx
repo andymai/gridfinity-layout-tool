@@ -12,6 +12,7 @@ import { isOk } from '@/core/result';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
 import { trackEvent } from '@/shared/analytics/posthog';
+import { useResponsive } from '@/shared/hooks/useResponsive';
 import type { CommunityCard as CommunityCardData } from '@/shared/types/community';
 import { unpublishDesign } from '../../api/client';
 import { useBrowseStore } from '../../store/browseStore';
@@ -78,6 +79,7 @@ export function MineCard({
   index,
 }: MineCardProps) {
   const t = useTranslation();
+  const { isMobile } = useResponsive();
   const removeItem = useMineStore((s) => s.removeItem);
   const addToast = useToastStore((s) => s.addToast);
 
@@ -270,6 +272,7 @@ export function MineCard({
             // front spares the owner a round trip guaranteed to fail.
             disabled={isHidden || editBusy}
             title={isHidden ? t('community.mine.editDisabledHidden') : undefined}
+            touchTarget={isMobile}
             onClick={handleEdit}
             className="h-auto px-2.5 py-1 text-xs"
             data-testid="community-mine-edit"
@@ -279,6 +282,7 @@ export function MineCard({
           <Button
             variant="ghost"
             aria-label={t('community.mine.unpublishAria', { name: card.name })}
+            touchTarget={isMobile}
             onClick={handleUnpublishEntry}
             className="h-auto px-2.5 py-1 text-xs text-error hover:text-error"
             data-testid="community-mine-unpublish"

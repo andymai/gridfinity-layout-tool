@@ -12,6 +12,7 @@ import {
   communityLikedKey,
   communityLikesKey,
   communityOpenedKey,
+  communityParamsHashKey,
   communityPublishedKey,
   communityReportReasonKey,
   communityReportedKey,
@@ -33,9 +34,11 @@ import {
 } from '../lib/shared.js';
 import {
   COMMUNITY_DEDUPE_TTL_SECONDS,
+  adjustRemixCredit,
   communityContentHash,
   communityDedupeBucket,
   communityMeshBlobPath,
+  communityParamsFingerprint,
   communityThumbBlobPath,
   deleteCommunityDesignBlob,
   deriveCommunityMetrics,
@@ -54,8 +57,11 @@ import type {
 import {
   COMMUNITY_REPORT_NOTE_MAX_LENGTH,
   COMMUNITY_REPORT_REASONS,
+  communityRequiresCutouts,
   validateCommunityPublish,
 } from '../lib/communityValidation.js';
+import { hasQualifyingCutout } from '../lib/communityLowEffort.js';
+import { COMMUNITY_EXAMPLE_PARAM_HASHES } from '../lib/communityExampleParamHashes.js';
 import type { CommunityReportReason } from '../lib/communityValidation.js';
 import { isObject, isString } from '../lib/validationUtils.js';
 
@@ -258,7 +264,10 @@ async function handleGet(req: VercelRequest, res: VercelResponse, id: string) {
         }
         hiddenReasonCategory = await readTopReportReason(redis, id);
       }
-      if (status === 'live' && !owns) {
+      // A15: lineage-resolution and publish-dialog fetches pass ?view=0 so a
+      // parent design's view count is not inflated by the remix flow.
+      const viewParam = Array.isArray(req.query.view) ? req.query.view[0] : req.query.view;
+      if (status === 'live' && !owns && viewParam !== '0') {
         await recordCommunityView(redis, id, clientIP);
       }
     }
@@ -292,6 +301,28 @@ function nextAssetRev(meshUrl: string): number {
     // fall through to the timestamp fallback
   }
   return Date.now();
+}
+
+/**
+ * B3 exact-duplicate guard for updates. True when the edited params match a
+ * built-in example or another author's live design. The design being edited is
+ * excluded (its own params-hash index entry points back at itself).
+ */
+async function isDuplicateOnUpdate(
+  redis: Redis,
+  paramsFingerprint: string,
+  authorPublicId: string,
+  selfId: string
+): Promise<boolean> {
+  if (COMMUNITY_EXAMPLE_PARAM_HASHES.has(paramsFingerprint)) return true;
+  const candidateId = await redis.get(communityParamsHashKey(paramsFingerprint));
+  if (candidateId === null || candidateId === '' || candidateId === selfId) return false;
+  const [status, candidateAuthor] = await redis.hmget(
+    communityDesignKey(candidateId),
+    'status',
+    'authorPublicId'
+  );
+  return status === 'live' && candidateAuthor !== null && candidateAuthor !== authorPublicId;
 }
 
 async function handlePut(req: VercelRequest, res: VercelResponse, id: string) {
@@ -351,6 +382,39 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string) {
       return sendError(res, 403, ErrorCode.UNAUTHORIZED, 'This design cannot be updated.');
     }
 
+    // B1: cutout-only launch policy gates updates too.
+    if (communityRequiresCutouts() && !hasQualifyingCutout(payload.params)) {
+      return res.status(400).json({
+        error:
+          'Community publishing is for bins with tool cutouts right now. Add a cutout to share this design.',
+        code: 'CUTOUT_REQUIRED',
+      });
+    }
+
+    const paramsFingerprint = communityParamsFingerprint(payload.params);
+    const previousFingerprint = communityParamsFingerprint(existing.params);
+
+    // B3: reject an edit into a verbatim built-in example or another author's
+    // live design.
+    if (await isDuplicateOnUpdate(redis, paramsFingerprint, existing.authorPublicId, id)) {
+      return res.status(409).json({
+        error:
+          'This matches a design that has already been published (or a built-in example). Make it your own before publishing.',
+        code: 'DUPLICATE_DESIGN',
+      });
+    }
+
+    // B4: a remix must still differ from its parent after an edit.
+    if (existing.lineage !== null) {
+      const parent = await readCommunityDesignBlob(existing.lineage.parentId);
+      if (parent !== null && communityParamsFingerprint(parent.params) === paramsFingerprint) {
+        return res.status(409).json({
+          error: 'Change the design before publishing your remix.',
+          code: 'REMIX_UNCHANGED',
+        });
+      }
+    }
+
     // allowOverwrite because the rev derives from the stored record: a retry
     // after a partial failure recomputes the same rev and must be able to
     // rewrite its own half-written assets.
@@ -394,6 +458,12 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string) {
     };
 
     await writeCommunityDesignBlob(updated, { allowOverwrite: true });
+
+    // A4: re-read moderation status immediately before writing the card. A hide
+    // (setCommunityDesignStatus) landing during the asset upload above must not
+    // be flipped back to live by this in-flight edit; the card carries the
+    // current status, never the publish-time one.
+    const statusAtWrite = await readModerationStatus(id, existing.status);
     await writeCommunityCard(redis, {
       id,
       name: updated.name,
@@ -411,20 +481,31 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string) {
       featured: updated.featured,
       createdAt: updated.createdAt,
       updatedAt: updated.updatedAt,
-      status: updated.status,
+      status: statusAtWrite,
     });
 
     // Publish idempotency keys on this hash; without the refresh a retried
     // POST of the pre-edit content would 200 against this id and a POST of
-    // the edited content would mint a duplicate design.
+    // the edited content would mint a duplicate design. Includes authorName +
+    // lineage (A8) so it matches the publish-side hash.
     await redis.hset(communityDesignKey(id), {
       contentHash: communityContentHash({
         params: payload.params,
         name: payload.name,
         description: payload.description,
         category: payload.category,
+        authorName: payload.authorName,
+        lineage: existing.lineage,
       }),
     });
+
+    // Keep the exact-duplicate index pointing at the edited params. Only a
+    // still-live design is indexed (A4: never re-index a non-live design), and
+    // a changed fingerprint drops the stale entry. Best-effort bookkeeping.
+    if (statusAtWrite === 'live' && paramsFingerprint !== previousFingerprint) {
+      await redis.set(communityParamsHashKey(paramsFingerprint), id).catch(() => undefined);
+      await redis.del(communityParamsHashKey(previousFingerprint)).catch(() => undefined);
+    }
 
     // Replaced-asset cleanup is best-effort: the record already points at the
     // new rev, so a failed delete only strands unreferenced blobs.
@@ -499,6 +580,18 @@ async function handleDelete(req: VercelRequest, res: VercelResponse, id: string)
       if (!owns) {
         return designNotFound(res);
       }
+      // A2: the owner cannot unpublish a design that moderation has hidden or
+      // removed. Deleting it would clear the reports/record and let a clean
+      // re-publish escape the moderation state. The card hash is the
+      // moderation truth (record.status is the publish-time blob status). The
+      // admin-token path (ownerUserId === null) still purges.
+      const moderationStatus = await redis.hget(communityDesignKey(id), 'status');
+      if (moderationStatus === 'hidden' || moderationStatus === 'removed') {
+        return res.status(403).json({
+          error: 'This design is under moderation review and cannot be unpublished.',
+          code: 'UNDER_REVIEW',
+        });
+      }
     }
 
     const authorPublicId = record?.authorPublicId ?? cardFields?.authorPublicId ?? '';
@@ -519,6 +612,10 @@ async function handleDelete(req: VercelRequest, res: VercelResponse, id: string)
     }
 
     const likers = await redis.smembers(communityLikesKey(id));
+    // A15: before deleting the reports set, drop this id from each reporter's
+    // reverse "reported" set, or those sets leak dead ids the account-deletion
+    // cascade would later walk.
+    const reporters = await redis.smembers(communityReportsKey(id));
     await removeFromCommunityIndexes(redis, id);
 
     const pipeline = redis.pipeline();
@@ -546,12 +643,28 @@ async function handleDelete(req: VercelRequest, res: VercelResponse, id: string)
     for (const liker of likers) {
       pipeline.srem(communityLikedKey(liker), id);
     }
+    for (const reporter of reporters) {
+      pipeline.srem(communityReportedKey(reporter), id);
+    }
     const results = await pipeline.exec();
     if (results === null) {
       throw new Error('Community delete pipeline failed: redis connection lost');
     }
     for (const [pipelineError] of results) {
       if (pipelineError) throw pipelineError;
+    }
+
+    // A1: a deleted remix returns its credit to the parent and root. The blob
+    // carries the rootId; a card-hash-only retry only knows the parent, which
+    // adjustRemixCredit credits once. Best-effort: the design is already gone.
+    if (parentId !== undefined) {
+      const rootId = record?.lineage?.rootId ?? parentId;
+      await adjustRemixCredit(redis, parentId, rootId, -1).catch((remixErr: unknown) => {
+        logger.warn('Community delete: remix credit decrement failed', {
+          id,
+          error: remixErr instanceof Error ? remixErr.message : String(remixErr),
+        });
+      });
     }
 
     return res.status(200).json({ success: true });
@@ -626,55 +739,37 @@ async function handleLikeAction(
   const redis = getRedis();
   if (!redis) return serviceUnavailable(res);
 
-  if (!(await requireLiveDesign(redis, id))) return designNotFound(res);
+  // A3: a deny-listed account keeps no like/report powers, matching publish/PUT.
+  if ((await redis.sismember(communityDenylistKey(), session.userId)) === 1) {
+    return sendError(
+      res,
+      403,
+      ErrorCode.UNAUTHORIZED,
+      'This action is not available for this account.'
+    );
+  }
+
+  // A15: only a NEW like requires a live design. Withdrawing a like (unlike)
+  // must keep working after the design was hidden/removed, or a user could
+  // never clear a heart on a moderated design.
+  if (like && !(await requireLiveDesign(redis, id))) return designNotFound(res);
 
   const { likes, likedByMe } = await toggleCommunityLike(redis, session.userId, id, like);
   return res.status(200).json({ likes, likedByMe });
 }
 
 /**
- * Flip status to hidden and purge the public asset blobs (thumbnails + GLB)
- * from the CDN. The record blob itself is untouched so the owner still sees
- * the design in the Mine view, but updates are rejected while non-live
- * (handlePut), so fresh assets can only reach the CDN again through a
- * moderation restore. The purge is required because blob access is by
- * unguessable path, not by the
- * already-flipped moderation status: a leaked or search-indexed thumbnail URL
- * must stop resolving the moment a design is auto-hidden, not just stop
- * being served through the API.
+ * Reversible soft-hide: flip status to hidden and de-index, keeping the record
+ * and asset blobs intact so an admin restore brings the design back whole. A
+ * report threshold is a signal, not a verdict, so it must NOT delete CDN
+ * assets: the takedown that purges assets is the admin hide/denylist/purge path
+ * (scripts/community-admin, API delete), which fails loud on a delete error.
  */
 async function autoHideCommunityDesign(redis: Redis, id: string): Promise<boolean> {
-  const record = await readCommunityDesignBlob(id);
   await setCommunityDesignStatus(redis, id, 'hidden');
   // Distinguishes this hide from a deny-list sweep in the owner's Mine view;
   // everyone else keeps seeing a plain 404 either way.
   await redis.hset(communityDesignKey(id), { hiddenReason: 'reports' });
-  if (record) {
-    const assetUrls = [...record.thumbnails, record.meshUrl].filter((url) => url !== '');
-    if (assetUrls.length > 0) {
-      // One inline retry, then a persisted flag: a hidden design stops taking
-      // reports (non-live actions 404), so nothing on the moderation path
-      // would revisit a failed purge and the leaked/search-indexed asset URLs
-      // would stay live on the CDN. The flag is what admin tooling / a sweep
-      // keys on to finish the purge.
-      let purged = false;
-      for (let attempt = 0; attempt < 2 && !purged; attempt++) {
-        try {
-          await del(assetUrls);
-          purged = true;
-        } catch (delErr) {
-          logger.warn('Failed to purge CDN assets for auto-hidden design', {
-            id,
-            attempt,
-            error: delErr instanceof Error ? delErr.message : String(delErr),
-          });
-        }
-      }
-      if (!purged) {
-        await redis.hset(communityDesignKey(id), { purgePending: '1' });
-      }
-    }
-  }
   logger.warn('Community design auto-hidden by reports', { id });
   return true;
 }
@@ -710,6 +805,16 @@ async function handleReportAction(
 
   const redis = getRedis();
   if (!redis) return serviceUnavailable(res);
+
+  // A3: a deny-listed account keeps no like/report powers, matching publish/PUT.
+  if ((await redis.sismember(communityDenylistKey(), session.userId)) === 1) {
+    return sendError(
+      res,
+      403,
+      ErrorCode.UNAUTHORIZED,
+      'This action is not available for this account.'
+    );
+  }
 
   if (!(await requireLiveDesign(redis, id))) return designNotFound(res);
 

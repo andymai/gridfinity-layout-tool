@@ -26,6 +26,7 @@ import {
   userTombstoneSweptAtKey,
 } from '../lib/redisKeys.js';
 import {
+  adjustRemixCredit,
   communityDesignBlobPath,
   readCommunityDesignBlob,
   type CommunityDesignRecord,
@@ -148,6 +149,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
           return parentId === undefined ? [] : [redis.srem(communityChildrenKey(parentId), id)];
         })
       );
+      // A1: deleting a remix returns its credit to the parent and root,
+      // matching the single-design DELETE handler.
+      await Promise.all(
+        publishedIds.flatMap((_id, i) => {
+          const lineage = records[i]?.lineage;
+          return !lineage ? [] : [adjustRemixCredit(redis, lineage.parentId, lineage.rootId, -1)];
+        })
+      );
       await redis.del(
         ...publishedIds.flatMap((id) => [
           communityDesignKey(id),
@@ -165,7 +174,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       // The SREM result gates the decrement so a replayed cascade can't
       // double-decrement a surviving design's like count.
       if (removed > 0 && (await redis.hexists(communityDesignKey(likedId), 'likes')) === 1) {
-        await redis.hincrby(communityDesignKey(likedId), 'likes', -1);
+        // A13: clamp at zero and rescore the likes index, matching the Lua
+        // toggle. Only a still-live design is rescored (a plain ZADD would
+        // resurrect a hidden/removed design into the likes sort).
+        let likes = await redis.hincrby(communityDesignKey(likedId), 'likes', -1);
+        if (likes < 0) {
+          await redis.hset(communityDesignKey(likedId), { likes: '0' });
+          likes = 0;
+        }
+        if ((await redis.hget(communityDesignKey(likedId), 'status')) === 'live') {
+          await redis.zadd(communityIndexKey('likes'), likes, likedId);
+        }
       }
     }
 

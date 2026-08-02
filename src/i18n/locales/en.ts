@@ -3242,12 +3242,16 @@ const en: Record<string, string> = {
   // Community showcase publish flow
   'community.publishButton': 'Publish',
   'community.publishButtonAria': 'Publish to the community showcase',
+  'community.publish.needsCutout.button':
+    'The community showcase is open to bins with tool cutouts to start. Add a cutout to share this one.',
+  'community.publish.needsCutout.hint':
+    'Bins with tool cutouts can be shared to the community showcase. More design types are coming later.',
   'community.publish.title': 'Publish to the community',
   'community.publish.updateTitle': 'Update published design',
   'community.publish.signin.value':
     'Share this design in the community showcase. Anyone can print it or remix it.',
   'community.publish.disclosure':
-    'Published designs are public, appear in search engines, and anyone can remix them under CC BY 4.0.',
+    'Published designs are public, appear in search engines, and anyone can remix them under CC BY 4.0. The showcase is focused on tool-cutout bins for now, with more to come.',
   'community.publish.disclosureTerms': 'Terms of use',
   'community.publish.identity.label': 'Public name',
   'community.publish.identity.hint': 'Your public name, shown on everything you publish.',
@@ -3316,6 +3320,26 @@ const en: Record<string, string> = {
   'community.publish.error.invalidAuthorName':
     'The server rejected the public name. Choose a different one.',
   'community.publish.error.invalidCategory': 'Choose a valid category and try again.',
+  'community.publish.error.nameTooShort':
+    'That name is too short. Give your design a descriptive name.',
+  'community.publish.error.namePlaceholder': 'Give your design a name before publishing.',
+  'community.publish.error.nameLowEffort': 'Give your design a real, descriptive name.',
+  'community.publish.error.cutoutRequired':
+    'The community showcase is open to bins with tool cutouts to start. Add a cutout to share this one.',
+  'community.publish.error.duplicate':
+    'This design matches one that is already in the showcase (or a built-in example).',
+  'community.publish.error.remixUnchanged': 'Change the design before publishing your remix.',
+  'community.publish.error.invalidLineage':
+    "The design this remixes is no longer available, so it can't be credited.",
+  'community.publish.error.underReview':
+    "This design is under review and can't be removed right now.",
+  'community.publish.error.publishWithoutRemix': 'Publish without the remix link',
+  'community.publish.announce.signin': 'Sign in to publish.',
+  'community.publish.announce.identity': 'Choose your public name.',
+  'community.publish.announce.form': 'Publish details.',
+  'community.publish.announce.publishing': 'Publishing your design.',
+  'community.publish.announce.success': 'Design published.',
+  'community.publish.announce.error': 'Something went wrong.',
   'community.toast.publishLinkNotSaved':
     "Published, but the link couldn't be saved to this design.",
   'community.toast.unpublished': 'Design removed from the community showcase.',
@@ -3352,7 +3376,7 @@ const en: Record<string, string> = {
   'community.gallery.loading': 'Loading community designs…',
   'community.gallery.empty.title': 'No community designs yet',
   'community.gallery.empty.subtitle':
-    'Be the first to publish a design for everyone to print and remix.',
+    'Be the first to share a tool-cutout bin for everyone to print and remix.',
   'community.gallery.empty.publishCta': 'Publish a design',
   'community.gallery.empty.designCta': 'Design a bin',
   'community.gallery.noMatches.title': 'No matching designs',
@@ -3425,7 +3449,7 @@ const en: Record<string, string> = {
   'community.page.back': 'Back to the app',
   'community.page.title': 'Community designs',
   'community.page.strip.text':
-    'Gridfinity Layout Tool is a free in-browser designer for custom 3D-printable bins and drawer layouts.',
+    'Gridfinity Layout Tool is a free in-browser designer for custom 3D-printable bins and drawer layouts. Right now it is tool-cutout bins (shadow boards and fitted holders), with more design types later.',
   'community.page.strip.cta': 'Design your own bin',
   'community.page.strip.dismiss': 'Dismiss',
 

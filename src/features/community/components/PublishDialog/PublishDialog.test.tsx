@@ -29,7 +29,16 @@ vi.mock('@/shared/analytics/posthog', () => ({
   trackEvent: vi.fn(),
 }));
 
+vi.mock('@/core/sync/session/sessionApi', () => ({
+  getMe: vi.fn(),
+  signInUrl: (provider: string) => `https://example.test/auth/${provider}`,
+}));
+
 import { trackEvent } from '@/shared/analytics/posthog';
+import { getMe } from '@/core/sync/session/sessionApi';
+import type { SessionUser } from '@/core/sync/session/sessionApi';
+
+const LIVE_USER: SessionUser = { userId: 'u1', provider: 'google', email: 'a@b.c' };
 
 const params = {
   compartments: { cells: [0] },
@@ -116,6 +125,8 @@ describe('PublishDialog', () => {
     useCommunityPublishStore.setState(INITIAL_COMMUNITY_PUBLISH_STATE);
     usePublishDialogStore.setState(INITIAL_PUBLISH_DIALOG_STATE);
     useSessionStore.setState({ status: 'anonymous', user: null });
+    // Default: a 404 reconcile confirms a live session, so the prefill clears.
+    vi.mocked(getMe).mockResolvedValue(LIVE_USER);
   });
 
   it('signed out: shows the value line, sign-in buttons, and tracks the prompt', async () => {
@@ -215,6 +226,43 @@ describe('PublishDialog', () => {
       is_update: false,
     });
     expect(screen.getByText('The community gallery is coming soon.')).toBeInTheDocument();
+  });
+
+  it('INVALID_LINEAGE: shows a real message and a strip-lineage retry that republishes standalone', async () => {
+    saveDisplayName('Andy');
+    useSessionStore.setState({ status: 'authenticated', user: LIVE_USER });
+    // Parent fetch 404s so no identical-params interstitial and no parent hash.
+    vi.mocked(fetchOwnDesign).mockResolvedValue(err({ kind: 'notFound' }));
+    vi.mocked(publishDesign)
+      .mockResolvedValueOnce(err({ kind: 'validation', code: 'INVALID_LINEAGE', message: 'x' }))
+      .mockResolvedValueOnce(
+        ok({ id: 'NewId1234567', url: 'https://example.com/community/d/NewId1234567' })
+      );
+    openDialog(
+      makeContext({
+        lineage: {
+          parentId: 'Par123456789',
+          rootId: 'Par123456789',
+          parentName: 'Parent',
+          parentAuthorName: 'Someone',
+          rootAuthorName: 'Someone',
+        },
+      })
+    );
+    await fillAndSubmit();
+    expect(
+      await screen.findByText(
+        "The design this remixes is no longer available, so it can't be credited."
+      )
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Publish without the remix link'));
+    await waitFor(() =>
+      expect(
+        screen.getByDisplayValue('https://example.com/community/d/NewId1234567')
+      ).toBeInTheDocument()
+    );
+    // The retry publishes with lineage stripped to null.
+    expect(vi.mocked(publishDesign).mock.calls[1][1]).toBeNull();
   });
 
   it('shows the kill-switch message on a 503 with a way back to the form', async () => {
@@ -414,6 +462,20 @@ describe('PublishDialog', () => {
     expect(await screen.findByText('Publish')).toBeInTheDocument();
     expect(handlers.onUnpublished).toHaveBeenCalledTimes(1);
     expect(screen.queryByText('Unpublish')).not.toBeInTheDocument();
+  });
+
+  it('does NOT sever the publishedId link on a 404 when the session is not live (hidden-design trap)', async () => {
+    saveDisplayName('Andy');
+    useSessionStore.setState({ status: 'authenticated', user: LIVE_USER });
+    // The client thinks it is signed in, but the server session is dead: the
+    // API 404s a hidden-but-recoverable design. getMe returning null must keep
+    // the link instead of clearing it and minting a duplicate.
+    vi.mocked(getMe).mockResolvedValue(null);
+    vi.mocked(fetchOwnDesign).mockResolvedValue(err({ kind: 'notFound' }));
+    const handlers = openDialog(makeContext({ publishedId: 'Pub123456789' }));
+    await waitFor(() => expect(getMe).toHaveBeenCalled());
+    expect(handlers.onUnpublished).not.toHaveBeenCalled();
+    expect(useCommunityPublishStore.getState().context?.publishedId).toBe('Pub123456789');
   });
 
   it('unpublish goes through the confirm dialog and closes on success', async () => {

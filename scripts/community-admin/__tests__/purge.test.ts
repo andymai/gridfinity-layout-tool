@@ -192,6 +192,8 @@ describe('purge command', () => {
       args: ['community:children:parent123ABC', 'abc123DEF456'],
     });
     expect(commands).toContainEqual({ op: 'del', args: ['community:reports:abc123DEF456'] });
+    // A15: the reason-tally hash is purged too, not orphaned.
+    expect(commands).toContainEqual({ op: 'del', args: ['community:reportReasons:abc123DEF456'] });
     expect(commands).toContainEqual({ op: 'del', args: ['community:likes:abc123DEF456'] });
     expect(commands).toContainEqual({ op: 'del', args: ['community:children:abc123DEF456'] });
     expect(commands).toContainEqual({
@@ -204,20 +206,24 @@ describe('purge command', () => {
     });
   });
 
-  it('logs a per-blob failure and continues the rest of the cleanup', async () => {
+  it('continues the rest of the cleanup on a per-blob failure but fails loud (non-zero exit)', async () => {
     mocks.readCommunityDesignBlob.mockResolvedValue(RECORD);
     mocks.readCommunityCards.mockResolvedValue([CARD]);
     mocks.deleteBlob
       .mockRejectedValueOnce(new Error('blob store unavailable'))
       .mockResolvedValue(undefined);
-    const { redis } = createFakeRedis([]);
+    const { redis, commands } = createFakeRedis([]);
     mocks.connect.mockReturnValue(redis);
 
     const code = await purge(baseArgs(['abc123DEF456']));
 
-    expect(code).toBe(0);
+    // Fail loud: a takedown that could not delete a world-readable blob exits
+    // non-zero so the operator knows, but still completes the redis cleanup so
+    // the design leaves the gallery.
+    expect(code).toBe(1);
     expect(mocks.loggerError).toHaveBeenCalledTimes(1);
     expect(mocks.deleteBlob).toHaveBeenCalledTimes(4);
+    expect(commands).toContainEqual({ op: 'del', args: ['community:design:abc123DEF456'] });
   });
 
   it('rejects a malformed id before touching redis or blob storage', async () => {

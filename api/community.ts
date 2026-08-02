@@ -17,6 +17,7 @@ import {
 import {
   COMMUNITY_CATEGORIES,
   COMMUNITY_TECHNIQUES,
+  communityRequiresCutouts,
   parseCommunityLineage,
   validateCommunityPublish,
 } from './lib/communityValidation.js';
@@ -24,8 +25,10 @@ import type { CommunityCategory, CommunityTechnique } from './lib/communityValid
 import { deriveAuthorPublicId, generateCommunityDesignId } from './lib/communityIds.js';
 import { checkCommunityPublishQuota } from './lib/communityQuota.js';
 import {
+  adjustRemixCredit,
   communityContentHash,
   communityMeshBlobPath,
+  communityParamsFingerprint,
   communityThumbBlobPath,
   deleteCommunityDesignBlob,
   deriveCommunityMetrics,
@@ -36,6 +39,8 @@ import {
   writeCommunityCard,
   writeCommunityDesignBlob,
 } from './lib/communityStore.js';
+import { hasQualifyingCutout } from './lib/communityLowEffort.js';
+import { COMMUNITY_EXAMPLE_PARAM_HASHES } from './lib/communityExampleParamHashes.js';
 import type {
   CommunityCardMetadata,
   CommunityCardRecord,
@@ -53,7 +58,9 @@ import {
   communityDesignKey,
   communityIndexKey,
   communityLikedKey,
+  communityParamsHashKey,
   communityPublishedKey,
+  communityPublishLockKey,
 } from './lib/redisKeys.js';
 import type { CommunityIndexSort } from './lib/redisKeys.js';
 
@@ -69,6 +76,10 @@ const LIST_MAX_SCAN = 960;
 const AUTHOR_PUBLIC_ID_REGEX = /^[a-f0-9]{32}$/;
 const CURSOR_REGEX = /^\d{1,9}$/;
 
+// Short per-user publish lock TTL: long enough to cover the check->write
+// sequence of one publish, short enough that a crashed request self-heals.
+const PUBLISH_LOCK_TTL_MS = 10_000;
+
 // Matches the client's publicDesignUrl: /community/d/<id> is the canonical route.
 function communityDesignUrl(designId: string): string {
   return `${getBaseUrl()}/community/d/${designId}`;
@@ -79,7 +90,8 @@ function badRequest(res: VercelResponse, message: string): void {
 }
 
 type LineageResolveResult =
-  { ok: true; lineage: CommunityLineage | null } | { ok: false; message: string };
+  | { ok: true; lineage: CommunityLineage | null; parentParams: Record<string, unknown> | null }
+  | { ok: false; message: string };
 
 /**
  * Lineage display fields and the root itself come from the stored parent
@@ -88,14 +100,20 @@ type LineageResolveResult =
  * authors. The parent must be live at publish time and its stored chain
  * dictates the root; a client rootId that disagrees is rejected. When the
  * chain's root is legitimately deleted, its snapshot survives via the parent
- * record. The parent link itself carries no proof-of-remix: any live design
- * can be claimed as a parent, only the credit text is server-derived.
+ * record.
+ *
+ * ACCEPTED RISK (A11, community-showcase-plan): the parent link carries no
+ * proof-of-remix. Any live design can be claimed as a parent; only the credit
+ * text is server-derived, so a spammer could inflate a victim's remix count.
+ * This is bounded by the 10/day publish rate limit and the report path, and
+ * further shrunk by the cutout-only gate, the remix-must-differ rule (B4), and
+ * the exact-duplicate guard (B3). We deliberately do not build proof-of-remix.
  */
 async function resolveLineage(
   redis: RedisClient,
   lineage: CommunityLineage | null
 ): Promise<LineageResolveResult> {
-  if (lineage === null) return { ok: true, lineage: null };
+  if (lineage === null) return { ok: true, lineage: null, parentParams: null };
   const parentCard = (await readCommunityCards(redis, [lineage.parentId]))[0] ?? null;
   if (parentCard === null || parentCard.status !== 'live') {
     return { ok: false, message: 'lineage.parentId does not reference a live design' };
@@ -124,6 +142,7 @@ async function resolveLineage(
       parentAuthorName: parentCard.authorName,
       rootAuthorName,
     },
+    parentParams: parentRecord.params,
   };
 }
 
@@ -150,7 +169,13 @@ async function findPublishedIdByContentHash(
     if (error) {
       throw new Error(`Community idempotency check failed: ${error.message}`);
     }
-    if (value === contentHash) return publishedIds[i];
+    if (value === contentHash) {
+      // A8: never resurface a hidden/removed design as a 200 idempotency hit.
+      // A moderated design keeping its content hash would otherwise let a
+      // re-publish return the id of a design the gallery no longer shows.
+      const status = await redis.hget(communityDesignKey(publishedIds[i]), 'status');
+      if (status === 'live') return publishedIds[i];
+    }
   }
   return null;
 }
@@ -175,6 +200,27 @@ function cardFromRecord(record: CommunityDesignRecord): CommunityCardMetadata {
     updatedAt: record.updatedAt,
     status: record.status,
   };
+}
+
+/**
+ * B3 exact-duplicate guard. True when the sanitized params re-upload a built-in
+ * example, or match a currently-live design published by a different author.
+ * The author's own re-publish never reaches here (idempotency returns first).
+ */
+async function isExactDuplicate(
+  redis: RedisClient,
+  paramsFingerprint: string,
+  authorPublicId: string
+): Promise<boolean> {
+  if (COMMUNITY_EXAMPLE_PARAM_HASHES.has(paramsFingerprint)) return true;
+  const candidateId = await redis.get(communityParamsHashKey(paramsFingerprint));
+  if (candidateId === null || candidateId === '') return false;
+  const [status, candidateAuthor] = await redis.hmget(
+    communityDesignKey(candidateId),
+    'status',
+    'authorPublicId'
+  );
+  return status === 'live' && candidateAuthor !== null && candidateAuthor !== authorPublicId;
 }
 
 async function handlePublish(req: VercelRequest, res: VercelResponse): Promise<void> {
@@ -226,131 +272,216 @@ async function handlePublish(req: VercelRequest, res: VercelResponse): Promise<v
       return;
     }
 
-    const contentHash = communityContentHash({
-      params: payload.params,
-      name: payload.name,
-      description: payload.description,
-      category: payload.category,
-    });
-    // Idempotency runs before quota: a retry of an already-published design
-    // must return its id even when the user sits at the live-design cap.
-    const existingId = await findPublishedIdByContentHash(redis, session.userId, contentHash);
-    if (existingId !== null) {
-      res.status(200).json({ id: existingId, url: communityDesignUrl(existingId) });
+    // B1: cutout-only launch policy. Wall cutouts do not qualify.
+    if (communityRequiresCutouts() && !hasQualifyingCutout(payload.params)) {
+      res.status(400).json({
+        error:
+          'Community publishing is for bins with tool cutouts right now. Add a cutout to share this design.',
+        code: 'CUTOUT_REQUIRED',
+      });
       return;
     }
 
-    const quota = await checkCommunityPublishQuota(redis, session.userId);
-    if (!quota.ok) {
-      sendError(
-        res,
-        413,
-        ErrorCode.SIZE_LIMIT,
-        `Published design limit reached (${quota.error.limit} live designs).`
-      );
+    // A9: serialize one user's overlapping publishes so the check->write
+    // sequence cannot interleave into a duplicate mint or a quota overshoot.
+    const lockKey = communityPublishLockKey(session.userId);
+    const lockAcquired = await redis.set(lockKey, '1', 'PX', PUBLISH_LOCK_TTL_MS, 'NX');
+    if (lockAcquired !== 'OK') {
+      res.status(409).json({
+        error: 'Another publish is already in progress. Try again in a moment.',
+        code: 'PUBLISH_IN_PROGRESS',
+      });
       return;
     }
-
-    const lineageResolve = await resolveLineage(redis, lineageParse.lineage);
-    if (!lineageResolve.ok) {
-      res.status(400).json({ error: lineageResolve.message, code: 'INVALID_LINEAGE' });
-      return;
-    }
-    const lineage = lineageResolve.lineage;
-
-    const id = generateCommunityDesignId();
-    const now = Date.now();
-    const [thumbBlobs, meshBlob] = await Promise.all([
-      Promise.all(
-        payload.thumbnails.map((thumbnail, angle) =>
-          put(communityThumbBlobPath(id, FIRST_REVISION, angle), Buffer.from(thumbnail, 'base64'), {
-            access: 'public',
-            contentType: 'image/webp',
-            addRandomSuffix: false,
-            allowOverwrite: false,
-          })
-        )
-      ),
-      put(communityMeshBlobPath(id, FIRST_REVISION), Buffer.from(payload.glb, 'base64'), {
-        access: 'public',
-        contentType: 'model/gltf-binary',
-        addRandomSuffix: false,
-        allowOverwrite: false,
-      }),
-    ]);
-
-    const record: CommunityDesignRecord = {
-      id,
-      authorPublicId,
-      authorName: payload.authorName,
-      name: payload.name,
-      description: payload.description,
-      category: payload.category,
-      techniques: payload.techniques,
-      params: payload.params,
-      metrics: deriveCommunityMetrics(payload.params),
-      lineage,
-      thumbnails: thumbBlobs.map((blob) => blob.url),
-      meshUrl: meshBlob.url,
-      photos: [],
-      featured: false,
-      createdAt: now,
-      updatedAt: now,
-      status: 'live',
-    };
 
     try {
-      await writeCommunityDesignBlob(record);
-      await writeCommunityCard(redis, cardFromRecord(record));
-      await redis.hset(communityDesignKey(id), { contentHash });
-      await upsertCommunityIndexes(redis, id, { createdAt: now, remixes: 0, likes: 0 });
-      await redis.sadd(communityPublishedKey(session.userId), id);
-      await redis.sadd(communityAuthorKey(authorPublicId), id);
-      // Recorded at publish so remix claims are auditable and so the delete
-      // path's srem from the parent's children set has something to undo.
-      if (lineage !== null) {
-        await redis.sadd(communityChildrenKey(lineage.parentId), id);
+      const paramsFingerprint = communityParamsFingerprint(payload.params);
+      const contentHash = communityContentHash({
+        params: payload.params,
+        name: payload.name,
+        description: payload.description,
+        category: payload.category,
+        authorName: payload.authorName,
+        lineage: lineageParse.lineage,
+      });
+      // Idempotency runs before quota: a retry of an already-published design
+      // must return its id even when the user sits at the live-design cap.
+      const existingId = await findPublishedIdByContentHash(redis, session.userId, contentHash);
+      if (existingId !== null) {
+        res.status(200).json({ id: existingId, url: communityDesignUrl(existingId) });
+        return;
       }
-    } catch (writeErr) {
-      // The thumbnails and GLB were already uploaded to public, predictable
-      // paths; without this cleanup a failed publish would strand CDN assets
-      // that no record references and no purge can enumerate.
-      const uploadedAssets = [...thumbBlobs.map((blob) => blob.url), meshBlob.url];
-      await del(uploadedAssets).catch((delErr: unknown) => {
-        logger.error('Rollback failed: orphan community assets left after publish failure', {
-          id,
-          error: delErr instanceof Error ? delErr.message : String(delErr),
-        });
-      });
-      await deleteCommunityDesignBlob(id).catch((delErr: unknown) => {
-        logger.error('Rollback failed: orphan community design blob left after publish failure', {
-          id,
-          error: delErr instanceof Error ? delErr.message : String(delErr),
-        });
-      });
-      // Redis writes may have partially landed before the failure; without
-      // this cleanup a stranded card hash surfaces in the gallery list while
-      // the detail 404s, and the published-set entry burns a quota slot.
-      await (async () => {
-        const cleanup = redis.pipeline();
-        cleanup.del(communityDesignKey(id));
-        cleanup.srem(communityPublishedKey(session.userId), id);
-        cleanup.srem(communityAuthorKey(authorPublicId), id);
-        if (lineage !== null) {
-          cleanup.srem(communityChildrenKey(lineage.parentId), id);
-        }
-        await cleanup.exec();
-        await removeFromCommunityIndexes(redis, id);
-      })().catch((cleanupErr: unknown) => {
-        logger.error('Rollback failed: orphan community redis entries left after publish failure', {
-          id,
-          error: cleanupErr instanceof Error ? cleanupErr.message : String(cleanupErr),
-        });
-      });
-      throw writeErr;
-    }
 
-    res.status(201).json({ id, url: communityDesignUrl(id) });
+      // B3: reject a verbatim re-upload of a built-in example or of another
+      // author's live design. The author's own re-publish returned above.
+      if (await isExactDuplicate(redis, paramsFingerprint, authorPublicId)) {
+        res.status(409).json({
+          error:
+            'This matches a design that has already been published (or a built-in example). Make it your own before publishing.',
+          code: 'DUPLICATE_DESIGN',
+        });
+        return;
+      }
+
+      const quota = await checkCommunityPublishQuota(redis, session.userId);
+      if (!quota.ok) {
+        sendError(
+          res,
+          413,
+          ErrorCode.SIZE_LIMIT,
+          `Published design limit reached (${quota.error.limit} live designs).`
+        );
+        return;
+      }
+
+      const lineageResolve = await resolveLineage(redis, lineageParse.lineage);
+      if (!lineageResolve.ok) {
+        res.status(400).json({ error: lineageResolve.message, code: 'INVALID_LINEAGE' });
+        return;
+      }
+      const lineage = lineageResolve.lineage;
+
+      // B4: a remix must differ from its parent, or remix credit could be
+      // farmed by re-uploading the parent unchanged.
+      if (
+        lineage !== null &&
+        lineageResolve.parentParams !== null &&
+        communityParamsFingerprint(lineageResolve.parentParams) === paramsFingerprint
+      ) {
+        res.status(409).json({
+          error: 'Change the design before publishing your remix.',
+          code: 'REMIX_UNCHANGED',
+        });
+        return;
+      }
+
+      const id = generateCommunityDesignId();
+      const now = Date.now();
+      const [thumbBlobs, meshBlob] = await Promise.all([
+        Promise.all(
+          payload.thumbnails.map((thumbnail, angle) =>
+            put(
+              communityThumbBlobPath(id, FIRST_REVISION, angle),
+              Buffer.from(thumbnail, 'base64'),
+              {
+                access: 'public',
+                contentType: 'image/webp',
+                addRandomSuffix: false,
+                allowOverwrite: false,
+              }
+            )
+          )
+        ),
+        put(communityMeshBlobPath(id, FIRST_REVISION), Buffer.from(payload.glb, 'base64'), {
+          access: 'public',
+          contentType: 'model/gltf-binary',
+          addRandomSuffix: false,
+          allowOverwrite: false,
+        }),
+      ]);
+
+      const record: CommunityDesignRecord = {
+        id,
+        authorPublicId,
+        authorName: payload.authorName,
+        name: payload.name,
+        description: payload.description,
+        category: payload.category,
+        techniques: payload.techniques,
+        params: payload.params,
+        metrics: deriveCommunityMetrics(payload.params),
+        lineage,
+        thumbnails: thumbBlobs.map((blob) => blob.url),
+        meshUrl: meshBlob.url,
+        photos: [],
+        featured: false,
+        createdAt: now,
+        updatedAt: now,
+        status: 'live',
+      };
+
+      try {
+        await writeCommunityDesignBlob(record);
+        await writeCommunityCard(redis, cardFromRecord(record));
+        await redis.hset(communityDesignKey(id), { contentHash });
+        await upsertCommunityIndexes(redis, id, { createdAt: now, remixes: 0, likes: 0 });
+        await redis.sadd(communityPublishedKey(session.userId), id);
+        await redis.sadd(communityAuthorKey(authorPublicId), id);
+        // Recorded at publish so remix claims are auditable and so the delete
+        // path's srem from the parent's children set has something to undo.
+        if (lineage !== null) {
+          await redis.sadd(communityChildrenKey(lineage.parentId), id);
+        }
+      } catch (writeErr) {
+        // The thumbnails and GLB were already uploaded to public, predictable
+        // paths; without this cleanup a failed publish would strand CDN assets
+        // that no record references and no purge can enumerate.
+        const uploadedAssets = [...thumbBlobs.map((blob) => blob.url), meshBlob.url];
+        await del(uploadedAssets).catch((delErr: unknown) => {
+          logger.error('Rollback failed: orphan community assets left after publish failure', {
+            id,
+            error: delErr instanceof Error ? delErr.message : String(delErr),
+          });
+        });
+        await deleteCommunityDesignBlob(id).catch((delErr: unknown) => {
+          logger.error('Rollback failed: orphan community design blob left after publish failure', {
+            id,
+            error: delErr instanceof Error ? delErr.message : String(delErr),
+          });
+        });
+        // Redis writes may have partially landed before the failure; without
+        // this cleanup a stranded card hash surfaces in the gallery list while
+        // the detail 404s, and the published-set entry burns a quota slot.
+        await (async () => {
+          const cleanup = redis.pipeline();
+          cleanup.del(communityDesignKey(id));
+          cleanup.srem(communityPublishedKey(session.userId), id);
+          cleanup.srem(communityAuthorKey(authorPublicId), id);
+          if (lineage !== null) {
+            cleanup.srem(communityChildrenKey(lineage.parentId), id);
+          }
+          await cleanup.exec();
+          await removeFromCommunityIndexes(redis, id);
+        })().catch((cleanupErr: unknown) => {
+          logger.error(
+            'Rollback failed: orphan community redis entries left after publish failure',
+            {
+              id,
+              error: cleanupErr instanceof Error ? cleanupErr.message : String(cleanupErr),
+            }
+          );
+        });
+        throw writeErr;
+      }
+
+      // Post-commit bookkeeping: the design is already live, so these keep the
+      // duplicate index and remix stats in sync best-effort. A failure here
+      // must not fail an already-successful publish.
+      await redis.set(communityParamsHashKey(paramsFingerprint), id).catch((indexErr: unknown) => {
+        logger.warn('Community publish: params-hash index write failed', {
+          id,
+          error: indexErr instanceof Error ? indexErr.message : String(indexErr),
+        });
+      });
+      // A1: crediting the parent and root remix counts (and rescoring the
+      // most-remixed index) is the counterpart of the delete-path decrement.
+      if (lineage !== null) {
+        await adjustRemixCredit(redis, lineage.parentId, lineage.rootId, 1).catch(
+          (remixErr: unknown) => {
+            logger.warn('Community publish: remix credit bump failed', {
+              id,
+              error: remixErr instanceof Error ? remixErr.message : String(remixErr),
+            });
+          }
+        );
+      }
+
+      res.status(201).json({ id, url: communityDesignUrl(id) });
+    } finally {
+      await redis.del(lockKey).catch(() => {
+        // The lock self-heals via its PX TTL; a failed release is not fatal.
+      });
+    }
   } catch (error) {
     logger.error('Community publish error', {
       error: error instanceof Error ? error.message : String(error),
@@ -443,7 +574,10 @@ function compareCards(
 ): number {
   if (sort === 'likes' && b.likes !== a.likes) return b.likes - a.likes;
   if (sort === 'remixes' && b.remixes !== a.remixes) return b.remixes - a.remixes;
-  return b.createdAt - a.createdAt;
+  if (b.createdAt !== a.createdAt) return b.createdAt - a.createdAt;
+  // A12: id is the final tiebreaker so tied timestamps produce a stable total
+  // order across requests, preventing dup/skip at a page boundary.
+  return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
 }
 
 function isCommunityIndexSort(value: string): value is CommunityIndexSort {

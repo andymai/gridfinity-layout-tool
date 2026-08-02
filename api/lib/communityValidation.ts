@@ -12,6 +12,7 @@ import { checkText, filterDisplayName, filterSharedDesignsContent } from './cont
 import { validateDesignerShare } from './designerValidation.js';
 import { isValidShareId } from './shared.js';
 import { isObject, isString, validationError } from './validationUtils.js';
+import { classifyCommunityName } from './communityLowEffort.js';
 import type { CommunityLineage } from './communityStore.js';
 
 /**
@@ -40,6 +41,15 @@ export type CommunityCategory = (typeof COMMUNITY_CATEGORIES)[number];
 export const COMMUNITY_REPORT_REASONS = ['inappropriate', 'spam', 'broken', 'stolen'] as const;
 export type CommunityReportReason = (typeof COMMUNITY_REPORT_REASONS)[number];
 export const COMMUNITY_REPORT_NOTE_MAX_LENGTH = 500;
+
+/**
+ * B1 cutout-only launch policy toggle. Default ON; set COMMUNITY_REQUIRE_CUTOUTS
+ * to the literal string 'false' to relax the requirement later. The server is
+ * the final authority. Documented in CLAUDE.md's env section.
+ */
+export function communityRequiresCutouts(): boolean {
+  return process.env.COMMUNITY_REQUIRE_CUTOUTS !== 'false';
+}
 
 export const COMMUNITY_NAME_MAX_LENGTH = 60;
 export const COMMUNITY_DESCRIPTION_MAX_LENGTH = 500;
@@ -268,11 +278,29 @@ export function validateCommunityPublish(body: unknown): CommunityValidationResu
     return validationError('INVALID_NAME', 'name must be a string');
   }
   const name = body.name.trim();
-  if (name.length < 1 || name.length > COMMUNITY_NAME_MAX_LENGTH) {
+  if (name.length > COMMUNITY_NAME_MAX_LENGTH) {
     return validationError(
       'INVALID_NAME',
       `name must be 1-${COMMUNITY_NAME_MAX_LENGTH} characters`
     );
+  }
+  // Low-effort name guard (B2): empty/whitespace keeps the legacy INVALID_NAME
+  // code; the new junk categories get their own actionable codes.
+  const nameIssue = classifyCommunityName(name);
+  if (nameIssue === 'empty') {
+    return validationError('INVALID_NAME', 'name must be 1-60 characters');
+  }
+  if (nameIssue === 'too-short') {
+    return validationError('NAME_TOO_SHORT', 'name must be at least 3 characters');
+  }
+  if (nameIssue === 'placeholder') {
+    return validationError(
+      'NAME_PLACEHOLDER',
+      'name is the default placeholder; rename the design'
+    );
+  }
+  if (nameIssue === 'low-effort') {
+    return validationError('NAME_LOW_EFFORT', 'name is too generic; use a descriptive name');
   }
 
   let description = '';

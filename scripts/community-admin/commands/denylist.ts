@@ -6,6 +6,7 @@ import {
   communityDesignKey,
 } from '../../../api/lib/redisKeys.js';
 import type { Args } from '../lib/args.js';
+import { purgeCommunityAssets } from '../lib/assets.js';
 import { colors } from '../lib/output.js';
 import { connect } from '../lib/redis.js';
 
@@ -36,10 +37,13 @@ export async function denylist(args: Args): Promise<number> {
     }
     // hiddenReason drives the owner's Mine badge: a deny-list hide must read
     // differently from a report auto-hide (community-showcase-plan.md §2.6).
+    // A10: the deny-list sweep is a takedown, so it also deletes each hidden
+    // design's CDN assets (fail loud).
     await Promise.all(
       liveIds.map(async (id) => {
         await setCommunityDesignStatus(redis, id, 'hidden');
         await redis.hset(communityDesignKey(id), { hiddenReason: 'denylist' });
+        await purgeCommunityAssets(id);
       })
     );
 

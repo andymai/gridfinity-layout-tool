@@ -63,6 +63,9 @@ interface CommunityPublishActions {
   beginCapture: () => number;
   setCaptureFailed: () => void;
   clearContextPublishedId: () => void;
+  /** Drop the remix link so a publish blocked by an unpublishable parent can
+   *  retry as a standalone design (INVALID_LINEAGE recovery). */
+  clearContextLineage: () => void;
   close: () => void;
 }
 
@@ -102,6 +105,11 @@ export const useCommunityPublishStore = create<CommunityPublishStore>((set, get)
   clearContextPublishedId: () => {
     set((s) => ({
       context: s.context === null ? null : { ...s.context, publishedId: null },
+    }));
+  },
+  clearContextLineage: () => {
+    set((s) => ({
+      context: s.context === null ? null : { ...s.context, lineage: null },
     }));
   },
   close: () => {

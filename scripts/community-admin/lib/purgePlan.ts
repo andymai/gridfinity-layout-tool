@@ -4,6 +4,7 @@ import {
   communityDesignKey,
   communityIndexKey,
   communityLikesKey,
+  communityReportReasonKey,
   communityReportsKey,
   COMMUNITY_INDEX_SORTS,
 } from '../../../api/lib/redisKeys.js';
@@ -20,6 +21,8 @@ export interface PurgeCleanupPlan {
   indexKeys: string[];
   likesKey: string;
   reportsKey: string;
+  /** HASH of report-reason tallies; deleted alongside reportsKey so a purge leaves nothing behind. */
+  reportReasonKey: string;
   /** SET of this design's own remixes: deleted as bookkeeping, the remixes themselves are untouched. */
   childrenKey: string;
   /** community:author:{publicId}, or null when neither the blob nor the card resolved an author. */
@@ -58,6 +61,7 @@ export function planPurgeCleanup(
     indexKeys: COMMUNITY_INDEX_SORTS.map((sort) => communityIndexKey(sort)),
     likesKey: communityLikesKey(designId),
     reportsKey: communityReportsKey(designId),
+    reportReasonKey: communityReportReasonKey(designId),
     childrenKey: communityChildrenKey(designId),
     authorKey: authorPublicId ? communityAuthorKey(authorPublicId) : null,
     parentChildKey: parentId ? communityChildrenKey(parentId) : null,

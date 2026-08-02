@@ -37,10 +37,16 @@ export async function purge(args: Args): Promise<number> {
 
     const plan = planPurgeCleanup(id, record, card);
 
+    // The takedown deletes every asset blob AND still completes the redis
+    // cleanup below so the design leaves the gallery even if a blob delete
+    // fails. But a failed delete FAILS LOUD (non-zero exit) instead of a silent
+    // success, so the operator knows a world-readable blob may still be live.
+    let blobDeleteFailed = false;
     for (const path of plan.blobPaths) {
       try {
         await deleteBlob(path);
       } catch (error) {
+        blobDeleteFailed = true;
         logger.error('community-admin purge: blob delete failed', {
           id,
           path,
@@ -59,6 +65,7 @@ export async function purge(args: Args): Promise<number> {
     if (plan.authorKey) pipeline.srem(plan.authorKey, id);
     if (plan.parentChildKey) pipeline.srem(plan.parentChildKey, id);
     pipeline.del(plan.reportsKey);
+    pipeline.del(plan.reportReasonKey);
     pipeline.del(plan.likesKey);
     pipeline.del(plan.childrenKey);
     for (const userId of likerIds) pipeline.srem(communityLikedKey(userId), id);
@@ -81,6 +88,14 @@ export async function purge(args: Args): Promise<number> {
         '  community:published:{userId} cannot be cleaned from a design id alone (authorPublicId is a one-way hash); the author keeps a phantom quota slot until the record is resolved out of band'
       )
     );
+    if (blobDeleteFailed) {
+      console.error(
+        colors.yellow(
+          '  one or more asset blobs failed to delete; a world-readable blob may still be live. Check the logs and delete it out of band.'
+        )
+      );
+      return 1;
+    }
     return 0;
   } finally {
     await redis.quit();
