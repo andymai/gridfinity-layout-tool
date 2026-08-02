@@ -64,32 +64,3 @@ export function calculateStaggeredGrid(config: StaggeredGridConfig): PatternCent
 
   return centers;
 }
-
-/**
- * Calculate center positions for an axis-aligned (non-staggered) grid.
- *
- * Rows and columns line up, producing a clean lattice — used by the diamond
- * pattern (argyle reads best aligned, not offset). Both axes are strictly
- * bounded within ±maxX / ±maxY.
- */
-export function calculateAlignedGrid(config: StaggeredGridConfig): PatternCenter[] {
-  const { maxX, maxY, colSpacing, rowSpacing } = config;
-
-  if (maxX < 0 || maxY < 0 || colSpacing <= 0 || rowSpacing <= 0) {
-    return [];
-  }
-
-  const centers: PatternCenter[] = [];
-  const startRow = Math.ceil(-maxY / rowSpacing);
-  const endRow = Math.floor(maxY / rowSpacing);
-  const startCol = Math.ceil(-maxX / colSpacing);
-  const endCol = Math.floor(maxX / colSpacing);
-
-  for (let row = startRow; row <= endRow; row++) {
-    for (let col = startCol; col <= endCol; col++) {
-      centers.push({ x: col * colSpacing, y: row * rowSpacing });
-    }
-  }
-
-  return centers;
-}

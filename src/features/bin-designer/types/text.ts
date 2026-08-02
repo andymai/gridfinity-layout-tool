@@ -62,9 +62,6 @@ export const TEXT_SIDE_TO_ANCHOR: Record<CutoutTextSide, CutoutTextAnchor> = {
   right: 'right',
 } as const;
 
-/** Anchor applied when neither `textAnchor` nor a legacy `textSide` is set. */
-export const DEFAULT_CUTOUT_TEXT_ANCHOR: CutoutTextAnchor = 'top';
-
 export interface TextStyleDefaults {
   readonly font: TextFontFamily;
   readonly mode: TextMode;

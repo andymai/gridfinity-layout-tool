@@ -81,5 +81,4 @@ export type Middleware<TCommand = unknown, TEvent = unknown> = (
   command: TCommand,
   next: NextFn<TCommand, TEvent>
 ) => CommandResult<unknown, TEvent>;
-export type EventHandler<T = unknown> = (event: T) => void;
 export type UnsubscribeFn = () => void;

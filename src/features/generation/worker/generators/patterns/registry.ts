@@ -15,7 +15,6 @@
 
 import type { WallPatternType } from '@/shared/types/bin';
 import type { PatternCalculator } from './types';
-import type { HoneycombPatternCalculator } from './honeycombPattern';
 import { createHoneycombCalculator } from './honeycombPattern';
 import { createRoundCalculator } from './roundPattern';
 import { createDiamondCalculator } from './diamondPattern';
@@ -114,20 +113,4 @@ export function getPatternCalculator(
     throw new Error(`Unknown wall pattern type: "${pattern}". Available patterns: ${available}`);
   }
   return entry.createCalculator(binHeight, scale);
-}
-
-/**
- * Type guard to check if a calculator is a HoneycombPatternCalculator.
- */
-export function isHoneycombCalculator(
-  calculator: PatternCalculator
-): calculator is HoneycombPatternCalculator {
-  return calculator.getPatternType() === 'honeycomb';
-}
-
-/**
- * Get all available pattern types.
- */
-export function getAvailablePatterns(): WallPatternType[] {
-  return Object.keys(PATTERN_REGISTRY) as WallPatternType[];
 }

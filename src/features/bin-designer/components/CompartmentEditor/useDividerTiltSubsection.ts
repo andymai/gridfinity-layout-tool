@@ -19,8 +19,6 @@ import {
  *  (`selectedDividerKey` / `hoveredDividerKey` lookups depend on this). */
 export const rowKeyOf = (a: number, b: number): string => (a < b ? `${a}-${b}` : `${b}-${a}`);
 
-export type DividerAxis = 'vertical' | 'horizontal';
-
 export interface TiltRow extends EligibleDivider {
   readonly key: string;
   /** True when either endpoint offset is non-zero (i.e. the divider is tilted/shifted). */

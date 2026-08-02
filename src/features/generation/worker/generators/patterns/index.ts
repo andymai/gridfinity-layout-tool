@@ -9,22 +9,16 @@ export type {
   PatternCalculator,
   StampPatternCalculator,
   MotifPatternCalculator,
-  BasePatternCalculator,
   PatternCenter,
   PatternGridConfig,
-  PatternStrategyKind,
   ShapeDescriptor,
-  PolygonShape,
-  RectShape,
   MotifCell,
   MotifPath,
-  MotifSegment,
   MotifMode,
   WrappedLatticeCalculator,
 } from './types';
 export {
   isStampCalculator,
-  isMotifCalculator,
   isWrappedLatticeCalculator,
   shapeDescriptorKey,
 } from './types';
@@ -54,7 +48,7 @@ export { createTsumiishiKikkoCalculator, TSUMIISHI_KIKKO_DEF } from './kumiko/ts
 export { replicateRotations, SIX_FOLD } from './kumiko/fillingUtils';
 
 // Grid utilities
-export { calculateStaggeredGrid, calculateAlignedGrid } from './gridUtils';
+export { calculateStaggeredGrid } from './gridUtils';
 export type { StaggeredGridConfig } from './gridUtils';
 
 // Scale model
@@ -82,6 +76,4 @@ export { SlotPatternCalculator, createSlotCalculator } from './slotPattern';
 export {
   PATTERN_REGISTRY,
   getPatternCalculator,
-  isHoneycombCalculator,
-  getAvailablePatterns,
 } from './registry';

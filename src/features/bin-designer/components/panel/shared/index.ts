@@ -1,4 +1,4 @@
-export { ShapePicker, type ShapeOption } from './ShapePicker';
+export { ShapePicker } from './ShapePicker';
 export { SideSelector, type Side, type SideState } from './SideSelector';
 export { StepperField } from './StepperField';
 export { AdvancedDisclosure } from './AdvancedDisclosure';

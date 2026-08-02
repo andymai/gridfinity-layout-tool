@@ -3,7 +3,7 @@
  */
 
 export type { PipelineContext, PipelineStage, BinDimensions } from './types';
-export type { FeatureBuilder, FeatureTarget, BuildResult } from './featureBuilder';
+export type { FeatureBuilder } from './featureBuilder';
 export { createInitialContext } from './context';
 export { runPipeline } from './runner';
 export { collectOrigins } from './collectOrigins';

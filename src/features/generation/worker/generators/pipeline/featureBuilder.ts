@@ -19,16 +19,6 @@ import type { FeatureTag } from '../featureTags';
 export type FeatureTarget = 'fuse' | 'cut' | 'patternCut';
 
 /**
- * Result of running a single feature builder. Collects shapes with
- * their target bucket and provenance tag.
- */
-export interface BuildResult {
-  readonly shapes: readonly Shape3D[];
-  readonly target: FeatureTarget;
-  readonly tag: FeatureTag;
-}
-
-/**
  * Protocol for a single bin feature.
  *
  * Each builder is a plain object implementing this interface.
