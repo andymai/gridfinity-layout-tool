@@ -70,6 +70,7 @@ export function StackedBaseplateMeshes({
   const {
     drawerWidth,
     drawerDepth,
+    drawerOutline,
     gridUnitMm,
     gridUnitMmY,
     fractionalEdgeX,
@@ -79,6 +80,9 @@ export function StackedBaseplateMeshes({
     useShallow((s) => ({
       drawerWidth: s.layout.drawer.width,
       drawerDepth: s.layout.drawer.depth,
+      // A custom perimeter now stacks (#3113); pass it so the preview's
+      // fingerprint grouping matches the shaped tiles generation produced.
+      drawerOutline: s.layout.drawer.outline,
       gridUnitMm: s.layout.gridUnitMm,
       gridUnitMmY: effectiveGridUnitMmY(s.layout),
       fractionalEdgeX: s.layout.drawer.fractionalEdgeX ?? 'end',
@@ -102,7 +106,7 @@ export function StackedBaseplateMeshes({
       fractionalEdgeX,
       fractionalEdgeY,
       nozzleSizeMm,
-      undefined,
+      drawerOutline,
       undefined,
       gridUnitMmY
     );
@@ -171,6 +175,7 @@ export function StackedBaseplateMeshes({
     baseplateParams,
     drawerWidth,
     drawerDepth,
+    drawerOutline,
     gridUnitMm,
     gridUnitMmY,
     fractionalEdgeX,

@@ -107,12 +107,10 @@ export function useBaseplatePanelDerived(): BaseplatePanelDerived {
   // padding (the cuts are re-inscribed on the padded rectangle), so padding
   // stays live and only corner rounding + detached margins hide. Painted/pen/
   // trace shapes have no parametric resize: they subsume padding too, so all
-  // those controls hide behind the notice. Stacking wins over the shape
-  // (uniform rectangular tiles), so the stack section stays functional — but
-  // via the export-format-aware `stackEnabled`: STEP clears stackPrint before
-  // buildFullParams, so a STEP export of a stacked shaped drawer IS shaped and
-  // the panel must say so.
-  const outlineActive = drawerOutline !== undefined && synced && !stackEnabled;
+  // those controls hide behind the notice. Stacking keeps the shape now (#3113):
+  // the shaped tiles dedupe and stack, so a stacked shaped drawer IS shaped and
+  // the panel must say so — for every export format, not just STEP.
+  const outlineActive = drawerOutline !== undefined && synced;
   const cornerShaped =
     outlineActive &&
     drawerOutline.authoring?.kind === 'corners' &&

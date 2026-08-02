@@ -186,6 +186,46 @@ describe('buildBaseplateExportPieces', () => {
     expect(result.guideText).toBe('');
   });
 
+  it('stacks a shaped split plate: identical tiles tower, the notched tile prints singly (#3113)', async () => {
+    const { bridge } = makeBridge();
+    const U = 42;
+    // 8×8 plate with the top-right 2×2 corner notched out, on a 4u bed → a 2×2
+    // grid of 4u tiles. Three tiles stay full squares (one dedup group, stacked
+    // into a tower); the notched tile is unique (its own single-plate tower).
+    // Before #3113 the outline was dropped under stacking, collapsing this into
+    // one rectangular tower (uniqueCount 1) — the confusing "nothing to shape".
+    const notched = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 8 * U, y: 0 },
+        { x: 8 * U, y: 6 * U },
+        { x: 6 * U, y: 6 * U },
+        { x: 6 * U, y: 8 * U },
+        { x: 0, y: 8 * U },
+      ],
+    };
+    const result = await buildBaseplateExportPieces(
+      bridge,
+      null,
+      input({
+        drawerWidth: 8,
+        drawerDepth: 8,
+        drawerOutline: notched,
+        printBedWidthMm: 4 * U,
+        printBedDepthMm: 4 * U,
+        baseplateParams: {
+          ...DEFAULT_BASEPLATE_PARAMS,
+          stackPrint: { enabled: true, gapMm: mm(0.2), copies: 1 },
+        },
+      })
+    );
+
+    // The shape kept all four tiles, deduped to two unique tiles (3 full + 1 notched).
+    expect(result.splitStats).toEqual({ uniqueCount: 2, totalPieces: 4, stackEnabled: true });
+    // One tower per unique tile: the three full tiles collapse into a single tower.
+    expect(result.pieces).toHaveLength(2);
+  });
+
   it('reports progress during a split export', async () => {
     const { bridge } = makeBridge();
     const onProgress = vi.fn();

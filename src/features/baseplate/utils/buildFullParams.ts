@@ -50,10 +50,13 @@ export function maxCornerRadiusMm(totalW: number, totalD: number): number {
  * The inputs the outline resolution depends on, derived once.
  *
  * Both `buildFullParams` and {@link hasEffectivePerimeter} read these, so the
- * rules for which dimensions apply, whether the drawer shape is in play, and
- * whether stacking suppresses everything exist in one place. Restating them
- * per caller is what let the panel and the regeneration trigger disagree about
- * radius-cut plates once already.
+ * rules for which dimensions apply and whether the drawer shape is in play exist
+ * in one place. Restating them per caller is what let the panel and the
+ * regeneration trigger disagree about radius-cut plates once already.
+ *
+ * A custom drawer shape now applies under stacking too (#3113): the shaped tiles
+ * split and dedupe by fingerprint like any others, so identical tiles stack.
+ * Only the radius→outline conversion stays stacking-gated (see `resolveOutlineRaw`).
  */
 function outlineInputs(
   stored: StoredBaseplateParams,
@@ -70,7 +73,7 @@ function outlineInputs(
   return {
     synced,
     stackingOn,
-    outlineOn: drawerOutline !== undefined && synced && !stackingOn,
+    outlineOn: drawerOutline !== undefined && synced,
     widthMm: width * gridUnitMm,
     depthMm: depth * gridUnitMmY,
   };
@@ -87,9 +90,11 @@ function outlineInputs(
  * made outlines from large radii, which showed the whole-cell control on plates
  * the trigger considered rectangular.
  *
- * `stackingOverride` exists for the one caller that needs a different answer:
- * the panel keeps controls live for a STEP export, which clears `stackPrint`
- * before this resolver ever runs.
+ * A drawer shape is a perimeter under stacking too (#3113); only the
+ * radius→outline conversion stays stacking-gated. `stackingOverride` still
+ * flips that gate for the one caller that needs it: the panel keeps rounding
+ * controls live for a STEP export, which clears `stackPrint` before this
+ * resolver ever runs, so its plate really is radius-shaped.
  */
 export function hasEffectivePerimeter(
   stored: StoredBaseplateParams,
@@ -109,15 +114,15 @@ export function hasEffectivePerimeter(
     drawerOutline
   );
   const stacking = stackingOverride ?? inputs.stackingOn;
-  if (stacking) return false;
   return (
     resolveOutline(
       drawerOutline,
-      drawerOutline !== undefined && inputs.synced,
+      inputs.outlineOn,
       stored,
       inputs.widthMm,
       inputs.depthMm,
-      gridUnitMm
+      gridUnitMm,
+      stacking
     ).outline !== undefined
   );
 }
@@ -138,9 +143,18 @@ function resolveOutline(
   stored: StoredBaseplateParams,
   widthMm: number,
   depthMm: number,
-  gridUnitMm: number
+  gridUnitMm: number,
+  stacking: boolean
 ): { outline: DrawerOutline | undefined; paddingOn: boolean } {
-  const resolved = resolveOutlineRaw(drawerOutline, outlineOn, stored, widthMm, depthMm, gridUnitMm);
+  const resolved = resolveOutlineRaw(
+    drawerOutline,
+    outlineOn,
+    stored,
+    widthMm,
+    depthMm,
+    gridUnitMm,
+    stacking
+  );
   if (resolved.outline === undefined) return resolved;
 
   // Re-base the plate's grid onto the perimeter. Since the pen editor auto-grows
@@ -172,7 +186,8 @@ function resolveOutlineRaw(
   stored: StoredBaseplateParams,
   widthMm: number,
   depthMm: number,
-  gridUnitMm: number
+  gridUnitMm: number,
+  stacking: boolean
 ): { outline: DrawerOutline | undefined; paddingOn: boolean } {
   if (outlineOn && drawerOutline !== undefined) {
     // The authoring echo is a round-trip hint, never trusted blindly: only
@@ -219,10 +234,16 @@ function resolveOutlineRaw(
     };
   }
 
-  // No active drawer shape: corner radii beyond the plain rounding limit
-  // become a radius-cut outline, so the generator's cell classification
-  // handles the sockets the arc consumes (the plain path must never orphan a
-  // pocket, which is why it clamps at the limit).
+  // No active drawer shape. Under stacking, corner rounding is stripped rather
+  // than converted to a radius-cut outline — a flipped rounded corner tile would
+  // differ from the interior tiles it should stack with — so no perimeter is
+  // derived from a large radius here. A user-authored drawer shape above is still
+  // honoured while stacking (#3113); only this rounding conversion stays gated.
+  if (stacking) return { outline: undefined, paddingOn: true };
+
+  // Corner radii beyond the plain rounding limit become a radius-cut outline, so
+  // the generator's cell classification handles the sockets the arc consumes (the
+  // plain path must never orphan a pocket, which is why it clamps at the limit).
   const radii = stored.cornerRadii ?? {
     tl: stored.cornerRadius ?? 0,
     tr: stored.cornerRadius ?? 0,
@@ -263,13 +284,15 @@ function resolveOutlineRaw(
  *
  * @param drawerOutline - The drawer's non-rectangular boundary, if any.
  * Applied only when the baseplate syncs with the layout (a custom-size plate
- * has no defined relationship to the drawer shape) and stack printing is off
- * (stacking needs uniform rectangular tiles). Padding composes with every
- * shape — corner-cut shapes re-inscribe their cuts on the padded rectangle,
- * all others offset their edges outward (`padOutline`) — so the resolved
- * outline is plate-local over the padded extent. Corner rounding and detached
- * margins are outline-unaware, so while a shape is active they are functionally
- * zeroed, stored values untouched (the stack-print stripping precedent).
+ * has no defined relationship to the drawer shape). Under stacking the shape is
+ * kept too (#3113): the shaped tiles split, dedupe by fingerprint, and stack —
+ * identical tiles into towers, unique perimeter tiles printed singly. Padding
+ * composes with every shape — corner-cut shapes re-inscribe their cuts on the
+ * padded rectangle, all others offset their edges outward (`padOutline`) — so
+ * the resolved outline is plate-local over the padded extent. Corner rounding
+ * and detached margins are outline-unaware, so while a shape is active they are
+ * functionally zeroed, stored values untouched (the stack-print stripping
+ * precedent).
  */
 export function buildFullParams(
   stored: StoredBaseplateParams,
@@ -297,17 +320,26 @@ export function buildFullParams(
   // Stack printing flips every plate above the bottom upside down. Magnet
   // pockets become downward bridges when flipped (audited ~10% bridge area, vs
   // 0% for a magnet-free plate), and corner rounding makes corner tiles differ
-  // from the rest, so both are stripped. Dovetail connectors survive: tongues,
-  // grooves, and the dovetail key are full-height vertical prisms that flip
-  // cleanly. Only snap clip is incompatible — its blind top pocket (sealed
-  // floor + undercut ledge) inverts into a downward bridge/overhang — so it
-  // alone is stripped. Done here rather than by mutating stored params, so the
-  // user's settings return intact when stacking is turned off.
+  // from the rest, so both are stripped. A custom drawer perimeter is NOT
+  // stripped (#3113): its tiles split and dedupe by fingerprint, so identical
+  // ones still stack into towers while the unique perimeter tiles print singly.
+  // Dovetail connectors survive: tongues, grooves, and the dovetail key are
+  // full-height vertical prisms that flip cleanly. Only snap clip is
+  // incompatible — its blind top pocket (sealed floor + undercut ledge) inverts
+  // into a downward bridge/overhang — so it alone is stripped. Done here rather
+  // than by mutating stored params, so the user's settings return intact when
+  // stacking is turned off.
   const stripConnectors = stackingOn && stored.connectorStyle === 'snapClip';
 
-  const { outline, paddingOn } = stackingOn
-    ? { outline: undefined, paddingOn: true }
-    : resolveOutline(drawerOutline, outlineOn, stored, outlineWidthMm, outlineDepthMm, gridUnitMm);
+  const { outline, paddingOn } = resolveOutline(
+    drawerOutline,
+    outlineOn,
+    stored,
+    outlineWidthMm,
+    outlineDepthMm,
+    gridUnitMm,
+    stackingOn
+  );
   // An outline carries its own corner geometry as arcs and shares the same
   // post-cache intersect slot, so rounding is zeroed whenever one is active —
   // whether it came from the drawer shape or from the radius conversion above.
