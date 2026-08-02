@@ -15,6 +15,7 @@ import { CONSTRAINTS } from '@/core/constants';
 import { loadLayoutAsync } from './LayoutService';
 import { createLayoutEntry } from './LayoutManager';
 import { importLayoutJSON } from './ShareService';
+import { getDesignStorePort } from './designStorePort';
 interface LinkedDesignExport {
   readonly id: string;
   readonly name: string;
@@ -107,19 +108,20 @@ export async function exportAllLayouts(
       if (designIds.size > 0) {
         linkedDesigns = [];
         try {
-          // Dynamic import — same rationale as ShareService.ts: keeps the
-          // bin-designer chunk out of core/storage's entry. Future cleanup
-          // could move this service to shared/ or invert the loader.
-          // eslint-disable-next-line boundaries/dependencies
-          const { loadDesign } = await import('@/features/bin-designer/storage/DesignerStorage');
-          for (const id of designIds) {
-            const result = await loadDesign(id);
-            if (isOk(result)) {
-              linkedDesigns.push({
-                id: result.value.id,
-                name: result.value.name,
-                params: result.value.params,
-              });
+          // The port loads designs through the bin-designer adapter without a
+          // core → feature import. A null port (feature not registered) leaves
+          // the array empty, so the layout exports without linked designs.
+          const port = getDesignStorePort();
+          if (port !== null) {
+            for (const id of designIds) {
+              const result = await port.loadDesign(id);
+              if (isOk(result)) {
+                linkedDesigns.push({
+                  id: result.value.id,
+                  name: result.value.name,
+                  params: result.value.params,
+                });
+              }
             }
           }
         } catch {
