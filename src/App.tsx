@@ -42,6 +42,7 @@ import { BinContextMenuWrapper } from '@/shell/Mobile/BinContextMenuWrapper';
 import { TabletPanelOverlay, TabletPanelTriggers } from '@/shell/Tablet';
 import { LiveRegion } from '@/shell/LiveRegion';
 import { LocalMutationsProvider } from '@/shared/contexts';
+import { DesignStoreRegistration } from '@/shared/storage/DesignStoreRegistration';
 import { useTranslation } from '@/i18n';
 import { useCommandPalette } from '@/features/command-palette';
 import { useEngagementNudges, useLayoutPromotion } from '@/features/engagement';
@@ -604,6 +605,7 @@ export default function App() {
                 ? t('seo.community.title')
                 : t('seo.h1')}
       </h1>
+      <DesignStoreRegistration />
       {cloudSyncEnabled && (
         <Suspense fallback={null}>
           <LazySyncSessionMount />

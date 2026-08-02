@@ -19,6 +19,11 @@ import type { Layout } from '@/core/types';
 import { binId, categoryId, designId, gridUnits, heightUnits, layerId } from '@/core/types';
 import { getUserMessage, ok, err, storageNotFound } from '@/core/result';
 import type { Result, ValidationError, ValidationImportError } from '@/core/result';
+import {
+  registerDesignStorePort,
+  resetDesignStorePort,
+  type DesignStorePort,
+} from '@/core/storage/designStorePort';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { expectOk, expectErr, createTestLayout as baseCreateTestLayout } from '@/test/testUtils';
 
@@ -32,19 +37,18 @@ const originalWindow = global.window;
 const originalNavigator = global.navigator;
 const originalDocument = global.document;
 
-// Mock DesignerStorage
+// Fake DesignStorePort — the core-owned seam the share flows now talk to,
+// replacing the old direct DesignerStorage / customBinRegistry mocks.
 const mockLoadDesign = vi.fn();
 const mockSaveDesign = vi.fn();
-vi.mock('@/features/bin-designer/storage/DesignerStorage', () => ({
+const mockUpsertRegistryEntry = vi.fn();
+
+const fakePort: DesignStorePort = {
   loadDesign: (...args: unknown[]) => mockLoadDesign(...args),
   saveDesign: (...args: unknown[]) => mockSaveDesign(...args),
-}));
-
-const mockUpsertRegistryEntry = vi.fn();
-vi.mock('@/features/bin-designer/store/customBinRegistry', () => ({
   upsertRegistryEntry: (...args: unknown[]) => mockUpsertRegistryEntry(...args),
-  registryEdgeFields: () => ({}),
-}));
+  registryEdgeFields: async () => ({}),
+};
 
 function expectImportError(result: Result<unknown, ValidationError>): ValidationImportError {
   const error = expectErr(result);
@@ -634,6 +638,7 @@ describe('storage-share', () => {
 
     beforeEach(() => {
       vi.clearAllMocks();
+      registerDesignStorePort(fakePort);
     });
 
     it('exports layout without linked designs (no linkedDesigns key in output)', async () => {
@@ -729,6 +734,7 @@ describe('storage-share', () => {
   describe('restoreEmbeddedDesigns', () => {
     beforeEach(() => {
       vi.clearAllMocks();
+      registerDesignStorePort(fakePort);
     });
 
     it('returns unchanged layout when no linkedDesigns in JSON', async () => {
@@ -954,6 +960,7 @@ describe('storage-share', () => {
 
     beforeEach(() => {
       vi.clearAllMocks();
+      registerDesignStorePort(fakePort);
     });
 
     it('returns the layout untouched when no designs travelled with it', async () => {
@@ -1034,6 +1041,63 @@ describe('storage-share', () => {
 
       expect(mockSaveDesign).not.toHaveBeenCalled();
       expect(result.bins[0].linkedDesignId).toBe('remote-design-1');
+    });
+  });
+
+  // Before boot registers the adapter (or if the design feature is otherwise
+  // unavailable) the port is null, and every design flow must degrade to the
+  // same output as the "no designs resolved" path.
+  describe('when no DesignStorePort is registered', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+      resetDesignStorePort();
+    });
+
+    it('exports the layout with no linkedDesigns key', async () => {
+      const layout = createTestLayout();
+      layout.bins = layout.bins.map((bin, i) => ({
+        ...bin,
+        linkedDesignId: i === 0 ? designId('design-1') : undefined,
+      }));
+
+      const json = await exportLayoutJSONWithDesigns(layout);
+      const parsed = JSON.parse(json);
+
+      expect(parsed.linkedDesigns).toBeUndefined();
+      expect(mockLoadDesign).not.toHaveBeenCalled();
+    });
+
+    it('restores embedded designs as a no-op, leaving bins unchanged', async () => {
+      const layout = createTestLayout();
+      layout.bins[0].linkedDesignId = designId('old-design-id');
+      const json = JSON.stringify({
+        ...layout,
+        linkedDesigns: [
+          { id: 'old-design-id', name: 'Test Design', params: { ...DEFAULT_BIN_PARAMS } },
+        ],
+      });
+
+      const result = await restoreEmbeddedDesigns(json, layout);
+
+      expect(result.importedDesignCount).toBe(0);
+      expect(result.layout.bins[0].linkedDesignId).toBe('old-design-id');
+      expect(mockSaveDesign).not.toHaveBeenCalled();
+    });
+
+    it('restores shared designs as a no-op, returning the layout untouched', async () => {
+      const layout = createTestLayout();
+      layout.bins = layout.bins.map((bin, i) => ({
+        ...bin,
+        linkedDesignId: i === 0 ? designId('remote-design-1') : undefined,
+      }));
+
+      const result = await restoreSharedDesigns('abc123DEF456', layout, [
+        { id: 'remote-design-1', name: 'Socket Tray', params: { ...DEFAULT_BIN_PARAMS } },
+      ]);
+
+      expect(result).toBe(layout);
+      expect(mockSaveDesign).not.toHaveBeenCalled();
+      expect(mockUpsertRegistryEntry).not.toHaveBeenCalled();
     });
   });
 });

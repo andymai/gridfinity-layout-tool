@@ -16,6 +16,7 @@ import type { Layout, LayerId, CategoryId, DesignId } from '@/core/types';
 import { designId as toDesignId } from '@/core/types';
 import type { Result, ValidationError } from '@/core/result';
 import { ok, err, validationImportFailed, isOk } from '@/core/result';
+import { getDesignStorePort } from './designStorePort';
 import type { BinParams } from '@/shared/types/bin';
 export interface LinkedDesignExport {
   readonly id: string;
@@ -40,21 +41,19 @@ export async function collectLinkedDesigns(layout: Layout): Promise<LinkedDesign
   }
   if (designIds.size === 0) return [];
 
-  // Dynamic import keeps the bin-designer chunk out of the core/storage
-  // entry; the layer rule's `disallow` covers static imports but flags
-  // dynamic ones too. Until the call site is inverted to pass the
-  // loader in (or this service moves to shared/), the exception is
-  // documented here.
-  // eslint-disable-next-line boundaries/dependencies -- TECH-DEBT: dynamic import is deliberate code-splitting; see the note above
-  const { loadDesign } = await import('@/features/bin-designer/storage/DesignerStorage');
+  // A missing port means the design feature has not registered its adapter
+  // yet; treat it exactly like "no designs resolved" (empty result).
+  const port = getDesignStorePort();
+  if (port === null) return [];
+
   const linkedDesigns: LinkedDesignExport[] = [];
   for (const id of designIds) {
-    const result = await loadDesign(id);
+    const result = await port.loadDesign(id);
     if (isOk(result) && result.value.params) {
       linkedDesigns.push({
         id: result.value.id,
         name: result.value.name,
-        params: result.value.params,
+        params: result.value.params as BinParams,
       });
     }
   }
@@ -194,10 +193,11 @@ export async function restoreEmbeddedDesigns(
     return { layout, importedDesignCount: 0 };
   }
 
-  // Dynamic import — same code-splitting rationale as the loadDesign call
-  // above; see comment there for the cleanup follow-up.
-  // eslint-disable-next-line boundaries/dependencies
-  const { saveDesign } = await import('@/features/bin-designer/storage/DesignerStorage');
+  const port = getDesignStorePort();
+  if (port === null) {
+    return { layout, importedDesignCount: 0 };
+  }
+
   const designIdMap = new Map<string, DesignId>();
   let importedDesignCount = 0;
 
@@ -212,9 +212,9 @@ export async function restoreEmbeddedDesigns(
       typeof linkedDesign.id === 'string' &&
       typeof linkedDesign.name === 'string'
     ) {
-      const result = await saveDesign({
+      const result = await port.saveDesign({
         name: linkedDesign.name,
-        params: linkedDesign.params as BinParams,
+        params: linkedDesign.params,
         thumbnail: null,
         exportFileNameConfig: null,
       });
@@ -277,13 +277,10 @@ export async function restoreSharedDesigns(
 ): Promise<Layout> {
   if (designs.length === 0) return layout;
 
-  // Dynamic imports for the same code-splitting reason as collectLinkedDesigns.
-  // eslint-disable-next-line boundaries/dependencies -- TECH-DEBT: dynamic import is deliberate code-splitting; see collectLinkedDesigns
-  const { saveDesign } = await import('@/features/bin-designer/storage/DesignerStorage');
-  const { upsertRegistryEntry, registryEdgeFields } = await import(
-    // eslint-disable-next-line boundaries/dependencies -- TECH-DEBT: dynamic import is deliberate code-splitting; see collectLinkedDesigns
-    '@/features/bin-designer/store/customBinRegistry'
-  );
+  // No registered port means the design feature is unavailable; leave the
+  // layout untouched, exactly as when none of the designs resolve.
+  const port = getDesignStorePort();
+  if (port === null) return layout;
 
   const idMap = new Map<string, DesignId>();
   for (const design of designs) {
@@ -292,7 +289,7 @@ export async function restoreSharedDesigns(
     }
     const params = design.params as BinParams;
 
-    const result = await saveDesign({
+    const result = await port.saveDesign({
       id: sharedDesignLocalId(shareId, design.id),
       name: design.name,
       params,
@@ -304,13 +301,14 @@ export async function restoreSharedDesigns(
     idMap.set(design.id, result.value.id);
     // The planner palette and the linked-bin mesh cache both key off the
     // registry, so a design that skips it stays invisible to the layout.
-    upsertRegistryEntry({
+    const edgeFields = await port.registryEdgeFields(params);
+    await port.upsertRegistryEntry({
       id: result.value.id,
       name: result.value.name,
       width: params.width,
       depth: params.depth,
       height: params.height,
-      ...registryEdgeFields(params),
+      ...edgeFields,
       updatedAt: result.value.updatedAt,
     });
   }

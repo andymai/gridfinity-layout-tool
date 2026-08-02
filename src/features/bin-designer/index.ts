@@ -24,6 +24,11 @@ export {
 // --- Storage ---
 export { loadDesign, deleteDesign, listDesigns, updateDesignParams } from './storage';
 
+// Concrete DesignStorePort. Exposed for `shared/storage/` to register with the
+// core-owned port so core/storage can persist/read designs without a
+// cross-boundary import (parallels `designAdapter` for sync below).
+export { designStoreAdapter } from './storage/designStoreAdapter';
+
 // --- Hooks ---
 // Deep paths on purpose: the ./hooks barrel also re-exports useAutoSave /
 // useThumbnailCapture, which import ./utils/thumbnail (full three.js namespace).

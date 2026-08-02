@@ -6,8 +6,22 @@ import {
   importArchive,
 } from '@/core/storage/BulkArchiveService';
 import type { Layout, LayoutLibrary, LayoutEntry } from '@/core/types';
-import { layoutId, layerId, gridUnits, heightUnits, mm } from '@/core/types';
+import {
+  layoutId,
+  layerId,
+  binId,
+  categoryId,
+  designId,
+  gridUnits,
+  heightUnits,
+  mm,
+} from '@/core/types';
 import { ok, err } from '@/core/result';
+import {
+  registerDesignStorePort,
+  resetDesignStorePort,
+  type DesignStorePort,
+} from '@/core/storage/designStorePort';
 
 // === Mocks ===
 
@@ -25,6 +39,16 @@ const mockImportLayoutJSON = vi.fn();
 vi.mock('@/core/storage/ShareService', () => ({
   importLayoutJSON: (...args: unknown[]) => mockImportLayoutJSON(...args),
 }));
+
+// Fake DesignStorePort — exportAllLayouts reads linked designs through it.
+// Only loadDesign is exercised here; the rest are inert stubs.
+const mockLoadDesign = vi.fn();
+const fakePort: DesignStorePort = {
+  loadDesign: (...args: unknown[]) => mockLoadDesign(...args),
+  saveDesign: () => Promise.reject(new Error('saveDesign not used in BulkArchive tests')),
+  upsertRegistryEntry: () => Promise.reject(new Error('upsertRegistryEntry not used')),
+  registryEdgeFields: () => Promise.resolve({}),
+};
 
 // === Fixtures ===
 
@@ -61,6 +85,26 @@ function makeEntry(id: string, name: string): LayoutEntry {
 
 function makeLibrary(entries: LayoutEntry[]): LayoutLibrary {
   return { version: '1.0', activeLayoutId: entries[0]?.id ?? '', settings: {}, entries };
+}
+
+function makeLayoutWithLinkedDesign(remoteId: string, name = 'Linked'): Layout {
+  const layout = makeLayout(name);
+  layout.bins = [
+    {
+      id: binId('bin-1'),
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+      height: heightUnits(3),
+      layerId: layerId('layer-1'),
+      category: categoryId('cat-1'),
+      label: '',
+      notes: '',
+      linkedDesignId: designId(remoteId),
+    },
+  ];
+  return layout;
 }
 
 // === isArchiveFormat ===
@@ -136,6 +180,7 @@ describe('parseArchive', () => {
 describe('exportAllLayouts', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetDesignStorePort();
   });
 
   it('builds archive JSON containing each layout entry', async () => {
@@ -193,6 +238,31 @@ describe('exportAllLayouts', () => {
     expect(result.skipped).toBe(1);
     expect(parsed._archive.layoutCount).toBe(1);
     expect(parsed.layouts[0].name).toBe('Beta');
+  });
+
+  it('embeds linked designs resolved through the registered port', async () => {
+    registerDesignStorePort(fakePort);
+    mockLoadLayoutAsync.mockResolvedValueOnce(makeLayoutWithLinkedDesign('d1'));
+    mockLoadDesign.mockResolvedValue(ok({ id: 'd1', name: 'Widget', params: { width: 2 } }));
+
+    const result = await exportAllLayouts(makeLibrary([makeEntry('id-1', 'L1')]));
+    const parsed = JSON.parse(result.json);
+
+    expect(mockLoadDesign).toHaveBeenCalledWith('d1');
+    expect(parsed.layouts[0].linkedDesigns).toHaveLength(1);
+    expect(parsed.layouts[0].linkedDesigns[0].id).toBe('d1');
+  });
+
+  it('omits linked designs when no port is registered (null fallback)', async () => {
+    resetDesignStorePort();
+    mockLoadLayoutAsync.mockResolvedValueOnce(makeLayoutWithLinkedDesign('d1'));
+
+    const result = await exportAllLayouts(makeLibrary([makeEntry('id-1', 'L1')]));
+    const parsed = JSON.parse(result.json);
+
+    expect(result.exported).toBe(1);
+    expect(mockLoadDesign).not.toHaveBeenCalled();
+    expect(parsed.layouts[0].linkedDesigns).toBeUndefined();
   });
 });
 
