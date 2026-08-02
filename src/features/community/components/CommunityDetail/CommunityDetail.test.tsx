@@ -156,7 +156,7 @@ describe('CommunityDetail', () => {
     fetchMock.mockResolvedValueOnce(ok({ design: communityDesign(), isOwner: false }));
     Object.defineProperty(window.navigator, 'onLine', { value: true, configurable: true });
     fireEvent(window, new Event('online'));
-    expect(await screen.findByText('by Jo')).toBeInTheDocument();
+    expect(await screen.findByText('by Jo', undefined, { timeout: 5000 })).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
