@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.353.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.352.4...gridfinity-layout-tool-v4.353.0) (2026-08-02)
+
+
+### Features
+
+* **drawer-shape:** share the grid frame with the baseplate and add a manual grid shift ([#3157](https://github.com/andymai/gridfinity-layout-tool/issues/3157)) ([#3159](https://github.com/andymai/gridfinity-layout-tool/issues/3159)) ([ac34c34](https://github.com/andymai/gridfinity-layout-tool/commit/ac34c344335cd2923b3c2eed9798ee575ec64ffb))
+
 ## [4.352.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.352.3...gridfinity-layout-tool-v4.352.4) (2026-08-02)
 
 
