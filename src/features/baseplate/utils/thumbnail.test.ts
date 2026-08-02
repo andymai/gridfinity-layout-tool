@@ -9,6 +9,15 @@ import {
   clearPreviewCanvas,
   type BaseplateThumbnailFraming,
 } from './thumbnail';
+import { calculateIdealDistance } from '../components/BaseplatePreview/cameraUtils';
+import type * as CameraUtils from '../components/BaseplatePreview/cameraUtils';
+
+// Spy on the framing math so a test can assert the Y pitch actually reaches it
+// (an omitted/reordered gridUnitMmY would otherwise silently re-square the depth).
+vi.mock('../components/BaseplatePreview/cameraUtils', async (importOriginal) => {
+  const actual = await importOriginal<typeof CameraUtils>();
+  return { ...actual, calculateIdealDistance: vi.fn(actual.calculateIdealDistance) };
+});
 
 const FRAMING: BaseplateThumbnailFraming = {
   width: 4,
@@ -106,6 +115,22 @@ describe('captureBaseplateThumbnailAtPreset', () => {
 
   it('returns null when nothing is registered at all', () => {
     expect(captureBaseplateThumbnailAtPreset(FRAMING)).toBeNull();
+  });
+
+  it('frames the capture on the non-square Y pitch', () => {
+    const renderer = { render: vi.fn() } as unknown as WebGLRenderer;
+    const scene = new Scene();
+    const camera = new PerspectiveCamera(45, 1, 0.1, 20_000);
+    setPreviewCanvas(mockCanvas);
+    setPreviewContext(renderer, scene, camera);
+
+    const calc = vi.mocked(calculateIdealDistance);
+    calc.mockClear();
+    captureBaseplateThumbnailAtPreset({ ...FRAMING, gridUnitMmY: 60 });
+
+    expect(calc).toHaveBeenCalledTimes(1);
+    // Signature: (…paddings, fov, aspect, gridUnitMmY) — the Y pitch is arg 10.
+    expect(calc.mock.calls[0][9]).toBe(60);
   });
 
   it('renders one preset frame, captures, then restores the original camera pose', () => {
