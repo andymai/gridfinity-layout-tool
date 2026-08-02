@@ -1,0 +1,131 @@
+src/core/store/gapFit.test.ts
+  s_48b067c1af6f8c::t_922994c962753b 1-40
+src/core/store/gapFit.ts
+  s_48b067c1af6f8c::t_6a81307b49daae 1-54
+src/core/store/interaction.test.ts
+  s_48b067c1af6f8c::t_34fa9d649da31a 107-141
+src/core/store/interaction.ts
+  s_48b067c1af6f8c::t_4afaafda7a4ce2 35-37,54-55,70,87-90,95,99-101
+src/core/types/interaction.ts
+  s_48b067c1af6f8c::t_cce0c6c0723e8d 52-60,62-68
+src/features/community/components/CommunityCard/cardDims.ts
+  s_48b067c1af6f8c::t_f1303cc3159ec2 4,8,12-17,25-32,34
+src/features/community/components/CommunityDetail/CommunityDetail.test.tsx
+  s_48b067c1af6f8c::t_5c4e8e84bc342c 6,48-49,123-124,132,154,651-803
+src/features/community/components/CommunityDetail/CommunityDetail.tsx
+  s_48b067c1af6f8c::t_d008adc537185c 16,39,102,345-380,402-416,533-535,549-564
+src/features/community/components/CommunityGalleryTab/CommunityGalleryTab.test.tsx
+  s_48b067c1af6f8c::t_b3f770626e1bd3 3,13-14,81,112,114-117,120-121,186,575-711
+src/features/community/components/CommunityGalleryTab/DimensionFilters.test.tsx
+  s_48b067c1af6f8c::t_ab786187d08473 1-96
+src/features/community/components/CommunityGalleryTab/DimensionFilters.tsx
+  s_48b067c1af6f8c::t_0b4af7bfc9c301 1-148
+src/features/community/components/CommunityGalleryTab/FilterSheet.test.tsx
+  s_48b067c1af6f8c::t_76ed35ad6853e9 37-44,49-53,59-63
+src/features/community/components/CommunityGalleryTab/FilterSheet.tsx
+  s_48b067c1af6f8c::t_4ae4d2054ef181 6,21-25,61,71-75
+src/features/community/components/CommunityGalleryTab/GalleryToolbar.test.tsx
+  s_48b067c1af6f8c::t_05f3bc09466bca 3,5-6,8-12,32,84-123,214-264,304-312
+src/features/community/components/CommunityGalleryTab/GalleryToolbar.tsx
+  s_48b067c1af6f8c::t_9f60231149491b 1,6,10-14,16,19,23,25,70-72,80,82,87-94,96-104,121-164,265,268,323
+src/features/community/components/CommunityGalleryTab/ShelfLanding.test.tsx
+  s_48b067c1af6f8c::t_e6574f43bcb7ee 1-142
+src/features/community/components/CommunityGalleryTab/ShelfLanding.tsx
+  s_48b067c1af6f8c::t_665c37dc3bf189 1-91
+src/features/community/components/CommunityGalleryTab/galleryFilterOptions.test.ts
+  s_48b067c1af6f8c::t_9ea352416b5225 1-107
+src/features/community/components/CommunityGalleryTab/galleryFilterOptions.ts
+  s_48b067c1af6f8c::t_f77e3bbde3066f 3-7,11,13-25,31-32,53-86,94-97
+src/features/community/components/CommunityGalleryTab/shelfData.test.ts
+  s_48b067c1af6f8c::t_84cc0e361cc7ff 1-119
+src/features/community/components/CommunityGalleryTab/shelfData.ts
+  s_48b067c1af6f8c::t_f4669ed21e40ff 1-50
+src/features/grid-editor/components/Grid/GridCanvas/GridCanvas.test.tsx
+  s_48b067c1af6f8c::t_86db425e3d6044 9,442-582
+src/features/grid-editor/components/Grid/GridCanvas/GridCanvas.tsx
+  s_48b067c1af6f8c::t_c6eb7408b7e91f 1-2,13,16,29,80-82,86-90,139-150,157-162,166-191,303-307
+src/features/grid-editor/components/Grid/GridToolbar/GridToolbar.test.tsx
+  s_48b067c1af6f8c::t_66df47e169bbcb 5,437-467
+src/features/grid-editor/components/Grid/GridToolbar/GridToolbar.tsx
+  s_48b067c1af6f8c::t_502d78abb6b644 15,69-75,130-148
+src/features/grid-editor/hooks/useInteraction.ts
+  s_48b067c1af6f8c::t_3803261c9cdb8d 3,178-179,181-182,333-347,354-356
+src/i18n/locales/cs.json
+  s_48b067c1af6f8c::t_6f3d4becab6d03 3112-3114,3230-3247,3288-3293
+src/i18n/locales/de.json
+  s_48b067c1af6f8c::t_e7a7d30584e6ec 1564-1581,1622-1627,3292-3294
+src/i18n/locales/en.ts
+  s_48b067c1af6f8c::t_1899f3181063cb 238-240,3378-3396,3469-3475
+src/i18n/locales/es.json
+  s_48b067c1af6f8c::t_87bc2319506618 1702-1719,1760-1765,3292-3294
+src/i18n/locales/fr.json
+  s_48b067c1af6f8c::t_a6fa49dfa19606 3112-3114,3258-3263,3275-3292
+src/i18n/locales/it.json
+  s_48b067c1af6f8c::t_37e496b92c63d5 1601-1606,1676-1693,3292-3294
+src/i18n/locales/ja.json
+  s_48b067c1af6f8c::t_d4170020c6e0d3 1554-1559,1629-1646,3292-3294
+src/i18n/locales/ko.json
+  s_48b067c1af6f8c::t_192fc246b10a8b 3036-3038,3230-3247,3288-3293
+src/i18n/locales/nb.json
+  s_48b067c1af6f8c::t_c900dab3392c0a 1601-1606,1676-1693,3292-3294
+src/i18n/locales/nl.json
+  s_48b067c1af6f8c::t_4f1720d8ed4c35 1564-1581,1622-1627,3292-3294
+src/i18n/locales/pl.json
+  s_48b067c1af6f8c::t_7bb43ebd54c8f8 3112-3114,3230-3247,3288-3293
+src/i18n/locales/pt-BR.json
+  s_48b067c1af6f8c::t_6456c95994846c 3112-3114,3230-3247,3288-3293
+src/i18n/locales/sv.json
+  s_48b067c1af6f8c::t_eac26656d5fbde 3112-3114,3230-3247,3288-3293
+src/i18n/locales/uk.json
+  s_48b067c1af6f8c::t_c916b61f541f38 1554-1559,1701-1718,3292-3294
+src/i18n/locales/zh-CN.json
+  s_48b067c1af6f8c::t_8a77d878bee2c3 3112-3114,3230-3247,3351-3356
+src/shared/hooks/interactions/types.ts
+  s_48b067c1af6f8c::t_60ced199be2eac 14,109-110,112
+src/shared/hooks/interactions/useDrawInteraction.test.ts
+  s_48b067c1af6f8c::t_f2bdce38213af0 7-10,12,277-429
+src/shared/hooks/interactions/useDrawInteraction.ts
+  s_48b067c1af6f8c::t_9f1eab5016ecde 2-11,13,17,21-29,70-72,78,98,148-210,385,390
+src/shared/hooks/keyboard/handlers.ts
+  s_48b067c1af6f8c::t_0b6786fbe9930f 70
+src/shared/hooks/keyboard/types.ts
+  s_48b067c1af6f8c::t_c9d02e81195246 40
+src/shared/hooks/useKeyboard.test.ts
+  s_48b067c1af6f8c::t_77180cae3ff25a 328-339
+src/shared/hooks/useKeyboard.ts
+  s_48b067c1af6f8c::t_be88418abdd346 132,136,193,229
+src/shared/types/communityDetail.ts
+  s_48b067c1af6f8c::t_da8cc4f63480da 16-24,39-46
+src/shared/types/communityGalleryTab.ts
+  s_48b067c1af6f8c::t_85c35c0648e84a 12-17
+src/shell/Mobile/MobileGridToolbar/MobileGridToolbar.test.tsx
+  s_48b067c1af6f8c::t_2a0d29a318b03f 2,4,25-48
+src/shell/Mobile/MobileGridToolbar/MobileGridToolbar.tsx
+  s_48b067c1af6f8c::t_fc451a99a5f5b4 6-7,34-40,105-124
+src/shell/Modals/DesignGalleryModal/DesignGalleryModal.test.tsx
+  s_48b067c1af6f8c::t_8f78110262f294 5-7,31-42,47,109-134
+src/shell/Modals/DesignGalleryModal/DesignGalleryModal.tsx
+  s_48b067c1af6f8c::t_74369bac5d8860 1,6,9,15,52-70,75,109,113,116,126,129-130
+src/shell/Modals/DesignGalleryModal/communityDesignerBridge.test.ts
+  s_48b067c1af6f8c::t_e7915f208855a5 35-41,45,48-54,56-62,136-285
+src/shell/Modals/DesignGalleryModal/communityDesignerBridge.ts
+  s_48b067c1af6f8c::t_0d328afd04d38c 10-11,13-16,87-196
+src/test/testUtils.ts
+  s_48b067c1af6f8c::t_c71bebc9473208 25-29,123-126
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "2d7b738033b53609718e582b7d88d12b951b5e40",
+  "prompts": {},
+  "sessions": {
+    "s_48b067c1af6f8c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cee190e2-3f33-4597-9d75-51124180100d",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
