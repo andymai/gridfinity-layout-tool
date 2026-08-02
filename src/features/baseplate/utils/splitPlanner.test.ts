@@ -12,7 +12,7 @@ import { CONSTRAINTS } from '@/core/constants';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { BaseplatePiece } from '../types/tiling';
 import { computePieceFingerprint } from './pieceFingerprint';
-import { outlineFrameOffset } from '@/shared/utils/drawerOutlineGeometry';
+import { outlineLatticeShift } from '@/shared/utils/drawerOutlineGeometry';
 import { rotateOutline180, translateOutline } from '@/shared/utils/drawerOutline';
 import { cornerCutVertices } from '@/shared/utils/cornerCutOutline';
 import type { DrawerOutline } from '@/core/types';
@@ -1870,8 +1870,9 @@ describe('shaped plates (outline-aware splitting)', () => {
   // pen editor auto-grows to the max only and never re-bases the min, #3092) is
   // classified against extent-anchored seam bands, so seams near the boundary
   // misclassify and lose their connectors — and pieces over the empty grown
-  // region drop entirely. Re-basing the outline onto its bbox (what
-  // buildFullParams now does via `outlineFrameOffset`) restores them.
+  // region drop entirely. Re-basing the outline onto the socket lattice (what
+  // buildFullParams does via `outlineLatticeShift`) restores them — by whole
+  // cells only, so registration is preserved (#3149).
   it('re-basing an offset outline restores dropped pieces and seam connectors', () => {
     // A 6-unit-wide full-height rectangle drawn in the right two thirds of a
     // 9-unit plate: the drawer grew to hold maxX = 9U but the min stayed at 3U.
@@ -1896,21 +1897,25 @@ describe('shaped plates (outline-aware splitting)', () => {
     expect(driftedByLabel.has('A1')).toBe(false);
     expect(driftedByLabel.get('B1')?.edges.left).toBe('exterior');
 
-    // Re-base onto the bbox centre — exactly the transform buildFullParams applies.
-    const off = outlineFrameOffset(drifted, W * U, D * U);
-    expect(off.x).toBeCloseTo(1.5 * U, 6);
-    const centered = translateOutline(drifted, -off.x, -off.y);
+    // Re-base onto the lattice — exactly the transform buildFullParams applies.
+    // The 6 whole cells register at any whole-unit shift; nearest-centre wins.
+    const shift = outlineLatticeShift(drifted, {
+      x: { extentMm: W * U, originMm: 0, pitchMm: U, wholeCells: W },
+      y: { extentMm: D * U, originMm: 0, pitchMm: U, wholeCells: D },
+    });
+    expect(shift.x).toBeCloseTo(-U, 6);
+    const rebased = translateOutline(drifted, shift.x, shift.y);
 
-    const centeredTiling = computeBaseplateTiling(
-      shapedParams(centered, { width: W, depth: D }),
+    const rebasedTiling = computeBaseplateTiling(
+      shapedParams(rebased, { width: W, depth: D }),
       BED
     );
-    const centeredByLabel = new Map(centeredTiling.pieces.map((p) => [p.label, p]));
+    const rebasedByLabel = new Map(rebasedTiling.pieces.map((p) => [p.label, p]));
     // The left piece survives and its seam to the middle piece keeps a connector.
-    expect(centeredByLabel.has('A1')).toBe(true);
-    expect(centeredByLabel.get('A1')?.edges.right).toBe('join');
-    expect(centeredByLabel.get('B1')?.edges.left).toBe('join');
-    expect(centeredTiling.pieces.length).toBeGreaterThan(driftedTiling.pieces.length);
+    expect(rebasedByLabel.has('A1')).toBe(true);
+    expect(rebasedByLabel.get('A1')?.edges.right).toBe('join');
+    expect(rebasedByLabel.get('B1')?.edges.left).toBe('join');
+    expect(rebasedTiling.pieces.length).toBeGreaterThan(driftedTiling.pieces.length);
   });
 });
 

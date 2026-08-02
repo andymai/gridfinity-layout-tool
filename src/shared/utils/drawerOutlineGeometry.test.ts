@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { DrawerOutline } from '@/core/types';
+import type { OutlineLatticeFrame } from './drawerOutlineGeometry';
 import {
   arcGeometry,
   arcPointAt,
@@ -9,7 +10,7 @@ import {
   insideAreaFraction,
   isFootprintInsideOutline,
   outlineBounds,
-  outlineFrameOffset,
+  outlineLatticeShift,
   outlineSignedArea,
   pointInOutline,
 } from './drawerOutlineGeometry';
@@ -236,7 +237,13 @@ describe('outlineBounds', () => {
   });
 });
 
-describe('outlineFrameOffset', () => {
+describe('outlineLatticeShift', () => {
+  /** Zero-padding frame over a widthU×depthU drawer. */
+  const frame = (widthU: number, depthU: number, pitchX = U, pitchY = U): OutlineLatticeFrame => ({
+    x: { extentMm: widthU * pitchX, originMm: 0, pitchMm: pitchX, wholeCells: Math.floor(widthU) },
+    y: { extentMm: depthU * pitchY, originMm: 0, pitchMm: pitchY, wholeCells: Math.floor(depthU) },
+  });
+
   it('is zero when the outline fills the extent', () => {
     const full: DrawerOutline = {
       vertices: [
@@ -246,30 +253,49 @@ describe('outlineFrameOffset', () => {
         { x: 0, y: 4 * U },
       ],
     };
-    const offset = outlineFrameOffset(full, 4 * U, 4 * U);
-    expect(offset.x).toBe(0);
-    expect(offset.y).toBe(0);
+    const shift = outlineLatticeShift(full, frame(4, 4));
+    expect(shift.x).toBe(0);
+    expect(shift.y).toBe(0);
   });
 
-  it('is zero when a smaller outline is already centred on the extent', () => {
-    // 2×2 outline centred in a 4×4 extent — no drift.
-    const centred: DrawerOutline = {
+  it('keeps a half-unit-slack corner outline in place — registration beats centring (#3149)', () => {
+    // The #3149 auto-grow shape: 8.25×7.04 units on a 48×42 pitch, grown to an
+    // 8.5×7.5 drawer. The only position holding 8×7 whole cells is the corner
+    // anchor; a bbox-centring shift (+6, +9.75) would lose a column and a row.
+    const grown: DrawerOutline = {
       vertices: [
-        { x: U, y: U },
-        { x: 3 * U, y: U },
-        { x: 3 * U, y: 3 * U },
-        { x: U, y: 3 * U },
+        { x: 0, y: 0 },
+        { x: 396, y: 0 },
+        { x: 396, y: 295.5 },
+        { x: 0, y: 295.5 },
       ],
     };
-    const offset = outlineFrameOffset(centred, 4 * U, 4 * U);
-    expect(offset.x).toBeCloseTo(0, 6);
-    expect(offset.y).toBeCloseTo(0, 6);
+    const shift = outlineLatticeShift(grown, frame(8.5, 7.5, 48, 42));
+    expect(shift.x).toBe(0);
+    expect(shift.y).toBe(0);
   });
 
-  it('returns the bbox-centre drift for a corner-offset sub-rectangle (#3092 auto-grow)', () => {
-    // Outline pinned to the bottom-left, leaving a half-unit of grown extent on
-    // the top/right — exactly what auto-grow's ceil-the-max-only produces.
+  it('centres a whole-unit-drifted outline by whole cells only', () => {
+    // 6u-wide rectangle stuck in the right two thirds of a 9u extent: any
+    // whole-unit shift keeps all 6 cells, so centring picks the least move
+    // that lands nearest the extent centre.
     const drifted: DrawerOutline = {
+      vertices: [
+        { x: 3 * U, y: 0 },
+        { x: 9 * U, y: 0 },
+        { x: 9 * U, y: 4 * U },
+        { x: 3 * U, y: 4 * U },
+      ],
+    };
+    const shift = outlineLatticeShift(drifted, frame(9, 4));
+    expect(shift.x).toBe(-U);
+    expect(shift.y).toBe(0);
+  });
+
+  it('registers the cell block to the padded lattice origin', () => {
+    // 3u square at the corner of a 4u drawer with 10mm padding all round:
+    // whole cells start at x=10, so the registered shifts land on 10+k·U.
+    const square: DrawerOutline = {
       vertices: [
         { x: 0, y: 0 },
         { x: 3 * U, y: 0 },
@@ -277,9 +303,28 @@ describe('outlineFrameOffset', () => {
         { x: 0, y: 3 * U },
       ],
     };
-    const offset = outlineFrameOffset(drifted, 3.5 * U, 3.5 * U);
-    // bbox centre = 1.5U; extent centre = 1.75U → drift = -0.25U on each axis.
-    expect(offset.x).toBeCloseTo(-0.25 * U, 6);
-    expect(offset.y).toBeCloseTo(-0.25 * U, 6);
+    const shift = outlineLatticeShift(square, {
+      x: { extentMm: 4 * U + 20, originMm: 10, pitchMm: U, wholeCells: 4 },
+      y: { extentMm: 4 * U + 20, originMm: 10, pitchMm: U, wholeCells: 4 },
+    });
+    // Candidate registrations are 10 (k=0) and 52 (k=1), equally centred;
+    // the smaller move wins.
+    expect(shift.x).toBe(10);
+    expect(shift.y).toBe(10);
+  });
+
+  it('falls back to clamped bbox centring when no whole cell fits', () => {
+    // A sliver thinner than a cell has no registration to preserve.
+    const sliver: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 0.8 * U, y: 0 },
+        { x: 0.8 * U, y: 4 * U },
+        { x: 0, y: 4 * U },
+      ],
+    };
+    const shift = outlineLatticeShift(sliver, frame(4, 4));
+    expect(shift.x).toBeCloseTo(1.6 * U, 6);
+    expect(shift.y).toBe(0);
   });
 });
