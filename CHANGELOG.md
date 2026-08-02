@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.350.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.349.1...gridfinity-layout-tool-v4.350.0) (2026-08-02)
+
+
+### Features
+
+* **community:** mine view with owner stats, visit digest, and milestones ([#3139](https://github.com/andymai/gridfinity-layout-tool/issues/3139)) ([6ac6935](https://github.com/andymai/gridfinity-layout-tool/commit/6ac6935afb75efb8c971ac131507ef466e5577c7))
+
 ## [4.349.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.349.0...gridfinity-layout-tool-v4.349.1) (2026-08-02)
 
 
