@@ -1,0 +1,21 @@
+src/features/bin-designer/utils/thumbnail.ts
+  s_48a510eaef7c22::t_30182228dabdf8 26,524
+src/shared/generation/meshAsset.ts
+  s_48a510eaef7c22::t_2fba58bcccb1bb 87
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "bf1dd40a0001821f2724b7fbe75cf8f491e1b14f",
+  "prompts": {},
+  "sessions": {
+    "s_48a510eaef7c22": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fda9511-153c-4dd5-bba7-05895a1e12c3",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
