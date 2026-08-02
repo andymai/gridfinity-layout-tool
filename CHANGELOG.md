@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.349.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.349.0...gridfinity-layout-tool-v4.349.1) (2026-08-02)
+
+
+### Bug Fixes
+
+* **baseplate:** show the corner-radius control while stacking ([#3131](https://github.com/andymai/gridfinity-layout-tool/issues/3131)) ([4fa1a57](https://github.com/andymai/gridfinity-layout-tool/commit/4fa1a575bc95717e8b823c01cccccf79d6314306))
+
 ## [4.349.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.348.0...gridfinity-layout-tool-v4.349.0) (2026-08-02)
 
 
