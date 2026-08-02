@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.352.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.352.1...gridfinity-layout-tool-v4.352.2) (2026-08-02)
+
+
+### Bug Fixes
+
+* **drawer-shape:** close the implicit-mutation gaps around the custom perimeter ([#3149](https://github.com/andymai/gridfinity-layout-tool/issues/3149)) ([#3155](https://github.com/andymai/gridfinity-layout-tool/issues/3155)) ([9ba5fd5](https://github.com/andymai/gridfinity-layout-tool/commit/9ba5fd5b336bb256ba0bf5c5bbdf5ee5808d0b54))
+
 ## [4.352.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.352.0...gridfinity-layout-tool-v4.352.1) (2026-08-02)
 
 
