@@ -3,9 +3,7 @@ import { render } from '@testing-library/react';
 import { IsometricPreviewControls } from './IsometricPreviewControls';
 import type { Layer } from '@/core/types';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 const defaultProps = {
   sceneRef: { current: null },

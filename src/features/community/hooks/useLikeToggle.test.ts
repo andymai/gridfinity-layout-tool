@@ -15,9 +15,7 @@ vi.mock('@/shared/analytics/posthog', () => ({
   trackEvent: vi.fn(),
 }));
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 import { setDesignLiked } from '../api/client';
 import { trackEvent } from '@/shared/analytics/posthog';

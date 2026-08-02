@@ -29,9 +29,7 @@ vi.mock('@/shared/scanTrace', () => ({
   CARD_HEIGHT_MM: 53.98,
 }));
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 const TOKEN = '3f2504e0-4f89-41d3-9a0c-0305e82c3301';
 const IMAGE = { width: 24, height: 20, data: new Uint8ClampedArray(24 * 20 * 4) };

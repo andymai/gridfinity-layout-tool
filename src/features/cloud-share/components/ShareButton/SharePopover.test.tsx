@@ -10,9 +10,7 @@ vi.mock('@/shared/hooks/useCollabMode', () => ({
   useCollabMode: () => ({ isCollaborative: false }),
 }));
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 vi.mock('@/shared/utils/slug', () => ({
   slugify: (str: string) => str.toLowerCase().replace(/\s+/g, '-'),

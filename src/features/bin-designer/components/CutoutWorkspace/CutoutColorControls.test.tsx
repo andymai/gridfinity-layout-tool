@@ -2,9 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { CutoutColorControls } from './CutoutColorControls';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_CUTOUT_COLOR } from '@/features/bin-designer/constants/defaults';
 import type { Cutout } from '@/features/bin-designer/types';

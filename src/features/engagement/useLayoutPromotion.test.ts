@@ -37,9 +37,7 @@ vi.mock('@/shared/analytics/posthog', () => ({
   trackEvent: vi.fn(),
 }));
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 vi.mock('@/shared/utils', () => ({
   // Raw literal rather than STAGING_ID: vi.mock factories are hoisted above

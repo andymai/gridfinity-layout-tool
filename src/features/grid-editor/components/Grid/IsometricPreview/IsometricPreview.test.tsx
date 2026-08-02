@@ -202,9 +202,7 @@ vi.mock('@/shared/hooks/use3DPreviewKeyboard', () => ({
   use3DPreviewKeyboard: vi.fn(),
 }));
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 // useTranslation is mocked to echo keys, so the layer-mode buttons carry their
 // raw i18n key as the title attribute.

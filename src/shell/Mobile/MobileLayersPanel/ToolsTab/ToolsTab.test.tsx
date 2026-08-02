@@ -3,9 +3,7 @@ import { render } from '@testing-library/react';
 import { ToolsTab } from './ToolsTab';
 import { resetAllStores } from '@/test/testUtils';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 describe('ToolsTab', () => {
   beforeEach(() => {

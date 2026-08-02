@@ -8,9 +8,7 @@ vi.mock('@/shared/hooks/useResponsive', () => ({
   useResponsive: () => ({ isDesktop: true, isTouchDevice: false }),
 }));
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 vi.mock('../../store/baseplatePageStore', () => ({}));
 

@@ -4,9 +4,7 @@ import { InspectorDock } from './InspectorDock';
 import type { Cutout } from '@/features/bin-designer/types';
 import { loadInspectorCollapsed } from './inspectorDockStorage';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 vi.mock('./InspectorContent', () => ({
   InspectorContent: () => <div data-testid="inspector-content" />,

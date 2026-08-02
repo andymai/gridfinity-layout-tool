@@ -3,12 +3,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { LabelFitSampleButton } from './LabelFitSampleButton';
 import { resetAllStores } from '@/test/testUtils';
 
-vi.mock('@/i18n', () => ({
-  useTranslation:
-    () =>
-    (key: string): string =>
-      key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 const downloadSample = vi.fn().mockResolvedValue(true);
 let canExport = true;

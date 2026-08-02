@@ -4,9 +4,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { InspectorContent } from './InspectorContent';
 import type { Cutout } from '@/features/bin-designer/types';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 // Mirrors the real input's commit clamp (CompactNumberInput.tsx `clampTyped`).
 // A pass-through mock would report 156 whether or not `softMax` is wired, so the

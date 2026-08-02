@@ -33,9 +33,7 @@ vi.mock('@/core/store/toast', () => ({
   INITIAL_TOAST_STATE: {},
 }));
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports -- dynamic import bound late via vi.resetModules()
 let storage: typeof import('@/core/storage');

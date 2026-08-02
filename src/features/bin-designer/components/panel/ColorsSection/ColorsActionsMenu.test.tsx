@@ -6,9 +6,7 @@ import { DEFAULT_SETTINGS } from '@/core/store/settings.types';
 import { makeUniformLipCells } from '@/features/bin-designer/types/featureColors';
 import type { FeatureColorConfig } from '@/features/bin-designer/types/featureColors';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 vi.mock('@/design-system/Popover/Popover', () => ({
   Popover: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,

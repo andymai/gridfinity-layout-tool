@@ -10,9 +10,7 @@ const mockPruneAnalytics = vi.hoisted(() => vi.fn());
 const mockIsTrackingOptOut = vi.hoisted(() => vi.fn(() => false));
 const mockState = vi.hoisted(() => ({ analyticsEnabled: true }));
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 vi.mock('zustand/shallow', () => ({
   useShallow: (fn: unknown) => fn,

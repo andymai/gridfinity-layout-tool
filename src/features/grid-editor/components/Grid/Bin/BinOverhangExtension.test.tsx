@@ -8,7 +8,7 @@ import { createTestBin } from '@/test/testUtils';
 import { gridUnits, heightUnits, mm } from '@/core/types';
 import type { Bin, Drawer, StoredBaseplateParams } from '@/core/types';
 
-vi.mock('@/i18n', () => ({ useTranslation: () => (key: string) => key }));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 const DRAWER: Drawer = { width: gridUnits(5), depth: gridUnits(4), height: heightUnits(6) };
 

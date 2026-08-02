@@ -13,9 +13,7 @@ import { INITIAL_BROWSE_STATE, useBrowseStore } from '../../store/browseStore';
 import { SIMILAR_DESIGNS_MAX } from '../../utils/similarDesigns';
 import { SimilarRail } from './SimilarRail';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 vi.mock('../../api/client', async (importOriginal) => {
   const actual = await importOriginal<object>();

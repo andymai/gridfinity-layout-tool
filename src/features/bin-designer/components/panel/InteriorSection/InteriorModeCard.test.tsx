@@ -18,9 +18,7 @@ vi.mock('../../SlotConfigurator/SlotConfigurator', () => ({
 }));
 
 // Mock i18n
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 // Mock store
 vi.mock('@/features/bin-designer/store', () => ({

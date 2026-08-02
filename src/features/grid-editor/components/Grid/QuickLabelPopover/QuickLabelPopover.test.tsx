@@ -8,9 +8,7 @@ import { createDefaultLayout } from '@/core/constants';
 import { binId, gridUnits, heightUnits } from '@/core/types';
 
 // Mock i18n
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 // Mock mutations
 vi.mock('@/shared/contexts', () => ({

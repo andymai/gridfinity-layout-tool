@@ -3,9 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { TabletPanelTriggers } from './TabletPanelTriggers';
 import { resetAllStores } from '@/test/testUtils';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 describe('TabletPanelTriggers', () => {
   beforeEach(() => {

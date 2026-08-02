@@ -5,9 +5,7 @@ import { resetAllStores } from '@/test/testUtils';
 import type { LayoutEntry } from '@/core/types';
 import { gridUnits, heightUnits, layoutId } from '@/core/types';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 beforeEach(() => {
   resetAllStores();
