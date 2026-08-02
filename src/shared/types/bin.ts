@@ -304,6 +304,14 @@ export interface BaseplateEdges {
   readonly back: BaseplateEdgeKind;
 }
 
+/**
+ * Per-side allowed connector positions along a join seam (piece-centered mm on
+ * the seam's boundary axis). See `ResolvedBaseplateParams.connectorFilter`.
+ */
+export type ConnectorBoundaryFilter = Partial<
+  Record<'left' | 'right' | 'front' | 'back', readonly number[]>
+>;
+
 /** A plate corner, named by the integral plate's exterior face pair. */
 export type MarginCorner = 'tl' | 'tr' | 'bl' | 'br';
 
@@ -421,6 +429,15 @@ export interface ResolvedBaseplateParams {
   readonly wholeCellsOnly?: boolean;
   /** Edge classification for split pieces — omit for single (unsplit) baseplates. */
   readonly edges?: BaseplateEdges;
+  /**
+   * Per-side allowed connector positions along a join seam, in piece-centered
+   * mm on the seam's boundary axis (the same coordinate `buildConnectors`
+   * places dovetails at). Present only when a shaped plate keeps a seam but
+   * gates its connectors to the sub-span whose one-cell bands sit fully inside
+   * the perimeter (#3163). Absent side (or absent map) = every interior cell
+   * boundary carries a connector, byte-identical to unshaped plates.
+   */
+  readonly connectorFilter?: ConnectorBoundaryFilter;
   /**
    * Non-rectangular plate boundary in plate-local mm (origin bottom-left of
    * the plate's outer extent). Cells fully inside get standard pockets; cells

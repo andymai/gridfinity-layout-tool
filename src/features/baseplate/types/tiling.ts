@@ -9,7 +9,12 @@
 // MarginPiece lives in shared so the generation worker can build a rail without
 // a cross-feature import; imported here for `BaseplateTiling` and re-exported
 // for baseplate-local consumers.
-import type { BaseplateEdgeKind, MarginCorner, MarginPiece } from '@/shared/types/bin';
+import type {
+  BaseplateEdgeKind,
+  ConnectorBoundaryFilter,
+  MarginCorner,
+  MarginPiece,
+} from '@/shared/types/bin';
 
 export type { MarginCorner, MarginPiece };
 
@@ -47,6 +52,14 @@ export interface BaseplatePiece {
   readonly fractionalEdgeX: 'start' | 'end' | 'none';
   readonly fractionalEdgeY: 'start' | 'end' | 'none';
   readonly edges: PieceEdges;
+  /**
+   * Per-side allowed connector positions (piece-centered mm on the seam's
+   * boundary axis), in the piece's actual (world) orientation — present only
+   * when a shaped plate keeps a join edge but gates its connectors to the
+   * sub-span inside the perimeter (#3163). `pieceToBaseplateParams` rotates it
+   * into the canonical frame alongside the other positional fields.
+   */
+  readonly connectorFilter?: ConnectorBoundaryFilter;
   /**
    * Rotation in degrees (0 or 180) to apply to the generated mesh when placing
    * this piece. Non-zero only under `preferIdenticalPieces`: opposite-corner

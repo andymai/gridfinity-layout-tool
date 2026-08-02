@@ -115,6 +115,13 @@ export function meshCacheKey(
     params.edges?.right ?? '',
     params.edges?.front ?? '',
     params.edges?.back ?? '',
+    // Per-seam connector gating on shaped plates (#3163) — empty when absent,
+    // so every ungated plate keeps its cache identity.
+    params.connectorFilter !== undefined
+      ? `cf:${(['left', 'right', 'front', 'back'] as const)
+          .map((s) => params.connectorFilter?.[s]?.map((v) => v.toFixed(2)).join(',') ?? '')
+          .join(';')}`
+      : '',
     params.connectorNubs ?? false,
     params.invertDovetails ?? false,
     params.preferIdenticalPieces ?? false,

@@ -307,6 +307,41 @@ describe('baseplate outline geometry', () => {
     expect(bb.minX).toBeLessThan(-2 * U - 0.5);
   });
 
+  it('gates seam connectors to the filtered junctions (#3163)', { timeout: 240_000 }, () => {
+    // Same partial piece, but the planner gated the left seam to the single
+    // junction at piece-centered −42: connectors must exist there and ONLY
+    // there, and the ungated piece must differ — the filter is a
+    // geometry-affecting control, not a label.
+    const gen = getGenerateBaseplate();
+    const outline: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 4 * U, y: 0 },
+        { x: 4 * U, y: 3 * U },
+        { x: 3 * U, y: 3 * U },
+        { x: 3 * U, y: 4 * U },
+        { x: 0, y: 4 * U },
+      ],
+    };
+    const base = defaults({
+      outline,
+      connectorNubs: true,
+      edges: { left: 'join', right: 'exterior', front: 'exterior', back: 'exterior' },
+    });
+    const gated = gen({ ...base, connectorFilter: { left: [-U] } }, NO_OP, true);
+    assertStructurallyValid(gated, 'gated partial piece');
+    const full = gen(base, NO_OP, true);
+
+    // Vertices past the left face (mesh x = −84) are connector geometry.
+    // Junctions sit at piece-centered y ∈ {−42, 0, +42}.
+    const allowedWindow = countVerticesIn(gated.vertices, -95, -52, -84.5, -32);
+    const gatedWindows = countVerticesIn(gated.vertices, -95, -10, -84.5, 52);
+    const fullWindows = countVerticesIn(full.vertices, -95, -10, -84.5, 52);
+    expect(allowedWindow).toBeGreaterThan(0);
+    expect(gatedWindows).toBe(0);
+    expect(fullWindows).toBeGreaterThan(0);
+  });
+
   it.skipIf(BREPKIT_CORNER_NOTCH_INTERSECT_BROKEN)(
     'scales with a non-standard grid unit',
     { timeout: 240_000 },
