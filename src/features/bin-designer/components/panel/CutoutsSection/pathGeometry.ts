@@ -16,6 +16,7 @@
 
 import { MIN_PATH_POINTS } from '@/features/bin-designer/types';
 import type { PathPoint } from '@/features/bin-designer/types';
+import { pointsBounds } from '@/shared/utils/pointsBounds';
 import type { Bounds } from './geometry';
 import { flattenPath, type Point2D } from './pathGeometryBezier';
 
@@ -45,20 +46,7 @@ export function getPathBounds(points: readonly PathPoint[]): Bounds {
   }
 
   // For accuracy with bezier curves, flatten first
-  const flat = flattenPath(points);
-  let minX = Infinity,
-    minY = Infinity,
-    maxX = -Infinity,
-    maxY = -Infinity;
-
-  for (const p of flat) {
-    if (p.x < minX) minX = p.x;
-    if (p.y < minY) minY = p.y;
-    if (p.x > maxX) maxX = p.x;
-    if (p.y > maxY) maxY = p.y;
-  }
-
-  return { minX, minY, maxX, maxY };
+  return pointsBounds(flattenPath(points));
 }
 
 // Re-exported from utils/ so the cutout store can share the same transforms

@@ -5,6 +5,7 @@
  */
 
 import * as THREE from 'three';
+import { pointsBounds } from '@/shared/utils/pointsBounds';
 
 /** Vertex shader passing local position for distance-field texture lookup. */
 export const outlineVertexShader = /* glsl */ `
@@ -50,18 +51,13 @@ export function bakeDistanceField(
   centerX: number,
   centerY: number
 ): { texture: THREE.DataTexture; boundsMin: [number, number]; boundsSize: [number, number] } {
-  let minX = Infinity,
-    minY = Infinity,
-    maxX = -Infinity,
-    maxY = -Infinity;
-  for (const p of polygon) {
-    const lx = p.x - centerX;
-    const ly = p.y - centerY;
-    if (lx < minX) minX = lx;
-    if (ly < minY) minY = ly;
-    if (lx > maxX) maxX = lx;
-    if (ly > maxY) maxY = ly;
-  }
+  // Bounds are in local (recentered) space; the recenter is a constant offset,
+  // so it factors out of the min/max and can be applied to the world-space box.
+  const b = pointsBounds(polygon);
+  let minX = b.minX - centerX;
+  let minY = b.minY - centerY;
+  let maxX = b.maxX - centerX;
+  let maxY = b.maxY - centerY;
   const pad = 0.5;
   minX -= pad;
   minY -= pad;
