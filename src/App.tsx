@@ -105,7 +105,7 @@ const SupportersPage = lazyWithRetry(() =>
   import('@/features/supporters').then(namedExport('SupportersPage'))
 );
 const CommunityPage = lazyWithRetry(() =>
-  import('@/features/community/components/CommunityPage').then(namedExport('CommunityPage'))
+  import('@/features/community').then(namedExport('CommunityPage'))
 );
 // Dev-only: pre-renders one gallery example for the thumbnail generator.
 // Inert in production via the `import.meta.env.DEV` gate at the route below.
