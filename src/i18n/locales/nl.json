@@ -1517,6 +1517,7 @@
   "community.publish.error.publishWithoutRemix": "Publiceren zonder remix-link",
   "community.publish.error.remixUnchanged": "Wijzig het ontwerp voordat je je remix publiceert.",
   "community.publish.error.underReview": "Dit ontwerp wordt beoordeeld en kan nu niet worden verwijderd.",
+  "community.publish.error.inProgress": "Er is al een publicatie bezig. Probeer het zo meteen opnieuw.",
   "community.publish.announce.error": "Er is iets misgegaan.",
   "community.publish.announce.form": "Publicatiegegevens.",
   "community.publish.announce.identity": "Kies je openbare naam.",

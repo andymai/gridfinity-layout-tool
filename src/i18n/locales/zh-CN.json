@@ -1611,6 +1611,7 @@
   "community.publish.error.publishWithoutRemix": "不带二次创作链接发布",
   "community.publish.error.remixUnchanged": "发布你的二次创作前，请先修改设计。",
   "community.publish.error.underReview": "此设计正在审核中，暂时无法删除。",
+  "community.publish.error.inProgress": "已有一个发布正在进行中。请稍后重试。",
   "community.publish.announce.error": "出了点问题。",
   "community.publish.announce.form": "发布详情。",
   "community.publish.announce.identity": "选择你的公开名称。",

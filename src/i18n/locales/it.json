@@ -1733,6 +1733,7 @@
   "community.publish.error.publishWithoutRemix": "Pubblica senza il link al remix",
   "community.publish.error.remixUnchanged": "Modifica il design prima di pubblicare il tuo remix.",
   "community.publish.error.underReview": "Questo design è in fase di revisione e al momento non può essere rimosso.",
+  "community.publish.error.inProgress": "Una pubblicazione è già in corso. Riprova tra un momento.",
   "community.publish.announce.error": "Qualcosa è andato storto.",
   "community.publish.announce.form": "Dettagli di pubblicazione.",
   "community.publish.announce.identity": "Scegli il tuo nome pubblico.",

@@ -78,7 +78,10 @@ function errorFromResponse(status: number, data: unknown): CommunityClientError 
   if (status === 413) return { kind: 'quotaExceeded', message: body?.error ?? '' };
   if (status === 403) return { kind: 'forbidden', message: body?.error ?? '' };
   if (status === 404) return { kind: 'notFound' };
-  if (status === 400 && body !== null) {
+  // 400 for validation, 409 for conflict-class rejections (duplicate, unchanged
+  // remix, publish-in-progress). Both carry a code the dialog turns into a real
+  // message, so route them through the same validation channel.
+  if ((status === 400 || status === 409) && body !== null) {
     if (body.code === 'CONTENT_BLOCKED') return { kind: 'contentBlocked', message: body.error };
     return { kind: 'validation', code: body.code, message: body.error };
   }

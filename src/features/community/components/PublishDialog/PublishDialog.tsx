@@ -59,7 +59,11 @@ const VALIDATION_CODE_KEYS: Partial<Record<string, string>> = {
   REMIX_UNCHANGED: 'community.publish.error.remixUnchanged',
   INVALID_LINEAGE: 'community.publish.error.invalidLineage',
   UNDER_REVIEW: 'community.publish.error.underReview',
+  PUBLISH_IN_PROGRESS: 'community.publish.error.inProgress',
 };
+
+/** A transient conflict the user can simply retry. */
+const RETRYABLE_CODE = 'PUBLISH_IN_PROGRESS';
 
 /** Validation codes whose only recovery is to drop the remix link and retry. */
 const INVALID_LINEAGE_CODE = 'INVALID_LINEAGE';
@@ -612,7 +616,9 @@ export function PublishDialog() {
               >
                 {t('community.publish.error.back')}
               </Button>
-              {(error.kind === 'network' || error.kind === 'server') && (
+              {(error.kind === 'network' ||
+                error.kind === 'server' ||
+                errorCode === RETRYABLE_CODE) && (
                 <Button variant="primary" className="min-h-11 md:min-h-0" onClick={handleTryAgain}>
                   {t('community.publish.error.tryAgain')}
                 </Button>

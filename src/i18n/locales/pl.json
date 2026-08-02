@@ -1611,6 +1611,7 @@
   "community.publish.error.publishWithoutRemix": "Publikuj bez linku do remiksu",
   "community.publish.error.remixUnchanged": "Zmień projekt przed opublikowaniem swojego remiksu.",
   "community.publish.error.underReview": "Ten projekt jest w trakcie weryfikacji i nie można go teraz usunąć.",
+  "community.publish.error.inProgress": "Publikowanie już trwa. Spróbuj ponownie za chwilę.",
   "community.publish.announce.error": "Coś poszło nie tak.",
   "community.publish.announce.form": "Szczegóły publikacji.",
   "community.publish.announce.identity": "Wybierz swoją nazwę publiczną.",

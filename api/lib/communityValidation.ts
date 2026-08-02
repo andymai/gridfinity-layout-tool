@@ -12,7 +12,7 @@ import { checkText, filterDisplayName, filterSharedDesignsContent } from './cont
 import { validateDesignerShare } from './designerValidation.js';
 import { isValidShareId } from './shared.js';
 import { isObject, isString, validationError } from './validationUtils.js';
-import { classifyCommunityName } from './communityLowEffort.js';
+import { classifyCommunityName, COMMUNITY_NAME_MIN_LENGTH } from './communityLowEffort.js';
 import type { CommunityLineage } from './communityStore.js';
 
 /**
@@ -288,10 +288,16 @@ export function validateCommunityPublish(body: unknown): CommunityValidationResu
   // code; the new junk categories get their own actionable codes.
   const nameIssue = classifyCommunityName(name);
   if (nameIssue === 'empty') {
-    return validationError('INVALID_NAME', 'name must be 1-60 characters');
+    return validationError(
+      'INVALID_NAME',
+      `name must be 1-${COMMUNITY_NAME_MAX_LENGTH} characters`
+    );
   }
   if (nameIssue === 'too-short') {
-    return validationError('NAME_TOO_SHORT', 'name must be at least 3 characters');
+    return validationError(
+      'NAME_TOO_SHORT',
+      `name must be at least ${COMMUNITY_NAME_MIN_LENGTH} characters`
+    );
   }
   if (nameIssue === 'placeholder') {
     return validationError(

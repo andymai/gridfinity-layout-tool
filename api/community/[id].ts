@@ -587,7 +587,10 @@ async function handleDelete(req: VercelRequest, res: VercelResponse, id: string)
       // admin-token path (ownerUserId === null) still purges.
       const moderationStatus = await redis.hget(communityDesignKey(id), 'status');
       if (moderationStatus === 'hidden' || moderationStatus === 'removed') {
-        return res.status(403).json({
+        // 409 (state conflict) so the client routes this through the coded
+        // conflict channel and shows the localized under-review message,
+        // rather than the generic neutral 403 used for deny-list rejections.
+        return res.status(409).json({
           error: 'This design is under moderation review and cannot be unpublished.',
           code: 'UNDER_REVIEW',
         });

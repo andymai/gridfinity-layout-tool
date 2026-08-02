@@ -1649,6 +1649,7 @@
   "community.publish.error.publishWithoutRemix": "Опублікувати без посилання на ремікс",
   "community.publish.error.remixUnchanged": "Змініть дизайн перед публікацією свого реміксу.",
   "community.publish.error.underReview": "Цей дизайн зараз на розгляді, і його поки що не можна видалити.",
+  "community.publish.error.inProgress": "Публікація вже триває. Спробуйте ще раз за мить.",
   "community.publish.announce.error": "Щось пішло не так.",
   "community.publish.announce.form": "Деталі публікації.",
   "community.publish.announce.identity": "Виберіть своє публічне ім'я.",

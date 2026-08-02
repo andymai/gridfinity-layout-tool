@@ -1685,6 +1685,7 @@
   "community.publish.error.publishWithoutRemix": "リミックスのリンクなしで公開",
   "community.publish.error.remixUnchanged": "リミックスを公開する前にデザインを変更してください。",
   "community.publish.error.underReview": "このデザインは審査中のため、今は削除できません。",
+  "community.publish.error.inProgress": "別の公開がすでに進行中です。少し待ってからもう一度お試しください。",
   "community.publish.announce.error": "問題が発生しました。",
   "community.publish.announce.form": "公開の詳細。",
   "community.publish.announce.identity": "公開名を選んでください。",

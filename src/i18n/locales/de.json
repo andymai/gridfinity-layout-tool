@@ -1517,6 +1517,7 @@
   "community.publish.error.publishWithoutRemix": "Ohne Remix-Link veröffentlichen",
   "community.publish.error.remixUnchanged": "Ändere das Design, bevor du deinen Remix veröffentlichst.",
   "community.publish.error.underReview": "Dieses Design wird gerade geprüft und kann momentan nicht entfernt werden.",
+  "community.publish.error.inProgress": "Eine Veröffentlichung läuft bereits. Versuche es gleich noch einmal.",
   "community.publish.announce.error": "Etwas ist schiefgelaufen.",
   "community.publish.announce.form": "Angaben zur Veröffentlichung.",
   "community.publish.announce.identity": "Wähle deinen öffentlichen Namen.",

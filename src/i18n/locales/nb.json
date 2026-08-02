@@ -1733,6 +1733,7 @@
   "community.publish.error.publishWithoutRemix": "Publiser uten remix-lenken",
   "community.publish.error.remixUnchanged": "Endre designet før du publiserer remixen din.",
   "community.publish.error.underReview": "Dette designet er under vurdering og kan ikke fjernes akkurat nå.",
+  "community.publish.error.inProgress": "En publisering pågår allerede. Prøv igjen om et øyeblikk.",
   "community.publish.announce.error": "Noe gikk galt.",
   "community.publish.announce.form": "Publiseringsdetaljer.",
   "community.publish.announce.identity": "Velg det offentlige navnet ditt.",

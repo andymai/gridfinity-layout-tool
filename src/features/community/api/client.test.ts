@@ -183,6 +183,17 @@ describe('publishDesign', () => {
     }
   });
 
+  it('routes coded 409 conflicts (duplicate, unchanged remix, in-progress) through validation', async () => {
+    for (const code of ['DUPLICATE_DESIGN', 'REMIX_UNCHANGED', 'PUBLISH_IN_PROGRESS']) {
+      fetchMock.mockResolvedValue(jsonResponse(409, { error: 'conflict', code }));
+      const result = await publishDesign(input);
+      expect(isErr(result)).toBe(true);
+      if (isErr(result)) {
+        expect(result.error).toEqual({ kind: 'validation', code, message: 'conflict' });
+      }
+    }
+  });
+
   it('maps 403 to forbidden with the neutral server message', async () => {
     fetchMock.mockResolvedValue(
       jsonResponse(403, {

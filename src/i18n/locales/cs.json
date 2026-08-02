@@ -1648,6 +1648,7 @@
   "community.publish.error.publishWithoutRemix": "Publikovat bez odkazu na remix",
   "community.publish.error.remixUnchanged": "Než publikuješ svůj remix, něco na návrhu změň.",
   "community.publish.error.underReview": "Tenhle návrh se právě posuzuje a teď ho nejde odstranit.",
+  "community.publish.error.inProgress": "Jiné publikování už právě probíhá. Zkuste to za chvíli znovu.",
   "community.publish.announce.error": "Něco se pokazilo.",
   "community.publish.announce.form": "Údaje k publikování.",
   "community.publish.announce.identity": "Vyber si veřejné jméno.",

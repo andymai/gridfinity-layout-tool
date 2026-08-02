@@ -3333,6 +3333,8 @@ const en: Record<string, string> = {
     "The design this remixes is no longer available, so it can't be credited.",
   'community.publish.error.underReview':
     "This design is under review and can't be removed right now.",
+  'community.publish.error.inProgress':
+    'Another publish is already in progress. Try again in a moment.',
   'community.publish.error.publishWithoutRemix': 'Publish without the remix link',
   'community.publish.announce.signin': 'Sign in to publish.',
   'community.publish.announce.identity': 'Choose your public name.',

@@ -1611,6 +1611,7 @@
   "community.publish.error.publishWithoutRemix": "Publicera utan remix-länken",
   "community.publish.error.remixUnchanged": "Ändra designen innan du publicerar din remix.",
   "community.publish.error.underReview": "Den här designen granskas och kan inte tas bort just nu.",
+  "community.publish.error.inProgress": "En publicering pågår redan. Försök igen om en stund.",
   "community.publish.announce.error": "Något gick fel.",
   "community.publish.announce.form": "Publiceringsdetaljer.",
   "community.publish.announce.identity": "Välj ditt offentliga namn.",

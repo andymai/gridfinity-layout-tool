@@ -3184,6 +3184,7 @@
   "community.publish.error.publishWithoutRemix": "리믹스 링크 없이 게시",
   "community.publish.error.remixUnchanged": "리믹스를 게시하기 전에 디자인을 변경하세요.",
   "community.publish.error.underReview": "이 디자인은 검토 중이라 지금은 삭제할 수 없습니다.",
+  "community.publish.error.inProgress": "다른 게시가 이미 진행 중입니다. 잠시 후 다시 시도하세요.",
   "community.publish.announce.error": "문제가 발생했습니다.",
   "community.publish.announce.form": "게시 정보.",
   "community.publish.announce.identity": "공개 이름을 선택하세요.",

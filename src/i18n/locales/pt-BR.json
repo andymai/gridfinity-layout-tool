@@ -1611,6 +1611,7 @@
   "community.publish.error.publishWithoutRemix": "Publicar sem o link do remix",
   "community.publish.error.remixUnchanged": "Altere o design antes de publicar seu remix.",
   "community.publish.error.underReview": "Este design está em análise e não pode ser removido agora.",
+  "community.publish.error.inProgress": "Já há uma publicação em andamento. Tente novamente em instantes.",
   "community.publish.announce.error": "Algo deu errado.",
   "community.publish.announce.form": "Detalhes da publicação.",
   "community.publish.announce.identity": "Escolha seu nome público.",

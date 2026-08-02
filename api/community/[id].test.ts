@@ -975,7 +975,7 @@ describe('community/[id]', () => {
         field === 'status' ? 'hidden' : null
       );
       const res = await handle('DELETE');
-      expect(res._status).toBe(403);
+      expect(res._status).toBe(409);
       expect((res._body as { code: string }).code).toBe('UNDER_REVIEW');
       expect(mocks.del).not.toHaveBeenCalled();
       expect(mocks.deleteCommunityDesignBlob).not.toHaveBeenCalled();
