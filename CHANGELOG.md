@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.344.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.344.1...gridfinity-layout-tool-v4.344.2) (2026-08-02)
+
+
+### Bug Fixes
+
+* **baseplate:** frame library thumbnails on the Y pitch for non-square grids ([#3105](https://github.com/andymai/gridfinity-layout-tool/issues/3105)) ([63fb134](https://github.com/andymai/gridfinity-layout-tool/commit/63fb134acdd73950f85fb7f58cad051d16ca0f21))
+* **bin-designer:** thread the Y pitch into axis labels and preset framing ([#3106](https://github.com/andymai/gridfinity-layout-tool/issues/3106)) ([1e946a7](https://github.com/andymai/gridfinity-layout-tool/commit/1e946a75124f9d18325b61d2b5bf76602dcb54a6))
+
 ## [4.344.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.344.0...gridfinity-layout-tool-v4.344.1) (2026-08-02)
 
 
