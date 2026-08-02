@@ -59,7 +59,6 @@ export {
   getLayerZStartResult,
   getBin3DRectResult,
   footprintsOverlap,
-  verticalRangesOverlap,
   binsCollideResult,
   getBlockedZones,
   isInBlockedZone,

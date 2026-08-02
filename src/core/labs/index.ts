@@ -8,7 +8,7 @@
  * UI components for the labs feature (drawer, button, etc.) remain in features/labs/.
  */
 
-export type { FeatureStatus, RiskLevel, FeatureFlag, LabsPreferences } from './types';
+export type { FeatureStatus, FeatureFlag, LabsPreferences } from './types';
 export { createDefaultLabsPreferences } from './types';
 
 // Feature definitions

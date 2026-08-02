@@ -33,7 +33,6 @@ export {
 } from './pathEditHandler';
 export type {
   VertexEditMode,
-  VertexDragTarget,
   VertexEditSetters,
   SegmentHoverInfo,
 } from './pathEditHandler';

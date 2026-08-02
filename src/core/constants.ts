@@ -121,13 +121,6 @@ export function calcMaxGridUnits(
   };
 }
 
-/** Resolve effective print bed depth, falling back to width when undefined. */
-export function getEffectivePrintBedDepth(layout: {
-  printBedSize: number;
-  printBedDepth?: number;
-}): number {
-  return layout.printBedDepth ?? layout.printBedSize;
-}
 export const STAGING_ID = '__staging__' as LayerId;
 /** Sentinel layout ID used when viewing a shared layout in preview mode. */
 export const SHARED_PREVIEW_ID = '__shared_preview__' as LayoutId;

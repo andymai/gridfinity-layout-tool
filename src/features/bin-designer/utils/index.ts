@@ -26,7 +26,6 @@ export {
   captureThumbnailPNG,
   captureThumbnailAtPreset,
   captureCommunityThumbnails,
-  exportPreviewGlb,
   exportCommunityGlb,
   setPreviewCanvas,
   clearPreviewCanvas,

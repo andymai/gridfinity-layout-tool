@@ -17,7 +17,6 @@
 export type {
   InteractionContext,
   ModeHandlers,
-  AddBinParams,
   PointerCaptureHandle,
   PaintSize,
   DrawStartArgs,

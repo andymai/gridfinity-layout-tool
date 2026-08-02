@@ -199,10 +199,6 @@ export type LabelSocketStyle = 'clickIn' | 'slideChannel';
 
 export const LABEL_SOCKET_STYLES: readonly LabelSocketStyle[] = ['clickIn', 'slideChannel'];
 
-export function isLabelSocketStyle(value: unknown): value is LabelSocketStyle {
-  return (LABEL_SOCKET_STYLES as readonly unknown[]).includes(value);
-}
-
 /** Lip band above the plate: thickness (Z) and overhang into the pocket (XY). */
 export const LABEL_SOCKET_LIP_THICKNESS_MM = 0.6;
 export const LABEL_SOCKET_LIP_OVERHANG_MM = 1.2;

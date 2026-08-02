@@ -167,11 +167,6 @@ export function isStampCalculator(c: PatternCalculator): c is StampPatternCalcul
   return c.strategy === 'stamp';
 }
 
-/** Narrow a calculator to the motif strategy. */
-export function isMotifCalculator(c: PatternCalculator): c is MotifPatternCalculator {
-  return c.strategy === 'motif';
-}
-
 /** Narrow a calculator to the wrapped-lattice (kumiko) strategy. */
 export function isWrappedLatticeCalculator(c: PatternCalculator): c is WrappedLatticeCalculator {
   return c.strategy === 'wrapped-lattice';

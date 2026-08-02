@@ -3,7 +3,6 @@ export {
   traceScene,
   traceSceneSegmented,
   detectCard,
-  buildToolTrace,
   computeAutoSeed,
   withCardSize,
 } from './traceScene';
@@ -18,6 +17,5 @@ export type {
   Point,
   TraceOptions,
   TraceError,
-  TraceErrorCode,
   TraceResult,
 } from './types';

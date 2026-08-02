@@ -1,5 +1,4 @@
 export const PADDING_BUTTON_STEP = 0.25;
-export const PADDING_INPUT_STEP = 0.01;
 export const PADDING_MIN = 0;
 export const PADDING_MAX = 100;
 
