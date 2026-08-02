@@ -820,6 +820,11 @@ export function useBaseplateGeneration(): void {
         setTiling(tiling);
         setSplitProgress(null);
         setDedupStats(null);
+        // No draft ran this epoch, so reset the preview-timing refs — otherwise
+        // runBrepGeneration's telemetry would report a stale draft (kind/ms)
+        // left over from a previous, differently-shaped generation.
+        directMeshDurationRef.current = 0;
+        previewKindRef.current = 'direct';
       } else if (preview && !preview.isDestroyed) {
         // manifold_preview on: draft with the Manifold kernel (real generator,
         // draft quality) instead of the procedural direct-mesh.
