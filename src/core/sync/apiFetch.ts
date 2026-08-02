@@ -20,10 +20,16 @@ let forcedSignOutDispatched = false;
 export interface ApiFetchOptions extends RequestInit {
   /** Pass false to skip the X-Requested-With header (e.g. for cross-origin debug). */
   csrf?: boolean;
+  /**
+   * Pass true to suppress the gflt:forced-sign-out dispatch on a 401 from
+   * this call: for probes where an anonymous/expired response is an
+   * expected outcome, not evidence the session died.
+   */
+  suppressForcedSignOut?: boolean;
 }
 
 export async function apiFetch(input: string, init: ApiFetchOptions = {}): Promise<Response> {
-  const { csrf = true, headers, ...rest } = init;
+  const { csrf = true, suppressForcedSignOut = false, headers, ...rest } = init;
   const merged = new Headers(headers);
   if (csrf) merged.set('X-Requested-With', 'gflt');
 
@@ -33,7 +39,10 @@ export async function apiFetch(input: string, init: ApiFetchOptions = {}): Promi
     headers: merged,
   });
 
-  if (response.status === 401 && !forcedSignOutDispatched) {
+  // A suppressed call must not touch the `forcedSignOutDispatched` latch
+  // either way: it shouldn't consume or reset the debounce a concurrent,
+  // non-suppressed call relies on.
+  if (response.status === 401 && !forcedSignOutDispatched && !suppressForcedSignOut) {
     forcedSignOutDispatched = true;
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent(FORCED_SIGN_OUT_EVENT));

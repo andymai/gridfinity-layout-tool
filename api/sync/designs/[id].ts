@@ -8,11 +8,58 @@ export const SCHEMA_VERSION = 1 as const;
 /** Max length for a user-visible design name (mirrors `inserts[].label`). */
 const MAX_NAME_LENGTH = 100;
 
+/** Generous cap for lineage ids (community ids are 12 chars today). */
+const MAX_LINEAGE_ID_LENGTH = 64;
+
 interface DesignEnvelope {
-  /** `{ name, params, tags }` wrapper; readers parse with `unwrapDesignPayload`. */
+  /** `{ name, params, tags, publishedId?, lineage? }` wrapper; readers parse with `unwrapDesignPayload`. */
   design: unknown;
   modifiedAt: number;
   schemaVersion: typeof SCHEMA_VERSION;
+}
+
+interface StoredLineage {
+  parentId: string;
+  rootId: string;
+  parentName: string;
+  parentAuthorName: string;
+  rootAuthorName: string;
+}
+
+/**
+ * Loose shape check only: this envelope caches what the client already
+ * learned from a publish response, it grants no authority (the community
+ * endpoints never trust a client-sent publishedId). Malformed shapes are
+ * rejected rather than dropped so a client bug surfaces instead of losing
+ * data silently.
+ */
+function sanitizeLineage(
+  value: unknown
+): { ok: true; lineage: StoredLineage | null | undefined } | { ok: false } {
+  if (value === undefined) return { ok: true, lineage: undefined };
+  if (value === null) return { ok: true, lineage: null };
+  if (typeof value !== 'object' || Array.isArray(value)) return { ok: false };
+  const l = value as Record<string, unknown>;
+  const { parentId, rootId, parentName, parentAuthorName, rootAuthorName } = l;
+  if (
+    typeof parentId !== 'string' ||
+    typeof rootId !== 'string' ||
+    typeof parentName !== 'string' ||
+    typeof parentAuthorName !== 'string' ||
+    typeof rootAuthorName !== 'string'
+  ) {
+    return { ok: false };
+  }
+  return {
+    ok: true,
+    lineage: {
+      parentId: sanitizeString(parentId, MAX_LINEAGE_ID_LENGTH),
+      rootId: sanitizeString(rootId, MAX_LINEAGE_ID_LENGTH),
+      parentName: sanitizeString(parentName, MAX_NAME_LENGTH),
+      parentAuthorName: sanitizeString(parentAuthorName, MAX_NAME_LENGTH),
+      rootAuthorName: sanitizeString(rootAuthorName, MAX_NAME_LENGTH),
+    },
+  };
 }
 
 /**
@@ -21,20 +68,36 @@ interface DesignEnvelope {
  * two are unambiguous. Returns `null` if the wrapper is malformed (e.g.
  * `name` is present but isn't a string) so the caller can 400.
  */
-function unwrapDesignPayload(
-  design: unknown
-): { name: string | null; params: unknown; tags: unknown } | null {
+function unwrapDesignPayload(design: unknown): {
+  name: string | null;
+  params: unknown;
+  tags: unknown;
+  publishedId: unknown;
+  lineage: unknown;
+} | null {
   if (design === null || typeof design !== 'object') return null;
-  const { name, params, tags } = design as { name?: unknown; params?: unknown; tags?: unknown };
+  const { name, params, tags, publishedId, lineage } = design as {
+    name?: unknown;
+    params?: unknown;
+    tags?: unknown;
+    publishedId?: unknown;
+    lineage?: unknown;
+  };
   if (typeof params === 'object' && params !== null) {
     // Wrapper shape: name must be a string or absent. Reject other types
     // so malformed clients can't silently drop the user-visible field.
     if (name !== undefined && typeof name !== 'string') return null;
     // `tags` is sanitized (not strictly validated) downstream, so any shape
     // is tolerated here; non-array input becomes [].
-    return { name: name ?? null, params, tags };
+    return { name: name ?? null, params, tags, publishedId, lineage };
   }
-  return { name: null, params: design, tags: undefined };
+  return {
+    name: null,
+    params: design,
+    tags: undefined,
+    publishedId: undefined,
+    lineage: undefined,
+  };
 }
 
 /**
@@ -73,6 +136,35 @@ export default createSyncResourceHandler<DesignEnvelope>({
     // params validator and are sanitized/capped here instead.
     const tags = sanitizeTags(unwrapped.tags);
 
+    // Opaque passthrough: `null` (unpublish) and absent (legacy client) are
+    // distinct and both preserved. Malformed ids are 400, not dropped:
+    // community ids are the 12-char branch of `isValidShareId`.
+    const rawPublishedId = unwrapped.publishedId;
+    if (
+      rawPublishedId !== undefined &&
+      rawPublishedId !== null &&
+      !isValidShareId(rawPublishedId)
+    ) {
+      return {
+        ok: false,
+        status: 400,
+        error: 'publishedId must be a community design id or null',
+        code: ErrorCode.VALIDATION_ERROR,
+      };
+    }
+    const publishedId = rawPublishedId;
+    const lineageResult = sanitizeLineage(unwrapped.lineage);
+    if (!lineageResult.ok) {
+      return {
+        ok: false,
+        status: 400,
+        error:
+          'lineage must be null or carry string parentId, rootId, parentName, parentAuthorName, rootAuthorName',
+        code: ErrorCode.VALIDATION_ERROR,
+      };
+    }
+    const lineage = lineageResult.lineage;
+
     // Two byte counts intentionally: `preValidationBytes` is what the
     // validator's 100 KB size cap sees — purely a CPU guard against huge
     // params. `sizeBytes` is what we actually store after sanitization, and
@@ -85,7 +177,7 @@ export default createSyncResourceHandler<DesignEnvelope>({
       params: unwrapped.params,
     };
     const preValidationBytes = Buffer.byteLength(
-      JSON.stringify({ name, tags, ...validationPayload }),
+      JSON.stringify({ name, tags, publishedId, lineage, ...validationPayload }),
       'utf8'
     );
     const validation = validateDesignerShare(validationPayload, preValidationBytes);
@@ -101,6 +193,8 @@ export default createSyncResourceHandler<DesignEnvelope>({
       JSON.stringify({
         name,
         tags,
+        publishedId,
+        lineage,
         type: 'designer',
         version: 1,
         params: validation.payload.params,
@@ -110,9 +204,18 @@ export default createSyncResourceHandler<DesignEnvelope>({
 
     // Always emit the new wrapper shape. Legacy posts become `name = ''`;
     // readers fall back from there. `tags` is always an array (possibly
-    // empty). Equal-ms ties hash over `{ name, params, tags }` so renames
-    // and tag-only edits also participate.
-    const stored = { name, params: validation.payload.params, tags };
+    // empty). `publishedId`/`lineage` are spread conditionally so an absent
+    // field stays absent (an explicit `undefined` key would hash like `null`
+    // in the tiebreaker, conflating "never published" with "unpublished").
+    // Equal-ms ties hash over every stored key, so renames, tag-only edits,
+    // and publish/lineage-only edits all participate.
+    const stored = {
+      name,
+      params: validation.payload.params,
+      tags,
+      ...(publishedId !== undefined ? { publishedId } : {}),
+      ...(lineage !== undefined ? { lineage } : {}),
+    };
     return {
       ok: true,
       envelope: { design: stored, modifiedAt, schemaVersion: SCHEMA_VERSION },

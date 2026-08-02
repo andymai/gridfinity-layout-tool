@@ -7,6 +7,7 @@ import type {
   SyncableItem,
 } from '@/core/sync/adapters/types';
 import { designId } from '@/core/types';
+import type { CommunityDesignLineage } from '@/shared/types/community';
 import type { BinParams } from '@/features/bin-designer/types';
 import {
   deleteDesign,
@@ -34,16 +35,36 @@ function toMs(iso: string): number {
   return Number.isFinite(ms) ? ms : 0;
 }
 
+function isLineage(value: unknown): value is CommunityDesignLineage {
+  if (value === null || typeof value !== 'object') return false;
+  const l = value as Record<string, unknown>;
+  return (
+    typeof l.parentId === 'string' &&
+    typeof l.rootId === 'string' &&
+    typeof l.parentName === 'string' &&
+    typeof l.parentAuthorName === 'string' &&
+    typeof l.rootAuthorName === 'string'
+  );
+}
+
 /**
  * Accept either the new `{ name, params }` wrapper or the legacy bare
  * `BinParams` shape so pre-name cloud blobs still apply cleanly.
  */
-function unwrap(payload: unknown): { name?: string; params: BinParams; tags?: string[] } {
+function unwrap(payload: unknown): {
+  name?: string;
+  params: BinParams;
+  tags?: string[];
+  publishedId?: string | null;
+  lineage?: CommunityDesignLineage | null;
+} {
   if (payload !== null && typeof payload === 'object' && 'params' in payload) {
-    const { name, params, tags } = payload as {
+    const { name, params, tags, publishedId, lineage } = payload as {
       name?: unknown;
       params: unknown;
       tags?: unknown;
+      publishedId?: unknown;
+      lineage?: unknown;
     };
     if (typeof params === 'object' && params !== null) {
       // Empty/whitespace-only remote names become `undefined` so the
@@ -58,6 +79,11 @@ function unwrap(payload: unknown): { name?: string; params: BinParams; tags?: st
         name: trimmed === '' ? undefined : trimmed,
         params: params as BinParams,
         tags: normalizedTags,
+        // Explicit `null` is authoritative (unpublished / no lineage);
+        // malformed values degrade to `undefined` so local state survives.
+        publishedId:
+          publishedId === null || typeof publishedId === 'string' ? publishedId : undefined,
+        lineage: lineage === null ? null : isLineage(lineage) ? lineage : undefined,
       };
     }
   }
@@ -72,7 +98,13 @@ export const designAdapter: DesignAdapter = {
     // importedMesh) are local-only and must never upload `params: undefined`.
     return result.value.filter(isBinDesign).map((d) => ({
       id: d.id,
-      payload: { name: d.name, params: d.params, tags: d.tags },
+      payload: {
+        name: d.name,
+        params: d.params,
+        tags: d.tags,
+        publishedId: d.publishedId,
+        lineage: d.lineage,
+      },
       modifiedAt: toMs(d.updatedAt),
     }));
   },
@@ -86,7 +118,13 @@ export const designAdapter: DesignAdapter = {
     if (!isBinDesign(d)) return null;
     return {
       id: d.id,
-      payload: { name: d.name, params: d.params, tags: d.tags },
+      payload: {
+        name: d.name,
+        params: d.params,
+        tags: d.tags,
+        publishedId: d.publishedId,
+        lineage: d.lineage,
+      },
       modifiedAt: toMs(d.updatedAt),
     };
   },
@@ -98,7 +136,13 @@ export const designAdapter: DesignAdapter = {
       // exportFileNameConfig) on update.
       const existing = await loadDesign(designId(item.id));
       const base = isOk(existing) ? existing.value : null;
-      const { name: remoteName, params, tags: remoteTags } = unwrap(item.payload);
+      const {
+        name: remoteName,
+        params,
+        tags: remoteTags,
+        publishedId: remotePublishedId,
+        lineage: remoteLineage,
+      } = unwrap(item.payload);
       // LWW: engine only calls applyRemote when remote is newer, so a
       // remote rename must win. Local name is only a fallback for legacy
       // payloads with no name; the literal covers a legacy fresh-device pull.
@@ -106,6 +150,10 @@ export const designAdapter: DesignAdapter = {
       // Same LWW logic for tags: a remote array (even empty) wins; only a
       // legacy payload that omits tags entirely falls back to local.
       const tags = remoteTags ?? base?.tags;
+      // `??` would swallow an explicit remote `null` ("unpublished on the
+      // other device"), so only `undefined` (legacy payload) falls back.
+      const publishedId = remotePublishedId === undefined ? base?.publishedId : remotePublishedId;
+      const lineage = remoteLineage === undefined ? base?.lineage : remoteLineage;
       const result = await saveDesign({
         id: designId(item.id),
         name,
@@ -113,6 +161,8 @@ export const designAdapter: DesignAdapter = {
         thumbnail: base?.thumbnail ?? null,
         exportFileNameConfig: base?.exportFileNameConfig ?? null,
         tags,
+        publishedId,
+        lineage,
       });
       if (!isOk(result)) {
         throw new Error(`saveDesign failed for ${item.id}`);

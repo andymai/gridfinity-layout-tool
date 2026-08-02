@@ -13,6 +13,7 @@ interface UserProfileRecord {
   provider: AuthProvider;
   email: string;
   displayName?: string;
+  handle?: string;
 }
 
 interface MeResponse {
@@ -22,6 +23,7 @@ interface MeResponse {
     provider: AuthProvider;
     email: string;
     displayName?: string;
+    handle?: string;
   } | null;
 }
 
@@ -86,6 +88,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         provider: session.provider,
         email: profile.email,
         displayName: profile.displayName,
+        handle: profile.handle,
       },
     };
     res.status(200).json(body);

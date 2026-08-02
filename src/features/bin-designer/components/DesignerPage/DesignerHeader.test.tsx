@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { resetAllStores } from '@/test/testUtils';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useLabsStore } from '@/core/store';
 import {
   DEFAULT_BIN_PARAMS,
   DEFAULT_GENERATION_STATE,
@@ -101,5 +102,47 @@ describe('DesignerHeader', () => {
   it('renders mobile layout without support links', () => {
     render(<DesignerHeader isDesktop={false} nameEditor={createMockNameEditor()} />);
     expect(screen.queryByTestId('header-support-links')).not.toBeInTheDocument();
+  });
+
+  describe('community publish entry', () => {
+    function setCommunityFlag(enabled: boolean): void {
+      useLabsStore.setState((s) => ({
+        preferences: {
+          ...s.preferences,
+          enabledFeatures: { ...s.preferences.enabledFeatures, community_showcase: enabled },
+        },
+      }));
+    }
+
+    it('hides the Publish button while the flag is off', () => {
+      setCommunityFlag(false);
+      render(<DesignerHeader isDesktop nameEditor={createMockNameEditor()} />);
+      expect(screen.queryByLabelText('Publish to the community showcase')).not.toBeInTheDocument();
+    });
+
+    it('shows a disabled Publish button next to Export until the mesh is ready', () => {
+      setCommunityFlag(true);
+      render(<DesignerHeader isDesktop nameEditor={createMockNameEditor()} />);
+      expect(screen.getByLabelText('Publish to the community showcase')).toBeDisabled();
+    });
+
+    it('enables Publish once the mesh is ready, on desktop and mobile', () => {
+      setCommunityFlag(true);
+      useDesignerStore.setState({
+        generation: {
+          ...DEFAULT_GENERATION_STATE,
+          mesh: {
+            error: null,
+            vertices: new Float32Array([0, 0, 0]),
+            normals: new Float32Array([0, 0, 1]),
+          } as unknown as (typeof DEFAULT_GENERATION_STATE)['mesh'],
+        },
+      });
+      const desktop = render(<DesignerHeader isDesktop nameEditor={createMockNameEditor()} />);
+      expect(screen.getByLabelText('Publish to the community showcase')).not.toBeDisabled();
+      desktop.unmount();
+      render(<DesignerHeader isDesktop={false} nameEditor={createMockNameEditor()} />);
+      expect(screen.getByLabelText('Publish to the community showcase')).not.toBeDisabled();
+    });
   });
 });

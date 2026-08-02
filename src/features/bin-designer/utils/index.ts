@@ -24,9 +24,14 @@ export type { PrintEstimate } from './printEstimates';
 export {
   captureThumbnail,
   captureThumbnailPNG,
+  captureThumbnailAtPreset,
+  captureCommunityThumbnails,
+  exportPreviewGlb,
+  exportCommunityGlb,
   setPreviewCanvas,
   clearPreviewCanvas,
 } from './thumbnail';
+export type { ThumbnailCaptureOptions, BinFramingDimensions } from './thumbnail';
 export { packageSplitPiecesAsZip } from './splitExport';
 export { validateBinParams, computeMinCellSize, validateCompartmentSizes } from './validation';
 export type { DesignerValidationError, MinCellSize } from './validation';

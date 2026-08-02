@@ -1,11 +1,17 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { Scene, PerspectiveCamera, Mesh, BoxGeometry, MeshStandardMaterial } from 'three';
+import type { WebGLRenderer } from 'three';
 import {
   captureThumbnail,
   captureThumbnailPNG,
+  captureCommunityThumbnails,
+  exportCommunityGlb,
   setPreviewCanvas,
+  setPreviewContext,
   clearPreviewCanvas,
 } from './thumbnail';
+import type { BinFramingDimensions } from './thumbnail';
 
 describe('thumbnail', () => {
   let mockCanvas: HTMLCanvasElement;
@@ -233,5 +239,140 @@ describe('captureThumbnailPNG', () => {
     setPreviewCanvas(mockCanvas);
     const result = await captureThumbnailPNG();
     expect(result).toBeNull();
+  });
+});
+
+const DIMS: BinFramingDimensions = {
+  width: 2,
+  depth: 1,
+  height: 3,
+  gridUnitMm: 42,
+  heightUnitMm: 7,
+};
+
+describe('captureCommunityThumbnails', () => {
+  let mockCanvas: HTMLCanvasElement;
+  let mockCtx: CanvasRenderingContext2D;
+
+  beforeEach(() => {
+    mockCanvas = document.createElement('canvas');
+    mockCanvas.width = 800;
+    mockCanvas.height = 600;
+
+    mockCtx = {
+      drawImage: vi.fn(),
+    } as unknown as CanvasRenderingContext2D;
+
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(function (
+      this: HTMLCanvasElement,
+      contextId: string
+    ) {
+      if (contextId === '2d' && this !== mockCanvas) {
+        return mockCtx;
+      }
+      return null;
+    } as typeof HTMLCanvasElement.prototype.getContext);
+
+    vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockReturnValue(
+      'data:image/webp;base64,mockThumb'
+    );
+  });
+
+  afterEach(() => {
+    clearPreviewCanvas();
+    vi.restoreAllMocks();
+  });
+
+  it('returns null when no preview context is registered, even with a canvas', async () => {
+    setPreviewCanvas(mockCanvas);
+    await expect(captureCommunityThumbnails(DIMS)).resolves.toBeNull();
+  });
+
+  it('captures three WebP shots from distinct camera positions', async () => {
+    setPreviewCanvas(mockCanvas);
+    const scene = new Scene();
+    const camera = new PerspectiveCamera(45);
+    const renderPositions: { x: number; y: number; z: number }[] = [];
+    const renderer = {
+      render: vi.fn(() => {
+        renderPositions.push({
+          x: camera.position.x,
+          y: camera.position.y,
+          z: camera.position.z,
+        });
+      }),
+    } as unknown as WebGLRenderer;
+    setPreviewContext(renderer, scene, camera);
+
+    const result = await captureCommunityThumbnails(DIMS);
+
+    expect(result).toHaveLength(3);
+    for (const url of result ?? []) {
+      expect(url.startsWith('data:image/webp')).toBe(true);
+    }
+
+    // Each capture renders twice (preset frame + restore), so the preset
+    // positions are the even-indexed render calls.
+    expect(renderPositions).toHaveLength(6);
+    const presets = [renderPositions[0], renderPositions[2], renderPositions[4]];
+    for (let i = 0; i < presets.length; i++) {
+      for (let j = i + 1; j < presets.length; j++) {
+        const same =
+          Math.abs(presets[i].x - presets[j].x) < 1e-6 &&
+          Math.abs(presets[i].y - presets[j].y) < 1e-6 &&
+          Math.abs(presets[i].z - presets[j].z) < 1e-6;
+        expect(same).toBe(false);
+      }
+    }
+  });
+
+  it('uses the default WebP encoder settings for every shot', async () => {
+    setPreviewCanvas(mockCanvas);
+    const renderer = { render: vi.fn() } as unknown as WebGLRenderer;
+    setPreviewContext(renderer, new Scene(), new PerspectiveCamera(45));
+
+    await captureCommunityThumbnails(DIMS);
+
+    expect(HTMLCanvasElement.prototype.toDataURL).toHaveBeenCalledTimes(3);
+    expect(HTMLCanvasElement.prototype.toDataURL).toHaveBeenCalledWith('image/webp', 0.9);
+  });
+
+  it('returns null when the context is registered but no canvas yields pixels', async () => {
+    const renderer = { render: vi.fn() } as unknown as WebGLRenderer;
+    setPreviewContext(renderer, new Scene(), new PerspectiveCamera(45));
+
+    await expect(captureCommunityThumbnails(DIMS)).resolves.toBeNull();
+  });
+});
+
+describe('exportCommunityGlb', () => {
+  afterEach(() => {
+    clearPreviewCanvas();
+    vi.restoreAllMocks();
+  });
+
+  it('returns null when no preview scene is registered', async () => {
+    await expect(exportCommunityGlb()).resolves.toBeNull();
+  });
+
+  it('returns base64 GLB with glTF magic bytes for a registered scene', async () => {
+    const scene = new Scene();
+    scene.add(new Mesh(new BoxGeometry(1, 1, 1), new MeshStandardMaterial({ color: 0x808080 })));
+    const renderer = { render: vi.fn() } as unknown as WebGLRenderer;
+    setPreviewContext(renderer, scene, new PerspectiveCamera(45));
+
+    const result = await exportCommunityGlb();
+
+    expect(result).not.toBeNull();
+    const decoded = atob(result ?? '');
+    expect(decoded.slice(0, 4)).toBe('glTF');
+    expect(decoded.length).toBeGreaterThan(12);
+  });
+
+  it('returns null for a scene with no visible meshes', async () => {
+    const renderer = { render: vi.fn() } as unknown as WebGLRenderer;
+    setPreviewContext(renderer, new Scene(), new PerspectiveCamera(45));
+
+    await expect(exportCommunityGlb()).resolves.toBeNull();
   });
 });

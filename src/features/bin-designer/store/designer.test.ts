@@ -1,11 +1,19 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { useDesignerStore, _resetPendingMeshCache } from './designer';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { designId } from '@/core/types';
+import type { SavedDesign } from '../types';
 import {
   DEFAULT_BIN_PARAMS,
   DESIGNER_CONSTRAINTS,
   DEFAULT_GENERATION_STATE,
   DEFAULT_UI_STATE,
 } from '../constants';
+
+const reconcileMock = vi.fn(async (_design: unknown): Promise<void> => undefined);
+vi.mock('../sync/publishedIdReconcile', () => ({
+  reconcilePublishedId: (design: unknown) => reconcileMock(design),
+}));
+
+import { useDesignerStore, _resetPendingMeshCache } from './designer';
 
 describe('useDesignerStore', () => {
   beforeEach(() => {
@@ -369,6 +377,38 @@ describe('useDesignerStore', () => {
       expect(mask!.cols).toBe(4);
       expect(mask!.rows).toBe(6);
       expect(mask!.cells[0]).toBe(0);
+    });
+  });
+
+  describe('loadDesign publishedId reconcile wiring', () => {
+    function saved(publishedId?: string): SavedDesign {
+      return {
+        id: designId('design_1_abc123'),
+        name: 'Loaded',
+        params: { ...DEFAULT_BIN_PARAMS },
+        thumbnail: null,
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+        exportFileNameConfig: null,
+        ...(publishedId !== undefined ? { publishedId } : {}),
+      };
+    }
+
+    beforeEach(() => {
+      reconcileMock.mockClear();
+    });
+
+    it('fires the reconcile with the loaded design after applying state', () => {
+      const design = saved('PubLish12345');
+      useDesignerStore.getState().loadDesign(design);
+      expect(useDesignerStore.getState().currentDesignId).toBe(design.id);
+      expect(reconcileMock).toHaveBeenCalledTimes(1);
+      expect(reconcileMock).toHaveBeenCalledWith(design);
+    });
+
+    it('also passes never-published designs through (reconcile no-ops itself)', () => {
+      useDesignerStore.getState().loadDesign(saved());
+      expect(reconcileMock).toHaveBeenCalledTimes(1);
     });
   });
 });

@@ -9,6 +9,7 @@ import { Button, IconButton } from '@/design-system';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
+import { useCommunityPublishEntry } from '@/features/bin-designer/hooks/useCommunityPublish';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '@/i18n';
 import { SaveStatusIndicator } from '@/shared/components/SaveStatusIndicator';
@@ -44,6 +45,7 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
   );
   const undo = useDesignerStore((s) => s.undo);
   const redo = useDesignerStore((s) => s.redo);
+  const { publishVisible, canPublish, openPublish } = useCommunityPublishEntry();
 
   const {
     isEditingName,
@@ -131,6 +133,34 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
               </svg>
               <span className="hidden lg:inline">{t('common.export')}</span>
             </Button>
+
+            {/* Publish button (community showcase) */}
+            {publishVisible && !canPublish && (
+              <span id="community-publish-disabled-hint" className="sr-only">
+                {t('community.publish.form.preparingPreview')}
+              </span>
+            )}
+            {publishVisible && (
+              <Button
+                variant="ghost"
+                onClick={openPublish}
+                disabled={!canPublish}
+                className="px-2 py-1.5 text-sm font-normal rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5"
+                title={t('community.publishButtonAria')}
+                aria-label={t('community.publishButtonAria')}
+                aria-describedby={canPublish ? undefined : 'community-publish-disabled-hint'}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                  />
+                </svg>
+                <span className="hidden lg:inline">{t('community.publishButton')}</span>
+              </Button>
+            )}
           </div>
 
           <div className="flex items-center gap-1 flex-shrink-0">
@@ -271,6 +301,36 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
                 />
               </svg>
             </IconButton>
+
+            {/* Publish button (community showcase) */}
+            {publishVisible && !canPublish && (
+              <span id="community-publish-disabled-hint" className="sr-only">
+                {t('community.publish.form.preparingPreview')}
+              </span>
+            )}
+            {publishVisible && (
+              <IconButton
+                variant="ghost"
+                onClick={openPublish}
+                disabled={!canPublish}
+                aria-label={t('community.publishButtonAria')}
+                aria-describedby={canPublish ? undefined : 'community-publish-disabled-hint'}
+              >
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                  />
+                </svg>
+              </IconButton>
+            )}
 
             {/* Undo/Redo */}
             <IconButton

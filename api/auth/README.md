@@ -127,6 +127,6 @@ userId = sha256(`${provider}:${providerSubject}`).slice(0, 32);
 - Manual verification flow:
   1. Visit `/api/auth/login/google` in an unauthenticated browser.
   2. Complete the consent screen → land back at `/`.
-  3. `GET /api/auth/me` returns `{ userId, provider, email, displayName }`.
+  3. `GET /api/auth/me` returns `{ userId, provider, email, displayName, handle }`.
   4. `POST /api/auth/logout` (with `X-Requested-With: gflt`) returns 204.
   5. `GET /api/auth/me` returns 401.

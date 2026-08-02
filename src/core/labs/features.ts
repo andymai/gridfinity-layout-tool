@@ -187,6 +187,18 @@ export const FEATURE_FLAGS = [
     graduatedAt: '2026-07',
     requiresRefresh: false,
   },
+  {
+    id: 'community_showcase',
+    name: 'Community Showcase',
+    description:
+      'Publish your bin designs to a shared community showcase and remix designs from others. Publishing needs a free sign-in; anything you publish is public under CC BY 4.0.',
+    status: 'experimental',
+    risk: 'medium',
+    warning:
+      'Early feature. Publishing works, but the gallery for browsing and remixing is still rolling out, so published designs are not discoverable in-app yet.',
+    addedAt: '2026-08',
+    requiresRefresh: false,
+  },
 ] as const satisfies readonly FeatureFlag[];
 
 export type FeatureId = (typeof FEATURE_FLAGS)[number]['id'];

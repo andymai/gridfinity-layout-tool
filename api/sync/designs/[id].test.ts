@@ -331,6 +331,220 @@ describe('PUT', () => {
     expect(body.envelope.design.tags).toEqual([]);
   });
 
+  it('round-trips publishedId and lineage through PUT then GET', async () => {
+    const { default: handler } = await import('./[id]');
+    const lineage = {
+      parentId: 'AbCdEf123456',
+      rootId: 'ZyXwVu654321',
+      parentName: 'Parent Bin',
+      parentAuthorName: 'Ann Author',
+      rootAuthorName: 'Root Author',
+    };
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: {
+          design: {
+            name: 'Published',
+            params: VALID_DESIGN,
+            publishedId: 'PubLish12345',
+            lineage,
+          },
+          modifiedAt: 1000,
+        },
+      }),
+      makeRes() as unknown as VercelResponse
+    );
+    const getRes = makeRes();
+    await handler(makeReq({ method: 'GET' }), getRes as unknown as VercelResponse);
+    const body = getRes._body as {
+      envelope: { design: { publishedId: string; lineage: unknown } };
+    };
+    expect(body.envelope.design.publishedId).toBe('PubLish12345');
+    expect(body.envelope.design.lineage).toEqual(lineage);
+  });
+
+  it('round-trips an explicit publishedId/lineage null (unpublished state)', async () => {
+    const { default: handler } = await import('./[id]');
+    const res = makeRes();
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: {
+          design: { name: 'x', params: VALID_DESIGN, publishedId: null, lineage: null },
+          modifiedAt: 1000,
+        },
+      }),
+      res as unknown as VercelResponse
+    );
+    expect(res._status).toBe(200);
+    const body = res._body as {
+      envelope: { design: { publishedId: unknown; lineage: unknown } };
+    };
+    expect(body.envelope.design.publishedId).toBe(null);
+    expect(body.envelope.design.lineage).toBe(null);
+  });
+
+  it('leaves publishedId and lineage absent when the wrapper omits them', async () => {
+    const { default: handler } = await import('./[id]');
+    const res = makeRes();
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: { design: { name: 'x', params: VALID_DESIGN }, modifiedAt: 1000 },
+      }),
+      res as unknown as VercelResponse
+    );
+    expect(res._status).toBe(200);
+    const body = res._body as { envelope: { design: Record<string, unknown> } };
+    expect('publishedId' in body.envelope.design).toBe(false);
+    expect('lineage' in body.envelope.design).toBe(false);
+  });
+
+  it('rejects a malformed publishedId with 400', async () => {
+    const { default: handler } = await import('./[id]');
+    const res = makeRes();
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: {
+          design: { name: 'x', params: VALID_DESIGN, publishedId: 'not a valid id!' },
+          modifiedAt: 1000,
+        },
+      }),
+      res as unknown as VercelResponse
+    );
+    expect(res._status).toBe(400);
+  });
+
+  it('rejects a lineage missing a required string field with 400', async () => {
+    const { default: handler } = await import('./[id]');
+    const res = makeRes();
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: {
+          design: {
+            name: 'x',
+            params: VALID_DESIGN,
+            lineage: { parentId: 'AbCdEf123456', rootId: 42 },
+          },
+          modifiedAt: 1000,
+        },
+      }),
+      res as unknown as VercelResponse
+    );
+    expect(res._status).toBe(400);
+  });
+
+  it('counts publishedId and lineage in the stored sizeBytes', async () => {
+    const { default: handler } = await import('./[id]');
+    const lineage = {
+      parentId: 'AbCdEf123456',
+      rootId: 'ZyXwVu654321',
+      parentName: 'Parent Bin',
+      parentAuthorName: 'Ann Author',
+      rootAuthorName: 'Root Author',
+    };
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: {
+          design: {
+            name: 'Sized',
+            params: VALID_DESIGN,
+            publishedId: 'PubLish12345',
+            lineage,
+          },
+          modifiedAt: 1000,
+        },
+      }),
+      makeRes() as unknown as VercelResponse
+    );
+    const indexHash = [...redisHashes.values()].find((h) => h.size > 0);
+    const encoded = [...(indexHash?.values() ?? [])][0];
+    const entry = JSON.parse(encoded ?? '{}') as { sizeBytes: number };
+    const storedEnvelope = [...blobStore.values()][0] as {
+      design: { name: string; params: unknown; tags: string[] };
+    };
+    const withoutNewFields = Buffer.byteLength(
+      JSON.stringify({
+        name: storedEnvelope.design.name,
+        tags: storedEnvelope.design.tags,
+        type: 'designer',
+        version: 1,
+        params: storedEnvelope.design.params,
+      }),
+      'utf8'
+    );
+    const withNewFields = Buffer.byteLength(
+      JSON.stringify({
+        name: storedEnvelope.design.name,
+        tags: storedEnvelope.design.tags,
+        publishedId: 'PubLish12345',
+        lineage,
+        type: 'designer',
+        version: 1,
+        params: storedEnvelope.design.params,
+      }),
+      'utf8'
+    );
+    expect(entry.sizeBytes).toBe(withNewFields);
+    expect(entry.sizeBytes).toBeGreaterThan(withoutNewFields);
+  });
+
+  it('equal-ms writes differing only in lineage converge deterministically', async () => {
+    const { default: handler } = await import('./[id]');
+    const lineage = {
+      parentId: 'AbCdEf123456',
+      rootId: 'ZyXwVu654321',
+      parentName: 'Parent Bin',
+      parentAuthorName: 'Ann Author',
+      rootAuthorName: 'Root Author',
+    };
+    const bare = { design: { name: 'Tie', params: VALID_DESIGN }, modifiedAt: 1000 };
+    const withLineage = {
+      design: { name: 'Tie', params: VALID_DESIGN, lineage },
+      modifiedAt: 1000,
+    };
+
+    async function runOrder(
+      first: unknown,
+      second: unknown
+    ): Promise<{
+      secondStatus: number;
+      finalDesign: unknown;
+    }> {
+      redisStore = new Map();
+      redisHashes = new Map();
+      blobStore.clear();
+      await handler(
+        makeReq({ method: 'PUT', body: first }),
+        makeRes() as unknown as VercelResponse
+      );
+      const secondRes = makeRes();
+      await handler(
+        makeReq({ method: 'PUT', body: second }),
+        secondRes as unknown as VercelResponse
+      );
+      const getRes = makeRes();
+      await handler(makeReq({ method: 'GET' }), getRes as unknown as VercelResponse);
+      const body = getRes._body as { envelope: { design: unknown } };
+      return { secondStatus: secondRes._status, finalDesign: body.envelope.design };
+    }
+
+    const a = await runOrder(bare, withLineage);
+    const b = await runOrder(withLineage, bare);
+
+    // The lineage-only difference must alter the tiebreaker hash: if it
+    // didn't, both second PUTs would 409 as equal payloads. Exactly one
+    // arrival order lets the second write win, and both orders converge on
+    // the same stored winner.
+    const secondWins = [a.secondStatus, b.secondStatus].filter((s) => s === 200);
+    expect(secondWins).toHaveLength(1);
+    expect(a.finalDesign).toEqual(b.finalDesign);
+  });
+
   it('rejects 409 when remote is newer', async () => {
     const { default: handler } = await import('./[id]');
     await handler(
