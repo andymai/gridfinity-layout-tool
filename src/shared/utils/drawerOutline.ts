@@ -251,6 +251,44 @@ export function hashOutline(outline: DrawerOutline): string {
   return (h >>> 0).toString(36);
 }
 
+/**
+ * Rotate the vertex loop to a canonical starting index so a closed outline and
+ * any cyclic shift of it hash equal — in particular a point-symmetric loop and
+ * its 180° rotation, which trace the same polygon shifted by n/2. Winding,
+ * bulges, and the vertex→next-edge bulge association are all preserved; only the
+ * start moves. Picks the rotation whose quantized (x, y, bulge) vertex sequence
+ * is lexicographically smallest so a repeated smallest vertex still resolves
+ * deterministically. Drops the authoring annotation (pipeline-only op).
+ */
+export function canonicalStartOutline(outline: DrawerOutline): DrawerOutline {
+  const verts = outline.vertices;
+  const n = verts.length;
+  if (n < 2) return { vertices: verts.map((v) => v) };
+  const keys = verts.map((v): readonly [number, number, number] => [
+    Math.round(v.x / OUTLINE_QUANTUM_MM),
+    Math.round(v.y / OUTLINE_QUANTUM_MM),
+    Math.round((v.bulge ?? 0) * 1e6),
+  ]);
+  // True iff the rotation starting at index `a` is lexicographically smaller
+  // than the one starting at `b`, comparing the full vertex sequence.
+  const rotationLess = (a: number, b: number): boolean => {
+    for (let i = 0; i < n; i++) {
+      const ka = keys[(a + i) % n];
+      const kb = keys[(b + i) % n];
+      for (let c = 0; c < 3; c++) {
+        if (ka[c] !== kb[c]) return ka[c] < kb[c];
+      }
+    }
+    return false;
+  };
+  let best = 0;
+  for (let s = 1; s < n; s++) {
+    if (rotationLess(s, best)) best = s;
+  }
+  const rotated = best === 0 ? verts : [...verts.slice(best), ...verts.slice(0, best)];
+  return { vertices: rotated.map((v) => v) };
+}
+
 interface MutableVertex {
   x: number;
   y: number;

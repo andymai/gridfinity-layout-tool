@@ -13,7 +13,8 @@ import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { BaseplatePiece } from '../types/tiling';
 import { computePieceFingerprint } from './pieceFingerprint';
 import { outlineFrameOffset } from '@/shared/utils/drawerOutlineGeometry';
-import { translateOutline } from '@/shared/utils/drawerOutline';
+import { rotateOutline180, translateOutline } from '@/shared/utils/drawerOutline';
+import { cornerCutVertices } from '@/shared/utils/cornerCutOutline';
 import type { DrawerOutline } from '@/core/types';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -1755,12 +1756,75 @@ describe('shaped plates (outline-aware splitting)', () => {
     expect(byLabel.get('A1')?.edges.back).toBe('join');
   });
 
-  it('forces placement rotation off for shaped tilings', () => {
+  // Point-symmetric radius cut on all four corners: a 1-unit arc trims each
+  // outer corner cell but leaves every interior seam fully inside, so all four
+  // corner tiles survive as partials and TL↔BR / TR↔BL are 180° rotations.
+  const roundedAll = (r: number): DrawerOutline => ({
+    vertices: cornerCutVertices(8 * U, 8 * U, {
+      tl: { kind: 'radius', r },
+      tr: { kind: 'radius', r },
+      bl: { kind: 'radius', r },
+      br: { kind: 'radius', r },
+    }),
+  });
+
+  // Only the top-right corner rounds — NOT point-symmetric, so opposite corner
+  // tiles are not congruent and must never share a tower.
+  const roundedTrOnly = (r: number): DrawerOutline => ({
+    vertices: cornerCutVertices(8 * U, 8 * U, {
+      tl: { kind: 'none' },
+      tr: { kind: 'radius', r },
+      bl: { kind: 'none' },
+      br: { kind: 'none' },
+    }),
+  });
+
+  it('shares one canonical tower between opposite rounded-corner tiles (point-symmetric)', () => {
     const tiling = computeBaseplateTiling(
-      shapedParams(L_OUTLINE, { preferIdenticalPieces: true }),
+      shapedParams(roundedAll(U), { preferIdenticalPieces: true }),
       BED
     );
-    expect(tiling.pieces.every((p) => p.placementRotationDeg === 0)).toBe(true);
+    expect(tiling.pieces).toHaveLength(4);
+    const byLabel = new Map(tiling.pieces.map((p) => [p.label, p]));
+    const rotated = (l: string): boolean => byLabel.get(l)?.placementRotationDeg === 180;
+    // Each opposite pair gets a canonical 0 / rotated-180 split (A1↔B2, A2↔B1),
+    // so exactly one of each pair carries the rotation.
+    expect(rotated('A1')).not.toBe(rotated('B2'));
+    expect(rotated('A2')).not.toBe(rotated('B1'));
+    expect(tiling.pieces.filter((p) => p.placementRotationDeg === 180)).toHaveLength(2);
+  });
+
+  it('rotates (not merely translates) a 180° piece outline about its window (edit b)', () => {
+    const outline = roundedAll(U);
+    const parent = shapedParams(outline, { preferIdenticalPieces: true });
+    const tiling = computeBaseplateTiling(parent, BED);
+    const rotated = tiling.pieces.find(
+      (p) => p.placementRotationDeg === 180 && p.outlineWindowOriginMm !== undefined
+    );
+    if (rotated === undefined || rotated.outlineWindowOriginMm === undefined) {
+      expect.fail('expected a rotated partial rounded-corner piece');
+    }
+    const { x: ox, y: oy } = rotated.outlineWindowOriginMm;
+    const genParams = pieceToBaseplateParams(rotated, parent);
+    const localUnrotated = translateOutline(outline, -ox, -oy);
+    const windowW = rotated.widthUnits * U + rotated.paddingLeft + rotated.paddingRight;
+    const windowD = rotated.depthUnits * U + rotated.paddingFront + rotated.paddingBack;
+    expect(genParams.outline).toEqual(rotateOutline180(localUnrotated, windowW, windowD));
+  });
+
+  it('keeps opposite tiles of an asymmetric (single-corner) shape distinct', () => {
+    const parent = shapedParams(roundedTrOnly(U), { preferIdenticalPieces: true });
+    const tiling = computeBaseplateTiling(parent, BED);
+    expect(tiling.pieces).toHaveLength(4);
+    const byLabel = new Map(tiling.pieces.map((p) => [p.label, p]));
+    const a1 = byLabel.get('A1'); // BL — plain rectangle
+    const b2 = byLabel.get('B2'); // TR — rounded, partial
+    if (a1 === undefined || b2 === undefined) {
+      expect.fail('expected all four corner tiles to survive');
+    }
+    const a1Fp = computePieceFingerprint(pieceToBaseplateParams(a1, parent));
+    const b2Fp = computePieceFingerprint(pieceToBaseplateParams(b2, parent));
+    expect(a1Fp).not.toBe(b2Fp);
   });
 
   it('measures seam bands with the per-axis pitch on a non-square grid (#2733)', () => {
@@ -1822,7 +1886,10 @@ describe('shaped plates (outline-aware splitting)', () => {
     const W = 9;
     const D = 4;
 
-    const driftedTiling = computeBaseplateTiling(shapedParams(drifted, { width: W, depth: D }), BED);
+    const driftedTiling = computeBaseplateTiling(
+      shapedParams(drifted, { width: W, depth: D }),
+      BED
+    );
     const driftedByLabel = new Map(driftedTiling.pieces.map((p) => [p.label, p]));
     // The extent-anchored left column [0,3U] falls entirely in the empty region
     // and is dropped; only the middle+right pieces survive with a single seam.
