@@ -37,6 +37,31 @@ describe('DrawerOutlineOverlay', () => {
     expect(screen.queryByRole('img')).toBeNull();
   });
 
+  it('grows the SVG viewport to hold an outline reaching past the grid (#3107)', () => {
+    // The perimeter's right edge sits at 7u in a 6-wide drawer. The viewport
+    // must widen to it (default 42mm pitch → 42px/unit) rather than clip it.
+    const OVERSIZE: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 7 * U, y: 0 },
+        { x: 7 * U, y: 2 * U },
+        { x: 4 * U, y: 2 * U },
+        { x: 4 * U, y: 4 * U },
+        { x: 0, y: 4 * U },
+      ],
+    };
+    useLayoutStore.setState((s) => ({
+      layout: {
+        ...s.layout,
+        drawer: { ...s.layout.drawer, width: gridUnits(6), depth: gridUnits(4), outline: OVERSIZE },
+      },
+    }));
+    renderOverlay();
+    const svg = screen.getByRole('img');
+    // gap 2, cell 40 → 42px/unit; the 6-unit grid is ~250px but the shape needs 7u.
+    expect(Number(svg.getAttribute('width'))).toBeCloseTo(7 * (40 + 2), 0);
+  });
+
   it('renders the hatch and boundary for a shaped drawer', () => {
     useLayoutStore.setState((s) => ({
       layout: {

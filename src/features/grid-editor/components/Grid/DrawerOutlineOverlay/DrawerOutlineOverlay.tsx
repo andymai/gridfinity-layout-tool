@@ -6,6 +6,7 @@ import { effectiveGridUnitMmY } from '@/core/types';
 import { useTranslation } from '@/i18n';
 import { flattenOutline } from '@/shared/utils/drawerOutlineGeometry';
 import { padOutline } from '@/shared/utils/padOutline';
+import { computeOverlayViewport } from './overlayViewport';
 
 interface DrawerOutlineOverlayProps {
   cellSize: number;
@@ -17,8 +18,9 @@ interface DrawerOutlineOverlayProps {
  * region outside the outline, strokes the boundary, and — when the baseplate
  * carries per-side padding — draws the drawer-fit rim the plate gains around
  * the shape (#2705), the shaped counterpart of the rectangular {@link
- * DrawerMargin} band. One SVG, sized to the padded extent so the rim can
- * overhang the grid; even-odd paths keep a 50×50 grid as cheap as a 2×2.
+ * DrawerMargin} band. One SVG, sized to the union of the padded extent and the
+ * outline's own bbox so a rim overhang OR an oversize/off-grid perimeter (#3107)
+ * stays un-clipped; even-odd paths keep a 50×50 grid as cheap as a 2×2.
  *
  * Purely visual and `pointer-events: none`: placement truth lives in
  * `canPlaceBin` (same geometry predicate), so a hatched cell is exactly a
@@ -87,15 +89,49 @@ export function DrawerOutlineOverlay({ cellSize, gap }: DrawerOutlineOverlayProp
     const padT = showRim ? backPx : 0;
     const padB = showRim ? frontPx : 0;
 
-    const svgW = gridW + padL + padR;
-    const svgH = gridD + padT + padB;
+    // The shape sits at the grid's inset only when the rim is drawn; otherwise
+    // it maps straight onto the grid extent (no canvas extension).
+    const shapeTx = showRim ? paddingLeft : 0;
+    const shapeTy = showRim ? paddingFront : 0;
 
-    // Everything is mapped in PLATE-local mm (origin at the padded plate's
-    // bottom-left), so the padded outline maps directly and the drawer-local
-    // shape is shifted in by (left, front) to sit at the grid's inset position.
-    // With no padding this collapses to the plain drawer-local mapping.
-    const gx = (mm: number): number => (mm / gridUnitMm) * unitPx;
-    const gy = (mm: number): number => svgH - (mm / gridUnitMmY) * unitPxY;
+    // Plate-local mm → px, kept separate from gx/gy so the frame and the drawn
+    // loops share one factor per axis. Origin at the padded plate's bottom-left.
+    const toPxX = (mm: number): number => (mm / gridUnitMm) * unitPx;
+    const toPxY = (mm: number): number => (mm / gridUnitMmY) * unitPxY;
+
+    // Frame the SVG to the union of the padded plate and the shape's flattened
+    // bbox (arcs expanded), so an oversize/off-edge perimeter is not clipped by
+    // the SVG's overflow (#3107). With an in-bounds shape the union is the plate.
+    const flat = flattenOutline(outline);
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+    for (const p of flat) {
+      minX = Math.min(minX, p.x);
+      maxX = Math.max(maxX, p.x);
+      minY = Math.min(minY, p.y);
+      maxY = Math.max(maxY, p.y);
+    }
+    const { svgW, svgH, offsetX, offsetY, originX, originY } = computeOverlayViewport(
+      gridW + padL + padR,
+      gridD + padT + padB,
+      padL,
+      padT,
+      {
+        minX: toPxX(minX + shapeTx),
+        maxX: toPxX(maxX + shapeTx),
+        minY: toPxY(minY + shapeTy),
+        maxY: toPxY(maxY + shapeTy),
+      }
+    );
+
+    // Padded outline maps directly; the drawer-local shape is shifted in by
+    // (left, front) to sit at the grid's inset. originX/originY (≤ 0) shift the
+    // mapping so a shape reaching past the plate origin stays on-canvas — both
+    // are 0 for an in-bounds shape, collapsing to the plain plate-local map.
+    const gx = (mm: number): number => toPxX(mm) - originX;
+    const gy = (mm: number): number => svgH - (toPxY(mm) - originY);
     const loopFrom = (pts: readonly { x: number; y: number }[], tx = 0, ty = 0): string =>
       pts
         .map(
@@ -103,11 +139,7 @@ export function DrawerOutlineOverlay({ cellSize, gap }: DrawerOutlineOverlayProp
         )
         .join(' ') + ' Z';
 
-    // The shape sits at the grid's inset only when the rim is drawn; otherwise
-    // it maps straight onto the grid extent (no canvas extension).
-    const shapeTx = showRim ? paddingLeft : 0;
-    const shapeTy = showRim ? paddingFront : 0;
-    const shapeLoop = loopFrom(flattenOutline(outline), shapeTx, shapeTy);
+    const shapeLoop = loopFrom(flat, shapeTx, shapeTy);
     const plateLoop = paddedOutline !== null ? loopFrom(flattenOutline(paddedOutline)) : null;
 
     // Hatch outside the plate (or the shape when there's no rim) — never the rim
@@ -117,7 +149,7 @@ export function DrawerOutlineOverlay({ cellSize, gap }: DrawerOutlineOverlayProp
     const rim = plateLoop !== null ? `${plateLoop} ${shapeLoop}` : null;
     const plateBoundary = plateLoop;
 
-    return { svgW, svgH, offsetX: -padL, offsetY: -padT, outside, shapeLoop, rim, plateBoundary };
+    return { svgW, svgH, offsetX, offsetY, outside, shapeLoop, rim, plateBoundary };
   }, [
     outline,
     paddingLeft,

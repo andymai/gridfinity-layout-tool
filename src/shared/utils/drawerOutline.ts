@@ -374,9 +374,10 @@ function clipHalfPlane(
  * Extend the loop across a grown drawer edge. The grown strip
  * (`newRect \ oldRect` on this axis) defaults to inside, welded to the shape
  * along the segment run the outline shares with the moved edge. Exactly one
- * maximal run must exist: zero means the strip would be disconnected, two or
- * more would enclose a hole — both unrepresentable, so the caller resets to a
- * full rectangle (returns null).
+ * maximal run can weld: zero (the loop never lay flush with, or already runs
+ * past, the moved edge) or two-plus (welding would enclose a hole) return
+ * null. On a grow the caller then keeps the loop unchanged — a bigger grid
+ * only enlarges the valid region around an already-valid shape.
  */
 function growAxis(
   verts: readonly MutableVertex[],
@@ -442,6 +443,24 @@ function growAxis(
 }
 
 /**
+ * Grow an axis, keeping the loop unchanged when {@link growAxis} can't weld a
+ * strip (the loop is off the moved edge, or already runs past it). A grow only
+ * enlarges the valid region, so an unweldable perimeter stays valid as-is;
+ * discarding it would delete a custom shape the instant the grid grows (#3114).
+ * Shrinks stay on {@link clipHalfPlane}, whose null result is a genuine
+ * fall-back-to-rectangle (the clip severed or emptied the loop).
+ */
+function growOrKeep(
+  verts: readonly MutableVertex[],
+  axis: Axis,
+  oldK: number,
+  newK: number,
+  crossExtent: number
+): MutableVertex[] {
+  return growAxis(verts, axis, oldK, newK, crossExtent) ?? [...verts];
+}
+
+/**
  * Topology test, not an area tolerance: the loop traces the full rectangle
  * exactly when every segment is straight and hugs one of the four boundary
  * lines. A corner-cutting edge (e.g. a small chamfer) has its endpoints on
@@ -486,11 +505,14 @@ function dropCoincident(verts: MutableVertex[]): MutableVertex[] {
 
 /**
  * Adapt an outline to resized drawer dims (mm): cropped where the drawer
- * shrank, extended (new area inside) where it grew. Returns:
+ * shrank, and where it grew either welded across the moved edge (loop flush
+ * with it) or kept unchanged (loop off it — the grid just enlarges around a
+ * still-valid shape). Returns:
  * - the same outline when dims are unchanged,
  * - a new outline when the crop/extend succeeded,
- * - `undefined` when the result is the full rectangle OR degenerate/invalid —
- *   the caller must fall back to a plain rectangular drawer (drop the field).
+ * - `undefined` when the result is the full rectangle OR degenerate/invalid
+ *   (a shrink severed the loop, or the kept shape no longer validates) — the
+ *   caller must fall back to a plain rectangular drawer (drop the field).
  *
  * The authoring annotation is dropped whenever geometry changes; editors
  * re-derive their state from geometry.
@@ -514,13 +536,13 @@ export function resizeDrawerOutline(
     verts =
       newWidthMm < oldWidthMm
         ? clipHalfPlane(verts, 'x', newWidthMm)
-        : growAxis(verts, 'x', oldWidthMm, newWidthMm, oldDepthMm);
+        : growOrKeep(verts, 'x', oldWidthMm, newWidthMm, oldDepthMm);
   }
   if (verts !== null && !sameD) {
     verts =
       newDepthMm < oldDepthMm
         ? clipHalfPlane(verts, 'y', newDepthMm)
-        : growAxis(verts, 'y', oldDepthMm, newDepthMm, newWidthMm);
+        : growOrKeep(verts, 'y', oldDepthMm, newDepthMm, newWidthMm);
   }
   if (verts === null) return undefined;
 
