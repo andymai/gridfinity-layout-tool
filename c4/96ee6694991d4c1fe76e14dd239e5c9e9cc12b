@@ -1,0 +1,29 @@
+api/community.test.ts
+  s_48a510eaef7c22::t_fd775626d20149 157-164
+  s_48a510eaef7c22::t_39c8664f770215 503-520
+  s_48a510eaef7c22::t_c46c1076ee79aa 112-124
+api/lib/communityStore.ts
+  s_48a510eaef7c22::t_556235e3226fda 261-279,290,299
+  s_48a510eaef7c22::t_8306a70face48b 13
+api/community.ts
+  s_48a510eaef7c22::t_b15b3155847fdd 317-335
+  s_48a510eaef7c22::t_2f57f87244498d 31
+api/lib/communityStore.test.ts
+  s_48a510eaef7c22::t_4cbca6fff24be5 311-331
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "c496ee6694991d4c1fe76e14dd239e5c9e9cc12b",
+  "prompts": {},
+  "sessions": {
+    "s_48a510eaef7c22": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fda9511-153c-4dd5-bba7-05895a1e12c3",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
