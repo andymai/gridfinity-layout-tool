@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.351.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.350.0...gridfinity-layout-tool-v4.351.0) (2026-08-02)
+
+
+### Features
+
+* **baseplate:** share a tower between opposite rounded-corner tiles ([#3134](https://github.com/andymai/gridfinity-layout-tool/issues/3134)) ([c41e842](https://github.com/andymai/gridfinity-layout-tool/commit/c41e84231c832b786c09e56ab238f7802443e02f))
+
 ## [4.350.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.349.1...gridfinity-layout-tool-v4.350.0) (2026-08-02)
 
 
