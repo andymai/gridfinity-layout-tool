@@ -5,12 +5,14 @@
  * end-state without throwing.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { communityDesignBlobPath } from '../lib/communityStore';
 
 let redisStore: Map<string, string>;
 let redisHashes: Map<string, Map<string, string>>;
 let redisSets: Map<string, Set<string>>;
+let redisZsets: Map<string, Map<string, number>>;
 let blobStore: Map<string, unknown>;
 
 const mockRedis = {
@@ -25,6 +27,7 @@ const mockRedis = {
       if (redisStore.delete(k)) count++;
       if (redisHashes.delete(k)) count++;
       if (redisSets.delete(k)) count++;
+      if (redisZsets.delete(k)) count++;
     }
     return count;
   }),
@@ -34,6 +37,34 @@ const mockRedis = {
     s.add(m);
     redisSets.set(k, s);
     return 1;
+  }),
+  srem: vi.fn(async (k: string, ...members: string[]) => {
+    const s = redisSets.get(k);
+    if (!s) return 0;
+    let count = 0;
+    for (const m of members) {
+      if (s.delete(m)) count++;
+    }
+    if (s.size === 0) redisSets.delete(k);
+    return count;
+  }),
+  zrem: vi.fn(async (k: string, ...members: string[]) => {
+    const z = redisZsets.get(k);
+    if (!z) return 0;
+    let count = 0;
+    for (const m of members) {
+      if (z.delete(m)) count++;
+    }
+    if (z.size === 0) redisZsets.delete(k);
+    return count;
+  }),
+  hexists: vi.fn(async (k: string, f: string) => (redisHashes.get(k)?.has(f) ? 1 : 0)),
+  hincrby: vi.fn(async (k: string, f: string, by: number) => {
+    const h = redisHashes.get(k) ?? new Map<string, string>();
+    const next = Number(h.get(f) ?? '0') + by;
+    h.set(f, String(next));
+    redisHashes.set(k, h);
+    return next;
   }),
   hkeys: vi.fn(async (k: string) => Array.from(redisHashes.get(k)?.keys() ?? [])),
   hset: vi.fn(async (k: string, f: string, v: string) => {
@@ -69,7 +100,7 @@ const deleteBlobMock = vi.fn(async (path: string) => {
 
 vi.mock('../lib/blobStore', () => ({
   putJson: vi.fn(),
-  getJson: vi.fn(),
+  getJson: vi.fn(async (path: string) => blobStore.get(path) ?? null),
   deleteBlob: (path: string) => deleteBlobMock(path),
   headBlob: vi.fn(),
 }));
@@ -130,15 +161,57 @@ function setSet(key: string, members: string[]) {
   redisSets.set(key, new Set(members));
 }
 
+function setZset(key: string, members: Record<string, number>) {
+  redisZsets.set(key, new Map(Object.entries(members)));
+}
+
+function seedCommunityDesign(
+  id: string,
+  authorPublicId: string,
+  opts: {
+    likes?: string[];
+    children?: string[];
+    reports?: string[];
+    parentId?: string;
+  } = {}
+) {
+  blobStore.set(communityDesignBlobPath(id), {
+    id,
+    authorPublicId,
+    thumbnails: [`https://blob.example/community/thumbs/${id}-1-0.webp`],
+    meshUrl: `https://blob.example/community/meshes/${id}-1.glb`,
+    lineage:
+      opts.parentId === undefined
+        ? null
+        : {
+            parentId: opts.parentId,
+            rootId: opts.parentId,
+            parentName: 'Parent',
+            parentAuthorName: 'Ada',
+            rootAuthorName: 'Ada',
+          },
+  });
+  setHash(`community:design:${id}`, { id, likes: String(opts.likes?.length ?? 0), status: 'live' });
+  if (opts.likes) setSet(`community:likes:${id}`, opts.likes);
+  if (opts.children) setSet(`community:children:${id}`, opts.children);
+  if (opts.reports) setSet(`community:reports:${id}`, opts.reports);
+}
+
 beforeEach(() => {
   redisStore = new Map();
   redisHashes = new Map();
   redisSets = new Map();
+  redisZsets = new Map();
   blobStore = new Map();
   vi.clearAllMocks();
+  vi.stubEnv('TOKEN_SALT', 'test-salt');
   deleteBlobMock.mockImplementation(async (path: string) => {
     blobStore.delete(path);
   });
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
 });
 
 describe('DELETE /api/sync/account', () => {
@@ -214,6 +287,172 @@ describe('DELETE /api/sync/account', () => {
     expect(res._status).toBe(204);
     // KV state still cleared even though a blob failed.
     expect(redisHashes.has('users:user-1:index:layouts')).toBe(false);
+  });
+
+  it('removes every community key for a user with published designs and likes', async () => {
+    const { deriveAuthorPublicId } = await import('../lib/communityIds');
+    const authorPublicId = deriveAuthorPublicId('user-1');
+    expect(authorPublicId).not.toBeNull();
+    const authorKey = `community:author:${String(authorPublicId)}`;
+
+    seedCommunityDesign('cd-1', String(authorPublicId), {
+      likes: ['user-2', 'user-3'],
+      children: ['remix-1'],
+    });
+    seedCommunityDesign('cd-2', String(authorPublicId), { reports: ['user-4'] });
+    setSet('community:published:user-1', ['cd-1', 'cd-2']);
+    setSet(authorKey, ['cd-1', 'cd-2']);
+    setZset('community:index:newest', { 'cd-1': 1, 'cd-2': 2, 'other-cd': 3 });
+    setZset('community:index:remixes', { 'cd-1': 1, 'other-cd': 0 });
+    setZset('community:index:likes', { 'cd-1': 2, 'cd-2': 0, 'other-cd': 5 });
+
+    setSet('community:liked:user-1', ['oth-1', 'oth-2', 'oth-3']);
+    for (const id of ['oth-1', 'oth-2', 'oth-3']) {
+      setHash(`community:design:${id}`, { id, likes: '5', status: 'live' });
+      setSet(`community:likes:${id}`, ['user-1', 'user-9']);
+    }
+    setSet('community:denylist', ['user-1', 'user-5']);
+
+    const { default: handler } = await import('./account');
+    const res = makeRes();
+    await handler(makeReq(), res as unknown as VercelResponse);
+    expect(res._status).toBe(204);
+
+    // Published-design blobs gone: record via path, assets via stored URLs.
+    expect(blobStore.has(communityDesignBlobPath('cd-1'))).toBe(false);
+    expect(blobStore.has(communityDesignBlobPath('cd-2'))).toBe(false);
+    expect(deleteBlobMock).toHaveBeenCalledWith(
+      'https://blob.example/community/thumbs/cd-1-1-0.webp'
+    );
+    expect(deleteBlobMock).toHaveBeenCalledWith('https://blob.example/community/meshes/cd-1-1.glb');
+    expect(deleteBlobMock).toHaveBeenCalledWith(
+      'https://blob.example/community/thumbs/cd-2-1-0.webp'
+    );
+    expect(deleteBlobMock).toHaveBeenCalledWith('https://blob.example/community/meshes/cd-2-1.glb');
+
+    // Per-design keys gone.
+    for (const id of ['cd-1', 'cd-2']) {
+      expect(redisHashes.has(`community:design:${id}`)).toBe(false);
+      expect(redisSets.has(`community:likes:${id}`)).toBe(false);
+      expect(redisSets.has(`community:children:${id}`)).toBe(false);
+      expect(redisSets.has(`community:reports:${id}`)).toBe(false);
+    }
+
+    // Sort-index memberships removed, other designs untouched.
+    for (const sort of ['newest', 'remixes', 'likes']) {
+      const zset = redisZsets.get(`community:index:${sort}`);
+      expect(zset?.has('cd-1')).toBe(false);
+      expect(zset?.has('cd-2')).toBe(false);
+      expect(zset?.has('other-cd')).toBe(true);
+    }
+
+    // Liked designs: membership removed, counts decremented, other likers kept.
+    for (const id of ['oth-1', 'oth-2', 'oth-3']) {
+      expect(redisSets.get(`community:likes:${id}`)).toEqual(new Set(['user-9']));
+      expect(redisHashes.get(`community:design:${id}`)?.get('likes')).toBe('4');
+    }
+
+    // User-scoped keys gone. Deny-list membership survives deletion: the
+    // userId is deterministic, so dropping it would let a banned publisher
+    // reset the ban by deleting and recreating the account.
+    expect(redisSets.has('community:liked:user-1')).toBe(false);
+    expect(redisSets.has('community:published:user-1')).toBe(false);
+    expect(redisSets.has(authorKey)).toBe(false);
+    expect(redisSets.get('community:denylist')).toEqual(new Set(['user-1', 'user-5']));
+  });
+
+  it('removes the deleted designs from every liker reverse liked set', async () => {
+    const { deriveAuthorPublicId } = await import('../lib/communityIds');
+    const authorPublicId = String(deriveAuthorPublicId('user-1'));
+    seedCommunityDesign('cd-1', authorPublicId, { likes: ['user-2', 'user-3'] });
+    setSet('community:published:user-1', ['cd-1']);
+    setSet('community:liked:user-2', ['cd-1', 'other-cd']);
+    setSet('community:liked:user-3', ['cd-1']);
+
+    const { default: handler } = await import('./account');
+    const res = makeRes();
+    await handler(makeReq(), res as unknown as VercelResponse);
+    expect(res._status).toBe(204);
+
+    expect(redisSets.get('community:liked:user-2')).toEqual(new Set(['other-cd']));
+    expect(redisSets.has('community:liked:user-3')).toBe(false);
+  });
+
+  it('removes a deleted remix from its parent design children set', async () => {
+    const { deriveAuthorPublicId } = await import('../lib/communityIds');
+    const authorPublicId = String(deriveAuthorPublicId('user-1'));
+    seedCommunityDesign('remix-1', authorPublicId, { parentId: 'parent-1' });
+    setSet('community:published:user-1', ['remix-1']);
+    seedCommunityDesign('parent-1', 'other-author', { children: ['remix-1', 'other-remix'] });
+    setSet('community:published:user-2', ['parent-1']);
+
+    const { default: handler } = await import('./account');
+    const res = makeRes();
+    await handler(makeReq(), res as unknown as VercelResponse);
+    expect(res._status).toBe(204);
+
+    expect(redisSets.get('community:children:parent-1')).toEqual(new Set(['other-remix']));
+    expect(blobStore.has(communityDesignBlobPath('parent-1'))).toBe(true);
+  });
+
+  it('removes the deleted user from every design they reported', async () => {
+    seedCommunityDesign('reported-cd', 'other-author', { reports: ['user-1', 'user-9'] });
+    setSet('community:published:user-2', ['reported-cd']);
+    setSet('community:reported:user-1', ['reported-cd']);
+
+    const { default: handler } = await import('./account');
+    const res = makeRes();
+    await handler(makeReq(), res as unknown as VercelResponse);
+    expect(res._status).toBe(204);
+
+    expect(redisSets.get('community:reports:reported-cd')).toEqual(new Set(['user-9']));
+    expect(redisSets.has('community:reported:user-1')).toBe(false);
+  });
+
+  it('leaves other users community data untouched when the user has none', async () => {
+    setHash('users:user-1:index:layouts', { 'lay-1': '{}' });
+    blobStore.set('users/user-1/layouts/lay-1.json', {});
+
+    seedCommunityDesign('other-cd', 'other-author', { likes: ['user-2'] });
+    setSet('community:published:user-2', ['other-cd']);
+    setSet('community:author:other-author', ['other-cd']);
+    setSet('community:liked:user-2', ['other-cd']);
+    setSet('community:denylist', ['user-5']);
+    setZset('community:index:newest', { 'other-cd': 1 });
+
+    const { default: handler } = await import('./account');
+    const res = makeRes();
+    await handler(makeReq(), res as unknown as VercelResponse);
+    expect(res._status).toBe(204);
+
+    expect(blobStore.has(communityDesignBlobPath('other-cd'))).toBe(true);
+    expect(redisHashes.get('community:design:other-cd')?.get('likes')).toBe('1');
+    expect(redisSets.get('community:likes:other-cd')).toEqual(new Set(['user-2']));
+    expect(redisSets.get('community:published:user-2')).toEqual(new Set(['other-cd']));
+    expect(redisSets.get('community:author:other-author')).toEqual(new Set(['other-cd']));
+    expect(redisSets.get('community:liked:user-2')).toEqual(new Set(['other-cd']));
+    expect(redisSets.get('community:denylist')).toEqual(new Set(['user-5']));
+    expect(redisZsets.get('community:index:newest')?.has('other-cd')).toBe(true);
+    expect(redisHashes.has('users:user-1:index:layouts')).toBe(false);
+  });
+
+  it('does not decrement a liked design twice on cascade replay', async () => {
+    setSet('community:liked:user-1', ['oth-1']);
+    setHash('community:design:oth-1', { id: 'oth-1', likes: '3', status: 'live' });
+    setSet('community:likes:oth-1', ['user-1', 'user-9']);
+    // Simulate a partial failure: the liked set survived the first run.
+    const { default: handler } = await import('./account');
+
+    const firstRes = makeRes();
+    await handler(makeReq(), firstRes as unknown as VercelResponse);
+    expect(firstRes._status).toBe(204);
+    expect(redisHashes.get('community:design:oth-1')?.get('likes')).toBe('2');
+
+    setSet('community:liked:user-1', ['oth-1']);
+    const replayRes = makeRes();
+    await handler(makeReq(), replayRes as unknown as VercelResponse);
+    expect(replayRes._status).toBe(204);
+    expect(redisHashes.get('community:design:oth-1')?.get('likes')).toBe('2');
   });
 
   it('returns 405 for non-DELETE methods', async () => {

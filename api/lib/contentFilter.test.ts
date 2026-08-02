@@ -4,6 +4,7 @@
 
 import { describe, it, expect } from 'vitest';
 import {
+  checkText,
   filterDisplayName,
   filterLayoutContent,
   filterSharedDesignsContent,
@@ -389,5 +390,27 @@ describe('filterSharedDesignsContent', () => {
     for (let i = 0; i < 200; i++) deep = { nested: deep };
 
     expect(filterSharedDesignsContent([design({ params: deep })]).passed).toBe(true);
+  });
+});
+
+describe('checkText', () => {
+  it('passes ordinary free-text descriptions', () => {
+    const result = checkText('Holds 25 assorted M3 screws.\nPrint with 3 walls.');
+    expect(result.passed).toBe(true);
+  });
+
+  it('rejects blocklisted terms', () => {
+    expect(checkText('kys').passed).toBe(false);
+  });
+
+  it('rejects harmful patterns like URLs', () => {
+    expect(checkText('visit https://spam.example now').passed).toBe(false);
+  });
+
+  it('is the same gate filterDisplayName applies', () => {
+    const sample = ['clean text', 'kys', '<script>alert(1)</script>'];
+    for (const text of sample) {
+      expect(checkText(text).passed).toBe(filterDisplayName(text).passed);
+    }
   });
 });

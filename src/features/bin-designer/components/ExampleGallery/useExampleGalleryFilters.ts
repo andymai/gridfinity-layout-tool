@@ -1,4 +1,5 @@
-import type { ExampleDesign, ExampleTechnique } from '@/features/bin-designer/types/exampleGallery';
+import type { ExampleDesign } from '@/features/bin-designer/types/exampleGallery';
+import type { ExampleTechnique } from '@/shared/types/exampleTechniques';
 
 export interface GalleryFilters {
   search: string;

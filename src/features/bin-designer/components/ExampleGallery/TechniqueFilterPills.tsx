@@ -1,6 +1,7 @@
 import { Button } from '@/design-system';
-import type { ExampleDesign, ExampleTechnique } from '@/features/bin-designer/types/exampleGallery';
-import { TECHNIQUE_CONFIG } from '@/features/bin-designer/types/exampleGallery';
+import type { ExampleDesign } from '@/features/bin-designer/types/exampleGallery';
+import type { ExampleTechnique } from '@/shared/types/exampleTechniques';
+import { TECHNIQUE_CONFIG } from '@/shared/types/exampleTechniques';
 import { useTranslation } from '@/i18n';
 
 interface TechniqueFilterPillsProps {

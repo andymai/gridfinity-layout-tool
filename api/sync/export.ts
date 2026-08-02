@@ -12,18 +12,23 @@ import {
   type IndexEntry,
   type SyncItemKind,
 } from '../lib/userIndex.js';
+import { readCommunityDesignBlob } from '../lib/communityStore.js';
+import { communityPublishedKey } from '../lib/redisKeys.js';
 
 /**
  * GET /api/sync/export
  *
  * Stream a ZIP of the user's live data:
  *
- *   manifest.json        — { layouts, designs, baseplates: { [id]: IndexEntry }, indexUpdatedAt, exportedAt }
- *   layouts/{id}.json    — full envelope for each non-tombstoned layout
- *   designs/{id}.json    — full envelope for each non-tombstoned design
- *   baseplates/{id}.json — full envelope for each non-tombstoned baseplate
+ *   manifest.json        : { layouts, designs, baseplates: { [id]: IndexEntry }, community: [id], indexUpdatedAt, exportedAt }
+ *   layouts/{id}.json    : full envelope for each non-tombstoned layout
+ *   designs/{id}.json    : full envelope for each non-tombstoned design
+ *   baseplates/{id}.json : full envelope for each non-tombstoned baseplate
+ *   community/{id}.json  : full record for each design the user published to
+ *                          the community showcase (server-side user data that
+ *                          may exist nowhere locally)
  *
- * Tombstones are excluded — the user asked to export their data, not
+ * Tombstones are excluded: the user asked to export their data, not
  * the audit trail of deletions.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
@@ -45,12 +50,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   }
 
   try {
-    const [layoutsIndex, designsIndex, baseplatesIndex, indexUpdatedAt] = await Promise.all([
-      getIndex(redis, session.userId, 'layouts'),
-      getIndex(redis, session.userId, 'designs'),
-      getIndex(redis, session.userId, 'baseplates'),
-      getIndexUpdatedAt(redis, session.userId),
-    ]);
+    const [layoutsIndex, designsIndex, baseplatesIndex, indexUpdatedAt, publishedIds] =
+      await Promise.all([
+        getIndex(redis, session.userId, 'layouts'),
+        getIndex(redis, session.userId, 'designs'),
+        getIndex(redis, session.userId, 'baseplates'),
+        getIndexUpdatedAt(redis, session.userId),
+        redis.smembers(communityPublishedKey(session.userId)),
+      ]);
+    const communityIds = [...publishedIds].sort();
 
     const liveLayouts = filterLive(layoutsIndex);
     const liveDesigns = filterLive(designsIndex);
@@ -72,6 +80,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
               layouts: liveLayouts,
               designs: liveDesigns,
               baseplates: liveBaseplates,
+              community: communityIds,
               indexUpdatedAt,
               exportedAt: Date.now(),
               schemaVersion: 1,
@@ -85,6 +94,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         streamEnvelopes(addFile, session.userId, 'layouts', Object.keys(liveLayouts)),
         streamEnvelopes(addFile, session.userId, 'designs', Object.keys(liveDesigns)),
         streamEnvelopes(addFile, session.userId, 'baseplates', Object.keys(liveBaseplates)),
+        streamCommunityRecords(addFile, communityIds),
       ]);
     });
   } catch (error) {
@@ -167,6 +177,17 @@ async function streamEnvelopes(
     const envelope = envelopes[i];
     if (envelope) {
       addFile(`${kind}/${ids[i]}.json`, strToU8(JSON.stringify(envelope, null, 2)));
+    }
+  }
+}
+
+async function streamCommunityRecords(addFile: AddFile, ids: string[]): Promise<void> {
+  // Missing blobs (published-set/blob race) are skipped rather than failing the export.
+  const records = await Promise.all(ids.map((id) => readCommunityDesignBlob(id)));
+  for (let i = 0; i < ids.length; i++) {
+    const record = records[i];
+    if (record) {
+      addFile(`community/${ids[i]}.json`, strToU8(JSON.stringify(record, null, 2)));
     }
   }
 }

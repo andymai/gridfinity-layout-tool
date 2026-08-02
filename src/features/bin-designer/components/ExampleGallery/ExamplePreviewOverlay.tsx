@@ -4,7 +4,7 @@ import { useToastStore } from '@/core/store/toast';
 import { isOk } from '@/core/result';
 import { exampleToDesign } from '@/features/bin-designer/utils/exampleToDesign';
 import type { ExampleDesign } from '@/features/bin-designer/types/exampleGallery';
-import { TECHNIQUE_CONFIG } from '@/features/bin-designer/types/exampleGallery';
+import { TECHNIQUE_CONFIG } from '@/shared/types/exampleTechniques';
 import { useTranslation } from '@/i18n';
 import { Example3DViewer } from './Example3DViewer';
 
