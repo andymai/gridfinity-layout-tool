@@ -12,6 +12,9 @@ import { CONSTRAINTS } from '@/core/constants';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { BaseplatePiece } from '../types/tiling';
 import { computePieceFingerprint } from './pieceFingerprint';
+import { outlineFrameOffset } from '@/shared/utils/drawerOutlineGeometry';
+import { translateOutline } from '@/shared/utils/drawerOutline';
+import type { DrawerOutline } from '@/core/types';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -1797,6 +1800,50 @@ describe('shaped plates (outline-aware splitting)', () => {
     const b2 = pieceToBaseplateParams(byLabel.get('B2') as BaseplatePiece, parent);
     expect(computePieceFingerprint(b2)).not.toBe(computePieceFingerprint(a1));
     expect(computePieceFingerprint(b2)).toBe(computePieceFingerprint(b2));
+  });
+
+  // #3109: an outline sitting in an offset sub-region of the plate extent (the
+  // pen editor auto-grows to the max only and never re-bases the min, #3092) is
+  // classified against extent-anchored seam bands, so seams near the boundary
+  // misclassify and lose their connectors — and pieces over the empty grown
+  // region drop entirely. Re-basing the outline onto its bbox (what
+  // buildFullParams now does via `outlineFrameOffset`) restores them.
+  it('re-basing an offset outline restores dropped pieces and seam connectors', () => {
+    // A 6-unit-wide full-height rectangle drawn in the right two thirds of a
+    // 9-unit plate: the drawer grew to hold maxX = 9U but the min stayed at 3U.
+    const drifted: DrawerOutline = {
+      vertices: [
+        { x: 3 * U, y: 0 },
+        { x: 9 * U, y: 0 },
+        { x: 9 * U, y: 4 * U },
+        { x: 3 * U, y: 4 * U },
+      ],
+    };
+    const W = 9;
+    const D = 4;
+
+    const driftedTiling = computeBaseplateTiling(shapedParams(drifted, { width: W, depth: D }), BED);
+    const driftedByLabel = new Map(driftedTiling.pieces.map((p) => [p.label, p]));
+    // The extent-anchored left column [0,3U] falls entirely in the empty region
+    // and is dropped; only the middle+right pieces survive with a single seam.
+    expect(driftedByLabel.has('A1')).toBe(false);
+    expect(driftedByLabel.get('B1')?.edges.left).toBe('exterior');
+
+    // Re-base onto the bbox centre — exactly the transform buildFullParams applies.
+    const off = outlineFrameOffset(drifted, W * U, D * U);
+    expect(off.x).toBeCloseTo(1.5 * U, 6);
+    const centered = translateOutline(drifted, -off.x, -off.y);
+
+    const centeredTiling = computeBaseplateTiling(
+      shapedParams(centered, { width: W, depth: D }),
+      BED
+    );
+    const centeredByLabel = new Map(centeredTiling.pieces.map((p) => [p.label, p]));
+    // The left piece survives and its seam to the middle piece keeps a connector.
+    expect(centeredByLabel.has('A1')).toBe(true);
+    expect(centeredByLabel.get('A1')?.edges.right).toBe('join');
+    expect(centeredByLabel.get('B1')?.edges.left).toBe('join');
+    expect(centeredTiling.pieces.length).toBeGreaterThan(driftedTiling.pieces.length);
   });
 });
 

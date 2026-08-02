@@ -15,6 +15,8 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBaseplate, getKernelName } from './__kernel-tests__/wasmInit';
 import { assertStructurallyValid, boundingBox } from './__kernel-tests__/meshAssertions';
 import { cornerCutVertices } from '@/shared/utils/cornerCutOutline';
+import { outlineFrameOffset } from '@/shared/utils/drawerOutlineGeometry';
+import { translateOutline } from '@/shared/utils/drawerOutline';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { DrawerOutline } from '@/core/types';
 
@@ -389,6 +391,42 @@ describe('baseplate outline geometry', () => {
     // 10mm margins clear the 8mm printable-tile floor → the ring gains
     // outline-clipped pockets.
     expect(tiledRing.triangleCount).toBeGreaterThan(solidRing.triangleCount);
+  });
+
+  // #3108: a custom perimeter that occupies a corner-offset sub-rectangle of the
+  // grown extent (pen auto-grow, #3092) must generate its grid CENTRED on the
+  // perimeter, not anchored to the extent corner. buildFullParams re-bases the
+  // outline via `outlineFrameOffset`; here we feed the generator the same re-based
+  // outline and confirm the resulting solid is valid and symmetric.
+  it('centres the socket grid on an offset perimeter (whole-cell fit)', { timeout: 240_000 }, () => {
+    const gen = getGenerateBaseplate();
+    // 3×3-unit square pinned bottom-left of a 4×4 plate: bbox [0,3u], extent 4u.
+    const drifted: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 3 * U, y: 0 },
+        { x: 3 * U, y: 3 * U },
+        { x: 0, y: 3 * U },
+      ],
+    };
+    const off = outlineFrameOffset(drifted, 4 * U, 4 * U);
+    expect(off.x).toBeCloseTo(-0.5 * U, 6);
+    const centered = translateOutline(drifted, -off.x, -off.y);
+
+    const raw = gen(defaults({ outline: drifted, wholeCellsOnly: true }), NO_OP, true);
+    const fixed = gen(defaults({ outline: centered, wholeCellsOnly: true }), NO_OP, true);
+    assertStructurallyValid(fixed, 'offset perimeter (centred)');
+
+    // Zero padding → mesh frame is the extent centred on origin. The re-based plate
+    // spans plate-local [0.5u,3.5u] → mesh [-1.5u,1.5u], symmetric about 0; the raw
+    // drifted plate spans [0,3u] → mesh [-2u,1u], skewed toward −X.
+    const rawBB = boundingBox(raw.vertices);
+    const fixedBB = boundingBox(fixed.vertices);
+    expect(fixedBB.minX + fixedBB.maxX).toBeCloseTo(0, 0);
+    expect(fixedBB.minY + fixedBB.maxY).toBeCloseTo(0, 0);
+    expect(rawBB.minX + rawBB.maxX).toBeLessThan(-1);
+    // A whole socket sits at the centred plate's middle cell (mesh origin).
+    expect(countVerticesIn(fixed.vertices, -20, -20, 20, 20)).toBeGreaterThan(0);
   });
 
   it('cuts a geometric-max corner radius, trimming corner sockets', { timeout: 240_000 }, () => {

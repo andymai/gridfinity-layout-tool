@@ -19,10 +19,17 @@ import {
   cornerCutsMatchVertices,
 } from '@/shared/utils/cornerCutOutline';
 import { padOutline } from '@/shared/utils/padOutline';
+import { translateOutline } from '@/shared/utils/drawerOutline';
+import { outlineFrameOffset } from '@/shared/utils/drawerOutlineGeometry';
 
 /** Keeps regenerated cuts off degenerate geometry (mirrors the generator's
  * own geometric radius clamp). */
 const CUT_GEOMETRY_MARGIN_MM = 0.1;
+
+/** Below this the outline is treated as already centred on the extent (no
+ * re-base) — well under the 0.01mm outline-hash quantum, so it only absorbs
+ * float noise, never a real pen auto-grow drift. */
+const RECENTER_EPS_MM = 1e-6;
 
 /**
  * Largest corner radius the plain rounding path may cut: the arc can enter
@@ -120,8 +127,46 @@ export function hasEffectivePerimeter(
  * paddings it permits. Corner-cut drawer shapes re-inscribe their cuts on the
  * padded rectangle; every other shape offsets its edges outward (`padOutline`).
  * Either way padding composes, unless it would fold the loop (then it's zeroed).
+ *
+ * A final step re-bases the outline onto its own bbox centre (see below) so the
+ * plate's socket/seam grid ends up centred on the perimeter rather than the
+ * extent (#3108/#3109).
  */
 function resolveOutline(
+  drawerOutline: DrawerOutline | undefined,
+  outlineOn: boolean,
+  stored: StoredBaseplateParams,
+  widthMm: number,
+  depthMm: number,
+  gridUnitMm: number
+): { outline: DrawerOutline | undefined; paddingOn: boolean } {
+  const resolved = resolveOutlineRaw(drawerOutline, outlineOn, stored, widthMm, depthMm, gridUnitMm);
+  if (resolved.outline === undefined) return resolved;
+
+  // Re-base the plate's grid onto the perimeter. Since the pen editor auto-grows
+  // the drawer to the max extent only (#3092), a custom outline usually sits in a
+  // corner-offset sub-rectangle of `[0,totalW]×[0,totalD]`; anchoring the socket/
+  // seam grid to that extent leaves it off-centre (#3108) and misclassifies
+  // boundary seams (#3109). Centring the outline on the extent here — once, on the
+  // one derived outline the generator, the split planner, and every piece all
+  // consume — makes those two frames identical by construction. Zero-drift
+  // outlines (corner-cut / radius / already-centred) translate by 0 and keep their
+  // exact vertices, so square and full-extent plates stay cache-stable.
+  const padL = resolved.paddingOn ? stored.paddingLeft : 0;
+  const padR = resolved.paddingOn ? stored.paddingRight : 0;
+  const padF = resolved.paddingOn ? stored.paddingFront : 0;
+  const padB = resolved.paddingOn ? stored.paddingBack : 0;
+  const offset = outlineFrameOffset(resolved.outline, widthMm + padL + padR, depthMm + padF + padB);
+  // Corner-cut / radius outlines fill the extent and give an exact 0; the eps
+  // only guards float noise on an already-centred freeform shape.
+  if (Math.abs(offset.x) < RECENTER_EPS_MM && Math.abs(offset.y) < RECENTER_EPS_MM) return resolved;
+  return {
+    outline: translateOutline(resolved.outline, -offset.x, -offset.y),
+    paddingOn: resolved.paddingOn,
+  };
+}
+
+function resolveOutlineRaw(
   drawerOutline: DrawerOutline | undefined,
   outlineOn: boolean,
   stored: StoredBaseplateParams,

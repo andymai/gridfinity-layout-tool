@@ -116,6 +116,65 @@ export function outlineSignedArea(outline: DrawerOutline): number {
   return polylineSignedArea(flattenOutline(outline));
 }
 
+export interface OutlineBounds {
+  readonly minX: number;
+  readonly minY: number;
+  readonly maxX: number;
+  readonly maxY: number;
+}
+
+/**
+ * Axis-aligned bounds of the outline's flattened polyline. Measured on the
+ * flattened path, not the vertices, so an arc that bows past its own endpoints
+ * is included (the `loopBounds` precedent in the drawer-shape importer).
+ */
+export function outlineBounds(outline: DrawerOutline): OutlineBounds {
+  const pts = flattenOutline(outline);
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (const p of pts) {
+    if (p.x < minX) minX = p.x;
+    if (p.y < minY) minY = p.y;
+    if (p.x > maxX) maxX = p.x;
+    if (p.y > maxY) maxY = p.y;
+  }
+  return { minX, minY, maxX, maxY };
+}
+
+/**
+ * Millimetre offset that re-bases a plate's socket/seam grid onto the outline
+ * bbox instead of the plate extent — the drift of the flattened bbox centre
+ * from the extent centre of `[0,widthMm]×[0,depthMm]`.
+ *
+ * Since the pen editor's auto-grow (#3092) grows only the max extent (ceiled to
+ * a half unit) and never re-bases the min to 0, a custom perimeter commonly
+ * occupies a corner-offset SUB-rectangle of its declared extent. Anchoring the
+ * grid to the extent then straddles the perimeter asymmetrically — the socket
+ * grid is off-centre and "fit whole cells" drops cells (#3108), and split-seam
+ * bands near the boundary misclassify and lose their connectors (#3109).
+ *
+ * Translating the outline by `-x,-y` centres it on the extent (equivalently,
+ * centres the grid on the outline), which is what the generator and the split
+ * planner both consume. Zero when the outline already fills or is centred, so
+ * square and full-extent plates are untouched. Measured against the extent
+ * centre (not the padding-shifted grid centre) so asymmetric padding is
+ * preserved: the grid stays the same distance off the outline centre that the
+ * user's padding asked for.
+ */
+export function outlineFrameOffset(
+  outline: DrawerOutline,
+  widthMm: number,
+  depthMm: number
+): { readonly x: number; readonly y: number } {
+  const b = outlineBounds(outline);
+  return {
+    x: (b.minX + b.maxX) / 2 - widthMm / 2,
+    y: (b.minY + b.maxY) / 2 - depthMm / 2,
+  };
+}
+
 export function polylineSignedArea(pts: readonly OutlinePoint[]): number {
   let area = 0;
   for (let i = 0; i < pts.length; i++) {

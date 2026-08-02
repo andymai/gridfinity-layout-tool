@@ -8,6 +8,8 @@ import {
   flattenOutline,
   insideAreaFraction,
   isFootprintInsideOutline,
+  outlineBounds,
+  outlineFrameOffset,
   outlineSignedArea,
   pointInOutline,
 } from './drawerOutlineGeometry';
@@ -210,5 +212,74 @@ describe('isFootprintInsideOutline', () => {
     expect(isFootprintInsideOutline({ x: 0, y: 2, width: 2, depth: 2 }, lNs, UX, UY)).toBe(true);
     expect(isFootprintInsideOutline({ x: 2, y: 0, width: 2, depth: 2 }, lNs, UX, UY)).toBe(true);
     expect(isFootprintInsideOutline({ x: 2, y: 2, width: 1, depth: 1 }, lNs, UX, UY)).toBe(false);
+  });
+});
+
+describe('outlineBounds', () => {
+  it('measures the flattened extent, including an arc that bows past its endpoints', () => {
+    // The back edge (segment leaving [4U,4U] toward [0,4U]) bows outward: positive
+    // bulge sweeps right of −x travel, i.e. up, pushing maxY past the vertex row.
+    const bowed: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 4 * U, y: 0 },
+        { x: 4 * U, y: 4 * U, bulge: 0.4 },
+        { x: 0, y: 4 * U },
+      ],
+    };
+    const b = outlineBounds(bowed);
+    expect(b.minX).toBeCloseTo(0, 6);
+    expect(b.maxX).toBeCloseTo(4 * U, 6);
+    expect(b.minY).toBeCloseTo(0, 6);
+    // The arc pushes maxY past the vertex row at 4U.
+    expect(b.maxY).toBeGreaterThan(4 * U);
+  });
+});
+
+describe('outlineFrameOffset', () => {
+  it('is zero when the outline fills the extent', () => {
+    const full: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 4 * U, y: 0 },
+        { x: 4 * U, y: 4 * U },
+        { x: 0, y: 4 * U },
+      ],
+    };
+    const offset = outlineFrameOffset(full, 4 * U, 4 * U);
+    expect(offset.x).toBe(0);
+    expect(offset.y).toBe(0);
+  });
+
+  it('is zero when a smaller outline is already centred on the extent', () => {
+    // 2×2 outline centred in a 4×4 extent — no drift.
+    const centred: DrawerOutline = {
+      vertices: [
+        { x: U, y: U },
+        { x: 3 * U, y: U },
+        { x: 3 * U, y: 3 * U },
+        { x: U, y: 3 * U },
+      ],
+    };
+    const offset = outlineFrameOffset(centred, 4 * U, 4 * U);
+    expect(offset.x).toBeCloseTo(0, 6);
+    expect(offset.y).toBeCloseTo(0, 6);
+  });
+
+  it('returns the bbox-centre drift for a corner-offset sub-rectangle (#3092 auto-grow)', () => {
+    // Outline pinned to the bottom-left, leaving a half-unit of grown extent on
+    // the top/right — exactly what auto-grow's ceil-the-max-only produces.
+    const drifted: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 3 * U, y: 0 },
+        { x: 3 * U, y: 3 * U },
+        { x: 0, y: 3 * U },
+      ],
+    };
+    const offset = outlineFrameOffset(drifted, 3.5 * U, 3.5 * U);
+    // bbox centre = 1.5U; extent centre = 1.75U → drift = -0.25U on each axis.
+    expect(offset.x).toBeCloseTo(-0.25 * U, 6);
+    expect(offset.y).toBeCloseTo(-0.25 * U, 6);
   });
 });

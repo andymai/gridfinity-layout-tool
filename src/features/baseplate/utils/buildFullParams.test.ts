@@ -637,6 +637,71 @@ describe('drawer outline handling', () => {
     expect(result.outline).toBeUndefined();
     expect(result.paddingLeft).toBe(1.0);
   });
+
+  // #3108/#3109: the pen editor auto-grows the drawer to the MAX extent only
+  // (#3092), so a custom perimeter usually lands in a corner-offset sub-rect of
+  // the declared extent. The resolver re-bases the one derived outline onto that
+  // bbox so the generator's socket grid and the split planner's seam bands share
+  // one centred frame.
+  describe('outline re-centring on the perimeter bbox', () => {
+    const zeroPad = {
+      ...storedBase,
+      paddingLeft: mm(0),
+      paddingRight: mm(0),
+      paddingFront: mm(0),
+      paddingBack: mm(0),
+    };
+    // 3×3-unit square pinned to the bottom-left of a 4×4 drawer — half a unit of
+    // grown, unused extent on the top and right.
+    const drifted: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 126, y: 0 },
+        { x: 126, y: 126 },
+        { x: 0, y: 126 },
+      ],
+    };
+
+    const bboxOf = (o: DrawerOutline): { cx: number; cy: number; w: number; h: number } => {
+      const xs = o.vertices.map((v) => v.x);
+      const ys = o.vertices.map((v) => v.y);
+      const minX = Math.min(...xs);
+      const maxX = Math.max(...xs);
+      const minY = Math.min(...ys);
+      const maxY = Math.max(...ys);
+      return { cx: (minX + maxX) / 2, cy: (minY + maxY) / 2, w: maxX - minX, h: maxY - minY };
+    };
+
+    it('shifts a corner-offset outline to the extent centre (grid stays put)', () => {
+      const result = buildFullParams(zeroPad, 4, 4, 42, 'end', 'end', undefined, drifted);
+      // Drift = 63 − 84 = −21 per axis; re-centre translates by +21.
+      expect(result.outline?.vertices).toEqual([
+        { x: 21, y: 21 },
+        { x: 147, y: 21 },
+        { x: 147, y: 147 },
+        { x: 21, y: 147 },
+      ]);
+      // Same shape, now centred on the 168×168 extent.
+      const b = bboxOf(result.outline as DrawerOutline);
+      expect(b.cx).toBeCloseTo(84, 6);
+      expect(b.cy).toBeCloseTo(84, 6);
+      expect(b.w).toBeCloseTo(126, 6);
+    });
+
+    it('leaves a full-extent outline byte-identical (no drift, cache-stable)', () => {
+      // `outline` fills the 10×8 extent (bbox [0,420]×[0,336]) → offset 0.
+      const result = buildFullParams(zeroPad, 10, 8, 42, 'end', 'end', undefined, outline);
+      expect(result.outline?.vertices).toEqual(outline.vertices);
+    });
+
+    it('centres against the PADDED extent, composing with asymmetric padding', () => {
+      // storedBase padding L1/R2/F3/B4 → padded extent 171×175.
+      const result = buildFullParams(storedBase, 4, 4, 42, 'end', 'end', undefined, drifted);
+      const b = bboxOf(result.outline as DrawerOutline);
+      expect(b.cx).toBeCloseTo(171 / 2, 6);
+      expect(b.cy).toBeCloseTo(175 / 2, 6);
+    });
+  });
 });
 
 describe('corner-cut shape + padding composition', () => {
