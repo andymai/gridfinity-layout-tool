@@ -28,6 +28,7 @@ Undo/redo (max 100) lives in `src/core/cqrs/undo/historyStore.ts`, captured auto
 4. **Multi-Layout**: Each layout stored by UUID (`gridfinity-layout-{uuid}`). Library index tracks metadata only.
 5. **Wall Pattern Border Rule**: Any feature that cuts through a wall (cutouts, handles, etc.) MUST have corresponding border clipping in `wallPatternBuilder.ts`. Cutout/handle clips use `CUTOUT_BORDER_WIDTH` (1.5mm); divider junction clips use `max(CUTOUT_BORDER_WIDTH, shapeRadius)` so larger hex prisms (4u+ bins) can't bleed into divider walls. Without border clipping, hex prisms overlap the cut region producing jagged edges.
 6. **Compartment IDs are not stable**: `normalizeIds()` renumbers `compartments.cells` on every merge/split, so any parallel per-compartment array (e.g. `compartmentTexts`) must be reindexed in lockstep via `normalizeIdsWithRemap()` + `remapCompartmentTexts()`. Resetting the grid (`setCompartmentGrid`) regenerates IDs from scratch — drop parallel arrays rather than carry ghost values onto unrelated cells.
+7. **Custom-perimeter frame**: never consume `drawer.outline` raw for gating/rendering/generation — go through `@/shared/utils/outlineFrame` (lattice registration + `drawer.gridShiftX/Y`), or the layout's placeable cells and the plate's kept sockets diverge (#3157). Authoring editors are the exception (raw anchor); the stored outline is never mutated by the frame (#3149).
 
 ### Result Type (`src/core/result/`)
 

@@ -6,6 +6,14 @@ write ONE field — `Drawer.outline`
 `drawer.setOutline` command; everything downstream (placement gating,
 hatching, baseplate generation/splitting) derives from it.
 
+Consumers never read the stored outline directly for gating or rendering:
+they go through `@/shared/utils/outlineFrame` (#3157), which composes the
+plate's lattice registration with the user's manual grid shift
+(`Drawer.gridShiftX/Y`, ±half pitch) into one translation both the layout and
+the baseplate apply. Authoring surfaces are the exception — the editors show
+the shape at its raw authored anchor, and the stored outline is never mutated
+by the frame (#3149).
+
 ## Key Files
 
 - `components/DrawerShapeSection` — Sidebar entry: toggle on opens the editor;
@@ -14,6 +22,11 @@ hatching, baseplate generation/splitting) derives from it.
   rows are checkboxes, and this sits directly under Half-grid mode. Corner
   cuts stay reachable with no outline: they build one from the plain
   rectangle. Takes `variant` so the mobile settings sheet gets `lg` hit areas.
+- `components/GridAlignmentControls` — grid↔perimeter alignment (#3157/#3108):
+  X/Y mm steppers writing `drawer.gridShiftX/Y` through `drawer.update`
+  (undoable, displaces newly-outside bins), a reset, and a hint reporting the
+  effective frame translation whenever it is non-zero. Hidden when the plate
+  does not sync with the layout — there is no shared frame to align then.
 - `components/ShapeEditorDialog` — cell-paint editor. Whole drawer cells
   (plus the fractional-edge cell of an x.5 drawer) toggle in/out; drag paints
   with the state of the first cell touched via ONE container pointer handler
