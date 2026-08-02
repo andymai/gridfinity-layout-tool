@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.349.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.348.0...gridfinity-layout-tool-v4.349.0) (2026-08-02)
+
+
+### Features
+
+* **baseplate:** support vertical stacking with a custom perimeter ([#3113](https://github.com/andymai/gridfinity-layout-tool/issues/3113)) ([#3128](https://github.com/andymai/gridfinity-layout-tool/issues/3128)) ([719f0aa](https://github.com/andymai/gridfinity-layout-tool/commit/719f0aa50543d411ab543ba3b551db9535316a71))
+
 ## [4.348.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.347.3...gridfinity-layout-tool-v4.348.0) (2026-08-02)
 
 
