@@ -1,8 +1,9 @@
 /**
  * Section 3 of the baseplate panel: connectors (when split), magnet holes,
- * solid floor, and corner radius. While stacking, magnets and corner rounding
+ * solid floor, and corner radius. While stacking, magnets and the solid floor
  * are stripped so they hide, but connectors stay reachable (dovetail styles
- * stack fine); the group only renders when it still has content, so it never
+ * stack fine) and corner rounding stays too — a radius now shapes the stacked
+ * tiles (#3113). The group only renders when it still has content, so it never
  * shows as an empty collapsible group.
  */
 
@@ -58,7 +59,10 @@ export function BaseSection() {
   const tiling = useBaseplatePageStore((s) => s.tiling);
   const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
 
-  if (!(tiling?.isSplit || !stackEnabled)) return null;
+  // Render when the section has any content: connectors (split), magnets/floor
+  // (not stacking), or the corner-radius control (no drawn shape) — which now
+  // shows under stacking too, since a radius shapes the stacked tiles (#3113).
+  if (!(tiling?.isSplit || !stackEnabled || !outlineActive)) return null;
 
   return (
     <StickyGroupHeader
@@ -219,38 +223,39 @@ export function BaseSection() {
                 }
               />
             </div>
-            {/* Corner rounding is zeroed whenever an outline is active
-                (the shape carries its own corners), so show the control
-                only for an unshaped rectangular plate. */}
-            {!outlineActive && (
-              <div className="border-t border-stroke-subtle pt-3">
-                <CornerRadiusControl
-                  cornerRadius={baseplateParams.cornerRadius}
-                  cornerRadii={baseplateParams.cornerRadii}
-                  // Geometric max (up to a pill shape), floored to the
-                  // slider's 0.5 step. Radii beyond the plain rounding
-                  // limit become a radius-cut outline downstream, which
-                  // trims or drops the sockets the arc consumes.
-                  maxRadius={Math.max(
-                    0,
-                    Math.floor(maxCornerRadiusMm(totalWidthMm, totalDepthMm) * 2) / 2
-                  )}
-                  onUniformChange={(r) => {
-                    updateParam('cornerRadius', mm(r));
-                    updateParam('cornerRadii', undefined);
-                  }}
-                  onPerCornerChange={(radii) => {
-                    updateParam('cornerRadii', {
-                      tl: mm(radii.tl),
-                      tr: mm(radii.tr),
-                      bl: mm(radii.bl),
-                      br: mm(radii.br),
-                    });
-                  }}
-                />
-              </div>
-            )}
           </>
+        )}
+        {/* Corner rounding is zeroed whenever an outline is active (the shape
+            carries its own corners), so show the control only for an unshaped
+            plate — including while stacking, where a radius now shapes the
+            stacked tiles (#3113) rather than being stripped. */}
+        {!outlineActive && (
+          <div className="border-t border-stroke-subtle pt-3">
+            <CornerRadiusControl
+              cornerRadius={baseplateParams.cornerRadius}
+              cornerRadii={baseplateParams.cornerRadii}
+              // Geometric max (up to a pill shape), floored to the slider's 0.5
+              // step. Radii beyond the plain rounding limit become a radius-cut
+              // outline downstream, which trims or drops the sockets the arc
+              // consumes.
+              maxRadius={Math.max(
+                0,
+                Math.floor(maxCornerRadiusMm(totalWidthMm, totalDepthMm) * 2) / 2
+              )}
+              onUniformChange={(r) => {
+                updateParam('cornerRadius', mm(r));
+                updateParam('cornerRadii', undefined);
+              }}
+              onPerCornerChange={(radii) => {
+                updateParam('cornerRadii', {
+                  tl: mm(radii.tl),
+                  tr: mm(radii.tr),
+                  bl: mm(radii.bl),
+                  br: mm(radii.br),
+                });
+              }}
+            />
+          </div>
         )}
       </div>
     </StickyGroupHeader>

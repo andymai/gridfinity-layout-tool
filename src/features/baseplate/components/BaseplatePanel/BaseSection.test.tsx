@@ -43,6 +43,18 @@ describe('BaseSection', () => {
     render(<BaseSection />);
     expect(screen.getByText('baseplate.magnetHoles')).toBeInTheDocument();
     expect(screen.getByText('baseplate.solidFloor')).toBeInTheDocument();
+    expect(screen.getByText('baseplate.cornerRadius')).toBeInTheDocument();
+  });
+
+  it('shows the corner-radius control while stacking, since a radius shapes the tiles (#3113)', () => {
+    useLayoutStore.getState().setBaseplateParams({
+      ...DEFAULT_BASEPLATE_PARAMS,
+      stackPrint: { enabled: true, copies: 2, gapMm: mm(0.2) },
+    });
+    render(<BaseSection />);
+    expect(screen.getByText('baseplate.cornerRadius')).toBeInTheDocument();
+    // Magnets are still stripped (and hidden) while stacking.
+    expect(screen.queryByText('baseplate.magnetHoles')).not.toBeInTheDocument();
   });
 
   it('toggling magnet holes writes through to the layout store', () => {
@@ -119,11 +131,29 @@ describe('BaseSection', () => {
     });
   });
 
-  it('renders nothing when stacking hides every control and the plate is unsplit', () => {
+  it('renders nothing when stacking + unsplit + a drawn shape hides even the radius control', () => {
     useLayoutStore.getState().setBaseplateParams({
       ...DEFAULT_BASEPLATE_PARAMS,
       stackPrint: { enabled: true, copies: 2, gapMm: mm(0.2) },
     });
+    // A drawn outline makes the plate shaped, so the corner-radius control hides
+    // too (the shape carries its own corners) — leaving the section empty.
+    useLayoutStore.setState((s) => ({
+      layout: {
+        ...s.layout,
+        drawer: {
+          ...s.layout.drawer,
+          outline: {
+            vertices: [
+              { x: 0, y: 0 },
+              { x: 100, y: 0 },
+              { x: 100, y: 80 },
+              { x: 0, y: 80 },
+            ],
+          },
+        },
+      },
+    }));
     const { container } = render(<BaseSection />);
     expect(container).toBeEmptyDOMElement();
   });
