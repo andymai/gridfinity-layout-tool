@@ -40,6 +40,7 @@ function GallerySkeletons() {
 export function CommunityGalleryTab({
   onRequestClose,
   onRequestPublish,
+  surface = 'tab',
 }: CommunityGalleryTabProps) {
   const t = useTranslation();
 
@@ -63,8 +64,8 @@ export function CommunityGalleryTab({
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    trackEvent('community_gallery_opened', { surface: 'tab' });
-  }, []);
+    trackEvent('community_gallery_opened', { surface });
+  }, [surface]);
 
   useEffect(() => {
     void ensureIndex();

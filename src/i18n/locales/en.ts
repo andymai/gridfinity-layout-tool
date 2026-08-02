@@ -33,6 +33,9 @@ const en: Record<string, string> = {
   'seo.supporters.title': 'Supporters — Gridfinity Layout Tool',
   'seo.supporters.description':
     'The people whose support keeps the Gridfinity Layout Tool free, ad-free, and independent.',
+  'seo.community.title': 'Community Designs — Gridfinity Layout Tool',
+  'seo.community.description':
+    'Browse Gridfinity bin designs published by the community. Preview any design in 3D, remix it into your own editable copy, and export it for printing. Free, no account.',
 
   // Supporters page
   'supporters.back': 'Back to the app',
@@ -2999,6 +3002,7 @@ const en: Record<string, string> = {
   'loading.designer': 'Loading designer',
   'loading.baseplate': 'Loading baseplate generator',
   'loading.supporters': 'Loading supporters',
+  'loading.community': 'Loading community designs',
   'loading.mobileLayout': 'Loading mobile layout',
   'loading.help': 'Loading help',
   'loading.sharedWithMe': 'Loading...',
@@ -3360,6 +3364,14 @@ const en: Record<string, string> = {
   'community.card.likesLabel': '{count} likes',
   'community.card.remixesLabel': '{count} published remixes',
   'community.card.remixBadge': 'Remix',
+
+  // Public /community route (full-page host)
+  'community.page.back': 'Back to the app',
+  'community.page.title': 'Community designs',
+  'community.page.strip.text':
+    'Gridfinity Layout Tool is a free in-browser designer for custom 3D-printable bins and drawer layouts.',
+  'community.page.strip.cta': 'Design your own bin',
+  'community.page.strip.dismiss': 'Dismiss',
 
   // Community detail view
   'community.detail.title': 'Community design',

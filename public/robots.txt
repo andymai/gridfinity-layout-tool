@@ -10,6 +10,10 @@ Disallow: /api/
 # Disallow shared layout URLs (user-generated content, dynamic)
 Disallow: /s/
 
+# Community design deep links stay unindexed while the showcase is
+# flag-gated; the disallow is removed at graduation.
+Disallow: /community/d/
+
 # Disallow library/shared-layout deep links — same SPA, same meta as homepage,
 # so indexing them creates duplicate-title results.
 Disallow: /l/

@@ -2,6 +2,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ok, err } from '@/core/result';
+import { trackEvent } from '@/shared/analytics/posthog';
 import {
   INITIAL_COMMUNITY_DETAIL_STATE,
   useCommunityDetailStore,
@@ -267,5 +268,23 @@ describe('CommunityGalleryTab', () => {
     await useBrowseStore.getState().refreshIndex();
     expect(screen.getByRole('alert')).toBeInTheDocument();
     expect(screen.getByText('Bin a')).toBeInTheDocument();
+  });
+
+  it('tracks the gallery open with the tab surface by default', async () => {
+    indexMock.mockResolvedValue(ok({ items: [], capped: false }));
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    expect(trackEvent).toHaveBeenCalledWith('community_gallery_opened', { surface: 'tab' });
+    await waitFor(() => {
+      expect(screen.queryByTestId('community-gallery-skeletons')).not.toBeInTheDocument();
+    });
+  });
+
+  it('tracks the gallery open with the route surface when hosted full-page', async () => {
+    indexMock.mockResolvedValue(ok({ items: [], capped: false }));
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} surface="route" />);
+    expect(trackEvent).toHaveBeenCalledWith('community_gallery_opened', { surface: 'route' });
+    await waitFor(() => {
+      expect(screen.queryByTestId('community-gallery-skeletons')).not.toBeInTheDocument();
+    });
   });
 });

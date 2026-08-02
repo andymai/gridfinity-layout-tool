@@ -46,6 +46,7 @@ function CommunityDetailDialog({
   onRequestCloseGallery,
   onRemixDesign,
   onEditOriginal,
+  surface = 'tab',
 }: CommunityDetailDialogProps) {
   const t = useTranslation();
   const { isMobile } = useResponsive();
@@ -65,7 +66,9 @@ function CommunityDetailDialog({
     useCommunityDetailStore.getState().close();
   }, []);
 
-  const consumeTrap = useDetailHistoryTrap(close);
+  // On the route surface the host owns history: /community/d/<id> is a real
+  // entry, so the URL-less trap entry must not stack on top of it.
+  const consumeTrap = useDetailHistoryTrap(close, surface !== 'route');
 
   const { designId, card } = request;
 
@@ -88,7 +91,7 @@ function CommunityDetailDialog({
         setPhase('ready');
         if (!hasTrackedViewRef.current) {
           hasTrackedViewRef.current = true;
-          trackEvent('community_detail_viewed', { surface: 'tab' });
+          trackEvent('community_detail_viewed', { surface });
         }
       } else if (result.error.kind === 'notFound') {
         setPhase('gone');
@@ -102,7 +105,7 @@ function CommunityDetailDialog({
     return () => {
       cancelled = true;
     };
-  }, [designId, attempt, reconnectAttempt]);
+  }, [designId, attempt, reconnectAttempt, surface]);
 
   const retry = useCallback(() => {
     setPhase('loading');

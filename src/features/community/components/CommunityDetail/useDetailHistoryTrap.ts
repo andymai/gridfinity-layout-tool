@@ -9,9 +9,14 @@ interface TrapHandle {
  * Traps one history entry for the lifetime of the detail overlay so
  * hardware/browser Back closes the overlay instead of the app or the
  * gallery modal underneath. The entry is pushed without a URL change (the
- * modal surface is not addressable; the /community/d/<id> route ships
- * separately). When the overlay closes by any other means, the cleanup
- * consumes the trapped entry so a later Back does not replay a stale pop.
+ * modal surface is not addressable). When the overlay closes by any other
+ * means, the cleanup consumes the trapped entry so a later Back does not
+ * replay a stale pop.
+ *
+ * On the /community route the overlay IS addressable: the host pushes the
+ * real /community/d/<id> entry and Back closes the overlay by popping it, so
+ * the route host disables the trap via `enabled: false` (a second, URL-less
+ * entry here would make Back require two presses).
  *
  * App-synthetic popstate dispatches (the routing helpers re-fire popstate
  * after pushState) are ignored: treating one as a real Back would mark the
@@ -21,9 +26,12 @@ interface TrapHandle {
  * open (remix/edit push /designer): it pops the trapped entry first and runs
  * the navigation only once the pop has settled, because a pushState landing
  * on top of the trap would make the cleanup's history.back() pop the wrong
- * entry.
+ * entry. When disabled, consumeTrap runs the continuation immediately.
  */
-export function useDetailHistoryTrap(onBack: () => void): (onConsumed: () => void) => void {
+export function useDetailHistoryTrap(
+  onBack: () => void,
+  enabled: boolean = true
+): (onConsumed: () => void) => void {
   const onBackRef = useRef(onBack);
   useEffect(() => {
     onBackRef.current = onBack;
@@ -36,6 +44,7 @@ export function useDetailHistoryTrap(onBack: () => void): (onConsumed: () => voi
   // keyed by designId, so opening detail B over detail A runs A's cleanup
   // back() concurrently with B's mount pushState and can pop B's fresh trap.
   useEffect(() => {
+    if (!enabled) return;
     let consumed = false;
     let pending: (() => void) | null = null;
     window.history.pushState({ communityDetail: true }, '');
@@ -67,7 +76,7 @@ export function useDetailHistoryTrap(onBack: () => void): (onConsumed: () => voi
       window.removeEventListener('popstate', handlePop);
       if (!consumed) window.history.back();
     };
-  }, []);
+  }, [enabled]);
 
   return useCallback((onConsumed: () => void) => {
     const trap = trapRef.current;

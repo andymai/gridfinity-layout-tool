@@ -80,6 +80,24 @@ describe('useDetailHistoryTrap', () => {
     expect(backSpy).toHaveBeenCalledTimes(1);
   });
 
+  it('disabled: pushes no entry, ignores popstate, and consume runs the continuation directly', () => {
+    const onBack = vi.fn();
+    const pushSpy = vi.spyOn(window.history, 'pushState');
+    const backSpy = vi.spyOn(window.history, 'back').mockImplementation(() => undefined);
+    const { result, unmount } = renderHook(() => useDetailHistoryTrap(onBack, false));
+    expect(pushSpy).not.toHaveBeenCalled();
+    // A real Back on the route surface pops the host's URL entry; the
+    // disabled trap must not also treat it as its own.
+    window.dispatchEvent(new PopStateEvent('popstate'));
+    expect(onBack).not.toHaveBeenCalled();
+    const continuation = vi.fn();
+    result.current(continuation);
+    expect(continuation).toHaveBeenCalledTimes(1);
+    expect(backSpy).not.toHaveBeenCalled();
+    unmount();
+    expect(backSpy).not.toHaveBeenCalled();
+  });
+
   it('uses the latest onBack callback', () => {
     const first = vi.fn();
     const second = vi.fn();
