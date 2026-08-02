@@ -46,10 +46,14 @@ export function GridAlignmentControls({ variant = 'desktop' }: GridAlignmentCont
     }))
   );
 
-  const shiftX = drawer.gridShiftX ?? 0;
-  const shiftY = drawer.gridShiftY ?? 0;
   const maxX = gridUnitMm / 2;
   const maxY = gridUnitMmY / 2;
+  // Stored values can sit outside ±pitch/2 (imported/hand-edited layouts, or
+  // a pitch change after the shift was set); the frame clamps them for
+  // geometry, so clamp for display too or the control shows a shift the
+  // plate doesn't apply.
+  const shiftX = Math.max(-maxX, Math.min(maxX, drawer.gridShiftX ?? 0));
+  const shiftY = Math.max(-maxY, Math.min(maxY, drawer.gridShiftY ?? 0));
 
   const setShift = useCallback(
     (axis: 'gridShiftX' | 'gridShiftY', value: number, limit: number) => {

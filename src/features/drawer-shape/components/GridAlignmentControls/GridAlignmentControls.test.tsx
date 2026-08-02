@@ -116,6 +116,14 @@ describe('GridAlignmentControls', () => {
     expect(mockUpdateDrawer).toHaveBeenCalledWith({ gridShiftX: 0.5 });
   });
 
+  it('clamps an out-of-range stored shift for display', () => {
+    // Imported/hand-edited layouts can carry shifts beyond ±pitch/2; the
+    // frame clamps them for geometry, so the control must show the same.
+    setDrawer(OFF_LATTICE, { gridShiftX: 30 });
+    render(<GridAlignmentControls />);
+    expect(screen.getByLabelText('drawerShape.gridAlignment.shiftX')).toHaveValue(U / 2);
+  });
+
   it('clamps a typed value to half the grid pitch', () => {
     setDrawer(OFF_LATTICE);
     render(<GridAlignmentControls />);
