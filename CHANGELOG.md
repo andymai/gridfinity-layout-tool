@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.344.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.343.0...gridfinity-layout-tool-v4.344.0) (2026-08-02)
+
+
+### Features
+
+* **drawer-shape:** let pen-editor points exceed the grid, auto-growing the drawer ([#3092](https://github.com/andymai/gridfinity-layout-tool/issues/3092)) ([#3100](https://github.com/andymai/gridfinity-layout-tool/issues/3100)) ([8a93362](https://github.com/andymai/gridfinity-layout-tool/commit/8a93362a1bb69c31a2e822523dad1525f91b0f3f))
+
 ## [4.343.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.342.3...gridfinity-layout-tool-v4.343.0) (2026-08-02)
 
 
