@@ -50,6 +50,12 @@ import { useThemeEffect } from '@/shared/hooks/useThemeEffect';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
 import { useSupportersRouting } from '@/shared/hooks/useSupportersRouting';
+import { useCommunityRouting } from '@/shared/hooks/useCommunityRouting';
+import {
+  editOriginalCommunityDesign,
+  openPublishForActiveDesign,
+  remixCommunityDesign,
+} from '@/shell/Modals/DesignGalleryModal/communityDesignerBridge';
 import { usePlaceBinFromURL } from '@/features/bin-designer/hooks/usePlaceBinInLayout';
 import { useBackgroundThumbnailRegen } from '@/features/bin-designer';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
@@ -98,6 +104,9 @@ const BaseplateLibraryInitMount = lazyWithRetry(() =>
 const SupportersPage = lazyWithRetry(() =>
   import('@/features/supporters').then(namedExport('SupportersPage'))
 );
+const CommunityPage = lazyWithRetry(() =>
+  import('@/features/community/components/CommunityPage').then(namedExport('CommunityPage'))
+);
 // Dev-only: pre-renders one gallery example for the thumbnail generator.
 // Inert in production via the `import.meta.env.DEV` gate at the route below.
 const DevThumbnailRoute = lazyWithRetry(() =>
@@ -132,6 +141,9 @@ export default function App() {
   const { isDesignerRoute, navigateToDesigner } = useDesignerRouting();
   const { isBaseplateRoute } = useBaseplateRouting();
   const { isSupportersRoute, navigateToSupporters } = useSupportersRouting();
+  // False while the community_showcase flag is off (gated inside the hook),
+  // so the /community URL falls through to the layout planner.
+  const { isCommunityRoute } = useCommunityRouting();
   // Dev-only thumbnail capture route. Suppresses layout/designer routing so
   // those hooks don't rewrite the URL and strip the query params we depend on.
   const isDevThumbnailRoute =
@@ -140,7 +152,11 @@ export default function App() {
   // (its shortcuts, its URL slug) stand down here; add new routes to this one
   // expression rather than to each call site.
   const isNonLayoutRoute =
-    isDesignerRoute || isBaseplateRoute || isSupportersRoute || isDevThumbnailRoute;
+    isDesignerRoute ||
+    isBaseplateRoute ||
+    isSupportersRoute ||
+    isCommunityRoute ||
+    isDevThumbnailRoute;
   const { open: commandPaletteOpen, setOpen: setCommandPaletteOpen } = useCommandPalette({
     disabled: isNonLayoutRoute,
   });
@@ -183,14 +199,18 @@ export default function App() {
         ? 'seo.baseplate.title'
         : isSupportersRoute
           ? 'seo.supporters.title'
-          : 'seo.title';
+          : isCommunityRoute
+            ? 'seo.community.title'
+            : 'seo.title';
     const descKey = isDesignerRoute
       ? 'seo.designer.description'
       : isBaseplateRoute
         ? 'seo.baseplate.description'
         : isSupportersRoute
           ? 'seo.supporters.description'
-          : 'seo.description';
+          : isCommunityRoute
+            ? 'seo.community.description'
+            : 'seo.description';
     const title = t(titleKey);
     const desc = t(descKey);
     document.title = title;
@@ -199,7 +219,7 @@ export default function App() {
     document.querySelector('meta[property="og:description"]')?.setAttribute('content', desc);
     document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', title);
     document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', desc);
-  }, [isDesignerRoute, isBaseplateRoute, isSupportersRoute, t]);
+  }, [isDesignerRoute, isBaseplateRoute, isSupportersRoute, isCommunityRoute, t]);
   const { isMobile, isTablet } = useResponsive();
 
   const { shouldShowDrawTutorial } = useOnboarding();
@@ -388,6 +408,18 @@ export default function App() {
       );
     }
 
+    if (isCommunityRoute) {
+      return (
+        <Suspense fallback={<LoadingFallback label={t('loading.community')} />}>
+          <CommunityPage
+            onRequestPublish={openPublishForActiveDesign}
+            onRemixDesign={remixCommunityDesign}
+            onEditOriginal={editOriginalCommunityDesign}
+          />
+        </Suspense>
+      );
+    }
+
     if (isMobile) {
       return wrapWithMutations(
         <div className={`h-screen ${entranceClass}`}>
@@ -561,7 +593,9 @@ export default function App() {
             ? t('seo.baseplate.title')
             : isSupportersRoute
               ? t('seo.supporters.title')
-              : t('seo.h1')}
+              : isCommunityRoute
+                ? t('seo.community.title')
+                : t('seo.h1')}
       </h1>
       {cloudSyncEnabled && (
         <Suspense fallback={null}>

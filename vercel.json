@@ -360,6 +360,8 @@
     { "source": "/designer", "destination": "/" },
     { "source": "/baseplate", "destination": "/" },
     { "source": "/supporters", "destination": "/" },
+    { "source": "/community", "destination": "/" },
+    { "source": "/community/d/:id([a-zA-Z0-9]{12})", "destination": "/" },
     { "source": "/s/:id([a-zA-Z0-9]{12})", "destination": "/" },
     { "source": "/l/:id([a-zA-Z0-9]{12})", "destination": "/" },
     { "source": "/l/:id([a-zA-Z0-9]{12})/:slug*", "destination": "/" },

@@ -89,6 +89,7 @@ interface RenderOptions {
     options?: { ownDuplicate?: boolean }
   ) => Promise<boolean>;
   onEditOriginal?: (design: CommunityDesign) => Promise<'opened' | 'missing' | 'error'>;
+  surface?: 'tab' | 'route';
 }
 
 function renderDetail(options: RenderOptions = {}) {
@@ -96,6 +97,7 @@ function renderDetail(options: RenderOptions = {}) {
     onRequestCloseGallery: options.onRequestCloseGallery ?? vi.fn(),
     onRemixDesign: options.onRemixDesign ?? vi.fn().mockResolvedValue(true),
     onEditOriginal: options.onEditOriginal ?? vi.fn().mockResolvedValue('opened' as const),
+    surface: options.surface,
   };
   return { ...render(<CommunityDetail {...props} />), props };
 }
@@ -269,6 +271,31 @@ describe('CommunityDetail', () => {
     fireEvent.click(screen.getByLabelText('Close'));
     await waitFor(() => expect(useCommunityDetailStore.getState().request).toBeNull());
     expect(window.history.back).toHaveBeenCalledTimes(1);
+  });
+
+  it('route surface: tracks the view with surface route and skips the history trap', async () => {
+    fetchMock.mockResolvedValue(ok({ design: communityDesign(), isOwner: false }));
+    const pushSpy = vi.spyOn(window.history, 'pushState');
+    openDetail();
+    renderDetail({ surface: 'route' });
+    await screen.findByText('by Jo');
+    expect(trackEvent).toHaveBeenCalledWith('community_detail_viewed', { surface: 'route' });
+    // The /community/d/<id> entry is pushed by the route host; the overlay
+    // must not stack its URL-less trap entry on top of it.
+    expect(pushSpy).not.toHaveBeenCalledWith({ communityDetail: true }, '');
+  });
+
+  it('route surface: remix switches to the designer without popping history', async () => {
+    fetchMock.mockResolvedValue(ok({ design: communityDesign(), isOwner: false }));
+    const switched = vi.fn();
+    window.addEventListener('switch-to-designer', switched);
+    openDetail();
+    renderDetail({ surface: 'route' });
+    fireEvent.click(await screen.findByText('Remix'));
+    await waitFor(() => expect(switched).toHaveBeenCalled());
+    expect(useCommunityDetailStore.getState().request).toBeNull();
+    expect(window.history.back).not.toHaveBeenCalled();
+    window.removeEventListener('switch-to-designer', switched);
   });
 
   it('share copies the canonical public URL and toasts', async () => {

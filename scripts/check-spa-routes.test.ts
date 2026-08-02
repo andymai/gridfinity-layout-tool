@@ -61,4 +61,17 @@ describe('SPA routes are served by Vercel', () => {
     expect(rewrite, `vercel.json needs { "source": "${route}", "destination": "/" }`).toBeDefined();
     expect(rewrite?.destination).toBe('/');
   });
+
+  // The derivation above only sees literal pathname comparisons. The
+  // community detail deep link is matched by regex in useCommunityRouting.ts,
+  // so its parameterized rewrite has to be asserted by hand here.
+  it('/community/d/:id rewrites to the SPA', () => {
+    const source = '/community/d/:id([a-zA-Z0-9]{12})';
+    const rewrite = rewrites.find((r) => r.source === source);
+    expect(
+      rewrite,
+      `vercel.json needs { "source": "${source}", "destination": "/" }`
+    ).toBeDefined();
+    expect(rewrite?.destination).toBe('/');
+  });
 });

@@ -5,6 +5,7 @@
  * as props, so features/community never imports features/bin-designer.
  */
 import type { CommunityDesign } from '@/shared/types/community';
+import type { CommunityGallerySurface } from '@/shared/types/communityGalleryTab';
 
 /**
  * `missing` = no local design carries this publishedId (cross-device or
@@ -26,4 +27,11 @@ export interface CommunityDetailProps {
   ) => Promise<boolean>;
   /** Loads the owner's local original and opens the publish dialog in update mode. */
   onEditOriginal: (design: CommunityDesign) => Promise<CommunityEditOriginalOutcome>;
+  /**
+   * Host surface, used as the analytics `surface` property. On 'route' the
+   * detail is addressable at /community/d/<id> and the host owns the
+   * history/URL semantics, so the overlay's own history trap is disabled.
+   * @default 'tab'
+   */
+  surface?: CommunityGallerySurface;
 }
