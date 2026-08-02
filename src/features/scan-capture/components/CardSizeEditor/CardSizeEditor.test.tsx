@@ -3,9 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { CardSizeEditor } from './CardSizeEditor';
 import { DEFAULT_CARD_SIZE } from '@/features/scan-capture/cardSize';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 function setup(size = DEFAULT_CARD_SIZE) {
   const onChange = vi.fn();

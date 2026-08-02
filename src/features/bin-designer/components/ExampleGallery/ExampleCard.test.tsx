@@ -5,9 +5,7 @@ import type { ExampleDesign } from '@/features/bin-designer/types/exampleGallery
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import { ExampleCard } from './ExampleCard';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 const example: ExampleDesign = {
   id: 'custom-l-shape',

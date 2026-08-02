@@ -2,9 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ShareLinkSection } from './ShareLinkSection';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 const baseProps = {
   shareUrl: 'https://example.test/l/abc/test',

@@ -29,9 +29,7 @@ vi.mock('@/features/community/api/client', () => ({
   setDesignLiked: vi.fn(),
 }));
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 vi.mock('@/shared/analytics/posthog', () => ({
   trackEvent: vi.fn(),

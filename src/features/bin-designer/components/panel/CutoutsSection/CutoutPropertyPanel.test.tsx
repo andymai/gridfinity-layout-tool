@@ -4,9 +4,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import type { Cutout } from '@/features/bin-designer/types';
 import { CutoutPropertyPanel } from './CutoutPropertyPanel';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 vi.mock('@/design-system', async () => ({
   ...(await vi.importActual<typeof DesignSystem>('@/design-system')),

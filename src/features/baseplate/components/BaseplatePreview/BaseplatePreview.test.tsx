@@ -81,9 +81,7 @@ vi.mock('@/core/store', () => ({
   useSettingsStore: (selector: (state: Record<string, unknown>) => unknown) =>
     selector({ settings: { baseplateFilamentColor: '#d4d8dc' } }),
 }));
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 // Mock internal modules
 vi.mock('../../store/baseplatePageStore', () => ({

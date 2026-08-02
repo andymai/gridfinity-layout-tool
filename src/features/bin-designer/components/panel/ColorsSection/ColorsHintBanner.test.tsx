@@ -4,9 +4,7 @@ import { ColorsHintBanner } from './ColorsHintBanner';
 import { useSettingsStore } from '@/core/store';
 import { DEFAULT_SETTINGS } from '@/core/store/settings.types';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 describe('ColorsHintBanner', () => {
   beforeEach(() => {

@@ -41,9 +41,7 @@ vi.mock('@react-three/drei', () => ({
   useProgress: () => ({ active: true, progress: 40, errors: [], item: '', loaded: 2, total: 5 }),
 }));
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 const reducedMotion = vi.hoisted(() => ({ value: false }));
 vi.mock('@/shared/hooks/usePrefersReducedMotion', () => ({

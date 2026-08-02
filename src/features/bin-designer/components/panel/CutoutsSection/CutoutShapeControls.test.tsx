@@ -4,9 +4,7 @@ import { CutoutShapeControls } from './CutoutShapeControls';
 import { hasShapeControls } from './cutoutSectionVisibility';
 import type { Cutout } from '@/features/bin-designer/types';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 function makeCutout(overrides: Partial<Cutout> = {}): Cutout {
   return {

@@ -5,9 +5,7 @@ import { TECHNIQUE_CONFIG } from '@/shared/types/exampleTechniques';
 import { ALL_TECHNIQUES } from './galleryFilterOptions';
 import { CommunityTechniquePills } from './CommunityTechniquePills';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 describe('CommunityTechniquePills', () => {
   it('renders the full static technique enum plus an All pill', () => {

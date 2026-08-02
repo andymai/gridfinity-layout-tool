@@ -8,9 +8,7 @@ import { loadPendingLikeAction } from '@/shared/utils/communityPendingLikeAction
 import { INITIAL_BROWSE_STATE, useBrowseStore } from '../../store/browseStore';
 import { CommunityCard } from './CommunityCard';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 vi.mock('../../api/client', () => ({
   setDesignLiked: vi.fn(),

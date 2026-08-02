@@ -11,9 +11,7 @@ import { fetchCommunityIndex } from '../../api/client';
 import { INITIAL_BROWSE_STATE, useBrowseStore } from '../../store/browseStore';
 import { DirectRemixList } from './DirectRemixList';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 vi.mock('../../api/client', async (importOriginal) => {
   const actual = await importOriginal<object>();

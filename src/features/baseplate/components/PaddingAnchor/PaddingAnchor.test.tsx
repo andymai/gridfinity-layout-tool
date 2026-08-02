@@ -2,9 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { PaddingAnchor } from './PaddingAnchor';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 describe('PaddingAnchor', () => {
   it('renders nine radio buttons in a radiogroup', () => {

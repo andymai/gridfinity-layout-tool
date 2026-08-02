@@ -6,9 +6,7 @@ import { ALL_TECHNIQUES } from './galleryFilterOptions';
 import { INITIAL_BROWSE_STATE, useBrowseStore } from '../../store/browseStore';
 import { GalleryToolbar } from './GalleryToolbar';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 const responsiveMock = vi.hoisted(() => ({ isMobile: false }));
 vi.mock('@/shared/hooks/useResponsive', () => ({

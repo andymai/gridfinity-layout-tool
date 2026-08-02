@@ -3,9 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { CutoutPresetChips } from './CutoutPresetChips';
 import type { CutoutSizePreset } from './cutoutShapePresets';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 const PRESETS: CutoutSizePreset[] = [
   { id: 'a', label: '1/4" hex bit (6.35mm)', mm: 6.35 },

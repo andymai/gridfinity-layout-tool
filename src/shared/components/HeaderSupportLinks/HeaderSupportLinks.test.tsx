@@ -3,9 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { HeaderSupportLinks } from './HeaderSupportLinks';
 
 // Mock i18n
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 // Mock LanguageSelector
 vi.mock('@/shared/components/LanguageSelector', () => ({

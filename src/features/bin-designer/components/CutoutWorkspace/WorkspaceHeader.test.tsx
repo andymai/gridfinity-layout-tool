@@ -3,9 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { WorkspaceHeader } from './WorkspaceHeader';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 vi.mock('@/features/bin-designer/store', () => ({
   useDesignerStore: vi.fn(),

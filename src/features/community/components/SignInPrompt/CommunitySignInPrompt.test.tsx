@@ -11,9 +11,7 @@ import {
 } from '@/shared/utils/communityReturnPath';
 import { CommunitySignInPrompt } from './CommunitySignInPrompt';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 // Hash URLs keep jsdom quiet: assigning location.href to a hash change is
 // implemented, a full navigation is not.

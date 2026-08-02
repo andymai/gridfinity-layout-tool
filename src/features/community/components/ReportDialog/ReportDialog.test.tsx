@@ -5,9 +5,7 @@ import { ok, err } from '@/core/result';
 import { INITIAL_TOAST_STATE, useToastStore } from '@/core/store/toast';
 import { ReportDialog } from './ReportDialog';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 vi.mock('../../api/client', () => ({
   reportDesign: vi.fn(),

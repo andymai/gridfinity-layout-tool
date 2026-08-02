@@ -70,9 +70,7 @@ vi.mock('../icons', () => ({
   CloseIcon: ({ className }: { className?: string }) => <div className={className}>Close</div>,
 }));
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 function mockLabsStore(
   overrides: {

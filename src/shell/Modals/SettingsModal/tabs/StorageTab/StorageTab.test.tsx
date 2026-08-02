@@ -3,9 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { StorageTab } from './StorageTab';
 import type { StorageInfo } from './useStorageInfo';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 const mockUseStorageInfo = vi.hoisted(() => vi.fn());
 

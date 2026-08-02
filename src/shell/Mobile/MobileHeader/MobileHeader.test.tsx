@@ -2,9 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MobileHeader } from './MobileHeader';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 vi.mock('@/core/store/layout', () => ({
   useLayoutStore: (selector: (state: Record<string, unknown>) => unknown) =>

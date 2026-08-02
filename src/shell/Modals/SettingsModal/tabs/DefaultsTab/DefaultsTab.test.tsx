@@ -11,9 +11,7 @@ const mockDrawerState = vi.hoisted(() => ({
   hasCustomCategoryDefaults: false,
 }));
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 vi.mock('zustand/shallow', () => ({
   useShallow: (fn: unknown) => fn,

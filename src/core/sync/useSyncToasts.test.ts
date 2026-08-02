@@ -19,9 +19,7 @@ vi.mock('./engine', () => ({
   },
 }));
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 function emitEngineEvent(event: EngineEvent): void {
   for (const cb of onEngineEventListeners) cb(event);

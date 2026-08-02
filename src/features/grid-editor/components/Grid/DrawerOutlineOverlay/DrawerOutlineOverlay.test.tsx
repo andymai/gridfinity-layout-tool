@@ -4,9 +4,7 @@ import { useLayoutStore } from '@/core/store';
 import { resetAllStores } from '@/test/testUtils';
 import { gridUnits } from '@/core/types';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 import type { DrawerOutline } from '@/core/types';
 import { DrawerOutlineOverlay } from './DrawerOutlineOverlay';
 

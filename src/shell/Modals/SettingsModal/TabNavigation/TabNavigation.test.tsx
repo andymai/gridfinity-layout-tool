@@ -10,9 +10,7 @@ vi.mock('@/shared/hooks', () => ({
 }));
 
 // Mock useTranslation
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 // Derive from the source of truth so adding/removing a tab doesn't require a
 // manual bump here (tabDefinitions.test.ts asserts the exact expected set).

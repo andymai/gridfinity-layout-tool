@@ -8,9 +8,7 @@ const mockUpdateSettings = vi.hoisted(() => vi.fn());
 const mockAddToast = vi.hoisted(() => vi.fn());
 const mockSettings = vi.hoisted(() => ({ theme: 'dark', accentColor: 'amber' }));
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 vi.mock('@/core/store', () => ({
   useSettingsStore: Object.assign(() => undefined, {

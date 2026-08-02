@@ -5,9 +5,7 @@ import { useLabsStore, useToastStore } from '@/core/store';
 import { trackEvent } from '@/shared/analytics/posthog/trackEvent';
 import { resetAllStores } from '@/test/testUtils';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 vi.mock('@/shared/analytics/posthog/trackEvent', () => ({
   trackEvent: vi.fn(),

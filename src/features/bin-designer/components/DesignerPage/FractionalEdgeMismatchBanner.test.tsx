@@ -4,9 +4,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { FractionalEdgeMismatchBanner } from './FractionalEdgeMismatchBanner';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 describe('FractionalEdgeMismatchBanner', () => {
   it('renders the warning and match-drawer action', () => {

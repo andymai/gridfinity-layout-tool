@@ -7,9 +7,7 @@ import { createDefaultLayout } from '@/core/constants';
 import { mm } from '@/core/types';
 import type { StoredBaseplateParams } from '@/core/types';
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 function setPadding(padding: Partial<StoredBaseplateParams>): void {
   const layout = createDefaultLayout();

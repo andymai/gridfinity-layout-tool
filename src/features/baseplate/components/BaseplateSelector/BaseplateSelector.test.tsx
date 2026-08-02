@@ -49,9 +49,7 @@ vi.mock('@/core/store/toast', () => ({
   useToastStore: (selector: (s: unknown) => unknown) => selector({ addToast: mocks.addToast }),
 }));
 
-vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => key,
-}));
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 const nameButton = () => screen.getByText('Baseplate 1');
 const nameInput = () => screen.getByLabelText('baseplate.library.namePrompt');
