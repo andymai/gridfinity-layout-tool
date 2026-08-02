@@ -1950,6 +1950,7 @@
   "drawerShape.editor.gridAria": "Celdas de la forma del cajón",
   "drawerShape.editor.hint": "Haz clic o arrastra para recortar celdas del cajón. Los bins fuera de la forma pasan al depósito al aplicar.",
   "drawerShape.editor.invalidDisconnected": "La forma debe ser una sola pieza conectada.",
+  "drawerShape.editor.replacesDrawnShape": "El perímetro actual se dibujó a mano alzada o se importó. Aplicar una forma de celdas lo reemplaza: se pierden las curvas y los bordes fuera de la cuadrícula.",
   "drawerShape.editor.invalidEmpty": "La forma necesita al menos una celda.",
   "drawerShape.editor.title": "Forma del cajón",
   "drawerShape.penOpen": "Dibujar forma…",

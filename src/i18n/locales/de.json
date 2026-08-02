@@ -1950,6 +1950,7 @@
   "drawerShape.editor.gridAria": "Zellen der Schubladenform",
   "drawerShape.editor.hint": "Klicke oder ziehe, um Zellen aus der Schublade zu entfernen. Bins außerhalb der Form wandern beim Anwenden in die Ablage.",
   "drawerShape.editor.invalidDisconnected": "Die Form muss zusammenhängend sein.",
+  "drawerShape.editor.replacesDrawnShape": "Der aktuelle Umriss wurde freihändig gezeichnet oder importiert. Beim Anwenden einer Zellenform wird er ersetzt — Kurven und rasterfremde Kanten gehen verloren.",
   "drawerShape.editor.invalidEmpty": "Die Form braucht mindestens eine Zelle.",
   "drawerShape.editor.title": "Schubladenform",
   "drawerShape.penOpen": "Form zeichnen…",

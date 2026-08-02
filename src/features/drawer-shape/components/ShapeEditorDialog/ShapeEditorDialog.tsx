@@ -12,6 +12,7 @@ import { trackDrawerShapeApplied } from '@/shared/analytics/posthog';
 import {
   buildFullDrawerMask,
   drawerMaskToOutline,
+  isOutlineCellRepresentable,
   outlineToDrawerMask,
   type DrawerMaskGrid,
 } from '../../utils/drawerMask';
@@ -54,6 +55,20 @@ export function ShapeEditorDialog({ open, onClose }: ShapeEditorDialogProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reseed only on open
   }, [open]);
   const active = grid ?? seeded;
+
+  // A pen-drawn or imported perimeter (arcs, diagonals, off-cell edges) does
+  // not survive rasterization — applying a cell paint would replace it, so
+  // the dialog says so up front (#3149).
+  const replacesDrawnShape = useMemo(() => {
+    if (!open || layout.drawer.outline === undefined) return false;
+    return !isOutlineCellRepresentable(
+      layout.drawer.outline,
+      layout.drawer,
+      layout.gridUnitMm,
+      gridUnitMmY
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- evaluate only on open
+  }, [open]);
 
   const cellFromEvent = useCallback((e: PointerEvent<HTMLDivElement>): number | null => {
     const el = (e.target as HTMLElement).closest('[data-cell-index]');
@@ -166,6 +181,11 @@ export function ShapeEditorDialog({ open, onClose }: ShapeEditorDialogProps) {
       <Dialog.Body>
         <div className="space-y-3">
           <p className="text-xs text-content-secondary">{t('drawerShape.editor.hint')}</p>
+          {replacesDrawnShape && (
+            <p className="text-xs text-status-warning" role="alert">
+              {t('drawerShape.editor.replacesDrawnShape')}
+            </p>
+          )}
           <div
             role="grid"
             aria-label={t('drawerShape.editor.gridAria')}

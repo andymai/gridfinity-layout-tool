@@ -11,6 +11,7 @@
 
 import type { Drawer, DrawerOutline, FractionalEdge } from '@/core/types';
 import { MASK_CELLS_PER_UNIT, maskToPolygon, type CellMask } from '@/shared/utils/cellMask';
+import { canonicalStartOutline, hashOutline } from '@/shared/utils/drawerOutline';
 import { getOutsideCellSet } from '@/shared/utils/drawerOutlineCells';
 
 /** One paintable editor cell (whole drawer cell or the fractional edge cell). */
@@ -132,6 +133,32 @@ export function drawerMaskToOutline(
       authoring: { kind: 'cells' },
     },
   };
+}
+
+/**
+ * Whether the stored outline survives a rasterize → trace round-trip intact.
+ * False means the cell editor cannot express this shape (arcs, diagonals,
+ * off-cell edges from the pen editor or an import), so applying a cell paint
+ * would replace the drawn perimeter — the dialog warns before that happens
+ * (#3149). Hash-compares canonical geometry, so vertex order and the
+ * authoring echo don't produce false negatives.
+ */
+export function isOutlineCellRepresentable(
+  outline: DrawerOutline,
+  drawer: Drawer,
+  gridUnitMm: number,
+  // Depth-axis pitch for a non-square grid; defaults to the X pitch (square).
+  gridUnitMmY: number = gridUnitMm
+): boolean {
+  const conv = drawerMaskToOutline(
+    outlineToDrawerMask(outline, drawer, gridUnitMm, gridUnitMmY),
+    gridUnitMm,
+    gridUnitMmY
+  );
+  if (!('outline' in conv)) return false;
+  return (
+    hashOutline(canonicalStartOutline(conv.outline)) === hashOutline(canonicalStartOutline(outline))
+  );
 }
 
 function isFourConnected(grid: DrawerMaskGrid): boolean {

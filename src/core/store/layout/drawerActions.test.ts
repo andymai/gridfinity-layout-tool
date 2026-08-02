@@ -110,6 +110,51 @@ describe('drawerActions', () => {
       expect(useLayoutStore.getState().layout.bins[0].layerId).toBe(lid);
     });
 
+    it('clamps a shrink to the custom outline bounding grid, shape untouched (#3149)', () => {
+      const u = useLayoutStore.getState().layout.gridUnitMm as number;
+      const outline = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 4.2 * u, y: 0 },
+          { x: 4.2 * u, y: 4 * u },
+          { x: 2 * u, y: 4 * u },
+          { x: 2 * u, y: 6 * u },
+          { x: 0, y: 6 * u },
+        ],
+      };
+      useLayoutStore.setState((state) => ({
+        layout: { ...state.layout, drawer: { ...state.layout.drawer, outline } },
+      }));
+
+      const { updateDrawer } = useLayoutStore.getState();
+      updateDrawer({ width: gridUnits(3), depth: gridUnits(3) });
+      const drawer = useLayoutStore.getState().layout.drawer;
+      expect(drawer.width).toBe(4.5);
+      expect(drawer.depth).toBe(6);
+      expect(drawer.outline).toBe(outline);
+    });
+
+    it('keeps the outline byte-identical across a grow', () => {
+      const u = useLayoutStore.getState().layout.gridUnitMm as number;
+      const outline = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 4 * u, y: 0 },
+          { x: 4 * u, y: 2 * u },
+          { x: 0, y: 2 * u },
+        ],
+      };
+      useLayoutStore.setState((state) => ({
+        layout: { ...state.layout, drawer: { ...state.layout.drawer, outline } },
+      }));
+
+      const { updateDrawer } = useLayoutStore.getState();
+      updateDrawer({ width: gridUnits(12), depth: gridUnits(9) });
+      const drawer = useLayoutStore.getState().layout.drawer;
+      expect(drawer.width).toBe(12);
+      expect(drawer.outline).toBe(outline);
+    });
+
     it('updates fractionalEdgeX', () => {
       const { updateDrawer } = useLayoutStore.getState();
       updateDrawer({ fractionalEdgeX: 'start' });

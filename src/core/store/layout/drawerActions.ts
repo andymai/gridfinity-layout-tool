@@ -2,7 +2,7 @@ import type { Drawer, GridUnits, HeightUnits } from '@/core/types';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { clamp } from '@/shared/utils/validation';
-import { resizeDrawerOutline } from '@/shared/utils/drawerOutline';
+import { minDrawerUnitsForOutline } from '@/shared/utils/drawerOutline';
 import { computeDisplacedBins } from '@/core/cqrs/v2/domain/drawer/displacement';
 import type { SetLocal } from './types';
 
@@ -14,17 +14,31 @@ export function createDrawerActions(setLocal: SetLocal) {
         const oldWidth = drawer.width as number;
         const oldDepth = drawer.depth as number;
 
+        // With a custom outline active the shrink floor rises to the
+        // outline's bounding half-unit grid — a resize must never mutate the
+        // user's shape (#3149); same rule as the CQRS updateDrawer command.
+        const outlineMin =
+          drawer.outline !== undefined
+            ? minDrawerUnitsForOutline(
+                drawer.outline,
+                state.layout.gridUnitMm,
+                effectiveGridUnitMmY(state.layout)
+              )
+            : undefined;
+        const axisFloor = (min: number | undefined): number =>
+          Math.min(CONSTRAINTS.GRID_MAX, Math.max(CONSTRAINTS.GRID_MIN, min ?? 0));
+
         if (updates.width !== undefined) {
           drawer.width = clamp(
             updates.width,
-            CONSTRAINTS.GRID_MIN,
+            axisFloor(outlineMin?.width),
             CONSTRAINTS.GRID_MAX
           ) as GridUnits;
         }
         if (updates.depth !== undefined) {
           drawer.depth = clamp(
             updates.depth,
-            CONSTRAINTS.GRID_MIN,
+            axisFloor(outlineMin?.depth),
             CONSTRAINTS.GRID_MAX
           ) as GridUnits;
         }
@@ -37,31 +51,6 @@ export function createDrawerActions(setLocal: SetLocal) {
         }
         if (updates.fractionalEdgeY !== undefined) {
           drawer.fractionalEdgeY = updates.fractionalEdgeY;
-        }
-
-        // Adapt the outline to the new dims (crop/extend; degenerate result →
-        // back to the plain rectangle) — same rule as the CQRS updateDrawer
-        // command, shared via resizeDrawerOutline.
-        if (
-          drawer.outline !== undefined &&
-          ((drawer.width as number) !== oldWidth || (drawer.depth as number) !== oldDepth)
-        ) {
-          const u = state.layout.gridUnitMm as number;
-          const uy = effectiveGridUnitMmY(state.layout) as number;
-          const resized = resizeDrawerOutline(
-            drawer.outline,
-            oldWidth * u,
-            oldDepth * uy,
-            (drawer.width as number) * u,
-            (drawer.depth as number) * uy,
-            u,
-            uy
-          );
-          if (resized === undefined) {
-            delete drawer.outline;
-          } else {
-            drawer.outline = resized;
-          }
         }
 
         // Move bins that no longer fit (bounds or outline) to staging. Planar

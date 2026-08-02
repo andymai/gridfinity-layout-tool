@@ -1950,6 +1950,7 @@
   "drawerShape.editor.gridAria": "Клітинки форми шухляди",
   "drawerShape.editor.hint": "Клацайте або тягніть, щоб вирізати клітинки з шухляди. Біни поза формою перемістяться до сховку після застосування.",
   "drawerShape.editor.invalidDisconnected": "Форма має бути суцільною.",
+  "drawerShape.editor.replacesDrawnShape": "Поточний контур намальовано від руки або імпортовано. Застосування форми з клітинок замінить його — криві та краї поза сіткою буде втрачено.",
   "drawerShape.editor.invalidEmpty": "Форма має містити принаймні одну клітинку.",
   "drawerShape.editor.title": "Форма шухляди",
   "drawerShape.penOpen": "Намалювати форму…",

@@ -1950,6 +1950,7 @@
   "drawerShape.editor.gridAria": "引き出し形状のセル",
   "drawerShape.editor.hint": "クリックまたはドラッグでセルを削り取ります。形状の外のビンは適用時にスタッシュへ移動します。",
   "drawerShape.editor.invalidDisconnected": "形状はひとつながりである必要があります。",
+  "drawerShape.editor.replacesDrawnShape": "現在の外形はフリーハンドで描かれたか、インポートされたものです。セル形状を適用すると置き換えられ、曲線やグリッド外のエッジは失われます。",
   "drawerShape.editor.invalidEmpty": "形状には少なくとも1つのセルが必要です。",
   "drawerShape.editor.title": "引き出しの形状",
   "drawerShape.penOpen": "形状を描く…",

@@ -1773,6 +1773,7 @@
   "drawerShape.editor.gridAria": "抽屉形状单元",
   "drawerShape.editor.hint": "点击或拖动以从抽屉中挖去单元。应用时，形状之外的收纳盒会被移入暂存区。",
   "drawerShape.editor.invalidDisconnected": "形状必须是一个连通的整体。",
+  "drawerShape.editor.replacesDrawnShape": "当前轮廓是手绘或导入的。应用单元格形状将替换它——曲线和网格外的边缘将丢失。",
   "drawerShape.editor.invalidEmpty": "形状至少需要一个单元。",
   "drawerShape.editor.title": "抽屉形状",
   "drawerShape.penOpen": "绘制形状…",

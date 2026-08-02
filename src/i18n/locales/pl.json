@@ -1773,6 +1773,7 @@
   "drawerShape.editor.gridAria": "Komórki kształtu szuflady",
   "drawerShape.editor.hint": "Kliknij lub przeciągnij, aby wyciąć komórki z szuflady. Biny poza kształtem przenoszą się do Stash po zastosowaniu.",
   "drawerShape.editor.invalidDisconnected": "Kształt musi być jednym połączonym elementem.",
+  "drawerShape.editor.replacesDrawnShape": "Obecny obrys narysowano odręcznie lub zaimportowano. Zastosowanie kształtu z komórek zastąpi go — krzywe i krawędzie poza siatką zostaną utracone.",
   "drawerShape.editor.invalidEmpty": "Kształt potrzebuje przynajmniej jednej komórki.",
   "drawerShape.editor.title": "Kształt szuflady",
   "drawerShape.penOpen": "Narysuj kształt…",

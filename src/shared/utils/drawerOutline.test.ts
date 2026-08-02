@@ -6,10 +6,10 @@ import { createTestLayout } from '@/test/testUtils';
 import {
   canonicalStartOutline,
   hashOutline,
+  minDrawerUnitsForOutline,
   normalizeDrawerOutline,
   OUTLINE_MAX_VERTICES,
   quantizeOutline,
-  resizeDrawerOutline,
   rotateOutline180,
   snapOutlineToBounds,
   translateOutline,
@@ -310,183 +310,60 @@ describe('canonicalStartOutline', () => {
   });
 });
 
-describe('resizeDrawerOutline', () => {
-  it('returns the same outline when dims are unchanged', () => {
-    expect(resizeDrawerOutline(L_SHAPE, 4 * U, 4 * U, 4 * U, 4 * U, U)).toBe(L_SHAPE);
+describe('minDrawerUnitsForOutline', () => {
+  it('returns the exact unit dims for a whole-unit shape', () => {
+    expect(minDrawerUnitsForOutline(L_SHAPE, U)).toEqual({ width: 4, depth: 4 });
   });
 
-  it('crops on shrink, preserving the notch', () => {
-    const shrunk = resizeDrawerOutline(L_SHAPE, 4 * U, 4 * U, 3 * U, 4 * U, U);
-    expect(shrunk).toBeDefined();
-    const o = shrunk as DrawerOutline;
-    expect(validateOutline(o, 3 * U, 4 * U, U)).toBeNull();
-    expect(outlineSignedArea(o)).toBeCloseTo(3 * 4 * U * U - 1 * 2 * U * U);
-  });
-
-  it('resets to rectangle when the shrink consumes the notch', () => {
-    expect(resizeDrawerOutline(L_SHAPE, 4 * U, 4 * U, 2 * U, 4 * U, U)).toBeUndefined();
-  });
-
-  it('extends across a grown edge with the new area inside', () => {
-    const grown = resizeDrawerOutline(L_SHAPE, 4 * U, 4 * U, 5 * U, 4 * U, U);
-    expect(grown).toBeDefined();
-    const o = grown as DrawerOutline;
-    expect(validateOutline(o, 5 * U, 4 * U, U)).toBeNull();
-    expect(outlineSignedArea(o)).toBeCloseTo(16 * U * U - 4 * U * U + 4 * U * U);
-  });
-
-  it('grows both axes sequentially', () => {
-    // Notch at the bottom-right, away from both grown edges.
-    const bottomNotch: DrawerOutline = {
+  it('ceils a fractional extent to the next half unit', () => {
+    const overhang: DrawerOutline = {
       vertices: [
         { x: 0, y: 0 },
-        { x: 2 * U, y: 0 },
-        { x: 2 * U, y: 2 * U },
-        { x: 4 * U, y: 2 * U },
-        { x: 4 * U, y: 4 * U },
-        { x: 0, y: 4 * U },
+        { x: 4.2 * U, y: 0 },
+        { x: 4.2 * U, y: 3.6 * U },
+        { x: 0, y: 3.6 * U },
       ],
     };
-    const grown = resizeDrawerOutline(bottomNotch, 4 * U, 4 * U, 5 * U, 5 * U, U);
-    expect(grown).toBeDefined();
-    const o = grown as DrawerOutline;
-    expect(validateOutline(o, 5 * U, 5 * U, U)).toBeNull();
-    // L area + right strip (1×4) + top strip (5×1).
-    expect(outlineSignedArea(o)).toBeCloseTo((12 + 4 + 5) * U * U);
+    expect(minDrawerUnitsForOutline(overhang, U)).toEqual({ width: 4.5, depth: 4 });
   });
 
-  it('grows depth past an edge-touching notch, keeping it open', () => {
-    const grown = resizeDrawerOutline(L_SHAPE, 4 * U, 4 * U, 4 * U, 5 * U, U);
-    expect(grown).toBeDefined();
-    const o = grown as DrawerOutline;
-    expect(validateOutline(o, 4 * U, 5 * U, U)).toBeNull();
-    // L area + top strip over the body only (the notch mouth stays open at
-    // the right drawer edge — no hole).
-    expect(outlineSignedArea(o)).toBeCloseTo((12 + 4) * U * U);
-  });
-
-  it('keeps the shape when a second-axis growth cannot weld (welds the first, notch stays open)', () => {
-    // Width growth welds a strip along the notch's right side; the later depth
-    // growth would then span two separate top runs, so it welds nothing and the
-    // width-grown shape is kept rather than discarded (#3114).
-    const grown = resizeDrawerOutline(L_SHAPE, 4 * U, 4 * U, 5 * U, 5 * U, U);
-    expect(grown).toBeDefined();
-    const o = grown as DrawerOutline;
-    expect(validateOutline(o, 5 * U, 5 * U, U)).toBeNull();
-    // L area (12) + welded right strip (1×4); the top stays open (unwelded).
-    expect(outlineSignedArea(o)).toBeCloseTo((12 + 4) * U * U);
-  });
-
-  it('keeps an off-edge outline when growing (the grid enlarges around it)', () => {
-    // An L inset from the 4-wide drawer's right edge: growing to 5 wide welds
-    // nothing (no run flush with the old edge), so it is kept unchanged, now
-    // offset within the larger grid (#3114).
-    const inset: DrawerOutline = {
-      vertices: [
-        { x: 0, y: 0 },
-        { x: 3 * U, y: 0 },
-        { x: 3 * U, y: 2 * U },
-        { x: U, y: 2 * U },
-        { x: U, y: 4 * U },
-        { x: 0, y: 4 * U },
-      ],
-    };
-    const grown = resizeDrawerOutline(inset, 4 * U, 4 * U, 5 * U, 4 * U, U);
-    expect(grown).toBeDefined();
-    const o = grown as DrawerOutline;
-    expect(validateOutline(o, 5 * U, 4 * U, U)).toBeNull();
-    expect(o.vertices).toEqual(inset.vertices);
-  });
-
-  it('keeps a right-notched outline when growing past its two-run edge', () => {
-    // The notch cuts the old right edge into two runs; welding both would trap a
-    // hole. Growing instead keeps the shape, the notch now interior to the
-    // larger grid (#3114).
-    const sideNotch: DrawerOutline = {
+  it('measures the flattened arc, not the vertices', () => {
+    // Positive bulge on the back edge bows outward past y = 4u (sagitta
+    // 0.5u at bulge 0.25 over a 4u chord), so the depth floor is 4.5.
+    const bowedBack: DrawerOutline = {
       vertices: [
         { x: 0, y: 0 },
         { x: 4 * U, y: 0 },
-        { x: 4 * U, y: U },
-        { x: 2 * U, y: U },
-        { x: 2 * U, y: 3 * U },
-        { x: 4 * U, y: 3 * U },
-        { x: 4 * U, y: 4 * U },
+        { x: 4 * U, y: 4 * U, bulge: 0.25 },
         { x: 0, y: 4 * U },
       ],
     };
-    expect(validateOutline(sideNotch, 4 * U, 4 * U, U)).toBeNull();
-    const grown = resizeDrawerOutline(sideNotch, 4 * U, 4 * U, 5 * U, 4 * U, U);
-    expect(grown).toBeDefined();
-    const o = grown as DrawerOutline;
-    expect(validateOutline(o, 5 * U, 4 * U, U)).toBeNull();
-    // Full 4×4 minus the 2×2 notch.
-    expect(outlineSignedArea(o)).toBeCloseTo((16 - 4) * U * U);
+    expect(minDrawerUnitsForOutline(bowedBack, U).depth).toBe(4.5);
   });
 
-  it('keeps an oversize outline on grow, revalidated against the larger bounds', () => {
-    // The perimeter already reaches past the old 4-wide grid (x = 4.5u).
-    // Growing welds nothing and keeps it, now within the 5-wide bounds (#3114).
-    const oversize: DrawerOutline = {
+  it('uses the per-axis pitch on a non-square grid', () => {
+    const rect: DrawerOutline = {
       vertices: [
         { x: 0, y: 0 },
-        { x: 4.5 * U, y: 0 },
-        { x: 4.5 * U, y: 3.5 * U },
-        { x: 4 * U, y: 4 * U },
-        { x: 0, y: 4 * U },
+        { x: 396, y: 0 },
+        { x: 396, y: 295.5 },
+        { x: 0, y: 295.5 },
       ],
     };
-    const grown = resizeDrawerOutline(oversize, 4 * U, 4 * U, 5 * U, 4 * U, U);
-    expect(grown).toBeDefined();
-    const o = grown as DrawerOutline;
-    expect(validateOutline(o, 5 * U, 4 * U, U)).toBeNull();
-    expect(o.vertices).toEqual(oversize.vertices);
+    // The #3149 repro: 48 × 42 pitch needs an 8.5 × 7.5 drawer.
+    expect(minDrawerUnitsForOutline(rect, 48, 42)).toEqual({ width: 8.5, depth: 7.5 });
   });
 
-  it('resets when a shrink would split the shape into two components', () => {
-    const bridge: DrawerOutline = {
+  it('does not ceil an extent already on a half unit (float noise guarded)', () => {
+    const exact: DrawerOutline = {
       vertices: [
         { x: 0, y: 0 },
-        { x: U, y: 0 },
-        { x: U, y: 3 * U },
-        { x: 3 * U, y: 3 * U },
-        { x: 3 * U, y: 0 },
-        { x: 4 * U, y: 0 },
-        { x: 4 * U, y: 4 * U },
-        { x: 0, y: 4 * U },
+        { x: 8.5 * 48, y: 0 },
+        { x: 8.5 * 48, y: 7.5 * 42 },
+        { x: 0, y: 7.5 * 42 },
       ],
     };
-    expect(validateOutline(bridge, 4 * U, 4 * U, U)).toBeNull();
-    expect(resizeDrawerOutline(bridge, 4 * U, 4 * U, 4 * U, 2 * U, U)).toBeUndefined();
-  });
-
-  it('resets when the crop removes the whole curved region', () => {
-    // CURVED_BACK's arc only dips to y = 3.5u; cropping to 3u leaves a plain
-    // rectangle, which must normalize back to "no outline".
-    expect(resizeDrawerOutline(CURVED_BACK, 4 * U, 4 * U, 4 * U, 3 * U, U)).toBeUndefined();
-  });
-
-  it('crops through arcs without breaking validity', () => {
-    // Deeper bow (sagitta 1u): the clip line at 3.5u crosses the arc twice.
-    const deepCurve: DrawerOutline = {
-      vertices: [
-        { x: 0, y: 0 },
-        { x: 4 * U, y: 0 },
-        { x: 4 * U, y: 4 * U, bulge: -0.5 },
-        { x: 0, y: 4 * U },
-      ],
-    };
-    const shrunk = resizeDrawerOutline(deepCurve, 4 * U, 4 * U, 4 * U, 3.5 * U, U);
-    expect(shrunk).toBeDefined();
-    const o = shrunk as DrawerOutline;
-    expect(validateOutline(o, 4 * U, 3.5 * U, U)).toBeNull();
-    expect(o.vertices.some((v) => (v.bulge ?? 0) !== 0)).toBe(true);
-    expect(outlineSignedArea(o)).toBeLessThan(4 * 3.5 * U * U);
-  });
-
-  it('drops the authoring annotation when geometry changes', () => {
-    const annotated: DrawerOutline = { ...L_SHAPE, authoring: { kind: 'cells' } };
-    const shrunk = resizeDrawerOutline(annotated, 4 * U, 4 * U, 3 * U, 4 * U, U);
-    expect((shrunk as DrawerOutline).authoring).toBeUndefined();
+    expect(minDrawerUnitsForOutline(exact, 48, 42)).toEqual({ width: 8.5, depth: 7.5 });
   });
 });
 

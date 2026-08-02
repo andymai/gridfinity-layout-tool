@@ -77,6 +77,55 @@ describe('ShapeEditorDialog', () => {
     expect(screen.getByRole('button', { name: 'drawerShape.editor.apply' })).toBeDisabled();
   });
 
+  it('warns when the stored perimeter is not cell-representable (#3149)', () => {
+    setDrawer(4, 4);
+    const u = useLayoutStore.getState().layout.gridUnitMm as number;
+    useLayoutStore.setState((s) => ({
+      layout: {
+        ...s.layout,
+        drawer: {
+          ...s.layout.drawer,
+          outline: {
+            vertices: [
+              { x: 0, y: 0 },
+              { x: 4 * u, y: 0 },
+              { x: 4 * u, y: 4 * u, bulge: -0.25 },
+              { x: 0, y: 4 * u },
+            ],
+          },
+        },
+      },
+    }));
+    render(<ShapeEditorDialog open onClose={() => {}} />);
+    expect(screen.getByText('drawerShape.editor.replacesDrawnShape')).toBeInTheDocument();
+  });
+
+  it('shows no warning for a cell-painted perimeter', () => {
+    setDrawer(2, 2);
+    const u = useLayoutStore.getState().layout.gridUnitMm as number;
+    useLayoutStore.setState((s) => ({
+      layout: {
+        ...s.layout,
+        drawer: {
+          ...s.layout.drawer,
+          outline: {
+            vertices: [
+              { x: 0, y: 0 },
+              { x: 2 * u, y: 0 },
+              { x: 2 * u, y: u },
+              { x: u, y: u },
+              { x: u, y: 2 * u },
+              { x: 0, y: 2 * u },
+            ],
+            authoring: { kind: 'cells' as const },
+          },
+        },
+      },
+    }));
+    render(<ShapeEditorDialog open onClose={() => {}} />);
+    expect(screen.queryByText('drawerShape.editor.replacesDrawnShape')).not.toBeInTheDocument();
+  });
+
   it('trace seeds the grid from bin footprints', () => {
     setDrawer(2, 1);
     useLayoutStore.setState((s) => ({

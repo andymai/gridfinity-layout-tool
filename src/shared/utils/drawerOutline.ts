@@ -1,6 +1,6 @@
 /**
  * Model operations for `DrawerOutline`: validation, transforms, hashing,
- * resize (crop/extend), and read-side normalization.
+ * and read-side normalization.
  *
  * Everything here is brepjs/WASM-free and pure. The geometry math (arcs,
  * flattening, classification) lives in `drawerOutlineGeometry.ts`; this module
@@ -16,6 +16,7 @@ import {
   BULGE_EPS,
   bulgeForSweep,
   flattenOutline,
+  outlineBounds,
   polylineSignedArea,
   type OutlinePoint,
 } from './drawerOutlineGeometry';
@@ -409,96 +410,6 @@ function clipHalfPlane(
 }
 
 /**
- * Extend the loop across a grown drawer edge. The grown strip
- * (`newRect \ oldRect` on this axis) defaults to inside, welded to the shape
- * along the segment run the outline shares with the moved edge. Exactly one
- * maximal run can weld: zero (the loop never lay flush with, or already runs
- * past, the moved edge) or two-plus (welding would enclose a hole) return
- * null. On a grow the caller then keeps the loop unchanged — a bigger grid
- * only enlarges the valid region around an already-valid shape.
- */
-function growAxis(
-  verts: readonly MutableVertex[],
-  axis: Axis,
-  oldK: number,
-  newK: number,
-  crossExtent: number
-): MutableVertex[] | null {
-  const n = verts.length;
-  const onEdge = (i: number): boolean => {
-    const a = verts[i];
-    const b = verts[(i + 1) % n];
-    return (
-      Math.abs(a.bulge) < BULGE_EPS &&
-      Math.abs(coord(a, axis) - oldK) <= LINE_EPS &&
-      Math.abs(coord(b, axis) - oldK) <= LINE_EPS
-    );
-  };
-
-  const runStarts: number[] = [];
-  for (let i = 0; i < n; i++) {
-    if (onEdge(i) && !onEdge((i - 1 + n) % n)) runStarts.push(i);
-  }
-  if (runStarts.length !== 1) return null;
-
-  let runEnd = runStarts[0];
-  while (onEdge(runEnd)) runEnd = (runEnd + 1) % n;
-
-  // Rotate so the run's interior vertices sit at the end of the array:
-  // rotated[0] follows the run, rotated[last] starts it.
-  const start = runStarts[0];
-  const rotated: MutableVertex[] = [];
-  for (let i = runEnd; i !== start; i = (i + 1) % n) rotated.push(verts[i]);
-  const runStartVertex = verts[start];
-  const runEndVertex = verts[runEnd];
-
-  // Walk the strip's boundary from weld start to weld end (CCW, interior
-  // left). X axis: down the old edge, around the strip; Y axis mirrored.
-  const detour: MutableVertex[] = [{ ...runStartVertex, bulge: 0 }];
-  const push = (x: number, y: number): void => {
-    const last = detour[detour.length - 1];
-    if (Math.hypot(last.x - x, last.y - y) >= COINCIDENT_EPS) {
-      detour.push({ x, y, bulge: 0 });
-    }
-  };
-  if (axis === 'x') {
-    push(oldK, 0);
-    push(newK, 0);
-    push(newK, crossExtent);
-    push(oldK, crossExtent);
-  } else {
-    push(crossExtent, oldK);
-    push(crossExtent, newK);
-    push(0, newK);
-    push(0, oldK);
-  }
-  const last = detour[detour.length - 1];
-  if (Math.hypot(last.x - runEndVertex.x, last.y - runEndVertex.y) < COINCIDENT_EPS) {
-    detour.pop();
-  }
-
-  return [...rotated, ...detour];
-}
-
-/**
- * Grow an axis, keeping the loop unchanged when {@link growAxis} can't weld a
- * strip (the loop is off the moved edge, or already runs past it). A grow only
- * enlarges the valid region, so an unweldable perimeter stays valid as-is;
- * discarding it would delete a custom shape the instant the grid grows (#3114).
- * Shrinks stay on {@link clipHalfPlane}, whose null result is a genuine
- * fall-back-to-rectangle (the clip severed or emptied the loop).
- */
-function growOrKeep(
-  verts: readonly MutableVertex[],
-  axis: Axis,
-  oldK: number,
-  newK: number,
-  crossExtent: number
-): MutableVertex[] {
-  return growAxis(verts, axis, oldK, newK, crossExtent) ?? [...verts];
-}
-
-/**
  * Topology test, not an area tolerance: the loop traces the full rectangle
  * exactly when every segment is straight and hugs one of the four boundary
  * lines. A corner-cutting edge (e.g. a small chamfer) has its endpoints on
@@ -542,61 +453,25 @@ function dropCoincident(verts: MutableVertex[]): MutableVertex[] {
 }
 
 /**
- * Adapt an outline to resized drawer dims (mm): cropped where the drawer
- * shrank, and where it grew either welded across the moved edge (loop flush
- * with it) or kept unchanged (loop off it — the grid just enlarges around a
- * still-valid shape). Returns:
- * - the same outline when dims are unchanged,
- * - a new outline when the crop/extend succeeded,
- * - `undefined` when the result is the full rectangle OR degenerate/invalid
- *   (a shrink severed the loop, or the kept shape no longer validates) — the
- *   caller must fall back to a plain rectangular drawer (drop the field).
- *
- * The authoring annotation is dropped whenever geometry changes; editors
- * re-derive their state from geometry.
+ * Smallest half-unit drawer dims that contain the outline — the floor a
+ * drawer resize may shrink to while a custom shape is active (#3149: a resize
+ * must never crop or extend the user's shape, so the dims clamp instead).
+ * Measured on the flattened path (an arc bows past its own endpoints), same
+ * as the pen editor's auto-grow, so clamp and grow agree on the boundary.
  */
-export function resizeDrawerOutline(
+export function minDrawerUnitsForOutline(
   outline: DrawerOutline,
-  oldWidthMm: number,
-  oldDepthMm: number,
-  newWidthMm: number,
-  newDepthMm: number,
   gridUnitMm: number,
   // Depth-axis pitch for a non-square grid; defaults to the X pitch (square).
   gridUnitMmY: number = gridUnitMm
-): DrawerOutline | undefined {
-  const sameW = Math.abs(newWidthMm - oldWidthMm) < OUTLINE_QUANTUM_MM;
-  const sameD = Math.abs(newDepthMm - oldDepthMm) < OUTLINE_QUANTUM_MM;
-  if (sameW && sameD) return outline;
-
-  let verts: MutableVertex[] | null = toMutable(outline.vertices);
-  if (!sameW) {
-    verts =
-      newWidthMm < oldWidthMm
-        ? clipHalfPlane(verts, 'x', newWidthMm)
-        : growOrKeep(verts, 'x', oldWidthMm, newWidthMm, oldDepthMm);
-  }
-  if (verts !== null && !sameD) {
-    verts =
-      newDepthMm < oldDepthMm
-        ? clipHalfPlane(verts, 'y', newDepthMm)
-        : growOrKeep(verts, 'y', oldDepthMm, newDepthMm, newWidthMm);
-  }
-  if (verts === null) return undefined;
-
-  verts = dropCoincident(verts);
-  if (verts.length < 3) return undefined;
-
-  const candidate = snapOutlineToBounds(
-    quantizeOutline({ vertices: toVertices(verts) }),
-    newWidthMm,
-    newDepthMm
-  );
-  if (isFullRectangle(candidate, newWidthMm, newDepthMm)) return undefined;
-  if (validateOutline(candidate, newWidthMm, newDepthMm, gridUnitMm, gridUnitMmY) !== null) {
-    return undefined;
-  }
-  return candidate;
+): { readonly width: number; readonly depth: number } {
+  const b = outlineBounds(outline);
+  const ceilHalf = (mm: number, pitch: number): number =>
+    Math.max(0.5, Math.ceil((mm / pitch) * 2 - 1e-9) / 2);
+  return {
+    width: ceilHalf(b.maxX, gridUnitMm),
+    depth: ceilHalf(b.maxY, gridUnitMmY),
+  };
 }
 
 /**

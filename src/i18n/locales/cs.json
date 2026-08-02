@@ -1773,6 +1773,7 @@
   "drawerShape.editor.gridAria": "Buňky tvaru zásuvky",
   "drawerShape.editor.hint": "Klikáním nebo tažením vyřezávej buňky ze zásuvky. Biny mimo tvar se při použití přesunou do Stash.",
   "drawerShape.editor.invalidDisconnected": "Tvar musí být jeden souvislý kus.",
+  "drawerShape.editor.replacesDrawnShape": "Aktuální obrys byl nakreslen od ruky nebo importován. Použitím tvaru z buněk se nahradí — křivky a hrany mimo mřížku budou ztraceny.",
   "drawerShape.editor.invalidEmpty": "Tvar potřebuje alespoň jednu buňku.",
   "drawerShape.editor.title": "Tvar zásuvky",
   "drawerShape.penOpen": "Nakreslit tvar…",
