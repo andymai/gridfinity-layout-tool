@@ -25,8 +25,11 @@ import { usePenView, VIEW_PAD_MM } from './usePenView';
 import { useOutlineImport } from './useOutlineImport';
 import { PenImportNotice } from './PenImportNotice';
 import { PenControls } from './PenControls';
+import { loopBounds, unitsFor } from '../../utils/outlineImport';
 import { useLayoutStore, useToastStore } from '@/core/store';
 import { isOk } from '@/core/result';
+import { CONSTRAINTS } from '@/core/constants';
+import { batch } from '@/core/cqrs';
 import { useTranslation } from '@/i18n';
 import { useMutations } from '@/shared/contexts/MutationsContext';
 import { computeDisplacedBins } from '@/core/cqrs/v2/domain/drawer/displacement';
@@ -84,6 +87,13 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
 
   const widthMm = layout.drawer.width * layout.gridUnitMm;
   const depthMm = layout.drawer.depth * gridUnitMmY;
+  const pitchX = layout.gridUnitMm;
+  const pitchY = gridUnitMmY;
+  // A point may be placed past the current grid extent, up to the product
+  // ceiling; Apply grows the drawer to fit. Only the upper bound moves — points
+  // stay in the >=0 quadrant.
+  const maxWmm = CONSTRAINTS.GRID_MAX * pitchX;
+  const maxDmm = CONSTRAINTS.GRID_MAX * pitchY;
   const baseHandleR = handleRadiusMm(widthMm, depthMm);
 
   // Reseed only when the dialog opens: an existing outline becomes the starting
@@ -107,23 +117,7 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
   const dragRef = useRef<Drag | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const sketch = usePenSketch(seeded);
-  // `seeded` is a fresh array per open, so it doubles as the session token.
-  const view = usePenView(widthMm, depthMm, seeded);
-  // Divided by the zoom so the grab area matches the drawn handle at any zoom.
-  const hitR = hitRadiusMm(widthMm, depthMm) / view.zoom;
   const { verts, radii, selected, setSelected } = sketch;
-  const [marquee, setMarquee] = useState<{ x0: number; y0: number; x1: number; y1: number } | null>(
-    null
-  );
-  const [guides, setGuides] = useState<{ x: number | null; y: number | null }>({
-    x: null,
-    y: null,
-  });
-  const spaceRef = useRef(false);
-  const nudgeBounds = useMemo(
-    () => ({ widthMm, depthMm, pitchX: layout.gridUnitMm, pitchY: gridUnitMmY, snap }),
-    [widthMm, depthMm, layout.gridUnitMm, gridUnitMmY, snap]
-  );
 
   const outline = useMemo(() => {
     if (verts.length < 3) return null;
@@ -136,13 +130,46 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
     // turn is signed, so an unnormalized loop still rounds on the correct side.
     return sketchToOutline(filletOutline({ vertices: [...verts] }, radii).vertices);
   }, [verts, radii]);
+
+  // The flattened bbox (arcs expanded) is the geometry `validateOutline` grades
+  // and the drawer must grow to hold, so a bowed edge past the grid counts too.
+  const bounds = useMemo(() => (outline === null ? null : loopBounds(outline.vertices)), [outline]);
+  const bboxMaxXMm = bounds === null ? widthMm : bounds.minX + bounds.widthMm;
+  const bboxMaxYMm = bounds === null ? depthMm : bounds.minY + bounds.depthMm;
+  // The frame covers the union of the grid rect and the sketch, so a handle
+  // dragged past the grid stays visible and grabbable.
+  const contentWidthMm = Math.max(widthMm, bboxMaxXMm);
+  const contentDepthMm = Math.max(depthMm, bboxMaxYMm);
+
+  // `seeded` is a fresh array per open, so it doubles as the session token.
+  const view = usePenView(contentWidthMm, contentDepthMm, widthMm, depthMm, seeded);
+  // Divided by the zoom so the grab area matches the drawn handle at any zoom.
+  const hitR = hitRadiusMm(widthMm, depthMm) / view.zoom;
+  const [marquee, setMarquee] = useState<{ x0: number; y0: number; x1: number; y1: number } | null>(
+    null
+  );
+  const [guides, setGuides] = useState<{ x: number | null; y: number | null }>({
+    x: null,
+    y: null,
+  });
+  const spaceRef = useRef(false);
+  const nudgeBounds = useMemo(
+    () => ({ widthMm: maxWmm, depthMm: maxDmm, pitchX, pitchY, snap }),
+    [maxWmm, maxDmm, pitchX, pitchY, snap]
+  );
+
+  // Validate against the bounds the drawer WILL have after Apply grows it, so a
+  // growable overflow does not trip the out-of-bounds rule and disable Apply.
+  // Coords are clamped to <= GRID_MAX*pitch, so these stay representable and
+  // there is no unreachable "too big" error to surface.
+  const effWmm = Math.max(widthMm, unitsFor(bboxMaxXMm, pitchX) * pitchX);
+  const effDmm = Math.max(depthMm, unitsFor(bboxMaxYMm, pitchY) * pitchY);
   const error = useMemo(
     () =>
       outline === null
         ? 'too_few_vertices'
-        : (validateOutline(outline, widthMm, depthMm, layout.gridUnitMm, gridUnitMmY)?.kind ??
-          null),
-    [outline, widthMm, depthMm, layout.gridUnitMm, gridUnitMmY]
+        : (validateOutline(outline, effWmm, effDmm, pitchX, pitchY)?.kind ?? null),
+    [outline, effWmm, effDmm, pitchX, pitchY]
   );
 
   /** Pointer position in drawer-local mm, undoing the padding and the flipped Y. */
@@ -151,20 +178,20 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
       const svg = svgRef.current;
       if (svg === null) return null;
       const f = view.toFrame(e.clientX, e.clientY, svg.getBoundingClientRect());
-      return { x: f.x - VIEW_PAD_MM, y: depthMm - (f.y - VIEW_PAD_MM) };
+      return { x: f.x - VIEW_PAD_MM, y: contentDepthMm - (f.y - VIEW_PAD_MM) };
     },
-    [depthMm, view]
+    [contentDepthMm, view]
   );
 
   const snapPoint = useCallback(
     (p: { x: number; y: number }) => {
-      const c = clampToDrawer(p.x, p.y, widthMm, depthMm);
+      const c = clampToDrawer(p.x, p.y, maxWmm, maxDmm);
       return {
-        x: snapMm(c.x, layout.gridUnitMm, snap),
-        y: snapMm(c.y, gridUnitMmY, snap),
+        x: snapMm(c.x, pitchX, snap),
+        y: snapMm(c.y, pitchY, snap),
       };
     },
-    [widthMm, depthMm, layout.gridUnitMm, gridUnitMmY, snap]
+    [maxWmm, maxDmm, pitchX, pitchY, snap]
   );
 
   const handlePointerDown = useCallback(
@@ -215,7 +242,7 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
         const svg = svgRef.current;
         if (svg === null) return;
         const rect = svg.getBoundingClientRect();
-        const scale = (widthMm + VIEW_PAD_MM * 2) / view.zoom / rect.width;
+        const scale = (contentWidthMm + VIEW_PAD_MM * 2) / view.zoom / rect.width;
         view.panBy((e.clientX - drag.last.x) * scale, (e.clientY - drag.last.y) * scale);
         dragRef.current = { kind: 'pan', last: { x: e.clientX, y: e.clientY } };
         return;
@@ -254,15 +281,15 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
           moving,
           g.point.x - verts[drag.index].x,
           g.point.y - verts[drag.index].y,
-          widthMm,
-          depthMm
+          maxWmm,
+          maxDmm
         );
         sketch.preview({ verts: moveVertices(verts, moving, dx, dy), radii });
         return;
       }
 
       // Bulge is a curvature, not a position, so it is never snapped.
-      const clamped = clampToDrawer(p.x, p.y, widthMm, depthMm);
+      const clamped = clampToDrawer(p.x, p.y, maxWmm, maxDmm);
       sketch.preview({
         verts: setBulge(
           verts,
@@ -272,7 +299,7 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
         radii,
       });
     },
-    [toMm, snapPoint, verts, radii, widthMm, depthMm, sketch, view, selected, hitR]
+    [toMm, snapPoint, verts, radii, maxWmm, maxDmm, contentWidthMm, sketch, view, selected, hitR]
   );
 
   const endDrag = useCallback(() => {
@@ -406,12 +433,12 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
       const p = clampToDrawer(
         axis === 'x' ? value : v.x,
         axis === 'y' ? value : v.y,
-        widthMm,
-        depthMm
+        maxWmm,
+        maxDmm
       );
       sketch.commit({ verts: moveVertex(verts, lone, p.x, p.y), radii });
     },
-    [lone, verts, radii, widthMm, depthMm, sketch]
+    [lone, verts, radii, maxWmm, maxDmm, sketch]
   );
 
   const handleReset = useCallback(() => {
@@ -450,7 +477,20 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
       layout.gridUnitMm,
       gridUnitMmY
     ).length;
-    if (!isOk(mutations.setDrawerOutline(outline))) return;
+    // Grow the drawer to the smallest grid that holds the sketch. The command
+    // bus is synchronous, so growing first lets setDrawerOutline validate
+    // against the enlarged aggregate; batch() collapses the pair to one undo
+    // step. When the sketch already fits, the single commit is kept.
+    const growW = Math.max(layout.drawer.width, unitsFor(bboxMaxXMm, pitchX));
+    const growD = Math.max(layout.drawer.depth, unitsFor(bboxMaxYMm, pitchY));
+    const applied =
+      growW > layout.drawer.width || growD > layout.drawer.depth
+        ? batch(() => {
+            mutations.updateDrawer({ width: gridUnits(growW), depth: gridUnits(growD) });
+            return mutations.setDrawerOutline(outline);
+          })
+        : mutations.setDrawerOutline(outline);
+    if (!isOk(applied)) return;
     // Read the post-commit store: a shape equivalent to the plain rectangle is
     // normalized to "no outline" by the mutation, so `cleared` has to reflect
     // what actually landed rather than what was sent.
@@ -464,7 +504,20 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
       addToast(t('toast.binsDisplacedByShape', { count: displaced }), 'info');
     }
     onClose();
-  }, [outline, error, layout, gridUnitMmY, mutations, addToast, t, onClose]);
+  }, [
+    outline,
+    error,
+    layout,
+    gridUnitMmY,
+    mutations,
+    addToast,
+    t,
+    onClose,
+    bboxMaxXMm,
+    bboxMaxYMm,
+    pitchX,
+    pitchY,
+  ]);
 
   if (!open) return null;
 
@@ -492,6 +545,7 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
               pathD={outline !== null ? sketchPathD(outline.vertices) : sketchPathD(verts)}
               widthMm={widthMm}
               depthMm={depthMm}
+              contentDepthMm={contentDepthMm}
               viewBox={view.viewBox}
               padMm={VIEW_PAD_MM}
               handleR={handleR}
@@ -521,8 +575,8 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
             snap={snap}
             onSnapChange={setSnap}
             lone={lone === null ? null : { index: lone, x: verts[lone].x, y: verts[lone].y }}
-            widthMm={widthMm}
-            depthMm={depthMm}
+            maxWmm={maxWmm}
+            maxDmm={maxDmm}
             onCoordChange={setSelectedCoord}
             selectedCount={selected.size}
             filletValue={filletValue}

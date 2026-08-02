@@ -16,8 +16,10 @@ interface PenControlsProps {
   readonly onSnapChange: (snap: SnapFraction) => void;
   /** The one selected corner, or null when the selection is empty or multiple. */
   readonly lone: { readonly index: number; readonly x: number; readonly y: number } | null;
-  readonly widthMm: number;
-  readonly depthMm: number;
+  /** Coordinate ceilings: the product grid maximum, so a point can be typed
+   * past the current grid extent and grow the drawer on Apply. */
+  readonly maxWmm: number;
+  readonly maxDmm: number;
   readonly onCoordChange: (axis: 'x' | 'y', value: number) => void;
   readonly selectedCount: number;
   /** Shared radius of the corners the stepper edits, or null when they differ. */
@@ -39,8 +41,8 @@ export function PenControls({
   snap,
   onSnapChange,
   lone,
-  widthMm,
-  depthMm,
+  maxWmm,
+  maxDmm,
   onCoordChange,
   selectedCount,
   filletValue,
@@ -89,7 +91,7 @@ export function PenControls({
             value={lone.x}
             onChange={(v) => onCoordChange('x', v)}
             min={0}
-            max={widthMm}
+            max={maxWmm}
             step={1}
             unit="mm"
           />
@@ -98,7 +100,7 @@ export function PenControls({
             value={lone.y}
             onChange={(v) => onCoordChange('y', v)}
             min={0}
-            max={depthMm}
+            max={maxDmm}
             step={1}
             unit="mm"
           />

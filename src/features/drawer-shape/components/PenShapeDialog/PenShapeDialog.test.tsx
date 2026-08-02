@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import type { DrawerOutline } from '@/core/types';
+import type * as CqrsModule from '@/core/cqrs';
 import { ok } from '@/core/result';
 import { useLayoutStore } from '@/core/store';
 import { resetAllStores } from '@/test/testUtils';
@@ -10,9 +11,19 @@ import { PenShapeDialog } from './PenShapeDialog';
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 const setDrawerOutline = vi.fn((_outline: DrawerOutline | null) => ok(undefined));
+const updateDrawer = vi.fn();
 vi.mock('@/shared/contexts/MutationsContext', () => ({
-  useMutations: () => ({ setDrawerOutline }),
+  useMutations: () => ({ setDrawerOutline, updateDrawer }),
 }));
+
+// Spy on batch but run the callback, so the grow + commit still execute and the
+// single-undo-step wrapping stays observable. Hoisted because the mock factory
+// spreads it eagerly, so it must exist before the module graph is set up.
+const { batch } = vi.hoisted(() => ({ batch: vi.fn(<T,>(fn: () => T): T => fn()) }));
+vi.mock('@/core/cqrs', async (importOriginal) => {
+  const actual = await importOriginal<typeof CqrsModule>();
+  return { ...actual, batch };
+});
 
 /** Drawer-local mm extent of the default test drawer. */
 function extent(): { w: number; d: number } {
@@ -30,6 +41,8 @@ describe('PenShapeDialog', () => {
   beforeEach(() => {
     resetAllStores();
     setDrawerOutline.mockClear();
+    updateDrawer.mockClear();
+    batch.mockClear();
   });
 
   it('renders nothing while closed', () => {
@@ -107,6 +120,47 @@ describe('PenShapeDialog', () => {
     const applied = setDrawerOutline.mock.calls[0][0];
     expect(applied?.authoring).toEqual({ kind: 'pen' });
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  // A point placed past the grid grows the drawer to fit on Apply (#3092). The
+  // grow and the outline commit share one batch so undo reverts both, and the
+  // grow runs first so setDrawerOutline validates against the enlarged drawer.
+  describe('auto-grow', () => {
+    it('grows the drawer to fit an oversize sketch, in one undo step', () => {
+      const { d } = extent(); // 420 x 336 = 10 x 8 units
+      // A trapezoid reaching x = 441 (10.5 units), past the 420mm grid edge.
+      setOutline([
+        { x: 0, y: 0 },
+        { x: 441, y: 0 },
+        { x: 420, y: d },
+        { x: 0, y: d },
+      ]);
+      const onClose = vi.fn();
+      render(<PenShapeDialog open onClose={onClose} />);
+
+      expect(screen.getByText('drawerShape.editor.apply')).toBeEnabled();
+      fireEvent.click(screen.getByText('drawerShape.editor.apply'));
+
+      // Grown to the smallest half-unit grid that holds the sketch: 10.5 x 8.
+      expect(updateDrawer).toHaveBeenCalledWith({ width: 10.5, depth: 8 });
+      expect(batch).toHaveBeenCalledTimes(1);
+      expect(setDrawerOutline).toHaveBeenCalledTimes(1);
+      // The grow lands before the outline commit, so the store aggregate
+      // setDrawerOutline validates against is already the enlarged drawer.
+      expect(updateDrawer.mock.invocationCallOrder[0]).toBeLessThan(
+        setDrawerOutline.mock.invocationCallOrder[0]
+      );
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('leaves the drawer untouched when the sketch fits the current grid', () => {
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      fireEvent.click(screen.getByText('drawerShape.editor.apply'));
+
+      expect(updateDrawer).not.toHaveBeenCalled();
+      expect(batch).not.toHaveBeenCalled();
+      expect(setDrawerOutline).toHaveBeenCalledTimes(1);
+    });
   });
 
   // The dialog grades the sketch with the same validator the commit uses, so an
