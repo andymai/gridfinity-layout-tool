@@ -29,9 +29,15 @@ import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
 // Re-export for consumers that were importing from this module
 export { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
 
-/** Auto-compute corner radius: 15% of the smaller dimension, clamped to [0.5, 5] mm. */
-function autoCornerRadius(cutWidth: number, cutHeight: number): number {
-  return Math.max(0.5, Math.min(5, Math.min(cutWidth * 0.15, cutHeight * 0.15)));
+/**
+ * Auto-compute corner radius: 15% of the cutout's span, clamped to [0.5, 5] mm.
+ * Deliberately independent of the cut height — at 100% height the cut tracks
+ * the wall, so a height term makes the bin's HEIGHT change the corner look of
+ * an otherwise untouched cutout (#3162). Degenerately short or narrow cutouts
+ * are still bounded by the callers' width/2 and height/2 guards.
+ */
+export function autoCornerRadius(cutWidth: number): number {
+  return Math.max(0.5, Math.min(5, cutWidth * 0.15));
 }
 
 /** Funnel taper ratio: bottom width is 60% of top width. */
@@ -74,7 +80,7 @@ export function buildCutoutProfile(
 
     case 'funnel': {
       // Tapered U: wider at top, narrower at bottom with rounded corners.
-      const cornerR = autoCornerRadius(cutWidth, userCutHeight);
+      const cornerR = autoCornerRadius(cutWidth);
       const safeR = Math.min(cornerR, cutWidth / 2 - 0.01, userCutHeight / 2 - 0.01);
 
       const topHW = cutWidth / 2;
@@ -92,7 +98,7 @@ export function buildCutoutProfile(
 
     default: {
       // U-shape: rounded rectangle (existing behavior)
-      const cornerR = autoCornerRadius(cutWidth, userCutHeight);
+      const cornerR = autoCornerRadius(cutWidth);
       const safeR = Math.min(cornerR, cutWidth / 2 - 0.01, userCutHeight / 2 - 0.01);
       if (safeR > 0.1) {
         return drawRoundedRectangle(cutWidth, totalHeight, safeR);
@@ -294,7 +300,9 @@ function buildWallCutoutCutsInScope(
   const cellMask = params.cellMask;
   const sides: PolygonSideGeometry[] = isPartialMask(cellMask)
     ? (['front', 'back', 'left', 'right'] as const)
-        .map((key) => resolvePolygonSideGeometry(cellMask, pitchFromParams(params), wallThickness, key))
+        .map((key) =>
+          resolvePolygonSideGeometry(cellMask, pitchFromParams(params), wallThickness, key)
+        )
         .filter((g): g is PolygonSideGeometry => g !== null)
     : [
         { key: 'front', wallSpan: innerW, x: 0, y: -innerD / 2, rotateZ: 0 },
