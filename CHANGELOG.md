@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.344.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.344.0...gridfinity-layout-tool-v4.344.1) (2026-08-02)
+
+
+### Bug Fixes
+
+* **baseplate:** size preview overlays on the Y pitch for non-square grids ([#3102](https://github.com/andymai/gridfinity-layout-tool/issues/3102)) ([b194935](https://github.com/andymai/gridfinity-layout-tool/commit/b1949352c164ec540c87b28a838b608ba73f0e64))
+
 ## [4.344.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.343.0...gridfinity-layout-tool-v4.344.0) (2026-08-02)
 
 
