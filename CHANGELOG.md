@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.352.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.352.2...gridfinity-layout-tool-v4.352.3) (2026-08-02)
+
+
+### Bug Fixes
+
+* **baseplate:** register the perimeter re-base to the socket lattice ([#3149](https://github.com/andymai/gridfinity-layout-tool/issues/3149)) ([#3154](https://github.com/andymai/gridfinity-layout-tool/issues/3154)) ([a431b9c](https://github.com/andymai/gridfinity-layout-tool/commit/a431b9ceeba5e15dec7dbacc0de5da193fc16e46))
+
 ## [4.352.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.352.1...gridfinity-layout-tool-v4.352.2) (2026-08-02)
 
 
