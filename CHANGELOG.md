@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.347.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.347.2...gridfinity-layout-tool-v4.347.3) (2026-08-02)
+
+
+### Bug Fixes
+
+* **baseplate:** keep a cheap preview for shaped plates ([#3111](https://github.com/andymai/gridfinity-layout-tool/issues/3111)) ([#3125](https://github.com/andymai/gridfinity-layout-tool/issues/3125)) ([ba2604c](https://github.com/andymai/gridfinity-layout-tool/commit/ba2604ca7e8f6782843177ba09337b1bfef101c0))
+
 ## [4.347.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.347.1...gridfinity-layout-tool-v4.347.2) (2026-08-02)
 
 
