@@ -4,6 +4,7 @@ import { act, render, screen, fireEvent } from '@testing-library/react';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { useGapFitStore } from '@/core/store/gapFit';
 import { gridUnits, heightUnits, layerId } from '@/core/types';
+import type { Mm } from '@/core/types';
 import { ALL_TECHNIQUES } from './galleryFilterOptions';
 import {
   INITIAL_BROWSE_FILTERS,
@@ -102,7 +103,16 @@ describe('GalleryToolbar (desktop)', () => {
   });
 
   it('offers best-fit while a fits-gap context is set without toolbar constraints', () => {
-    useBrowseStore.getState().setFitsGapContext({ widthMax: 2, depthMax: 3, maxHeight: null });
+    useBrowseStore
+      .getState()
+      .setFitsGapContext({
+        widthMax: 2,
+        depthMax: 3,
+        maxHeight: null,
+        gridUnitMm: 42,
+        gridUnitMmY: 42,
+        heightUnitMm: 7,
+      });
     render(<GalleryToolbar />);
     const sortSelect = screen.getByLabelText('community.gallery.sortLabel');
     expect(Array.from(sortSelect.querySelectorAll('option')).map((o) => o.value)).toContain(
@@ -212,7 +222,16 @@ describe('GalleryToolbar filter chips', () => {
   });
 
   it('shows the fits-gap banner with the gap size while the context is active', () => {
-    useBrowseStore.getState().setFitsGapContext({ widthMax: 2.5, depthMax: 3, maxHeight: 6 });
+    useBrowseStore
+      .getState()
+      .setFitsGapContext({
+        widthMax: 2.5,
+        depthMax: 3,
+        maxHeight: 6,
+        gridUnitMm: 42,
+        gridUnitMmY: 42,
+        heightUnitMm: 7,
+      });
     render(<GalleryToolbar />);
     const chip = screen.getByTestId('community-fits-gap-chip');
     // i18nEcho returns the key; the size rides in as interpolation params.
@@ -225,9 +244,21 @@ describe('GalleryToolbar filter chips', () => {
       maxWidth: gridUnits(2.5),
       maxDepth: gridUnits(3),
       maxHeight: heightUnits(6),
+      gridUnitMm: 42 as Mm,
+      gridUnitMmY: 42 as Mm,
+      heightUnitMm: 7 as Mm,
       targetPosition: { x: gridUnits(0), y: gridUnits(0), layerId: layerId('layer_1') },
     });
-    useBrowseStore.getState().setFitsGapContext({ widthMax: 2.5, depthMax: 3, maxHeight: 6 });
+    useBrowseStore
+      .getState()
+      .setFitsGapContext({
+        widthMax: 2.5,
+        depthMax: 3,
+        maxHeight: 6,
+        gridUnitMm: 42,
+        gridUnitMmY: 42,
+        heightUnitMm: 7,
+      });
     useBrowseStore.getState().setSort('best-fit');
     render(<GalleryToolbar />);
 

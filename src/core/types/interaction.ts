@@ -51,10 +51,11 @@ export interface SwapTarget {
 
 /**
  * How a fits-gap selection was initiated. 'right-drag' (the power-user
- * shortcut) only commits after real drag movement, so a plain right-click
- * falls through to the browser context menu; 'armed' (the toolbar's
- * find-bins mode, the touch-reachable path) lets a single tap select a
- * minimum-size gap.
+ * shortcut) only commits after real drag movement, though any right press on
+ * empty canvas suppresses the browser context menu while the flag is on
+ * (contextmenu timing is platform-split, so movement cannot gate it);
+ * 'armed' (the toolbar's find-bins mode, the touch-reachable path) lets a
+ * single tap select a minimum-size gap.
  */
 export type FitsGapSource = 'right-drag' | 'armed';
 

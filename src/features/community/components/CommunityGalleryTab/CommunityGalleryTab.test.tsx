@@ -12,6 +12,7 @@ import type { CommunityCard } from '@/shared/types/community';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { useGapFitStore } from '@/core/store/gapFit';
 import { gridUnits, heightUnits, layerId } from '@/core/types';
+import type { Mm } from '@/core/types';
 import { fetchCommunityIndex, fetchMineIndex } from '../../api/client';
 import { INITIAL_BROWSE_STATE, useBrowseStore } from '../../store/browseStore';
 import { INITIAL_MINE_STATE, useMineStore } from '../../store/mineStore';
@@ -651,6 +652,9 @@ describe('CommunityGalleryTab fits-gap sync', () => {
       maxWidth: gridUnits(2.5),
       maxDepth: gridUnits(3),
       maxHeight: heightUnits(6),
+      gridUnitMm: 42 as Mm,
+      gridUnitMmY: 42 as Mm,
+      heightUnitMm: 7 as Mm,
       targetPosition: { x: gridUnits(1), y: gridUnits(1), layerId: layerId('layer_1') },
     });
   };
@@ -665,6 +669,9 @@ describe('CommunityGalleryTab fits-gap sync', () => {
         widthMax: 2.5,
         depthMax: 3,
         maxHeight: 6,
+        gridUnitMm: 42,
+        gridUnitMmY: 42,
+        heightUnitMm: 7,
       });
     });
     expect(useBrowseStore.getState().filters.sort).toBe('best-fit');
@@ -678,6 +685,9 @@ describe('CommunityGalleryTab fits-gap sync', () => {
       maxWidth: gridUnits(1),
       maxDepth: gridUnits(1),
       maxHeight: heightUnits(6),
+      gridUnitMm: 42 as Mm,
+      gridUnitMmY: 42 as Mm,
+      heightUnitMm: 7 as Mm,
       targetPosition: { x: gridUnits(1), y: gridUnits(1), layerId: layerId('layer_1') },
     });
     render(<CommunityGalleryTab onRequestClose={vi.fn()} surface="fits_gap" />);
@@ -699,7 +709,16 @@ describe('CommunityGalleryTab fits-gap sync', () => {
 
   it('drops a stale gap context when the handoff has been cleared', async () => {
     indexMock.mockResolvedValue(ok({ items: [card('design001')], capped: false }));
-    useBrowseStore.getState().setFitsGapContext({ widthMax: 2, depthMax: 2, maxHeight: 6 });
+    useBrowseStore
+      .getState()
+      .setFitsGapContext({
+        widthMax: 2,
+        depthMax: 2,
+        maxHeight: 6,
+        gridUnitMm: 42,
+        gridUnitMmY: 42,
+        heightUnitMm: 7,
+      });
     render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
 
     await waitFor(() => {

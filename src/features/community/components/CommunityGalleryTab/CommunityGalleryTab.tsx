@@ -138,12 +138,18 @@ export function CommunityGalleryTab({
       current !== null &&
       current.widthMax === constraint.maxWidth &&
       current.depthMax === constraint.maxDepth &&
-      current.maxHeight === constraint.maxHeight;
+      current.maxHeight === constraint.maxHeight &&
+      current.gridUnitMm === constraint.gridUnitMm &&
+      current.gridUnitMmY === constraint.gridUnitMmY &&
+      current.heightUnitMm === constraint.heightUnitMm;
     if (unchanged) return;
     setFitsGapContext({
       widthMax: constraint.maxWidth,
       depthMax: constraint.maxDepth,
       maxHeight: constraint.maxHeight,
+      gridUnitMm: constraint.gridUnitMm,
+      gridUnitMmY: constraint.gridUnitMmY,
+      heightUnitMm: constraint.heightUnitMm,
     });
     setSort('best-fit');
   }, [setFitsGapContext, setSort]);

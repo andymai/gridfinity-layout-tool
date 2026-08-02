@@ -47,6 +47,7 @@ import { trackEvent } from '@/shared/analytics/posthog';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { useGapFitStore } from '@/core/store/gapFit';
 import { gridUnits, heightUnits, layerId } from '@/core/types';
+import type { Mm } from '@/core/types';
 import { INITIAL_BROWSE_STATE, useBrowseStore } from '../../store/browseStore';
 import { loadRecentlyViewedIds } from '../../utils/recentlyViewed';
 import { CommunityDetail } from './CommunityDetail';
@@ -655,6 +656,9 @@ describe('CommunityDetail', () => {
         maxWidth: gridUnits(3),
         maxDepth: gridUnits(3),
         maxHeight: heightUnits(6),
+        gridUnitMm: 42 as Mm,
+        gridUnitMmY: 42 as Mm,
+        heightUnitMm: 7 as Mm,
         targetPosition: { x: gridUnits(0), y: gridUnits(0), layerId: layerId('layer_1') },
       });
     }
