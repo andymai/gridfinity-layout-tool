@@ -415,7 +415,7 @@ describe('BaseplatePanel', () => {
     describe('while vertical stacking', () => {
       const stacking = { enabled: true, gapMm: mm(0.2) };
 
-      it('keeps the connector picker reachable but hides magnets and corner radius', () => {
+      it('keeps the connector picker and corner radius reachable but hides magnets', () => {
         mockLayoutState.layout.baseplateParams = {
           ...DEFAULT_BASEPLATE_PARAMS,
           connectorNubs: true,
@@ -426,7 +426,8 @@ describe('BaseplatePanel', () => {
           screen.getByRole('radio', { name: 'baseplate.connectorStyle.dovetail' })
         ).toBeChecked();
         expect(screen.queryByText('baseplate.magnetHoles')).toBeNull();
-        expect(screen.queryByText('baseplate.cornerRadius')).toBeNull();
+        // A radius now shapes the stacked tiles (#3113), so the control stays.
+        expect(screen.getByText('baseplate.cornerRadius')).toBeInTheDocument();
       });
 
       it('disables the snap clip option with a reason', () => {
