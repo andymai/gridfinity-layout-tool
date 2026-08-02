@@ -71,8 +71,23 @@ describe('cameraFraming', () => {
     it('frames the depth axis on the non-square Y pitch', () => {
       // Depth-dominated bin: a larger Y pitch must push the camera out, not stay
       // pinned to the square X pitch.
-      const square = calculateIdealDistance(1, 8, 3, 50, 42, 7);
-      const nonSquare = calculateIdealDistance(1, 8, 3, 50, 42, 7, 60);
+      const square = calculateIdealDistance(
+        1,
+        8,
+        3,
+        50,
+        GRIDFINITY.GRID_SIZE,
+        GRIDFINITY.HEIGHT_UNIT
+      );
+      const nonSquare = calculateIdealDistance(
+        1,
+        8,
+        3,
+        50,
+        GRIDFINITY.GRID_SIZE,
+        GRIDFINITY.HEIGHT_UNIT,
+        GRIDFINITY.GRID_SIZE + 18
+      );
       expect(nonSquare).toBeGreaterThan(square);
     });
 
