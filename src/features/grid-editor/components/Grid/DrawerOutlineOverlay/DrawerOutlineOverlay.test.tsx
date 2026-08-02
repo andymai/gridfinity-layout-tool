@@ -37,6 +37,31 @@ describe('DrawerOutlineOverlay', () => {
     expect(screen.queryByRole('img')).toBeNull();
   });
 
+  it('grows the SVG viewport to hold an outline reaching past the grid (#3107)', () => {
+    // The perimeter's right edge sits at 7u in a 6-wide drawer. The viewport
+    // must widen to it (default 42mm pitch → 42px/unit) rather than clip it.
+    const OVERSIZE: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 7 * U, y: 0 },
+        { x: 7 * U, y: 2 * U },
+        { x: 4 * U, y: 2 * U },
+        { x: 4 * U, y: 4 * U },
+        { x: 0, y: 4 * U },
+      ],
+    };
+    useLayoutStore.setState((s) => ({
+      layout: {
+        ...s.layout,
+        drawer: { ...s.layout.drawer, width: gridUnits(6), depth: gridUnits(4), outline: OVERSIZE },
+      },
+    }));
+    renderOverlay();
+    const svg = screen.getByRole('img');
+    // gap 2, cell 40 → 42px/unit; the 6-unit grid is ~250px but the shape needs 7u.
+    expect(Number(svg.getAttribute('width'))).toBeCloseTo(7 * (40 + 2), 0);
+  });
+
   it('renders the hatch and boundary for a shaped drawer', () => {
     useLayoutStore.setState((s) => ({
       layout: {
@@ -79,6 +104,51 @@ describe('DrawerOutlineOverlay', () => {
     expect(paths[1].getAttribute('class')).toContain('fill-accent');
     // The plate boundary is a dashed accent stroke.
     expect(paths[2].getAttribute('stroke-dasharray')).toBe('4 3');
+  });
+
+  it('frames the padding rim of an oversize outline so it is not clipped (#3107)', () => {
+    // Right/back-heavy padding pushes the rim past the raw outline's bbox; the
+    // viewport must include the rim, not just the shape.
+    const OVERSIZE: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 7 * U, y: 0 },
+        { x: 7 * U, y: 2 * U },
+        { x: 4 * U, y: 2 * U },
+        { x: 4 * U, y: 4 * U },
+        { x: 0, y: 4 * U },
+      ],
+    };
+    useLayoutStore.setState((s) => ({
+      layout: {
+        ...s.layout,
+        drawer: { ...s.layout.drawer, width: gridUnits(6), depth: gridUnits(4), outline: OVERSIZE },
+        baseplateParams: {
+          ...s.layout.baseplateParams,
+          paddingLeft: 4,
+          paddingRight: 24,
+          paddingFront: 4,
+          paddingBack: 24,
+        },
+      },
+    }));
+    const { container } = renderOverlay();
+    const svg = screen.getByRole('img');
+    const svgW = Number(svg.getAttribute('width'));
+    const svgH = Number(svg.getAttribute('height'));
+    // Every drawn vertex (rim, plate boundary, shape) must sit inside the SVG —
+    // the outside hatch (path 0) uses H/V commands, so skip it.
+    const drawn = [...container.querySelectorAll('path')].slice(1);
+    expect(drawn.length).toBeGreaterThan(0);
+    for (const path of drawn) {
+      const nums = (path.getAttribute('d') ?? '').match(/-?\d+(?:\.\d+)?/g) ?? [];
+      for (let i = 0; i + 1 < nums.length; i += 2) {
+        expect(Number(nums[i])).toBeGreaterThanOrEqual(-0.05);
+        expect(Number(nums[i])).toBeLessThanOrEqual(svgW + 0.05);
+        expect(Number(nums[i + 1])).toBeGreaterThanOrEqual(-0.05);
+        expect(Number(nums[i + 1])).toBeLessThanOrEqual(svgH + 0.05);
+      }
+    }
   });
 
   it('omits the rim when padding would fold the shape (dropped by the resolver)', () => {

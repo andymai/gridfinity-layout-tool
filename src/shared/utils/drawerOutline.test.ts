@@ -314,25 +314,43 @@ describe('resizeDrawerOutline', () => {
     expect(outlineSignedArea(o)).toBeCloseTo((12 + 4) * U * U);
   });
 
-  it('resets when sequential growth would trap the notch as a hole', () => {
-    // Width growth welds a strip along the notch's right side; the later
-    // depth growth would then need to weld across two separate runs.
-    expect(resizeDrawerOutline(L_SHAPE, 4 * U, 4 * U, 5 * U, 5 * U, U)).toBeUndefined();
+  it('keeps the shape when a second-axis growth cannot weld (welds the first, notch stays open)', () => {
+    // Width growth welds a strip along the notch's right side; the later depth
+    // growth would then span two separate top runs, so it welds nothing and the
+    // width-grown shape is kept rather than discarded (#3114).
+    const grown = resizeDrawerOutline(L_SHAPE, 4 * U, 4 * U, 5 * U, 5 * U, U);
+    expect(grown).toBeDefined();
+    const o = grown as DrawerOutline;
+    expect(validateOutline(o, 5 * U, 5 * U, U)).toBeNull();
+    // L area (12) + welded right strip (1×4); the top stays open (unwelded).
+    expect(outlineSignedArea(o)).toBeCloseTo((12 + 4) * U * U);
   });
 
-  it('resets when the outline never touches the grown edge', () => {
+  it('keeps an off-edge outline when growing (the grid enlarges around it)', () => {
+    // An L inset from the 4-wide drawer's right edge: growing to 5 wide welds
+    // nothing (no run flush with the old edge), so it is kept unchanged, now
+    // offset within the larger grid (#3114).
     const inset: DrawerOutline = {
       vertices: [
         { x: 0, y: 0 },
         { x: 3 * U, y: 0 },
-        { x: 3 * U, y: 4 * U },
+        { x: 3 * U, y: 2 * U },
+        { x: U, y: 2 * U },
+        { x: U, y: 4 * U },
         { x: 0, y: 4 * U },
       ],
     };
-    expect(resizeDrawerOutline(inset, 4 * U, 4 * U, 5 * U, 4 * U, U)).toBeUndefined();
+    const grown = resizeDrawerOutline(inset, 4 * U, 4 * U, 5 * U, 4 * U, U);
+    expect(grown).toBeDefined();
+    const o = grown as DrawerOutline;
+    expect(validateOutline(o, 5 * U, 4 * U, U)).toBeNull();
+    expect(o.vertices).toEqual(inset.vertices);
   });
 
-  it('resets when growth would enclose a hole (two edge runs)', () => {
+  it('keeps a right-notched outline when growing past its two-run edge', () => {
+    // The notch cuts the old right edge into two runs; welding both would trap a
+    // hole. Growing instead keeps the shape, the notch now interior to the
+    // larger grid (#3114).
     const sideNotch: DrawerOutline = {
       vertices: [
         { x: 0, y: 0 },
@@ -346,7 +364,31 @@ describe('resizeDrawerOutline', () => {
       ],
     };
     expect(validateOutline(sideNotch, 4 * U, 4 * U, U)).toBeNull();
-    expect(resizeDrawerOutline(sideNotch, 4 * U, 4 * U, 5 * U, 4 * U, U)).toBeUndefined();
+    const grown = resizeDrawerOutline(sideNotch, 4 * U, 4 * U, 5 * U, 4 * U, U);
+    expect(grown).toBeDefined();
+    const o = grown as DrawerOutline;
+    expect(validateOutline(o, 5 * U, 4 * U, U)).toBeNull();
+    // Full 4×4 minus the 2×2 notch.
+    expect(outlineSignedArea(o)).toBeCloseTo((16 - 4) * U * U);
+  });
+
+  it('keeps an oversize outline on grow, revalidated against the larger bounds', () => {
+    // The perimeter already reaches past the old 4-wide grid (x = 4.5u).
+    // Growing welds nothing and keeps it, now within the 5-wide bounds (#3114).
+    const oversize: DrawerOutline = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 4.5 * U, y: 0 },
+        { x: 4.5 * U, y: 3.5 * U },
+        { x: 4 * U, y: 4 * U },
+        { x: 0, y: 4 * U },
+      ],
+    };
+    const grown = resizeDrawerOutline(oversize, 4 * U, 4 * U, 5 * U, 4 * U, U);
+    expect(grown).toBeDefined();
+    const o = grown as DrawerOutline;
+    expect(validateOutline(o, 5 * U, 4 * U, U)).toBeNull();
+    expect(o.vertices).toEqual(oversize.vertices);
   });
 
   it('resets when a shrink would split the shape into two components', () => {
