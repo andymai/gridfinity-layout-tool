@@ -4,6 +4,7 @@ import type { DrawerOutline, Layout } from '@/core/types';
 import { gridUnits, mm } from '@/core/types';
 import { createTestLayout } from '@/test/testUtils';
 import {
+  canonicalStartOutline,
   hashOutline,
   normalizeDrawerOutline,
   OUTLINE_MAX_VERTICES,
@@ -256,6 +257,56 @@ describe('hashOutline', () => {
       vertices: L_SHAPE.vertices.map((v) => ({ x: v.x + U, y: v.y })),
     };
     expect(hashOutline(shifted)).not.toBe(hashOutline(L_SHAPE));
+  });
+});
+
+describe('canonicalStartOutline', () => {
+  /** A rectangle chamfered at BL and TR — point-symmetric about its center. */
+  const SYM_CHAMFER: DrawerOutline = {
+    vertices: [
+      { x: U, y: 0 },
+      { x: 4 * U, y: 0 },
+      { x: 4 * U, y: 3 * U },
+      { x: 3 * U, y: 4 * U },
+      { x: 0, y: 4 * U },
+      { x: 0, y: U },
+    ],
+  };
+
+  /** Rotate the vertex list by `k` — same polygon, different starting vertex. */
+  const rotateStart = (outline: DrawerOutline, k: number): DrawerOutline => ({
+    vertices: [...outline.vertices.slice(k), ...outline.vertices.slice(0, k)],
+  });
+
+  it('is invariant to the starting vertex (cyclic shift)', () => {
+    const base = canonicalStartOutline(SYM_CHAMFER);
+    for (let k = 1; k < SYM_CHAMFER.vertices.length; k++) {
+      expect(canonicalStartOutline(rotateStart(SYM_CHAMFER, k)).vertices).toEqual(base.vertices);
+      expect(hashOutline(canonicalStartOutline(rotateStart(SYM_CHAMFER, k)))).toBe(
+        hashOutline(base)
+      );
+    }
+  });
+
+  it('collapses a point-symmetric outline and its 180° rotation to one hash', () => {
+    const rotated = rotateOutline180(SYM_CHAMFER, 4 * U, 4 * U);
+    // The 180° rotation of a point-symmetric loop is the same polygon shifted by
+    // n/2, so canonical-start hashes match even though raw hashes need not.
+    expect(hashOutline(canonicalStartOutline(rotated))).toBe(
+      hashOutline(canonicalStartOutline(SYM_CHAMFER))
+    );
+  });
+
+  it('keeps an asymmetric outline distinct from its 180° rotation', () => {
+    const rotated = rotateOutline180(L_SHAPE, 4 * U, 4 * U);
+    expect(hashOutline(canonicalStartOutline(rotated))).not.toBe(
+      hashOutline(canonicalStartOutline(L_SHAPE))
+    );
+  });
+
+  it('preserves winding and bulge association', () => {
+    const canon = canonicalStartOutline(CURVED_BACK);
+    expect(outlineSignedArea(canon)).toBeCloseTo(outlineSignedArea(CURVED_BACK));
   });
 });
 

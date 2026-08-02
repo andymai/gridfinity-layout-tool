@@ -8,7 +8,7 @@
 
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { hasAllEdgeSlots } from '@/shared/types/bin';
-import { hashOutline } from '@/shared/utils/drawerOutline';
+import { canonicalStartOutline, hashOutline } from '@/shared/utils/drawerOutline';
 import { exteriorCorners, type CornerKey } from '@/shared/generation/baseplateCorners';
 import type { BaseplatePiece } from '../types/tiling';
 import { pieceToBaseplateParams } from './splitPlanner';
@@ -68,8 +68,14 @@ export function computePieceFingerprint(params: ResolvedBaseplateParams): string
   // unaffected (only generation time); a window-clipped canonical form would
   // need the 2D polygon clipping this design avoids. Fully-inside pieces
   // carry no outline and keep sharing entries with plain rectangles.
+  //
+  // Canonicalize the loop's starting vertex so a point-symmetric outline and its
+  // 180° rotation (the same polygon shifted by n/2) hash equal — the outline is
+  // the only piece field whose 180° rotation isn't already a plain field swap, so
+  // this is what lets opposite corner tiles (whose rotated partner carries the
+  // rotated outline, see pieceToBaseplateParams) collapse into one shared mesh.
   if (params.outline !== undefined) {
-    parts.push(`ol:${hashOutline(params.outline)}`);
+    parts.push(`ol:${hashOutline(canonicalStartOutline(params.outline))}`);
   }
 
   // Edge classification (exterior vs join) affects geometry through two

@@ -1,7 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { computePieceFingerprint, groupPiecesByFingerprint } from './pieceFingerprint';
 import { computeBaseplateTiling } from './splitPlanner';
+import { rotateOutline180 } from '@/shared/utils/drawerOutline';
+import { cornerCutVertices } from '@/shared/utils/cornerCutOutline';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
+import type { DrawerOutline } from '@/core/types';
 
 function makeParams(overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams {
   return {
@@ -524,5 +527,88 @@ describe('groupPiecesByFingerprint', () => {
       const plain = makeParams({ width: 4, depth: 4, cornerRadius: 0, edges: interior });
       expect(computePieceFingerprint(padded)).not.toBe(computePieceFingerprint(plain));
     });
+  });
+});
+
+// ─── outline 180° dedup (point-symmetric plates, #3113) ──────────────────────
+// Mirrors the cornerRadii precedent above: a 180°-symmetric shape collapses its
+// opposite corner tiles into shared groups, an asymmetric one keeps them apart.
+describe('outline 180° dedup', () => {
+  const U = 42;
+  // 189mm bed tiles the 8×8 plate 2×2.
+  const BED = 4.5 * U;
+
+  const roundedAll = (r: number): DrawerOutline => ({
+    vertices: cornerCutVertices(8 * U, 8 * U, {
+      tl: { kind: 'radius', r },
+      tr: { kind: 'radius', r },
+      bl: { kind: 'radius', r },
+      br: { kind: 'radius', r },
+    }),
+  });
+
+  const roundedTrOnly = (r: number): DrawerOutline => ({
+    vertices: cornerCutVertices(8 * U, 8 * U, {
+      tl: { kind: 'none' },
+      tr: { kind: 'radius', r },
+      bl: { kind: 'none' },
+      br: { kind: 'none' },
+    }),
+  });
+
+  const shaped = (outline: DrawerOutline): ResolvedBaseplateParams =>
+    makeParams({
+      width: 8,
+      depth: 8,
+      connectorNubs: true,
+      preferIdenticalPieces: true,
+      outline,
+    });
+
+  it('collapses a point-symmetric radius-cut plate: 4 corners → 2 groups', () => {
+    const params = shaped(roundedAll(U));
+    const tiling = computeBaseplateTiling(params, BED);
+    expect(tiling.pieces).toHaveLength(4);
+    const groups = groupPiecesByFingerprint(tiling.pieces, params);
+    expect(groups.size).toBe(2);
+    for (const group of groups.values()) {
+      expect(group.indices).toHaveLength(2);
+    }
+  });
+
+  it('never merges a single rounded corner with its plain 180° opposite (no false dedupe)', () => {
+    const params = shaped(roundedTrOnly(U));
+    const tiling = computeBaseplateTiling(params, BED);
+    expect(tiling.pieces).toHaveLength(4);
+    const groups = groupPiecesByFingerprint(tiling.pieces, params);
+    // The two plain-rectangle corners (TL↔BR) still dedupe as before — that is
+    // the pre-existing preferIdenticalPieces behavior and is correct. The rounded
+    // TR corner must NOT collapse into its plain BL opposite, so it sits alone:
+    // three groups total, with the rounded corner in a singleton group.
+    expect(groups.size).toBe(3);
+    const b2Index = tiling.pieces.findIndex((p) => p.label === 'B2');
+    expect(b2Index).toBeGreaterThanOrEqual(0);
+    const b2Group = [...groups.values()].find((g) => g.indices.includes(b2Index));
+    expect(b2Group?.indices).toEqual([b2Index]);
+  });
+
+  it('hashes a point-symmetric outline equal to its 180° rotation', () => {
+    const P = roundedAll(U);
+    const base = shaped(P);
+    const rotated: ResolvedBaseplateParams = {
+      ...base,
+      outline: rotateOutline180(P, 8 * U, 8 * U),
+    };
+    expect(computePieceFingerprint(rotated)).toBe(computePieceFingerprint(base));
+  });
+
+  it('keeps an asymmetric outline distinct from its 180° rotation', () => {
+    const P = roundedTrOnly(U);
+    const base = shaped(P);
+    const rotated: ResolvedBaseplateParams = {
+      ...base,
+      outline: rotateOutline180(P, 8 * U, 8 * U),
+    };
+    expect(computePieceFingerprint(rotated)).not.toBe(computePieceFingerprint(base));
   });
 });

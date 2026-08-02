@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { mm } from '@/core/types';
-import type { StackPrintParams } from '@/core/types';
+import type { DrawerOutline, StackPrintParams } from '@/core/types';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import { computeBaseplateTiling } from './splitPlanner';
+import { cornerCutVertices } from '@/shared/utils/cornerCutOutline';
 import type { BaseplatePiece, BaseplateTiling } from '../types/tiling';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import {
@@ -402,6 +404,35 @@ describe('stackGroupsFromTiling', () => {
     expect(evaluateStackPrint(stackGroupsFromTiling(null, resolvedDefault, 3), 48, 5, 250)).toEqual(
       { kind: 'ok' }
     );
+  });
+
+  it('shares one tower per opposite-corner pair on a point-symmetric shaped plate (#3113)', () => {
+    // A 1-unit radius cut on all four corners of an 8×8 plate makes TL↔BR and
+    // TR↔BL 180° rotations, so the 2×2 split dedupes into two shared towers of
+    // quantity 2 — not four singletons.
+    const U = 42;
+    const outline: DrawerOutline = {
+      vertices: cornerCutVertices(8 * U, 8 * U, {
+        tl: { kind: 'radius', r: U },
+        tr: { kind: 'radius', r: U },
+        bl: { kind: 'radius', r: U },
+        br: { kind: 'radius', r: U },
+      }),
+    };
+    const params: ResolvedBaseplateParams = {
+      ...resolvedDefault,
+      width: 8,
+      depth: 8,
+      connectorNubs: true,
+      preferIdenticalPieces: true,
+      outline,
+    };
+    const tiling = computeBaseplateTiling(params, 4.5 * U);
+    expect(tiling.pieces).toHaveLength(4);
+
+    const groups = stackGroupsFromTiling(tiling, params);
+    expect(groups).toHaveLength(2);
+    expect(groups.every((g) => g.quantity === 2)).toBe(true);
   });
 });
 

@@ -34,7 +34,7 @@ import type {
 } from '../types/tiling';
 import { estimateBedLoads, type Footprint } from './bedPacking';
 import type { DrawerOutline } from '@/core/types';
-import { translateOutline } from '@/shared/utils/drawerOutline';
+import { rotateOutline180, translateOutline } from '@/shared/utils/drawerOutline';
 import { classifyRect, type RegionClass } from '@/shared/utils/drawerOutlineGeometry';
 import { FRACTIONAL_THRESHOLD, isFractional, reorderForDisplay } from './splitReorder';
 
@@ -938,10 +938,16 @@ export function computeBaseplateTiling(
  * of the whole shared span must be fully inside. Partial seams (and seams to
  * dropped neighbors) become plain butt joints — both facing edges 'exterior'.
  *
- * `placementRotationDeg` is forced to 0: the preferIdenticalPieces 180° mesh
- * sharing pairs opposite corners of a SYMMETRIC tiling, which dropping and
- * reclassification break. Congruent pieces still dedupe via identical
- * fingerprints.
+ * `placementRotationDeg` follows the same palindromic rule the rectangular path
+ * uses, but computed from the RECLASSIFIED edges (partial/dropped seams demote
+ * some joins to exterior first). On a point-symmetric outline this lets opposite
+ * corner tiles (TL↔BR, TR↔BL) share one canonical mesh placed rotated 180° —
+ * their piece-local outlines are 180° rotations of each other, which the
+ * cyclic-start-canonical outline hash (see pieceFingerprint) collapses to one
+ * fingerprint. `placementRotationDeg` follows the edge layout, not the outline,
+ * so a non-symmetric piece may still be placed at 180 — but its rotated outline
+ * differs from any partner's, so the fingerprints diverge and it never shares a
+ * tower (it stays in its own group; the rotation only affects placement).
  *
  * The outline is plate-local mm over the padded extent (corner-cut shapes
  * compose with padding), so windows are the pieces' padded slab extents:
@@ -1007,6 +1013,10 @@ function applyOutlineToTiling(
     back: [0, 1],
   };
 
+  // Mirrors computeBaseplateTiling: preferIdenticalPieces only engages when
+  // connectors are on (the UI checkbox is hidden otherwise, but the flag persists).
+  const palindromic = !!params.preferIdenticalPieces && !!params.connectorNubs;
+
   const survivors: BaseplatePiece[] = [];
   for (const piece of tiling.pieces) {
     const cls = classAt(piece.col, piece.row);
@@ -1020,11 +1030,15 @@ function applyOutlineToTiling(
       if (neighborDropped || !fullSeam(piece, side)) edges[side] = 'exterior';
     }
 
+    // Canonicalize from the RECLASSIFIED edges: the 180° share only applies once
+    // partial/dropped seams have demoted their joins to exterior.
+    const needs180 = palindromic && edgeKey(edges) > edgeKey(rotateEdges180(edges));
+
     const w = windowOf(piece);
     survivors.push({
       ...piece,
       edges,
-      placementRotationDeg: 0,
+      placementRotationDeg: needs180 ? 180 : 0,
       ...(cls === 'partial' ? { outlineWindowOriginMm: { x: w.x0, y: w.y0 } } : {}),
     });
   }
@@ -1119,15 +1133,30 @@ export function pieceToBaseplateParams(
   // Partial pieces get the plate outline translated into their local frame;
   // the generator's 3D intersect performs the window clip (the piece slab IS
   // the window), so no 2D clipping is needed here. Fully-inside pieces carry
-  // no outline and stay byte-identical to unshaped rectangles.
-  const pieceOutline =
-    parentParams.outline !== undefined && piece.outlineWindowOriginMm !== undefined
-      ? translateOutline(
-          parentParams.outline,
-          -piece.outlineWindowOriginMm.x,
-          -piece.outlineWindowOriginMm.y
-        )
-      : undefined;
+  // no outline and stay byte-identical to unshaped rectangles. Under `rot` the
+  // outline is the ONLY positional field not yet rotated (padding/edges/
+  // fractionalEdge/cornerRadii already are), so rotate it 180° about the window
+  // center. Window extents are rotation-invariant per-axis sums, so they need no
+  // swap. On a point-symmetric outline this lands the rotated partner's local
+  // outline exactly on its canonical mate's (see the cyclic-start fingerprint).
+  const pieceOutline = ((): ResolvedBaseplateParams['outline'] => {
+    if (parentParams.outline === undefined || piece.outlineWindowOriginMm === undefined) {
+      return undefined;
+    }
+    const local = translateOutline(
+      parentParams.outline,
+      -piece.outlineWindowOriginMm.x,
+      -piece.outlineWindowOriginMm.y
+    );
+    if (!rot) return local;
+    const windowW =
+      piece.widthUnits * parentParams.gridUnitMm + piece.paddingLeft + piece.paddingRight;
+    const windowD =
+      piece.depthUnits * (parentParams.gridUnitMmY ?? parentParams.gridUnitMm) +
+      piece.paddingFront +
+      piece.paddingBack;
+    return rotateOutline180(local, windowW, windowD);
+  })();
 
   return {
     width: piece.widthUnits,
