@@ -38,12 +38,9 @@ import { DEFAULT_BIN_PARAMS, DEFAULT_FLOOR_PATTERN_CONFIG } from '../../constant
 import { isErr } from '@/core/result';
 import {
   carryCompartmentTextsByPosition,
-  remapLabelPlateWidths,
-  remapLabelIcons,
   isRectangularSelection,
-  normalizeIdsWithRemap,
-  remapCompartmentTexts,
-  remapDividerOverrides,
+  mergeCells,
+  splitCompartment,
 } from '../../utils/compartments';
 import { validateCompartmentSizes } from '../../utils/validation';
 import { defaultsForNewDesign, paramsNeedHalfGridMode, pushHistoryEntry } from '../helpers';
@@ -386,34 +383,14 @@ export function createParamSlice(set: Set, get: Get) {
       const { params } = get();
       const { cols } = params.compartments;
 
+      // Guard before the history entry so a non-rectangular selection (which the
+      // canonical mergeCells rejects with null) stays a true no-op.
       if (!isRectangularSelection(cols, cellIndices)) return;
-
-      const existingIds = cellIndices.map((i) => params.compartments.cells[i]);
-      const targetId = Math.min(...existingIds);
 
       set((state) => {
         pushHistoryEntry(state);
-        const newCells = [...state.params.compartments.cells];
-        for (const idx of cellIndices) {
-          newCells[idx] = targetId;
-        }
-        const { cells: normalized, remap } = normalizeIdsWithRemap(newCells);
-        const prevTexts = state.params.compartments.compartmentTexts;
-        const prevPlateWidths = state.params.compartments.labelPlateWidths;
-        const prevIcons = state.params.compartments.labelIcons;
-        const prevOverrides = state.params.compartments.dividerOverrides;
-        state.params.compartments = {
-          ...state.params.compartments,
-          cells: normalized,
-          ...(prevTexts ? { compartmentTexts: remapCompartmentTexts(prevTexts, remap) } : {}),
-          ...(prevPlateWidths
-            ? { labelPlateWidths: remapLabelPlateWidths(prevPlateWidths, remap) }
-            : {}),
-          ...(prevIcons ? { labelIcons: remapLabelIcons(prevIcons, remap) } : {}),
-          ...(prevOverrides
-            ? { dividerOverrides: remapDividerOverrides(prevOverrides, remap) }
-            : {}),
-        };
+        state.params.compartments =
+          mergeCells(state.params.compartments, cellIndices) ?? state.params.compartments;
       });
     },
 
@@ -434,35 +411,7 @@ export function createParamSlice(set: Set, get: Get) {
 
       set((state) => {
         pushHistoryEntry(state);
-        const newCells = [...state.params.compartments.cells];
-        let nextId = Math.max(...newCells) + 1;
-        let first = true;
-        for (let i = 0; i < newCells.length; i++) {
-          if (newCells[i] === compartmentId) {
-            if (first) {
-              first = false;
-            } else {
-              newCells[i] = nextId++;
-            }
-          }
-        }
-        const { cells: normalized, remap } = normalizeIdsWithRemap(newCells);
-        const prevTexts = state.params.compartments.compartmentTexts;
-        const prevPlateWidths = state.params.compartments.labelPlateWidths;
-        const prevIcons = state.params.compartments.labelIcons;
-        const prevOverrides = state.params.compartments.dividerOverrides;
-        state.params.compartments = {
-          ...state.params.compartments,
-          cells: normalized,
-          ...(prevTexts ? { compartmentTexts: remapCompartmentTexts(prevTexts, remap) } : {}),
-          ...(prevPlateWidths
-            ? { labelPlateWidths: remapLabelPlateWidths(prevPlateWidths, remap) }
-            : {}),
-          ...(prevIcons ? { labelIcons: remapLabelIcons(prevIcons, remap) } : {}),
-          ...(prevOverrides
-            ? { dividerOverrides: remapDividerOverrides(prevOverrides, remap) }
-            : {}),
-        };
+        state.params.compartments = splitCompartment(state.params.compartments, compartmentId);
       });
     },
 

@@ -31,6 +31,8 @@ import {
   getEligibleDividers,
   isRectangularSelection,
   cellIndex,
+  previewMergeCells,
+  previewSplitCells,
 } from '@/features/bin-designer/utils/compartments';
 import {
   minUniformCavity,
@@ -227,7 +229,6 @@ export function CompartmentEditor() {
     if (!isDragging || selection.size < 2 || selectionAction === 'none') return null;
 
     const indices = [...selection];
-    const newCells = [...cells];
 
     // Compute selection bounds
     let minCol = cols,
@@ -243,19 +244,10 @@ export function CompartmentEditor() {
       maxRow = Math.max(maxRow, row);
     }
 
-    if (selectionAction === 'merge') {
-      // Merge: assign all selected cells to a new ID (use first selected ID)
-      const targetId = cells[indices[0]];
-      for (const idx of indices) {
-        newCells[idx] = targetId;
-      }
-    } else {
-      // Split: assign each cell a unique ID
-      let nextId = Math.max(...cells) + 1;
-      for (const idx of indices) {
-        newCells[idx] = nextId++;
-      }
-    }
+    const newCells =
+      selectionAction === 'merge'
+        ? previewMergeCells(cells, indices)
+        : previewSplitCells(cells, indices);
 
     return {
       compartments: { cols, rows, thickness, cells: newCells },

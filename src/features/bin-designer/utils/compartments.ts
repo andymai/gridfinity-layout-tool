@@ -795,6 +795,49 @@ export function splitCompartment(
 }
 
 /**
+ * Cells-only preview of a merge: assign every selected cell to the first
+ * selection's compartment ID. Returns a fresh array.
+ *
+ * Deliberately skips ID normalization and the parallel-array remap that the
+ * committed {@link mergeCells} performs — a drag ghost only needs the cell
+ * partition to derive divider walls, and normalizing the preview would renumber
+ * IDs the committed result hasn't yet applied.
+ */
+export function previewMergeCells(
+  cells: readonly number[],
+  cellIndices: readonly number[]
+): number[] {
+  const next = [...cells];
+  if (cellIndices.length === 0) return next;
+  const targetId = cells[cellIndices[0]];
+  for (const idx of cellIndices) {
+    next[idx] = targetId;
+  }
+  return next;
+}
+
+/**
+ * Cells-only preview of a split: give each selected cell a fresh unique ID,
+ * counting up from the current maximum in the order the indices are supplied.
+ * Leaves unselected cells untouched. Returns a fresh array.
+ *
+ * Like {@link previewMergeCells}, this skips normalization and parallel-array
+ * remap — those belong to the commit path. Callers that need a canonical grid
+ * (e.g. a committed split) wrap the result in {@link normalizeIds}.
+ */
+export function previewSplitCells(
+  cells: readonly number[],
+  cellIndices: readonly number[]
+): number[] {
+  const next = [...cells];
+  let nextId = Math.max(...cells) + 1;
+  for (const idx of cellIndices) {
+    next[idx] = nextId++;
+  }
+  return next;
+}
+
+/**
  * Normalize compartment IDs to be contiguous starting from 0.
  * Preserves spatial ordering (top-left to bottom-right first occurrence).
  */
