@@ -4,21 +4,11 @@ import type { CommunityCategory, CommunityIndexSort } from '@/shared/types/commu
 import { COMMUNITY_CATEGORIES, COMMUNITY_INDEX_SORTS } from '@/shared/types/community';
 import type { ExampleTechnique } from '@/shared/types/exampleTechniques';
 import { TECHNIQUE_CONFIG } from '@/shared/types/exampleTechniques';
+import { CATEGORY_LABEL_KEYS } from '../../utils/categoryLabels';
 
 export const ALL_TECHNIQUES = Object.keys(TECHNIQUE_CONFIG) as readonly ExampleTechnique[];
 
 export const CATEGORY_ALL = 'all';
-
-const CATEGORY_LABEL_KEYS: Record<CommunityCategory, string> = {
-  tools: 'community.category.tools',
-  hardware: 'community.category.hardware',
-  kitchen: 'community.category.kitchen',
-  office: 'community.category.office',
-  crafts: 'community.category.crafts',
-  electronics: 'community.category.electronics',
-  'toys-games': 'community.category.toysGames',
-  other: 'community.category.other',
-};
 
 const SORT_LABEL_KEYS: Record<CommunityIndexSort, string> = {
   newest: 'community.gallery.sort.newest',

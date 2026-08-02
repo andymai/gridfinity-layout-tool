@@ -9,6 +9,8 @@ import type {
   CommunityDesign,
   CommunityDesignLineage,
 } from '@/shared/types/community';
+import { COMMUNITY_CATEGORIES } from '@/shared/types/community';
+import { TECHNIQUE_CONFIG } from '@/shared/types/exampleTechniques';
 
 const COMMUNITY_ENDPOINT = '/api/community';
 
@@ -92,8 +94,10 @@ function isCommunityDesign(value: unknown): value is CommunityDesign {
     typeof value.authorName === 'string' &&
     typeof value.name === 'string' &&
     typeof value.description === 'string' &&
-    typeof value.category === 'string' &&
+    isKnownCategory(value.category) &&
     Array.isArray(value.techniques) &&
+    value.techniques.every(isKnownTechnique) &&
+    value.techniques.every(isKnownTechnique) &&
     isRecord(value.params) &&
     isRecord(value.metrics) &&
     (value.lineage === null || isRecord(value.lineage)) &&
@@ -119,6 +123,16 @@ function isDetailResponse(value: unknown): value is { design: CommunityDesign; i
   return isDesignResponse(value) && (!('isOwner' in value) || typeof value.isOwner === 'boolean');
 }
 
+const KNOWN_TECHNIQUES: readonly string[] = Object.keys(TECHNIQUE_CONFIG);
+
+function isKnownCategory(value: unknown): value is CommunityCategory {
+  return typeof value === 'string' && (COMMUNITY_CATEGORIES as readonly string[]).includes(value);
+}
+
+function isKnownTechnique(value: unknown): boolean {
+  return typeof value === 'string' && KNOWN_TECHNIQUES.includes(value);
+}
+
 function isCommunityCard(value: unknown): value is CommunityCard {
   if (!isRecord(value)) return false;
   const counts: unknown = value.counts;
@@ -128,8 +142,9 @@ function isCommunityCard(value: unknown): value is CommunityCard {
     typeof value.name === 'string' &&
     typeof value.authorName === 'string' &&
     typeof value.authorPublicId === 'string' &&
-    typeof value.category === 'string' &&
+    isKnownCategory(value.category) &&
     Array.isArray(value.techniques) &&
+    value.techniques.every(isKnownTechnique) &&
     isRecord(metrics) &&
     typeof metrics.width === 'number' &&
     typeof metrics.depth === 'number' &&

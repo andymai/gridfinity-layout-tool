@@ -49,7 +49,11 @@ export function useGalleryTab(): UseGalleryTab {
   const [activeTab, setActiveTabState] = useState<GalleryTabId>(
     () => loadStoredTab() ?? 'examples'
   );
-  const [communityOpened, setCommunityOpened] = useState<boolean>(hasCommunityBeenOpened);
+  // A stored active tab of 'community' implies it has been opened even if the
+  // opened marker is missing, so the active tab never carries the New dot.
+  const [communityOpened, setCommunityOpened] = useState<boolean>(
+    () => hasCommunityBeenOpened() || loadStoredTab() === 'community'
+  );
 
   const setActiveTab = useCallback((tab: GalleryTabId) => {
     setActiveTabState(tab);
