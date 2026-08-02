@@ -16,15 +16,22 @@ import {
   saveDesign,
   updateDesignTags,
 } from '@/features/bin-designer/storage/DesignerStorage';
-import { Menu, Button, IconButton, XIcon, PlusIcon } from '@/design-system';
 import { useBinDefaults } from '../../hooks';
-import { collectTags, filterByTags, toggleTag } from '@/features/bin-designer/utils/tagFilter';
+import { collectTags, toggleTag } from '@/features/bin-designer/utils/tagFilter';
 import { normalizeTags, tagsEqual } from '@/features/bin-designer/utils/tags';
 import { TagFilterBar } from './TagFilterBar';
 import { BulkActionBar } from './BulkActionBar';
 import { TagEditDialog } from './TagEditDialog';
 import { TagManagerDialog } from '../TagManagerDialog';
 import { useDesignSelection } from './useDesignSelection';
+import { DesignListHeader } from './DesignListHeader';
+import { DesignListSkeleton } from './DesignListSkeleton';
+import { DesignListEmptyState } from './DesignListEmptyState';
+import { DesignListNoResults } from './DesignListNoResults';
+import { DesignListOptionsMenu } from './DesignListOptionsMenu';
+import { DesignItemsView } from './DesignItemsView';
+import { filterAndSortDesigns, SORT_OPTIONS, SORT_OPTION_KEYS } from './designListSort';
+import type { SortOption } from './designListSort';
 import { removeRegistryEntry } from '../../store/customBinRegistry';
 import { useDesignerStore } from '../../store';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
@@ -33,13 +40,10 @@ import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
 import { useResponsive } from '@/shared/hooks';
 import { ItemListShell } from '@/shared/components';
-import { DesignGridItem } from '../DesignGridItem';
-import { DesignListItem } from '../DesignListItem';
 import { DesignImportView } from '../DesignImportView';
 import { ImportBinDialog, useImportBinDesign } from '../ImportBinDialog';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import type { SavedDesign, BinParams } from '../../types';
-import { designFootprint } from '../../utils/designKind';
 import { useThumbnailRegeneration } from '../../hooks/useThumbnailRegeneration';
 import { useTranslation } from '@/i18n';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog/ConfirmDialog';
@@ -50,18 +54,6 @@ interface DesignListDialogProps {
   open: boolean;
   onClose: () => void;
 }
-
-type SortOption = 'recent' | 'name' | 'size';
-
-/** Sort option values - labels are generated dynamically via i18n */
-const SORT_OPTIONS: readonly SortOption[] = ['recent', 'name', 'size'] as const;
-
-/** i18n key mapping for sort options */
-const SORT_OPTION_KEYS: Record<SortOption, string> = {
-  recent: 'binDesigner.sortRecent',
-  name: 'binDesigner.sortName',
-  size: 'binDesigner.sortSize',
-};
 
 /**
  * Renders a modal dialog listing saved designs and providing load, rename, duplicate, delete, and create actions.
@@ -200,34 +192,10 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   }
 
   // Filter and sort designs
-  const sortedDesigns = useMemo(() => {
-    let filtered = filterByTags(designs, activeTags);
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter((d) => d.name.toLowerCase().includes(query));
-    }
-
-    return [...filtered].sort((a, b) => {
-      // Active design always first
-      if (a.id === currentDesignId) return -1;
-      if (b.id === currentDesignId) return 1;
-
-      switch (sortBy) {
-        case 'name':
-          return a.name.localeCompare(b.name);
-        case 'size': {
-          const af = designFootprint(a);
-          const bf = designFootprint(b);
-          const aSize = af.width * af.depth * Math.max(af.height, 1);
-          const bSize = bf.width * bf.depth * Math.max(bf.height, 1);
-          return bSize - aSize;
-        }
-        case 'recent':
-        default:
-          return b.updatedAt.localeCompare(a.updatedAt);
-      }
-    });
-  }, [designs, activeTags, searchQuery, sortBy, currentDesignId]);
+  const sortedDesigns = useMemo(
+    () => filterAndSortDesigns(designs, { activeTags, searchQuery, sortBy, currentDesignId }),
+    [designs, activeTags, searchQuery, sortBy, currentDesignId]
+  );
 
   // Get localized sort options
   const localizedSortOptions = useMemo(
@@ -528,6 +496,27 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
     [loadDesign, navigateToDesign, addToast, onClose, t]
   );
 
+  const registerItemRef = useCallback((id: string, el: HTMLDivElement | HTMLLIElement | null) => {
+    if (el) itemRefs.current.set(id, el);
+    else itemRefs.current.delete(id);
+  }, []);
+
+  const itemViewProps = {
+    currentDesignId,
+    focusedIndex,
+    selectionActive: selection.active,
+    isSelected: selection.isSelected,
+    onLoad: handleLoad,
+    onDownloadJSON: handleDownloadJSON,
+    onRename: (design: SavedDesign, newName: string) => void handleRename(design, newName),
+    onEditTags: (design: SavedDesign) => setTagEdit({ mode: 'single', design }),
+    onDuplicate: (design: SavedDesign) => void handleDuplicate(design),
+    onDelete: (design: SavedDesign) => void handleDelete(design),
+    onFocus: setFocusedIndex,
+    onToggleSelect: selection.toggle,
+    registerItemRef,
+  };
+
   if (!open) return null;
 
   return (
@@ -548,80 +537,16 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
         aria-modal="true"
         aria-label={t('binDesigner.savedDesigns')}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-stroke-subtle px-5 py-4">
-          <h2 className="text-lg font-semibold text-content">{t('binDesigner.savedDesigns')}</h2>
-          <div className="flex flex-wrap items-center gap-2">
-            {!showImport && designs.length > 0 && !selection.active && (
-              <Button
-                variant="secondary"
-                onClick={() => selection.enter()}
-                className="rounded-md bg-surface-secondary px-3 py-1.5 text-sm font-medium text-content border border-stroke transition-colors hover:bg-surface-hover"
-              >
-                {t('binDesigner.select')}
-              </Button>
-            )}
-            <Button
-              variant="secondary"
-              onClick={() => setShowImport(true)}
-              className="rounded-md bg-surface-secondary px-3 py-1.5 text-sm font-medium text-content border border-stroke transition-colors hover:bg-surface-hover"
-            >
-              {t('common.import')}
-            </Button>
-            <Button
-              variant="primary"
-              onClick={handleNewDesign}
-              className="rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover"
-            >
-              {t('binDesigner.newDesign')}
-            </Button>
-            <IconButton
-              type="button"
-              size="md"
-              touchTarget={false}
-              onClick={handleOpenOptionsMenu}
-              className="relative h-auto w-auto rounded-md p-1.5 text-content-secondary border border-stroke transition-colors hover:bg-surface-hover hover:text-content"
-              aria-label={
-                customDefaultActive
-                  ? `${t('binDesigner.moreOptions')} — ${t('binDesigner.customDefaultActive')}`
-                  : t('binDesigner.moreOptions')
-              }
-              aria-haspopup="menu"
-              aria-expanded={optionsMenu.open}
-              title={t('binDesigner.moreOptions')}
-            >
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 5v.01M12 12v.01M12 19v.01"
-                />
-              </svg>
-              {customDefaultActive && (
-                <span
-                  className="absolute right-0.5 top-0.5 h-2 w-2 rounded-full bg-accent ring-2 ring-surface-secondary"
-                  aria-hidden="true"
-                />
-              )}
-            </IconButton>
-            <IconButton
-              size="sm"
-              touchTarget={false}
-              onClick={onClose}
-              className="h-auto w-auto rounded-md p-1 text-content-secondary hover:bg-surface-hover hover:text-content"
-              aria-label={t('common.close')}
-            >
-              <XIcon className="h-5 w-5" />
-            </IconButton>
-          </div>
-        </div>
+        <DesignListHeader
+          showSelectButton={!showImport && designs.length > 0 && !selection.active}
+          optionsMenuOpen={optionsMenu.open}
+          customDefaultActive={customDefaultActive}
+          onEnterSelect={() => selection.enter()}
+          onShowImport={() => setShowImport(true)}
+          onNewDesign={handleNewDesign}
+          onOpenOptionsMenu={handleOpenOptionsMenu}
+          onClose={onClose}
+        />
 
         {/* Design list or import view */}
         <div className="flex-1 min-h-0 flex flex-col px-5 py-3" aria-busy={loading}>
@@ -643,53 +568,9 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
               />
             </>
           ) : loading ? (
-            <div className="space-y-2 py-2">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="flex animate-pulse motion-reduce:animate-none items-center gap-3 rounded-lg border border-stroke-subtle px-3 py-2.5"
-                >
-                  <div className="h-10 w-10 flex-shrink-0 rounded-md bg-surface-elevated" />
-                  <div className="flex-1 space-y-1.5">
-                    <div className="h-3.5 w-24 rounded bg-surface-elevated" />
-                    <div className="h-3 w-16 rounded bg-surface-elevated" />
-                  </div>
-                </div>
-              ))}
-            </div>
+            <DesignListSkeleton />
           ) : designs.length === 0 ? (
-            <div className="py-8 text-center">
-              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-surface-elevated">
-                <svg
-                  className="h-6 w-6 text-content-tertiary"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                  />
-                </svg>
-              </div>
-              <p className="text-sm font-medium text-content-secondary">
-                {t('binDesigner.noSavedDesignsYet')}
-              </p>
-              <p className="mt-1 text-xs text-content-disabled">
-                {t('binDesigner.changesAreSavedAutomaticallyAsYouDe')}
-              </p>
-              <Button
-                variant="primary"
-                onClick={handleNewDesign}
-                className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover"
-                leftIcon={<PlusIcon className="h-4 w-4" />}
-              >
-                {t('binDesigner.startANewDesign')}
-              </Button>
-            </div>
+            <DesignListEmptyState onNewDesign={handleNewDesign} />
           ) : (
             <ItemListShell
               items={sortedDesigns}
@@ -739,74 +620,15 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
                   aria-label={t('binDesigner.savedDesigns')}
                   className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3 content-start"
                 >
-                  {items.map((design, index) => (
-                    <DesignGridItem
-                      key={design.id}
-                      design={design}
-                      isActive={design.id === currentDesignId}
-                      isFocused={index === focusedIndex}
-                      onSelect={() => handleLoad(design)}
-                      onDownloadJSON={() => handleDownloadJSON(design)}
-                      onRename={(newName) => void handleRename(design, newName)}
-                      onEditTags={() => setTagEdit({ mode: 'single', design })}
-                      onDuplicate={() => void handleDuplicate(design)}
-                      onDelete={() => void handleDelete(design)}
-                      onFocus={() => setFocusedIndex(index)}
-                      selectionActive={selection.active}
-                      isSelected={selection.isSelected(design.id)}
-                      onToggleSelect={() => selection.toggle(design.id)}
-                      itemRef={(el) => {
-                        if (el) itemRefs.current.set(design.id, el);
-                        else itemRefs.current.delete(design.id);
-                      }}
-                    />
-                  ))}
+                  <DesignItemsView variant="grid" items={items} {...itemViewProps} />
                 </div>
               )}
               renderList={(items) => (
                 <ul role="listbox" aria-label={t('binDesigner.savedDesigns')} className="space-y-2">
-                  {items.map((design, index) => (
-                    <DesignListItem
-                      key={design.id}
-                      design={design}
-                      isActive={design.id === currentDesignId}
-                      isFocused={index === focusedIndex}
-                      onSelect={() => handleLoad(design)}
-                      onDownloadJSON={() => handleDownloadJSON(design)}
-                      onRename={(newName) => void handleRename(design, newName)}
-                      onEditTags={() => setTagEdit({ mode: 'single', design })}
-                      onDuplicate={() => void handleDuplicate(design)}
-                      onDelete={() => void handleDelete(design)}
-                      onFocus={() => setFocusedIndex(index)}
-                      selectionActive={selection.active}
-                      isSelected={selection.isSelected(design.id)}
-                      onToggleSelect={() => selection.toggle(design.id)}
-                      itemRef={(el) => {
-                        if (el) itemRefs.current.set(design.id, el);
-                        else itemRefs.current.delete(design.id);
-                      }}
-                    />
-                  ))}
+                  <DesignItemsView variant="list" items={items} {...itemViewProps} />
                 </ul>
               )}
-              noResultsState={
-                <div className="text-center py-8 text-content-tertiary">
-                  <svg
-                    className="w-10 h-10 mx-auto mb-3 opacity-50"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
-                  <p>{t('binDesigner.noDesignsMatch', { query: searchQuery })}</p>
-                </div>
-              }
+              noResultsState={<DesignListNoResults searchQuery={searchQuery} />}
               footer={t('binDesigner.designCount', { count: designs.length })}
             />
           )}
@@ -850,72 +672,18 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
         onConfirm={() => void handleBulkDelete()}
         onCancel={() => setShowBulkDeleteConfirm(false)}
       />
-      <Menu.Root
+      <DesignListOptionsMenu
         open={optionsMenu.open}
-        onClose={closeOptionsMenu}
         position={optionsMenu.position}
-        className="min-w-[18rem]"
-      >
-        {customDefaultActive && (
-          <div
-            className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-content-tertiary"
-            aria-hidden="true"
-          >
-            <span className="h-2 w-2 rounded-full bg-accent" />
-            {t('binDesigner.customDefaultActive')}
-          </div>
-        )}
-        <Menu.Item
-          icon={
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-          }
-          onClick={setCurrentAsDefault}
-        >
-          {t('binDesigner.setAsDefault')}
-        </Menu.Item>
-        <Menu.Item
-          icon={
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
-              />
-            </svg>
-          }
-          onClick={() => {
-            closeOptionsMenu();
-            setShowTagManager(true);
-          }}
-        >
-          {t('binDesigner.tagManager.menuItem')}
-        </Menu.Item>
-        <Menu.Divider />
-        <Menu.Item
-          icon={
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-              />
-            </svg>
-          }
-          disabled={!customDefaultActive}
-          onClick={resetToFactory}
-        >
-          {t('binDesigner.resetFactoryDefaults')}
-        </Menu.Item>
-      </Menu.Root>
+        customDefaultActive={customDefaultActive}
+        onClose={closeOptionsMenu}
+        onSetDefault={setCurrentAsDefault}
+        onOpenTagManager={() => {
+          closeOptionsMenu();
+          setShowTagManager(true);
+        }}
+        onResetFactory={resetToFactory}
+      />
     </div>
   );
 }
