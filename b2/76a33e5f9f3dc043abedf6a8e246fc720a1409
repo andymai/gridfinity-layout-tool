@@ -1,0 +1,23 @@
+api/community.ts
+  s_48a510eaef7c22::t_8495a9cb8ae614 135-141,144-147
+scripts/community-admin/commands/list.ts
+  s_48a510eaef7c22::t_79c49b61d7228b 23-26
+scripts/community-admin/commands/purge.ts
+  s_48a510eaef7c22::t_159dfab1115b9a 65-71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "b276a33e5f9f3dc043abedf6a8e246fc720a1409",
+  "prompts": {},
+  "sessions": {
+    "s_48a510eaef7c22": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fda9511-153c-4dd5-bba7-05895a1e12c3",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
