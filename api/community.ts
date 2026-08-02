@@ -28,6 +28,7 @@ import {
   deriveCommunityMetrics,
   readCommunityCards,
   readCommunityDesignBlob,
+  removeFromCommunityIndexes,
   upsertCommunityIndexes,
   writeCommunityCard,
   writeCommunityDesignBlob,
@@ -311,6 +312,25 @@ async function handlePublish(req: VercelRequest, res: VercelResponse): Promise<v
         logger.error('Rollback failed: orphan community design blob left after publish failure', {
           id,
           error: delErr instanceof Error ? delErr.message : String(delErr),
+        });
+      });
+      // Redis writes may have partially landed before the failure; without
+      // this cleanup a stranded card hash surfaces in the gallery list while
+      // the detail 404s, and the published-set entry burns a quota slot.
+      await (async () => {
+        const cleanup = redis.pipeline();
+        cleanup.del(communityDesignKey(id));
+        cleanup.srem(communityPublishedKey(session.userId), id);
+        cleanup.srem(communityAuthorKey(authorPublicId), id);
+        if (lineage !== null) {
+          cleanup.srem(communityChildrenKey(lineage.parentId), id);
+        }
+        await cleanup.exec();
+        await removeFromCommunityIndexes(redis, id);
+      })().catch((cleanupErr: unknown) => {
+        logger.error('Rollback failed: orphan community redis entries left after publish failure', {
+          id,
+          error: cleanupErr instanceof Error ? cleanupErr.message : String(cleanupErr),
         });
       });
       throw writeErr;

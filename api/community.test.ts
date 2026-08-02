@@ -109,6 +109,19 @@ class FakeRedis {
     return this.zsets.get(key)?.delete(member) ? 1 : 0;
   }
 
+  async srem(key: string, member: string): Promise<number> {
+    return this.sets.get(key)?.delete(member) ? 1 : 0;
+  }
+
+  async del(...keys: string[]): Promise<number> {
+    let removed = 0;
+    for (const key of keys) {
+      const had = this.hashes.delete(key) || this.sets.delete(key) || this.zsets.delete(key);
+      if (had) removed += 1;
+    }
+    return removed;
+  }
+
   async zrevrange(key: string, start: number, stop: number): Promise<string[]> {
     const entries = [...(this.zsets.get(key) ?? new Map<string, number>()).entries()].sort(
       (a, b) => b[1] - a[1] || (a[0] < b[0] ? 1 : -1)
@@ -139,6 +152,14 @@ class FakeRedis {
       },
       zrem: (key: string, member: string) => {
         ops.push(() => this.zrem(key, member));
+        return pipe;
+      },
+      srem: (key: string, member: string) => {
+        ops.push(() => this.srem(key, member));
+        return pipe;
+      },
+      del: (...keys: string[]) => {
+        ops.push(() => this.del(...keys));
         return pipe;
       },
       exec: async (): Promise<Array<[Error | null, unknown]>> => {
@@ -477,6 +498,24 @@ describe('POST /api/community (publish)', () => {
     expect(fake.zsets.get(communityIndexKey('newest'))?.has(body.id)).toBe(true);
     expect(await fake.hget(communityDesignKey(body.id), 'status')).toBe('live');
     expect(await fake.hget(communityDesignKey(body.id), 'contentHash')).toMatch(/^[a-f0-9]{32}$/);
+  });
+
+  it('rolls back redis state when a write fails mid-publish', async () => {
+    const originalSadd = fake.sadd.bind(fake);
+    fake.sadd = async (key: string, member: string): Promise<number> => {
+      if (key.startsWith('community:author:')) {
+        throw new Error('redis write failed');
+      }
+      return originalSadd(key, member);
+    };
+
+    const res = await handle({ body: publishBody() });
+    expect(res._status).toBe(500);
+
+    expect(await fake.smembers(communityPublishedKey('user-1'))).toEqual([]);
+    expect(fake.zsets.get(communityIndexKey('newest'))?.size ?? 0).toBe(0);
+    const hashKeys = [...fake.hashes.keys()].filter((key) => key.startsWith('community:design:'));
+    expect(hashKeys).toEqual([]);
   });
 
   it('republishing identical content returns the existing id with 200', async () => {

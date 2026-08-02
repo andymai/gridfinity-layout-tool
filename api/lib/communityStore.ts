@@ -10,7 +10,7 @@
  */
 
 import { createHash } from 'node:crypto';
-import type { Redis } from 'ioredis';
+import type { ChainableCommander, Redis } from 'ioredis';
 import { deleteBlob, getJson, putJson } from './blobStore.js';
 import type { CommunityCategory, CommunityTechnique } from './communityValidation.js';
 import { COMMUNITY_INDEX_SORTS, communityDesignKey, communityIndexKey } from './redisKeys.js';
@@ -258,6 +258,25 @@ export interface CommunityIndexScores {
   likes: number;
 }
 
+/**
+ * ioredis returns null from exec() on connection-level failure and reports
+ * per-command errors in the result tuples. Index membership decides whether
+ * a design exists in the gallery at all, so both cases must throw instead
+ * of leaving the indexes silently out of sync (same contract as the session
+ * pipeline in session.ts).
+ */
+async function execIndexPipeline(pipeline: ChainableCommander, context: string): Promise<void> {
+  const results = await pipeline.exec();
+  if (results === null) {
+    throw new Error(`${context}: redis connection lost`);
+  }
+  for (const [err] of results) {
+    if (err) {
+      throw new Error(`${context}: ${err.message}`);
+    }
+  }
+}
+
 /** Pipelined ZADD across all three sort indexes. Only call for live designs. */
 export async function upsertCommunityIndexes(
   redis: Redis,
@@ -268,7 +287,7 @@ export async function upsertCommunityIndexes(
   pipeline.zadd(communityIndexKey('newest'), scores.createdAt, designId);
   pipeline.zadd(communityIndexKey('remixes'), scores.remixes, designId);
   pipeline.zadd(communityIndexKey('likes'), scores.likes, designId);
-  await pipeline.exec();
+  await execIndexPipeline(pipeline, 'Community index upsert failed');
 }
 
 /** Pipelined ZREM from every sort index (hide, remove, unpublish). */
@@ -277,7 +296,7 @@ export async function removeFromCommunityIndexes(redis: Redis, designId: string)
   for (const sort of COMMUNITY_INDEX_SORTS) {
     pipeline.zrem(communityIndexKey(sort), designId);
   }
-  await pipeline.exec();
+  await execIndexPipeline(pipeline, 'Community index removal failed');
 }
 
 /**

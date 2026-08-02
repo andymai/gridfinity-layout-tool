@@ -308,6 +308,27 @@ describe('index helpers', () => {
     ]);
     expect(pipeline.exec).toHaveBeenCalledTimes(1);
   });
+
+  it('throws when the index pipeline loses the connection (exec returns null)', async () => {
+    const pipeline = createPipeline();
+    pipeline.exec.mockResolvedValue(null as unknown as Array<[Error | null, unknown]>);
+    const { redis } = createRedis(pipeline);
+
+    await expect(
+      upsertCommunityIndexes(redis, 'abc123def456', { createdAt: 1, remixes: 0, likes: 0 })
+    ).rejects.toThrow('redis connection lost');
+  });
+
+  it('throws when an index command reports a per-command error', async () => {
+    const pipeline = createPipeline([
+      [null, 1],
+      [new Error('WRONGTYPE'), null],
+      [null, 1],
+    ]);
+    const { redis } = createRedis(pipeline);
+
+    await expect(removeFromCommunityIndexes(redis, 'abc123def456')).rejects.toThrow('WRONGTYPE');
+  });
 });
 
 describe('setCommunityDesignStatus', () => {
