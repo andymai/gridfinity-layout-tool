@@ -98,3 +98,18 @@ export function shouldDeferBrepPreview(
   const { maxPieceCells, totalCells } = estimatePreviewComplexity(tiling, parentParams);
   return maxPieceCells >= DEFER_MAX_PIECE_CELLS || totalCells >= DEFER_TOTAL_CELLS;
 }
+
+/**
+ * True when the fast Manifold DRAFT preview should be skipped in favor of going
+ * straight to the exact BREP.
+ *
+ * A shaped (outlined) plate clips the slab against its outline with the same
+ * expensive coplanar boolean the exact BREP runs, so drafting one does that
+ * heavy work twice per edit for a result indistinguishable from the exact. The
+ * caller keeps the last good mesh on screen until the single exact build lands
+ * instead. Rectangular plates keep the draft — there it is a cheap early fill,
+ * not a duplicate of the exact.
+ */
+export function shouldSkipManifoldDraft(params: ResolvedBaseplateParams): boolean {
+  return params.outline !== undefined;
+}

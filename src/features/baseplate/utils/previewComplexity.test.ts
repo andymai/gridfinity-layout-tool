@@ -2,12 +2,26 @@ import { describe, it, expect } from 'vitest';
 import {
   estimatePreviewComplexity,
   shouldDeferBrepPreview,
+  shouldSkipManifoldDraft,
   DEFER_MAX_PIECE_CELLS,
   DEFER_TOTAL_CELLS,
   DEFER_LAST_BREP_MS,
 } from './previewComplexity';
 import { computeBaseplateTiling } from './splitPlanner';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
+import type { DrawerOutline } from '@/core/types';
+
+/** A closed CCW rectangle outline spanning the plate's grid extent. */
+function rectOutline(widthMm: number, depthMm: number): DrawerOutline {
+  return {
+    vertices: [
+      { x: 0, y: 0 },
+      { x: widthMm, y: 0 },
+      { x: widthMm, y: depthMm },
+      { x: 0, y: depthMm },
+    ],
+  };
+}
 
 function makeParams(overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams {
   return {
@@ -101,5 +115,30 @@ describe('shouldDeferBrepPreview', () => {
     const p = makeParams({ width: 6, depth: 6 }); // small, would not defer statically
     expect(defer(p, 256, null)).toBe(false);
     expect(defer(p, 256, DEFER_LAST_BREP_MS + 1)).toBe(true);
+  });
+
+  it('never defers a shaped (outlined) plate — it must run the exact BREP', () => {
+    // The same 10×10 magnet plate that defers when rectangular, now shaped. The
+    // direct-mesh is rectangles-only, so deferring would freeze a wrong preview;
+    // shaped plates always run BREP even when otherwise over the cost threshold.
+    expect(defer(makeParams({ width: 10, depth: 10 }), 460)).toBe(true);
+    expect(defer(makeParams({ width: 10, depth: 10, outline: rectOutline(420, 420) }), 460)).toBe(
+      false
+    );
+  });
+
+  it('defers past the adaptive threshold only for rectangular plates, never shaped', () => {
+    const shaped = makeParams({ width: 6, depth: 6, outline: rectOutline(252, 252) });
+    expect(defer(shaped, 256, DEFER_LAST_BREP_MS + 1)).toBe(false);
+  });
+});
+
+describe('shouldSkipManifoldDraft', () => {
+  it('skips the draft for a shaped (outlined) plate — the draft duplicates the exact intersect', () => {
+    expect(shouldSkipManifoldDraft(makeParams({ outline: rectOutline(252, 252) }))).toBe(true);
+  });
+
+  it('keeps the draft for a rectangular plate (no outline)', () => {
+    expect(shouldSkipManifoldDraft(makeParams())).toBe(false);
   });
 });
