@@ -33,6 +33,7 @@ import {
 import type { BinId, DesignId, SyncResult } from '../types';
 import { isErr, isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
+import { dispatchSyntheticPopstate } from '@/shared/hooks/useDesignerRouting';
 
 interface UseBinLinkingReturn {
   /** Link a bin to a design (undoable) */
@@ -149,7 +150,7 @@ export function useBinLinking(): UseBinLinkingReturn {
   // Navigate to designer to edit a design
   const editLinkedDesign = useCallback((designId: DesignId) => {
     window.history.pushState({ designId }, '', `/designer?id=${encodeURIComponent(designId)}`);
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    dispatchSyntheticPopstate();
   }, []);
 
   // Show create design dialog for a bin
@@ -329,7 +330,7 @@ export function useBinLinking(): UseBinLinkingReturn {
       }
 
       window.history.pushState(null, '', `/designer?${params.toString()}`);
-      window.dispatchEvent(new PopStateEvent('popstate'));
+      dispatchSyntheticPopstate();
     },
     [hideCreateDesignDialog, layout.drawer, layout.bins]
   );

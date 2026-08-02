@@ -46,6 +46,7 @@ export const useDesignerStore = create<DesignerState>()(
       // Persistence state
       currentDesignId: null as string | null,
       designName: 'Untitled Bin',
+      lineage: null,
       saveStatus: 'idle',
       exportFileNameConfig: { ...DEFAULT_EXPORT_FILE_NAME_CONFIG },
       pendingBinLink: null as string | null,

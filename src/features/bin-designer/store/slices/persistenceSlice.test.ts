@@ -278,3 +278,34 @@ describe('newDesign / resetToDefaults — custom "default for new bins"', () => 
     expect(useDesignerStore.getState().params.depth).toBe(DEFAULT_BIN_PARAMS.depth);
   });
 });
+
+describe('persistenceSlice — remix lineage lifting', () => {
+  const lineage = {
+    parentId: 'Parent123456',
+    rootId: 'Parent123456',
+    parentName: 'Screw Bin',
+    parentAuthorName: 'Jo',
+    rootAuthorName: 'Jo',
+  };
+
+  beforeEach(() => {
+    useDesignerStore.setState(useDesignerStore.getInitialState());
+  });
+
+  it('lifts lineage into live state on load', () => {
+    useDesignerStore.getState().loadDesign({ ...makeSaved(), lineage });
+    expect(useDesignerStore.getState().lineage).toEqual(lineage);
+  });
+
+  it('clears lineage when loading a design without one', () => {
+    useDesignerStore.getState().loadDesign({ ...makeSaved(), lineage });
+    useDesignerStore.getState().loadDesign(makeSaved());
+    expect(useDesignerStore.getState().lineage).toBeNull();
+  });
+
+  it('newDesign resets lineage', () => {
+    useDesignerStore.getState().loadDesign({ ...makeSaved(), lineage });
+    useDesignerStore.getState().newDesign();
+    expect(useDesignerStore.getState().lineage).toBeNull();
+  });
+});

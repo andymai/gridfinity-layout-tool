@@ -52,6 +52,7 @@ import type {
   ExportFileNameConfig,
 } from './uiState';
 import type { SavedDesign } from './savedDesign';
+import type { CommunityDesignLineage } from '@/shared/types/community';
 
 /** Complete designer store state */
 export interface DesignerState {
@@ -72,6 +73,12 @@ export interface DesignerState {
   // Persistence
   currentDesignId: string | null;
   designName: string;
+  /**
+   * Remix lineage of the loaded design, lifted into live state (unlike
+   * publishedId, which is read on demand at publish-open) so the remix
+   * banner can render without an async storage read.
+   */
+  lineage: CommunityDesignLineage | null;
   saveStatus: SaveStatus;
   exportFileNameConfig: ExportFileNameConfig;
   pendingBinLink: string | null;

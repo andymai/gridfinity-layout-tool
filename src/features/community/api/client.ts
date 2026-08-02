@@ -1,15 +1,30 @@
 import type { Result } from '@/core/result';
-import { ok, err } from '@/core/result';
+import { ok, err, isErr } from '@/core/result';
 import { isApiErrorResponse } from '@/core/api/mapApiError';
 import { apiFetch } from '@/core/sync/apiFetch';
 import type { BinParams } from '@/shared/types/bin';
 import type {
+  CommunityCard,
   CommunityCategory,
   CommunityDesign,
   CommunityDesignLineage,
 } from '@/shared/types/community';
+import { COMMUNITY_CATEGORIES } from '@/shared/types/community';
+import { TECHNIQUE_CONFIG } from '@/shared/types/exampleTechniques';
 
 const COMMUNITY_ENDPOINT = '/api/community';
+
+/**
+ * The browse engine holds the whole card index in memory for client-side
+ * search/filter/sort; cap it at the 2,000 newest so a runaway library cannot
+ * grow the fetch loop or the store unboundedly (plan §2.3). The cap state is
+ * surfaced so the gallery can say "Showing the 2,000 newest designs".
+ */
+export const COMMUNITY_INDEX_CAP = 2000;
+
+// Heavy in-memory filtering server-side can return near-empty pages with a
+// non-null cursor; this bounds the loop if the index never yields the cap.
+const INDEX_MAX_REQUESTS = 250;
 
 /**
  * Community-specific error union instead of the generic ApiError: the publish
@@ -79,8 +94,10 @@ function isCommunityDesign(value: unknown): value is CommunityDesign {
     typeof value.authorName === 'string' &&
     typeof value.name === 'string' &&
     typeof value.description === 'string' &&
-    typeof value.category === 'string' &&
+    isKnownCategory(value.category) &&
     Array.isArray(value.techniques) &&
+    value.techniques.every(isKnownTechnique) &&
+    value.techniques.every(isKnownTechnique) &&
     isRecord(value.params) &&
     isRecord(value.metrics) &&
     (value.lineage === null || isRecord(value.lineage)) &&
@@ -94,6 +111,70 @@ function isCommunityDesign(value: unknown): value is CommunityDesign {
 
 function isDesignResponse(value: unknown): value is { design: CommunityDesign } {
   return isRecord(value) && isCommunityDesign(value.design);
+}
+
+export interface CommunityDesignDetail {
+  design: CommunityDesign;
+  /** Server-verified against the session's published set, never a client-sent id. */
+  isOwner: boolean;
+}
+
+function isDetailResponse(value: unknown): value is { design: CommunityDesign; isOwner?: boolean } {
+  return isDesignResponse(value) && (!('isOwner' in value) || typeof value.isOwner === 'boolean');
+}
+
+const KNOWN_TECHNIQUES: readonly string[] = Object.keys(TECHNIQUE_CONFIG);
+
+function isKnownCategory(value: unknown): value is CommunityCategory {
+  return typeof value === 'string' && (COMMUNITY_CATEGORIES as readonly string[]).includes(value);
+}
+
+function isKnownTechnique(value: unknown): boolean {
+  return typeof value === 'string' && KNOWN_TECHNIQUES.includes(value);
+}
+
+function isCommunityCard(value: unknown): value is CommunityCard {
+  if (!isRecord(value)) return false;
+  const counts: unknown = value.counts;
+  const metrics: unknown = value.metrics;
+  return (
+    typeof value.id === 'string' &&
+    typeof value.name === 'string' &&
+    typeof value.authorName === 'string' &&
+    typeof value.authorPublicId === 'string' &&
+    isKnownCategory(value.category) &&
+    Array.isArray(value.techniques) &&
+    value.techniques.every(isKnownTechnique) &&
+    isRecord(metrics) &&
+    typeof metrics.width === 'number' &&
+    typeof metrics.depth === 'number' &&
+    typeof metrics.height === 'number' &&
+    typeof metrics.gridUnitMm === 'number' &&
+    typeof value.thumbnailUrl === 'string' &&
+    typeof value.isRemix === 'boolean' &&
+    typeof value.featured === 'boolean' &&
+    isRecord(counts) &&
+    typeof counts.likes === 'number' &&
+    typeof counts.remixes === 'number' &&
+    typeof counts.exports === 'number' &&
+    typeof value.createdAt === 'number' &&
+    typeof value.updatedAt === 'number' &&
+    (value.status === 'live' || value.status === 'hidden' || value.status === 'removed')
+  );
+}
+
+interface CommunityListPage {
+  items: CommunityCard[];
+  nextCursor: string | null;
+}
+
+function isListPage(value: unknown): value is CommunityListPage {
+  return (
+    isRecord(value) &&
+    Array.isArray(value.items) &&
+    value.items.every(isCommunityCard) &&
+    (value.nextCursor === null || typeof value.nextCursor === 'string')
+  );
 }
 
 function isDeleteResponse(value: unknown): value is { success: true } {
@@ -159,6 +240,88 @@ export async function unpublishDesign(
     const data: unknown = await response.json();
     if (!response.ok) return err(errorFromResponse(response.status, data));
     if (isDeleteResponse(data)) return ok(data);
+    return err({ kind: 'server' });
+  } catch {
+    return err({ kind: 'network' });
+  }
+}
+
+export interface CommunityIndexResult {
+  items: CommunityCard[];
+  /** True when the index was truncated to the `COMMUNITY_INDEX_CAP` newest designs. */
+  capped: boolean;
+}
+
+async function fetchCommunityPage(
+  cursor: string | null,
+  signal?: AbortSignal
+): Promise<Result<CommunityListPage, CommunityClientError>> {
+  try {
+    const params = new URLSearchParams({ sort: 'newest' });
+    if (cursor !== null) params.set('cursor', cursor);
+    const response = await communityFetch(`${COMMUNITY_ENDPOINT}?${params.toString()}`, {
+      method: 'GET',
+      signal,
+    });
+    const data: unknown = await response.json();
+    if (!response.ok) return err(errorFromResponse(response.status, data));
+    if (isListPage(data)) return ok(data);
+    return err({ kind: 'server' });
+  } catch {
+    return err({ kind: 'network' });
+  }
+}
+
+/**
+ * Fetches the complete public card index by transparently paging through
+ * `GET /api/community` until the cursor is exhausted or `COMMUNITY_INDEX_CAP`
+ * is reached. A short page with a non-null `nextCursor` is normal (the server
+ * bounds each request's scan), so only `nextCursor === null` means done.
+ *
+ * Pages are deduped by id: the server cursor is a raw offset into a live
+ * sorted set, so a publish landing between two page requests shifts every
+ * offset and re-serves the boundary card on the next page.
+ */
+export async function fetchCommunityIndex(
+  signal?: AbortSignal
+): Promise<Result<CommunityIndexResult, CommunityClientError>> {
+  const items: CommunityCard[] = [];
+  const seenIds = new Set<string>();
+  let cursor: string | null = null;
+  for (let request = 0; request < INDEX_MAX_REQUESTS; request++) {
+    const page = await fetchCommunityPage(cursor, signal);
+    if (isErr(page)) return page;
+    for (const card of page.value.items) {
+      if (seenIds.has(card.id)) continue;
+      seenIds.add(card.id);
+      items.push(card);
+    }
+    cursor = page.value.nextCursor;
+    if (cursor === null) return ok({ items, capped: false });
+    if (items.length >= COMMUNITY_INDEX_CAP) {
+      return ok({ items: items.slice(0, COMMUNITY_INDEX_CAP), capped: true });
+    }
+  }
+  // Exhausting the request budget below the cap is a server paging anomaly;
+  // only claim the exact-cap truncation when the cap was actually reached.
+  return ok({
+    items: items.slice(0, COMMUNITY_INDEX_CAP),
+    capped: items.length >= COMMUNITY_INDEX_CAP,
+  });
+}
+
+export async function fetchCommunityDesign(
+  id: string
+): Promise<Result<CommunityDesignDetail, CommunityClientError>> {
+  try {
+    const response = await communityFetch(`${COMMUNITY_ENDPOINT}/${id}`, {
+      method: 'GET',
+    });
+    const data: unknown = await response.json();
+    if (!response.ok) return err(errorFromResponse(response.status, data));
+    if (isDetailResponse(data)) {
+      return ok({ design: data.design, isOwner: data.isOwner === true });
+    }
     return err({ kind: 'server' });
   } catch {
     return err({ kind: 'network' });

@@ -261,18 +261,15 @@ export function DialogRoot({
     return () => setDescriptionRegistrations((count) => count - 1);
   }, []);
 
-  // Store the element that had focus before opening
+  // Restore focus via effect cleanup so it also runs when the dialog closes
+  // by unmounting (open kept literally true and the parent conditionally
+  // renders), not only when the open prop flips to false.
   useEffect(() => {
-    if (open) {
-      previousFocusRef.current = document.activeElement as HTMLElement;
-    }
-  }, [open]);
-
-  // Restore focus when closing
-  useEffect(() => {
-    if (!open && previousFocusRef.current) {
-      previousFocusRef.current.focus();
-    }
+    if (!open) return;
+    previousFocusRef.current = document.activeElement as HTMLElement;
+    return () => {
+      previousFocusRef.current?.focus();
+    };
   }, [open]);
 
   const canDismiss = dismissable && closeOnEscape;

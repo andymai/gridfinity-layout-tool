@@ -129,17 +129,17 @@ async function handleGet(req: VercelRequest, res: VercelResponse, id: string) {
     }
 
     const status = await readModerationStatus(id, record.status);
-    if (status !== 'live') {
+    // Ownership resolves on every GET (not only the hidden/removed branch) so
+    // the detail view can render owner actions without a second request.
+    const session = await readOptionalSession(req);
+    const owns = session !== null && (await isPublishedBy(session.userId, id));
+    if (status !== 'live' && !owns) {
       // Hidden/removed designs must be indistinguishable from missing ones
       // for everyone but their owner, so a takedown can't be probed.
-      const session = await readOptionalSession(req);
-      const owns = session !== null && (await isPublishedBy(session.userId, id));
-      if (!owns) {
-        return designNotFound(res);
-      }
+      return designNotFound(res);
     }
 
-    return res.status(200).json({ design: { ...record, status } });
+    return res.status(200).json({ design: { ...record, status }, isOwner: owns });
   } catch (error) {
     logger.error('Community design fetch error', {
       error: error instanceof Error ? error.message : String(error),

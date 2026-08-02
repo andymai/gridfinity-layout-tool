@@ -1,0 +1,1 @@
+export { CommunityCard } from './CommunityCard';

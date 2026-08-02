@@ -32,6 +32,8 @@ export {
   clearPreviewCanvas,
 } from './thumbnail';
 export type { ThumbnailCaptureOptions, BinFramingDimensions } from './thumbnail';
+export { communityToDesign, lineageFromParent } from './communityToDesign';
+export { findLocalDesignByPublishedId } from './findLocalDesignByPublishedId';
 export { packageSplitPiecesAsZip } from './splitExport';
 export { validateBinParams, computeMinCellSize, validateCompartmentSizes } from './validation';
 export type { DesignerValidationError, MinCellSize } from './validation';

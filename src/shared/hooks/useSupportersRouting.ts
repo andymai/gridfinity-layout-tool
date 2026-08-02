@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { dispatchSyntheticPopstate } from './useDesignerRouting';
 
 function isSupportersPath(): boolean {
   return window.location.pathname === '/supporters' || window.location.pathname === '/supporters/';
@@ -23,13 +24,13 @@ export function useSupportersRouting() {
   const navigateToSupporters = useCallback(() => {
     window.history.pushState(null, '', '/supporters');
     setIsSupportersRoute(true);
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    dispatchSyntheticPopstate();
   }, []);
 
   const navigateHome = useCallback(() => {
     window.history.pushState(null, '', '/');
     setIsSupportersRoute(false);
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    dispatchSyntheticPopstate();
   }, []);
 
   return { isSupportersRoute, navigateToSupporters, navigateHome };

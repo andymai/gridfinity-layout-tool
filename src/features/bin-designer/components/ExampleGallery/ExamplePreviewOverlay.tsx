@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { Button, IconButton } from '@/design-system';
+import { useState } from 'react';
+import { Button, Dialog, IconButton } from '@/design-system';
 import { useToastStore } from '@/core/store/toast';
 import { isOk } from '@/core/result';
 import { exampleToDesign } from '@/features/bin-designer/utils/exampleToDesign';
@@ -17,12 +17,7 @@ interface ExamplePreviewOverlayProps {
 export function ExamplePreviewOverlay({ example, onClose, onBack }: ExamplePreviewOverlayProps) {
   const t = useTranslation();
   const addToast = useToastStore((state) => state.addToast);
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [isImporting, setIsImporting] = useState(false);
-
-  useEffect(() => {
-    closeButtonRef.current?.focus();
-  }, []);
 
   const handleUse = async () => {
     if (isImporting) return;
@@ -46,115 +41,100 @@ export function ExamplePreviewOverlay({ example, onClose, onBack }: ExamplePrevi
 
   const { width, depth, height } = example.metrics;
 
+  // Dialog.Root (not a hand-rolled overlay) so the preview gets its own focus
+  // trap and dialog stacking: Tab stays inside the preview instead of reaching
+  // the gallery grid hidden behind the backdrop, and Escape closes the preview
+  // before the surrounding gallery modal.
   return (
-    <div
-      className="fixed inset-0 z-[60] flex items-center justify-center p-4 animate-fade-in"
-      role="presentation"
-      onClick={onBack}
+    <Dialog.Root
+      open
+      onClose={onBack}
+      size="2xl"
+      aria-label={t(example.nameKey)}
+      className="bg-surface-elevated"
     >
-      <div className="absolute inset-0 bg-black/70" aria-hidden="true" />
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-stroke-subtle shrink-0">
+        <div className="flex items-center gap-3">
+          <IconButton
+            variant="ghost"
+            onClick={onBack}
+            className="p-2 text-content-secondary hover:text-content hover:bg-surface rounded-lg transition-colors"
+            aria-label={t('binExamples.backToGallery')}
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
+            </svg>
+          </IconButton>
+          <h2 className="text-lg font-bold text-content">{t(example.nameKey)}</h2>
+        </div>
 
-      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- stopPropagation prevents backdrop dismiss */}
-      <div
-        className="relative bg-surface-elevated rounded-xl shadow-2xl flex flex-col overflow-hidden animate-scale-in w-full max-w-2xl max-h-[90vh]"
-        onClick={(e) => e.stopPropagation()}
-        onKeyDown={(e) => {
-          e.stopPropagation();
-          if (e.key === 'Escape') onBack();
-        }}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="example-preview-title"
-        tabIndex={-1}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-stroke-subtle shrink-0">
-          <div className="flex items-center gap-3">
-            <IconButton
-              ref={closeButtonRef}
-              variant="ghost"
-              onClick={onBack}
-              className="p-2 text-content-secondary hover:text-content hover:bg-surface rounded-lg transition-colors"
-              aria-label={t('binExamples.backToGallery')}
+        <div className="flex items-center gap-2">
+          {example.techniques.map((technique) => (
+            <span
+              key={technique}
+              className="text-xs uppercase tracking-wide px-2 py-1 rounded bg-surface-secondary text-content-tertiary"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                />
-              </svg>
-            </IconButton>
-            <h2 id="example-preview-title" className="text-lg font-bold text-content">
-              {t(example.nameKey)}
-            </h2>
-          </div>
+              {t(TECHNIQUE_CONFIG[technique].labelKey)}
+            </span>
+          ))}
+        </div>
+      </div>
 
-          <div className="flex items-center gap-2">
-            {example.techniques.map((technique) => (
-              <span
-                key={technique}
-                className="text-xs uppercase tracking-wide px-2 py-1 rounded bg-surface-secondary text-content-tertiary"
-              >
-                {t(TECHNIQUE_CONFIG[technique].labelKey)}
-              </span>
-            ))}
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto scrollbar-thin flex flex-col md:flex-row">
+        {/* Preview: live 3D viewer (falls back to static thumbnail when no mesh) */}
+        <div className="flex-1 p-6 flex items-center justify-center bg-surface">
+          <div className="bg-surface-secondary rounded-xl p-4 w-full flex items-center justify-center">
+            <Example3DViewer example={example} />
           </div>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto scrollbar-thin flex flex-col md:flex-row">
-          {/* Preview: live 3D viewer (falls back to static thumbnail when no mesh) */}
-          <div className="flex-1 p-6 flex items-center justify-center bg-surface">
-            <div className="bg-surface-secondary rounded-xl p-4 w-full flex items-center justify-center">
-              <Example3DViewer example={example} />
-            </div>
+        {/* Details */}
+        <div className="md:w-72 p-4 md:border-l border-stroke-subtle space-y-4">
+          {/* Description */}
+          <div>
+            <h3 className="text-sm font-medium text-content mb-1">
+              {t('binExamples.description')}
+            </h3>
+            <p className="text-sm text-content-secondary">{t(example.descriptionKey)}</p>
           </div>
 
-          {/* Details */}
-          <div className="md:w-72 p-4 md:border-l border-stroke-subtle space-y-4">
-            {/* Description */}
-            <div>
-              <h3 className="text-sm font-medium text-content mb-1">
-                {t('binExamples.description')}
-              </h3>
-              <p className="text-sm text-content-secondary">{t(example.descriptionKey)}</p>
+          {/* Dimensions */}
+          <div>
+            <h3 className="text-sm font-medium text-content mb-2">{t('binExamples.dimensions')}</h3>
+            <div className="grid grid-cols-3 gap-2">
+              <MetricCard label={t('binExamples.width')} value={`${width}`} />
+              <MetricCard label={t('binExamples.depth')} value={`${depth}`} />
+              <MetricCard label={t('binExamples.height')} value={`${height}`} />
             </div>
-
-            {/* Dimensions */}
-            <div>
-              <h3 className="text-sm font-medium text-content mb-2">
-                {t('binExamples.dimensions')}
-              </h3>
-              <div className="grid grid-cols-3 gap-2">
-                <MetricCard label={t('binExamples.width')} value={`${width}`} />
-                <MetricCard label={t('binExamples.depth')} value={`${depth}`} />
-                <MetricCard label={t('binExamples.height')} value={`${height}`} />
-              </div>
-              <p className="text-xs text-content-tertiary mt-1">
-                {`${width * example.metrics.gridUnitMm}×${depth * (example.params.gridUnitMmY ?? example.metrics.gridUnitMm)}×${height * example.params.heightUnitMm}mm`}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="p-4 border-t border-stroke-subtle bg-surface shrink-0">
-          <div className="flex items-center justify-between gap-4">
-            <p className="text-sm text-content-secondary">{t('binExamples.useAsNewDesignHint')}</p>
-            <Button
-              variant="primary"
-              onClick={handleUse}
-              loading={isImporting}
-              className="px-6 shrink-0"
-            >
-              {isImporting ? t('binExamples.creating') : t('binExamples.useAsNewDesign')}
-            </Button>
+            <p className="text-xs text-content-tertiary mt-1">
+              {`${width * example.metrics.gridUnitMm}×${depth * (example.params.gridUnitMmY ?? example.metrics.gridUnitMm)}×${height * example.params.heightUnitMm}mm`}
+            </p>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Footer */}
+      <div className="p-4 border-t border-stroke-subtle bg-surface shrink-0">
+        <div className="flex items-center justify-between gap-4">
+          <p className="text-sm text-content-secondary">{t('binExamples.useAsNewDesignHint')}</p>
+          <Button
+            variant="primary"
+            onClick={handleUse}
+            loading={isImporting}
+            className="px-6 shrink-0"
+          >
+            {isImporting ? t('binExamples.creating') : t('binExamples.useAsNewDesign')}
+          </Button>
+        </div>
+      </div>
+    </Dialog.Root>
   );
 }
 

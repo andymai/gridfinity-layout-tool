@@ -267,6 +267,31 @@ describe('community/[id]', () => {
       expect(res._body).toEqual({ error: 'Design not found', code: 'NOT_FOUND' });
     });
 
+    it('marks isOwner false for an anonymous GET of a live design', async () => {
+      const res = await handle('GET');
+      expect(res._status).toBe(200);
+      expect((res._body as { isOwner: boolean }).isOwner).toBe(false);
+    });
+
+    it('marks isOwner true when the session user published the live design', async () => {
+      mocks.readSessionCookie.mockReturnValue('session-token');
+      mocks.readSession.mockResolvedValue(session);
+      redis.sismember.mockResolvedValue(1);
+      const res = await handle('GET');
+      expect(res._status).toBe(200);
+      expect((res._body as { isOwner: boolean }).isOwner).toBe(true);
+      expect(redis.sismember).toHaveBeenCalledWith(communityPublishedKey(USER_ID), VALID_ID);
+    });
+
+    it('marks isOwner false for a signed-in non-publisher of a live design', async () => {
+      mocks.readSessionCookie.mockReturnValue('session-token');
+      mocks.readSession.mockResolvedValue(session);
+      redis.sismember.mockResolvedValue(0);
+      const res = await handle('GET');
+      expect(res._status).toBe(200);
+      expect((res._body as { isOwner: boolean }).isOwner).toBe(false);
+    });
+
     it('makes a hidden design indistinguishable from not-found for a stranger', async () => {
       redis.hget.mockResolvedValue('hidden');
       mocks.readCommunityDesignBlob.mockResolvedValue(designRecord({ status: 'hidden' }));
