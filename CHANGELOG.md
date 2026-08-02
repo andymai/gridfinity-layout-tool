@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.347.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.347.1...gridfinity-layout-tool-v4.347.2) (2026-08-02)
+
+
+### Bug Fixes
+
+* **baseplate:** centre the socket/seam grid on the custom-perimeter bbox ([#3108](https://github.com/andymai/gridfinity-layout-tool/issues/3108), [#3109](https://github.com/andymai/gridfinity-layout-tool/issues/3109)) ([#3123](https://github.com/andymai/gridfinity-layout-tool/issues/3123)) ([6a9bbf6](https://github.com/andymai/gridfinity-layout-tool/commit/6a9bbf6a71e0fac6bb53d7fceb070ac7f7184970))
+
 ## [4.347.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.347.0...gridfinity-layout-tool-v4.347.1) (2026-08-02)
 
 
