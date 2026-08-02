@@ -13,6 +13,7 @@
 // Import via the shared barrel (not @/features/*) so this shared utility never
 // reaches into a feature — keeps the features → shared → core direction intact.
 import { MIN_POLYGON_SIDES, MAX_POLYGON_SIDES } from '@/shared/types/bin';
+import { pointsBounds } from './pointsBounds';
 
 export interface PolygonPoint {
   readonly x: number;
@@ -45,27 +46,6 @@ function unitPolygonVertices(sides: number): PolygonPoint[] {
   return verts;
 }
 
-interface Bbox {
-  readonly minX: number;
-  readonly minY: number;
-  readonly maxX: number;
-  readonly maxY: number;
-}
-
-function boundsOf(points: readonly PolygonPoint[]): Bbox {
-  let minX = Infinity;
-  let minY = Infinity;
-  let maxX = -Infinity;
-  let maxY = -Infinity;
-  for (const p of points) {
-    if (p.x < minX) minX = p.x;
-    if (p.y < minY) minY = p.y;
-    if (p.x > maxX) maxX = p.x;
-    if (p.y > maxY) maxY = p.y;
-  }
-  return { minX, minY, maxX, maxY };
-}
-
 /**
  * Vertices of a regular polygon centered at the origin, scaled to fill the
  * given `width × depth` bounding box exactly. CCW order. Degenerate sizes
@@ -74,7 +54,7 @@ function boundsOf(points: readonly PolygonPoint[]): Bbox {
 export function regularPolygonPoints(sides: number, width: number, depth: number): PolygonPoint[] {
   if (width <= 0 || depth <= 0) return [];
   const unit = unitPolygonVertices(sides);
-  const b = boundsOf(unit);
+  const b = pointsBounds(unit);
   const uw = b.maxX - b.minX;
   const uh = b.maxY - b.minY;
   if (uw <= 0 || uh <= 0) return [];
@@ -90,7 +70,7 @@ export function regularPolygonPoints(sides: number, width: number, depth: number
  * (≈1.1547 for a hexagon: point-to-point is wider than flat-to-flat).
  */
 function polygonAspect(sides: number): number {
-  const b = boundsOf(unitPolygonVertices(sides));
+  const b = pointsBounds(unitPolygonVertices(sides));
   const uw = b.maxX - b.minX;
   const uh = b.maxY - b.minY;
   return uh > 0 ? uw / uh : 1;
