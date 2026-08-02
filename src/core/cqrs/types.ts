@@ -31,8 +31,11 @@ export interface EventMeta {
   readonly aggregateId: LayoutId;
   /** Monotonically increasing version per aggregate for ordering */
   readonly version: number;
-  /** Schema version for forward-compatible event migration */
-  readonly schemaVersion: number;
+  /**
+   * Schema version for forward-compatible event migration. Absent on events
+   * persisted before versioning existed; `migrateEvent` treats missing as v1.
+   */
+  readonly schemaVersion?: number;
 }
 export interface BaseCommand<TType extends string, TPayload> {
   readonly type: TType;

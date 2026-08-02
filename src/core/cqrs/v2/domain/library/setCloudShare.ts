@@ -12,9 +12,17 @@ import { layoutId as toLayoutId } from '@/core/types';
 import type { CloudShareInfo } from '@/core/types';
 import { defineCommand } from '../../defineCommand';
 
+const cloudShareInfoSchema = z.object({
+  id: z.string(),
+  deleteToken: z.string(),
+  sharedAt: z.number(),
+  permission: z.enum(['view', 'edit']),
+  lastUpdatedAt: z.number().optional(),
+});
+
 const payloadSchema = z.object({
   layoutId: z.string().min(1),
-  shareInfo: z.object({ id: z.string(), url: z.string() }).loose(),
+  shareInfo: cloudShareInfoSchema,
 });
 
 export const setCloudShare = defineCommand({
@@ -28,11 +36,7 @@ export const setCloudShare = defineCommand({
   middleware: { undoCapture: false, validate: true, analytics: true },
   handle: (payload) => {
     const layoutId = toLayoutId(payload.layoutId);
-    // Central schema enforces {id, url} + .loose() — full CloudShareInfo
-    // shape (deleteToken, sharedAt, permission) is supplied by callers
-    // and trusted here. Cast through unknown because the validator only
-    // guarantees the two required fields.
-    const shareInfo = payload.shareInfo as unknown as CloudShareInfo;
+    const shareInfo: CloudShareInfo = payload.shareInfo;
     return ok({
       value: undefined,
       event: { payload: { layoutId, shareInfo } },

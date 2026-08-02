@@ -74,6 +74,19 @@ interface MigrationError {
 
 type BridgeResponse = MigrationComplete | MigrationError;
 
+/** Narrow an untrusted postMessage payload to a well-formed bridge response. */
+function isBridgeResponse(value: unknown): value is BridgeResponse {
+  if (typeof value !== 'object' || value === null) return false;
+  const obj = value as Record<string, unknown>;
+  if (obj.type === 'www-migration-complete') {
+    return typeof obj.stats === 'object' && obj.stats !== null;
+  }
+  if (obj.type === 'www-migration-error') {
+    return typeof obj.error === 'string';
+  }
+  return false;
+}
+
 /** Collect all gridfinity-* keys from localStorage. */
 export function readAllLocalStorage(): Record<string, string> {
   const data: Record<string, string> = {};
@@ -179,12 +192,11 @@ function sendToBridge(data: MigrationData): Promise<BridgeResponse> {
 
     function onMessage(event: MessageEvent): void {
       if (event.origin !== CANONICAL_ORIGIN) return;
-      const msg = event.data as Record<string, unknown> | undefined;
-      if (!msg) return;
-      if (msg.type !== 'www-migration-complete' && msg.type !== 'www-migration-error') return;
+      const msg: unknown = event.data;
+      if (!isBridgeResponse(msg)) return;
 
       cleanup();
-      resolve(msg as unknown as BridgeResponse);
+      resolve(msg);
     }
 
     function cleanup(): void {

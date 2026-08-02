@@ -135,8 +135,9 @@ function validateFetchShareResponse(
   }
 
   // Drop anything malformed rather than rejecting the whole share — a bad
-  // design entry should cost that one design, not the layout.
-  const raw: unknown = (data as unknown as Record<string, unknown>).linkedDesigns;
+  // design entry should cost that one design, not the layout. The structure
+  // guard doesn't validate this field, so re-check it as untrusted input.
+  const raw: unknown = data.linkedDesigns;
   const linkedDesigns = Array.isArray(raw)
     ? raw.filter(
         (entry): entry is SharedLinkedDesign =>

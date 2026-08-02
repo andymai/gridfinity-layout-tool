@@ -58,10 +58,8 @@ export function migrateEvent(event: DomainEvent): DomainEvent {
   // Unknown event type (e.g., removed from the codebase) — return as-is
   if (currentVersion === undefined) return event;
 
-  const eventVersion =
-    (event.meta as unknown as Readonly<Record<string, unknown>>).schemaVersion ?? 1;
+  const eventVersion = event.meta.schemaVersion ?? 1;
 
-  if (typeof eventVersion !== 'number') return event;
   if (eventVersion >= currentVersion) return event;
 
   let migrated: unknown = event;

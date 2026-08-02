@@ -41,27 +41,53 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value);
+}
+
+/**
+ * Validate a remote params blob against the always-present v1 fields of
+ * StoredBaseplateParams before trusting it. Mirrors the required-field posture
+ * of `api/lib/baseplateValidation.ts` (server code can't be imported across the
+ * module boundary); numeric ranges stay a server concern. A malformed object —
+ * missing or mistyped required field, or an array — is rejected so a corrupt
+ * remote record is dropped rather than persisted.
+ */
+function isStoredBaseplateParams(value: unknown): value is StoredBaseplateParams {
+  if (!isPlainObject(value)) return false;
+  if (typeof value.magnetHoles !== 'boolean') return false;
+  return (
+    isFiniteNumber(value.magnetDiameter) &&
+    isFiniteNumber(value.magnetDepth) &&
+    isFiniteNumber(value.paddingLeft) &&
+    isFiniteNumber(value.paddingRight) &&
+    isFiniteNumber(value.paddingFront) &&
+    isFiniteNumber(value.paddingBack)
+  );
+}
+
 /**
  * Accept either the `{ name, params }` wrapper or a bare params shape so a
  * legacy cloud blob still applies cleanly. Returns `null` for a malformed
- * payload (non-object or array params) so the caller can drop it rather than
- * persist a record that reads back corrupt and vanishes.
+ * payload (non-object, array, or params missing the required v1 fields) so the
+ * caller can drop it rather than persist a record that reads back corrupt and
+ * vanishes.
  */
 function unwrap(payload: unknown): { name?: string; params: StoredBaseplateParams } | null {
   if (payload !== null && typeof payload === 'object' && 'params' in payload) {
     const { name, params } = payload as { name?: unknown; params: unknown };
-    if (isPlainObject(params)) {
+    if (isStoredBaseplateParams(params)) {
       // Empty/whitespace-only remote names become `undefined` so the
       // fallback chain kicks in.
       const trimmed = typeof name === 'string' ? name.trim() : '';
       return {
         name: trimmed === '' ? undefined : trimmed,
-        params: params as unknown as StoredBaseplateParams,
+        params,
       };
     }
     return null;
   }
-  return isPlainObject(payload) ? { params: payload as unknown as StoredBaseplateParams } : null;
+  return isStoredBaseplateParams(payload) ? { params: payload } : null;
 }
 
 export const baseplateAdapter: BaseplateAdapter = {
