@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.343.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.342.3...gridfinity-layout-tool-v4.343.0) (2026-08-02)
+
+
+### Features
+
+* **community:** backend foundation for publishing bin designs ([#3098](https://github.com/andymai/gridfinity-layout-tool/issues/3098)) ([3ea8740](https://github.com/andymai/gridfinity-layout-tool/commit/3ea8740e118255869e48ad37f9198469876e881f))
+
 ## [4.342.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.342.2...gridfinity-layout-tool-v4.342.3) (2026-08-01)
 
 
