@@ -42,6 +42,14 @@ describe('cameraUtils', () => {
       expect(large).toBeGreaterThan(small);
     });
 
+    it('frames the depth axis on the non-square Y pitch', () => {
+      // A tall plate where depth dominates the framing: a larger Y pitch must
+      // push the camera further out, not stay pinned to the square X pitch.
+      const square = calculateIdealDistance(1, 10, 42, 0, 0, 0, 0, 45, 1);
+      const nonSquare = calculateIdealDistance(1, 10, 42, 0, 0, 0, 0, 45, 1, 50);
+      expect(nonSquare).toBeGreaterThan(square);
+    });
+
     it('increases with padding', () => {
       const noPad = calculateIdealDistance(4, 4, 42, 0, 0, 0, 0, 45);
       const withPad = calculateIdealDistance(4, 4, 42, 10, 10, 10, 10, 45);

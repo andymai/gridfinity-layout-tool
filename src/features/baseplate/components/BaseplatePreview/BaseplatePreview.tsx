@@ -149,6 +149,7 @@ export function BaseplatePreview({
     width,
     depth,
     gridUnitMm,
+    gridUnitMmY,
     paddingLeft,
     paddingRight,
     paddingFront,
@@ -231,8 +232,10 @@ export function BaseplatePreview({
   // The footprint grid renders in every mode (including stacking) so the scene
   // always reads as "parts on a build plate". In stack mode it's sized to the
   // tower field so the grid reaches under every tower, not just one plate.
+  // Divide each axis by its own pitch so FootprintGrid multiplies it back to the
+  // true field mm — the depth axis must use gridUnitMmY on a non-square grid.
   const gridWidthUnits = stackEnabled && stackBounds ? stackBounds.widthMm / gridUnitMm : width;
-  const gridDepthUnits = stackEnabled && stackBounds ? stackBounds.depthMm / gridUnitMm : depth;
+  const gridDepthUnits = stackEnabled && stackBounds ? stackBounds.depthMm / gridUnitMmY : depth;
 
   // In stack mode the canvas renders StackedBaseplateMeshes instead of
   // BaseplateMesh/SplitBaseplateMeshes. Gate visibility on stackBounds so
@@ -333,6 +336,7 @@ export function BaseplatePreview({
                   width={width}
                   depth={depth}
                   gridUnitMm={gridUnitMm}
+                  gridUnitMmY={gridUnitMmY}
                   paddingLeft={paddingLeft}
                   paddingRight={paddingRight}
                   paddingFront={paddingFront}
@@ -382,6 +386,7 @@ export function BaseplatePreview({
                   width={gridWidthUnits}
                   depth={gridDepthUnits}
                   gridUnitMm={gridUnitMm}
+                  gridUnitMmY={gridUnitMmY}
                 />
 
                 {/* Remaining single-plate overlays (ghost, dimensions) don't apply
@@ -394,6 +399,7 @@ export function BaseplatePreview({
                         width={width}
                         depth={depth}
                         gridUnitMm={gridUnitMm}
+                        gridUnitMmY={gridUnitMmY}
                         paddingLeft={paddingLeft}
                         paddingRight={paddingRight}
                         paddingFront={paddingFront}
@@ -405,11 +411,17 @@ export function BaseplatePreview({
                     {/* Hide measurement labels in exploded mode -- pieces scatter beyond these positions */}
                     {splitViewMode !== 'exploded' && (
                       <>
-                        <BinAxisLabels width={width} depth={depth} gridUnitMm={gridUnitMm} />
+                        <BinAxisLabels
+                          width={width}
+                          depth={depth}
+                          gridUnitMm={gridUnitMm}
+                          gridUnitMmY={gridUnitMmY}
+                        />
                         <DimensionLabels
                           width={width}
                           depth={depth}
                           gridUnitMm={gridUnitMm}
+                          gridUnitMmY={gridUnitMmY}
                           paddingLeft={paddingLeft}
                           paddingRight={paddingRight}
                           paddingFront={paddingFront}
