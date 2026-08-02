@@ -71,6 +71,8 @@ export function Sidebar() {
     fractionalEdges,
     widthStep,
     depthStep,
+    drawerMinWidth,
+    drawerMinDepth,
     hasFractionalWidth,
     hasFractionalDepth,
     realWorldDimensions,
@@ -335,7 +337,7 @@ export function Sidebar() {
                         value={drawer.width}
                         onChange={handleDrawerWidthInput}
                         onStep={handleDrawerWidthChange}
-                        min={0.5}
+                        min={drawerMinWidth}
                         max={CONSTRAINTS.GRID_MAX}
                         step={widthStep}
                         size="sm"
@@ -354,7 +356,7 @@ export function Sidebar() {
                         value={drawer.depth}
                         onChange={handleDrawerDepthInput}
                         onStep={handleDrawerDepthChange}
-                        min={0.5}
+                        min={drawerMinDepth}
                         max={CONSTRAINTS.GRID_MAX}
                         step={depthStep}
                         size="sm"

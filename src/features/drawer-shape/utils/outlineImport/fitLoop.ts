@@ -9,6 +9,7 @@
  */
 
 import type { OutlineVertex } from '@/core/types';
+import { ceilHalfUnits } from '@/shared/utils/drawerOutline';
 import { flattenOutline, polylineSignedArea } from '@/shared/utils/drawerOutlineGeometry';
 import { isClockwise, reverseWinding } from '../penShape';
 import type { ImportedLoop } from './types';
@@ -82,9 +83,13 @@ export interface FittedLoop {
   readonly requiredDepthUnits: number;
 }
 
-/** Round up to the next half grid unit, the finest drawer dimension allowed. */
+/**
+ * Round up to the next half grid unit, the finest drawer dimension allowed.
+ * Shares `ceilHalfUnits` with the resize clamp (#3149) so a shape flush with
+ * the drawer edge never grows the drawer by float noise alone.
+ */
 export function unitsFor(mm: number, pitch: number): number {
-  return Math.max(1, Math.ceil((mm / pitch) * 2) / 2);
+  return Math.max(1, ceilHalfUnits(mm, pitch));
 }
 
 /**

@@ -3183,6 +3183,7 @@
   "toast.binRotated": "Бін обернуто",
   "toast.binsDeleted": "Видалено {count} бінів",
   "toast.binsDisplacedByShape": "{count} бін(и) переміщено до сховку (поза новою формою)",
+  "toast.drawerSizeLimitedByShape": "Шухляда не може стати меншою за свою власну форму. Спочатку відредагуйте або скиньте форму.",
   "toast.outlineImport.parseFailed": "Не вдалося прочитати цей файл як креслення SVG або DXF.",
   "toast.outlineImport.noClosedLoop": "Замкнену форму не знайдено. Периметр має з’єднуватися по колу.",
   "toast.outlineImport.tooComplex": "Ця форма має забагато точок навіть після спрощення.",

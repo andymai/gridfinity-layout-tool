@@ -3003,6 +3003,7 @@
   "toast.binRotated": "Bin otočen",
   "toast.binsDeleted": "Smazáno {count} binů",
   "toast.binsDisplacedByShape": "{count} binů přesunuto do Stash (mimo nový tvar)",
+  "toast.drawerSizeLimitedByShape": "Zásuvka nemůže být menší než její vlastní tvar. Nejprve tvar upravte nebo obnovte.",
   "toast.outlineImport.parseFailed": "Tento soubor se nepodařilo přečíst jako výkres SVG ani DXF.",
   "toast.outlineImport.noClosedLoop": "Nenalezen uzavřený tvar. Obvod musí být spojený dokola.",
   "toast.outlineImport.tooComplex": "Tento tvar má i po zjednodušení příliš mnoho bodů.",

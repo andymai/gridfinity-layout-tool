@@ -2,7 +2,8 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { useLayoutStore } from '@/core/store';
 import { resetAllStores } from '@/test/testUtils';
-import type { DrawerOutline } from '@/core/types';
+import type { Drawer, DrawerOutline } from '@/core/types';
+import { gridUnits } from '@/core/types';
 import { CornerCutsDialog } from './CornerCutsDialog';
 
 vi.mock('@/i18n', () => ({
@@ -23,6 +24,32 @@ function kindSelect(cornerKey: string): HTMLSelectElement {
     name: `drawerShape.corners.${cornerKey}`,
   });
 }
+
+function setDrawer(patch: Partial<Drawer>): void {
+  useLayoutStore.setState((s) => ({
+    layout: { ...s.layout, drawer: { ...s.layout.drawer, ...patch } },
+  }));
+}
+
+/** A front-left 30mm chamfer on a 4×4 drawer, with its authoring echo. */
+const CHAMFER_OUTLINE: DrawerOutline = {
+  vertices: [
+    { x: 0, y: 30 },
+    { x: 30, y: 0 },
+    { x: 168, y: 0 },
+    { x: 168, y: 168 },
+    { x: 0, y: 168 },
+  ],
+  authoring: {
+    kind: 'corners',
+    corners: {
+      tl: { kind: 'none' },
+      tr: { kind: 'none' },
+      bl: { kind: 'chamfer', size: 30 },
+      br: { kind: 'none' },
+    },
+  },
+};
 
 describe('CornerCutsDialog', () => {
   beforeEach(() => {
@@ -53,56 +80,42 @@ describe('CornerCutsDialog', () => {
   });
 
   it('seeds from an existing corners outline for round-trip editing', () => {
-    useLayoutStore.setState((s) => ({
-      layout: {
-        ...s.layout,
-        drawer: {
-          ...s.layout.drawer,
-          outline: {
-            vertices: [
-              { x: 30, y: 0 },
-              { x: 168, y: 0 },
-              { x: 168, y: 168 },
-              { x: 0, y: 168 },
-              { x: 0, y: 30 },
-            ],
-            authoring: {
-              kind: 'corners',
-              corners: {
-                tl: { kind: 'none' },
-                tr: { kind: 'none' },
-                bl: { kind: 'chamfer', size: 30 },
-                br: { kind: 'none' },
-              },
-            },
-          } as DrawerOutline,
-        },
-      },
-    }));
+    // The echo is only trusted when it reproduces the vertices at the
+    // CURRENT drawer size, so the drawer must match the 4×4 fixture.
+    setDrawer({ width: gridUnits(4), depth: gridUnits(4), outline: CHAMFER_OUTLINE });
     render(<CornerCutsDialog open onClose={() => {}} />);
     expect(kindSelect('frontLeft').value).toBe('chamfer');
   });
 
+  it('confirms before replacing a corners shape whose echo went stale (#3149)', () => {
+    // Same cuts, but on the default 10×8 drawer: the annotation still says
+    // 'corners' while re-inscribing it on the NEW rectangle would replace the
+    // actual (now sub-rect) shape — the geometry check must treat it as
+    // foreign and ask first.
+    setDrawer({ outline: CHAMFER_OUTLINE });
+    render(<CornerCutsDialog open onClose={() => {}} />);
+    // Stale echo must not seed the pickers either.
+    expect(kindSelect('frontLeft').value).toBe('none');
+    fireEvent.change(kindSelect('backLeft'), { target: { value: 'radius' } });
+    fireEvent.click(screen.getByRole('button', { name: 'drawerShape.editor.apply' }));
+    expect(mockSetDrawerOutline).not.toHaveBeenCalled();
+    expect(screen.getByText('drawerShape.corners.replaceTitle')).toBeInTheDocument();
+  });
+
   it('confirms before replacing a shape drawn with another editor', () => {
-    useLayoutStore.setState((s) => ({
-      layout: {
-        ...s.layout,
-        drawer: {
-          ...s.layout.drawer,
-          outline: {
-            vertices: [
-              { x: 0, y: 0 },
-              { x: 168, y: 0 },
-              { x: 168, y: 84 },
-              { x: 84, y: 84 },
-              { x: 84, y: 168 },
-              { x: 0, y: 168 },
-            ],
-            authoring: { kind: 'cells' },
-          } as DrawerOutline,
-        },
+    setDrawer({
+      outline: {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 168, y: 0 },
+          { x: 168, y: 84 },
+          { x: 84, y: 84 },
+          { x: 84, y: 168 },
+          { x: 0, y: 168 },
+        ],
+        authoring: { kind: 'cells' },
       },
-    }));
+    });
     render(<CornerCutsDialog open onClose={() => {}} />);
     fireEvent.change(kindSelect('backLeft'), { target: { value: 'radius' } });
     fireEvent.click(screen.getByRole('button', { name: 'drawerShape.editor.apply' }));
@@ -130,25 +143,10 @@ describe('review regressions', () => {
   });
 
   it('treats a corners outline with a stripped annotation as foreign (confirms)', () => {
-    useLayoutStore.setState((s) => ({
-      layout: {
-        ...s.layout,
-        drawer: {
-          ...s.layout.drawer,
-          outline: {
-            vertices: [
-              { x: 30, y: 0 },
-              { x: 168, y: 0 },
-              { x: 168, y: 168 },
-              { x: 0, y: 168 },
-              { x: 0, y: 30 },
-            ],
-            // An older server stripped `corners` — only the kind survived.
-            authoring: { kind: 'corners' },
-          } as never,
-        },
-      },
-    }));
+    setDrawer({
+      // An older server stripped `corners` — only the kind survived.
+      outline: { vertices: CHAMFER_OUTLINE.vertices, authoring: { kind: 'corners' } },
+    });
     render(<CornerCutsDialog open onClose={() => {}} />);
     fireEvent.click(screen.getByRole('button', { name: 'drawerShape.editor.apply' }));
     expect(mockSetDrawerOutline).not.toHaveBeenCalled();

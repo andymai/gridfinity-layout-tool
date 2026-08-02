@@ -3183,6 +3183,7 @@
   "toast.binRotated": "Bin gedreht",
   "toast.binsDeleted": "{count} Bin(s) gelöscht",
   "toast.binsDisplacedByShape": "{count} Bin(s) in die Ablage verschoben (außerhalb der neuen Form)",
+  "toast.drawerSizeLimitedByShape": "Die Schublade kann nicht kleiner als ihre eigene Form werden. Bearbeite oder setze die Form zuerst zurück.",
   "toast.outlineImport.parseFailed": "Diese Datei konnte nicht als SVG- oder DXF-Zeichnung gelesen werden.",
   "toast.outlineImport.noClosedLoop": "Keine geschlossene Form gefunden. Der Umriss muss rundherum verbunden sein.",
   "toast.outlineImport.tooComplex": "Diese Form hat auch nach dem Vereinfachen zu viele Punkte.",

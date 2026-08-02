@@ -3003,6 +3003,7 @@
   "toast.binRotated": "Fack roterat",
   "toast.binsDeleted": "Raderade {count} fack",
   "toast.binsDisplacedByShape": "{count} bin(s) flyttade till förrådet (utanför den nya formen)",
+  "toast.drawerSizeLimitedByShape": "Lådan kan inte bli mindre än sin anpassade form. Redigera eller återställ formen först.",
   "toast.outlineImport.parseFailed": "Filen kunde inte läsas som en SVG- eller DXF-ritning.",
   "toast.outlineImport.noClosedLoop": "Ingen sluten form hittades. Omkretsen måste gå ihop hela vägen runt.",
   "toast.outlineImport.tooComplex": "Formen har för många punkter, även efter förenkling.",

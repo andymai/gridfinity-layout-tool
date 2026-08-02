@@ -19,7 +19,7 @@ import type { Result, LayoutError } from '@/core/result';
 import { ok } from '@/core/result';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { clamp } from '@/shared/utils/validation';
-import { minDrawerUnitsForOutline } from '@/shared/utils/drawerOutline';
+import { drawerSizeFloors, isOutlineFullRectangle } from '@/shared/utils/drawerOutline';
 import type { BinId, Drawer, GridUnits, MeasuredDrawerMm } from '@/core/types';
 import { effectiveGridUnitMmY, gridUnits, heightUnits } from '@/core/types';
 import { defineCommand } from '../../defineCommand';
@@ -95,30 +95,20 @@ export const updateDrawer = defineCommand({
   > => {
     const layout = ctx.aggregate;
     const drawer = layout.drawer;
+    const gridUnitMmY = effectiveGridUnitMmY(layout);
 
     // Resolve clamped/derived values up-front so the event records
     // exactly what apply() will install. With a custom outline active the
     // shrink floor rises to the outline's bounding half-unit grid: the shape
     // is user-authored and a resize must never crop or extend it (#3149) —
     // to go smaller, the user edits the shape first.
-    const outlineMin =
-      drawer.outline !== undefined
-        ? minDrawerUnitsForOutline(drawer.outline, layout.gridUnitMm, effectiveGridUnitMmY(layout))
-        : undefined;
+    const floors = drawerSizeFloors(drawer.outline, layout.gridUnitMm, gridUnitMmY);
     const changes: Partial<Drawer> = {};
     if (payload.width !== undefined) {
-      const floor = Math.min(
-        CONSTRAINTS.GRID_MAX,
-        Math.max(CONSTRAINTS.GRID_MIN, outlineMin?.width ?? 0)
-      );
-      changes.width = gridUnits(clamp(payload.width, floor, CONSTRAINTS.GRID_MAX));
+      changes.width = gridUnits(clamp(payload.width, floors.width, CONSTRAINTS.GRID_MAX));
     }
     if (payload.depth !== undefined) {
-      const floor = Math.min(
-        CONSTRAINTS.GRID_MAX,
-        Math.max(CONSTRAINTS.GRID_MIN, outlineMin?.depth ?? 0)
-      );
-      changes.depth = gridUnits(clamp(payload.depth, floor, CONSTRAINTS.GRID_MAX));
+      changes.depth = gridUnits(clamp(payload.depth, floors.depth, CONSTRAINTS.GRID_MAX));
     }
     if (payload.height !== undefined) {
       const totalLayerHeight = layout.layers.reduce((sum, l) => sum + (l.height as number), 0);
@@ -134,13 +124,26 @@ export const updateDrawer = defineCommand({
     const newWidth: GridUnits = changes.width ?? drawer.width;
     const newDepth: GridUnits = changes.depth ?? drawer.depth;
 
-    // The outline never changes on resize (see the clamp above); displacement
-    // runs against the new dims with the shape as-is.
+    // The shape never changes on resize (see the clamp above) — but a shrink
+    // can land exactly on the outline's bounding rectangle, and a
+    // rectangle-equivalent outline is stored as "no outline" everywhere else
+    // (setOutline, read-side normalize). Normalize here too, or the layout
+    // keeps a redundant "shaped" flag that flips behaviour on the next load.
+    const outlineBecameRectangle =
+      drawer.outline !== undefined &&
+      (newWidth !== drawer.width || newDepth !== drawer.depth) &&
+      isOutlineFullRectangle(drawer.outline, newWidth * layout.gridUnitMm, newDepth * gridUnitMmY);
+    if (outlineBecameRectangle) changes.outline = undefined;
+
     const displacedBinIds = computeDisplacedBins(
       layout.bins,
-      { width: newWidth, depth: newDepth, outline: drawer.outline },
+      {
+        width: newWidth,
+        depth: newDepth,
+        outline: outlineBecameRectangle ? undefined : drawer.outline,
+      },
       layout.gridUnitMm,
-      effectiveGridUnitMmY(layout)
+      gridUnitMmY
     );
 
     const previous = capturePrevious(drawer, changes);

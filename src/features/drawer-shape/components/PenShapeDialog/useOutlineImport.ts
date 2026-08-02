@@ -9,7 +9,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { OutlineVertex } from '@/core/types';
-import { CONSTRAINTS } from '@/core/constants';
+import { CONSTRAINTS, snapToHalf } from '@/core/constants';
 import { isOk } from '@/core/result';
 import { useToastStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
@@ -95,6 +95,16 @@ export function useOutlineImport(deps: OutlineImportDeps): UseOutlineImportRetur
       }
       const m = measured.value;
 
+      // Growing never shrinks the other axis: `updateDrawer` clamps a shrink
+      // while a custom outline is active (#3149), so promising the file's
+      // absolute dims would land a different drawer than the loop was fitted
+      // and centred for. Max against the current drawer so the prompt, the
+      // fit extent, and the landed size all agree.
+      const currentWidthUnits = snapToHalf(d.drawerWidthMm / d.gridUnitMm);
+      const currentDepthUnits = snapToHalf(d.drawerDepthMm / d.gridUnitMmY);
+      const growWidthUnits = Math.max(currentWidthUnits, m.requiredWidthUnits);
+      const growDepthUnits = Math.max(currentDepthUnits, m.requiredDepthUnits);
+
       if (mode.kind === 'trueScale' && !m.fitsAtTrueScale) {
         // A measured drawer must not be silently rescaled, so the choice
         // between shrinking the shape and growing the drawer is the user's.
@@ -102,11 +112,9 @@ export function useOutlineImport(deps: OutlineImportDeps): UseOutlineImportRetur
         setOversize({
           sourceWidthMm: m.sourceWidthMm,
           sourceDepthMm: m.sourceDepthMm,
-          requiredWidthUnits: m.requiredWidthUnits,
-          requiredDepthUnits: m.requiredDepthUnits,
-          canGrow:
-            m.requiredWidthUnits <= CONSTRAINTS.GRID_MAX &&
-            m.requiredDepthUnits <= CONSTRAINTS.GRID_MAX,
+          requiredWidthUnits: growWidthUnits,
+          requiredDepthUnits: growDepthUnits,
+          canGrow: growWidthUnits <= CONSTRAINTS.GRID_MAX && growDepthUnits <= CONSTRAINTS.GRID_MAX,
         });
         return;
       }
@@ -118,13 +126,13 @@ export function useOutlineImport(deps: OutlineImportDeps): UseOutlineImportRetur
       if (mode.kind === 'grow') {
         const grown = importOutline(text, {
           ...common,
-          drawerWidthMm: m.requiredWidthUnits * d.gridUnitMm,
-          drawerDepthMm: m.requiredDepthUnits * d.gridUnitMmY,
+          drawerWidthMm: growWidthUnits * d.gridUnitMm,
+          drawerDepthMm: growDepthUnits * d.gridUnitMmY,
           scaleToFit: false,
         });
         if (!isOk(grown)) return;
         final = grown.value;
-        d.onGrowDrawer(m.requiredWidthUnits, m.requiredDepthUnits);
+        d.onGrowDrawer(growWidthUnits, growDepthUnits);
       } else if (mode.kind === 'scaleToFit') {
         const scaled = importOutline(text, {
           ...common,

@@ -12,8 +12,8 @@ vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 const U = 42;
 
-/** Closed square LWPOLYLINE of the given size, in millimetres. */
-function squareDxf(size: number): string {
+/** Closed rectangular LWPOLYLINE, in millimetres. */
+function rectDxf(width: number, depth: number): string {
   const pairs: [number, string | number][] = [
     [0, 'SECTION'],
     [2, 'ENTITIES'],
@@ -22,16 +22,20 @@ function squareDxf(size: number): string {
     [70, 1],
     [10, 0],
     [20, 0],
-    [10, size],
+    [10, width],
     [20, 0],
-    [10, size],
-    [20, size],
+    [10, width],
+    [20, depth],
     [10, 0],
-    [20, size],
+    [20, depth],
     [0, 'ENDSEC'],
     [0, 'EOF'],
   ];
   return pairs.map(([c, v]) => `${c}\n${v}`).join('\n') + '\n';
+}
+
+function squareDxf(size: number): string {
+  return rectDxf(size, size);
 }
 
 function setup(overrides: Partial<OutlineImportDeps> = {}) {
@@ -142,6 +146,29 @@ describe('useOutlineImport', () => {
     // True scale kept, and centred in the grown drawer (21.5u = 903mm).
     expect(Math.max(...xs) - Math.min(...xs)).toBeCloseTo(900, 6);
     expect(Math.min(...xs)).toBeCloseTo((21.5 * U - 900) / 2, 6);
+  });
+
+  // Growing must never shrink the other axis: the drawer-resize clamp (#3149)
+  // would refuse the shrink and land a different size than the loop was
+  // centred for, so the target maxes each axis against the current drawer.
+  it('grows only the overflowing axis, keeping the current size on the other', async () => {
+    const { result, onImported, onGrowDrawer } = setup();
+    // 500×100mm: width needs 12 units, depth (2.5) is under the current 8.
+    await pickFile('wide.dxf', rectDxf(500, 100));
+    await waitFor(() => expect(result.current.oversize).not.toBeNull());
+    expect(result.current.oversize?.requiredWidthUnits).toBe(12);
+    expect(result.current.oversize?.requiredDepthUnits).toBe(8);
+
+    await act(async () => {
+      result.current.resolveOversize('grow');
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    await waitFor(() => expect(onImported).toHaveBeenCalledTimes(1));
+    expect(onGrowDrawer).toHaveBeenCalledWith(12, 8);
+    const verts = onImported.mock.calls[0][0];
+    const ys = verts.map((v: { y: number }) => v.y);
+    // Centred in the drawer that actually lands (depth stays 8u = 336mm).
+    expect(Math.min(...ys)).toBeCloseTo((8 * U - 100) / 2, 6);
   });
 
   it('imports nothing when the prompt is cancelled', async () => {

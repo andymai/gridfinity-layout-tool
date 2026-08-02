@@ -2,7 +2,7 @@
  * Shared fixtures for v2 layout-metadata command property tests.
  */
 
-import type { Layout } from '@/core/types';
+import type { Layout, OutlineVertex } from '@/core/types';
 import { layerId, categoryId, gridUnits, heightUnits } from '@/core/types';
 
 export function makeLayout(overrides: Partial<Layout> = {}): Layout {
@@ -22,4 +22,13 @@ export function makeLayout(overrides: Partial<Layout> = {}): Layout {
     bins: [],
     ...overrides,
   };
+}
+
+/** {@link makeLayout} carrying a custom drawer outline (6×4 at 42mm). */
+export function makeLayoutWithOutline(
+  vertices: OutlineVertex[],
+  overrides: Partial<Layout> = {}
+): Layout {
+  const base = makeLayout(overrides);
+  return { ...base, drawer: { ...base.drawer, outline: { vertices } } };
 }

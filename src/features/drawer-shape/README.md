@@ -70,9 +70,11 @@ hatching, baseplate generation/splitting) derives from it.
 5. **An import is never silently rescaled** — true scale is the point of
    importing a drawer measured in CAD, so an oversized perimeter raises
    `PenImportNotice` and the user picks between scaling it down and growing the
-   drawer. The grow path fits the loop against the drawer it is _about_ to
-   have, so the resize and the outline land in one commit instead of racing.
-   Loops dropped and points thinned are always toasted, never silent.
+   drawer. The grow target is the max of the file's size and the current
+   drawer per axis (growing never shrinks — the #3149 clamp would refuse it),
+   and the loop is fitted against that same target, so the prompt, the resize
+   and the outline all land consistently. Loops dropped and points thinned
+   are always toasted, never silent.
 6. **The outline never changes implicitly** (#3149) — `drawer.update` clamps a
    shrink to the shape's bounding half-unit grid (`minDrawerUnitsForOutline`)
    and keeps the outline byte-identical on grow; the old crop/weld adaptation

@@ -138,6 +138,18 @@ describe('isOutlineCellRepresentable (#3149)', () => {
     expect(isOutlineCellRepresentable(offCell, drawer(4, 4), U)).toBe(false);
   });
 
+  it('round-trips a fractional-edge shape on a non-square grid', () => {
+    // 3.5×2 drawer at 48×42 with the half column dropped: the traced outline
+    // stops at 3 whole units and must survive the round-trip exactly.
+    const d = drawer(3.5, 2);
+    const grid = buildFullDrawerMask(d);
+    setCell(grid, 3, 0, 0);
+    setCell(grid, 3, 1, 0);
+    const result = drawerMaskToOutline(grid, 48, 42);
+    if (!('outline' in result)) throw new Error('expected outline');
+    expect(isOutlineCellRepresentable(result.outline, d, 48, 42)).toBe(true);
+  });
+
   it('rejects an outline whose rasterization collapses to nothing', () => {
     // Thinner than a cell everywhere: no cell is fully inside.
     const sliver = {
