@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.347.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.347.0...gridfinity-layout-tool-v4.347.1) (2026-08-02)
+
+
+### Bug Fixes
+
+* **layout-editor:** render and preserve oversize custom perimeters ([#3107](https://github.com/andymai/gridfinity-layout-tool/issues/3107), [#3114](https://github.com/andymai/gridfinity-layout-tool/issues/3114)) ([#3121](https://github.com/andymai/gridfinity-layout-tool/issues/3121)) ([54e1150](https://github.com/andymai/gridfinity-layout-tool/commit/54e1150596f792d929bc2394ab7a073831aa662c))
+
 ## [4.347.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.346.0...gridfinity-layout-tool-v4.347.0) (2026-08-02)
 
 
