@@ -1,0 +1,81 @@
+public/robots.txt
+  s_48a510eaef7c22::t_6ca16d69478570 13-16
+scripts/check-spa-routes.test.ts
+  s_48a510eaef7c22::t_f4874095454cb8 64-76
+src/App.tsx
+  s_48a510eaef7c22::t_fb8827f117b7ba 53-58,107-109,144-146,155-159,202-204,211-213,222,411-422,596-598
+src/features/community/components/CommunityDetail/CommunityDetail.test.tsx
+  s_48a510eaef7c22::t_e3c67ad3480d44 92,100,276-300
+src/features/community/components/CommunityDetail/CommunityDetail.tsx
+  s_48a510eaef7c22::t_c561a7b7b263fa 49,69-71,94,108
+src/features/community/components/CommunityDetail/useDetailHistoryTrap.test.ts
+  s_48a510eaef7c22::t_e6ba24830ac2ed 83-100
+src/features/community/components/CommunityDetail/useDetailHistoryTrap.ts
+  s_48a510eaef7c22::t_76f1fd9e9328a2 12-19,29,31-34,47,79
+src/features/community/components/CommunityGalleryTab/CommunityGalleryTab.test.tsx
+  s_48a510eaef7c22::t_a972112caeb5b8 5,272-289
+src/features/community/components/CommunityGalleryTab/CommunityGalleryTab.tsx
+  s_48a510eaef7c22::t_74f09cdb6b5e59 43,67-68
+src/features/community/components/CommunityPage/CommunityPage.test.tsx
+  s_48a510eaef7c22::t_6b9096369b38ff 1-217
+src/features/community/components/CommunityPage/CommunityPage.tsx
+  s_48a510eaef7c22::t_41ab784472a6f9 1-173
+src/features/community/components/CommunityPage/index.ts
+  s_48a510eaef7c22::t_1320609272a64d 1-2
+src/i18n/locales/cs.json
+  s_48a510eaef7c22::t_a211957f985cd6 1572-1576,2402,2655-2656
+src/i18n/locales/de.json
+  s_48a510eaef7c22::t_809df0836132d1 1441-1445,2483,2736-2737
+src/i18n/locales/en.ts
+  s_48a510eaef7c22::t_410ac47b43f070 36-38,3005,3368-3375
+src/i18n/locales/es.json
+  s_48a510eaef7c22::t_b07ca2b9c7cfc0 1587-1591,2483,2736-2737
+src/i18n/locales/fr.json
+  s_48a510eaef7c22::t_e1b5d095f10406 1580-1584,2402,2655-2656
+src/i18n/locales/it.json
+  s_48a510eaef7c22::t_802abdb4587a00 1658-1662,2483,2736-2737
+src/i18n/locales/ja.json
+  s_48a510eaef7c22::t_8cee631f8900d5 1612-1616,2483,2736-2737
+src/i18n/locales/ko.json
+  s_48a510eaef7c22::t_9542a93e7db4fa 2326,2579-2580,3104-3108
+src/i18n/locales/nb.json
+  s_48a510eaef7c22::t_9273baa9c9c65e 1658-1662,2483,2736-2737
+src/i18n/locales/nl.json
+  s_48a510eaef7c22::t_9d74696464cf5e 1441-1445,2483,2736-2737
+src/i18n/locales/pl.json
+  s_48a510eaef7c22::t_8f5a37d73fbff4 1580-1584,2402,2655-2656
+src/i18n/locales/pt-BR.json
+  s_48a510eaef7c22::t_c9096d5ef332ae 1580-1584,2402,2655-2656
+src/i18n/locales/sv.json
+  s_48a510eaef7c22::t_57604ca5dc551c 1580-1584,2402,2655-2656
+src/i18n/locales/uk.json
+  s_48a510eaef7c22::t_e2f32fd7afde7f 1612-1616,2483,2736-2737
+src/i18n/locales/zh-CN.json
+  s_48a510eaef7c22::t_88c3ec0766aba5 1580-1584,2402,2655-2656
+src/shared/hooks/useCommunityRouting.test.ts
+  s_48a510eaef7c22::t_c10a784a308b22 1-195
+src/shared/hooks/useCommunityRouting.ts
+  s_48a510eaef7c22::t_9f3e25a4f08bec 1-112
+src/shared/types/communityDetail.ts
+  s_48a510eaef7c22::t_f993a08e05317b 8,30-36
+src/shared/types/communityGalleryTab.ts
+  s_48a510eaef7c22::t_29daa6a18cc209 2-7,9-12,22-23
+vercel.json
+  s_48a510eaef7c22::t_5048c0c75a0091 363-364
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "b575fe7b51eace51aa1b6f54b5113ff29c96b1b6",
+  "prompts": {},
+  "sessions": {
+    "s_48a510eaef7c22": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fda9511-153c-4dd5-bba7-05895a1e12c3",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
