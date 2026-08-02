@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.345.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.344.2...gridfinity-layout-tool-v4.345.0) (2026-08-02)
+
+
+### Features
+
+* **community:** publish flow for sharing bin designs ([#3104](https://github.com/andymai/gridfinity-layout-tool/issues/3104)) ([c810b44](https://github.com/andymai/gridfinity-layout-tool/commit/c810b4436b01551d660f9ab0100fcd8665d7105d))
+
 ## [4.344.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.344.1...gridfinity-layout-tool-v4.344.2) (2026-08-02)
 
 
