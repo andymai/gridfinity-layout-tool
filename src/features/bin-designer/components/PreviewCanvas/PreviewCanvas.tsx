@@ -259,7 +259,8 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
     params.depth,
     params.height,
     params.gridUnitMm,
-    params.heightUnitMm
+    params.heightUnitMm,
+    params.gridUnitMmY
   );
 
   const setCameraPreset = useCallback(
@@ -491,7 +492,12 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
               {/* Dimension markers and labels — hidden for split pieces */}
               {!hideChrome && !showSplitPieces && (
                 <>
-                  <BinAxisLabels width={width} depth={depth} gridUnitMm={params.gridUnitMm} />
+                  <BinAxisLabels
+                    width={width}
+                    depth={depth}
+                    gridUnitMm={params.gridUnitMm}
+                    gridUnitMmY={params.gridUnitMmY}
+                  />
                   {isBinKind && (
                     <>
                       <AssembledBinDimensions
