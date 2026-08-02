@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.352.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.352.3...gridfinity-layout-tool-v4.352.4) (2026-08-02)
+
+
+### Bug Fixes
+
+* **community:** harden publishing with audit fixes and a cutout-only launch gate ([#3160](https://github.com/andymai/gridfinity-layout-tool/issues/3160)) ([08e4b1a](https://github.com/andymai/gridfinity-layout-tool/commit/08e4b1add9572c13b2ae22678d0c4c04c775c7b5))
+
 ## [4.352.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.352.2...gridfinity-layout-tool-v4.352.3) (2026-08-02)
 
 
