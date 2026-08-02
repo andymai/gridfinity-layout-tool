@@ -3,11 +3,14 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useLabsStore } from '@/core/store';
 import {
+  getCommunityAuthorIdFromUrl,
   getCommunityDesignIdFromUrl,
+  syncCommunityAuthorParam,
   useCommunityRouting,
 } from '@/shared/hooks/useCommunityRouting';
 
 const DESIGN_ID = 'Abc123456789';
+const AUTHOR_ID = 'a1b2c3d4e5f60718293a4b5c6d7e8f90';
 
 function setCommunityFlag(enabled: boolean): void {
   useLabsStore.setState((s) => ({
@@ -190,6 +193,70 @@ describe('useCommunityRouting', () => {
       expect(getCommunityDesignIdFromUrl()).toBe(DESIGN_ID);
       window.history.replaceState(null, '', '/community');
       expect(getCommunityDesignIdFromUrl()).toBeNull();
+    });
+  });
+
+  describe('author view query param', () => {
+    it('reads a valid ?author= on the gallery path', () => {
+      window.history.replaceState(null, '', `/community?author=${AUTHOR_ID}`);
+      expect(getCommunityAuthorIdFromUrl()).toBe(AUTHOR_ID);
+    });
+
+    it('exposes the author id through the hook and re-derives it on popstate', () => {
+      window.history.replaceState(null, '', `/community?author=${AUTHOR_ID}`);
+      const { result } = renderHook(() => useCommunityRouting());
+      expect(result.current.communityAuthorIdFromUrl).toBe(AUTHOR_ID);
+      act(() => {
+        window.history.replaceState(null, '', '/community');
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      });
+      expect(result.current.communityAuthorIdFromUrl).toBeNull();
+    });
+
+    it.each(['not-an-id', 'ABCDEF', 'a'.repeat(31), 'a'.repeat(33), 'G'.repeat(32)])(
+      'rejects invalid author value %s',
+      (value) => {
+        window.history.replaceState(null, '', `/community?author=${value}`);
+        expect(getCommunityAuthorIdFromUrl()).toBeNull();
+      }
+    );
+
+    it('returns null off the gallery path even with the param present', () => {
+      window.history.replaceState(null, '', `/community/d/${DESIGN_ID}?author=${AUTHOR_ID}`);
+      expect(getCommunityAuthorIdFromUrl()).toBeNull();
+    });
+
+    it('syncCommunityAuthorParam writes, rewrites, and removes the param in place', () => {
+      window.history.replaceState(null, '', '/community');
+      syncCommunityAuthorParam(AUTHOR_ID);
+      expect(window.location.search).toBe(`?author=${AUTHOR_ID}`);
+      const other = 'f'.repeat(32);
+      syncCommunityAuthorParam(other);
+      expect(window.location.search).toBe(`?author=${other}`);
+      syncCommunityAuthorParam(null);
+      expect(window.location.search).toBe('');
+      expect(window.location.pathname).toBe('/community');
+    });
+
+    it('syncCommunityAuthorParam replaces instead of pushing history entries', () => {
+      window.history.replaceState(null, '', '/community');
+      const pushSpy = vi.spyOn(window.history, 'pushState');
+      const replaceSpy = vi.spyOn(window.history, 'replaceState');
+      syncCommunityAuthorParam(AUTHOR_ID);
+      expect(pushSpy).not.toHaveBeenCalled();
+      expect(replaceSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('syncCommunityAuthorParam is a no-op off the gallery path', () => {
+      window.history.replaceState(null, '', `/community/d/${DESIGN_ID}`);
+      syncCommunityAuthorParam(AUTHOR_ID);
+      expect(window.location.search).toBe('');
+    });
+
+    it('syncCommunityAuthorParam preserves the detail marker state', () => {
+      window.history.replaceState({ communityRouteDetail: true }, '', '/community');
+      syncCommunityAuthorParam(AUTHOR_ID);
+      expect(window.history.state).toEqual({ communityRouteDetail: true });
     });
   });
 });

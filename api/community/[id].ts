@@ -1,20 +1,26 @@
+import { createHash } from 'node:crypto';
 import { del, put } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import type { Redis } from 'ioredis';
 import { readSessionCookie } from '../lib/cookies.js';
 import {
   communityAuthorKey,
   communityChildrenKey,
   communityDenylistKey,
   communityDesignKey,
+  communityExportedKey,
   communityLikedKey,
   communityLikesKey,
+  communityOpenedKey,
   communityPublishedKey,
+  communityReportedKey,
   communityReportsKey,
 } from '../lib/redisKeys.js';
 import { checkRateLimit, getClientIP, getRedis } from '../lib/rateLimit.js';
 import { readSession, requireSession } from '../lib/session.js';
 import type { SessionRecord } from '../lib/session.js';
 import { logger } from '../lib/logger.js';
+import { checkText, REPORT_THRESHOLD } from '../lib/contentFilter.js';
 import {
   ErrorCode,
   methodNotAllowed,
@@ -23,18 +29,28 @@ import {
   timingSafeCompare,
 } from '../lib/shared.js';
 import {
+  COMMUNITY_DEDUPE_TTL_SECONDS,
   communityContentHash,
+  communityDedupeBucket,
   communityMeshBlobPath,
   communityThumbBlobPath,
   deleteCommunityDesignBlob,
   deriveCommunityMetrics,
   readCommunityDesignBlob,
   removeFromCommunityIndexes,
+  setCommunityDesignStatus,
+  toggleCommunityLike,
   writeCommunityCard,
   writeCommunityDesignBlob,
 } from '../lib/communityStore.js';
 import type { CommunityDesignRecord, CommunityDesignStatus } from '../lib/communityStore.js';
-import { validateCommunityPublish } from '../lib/communityValidation.js';
+import {
+  COMMUNITY_REPORT_NOTE_MAX_LENGTH,
+  COMMUNITY_REPORT_REASONS,
+  validateCommunityPublish,
+} from '../lib/communityValidation.js';
+import type { CommunityReportReason } from '../lib/communityValidation.js';
+import { isObject, isString } from '../lib/validationUtils.js';
 
 const COMMUNITY_DESIGN_ID_REGEX = /^[a-zA-Z0-9]{12}$/;
 
@@ -55,10 +71,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return handleGet(req, res, id);
     case 'PUT':
       return handlePut(req, res, id);
+    case 'POST':
+      return handlePost(req, res, id);
     case 'DELETE':
       return handleDelete(req, res, id);
     default:
-      return methodNotAllowed(res, 'GET, PUT, DELETE');
+      return methodNotAllowed(res, 'GET, PUT, POST, DELETE');
   }
 }
 
@@ -139,7 +157,32 @@ async function handleGet(req: VercelRequest, res: VercelResponse, id: string) {
       return designNotFound(res);
     }
 
-    return res.status(200).json({ design: { ...record, status }, isOwner: owns });
+    // Counts and like-state ship with the detail so the stats row does not
+    // depend on the capped browse index: a design past the client's index cap
+    // (or any index fetch failure) still gets a heart and counters.
+    const redis = getRedis();
+    let counts: { likes: number; remixes: number; exports: number } | null = null;
+    let likedByMe = false;
+    if (redis) {
+      const [likes, remixes, exports] = await redis.hmget(
+        communityDesignKey(id),
+        'likes',
+        'remixes',
+        'exports'
+      );
+      counts = {
+        likes: Number(likes ?? 0),
+        remixes: Number(remixes ?? 0),
+        exports: Number(exports ?? 0),
+      };
+      if (session !== null) {
+        likedByMe = (await redis.sismember(communityLikesKey(id), session.userId)) === 1;
+      }
+    }
+
+    return res
+      .status(200)
+      .json({ design: { ...record, status }, isOwner: owns, counts, likedByMe });
   } catch (error) {
     logger.error('Community design fetch error', {
       error: error instanceof Error ? error.message : String(error),
@@ -444,4 +487,307 @@ async function handleDelete(req: VercelRequest, res: VercelResponse, id: string)
       code: ErrorCode.SERVER_ERROR,
     });
   }
+}
+
+/**
+ * Existence + visibility gate for the POST actions. Unlike GET, no action
+ * needs the ~1 MB record blob just to be admitted, so the card hash status
+ * is read directly. A missing hash (never published or already deleted)
+ * collapses onto the same 404 as hidden/removed, preserving the
+ * "indistinguishable from missing" invariant.
+ *
+ * Actions on live designs deliberately ignore the COMMUNITY_PUBLISH_ENABLED
+ * kill switch: it gates creating new public content, not engaging with
+ * content that is already live.
+ */
+async function requireLiveDesign(redis: Redis, id: string): Promise<boolean> {
+  const status = await redis.hget(communityDesignKey(id), 'status');
+  return status === 'live';
+}
+
+const COMMUNITY_CLIENT_ID_REGEX = /^[A-Za-z0-9_-]{16,64}$/;
+
+async function handlePost(req: VercelRequest, res: VercelResponse, id: string) {
+  try {
+    const body: unknown = req.body;
+    if (!isObject(body) || !isString(body.action)) {
+      return res.status(400).json({
+        error: 'action is required',
+        code: ErrorCode.VALIDATION_ERROR,
+      });
+    }
+    switch (body.action) {
+      case 'like':
+        return await handleLikeAction(req, res, id, true);
+      case 'unlike':
+        return await handleLikeAction(req, res, id, false);
+      case 'report':
+        return await handleReportAction(req, res, id, body);
+      case 'open':
+        return await handleCounterAction(req, res, id, 'open', body);
+      case 'export':
+        return await handleCounterAction(req, res, id, 'export', body);
+      default:
+        return res.status(400).json({
+          error: 'Unknown action',
+          code: ErrorCode.VALIDATION_ERROR,
+        });
+    }
+  } catch (error) {
+    logger.error('Community design action error', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    return res.status(500).json({
+      error: 'Failed to perform action',
+      code: ErrorCode.SERVER_ERROR,
+    });
+  }
+}
+
+async function handleLikeAction(
+  req: VercelRequest,
+  res: VercelResponse,
+  id: string,
+  like: boolean
+) {
+  const session = await requireSession(req, res);
+  if (!session) return;
+
+  const rateLimit = await checkRateLimit(session.userId, 'community.like');
+  if (!rateLimit.allowed) return rateLimited(res, rateLimit.retryAfterSeconds);
+
+  const redis = getRedis();
+  if (!redis) return serviceUnavailable(res);
+
+  if (!(await requireLiveDesign(redis, id))) return designNotFound(res);
+
+  const { likes, likedByMe } = await toggleCommunityLike(redis, session.userId, id, like);
+  return res.status(200).json({ likes, likedByMe });
+}
+
+/**
+ * Flip status to hidden and purge the public asset blobs (thumbnails + GLB)
+ * from the CDN. The record blob itself is untouched so the owner still sees
+ * the design in the Mine view, but updates are rejected while non-live
+ * (handlePut), so fresh assets can only reach the CDN again through a
+ * moderation restore. The purge is required because blob access is by
+ * unguessable path, not by the
+ * already-flipped moderation status: a leaked or search-indexed thumbnail URL
+ * must stop resolving the moment a design is auto-hidden, not just stop
+ * being served through the API.
+ */
+async function autoHideCommunityDesign(redis: Redis, id: string): Promise<boolean> {
+  const record = await readCommunityDesignBlob(id);
+  await setCommunityDesignStatus(redis, id, 'hidden');
+  if (record) {
+    const assetUrls = [...record.thumbnails, record.meshUrl].filter((url) => url !== '');
+    if (assetUrls.length > 0) {
+      // One inline retry, then a persisted flag: a hidden design stops taking
+      // reports (non-live actions 404), so nothing on the moderation path
+      // would revisit a failed purge and the leaked/search-indexed asset URLs
+      // would stay live on the CDN. The flag is what admin tooling / a sweep
+      // keys on to finish the purge.
+      let purged = false;
+      for (let attempt = 0; attempt < 2 && !purged; attempt++) {
+        try {
+          await del(assetUrls);
+          purged = true;
+        } catch (delErr) {
+          logger.warn('Failed to purge CDN assets for auto-hidden design', {
+            id,
+            attempt,
+            error: delErr instanceof Error ? delErr.message : String(delErr),
+          });
+        }
+      }
+      if (!purged) {
+        await redis.hset(communityDesignKey(id), { purgePending: '1' });
+      }
+    }
+  }
+  logger.warn('Community design auto-hidden by reports', { id });
+  return true;
+}
+
+async function handleReportAction(
+  req: VercelRequest,
+  res: VercelResponse,
+  id: string,
+  body: Record<string, unknown>
+) {
+  const session = await requireSession(req, res);
+  if (!session) return;
+
+  const rateLimit = await checkRateLimit(session.userId, 'community.report');
+  if (!rateLimit.allowed) return rateLimited(res, rateLimit.retryAfterSeconds);
+
+  const { reason, note } = body;
+  if (!isString(reason) || !(COMMUNITY_REPORT_REASONS as readonly string[]).includes(reason)) {
+    return res.status(400).json({
+      error: 'Invalid report reason',
+      code: ErrorCode.VALIDATION_ERROR,
+    });
+  }
+  const reportReason = reason as CommunityReportReason;
+  let reportNote = '';
+  if (note !== undefined) {
+    if (!isString(note)) {
+      return res.status(400).json({
+        error: 'note must be a string',
+        code: ErrorCode.VALIDATION_ERROR,
+      });
+    }
+    // The slice bounds the string before the filter's ReDoS-prone regexes run.
+    reportNote = note.slice(0, COMMUNITY_REPORT_NOTE_MAX_LENGTH);
+    if (reportNote !== '' && !checkText(reportNote).passed) {
+      return res.status(400).json({
+        error: 'note contains prohibited content',
+        code: ErrorCode.CONTENT_BLOCKED,
+      });
+    }
+  }
+
+  const redis = getRedis();
+  if (!redis) return serviceUnavailable(res);
+
+  if (!(await requireLiveDesign(redis, id))) return designNotFound(res);
+
+  // Both sides of the report written together: the reverse index is what the
+  // account-deletion cascade walks to find this user's entries (redisKeys.ts).
+  const pipeline = redis.pipeline();
+  pipeline.sadd(communityReportsKey(id), session.userId);
+  pipeline.sadd(communityReportedKey(session.userId), id);
+  const results = await pipeline.exec();
+  if (results === null) {
+    throw new Error('Community report pipeline failed: redis connection lost');
+  }
+  for (const [pipelineError] of results) {
+    if (pipelineError) throw pipelineError;
+  }
+
+  const [, added] = results[0] as [Error | null, number];
+  let autoHidden = false;
+
+  // Only re-evaluate the threshold on a genuinely new report: a repeat report
+  // from the same account (SADD returns 0) cannot push the count further and
+  // would just redo the purge work.
+  if (added === 1) {
+    const distinctReporters = await redis.scard(communityReportsKey(id));
+    logger.warn('Community design reported', {
+      id,
+      reason: reportReason,
+      note: reportNote,
+      reportCount: distinctReporters,
+    });
+    if (distinctReporters >= REPORT_THRESHOLD) {
+      autoHidden = await autoHideCommunityDesign(redis, id);
+    }
+  }
+
+  return res.status(200).json({ success: true, autoHidden });
+}
+
+/**
+ * Cardinality ceiling for one dedupe set (one design, one 7-day bucket).
+ * Memory defense in depth on a small Redis instance: past this many distinct
+ * members the set stops growing and counting for the rest of the window.
+ */
+const COMMUNITY_DEDUPE_MAX_MEMBERS = 20_000;
+
+async function handleCounterAction(
+  req: VercelRequest,
+  res: VercelResponse,
+  id: string,
+  kind: 'open' | 'export',
+  body: Record<string, unknown>
+) {
+  const clientIP = getClientIP(req);
+  const rateLimit = await checkRateLimit(clientIP, 'community.action');
+  if (!rateLimit.allowed) return rateLimited(res, rateLimit.retryAfterSeconds);
+
+  const { clientId } = body;
+  if (!isString(clientId) || !COMMUNITY_CLIENT_ID_REGEX.test(clientId)) {
+    return res.status(400).json({
+      error: 'Invalid clientId',
+      code: ErrorCode.VALIDATION_ERROR,
+    });
+  }
+
+  const redis = getRedis();
+  if (!redis) return serviceUnavailable(res);
+
+  if (!(await requireLiveDesign(redis, id))) return designNotFound(res);
+
+  const bucket = communityDedupeBucket(Date.now());
+  const dedupeKey =
+    kind === 'open' ? communityOpenedKey(id, bucket) : communityExportedKey(id, bucket);
+
+  let counted = false;
+  if ((await redis.scard(dedupeKey)) < COMMUNITY_DEDUPE_MAX_MEMBERS) {
+    // The counter only moves when the caller's IP AND the clientId are both
+    // new to this window: the clientId is attacker-mintable (any string
+    // passing the regex), so on its own the dedupe set is no defense against
+    // deliberate inflation. The server-derived hashed-IP member goes first,
+    // and the clientId member is only written when the IP is new: writing
+    // minted clientIds on every request would let a single IP fill the set to
+    // the cardinality ceiling and freeze counting for the whole window.
+    // IP-first bounds set growth at two members per distinct IP and bounds
+    // inflation at one count per IP per window per design. Distinct member
+    // prefixes keep a crafted clientId from colliding with an IP member.
+    const ipAdded = await redis.sadd(
+      dedupeKey,
+      `ip:${createHash('sha256').update(clientIP).digest('hex').slice(0, 16)}`
+    );
+    if (ipAdded === 1) {
+      const pipeline = redis.pipeline();
+      pipeline.sadd(dedupeKey, `c:${clientId}`);
+      pipeline.expire(dedupeKey, COMMUNITY_DEDUPE_TTL_SECONDS);
+      const results = await pipeline.exec();
+      if (results === null) {
+        throw new Error('Community counter pipeline failed: redis connection lost');
+      }
+      for (const [pipelineError] of results) {
+        if (pipelineError) throw pipelineError;
+      }
+      const [, clientAdded] = results[0] as [Error | null, number];
+      counted = clientAdded === 1;
+    }
+  }
+
+  if (!counted) {
+    // Already counted for this client or IP within the window: no-op, still 200.
+    if (kind === 'export') {
+      const exports = Number((await redis.hget(communityDesignKey(id), 'exports')) ?? 0);
+      return res.status(200).json({ success: true, exports });
+    }
+    return res.status(200).json({ success: true });
+  }
+
+  if (kind === 'open') {
+    // Owner-only stat (never echoed back): HINCRBY on a never-set field
+    // starts from 0, so no card-hash migration is needed.
+    await redis.hincrby(communityDesignKey(id), 'opens', 1);
+    return res.status(200).json({ success: true });
+  }
+
+  // Export credits this design, plus its parent and root when it has lineage:
+  // printing a remix is also evidence the design it descends from works. The
+  // blob record supplies the lineage (the card hash only carries parentId).
+  const exports = await redis.hincrby(communityDesignKey(id), 'exports', 1);
+  const record = await readCommunityDesignBlob(id);
+  if (record?.lineage) {
+    // A Set collapses parentId === rootId (a direct remix of the root) so
+    // that case credits once, not twice.
+    const creditIds = new Set([record.lineage.parentId, record.lineage.rootId]);
+    for (const creditId of creditIds) {
+      // EXISTS guard: the parent/root may have since been deleted. HINCRBY on
+      // a DEL'd hash would silently recreate a phantom hash carrying only an
+      // exports field and none of its card metadata.
+      if ((await redis.exists(communityDesignKey(creditId))) === 1) {
+        await redis.hincrby(communityDesignKey(creditId), 'exports', 1);
+      }
+    }
+  }
+  return res.status(200).json({ success: true, exports });
 }

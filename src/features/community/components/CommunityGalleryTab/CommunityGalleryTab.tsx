@@ -13,7 +13,9 @@ import { TECHNIQUE_CONFIG } from '@/shared/types/exampleTechniques';
 import { COMMUNITY_INDEX_CAP } from '../../api/client';
 import { filterAndSortCards, useBrowseStore } from '../../store/browseStore';
 import { CATEGORY_LABEL_KEYS } from '../../utils/categoryLabels';
+import { loadRecentlyViewedIds } from '../../utils/recentlyViewed';
 import { CommunityCard } from '../CommunityCard';
+import { HeartGlyph } from '../CommunityCard/CommunityCard';
 import { GalleryToolbar } from './GalleryToolbar';
 import { hasLocalDesigns } from './hasLocalDesigns';
 
@@ -57,8 +59,10 @@ export function CommunityGalleryTab({
   const ensureIndex = useBrowseStore((s) => s.ensureIndex);
   const refreshIndex = useBrowseStore((s) => s.refreshIndex);
   const clearFilters = useBrowseStore((s) => s.clearFilters);
+  const setAuthor = useBrowseStore((s) => s.setAuthor);
   const showMore = useBrowseStore((s) => s.showMore);
   const openDetail = useCommunityDetailStore((s) => s.open);
+  const detailRequest = useCommunityDetailStore((s) => s.request);
   const addToast = useToastStore((s) => s.addToast);
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -105,6 +109,14 @@ export function CommunityGalleryTab({
     [openDetail]
   );
 
+  const handleSelectAuthor = useCallback(
+    (card: CommunityCardData) => {
+      setAuthor({ id: card.authorPublicId, name: card.authorName });
+      trackEvent('community_author_filter_applied', { surface: 'card' });
+    },
+    [setAuthor]
+  );
+
   const handleGoToDesigner = useCallback(() => {
     // Capture before closing: hasLocalDesigns reads localStorage.
     const publish = hasLocalDesigns() ? onRequestPublish : undefined;
@@ -125,15 +137,24 @@ export function CommunityGalleryTab({
     [t]
   );
 
+  // Re-read after every detail open/close: opening a detail records it, so
+  // the recently-viewed order can change while this component stays mounted.
+  const recentIds = useMemo(() => {
+    void detailRequest;
+    return loadRecentlyViewedIds();
+  }, [detailRequest]);
+
   const filtered = useMemo(
-    () => filterAndSortCards(items, filters, searchLabels),
-    [items, filters, searchLabels]
+    () => filterAndSortCards(items, filters, searchLabels, recentIds),
+    [items, filters, searchLabels, recentIds]
   );
   const visible = filtered.slice(0, visibleCount);
 
   const isInitialLoading = status === 'loading' && items.length === 0;
   const isEmptyLibrary = status === 'ready' && items.length === 0;
   const isNoMatches = status === 'ready' && items.length > 0 && filtered.length === 0;
+  const isLikedEmpty = isNoMatches && filters.likedOnly;
+  const isAuthorEmpty = isNoMatches && !filters.likedOnly && filters.author !== null;
   const isBlockingError = status === 'error' && items.length === 0;
   const isOffline =
     isBlockingError &&
@@ -220,7 +241,35 @@ export function CommunityGalleryTab({
           />
         )}
 
-        {isNoMatches && (
+        {isLikedEmpty && (
+          <EmptyState
+            icon={<HeartGlyph className="h-8 w-8" />}
+            iconStyle="circle"
+            title={t('community.gallery.likedEmpty.title')}
+            description={t('community.gallery.likedEmpty.subtitle')}
+          />
+        )}
+
+        {isAuthorEmpty && (
+          <EmptyState
+            icon={<SearchIcon />}
+            iconStyle="circle"
+            title={t('community.gallery.authorEmpty.title', {
+              author:
+                filters.author.name !== ''
+                  ? filters.author.name
+                  : t('community.gallery.authorFallback'),
+            })}
+            description={t('community.gallery.authorEmpty.subtitle')}
+            actions={
+              <Button variant="secondary" className="min-h-11" onClick={() => setAuthor(null)}>
+                {t('community.gallery.showAllDesigns')}
+              </Button>
+            }
+          />
+        )}
+
+        {isNoMatches && !isLikedEmpty && !isAuthorEmpty && (
           <EmptyState
             icon={<SearchIcon />}
             iconStyle="circle"
@@ -236,10 +285,17 @@ export function CommunityGalleryTab({
 
         {visible.length > 0 && (
           <>
-            <ul className={GRID_CLASS} aria-label={t('community.gallery.gridLabel')}>
+            {/* role="list" restores list semantics that Safari/iOS VoiceOver strips when list-style:none is applied. */}
+            {/* eslint-disable-next-line jsx-a11y/no-redundant-roles */}
+            <ul role="list" className={GRID_CLASS} aria-label={t('community.gallery.gridLabel')}>
               {visible.map((card, index) => (
                 <li key={card.id}>
-                  <CommunityCard card={card} onSelect={handleSelect} index={index} />
+                  <CommunityCard
+                    card={card}
+                    onSelect={handleSelect}
+                    onSelectAuthor={handleSelectAuthor}
+                    index={index}
+                  />
                 </li>
               ))}
             </ul>

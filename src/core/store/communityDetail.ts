@@ -18,27 +18,51 @@ export interface CommunityDetailRequest {
   readonly card: CommunityCard | null;
 }
 
+/**
+ * Server-resolved like state pushed by the post-OAuth resume
+ * (useCommunityLikeReturn). The open detail's own fetch can race the resumed
+ * like write and snapshot likedByMe=false; the detail consumes this record
+ * after its fetch settles so the heart cannot contradict the "Design liked."
+ * toast.
+ */
+export interface CommunityDetailLikeSync {
+  readonly designId: string;
+  readonly likes: number;
+  readonly likedByMe: boolean;
+}
+
 interface CommunityDetailState {
   request: CommunityDetailRequest | null;
+  likeSync: CommunityDetailLikeSync | null;
 }
 
 interface CommunityDetailActions {
   open: (designId: string, card?: CommunityCard) => void;
   close: () => void;
+  /** No-op unless the sync targets the currently open design, so a resolved like can never linger and replay onto a later detail view. */
+  syncLike: (sync: CommunityDetailLikeSync) => void;
+  clearLikeSync: () => void;
 }
 
 export type CommunityDetailStore = CommunityDetailState & CommunityDetailActions;
 
 export const INITIAL_COMMUNITY_DETAIL_STATE: CommunityDetailState = {
   request: null,
+  likeSync: null,
 };
 
 export const useCommunityDetailStore = create<CommunityDetailStore>((set) => ({
   ...INITIAL_COMMUNITY_DETAIL_STATE,
   open: (designId, card) => {
-    set({ request: { designId, card: card ?? null } });
+    set({ request: { designId, card: card ?? null }, likeSync: null });
   },
   close: () => {
-    set({ request: null });
+    set({ request: null, likeSync: null });
+  },
+  syncLike: (sync) => {
+    set((state) => (state.request?.designId === sync.designId ? { likeSync: sync } : {}));
+  },
+  clearLikeSync: () => {
+    set({ likeSync: null });
   },
 }));

@@ -27,6 +27,7 @@ declare -A UNION_TYPES=(
   ["CommunityCategory"]="tools,hardware,kitchen,office,crafts,electronics,toys-games,other"
   ["CommunityDesignStatus"]="live,hidden,removed"
   ["CommunityIndexSort"]="newest,remixes,likes"
+  ["CommunityReportReason"]="inappropriate,spam,broken,stolen"
 )
 
 # Get files to check

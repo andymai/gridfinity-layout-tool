@@ -176,12 +176,43 @@ describe('filters', () => {
     expect(state.scrollTop).toBe(0);
   });
 
+  it('author/liked/recent setters update filters and reset the remembered scroll position', () => {
+    const store = useBrowseStore.getState();
+    store.setScrollTop(300);
+    store.setAuthor({ id: 'f'.repeat(32), name: 'Alice' });
+    let state = useBrowseStore.getState();
+    expect(state.filters.author).toEqual({ id: 'f'.repeat(32), name: 'Alice' });
+    expect(state.scrollTop).toBe(0);
+
+    store.setScrollTop(300);
+    store.setLikedOnly(true);
+    state = useBrowseStore.getState();
+    expect(state.filters.likedOnly).toBe(true);
+    expect(state.scrollTop).toBe(0);
+
+    store.setScrollTop(300);
+    store.setRecentOnly(true);
+    state = useBrowseStore.getState();
+    expect(state.filters.recentOnly).toBe(true);
+    expect(state.scrollTop).toBe(0);
+  });
+
+  it('setAuthor(null) clears the author view', () => {
+    const store = useBrowseStore.getState();
+    store.setAuthor({ id: 'f'.repeat(32), name: 'Alice' });
+    store.setAuthor(null);
+    expect(useBrowseStore.getState().filters.author).toBeNull();
+  });
+
   it('clearFilters restores the defaults', () => {
     const store = useBrowseStore.getState();
     store.setSearchText('screw');
     store.setCategory('kitchen');
     store.setTechnique('scoop');
     store.setSort('remixes');
+    store.setAuthor({ id: 'f'.repeat(32), name: 'Alice' });
+    store.setLikedOnly(true);
+    store.setRecentOnly(true);
     store.clearFilters();
     expect(useBrowseStore.getState().filters).toEqual(INITIAL_BROWSE_FILTERS);
   });
@@ -207,10 +238,14 @@ describe('filters', () => {
 });
 
 describe('filterAndSortCards', () => {
+  const ALICE = 'a'.repeat(32);
+  const BOB = 'b'.repeat(32);
+
   const items: readonly CommunityCard[] = [
     card('screws', {
       name: 'Screw Sorter',
       authorName: 'Alice',
+      authorPublicId: ALICE,
       category: 'hardware',
       techniques: ['compartments', 'labelTab'],
       counts: { likes: 5, remixes: 1, exports: 0 },
@@ -219,25 +254,35 @@ describe('filterAndSortCards', () => {
     card('spice', {
       name: 'Spice Rack',
       authorName: 'Bob',
+      authorPublicId: BOB,
       category: 'kitchen',
       techniques: ['slotted'],
       counts: { likes: 9, remixes: 4, exports: 2 },
       createdAt: 2000,
+      likedByMe: true,
     }),
     card('pens', {
       name: 'Pen Tray',
       authorName: 'Alice',
+      authorPublicId: ALICE,
       category: 'office',
       techniques: ['scoop'],
       counts: { likes: 9, remixes: 4, exports: 1 },
       createdAt: 1000,
+      likedByMe: true,
     }),
   ];
 
-  function ids(filters: Partial<typeof INITIAL_BROWSE_FILTERS>): string[] {
-    return filterAndSortCards(items, { ...INITIAL_BROWSE_FILTERS, ...filters }).map(
-      (item) => item.id
-    );
+  function ids(
+    filters: Partial<typeof INITIAL_BROWSE_FILTERS>,
+    recentIds: readonly string[] = []
+  ): string[] {
+    return filterAndSortCards(
+      items,
+      { ...INITIAL_BROWSE_FILTERS, ...filters },
+      undefined,
+      recentIds
+    ).map((item) => item.id);
   }
 
   it('sorts by newest by default', () => {
@@ -292,6 +337,61 @@ describe('filterAndSortCards', () => {
   it('sorts by remixes with newest breaking ties', () => {
     expect(ids({ sort: 'remixes' })).toEqual(['spice', 'pens', 'screws']);
   });
+
+  it('filters to a single author by public id', () => {
+    expect(ids({ author: { id: ALICE, name: 'Alice' } })).toEqual(['screws', 'pens']);
+    expect(ids({ author: { id: BOB, name: 'Bob' } })).toEqual(['spice']);
+  });
+
+  it('yields nothing for an author with no cards in the index', () => {
+    expect(ids({ author: { id: 'c'.repeat(32), name: '' } })).toEqual([]);
+  });
+
+  it('author combines with category, search, and likedOnly', () => {
+    expect(ids({ author: { id: ALICE, name: 'Alice' }, category: 'office' })).toEqual(['pens']);
+    expect(ids({ author: { id: ALICE, name: 'Alice' }, searchText: 'screw' })).toEqual(['screws']);
+    expect(ids({ author: { id: ALICE, name: 'Alice' }, likedOnly: true })).toEqual(['pens']);
+  });
+
+  it('likedOnly keeps only cards liked by the session user', () => {
+    expect(ids({ likedOnly: true })).toEqual(['spice', 'pens']);
+  });
+
+  it('likedOnly treats an absent likedByMe as not liked', () => {
+    const anonymous = items.map(({ likedByMe: _likedByMe, ...rest }) => rest as CommunityCard);
+    const found = filterAndSortCards(anonymous, {
+      ...INITIAL_BROWSE_FILTERS,
+      likedOnly: true,
+    });
+    expect(found).toEqual([]);
+  });
+
+  it('recentOnly filters to the recorded list and orders most-recent-first', () => {
+    expect(ids({ recentOnly: true }, ['pens', 'screws'])).toEqual(['pens', 'screws']);
+  });
+
+  it('recentOnly ignores recorded ids missing from the index', () => {
+    expect(ids({ recentOnly: true }, ['gone-design', 'spice'])).toEqual(['spice']);
+  });
+
+  it('recentOnly with nothing recorded yields nothing', () => {
+    expect(ids({ recentOnly: true })).toEqual([]);
+  });
+
+  it('recency order overrides the sort control while recentOnly is active', () => {
+    expect(ids({ recentOnly: true, sort: 'likes' }, ['screws', 'pens', 'spice'])).toEqual([
+      'screws',
+      'pens',
+      'spice',
+    ]);
+  });
+
+  it('recentOnly combines with the other filters', () => {
+    expect(
+      ids({ recentOnly: true, author: { id: ALICE, name: 'Alice' } }, ['spice', 'pens', 'screws'])
+    ).toEqual(['pens', 'screws']);
+    expect(ids({ recentOnly: true, likedOnly: true }, ['screws', 'pens'])).toEqual(['pens']);
+  });
 });
 
 describe('isIndexStale', () => {
@@ -302,5 +402,37 @@ describe('isIndexStale', () => {
   it('flips exactly at the staleness window', () => {
     expect(isIndexStale(1000, 1000 + BROWSE_INDEX_STALE_MS - 1)).toBe(false);
     expect(isIndexStale(1000, 1000 + BROWSE_INDEX_STALE_MS)).toBe(true);
+  });
+});
+
+describe('patchCardLike', () => {
+  beforeEach(() => {
+    useBrowseStore.setState({
+      ...INITIAL_BROWSE_STATE,
+      items: [card('a', { counts: { likes: 5, remixes: 1, exports: 2 } }), card('b')],
+    });
+  });
+
+  it('patches likedByMe and merges likes into counts on the target card only', () => {
+    useBrowseStore.getState().patchCardLike('a', { likedByMe: true, likes: 6 });
+    const [a, b] = useBrowseStore.getState().items;
+    expect(a.likedByMe).toBe(true);
+    expect(a.counts).toEqual({ likes: 6, remixes: 1, exports: 2 });
+    expect(b.likedByMe).toBeUndefined();
+    expect(b.counts.likes).toBe(0);
+  });
+
+  it('leaves fields absent from the patch untouched (rollback shape)', () => {
+    useBrowseStore.getState().patchCardLike('a', { likedByMe: true, likes: 6 });
+    useBrowseStore.getState().patchCardLike('a', { likedByMe: false, likes: 5 });
+    const [a] = useBrowseStore.getState().items;
+    expect(a.likedByMe).toBe(false);
+    expect(a.counts).toEqual({ likes: 5, remixes: 1, exports: 2 });
+  });
+
+  it('no-ops for an id not present in the index', () => {
+    const before = useBrowseStore.getState().items;
+    useBrowseStore.getState().patchCardLike('missing', { likedByMe: true, likes: 1 });
+    expect(useBrowseStore.getState().items).toEqual(before);
   });
 });

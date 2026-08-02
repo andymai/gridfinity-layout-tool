@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { ok, err } from '@/core/result';
 import type { BinParams } from '@/shared/types/bin';
 import type { CommunityCard, CommunityDesign } from '@/shared/types/community';
@@ -11,6 +11,9 @@ import { useToastStore } from '@/core/store/toast';
 
 vi.mock('../../api/client', () => ({
   fetchCommunityDesign: vi.fn(),
+  fetchCommunityIndex: vi.fn(),
+  setDesignLiked: vi.fn(),
+  reportDesign: vi.fn(),
 }));
 
 vi.mock('@/shared/analytics/posthog', () => ({
@@ -27,15 +30,28 @@ vi.mock('@/shared/components/preview/GradientBackground', () => ({
   GradientBackground: () => null,
 }));
 
+const responsiveMock = vi.hoisted(() => ({ isMobile: false }));
 vi.mock('@/shared/hooks/useResponsive', () => ({
-  useResponsive: () => ({ isMobile: false }),
+  useResponsive: () => ({ isMobile: responsiveMock.isMobile }),
 }));
 
-import { fetchCommunityDesign } from '../../api/client';
+import {
+  fetchCommunityDesign,
+  fetchCommunityIndex,
+  reportDesign,
+  setDesignLiked,
+} from '../../api/client';
+import type { CommunityDesignDetail } from '../../api/client';
 import { trackEvent } from '@/shared/analytics/posthog';
+import { useSessionStore } from '@/core/sync/session/useSession';
+import { INITIAL_BROWSE_STATE, useBrowseStore } from '../../store/browseStore';
+import { loadRecentlyViewedIds } from '../../utils/recentlyViewed';
 import { CommunityDetail } from './CommunityDetail';
 
 const fetchMock = vi.mocked(fetchCommunityDesign);
+const indexMock = vi.mocked(fetchCommunityIndex);
+const likeMock = vi.mocked(setDesignLiked);
+const reportMock = vi.mocked(reportDesign);
 
 const params = { width: 2, depth: 3, height: 6 } as unknown as BinParams;
 
@@ -82,6 +98,16 @@ function card(overrides: Partial<CommunityCard> = {}): CommunityCard {
   };
 }
 
+function detail(overrides: Partial<CommunityDesignDetail> = {}): CommunityDesignDetail {
+  return {
+    design: communityDesign(),
+    isOwner: false,
+    counts: null,
+    likedByMe: false,
+    ...overrides,
+  };
+}
+
 interface RenderOptions {
   onRequestCloseGallery?: () => void;
   onRemixDesign?: (
@@ -108,10 +134,28 @@ function openDetail() {
 
 describe('CommunityDetail', () => {
   beforeEach(() => {
+    responsiveMock.isMobile = false;
     fetchMock.mockReset();
+    indexMock.mockReset();
+    indexMock.mockResolvedValue(ok({ items: [], capped: false }));
+    likeMock.mockReset();
+    reportMock.mockReset();
+    localStorage.clear();
     vi.mocked(trackEvent).mockClear();
     useCommunityDetailStore.setState({ ...INITIAL_COMMUNITY_DETAIL_STATE });
     useToastStore.setState({ toasts: [] });
+    // status ready + fresh fetchedAt: the similar rail's ensureIndex must not
+    // start a load over the seeded items.
+    useBrowseStore.setState({
+      ...INITIAL_BROWSE_STATE,
+      items: [card()],
+      status: 'ready',
+      fetchedAt: Date.now(),
+    });
+    useSessionStore.setState({
+      status: 'authenticated',
+      user: { userId: 'u1', provider: 'google', email: 'a@b.c' },
+    });
     // Simulates the browser: back() traverses and fires a real popstate, which
     // the history trap relies on to consume its entry before navigating.
     vi.spyOn(window.history, 'back').mockImplementation(() => {
@@ -129,7 +173,7 @@ describe('CommunityDetail', () => {
   });
 
   it('shows a loading state, then the record, and tracks the view', async () => {
-    fetchMock.mockResolvedValue(ok({ design: communityDesign(), isOwner: false }));
+    fetchMock.mockResolvedValue(ok(detail()));
     openDetail();
     renderDetail();
     expect(screen.getByText('Loading design…')).toBeInTheDocument();
@@ -153,7 +197,7 @@ describe('CommunityDetail', () => {
     openDetail();
     renderDetail();
     expect(await screen.findByText('You appear to be offline')).toBeInTheDocument();
-    fetchMock.mockResolvedValueOnce(ok({ design: communityDesign(), isOwner: false }));
+    fetchMock.mockResolvedValueOnce(ok(detail()));
     Object.defineProperty(window.navigator, 'onLine', { value: true, configurable: true });
     fireEvent(window, new Event('online'));
     expect(await screen.findByText('by Jo', undefined, { timeout: 5000 })).toBeInTheDocument();
@@ -162,7 +206,7 @@ describe('CommunityDetail', () => {
 
   it('shows an error state with a retry that refetches', async () => {
     fetchMock.mockResolvedValueOnce(err({ kind: 'network' }));
-    fetchMock.mockResolvedValueOnce(ok({ design: communityDesign(), isOwner: false }));
+    fetchMock.mockResolvedValueOnce(ok(detail()));
     openDetail();
     renderDetail();
     expect(await screen.findByText("Couldn't load this design.")).toBeInTheDocument();
@@ -172,7 +216,7 @@ describe('CommunityDetail', () => {
   });
 
   it('renders Remix as the primary action for a non-owner', async () => {
-    fetchMock.mockResolvedValue(ok({ design: communityDesign(), isOwner: false }));
+    fetchMock.mockResolvedValue(ok(detail()));
     openDetail();
     renderDetail();
     expect(await screen.findByText('Remix')).toBeInTheDocument();
@@ -181,7 +225,7 @@ describe('CommunityDetail', () => {
   });
 
   it('replaces Remix with owner actions when the server marks ownership', async () => {
-    fetchMock.mockResolvedValue(ok({ design: communityDesign(), isOwner: true }));
+    fetchMock.mockResolvedValue(ok(detail({ isOwner: true })));
     openDetail();
     renderDetail();
     expect(await screen.findByText('Edit original')).toBeInTheDocument();
@@ -191,7 +235,7 @@ describe('CommunityDetail', () => {
 
   it('remix creates the copy, tracks, switches to the designer, and closes everything', async () => {
     const design = communityDesign();
-    fetchMock.mockResolvedValue(ok({ design, isOwner: false }));
+    fetchMock.mockResolvedValue(ok(detail({ design })));
     const onRemixDesign = vi.fn().mockResolvedValue(true);
     const onRequestCloseGallery = vi.fn();
     const switched = vi.fn();
@@ -213,7 +257,7 @@ describe('CommunityDetail', () => {
   });
 
   it('keeps the detail open and toasts when remix fails', async () => {
-    fetchMock.mockResolvedValue(ok({ design: communityDesign(), isOwner: false }));
+    fetchMock.mockResolvedValue(ok(detail()));
     const onRemixDesign = vi.fn().mockResolvedValue(false);
     openDetail();
     renderDetail({ onRemixDesign });
@@ -227,7 +271,7 @@ describe('CommunityDetail', () => {
   });
 
   it('edit original switches to the designer when a local copy opens', async () => {
-    fetchMock.mockResolvedValue(ok({ design: communityDesign(), isOwner: true }));
+    fetchMock.mockResolvedValue(ok(detail({ isOwner: true })));
     const onEditOriginal = vi.fn().mockResolvedValue('opened' as const);
     const onRequestCloseGallery = vi.fn();
     openDetail();
@@ -240,7 +284,7 @@ describe('CommunityDetail', () => {
 
   it('edit original falls back to duplicate-as-new when no local copy exists', async () => {
     const design = communityDesign();
-    fetchMock.mockResolvedValue(ok({ design, isOwner: true }));
+    fetchMock.mockResolvedValue(ok(detail({ design, isOwner: true })));
     const onEditOriginal = vi.fn().mockResolvedValue('missing' as const);
     const onRemixDesign = vi.fn().mockResolvedValue(true);
     openDetail();
@@ -255,7 +299,7 @@ describe('CommunityDetail', () => {
   });
 
   it('closes on browser back via the trapped history entry', async () => {
-    fetchMock.mockResolvedValue(ok({ design: communityDesign(), isOwner: false }));
+    fetchMock.mockResolvedValue(ok(detail()));
     openDetail();
     renderDetail();
     await screen.findByText('by Jo');
@@ -264,7 +308,7 @@ describe('CommunityDetail', () => {
   });
 
   it('consumes the trapped history entry when closed from the UI', async () => {
-    fetchMock.mockResolvedValue(ok({ design: communityDesign(), isOwner: false }));
+    fetchMock.mockResolvedValue(ok(detail()));
     openDetail();
     renderDetail();
     await screen.findByText('by Jo');
@@ -274,7 +318,7 @@ describe('CommunityDetail', () => {
   });
 
   it('route surface: tracks the view with surface route and skips the history trap', async () => {
-    fetchMock.mockResolvedValue(ok({ design: communityDesign(), isOwner: false }));
+    fetchMock.mockResolvedValue(ok(detail()));
     const pushSpy = vi.spyOn(window.history, 'pushState');
     openDetail();
     renderDetail({ surface: 'route' });
@@ -286,7 +330,7 @@ describe('CommunityDetail', () => {
   });
 
   it('route surface: remix switches to the designer without popping history', async () => {
-    fetchMock.mockResolvedValue(ok({ design: communityDesign(), isOwner: false }));
+    fetchMock.mockResolvedValue(ok(detail()));
     const switched = vi.fn();
     window.addEventListener('switch-to-designer', switched);
     openDetail();
@@ -299,7 +343,7 @@ describe('CommunityDetail', () => {
   });
 
   it('share copies the canonical public URL and toasts', async () => {
-    fetchMock.mockResolvedValue(ok({ design: communityDesign(), isOwner: false }));
+    fetchMock.mockResolvedValue(ok(detail()));
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, 'clipboard', {
       value: { writeText },
@@ -328,16 +372,17 @@ describe('CommunityDetail', () => {
       },
     });
     fetchMock.mockImplementation((id: string) => {
-      if (id === 'Child1234567') return Promise.resolve(ok({ design: remix, isOwner: false }));
+      if (id === 'Child1234567') return Promise.resolve(ok(detail({ design: remix })));
       return Promise.resolve(
-        ok({
-          design: communityDesign({
-            id: 'Parent123456',
-            name: 'Renamed Parent',
-            authorName: 'Samuel',
-          }),
-          isOwner: false,
-        })
+        ok(
+          detail({
+            design: communityDesign({
+              id: 'Parent123456',
+              name: 'Renamed Parent',
+              authorName: 'Samuel',
+            }),
+          })
+        )
       );
     });
     useCommunityDetailStore.getState().open('Child1234567', card({ id: 'Child1234567' }));
@@ -358,12 +403,241 @@ describe('CommunityDetail', () => {
       },
     });
     fetchMock.mockImplementation((id: string) => {
-      if (id === 'Child1234567') return Promise.resolve(ok({ design: remix, isOwner: false }));
+      if (id === 'Child1234567') return Promise.resolve(ok(detail({ design: remix })));
       return Promise.resolve(err({ kind: 'notFound' as const }));
     });
     useCommunityDetailStore.getState().open('Child1234567', card({ id: 'Child1234567' }));
     renderDetail();
     expect(await screen.findByText(/Remixed from Older Bin by Sam/)).toBeInTheDocument();
     expect(await screen.findByText(/no longer published/)).toBeInTheDocument();
+  });
+
+  it('renders the stats-row heart with aria-pressed and toggles the like optimistically', async () => {
+    fetchMock.mockResolvedValue(ok(detail()));
+    likeMock.mockResolvedValue(ok({ likes: 13, likedByMe: true }));
+    openDetail();
+    renderDetail();
+    const heart = await screen.findByTestId('community-detail-like');
+    expect(heart).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByText('12')).toBeInTheDocument();
+
+    fireEvent.click(heart);
+
+    // Optimistic count from the browse-store patch, then aria-pressed follows.
+    expect(await screen.findByText('13')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId('community-detail-like')).toHaveAttribute('aria-pressed', 'true');
+    });
+    expect(likeMock).toHaveBeenCalledWith('Abc123456789', true);
+  });
+
+  it('hides the heart only when neither a browse card nor detail stats exist (degraded server)', async () => {
+    useBrowseStore.setState({ ...INITIAL_BROWSE_STATE, items: [] });
+    fetchMock.mockResolvedValue(ok(detail()));
+    openDetail();
+    renderDetail();
+    await screen.findByText('by Jo');
+    expect(screen.queryByTestId('community-detail-like')).not.toBeInTheDocument();
+  });
+
+  it('falls back to detail-payload stats for a design beyond the browse index', async () => {
+    // The 2,000-card index cap (or an index fetch failure) must not strip the
+    // stats row and like affordance from the detail view.
+    useBrowseStore.setState({ ...INITIAL_BROWSE_STATE, items: [] });
+    fetchMock.mockResolvedValue(
+      ok(detail({ counts: { likes: 7, remixes: 3, exports: 5 }, likedByMe: false }))
+    );
+    likeMock.mockResolvedValue(ok({ likes: 8, likedByMe: true }));
+    openDetail();
+    renderDetail();
+    const heart = await screen.findByTestId('community-detail-like');
+    expect(heart).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByText('7')).toBeInTheDocument();
+
+    fireEvent.click(heart);
+
+    // Optimistic patch lands on the detail-local stats (no store card to patch).
+    expect(await screen.findByText('8')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId('community-detail-like')).toHaveAttribute('aria-pressed', 'true');
+    });
+    expect(likeMock).toHaveBeenCalledWith('Abc123456789', true);
+  });
+
+  it('adopts a resumed post-OAuth like pushed through the store sync', async () => {
+    // The detail fetch can race the resumed like write server-side and
+    // snapshot likedByMe=false; the sync record must win once ready.
+    useBrowseStore.setState({ ...INITIAL_BROWSE_STATE, items: [] });
+    fetchMock.mockResolvedValue(
+      ok(detail({ counts: { likes: 7, remixes: 3, exports: 5 }, likedByMe: false }))
+    );
+    openDetail();
+    renderDetail();
+    const heart = await screen.findByTestId('community-detail-like');
+    expect(heart).toHaveAttribute('aria-pressed', 'false');
+
+    act(() => {
+      useCommunityDetailStore
+        .getState()
+        .syncLike({ designId: 'Abc123456789', likes: 8, likedByMe: true });
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('community-detail-like')).toHaveAttribute('aria-pressed', 'true');
+    });
+    expect(screen.getByText('8')).toBeInTheDocument();
+
+    // A manual toggle starts from the synced state and consumes the record,
+    // so the sync cannot replay over the user's later choice.
+    likeMock.mockResolvedValue(ok({ likes: 7, likedByMe: false }));
+    fireEvent.click(screen.getByTestId('community-detail-like'));
+    expect(useCommunityDetailStore.getState().likeSync).toBeNull();
+    await waitFor(() => {
+      expect(likeMock).toHaveBeenCalledWith('Abc123456789', false);
+    });
+    await waitFor(() => {
+      expect(screen.getByTestId('community-detail-like')).toHaveAttribute('aria-pressed', 'false');
+    });
+  });
+
+  it('opens the sign-in prompt for a signed-out heart tap', async () => {
+    useSessionStore.setState({ status: 'anonymous', user: null });
+    fetchMock.mockResolvedValue(ok(detail()));
+    openDetail();
+    renderDetail();
+    fireEvent.click(await screen.findByTestId('community-detail-like'));
+    expect(
+      await screen.findByText(
+        'Sign in to like designs. Your like will be applied after you sign in.'
+      )
+    ).toBeInTheDocument();
+    expect(likeMock).not.toHaveBeenCalled();
+    expect(trackEvent).toHaveBeenCalledWith('community_signin_prompt_shown', { intent: 'like' });
+  });
+
+  it('offers Report to non-owners and opens the report dialog when signed in', async () => {
+    fetchMock.mockResolvedValue(ok(detail()));
+    openDetail();
+    renderDetail();
+    fireEvent.click(await screen.findByText('Report'));
+    expect(await screen.findByText('Report this design')).toBeInTheDocument();
+  });
+
+  it('does not offer Report on an owned design', async () => {
+    fetchMock.mockResolvedValue(ok(detail({ isOwner: true })));
+    openDetail();
+    renderDetail();
+    await screen.findByText('Edit original');
+    expect(screen.queryByText('Report')).not.toBeInTheDocument();
+  });
+
+  it('moves Report into the overflow menu on mobile', async () => {
+    responsiveMock.isMobile = true;
+    fetchMock.mockResolvedValue(ok(detail()));
+    openDetail();
+    renderDetail();
+    const overflow = await screen.findByTestId('community-detail-overflow');
+    expect(screen.queryByText('Report')).not.toBeInTheDocument();
+    fireEvent.click(overflow);
+    fireEvent.click(await screen.findByText('Report'));
+    expect(await screen.findByText('Report this design')).toBeInTheDocument();
+  });
+
+  it('moves the owner secondary action (Duplicate as new) into the overflow on mobile', async () => {
+    responsiveMock.isMobile = true;
+    fetchMock.mockResolvedValue(ok(detail({ isOwner: true })));
+    const onRemixDesign = vi.fn().mockResolvedValue(true);
+    openDetail();
+    renderDetail({ onRemixDesign });
+    await screen.findByText('Edit original');
+    // Plan 2.8: owner actions live in the overflow on mobile; the footer
+    // keeps only the primary Edit original.
+    expect(screen.queryByText('Duplicate as new')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('community-detail-overflow'));
+    fireEvent.click(await screen.findByText('Duplicate as new'));
+    await waitFor(() => {
+      expect(onRemixDesign).toHaveBeenCalledWith(expect.anything(), { ownDuplicate: true });
+    });
+  });
+
+  it('prompts sign-in instead of the report dialog for anonymous users', async () => {
+    useSessionStore.setState({ status: 'anonymous', user: null });
+    fetchMock.mockResolvedValue(ok(detail()));
+    openDetail();
+    renderDetail();
+    fireEvent.click(await screen.findByText('Report'));
+    expect(
+      await screen.findByText('Sign in to report a design to the moderators.')
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Report this design')).not.toBeInTheDocument();
+    expect(trackEvent).toHaveBeenCalledWith('community_signin_prompt_shown', { intent: 'report' });
+  });
+
+  it('records the design as recently viewed once per dialog instance', async () => {
+    fetchMock.mockResolvedValue(ok(detail()));
+    openDetail();
+    renderDetail();
+    await screen.findByText('by Jo');
+    expect(loadRecentlyViewedIds()).toEqual(['Abc123456789']);
+    const firstStored = localStorage.getItem('gridfinity-community-recently-viewed-v1');
+    // A reconnect-triggered reload of the same instance must not re-record.
+    fireEvent(window, new Event('online'));
+    await screen.findByText('by Jo');
+    expect(localStorage.getItem('gridfinity-community-recently-viewed-v1')).toBe(firstStored);
+  });
+
+  it('author line is a real button that filters the gallery to the author and closes the detail', async () => {
+    fetchMock.mockResolvedValue(ok(detail()));
+    openDetail();
+    renderDetail();
+    const author = await screen.findByTestId('community-detail-author');
+    expect(author.tagName).toBe('BUTTON');
+    expect(author).toHaveAccessibleName('See all designs by Jo');
+
+    fireEvent.click(author);
+
+    expect(useBrowseStore.getState().filters.author).toEqual({
+      id: 'a'.repeat(32),
+      name: 'Jo',
+    });
+    expect(trackEvent).toHaveBeenCalledWith('community_author_filter_applied', {
+      surface: 'detail',
+    });
+    await waitFor(() => expect(useCommunityDetailStore.getState().request).toBeNull());
+  });
+
+  it('shows the similar rail and swaps the detail in place when a tile is tapped', async () => {
+    const similar = card({
+      id: 'Similar12345',
+      name: 'Similar Bin',
+      authorPublicId: 'b'.repeat(32),
+    });
+    useBrowseStore.setState({
+      ...INITIAL_BROWSE_STATE,
+      items: [card(), similar],
+      status: 'ready',
+      fetchedAt: Date.now(),
+    });
+    fetchMock.mockImplementation((id: string) => {
+      if (id === 'Similar12345') {
+        return Promise.resolve(
+          ok(detail({ design: communityDesign({ id: 'Similar12345', name: 'Similar Bin' }) }))
+        );
+      }
+      return Promise.resolve(ok(detail()));
+    });
+    openDetail();
+    renderDetail();
+    const rail = await screen.findByTestId('community-similar-rail');
+    expect(rail).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('community-similar-tile'));
+
+    expect(useCommunityDetailStore.getState().request?.designId).toBe('Similar12345');
+    await waitFor(() => {
+      expect(screen.getAllByText('Similar Bin').length).toBeGreaterThan(0);
+    });
+    // Both openings recorded, most recent first.
+    expect(loadRecentlyViewedIds()).toEqual(['Similar12345', 'Abc123456789']);
   });
 });

@@ -15,11 +15,24 @@ export const GALLERY_PAGE_SIZE = 24;
 
 export type BrowseLoadStatus = 'idle' | 'loading' | 'ready' | 'error';
 
+/**
+ * `name` rides along with the filtering `id` so the clearable chip can label
+ * itself without a card lookup; it is '' on a cold `?author=` deep link until
+ * the loaded index resolves the display name.
+ */
+export interface BrowseAuthorFilter {
+  readonly id: string;
+  readonly name: string;
+}
+
 export interface BrowseFilters {
   readonly searchText: string;
   readonly category: CommunityCategory | null;
   readonly technique: ExampleTechnique | null;
   readonly sort: CommunityIndexSort;
+  readonly author: BrowseAuthorFilter | null;
+  readonly likedOnly: boolean;
+  readonly recentOnly: boolean;
 }
 
 export const INITIAL_BROWSE_FILTERS: BrowseFilters = {
@@ -27,6 +40,9 @@ export const INITIAL_BROWSE_FILTERS: BrowseFilters = {
   category: null,
   technique: null,
   sort: 'newest',
+  author: null,
+  likedOnly: false,
+  recentOnly: false,
 };
 
 interface BrowseState {
@@ -47,13 +63,24 @@ interface BrowseState {
   requestId: number;
 }
 
+/** Like-state patch for one card; `likes` merges into `counts` unchanged otherwise. */
+export interface CardLikePatch {
+  readonly likedByMe?: boolean;
+  readonly likes?: number;
+}
+
 interface BrowseActions {
   ensureIndex: () => Promise<void>;
   refreshIndex: () => Promise<void>;
+  /** Optimistic single-card like patch; rollback re-applies the pre-toggle values. */
+  patchCardLike: (id: string, patch: CardLikePatch) => void;
   setSearchText: (searchText: string) => void;
   setCategory: (category: CommunityCategory | null) => void;
   setTechnique: (technique: ExampleTechnique | null) => void;
   setSort: (sort: CommunityIndexSort) => void;
+  setAuthor: (author: BrowseAuthorFilter | null) => void;
+  setLikedOnly: (likedOnly: boolean) => void;
+  setRecentOnly: (recentOnly: boolean) => void;
   clearFilters: () => void;
   setScrollTop: (scrollTop: number) => void;
   showMore: () => void;
@@ -96,16 +123,25 @@ function compareCards(a: CommunityCard, b: CommunityCard, sort: CommunityIndexSo
 export function filterAndSortCards(
   items: readonly CommunityCard[],
   filters: BrowseFilters,
-  searchLabels?: (card: CommunityCard) => string
+  searchLabels?: (card: CommunityCard) => string,
+  recentIds: readonly string[] = []
 ): CommunityCard[] {
-  return items
-    .filter(
-      (card) =>
-        (filters.category === null || card.category === filters.category) &&
-        (filters.technique === null || card.techniques.includes(filters.technique)) &&
-        matchesSearch(card, filters.searchText, searchLabels?.(card) ?? '')
-    )
-    .sort((a, b) => compareCards(a, b, filters.sort));
+  const recentRank = filters.recentOnly ? new Map(recentIds.map((id, index) => [id, index])) : null;
+  const matched = items.filter(
+    (card) =>
+      (filters.category === null || card.category === filters.category) &&
+      (filters.technique === null || card.techniques.includes(filters.technique)) &&
+      (filters.author === null || card.authorPublicId === filters.author.id) &&
+      (!filters.likedOnly || card.likedByMe === true) &&
+      (recentRank === null || recentRank.has(card.id)) &&
+      matchesSearch(card, filters.searchText, searchLabels?.(card) ?? '')
+  );
+  if (recentRank !== null) {
+    // Most-recent-first is the point of the recently-viewed chip, so it
+    // overrides the sort control while active.
+    return matched.sort((a, b) => (recentRank.get(a.id) ?? 0) - (recentRank.get(b.id) ?? 0));
+  }
+  return matched.sort((a, b) => compareCards(a, b, filters.sort));
 }
 
 export function isIndexStale(fetchedAt: number | null, now: number): boolean {
@@ -138,6 +174,21 @@ export const useBrowseStore = create<BrowseStore>((set, get) => {
     ...INITIAL_BROWSE_STATE,
     ensureIndex: () => load(false),
     refreshIndex: () => load(true),
+    patchCardLike: (id, patch) => {
+      set((state) => ({
+        items: state.items.map((card) =>
+          card.id === id
+            ? {
+                ...card,
+                ...(patch.likedByMe !== undefined && { likedByMe: patch.likedByMe }),
+                ...(patch.likes !== undefined && {
+                  counts: { ...card.counts, likes: patch.likes },
+                }),
+              }
+            : card
+        ),
+      }));
+    },
     setSearchText: (searchText) => {
       set((state) => ({
         filters: { ...state.filters, searchText },
@@ -162,6 +213,27 @@ export const useBrowseStore = create<BrowseStore>((set, get) => {
     setSort: (sort) => {
       set((state) => ({
         filters: { ...state.filters, sort },
+        scrollTop: 0,
+        visibleCount: GALLERY_PAGE_SIZE,
+      }));
+    },
+    setAuthor: (author) => {
+      set((state) => ({
+        filters: { ...state.filters, author },
+        scrollTop: 0,
+        visibleCount: GALLERY_PAGE_SIZE,
+      }));
+    },
+    setLikedOnly: (likedOnly) => {
+      set((state) => ({
+        filters: { ...state.filters, likedOnly },
+        scrollTop: 0,
+        visibleCount: GALLERY_PAGE_SIZE,
+      }));
+    },
+    setRecentOnly: (recentOnly) => {
+      set((state) => ({
+        filters: { ...state.filters, recentOnly },
         scrollTop: 0,
         visibleCount: GALLERY_PAGE_SIZE,
       }));

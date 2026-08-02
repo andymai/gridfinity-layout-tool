@@ -12,13 +12,22 @@ import {
 import { logger } from '../lib/logger.js';
 
 /**
- * SECURITY — report counter inflation:
- * Counters are protected only by per-IP rate limiting (10/hr). A botnet
- * with 5+ residential IPs can reach REPORT_THRESHOLD on any share, so
- * the threshold is currently a manual-review trigger only — there is NO
- * automated takedown. Before wiring up automated takedown, add a CAPTCHA
- * (or proof-of-work, or unique-IP requirement) to the report flow so the
+ * SECURITY: report counter inflation.
+ * Counters here are protected only by per-IP rate limiting (10/hr) and are
+ * anonymous; no signed-in account is required to file one. A botnet with 5+
+ * residential IPs can reach REPORT_THRESHOLD on any share, so the threshold
+ * is currently a manual-review trigger only. There is NO automated takedown
+ * here. Before wiring up automated takedown for shares, add a CAPTCHA (or
+ * proof-of-work, or unique-account requirement) to this report flow so the
  * threshold can't be hit by IP rotation alone.
+ *
+ * Community showcase reports (`api/community/[id].ts`, POST
+ * `{ action: 'report' }`) DO auto-hide at the same REPORT_THRESHOLD: that
+ * flow requires `requireSession` and dedupes on `community:reports:{id}` (a
+ * SET of userIds, not IPs), so its threshold can only be reached by
+ * REPORT_THRESHOLD distinct signed-in accounts, not rotated IPs. That is the
+ * unique-account requirement this comment asks for, applied there instead of
+ * here.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'OPTIONS') return res.status(200).end();

@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { Badge, Button, IconButton, Input, Select } from '@/design-system';
+import { Badge, Button, IconButton, Input, Select, cn } from '@/design-system';
 import { SearchIcon, XIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
+import { useSessionStore } from '@/core/sync/session/useSession';
+import { trackEvent } from '@/shared/analytics/posthog';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useBrowseStore, INITIAL_BROWSE_FILTERS } from '../../store/browseStore';
+import { HeartGlyph } from '../CommunityCard/CommunityCard';
+import { CommunitySignInPrompt } from '../SignInPrompt';
 import { CommunityTechniquePills } from './CommunityTechniquePills';
 import { FilterSheet } from './FilterSheet';
 import {
@@ -15,17 +19,39 @@ import {
   sortOptions,
 } from './galleryFilterOptions';
 
+function ClockGlyph() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-3 w-3"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
+      <circle cx="12" cy="12" r="9" />
+    </svg>
+  );
+}
+
 export function GalleryToolbar() {
   const t = useTranslation();
   const { isMobile } = useResponsive();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [likedSignInOpen, setLikedSignInOpen] = useState(false);
 
   const { filters } = useBrowseStore(useShallow((s) => ({ filters: s.filters })));
   const setSearchText = useBrowseStore((s) => s.setSearchText);
   const setCategory = useBrowseStore((s) => s.setCategory);
   const setTechnique = useBrowseStore((s) => s.setTechnique);
   const setSort = useBrowseStore((s) => s.setSort);
+  const setAuthor = useBrowseStore((s) => s.setAuthor);
+  const setLikedOnly = useBrowseStore((s) => s.setLikedOnly);
+  const setRecentOnly = useBrowseStore((s) => s.setRecentOnly);
   const clearFilters = useBrowseStore((s) => s.clearFilters);
+  const sessionStatus = useSessionStore((s) => s.status);
+  const signedIn = sessionStatus === 'authenticated';
 
   const activeSheetFilterCount =
     (filters.category !== null ? 1 : 0) + (filters.technique !== null ? 1 : 0);
@@ -33,7 +59,84 @@ export function GalleryToolbar() {
     filters.searchText !== INITIAL_BROWSE_FILTERS.searchText ||
     filters.category !== INITIAL_BROWSE_FILTERS.category ||
     filters.technique !== INITIAL_BROWSE_FILTERS.technique ||
-    filters.sort !== INITIAL_BROWSE_FILTERS.sort;
+    filters.sort !== INITIAL_BROWSE_FILTERS.sort ||
+    filters.author !== null ||
+    filters.likedOnly ||
+    filters.recentOnly;
+
+  const chipClass = (active: boolean): string =>
+    cn(
+      'flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition-all duration-150',
+      active
+        ? 'bg-accent text-on-dark shadow-sm hover:bg-accent hover:text-on-dark'
+        : 'bg-surface text-content-secondary hover:bg-surface-hover hover:text-content'
+    );
+
+  const authorLabel =
+    filters.author !== null && filters.author.name !== ''
+      ? filters.author.name
+      : t('community.gallery.authorFallback');
+
+  const filterChips = (
+    <div className="flex flex-wrap items-center gap-2">
+      <Button
+        variant="ghost"
+        aria-pressed={filters.likedOnly}
+        onClick={() => {
+          // Signed out, the chip explains itself via the sign-in prompt (the
+          // like/report pattern): a disabled control with only a title
+          // tooltip is an unexplained dead control on touch devices.
+          if (!signedIn) {
+            trackEvent('community_signin_prompt_shown', { intent: 'liked-filter' });
+            setLikedSignInOpen(true);
+            return;
+          }
+          setLikedOnly(!filters.likedOnly);
+        }}
+        className={chipClass(filters.likedOnly)}
+        data-testid="community-liked-chip"
+      >
+        <HeartGlyph filled={filters.likedOnly} />
+        {t('community.gallery.likedFilter')}
+      </Button>
+      <CommunitySignInPrompt
+        open={likedSignInOpen}
+        message={t('community.gallery.likedFilterSignedOut')}
+        onClose={() => setLikedSignInOpen(false)}
+      />
+      <Button
+        variant="ghost"
+        aria-pressed={filters.recentOnly}
+        onClick={() => setRecentOnly(!filters.recentOnly)}
+        className={chipClass(filters.recentOnly)}
+        data-testid="community-recent-chip"
+      >
+        <ClockGlyph />
+        {t('community.gallery.recentFilter')}
+      </Button>
+      {filters.author !== null && (
+        <Badge
+          tone="accent"
+          shape="pill"
+          size="sm"
+          className="inline-flex items-center gap-1"
+          data-testid="community-author-chip"
+        >
+          {t('community.gallery.filteredByAuthor', { author: authorLabel })}
+          <IconButton
+            aria-label={t('community.gallery.clearAuthorFilter')}
+            size="sm"
+            // On mobile this chip is the main way out of the author view, so
+            // the dismiss target keeps the 44px hit area.
+            touchTarget={isMobile}
+            onClick={() => setAuthor(null)}
+          >
+            <XIcon className="h-3 w-3" />
+          </IconButton>
+        </Badge>
+      )}
+    </div>
+  );
 
   const searchField = (
     <Input
@@ -73,7 +176,7 @@ export function GalleryToolbar() {
 
   if (isMobile) {
     return (
-      <div className="shrink-0 border-b border-stroke-subtle px-3 py-2">
+      <div className="shrink-0 space-y-2 border-b border-stroke-subtle px-3 py-2">
         <div className="flex items-center gap-2">
           {searchField}
           {sortField}
@@ -93,6 +196,7 @@ export function GalleryToolbar() {
             )}
           </Button>
         </div>
+        {filterChips}
         <FilterSheet open={sheetOpen} onClose={() => setSheetOpen(false)} />
       </div>
     );
@@ -119,6 +223,7 @@ export function GalleryToolbar() {
         )}
       </div>
       <CommunityTechniquePills selected={filters.technique} onChange={setTechnique} />
+      {filterChips}
     </div>
   );
 }

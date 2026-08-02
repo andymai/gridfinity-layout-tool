@@ -156,6 +156,7 @@
     "community.gallery.filters",
     "community.publish.form.descriptionLabel",
     "community.publish.form.nameLabel",
+    "community.report.reason.spam",
     "dashboard.filament",
     "designLinking.experimental",
     "dock.syncStatusOffline",

@@ -6,6 +6,8 @@ const mocks = vi.hoisted(() => ({
   checkRateLimit: vi.fn(),
   getRedis: vi.fn(),
   requireSession: vi.fn(),
+  readSession: vi.fn(),
+  readSessionCookie: vi.fn(),
   validateDesignerShare: vi.fn(),
   getJson: vi.fn(),
   put: vi.fn(),
@@ -21,6 +23,11 @@ vi.mock('./lib/rateLimit.js', () => ({
 
 vi.mock('./lib/session.js', () => ({
   requireSession: mocks.requireSession,
+  readSession: mocks.readSession,
+}));
+
+vi.mock('./lib/cookies.js', () => ({
+  readSessionCookie: mocks.readSessionCookie,
 }));
 
 vi.mock('./lib/designerValidation.js', () => ({
@@ -45,6 +52,7 @@ import {
   communityDesignBlobPath,
   communityMeshBlobPath,
   communityThumbBlobPath,
+  setCommunityDesignStatus,
   writeCommunityCard,
   type CommunityCardMetadata,
   type CommunityDesignRecord,
@@ -55,6 +63,7 @@ import {
   communityDenylistKey,
   communityDesignKey,
   communityIndexKey,
+  communityLikedKey,
   communityPublishedKey,
 } from './lib/redisKeys.js';
 
@@ -92,6 +101,11 @@ class FakeRedis {
 
   async sismember(key: string, member: string): Promise<number> {
     return this.sets.get(key)?.has(member) ? 1 : 0;
+  }
+
+  async smismember(key: string, ...members: string[]): Promise<number[]> {
+    const set = this.sets.get(key);
+    return members.map((member) => (set?.has(member) ? 1 : 0));
   }
 
   async scard(key: string): Promise<number> {
@@ -332,6 +346,8 @@ beforeEach(() => {
   mocks.getRedis.mockReturnValue(fake);
   mocks.checkRateLimit.mockResolvedValue({ allowed: true, remaining: 10, resetAt: 0 });
   mocks.requireSession.mockResolvedValue(SESSION);
+  mocks.readSessionCookie.mockReturnValue(null);
+  mocks.readSession.mockResolvedValue(null);
   mocks.validateDesignerShare.mockImplementation((body: { params: Record<string, unknown> }) => ({
     valid: true,
     payload: { type: 'designer', version: 1, params: body.params },
@@ -801,5 +817,71 @@ describe('GET /api/community (list)', () => {
     const res = await handle({ method: 'GET' });
     expect(res._status).toBe(200);
     expect(mocks.requireSession).not.toHaveBeenCalled();
+  });
+
+  it('returns empty likedIds for an anonymous caller', async () => {
+    await seedCard({ id: 'public-live' });
+    const res = await handle({ method: 'GET' });
+    expect(res._status).toBe(200);
+    expect((res._body as { likedIds: string[] }).likedIds).toEqual([]);
+  });
+
+  it('returns likedIds for the session caller, scoped to the returned page', async () => {
+    await seedCard({ id: 'liked-one', createdAt: 3_000 });
+    await seedCard({ id: 'not-liked00', createdAt: 2_000 });
+    await seedCard({ id: 'liked-two', createdAt: 1_000 });
+    await fake.sadd(communityLikedKey('user-1'), 'liked-one');
+    await fake.sadd(communityLikedKey('user-1'), 'liked-two');
+    // Liked but off this page (deleted or filtered out): must not leak in.
+    await fake.sadd(communityLikedKey('user-1'), 'off-page-id0');
+    mocks.readSessionCookie.mockReturnValue('session-token');
+    mocks.readSession.mockResolvedValue(SESSION);
+
+    const res = await handle({ method: 'GET' });
+    expect(res._status).toBe(200);
+    const body = res._body as { items: Array<{ id: string }>; likedIds: string[] };
+    expect(body.items.map((item) => item.id)).toEqual(['liked-one', 'not-liked00', 'liked-two']);
+    expect(body.likedIds).toEqual(['liked-one', 'liked-two']);
+    // Heart state is a public-surface nicety: it must come from the cookie
+    // session, never the 401-sending requireSession.
+    expect(mocks.requireSession).not.toHaveBeenCalled();
+  });
+
+  it('degrades to anonymous likedIds when the session read throws', async () => {
+    await seedCard({ id: 'public-live' });
+    mocks.readSessionCookie.mockReturnValue('session-token');
+    mocks.readSession.mockRejectedValue(new Error('redis flaked'));
+    const res = await handle({ method: 'GET' });
+    expect(res._status).toBe(200);
+    expect((res._body as { likedIds: string[] }).likedIds).toEqual([]);
+  });
+
+  it('mine returns likedIds for the session user too', async () => {
+    await seedCard({ id: 'mine-liked00' });
+    await fake.sadd(communityPublishedKey('user-1'), 'mine-liked00');
+    await fake.sadd(communityLikedKey('user-1'), 'mine-liked00');
+    const res = await handle({ method: 'GET', query: { mine: '1' } });
+    expect(res._status).toBe(200);
+    expect((res._body as { likedIds: string[] }).likedIds).toEqual(['mine-liked00']);
+  });
+
+  it('excludes a design from the list once auto-hide flips its status', async () => {
+    await seedCard({ id: 'reported-des', createdAt: 5_000 });
+    await seedCard({ id: 'still-live00', createdAt: 4_000 });
+
+    const before = await handle({ method: 'GET' });
+    expect((before._body as { items: Array<{ id: string }> }).items.map((i) => i.id)).toEqual([
+      'reported-des',
+      'still-live00',
+    ]);
+
+    // The exact flip the report threshold performs (setCommunityDesignStatus
+    // to 'hidden'): status rewritten on the card hash + ZREM from every index.
+    await setCommunityDesignStatus(fake as unknown as Redis, 'reported-des', 'hidden');
+
+    const after = await handle({ method: 'GET' });
+    expect((after._body as { items: Array<{ id: string }> }).items.map((i) => i.id)).toEqual([
+      'still-live00',
+    ]);
   });
 });

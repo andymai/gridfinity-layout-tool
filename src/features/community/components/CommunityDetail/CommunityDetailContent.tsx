@@ -1,11 +1,14 @@
 import { useCallback, useState } from 'react';
-import { Button, cn } from '@/design-system';
+import { Button, IconButton, cn } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { GlbViewer } from '@/shared/components/GlbViewer';
 import { GradientBackground } from '@/shared/components/preview/GradientBackground';
 import type { CommunityDesign, CommunityDesignCounts } from '@/shared/types/community';
 import { TECHNIQUE_CONFIG } from '@/shared/types/exampleTechniques';
+import { HeartGlyph } from '../CommunityCard/CommunityCard';
 import { CATEGORY_LABEL_KEYS } from '../../utils/categoryLabels';
+import { DirectRemixList } from './DirectRemixList';
+import { SimilarRail } from './SimilarRail';
 
 /**
  * Live-name resolution state for the lineage line: snapshot names render
@@ -15,12 +18,22 @@ import { CATEGORY_LABEL_KEYS } from '../../utils/categoryLabels';
 export type ParentResolution =
   { kind: 'snapshot' } | { kind: 'live'; name: string; authorName: string } | { kind: 'gone' };
 
+/** Like-toggle wiring for the stats row; null hides the heart (no browse-store card to patch). */
+export interface DetailLikeState {
+  likedByMe: boolean;
+  onToggle: () => void;
+}
+
 interface CommunityDetailContentProps {
   design: CommunityDesign;
   /** Read-only counts from the browse card; null when opened by bare id. */
   counts: CommunityDesignCounts | null;
   isMobile: boolean;
   parentResolution: ParentResolution;
+  /** Optional so fixtures without like wiring keep compiling; absent hides the heart. */
+  like?: DetailLikeState | null;
+  /** Filters the gallery to this design's author (the author-view entry point). */
+  onFilterByAuthor?: () => void;
 }
 
 function formatMm(value: number): string {
@@ -40,10 +53,13 @@ export function CommunityDetailContent({
   counts,
   isMobile,
   parentResolution,
+  like = null,
+  onFilterByAuthor,
 }: CommunityDetailContentProps) {
   const t = useTranslation();
   const [angleIndex, setAngleIndex] = useState(0);
   const [viewerReady, setViewerReady] = useState(false);
+  const [remixListOpen, setRemixListOpen] = useState(false);
   const handleModelReady = useCallback(() => setViewerReady(true), []);
 
   const poster = design.thumbnails.at(angleIndex) ?? design.thumbnails.at(0) ?? '';
@@ -106,9 +122,25 @@ export function CommunityDetailContent({
       {/* Details rail */}
       <div className="space-y-4 p-4 md:w-80 md:shrink-0 md:overflow-y-auto md:border-l md:border-stroke-subtle">
         <div>
-          <p className="text-sm text-content-secondary">
-            {t('community.detail.byAuthor', { author: design.authorName })}
-          </p>
+          {onFilterByAuthor !== undefined ? (
+            <Button
+              variant="ghost"
+              // 44px hit area on touch layouts, mirroring the card's author
+              // button: a mis-tap in the fullscreen sheet falls through to
+              // surrounding content.
+              touchTarget={isMobile}
+              aria-label={t('community.authorFilterAria', { author: design.authorName })}
+              onClick={onFilterByAuthor}
+              className="h-auto justify-start p-0 text-sm font-normal text-content-secondary underline-offset-2 hover:underline"
+              data-testid="community-detail-author"
+            >
+              {t('community.detail.byAuthor', { author: design.authorName })}
+            </Button>
+          ) : (
+            <p className="text-sm text-content-secondary">
+              {t('community.detail.byAuthor', { author: design.authorName })}
+            </p>
+          )}
           <p className="mt-1 text-xs text-content-tertiary">
             {t('community.detail.publishedOn', { date: formatDate(design.createdAt) })}
             {design.updatedAt > design.createdAt && (
@@ -165,20 +197,53 @@ export function CommunityDetailContent({
         </div>
 
         {counts !== null && (
-          <div className="flex gap-4 text-sm text-content-secondary">
-            <span>
-              {t('community.detail.stats.likes')}{' '}
-              <span className="font-semibold text-content">{counts.likes}</span>
-            </span>
-            <span>
-              {t('community.detail.stats.remixes')}{' '}
-              <span className="font-semibold text-content">{counts.remixes}</span>
-            </span>
-            <span>
-              {t('community.detail.stats.exports')}{' '}
-              <span className="font-semibold text-content">{counts.exports}</span>
-            </span>
-          </div>
+          <>
+            <div className="flex items-center gap-4 text-sm text-content-secondary">
+              <span className="inline-flex items-center gap-1">
+                {like !== null && (
+                  <IconButton
+                    aria-label={t(like.likedByMe ? 'community.like.unlike' : 'community.like.like')}
+                    pressed={like.likedByMe}
+                    size="sm"
+                    touchTarget={isMobile}
+                    onClick={like.onToggle}
+                    className={cn(like.likedByMe && 'text-accent')}
+                    data-testid="community-detail-like"
+                  >
+                    <HeartGlyph filled={like.likedByMe} />
+                  </IconButton>
+                )}
+                {t('community.detail.stats.likes')}{' '}
+                <span className="font-semibold text-content">{counts.likes}</span>
+              </span>
+              {counts.remixes > 0 ? (
+                <Button
+                  variant="ghost"
+                  touchTarget={isMobile}
+                  aria-expanded={remixListOpen}
+                  aria-label={t('community.detail.buildsOnThis', { count: counts.remixes })}
+                  onClick={() => setRemixListOpen((open) => !open)}
+                  className="h-auto p-0 text-sm font-normal text-content-secondary underline-offset-2 hover:underline"
+                  data-testid="community-detail-remixes"
+                >
+                  {t('community.detail.stats.remixes')}{' '}
+                  <span className="font-semibold text-content">{counts.remixes}</span>
+                </Button>
+              ) : (
+                <span>
+                  {t('community.detail.stats.remixes')}{' '}
+                  <span className="font-semibold text-content">{counts.remixes}</span>
+                </span>
+              )}
+              <span>
+                {t('community.detail.stats.exports')}{' '}
+                <span className="font-semibold text-content">{counts.exports}</span>
+              </span>
+            </div>
+            {remixListOpen && counts.remixes > 0 && (
+              <DirectRemixList designId={design.id} remixCount={counts.remixes} />
+            )}
+          </>
         )}
 
         {lineage !== null && (
@@ -193,6 +258,8 @@ export function CommunityDetailContent({
             {parentResolution.kind === 'gone' && <> · {t('community.detail.lineageGoneSuffix')}</>}
           </p>
         )}
+
+        <SimilarRail design={design} />
 
         <p className="text-xs text-content-tertiary">{t('community.detail.license')}</p>
       </div>

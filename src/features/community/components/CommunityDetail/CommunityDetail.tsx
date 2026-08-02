@@ -5,17 +5,28 @@
  * feature never imports the bin designer (see shared/types/communityDetail).
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Button, Dialog, Spinner } from '@/design-system';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { MouseEvent } from 'react';
+import { Button, Dialog, IconButton, Menu, Spinner } from '@/design-system';
+import { MoreHorizontalIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 import { isOk } from '@/core/result';
 import { useCommunityDetailStore } from '@/core/store/communityDetail';
 import type { CommunityDetailRequest } from '@/core/store/communityDetail';
 import { useToastStore } from '@/core/store/toast';
+import { useSessionStore } from '@/core/sync/session/useSession';
 import { trackEvent } from '@/shared/analytics/posthog';
-import type { CommunityDesign } from '@/shared/types/community';
+import type { CommunityDesign, CommunityDesignCounts } from '@/shared/types/community';
 import type { CommunityDetailProps } from '@/shared/types/communityDetail';
+import { savePendingLikeAction } from '@/shared/utils/communityPendingLikeAction';
 import { fetchCommunityDesign } from '../../api/client';
+import { useLikeToggle } from '../../hooks/useLikeToggle';
+import type { LikeToggleTarget } from '../../hooks/useLikeToggle';
+import { useBrowseStore } from '../../store/browseStore';
+import type { CardLikePatch } from '../../store/browseStore';
+import { recordRecentlyViewed } from '../../utils/recentlyViewed';
+import { ReportDialog } from '../ReportDialog';
+import { CommunitySignInPrompt } from '../SignInPrompt';
 import { CommunityDetailContent } from './CommunityDetailContent';
 import type { ParentResolution } from './CommunityDetailContent';
 import { useDetailHistoryTrap } from './useDetailHistoryTrap';
@@ -26,6 +37,12 @@ type DetailPhase = 'loading' | 'ready' | 'gone' | 'error';
 
 type BusyAction = 'remix' | 'edit' | 'duplicate' | null;
 
+/** Detail-payload stats fallback for designs the capped browse index lacks. */
+interface DetailStats {
+  counts: CommunityDesignCounts;
+  likedByMe: boolean;
+}
+
 function publicDesignUrl(id: string): string {
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   return `${origin}/community/d/${id}`;
@@ -34,15 +51,50 @@ function publicDesignUrl(id: string): string {
 export function CommunityDetail(props: CommunityDetailProps) {
   const request = useCommunityDetailStore((s) => s.request);
   if (request === null) return null;
-  return <CommunityDetailDialog key={request.designId} request={request} {...props} />;
+  return <CommunityDetailHost request={request} {...props} />;
+}
+
+interface CommunityDetailHostProps extends CommunityDetailProps {
+  request: CommunityDetailRequest;
+}
+
+/**
+ * Owns the history trap above the keyed dialog: it stays mounted across
+ * detail-to-detail transitions (the similar rail swaps the request in place),
+ * so one trapped entry spans them all. Trapping inside the keyed dialog would
+ * run the old instance's cleanup back() concurrently with the new instance's
+ * pushState and could pop the fresh trap.
+ */
+function CommunityDetailHost({ request, ...props }: CommunityDetailHostProps) {
+  const close = useCallback(() => {
+    useCommunityDetailStore.getState().close();
+  }, []);
+
+  // On the route surface the host page owns history: /community/d/<id> is a
+  // real entry, so the URL-less trap entry must not stack on top of it.
+  const consumeTrap = useDetailHistoryTrap(close, (props.surface ?? 'tab') !== 'route');
+
+  return (
+    <CommunityDetailDialog
+      key={request.designId}
+      request={request}
+      close={close}
+      consumeTrap={consumeTrap}
+      {...props}
+    />
+  );
 }
 
 interface CommunityDetailDialogProps extends CommunityDetailProps {
   request: CommunityDetailRequest;
+  close: () => void;
+  consumeTrap: (onConsumed: () => void) => void;
 }
 
 function CommunityDetailDialog({
   request,
+  close,
+  consumeTrap,
   onRequestCloseGallery,
   onRemixDesign,
   onEditOriginal,
@@ -54,6 +106,7 @@ function CommunityDetailDialog({
 
   const [phase, setPhase] = useState<DetailPhase>('loading');
   const [design, setDesign] = useState<CommunityDesign | null>(null);
+  const [detailStats, setDetailStats] = useState<DetailStats | null>(null);
   const [isOwner, setIsOwner] = useState(false);
   const [offline, setOffline] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -61,16 +114,89 @@ function CommunityDetailDialog({
   const [parentResolution, setParentResolution] = useState<ParentResolution>({
     kind: 'snapshot',
   });
-
-  const close = useCallback(() => {
-    useCommunityDetailStore.getState().close();
-  }, []);
-
-  // On the route surface the host owns history: /community/d/<id> is a real
-  // entry, so the URL-less trap entry must not stack on top of it.
-  const consumeTrap = useDetailHistoryTrap(close, surface !== 'route');
+  const [reportOpen, setReportOpen] = useState(false);
+  const [signInIntent, setSignInIntent] = useState<'like' | 'report' | null>(null);
+  const [overflowMenu, setOverflowMenu] = useState<{
+    open: boolean;
+    position: { x: number; y: number };
+  }>({ open: false, position: { x: 0, y: 0 } });
 
   const { designId, card } = request;
+
+  // Live browse-store card for this design: optimistic like patches land in
+  // the store, so the stats row reflects them without local mirror state.
+  // A design the capped index lacks (or a cold deep link) falls back to the
+  // detail payload's stats, then to the request's snapshot.
+  const liveCard = useBrowseStore((s) => s.items.find((item) => item.id === designId) ?? null);
+
+  // Post-OAuth resumed like pushed by useCommunityLikeReturn: the record
+  // fetch can race the resumed like write server-side and snapshot a stale
+  // likedByMe that would contradict the "Design liked." toast, so a matching
+  // sync record overrides the fetched fallback until a manual toggle (which
+  // consumes it) or close.
+  const likeSync = useCommunityDetailStore((s) => s.likeSync);
+  const syncForThis = likeSync !== null && likeSync.designId === designId ? likeSync : null;
+  const detailCounts = useMemo(
+    () =>
+      detailStats !== null
+        ? syncForThis !== null
+          ? { ...detailStats.counts, likes: syncForThis.likes }
+          : detailStats.counts
+        : null,
+    [detailStats, syncForThis]
+  );
+  const counts = liveCard?.counts ?? detailCounts ?? card?.counts ?? null;
+  const likedByMe =
+    liveCard !== null
+      ? liveCard.likedByMe === true
+      : syncForThis !== null
+        ? syncForThis.likedByMe
+        : detailStats?.likedByMe === true;
+  const toggleLike = useLikeToggle();
+  const sessionStatus = useSessionStore((s) => s.status);
+
+  const patchDetailStats = useCallback((patch: CardLikePatch) => {
+    setDetailStats((current) =>
+      current === null
+        ? current
+        : {
+            counts:
+              patch.likes !== undefined
+                ? { ...current.counts, likes: patch.likes }
+                : current.counts,
+            likedByMe: patch.likedByMe ?? current.likedByMe,
+          }
+    );
+  }, []);
+
+  const handleToggleLike = useCallback(() => {
+    const target: LikeToggleTarget | null =
+      liveCard ??
+      (detailCounts !== null ? { id: designId, likedByMe, counts: detailCounts } : null);
+    if (target === null) return;
+    // The toggle starts from the synced state (folded into `target` above),
+    // so the sync record is spent; the optimistic patch below lands on
+    // detailStats and takes over as the source of truth.
+    useCommunityDetailStore.getState().clearLikeSync();
+    void toggleLike(target, patchDetailStats).then((outcome) => {
+      if (outcome === 'signin-required') setSignInIntent('like');
+    });
+  }, [designId, detailCounts, likedByMe, liveCard, patchDetailStats, toggleLike]);
+
+  const handleReportEntry = useCallback(() => {
+    if (sessionStatus !== 'authenticated') {
+      trackEvent('community_signin_prompt_shown', { intent: 'report' });
+      setSignInIntent('report');
+      return;
+    }
+    setReportOpen(true);
+  }, [sessionStatus]);
+
+  const handleOverflowOpen = useCallback((event: MouseEvent<HTMLButtonElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    // Anchor to the button's upper-left; Menu.Root clamps to the viewport.
+    setOverflowMenu({ open: true, position: { x: rect.left, y: rect.top - 8 } });
+  }, []);
 
   // A bumped reconnectAttempt re-runs the load directly (the error copy stays
   // up until the retry resolves); only the manual Retry button flips the
@@ -87,11 +213,17 @@ function CommunityDetailDialog({
       if (cancelled) return;
       if (isOk(result)) {
         setDesign(result.value.design);
+        setDetailStats(
+          result.value.counts !== null
+            ? { counts: result.value.counts, likedByMe: result.value.likedByMe }
+            : null
+        );
         setIsOwner(result.value.isOwner);
         setPhase('ready');
         if (!hasTrackedViewRef.current) {
           hasTrackedViewRef.current = true;
           trackEvent('community_detail_viewed', { surface });
+          recordRecentlyViewed(designId);
         }
       } else if (result.error.kind === 'notFound') {
         setPhase('gone');
@@ -199,6 +331,15 @@ function CommunityDetailDialog({
     }
   }, [addToast, busy, design, onEditOriginal, runDuplicate, switchToDesignerAndClose, t]);
 
+  const handleFilterByAuthor = useCallback(() => {
+    if (design === null) return;
+    useBrowseStore.getState().setAuthor({ id: design.authorPublicId, name: design.authorName });
+    trackEvent('community_author_filter_applied', { surface: 'detail' });
+    // Closing reveals the gallery beneath (tab) or returns the route to
+    // /community, where the author sync appends ?author= for sharing.
+    close();
+  }, [close, design]);
+
   const handleShare = useCallback(async () => {
     const url = publicDesignUrl(designId);
     try {
@@ -266,9 +407,15 @@ function CommunityDetailDialog({
         {phase === 'ready' && design !== null && (
           <CommunityDetailContent
             design={design}
-            counts={card?.counts ?? null}
+            counts={counts}
             isMobile={isMobile}
             parentResolution={parentResolution}
+            like={
+              liveCard !== null || detailStats !== null
+                ? { likedByMe, onToggle: handleToggleLike }
+                : null
+            }
+            onFilterByAuthor={handleFilterByAuthor}
           />
         )}
       </Dialog.Body>
@@ -288,17 +435,37 @@ function CommunityDetailDialog({
           <Button variant="ghost" touchTarget={isMobile} onClick={() => void handleShare()}>
             {t('community.detail.share')}
           </Button>
+          {/* Mobile keeps secondary actions (Report, or the owner's
+              Duplicate as new) in the overflow menu; desktop shows them inline. */}
+          {isMobile ? (
+            <IconButton
+              aria-label={t('community.detail.moreActions')}
+              aria-haspopup="menu"
+              aria-expanded={overflowMenu.open}
+              onClick={handleOverflowOpen}
+              data-testid="community-detail-overflow"
+            >
+              <MoreHorizontalIcon />
+            </IconButton>
+          ) : (
+            !isOwner && (
+              <Button variant="ghost" onClick={handleReportEntry}>
+                {t('community.detail.report')}
+              </Button>
+            )
+          )}
           {isOwner ? (
             <>
-              <Button
-                variant="secondary"
-                touchTarget={isMobile}
-                loading={busy === 'duplicate'}
-                disabled={busy !== null && busy !== 'duplicate'}
-                onClick={handleDuplicate}
-              >
-                {t('community.detail.duplicateAsNew')}
-              </Button>
+              {!isMobile && (
+                <Button
+                  variant="secondary"
+                  loading={busy === 'duplicate'}
+                  disabled={busy !== null && busy !== 'duplicate'}
+                  onClick={handleDuplicate}
+                >
+                  {t('community.detail.duplicateAsNew')}
+                </Button>
+              )}
               <Button
                 variant="primary"
                 touchTarget={isMobile}
@@ -329,6 +496,63 @@ function CommunityDetailDialog({
           )}
         </Dialog.Footer>
       )}
+
+      <Menu.Root
+        open={overflowMenu.open}
+        onClose={() => setOverflowMenu((state) => ({ ...state, open: false }))}
+        position={overflowMenu.position}
+      >
+        {isOwner ? (
+          <Menu.Item
+            onClick={() => {
+              setOverflowMenu((state) => ({ ...state, open: false }));
+              handleDuplicate();
+            }}
+          >
+            {t('community.detail.duplicateAsNew')}
+          </Menu.Item>
+        ) : (
+          <Menu.Item
+            onClick={() => {
+              setOverflowMenu((state) => ({ ...state, open: false }));
+              handleReportEntry();
+            }}
+          >
+            {t('community.detail.report')}
+          </Menu.Item>
+        )}
+      </Menu.Root>
+
+      {reportOpen && (
+        <ReportDialog
+          designId={designId}
+          onClose={() => setReportOpen(false)}
+          onNeedsAuth={() => {
+            setReportOpen(false);
+            trackEvent('community_signin_prompt_shown', { intent: 'report' });
+            setSignInIntent('report');
+          }}
+        />
+      )}
+
+      <CommunitySignInPrompt
+        open={signInIntent !== null}
+        message={
+          signInIntent === 'report'
+            ? t('community.signin.reportMessage')
+            : t('community.signin.likeMessage')
+        }
+        onClose={() => setSignInIntent(null)}
+        onBeforeSignIn={
+          signInIntent === 'like'
+            ? () =>
+                savePendingLikeAction({
+                  designId,
+                  liked: !likedByMe,
+                })
+            : undefined
+        }
+      />
     </Dialog.Root>
   );
 }

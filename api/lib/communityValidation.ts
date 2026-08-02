@@ -32,6 +32,15 @@ export const COMMUNITY_CATEGORIES = [
 ] as const;
 export type CommunityCategory = (typeof COMMUNITY_CATEGORIES)[number];
 
+/**
+ * Closed union of report reasons, matching the detail view's radio options
+ * (Inappropriate, Spam, Doesn't generate correctly, Stolen work). Registered
+ * in scripts/check-union-exhaustiveness.sh.
+ */
+export const COMMUNITY_REPORT_REASONS = ['inappropriate', 'spam', 'broken', 'stolen'] as const;
+export type CommunityReportReason = (typeof COMMUNITY_REPORT_REASONS)[number];
+export const COMMUNITY_REPORT_NOTE_MAX_LENGTH = 500;
+
 export const COMMUNITY_NAME_MAX_LENGTH = 60;
 export const COMMUNITY_DESCRIPTION_MAX_LENGTH = 500;
 /** Matches MAX_DISPLAY_NAME_LENGTH in supporters.ts: one cap for every rendered public name. */

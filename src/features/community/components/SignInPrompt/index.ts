@@ -1,0 +1,1 @@
+export { CommunitySignInPrompt } from './CommunitySignInPrompt';

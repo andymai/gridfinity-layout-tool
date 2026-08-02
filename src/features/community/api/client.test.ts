@@ -8,6 +8,8 @@ import {
   fetchCommunityIndex,
   fetchOwnDesign,
   publishDesign,
+  reportDesign,
+  setDesignLiked,
   unpublishDesign,
   updateDesign,
 } from './client';
@@ -458,6 +460,33 @@ describe('fetchCommunityDesign', () => {
     if (isOk(result)) expect(result.value.isOwner).toBe(false);
   });
 
+  it('parses the detail counts and likedByMe for the stats-row fallback', async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse(200, {
+        design,
+        isOwner: false,
+        counts: { likes: 4, remixes: 2, exports: 9 },
+        likedByMe: true,
+      })
+    );
+    const result = await fetchCommunityDesign('AbCdEf123456');
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) {
+      expect(result.value.counts).toEqual({ likes: 4, remixes: 2, exports: 9 });
+      expect(result.value.likedByMe).toBe(true);
+    }
+  });
+
+  it('degrades counts to null when absent or malformed (older server, no Redis)', async () => {
+    fetchMock.mockResolvedValue(jsonResponse(200, { design, counts: { likes: 'many' } }));
+    const result = await fetchCommunityDesign('AbCdEf123456');
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) {
+      expect(result.value.counts).toBeNull();
+      expect(result.value.likedByMe).toBe(false);
+    }
+  });
+
   it('maps 404 to notFound for hidden or removed designs', async () => {
     fetchMock.mockResolvedValue(
       jsonResponse(404, { error: 'Design not found', code: 'NOT_FOUND' })
@@ -472,5 +501,117 @@ describe('fetchCommunityDesign', () => {
     const result = await fetchCommunityDesign('AbCdEf123456');
     expect(isErr(result)).toBe(true);
     if (isErr(result)) expect(result.error).toEqual({ kind: 'network' });
+  });
+});
+
+describe('likedIds seeding', () => {
+  it('marks cards from each page against that page likedIds', async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        jsonResponse(200, { items: [card('a'), card('b')], nextCursor: '48', likedIds: ['b'] })
+      )
+      .mockResolvedValueOnce(
+        jsonResponse(200, { items: [card('c')], nextCursor: null, likedIds: [] })
+      );
+    const result = await fetchCommunityIndex();
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) {
+      expect(result.value.items.map((item) => item.likedByMe)).toEqual([false, true, false]);
+    }
+  });
+
+  it('treats an absent likedIds field as nothing liked', async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse(200, { items: [card('a')], nextCursor: null }));
+    const result = await fetchCommunityIndex();
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) expect(result.value.items[0].likedByMe).toBe(false);
+  });
+});
+
+describe('setDesignLiked', () => {
+  it('POSTs the like action and returns the authoritative result', async () => {
+    fetchMock.mockResolvedValue(jsonResponse(200, { likes: 13, likedByMe: true }));
+    const result = await setDesignLiked('AbCdEf123456', true);
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) expect(result.value).toEqual({ likes: 13, likedByMe: true });
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/community/AbCdEf123456',
+      expect.objectContaining({ method: 'POST', body: JSON.stringify({ action: 'like' }) })
+    );
+  });
+
+  it('POSTs the unlike action when toggling off', async () => {
+    fetchMock.mockResolvedValue(jsonResponse(200, { likes: 11, likedByMe: false }));
+    const result = await setDesignLiked('AbCdEf123456', false);
+    expect(isOk(result)).toBe(true);
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/community/AbCdEf123456',
+      expect.objectContaining({ body: JSON.stringify({ action: 'unlike' }) })
+    );
+  });
+
+  it('maps 401 to needsAuth', async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse(401, { error: 'Authentication required', code: 'UNAUTHORIZED' })
+    );
+    const result = await setDesignLiked('AbCdEf123456', true);
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) expect(result.error).toEqual({ kind: 'needsAuth' });
+  });
+
+  it('rejects a malformed success payload', async () => {
+    fetchMock.mockResolvedValue(jsonResponse(200, { liked: true }));
+    const result = await setDesignLiked('AbCdEf123456', true);
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) expect(result.error).toEqual({ kind: 'server' });
+  });
+});
+
+describe('reportDesign', () => {
+  it('POSTs the report action with reason and trimmed note', async () => {
+    fetchMock.mockResolvedValue(jsonResponse(200, { success: true, autoHidden: false }));
+    const result = await reportDesign('AbCdEf123456', 'spam', '  keyword stuffing  ');
+    expect(isOk(result)).toBe(true);
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/community/AbCdEf123456',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ action: 'report', reason: 'spam', note: 'keyword stuffing' }),
+      })
+    );
+  });
+
+  it('omits the note field entirely when the note is blank', async () => {
+    fetchMock.mockResolvedValue(jsonResponse(200, { success: true, autoHidden: false }));
+    await reportDesign('AbCdEf123456', 'broken', '   ');
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/community/AbCdEf123456',
+      expect.objectContaining({ body: JSON.stringify({ action: 'report', reason: 'broken' }) })
+    );
+  });
+
+  it('caps the note at 500 characters before sending', async () => {
+    fetchMock.mockResolvedValue(jsonResponse(200, { success: true, autoHidden: false }));
+    await reportDesign('AbCdEf123456', 'stolen', 'x'.repeat(600));
+    const body: unknown = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body));
+    expect((body as { note: string }).note).toHaveLength(500);
+  });
+
+  it('maps 400 CONTENT_BLOCKED to contentBlocked', async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse(400, { error: 'note contains prohibited content', code: 'CONTENT_BLOCKED' })
+    );
+    const result = await reportDesign('AbCdEf123456', 'spam', 'bad');
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) expect(result.error.kind).toBe('contentBlocked');
+  });
+
+  it('maps 401 to needsAuth', async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse(401, { error: 'Authentication required', code: 'UNAUTHORIZED' })
+    );
+    const result = await reportDesign('AbCdEf123456', 'spam', '');
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) expect(result.error).toEqual({ kind: 'needsAuth' });
   });
 });

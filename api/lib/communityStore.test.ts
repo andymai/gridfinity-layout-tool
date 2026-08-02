@@ -26,10 +26,17 @@ import {
   upsertCommunityIndexes,
   removeFromCommunityIndexes,
   setCommunityDesignStatus,
+  toggleCommunityLike,
   communityContentHash,
   type CommunityCardMetadata,
   type CommunityDesignRecord,
 } from './communityStore.js';
+import {
+  communityDesignKey,
+  communityIndexKey,
+  communityLikedKey,
+  communityLikesKey,
+} from './redisKeys.js';
 
 interface PipelineCall {
   command: string;
@@ -376,6 +383,191 @@ describe('setCommunityDesignStatus', () => {
       expect(pipeline.calls.map((c) => c.command)).toEqual(['zrem', 'zrem', 'zrem']);
     }
   );
+});
+
+/**
+ * Emulates the like-toggle Lua script's semantics step for step over in-memory
+ * structures. The registered command body runs with no awaits between steps,
+ * so interleaved invocations serialize whole, exactly like Redis executing an
+ * EVALSHA atomically. The real script body runs against a real server in
+ * communityStore.integration.test.ts; this fake verifies the toggle's
+ * convergence CONTRACT under interleaving, which mocked call-assertions
+ * cannot.
+ */
+class FakeLikeRedis {
+  sets = new Map<string, Set<string>>();
+  hashes = new Map<string, Map<string, string>>();
+  zsets = new Map<string, Map<string, number>>();
+  defineCommandCalls = 0;
+  communityLikeToggle?: (
+    likesKey: string,
+    likedKey: string,
+    designKey: string,
+    likesIndexKey: string,
+    userId: string,
+    designId: string,
+    like: string
+  ) => Promise<[number, number]>;
+
+  private sHas(key: string, member: string): boolean {
+    return this.sets.get(key)?.has(member) ?? false;
+  }
+
+  private sAdd(key: string, member: string): void {
+    const set = this.sets.get(key) ?? new Set<string>();
+    set.add(member);
+    this.sets.set(key, set);
+  }
+
+  private sRem(key: string, member: string): void {
+    this.sets.get(key)?.delete(member);
+  }
+
+  private hGetLikes(key: string): number {
+    return Number(this.hashes.get(key)?.get('likes') ?? '0');
+  }
+
+  private hSetLikes(key: string, value: number): void {
+    const hash = this.hashes.get(key) ?? new Map<string, string>();
+    hash.set('likes', String(value));
+    this.hashes.set(key, hash);
+  }
+
+  private zAddXx(key: string, score: number, member: string): void {
+    const zset = this.zsets.get(key);
+    if (zset?.has(member)) zset.set(member, score);
+  }
+
+  defineCommand(name: string, _def: { numberOfKeys: number; lua: string }): void {
+    this.defineCommandCalls += 1;
+    if (name !== 'communityLikeToggle') return;
+    this.communityLikeToggle = async (
+      likesKey,
+      likedKey,
+      designKey,
+      likesIndexKey,
+      userId,
+      designId,
+      like
+    ) => {
+      const isMember = this.sHas(likesKey, userId) ? 1 : 0;
+      let likes = this.hGetLikes(designKey);
+      if (like === '1') {
+        if (isMember === 1) return [likes, 1];
+        this.sAdd(likesKey, userId);
+        this.sAdd(likedKey, designId);
+        likes += 1;
+        this.hSetLikes(designKey, likes);
+        this.zAddXx(likesIndexKey, likes, designId);
+        return [likes, 1];
+      }
+      if (isMember === 0) return [likes, 0];
+      this.sRem(likesKey, userId);
+      this.sRem(likedKey, designId);
+      likes -= 1;
+      if (likes < 0) likes = 0;
+      this.hSetLikes(designKey, likes);
+      this.zAddXx(likesIndexKey, likes, designId);
+      return [likes, 0];
+    };
+  }
+}
+
+describe('toggleCommunityLike', () => {
+  const ID = 'abc123def456';
+  const USER = 'user-1';
+  let fake: FakeLikeRedis;
+  const asRedis = () => fake as unknown as Redis;
+
+  beforeEach(() => {
+    fake = new FakeLikeRedis();
+    fake.hashes.set(communityDesignKey(ID), new Map([['likes', '0']]));
+    fake.zsets.set(communityIndexKey('likes'), new Map([[ID, 0]]));
+  });
+
+  it('registers the Lua command once per client', async () => {
+    await toggleCommunityLike(asRedis(), USER, ID, true);
+    await toggleCommunityLike(asRedis(), USER, ID, false);
+    expect(fake.defineCommandCalls).toBe(1);
+  });
+
+  it('like updates the set, the reverse index, the counter, and the sort score', async () => {
+    const result = await toggleCommunityLike(asRedis(), USER, ID, true);
+    expect(result).toEqual({ likes: 1, likedByMe: true });
+    expect(fake.sets.get(communityLikesKey(ID))?.has(USER)).toBe(true);
+    expect(fake.sets.get(communityLikedKey(USER))?.has(ID)).toBe(true);
+    expect(fake.hashes.get(communityDesignKey(ID))?.get('likes')).toBe('1');
+    expect(fake.zsets.get(communityIndexKey('likes'))?.get(ID)).toBe(1);
+  });
+
+  it('is idempotent: liking an already-liked design changes nothing', async () => {
+    await toggleCommunityLike(asRedis(), USER, ID, true);
+    const second = await toggleCommunityLike(asRedis(), USER, ID, true);
+    expect(second).toEqual({ likes: 1, likedByMe: true });
+    expect(fake.hashes.get(communityDesignKey(ID))?.get('likes')).toBe('1');
+  });
+
+  it('unlike reverses everything and reports likedByMe false', async () => {
+    await toggleCommunityLike(asRedis(), USER, ID, true);
+    const result = await toggleCommunityLike(asRedis(), USER, ID, false);
+    expect(result).toEqual({ likes: 0, likedByMe: false });
+    expect(fake.sets.get(communityLikesKey(ID))?.has(USER)).toBe(false);
+    expect(fake.sets.get(communityLikedKey(USER))?.has(ID)).toBe(false);
+    expect(fake.zsets.get(communityIndexKey('likes'))?.get(ID)).toBe(0);
+  });
+
+  it('unliking a never-liked design is a no-op, not a decrement', async () => {
+    await toggleCommunityLike(asRedis(), 'other-user', ID, true);
+    const result = await toggleCommunityLike(asRedis(), USER, ID, false);
+    expect(result).toEqual({ likes: 1, likedByMe: false });
+  });
+
+  it('clamps the counter at zero on drifted state instead of going negative', async () => {
+    // Set says liked, counter says 0: legacy drift the toggle must absorb.
+    fake.sets.set(communityLikesKey(ID), new Set([USER]));
+    const result = await toggleCommunityLike(asRedis(), USER, ID, false);
+    expect(result).toEqual({ likes: 0, likedByMe: false });
+    expect(fake.hashes.get(communityDesignKey(ID))?.get('likes')).toBe('0');
+  });
+
+  it('never resurrects an unindexed (hidden) design into the likes sort', async () => {
+    fake.zsets.set(communityIndexKey('likes'), new Map());
+    await toggleCommunityLike(asRedis(), USER, ID, true);
+    expect(fake.zsets.get(communityIndexKey('likes'))?.has(ID)).toBe(false);
+  });
+
+  it('converges when the same user races two likes', async () => {
+    const results = await Promise.all([
+      toggleCommunityLike(asRedis(), USER, ID, true),
+      toggleCommunityLike(asRedis(), USER, ID, true),
+    ]);
+    expect(results.map((r) => r.likes)).toEqual([1, 1]);
+    expect(fake.hashes.get(communityDesignKey(ID))?.get('likes')).toBe('1');
+    expect(fake.sets.get(communityLikesKey(ID))?.size).toBe(1);
+  });
+
+  it('converges under interleaved like/unlike storms from many users', async () => {
+    const users = Array.from({ length: 8 }, (_, i) => `user-${i}`);
+    const calls: Array<Promise<{ likes: number; likedByMe: boolean }>> = [];
+    for (let round = 0; round < 5; round++) {
+      for (const user of users) {
+        calls.push(toggleCommunityLike(asRedis(), user, ID, true));
+        if ((round + user.length) % 2 === 0) {
+          calls.push(toggleCommunityLike(asRedis(), user, ID, false));
+        }
+      }
+    }
+    await Promise.all(calls);
+    // Whatever the interleaving, the counter and the membership set must
+    // agree with each other and with the sort index score.
+    const members = fake.sets.get(communityLikesKey(ID))?.size ?? 0;
+    expect(Number(fake.hashes.get(communityDesignKey(ID))?.get('likes'))).toBe(members);
+    expect(fake.zsets.get(communityIndexKey('likes'))?.get(ID)).toBe(members);
+    for (const user of users) {
+      const liked = fake.sets.get(communityLikesKey(ID))?.has(user) ?? false;
+      expect(fake.sets.get(communityLikedKey(user))?.has(ID) ?? false).toBe(liked);
+    }
+  });
 });
 
 describe('communityContentHash', () => {

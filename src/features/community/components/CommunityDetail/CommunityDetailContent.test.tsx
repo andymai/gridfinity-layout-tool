@@ -1,7 +1,8 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import type { CommunityDesign } from '@/shared/types/community';
 import type { BinParams } from '@/shared/types/bin';
+import { INITIAL_BROWSE_STATE, useBrowseStore } from '../../store/browseStore';
 
 vi.mock('@/shared/components/GlbViewer', () => ({
   GlbViewer: ({
@@ -66,6 +67,16 @@ function renderContent(
 }
 
 describe('CommunityDetailContent', () => {
+  beforeEach(() => {
+    // Ready + fresh so the embedded similar rail never starts a real index
+    // load; empty items keep the rail out of unrelated assertions.
+    useBrowseStore.setState({
+      ...INITIAL_BROWSE_STATE,
+      status: 'ready',
+      fetchedAt: Date.now(),
+    });
+  });
+
   it('renders author, category, techniques, dimensions, and license', () => {
     renderContent();
     expect(screen.getByText('by Jo')).toBeInTheDocument();
@@ -187,5 +198,100 @@ describe('CommunityDetailContent', () => {
     renderContent({ createdAt: created, updatedAt: created + 86_400_000 });
     expect(screen.getByText(/Published .*2026/)).toBeInTheDocument();
     expect(screen.getByText(/Updated .*2026/)).toBeInTheDocument();
+  });
+
+  it('renders the author as a labeled button when the author view is wired', () => {
+    const onFilterByAuthor = vi.fn();
+    renderContent({}, { onFilterByAuthor });
+    const author = screen.getByTestId('community-detail-author');
+    expect(author.tagName).toBe('BUTTON');
+    expect(author).toHaveAccessibleName('See all designs by Jo');
+    fireEvent.click(author);
+    expect(onFilterByAuthor).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the author as plain text when no author view is wired', () => {
+    renderContent();
+    expect(screen.queryByTestId('community-detail-author')).not.toBeInTheDocument();
+    expect(screen.getByText('by Jo')).toBeInTheDocument();
+  });
+
+  it('opens the direct-remix list from the remix count', () => {
+    useBrowseStore.setState({
+      status: 'ready',
+      fetchedAt: Date.now(),
+      items: [
+        {
+          id: 'Remix1234567',
+          name: 'Remixed Bin',
+          authorName: 'Sam',
+          authorPublicId: 'b'.repeat(32),
+          category: 'kitchen',
+          techniques: [],
+          metrics: { width: 420, depth: 420, height: 42, gridUnitMm: 42 },
+          thumbnailUrl: 'https://blob.example/remix.webp',
+          isRemix: true,
+          parentId: 'Abc123456789',
+          featured: false,
+          counts: { likes: 0, remixes: 0, exports: 0 },
+          createdAt: 1000,
+          updatedAt: 1000,
+          status: 'live',
+        },
+      ],
+    });
+    renderContent();
+    const remixes = screen.getByTestId('community-detail-remixes');
+    expect(remixes).toHaveAccessibleName('4 designs build on this');
+    expect(remixes).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByTestId('community-remix-list')).not.toBeInTheDocument();
+    fireEvent.click(remixes);
+    expect(remixes).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByTestId('community-remix-list')).toBeInTheDocument();
+    expect(screen.getAllByTestId('community-remix-tile')).toHaveLength(1);
+    expect(screen.getByText('Remixed Bin')).toBeInTheDocument();
+  });
+
+  it('explains when the counted remixes are not in the loaded index', () => {
+    renderContent();
+    fireEvent.click(screen.getByTestId('community-detail-remixes'));
+    expect(
+      screen.getByText('The designs that build on this are not in the loaded gallery.')
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId('community-remix-tile')).not.toBeInTheDocument();
+  });
+
+  it('keeps the remix count as plain text at zero', () => {
+    renderContent({}, { counts: { likes: 12, remixes: 0, exports: 9 } });
+    expect(screen.queryByTestId('community-detail-remixes')).not.toBeInTheDocument();
+    expect(screen.getByText('Remixes')).toBeInTheDocument();
+  });
+
+  it('embeds the similar rail between lineage and license when the index holds matches', () => {
+    useBrowseStore.setState({
+      status: 'ready',
+      fetchedAt: Date.now(),
+      items: [
+        {
+          id: 'Other1234567',
+          name: 'Other Bin',
+          authorName: 'Sam',
+          authorPublicId: 'b'.repeat(32),
+          category: 'hardware',
+          techniques: ['scoop'],
+          metrics: { width: 83.5, depth: 125.5, height: 42, gridUnitMm: 42 },
+          thumbnailUrl: 'https://blob.example/other.webp',
+          isRemix: false,
+          featured: false,
+          counts: { likes: 0, remixes: 0, exports: 0 },
+          createdAt: 1000,
+          updatedAt: 1000,
+          status: 'live',
+        },
+      ],
+    });
+    renderContent();
+    expect(screen.getByTestId('community-similar-rail')).toBeInTheDocument();
+    expect(screen.getByText('Other Bin')).toBeInTheDocument();
   });
 });

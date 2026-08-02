@@ -12,6 +12,8 @@ import {
   COMMUNITY_CATEGORIES,
   COMMUNITY_NAME_MAX_LENGTH,
   COMMUNITY_DESCRIPTION_MAX_LENGTH,
+  COMMUNITY_REPORT_NOTE_MAX_LENGTH,
+  COMMUNITY_REPORT_REASONS,
   COMMUNITY_TECHNIQUES,
   MAX_COMMUNITY_THUMBNAIL_BYTES,
   deriveCommunityTechniques,
@@ -331,5 +333,14 @@ describe('parseCommunityLineage', () => {
 
   it('rejects blocked content in snapshot names', () => {
     expect(parseCommunityLineage({ ...LINEAGE, parentName: 'cool <script name' }).ok).toBe(false);
+  });
+});
+
+describe('report reason union', () => {
+  it('matches the detail view radio options and the exhaustiveness registry', () => {
+    // Mirrors scripts/check-union-exhaustiveness.sh's CommunityReportReason
+    // entry; update both together.
+    expect(COMMUNITY_REPORT_REASONS).toEqual(['inappropriate', 'spam', 'broken', 'stolen']);
+    expect(COMMUNITY_REPORT_NOTE_MAX_LENGTH).toBe(500);
   });
 });

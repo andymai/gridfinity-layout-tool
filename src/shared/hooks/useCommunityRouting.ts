@@ -25,6 +25,12 @@ interface CommunityDetailHistoryState {
   communityRouteDetail?: boolean;
 }
 
+// Kept in lockstep with AUTHOR_PUBLIC_ID_REGEX in api/community.ts (the
+// 32-char hex authorPublicId derived by the publish handler).
+const AUTHOR_PUBLIC_ID_RE = /^[a-f0-9]{32}$/;
+
+const AUTHOR_PARAM = 'author';
+
 function isCommunityGalleryPath(): boolean {
   return window.location.pathname === '/community' || window.location.pathname === '/community/';
 }
@@ -32,6 +38,33 @@ function isCommunityGalleryPath(): boolean {
 export function getCommunityDesignIdFromUrl(): string | null {
   const match = COMMUNITY_DETAIL_RE.exec(window.location.pathname);
   return match === null ? null : match[1];
+}
+
+/** The `?author=` filter on /community, making the author view shareable. */
+export function getCommunityAuthorIdFromUrl(): string | null {
+  if (!isCommunityGalleryPath()) return null;
+  const value = new URLSearchParams(window.location.search).get(AUTHOR_PARAM);
+  return value !== null && AUTHOR_PUBLIC_ID_RE.test(value) ? value : null;
+}
+
+/**
+ * Mirrors the browse store's author filter into the /community URL. Replaces
+ * rather than pushes: filters keep no history entries of their own, matching
+ * the other gallery filters. No-ops off the gallery path (a detail deep link
+ * carries no query; the filter is restored when the gallery path returns).
+ */
+export function syncCommunityAuthorParam(authorId: string | null): void {
+  if (!isCommunityGalleryPath()) return;
+  const params = new URLSearchParams(window.location.search);
+  if (params.get(AUTHOR_PARAM) === authorId) return;
+  if (authorId === null) params.delete(AUTHOR_PARAM);
+  else params.set(AUTHOR_PARAM, authorId);
+  const query = params.toString();
+  window.history.replaceState(
+    window.history.state,
+    '',
+    `${window.location.pathname}${query === '' ? '' : `?${query}`}`
+  );
 }
 
 function isCommunityPath(): boolean {
@@ -44,11 +77,15 @@ export function useCommunityRouting() {
   const [communityDesignIdFromUrl, setCommunityDesignIdFromUrl] = useState<string | null>(
     getCommunityDesignIdFromUrl
   );
+  const [communityAuthorIdFromUrl, setCommunityAuthorIdFromUrl] = useState<string | null>(
+    getCommunityAuthorIdFromUrl
+  );
 
   useEffect(() => {
     const handlePopState = () => {
       setIsCommunityPathActive(isCommunityPath());
       setCommunityDesignIdFromUrl(getCommunityDesignIdFromUrl());
+      setCommunityAuthorIdFromUrl(getCommunityAuthorIdFromUrl());
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
@@ -104,6 +141,8 @@ export function useCommunityRouting() {
     /** True on /community and /community/d/<id> while community_showcase is on. */
     isCommunityRoute: communityEnabled && isCommunityPathActive,
     communityDesignIdFromUrl,
+    /** The shareable `?author=` filter, null off the gallery path or when invalid. */
+    communityAuthorIdFromUrl,
     navigateToCommunity,
     navigateHome,
     openCommunityDesignUrl,

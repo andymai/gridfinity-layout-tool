@@ -60,6 +60,7 @@ import { usePlaceBinFromURL } from '@/features/bin-designer/hooks/usePlaceBinInL
 import { useBackgroundThumbnailRegen } from '@/features/bin-designer';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useCommunityPublishReturn } from '@/shared/hooks/useCommunityPublishReturn';
+import { useCommunityLikeReturn } from '@/shared/hooks/useCommunityLikeReturn';
 import { SHORTCUTS } from '@/core/constants';
 
 // Lazy-loaded so the sync chunk only fetches when the user opts into the
@@ -242,6 +243,7 @@ export default function App() {
   useOwnedShareSync();
   useBackgroundThumbnailRegen();
   useCommunityPublishReturn();
+  useCommunityLikeReturn();
 
   useEffect(() => {
     return initLayoutAnalytics();

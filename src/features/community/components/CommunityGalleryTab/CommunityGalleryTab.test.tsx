@@ -270,6 +270,113 @@ describe('CommunityGalleryTab', () => {
     expect(screen.getByText('Bin a')).toBeInTheDocument();
   });
 
+  it('clicking a card author filters the gallery to that author with a clearable chip', async () => {
+    const alice = 'f'.repeat(32);
+    const bob = 'e'.repeat(32);
+    indexMock.mockResolvedValue(
+      ok({
+        items: [
+          card('byalice00001', { authorName: 'Alice', authorPublicId: alice }),
+          card('bybob0000001', { authorName: 'Bob', authorPublicId: bob }),
+        ],
+        capped: false,
+      })
+    );
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.getByText('Bin byalice00001')).toBeInTheDocument();
+    });
+    const authorButtons = screen.getAllByTestId('community-card-author');
+    fireEvent.click(authorButtons[0]);
+    expect(useBrowseStore.getState().filters.author).toEqual({ id: alice, name: 'Alice' });
+    expect(trackEvent).toHaveBeenCalledWith('community_author_filter_applied', {
+      surface: 'card',
+    });
+    expect(screen.getByText('Bin byalice00001')).toBeInTheDocument();
+    expect(screen.queryByText('Bin bybob0000001')).not.toBeInTheDocument();
+    expect(useCommunityDetailStore.getState().request).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'community.gallery.clearAuthorFilter' }));
+    expect(useBrowseStore.getState().filters.author).toBeNull();
+    expect(screen.getByText('Bin bybob0000001')).toBeInTheDocument();
+  });
+
+  it('shows the author empty state with a show-all action when the author has nothing', async () => {
+    indexMock.mockResolvedValue(ok({ items: [card('a')], capped: false }));
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.getByText('Bin a')).toBeInTheDocument();
+    });
+    useBrowseStore.getState().setAuthor({ id: 'd'.repeat(32), name: 'Ghost' });
+    expect(await screen.findByText('community.gallery.authorEmpty.title')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'community.gallery.showAllDesigns' }));
+    expect(useBrowseStore.getState().filters.author).toBeNull();
+    expect(screen.getByText('Bin a')).toBeInTheDocument();
+  });
+
+  it('shows the liked empty state with the heart hint when nothing is liked', async () => {
+    indexMock.mockResolvedValue(ok({ items: [card('a')], capped: false }));
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.getByText('Bin a')).toBeInTheDocument();
+    });
+    useBrowseStore.getState().setLikedOnly(true);
+    expect(await screen.findByText('community.gallery.likedEmpty.title')).toBeInTheDocument();
+    expect(screen.getByText('community.gallery.likedEmpty.subtitle')).toBeInTheDocument();
+    expect(screen.queryByText('community.gallery.noMatches.title')).not.toBeInTheDocument();
+  });
+
+  it('filters to liked cards when the liked filter is active', async () => {
+    indexMock.mockResolvedValue(
+      ok({
+        items: [card('liked0000001', { likedByMe: true }), card('other0000001')],
+        capped: false,
+      })
+    );
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.getByText('Bin other0000001')).toBeInTheDocument();
+    });
+    useBrowseStore.getState().setLikedOnly(true);
+    await waitFor(() => {
+      expect(screen.queryByText('Bin other0000001')).not.toBeInTheDocument();
+    });
+    expect(screen.getByText('Bin liked0000001')).toBeInTheDocument();
+  });
+
+  it('shows recently-viewed designs most-recent-first when the recent filter is active', async () => {
+    localStorage.setItem(
+      'gridfinity-community-recently-viewed-v1',
+      JSON.stringify([
+        { id: 'second000001', viewedAt: 2000 },
+        { id: 'first0000001', viewedAt: 1000 },
+      ])
+    );
+    indexMock.mockResolvedValue(
+      ok({
+        items: [
+          card('first0000001', { createdAt: 9000 }),
+          card('unviewed0001', { createdAt: 8000 }),
+          card('second000001', { createdAt: 1000 }),
+        ],
+        capped: false,
+      })
+    );
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.getByText('Bin unviewed0001')).toBeInTheDocument();
+    });
+    useBrowseStore.getState().setRecentOnly(true);
+    await waitFor(() => {
+      expect(screen.queryByText('Bin unviewed0001')).not.toBeInTheDocument();
+    });
+    const names = screen
+      .getAllByTestId('community-card-author')
+      .map((el) => el.closest('[data-community-card]'))
+      .map((el) => el?.getAttribute('aria-label'));
+    expect(names).toEqual(['Bin second000001', 'Bin first0000001']);
+  });
+
   it('tracks the gallery open with the tab surface by default', async () => {
     indexMock.mockResolvedValue(ok({ items: [], capped: false }));
     render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
