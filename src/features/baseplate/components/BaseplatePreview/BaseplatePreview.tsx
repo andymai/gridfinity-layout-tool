@@ -232,8 +232,10 @@ export function BaseplatePreview({
   // The footprint grid renders in every mode (including stacking) so the scene
   // always reads as "parts on a build plate". In stack mode it's sized to the
   // tower field so the grid reaches under every tower, not just one plate.
+  // Divide each axis by its own pitch so FootprintGrid multiplies it back to the
+  // true field mm — the depth axis must use gridUnitMmY on a non-square grid.
   const gridWidthUnits = stackEnabled && stackBounds ? stackBounds.widthMm / gridUnitMm : width;
-  const gridDepthUnits = stackEnabled && stackBounds ? stackBounds.depthMm / gridUnitMm : depth;
+  const gridDepthUnits = stackEnabled && stackBounds ? stackBounds.depthMm / gridUnitMmY : depth;
 
   // In stack mode the canvas renders StackedBaseplateMeshes instead of
   // BaseplateMesh/SplitBaseplateMeshes. Gate visibility on stackBounds so
