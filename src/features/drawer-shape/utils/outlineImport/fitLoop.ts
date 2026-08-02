@@ -83,7 +83,7 @@ export interface FittedLoop {
 }
 
 /** Round up to the next half grid unit, the finest drawer dimension allowed. */
-function unitsFor(mm: number, pitch: number): number {
+export function unitsFor(mm: number, pitch: number): number {
   return Math.max(1, Math.ceil((mm / pitch) * 2) / 2);
 }
 

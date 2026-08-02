@@ -20,7 +20,7 @@ export { MAX_OUTLINE_FILE_SIZE } from './types';
 export type { FittedLoop } from './fitLoop';
 export { parseDxfString } from './dxfParser';
 export { parseSvgOutline } from './svgOutlineParser';
-export { fitLoop, largestLoop, loopBounds } from './fitLoop';
+export { fitLoop, largestLoop, loopBounds, unitsFor } from './fitLoop';
 export { ensureMinVertices, simplifyLoop } from './simplifyLoop';
 
 export interface ImportOptions {

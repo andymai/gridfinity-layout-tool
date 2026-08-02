@@ -9,8 +9,8 @@ function renderControls(overrides: Partial<Parameters<typeof PenControls>[0]> = 
     snap: 0.5 as const,
     onSnapChange: vi.fn(),
     lone: null,
-    widthMm: 420,
-    depthMm: 336,
+    maxWmm: 2100,
+    maxDmm: 2100,
     onCoordChange: vi.fn(),
     selectedCount: 0,
     filletValue: 0,
@@ -62,6 +62,19 @@ describe('PenControls', () => {
 
     renderControls({ lone: { index: 2, x: 100, y: 50 } });
     expect(screen.getByText('drawerShape.penCorner')).toBeInTheDocument();
+  });
+
+  // A point may be typed past the current grid extent so the drawer can grow to
+  // hold it (#3092); the coordinate ceiling is the product maximum, not the grid.
+  it('accepts a coordinate typed past the current grid extent, up to the ceiling', () => {
+    const { props } = renderControls({ lone: { index: 0, x: 100, y: 50 }, maxWmm: 2100 });
+
+    fireEvent.click(screen.getByRole('button', { name: 'X: 100 mm' }));
+    const input = screen.getByRole('textbox');
+    fireEvent.change(input, { target: { value: '500' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    expect(props.onCoordChange).toHaveBeenCalledWith('x', 500);
   });
 
   it('triggers an import', () => {

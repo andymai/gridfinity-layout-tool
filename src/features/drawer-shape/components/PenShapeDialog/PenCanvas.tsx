@@ -25,6 +25,8 @@ export interface PenCanvasProps {
   readonly pathD: string;
   readonly widthMm: number;
   readonly depthMm: number;
+  /** Frame depth (drawer depth unioned with the sketch bbox) for the Y flip. */
+  readonly contentDepthMm: number;
   readonly viewBox: string;
   readonly padMm: number;
   readonly handleR: number;
@@ -50,6 +52,7 @@ export function PenCanvas({
   pathD,
   widthMm,
   depthMm,
+  contentDepthMm,
   viewBox,
   padMm,
   handleR,
@@ -87,8 +90,10 @@ export function PenCanvas({
       aria-label={ariaLabel}
     >
       {/* Y-up data in a Y-down viewport: flip once here so the canvas reads
-          like the layout grid without touching stored coordinates. */}
-      <g transform={`translate(${padMm} ${depthMm + padMm}) scale(1 -1)`}>
+          like the layout grid without touching stored coordinates. The origin
+          sits at the frame's content depth, not the drawer depth, so a point
+          dragged past the back edge stays inside the flipped frame. */}
+      <g transform={`translate(${padMm} ${contentDepthMm + padMm}) scale(1 -1)`}>
         <rect
           x={0}
           y={0}

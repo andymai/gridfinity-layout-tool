@@ -1,11 +1,13 @@
 /**
  * Zoom and pan for the pen editor canvas.
  *
- * The canvas works in a padded drawer-local frame: `[0, widthMm + 2·pad] ×
- * [0, depthMm + 2·pad]`, with the drawer itself inset by `pad` so edge handles
- * stay grabbable. Zoom and pan are expressed as the SVG viewBox over that
- * frame, which keeps every coordinate in millimetres — no second unit system,
- * and the vertex data never has to know the view exists.
+ * The canvas works in a padded content-local frame: `[0, contentWidthMm + 2·pad]
+ * × [0, contentDepthMm + 2·pad]`, where the content is the union of the drawer
+ * rectangle and the sketch's bounding box — so a point dragged past the grid
+ * grows the frame and stays visible. The drawer is inset by `pad` so edge
+ * handles stay grabbable. Zoom and pan are expressed as the SVG viewBox over
+ * that frame, which keeps every coordinate in millimetres — no second unit
+ * system, and the vertex data never has to know the view exists.
  */
 
 import { useCallback, useMemo, useState } from 'react';
@@ -31,18 +33,24 @@ export interface PenView {
   reset: () => void;
 }
 
-export function usePenView(widthMm: number, depthMm: number, session: unknown): PenView {
-  const frameW = widthMm + VIEW_PAD_MM * 2;
-  const frameH = depthMm + VIEW_PAD_MM * 2;
+export function usePenView(
+  contentWidthMm: number,
+  contentDepthMm: number,
+  drawerWidthMm: number,
+  drawerDepthMm: number,
+  session: unknown
+): PenView {
+  const frameW = contentWidthMm + VIEW_PAD_MM * 2;
+  const frameH = contentDepthMm + VIEW_PAD_MM * 2;
   // One object rather than separate zoom/origin state: a wheel zoom changes
   // both together, and splitting them would let a render observe half a step.
   const [view, setView] = useState({ zoom: 1, x: 0, y: 0 });
   // A new session, or a resized drawer, must start in the default framing: the
   // dialog stays mounted, so the previous zoom and pan would otherwise be
-  // inherited by a shape they were never framed for. The frame dimensions are
-  // part of the identity because a resize changes the frame itself, leaving a
-  // pan that can sit outside it or hide the area that just appeared.
-  const identity = `${String(frameW)}x${String(frameH)}`;
+  // inherited by a shape they were never framed for. Keyed to the DRAWER dims,
+  // not the frame: the frame also grows when a point is dragged past the grid,
+  // and re-framing on that would snap the view back mid-drag.
+  const identity = `${String(drawerWidthMm)}x${String(drawerDepthMm)}`;
   const [viewIdentity, setViewIdentity] = useState<{ session: unknown; frame: string }>({
     session,
     frame: identity,
@@ -62,12 +70,19 @@ export function usePenView(widthMm: number, depthMm: number, session: unknown): 
     [frameW, frameH]
   );
 
+  // The stored origin can fall outside the frame after it SHRINKS — dragging a
+  // point back inside lowers the content bbox, so a pan that was valid for the
+  // larger frame would otherwise leave the viewBox entirely off it (blank
+  // canvas). Clamp on read so display and pointer mapping stay on-frame without
+  // disturbing the stored zoom/pan (a later panBy re-clamps the stored value).
+  const origin = clamp(view.x, view.y, view.zoom);
+
   const toFrame = useCallback(
     (clientX: number, clientY: number, rect: DOMRect) => ({
-      x: view.x + ((clientX - rect.left) / rect.width) * (frameW / view.zoom),
-      y: view.y + ((clientY - rect.top) / rect.height) * (frameH / view.zoom),
+      x: origin.x + ((clientX - rect.left) / rect.width) * (frameW / view.zoom),
+      y: origin.y + ((clientY - rect.top) / rect.height) * (frameH / view.zoom),
     }),
-    [view, frameW, frameH]
+    [origin, view.zoom, frameW, frameH]
   );
 
   const zoomAt = useCallback(
@@ -108,8 +123,8 @@ export function usePenView(widthMm: number, depthMm: number, session: unknown): 
   const reset = useCallback(() => setView({ zoom: 1, x: 0, y: 0 }), []);
 
   const viewBox = useMemo(
-    () => `${view.x} ${view.y} ${frameW / view.zoom} ${frameH / view.zoom}`,
-    [view, frameW, frameH]
+    () => `${origin.x} ${origin.y} ${frameW / view.zoom} ${frameH / view.zoom}`,
+    [origin, view.zoom, frameW, frameH]
   );
 
   return {
