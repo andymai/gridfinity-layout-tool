@@ -3,6 +3,7 @@ import { effectiveGridUnitMmY } from '@/core/types';
 import { generateBinId, CONSTRAINTS } from '@/core/constants';
 import { getBlockedZones } from './collision';
 import { getOutsideCellSet } from './drawerOutlineCells';
+import { drawerFrameOutline } from './outlineFrame';
 
 /**
  * Create a Set of blocked cell keys for O(1) lookup.
@@ -18,10 +19,17 @@ export function createOccupiedCellSet(
   const occupied = new Set<string>();
 
   // Cells outside a non-rectangular drawer are unplaceable — mark them
-  // occupied so fill tools skip them (same predicate as canPlaceBin).
-  if (layout.drawer.outline !== undefined) {
+  // occupied so fill tools skip them (same predicate as canPlaceBin, frame
+  // included: #3157).
+  const frameOutline = drawerFrameOutline(
+    layout.drawer,
+    layout.baseplateParams,
+    layout.gridUnitMm,
+    effectiveGridUnitMmY(layout)
+  );
+  if (frameOutline !== undefined) {
     const outside = getOutsideCellSet(
-      layout.drawer.outline,
+      frameOutline,
       layout.drawer,
       layout.gridUnitMm,
       step,

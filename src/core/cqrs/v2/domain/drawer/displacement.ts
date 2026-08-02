@@ -4,21 +4,38 @@
  * bounds, or outside the outline when one is set. Used by `drawer.update`
  * (resize) and `drawer.setOutline` so the two commands can never disagree,
  * and mirrored by the legacy store action.
+ *
+ * The outline is read through the shared grid↔perimeter frame (#3157), so
+ * any frame-affecting edit — outline, fractional edge, manual grid shift,
+ * baseplate padding — displaces exactly the bins whose sockets the printed
+ * plate loses.
  */
 
-import type { Bin, BinId, Drawer } from '@/core/types';
+import type { Bin, BinId, Drawer, StoredBaseplateParams } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import { isFootprintInsideOutline } from '@/shared/utils/drawerOutlineGeometry';
+import { drawerFrameOutline } from '@/shared/utils/outlineFrame';
 
 export function computeDisplacedBins(
   bins: readonly Bin[],
-  drawer: Pick<Drawer, 'width' | 'depth' | 'outline'>,
+  drawer: Pick<
+    Drawer,
+    | 'width'
+    | 'depth'
+    | 'outline'
+    | 'fractionalEdgeX'
+    | 'fractionalEdgeY'
+    | 'gridShiftX'
+    | 'gridShiftY'
+  >,
+  baseplateParams: StoredBaseplateParams | undefined,
   gridUnitMm: number,
   // Depth-axis pitch for a non-square grid; defaults to the X pitch (square).
   gridUnitMmY: number = gridUnitMm
 ): BinId[] {
   const width = drawer.width as number;
   const depth = drawer.depth as number;
+  const frameOutline = drawerFrameOutline(drawer, baseplateParams, gridUnitMm, gridUnitMmY);
   return bins
     .filter((bin) => {
       if (bin.layerId === STAGING_ID) return false;
@@ -31,10 +48,10 @@ export function computeDisplacedBins(
         return true;
       }
       return (
-        drawer.outline !== undefined &&
+        frameOutline !== undefined &&
         !isFootprintInsideOutline(
           { x: bin.x, y: bin.y, width: bin.width, depth: bin.depth },
-          drawer.outline,
+          frameOutline,
           gridUnitMm,
           gridUnitMmY
         )

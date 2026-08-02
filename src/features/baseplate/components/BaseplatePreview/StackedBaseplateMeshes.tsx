@@ -75,6 +75,8 @@ export function StackedBaseplateMeshes({
     gridUnitMmY,
     fractionalEdgeX,
     fractionalEdgeY,
+    gridShiftX,
+    gridShiftY,
     baseplateParams,
   } = useLayoutStore(
     useShallow((s) => ({
@@ -87,6 +89,8 @@ export function StackedBaseplateMeshes({
       gridUnitMmY: effectiveGridUnitMmY(s.layout),
       fractionalEdgeX: s.layout.drawer.fractionalEdgeX ?? 'end',
       fractionalEdgeY: s.layout.drawer.fractionalEdgeY ?? 'end',
+      gridShiftX: s.layout.drawer.gridShiftX ?? 0,
+      gridShiftY: s.layout.drawer.gridShiftY ?? 0,
       baseplateParams: s.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
     }))
   );
@@ -108,7 +112,9 @@ export function StackedBaseplateMeshes({
       nozzleSizeMm,
       drawerOutline,
       undefined,
-      gridUnitMmY
+      gridUnitMmY,
+      gridShiftX,
+      gridShiftY
     );
     const groups = stackGroupsFromTiling(
       tiling,
@@ -180,6 +186,8 @@ export function StackedBaseplateMeshes({
     gridUnitMmY,
     fractionalEdgeX,
     fractionalEdgeY,
+    gridShiftX,
+    gridShiftY,
     nozzleSizeMm,
     maxPrintHeightMm,
     tiling,

@@ -146,6 +146,12 @@ export function applyEvent(layout: Layout, event: DomainEvent): Layout {
       if ('measuredMm' in event.payload.changes && event.payload.changes.measuredMm === undefined) {
         delete next.drawer.measuredMm;
       }
+      if ('gridShiftX' in event.payload.changes && event.payload.changes.gridShiftX === undefined) {
+        delete next.drawer.gridShiftX;
+      }
+      if ('gridShiftY' in event.payload.changes && event.payload.changes.gridShiftY === undefined) {
+        delete next.drawer.gridShiftY;
+      }
       break;
 
     case 'drawer.outlineSet': {
@@ -188,14 +194,31 @@ export function applyEvent(layout: Layout, event: DomainEvent): Layout {
       next.heightUnitMm = mm(event.payload.mm);
       break;
 
-    case 'layout.baseplateParamsSet':
+    case 'layout.baseplateParamsSet': {
       next.baseplateParams = event.payload.params;
+      // Mirror setBaseplateParams.apply(): padding moves the perimeter frame
+      // (#3157), so the event may carry a displacement cascade. Absent on
+      // events that predate the field — bins stay untouched then.
+      const displaced = new Set(event.payload.displacedBinIds ?? []);
+      if (displaced.size > 0) {
+        next.bins = next.bins.map((bin) =>
+          displaced.has(bin.id) ? { ...bin, layerId: STAGING_ID } : bin
+        );
+      }
       break;
+    }
 
-    case 'layout.activeBaseplateSet':
+    case 'layout.activeBaseplateSet': {
       next.activeBaseplateId = event.payload.designId;
       next.baseplateParams = event.payload.params;
+      const displaced = new Set(event.payload.displacedBinIds ?? []);
+      if (displaced.size > 0) {
+        next.bins = next.bins.map((bin) =>
+          displaced.has(bin.id) ? { ...bin, layerId: STAGING_ID } : bin
+        );
+      }
       break;
+    }
   }
 
   return next;

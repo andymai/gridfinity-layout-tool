@@ -3710,6 +3710,13 @@ const en: Record<string, string> = {
   'drawerDims.suggestionDismiss': 'Dismiss suggestion',
   'drawerShape.toggle': 'Custom drawer shape',
   'drawerShape.edit': 'Edit shape…',
+  'drawerShape.gridAlignment.title': 'Grid shift (mm)',
+  'drawerShape.gridAlignment.shiftX': 'Grid shift X',
+  'drawerShape.gridAlignment.shiftY': 'Grid shift Y',
+  'drawerShape.gridAlignment.increase': 'Increase {label}',
+  'drawerShape.gridAlignment.decrease': 'Decrease {label}',
+  'drawerShape.gridAlignment.reset': 'Reset',
+  'drawerShape.gridAlignment.hint': 'Shape aligned to the baseplate grid ({x}, {y} mm)',
   'drawerShape.trace': 'Trace bin layout',
   'drawerShape.resetConfirmTitle': 'Reset drawer shape?',
   'drawerShape.resetConfirmBody':

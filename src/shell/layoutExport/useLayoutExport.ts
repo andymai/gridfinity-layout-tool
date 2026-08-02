@@ -472,6 +472,8 @@ export function useLayoutExport(): UseLayoutExportReturn {
           magnetAnchor: layout.magnetAnchor,
           fractionalEdgeX: layout.drawer.fractionalEdgeX ?? 'end',
           fractionalEdgeY: layout.drawer.fractionalEdgeY ?? 'end',
+          gridShiftX: layout.drawer.gridShiftX ?? 0,
+          gridShiftY: layout.drawer.gridShiftY ?? 0,
           printBedWidthMm: layout.printBedSize,
           printBedDepthMm: layout.printBedDepth ?? layout.printBedSize,
           format,

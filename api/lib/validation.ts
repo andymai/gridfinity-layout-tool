@@ -22,6 +22,10 @@ const SHARE_CONSTRAINTS = {
   // Server <-> client divergence would let a peer persist height=1 that the
   // recipient's CQRS schema rejects on the next mutation.
   HEIGHT_MIN: 2,
+  // Mirrors client `GRID_PITCH_MM_MAX / 2` (drawerOutline.ts) — half the
+  // largest settable grid pitch, i.e. the largest legal grid shift within a
+  // custom perimeter. NOT `GRID_UNIT_MM_MAX / 2`: the pitch ceiling is 200mm.
+  GRID_SHIFT_MM_MAX: 100,
   VALID_EXPIRATIONS: [30, 60, 90, 365] as const,
   // Custom properties constraints
   CUSTOM_PROPERTY_MAX_COUNT: 50,
@@ -93,6 +97,8 @@ interface DrawerShape {
   fractionalEdgeX?: 'start' | 'end';
   fractionalEdgeY?: 'start' | 'end';
   outline?: DrawerOutlineShape;
+  gridShiftX?: number;
+  gridShiftY?: number;
   measuredMm?: { width: number; depth: number; height?: number };
 }
 
@@ -493,10 +499,16 @@ function isValidMeasuredMm(value: unknown): boolean {
 }
 
 // Type guards
+const isValidGridShift = (value: unknown): value is number =>
+  isNumber(value) &&
+  inRange(value, -SHARE_CONSTRAINTS.GRID_SHIFT_MM_MAX, SHARE_CONSTRAINTS.GRID_SHIFT_MM_MAX);
+
 function isValidDrawer(value: unknown): value is DrawerShape {
   if (!isObject(value)) return false;
   if (value.outline !== undefined && !isValidDrawerOutline(value.outline)) return false;
   if (value.measuredMm !== undefined && !isValidMeasuredMm(value.measuredMm)) return false;
+  if (value.gridShiftX !== undefined && !isValidGridShift(value.gridShiftX)) return false;
+  if (value.gridShiftY !== undefined && !isValidGridShift(value.gridShiftY)) return false;
   return (
     isNumber(value.width) &&
     isNumber(value.depth) &&
@@ -607,6 +619,12 @@ function sanitizeDrawer(drawer: DrawerShape): DrawerShape {
   }
   if (drawer.fractionalEdgeY === 'start' || drawer.fractionalEdgeY === 'end') {
     out.fractionalEdgeY = drawer.fractionalEdgeY;
+  }
+  if (isValidGridShift(drawer.gridShiftX) && drawer.gridShiftX !== 0) {
+    out.gridShiftX = drawer.gridShiftX;
+  }
+  if (isValidGridShift(drawer.gridShiftY) && drawer.gridShiftY !== 0) {
+    out.gridShiftY = drawer.gridShiftY;
   }
   if (drawer.outline !== undefined) {
     out.outline = {

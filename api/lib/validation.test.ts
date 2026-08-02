@@ -39,6 +39,8 @@ interface TestDrawer {
   fractionalEdgeX?: 'start' | 'end';
   fractionalEdgeY?: 'start' | 'end';
   outline?: unknown;
+  gridShiftX?: number;
+  gridShiftY?: number;
   measuredMm?: { width: number; depth: number; height?: number };
 }
 
@@ -709,6 +711,24 @@ describe('drawer outline validation (issue #2528)', () => {
     expect(result.valid).toBe(true);
     if (!result.valid) return;
     expect(result.layout.drawer.fractionalEdgeX).toBe('start');
+  });
+
+  it('preserves an in-range grid shift and drops a zero one (#3157)', () => {
+    const layout = createValidLayout();
+    // 90mm is legal on a large-pitch layout (pitch ceiling 200mm → half 100).
+    layout.drawer.gridShiftX = 90;
+    layout.drawer.gridShiftY = 0;
+    const result = validateOutline(layout);
+    expect(result.valid).toBe(true);
+    if (!result.valid) return;
+    expect(result.layout.drawer.gridShiftX).toBe(90);
+    expect('gridShiftY' in result.layout.drawer).toBe(false);
+  });
+
+  it('rejects a grid shift beyond half the largest settable pitch', () => {
+    const layout = createValidLayout();
+    layout.drawer.gridShiftX = 101;
+    expect(validateOutline(layout).valid).toBe(false);
   });
 
   it('rejects outlines with too few or too many vertices', () => {

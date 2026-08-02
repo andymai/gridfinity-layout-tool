@@ -10,6 +10,9 @@ import { computeBaseplateTiling } from './splitPlanner';
 import { groupPiecesByFingerprint } from './pieceFingerprint';
 import { stackGroupsFromTiling, evaluateStackPrint } from './stackPrint';
 import { cornerCutVertices } from '@/shared/utils/cornerCutOutline';
+import { drawerFrameShift } from '@/shared/utils/outlineFrame';
+import { padOutline } from '@/shared/utils/padOutline';
+import { translateOutline } from '@/shared/utils/drawerOutline';
 import type { CornerCutParams, DrawerOutline } from '@/core/types';
 
 describe('buildFullParams', () => {
@@ -1044,4 +1047,80 @@ describe('large corner radius → outline conversion', () => {
       cornerCutVertices(210, 210, { tl: r, tr: r, bl: r, br: r })
     );
   });
+});
+
+describe('grid↔perimeter frame parity (#3157)', () => {
+  const U = 42;
+  /** 84×84mm square at (10,10) inside a 4×4 extent — off-lattice by design;
+   * the two-cell block registers at 42..126 per axis (shift +32, +32). */
+  const OFF_LATTICE: DrawerOutline = {
+    vertices: [
+      { x: 10, y: 10 },
+      { x: 94, y: 10 },
+      { x: 94, y: 94 },
+      { x: 10, y: 94 },
+    ],
+  };
+
+  it.each([
+    { padding: 0, gridShiftX: 0, gridShiftY: 0 },
+    { padding: 3.5, gridShiftX: 0, gridShiftY: 0 },
+    { padding: 3.5, gridShiftX: 7, gridShiftY: -4.25 },
+  ])(
+    'the plate outline is the padded shape translated by the shared frame shift (padding=$padding, shift=$gridShiftX/$gridShiftY)',
+    ({ padding, gridShiftX, gridShiftY }) => {
+      const stored = {
+        magnetHoles: false,
+        magnetDiameter: mm(6.5),
+        magnetDepth: mm(2.4),
+        paddingLeft: mm(padding),
+        paddingRight: mm(padding),
+        paddingFront: mm(padding),
+        paddingBack: mm(padding),
+      };
+      const drawer = {
+        width: gridUnits(4),
+        depth: gridUnits(4),
+        outline: OFF_LATTICE,
+        gridShiftX: mm(gridShiftX),
+        gridShiftY: mm(gridShiftY),
+      };
+
+      const plate = buildFullParams(
+        stored,
+        4,
+        4,
+        U,
+        'end',
+        'end',
+        undefined,
+        OFF_LATTICE,
+        'edge',
+        U,
+        gridShiftX,
+        gridShiftY
+      );
+
+      // The layout side derives its translation from the same module; the
+      // plate's resolved outline must be exactly the padded shape carried by
+      // that shift, or a placeable layout cell and a kept socket can disagree.
+      const shift = drawerFrameShift(drawer, stored, U, U);
+      const padded =
+        padding > 0
+          ? padOutline(OFF_LATTICE, {
+              left: padding,
+              right: padding,
+              front: padding,
+              back: padding,
+            })
+          : OFF_LATTICE;
+      expect(padded).not.toBeNull();
+      if (padded === null) throw new Error('unreachable');
+      const expected =
+        shift.x === 0 && shift.y === 0 ? padded : translateOutline(padded, shift.x, shift.y);
+      expect(plate.outline?.vertices).toEqual(expected.vertices);
+      expect(shift.x).toBeCloseTo(32 - gridShiftX, 9);
+      expect(shift.y).toBeCloseTo(32 - gridShiftY, 9);
+    }
+  );
 });

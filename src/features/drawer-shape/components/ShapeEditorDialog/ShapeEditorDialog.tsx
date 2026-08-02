@@ -136,6 +136,7 @@ export function ShapeEditorDialog({ open, onClose }: ShapeEditorDialogProps) {
     const displaced = computeDisplacedBins(
       layout.bins,
       { ...layout.drawer, outline: conversion.outline },
+      layout.baseplateParams,
       layout.gridUnitMm,
       gridUnitMmY
     ).length;

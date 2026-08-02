@@ -12,6 +12,7 @@ import * as z from 'zod';
 import { CONSTRAINTS, SOLID_FLOOR_MIN_MM, SOLID_FLOOR_MAX_MM } from '@/core/constants';
 import { STACK_PRINT_MIN_GAP_MM, STACK_PRINT_MAX_GAP_MM } from '@/core/types';
 import { BASEPLATE_CONNECTOR_STYLES } from '@/shared/types/bin';
+import { GRID_PITCH_MM_MAX } from '@/shared/utils/drawerOutline';
 import type { CommandType } from '../commands';
 import {
   libraryCreateEntrySchema,
@@ -224,6 +225,17 @@ const drawerUpdateSchema = z
     height: z.number().min(CONSTRAINTS.MIN_LAYER_HEIGHT),
     fractionalEdgeX: z.union([z.literal('start'), z.literal('end')]),
     fractionalEdgeY: z.union([z.literal('start'), z.literal('end')]),
+    // Half the largest settable pitch (setGridUnitMm clamps to
+    // GRID_PITCH_MM_MAX, not GRID_UNIT_MM_MAX); the command re-clamps to the
+    // layout's actual ±pitch/2.
+    gridShiftX: z
+      .number()
+      .min(-GRID_PITCH_MM_MAX / 2)
+      .max(GRID_PITCH_MM_MAX / 2),
+    gridShiftY: z
+      .number()
+      .min(-GRID_PITCH_MM_MAX / 2)
+      .max(GRID_PITCH_MM_MAX / 2),
     // null clears the stored measurement
     measuredMm: z
       .object({

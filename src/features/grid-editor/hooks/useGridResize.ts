@@ -68,7 +68,7 @@ export function useGridResize(options: UseGridResizeOptions): GridResizeState {
       updateDrawer: state.updateDrawer,
     }))
   );
-  const { updateBin } = useMutations();
+  const { updateBin, updateDrawer: updateDrawerCommand } = useMutations();
 
   // Grid edge resize state
   const [resizeDirection, setResizeDirection] = useState<ResizeDirection>(null);
@@ -207,12 +207,23 @@ export function useGridResize(options: UseGridResizeOptions): GridResizeState {
           depth: resizeStart.depth as GridUnits,
         });
       } else {
-        // No clipped bins - track the completed resize
-        // Only track if dimensions actually changed
+        // Only commit/track if dimensions actually changed
         if (
           resizeStart.width !== currentDrawer.width ||
           resizeStart.depth !== currentDrawer.depth
         ) {
+          // The per-move updates went store-direct (no history). Rewind to
+          // the drag-start size and re-commit once through the command, so
+          // the whole drag is a single undoable entry.
+          const finalWidth = currentDrawer.width;
+          const finalDepth = currentDrawer.depth;
+          updateDrawer({
+            width: resizeStart.width as GridUnits,
+            depth: resizeStart.depth as GridUnits,
+          });
+          batch(() => {
+            updateDrawerCommand({ width: finalWidth, depth: finalDepth });
+          });
           mlTracking.trackDrawerResize(
             { width: resizeStart.width, depth: resizeStart.depth, height: currentDrawer.height },
             currentDrawer,
@@ -231,7 +242,7 @@ export function useGridResize(options: UseGridResizeOptions): GridResizeState {
       document.removeEventListener('pointerup', handlePointerUp);
       releaseCapture();
     };
-  }, [resizeDirection, resizeStart, cellSize, cellSizeY, gap, updateDrawer]);
+  }, [resizeDirection, resizeStart, cellSize, cellSizeY, gap, updateDrawer, updateDrawerCommand]);
 
   // Confirm pending resize - move clipped bins to staging
   const confirmResize = useCallback(() => {

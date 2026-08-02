@@ -72,9 +72,17 @@ export type HeightUnitMmSetEvent = BaseDomainEvent<
   { readonly mm: number; readonly previousMm: number }
 >;
 
+// Padding participates in the grid↔perimeter frame (#3157), so a params
+// change can move the registered frame and displace bins exactly like a
+// resize. `displacedBinIds` is optional for back-compat with persisted
+// events that predate the field; replay leaves bins untouched then.
 export type BaseplateParamsSetEvent = BaseDomainEvent<
   'layout.baseplateParamsSet',
-  { readonly params: StoredBaseplateParams; readonly previousParams?: StoredBaseplateParams }
+  {
+    readonly params: StoredBaseplateParams;
+    readonly previousParams?: StoredBaseplateParams;
+    readonly displacedBinIds?: ReadonlyArray<BinId>;
+  }
 >;
 
 export type ActiveBaseplateSetEvent = BaseDomainEvent<
@@ -84,6 +92,7 @@ export type ActiveBaseplateSetEvent = BaseDomainEvent<
     readonly params: StoredBaseplateParams;
     readonly previousActiveBaseplateId: BaseplateDesignId | null;
     readonly previousParams?: StoredBaseplateParams;
+    readonly displacedBinIds?: ReadonlyArray<BinId>;
   }
 >;
 

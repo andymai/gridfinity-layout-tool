@@ -3,7 +3,7 @@ import { produce } from 'immer';
 import { isOk } from '@/core/result';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import type { DrawerOutline, Layout } from '@/core/types';
-import { binId, gridUnits, heightUnits } from '@/core/types';
+import { binId, gridUnits, heightUnits, mm } from '@/core/types';
 import { updateDrawer } from './updateDrawer';
 import { makeLayout, makeBin } from './_testHelpers';
 import { applyEvent } from '../../../projection/replay';
@@ -285,6 +285,52 @@ describe('v2 drawer.update with an outline', () => {
       expect(isOk(result)).toBe(true);
       if (!isOk(result)) return;
       expect('measuredMm' in result.value.event.payload.changes).toBe(false);
+    });
+  });
+
+  describe('gridShift (#3157)', () => {
+    it('clamps the shift to half the pitch per axis', () => {
+      const result = updateDrawer.handle(
+        { gridShiftX: 30, gridShiftY: -30 },
+        { aggregate: makeLayout() }
+      );
+
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      expect(result.value.event.payload.changes.gridShiftX).toBe(21);
+      expect(result.value.event.payload.changes.gridShiftY).toBe(-21);
+    });
+
+    it('keeps a large shift on a large-pitch layout (pitch ceiling, not 42mm)', () => {
+      const layout = { ...makeLayout(), gridUnitMm: mm(200) };
+      const result = updateDrawer.handle({ gridShiftX: 90 }, { aggregate: layout });
+
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      expect(result.value.event.payload.changes.gridShiftX).toBe(90);
+    });
+
+    it('stores a zero shift as an absent key', () => {
+      const layout = {
+        ...makeLayout(),
+        drawer: { ...makeLayout().drawer, gridShiftX: mm(5) },
+      };
+      const result = updateDrawer.handle({ gridShiftX: 0 }, { aggregate: layout });
+
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      expect('gridShiftX' in result.value.event.payload.changes).toBe(true);
+      expect(result.value.event.payload.changes.gridShiftX).toBeUndefined();
+      const applied = produce(layout, (draft) => {
+        updateDrawer.apply({ type: 'drawer.updated', payload: result.value.event.payload }, draft);
+      });
+      expect('gridShiftX' in applied.drawer).toBe(false);
+
+      const replayed = applyEvent(layout, {
+        type: 'drawer.updated',
+        payload: result.value.event.payload,
+      } as never);
+      expect('gridShiftX' in replayed.drawer).toBe(false);
     });
   });
 });

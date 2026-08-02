@@ -5,6 +5,7 @@ import { getCellSizeY } from '@/core/constants';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { useTranslation } from '@/i18n';
 import { flattenOutline } from '@/shared/utils/drawerOutlineGeometry';
+import { drawerFrameOutline } from '@/shared/utils/outlineFrame';
 import { padOutline } from '@/shared/utils/padOutline';
 import { computeOverlayViewport } from './overlayViewport';
 
@@ -30,7 +31,8 @@ export function DrawerOutlineOverlay({ cellSize, gap }: DrawerOutlineOverlayProp
   const t = useTranslation();
   const patternId = useId();
   const {
-    outline,
+    drawer,
+    baseplateParams,
     width,
     depth,
     gridUnitMm,
@@ -42,8 +44,11 @@ export function DrawerOutlineOverlay({ cellSize, gap }: DrawerOutlineOverlayProp
   } = useLayoutStore(
     // Flat scalars only: a nested object literal here gets a fresh reference
     // every render, which useShallow reads as a change → infinite re-render.
+    // (`drawer`/`baseplateParams` are store references — replaced, never
+    // mutated — so they are valid change signals.)
     useShallow((s) => ({
-      outline: s.layout.drawer.outline,
+      drawer: s.layout.drawer,
+      baseplateParams: s.layout.baseplateParams,
       width: s.layout.drawer.width,
       depth: s.layout.drawer.depth,
       gridUnitMm: s.layout.gridUnitMm,
@@ -64,6 +69,10 @@ export function DrawerOutlineOverlay({ cellSize, gap }: DrawerOutlineOverlayProp
   const gridD = depth * unitPxY - gap;
 
   const geometry = useMemo(() => {
+    // The shape is drawn in the shared grid↔perimeter frame (#3157) — the
+    // same position placement gates on and the plate prints — not at its raw
+    // authored anchor (the pen editor keeps showing that one).
+    const outline = drawerFrameOutline(drawer, baseplateParams, gridUnitMm, gridUnitMmY);
     if (outline === undefined) return null;
 
     // The rim is the padded plate minus the shape. It only exists when padding
@@ -160,7 +169,8 @@ export function DrawerOutlineOverlay({ cellSize, gap }: DrawerOutlineOverlayProp
 
     return { svgW, svgH, offsetX, offsetY, outside, shapeLoop, rim, plateBoundary };
   }, [
-    outline,
+    drawer,
+    baseplateParams,
     paddingLeft,
     paddingRight,
     paddingFront,

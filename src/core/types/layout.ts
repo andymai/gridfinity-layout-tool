@@ -73,6 +73,15 @@ export interface Drawer {
   fractionalEdgeY?: FractionalEdge; // 'start' = bottom, 'end' = top (default)
   /** Non-rectangular boundary. Absent = full `width × depth` rectangle. */
   outline?: DrawerOutline;
+  /**
+   * Manual grid shift within a custom perimeter (mm per axis), composed on
+   * top of the automatic lattice registration (#3157/#3108). Absent = 0.
+   * Any shift beyond ±half pitch is equivalent to a different whole-cell
+   * registration, so consumers clamp to that range. Only meaningful while
+   * `outline` is present.
+   */
+  gridShiftX?: Mm;
+  gridShiftY?: Mm;
   /** Measured physical drawer size. Absent until the user enters one. */
   measuredMm?: MeasuredDrawerMm;
 }

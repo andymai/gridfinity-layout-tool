@@ -91,7 +91,16 @@ export const setDrawerOutline = defineCommand({
 
     const displacedBinIds = computeDisplacedBins(
       layout.bins,
-      { width: drawer.width, depth: drawer.depth, outline },
+      {
+        width: drawer.width,
+        depth: drawer.depth,
+        outline,
+        fractionalEdgeX: drawer.fractionalEdgeX,
+        fractionalEdgeY: drawer.fractionalEdgeY,
+        gridShiftX: drawer.gridShiftX,
+        gridShiftY: drawer.gridShiftY,
+      },
+      layout.baseplateParams,
       layout.gridUnitMm,
       gridUnitMmY
     );
