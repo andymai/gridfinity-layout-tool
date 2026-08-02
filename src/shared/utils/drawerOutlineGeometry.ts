@@ -144,35 +144,123 @@ export function outlineBounds(outline: DrawerOutline): OutlineBounds {
 }
 
 /**
- * Millimetre offset that re-bases a plate's socket/seam grid onto the outline
- * bbox instead of the plate extent — the drift of the flattened bbox centre
- * from the extent centre of `[0,widthMm]×[0,depthMm]`.
- *
- * Since the pen editor's auto-grow (#3092) grows only the max extent (ceiled to
- * a half unit) and never re-bases the min to 0, a custom perimeter commonly
- * occupies a corner-offset SUB-rectangle of its declared extent. Anchoring the
- * grid to the extent then straddles the perimeter asymmetrically — the socket
- * grid is off-centre and "fit whole cells" drops cells (#3108), and split-seam
- * bands near the boundary misclassify and lose their connectors (#3109).
- *
- * Translating the outline by `-x,-y` centres it on the extent (equivalently,
- * centres the grid on the outline), which is what the generator and the split
- * planner both consume. Zero when the outline already fills or is centred, so
- * square and full-extent plates are untouched. Measured against the extent
- * centre (not the padding-shifted grid centre) so asymmetric padding is
- * preserved: the grid stays the same distance off the outline centre that the
- * user's padding asked for.
+ * One axis of the lattice frame for {@link outlineLatticeShift}: the padded
+ * plate extent, where the nominal socket lattice starts inside it (the leading
+ * padding, plus a leading fractional cell), the cell pitch, and how many whole
+ * nominal cells exist.
  */
-export function outlineFrameOffset(
+export interface OutlineLatticeAxis {
+  readonly extentMm: number;
+  readonly originMm: number;
+  readonly pitchMm: number;
+  readonly wholeCells: number;
+}
+
+export interface OutlineLatticeFrame {
+  readonly x: OutlineLatticeAxis;
+  readonly y: OutlineLatticeAxis;
+}
+
+/**
+ * Millimetre translation that re-bases a plate's custom perimeter onto the
+ * socket lattice: among all positions that keep the maximum number of whole
+ * lattice cells inside the perimeter bbox, the one that centres the cell
+ * block in the bbox (then the bbox on the extent, then moves least).
+ *
+ * Since the pen editor's auto-grow (#3092) grows only the max extent (ceiled
+ * to a half unit) and never re-bases the min to 0, a custom perimeter commonly
+ * occupies a corner-offset SUB-rectangle of its declared extent, which
+ * misclassifies split-seam bands near the boundary (#3109) and leaves the
+ * socket grid straddling the perimeter asymmetrically (#3108). Pure bbox
+ * centring (the first fix) moved the perimeter by sub-cell amounts, breaking
+ * lattice registration: "fit whole cells" then dropped an entire row and column
+ * of sockets the corner-anchored frame kept (#3149). Registration is therefore
+ * the primary objective and centring only breaks ties — a whole-cell
+ * translation is a pure relabelling (sockets sit at the same places relative to
+ * the perimeter), so it fixes the extent interaction without costing a socket.
+ *
+ * Zero when the outline already fills or is registered to the extent, so
+ * square and full-extent plates stay byte-identical (cache-stable).
+ */
+export function outlineLatticeShift(
   outline: DrawerOutline,
-  widthMm: number,
-  depthMm: number
+  frame: OutlineLatticeFrame
 ): { readonly x: number; readonly y: number } {
   const b = outlineBounds(outline);
   return {
-    x: (b.minX + b.maxX) / 2 - widthMm / 2,
-    y: (b.minY + b.maxY) / 2 - depthMm / 2,
+    x: axisLatticeShift(b.minX, b.maxX, frame.x),
+    y: axisLatticeShift(b.minY, b.maxY, frame.y),
   };
+}
+
+const LATTICE_EPS = 1e-9;
+
+interface ShiftCandidate {
+  readonly shift: number;
+  /** How far the shift lands from centring the cell block in the bbox. */
+  readonly blockMiss: number;
+  /** How far the shift lands from centring the bbox on the extent. */
+  readonly centerMiss: number;
+}
+
+/**
+ * Tie-break order, in full: tightest registration, then closest to centred,
+ * then the smallest move. Deterministic by construction — the trailing
+ * `|shift|` comparison decides candidates that tie on both misses.
+ */
+function beatsBest(candidate: ShiftCandidate, best: ShiftCandidate): boolean {
+  if (candidate.blockMiss < best.blockMiss - LATTICE_EPS) return true;
+  if (candidate.blockMiss >= best.blockMiss + LATTICE_EPS) return false;
+  if (candidate.centerMiss < best.centerMiss - LATTICE_EPS) return true;
+  if (candidate.centerMiss >= best.centerMiss + LATTICE_EPS) return false;
+  return Math.abs(candidate.shift) < Math.abs(best.shift);
+}
+
+function clamp(value: number, lo: number, hi: number): number {
+  return Math.min(hi, Math.max(lo, value));
+}
+
+function axisLatticeShift(bboxMin: number, bboxMax: number, axis: OutlineLatticeAxis): number {
+  const { extentMm, originMm, pitchMm, wholeCells } = axis;
+  // Every shift must keep the bbox inside the plate extent; a bbox wider than
+  // the extent has none, so it stays where the author put it.
+  const shiftMin = -bboxMin;
+  const shiftMax = extentMm - bboxMax;
+  if (shiftMax < shiftMin) return 0;
+
+  const bboxCenter = (bboxMin + bboxMax) / 2;
+  const centeringShift = extentMm / 2 - bboxCenter;
+  const blockCells = Math.min(Math.floor((bboxMax - bboxMin) / pitchMm + LATTICE_EPS), wholeCells);
+
+  // Where that block of cells can sit on the lattice; none when the bbox is
+  // narrower than a single cell.
+  const blockPositions = blockCells >= 1 ? wholeCells - blockCells + 1 : 0;
+
+  let best: ShiftCandidate | null = null;
+  for (let k = 0; k < blockPositions; k++) {
+    const blockStart = originMm + k * pitchMm;
+    const blockEnd = blockStart + blockCells * pitchMm;
+    // Shifts that keep this cell block inside the bbox AND the bbox inside the
+    // extent. k=0 is always feasible (blockCells·pitch ≤ span ≤ extent), so the
+    // loop never comes up empty.
+    const lo = Math.max(blockEnd - bboxMax, shiftMin);
+    const hi = Math.min(blockStart - bboxMin, shiftMax);
+    if (lo > hi + LATTICE_EPS) continue;
+    const blockCenteringShift = (blockStart + blockEnd) / 2 - bboxCenter;
+    const shift = clamp(blockCenteringShift, lo, hi);
+    const candidate: ShiftCandidate = {
+      shift,
+      blockMiss: Math.abs(shift - blockCenteringShift),
+      centerMiss: Math.abs(shift - centeringShift),
+    };
+    if (best === null || beatsBest(candidate, best)) best = candidate;
+  }
+
+  // No whole cell fits inside the bbox: there is no registration to preserve,
+  // so fall back to plain bbox centring within the feasible range.
+  const shift = best === null ? clamp(centeringShift, shiftMin, shiftMax) : best.shift;
+  // The `-bboxMin` bound can clamp to -0; normalize so callers and tests see 0.
+  return shift === 0 ? 0 : shift;
 }
 
 export function polylineSignedArea(pts: readonly OutlinePoint[]): number {

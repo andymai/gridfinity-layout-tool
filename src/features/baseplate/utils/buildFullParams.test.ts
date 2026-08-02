@@ -644,10 +644,11 @@ describe('drawer outline handling', () => {
 
   // #3108/#3109: the pen editor auto-grows the drawer to the MAX extent only
   // (#3092), so a custom perimeter usually lands in a corner-offset sub-rect of
-  // the declared extent. The resolver re-bases the one derived outline onto that
-  // bbox so the generator's socket grid and the split planner's seam bands share
-  // one centred frame.
-  describe('outline re-centring on the perimeter bbox', () => {
+  // the declared extent. The resolver re-bases the one derived outline so the
+  // generator's socket grid and the split planner's seam bands share one frame —
+  // but only by lattice-registered shifts: a sub-cell move breaks whole-cell
+  // registration and drops sockets (#3149).
+  describe('outline re-basing onto the socket lattice', () => {
     const zeroPad = {
       ...storedBase,
       paddingLeft: mm(0),
@@ -676,34 +677,68 @@ describe('drawer outline handling', () => {
       return { cx: (minX + maxX) / 2, cy: (minY + maxY) / 2, w: maxX - minX, h: maxY - minY };
     };
 
-    it('shifts a corner-offset outline to the extent centre (grid stays put)', () => {
+    it('keeps a corner-anchored whole-unit shape in place — no sub-cell shift (#3149)', () => {
+      // 3u square in a 4u extent: corner-anchor already holds all 3×3 whole
+      // cells; the old bbox centring (+21 per axis) left only 2×2. Both
+      // registered positions (0 and 42) centre equally, so the smaller move
+      // wins and the outline stays byte-identical.
       const result = buildFullParams(zeroPad, 4, 4, 42, 'end', 'end', undefined, drifted);
-      // Drift = 63 − 84 = −21 per axis; re-centre translates by +21.
-      expect(result.outline?.vertices).toEqual([
-        { x: 21, y: 21 },
-        { x: 147, y: 21 },
-        { x: 147, y: 147 },
-        { x: 21, y: 147 },
-      ]);
-      // Same shape, now centred on the 168×168 extent.
+      expect(result.outline?.vertices).toEqual(drifted.vertices);
+    });
+
+    it('re-bases a whole-unit drift by whole cells, restoring the split frame (#3109)', () => {
+      // 3u square stuck at the right of a 5u extent. A whole-unit −42 shift
+      // relabels the same three cells while landing the shape centred; the
+      // pure-centring −21 would have cost a cell.
+      const rightStuck: DrawerOutline = {
+        vertices: [
+          { x: 84, y: 0 },
+          { x: 210, y: 0 },
+          { x: 210, y: 126 },
+          { x: 84, y: 126 },
+        ],
+      };
+      const result = buildFullParams(zeroPad, 5, 4, 42, 'end', 'end', undefined, rightStuck);
       const b = bboxOf(result.outline as DrawerOutline);
-      expect(b.cx).toBeCloseTo(84, 6);
-      expect(b.cy).toBeCloseTo(84, 6);
+      // [84,210] → [42,168]: registered AND centred on the 210 extent.
+      expect(b.cx).toBeCloseTo(105, 6);
       expect(b.w).toBeCloseTo(126, 6);
     });
 
+    it("registers to the shifted lattice of a 'start' fractional edge", () => {
+      // 4.5-unit drawer, half cell FIRST: whole cells run [21,189] in 42mm
+      // steps. A 4u-wide corner shape must shift +21 onto that lattice to
+      // hold all four cells; with the edge at 'end' it is already registered.
+      const fourWide: DrawerOutline = {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 168, y: 0 },
+          { x: 168, y: 168 },
+          { x: 0, y: 168 },
+        ],
+      };
+      const startEdge = buildFullParams(zeroPad, 4.5, 4, 42, 'start', 'end', undefined, fourWide);
+      expect(bboxOf(startEdge.outline as DrawerOutline).cx - 84).toBeCloseTo(21, 6);
+      const endEdge = buildFullParams(zeroPad, 4.5, 4, 42, 'end', 'end', undefined, fourWide);
+      expect(endEdge.outline?.vertices).toEqual(fourWide.vertices);
+    });
+
     it('leaves a full-extent outline byte-identical (no drift, cache-stable)', () => {
-      // `outline` fills the 10×8 extent (bbox [0,420]×[0,336]) → offset 0.
+      // `outline` fills the 10×8 extent (bbox [0,420]×[0,336]) → shift 0.
       const result = buildFullParams(zeroPad, 10, 8, 42, 'end', 'end', undefined, outline);
       expect(result.outline?.vertices).toEqual(outline.vertices);
     });
 
-    it('centres against the PADDED extent, composing with asymmetric padding', () => {
-      // storedBase padding L1/R2/F3/B4 → padded extent 171×175.
+    it('registers against the PADDED lattice, composing with asymmetric padding', () => {
+      // storedBase padding L1/R2/F3/B4 → padded extent 171×175, lattice
+      // origin (1,3), and the outline itself padded first (x span 129,
+      // y span 133). The only shift that holds a full 3-cell block lands the
+      // block on padded lattice lines — [43,169]×[45,171] — putting the
+      // padded bbox at 41.5 on each axis.
       const result = buildFullParams(storedBase, 4, 4, 42, 'end', 'end', undefined, drifted);
       const b = bboxOf(result.outline as DrawerOutline);
-      expect(b.cx).toBeCloseTo(171 / 2, 6);
-      expect(b.cy).toBeCloseTo(175 / 2, 6);
+      expect(b.cx - b.w / 2).toBeCloseTo(41.5, 6);
+      expect(b.cy - b.h / 2).toBeCloseTo(41.5, 6);
     });
   });
 });
