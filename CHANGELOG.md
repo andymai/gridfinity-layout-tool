@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.347.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.346.0...gridfinity-layout-tool-v4.347.0) (2026-08-02)
+
+
+### Features
+
+* **community:** public route for browsing the community showcase ([#3119](https://github.com/andymai/gridfinity-layout-tool/issues/3119)) ([d0287fb](https://github.com/andymai/gridfinity-layout-tool/commit/d0287fbb5a825d0c11d620bb95095a5844528162))
+
 ## [4.346.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.345.0...gridfinity-layout-tool-v4.346.0) (2026-08-02)
 
 
