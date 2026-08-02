@@ -62,7 +62,13 @@ export async function purge(args: Args): Promise<number> {
     pipeline.del(plan.likesKey);
     pipeline.del(plan.childrenKey);
     for (const userId of likerIds) pipeline.srem(communityLikedKey(userId), id);
-    await pipeline.exec();
+    const results = await pipeline.exec();
+    if (results === null) {
+      throw new Error('purge pipeline failed: redis connection lost');
+    }
+    for (const [error] of results) {
+      if (error) throw new Error(`purge pipeline failed: ${error.message}`);
+    }
 
     console.log(colors.cyan(`purged: ${id}`));
     if (!plan.authorKey) {

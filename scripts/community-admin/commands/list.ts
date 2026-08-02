@@ -20,7 +20,10 @@ async function loadRows(redis: Redis): Promise<ListRow[]> {
 
   const pipeline = redis.pipeline();
   for (const id of ids) pipeline.scard(communityReportsKey(id));
-  const reportResults = (await pipeline.exec()) ?? [];
+  const reportResults = await pipeline.exec();
+  if (reportResults === null) {
+    throw new Error('report-count pipeline failed: redis connection lost');
+  }
 
   const rows: ListRow[] = [];
   cards.forEach((card, i) => {

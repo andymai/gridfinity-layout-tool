@@ -132,10 +132,19 @@ async function findPublishedIdByContentHash(
   for (const id of publishedIds) {
     pipeline.hget(communityDesignKey(id), 'contentHash');
   }
-  const results = (await pipeline.exec()) ?? [];
+  // A swallowed exec failure would disable idempotency and mint duplicate
+  // designs while consuming quota, so an unhealthy redis must fail the
+  // publish instead.
+  const results = await pipeline.exec();
+  if (results === null) {
+    throw new Error('Community idempotency check failed: redis connection lost');
+  }
   for (let i = 0; i < publishedIds.length && i < results.length; i++) {
     const [error, value] = results[i];
-    if (!error && value === contentHash) return publishedIds[i];
+    if (error) {
+      throw new Error(`Community idempotency check failed: ${error.message}`);
+    }
+    if (value === contentHash) return publishedIds[i];
   }
   return null;
 }
