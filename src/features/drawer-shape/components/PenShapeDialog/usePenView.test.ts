@@ -28,6 +28,30 @@ describe('usePenView', () => {
     expect(result.current.zoom).toBeGreaterThan(1);
   });
 
+  // Dragging a point back inside shrinks the content frame; a pan that was at
+  // the edge of the larger frame must not leave the viewBox off the smaller one
+  // (which would blank the canvas).
+  it('keeps the viewBox on-frame when the content shrinks back', () => {
+    const { result, rerender } = renderHook(
+      ({ cw }: { cw: number }) => usePenView(cw, 336, 420, 336, 'session'),
+      { initialProps: { cw: 520 } }
+    );
+    act(() => result.current.zoomAt(-100, 250, 250, RECT));
+    act(() => result.current.zoomAt(-100, 250, 250, RECT));
+    // Pan hard toward the far edge; the clamp pins the origin to the big frame.
+    act(() => result.current.panBy(-2000, -2000));
+
+    rerender({ cw: 420 });
+
+    const [x, y, w, h] = result.current.viewBox.split(' ').map(Number);
+    const frameW = 420 + 14 * 2;
+    const frameH = 336 + 14 * 2;
+    expect(x).toBeGreaterThanOrEqual(0);
+    expect(y).toBeGreaterThanOrEqual(0);
+    expect(x + w).toBeLessThanOrEqual(frameW + 1e-6);
+    expect(y + h).toBeLessThanOrEqual(frameH + 1e-6);
+  });
+
   it('re-frames to the default view when the drawer is resized', () => {
     const { result, rerender } = renderHook(
       ({ dw }: { dw: number }) => usePenView(dw, 336, dw, 336, 'session'),

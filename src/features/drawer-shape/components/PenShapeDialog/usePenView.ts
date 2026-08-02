@@ -70,12 +70,19 @@ export function usePenView(
     [frameW, frameH]
   );
 
+  // The stored origin can fall outside the frame after it SHRINKS — dragging a
+  // point back inside lowers the content bbox, so a pan that was valid for the
+  // larger frame would otherwise leave the viewBox entirely off it (blank
+  // canvas). Clamp on read so display and pointer mapping stay on-frame without
+  // disturbing the stored zoom/pan (a later panBy re-clamps the stored value).
+  const origin = clamp(view.x, view.y, view.zoom);
+
   const toFrame = useCallback(
     (clientX: number, clientY: number, rect: DOMRect) => ({
-      x: view.x + ((clientX - rect.left) / rect.width) * (frameW / view.zoom),
-      y: view.y + ((clientY - rect.top) / rect.height) * (frameH / view.zoom),
+      x: origin.x + ((clientX - rect.left) / rect.width) * (frameW / view.zoom),
+      y: origin.y + ((clientY - rect.top) / rect.height) * (frameH / view.zoom),
     }),
-    [view, frameW, frameH]
+    [origin, view.zoom, frameW, frameH]
   );
 
   const zoomAt = useCallback(
@@ -116,8 +123,8 @@ export function usePenView(
   const reset = useCallback(() => setView({ zoom: 1, x: 0, y: 0 }), []);
 
   const viewBox = useMemo(
-    () => `${view.x} ${view.y} ${frameW / view.zoom} ${frameH / view.zoom}`,
-    [view, frameW, frameH]
+    () => `${origin.x} ${origin.y} ${frameW / view.zoom} ${frameH / view.zoom}`,
+    [origin, view.zoom, frameW, frameH]
   );
 
   return {

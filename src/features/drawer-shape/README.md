@@ -30,6 +30,14 @@ hatching, baseplate generation/splitting) derives from it.
   Sketch state lives in `usePenSketch`, which owns the `radii` parallel array —
   inserting and deleting are hook methods precisely so no call site can shift
   vertex indices without moving the radii with them.
+  Points may sit **past the current grid** (issue #3092): every clamp allows up
+  to `CONSTRAINTS.GRID_MAX × pitch` rather than the drawer extent, `usePenView`
+  frames the union of the drawer rect and the sketch bbox so out-of-bounds
+  handles stay grabbable, and **Apply grows the drawer** to the smallest
+  half-unit grid that holds the shape — `updateDrawer` then `setDrawerOutline`
+  in one `batch()`, relying on the synchronous command bus so the outline
+  validates against the enlarged drawer (one undo step). The live `validateOutline`
+  runs against those post-grow bounds so a growable overflow never disables Apply.
 - `utils/outlineImport/` — SVG/DXF file → perimeter. Both parsers land on the
   same shape (closed loops of `OutlineVertex` in mm, Y-up), so loop selection,
   fitting and simplification are written once. DXF group code 42 **is**
