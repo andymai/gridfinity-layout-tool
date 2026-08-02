@@ -23,6 +23,7 @@ import {
   calculateIdealDistance,
 } from './cameraFraming';
 import type { CameraDirection } from './cameraFraming';
+import { bytesToBase64 } from '@/shared/generation/meshAsset';
 
 /** Thumbnail size for IndexedDB storage (high res for crisp display at any size) */
 const THUMBNAIL_SIZE = 384;
@@ -520,8 +521,5 @@ export function captureCommunityThumbnails(
 export async function exportCommunityGlb(): Promise<string | null> {
   const buf = await exportPreviewGlb();
   if (!buf) return null;
-  let bin = '';
-  const bytes = new Uint8Array(buf);
-  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-  return btoa(bin);
+  return bytesToBase64(new Uint8Array(buf));
 }
