@@ -1,0 +1,25 @@
+src/core/store/gapFit.test.ts
+  s_48b067c1af6f8c::t_4aecaf5a27ae47 3,11-13,39-41
+src/core/types/interaction.ts
+  s_48b067c1af6f8c::t_448c2605f81b70 54-58
+src/features/community/components/CommunityDetail/CommunityDetail.test.tsx
+  s_48b067c1af6f8c::t_0623a21b2ce616 50,659-661
+src/features/community/components/CommunityGalleryTab/CommunityGalleryTab.tsx
+  s_48b067c1af6f8c::t_9d01e792a07d02 141-144,150-152
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "7e802a6d60e46ceaefe9ed0f7f72f758c0edac1d",
+  "prompts": {},
+  "sessions": {
+    "s_48b067c1af6f8c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cee190e2-3f33-4597-9d75-51124180100d",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
