@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.346.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.345.0...gridfinity-layout-tool-v4.346.0) (2026-08-02)
+
+
+### Features
+
+* **community:** browsable gallery with detail view and remix ([#3116](https://github.com/andymai/gridfinity-layout-tool/issues/3116)) ([174a952](https://github.com/andymai/gridfinity-layout-tool/commit/174a9523ded5cd4bef9c572b7a6efd1d38e9f17a))
+
 ## [4.345.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.344.2...gridfinity-layout-tool-v4.345.0) (2026-08-02)
 
 
