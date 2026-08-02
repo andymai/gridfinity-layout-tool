@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.352.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.351.0...gridfinity-layout-tool-v4.352.0) (2026-08-02)
+
+
+### Features
+
+* **community:** discovery shelves, dimension filters, and find bins that fit ([#3150](https://github.com/andymai/gridfinity-layout-tool/issues/3150)) ([9c89484](https://github.com/andymai/gridfinity-layout-tool/commit/9c8948438584335f4fa77390caa8641b285d8f21))
+
 ## [4.351.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.350.0...gridfinity-layout-tool-v4.351.0) (2026-08-02)
 
 
