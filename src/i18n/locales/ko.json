@@ -1697,6 +1697,7 @@
   "drawerShape.editor.gridAria": "서랍 모양 셀",
   "drawerShape.editor.hint": "클릭하거나 드래그하여 서랍에서 셀을 파내세요. 적용하면 모양 바깥의 수납통은 임시 보관함으로 이동합니다.",
   "drawerShape.editor.invalidDisconnected": "모양은 하나로 연결된 조각이어야 합니다.",
+  "drawerShape.editor.replacesDrawnShape": "현재 윤곽은 자유 곡선으로 그렸거나 가져온 것입니다. 셀 모양을 적용하면 대체되며 곡선과 그리드를 벗어난 가장자리는 사라집니다.",
   "drawerShape.editor.invalidEmpty": "모양에는 셀이 최소 하나 필요합니다.",
   "drawerShape.editor.title": "서랍 모양",
   "drawerShape.penOpen": "형상 그리기…",

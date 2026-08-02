@@ -1926,6 +1926,7 @@
   "drawerShape.editor.gridAria": "Celle della forma del cassetto",
   "drawerShape.editor.hint": "Clicca o trascina per ritagliare celle dal cassetto. I bin fuori dalla forma si spostano nell'area di sosta quando applichi.",
   "drawerShape.editor.invalidDisconnected": "La forma deve essere un unico pezzo connesso.",
+  "drawerShape.editor.replacesDrawnShape": "Il perimetro attuale è stato disegnato a mano libera o importato. Applicando una forma a celle verrà sostituito: curve e bordi fuori griglia andranno persi.",
   "drawerShape.editor.invalidEmpty": "La forma richiede almeno una cella.",
   "drawerShape.editor.title": "Forma del cassetto",
   "drawerShape.penOpen": "Disegna forma…",

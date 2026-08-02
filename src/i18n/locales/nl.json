@@ -1926,6 +1926,7 @@
   "drawerShape.editor.gridAria": "Cellen van de ladevorm",
   "drawerShape.editor.hint": "Klik of sleep om cellen uit de lade te verwijderen. Bins buiten de vorm gaan bij toepassen naar de stash.",
   "drawerShape.editor.invalidDisconnected": "De vorm moet één aaneengesloten geheel zijn.",
+  "drawerShape.editor.replacesDrawnShape": "De huidige omtrek is uit de vrije hand getekend of geïmporteerd. Een celvorm toepassen vervangt deze — bochten en randen buiten het raster gaan verloren.",
   "drawerShape.editor.invalidEmpty": "De vorm heeft minstens één cel nodig.",
   "drawerShape.editor.title": "Ladevorm",
   "drawerShape.penOpen": "Vorm tekenen…",

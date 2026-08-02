@@ -1773,6 +1773,7 @@
   "drawerShape.editor.gridAria": "Cellules de la forme du tiroir",
   "drawerShape.editor.hint": "Cliquez ou faites glisser pour retirer des cellules du tiroir. Les bacs hors de la forme partent en réserve à l’application.",
   "drawerShape.editor.invalidDisconnected": "La forme doit être d’un seul tenant.",
+  "drawerShape.editor.replacesDrawnShape": "Le périmètre actuel a été dessiné à main levée ou importé. Appliquer une forme par cellules le remplace — les courbes et les bords hors grille sont perdus.",
   "drawerShape.editor.invalidEmpty": "La forme doit contenir au moins une cellule.",
   "drawerShape.editor.title": "Forme du tiroir",
   "drawerShape.penOpen": "Dessiner la forme…",

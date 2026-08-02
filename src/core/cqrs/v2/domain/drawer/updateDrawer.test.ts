@@ -86,35 +86,58 @@ describe('v2 drawer.update with an outline', () => {
     return { ...base, drawer: { ...base.drawer, outline: L_OUTLINE } };
   };
 
-  it('crops the outline on shrink and records it in changes', () => {
+  it('clamps a shrink to the outline bounding grid and never touches the shape (#3149)', () => {
+    // The L-shape spans the full 6×4 extent — a shrink below that would cut
+    // into the drawn shape, so the width clamps back up to 6.
     const result = updateDrawer.handle({ width: 5 }, { aggregate: withOutline() });
     expect(isOk(result)).toBe(true);
     if (!isOk(result)) return;
     const changes = result.value.event.payload.changes;
-    expect(changes.outline).toBeDefined();
-    expect(changes.outline?.vertices.every((v) => v.x <= 5 * U + 0.01)).toBe(true);
-    expect(result.value.event.payload.previous.outline).toBe(L_OUTLINE);
+    expect(changes.width).toBe(gridUnits(6));
+    expect('outline' in changes).toBe(false);
   });
 
-  it('resets to a plain rectangle when the shrink consumes the notch', () => {
-    // Shrinking to width 4 removes everything right of the notch — the
-    // remaining region is the full 4×4 rectangle.
-    const result = updateDrawer.handle({ width: 4 }, { aggregate: withOutline() });
+  it('keeps the outline byte-identical across a grow', () => {
+    const result = updateDrawer.handle({ width: 8, depth: 6 }, { aggregate: withOutline() });
     expect(isOk(result)).toBe(true);
     if (!isOk(result)) return;
     const payload = result.value.event.payload;
-    expect('outline' in payload.changes).toBe(true);
-    expect(payload.changes.outline).toBeUndefined();
+    expect(payload.changes.width).toBe(gridUnits(8));
+    expect(payload.changes.depth).toBe(gridUnits(6));
+    expect('outline' in payload.changes).toBe(false);
 
     const next = produce(withOutline(), (draft) => {
       updateDrawer.apply({ payload } as never, draft);
     });
-    expect('outline' in next.drawer).toBe(false);
+    expect(next.drawer.outline).toBe(L_OUTLINE);
   });
 
-  it('displaces bins that fall outside the adapted outline', () => {
-    // Growing depth to 6 extends the shape upward except over the notch;
-    // a bin in the notch column stays displaced.
+  it('clamps to the half-unit ceiling of a shape that overhangs whole units', () => {
+    // Shape reaching to 4.2 units needs a 4.5-unit drawer.
+    const base = makeLayout();
+    const layout = {
+      ...base,
+      drawer: {
+        ...base.drawer,
+        outline: {
+          vertices: [
+            { x: 0, y: 0 },
+            { x: 4.2 * U, y: 0 },
+            { x: 4.2 * U, y: 4 * U },
+            { x: 0, y: 4 * U },
+          ],
+        },
+      },
+    };
+    const result = updateDrawer.handle({ width: 3 }, { aggregate: layout });
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    expect(result.value.event.payload.changes.width).toBe(gridUnits(4.5));
+  });
+
+  it('displaces bins that fall outside the unchanged outline after a grow', () => {
+    // Growing depth leaves the shape as-is; a bin in the notch column stays
+    // displaced.
     const layout = { ...withOutline(), bins: [makeBin('bin_notch', 5, 3)] };
     const result = updateDrawer.handle({ depth: 6 }, { aggregate: layout });
     expect(isOk(result)).toBe(true);
@@ -122,12 +145,17 @@ describe('v2 drawer.update with an outline', () => {
     expect(result.value.event.payload.displacedBinIds).toEqual([binId('bin_notch')]);
   });
 
-  it('replay deletes the outline key on reset, matching apply()', () => {
-    const result = updateDrawer.handle({ width: 4 }, { aggregate: withOutline() });
-    if (!isOk(result)) throw new Error('handle failed');
+  it('replay of a legacy outline-reset event still deletes the key', () => {
+    // Events persisted before #3149 carried an adapted (or reset) outline in
+    // `changes`; apply()/replay must keep honouring them.
     const event = {
       type: 'drawer.updated',
-      payload: result.value.event.payload,
+      payload: {
+        changes: { width: gridUnits(4), outline: undefined },
+        previous: { width: gridUnits(6), outline: L_OUTLINE },
+        binsDisplacedToStaging: 0,
+        displacedBinIds: [],
+      },
     } as never;
     const replayed = applyEvent(withOutline(), event);
     expect('outline' in replayed.drawer).toBe(false);

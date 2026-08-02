@@ -1,11 +1,13 @@
 /**
  * Update drawer dims and cascade out-of-bounds bins to staging.
  *
- * Clamping (width/depth in [GRID_MIN, GRID_MAX], height >= sum of layer
- * heights) happens in handle() so the event's `changes` always reflects
- * the value that lands. The displaced bin set is also precomputed in
- * handle() and goes into the event as `displacedBinIds`, so apply()
- * applies the drawer change AND the displacement deterministically.
+ * Clamping (width/depth in [GRID_MIN, GRID_MAX] and, with a custom outline
+ * active, no smaller than the outline's bounding half-unit grid — a resize
+ * must never mutate the user's shape, #3149; height >= sum of layer heights)
+ * happens in handle() so the event's `changes` always reflects the value
+ * that lands. The displaced bin set is also precomputed in handle() and
+ * goes into the event as `displacedBinIds`, so apply() applies the drawer
+ * change AND the displacement deterministically.
  *
  * `displacedBinIds` is optional on the event type for back-compat with
  * persisted events that predate the field (those carried only the
@@ -17,7 +19,7 @@ import type { Result, LayoutError } from '@/core/result';
 import { ok } from '@/core/result';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { clamp } from '@/shared/utils/validation';
-import { resizeDrawerOutline } from '@/shared/utils/drawerOutline';
+import { minDrawerUnitsForOutline } from '@/shared/utils/drawerOutline';
 import type { BinId, Drawer, GridUnits, MeasuredDrawerMm } from '@/core/types';
 import { effectiveGridUnitMmY, gridUnits, heightUnits } from '@/core/types';
 import { defineCommand } from '../../defineCommand';
@@ -95,13 +97,28 @@ export const updateDrawer = defineCommand({
     const drawer = layout.drawer;
 
     // Resolve clamped/derived values up-front so the event records
-    // exactly what apply() will install.
+    // exactly what apply() will install. With a custom outline active the
+    // shrink floor rises to the outline's bounding half-unit grid: the shape
+    // is user-authored and a resize must never crop or extend it (#3149) —
+    // to go smaller, the user edits the shape first.
+    const outlineMin =
+      drawer.outline !== undefined
+        ? minDrawerUnitsForOutline(drawer.outline, layout.gridUnitMm, effectiveGridUnitMmY(layout))
+        : undefined;
     const changes: Partial<Drawer> = {};
     if (payload.width !== undefined) {
-      changes.width = gridUnits(clamp(payload.width, CONSTRAINTS.GRID_MIN, CONSTRAINTS.GRID_MAX));
+      const floor = Math.min(
+        CONSTRAINTS.GRID_MAX,
+        Math.max(CONSTRAINTS.GRID_MIN, outlineMin?.width ?? 0)
+      );
+      changes.width = gridUnits(clamp(payload.width, floor, CONSTRAINTS.GRID_MAX));
     }
     if (payload.depth !== undefined) {
-      changes.depth = gridUnits(clamp(payload.depth, CONSTRAINTS.GRID_MIN, CONSTRAINTS.GRID_MAX));
+      const floor = Math.min(
+        CONSTRAINTS.GRID_MAX,
+        Math.max(CONSTRAINTS.GRID_MIN, outlineMin?.depth ?? 0)
+      );
+      changes.depth = gridUnits(clamp(payload.depth, floor, CONSTRAINTS.GRID_MAX));
     }
     if (payload.height !== undefined) {
       const totalLayerHeight = layout.layers.reduce((sum, l) => sum + (l.height as number), 0);
@@ -117,30 +134,11 @@ export const updateDrawer = defineCommand({
     const newWidth: GridUnits = changes.width ?? drawer.width;
     const newDepth: GridUnits = changes.depth ?? drawer.depth;
 
-    // A resize adapts the outline (cropped where the drawer shrank, extended
-    // where it grew); a degenerate result falls back to the full rectangle.
-    // The derived change rides in the event so replay stays deterministic.
-    const dimsChanged = newWidth !== drawer.width || newDepth !== drawer.depth;
-    let newOutline = drawer.outline;
-    if (drawer.outline !== undefined && dimsChanged) {
-      const u = layout.gridUnitMm as number;
-      const uy = effectiveGridUnitMmY(layout) as number;
-      newOutline = resizeDrawerOutline(
-        drawer.outline,
-        (drawer.width as number) * u,
-        (drawer.depth as number) * uy,
-        (newWidth as number) * u,
-        (newDepth as number) * uy,
-        u,
-        uy
-      );
-      changes.outline = newOutline;
-    }
-
-    // Displacement against the post-update drawer (dims AND adapted outline).
+    // The outline never changes on resize (see the clamp above); displacement
+    // runs against the new dims with the shape as-is.
     const displacedBinIds = computeDisplacedBins(
       layout.bins,
-      { width: newWidth, depth: newDepth, outline: newOutline },
+      { width: newWidth, depth: newDepth, outline: drawer.outline },
       layout.gridUnitMm,
       effectiveGridUnitMmY(layout)
     );

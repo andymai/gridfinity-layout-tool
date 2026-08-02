@@ -73,7 +73,13 @@ hatching, baseplate generation/splitting) derives from it.
    drawer. The grow path fits the loop against the drawer it is _about_ to
    have, so the resize and the outline land in one commit instead of racing.
    Loops dropped and points thinned are always toasted, never silent.
-6. The corner-cut vertex geometry lives in
+6. **The outline never changes implicitly** (#3149) — `drawer.update` clamps a
+   shrink to the shape's bounding half-unit grid (`minDrawerUnitsForOutline`)
+   and keeps the outline byte-identical on grow; the old crop/weld adaptation
+   is gone. The cell editor warns (`drawerShape.editor.replacesDrawnShape`)
+   when the stored perimeter would not survive rasterization
+   (`isOutlineCellRepresentable`), since applying a cell paint replaces it.
+7. The corner-cut vertex geometry lives in
    `@/shared/utils/cornerCutOutline` (not here) so the baseplate's
    `buildFullParams` can re-inscribe the same cuts on the padded plate
    rectangle (issue #2612). `cornersToOutline` is a thin wrapper that adds

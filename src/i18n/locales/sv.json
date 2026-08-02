@@ -1773,6 +1773,7 @@
   "drawerShape.editor.gridAria": "Celler i lådans form",
   "drawerShape.editor.hint": "Klicka eller dra för att ta bort celler ur lådan. Bins utanför formen flyttas till förrådet när du tillämpar.",
   "drawerShape.editor.invalidDisconnected": "Formen måste hänga ihop.",
+  "drawerShape.editor.replacesDrawnShape": "Den nuvarande konturen ritades på fri hand eller importerades. Att tillämpa en cellform ersätter den — kurvor och kanter utanför rutnätet går förlorade.",
   "drawerShape.editor.invalidEmpty": "Formen behöver minst en cell.",
   "drawerShape.editor.title": "Lådans form",
   "drawerShape.penOpen": "Rita form…",

@@ -1926,6 +1926,7 @@
   "drawerShape.editor.gridAria": "Celler i skuffeformen",
   "drawerShape.editor.hint": "Klikk eller dra for å fjerne celler fra skuffen. Binner utenfor formen flyttes til lageret når du bruker den.",
   "drawerShape.editor.invalidDisconnected": "Formen må henge sammen.",
+  "drawerShape.editor.replacesDrawnShape": "Den gjeldende omkretsen ble tegnet på frihånd eller importert. Å bruke en celleform erstatter den — kurver og kanter utenfor rutenettet går tapt.",
   "drawerShape.editor.invalidEmpty": "Formen trenger minst én celle.",
   "drawerShape.editor.title": "Skuffeform",
   "drawerShape.penOpen": "Tegn form…",

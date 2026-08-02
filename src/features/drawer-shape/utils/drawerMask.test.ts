@@ -5,6 +5,7 @@ import {
   buildFullDrawerMask,
   drawerMaskToOutline,
   editorAxisCells,
+  isOutlineCellRepresentable,
   outlineToDrawerMask,
 } from './drawerMask';
 
@@ -97,6 +98,57 @@ describe('outlineToDrawerMask round-trip', () => {
     const d = drawer(4, 4);
     const back = outlineToDrawerMask(result.outline, d, U);
     expect(Array.from(back.cells)).toEqual(Array.from(grid.cells));
+  });
+});
+
+describe('isOutlineCellRepresentable (#3149)', () => {
+  it('accepts a cell-painted shape (exact round-trip)', () => {
+    const grid = buildFullDrawerMask(drawer(4, 4));
+    setCell(grid, 2, 2, 0);
+    setCell(grid, 3, 2, 0);
+    setCell(grid, 2, 3, 0);
+    setCell(grid, 3, 3, 0);
+    const result = drawerMaskToOutline(grid, U);
+    if (!('outline' in result)) throw new Error('expected outline');
+    expect(isOutlineCellRepresentable(result.outline, drawer(4, 4), U)).toBe(true);
+  });
+
+  it('rejects a pen shape with arcs', () => {
+    const curved = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 4 * U, y: 0 },
+        { x: 4 * U, y: 4 * U, bulge: -0.25 },
+        { x: 0, y: 4 * U },
+      ],
+    };
+    expect(isOutlineCellRepresentable(curved, drawer(4, 4), U)).toBe(false);
+  });
+
+  it('rejects a pen shape with off-cell edges', () => {
+    // Straight-edged, but the right edge sits at 3.3 units — between cells.
+    const offCell = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 3.3 * U, y: 0 },
+        { x: 3.3 * U, y: 4 * U },
+        { x: 0, y: 4 * U },
+      ],
+    };
+    expect(isOutlineCellRepresentable(offCell, drawer(4, 4), U)).toBe(false);
+  });
+
+  it('rejects an outline whose rasterization collapses to nothing', () => {
+    // Thinner than a cell everywhere: no cell is fully inside.
+    const sliver = {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 4 * U, y: 0 },
+        { x: 4 * U, y: 0.4 * U },
+        { x: 0, y: 0.4 * U },
+      ],
+    };
+    expect(isOutlineCellRepresentable(sliver, drawer(4, 4), U)).toBe(false);
   });
 });
 

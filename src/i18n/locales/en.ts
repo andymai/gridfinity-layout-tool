@@ -3695,6 +3695,8 @@ const en: Record<string, string> = {
   'drawerShape.editor.apply': 'Apply shape',
   'drawerShape.editor.invalidEmpty': 'The shape needs at least one cell.',
   'drawerShape.editor.invalidDisconnected': 'The shape must be one connected piece.',
+  'drawerShape.editor.replacesDrawnShape':
+    'The current perimeter was drawn freehand or imported. Applying a cell shape replaces it — curves and off-grid edges are lost.',
   'toast.binsDisplacedByShape': '{count} bin(s) moved to the stash (outside the new shape)',
   'toast.outlineImport.parseFailed': "That file couldn't be read as an SVG or DXF drawing.",
   'toast.outlineImport.noClosedLoop':
