@@ -3277,6 +3277,7 @@
   "community.signin.reportMessage": "Connectez-vous pour signaler un design aux modérateurs.",
   "community.toast.likeFailed": "Impossible d'enregistrer votre mention J'aime. Réessayez.",
   "community.toast.likeSaved": "Design aimé.",
+  "community.toast.unlikeSaved": "Mention J’aime retirée.",
   "community.toast.likeSigninIncomplete": "La connexion n'a pas abouti. Le design n'a pas été aimé.",
   "community.report.title": "Signaler ce design",
   "community.report.reasonLabel": "Motif",

@@ -3277,6 +3277,7 @@
   "community.signin.reportMessage": "디자인을 운영진에게 신고하려면 로그인하세요.",
   "community.toast.likeFailed": "좋아요를 저장하지 못했습니다. 다시 시도하세요.",
   "community.toast.likeSaved": "디자인에 좋아요를 눌렀습니다.",
+  "community.toast.unlikeSaved": "좋아요를 취소했습니다.",
   "community.toast.likeSigninIncomplete": "로그인이 완료되지 않았습니다. 디자인에 좋아요가 적용되지 않았습니다.",
   "community.report.title": "이 디자인 신고",
   "community.report.reasonLabel": "사유",

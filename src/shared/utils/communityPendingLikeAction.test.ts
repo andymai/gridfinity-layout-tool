@@ -48,16 +48,16 @@ describe('communityPendingLikeAction', () => {
   });
 
   it('round-trips a saved action with a timestamp', () => {
-    savePendingLikeAction({ designId: 'design-1', liked: true });
+    savePendingLikeAction({ designId: 'design000001', liked: true });
     const loaded = loadPendingLikeAction();
     expect(loaded).not.toBeNull();
-    expect(loaded?.designId).toBe('design-1');
+    expect(loaded?.designId).toBe('design000001');
     expect(loaded?.liked).toBe(true);
     expect(typeof loaded?.savedAt).toBe('number');
   });
 
   it('is one-shot: a second load returns null', () => {
-    savePendingLikeAction({ designId: 'design-1', liked: true });
+    savePendingLikeAction({ designId: 'design000001', liked: true });
     expect(loadPendingLikeAction()).not.toBeNull();
     expect(loadPendingLikeAction()).toBeNull();
   });
@@ -65,7 +65,7 @@ describe('communityPendingLikeAction', () => {
   it('rejects a record older than the OAuth round-trip budget', () => {
     vi.useFakeTimers();
     try {
-      savePendingLikeAction({ designId: 'design-1', liked: true });
+      savePendingLikeAction({ designId: 'design000001', liked: true });
       vi.advanceTimersByTime(11 * 60 * 1000);
       expect(loadPendingLikeAction()).toBeNull();
     } finally {
@@ -85,7 +85,7 @@ describe('communityPendingLikeAction', () => {
   });
 
   it('clearPendingLikeAction removes a saved record', () => {
-    savePendingLikeAction({ designId: 'design-1', liked: false });
+    savePendingLikeAction({ designId: 'design000001', liked: false });
     clearPendingLikeAction();
     expect(loadPendingLikeAction()).toBeNull();
   });

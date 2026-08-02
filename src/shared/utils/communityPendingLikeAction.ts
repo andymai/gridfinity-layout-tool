@@ -24,7 +24,7 @@ function isPendingLikeAction(value: unknown): value is PendingLikeAction {
   const record = value as Record<string, unknown>;
   return (
     typeof record.designId === 'string' &&
-    record.designId.length > 0 &&
+    /^[a-zA-Z0-9]{12}$/.test(record.designId) &&
     typeof record.liked === 'boolean' &&
     typeof record.savedAt === 'number' &&
     Number.isFinite(record.savedAt)

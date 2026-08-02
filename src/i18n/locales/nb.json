@@ -1763,6 +1763,7 @@
   "community.signin.title": "Logg inn for å fortsette",
   "community.toast.likeFailed": "Kunne ikke lagre liket ditt. Prøv igjen.",
   "community.toast.likeSaved": "Design likt.",
+  "community.toast.unlikeSaved": "Liker fjernet.",
   "community.toast.likeSigninIncomplete": "Innloggingen ble ikke fullført. Designet ble ikke likt.",
   "community.toast.unpublished": "Design fjernet fra fellesskapsutstillingen.",
   "community.toast.signinIncomplete": "Innloggingen ble ikke fullført. Designet ble ikke publisert.",

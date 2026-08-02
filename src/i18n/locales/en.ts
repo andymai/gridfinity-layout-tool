@@ -3437,6 +3437,7 @@ const en: Record<string, string> = {
   'community.signin.reportMessage': 'Sign in to report a design to the moderators.',
   'community.toast.likeFailed': "Couldn't save your like. Try again.",
   'community.toast.likeSaved': 'Design liked.',
+  'community.toast.unlikeSaved': 'Like removed.',
   'community.toast.likeSigninIncomplete': 'Sign-in did not complete. The design was not liked.',
   'community.report.title': 'Report this design',
   'community.report.reasonLabel': 'Reason',

@@ -1763,6 +1763,7 @@
   "community.signin.title": "Accedi per continuare",
   "community.toast.likeFailed": "Impossibile salvare il tuo mi piace. Riprova.",
   "community.toast.likeSaved": "Mi piace aggiunto.",
+  "community.toast.unlikeSaved": "Mi piace rimosso.",
   "community.toast.likeSigninIncomplete": "L'accesso non è stato completato. Il design non ha ricevuto il mi piace.",
   "community.toast.unpublished": "Design rimosso dalla vetrina della community.",
   "community.toast.signinIncomplete": "L'accesso non è stato completato. Il design non è stato pubblicato.",

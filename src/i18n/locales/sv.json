@@ -3277,6 +3277,7 @@
   "community.signin.reportMessage": "Logga in för att rapportera en design till moderatorerna.",
   "community.toast.likeFailed": "Det gick inte att spara din gillning. Försök igen.",
   "community.toast.likeSaved": "Designen gillades.",
+  "community.toast.unlikeSaved": "Gillamarkering borttagen.",
   "community.toast.likeSigninIncomplete": "Inloggningen slutfördes inte. Designen gillades inte.",
   "community.report.title": "Rapportera den här designen",
   "community.report.reasonLabel": "Anledning",

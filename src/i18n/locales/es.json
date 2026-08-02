@@ -1752,6 +1752,7 @@
   "community.signin.reportMessage": "Inicia sesión para denunciar un diseño a los moderadores.",
   "community.toast.likeFailed": "No se pudo guardar tu me gusta. Inténtalo de nuevo.",
   "community.toast.likeSaved": "Me gusta guardado.",
+  "community.toast.unlikeSaved": "Me gusta eliminado.",
   "community.toast.likeSigninIncomplete": "El inicio de sesión no se completó. El diseño no se marcó con me gusta.",
   "community.report.title": "Denunciar este diseño",
   "community.report.reasonLabel": "Motivo",

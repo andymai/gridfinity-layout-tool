@@ -3242,6 +3242,7 @@
   "community.signin.reportMessage": "登录后即可向管理员举报设计。",
   "community.toast.likeFailed": "无法保存你的点赞。请重试。",
   "community.toast.likeSaved": "设计已点赞。",
+  "community.toast.unlikeSaved": "已取消点赞。",
   "community.toast.likeSigninIncomplete": "登录未完成，设计未点赞。",
   "community.report.title": "举报此设计",
   "community.report.reasonLabel": "原因",

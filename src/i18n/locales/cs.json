@@ -3277,6 +3277,7 @@
   "community.signin.reportMessage": "Přihlas se, abys mohl nahlásit návrh moderátorům.",
   "community.toast.likeFailed": "Tvůj lajk se nepodařilo uložit. Zkus to znovu.",
   "community.toast.likeSaved": "Návrh olajkován.",
+  "community.toast.unlikeSaved": "To se mi líbí odebráno.",
   "community.toast.likeSigninIncomplete": "Přihlášení nebylo dokončeno. Návrh nebyl olajkován.",
   "community.report.title": "Nahlásit tento návrh",
   "community.report.reasonLabel": "Důvod",

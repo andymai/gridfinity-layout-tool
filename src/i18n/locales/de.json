@@ -1614,6 +1614,7 @@
   "community.signin.reportMessage": "Melde dich an, um ein Design bei den Moderatoren zu melden.",
   "community.toast.likeFailed": "Dein Like konnte nicht gespeichert werden. Versuch es erneut.",
   "community.toast.likeSaved": "Design gelikt.",
+  "community.toast.unlikeSaved": "Gefällt mir entfernt.",
   "community.toast.likeSigninIncomplete": "Die Anmeldung wurde nicht abgeschlossen. Das Design wurde nicht gelikt.",
   "community.report.title": "Dieses Design melden",
   "community.report.reasonLabel": "Grund",

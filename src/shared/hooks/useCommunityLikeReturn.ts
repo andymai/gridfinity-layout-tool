@@ -40,7 +40,7 @@ async function applyPendingLike(pending: PendingLikeAction, t: Translate): Promi
     });
     trackEvent(pending.liked ? 'community_like' : 'community_unlike', { resumed: true });
     useToastStore.getState().addToast({
-      message: t('community.toast.likeSaved'),
+      message: t(pending.liked ? 'community.toast.likeSaved' : 'community.toast.unlikeSaved'),
       type: 'success',
     });
   } else {

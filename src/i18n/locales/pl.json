@@ -3277,6 +3277,7 @@
   "community.signin.reportMessage": "Zaloguj się, aby zgłosić projekt moderatorom.",
   "community.toast.likeFailed": "Nie udało się zapisać polubienia. Spróbuj ponownie.",
   "community.toast.likeSaved": "Projekt polubiony.",
+  "community.toast.unlikeSaved": "Polubienie usunięte.",
   "community.toast.likeSigninIncomplete": "Logowanie nie zostało ukończone. Projekt nie został polubiony.",
   "community.report.title": "Zgłoś ten projekt",
   "community.report.reasonLabel": "Powód",

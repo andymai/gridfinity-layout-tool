@@ -1614,6 +1614,7 @@
   "community.signin.reportMessage": "Meld je aan om een ontwerp te rapporteren aan de moderatoren.",
   "community.toast.likeFailed": "Kon je like niet opslaan. Probeer het opnieuw.",
   "community.toast.likeSaved": "Ontwerp leuk gevonden.",
+  "community.toast.unlikeSaved": "Vind-ik-leuk verwijderd.",
   "community.toast.likeSigninIncomplete": "Het inloggen is niet voltooid. Het ontwerp is niet leuk gevonden.",
   "community.report.title": "Dit ontwerp rapporteren",
   "community.report.reasonLabel": "Reden",

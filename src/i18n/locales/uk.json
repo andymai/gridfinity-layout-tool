@@ -1706,6 +1706,7 @@
   "community.signin.reportMessage": "Увійдіть, щоб поскаржитися модераторам на дизайн.",
   "community.toast.likeFailed": "Не вдалося зберегти вподобання. Спробуйте ще раз.",
   "community.toast.likeSaved": "Дизайн вподобано.",
+  "community.toast.unlikeSaved": "Вподобання видалено.",
   "community.toast.likeSigninIncomplete": "Вхід не завершено. Дизайн не вподобано.",
   "community.report.title": "Поскаржитися на дизайн",
   "community.report.reasonLabel": "Причина",

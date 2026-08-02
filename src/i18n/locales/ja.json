@@ -1706,6 +1706,7 @@
   "community.signin.reportMessage": "モデレーターにデザインを報告するにはサインインしてください。",
   "community.toast.likeFailed": "いいねを保存できませんでした。もう一度お試しください。",
   "community.toast.likeSaved": "デザインにいいねしました。",
+  "community.toast.unlikeSaved": "いいねを取り消しました。",
   "community.toast.likeSigninIncomplete": "サインインが完了しなかったため、デザインにいいねされませんでした。",
   "community.report.title": "このデザインを報告",
   "community.report.reasonLabel": "理由",

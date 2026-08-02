@@ -3277,6 +3277,7 @@
   "community.signin.reportMessage": "Entre para denunciar um design aos moderadores.",
   "community.toast.likeFailed": "Não foi possível salvar sua curtida. Tente novamente.",
   "community.toast.likeSaved": "Design curtido.",
+  "community.toast.unlikeSaved": "Curtida removida.",
   "community.toast.likeSigninIncomplete": "O login não foi concluído. O design não foi curtido.",
   "community.report.title": "Denunciar este design",
   "community.report.reasonLabel": "Motivo",
