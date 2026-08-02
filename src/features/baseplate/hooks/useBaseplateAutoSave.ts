@@ -63,6 +63,7 @@ function resolveThumbnailFraming(stored: StoredBaseplateParams): BaseplateThumbn
     width: full.width,
     depth: full.depth,
     gridUnitMm: full.gridUnitMm,
+    gridUnitMmY: full.gridUnitMmY ?? full.gridUnitMm,
     paddingLeft: full.paddingLeft,
     paddingRight: full.paddingRight,
     paddingFront: full.paddingFront,

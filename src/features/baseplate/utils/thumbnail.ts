@@ -113,6 +113,8 @@ export interface BaseplateThumbnailFraming {
   readonly width: number;
   readonly depth: number;
   readonly gridUnitMm: number;
+  /** Depth-axis pitch for a non-square grid; defaults to the X pitch. */
+  readonly gridUnitMmY: number;
   readonly paddingLeft: number;
   readonly paddingRight: number;
   readonly paddingFront: number;
@@ -148,8 +150,16 @@ export function captureBaseplateThumbnailAtPreset(
   const hidden: { visible: boolean }[] = [];
 
   try {
-    const { width, depth, gridUnitMm, paddingLeft, paddingRight, paddingFront, paddingBack } =
-      framing;
+    const {
+      width,
+      depth,
+      gridUnitMm,
+      gridUnitMmY,
+      paddingLeft,
+      paddingRight,
+      paddingFront,
+      paddingBack,
+    } = framing;
     // The plate is thin and centered on the origin (pockets align to the
     // FootprintGrid), so framing on (0,0,0) is exact enough for a thumbnail.
     const center = new Vector3(0, 0, 0);
@@ -163,7 +173,9 @@ export function captureBaseplateThumbnailAtPreset(
       paddingRight,
       paddingFront,
       paddingBack,
-      camera.fov
+      camera.fov,
+      1,
+      gridUnitMmY
     );
 
     camera.position.copy(
