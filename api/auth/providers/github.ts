@@ -63,6 +63,7 @@ async function fetchProfile(accessToken: string): Promise<ProviderProfile> {
     subject: String(user.id),
     email,
     displayName: user.name ?? user.login,
+    handle: user.login,
   };
 }
 

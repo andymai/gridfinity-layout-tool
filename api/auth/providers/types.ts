@@ -12,6 +12,12 @@ export interface ProviderProfile {
   subject: string;
   email: string;
   displayName?: string;
+  /**
+   * Provider login handle (GitHub `login`); absent for providers without
+   * one. Kept separate from displayName so UIs can prefill a public-facing
+   * name without leaking a real name.
+   */
+  handle?: string;
 }
 
 /**

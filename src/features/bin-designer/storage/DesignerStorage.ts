@@ -94,6 +94,12 @@ export async function saveDesign(
 
     const tags = normalizeTags(design.tags ?? existing?.tags);
 
+    // Unlike tags, `null` is meaningful here ("explicitly unpublished" / "no
+    // lineage"); only an omitted field falls back to the stored value.
+    const publishedId =
+      design.publishedId === undefined ? existing?.publishedId : design.publishedId;
+    const lineage = design.lineage === undefined ? existing?.lineage : design.lineage;
+
     const kind = design.kind ?? 'bin';
     // Reject incomplete writes up front so a malformed call can't persist a
     // record that later fails loadDesign() or renders blank.
@@ -116,6 +122,8 @@ export async function saveDesign(
       createdAt,
       updatedAt: now,
       ...(tags.length > 0 ? { tags } : {}),
+      ...(publishedId !== undefined ? { publishedId } : {}),
+      ...(lineage !== undefined ? { lineage } : {}),
       // Bins persist flat `params` (canonical, back-compat); non-bin kinds
       // persist `kind` + `envelope` + `structure` and OMIT `params` so a stale
       // bin payload can never shadow the real structure.
@@ -228,6 +236,50 @@ export async function duplicateDesign(id: DesignId): Promise<Result<SavedDesign,
       ? { ...original.exportFileNameConfig }
       : null,
     tags: original.tags,
+    // publishedId intentionally not carried: it identifies a specific
+    // published community record, and the copy is a new, unpublished design.
+    // Lineage describes where the content came from, which is still true of
+    // the copy, so it carries forward like tags.
+    lineage: original.lineage,
+  });
+}
+
+/**
+ * Record a successful community publish on the local design so update mode
+ * and cross-device sync see it.
+ */
+export async function setDesignPublishedId(
+  id: DesignId,
+  publishedId: string
+): Promise<Result<SavedDesign, StorageError>> {
+  const loadResult = await loadDesign(id);
+  if (isErr(loadResult)) {
+    return loadResult;
+  }
+  return saveDesign({
+    ...loadResult.value,
+    publishedId,
+  });
+}
+
+/**
+ * Drop a stale community publish id (the published record no longer exists
+ * or is no longer owned). Persists `null` so the cleared state syncs.
+ */
+export async function clearDesignPublishedId(
+  id: DesignId
+): Promise<Result<SavedDesign, StorageError>> {
+  const loadResult = await loadDesign(id);
+  if (isErr(loadResult)) {
+    return loadResult;
+  }
+  const current = loadResult.value;
+  if (current.publishedId === undefined || current.publishedId === null) {
+    return loadResult;
+  }
+  return saveDesign({
+    ...current,
+    publishedId: null,
   });
 }
 

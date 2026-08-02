@@ -51,12 +51,13 @@ export function TagManagerDialog({ open, tags, onClose }: TagManagerDialogProps)
               return (
                 <li key={key} className="rounded-lg border border-stroke-subtle">
                   <div className="flex items-center gap-2 px-3 py-2">
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
                       onClick={() => setExpandedKey(expanded ? null : key)}
                       aria-expanded={expanded}
                       aria-label={t('binDesigner.tagManager.customize', { tag })}
-                      className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                      className="min-w-0 flex-1 justify-start gap-2 p-0 text-left hover:bg-transparent"
                     >
                       <span
                         className="inline-flex items-center gap-1.5 rounded-full bg-surface-elevated px-2.5 py-0.5 text-xs font-medium text-content"
@@ -85,7 +86,7 @@ export function TagManagerDialog({ open, tags, onClose }: TagManagerDialogProps)
                           d="M19 9l-7 7-7-7"
                         />
                       </svg>
-                    </button>
+                    </Button>
                     {appearance !== undefined && (
                       <IconButton
                         type="button"

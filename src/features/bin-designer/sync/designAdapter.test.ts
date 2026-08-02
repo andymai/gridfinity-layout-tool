@@ -177,6 +177,86 @@ describe('designAdapter tags', () => {
   });
 });
 
+describe('designAdapter publishedId + lineage', () => {
+  const LINEAGE = {
+    parentId: 'AbCdEf123456',
+    rootId: 'ZyXwVu654321',
+    parentName: 'Parent Bin',
+    parentAuthorName: 'Ann Author',
+    rootAuthorName: 'Root Author',
+  };
+
+  function publishedDesign(id: string, updatedAt: string): SavedDesign {
+    return {
+      ...savedDesign(id, updatedAt),
+      publishedId: 'PubLish12345',
+      lineage: LINEAGE,
+    };
+  }
+
+  it('list carries publishedId and lineage in the payload', async () => {
+    listDesignsMock.mockResolvedValueOnce(ok([publishedDesign('a', '2026-01-01T00:00:00.000Z')]));
+    const items = await designAdapter.list();
+    expect(items[0].payload.publishedId).toBe('PubLish12345');
+    expect(items[0].payload.lineage).toEqual(LINEAGE);
+  });
+
+  it('get carries publishedId and lineage in the payload', async () => {
+    loadDesignMock.mockResolvedValueOnce(ok(publishedDesign('d1', '2026-03-01T00:00:00.000Z')));
+    const item = await designAdapter.get('d1');
+    expect(item?.payload.publishedId).toBe('PubLish12345');
+    expect(item?.payload.lineage).toEqual(LINEAGE);
+  });
+
+  it('applyRemote writes the remote publishedId and lineage (LWW: remote wins)', async () => {
+    loadDesignMock.mockResolvedValueOnce(ok(publishedDesign('d1', '2026-01-01T00:00:00.000Z')));
+    saveDesignMock.mockResolvedValueOnce(ok(savedDesign('d1', '2026-04-01T00:00:00.000Z')));
+
+    const remoteLineage = { ...LINEAGE, parentName: 'Renamed Parent' };
+    await designAdapter.applyRemote({
+      id: 'd1',
+      payload: {
+        name: 'D',
+        params: sampleParams(),
+        publishedId: 'RemotePub999',
+        lineage: remoteLineage,
+      },
+      modifiedAt: Date.parse('2026-04-01T00:00:00.000Z'),
+    });
+
+    expect(saveDesignMock.mock.calls[0][0].publishedId).toBe('RemotePub999');
+    expect(saveDesignMock.mock.calls[0][0].lineage).toEqual(remoteLineage);
+  });
+
+  it('applyRemote: an explicit remote null clears local publishedId and lineage', async () => {
+    loadDesignMock.mockResolvedValueOnce(ok(publishedDesign('d1', '2026-01-01T00:00:00.000Z')));
+    saveDesignMock.mockResolvedValueOnce(ok(savedDesign('d1', '2026-04-01T00:00:00.000Z')));
+
+    await designAdapter.applyRemote({
+      id: 'd1',
+      payload: { name: 'D', params: sampleParams(), publishedId: null, lineage: null },
+      modifiedAt: Date.parse('2026-04-01T00:00:00.000Z'),
+    });
+
+    expect(saveDesignMock.mock.calls[0][0].publishedId).toBe(null);
+    expect(saveDesignMock.mock.calls[0][0].lineage).toBe(null);
+  });
+
+  it('applyRemote: a legacy payload with neither field falls back to local values', async () => {
+    loadDesignMock.mockResolvedValueOnce(ok(publishedDesign('d1', '2026-01-01T00:00:00.000Z')));
+    saveDesignMock.mockResolvedValueOnce(ok(savedDesign('d1', '2026-04-01T00:00:00.000Z')));
+
+    await designAdapter.applyRemote({
+      id: 'd1',
+      payload: { name: 'D', params: sampleParams() },
+      modifiedAt: Date.parse('2026-04-01T00:00:00.000Z'),
+    });
+
+    expect(saveDesignMock.mock.calls[0][0].publishedId).toBe('PubLish12345');
+    expect(saveDesignMock.mock.calls[0][0].lineage).toEqual(LINEAGE);
+  });
+});
+
 describe('designAdapter.applyRemote', () => {
   it('preserves local-only fields (thumbnail, exportFileNameConfig) when an existing entry is found', async () => {
     loadDesignMock.mockResolvedValueOnce(

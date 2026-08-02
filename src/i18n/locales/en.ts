@@ -2543,21 +2543,11 @@ const en: Record<string, string> = {
     'Top-cut tool-shaped recesses — draw them or scan a real tool with your phone.',
   'binDesigner.resetView': 'Reset view (R)',
   'binDesigner.toggleWireframe': 'Toggle wireframe (W)',
-  'binDesigner.shareDesign': 'Share Design',
-  'binDesigner.createShareLink': 'Create Share Link',
-  'binDesigner.shareDescription': 'Generate a link anyone can use to load this bin configuration.',
-  'binDesigner.shareCreating': 'Creating link...',
-  'binDesigner.sharePermanentNote':
-    'This link is permanent. Anyone with the link can load this design.',
-  'binDesigner.loadSharedDesign': 'Load Shared Design',
-  'binDesigner.pasteShareUrl': 'Paste share URL or ID',
-
   'binDesigner.changePreviewColor': 'Change preview color',
   'binDesigner.changesAreSavedAutomaticallyAsYouDe':
     'Changes are saved automatically as you design',
   'binDesigner.columns': 'Columns',
   'binDesigner.compartments': 'compartments',
-  'binDesigner.copied': 'Copied!',
   'binDesigner.designName': 'Design name',
   'binDesigner.designs': 'Designs',
   'binDesigner.dismissTouchHints': 'Dismiss touch hints',
@@ -2596,7 +2586,6 @@ const en: Record<string, string> = {
   'binDesigner.extraWallHeightTooltip':
     'Raise the outer walls and stacking lip above the bin height, leaving the interior as-is. Adds headroom so tall contents are enclosed and a stacked bin rests on the taller rim.',
   'binDesigner.load': 'Load',
-  'binDesigner.loading': 'Loading',
   'binDesigner.loadingSharedDesign': 'Loading shared design',
   'binDesigner.fractionalEdgeMismatch':
     "This design's half-unit foot is on a different edge than where the linked bin sits in the drawer.",
@@ -2625,7 +2614,6 @@ const en: Record<string, string> = {
   'binDesigner.alreadyFactoryDefaults': 'Already using factory defaults',
   'binDesigner.customDefaultActive': 'Custom default active',
   'binDesigner.noSavedDesignsYet': 'No saved designs yet',
-  'binDesigner.or': 'or',
   'binDesigner.pinchToZoom': 'Pinch to zoom',
   'binDesigner.previewColorOptions': 'Preview color options',
   'binDesigner.printBedTooltip':
@@ -2649,8 +2637,6 @@ const en: Record<string, string> = {
   'binDesigner.revertedToWorking': 'Reverted to last working configuration',
   'binDesigner.rows': 'Rows',
   'binDesigner.savedDesigns': 'Saved Designs',
-  'binDesigner.shareUrl': 'Share URL',
-  'binDesigner.shareUrlOrId': 'Share URL or ID',
   'binDesigner.startANewDesign': 'Start a new design',
   'binDesigner.splitExport.exceedsPrintBed':
     'This bin exceeds your print bed ({size}mm). It will be split into {count} pieces.',
@@ -3242,6 +3228,97 @@ const en: Record<string, string> = {
   'binExamples.heroUShape.description':
     'A 3×2 custom-shape bin with a U cutout and scoop for wrapping around an obstacle.',
 
+  // Community showcase publish flow
+  'community.publishButton': 'Publish',
+  'community.publishButtonAria': 'Publish to the community showcase',
+  'community.publish.title': 'Publish to the community',
+  'community.publish.updateTitle': 'Update published design',
+  'community.publish.signin.value':
+    'Share this design in the community showcase. Anyone can print it or remix it.',
+  'community.publish.disclosure':
+    'Published designs are public, appear in search engines, and anyone can remix them under CC BY 4.0.',
+  'community.publish.disclosureTerms': 'Terms of use',
+  'community.publish.identity.label': 'Public name',
+  'community.publish.identity.hint': 'Your public name, shown on everything you publish.',
+  'community.publish.identity.placeholder': 'Pick a public name',
+  'community.publish.identity.continue': 'Continue',
+  'community.publish.form.previewLabel': 'Preview',
+  'community.publish.form.previewAlt': 'Design preview {index}',
+  'community.publish.form.preparingPreview': 'Preparing preview…',
+  'community.publish.form.previewFailed': "Couldn't capture the preview.",
+  'community.publish.form.retryPreview': 'Retry preview',
+  'community.publish.form.nameLabel': 'Name',
+  'community.publish.form.nameRequired': 'Enter a name for this design.',
+  'community.publish.form.descriptionLabel': 'Description',
+  'community.publish.form.descriptionPlaceholder': 'What is it for? Any print tips?',
+  'community.publish.form.categoryLabel': 'Category',
+  'community.publish.form.categoryPlaceholder': 'Choose a category',
+  'community.publish.form.categoryRequired': 'Choose a category.',
+  'community.publish.form.techniquesLabel': 'Detected techniques',
+  'community.publish.form.techniquesNone': 'None detected',
+  'community.publish.form.lineageNotice': 'Will be credited as a remix of {parent} by {author}',
+  'community.publish.form.lineageNoticeRoot': 'Originally by {author}',
+  'community.publish.form.identicalTitle': 'Publish an identical design?',
+  'community.publish.form.identicalMessage': 'This is identical to {parent}. Publish anyway?',
+  'community.publish.form.identicalConfirm': 'Publish anyway',
+  'community.publish.submit': 'Publish',
+  'community.publish.submitUpdate': 'Update',
+  'community.publish.unpublish': 'Unpublish',
+  'community.publish.unpublishTitle': 'Unpublish this design?',
+  'community.publish.unpublishMessage':
+    'It will be removed from the community showcase. Copies people already remixed are unaffected.',
+  'community.publish.loadingPublished': 'Loading published details…',
+  'community.publish.publishing': 'Publishing…',
+  'community.publish.updating': 'Updating…',
+  'community.publish.success.title': 'Published to the community',
+  'community.publish.success.updatedTitle': 'Published design updated',
+  'community.publish.success.linkLabel': 'Public link',
+  'community.publish.success.copy': 'Copy link',
+  'community.publish.success.copied': 'Copied',
+  'community.publish.success.viewSoon': 'The community gallery is coming soon.',
+  'community.publish.success.done': 'Done',
+  'community.publish.error.needsAuth':
+    'Your sign-in expired. Sign in again to finish publishing; your details are kept.',
+  'community.publish.error.disabled': 'Publishing is not available yet.',
+  'community.publish.error.rateLimited': 'Too many publishes right now. Try again later.',
+  'community.publish.error.rateLimitedWait':
+    'Too many publishes right now. Try again in about {seconds} seconds.',
+  'community.publish.error.quota':
+    'You have reached the limit of published designs. Unpublish one to make room.',
+  'community.publish.error.contentBlocked':
+    'Some of the text was flagged by the content filter. Reword the name or description and try again.',
+  'community.publish.error.offline':
+    'You appear to be offline. Check your connection and try again.',
+  'community.publish.error.notFound': 'The published record no longer exists.',
+  'community.publish.error.republishAsNew':
+    'The published copy no longer exists. Publishing will create a new link.',
+  'community.publish.error.generic': 'Something went wrong. Try again.',
+  'community.publish.error.back': 'Back',
+  'community.publish.error.tryAgain': 'Try again',
+  'community.publish.error.quotaHint': 'Open a published design and choose Unpublish to make room.',
+  'community.publish.error.loadFailed':
+    "Couldn't load the published details. Check your connection and try again.",
+  'community.publish.error.invalidName':
+    'The server rejected the name. Shorten or reword it and try again.',
+  'community.publish.error.invalidDescription':
+    'The server rejected the description. Shorten or reword it and try again.',
+  'community.publish.error.invalidAuthorName':
+    'The server rejected the public name. Choose a different one.',
+  'community.publish.error.invalidCategory': 'Choose a valid category and try again.',
+  'community.toast.publishLinkNotSaved':
+    "Published, but the link couldn't be saved to this design.",
+  'community.toast.unpublished': 'Design removed from the community showcase.',
+  'community.toast.signinIncomplete': 'Sign-in did not complete. The design was not published.',
+  'community.toast.publishDesignMissing': 'Could not find the design that was being published.',
+  'community.category.tools': 'Tools',
+  'community.category.hardware': 'Hardware',
+  'community.category.kitchen': 'Kitchen',
+  'community.category.office': 'Office',
+  'community.category.crafts': 'Crafts',
+  'community.category.electronics': 'Electronics',
+  'community.category.toysGames': 'Toys & Games',
+  'community.category.other': 'Other',
+
   // Snapping Slider (shared component)
   'snappingSlider.default': 'Default',
   'snappingSlider.select': 'Select {value}{unit}',
@@ -3557,7 +3634,6 @@ const en: Record<string, string> = {
   'binDesigner.toast.designDeleteFailed': 'Failed to delete design',
   'binDesigner.toast.sharedDesignLoaded': 'Shared design loaded',
   'binDesigner.toast.sharedDesignLoadFailed': 'Failed to load shared design',
-  'binDesigner.toast.shareLinkCopied': 'Share link copied to clipboard',
 
   // Bin-designer screen-reader announcements
   'binDesigner.announce.loadingEngine': 'Loading 3D engine',

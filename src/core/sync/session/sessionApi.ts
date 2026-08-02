@@ -7,6 +7,8 @@ export interface SessionUser {
   provider: AuthProvider;
   email: string;
   displayName?: string;
+  /** Provider login handle (GitHub `login`); never a real name. */
+  handle?: string;
 }
 
 interface MeResponse {

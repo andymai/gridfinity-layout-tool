@@ -13,6 +13,8 @@ import {
   createNewDesign,
   initializeDesigner,
   updateDesignTags,
+  clearDesignPublishedId,
+  setDesignPublishedId,
 } from '@/features/bin-designer/storage/DesignerStorage';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
 import type { BinParams, SavedDesign } from '../types';
@@ -694,6 +696,124 @@ describe('DesignerStorage', () => {
       );
       const dup = expectOk(await duplicateDesign(saved.id));
       expect(dup.tags).toEqual(['kitchen']);
+    });
+  });
+
+  describe('publishedId + lineage', () => {
+    const LINEAGE = {
+      parentId: 'AbCdEf123456',
+      rootId: 'ZyXwVu654321',
+      parentName: 'Parent Bin',
+      parentAuthorName: 'Ann Author',
+      rootAuthorName: 'Root Author',
+    };
+
+    async function savePublished(): Promise<SavedDesign> {
+      return expectOk(
+        await saveDesign({
+          name: 'Published',
+          params: DEFAULT_BIN_PARAMS,
+          thumbnail: null,
+          exportFileNameConfig: null,
+          publishedId: 'PubLish12345',
+          lineage: LINEAGE,
+        })
+      );
+    }
+
+    it('saveDesign persists both fields and they round-trip through loadDesign', async () => {
+      const saved = await savePublished();
+      expect(saved.publishedId).toBe('PubLish12345');
+      expect(saved.lineage).toEqual(LINEAGE);
+      const loaded = expectOk(await loadDesign(saved.id));
+      expect(loaded.publishedId).toBe('PubLish12345');
+      expect(loaded.lineage).toEqual(LINEAGE);
+    });
+
+    it('an update that omits both fields keeps the stored values', async () => {
+      const saved = await savePublished();
+      const updated = expectOk(
+        await saveDesign({
+          id: saved.id,
+          name: 'Renamed',
+          params: DEFAULT_BIN_PARAMS,
+          thumbnail: null,
+          exportFileNameConfig: null,
+        })
+      );
+      expect(updated.publishedId).toBe('PubLish12345');
+      expect(updated.lineage).toEqual(LINEAGE);
+    });
+
+    it('an explicit null clears the stored value', async () => {
+      const saved = await savePublished();
+      const updated = expectOk(
+        await saveDesign({
+          id: saved.id,
+          name: saved.name,
+          params: DEFAULT_BIN_PARAMS,
+          thumbnail: null,
+          exportFileNameConfig: null,
+          publishedId: null,
+        })
+      );
+      expect(updated.publishedId).toBe(null);
+      expect(updated.lineage).toEqual(LINEAGE);
+    });
+
+    it('duplicateDesign drops publishedId and carries lineage', async () => {
+      const saved = await savePublished();
+      const dup = expectOk(await duplicateDesign(saved.id));
+      expect(dup.publishedId).toBeUndefined();
+      expect(dup.lineage).toEqual(LINEAGE);
+      const original = expectOk(await loadDesign(saved.id));
+      expect(original.publishedId).toBe('PubLish12345');
+    });
+
+    it('setDesignPublishedId records the id and keeps lineage', async () => {
+      const saved = await savePublished();
+      const updated = expectOk(await setDesignPublishedId(saved.id, 'NewPublish99'));
+      expect(updated.publishedId).toBe('NewPublish99');
+      expect(updated.lineage).toEqual(LINEAGE);
+      const loaded = expectOk(await loadDesign(saved.id));
+      expect(loaded.publishedId).toBe('NewPublish99');
+    });
+
+    it('setDesignPublishedId works for a never-published design', async () => {
+      const saved = expectOk(
+        await saveDesign({
+          name: 'Local Only',
+          params: DEFAULT_BIN_PARAMS,
+          thumbnail: null,
+          exportFileNameConfig: null,
+        })
+      );
+      const updated = expectOk(await setDesignPublishedId(saved.id, 'FirstPub1234'));
+      expect(updated.publishedId).toBe('FirstPub1234');
+    });
+
+    it('clearDesignPublishedId persists null and keeps lineage', async () => {
+      const saved = await savePublished();
+      const cleared = expectOk(await clearDesignPublishedId(saved.id));
+      expect(cleared.publishedId).toBe(null);
+      expect(cleared.lineage).toEqual(LINEAGE);
+      const loaded = expectOk(await loadDesign(saved.id));
+      expect(loaded.publishedId).toBe(null);
+    });
+
+    it('clearDesignPublishedId is a no-op for a never-published design', async () => {
+      const saved = expectOk(
+        await saveDesign({
+          name: 'Local Only',
+          params: DEFAULT_BIN_PARAMS,
+          thumbnail: null,
+          exportFileNameConfig: null,
+        })
+      );
+      const before = saved.updatedAt;
+      const result = expectOk(await clearDesignPublishedId(saved.id));
+      expect(result.publishedId).toBeUndefined();
+      expect(result.updatedAt).toBe(before);
     });
   });
 });

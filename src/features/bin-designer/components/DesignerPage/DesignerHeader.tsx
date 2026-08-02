@@ -9,6 +9,7 @@ import { Button, IconButton } from '@/design-system';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
+import { useCommunityPublishEntry } from '@/features/bin-designer/hooks/useCommunityPublish';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '@/i18n';
 import { SaveStatusIndicator } from '@/shared/components/SaveStatusIndicator';
@@ -44,6 +45,7 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
   );
   const undo = useDesignerStore((s) => s.undo);
   const redo = useDesignerStore((s) => s.redo);
+  const { publishVisible, canPublish, openPublish } = useCommunityPublishEntry();
 
   const {
     isEditingName,
@@ -63,7 +65,7 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
       {isDesktop ? (
         /* ---- Desktop action bar ---- */
         <>
-          <div className="flex items-center gap-4 min-w-0">
+          <div className="flex items-center gap-3 min-w-0">
             <ToolSwitcher />
 
             {/* Design name (click to rename inline) */}
@@ -109,7 +111,7 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
                   d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
                 />
               </svg>
-              <span className="hidden lg:inline">{t('binDesigner.designs')}</span>
+              <span className="hidden 2xl:inline">{t('binDesigner.designs')}</span>
             </Button>
 
             {/* Export button */}
@@ -129,8 +131,39 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
                   d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
                 />
               </svg>
-              <span className="hidden lg:inline">{t('common.export')}</span>
+              <span className="hidden 2xl:inline">{t('common.export')}</span>
             </Button>
+
+            {/* Publish button (community showcase) */}
+            {publishVisible && !canPublish && (
+              <span id="community-publish-disabled-hint" className="sr-only">
+                {t('community.publish.form.preparingPreview')}
+              </span>
+            )}
+            {publishVisible && (
+              <Button
+                variant="ghost"
+                onClick={openPublish}
+                disabled={!canPublish}
+                className="px-2 py-1.5 text-sm font-normal rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5"
+                title={t('community.publishButtonAria')}
+                aria-label={t('community.publishButtonAria')}
+                aria-describedby={canPublish ? undefined : 'community-publish-disabled-hint'}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                  />
+                </svg>
+                {/* Label only on very wide screens: the desktop header's left
+                    cluster overflows into the save indicator at lg widths once
+                    a fifth labeled button is present. */}
+                <span className="hidden 2xl:inline">{t('community.publishButton')}</span>
+              </Button>
+            )}
           </div>
 
           <div className="flex items-center gap-1 flex-shrink-0">
@@ -271,6 +304,36 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
                 />
               </svg>
             </IconButton>
+
+            {/* Publish button (community showcase) */}
+            {publishVisible && !canPublish && (
+              <span id="community-publish-disabled-hint" className="sr-only">
+                {t('community.publish.form.preparingPreview')}
+              </span>
+            )}
+            {publishVisible && (
+              <IconButton
+                variant="ghost"
+                onClick={openPublish}
+                disabled={!canPublish}
+                aria-label={t('community.publishButtonAria')}
+                aria-describedby={canPublish ? undefined : 'community-publish-disabled-hint'}
+              >
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                  />
+                </svg>
+              </IconButton>
+            )}
 
             {/* Undo/Redo */}
             <IconButton

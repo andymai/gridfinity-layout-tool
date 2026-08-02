@@ -8,18 +8,26 @@
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 
 /**
- * Standard isometric camera direction (matches PreviewCanvas.CAMERA_PRESETS.isometric),
- * as a normalized {x,y,z}. Kept three-free (a plain object, not a THREE.Vector3) so
- * this module — pulled by the eagerly-reachable thumbnail regenerator — doesn't drag
- * three core onto first paint. Construct a Vector3 from it at the (three-loaded) call site.
+ * Normalized camera direction as a plain {x,y,z}. Kept three-free (not a
+ * THREE.Vector3) so this module, pulled by the eagerly-reachable thumbnail
+ * regenerator, doesn't drag three core onto first paint. Construct a Vector3
+ * from it at the (three-loaded) call site.
  */
-export const ISOMETRIC_DIRECTION: Readonly<{ x: number; y: number; z: number }> = (() => {
-  const x = 0.6;
-  const y = -0.6;
-  const z = 0.5;
+export type CameraDirection = Readonly<{ x: number; y: number; z: number }>;
+
+function normalizeDirection(x: number, y: number, z: number): CameraDirection {
   const len = Math.hypot(x, y, z);
   return { x: x / len, y: y / len, z: z / len };
-})();
+}
+
+/** Standard isometric camera direction (matches PreviewCanvas.CAMERA_PRESETS.isometric). */
+export const ISOMETRIC_DIRECTION: CameraDirection = normalizeDirection(0.6, -0.6, 0.5);
+
+/** Matches PreviewCanvas.CAMERA_PRESETS.front. */
+export const FRONT_DIRECTION: CameraDirection = normalizeDirection(0, -1, 0.3);
+
+/** Matches PreviewCanvas.CAMERA_PRESETS.side. */
+export const SIDE_DIRECTION: CameraDirection = normalizeDirection(1, 0, 0.3);
 
 /** How much of the viewport the bin should fill (matches PreviewCanvas.FRAME_FILL) */
 export const FRAME_FILL = 0.65;

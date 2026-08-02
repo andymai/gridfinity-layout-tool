@@ -37,6 +37,13 @@ export interface CommunityDesignMetrics {
   readonly gridUnitMm: number;
 }
 
+/** Publish-form fields preserved across an OAuth round trip or re-auth. */
+export interface CommunityPublishDraft {
+  readonly name: string;
+  readonly description: string;
+  readonly category: CommunityCategory | null;
+}
+
 /** Snapshot naming so lineage still reads sensibly after the parent/root is deleted or renamed. */
 export interface CommunityDesignLineage {
   readonly parentId: string;

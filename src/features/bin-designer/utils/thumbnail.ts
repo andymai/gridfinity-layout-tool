@@ -16,7 +16,14 @@ import {
   BufferAttribute,
   MeshStandardMaterial,
 } from 'three';
-import { ISOMETRIC_DIRECTION, calculateIdealDistance } from './cameraFraming';
+import {
+  ISOMETRIC_DIRECTION,
+  FRONT_DIRECTION,
+  SIDE_DIRECTION,
+  calculateIdealDistance,
+} from './cameraFraming';
+import type { CameraDirection } from './cameraFraming';
+import { bytesToBase64 } from '@/shared/generation/meshAsset';
 
 /** Thumbnail size for IndexedDB storage (high res for crisp display at any size) */
 const THUMBNAIL_SIZE = 384;
@@ -131,6 +138,18 @@ export interface ThumbnailCaptureOptions {
   readonly mimeType?: 'image/webp' | 'image/png';
   /** Encoder quality (ignored for PNG). Defaults to 0.9. */
   readonly quality?: number;
+  /** Camera direction for preset captures. Defaults to ISOMETRIC_DIRECTION. */
+  readonly direction?: CameraDirection;
+}
+
+export interface BinFramingDimensions {
+  width: number;
+  depth: number;
+  height: number;
+  gridUnitMm: number;
+  /** Y-axis pitch for non-square grids; defaults to gridUnitMm. */
+  gridUnitMmY?: number;
+  heightUnitMm: number;
 }
 
 export function captureThumbnail(options?: ThumbnailCaptureOptions): string | null {
@@ -181,8 +200,7 @@ const EXPORT_EDGE_COLOR = 0x000000;
  */
 function positionVertexCount(geo: BufferGeometry): number {
   const pos = geo.getAttribute('position') as
-    | ReturnType<BufferGeometry['getAttribute']>
-    | undefined;
+    ReturnType<BufferGeometry['getAttribute']> | undefined;
   return pos ? pos.count : 0;
 }
 
@@ -368,7 +386,12 @@ export async function exportPreviewGlb(): Promise<ArrayBuffer | null> {
     )
   );
 
-  const edges = edgeGeometries.length === 1 ? edgeGeometries[0] : merge(edgeGeometries);
+  const edges =
+    edgeGeometries.length === 0
+      ? null
+      : edgeGeometries.length === 1
+        ? edgeGeometries[0]
+        : merge(edgeGeometries);
   if (edges) {
     group.add(new LineSegments(edges, new LineBasicMaterial({ color: EXPORT_EDGE_COLOR })));
   }
@@ -389,15 +412,7 @@ export async function exportPreviewGlb(): Promise<ArrayBuffer | null> {
  * @returns WebP data URL or null
  */
 export function captureThumbnailAtPreset(
-  binDimensions: {
-    width: number;
-    depth: number;
-    height: number;
-    gridUnitMm: number;
-    /** Y-axis pitch for non-square grids; defaults to gridUnitMm. */
-    gridUnitMmY?: number;
-    heightUnitMm: number;
-  },
+  binDimensions: BinFramingDimensions,
   options?: ThumbnailCaptureOptions
 ): string | null {
   if (!previewRenderer || !previewScene || !previewCamera) {
@@ -425,12 +440,8 @@ export function captureThumbnailAtPreset(
     const savedUp = previewCamera.up.clone();
     const savedQuaternion = previewCamera.quaternion.clone();
 
-    // Move to isometric preset
-    const targetPosition = new Vector3(
-      ISOMETRIC_DIRECTION.x,
-      ISOMETRIC_DIRECTION.y,
-      ISOMETRIC_DIRECTION.z
-    )
+    const direction = options?.direction ?? ISOMETRIC_DIRECTION;
+    const targetPosition = new Vector3(direction.x, direction.y, direction.z)
       .multiplyScalar(idealDistance)
       .add(binCenter);
     previewCamera.position.copy(targetPosition);
@@ -472,4 +483,43 @@ export function captureThumbnailAtPreset(
   } catch {
     return captureThumbnail(options);
   }
+}
+
+const COMMUNITY_CAPTURE_DIRECTIONS: readonly CameraDirection[] = [
+  ISOMETRIC_DIRECTION,
+  FRONT_DIRECTION,
+  SIDE_DIRECTION,
+];
+
+/**
+ * Capture distinct preset-angle thumbnails (isometric, front, side) for a
+ * community publish submission, as 384px WebP data URLs.
+ *
+ * Unlike captureThumbnailAtPreset, a missing preview context returns null
+ * instead of silently falling back to identical current-view crops: community
+ * uploads need genuinely different angles, so the fallback would only produce
+ * duplicates.
+ */
+export function captureCommunityThumbnails(
+  binDimensions: BinFramingDimensions
+): Promise<string[] | null> {
+  if (!previewRenderer || !previewScene || !previewCamera) return Promise.resolve(null);
+
+  const shots: string[] = [];
+  for (const direction of COMMUNITY_CAPTURE_DIRECTIONS) {
+    const shot = captureThumbnailAtPreset(binDimensions, { direction });
+    if (shot) shots.push(shot);
+  }
+  return Promise.resolve(shots.length > 0 ? shots : null);
+}
+
+/**
+ * Export the current preview mesh as a base64-encoded binary GLB for a
+ * community publish submission. Server-side validation caps the decoded size
+ * (MAX_COMMUNITY_GLB_BYTES) and checks the glTF magic bytes.
+ */
+export async function exportCommunityGlb(): Promise<string | null> {
+  const buf = await exportPreviewGlb();
+  if (!buf) return null;
+  return bytesToBase64(new Uint8Array(buf));
 }

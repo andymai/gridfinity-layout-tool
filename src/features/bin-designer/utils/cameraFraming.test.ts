@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
   ISOMETRIC_DIRECTION,
+  FRONT_DIRECTION,
+  SIDE_DIRECTION,
   FRAME_FILL,
   calculateIdealDistance,
 } from '@/features/bin-designer/utils/cameraFraming';
@@ -25,6 +27,38 @@ describe('cameraFraming', () => {
       expect(ISOMETRIC_DIRECTION.x).toBeCloseTo(expectedX, 5);
       expect(ISOMETRIC_DIRECTION.y).toBeCloseTo(expectedY, 5);
       expect(ISOMETRIC_DIRECTION.z).toBeCloseTo(expectedZ, 5);
+    });
+  });
+
+  describe('FRONT_DIRECTION and SIDE_DIRECTION', () => {
+    it('are normalized directions with length approximately 1', () => {
+      for (const dir of [FRONT_DIRECTION, SIDE_DIRECTION]) {
+        expect(Math.hypot(dir.x, dir.y, dir.z)).toBeCloseTo(1, 10);
+      }
+    });
+
+    it('FRONT_DIRECTION matches the front camera preset (0, -1, 0.3)', () => {
+      const len = Math.hypot(0, -1, 0.3);
+      expect(FRONT_DIRECTION.x).toBeCloseTo(0, 10);
+      expect(FRONT_DIRECTION.y).toBeCloseTo(-1 / len, 10);
+      expect(FRONT_DIRECTION.z).toBeCloseTo(0.3 / len, 10);
+    });
+
+    it('SIDE_DIRECTION matches the side camera preset (1, 0, 0.3)', () => {
+      const len = Math.hypot(1, 0, 0.3);
+      expect(SIDE_DIRECTION.x).toBeCloseTo(1 / len, 10);
+      expect(SIDE_DIRECTION.y).toBeCloseTo(0, 10);
+      expect(SIDE_DIRECTION.z).toBeCloseTo(0.3 / len, 10);
+    });
+
+    it('all three capture directions are pairwise distinct', () => {
+      const dirs = [ISOMETRIC_DIRECTION, FRONT_DIRECTION, SIDE_DIRECTION];
+      for (let i = 0; i < dirs.length; i++) {
+        for (let j = i + 1; j < dirs.length; j++) {
+          const dot = dirs[i].x * dirs[j].x + dirs[i].y * dirs[j].y + dirs[i].z * dirs[j].z;
+          expect(dot).toBeLessThan(0.999);
+        }
+      }
     });
   });
 

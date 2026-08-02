@@ -17,7 +17,7 @@ import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { EXAMPLE_DESIGNS } from '@/features/bin-designer/data/examples';
 import {
   captureThumbnailAtPreset,
-  exportPreviewGlb,
+  exportCommunityGlb,
   __debugSceneMaterials,
 } from '@/features/bin-designer/utils/thumbnail';
 
@@ -109,14 +109,7 @@ export function DevThumbnailRoute() {
             },
             { size: THUMBNAIL_SIZE, mimeType: 'image/png' }
           );
-        bridge.__exportGlb = async (): Promise<string | null> => {
-          const buf = await exportPreviewGlb();
-          if (!buf) return null;
-          let bin = '';
-          const bytes = new Uint8Array(buf);
-          for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-          return btoa(bin);
-        };
+        bridge.__exportGlb = exportCommunityGlb;
         (window as unknown as { __debugScene?: () => unknown }).__debugScene =
           __debugSceneMaterials;
         bridge.__thumbnailReady = true;

@@ -1,4 +1,5 @@
 import type { DesignId } from '@/core/types';
+import type { CommunityDesignLineage } from '@/shared/types/community';
 import type { ItemEnvelope, ItemKind, ItemStructure } from '@/shared/types/item';
 import type { BinParams } from './binParams';
 import type { ExportFileNameConfig } from './uiState';
@@ -26,6 +27,10 @@ export interface SavedDesign {
   readonly exportFileNameConfig: ExportFileNameConfig | null;
   /** User-assigned organization tags. Absent on pre-tags designs. */
   readonly tags?: readonly string[];
+  /** Community publish id. `null` = explicitly unpublished; absent = never published. */
+  readonly publishedId?: string | null;
+  /** Remix lineage snapshot; describes where the design's content came from. */
+  readonly lineage?: CommunityDesignLineage | null;
 }
 
 // Store Types

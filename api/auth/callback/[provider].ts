@@ -25,6 +25,7 @@ interface UserProfileRecord {
   providerSubject: string;
   email: string;
   displayName?: string;
+  handle?: string;
   createdAt: number;
 }
 
@@ -97,13 +98,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   const profileKey = userProfileKey(userId);
   const existing = safeParse(await redis.get(profileKey));
   const profileRecord: UserProfileRecord = existing
-    ? { ...existing, email: profile.email, displayName: profile.displayName }
+    ? {
+        ...existing,
+        email: profile.email,
+        displayName: profile.displayName,
+        handle: profile.handle,
+      }
     : {
         userId,
         provider,
         providerSubject: profile.subject,
         email: profile.email,
         displayName: profile.displayName,
+        handle: profile.handle,
         createdAt: now,
       };
   // Profile TTL is bumped on every successful sign-in. Active users keep

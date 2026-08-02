@@ -9,6 +9,7 @@ import {
 } from '@/core/store';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
+import { useCommunityPublishStore } from '@/core/store/communityPublish';
 import { initLayoutAnalytics } from '@/core/store/layoutAnalytics';
 import {
   useAutoSave,
@@ -52,6 +53,7 @@ import { useSupportersRouting } from '@/shared/hooks/useSupportersRouting';
 import { usePlaceBinFromURL } from '@/features/bin-designer/hooks/usePlaceBinInLayout';
 import { useBackgroundThumbnailRegen } from '@/features/bin-designer';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
+import { useCommunityPublishReturn } from '@/shared/hooks/useCommunityPublishReturn';
 import { SHORTCUTS } from '@/core/constants';
 
 // Lazy-loaded so the sync chunk only fetches when the user opts into the
@@ -115,6 +117,9 @@ const CollabProvider = lazyWithRetry(() =>
 const BinExampleGallery = lazyWithRetry(() =>
   import('@/features/bin-designer/components/ExampleGallery').then(namedExport('ExampleGallery'))
 );
+const CommunityPublishDialog = lazyWithRetry(() =>
+  import('@/features/community/components/PublishDialog').then(namedExport('PublishDialog'))
+);
 
 let hasRenderedInitialLayout = false;
 
@@ -141,6 +146,8 @@ export default function App() {
   });
   const binExampleGalleryOpen = useBinExampleGalleryStore((s) => s.isOpen);
   const closeBinExampleGallery = useBinExampleGalleryStore((s) => s.close);
+  const communityPublishOpen = useCommunityPublishStore((s) => s.isOpen);
+  const communityShowcaseEnabled = useFeatureFlag('community_showcase');
   const [commandPaletteInitialQuery, setCommandPaletteInitialQuery] = useState('');
 
   // Allow external surfaces (e.g. HelpModal's empty-state fall-through) to open
@@ -214,6 +221,7 @@ export default function App() {
   usePlaceBinFromURL();
   useOwnedShareSync();
   useBackgroundThumbnailRegen();
+  useCommunityPublishReturn();
 
   useEffect(() => {
     return initLayoutAnalytics();
@@ -565,6 +573,11 @@ export default function App() {
       {binExampleGalleryOpen && (
         <Suspense fallback={null}>
           <BinExampleGallery onClose={closeBinExampleGallery} />
+        </Suspense>
+      )}
+      {communityShowcaseEnabled && communityPublishOpen && (
+        <Suspense fallback={null}>
+          <CommunityPublishDialog />
         </Suspense>
       )}
       {!isMobile && commandPaletteOpen && (

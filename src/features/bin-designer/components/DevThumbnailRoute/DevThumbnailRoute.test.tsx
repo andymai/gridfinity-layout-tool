@@ -14,7 +14,7 @@ vi.mock('@/features/bin-designer/hooks/useGeneration', () => ({
 
 vi.mock('@/features/bin-designer/utils/thumbnail', () => ({
   captureThumbnailAtPreset: () => null,
-  exportPreviewGlb: async () => null,
+  exportCommunityGlb: () => Promise.resolve(null),
   __debugSceneMaterials: () => null,
 }));
 

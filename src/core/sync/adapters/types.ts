@@ -15,6 +15,7 @@
  */
 
 import type { Layout } from '@/core/types';
+import type { CommunityDesignLineage } from '@/shared/types/community';
 
 /**
  * Common shape every synced item presents to the engine, regardless of
@@ -99,6 +100,13 @@ export interface DesignSyncPayload {
    * as a sibling field in the design envelope.
    */
   tags?: readonly string[];
+  /**
+   * Community publish id (`CommunityDesign.id`). `null` means explicitly
+   * unpublished; absent means the payload predates the field.
+   */
+  publishedId?: string | null;
+  /** Remix lineage snapshot, mirrors `CommunityDesignLineage`. */
+  lineage?: CommunityDesignLineage | null;
 }
 
 /**

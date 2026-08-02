@@ -21,6 +21,7 @@ import { useThumbnailCapture } from '@/features/bin-designer/hooks/useThumbnailC
 import { useDesignerUrlSync } from '@/features/bin-designer/hooks/useDesignerUrlSync';
 import { useUnsavedWarning } from '@/features/bin-designer/hooks/useUnsavedWarning';
 import { useBinDefaultCommandBridge } from '@/features/bin-designer/hooks/useBinDefaultCommandBridge';
+import { useCommunityPublishLifecycle } from '@/features/bin-designer/hooks/useCommunityPublish';
 import { useDesignerFirstRun } from '@/features/bin-designer/hooks/useDesignerFirstRun';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useResponsive } from '@/shared/hooks/useResponsive';
@@ -73,6 +74,9 @@ export function DesignerPage() {
 
   // Bridge command-palette "bin default" commands (window events) to actions
   useBinDefaultCommandBridge();
+
+  // Community publish: recapture assets while the dialog waits, resume after OAuth
+  useCommunityPublishLifecycle();
 
   const { isDesktop, isMobile, isLandscape } = useResponsive();
   const cutoutEditorOpen = useDesignerStore((s) => s.ui.cutoutEditorOpen);

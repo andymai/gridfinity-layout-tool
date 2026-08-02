@@ -146,6 +146,8 @@
     "common.notes",
     "common.redditCommunity",
     "common.standard",
+    "community.publish.form.descriptionLabel",
+    "community.publish.form.nameLabel",
     "dashboard.filament",
     "designLinking.experimental",
     "dock.syncStatusOffline",
