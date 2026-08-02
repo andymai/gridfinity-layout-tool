@@ -99,15 +99,29 @@ export function DrawerOutlineOverlay({ cellSize, gap }: DrawerOutlineOverlayProp
     const toPxX = (mm: number): number => (mm / gridUnitMm) * unitPx;
     const toPxY = (mm: number): number => (mm / gridUnitMmY) * unitPxY;
 
-    // Frame the SVG to the union of the padded plate and the shape's flattened
-    // bbox (arcs expanded), so an oversize/off-edge perimeter is not clipped by
-    // the SVG's overflow (#3107). With an in-bounds shape the union is the plate.
+    // Frame the SVG to the union of the padded plate and everything drawn (arcs
+    // expanded), so an oversize/off-edge perimeter — or a rim overhang beyond it
+    // — is not clipped by the SVG's overflow (#3107). The rim (`plateLoop`) is
+    // drawn from `paddedOutline`, which reaches past the raw outline's bbox by
+    // the padding, so it must be part of the frame too. With an in-bounds shape
+    // and no rim the union is just the plate.
     const flat = flattenOutline(outline);
+    // Same (x, y) → px each loop is drawn with below: the shape is inset by
+    // (shapeTx, shapeTy); the padded rim maps directly.
+    const framePts: { x: number; y: number }[] = flat.map((p) => ({
+      x: toPxX(p.x + shapeTx),
+      y: toPxY(p.y + shapeTy),
+    }));
+    if (paddedOutline !== null) {
+      for (const p of flattenOutline(paddedOutline)) {
+        framePts.push({ x: toPxX(p.x), y: toPxY(p.y) });
+      }
+    }
     let minX = Infinity;
     let maxX = -Infinity;
     let minY = Infinity;
     let maxY = -Infinity;
-    for (const p of flat) {
+    for (const p of framePts) {
       minX = Math.min(minX, p.x);
       maxX = Math.max(maxX, p.x);
       minY = Math.min(minY, p.y);
@@ -118,12 +132,7 @@ export function DrawerOutlineOverlay({ cellSize, gap }: DrawerOutlineOverlayProp
       gridD + padT + padB,
       padL,
       padT,
-      {
-        minX: toPxX(minX + shapeTx),
-        maxX: toPxX(maxX + shapeTx),
-        minY: toPxY(minY + shapeTy),
-        maxY: toPxY(maxY + shapeTy),
-      }
+      { minX, maxX, minY, maxY }
     );
 
     // Padded outline maps directly; the drawer-local shape is shifted in by
