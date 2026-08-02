@@ -25,6 +25,7 @@ interface GhostPaddingOutlineProps {
   readonly width: number;
   readonly depth: number;
   readonly gridUnitMm: number;
+  readonly gridUnitMmY: number;
   readonly paddingLeft: number;
   readonly paddingRight: number;
   readonly paddingFront: number;
@@ -36,6 +37,7 @@ export function GhostPaddingOutline({
   width,
   depth,
   gridUnitMm,
+  gridUnitMmY,
   paddingLeft,
   paddingRight,
   paddingFront,
@@ -50,7 +52,7 @@ export function GhostPaddingOutline({
   const canvasHeight = size.height;
 
   const gridW = width * gridUnitMm;
-  const gridD = depth * gridUnitMm;
+  const gridD = depth * gridUnitMmY;
   const totalH = GRIDFINITY_SPEC.SOCKET_HEIGHT;
 
   // Slab edges: pockets centered at origin, slab offset by padding asymmetry

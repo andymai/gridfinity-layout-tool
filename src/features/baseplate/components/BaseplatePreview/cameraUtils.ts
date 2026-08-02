@@ -44,10 +44,12 @@ export function calculateIdealDistance(
   paddingFront: number,
   paddingBack: number,
   fov: number,
-  aspect = 1
+  aspect = 1,
+  // Depth-axis pitch for a non-square grid; defaults to the square X pitch.
+  gridUnitMmY = gridUnitMm
 ): number {
   const outerW = width * gridUnitMm + paddingLeft + paddingRight;
-  const outerD = depth * gridUnitMm + paddingFront + paddingBack;
+  const outerD = depth * gridUnitMmY + paddingFront + paddingBack;
 
   const halfFovTan = Math.tan((fov / 2) * (Math.PI / 180));
   const dForWidth = outerW / 2 / (halfFovTan * aspect * FRAME_FILL);

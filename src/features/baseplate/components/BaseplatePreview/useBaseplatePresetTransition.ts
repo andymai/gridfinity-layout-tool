@@ -22,6 +22,7 @@ export function useBaseplatePresetTransition(
   width: number,
   depth: number,
   gridUnitMm: number,
+  gridUnitMmY: number,
   paddingLeft: number,
   paddingRight: number,
   paddingFront: number,
@@ -49,7 +50,8 @@ export function useBaseplatePresetTransition(
         paddingFront,
         paddingBack,
         fov,
-        aspect
+        aspect,
+        gridUnitMmY
       );
 
       const direction = new THREE.Vector3(...CAMERA_PRESETS[preset]).normalize();
@@ -106,6 +108,7 @@ export function useBaseplatePresetTransition(
       width,
       depth,
       gridUnitMm,
+      gridUnitMmY,
       paddingLeft,
       paddingRight,
       paddingFront,

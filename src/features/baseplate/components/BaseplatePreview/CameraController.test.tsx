@@ -95,6 +95,7 @@ function renderController(
       width={overrides.width ?? 5}
       depth={overrides.depth ?? 5}
       gridUnitMm={42}
+      gridUnitMmY={42}
       paddingLeft={0}
       paddingRight={0}
       paddingFront={0}

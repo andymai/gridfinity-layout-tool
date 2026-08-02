@@ -23,6 +23,7 @@ export function DimensionLabels({
   width,
   depth,
   gridUnitMm,
+  gridUnitMmY,
   paddingLeft,
   paddingRight,
   paddingFront,
@@ -31,16 +32,16 @@ export function DimensionLabels({
   width: number;
   depth: number;
   gridUnitMm: number;
+  gridUnitMmY: number;
   paddingLeft: number;
   paddingRight: number;
   paddingFront: number;
   paddingBack: number;
 }) {
   const colors = useThreeColors();
-  const GS = gridUnitMm;
 
-  const gridW = width * GS;
-  const gridD = depth * GS;
+  const gridW = width * gridUnitMm;
+  const gridD = depth * gridUnitMmY;
   const totalW = gridW + paddingLeft + paddingRight;
   const totalD = gridD + paddingFront + paddingBack;
 

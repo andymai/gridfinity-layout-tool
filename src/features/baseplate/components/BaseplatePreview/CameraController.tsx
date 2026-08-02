@@ -37,6 +37,7 @@ export function CameraController({
   width,
   depth,
   gridUnitMm,
+  gridUnitMmY,
   paddingLeft,
   paddingRight,
   paddingFront,
@@ -49,6 +50,7 @@ export function CameraController({
   width: number;
   depth: number;
   gridUnitMm: number;
+  gridUnitMmY: number;
   paddingLeft: number;
   paddingRight: number;
   paddingFront: number;
@@ -88,12 +90,14 @@ export function CameraController({
       paddingFront,
       paddingBack,
       fov,
-      aspect
+      aspect,
+      gridUnitMmY
     );
   }, [
     width,
     depth,
     gridUnitMm,
+    gridUnitMmY,
     paddingLeft,
     paddingRight,
     paddingFront,

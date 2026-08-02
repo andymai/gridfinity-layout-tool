@@ -16,8 +16,10 @@ interface FootprintGridProps {
   width: number;
   /** Bin depth in grid units */
   depth: number;
-  /** Grid unit size in mm (defaults to standard 42mm) */
+  /** Grid unit size in mm along X (defaults to standard 42mm) */
   gridUnitMm?: number;
+  /** Depth-axis pitch for a non-square grid; defaults to the X pitch */
+  gridUnitMmY?: number;
 }
 
 /** How many grid units the floor extends beyond the bin footprint */
@@ -35,7 +37,7 @@ const gridVertexShader = /* glsl */ `
 `;
 
 const gridFragmentShader = /* glsl */ `
-  uniform float gridSize;
+  uniform vec2 gridSize;
   uniform vec2 gridOffset;
   uniform float fadeStart;
   uniform float fadeEnd;
@@ -70,28 +72,32 @@ const gridFragmentShader = /* glsl */ `
  * the bin's cell boundaries, so the bin appears correctly placed on
  * the grid cells it occupies.
  */
-export function FootprintGrid({ width, depth, gridUnitMm }: FootprintGridProps) {
+export function FootprintGrid({ width, depth, gridUnitMm, gridUnitMmY }: FootprintGridProps) {
   const colors = useThreeColors();
   const GS = gridUnitMm ?? GRIDFINITY.GRID_SIZE;
+  const GSY = gridUnitMmY ?? GS;
+  // Floor size + radial fade are isotropic; size them off the larger pitch so a
+  // non-square grid never fades before its own edge.
+  const maxGS = Math.max(GS, GSY);
   // Floor size: extends well beyond the bin for the "infinite" illusion
   const maxDim = Math.max(width, depth);
-  const floorSize = Math.max((maxDim + GRID_EXTENT * 2) * GS, GS * MIN_FLOOR_GRID_UNITS);
+  const floorSize = Math.max((maxDim + GRID_EXTENT * 2) * maxGS, maxGS * MIN_FLOOR_GRID_UNITS);
 
   // Grid offset: shift the grid pattern so lines align with the bin's cell boundaries
   // The bin is centered at origin, so offset by half the nominal width/depth
   const offsetX = (width * GS) / 2;
-  const offsetY = (depth * GS) / 2;
+  const offsetY = (depth * GSY) / 2;
 
   // Fade distances: grid stays crisp near the bin, fades out toward edges
-  const fadeStart = (maxDim / 2 + 4) * GS;
-  const fadeEnd = (maxDim / 2 + GRID_EXTENT) * GS;
+  const fadeStart = (maxDim / 2 + 4) * maxGS;
+  const fadeEnd = (maxDim / 2 + GRID_EXTENT) * maxGS;
 
   const material = useMemo(() => {
     return new THREE.ShaderMaterial({
       vertexShader: gridVertexShader,
       fragmentShader: gridFragmentShader,
       uniforms: {
-        gridSize: { value: GS },
+        gridSize: { value: new THREE.Vector2(GS, GSY) },
         gridOffset: { value: new THREE.Vector2(offsetX, offsetY) },
         fadeStart: { value: fadeStart },
         fadeEnd: { value: fadeEnd },
@@ -102,7 +108,7 @@ export function FootprintGrid({ width, depth, gridUnitMm }: FootprintGridProps) 
       transparent: true,
       depthWrite: false,
     });
-  }, [GS, offsetX, offsetY, fadeStart, fadeEnd, colors.footprintLine]);
+  }, [GS, GSY, offsetX, offsetY, fadeStart, fadeEnd, colors.footprintLine]);
 
   // Dispose shader material on unmount/change
   useEffect(() => {

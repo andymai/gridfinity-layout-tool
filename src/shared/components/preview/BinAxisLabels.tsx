@@ -22,8 +22,10 @@ interface BinAxisLabelsProps {
   width: number;
   /** Bin depth in grid units (can be fractional for half-bin mode) */
   depth: number;
-  /** Grid unit size in mm (defaults to standard 42mm) */
+  /** Grid unit size in mm along X (defaults to standard 42mm) */
   gridUnitMm?: number;
+  /** Depth-axis pitch for a non-square grid; defaults to the X pitch */
+  gridUnitMmY?: number;
 }
 
 // Styling constants matched to planner's AxisLabels proportions
@@ -42,12 +44,13 @@ const FRACTIONAL_LABEL = '+.5'; // Display label for half-unit cells
  * Grid axis labels showing column/row numbers along bin edges.
  * Matches the architectural drawing style of the layout planner.
  */
-export function BinAxisLabels({ width, depth, gridUnitMm }: BinAxisLabelsProps) {
+export function BinAxisLabels({ width, depth, gridUnitMm, gridUnitMmY }: BinAxisLabelsProps) {
   const colors = useThreeColors();
   const GS = gridUnitMm ?? GRIDFINITY.GRID_SIZE;
+  const GSY = gridUnitMmY ?? GS;
 
   const halfW = (width * GS) / 2;
-  const halfD = (depth * GS) / 2;
+  const halfD = (depth * GSY) / 2;
 
   const integerWidth = Math.floor(width);
   const integerDepth = Math.floor(depth);
@@ -89,7 +92,7 @@ export function BinAxisLabels({ width, depth, gridUnitMm }: BinAxisLabelsProps) 
 
     // Y-axis ticks along the left edge — outward only (matching planner)
     for (let i = 0; i <= integerDepth; i++) {
-      const y = -halfD + i * GS;
+      const y = -halfD + i * GSY;
       positions.push(-halfW, y, TICK_OFFSET);
       positions.push(-halfW - TICK_SIZE, y, TICK_OFFSET);
     }
@@ -101,7 +104,7 @@ export function BinAxisLabels({ width, depth, gridUnitMm }: BinAxisLabelsProps) 
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     return geo;
-  }, [halfW, halfD, integerWidth, integerDepth, hasFractionalWidth, hasFractionalDepth, GS]);
+  }, [halfW, halfD, integerWidth, integerDepth, hasFractionalWidth, hasFractionalDepth, GS, GSY]);
 
   // Cleanup geometry on unmount or change
   useEffect(() => {
@@ -145,8 +148,8 @@ export function BinAxisLabels({ width, depth, gridUnitMm }: BinAxisLabelsProps) 
       {yLabels.map(({ value, isFractional }, idx) => {
         // Center label in its grid cell
         const yPos = isFractional
-          ? -halfD + (integerDepth + (depth - integerDepth) / 2) * GS
-          : -halfD + (value - 0.5) * GS;
+          ? -halfD + (integerDepth + (depth - integerDepth) / 2) * GSY
+          : -halfD + (value - 0.5) * GSY;
         const xPos = -halfW - LABEL_OFFSET;
         const label = isFractional ? FRACTIONAL_LABEL : value.toString();
 

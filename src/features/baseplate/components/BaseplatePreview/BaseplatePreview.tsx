@@ -149,6 +149,7 @@ export function BaseplatePreview({
     width,
     depth,
     gridUnitMm,
+    gridUnitMmY,
     paddingLeft,
     paddingRight,
     paddingFront,
@@ -333,6 +334,7 @@ export function BaseplatePreview({
                   width={width}
                   depth={depth}
                   gridUnitMm={gridUnitMm}
+                  gridUnitMmY={gridUnitMmY}
                   paddingLeft={paddingLeft}
                   paddingRight={paddingRight}
                   paddingFront={paddingFront}
@@ -382,6 +384,7 @@ export function BaseplatePreview({
                   width={gridWidthUnits}
                   depth={gridDepthUnits}
                   gridUnitMm={gridUnitMm}
+                  gridUnitMmY={gridUnitMmY}
                 />
 
                 {/* Remaining single-plate overlays (ghost, dimensions) don't apply
@@ -394,6 +397,7 @@ export function BaseplatePreview({
                         width={width}
                         depth={depth}
                         gridUnitMm={gridUnitMm}
+                        gridUnitMmY={gridUnitMmY}
                         paddingLeft={paddingLeft}
                         paddingRight={paddingRight}
                         paddingFront={paddingFront}
@@ -405,11 +409,17 @@ export function BaseplatePreview({
                     {/* Hide measurement labels in exploded mode -- pieces scatter beyond these positions */}
                     {splitViewMode !== 'exploded' && (
                       <>
-                        <BinAxisLabels width={width} depth={depth} gridUnitMm={gridUnitMm} />
+                        <BinAxisLabels
+                          width={width}
+                          depth={depth}
+                          gridUnitMm={gridUnitMm}
+                          gridUnitMmY={gridUnitMmY}
+                        />
                         <DimensionLabels
                           width={width}
                           depth={depth}
                           gridUnitMm={gridUnitMm}
+                          gridUnitMmY={gridUnitMmY}
                           paddingLeft={paddingLeft}
                           paddingRight={paddingRight}
                           paddingFront={paddingFront}
