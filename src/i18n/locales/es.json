@@ -3183,6 +3183,7 @@
   "toast.binRotated": "Bin rotado",
   "toast.binsDeleted": "{count} bin(s) eliminado(s)",
   "toast.binsDisplacedByShape": "{count} bin(s) movidos al depósito (fuera de la nueva forma)",
+  "toast.drawerSizeLimitedByShape": "El cajón no puede reducirse por debajo de su forma personalizada. Edita o restablece la forma primero.",
   "toast.outlineImport.parseFailed": "No se pudo leer ese archivo como un dibujo SVG o DXF.",
   "toast.outlineImport.noClosedLoop": "No se encontró una forma cerrada. El perímetro debe unirse por completo.",
   "toast.outlineImport.tooComplex": "Esa forma tiene demasiados puntos, incluso tras simplificarla.",

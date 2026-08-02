@@ -3003,6 +3003,7 @@
   "toast.binRotated": "Bin rotacionado",
   "toast.binsDeleted": "{count} bin(s) excluído(s)",
   "toast.binsDisplacedByShape": "{count} bin(s) movidos para o depósito (fora do novo formato)",
+  "toast.drawerSizeLimitedByShape": "A gaveta não pode ficar menor que sua forma personalizada. Edite ou redefina a forma primeiro.",
   "toast.outlineImport.parseFailed": "Não foi possível ler esse arquivo como um desenho SVG ou DXF.",
   "toast.outlineImport.noClosedLoop": "Nenhuma forma fechada encontrada. O perímetro precisa se unir por completo.",
   "toast.outlineImport.tooComplex": "Essa forma tem pontos demais, mesmo após a simplificação.",

@@ -1,9 +1,16 @@
-/** Set the grid unit in mm. Clamps to [1, 200]; captures `previousMm` for undo. */
+/**
+ * Set the grid unit in mm. Clamps to the pitch range; with a custom drawer
+ * outline active the floor rises so the mm extent keeps containing the shape —
+ * the outline is stored in absolute mm, and a smaller pitch would leave it
+ * overhanging for the read-side normalizer to clip on the next load (#3149).
+ * Captures `previousMm` for undo.
+ */
 
 import { z } from 'zod';
 import { ok } from '@/core/result';
 import { clamp } from '@/shared/utils/validation';
 import { mm } from '@/core/types';
+import { GRID_PITCH_MM_MAX, gridPitchFloors } from '@/shared/utils/drawerOutline';
 import { defineCommand } from '../../defineCommand';
 
 const payloadSchema = z.object({ mm: z.number() });
@@ -18,8 +25,9 @@ export const setGridUnitMm = defineCommand({
   descriptionKey: 'undo.action.layoutSetGridUnitMm',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (payload, ctx) => {
-    const previousMm = ctx.aggregate.gridUnitMm as number;
-    const newMm = clamp(payload.mm, 1, 200);
+    const layout = ctx.aggregate;
+    const previousMm = layout.gridUnitMm as number;
+    const newMm = clamp(payload.mm, gridPitchFloors(layout).x, GRID_PITCH_MM_MAX);
     return ok({
       value: undefined,
       event: { payload: { mm: newMm, previousMm } },

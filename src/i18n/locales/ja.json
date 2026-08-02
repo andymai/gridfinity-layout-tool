@@ -3183,6 +3183,7 @@
   "toast.binRotated": "ビンを回転しました",
   "toast.binsDeleted": "{count}個のビンを削除しました",
   "toast.binsDisplacedByShape": "{count}個のビンをスタッシュへ移動しました（新しい形状の外）",
+  "toast.drawerSizeLimitedByShape": "引き出しはカスタム形状より小さくできません。先に形状を編集するかリセットしてください。",
   "toast.outlineImport.parseFailed": "そのファイルは SVG または DXF の図面として読み取れませんでした。",
   "toast.outlineImport.noClosedLoop": "閉じた形状が見つかりません。外周は一周つながっている必要があります。",
   "toast.outlineImport.tooComplex": "その形状は簡略化しても点が多すぎます。",

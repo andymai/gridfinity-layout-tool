@@ -3183,6 +3183,7 @@
   "toast.binRotated": "Bin ruotato",
   "toast.binsDeleted": "Eliminati {count} bin",
   "toast.binsDisplacedByShape": "{count} bin spostati nell'area di sosta (fuori dalla nuova forma)",
+  "toast.drawerSizeLimitedByShape": "Il cassetto non può ridursi oltre la sua forma personalizzata. Modifica o reimposta prima la forma.",
   "toast.outlineImport.parseFailed": "Impossibile leggere quel file come disegno SVG o DXF.",
   "toast.outlineImport.noClosedLoop": "Nessuna forma chiusa trovata. Il perimetro deve chiudersi del tutto.",
   "toast.outlineImport.tooComplex": "Quella forma ha troppi punti, anche dopo la semplificazione.",

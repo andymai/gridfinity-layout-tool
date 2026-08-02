@@ -5,6 +5,7 @@ import { gridUnits, mm } from '@/core/types';
 import { createTestLayout } from '@/test/testUtils';
 import {
   canonicalStartOutline,
+  ceilHalfUnits,
   hashOutline,
   minDrawerUnitsForOutline,
   normalizeDrawerOutline,
@@ -310,6 +311,19 @@ describe('canonicalStartOutline', () => {
   });
 });
 
+describe('ceilHalfUnits', () => {
+  it('does not ceil float noise at an exact unit boundary', () => {
+    // 4 × 45.3 = 181.20000000000002: without the epsilon this reads as 4.5.
+    expect(ceilHalfUnits(4 * 45.3, 45.3)).toBe(4);
+    expect(ceilHalfUnits(8.5 * 48, 48)).toBe(8.5);
+  });
+
+  it('rounds a real overhang up to the next half unit', () => {
+    expect(ceilHalfUnits(181.5, 45.3)).toBe(4.5);
+    expect(ceilHalfUnits(396, 48)).toBe(8.5);
+  });
+});
+
 describe('minDrawerUnitsForOutline', () => {
   it('returns the exact unit dims for a whole-unit shape', () => {
     expect(minDrawerUnitsForOutline(L_SHAPE, U)).toEqual({ width: 4, depth: 4 });
@@ -352,6 +366,18 @@ describe('minDrawerUnitsForOutline', () => {
     };
     // The #3149 repro: 48 × 42 pitch needs an 8.5 × 7.5 drawer.
     expect(minDrawerUnitsForOutline(rect, 48, 42)).toEqual({ width: 8.5, depth: 7.5 });
+  });
+
+  it('floors on the outline max, not its width', () => {
+    const offset: DrawerOutline = {
+      vertices: [
+        { x: 2 * U, y: 0 },
+        { x: 5 * U, y: 0 },
+        { x: 5 * U, y: 3 * U },
+        { x: 2 * U, y: 3 * U },
+      ],
+    };
+    expect(minDrawerUnitsForOutline(offset, U)).toEqual({ width: 5, depth: 3 });
   });
 
   it('does not ceil an extent already on a half unit (float noise guarded)', () => {

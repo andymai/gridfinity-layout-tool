@@ -10,6 +10,8 @@
 
 import type { DrawerOutline, Layout, OutlineVertex } from '@/core/types';
 import { effectiveGridUnitMmY } from '@/core/types';
+import { CONSTRAINTS } from '@/core/constants';
+import { clamp } from './math';
 import {
   arcGeometry,
   arcPointAt,
@@ -416,7 +418,11 @@ function clipHalfPlane(
  * two DIFFERENT lines, so even cuts far smaller than any area epsilon are
  * preserved as intentional geometry.
  */
-function isFullRectangle(outline: DrawerOutline, widthMm: number, depthMm: number): boolean {
+export function isOutlineFullRectangle(
+  outline: DrawerOutline,
+  widthMm: number,
+  depthMm: number
+): boolean {
   const n = outline.vertices.length;
   for (let i = 0; i < n; i++) {
     const a = outline.vertices[i];
@@ -453,11 +459,21 @@ function dropCoincident(verts: MutableVertex[]): MutableVertex[] {
 }
 
 /**
+ * Smallest half-unit count covering `mm` at `pitch`. The epsilon keeps an
+ * exact boundary (e.g. 8.5 units × 48mm, whose product carries float noise)
+ * from ceiling an extra half unit. Every "how many units does this length
+ * need" callsite must share this so clamps and grows agree on the boundary.
+ */
+export function ceilHalfUnits(mm: number, pitch: number): number {
+  return Math.ceil((mm / pitch) * 2 - 1e-9) / 2;
+}
+
+/**
  * Smallest half-unit drawer dims that contain the outline — the floor a
  * drawer resize may shrink to while a custom shape is active (#3149: a resize
  * must never crop or extend the user's shape, so the dims clamp instead).
- * Measured on the flattened path (an arc bows past its own endpoints), same
- * as the pen editor's auto-grow, so clamp and grow agree on the boundary.
+ * Measured on the flattened path (an arc bows past its own endpoints) and on
+ * {@link ceilHalfUnits}, shared with the pen editor's auto-grow.
  */
 export function minDrawerUnitsForOutline(
   outline: DrawerOutline,
@@ -466,12 +482,58 @@ export function minDrawerUnitsForOutline(
   gridUnitMmY: number = gridUnitMm
 ): { readonly width: number; readonly depth: number } {
   const b = outlineBounds(outline);
-  const ceilHalf = (mm: number, pitch: number): number =>
-    Math.max(0.5, Math.ceil((mm / pitch) * 2 - 1e-9) / 2);
   return {
-    width: ceilHalf(b.maxX, gridUnitMm),
-    depth: ceilHalf(b.maxY, gridUnitMmY),
+    width: Math.max(0.5, ceilHalfUnits(b.maxX, gridUnitMm)),
+    depth: Math.max(0.5, ceilHalfUnits(b.maxY, gridUnitMmY)),
   };
+}
+
+/**
+ * Drawer dims (grid units) a resize may clamp down to: the outline's bounding
+ * half-unit grid while a custom shape is active, the plain grid minimum
+ * without one. Shared by the CQRS command, the store mirror and the size
+ * steppers so all three refuse the same shrinks (#3149).
+ */
+export function drawerSizeFloors(
+  outline: DrawerOutline | undefined,
+  gridUnitMm: number,
+  gridUnitMmY: number = gridUnitMm
+): { readonly width: number; readonly depth: number } {
+  if (outline === undefined) {
+    return { width: CONSTRAINTS.GRID_MIN, depth: CONSTRAINTS.GRID_MIN };
+  }
+  const min = minDrawerUnitsForOutline(outline, gridUnitMm, gridUnitMmY);
+  return {
+    width: clamp(min.width, CONSTRAINTS.GRID_MIN, CONSTRAINTS.GRID_MAX),
+    depth: clamp(min.depth, CONSTRAINTS.GRID_MIN, CONSTRAINTS.GRID_MAX),
+  };
+}
+
+/** Range a grid pitch may be set to (mm), either axis. */
+const GRID_PITCH_MM_MIN = 1;
+export const GRID_PITCH_MM_MAX = 200;
+
+/**
+ * Grid pitch (mm) a pitch change may clamp down to, per axis. Lowering the
+ * pitch shrinks the mm extent without touching the stored outline, and the
+ * read-side normalizer would then clip the shape on the next load (#3149:
+ * nothing may mutate the shape implicitly, so the pitch clamps instead).
+ * Floors round up to 0.01mm so `units × pitch ≥ bounds` survives float noise.
+ * On a square grid the X pitch drives both axes, so its floor honours the Y
+ * bound too. Shared by the CQRS commands and their store mirrors.
+ */
+export function gridPitchFloors(layout: Pick<Layout, 'drawer' | 'gridUnitMm' | 'gridUnitMmY'>): {
+  readonly x: number;
+  readonly y: number;
+} {
+  const outline = layout.drawer.outline;
+  if (outline === undefined) return { x: GRID_PITCH_MM_MIN, y: GRID_PITCH_MM_MIN };
+  const b = outlineBounds(outline);
+  const floor = (extentMm: number, units: number): number =>
+    clamp(Math.ceil((extentMm / units) * 100 - 1e-6) / 100, GRID_PITCH_MM_MIN, GRID_PITCH_MM_MAX);
+  const x = floor(b.maxX, layout.drawer.width);
+  const y = floor(b.maxY, layout.drawer.depth);
+  return { x: layout.gridUnitMmY === undefined ? Math.max(x, y) : x, y };
 }
 
 /**
@@ -529,7 +591,7 @@ export function normalizeDrawerOutline(layout: Layout): Layout {
     widthMm,
     depthMm
   );
-  if (isFullRectangle(candidate, widthMm, depthMm)) return drop();
+  if (isOutlineFullRectangle(candidate, widthMm, depthMm)) return drop();
   if (validateOutline(candidate, widthMm, depthMm, layout.gridUnitMm, gridUnitMmY) !== null) {
     return drop();
   }

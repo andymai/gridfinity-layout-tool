@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { produce } from 'immer';
 import { isOk } from '@/core/result';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
+import type { DrawerOutline, Layout } from '@/core/types';
 import { binId, gridUnits, heightUnits } from '@/core/types';
 import { updateDrawer } from './updateDrawer';
 import { makeLayout, makeBin } from './_testHelpers';
@@ -81,9 +82,9 @@ describe('v2 drawer.update with an outline', () => {
       { x: 0, y: 4 * U },
     ],
   };
-  const withOutline = () => {
+  const withOutline = (outline: DrawerOutline = L_OUTLINE): Layout => {
     const base = makeLayout();
-    return { ...base, drawer: { ...base.drawer, outline: L_OUTLINE } };
+    return { ...base, drawer: { ...base.drawer, outline } };
   };
 
   it('clamps a shrink to the outline bounding grid and never touches the shape (#3149)', () => {
@@ -114,25 +115,61 @@ describe('v2 drawer.update with an outline', () => {
 
   it('clamps to the half-unit ceiling of a shape that overhangs whole units', () => {
     // Shape reaching to 4.2 units needs a 4.5-unit drawer.
-    const base = makeLayout();
-    const layout = {
-      ...base,
-      drawer: {
-        ...base.drawer,
-        outline: {
-          vertices: [
-            { x: 0, y: 0 },
-            { x: 4.2 * U, y: 0 },
-            { x: 4.2 * U, y: 4 * U },
-            { x: 0, y: 4 * U },
-          ],
-        },
-      },
-    };
+    const layout = withOutline({
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 4.2 * U, y: 0 },
+        { x: 4.2 * U, y: 4 * U },
+        { x: 0, y: 4 * U },
+      ],
+    });
     const result = updateDrawer.handle({ width: 3 }, { aggregate: layout });
     expect(isOk(result)).toBe(true);
     if (!isOk(result)) return;
     expect(result.value.event.payload.changes.width).toBe(gridUnits(4.5));
+  });
+
+  it('floors on the outline MAX, not its width — an offset shape counts from its far edge', () => {
+    // Shape spanning [2u, 5u]: only 3 units wide, but the drawer must keep
+    // reaching 5 units for it to stay inside.
+    const layout = withOutline({
+      vertices: [
+        { x: 2 * U, y: 0 },
+        { x: 5 * U, y: 0 },
+        { x: 5 * U, y: 3 * U },
+        { x: 2 * U, y: 3 * U },
+      ],
+    });
+    const result = updateDrawer.handle({ width: 3 }, { aggregate: layout });
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    expect(result.value.event.payload.changes.width).toBe(gridUnits(5));
+  });
+
+  it('drops a rectangle-equivalent outline when the shrink lands on its bbox', () => {
+    // 4×4 rect outline inside the 6×4 drawer (a real shape at 6 wide).
+    // Shrinking to exactly 4 makes it trace the full rectangle — normalized
+    // to "no outline", same as setOutline and the read-side guard.
+    const layout = withOutline({
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 4 * U, y: 0 },
+        { x: 4 * U, y: 4 * U },
+        { x: 0, y: 4 * U },
+      ],
+    });
+    const result = updateDrawer.handle({ width: 4 }, { aggregate: layout });
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    const payload = result.value.event.payload;
+    expect(payload.changes.width).toBe(gridUnits(4));
+    expect('outline' in payload.changes).toBe(true);
+    expect(payload.changes.outline).toBeUndefined();
+
+    const next = produce(layout, (draft) => {
+      updateDrawer.apply({ payload } as never, draft);
+    });
+    expect('outline' in next.drawer).toBe(false);
   });
 
   it('displaces bins that fall outside the unchanged outline after a grow', () => {

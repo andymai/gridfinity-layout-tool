@@ -3003,6 +3003,7 @@
   "toast.binRotated": "Bin pivoté",
   "toast.binsDeleted": "{count} bin(s) supprimé(s)",
   "toast.binsDisplacedByShape": "{count} bac(s) déplacés en réserve (hors de la nouvelle forme)",
+  "toast.drawerSizeLimitedByShape": "Le tiroir ne peut pas devenir plus petit que sa forme personnalisée. Modifiez ou réinitialisez d'abord la forme.",
   "toast.outlineImport.parseFailed": "Ce fichier n’a pas pu être lu comme un dessin SVG ou DXF.",
   "toast.outlineImport.noClosedLoop": "Aucune forme fermée trouvée. Le périmètre doit se refermer entièrement.",
   "toast.outlineImport.tooComplex": "Cette forme a trop de points, même après simplification.",

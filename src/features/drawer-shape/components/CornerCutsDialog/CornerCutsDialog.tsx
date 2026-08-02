@@ -8,8 +8,9 @@ import { useMutations } from '@/shared/contexts/MutationsContext';
 import { isOk } from '@/core/result';
 import { computeDisplacedBins } from '@/core/cqrs/v2/domain/drawer/displacement';
 import { trackDrawerShapeApplied } from '@/shared/analytics/posthog';
-import type { CornerCut, CornerCutParams } from '@/core/types';
+import type { CornerCut, CornerCutParams, DrawerOutline } from '@/core/types';
 import { effectiveGridUnitMmY } from '@/core/types';
+import { cornerCutsMatchVertices } from '@/shared/utils/cornerCutOutline';
 import { cornersToOutline, maxCutExtentMm, NO_CUTS } from '../../utils/cornersToOutline';
 
 interface CornerCutsDialogProps {
@@ -30,6 +31,27 @@ const CORNER_LAYOUT: ReadonlyArray<readonly [CornerKey, string]> = [
 
 function clampMm(value: number, maxMm: number): number {
   return Math.min(maxMm, Math.max(1, value));
+}
+
+/**
+ * The corner params this dialog may seed from, or undefined when the authoring
+ * echo cannot be trusted. The echo goes stale when the drawer resizes under it
+ * (#3149 keeps the outline byte-identical), so it counts only while it still
+ * reproduces the stored vertices at the CURRENT size — re-inscribing a stale
+ * echo on the new rectangle would silently replace the actual shape.
+ */
+function reproducibleCorners(
+  outline: DrawerOutline | undefined,
+  widthMm: number,
+  depthMm: number
+): CornerCutParams | undefined {
+  if (outline === undefined) return undefined;
+  const authoring = outline.authoring;
+  if (authoring?.kind !== 'corners' || authoring.corners === undefined) return undefined;
+  if (!cornerCutsMatchVertices(outline.vertices, widthMm, depthMm, authoring.corners)) {
+    return undefined;
+  }
+  return authoring.corners;
 }
 
 function defaultCut(kind: CutKind, maxMm: number): CornerCut {
@@ -64,21 +86,21 @@ export function CornerCutsDialog({ open, onClose }: CornerCutsDialogProps) {
   );
 
   const existing = layout.drawer.outline;
-  const seeded: CornerCutParams =
-    existing?.authoring?.kind === 'corners' && existing.authoring.corners !== undefined
-      ? existing.authoring.corners
-      : NO_CUTS;
+  const echoCorners = reproducibleCorners(
+    existing,
+    layout.drawer.width * layout.gridUnitMm,
+    layout.drawer.depth * gridUnitMmY
+  );
+  const seeded: CornerCutParams = echoCorners ?? NO_CUTS;
   const [cuts, setCuts] = useState<CornerCutParams | null>(null);
   const [confirmReplace, setConfirmReplace] = useState(false);
   const active = cuts ?? seeded;
 
   const maxMm = maxCutExtentMm(layout.drawer, layout.gridUnitMm, gridUnitMmY);
-  // A shape drawn with another editor — or a corners shape whose annotation
-  // was stripped by an older server (params lost) — must confirm before this
-  // dialog replaces it; the seeded pickers don't represent it.
-  const replacesForeignShape =
-    existing !== undefined &&
-    (existing.authoring?.kind !== 'corners' || existing.authoring.corners === undefined);
+  // A shape this dialog cannot reproduce — drawn with another editor, an
+  // annotation stripped by an older server, or a stale echo — must confirm
+  // before being replaced; the seeded pickers don't represent it.
+  const replacesForeignShape = existing !== undefined && echoCorners === undefined;
 
   const setCorner = useCallback(
     (key: CornerKey, cut: CornerCut) => {

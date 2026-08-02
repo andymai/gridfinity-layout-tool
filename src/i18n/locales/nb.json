@@ -3183,6 +3183,7 @@
   "toast.binRotated": "Bin rotert",
   "toast.binsDeleted": "Slettet {count} bin(s)",
   "toast.binsDisplacedByShape": "{count} bin(ner) flyttet til lageret (utenfor den nye formen)",
+  "toast.drawerSizeLimitedByShape": "Skuffen kan ikke bli mindre enn sin egendefinerte form. Rediger eller tilbakestill formen først.",
   "toast.outlineImport.parseFailed": "Denne filen kunne ikke leses som en SVG- eller DXF-tegning.",
   "toast.outlineImport.noClosedLoop": "Fant ingen lukket form. Omrisset må henge sammen hele veien rundt.",
   "toast.outlineImport.tooComplex": "Formen har for mange punkter, selv etter forenkling.",

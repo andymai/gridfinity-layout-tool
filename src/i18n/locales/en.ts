@@ -3727,6 +3727,8 @@ const en: Record<string, string> = {
   'drawerShape.editor.replacesDrawnShape':
     'The current perimeter was drawn freehand or imported. Applying a cell shape replaces it — curves and off-grid edges are lost.',
   'toast.binsDisplacedByShape': '{count} bin(s) moved to the stash (outside the new shape)',
+  'toast.drawerSizeLimitedByShape':
+    'The drawer cannot shrink below its custom shape. Edit or reset the shape first.',
   'toast.outlineImport.parseFailed': "That file couldn't be read as an SVG or DXF drawing.",
   'toast.outlineImport.noClosedLoop':
     'No closed shape found. The perimeter needs to join up all the way round.',

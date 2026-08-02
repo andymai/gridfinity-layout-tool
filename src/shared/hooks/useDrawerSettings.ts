@@ -20,6 +20,7 @@ import {
 import { validateHalfGridModeToggle } from '@/shared/utils/halfGridConstraints';
 import type { HalfGridConstraintViolation } from '@/shared/utils/halfGridConstraints';
 import { fitAxisUnits, halfUnitUpgrade } from '@/shared/utils/drawerFit';
+import { drawerSizeFloors } from '@/shared/utils/drawerOutline';
 import {
   trackDrawerHalfFitSuggestion,
   trackDrawerMeasuredCommitted,
@@ -73,6 +74,9 @@ export interface UseDrawerSettingsReturn {
   // Computed values
   widthStep: number;
   depthStep: number;
+  /** Size floor set by the custom drawer shape, 0.5 without one (#3149). */
+  drawerMinWidth: number;
+  drawerMinDepth: number;
   hasFractionalWidth: boolean;
   hasFractionalDepth: boolean;
   realWorldDimensions: {
@@ -306,6 +310,15 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   const depthStep = halfGridMode || hasFractionalDepth ? 0.5 : 1;
   const maxGridUnits = calcMaxGridUnits(printBedSize, gridUnitMm, printBedDepth, gridUnitMmY);
 
+  // A custom drawer shape floors the size (#3149: the command clamps rather
+  // than crop the shape); exposing the floor lets the steppers bound their
+  // range so the "−" button disables instead of silently doing nothing.
+  const drawerOutline = layout.drawer.outline;
+  const { width: drawerMinWidth, depth: drawerMinDepth } = useMemo(
+    () => drawerSizeFloors(drawerOutline, gridUnitMm, gridUnitMmY),
+    [drawerOutline, gridUnitMm, gridUnitMmY]
+  );
+
   const realWorldDimensions = useMemo(
     () => ({
       width: drawerWidth * gridUnitMm,
@@ -318,23 +331,23 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   const handleDrawerWidthChange = useCallback(
     (delta: number) => {
       const newWidth = Math.max(
-        0.5,
+        drawerMinWidth,
         Math.min(CONSTRAINTS.GRID_MAX, drawerWidth + delta * widthStep)
       ) as GridUnits;
       batch(() => updateDrawer({ width: newWidth }));
     },
-    [widthStep, drawerWidth, updateDrawer]
+    [widthStep, drawerWidth, drawerMinWidth, updateDrawer]
   );
 
   const handleDrawerDepthChange = useCallback(
     (delta: number) => {
       const newDepth = Math.max(
-        0.5,
+        drawerMinDepth,
         Math.min(CONSTRAINTS.GRID_MAX, drawerDepth + delta * depthStep)
       ) as GridUnits;
       batch(() => updateDrawer({ depth: newDepth }));
     },
-    [depthStep, drawerDepth, updateDrawer]
+    [depthStep, drawerDepth, drawerMinDepth, updateDrawer]
   );
 
   const handleDrawerHeightChange = useCallback(
@@ -360,26 +373,30 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
 
   const handleDrawerWidthInput = useCallback(
     (width: number) => {
-      const snapped = gridUnits(snapToHalf(Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, width))));
+      const snapped = gridUnits(
+        snapToHalf(Math.max(drawerMinWidth, Math.min(CONSTRAINTS.GRID_MAX, width)))
+      );
       batch(() => updateDrawer({ width: snapped }));
       if (isFractional(snapped) && !halfGridMode) {
         setHalfGridMode(true);
         addToast(t('toast.halfBinModeAutoEnabled'), 'info');
       }
     },
-    [updateDrawer, halfGridMode, setHalfGridMode, addToast, t]
+    [updateDrawer, drawerMinWidth, halfGridMode, setHalfGridMode, addToast, t]
   );
 
   const handleDrawerDepthInput = useCallback(
     (depth: number) => {
-      const snapped = gridUnits(snapToHalf(Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, depth))));
+      const snapped = gridUnits(
+        snapToHalf(Math.max(drawerMinDepth, Math.min(CONSTRAINTS.GRID_MAX, depth)))
+      );
       batch(() => updateDrawer({ depth: snapped }));
       if (isFractional(snapped) && !halfGridMode) {
         setHalfGridMode(true);
         addToast(t('toast.halfBinModeAutoEnabled'), 'info');
       }
     },
-    [updateDrawer, halfGridMode, setHalfGridMode, addToast, t]
+    [updateDrawer, drawerMinDepth, halfGridMode, setHalfGridMode, addToast, t]
   );
 
   // Fractional edge position handler
@@ -501,9 +518,15 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     batch(() =>
       updateDrawer({ width: drawerFitSuggestion.width, depth: drawerFitSuggestion.depth })
     );
+    // A custom shape floors the size (#3149), so the fit may land clamped —
+    // say so instead of dismissing the card as if the fit applied.
+    const landed = useLayoutStore.getState().layout.drawer;
+    if (landed.width !== drawerFitSuggestion.width || landed.depth !== drawerFitSuggestion.depth) {
+      addToast(t('toast.drawerSizeLimitedByShape'), 'info');
+    }
     setHalfFit(null);
     trackDrawerHalfFitSuggestion('accepted');
-  }, [drawerFitSuggestion, setHalfGridMode, updateDrawer]);
+  }, [drawerFitSuggestion, setHalfGridMode, updateDrawer, addToast, t]);
 
   const dismissDrawerFitSuggestion = useCallback(() => {
     setHalfFit(null);
@@ -651,6 +674,8 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     // Computed values
     widthStep,
     depthStep,
+    drawerMinWidth,
+    drawerMinDepth,
     hasFractionalWidth,
     hasFractionalDepth,
     realWorldDimensions,

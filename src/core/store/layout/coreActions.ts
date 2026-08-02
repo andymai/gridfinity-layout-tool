@@ -9,6 +9,7 @@ import type {
 } from '@/core/types';
 import { CONSTRAINTS, migrateBaseplateParams } from '@/core/constants';
 import { clamp } from '@/shared/utils/validation';
+import { GRID_PITCH_MM_MAX, gridPitchFloors } from '@/shared/utils/drawerOutline';
 import type { EditSource, SetLocal, ImmerSet, GetState } from './types';
 
 export function createCoreActions(setLocal: SetLocal, set: ImmerSet, _get: GetState) {
@@ -81,15 +82,26 @@ export function createCoreActions(setLocal: SetLocal, set: ImmerSet, _get: GetSt
       });
     },
 
+    // With a custom outline active the pitch floors rise so the mm extent
+    // keeps containing the shape — same rule as the CQRS commands (#3149).
     setGridUnitMm: (mm: number): void => {
       setLocal((state) => {
-        state.layout.gridUnitMm = clamp(mm, 1, 200) as Mm;
+        const floorX = gridPitchFloors(state.layout).x;
+        state.layout.gridUnitMm = clamp(mm, floorX, GRID_PITCH_MM_MAX) as Mm;
       });
     },
 
     setGridUnitMmY: (mm: number | null): void => {
       setLocal((state) => {
-        state.layout.gridUnitMmY = mm === null ? undefined : (clamp(mm, 1, 200) as Mm);
+        const floorY = gridPitchFloors(state.layout).y;
+        if (mm === null) {
+          // Clearing to a square grid is refused when the square pitch would
+          // leave the shape overhanging (the normalizer would clip it).
+          if ((state.layout.gridUnitMm as number) < floorY) return;
+          state.layout.gridUnitMmY = undefined;
+          return;
+        }
+        state.layout.gridUnitMmY = clamp(mm, floorY, GRID_PITCH_MM_MAX) as Mm;
       });
     },
 

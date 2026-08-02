@@ -43,6 +43,8 @@ export function MobileSettingsPanel() {
     drawer,
     widthStep,
     depthStep,
+    drawerMinWidth,
+    drawerMinDepth,
     realWorldDimensions,
     measuredMm,
     drawerFitSuggestion,
@@ -105,7 +107,7 @@ export function MobileSettingsPanel() {
               value={drawer.width}
               onChange={handleDrawerWidthInput}
               onStep={handleDrawerWidthChange}
-              min={0.5}
+              min={drawerMinWidth}
               max={CONSTRAINTS.GRID_MAX}
               step={widthStep}
               size="lg"
@@ -122,7 +124,7 @@ export function MobileSettingsPanel() {
               value={drawer.depth}
               onChange={handleDrawerDepthInput}
               onStep={handleDrawerDepthChange}
-              min={0.5}
+              min={drawerMinDepth}
               max={CONSTRAINTS.GRID_MAX}
               step={depthStep}
               size="lg"

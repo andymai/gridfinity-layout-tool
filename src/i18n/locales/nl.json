@@ -3183,6 +3183,7 @@
   "toast.binRotated": "Bin geroteerd",
   "toast.binsDeleted": "{count} bin(s) verwijderd",
   "toast.binsDisplacedByShape": "{count} bin(s) naar de stash verplaatst (buiten de nieuwe vorm)",
+  "toast.drawerSizeLimitedByShape": "De lade kan niet kleiner worden dan de aangepaste vorm. Bewerk of herstel eerst de vorm.",
   "toast.outlineImport.parseFailed": "Dat bestand kon niet als SVG- of DXF-tekening worden gelezen.",
   "toast.outlineImport.noClosedLoop": "Geen gesloten vorm gevonden. De omtrek moet helemaal rondlopen.",
   "toast.outlineImport.tooComplex": "Die vorm heeft te veel punten, zelfs na vereenvoudiging.",

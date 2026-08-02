@@ -2927,6 +2927,7 @@
   "toast.binRotated": "수납통을 회전했습니다",
   "toast.binsDeleted": "수납통 {count}개를 삭제했습니다",
   "toast.binsDisplacedByShape": "수납통 {count}개를 임시 보관함으로 이동했습니다(새 모양 바깥)",
+  "toast.drawerSizeLimitedByShape": "서랍은 사용자 지정 모양보다 작게 줄일 수 없습니다. 먼저 모양을 편집하거나 초기화하세요.",
   "toast.outlineImport.parseFailed": "해당 파일을 SVG 또는 DXF 도면으로 읽을 수 없습니다.",
   "toast.outlineImport.noClosedLoop": "닫힌 모양을 찾을 수 없습니다. 둘레가 한 바퀴 이어져야 합니다.",
   "toast.outlineImport.tooComplex": "해당 모양은 단순화한 뒤에도 점이 너무 많습니다.",
