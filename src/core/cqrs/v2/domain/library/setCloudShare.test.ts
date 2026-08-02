@@ -16,7 +16,7 @@ describe('v2 library.setCloudShare', () => {
   it('emits library.cloudShareUpdated with the share info', () => {
     const library = makeLibrary();
     const result = setCloudShare.handle(
-      { layoutId: 'layout_1', shareInfo: { ...sampleShare, url: 'https://example.com' } },
+      { layoutId: 'layout_1', shareInfo: sampleShare },
       { aggregate: library }
     );
 
@@ -27,7 +27,7 @@ describe('v2 library.setCloudShare', () => {
   it('apply() sets cloudShare on the matching entry', () => {
     const library = makeLibrary({ entries: [makeEntry('layout_1')] });
     const result = setCloudShare.handle(
-      { layoutId: 'layout_1', shareInfo: { ...sampleShare, url: 'https://example.com' } },
+      { layoutId: 'layout_1', shareInfo: sampleShare },
       { aggregate: library }
     );
     if (!isOk(result)) throw new Error('handle failed');
@@ -44,7 +44,7 @@ describe('v2 library.setCloudShare', () => {
   it('apply() no-ops when the layoutId is unknown', () => {
     const library = makeLibrary();
     const result = setCloudShare.handle(
-      { layoutId: 'layout_gone', shareInfo: { ...sampleShare, url: 'https://example.com' } },
+      { layoutId: 'layout_gone', shareInfo: sampleShare },
       { aggregate: library }
     );
     if (!isOk(result)) throw new Error('handle failed');

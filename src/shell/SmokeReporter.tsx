@@ -21,7 +21,7 @@ export function SmokeReporter(): null {
       gitSha: __GIT_SHA__,
       buildTime: __BUILD_TIME__,
     };
-    (window as unknown as { __SMOKE_BUILD_INFO__: SmokeBuildInfo }).__SMOKE_BUILD_INFO__ = info;
+    window.__SMOKE_BUILD_INFO__ = info;
 
     if (window.parent === window) return;
     const payload: SmokeResultMessage = {

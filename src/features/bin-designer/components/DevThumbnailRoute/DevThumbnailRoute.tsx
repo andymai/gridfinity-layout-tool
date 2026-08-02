@@ -23,12 +23,6 @@ import {
 
 const THUMBNAIL_SIZE = 512;
 
-interface ThumbnailCaptureBridge {
-  __thumbnailReady?: boolean;
-  __captureThumbnail?: () => string | null;
-  __exportGlb?: () => Promise<string | null>;
-}
-
 export function DevThumbnailRoute() {
   const setParams = useDesignerStore((s) => s.setParams);
   const { status, mesh, params } = useDesignerStore(
@@ -96,8 +90,7 @@ export function DevThumbnailRoute() {
       // Require a short run of stable frames so the font has resettled and
       // R3F has drawn the completed mesh before we sample the canvas.
       if (stableFrames >= 8) {
-        const bridge = window as unknown as ThumbnailCaptureBridge;
-        bridge.__captureThumbnail = (): string | null =>
+        window.__captureThumbnail = (): string | null =>
           captureThumbnailAtPreset(
             {
               width: params.width,
@@ -109,10 +102,9 @@ export function DevThumbnailRoute() {
             },
             { size: THUMBNAIL_SIZE, mimeType: 'image/png' }
           );
-        bridge.__exportGlb = exportCommunityGlb;
-        (window as unknown as { __debugScene?: () => unknown }).__debugScene =
-          __debugSceneMaterials;
-        bridge.__thumbnailReady = true;
+        window.__exportGlb = exportCommunityGlb;
+        window.__debugScene = __debugSceneMaterials;
+        window.__thumbnailReady = true;
         return;
       }
       frame = window.requestAnimationFrame(publish);

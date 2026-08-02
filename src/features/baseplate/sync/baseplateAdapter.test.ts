@@ -27,7 +27,16 @@ vi.mock('@/features/baseplate/store/baseplateRegistry', () => ({
 import { baseplateAdapter } from './baseplateAdapter';
 import { __resetForTests, emit } from './baseplateEvents';
 
-const sampleParams = (): StoredBaseplateParams => ({}) as StoredBaseplateParams;
+const sampleParams = (): StoredBaseplateParams =>
+  ({
+    magnetHoles: false,
+    magnetDiameter: 6.5,
+    magnetDepth: 2.4,
+    paddingLeft: 0,
+    paddingRight: 0,
+    paddingFront: 0,
+    paddingBack: 0,
+  }) as StoredBaseplateParams;
 const samplePayload = (name = 'B'): { name: string; params: StoredBaseplateParams } => ({
   name,
   params: sampleParams(),
@@ -61,8 +70,8 @@ describe('baseplateAdapter.list', () => {
     expect(items.map((i) => i.id)).toEqual(['baseplate_1_a', 'baseplate_2_b']);
     expect(items[0].modifiedAt).toBe(Date.parse('2026-01-01T00:00:00.000Z'));
     expect(items[1].modifiedAt).toBe(Date.parse('2026-01-02T00:00:00.000Z'));
-    expect(items[0].payload).toEqual({ name: 'Alpha', params: {} });
-    expect(items[1].payload).toEqual({ name: 'Beta', params: {} });
+    expect(items[0].payload).toEqual({ name: 'Alpha', params: sampleParams() });
+    expect(items[1].payload).toEqual({ name: 'Beta', params: sampleParams() });
   });
 
   it('returns [] when listDesigns errors', async () => {
@@ -84,7 +93,7 @@ describe('baseplateAdapter.get', () => {
     const item = await baseplateAdapter.get('bp1');
     expect(item?.id).toBe('bp1');
     expect(item?.modifiedAt).toBe(Date.parse('2026-03-01T00:00:00.000Z'));
-    expect(item?.payload).toEqual({ name: 'My Plate', params: {} });
+    expect(item?.payload).toEqual({ name: 'My Plate', params: sampleParams() });
   });
 });
 

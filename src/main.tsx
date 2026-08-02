@@ -41,7 +41,7 @@ if (isSmokeMode()) {
   void import('./shell/smokeBoot').then(({ runSmokeBoot }) => runSmokeBoot());
 } else if (recoverFromBadWwwMigration()) {
   // Reload triggered — stop all further initialization.
-} else if ((window as unknown as { __wwwMigrationPending?: boolean }).__wwwMigrationPending) {
+} else if (window.__wwwMigrationPending) {
   void import('./core/storage/wwwMigration')
     .then(({ runWwwMigration }) => runWwwMigration())
     .catch(() => {
