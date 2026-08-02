@@ -1,7 +1,13 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP, getRedis } from '../lib/rateLimit.js';
 import { logger } from '../lib/logger.js';
-import { rateLimited, serviceUnavailable, ErrorCode, methodNotAllowed } from '../lib/shared.js';
+import {
+  rateLimited,
+  serviceUnavailable,
+  ErrorCode,
+  methodNotAllowed,
+  sendError,
+} from '../lib/shared.js';
 import { scanSessionKey } from '../lib/redisKeys.js';
 import { isValidScanToken, validateScanSvg, type ScanSessionRecord } from '../lib/scanSession.js';
 
@@ -18,7 +24,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const raw = req.query.token;
   const token = Array.isArray(raw) ? raw[0] : raw;
   if (!isValidScanToken(token)) {
-    return res.status(400).json({ error: 'Invalid scan token.', code: ErrorCode.VALIDATION_ERROR });
+    return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'Invalid scan token.');
   }
 
   const redis = getRedis();
@@ -37,7 +43,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       // The session must still exist (not expired / already consumed).
       if (!(await redis.exists(key))) {
-        return res.status(404).json({ error: 'Scan session expired.', code: ErrorCode.EXPIRED });
+        return sendError(res, 404, ErrorCode.EXPIRED, 'Scan session expired.');
       }
 
       const body = (req.body ?? {}) as Record<string, unknown>;
@@ -66,9 +72,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       const stored = await redis.get(key);
       if (!stored) {
-        return res
-          .status(404)
-          .json({ error: 'Scan session not found or expired.', code: ErrorCode.EXPIRED });
+        return sendError(res, 404, ErrorCode.EXPIRED, 'Scan session not found or expired.');
       }
 
       let record: ScanSessionRecord;
@@ -76,9 +80,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         record = JSON.parse(stored) as ScanSessionRecord;
       } catch {
         // Corrupt record — treat as gone rather than 500.
-        return res
-          .status(404)
-          .json({ error: 'Scan session not found or expired.', code: ErrorCode.EXPIRED });
+        return sendError(res, 404, ErrorCode.EXPIRED, 'Scan session not found or expired.');
       }
       if (record.status === 'ready' && record.svg) {
         // Idempotent delivery: the outline stays available until the session's
@@ -98,6 +100,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     logger.error('Scan session handoff error', {
       error: error instanceof Error ? error.message : String(error),
     });
-    return res.status(500).json({ error: 'Scan handoff failed.', code: ErrorCode.SERVER_ERROR });
+    return sendError(res, 500, ErrorCode.SERVER_ERROR, 'Scan handoff failed.');
   }
 }

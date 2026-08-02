@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireMethod } from '../../lib/method.js';
-import { rateLimited, ErrorCode } from '../../lib/shared.js';
+import { rateLimited, ErrorCode, sendError } from '../../lib/shared.js';
 import { logger } from '../../lib/logger.js';
 import { checkRateLimit, getClientIP } from '../../lib/rateLimit.js';
 import { setOAuthStateCookie, setOAuthVerifierCookie } from '../../lib/cookies.js';
@@ -21,7 +21,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
 
   const provider = req.query.provider;
   if (typeof provider !== 'string' || !isSupportedProvider(provider)) {
-    res.status(400).json({ error: 'Unsupported provider', code: ErrorCode.VALIDATION_ERROR });
+    sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'Unsupported provider');
     return;
   }
 
@@ -44,6 +44,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       provider,
       error: error instanceof Error ? error.message : String(error),
     });
-    res.status(500).json({ error: 'Sign-in unavailable', code: ErrorCode.CONFIGURATION_ERROR });
+    sendError(res, 500, ErrorCode.CONFIGURATION_ERROR, 'Sign-in unavailable');
   }
 }

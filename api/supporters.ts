@@ -1,7 +1,13 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP, getRedis } from './lib/rateLimit.js';
 import { logger } from './lib/logger.js';
-import { rateLimited, serviceUnavailable, ErrorCode, methodNotAllowed } from './lib/shared.js';
+import {
+  rateLimited,
+  serviceUnavailable,
+  ErrorCode,
+  methodNotAllowed,
+  sendError,
+} from './lib/shared.js';
 import { readSupporters } from './lib/supporters.js';
 
 /**
@@ -36,9 +42,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     logger.error('Supporters read error', {
       error: error instanceof Error ? error.message : String(error),
     });
-    return res.status(500).json({
-      error: 'Failed to read supporters.',
-      code: ErrorCode.SERVER_ERROR,
-    });
+    return sendError(res, 500, ErrorCode.SERVER_ERROR, 'Failed to read supporters.');
   }
 }

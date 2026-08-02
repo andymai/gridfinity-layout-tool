@@ -22,16 +22,14 @@ import {
   SHARE_LAST_ACCESSED_TTL_SECONDS,
   type ShareData,
   rateLimited,
+  sendError,
 } from '../lib/shared.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { id } = req.query;
 
   if (typeof id !== 'string' || !isValidShareId(id)) {
-    return res.status(400).json({
-      error: 'Invalid share ID',
-      code: ErrorCode.VALIDATION_ERROR,
-    });
+    return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'Invalid share ID');
   }
 
   const blobPath = `shares/${id}.json`;
@@ -66,19 +64,13 @@ async function handleGet(req: VercelRequest, res: VercelResponse, _id: string, b
     // Check if blob exists
     const blobInfo = await head(blobPath).catch(() => null);
     if (!blobInfo) {
-      return res.status(404).json({
-        error: 'Share not found',
-        code: ErrorCode.NOT_FOUND,
-      });
+      return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
     }
 
     // Fetch the blob content
     const response = await fetch(blobInfo.url);
     if (!response.ok) {
-      return res.status(404).json({
-        error: 'Share not found',
-        code: ErrorCode.NOT_FOUND,
-      });
+      return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
     }
 
     const shareData = (await response.json()) as ShareData;
@@ -120,10 +112,7 @@ async function handleGet(req: VercelRequest, res: VercelResponse, _id: string, b
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });
-    return res.status(500).json({
-      error: 'Failed to fetch share',
-      code: ErrorCode.SERVER_ERROR,
-    });
+    return sendError(res, 500, ErrorCode.SERVER_ERROR, 'Failed to fetch share');
   }
 }
 
@@ -144,27 +133,18 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
     const { layout, permission, deleteToken, linkedDesigns } = body;
 
     if (!deleteToken || typeof deleteToken !== 'string') {
-      return res.status(401).json({
-        error: 'Delete token required for updates',
-        code: ErrorCode.UNAUTHORIZED,
-      });
+      return sendError(res, 401, ErrorCode.UNAUTHORIZED, 'Delete token required for updates');
     }
 
     // Fetch existing share
     const blobInfo = await head(blobPath).catch(() => null);
     if (!blobInfo) {
-      return res.status(404).json({
-        error: 'Share not found',
-        code: ErrorCode.NOT_FOUND,
-      });
+      return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
     }
 
     const response = await fetch(blobInfo.url);
     if (!response.ok) {
-      return res.status(404).json({
-        error: 'Share not found',
-        code: ErrorCode.NOT_FOUND,
-      });
+      return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
     }
 
     const existingData = (await response.json()) as ShareData;
@@ -175,28 +155,24 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
       (redis ? await redis.get(shareHashKey(id)) : null) ?? existingData.metadata.deleteTokenHash;
 
     if (!storedHash) {
-      return res.status(404).json({
-        error: 'Share not found',
-        code: ErrorCode.NOT_FOUND,
-      });
+      return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
     }
 
     // Verify delete token (constant-time comparison prevents timing attacks)
     const tokenHash = await hashToken(deleteToken);
     if (!timingSafeCompare(tokenHash, storedHash)) {
-      return res.status(401).json({
-        error: 'Invalid delete token',
-        code: ErrorCode.UNAUTHORIZED,
-      });
+      return sendError(res, 401, ErrorCode.UNAUTHORIZED, 'Invalid delete token');
     }
 
     // Validate permission if provided
     const newPermission = permission ?? existingData.metadata.permission;
     if (newPermission !== 'view' && newPermission !== 'edit') {
-      return res.status(400).json({
-        error: 'Invalid permission. Must be "view" or "edit".',
-        code: ErrorCode.VALIDATION_ERROR,
-      });
+      return sendError(
+        res,
+        400,
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid permission. Must be "view" or "edit".'
+      );
     }
 
     const now = new Date().toISOString();
@@ -248,10 +224,12 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
     // Content filtering
     const contentResult = filterLayoutContent(validationResult.layout);
     if (!contentResult.passed) {
-      return res.status(400).json({
-        error: `Content blocked: ${contentResult.reason}`,
-        code: ErrorCode.CONTENT_BLOCKED,
-      });
+      return sendError(
+        res,
+        400,
+        ErrorCode.CONTENT_BLOCKED,
+        `Content blocked: ${contentResult.reason}`
+      );
     }
 
     const designsResult = validateSharedDesigns(linkedDesigns);
@@ -264,10 +242,12 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
 
     const designContent = filterSharedDesignsContent(designsResult.designs);
     if (!designContent.passed) {
-      return res.status(400).json({
-        error: `Content blocked: ${designContent.reason}`,
-        code: ErrorCode.CONTENT_BLOCKED,
-      });
+      return sendError(
+        res,
+        400,
+        ErrorCode.CONTENT_BLOCKED,
+        `Content blocked: ${designContent.reason}`
+      );
     }
 
     // Update share data (preserve original deleteTokenHash and createdAt;
@@ -301,10 +281,7 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });
-    return res.status(500).json({
-      error: 'Failed to update share',
-      code: ErrorCode.SERVER_ERROR,
-    });
+    return sendError(res, 500, ErrorCode.SERVER_ERROR, 'Failed to update share');
   }
 }
 
@@ -337,27 +314,18 @@ async function handleDelete(
       (typeof deleteBody.deleteToken === 'string' ? deleteBody.deleteToken : undefined);
 
     if (!deleteToken) {
-      return res.status(401).json({
-        error: 'Delete token required',
-        code: ErrorCode.UNAUTHORIZED,
-      });
+      return sendError(res, 401, ErrorCode.UNAUTHORIZED, 'Delete token required');
     }
 
     // Fetch existing share
     const blobInfo = await head(blobPath).catch(() => null);
     if (!blobInfo) {
-      return res.status(404).json({
-        error: 'Share not found',
-        code: ErrorCode.NOT_FOUND,
-      });
+      return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
     }
 
     const response = await fetch(blobInfo.url);
     if (!response.ok) {
-      return res.status(404).json({
-        error: 'Share not found',
-        code: ErrorCode.NOT_FOUND,
-      });
+      return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
     }
 
     const existingData = (await response.json()) as ShareData;
@@ -368,19 +336,13 @@ async function handleDelete(
       (redis ? await redis.get(shareHashKey(_id)) : null) ?? existingData.metadata.deleteTokenHash;
 
     if (!storedHash) {
-      return res.status(404).json({
-        error: 'Share not found',
-        code: ErrorCode.NOT_FOUND,
-      });
+      return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
     }
 
     // Verify delete token (constant-time comparison prevents timing attacks)
     const tokenHash = await hashToken(deleteToken);
     if (!timingSafeCompare(tokenHash, storedHash)) {
-      return res.status(401).json({
-        error: 'Invalid delete token',
-        code: ErrorCode.UNAUTHORIZED,
-      });
+      return sendError(res, 401, ErrorCode.UNAUTHORIZED, 'Invalid delete token');
     }
 
     // Delete the blob and clean up Redis keys
@@ -398,9 +360,6 @@ async function handleDelete(
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });
-    return res.status(500).json({
-      error: 'Failed to delete share',
-      code: ErrorCode.SERVER_ERROR,
-    });
+    return sendError(res, 500, ErrorCode.SERVER_ERROR, 'Failed to delete share');
   }
 }

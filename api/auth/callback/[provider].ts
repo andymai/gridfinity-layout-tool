@@ -1,6 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireMethod } from '../../lib/method.js';
-import { rateLimited, serviceUnavailable, singleParam, ErrorCode } from '../../lib/shared.js';
+import {
+  rateLimited,
+  serviceUnavailable,
+  singleParam,
+  ErrorCode,
+  sendError,
+} from '../../lib/shared.js';
 import { logger } from '../../lib/logger.js';
 import { checkRateLimit, getClientIP, getRedis } from '../../lib/rateLimit.js';
 import {
@@ -44,7 +50,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
 
   const provider = req.query.provider;
   if (typeof provider !== 'string' || !isSupportedProvider(provider)) {
-    res.status(400).json({ error: 'Unsupported provider', code: ErrorCode.VALIDATION_ERROR });
+    sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'Unsupported provider');
     return;
   }
 
@@ -59,7 +65,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   const cookieState = readOAuthStateCookie(req);
   if (!code || !state || !cookieState || state !== cookieState) {
     clearOAuthCookies(res);
-    res.status(400).json({ error: 'Invalid OAuth state', code: ErrorCode.VALIDATION_ERROR });
+    sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'Invalid OAuth state');
     return;
   }
 
@@ -75,7 +81,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       error: error instanceof Error ? error.message : String(error),
     });
     clearOAuthCookies(res);
-    res.status(400).json({ error: 'OAuth exchange failed', code: ErrorCode.VALIDATION_ERROR });
+    sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'OAuth exchange failed');
     return;
   }
 

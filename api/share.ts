@@ -22,6 +22,7 @@ import {
   type ShareData,
   rateLimited,
   serviceUnavailable,
+  sendError,
 } from './lib/shared.js';
 
 /**
@@ -58,18 +59,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Validate layoutId - must be provided by client
     if (!isValidShareId(layoutId)) {
-      return res.status(400).json({
-        error: 'Invalid or missing layoutId.',
-        code: ErrorCode.VALIDATION_ERROR,
-      });
+      return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'Invalid or missing layoutId.');
     }
 
     // Validate permission
     if (permission !== 'view' && permission !== 'edit') {
-      return res.status(400).json({
-        error: 'Invalid permission. Must be "view" or "edit".',
-        code: ErrorCode.VALIDATION_ERROR,
-      });
+      return sendError(
+        res,
+        400,
+        ErrorCode.VALIDATION_ERROR,
+        'Invalid permission. Must be "view" or "edit".'
+      );
     }
 
     let sharePayload: unknown;
@@ -93,10 +93,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     } else {
       // Layout share: validate layout structure
       if (!layout) {
-        return res.status(400).json({
-          error: 'Missing layout data',
-          code: ErrorCode.VALIDATION_ERROR,
-        });
+        return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'Missing layout data');
       }
 
       const layoutJson = JSON.stringify(layout);
@@ -112,10 +109,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // Content filtering (layout shares only)
       const contentResult = filterLayoutContent(validationResult.layout);
       if (!contentResult.passed) {
-        return res.status(400).json({
-          error: `Content blocked: ${contentResult.reason}`,
-          code: ErrorCode.CONTENT_BLOCKED,
-        });
+        return sendError(
+          res,
+          400,
+          ErrorCode.CONTENT_BLOCKED,
+          `Content blocked: ${contentResult.reason}`
+        );
       }
 
       sharePayload = validationResult.layout;
@@ -133,10 +132,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // recipient, so they get the same moderation the layout does.
       const designContent = filterSharedDesignsContent(sharedDesigns);
       if (!designContent.passed) {
-        return res.status(400).json({
-          error: `Content blocked: ${designContent.reason}`,
-          code: ErrorCode.CONTENT_BLOCKED,
-        });
+        return sendError(
+          res,
+          400,
+          ErrorCode.CONTENT_BLOCKED,
+          `Content blocked: ${designContent.reason}`
+        );
       }
     }
 
@@ -194,10 +195,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // to distinguish "lost the race" from genuine errors.
       const collided = await head(blobPath).catch(() => null);
       if (collided) {
-        return res.status(409).json({
-          error: 'A share with this ID already exists.',
-          code: ErrorCode.VALIDATION_ERROR,
-        });
+        return sendError(
+          res,
+          409,
+          ErrorCode.VALIDATION_ERROR,
+          'A share with this ID already exists.'
+        );
       }
       throw putErr;
     }
@@ -233,9 +236,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });
-    return res.status(500).json({
-      error: 'Failed to create share',
-      code: ErrorCode.SERVER_ERROR,
-    });
+    return sendError(res, 500, ErrorCode.SERVER_ERROR, 'Failed to create share');
   }
 }

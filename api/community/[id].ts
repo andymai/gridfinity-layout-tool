@@ -27,6 +27,7 @@ import {
   ErrorCode,
   methodNotAllowed,
   rateLimited,
+  sendError,
   serviceUnavailable,
   timingSafeCompare,
 } from '../lib/shared.js';
@@ -64,10 +65,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { id } = req.query;
 
   if (typeof id !== 'string' || !COMMUNITY_DESIGN_ID_REGEX.test(id)) {
-    return res.status(400).json({
-      error: 'Invalid design ID',
-      code: ErrorCode.VALIDATION_ERROR,
-    });
+    return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'Invalid design ID');
   }
 
   switch (req.method) {
@@ -87,10 +85,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 }
 
 function designNotFound(res: VercelResponse) {
-  return res.status(404).json({
-    error: 'Design not found',
-    code: ErrorCode.NOT_FOUND,
-  });
+  return sendError(res, 404, ErrorCode.NOT_FOUND, 'Design not found');
 }
 
 /**
@@ -280,10 +275,7 @@ async function handleGet(req: VercelRequest, res: VercelResponse, id: string) {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });
-    return res.status(500).json({
-      error: 'Failed to fetch design',
-      code: ErrorCode.SERVER_ERROR,
-    });
+    return sendError(res, 500, ErrorCode.SERVER_ERROR, 'Failed to fetch design');
   }
 }
 
@@ -324,10 +316,12 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string) {
     const denied = await redis.sismember(communityDenylistKey(), session.userId);
     if (denied === 1) {
       // Deliberately neutral: the response must not reveal deny-listing.
-      return res.status(403).json({
-        error: 'Publishing is not available for this account.',
-        code: ErrorCode.UNAUTHORIZED,
-      });
+      return sendError(
+        res,
+        403,
+        ErrorCode.UNAUTHORIZED,
+        'Publishing is not available for this account.'
+      );
     }
 
     const owns = (await redis.sismember(communityPublishedKey(session.userId), id)) === 1;
@@ -354,10 +348,7 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string) {
     // even though the design itself is off the gallery.
     const status = await readModerationStatus(id, existing.status);
     if (status !== 'live') {
-      return res.status(403).json({
-        error: 'This design cannot be updated.',
-        code: ErrorCode.UNAUTHORIZED,
-      });
+      return sendError(res, 403, ErrorCode.UNAUTHORIZED, 'This design cannot be updated.');
     }
 
     // allowOverwrite because the rev derives from the stored record: a retry
@@ -455,10 +446,7 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string) {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });
-    return res.status(500).json({
-      error: 'Failed to update design',
-      code: ErrorCode.SERVER_ERROR,
-    });
+    return sendError(res, 500, ErrorCode.SERVER_ERROR, 'Failed to update design');
   }
 }
 
@@ -477,10 +465,7 @@ async function handleDelete(req: VercelRequest, res: VercelResponse, id: string)
         return rateLimited(res, rateLimit.retryAfterSeconds);
       }
       if (!timingSafeCompare(adminToken, expectedAdminToken)) {
-        return res.status(401).json({
-          error: 'Invalid admin token',
-          code: ErrorCode.UNAUTHORIZED,
-        });
+        return sendError(res, 401, ErrorCode.UNAUTHORIZED, 'Invalid admin token');
       }
     } else {
       // With COMMUNITY_ADMIN_TOKEN unset the admin path is disabled outright;
@@ -575,10 +560,7 @@ async function handleDelete(req: VercelRequest, res: VercelResponse, id: string)
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });
-    return res.status(500).json({
-      error: 'Failed to delete design',
-      code: ErrorCode.SERVER_ERROR,
-    });
+    return sendError(res, 500, ErrorCode.SERVER_ERROR, 'Failed to delete design');
   }
 }
 
@@ -604,10 +586,7 @@ async function handlePost(req: VercelRequest, res: VercelResponse, id: string) {
   try {
     const body: unknown = req.body;
     if (!isObject(body) || !isString(body.action)) {
-      return res.status(400).json({
-        error: 'action is required',
-        code: ErrorCode.VALIDATION_ERROR,
-      });
+      return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'action is required');
     }
     switch (body.action) {
       case 'like':
@@ -621,20 +600,14 @@ async function handlePost(req: VercelRequest, res: VercelResponse, id: string) {
       case 'export':
         return await handleCounterAction(req, res, id, 'export', body);
       default:
-        return res.status(400).json({
-          error: 'Unknown action',
-          code: ErrorCode.VALIDATION_ERROR,
-        });
+        return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'Unknown action');
     }
   } catch (error) {
     logger.error('Community design action error', {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });
-    return res.status(500).json({
-      error: 'Failed to perform action',
-      code: ErrorCode.SERVER_ERROR,
-    });
+    return sendError(res, 500, ErrorCode.SERVER_ERROR, 'Failed to perform action');
   }
 }
 
@@ -720,27 +693,18 @@ async function handleReportAction(
 
   const { reason, note } = body;
   if (!isString(reason) || !(COMMUNITY_REPORT_REASONS as readonly string[]).includes(reason)) {
-    return res.status(400).json({
-      error: 'Invalid report reason',
-      code: ErrorCode.VALIDATION_ERROR,
-    });
+    return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'Invalid report reason');
   }
   const reportReason = reason as CommunityReportReason;
   let reportNote = '';
   if (note !== undefined) {
     if (!isString(note)) {
-      return res.status(400).json({
-        error: 'note must be a string',
-        code: ErrorCode.VALIDATION_ERROR,
-      });
+      return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'note must be a string');
     }
     // The slice bounds the string before the filter's ReDoS-prone regexes run.
     reportNote = note.slice(0, COMMUNITY_REPORT_NOTE_MAX_LENGTH);
     if (reportNote !== '' && !checkText(reportNote).passed) {
-      return res.status(400).json({
-        error: 'note contains prohibited content',
-        code: ErrorCode.CONTENT_BLOCKED,
-      });
+      return sendError(res, 400, ErrorCode.CONTENT_BLOCKED, 'note contains prohibited content');
     }
   }
 
@@ -800,10 +764,7 @@ async function handleCounterAction(
 
   const { clientId } = body;
   if (!isString(clientId) || !COMMUNITY_CLIENT_ID_REGEX.test(clientId)) {
-    return res.status(400).json({
-      error: 'Invalid clientId',
-      code: ErrorCode.VALIDATION_ERROR,
-    });
+    return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'Invalid clientId');
   }
 
   const redis = getRedis();
