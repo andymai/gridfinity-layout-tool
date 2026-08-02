@@ -14,6 +14,7 @@ const FRAMING: BaseplateThumbnailFraming = {
   width: 4,
   depth: 4,
   gridUnitMm: 42,
+  gridUnitMmY: 42,
   paddingLeft: 0,
   paddingRight: 0,
   paddingFront: 0,
