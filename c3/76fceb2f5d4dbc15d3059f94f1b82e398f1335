@@ -1,0 +1,24 @@
+api/community.test.ts
+  s_48b067c1af6f8c::t_f838196422791e 188-197
+  s_48b067c1af6f8c::t_a2e9992c30b933 824-836
+api/community.ts
+  s_48b067c1af6f8c::t_5a006b5f96f9eb 1
+  s_48b067c1af6f8c::t_64937cc0ed2862 486-497
+  s_48b067c1af6f8c::t_fde735774a39e5 288-290,292-293
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "c376fceb2f5d4dbc15d3059f94f1b82e398f1335",
+  "prompts": {},
+  "sessions": {
+    "s_48b067c1af6f8c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cee190e2-3f33-4597-9d75-51124180100d",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
