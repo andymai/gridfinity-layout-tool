@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.353.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.353.0...gridfinity-layout-tool-v4.353.1) (2026-08-02)
+
+
+### Bug Fixes
+
+* **bin-designer:** keep the wall-cutout corner radius independent of bin height ([#3162](https://github.com/andymai/gridfinity-layout-tool/issues/3162)) ([#3164](https://github.com/andymai/gridfinity-layout-tool/issues/3164)) ([261a39e](https://github.com/andymai/gridfinity-layout-tool/commit/261a39e492274f8d63be5d2d0b3c35b62e19d803))
+
 ## [4.353.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.352.4...gridfinity-layout-tool-v4.353.0) (2026-08-02)
 
 
