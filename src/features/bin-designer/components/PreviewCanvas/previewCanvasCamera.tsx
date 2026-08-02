@@ -280,7 +280,8 @@ export function usePresetTransition(
   depth: number,
   height: number,
   gridUnitMm: number,
-  heightUnitMm: number
+  heightUnitMm: number,
+  gridUnitMmY?: number
 ) {
   const animFrameRef = useRef<number | null>(null);
 
@@ -298,7 +299,8 @@ export function usePresetTransition(
         height,
         fov,
         gridUnitMm,
-        heightUnitMm
+        heightUnitMm,
+        gridUnitMmY
       );
 
       // Calculate target position from preset direction
@@ -351,7 +353,7 @@ export function usePresetTransition(
 
       animate();
     },
-    [controlsRef, invalidateRef, width, depth, height, gridUnitMm, heightUnitMm]
+    [controlsRef, invalidateRef, width, depth, height, gridUnitMm, heightUnitMm, gridUnitMmY]
   );
 
   // Cleanup on unmount

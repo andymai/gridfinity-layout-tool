@@ -68,6 +68,29 @@ describe('cameraFraming', () => {
       expect(tall).toBeGreaterThan(short);
     });
 
+    it('frames the depth axis on the non-square Y pitch', () => {
+      // Depth-dominated bin: a larger Y pitch must push the camera out, not stay
+      // pinned to the square X pitch.
+      const square = calculateIdealDistance(
+        1,
+        8,
+        3,
+        50,
+        GRIDFINITY.GRID_SIZE,
+        GRIDFINITY.HEIGHT_UNIT
+      );
+      const nonSquare = calculateIdealDistance(
+        1,
+        8,
+        3,
+        50,
+        GRIDFINITY.GRID_SIZE,
+        GRIDFINITY.HEIGHT_UNIT,
+        GRIDFINITY.GRID_SIZE + 18
+      );
+      expect(nonSquare).toBeGreaterThan(square);
+    });
+
     it('produces larger distance for smaller FOV (zoom effect)', () => {
       const wideFov = calculateIdealDistance(1, 1, 3, 75);
       const narrowFov = calculateIdealDistance(1, 1, 3, 30);
