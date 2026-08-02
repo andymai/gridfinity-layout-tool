@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.353.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.353.1...gridfinity-layout-tool-v4.353.2) (2026-08-02)
+
+
+### Bug Fixes
+
+* **baseplate:** keep shaped-plate seam connectors at every junction inside the perimeter ([#3163](https://github.com/andymai/gridfinity-layout-tool/issues/3163)) ([#3167](https://github.com/andymai/gridfinity-layout-tool/issues/3167)) ([2581b87](https://github.com/andymai/gridfinity-layout-tool/commit/2581b87d7d84394cbeeb73c1297c9ca735f88c9f))
+
 ## [4.353.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.353.0...gridfinity-layout-tool-v4.353.1) (2026-08-02)
 
 
