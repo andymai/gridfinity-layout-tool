@@ -112,9 +112,8 @@ describe('buildFullParams', () => {
     /** Same arguments buildFullParams is called with throughout this file. */
     const perimeter = (
       stored: Parameters<typeof hasEffectivePerimeter>[0],
-      drawerOutline?: DrawerOutline,
-      stackingOverride?: boolean
-    ): boolean => hasEffectivePerimeter(stored, 10, 8, 42, drawerOutline, 42, stackingOverride);
+      drawerOutline?: DrawerOutline
+    ): boolean => hasEffectivePerimeter(stored, 10, 8, 42, drawerOutline, 42);
 
     it('is false for a plain rectangle', () => {
       expect(perimeter(storedBase)).toBe(false);
@@ -130,21 +129,16 @@ describe('buildFullParams', () => {
       expect(perimeter({ ...storedBase, cornerRadius: mm(10) })).toBe(false);
     });
 
-    // A custom drawer perimeter now stacks (#3113): its tiles dedupe by
-    // fingerprint like any others, so the resolver keeps the shape. Only the
-    // radius→outline conversion stays stacking-gated (rounding is stripped, not
-    // converted), so a stored radius alone claims no perimeter under stacking.
-    it('keeps a drawer shape under stacking but not a radius conversion (#3113)', () => {
+    // A custom perimeter now stacks (#3113): both a drawer shape and a
+    // large-radius conversion keep their perimeter under stacking (the shaped
+    // tiles dedupe by fingerprint like any others), so the answer is
+    // stacking-independent — matching what generation actually produces.
+    it('keeps a drawer shape AND a radius conversion under stacking (#3113)', () => {
       const stacked = { ...storedBase, stackPrint: { enabled: true, gapMm: mm(0.2) } };
       expect(perimeter(stacked, outline)).toBe(true);
-      expect(perimeter({ ...stacked, cornerRadius: mm(40) })).toBe(false);
-    });
-
-    it('honours the format-aware override for a STEP export', () => {
-      const stacked = { ...storedBase, stackPrint: { enabled: true, gapMm: mm(0.2) } };
-      // STEP clears stackPrint before the resolver runs, so a stored radius the
-      // resolver would convert to an outline counts as a perimeter again.
-      expect(perimeter({ ...stacked, cornerRadius: mm(40) }, undefined, false)).toBe(true);
+      expect(perimeter({ ...stacked, cornerRadius: mm(40) })).toBe(true);
+      // A small radius still leaves no perimeter (plain rounding, no outline).
+      expect(perimeter({ ...stacked, cornerRadius: mm(10) })).toBe(false);
     });
 
     // It runs the resolver rather than restating its rules, so this walks a
@@ -765,6 +759,37 @@ describe('shaped stacking splits into stackable tiles (#3113)', () => {
     const stackGroups = stackGroupsFromTiling(tiling, params, 1);
     expect(evaluateStackPrint(stackGroups, 8, 5, 250)).toEqual({ kind: 'ok' });
   });
+
+  it('shapes a large radius under stacking: interior tiles stack, rounded corners print singly (#3113)', () => {
+    // 12×12 plate, uniform R60 corners → a radius-cut outline (not plain
+    // rounding). On a 4u bed it tiles 3×3: the four corner tiles each carry a
+    // distinct rounded corner (unique, print singly — placementRotationDeg is
+    // forced to 0 on shaped tilings, so opposite corners do NOT share a mesh),
+    // while the five interior/edge tiles are full squares that share a
+    // fingerprint and stack.
+    const stored = { ...zeroPadStacked, cornerRadius: mm(60) };
+    const params = buildFullParams(stored, 12, 12, U, 'end', 'end');
+    expect(params.outline).toBeDefined();
+    // The radius lives in the outline arcs, so plain rounding is zeroed.
+    expect(params.cornerRadius).toBe(0);
+
+    const tiling = computeBaseplateTiling(params, 4 * U, 4 * U);
+    expect(tiling.isSplit).toBe(true);
+    // Four rounded-corner tiles are partial (each a distinct arc).
+    const partial = tiling.pieces.filter((p) => p.outlineWindowOriginMm !== undefined);
+    expect(partial).toHaveLength(4);
+
+    const groups = groupPiecesByFingerprint(tiling.pieces, params);
+    // The five full square tiles dedupe into one stackable group.
+    const maxGroup = Math.max(...[...groups.values()].map((g) => g.indices.length));
+    expect(maxGroup).toBe(5);
+    // Each rounded corner tile is its own group — no false dedup via the flip.
+    const singletons = [...groups.values()].filter((g) => g.indices.length === 1);
+    expect(singletons).toHaveLength(4);
+
+    const stackGroups = stackGroupsFromTiling(tiling, params, 1);
+    expect(evaluateStackPrint(stackGroups, 8, 5, 250)).toEqual({ kind: 'ok' });
+  });
 });
 
 describe('corner-cut shape + padding composition', () => {
@@ -953,14 +978,20 @@ describe('large corner radius → outline conversion', () => {
     expect(result.paddingLeft).toBe(11);
   });
 
-  it('never converts while stacking (rounding is stripped instead)', () => {
+  it('converts while stacking too, so the rounded tiles stack (#3113)', () => {
     const stored = {
       ...storedBase,
       cornerRadius: mm(60),
       stackPrint: { enabled: true, gapMm: mm(0.2) },
     };
     const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
-    expect(result.outline).toBeUndefined();
+    // The radius becomes a radius-cut outline (same as the non-stacking path), so
+    // the rounded perimeter survives instead of being flattened under stacking.
+    const r: CornerCutParams['tl'] = { kind: 'radius', r: 60 };
+    expect(result.outline?.vertices).toEqual(
+      cornerCutVertices(420, 336, { tl: r, tr: r, bl: r, br: r })
+    );
+    // The radius lives in the outline arcs now, so plain rounding is zeroed.
     expect(result.cornerRadius).toBe(0);
   });
 

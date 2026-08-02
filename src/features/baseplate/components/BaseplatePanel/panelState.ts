@@ -130,6 +130,9 @@ export function useBaseplatePanelDerived(): BaseplatePanelDerived {
   // outline in buildFullParams, so the plate really does get a curved perimeter
   // slicing sockets. Asking the resolver's own predicate rather than repeating
   // its threshold keeps the panel, the trigger and the resolver from drifting.
+  // Stacking-independent since #3113: a large radius shapes the plate whether or
+  // not stacking is on (the rounded tiles stack), so the whole-cell control this
+  // gates surfaces for a stacked large-radius plate too — no format override.
   /** The plate has a curved or angled perimeter that can slice sockets. */
   const perimeterShaped = hasEffectivePerimeter(
     baseplateParams,
@@ -137,11 +140,7 @@ export function useBaseplatePanelDerived(): BaseplatePanelDerived {
     drawerDepth,
     gridUnitMm,
     drawerOutline,
-    gridUnitMmY,
-    // Format-aware override: a STEP export clears stackPrint before the
-    // resolver runs, so its controls stay live the way every other
-    // stacking-stripped control already does.
-    stackEnabled
+    gridUnitMmY
   );
 
   return {

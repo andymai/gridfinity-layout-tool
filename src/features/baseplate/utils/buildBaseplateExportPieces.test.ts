@@ -193,7 +193,7 @@ describe('buildBaseplateExportPieces', () => {
     // grid of 4u tiles. Three tiles stay full squares (one dedup group, stacked
     // into a tower); the notched tile is unique (its own single-plate tower).
     // Before #3113 the outline was dropped under stacking, collapsing this into
-    // one rectangular tower (uniqueCount 1) — the confusing "nothing to shape".
+    // one rectangular tower (uniqueCount 1) — the confusing "nothing to stack".
     const notched = {
       vertices: [
         { x: 0, y: 0 },
