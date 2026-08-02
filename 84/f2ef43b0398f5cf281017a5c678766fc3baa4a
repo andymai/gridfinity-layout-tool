@@ -1,0 +1,683 @@
+scripts/community-admin/commands/inspect.ts
+  s_48a510eaef7c22::t_cab8294a53b213 1-71
+  s_48a510eaef7c22::t_43abc4705f5635 72-73
+scripts/community-admin/__tests__/undenylist.test.ts
+  s_48a510eaef7c22::t_5df1f9473c2a8d 1-51
+scripts/community-admin/__tests__/purge.test.ts
+  s_48a510eaef7c22::t_bb363edc741b4f 125
+  s_48a510eaef7c22::t_c6d152bd3bd29d 1-34,36-102,104-124,126-158,160-228
+  s_48a510eaef7c22::t_7d623a527dbe76 35
+  s_48a510eaef7c22::t_bd900028a1ecd9 159
+scripts/community-admin/lib/env.ts
+  s_48a510eaef7c22::t_2d427a81ac1542 1-27
+api/community.ts
+  s_48a510eaef7c22::t_a7a09fa3f5f6b3 75-78,87,91-92,94-95,112-114,117-118,120-121
+  s_48a510eaef7c22::t_5160ba0bf898e6 142-143
+  s_48a510eaef7c22::t_fc87f2c02cfe01 1,3-16,18-27,29,32-46,48-70,88-90,96,122-134,148-165,167-209,211-248,255-297,299-303,320,322-325,346-511,513-517,519-523,525-529,531-537,539-578
+  s_48a510eaef7c22::t_c4a97f7228bea5 512,518,524,530,538
+  s_48a510eaef7c22::t_180ad390ed45e9 71-74
+  s_48a510eaef7c22::t_f979dba6de14e3 17
+  s_48a510eaef7c22::t_8ba61fea7ebe76 28
+  s_48a510eaef7c22::t_187786caeacb4a 249-254
+  s_48a510eaef7c22::t_1be5771afc2b8b 298,304-319,321,345
+  s_48a510eaef7c22::t_8392921c6abdc5 30
+  s_48a510eaef7c22::t_9d4af8b019c415 2
+  s_48a510eaef7c22::t_741b278712c25f 79-86,93,97-111,115-116,119
+  s_48a510eaef7c22::t_9c9d30b861554c 47
+  s_48a510eaef7c22::t_fd68b005495737 210
+scripts/community-admin/__tests__/hide.test.ts
+  s_48a510eaef7c22::t_f7953ee0e507c1 1-71
+scripts/community-admin/__tests__/feature.test.ts
+  s_48a510eaef7c22::t_ba0790ee1f2cc7 1-95
+api/sync/account.ts
+  s_48a510eaef7c22::t_9ba5d360176f11 43,46-47,49,52-55,59
+  s_48a510eaef7c22::t_21423769e10808 127-137
+  s_48a510eaef7c22::t_3b717cfb964db1 208-222
+  s_48a510eaef7c22::t_95b8ed676696e0 107-126,138-140,150-169,174-181,189-191,193,196
+  s_48a510eaef7c22::t_b7740fe4e64989 95
+  s_48a510eaef7c22::t_72a61a5c4e22e9 231
+  s_48a510eaef7c22::t_ab60c562cf0d92 141-149
+  s_48a510eaef7c22::t_1ce726a413c1b2 170-173
+  s_48a510eaef7c22::t_0229254e3d11d6 192
+  s_48a510eaef7c22::t_9faa2a73251e9b 10-17,19,27-32
+  s_48a510eaef7c22::t_5c7b26a0e7e1cf 18
+  s_48a510eaef7c22::t_7c06411d65ce53 39,41-42,48,50,62-65
+  s_48a510eaef7c22::t_0823cc75cfa9d2 44-45
+  s_48a510eaef7c22::t_1ec99f2b621f69 51
+src/shared/types/exampleTechniques.test.ts
+  s_48a510eaef7c22::t_377db58a079abb 1-34
+api/lib/communityQuota.ts
+  s_48a510eaef7c22::t_4df914c8db0801 1-24,27-33,35,38-50
+  s_48a510eaef7c22::t_445a22ae46dadc 25-26,34,36-37
+scripts/community-admin/index.ts
+  s_48a510eaef7c22::t_be72d954a02e6b 1-10,12-73,77-78,80-87
+  s_48a510eaef7c22::t_f964b9ce01a943 11
+  s_48a510eaef7c22::t_9b8bba5a67343f 74-76,79
+scripts/community-admin/__tests__/denylist.test.ts
+  s_48a510eaef7c22::t_59849e08b518eb 1-183
+api/lib/communityStore.ts
+  s_48a510eaef7c22::t_87777483a087a6 199
+  s_48a510eaef7c22::t_abbfefb0433dfb 1-12,14-34,65-87,106-109,112-115,117-146,148-160,165-190,192-198,200-222,224-247,254-255,257-265,285-294,296-303,305-346,350-374
+  s_48a510eaef7c22::t_5d25c550eabd8b 89-94,96,99,101-105,110-111,116
+  s_48a510eaef7c22::t_8650e89d66264f 147
+  s_48a510eaef7c22::t_940ec757b988e7 347-349
+  s_48a510eaef7c22::t_99727f66f69cab 256
+  s_48a510eaef7c22::t_67c48813279365 35-64
+  s_48a510eaef7c22::t_3219f598d4ff0e 88,95,97-98,100
+src/features/bin-designer/types/index.ts
+  s_48a510eaef7c22::t_789902d71dbc05 134-136
+api/lib/contentFilter.ts
+  s_48a510eaef7c22::t_126e76604ec41d 188-192,194
+api/lib/rateLimit.test.ts
+  s_48a510eaef7c22::t_e774fef1799c45 43-51
+  s_48a510eaef7c22::t_b7045855472d6d 1-42,52-58
+scripts/community-admin/__tests__/purgePlan.test.ts
+  s_48a510eaef7c22::t_cf2c42c56e900d 76
+  s_48a510eaef7c22::t_d92364dc685231 2,4,13-42,44-75,77-103,105-139
+  s_48a510eaef7c22::t_8d677e2ecfa510 104
+  s_48a510eaef7c22::t_00030faf68d074 1,3,5-12
+CLAUDE.md
+  s_48a510eaef7c22::t_0b78225cb9e0f1 74
+scripts/community-admin/lib/redis.ts
+  s_48a510eaef7c22::t_3702683041a5ea 12
+  s_48a510eaef7c22::t_6d241aa4e72b10 1-11,13-28
+api/sync/account.test.ts
+  s_48a510eaef7c22::t_7adc76739fb13c 15
+  s_48a510eaef7c22::t_61b260aef62642 8
+  s_48a510eaef7c22::t_317843ea41d68e 322-323
+  s_48a510eaef7c22::t_e782fa3cc1b2e6 428
+  s_48a510eaef7c22::t_42d9c94bf4766e 164-170,177,179-182,193-199,204,207,213-214
+  s_48a510eaef7c22::t_52e4f707dada33 10
+  s_48a510eaef7c22::t_b1702df431519f 30,41-68
+  s_48a510eaef7c22::t_fb7b9bc9937cf4 103
+  s_48a510eaef7c22::t_58d39dc8961143 292-321,324-354,358-360,410-427,429-457
+  s_48a510eaef7c22::t_55453e774db4f1 355-357,361-363,381-409
+  s_48a510eaef7c22::t_a3c209290064e7 364-380
+  s_48a510eaef7c22::t_eea7538770ae82 171-176,178,183-192
+  s_48a510eaef7c22::t_db52a60e102c30 215-216
+api/lib/communityIds.test.ts
+  s_48a510eaef7c22::t_a417bd0c6f8cff 1-71
+scripts/community-admin/commands/hide.ts
+  s_48a510eaef7c22::t_776b9f2c7973ad 1-31
+api/lib/communityIds.ts
+  s_48a510eaef7c22::t_b7935d471efc28 1-5,7-9,11-44
+  s_48a510eaef7c22::t_3c6d1642d146de 6
+  s_48a510eaef7c22::t_5b285a73641a14 10
+scripts/check-union-exhaustiveness.sh
+  s_48a510eaef7c22::t_664aa45781d776 27-28
+  s_48a510eaef7c22::t_29da693ae438af 29
+tsconfig.scripts.json
+  s_48a510eaef7c22::t_849194f683bf68 21-25
+scripts/community-admin/__tests__/args.test.ts
+  s_48a510eaef7c22::t_b545a418c3f6ef 1-39
+scripts/community-admin/README.md
+  s_48a510eaef7c22::t_b71acab59b02d9 23,36-39,72-73,89-90,108,135-138,143,145,148-149,151
+  s_48a510eaef7c22::t_c0cb93aa6ffc3c 1-22,24-35,40-71,74-88,91-107,109-134,139-142,144,146-147,150,152
+scripts/community-admin/__tests__/list.test.ts
+  s_48a510eaef7c22::t_393977156a9460 1-29,31-116
+api/lib/communityStore.test.ts
+  s_48a510eaef7c22::t_bd0b9380853be7 188,196,201
+  s_48a510eaef7c22::t_90f1373b55bb08 120,124-125,127-129,132,136-138,142-143,146,149-150
+  s_48a510eaef7c22::t_b7c480d65c24e2 1
+  s_48a510eaef7c22::t_c3bde7b42a12a1 2-19,21-89,91-108,110-114,119,126,174-180,182-187,189-195,197-200,202-261,263-310,342-413,415-418
+  s_48a510eaef7c22::t_b199d7b63c9c72 20
+  s_48a510eaef7c22::t_d91d1d988ebcfd 109,115-118,121-123,130-131,133-135,139-141,144-145,147-148,151-173
+  s_48a510eaef7c22::t_d55da823ba78e0 181
+  s_48a510eaef7c22::t_e93a37d4666640 262
+  s_48a510eaef7c22::t_0f1f14e3823200 414
+api/lib/rateLimit.ts
+  s_48a510eaef7c22::t_7b26329bce08ca 23-24
+  s_48a510eaef7c22::t_8580c8ff7fae87 85-89
+  s_48a510eaef7c22::t_df21065e16ccae 79-84
+  s_48a510eaef7c22::t_5ccc0dcd79fe6e 25-26
+  s_48a510eaef7c22::t_8088969f65245a 78
+src/shared/types/exampleTechniques.ts
+  s_48a510eaef7c22::t_9d51792f8e98c7 1-31
+src/features/bin-designer/components/ExampleGallery/ExampleCard.test.tsx
+  s_48a510eaef7c22::t_07b9435250e0b1 1-53
+  s_48a510eaef7c22::t_6495a81be289ed 54-55
+api/lib/redisKeys.ts
+  s_48a510eaef7c22::t_4e9419e2726582 111-141,143-149,159-164
+  s_48a510eaef7c22::t_341d01ac8a231f 142,150-158
+  s_48a510eaef7c22::t_6e1083afb141f1 36-38
+  s_48a510eaef7c22::t_3cb6575965b7d6 22-29,31
+  s_48a510eaef7c22::t_8d2f46387e4dce 30
+scripts/community-admin/commands/list.ts
+  s_48a510eaef7c22::t_7b49af2c6af769 1
+  s_48a510eaef7c22::t_eae10fae292f64 2-15,17-22,27-96
+  s_48a510eaef7c22::t_7b0de0ce5d41e9 16
+scripts/community-admin/commands/denylist.ts
+  s_48a510eaef7c22::t_7493330782ba10 29-32
+  s_48a510eaef7c22::t_d62f9078054095 1-28,33-41
+src/shared/types/community.ts
+  s_48a510eaef7c22::t_eb772697245a8a 84
+  s_48a510eaef7c22::t_3ca764c72b7eb0 7-8
+  s_48a510eaef7c22::t_44dfd5e63e5347 58
+  s_48a510eaef7c22::t_01c58a924de351 1-6,9-39,47-57,59-70,72-83,85-105
+  s_48a510eaef7c22::t_1ab8507d8b80e6 71
+  s_48a510eaef7c22::t_020eea09716fbd 40-46
+scripts/community-admin/__tests__/dispatch.test.ts
+  s_48a510eaef7c22::t_4a85cc7bf172c0 1-39
+src/features/bin-designer/types/exampleGallery.ts
+  s_48a510eaef7c22::t_cad8b5f6acee15 2
+scripts/community-admin/commands/undenylist.ts
+  s_48a510eaef7c22::t_d4b2594a716009 1-26
+  s_48a510eaef7c22::t_a941d80b7453b2 27-30
+scripts/community-admin/lib/args.ts
+  s_48a510eaef7c22::t_c52da52f773f64 1-26
+api/lib/communityValidation.test.ts
+  s_48a510eaef7c22::t_2c7ccf8e73d6f7 1-299
+  s_48a510eaef7c22::t_4810c4afcb8048 300-335
+vercel.json
+  s_48a510eaef7c22::t_e1e856edda700f 28
+api/community.test.ts
+  s_48a510eaef7c22::t_581401f0a2ee3e 1-9,11-36,44,53,55-111,125-156,165-245,247-256,281-287,289-329,332-339,341-380,393-464,466-480,485-502,521-531,566-571,576,578-581,609-610,623-626,696-717,719-805
+  s_48a510eaef7c22::t_3cee94f2b4e1b8 718
+  s_48a510eaef7c22::t_ab3c06d87aa76e 40
+  s_48a510eaef7c22::t_0aaf8fc1ab837f 465
+  s_48a510eaef7c22::t_aad9cfd8e7e809 257-280
+  s_48a510eaef7c22::t_f513acda359555 381-392
+  s_48a510eaef7c22::t_8065091ec64954 565,577,584-585,611-613,627,638-648,650,661-695
+  s_48a510eaef7c22::t_68ccc5a7db70ac 37-39,41-43,46-47,50
+  s_48a510eaef7c22::t_9d0df453a03f15 532-564
+  s_48a510eaef7c22::t_a6636fb02c92e5 481-484
+  s_48a510eaef7c22::t_5af35928e63512 572-575,582-583,586-608,614-622,628-637,649,651-660
+  s_48a510eaef7c22::t_ca2e46884eb1a5 10
+  s_48a510eaef7c22::t_a36c9607ac0024 330-331
+  s_48a510eaef7c22::t_cdd2465d8d23df 340
+  s_48a510eaef7c22::t_b848c01ea18b35 45,48-49,51-52,54
+  s_48a510eaef7c22::t_b46b20d141aa94 246
+scripts/community-admin/commands/restore.ts
+  s_48a510eaef7c22::t_8d5f73c99cf2b1 1-31
+src/features/bin-designer/components/ExampleGallery/TechniqueFilterPills.tsx
+  s_48a510eaef7c22::t_0ed064f77eacfc 2-4
+scripts/community-admin/lib/banner.ts
+  s_48a510eaef7c22::t_ffd994f876d0b4 9,16
+  s_48a510eaef7c22::t_432f8003d77de2 1-8,10-15,20-21
+src/shared/utils/communityTechniques.crossBoundary.test.ts
+  s_48a510eaef7c22::t_cb96ca959e494d 1-5,7-30,32-52,54-87
+  s_48a510eaef7c22::t_707f58613f50f6 6
+  s_48a510eaef7c22::t_a9e78ae85d2e2b 31
+  s_48a510eaef7c22::t_5b5b4aa546927b 53
+api/lib/communityValidation.ts
+  s_48a510eaef7c22::t_93087164bd12e7 104-149
+  s_48a510eaef7c22::t_85ec811a9d9570 335
+  s_48a510eaef7c22::t_69c703466d928d 17-22
+  s_48a510eaef7c22::t_aa0594a8b741ed 37
+  s_48a510eaef7c22::t_2d99657877ef61 13,15
+  s_48a510eaef7c22::t_00a57563233451 1-12,14,16,23-36,38-43,46,51-103,150-154,156-209,214-334,336-373
+  s_48a510eaef7c22::t_f512c3ff8cfdbc 155
+  s_48a510eaef7c22::t_4480cc83c967bb 44-45,47-50
+src/shared/utils/communityTechniques.ts
+  s_48a510eaef7c22::t_322091974e3307 1,3-8,11-12,14-38
+  s_48a510eaef7c22::t_9706e869fe12dd 2,9-10,13
+scripts/community-admin/lib/purgePlan.ts
+  s_48a510eaef7c22::t_b085d1e1f90d71 1-12,14-22,24-37,40-65
+  s_48a510eaef7c22::t_eaee7623b04519 23
+  s_48a510eaef7c22::t_abace75a02d448 38-39
+  s_48a510eaef7c22::t_fdd283e4441ca7 13
+api/lib/redisKeys.test.ts
+  s_48a510eaef7c22::t_bed3f14d01108d 21
+  s_48a510eaef7c22::t_f3218bfb1df328 12-20,22
+  s_48a510eaef7c22::t_84d6d36ff96e03 106-109
+  s_48a510eaef7c22::t_dd47c9efa2cc73 125
+  s_48a510eaef7c22::t_b8380a52fa0234 70-105,110-124,126-131
+scripts/community-admin/__tests__/restore.test.ts
+  s_48a510eaef7c22::t_d11c651d131d9c 1-71
+src/features/bin-designer/data/examples/index.ts
+  s_48a510eaef7c22::t_cd4e1bfb9d5a54 1-2
+api/lib/communityQuota.test.ts
+  s_48a510eaef7c22::t_a9b9d26745e32d 1-5,7-38
+  s_48a510eaef7c22::t_c72f3fa0de5c04 6
+api/sync/export.test.ts
+  s_48a510eaef7c22::t_3dd22381e63a47 163
+  s_48a510eaef7c22::t_e92883a950647e 166-170
+  s_48a510eaef7c22::t_861b217316fb79 1,3
+  s_48a510eaef7c22::t_e707c01e972f8d 234
+  s_48a510eaef7c22::t_69b4ef9a7b9202 7
+  s_48a510eaef7c22::t_3f25b1f0adfc93 210-211
+  s_48a510eaef7c22::t_f443103c9ddc04 183,188-209,212-233,235-245
+  s_48a510eaef7c22::t_317f2b51f60ead 20
+api/community/[id].ts
+  s_48a510eaef7c22::t_5f69ba1c4060bc 7
+  s_48a510eaef7c22::t_5490422a7046a5 26,30
+  s_48a510eaef7c22::t_10cf69254fa49e 255,264
+  s_48a510eaef7c22::t_9567898ff7abb7 220-221
+  s_48a510eaef7c22::t_367081a024bddb 1-6,8-25,27-29,31-35,37-98,118-130,133-141,143-171,176-178,180,182-186,196-214,226-254,256-263,265-283,285-290,303-339,341-354,356-384,389-447
+  s_48a510eaef7c22::t_ea02dcecc884c5 291-302
+  s_48a510eaef7c22::t_99e665757f111a 340
+  s_48a510eaef7c22::t_ba0b8aed767100 36
+  s_48a510eaef7c22::t_a93fa1dd069a2f 99-101,106-110,112,114,116-117,131-132,142
+  s_48a510eaef7c22::t_d00a43efb4755f 179,181
+  s_48a510eaef7c22::t_aae65c136937b5 355
+  s_48a510eaef7c22::t_cc0391d8d763c9 172-175,187-195,215-219,222-225
+package.json
+  s_48a510eaef7c22::t_1c8ca78d3e0fe4 63
+src/features/bin-designer/components/ExampleGallery/useExampleGalleryFilters.ts
+  s_48a510eaef7c22::t_65af2afecc68dd 1-2
+src/shared/utils/communityTechniques.test.ts
+  s_48a510eaef7c22::t_86df90fab824ce 1-124
+scripts/community-admin/lib/output.ts
+  s_48a510eaef7c22::t_cec4ea787ec8f5 1-24
+api/sync/export.ts
+  s_48a510eaef7c22::t_2ea715be4bcd5d 15-16,28-29
+  s_48a510eaef7c22::t_d8f3147d2d333b 53-61
+  s_48a510eaef7c22::t_6cad0f6bbb2fbd 183-193
+  s_48a510eaef7c22::t_602a7883d565c8 23-27,31
+  s_48a510eaef7c22::t_b5ceb7405cabd4 83
+  s_48a510eaef7c22::t_923048d217505b 97
+scripts/community-admin/lib/dispatch.ts
+  s_48a510eaef7c22::t_e83640a02f4bdb 1-22
+api/community/[id].test.ts
+  s_48a510eaef7c22::t_471df3af5a77a1 453-455,459,461-462
+  s_48a510eaef7c22::t_69468755ff7e6d 74
+  s_48a510eaef7c22::t_27cb096b0a75a4 184
+  s_48a510eaef7c22::t_9ed5386ad63c38 216
+  s_48a510eaef7c22::t_9e8036fdc0c2c7 116
+  s_48a510eaef7c22::t_c5b2ed68490e33 37
+  s_48a510eaef7c22::t_2cac53e395a92c 311-321,329-347
+  s_48a510eaef7c22::t_ffb802419fb946 132
+  s_48a510eaef7c22::t_0c79bbecb39549 362
+  s_48a510eaef7c22::t_eeedc33b5858fb 118,129,133
+  s_48a510eaef7c22::t_1e405f85767073 1-13,15-19,21-36,38-68,73,75-115,117,119-128,130,134-183,185-214,217-236,239-270,272-283,285-293,295-310,348-350,371-399,402-403,416-417,445-452,456-458,460,463-488,526-600,632-650,666-667
+  s_48a510eaef7c22::t_1ce728068971eb 215
+  s_48a510eaef7c22::t_0a83da2b8555d5 400,404-410,412-415
+  s_48a510eaef7c22::t_083d3d4bbe83e6 361
+  s_48a510eaef7c22::t_75b8bee22f5686 418-444
+  s_48a510eaef7c22::t_714a0d9383650f 351-360,363-370
+  s_48a510eaef7c22::t_d48d9a40ec1296 489-525
+  s_48a510eaef7c22::t_764473669c58c5 238
+  s_48a510eaef7c22::t_95302bd7dc0f50 14
+  s_48a510eaef7c22::t_156c640c95a7fb 601-631
+  s_48a510eaef7c22::t_c6d1f05ae69791 20
+  s_48a510eaef7c22::t_61eb6e8a8fcde7 69-72
+  s_48a510eaef7c22::t_259b9406d11398 237
+scripts/community-admin/commands/feature.ts
+  s_48a510eaef7c22::t_e373c46b78a9bd 1-49
+  s_48a510eaef7c22::t_16046c9a771e46 50-52
+  s_5664ed5192d880::t_568376bbbc681e 53-55
+api/README.md
+  s_48a510eaef7c22::t_22eb597fd76efa 61-62
+  s_48a510eaef7c22::t_98fa7e9bf94068 41-60,63-65
+scripts/community-admin/commands/purge.ts
+  s_48a510eaef7c22::t_2693871bd6852a 1-64,72-86
+  s_48a510eaef7c22::t_0922fe201863de 87-88
+src/shared/types/community.test.ts
+  s_48a510eaef7c22::t_57a5f565adf60c 1-17
+scripts/community-admin/__tests__/inspect.test.ts
+  s_48a510eaef7c22::t_1491e534fec772 1-105
+api/lib/contentFilter.test.ts
+  s_48a510eaef7c22::t_43bfc1c6b992a7 7,395-416
+src/features/bin-designer/components/ExampleGallery/ExampleCard.tsx
+  s_48a510eaef7c22::t_4446e718e6c18d 3
+src/features/bin-designer/components/ExampleGallery/ExamplePreviewOverlay.tsx
+  s_48a510eaef7c22::t_b14bd09cd7f40d 7
+src/i18n/locales/ko.json
+  s_48a510eaef7c22::t_7921761180e2b8 3096-3159
+  s_48a510eaef7c22::t_fa6e9cdae31a0d 3160-3162
+scripts/i18n-values-allowlist.json
+  s_48a510eaef7c22::t_cf3f3550120c35 149-150
+src/features/community/api/client.ts
+  s_48a510eaef7c22::t_fe4257e8a6bf29 1-178
+src/features/bin-designer/storage/DesignerStorage.ts
+  s_48a510eaef7c22::t_b3ccbd3a28f690 97-102
+  s_48a510eaef7c22::t_552e44a6b5a1cf 125-126
+  s_48a510eaef7c22::t_3b06aba5993c92 239-247,266-282
+  s_48a510eaef7c22::t_1e6281a4f83b1b 248-265
+api/auth/callback/[provider].ts
+  s_48a510eaef7c22::t_c2edfe9367aa57 101-106,113
+  s_48a510eaef7c22::t_28cedefaa1895f 28
+src/i18n/locales/en.ts
+  s_48a510eaef7c22::t_5e682d5ccbe6ae 3248
+  s_48a510eaef7c22::t_24bf65660d23e2 3291-3292,3296-3297
+  s_48a510eaef7c22::t_076427c9c938e1 3232-3236,3238-3247,3249-3280,3282-3290,3293-3295,3298-3307
+  s_48a510eaef7c22::t_877d3e0e6cdc82 3231
+  s_48a510eaef7c22::t_ae1648f8ec603f 3237
+  s_48a510eaef7c22::t_e6385950db2f6a 3281
+src/features/community/components/PublishDialog/IdentityStep.test.tsx
+  s_48a510eaef7c22::t_ecdc54b79ca231 1-35
+src/features/bin-designer/types/savedDesign.ts
+  s_48a510eaef7c22::t_7f9935bdacfb7c 30-33
+  s_48a510eaef7c22::t_c19373ac6e4b2a 2
+src/features/bin-designer/storage/DesignerStorage.test.ts
+  s_48a510eaef7c22::t_743902232936c6 16
+  s_48a510eaef7c22::t_918e7bc83c41ba 17
+  s_48a510eaef7c22::t_f1896a9173c153 701-772,795-818
+  s_48a510eaef7c22::t_7fb5f51c5719c6 773-794
+src/features/bin-designer/components/DesignerPage/DesignerHeader.test.tsx
+  s_48a510eaef7c22::t_5023c32e293a3e 106-147
+  s_48a510eaef7c22::t_0b296d10f4d947 5
+src/features/bin-designer/store/designer.ts
+  s_48a510eaef7c22::t_94ce5fcae67ded 10-11
+  s_48a510eaef7c22::t_2037abab42cdc4 29-30,33-44,46-52,54-65
+  s_48a510eaef7c22::t_f38e760f75f8ac 31-32
+api/sync/designs/[id].test.ts
+  s_48a510eaef7c22::t_5a2eb4b63a9053 334-544,546-547
+  s_48a510eaef7c22::t_922cbc8b9c5bed 545
+src/i18n/locales/zh-CN.json
+  s_48a510eaef7c22::t_5ffabdb809746b 1572-1634
+  s_48a510eaef7c22::t_be216c39c3de91 1635-1637
+src/features/bin-designer/sync/publishedIdReconcile.test.ts
+  s_48a510eaef7c22::t_4e907809638eb7 4,23-26,30-52
+  s_48a510eaef7c22::t_9237e3ff7377b8 1-3,5-22,27-29,53-106
+src/features/bin-designer/sync/designAdapter.ts
+  s_48a510eaef7c22::t_49b8030ded8780 139-145,153-156,164-165
+  s_48a510eaef7c22::t_c675f6c3941359 10
+  s_48a510eaef7c22::t_31d96add943df7 101-107
+  s_48a510eaef7c22::t_5c043395aa39a9 38-49,54-60,62,66-67,82-86
+  s_48a510eaef7c22::t_66c852178f4128 121-127
+src/features/community/store/publishStore.ts
+  s_48a510eaef7c22::t_86bf9c6dbe6203 1-43,45-109,114-117
+  s_48a510eaef7c22::t_5b6b3d10d0e2df 110-113
+  s_48a510eaef7c22::t_219001f603fc56 44
+api/auth/me.ts
+  s_48a510eaef7c22::t_eac847605d41c6 16,26
+  s_48a510eaef7c22::t_5dd3e8b68d61bc 91
+src/i18n/locales/it.json
+  s_48a510eaef7c22::t_09af12099f9119 1572-1634
+  s_48a510eaef7c22::t_6b3c30b2542e4f 1635-1637
+src/features/community/components/PublishDialog/PublishDialog.test.tsx
+  s_48a510eaef7c22::t_c06467f46a7711 182,190-192
+  s_48a510eaef7c22::t_23fb3d1e07ba3d 217,220,230-231,234,248-269
+  s_48a510eaef7c22::t_932ffe0c20b9ec 138-144,151-159
+  s_48a510eaef7c22::t_27740c5f4481a6 365-395
+  s_48a510eaef7c22::t_2f7aa0021fbd10 2
+  s_48a510eaef7c22::t_d88ae5d893931f 64-68
+  s_48a510eaef7c22::t_0ff013d98a5585 1,3-63,69-104,106-107,109-127,130-137,145-146,148,160-167,169-173,175-178,180-181,183-188,194-216,218-219,221-228,232-233,235-247,270-285,287-305,307,309-334,336,338-353,355,357-364,396-404,406-410,412-414,416-417
+  s_48a510eaef7c22::t_3dc9da9cb22938 415
+  s_48a510eaef7c22::t_7c36710122876d 105
+  s_48a510eaef7c22::t_80f6e0864e7e0c 108
+  s_48a510eaef7c22::t_88e420ed2238ab 128-129
+  s_48a510eaef7c22::t_bccf6ad03225fa 147
+  s_48a510eaef7c22::t_e89ee9966586d0 149-150
+  s_48a510eaef7c22::t_7de410e49ebde6 168
+  s_48a510eaef7c22::t_2fc1a4b8753d0d 174
+  s_48a510eaef7c22::t_189182db889c77 179
+  s_48a510eaef7c22::t_fe3c3e79ab71b0 189
+  s_48a510eaef7c22::t_3f4f875bff975c 193
+  s_48a510eaef7c22::t_7acfac78f12f99 229
+  s_48a510eaef7c22::t_317f765a4cb154 286
+  s_48a510eaef7c22::t_55b16884d967db 306
+  s_48a510eaef7c22::t_05935c6c11ffc0 308
+  s_48a510eaef7c22::t_10f79f9b2f17cc 335
+  s_48a510eaef7c22::t_276dde2c3e7d19 337
+  s_48a510eaef7c22::t_e52f6c50c7fe6e 354
+  s_48a510eaef7c22::t_1985819bbef9b9 356
+  s_48a510eaef7c22::t_96bfefe97cfd4d 405
+  s_48a510eaef7c22::t_2162d4c7fdb24e 411
+src/core/sync/session/sessionApi.ts
+  s_48a510eaef7c22::t_8648506106758b 10-11
+src/shared/utils/binParamsHash.test.ts
+  s_48a510eaef7c22::t_7a5fb991212f30 1-37
+  s_48a510eaef7c22::t_5d31c6f5dae9d1 38-39
+src/core/store/communityPublish.test.ts
+  s_48a510eaef7c22::t_39723f3f01aabf 17-21
+  s_48a510eaef7c22::t_7004dfee495fc4 3,5-8,10-12,14-15,24-33,35-44,46,52-61,65-69,71-81,110-111
+  s_48a510eaef7c22::t_bf7189911c8683 84-102
+  s_48a510eaef7c22::t_fd9e5b1c38c445 1-2,4,9,13,16,22-23,34,45,47-51,62-64,70,82-83,103-109
+src/shared/hooks/useCommunityPublishReturn.ts
+  s_48a510eaef7c22::t_12a9d3b3a446fd 1-41
+src/features/community/README.md
+  s_48a510eaef7c22::t_316d93108073d8 1-15,17
+  s_48a510eaef7c22::t_79369cedc18ecf 16,18
+src/features/community/store/publishStore.test.ts
+  s_48a510eaef7c22::t_b5c2ca80892981 1-190
+src/features/bin-designer/utils/index.ts
+  s_48a510eaef7c22::t_8d07484a015d96 27-30,34
+src/features/community/utils/displayName.ts
+  s_48a510eaef7c22::t_bd6dffbca4db05 1-35
+src/core/api/communityClient.test.ts
+  s_48a510eaef7c22::t_ef5aa63462a292 1-54
+src/i18n/locales/es.json
+  s_48a510eaef7c22::t_95a94932ee08d8 1572-1634
+  s_48a510eaef7c22::t_6fd95d348ecd58 1635-1637
+src/features/bin-designer/store/designer.test.ts
+  s_48a510eaef7c22::t_776aecdd23134d 11
+  s_48a510eaef7c22::t_d4b6b32b45ff2a 1-3,12-16
+  s_48a510eaef7c22::t_5d82450b8cad08 382-413
+  s_48a510eaef7c22::t_2876b98f2e36ef 17
+api/auth/providers/github.ts
+  s_48a510eaef7c22::t_438d75faac1528 66
+src/features/community/components/PublishDialog/PublishForm.tsx
+  s_48a510eaef7c22::t_4fbf4e98334c76 53
+  s_48a510eaef7c22::t_068b2924bbc3c9 37
+  s_48a510eaef7c22::t_f3e0abc1db6580 1-11,15-36,38-52,54-112,122-240
+  s_48a510eaef7c22::t_9cc36cc15daac5 13-14
+  s_48a510eaef7c22::t_5b2d1773c60c81 12
+  s_48a510eaef7c22::t_90116cf512a069 113-121
+src/features/bin-designer/components/DevThumbnailRoute/DevThumbnailRoute.tsx
+  s_48a510eaef7c22::t_cae407bb35b73d 112
+  s_48a510eaef7c22::t_e170abdd35485c 20
+src/i18n/locales/sv.json
+  s_48a510eaef7c22::t_362e2d9eb32bde 1572-1634
+  s_48a510eaef7c22::t_ad71ebec710c19 1635-1637
+src/features/bin-designer/components/DevThumbnailRoute/DevThumbnailRoute.test.tsx
+  s_48a510eaef7c22::t_9cd60644506391 17
+src/shared/utils/binParamsHash.ts
+  s_48a510eaef7c22::t_cb317b26f6e06b 10,12
+  s_48a510eaef7c22::t_bd4984e8c052db 1-9,11,13-33
+src/features/community/api/client.test.ts
+  s_48a510eaef7c22::t_4c0b22954c018b 1-266
+  s_48a510eaef7c22::t_7931bb49c221e5 267-269
+  s_06fdb76f2765cd::t_0bc787418beb87 270
+src/features/bin-designer/components/DesignerPage/DesignerHeader.tsx
+  s_48a510eaef7c22::t_635bd9ec2e8c14 305,311-316,318-334
+  s_48a510eaef7c22::t_0da7ccc18d3c3f 48
+  s_48a510eaef7c22::t_165d3e23c53fc3 136-137,143-150,152-163
+  s_48a510eaef7c22::t_d5700376fa2cb1 138-142,151
+  s_48a510eaef7c22::t_0aa7e2553eee89 12
+  s_48a510eaef7c22::t_468d876fa9f0b6 306-310,317
+src/i18n/locales/ja.json
+  s_48a510eaef7c22::t_d3f8763fca5ae1 1526-1588
+  s_48a510eaef7c22::t_a55a1e72d43bfa 1589-1591
+src/features/bin-designer/hooks/useCommunityPublish.test.ts
+  s_48a510eaef7c22::t_4abf97a868d050 1-2,5-28,30-38,40-93,96-136,138-140,183-278
+  s_48a510eaef7c22::t_0738dfd582008a 94-95
+  s_48a510eaef7c22::t_ae70913e4c70fc 173
+  s_48a510eaef7c22::t_6faf24a19606b3 3
+  s_48a510eaef7c22::t_76089c57ae52b3 137,141-172,174-182
+  s_48a510eaef7c22::t_9f41f70f1fc4de 4
+  s_48a510eaef7c22::t_bbc7038247ab87 29
+  s_48a510eaef7c22::t_013e6ac7985c57 39
+src/features/bin-designer/utils/thumbnail.test.ts
+  s_48a510eaef7c22::t_e0612dad0586bb 3-4,8-9,11,14
+  s_48a510eaef7c22::t_9e2f9fad91f1d6 244-378
+src/features/community/components/PublishDialog/IdentityStep.tsx
+  s_48a510eaef7c22::t_1d7da28308f2b7 1-51
+src/features/community/components/PublishDialog/PublishForm.test.tsx
+  s_48a510eaef7c22::t_ce2c6784918c2d 58,67-68,74,79-81,89,92,102,107-110,116-117
+  s_48a510eaef7c22::t_48a84e23344cac 39
+  s_48a510eaef7c22::t_ea5fa37fe06adc 1-38,40-55,69-73,75-78,82-88,90-91,93-101,103-106,111-115,118-120
+  s_48a510eaef7c22::t_9d895194453dc4 56-57,59-66
+src/features/community/components/PublishDialog/index.ts
+  s_48a510eaef7c22::t_cacbe866325fd7 1
+src/i18n/locales/nl.json
+  s_48a510eaef7c22::t_0e8a223c9b50a3 1434-1496
+  s_48a510eaef7c22::t_ee5451dc2e6d73 1497-1499
+src/features/bin-designer/sync/publishedIdReconcile.ts
+  s_48a510eaef7c22::t_90067e56acc694 10,21-25
+  s_48a510eaef7c22::t_bbac7d463ee402 1-9,11-20,26-44
+src/core/api/communityClient.ts
+  s_48a510eaef7c22::t_4246710495ea07 1-32
+src/features/bin-designer/utils/cameraFraming.ts
+  s_48a510eaef7c22::t_cf1d9e8bb9474a 12-13
+  s_48a510eaef7c22::t_615674a9e95e92 11,14,16-18,21-30
+src/i18n/locales/de.json
+  s_48a510eaef7c22::t_157ad5f58d3a6a 1434-1496
+  s_48a510eaef7c22::t_0193d1a6ac0245 1497-1499
+api/sync/designs/[id].ts
+  s_48a510eaef7c22::t_0bc1b7f78937e0 196-197
+  s_48a510eaef7c22::t_a1f1af2e438c66 140
+  s_48a510eaef7c22::t_46b8156cc34bb0 11-13,15,21-63
+  s_48a510eaef7c22::t_5ba5c90606fc57 155
+  s_48a510eaef7c22::t_6a7b4dcc84f1f0 180
+  s_48a510eaef7c22::t_cdc78f104ca246 71-77,79-85,92,94-100
+  s_48a510eaef7c22::t_6f397e27540e28 207-218
+  s_48a510eaef7c22::t_04869137f6ce48 139,141-154,156-167
+  s_48a510eaef7c22::t_a7e1ac694d6127 64
+src/core/sync/adapters/types.ts
+  s_48a510eaef7c22::t_9c274c80894c09 103-109
+  s_48a510eaef7c22::t_809bc17a39018c 18
+src/i18n/locales/cs.json
+  s_48a510eaef7c22::t_a786ab5a1b1c2d 1572-1634
+  s_48a510eaef7c22::t_d44d52d40f86fa 1635-1637
+src/i18n/locales/pl.json
+  s_48a510eaef7c22::t_7e6a7222af0bcf 1572-1634
+  s_48a510eaef7c22::t_9c6be075425ef8 1635-1637
+src/core/labs/features.ts
+  s_48a510eaef7c22::t_dc190cc499ce29 190-196,199-201
+  s_48a510eaef7c22::t_cfe919c05215a6 197-198
+src/i18n/locales/pt-BR.json
+  s_48a510eaef7c22::t_f41e1fb8f7d8ae 1572-1634
+  s_48a510eaef7c22::t_598172d35817a3 1635-1637
+api/auth/providers/types.ts
+  s_48a510eaef7c22::t_3b518215346120 15-20
+src/features/community/utils/displayName.test.ts
+  s_48a510eaef7c22::t_1388f1c78c3409 1-70
+src/core/sync/apiFetch.test.ts
+  s_48a510eaef7c22::t_ee7ba8126cd387 62-96
+src/features/bin-designer/utils/cameraFraming.test.ts
+  s_48a510eaef7c22::t_997cfccdebb1be 4-5
+  s_48a510eaef7c22::t_c7c993b440cd6f 33-64
+src/i18n/locales/nb.json
+  s_48a510eaef7c22::t_189837be669d26 1572-1634
+  s_48a510eaef7c22::t_f27accc2c40a57 1635-1637
+src/features/community/components/PublishDialog/PublishDialog.tsx
+  s_48a510eaef7c22::t_5b9a8e676384a9 481-483
+  s_48a510eaef7c22::t_f59e9f0cdcdeaa 310
+  s_48a510eaef7c22::t_c192e0c49b03c2 1-28,30-47,49-55,57-60,64-111,121-126,128-152,154-189,193-223,235-236,245-250,252-264,266-295,303-307,312-372,374-392,394-430,436-441,445-480,484-487,498-513,515-540
+  s_48a510eaef7c22::t_c86892423534a1 265
+  s_48a510eaef7c22::t_d907c544ad48c1 29
+  s_48a510eaef7c22::t_a7fa37122c3048 48
+  s_48a510eaef7c22::t_7430668e27ec89 112-120,127
+  s_48a510eaef7c22::t_1614ee4c5b65fb 296-302,308-309,311
+  s_48a510eaef7c22::t_86a7f2139f6ed9 61-63
+  s_48a510eaef7c22::t_bd94ce090daeb2 431-435,442-444
+  s_48a510eaef7c22::t_139be3d1189888 393
+  s_48a510eaef7c22::t_fef0047751dc79 514
+  s_48a510eaef7c22::t_569d49df371581 251
+  s_48a510eaef7c22::t_df6e159f0f6053 488-497
+  s_48a510eaef7c22::t_9639d6f8e1242d 153
+  s_48a510eaef7c22::t_0e456b9c137a30 190-192
+  s_48a510eaef7c22::t_f3ce0d0d77e0c2 224-234,237-244
+  s_48a510eaef7c22::t_0621dd64a9ee64 373
+  s_48a510eaef7c22::t_2dd8a31d566672 56
+src/features/bin-designer/hooks/useCommunityPublish.ts
+  s_48a510eaef7c22::t_9364190a3c95fe 90-94
+  s_48a510eaef7c22::t_b483d95f216962 39-43,56-60
+  s_48a510eaef7c22::t_8b133821f76c0a 1-38,44-55,61-89,95-159
+src/core/store/communityPublish.ts
+  s_48a510eaef7c22::t_1d4d7466614b14 44-45,56-58,68,75-81,84-95
+  s_48a510eaef7c22::t_109db1799e57f5 34-35
+  s_48a510eaef7c22::t_da5eb68724e735 1,4-8,12-23,25-28,31-32,40-43,47-49,55,59-67,70-73,82-83,96-100
+  s_48a510eaef7c22::t_21471f73ab3491 2-3,9-11,24,29-30,33,36-39,46,50-54,69,74
+src/App.tsx
+  s_48a510eaef7c22::t_eee1ce0c65b6fc 578-582
+  s_48a510eaef7c22::t_ac0c8462c33554 12
+  s_48a510eaef7c22::t_99598f2290ed72 149-150
+  s_48a510eaef7c22::t_9ed7e7c1c6d4d1 224
+  s_48a510eaef7c22::t_14812e477d3c9e 120-122
+  s_48a510eaef7c22::t_bda8a81d77e500 56
+src/i18n/locales/uk.json
+  s_48a510eaef7c22::t_92489c415c06b1 1526-1588
+  s_48a510eaef7c22::t_efb86c4dae701e 1589-1591
+src/features/bin-designer/sync/designAdapter.test.ts
+  s_48a510eaef7c22::t_db3f0602e3e02c 180-259
+src/shared/utils/communityPendingAction.test.ts
+  s_48a510eaef7c22::t_b981615181eb29 48,53,63,75,80,89,97,100-109,111-126,130
+  s_48a510eaef7c22::t_80aeee4c6d7889 33,41,45,49,52,58,64,67-70,72-74,76,79,82,85-86,88,90,93-94,96,98,128,131-152
+  s_48a510eaef7c22::t_632be5e4b0ed2b 7
+  s_48a510eaef7c22::t_28e3d6357e4099 5
+  s_48a510eaef7c22::t_36b3d68b2deae9 2-4
+  s_48a510eaef7c22::t_6fab925b33daa3 6
+  s_48a510eaef7c22::t_a5ed55dbdc164b 8-10
+  s_48a510eaef7c22::t_9cdd1a361cb69c 30-32
+  s_48a510eaef7c22::t_a4e9b0132398ef 40
+  s_48a510eaef7c22::t_b32e7ee627fb7c 43-44
+  s_48a510eaef7c22::t_895f91d0aa8e96 47
+  s_48a510eaef7c22::t_5ee40193373452 51
+  s_48a510eaef7c22::t_fcbbec6abe5250 54-57
+  s_48a510eaef7c22::t_aec239b6535e2d 60-62
+  s_48a510eaef7c22::t_67e8dc03e2a28d 66
+  s_48a510eaef7c22::t_92e1293fab2242 71
+  s_48a510eaef7c22::t_505f6dc6af0ad2 78
+  s_48a510eaef7c22::t_7b12bb160b80c3 81
+  s_48a510eaef7c22::t_89e1dec73574ba 84
+  s_48a510eaef7c22::t_d979d49554158b 87
+  s_48a510eaef7c22::t_8d6e7fb17b2c0b 92
+  s_48a510eaef7c22::t_2b661622435ba9 95
+  s_48a510eaef7c22::t_e7dd20fb3d6fde 110
+  s_48a510eaef7c22::t_cef0ed9a4d91ec 127
+  s_48a510eaef7c22::t_94cfec665c6d19 129
+  s_06fdb76f2765cd::t_8a7d9f0280a98d 1,11-27,29,36,38
+src/i18n/locales/fr.json
+  s_48a510eaef7c22::t_77c5d4f0b137e0 1572-1634
+  s_48a510eaef7c22::t_39a9c768ce3a64 1635-1637
+src/core/sync/apiFetch.ts
+  s_48a510eaef7c22::t_7d302e89c3f56f 43
+  s_48a510eaef7c22::t_c633c318143ed4 42,44-45
+  s_48a510eaef7c22::t_2678623b88704c 23-24,26-28,32
+  s_48a510eaef7c22::t_e6103a2aebb93d 25
+src/features/bin-designer/components/DesignerPage/DesignerPage.tsx
+  s_48a510eaef7c22::t_cab7b0ee38891d 24
+  s_48a510eaef7c22::t_815a586d0176e8 78-80
+src/shared/utils/communityPendingAction.ts
+  s_48a510eaef7c22::t_67ff6db2e0bf9c 1-46
+  s_48a510eaef7c22::t_7d42c381cbb676 47,50,53,55-56,58,62,64-66,68-72,78-80,82-100,102,104,106-107
+  s_48a510eaef7c22::t_2eaa9ef203107c 48-49
+  s_48a510eaef7c22::t_703ae9d41c8dbc 51-52
+  s_48a510eaef7c22::t_e3eb5766a8b424 54
+  s_48a510eaef7c22::t_c18ed53b22c79a 57
+  s_48a510eaef7c22::t_e0f9745e4d0909 59-61
+  s_48a510eaef7c22::t_6ef507fbc35240 63
+  s_48a510eaef7c22::t_112f43fd4c348c 67
+  s_48a510eaef7c22::t_35d13925f76071 73-77
+  s_48a510eaef7c22::t_bee085d6399cef 81
+  s_48a510eaef7c22::t_34914d43a80ef3 101
+  s_48a510eaef7c22::t_5e704e9975d9e5 103
+  s_48a510eaef7c22::t_ee332ae2d7bbed 105
+src/features/bin-designer/utils/thumbnail.ts
+  s_48a510eaef7c22::t_51b0e7b26e5214 414
+  s_48a510eaef7c22::t_1279face4b0198 486-527
+  s_48a510eaef7c22::t_a7137f4256112a 388-393
+  s_48a510eaef7c22::t_10c7a793b62fce 140-151
+  s_48a510eaef7c22::t_c063bab6b1f8fb 442-443
+  s_48a510eaef7c22::t_10827bb2bb8031 19-25
+  s_06fdb76f2765cd::t_a67bb1b467fe6e 202
+src/shared/hooks/useCommunityPublishReturn.test.ts
+  s_48a510eaef7c22::t_88e92fb95a2533 1-79
+api/auth/README.md
+  s_06fdb76f2765cd::t_5294e4fd730052 130
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "84f2ef43b0398f5cf281017a5c678766fc3baa4a",
+  "prompts": {},
+  "sessions": {
+    "s_06fdb76f2765cd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a316cd3edd8050d3b",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_48a510eaef7c22": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fda9511-153c-4dd5-bba7-05895a1e12c3",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_5664ed5192d880": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a18cd9224d724d28e",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
