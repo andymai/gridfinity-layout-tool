@@ -13,6 +13,7 @@ import { useTranslation } from '@/i18n';
 import { isOk } from '@/core/result';
 import { useCommunityDetailStore } from '@/core/store/communityDetail';
 import type { CommunityDetailRequest } from '@/core/store/communityDetail';
+import { useGapFitStore } from '@/core/store/gapFit';
 import { useToastStore } from '@/core/store/toast';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { trackEvent } from '@/shared/analytics/posthog';
@@ -35,7 +36,7 @@ import { useRetryOnReconnect } from '@/shared/hooks/useRetryOnReconnect';
 
 type DetailPhase = 'loading' | 'ready' | 'gone' | 'error';
 
-type BusyAction = 'remix' | 'edit' | 'duplicate' | null;
+type BusyAction = 'remix' | 'edit' | 'duplicate' | 'place' | null;
 
 /** Detail-payload stats fallback for designs the capped browse index lacks. */
 interface DetailStats {
@@ -98,6 +99,7 @@ function CommunityDetailDialog({
   onRequestCloseGallery,
   onRemixDesign,
   onEditOriginal,
+  onPlaceInLayout,
   surface = 'tab',
 }: CommunityDetailDialogProps) {
   const t = useTranslation();
@@ -340,6 +342,42 @@ function CommunityDetailDialog({
     }
   }, [addToast, busy, design, onEditOriginal, runDuplicate, switchToDesignerAndClose, t]);
 
+  // Fits-gap context: active only while the layout editor's handoff is live
+  // AND the host wired the placement bridge (the /community route does not).
+  const gapConstraintActive = useGapFitStore((s) => s.constraint !== null);
+  const placeAvailable = gapConstraintActive && onPlaceInLayout !== undefined;
+
+  const handlePlaceInLayout = useCallback(async () => {
+    if (design === null || busy !== null || onPlaceInLayout === undefined) return;
+    setBusy('place');
+    try {
+      const outcome = await onPlaceInLayout(design);
+      if (outcome === 'placed') {
+        trackEvent('community_place_in_layout');
+        addToast(t('community.detail.placedInLayout'), 'success');
+        // Stay on the layout canvas with the placed bin selected: close both
+        // the detail and the whole gallery, but never switch-to-designer.
+        close();
+        onRequestCloseGallery();
+        return;
+      }
+      if (outcome === 'no-fit') {
+        // Gallery and detail stay open so the user can pick another design.
+        addToast(t('community.detail.placeNoFit'), 'error');
+        return;
+      }
+      if (outcome === 'error-copy-saved') {
+        // The remix copy was already saved before placement failed; the
+        // message must own that side effect.
+        addToast(t('community.detail.placeFailedCopySaved'), 'error');
+        return;
+      }
+      addToast(t('community.detail.placeFailed'), 'error');
+    } finally {
+      setBusy(null);
+    }
+  }, [addToast, busy, close, design, onPlaceInLayout, onRequestCloseGallery, t]);
+
   const handleFilterByAuthor = useCallback(() => {
     if (design === null) return;
     useBrowseStore.getState().setAuthor({ id: design.authorPublicId, name: design.authorName });
@@ -360,6 +398,21 @@ function CommunityDetailDialog({
   }, [addToast, designId, t]);
 
   const title = design?.name ?? card?.name ?? t('community.detail.title');
+
+  // Shared between the owner and non-owner footers: in the fits-gap flow
+  // placing at the selected gap is the primary intent for both.
+  const placeButton = (
+    <Button
+      variant="primary"
+      touchTarget={isMobile}
+      loading={busy === 'place'}
+      disabled={busy !== null && busy !== 'place'}
+      onClick={() => void handlePlaceInLayout()}
+      data-testid="community-place-in-layout"
+    >
+      {t('community.detail.placeInLayout')}
+    </Button>
+  );
 
   return (
     <Dialog.Root
@@ -477,7 +530,9 @@ function CommunityDetailDialog({
                 </Button>
               )}
               <Button
-                variant="primary"
+                // In the fits-gap flow placing at the selected gap is the
+                // primary intent even for the design's owner.
+                variant={placeAvailable ? 'secondary' : 'primary'}
                 touchTarget={isMobile}
                 loading={busy === 'edit'}
                 // Hidden designs reject updates server-side (PUT 403s while
@@ -491,6 +546,22 @@ function CommunityDetailDialog({
               >
                 {t('community.detail.editOriginal')}
               </Button>
+              {placeAvailable && placeButton}
+            </>
+          ) : placeAvailable ? (
+            <>
+              {/* Fits-gap context: placing at the selected gap is primary;
+                  the remix path stays available as "Open in designer". */}
+              <Button
+                variant="secondary"
+                touchTarget={isMobile}
+                loading={busy === 'remix'}
+                disabled={busy !== null && busy !== 'remix'}
+                onClick={handleRemix}
+              >
+                {t('community.detail.openInDesigner')}
+              </Button>
+              {placeButton}
             </>
           ) : (
             <>

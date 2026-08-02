@@ -129,10 +129,11 @@ export function useKeyboard({ disabled = false }: UseKeyboardOptions = {}) {
     }))
   );
 
-  const { setInteraction, setPaintSize } = useInteractionStore(
+  const { setInteraction, setPaintSize, setGapSelectArmed } = useInteractionStore(
     useShallow((state) => ({
       setInteraction: state.setInteraction,
       setPaintSize: state.setPaintSize,
+      setGapSelectArmed: state.setGapSelectArmed,
     }))
   );
 
@@ -189,6 +190,7 @@ export function useKeyboard({ disabled = false }: UseKeyboardOptions = {}) {
         showQuickLabel,
         setInteraction,
         setPaintSize,
+        setGapSelectArmed,
         zoomIn,
         zoomOut,
         setShowLayoutManager,
@@ -224,6 +226,7 @@ export function useKeyboard({ disabled = false }: UseKeyboardOptions = {}) {
       setFocusedBin,
       setInteraction,
       setPaintSize,
+      setGapSelectArmed,
       handleNavigationKey,
       activeLayerId,
       setActiveLayer,

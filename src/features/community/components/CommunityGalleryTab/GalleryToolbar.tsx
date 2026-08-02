@@ -1,22 +1,29 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Badge, Button, IconButton, Input, Select, cn } from '@/design-system';
 import { SearchIcon, XIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
+import { useGapFitStore } from '@/core/store/gapFit';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { useResponsive } from '@/shared/hooks/useResponsive';
-import { useBrowseStore, INITIAL_BROWSE_FILTERS } from '../../store/browseStore';
+import {
+  hasActiveBrowseFilters,
+  hasDimensionConstraints,
+  useBrowseStore,
+} from '../../store/browseStore';
 import { HeartGlyph } from '../CommunityCard/CommunityCard';
+import { formatUnits } from '../CommunityCard/cardDims';
 import { CommunitySignInPrompt } from '../SignInPrompt';
 import { CommunityTechniquePills } from './CommunityTechniquePills';
+import { DimensionFilters } from './DimensionFilters';
 import { FilterSheet } from './FilterSheet';
 import {
   CATEGORY_ALL,
+  browseSortOptions,
   categoryOptions,
+  isBrowseSort,
   isCommunityCategory,
-  isCommunitySort,
-  sortOptions,
 } from './galleryFilterOptions';
 
 function UserGlyph() {
@@ -60,7 +67,9 @@ export function GalleryToolbar() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [likedSignInOpen, setLikedSignInOpen] = useState(false);
 
-  const { filters } = useBrowseStore(useShallow((s) => ({ filters: s.filters })));
+  const { filters, fitsGapContext } = useBrowseStore(
+    useShallow((s) => ({ filters: s.filters, fitsGapContext: s.fitsGapContext }))
+  );
   const setSearchText = useBrowseStore((s) => s.setSearchText);
   const setCategory = useBrowseStore((s) => s.setCategory);
   const setTechnique = useBrowseStore((s) => s.setTechnique);
@@ -68,22 +77,31 @@ export function GalleryToolbar() {
   const setAuthor = useBrowseStore((s) => s.setAuthor);
   const setLikedOnly = useBrowseStore((s) => s.setLikedOnly);
   const setRecentOnly = useBrowseStore((s) => s.setRecentOnly);
+  const setFeaturedOnly = useBrowseStore((s) => s.setFeaturedOnly);
   const setMineOnly = useBrowseStore((s) => s.setMineOnly);
+  const setFitsGapContext = useBrowseStore((s) => s.setFitsGapContext);
   const clearFilters = useBrowseStore((s) => s.clearFilters);
   const sessionStatus = useSessionStore((s) => s.status);
   const signedIn = sessionStatus === 'authenticated';
 
+  // Clearing the banner ends the whole fits-gap context, core handoff
+  // included: browsing returns to normal and the detail view's "Place in
+  // layout" action disappears with it.
+  const handleClearFitsGap = useCallback(() => {
+    setFitsGapContext(null);
+    useGapFitStore.getState().clear();
+  }, [setFitsGapContext]);
+
   const activeSheetFilterCount =
-    (filters.category !== null ? 1 : 0) + (filters.technique !== null ? 1 : 0);
-  const hasActiveFilters =
-    filters.searchText !== INITIAL_BROWSE_FILTERS.searchText ||
-    filters.category !== INITIAL_BROWSE_FILTERS.category ||
-    filters.technique !== INITIAL_BROWSE_FILTERS.technique ||
-    filters.sort !== INITIAL_BROWSE_FILTERS.sort ||
-    filters.author !== null ||
-    filters.likedOnly ||
-    filters.recentOnly ||
-    filters.mineOnly;
+    (filters.category !== null ? 1 : 0) +
+    (filters.technique !== null ? 1 : 0) +
+    (filters.widthMin !== null ? 1 : 0) +
+    (filters.widthMax !== null ? 1 : 0) +
+    (filters.depthMin !== null ? 1 : 0) +
+    (filters.depthMax !== null ? 1 : 0) +
+    (filters.maxHeight !== null ? 1 : 0);
+  const hasActiveFilters = hasActiveBrowseFilters(filters);
+  const bestFitAvailable = hasDimensionConstraints(filters) || fitsGapContext !== null;
 
   const chipClass = (active: boolean): string =>
     cn(
@@ -100,6 +118,50 @@ export function GalleryToolbar() {
 
   const filterChips = (
     <div className="flex flex-wrap items-center gap-2">
+      {fitsGapContext !== null && (
+        <Badge
+          tone="accent"
+          shape="pill"
+          size="sm"
+          className="inline-flex items-center gap-1"
+          data-testid="community-fits-gap-chip"
+        >
+          {t('community.gallery.fitsGapBanner', {
+            width: formatUnits(fitsGapContext.widthMax),
+            depth: formatUnits(fitsGapContext.depthMax),
+          })}
+          <IconButton
+            aria-label={t('community.gallery.clearFitsGap')}
+            size="sm"
+            touchTarget={isMobile}
+            onClick={handleClearFitsGap}
+          >
+            <XIcon className="h-3 w-3" />
+          </IconButton>
+        </Badge>
+      )}
+      {/* featuredOnly has no toolbar toggle of its own (the shelf landing's
+          "See all Staff picks" sets it), so while active it needs a visible,
+          clearable chip or the narrowed state is invisible. */}
+      {filters.featuredOnly && (
+        <Badge
+          tone="accent"
+          shape="pill"
+          size="sm"
+          className="inline-flex items-center gap-1"
+          data-testid="community-featured-chip"
+        >
+          {t('community.shelves.staffPicks')}
+          <IconButton
+            aria-label={t('community.gallery.clearFeaturedFilter')}
+            size="sm"
+            touchTarget={isMobile}
+            onClick={() => setFeaturedOnly(false)}
+          >
+            <XIcon className="h-3 w-3" />
+          </IconButton>
+        </Badge>
+      )}
       {/* No signed-out prompt branch, unlike Liked: a signed-out visitor
           structurally has no published designs, so the chip simply is not
           rendered. */}
@@ -200,10 +262,10 @@ export function GalleryToolbar() {
 
   const sortField = (
     <Select
-      options={sortOptions(t)}
+      options={browseSortOptions(t, bestFitAvailable)}
       value={filters.sort}
       onValueChange={(value) => {
-        if (isCommunitySort(value)) setSort(value);
+        if (isBrowseSort(value)) setSort(value);
       }}
       aria-label={t('community.gallery.sortLabel')}
       className={isMobile ? 'w-32' : 'w-40'}
@@ -258,6 +320,7 @@ export function GalleryToolbar() {
           </Button>
         )}
       </div>
+      <DimensionFilters variant="toolbar" />
       <CommunityTechniquePills selected={filters.technique} onChange={setTechnique} />
       {filterChips}
     </div>

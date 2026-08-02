@@ -4,10 +4,12 @@ import { useDrawInteraction } from '@/shared/hooks/interactions/useDrawInteracti
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
-import { useHalfGridModeStore } from '@/core/store';
-import { resetAllStores } from '@/test/testUtils';
+import { useHalfGridModeStore, useToastStore } from '@/core/store';
+import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
+import { useGapFitStore } from '@/core/store/gapFit';
+import { createTestBin, resetAllStores } from '@/test/testUtils';
 import { ok } from '@/core/result';
-import { gridUnits } from '@/core/types';
+import { binId, gridUnits, heightUnits } from '@/core/types';
 import type { Coord } from '@/core/types';
 import type { RefObject } from 'react';
 import type {
@@ -269,6 +271,159 @@ describe('useDrawInteraction', () => {
 
       expect(mockAddBin).toHaveBeenCalledTimes(1);
       expect(mockSetSelectedBin).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('fits-gap selection', () => {
+    it('derives the gap constraint from the drawn selection and opens the gallery', () => {
+      useInteractionStore.setState({
+        interaction: {
+          type: 'draw',
+          start: coord(2, 3),
+          current: coord(4, 4),
+          fitsGap: 'right-drag',
+        },
+      });
+
+      const { result } = renderHook(() => useDrawInteraction(createContext()));
+
+      act(() => {
+        result.current.handleUp();
+      });
+
+      expect(mockAddBin).not.toHaveBeenCalled();
+      const { layout } = useLayoutStore.getState();
+      const constraint = useGapFitStore.getState().constraint;
+      expect(constraint).toEqual({
+        maxWidth: 3,
+        maxDepth: 2,
+        // Single layer at z-start 0: the full drawer height remains.
+        maxHeight: layout.drawer.height,
+        gridUnitMm: layout.gridUnitMm,
+        gridUnitMmY: layout.gridUnitMm,
+        heightUnitMm: layout.heightUnitMm,
+        targetPosition: { x: 2, y: 3, layerId: layout.layers[0].id },
+      });
+      expect(useBinExampleGalleryStore.getState().isOpen).toBe(true);
+    });
+
+    it('derives half-grid constraints at 0.5 steps', () => {
+      useHalfGridModeStore.setState({ halfGridMode: true });
+      useInteractionStore.setState({
+        interaction: {
+          type: 'draw',
+          start: coord(1.5, 2),
+          current: coord(2.5, 3.5),
+          fitsGap: 'right-drag',
+        },
+      });
+
+      const { result } = renderHook(() => useDrawInteraction(createContext()));
+
+      act(() => {
+        result.current.handleUp();
+      });
+
+      const constraint = useGapFitStore.getState().constraint;
+      expect(constraint?.maxWidth).toBe(1.5);
+      expect(constraint?.maxDepth).toBe(2);
+      expect(constraint?.targetPosition.x).toBe(1.5);
+      expect(constraint?.targetPosition.y).toBe(2);
+    });
+
+    it('toasts and bails without opening the gallery when the region is not empty', () => {
+      const { layout } = useLayoutStore.getState();
+      useLayoutStore.setState({
+        layout: {
+          ...layout,
+          bins: [
+            createTestBin({
+              id: binId('blocker'),
+              layerId: layout.layers[0].id,
+              category: layout.categories[0].id,
+              x: gridUnits(2),
+              y: gridUnits(2),
+              width: gridUnits(2),
+              depth: gridUnits(2),
+              height: heightUnits(3),
+            }),
+          ],
+        },
+      });
+      useInteractionStore.setState({
+        interaction: { type: 'draw', start: coord(2, 2), current: coord(2, 2), fitsGap: 'armed' },
+      });
+
+      const { result } = renderHook(() => useDrawInteraction(createContext()));
+
+      act(() => {
+        result.current.handleUp();
+      });
+
+      expect(mockAddBin).not.toHaveBeenCalled();
+      expect(useGapFitStore.getState().constraint).toBeNull();
+      expect(useBinExampleGalleryStore.getState().isOpen).toBe(false);
+      expect(useToastStore.getState().toasts).toHaveLength(1);
+      expect(useToastStore.getState().toasts[0].type).toBe('error');
+    });
+
+    it('a stationary right-click is not a gap selection (context menu falls through)', () => {
+      useInteractionStore.setState({
+        interaction: {
+          type: 'draw',
+          start: coord(2, 2),
+          current: coord(2, 2),
+          fitsGap: 'right-drag',
+        },
+      });
+
+      const { result } = renderHook(() => useDrawInteraction(createContext()));
+
+      act(() => {
+        result.current.handleUp();
+      });
+
+      expect(mockAddBin).not.toHaveBeenCalled();
+      expect(useGapFitStore.getState().constraint).toBeNull();
+      expect(useBinExampleGalleryStore.getState().isOpen).toBe(false);
+      expect(useToastStore.getState().toasts).toHaveLength(0);
+    });
+
+    it('an armed single tap selects a minimum-size gap and disarms the mode', () => {
+      useInteractionStore.setState({
+        gapSelectArmed: true,
+        interaction: { type: 'draw', start: coord(2, 2), current: coord(2, 2), fitsGap: 'armed' },
+      });
+
+      const { result } = renderHook(() => useDrawInteraction(createContext()));
+
+      act(() => {
+        result.current.handleUp();
+      });
+
+      const constraint = useGapFitStore.getState().constraint;
+      expect(constraint?.maxWidth).toBe(1);
+      expect(constraint?.maxDepth).toBe(1);
+      expect(constraint?.targetPosition).toMatchObject({ x: 2, y: 2 });
+      expect(useBinExampleGalleryStore.getState().isOpen).toBe(true);
+      expect(useInteractionStore.getState().gapSelectArmed).toBe(false);
+    });
+
+    it('a plain draw leaves the gap handoff untouched', () => {
+      mockAddBin.mockReturnValue(ok('new-bin-id'));
+      useInteractionStore.setState({
+        interaction: { type: 'draw', start: coord(0, 0), current: coord(1, 1) },
+      });
+
+      const { result } = renderHook(() => useDrawInteraction(createContext()));
+
+      act(() => {
+        result.current.handleUp();
+      });
+
+      expect(mockAddBin).toHaveBeenCalledTimes(1);
+      expect(useGapFitStore.getState().constraint).toBeNull();
+      expect(useBinExampleGalleryStore.getState().isOpen).toBe(false);
     });
   });
 

@@ -2,12 +2,15 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { ok, err } from '@/core/result';
 import type { CommunityCard } from '@/shared/types/community';
 import { fetchCommunityIndex } from '../api/client';
+import type { FitsGapContext } from './browseStore';
 import {
   BROWSE_INDEX_STALE_MS,
   GALLERY_PAGE_SIZE,
   INITIAL_BROWSE_FILTERS,
   INITIAL_BROWSE_STATE,
   filterAndSortCards,
+  hasActiveBrowseFilters,
+  hasDimensionConstraints,
   isIndexStale,
   useBrowseStore,
 } from './browseStore';
@@ -456,5 +459,369 @@ describe('removeItem', () => {
     useBrowseStore.setState({ ...INITIAL_BROWSE_STATE, items: [card('a'), card('b')] });
     useBrowseStore.getState().removeItem('a');
     expect(useBrowseStore.getState().items.map((item) => item.id)).toEqual(['b']);
+  });
+});
+
+describe('dimension filters and best-fit sort', () => {
+  // Outer millimetres carry the 0.5mm fit tolerance, so ranks recover the
+  // published grid footprint via roundToHalf: 62.5/42 -> 1.5, 24.5/7 -> 3.5.
+  const dimItems: readonly CommunityCard[] = [
+    card('small', {
+      metrics: { width: 41.5, depth: 41.5, height: 21, gridUnitMm: 42 },
+      createdAt: 3000,
+    }),
+    card('half', {
+      metrics: { width: 62.5, depth: 83.5, height: 24.5, gridUnitMm: 42 },
+      createdAt: 2000,
+    }),
+    card('large', {
+      metrics: { width: 125.5, depth: 125.5, height: 42, gridUnitMm: 42 },
+      createdAt: 1000,
+      featured: true,
+    }),
+  ];
+
+  function ids(
+    filters: Partial<typeof INITIAL_BROWSE_FILTERS>,
+    fitsGapContext: FitsGapContext | null = null
+  ): string[] {
+    return filterAndSortCards(
+      dimItems,
+      { ...INITIAL_BROWSE_FILTERS, ...filters },
+      undefined,
+      [],
+      fitsGapContext
+    ).map((item) => item.id);
+  }
+
+  it('widthMin is an inclusive half-grid lower bound', () => {
+    expect(ids({ widthMin: 1.5 })).toEqual(['half', 'large']);
+    expect(ids({ widthMin: 2 })).toEqual(['large']);
+  });
+
+  it('widthMax is an inclusive half-grid upper bound', () => {
+    expect(ids({ widthMax: 1.5 })).toEqual(['small', 'half']);
+    expect(ids({ widthMax: 1 })).toEqual(['small']);
+  });
+
+  it('an exact half-unit rank matches both of its own bounds', () => {
+    expect(ids({ widthMin: 1.5, widthMax: 1.5 })).toEqual(['half']);
+  });
+
+  it('depth bounds are inclusive and half-grid aware', () => {
+    expect(ids({ depthMin: 2 })).toEqual(['half', 'large']);
+    expect(ids({ depthMax: 2 })).toEqual(['small', 'half']);
+    expect(ids({ depthMin: 2, depthMax: 2 })).toEqual(['half']);
+  });
+
+  it('maxHeight is an inclusive upper bound in height units', () => {
+    expect(ids({ maxHeight: 3.5 })).toEqual(['small', 'half']);
+    expect(ids({ maxHeight: 3 })).toEqual(['small']);
+    expect(ids({ maxHeight: 6 })).toEqual(['small', 'half', 'large']);
+  });
+
+  it('a min above the max yields zero matches', () => {
+    expect(ids({ widthMin: 3, widthMax: 1 })).toEqual([]);
+  });
+
+  it('featuredOnly keeps only featured cards', () => {
+    expect(ids({ featuredOnly: true })).toEqual(['large']);
+  });
+
+  it('fitsGapContext supplies implicit upper bounds when the toolbar is unset', () => {
+    expect(
+      ids(
+        {},
+        {
+          widthMax: 1.5,
+          depthMax: 2,
+          maxHeight: null,
+          gridUnitMm: 42,
+          gridUnitMmY: 42,
+          heightUnitMm: 7,
+        }
+      )
+    ).toEqual(['small', 'half']);
+    expect(
+      ids(
+        {},
+        {
+          widthMax: 3,
+          depthMax: 3,
+          maxHeight: 3.5,
+          gridUnitMm: 42,
+          gridUnitMmY: 42,
+          heightUnitMm: 7,
+        }
+      )
+    ).toEqual(['small', 'half']);
+  });
+
+  it('an explicit toolbar bound wins over the gap context', () => {
+    expect(
+      ids(
+        { widthMax: 3, depthMax: 3 },
+        {
+          widthMax: 1,
+          depthMax: 1,
+          maxHeight: null,
+          gridUnitMm: 42,
+          gridUnitMmY: 42,
+          heightUnitMm: 7,
+        }
+      )
+    ).toEqual(['small', 'half', 'large']);
+  });
+
+  it('a gap context accepts either orientation, matching the placement probe', () => {
+    const tall: readonly CommunityCard[] = [
+      // 1x3 published footprint.
+      card('one-by-three', {
+        metrics: { width: 41.5, depth: 125.5, height: 21, gridUnitMm: 42 },
+      }),
+    ];
+    const gapIds = filterAndSortCards(
+      tall,
+      INITIAL_BROWSE_FILTERS,
+      undefined,
+      [],
+      // 3x1 gap: only the rotated orientation fits.
+      {
+        widthMax: 3,
+        depthMax: 1,
+        maxHeight: null,
+        gridUnitMm: 42,
+        gridUnitMmY: 42,
+        heightUnitMm: 7,
+      }
+    ).map((item) => item.id);
+    expect(gapIds).toEqual(['one-by-three']);
+  });
+
+  it('toolbar-only max bounds stay literal (no rotation)', () => {
+    const tall: readonly CommunityCard[] = [
+      card('one-by-three', {
+        metrics: { width: 41.5, depth: 125.5, height: 21, gridUnitMm: 42 },
+      }),
+    ];
+    const found = filterAndSortCards(tall, {
+      ...INITIAL_BROWSE_FILTERS,
+      widthMax: 3,
+      depthMax: 1,
+    }).map((item) => item.id);
+    expect(found).toEqual([]);
+  });
+
+  it('a gap context rejects footprints that fit in neither orientation', () => {
+    expect(
+      ids(
+        {},
+        {
+          widthMax: 1,
+          depthMax: 1.5,
+          maxHeight: null,
+          gridUnitMm: 42,
+          gridUnitMmY: 42,
+          heightUnitMm: 7,
+        }
+      )
+    ).toEqual(['small']);
+  });
+
+  it('best-fit orders by descending coverage of the constraint box', () => {
+    expect(ids({ sort: 'best-fit', widthMax: 3, depthMax: 3 })).toEqual(['large', 'half', 'small']);
+  });
+
+  it('best-fit uses the gap context as the target box', () => {
+    expect(
+      ids(
+        { sort: 'best-fit' },
+        {
+          widthMax: 2,
+          depthMax: 3,
+          maxHeight: null,
+          gridUnitMm: 42,
+          gridUnitMmY: 42,
+          heightUnitMm: 7,
+        }
+      )
+    ).toEqual(['half', 'small']);
+  });
+
+  it('best-fit without a target box falls back to raw footprint area', () => {
+    expect(ids({ sort: 'best-fit', maxHeight: 6 })).toEqual(['large', 'half', 'small']);
+  });
+
+  it('best-fit breaks coverage ties by recency', () => {
+    const tied: readonly CommunityCard[] = [
+      card('older', {
+        metrics: { width: 41.5, depth: 41.5, height: 21, gridUnitMm: 42 },
+        createdAt: 1000,
+      }),
+      card('newer', {
+        metrics: { width: 41.5, depth: 41.5, height: 21, gridUnitMm: 42 },
+        createdAt: 2000,
+      }),
+    ];
+    const found = filterAndSortCards(tied, {
+      ...INITIAL_BROWSE_FILTERS,
+      sort: 'best-fit',
+      widthMax: 2,
+      depthMax: 2,
+    }).map((item) => item.id);
+    expect(found).toEqual(['newer', 'older']);
+  });
+});
+
+describe('dimension setters and fits-gap context', () => {
+  it('dimension setters update filters and reset scroll and paging', () => {
+    const store = useBrowseStore.getState();
+    store.setScrollTop(300);
+    store.showMore();
+    store.setWidthMin(1.5);
+    store.setWidthMax(3);
+    store.setDepthMin(0.5);
+    store.setDepthMax(2.5);
+    store.setMaxHeight(6);
+    const state = useBrowseStore.getState();
+    expect(state.filters.widthMin).toBe(1.5);
+    expect(state.filters.widthMax).toBe(3);
+    expect(state.filters.depthMin).toBe(0.5);
+    expect(state.filters.depthMax).toBe(2.5);
+    expect(state.filters.maxHeight).toBe(6);
+    expect(state.scrollTop).toBe(0);
+    expect(state.visibleCount).toBe(GALLERY_PAGE_SIZE);
+  });
+
+  it('picking a min above the current max drags the max along', () => {
+    const store = useBrowseStore.getState();
+    store.setWidthMax(2);
+    store.setWidthMin(4);
+    expect(useBrowseStore.getState().filters.widthMin).toBe(4);
+    expect(useBrowseStore.getState().filters.widthMax).toBe(4);
+    store.setDepthMax(1);
+    store.setDepthMin(3);
+    expect(useBrowseStore.getState().filters.depthMin).toBe(3);
+    expect(useBrowseStore.getState().filters.depthMax).toBe(3);
+  });
+
+  it('picking a max below the current min drags the min along', () => {
+    const store = useBrowseStore.getState();
+    store.setWidthMin(4);
+    store.setWidthMax(2);
+    expect(useBrowseStore.getState().filters.widthMin).toBe(2);
+    expect(useBrowseStore.getState().filters.widthMax).toBe(2);
+    store.setDepthMin(3);
+    store.setDepthMax(1);
+    expect(useBrowseStore.getState().filters.depthMin).toBe(1);
+    expect(useBrowseStore.getState().filters.depthMax).toBe(1);
+  });
+
+  it('non-crossing dimension picks leave the opposing bound alone', () => {
+    const store = useBrowseStore.getState();
+    store.setWidthMax(4);
+    store.setWidthMin(2);
+    expect(useBrowseStore.getState().filters.widthMin).toBe(2);
+    expect(useBrowseStore.getState().filters.widthMax).toBe(4);
+    store.setWidthMin(null);
+    expect(useBrowseStore.getState().filters.widthMin).toBeNull();
+    expect(useBrowseStore.getState().filters.widthMax).toBe(4);
+  });
+
+  it('setFeaturedOnly updates the filter and resets scroll', () => {
+    const store = useBrowseStore.getState();
+    store.setScrollTop(300);
+    store.setFeaturedOnly(true);
+    const state = useBrowseStore.getState();
+    expect(state.filters.featuredOnly).toBe(true);
+    expect(state.scrollTop).toBe(0);
+  });
+
+  it('clearing the last dimension constraint drops best-fit back to newest', () => {
+    const store = useBrowseStore.getState();
+    store.setWidthMax(2);
+    store.setSort('best-fit');
+    store.setWidthMax(null);
+    expect(useBrowseStore.getState().filters.sort).toBe('newest');
+  });
+
+  it('best-fit survives clearing one constraint while another remains', () => {
+    const store = useBrowseStore.getState();
+    store.setWidthMax(2);
+    store.setMaxHeight(6);
+    store.setSort('best-fit');
+    store.setWidthMax(null);
+    expect(useBrowseStore.getState().filters.sort).toBe('best-fit');
+  });
+
+  it('best-fit survives clearing dimensions while a gap context is set', () => {
+    const store = useBrowseStore.getState();
+    store.setFitsGapContext({
+      widthMax: 2,
+      depthMax: 3,
+      maxHeight: null,
+      gridUnitMm: 42,
+      gridUnitMmY: 42,
+      heightUnitMm: 7,
+    });
+    store.setWidthMax(2);
+    store.setSort('best-fit');
+    store.setWidthMax(null);
+    expect(useBrowseStore.getState().filters.sort).toBe('best-fit');
+    useBrowseStore.getState().setFitsGapContext(null);
+    expect(useBrowseStore.getState().filters.sort).toBe('newest');
+  });
+
+  it('clearFilters resets the new fields but keeps the gap context', () => {
+    const store = useBrowseStore.getState();
+    store.setFitsGapContext({
+      widthMax: 2,
+      depthMax: 3,
+      maxHeight: 6,
+      gridUnitMm: 42,
+      gridUnitMmY: 42,
+      heightUnitMm: 7,
+    });
+    store.setFeaturedOnly(true);
+    store.setWidthMin(1);
+    store.setMaxHeight(3);
+    store.clearFilters();
+    const state = useBrowseStore.getState();
+    expect(state.filters).toEqual(INITIAL_BROWSE_FILTERS);
+    expect(state.fitsGapContext).toEqual({
+      widthMax: 2,
+      depthMax: 3,
+      maxHeight: 6,
+      gridUnitMm: 42,
+      gridUnitMmY: 42,
+      heightUnitMm: 7,
+    });
+  });
+});
+
+describe('filter state helpers', () => {
+  it('hasDimensionConstraints is true when any of the five bounds is set', () => {
+    expect(hasDimensionConstraints(INITIAL_BROWSE_FILTERS)).toBe(false);
+    expect(hasDimensionConstraints({ ...INITIAL_BROWSE_FILTERS, widthMin: 1 })).toBe(true);
+    expect(hasDimensionConstraints({ ...INITIAL_BROWSE_FILTERS, widthMax: 1 })).toBe(true);
+    expect(hasDimensionConstraints({ ...INITIAL_BROWSE_FILTERS, depthMin: 1 })).toBe(true);
+    expect(hasDimensionConstraints({ ...INITIAL_BROWSE_FILTERS, depthMax: 1 })).toBe(true);
+    expect(hasDimensionConstraints({ ...INITIAL_BROWSE_FILTERS, maxHeight: 1 })).toBe(true);
+  });
+
+  it('hasActiveBrowseFilters covers every filter field', () => {
+    expect(hasActiveBrowseFilters(INITIAL_BROWSE_FILTERS)).toBe(false);
+    expect(hasActiveBrowseFilters({ ...INITIAL_BROWSE_FILTERS, searchText: 'x' })).toBe(true);
+    expect(hasActiveBrowseFilters({ ...INITIAL_BROWSE_FILTERS, category: 'tools' })).toBe(true);
+    expect(hasActiveBrowseFilters({ ...INITIAL_BROWSE_FILTERS, technique: 'scoop' })).toBe(true);
+    expect(hasActiveBrowseFilters({ ...INITIAL_BROWSE_FILTERS, sort: 'likes' })).toBe(true);
+    expect(
+      hasActiveBrowseFilters({ ...INITIAL_BROWSE_FILTERS, author: { id: 'a', name: 'A' } })
+    ).toBe(true);
+    expect(hasActiveBrowseFilters({ ...INITIAL_BROWSE_FILTERS, likedOnly: true })).toBe(true);
+    expect(hasActiveBrowseFilters({ ...INITIAL_BROWSE_FILTERS, recentOnly: true })).toBe(true);
+    expect(hasActiveBrowseFilters({ ...INITIAL_BROWSE_FILTERS, featuredOnly: true })).toBe(true);
+    expect(hasActiveBrowseFilters({ ...INITIAL_BROWSE_FILTERS, mineOnly: true })).toBe(true);
+    expect(hasActiveBrowseFilters({ ...INITIAL_BROWSE_FILTERS, depthMax: 2 })).toBe(true);
   });
 });

@@ -34,15 +34,33 @@ describe('FilterSheet', () => {
     expect(useBrowseStore.getState().filters.technique).toBe(ALL_TECHNIQUES[0]);
   });
 
+  it('renders the dimension filter controls', () => {
+    render(<FilterSheet open onClose={vi.fn()} />);
+    expect(screen.getByTestId('community-dimension-filters')).toBeInTheDocument();
+    expect(screen.getByLabelText('community.gallery.widthMinLabel')).toBeInTheDocument();
+    expect(screen.getByLabelText('community.gallery.depthMaxLabel')).toBeInTheDocument();
+    expect(screen.getByLabelText('community.gallery.maxHeightLabel')).toBeInTheDocument();
+  });
+
   it('clear all resets only the sheet filters, keeping search text', () => {
     useBrowseStore.getState().setSearchText('screws');
     useBrowseStore.getState().setCategory('tools');
     useBrowseStore.getState().setTechnique('scoop');
+    useBrowseStore.getState().setWidthMin(1);
+    useBrowseStore.getState().setWidthMax(2);
+    useBrowseStore.getState().setDepthMin(1);
+    useBrowseStore.getState().setDepthMax(3);
+    useBrowseStore.getState().setMaxHeight(6);
     render(<FilterSheet open onClose={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: 'community.gallery.clearAll' }));
     const { filters } = useBrowseStore.getState();
     expect(filters.category).toBeNull();
     expect(filters.technique).toBeNull();
+    expect(filters.widthMin).toBeNull();
+    expect(filters.widthMax).toBeNull();
+    expect(filters.depthMin).toBeNull();
+    expect(filters.depthMax).toBeNull();
+    expect(filters.maxHeight).toBeNull();
     expect(filters.searchText).toBe('screws');
   });
 

@@ -9,8 +9,12 @@
 
 import type { CommunityEditOriginalOutcome } from '@/shared/types/communityDetail';
 
-/** Which host surface is showing community content; used as the analytics `surface` property. */
-export type CommunityGallerySurface = 'tab' | 'route';
+/**
+ * Which host surface is showing community content; used as the analytics
+ * `surface` property. 'fits_gap' is the gallery tab opened by the layout
+ * editor's "find bins that fit" flow.
+ */
+export type CommunityGallerySurface = 'tab' | 'route' | 'fits_gap';
 
 export interface CommunityGalleryTabProps {
   onRequestClose: () => void;

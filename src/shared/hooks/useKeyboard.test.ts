@@ -325,6 +325,18 @@ describe('useKeyboard', () => {
       expect(useInteractionStore.getState().paintSize).toBeNull();
     });
 
+    it('disarms gap-select mode on Escape', () => {
+      useInteractionStore.getState().setGapSelectArmed(true);
+
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey('Escape');
+      });
+
+      expect(useInteractionStore.getState().gapSelectArmed).toBe(false);
+    });
+
     it('clears interaction on Escape', () => {
       useInteractionStore.getState().setInteraction({
         type: 'draw',

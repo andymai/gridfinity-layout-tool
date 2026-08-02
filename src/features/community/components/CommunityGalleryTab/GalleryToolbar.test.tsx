@@ -1,9 +1,16 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { act, render, screen, fireEvent } from '@testing-library/react';
 import { useSessionStore } from '@/core/sync/session/useSession';
+import { useGapFitStore } from '@/core/store/gapFit';
+import { gridUnits, heightUnits, layerId } from '@/core/types';
+import type { Mm } from '@/core/types';
 import { ALL_TECHNIQUES } from './galleryFilterOptions';
-import { INITIAL_BROWSE_STATE, useBrowseStore } from '../../store/browseStore';
+import {
+  INITIAL_BROWSE_FILTERS,
+  INITIAL_BROWSE_STATE,
+  useBrowseStore,
+} from '../../store/browseStore';
 import { GalleryToolbar } from './GalleryToolbar';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
@@ -23,6 +30,7 @@ function signIn(): void {
 beforeEach(() => {
   responsiveMock.isMobile = false;
   useBrowseStore.setState({ ...INITIAL_BROWSE_STATE });
+  useGapFitStore.setState({ constraint: null });
   useSessionStore.setState({ status: 'anonymous', user: null });
 });
 
@@ -72,6 +80,55 @@ describe('GalleryToolbar (desktop)', () => {
     expect(useBrowseStore.getState().filters.technique).toBe(ALL_TECHNIQUES[0]);
     fireEvent.click(pill);
     expect(useBrowseStore.getState().filters.technique).toBeNull();
+  });
+
+  it('renders the dimension filter row on desktop', () => {
+    render(<GalleryToolbar />);
+    expect(screen.getByTestId('community-dimension-filters')).toBeInTheDocument();
+    expect(screen.getByLabelText('community.gallery.widthMinLabel')).toBeInTheDocument();
+    expect(screen.getByLabelText('community.gallery.maxHeightLabel')).toBeInTheDocument();
+  });
+
+  it('offers best-fit only while a dimension constraint is active', () => {
+    render(<GalleryToolbar />);
+    const sortSelect = screen.getByLabelText('community.gallery.sortLabel');
+    const optionIds = () => Array.from(sortSelect.querySelectorAll('option')).map((o) => o.value);
+    expect(optionIds()).not.toContain('best-fit');
+    act(() => {
+      useBrowseStore.getState().setWidthMax(2);
+    });
+    expect(optionIds()).toContain('best-fit');
+    fireEvent.change(sortSelect, { target: { value: 'best-fit' } });
+    expect(useBrowseStore.getState().filters.sort).toBe('best-fit');
+  });
+
+  it('offers best-fit while a fits-gap context is set without toolbar constraints', () => {
+    useBrowseStore
+      .getState()
+      .setFitsGapContext({
+        widthMax: 2,
+        depthMax: 3,
+        maxHeight: null,
+        gridUnitMm: 42,
+        gridUnitMmY: 42,
+        heightUnitMm: 7,
+      });
+    render(<GalleryToolbar />);
+    const sortSelect = screen.getByLabelText('community.gallery.sortLabel');
+    expect(Array.from(sortSelect.querySelectorAll('option')).map((o) => o.value)).toContain(
+      'best-fit'
+    );
+  });
+
+  it('counts dimension filters toward the clear-filters affordance', () => {
+    render(<GalleryToolbar />);
+    expect(screen.queryByRole('button', { name: 'community.gallery.clearFilters' })).toBeNull();
+    act(() => {
+      useBrowseStore.getState().setMaxHeight(6);
+    });
+    expect(
+      screen.getByRole('button', { name: 'community.gallery.clearFilters' })
+    ).toBeInTheDocument();
   });
 
   it('shows a clear-filters button only when a filter is active', () => {
@@ -164,6 +221,78 @@ describe('GalleryToolbar filter chips', () => {
     expect(screen.queryByTestId('community-author-chip')).not.toBeInTheDocument();
   });
 
+  it('shows the fits-gap banner with the gap size while the context is active', () => {
+    useBrowseStore
+      .getState()
+      .setFitsGapContext({
+        widthMax: 2.5,
+        depthMax: 3,
+        maxHeight: 6,
+        gridUnitMm: 42,
+        gridUnitMmY: 42,
+        heightUnitMm: 7,
+      });
+    render(<GalleryToolbar />);
+    const chip = screen.getByTestId('community-fits-gap-chip');
+    // i18nEcho returns the key; the size rides in as interpolation params.
+    expect(chip).toHaveTextContent('community.gallery.fitsGapBanner');
+    expect(screen.getByRole('button', { name: 'community.gallery.clearFitsGap' })).toBeEnabled();
+  });
+
+  it('clearing the banner ends the fits-gap context in both stores and restores normal browsing', () => {
+    useGapFitStore.getState().setConstraint({
+      maxWidth: gridUnits(2.5),
+      maxDepth: gridUnits(3),
+      maxHeight: heightUnits(6),
+      gridUnitMm: 42 as Mm,
+      gridUnitMmY: 42 as Mm,
+      heightUnitMm: 7 as Mm,
+      targetPosition: { x: gridUnits(0), y: gridUnits(0), layerId: layerId('layer_1') },
+    });
+    useBrowseStore
+      .getState()
+      .setFitsGapContext({
+        widthMax: 2.5,
+        depthMax: 3,
+        maxHeight: 6,
+        gridUnitMm: 42,
+        gridUnitMmY: 42,
+        heightUnitMm: 7,
+      });
+    useBrowseStore.getState().setSort('best-fit');
+    render(<GalleryToolbar />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'community.gallery.clearFitsGap' }));
+
+    expect(useBrowseStore.getState().fitsGapContext).toBeNull();
+    expect(useGapFitStore.getState().constraint).toBeNull();
+    // best-fit has nothing to score against once the gap clears, so the sort
+    // falls back and browsing is fully back to normal.
+    expect(useBrowseStore.getState().filters.sort).toBe('newest');
+    expect(useBrowseStore.getState().filters).toEqual(INITIAL_BROWSE_FILTERS);
+    expect(screen.queryByTestId('community-fits-gap-chip')).not.toBeInTheDocument();
+  });
+
+  it('hides the fits-gap banner when no gap context is active', () => {
+    render(<GalleryToolbar />);
+    expect(screen.queryByTestId('community-fits-gap-chip')).not.toBeInTheDocument();
+  });
+
+  it('shows a clearable staff-picks chip while featuredOnly is active', () => {
+    useBrowseStore.getState().setFeaturedOnly(true);
+    render(<GalleryToolbar />);
+    const chip = screen.getByTestId('community-featured-chip');
+    expect(chip).toHaveTextContent('community.shelves.staffPicks');
+    fireEvent.click(screen.getByRole('button', { name: 'community.gallery.clearFeaturedFilter' }));
+    expect(useBrowseStore.getState().filters.featuredOnly).toBe(false);
+    expect(screen.queryByTestId('community-featured-chip')).not.toBeInTheDocument();
+  });
+
+  it('hides the staff-picks chip while featuredOnly is off', () => {
+    render(<GalleryToolbar />);
+    expect(screen.queryByTestId('community-featured-chip')).not.toBeInTheDocument();
+  });
+
   it('counts the new filters toward the clear-filters affordance', () => {
     useBrowseStore.getState().setAuthor({ id: 'a'.repeat(32), name: 'Alice' });
     render(<GalleryToolbar />);
@@ -201,6 +330,15 @@ describe('GalleryToolbar (mobile)', () => {
     render(<GalleryToolbar />);
     expect(screen.getByText('community.gallery.activeFilterCount')).toBeInTheDocument();
     expect(screen.getByText('2')).toBeInTheDocument();
+  });
+
+  it('counts each active dimension filter in the badge', () => {
+    useBrowseStore.getState().setWidthMin(1);
+    useBrowseStore.getState().setWidthMax(2);
+    useBrowseStore.getState().setDepthMax(3);
+    useBrowseStore.getState().setMaxHeight(6);
+    render(<GalleryToolbar />);
+    expect(screen.getByText('4')).toBeInTheDocument();
   });
 
   it('opens the filter sheet from the filter button', () => {

@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { Button, EmptyState } from '@/design-system';
 import { AlertTriangleIcon, LayoutGridIcon, SearchIcon } from '@/design-system/Icon';
 import { useCommunityDetailStore } from '@/core/store/communityDetail';
+import { useGapFitStore } from '@/core/store/gapFit';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
 import { useSessionStore } from '@/core/sync/session/useSession';
@@ -12,16 +13,23 @@ import type { CommunityCard as CommunityCardData } from '@/shared/types/communit
 import type { CommunityGalleryTabProps } from '@/shared/types/communityGalleryTab';
 import { TECHNIQUE_CONFIG } from '@/shared/types/exampleTechniques';
 import { COMMUNITY_INDEX_CAP } from '../../api/client';
-import { filterAndSortCards, useBrowseStore } from '../../store/browseStore';
+import {
+  filterAndSortCards,
+  hasActiveBrowseFilters,
+  useBrowseStore,
+} from '../../store/browseStore';
 import { useMineStore } from '../../store/mineStore';
 import { CATEGORY_LABEL_KEYS } from '../../utils/categoryLabels';
 import { loadRecentlyViewedIds } from '../../utils/recentlyViewed';
 import { CommunityCard } from '../CommunityCard';
 import { HeartGlyph } from '../CommunityCard/CommunityCard';
+import { formatUnits } from '../CommunityCard/cardDims';
 import { MineCard } from '../CommunityCard/MineCard';
 import { MineDigestSummary } from '../MineDigestSummary';
 import { GalleryToolbar } from './GalleryToolbar';
 import { hasLocalDesigns } from './hasLocalDesigns';
+import { ShelfLanding } from './ShelfLanding';
+import { SHELF_LANDING_MIN_DESIGNS } from './shelfData';
 
 export { GALLERY_PAGE_SIZE } from '../../store/browseStore';
 
@@ -54,13 +62,14 @@ export function CommunityGalleryTab({
 }: CommunityGalleryTabProps) {
   const t = useTranslation();
 
-  const { status, items, capped, error, filters, visibleCount } = useBrowseStore(
+  const { status, items, capped, error, filters, fitsGapContext, visibleCount } = useBrowseStore(
     useShallow((s) => ({
       status: s.status,
       items: s.items,
       capped: s.capped,
       error: s.error,
       filters: s.filters,
+      fitsGapContext: s.fitsGapContext,
       visibleCount: s.visibleCount,
     }))
   );
@@ -69,6 +78,8 @@ export function CommunityGalleryTab({
   const clearFilters = useBrowseStore((s) => s.clearFilters);
   const setAuthor = useBrowseStore((s) => s.setAuthor);
   const setMineOnly = useBrowseStore((s) => s.setMineOnly);
+  const setFitsGapContext = useBrowseStore((s) => s.setFitsGapContext);
+  const setSort = useBrowseStore((s) => s.setSort);
   const showMore = useBrowseStore((s) => s.showMore);
   const {
     status: mineStatus,
@@ -109,6 +120,39 @@ export function CommunityGalleryTab({
   useEffect(() => {
     void ensureIndex();
   }, [ensureIndex]);
+
+  // Mirror the core gapFit handoff into the browse store on mount: the grid
+  // editor cannot import this feature, so it records the gap in
+  // core/store/gapFit and this sync applies the dimension bounds plus the
+  // best-fit sort.
+  // A cleared handoff (gallery closed, bin placed) drops the ambient context
+  // on the next mount so the route surface never inherits a stale gap.
+  useEffect(() => {
+    const constraint = useGapFitStore.getState().constraint;
+    const current = useBrowseStore.getState().fitsGapContext;
+    if (constraint === null) {
+      if (current !== null) setFitsGapContext(null);
+      return;
+    }
+    const unchanged =
+      current !== null &&
+      current.widthMax === constraint.maxWidth &&
+      current.depthMax === constraint.maxDepth &&
+      current.maxHeight === constraint.maxHeight &&
+      current.gridUnitMm === constraint.gridUnitMm &&
+      current.gridUnitMmY === constraint.gridUnitMmY &&
+      current.heightUnitMm === constraint.heightUnitMm;
+    if (unchanged) return;
+    setFitsGapContext({
+      widthMax: constraint.maxWidth,
+      depthMax: constraint.maxDepth,
+      maxHeight: constraint.maxHeight,
+      gridUnitMm: constraint.gridUnitMm,
+      gridUnitMmY: constraint.gridUnitMmY,
+      heightUnitMm: constraint.heightUnitMm,
+    });
+    setSort('best-fit');
+  }, [setFitsGapContext, setSort]);
 
   useEffect(() => {
     if (mineActive) {
@@ -231,8 +275,8 @@ export function CommunityGalleryTab({
   // The toolbar's search/category/technique filters still apply within Mine;
   // mineOnly itself is not a predicate (the source switch above handles it).
   const filtered = useMemo(
-    () => filterAndSortCards(activeItems, filters, searchLabels, recentIds),
-    [activeItems, filters, searchLabels, recentIds]
+    () => filterAndSortCards(activeItems, filters, searchLabels, recentIds, fitsGapContext),
+    [activeItems, filters, searchLabels, recentIds, fitsGapContext]
   );
   const visible = filtered.slice(0, visibleCount);
 
@@ -240,8 +284,13 @@ export function CommunityGalleryTab({
   const isEmptyLibrary = !mineActive && status === 'ready' && items.length === 0;
   const isMineEmpty = mineActive && mineStatus === 'ready' && mineItems.length === 0;
   const isNoMatches = activeStatus === 'ready' && activeItems.length > 0 && filtered.length === 0;
-  const isLikedEmpty = isNoMatches && filters.likedOnly;
-  const isAuthorEmpty = isNoMatches && !filters.likedOnly && filters.author !== null;
+  // The ambient gap bound is the likeliest cause of an empty result while it
+  // is active, and clearFilters deliberately preserves it, so it needs its
+  // own empty state whose action actually clears the gap.
+  const isFitsGapEmpty = isNoMatches && fitsGapContext !== null;
+  const isLikedEmpty = isNoMatches && !isFitsGapEmpty && filters.likedOnly;
+  const isAuthorEmpty =
+    isNoMatches && !isFitsGapEmpty && !filters.likedOnly && filters.author !== null;
   const isBlockingError = activeStatus === 'error' && activeItems.length === 0;
   const isOffline =
     isBlockingError &&
@@ -252,6 +301,18 @@ export function CommunityGalleryTab({
   return (
     <div className="flex min-h-0 flex-1 flex-col" data-testid="community-gallery-tab">
       <GalleryToolbar />
+
+      {/* Landing affordance for the public index only: hidden in Mine, over
+          non-ready states, and once the visitor has stated any filter intent.
+          Sits outside the scrollRef div so shelf scrolling never pollutes the
+          persisted grid scrollTop. */}
+      {!mineActive &&
+        status === 'ready' &&
+        items.length >= SHELF_LANDING_MIN_DESIGNS &&
+        fitsGapContext === null &&
+        !hasActiveBrowseFilters(filters) && (
+          <ShelfLanding items={items} onSelect={handleSelect} onSelectAuthor={handleSelectAuthor} />
+        )}
 
       <div
         ref={scrollRef}
@@ -382,7 +443,32 @@ export function CommunityGalleryTab({
           />
         )}
 
-        {isNoMatches && !isLikedEmpty && !isAuthorEmpty && (
+        {isNoMatches && fitsGapContext !== null && (
+          <EmptyState
+            icon={<SearchIcon />}
+            iconStyle="circle"
+            title={t('community.gallery.fitsGapEmpty.title', {
+              width: formatUnits(fitsGapContext.widthMax),
+              depth: formatUnits(fitsGapContext.depthMax),
+            })}
+            description={t('community.gallery.fitsGapEmpty.subtitle')}
+            actions={
+              <Button
+                variant="secondary"
+                className="min-h-11"
+                onClick={() => {
+                  setFitsGapContext(null);
+                  useGapFitStore.getState().clear();
+                }}
+                data-testid="community-fits-gap-empty-clear"
+              >
+                {t('community.gallery.clearFitsGap')}
+              </Button>
+            }
+          />
+        )}
+
+        {isNoMatches && !isFitsGapEmpty && !isLikedEmpty && !isAuthorEmpty && (
           <EmptyState
             icon={<SearchIcon />}
             iconStyle="circle"

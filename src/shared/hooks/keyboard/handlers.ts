@@ -67,6 +67,7 @@ export function handleEscape(e: KeyboardEvent, ctx: KeyboardContext): boolean {
   ctx.setInteraction(null);
   ctx.setSelectedBins([]);
   ctx.setPaintSize(null);
+  ctx.setGapSelectArmed(false);
   return true;
 }
 

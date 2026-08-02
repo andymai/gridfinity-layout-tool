@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { ok, err } from '@/core/result';
 import { trackEvent } from '@/shared/analytics/posthog';
 import {
@@ -10,6 +10,9 @@ import {
 import { useToastStore } from '@/core/store/toast';
 import type { CommunityCard } from '@/shared/types/community';
 import { useSessionStore } from '@/core/sync/session/useSession';
+import { useGapFitStore } from '@/core/store/gapFit';
+import { gridUnits, heightUnits, layerId } from '@/core/types';
+import type { Mm } from '@/core/types';
 import { fetchCommunityIndex, fetchMineIndex } from '../../api/client';
 import { INITIAL_BROWSE_STATE, useBrowseStore } from '../../store/browseStore';
 import { INITIAL_MINE_STATE, useMineStore } from '../../store/mineStore';
@@ -76,6 +79,7 @@ beforeEach(() => {
   useBrowseStore.setState({ ...INITIAL_BROWSE_STATE });
   useMineStore.setState({ ...INITIAL_MINE_STATE });
   useCommunityDetailStore.setState({ ...INITIAL_COMMUNITY_DETAIL_STATE });
+  useGapFitStore.setState({ constraint: null });
   useToastStore.setState({ toasts: [] });
   useSessionStore.setState({ status: 'anonymous', user: null });
 });
@@ -106,11 +110,16 @@ describe('CommunityGalleryTab', () => {
   it('renders chunks of 24 with a Load more button', async () => {
     indexMock.mockResolvedValue(ok({ items: manyCards(30), capped: false }));
     render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    // Scoped to the grid list: the shelf landing above renders its own cards.
     await waitFor(() => {
-      expect(screen.getAllByTestId('community-card-placeholder')).toHaveLength(GALLERY_PAGE_SIZE);
+      const grid = screen.getByRole('list', { name: 'community.gallery.gridLabel' });
+      expect(within(grid).getAllByTestId('community-card-placeholder')).toHaveLength(
+        GALLERY_PAGE_SIZE
+      );
     });
     fireEvent.click(screen.getByRole('button', { name: 'community.gallery.loadMore' }));
-    expect(screen.getAllByTestId('community-card-placeholder')).toHaveLength(30);
+    const grid = screen.getByRole('list', { name: 'community.gallery.gridLabel' });
+    expect(within(grid).getAllByTestId('community-card-placeholder')).toHaveLength(30);
     expect(
       screen.queryByRole('button', { name: 'community.gallery.loadMore' })
     ).not.toBeInTheDocument();
@@ -175,7 +184,7 @@ describe('CommunityGalleryTab', () => {
     indexMock.mockResolvedValue(ok({ items: manyCards(30), capped: false }));
     render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
     await waitFor(() => {
-      expect(screen.getByText('Bin design000')).toBeInTheDocument();
+      expect(screen.getAllByText('Bin design000').length).toBeGreaterThan(0);
     });
     const scroller = screen.getByTestId('community-gallery-scroll');
     scroller.scrollTop = 400;
@@ -562,5 +571,160 @@ describe('CommunityGalleryTab Mine view', () => {
     await waitFor(() => {
       expect(screen.getByText('Bin mylive000001')).toBeInTheDocument();
     });
+  });
+});
+
+describe('CommunityGalleryTab shelf landing', () => {
+  function shelfCards(count: number): CommunityCard[] {
+    return Array.from({ length: count }, (_, i) =>
+      card(`design${String(i).padStart(3, '0')}`, {
+        createdAt: 1000 + i,
+        featured: i === 0,
+      })
+    );
+  }
+
+  it('shows the shelves over a ready public index at the landing threshold', async () => {
+    indexMock.mockResolvedValue(ok({ items: shelfCards(12), capped: false }));
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.getByTestId('community-shelves')).toBeInTheDocument();
+    });
+    expect(screen.getByText('community.shelves.staffPicks')).toBeInTheDocument();
+  });
+
+  it('keeps the plain grid below the threshold', async () => {
+    indexMock.mockResolvedValue(ok({ items: shelfCards(11), capped: false }));
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.getByText('Bin design000')).toBeInTheDocument();
+    });
+    expect(screen.queryByTestId('community-shelves')).not.toBeInTheDocument();
+  });
+
+  it('hides the shelves once any filter is active and restores them on clear', async () => {
+    indexMock.mockResolvedValue(ok({ items: shelfCards(12), capped: false }));
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.getByTestId('community-shelves')).toBeInTheDocument();
+    });
+    fireEvent.change(screen.getByLabelText('community.gallery.categoryLabel'), {
+      target: { value: 'kitchen' },
+    });
+    expect(screen.queryByTestId('community-shelves')).not.toBeInTheDocument();
+    const clearButtons = screen.getAllByRole('button', { name: 'community.gallery.clearFilters' });
+    fireEvent.click(clearButtons[0]);
+    expect(screen.getByTestId('community-shelves')).toBeInTheDocument();
+  });
+
+  it('never shows shelves in the Mine view', async () => {
+    indexMock.mockResolvedValue(ok({ items: shelfCards(12), capped: false }));
+    mineIndexMock.mockResolvedValue(ok({ items: [card('mylive000001')], capped: false }));
+    signIn();
+    useBrowseStore.getState().setMineOnly(true);
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.getByText('Bin mylive000001')).toBeInTheDocument();
+    });
+    expect(screen.queryByTestId('community-shelves')).not.toBeInTheDocument();
+  });
+
+  it('see all on staff picks filters the grid to featured designs', async () => {
+    indexMock.mockResolvedValue(ok({ items: shelfCards(12), capped: false }));
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.getByTestId('community-shelves')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByTestId('community-shelf-see-all-staff-picks'));
+    expect(useBrowseStore.getState().filters.featuredOnly).toBe(true);
+    // The shelves are a landing affordance; an active filter replaces them
+    // with the filtered grid.
+    expect(screen.queryByTestId('community-shelves')).not.toBeInTheDocument();
+    const grid = screen.getByRole('list', { name: 'community.gallery.gridLabel' });
+    expect(within(grid).getAllByRole('listitem')).toHaveLength(1);
+    expect(within(grid).getByText('Bin design000')).toBeInTheDocument();
+  });
+});
+
+describe('CommunityGalleryTab fits-gap sync', () => {
+  const setConstraint = () => {
+    useGapFitStore.getState().setConstraint({
+      maxWidth: gridUnits(2.5),
+      maxDepth: gridUnits(3),
+      maxHeight: heightUnits(6),
+      gridUnitMm: 42 as Mm,
+      gridUnitMmY: 42 as Mm,
+      heightUnitMm: 7 as Mm,
+      targetPosition: { x: gridUnits(1), y: gridUnits(1), layerId: layerId('layer_1') },
+    });
+  };
+
+  it('pre-applies the gap bounds and the best-fit sort from the core handoff', async () => {
+    indexMock.mockResolvedValue(ok({ items: [card('design001')], capped: false }));
+    setConstraint();
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} surface="fits_gap" />);
+
+    await waitFor(() => {
+      expect(useBrowseStore.getState().fitsGapContext).toEqual({
+        widthMax: 2.5,
+        depthMax: 3,
+        maxHeight: 6,
+        gridUnitMm: 42,
+        gridUnitMmY: 42,
+        heightUnitMm: 7,
+      });
+    });
+    expect(useBrowseStore.getState().filters.sort).toBe('best-fit');
+    expect(trackEvent).toHaveBeenCalledWith('community_gallery_opened', { surface: 'fits_gap' });
+  });
+
+  it('shows a gap-specific empty state whose action clears the gap context', async () => {
+    // Default card is 2x3: nothing fits a 1x1 gap in either orientation.
+    indexMock.mockResolvedValue(ok({ items: [card('design001')], capped: false }));
+    useGapFitStore.getState().setConstraint({
+      maxWidth: gridUnits(1),
+      maxDepth: gridUnits(1),
+      maxHeight: heightUnits(6),
+      gridUnitMm: 42 as Mm,
+      gridUnitMmY: 42 as Mm,
+      heightUnitMm: 7 as Mm,
+      targetPosition: { x: gridUnits(1), y: gridUnits(1), layerId: layerId('layer_1') },
+    });
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} surface="fits_gap" />);
+
+    await waitFor(() => {
+      expect(screen.getByText('community.gallery.fitsGapEmpty.title')).toBeInTheDocument();
+    });
+    // The generic no-matches state (whose clearFilters preserves the gap)
+    // must not render here.
+    expect(screen.queryByText('community.gallery.noMatches.title')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('community-fits-gap-empty-clear'));
+    expect(useBrowseStore.getState().fitsGapContext).toBeNull();
+    expect(useGapFitStore.getState().constraint).toBeNull();
+    await waitFor(() => {
+      expect(screen.getByText('Bin design001')).toBeInTheDocument();
+    });
+  });
+
+  it('drops a stale gap context when the handoff has been cleared', async () => {
+    indexMock.mockResolvedValue(ok({ items: [card('design001')], capped: false }));
+    useBrowseStore
+      .getState()
+      .setFitsGapContext({
+        widthMax: 2,
+        depthMax: 2,
+        maxHeight: 6,
+        gridUnitMm: 42,
+        gridUnitMmY: 42,
+        heightUnitMm: 7,
+      });
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+
+    await waitFor(() => {
+      expect(useBrowseStore.getState().fitsGapContext).toBeNull();
+    });
+    // Nothing to score against once the context drops.
+    expect(useBrowseStore.getState().filters.sort).toBe('newest');
   });
 });

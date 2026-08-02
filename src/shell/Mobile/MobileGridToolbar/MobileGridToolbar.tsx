@@ -3,6 +3,8 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useViewStore, useSelectionStore, useInteractionStore, useMobileStore } from '@/core/store';
 import { CONSTRAINTS } from '@/core/constants';
 import { Button, IconButton, PlusIcon, MinusIcon } from '@/design-system';
+import { trackEvent } from '@/shared/analytics/posthog';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useTranslation } from '@/i18n';
 
 interface MobileGridToolbarProps {
@@ -29,6 +31,13 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
       setPaintSize: state.setPaintSize,
     }))
   );
+  const { gapSelectArmed, setGapSelectArmed } = useInteractionStore(
+    useShallow((state) => ({
+      gapSelectArmed: state.gapSelectArmed,
+      setGapSelectArmed: state.setGapSelectArmed,
+    }))
+  );
+  const fitsGapEnabled = useFeatureFlag('community_showcase');
   const { showIsometricPreview, toggleIsometricPreview } = useViewStore(
     useShallow((state) => ({
       showIsometricPreview: state.showIsometricPreview,
@@ -90,6 +99,26 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
               d="M6 18L18 6M6 6l12 12"
             />
           </svg>
+        </Button>
+      )}
+
+      {/* Community "find bins that fit": the only touch-reachable entry into
+          the gap-selection flow (the right-drag shortcut needs a mouse). */}
+      {fitsGapEnabled && (
+        <Button
+          variant={gapSelectArmed ? 'primary' : 'secondary'}
+          aria-pressed={gapSelectArmed}
+          onClick={() => {
+            if (!gapSelectArmed) {
+              trackEvent('community_gap_select_armed', { surface: 'mobile-toolbar' });
+            }
+            setGapSelectArmed(!gapSelectArmed);
+          }}
+          className="px-3 h-10 flex-shrink-0 text-sm whitespace-nowrap"
+          title={t(gapSelectArmed ? 'toolbar.findBinsArmedHint' : 'toolbar.findBinsHint')}
+          data-testid="mobile-toolbar-find-bins-that-fit"
+        >
+          {t('toolbar.findBins')}
         </Button>
       )}
 

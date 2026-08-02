@@ -2,6 +2,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { useLabsStore } from '@/core/store';
+import { useGapFitStore } from '@/core/store/gapFit';
+import { gridUnits, heightUnits, layerId } from '@/core/types';
+import type { Mm } from '@/core/types';
 import { DesignGalleryModal } from './DesignGalleryModal';
 
 vi.mock('@/features/bin-designer/components/ExampleGallery', () => ({
@@ -25,10 +28,23 @@ function setCommunityFlag(enabled: boolean): void {
   }));
 }
 
+function setGapConstraint(): void {
+  useGapFitStore.getState().setConstraint({
+    maxWidth: gridUnits(2),
+    maxDepth: gridUnits(2),
+    maxHeight: heightUnits(6),
+    gridUnitMm: 42 as Mm,
+    gridUnitMmY: 42 as Mm,
+    heightUnitMm: 7 as Mm,
+    targetPosition: { x: gridUnits(0), y: gridUnits(0), layerId: layerId('layer_1') },
+  });
+}
+
 describe('DesignGalleryModal', () => {
   beforeEach(() => {
     localStorage.clear();
     setCommunityFlag(false);
+    useGapFitStore.setState({ constraint: null });
   });
 
   it('flag off: renders the dialog with examples content and no tab bar', async () => {
@@ -88,6 +104,32 @@ describe('DesignGalleryModal', () => {
       'true'
     );
     expect(await screen.findByTestId('community-content')).toBeInTheDocument();
+  });
+
+  it('flag on: a fits-gap open lands on the Community tab despite a stored examples tab', async () => {
+    setCommunityFlag(true);
+    localStorage.setItem('gridfinity-design-gallery-tab-v1', 'examples');
+    setGapConstraint();
+    render(<DesignGalleryModal onClose={vi.fn()} />);
+
+    expect(await screen.findByTestId('community-content')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /^Community/ })).toHaveAttribute(
+      'aria-selected',
+      'true'
+    );
+  });
+
+  it('closing the gallery clears the fits-gap handoff', async () => {
+    setCommunityFlag(true);
+    setGapConstraint();
+    const onClose = vi.fn();
+    render(<DesignGalleryModal onClose={onClose} />);
+    await screen.findByTestId('community-content');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(useGapFitStore.getState().constraint).toBeNull();
   });
 
   it('the header close button and Escape both call onClose', async () => {
