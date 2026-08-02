@@ -2,7 +2,13 @@ import { Liveblocks } from '@liveblocks/node';
 import { head } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP } from './lib/rateLimit.js';
-import { rateLimited, ErrorCode, isValidShareId, methodNotAllowed } from './lib/shared.js';
+import {
+  rateLimited,
+  ErrorCode,
+  isValidShareId,
+  methodNotAllowed,
+  sendError,
+} from './lib/shared.js';
 import { logger } from './lib/logger.js';
 import type { ShareData } from './lib/shared.js';
 
@@ -83,10 +89,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Check if Liveblocks is configured
     if (!process.env.LIVEBLOCKS_SECRET_KEY) {
       logger.error('LIVEBLOCKS_SECRET_KEY not configured');
-      return res.status(500).json({
-        error: 'Collaboration not configured',
-        code: ErrorCode.CONFIGURATION_ERROR,
-      });
+      return sendError(res, 500, ErrorCode.CONFIGURATION_ERROR, 'Collaboration not configured');
     }
 
     // Rate limiting - use 'view' limits (100/min) since auth is lightweight
@@ -102,34 +105,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Validate room ID format (must be gridfinity-{shareId})
     if (!room || typeof room !== 'string') {
-      return res.status(400).json({
-        error: 'Missing room ID',
-        code: ErrorCode.VALIDATION_ERROR,
-      });
+      return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'Missing room ID');
     }
 
     if (!room.startsWith('gridfinity-')) {
-      return res.status(400).json({
-        error: 'Invalid room ID format',
-        code: ErrorCode.VALIDATION_ERROR,
-      });
+      return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'Invalid room ID format');
     }
 
     // Extract share ID and validate format
     const shareId = room.replace('gridfinity-', '');
     if (!isValidShareId(shareId)) {
-      return res.status(400).json({
-        error: 'Invalid share ID',
-        code: ErrorCode.VALIDATION_ERROR,
-      });
+      return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'Invalid share ID');
     }
 
     // Validate user ID
     if (!userId || typeof userId !== 'string') {
-      return res.status(400).json({
-        error: 'Missing user ID',
-        code: ErrorCode.VALIDATION_ERROR,
-      });
+      return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'Missing user ID');
     }
 
     // Fetch share metadata from Vercel Blob to check permission
@@ -137,18 +128,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const blobInfo = await head(blobPath).catch(() => null);
 
     if (!blobInfo) {
-      return res.status(404).json({
-        error: 'Share not found',
-        code: ErrorCode.NOT_FOUND,
-      });
+      return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
     }
 
     const blobResponse = await fetch(blobInfo.url);
     if (!blobResponse.ok) {
-      return res.status(404).json({
-        error: 'Share not found',
-        code: ErrorCode.NOT_FOUND,
-      });
+      return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
     }
 
     const shareData = (await blobResponse.json()) as ShareData;
@@ -175,9 +160,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });
-    return res.status(500).json({
-      error: 'Authentication failed',
-      code: ErrorCode.SERVER_ERROR,
-    });
+    return sendError(res, 500, ErrorCode.SERVER_ERROR, 'Authentication failed');
   }
 }

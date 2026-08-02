@@ -3,7 +3,13 @@ import type { Redis } from 'ioredis';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP, getRedis } from './lib/rateLimit.js';
 import { logger } from './lib/logger.js';
-import { rateLimited, serviceUnavailable, ErrorCode, methodNotAllowed } from './lib/shared.js';
+import {
+  rateLimited,
+  serviceUnavailable,
+  ErrorCode,
+  methodNotAllowed,
+  sendError,
+} from './lib/shared.js';
 import { supportersDonorsKey, supportersMessageKey, supportersTotalsKey } from './lib/redisKeys.js';
 import {
   MESSAGE_DEDUPE_TTL_SECONDS,
@@ -74,10 +80,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const contentType = req.headers['content-type'] ?? '';
   if (!/application\/(x-www-form-urlencoded|json)/i.test(contentType)) {
     logger.warn('Ko-fi webhook rejected: unexpected content-type', { contentType });
-    return res.status(415).json({
-      error: 'Unsupported content type.',
-      code: ErrorCode.VALIDATION_ERROR,
-    });
+    return sendError(res, 415, ErrorCode.VALIDATION_ERROR, 'Unsupported content type.');
   }
 
   const expectedToken = process.env.KOFI_VERIFICATION_TOKEN;
@@ -85,23 +88,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Fail closed: without the token we cannot tell Ko-fi from anyone else, and
     // this endpoint writes to a public page.
     logger.error('Ko-fi webhook rejected: KOFI_VERIFICATION_TOKEN is not configured');
-    return res.status(503).json({
-      error: 'Supporter sync is not configured.',
-      code: ErrorCode.CONFIGURATION_ERROR,
-    });
+    return sendError(res, 503, ErrorCode.CONFIGURATION_ERROR, 'Supporter sync is not configured.');
   }
 
   const payload = parseKofiPayload(req.body);
   if (!payload) {
-    return res.status(400).json({
-      error: 'Malformed Ko-fi payload.',
-      code: ErrorCode.VALIDATION_ERROR,
-    });
+    return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'Malformed Ko-fi payload.');
   }
 
   if (!tokensMatch(payload.verification_token, expectedToken)) {
     logger.warn('Ko-fi webhook rejected: verification token mismatch');
-    return res.status(401).json({ error: 'Invalid token.', code: ErrorCode.UNAUTHORIZED });
+    return sendError(res, 401, ErrorCode.UNAUTHORIZED, 'Invalid token.');
   }
 
   try {
@@ -177,9 +174,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     logger.error('Ko-fi webhook error', {
       error: error instanceof Error ? error.message : String(error),
     });
-    return res.status(500).json({
-      error: 'Failed to record supporter.',
-      code: ErrorCode.SERVER_ERROR,
-    });
+    return sendError(res, 500, ErrorCode.SERVER_ERROR, 'Failed to record supporter.');
   }
 }

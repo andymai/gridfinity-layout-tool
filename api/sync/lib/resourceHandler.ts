@@ -18,6 +18,8 @@ import {
   serviceUnavailable,
   serverError,
   singleParam,
+  sendError,
+  sendJson,
   ErrorCode,
 } from '../../lib/shared.js';
 import { logger } from '../../lib/logger.js';
@@ -76,18 +78,18 @@ export function createSyncResourceHandler<TEnvelope extends SyncEnvelope>(
   ): Promise<void> {
     const entry = await getEntry(redis, userId, config.kind, id);
     if (!entry) {
-      res.status(404).json({ error: 'Not found', code: ErrorCode.NOT_FOUND });
+      sendError(res, 404, ErrorCode.NOT_FOUND, 'Not found');
       return;
     }
     if (entry.deletedAt !== undefined) {
-      res.status(410).json({ error: 'Deleted', code: ErrorCode.NOT_FOUND, indexEntry: entry });
+      sendJson(res, 410, { error: 'Deleted', code: ErrorCode.NOT_FOUND, indexEntry: entry });
       return;
     }
     const envelope = await getJson<TEnvelope>(blobPath(userId, id));
     if (!envelope) {
       // Blob missing but index says it should exist — treat as 404 so the
       // client refreshes its view. Don't 500 since the user can't act on it.
-      res.status(404).json({ error: 'Not found', code: ErrorCode.NOT_FOUND });
+      sendError(res, 404, ErrorCode.NOT_FOUND, 'Not found');
       return;
     }
     res.status(200).json({ envelope, indexEntry: entry });
@@ -102,15 +104,12 @@ export function createSyncResourceHandler<TEnvelope extends SyncEnvelope>(
   ): Promise<void> {
     const body = req.body as Record<string, unknown> | undefined;
     if (!body || typeof body !== 'object') {
-      res.status(400).json({ error: 'Missing body', code: ErrorCode.VALIDATION_ERROR });
+      sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'Missing body');
       return;
     }
     const modifiedAt = body.modifiedAt;
     if (typeof modifiedAt !== 'number' || !Number.isFinite(modifiedAt)) {
-      res.status(400).json({
-        error: 'modifiedAt must be a number (ms epoch)',
-        code: ErrorCode.VALIDATION_ERROR,
-      });
+      sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'modifiedAt must be a number (ms epoch)');
       return;
     }
 
@@ -129,7 +128,7 @@ export function createSyncResourceHandler<TEnvelope extends SyncEnvelope>(
     if (existing && existing.deletedAt === undefined) {
       if (existing.modifiedAt > modifiedAt) {
         const stored = await getJson<TEnvelope>(blobPath(userId, id));
-        res.status(409).json({
+        sendJson(res, 409, {
           error: 'A newer version already exists.',
           code: ErrorCode.VALIDATION_ERROR,
           stored,
@@ -147,7 +146,7 @@ export function createSyncResourceHandler<TEnvelope extends SyncEnvelope>(
         if (stored !== null) {
           const order = compareForTiebreaker(tiebreakerCandidate, config.storedComparable(stored));
           if (order <= 0) {
-            res.status(409).json({
+            sendJson(res, 409, {
               error: 'A newer version already exists.',
               code: ErrorCode.VALIDATION_ERROR,
               stored,
@@ -162,7 +161,7 @@ export function createSyncResourceHandler<TEnvelope extends SyncEnvelope>(
     // Tombstone protection: a stale edit can't resurrect a deletion that
     // happened *after* the local change.
     if (existing?.deletedAt !== undefined && existing.deletedAt >= modifiedAt) {
-      res.status(410).json({
+      sendJson(res, 410, {
         error: config.deletedError,
         code: ErrorCode.NOT_FOUND,
         indexEntry: existing,
@@ -178,10 +177,12 @@ export function createSyncResourceHandler<TEnvelope extends SyncEnvelope>(
       replacingId,
     });
     if (!quota.ok) {
-      res.status(413).json({
-        error: `Quota exceeded (${quota.error.reason}): ${quota.error.current} of ${quota.error.limit}.`,
-        code: ErrorCode.SIZE_LIMIT,
-      });
+      sendError(
+        res,
+        413,
+        ErrorCode.SIZE_LIMIT,
+        `Quota exceeded (${quota.error.reason}): ${quota.error.current} of ${quota.error.limit}.`
+      );
       return;
     }
 
@@ -227,7 +228,7 @@ export function createSyncResourceHandler<TEnvelope extends SyncEnvelope>(
 
     const id = singleParam(req.query.id);
     if (!id || !config.isValidId(id)) {
-      res.status(400).json({ error: config.invalidIdError, code: ErrorCode.VALIDATION_ERROR });
+      sendError(res, 400, ErrorCode.VALIDATION_ERROR, config.invalidIdError);
       return;
     }
 

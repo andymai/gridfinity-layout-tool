@@ -10,6 +10,7 @@ import {
   ErrorCode,
   getBaseUrl,
   rateLimited,
+  sendError,
   serviceUnavailable,
   singleParam,
 } from './lib/shared.js';
@@ -74,7 +75,7 @@ function communityDesignUrl(designId: string): string {
 }
 
 function badRequest(res: VercelResponse, message: string): void {
-  res.status(400).json({ error: message, code: ErrorCode.VALIDATION_ERROR });
+  sendError(res, 400, ErrorCode.VALIDATION_ERROR, message);
 }
 
 type LineageResolveResult =
@@ -221,10 +222,7 @@ async function handlePublish(req: VercelRequest, res: VercelResponse): Promise<v
     const denied = await redis.sismember(communityDenylistKey(), session.userId);
     if (denied === 1) {
       // Deliberately neutral: the response must not reveal deny-listing.
-      res.status(403).json({
-        error: 'Publishing is not available for this account.',
-        code: ErrorCode.UNAUTHORIZED,
-      });
+      sendError(res, 403, ErrorCode.UNAUTHORIZED, 'Publishing is not available for this account.');
       return;
     }
 
@@ -244,10 +242,12 @@ async function handlePublish(req: VercelRequest, res: VercelResponse): Promise<v
 
     const quota = await checkCommunityPublishQuota(redis, session.userId);
     if (!quota.ok) {
-      res.status(413).json({
-        error: `Published design limit reached (${quota.error.limit} live designs).`,
-        code: ErrorCode.SIZE_LIMIT,
-      });
+      sendError(
+        res,
+        413,
+        ErrorCode.SIZE_LIMIT,
+        `Published design limit reached (${quota.error.limit} live designs).`
+      );
       return;
     }
 
@@ -356,7 +356,7 @@ async function handlePublish(req: VercelRequest, res: VercelResponse): Promise<v
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });
-    res.status(500).json({ error: 'Failed to publish design', code: ErrorCode.SERVER_ERROR });
+    sendError(res, 500, ErrorCode.SERVER_ERROR, 'Failed to publish design');
   }
 }
 
@@ -628,7 +628,7 @@ async function handleList(req: VercelRequest, res: VercelResponse): Promise<void
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });
-    res.status(500).json({ error: 'Failed to list designs', code: ErrorCode.SERVER_ERROR });
+    sendError(res, 500, ErrorCode.SERVER_ERROR, 'Failed to list designs');
   }
 }
 

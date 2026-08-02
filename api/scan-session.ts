@@ -8,6 +8,7 @@ import {
   ErrorCode,
   getBaseUrl,
   methodNotAllowed,
+  sendError,
 } from './lib/shared.js';
 import { scanSessionKey } from './lib/redisKeys.js';
 import { SCAN_SESSION_TTL_SECONDS, type ScanSessionRecord } from './lib/scanSession.js';
@@ -54,9 +55,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     logger.error('Scan session create error', {
       error: error instanceof Error ? error.message : String(error),
     });
-    return res.status(500).json({
-      error: 'Failed to create scan session',
-      code: ErrorCode.SERVER_ERROR,
-    });
+    return sendError(res, 500, ErrorCode.SERVER_ERROR, 'Failed to create scan session');
   }
 }

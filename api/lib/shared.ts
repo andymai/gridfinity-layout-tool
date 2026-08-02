@@ -185,6 +185,19 @@ export function serverError(res: VercelResponse): VercelResponse {
   return res.status(500).json({ error: 'Server error', code: ErrorCode.SERVER_ERROR });
 }
 
+export function sendError(
+  res: VercelResponse,
+  status: number,
+  code: ErrorCodeType,
+  message?: string
+): VercelResponse {
+  return res.status(status).json({ error: message ?? code, code });
+}
+
+export function sendJson(res: VercelResponse, status: number, body: unknown): VercelResponse {
+  return res.status(status).json(body);
+}
+
 /** Collapse Vercel's `string | string[]` query param to its first value. */
 export function singleParam(value: string | string[] | undefined): string | undefined {
   if (Array.isArray(value)) return value[0];

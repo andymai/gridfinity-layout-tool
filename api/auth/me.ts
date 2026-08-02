@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireMethod } from '../lib/method.js';
 import { logger } from '../lib/logger.js';
-import { rateLimited, serviceUnavailable, ErrorCode } from '../lib/shared.js';
+import { rateLimited, serviceUnavailable, ErrorCode, sendError } from '../lib/shared.js';
 import { checkRateLimit, getClientIP, getRedis } from '../lib/rateLimit.js';
 import { checkCsrfDefense, readSession } from '../lib/session.js';
 import { readSessionCookie } from '../lib/cookies.js';
@@ -96,6 +96,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     logger.error('Failed to read user profile', {
       error: error instanceof Error ? error.message : String(error),
     });
-    res.status(500).json({ error: 'Profile read failed', code: ErrorCode.SERVER_ERROR });
+    sendError(res, 500, ErrorCode.SERVER_ERROR, 'Profile read failed');
   }
 }

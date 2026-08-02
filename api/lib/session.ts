@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import type { Redis } from 'ioredis';
 import { getRedis } from './rateLimit.js';
-import { ErrorCode, serviceUnavailable } from './shared.js';
+import { ErrorCode, sendError, serviceUnavailable } from './shared.js';
 import { logger } from './logger.js';
 import { sessionKey, userSessionsKey } from './redisKeys.js';
 import { readSessionCookie } from './cookies.js';
@@ -149,13 +149,13 @@ function parseSessionRecord(raw: string): SessionRecord | null {
  */
 export function checkCsrfDefense(req: VercelRequest, res: VercelResponse): boolean {
   if (!isOriginAllowed(req)) {
-    res.status(403).json({ error: 'Forbidden origin', code: ErrorCode.UNAUTHORIZED });
+    sendError(res, 403, ErrorCode.UNAUTHORIZED, 'Forbidden origin');
     return false;
   }
   if (req.method && !SAFE_METHODS.has(req.method)) {
     const xrw = headerValue(req, 'x-requested-with');
     if (xrw !== 'gflt') {
-      res.status(403).json({ error: 'Missing CSRF header', code: ErrorCode.UNAUTHORIZED });
+      sendError(res, 403, ErrorCode.UNAUTHORIZED, 'Missing CSRF header');
       return false;
     }
   }
@@ -174,7 +174,7 @@ export async function requireSession(
 
   const token = readSessionCookie(req);
   if (!token) {
-    res.status(401).json({ error: 'Not signed in', code: ErrorCode.UNAUTHORIZED });
+    sendError(res, 401, ErrorCode.UNAUTHORIZED, 'Not signed in');
     return null;
   }
 
@@ -185,13 +185,13 @@ export async function requireSession(
       serviceUnavailable(res);
       return null;
     }
-    res.status(401).json({ error: 'Not signed in', code: ErrorCode.UNAUTHORIZED });
+    sendError(res, 401, ErrorCode.UNAUTHORIZED, 'Not signed in');
     return null;
   }
 
   const session = await readSession(redis, token);
   if (!session) {
-    res.status(401).json({ error: 'Session expired', code: ErrorCode.UNAUTHORIZED });
+    sendError(res, 401, ErrorCode.UNAUTHORIZED, 'Session expired');
     return null;
   }
   return session;
