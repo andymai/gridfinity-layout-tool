@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import type { CommunityCard as CommunityCardData } from '@/shared/types/community';
@@ -32,6 +32,21 @@ export function ShelfLanding({ items, onSelect, onSelectAuthor }: ShelfLandingPr
 
   const shelves = useMemo(() => buildShelves(items, fetchedAt ?? 0), [items, fetchedAt]);
   const collections = useMemo(() => resolveCollections(COMMUNITY_COLLECTIONS, items), [items]);
+
+  // Curation happens by PR against a static file, so a typo has no other way
+  // of announcing itself: without this the shelf just quietly shrinks. Dev
+  // only, since in production an unresolved id is usually a design that was
+  // moderated or has aged out of the capped index, not a mistake.
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    for (const collection of collections) {
+      if (collection.missingIds.length > 0) {
+        console.warn(
+          `[collections] "${collection.id}" has ids with no live design: ${collection.missingIds.join(', ')}`
+        );
+      }
+    }
+  }, [collections]);
   if (shelves.length === 0 && collections.length === 0) return null;
 
   // Deliberately not clearFilters(): if a filter raced in from another tab,

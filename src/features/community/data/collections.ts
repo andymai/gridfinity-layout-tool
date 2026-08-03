@@ -24,7 +24,11 @@
  */
 
 export interface CommunityCollection {
-  /** Stable slug; used as a React key and in analytics. */
+  /**
+   * Stable slug, lowercase with hyphens. Becomes a React key and part of the
+   * shelf's DOM id, so it must be unique across the list; `collections.test.ts`
+   * enforces both.
+   */
   readonly id: string;
   /** i18n key for the shelf heading. */
   readonly titleKey: string;
