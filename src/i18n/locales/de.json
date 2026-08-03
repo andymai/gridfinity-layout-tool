@@ -1622,9 +1622,6 @@
   "community.detail.stats.likes": "Likes",
   "community.detail.stats.remixes": "Remixe",
   "community.detail.stats.exports": "Drucke",
-  "community.detail.lineageRemixOf": "Remix von {parent} von {author}",
-  "community.detail.lineageRoot": "ursprünglich von {author}",
-  "community.detail.lineageGoneSuffix": "nicht mehr veröffentlicht",
   "community.detail.license": "Veröffentlicht unter der CC-BY-4.0-Lizenz.",
   "community.detail.remix": "Remixen",
   "community.detail.remixHint": "Remixen öffnet eine bearbeitbare Kopie dieses Designs.",
@@ -3498,5 +3495,13 @@
   "community.author.remixedOther": "{count}-mal darauf aufgebaut",
   "community.author.printedOne": "1-mal gedruckt",
   "community.author.printedOther": "{count}-mal gedruckt",
-  "community.author.partial": "Basiert auf den hier geladenen Designs, ältere können fehlen."
+  "community.author.partial": "Basiert auf den hier geladenen Designs, ältere können fehlen.",
+  "community.lineage.title": "Woher das stammt",
+  "community.lineage.root": "Ursprünglich von {author}",
+  "community.lineage.byAuthor": "von {author}",
+  "community.lineage.thisDesign": "Dieses Design",
+  "community.lineage.unavailable": "Nicht mehr verfügbar",
+  "community.lineage.gap": "Schritte dazwischen wurden nicht erfasst.",
+  "community.lineage.openRoot": "Original von {author} öffnen",
+  "community.lineage.openParent": "{name} öffnen"
 }

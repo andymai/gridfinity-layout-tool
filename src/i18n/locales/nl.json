@@ -1622,9 +1622,6 @@
   "community.detail.stats.likes": "Vind-ik-leuks",
   "community.detail.stats.remixes": "Remixen",
   "community.detail.stats.exports": "Afdrukken",
-  "community.detail.lineageRemixOf": "Geremixt van {parent} door {author}",
-  "community.detail.lineageRoot": "oorspronkelijk door {author}",
-  "community.detail.lineageGoneSuffix": "niet meer gepubliceerd",
   "community.detail.license": "Gepubliceerd onder de CC BY 4.0-licentie.",
   "community.detail.remix": "Remixen",
   "community.detail.remixHint": "Remixen opent een bewerkbare kopie van dit ontwerp.",
@@ -3498,5 +3495,13 @@
   "community.author.remixedOther": "{count} keer op voortgebouwd",
   "community.author.printedOne": "1 keer geprint",
   "community.author.printedOther": "{count} keer geprint",
-  "community.author.partial": "Gebaseerd op de hier geladen designs, oudere kunnen ontbreken."
+  "community.author.partial": "Gebaseerd op de hier geladen designs, oudere kunnen ontbreken.",
+  "community.lineage.title": "Waar dit vandaan komt",
+  "community.lineage.root": "Oorspronkelijk van {author}",
+  "community.lineage.byAuthor": "door {author}",
+  "community.lineage.thisDesign": "Dit design",
+  "community.lineage.unavailable": "Niet meer beschikbaar",
+  "community.lineage.gap": "Tussenliggende stappen zijn niet vastgelegd.",
+  "community.lineage.openRoot": "Origineel van {author} openen",
+  "community.lineage.openParent": "{name} openen"
 }

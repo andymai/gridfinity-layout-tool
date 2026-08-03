@@ -437,6 +437,12 @@ function CommunityDetailDialog({
 
   const printDialogOpen = usePrintDialogStore((s) => s.phase !== 'closed');
 
+  // Opening by bare id rather than a card: an ancestor may sit outside the
+  // loaded index, and the detail view already handles a cold id fetch.
+  const handleOpenAncestor = useCallback((ancestorId: string) => {
+    useCommunityDetailStore.getState().open(ancestorId);
+  }, []);
+
   const handleAddPrint = useCallback(() => {
     if (design === null) return;
     usePrintDialogStore.getState().open({
@@ -548,6 +554,7 @@ function CommunityDetailDialog({
             }
             onFilterByAuthor={handleFilterByAuthor}
             ownerModeration={ownerModeration}
+            onOpenDesign={handleOpenAncestor}
             onAddPrint={printsAvailable ? handleAddPrint : undefined}
             costSlot={
               <PrintCostPanel

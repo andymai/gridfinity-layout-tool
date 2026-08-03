@@ -157,8 +157,11 @@ describe('CommunityDetailContent', () => {
         rootAuthorName: 'Root Author',
       },
     });
-    expect(screen.getByText(/Remixed from Older Bin by Sam/)).toBeInTheDocument();
-    expect(screen.getByText(/originally by Root Author/)).toBeInTheDocument();
+    expect(screen.getByTestId('remix-lineage-parent')).toHaveTextContent('Older Bin');
+    expect(screen.getByTestId('remix-lineage-root')).toHaveTextContent('Originally by Root Author');
+    // Only parentId and rootId are stored, so the strip says so rather than
+    // drawing a chain it cannot vouch for.
+    expect(screen.getByTestId('remix-lineage-gap')).toBeInTheDocument();
   });
 
   it('upgrades the lineage line to the live parent name', () => {
@@ -174,7 +177,9 @@ describe('CommunityDetailContent', () => {
       },
       { parentResolution: { kind: 'live', name: 'Renamed Parent', authorName: 'Samuel' } }
     );
-    expect(screen.getByText(/Remixed from Renamed Parent by Samuel/)).toBeInTheDocument();
+    const parent = screen.getByTestId('remix-lineage-parent');
+    expect(parent).toHaveTextContent('Renamed Parent');
+    expect(parent).toHaveTextContent('Samuel');
   });
 
   it('marks the parent as no longer published when it is gone', () => {
@@ -190,7 +195,7 @@ describe('CommunityDetailContent', () => {
       },
       { parentResolution: { kind: 'gone' } }
     );
-    expect(screen.getByText(/no longer published/)).toBeInTheDocument();
+    expect(screen.getByTestId('remix-lineage-parent')).toHaveTextContent('No longer available');
   });
 
   it('renders the updated date only when later than the published date', () => {

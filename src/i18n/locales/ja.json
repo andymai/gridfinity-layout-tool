@@ -1563,9 +1563,6 @@
   "community.detail.goneTitle": "このデザインは利用できなくなりました。",
   "community.detail.gridUnits": "{width}×{depth}×{height} グリッド単位",
   "community.detail.license": "CC BY 4.0ライセンスのもとで公開されています。",
-  "community.detail.lineageGoneSuffix": "現在は非公開",
-  "community.detail.lineageRemixOf": "{author}による{parent}のリミックス",
-  "community.detail.lineageRoot": "オリジナル制作者：{author}",
   "community.detail.loadFailed": "このデザインを読み込めませんでした。",
   "community.detail.loading": "デザインを読み込み中…",
   "community.detail.millimeters": "{width}×{depth}×{height} mm",
@@ -3498,5 +3495,13 @@
   "community.author.remixedOther": "{count} 回リミックスされました",
   "community.author.printedOne": "1 回プリントされました",
   "community.author.printedOther": "{count} 回プリントされました",
-  "community.author.partial": "ここに読み込まれたデザインに基づくため、古いものは含まれない場合があります。"
+  "community.author.partial": "ここに読み込まれたデザインに基づくため、古いものは含まれない場合があります。",
+  "community.lineage.title": "この作品の由来",
+  "community.lineage.root": "原案: {author}",
+  "community.lineage.byAuthor": "作成: {author}",
+  "community.lineage.thisDesign": "この作品",
+  "community.lineage.unavailable": "現在は利用できません",
+  "community.lineage.gap": "途中の経緯は記録されていません。",
+  "community.lineage.openRoot": "{author} さんの原案を開く",
+  "community.lineage.openParent": "{name} を開く"
 }

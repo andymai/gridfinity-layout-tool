@@ -15,6 +15,7 @@ import { HeartGlyph } from '../CommunityCard/CommunityCard';
 import { CATEGORY_LABEL_KEYS } from '../../utils/categoryLabels';
 import { REPORT_REASON_LABEL_KEYS } from '../../utils/reportReasonLabels';
 import { DirectRemixList } from './DirectRemixList';
+import { RemixLineage } from './RemixLineage';
 import { SimilarRail } from './SimilarRail';
 
 /**
@@ -61,6 +62,8 @@ interface CommunityDetailContentProps {
   printsSlot?: ReactNode;
   /** Print cost and bed fit; sits with the dimensions, which is the same question. */
   costSlot?: ReactNode;
+  /** Navigates to an ancestor design; absent renders the lineage read-only. */
+  onOpenDesign?: (designId: string) => void;
 }
 
 function formatMm(value: number): string {
@@ -87,6 +90,7 @@ export function CommunityDetailContent({
   hasOwnPrint = false,
   printsSlot,
   costSlot,
+  onOpenDesign,
 }: CommunityDetailContentProps) {
   const t = useTranslation();
   const [angleIndex, setAngleIndex] = useState(0);
@@ -96,12 +100,6 @@ export function CommunityDetailContent({
 
   const poster = design.thumbnails.at(angleIndex) ?? design.thumbnails.at(0) ?? '';
   const { params, metrics, lineage } = design;
-  const parentName =
-    parentResolution.kind === 'live' ? parentResolution.name : (lineage?.parentName ?? '');
-  const parentAuthorName =
-    parentResolution.kind === 'live'
-      ? parentResolution.authorName
-      : (lineage?.parentAuthorName ?? '');
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto md:flex-row md:overflow-hidden">
@@ -333,16 +331,12 @@ export function CommunityDetailContent({
         )}
 
         {lineage !== null && (
-          <p className="text-xs text-content-tertiary">
-            {t('community.detail.lineageRemixOf', {
-              parent: parentName,
-              author: parentAuthorName,
-            })}
-            {lineage.rootId !== lineage.parentId && (
-              <> · {t('community.detail.lineageRoot', { author: lineage.rootAuthorName })}</>
-            )}
-            {parentResolution.kind === 'gone' && <> · {t('community.detail.lineageGoneSuffix')}</>}
-          </p>
+          <RemixLineage
+            lineage={lineage}
+            parentResolution={parentResolution}
+            designName={design.name}
+            onOpenDesign={onOpenDesign}
+          />
         )}
 
         {/* Sits above the similar rail: whether this printed for other people

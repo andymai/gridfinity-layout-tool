@@ -3297,9 +3297,6 @@
   "community.detail.stats.likes": "Polubienia",
   "community.detail.stats.remixes": "Remiksy",
   "community.detail.stats.exports": "Wydruki",
-  "community.detail.lineageRemixOf": "Remiks {parent} autorstwa {author}",
-  "community.detail.lineageRoot": "pierwotnie autorstwa {author}",
-  "community.detail.lineageGoneSuffix": "nie jest już publikowany",
   "community.detail.license": "Opublikowano na licencji CC BY 4.0.",
   "community.detail.remix": "Remiksuj",
   "community.detail.remixHint": "Remiksowanie otwiera edytowalną kopię tego projektu.",
@@ -3498,5 +3495,13 @@
   "community.author.remixedOther": "Rozwinięty {count} razy",
   "community.author.printedOne": "Wydrukowany 1 raz",
   "community.author.printedOther": "Wydrukowany {count} razy",
-  "community.author.partial": "Na podstawie projektów wczytanych tutaj, starsze mogą się nie pojawić."
+  "community.author.partial": "Na podstawie projektów wczytanych tutaj, starsze mogą się nie pojawić.",
+  "community.lineage.title": "Skąd to pochodzi",
+  "community.lineage.root": "Pierwotnie autorstwa {author}",
+  "community.lineage.byAuthor": "autor: {author}",
+  "community.lineage.thisDesign": "Ten projekt",
+  "community.lineage.unavailable": "Już niedostępne",
+  "community.lineage.gap": "Kroki pośrednie nie zostały zapisane.",
+  "community.lineage.openRoot": "Otwórz oryginał autorstwa {author}",
+  "community.lineage.openParent": "Otwórz {name}"
 }

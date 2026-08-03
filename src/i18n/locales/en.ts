@@ -3479,9 +3479,6 @@ const en: Record<string, string> = {
   'community.detail.stats.likes': 'Likes',
   'community.detail.stats.remixes': 'Remixes',
   'community.detail.stats.exports': 'Prints',
-  'community.detail.lineageRemixOf': 'Remixed from {parent} by {author}',
-  'community.detail.lineageRoot': 'originally by {author}',
-  'community.detail.lineageGoneSuffix': 'no longer published',
   'community.detail.license': 'Published under the CC BY 4.0 license.',
   'community.detail.remix': 'Remix',
   'community.detail.remixHint': 'Remix opens an editable copy of this design.',
@@ -3677,6 +3674,17 @@ const en: Record<string, string> = {
   'community.author.printedOne': 'Printed 1 time',
   'community.author.printedOther': 'Printed {count} times',
   'community.author.partial': 'Based on the designs loaded here, so older ones may be missing.',
+
+  // Remix ancestry strip on the detail view. Only parentId and rootId are
+  // stored, so the copy must not imply a complete chain.
+  'community.lineage.title': 'Where this came from',
+  'community.lineage.root': 'Originally by {author}',
+  'community.lineage.byAuthor': 'by {author}',
+  'community.lineage.thisDesign': 'This design',
+  'community.lineage.unavailable': 'No longer available',
+  'community.lineage.gap': 'Any steps between these were not recorded.',
+  'community.lineage.openRoot': 'Open the original by {author}',
+  'community.lineage.openParent': 'Open {name}',
 
   // Post-remix continuation banner (bin designer)
   'binDesigner.remixBanner.text':

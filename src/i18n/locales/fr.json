@@ -3267,9 +3267,6 @@
   "community.detail.stats.likes": "Mentions J'aime",
   "community.detail.stats.remixes": "Remix",
   "community.detail.stats.exports": "Impressions",
-  "community.detail.lineageRemixOf": "Remixé à partir de {parent} par {author}",
-  "community.detail.lineageRoot": "à l'origine par {author}",
-  "community.detail.lineageGoneSuffix": "n'est plus publié",
   "community.detail.license": "Publié sous licence CC BY 4.0.",
   "community.detail.remix": "Remixer",
   "community.detail.remixHint": "Remixer ouvre une copie modifiable de ce design.",
@@ -3498,5 +3495,13 @@
   "community.author.remixedOther": "Repris {count} fois",
   "community.author.printedOne": "Imprimé 1 fois",
   "community.author.printedOther": "Imprimé {count} fois",
-  "community.author.partial": "Basé sur les designs chargés ici, les plus anciens peuvent manquer."
+  "community.author.partial": "Basé sur les designs chargés ici, les plus anciens peuvent manquer.",
+  "community.lineage.title": "D'où cela vient",
+  "community.lineage.root": "À l'origine de {author}",
+  "community.lineage.byAuthor": "par {author}",
+  "community.lineage.thisDesign": "Ce design",
+  "community.lineage.unavailable": "Plus disponible",
+  "community.lineage.gap": "Les étapes intermédiaires n'ont pas été enregistrées.",
+  "community.lineage.openRoot": "Ouvrir l'original de {author}",
+  "community.lineage.openParent": "Ouvrir {name}"
 }

@@ -3297,9 +3297,6 @@
   "community.detail.stats.likes": "Lajky",
   "community.detail.stats.remixes": "Remixy",
   "community.detail.stats.exports": "Tisky",
-  "community.detail.lineageRemixOf": "Remixováno z {parent} od {author}",
-  "community.detail.lineageRoot": "původně od {author}",
-  "community.detail.lineageGoneSuffix": "už není publikováno",
   "community.detail.license": "Publikováno pod licencí CC BY 4.0.",
   "community.detail.remix": "remix",
   "community.detail.remixHint": "Remix otevře upravitelnou kopii tohoto návrhu.",
@@ -3498,5 +3495,13 @@
   "community.author.remixedOther": "Navázáno {count}krát",
   "community.author.printedOne": "Vytištěno 1krát",
   "community.author.printedOther": "Vytištěno {count}krát",
-  "community.author.partial": "Podle návrhů načtených zde, starší mohou chybět."
+  "community.author.partial": "Podle návrhů načtených zde, starší mohou chybět.",
+  "community.lineage.title": "Odkud to pochází",
+  "community.lineage.root": "Původně od {author}",
+  "community.lineage.byAuthor": "od {author}",
+  "community.lineage.thisDesign": "Tento návrh",
+  "community.lineage.unavailable": "Už není dostupné",
+  "community.lineage.gap": "Případné mezikroky nebyly zaznamenány.",
+  "community.lineage.openRoot": "Otevřít originál od {author}",
+  "community.lineage.openParent": "Otevřít {name}"
 }

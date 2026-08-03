@@ -1610,9 +1610,6 @@
   "community.detail.goneTitle": "Dette designet er ikke lenger tilgjengelig.",
   "community.detail.gridUnits": "{width}×{depth}×{height} rutenettenheter",
   "community.detail.license": "Publisert under CC BY 4.0-lisensen.",
-  "community.detail.lineageGoneSuffix": "ikke lenger publisert",
-  "community.detail.lineageRemixOf": "Remixet fra {parent} av {author}",
-  "community.detail.lineageRoot": "opprinnelig av {author}",
   "community.detail.loadFailed": "Kunne ikke laste dette designet.",
   "community.detail.loading": "Laster design…",
   "community.detail.millimeters": "{width}×{depth}×{height} mm",
@@ -3498,5 +3495,13 @@
   "community.author.remixedOther": "Bygget videre på {count} ganger",
   "community.author.printedOne": "Skrevet ut 1 gang",
   "community.author.printedOther": "Skrevet ut {count} ganger",
-  "community.author.partial": "Basert på designene som er lastet her, eldre kan mangle."
+  "community.author.partial": "Basert på designene som er lastet her, eldre kan mangle.",
+  "community.lineage.title": "Hvor dette kommer fra",
+  "community.lineage.root": "Opprinnelig av {author}",
+  "community.lineage.byAuthor": "av {author}",
+  "community.lineage.thisDesign": "Dette designet",
+  "community.lineage.unavailable": "Ikke lenger tilgjengelig",
+  "community.lineage.gap": "Eventuelle mellomliggende trinn ble ikke registrert.",
+  "community.lineage.openRoot": "Åpne originalen av {author}",
+  "community.lineage.openParent": "Åpne {name}"
 }

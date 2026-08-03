@@ -3297,9 +3297,6 @@
   "community.detail.stats.likes": "좋아요",
   "community.detail.stats.remixes": "리믹스",
   "community.detail.stats.exports": "인쇄",
-  "community.detail.lineageRemixOf": "{author}의 \"{parent}\" 리믹스",
-  "community.detail.lineageRoot": "원작자: {author}",
-  "community.detail.lineageGoneSuffix": "더 이상 게시되지 않음",
   "community.detail.license": "CC BY 4.0 라이선스로 게시되었습니다.",
   "community.detail.remix": "리믹스",
   "community.detail.remixHint": "리믹스하면 이 디자인의 편집 가능한 사본이 열립니다.",
@@ -3498,5 +3495,13 @@
   "community.author.remixedOther": "{count}번 리믹스됨",
   "community.author.printedOne": "1번 출력됨",
   "community.author.printedOther": "{count}번 출력됨",
-  "community.author.partial": "여기에 불러온 디자인 기준이라 오래된 것은 빠질 수 있습니다."
+  "community.author.partial": "여기에 불러온 디자인 기준이라 오래된 것은 빠질 수 있습니다.",
+  "community.lineage.title": "이 디자인의 출처",
+  "community.lineage.root": "원작: {author}",
+  "community.lineage.byAuthor": "작성: {author}",
+  "community.lineage.thisDesign": "이 디자인",
+  "community.lineage.unavailable": "더 이상 이용할 수 없음",
+  "community.lineage.gap": "중간 단계는 기록되지 않았습니다.",
+  "community.lineage.openRoot": "{author} 님의 원작 열기",
+  "community.lineage.openParent": "{name} 열기"
 }
