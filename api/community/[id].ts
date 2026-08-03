@@ -17,6 +17,7 @@ import {
   communityReportReasonKey,
   communityReportedKey,
   communityReportsKey,
+  communityPrintsKey,
   communityViewedKey,
 } from '../lib/redisKeys.js';
 import { checkRateLimit, getClientIP, getRedis } from '../lib/rateLimit.js';
@@ -60,6 +61,8 @@ import {
   communityRequiresCutouts,
   validateCommunityPublish,
 } from '../lib/communityValidation.js';
+import { readCommunityPrints } from '../lib/communityPrintStore.js';
+import { communityPrintsEnabled } from '../lib/communityPrintValidation.js';
 import { hasQualifyingCutout } from '../lib/communityLowEffort.js';
 import { COMMUNITY_EXAMPLE_PARAM_HASHES } from '../lib/communityExampleParamHashes.js';
 import type { CommunityReportReason } from '../lib/communityValidation.js';
@@ -715,6 +718,8 @@ async function handlePost(req: VercelRequest, res: VercelResponse, id: string) {
         return await handleCounterAction(req, res, id, 'open', body);
       case 'export':
         return await handleCounterAction(req, res, id, 'export', body);
+      case 'setCover':
+        return await handleSetCoverAction(req, res, id, body);
       default:
         return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'Unknown action');
     }
@@ -725,6 +730,80 @@ async function handlePost(req: VercelRequest, res: VercelResponse, id: string) {
     });
     return sendError(res, 500, ErrorCode.SERVER_ERROR, 'Failed to perform action');
   }
+}
+
+/**
+ * Owner opt-in cover promotion: replace the design's card image with one of its
+ * print photos, or clear it back to the render.
+ *
+ * Owner-only and validated against the design's own live prints. Without that
+ * check the field would accept any URL, which is the whole risk this feature
+ * carries: the gallery grid is the most public surface in the app, and an
+ * unreviewed image reaching it is exactly what owner opt-in exists to prevent.
+ */
+async function handleSetCoverAction(
+  req: VercelRequest,
+  res: VercelResponse,
+  id: string,
+  body: Record<string, unknown>
+) {
+  // Promotion is part of the prints feature, so the kill switch covers it too:
+  // otherwise an owner could still push an unreviewed photo onto the grid
+  // while prints are meant to be dark.
+  if (!communityPrintsEnabled()) {
+    return serviceUnavailable(res, 'Print reports are not available.');
+  }
+
+  const session = await requireSession(req, res);
+  if (!session) return;
+
+  const rateLimit = await checkRateLimit(session.userId, 'community.manage');
+  if (!rateLimit.allowed) return rateLimited(res, rateLimit.retryAfterSeconds);
+
+  const redis = getRedis();
+  if (!redis) return serviceUnavailable(res);
+
+  if (!(await isPublishedBy(session.userId, id))) return designNotFound(res);
+
+  const photoUrl = body.photoUrl;
+  if (photoUrl !== null && !isString(photoUrl)) {
+    return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'photoUrl must be a string or null');
+  }
+
+  if (photoUrl !== null) {
+    const printerIds = await redis.zrange(communityPrintsKey(id), 0, -1);
+    const prints = await readCommunityPrints(redis, id, printerIds);
+    const promotable = prints.some(
+      (print) => print !== null && print.status === 'live' && print.photos.includes(photoUrl)
+    );
+    if (!promotable) {
+      return sendError(
+        res,
+        400,
+        ErrorCode.VALIDATION_ERROR,
+        'photoUrl must be a photo from a live print of this design'
+      );
+    }
+  }
+
+  await redis.hset(communityDesignKey(id), { coverPhotoUrl: photoUrl ?? '' });
+
+  // Mirror onto the record blob so a detail fetch and the card agree; the hash
+  // is the one the gallery reads, so a blob failure must not fail the action.
+  const record = await readCommunityDesignBlob(id);
+  if (record !== null) {
+    await writeCommunityDesignBlob(
+      { ...record, coverPhotoUrl: photoUrl ?? '' },
+      { allowOverwrite: true }
+    ).catch((err: unknown) => {
+      logger.warn('Community cover: record blob mirror failed', {
+        id,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    });
+  }
+
+  return res.status(200).json({ coverPhotoUrl: photoUrl ?? '' });
 }
 
 async function handleLikeAction(

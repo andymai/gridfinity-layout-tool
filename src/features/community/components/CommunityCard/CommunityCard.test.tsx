@@ -189,4 +189,24 @@ describe('CommunityCard', () => {
     expect(pending?.liked).toBe(true);
     expect(window.location.hash).toBe('#signin-google');
   });
+
+  describe('print count', () => {
+    it('is absent until somebody has printed it', () => {
+      render(<CommunityCard card={card()} onSelect={vi.fn()} index={0} />);
+      expect(screen.queryByTestId('community-card-prints')).toBeNull();
+    });
+
+    it('shows the distinct-printer count once there is one', () => {
+      render(
+        <CommunityCard
+          card={card({ counts: { likes: 2, remixes: 1, exports: 5, prints: 7 } })}
+          onSelect={vi.fn()}
+          index={0}
+        />
+      );
+      const prints = screen.getByTestId('community-card-prints');
+      expect(prints).toHaveTextContent('7');
+      expect(prints).toHaveTextContent('community.card.printsLabel');
+    });
+  });
 });

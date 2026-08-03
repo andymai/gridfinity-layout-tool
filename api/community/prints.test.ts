@@ -607,6 +607,19 @@ describe('DELETE', () => {
     expect(mocks.del).toHaveBeenCalledWith([expect.stringContaining('community/prints/')]);
   });
 
+  it('drops the design cover when the promoted photo is deleted with the print', async () => {
+    await handle({ method: 'PUT', body: validPrintBody({ photos: [webpBase64()] }) });
+    const author = authorIdFor(USER_ID);
+    const photos = JSON.parse(
+      redis.hashes.get(communityPrintKey(DESIGN_ID, author))?.get('photos') ?? '[]'
+    ) as string[];
+    redis.hashes.get(communityDesignKey(DESIGN_ID))?.set('coverPhotoUrl', photos[0] ?? 'x');
+
+    await handle({ method: 'DELETE' });
+
+    expect(redis.hashes.get(communityDesignKey(DESIGN_ID))?.get('coverPhotoUrl')).toBe('');
+  });
+
   it('404s when there is nothing to delete', async () => {
     const res = await handle({ method: 'DELETE' });
     expect(res._status).toBe(404);
@@ -626,9 +639,9 @@ describe('DELETE', () => {
 });
 
 describe('POST report', () => {
-  async function seedOtherUsersPrint(): Promise<string> {
+  async function seedOtherUsersPrint(photos: string[] = []): Promise<string> {
     signedInAs(OTHER_USER_ID);
-    await handle({ method: 'PUT', body: validPrintBody() });
+    await handle({ method: 'PUT', body: validPrintBody({ photos }) });
     signedInAs(USER_ID);
     return authorIdFor(OTHER_USER_ID);
   }
@@ -686,6 +699,37 @@ describe('POST report', () => {
     // The hash survives so the dedupe holds, but it leaves the zset and count.
     expect(redis.zsets.get(communityPrintsKey(DESIGN_ID))?.has(target)).toBe(false);
     expect(redis.hashes.get(communityDesignKey(DESIGN_ID))?.get('prints')).toBe('0');
+  });
+
+  it("drops the design cover when the promoted photo's print is hidden", async () => {
+    const target = await seedOtherUsersPrint([webpBase64()]);
+    const photos = JSON.parse(
+      redis.hashes.get(communityPrintKey(DESIGN_ID, target))?.get('photos') ?? '[]'
+    ) as string[];
+    expect(photos).toHaveLength(1);
+    // Promote the print's photo, then trip the report threshold on it.
+    redis.hashes.get(communityDesignKey(DESIGN_ID))?.set('coverPhotoUrl', photos[0]);
+    seedReporters(target, REPORT_THRESHOLD - 1);
+
+    await handle({ method: 'POST', body: { action: 'report', printer: target, reason: 'spam' } });
+
+    // Otherwise moderation takes the print down while its photo keeps running
+    // on the most public surface in the app.
+    expect(redis.hashes.get(communityDesignKey(DESIGN_ID))?.get('coverPhotoUrl')).toBe('');
+  });
+
+  it('leaves an unrelated cover alone when a print is hidden', async () => {
+    const target = await seedOtherUsersPrint();
+    redis.hashes
+      .get(communityDesignKey(DESIGN_ID))
+      ?.set('coverPhotoUrl', 'https://blob.example/other.webp');
+    seedReporters(target, REPORT_THRESHOLD - 1);
+
+    await handle({ method: 'POST', body: { action: 'report', printer: target, reason: 'spam' } });
+
+    expect(redis.hashes.get(communityDesignKey(DESIGN_ID))?.get('coverPhotoUrl')).toBe(
+      'https://blob.example/other.webp'
+    );
   });
 
   it('drops a hidden print out of the public list', async () => {

@@ -103,4 +103,35 @@ describe('PrintCard', () => {
     render(<PrintCard print={print({ note: 'scaled 2 percent' })} isMine={false} />);
     expect(screen.getByText('scaled 2 percent')).toBeInTheDocument();
   });
+
+  describe('cover promotion', () => {
+    const withPhoto = () => print({ photos: ['https://blob.example/a.webp'] });
+
+    it('offers no promotion to a non-owner', () => {
+      render(<PrintCard print={withPhoto()} isMine={false} />);
+      // The gallery grid is the most public surface in the app; only the
+      // design's owner may put an image on it.
+      expect(screen.queryByTestId('print-promote-0')).toBeNull();
+    });
+
+    it('lets the owner promote a photo', () => {
+      const onPromoteCover = vi.fn();
+      render(<PrintCard print={withPhoto()} isMine={false} onPromoteCover={onPromoteCover} />);
+      fireEvent.click(screen.getByTestId('print-promote-0'));
+      expect(onPromoteCover).toHaveBeenCalledWith('https://blob.example/a.webp');
+    });
+
+    it('labels the current cover instead of offering it again', () => {
+      render(
+        <PrintCard
+          print={withPhoto()}
+          isMine={false}
+          onPromoteCover={vi.fn()}
+          coverPhotoUrl="https://blob.example/a.webp"
+        />
+      );
+      expect(screen.queryByTestId('print-promote-0')).toBeNull();
+      expect(screen.getByText('community.prints.coverCurrent')).toBeInTheDocument();
+    });
+  });
 });

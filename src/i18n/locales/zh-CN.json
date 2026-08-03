@@ -3472,5 +3472,12 @@
   "community.prints.verdictAsDesigned": "{count} 次按设计尺寸装得下",
   "community.prints.verdictAdjusted": "{count} 次调整后装得下",
   "community.prints.verdictDidNotFit": "{count} 次装不下",
-  "community.prints.verdictHint": "其他人打印后的实际结果。"
+  "community.prints.verdictHint": "其他人打印后的实际结果。",
+  "community.gallery.sort.prints": "打印最多",
+  "community.card.printsLabel": "{count} 人打印过",
+  "community.shelves.proven": "已有人打印过",
+  "community.prints.useAsCover": "设为封面",
+  "community.prints.coverCurrent": "封面图片",
+  "community.prints.clearCover": "改用渲染图",
+  "community.prints.coverFailed": "无法更新封面图片。"
 }

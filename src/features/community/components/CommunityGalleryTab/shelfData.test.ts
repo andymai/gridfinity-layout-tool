@@ -160,4 +160,45 @@ describe('buildShelves', () => {
     const allIds = shelves.flatMap((shelf) => shelf.cards.map((c) => c.id));
     expect(new Set(allIds).size).toBe(allIds.length);
   });
+
+  describe('proven shelf', () => {
+    it('is absent when nothing has been printed', () => {
+      const items = Array.from({ length: 12 }, (_, i) => card(`d${i}`));
+      expect(buildShelves(items, NOW).map((s) => s.id)).not.toContain('proven');
+    });
+
+    it('surfaces printed designs ordered by printer count', () => {
+      const items = [
+        ...Array.from({ length: 12 }, (_, i) => card(`d${i}`)),
+        card('printed-low', { counts: { likes: 0, remixes: 0, exports: 0, prints: 1 } }),
+        card('printed-high', { counts: { likes: 0, remixes: 0, exports: 0, prints: 9 } }),
+      ];
+
+      const proven = buildShelves(items, NOW).find((s) => s.id === 'proven');
+      expect(proven?.cards.map((c) => c.id)).toEqual(['printed-high', 'printed-low']);
+    });
+
+    it('ranks above new-this-week, since proof outranks recency', () => {
+      const items = [
+        ...Array.from({ length: 12 }, (_, i) => card(`d${i}`, { createdAt: NOW })),
+        card('printed', { counts: { likes: 0, remixes: 0, exports: 0, prints: 3 } }),
+      ];
+
+      const ids = buildShelves(items, NOW).map((s) => s.id);
+      expect(ids.indexOf('proven')).toBeLessThan(ids.indexOf('new-this-week'));
+    });
+
+    it('does not repeat a design already shown in staff picks', () => {
+      const items = [
+        ...Array.from({ length: 12 }, (_, i) => card(`d${i}`)),
+        card('both', {
+          featured: true,
+          counts: { likes: 0, remixes: 0, exports: 0, prints: 5 },
+        }),
+      ];
+
+      const proven = buildShelves(items, NOW).find((s) => s.id === 'proven');
+      expect(proven?.cards.map((c) => c.id) ?? []).not.toContain('both');
+    });
+  });
 });

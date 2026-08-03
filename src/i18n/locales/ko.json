@@ -3472,5 +3472,12 @@
   "community.prints.verdictAsDesigned": "{count}건 설계대로",
   "community.prints.verdictAdjusted": "{count}건 조정 후 성공",
   "community.prints.verdictDidNotFit": "{count}건 맞지 않음",
-  "community.prints.verdictHint": "다른 사람들이 출력하며 확인한 내용입니다."
+  "community.prints.verdictHint": "다른 사람들이 출력하며 확인한 내용입니다.",
+  "community.gallery.sort.prints": "많이 출력된 순",
+  "community.card.printsLabel": "{count}명이 출력",
+  "community.shelves.proven": "실제로 출력된 디자인",
+  "community.prints.useAsCover": "대표 이미지로 사용",
+  "community.prints.coverCurrent": "대표 이미지",
+  "community.prints.clearCover": "대신 렌더 이미지 사용",
+  "community.prints.coverFailed": "대표 이미지를 변경하지 못했습니다."
 }

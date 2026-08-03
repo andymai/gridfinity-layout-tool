@@ -9,6 +9,7 @@ import { buildShelves } from './shelfData';
 
 const SHELF_TITLE_KEYS: Record<ShelfId, string> = {
   'staff-picks': 'community.shelves.staffPicks',
+  proven: 'community.shelves.proven',
   'new-this-week': 'community.shelves.newThisWeek',
   'most-remixed': 'community.shelves.mostRemixed',
 };
@@ -39,6 +40,8 @@ export function ShelfLanding({ items, onSelect, onSelectAuthor }: ShelfLandingPr
       setFeaturedOnly(true);
     } else if (id === 'most-remixed') {
       setSort('remixes');
+    } else if (id === 'proven') {
+      setSort('prints');
     }
   };
 

@@ -545,6 +545,8 @@ function CommunityDetailDialog({
                   ownPrint={myPrint}
                   refreshToken={printsRefresh}
                   onReport={setReportPrintTarget}
+                  isOwner={isOwner}
+                  coverPhotoUrl={design.coverPhotoUrl ?? ''}
                 />
               ) : undefined
             }

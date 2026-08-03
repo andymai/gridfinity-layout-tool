@@ -40,6 +40,7 @@ import {
   writeCommunityCard,
   writeCommunityDesignBlob,
 } from './lib/communityStore.js';
+import { communityPrintsEnabled } from './lib/communityPrintValidation.js';
 import { hasQualifyingCutout } from './lib/communityLowEffort.js';
 import { COMMUNITY_EXAMPLE_PARAM_HASHES } from './lib/communityExampleParamHashes.js';
 import type {
@@ -524,12 +525,25 @@ interface CommunityListItem {
   parentId: string;
   featured: boolean;
   /** `opens`/`views` are owner-only stats, present only on `mine=1` items. */
-  counts: { likes: number; remixes: number; exports: number; opens?: number; views?: number };
+  counts: {
+    likes: number;
+    remixes: number;
+    exports: number;
+    prints: number;
+    opens?: number;
+    views?: number;
+  };
   createdAt: number;
   updatedAt: number;
   status: CommunityDesignStatus;
   /** Owner-only: why a hidden design is hidden. Present only on `mine=1` items with status 'hidden'. */
   hiddenReason?: CommunityHiddenReason;
+}
+
+function coverThumbnail(card: CommunityCardRecord): string {
+  if (!communityPrintsEnabled()) return card.thumbnailUrl;
+  const cover = card.coverPhotoUrl ?? '';
+  return cover !== '' ? cover : card.thumbnailUrl;
 }
 
 function toListItem(card: CommunityCardRecord): CommunityListItem {
@@ -546,11 +560,20 @@ function toListItem(card: CommunityCardRecord): CommunityListItem {
       height: card.height,
       gridUnitMm: card.gridUnitMm,
     },
-    thumbnailUrl: card.thumbnailUrl,
+    // A promoted print photo wins over the render: a shelf of real prints
+    // reads as proven in a way a grid of renders cannot. Resolved at read
+    // time so flipping the kill switch off also pulls every already promoted
+    // photo back off the grid rather than stranding it there.
+    thumbnailUrl: coverThumbnail(card),
     isRemix: card.isRemix,
     parentId: card.parentId,
     featured: card.featured,
-    counts: { likes: card.likes, remixes: card.remixes, exports: card.exports },
+    counts: {
+      likes: card.likes,
+      remixes: card.remixes,
+      exports: card.exports,
+      prints: card.prints ?? 0,
+    },
     createdAt: card.createdAt,
     updatedAt: card.updatedAt,
     status: card.status,
@@ -593,6 +616,9 @@ function compareCards(
 ): number {
   if (sort === 'likes' && b.likes !== a.likes) return b.likes - a.likes;
   if (sort === 'remixes' && b.remixes !== a.remixes) return b.remixes - a.remixes;
+  if (sort === 'prints' && (b.prints ?? 0) !== (a.prints ?? 0)) {
+    return (b.prints ?? 0) - (a.prints ?? 0);
+  }
   if (b.createdAt !== a.createdAt) return b.createdAt - a.createdAt;
   // A12: id is the final tiebreaker so tied timestamps produce a stable total
   // order across requests, preventing dup/skip at a page boundary.

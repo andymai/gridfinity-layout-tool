@@ -7,7 +7,7 @@ import { PrintsSection } from './PrintsSection';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
-const api = vi.hoisted(() => ({ fetchPrints: vi.fn() }));
+const api = vi.hoisted(() => ({ fetchPrints: vi.fn(), setCoverPhoto: vi.fn() }));
 vi.mock('../../api/printsClient', () => api);
 
 function print(id: string, overrides: Partial<CommunityPrint> = {}): CommunityPrint {
@@ -132,5 +132,55 @@ describe('PrintsSection', () => {
 
     rerender(<PrintsSection designId="abc123def456" ownPrint={null} refreshToken={1} />);
     await waitFor(() => expect(api.fetchPrints).toHaveBeenCalledTimes(2));
+  });
+
+  describe('cover promotion', () => {
+    beforeEach(() => {
+      api.setCoverPhoto.mockResolvedValue(ok({ coverPhotoUrl: 'https://blob.example/a.webp' }));
+      api.fetchPrints.mockResolvedValue(
+        page([print('a', { photos: ['https://blob.example/a.webp'] })])
+      );
+    });
+
+    it('offers no clear action to a non-owner', async () => {
+      setup({ coverPhotoUrl: 'https://blob.example/a.webp' });
+      await waitFor(() => expect(screen.getByTestId('prints-section')).toBeInTheDocument());
+      expect(screen.queryByTestId('prints-clear-cover')).toBeNull();
+    });
+
+    it('lets the owner revert to the render', async () => {
+      api.setCoverPhoto.mockResolvedValue(ok({ coverPhotoUrl: '' }));
+      setup({ isOwner: true, coverPhotoUrl: 'https://blob.example/a.webp' });
+      await waitFor(() => expect(screen.getByTestId('prints-clear-cover')).toBeInTheDocument());
+
+      fireEvent.click(screen.getByTestId('prints-clear-cover'));
+
+      await waitFor(() => expect(api.setCoverPhoto).toHaveBeenCalledWith('abc123def456', null));
+    });
+
+    it('promotes a photo the owner picks', async () => {
+      setup({ isOwner: true });
+      await waitFor(() => expect(screen.getByTestId('print-promote-0')).toBeInTheDocument());
+
+      fireEvent.click(screen.getByTestId('print-promote-0'));
+
+      await waitFor(() =>
+        expect(api.setCoverPhoto).toHaveBeenCalledWith(
+          'abc123def456',
+          'https://blob.example/a.webp'
+        )
+      );
+    });
+
+    it('reverts the label when the server rejects the promotion', async () => {
+      api.setCoverPhoto.mockResolvedValue(err({ kind: 'validation', code: 'X', message: 'no' }));
+      setup({ isOwner: true });
+      await waitFor(() => expect(screen.getByTestId('print-promote-0')).toBeInTheDocument());
+
+      fireEvent.click(screen.getByTestId('print-promote-0'));
+
+      // Never left claiming a cover the server refused.
+      await waitFor(() => expect(screen.getByTestId('print-promote-0')).toBeInTheDocument());
+    });
   });
 });

@@ -34,6 +34,7 @@ const SORT_LABEL_KEYS: Record<CommunityIndexSort, string> = {
   newest: 'community.gallery.sort.newest',
   remixes: 'community.gallery.sort.remixes',
   likes: 'community.gallery.sort.likes',
+  prints: 'community.gallery.sort.prints',
 };
 
 export function categoryOptions(t: TFunction): SelectOption[] {

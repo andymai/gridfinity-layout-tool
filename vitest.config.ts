@@ -147,6 +147,12 @@ export default defineConfig({
           setupFiles: ['./src/test/setup.ts'],
           include: integrationIncludes,
           exclude: sharedExclude,
+          // Every integration file FLUSHDBs the same Redis in beforeEach, so
+          // running them in parallel lets one file wipe another's state
+          // mid-test. That surfaced as unrelated-looking flakes: a rate-limit
+          // window losing entries, a like toggle finding its sets empty.
+          // Serialising the files is the fix; they are fast and few.
+          fileParallelism: false,
         },
       },
     ],

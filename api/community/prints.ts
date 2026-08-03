@@ -57,6 +57,7 @@ import {
   writeCommunityPrint,
 } from '../lib/communityPrintStore.js';
 import type { CommunityPrintRecord } from '../lib/communityPrintStore.js';
+import { readCommunityDesignBlob, writeCommunityDesignBlob } from '../lib/communityStore.js';
 
 const COMMUNITY_DESIGN_ID_REGEX = /^[a-zA-Z0-9]{12}$/;
 const AUTHOR_PUBLIC_ID_REGEX = /^[a-f0-9]{32}$/;
@@ -181,6 +182,37 @@ function toPrintResponse(record: CommunityPrintRecord): PrintResponse {
     updatedAt: record.updatedAt,
     status: record.status,
   };
+}
+
+/**
+ * Drop the design's promoted cover when it came from a print that is no longer
+ * publicly visible.
+ *
+ * Without this, hiding a print leaves its photo on the design's card: the most
+ * public surface in the app would keep showing an image moderation just took
+ * down, which defeats the report path entirely.
+ */
+async function clearCoverIfFromPhotos(
+  redis: Redis,
+  designId: string,
+  photos: readonly string[]
+): Promise<void> {
+  if (photos.length === 0) return;
+  const cover = await redis.hget(communityDesignKey(designId), 'coverPhotoUrl');
+  if (cover === null || cover === '' || !photos.includes(cover)) return;
+  await redis.hset(communityDesignKey(designId), { coverPhotoUrl: '' });
+  const record = await readCommunityDesignBlob(designId);
+  if (record !== null) {
+    await writeCommunityDesignBlob(
+      { ...record, coverPhotoUrl: '' },
+      { allowOverwrite: true }
+    ).catch((err: unknown) => {
+      logger.warn('Community cover: clear-on-moderation blob mirror failed', {
+        designId,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    });
+  }
 }
 
 async function handleList(
@@ -420,6 +452,7 @@ async function handleUpsert(
   // Best-effort, because the record is already correct and a failed cleanup
   // must not fail a successful edit.
   const orphaned = existingPhotos.filter((url) => !photos.includes(url));
+  await clearCoverIfFromPhotos(redis, designId, orphaned);
   if (orphaned.length > 0) {
     await del(orphaned).catch((delErr: unknown) => {
       logger.warn('Community print: dropped-photo cleanup failed', {
@@ -472,6 +505,7 @@ async function handleDelete(
 
   await deleteCommunityPrint(redis, designId, authorPublicId, session.userId);
   const count = await syncCommunityPrintCount(redis, designId);
+  await clearCoverIfFromPhotos(redis, designId, existing.photos);
 
   if (existing.photos.length > 0) {
     await del(existing.photos).catch((delErr: unknown) => {
@@ -595,6 +629,7 @@ async function handleReport(
     });
     await redis.zrem(communityPrintsKey(designId), targetPublicId);
     await syncCommunityPrintCount(redis, designId);
+    await clearCoverIfFromPhotos(redis, designId, existing.photos);
     hidden = true;
   }
 

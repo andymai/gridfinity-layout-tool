@@ -1,3 +1,4 @@
+import { COMMUNITY_INDEX_SORTS } from '@/shared/types/community';
 import { describe, it, expect } from 'vitest';
 import type { TFunction } from '@/i18n';
 import type { CommunityCard } from '@/shared/types/community';
@@ -83,14 +84,10 @@ describe('parseDimensionRank', () => {
 describe('browseSortOptions', () => {
   it('appends best-fit only while available', () => {
     expect(browseSortOptions(t, false).map((option) => option.id)).toEqual([
-      'newest',
-      'remixes',
-      'likes',
+      ...COMMUNITY_INDEX_SORTS,
     ]);
     expect(browseSortOptions(t, true).map((option) => option.id)).toEqual([
-      'newest',
-      'remixes',
-      'likes',
+      ...COMMUNITY_INDEX_SORTS,
       'best-fit',
     ]);
   });

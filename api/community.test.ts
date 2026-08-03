@@ -1098,6 +1098,34 @@ describe('GET /api/community (list)', () => {
     expect((res._body as { likedIds: string[] }).likedIds).toEqual([]);
   });
 
+  it('prefers a promoted cover photo over the render while prints are enabled', async () => {
+    vi.stubEnv('COMMUNITY_PRINTS_ENABLED', 'true');
+    await seedCard({ id: 'coverdesign1' });
+    await fake.hset(communityDesignKey('coverdesign1'), {
+      coverPhotoUrl: 'https://blob.example/cover.webp',
+    });
+
+    const res = await handle({ method: 'GET' });
+    const body = res._body as { items: Array<{ id: string; thumbnailUrl: string }> };
+    const item = body.items.find((i) => i.id === 'coverdesign1');
+    expect(item?.thumbnailUrl).toBe('https://blob.example/cover.webp');
+  });
+
+  it('falls back to the render once the prints kill switch is off', async () => {
+    vi.stubEnv('COMMUNITY_PRINTS_ENABLED', 'false');
+    await seedCard({ id: 'coverdesign2' });
+    await fake.hset(communityDesignKey('coverdesign2'), {
+      coverPhotoUrl: 'https://blob.example/cover.webp',
+    });
+
+    const res = await handle({ method: 'GET' });
+    const body = res._body as { items: Array<{ id: string; thumbnailUrl: string }> };
+    const item = body.items.find((i) => i.id === 'coverdesign2');
+    // Flipping the switch off must pull already-promoted photos back off the
+    // grid, not strand them there.
+    expect(item?.thumbnailUrl).not.toBe('https://blob.example/cover.webp');
+  });
+
   it('mine items carry owner-only opens/views counts and the hide reason', async () => {
     await seedCard({ id: 'mine-stats00', createdAt: 3_000 }, { likes: 4, opens: 7, views: 31 });
     await seedCard(
@@ -1124,7 +1152,14 @@ describe('GET /api/community (list)', () => {
       'mine-denied0',
       'mine-report0',
     ]);
-    expect(body.items[0].counts).toEqual({ likes: 4, remixes: 0, exports: 0, opens: 7, views: 31 });
+    expect(body.items[0].counts).toEqual({
+      likes: 4,
+      remixes: 0,
+      exports: 0,
+      prints: 0,
+      opens: 7,
+      views: 31,
+    });
     expect(body.items[0].hiddenReason).toBeUndefined();
     expect(body.items[1].hiddenReason).toBe('denylist');
     expect(body.items[2].hiddenReason).toBe('reports');
@@ -1135,7 +1170,7 @@ describe('GET /api/community (list)', () => {
     const res = await handle({ method: 'GET' });
     expect(res._status).toBe(200);
     const body = res._body as { items: Array<Record<string, unknown>> };
-    expect(body.items[0].counts).toEqual({ likes: 4, remixes: 0, exports: 0 });
+    expect(body.items[0].counts).toEqual({ likes: 4, remixes: 0, exports: 0, prints: 0 });
     expect(body.items[0]).not.toHaveProperty('hiddenReason');
   });
 

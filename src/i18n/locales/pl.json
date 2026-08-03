@@ -3472,5 +3472,12 @@
   "community.prints.verdictAsDesigned": "{count} zgodnie z projektem",
   "community.prints.verdictAdjusted": "{count} po korekcie",
   "community.prints.verdictDidNotFit": "{count} nie pasowało",
-  "community.prints.verdictHint": "Co inni stwierdzili podczas drukowania."
+  "community.prints.verdictHint": "Co inni stwierdzili podczas drukowania.",
+  "community.gallery.sort.prints": "Najczęściej drukowane",
+  "community.card.printsLabel": "Wydrukowane przez {count} osób",
+  "community.shelves.proven": "Te już wydrukowano",
+  "community.prints.useAsCover": "Użyj jako okładki",
+  "community.prints.coverCurrent": "Obraz okładki",
+  "community.prints.clearCover": "Użyj zamiast tego renderu",
+  "community.prints.coverFailed": "Nie udało się zaktualizować okładki."
 }
