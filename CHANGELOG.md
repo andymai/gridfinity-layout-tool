@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.360.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.359.0...gridfinity-layout-tool-v4.360.0) (2026-08-03)
+
+
+### Features
+
+* **community:** make remix ancestry a navigable strip ([#3203](https://github.com/andymai/gridfinity-layout-tool/issues/3203)) ([226e255](https://github.com/andymai/gridfinity-layout-tool/commit/226e2551b2c6ce5d7754fcbfc4441cea4017df8c))
+
 ## [4.359.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.358.0...gridfinity-layout-tool-v4.359.0) (2026-08-03)
 
 
