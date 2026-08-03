@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.357.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.356.0...gridfinity-layout-tool-v4.357.0) (2026-08-03)
+
+
+### Features
+
+* **community:** surface print counts across browsing ([#3195](https://github.com/andymai/gridfinity-layout-tool/issues/3195)) ([8105a6d](https://github.com/andymai/gridfinity-layout-tool/commit/8105a6d1856630c5ff932f3cc900e3b8db6e150c))
+
 ## [4.356.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.355.1...gridfinity-layout-tool-v4.356.0) (2026-08-03)
 
 
