@@ -1,0 +1,25 @@
+src/features/community/README.md
+  s_1ba7ad2a498875::t_5cd5db993d1779 72
+src/features/community/components/CommunityDetail/CommunityDetail.tsx
+  s_1ba7ad2a498875::t_5cd5db993d1779 429-432
+src/features/community/components/PrintCostPanel/PrintCostPanel.tsx
+  s_1ba7ad2a498875::t_5cd5db993d1779 78-81,137-140
+src/features/community/components/PrintCostPanel/PrintCostPanel.test.tsx
+  s_1ba7ad2a498875::t_8eab75a136f8cc 101-113
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "96130c0080a2af28faf042d4ee9eab9a11db963c",
+  "prompts": {},
+  "sessions": {
+    "s_1ba7ad2a498875": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ce6c2b71-68eb-40ff-967f-188df1b2c251",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
