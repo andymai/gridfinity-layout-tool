@@ -53,6 +53,16 @@ function toNumber(value: string): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+/**
+ * Optional measurements only mean something above zero, and the server's floor
+ * is 0.1, so a typed 0 or -5 is an unset field rather than a value worth a
+ * round trip to have rejected.
+ */
+function toPositiveNumber(value: string): number | null {
+  const parsed = toNumber(value);
+  return parsed !== null && parsed > 0 ? parsed : null;
+}
+
 function toInput(
   draft: PrintDraft,
   displayName: string,
@@ -69,7 +79,7 @@ function toInput(
     nozzleMm,
     layerHeightMm,
     printMinutes,
-    filamentGrams: toNumber(draft.filamentGrams),
+    filamentGrams: toPositiveNumber(draft.filamentGrams),
     printer: draft.printer,
     ...(draft.printer === COMMUNITY_PRINTER_OTHER && {
       printerOther: draft.printerOther.trim(),
@@ -86,7 +96,19 @@ function goTo(url: string): void {
   if (typeof window !== 'undefined') window.location.href = url;
 }
 
-export function PrintDialog({ onSaved, onDeleted }: PrintDialogProps) {
+/**
+ * Closed is genuinely unmounted rather than hidden: `issues`, the delete
+ * confirmation and its busy flag are local state, and a component that merely
+ * returns null keeps all three across a close and reopen (stale validation
+ * errors, or a delete confirmation from a previous session reappearing).
+ */
+export function PrintDialog(props: PrintDialogProps) {
+  const phase = usePrintDialogStore((s) => s.phase);
+  if (phase === 'closed') return null;
+  return <PrintDialogOpen {...props} />;
+}
+
+function PrintDialogOpen({ onSaved, onDeleted }: PrintDialogProps) {
   const t = useTranslation();
   const addToast = useToastStore((s) => s.addToast);
 
@@ -112,8 +134,6 @@ export function PrintDialog({ onSaved, onDeleted }: PrintDialogProps) {
   const [issues, setIssues] = useState<PrintDraftIssues>({});
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleteBusy, setDeleteBusy] = useState(false);
-
-  if (phase === 'closed') return null;
 
   const saving = phase === 'saving';
   const busy = saving || deleteBusy;

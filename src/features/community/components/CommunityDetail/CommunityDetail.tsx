@@ -121,6 +121,7 @@ function CommunityDetailDialog({
     designId: string;
     print: CommunityPrint | null;
   } | null>(null);
+  const [printsAvailable, setPrintsAvailable] = useState(true);
   const [ownerModeration, setOwnerModeration] = useState<OwnerModeration | null>(null);
   const [offline, setOffline] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -392,20 +393,29 @@ function CommunityDetailDialog({
   // The caller's own print decides whether the CTA posts or edits. The list
   // response carries it even when it is not on the first page, so this is one
   // request rather than a walk.
+  // Keyed off the id, not the design object: a counts refresh replaces the
+  // object without changing which design this is, and depending on the object
+  // would re-fetch prints every time.
+  const printsDesignId = design?.id ?? null;
   useEffect(() => {
-    if (phase !== 'ready' || design === null) return;
-    const { id } = design;
+    if (phase !== 'ready' || printsDesignId === null) return;
     let cancelled = false;
-    void fetchPrints(id).then((result) => {
+    void fetchPrints(printsDesignId).then((result) => {
       if (cancelled) return;
-      // A disabled kill switch or any other failure just leaves the CTA in its
-      // "post" state; the server is still the authority on what happens next.
-      setOwnPrint({ designId: id, print: isOk(result) ? result.value.mine : null });
+      if (isOk(result)) {
+        setOwnPrint({ designId: printsDesignId, print: result.value.mine });
+        return;
+      }
+      // The kill switch is the one failure worth acting on: a CTA that opens a
+      // dialog which can only fail is worse than no CTA. Any other error just
+      // leaves the button in its "post" state.
+      setPrintsAvailable(result.error.kind !== 'disabled');
+      setOwnPrint({ designId: printsDesignId, print: null });
     });
     return () => {
       cancelled = true;
     };
-  }, [phase, design]);
+  }, [phase, printsDesignId]);
 
   const myPrint = design !== null && ownPrint?.designId === design.id ? ownPrint.print : null;
 
@@ -522,7 +532,7 @@ function CommunityDetailDialog({
             }
             onFilterByAuthor={handleFilterByAuthor}
             ownerModeration={ownerModeration}
-            onAddPrint={handleAddPrint}
+            onAddPrint={printsAvailable ? handleAddPrint : undefined}
             hasOwnPrint={myPrint !== null}
           />
         )}

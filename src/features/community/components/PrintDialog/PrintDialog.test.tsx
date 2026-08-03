@@ -160,6 +160,35 @@ describe('PrintDialog', () => {
     await waitFor(() => expect(usePrintDialogStore.getState().phase).toBe('signin'));
   });
 
+  it('drops a non-positive filament entry rather than letting the server reject it', async () => {
+    renderOpen();
+
+    completeForm();
+    fireEvent.change(screen.getByLabelText('community.print.filamentLabel'), {
+      target: { value: '0' },
+    });
+    fireEvent.click(screen.getByTestId('print-dialog-submit'));
+
+    await waitFor(() => expect(api.savePrint).toHaveBeenCalled());
+    const [, input] = api.savePrint.mock.calls[0] as [string, Record<string, unknown>];
+    // The server floor is 0.1, so 0 is an unset field, not a value.
+    expect(input.filamentGrams).toBeNull();
+  });
+
+  it('does not carry validation errors across a close and reopen', () => {
+    const { rerender } = renderOpen();
+
+    fireEvent.click(screen.getByTestId('print-dialog-submit'));
+    expect(screen.getByText('community.print.fitRequired')).toBeInTheDocument();
+
+    usePrintDialogStore.getState().reset();
+    rerender(<PrintDialog onSaved={vi.fn()} onDeleted={vi.fn()} />);
+    openDialog();
+    rerender(<PrintDialog onSaved={vi.fn()} onDeleted={vi.fn()} />);
+
+    expect(screen.queryByText('community.print.fitRequired')).toBeNull();
+  });
+
   it('offers delete only when editing', () => {
     const { unmount } = renderOpen();
     expect(screen.queryByTestId('print-dialog-delete')).toBeNull();

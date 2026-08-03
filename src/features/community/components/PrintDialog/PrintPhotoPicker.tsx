@@ -101,12 +101,18 @@ export function PrintPhotoPicker({
         )}
       </div>
 
+      {/* Hidden from AT and from the tab order on purpose: the labelled button
+          above is the real control, and an sr-only input would otherwise be a
+          focusable, unnamed file field that ignores the disabled state. */}
       <input
         ref={inputRef}
         type="file"
         accept="image/*"
         multiple
-        className="sr-only"
+        hidden
+        tabIndex={-1}
+        aria-hidden="true"
+        disabled={disabled || busy}
         // Reset the value after handling so re-picking the same file still
         // fires a change event.
         onChange={(event) => {
