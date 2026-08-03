@@ -1,0 +1,84 @@
+src/features/community/components/ReportDialog/ReportDialog.tsx
+  s_1ba7ad2a498875::t_8d172c87cdb645 34-37
+  s_1ba7ad2a498875::t_9c18ed007fef49 29-33,38-39,43,100-101
+  s_1ba7ad2a498875::t_f1520f6187294d 120-123
+  s_1ba7ad2a498875::t_25cea509f66a6c 6
+src/features/community/components/CommunityDetail/CommunityDetailContent.tsx
+  s_1ba7ad2a498875::t_9c44861778489e 2
+  s_1ba7ad2a498875::t_74fbfe43db00c3 60-61,86,357
+  s_1ba7ad2a498875::t_b69c03a2e15457 358
+src/i18n/locales/fr.json
+  s_1ba7ad2a498875::t_512c15e7e41d33 3451-3475
+src/i18n/locales/en.ts
+  s_1ba7ad2a498875::t_e9dcbf3c546367 3623-3648
+src/i18n/locales/pl.json
+  s_1ba7ad2a498875::t_512c15e7e41d33 3451-3475
+src/features/community/components/PrintsSection/index.ts
+  s_1ba7ad2a498875::t_3a79efaff1fbd8 1-2
+src/i18n/locales/ko.json
+  s_1ba7ad2a498875::t_512c15e7e41d33 3451-3475
+src/features/community/components/PrintsSection/PrintsSection.tsx
+  s_1ba7ad2a498875::t_009a61d1da1ef4 30,38-42,44-47,59,62,68,73
+  s_1ba7ad2a498875::t_1cee0a90dfa14e 1-29,31-37,43,48-58,60-61,63-67,69-72,74-158
+scripts/i18n-values-allowlist.json
+  s_1ba7ad2a498875::t_cbc4b475b85853 166
+src/features/community/components/PrintsSection/PrintCard.tsx
+  s_1ba7ad2a498875::t_009a61d1da1ef4 75
+  s_1ba7ad2a498875::t_18bf4d96faa78c 1-74,76-129
+src/features/community/utils/printFormat.test.ts
+  s_1ba7ad2a498875::t_6d73e4eac4dcc0 1-75
+src/i18n/locales/cs.json
+  s_1ba7ad2a498875::t_512c15e7e41d33 3451-3475
+src/i18n/locales/es.json
+  s_1ba7ad2a498875::t_512c15e7e41d33 3451-3475
+src/features/community/components/PrintsSection/PrintSummary.test.tsx
+  s_1ba7ad2a498875::t_c28d965ebefddb 1-71
+src/i18n/locales/zh-CN.json
+  s_1ba7ad2a498875::t_512c15e7e41d33 3451-3475
+src/i18n/locales/pt-BR.json
+  s_1ba7ad2a498875::t_512c15e7e41d33 3451-3475
+src/i18n/locales/sv.json
+  s_1ba7ad2a498875::t_512c15e7e41d33 3451-3475
+src/i18n/locales/nl.json
+  s_1ba7ad2a498875::t_512c15e7e41d33 3451-3475
+src/i18n/locales/it.json
+  s_1ba7ad2a498875::t_512c15e7e41d33 3451-3475
+src/i18n/locales/de.json
+  s_1ba7ad2a498875::t_512c15e7e41d33 3451-3475
+src/i18n/locales/ja.json
+  s_1ba7ad2a498875::t_512c15e7e41d33 3451-3475
+src/i18n/locales/uk.json
+  s_1ba7ad2a498875::t_512c15e7e41d33 3451-3475
+src/features/community/utils/printFormat.ts
+  s_1ba7ad2a498875::t_0c9ba89853140d 1-40
+src/features/community/components/CommunityDetail/CommunityDetail.tsx
+  s_1ba7ad2a498875::t_fc67039d75d1fe 32,717-737
+  s_1ba7ad2a498875::t_b77b67a3357443 35,126-129,541-550,740-747
+src/i18n/locales/nb.json
+  s_1ba7ad2a498875::t_512c15e7e41d33 3451-3475
+src/features/community/components/PrintsSection/PrintCard.test.tsx
+  s_1ba7ad2a498875::t_c28d965ebefddb 1-101
+  s_1ba7ad2a498875::t_0985de8c9d20dc 102-104
+src/features/community/components/PrintsSection/PrintsSection.test.tsx
+  s_1ba7ad2a498875::t_f13da0e299085d 1-136
+src/features/community/components/PrintsSection/PrintSummary.tsx
+  s_1ba7ad2a498875::t_e2bfcb1c821703 1-90
+  s_1ba7ad2a498875::t_8ea06f7032cc86 91-93
+  s_1ba7ad2a498875::t_85d19a94a7d6b2 94-95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "f06aad812299afee9d6ddd7cb18307c8456fc3a5",
+  "prompts": {},
+  "sessions": {
+    "s_1ba7ad2a498875": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ce6c2b71-68eb-40ff-967f-188df1b2c251",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
