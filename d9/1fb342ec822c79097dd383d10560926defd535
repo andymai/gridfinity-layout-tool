@@ -1,0 +1,19 @@
+src/features/community/components/CommunityDetail/CommunityDetail.test.tsx
+  s_1ba7ad2a498875::t_538bf1cca639ed 223-227
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "d91fb342ec822c79097dd383d10560926defd535",
+  "prompts": {},
+  "sessions": {
+    "s_1ba7ad2a498875": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ce6c2b71-68eb-40ff-967f-188df1b2c251",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
