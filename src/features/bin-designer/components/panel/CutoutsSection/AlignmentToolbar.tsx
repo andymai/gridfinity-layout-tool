@@ -20,7 +20,7 @@ import {
 } from './geometry';
 import { autoArrangeCutouts } from './autoArrange';
 import { PathfinderControls } from './PathfinderControls';
-import { resolveActiveOp } from './pathfinderHelpers';
+import { canGroupSelection } from './pathfinderHelpers';
 import { TransformControls } from './TransformControls';
 import { ArrangeControls } from './ArrangeControls';
 
@@ -147,8 +147,7 @@ export function AlignmentToolbar({
 
   const selected = cutouts.filter((c) => selectedIds.includes(c.id));
   const hasGroup = selected.some((c) => c.groupId !== null);
-  // Already one whole group → grouping again would do nothing, so hide it.
-  const canGroup = selectedIds.length >= 2 && resolveActiveOp(selectedIds, cutouts) === null;
+  const canGroup = canGroupSelection(selectedIds, cutouts);
 
   const handleAlign = (type: AlignType) => {
     const bounds = computeBounds(selected);

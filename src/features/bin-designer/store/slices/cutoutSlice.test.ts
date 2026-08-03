@@ -878,6 +878,42 @@ describe('cutoutSlice - consolidated actions', () => {
       expect(cutouts[0].groupId).toBe(cutouts[1].groupId);
     });
 
+    it('does not spend an undo step re-grouping an unchanged group', () => {
+      // Reachable from Ctrl+G on a partial selection: groupCutouts reuses the
+      // existing groupId and re-groups every member, so nothing changes.
+      const { addCutout, groupCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b' }));
+      addCutout(createTestCutout({ id: 'c' }));
+      groupCutouts(['a', 'b', 'c']);
+
+      const before = useDesignerStore.getState();
+      const depthBefore = before.history.past.length;
+      const cutoutsBefore = before.params.cutouts;
+
+      groupCutouts(['a', 'b']);
+
+      const after = useDesignerStore.getState();
+      expect(after.history.past.length).toBe(depthBefore);
+      expect(after.params.cutouts).toBe(cutoutsBefore);
+    });
+
+    it('still records history when a loose cutout joins an existing group', () => {
+      const { addCutout, groupCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b' }));
+      addCutout(createTestCutout({ id: 'c' }));
+      groupCutouts(['a', 'b']);
+
+      const depthBefore = useDesignerStore.getState().history.past.length;
+      groupCutouts(['a', 'c']);
+
+      const after = useDesignerStore.getState();
+      expect(after.history.past.length).toBe(depthBefore + 1);
+      const byId = Object.fromEntries(after.params.cutouts.map((x) => [x.id, x.groupId]));
+      expect(byId.c).toBe(byId.a);
+    });
+
     it('stamps the passed op on all members', () => {
       const { addCutout, groupCutouts } = useDesignerStore.getState();
       addCutout(createTestCutout({ id: 'a' }));

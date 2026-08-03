@@ -34,6 +34,27 @@ export function resolveActiveOp(
 }
 
 /**
+ * Whether a plain Group action would actually change anything.
+ *
+ * False once every selected cutout already shares one group — including a
+ * PARTIAL selection of that group, where `resolveActiveOp` returns null but
+ * `groupCutouts` would still re-group the whole group and land an empty undo
+ * step. A mixed selection (loose shapes plus a group) stays groupable: that
+ * folds the loose shapes into the existing group.
+ */
+export function canGroupSelection(
+  selectedIds: readonly string[],
+  cutouts: readonly Cutout[]
+): boolean {
+  if (selectedIds.length < 2) return false;
+  const selected = cutouts.filter((c) => selectedIds.includes(c.id));
+  if (selected.length < 2) return false;
+  const first = selected[0].groupId;
+  if (first === null) return true;
+  return selected.some((c) => c.groupId !== first);
+}
+
+/**
  * Rotate `(x, y)` around `(cx, cy)` by `deg` degrees CCW.
  */
 function rotateAroundCenter(
