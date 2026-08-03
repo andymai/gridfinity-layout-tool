@@ -61,6 +61,20 @@ Backend lives in `api/community/prints.ts` (`GET`/`PUT`/`DELETE`/`POST report`),
 - **Proven shelf** sits directly under staff picks, above recency: a design other people actually printed is the strongest recommendation the library has, and it is the one signal nobody can inflate by posting.
 - **Cover promotion** is owner opt-in and server-validated against the design's own **live** prints. The gallery grid is the most public surface in the app, and this is the only path by which a user-supplied image can reach it, so the check that the URL belongs to a live print of that design is load-bearing, not defensive. A hidden print's photo is not promotable.
 
+### Editorial collections
+
+`data/collections.ts` holds hand-picked groups of designs, curated by PR. Human taste is the honest alternative to an engagement algorithm, and unlike an algorithm it does not pretend to be objective. Keeping the list in the repo means curation is reviewable, diffable and revertible, and needs no admin UI or storage.
+
+`utils/resolveCollections.ts` is where those intentions meet reality:
+
+- **Curated order is preserved exactly.** The sequence is part of the editorial judgement, so the index order never overrides it.
+- **Non-live and unknown ids are skipped**, and reported as `missingIds` so a curator can tell "not published yet" from "my ids are wrong".
+- **A collection with nothing left to show is dropped.** An empty shelf advertises a grouping and then fails to deliver it, so curation never has to be undone because a design went away.
+
+Curated shelves render above the derived ones: a human vouched for these, which is a stronger claim than any derived shelf can make. They carry a blurb (the reason the grouping exists) and no "See all", because a collection is a pick rather than a filter.
+
+The shipped list is deliberately empty. The mechanism is the engineering deliverable; the picks are a separate content decision, made by opening a PR against that file. Adding one means adding its two i18n keys across all locales, since editorial copy is user-facing like everything else.
+
 ### Remix ancestry
 
 `components/CommunityDetail/RemixLineage.tsx` replaces the old one-line lineage sentence with a navigable strip: root (when it differs from the parent), parent, then this design.
