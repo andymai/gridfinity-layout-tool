@@ -229,6 +229,21 @@ describe('CommunityCard', () => {
       );
     });
 
+    it('shows no badge for a reason outside the known set', () => {
+      render(
+        <CommunityCard
+          card={card({
+            featured: true,
+            featureReason: 'retired-reason' as unknown as 'clever',
+          })}
+          onSelect={vi.fn()}
+          index={0}
+        />
+      );
+      // A retired or corrupt value must not hand an undefined key to t().
+      expect(screen.queryByTestId('community-card-featured')).toBeNull();
+    });
+
     it('shows no badge for a pick made before reasons existed', () => {
       render(<CommunityCard card={card({ featured: true })} onSelect={vi.fn()} index={0} />);
       // Better silent than inventing a reason the curator never gave.

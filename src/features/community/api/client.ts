@@ -12,8 +12,10 @@ import type {
   CommunityHiddenReason,
   CommunityReportReason,
 } from '@/shared/types/community';
+import type { CommunityFeatureReason } from '@/shared/types/community';
 import {
   COMMUNITY_CATEGORIES,
+  COMMUNITY_FEATURE_REASONS,
   COMMUNITY_REPORT_NOTE_MAX_LENGTH,
   COMMUNITY_REPORT_REASONS,
 } from '@/shared/types/community';
@@ -192,6 +194,12 @@ function isKnownTechnique(value: unknown): boolean {
   return typeof value === 'string' && KNOWN_TECHNIQUES.includes(value);
 }
 
+function isKnownFeatureReason(value: unknown): value is CommunityFeatureReason {
+  return (
+    typeof value === 'string' && (COMMUNITY_FEATURE_REASONS as readonly string[]).includes(value)
+  );
+}
+
 function isCommunityCard(value: unknown): value is CommunityCard {
   if (!isRecord(value)) return false;
   const counts: unknown = value.counts;
@@ -213,6 +221,9 @@ function isCommunityCard(value: unknown): value is CommunityCard {
     typeof value.isRemix === 'boolean' &&
     (value.parentId === undefined || typeof value.parentId === 'string') &&
     typeof value.featured === 'boolean' &&
+    // A reason outside the union fails the whole card rather than flowing
+    // through as a typed value the UI will index into a label map.
+    (value.featureReason === undefined || isKnownFeatureReason(value.featureReason)) &&
     isRecord(counts) &&
     typeof counts.likes === 'number' &&
     typeof counts.remixes === 'number' &&

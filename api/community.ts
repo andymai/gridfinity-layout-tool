@@ -19,6 +19,7 @@ import {
   COMMUNITY_CATEGORIES,
   COMMUNITY_TECHNIQUES,
   communityRequiresCutouts,
+  isCommunityFeatureReason,
   parseCommunityLineage,
   validateCommunityPublish,
 } from './lib/communityValidation.js';
@@ -570,9 +571,12 @@ function toListItem(card: CommunityCardRecord): CommunityListItem {
     isRemix: card.isRemix,
     parentId: card.parentId,
     featured: card.featured,
+    // Validated, not forwarded: the stored value is a free string, and a
+    // reason retired from the union would otherwise reach a client that
+    // indexes it straight into a label map.
     ...(card.featured &&
       card.featureReason !== undefined &&
-      card.featureReason !== '' && { featureReason: card.featureReason }),
+      isCommunityFeatureReason(card.featureReason) && { featureReason: card.featureReason }),
     counts: {
       likes: card.likes,
       remixes: card.remixes,

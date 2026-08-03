@@ -114,7 +114,11 @@ export interface CommunityDesignRecord {
    */
   coverPhotoUrl?: string;
   featured: boolean;
-  /** Why it was featured; '' when unfeatured or picked before the field existed. */
+  /**
+   * Why it was featured. Absent entirely on a blob written before the field
+   * existed (the reader returns stored JSON verbatim); '' once the admin path
+   * has touched it with an unfeature. Treat absent and '' the same.
+   */
   featureReason?: string;
   createdAt: number;
   updatedAt: number;

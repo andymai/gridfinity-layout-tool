@@ -114,6 +114,10 @@ export function CommunityCard({ card, onSelect, onSelectAuthor, index }: Communi
   const dims = formatCardDims(card.metrics);
   const liked = card.likedByMe === true;
   const prints = card.counts.prints ?? 0;
+  // Looked up rather than indexed blind: a reason retired from the union, or
+  // a corrupt stored value, would otherwise hand an undefined key to t().
+  const featureReasonKey =
+    card.featureReason === undefined ? undefined : FEATURE_REASON_KEYS[card.featureReason];
 
   const handleLike = (event: MouseEvent<HTMLButtonElement>) => {
     // The card root is itself a click target; a heart tap must not also
@@ -177,14 +181,14 @@ export function CommunityCard({ card, onSelect, onSelectAuthor, index }: Communi
           )}
           {/* The stated reason replaces a bare star: a pick nobody explained
               is the least legible signal in the gallery. */}
-          {card.featured && card.featureReason !== undefined && (
+          {card.featured && featureReasonKey !== undefined && (
             <Badge
               tone="overlay"
               size="sm"
               className="absolute left-1 top-1"
               data-testid="community-card-featured"
             >
-              {t(FEATURE_REASON_KEYS[card.featureReason])}
+              {t(featureReasonKey)}
             </Badge>
           )}
           {card.isRemix && (
