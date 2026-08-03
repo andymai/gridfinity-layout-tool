@@ -6,7 +6,7 @@ export const SHELF_CARD_LIMIT = 8;
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
-export type ShelfId = 'staff-picks' | 'new-this-week' | 'most-remixed';
+export type ShelfId = 'staff-picks' | 'proven' | 'new-this-week' | 'most-remixed';
 
 export interface Shelf {
   readonly id: ShelfId;
@@ -31,6 +31,21 @@ export function buildShelves(items: readonly CommunityCard[], now: number): Shel
   if (staffPicks.length > 0) {
     shelves.push({ id: 'staff-picks', cards: staffPicks });
     for (const card of staffPicks) shownIds.add(card.id);
+  }
+
+  // Sits directly under staff picks, above recency: a design other people
+  // have actually printed is the strongest recommendation the library has,
+  // and it is the one signal here that nobody can inflate by posting.
+  const proven = [...items]
+    .filter((card) => (card.counts.prints ?? 0) > 0 && !shownIds.has(card.id))
+    .sort((a, b) => {
+      const delta = (b.counts.prints ?? 0) - (a.counts.prints ?? 0);
+      return delta !== 0 ? delta : byNewest(a, b);
+    })
+    .slice(0, SHELF_CARD_LIMIT);
+  if (proven.length > 0) {
+    shelves.push({ id: 'proven', cards: proven });
+    for (const card of proven) shownIds.add(card.id);
   }
 
   const newest = [...items].sort(byNewest);

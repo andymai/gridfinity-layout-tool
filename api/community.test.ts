@@ -1124,7 +1124,14 @@ describe('GET /api/community (list)', () => {
       'mine-denied0',
       'mine-report0',
     ]);
-    expect(body.items[0].counts).toEqual({ likes: 4, remixes: 0, exports: 0, opens: 7, views: 31 });
+    expect(body.items[0].counts).toEqual({
+      likes: 4,
+      remixes: 0,
+      exports: 0,
+      prints: 0,
+      opens: 7,
+      views: 31,
+    });
     expect(body.items[0].hiddenReason).toBeUndefined();
     expect(body.items[1].hiddenReason).toBe('denylist');
     expect(body.items[2].hiddenReason).toBe('reports');
@@ -1135,7 +1142,7 @@ describe('GET /api/community (list)', () => {
     const res = await handle({ method: 'GET' });
     expect(res._status).toBe(200);
     const body = res._body as { items: Array<Record<string, unknown>> };
-    expect(body.items[0].counts).toEqual({ likes: 4, remixes: 0, exports: 0 });
+    expect(body.items[0].counts).toEqual({ likes: 4, remixes: 0, exports: 0, prints: 0 });
     expect(body.items[0]).not.toHaveProperty('hiddenReason');
   });
 

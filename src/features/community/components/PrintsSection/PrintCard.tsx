@@ -9,6 +9,14 @@ export interface PrintCardProps {
   /** True when this is the viewer's own record; suppresses the report action. */
   isMine: boolean;
   onReport?: (print: CommunityPrint) => void;
+  /**
+   * Present only for the design's owner. Promotion is owner opt-in because the
+   * gallery grid is the most public surface in the app, and this is the one
+   * place a user-supplied image can reach it.
+   */
+  onPromoteCover?: (photoUrl: string) => void;
+  /** The design's current cover, so the promoted photo can label itself. */
+  coverPhotoUrl?: string;
 }
 
 const VERDICT_KEYS: Record<CommunityPrint['fitVerdict'], string> = {
@@ -23,7 +31,13 @@ const VERDICT_TONES: Record<CommunityPrint['fitVerdict'], 'success' | 'warning' 
   'did-not-fit': 'error',
 };
 
-export function PrintCard({ print, isMine, onReport }: PrintCardProps) {
+export function PrintCard({
+  print,
+  isMine,
+  onReport,
+  onPromoteCover,
+  coverPhotoUrl,
+}: PrintCardProps) {
   const t = useTranslation();
   const { settings } = print;
   const { hours, minutes } = formatPrintDuration(settings.printMinutes);
@@ -74,7 +88,7 @@ export function PrintCard({ print, isMine, onReport }: PrintCardProps) {
       {print.photos.length > 0 && (
         <ul className="mt-2 flex gap-2 overflow-x-auto scrollbar-thin">
           {print.photos.map((photo, index) => (
-            <li key={photo}>
+            <li key={photo} className="shrink-0">
               <img
                 src={photo}
                 alt={t('community.prints.photoAlt', {
@@ -82,8 +96,26 @@ export function PrintCard({ print, isMine, onReport }: PrintCardProps) {
                   author: print.authorName,
                 })}
                 loading="lazy"
-                className="h-24 w-24 shrink-0 rounded-lg border border-stroke-subtle object-cover"
+                className={cn(
+                  'h-24 w-24 rounded-lg border object-cover',
+                  photo === coverPhotoUrl ? 'border-accent' : 'border-stroke-subtle'
+                )}
               />
+              {onPromoteCover !== undefined &&
+                (photo === coverPhotoUrl ? (
+                  <p className="mt-1 text-center text-[11px] text-accent">
+                    {t('community.prints.coverCurrent')}
+                  </p>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    onClick={() => onPromoteCover(photo)}
+                    className="mt-1 h-auto w-24 justify-center p-0 text-[11px] font-normal text-content-tertiary underline-offset-2 hover:underline"
+                    data-testid={`print-promote-${index}`}
+                  >
+                    {t('community.prints.useAsCover')}
+                  </Button>
+                ))}
             </li>
           ))}
         </ul>

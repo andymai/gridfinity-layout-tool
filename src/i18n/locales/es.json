@@ -3472,5 +3472,12 @@
   "community.prints.verdictAsDesigned": "{count} tal cual",
   "community.prints.verdictAdjusted": "{count} tras ajustar",
   "community.prints.verdictDidNotFit": "{count} no encajaron",
-  "community.prints.verdictHint": "Lo que encontraron otras personas al imprimirlo."
+  "community.prints.verdictHint": "Lo que encontraron otras personas al imprimirlo.",
+  "community.gallery.sort.prints": "Más impresos",
+  "community.card.printsLabel": "Impreso por {count} personas",
+  "community.shelves.proven": "Ya los han impreso",
+  "community.prints.useAsCover": "Usar como portada",
+  "community.prints.coverCurrent": "Imagen de portada",
+  "community.prints.clearCover": "Usar el render en su lugar",
+  "community.prints.coverFailed": "No se pudo actualizar la portada."
 }

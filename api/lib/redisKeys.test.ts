@@ -75,7 +75,7 @@ describe('redisKeys', () => {
     });
 
     it('communityIndexKey produces community:index:{sort} for every sort', () => {
-      expect(COMMUNITY_INDEX_SORTS).toEqual(['newest', 'remixes', 'likes']);
+      expect(COMMUNITY_INDEX_SORTS).toEqual(['newest', 'remixes', 'likes', 'prints']);
       expect(communityIndexKey('newest')).toBe('community:index:newest');
       expect(communityIndexKey('remixes')).toBe('community:index:remixes');
       expect(communityIndexKey('likes')).toBe('community:index:likes');

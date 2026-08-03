@@ -3472,5 +3472,12 @@
   "community.prints.verdictAsDesigned": "{count} tel quel",
   "community.prints.verdictAdjusted": "{count} après ajustement",
   "community.prints.verdictDidNotFit": "{count} ne convenaient pas",
-  "community.prints.verdictHint": "Ce que d'autres ont constaté en l'imprimant."
+  "community.prints.verdictHint": "Ce que d'autres ont constaté en l'imprimant.",
+  "community.gallery.sort.prints": "Les plus imprimés",
+  "community.card.printsLabel": "Imprimé par {count} personnes",
+  "community.shelves.proven": "Déjà imprimés par d'autres",
+  "community.prints.useAsCover": "Utiliser comme couverture",
+  "community.prints.coverCurrent": "Image de couverture",
+  "community.prints.clearCover": "Utiliser le rendu à la place",
+  "community.prints.coverFailed": "Impossible de mettre à jour la couverture."
 }

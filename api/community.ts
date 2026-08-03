@@ -524,7 +524,14 @@ interface CommunityListItem {
   parentId: string;
   featured: boolean;
   /** `opens`/`views` are owner-only stats, present only on `mine=1` items. */
-  counts: { likes: number; remixes: number; exports: number; opens?: number; views?: number };
+  counts: {
+    likes: number;
+    remixes: number;
+    exports: number;
+    prints: number;
+    opens?: number;
+    views?: number;
+  };
   createdAt: number;
   updatedAt: number;
   status: CommunityDesignStatus;
@@ -546,11 +553,21 @@ function toListItem(card: CommunityCardRecord): CommunityListItem {
       height: card.height,
       gridUnitMm: card.gridUnitMm,
     },
-    thumbnailUrl: card.thumbnailUrl,
+    // A promoted print photo wins over the render: a shelf of real prints
+    // reads as proven in a way a grid of renders cannot.
+    thumbnailUrl:
+      card.coverPhotoUrl !== undefined && card.coverPhotoUrl !== ''
+        ? card.coverPhotoUrl
+        : card.thumbnailUrl,
     isRemix: card.isRemix,
     parentId: card.parentId,
     featured: card.featured,
-    counts: { likes: card.likes, remixes: card.remixes, exports: card.exports },
+    counts: {
+      likes: card.likes,
+      remixes: card.remixes,
+      exports: card.exports,
+      prints: card.prints ?? 0,
+    },
     createdAt: card.createdAt,
     updatedAt: card.updatedAt,
     status: card.status,
@@ -593,6 +610,9 @@ function compareCards(
 ): number {
   if (sort === 'likes' && b.likes !== a.likes) return b.likes - a.likes;
   if (sort === 'remixes' && b.remixes !== a.remixes) return b.remixes - a.remixes;
+  if (sort === 'prints' && (b.prints ?? 0) !== (a.prints ?? 0)) {
+    return (b.prints ?? 0) - (a.prints ?? 0);
+  }
   if (b.createdAt !== a.createdAt) return b.createdAt - a.createdAt;
   // A12: id is the final tiebreaker so tied timestamps produce a stable total
   // order across requests, preventing dup/skip at a page boundary.

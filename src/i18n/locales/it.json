@@ -3472,5 +3472,12 @@
   "community.prints.verdictAsDesigned": "{count} così com'era",
   "community.prints.verdictAdjusted": "{count} dopo una modifica",
   "community.prints.verdictDidNotFit": "{count} non andavano bene",
-  "community.prints.verdictHint": "Cosa hanno riscontrato gli altri stampandolo."
+  "community.prints.verdictHint": "Cosa hanno riscontrato gli altri stampandolo.",
+  "community.gallery.sort.prints": "Più stampati",
+  "community.card.printsLabel": "Stampato da {count} persone",
+  "community.shelves.proven": "Già stampati da altri",
+  "community.prints.useAsCover": "Usa come copertina",
+  "community.prints.coverCurrent": "Immagine di copertina",
+  "community.prints.clearCover": "Usa invece il render",
+  "community.prints.coverFailed": "Impossibile aggiornare la copertina."
 }

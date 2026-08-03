@@ -174,3 +174,31 @@ export async function reportPrint(
     return err({ kind: 'network' });
   }
 }
+
+/**
+ * Owner opt-in: promote one of a design's print photos to its card, or pass
+ * null to fall back to the render. The server re-verifies that the URL belongs
+ * to a live print of that design.
+ */
+export async function setCoverPhoto(
+  designId: string,
+  photoUrl: string | null,
+  signal?: AbortSignal
+): Promise<Result<{ coverPhotoUrl: string }, CommunityClientError>> {
+  try {
+    const response = await communityFetch(`/api/community/${encodeURIComponent(designId)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'setCover', photoUrl }),
+      signal,
+    });
+    const data: unknown = await response.json();
+    if (!response.ok) return err(errorFromResponse(response.status, data));
+    if (isRecord(data) && typeof data.coverPhotoUrl === 'string') {
+      return ok({ coverPhotoUrl: data.coverPhotoUrl });
+    }
+    return err({ kind: 'server' });
+  } catch {
+    return err({ kind: 'network' });
+  }
+}

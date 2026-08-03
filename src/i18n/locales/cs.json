@@ -3472,5 +3472,12 @@
   "community.prints.verdictAsDesigned": "{count} podle návrhu",
   "community.prints.verdictAdjusted": "{count} po úpravě",
   "community.prints.verdictDidNotFit": "{count} nesedělo",
-  "community.prints.verdictHint": "Co zjistili ostatní při tisku."
+  "community.prints.verdictHint": "Co zjistili ostatní při tisku.",
+  "community.gallery.sort.prints": "Nejčastěji tištěné",
+  "community.card.printsLabel": "Vytisklo {count} lidí",
+  "community.shelves.proven": "Tyto už někdo tiskl",
+  "community.prints.useAsCover": "Použít jako titulní obrázek",
+  "community.prints.coverCurrent": "Titulní obrázek",
+  "community.prints.clearCover": "Použít místo toho render",
+  "community.prints.coverFailed": "Titulní obrázek se nepodařilo změnit."
 }

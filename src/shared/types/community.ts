@@ -28,7 +28,7 @@ export type CommunityCategory = (typeof COMMUNITY_CATEGORIES)[number];
  * `api/lib/redisKeys.ts` (one Redis sorted-set index per mode). Guarded by
  * the cross-boundary equality test in `community.test.ts`.
  */
-export const COMMUNITY_INDEX_SORTS = ['newest', 'remixes', 'likes'] as const;
+export const COMMUNITY_INDEX_SORTS = ['newest', 'remixes', 'likes', 'prints'] as const;
 
 export type CommunityIndexSort = (typeof COMMUNITY_INDEX_SORTS)[number];
 
@@ -101,7 +101,13 @@ export interface CommunityDesignLineage {
 export interface CommunityDesignCounts {
   readonly likes: number;
   readonly remixes: number;
+  /** File downloads, NOT prints. The two are different signals; do not conflate them in UI copy. */
   readonly exports: number;
+  /**
+   * Distinct printers who reported printing this design. Optional so fixtures
+   * and pre-field snapshots keep compiling; absent reads as none.
+   */
+  readonly prints?: number;
   /** Owner-only stat (remix opens); present only on `mine=1` items and owner detail fetches. */
   readonly opens?: number;
   /** Owner-only stat (deduped detail views); present only on `mine=1` items and owner detail fetches. */
@@ -175,6 +181,11 @@ export interface CommunityDesign {
   readonly meshUrl: string;
   /** Reserved for post-graduation publisher photos; empty until then. */
   readonly photos: readonly string[];
+  /**
+   * A print photo the design's owner promoted to its card, '' for the render.
+   * Owner opt-in and server-validated against the design's own live prints.
+   */
+  readonly coverPhotoUrl?: string;
   readonly featured: boolean;
   readonly createdAt: number;
   readonly updatedAt: number;

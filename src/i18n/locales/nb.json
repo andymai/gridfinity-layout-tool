@@ -3472,5 +3472,12 @@
   "community.prints.verdictAsDesigned": "{count} som designet",
   "community.prints.verdictAdjusted": "{count} etter justering",
   "community.prints.verdictDidNotFit": "{count} passet ikke",
-  "community.prints.verdictHint": "Hva andre opplevde da de skrev den ut."
+  "community.prints.verdictHint": "Hva andre opplevde da de skrev den ut.",
+  "community.gallery.sort.prints": "Mest utskrevet",
+  "community.card.printsLabel": "Skrevet ut av {count} personer",
+  "community.shelves.proven": "Disse har folk skrevet ut",
+  "community.prints.useAsCover": "Bruk som omslag",
+  "community.prints.coverCurrent": "Omslagsbilde",
+  "community.prints.clearCover": "Bruk gjengivelsen i stedet",
+  "community.prints.coverFailed": "Kunne ikke oppdatere omslaget."
 }

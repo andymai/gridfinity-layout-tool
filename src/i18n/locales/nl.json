@@ -3472,5 +3472,12 @@
   "community.prints.verdictAsDesigned": "{count} zoals ontworpen",
   "community.prints.verdictAdjusted": "{count} na aanpassing",
   "community.prints.verdictDidNotFit": "{count} pasten niet",
-  "community.prints.verdictHint": "Wat anderen ondervonden bij het printen."
+  "community.prints.verdictHint": "Wat anderen ondervonden bij het printen.",
+  "community.gallery.sort.prints": "Meest geprint",
+  "community.card.printsLabel": "Geprint door {count} mensen",
+  "community.shelves.proven": "Deze zijn al geprint",
+  "community.prints.useAsCover": "Als omslag gebruiken",
+  "community.prints.coverCurrent": "Omslagafbeelding",
+  "community.prints.clearCover": "Gebruik in plaats daarvan de render",
+  "community.prints.coverFailed": "Kon de omslag niet bijwerken."
 }

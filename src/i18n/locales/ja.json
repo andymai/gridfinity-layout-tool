@@ -3472,5 +3472,12 @@
   "community.prints.verdictAsDesigned": "{count} 件が設計どおり",
   "community.prints.verdictAdjusted": "{count} 件が調整して成功",
   "community.prints.verdictDidNotFit": "{count} 件が収まらず",
-  "community.prints.verdictHint": "他の人がプリントして分かったことです。"
+  "community.prints.verdictHint": "他の人がプリントして分かったことです。",
+  "community.gallery.sort.prints": "プリントが多い順",
+  "community.card.printsLabel": "{count} 人がプリント",
+  "community.shelves.proven": "実際にプリントされた作品",
+  "community.prints.useAsCover": "カバー画像にする",
+  "community.prints.coverCurrent": "カバー画像",
+  "community.prints.clearCover": "代わりにレンダー画像を使う",
+  "community.prints.coverFailed": "カバー画像を更新できませんでした。"
 }

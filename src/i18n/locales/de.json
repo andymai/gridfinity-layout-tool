@@ -3472,5 +3472,12 @@
   "community.prints.verdictAsDesigned": "{count} wie geplant",
   "community.prints.verdictAdjusted": "{count} angepasst",
   "community.prints.verdictDidNotFit": "{count} passten nicht",
-  "community.prints.verdictHint": "Was andere beim Drucken festgestellt haben."
+  "community.prints.verdictHint": "Was andere beim Drucken festgestellt haben.",
+  "community.gallery.sort.prints": "Am meisten gedruckt",
+  "community.card.printsLabel": "Von {count} Personen gedruckt",
+  "community.shelves.proven": "Diese wurden schon gedruckt",
+  "community.prints.useAsCover": "Als Titelbild verwenden",
+  "community.prints.coverCurrent": "Titelbild",
+  "community.prints.clearCover": "Stattdessen Render verwenden",
+  "community.prints.coverFailed": "Titelbild konnte nicht geändert werden."
 }

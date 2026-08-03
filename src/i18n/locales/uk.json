@@ -3472,5 +3472,12 @@
   "community.prints.verdictAsDesigned": "{count} як задумано",
   "community.prints.verdictAdjusted": "{count} після коригування",
   "community.prints.verdictDidNotFit": "{count} не підійшло",
-  "community.prints.verdictHint": "Що виявили інші, коли друкували."
+  "community.prints.verdictHint": "Що виявили інші, коли друкували.",
+  "community.gallery.sort.prints": "Найчастіше друковані",
+  "community.card.printsLabel": "Надрукували {count} людей",
+  "community.shelves.proven": "Це вже друкували",
+  "community.prints.useAsCover": "Використати як обкладинку",
+  "community.prints.coverCurrent": "Зображення обкладинки",
+  "community.prints.clearCover": "Використати рендер натомість",
+  "community.prints.coverFailed": "Не вдалося оновити обкладинку."
 }

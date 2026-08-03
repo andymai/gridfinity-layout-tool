@@ -12,7 +12,8 @@ import { Button, Spinner } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { isOk } from '@/core/result';
 import type { CommunityPrint, CommunityPrintSummary } from '@/shared/types/communityPrint';
-import { fetchPrints } from '../../api/printsClient';
+import { useToastStore } from '@/core/store/toast';
+import { fetchPrints, setCoverPhoto } from '../../api/printsClient';
 import { PrintCard } from './PrintCard';
 import { PrintSummary } from './PrintSummary';
 
@@ -23,11 +24,22 @@ export interface PrintsSectionProps {
   /** Bumped by the parent after a save or delete to force a refetch. */
   refreshToken: number;
   onReport?: (print: CommunityPrint) => void;
+  /** Present only for the design's owner; enables cover promotion. */
+  isOwner?: boolean;
+  /** The design's current cover photo, '' when it still uses the render. */
+  coverPhotoUrl?: string;
 }
 
 type LoadStatus = 'loading' | 'ready' | 'error';
 
-export function PrintsSection({ designId, ownPrint, refreshToken, onReport }: PrintsSectionProps) {
+export function PrintsSection({
+  designId,
+  ownPrint,
+  refreshToken,
+  onReport,
+  isOwner = false,
+  coverPhotoUrl = '',
+}: PrintsSectionProps) {
   const t = useTranslation();
 
   const [items, setItems] = useState<readonly CommunityPrint[]>([]);
@@ -40,6 +52,7 @@ export function PrintsSection({ designId, ownPrint, refreshToken, onReport }: Pr
   // effect free of a synchronous setState.
   const [answered, setAnswered] = useState<string | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
+  const [cover, setCover] = useState(coverPhotoUrl);
 
   const requestKey = `${designId}:${refreshToken}:${attempt}`;
   const status: LoadStatus =
@@ -71,6 +84,23 @@ export function PrintsSection({ designId, ownPrint, refreshToken, onReport }: Pr
       cancelled = true;
     };
   }, [designId, requestKey]);
+
+  const applyCover = useCallback(
+    (photoUrl: string | null) => {
+      const previous = cover;
+      // Optimistic: the grid is elsewhere, so the only local feedback is this
+      // label. Reverted on failure rather than left claiming a cover that the
+      // server rejected.
+      setCover(photoUrl ?? '');
+      void setCoverPhoto(designId, photoUrl).then((result) => {
+        if (!isOk(result)) {
+          setCover(previous);
+          useToastStore.getState().addToast(t('community.prints.coverFailed'), 'error');
+        }
+      });
+    },
+    [cover, designId, t]
+  );
 
   const handleLoadMore = useCallback(() => {
     if (cursor === null || moreBusy) return;
@@ -113,7 +143,19 @@ export function PrintsSection({ designId, ownPrint, refreshToken, onReport }: Pr
 
   return (
     <section className="space-y-3" data-testid="prints-section">
-      <h3 className="text-sm font-medium text-content">{t('community.prints.title')}</h3>
+      <div className="flex items-baseline justify-between gap-2">
+        <h3 className="text-sm font-medium text-content">{t('community.prints.title')}</h3>
+        {isOwner && cover !== '' && (
+          <Button
+            variant="ghost"
+            onClick={() => applyCover(null)}
+            className="h-auto p-0 text-xs font-normal text-content-tertiary underline-offset-2 hover:underline"
+            data-testid="prints-clear-cover"
+          >
+            {t('community.prints.clearCover')}
+          </Button>
+        )}
+      </div>
 
       {summary !== null && summary.count > 0 && (
         <>
@@ -136,6 +178,8 @@ export function PrintsSection({ designId, ownPrint, refreshToken, onReport }: Pr
                 print={print}
                 isMine={ownPrint !== null && print.id === ownPrint.id}
                 onReport={onReport}
+                onPromoteCover={isOwner ? applyCover : undefined}
+                coverPhotoUrl={cover}
               />
             ))}
           </ul>

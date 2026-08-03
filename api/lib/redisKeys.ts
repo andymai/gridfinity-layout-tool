@@ -43,7 +43,7 @@
 
 export type SyncItemKind = 'layouts' | 'designs' | 'baseplates';
 
-export const COMMUNITY_INDEX_SORTS = ['newest', 'remixes', 'likes'] as const;
+export const COMMUNITY_INDEX_SORTS = ['newest', 'remixes', 'likes', 'prints'] as const;
 export type CommunityIndexSort = (typeof COMMUNITY_INDEX_SORTS)[number];
 
 /** Delete-token hash for an anonymous share. */
@@ -228,13 +228,12 @@ export function communityPrintReportedKey(userId: string): string {
 
 /**
  * ZSET of design ids scored by print count, the index behind the "most printed"
- * sort. Deliberately NOT a member of COMMUNITY_INDEX_SORTS yet: the index is
- * maintained from the moment prints exist so its scores are correct whenever
- * the sort is exposed, but exposing it is a separate change (the option would
- * otherwise render an all-zero ordering while the feature is switched off).
+ * sort. Now a member of COMMUNITY_INDEX_SORTS, so `communityIndexKey('prints')`
+ * resolves to the same key; this builder stays as the name the print store
+ * uses when it rescores a single design.
  */
 export function communityPrintsIndexKey(): string {
-  return 'community:index:prints';
+  return communityIndexKey('prints');
 }
 
 /**

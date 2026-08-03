@@ -93,6 +93,9 @@ vi.mock('../lib/communityQuota.js', () => ({
   checkCommunityPublishQuota: mocks.checkCommunityPublishQuota,
 }));
 
+const printStoreMocks = vi.hoisted(() => ({ readCommunityPrints: vi.fn() }));
+vi.mock('../lib/communityPrintStore.js', () => printStoreMocks);
+
 vi.mock('../lib/communityStore.js', async (importOriginal) => {
   const actual = await importOriginal<Record<string, unknown>>();
   return {
@@ -148,6 +151,7 @@ interface FakeRedis {
   set: ReturnType<typeof vi.fn>;
   del: ReturnType<typeof vi.fn>;
   zadd: ReturnType<typeof vi.fn>;
+  zrange: ReturnType<typeof vi.fn>;
   hget: ReturnType<typeof vi.fn>;
   hgetall: ReturnType<typeof vi.fn>;
   hmget: ReturnType<typeof vi.fn>;
@@ -183,6 +187,7 @@ function createRedis(): { redis: FakeRedis; pipeline: FakePipeline } {
     set: vi.fn(async () => 'OK'),
     del: vi.fn(async () => 1),
     zadd: vi.fn(async () => 1),
+    zrange: vi.fn(async () => [] as string[]),
     hget: vi.fn(async (_key: string, field: string) => (field === 'status' ? 'live' : null)),
     hgetall: vi.fn(async (): Promise<Record<string, string>> => ({})),
     hmget: vi.fn(async () => [null, null, null] as (string | null)[]),
@@ -1044,6 +1049,81 @@ describe('community/[id]', () => {
         const res = await handle('POST', { body: { action: 'boost' } });
         expect(res._status).toBe(400);
         expect((res._body as { code: string }).code).toBe('VALIDATION_ERROR');
+      });
+    });
+
+    describe('setCover (owner cover promotion)', () => {
+      const PHOTO = 'https://blob.example/community/prints/a.webp';
+
+      function livePrintWith(photos: string[]) {
+        return [{ status: 'live', photos, designId: VALID_ID, authorPublicId: 'a'.repeat(32) }];
+      }
+
+      beforeEach(() => {
+        redis.zrange.mockResolvedValue(['a'.repeat(32)]);
+        printStoreMocks.readCommunityPrints.mockResolvedValue(livePrintWith([PHOTO]));
+      });
+
+      it('requires a session', async () => {
+        withSessionRejected();
+        const res = await handle('POST', { body: { action: 'setCover', photoUrl: PHOTO } });
+        expect(res._status).toBe(401);
+      });
+
+      it('404s for a caller who does not own the design', async () => {
+        // Not deny-listed, but not in the published set either: not the owner.
+        redis.sismember.mockResolvedValue(0);
+        const res = await handle('POST', { body: { action: 'setCover', photoUrl: PHOTO } });
+        expect(res._status).toBe(404);
+      });
+
+      it('promotes a photo that belongs to a live print of this design', async () => {
+        const res = await handle('POST', { body: { action: 'setCover', photoUrl: PHOTO } });
+
+        expect(res._status).toBe(200);
+        expect(res._body).toEqual({ coverPhotoUrl: PHOTO });
+        expect(redis.hset).toHaveBeenCalledWith(
+          communityDesignKey(VALID_ID),
+          expect.objectContaining({ coverPhotoUrl: PHOTO })
+        );
+      });
+
+      it('rejects a URL that is not on any print of this design', async () => {
+        // Without this the field would accept any URL, which is the entire
+        // risk owner opt-in exists to contain.
+        const res = await handle('POST', {
+          body: { action: 'setCover', photoUrl: 'https://blob.example/somebody-else.webp' },
+        });
+
+        expect(res._status).toBe(400);
+        expect(redis.hset).not.toHaveBeenCalledWith(
+          communityDesignKey(VALID_ID),
+          expect.objectContaining({ coverPhotoUrl: expect.anything() })
+        );
+      });
+
+      it('refuses a photo from a hidden print', async () => {
+        printStoreMocks.readCommunityPrints.mockResolvedValue([
+          { status: 'hidden', photos: [PHOTO], designId: VALID_ID, authorPublicId: 'a'.repeat(32) },
+        ]);
+
+        const res = await handle('POST', { body: { action: 'setCover', photoUrl: PHOTO } });
+
+        // A moderated print must not be promotable back onto the grid.
+        expect(res._status).toBe(400);
+      });
+
+      it('clears the cover back to the render', async () => {
+        const res = await handle('POST', { body: { action: 'setCover', photoUrl: null } });
+
+        expect(res._status).toBe(200);
+        expect(res._body).toEqual({ coverPhotoUrl: '' });
+        expect(printStoreMocks.readCommunityPrints).not.toHaveBeenCalled();
+      });
+
+      it('rejects a non-string, non-null photoUrl', async () => {
+        const res = await handle('POST', { body: { action: 'setCover', photoUrl: 42 } });
+        expect(res._status).toBe(400);
       });
     });
 

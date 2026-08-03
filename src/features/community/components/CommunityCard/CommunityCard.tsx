@@ -42,6 +42,25 @@ export function HeartGlyph({
   );
 }
 
+export function PrintGlyph() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-3 w-3"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M6 9V3h12v6M6 18H4a1 1 0 01-1-1v-5a2 2 0 012-2h14a2 2 0 012 2v5a1 1 0 01-1 1h-2M6 14h12v7H6v-7z"
+      />
+    </svg>
+  );
+}
+
 export function RemixGlyph() {
   return (
     <svg
@@ -93,6 +112,7 @@ export function CommunityCard({ card, onSelect, onSelectAuthor, index }: Communi
   const animationDelay = `${Math.min(index * 50, 300)}ms`;
   const dims = formatCardDims(card.metrics);
   const liked = card.likedByMe === true;
+  const prints = card.counts.prints ?? 0;
 
   const handleLike = (event: MouseEvent<HTMLButtonElement>) => {
     // The card root is itself a click target; a heart tap must not also
@@ -232,6 +252,23 @@ export function CommunityCard({ card, onSelect, onSelectAuthor, index }: Communi
               {t('community.card.remixesLabel', { count: card.counts.remixes })}
             </span>
           </span>
+          {prints > 0 && (
+            <>
+              <span aria-hidden="true">·</span>
+              {/* Proof-of-print outranks the engagement counts, so it renders
+                  in full-strength text where likes and remixes are tertiary. */}
+              <span
+                className="inline-flex items-center gap-0.5 text-content-secondary"
+                data-testid="community-card-prints"
+              >
+                <PrintGlyph />
+                <span aria-hidden="true">{prints}</span>
+                <span className="sr-only">
+                  {t('community.card.printsLabel', { count: prints })}
+                </span>
+              </span>
+            </>
+          )}
         </span>
       </div>
 
