@@ -20,7 +20,12 @@ export interface AuthorSummary {
   readonly topTechniques: readonly ExampleTechnique[];
   /** Times their designs have been built upon. */
   readonly remixesOfTheirWork: number;
-  /** Distinct printers across their designs, the unfarmable signal. */
+  /**
+   * Prints summed across their designs. Each design contributes its own
+   * distinct-printer count, so one person who printed two of their designs
+   * counts twice: this is "how often their work got printed", not "how many
+   * different people printed it". The copy says "printed N times" to match.
+   */
   readonly printsOfTheirWork: number;
 }
 

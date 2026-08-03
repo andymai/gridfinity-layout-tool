@@ -8,7 +8,7 @@
  */
 
 import { useMemo } from 'react';
-import { useTranslation } from '@/i18n';
+import { useFormatting, useTranslation } from '@/i18n';
 import type { CommunityCard } from '@/shared/types/community';
 import { TECHNIQUE_CONFIG } from '@/shared/types/exampleTechniques';
 import { CATEGORY_LABEL_KEYS } from '../../utils/categoryLabels';
@@ -26,10 +26,6 @@ export interface AuthorSummaryProps {
   indexCapped: boolean;
 }
 
-function formatDate(timestamp: number): string {
-  return new Date(timestamp).toLocaleDateString(undefined, { year: 'numeric', month: 'long' });
-}
-
 export function AuthorSummary({
   items,
   authorPublicId,
@@ -37,6 +33,9 @@ export function AuthorSummary({
   indexCapped,
 }: AuthorSummaryProps) {
   const t = useTranslation();
+  // The app's locale, not the OS one: an in-app language switch must move
+  // this date with it.
+  const { formatDate } = useFormatting();
   const summary = useMemo(() => buildAuthorSummary(items, authorPublicId), [items, authorPublicId]);
 
   if (summary.designCount === 0) return null;
@@ -48,7 +47,10 @@ export function AuthorSummary({
   ];
 
   if (summary.firstPublishedAt !== null) {
-    facts.push(t('community.author.since', { date: formatDate(summary.firstPublishedAt) }));
+    // Hoisted rather than inlined: the interpolation check parses t() args
+    // with a regex and reads a nested options object as extra params.
+    const since = formatDate(summary.firstPublishedAt, { year: 'numeric', month: 'long' });
+    facts.push(t('community.author.since', { date: since }));
   }
 
   if (summary.topCategories.length > 0) {
