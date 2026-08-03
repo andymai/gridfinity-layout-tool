@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.354.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.353.5...gridfinity-layout-tool-v4.354.0) (2026-08-03)
+
+
+### Features
+
+* **community:** print reports backend behind COMMUNITY_PRINTS_ENABLED ([#3178](https://github.com/andymai/gridfinity-layout-tool/issues/3178)) ([880a706](https://github.com/andymai/gridfinity-layout-tool/commit/880a70656408521374b6912584052d2b3118a9d6))
+
 ## [4.353.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.353.4...gridfinity-layout-tool-v4.353.5) (2026-08-03)
 
 
