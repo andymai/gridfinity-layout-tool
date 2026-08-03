@@ -8,11 +8,11 @@ exports[`custom-shape > 2×2 mixed-detail per-cell half sockets 1`] = `4336`;
 
 exports[`custom-shape > 3×3 L flat base no lip 1`] = `260`;
 
-exports[`custom-shape > 3×3 L with front cutout (polygon-aware side mapping) 1`] = `5330`;
+exports[`custom-shape > 3×3 L with front cutout (polygon-aware side mapping) 1`] = `5612`;
 
 exports[`custom-shape > 3×3 L with front handle (polygon-aware side mapping) 1`] = `5730`;
 
-exports[`custom-shape > 3×3 L with honeycomb + front cutout (outermost-edge clip) 1`] = `8198`;
+exports[`custom-shape > 3×3 L with honeycomb + front cutout (outermost-edge clip) 1`] = `8790`;
 
 exports[`custom-shape > 3×3 L with honeycomb pattern (polygon edge enumeration) 1`] = `8234`;
 
@@ -24,7 +24,7 @@ exports[`custom-shape > 3×3 T with lip 1`] = `4368`;
 
 exports[`custom-shape > 3×3 U with front + left handles (multi-side polygon) 1`] = `5808`;
 
-exports[`custom-shape > 3×3 U with front cutout (single candidate edge) 1`] = `5408`;
+exports[`custom-shape > 3×3 U with front cutout (single candidate edge) 1`] = `5690`;
 
 exports[`custom-shape > 3×3 U with honeycomb pattern (multi-side polygon pattern) 1`] = `9328`;
 

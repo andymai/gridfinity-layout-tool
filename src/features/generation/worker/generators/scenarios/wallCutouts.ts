@@ -126,6 +126,58 @@ export const wallCutouts: ScenarioCase[] = [
     },
     timeout: 60_000,
   }),
+  defineScenario('wall cutouts', 'full-height u-shape meets the rim square (#3173)', {
+    // The reporter's config: a 14mm grid with 2.6mm walls and a 100%-height
+    // cutout, so the cut's top edge lands exactly on the rim. The u-shape's top
+    // corners are square there now, which makes the boolean coplanar with the
+    // wall top — assert the result is still a clean solid.
+    assert: 'structural',
+    params: {
+      width: 3,
+      depth: 10,
+      height: 5,
+      gridUnitMm: 14,
+      wallThickness: 2.6,
+      walls: {
+        enabled: true,
+        shape: 'u-shape',
+        width: 0,
+        depth: 0,
+        front: DISABLED_WALL_CUTOUT,
+        back: DISABLED_WALL_CUTOUT,
+        left: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 100 },
+        right: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 100 },
+        interior: DISABLED_WALL_CUTOUT,
+      },
+    },
+    timeout: 60_000,
+  }),
+  defineScenario('wall cutouts', 'full-height u-shape through a stacking lip (#3173)', {
+    // Same cut against a lipped wall: the true rim is the lip peak at
+    // wallHeight + LIP_HEIGHT - LIP_OVERLAP, which the overshoot clears by only
+    // ~2.1mm — the case where a 5mm corner radius left the most arc behind.
+    assert: 'structural',
+    params: {
+      width: 3,
+      depth: 4,
+      height: 5,
+      gridUnitMm: 14,
+      wallThickness: 2.6,
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+      walls: {
+        enabled: true,
+        shape: 'u-shape',
+        width: 0,
+        depth: 0,
+        front: DISABLED_WALL_CUTOUT,
+        back: DISABLED_WALL_CUTOUT,
+        left: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 100 },
+        right: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 100 },
+        interior: DISABLED_WALL_CUTOUT,
+      },
+    },
+    timeout: 60_000,
+  }),
   defineScenario('wall cutouts', 'left-aligned cutout with offset and absolute mm width', {
     assert: 'structural',
     params: {

@@ -5,17 +5,7 @@
  * for u-shape, scoop (semicircle), and funnel (tapered U) profiles.
  */
 
-import {
-  draw,
-  drawRoundedRectangle,
-  drawRectangle,
-  translate,
-  rotate,
-  clone,
-  unwrap,
-  withScope,
-  fuseAll,
-} from 'brepjs';
+import { draw, translate, rotate, clone, unwrap, withScope, fuseAll } from 'brepjs';
 import type { Shape3D, Drawing, DisposalScope, ValidSolid } from 'brepjs';
 import type { BinParams, WallCutoutShape } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
@@ -78,32 +68,30 @@ export function buildCutoutProfile(
         .close();
     }
 
-    case 'funnel': {
-      // Tapered U: wider at top, narrower at bottom with rounded corners.
+    case 'funnel':
+    default: {
+      // U-shape and funnel are the same pen — a straight-sided u-shape is the
+      // degenerate funnel with no taper.
+      //
+      // Only the two BOTTOM corners are rounded. The top corners must stay
+      // square: the profile clears the wall by `overshoot`, but `safeR` can
+      // reach 5mm while the overshoot is only ~2mm above the true rim, so a
+      // four-corner rounding leaves arc on the visible rim instead of having
+      // it trimmed away by the boolean (#3173).
       const cornerR = autoCornerRadius(cutWidth);
       const safeR = Math.min(cornerR, cutWidth / 2 - 0.01, userCutHeight / 2 - 0.01);
 
       const topHW = cutWidth / 2;
-      const bottomHW = (cutWidth * FUNNEL_TAPER_RATIO) / 2;
+      const bottomHW = cutoutShape === 'funnel' ? (cutWidth * FUNNEL_TAPER_RATIO) / 2 : topHW;
       const topY = totalHeight / 2;
       const bottomY = -totalHeight / 2;
 
-      // Draw trapezoid: top-left -> top-right -> bottom-right -> bottom-left -> close
+      // top-left -> top-right -> bottom-right -> bottom-left -> close
       let pen = draw([-topHW, topY]).lineTo([topHW, topY]).lineTo([bottomHW, bottomY]);
       if (safeR > 0.1) pen = pen.customCorner(safeR);
       pen = pen.lineTo([-bottomHW, bottomY]);
       if (safeR > 0.1) pen = pen.customCorner(safeR);
       return pen.close();
-    }
-
-    default: {
-      // U-shape: rounded rectangle (existing behavior)
-      const cornerR = autoCornerRadius(cutWidth);
-      const safeR = Math.min(cornerR, cutWidth / 2 - 0.01, userCutHeight / 2 - 0.01);
-      if (safeR > 0.1) {
-        return drawRoundedRectangle(cutWidth, totalHeight, safeR);
-      }
-      return drawRectangle(cutWidth, totalHeight);
     }
   }
 }

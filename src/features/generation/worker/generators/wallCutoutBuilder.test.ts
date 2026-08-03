@@ -1,7 +1,24 @@
-import { describe, it, expect } from 'vitest';
-import { autoCornerRadius, computeInteriorDividerCutouts } from './wallCutoutBuilder';
+import { describe, it, expect, beforeAll } from 'vitest';
+import { draw, getBounds, intersect } from 'brepjs';
+import type { Shape3D } from 'brepjs';
+import { isOk } from '@/core/result';
+import {
+  autoCornerRadius,
+  buildSingleCutout,
+  computeInteriorDividerCutouts,
+} from './wallCutoutBuilder';
+import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
-import type { BinParams, DividerOverride } from '@/features/bin-designer/types';
+import type { BinParams, DividerOverride, WallCutoutShape } from '@/features/bin-designer/types';
+
+const box = (x0: number, x1: number, y0: number, y1: number, z0: number, z1: number): Shape3D =>
+  draw([x0, y0])
+    .lineTo([x1, y0])
+    .lineTo([x1, y1])
+    .lineTo([x0, y1])
+    .close()
+    .sketchOnPlane('XY', z0)
+    .extrude(z1 - z0);
 
 const INNER_W = 80;
 const INNER_D = 40;
@@ -231,5 +248,114 @@ describe('autoCornerRadius', () => {
     expect(autoCornerRadius(98)).toBe(5); // wide slot hits the 5mm cap
     expect(autoCornerRadius(20)).toBeCloseTo(3, 9); // 15% slope in range
     expect(autoCornerRadius(1)).toBe(0.5); // floor for tiny slots
+  });
+});
+
+describe('buildSingleCutout corner placement', () => {
+  beforeAll(async () => {
+    await initBrepjs();
+  }, 120_000);
+
+  // 40mm span → autoCornerRadius saturates at its 5mm cap, the worst case for
+  // #3173. OVERSHOOT is the production no-lip value ((hasLip ? LIP_HEIGHT : 0) + 2),
+  // so the cut runs from z = WALL_HEIGHT - CUT_HEIGHT up to z = WALL_HEIGHT + 2
+  // and the wall's visible rim sits at z = WALL_HEIGHT.
+  const CUT_WIDTH = 40;
+  const CUT_HEIGHT = 30;
+  const OVERSHOOT = 2;
+  const EXTRUDE_DEPTH = 8;
+  const WALL_HEIGHT = 40;
+  const CENTERED = { x: 0, y: 0, rotateZ: 0 };
+  const FLOOR_Z = WALL_HEIGHT - CUT_HEIGHT;
+
+  /**
+   * Horizontal span of the cut across the thin Z slab starting at `z`.
+   *
+   * Measured on the positioned solid rather than the 2D profile on purpose:
+   * `isInside2D` is winding-sensitive (`drawRoundedRectangle` emits a
+   * counterClockwise blueprint and calls its own centre outside), and 2D
+   * drawing booleans throw on these profiles. A 3D bounding box is immune to
+   * both, and this exercises the real overshoot/`cutZ` placement — the half of
+   * #3173 that decides whether an arc reaches the rim at all.
+   */
+  const spanAtZ = (shape: WallCutoutShape, z: number, cutHeight: number = CUT_HEIGHT): number => {
+    const cut = buildSingleCutout(
+      shape,
+      CUT_WIDTH,
+      cutHeight,
+      OVERSHOOT,
+      EXTRUDE_DEPTH,
+      WALL_HEIGHT,
+      CENTERED
+    );
+    const slab = box(-CUT_WIDTH, CUT_WIDTH, -EXTRUDE_DEPTH, EXTRUDE_DEPTH, z, z + 0.001);
+    const clipped = intersect(cut, slab);
+    expect(isOk(clipped), `slab intersection at z=${z}`).toBe(true);
+    if (!isOk(clipped)) return NaN;
+    const b = getBounds(clipped.value);
+    return b.xMax - b.xMin;
+  };
+
+  it('straddles the wall and overshoots the rim', () => {
+    // The u-shape profile switched from drawRoundedRectangle to a pen for
+    // #3173, which flips the blueprint winding (counterClockwise → clockwise).
+    // Winding can flip an extrusion's direction, so pin the placement: the cut
+    // must stay centred on the wall face in Y and still clear the rim in Z.
+    const cut = buildSingleCutout(
+      'u-shape',
+      CUT_WIDTH,
+      CUT_HEIGHT,
+      OVERSHOOT,
+      EXTRUDE_DEPTH,
+      WALL_HEIGHT,
+      CENTERED
+    );
+    const b = getBounds(cut);
+    expect(b.yMin).toBeCloseTo(-EXTRUDE_DEPTH / 2, 3);
+    expect(b.yMax).toBeCloseTo(EXTRUDE_DEPTH / 2, 3);
+    expect(b.zMin).toBeCloseTo(FLOOR_Z, 3);
+    expect(b.zMax).toBeCloseTo(WALL_HEIGHT + OVERSHOOT, 3);
+  });
+
+  it('opens the u-shape to full width at the rim (#3173)', () => {
+    // The regression: a 5mm radius only clears a 2mm overshoot over the top 2mm
+    // of its arc, so at rim level the arc had already pulled the opening in by
+    // 5 - sqrt(5² - 2²) = 1mm per side — 2mm of visible flare on the wall's rim.
+    expect(spanAtZ('u-shape', WALL_HEIGHT)).toBeCloseTo(CUT_WIDTH, 2);
+  });
+
+  it('keeps the u-shape full width through the trimmed overshoot', () => {
+    // Nothing narrows anywhere in the strip the boolean consumes, so no arc can
+    // survive down to the rim no matter how the overshoot is retuned.
+    expect(spanAtZ('u-shape', WALL_HEIGHT + OVERSHOOT - 0.001)).toBeCloseTo(CUT_WIDTH, 2);
+  });
+
+  it('still rounds the u-shape bottom corners', () => {
+    const r = autoCornerRadius(CUT_WIDTH);
+    // At the floor the arcs have run their full radius in from each side. The
+    // probe slab has thickness, over which the arc widens back out ~0.2mm, so
+    // the tolerance is loose rather than an exact CUT_WIDTH - 2r.
+    expect(spanAtZ('u-shape', FLOOR_Z)).toBeCloseTo(CUT_WIDTH - 2 * r, 0);
+  });
+
+  it('falls back to a plain rectangle when the radius degenerates', () => {
+    // userCutHeight/2 - 0.01 drives safeR below the 0.1 threshold, so all four
+    // corners stay square and the floor spans the full width.
+    const tinyHeight = 0.2;
+    expect(spanAtZ('u-shape', WALL_HEIGHT - tinyHeight, tinyHeight)).toBeCloseTo(CUT_WIDTH, 2);
+  });
+
+  it('leaves the funnel and scoop top corners square', () => {
+    // Both are already square at the top; these guard against the u-shape fix
+    // being generalised into the branches that never had the defect.
+    expect(spanAtZ('funnel', WALL_HEIGHT + OVERSHOOT - 0.001)).toBeCloseTo(CUT_WIDTH, 2);
+    expect(spanAtZ('scoop', WALL_HEIGHT + OVERSHOOT - 0.001)).toBeCloseTo(CUT_WIDTH, 2);
+  });
+
+  it('still rounds the funnel bottom corners', () => {
+    // The funnel's sides are slanted, so its floor arcs do not inset by a flat
+    // `r` per side — assert only that the floor is clearly pulled in from the
+    // nominal 60% bottom width.
+    expect(spanAtZ('funnel', FLOOR_Z)).toBeLessThan(CUT_WIDTH * 0.6 - 1);
   });
 });

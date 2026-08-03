@@ -2,11 +2,11 @@
 
 exports[`divider patterns > 2×2 honeycomb dividers 1`] = `11444`;
 
-exports[`divider patterns > dividers + interior cutouts 1`] = `10020`;
+exports[`divider patterns > dividers + interior cutouts 1`] = `10504`;
 
 exports[`divider patterns > dividers + label tabs keep the shelf anchorage solid 1`] = `11884`;
 
-exports[`divider patterns > dividers + outer cutouts + handles 1`] = `14588`;
+exports[`divider patterns > dividers + outer cutouts + handles 1`] = `14956`;
 
 exports[`divider patterns > dividers + scoops keep the ramp footings solid 1`] = `14170`;
 
