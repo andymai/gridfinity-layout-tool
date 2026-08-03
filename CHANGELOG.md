@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.355.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.354.1...gridfinity-layout-tool-v4.355.0) (2026-08-03)
+
+
+### Features
+
+* **community:** post and edit print reports from the detail view ([#3183](https://github.com/andymai/gridfinity-layout-tool/issues/3183)) ([c273619](https://github.com/andymai/gridfinity-layout-tool/commit/c2736191ee34fccc965b7f4d1b9715e1fee45966))
+
 ## [4.354.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.354.0...gridfinity-layout-tool-v4.354.1) (2026-08-03)
 
 
