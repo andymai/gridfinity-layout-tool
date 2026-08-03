@@ -5,9 +5,18 @@ import { gapFitVerdict } from './gapFit';
 
 const UNIT = 42;
 
-/** Metrics for a design of `w` x `d` grid units and `h` height units. */
+/**
+ * Metrics for a design of `w` x `d` grid units and `h` height units, sized
+ * against its own `gridUnitMm` so a non-default scale produces coherent
+ * millimetres rather than 42mm dimensions wearing another unit's label.
+ */
 function metrics(w: number, d: number, h = 3, gridUnitMm = UNIT): CommunityDesignMetrics {
-  return { width: w * UNIT - 0.5, depth: d * UNIT - 0.5, height: h * 7, gridUnitMm };
+  return {
+    width: w * gridUnitMm - 0.5,
+    depth: d * gridUnitMm - 0.5,
+    height: h * 7,
+    gridUnitMm,
+  };
 }
 
 function gap(overrides: Partial<FitsGapContext> = {}): FitsGapContext {

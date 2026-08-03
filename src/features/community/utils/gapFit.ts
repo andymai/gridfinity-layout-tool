@@ -20,6 +20,14 @@ export type GapFitVerdict =
   /**
    * Built against a different mm-per-unit scale than the layout. Placement
    * hard-rejects these, so a size comparison would be meaningless.
+   *
+   * Only the X grid scale is screened: `CommunityDesignMetrics` is what the
+   * card index carries, and it has no `gridUnitMmY` or `heightUnitMm`. A
+   * design matching on X but differing on either still reaches placement and
+   * surfaces through its failure toast. Screening it here would mean either
+   * widening the list index or giving the detail view a second, better
+   * implementation, and two implementations is exactly what this module
+   * exists to prevent.
    */
   | 'scale-mismatch';
 
@@ -28,7 +36,8 @@ export function gapFitVerdict(
   context: FitsGapContext
 ): GapFitVerdict {
   // Scale first: comparing footprints across different grid units compares
-  // numbers that do not mean the same thing.
+  // numbers that do not mean the same thing. Partial by necessity, see the
+  // note on the verdict type.
   if (metrics.gridUnitMm !== context.gridUnitMm) return 'scale-mismatch';
 
   const dims = cardDimensionUnits(metrics);
