@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.355.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.355.0...gridfinity-layout-tool-v4.355.1) (2026-08-03)
+
+
+### Bug Fixes
+
+* **ci:** assert snapshots instead of rewriting them ([#3181](https://github.com/andymai/gridfinity-layout-tool/issues/3181)) ([#3185](https://github.com/andymai/gridfinity-layout-tool/issues/3185)) ([7ffe8e0](https://github.com/andymai/gridfinity-layout-tool/commit/7ffe8e088c5b7ed2a4d83380e5ec8c579db37d08))
+
 ## [4.355.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.354.1...gridfinity-layout-tool-v4.355.0) (2026-08-03)
 
 
