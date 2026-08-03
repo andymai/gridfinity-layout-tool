@@ -1,0 +1,19 @@
+scripts/community-admin/__tests__/purgePlan.test.ts
+  s_1ba7ad2a498875::t_5c0cda3cde3e0f 1,84,88-89,91
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "2d03c94c2fba1901b127c13a687a55f390d0af89",
+  "prompts": {},
+  "sessions": {
+    "s_1ba7ad2a498875": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ce6c2b71-68eb-40ff-967f-188df1b2c251",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
