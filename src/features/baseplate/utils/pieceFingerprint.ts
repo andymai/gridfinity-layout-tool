@@ -43,6 +43,16 @@ export function computePieceFingerprint(params: ResolvedBaseplateParams): string
     `pr:${params.paddingRight}`,
     `pf:${params.paddingFront}`,
     `pb:${params.paddingBack}`,
+    // Widens the piece's slab past its nominal extent (#3169), so two
+    // otherwise-identical edge pieces with different overhangs cut different
+    // geometry. Omitted entirely when absent, keeping unshifted plates' and
+    // interior pieces' fingerprints byte-identical to before.
+    ...(params.outlineOverhang !== undefined
+      ? [
+          `oh:${params.outlineOverhang.left},${params.outlineOverhang.right},` +
+            `${params.outlineOverhang.front},${params.outlineOverhang.back}`,
+        ]
+      : []),
     `fx:${params.fractionalEdgeX}`,
     `fy:${params.fractionalEdgeY}`,
     `cn:${params.connectorNubs ? 1 : 0}`,

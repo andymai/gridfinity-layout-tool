@@ -95,7 +95,31 @@ describe('GridAlignmentControls', () => {
     setDrawer(OFF_LATTICE);
     render(<GridAlignmentControls />);
     expect(screen.getByTestId('grid-alignment-hint')).toHaveTextContent(
-      'drawerShape.gridAlignment.hint:{"x":"+32.0","y":"+32.0"}'
+      'drawerShape.gridAlignment.hint:{"x":"+32","y":"+32"}'
+    );
+  });
+
+  // #3170: the stored value is exact (roundMm keeps 2 decimals) — it was only
+  // the two readouts that disagreed, the stepper rounding 0.75 up to "0.8" and
+  // the hint rounding the negated frame shift down to "−0.7".
+  it('commits a typed two-decimal shift at full precision', () => {
+    setDrawer(REGISTERED);
+    render(<GridAlignmentControls />);
+    const input = screen.getByLabelText('drawerShape.gridAlignment.shiftY');
+    fireEvent.focus(input);
+    fireEvent.change(input, { target: { value: '0.75' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(mockUpdateDrawer).toHaveBeenCalledWith({ gridShiftY: 0.75 });
+  });
+
+  it('displays a stored two-decimal shift exactly, in both the field and the hint', () => {
+    setDrawer(REGISTERED, { gridShiftY: 0.75 });
+    render(<GridAlignmentControls />);
+    expect(screen.getByLabelText('drawerShape.gridAlignment.shiftY')).toHaveValue(0.75);
+    // A registered shape has zero registration, so the frame shift is exactly
+    // the negated manual shift — and must read as −0.75, not −0.7.
+    expect(screen.getByTestId('grid-alignment-hint')).toHaveTextContent(
+      'drawerShape.gridAlignment.hint:{"x":"+0","y":"−0.75"}'
     );
   });
 

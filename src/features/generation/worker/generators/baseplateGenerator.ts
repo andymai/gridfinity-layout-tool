@@ -290,6 +290,19 @@ export function buildBaseplateSolid(
   const totalHeight = SOCKET_HEIGHT + floorDepth;
   const slabOffsetX = (paddingRight - paddingLeft) / 2;
   const slabOffsetY = (paddingBack - paddingFront) / 2;
+  // Material bound for the outline intersect: the nominal extent widened per
+  // side by however far the framed perimeter reaches past it (#3169). The
+  // socket lattice below is deliberately NOT widened — it stays anchored to
+  // the nominal extent, which is what makes a grid shift a grid shift.
+  const overhang = params.outlineOverhang;
+  const ohLeft = overhang?.left ?? 0;
+  const ohRight = overhang?.right ?? 0;
+  const ohFront = overhang?.front ?? 0;
+  const ohBack = overhang?.back ?? 0;
+  const slabW = totalW + ohLeft + ohRight;
+  const slabD = totalD + ohFront + ohBack;
+  const slabCenterX = slabOffsetX + (ohRight - ohLeft) / 2;
+  const slabCenterY = slabOffsetY + (ohBack - ohFront) / 2;
   const cellOpts = { fractionalEdgeX, fractionalEdgeY, gridUnitMm: pitch };
 
   // Over-tile margin tiles (clipped padding tiles) are decomposed ONCE here and
@@ -382,11 +395,18 @@ export function buildBaseplateSolid(
     // independent of corner radius, so we cache the rectangular slab+pockets
     // and apply corner rounding as a post-cache step. Avoids expensive pocket
     // re-cuts when only corner radius changes.
-    const rectProfile = drawRectangle(totalW, totalD);
+    //
+    // The slab is also the material bound for the outline intersect below, so
+    // it spans the nominal extent WIDENED by the outline's overhang (#3169):
+    // a grid shift translates the perimeter against a fixed lattice, and a
+    // perimeter pushed past `[0, totalW]` would otherwise be intersected away
+    // — the plate printed with a flat-cut edge. Zero overhang (every plate
+    // that fits its extent) keeps the original rectangle exactly.
+    const rectProfile = drawRectangle(slabW, slabD);
     const extrudedSlab = (
       rectProfile.sketchOnPlane('XY', 0) as { extrude: (h: number) => Shape3D }
     ).extrude(-totalHeight);
-    baseplate = translate(extrudedSlab, [slabOffsetX, slabOffsetY, 0]);
+    baseplate = translate(extrudedSlab, [slabCenterX, slabCenterY, 0]);
     extrudedSlab.delete();
     probe?.('slabExtruded', baseplate);
 

@@ -14,13 +14,19 @@ interface GridAlignmentControlsProps {
 
 const BUTTON_STEP_MM = 0.5;
 
+/** Stored precision. The steppers and the hint both display at this many
+ * decimals, so neither can show a value the frame doesn't apply (#3170). */
+const SHIFT_DECIMALS = 2;
+
 const roundMm = (v: number): number => Math.round(v * 100) / 100;
 
-/** Sign-explicit mm value for the alignment hint, e.g. "+2.1" / "−0.4". */
+/** Sign-explicit mm value for the alignment hint, e.g. "+2.1" / "−0.75".
+ * Rounds the magnitude, not the signed value: `Math.round` breaks ties toward
+ * +∞, which rendered a stored −0.75 as "−0.7" while the stepper's own
+ * formatter rounded the same magnitude up to "0.8" (#3170). */
 const fmtShift = (v: number): string => {
-  const rounded = Math.round(v * 10) / 10;
-  const s = Math.abs(rounded).toFixed(1);
-  return rounded < 0 ? `−${s}` : `+${s}`;
+  const magnitude = Number(Math.abs(roundMm(v)).toFixed(SHIFT_DECIMALS));
+  return v < 0 && magnitude !== 0 ? `−${magnitude}` : `+${magnitude}`;
 };
 
 /**
@@ -100,6 +106,7 @@ export function GridAlignmentControls({ variant = 'desktop' }: GridAlignmentCont
           min={-maxX}
           max={maxX}
           step={BUTTON_STEP_MM}
+          inputDecimals={SHIFT_DECIMALS}
           onChange={(v) => setShift('gridShiftX', v, maxX)}
           onStep={(delta) => setShift('gridShiftX', shiftX + delta * BUTTON_STEP_MM, maxX)}
           aria-label={t('drawerShape.gridAlignment.shiftX')}
@@ -116,6 +123,7 @@ export function GridAlignmentControls({ variant = 'desktop' }: GridAlignmentCont
           min={-maxY}
           max={maxY}
           step={BUTTON_STEP_MM}
+          inputDecimals={SHIFT_DECIMALS}
           onChange={(v) => setShift('gridShiftY', v, maxY)}
           onStep={(delta) => setShift('gridShiftY', shiftY + delta * BUTTON_STEP_MM, maxY)}
           aria-label={t('drawerShape.gridAlignment.shiftY')}

@@ -15,14 +15,29 @@
  * user may shift the grid within the perimeter (`drawer.gridShiftX/Y`,
  * #3108); the grid is rendered fixed on both sides, so a grid shift is
  * applied as the equal-and-opposite outline translation.
+ *
+ * Because the grid is what stays put, that translation can carry the
+ * perimeter OUTSIDE the grid extent — and the perimeter is the plate's
+ * material, not a decoration inside it. So the frame also reports the
+ * `overhang` every extent-bounded consumer must widen by (#3169).
  */
 
-import type { Drawer, DrawerOutline, FractionalEdge, StoredBaseplateParams } from '@/core/types';
+import type {
+  Drawer,
+  DrawerOutline,
+  FractionalEdge,
+  OutlineOverhang,
+  StoredBaseplateParams,
+} from '@/core/types';
 import { clamp } from './validation';
 import { padOutline } from './padOutline';
 import { translateOutline } from './drawerOutline';
 import { clampCornerCuts, cornerCutVertices, cornerCutsMatchVertices } from './cornerCutOutline';
-import { outlineLatticeShift, type OutlineLatticeAxis } from './drawerOutlineGeometry';
+import {
+  outlineBounds,
+  outlineLatticeShift,
+  type OutlineLatticeAxis,
+} from './drawerOutlineGeometry';
 
 /** Keeps regenerated cuts off degenerate geometry (mirrors the generator's
  * own geometric radius clamp). */
@@ -54,6 +69,17 @@ export interface OutlineFrameParams {
   readonly gridShiftY: number;
 }
 
+export const NO_OUTLINE_OVERHANG: OutlineOverhang = {
+  left: 0,
+  right: 0,
+  front: 0,
+  back: 0,
+};
+
+export function hasOutlineOverhang(o: OutlineOverhang | undefined): boolean {
+  return o !== undefined && (o.left > 0 || o.right > 0 || o.front > 0 || o.back > 0);
+}
+
 export interface ResolvedOutlineFrame {
   /** Plate-local padded outline, before the frame translation. */
   readonly outline: DrawerOutline;
@@ -64,6 +90,20 @@ export interface ResolvedOutlineFrame {
    * shift. Exactly 0 per axis when below {@link RECENTER_EPS_MM}. */
   readonly shiftX: number;
   readonly shiftY: number;
+  /**
+   * How far the translated outline reaches past the padded grid extent, per
+   * side (#3169).
+   *
+   * The grid is rendered fixed and the perimeter carries the frame
+   * translation, so a shift toward an edge the shape already touches pushes
+   * the perimeter outside `[0, extent]`. The perimeter is the plate's
+   * material, so every consumer that bounds material by the grid extent —
+   * the generator's slab (the outline is intersected against it), the split
+   * planner's piece windows, the layout overlay's canvas — must widen by
+   * this, or that strip is silently cut off. Zero on every axis for a
+   * registered, unshifted, in-extent shape.
+   */
+  readonly overhang: OutlineOverhang;
 }
 
 /**
@@ -166,13 +206,46 @@ export function resolveOutlineFrame(
   // (imported or hand-edited layouts).
   const manualX = clamp(p.gridShiftX, -p.gridUnitMm / 2, p.gridUnitMm / 2);
   const manualY = clamp(p.gridShiftY, -p.gridUnitMmY / 2, p.gridUnitMmY / 2);
-  const shiftX = registration.x - manualX;
-  const shiftY = registration.y - manualY;
+  const rawShiftX = registration.x - manualX;
+  const rawShiftY = registration.y - manualY;
+  const shiftX = Math.abs(rawShiftX) < RECENTER_EPS_MM ? 0 : rawShiftX;
+  const shiftY = Math.abs(rawShiftY) < RECENTER_EPS_MM ? 0 : rawShiftY;
   return {
     outline: resolved.outline,
     paddingOn: resolved.paddingOn,
-    shiftX: Math.abs(shiftX) < RECENTER_EPS_MM ? 0 : shiftX,
-    shiftY: Math.abs(shiftY) < RECENTER_EPS_MM ? 0 : shiftY,
+    shiftX,
+    shiftY,
+    overhang: measureOverhang(
+      resolved.outline,
+      shiftX,
+      shiftY,
+      p.widthMm + padL + padR,
+      p.depthMm + padF + padB
+    ),
+  };
+}
+
+/**
+ * Per-side reach of the translated outline past `[0, extentW] × [0, extentD]`.
+ * Measured on the flattened path (via `outlineBounds`), so a corner arc that
+ * bows past its own endpoints is included. Sub-epsilon reach is dropped so a
+ * registered shape stays exactly zero and consumers keep their byte-stable
+ * fast paths.
+ */
+function measureOverhang(
+  outline: DrawerOutline,
+  shiftX: number,
+  shiftY: number,
+  extentW: number,
+  extentD: number
+): OutlineOverhang {
+  const b = outlineBounds(outline);
+  const past = (v: number): number => (v > RECENTER_EPS_MM ? v : 0);
+  return {
+    left: past(-(b.minX + shiftX)),
+    right: past(b.maxX + shiftX - extentW),
+    front: past(-(b.minY + shiftY)),
+    back: past(b.maxY + shiftY - extentD),
   };
 }
 
@@ -189,7 +262,13 @@ type FrameDrawer = Pick<
 
 const ZERO_SHIFT = { x: 0, y: 0 } as const;
 
-const shiftCache = new WeakMap<DrawerOutline, Map<string, { x: number; y: number }>>();
+interface CachedFrame {
+  readonly x: number;
+  readonly y: number;
+  readonly overhang: OutlineOverhang;
+}
+
+const shiftCache = new WeakMap<DrawerOutline, Map<string, CachedFrame>>();
 const outlineCache = new WeakMap<DrawerOutline, Map<string, DrawerOutline>>();
 
 /**
@@ -205,9 +284,42 @@ export function drawerFrameShift(
   gridUnitMm: number,
   gridUnitMmY: number = gridUnitMm
 ): { readonly x: number; readonly y: number } {
+  return frameFor(drawer, baseplateParams, gridUnitMm, gridUnitMmY) ?? ZERO_SHIFT;
+}
+
+/**
+ * How far the framed shape reaches past the padded grid extent, per side in mm
+ * (#3169) — the layout counterpart of the plate's slab widening.
+ *
+ * The grid renders fixed and the shape carries the frame translation, so a
+ * shift toward an edge the shape already touches draws it outside the grid
+ * box. The overlay's own canvas grows to match, but it can only grow into
+ * space the layout reserved: the grid sits in a scroll container, and content
+ * placed at a negative offset is not reachable by scrolling — it is simply
+ * clipped. Callers reserve this much gutter so the shape stays on screen.
+ */
+export function drawerFrameOverhang(
+  drawer: FrameDrawer,
+  baseplateParams: StoredBaseplateParams | undefined,
+  gridUnitMm: number,
+  gridUnitMmY: number = gridUnitMm
+): OutlineOverhang {
+  return (
+    frameFor(drawer, baseplateParams, gridUnitMm, gridUnitMmY)?.overhang ?? NO_OUTLINE_OVERHANG
+  );
+}
+
+/** Resolved frame for a synced custom shape, memoized per outline + inputs.
+ * `undefined` when there is no shared frame to speak of. */
+function frameFor(
+  drawer: FrameDrawer,
+  baseplateParams: StoredBaseplateParams | undefined,
+  gridUnitMm: number,
+  gridUnitMmY: number
+): CachedFrame | undefined {
   const outline = drawer.outline;
-  if (outline === undefined) return ZERO_SHIFT;
-  if (baseplateParams?.syncWithLayout === false) return ZERO_SHIFT;
+  if (outline === undefined) return undefined;
+  if (baseplateParams?.syncWithLayout === false) return undefined;
   const p: OutlineFrameParams = {
     widthMm: (drawer.width as number) * gridUnitMm,
     depthMm: (drawer.depth as number) * gridUnitMmY,
@@ -244,9 +356,9 @@ export function drawerFrameShift(
   const cached = byInputs.get(key);
   if (cached !== undefined) return cached;
   const frame = resolveOutlineFrame(outline, p);
-  const shift = { x: frame.shiftX, y: frame.shiftY };
-  byInputs.set(key, shift);
-  return shift;
+  const resolved: CachedFrame = { x: frame.shiftX, y: frame.shiftY, overhang: frame.overhang };
+  byInputs.set(key, resolved);
+  return resolved;
 }
 
 /**

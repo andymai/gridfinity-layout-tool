@@ -22,6 +22,7 @@ import { effectiveGridUnitMmY } from '@/core/types';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { GridCanvas } from './GridCanvas';
 import { DrawerMargin, useDrawerMarginInsets } from './DrawerMargin';
+import { useOutlineOverhangInsets } from './DrawerOutlineOverlay';
 import { Overlay } from './Overlay';
 import { QuickLabelPopover } from './QuickLabelPopover';
 import { SelectionToolbar } from './SelectionToolbar';
@@ -226,6 +227,9 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
   // opaque and sit above the band, so on the padded left/front sides they'd hide
   // the overhang — push them out by the band's extent so both stay visible (#2549).
   const marginInsets = useDrawerMarginInsets(cellSize, gap);
+  // A grid-shifted custom perimeter is drawn outside the grid box; the scroll
+  // container can't reach negative offsets, so reserve the gutter (#3169).
+  const outlineInsets = useOutlineOverhangInsets(cellSize, gap);
 
   // In half-bin mode, visual cells are smaller to fit 2x cells in the same space
   // Formula accounts for extra gaps: (cellSize - gap) / 2 keeps total grid size constant
@@ -360,7 +364,15 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
                 gridTemplateRows: '1fr',
                 // Widen the row-label gutter by the left overhang so the band
                 // sits between the labels and the grid instead of under them.
-                columnGap: labelsState.axisLabelsVisible ? 4 + marginInsets.left : 0,
+                columnGap: labelsState.axisLabelsVisible
+                  ? 4 + marginInsets.left + outlineInsets.left
+                  : 0,
+                // Reserve the two directions the scroll container would clip
+                // (#3169). The left gutter only exists with labels, so pad the
+                // wrapper itself when they're hidden; the top has no gutter at
+                // all. Both are 0 unless the shape actually reaches out there.
+                paddingLeft: labelsState.axisLabelsVisible ? undefined : outlineInsets.left,
+                paddingTop: outlineInsets.top,
               }}
             >
               {/* Row labels column - sticky to left edge */}

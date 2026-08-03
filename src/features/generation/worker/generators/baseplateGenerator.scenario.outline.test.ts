@@ -500,4 +500,59 @@ describe('baseplate outline geometry', () => {
     // (distance from (60,60) to (17,17) ≈ 60.8 > 60).
     expect(countVerticesIn(result.vertices, -83, -83, -68, -68)).toBe(0);
   });
+
+  /**
+   * #3169: a grid shift translates the perimeter against a fixed lattice, so
+   * a perimeter that already touched an edge is pushed past `[0, totalW]`.
+   * The slab it is intersected against is the plate's material bound, so
+   * without `outlineOverhang` widening it the protruding strip is cut away —
+   * the plate prints with a flat-sliced edge where the shape's corner radius
+   * should be. The perimeter is the plate, so its full extent must survive
+   * whatever the shift.
+   */
+  describe('grid-shifted perimeter (#3169)', () => {
+    const SHIFT = 6;
+    // Full-extent square pushed 6mm past the plate's left edge, exactly what
+    // the frame emits for a +6mm X grid shift on an edge-touching shape.
+    const shifted = translateOutline(
+      {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 4 * U, y: 0 },
+          { x: 4 * U, y: 4 * U },
+          { x: 0, y: 4 * U },
+        ],
+      },
+      -SHIFT,
+      0
+    );
+
+    it('keeps the whole perimeter when the shift pushes it past the extent', () => {
+      const gen = getGenerateBaseplate();
+      const result = gen(
+        defaults({
+          outline: shifted,
+          outlineOverhang: { left: SHIFT, right: 0, front: 0, back: 0 },
+        }),
+        NO_OP,
+        true
+      );
+      assertStructurallyValid(result, 'grid-shifted plate');
+      const bb = boundingBox(result.vertices);
+      // Full perimeter width, not 4U − SHIFT: nothing was sliced off.
+      expect(bb.maxX - bb.minX).toBeCloseTo(4 * U, 0);
+      expect(bb.maxY - bb.minY).toBeCloseTo(4 * U, 0);
+      // ...and it sits shifted, so the far edge stops short of the extent.
+      expect(bb.minX).toBeCloseTo(-2 * U - SHIFT, 0);
+      expect(bb.maxX).toBeCloseTo(2 * U - SHIFT, 0);
+    });
+
+    it('truncates without the overhang — the reported defect', () => {
+      const gen = getGenerateBaseplate();
+      const result = gen(defaults({ outline: shifted }), NO_OP, true);
+      const bb = boundingBox(result.vertices);
+      // Pins the mechanism: the slab bound alone cuts the protruding strip.
+      expect(bb.maxX - bb.minX).toBeCloseTo(4 * U - SHIFT, 0);
+    });
+  });
 });
