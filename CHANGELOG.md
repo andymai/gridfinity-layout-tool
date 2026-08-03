@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.353.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.353.2...gridfinity-layout-tool-v4.353.3) (2026-08-03)
+
+
+### Bug Fixes
+
+* **cutouts:** rotate a grouped selection as one rigid body ([#3171](https://github.com/andymai/gridfinity-layout-tool/issues/3171)) ([0c52809](https://github.com/andymai/gridfinity-layout-tool/commit/0c52809a00f2b08b8b6ae8dc2f196746f5188e30))
+
 ## [4.353.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.353.1...gridfinity-layout-tool-v4.353.2) (2026-08-02)
 
 
