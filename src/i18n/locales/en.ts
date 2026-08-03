@@ -3620,6 +3620,32 @@ const en: Record<string, string> = {
   'community.print.toast.updated': 'Print updated.',
   'community.print.toast.deleted': 'Print removed.',
 
+  // Print list and derived summary on the design detail view.
+  'community.prints.title': 'Prints',
+  'community.prints.countOne': 'Printed by 1 person',
+  'community.prints.countOther': 'Printed by {count} people',
+  'community.prints.empty': 'Nobody has posted a print of this yet.',
+  'community.prints.emptyOwn': 'No prints posted yet. Yours would be the first.',
+  'community.prints.loadMore': 'Show more prints',
+  'community.prints.error': 'Could not load prints.',
+  'community.prints.retry': 'Try again',
+  'community.prints.byAuthor': 'by {author}',
+  'community.prints.settingsLine': '{material} · {nozzle}mm nozzle · {layer}mm layers',
+  'community.prints.durationHours': '{hours}h {minutes}m',
+  'community.prints.durationHoursExact': '{hours}h',
+  'community.prints.durationMinutes': '{minutes}m',
+  'community.prints.filament': '{grams}g filament',
+  'community.prints.photoAlt': 'Print photo {index} by {author}',
+  'community.prints.report': 'Report this print',
+  'community.prints.yours': 'Your print',
+  'community.prints.summaryUsually': 'usually {material} at {layer}mm',
+  'community.prints.summaryTime': 'about {duration}',
+  'community.prints.summaryFilament': 'about {grams}g',
+  'community.prints.verdictAsDesigned': '{count} as designed',
+  'community.prints.verdictAdjusted': '{count} adjusted',
+  'community.prints.verdictDidNotFit': '{count} did not fit',
+  'community.prints.verdictHint': 'What other people found when they printed it.',
+
   // Post-remix continuation banner (bin designer)
   'binDesigner.remixBanner.text':
     'Remixing {name} by {author}. Publish your version when it is ready.',

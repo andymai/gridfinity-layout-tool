@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import type { ReactNode } from 'react';
 import { Badge, Button, IconButton, cn } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { GlbViewer } from '@/shared/components/GlbViewer';
@@ -56,6 +57,8 @@ interface CommunityDetailContentProps {
   onAddPrint?: () => void;
   /** Switches the CTA between posting a first print and editing an existing one. */
   hasOwnPrint?: boolean;
+  /** Rendered below the CTA; absent while prints are unavailable. */
+  printsSlot?: ReactNode;
 }
 
 function formatMm(value: number): string {
@@ -80,6 +83,7 @@ export function CommunityDetailContent({
   ownerModeration = null,
   onAddPrint,
   hasOwnPrint = false,
+  printsSlot,
 }: CommunityDetailContentProps) {
   const t = useTranslation();
   const [angleIndex, setAngleIndex] = useState(0);
@@ -349,6 +353,8 @@ export function CommunityDetailContent({
             {t(hasOwnPrint ? 'community.print.editCta' : 'community.print.cta')}
           </Button>
         )}
+
+        {printsSlot}
 
         <SimilarRail design={design} />
 

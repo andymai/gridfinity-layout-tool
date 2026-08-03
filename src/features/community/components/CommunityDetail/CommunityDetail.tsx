@@ -29,9 +29,10 @@ import type { CardLikePatch } from '../../store/browseStore';
 import { recordRecentlyViewed } from '../../utils/recentlyViewed';
 import { ReportDialog } from '../ReportDialog';
 import { CommunitySignInPrompt } from '../SignInPrompt';
-import { fetchPrints } from '../../api/printsClient';
+import { fetchPrints, reportPrint } from '../../api/printsClient';
 import { usePrintDialogStore } from '../../store/printDialogStore';
 import { PrintDialog } from '../PrintDialog';
+import { PrintsSection } from '../PrintsSection';
 import { CommunityDetailContent } from './CommunityDetailContent';
 import type { OwnerModeration, ParentResolution } from './CommunityDetailContent';
 import { useDetailHistoryTrap } from './useDetailHistoryTrap';
@@ -122,6 +123,10 @@ function CommunityDetailDialog({
     print: CommunityPrint | null;
   } | null>(null);
   const [printsAvailable, setPrintsAvailable] = useState(true);
+  // Bumped after a write so the list refetches; the parent owns it because the
+  // CTA and the list must agree on whether the viewer has a print.
+  const [printsRefresh, setPrintsRefresh] = useState(0);
+  const [reportPrintTarget, setReportPrintTarget] = useState<CommunityPrint | null>(null);
   const [ownerModeration, setOwnerModeration] = useState<OwnerModeration | null>(null);
   const [offline, setOffline] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -533,6 +538,16 @@ function CommunityDetailDialog({
             onFilterByAuthor={handleFilterByAuthor}
             ownerModeration={ownerModeration}
             onAddPrint={printsAvailable ? handleAddPrint : undefined}
+            printsSlot={
+              printsAvailable && design !== null ? (
+                <PrintsSection
+                  designId={design.id}
+                  ownPrint={myPrint}
+                  refreshToken={printsRefresh}
+                  onReport={setReportPrintTarget}
+                />
+              ) : undefined
+            }
             hasOwnPrint={myPrint !== null}
           />
         )}
@@ -699,12 +714,37 @@ function CommunityDetailDialog({
       {/* CommunityDetail is already its own chunk, so the dialog is off the
           eager path without a further split; an extra chunk boundary here only
           adds overhead to the total-JS budget. */}
+      {reportPrintTarget !== null && (
+        <ReportDialog
+          designId={designId}
+          title={t('community.prints.report')}
+          // Same reason union, note field and error handling as a design
+          // report; only the target differs.
+          submit={(reason, note) =>
+            reportPrint(designId, reportPrintTarget.authorPublicId, reason, note)
+          }
+          onClose={() => {
+            setReportPrintTarget(null);
+            setPrintsRefresh((n) => n + 1);
+          }}
+          onNeedsAuth={() => {
+            setReportPrintTarget(null);
+            trackEvent('community_signin_prompt_shown', { intent: 'report' });
+            setSignInIntent('report');
+          }}
+        />
+      )}
+
       {printDialogOpen && (
         <PrintDialog
-          onSaved={(print) => setOwnPrint({ designId: print.designId, print })}
-          onDeleted={() =>
-            setOwnPrint(design === null ? null : { designId: design.id, print: null })
-          }
+          onSaved={(print) => {
+            setOwnPrint({ designId: print.designId, print });
+            setPrintsRefresh((n) => n + 1);
+          }}
+          onDeleted={() => {
+            setOwnPrint(design === null ? null : { designId: design.id, print: null });
+            setPrintsRefresh((n) => n + 1);
+          }}
         />
       )}
     </Dialog.Root>
