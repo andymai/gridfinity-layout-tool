@@ -97,8 +97,12 @@ export function ReportDialog({ designId, onClose, onNeedsAuth, submit, title }: 
     if (reason === null || busy) return;
     setBusy(true);
     setError(null);
+    // Normalise here rather than in each submitter: reportDesign trims and
+    // caps internally, so an injected submit would otherwise send raw text and
+    // could fail server validation on trailing whitespace alone.
+    const trimmed = note.trim().slice(0, COMMUNITY_REPORT_NOTE_MAX_LENGTH);
     const run = submit ?? ((r: CommunityReportReason, n: string) => reportDesign(designId, r, n));
-    void run(reason, note).then((result) => {
+    void run(reason, trimmed).then((result) => {
       setBusy(false);
       if (isOk(result)) {
         trackEvent('community_report', { reason });

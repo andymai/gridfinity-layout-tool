@@ -94,7 +94,7 @@ export function PrintsSection({ designId, ownPrint, refreshToken, onReport }: Pr
       <div className="flex justify-center py-4" data-testid="prints-section-loading">
         <Spinner size="sm" />
         <span className="sr-only" role="status">
-          {t('community.prints.title')}
+          {t('common.loading')}
         </span>
       </div>
     );

@@ -41,6 +41,12 @@ describe('roundSummaryMinutes', () => {
     expect(roundSummaryMinutes(133)).toBe(135);
   });
 
+  it.each([1, 2, 4])('never rounds a real %s-minute print down to zero', (value) => {
+    // printMinutes is validated at min 1, so "about 0m" would be reachable and
+    // would read as missing data rather than a fast print.
+    expect(roundSummaryMinutes(value)).toBe(5);
+  });
+
   it.each([0, -1, Number.NaN])('treats %s as zero', (value) => {
     expect(roundSummaryMinutes(value)).toBe(0);
   });

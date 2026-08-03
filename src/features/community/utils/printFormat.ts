@@ -23,7 +23,12 @@ export function formatPrintDuration(minutes: number): { hours: number; minutes: 
  */
 export function roundSummaryMinutes(minutes: number): number {
   if (!Number.isFinite(minutes) || minutes <= 0) return 0;
-  if (minutes < 60) return Math.round(minutes / 5) * 5;
+  if (minutes < 60) {
+    // Floor at the rounding step: printMinutes is validated at min 1, so a
+    // genuine one-minute print would otherwise round to 0 and summarise as
+    // "about 0m", which reads as missing data rather than a fast print.
+    return Math.max(5, Math.round(minutes / 5) * 5);
+  }
   return Math.round(minutes / 15) * 15;
 }
 
