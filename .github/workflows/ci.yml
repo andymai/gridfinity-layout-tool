@@ -95,18 +95,26 @@ jobs:
           GIT_REF: ${{ github.ref }}
           GROUP: ${{ matrix.group }}
           SHARD: ${{ matrix.shard }}
+        # No `-u` here, deliberately: it makes Vitest REWRITE a mismatched
+        # snapshot in the runner and pass, so committed baselines gate nothing
+        # (#3181). It was correct when added — 3d1fccb7 had just deleted the
+        # scenario snapshots from git, so every missing baseline failed a shard
+        # — but e8653992 restored them to version control in June. Baselines are
+        # now committed, so CI asserts them. Regenerate locally and commit the
+        # diff: `pnpm exec vitest run <path> -u` (filter FIRST — `-u <path>`
+        # swallows the path as the flag's value and runs the whole project).
         run: |
           if [ "$GIT_REF" = "refs/heads/main" ]; then
             # Projects are named explicitly rather than using the default "all":
             # `integration` needs a Redis service and runs as its own job.
             echo "Running full suite with coverage (main branch)"
-            pnpm vitest run --coverage -u --project=unit --project=dom --project=generators
+            pnpm vitest run --coverage --project=unit --project=dom --project=generators
           elif [ "$GROUP" = "generators" ]; then
             echo "Running generators project (shard $SHARD)"
-            pnpm vitest run --project=generators --shard="$SHARD" -u
+            pnpm vitest run --project=generators --shard="$SHARD"
           else
             echo "Running core projects unit+dom (shard $SHARD)"
-            pnpm vitest run --project=unit --project=dom --shard="$SHARD" -u
+            pnpm vitest run --project=unit --project=dom --shard="$SHARD"
           fi
 
       - name: Upload coverage report

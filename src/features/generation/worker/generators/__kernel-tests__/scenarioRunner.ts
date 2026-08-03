@@ -8,8 +8,11 @@
  * placement obvious: a scenario lives in `scenarios/<domain>.ts` and runs in
  * `binGenerator.scenario.<domain>.test.ts`.
  *
- * Update snapshots after verified geometry changes (whole domain or one file):
- *   pnpm run test:run -- -u src/features/generation/worker/generators/binGenerator.scenario.handles
+ * Update snapshots after verified geometry changes (whole domain or one file).
+ * The filter MUST precede `-u`: after `--` vitest reads everything as positional
+ * filters (#1329), and `--update <path>` eats the path as the flag's value —
+ * both silently run the whole project instead of the file you named.
+ *   pnpm exec vitest run src/features/generation/worker/generators/binGenerator.scenario.handles -u
  */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './wasmInit';
