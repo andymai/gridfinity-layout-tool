@@ -26,6 +26,7 @@ function Step({
   label,
   sub,
   current = false,
+  isLast = false,
   onOpen,
   openAria,
   testId,
@@ -33,15 +34,15 @@ function Step({
   label: string;
   sub?: string;
   current?: boolean;
+  /** Suppresses the connector rule; there is nothing below to connect to. */
+  isLast?: boolean;
   onOpen?: () => void;
   openAria?: string;
   testId: string;
 }) {
   const body = (
     <>
-      <span className={cn('block truncate text-sm', current ? 'text-content' : 'text-content')}>
-        {label}
-      </span>
+      <span className="block truncate text-sm text-content">{label}</span>
       {sub !== undefined && (
         <span className="block truncate text-xs text-content-tertiary">{sub}</span>
       )}
@@ -58,10 +59,14 @@ function Step({
           current ? 'bg-accent' : 'bg-stroke-subtle'
         )}
       />
-      <span
-        aria-hidden="true"
-        className="absolute bottom-0 left-[3px] top-3.5 w-px bg-stroke-subtle last:hidden"
-      />
+      {/* Rendered conditionally rather than via `last:`, which resolves
+          against this span's siblings inside the li and so never matched. */}
+      {!isLast && (
+        <span
+          aria-hidden="true"
+          className="absolute bottom-0 left-[3px] top-3.5 w-px bg-stroke-subtle"
+        />
+      )}
       {onOpen === undefined ? (
         <div className={cn('min-w-0', current && 'font-medium')}>{body}</div>
       ) : (
@@ -97,6 +102,7 @@ export function RemixLineage({
     <div className="space-y-1" data-testid="remix-lineage">
       <h3 className="text-sm font-medium text-content">{t('community.lineage.title')}</h3>
 
+      {/* role="list" restores list semantics that Safari/iOS VoiceOver strips when list-style:none is applied. */}
       {/* eslint-disable-next-line jsx-a11y/no-redundant-roles */}
       <ul role="list" className="space-y-2">
         {hasSeparateRoot && (
@@ -131,6 +137,7 @@ export function RemixLineage({
           label={designName}
           sub={t('community.lineage.thisDesign')}
           current
+          isLast
         />
       </ul>
 

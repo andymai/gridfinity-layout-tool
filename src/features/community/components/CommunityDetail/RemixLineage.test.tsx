@@ -105,4 +105,20 @@ describe('RemixLineage', () => {
     expect(screen.queryByLabelText('community.lineage.openParent')).toBeNull();
     expect(screen.getByTestId('remix-lineage-parent')).toHaveTextContent('Parent Bin');
   });
+
+  it('draws a connector on every step but the last', () => {
+    setup({ rootId: ROOT_ID, rootAuthorName: 'Sam' });
+
+    const steps = [
+      screen.getByTestId('remix-lineage-root'),
+      screen.getByTestId('remix-lineage-parent'),
+      screen.getByTestId('remix-lineage-current'),
+    ];
+    // A `last:` variant resolves against the span's siblings inside the li,
+    // so it never matched and the rule hung below the final step.
+    const connectors = steps.map(
+      (step) => step.querySelectorAll('span[aria-hidden="true"]').length
+    );
+    expect(connectors).toEqual([2, 2, 1]);
+  });
 });
