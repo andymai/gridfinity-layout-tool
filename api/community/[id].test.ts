@@ -1060,8 +1060,17 @@ describe('community/[id]', () => {
       }
 
       beforeEach(() => {
+        vi.stubEnv('COMMUNITY_PRINTS_ENABLED', 'true');
         redis.zrange.mockResolvedValue(['a'.repeat(32)]);
         printStoreMocks.readCommunityPrints.mockResolvedValue(livePrintWith([PHOTO]));
+      });
+
+      it('503s while the prints kill switch is off', async () => {
+        vi.stubEnv('COMMUNITY_PRINTS_ENABLED', 'false');
+        const res = await handle('POST', { body: { action: 'setCover', photoUrl: PHOTO } });
+        // Promotion is part of the prints feature: an owner must not be able
+        // to push an unreviewed photo onto the grid while prints are dark.
+        expect(res._status).toBe(503);
       });
 
       it('requires a session', async () => {

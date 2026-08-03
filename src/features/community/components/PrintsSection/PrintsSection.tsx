@@ -52,7 +52,14 @@ export function PrintsSection({
   // effect free of a synchronous setState.
   const [answered, setAnswered] = useState<string | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
-  const [cover, setCover] = useState(coverPhotoUrl);
+  // Stamped with the design it belongs to, the same trick the detail overlay
+  // uses for its own print: the component can be reused across designs, and a
+  // stamped value is stale-proof without a synchronous reset in an effect.
+  const [coverOverride, setCoverOverride] = useState<{ designId: string; url: string } | null>(
+    null
+  );
+  const cover = coverOverride?.designId === designId ? coverOverride.url : coverPhotoUrl;
+  const setCover = useCallback((url: string) => setCoverOverride({ designId, url }), [designId]);
 
   const requestKey = `${designId}:${refreshToken}:${attempt}`;
   const status: LoadStatus =
@@ -99,7 +106,7 @@ export function PrintsSection({
         }
       });
     },
-    [cover, designId, t]
+    [cover, designId, setCover, t]
   );
 
   const handleLoadMore = useCallback(() => {

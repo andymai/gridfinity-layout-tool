@@ -88,7 +88,9 @@ export function PrintCard({
       {print.photos.length > 0 && (
         <ul className="mt-2 flex gap-2 overflow-x-auto scrollbar-thin">
           {print.photos.map((photo, index) => (
-            <li key={photo} className="shrink-0">
+            // Index-qualified: the server does not dedupe the photo array, so
+            // two identical URLs would otherwise collide as keys.
+            <li key={`${index}-${photo}`} className="shrink-0">
               <img
                 src={photo}
                 alt={t('community.prints.photoAlt', {

@@ -40,6 +40,7 @@ import {
   writeCommunityCard,
   writeCommunityDesignBlob,
 } from './lib/communityStore.js';
+import { communityPrintsEnabled } from './lib/communityPrintValidation.js';
 import { hasQualifyingCutout } from './lib/communityLowEffort.js';
 import { COMMUNITY_EXAMPLE_PARAM_HASHES } from './lib/communityExampleParamHashes.js';
 import type {
@@ -539,6 +540,12 @@ interface CommunityListItem {
   hiddenReason?: CommunityHiddenReason;
 }
 
+function coverThumbnail(card: CommunityCardRecord): string {
+  if (!communityPrintsEnabled()) return card.thumbnailUrl;
+  const cover = card.coverPhotoUrl ?? '';
+  return cover !== '' ? cover : card.thumbnailUrl;
+}
+
 function toListItem(card: CommunityCardRecord): CommunityListItem {
   return {
     id: card.id,
@@ -554,11 +561,10 @@ function toListItem(card: CommunityCardRecord): CommunityListItem {
       gridUnitMm: card.gridUnitMm,
     },
     // A promoted print photo wins over the render: a shelf of real prints
-    // reads as proven in a way a grid of renders cannot.
-    thumbnailUrl:
-      card.coverPhotoUrl !== undefined && card.coverPhotoUrl !== ''
-        ? card.coverPhotoUrl
-        : card.thumbnailUrl,
+    // reads as proven in a way a grid of renders cannot. Resolved at read
+    // time so flipping the kill switch off also pulls every already promoted
+    // photo back off the grid rather than stranding it there.
+    thumbnailUrl: coverThumbnail(card),
     isRemix: card.isRemix,
     parentId: card.parentId,
     featured: card.featured,

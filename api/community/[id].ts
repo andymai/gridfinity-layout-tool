@@ -62,6 +62,7 @@ import {
   validateCommunityPublish,
 } from '../lib/communityValidation.js';
 import { readCommunityPrints } from '../lib/communityPrintStore.js';
+import { communityPrintsEnabled } from '../lib/communityPrintValidation.js';
 import { hasQualifyingCutout } from '../lib/communityLowEffort.js';
 import { COMMUNITY_EXAMPLE_PARAM_HASHES } from '../lib/communityExampleParamHashes.js';
 import type { CommunityReportReason } from '../lib/communityValidation.js';
@@ -746,6 +747,13 @@ async function handleSetCoverAction(
   id: string,
   body: Record<string, unknown>
 ) {
+  // Promotion is part of the prints feature, so the kill switch covers it too:
+  // otherwise an owner could still push an unreviewed photo onto the grid
+  // while prints are meant to be dark.
+  if (!communityPrintsEnabled()) {
+    return serviceUnavailable(res, 'Print reports are not available.');
+  }
+
   const session = await requireSession(req, res);
   if (!session) return;
 

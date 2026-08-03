@@ -1098,6 +1098,34 @@ describe('GET /api/community (list)', () => {
     expect((res._body as { likedIds: string[] }).likedIds).toEqual([]);
   });
 
+  it('prefers a promoted cover photo over the render while prints are enabled', async () => {
+    vi.stubEnv('COMMUNITY_PRINTS_ENABLED', 'true');
+    await seedCard({ id: 'coverdesign1' });
+    await fake.hset(communityDesignKey('coverdesign1'), {
+      coverPhotoUrl: 'https://blob.example/cover.webp',
+    });
+
+    const res = await handle({ method: 'GET' });
+    const body = res._body as { items: Array<{ id: string; thumbnailUrl: string }> };
+    const item = body.items.find((i) => i.id === 'coverdesign1');
+    expect(item?.thumbnailUrl).toBe('https://blob.example/cover.webp');
+  });
+
+  it('falls back to the render once the prints kill switch is off', async () => {
+    vi.stubEnv('COMMUNITY_PRINTS_ENABLED', 'false');
+    await seedCard({ id: 'coverdesign2' });
+    await fake.hset(communityDesignKey('coverdesign2'), {
+      coverPhotoUrl: 'https://blob.example/cover.webp',
+    });
+
+    const res = await handle({ method: 'GET' });
+    const body = res._body as { items: Array<{ id: string; thumbnailUrl: string }> };
+    const item = body.items.find((i) => i.id === 'coverdesign2');
+    // Flipping the switch off must pull already-promoted photos back off the
+    // grid, not strand them there.
+    expect(item?.thumbnailUrl).not.toBe('https://blob.example/cover.webp');
+  });
+
   it('mine items carry owner-only opens/views counts and the hide reason', async () => {
     await seedCard({ id: 'mine-stats00', createdAt: 3_000 }, { likes: 4, opens: 7, views: 31 });
     await seedCard(
