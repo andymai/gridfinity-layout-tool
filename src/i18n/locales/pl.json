@@ -3479,5 +3479,15 @@
   "community.prints.useAsCover": "Użyj jako okładki",
   "community.prints.coverCurrent": "Obraz okładki",
   "community.prints.clearCover": "Użyj zamiast tego renderu",
-  "community.prints.coverFailed": "Nie udało się zaktualizować okładki."
+  "community.prints.coverFailed": "Nie udało się zaktualizować okładki.",
+  "community.cost.title": "Czego wymaga wydruk",
+  "community.cost.timeLabel": "Czas druku",
+  "community.cost.filamentLabel": "Filament",
+  "community.cost.estimated": "Szacowane",
+  "community.cost.observedOne": "Z 1 wydruku",
+  "community.cost.observedOther": "Z {count} wydruków",
+  "community.cost.estimateNote": "Oszacowane z modelu przy 0,2mm i 15% wypełnienia. Prawdziwe wydruki zastąpią tę wartość.",
+  "community.cost.bedFits": "Mieści się na twoim stole",
+  "community.cost.bedTooLarge": "Większe niż twój stół roboczy ({width} x {depth}mm)",
+  "community.cost.bedHint": "Obrót jest uwzględniony."
 }

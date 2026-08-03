@@ -3479,5 +3479,15 @@
   "community.prints.useAsCover": "カバー画像にする",
   "community.prints.coverCurrent": "カバー画像",
   "community.prints.clearCover": "代わりにレンダー画像を使う",
-  "community.prints.coverFailed": "カバー画像を更新できませんでした。"
+  "community.prints.coverFailed": "カバー画像を更新できませんでした。",
+  "community.cost.title": "プリントに必要なもの",
+  "community.cost.timeLabel": "プリント時間",
+  "community.cost.filamentLabel": "フィラメント",
+  "community.cost.estimated": "推定値",
+  "community.cost.observedOne": "1 件のプリントより",
+  "community.cost.observedOther": "{count} 件のプリントより",
+  "community.cost.estimateNote": "0.2mm・インフィル15%のモデルによる推定です。実際のプリント報告が集まると置き換わります。",
+  "community.cost.bedFits": "お使いのプリントベッドに収まります",
+  "community.cost.bedTooLarge": "プリントベッドより大きいです（{width} x {depth}mm）",
+  "community.cost.bedHint": "回転も考慮しています。"
 }

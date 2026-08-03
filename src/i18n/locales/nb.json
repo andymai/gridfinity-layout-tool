@@ -3479,5 +3479,15 @@
   "community.prints.useAsCover": "Bruk som omslag",
   "community.prints.coverCurrent": "Omslagsbilde",
   "community.prints.clearCover": "Bruk gjengivelsen i stedet",
-  "community.prints.coverFailed": "Kunne ikke oppdatere omslaget."
+  "community.prints.coverFailed": "Kunne ikke oppdatere omslaget.",
+  "community.cost.title": "Hva utskriften krever",
+  "community.cost.timeLabel": "Utskriftstid",
+  "community.cost.filamentLabel": "Filament",
+  "community.cost.estimated": "Anslått",
+  "community.cost.observedOne": "Fra 1 utskrift",
+  "community.cost.observedOther": "Fra {count} utskrifter",
+  "community.cost.estimateNote": "Anslått fra modellen ved 0,2mm og 15% fyll. Ekte utskrifter erstatter dette når noen har rapportert.",
+  "community.cost.bedFits": "Får plass på byggeplaten din",
+  "community.cost.bedTooLarge": "Større enn byggeplaten din ({width} x {depth}mm)",
+  "community.cost.bedHint": "Rotasjon er tatt med."
 }

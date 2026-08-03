@@ -3479,5 +3479,15 @@
   "community.prints.useAsCover": "대표 이미지로 사용",
   "community.prints.coverCurrent": "대표 이미지",
   "community.prints.clearCover": "대신 렌더 이미지 사용",
-  "community.prints.coverFailed": "대표 이미지를 변경하지 못했습니다."
+  "community.prints.coverFailed": "대표 이미지를 변경하지 못했습니다.",
+  "community.cost.title": "출력에 필요한 것",
+  "community.cost.timeLabel": "출력 시간",
+  "community.cost.filamentLabel": "필라멘트",
+  "community.cost.estimated": "예상치",
+  "community.cost.observedOne": "출력 기록 1건 기준",
+  "community.cost.observedOther": "출력 기록 {count}건 기준",
+  "community.cost.estimateNote": "0.2mm, 인필 15% 기준 모델 예상치입니다. 실제 출력 기록이 쌓이면 대체됩니다.",
+  "community.cost.bedFits": "사용 중인 베드에 맞습니다",
+  "community.cost.bedTooLarge": "베드보다 큽니다 ({width} x {depth}mm)",
+  "community.cost.bedHint": "회전도 고려했습니다."
 }

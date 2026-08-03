@@ -3653,6 +3653,20 @@ const en: Record<string, string> = {
   'community.prints.verdictDidNotFit': '{count} did not fit',
   'community.prints.verdictHint': 'What other people found when they printed it.',
 
+  // Print cost panel: what this design costs to print, and whether that
+  // figure is a model estimate or what people actually reported.
+  'community.cost.title': 'What it takes to print',
+  'community.cost.timeLabel': 'Print time',
+  'community.cost.filamentLabel': 'Filament',
+  'community.cost.estimated': 'Estimated',
+  'community.cost.observedOne': 'From 1 print',
+  'community.cost.observedOther': 'From {count} prints',
+  'community.cost.estimateNote':
+    'Estimated from the model at 0.2mm, 15% infill. Real prints will replace this once a few people report theirs.',
+  'community.cost.bedFits': 'Fits your print bed',
+  'community.cost.bedTooLarge': 'Larger than your print bed ({width} x {depth}mm)',
+  'community.cost.bedHint': 'Rotation is taken into account.',
+
   // Post-remix continuation banner (bin designer)
   'binDesigner.remixBanner.text':
     'Remixing {name} by {author}. Publish your version when it is ready.',

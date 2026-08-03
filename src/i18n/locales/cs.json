@@ -3479,5 +3479,15 @@
   "community.prints.useAsCover": "Použít jako titulní obrázek",
   "community.prints.coverCurrent": "Titulní obrázek",
   "community.prints.clearCover": "Použít místo toho render",
-  "community.prints.coverFailed": "Titulní obrázek se nepodařilo změnit."
+  "community.prints.coverFailed": "Titulní obrázek se nepodařilo změnit.",
+  "community.cost.title": "Co tisk vyžaduje",
+  "community.cost.timeLabel": "Doba tisku",
+  "community.cost.filamentLabel": "Filament",
+  "community.cost.estimated": "Odhad",
+  "community.cost.observedOne": "Z 1 tisku",
+  "community.cost.observedOther": "Z {count} tisků",
+  "community.cost.estimateNote": "Odhadnuto z modelu při 0,2mm a 15% výplni. Skutečné tisky to nahradí, jakmile jich pár bude.",
+  "community.cost.bedFits": "Vejde se na tvou podložku",
+  "community.cost.bedTooLarge": "Větší než tvá podložka ({width} x {depth}mm)",
+  "community.cost.bedHint": "Otočení je zohledněno."
 }

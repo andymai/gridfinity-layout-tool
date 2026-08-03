@@ -3479,5 +3479,15 @@
   "community.prints.useAsCover": "Als omslag gebruiken",
   "community.prints.coverCurrent": "Omslagafbeelding",
   "community.prints.clearCover": "Gebruik in plaats daarvan de render",
-  "community.prints.coverFailed": "Kon de omslag niet bijwerken."
+  "community.prints.coverFailed": "Kon de omslag niet bijwerken.",
+  "community.cost.title": "Wat printen kost",
+  "community.cost.timeLabel": "Printtijd",
+  "community.cost.filamentLabel": "Filament",
+  "community.cost.estimated": "Geschat",
+  "community.cost.observedOne": "Uit 1 print",
+  "community.cost.observedOther": "Uit {count} prints",
+  "community.cost.estimateNote": "Geschat op basis van het model bij 0,2mm en 15% vulling. Echte prints vervangen dit zodra er enkele zijn.",
+  "community.cost.bedFits": "Past op je printbed",
+  "community.cost.bedTooLarge": "Groter dan je printbed ({width} x {depth}mm)",
+  "community.cost.bedHint": "Rotatie wordt meegerekend."
 }

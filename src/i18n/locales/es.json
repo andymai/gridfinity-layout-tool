@@ -3479,5 +3479,15 @@
   "community.prints.useAsCover": "Usar como portada",
   "community.prints.coverCurrent": "Imagen de portada",
   "community.prints.clearCover": "Usar el render en su lugar",
-  "community.prints.coverFailed": "No se pudo actualizar la portada."
+  "community.prints.coverFailed": "No se pudo actualizar la portada.",
+  "community.cost.title": "Lo que cuesta imprimirlo",
+  "community.cost.timeLabel": "Tiempo de impresión",
+  "community.cost.filamentLabel": "Filamento",
+  "community.cost.estimated": "Estimado",
+  "community.cost.observedOne": "Según 1 impresión",
+  "community.cost.observedOther": "Según {count} impresiones",
+  "community.cost.estimateNote": "Estimado con el modelo a 0,2mm y 15% de relleno. Las impresiones reales lo sustituirán cuando haya varias.",
+  "community.cost.bedFits": "Cabe en tu cama de impresión",
+  "community.cost.bedTooLarge": "Más grande que tu cama de impresión ({width} x {depth}mm)",
+  "community.cost.bedHint": "Se tiene en cuenta la rotación."
 }
