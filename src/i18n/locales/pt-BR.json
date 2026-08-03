@@ -3297,9 +3297,6 @@
   "community.detail.stats.likes": "Curtidas",
   "community.detail.stats.remixes": "Remixes",
   "community.detail.stats.exports": "Impressões",
-  "community.detail.lineageRemixOf": "Remixado de {parent}, de {author}",
-  "community.detail.lineageRoot": "originalmente por {author}",
-  "community.detail.lineageGoneSuffix": "não está mais publicado",
   "community.detail.license": "Publicado sob a licença CC BY 4.0.",
   "community.detail.remix": "Remixar",
   "community.detail.remixHint": "Remixar abre uma cópia editável deste design.",
@@ -3498,5 +3495,13 @@
   "community.author.remixedOther": "Remixado {count} vezes",
   "community.author.printedOne": "Impresso 1 vez",
   "community.author.printedOther": "Impresso {count} vezes",
-  "community.author.partial": "Baseado nos designs carregados aqui, os mais antigos podem faltar."
+  "community.author.partial": "Baseado nos designs carregados aqui, os mais antigos podem faltar.",
+  "community.lineage.title": "De onde isto veio",
+  "community.lineage.root": "Originalmente de {author}",
+  "community.lineage.byAuthor": "por {author}",
+  "community.lineage.thisDesign": "Este design",
+  "community.lineage.unavailable": "Não está mais disponível",
+  "community.lineage.gap": "Etapas intermediárias não foram registradas.",
+  "community.lineage.openRoot": "Abrir o original de {author}",
+  "community.lineage.openParent": "Abrir {name}"
 }

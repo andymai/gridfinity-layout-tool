@@ -408,7 +408,11 @@ describe('CommunityDetail', () => {
     useCommunityDetailStore.getState().open('Child1234567', card({ id: 'Child1234567' }));
     renderDetail();
     // Both the parent name and the parent author upgrade to the live record.
-    expect(await screen.findByText(/Remixed from Renamed Parent by Samuel/)).toBeInTheDocument();
+    // Wait on the resolved content, not just the element: the strip renders
+    // with the publish-time snapshot first and upgrades once the live parent
+    // record arrives, so findByTestId alone would race that upgrade.
+    expect(await screen.findByText(/Renamed Parent/)).toBeInTheDocument();
+    expect(screen.getByTestId('remix-lineage-parent')).toHaveTextContent('Samuel');
   });
 
   it('marks the lineage parent as no longer published when it 404s', async () => {
@@ -428,8 +432,9 @@ describe('CommunityDetail', () => {
     });
     useCommunityDetailStore.getState().open('Child1234567', card({ id: 'Child1234567' }));
     renderDetail();
-    expect(await screen.findByText(/Remixed from Older Bin by Sam/)).toBeInTheDocument();
-    expect(await screen.findByText(/no longer published/)).toBeInTheDocument();
+    // Same race: the gone verdict only lands after the parent fetch 404s.
+    expect(await screen.findByText(/No longer available/)).toBeInTheDocument();
+    expect(screen.getByTestId('remix-lineage-parent')).toHaveTextContent('Older Bin');
   });
 
   it('renders the stats-row heart with aria-pressed and toggles the like optimistically', async () => {

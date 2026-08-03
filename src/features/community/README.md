@@ -61,6 +61,14 @@ Backend lives in `api/community/prints.ts` (`GET`/`PUT`/`DELETE`/`POST report`),
 - **Proven shelf** sits directly under staff picks, above recency: a design other people actually printed is the strongest recommendation the library has, and it is the one signal nobody can inflate by posting.
 - **Cover promotion** is owner opt-in and server-validated against the design's own **live** prints. The gallery grid is the most public surface in the app, and this is the only path by which a user-supplied image can reach it, so the check that the URL belongs to a live print of that design is load-bearing, not defensive. A hidden print's photo is not promotable.
 
+### Remix ancestry
+
+`components/CommunityDetail/RemixLineage.tsx` replaces the old one-line lineage sentence with a navigable strip: root (when it differs from the parent), parent, then this design.
+
+**Deliberately not called a tree.** The stored lineage is only `parentId` and `rootId`, so when those differ there may be steps in between that were never recorded. Drawing a continuous chain would imply completeness the data does not have, so the strip states the gap instead of smoothing over it.
+
+A parent that is gone is labelled and _not_ linked: its detail fetch would 404, and a dead link is worse than a plainly labelled dead end. A live parent's current name and author win over the publish-time snapshot.
+
 ### Author portrait
 
 `components/AuthorSummary/` renders a derived portrait while the gallery is filtered to one author: how many designs, since when, what they mostly make, and how often their work has been printed or built upon.

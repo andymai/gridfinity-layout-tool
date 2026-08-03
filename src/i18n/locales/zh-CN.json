@@ -3360,9 +3360,6 @@
   "community.detail.stats.likes": "赞",
   "community.detail.stats.remixes": "二次创作",
   "community.detail.stats.exports": "打印次数",
-  "community.detail.lineageRemixOf": "二次创作自「{parent}」，作者：{author}",
-  "community.detail.lineageRoot": "原作者：{author}",
-  "community.detail.lineageGoneSuffix": "已不再发布",
   "community.detail.license": "依据 CC BY 4.0 协议发布。",
   "community.detail.remix": "二次创作",
   "community.detail.remixHint": "二次创作会打开此设计的可编辑副本。",
@@ -3498,5 +3495,13 @@
   "community.author.remixedOther": "被再创作 {count} 次",
   "community.author.printedOne": "被打印 1 次",
   "community.author.printedOther": "被打印 {count} 次",
-  "community.author.partial": "基于此处已加载的设计，较早的可能未包含。"
+  "community.author.partial": "基于此处已加载的设计，较早的可能未包含。",
+  "community.lineage.title": "它的来源",
+  "community.lineage.root": "最初来自 {author}",
+  "community.lineage.byAuthor": "作者 {author}",
+  "community.lineage.thisDesign": "当前设计",
+  "community.lineage.unavailable": "已不可用",
+  "community.lineage.gap": "中间步骤未被记录。",
+  "community.lineage.openRoot": "打开 {author} 的原作",
+  "community.lineage.openParent": "打开 {name}"
 }

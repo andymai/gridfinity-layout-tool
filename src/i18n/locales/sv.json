@@ -3297,9 +3297,6 @@
   "community.detail.stats.likes": "Gillningar",
   "community.detail.stats.remixes": "Remixar",
   "community.detail.stats.exports": "Utskrifter",
-  "community.detail.lineageRemixOf": "Remixad från {parent} av {author}",
-  "community.detail.lineageRoot": "ursprungligen av {author}",
-  "community.detail.lineageGoneSuffix": "inte längre publicerad",
   "community.detail.license": "Publicerad under licensen CC BY 4.0.",
   "community.detail.remix": "Remixa",
   "community.detail.remixHint": "Remixa öppnar en redigerbar kopia av den här designen.",
@@ -3498,5 +3495,13 @@
   "community.author.remixedOther": "Byggd vidare på {count} gånger",
   "community.author.printedOne": "Utskriven 1 gång",
   "community.author.printedOther": "Utskriven {count} gånger",
-  "community.author.partial": "Baserat på de designer som laddats här, äldre kan saknas."
+  "community.author.partial": "Baserat på de designer som laddats här, äldre kan saknas.",
+  "community.lineage.title": "Var det kommer ifrån",
+  "community.lineage.root": "Ursprungligen av {author}",
+  "community.lineage.byAuthor": "av {author}",
+  "community.lineage.thisDesign": "Den här designen",
+  "community.lineage.unavailable": "Inte längre tillgänglig",
+  "community.lineage.gap": "Eventuella steg däremellan registrerades inte.",
+  "community.lineage.openRoot": "Öppna originalet av {author}",
+  "community.lineage.openParent": "Öppna {name}"
 }

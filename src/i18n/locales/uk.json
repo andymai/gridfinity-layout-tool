@@ -1563,9 +1563,6 @@
   "community.detail.goneTitle": "Цей дизайн більше не доступний.",
   "community.detail.gridUnits": "{width}×{depth}×{height} одиниць сітки",
   "community.detail.license": "Опубліковано за ліцензією CC BY 4.0.",
-  "community.detail.lineageGoneSuffix": "більше не опубліковано",
-  "community.detail.lineageRemixOf": "Ремікс дизайну «{parent}» від {author}",
-  "community.detail.lineageRoot": "автор оригіналу: {author}",
   "community.detail.loadFailed": "Не вдалося завантажити цей дизайн.",
   "community.detail.loading": "Завантаження дизайну…",
   "community.detail.millimeters": "{width}×{depth}×{height} мм",
@@ -3498,5 +3495,13 @@
   "community.author.remixedOther": "Розвинуто {count} разів",
   "community.author.printedOne": "Надруковано 1 раз",
   "community.author.printedOther": "Надруковано {count} разів",
-  "community.author.partial": "На основі завантажених тут дизайнів, старіші можуть бути відсутні."
+  "community.author.partial": "На основі завантажених тут дизайнів, старіші можуть бути відсутні.",
+  "community.lineage.title": "Звідки це походить",
+  "community.lineage.root": "Спочатку від {author}",
+  "community.lineage.byAuthor": "від {author}",
+  "community.lineage.thisDesign": "Цей дизайн",
+  "community.lineage.unavailable": "Більше недоступно",
+  "community.lineage.gap": "Проміжні кроки не записані.",
+  "community.lineage.openRoot": "Відкрити оригінал від {author}",
+  "community.lineage.openParent": "Відкрити {name}"
 }

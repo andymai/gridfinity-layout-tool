@@ -1610,9 +1610,6 @@
   "community.detail.goneTitle": "Questo design non è più disponibile.",
   "community.detail.gridUnits": "{width}×{depth}×{height} unità di griglia",
   "community.detail.license": "Pubblicato con licenza CC BY 4.0.",
-  "community.detail.lineageGoneSuffix": "non più pubblicato",
-  "community.detail.lineageRemixOf": "Remixato da {parent} di {author}",
-  "community.detail.lineageRoot": "originariamente di {author}",
   "community.detail.loadFailed": "Impossibile caricare questo design.",
   "community.detail.loading": "Caricamento del design…",
   "community.detail.millimeters": "{width}×{depth}×{height} mm",
@@ -3498,5 +3495,13 @@
   "community.author.remixedOther": "Ripreso {count} volte",
   "community.author.printedOne": "Stampato 1 volta",
   "community.author.printedOther": "Stampato {count} volte",
-  "community.author.partial": "Basato sui design caricati qui, i più vecchi potrebbero mancare."
+  "community.author.partial": "Basato sui design caricati qui, i più vecchi potrebbero mancare.",
+  "community.lineage.title": "Da dove arriva",
+  "community.lineage.root": "Originariamente di {author}",
+  "community.lineage.byAuthor": "di {author}",
+  "community.lineage.thisDesign": "Questo design",
+  "community.lineage.unavailable": "Non più disponibile",
+  "community.lineage.gap": "Gli eventuali passaggi intermedi non sono stati registrati.",
+  "community.lineage.openRoot": "Apri l'originale di {author}",
+  "community.lineage.openParent": "Apri {name}"
 }
