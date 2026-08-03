@@ -195,6 +195,7 @@ export const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(function Com
   return (
     <div
       ref={wrapperRef}
+      data-focus-ring
       className={cn(WRAPPER_STATIC, interactiveTransition, wrapperSize[size], className)}
     >
       {activeGhost && (

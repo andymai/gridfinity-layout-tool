@@ -168,6 +168,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
     return (
       <div
+        data-focus-ring
         className={cn(inputWrapperVariants({ size, error, disabled, fullWidth }), wrapperClassName)}
       >
         {leftIcon && (

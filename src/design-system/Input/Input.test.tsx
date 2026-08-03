@@ -54,6 +54,13 @@ describe('Input', () => {
     });
   });
 
+  describe('focus ring', () => {
+    it('marks the wrapper so the global focus outline is suppressed', () => {
+      const { container } = render(<Input aria-label="Search" />);
+      expect(container.firstChild).toHaveAttribute('data-focus-ring');
+    });
+  });
+
   describe('error state', () => {
     it('sets aria-invalid when error', () => {
       render(<Input error aria-label="Email" />);
