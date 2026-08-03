@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.354.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.354.0...gridfinity-layout-tool-v4.354.1) (2026-08-03)
+
+
+### Bug Fixes
+
+* **bin-designer:** meet the wall rim square on u-shape cutouts ([#3173](https://github.com/andymai/gridfinity-layout-tool/issues/3173)) ([#3179](https://github.com/andymai/gridfinity-layout-tool/issues/3179)) ([d080539](https://github.com/andymai/gridfinity-layout-tool/commit/d08053951e34101259b168718cf5064ad2d3d709))
+
 ## [4.354.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.353.5...gridfinity-layout-tool-v4.354.0) (2026-08-03)
 
 
