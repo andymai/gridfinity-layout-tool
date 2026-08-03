@@ -52,6 +52,10 @@ interface CommunityDetailContentProps {
   onFilterByAuthor?: () => void;
   /** Present only for the owner of a hidden design; renders the hidden-state notice. */
   ownerModeration?: OwnerModeration | null;
+  /** Opens the print-report dialog; absent hides the CTA entirely. */
+  onAddPrint?: () => void;
+  /** Switches the CTA between posting a first print and editing an existing one. */
+  hasOwnPrint?: boolean;
 }
 
 function formatMm(value: number): string {
@@ -74,6 +78,8 @@ export function CommunityDetailContent({
   like = null,
   onFilterByAuthor,
   ownerModeration = null,
+  onAddPrint,
+  hasOwnPrint = false,
 }: CommunityDetailContentProps) {
   const t = useTranslation();
   const [angleIndex, setAngleIndex] = useState(0);
@@ -328,6 +334,20 @@ export function CommunityDetailContent({
             )}
             {parentResolution.kind === 'gone' && <> · {t('community.detail.lineageGoneSuffix')}</>}
           </p>
+        )}
+
+        {/* Sits above the similar rail: whether this printed for other people
+            is a decision input, and the rail is where attention goes next. */}
+        {onAddPrint !== undefined && (
+          <Button
+            variant={hasOwnPrint ? 'ghost' : 'secondary'}
+            touchTarget={isMobile}
+            onClick={onAddPrint}
+            className="w-full justify-center"
+            data-testid="community-detail-add-print"
+          >
+            {t(hasOwnPrint ? 'community.print.editCta' : 'community.print.cta')}
+          </Button>
         )}
 
         <SimilarRail design={design} />

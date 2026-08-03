@@ -357,4 +357,26 @@ describe('CommunityDetailContent owner hidden-state notice', () => {
     expect(screen.queryByTestId('community-hidden-badge')).not.toBeInTheDocument();
     expect(screen.queryByText('A moderator will review it.')).not.toBeInTheDocument();
   });
+
+  describe('print CTA', () => {
+    it('is absent when no handler is supplied', () => {
+      renderContent();
+      expect(screen.queryByTestId('community-detail-add-print')).not.toBeInTheDocument();
+    });
+
+    it('invites a first print when the viewer has none', () => {
+      const onAddPrint = vi.fn();
+      renderContent({}, { onAddPrint });
+
+      const cta = screen.getByTestId('community-detail-add-print');
+      expect(cta).toHaveTextContent('I printed this');
+      fireEvent.click(cta);
+      expect(onAddPrint).toHaveBeenCalled();
+    });
+
+    it('switches to editing once the viewer has a print', () => {
+      renderContent({}, { onAddPrint: vi.fn(), hasOwnPrint: true });
+      expect(screen.getByTestId('community-detail-add-print')).toHaveTextContent('Edit your print');
+    });
+  });
 });
