@@ -26,7 +26,8 @@ export type RateLimitAction =
   | 'community.manage'
   | 'community.like'
   | 'community.action'
-  | 'community.report';
+  | 'community.report'
+  | 'community.print';
 
 /**
  * Parse Redis URL using WHATWG URL API to avoid deprecated url.parse().
@@ -102,6 +103,10 @@ const RATE_LIMITS: Record<RateLimitAction, RateLimitConfig> = {
   // Report: session-scoped. Mirrors the anonymous 'report' action's budget
   // (10/hour), same abuse shape but keyed by account instead of IP.
   'community.report': { limit: 10, windowSeconds: 3600 }, // 10/hour per user
+  // Print report: session-scoped, and covers edits as well as new posts since
+  // both carry photo uploads. Deliberately matched to the publish budget:
+  // posting a print is the same order of deliberate act as publishing a design.
+  'community.print': { limit: 10, windowSeconds: 24 * 60 * 60 }, // 10/day per user
 };
 
 interface RateLimitResult {

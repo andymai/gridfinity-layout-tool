@@ -22,6 +22,22 @@ Community design showcase (issue #3050): publishing bin designs, browsing them, 
 - `utils/displayName.ts`: explicit localStorage persistence of the chosen public display name (this repo has no zustand persist middleware).
 - `@/shared/utils/communityPendingAction`: sessionStorage stash of a pending publish intent (plus form draft) across the OAuth redirect. Lives in shared, not here, because the designer reads it on mount to resume the flow (the callback always lands on `/`).
 
+## Print reports ("Prints")
+
+Proof that a published design was actually printed: photos, the settings that worked, and whether it fit as designed. The merit signal the showcase ranks on, chosen over engagement metrics because it cannot be produced without having printed the thing.
+
+- **One record per user per design, editable.** Posting again replaces the existing record, so "printed by N" is a distinct-printer count by construction. `(designId, authorPublicId)` is the identity, so nothing needs a reverse index to address a print.
+- **Vocabulary** lives in `@/shared/types/communityPrint` and `@/shared/types/communityPrinters`, mirrored server-side in `api/lib/communityPrintValidation.ts` and `api/lib/communityPrinters.ts`. The cross-boundary test in `communityPrint.test.ts` guards every tuple, limit and range.
+- **`fitVerdict`** (`as-designed` / `adjusted` / `did-not-fit`) is the field worth the most: it tells the next printer what to expect, and no amount of posting can fake it.
+- **Printers** are a closed curated list plus an `other` free-text escape hatch. Free text alone would turn "X1C", "x1 carbon" and "Bambu X1C" into three unrelated values and make aggregation impossible. Labels are hardware model names and are deliberately not translated.
+- **Photos** are re-encoded to WebP at 1200px client-side before upload, which is also what strips EXIF/GPS. The server re-checks bytes, magic framing and canvas dimensions (`readWebpDimensions`), because a byte cap alone does not bound pixels.
+- **Moderation mirrors designs exactly**: signed-in only, post-moderated, report threshold auto-hides, deny-list applies, admin purge available. A hidden print leaves the ZSET (so it drops out of the list and the count) but keeps its hash, so the reporter dedupe holds and it cannot be edited back into visibility.
+- **Kill switch**: `COMMUNITY_PRINTS_ENABLED`. Unset or anything but `true` makes every method 503.
+
+Backend lives in `api/community/prints.ts` (`GET`/`PUT`/`DELETE`/`POST report`), `api/lib/communityPrintStore.ts`, and `api/lib/communityPrintValidation.ts`. The `community:index:prints` ZSET is maintained from the moment prints exist but is not yet a member of `COMMUNITY_INDEX_SORTS`: exposing the "most printed" sort is a separate change, so that when it lands its scores are already correct rather than needing a backfill.
+
+Note that `counts.exports` means file downloads, not prints. The two are different signals and the UI must not conflate them.
+
 ## Deferred to later PRs
 
 - Mine/Liked filter chips: land with the Mine view (author filtering) PR alongside like/report actions.

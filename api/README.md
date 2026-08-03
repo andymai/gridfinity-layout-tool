@@ -63,6 +63,10 @@ graph TB
 | `/api/community/[id]`           | GET            | 240/min    | Fetch a single community design's detail                         |
 | `/api/community/[id]`           | PUT            | 60/day     | Update a published design (owner only)                           |
 | `/api/community/[id]`           | DELETE         | 60/day     | Unpublish a design (owner, or admin via `COMMUNITY_ADMIN_TOKEN`) |
+| `/api/community/prints`         | GET            | 240/min    | List a design's print reports plus the derived summary           |
+| `/api/community/prints`         | PUT            | 10/day     | Create or replace the caller's own print report                  |
+| `/api/community/prints`         | DELETE         | 60/day     | Delete the caller's own print report                             |
+| `/api/community/prints`         | POST           | 10/hour    | `{ action: 'report' }` flag someone else's print report          |
 
 See [`auth/README.md`](./auth/README.md) for the OAuth setup and [`sync/README.md`](./sync/README.md) for sync semantics, quotas, and the LWW + tombstone state machine.
 
