@@ -3479,5 +3479,15 @@
   "community.prints.useAsCover": "Використати як обкладинку",
   "community.prints.coverCurrent": "Зображення обкладинки",
   "community.prints.clearCover": "Використати рендер натомість",
-  "community.prints.coverFailed": "Не вдалося оновити обкладинку."
+  "community.prints.coverFailed": "Не вдалося оновити обкладинку.",
+  "community.cost.title": "Що потрібно для друку",
+  "community.cost.timeLabel": "Час друку",
+  "community.cost.filamentLabel": "Філамент",
+  "community.cost.estimated": "Оцінка",
+  "community.cost.observedOne": "З 1 друку",
+  "community.cost.observedOther": "З {count} друків",
+  "community.cost.estimateNote": "Оцінено за моделлю при 0,2мм і 15% заповнення. Реальні друки замінять це значення.",
+  "community.cost.bedFits": "Вміщується на твій стіл",
+  "community.cost.bedTooLarge": "Більше за твій стіл ({width} x {depth}мм)",
+  "community.cost.bedHint": "Обертання враховано."
 }

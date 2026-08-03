@@ -59,6 +59,8 @@ interface CommunityDetailContentProps {
   hasOwnPrint?: boolean;
   /** Rendered below the CTA; absent while prints are unavailable. */
   printsSlot?: ReactNode;
+  /** Print cost and bed fit; sits with the dimensions, which is the same question. */
+  costSlot?: ReactNode;
 }
 
 function formatMm(value: number): string {
@@ -84,6 +86,7 @@ export function CommunityDetailContent({
   onAddPrint,
   hasOwnPrint = false,
   printsSlot,
+  costSlot,
 }: CommunityDetailContentProps) {
   const t = useTranslation();
   const [angleIndex, setAngleIndex] = useState(0);
@@ -276,6 +279,8 @@ export function CommunityDetailContent({
             })}
           </p>
         </div>
+
+        {costSlot}
 
         {counts !== null && (
           <>

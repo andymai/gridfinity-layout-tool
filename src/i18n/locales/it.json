@@ -3479,5 +3479,15 @@
   "community.prints.useAsCover": "Usa come copertina",
   "community.prints.coverCurrent": "Immagine di copertina",
   "community.prints.clearCover": "Usa invece il render",
-  "community.prints.coverFailed": "Impossibile aggiornare la copertina."
+  "community.prints.coverFailed": "Impossibile aggiornare la copertina.",
+  "community.cost.title": "Cosa serve per stamparlo",
+  "community.cost.timeLabel": "Tempo di stampa",
+  "community.cost.filamentLabel": "Filamento",
+  "community.cost.estimated": "Stimato",
+  "community.cost.observedOne": "Da 1 stampa",
+  "community.cost.observedOther": "Da {count} stampe",
+  "community.cost.estimateNote": "Stimato dal modello a 0,2mm e 15% di riempimento. Le stampe reali lo sostituiranno quando saranno alcune.",
+  "community.cost.bedFits": "Sta sul tuo piano di stampa",
+  "community.cost.bedTooLarge": "Più grande del tuo piano di stampa ({width} x {depth}mm)",
+  "community.cost.bedHint": "La rotazione è considerata."
 }

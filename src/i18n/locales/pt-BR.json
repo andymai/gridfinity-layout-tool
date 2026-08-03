@@ -3479,5 +3479,15 @@
   "community.prints.useAsCover": "Usar como capa",
   "community.prints.coverCurrent": "Imagem de capa",
   "community.prints.clearCover": "Usar a renderização",
-  "community.prints.coverFailed": "Não foi possível atualizar a capa."
+  "community.prints.coverFailed": "Não foi possível atualizar a capa.",
+  "community.cost.title": "O que a impressão exige",
+  "community.cost.timeLabel": "Tempo de impressão",
+  "community.cost.filamentLabel": "Filamento",
+  "community.cost.estimated": "Estimado",
+  "community.cost.observedOne": "De 1 impressão",
+  "community.cost.observedOther": "De {count} impressões",
+  "community.cost.estimateNote": "Estimado pelo modelo a 0,2mm e 15% de preenchimento. Impressões reais substituirão este valor.",
+  "community.cost.bedFits": "Cabe na sua mesa de impressão",
+  "community.cost.bedTooLarge": "Maior que sua mesa de impressão ({width} x {depth}mm)",
+  "community.cost.bedHint": "A rotação é considerada."
 }

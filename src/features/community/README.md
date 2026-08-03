@@ -61,6 +61,18 @@ Backend lives in `api/community/prints.ts` (`GET`/`PUT`/`DELETE`/`POST report`),
 - **Proven shelf** sits directly under staff picks, above recency: a design other people actually printed is the strongest recommendation the library has, and it is the one signal nobody can inflate by posting.
 - **Cover promotion** is owner opt-in and server-validated against the design's own **live** prints. The gallery grid is the most public surface in the app, and this is the only path by which a user-supplied image can reach it, so the check that the URL belongs to a live print of that design is load-bearing, not defensive. A hidden print's photo is not promotable.
 
+### Print cost
+
+`components/PrintCostPanel/` answers "what will this cost me" before you commit, from `@/shared/utils/communityPrintCost`.
+
+The rule that shapes it: **observed beats estimated, and the difference is never hidden.** A model estimate and the median of twelve real prints are different kinds of claim, so each figure carries a `source` the panel renders as a distinct badge. Time and filament resolve independently, because reporting filament is optional and an observed time beside an estimated weight is the normal case.
+
+Observed data only displaces the model at `OBSERVED_MIN_SAMPLE` (2) reports: one person's print is a data point, not a distribution.
+
+The estimator itself is bin-designer internal, so the wrapper lives in `shared/` (the sanctioned bridge, as in `shared/items/bin/descriptor.ts`) rather than being imported across slices. `estimateCommunityPrint` propagates whatever the estimator throws; `PrintCostPanel` is what catches it, because a design published by an older client can carry params this build cannot read, and that must not take the detail view down. Other callers need their own handling.
+
+Bed fit compares the footprint against the viewer's configured bed and allows rotation, since every slicer will rotate it for you.
+
 Note that `counts.exports` means file downloads, not prints. The two are different signals and the UI must not conflate them.
 
 ## Deferred to later PRs

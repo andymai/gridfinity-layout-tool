@@ -3479,5 +3479,15 @@
   "community.prints.useAsCover": "Utiliser comme couverture",
   "community.prints.coverCurrent": "Image de couverture",
   "community.prints.clearCover": "Utiliser le rendu à la place",
-  "community.prints.coverFailed": "Impossible de mettre à jour la couverture."
+  "community.prints.coverFailed": "Impossible de mettre à jour la couverture.",
+  "community.cost.title": "Ce que l'impression demande",
+  "community.cost.timeLabel": "Temps d'impression",
+  "community.cost.filamentLabel": "Filament",
+  "community.cost.estimated": "Estimé",
+  "community.cost.observedOne": "D'après 1 impression",
+  "community.cost.observedOther": "D'après {count} impressions",
+  "community.cost.estimateNote": "Estimé à partir du modèle à 0,2mm et 15% de remplissage. Les impressions réelles remplaceront cette valeur.",
+  "community.cost.bedFits": "Tient sur votre plateau",
+  "community.cost.bedTooLarge": "Plus grand que votre plateau ({width} x {depth}mm)",
+  "community.cost.bedHint": "La rotation est prise en compte."
 }

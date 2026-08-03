@@ -3479,5 +3479,15 @@
   "community.prints.useAsCover": "设为封面",
   "community.prints.coverCurrent": "封面图片",
   "community.prints.clearCover": "改用渲染图",
-  "community.prints.coverFailed": "无法更新封面图片。"
+  "community.prints.coverFailed": "无法更新封面图片。",
+  "community.cost.title": "打印所需",
+  "community.cost.timeLabel": "打印时间",
+  "community.cost.filamentLabel": "耗材",
+  "community.cost.estimated": "预估",
+  "community.cost.observedOne": "来自 1 次打印",
+  "community.cost.observedOther": "来自 {count} 次打印",
+  "community.cost.estimateNote": "基于 0.2mm、15% 填充的模型预估。有几次真实打印记录后将替换此数值。",
+  "community.cost.bedFits": "可放入你的热床",
+  "community.cost.bedTooLarge": "大于你的热床（{width} x {depth}mm）",
+  "community.cost.bedHint": "已考虑旋转摆放。"
 }

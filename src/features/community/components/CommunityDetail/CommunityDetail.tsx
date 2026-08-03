@@ -18,7 +18,7 @@ import { useToastStore } from '@/core/store/toast';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { trackEvent } from '@/shared/analytics/posthog';
 import type { CommunityDesign, CommunityDesignCounts } from '@/shared/types/community';
-import type { CommunityPrint } from '@/shared/types/communityPrint';
+import type { CommunityPrint, CommunityPrintSummary } from '@/shared/types/communityPrint';
 import type { CommunityDetailProps } from '@/shared/types/communityDetail';
 import { savePendingLikeAction } from '@/shared/utils/communityPendingLikeAction';
 import { fetchCommunityDesign } from '../../api/client';
@@ -32,6 +32,7 @@ import { CommunitySignInPrompt } from '../SignInPrompt';
 import { fetchPrints, reportPrint } from '../../api/printsClient';
 import { usePrintDialogStore } from '../../store/printDialogStore';
 import { PrintDialog } from '../PrintDialog';
+import { PrintCostPanel } from '../PrintCostPanel';
 import { PrintsSection } from '../PrintsSection';
 import { CommunityDetailContent } from './CommunityDetailContent';
 import type { OwnerModeration, ParentResolution } from './CommunityDetailContent';
@@ -121,6 +122,7 @@ function CommunityDetailDialog({
   const [ownPrint, setOwnPrint] = useState<{
     designId: string;
     print: CommunityPrint | null;
+    summary: CommunityPrintSummary | null;
   } | null>(null);
   const [printsAvailable, setPrintsAvailable] = useState(true);
   // Bumped after a write so the list refetches; the parent owns it because the
@@ -408,21 +410,30 @@ function CommunityDetailDialog({
     void fetchPrints(printsDesignId).then((result) => {
       if (cancelled) return;
       if (isOk(result)) {
-        setOwnPrint({ designId: printsDesignId, print: result.value.mine });
+        setOwnPrint({
+          designId: printsDesignId,
+          print: result.value.mine,
+          summary: result.value.summary,
+        });
         return;
       }
       // The kill switch is the one failure worth acting on: a CTA that opens a
       // dialog which can only fail is worse than no CTA. Any other error just
       // leaves the button in its "post" state.
       setPrintsAvailable(result.error.kind !== 'disabled');
-      setOwnPrint({ designId: printsDesignId, print: null });
+      setOwnPrint({ designId: printsDesignId, print: null, summary: null });
     });
     return () => {
       cancelled = true;
     };
-  }, [phase, printsDesignId]);
+    // printsRefresh is a dependency, not just PrintsSection's: the cost panel
+    // reads its summary from here, so without it a save could leave the panel
+    // showing "estimated" after the report that should have flipped it.
+  }, [phase, printsDesignId, printsRefresh]);
 
-  const myPrint = design !== null && ownPrint?.designId === design.id ? ownPrint.print : null;
+  const stampedPrints = design !== null && ownPrint?.designId === design.id ? ownPrint : null;
+  const myPrint = stampedPrints?.print ?? null;
+  const printSummary = stampedPrints?.summary ?? null;
 
   const printDialogOpen = usePrintDialogStore((s) => s.phase !== 'closed');
 
@@ -538,6 +549,13 @@ function CommunityDetailDialog({
             onFilterByAuthor={handleFilterByAuthor}
             ownerModeration={ownerModeration}
             onAddPrint={printsAvailable ? handleAddPrint : undefined}
+            costSlot={
+              <PrintCostPanel
+                params={design.params}
+                metrics={design.metrics}
+                summary={printSummary}
+              />
+            }
             printsSlot={
               printsAvailable && design !== null ? (
                 <PrintsSection
@@ -740,11 +758,17 @@ function CommunityDetailDialog({
       {printDialogOpen && (
         <PrintDialog
           onSaved={(print) => {
-            setOwnPrint({ designId: print.designId, print });
+            setOwnPrint((current) => ({
+              designId: print.designId,
+              print,
+              summary: current?.designId === print.designId ? current.summary : null,
+            }));
             setPrintsRefresh((n) => n + 1);
           }}
           onDeleted={() => {
-            setOwnPrint(design === null ? null : { designId: design.id, print: null });
+            setOwnPrint(
+              design === null ? null : { designId: design.id, print: null, summary: null }
+            );
             setPrintsRefresh((n) => n + 1);
           }}
         />

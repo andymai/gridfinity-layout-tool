@@ -3479,5 +3479,15 @@
   "community.prints.useAsCover": "Als Titelbild verwenden",
   "community.prints.coverCurrent": "Titelbild",
   "community.prints.clearCover": "Stattdessen Render verwenden",
-  "community.prints.coverFailed": "Titelbild konnte nicht geändert werden."
+  "community.prints.coverFailed": "Titelbild konnte nicht geändert werden.",
+  "community.cost.title": "Was der Druck erfordert",
+  "community.cost.timeLabel": "Druckzeit",
+  "community.cost.filamentLabel": "Filament",
+  "community.cost.estimated": "Geschätzt",
+  "community.cost.observedOne": "Aus 1 Druck",
+  "community.cost.observedOther": "Aus {count} Drucken",
+  "community.cost.estimateNote": "Geschätzt aus dem Modell bei 0,2mm und 15% Infill. Echte Drucke ersetzen dies, sobald einige berichten.",
+  "community.cost.bedFits": "Passt auf dein Druckbett",
+  "community.cost.bedTooLarge": "Größer als dein Druckbett ({width} x {depth}mm)",
+  "community.cost.bedHint": "Drehung wird berücksichtigt."
 }
