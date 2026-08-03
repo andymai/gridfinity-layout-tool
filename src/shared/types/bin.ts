@@ -461,9 +461,11 @@ export interface ResolvedBaseplateParams {
    * fits the extent (every plate before this existed), which keeps the slab
    * byte-identical and cache-stable.
    *
-   * Split pieces never carry this: a piece's slab IS its clip window, so
-   * growing it would let each piece swallow its neighbours. The planner
-   * instead widens the outermost pieces' windows to cover the overhang.
+   * A split piece's slab IS its clip window, so this is never inherited
+   * wholesale — that would let every piece swallow its neighbours. Only the
+   * pieces on the parent's outer edge carry it, and only on the side they sit
+   * on, matching the windows the planner widened for them; interior pieces
+   * carry nothing and stay byte-identical to unshifted plates.
    */
   readonly outlineOverhang?: OutlineOverhang;
   /** Enable registration nubs/holes on join edges for split piece alignment. */
