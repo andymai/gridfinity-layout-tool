@@ -69,7 +69,7 @@ The rule that shapes it: **observed beats estimated, and the difference is never
 
 Observed data only displaces the model at `OBSERVED_MIN_SAMPLE` (2) reports: one person's print is a data point, not a distribution.
 
-The estimator itself is bin-designer internal, so the wrapper lives in `shared/` (the sanctioned bridge, as in `shared/items/bin/descriptor.ts`) rather than being imported across slices. It is wrapped in a try/catch: a design published by an older client can carry params this build cannot read, and no estimate is honest where a wrong one is not.
+The estimator itself is bin-designer internal, so the wrapper lives in `shared/` (the sanctioned bridge, as in `shared/items/bin/descriptor.ts`) rather than being imported across slices. `estimateCommunityPrint` propagates whatever the estimator throws; `PrintCostPanel` is what catches it, because a design published by an older client can carry params this build cannot read, and that must not take the detail view down. Other callers need their own handling.
 
 Bed fit compares the footprint against the viewer's configured bed and allows rotation, since every slicer will rotate it for you.
 

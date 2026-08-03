@@ -426,7 +426,10 @@ function CommunityDetailDialog({
     return () => {
       cancelled = true;
     };
-  }, [phase, printsDesignId]);
+    // printsRefresh is a dependency, not just PrintsSection's: the cost panel
+    // reads its summary from here, so without it a save could leave the panel
+    // showing "estimated" after the report that should have flipped it.
+  }, [phase, printsDesignId, printsRefresh]);
 
   const stampedPrints = design !== null && ownPrint?.designId === design.id ? ownPrint : null;
   const myPrint = stampedPrints?.print ?? null;

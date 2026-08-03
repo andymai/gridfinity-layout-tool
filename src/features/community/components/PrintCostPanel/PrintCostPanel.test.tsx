@@ -98,6 +98,19 @@ describe('PrintCostPanel', () => {
     expect(screen.queryByText('community.cost.bedHint')).toBeNull();
   });
 
+  it('omits the estimate caveat when no estimated figure is on screen', () => {
+    estimate.mockImplementation(() => {
+      throw new Error('unknown param shape');
+    });
+
+    render(<PrintCostPanel params={PARAMS} metrics={METRICS} summary={null} />);
+
+    // Only bed-fit text renders here, so a note claiming a model figure
+    // would be describing something that is not there.
+    expect(screen.queryByTestId('cost-time')).toBeNull();
+    expect(screen.queryByTestId('cost-estimate-note')).toBeNull();
+  });
+
   it('survives params the estimator cannot read', () => {
     estimate.mockImplementation(() => {
       throw new Error('unknown param shape');

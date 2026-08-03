@@ -75,6 +75,10 @@ export function PrintCostPanel({ params, metrics, summary }: PrintCostPanelProps
   const duration =
     time.minutes === null ? null : formatPrintDuration(roundSummaryMinutes(time.minutes));
 
+  const showsEstimate =
+    (duration !== null && time.source.kind === 'estimated') ||
+    (filament.grams !== null && filament.source.kind === 'estimated');
+
   return (
     <div className="space-y-2" data-testid="print-cost-panel">
       <h3 className="text-sm font-medium text-content">{t('community.cost.title')}</h3>
@@ -130,9 +134,10 @@ export function PrintCostPanel({ params, metrics, summary }: PrintCostPanelProps
         <p className="text-xs text-content-tertiary">{t('community.cost.bedHint')}</p>
       )}
 
-      {/* Shown only while a figure is still model-derived, so the caveat
-          disappears once real reports have taken over. */}
-      {(time.source.kind === 'estimated' || filament.source.kind === 'estimated') && (
+      {/* Gated on a figure that is actually rendered, not merely on a source
+          kind: with no estimate to show, the note would claim a model figure
+          that is not there. Disappears once real reports have taken over. */}
+      {showsEstimate && (
         <p className="text-xs text-content-tertiary" data-testid="cost-estimate-note">
           {t('community.cost.estimateNote')}
         </p>
