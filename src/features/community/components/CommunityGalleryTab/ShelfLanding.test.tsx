@@ -8,6 +8,11 @@ import { SHELF_LANDING_MIN_DESIGNS } from './shelfData';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
+// The shipped list is empty on purpose; these drive it directly so the
+// mechanism is covered without committing editorial picks.
+const collections = vi.hoisted(() => ({ COMMUNITY_COLLECTIONS: [] as unknown[] }));
+vi.mock('../../data/collections', () => collections);
+
 vi.mock('@/shared/hooks/useResponsive', () => ({
   useResponsive: () => ({ isMobile: false }),
 }));
@@ -138,5 +143,56 @@ describe('ShelfLanding', () => {
     render(<ShelfLanding items={manyCards(12)} onSelect={onSelect} onSelectAuthor={vi.fn()} />);
     fireEvent.click(screen.getAllByRole('button', { name: /Bin design011/ })[0]);
     expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ id: 'design011' }));
+  });
+
+  describe('curated collections', () => {
+    it('renders a curated shelf above the derived ones', () => {
+      collections.COMMUNITY_COLLECTIONS = [
+        {
+          id: 'starters',
+          titleKey: 'collections.starters.title',
+          blurbKey: 'collections.starters.blurb',
+          designIds: ['design000'],
+        },
+      ];
+      const items = manyCards(SHELF_LANDING_MIN_DESIGNS);
+      render(<ShelfLanding items={items} onSelect={vi.fn()} onSelectAuthor={vi.fn()} />);
+
+      const headings = screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent);
+      // A human vouched for these, which outranks any derived shelf.
+      expect(headings[0]).toBe('collections.starters.title');
+      expect(screen.getByText('collections.starters.blurb')).toBeInTheDocument();
+    });
+
+    it('drops a curated shelf whose designs are all gone', () => {
+      collections.COMMUNITY_COLLECTIONS = [
+        {
+          id: 'ghosts',
+          titleKey: 'collections.ghosts.title',
+          blurbKey: 'collections.ghosts.blurb',
+          designIds: ['not-published'],
+        },
+      ];
+      const items = manyCards(SHELF_LANDING_MIN_DESIGNS);
+      render(<ShelfLanding items={items} onSelect={vi.fn()} onSelectAuthor={vi.fn()} />);
+
+      // An empty shelf advertises a grouping then fails to deliver it.
+      expect(screen.queryByText('collections.ghosts.title')).toBeNull();
+    });
+
+    it('gives a curated shelf no see-all, since it is not a filter', () => {
+      collections.COMMUNITY_COLLECTIONS = [
+        {
+          id: 'starters',
+          titleKey: 'collections.starters.title',
+          blurbKey: 'collections.starters.blurb',
+          designIds: ['design000'],
+        },
+      ];
+      const items = manyCards(SHELF_LANDING_MIN_DESIGNS);
+      render(<ShelfLanding items={items} onSelect={vi.fn()} onSelectAuthor={vi.fn()} />);
+
+      expect(screen.queryByTestId('community-shelf-see-all-collection-starters')).toBeNull();
+    });
   });
 });
