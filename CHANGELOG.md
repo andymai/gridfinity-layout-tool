@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.353.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.353.3...gridfinity-layout-tool-v4.353.4) (2026-08-03)
+
+
+### Bug Fixes
+
+* **drawer-shape:** keep the whole perimeter when the grid is shifted ([#3169](https://github.com/andymai/gridfinity-layout-tool/issues/3169), [#3170](https://github.com/andymai/gridfinity-layout-tool/issues/3170)) ([#3172](https://github.com/andymai/gridfinity-layout-tool/issues/3172)) ([696fb63](https://github.com/andymai/gridfinity-layout-tool/commit/696fb6376ffc036c1dc45c95a334ca60a14f8203))
+
 ## [4.353.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.353.2...gridfinity-layout-tool-v4.353.3) (2026-08-03)
 
 
