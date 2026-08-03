@@ -1,0 +1,21 @@
+src/features/community/utils/gapFit.test.ts
+  s_1ba7ad2a498875::t_2ee8876f2c0ab5 8-12,14-19
+src/features/community/utils/gapFit.ts
+  s_1ba7ad2a498875::t_2ee8876f2c0ab5 23-30,39-40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "2544686377ec0ceb12d36c7e8d0a7966cd1529e3",
+  "prompts": {},
+  "sessions": {
+    "s_1ba7ad2a498875": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ce6c2b71-68eb-40ff-967f-188df1b2c251",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
