@@ -1,0 +1,19 @@
+vitest.config.ts
+  s_1ba7ad2a498875::t_229b45dd93b66f 150-155
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "51da51718e122778fcbcde860f7eee3602c9ddcc",
+  "prompts": {},
+  "sessions": {
+    "s_1ba7ad2a498875": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ce6c2b71-68eb-40ff-967f-188df1b2c251",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
