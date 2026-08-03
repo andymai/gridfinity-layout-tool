@@ -491,6 +491,16 @@ textarea:focus-visible {
   outline: none;
 }
 
+/* Opt-out for fields that draw their own focus ring, either on the control or
+   on a wrapper that also holds icons. The rules above are unlayered, so they
+   beat Tailwind's layered `outline-none`; without this the control's square
+   outline renders nested inside the wrapper's rounded ring. Mark whichever
+   element paints the ring with `data-focus-ring`. */
+[data-focus-ring] :is(input, textarea, select):focus-visible,
+:is(input, textarea, select)[data-focus-ring]:focus-visible {
+  outline: none;
+}
+
 /* Command palette input - custom focus handling */
 [cmdk-input]:focus {
   outline: none;
