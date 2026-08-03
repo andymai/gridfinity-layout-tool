@@ -1,0 +1,29 @@
+src/features/community/components/CommunityCard/CommunityCard.tsx
+  s_1ba7ad2a498875::t_bf78e6e384c839 117-120,184,191
+src/features/community/api/client.ts
+  s_1ba7ad2a498875::t_3431ebe1ea4254 15,18,197-202,224-226
+api/community.ts
+  s_1ba7ad2a498875::t_bf78e6e384c839 22,574-576,579
+src/features/community/components/CommunityCard/CommunityCard.test.tsx
+  s_1ba7ad2a498875::t_90c3cdd2c69575 232-246
+api/lib/communityStore.ts
+  s_1ba7ad2a498875::t_bf78e6e384c839 117-121
+api/community.test.ts
+  s_1ba7ad2a498875::t_7870901d6e0330 1101-1128
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "f6cb3ed47b80ebe7f7377534492bbcca3bc62bf1",
+  "prompts": {},
+  "sessions": {
+    "s_1ba7ad2a498875": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ce6c2b71-68eb-40ff-967f-188df1b2c251",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
