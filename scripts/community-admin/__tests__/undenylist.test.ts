@@ -12,7 +12,7 @@ vi.mock('../lib/redis.js', () => ({
 const { undenylist } = await import('../commands/undenylist.js');
 
 function baseArgs(positional: string[]): Args {
-  return { command: 'undenylist', positional, json: false, yes: false, help: false };
+  return { command: 'undenylist', positional, json: false, yes: false, help: false, reason: null };
 }
 
 function createRedis(sremResult: number) {

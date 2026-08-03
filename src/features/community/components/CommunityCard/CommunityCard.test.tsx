@@ -209,4 +209,45 @@ describe('CommunityCard', () => {
       expect(prints).toHaveTextContent('community.card.printsLabel');
     });
   });
+
+  describe('featured', () => {
+    it('says nothing when the design is not featured', () => {
+      render(<CommunityCard card={card()} onSelect={vi.fn()} index={0} />);
+      expect(screen.queryByTestId('community-card-featured')).toBeNull();
+    });
+
+    it("states the curator's reason rather than a bare star", () => {
+      render(
+        <CommunityCard
+          card={card({ featured: true, featureReason: 'clever' })}
+          onSelect={vi.fn()}
+          index={0}
+        />
+      );
+      expect(screen.getByTestId('community-card-featured')).toHaveTextContent(
+        'community.featured.reason.clever'
+      );
+    });
+
+    it('shows no badge for a reason outside the known set', () => {
+      render(
+        <CommunityCard
+          card={card({
+            featured: true,
+            featureReason: 'retired-reason' as unknown as 'clever',
+          })}
+          onSelect={vi.fn()}
+          index={0}
+        />
+      );
+      // A retired or corrupt value must not hand an undefined key to t().
+      expect(screen.queryByTestId('community-card-featured')).toBeNull();
+    });
+
+    it('shows no badge for a pick made before reasons existed', () => {
+      render(<CommunityCard card={card({ featured: true })} onSelect={vi.fn()} index={0} />);
+      // Better silent than inventing a reason the curator never gave.
+      expect(screen.queryByTestId('community-card-featured')).toBeNull();
+    });
+  });
 });

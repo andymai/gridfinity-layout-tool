@@ -3503,5 +3503,9 @@
   "community.lineage.unavailable": "已不可用",
   "community.lineage.gap": "中间步骤未被记录。",
   "community.lineage.openRoot": "打开 {author} 的原作",
-  "community.lineage.openParent": "打开 {name}"
+  "community.lineage.openParent": "打开 {name}",
+  "community.featured.reason.wellMade": "做工尤其出色",
+  "community.featured.reason.clever": "巧妙的解法",
+  "community.featured.reason.versatile": "用途广泛",
+  "community.featured.reason.beginnerFriendly": "适合作为第一次打印"
 }

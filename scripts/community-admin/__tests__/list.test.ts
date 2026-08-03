@@ -49,7 +49,7 @@ function card(id: string, status: CommunityCardRecord['status']): CommunityCardR
 }
 
 function baseArgs(positional: string[], json = false): Args {
-  return { command: 'list', positional, json, yes: false, help: false };
+  return { command: 'list', positional, json, yes: false, help: false, reason: null };
 }
 
 function createRedis(reportCounts: number[]) {

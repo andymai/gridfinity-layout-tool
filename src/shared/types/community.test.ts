@@ -6,10 +6,17 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { COMMUNITY_CATEGORIES as API_COMMUNITY_CATEGORIES } from '../../../api/lib/communityValidation.js';
+import {
+  COMMUNITY_CATEGORIES as API_COMMUNITY_CATEGORIES,
+  COMMUNITY_FEATURE_REASONS as API_COMMUNITY_FEATURE_REASONS,
+} from '../../../api/lib/communityValidation.js';
 import { COMMUNITY_INDEX_SORTS as API_COMMUNITY_INDEX_SORTS } from '../../../api/lib/redisKeys.js';
 
-import { COMMUNITY_CATEGORIES, COMMUNITY_INDEX_SORTS } from './community';
+import {
+  COMMUNITY_CATEGORIES,
+  COMMUNITY_FEATURE_REASONS,
+  COMMUNITY_INDEX_SORTS,
+} from './community';
 
 describe('COMMUNITY_CATEGORIES (cross-boundary mirror)', () => {
   it('matches the api tuple exactly, including order', () => {
@@ -20,5 +27,11 @@ describe('COMMUNITY_CATEGORIES (cross-boundary mirror)', () => {
 describe('COMMUNITY_INDEX_SORTS (cross-boundary mirror)', () => {
   it('matches the api tuple exactly, including order', () => {
     expect([...COMMUNITY_INDEX_SORTS]).toEqual([...API_COMMUNITY_INDEX_SORTS]);
+  });
+});
+
+describe('COMMUNITY_FEATURE_REASONS (cross-boundary mirror)', () => {
+  it('matches the api tuple exactly, including order', () => {
+    expect([...COMMUNITY_FEATURE_REASONS]).toEqual([...API_COMMUNITY_FEATURE_REASONS]);
   });
 });

@@ -65,7 +65,7 @@ function createFakeRedis(likerIds: string[]) {
 }
 
 function baseArgs(positional: string[], yes = true): Args {
-  return { command: 'purge', positional, json: false, yes, help: false };
+  return { command: 'purge', positional, json: false, yes, help: false, reason: null };
 }
 
 const RECORD: CommunityDesignRecord = {

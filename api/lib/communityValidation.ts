@@ -51,6 +51,23 @@ export function communityRequiresCutouts(): boolean {
   return process.env.COMMUNITY_REQUIRE_CUTOUTS !== 'false';
 }
 
+/**
+ * MIRROR: must match `COMMUNITY_FEATURE_REASONS` in
+ * `src/shared/types/community.ts` (api/ cannot import from src/). Guarded by
+ * the cross-boundary equality test in `community.test.ts`.
+ */
+export const COMMUNITY_FEATURE_REASONS = [
+  'well-made',
+  'clever',
+  'versatile',
+  'beginner-friendly',
+] as const;
+export type CommunityFeatureReason = (typeof COMMUNITY_FEATURE_REASONS)[number];
+
+export function isCommunityFeatureReason(value: string): value is CommunityFeatureReason {
+  return (COMMUNITY_FEATURE_REASONS as readonly string[]).includes(value);
+}
+
 export const COMMUNITY_NAME_MAX_LENGTH = 60;
 export const COMMUNITY_DESCRIPTION_MAX_LENGTH = 500;
 /** Matches MAX_DISPLAY_NAME_LENGTH in supporters.ts: one cap for every rendered public name. */

@@ -3,7 +3,7 @@ import { dispatch } from '../lib/dispatch';
 import type { Args } from '../lib/args';
 
 function baseArgs(command: string, positional: string[] = []): Args {
-  return { command, positional, json: false, yes: false, help: false };
+  return { command, positional, json: false, yes: false, help: false, reason: null };
 }
 
 describe('dispatch', () => {

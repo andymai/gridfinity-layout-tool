@@ -1098,6 +1098,34 @@ describe('GET /api/community (list)', () => {
     expect((res._body as { likedIds: string[] }).likedIds).toEqual([]);
   });
 
+  it('serves a valid feature reason on a featured card', async () => {
+    await seedCard({ id: 'featured0001', featured: true });
+    await fake.hset(communityDesignKey('featured0001'), { featureReason: 'clever' });
+
+    const res = await handle({ method: 'GET' });
+    const body = res._body as { items: Array<{ id: string; featureReason?: string }> };
+    expect(body.items.find((i) => i.id === 'featured0001')?.featureReason).toBe('clever');
+  });
+
+  it('drops a stored reason that is no longer in the union', async () => {
+    await seedCard({ id: 'featured0002', featured: true });
+    await fake.hset(communityDesignKey('featured0002'), { featureReason: 'retired-reason' });
+
+    const res = await handle({ method: 'GET' });
+    const body = res._body as { items: Array<{ id: string; featureReason?: string }> };
+    // The stored value is a free string; a client indexes it into a label map.
+    expect(body.items.find((i) => i.id === 'featured0002')?.featureReason).toBeUndefined();
+  });
+
+  it('omits the reason on a design that is not featured', async () => {
+    await seedCard({ id: 'featured0003' });
+    await fake.hset(communityDesignKey('featured0003'), { featureReason: 'clever' });
+
+    const res = await handle({ method: 'GET' });
+    const body = res._body as { items: Array<{ id: string; featureReason?: string }> };
+    expect(body.items.find((i) => i.id === 'featured0003')?.featureReason).toBeUndefined();
+  });
+
   it('prefers a promoted cover photo over the render while prints are enabled', async () => {
     vi.stubEnv('COMMUNITY_PRINTS_ENABLED', 'true');
     await seedCard({ id: 'coverdesign1' });

@@ -31,7 +31,7 @@ const { hide } = await import('../commands/hide.js');
 const CARD = { id: 'abc123DEF456', status: 'live' } as CommunityCardRecord;
 
 function baseArgs(positional: string[]): Args {
-  return { command: 'hide', positional, json: false, yes: false, help: false };
+  return { command: 'hide', positional, json: false, yes: false, help: false, reason: null };
 }
 
 function createRedis() {

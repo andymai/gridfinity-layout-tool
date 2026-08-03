@@ -3503,5 +3503,9 @@
   "community.lineage.unavailable": "Nicht mehr verfügbar",
   "community.lineage.gap": "Schritte dazwischen wurden nicht erfasst.",
   "community.lineage.openRoot": "Original von {author} öffnen",
-  "community.lineage.openParent": "{name} öffnen"
+  "community.lineage.openParent": "{name} öffnen",
+  "community.featured.reason.wellMade": "Besonders gut gemacht",
+  "community.featured.reason.clever": "Clevere Lösung",
+  "community.featured.reason.versatile": "Vielseitig einsetzbar",
+  "community.featured.reason.beginnerFriendly": "Ein guter erster Druck"
 }

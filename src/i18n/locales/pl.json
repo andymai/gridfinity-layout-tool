@@ -3503,5 +3503,9 @@
   "community.lineage.unavailable": "Już niedostępne",
   "community.lineage.gap": "Kroki pośrednie nie zostały zapisane.",
   "community.lineage.openRoot": "Otwórz oryginał autorstwa {author}",
-  "community.lineage.openParent": "Otwórz {name}"
+  "community.lineage.openParent": "Otwórz {name}",
+  "community.featured.reason.wellMade": "Szczególnie dobrze wykonane",
+  "community.featured.reason.clever": "Sprytne rozwiązanie",
+  "community.featured.reason.versatile": "Przydatne do wielu rzeczy",
+  "community.featured.reason.beginnerFriendly": "Dobry pierwszy wydruk"
 }

@@ -3503,5 +3503,9 @@
   "community.lineage.unavailable": "現在は利用できません",
   "community.lineage.gap": "途中の経緯は記録されていません。",
   "community.lineage.openRoot": "{author} さんの原案を開く",
-  "community.lineage.openParent": "{name} を開く"
+  "community.lineage.openParent": "{name} を開く",
+  "community.featured.reason.wellMade": "特によくできています",
+  "community.featured.reason.clever": "巧みな解決策",
+  "community.featured.reason.versatile": "いろいろな用途に使えます",
+  "community.featured.reason.beginnerFriendly": "最初のプリントに最適"
 }

@@ -74,6 +74,28 @@ export const COMMUNITY_MILESTONE_KINDS = [
 
 export type CommunityMilestoneKind = (typeof COMMUNITY_MILESTONE_KINDS)[number];
 
+/**
+ * Why a design was featured, said out loud.
+ *
+ * A closed set rather than free text: it is user-facing copy that must
+ * translate, and it keeps the curator honest by forcing the pick into a
+ * stated reason instead of an unexplained star. The vision's rule is that a
+ * ranking formula stays legible, and a silent `featured` boolean is the least
+ * legible signal in the feature.
+ *
+ * MIRROR: must match `COMMUNITY_FEATURE_REASONS` in
+ * `api/lib/communityValidation.ts`. Registered in
+ * scripts/check-union-exhaustiveness.sh.
+ */
+export const COMMUNITY_FEATURE_REASONS = [
+  'well-made',
+  'clever',
+  'versatile',
+  'beginner-friendly',
+] as const;
+
+export type CommunityFeatureReason = (typeof COMMUNITY_FEATURE_REASONS)[number];
+
 export interface CommunityDesignMetrics {
   readonly width: number;
   readonly depth: number;
@@ -142,6 +164,8 @@ export interface CommunityCard {
    */
   readonly parentId?: string;
   readonly featured: boolean;
+  /** Why it was featured; absent on an unfeatured design or a pre-field pick. */
+  readonly featureReason?: CommunityFeatureReason;
   readonly counts: CommunityDesignCounts;
   /**
    * Whether the session user has liked this design, seeded client-side from
@@ -187,6 +211,8 @@ export interface CommunityDesign {
    */
   readonly coverPhotoUrl?: string;
   readonly featured: boolean;
+  /** Why it was featured; absent on an unfeatured design or a pre-field pick. */
+  readonly featureReason?: CommunityFeatureReason;
   readonly createdAt: number;
   readonly updatedAt: number;
   readonly status: CommunityDesignStatus;

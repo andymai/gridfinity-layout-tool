@@ -114,6 +114,12 @@ export interface CommunityDesignRecord {
    */
   coverPhotoUrl?: string;
   featured: boolean;
+  /**
+   * Why it was featured. Absent entirely on a blob written before the field
+   * existed (the reader returns stored JSON verbatim); '' once the admin path
+   * has touched it with an unfeature. Treat absent and '' the same.
+   */
+  featureReason?: string;
   createdAt: number;
   updatedAt: number;
   status: CommunityDesignStatus;
@@ -222,6 +228,8 @@ export interface CommunityCardRecord extends CommunityCardMetadata {
   prints?: number;
   /** Owner-promoted print photo, or '' for the render. Never written by the metadata writer. */
   coverPhotoUrl?: string;
+  /** Curator's stated reason for featuring; set by the admin path only. */
+  featureReason?: string;
   /** Present only after a hide; consulted only while status is 'hidden'. */
   hiddenReason?: CommunityHiddenReason;
 }
@@ -284,6 +292,7 @@ function parseCard(fields: Record<string, string | undefined>): CommunityCardRec
     views: Number(fields.views ?? 0),
     prints: Number(fields.prints ?? 0),
     coverPhotoUrl: fields.coverPhotoUrl ?? '',
+    featureReason: fields.featureReason ?? '',
     ...((fields.hiddenReason === 'reports' ||
       fields.hiddenReason === 'denylist' ||
       fields.hiddenReason === 'moderation') && {

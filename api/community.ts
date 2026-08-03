@@ -19,6 +19,7 @@ import {
   COMMUNITY_CATEGORIES,
   COMMUNITY_TECHNIQUES,
   communityRequiresCutouts,
+  isCommunityFeatureReason,
   parseCommunityLineage,
   validateCommunityPublish,
 } from './lib/communityValidation.js';
@@ -524,6 +525,8 @@ interface CommunityListItem {
   /** Direct-remix lineage pointer, '' for originals: powers the detail view's builds-on-this list. */
   parentId: string;
   featured: boolean;
+  /** Curator's stated reason; omitted when unfeatured or picked before the field. */
+  featureReason?: string;
   /** `opens`/`views` are owner-only stats, present only on `mine=1` items. */
   counts: {
     likes: number;
@@ -568,6 +571,12 @@ function toListItem(card: CommunityCardRecord): CommunityListItem {
     isRemix: card.isRemix,
     parentId: card.parentId,
     featured: card.featured,
+    // Validated, not forwarded: the stored value is a free string, and a
+    // reason retired from the union would otherwise reach a client that
+    // indexes it straight into a label map.
+    ...(card.featured &&
+      card.featureReason !== undefined &&
+      isCommunityFeatureReason(card.featureReason) && { featureReason: card.featureReason }),
     counts: {
       likes: card.likes,
       remixes: card.remixes,

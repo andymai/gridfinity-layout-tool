@@ -3503,5 +3503,9 @@
   "community.lineage.unavailable": "Non più disponibile",
   "community.lineage.gap": "Gli eventuali passaggi intermedi non sono stati registrati.",
   "community.lineage.openRoot": "Apri l'originale di {author}",
-  "community.lineage.openParent": "Apri {name}"
+  "community.lineage.openParent": "Apri {name}",
+  "community.featured.reason.wellMade": "Particolarmente ben fatto",
+  "community.featured.reason.clever": "Soluzione ingegnosa",
+  "community.featured.reason.versatile": "Utile per molte cose",
+  "community.featured.reason.beginnerFriendly": "Una buona prima stampa"
 }
