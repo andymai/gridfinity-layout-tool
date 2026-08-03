@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.356.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.355.1...gridfinity-layout-tool-v4.356.0) (2026-08-03)
+
+
+### Features
+
+* **community:** show a design's prints and their derived summary ([#3191](https://github.com/andymai/gridfinity-layout-tool/issues/3191)) ([8ac591f](https://github.com/andymai/gridfinity-layout-tool/commit/8ac591f3374aca01fba6e6f1e98915d78b267c29))
+
 ## [4.355.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.355.0...gridfinity-layout-tool-v4.355.1) (2026-08-03)
 
 
