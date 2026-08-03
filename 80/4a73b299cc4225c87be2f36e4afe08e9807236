@@ -1,0 +1,31 @@
+src/features/community/components/CommunityDetail/RemixLineage.test.tsx
+  s_1ba7ad2a498875::t_0b9f6e91906265 108-121
+  s_7ff36fc7322bef::t_74b86a1e050fde 122-123
+src/features/community/components/CommunityDetail/RemixLineage.tsx
+  s_1ba7ad2a498875::t_7c0b838826639f 29,37-38,45,62-69,105
+  s_1ba7ad2a498875::t_8239d1fb3bfeb0 140
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "804a73b299cc4225c87be2f36e4afe08e9807236",
+  "prompts": {},
+  "sessions": {
+    "s_1ba7ad2a498875": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ce6c2b71-68eb-40ff-967f-188df1b2c251",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_7ff36fc7322bef": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4125c687-4d22-454b-b422-a95ee692d292",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
