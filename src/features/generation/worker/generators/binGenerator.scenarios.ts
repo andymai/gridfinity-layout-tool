@@ -4,8 +4,9 @@
  * Split into category-based files under `./scenarios/`.
  * This barrel re-exports the aggregated array and helper functions.
  *
- * Update snapshots after verified geometry changes:
- *   pnpm run test:run -- -u src/features/generation/worker/generators/binGenerator.scenario.test
+ * Update snapshots after verified geometry changes (filter before `-u` — see
+ * the note in `__kernel-tests__/scenarioRunner.ts` for why):
+ *   pnpm exec vitest run binGenerator.scenario -u
  */
 export { ALL_SCENARIOS } from './scenarios/index';
 export type { ScenarioCase } from './scenarios/index';

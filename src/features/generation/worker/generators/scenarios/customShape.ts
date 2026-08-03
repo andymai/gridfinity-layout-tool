@@ -8,8 +8,9 @@
  *   - half-bin L: half-cell resolution, validates mask granularity end-to-end
  *
  * All fixtures produce meshes; triangle counts are snapshotted. When
- * verified visually correct, update with:
- *   pnpm run test:run -- -u src/features/generation/worker/generators/binGenerator.scenario.test
+ * verified visually correct, update with (filter before `-u` — see the note in
+ * `__kernel-tests__/scenarioRunner.ts` for why):
+ *   pnpm exec vitest run binGenerator.scenario.customShape -u
  */
 import {
   DEFAULT_BIN_PARAMS,
