@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { draw, getBounds, intersect } from 'brepjs';
-import type { Shape3D } from 'brepjs';
+import { draw, getBounds, intersect, withScope } from 'brepjs';
+import type { DisposalScope, Shape3D } from 'brepjs';
 import { isOk } from '@/core/result';
 import {
   autoCornerRadius,
@@ -278,39 +278,49 @@ describe('buildSingleCutout corner placement', () => {
    * both, and this exercises the real overshoot/`cutZ` placement — the half of
    * #3173 that decides whether an arc reaches the rim at all.
    */
-  const spanAtZ = (shape: WallCutoutShape, z: number, cutHeight: number = CUT_HEIGHT): number => {
-    const cut = buildSingleCutout(
-      shape,
-      CUT_WIDTH,
-      cutHeight,
-      OVERSHOOT,
-      EXTRUDE_DEPTH,
-      WALL_HEIGHT,
-      CENTERED
-    );
-    const slab = box(-CUT_WIDTH, CUT_WIDTH, -EXTRUDE_DEPTH, EXTRUDE_DEPTH, z, z + 0.001);
-    const clipped = intersect(cut, slab);
-    expect(isOk(clipped), `slab intersection at z=${z}`).toBe(true);
-    if (!isOk(clipped)) return NaN;
-    const b = getBounds(clipped.value);
-    return b.xMax - b.xMin;
-  };
+  const spanAtZ = (shape: WallCutoutShape, z: number, cutHeight: number = CUT_HEIGHT): number =>
+    withScope((scope: DisposalScope) => {
+      const cut = scope.register(
+        buildSingleCutout(
+          shape,
+          CUT_WIDTH,
+          cutHeight,
+          OVERSHOOT,
+          EXTRUDE_DEPTH,
+          WALL_HEIGHT,
+          CENTERED
+        )
+      );
+      const slab = scope.register(
+        box(-CUT_WIDTH, CUT_WIDTH, -EXTRUDE_DEPTH, EXTRUDE_DEPTH, z, z + 0.001)
+      );
+      const clipped = intersect(cut, slab);
+      expect(isOk(clipped), `slab intersection at z=${z}`).toBe(true);
+      if (!isOk(clipped)) return NaN;
+      const b = getBounds(scope.register(clipped.value));
+      return b.xMax - b.xMin;
+    });
 
   it('straddles the wall and overshoots the rim', () => {
     // The u-shape profile switched from drawRoundedRectangle to a pen for
     // #3173, which flips the blueprint winding (counterClockwise → clockwise).
     // Winding can flip an extrusion's direction, so pin the placement: the cut
     // must stay centred on the wall face in Y and still clear the rim in Z.
-    const cut = buildSingleCutout(
-      'u-shape',
-      CUT_WIDTH,
-      CUT_HEIGHT,
-      OVERSHOOT,
-      EXTRUDE_DEPTH,
-      WALL_HEIGHT,
-      CENTERED
+    const b = withScope((scope: DisposalScope) =>
+      getBounds(
+        scope.register(
+          buildSingleCutout(
+            'u-shape',
+            CUT_WIDTH,
+            CUT_HEIGHT,
+            OVERSHOOT,
+            EXTRUDE_DEPTH,
+            WALL_HEIGHT,
+            CENTERED
+          )
+        )
+      )
     );
-    const b = getBounds(cut);
     expect(b.yMin).toBeCloseTo(-EXTRUDE_DEPTH / 2, 3);
     expect(b.yMax).toBeCloseTo(EXTRUDE_DEPTH / 2, 3);
     expect(b.zMin).toBeCloseTo(FLOOR_Z, 3);

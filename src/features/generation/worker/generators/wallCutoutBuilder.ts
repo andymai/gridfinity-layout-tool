@@ -68,8 +68,8 @@ export function buildCutoutProfile(
         .close();
     }
 
-    case 'funnel':
-    default: {
+    case 'u-shape':
+    case 'funnel': {
       // U-shape and funnel are the same pen — a straight-sided u-shape is the
       // degenerate funnel with no taper.
       //
