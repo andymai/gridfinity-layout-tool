@@ -409,6 +409,8 @@ function CommunityDetailDialog({
 
   const myPrint = design !== null && ownPrint?.designId === design.id ? ownPrint.print : null;
 
+  const printDialogOpen = usePrintDialogStore((s) => s.phase !== 'closed');
+
   const handleAddPrint = useCallback(() => {
     if (design === null) return;
     usePrintDialogStore.getState().open({
@@ -684,10 +686,17 @@ function CommunityDetailDialog({
         }
       />
 
-      <PrintDialog
-        onSaved={(print) => setOwnPrint({ designId: print.designId, print })}
-        onDeleted={() => setOwnPrint(design === null ? null : { designId: design.id, print: null })}
-      />
+      {/* CommunityDetail is already its own chunk, so the dialog is off the
+          eager path without a further split; an extra chunk boundary here only
+          adds overhead to the total-JS budget. */}
+      {printDialogOpen && (
+        <PrintDialog
+          onSaved={(print) => setOwnPrint({ designId: print.designId, print })}
+          onDeleted={() =>
+            setOwnPrint(design === null ? null : { designId: design.id, print: null })
+          }
+        />
+      )}
     </Dialog.Root>
   );
 }
