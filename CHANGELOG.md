@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.362.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.361.0...gridfinity-layout-tool-v4.362.0) (2026-08-03)
+
+
+### Features
+
+* **community:** make featuring state its reason ([#3208](https://github.com/andymai/gridfinity-layout-tool/issues/3208)) ([c51edd3](https://github.com/andymai/gridfinity-layout-tool/commit/c51edd3e80febd97f2825ae67dbbcf0ad97b5891))
+
 ## [4.361.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.360.0...gridfinity-layout-tool-v4.361.0) (2026-08-03)
 
 
