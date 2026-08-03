@@ -1,8 +1,14 @@
 /**
  * Handler for the 'group-rotating' interaction mode.
  *
- * Rotates all selected cutouts around the group center, preserving
- * their relative positions and individual rotations.
+ * Rotates the selection as one rigid body about the group center: member
+ * centers swing around that center and every member turns by the same visual
+ * angle, so relative positions and orientations inside the group are preserved.
+ *
+ * Sign convention: positions rotate CCW with a CCW drag, while the renderer
+ * draws a cutout at `-rotation` (see `CutoutShapeMesh`) — so a CCW drag of θ
+ * must SUBTRACT θ from each member's stored rotation. Adding it spins each
+ * member backwards on its own axis while the constellation swings forwards.
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
@@ -50,7 +56,7 @@ export function handleGroupRotateMove(
     nextPreview.set(id, {
       x: rotated.x - cutout.width / 2,
       y: rotated.y - cutout.depth / 2,
-      rotation: (((initial.rotation + delta) % 360) + 360) % 360,
+      rotation: (((initial.rotation - delta) % 360) + 360) % 360,
     });
   }
 

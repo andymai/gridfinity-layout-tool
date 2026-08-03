@@ -61,6 +61,24 @@ describe('buildGroupRotationUpdates', () => {
     expect(updates.get('b')?.x).toBeCloseTo(0, 5);
   });
 
+  it('swings member centers the same visual way each member turns', () => {
+    // Rigid-body check at 90° (180° is sign-symmetric and hides a flipped
+    // position rotation). Stored `rotation` renders as `-rotation`, so a +90
+    // stored turn is clockwise on screen — member centers must travel
+    // clockwise too, or the group shears instead of rotating.
+    const a = cutout({ id: 'a', x: 90, y: 95, width: 10, depth: 10 });
+    const b = cutout({ id: 'b', x: 110, y: 95, width: 10, depth: 10 });
+    const updates = buildGroupRotationUpdates([a, b], 90, 200, 200);
+    // Group center (105, 100). a's center (95, 100) rotated 90° CW → (105, 110).
+    expect(updates.get('a')?.x).toBeCloseTo(100, 5);
+    expect(updates.get('a')?.y).toBeCloseTo(105, 5);
+    // b's center (115, 100) rotated 90° CW → (105, 90).
+    expect(updates.get('b')?.x).toBeCloseTo(100, 5);
+    expect(updates.get('b')?.y).toBeCloseTo(85, 5);
+    expect(updates.get('a')?.rotation).toBe(90);
+    expect(updates.get('b')?.rotation).toBe(90);
+  });
+
   it('skips locked cutouts', () => {
     const a = cutout({ id: 'a', locked: true });
     const updates = buildGroupRotationUpdates([a], 90, 200, 200);

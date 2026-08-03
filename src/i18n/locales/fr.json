@@ -654,6 +654,7 @@
   "binDesigner.cutouts.transform.rotate90": "Pivoter de 90°",
   "binDesigner.cutouts.transform.rotateField": "Rotation",
   "binDesigner.cutouts.transform.title": "Transformer",
+  "binDesigner.cutouts.group": "Grouper",
   "binDesigner.cutouts.ungroup": "Dissocier",
   "binDesigner.cutouts.width": "Largeur",
   "binDesigner.cutoutsDisableLightweight": "Impossible de combiner des découpes avec un fond allégé",

@@ -654,6 +654,7 @@
   "binDesigner.cutouts.transform.rotate90": "Rotera 90°",
   "binDesigner.cutouts.transform.rotateField": "Rotation",
   "binDesigner.cutouts.transform.title": "Transformera",
+  "binDesigner.cutouts.group": "Gruppera",
   "binDesigner.cutouts.ungroup": "Dela grupp",
   "binDesigner.cutouts.width": "Bredd",
   "binDesigner.cutoutsDisableLightweight": "Kan inte kombinera urtag med lätt golv",

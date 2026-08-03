@@ -654,6 +654,7 @@
   "binDesigner.cutouts.transform.rotate90": "90° 회전",
   "binDesigner.cutouts.transform.rotateField": "회전",
   "binDesigner.cutouts.transform.title": "변형",
+  "binDesigner.cutouts.group": "그룹화",
   "binDesigner.cutouts.ungroup": "그룹 해제",
   "binDesigner.cutouts.width": "너비",
   "binDesigner.cutoutsDisableLightweight": "상단 컷아웃과 경량 바닥을 함께 쓸 수 없습니다",

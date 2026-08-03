@@ -513,7 +513,6 @@ export function createCutoutSlice(set: Set) {
     groupCutouts: (cutoutIds: readonly string[], op?: GroupOp) => {
       if (cutoutIds.length < 2) return;
       set((state) => {
-        pushHistoryEntry(state);
         // Reuse an existing groupId if any selected cutout already belongs to a group
         const existingMember = state.params.cutouts.find(
           (c) => cutoutIds.includes(c.id) && c.groupId !== null
@@ -544,6 +543,21 @@ export function createCutoutSlice(set: Set) {
               colorScope: colorSource.colorScope ?? DEFAULT_CUTOUT_COLOR_SCOPE,
             }
           : undefined;
+        // Re-grouping a set that already forms this exact group changes nothing,
+        // and an unconditional history push would spend an undo slot on it —
+        // reachable from Ctrl+G on a partial selection of one group.
+        const noChange = state.params.cutouts.every(
+          (c) =>
+            !idsToGroup.has(c.id) ||
+            (c.groupId === groupId &&
+              (c.groupOp ?? DEFAULT_GROUP_OP) === groupOp &&
+              (!colorPatch ||
+                (c.color === colorPatch.color &&
+                  (c.colorScope ?? DEFAULT_CUTOUT_COLOR_SCOPE) === colorPatch.colorScope)))
+        );
+        if (noChange) return;
+
+        pushHistoryEntry(state);
         state.params.cutouts = state.params.cutouts.map((c) =>
           idsToGroup.has(c.id) ? { ...c, groupId, groupOp, ...colorPatch } : c
         );

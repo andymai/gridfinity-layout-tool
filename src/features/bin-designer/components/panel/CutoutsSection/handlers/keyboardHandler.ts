@@ -351,7 +351,8 @@ function handleRotate90(ctx: KeyboardHandlerContext): void {
   if (ctx.cutouts.some((c) => ctx.selection.has(c.id) && c.locked)) return;
 
   if (ctx.onUpdateBatch && ctx.selection.size > 1) {
-    // Group rotation: rotate each cutout's position around the group center
+    // Rigid group rotation: member centers travel clockwise (rotatePoint by
+    // -90) to match the clockwise on-screen turn a +90 stored rotation gives.
     const selectedCutouts = ctx.cutouts.filter((c) => ctx.selection.has(c.id));
     const bounds = computeBounds(selectedCutouts);
     const cx = (bounds.minX + bounds.maxX) / 2;
@@ -360,7 +361,7 @@ function handleRotate90(ctx: KeyboardHandlerContext): void {
     for (const cutout of selectedCutouts) {
       const cutCx = cutout.x + cutout.width / 2;
       const cutCy = cutout.y + cutout.depth / 2;
-      const rotated = rotatePoint(cutCx, cutCy, cx, cy, 90);
+      const rotated = rotatePoint(cutCx, cutCy, cx, cy, -90);
       updates.set(cutout.id, {
         x: rotated.x - cutout.width / 2,
         y: rotated.y - cutout.depth / 2,

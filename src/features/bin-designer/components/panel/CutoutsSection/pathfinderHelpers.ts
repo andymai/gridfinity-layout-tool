@@ -34,6 +34,27 @@ export function resolveActiveOp(
 }
 
 /**
+ * Whether a plain Group action would actually change anything.
+ *
+ * False once every selected cutout already shares one group — including a
+ * PARTIAL selection of that group, where `resolveActiveOp` returns null but
+ * `groupCutouts` would still re-group the whole group and land an empty undo
+ * step. A mixed selection (loose shapes plus a group) stays groupable: that
+ * folds the loose shapes into the existing group.
+ */
+export function canGroupSelection(
+  selectedIds: readonly string[],
+  cutouts: readonly Cutout[]
+): boolean {
+  if (selectedIds.length < 2) return false;
+  const selected = cutouts.filter((c) => selectedIds.includes(c.id));
+  if (selected.length < 2) return false;
+  const first = selected[0].groupId;
+  if (first === null) return true;
+  return selected.some((c) => c.groupId !== first);
+}
+
+/**
  * Rotate `(x, y)` around `(cx, cy)` by `deg` degrees CCW.
  */
 function rotateAroundCenter(
@@ -54,11 +75,17 @@ function rotateAroundCenter(
 
 /**
  * Compute updates that rotate every selected cutout `deg` around the
- * group's bounding-box center.
+ * group's bounding-box center, as one rigid body.
  *
  * Returns position (x/y) AND rotation updates per member. The rotation
  * applies on top of the existing per-cutout rotation. Locked cutouts are
  * skipped silently.
+ *
+ * Sign convention: a cutout renders at `-rotation` (see `CutoutShapeMesh`), so
+ * `+deg` turns a member clockwise on screen — member centers therefore travel
+ * clockwise too, i.e. `rotateAroundCenter` gets `-deg`. Rotating positions by
+ * `+deg` instead swings the constellation one way while each member spins the
+ * other, shearing the group rather than rotating it.
  */
 export function buildGroupRotationUpdates(
   selected: readonly Cutout[],
@@ -77,7 +104,7 @@ export function buildGroupRotationUpdates(
     const eb = getEffectiveBounds(cutout);
     const centerX = (eb.minX + eb.maxX) / 2;
     const centerY = (eb.minY + eb.maxY) / 2;
-    const rotated = rotateAroundCenter(centerX, centerY, cx, cy, deg);
+    const rotated = rotateAroundCenter(centerX, centerY, cx, cy, -deg);
     const newRotation = (((cutout.rotation + deg) % 360) + 360) % 360;
     const newX = rotated.x - cutout.width / 2;
     const newY = rotated.y - cutout.depth / 2;

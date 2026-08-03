@@ -654,6 +654,7 @@
   "binDesigner.cutouts.transform.rotate90": "Otočit o 90°",
   "binDesigner.cutouts.transform.rotateField": "Otočení",
   "binDesigner.cutouts.transform.title": "Transformace",
+  "binDesigner.cutouts.group": "Seskupit",
   "binDesigner.cutouts.ungroup": "Zrušit seskupení",
   "binDesigner.cutouts.width": "Šířka",
   "binDesigner.cutoutsDisableLightweight": "Nelze kombinovat horní výřezy s odlehčeným dnem",

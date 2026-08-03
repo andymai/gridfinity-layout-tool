@@ -36,6 +36,7 @@ function build(cutout: Cutout, overrides: Record<string, unknown> = {}) {
     lockCutouts: vi.fn(),
     unlockCutouts: vi.fn(),
     groupCutouts: vi.fn(),
+    ungroupCutouts: vi.fn(),
     setGroupOp: vi.fn(),
     reorderCutouts: vi.fn(),
     flattenArray: vi.fn(),
@@ -88,5 +89,53 @@ describe('array context actions', () => {
   it('does not offer array actions for a path cutout', () => {
     const actions = build(makeCutout({ shape: 'path' }));
     expect(labels(actions)).not.toContain('binDesigner.cutouts.array.create');
+  });
+});
+
+describe('group context actions', () => {
+  const buildMulti = (cutouts: Cutout[], overrides: Record<string, unknown> = {}) =>
+    build(cutouts[0], {
+      cutouts,
+      selection: new Set(cutouts.map((c) => c.id)),
+      ...overrides,
+    });
+
+  it('offers Group for a loose multi-selection', () => {
+    const groupCutouts = vi.fn();
+    const actions = buildMulti([makeCutout({ id: 'a' }), makeCutout({ id: 'b' })], {
+      groupCutouts,
+    });
+    expect(labels(actions)).toContain('binDesigner.cutouts.group');
+    expect(labels(actions)).not.toContain('binDesigner.cutouts.ungroup');
+    actions.find((a) => a.label === 'binDesigner.cutouts.group')?.onClick();
+    expect(groupCutouts).toHaveBeenCalledWith(['a', 'b']);
+  });
+
+  it('offers Ungroup (not Group) when the selection is already one group', () => {
+    const ungroupCutouts = vi.fn();
+    const actions = buildMulti(
+      [makeCutout({ id: 'a', groupId: 'g1' }), makeCutout({ id: 'b', groupId: 'g1' })],
+      { ungroupCutouts }
+    );
+    expect(labels(actions)).not.toContain('binDesigner.cutouts.group');
+    expect(labels(actions)).toContain('binDesigner.cutouts.ungroup');
+    actions.find((a) => a.label === 'binDesigner.cutouts.ungroup')?.onClick();
+    expect(ungroupCutouts).toHaveBeenCalledWith(['a', 'b']);
+  });
+
+  it('offers both when a loose shape is selected alongside a group', () => {
+    const actions = buildMulti([
+      makeCutout({ id: 'a', groupId: 'g1' }),
+      makeCutout({ id: 'b', groupId: 'g1' }),
+      makeCutout({ id: 'c' }),
+    ]);
+    expect(labels(actions)).toContain('binDesigner.cutouts.group');
+    expect(labels(actions)).toContain('binDesigner.cutouts.ungroup');
+  });
+
+  it('keeps group actions off a single selection', () => {
+    const actions = build(makeCutout({ groupId: 'g1' }));
+    expect(labels(actions)).not.toContain('binDesigner.cutouts.group');
+    expect(labels(actions)).not.toContain('binDesigner.cutouts.ungroup');
   });
 });

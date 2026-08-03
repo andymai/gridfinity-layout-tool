@@ -654,6 +654,7 @@
   "binDesigner.cutouts.transform.rotate90": "Obróć o 90°",
   "binDesigner.cutouts.transform.rotateField": "Obrót",
   "binDesigner.cutouts.transform.title": "Przekształć",
+  "binDesigner.cutouts.group": "Grupuj",
   "binDesigner.cutouts.ungroup": "Rozgrupuj",
   "binDesigner.cutouts.width": "Szerokość",
   "binDesigner.cutoutsDisableLightweight": "Nie można łączyć wycięć od góry z lekką podłogą",

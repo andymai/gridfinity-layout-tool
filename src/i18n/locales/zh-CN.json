@@ -654,6 +654,7 @@
   "binDesigner.cutouts.transform.rotate90": "旋转 90°",
   "binDesigner.cutouts.transform.rotateField": "旋转",
   "binDesigner.cutouts.transform.title": "变换",
+  "binDesigner.cutouts.group": "编组",
   "binDesigner.cutouts.ungroup": "取消编组",
   "binDesigner.cutouts.width": "宽度",
   "binDesigner.cutoutsDisableLightweight": "顶部挖槽无法与减重底面并用",

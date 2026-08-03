@@ -88,7 +88,7 @@ describe('resolveActiveOp', () => {
 describe('PathfinderControls', () => {
   it('disables every op button when fewer than 2 cutouts are selected', () => {
     renderControls({ selectedIds: ['a'], cutouts: [cutout({ id: 'a' })] });
-    for (const name of ['Unite', 'Minus Front', 'Intersect', 'Exclude']) {
+    for (const name of ['Union', 'Minus Front', 'Intersect', 'Exclude']) {
       expect(screen.getByRole('button', { name })).toBeDisabled();
     }
   });
@@ -146,6 +146,6 @@ describe('PathfinderControls', () => {
       'aria-pressed',
       'true'
     );
-    expect(screen.getByRole('button', { name: 'Unite' })).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: 'Union' })).toHaveAttribute('aria-pressed', 'false');
   });
 });

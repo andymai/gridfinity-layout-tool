@@ -33,6 +33,7 @@ interface BuildContextActionsArgs {
   lockCutouts: (ids: string[]) => void;
   unlockCutouts: (ids: string[]) => void;
   groupCutouts: (ids: readonly string[], op?: GroupOp) => void;
+  ungroupCutouts: (ids: readonly string[]) => void;
   setGroupOp: (groupId: string, op: GroupOp) => void;
   reorderCutouts: (ids: readonly string[], direction: ReorderDirection) => void;
   flattenArray: (id: string) => void;
@@ -56,6 +57,7 @@ export function buildCutoutContextActions(args: BuildContextActionsArgs): Contex
     lockCutouts,
     unlockCutouts,
     groupCutouts,
+    ungroupCutouts,
     setGroupOp,
     reorderCutouts,
     flattenArray,
@@ -185,6 +187,23 @@ export function buildCutoutContextActions(args: BuildContextActionsArgs): Contex
       if (sharedGroupId) setGroupOp(sharedGroupId, op);
       else groupCutouts(selectedIds, op);
     };
+
+    // Group/Ungroup first: the container is the everyday action, the boolean
+    // ops below it are the exception.
+    if (!sharedGroupId) {
+      actions.push({
+        label: t('binDesigner.cutouts.group'),
+        onClick: () => groupCutouts(selectedIds),
+        shortcut: { keys: 'G', modifier: true },
+      });
+    }
+    if (selectedCutouts.some((c) => c.groupId !== null)) {
+      actions.push({
+        label: t('binDesigner.cutouts.ungroup'),
+        onClick: () => ungroupCutouts(selectedIds),
+        shortcut: { keys: 'G', modifier: true, shift: true },
+      });
+    }
 
     actions.push({
       label: t('binDesigner.cutouts.pathfinder.union'),

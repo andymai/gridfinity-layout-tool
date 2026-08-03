@@ -654,6 +654,7 @@
   "binDesigner.cutouts.transform.rotate90": "Ruota di 90°",
   "binDesigner.cutouts.transform.rotateField": "Rotazione",
   "binDesigner.cutouts.transform.title": "Trasforma",
+  "binDesigner.cutouts.group": "Raggruppa",
   "binDesigner.cutouts.ungroup": "Separa",
   "binDesigner.cutouts.width": "Larghezza",
   "binDesigner.cutoutsDisableLightweight": "Impossibile combinare i ritagli superiori con un fondo alleggerito",

@@ -58,7 +58,13 @@ export function useCutoutInteraction({
   maskCellSize,
   meshAssets,
 }: UseCutoutInteractionOptions) {
-  const [mode, setMode] = useState<InteractionMode>({ type: 'placing', shape: 'rectangle' });
+  // Opening a board that already has shapes starts on the pointer/marquee tool
+  // so the first click selects instead of drawing a stray rectangle over
+  // existing work. An empty board keeps the rectangle tool armed — there is
+  // nothing to select, and the first click should draw.
+  const [mode, setMode] = useState<InteractionMode>(() =>
+    cutouts.length > 0 ? { type: 'idle' } : { type: 'placing', shape: 'rectangle' }
+  );
   const [selection, setSelection] = useState<ReadonlySet<string>>(new Set());
   const [preview, setPreview] = useState<PreviewMap>(new Map());
   const [snapEnabled, setSnapEnabled] = useState(true);

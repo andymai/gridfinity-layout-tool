@@ -654,6 +654,7 @@
   "binDesigner.cutouts.transform.rotate90": "Girar 90°",
   "binDesigner.cutouts.transform.rotateField": "Rotação",
   "binDesigner.cutouts.transform.title": "Transformar",
+  "binDesigner.cutouts.group": "Agrupar",
   "binDesigner.cutouts.ungroup": "Desagrupar",
   "binDesigner.cutouts.width": "Largura",
   "binDesigner.cutoutsDisableLightweight": "Não é possível combinar recortes com um piso leve",
