@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.358.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.357.0...gridfinity-layout-tool-v4.358.0) (2026-08-03)
+
+
+### Features
+
+* **community:** show what a design costs to print, and say where that came from ([#3199](https://github.com/andymai/gridfinity-layout-tool/issues/3199)) ([c1d739c](https://github.com/andymai/gridfinity-layout-tool/commit/c1d739c3f2c1679f027126ca4db01ae5ea365a87))
+
 ## [4.357.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.356.0...gridfinity-layout-tool-v4.357.0) (2026-08-03)
 
 
