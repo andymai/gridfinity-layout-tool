@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.353.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.353.4...gridfinity-layout-tool-v4.353.5) (2026-08-03)
+
+
+### Bug Fixes
+
+* **design-system:** remove the duplicate focus outline on wrapper-based inputs ([#3176](https://github.com/andymai/gridfinity-layout-tool/issues/3176)) ([a8f1c71](https://github.com/andymai/gridfinity-layout-tool/commit/a8f1c7161b1e4aad9f2118cdf06d557592489359))
+
 ## [4.353.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.353.3...gridfinity-layout-tool-v4.353.4) (2026-08-03)
 
 
