@@ -1,3 +1,4 @@
+import { COMMUNITY_INDEX_SORTS } from '../../../api/lib/redisKeys.js';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { planPurgeCleanup } from '../lib/purgePlan';
 import { communityDesignBlobPath } from '../../../api/lib/communityStore';
@@ -80,12 +81,14 @@ describe('planPurgeCleanup', () => {
     ]);
   });
 
-  it('enumerates the card hash, all three sort indexes, likes, reports, and children keys', () => {
+  it('enumerates the card hash, every sort index, likes, reports, and children keys', () => {
     const plan = planPurgeCleanup(DESIGN_ID, makeRecord(), makeCard());
 
     expect(plan.hashKey).toBe('community:design:abc123DEF456');
+    // Derived from the tuple so adding a sort cannot silently leave a purge
+    // orphaning that index.
     expect(plan.indexKeys.sort()).toEqual(
-      ['community:index:likes', 'community:index:newest', 'community:index:remixes'].sort()
+      COMMUNITY_INDEX_SORTS.map((sort) => `community:index:${sort}`).sort()
     );
     expect(plan.likesKey).toBe('community:likes:abc123DEF456');
     expect(plan.reportsKey).toBe('community:reports:abc123DEF456');
