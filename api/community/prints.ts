@@ -440,6 +440,14 @@ async function handleDelete(
   const session = await requireSession(req, res);
   if (!session) return;
 
+  // Deleting is cheap to request but not free to serve (blob deletes plus a
+  // count resync), so it carries the same budget as the design manage paths.
+  const rate = await checkRateLimit(session.userId, 'community.manage');
+  if (!rate.allowed) {
+    rateLimited(res, rate.retryAfterSeconds);
+    return;
+  }
+
   const authorPublicId = deriveAuthorPublicId(session.userId);
   if (authorPublicId === null) {
     logger.error('Community print delete failed: TOKEN_SALT is not configured');

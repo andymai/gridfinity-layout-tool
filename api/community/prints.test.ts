@@ -570,6 +570,12 @@ describe('DELETE', () => {
     const res = await handle({ method: 'DELETE' });
     expect(res._status).toBe(401);
   });
+
+  it('surfaces the rate limit', async () => {
+    mocks.checkRateLimit.mockResolvedValue({ allowed: false, retryAfterSeconds: 60 });
+    const res = await handle({ method: 'DELETE' });
+    expect(res._status).toBe(429);
+  });
 });
 
 describe('POST report', () => {
