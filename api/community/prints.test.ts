@@ -444,6 +444,38 @@ describe('PUT (edit)', () => {
     expect((res._body as { print: { photos: string[] } }).print.photos).toEqual(kept);
   });
 
+  it('holds the revision steady when an edit uploads nothing', async () => {
+    const author = await seedOwnPrint([webpBase64()]);
+    const rev = redis.hashes.get(communityPrintKey(DESIGN_ID, author))?.get('rev');
+    const kept = JSON.parse(
+      redis.hashes.get(communityPrintKey(DESIGN_ID, author))?.get('photos') ?? '[]'
+    ) as string[];
+
+    await handle({ method: 'PUT', body: validPrintBody({ photos: kept, note: 'typo fix' }) });
+
+    expect(redis.hashes.get(communityPrintKey(DESIGN_ID, author))?.get('rev')).toBe(rev);
+  });
+
+  it('advances the revision so an added photo cannot collide with a kept one', async () => {
+    const author = await seedOwnPrint([webpBase64()]);
+    const kept = JSON.parse(
+      redis.hashes.get(communityPrintKey(DESIGN_ID, author))?.get('photos') ?? '[]'
+    ) as string[];
+    mocks.put.mockClear();
+
+    // Keep photo 0 and add another. Both are index 0 of their batch, so a
+    // stable rev would make the upload target the kept photo's own path.
+    const res = await handle({
+      method: 'PUT',
+      body: validPrintBody({ photos: [...kept, webpBase64(500, 500)] }),
+    });
+
+    expect(res._status).toBe(200);
+    const [uploadPath] = mocks.put.mock.calls[0] as [string];
+    expect(uploadPath).toContain('-2-0.webp');
+    expect(kept[0]).not.toContain('-2-0.webp');
+  });
+
   it('rejects a kept URL that does not belong to this print', async () => {
     await seedOwnPrint([webpBase64()]);
 
@@ -512,6 +544,21 @@ describe('GET', () => {
 
     const body = res._body as { mine: { note: string } | null };
     expect(body.mine?.note).toBe('mine');
+  });
+
+  it('still returns a hidden print to its own author, with its status', async () => {
+    await handle({ method: 'PUT', body: validPrintBody({ note: 'mine' }) });
+    const author = authorIdFor(USER_ID);
+    redis.hashes.get(communityPrintKey(DESIGN_ID, author))?.set('status', 'hidden');
+    await redis.zrem(communityPrintsKey(DESIGN_ID), author);
+
+    const res = await handle({ method: 'GET' });
+
+    const body = res._body as { items: unknown[]; mine: { status: string } | null };
+    // Gone from the public list, but the author can still see what happened
+    // and delete it: moderation keeps the hash precisely for that.
+    expect(body.items).toHaveLength(0);
+    expect(body.mine?.status).toBe('hidden');
   });
 
   it('serves anonymously with no own print', async () => {

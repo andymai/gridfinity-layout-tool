@@ -243,8 +243,11 @@ async function handleList(
   if (session !== null) {
     const authorPublicId = deriveAuthorPublicId(session.userId);
     if (authorPublicId !== null) {
+      // A hidden print still travels to its own author, carrying its status:
+      // the moderation path keeps the hash precisely so the owner can see what
+      // happened and delete it. Only a removed record is gone for everyone.
       const own = await readCommunityPrint(redis, designId, authorPublicId);
-      if (own !== null && own.status === 'live') mine = toPrintResponse(own);
+      if (own !== null && own.status !== 'removed') mine = toPrintResponse(own);
     }
   }
 
@@ -338,10 +341,16 @@ async function handleUpsert(
   }
 
   const now = Date.now();
-  const rev = (existing?.rev ?? 0) + 1;
   const newPhotos = payload.photos.filter(
     (photo): photo is { kind: 'new'; base64: string } => photo.kind === 'new'
   );
+  // Only an upload advances the revision. Blob paths are (rev, index) and
+  // upload at `allowOverwrite: false`, so every batch needs a rev of its own or
+  // an edit that adds one photo while keeping another would target the kept
+  // photo's path and collide. A settings-only edit uploads nothing, so it holds
+  // the revision steady instead of churning it.
+  const previousRev = existing?.rev ?? 0;
+  const rev = newPhotos.length > 0 ? previousRev + 1 : Math.max(previousRev, 1);
 
   const uploaded = await Promise.all(
     newPhotos.map((photo, index) =>

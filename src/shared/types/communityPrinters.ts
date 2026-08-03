@@ -8,7 +8,10 @@
  * out of reporting a print.
  *
  * Labels are hardware model names, so they are NOT translated: a Prusa MK4 is a
- * Prusa MK4 in every locale. Only the "Other" option's label comes from i18n.
+ * Prusa MK4 in every locale. The `other` entry is the exception, since "Other"
+ * is ordinary UI copy rather than a product name. Its label here is an English
+ * fallback; `COMMUNITY_PRINTER_OTHER` is exported so a picker can match that
+ * entry and substitute a translated label.
  *
  * Maintained by PR. Adding an id is safe; removing one is not, because stored
  * prints reference it (`printerLabel` falls back to the raw id).
