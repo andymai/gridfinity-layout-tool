@@ -30,6 +30,9 @@ declare -A UNION_TYPES=(
   ["CommunityIndexSort"]="newest,remixes,likes"
   ["CommunityMilestoneKind"]="first_publish,first_remix_of_yours,ten_published_remixes,hundred_prints"
   ["CommunityReportReason"]="inappropriate,spam,broken,stolen"
+  ["CommunityPrintMaterial"]="pla,petg,abs,asa,tpu,other"
+  ["CommunityPrintFitVerdict"]="as-designed,adjusted,did-not-fit"
+  ["CommunityPrintStatus"]="live,hidden,removed"
 )
 
 # Get files to check

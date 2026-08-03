@@ -19,6 +19,7 @@ import {
   communityIndexKey,
   communityLikedKey,
   communityLikesKey,
+  communityPrintsIndexKey,
 } from './redisKeys.js';
 
 export type CommunityDesignStatus = 'live' | 'hidden' | 'removed';
@@ -208,6 +209,12 @@ export interface CommunityCardRecord extends CommunityCardMetadata {
   opens?: number;
   /** Owner-only stat: deduped detail views. Never served publicly. Optional like `opens`. */
   views?: number;
+  /**
+   * Distinct printers who reported printing this design, mirrored from the
+   * print ZSET's cardinality by `syncCommunityPrintCount`. Public. Optional in
+   * the type for fixture ergonomics; parseCard always yields a number.
+   */
+  prints?: number;
   /** Present only after a hide; consulted only while status is 'hidden'. */
   hiddenReason?: CommunityHiddenReason;
 }
@@ -268,6 +275,7 @@ function parseCard(fields: Record<string, string | undefined>): CommunityCardRec
     exports: Number(fields.exports ?? 0),
     opens: Number(fields.opens ?? 0),
     views: Number(fields.views ?? 0),
+    prints: Number(fields.prints ?? 0),
     ...((fields.hiddenReason === 'reports' ||
       fields.hiddenReason === 'denylist' ||
       fields.hiddenReason === 'moderation') && {
@@ -306,6 +314,7 @@ export interface CommunityIndexScores {
   createdAt: number;
   remixes: number;
   likes: number;
+  prints: number;
 }
 
 /**
@@ -327,7 +336,13 @@ async function execIndexPipeline(pipeline: ChainableCommander, context: string):
   }
 }
 
-/** Pipelined ZADD across all three sort indexes. Only call for live designs. */
+/**
+ * Pipelined ZADD across every gallery index. Only call for live designs.
+ *
+ * The prints index is maintained here alongside the queryable sorts even though
+ * it is not yet exposed as one, so that whenever it is exposed its scores are
+ * already correct rather than needing a backfill.
+ */
 export async function upsertCommunityIndexes(
   redis: Redis,
   designId: string,
@@ -337,15 +352,17 @@ export async function upsertCommunityIndexes(
   pipeline.zadd(communityIndexKey('newest'), scores.createdAt, designId);
   pipeline.zadd(communityIndexKey('remixes'), scores.remixes, designId);
   pipeline.zadd(communityIndexKey('likes'), scores.likes, designId);
+  pipeline.zadd(communityPrintsIndexKey(), scores.prints, designId);
   await execIndexPipeline(pipeline, 'Community index upsert failed');
 }
 
-/** Pipelined ZREM from every sort index (hide, remove, unpublish). */
+/** Pipelined ZREM from every index (hide, remove, unpublish). */
 export async function removeFromCommunityIndexes(redis: Redis, designId: string): Promise<void> {
   const pipeline = redis.pipeline();
   for (const sort of COMMUNITY_INDEX_SORTS) {
     pipeline.zrem(communityIndexKey(sort), designId);
   }
+  pipeline.zrem(communityPrintsIndexKey(), designId);
   await execIndexPipeline(pipeline, 'Community index removal failed');
 }
 
@@ -362,16 +379,18 @@ export async function setCommunityDesignStatus(
 ): Promise<void> {
   await redis.hset(communityDesignKey(designId), { status });
   if (status === 'live') {
-    const [createdAt, remixes, likes] = await redis.hmget(
+    const [createdAt, remixes, likes, prints] = await redis.hmget(
       communityDesignKey(designId),
       'createdAt',
       'remixes',
-      'likes'
+      'likes',
+      'prints'
     );
     await upsertCommunityIndexes(redis, designId, {
       createdAt: Number(createdAt ?? 0),
       remixes: Number(remixes ?? 0),
       likes: Number(likes ?? 0),
+      prints: Number(prints ?? 0),
     });
   } else {
     await removeFromCommunityIndexes(redis, designId);

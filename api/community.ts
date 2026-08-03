@@ -409,7 +409,12 @@ async function handlePublish(req: VercelRequest, res: VercelResponse): Promise<v
         await writeCommunityDesignBlob(record);
         await writeCommunityCard(redis, cardFromRecord(record));
         await redis.hset(communityDesignKey(id), { contentHash });
-        await upsertCommunityIndexes(redis, id, { createdAt: now, remixes: 0, likes: 0 });
+        await upsertCommunityIndexes(redis, id, {
+          createdAt: now,
+          remixes: 0,
+          likes: 0,
+          prints: 0,
+        });
         await redis.sadd(communityPublishedKey(session.userId), id);
         await redis.sadd(communityAuthorKey(authorPublicId), id);
         // Recorded at publish so remix claims are auditable and so the delete

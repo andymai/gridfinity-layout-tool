@@ -30,6 +30,12 @@
  *   community:reportReasons:{id}    → HASH of report reason → distinct-reporter count (owner-facing aggregate)
  *   community:reported:{uid}        → SET of design ids a user reported (reverse index for the account-deletion cascade)
  *   community:denylist              → SET of userIds barred from publishing
+ *   community:print:{id}:{pubId}    → HASH of one user's print report for one design
+ *   community:prints:{id}           → ZSET of authorPublicIds who printed a design, scored by createdAt
+ *   community:printed:{uid}         → SET of design ids a user posted a print for (cascade + daily quota)
+ *   community:printReports:{id}:{p} → SET of userIds who reported a print (per-account dedupe)
+ *   community:printReported:{uid}   → SET of print ids a user reported (reverse index for the deletion cascade)
+ *   community:index:prints          → ZSET of design ids scored by print count (not yet a queryable sort)
  *   community:opened:{id}           → SET of clientId dedupe tokens for the "open" (remix) counter, 7d TTL
  *   community:exported:{id}         → SET of clientId dedupe tokens for the "export" (printed) counter, 7d TTL
  *   community:viewed:{id}           → SET of hashed-IP dedupe tokens for the "views" counter, 7d TTL
@@ -175,6 +181,60 @@ export function communityReportedKey(userId: string): string {
 /** SET of userIds barred from publishing to the community showcase. */
 export function communityDenylistKey(): string {
   return 'community:denylist';
+}
+
+/**
+ * HASH of one user's print report for one design. The (designId, authorPublicId)
+ * pair IS the record's identity, so addressing a print never needs a reverse
+ * index and an id carries no information the card did not already publish.
+ */
+export function communityPrintKey(designId: string, authorPublicId: string): string {
+  return `community:print:${designId}:${authorPublicId}`;
+}
+
+/**
+ * ZSET of authorPublicIds who reported printing a design, scored by createdAt.
+ * ZCARD is the "printed by N" count: because membership is one entry per
+ * printer, the count is a distinct-printer tally by construction and cannot be
+ * inflated by posting repeatedly.
+ */
+export function communityPrintsKey(designId: string): string {
+  return `community:prints:${designId}`;
+}
+
+/**
+ * Reverse index: SET of design ids a user has posted a print for. Feeds the
+ * account-deletion cascade (find every print to purge) and the per-user daily
+ * quota check.
+ */
+export function communityPrintedKey(userId: string): string {
+  return `community:printed:${userId}`;
+}
+
+/** SET of userIds who reported a print (per-account dedupe for the auto-hide threshold). */
+export function communityPrintReportsKey(designId: string, authorPublicId: string): string {
+  return `community:printReports:${designId}:${authorPublicId}`;
+}
+
+/**
+ * Reverse index: SET of `<designId>:<authorPublicId>` print ids a user reported,
+ * the print-side counterpart of communityReportedKey. Same contract: whatever
+ * records a report must SADD here too, or the account-deletion cascade cannot
+ * find the user's entries.
+ */
+export function communityPrintReportedKey(userId: string): string {
+  return `community:printReported:${userId}`;
+}
+
+/**
+ * ZSET of design ids scored by print count, the index behind the "most printed"
+ * sort. Deliberately NOT a member of COMMUNITY_INDEX_SORTS yet: the index is
+ * maintained from the moment prints exist so its scores are correct whenever
+ * the sort is exposed, but exposing it is a separate change (the option would
+ * otherwise render an all-zero ordering while the feature is switched off).
+ */
+export function communityPrintsIndexKey(): string {
+  return 'community:index:prints';
 }
 
 /**

@@ -283,6 +283,7 @@ describe('readCommunityCards', () => {
       exports: 31,
       opens: 0,
       views: 0,
+      prints: 0,
     });
     expect(cards[1]).toBeNull();
     expect(cards[2]).toBeNull();
@@ -296,21 +297,27 @@ describe('readCommunityCards', () => {
 });
 
 describe('index helpers', () => {
-  it('upserts all three sort indexes in one pipeline', async () => {
+  it('upserts every gallery index in one pipeline', async () => {
     const pipeline = createPipeline();
     const { redis } = createRedis(pipeline);
 
-    await upsertCommunityIndexes(redis, 'abc123def456', { createdAt: 1000, remixes: 4, likes: 9 });
+    await upsertCommunityIndexes(redis, 'abc123def456', {
+      createdAt: 1000,
+      remixes: 4,
+      likes: 9,
+      prints: 2,
+    });
 
     expect(pipeline.calls).toEqual([
       { command: 'zadd', args: ['community:index:newest', 1000, 'abc123def456'] },
       { command: 'zadd', args: ['community:index:remixes', 4, 'abc123def456'] },
       { command: 'zadd', args: ['community:index:likes', 9, 'abc123def456'] },
+      { command: 'zadd', args: ['community:index:prints', 2, 'abc123def456'] },
     ]);
     expect(pipeline.exec).toHaveBeenCalledTimes(1);
   });
 
-  it('removes from all three sort indexes in one pipeline', async () => {
+  it('removes from every gallery index in one pipeline', async () => {
     const pipeline = createPipeline();
     const { redis } = createRedis(pipeline);
 
@@ -320,6 +327,7 @@ describe('index helpers', () => {
       { command: 'zrem', args: ['community:index:newest', 'abc123def456'] },
       { command: 'zrem', args: ['community:index:remixes', 'abc123def456'] },
       { command: 'zrem', args: ['community:index:likes', 'abc123def456'] },
+      { command: 'zrem', args: ['community:index:prints', 'abc123def456'] },
     ]);
     expect(pipeline.exec).toHaveBeenCalledTimes(1);
   });
@@ -340,7 +348,12 @@ describe('index helpers', () => {
     const { redis } = createRedis(pipeline);
 
     await expect(
-      upsertCommunityIndexes(redis, 'abc123def456', { createdAt: 1, remixes: 0, likes: 0 })
+      upsertCommunityIndexes(redis, 'abc123def456', {
+        createdAt: 1,
+        remixes: 0,
+        likes: 0,
+        prints: 0,
+      })
     ).rejects.toThrow('redis connection lost');
   });
 
@@ -360,7 +373,7 @@ describe('setCommunityDesignStatus', () => {
   it('restoring to live re-indexes with scores from the card hash', async () => {
     const pipeline = createPipeline();
     const { redis, hset, hmget } = createRedis(pipeline);
-    hmget.mockResolvedValue(['1000', '4', '9']);
+    hmget.mockResolvedValue(['1000', '4', '9', '2']);
 
     await setCommunityDesignStatus(redis, 'abc123def456', 'live');
 
@@ -369,12 +382,14 @@ describe('setCommunityDesignStatus', () => {
       'community:design:abc123def456',
       'createdAt',
       'remixes',
-      'likes'
+      'likes',
+      'prints'
     );
     expect(pipeline.calls).toEqual([
       { command: 'zadd', args: ['community:index:newest', 1000, 'abc123def456'] },
       { command: 'zadd', args: ['community:index:remixes', 4, 'abc123def456'] },
       { command: 'zadd', args: ['community:index:likes', 9, 'abc123def456'] },
+      { command: 'zadd', args: ['community:index:prints', 2, 'abc123def456'] },
     ]);
   });
 
@@ -388,7 +403,7 @@ describe('setCommunityDesignStatus', () => {
 
       expect(hset).toHaveBeenCalledWith('community:design:abc123def456', { status });
       expect(hmget).not.toHaveBeenCalled();
-      expect(pipeline.calls.map((c) => c.command)).toEqual(['zrem', 'zrem', 'zrem']);
+      expect(pipeline.calls.map((c) => c.command)).toEqual(['zrem', 'zrem', 'zrem', 'zrem']);
     }
   );
 });
