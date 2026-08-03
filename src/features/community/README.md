@@ -45,6 +45,13 @@ Client side:
 
 A photo slot is either `kept` (a URL already on the record) or `new` (a fresh data URL). Both travel to the server in one ordered array; the distinction lets an edit change a note without re-uploading images.
 
+- `components/PrintsSection/`: the detail view's print list. Owns its own fetch rather than taking a prop, because the overlay already fetches the caller's own print for the CTA and the two would otherwise have to stay in sync through the parent. The parent bumps `refreshToken` after a write.
+- `utils/printFormat.ts`: display rounding. A summary median is rounded to five minutes below the hour and a quarter hour above it, because quoting a 127-minute median to the minute implies precision the sample does not have.
+
+`PrintSummary` drops any figure nobody reported rather than rendering it as zero: an absent number must never read as a measured one. The fit verdicts get their own line, since "4 adjusted" is the part that changes whether you print the thing at all.
+
+`ReportDialog` takes an optional `submit` and `title`, so reporting a print reuses the same reason union, note field and error handling as reporting a design.
+
 Backend lives in `api/community/prints.ts` (`GET`/`PUT`/`DELETE`/`POST report`), `api/lib/communityPrintStore.ts`, and `api/lib/communityPrintValidation.ts`. The `community:index:prints` ZSET is maintained from the moment prints exist but is not yet a member of `COMMUNITY_INDEX_SORTS`: exposing the "most printed" sort is a separate change, so that when it lands its scores are already correct rather than needing a backfill.
 
 Note that `counts.exports` means file downloads, not prints. The two are different signals and the UI must not conflate them.

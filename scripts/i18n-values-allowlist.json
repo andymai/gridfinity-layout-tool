@@ -163,6 +163,7 @@
     "community.print.nozzleLabel",
     "community.print.photosLabel",
     "community.print.printerLabel",
+    "community.prints.title",
     "community.publish.form.descriptionLabel",
     "community.publish.form.nameLabel",
     "community.report.reason.spam",

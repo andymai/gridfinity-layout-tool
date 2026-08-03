@@ -3,6 +3,7 @@ import type { KeyboardEvent } from 'react';
 import { Button, Dialog, Field, Textarea, cn } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { isOk } from '@/core/result';
+import type { Result } from '@/core/result';
 import { useToastStore } from '@/core/store/toast';
 import { trackEvent } from '@/shared/analytics/posthog';
 import {
@@ -25,10 +26,21 @@ interface ReportDialogProps {
   onClose: () => void;
   /** Session expired between opening the dialog and submitting. */
   onNeedsAuth: () => void;
+  /**
+   * Replaces the default design report, so the same reason union, note field
+   * and error handling can report a print on that design. Kept optional so
+   * every existing call site keeps its behaviour.
+   */
+  submit?: (
+    reason: CommunityReportReason,
+    note: string
+  ) => Promise<Result<unknown, CommunityClientError>>;
+  /** Title override, so a print report does not read as a design report. */
+  title?: string;
 }
 
 /** Signed-in report flow: closed reason union + optional note, toast on success. */
-export function ReportDialog({ designId, onClose, onNeedsAuth }: ReportDialogProps) {
+export function ReportDialog({ designId, onClose, onNeedsAuth, submit, title }: ReportDialogProps) {
   const t = useTranslation();
   const [reason, setReason] = useState<CommunityReportReason | null>(null);
   const [note, setNote] = useState('');
@@ -85,7 +97,8 @@ export function ReportDialog({ designId, onClose, onNeedsAuth }: ReportDialogPro
     if (reason === null || busy) return;
     setBusy(true);
     setError(null);
-    void reportDesign(designId, reason, note).then((result) => {
+    const run = submit ?? ((r: CommunityReportReason, n: string) => reportDesign(designId, r, n));
+    void run(reason, note).then((result) => {
       setBusy(false);
       if (isOk(result)) {
         trackEvent('community_report', { reason });
@@ -104,7 +117,10 @@ export function ReportDialog({ designId, onClose, onNeedsAuth }: ReportDialogPro
 
   return (
     <Dialog.Root open onClose={onClose} size="md" mobilePresentation="sheet" dismissable={!busy}>
-      <Dialog.Header title={t('community.report.title')} closeAriaLabel={t('common.closeDialog')} />
+      <Dialog.Header
+        title={title ?? t('community.report.title')}
+        closeAriaLabel={t('common.closeDialog')}
+      />
       <Dialog.Body>
         <div className="space-y-4">
           <div
