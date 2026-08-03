@@ -101,8 +101,9 @@ jobs:
         # scenario snapshots from git, so every missing baseline failed a shard
         # — but e8653992 restored them to version control in June. Baselines are
         # now committed, so CI asserts them. Regenerate locally and commit the
-        # diff: `pnpm exec vitest run <path> -u` (filter FIRST — `-u <path>`
-        # swallows the path as the flag's value and runs the whole project).
+        # diff: `pnpm exec vitest run <path> -u` — keep the filter BEFORE `-u`,
+        # since a bare `-u` consumes the next token as its value and would run
+        # the whole suite. See scenarioRunner.ts for the full CLI note.
         run: |
           if [ "$GIT_REF" = "refs/heads/main" ]; then
             # Projects are named explicitly rather than using the default "all":

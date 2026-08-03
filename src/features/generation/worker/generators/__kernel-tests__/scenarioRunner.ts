@@ -8,11 +8,18 @@
  * placement obvious: a scenario lives in `scenarios/<domain>.ts` and runs in
  * `binGenerator.scenario.<domain>.test.ts`.
  *
- * Update snapshots after verified geometry changes (whole domain or one file).
- * The filter MUST precede `-u`: after `--` vitest reads everything as positional
- * filters (#1329), and `--update <path>` eats the path as the flag's value —
- * both silently run the whole project instead of the file you named.
+ * Update snapshots after verified geometry changes (whole domain or one file):
  *   pnpm exec vitest run src/features/generation/worker/generators/binGenerator.scenario.handles -u
+ *
+ * Put the filter BEFORE `-u`. Two separate ways to lose it, both silent:
+ *   1. A bare `-u`/`--update` consumes the NEXT token as its value, so
+ *      `-u <path>` leaves no filter and runs all ~1550 files. Verified on
+ *      vitest 4.1.10: `vitest list -u <path>` enumerates the whole project,
+ *      while `vitest list --update=true <path>` lists just that file — so
+ *      `--update=true <path>` is the other safe form.
+ *   2. Routing through `pnpm run <script> -- ...` puts a literal `--` in the
+ *      vitest argv; everything after it is read as a positional filter and the
+ *      `-u` is ignored outright (b2ee64e5, #1329, same trap with --shard).
  */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './wasmInit';
