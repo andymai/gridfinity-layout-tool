@@ -3503,5 +3503,9 @@
   "community.lineage.unavailable": "Inte längre tillgänglig",
   "community.lineage.gap": "Eventuella steg däremellan registrerades inte.",
   "community.lineage.openRoot": "Öppna originalet av {author}",
-  "community.lineage.openParent": "Öppna {name}"
+  "community.lineage.openParent": "Öppna {name}",
+  "community.featured.reason.wellMade": "Särskilt välgjord",
+  "community.featured.reason.clever": "Smart lösning",
+  "community.featured.reason.versatile": "Användbar till mycket",
+  "community.featured.reason.beginnerFriendly": "En bra första utskrift"
 }

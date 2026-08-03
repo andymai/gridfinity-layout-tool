@@ -29,8 +29,8 @@ const RECORD = {
   updatedAt: 1,
 } as CommunityDesignRecord;
 
-function baseArgs(command: string, positional: string[]): Args {
-  return { command, positional, json: false, yes: false, help: false };
+function baseArgs(command: string, positional: string[], reason: string | null = null): Args {
+  return { command, positional, json: false, yes: false, help: false, reason };
 }
 
 function createRedis() {
@@ -61,7 +61,7 @@ describe('feature/unfeature commands', () => {
     const redis = createRedis();
     mocks.connect.mockReturnValue(redis);
 
-    expect(await feature(baseArgs('feature', ['abc123DEF456']))).toBe(1);
+    expect(await feature(baseArgs('feature', ['abc123DEF456'], 'clever'))).toBe(1);
     expect(mocks.writeCommunityDesignBlob).not.toHaveBeenCalled();
     expect(redis.hset).not.toHaveBeenCalled();
     expect(redis.quit).toHaveBeenCalledTimes(1);
@@ -72,7 +72,7 @@ describe('feature/unfeature commands', () => {
     const redis = createRedis();
     mocks.connect.mockReturnValue(redis);
 
-    expect(await feature(baseArgs('feature', ['abc123DEF456']))).toBe(0);
+    expect(await feature(baseArgs('feature', ['abc123DEF456'], 'clever'))).toBe(0);
     const written = mocks.writeCommunityDesignBlob.mock.calls[0] as [
       CommunityDesignRecord,
       { allowOverwrite: boolean },
@@ -82,7 +82,11 @@ describe('feature/unfeature commands', () => {
     // either the blob or the card hash (no updatedAt written to the hash).
     expect(written[0].updatedAt).toBe(RECORD.updatedAt);
     expect(written[1]).toEqual({ allowOverwrite: true });
-    expect(redis.hset).toHaveBeenCalledWith('community:design:abc123DEF456', { featured: '1' });
+    expect(written[0].featureReason).toBe('clever');
+    expect(redis.hset).toHaveBeenCalledWith('community:design:abc123DEF456', {
+      featured: '1',
+      featureReason: 'clever',
+    });
     expect(redis.hset).not.toHaveBeenCalledWith(
       'community:design:abc123DEF456',
       expect.objectContaining({ updatedAt: expect.anything() })
@@ -97,6 +101,29 @@ describe('feature/unfeature commands', () => {
     expect(await unfeature(baseArgs('unfeature', ['abc123DEF456']))).toBe(0);
     const written = mocks.writeCommunityDesignBlob.mock.calls[0][0] as CommunityDesignRecord;
     expect(written.featured).toBe(false);
-    expect(redis.hset).toHaveBeenCalledWith('community:design:abc123DEF456', { featured: '0' });
+    // Cleared on unfeature so a later re-feature cannot inherit a stale reason.
+    expect(written.featureReason).toBe('');
+    expect(redis.hset).toHaveBeenCalledWith('community:design:abc123DEF456', {
+      featured: '0',
+      featureReason: '',
+    });
+  });
+
+  it('refuses to feature without a stated reason', async () => {
+    // An unexplained star is the least legible signal in the gallery.
+    expect(await feature(baseArgs('feature', ['abc123DEF456']))).toBe(2);
+    expect(mocks.writeCommunityDesignBlob).not.toHaveBeenCalled();
+  });
+
+  it('refuses a reason outside the closed set', async () => {
+    expect(await feature(baseArgs('feature', ['abc123DEF456'], 'because-i-said-so'))).toBe(2);
+    expect(mocks.writeCommunityDesignBlob).not.toHaveBeenCalled();
+  });
+
+  it('needs no reason to unfeature', async () => {
+    mocks.readCommunityDesignBlob.mockResolvedValue({ ...RECORD, featured: true });
+    mocks.connect.mockReturnValue(createRedis());
+
+    expect(await unfeature(baseArgs('unfeature', ['abc123DEF456']))).toBe(0);
   });
 });

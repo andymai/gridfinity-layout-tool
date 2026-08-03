@@ -114,6 +114,8 @@ export interface CommunityDesignRecord {
    */
   coverPhotoUrl?: string;
   featured: boolean;
+  /** Why it was featured; '' when unfeatured or picked before the field existed. */
+  featureReason?: string;
   createdAt: number;
   updatedAt: number;
   status: CommunityDesignStatus;
@@ -222,6 +224,8 @@ export interface CommunityCardRecord extends CommunityCardMetadata {
   prints?: number;
   /** Owner-promoted print photo, or '' for the render. Never written by the metadata writer. */
   coverPhotoUrl?: string;
+  /** Curator's stated reason for featuring; set by the admin path only. */
+  featureReason?: string;
   /** Present only after a hide; consulted only while status is 'hidden'. */
   hiddenReason?: CommunityHiddenReason;
 }
@@ -284,6 +288,7 @@ function parseCard(fields: Record<string, string | undefined>): CommunityCardRec
     views: Number(fields.views ?? 0),
     prints: Number(fields.prints ?? 0),
     coverPhotoUrl: fields.coverPhotoUrl ?? '',
+    featureReason: fields.featureReason ?? '',
     ...((fields.hiddenReason === 'reports' ||
       fields.hiddenReason === 'denylist' ||
       fields.hiddenReason === 'moderation') && {

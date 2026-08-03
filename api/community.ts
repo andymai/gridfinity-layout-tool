@@ -524,6 +524,8 @@ interface CommunityListItem {
   /** Direct-remix lineage pointer, '' for originals: powers the detail view's builds-on-this list. */
   parentId: string;
   featured: boolean;
+  /** Curator's stated reason; omitted when unfeatured or picked before the field. */
+  featureReason?: string;
   /** `opens`/`views` are owner-only stats, present only on `mine=1` items. */
   counts: {
     likes: number;
@@ -568,6 +570,9 @@ function toListItem(card: CommunityCardRecord): CommunityListItem {
     isRemix: card.isRemix,
     parentId: card.parentId,
     featured: card.featured,
+    ...(card.featured &&
+      card.featureReason !== undefined &&
+      card.featureReason !== '' && { featureReason: card.featureReason }),
     counts: {
       likes: card.likes,
       remixes: card.remixes,

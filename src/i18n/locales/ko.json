@@ -3503,5 +3503,9 @@
   "community.lineage.unavailable": "더 이상 이용할 수 없음",
   "community.lineage.gap": "중간 단계는 기록되지 않았습니다.",
   "community.lineage.openRoot": "{author} 님의 원작 열기",
-  "community.lineage.openParent": "{name} 열기"
+  "community.lineage.openParent": "{name} 열기",
+  "community.featured.reason.wellMade": "특히 잘 만들어졌습니다",
+  "community.featured.reason.clever": "영리한 해법",
+  "community.featured.reason.versatile": "여러 용도로 쓸 수 있습니다",
+  "community.featured.reason.beginnerFriendly": "첫 출력으로 좋습니다"
 }

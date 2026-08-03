@@ -1,4 +1,8 @@
 import { isValidShareId } from '../../../api/lib/shared.js';
+import {
+  COMMUNITY_FEATURE_REASONS,
+  isCommunityFeatureReason,
+} from '../../../api/lib/communityValidation.js';
 import { communityDesignKey } from '../../../api/lib/redisKeys.js';
 import {
   readCommunityDesignBlob,
@@ -25,6 +29,18 @@ async function setFeatured(args: Args, featured: boolean): Promise<number> {
     return 2;
   }
 
+  // Featuring requires stating why. An unexplained star is the least legible
+  // signal in the feature, and the reason is what the gallery shows.
+  let reason = '';
+  if (featured) {
+    const supplied = args.reason;
+    if (supplied === null || !isCommunityFeatureReason(supplied)) {
+      console.error(`feature <id> --reason <${COMMUNITY_FEATURE_REASONS.join('|')}> is required`);
+      return 2;
+    }
+    reason = supplied;
+  }
+
   const redis = connect();
   try {
     const record = await readCommunityDesignBlob(id);
@@ -37,10 +53,18 @@ async function setFeatured(args: Args, featured: boolean): Promise<number> {
     // reorder the design in any updatedAt-derived view and misreport it as
     // freshly edited.
     await Promise.all([
-      writeCommunityDesignBlob({ ...record, featured }, { allowOverwrite: true }),
-      redis.hset(communityDesignKey(id), { featured: featured ? '1' : '0' }),
+      writeCommunityDesignBlob(
+        { ...record, featured, featureReason: reason },
+        { allowOverwrite: true }
+      ),
+      redis.hset(communityDesignKey(id), {
+        featured: featured ? '1' : '0',
+        // Cleared on unfeature so a later re-feature cannot silently inherit
+        // a stale reason from a previous decision.
+        featureReason: reason,
+      }),
     ]);
-    console.log(colors.cyan(`${featured ? 'featured' : 'unfeatured'}: ${id}`));
+    console.log(colors.cyan(`${featured ? `featured (${reason})` : 'unfeatured'}: ${id}`));
     return 0;
   } finally {
     await redis.quit();

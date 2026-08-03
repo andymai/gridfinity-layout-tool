@@ -3503,5 +3503,9 @@
   "community.lineage.unavailable": "Už není dostupné",
   "community.lineage.gap": "Případné mezikroky nebyly zaznamenány.",
   "community.lineage.openRoot": "Otevřít originál od {author}",
-  "community.lineage.openParent": "Otevřít {name}"
+  "community.lineage.openParent": "Otevřít {name}",
+  "community.featured.reason.wellMade": "Obzvlášť dobře zpracované",
+  "community.featured.reason.clever": "Chytré řešení",
+  "community.featured.reason.versatile": "Užitečné na spoustu věcí",
+  "community.featured.reason.beginnerFriendly": "Dobrý první tisk"
 }

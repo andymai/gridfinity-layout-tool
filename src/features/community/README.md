@@ -61,6 +61,16 @@ Backend lives in `api/community/prints.ts` (`GET`/`PUT`/`DELETE`/`POST report`),
 - **Proven shelf** sits directly under staff picks, above recency: a design other people actually printed is the strongest recommendation the library has, and it is the one signal nobody can inflate by posting.
 - **Cover promotion** is owner opt-in and server-validated against the design's own **live** prints. The gallery grid is the most public surface in the app, and this is the only path by which a user-supplied image can reach it, so the check that the URL belongs to a live print of that design is load-bearing, not defensive. A hidden print's photo is not promotable.
 
+### Featured, with a reason
+
+`featured` no longer travels alone. Featuring a design through the admin CLI now **requires** `--reason <well-made|clever|versatile|beginner-friendly>`, and the gallery card shows that reason instead of a bare star.
+
+A closed set rather than free text: it is user-facing copy that has to translate, and it forces the pick into a stated reason. The vision's rule is that a ranking signal stays legible, and an unexplained star was the least legible thing in the feature.
+
+The reason is cleared on unfeature, so a later re-feature cannot silently inherit a previous decision. A design featured before the field existed shows no badge rather than an invented reason.
+
+Note the i18n key segments are camelCase (`...reason.wellMade`) while the union values are hyphenated (`well-made`). The keys follow the codebase convention, and the unused-key checker's literal scan does not match hyphens.
+
 ### Editorial collections
 
 `data/collections.ts` holds hand-picked groups of designs, curated by PR. Human taste is the honest alternative to an engagement algorithm, and unlike an algorithm it does not pretend to be objective. Keeping the list in the repo means curation is reviewable, diffable and revertible, and needs no admin UI or storage.

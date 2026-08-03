@@ -3503,5 +3503,9 @@
   "community.lineage.unavailable": "Більше недоступно",
   "community.lineage.gap": "Проміжні кроки не записані.",
   "community.lineage.openRoot": "Відкрити оригінал від {author}",
-  "community.lineage.openParent": "Відкрити {name}"
+  "community.lineage.openParent": "Відкрити {name}",
+  "community.featured.reason.wellMade": "Особливо добре зроблено",
+  "community.featured.reason.clever": "Розумне рішення",
+  "community.featured.reason.versatile": "Корисне для багатьох речей",
+  "community.featured.reason.beginnerFriendly": "Гарний перший друк"
 }

@@ -40,7 +40,7 @@ const RECORD = {
 const CARD = { id: 'abc123DEF456', likes: 2, remixes: 0, exports: 1 } as CommunityCardRecord;
 
 function baseArgs(positional: string[], json = false): Args {
-  return { command: 'inspect', positional, json, yes: false, help: false };
+  return { command: 'inspect', positional, json, yes: false, help: false, reason: null };
 }
 
 function createRedis(reporterIds: string[]) {

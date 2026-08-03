@@ -7,6 +7,7 @@ import type { CommunityCard as CommunityCardData } from '@/shared/types/communit
 import { savePendingLikeAction } from '@/shared/utils/communityPendingLikeAction';
 import { useLikeToggle } from '../../hooks/useLikeToggle';
 import { CommunitySignInPrompt } from '../SignInPrompt';
+import { FEATURE_REASON_KEYS } from '../../utils/featureReasonLabels';
 import { formatCardDims } from './cardDims';
 
 export interface CommunityCardProps {
@@ -173,6 +174,18 @@ export function CommunityCard({ card, onSelect, onSelectAuthor, index }: Communi
               onError={() => setImageState('error')}
               className="h-full w-full object-cover"
             />
+          )}
+          {/* The stated reason replaces a bare star: a pick nobody explained
+              is the least legible signal in the gallery. */}
+          {card.featured && card.featureReason !== undefined && (
+            <Badge
+              tone="overlay"
+              size="sm"
+              className="absolute left-1 top-1"
+              data-testid="community-card-featured"
+            >
+              {t(FEATURE_REASON_KEYS[card.featureReason])}
+            </Badge>
           )}
           {card.isRemix && (
             <Badge

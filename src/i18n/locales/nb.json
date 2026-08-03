@@ -3503,5 +3503,9 @@
   "community.lineage.unavailable": "Ikke lenger tilgjengelig",
   "community.lineage.gap": "Eventuelle mellomliggende trinn ble ikke registrert.",
   "community.lineage.openRoot": "Åpne originalen av {author}",
-  "community.lineage.openParent": "Åpne {name}"
+  "community.lineage.openParent": "Åpne {name}",
+  "community.featured.reason.wellMade": "Særlig godt laget",
+  "community.featured.reason.clever": "Smart løsning",
+  "community.featured.reason.versatile": "Nyttig til mye",
+  "community.featured.reason.beginnerFriendly": "En god første utskrift"
 }

@@ -3686,6 +3686,12 @@ const en: Record<string, string> = {
   'community.lineage.openRoot': 'Open the original by {author}',
   'community.lineage.openParent': 'Open {name}',
 
+  // Why a design was featured. A closed set so the pick is stated, not implied.
+  'community.featured.reason.wellMade': 'Especially well made',
+  'community.featured.reason.clever': 'Clever solution',
+  'community.featured.reason.versatile': 'Useful for lots of things',
+  'community.featured.reason.beginnerFriendly': 'A good first print',
+
   // Post-remix continuation banner (bin designer)
   'binDesigner.remixBanner.text':
     'Remixing {name} by {author}. Publish your version when it is ready.',

@@ -285,6 +285,7 @@ describe('readCommunityCards', () => {
       views: 0,
       prints: 0,
       coverPhotoUrl: '',
+      featureReason: '',
     });
     expect(cards[1]).toBeNull();
     expect(cards[2]).toBeNull();

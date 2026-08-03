@@ -124,7 +124,7 @@ function seedCard(redis: FakeRedis, id: string, status: string): void {
 }
 
 function baseArgs(positional: string[]): Args {
-  return { command: 'denylist', positional, json: false, yes: false, help: false };
+  return { command: 'denylist', positional, json: false, yes: false, help: false, reason: null };
 }
 
 beforeEach(() => {

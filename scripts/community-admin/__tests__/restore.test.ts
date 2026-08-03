@@ -26,7 +26,7 @@ const { restore } = await import('../commands/restore.js');
 const CARD = { id: 'abc123DEF456', status: 'hidden' } as CommunityCardRecord;
 
 function baseArgs(positional: string[]): Args {
-  return { command: 'restore', positional, json: false, yes: false, help: false };
+  return { command: 'restore', positional, json: false, yes: false, help: false, reason: null };
 }
 
 function createRedis() {

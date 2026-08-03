@@ -3503,5 +3503,9 @@
   "community.lineage.unavailable": "Plus disponible",
   "community.lineage.gap": "Les étapes intermédiaires n'ont pas été enregistrées.",
   "community.lineage.openRoot": "Ouvrir l'original de {author}",
-  "community.lineage.openParent": "Ouvrir {name}"
+  "community.lineage.openParent": "Ouvrir {name}",
+  "community.featured.reason.wellMade": "Particulièrement bien réalisé",
+  "community.featured.reason.clever": "Solution astucieuse",
+  "community.featured.reason.versatile": "Utile pour beaucoup de choses",
+  "community.featured.reason.beginnerFriendly": "Une bonne première impression"
 }

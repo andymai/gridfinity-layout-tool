@@ -3503,5 +3503,9 @@
   "community.lineage.unavailable": "Niet meer beschikbaar",
   "community.lineage.gap": "Tussenliggende stappen zijn niet vastgelegd.",
   "community.lineage.openRoot": "Origineel van {author} openen",
-  "community.lineage.openParent": "{name} openen"
+  "community.lineage.openParent": "{name} openen",
+  "community.featured.reason.wellMade": "Bijzonder goed gemaakt",
+  "community.featured.reason.clever": "Slimme oplossing",
+  "community.featured.reason.versatile": "Voor van alles bruikbaar",
+  "community.featured.reason.beginnerFriendly": "Een goede eerste print"
 }
