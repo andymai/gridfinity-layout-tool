@@ -1,0 +1,32 @@
+src/features/bin-designer/store/slices/cutoutSlice.ts
+  s_6ea5c7008437b5::t_07c2d1a213045c 546-560
+src/features/bin-designer/components/panel/CutoutsSection/pathfinderHelpers.ts
+  s_6ea5c7008437b5::t_18ebd52c5c29ff 37-56
+  s_6ea5c7008437b5::t_2a5cfe41ce8fa9 36
+src/features/bin-designer/components/CutoutWorkspace/WorkspaceHeader.tsx
+  s_6ea5c7008437b5::t_93c72c33127c0d 25
+  s_6ea5c7008437b5::t_c42faf1c56ef9f 269
+src/features/bin-designer/components/panel/CutoutsSection/AlignmentToolbar.tsx
+  s_6ea5c7008437b5::t_cc85a333e24ffc 23
+  s_6ea5c7008437b5::t_87b348766b87ce 150
+src/features/bin-designer/components/panel/CutoutsSection/pathfinderHelpers.test.ts
+  s_6ea5c7008437b5::t_2bbe936b01cbdf 1-66
+src/features/bin-designer/store/slices/cutoutSlice.test.ts
+  s_6ea5c7008437b5::t_0744f54d12fc21 881-916
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "d428fefe9a5d55cb8c8df37fbf35b95a6c41a1a8",
+  "prompts": {},
+  "sessions": {
+    "s_6ea5c7008437b5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1bf46f9f-00e7-4bab-8a86-06fec89ebc58",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
