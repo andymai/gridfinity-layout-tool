@@ -3507,5 +3507,10 @@
   "community.featured.reason.wellMade": "Особливо добре зроблено",
   "community.featured.reason.clever": "Розумне рішення",
   "community.featured.reason.versatile": "Корисне для багатьох речей",
-  "community.featured.reason.beginnerFriendly": "Гарний перший друк"
+  "community.featured.reason.beginnerFriendly": "Гарний перший друк",
+  "community.gapFit.fits": "Вміщується в обраний проміжок",
+  "community.gapFit.fitsRotated": "Вміщується в обраний проміжок, якщо повернути",
+  "community.gapFit.tooLarge": "Завеликий для обраного проміжку",
+  "community.gapFit.tooTall": "Зависокий для місця над цим шаром",
+  "community.gapFit.scaleMismatch": "Створено для іншого розміру сітки, ніж твій макет"
 }

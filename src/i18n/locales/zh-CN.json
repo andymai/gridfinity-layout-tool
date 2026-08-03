@@ -3507,5 +3507,10 @@
   "community.featured.reason.wellMade": "做工尤其出色",
   "community.featured.reason.clever": "巧妙的解法",
   "community.featured.reason.versatile": "用途广泛",
-  "community.featured.reason.beginnerFriendly": "适合作为第一次打印"
+  "community.featured.reason.beginnerFriendly": "适合作为第一次打印",
+  "community.gapFit.fits": "能放进你选的空位",
+  "community.gapFit.fitsRotated": "转个方向就能放进你选的空位",
+  "community.gapFit.tooLarge": "对你选的空位来说太大了",
+  "community.gapFit.tooTall": "高度超过该层上方的空间",
+  "community.gapFit.scaleMismatch": "按与你的布局不同的网格尺寸制作"
 }

@@ -3507,5 +3507,10 @@
   "community.featured.reason.wellMade": "Besonders gut gemacht",
   "community.featured.reason.clever": "Clevere Lösung",
   "community.featured.reason.versatile": "Vielseitig einsetzbar",
-  "community.featured.reason.beginnerFriendly": "Ein guter erster Druck"
+  "community.featured.reason.beginnerFriendly": "Ein guter erster Druck",
+  "community.gapFit.fits": "Passt in die gewählte Lücke",
+  "community.gapFit.fitsRotated": "Passt in die gewählte Lücke, quer gedreht",
+  "community.gapFit.tooLarge": "Zu groß für die gewählte Lücke",
+  "community.gapFit.tooTall": "Zu hoch für den Platz über dieser Ebene",
+  "community.gapFit.scaleMismatch": "Für eine andere Rastergröße als dein Layout gebaut"
 }

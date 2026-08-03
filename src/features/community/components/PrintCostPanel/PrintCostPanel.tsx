@@ -20,6 +20,9 @@ import {
   resolvePrintCost,
 } from '@/shared/utils/communityPrintCost';
 import type { PrintCostFigure } from '@/shared/utils/communityPrintCost';
+import type { FitsGapContext } from '../../store/browseStore';
+import { gapFitVerdict } from '../../utils/gapFit';
+import type { GapFitVerdict } from '../../utils/gapFit';
 import { formatGrams, formatPrintDuration, roundSummaryMinutes } from '../../utils/printFormat';
 
 export interface PrintCostPanelProps {
@@ -27,7 +30,25 @@ export interface PrintCostPanelProps {
   metrics: CommunityDesignMetrics;
   /** Null until the print list resolves; the panel shows estimates meanwhile. */
   summary: CommunityPrintSummary | null;
+  /** The gap the viewer picked in their layout; absent outside that flow. */
+  gapContext?: FitsGapContext | null;
 }
+
+const GAP_VERDICT_KEYS: Record<GapFitVerdict, string> = {
+  fits: 'community.gapFit.fits',
+  'fits-rotated': 'community.gapFit.fitsRotated',
+  'too-large': 'community.gapFit.tooLarge',
+  'too-tall': 'community.gapFit.tooTall',
+  'scale-mismatch': 'community.gapFit.scaleMismatch',
+};
+
+const GAP_VERDICT_FITS: Record<GapFitVerdict, boolean> = {
+  fits: true,
+  'fits-rotated': true,
+  'too-large': false,
+  'too-tall': false,
+  'scale-mismatch': false,
+};
 
 function SourceBadge({ source }: { source: PrintCostFigure['source'] }) {
   const t = useTranslation();
@@ -47,7 +68,12 @@ function SourceBadge({ source }: { source: PrintCostFigure['source'] }) {
   );
 }
 
-export function PrintCostPanel({ params, metrics, summary }: PrintCostPanelProps) {
+export function PrintCostPanel({
+  params,
+  metrics,
+  summary,
+  gapContext = null,
+}: PrintCostPanelProps) {
   const t = useTranslation();
   const bedWidth = useSettingsStore((s) => s.settings.defaultPrintBedSize);
   const bedDepth = useSettingsStore(
@@ -69,8 +95,14 @@ export function PrintCostPanel({ params, metrics, summary }: PrintCostPanelProps
 
   const { time, filament } = resolvePrintCost(estimate, summary);
   const bedFit = fitsPrintBed(metrics, bedWidth, bedDepth);
+  // The same verdict the gallery filtered on, carried through to the design
+  // the viewer actually opened. Filtering a card out and saying "this will
+  // not fit" are the same question and must not disagree.
+  const gapFit = gapContext === null ? null : gapFitVerdict(metrics, gapContext);
 
-  if (time.minutes === null && filament.grams === null && bedFit === 'unknown') return null;
+  if (time.minutes === null && filament.grams === null && bedFit === 'unknown' && gapFit === null) {
+    return null;
+  }
 
   const duration =
     time.minutes === null ? null : formatPrintDuration(roundSummaryMinutes(time.minutes));
@@ -112,6 +144,17 @@ export function PrintCostPanel({ params, metrics, summary }: PrintCostPanelProps
             <SourceBadge source={filament.source} />
           </span>
         </div>
+      )}
+
+      {gapFit !== null && (
+        <p
+          className={
+            GAP_VERDICT_FITS[gapFit] ? 'text-xs text-content-secondary' : 'text-xs text-warning'
+          }
+          data-testid={`cost-gap-${gapFit}`}
+        >
+          {t(GAP_VERDICT_KEYS[gapFit])}
+        </p>
       )}
 
       {bedFit !== 'unknown' && (

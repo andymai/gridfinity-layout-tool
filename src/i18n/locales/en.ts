@@ -3692,6 +3692,13 @@ const en: Record<string, string> = {
   'community.featured.reason.versatile': 'Useful for lots of things',
   'community.featured.reason.beginnerFriendly': 'A good first print',
 
+  // Gap-fit verdict on the detail view, for the "find bins that fit" flow.
+  'community.gapFit.fits': 'Fits the gap you picked',
+  'community.gapFit.fitsRotated': 'Fits the gap you picked, turned sideways',
+  'community.gapFit.tooLarge': 'Too big for the gap you picked',
+  'community.gapFit.tooTall': 'Too tall for the space above that layer',
+  'community.gapFit.scaleMismatch': 'Built for a different grid size than your layout',
+
   // Post-remix continuation banner (bin designer)
   'binDesigner.remixBanner.text':
     'Remixing {name} by {author}. Publish your version when it is ready.',

@@ -3507,5 +3507,10 @@
   "community.featured.reason.wellMade": "Especialmente bem feito",
   "community.featured.reason.clever": "Solução engenhosa",
   "community.featured.reason.versatile": "Útil para muitas coisas",
-  "community.featured.reason.beginnerFriendly": "Uma boa primeira impressão"
+  "community.featured.reason.beginnerFriendly": "Uma boa primeira impressão",
+  "community.gapFit.fits": "Cabe no espaço que você escolheu",
+  "community.gapFit.fitsRotated": "Cabe no espaço que você escolheu, virado",
+  "community.gapFit.tooLarge": "Grande demais para o espaço escolhido",
+  "community.gapFit.tooTall": "Alto demais para o espaço acima daquela camada",
+  "community.gapFit.scaleMismatch": "Feito para um tamanho de grade diferente do seu layout"
 }

@@ -3507,5 +3507,10 @@
   "community.featured.reason.wellMade": "Obzvlášť dobře zpracované",
   "community.featured.reason.clever": "Chytré řešení",
   "community.featured.reason.versatile": "Užitečné na spoustu věcí",
-  "community.featured.reason.beginnerFriendly": "Dobrý první tisk"
+  "community.featured.reason.beginnerFriendly": "Dobrý první tisk",
+  "community.gapFit.fits": "Vejde se do vybrané mezery",
+  "community.gapFit.fitsRotated": "Vejde se do vybrané mezery, otočený",
+  "community.gapFit.tooLarge": "Příliš velký na vybranou mezeru",
+  "community.gapFit.tooTall": "Příliš vysoký na místo nad touto vrstvou",
+  "community.gapFit.scaleMismatch": "Vytvořeno pro jinou velikost mřížky než tvůj layout"
 }

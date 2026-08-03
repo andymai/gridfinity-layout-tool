@@ -125,6 +125,10 @@ function CommunityDetailDialog({
     summary: CommunityPrintSummary | null;
   } | null>(null);
   const [printsAvailable, setPrintsAvailable] = useState(true);
+  // The gap the viewer picked in the layout editor, if any. Read here rather
+  // than passed down so the detail answers the same question the gallery
+  // filtered on.
+  const gapContext = useBrowseStore((s) => s.fitsGapContext);
   // Bumped after a write so the list refetches; the parent owns it because the
   // CTA and the list must agree on whether the viewer has a print.
   const [printsRefresh, setPrintsRefresh] = useState(0);
@@ -561,6 +565,7 @@ function CommunityDetailDialog({
                 params={design.params}
                 metrics={design.metrics}
                 summary={printSummary}
+                gapContext={gapContext}
               />
             }
             printsSlot={

@@ -3507,5 +3507,10 @@
   "community.featured.reason.wellMade": "Bijzonder goed gemaakt",
   "community.featured.reason.clever": "Slimme oplossing",
   "community.featured.reason.versatile": "Voor van alles bruikbaar",
-  "community.featured.reason.beginnerFriendly": "Een goede eerste print"
+  "community.featured.reason.beginnerFriendly": "Een goede eerste print",
+  "community.gapFit.fits": "Past in de gekozen ruimte",
+  "community.gapFit.fitsRotated": "Past in de gekozen ruimte, gedraaid",
+  "community.gapFit.tooLarge": "Te groot voor de gekozen ruimte",
+  "community.gapFit.tooTall": "Te hoog voor de ruimte boven die laag",
+  "community.gapFit.scaleMismatch": "Gemaakt voor een andere rastermaat dan jouw layout"
 }

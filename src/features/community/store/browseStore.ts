@@ -9,6 +9,7 @@ import type { ExampleTechnique } from '@/shared/types/exampleTechniques';
 import type { CommunityClientError } from '../api/client';
 import { fetchCommunityIndex } from '../api/client';
 import { cardDimensionUnits } from '../components/CommunityCard/cardDims';
+import { gapFitVerdict } from '../utils/gapFit';
 
 export const BROWSE_INDEX_STALE_MS = 5 * 60 * 1000;
 
@@ -247,23 +248,34 @@ export function filterAndSortCards(
   const effectiveWidthMax = filters.widthMax ?? fitsGapContext?.widthMax ?? null;
   const effectiveDepthMax = filters.depthMax ?? fitsGapContext?.depthMax ?? null;
   const effectiveMaxHeight = filters.maxHeight ?? fitsGapContext?.maxHeight ?? null;
+  // An explicit toolbar bound overrides the corresponding gap dimension but
+  // keeps the rest of the context (notably the grid scale), so the verdict
+  // stays a single comparison rather than two competing ones.
+  const effectiveGap =
+    fitsGapContext === null
+      ? null
+      : {
+          ...fitsGapContext,
+          widthMax: filters.widthMax ?? fitsGapContext.widthMax,
+          depthMax: filters.depthMax ?? fitsGapContext.depthMax,
+          maxHeight: filters.maxHeight ?? fitsGapContext.maxHeight,
+        };
   const fitsFootprintMax = (width: number, depth: number): boolean =>
     (effectiveWidthMax === null || width <= effectiveWidthMax) &&
     (effectiveDepthMax === null || depth <= effectiveDepthMax);
   const matched = items.filter((card) => {
     const dims = cardDimensionUnits(card.metrics);
-    // With a gap context, placement probes both orientations
-    // (placeCommunityDesignInLayout), so the filter must too: a 1x3 design
-    // does fit a 3x1 gap. Toolbar-only bounds stay literal.
+    // With a gap context the verdict comes from gapFitVerdict, the same
+    // function the detail view renders, so filtering a card out of the grid
+    // and telling someone "this will not fit" can never disagree. It covers
+    // rotation (placement probes both orientations) and the scale match that
+    // placement hard-rejects on.
+    const gapVerdict = effectiveGap === null ? null : gapFitVerdict(card.metrics, effectiveGap);
     const footprintOk =
-      fitsGapContext !== null
-        ? fitsFootprintMax(dims.width, dims.depth) || fitsFootprintMax(dims.depth, dims.width)
+      gapVerdict !== null
+        ? gapVerdict === 'fits' || gapVerdict === 'fits-rotated'
         : fitsFootprintMax(dims.width, dims.depth);
-    // Placement hard-rejects scale mismatches. The card index only carries the
-    // X grid scale, so this screens what it can; a rare Y/height-unit
-    // mismatch still surfaces through the placement failure toast.
-    const scaleOk =
-      fitsGapContext === null || card.metrics.gridUnitMm === fitsGapContext.gridUnitMm;
+    const scaleOk = gapVerdict === null || gapVerdict !== 'scale-mismatch';
     return (
       scaleOk &&
       (filters.category === null || card.category === filters.category) &&
