@@ -18,6 +18,7 @@ import { useToastStore } from '@/core/store/toast';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { trackEvent } from '@/shared/analytics/posthog';
 import type { CommunityDesign, CommunityDesignCounts } from '@/shared/types/community';
+import type { CommunityPrint } from '@/shared/types/communityPrint';
 import type { CommunityDetailProps } from '@/shared/types/communityDetail';
 import { savePendingLikeAction } from '@/shared/utils/communityPendingLikeAction';
 import { fetchCommunityDesign } from '../../api/client';
@@ -28,6 +29,9 @@ import type { CardLikePatch } from '../../store/browseStore';
 import { recordRecentlyViewed } from '../../utils/recentlyViewed';
 import { ReportDialog } from '../ReportDialog';
 import { CommunitySignInPrompt } from '../SignInPrompt';
+import { fetchPrints } from '../../api/printsClient';
+import { usePrintDialogStore } from '../../store/printDialogStore';
+import { PrintDialog } from '../PrintDialog';
 import { CommunityDetailContent } from './CommunityDetailContent';
 import type { OwnerModeration, ParentResolution } from './CommunityDetailContent';
 import { useDetailHistoryTrap } from './useDetailHistoryTrap';
@@ -110,6 +114,13 @@ function CommunityDetailDialog({
   const [design, setDesign] = useState<CommunityDesign | null>(null);
   const [detailStats, setDetailStats] = useState<DetailStats | null>(null);
   const [isOwner, setIsOwner] = useState(false);
+  // Stamped with the design it belongs to rather than cleared on switch: the
+  // overlay can go ready for design B while this still holds A's answer, and a
+  // stamped value is stale-proof without a synchronous reset in an effect.
+  const [ownPrint, setOwnPrint] = useState<{
+    designId: string;
+    print: CommunityPrint | null;
+  } | null>(null);
   const [ownerModeration, setOwnerModeration] = useState<OwnerModeration | null>(null);
   const [offline, setOffline] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -378,6 +389,36 @@ function CommunityDetailDialog({
     }
   }, [addToast, busy, close, design, onPlaceInLayout, onRequestCloseGallery, t]);
 
+  // The caller's own print decides whether the CTA posts or edits. The list
+  // response carries it even when it is not on the first page, so this is one
+  // request rather than a walk.
+  useEffect(() => {
+    if (phase !== 'ready' || design === null) return;
+    const { id } = design;
+    let cancelled = false;
+    void fetchPrints(id).then((result) => {
+      if (cancelled) return;
+      // A disabled kill switch or any other failure just leaves the CTA in its
+      // "post" state; the server is still the authority on what happens next.
+      setOwnPrint({ designId: id, print: isOk(result) ? result.value.mine : null });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [phase, design]);
+
+  const myPrint = design !== null && ownPrint?.designId === design.id ? ownPrint.print : null;
+
+  const handleAddPrint = useCallback(() => {
+    if (design === null) return;
+    usePrintDialogStore.getState().open({
+      designId: design.id,
+      designName: design.name,
+      signedIn: sessionStatus === 'authenticated',
+      existing: myPrint,
+    });
+  }, [design, myPrint, sessionStatus]);
+
   const handleFilterByAuthor = useCallback(() => {
     if (design === null) return;
     useBrowseStore.getState().setAuthor({ id: design.authorPublicId, name: design.authorName });
@@ -479,6 +520,8 @@ function CommunityDetailDialog({
             }
             onFilterByAuthor={handleFilterByAuthor}
             ownerModeration={ownerModeration}
+            onAddPrint={handleAddPrint}
+            hasOwnPrint={myPrint !== null}
           />
         )}
       </Dialog.Body>
@@ -639,6 +682,11 @@ function CommunityDetailDialog({
                 })
             : undefined
         }
+      />
+
+      <PrintDialog
+        onSaved={(print) => setOwnPrint({ designId: print.designId, print })}
+        onDeleted={() => setOwnPrint(design === null ? null : { designId: design.id, print: null })}
       />
     </Dialog.Root>
   );

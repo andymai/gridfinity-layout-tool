@@ -34,6 +34,17 @@ Proof that a published design was actually printed: photos, the settings that wo
 - **Moderation mirrors designs exactly**: signed-in only, post-moderated, report threshold auto-hides, deny-list applies, admin purge available. A hidden print leaves the ZSET (so it drops out of the list and the count) but keeps its hash, so the reporter dedupe holds and it cannot be edited back into visibility.
 - **Kill switch**: `COMMUNITY_PRINTS_ENABLED`. Unset or anything but `true` makes every method 503.
 
+Client side:
+
+- `utils/printPhoto.ts`: File → upload-ready WebP data URL. Decodes with `imageOrientation: 'from-image'` (without it a portrait phone photo bakes in sideways, since the re-encode then discards the EXIF tag that would have corrected it), downscales to 1200px, then walks a quality ladder and a scale ladder until the encode fits the byte cap. Dropping resolution beats heavy quantisation at the same file size, so quality is exhausted before scale.
+- `api/printsClient.ts`: Result-typed client sharing `CommunityClientError` with the design client, so both surfaces branch on one error union.
+- `store/printDialogStore.ts`: `closed → signin → form → saving | error` state machine plus the draft, its client-side validation mirror, and the photo slots. Numeric fields stay strings in the draft so a half-typed `0.` does not round-trip through `Number()`.
+- `components/PrintDialog/`: the dialog, form, and photo picker. Mounted by the detail overlay rather than at app level, because unlike publishing there is no cross-feature handoff.
+
+`fitVerdict` has no default: a verdict nobody consciously chose is worse than no verdict at all, so it is the one field the form refuses to submit without.
+
+A photo slot is either `kept` (a URL already on the record) or `new` (a fresh data URL). Both travel to the server in one ordered array; the distinction lets an edit change a note without re-uploading images.
+
 Backend lives in `api/community/prints.ts` (`GET`/`PUT`/`DELETE`/`POST report`), `api/lib/communityPrintStore.ts`, and `api/lib/communityPrintValidation.ts`. The `community:index:prints` ZSET is maintained from the moment prints exist but is not yet a member of `COMMUNITY_INDEX_SORTS`: exposing the "most printed" sort is a separate change, so that when it lands its scores are already correct rather than needing a backfill.
 
 Note that `counts.exports` means file downloads, not prints. The two are different signals and the UI must not conflate them.

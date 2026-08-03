@@ -68,7 +68,8 @@ export interface CommunityPublishResult {
   url: string;
 }
 
-function errorFromResponse(status: number, data: unknown): CommunityClientError {
+/** Shared with `printsClient.ts` so both surfaces branch on one error union. */
+export function errorFromResponse(status: number, data: unknown): CommunityClientError {
   const body = isApiErrorResponse(data) ? data : null;
   if (status === 401) return { kind: 'needsAuth' };
   if (status === 503) return { kind: 'disabled' };
@@ -247,7 +248,7 @@ function isDeleteResponse(value: unknown): value is { success: true } {
   return isRecord(value) && value.success === true;
 }
 
-async function communityFetch(input: string, init: RequestInit): Promise<Response> {
+export async function communityFetch(input: string, init: RequestInit): Promise<Response> {
   // A community 401 is handled locally by the publish flow; the app-wide
   // forced sign-out event would clear the sync outbox and flip every tab
   // anonymous.
