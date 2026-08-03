@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.363.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.362.0...gridfinity-layout-tool-v4.363.0) (2026-08-03)
+
+
+### Features
+
+* **community:** carry the gap-fit verdict into the detail view ([#3210](https://github.com/andymai/gridfinity-layout-tool/issues/3210)) ([ce1e1fd](https://github.com/andymai/gridfinity-layout-tool/commit/ce1e1fd7fcd95f9e7f42c748f26607c115948c0e))
+
 ## [4.362.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.361.0...gridfinity-layout-tool-v4.362.0) (2026-08-03)
 
 
