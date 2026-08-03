@@ -15,7 +15,11 @@ import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { isSeatedConnectorStyle } from '@/shared/types/bin';
 import { clampCornerCuts, cornerCutVertices } from '@/shared/utils/cornerCutOutline';
 import { translateOutline } from '@/shared/utils/drawerOutline';
-import { CUT_GEOMETRY_MARGIN_MM, resolveOutlineFrame } from '@/shared/utils/outlineFrame';
+import {
+  CUT_GEOMETRY_MARGIN_MM,
+  hasOutlineOverhang,
+  resolveOutlineFrame,
+} from '@/shared/utils/outlineFrame';
 
 /**
  * Largest corner radius the plain rounding path may cut: the arc can enter
@@ -133,7 +137,11 @@ function resolveOutline(
   fractionalEdgeY: 'start' | 'end',
   gridShiftX: number,
   gridShiftY: number
-): { outline: DrawerOutline | undefined; paddingOn: boolean } {
+): {
+  outline: DrawerOutline | undefined;
+  paddingOn: boolean;
+  overhang?: ResolvedBaseplateParams['outlineOverhang'];
+} {
   if (outlineOn && drawerOutline !== undefined) {
     const frame = resolveOutlineFrame(drawerOutline, {
       widthMm,
@@ -149,12 +157,16 @@ function resolveOutline(
       gridShiftX,
       gridShiftY,
     });
+    // Only carried when non-zero, so registered in-extent plates keep an
+    // absent field and stay byte-identical through the cache key.
+    const overhang = hasOutlineOverhang(frame.overhang) ? frame.overhang : undefined;
     if (frame.shiftX === 0 && frame.shiftY === 0) {
-      return { outline: frame.outline, paddingOn: frame.paddingOn };
+      return { outline: frame.outline, paddingOn: frame.paddingOn, overhang };
     }
     return {
       outline: translateOutline(frame.outline, frame.shiftX, frame.shiftY),
       paddingOn: frame.paddingOn,
+      overhang,
     };
   }
   return resolveRadiusOutline(stored, widthMm, depthMm, gridUnitMm);
@@ -269,7 +281,7 @@ export function buildFullParams(
 
   const effFractionalEdgeX = synced ? fractionalEdgeX : (stored.fractionalEdgeX ?? 'end');
   const effFractionalEdgeY = synced ? fractionalEdgeY : (stored.fractionalEdgeY ?? 'end');
-  const { outline, paddingOn } = resolveOutline(
+  const { outline, paddingOn, overhang } = resolveOutline(
     drawerOutline,
     outlineOn,
     stored,
@@ -319,6 +331,7 @@ export function buildFullParams(
     gridUnitMmY,
     nozzleSizeMm,
     outline,
+    outlineOverhang: overhang,
     magnetHoles: stackingOn ? false : stored.magnetHoles,
     magnetDiameter: stored.magnetDiameter,
     magnetDepth: stored.magnetDepth,

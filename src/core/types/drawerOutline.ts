@@ -67,6 +67,19 @@ export interface DrawerOutline {
 }
 
 /**
+ * How far a framed {@link DrawerOutline} reaches past the padded grid extent,
+ * per side in mm (each ≥ 0). Zero on every side when the perimeter fits its
+ * extent. See `@/shared/utils/outlineFrame` for how it is derived and
+ * `ResolvedBaseplateParams.outlineOverhang` for what consumes it (#3169).
+ */
+export interface OutlineOverhang {
+  readonly left: number;
+  readonly right: number;
+  readonly front: number;
+  readonly back: number;
+}
+
+/**
  * The user's tape-measure reading of the physical drawer, in mm. Kept
  * alongside the derived grid dims so the fit slack stays visible after
  * commit and the baseplate panel can pre-fill padding from it. Never

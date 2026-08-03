@@ -111,6 +111,16 @@ export function meshCacheKey(
     // Only meaningful with an outline: a rectangular plate has no crossed cell
     // to drop, so folding it out keeps every existing rectangle's cache identity.
     params.outline !== undefined && params.wholeCellsOnly === true,
+    // Widens the slab the outline is intersected against (#3169). On a whole
+    // plate this is derivable from the outline + extent already in this key,
+    // but a split piece INHERITS its overhang from its position in the parent
+    // (not from its own outline), so two pieces can agree on every other field
+    // and still cut different geometry. Keyed explicitly rather than relying on
+    // it being implied. Empty when absent, so existing plates keep their entry.
+    params.outlineOverhang !== undefined
+      ? `oh:${quantize(params.outlineOverhang.left)},${quantize(params.outlineOverhang.right)},` +
+          `${quantize(params.outlineOverhang.front)},${quantize(params.outlineOverhang.back)}`
+      : '',
     params.edges?.left ?? '',
     params.edges?.right ?? '',
     params.edges?.front ?? '',
@@ -176,6 +186,12 @@ export function slabPocketsCacheKey(
     quantize(params.paddingRight),
     quantize(params.paddingFront),
     quantize(params.paddingBack),
+    // Widens the cached slab the pockets are cut into (#3169) — without it a
+    // grid-shifted plate reuses the unshifted slab and prints truncated.
+    quantize(params.outlineOverhang?.left ?? 0),
+    quantize(params.outlineOverhang?.right ?? 0),
+    quantize(params.outlineOverhang?.front ?? 0),
+    quantize(params.outlineOverhang?.back ?? 0),
     params.fractionalEdgeX,
     params.fractionalEdgeY,
     params.overTile ?? false,

@@ -6,12 +6,13 @@ import {
   maxCornerRadiusMm,
   plainRoundingLimit,
 } from './buildFullParams';
-import { computeBaseplateTiling } from './splitPlanner';
+import { computeBaseplateTiling, pieceToBaseplateParams } from './splitPlanner';
 import { groupPiecesByFingerprint } from './pieceFingerprint';
 import { stackGroupsFromTiling, evaluateStackPrint } from './stackPrint';
 import { cornerCutVertices } from '@/shared/utils/cornerCutOutline';
 import { drawerFrameShift } from '@/shared/utils/outlineFrame';
 import { padOutline } from '@/shared/utils/padOutline';
+import { outlineBounds } from '@/shared/utils/drawerOutlineGeometry';
 import { translateOutline } from '@/shared/utils/drawerOutline';
 import type { CornerCutParams, DrawerOutline } from '@/core/types';
 
@@ -1123,4 +1124,100 @@ describe('grid↔perimeter frame parity (#3157)', () => {
       expect(shift.y).toBeCloseTo(32 - gridShiftY, 9);
     }
   );
+});
+
+describe('outline overhang (#3169)', () => {
+  // The #3149 reporter's setup: a 396 x 295.5mm perimeter on an 8.5 x 7.5
+  // drawer at 48 x 42 pitch, so the extent is 408 x 315 and the shape is
+  // anchored at the origin — touching the left and front edges.
+  const REPORTED: DrawerOutline = {
+    vertices: [
+      { x: 0, y: 0 },
+      { x: 396, y: 0 },
+      { x: 396, y: 295.5 },
+      { x: 0, y: 295.5 },
+    ],
+  };
+  const noPadding = {
+    magnetHoles: false,
+    magnetDiameter: mm(6.5),
+    magnetDepth: mm(2.4),
+    paddingLeft: mm(0),
+    paddingRight: mm(0),
+    paddingFront: mm(0),
+    paddingBack: mm(0),
+  };
+  const TOTAL_W = 8.5 * 48;
+  const TOTAL_D = 7.5 * 42;
+
+  const build = (shiftX: number, shiftY: number) =>
+    buildFullParams(
+      noPadding,
+      8.5,
+      7.5,
+      48,
+      'end',
+      'end',
+      undefined,
+      REPORTED,
+      undefined,
+      42,
+      shiftX,
+      shiftY
+    );
+
+  it.each([
+    [0, 0],
+    [4.5, 0],
+    [0, 4.5],
+    [-4.5, -4.5],
+    [24, -21],
+  ])('bounds the whole perimeter at shift (%s, %s)', (shiftX, shiftY) => {
+    const plate = build(shiftX, shiftY);
+    const b = outlineBounds(plate.outline as DrawerOutline);
+    const oh = plate.outlineOverhang;
+    // The generator's slab spans [-left, totalW + right]; the outline is
+    // intersected against it, so anything outside is cut off the plate.
+    expect(-(oh?.left ?? 0)).toBeLessThanOrEqual(b.minX);
+    expect(TOTAL_W + (oh?.right ?? 0)).toBeGreaterThanOrEqual(b.maxX);
+    expect(-(oh?.front ?? 0)).toBeLessThanOrEqual(b.minY);
+    expect(TOTAL_D + (oh?.back ?? 0)).toBeGreaterThanOrEqual(b.maxY);
+  });
+
+  it('measures the reported +4.5mm shift as a 4.5mm left overhang', () => {
+    expect(build(4.5, 0).outlineOverhang).toEqual({
+      left: 4.5,
+      right: 0,
+      front: 0,
+      back: 0,
+    });
+    expect(build(0, 4.5).outlineOverhang).toEqual({
+      left: 0,
+      right: 0,
+      front: 4.5,
+      back: 0,
+    });
+  });
+
+  it('stays absent when the shape fits its extent, keeping plates cache-stable', () => {
+    expect(build(0, 0).outlineOverhang).toBeUndefined();
+    // Shifts that move the shape into the extent's own slack overhang nothing.
+    expect(build(-4.5, -4.5).outlineOverhang).toBeUndefined();
+  });
+
+  it('gives only the outermost split pieces their side of the overhang', () => {
+    const plate = build(4.5, 0);
+    const tiling = computeBaseplateTiling(plate, 180, 180);
+    expect(tiling.isSplit).toBe(true);
+    for (const piece of tiling.pieces) {
+      const pieceParams = pieceToBaseplateParams(piece, plate);
+      if (piece.gridOffsetX === 0) {
+        // The piece slab IS its clip window, so the edge piece must carry the
+        // overhang or it re-clips the strip the widened window kept.
+        expect(pieceParams.outlineOverhang?.left).toBe(4.5);
+      } else {
+        expect(pieceParams.outlineOverhang).toBeUndefined();
+      }
+    }
+  });
 });

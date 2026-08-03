@@ -974,12 +974,30 @@ function applyOutlineToTiling(
   // The piece slab IS the clip window, so the window spans the piece's full
   // padded extent — a corner piece whose grid cells are all outside can still
   // survive as the padding material the arc leaves behind.
-  const windowOf = (piece: BaseplatePiece): { x0: number; y0: number; x1: number; y1: number } => ({
-    x0: padL + piece.gridOffsetX * u - piece.paddingLeft,
-    y0: padF + piece.gridOffsetY * uy - piece.paddingFront,
-    x1: padL + (piece.gridOffsetX + piece.widthUnits) * u + piece.paddingRight,
-    y1: padF + (piece.gridOffsetY + piece.depthUnits) * uy + piece.paddingBack,
+  //
+  // The outermost pieces additionally absorb the outline's overhang (#3169):
+  // a grid-shifted perimeter reaches past `[0, totalW]`, and windows that
+  // stopped at the nominal extent left that strip in no piece at all — it
+  // vanished from the split export exactly as it did from the whole plate.
+  // Interior pieces are untouched, so seams stay where they were.
+  const oh = params.outlineOverhang;
+  const edgesOf = (
+    piece: BaseplatePiece
+  ): { left: number; right: number; front: number; back: number } => ({
+    left: piece.gridOffsetX === 0 ? (oh?.left ?? 0) : 0,
+    right: piece.gridOffsetX + piece.widthUnits === tiling.totalWidthUnits ? (oh?.right ?? 0) : 0,
+    front: piece.gridOffsetY === 0 ? (oh?.front ?? 0) : 0,
+    back: piece.gridOffsetY + piece.depthUnits === tiling.totalDepthUnits ? (oh?.back ?? 0) : 0,
   });
+  const windowOf = (piece: BaseplatePiece): { x0: number; y0: number; x1: number; y1: number } => {
+    const e = edgesOf(piece);
+    return {
+      x0: padL + piece.gridOffsetX * u - piece.paddingLeft - e.left,
+      y0: padF + piece.gridOffsetY * uy - piece.paddingFront - e.front,
+      x1: padL + (piece.gridOffsetX + piece.widthUnits) * u + piece.paddingRight + e.right,
+      y1: padF + (piece.gridOffsetY + piece.depthUnits) * uy + piece.paddingBack + e.back,
+    };
+  };
 
   const classByKey = new Map<string, RegionClass>();
   for (const piece of tiling.pieces) {
@@ -1199,6 +1217,29 @@ export function pieceToBaseplateParams(
     return rotateOutline180(local, windowW, windowD);
   })();
 
+  // The outermost pieces inherit the parent's outline overhang on their outer
+  // sides only (#3169), matching the widened windows `applyOutlineToTiling`
+  // classified them against — without it the piece's slab stops at the nominal
+  // extent and clips the very strip the window was widened to keep. Interior
+  // sides stay 0 so seams and interior pieces are byte-identical. Positional
+  // like padding, so it swaps under `rot`.
+  const pieceOverhang = ((): ResolvedBaseplateParams['outlineOverhang'] => {
+    const oh = parentParams.outlineOverhang;
+    if (oh === undefined) return undefined;
+    const actual = {
+      left: piece.gridOffsetX === 0 ? oh.left : 0,
+      right: piece.gridOffsetX + piece.widthUnits === parentParams.width ? oh.right : 0,
+      front: piece.gridOffsetY === 0 ? oh.front : 0,
+      back: piece.gridOffsetY + piece.depthUnits === parentParams.depth ? oh.back : 0,
+    };
+    if (actual.left === 0 && actual.right === 0 && actual.front === 0 && actual.back === 0) {
+      return undefined;
+    }
+    return rot
+      ? { left: actual.right, right: actual.left, front: actual.back, back: actual.front }
+      : actual;
+  })();
+
   // Like the outline, the connector filter is positional: under `rot` the
   // sides swap (L↔R, F↔B) and the piece-centered along-seam offsets negate
   // (a 180° turn about the center). Sorted so equal gatings hash equal.
@@ -1223,6 +1264,7 @@ export function pieceToBaseplateParams(
     // axis identity, so the parent's X/Y pitch carries straight through.
     gridUnitMmY: parentParams.gridUnitMmY,
     outline: pieceOutline,
+    outlineOverhang: pieceOverhang,
     connectorFilter,
     magnetHoles: parentParams.magnetHoles,
     magnetDiameter: parentParams.magnetDiameter,

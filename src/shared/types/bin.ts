@@ -5,7 +5,7 @@
  * This barrel export allows other features (e.g., generation) to
  * depend on these types without a cross-feature import violation.
  */
-import type { DrawerOutline, MagnetAnchor, StackPrintParams } from '@/core/types';
+import type { DrawerOutline, MagnetAnchor, OutlineOverhang, StackPrintParams } from '@/core/types';
 
 export type {
   ExportFileFormat,
@@ -447,6 +447,25 @@ export interface ResolvedBaseplateParams {
    * this is piece-local (pre-translated by the planner).
    */
   readonly outline?: DrawerOutline;
+  /**
+   * Extra plate-local material the `outline` reaches beyond `[0, totalW] ×
+   * [0, totalD]`, per side in mm (#3169).
+   *
+   * The grid frame renders the grid fixed and translates the perimeter, so a
+   * grid shift toward an edge the shape already touches — or an imported
+   * perimeter drawn larger than the drawer — puts part of the perimeter
+   * outside the nominal extent. The slab the outline is intersected against
+   * must cover it, or that strip is cut off the printed plate. The socket
+   * lattice is NOT affected: it stays anchored to the nominal extent, which
+   * is exactly what makes the shift a grid shift. Absent/zero = the outline
+   * fits the extent (every plate before this existed), which keeps the slab
+   * byte-identical and cache-stable.
+   *
+   * Split pieces never carry this: a piece's slab IS its clip window, so
+   * growing it would let each piece swallow its neighbours. The planner
+   * instead widens the outermost pieces' windows to cover the overhang.
+   */
+  readonly outlineOverhang?: OutlineOverhang;
   /** Enable registration nubs/holes on join edges for split piece alignment. */
   readonly connectorNubs?: boolean;
   /** Swap tongue/groove convention on all join edges (default false). */
