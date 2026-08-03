@@ -202,7 +202,7 @@
     "knip": "^6.27.0",
     "lint-staged": "^17.1.0",
     "marked": "^18.0.6",
-    "postcss": "^8.5.23",
+    "postcss": "^8.5.25",
     "prettier": "^3.9.5",
     "rollup-plugin-visualizer": "^7.0.1",
     "size-limit": "^12.1.0",
