@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.359.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.358.0...gridfinity-layout-tool-v4.359.0) (2026-08-03)
+
+
+### Features
+
+* **community:** derived author portrait on the filtered gallery ([#3201](https://github.com/andymai/gridfinity-layout-tool/issues/3201)) ([764096a](https://github.com/andymai/gridfinity-layout-tool/commit/764096aadd7e3df9a43bf06936a497768a88ecb5))
+
 ## [4.358.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.357.0...gridfinity-layout-tool-v4.358.0) (2026-08-03)
 
 
