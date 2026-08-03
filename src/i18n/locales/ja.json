@@ -3507,5 +3507,10 @@
   "community.featured.reason.wellMade": "特によくできています",
   "community.featured.reason.clever": "巧みな解決策",
   "community.featured.reason.versatile": "いろいろな用途に使えます",
-  "community.featured.reason.beginnerFriendly": "最初のプリントに最適"
+  "community.featured.reason.beginnerFriendly": "最初のプリントに最適",
+  "community.gapFit.fits": "選んだ隙間に収まります",
+  "community.gapFit.fitsRotated": "選んだ隙間に、横向きなら収まります",
+  "community.gapFit.tooLarge": "選んだ隙間には大きすぎます",
+  "community.gapFit.tooTall": "そのレイヤーの上の高さに収まりません",
+  "community.gapFit.scaleMismatch": "レイアウトとは異なるグリッドサイズ向けです"
 }

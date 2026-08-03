@@ -3507,5 +3507,10 @@
   "community.featured.reason.wellMade": "특히 잘 만들어졌습니다",
   "community.featured.reason.clever": "영리한 해법",
   "community.featured.reason.versatile": "여러 용도로 쓸 수 있습니다",
-  "community.featured.reason.beginnerFriendly": "첫 출력으로 좋습니다"
+  "community.featured.reason.beginnerFriendly": "첫 출력으로 좋습니다",
+  "community.gapFit.fits": "선택한 공간에 들어갑니다",
+  "community.gapFit.fitsRotated": "선택한 공간에 돌려서 들어갑니다",
+  "community.gapFit.tooLarge": "선택한 공간에는 너무 큽니다",
+  "community.gapFit.tooTall": "해당 레이어 위 공간에 비해 너무 높습니다",
+  "community.gapFit.scaleMismatch": "레이아웃과 다른 그리드 크기로 만들어졌습니다"
 }

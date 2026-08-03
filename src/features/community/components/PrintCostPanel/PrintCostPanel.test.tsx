@@ -134,4 +134,59 @@ describe('PrintCostPanel', () => {
 
     expect(screen.queryByTestId('print-cost-panel')).toBeNull();
   });
+
+  describe('gap fit', () => {
+    const gap = {
+      widthMax: 3,
+      depthMax: 2,
+      maxHeight: 6,
+      gridUnitMm: 42,
+      gridUnitMmY: 42,
+      heightUnitMm: 7,
+    };
+
+    it('says nothing when the viewer is not filling a gap', () => {
+      render(<PrintCostPanel params={PARAMS} metrics={METRICS} summary={null} />);
+      expect(screen.queryByTestId('cost-gap-fits')).toBeNull();
+    });
+
+    it('confirms a design that fits the picked gap upright', () => {
+      const upright = { width: 2 * 42 - 0.5, depth: 1 * 42 - 0.5, height: 21, gridUnitMm: 42 };
+      render(<PrintCostPanel params={PARAMS} metrics={upright} summary={null} gapContext={gap} />);
+      expect(screen.getByTestId('cost-gap-fits')).toBeInTheDocument();
+    });
+
+    it('says so when it only fits turned sideways', () => {
+      // 2 wide x 3 deep against a 3 x 2 gap. Placement probes both
+      // orientations, so this is a fit, not a failure.
+      const rotated = { width: 2 * 42 - 0.5, depth: 3 * 42 - 0.5, height: 21, gridUnitMm: 42 };
+      render(<PrintCostPanel params={PARAMS} metrics={rotated} summary={null} gapContext={gap} />);
+      expect(screen.getByTestId('cost-gap-fits-rotated')).toBeInTheDocument();
+    });
+
+    it('warns when it is too big for the gap', () => {
+      const big = { width: 9 * 42, depth: 9 * 42, height: 21, gridUnitMm: 42 };
+      render(<PrintCostPanel params={PARAMS} metrics={big} summary={null} gapContext={gap} />);
+      expect(screen.getByTestId('cost-gap-too-large')).toBeInTheDocument();
+    });
+
+    it('flags a grid-scale mismatch rather than comparing sizes', () => {
+      const other = { ...METRICS, gridUnitMm: 30 };
+      render(<PrintCostPanel params={PARAMS} metrics={other} summary={null} gapContext={gap} />);
+      expect(screen.getByTestId('cost-gap-scale-mismatch')).toBeInTheDocument();
+    });
+
+    it('renders the panel for the gap verdict alone', () => {
+      estimate.mockImplementation(() => {
+        throw new Error('nope');
+      });
+      bed.width = 0;
+      bed.depth = 0;
+
+      const upright = { width: 2 * 42 - 0.5, depth: 1 * 42 - 0.5, height: 21, gridUnitMm: 42 };
+      render(<PrintCostPanel params={PARAMS} metrics={upright} summary={null} gapContext={gap} />);
+
+      expect(screen.getByTestId('print-cost-panel')).toBeInTheDocument();
+    });
+  });
 });

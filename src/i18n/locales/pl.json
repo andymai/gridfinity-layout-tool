@@ -3507,5 +3507,10 @@
   "community.featured.reason.wellMade": "Szczególnie dobrze wykonane",
   "community.featured.reason.clever": "Sprytne rozwiązanie",
   "community.featured.reason.versatile": "Przydatne do wielu rzeczy",
-  "community.featured.reason.beginnerFriendly": "Dobry pierwszy wydruk"
+  "community.featured.reason.beginnerFriendly": "Dobry pierwszy wydruk",
+  "community.gapFit.fits": "Mieści się w wybranej luce",
+  "community.gapFit.fitsRotated": "Mieści się w wybranej luce, obrócony",
+  "community.gapFit.tooLarge": "Za duży na wybraną lukę",
+  "community.gapFit.tooTall": "Za wysoki na miejsce nad tą warstwą",
+  "community.gapFit.scaleMismatch": "Zbudowany dla innego rozmiaru siatki niż twój układ"
 }

@@ -61,6 +61,18 @@ Backend lives in `api/community/prints.ts` (`GET`/`PUT`/`DELETE`/`POST report`),
 - **Proven shelf** sits directly under staff picks, above recency: a design other people actually printed is the strongest recommendation the library has, and it is the one signal nobody can inflate by posting.
 - **Cover promotion** is owner opt-in and server-validated against the design's own **live** prints. The gallery grid is the most public surface in the app, and this is the only path by which a user-supplied image can reach it, so the check that the URL belongs to a live print of that design is load-bearing, not defensive. A hidden print's photo is not promotable.
 
+### Gap fit
+
+`utils/gapFit.ts` answers whether a design fits the gap the viewer picked in the layout editor. It is the **single** implementation: the browse filter and the detail view both call it, because filtering a card out of the grid and telling someone "this will not fit" are the same question and must never disagree.
+
+It encodes three things that are easy to get wrong:
+
+- **Rotation counts.** Placement probes both orientations, so a 2x3 design does fit a 3x2 gap. The verdict distinguishes `fits` from `fits-rotated` so the detail can say which.
+- **Scale is checked first.** Comparing footprints across different `gridUnitMm` compares numbers that do not mean the same thing, and placement hard-rejects the mismatch anyway.
+- **Height is checked before footprint**, so a design that fails both reports the ceiling as the reason.
+
+An explicit toolbar bound overrides the corresponding gap dimension while keeping the rest of the context (notably the grid scale), so precedence stays one comparison rather than two competing ones.
+
 ### Featured, with a reason
 
 `featured` no longer travels alone. Featuring a design through the admin CLI now **requires** `--reason <well-made|clever|versatile|beginner-friendly>`, and the gallery card shows that reason instead of a bare star.

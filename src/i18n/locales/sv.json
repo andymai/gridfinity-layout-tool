@@ -3507,5 +3507,10 @@
   "community.featured.reason.wellMade": "Särskilt välgjord",
   "community.featured.reason.clever": "Smart lösning",
   "community.featured.reason.versatile": "Användbar till mycket",
-  "community.featured.reason.beginnerFriendly": "En bra första utskrift"
+  "community.featured.reason.beginnerFriendly": "En bra första utskrift",
+  "community.gapFit.fits": "Passar i luckan du valde",
+  "community.gapFit.fitsRotated": "Passar i luckan du valde, vänd",
+  "community.gapFit.tooLarge": "För stor för luckan du valde",
+  "community.gapFit.tooTall": "För hög för utrymmet ovanför det lagret",
+  "community.gapFit.scaleMismatch": "Byggd för en annan rutstorlek än din layout"
 }

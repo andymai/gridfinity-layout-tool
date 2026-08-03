@@ -3507,5 +3507,10 @@
   "community.featured.reason.wellMade": "Særlig godt laget",
   "community.featured.reason.clever": "Smart løsning",
   "community.featured.reason.versatile": "Nyttig til mye",
-  "community.featured.reason.beginnerFriendly": "En god første utskrift"
+  "community.featured.reason.beginnerFriendly": "En god første utskrift",
+  "community.gapFit.fits": "Passer i åpningen du valgte",
+  "community.gapFit.fitsRotated": "Passer i åpningen du valgte, snudd",
+  "community.gapFit.tooLarge": "For stor for åpningen du valgte",
+  "community.gapFit.tooTall": "For høy for plassen over det laget",
+  "community.gapFit.scaleMismatch": "Laget for en annen rutestørrelse enn oppsettet ditt"
 }

@@ -3507,5 +3507,10 @@
   "community.featured.reason.wellMade": "Particolarmente ben fatto",
   "community.featured.reason.clever": "Soluzione ingegnosa",
   "community.featured.reason.versatile": "Utile per molte cose",
-  "community.featured.reason.beginnerFriendly": "Una buona prima stampa"
+  "community.featured.reason.beginnerFriendly": "Una buona prima stampa",
+  "community.gapFit.fits": "Entra nello spazio scelto",
+  "community.gapFit.fitsRotated": "Entra nello spazio scelto, ruotato",
+  "community.gapFit.tooLarge": "Troppo grande per lo spazio scelto",
+  "community.gapFit.tooTall": "Troppo alto per lo spazio sopra quel livello",
+  "community.gapFit.scaleMismatch": "Creato per una griglia diversa da quella del tuo layout"
 }

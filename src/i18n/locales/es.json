@@ -3507,5 +3507,10 @@
   "community.featured.reason.wellMade": "Especialmente bien hecho",
   "community.featured.reason.clever": "Solución ingeniosa",
   "community.featured.reason.versatile": "Útil para muchas cosas",
-  "community.featured.reason.beginnerFriendly": "Una buena primera impresión"
+  "community.featured.reason.beginnerFriendly": "Una buena primera impresión",
+  "community.gapFit.fits": "Cabe en el hueco elegido",
+  "community.gapFit.fitsRotated": "Cabe en el hueco elegido, girado",
+  "community.gapFit.tooLarge": "Demasiado grande para el hueco elegido",
+  "community.gapFit.tooTall": "Demasiado alto para el espacio sobre esa capa",
+  "community.gapFit.scaleMismatch": "Hecho para un tamaño de rejilla distinto al de tu diseño"
 }
