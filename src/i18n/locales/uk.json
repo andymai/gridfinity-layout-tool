@@ -654,6 +654,7 @@
   "binDesigner.cutouts.transform.rotate90": "Повернути на 90°",
   "binDesigner.cutouts.transform.rotateField": "Поворот",
   "binDesigner.cutouts.transform.title": "Перетворити",
+  "binDesigner.cutouts.group": "Згрупувати",
   "binDesigner.cutouts.ungroup": "Розгрупувати",
   "binDesigner.cutouts.width": "Ширина",
   "binDesigner.cutoutsDisableLightweight": "Не можна поєднати вирізи з полегшеною підлогою",

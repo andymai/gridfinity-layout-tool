@@ -654,6 +654,7 @@
   "binDesigner.cutouts.transform.rotate90": "Rotar 90°",
   "binDesigner.cutouts.transform.rotateField": "Rotación",
   "binDesigner.cutouts.transform.title": "Transformar",
+  "binDesigner.cutouts.group": "Agrupar",
   "binDesigner.cutouts.ungroup": "Desagrupar",
   "binDesigner.cutouts.width": "Ancho",
   "binDesigner.cutoutsDisableLightweight": "No se pueden combinar recortes superiores con un suelo ligero",

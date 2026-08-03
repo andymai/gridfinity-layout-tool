@@ -654,6 +654,7 @@
   "binDesigner.cutouts.transform.rotate90": "90° draaien",
   "binDesigner.cutouts.transform.rotateField": "Rotatie",
   "binDesigner.cutouts.transform.title": "Transformeren",
+  "binDesigner.cutouts.group": "Groeperen",
   "binDesigner.cutouts.ungroup": "Groepering opheffen",
   "binDesigner.cutouts.width": "Breedte",
   "binDesigner.cutoutsDisableLightweight": "Kan uitsparingen niet combineren met een lichtgewicht bodem",

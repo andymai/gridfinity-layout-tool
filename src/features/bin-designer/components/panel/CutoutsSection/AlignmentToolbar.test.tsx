@@ -93,10 +93,26 @@ describe('AlignmentToolbar', () => {
     expect(screen.getByLabelText('binDesigner.cutouts.pathfinder.exclude')).toBeInTheDocument();
   });
 
-  it('groups via Pathfinder Unite button', () => {
+  it('groups via Pathfinder Union button', () => {
     render(<AlignmentToolbar {...defaultProps} />);
     fireEvent.click(screen.getByLabelText('binDesigner.cutouts.pathfinder.union'));
     expect(onGroup).toHaveBeenCalledWith(['a', 'b'], 'union');
+  });
+
+  it('offers a plain Group button for a loose multi-selection', () => {
+    render(<AlignmentToolbar {...defaultProps} />);
+    fireEvent.click(screen.getByText('binDesigner.cutouts.group'));
+    // No op argument — a plain group takes the default op.
+    expect(onGroup).toHaveBeenCalledWith(['a', 'b']);
+  });
+
+  it('hides Group once the selection is already one whole group', () => {
+    const groupedCutouts = [
+      createCutout('a', { groupId: 'g1' }),
+      createCutout('b', { groupId: 'g1' }),
+    ];
+    render(<AlignmentToolbar {...defaultProps} cutouts={groupedCutouts} />);
+    expect(screen.queryByText('binDesigner.cutouts.group')).not.toBeInTheDocument();
   });
 
   it('shows ungroup button when any cutout has a groupId', () => {

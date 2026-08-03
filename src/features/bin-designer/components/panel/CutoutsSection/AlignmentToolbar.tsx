@@ -2,7 +2,8 @@
  * Alignment and distribution toolbar for multi-selected cutouts.
  *
  * Shows alignment buttons (left/right/top/bottom/center), distribution,
- * auto-arrange with gap control, and combine (boolean union) actions.
+ * auto-arrange with gap control, group/ungroup, and the Pathfinder boolean
+ * ops a group can carry.
  */
 
 import { useState } from 'react';
@@ -19,6 +20,7 @@ import {
 } from './geometry';
 import { autoArrangeCutouts } from './autoArrange';
 import { PathfinderControls } from './PathfinderControls';
+import { resolveActiveOp } from './pathfinderHelpers';
 import { TransformControls } from './TransformControls';
 import { ArrangeControls } from './ArrangeControls';
 
@@ -145,6 +147,8 @@ export function AlignmentToolbar({
 
   const selected = cutouts.filter((c) => selectedIds.includes(c.id));
   const hasGroup = selected.some((c) => c.groupId !== null);
+  // Already one whole group → grouping again would do nothing, so hide it.
+  const canGroup = selectedIds.length >= 2 && resolveActiveOp(selectedIds, cutouts) === null;
 
   const handleAlign = (type: AlignType) => {
     const bounds = computeBounds(selected);
@@ -382,6 +386,18 @@ export function AlignmentToolbar({
         >
           {t('common.duplicate')}
         </Button>
+        {canGroup && (
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            touchTarget={false}
+            className="text-content-secondary"
+            onClick={() => onGroup(selectedIds)}
+          >
+            {t('binDesigner.cutouts.group')}
+          </Button>
+        )}
         {hasGroup && (
           <Button
             type="button"

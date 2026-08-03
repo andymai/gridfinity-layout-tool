@@ -81,6 +81,19 @@ describe('cutoutToPolygon', () => {
     expect(polygon![0].length).toBeGreaterThan(20);
   });
 
+  // `Cutout.rotation` is clockwise-positive (CutoutShapeMesh renders at
+  // `-rotation`; cutoutBuilder extrudes at `rotate(shape, -rotation)`). An
+  // outline rotated the other way mirrors every non-symmetric shape, so the
+  // Pathfinder preview and the empty-result check disagree with the mesh the
+  // worker actually cuts.
+  it('rotates clockwise, matching the renderer and the worker', () => {
+    // A long bar rotated 45°: clockwise sends its right-hand tip DOWN.
+    const ring = cutoutToPolygon(baseCutout({ width: 40, depth: 4, rotation: 45 }))![0];
+    const centerY = 2;
+    const rightTip = ring.reduce((best, p) => (p[0] > best[0] ? p : best), ring[0]);
+    expect(rightTip[1]).toBeLessThan(centerY);
+  });
+
   it('rotates a rectangle around its center', () => {
     const polygon = cutoutToPolygon(baseCutout({ rotation: 45 }))!;
     const xs = polygon[0].map(([x]) => x);

@@ -155,4 +155,37 @@ describe('WorkspaceHeader', () => {
     expect(screen.getByText('binDesigner.cutouts.centerInBin')).toBeInTheDocument();
     expect(screen.getByTitle('binDesigner.cutouts.pathfinder.union')).toBeInTheDocument();
   });
+
+  const member = (id: string, groupId: string | null) => ({
+    id,
+    shape: 'rectangle' as const,
+    x: 0,
+    y: 0,
+    width: 10,
+    depth: 10,
+    cutDepth: 5,
+    rotation: 0,
+    cornerRadius: 0,
+    label: '',
+    groupId,
+    locked: false,
+    hidden: false,
+  });
+
+  it('offers Group for a loose multi-selection and Ungroup once grouped', () => {
+    const loose = [member('c1', null), member('c2', null)];
+    const { unmount } = render(
+      <WorkspaceHeader {...defaultProps} cutouts={loose} selection={new Set(['c1', 'c2'])} />
+    );
+    expect(screen.getByText('binDesigner.cutouts.group')).toBeInTheDocument();
+    expect(screen.queryByText('binDesigner.cutouts.ungroup')).not.toBeInTheDocument();
+    unmount();
+
+    const grouped = [member('c1', 'g1'), member('c2', 'g1')];
+    render(
+      <WorkspaceHeader {...defaultProps} cutouts={grouped} selection={new Set(['c1', 'c2'])} />
+    );
+    expect(screen.queryByText('binDesigner.cutouts.group')).not.toBeInTheDocument();
+    expect(screen.getByText('binDesigner.cutouts.ungroup')).toBeInTheDocument();
+  });
 });

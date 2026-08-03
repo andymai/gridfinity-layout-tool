@@ -654,6 +654,7 @@
   "binDesigner.cutouts.transform.rotate90": "Um 90° drehen",
   "binDesigner.cutouts.transform.rotateField": "Drehung",
   "binDesigner.cutouts.transform.title": "Transformieren",
+  "binDesigner.cutouts.group": "Gruppieren",
   "binDesigner.cutouts.ungroup": "Gruppierung aufheben",
   "binDesigner.cutouts.width": "Breite",
   "binDesigner.cutoutsDisableLightweight": "Aussparungen lassen sich nicht mit Leichtbau-Boden kombinieren",

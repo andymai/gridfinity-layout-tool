@@ -22,6 +22,7 @@ import {
 } from '../panel/CutoutsSection/geometry';
 import { autoArrangeCutouts } from '../panel/CutoutsSection/autoArrange';
 import { PathfinderControls } from '../panel/CutoutsSection/PathfinderControls';
+import { resolveActiveOp } from '../panel/CutoutsSection/pathfinderHelpers';
 import { TransformControls } from '../panel/CutoutsSection/TransformControls';
 import { ArrangeControls } from '../panel/CutoutsSection/ArrangeControls';
 type AlignType = 'left' | 'right' | 'top' | 'bottom' | 'center-h' | 'center-v';
@@ -265,6 +266,10 @@ export function WorkspaceHeader({
   const selectedIds = [...selection];
   const selected = useMemo(() => cutouts.filter((c) => selection.has(c.id)), [cutouts, selection]);
   const hasGroup = selected.some((c) => c.groupId !== null);
+  // Hide Group once the selection is already one whole group — that click
+  // would be a no-op. Mixed selections (a loose shape plus a group) still
+  // offer it, which folds the loose shape into the existing group.
+  const canGroup = selectedIds.length >= 2 && resolveActiveOp(selectedIds, cutouts) === null;
   const singleCutout = selection.size === 1 ? (selected[0] ?? null) : null;
   const handleAlign = useCallback(
     (type: AlignType) => {
@@ -477,6 +482,7 @@ export function WorkspaceHeader({
         {textBtn(handleCenterInBin, t('binDesigner.cutouts.centerInBin'))}
         <AutoArrangePopover onArrange={handleAutoArrange} />
         {textBtn(() => onDuplicate(selectedIds), t('common.duplicate'))}
+        {canGroup && textBtn(() => onGroup(selectedIds), t('binDesigner.cutouts.group'))}
         {hasGroup && textBtn(() => onUngroup(selectedIds), t('binDesigner.cutouts.ungroup'))}
         <Separator />
         {textBtn(handleClearAllClick, t('binDesigner.cutouts.clearAll'), true)}

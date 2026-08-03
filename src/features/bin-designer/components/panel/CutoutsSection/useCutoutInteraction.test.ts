@@ -37,10 +37,28 @@ describe('useCutoutInteraction', () => {
     vi.clearAllMocks();
   });
 
-  it('starts in rectangle placing mode with empty selection', () => {
+  it('starts on the pointer tool when the board already has cutouts', () => {
     const { result } = renderHook(() => useCutoutInteraction(defaultOpts));
-    expect(result.current.mode).toEqual({ type: 'placing', shape: 'rectangle' });
+    expect(result.current.mode).toEqual({ type: 'idle' });
     expect(result.current.selection.size).toBe(0);
+  });
+
+  it('starts in rectangle placing mode on an empty board', () => {
+    const { result } = renderHook(() => useCutoutInteraction({ ...defaultOpts, cutouts: [] }));
+    expect(result.current.mode).toEqual({ type: 'placing', shape: 'rectangle' });
+  });
+
+  it('keeps the pointer tool when cutouts arrive after mount', () => {
+    // The tool choice is a mount-time decision; adding a shape mid-session must
+    // not yank the tool out from under the user.
+    const { result, rerender } = renderHook(
+      (props: { cutouts: readonly Cutout[] }) =>
+        useCutoutInteraction({ ...defaultOpts, cutouts: props.cutouts }),
+      { initialProps: { cutouts: [] as readonly Cutout[] } }
+    );
+    act(() => result.current.setMode({ type: 'idle' }));
+    rerender({ cutouts: defaultCutouts });
+    expect(result.current.mode).toEqual({ type: 'idle' });
   });
 
   describe('selectCutout', () => {

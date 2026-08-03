@@ -1,11 +1,17 @@
 /**
- * Adobe-Illustrator-style Pathfinder control: a 4-button strip for the
- * boolean ops we expose on cutout groups (Union, Subtract, Intersect,
- * Exclude). Disabled until at least two cutouts are selected.
+ * Pathfinder control: a 4-button strip for the boolean ops a cutout group can
+ * carry (Union, Subtract, Intersect, Exclude). Disabled until at least two
+ * cutouts are selected.
  *
- * Behavior parity with Illustrator's shape-mode buttons:
- *  - Clicking an op groups the selection into a single group with that op.
- *    If the selection already shares a single groupId, only the op flips.
+ * These are the *ops*, not the container — plain grouping is the Group button
+ * / Ctrl+G, which leaves the group on the default `union` op. Union is the
+ * geometric identity for cavity subtraction (a fused cavity cuts the same
+ * material as the members cutting separately), so a plain group highlights
+ * Union here; the other three change what gets cut.
+ *
+ * Behavior, like Figma's boolean ops:
+ *  - Clicking an op on a loose selection groups it under that op. If the
+ *    selection already shares a single groupId, only the op flips.
  *  - The active op is highlighted when the selection is one cohesive group.
  *  - Mixed-op selection (multiple groups w/ different ops) shows no
  *    highlight; the next click reunifies under the chosen op.

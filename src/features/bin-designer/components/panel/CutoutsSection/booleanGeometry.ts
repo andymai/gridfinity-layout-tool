@@ -34,17 +34,23 @@ const CIRCLE_SEGMENTS = 64;
 const CORNER_SEGMENTS_PER_QUADRANT = 8;
 
 /**
- * Rotate a point `[x, y]` around `(cx, cy)` by `angleDeg` (CCW).
+ * Rotate a point `[x, y]` around `(cx, cy)` by a cutout's `rotation`.
+ *
+ * `Cutout.rotation` is clockwise-positive — `CutoutShapeMesh` renders at
+ * `-rotation` and `cutoutBuilder` extrudes at `rotate(shape, -rotation)` — so
+ * the CCW math below is fed the negated angle. Rotating CCW here mirrors every
+ * non-symmetric member, which shows up as a Pathfinder preview (and an
+ * empty-result check) that disagrees with the mesh the worker cuts.
  */
 function rotatePair(
   x: number,
   y: number,
   cx: number,
   cy: number,
-  angleDeg: number
+  rotationDeg: number
 ): [number, number] {
-  if (angleDeg === 0) return [x, y];
-  const a = (angleDeg * Math.PI) / 180;
+  if (rotationDeg === 0) return [x, y];
+  const a = (-rotationDeg * Math.PI) / 180;
   const cos = Math.cos(a);
   const sin = Math.sin(a);
   const dx = x - cx;
