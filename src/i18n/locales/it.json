@@ -3489,5 +3489,14 @@
   "community.cost.estimateNote": "Stimato dal modello a 0,2mm e 15% di riempimento. Le stampe reali lo sostituiranno quando saranno alcune.",
   "community.cost.bedFits": "Sta sul tuo piano di stampa",
   "community.cost.bedTooLarge": "Più grande del tuo piano di stampa ({width} x {depth}mm)",
-  "community.cost.bedHint": "La rotazione è considerata."
+  "community.cost.bedHint": "La rotazione è considerata.",
+  "community.author.designsOne": "1 design",
+  "community.author.designsOther": "{count} design",
+  "community.author.since": "Pubblica da {date}",
+  "community.author.makes": "Soprattutto {categories}",
+  "community.author.remixedOne": "Ripreso 1 volta",
+  "community.author.remixedOther": "Ripreso {count} volte",
+  "community.author.printedOne": "Stampato 1 volta",
+  "community.author.printedOther": "Stampato {count} volte",
+  "community.author.partial": "Basato sui design caricati qui, i più vecchi potrebbero mancare."
 }

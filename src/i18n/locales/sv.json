@@ -3489,5 +3489,14 @@
   "community.cost.estimateNote": "Uppskattat från modellen vid 0,2mm och 15% fyllnad. Riktiga utskrifter ersätter detta när några rapporterats.",
   "community.cost.bedFits": "Får plats på din byggplatta",
   "community.cost.bedTooLarge": "Större än din byggplatta ({width} x {depth}mm)",
-  "community.cost.bedHint": "Rotation räknas in."
+  "community.cost.bedHint": "Rotation räknas in.",
+  "community.author.designsOne": "1 design",
+  "community.author.designsOther": "{count} designer",
+  "community.author.since": "Publicerar sedan {date}",
+  "community.author.makes": "Mest {categories}",
+  "community.author.remixedOne": "Byggd vidare på 1 gång",
+  "community.author.remixedOther": "Byggd vidare på {count} gånger",
+  "community.author.printedOne": "Utskriven 1 gång",
+  "community.author.printedOther": "Utskriven {count} gånger",
+  "community.author.partial": "Baserat på de designer som laddats här, äldre kan saknas."
 }

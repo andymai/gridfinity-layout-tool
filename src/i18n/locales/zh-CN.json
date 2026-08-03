@@ -3489,5 +3489,14 @@
   "community.cost.estimateNote": "基于 0.2mm、15% 填充的模型预估。有几次真实打印记录后将替换此数值。",
   "community.cost.bedFits": "可放入你的热床",
   "community.cost.bedTooLarge": "大于你的热床（{width} x {depth}mm）",
-  "community.cost.bedHint": "已考虑旋转摆放。"
+  "community.cost.bedHint": "已考虑旋转摆放。",
+  "community.author.designsOne": "1 个设计",
+  "community.author.designsOther": "{count} 个设计",
+  "community.author.since": "自 {date} 起发布",
+  "community.author.makes": "主要是 {categories}",
+  "community.author.remixedOne": "被再创作 1 次",
+  "community.author.remixedOther": "被再创作 {count} 次",
+  "community.author.printedOne": "被打印 1 次",
+  "community.author.printedOther": "被打印 {count} 次",
+  "community.author.partial": "基于此处已加载的设计，较早的可能未包含。"
 }

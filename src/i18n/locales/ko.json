@@ -3489,5 +3489,14 @@
   "community.cost.estimateNote": "0.2mm, 인필 15% 기준 모델 예상치입니다. 실제 출력 기록이 쌓이면 대체됩니다.",
   "community.cost.bedFits": "사용 중인 베드에 맞습니다",
   "community.cost.bedTooLarge": "베드보다 큽니다 ({width} x {depth}mm)",
-  "community.cost.bedHint": "회전도 고려했습니다."
+  "community.cost.bedHint": "회전도 고려했습니다.",
+  "community.author.designsOne": "디자인 1개",
+  "community.author.designsOther": "디자인 {count}개",
+  "community.author.since": "{date}부터 공개",
+  "community.author.makes": "주로 {categories}",
+  "community.author.remixedOne": "1번 리믹스됨",
+  "community.author.remixedOther": "{count}번 리믹스됨",
+  "community.author.printedOne": "1번 출력됨",
+  "community.author.printedOther": "{count}번 출력됨",
+  "community.author.partial": "여기에 불러온 디자인 기준이라 오래된 것은 빠질 수 있습니다."
 }

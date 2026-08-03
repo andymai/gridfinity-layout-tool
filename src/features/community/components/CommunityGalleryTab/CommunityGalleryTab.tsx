@@ -25,6 +25,7 @@ import { CommunityCard } from '../CommunityCard';
 import { HeartGlyph } from '../CommunityCard/CommunityCard';
 import { formatUnits } from '../CommunityCard/cardDims';
 import { MineCard } from '../CommunityCard/MineCard';
+import { AuthorSummary } from '../AuthorSummary';
 import { MineDigestSummary } from '../MineDigestSummary';
 import { GalleryToolbar } from './GalleryToolbar';
 import { hasLocalDesigns } from './hasLocalDesigns';
@@ -323,6 +324,21 @@ export function CommunityGalleryTab({
             summary mounts only inside the Mine branch: browsing the public
             grid keeps the deltas unseen. */}
         {mineActive && <MineDigestSummary />}
+
+        {/* Sits above the grid rather than replacing it: the author filter is
+            still a gallery view, and the portrait is context for it. */}
+        {!mineActive && filters.author !== null && (
+          <AuthorSummary
+            items={items}
+            authorPublicId={filters.author.id}
+            authorName={
+              filters.author.name !== ''
+                ? filters.author.name
+                : t('community.gallery.authorFallback')
+            }
+            indexCapped={capped}
+          />
+        )}
 
         {activeStatus === 'error' && activeItems.length > 0 && (
           <div

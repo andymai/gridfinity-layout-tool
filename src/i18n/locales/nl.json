@@ -3489,5 +3489,14 @@
   "community.cost.estimateNote": "Geschat op basis van het model bij 0,2mm en 15% vulling. Echte prints vervangen dit zodra er enkele zijn.",
   "community.cost.bedFits": "Past op je printbed",
   "community.cost.bedTooLarge": "Groter dan je printbed ({width} x {depth}mm)",
-  "community.cost.bedHint": "Rotatie wordt meegerekend."
+  "community.cost.bedHint": "Rotatie wordt meegerekend.",
+  "community.author.designsOne": "1 design",
+  "community.author.designsOther": "{count} designs",
+  "community.author.since": "Publiceert sinds {date}",
+  "community.author.makes": "Vooral {categories}",
+  "community.author.remixedOne": "1 keer op voortgebouwd",
+  "community.author.remixedOther": "{count} keer op voortgebouwd",
+  "community.author.printedOne": "1 keer geprint",
+  "community.author.printedOther": "{count} keer geprint",
+  "community.author.partial": "Gebaseerd op de hier geladen designs, oudere kunnen ontbreken."
 }

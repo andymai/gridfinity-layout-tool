@@ -61,6 +61,14 @@ Backend lives in `api/community/prints.ts` (`GET`/`PUT`/`DELETE`/`POST report`),
 - **Proven shelf** sits directly under staff picks, above recency: a design other people actually printed is the strongest recommendation the library has, and it is the one signal nobody can inflate by posting.
 - **Cover promotion** is owner opt-in and server-validated against the design's own **live** prints. The gallery grid is the most public surface in the app, and this is the only path by which a user-supplied image can reach it, so the check that the URL belongs to a live print of that design is load-bearing, not defensive. A hidden print's photo is not promotable.
 
+### Author portrait
+
+`components/AuthorSummary/` renders a derived portrait while the gallery is filtered to one author: how many designs, since when, what they mostly make, and how often their work has been printed or built upon.
+
+Everything is derived from cards already loaded, so it adds no request. **No self-authored bio by design**: a bio answers "how does this person present themselves", where the useful question is "what do they make, and does it work", and it would be a new moderation surface for the weaker answer.
+
+Zero-valued proof signals are omitted rather than shown: "built on 0 times" says nothing while looking like a measurement. When the browse index is capped, the portrait says so, because an understated count that looks authoritative is worse than one that states its own limits.
+
 ### Print cost
 
 `components/PrintCostPanel/` answers "what will this cost me" before you commit, from `@/shared/utils/communityPrintCost`.

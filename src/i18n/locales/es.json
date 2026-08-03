@@ -3489,5 +3489,14 @@
   "community.cost.estimateNote": "Estimado con el modelo a 0,2mm y 15% de relleno. Las impresiones reales lo sustituirán cuando haya varias.",
   "community.cost.bedFits": "Cabe en tu cama de impresión",
   "community.cost.bedTooLarge": "Más grande que tu cama de impresión ({width} x {depth}mm)",
-  "community.cost.bedHint": "Se tiene en cuenta la rotación."
+  "community.cost.bedHint": "Se tiene en cuenta la rotación.",
+  "community.author.designsOne": "1 diseño",
+  "community.author.designsOther": "{count} diseños",
+  "community.author.since": "Publicando desde {date}",
+  "community.author.makes": "Sobre todo {categories}",
+  "community.author.remixedOne": "Reutilizado 1 vez",
+  "community.author.remixedOther": "Reutilizado {count} veces",
+  "community.author.printedOne": "Impreso 1 vez",
+  "community.author.printedOther": "Impreso {count} veces",
+  "community.author.partial": "Basado en los diseños cargados aquí, pueden faltar los más antiguos."
 }
