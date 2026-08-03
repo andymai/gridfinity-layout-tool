@@ -3489,5 +3489,14 @@
   "community.cost.estimateNote": "Anslått fra modellen ved 0,2mm og 15% fyll. Ekte utskrifter erstatter dette når noen har rapportert.",
   "community.cost.bedFits": "Får plass på byggeplaten din",
   "community.cost.bedTooLarge": "Større enn byggeplaten din ({width} x {depth}mm)",
-  "community.cost.bedHint": "Rotasjon er tatt med."
+  "community.cost.bedHint": "Rotasjon er tatt med.",
+  "community.author.designsOne": "1 design",
+  "community.author.designsOther": "{count} design",
+  "community.author.since": "Publiserer siden {date}",
+  "community.author.makes": "Mest {categories}",
+  "community.author.remixedOne": "Bygget videre på 1 gang",
+  "community.author.remixedOther": "Bygget videre på {count} ganger",
+  "community.author.printedOne": "Skrevet ut 1 gang",
+  "community.author.printedOther": "Skrevet ut {count} ganger",
+  "community.author.partial": "Basert på designene som er lastet her, eldre kan mangle."
 }

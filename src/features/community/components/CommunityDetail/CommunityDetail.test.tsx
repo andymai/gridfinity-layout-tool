@@ -17,6 +17,17 @@ vi.mock('../../api/client', () => ({
   reportDesign: vi.fn(),
 }));
 
+// The overlay fetches prints for its CTA and cost panel. Left unmocked these
+// are real network calls in a component test: nondeterministic, and slow
+// enough under CI load to push the reconnect assertion past its timeout.
+vi.mock('../../api/printsClient', () => ({
+  fetchPrints: vi.fn(async () => ok({ items: [], nextCursor: null, summary: null, mine: null })),
+  setCoverPhoto: vi.fn(),
+  reportPrint: vi.fn(),
+  savePrint: vi.fn(),
+  deletePrint: vi.fn(),
+}));
+
 vi.mock('@/shared/analytics/posthog', () => ({
   trackEvent: vi.fn(),
 }));

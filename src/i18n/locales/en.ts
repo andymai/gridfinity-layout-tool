@@ -3667,6 +3667,17 @@ const en: Record<string, string> = {
   'community.cost.bedTooLarge': 'Larger than your print bed ({width} x {depth}mm)',
   'community.cost.bedHint': 'Rotation is taken into account.',
 
+  // Derived author portrait, shown while the gallery is filtered to one author.
+  'community.author.designsOne': '1 design',
+  'community.author.designsOther': '{count} designs',
+  'community.author.since': 'Publishing since {date}',
+  'community.author.makes': 'Mostly {categories}',
+  'community.author.remixedOne': 'Built on 1 time',
+  'community.author.remixedOther': 'Built on {count} times',
+  'community.author.printedOne': 'Printed 1 time',
+  'community.author.printedOther': 'Printed {count} times',
+  'community.author.partial': 'Based on the designs loaded here, so older ones may be missing.',
+
   // Post-remix continuation banner (bin designer)
   'binDesigner.remixBanner.text':
     'Remixing {name} by {author}. Publish your version when it is ready.',

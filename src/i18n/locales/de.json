@@ -3489,5 +3489,14 @@
   "community.cost.estimateNote": "Geschätzt aus dem Modell bei 0,2mm und 15% Infill. Echte Drucke ersetzen dies, sobald einige berichten.",
   "community.cost.bedFits": "Passt auf dein Druckbett",
   "community.cost.bedTooLarge": "Größer als dein Druckbett ({width} x {depth}mm)",
-  "community.cost.bedHint": "Drehung wird berücksichtigt."
+  "community.cost.bedHint": "Drehung wird berücksichtigt.",
+  "community.author.designsOne": "1 Design",
+  "community.author.designsOther": "{count} Designs",
+  "community.author.since": "Veröffentlicht seit {date}",
+  "community.author.makes": "Meist {categories}",
+  "community.author.remixedOne": "1-mal darauf aufgebaut",
+  "community.author.remixedOther": "{count}-mal darauf aufgebaut",
+  "community.author.printedOne": "1-mal gedruckt",
+  "community.author.printedOther": "{count}-mal gedruckt",
+  "community.author.partial": "Basiert auf den hier geladenen Designs, ältere können fehlen."
 }

@@ -3489,5 +3489,14 @@
   "community.cost.estimateNote": "Odhadnuto z modelu při 0,2mm a 15% výplni. Skutečné tisky to nahradí, jakmile jich pár bude.",
   "community.cost.bedFits": "Vejde se na tvou podložku",
   "community.cost.bedTooLarge": "Větší než tvá podložka ({width} x {depth}mm)",
-  "community.cost.bedHint": "Otočení je zohledněno."
+  "community.cost.bedHint": "Otočení je zohledněno.",
+  "community.author.designsOne": "1 návrh",
+  "community.author.designsOther": "Návrhů: {count}",
+  "community.author.since": "Publikuje od {date}",
+  "community.author.makes": "Hlavně {categories}",
+  "community.author.remixedOne": "Navázáno 1krát",
+  "community.author.remixedOther": "Navázáno {count}krát",
+  "community.author.printedOne": "Vytištěno 1krát",
+  "community.author.printedOther": "Vytištěno {count}krát",
+  "community.author.partial": "Podle návrhů načtených zde, starší mohou chybět."
 }

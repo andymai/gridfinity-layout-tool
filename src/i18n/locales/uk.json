@@ -3489,5 +3489,14 @@
   "community.cost.estimateNote": "Оцінено за моделлю при 0,2мм і 15% заповнення. Реальні друки замінять це значення.",
   "community.cost.bedFits": "Вміщується на твій стіл",
   "community.cost.bedTooLarge": "Більше за твій стіл ({width} x {depth}мм)",
-  "community.cost.bedHint": "Обертання враховано."
+  "community.cost.bedHint": "Обертання враховано.",
+  "community.author.designsOne": "1 дизайн",
+  "community.author.designsOther": "Дизайнів: {count}",
+  "community.author.since": "Публікує з {date}",
+  "community.author.makes": "Здебільшого {categories}",
+  "community.author.remixedOne": "Розвинуто 1 раз",
+  "community.author.remixedOther": "Розвинуто {count} разів",
+  "community.author.printedOne": "Надруковано 1 раз",
+  "community.author.printedOther": "Надруковано {count} разів",
+  "community.author.partial": "На основі завантажених тут дизайнів, старіші можуть бути відсутні."
 }

@@ -14,3 +14,18 @@ export function useTranslation() {
     return key;
   };
 }
+
+/**
+ * Deterministic `useFormatting`, so a component that formats a date is
+ * testable without a LocaleProvider and without the runner's own locale
+ * leaking into assertions. Fixed values, not `toLocaleDateString`: the real
+ * output varies by machine.
+ */
+export function useFormatting() {
+  return {
+    formatDate: (date: Date | string | number): string => new Date(date).toISOString().slice(0, 10),
+    formatRelativeDate: (date: Date | string | number): string =>
+      new Date(date).toISOString().slice(0, 10),
+    formatNumber: (value: number): string => String(value),
+  };
+}

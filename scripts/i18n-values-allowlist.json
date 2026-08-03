@@ -147,6 +147,8 @@
     "common.notes",
     "common.redditCommunity",
     "common.standard",
+    "community.author.designsOne",
+    "community.author.designsOther",
     "community.card.remixBadge",
     "community.cost.filamentLabel",
     "community.detail.millimeters",

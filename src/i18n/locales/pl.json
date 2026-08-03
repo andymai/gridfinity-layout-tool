@@ -3489,5 +3489,14 @@
   "community.cost.estimateNote": "Oszacowane z modelu przy 0,2mm i 15% wypełnienia. Prawdziwe wydruki zastąpią tę wartość.",
   "community.cost.bedFits": "Mieści się na twoim stole",
   "community.cost.bedTooLarge": "Większe niż twój stół roboczy ({width} x {depth}mm)",
-  "community.cost.bedHint": "Obrót jest uwzględniony."
+  "community.cost.bedHint": "Obrót jest uwzględniony.",
+  "community.author.designsOne": "1 projekt",
+  "community.author.designsOther": "Projekty: {count}",
+  "community.author.since": "Publikuje od {date}",
+  "community.author.makes": "Głównie {categories}",
+  "community.author.remixedOne": "Rozwinięty 1 raz",
+  "community.author.remixedOther": "Rozwinięty {count} razy",
+  "community.author.printedOne": "Wydrukowany 1 raz",
+  "community.author.printedOther": "Wydrukowany {count} razy",
+  "community.author.partial": "Na podstawie projektów wczytanych tutaj, starsze mogą się nie pojawić."
 }

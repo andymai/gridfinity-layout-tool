@@ -3489,5 +3489,14 @@
   "community.cost.estimateNote": "0.2mm・インフィル15%のモデルによる推定です。実際のプリント報告が集まると置き換わります。",
   "community.cost.bedFits": "お使いのプリントベッドに収まります",
   "community.cost.bedTooLarge": "プリントベッドより大きいです（{width} x {depth}mm）",
-  "community.cost.bedHint": "回転も考慮しています。"
+  "community.cost.bedHint": "回転も考慮しています。",
+  "community.author.designsOne": "デザイン 1 件",
+  "community.author.designsOther": "デザイン {count} 件",
+  "community.author.since": "{date} から公開",
+  "community.author.makes": "主に {categories}",
+  "community.author.remixedOne": "1 回リミックスされました",
+  "community.author.remixedOther": "{count} 回リミックスされました",
+  "community.author.printedOne": "1 回プリントされました",
+  "community.author.printedOther": "{count} 回プリントされました",
+  "community.author.partial": "ここに読み込まれたデザインに基づくため、古いものは含まれない場合があります。"
 }
