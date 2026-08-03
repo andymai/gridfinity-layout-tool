@@ -1,0 +1,97 @@
+src/i18n/locales/pt-BR.json
+  s_6ea5c7008437b5::t_0617e6843643e3 657
+src/i18n/locales/it.json
+  s_6ea5c7008437b5::t_0617e6843643e3 657
+src/i18n/locales/nb.json
+  s_6ea5c7008437b5::t_0617e6843643e3 657
+src/features/bin-designer/components/panel/CutoutsSection/PathfinderControls.test.tsx
+  s_6ea5c7008437b5::t_304dd31d2186e9 91,149
+src/i18n/locales/ko.json
+  s_6ea5c7008437b5::t_0617e6843643e3 657
+src/i18n/locales/nl.json
+  s_6ea5c7008437b5::t_0617e6843643e3 657
+src/features/bin-designer/components/panel/CutoutsSection/pathfinderHelpers.ts
+  s_6ea5c7008437b5::t_f2edf8cbcd3540 57,62-67
+  s_6ea5c7008437b5::t_7ce55864ae9efd 86
+src/features/bin-designer/components/panel/CutoutsSection/TransformControls.test.tsx
+  s_6ea5c7008437b5::t_f288d5895f7de5 64-68,71,78-81
+  s_6ea5c7008437b5::t_ae0486551eb204 69-70,72-77
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutInteraction.test.ts
+  s_6ea5c7008437b5::t_b9631dcea9a44f 40,42,46-62
+  s_6ea5c7008437b5::t_8a592dfc6725c0 63
+src/i18n/locales/zh-CN.json
+  s_6ea5c7008437b5::t_0617e6843643e3 657
+src/features/bin-designer/components/panel/CutoutsSection/handlers/keyboardHandler.ts
+  s_6ea5c7008437b5::t_00693460acd425 354-355,364
+src/features/bin-designer/components/panel/CutoutsSection/handlers/groupRotateHandler.test.ts
+  s_6ea5c7008437b5::t_4f08f936adb64c 1-121
+src/features/bin-designer/components/panel/CutoutsSection/AlignmentToolbar.tsx
+  s_6ea5c7008437b5::t_06d3858287ce5c 389-400
+  s_6ea5c7008437b5::t_1c74609547972e 5-6
+  s_6ea5c7008437b5::t_04a4252b77ce7f 23
+  s_6ea5c7008437b5::t_75c334ed8b49be 150-151
+src/i18n/locales/cs.json
+  s_6ea5c7008437b5::t_0617e6843643e3 657
+src/features/bin-designer/components/CutoutWorkspace/CutoutWorkspace.tsx
+  s_6ea5c7008437b5::t_729cc4fe4182e2 344
+  s_6ea5c7008437b5::t_8539dd882e3529 366
+src/i18n/locales/fr.json
+  s_6ea5c7008437b5::t_0617e6843643e3 657
+src/features/bin-designer/components/panel/CutoutsSection/booleanGeometry.ts
+  s_6ea5c7008437b5::t_3bf49176db8e27 37-43,50,52-53
+src/features/bin-designer/components/CutoutWorkspace/WorkspaceHeader.tsx
+  s_6ea5c7008437b5::t_809350c3789119 269-272
+  s_6ea5c7008437b5::t_81aedf994fed24 485
+  s_6ea5c7008437b5::t_1cfebb5fd81d17 25
+src/i18n/locales/es.json
+  s_6ea5c7008437b5::t_0617e6843643e3 657
+src/features/bin-designer/components/panel/CutoutsSection/PathfinderControls.tsx
+  s_6ea5c7008437b5::t_94d4056ee8a209 2-4,6-14
+src/features/bin-designer/components/panel/CutoutsSection/booleanGeometry.test.ts
+  s_6ea5c7008437b5::t_b26cd7bbf01c04 84-96
+src/i18n/locales/de.json
+  s_6ea5c7008437b5::t_0617e6843643e3 657
+src/features/bin-designer/components/panel/CutoutsSection/handlers/groupRotateHandler.ts
+  s_6ea5c7008437b5::t_2eedd0ed304caf 4-11
+  s_6ea5c7008437b5::t_2e176e946d5b46 59
+src/i18n/locales/pl.json
+  s_6ea5c7008437b5::t_0617e6843643e3 657
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutInteraction.ts
+  s_6ea5c7008437b5::t_35decde56a9512 61-67
+src/i18n/locales/en.ts
+  s_6ea5c7008437b5::t_1e3b7ab2237ef6 2267,2270
+src/i18n/locales/uk.json
+  s_6ea5c7008437b5::t_0617e6843643e3 657
+src/features/bin-designer/components/CutoutWorkspace/cutoutWorkspaceContextActions.ts
+  s_6ea5c7008437b5::t_9987fe0141f766 36
+  s_6ea5c7008437b5::t_fc6d51cd688db5 60
+  s_6ea5c7008437b5::t_8a07cb82d1ab50 191-207
+src/features/bin-designer/components/CutoutWorkspace/cutoutWorkspaceContextActions.test.ts
+  s_6ea5c7008437b5::t_aa3400bdfa6298 39
+  s_6ea5c7008437b5::t_de47714630f723 94-141
+src/features/bin-designer/components/CutoutWorkspace/WorkspaceHeader.test.tsx
+  s_6ea5c7008437b5::t_d429154c615701 158-190
+src/features/bin-designer/components/panel/CutoutsSection/AlignmentToolbar.test.tsx
+  s_6ea5c7008437b5::t_ceb61fcdbac0ef 96,102-116
+  s_6ea5c7008437b5::t_4b53f2bf22b8c6 117
+src/i18n/locales/ja.json
+  s_6ea5c7008437b5::t_0617e6843643e3 657
+src/i18n/locales/sv.json
+  s_6ea5c7008437b5::t_0617e6843643e3 657
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "0b5e559a4c8c70e4e0a26051f79206f6ff180b77",
+  "prompts": {},
+  "sessions": {
+    "s_6ea5c7008437b5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1bf46f9f-00e7-4bab-8a86-06fec89ebc58",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
