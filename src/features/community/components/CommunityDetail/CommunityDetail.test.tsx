@@ -220,7 +220,11 @@ describe('CommunityDetail', () => {
     fetchMock.mockResolvedValueOnce(ok(detail()));
     Object.defineProperty(window.navigator, 'onLine', { value: true, configurable: true });
     fireEvent(window, new Event('online'));
-    expect(await screen.findByText('by Jo', undefined, { timeout: 5000 })).toBeInTheDocument();
+    // Two full fetch-and-render cycles of the whole detail tree (viewer,
+    // prints, cost panel, lineage), so the wait is sized to that rather than
+    // to a single request. It has twice tripped the old 5s cap on loaded CI
+    // runners while passing consistently in isolation.
+    expect(await screen.findByText('by Jo', undefined, { timeout: 15000 })).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
