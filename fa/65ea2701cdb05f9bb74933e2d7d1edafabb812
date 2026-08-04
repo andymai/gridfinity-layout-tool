@@ -1,0 +1,42 @@
+src/features/generation/worker/generators/binGenerator.scenario.kumikoWrapping.test.ts
+  s_9af7ac3e0f4b7c::t_c55eb91605cf46 1-5
+src/features/generation/worker/generators/binGenerator.scenario.kumikoComposition.test.ts
+  s_9af7ac3e0f4b7c::t_263f5fe6fcd19b 1-5
+src/features/generation/worker/generators/binGenerator.scenario.kumikoPatterns.test.ts
+  s_9af7ac3e0f4b7c::t_73035e2f3931f6 1-5
+src/features/generation/worker/generators/binGenerator.export.kumikoComposition.test.ts
+  s_9af7ac3e0f4b7c::t_0e321049c8e1c8 1-5
+src/features/generation/worker/generators/scenarios/kumiko.ts
+  s_9af7ac3e0f4b7c::t_47c9ea355be9c4 388-391
+  s_9af7ac3e0f4b7c::t_f1e21ad659611d 275-285
+  s_9af7ac3e0f4b7c::t_1748b48f360909 460-464
+  s_e78a80249962a7::t_12e50b4627e5d2 465
+src/features/generation/worker/generators/binGenerator.export.kumikoPatterns.test.ts
+  s_9af7ac3e0f4b7c::t_d74d3cf16d876a 1-5
+src/features/generation/worker/generators/binGenerator.export.kumikoWrapping.test.ts
+  s_9af7ac3e0f4b7c::t_e60d77e0133b52 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "fa65ea2701cdb05f9bb74933e2d7d1edafabb812",
+  "prompts": {},
+  "sessions": {
+    "s_9af7ac3e0f4b7c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "318c9f2d-5378-4855-9abe-ee0a6965f038",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_e78a80249962a7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "14a54fde-3d06-478d-8f4f-decdd18cbff9",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
