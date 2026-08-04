@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.364.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.363.5...gridfinity-layout-tool-v4.364.0) (2026-08-04)
+
+
+### Features
+
+* **baseplate:** let users draw custom split lines ([#3227](https://github.com/andymai/gridfinity-layout-tool/issues/3227)) ([31d70cf](https://github.com/andymai/gridfinity-layout-tool/commit/31d70cf4f709c499df6f6936e2c7c48eed8befb7))
+
 ## [4.363.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.363.4...gridfinity-layout-tool-v4.363.5) (2026-08-04)
 
 
