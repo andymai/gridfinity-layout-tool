@@ -238,6 +238,16 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
   the boolean stage runs every cut AFTER every fuse, so a cut target would eat the shelf) and
   `buildCompartmentWalls` on the additive path. Both spanning shapes need it: `label.span`,
   and the socket plan's bin-spanning fallback for columns too narrow to host a plate.
+- **Label tab spans follow the divider, not the grid line (#3225)**: a `dividerOverride`
+  translates a divider off `-innerW/2 + col * cellW`, so that expression is not the
+  compartment edge. `compartmentTabXSpan` is the single source of truth, and the same three
+  callers consume it: the worker shelf (`labelTabBuilder`), the socket plate fit
+  (`planLabelSockets`) and the ghost overlay. The eligibility gates above only reject a
+  TILTED anchor wall, so a straight shift passes them and the tab is built in the wrong
+  place rather than dropped: it floats off its own wall, overhangs the neighbour, and its
+  plate is sized for room the compartment does not have. A tilted SIDE divider clamps to
+  whichever endpoint narrows the span, because the tab is an axis-aligned rectangle that
+  has to clear the wall at every Y.
 - **Cutout align/distribute**: `geometryAlign.ts` moves shapes by _delta_, never by
   assignment — `x`/`y` is the UNROTATED top-left while alignment is judged on the rotated
   silhouette (`getRotatedBounds`), and path cutouts store ABSOLUTE points that must travel
