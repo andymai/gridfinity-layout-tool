@@ -23,7 +23,7 @@
  */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './wasmInit';
-import { assertStructurallyValid } from './meshAssertions';
+import { assertKernelReturnedGeometry, assertStructurallyValid } from './meshAssertions';
 import { printTimingTable } from './reportTable';
 import type { TimingEntry } from './reportTable';
 import { buildParams } from './scenarioTypes';
@@ -37,8 +37,11 @@ function runScenario(scenario: ScenarioCase, timings: TimingEntry[]): void {
     const result = generateBin(fullParams, undefined, scenario.forExport);
 
     if (scenario.assert === 'snapshot') {
-      expect(result.vertices.length).toBeGreaterThan(0);
-      expect(result.triangleCount).toBeGreaterThan(0);
+      // Before the snapshot, never after: a kernel that returned nothing must
+      // report itself as a kernel failure, not as a triangle-count diff against
+      // the baseline (#3184). This also keeps a zero out of the baseline under
+      // `-u`, which would bake the failure in.
+      assertKernelReturnedGeometry(result, scenario.name);
       // Triangle counts are kernel-specific (each kernel tessellates to its
       // own density). The vitest config's `resolveSnapshotPath` routes each
       // non-default kernel to its own `.<kernel>.snap` file, so occt-wasm and
@@ -52,6 +55,9 @@ function runScenario(scenario: ScenarioCase, timings: TimingEntry[]): void {
     if (scenario.compareWith) {
       const compareParams = buildParams(scenario.compareWith.params);
       const compareResult = generateBin(compareParams, undefined, scenario.compareWith.forExport);
+      // The comparison arm is a generated mesh too, and an empty one makes any
+      // "removed material" / "differs from" assertion trivially true.
+      assertKernelReturnedGeometry(compareResult, `${scenario.name} (comparison)`);
       scenario.compareWith.assert(result, compareResult);
     }
 
