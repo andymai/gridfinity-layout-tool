@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.363.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.363.0...gridfinity-layout-tool-v4.363.1) (2026-08-04)
+
+
+### Bug Fixes
+
+* **baseplate:** frame split-piece outlines on the nominal extent ([#3213](https://github.com/andymai/gridfinity-layout-tool/issues/3213)) ([7255545](https://github.com/andymai/gridfinity-layout-tool/commit/725554521181d15ccbb12ac891a7ca952938815b))
+
 ## [4.363.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.362.0...gridfinity-layout-tool-v4.363.0) (2026-08-03)
 
 
