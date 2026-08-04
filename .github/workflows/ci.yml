@@ -79,12 +79,17 @@ jobs:
         #      `test-selfhosted` is covering generators on the Mac mini.
         #   3. PR otherwise: all nine, the pre-cut-over layout.
         #
-        # Case 3 is the fallback and its condition MUST stay the exact negation of
-        # `test-selfhosted`'s `if`. If the two ever disagree, a PR matching neither
-        # runs no generator tests at all and still reports green — the failure mode
-        # is silence, not a red check. That is why the head-repo comparison is
-        # duplicated here rather than simplified away: a fork PR is barred from the
-        # hardware, so it has to keep the cloud shards.
+        # Case 3 is the fallback, and its condition must stay the negation of
+        # `test-selfhosted`'s `if` for every PR that reaches this job. If the two
+        # ever disagree, a PR matching neither runs no generator tests at all and
+        # still reports green — the failure mode is silence, not a red check. That
+        # is why the head-repo comparison is duplicated here rather than simplified
+        # away: a fork PR is barred from the hardware, so it has to keep the cloud
+        # shards.
+        #
+        # `test-selfhosted` also carries a release-please guard that is deliberately
+        # absent here: this job's own `if` already skips those PRs outright, so
+        # repeating it inside the matrix would be unreachable.
         include: >-
           ${{ github.event_name != 'pull_request'
           && fromJSON('[{"name":"full","group":"full","shard":"1/1"}]')
@@ -269,8 +274,8 @@ jobs:
             success|skipped) ;;
             *)
               echo "Self-hosted generator shards did not pass (result: $SELFHOSTED_RESULT)"
-              echo "If the Mac mini is down, unset the SELF_HOSTED_CI repo variable"
-              echo "to fall back to cloud generator shards."
+              echo "If the Mac mini is down, set the SELF_HOSTED_CI repo variable to"
+              echo "false (or unset it) to fall back to cloud generator shards."
               exit 1
               ;;
           esac
