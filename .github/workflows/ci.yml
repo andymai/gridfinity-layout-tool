@@ -131,12 +131,25 @@ jobs:
   # them. Deliberately absent from test-gate's `needs`, so a failure here cannot
   # block a merge while we compare wall time and confirm snapshot parity.
   #
-  # Two shards, not six. The 6-way split above is sized for six independent
-  # 4-core cloud runners; on one machine that split would pay checkout + install
-  # + WASM init six times over and leave each shard ~1.7 cores. Two shards at
-  # five workers each keeps the performance cores saturated while leaving the
-  # efficiency cores for interactive use and for halcyon's three runners, which
-  # share this host.
+  # Four shards across four runners, three Vitest workers each. The sizing is
+  # bounded from two directions and has to sit between them.
+  #
+  # Measured on the first shadow run (#3221): two shards at five workers cost
+  # 1750 CPU-seconds of test time, which against ten performance cores puts the
+  # floor near 175s. That run took 224s instead, because `--shard` buckets by
+  # file-path HASH rather than duration — one shard drew 224s of work and the
+  # other 126s, a 1.8x imbalance. More buckets smooth that out, which is why
+  # this widens the split rather than narrowing it.
+  #
+  # The other bound is a single file: Vitest never parallelizes within one, so
+  # the longest file sets a floor no amount of sharding can cross (~330s on a
+  # cloud runner, closer to 130s here). Four shards approach the CPU floor while
+  # staying clear of the file floor, and 4x3 = 12 threads leaves headroom for
+  # interactive use and for halcyon's three runners, which share this host.
+  #
+  # Going past four would be wrong for a different reason than it is on the
+  # cloud side: here every shard pays checkout + install + WASM init on the SAME
+  # machine, so beyond the core count the fixed cost is pure loss.
   #
   # `vars.SELF_HOSTED_CI` is the kill switch: unset it in repo settings and every
   # shard here stops scheduling immediately, no code change needed. The head_repo
@@ -153,17 +166,21 @@ jobs:
     runs-on: [self-hosted, gflt-ci]
     # Shadow mode: report, never block.
     continue-on-error: true
-    # A wedged WASM kernel would otherwise hold a runner indefinitely, and there
-    # are only two of them.
+    # A wedged WASM kernel would otherwise hold a runner indefinitely, and the
+    # pool is small.
     timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
         include:
-          - name: generators 1/2
-            shard: 1/2
-          - name: generators 2/2
-            shard: 2/2
+          - name: generators 1/4
+            shard: 1/4
+          - name: generators 2/4
+            shard: 2/4
+          - name: generators 3/4
+            shard: 3/4
+          - name: generators 4/4
+            shard: 4/4
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -178,7 +195,7 @@ jobs:
       - name: Run generators tests
         env:
           SHARD: ${{ matrix.shard }}
-        run: pnpm vitest run --project=generators --shard="$SHARD" --maxWorkers=5
+        run: pnpm vitest run --project=generators --shard="$SHARD" --maxWorkers=3
 
   # Tests that need a real Redis. The rate limiter runs as a Lua script, and a
   # mocked ioredis can only assert the command was issued — it cannot execute
