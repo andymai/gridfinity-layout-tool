@@ -1,0 +1,19 @@
+src/features/baseplate/utils/splitPlanner.test.ts
+  s_616d06e0b8c0d3::t_644f63e1924982 2126,2132
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "26b95ee029f15a05265c45126c0e948d3a4d8ca0",
+  "prompts": {},
+  "sessions": {
+    "s_616d06e0b8c0d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "777d6338-198a-46ed-a076-fd9a333b8a3b",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
