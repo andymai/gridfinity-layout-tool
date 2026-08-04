@@ -82,6 +82,15 @@ interface AxisConfig {
   readonly paddingEnd: number;
   readonly startMaleMm: number;
   readonly endMaleMm: number;
+  /**
+   * Outline overhang on each outer end (#3169), kept separate from padding: it
+   * is not user-settable, so the padding-reduction hint must not offer to give
+   * it back. Positionally identical to padding otherwise — only the first/last
+   * chunk carries it, matching how `pieceToBaseplateParams` hands the overhang
+   * to the outermost pieces alone.
+   */
+  readonly overhangStart: number;
+  readonly overhangEnd: number;
 }
 
 function makeAxisConfig(
@@ -91,7 +100,9 @@ function makeAxisConfig(
   paddingEnd: number,
   connectorNubs: boolean | undefined,
   invertDovetails: boolean | undefined,
-  preferIdenticalPieces: boolean | undefined
+  preferIdenticalPieces: boolean | undefined,
+  overhangStart: number = 0,
+  overhangEnd: number = 0
 ): AxisConfig {
   // Both axes follow the same rule: the start side (left / front) is male iff !invertDovetails.
   // Under preferIdenticalPieces, every join edge places a tongue+groove pair —
@@ -99,8 +110,17 @@ function makeAxisConfig(
   // not just the conventionally-male side.
   const tongue = connectorNubs ? TONGUE_PROTRUSION : 0;
   const paired = !!preferIdenticalPieces && !!connectorNubs;
+  const ends = { overhangStart, overhangEnd };
   if (paired) {
-    return { bedMm, gridUnitMm, paddingStart, paddingEnd, startMaleMm: tongue, endMaleMm: tongue };
+    return {
+      bedMm,
+      gridUnitMm,
+      paddingStart,
+      paddingEnd,
+      startMaleMm: tongue,
+      endMaleMm: tongue,
+      ...ends,
+    };
   }
   const startMale = !invertDovetails;
   return {
@@ -110,6 +130,7 @@ function makeAxisConfig(
     paddingEnd,
     startMaleMm: startMale ? tongue : 0,
     endMaleMm: startMale ? 0 : tongue,
+    ...ends,
   };
 }
 
@@ -122,8 +143,8 @@ function makeAxisConfig(
 function axisCapacity(axis: AxisConfig): { maxFirst: number; maxLast: number; maxMiddle: number } {
   const { bedMm, gridUnitMm, paddingStart, paddingEnd, startMaleMm, endMaleMm } = axis;
   return {
-    maxFirst: Math.floor((bedMm - paddingStart - endMaleMm) / gridUnitMm),
-    maxLast: Math.floor((bedMm - paddingEnd - startMaleMm) / gridUnitMm),
+    maxFirst: Math.floor((bedMm - paddingStart - axis.overhangStart - endMaleMm) / gridUnitMm),
+    maxLast: Math.floor((bedMm - paddingEnd - axis.overhangEnd - startMaleMm) / gridUnitMm),
     maxMiddle: Math.floor((bedMm - startMaleMm - endMaleMm) / gridUnitMm),
   };
 }
@@ -147,8 +168,10 @@ function partitionAxis(totalUnits: number, numChunks: number, axis: AxisConfig):
   const intPart = Math.floor(totalUnits);
   const hasFrac = totalUnits - intPart >= FRACTIONAL_THRESHOLD;
 
-  // Single-piece (numChunks=1) has no joins, so no tongue overhead.
-  const maxWithBoth = Math.floor((bedMm - paddingStart - paddingEnd) / gridUnitMm);
+  // Single-piece (numChunks=1) has no joins, so no tongue overhead — but it is
+  // both the first and last chunk, so it carries both ends' padding AND overhang.
+  const bothEndsMm = paddingStart + paddingEnd + axis.overhangStart + axis.overhangEnd;
+  const maxWithBoth = Math.floor((bedMm - bothEndsMm) / gridUnitMm);
   const { maxFirst, maxLast, maxMiddle } = axisCapacity(axis);
 
   // Degenerate: bed can't hold even 1 unit in any position
@@ -159,7 +182,7 @@ function partitionAxis(totalUnits: number, numChunks: number, axis: AxisConfig):
   if (numChunks === 1) {
     if (intPart > maxWithBoth) return null;
     if (hasFrac) {
-      if ((intPart + 0.5) * gridUnitMm + paddingStart + paddingEnd <= bedMm) {
+      if ((intPart + 0.5) * gridUnitMm + bothEndsMm <= bedMm) {
         return [totalUnits];
       }
       return null;
@@ -213,7 +236,7 @@ function partitionAxis(totalUnits: number, numChunks: number, axis: AxisConfig):
   // Handle fractional 0.5 unit — absorb into last chunk if it fits
   if (hasFrac) {
     const lastIdx = numChunks - 1;
-    const lastOverhead = paddingEnd + startMaleMm;
+    const lastOverhead = paddingEnd + axis.overhangEnd + startMaleMm;
     if ((sizes[lastIdx] + 0.5) * gridUnitMm + lastOverhead <= bedMm) {
       sizes[lastIdx] += 0.5;
     } else {
@@ -240,16 +263,22 @@ function allPiecesFit(
 
 /**
  * Per-position physical size (mm) of each chunk on an axis — grid units plus
- * edge padding and join-edge tongue protrusion (matches the actual STL bounding
- * boxes). First/last chunks carry their exterior padding; join edges (interior
- * sides) carry a male tongue's protrusion when the convention assigns male to
- * that side, while female sides cut into the slab and add nothing.
+ * edge padding, the outline overhang, and join-edge tongue protrusion (matches
+ * the actual STL bounding boxes). First/last chunks carry their exterior
+ * padding and overhang; join edges (interior sides) carry a male tongue's
+ * protrusion when the convention assigns male to that side, while female sides
+ * cut into the slab and add nothing.
+ *
+ * The overhang belongs here for the same reason the tongue does (#3169/#3212):
+ * the generator widens the outermost pieces' slabs by it, so it is real printed
+ * material on the outer faces. Omitting it let the planner emit an outer piece
+ * that overshoots the bed — invisible until the slicer refused the STL.
  */
 function axisChunkMm(sizes: number[], axis: AxisConfig): number[] {
   const last = sizes.length - 1;
   return sizes.map((s, i) => {
-    const padStart = i === 0 ? axis.paddingStart : 0;
-    const padEnd = i === last ? axis.paddingEnd : 0;
+    const padStart = i === 0 ? axis.paddingStart + axis.overhangStart : 0;
+    const padEnd = i === last ? axis.paddingEnd + axis.overhangEnd : 0;
     const tongueStart = i === 0 ? 0 : axis.startMaleMm;
     const tongueEnd = i === last ? 0 : axis.endMaleMm;
     return s * axis.gridUnitMm + padStart + padEnd + tongueStart + tongueEnd;
@@ -782,6 +811,11 @@ export function computeBaseplateTiling(
   // (#1498). The planner reserves bed budget for those tongues so the resulting
   // STLs actually fit the bed.
   const gridUnitMmY = params.gridUnitMmY ?? gridUnitMm;
+  // The outermost pieces print wider than their grid units by the outline
+  // overhang (#3169), so the bed budget must reserve for it exactly as it does
+  // for exterior padding — otherwise the search happily sizes an outer chunk to
+  // the bed and the generator then widens it past the bed (#3212).
+  const oh = params.outlineOverhang;
   const xAxis = makeAxisConfig(
     printBedWidthMm,
     gridUnitMm,
@@ -789,7 +823,9 @@ export function computeBaseplateTiling(
     paddingRight,
     connectorNubs,
     invertDovetails,
-    palindromic
+    palindromic,
+    oh?.left ?? 0,
+    oh?.right ?? 0
   );
   const yAxis = makeAxisConfig(
     printBedDepthMm,
@@ -798,7 +834,9 @@ export function computeBaseplateTiling(
     paddingBack,
     connectorNubs,
     invertDovetails,
-    palindromic
+    palindromic,
+    oh?.front ?? 0,
+    oh?.back ?? 0
   );
 
   const { colSizes: rawColSizes, rowSizes: rawRowSizes } = findOptimalTiling(
