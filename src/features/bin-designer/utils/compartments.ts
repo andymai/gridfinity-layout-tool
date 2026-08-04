@@ -471,6 +471,93 @@ export function compartmentHasTiltedEdge(
 /** Which wall of a row a label tab hangs from. */
 export type TabAnchorSide = 'back' | 'front';
 
+/** A compartment's usable X extent (mm, interior frame, origin at bin centre). */
+export interface CompartmentTabSpan {
+  readonly left: number;
+  readonly right: number;
+}
+
+/**
+ * Signed mm shift of one vertical boundary of `compartmentId`, resolved from
+ * `dividerOverrides`.
+ *
+ * `side` names which boundary of the compartment this is, and therefore which
+ * endpoint of a TILTED divider bounds an axis-aligned tab: the left boundary is
+ * bounded by its rightmost endpoint, the right boundary by its leftmost. A
+ * straight shift has both endpoints equal, so the choice is moot there.
+ *
+ * A tall compartment can border different neighbours per row, each with its own
+ * override, so every bordering row is folded in: the tab is one rectangle and
+ * has to clear all of them.
+ */
+function dividerXShift(
+  config: CompartmentConfig,
+  compartmentId: number,
+  bounds: { minCol: number; maxCol: number; minRow: number; maxRow: number },
+  side: 'left' | 'right'
+): number {
+  const overrides = config.dividerOverrides;
+  if (!overrides || overrides.length === 0) return 0;
+  const { cols, cells } = config;
+  const neighborCol = side === 'left' ? bounds.minCol - 1 : bounds.maxCol + 1;
+  if (neighborCol < 0 || neighborCol >= cols) return 0;
+
+  let shift = side === 'left' ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY;
+  for (let row = bounds.minRow; row <= bounds.maxRow; row++) {
+    const neighborId = cells[row * cols + neighborCol];
+    if (neighborId === compartmentId) continue;
+    const a = Math.min(compartmentId, neighborId);
+    const b = Math.max(compartmentId, neighborId);
+    const ov = overrides.find((o) => o.compartmentA === a && o.compartmentB === b);
+    // A bordering row with no override pins the boundary to its grid line.
+    const rowShift = ov
+      ? side === 'left'
+        ? Math.max(ov.offsetStart, ov.offsetEnd)
+        : Math.min(ov.offsetStart, ov.offsetEnd)
+      : 0;
+    shift = side === 'left' ? Math.max(shift, rowShift) : Math.min(shift, rowShift);
+  }
+  return Number.isFinite(shift) ? shift : 0;
+}
+
+/**
+ * The X span a compartment's label tab may occupy: the compartment's column
+ * range, less half a divider on each side that has one, shifted to follow any
+ * `dividerOverrides` on those dividers.
+ *
+ * The single source of truth for that span, shared by the worker that builds
+ * the shelf, the ghost overlay that previews it and the socket planner that
+ * sizes its plate. Deriving it from the nominal grid line instead left the
+ * shelf floating off its wall and overhanging into the neighbour whenever a
+ * divider was shifted (#3225).
+ *
+ * Returns null for an id that isn't in the grid.
+ */
+export function compartmentTabXSpan(
+  config: CompartmentConfig,
+  compartmentId: number,
+  innerW: number
+): CompartmentTabSpan | null {
+  const bounds = getCompartmentBounds(config, compartmentId);
+  if (!bounds) return null;
+
+  const { cols, thickness } = config;
+  const cellW = innerW / cols;
+  const hasLeftWall = bounds.minCol > 0;
+  const hasRightWall = bounds.maxCol < cols - 1;
+
+  const left =
+    -innerW / 2 +
+    bounds.minCol * cellW +
+    (hasLeftWall ? thickness / 2 + dividerXShift(config, compartmentId, bounds, 'left') : 0);
+  const right =
+    -innerW / 2 +
+    (bounds.maxCol + 1) * cellW -
+    (hasRightWall ? thickness / 2 - dividerXShift(config, compartmentId, bounds, 'right') : 0);
+
+  return { left, right };
+}
+
 /**
  * True when a divider wall runs the FULL inner width at `row`'s anchor edge
  * (or that edge is the bin's own outer wall).

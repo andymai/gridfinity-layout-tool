@@ -19,7 +19,7 @@ import type {
 } from '@/shared/types/bin';
 import {
   compartmentTabEligible,
-  getCompartmentBounds,
+  compartmentTabXSpan,
   spanningTabEligible,
 } from '@/shared/types/bin';
 import {
@@ -191,8 +191,7 @@ export function planLabelSockets(
   innerWmm: number,
   clearanceMm: number
 ): LabelSocketPlan {
-  const { cols, rows, cells, thickness } = compartments;
-  const cellW = innerWmm / cols;
+  const { cols, rows, cells } = compartments;
   const overrides = compartments.labelPlateWidths;
 
   const plans: LabelSocketCompartmentPlan[] = [];
@@ -204,13 +203,9 @@ export function planLabelSockets(
       if (seen.has(id)) continue;
       seen.add(id);
 
-      const bounds = getCompartmentBounds(compartments, id);
-      if (!bounds) continue;
-
-      const span = (bounds.maxCol - bounds.minCol + 1) * cellW;
-      const leftDeduction = bounds.minCol > 0 ? thickness / 2 : 0;
-      const rightDeduction = bounds.maxCol < cols - 1 ? thickness / 2 : 0;
-      const availableWidthMm = span - leftDeduction - rightDeduction;
+      const span = compartmentTabXSpan(compartments, id, innerWmm);
+      if (!span) continue;
+      const availableWidthMm = span.right - span.left;
 
       const fittingWidthsU = LABEL_PLATE_WIDTHS_U.filter(
         (u) => labelSocketOuterWidthMm(u, clearanceMm) <= availableWidthMm

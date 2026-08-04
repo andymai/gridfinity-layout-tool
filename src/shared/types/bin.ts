@@ -135,13 +135,18 @@ export {
   compartmentHasTiltedBackWall,
   compartmentHasTiltedFrontWall,
   compartmentTabEligible,
+  compartmentTabXSpan,
   getCompartmentBounds,
   rectStraddlesTiltedDivider,
   rowHasFullWidthWall,
   spanRegionDepth,
   spanningTabEligible,
 } from '@/features/bin-designer/utils/compartments';
-export type { TabAnchorSide, LabelTabFit } from '@/features/bin-designer/utils/compartments';
+export type {
+  TabAnchorSide,
+  LabelTabFit,
+  CompartmentTabSpan,
+} from '@/features/bin-designer/utils/compartments';
 export type {
   LidCompatibilityIssue,
   LidCompatibilityId,

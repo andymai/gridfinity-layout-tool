@@ -31,6 +31,7 @@ import {
   compartmentHasTiltedBackWall,
   compartmentHasTiltedFrontWall,
   compartmentTabEligible,
+  compartmentTabXSpan,
   rowHasFullWidthWall,
   spanRegionDepth,
 } from '@/shared/types/bin';
@@ -642,11 +643,11 @@ function planTabsAtRow(
   dims: TabBuildDimensions,
   bothEdges: boolean
 ): TabSlot[] {
-  const { cols, rows, thickness, cells } = params.compartments;
+  const { cols, rows, cells } = params.compartments;
   const widthPercent = params.label.width;
   const alignment = params.label.alignment;
   const inset = params.label.inset ?? 0;
-  const { innerW, innerD, cellW, cellD, tabDepth, socket } = dims;
+  const { innerW, innerD, cellD, tabDepth, socket } = dims;
 
   const depthSign: 1 | -1 = anchor === 'back' ? -1 : 1;
 
@@ -693,29 +694,22 @@ function planTabsAtRow(
       groupEnd++;
     }
 
-    const groupCols = groupEnd - col;
     const groupMinCol = col;
     const groupMaxCol = groupEnd - 1;
-
-    // Compute available width for the column group.
-    // Deduct thickness only at boundaries with actual divider walls --
-    // merged columns share no divider, so no deduction between them.
-    const groupLeft = -innerW / 2 + groupMinCol * cellW;
-    const groupRight = groupLeft + groupCols * cellW;
 
     const hasLeftWall = groupMinCol === 0 || cells[row * cols + (groupMinCol - 1)] !== cellId;
     const hasRightWall =
       groupMaxCol === cols - 1 || cells[row * cols + (groupMaxCol + 1)] !== cellId;
 
-    const leftDeduction =
-      groupMinCol > 0 && cells[row * cols + (groupMinCol - 1)] !== cellId ? thickness / 2 : 0;
-    const rightDeduction =
-      groupMaxCol < cols - 1 && cells[row * cols + (groupMaxCol + 1)] !== cellId
-        ? thickness / 2
-        : 0;
-
-    const availableLeft = groupLeft + leftDeduction;
-    const availableRight = groupRight - rightDeduction;
+    // Deducts half a divider at each boundary that has one (merged columns
+    // share no divider) and follows any `dividerOverrides` shifting those
+    // dividers off their grid lines (#3225).
+    const span = compartmentTabXSpan(params.compartments, cellId, innerW);
+    if (!span) {
+      col = groupEnd;
+      continue;
+    }
+    const { left: availableLeft, right: availableRight } = span;
 
     // Y position of the anchor wall (front face of back wall, or back face
     // of front wall — i.e., the interior surface). Inset slides the tab
@@ -1400,6 +1394,8 @@ export const labelTabsFeature: FeatureBuilder = {
         : 'text';
     return compactKey(
       buildCacheKey(
+        // `v11`: tab spans follow `dividerOverrides` instead of the nominal
+        // grid line, so any shifted-divider design cuts a different shelf.
         // `v10`: tab text sizes against glyph ink and shares one size per
         // row/anchor group, so the same params now cut larger, uniform glyphs.
         // `v8`: click-in pockets deepened by LABEL_SOCKET_CLICK_POCKET_RELIEF_MM
@@ -1411,7 +1407,7 @@ export const labelTabsFeature: FeatureBuilder = {
         // `v5`: #1654 extrudes the shelf COPLANAR_OVERLAP proud (geometry +
         // face tags changed), so older IndexedDB entries must be invalidated.
         // `v4`: #1898 added `edges` + `inset` to LabelTabConfig.
-        'v10',
+        'v11',
         socketKeyPart,
         dim.shellKey,
         stableSerialize(params.label),

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   compartmentTabEligible,
+  compartmentTabXSpan,
   rowHasFullWidthWall,
   spanRegionDepth,
   spanningTabEligible,
@@ -1842,5 +1843,112 @@ describe('spanningTabEligible', () => {
     const g = grid(2, 2, [0, 1, 2, 3]);
 
     expect(spanningTabEligible(g, 0, 'front', fit({ tabDepth: 15, bothEdges: true }))).toBe(true);
+  });
+});
+
+describe('compartmentTabXSpan', () => {
+  const grid = (
+    cols: number,
+    rows: number,
+    cells: number[],
+    dividerOverrides?: DividerOverride[]
+  ): CompartmentConfig => ({
+    cols,
+    rows,
+    thickness: 1.2,
+    cells,
+    ...(dividerOverrides ? { dividerOverrides } : {}),
+  });
+
+  it('runs wall to wall for the only compartment', () => {
+    expect(compartmentTabXSpan(grid(1, 1, [0]), 0, 100)).toEqual({ left: -50, right: 50 });
+  });
+
+  it('deducts half a divider at each interior boundary', () => {
+    const g = grid(3, 1, [0, 1, 2]);
+
+    expect(compartmentTabXSpan(g, 0, 120)).toEqual({ left: -60, right: -20.6 });
+    expect(compartmentTabXSpan(g, 1, 120)).toEqual({ left: -19.4, right: 19.4 });
+    expect(compartmentTabXSpan(g, 2, 120)).toEqual({ left: 20.6, right: 60 });
+  });
+
+  it('takes no deduction between merged columns', () => {
+    // Compartment 0 spans both left columns, so no divider runs through it.
+    expect(compartmentTabXSpan(grid(3, 1, [0, 0, 1]), 0, 120)).toEqual({
+      left: -60,
+      right: 19.4,
+    });
+  });
+
+  // The bug: the span came from the nominal grid line, so a shifted divider
+  // left the shelf floating off its wall and overhanging its neighbour (#3225).
+  it('follows a shifted divider on both sides of it', () => {
+    const g = grid(
+      2,
+      1,
+      [0, 1],
+      [{ compartmentA: 0, compartmentB: 1, offsetStart: -30, offsetEnd: -30 }]
+    );
+
+    expect(compartmentTabXSpan(g, 0, 160)).toEqual({ left: -80, right: -30.6 });
+    expect(compartmentTabXSpan(g, 1, 160)).toEqual({ left: -29.4, right: 80 });
+  });
+
+  it('follows a divider shifted the other way', () => {
+    const g = grid(
+      2,
+      1,
+      [0, 1],
+      [{ compartmentA: 0, compartmentB: 1, offsetStart: 25, offsetEnd: 25 }]
+    );
+
+    expect(compartmentTabXSpan(g, 0, 160)).toEqual({ left: -80, right: 24.4 });
+    expect(compartmentTabXSpan(g, 1, 160)).toEqual({ left: 25.6, right: 80 });
+  });
+
+  // A tab is an axis-aligned rectangle, so it has to clear the tilted wall at
+  // every Y, which means the endpoint that narrows it wins.
+  it('clamps a tilted divider to the endpoint that narrows the tab', () => {
+    const g = grid(
+      2,
+      1,
+      [0, 1],
+      [{ compartmentA: 0, compartmentB: 1, offsetStart: -20, offsetEnd: 20 }]
+    );
+
+    expect(compartmentTabXSpan(g, 0, 160)).toEqual({ left: -80, right: -20.6 });
+    expect(compartmentTabXSpan(g, 1, 160)).toEqual({ left: 20.6, right: 80 });
+  });
+
+  // A tall compartment can border a different neighbour per row; the one
+  // rectangle has to clear every one of them.
+  it('takes the narrowest shift when rows border different neighbours', () => {
+    const g = grid(
+      2,
+      2,
+      [0, 2, 1, 2],
+      [
+        { compartmentA: 0, compartmentB: 2, offsetStart: 10, offsetEnd: 10 },
+        { compartmentA: 1, compartmentB: 2, offsetStart: 30, offsetEnd: 30 },
+      ]
+    );
+
+    // Compartment 2's left wall is at +10 in one row and +30 in the other.
+    expect(compartmentTabXSpan(g, 2, 160)).toEqual({ left: 30.6, right: 80 });
+  });
+
+  it('ignores an override that does not touch this compartment', () => {
+    const g = grid(
+      3,
+      1,
+      [0, 1, 2],
+      [{ compartmentA: 1, compartmentB: 2, offsetStart: -10, offsetEnd: -10 }]
+    );
+
+    expect(compartmentTabXSpan(g, 0, 120)).toEqual({ left: -60, right: -20.6 });
+  });
+
+  it('returns null for an id absent from the grid', () => {
+    expect(compartmentTabXSpan(grid(2, 1, [0, 1]), 7, 120)).toBeNull();
   });
 });

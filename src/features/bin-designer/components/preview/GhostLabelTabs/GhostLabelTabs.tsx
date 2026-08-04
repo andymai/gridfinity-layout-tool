@@ -21,6 +21,7 @@ import {
 } from '@/shared/constants/labelPlates';
 import {
   compartmentTabEligible,
+  compartmentTabXSpan,
   spanningTabEligible,
 } from '@/features/bin-designer/utils/compartments';
 
@@ -61,7 +62,7 @@ export function GhostLabelTabs() {
       generationStatus: s.generation.status,
     }))
   );
-  const { cols, rows, thickness, cells } = compartments;
+  const { cols, rows, cells } = compartments;
 
   const outerW = width * gridUnitMm - GRIDFINITY.TOLERANCE;
   const outerD = depth * (gridUnitMmY ?? gridUnitMm) - GRIDFINITY.TOLERANCE;
@@ -91,7 +92,6 @@ export function GhostLabelTabs() {
   const geometry = useMemo(() => {
     if (!shouldShow) return null;
 
-    const cellW = innerW / cols;
     const cellD = innerD / rows;
     // Socket mode (#2666) forces full-width tabs in the worker; mirror that.
     // (The rare bin-spanning fallback — no compartment fits a plate — still
@@ -203,23 +203,14 @@ export function GhostLabelTabs() {
           groupEnd++;
         }
 
-        const groupCols = groupEnd - col;
-        const groupMinCol = col;
-        const groupMaxCol = groupEnd - 1;
-
-        // Compute available width — deduct thickness only at actual divider boundaries
-        const groupLeft = -innerW / 2 + groupMinCol * cellW;
-        const groupRight = groupLeft + groupCols * cellW;
-
-        const leftDeduction =
-          groupMinCol > 0 && cells[row * cols + (groupMinCol - 1)] !== cellId ? thickness / 2 : 0;
-        const rightDeduction =
-          groupMaxCol < cols - 1 && cells[row * cols + (groupMaxCol + 1)] !== cellId
-            ? thickness / 2
-            : 0;
-
-        const availableLeft = groupLeft + leftDeduction;
-        const availableRight = groupRight - rightDeduction;
+        // Same span the worker builds against, so a shifted divider moves the
+        // ghost and the mesh together (#3225).
+        const span = compartmentTabXSpan(compartments, cellId, innerW);
+        if (!span) {
+          col = groupEnd;
+          continue;
+        }
+        const { left: availableLeft, right: availableRight } = span;
         const availableWidth = availableRight - availableLeft;
 
         const tabWidth = (availableWidth * widthPercent) / 100;
@@ -305,7 +296,6 @@ export function GhostLabelTabs() {
     innerD,
     cols,
     rows,
-    thickness,
     cells,
     compartments,
     label.width,
