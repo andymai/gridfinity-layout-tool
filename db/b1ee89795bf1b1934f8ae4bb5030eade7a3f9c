@@ -1,0 +1,49 @@
+src/features/bin-designer/utils/compartments.ts
+  s_96d7507cb977e3::t_c1c985839b46a4 490
+  s_96d7507cb977e3::t_98f8f01a6adb0e 530
+  s_96d7507cb977e3::t_6d36e31e482a9b 474-489,491-529,531-560
+src/features/bin-designer/utils/compartments.test.ts
+  s_96d7507cb977e3::t_98f8f01a6adb0e 1904
+  s_96d7507cb977e3::t_cd231f05bd9948 4
+  s_96d7507cb977e3::t_48672424d33d11 1848-1903,1905-1937
+  s_96d7507cb977e3::t_d06606b6d0c2b6 1938-1940
+src/shared/types/bin.ts
+  s_96d7507cb977e3::t_a3ad5aa0599d42 145-149
+  s_96d7507cb977e3::t_234f2e902a5ca4 138
+CLAUDE.md
+  s_96d7507cb977e3::t_fb6fead275bffe 33
+src/features/generation/worker/generators/labelTabBuilder.test.ts
+  s_96d7507cb977e3::t_31131eb393d3c0 929-937,939-999,1005-1006
+  s_96d7507cb977e3::t_61f780c6eb4936 1000-1004
+  s_96d7507cb977e3::t_e0f4d6282e7c82 8,938
+src/features/bin-designer/components/preview/GhostLabelTabs/GhostLabelTabs.tsx
+  s_96d7507cb977e3::t_35efaaf7033c99 206-213
+  s_96d7507cb977e3::t_c3d5c000865ea3 24,65
+src/shared/utils/labelSocketPlan.ts
+  s_96d7507cb977e3::t_9ea49818a63d19 22
+  s_96d7507cb977e3::t_866d6c2dbb1bb7 194,206-208
+src/features/generation/worker/generators/labelTabBuilder.ts
+  s_96d7507cb977e3::t_f0072b72c1a862 704-712
+  s_96d7507cb977e3::t_1257d22c4b03a3 34
+  s_96d7507cb977e3::t_4041a8c2104699 1397-1398
+  s_96d7507cb977e3::t_411cc79c4eb82a 1410
+  s_96d7507cb977e3::t_8537a569178126 646,650
+src/shared/utils/labelSocketPlan.test.ts
+  s_96d7507cb977e3::t_e8133884062296 123-142
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "dbb1ee89795bf1b1934f8ae4bb5030eade7a3f9c",
+  "prompts": {},
+  "sessions": {
+    "s_96d7507cb977e3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e92210a4-889c-4331-bf1f-693dc5b54c00",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
