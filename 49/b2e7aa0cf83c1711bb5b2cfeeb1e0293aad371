@@ -1,0 +1,19 @@
+src/features/bin-designer/README.md
+  s_96d7507cb977e3::t_4fced4a3c61cd1 241-250
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "49b2e7aa0cf83c1711bb5b2cfeeb1e0293aad371",
+  "prompts": {},
+  "sessions": {
+    "s_96d7507cb977e3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e92210a4-889c-4331-bf1f-693dc5b54c00",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
