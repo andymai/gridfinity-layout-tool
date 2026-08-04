@@ -39,7 +39,9 @@ import { lightweight } from './lightweight';
 import { spacer } from './spacer';
 import { labelSockets } from './labelSockets';
 import { wallPatterns } from './wallPatterns';
-import { kumiko } from './kumiko';
+import { kumikoComposition } from './kumikoComposition';
+import { kumikoPatterns } from './kumikoPatterns';
+import { kumikoWrapping } from './kumikoWrapping';
 import { dividerPatterns } from './dividerPatterns';
 import { floorPatterns } from './floorPatterns';
 
@@ -83,7 +85,9 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...lightweight,
   ...labelSockets,
   ...wallPatterns,
-  ...kumiko,
+  ...kumikoPatterns,
+  ...kumikoWrapping,
+  ...kumikoComposition,
   ...dividerPatterns,
   ...floorPatterns,
   ...spacer,
