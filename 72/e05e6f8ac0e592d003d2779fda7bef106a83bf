@@ -1,0 +1,22 @@
+.github/workflows/ci.yml
+  s_9af7ac3e0f4b7c::t_24eff34322c8d4 173-174
+  s_9af7ac3e0f4b7c::t_c47cfbd59f490d 144-154
+  s_9af7ac3e0f4b7c::t_73f9b3ea52851a 244,252,263-276
+  s_9af7ac3e0f4b7c::t_e75216549d365a 76-87,89-94
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "72e05e6f8ac0e592d003d2779fda7bef106a83bf",
+  "prompts": {},
+  "sessions": {
+    "s_9af7ac3e0f4b7c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "318c9f2d-5378-4855-9abe-ee0a6965f038",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
