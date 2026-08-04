@@ -1,0 +1,29 @@
+CLAUDE.md
+  s_616d06e0b8c0d3::t_14b4f33473706c 32
+src/features/baseplate/utils/splitPlanner.test.ts
+  s_616d06e0b8c0d3::t_3705f94b169b65 2083-2162
+src/features/baseplate/utils/splitPlanner.ts
+  s_616d06e0b8c0d3::t_96900dfe9a07ca 85-93,103-105,113,115-123,133
+  s_616d06e0b8c0d3::t_121f386a8a9be5 266-275,280-281
+  s_616d06e0b8c0d3::t_e2d24b0c6dcf86 146-147
+  s_616d06e0b8c0d3::t_a453d3dcfe43b5 185
+  s_616d06e0b8c0d3::t_8811c9dc7552cf 814-818,826-828,837-839
+  s_616d06e0b8c0d3::t_4f9f15864e1c88 239
+  s_616d06e0b8c0d3::t_e25550aa2f459d 171-174
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "ce352ff65311590d8230a6e7f18de887554980b4",
+  "prompts": {},
+  "sessions": {
+    "s_616d06e0b8c0d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "777d6338-198a-46ed-a076-fd9a333b8a3b",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
