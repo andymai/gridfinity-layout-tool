@@ -1,0 +1,35 @@
+src/features/baseplate/utils/buildFullParams.test.ts
+  s_616d06e0b8c0d3::t_4d85c08bd0a413 1235-1237
+  s_616d06e0b8c0d3::t_8c2dc705c96c06 1270-1271,1278-1285
+  s_7ff36fc7322bef::t_cbaf0daa9fc59c 1286-1287
+src/shared/utils/drawerOutlineGeometry.test.ts
+  s_616d06e0b8c0d3::t_03414a7f26ee4c 265-268,270-273
+  s_616d06e0b8c0d3::t_bdc85aecb10a80 241-264,269,274-281
+src/shared/utils/drawerOutlineGeometry.ts
+  s_616d06e0b8c0d3::t_35d77dd8453a16 231-242
+  s_616d06e0b8c0d3::t_c1d2b9a4a6992a 182-187
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "468f76365a1890ad1840869f566a3c610372bb1b",
+  "prompts": {},
+  "sessions": {
+    "s_616d06e0b8c0d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "777d6338-198a-46ed-a076-fd9a333b8a3b",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_7ff36fc7322bef": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4125c687-4d22-454b-b422-a95ee692d292",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
