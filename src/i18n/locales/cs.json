@@ -2325,6 +2325,7 @@
   "layout.collaborativeEditingIsNotActive": "Společné úpravy nejsou aktivní",
   "layoutExport.baseplateOnly": "Exportována pouze základní deska — nepodařilo se načíst žádné návrhy binů.",
   "layoutExport.binsOnly": "Biny exportovány — základní desku se nepodařilo vygenerovat.",
+  "layoutExport.baseplateOverBed": "Exportovány pouze díly – baseplate {pieces} se nevejde na podložku tiskárny. Upravte rozdělení na kartě Baseplate.",
   "layoutExport.button": "Exportovat rozvržení (3D)",
   "layoutExport.description": "Stáhni všechny propojené biny a základní desku jako jeden ZIP připravený ke slicování.",
   "layoutExport.download": "Stáhnout ZIP",

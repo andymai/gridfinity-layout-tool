@@ -2325,6 +2325,7 @@
   "layout.collaborativeEditingIsNotActive": "Edycja we współpracy nie jest aktywna",
   "layoutExport.baseplateOnly": "Wyeksportowano tylko płytę bazową — nie udało się wczytać żadnych projektów binów.",
   "layoutExport.binsOnly": "Wyeksportowano biny — nie udało się wygenerować płyty bazowej.",
+  "layoutExport.baseplateOverBed": "Wyeksportowano tylko biny – baseplate {pieces} nie mieści się na stole roboczym. Dostosuj podział na karcie Baseplate.",
   "layoutExport.button": "Eksportuj układ (3D)",
   "layoutExport.description": "Pobierz wszystkie powiązane biny i płytę bazową jako jeden plik ZIP, gotowy do cięcia.",
   "layoutExport.download": "Pobierz ZIP",

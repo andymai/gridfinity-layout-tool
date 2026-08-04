@@ -2502,6 +2502,7 @@
   "layout.collaborativeEditingIsNotActive": "Samarbeidsredigering er ikke aktivt",
   "layoutExport.baseplateOnly": "Eksporterte bare bunnplaten – ingen bingdesign kunne lastes.",
   "layoutExport.binsOnly": "Binger eksportert – bunnplaten kunne ikke genereres.",
+  "layoutExport.baseplateOverBed": "Eksporterte bare bins – baseplate {pieces} får ikke plass på printplaten. Juster delingen i Baseplate-fanen.",
   "layoutExport.button": "Eksporter oppsett (3D)",
   "layoutExport.description": "Last ned alle koblede binger og bunnplaten som én ZIP, klar for slicing.",
   "layoutExport.download": "Last ned ZIP",

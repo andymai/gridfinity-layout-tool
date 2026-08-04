@@ -2325,6 +2325,7 @@
   "layout.collaborativeEditingIsNotActive": "Samarbetsredigering är inte aktiv",
   "layoutExport.baseplateOnly": "Exporterade endast bottenplattan – inga fackdesigner kunde läsas in.",
   "layoutExport.binsOnly": "Fack exporterade – bottenplattan kunde inte genereras.",
+  "layoutExport.baseplateOverBed": "Exporterade bara bins – baseplate {pieces} får inte plats på utskriftsbädden. Justera delningen på Baseplate-fliken.",
   "layoutExport.button": "Exportera layout (3D)",
   "layoutExport.description": "Ladda ner alla länkade fack och bottenplattan som en enda ZIP, redo att skivas.",
   "layoutExport.download": "Ladda ner ZIP",

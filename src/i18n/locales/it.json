@@ -2502,6 +2502,7 @@
   "layout.collaborativeEditingIsNotActive": "La modifica collaborativa non è attiva",
   "layoutExport.baseplateOnly": "Esportata solo la baseplate; non è stato possibile caricare alcun design di bin.",
   "layoutExport.binsOnly": "Esportati i bin; non è stato possibile generare la baseplate.",
+  "layoutExport.baseplateOverBed": "Esportati solo i bin: la baseplate {pieces} non entra nel piano di stampa. Modifica la divisione nella scheda Baseplate.",
   "layoutExport.button": "Esporta layout (3D)",
   "layoutExport.description": "Scarica ogni bin collegato e la baseplate in un unico ZIP, pronto per lo slicing.",
   "layoutExport.download": "Scarica ZIP",

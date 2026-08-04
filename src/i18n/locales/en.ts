@@ -342,6 +342,8 @@ const en: Record<string, string> = {
   'layoutExport.nothingToExport': 'Nothing could be exported.',
   'layoutExport.baseplateOnly': 'Exported the baseplate only — no bin designs could be loaded.',
   'layoutExport.binsOnly': 'Exported bins — the baseplate could not be generated.',
+  'layoutExport.baseplateOverBed':
+    "Exported bins only — baseplate {pieces} won't fit the print bed. Adjust the split on the Baseplate tab.",
   'layoutExport.success': 'Layout exported.',
   'layoutExport.progress.bins': 'Exporting bins ({current}/{total})',
   'layoutExport.progress.baseplate': 'Exporting baseplate ({current}/{total})',

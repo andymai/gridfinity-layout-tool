@@ -2502,6 +2502,7 @@
   "layout.collaborativeEditingIsNotActive": "Samenwerkend bewerken is niet actief",
   "layoutExport.baseplateOnly": "Alleen de basisplaat geëxporteerd — er konden geen binontwerpen worden geladen.",
   "layoutExport.binsOnly": "Bins geëxporteerd — de basisplaat kon niet worden gegenereerd.",
+  "layoutExport.baseplateOverBed": "Alleen bins geëxporteerd – baseplate {pieces} past niet op het printbed. Pas de splitsing aan op het tabblad Baseplate.",
   "layoutExport.button": "Layout exporteren (3D)",
   "layoutExport.description": "Download alle gekoppelde bins en de basisplaat als één ZIP, klaar om te slicen.",
   "layoutExport.download": "ZIP downloaden",

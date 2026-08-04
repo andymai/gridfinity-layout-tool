@@ -2502,6 +2502,7 @@
   "layout.collaborativeEditingIsNotActive": "La edición colaborativa no está activa",
   "layoutExport.baseplateOnly": "Se exportó solo la placa base: no se pudo cargar ningún diseño de bin.",
   "layoutExport.binsOnly": "Bins exportados: no se pudo generar la placa base.",
+  "layoutExport.baseplateOverBed": "Solo se exportaron los bins: la baseplate {pieces} no cabe en la cama de impresión. Ajusta la división en la pestaña Baseplate.",
   "layoutExport.button": "Exportar disposición (3D)",
   "layoutExport.description": "Descarga todos los bins vinculados y la placa base en un único ZIP, listo para laminar.",
   "layoutExport.download": "Descargar ZIP",

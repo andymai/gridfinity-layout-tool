@@ -2231,6 +2231,7 @@
   "layout.collaborativeEditingIsNotActive": "공동 편집이 활성화되지 않았습니다",
   "layoutExport.baseplateOnly": "베이스플레이트만 내보냈습니다 — 불러올 수 있는 수납통 디자인이 없었습니다.",
   "layoutExport.binsOnly": "수납통을 내보냈습니다 — 베이스플레이트를 생성할 수 없었습니다.",
+  "layoutExport.baseplateOverBed": "bin만 내보냈습니다. 베이스플레이트 {pieces}이(가) 프린트 베드에 맞지 않습니다. Baseplate 탭에서 분할을 조정하세요.",
   "layoutExport.button": "레이아웃 내보내기 (3D)",
   "layoutExport.description": "연결된 모든 수납통과 베이스플레이트를 슬라이스 준비가 된 하나의 ZIP으로 내려받으세요.",
   "layoutExport.download": "ZIP 내려받기",

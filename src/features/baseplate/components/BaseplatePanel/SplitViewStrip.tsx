@@ -71,6 +71,9 @@ export function SplitViewStrip({
   const rowLanes = seamPositions(totalDepthUnits, fractionalEdgeY);
 
   const overageByLabel = new Map(tiling.bedOverages.map((o) => [o.label, o]));
+  // Set, not a `pieces.some()` per cell: the map renders cols x rows cells and a
+  // scan per cell is O(cols*rows*pieces) on every hover — ~6M checks on a 50x50.
+  const presentLabels = new Set(tiling.pieces.map((p) => p.label));
 
   const applySeams = (nextCols: readonly number[], nextRows: readonly number[]): void => {
     onChangeSplit(splitOverrideFromSeams(nextCols, nextRows, totalWidthUnits, totalDepthUnits));
@@ -218,8 +221,7 @@ export function SplitViewStrip({
                 // Pieces the perimeter dropped leave a gap, which is how the
                 // mini-map reads as the plate's shape (matching the labels'
                 // positional numbering in the print guide).
-                const exists = tiling.pieces.some((p) => p.label === label);
-                if (!exists) {
+                if (!presentLabels.has(label)) {
                   return (
                     <div
                       key={label}

@@ -2502,6 +2502,7 @@
   "layout.collaborativeEditingIsNotActive": "共同編集はアクティブではありません",
   "layoutExport.baseplateOnly": "ベースプレートのみをエクスポートしました。ビンデザインを読み込めませんでした。",
   "layoutExport.binsOnly": "ビンをエクスポートしました。ベースプレートを生成できませんでした。",
+  "layoutExport.baseplateOverBed": "ビンのみエクスポートしました。ベースプレート{pieces}はプリントベッドに収まりません。Baseplateタブで分割を調整してください。",
   "layoutExport.button": "レイアウトをエクスポート（3D）",
   "layoutExport.description": "リンクされたすべてのビンとベースプレートを1つのZIPとしてダウンロードし、スライス可能な状態にします。",
   "layoutExport.download": "ZIPをダウンロード",

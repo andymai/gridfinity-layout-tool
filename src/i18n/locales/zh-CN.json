@@ -2325,6 +2325,7 @@
   "layout.collaborativeEditingIsNotActive": "协作编辑未激活",
   "layoutExport.baseplateOnly": "仅导出了底板 — 未能加载任何收纳盒设计。",
   "layoutExport.binsOnly": "已导出收纳盒 — 无法生成底板。",
+  "layoutExport.baseplateOverBed": "仅导出了 bins：底板 {pieces} 无法放入打印床。请在 Baseplate 标签页调整拆分。",
   "layoutExport.button": "导出布局（3D）",
   "layoutExport.description": "将每一个已关联的收纳盒和底板作为一个 ZIP 下载，可直接切片。",
   "layoutExport.download": "下载 ZIP",

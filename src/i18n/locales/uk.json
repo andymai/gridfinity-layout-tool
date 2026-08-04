@@ -2502,6 +2502,7 @@
   "layout.collaborativeEditingIsNotActive": "Спільне редагування неактивне",
   "layoutExport.baseplateOnly": "Експортовано лише опорну плиту — не вдалося завантажити дизайни бінів.",
   "layoutExport.binsOnly": "Біни експортовано — не вдалося згенерувати опорну плиту.",
+  "layoutExport.baseplateOverBed": "Експортовано лише bins – baseplate {pieces} не вміщується на друкарському столі. Змініть поділ на вкладці Baseplate.",
   "layoutExport.button": "Експортувати розкладку (3D)",
   "layoutExport.description": "Завантажте всі повʼязані біни та опорну плиту одним ZIP-архівом, готовим до нарізання.",
   "layoutExport.download": "Завантажити ZIP",

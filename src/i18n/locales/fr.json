@@ -2325,6 +2325,7 @@
   "layout.collaborativeEditingIsNotActive": "L'édition collaborative n'est pas active",
   "layoutExport.baseplateOnly": "Seule la plaque de base a été exportée — aucun modèle de bac n'a pu être chargé.",
   "layoutExport.binsOnly": "Bacs exportés — la plaque de base n'a pas pu être générée.",
+  "layoutExport.baseplateOverBed": "Seuls les bins ont été exportés : la baseplate {pieces} ne tient pas sur le plateau. Ajustez la découpe dans l'onglet Baseplate.",
   "layoutExport.button": "Exporter la disposition (3D)",
   "layoutExport.description": "Téléchargez tous les bacs liés et la plaque de base dans un seul ZIP, prêt à trancher.",
   "layoutExport.download": "Télécharger le ZIP",

@@ -2502,6 +2502,7 @@
   "layout.collaborativeEditingIsNotActive": "Kollaborative Bearbeitung ist nicht aktiv",
   "layoutExport.baseplateOnly": "Nur die Grundplatte exportiert – keine Bin-Designs konnten geladen werden.",
   "layoutExport.binsOnly": "Bins exportiert – die Grundplatte konnte nicht erzeugt werden.",
+  "layoutExport.baseplateOverBed": "Nur Bins exportiert – Baseplate {pieces} passt nicht auf das Druckbett. Passe die Aufteilung im Baseplate-Tab an.",
   "layoutExport.button": "Layout exportieren (3D)",
   "layoutExport.description": "Lade alle verknüpften Bins und die Grundplatte als eine ZIP-Datei herunter – bereit zum Slicen.",
   "layoutExport.download": "ZIP herunterladen",

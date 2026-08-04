@@ -32,7 +32,8 @@ vi.mock('@/shared/analytics/posthog', async (orig) => ({
   ...(await orig<Record<string, unknown>>()),
   trackEvent: h.trackEvent,
 }));
-vi.mock('@/features/baseplate', () => ({
+vi.mock('@/features/baseplate', async (orig) => ({
+  ...(await orig<Record<string, unknown>>()),
   buildBaseplateExportPieces: h.buildBaseplateExportPieces,
 }));
 vi.mock('@/features/bin-designer', async (orig) => ({
@@ -41,6 +42,8 @@ vi.mock('@/features/bin-designer', async (orig) => ({
 }));
 
 import { useLayoutExport } from './useLayoutExport';
+import { BaseplateBedOverageError } from '@/features/baseplate';
+import { useToastStore } from '@/core/store/toast';
 
 function design(id: string, name: string, params: Partial<typeof DEFAULT_BIN_PARAMS> = {}) {
   return ok({
@@ -167,6 +170,30 @@ describe('useLayoutExport', () => {
     expect(h.triggerDownload).toHaveBeenCalledWith(expect.any(Blob), 'z.zip');
     expect(h.bridgeRelease).toHaveBeenCalledTimes(1);
     expect(h.poolRelease).toHaveBeenCalledTimes(1);
+  });
+
+  // #3115: this path calls the builder directly, so an over-bed custom split
+  // must drop the baseplate here rather than ship pieces the slicer refuses —
+  // and say which pieces, since the generic notice gives the user nothing to act on.
+  it('drops the baseplate and names the pieces when a custom split exceeds the bed', async () => {
+    const { addToast } = useToastStore.getState();
+    const toasts: string[] = [];
+    useToastStore.setState({
+      addToast: ((message: string, ...rest: unknown[]) => {
+        toasts.push(message);
+        return (addToast as (...a: unknown[]) => unknown)(message, ...rest);
+      }) as typeof addToast,
+    });
+    h.buildBaseplateExportPieces.mockRejectedValue(new BaseplateBedOverageError(['A1', 'B2']));
+    const { result } = renderHook(() => useLayoutExport());
+
+    const success = await result.current.exportLayout('stl', 'z', CONFIG);
+
+    expect(success).toBe(true);
+    expect(h.triggerDownload).toHaveBeenCalledWith(expect.any(Blob), 'z.zip');
+    // Asserting the interpolated text, not the key: this suite resolves real
+    // en.ts strings, so it also pins that the labels reach the user.
+    expect(toasts).toEqual([expect.stringContaining("A1, B2 won't fit the print bed")]);
   });
 
   it('reports engine-not-ready and does not release when the bridge fails to acquire', async () => {
