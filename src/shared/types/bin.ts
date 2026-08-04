@@ -5,7 +5,13 @@
  * This barrel export allows other features (e.g., generation) to
  * depend on these types without a cross-feature import violation.
  */
-import type { DrawerOutline, MagnetAnchor, OutlineOverhang, StackPrintParams } from '@/core/types';
+import type {
+  DrawerOutline,
+  MagnetAnchor,
+  OutlineOverhang,
+  SplitOverride,
+  StackPrintParams,
+} from '@/core/types';
 
 export type {
   ExportFileFormat,
@@ -561,4 +567,12 @@ export interface ResolvedBaseplateParams {
    * stripped by the caller before reaching here. Omit for a single plate.
    */
   readonly stackPrint?: StackPrintParams;
+  /**
+   * User-drawn split plan (#3115) that `computeBaseplateTiling` uses in place of
+   * its search. Already normalized by `buildFullParams` — present here only when
+   * it still matches `width`/`depth`. It never reaches the generator: it selects
+   * which pieces exist, and each piece's own params carry everything the mesh
+   * depends on, so it is deliberately absent from `meshCacheKey`.
+   */
+  readonly splitOverride?: SplitOverride;
 }

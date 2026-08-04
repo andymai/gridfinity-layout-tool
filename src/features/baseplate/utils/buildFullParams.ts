@@ -20,6 +20,7 @@ import {
   hasOutlineOverhang,
   resolveOutlineFrame,
 } from '@/shared/utils/outlineFrame';
+import { normalizeSplitOverride } from './splitOverride';
 
 /**
  * Largest corner radius the plain rounding path may cut: the arc can enter
@@ -375,5 +376,19 @@ export function buildFullParams(
     cornerRadii: roundingOn ? stored.cornerRadii : undefined,
     detachMargins,
     detachMarginConnector,
+    // A user-drawn split plan is meaningful only while it still describes this
+    // plate, so an orphaned one (grid resized, fractional edge flipped, or a
+    // malformed synced payload) is dropped here and the planner falls back to
+    // its own search — the plate is never rendered from a plan that disagrees
+    // with the geometry. Same normalization contract as the optional flags
+    // above, with shape validation on top: the field is allowlisted server-side
+    // without a type check.
+    splitOverride: normalizeSplitOverride(
+      stored.splitOverride,
+      width,
+      depth,
+      effFractionalEdgeX,
+      effFractionalEdgeY
+    ),
   };
 }

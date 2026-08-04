@@ -96,12 +96,16 @@ describe('BaseSection', () => {
           }),
         ],
         margins: [],
+        colSizes: [5, 5],
+        rowSizes: [4],
         totalWidthUnits: 10,
         totalDepthUnits: 4,
         stackCount: 1,
         stackSeparatorThickness: 0,
         bedLoads: 1,
         paddingReductionHint: null,
+        isCustomSplit: false,
+        bedOverages: [],
       });
       useLayoutStore.getState().setBaseplateParams({
         ...DEFAULT_BASEPLATE_PARAMS,

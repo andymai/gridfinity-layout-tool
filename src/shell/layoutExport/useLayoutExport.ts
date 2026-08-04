@@ -38,7 +38,7 @@ import { triggerDownload } from '@/shared/generation/exportUtils';
 import { packageFilesAsZip } from '@/shared/generation/zipExport';
 import type { ZipBinaryFile, ZipTextFile } from '@/shared/generation/zipExport';
 import type { ExportFileFormat, ExportFileNameConfig } from '@/shared/types/bin';
-import { buildBaseplateExportPieces } from '@/features/baseplate';
+import { buildBaseplateExportPieces, BaseplateBedOverageError } from '@/features/baseplate';
 import { loadDesign } from '@/features/bin-designer';
 import type { BinParams } from '@/features/bin-designer';
 // Deep import (not the barrel): the bin-designer barrel is eagerly loaded by App;
@@ -462,6 +462,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
 
         // Phase 2 — baseplate. A baseplate failure (e.g. a degenerate drawer)
         // must not lose a good bin export, so it degrades to a bins-only archive.
+        let baseplateError: unknown = null;
         const bp = await buildBaseplateExportPieces(bridge, pool, {
           baseplateParams: layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
           drawerWidth: layout.drawer.width,
@@ -498,7 +499,12 @@ export function useLayoutExport(): UseLayoutExportReturn {
                   }
                 : null
             ),
-        }).catch(() => null);
+        }).catch((error: unknown) => {
+          // Keep the reason: an over-bed custom split is a fixable user mistake,
+          // and the generic bins-only notice would not say which pieces or why.
+          baseplateError = error;
+          return null;
+        });
 
         // Nothing usable — don't ship an empty archive.
         if (plan.exportable.length === 0 && !bp) {
@@ -552,7 +558,14 @@ export function useLayoutExport(): UseLayoutExportReturn {
         if (plan.exportable.length === 0) {
           addToast(t('layoutExport.baseplateOnly'), 'info');
         } else if (!bp) {
-          addToast(t('layoutExport.binsOnly'), 'info');
+          addToast(
+            baseplateError instanceof BaseplateBedOverageError
+              ? t('layoutExport.baseplateOverBed', {
+                  pieces: baseplateError.pieceLabels.join(', '),
+                })
+              : t('layoutExport.binsOnly'),
+            'info'
+          );
         } else {
           addToast(t('layoutExport.success'), 'success');
         }

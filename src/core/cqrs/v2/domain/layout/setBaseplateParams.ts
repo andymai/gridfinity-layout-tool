@@ -8,12 +8,22 @@
 import { z } from 'zod';
 import { ok } from '@/core/result';
 import { clamp } from '@/shared/utils/validation';
-import { SOLID_FLOOR_MIN_MM, SOLID_FLOOR_MAX_MM, STAGING_ID } from '@/core/constants';
+import { CONSTRAINTS, SOLID_FLOOR_MIN_MM, SOLID_FLOOR_MAX_MM, STAGING_ID } from '@/core/constants';
 import type { StoredBaseplateParams, GridUnits, Mm } from '@/core/types';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { BASEPLATE_CONNECTOR_STYLES } from '@/shared/types/bin';
 import { defineCommand } from '../../defineCommand';
 import { computeDisplacedBins } from '../drawer/displacement';
+
+/**
+ * Chunk sizes for one axis of a custom split plan (#3115). A plate caps at
+ * GRID_MAX units and a chunk is at least a half unit, so twice GRID_MAX covers
+ * every legal plan while bounding what a crafted payload can ask for.
+ */
+const splitChunkSizes = z
+  .array(z.number().min(0.5).max(CONSTRAINTS.GRID_MAX))
+  .min(1)
+  .max(CONSTRAINTS.GRID_MAX * 2);
 
 // StoredBaseplateParams has many fields, most optional; the schema is permissive
 // (passes shape through). Validation focuses on the required boolean +
@@ -51,6 +61,12 @@ const payloadSchema = z.object({
         br: z.number(),
       })
       .optional(),
+    // Bounds only. Whether the plan still describes the plate is decided at
+    // resolve time by `normalizeSplitOverride`, which knows the dimensions.
+    // Both length and value are capped: an unbounded plan would bloat the
+    // stored layout and, since `splitOverride` is a generation trigger, ask the
+    // worker to build a piece per entry.
+    splitOverride: z.object({ cols: splitChunkSizes, rows: splitChunkSizes }).optional(),
   }),
 });
 

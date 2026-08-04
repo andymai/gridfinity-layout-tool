@@ -72,6 +72,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
 
   const mesh = useBaseplatePageStore((s) => s.generation.mesh);
   const pieceMeshes = useBaseplatePageStore((s) => s.pieceMeshes);
+  const tiling = useBaseplatePageStore((s) => s.tiling);
   const exportFileNameConfig = useBaseplatePageStore((s) => s.exportFileNameConfig);
   const exportProgress = useBaseplatePageStore((s) => s.exportProgress);
   const setExportProgress = useBaseplatePageStore((s) => s.setExportProgress);
@@ -79,7 +80,14 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
 
   const hasSingleMesh = mesh !== null && mesh.vertices !== null && mesh.error === null;
   const hasSplitMeshes = pieceMeshes.length > 0;
-  const canExport = (hasSingleMesh || hasSplitMeshes) && getActiveBridge() !== null;
+  // A user-drawn split (#3115) can place a seam that leaves a piece larger than
+  // the bed. The preview still renders it — mid-edit feedback is the point — but
+  // exporting would ship an STL the slicer refuses, so the button goes dead
+  // until the plan is fixed or reset. Automatic plans never populate this except
+  // when the bed cannot hold a single grid unit at all.
+  const overBedPieceCount = tiling?.bedOverages.length ?? 0;
+  const canExport =
+    (hasSingleMesh || hasSplitMeshes) && getActiveBridge() !== null && overBedPieceCount === 0;
 
   const downloadBaseplate = useCallback(
     async (format: ExportFileFormat, splitEnabled = true) => {

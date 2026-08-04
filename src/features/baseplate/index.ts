@@ -1,7 +1,10 @@
 export { BaseplatePage } from './components/BaseplatePage';
 export { BaseplateLibraryInitMount } from './components/BaseplateLibraryInitMount';
 export { helpEntries } from './helpEntries';
-export { buildBaseplateExportPieces } from './utils/buildBaseplateExportPieces';
+export {
+  buildBaseplateExportPieces,
+  BaseplateBedOverageError,
+} from './utils/buildBaseplateExportPieces';
 
 export type { SavedBaseplateDesign } from './types/library';
 export * as BaseplateStorage from './storage/BaseplateStorage';

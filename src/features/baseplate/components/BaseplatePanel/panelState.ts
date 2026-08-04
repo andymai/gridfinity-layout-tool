@@ -38,6 +38,14 @@ export interface BaseplatePanelDerived {
   drawerOutline: DrawerOutline | undefined;
   drawerFractionalEdgeX: FractionalEdge;
   drawerFractionalEdgeY: FractionalEdge;
+  /**
+   * Which edge actually carries the half unit, resolved the way
+   * `buildFullParams` does it (drawer when synced, stored otherwise). The split
+   * editor needs this to know where cuts may land — deriving it here keeps the
+   * panel from drifting from the resolver.
+   */
+  effectiveFractionalEdgeX: FractionalEdge;
+  effectiveFractionalEdgeY: FractionalEdge;
   gridUnitMm: number;
   gridUnitMmY: number;
   synced: boolean;
@@ -148,6 +156,12 @@ export function useBaseplatePanelDerived(): BaseplatePanelDerived {
     drawerOutline,
     drawerFractionalEdgeX,
     drawerFractionalEdgeY,
+    effectiveFractionalEdgeX: synced
+      ? drawerFractionalEdgeX
+      : (baseplateParams.fractionalEdgeX ?? 'end'),
+    effectiveFractionalEdgeY: synced
+      ? drawerFractionalEdgeY
+      : (baseplateParams.fractionalEdgeY ?? 'end'),
     gridUnitMm,
     gridUnitMmY,
     synced,

@@ -48,6 +48,30 @@ export const STACK_PRINT_MAX_STACK_HEIGHT = 8;
 export const STACK_PRINT_MIN_GAP_MM = 0.1;
 export const STACK_PRINT_MAX_GAP_MM = 1.0;
 
+/**
+ * A user-drawn split plan (issue #3115) replacing the planner's automatic
+ * tiling. `cols` / `rows` are the chunk sizes in grid units, front-to-back and
+ * left-to-right in the order they are printed — the same shape the planner's
+ * search produces, so every downstream consumer (margins, outline shaping,
+ * fingerprint dedup, stack grouping) is unaffected.
+ *
+ * Order is the user's, so it is NOT run through `reorderForDisplay`: that pass
+ * exists to prettify search output (largest-first, fractional pinning,
+ * palindromic) and would silently move hand-placed seams.
+ *
+ * Meaningful only while it still describes the current plate — `cols` must sum
+ * to the width and `rows` to the depth. `normalizeSplitOverride` drops it
+ * otherwise, so a grid resize falls back to the automatic plan rather than
+ * rendering a plan that disagrees with the geometry.
+ */
+export interface SplitOverride {
+  // Mutable element type with a readonly property, matching `DrawerOutline.vertices`:
+  // arrays inside `Layout` are replaced rather than mutated, and immer's draft
+  // types reject a `readonly` array here.
+  readonly cols: GridUnits[];
+  readonly rows: GridUnits[];
+}
+
 /** Stored (persisted) baseplate config saved per-layout.
  * Padding is in mm; width/depth/gridUnitMm are NOT stored — they are derived from the
  * layout's drawer at generation time unless syncWithLayout is false, in which case
@@ -194,4 +218,9 @@ export interface StoredBaseplateParams {
    * stacking (single baseplate).
    */
   readonly stackPrint?: StackPrintParams;
+  /**
+   * User-drawn split plan overriding the automatic tiling (issue #3115).
+   * Omitted/undefined = the planner chooses. See {@link SplitOverride}.
+   */
+  readonly splitOverride?: SplitOverride;
 }

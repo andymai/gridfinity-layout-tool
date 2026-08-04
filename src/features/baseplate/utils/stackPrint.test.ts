@@ -364,12 +364,16 @@ describe('stackGroupsFromTiling', () => {
       margins: [],
       cols: labels.length,
       rows: 1,
+      colSizes: labels.map(() => 3),
+      rowSizes: [3],
       totalWidthUnits: 3 * labels.length,
       totalDepthUnits: 3,
       stackCount: 1,
       stackSeparatorThickness: 0,
       bedLoads: 1,
       paddingReductionHint: null,
+      isCustomSplit: false,
+      bedOverages: [],
     };
   }
 

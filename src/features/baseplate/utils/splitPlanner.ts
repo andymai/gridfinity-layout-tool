@@ -35,6 +35,7 @@ import type {
   MarginCorner,
   MarginPiece,
   PaddingReductionHint,
+  PieceBedOverage,
   PieceEdges,
 } from '../types/tiling';
 import { estimateBedLoads, type Footprint } from './bedPacking';
@@ -285,8 +286,11 @@ function axisChunkMm(sizes: number[], axis: AxisConfig): number[] {
   });
 }
 
+/** Float slack for bed-fit comparisons — a chunk within this of the bed fits. */
+const TOLERANCE_MM = 0.001;
+
 function chunkSizesFit(sizes: number[], axis: AxisConfig): boolean {
-  return axisChunkMm(sizes, axis).every((mm) => mm <= axis.bedMm + 0.001);
+  return axisChunkMm(sizes, axis).every((mm) => mm <= axis.bedMm + TOLERANCE_MM);
 }
 
 /** Variance of an array — lower = more symmetric/equal. */
@@ -839,27 +843,42 @@ export function computeBaseplateTiling(
     oh?.back ?? 0
   );
 
-  const { colSizes: rawColSizes, rowSizes: rawRowSizes } = findOptimalTiling(
-    width,
-    depth,
-    xAxis,
-    yAxis
-  );
+  // A user-drawn plan (#3115) replaces the search outright. It is NOT reordered:
+  // `reorderForDisplay` exists to prettify search output, and applying it here
+  // would slide hand-placed seams to different offsets than the ones drawn.
+  // `buildFullParams` has already dropped a plan that no longer matches
+  // width/depth, so anything present here is consistent with the plate.
+  const override = params.splitOverride;
+  const isCustomSplit = override !== undefined;
 
-  // Reorder for display: largest pieces at front/left, fractional edges pinned.
-  // Under preferIdenticalPieces, arrange palindromically so outer positions match.
-  const colSizes = reorderForDisplay(
-    rawColSizes,
-    axisCapacity(xAxis),
-    fractionalEdgeX === 'start',
-    palindromic
-  );
-  const rowSizes = reorderForDisplay(
-    rawRowSizes,
-    axisCapacity(yAxis),
-    fractionalEdgeY === 'start',
-    palindromic
-  );
+  let colSizes: number[];
+  let rowSizes: number[];
+  if (override !== undefined) {
+    colSizes = [...override.cols];
+    rowSizes = [...override.rows];
+  } else {
+    const { colSizes: rawColSizes, rowSizes: rawRowSizes } = findOptimalTiling(
+      width,
+      depth,
+      xAxis,
+      yAxis
+    );
+
+    // Reorder for display: largest pieces at front/left, fractional edges pinned.
+    // Under preferIdenticalPieces, arrange palindromically so outer positions match.
+    colSizes = reorderForDisplay(
+      rawColSizes,
+      axisCapacity(xAxis),
+      fractionalEdgeX === 'start',
+      palindromic
+    );
+    rowSizes = reorderForDisplay(
+      rawRowSizes,
+      axisCapacity(yAxis),
+      fractionalEdgeY === 'start',
+      palindromic
+    );
+  }
 
   // Recompute on the FINAL (reordered) sizes: reordering can move a chunk
   // between an edge position (padding overhead) and a middle one (tongue only),
@@ -946,7 +965,12 @@ export function computeBaseplateTiling(
   }
 
   const pieceCount = colSizes.length * rowSizes.length;
-  const paddingReductionHint = computePaddingReductionHint(width, depth, xAxis, yAxis, pieceCount);
+  // The hint is advice about the automatic plan ("reduce padding and the
+  // planner saves you N pieces"), which is meaningless once the user has
+  // overridden that plan — their piece count is their own choice.
+  const paddingReductionHint = isCustomSplit
+    ? null
+    : computePaddingReductionHint(width, depth, xAxis, yAxis, pieceCount);
 
   const tiling: BaseplateTiling = {
     isSplit,
@@ -954,16 +978,67 @@ export function computeBaseplateTiling(
     margins: emitMargins(params, { colSizes, rowSizes, colOffsets, rowOffsets }),
     cols: colSizes.length,
     rows: rowSizes.length,
+    colSizes,
+    rowSizes,
     totalWidthUnits: width,
     totalDepthUnits: depth,
     bedLoads,
     stackCount: 1,
     stackSeparatorThickness: 0,
     paddingReductionHint,
+    isCustomSplit,
+    bedOverages: [],
   };
-  return params.outline !== undefined
-    ? applyOutlineToTiling(tiling, params, printBedWidthMm, printBedDepthMm)
-    : tiling;
+  const shaped =
+    params.outline !== undefined
+      ? applyOutlineToTiling(tiling, params, printBedWidthMm, printBedDepthMm)
+      : tiling;
+  return {
+    ...shaped,
+    // Computed on the shaped tiling so dropped pieces don't raise a warning
+    // about geometry that isn't printed.
+    bedOverages: computeBedOverages(shaped.pieces, colSizes, rowSizes, xAxis, yAxis),
+  };
+}
+
+/**
+ * Pieces whose printed footprint exceeds the bed, with the mm overage per axis.
+ *
+ * Uses `axisChunkMm` — the same budget the planner's own feasibility check runs
+ * on, including exterior padding, the outline overhang, and male tongue
+ * protrusion — so a user-drawn plan is held to exactly the standard the
+ * automatic planner holds itself to. Like `chunkSizesFit`, it deliberately does
+ * NOT consider a 90° rotation onto a non-square bed: the bed packer rotates
+ * pieces to fit more per load, but the planner never treats a rotation as
+ * making an otherwise-too-large piece feasible, and a warning that disagreed
+ * with the planner would let a custom plan pass a check the automatic one fails.
+ *
+ * Non-empty on an automatic plan only in the degenerate case where the bed
+ * cannot hold a single grid unit and `partitionAxis` falls back to one
+ * oversized piece.
+ */
+function computeBedOverages(
+  pieces: readonly BaseplatePiece[],
+  colSizes: number[],
+  rowSizes: number[],
+  xAxis: AxisConfig,
+  yAxis: AxisConfig
+): PieceBedOverage[] {
+  const colMm = axisChunkMm(colSizes, xAxis);
+  const rowMm = axisChunkMm(rowSizes, yAxis);
+  const overages: PieceBedOverage[] = [];
+  for (const piece of pieces) {
+    const overWidthMm = colMm[piece.col] - xAxis.bedMm;
+    const overDepthMm = rowMm[piece.row] - yAxis.bedMm;
+    if (overWidthMm > TOLERANCE_MM || overDepthMm > TOLERANCE_MM) {
+      overages.push({
+        label: piece.label,
+        overWidthMm: overWidthMm > TOLERANCE_MM ? overWidthMm : 0,
+        overDepthMm: overDepthMm > TOLERANCE_MM ? overDepthMm : 0,
+      });
+    }
+  }
+  return overages;
 }
 
 /**

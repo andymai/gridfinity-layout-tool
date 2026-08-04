@@ -91,6 +91,15 @@ export interface PaddingReductionHint {
   readonly piecesSaved: number;
 }
 
+/** A piece that does not fit the print bed, with its per-axis overage in mm. */
+export interface PieceBedOverage {
+  readonly label: string;
+  /** How far the piece's printed width exceeds the bed width; 0 if it fits. */
+  readonly overWidthMm: number;
+  /** How far the piece's printed depth exceeds the bed depth; 0 if it fits. */
+  readonly overDepthMm: number;
+}
+
 export interface BaseplateTiling {
   readonly isSplit: boolean;
   readonly pieces: readonly BaseplatePiece[];
@@ -101,6 +110,14 @@ export interface BaseplateTiling {
   readonly margins: readonly MarginPiece[];
   readonly cols: number;
   readonly rows: number;
+  /**
+   * Chunk sizes (grid units) along each axis, in emitted order. Kept alongside
+   * `pieces` because an outline-shaped tiling drops pieces, so the axis sizes
+   * can't be recovered by reading row 0 — and the split editor needs the plan
+   * itself, not just what survived the perimeter.
+   */
+  readonly colSizes: readonly number[];
+  readonly rowSizes: readonly number[];
   readonly totalWidthUnits: number;
   readonly totalDepthUnits: number;
   /**
@@ -113,8 +130,19 @@ export interface BaseplateTiling {
   readonly stackCount: number;
   /** Future: separator thickness between stacks in mm (default 0) */
   readonly stackSeparatorThickness: number;
-  /** Hint: reducing padding by this amount would save pieces. null if no benefit. */
+  /**
+   * Hint: reducing padding by this amount would save pieces. null if no benefit,
+   * and always null under a custom split — it is advice about the automatic plan.
+   */
   readonly paddingReductionHint: PaddingReductionHint | null;
+  /** True when these pieces came from a user-drawn plan rather than the search (#3115). */
+  readonly isCustomSplit: boolean;
+  /**
+   * Pieces that exceed the print bed. Always empty for an automatic plan except
+   * in the degenerate case of a bed too small for one grid unit; a custom plan
+   * can produce them freely, which is what blocks export.
+   */
+  readonly bedOverages: readonly PieceBedOverage[];
 }
 
 /** Statistics about deduplication in a split baseplate generation/export. */

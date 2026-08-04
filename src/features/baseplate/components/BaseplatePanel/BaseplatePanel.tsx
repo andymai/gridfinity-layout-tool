@@ -32,8 +32,8 @@ import { StackPrintSection } from './StackPrintSection';
 import { DimensionsSection } from './DimensionsSection';
 import { BaseSection } from './BaseSection';
 import { PhysicalUnitsSection } from './PhysicalUnitsSection';
-import type { StackPrintParams } from '@/core/types';
-import { updateBaseplateParams } from './panelState';
+import type { SplitOverride, StackPrintParams } from '@/core/types';
+import { updateBaseplateParams, useBaseplatePanelDerived } from './panelState';
 
 export function BaseplatePanel() {
   const t = useTranslation();
@@ -43,6 +43,7 @@ export function BaseplatePanel() {
     (state) => (state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS).stackPrint
   );
   const printBedSize = useLayoutStore((state) => state.layout.printBedSize);
+  const { effectiveFractionalEdgeX, effectiveFractionalEdgeY } = useBaseplatePanelDerived();
 
   const { tiling, hoveredPieceLabel, selectedPieceLabel } = useBaseplatePageStore(
     useShallow((s) => ({
@@ -69,6 +70,13 @@ export function BaseplatePanel() {
     []
   );
 
+  // Each seam toggle is its own command, so it is one undo step — matching every
+  // other panel control rather than collapsing an editing session into one.
+  const setSplitOverride = useCallback(
+    (next: SplitOverride | undefined) => updateBaseplateParams({ splitOverride: next }),
+    []
+  );
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-y-auto scrollbar-thin">
@@ -77,8 +85,10 @@ export function BaseplatePanel() {
         <BaseSection />
         <PhysicalUnitsSection />
 
-        {/* Split pieces mini-map — only when baseplate is split */}
-        {tiling?.isSplit && (
+        {/* Split pieces mini-map + seam editor. `isCustomSplit` keeps it mounted
+            when the user merges their plan back down to a single piece — the
+            reset-to-automatic control lives inside it. */}
+        {(tiling?.isSplit || tiling?.isCustomSplit) && (
           <SplitViewStrip
             tiling={tiling}
             hoveredPieceLabel={hoveredPieceLabel}
@@ -86,6 +96,9 @@ export function BaseplatePanel() {
             onHoverPiece={setHoveredPieceLabel}
             onSelectPiece={setSelectedPieceLabel}
             printBedSize={printBedSize}
+            fractionalEdgeX={effectiveFractionalEdgeX}
+            fractionalEdgeY={effectiveFractionalEdgeY}
+            onChangeSplit={setSplitOverride}
           />
         )}
 

@@ -21,6 +21,13 @@ const MAX_PADDING_MM = 1000;
 const MAX_CORNER_RADIUS_MM = 200;
 
 /**
+ * Max chunks per axis in a custom split plan. A plate caps at 50 grid units and
+ * a chunk is at least a half unit, so 100 covers every legal plan; the bound
+ * exists so a crafted payload can't ask the worker for thousands of pieces.
+ */
+const MAX_SPLIT_CHUNKS = 100;
+
+/**
  * Top-level keys allowed inside `params` after validation. Mirrors
  * `StoredBaseplateParams` in `src/core/types.ts` — update both together when
  * adding a generator-level baseplate parameter. Anything outside this set
@@ -59,6 +66,7 @@ const ALLOWED_PARAM_KEYS = new Set<string>([
   'detachMargins',
   'detachMarginConnector',
   'stackPrint',
+  'splitOverride',
 ]);
 
 function pickAllowedParams(params: Record<string, unknown>): Record<string, unknown> {
@@ -174,6 +182,29 @@ export function validateBaseplateShare(
     (!isNumber(params.connectorFitOffset) || !inRange(params.connectorFitOffset, -10, 10))
   ) {
     return validationError('INVALID_PARAMS', 'connectorFitOffset must be -10-10');
+  }
+
+  // A user-drawn split plan is the only param that carries arrays, and its
+  // length drives how many pieces the BREP worker generates — so it is shape-
+  // and bound-checked rather than merely allowlisted. The client re-validates
+  // it against the actual plate dimensions (`normalizeSplitOverride`) and drops
+  // a plan that no longer fits, so the check here is purely a resource guard.
+  if (params.splitOverride !== undefined) {
+    if (!isObject(params.splitOverride)) {
+      return validationError('INVALID_PARAMS', 'splitOverride must be an object');
+    }
+    for (const axis of ['cols', 'rows'] as const) {
+      const chunks = params.splitOverride[axis];
+      if (!Array.isArray(chunks) || chunks.length < 1 || chunks.length > MAX_SPLIT_CHUNKS) {
+        return validationError(
+          'INVALID_PARAMS',
+          `splitOverride.${axis} must be an array of 1-${MAX_SPLIT_CHUNKS} chunk sizes`
+        );
+      }
+      if (chunks.some((size) => !isNumber(size) || !inRange(size, 0.5, 50))) {
+        return validationError('INVALID_PARAMS', `splitOverride.${axis} sizes must be 0.5-50`);
+      }
+    }
   }
 
   return {

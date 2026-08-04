@@ -165,6 +165,22 @@ function buildStackedFileBlob(
   });
 }
 
+/**
+ * Thrown when a piece would print larger than the configured bed — reachable
+ * only under a user-drawn split plan (#3115), since the planner's own search
+ * never emits one. Carries the offending labels so a caller can name them; the
+ * baseplate page instead prevents the export from starting at all.
+ */
+export class BaseplateBedOverageError extends Error {
+  readonly pieceLabels: readonly string[];
+
+  constructor(pieceLabels: readonly string[]) {
+    super(`Baseplate pieces exceed the print bed: ${pieceLabels.join(', ')}`);
+    this.name = 'BaseplateBedOverageError';
+    this.pieceLabels = pieceLabels;
+  }
+}
+
 export async function buildBaseplateExportPieces(
   bridge: GenerationBridge,
   pool: WorkerPool | null,
@@ -210,6 +226,14 @@ export async function buildBaseplateExportPieces(
     gridShiftY
   );
   const tiling = computeBaseplateTiling(previewParams, printBedWidthMm, printBedDepthMm);
+
+  // The bed-fit gate lives HERE, not in the callers: this builder is the single
+  // choke point every export path runs through, and the baseplate page's
+  // `canExport` only disables its own button — the whole-layout ZIP calls
+  // straight through and would otherwise ship the same oversized pieces (#3115).
+  if (tiling.bedOverages.length > 0) {
+    throw new BaseplateBedOverageError(tiling.bedOverages.map((o) => o.label));
+  }
 
   const stack = baseplateParams.stackPrint;
   const stackEnabled = stack?.enabled === true && format !== 'step';

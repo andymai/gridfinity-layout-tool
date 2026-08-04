@@ -2,7 +2,8 @@ import { describe, it, expect, vi } from 'vitest';
 import { mm } from '@gridfinity/branded-types';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import type { GenerationBridge } from '@/shared/generation/bridge';
-import { buildBaseplateExportPieces } from './buildBaseplateExportPieces';
+import { gridUnits } from '@gridfinity/branded-types';
+import { buildBaseplateExportPieces, BaseplateBedOverageError } from './buildBaseplateExportPieces';
 import type { BuildBaseplateExportInput } from './buildBaseplateExportPieces';
 
 function buf(byte: number, length = 8): ArrayBuffer {
@@ -243,5 +244,70 @@ describe('buildBaseplateExportPieces', () => {
     expect(onProgress).toHaveBeenCalled();
     const lastCall = onProgress.mock.calls.at(-1)?.[0];
     expect(lastCall).toMatchObject({ total: expect.any(Number) });
+  });
+});
+
+// #3115: `useBaseplateExport.canExport` only greys out the baseplate page's own
+// button. The whole-layout ZIP calls this builder directly, so the bed-fit gate
+// has to live here or that path ships pieces the slicer will refuse.
+describe('buildBaseplateExportPieces — bed-fit gate', () => {
+  it('refuses a custom split whose piece exceeds the bed, naming the pieces', async () => {
+    const { bridge } = makeBridge();
+    await expect(
+      buildBaseplateExportPieces(
+        bridge,
+        null,
+        input({
+          baseplateParams: {
+            ...DEFAULT_BASEPLATE_PARAMS,
+            splitOverride: { cols: [4].map(gridUnits), rows: [4].map(gridUnits) },
+          },
+          // 4 units = 168mm against a 100mm bed.
+          printBedWidthMm: 100,
+          printBedDepthMm: 100,
+        })
+      )
+    ).rejects.toThrow(BaseplateBedOverageError);
+  });
+
+  it('carries the offending labels so a caller can report them', async () => {
+    const { bridge } = makeBridge();
+    const error = await buildBaseplateExportPieces(
+      bridge,
+      null,
+      input({
+        baseplateParams: {
+          ...DEFAULT_BASEPLATE_PARAMS,
+          splitOverride: { cols: [4].map(gridUnits), rows: [4].map(gridUnits) },
+        },
+        printBedWidthMm: 100,
+        printBedDepthMm: 100,
+      })
+    ).catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(BaseplateBedOverageError);
+    expect((error as BaseplateBedOverageError).pieceLabels).toEqual(['A1']);
+  });
+
+  it('exports normally when the custom split fits', async () => {
+    const { bridge } = makeBridge();
+    const result = await buildBaseplateExportPieces(
+      bridge,
+      null,
+      input({
+        baseplateParams: {
+          ...DEFAULT_BASEPLATE_PARAMS,
+          splitOverride: { cols: [2, 2].map(gridUnits), rows: [4].map(gridUnits) },
+        },
+      })
+    );
+    expect(result.pieces.map((p) => p.label)).toEqual(['A1', 'B1']);
+  });
+
+  // The automatic planner guarantees fit, so the gate must be invisible to
+  // every plate that predates this feature.
+  it('leaves an automatic plan untouched', async () => {
+    const { bridge } = makeBridge();
+    const result = await buildBaseplateExportPieces(bridge, null, input());
+    expect(result.pieces.length).toBeGreaterThan(0);
   });
 });
