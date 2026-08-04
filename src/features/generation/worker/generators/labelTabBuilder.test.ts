@@ -5,6 +5,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import type { DividerOverride } from '@/shared/types/bin';
 import { loadFont, measureVolume } from 'brepjs';
 import { isErr, isOk } from '@/core/result';
 import { readFileSync } from 'node:fs';
@@ -923,5 +924,83 @@ describe('planSpanningDividerClips', () => {
     const clips = planSpanningDividerClips(params, INNER_W, INNER_D, INTERIOR_H, 1.2);
 
     expect(clips.length).toBeGreaterThan(0);
+  });
+});
+
+// A divider shifted off its grid line moves the compartment walls the shelves
+// hang between. Planning them against the nominal line left each shelf floating
+// off its own wall and overhanging into the neighbour (#3225).
+describe('shifted dividers', () => {
+  const INNER_W = 160;
+  const INNER_D = 38;
+  const INTERIOR_H = 35;
+
+  const twoUp = (dividerOverrides?: DividerOverride[]) => ({
+    ...DEFAULT_BIN_PARAMS,
+    compartments: {
+      ...DEFAULT_BIN_PARAMS.compartments,
+      cols: 2,
+      rows: 1,
+      thickness: 1.2,
+      cells: [0, 1],
+      ...(dividerOverrides ? { dividerOverrides } : {}),
+    },
+    label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, mode: 'socket' as const, depth: 14 },
+  });
+
+  it('seats the plate against the shifted wall, not the grid line', async () => {
+    const { planLabelPlateSeats } = await import('./labelTabBuilder');
+
+    const nominal = planLabelPlateSeats(twoUp(), INNER_W, INNER_D, INTERIOR_H, 1.2);
+    const shifted = planLabelPlateSeats(
+      twoUp([{ compartmentA: 0, compartmentB: 1, offsetStart: -30, offsetEnd: -30 }]),
+      INNER_W,
+      INNER_D,
+      INTERIOR_H,
+      1.2
+    );
+
+    expect(nominal).toHaveLength(2);
+    expect(shifted).toHaveLength(2);
+    // Compartment 0 keeps its outer wall, so its left-aligned pocket is
+    // unmoved; compartment 1's wall came 30mm left and its pocket follows.
+    expect(shifted[1].x).toBeLessThan(nominal[1].x);
+    // A wider compartment now hosts a wider plate.
+    expect(shifted[1].plateWidthU).toBeGreaterThan(nominal[1].plateWidthU);
+  });
+
+  it('keeps each tab inside its own compartment', async () => {
+    const { planLabelPlateSeats } = await import('./labelTabBuilder');
+    const wallX = -INNER_W / 2 + INNER_W / 2 - 30; // shifted divider centre
+
+    const seats = planLabelPlateSeats(
+      twoUp([{ compartmentA: 0, compartmentB: 1, offsetStart: -30, offsetEnd: -30 }]),
+      INNER_W,
+      INNER_D,
+      INTERIOR_H,
+      1.2
+    );
+
+    expect(seats[0].x).toBeLessThan(wallX);
+    expect(seats[1].x).toBeGreaterThan(wallX);
+  });
+
+  it('builds a mesh for a shifted-divider design', async () => {
+    const { buildLabelTabs } = await import('./labelTabBuilder');
+
+    const result = buildLabelTabs(
+      twoUp([{ compartmentA: 0, compartmentB: 1, offsetStart: -30, offsetEnd: -30 }]),
+      INNER_W,
+      INNER_D,
+      INTERIOR_H,
+      1.2
+    );
+
+    expect(result).not.toBeNull();
+    if (result) {
+      const volume = measureVolume(result);
+      expect(isOk(volume)).toBe(true);
+      if (isOk(volume)) expect(volume.value).toBeGreaterThan(0);
+    }
   });
 });

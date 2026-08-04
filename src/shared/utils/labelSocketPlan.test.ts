@@ -120,6 +120,26 @@ describe('planLabelSockets', () => {
     // still fits) — push to 1.2 so it tips over the edge.
     expect(planLabelSockets(grid(1, 1, [0]), 39.1, 1.2).anyFits).toBe(false);
   });
+
+  // Sizing against the nominal grid line handed the narrowed compartment a
+  // plate too wide for the space its shifted divider actually leaves (#3225).
+  it('sizes plates against the shifted divider, not the grid line', () => {
+    const shifted = grid(2, 1, [0, 1], {
+      dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: -30, offsetEnd: -30 }],
+    });
+
+    const plan = planLabelSockets(shifted, 160, CLEARANCE);
+
+    expect(plan.compartments[0].availableWidthMm).toBeCloseTo(49.4, 5);
+    expect(plan.compartments[1].availableWidthMm).toBeCloseTo(109.4, 5);
+  });
+
+  it('leaves an unshifted grid on its nominal boundaries', () => {
+    const plan = planLabelSockets(grid(2, 1, [0, 1]), 160, CLEARANCE);
+
+    expect(plan.compartments[0].availableWidthMm).toBeCloseTo(79.4, 5);
+    expect(plan.compartments[1].availableWidthMm).toBeCloseTo(79.4, 5);
+  });
 });
 
 describe('planLabelPlates', () => {
