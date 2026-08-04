@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.363.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.363.2...gridfinity-layout-tool-v4.363.3) (2026-08-04)
+
+
+### Bug Fixes
+
+* **drawer-shape:** centre a perimeter drawn larger than its grid ([#3217](https://github.com/andymai/gridfinity-layout-tool/issues/3217)) ([dac389c](https://github.com/andymai/gridfinity-layout-tool/commit/dac389c48cbaa122673596fbebf65495fc84c0af))
+
 ## [4.363.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.363.1...gridfinity-layout-tool-v4.363.2) (2026-08-04)
 
 
