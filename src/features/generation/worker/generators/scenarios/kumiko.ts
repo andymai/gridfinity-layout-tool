@@ -272,7 +272,17 @@ function kumikoPatternCase(pattern: WallPatternType): ScenarioCase {
   });
 }
 
-export const kumiko: ScenarioCase[] = [
+// One case per kumiko pattern: each must remove material from a 1×1×6 bin.
+export const kumikoPatterns: ScenarioCase[] = [
+  kumikoPatternCase('goma'),
+  kumikoPatternCase('sakura'),
+  kumikoPatternCase('rindo'),
+  kumikoPatternCase('mikado'),
+  kumikoPatternCase('tsumiishi-kikko'),
+];
+
+// How a pattern reaches corners, and which walls it covers.
+export const kumikoWrapping: ScenarioCase[] = [
   defineScenario('kumiko', 'mitsukude keeps both diagonal families on corners (1×1×4, bold)', {
     assert: 'structural',
     timeout: 180_000,
@@ -286,7 +296,6 @@ export const kumiko: ScenarioCase[] = [
     },
     customAssert: assertCornerDiagonalsPresent,
   }),
-  kumikoPatternCase('goma'),
   defineScenario('kumiko', 'asanoha wraps a 1×1×6 bin including corners', {
     assert: 'structural',
     timeout: 180_000,
@@ -308,10 +317,6 @@ export const kumiko: ScenarioCase[] = [
       assert: assertCornersWrapped(1, 1),
     },
   }),
-  kumikoPatternCase('sakura'),
-  kumikoPatternCase('rindo'),
-  kumikoPatternCase('mikado'),
-  kumikoPatternCase('tsumiishi-kikko'),
   defineScenario('kumiko', 'mitsukude wraps a 1×1×6 bin including corners', {
     assert: 'structural',
     timeout: 180_000,
@@ -380,6 +385,10 @@ export const kumiko: ScenarioCase[] = [
       assert: assertRemovesMaterial,
     },
   }),
+];
+
+// Kumiko composed with other bin features.
+export const kumikoComposition: ScenarioCase[] = [
   defineScenario('kumiko', 'mitsukude composes with a front wall cutout', {
     assert: 'structural',
     timeout: 180_000,
@@ -448,3 +457,9 @@ export const kumiko: ScenarioCase[] = [
     },
   }),
 ];
+
+// Aggregate for scenarios/index.ts. The three groups above each get their own
+// test file: at ~13s per case these fifteen were a single 200s file, and Vitest
+// never parallelizes within a file, so it floored the whole generators shard no
+// matter how the suite was sharded. Same fix as #2882.
+export const kumiko: ScenarioCase[] = [...kumikoPatterns, ...kumikoWrapping, ...kumikoComposition];
