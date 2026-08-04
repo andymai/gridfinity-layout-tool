@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.363.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.363.1...gridfinity-layout-tool-v4.363.2) (2026-08-04)
+
+
+### Bug Fixes
+
+* **baseplate:** reserve print-bed budget for the outline overhang ([#3215](https://github.com/andymai/gridfinity-layout-tool/issues/3215)) ([0492164](https://github.com/andymai/gridfinity-layout-tool/commit/04921644e8ba23302bf57daf3b86bbbd6bcb3858))
+
 ## [4.363.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.363.0...gridfinity-layout-tool-v4.363.1) (2026-08-04)
 
 
