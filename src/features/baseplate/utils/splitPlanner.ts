@@ -989,11 +989,23 @@ function applyOutlineToTiling(
     front: piece.gridOffsetY === 0 ? (oh?.front ?? 0) : 0,
     back: piece.gridOffsetY + piece.depthUnits === tiling.totalDepthUnits ? (oh?.back ?? 0) : 0,
   });
+  // Origin of the piece's NOMINAL padded extent — the overhang is deliberately
+  // excluded (#3212). A piece frames its outline exactly as the whole plate
+  // does: the padded extent starts at 0 and the slab grows outward into
+  // negative coordinates. Subtracting the overhang here instead would land the
+  // perimeter that far inside its own slab, truncating the outer strip and
+  // displacing the shape against the piece's sockets — and only on the pieces
+  // that carry an outer overhang, which is what made it read as asymmetric.
+  const originOf = (piece: BaseplatePiece): { x: number; y: number } => ({
+    x: padL + piece.gridOffsetX * u - piece.paddingLeft,
+    y: padF + piece.gridOffsetY * uy - piece.paddingFront,
+  });
   const windowOf = (piece: BaseplatePiece): { x0: number; y0: number; x1: number; y1: number } => {
     const e = edgesOf(piece);
+    const origin = originOf(piece);
     return {
-      x0: padL + piece.gridOffsetX * u - piece.paddingLeft - e.left,
-      y0: padF + piece.gridOffsetY * uy - piece.paddingFront - e.front,
+      x0: origin.x - e.left,
+      y0: origin.y - e.front,
       x1: padL + (piece.gridOffsetX + piece.widthUnits) * u + piece.paddingRight + e.right,
       y1: padF + (piece.gridOffsetY + piece.depthUnits) * uy + piece.paddingBack + e.back,
     };
@@ -1092,12 +1104,11 @@ function applyOutlineToTiling(
     // partial/dropped seams have demoted their joins to exterior.
     const needs180 = palindromic && edgeKey(edges) > edgeKey(rotateEdges180(edges));
 
-    const w = windowOf(piece);
     survivors.push({
       ...piece,
       edges,
       placementRotationDeg: needs180 ? 180 : 0,
-      ...(cls === 'partial' ? { outlineWindowOriginMm: { x: w.x0, y: w.y0 } } : {}),
+      ...(cls === 'partial' ? { outlineWindowOriginMm: originOf(piece) } : {}),
       ...(hasFilter ? { connectorFilter: filter } : {}),
     });
   }
@@ -1189,9 +1200,11 @@ export function pieceToBaseplateParams(
   } else {
     cornerRadii = rot && pr ? { tl: pr.br, tr: pr.bl, bl: pr.tr, br: pr.tl } : pr;
   }
-  // Partial pieces get the plate outline translated into their local frame;
-  // the generator's 3D intersect performs the window clip (the piece slab IS
-  // the window), so no 2D clipping is needed here. Fully-inside pieces carry
+  // Partial pieces get the plate outline translated into their local frame —
+  // origin at the piece's padded extent, so an overhang stays negative exactly
+  // as it does on the whole plate (#3212). The generator's 3D intersect
+  // performs the window clip (the piece slab IS the window, and it is what the
+  // overhang widens), so no 2D clipping is needed here. Fully-inside pieces carry
   // no outline and stay byte-identical to unshaped rectangles. Under `rot` the
   // outline is the ONLY positional field not yet rotated (padding/edges/
   // fractionalEdge/cornerRadii already are), so rotate it 180° about the window

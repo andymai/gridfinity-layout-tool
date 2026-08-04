@@ -1221,3 +1221,91 @@ describe('outline overhang (#3169)', () => {
     }
   });
 });
+
+/**
+ * #3212: the overhang widens a piece's slab OUTWARD from its padded extent, so
+ * the piece must frame its outline exactly as the whole plate does — extent at
+ * 0, overhang negative. Deriving the piece-local outline from the widened
+ * window origin instead slid the perimeter inward by the overhang: the outer
+ * strip fell outside the piece's own clip and the shape sat displaced against
+ * that piece's sockets, on the outer pieces only (hence "asymmetrical").
+ */
+describe('split-piece outline frame vs. its overhang-widened slab (#3212)', () => {
+  // The reporter's plate: a 393 × 295.5mm perimeter on an 8 × 7 drawer at
+  // 48 × 42 pitch (extent 384 × 294), centred by a (4.5, 0.75) grid shift — so
+  // BOTH sides of BOTH axes overhang, and a 256mm bed tiles it 2 × 2.
+  const REPORTED: DrawerOutline = {
+    vertices: [
+      { x: 0, y: 0 },
+      { x: 106, y: 0 },
+      { x: 106, y: 80 },
+      { x: 290, y: 80 },
+      { x: 290, y: 0 },
+      { x: 393, y: 0 },
+      { x: 393, y: 295.5 },
+      { x: 0, y: 295.5 },
+    ],
+  };
+  const plate = buildFullParams(
+    {
+      magnetHoles: false,
+      magnetDiameter: mm(6.5),
+      magnetDepth: mm(2.4),
+      paddingLeft: mm(0),
+      paddingRight: mm(0),
+      paddingFront: mm(0),
+      paddingBack: mm(0),
+      wholeCellsOnly: true,
+    },
+    8,
+    7,
+    48,
+    'end',
+    'end',
+    undefined,
+    REPORTED,
+    undefined,
+    42,
+    4.5,
+    0.75
+  );
+
+  it('overhangs all four sides — the case a single-sided shift never reached', () => {
+    expect(plate.outlineOverhang).toEqual({ left: 4.5, right: 4.5, front: 0.75, back: 0.75 });
+  });
+
+  it('starts every piece outline at minus its own overhang, not at zero', () => {
+    const tiling = computeBaseplateTiling(plate, 256, 256);
+    expect(tiling.isSplit).toBe(true);
+    const partials = tiling.pieces.filter((p) => p.outlineWindowOriginMm !== undefined);
+    expect(partials.length).toBeGreaterThan(0);
+    // Every partial piece must reach its outer overhang; a piece whose outline
+    // started at 0 would leave that strip unclipped-away and misplace the shape.
+    for (const piece of partials) {
+      const pieceParams = pieceToBaseplateParams(piece, plate);
+      const oh = pieceParams.outlineOverhang;
+      const b = outlineBounds(pieceParams.outline as DrawerOutline);
+      if ((oh?.left ?? 0) > 0) expect(b.minX).toBeCloseTo(-(oh?.left ?? 0), 9);
+      if ((oh?.front ?? 0) > 0) expect(b.minY).toBeCloseTo(-(oh?.front ?? 0), 9);
+    }
+  });
+
+  it('reaches the far side of every piece slab the overhang widened', () => {
+    const tiling = computeBaseplateTiling(plate, 256, 256);
+    for (const piece of tiling.pieces) {
+      const pieceParams = pieceToBaseplateParams(piece, plate);
+      if (pieceParams.outline === undefined) continue;
+      const oh = pieceParams.outlineOverhang;
+      const totalW = piece.widthUnits * 48 + piece.paddingLeft + piece.paddingRight;
+      const totalD = piece.depthUnits * 42 + piece.paddingFront + piece.paddingBack;
+      const b = outlineBounds(pieceParams.outline);
+      // The outline is NOT pre-clipped to the piece — the slab does that in 3D
+      // — so on every widened side it must still reach past the slab's outer
+      // face, or that strip has no perimeter to keep it.
+      expect(b.minX).toBeLessThanOrEqual(-(oh?.left ?? 0) + 1e-9);
+      expect(b.minY).toBeLessThanOrEqual(-(oh?.front ?? 0) + 1e-9);
+      expect(b.maxX).toBeGreaterThanOrEqual(totalW + (oh?.right ?? 0) - 1e-9);
+      expect(b.maxY).toBeGreaterThanOrEqual(totalD + (oh?.back ?? 0) - 1e-9);
+    }
+  });
+});

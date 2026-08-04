@@ -14,6 +14,10 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBaseplate, getKernelName } from './__kernel-tests__/wasmInit';
 import { assertStructurallyValid, boundingBox } from './__kernel-tests__/meshAssertions';
+import {
+  computeBaseplateTiling,
+  pieceToBaseplateParams,
+} from '@/features/baseplate/utils/splitPlanner';
 import { cornerCutVertices } from '@/shared/utils/cornerCutOutline';
 import { outlineLatticeShift } from '@/shared/utils/drawerOutlineGeometry';
 import { translateOutline } from '@/shared/utils/drawerOutline';
@@ -553,6 +557,96 @@ describe('baseplate outline geometry', () => {
       const bb = boundingBox(result.vertices);
       // Pins the mechanism: the slab bound alone cuts the protruding strip.
       expect(bb.maxX - bb.minX).toBeCloseTo(4 * U - SHIFT, 0);
+    });
+  });
+
+  /**
+   * #3212: the whole plate above keeps its perimeter, but a SPLIT one used to
+   * lose it again. The overhang widens a piece's slab outward from its padded
+   * extent, so the piece must frame its outline the way the whole plate does.
+   * Deriving it from the widened window origin slid the perimeter inward by the
+   * overhang on the outer pieces only — the outer strip fell outside the
+   * piece's own clip and the shape sat displaced against that piece's sockets,
+   * which is the asymmetric, truncated plate the reporter printed.
+   */
+  describe('grid-shifted perimeter, split across pieces (#3212)', () => {
+    const OH = 6;
+    const BED = 2.5 * U;
+    // 180 × 180 rounded-rect perimeter on a 4 × 4 (168mm) plate, centred by a
+    // grid shift — so every side overhangs, and every corner piece is partial.
+    const OVERSIZE = translateOutline(
+      {
+        vertices: cornerCutVertices(4 * U + 2 * OH, 4 * U + 2 * OH, {
+          tl: { kind: 'radius', r: U / 2 },
+          tr: { kind: 'radius', r: U / 2 },
+          bl: { kind: 'radius', r: U / 2 },
+          br: { kind: 'radius', r: U / 2 },
+        }),
+      },
+      -OH,
+      -OH
+    );
+    const parent = (): ResolvedBaseplateParams =>
+      defaults({
+        outline: OVERSIZE,
+        outlineOverhang: { left: OH, right: OH, front: OH, back: OH },
+      });
+
+    /** Union bbox of every piece, mapped from piece-mesh into parent-mesh mm.
+     * Both frames centre on their own (zero-padding) nominal extent, so the
+     * offset is the piece's grid origin measured from the parent's centre. */
+    const assembledBounds = (): { width: number; depth: number } => {
+      const params = parent();
+      const tiling = computeBaseplateTiling(params, BED, BED);
+      expect(tiling.isSplit).toBe(true);
+      const gen = getGenerateBaseplate();
+      let minX = Infinity;
+      let maxX = -Infinity;
+      let minY = Infinity;
+      let maxY = -Infinity;
+      for (const piece of tiling.pieces) {
+        const result = gen(pieceToBaseplateParams(piece, params), NO_OP, true);
+        assertStructurallyValid(result, `piece ${piece.label}`);
+        const bb = boundingBox(result.vertices);
+        const dx = (piece.gridOffsetX + piece.widthUnits / 2 - params.width / 2) * U;
+        const dy = (piece.gridOffsetY + piece.depthUnits / 2 - params.depth / 2) * U;
+        minX = Math.min(minX, bb.minX + dx);
+        maxX = Math.max(maxX, bb.maxX + dx);
+        minY = Math.min(minY, bb.minY + dy);
+        maxY = Math.max(maxY, bb.maxY + dy);
+      }
+      return { width: maxX - minX, depth: maxY - minY };
+    };
+
+    it('reassembles into the whole perimeter, not the extent', { timeout: 240_000 }, () => {
+      const bounds = assembledBounds();
+      expect(bounds.width).toBeCloseTo(4 * U + 2 * OH, 0);
+      expect(bounds.depth).toBeCloseTo(4 * U + 2 * OH, 0);
+    });
+
+    it('truncates when a piece frames its outline on the widened window', () => {
+      // Pins the mechanism: shifting the outline in by the overhang — what
+      // deriving it from the widened window origin did — is what cost the
+      // outer strip on each outer piece.
+      const params = parent();
+      const tiling = computeBaseplateTiling(params, BED, BED);
+      const corner = tiling.pieces.find((p) => p.gridOffsetX === 0 && p.gridOffsetY === 0);
+      if (corner === undefined) throw new Error('expected a front-left piece');
+      const pieceParams = pieceToBaseplateParams(corner, params);
+      const gen = getGenerateBaseplate();
+      const good = boundingBox(gen(pieceParams, NO_OP, true).vertices);
+      const bad = boundingBox(
+        gen(
+          {
+            ...pieceParams,
+            outline: translateOutline(pieceParams.outline as DrawerOutline, OH, OH),
+          },
+          NO_OP,
+          true
+        ).vertices
+      );
+      expect(good.maxX - good.minX).toBeCloseTo(bad.maxX - bad.minX + OH, 0);
+      expect(good.maxY - good.minY).toBeCloseTo(bad.maxY - bad.minY + OH, 0);
     });
   });
 });
