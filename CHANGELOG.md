@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.363.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.363.4...gridfinity-layout-tool-v4.363.5) (2026-08-04)
+
+
+### Bug Fixes
+
+* **generation:** place label tabs against shifted dividers ([#3225](https://github.com/andymai/gridfinity-layout-tool/issues/3225)) ([cb046f4](https://github.com/andymai/gridfinity-layout-tool/commit/cb046f4fc2431e370a850175b6a76c38afc7468c))
+
 ## [4.363.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.363.3...gridfinity-layout-tool-v4.363.4) (2026-08-04)
 
 
