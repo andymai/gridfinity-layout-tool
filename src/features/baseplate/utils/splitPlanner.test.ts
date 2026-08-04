@@ -2123,13 +2123,13 @@ describe('print-bed budget reserves the outline overhang (#3169)', () => {
     const oh = pp.outlineOverhang;
     return {
       w:
-        piece.widthUnits * U +
+        piece.widthUnits * params.gridUnitMm +
         piece.paddingLeft +
         piece.paddingRight +
         (oh?.left ?? 0) +
         (oh?.right ?? 0),
       d:
-        piece.depthUnits * U +
+        piece.depthUnits * (params.gridUnitMmY ?? params.gridUnitMm) +
         piece.paddingFront +
         piece.paddingBack +
         (oh?.front ?? 0) +
