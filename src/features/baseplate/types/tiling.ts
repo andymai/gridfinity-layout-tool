@@ -69,8 +69,11 @@ export interface BaseplatePiece {
   readonly placementRotationDeg: 0 | 180;
   /**
    * Present exactly when the plate outline crosses this piece's window: the
-   * plate-local mm origin of the window (bottom-left), from which
-   * `pieceToBaseplateParams` derives the piece-local outline. Absent =
+   * plate-local mm origin of the piece's padded extent (bottom-left), from
+   * which `pieceToBaseplateParams` derives the piece-local outline. This is
+   * the NOMINAL extent, not the overhang-widened clip window (#3212) — the
+   * piece frames its outline the way the whole plate does, with the padded
+   * extent at 0 and the slab growing outward past it. Absent =
    * fully-inside piece, a pure rectangle whose fingerprints, dedup, and
    * connector behavior are identical to an unshaped plate. One field carries
    * both the "partial" flag and its data so they can't drift apart.
