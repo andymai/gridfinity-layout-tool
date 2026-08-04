@@ -23,12 +23,22 @@ import type { SplitPreviewResult } from './wasmInit';
  */
 export function assertKernelReturnedGeometry(result: MeshData, label?: string): void {
   const where = label ? ` (${label})` : '';
-  const diagnosis =
-    `kernel returned an EMPTY mesh${where} — 0 triangles is a generation failure, ` +
-    `not a geometry change. Usually WASM init/allocation failing under memory ` +
-    `pressure; re-run this file alone before treating it as a regression.`;
-  expect(result.triangleCount, diagnosis).toBeGreaterThan(0);
-  expect(result.vertices.length, diagnosis).toBeGreaterThan(0);
+  const why =
+    `An empty result is a generation failure, not a geometry change. Usually ` +
+    `WASM init/allocation failing under memory pressure; re-run this file alone ` +
+    `before treating it as a regression.`;
+  // Each half states what was actually observed. A shared message would report
+  // "0 triangles" for the count-without-buffers case below, which is the same
+  // misdiagnosis this helper exists to prevent.
+  expect(
+    result.triangleCount,
+    `kernel returned an EMPTY mesh${where} — no triangles. ${why}`
+  ).toBeGreaterThan(0);
+  expect(
+    result.vertices.length,
+    `kernel returned an EMPTY mesh${where} — ${result.triangleCount} triangles but ` +
+      `no vertex data. ${why}`
+  ).toBeGreaterThan(0);
 }
 
 /** Assert a MeshData result has valid structure: vertices > 0, normals match, indices consistent, no NaN. */

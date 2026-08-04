@@ -18,15 +18,17 @@ import {
 } from './__kernel-tests__/meshAssertions';
 import type { MeshData } from '@/features/generation/bridge/types';
 
-/** One degenerate-but-nonempty triangle: enough to pass every structural check. */
+/** One degenerate-but-nonempty triangle: enough to pass every structural check.
+ * Fully typed (no cast) so a change to the MeshData contract surfaces here. */
 function mesh(overrides: Partial<MeshData> = {}): MeshData {
   return {
     vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
     normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
     indices: new Uint32Array([0, 1, 2]),
+    edgeVertices: new Float32Array(0),
     triangleCount: 1,
     ...overrides,
-  } as MeshData;
+  };
 }
 
 const empty = (): MeshData =>
@@ -56,6 +58,20 @@ describe('assertKernelReturnedGeometry (#3184)', () => {
     expect(message).toContain('re-run this file alone');
     // ...and which scenario, since a whole domain file shares one runner.
     expect(message).toContain('L-shape with front cutout');
+  });
+
+  it('describes the count-without-buffers case as itself, not as "no triangles"', () => {
+    // A kernel can hand back a count with no buffer. Reporting that as
+    // "0 triangles" would be the same misdiagnosis this helper exists to
+    // prevent, so each half states what it actually observed.
+    let message = '';
+    try {
+      assertKernelReturnedGeometry(mesh({ triangleCount: 7, vertices: new Float32Array([]) }));
+    } catch (error) {
+      message = (error as Error).message;
+    }
+    expect(message).toContain('7 triangles but no vertex data');
+    expect(message).not.toContain('no triangles');
   });
 
   it('catches an empty mesh that still claims triangles', () => {
