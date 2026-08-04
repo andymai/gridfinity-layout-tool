@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.363.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.363.3...gridfinity-layout-tool-v4.363.4) (2026-08-04)
+
+
+### Bug Fixes
+
+* **generation:** diagnose an empty kernel mesh instead of reporting a number ([#3219](https://github.com/andymai/gridfinity-layout-tool/issues/3219)) ([578a3a6](https://github.com/andymai/gridfinity-layout-tool/commit/578a3a6e561a9256d7167a5131f61d4573910184))
+
 ## [4.363.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.363.2...gridfinity-layout-tool-v4.363.3) (2026-08-04)
 
 
