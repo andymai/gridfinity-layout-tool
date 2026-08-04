@@ -9,17 +9,50 @@ import type { SplitPreviewResult } from './wasmInit';
 
 // ─── Structural validity ─────────────────────────────────────────────────────
 
+/**
+ * Assert the kernel returned geometry at all.
+ *
+ * An empty mesh is categorically different from wrong geometry: no generator
+ * path produces zero triangles as an *answer*, so a zero means the kernel
+ * yielded nothing — a WASM init or allocation failure, characteristically under
+ * memory pressure from concurrent builds. Bare `toBeGreaterThan(0)` reports
+ * that as "expected +0 to be greater than +0", which reads as a geometry defect
+ * and sent #3184 to a bisect for a regression that was never there. The message
+ * names the failure class instead, so the next zero is diagnosed rather than
+ * investigated.
+ */
+export function assertKernelReturnedGeometry(result: MeshData, label?: string): void {
+  const where = label ? ` (${label})` : '';
+  const why =
+    `An empty result is a generation failure, not a geometry change. Usually ` +
+    `WASM init/allocation failing under memory pressure; re-run this file alone ` +
+    `before treating it as a regression.`;
+  // Each half states what was actually observed. A shared message would report
+  // "0 triangles" for the count-without-buffers case below, which is the same
+  // misdiagnosis this helper exists to prevent.
+  expect(
+    result.triangleCount,
+    `kernel returned an EMPTY mesh${where} — no triangles. ${why}`
+  ).toBeGreaterThan(0);
+  expect(
+    result.vertices.length,
+    `kernel returned an EMPTY mesh${where} — ${result.triangleCount} triangles but ` +
+      `no vertex data. ${why}`
+  ).toBeGreaterThan(0);
+}
+
 /** Assert a MeshData result has valid structure: vertices > 0, normals match, indices consistent, no NaN. */
 export function assertStructurallyValid(result: MeshData, label?: string): void {
   const prefix = label ? `${label}: ` : '';
-  expect(result.vertices.length, `${prefix}vertices should exist`).toBeGreaterThan(0);
+  // Emptiness first: it has its own diagnosis, and every check below reads as
+  // geometry drift when the real cause is that nothing was generated.
+  assertKernelReturnedGeometry(result, label);
   expect(result.normals.length, `${prefix}normals should match vertices`).toBe(
     result.vertices.length
   );
   expect(result.indices.length, `${prefix}indices should match triangleCount`).toBe(
     result.triangleCount * 3
   );
-  expect(result.triangleCount, `${prefix}should have triangles`).toBeGreaterThan(0);
   expect(hasNoNaNOrInfinity(result.vertices), `${prefix}vertices have NaN/Infinity`).toBe(true);
   expect(hasNoNaNOrInfinity(result.normals), `${prefix}normals have NaN/Infinity`).toBe(true);
 }
