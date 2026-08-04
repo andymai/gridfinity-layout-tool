@@ -2080,3 +2080,83 @@ describe('padded shaped plates (corner-cut shapes compose with padding)', () => 
     expect(b2Params.paddingBack).toBe(PAD);
   });
 });
+
+/**
+ * The outermost pieces print wider than their grid units by the outline
+ * overhang (#3169), so the bed budget must reserve for it exactly as it does
+ * for exterior padding. Without that the search sizes an outer chunk right up
+ * to the bed and the generator then widens it past the bed — a split the
+ * planner calls valid but the printer cannot take, invisible until the slicer
+ * rejects the STL.
+ */
+describe('print-bed budget reserves the outline overhang (#3169)', () => {
+  const U = 42;
+  const BED = 256;
+  const OH = 6;
+  // 12 units at the stock 42mm pitch on a 256mm bed: two 6-unit chunks measure
+  // 252mm and fit, but each outer piece prints at 252 + 6 = 258mm.
+  const shifted = (): ResolvedBaseplateParams =>
+    makeParams({
+      width: 12,
+      depth: 12,
+      outline: translateOutline(
+        {
+          vertices: [
+            { x: 0, y: 0 },
+            { x: 12 * U + 2 * OH, y: 0 },
+            { x: 12 * U + 2 * OH, y: 12 * U + 2 * OH },
+            { x: 0, y: 12 * U + 2 * OH },
+          ],
+        },
+        -OH,
+        -OH
+      ),
+      outlineOverhang: { left: OH, right: OH, front: OH, back: OH },
+    });
+
+  /** Printed footprint of a piece: grid units + its own padding + its overhang. */
+  const printedMm = (
+    piece: BaseplatePiece,
+    params: ResolvedBaseplateParams
+  ): { w: number; d: number } => {
+    const pp = pieceToBaseplateParams(piece, params);
+    const oh = pp.outlineOverhang;
+    return {
+      w:
+        piece.widthUnits * U +
+        piece.paddingLeft +
+        piece.paddingRight +
+        (oh?.left ?? 0) +
+        (oh?.right ?? 0),
+      d:
+        piece.depthUnits * U +
+        piece.paddingFront +
+        piece.paddingBack +
+        (oh?.front ?? 0) +
+        (oh?.back ?? 0),
+    };
+  };
+
+  it('never emits a piece whose printed footprint exceeds the bed', () => {
+    const params = shifted();
+    const tiling = computeBaseplateTiling(params, BED, BED);
+    for (const piece of tiling.pieces) {
+      const { w, d } = printedMm(piece, params);
+      expect(w).toBeLessThanOrEqual(BED);
+      expect(d).toBeLessThanOrEqual(BED);
+    }
+  });
+
+  it('splits finer than the nominal extent alone would call for', () => {
+    // 6-unit chunks fit nominally (252 <= 256) but not once widened, so the
+    // planner must step down rather than emit an unprintable piece.
+    const tiling = computeBaseplateTiling(shifted(), BED, BED);
+    expect(Math.max(...tiling.pieces.map((p) => p.widthUnits))).toBeLessThan(6);
+  });
+
+  it('leaves an overhang-free plate byte-identical', () => {
+    const plain = makeParams({ width: 12, depth: 12 });
+    const before = computeBaseplateTiling(plain, BED, BED);
+    expect(before.pieces.map((p) => p.widthUnits)).toEqual([6, 6, 6, 6]);
+  });
+});
