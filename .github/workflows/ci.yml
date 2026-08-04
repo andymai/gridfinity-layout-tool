@@ -126,6 +126,60 @@ jobs:
           path: coverage/
           retention-days: 5
 
+  # Shadow run of the generators workload on the self-hosted Mac mini (M4 Pro,
+  # 10 performance cores), alongside the cloud shards above rather than replacing
+  # them. Deliberately absent from test-gate's `needs`, so a failure here cannot
+  # block a merge while we compare wall time and confirm snapshot parity.
+  #
+  # Two shards, not six. The 6-way split above is sized for six independent
+  # 4-core cloud runners; on one machine that split would pay checkout + install
+  # + WASM init six times over and leave each shard ~1.7 cores. Two shards at
+  # five workers each keeps the performance cores saturated while leaving the
+  # efficiency cores for interactive use and for halcyon's three runners, which
+  # share this host.
+  #
+  # `vars.SELF_HOSTED_CI` is the kill switch: unset it in repo settings and every
+  # shard here stops scheduling immediately, no code change needed. The head_repo
+  # comparison is the security boundary — a fork PR must never execute on
+  # self-hosted hardware, where it would run as a real user on a real machine
+  # with a persistent workspace.
+  test-selfhosted:
+    name: Unit Tests SH (${{ matrix.name }})
+    if: >-
+      ${{ vars.SELF_HOSTED_CI == 'true'
+      && !startsWith(github.head_ref, 'release-please--')
+      && (github.event_name != 'pull_request'
+      || github.event.pull_request.head.repo.full_name == github.repository) }}
+    runs-on: [self-hosted, gflt-ci]
+    # Shadow mode: report, never block.
+    continue-on-error: true
+    # A wedged WASM kernel would otherwise hold a runner indefinitely, and there
+    # are only two of them.
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: generators 1/2
+            shard: 1/2
+          - name: generators 2/2
+            shard: 2/2
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup pnpm + Node and install dependencies
+        uses: ./.github/actions/setup-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Generate artifacts
+        run: pnpm run build:en-locale
+
+      - name: Run generators tests
+        env:
+          SHARD: ${{ matrix.shard }}
+        run: pnpm vitest run --project=generators --shard="$SHARD" --maxWorkers=5
+
   # Tests that need a real Redis. The rate limiter runs as a Lua script, and a
   # mocked ioredis can only assert the command was issued — it cannot execute
   # the body, so enforcement and atomicity are unverifiable without a server.
