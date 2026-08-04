@@ -169,12 +169,16 @@ describe('baseplatePageStore', () => {
       margins: [],
       cols: 2,
       rows: 2,
+      colSizes: [5, 5],
+      rowSizes: [4, 4],
       totalWidthUnits: 10,
       totalDepthUnits: 8,
       stackCount: 1,
       stackSeparatorThickness: 0,
       bedLoads: 1,
       paddingReductionHint: null,
+      isCustomSplit: false,
+      bedOverages: [],
     };
 
     it('sets a tiling plan', () => {
@@ -346,12 +350,16 @@ describe('baseplatePageStore', () => {
         margins: [],
         cols: 2,
         rows: 2,
+        colSizes: [5, 5],
+        rowSizes: [4, 4],
         totalWidthUnits: 10,
         totalDepthUnits: 8,
         stackCount: 1,
         stackSeparatorThickness: 0,
         bedLoads: 1,
         paddingReductionHint: null,
+        isCustomSplit: false,
+        bedOverages: [],
       });
 
       expect(useBaseplatePageStore.getState().hoveredPieceLabel).toBeNull();

@@ -40,12 +40,16 @@ function tiling(
     margins,
     cols: 2,
     rows: 1,
+    colSizes: [2, 2],
+    rowSizes: [2],
     totalWidthUnits: 4,
     totalDepthUnits: 2,
     stackCount: 1,
     stackSeparatorThickness: 0,
     bedLoads: 1,
     paddingReductionHint: null,
+    isCustomSplit: false,
+    bedOverages: [],
   };
 }
 

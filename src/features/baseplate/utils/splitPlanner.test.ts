@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { gridUnits } from '@gridfinity/branded-types';
 import {
   computeBaseplateTiling,
   pieceToBaseplateParams,
@@ -2158,5 +2159,148 @@ describe('print-bed budget reserves the outline overhang (#3169)', () => {
     const plain = makeParams({ width: 12, depth: 12 });
     const before = computeBaseplateTiling(plain, BED, BED);
     expect(before.pieces.map((p) => p.widthUnits)).toEqual([6, 6, 6, 6]);
+  });
+});
+
+// ─── Custom split plans (#3115) ─────────────────────────────────────────────
+
+describe('computeBaseplateTiling — splitOverride', () => {
+  const plan = (cols: number[], rows: number[]) => ({
+    cols: cols.map(gridUnits),
+    rows: rows.map(gridUnits),
+  });
+
+  it('tiles from the user plan instead of searching', () => {
+    // 6x4 on a 256mm bed fits in one piece, so the planner would never split it.
+    const tiling = computeBaseplateTiling(
+      makeParams({ width: 6, depth: 4, splitOverride: plan([2, 4], [4]) }),
+      256
+    );
+    expect(tiling.isCustomSplit).toBe(true);
+    expect(tiling.isSplit).toBe(true);
+    expect(tiling.colSizes).toEqual([2, 4]);
+    expect(tiling.pieces.map((p) => p.label)).toEqual(['A1', 'B1']);
+  });
+
+  it('preserves the drawn order rather than reordering largest-first', () => {
+    // The automatic path runs `reorderForDisplay`, which would put the 4 first.
+    const tiling = computeBaseplateTiling(
+      makeParams({ width: 6, depth: 4, splitOverride: plan([2, 4], [4]) }),
+      256
+    );
+    expect(tiling.pieces.filter((p) => p.row === 0).map((p) => p.widthUnits)).toEqual([2, 4]);
+  });
+
+  it('assigns padding and edges by position exactly as an automatic plan does', () => {
+    const tiling = computeBaseplateTiling(
+      makeParams({
+        width: 6,
+        depth: 4,
+        paddingLeft: 5,
+        paddingRight: 7,
+        splitOverride: plan([2, 2, 2], [4]),
+      }),
+      256
+    );
+    const [a, b, c] = tiling.pieces.filter((p) => p.row === 0).sort((x, y) => x.col - y.col);
+    expect([a.paddingLeft, a.paddingRight]).toEqual([5, 0]);
+    expect([b.paddingLeft, b.paddingRight]).toEqual([0, 0]);
+    expect([c.paddingLeft, c.paddingRight]).toEqual([0, 7]);
+    expect(b.edges).toMatchObject({ left: 'join', right: 'join' });
+  });
+
+  it('suppresses the padding-reduction hint, which only describes the automatic plan', () => {
+    // A plate that would otherwise produce a hint: heavy padding forcing a split.
+    const base = makeParams({ width: 6, depth: 6, paddingLeft: 20, paddingRight: 20 });
+    const auto = computeBaseplateTiling(base, 256);
+    expect(auto.paddingReductionHint).not.toBeNull();
+
+    const custom = computeBaseplateTiling({ ...base, splitOverride: plan([3, 3], [3, 3]) }, 256);
+    expect(custom.paddingReductionHint).toBeNull();
+  });
+
+  it('recomputes bed loads from the drawn plan', () => {
+    const tiling = computeBaseplateTiling(
+      makeParams({ width: 4, depth: 4, splitOverride: plan([1, 1, 1, 1], [1, 1, 1, 1]) }),
+      256
+    );
+    expect(tiling.pieces).toHaveLength(16);
+    expect(tiling.bedLoads).toBeGreaterThanOrEqual(1);
+  });
+
+  it('carries a fractional edge on the outermost piece', () => {
+    const tiling = computeBaseplateTiling(
+      makeParams({ width: 5.5, depth: 4, splitOverride: plan([3, 2.5], [4]) }),
+      256
+    );
+    const pieces = tiling.pieces.filter((p) => p.row === 0).sort((a, b) => a.col - b.col);
+    expect(pieces.map((p) => p.fractionalEdgeX)).toEqual(['none', 'end']);
+  });
+});
+
+describe('computeBaseplateTiling — bed overages', () => {
+  const plan = (cols: number[], rows: number[]) => ({
+    cols: cols.map(gridUnits),
+    rows: rows.map(gridUnits),
+  });
+
+  it('reports nothing for an automatic plan, which always fits by construction', () => {
+    expect(
+      computeBaseplateTiling(makeParams({ width: 12, depth: 12 }), 256, 256).bedOverages
+    ).toEqual([]);
+  });
+
+  it('flags a user-drawn piece that exceeds the bed, with the mm overage', () => {
+    // One 8-unit column is 336mm on a 256mm bed: 80mm over.
+    const tiling = computeBaseplateTiling(
+      makeParams({ width: 12, depth: 4, splitOverride: plan([8, 4], [4]) }),
+      256,
+      256
+    );
+    expect(tiling.bedOverages).toEqual([{ label: 'A1', overWidthMm: 336 - 256, overDepthMm: 0 }]);
+  });
+
+  it('counts exterior padding and the outline overhang against the bed budget', () => {
+    // 6 units = 252mm, inside a 256mm bed — until 10mm of left padding lands on
+    // the first piece, which is exactly what the planner's own fit check counts.
+    const fits = computeBaseplateTiling(
+      makeParams({ width: 6, depth: 4, splitOverride: plan([6], [4]) }),
+      256,
+      256
+    );
+    expect(fits.bedOverages).toEqual([]);
+
+    const over = computeBaseplateTiling(
+      makeParams({ width: 6, depth: 4, paddingLeft: 10, splitOverride: plan([6], [4]) }),
+      256,
+      256
+    );
+    expect(over.bedOverages).toHaveLength(1);
+    expect(over.bedOverages[0].overWidthMm).toBeCloseTo(6, 5);
+  });
+
+  it('reserves the male tongue on a join edge, matching the automatic fit check', () => {
+    const params = makeParams({
+      width: 12,
+      depth: 4,
+      connectorNubs: true,
+      splitOverride: plan([6, 6], [4]),
+    });
+    // Both pieces are 6 units (252mm) on a 252mm bed, but only ONE side of the
+    // seam is male: with invertDovetails off the left side carries the tongue,
+    // so B1 grows past the bed and A1 does not. The female groove cuts inward
+    // and costs nothing.
+    const tiling = computeBaseplateTiling(params, 252, 256);
+    expect(tiling.bedOverages.map((o) => o.label)).toEqual(['B1']);
+    expect(tiling.bedOverages[0].overWidthMm).toBeCloseTo(TONGUE_PROTRUSION, 5);
+  });
+
+  it('flags depth separately from width', () => {
+    const tiling = computeBaseplateTiling(
+      makeParams({ width: 4, depth: 12, splitOverride: plan([4], [8, 4]) }),
+      256,
+      256
+    );
+    expect(tiling.bedOverages).toEqual([{ label: 'A1', overWidthMm: 0, overDepthMm: 336 - 256 }]);
   });
 });

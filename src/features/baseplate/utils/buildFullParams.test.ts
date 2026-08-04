@@ -563,6 +563,44 @@ describe('drawer outline handling', () => {
     expect(rectangular.wholeCellsOnly).toBeUndefined();
   });
 
+  // #3115: a plan the plate has outgrown must never reach the planner, or the
+  // rendered pieces disagree with the geometry they were drawn against.
+  it('forwards a split plan that still matches the plate', () => {
+    const params = buildFullParams(
+      { ...storedBase, splitOverride: { cols: [6, 4].map(gridUnits), rows: [8].map(gridUnits) } },
+      10,
+      8,
+      42,
+      'end',
+      'end'
+    );
+    expect(params.splitOverride).toEqual({ cols: [6, 4], rows: [8] });
+  });
+
+  it('drops a split plan orphaned by a grid resize', () => {
+    const params = buildFullParams(
+      { ...storedBase, splitOverride: { cols: [6, 4].map(gridUnits), rows: [8].map(gridUnits) } },
+      9,
+      8,
+      42,
+      'end',
+      'end'
+    );
+    expect(params.splitOverride).toBeUndefined();
+  });
+
+  it('drops a split plan whose half unit sits on the wrong fractional edge', () => {
+    const plan = { cols: [2.5, 3].map(gridUnits), rows: [8].map(gridUnits) };
+    expect(
+      buildFullParams({ ...storedBase, splitOverride: plan }, 5.5, 8, 42, 'end', 'end')
+        .splitOverride
+    ).toBeUndefined();
+    expect(
+      buildFullParams({ ...storedBase, splitOverride: plan }, 5.5, 8, 42, 'start', 'end')
+        .splitOverride
+    ).toEqual({ cols: [2.5, 3], rows: [8] });
+  });
+
   // Resolved params are what split pieces inherit, and the key is allowlisted
   // server-side without a type check, so a malformed synced value must not get
   // this far.

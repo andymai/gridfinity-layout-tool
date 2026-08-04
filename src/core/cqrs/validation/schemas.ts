@@ -268,6 +268,15 @@ const layoutSetHeightUnitMmSchema = z.object({ mm: positiveMm });
 /** Baseplate params schema */
 // Max = gridUnitMm/2 (capped at 200mm) + max padding (100mm). UI derives a tighter bound per-layout.
 const cornerRadiusMm = z.number().min(0).max(200);
+/**
+ * Chunk sizes for one axis of a custom split plan (#3115). Bounds only — that
+ * the sizes actually sum to the plate is checked by `normalizeSplitOverride`,
+ * which has the resolved dimensions this layer does not.
+ */
+const splitChunkSizes = z
+  .array(z.number().min(0.5).max(CONSTRAINTS.GRID_MAX))
+  .min(1)
+  .max(CONSTRAINTS.GRID_MAX * 2);
 const baseplateParamsSchema = z.object({
   magnetHoles: z.boolean(),
   magnetDiameter: z.number().min(0.5).max(20),
@@ -302,6 +311,7 @@ const baseplateParamsSchema = z.object({
       gapMm: z.number().min(STACK_PRINT_MIN_GAP_MM).max(STACK_PRINT_MAX_GAP_MM),
     })
     .optional(),
+  splitOverride: z.object({ cols: splitChunkSizes, rows: splitChunkSizes }).optional(),
 });
 
 /** layout.setBaseplateParams */

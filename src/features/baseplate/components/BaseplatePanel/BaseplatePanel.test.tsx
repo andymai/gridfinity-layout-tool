@@ -130,12 +130,16 @@ const splitTiling: BaseplateTiling = {
     },
   ],
   margins: [],
+  colSizes: [5, 4],
+  rowSizes: [6],
   totalWidthUnits: 9,
   totalDepthUnits: 6,
   stackCount: 1,
   stackSeparatorThickness: 0,
   bedLoads: 1,
   paddingReductionHint: null,
+  isCustomSplit: false,
+  bedOverages: [],
 };
 
 describe('BaseplatePanel', () => {
@@ -260,13 +264,13 @@ describe('BaseplatePanel', () => {
 
   it('does not render view strip when tiling is null', () => {
     render(<BaseplatePanel />);
-    expect(screen.queryByText('baseplate.splitInfo')).not.toBeInTheDocument();
+    expect(screen.queryByText('baseplate.splitInfo.other')).not.toBeInTheDocument();
   });
 
   it('renders view strip when tiling is split', () => {
     mockTiling = splitTiling;
     render(<BaseplatePanel />);
-    expect(screen.getByText('baseplate.splitInfo')).toBeInTheDocument();
+    expect(screen.getByText('baseplate.splitInfo.other')).toBeInTheDocument();
     expect(screen.getByText('baseplate.splitReason')).toBeInTheDocument();
     // Mini-map buttons exist for each piece
     const pieceButtons = screen

@@ -51,6 +51,14 @@ const payloadSchema = z.object({
         br: z.number(),
       })
       .optional(),
+    // Bounds only. Whether the plan still describes the plate is decided at
+    // resolve time by `normalizeSplitOverride`, which knows the dimensions.
+    splitOverride: z
+      .object({
+        cols: z.array(z.number().positive()).min(1),
+        rows: z.array(z.number().positive()).min(1),
+      })
+      .optional(),
   }),
 });
 

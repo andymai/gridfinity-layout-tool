@@ -61,7 +61,7 @@ describe('generateAssemblyMapImage', () => {
     // Deterministic PNG encoder: hand back a tiny PNG-signed blob.
     vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(function (cb: BlobCallback) {
       cb(new Blob([new Uint8Array([0x89, 0x50, 0x4e, 0x47])], { type: 'image/png' }));
-    } as typeof HTMLCanvasElement.prototype.toBlob);
+    });
   });
 
   afterEach(() => {
@@ -94,9 +94,7 @@ describe('generateAssemblyMapImage', () => {
   });
 
   it('returns null when a 2D context is unavailable', async () => {
-    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(
-      null as unknown as CanvasRenderingContext2D
-    );
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
     const tiling = computeBaseplateTiling(makeParams({ width: 18, depth: 18 }), 256);
     expect(await generateAssemblyMapImage(tiling)).toBeNull();
   });
@@ -104,7 +102,7 @@ describe('generateAssemblyMapImage', () => {
   it('falls back to toDataURL when toBlob yields no blob', async () => {
     vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(function (cb: BlobCallback) {
       cb(null);
-    } as typeof HTMLCanvasElement.prototype.toBlob);
+    });
     // Base64 of the four PNG-signature bytes.
     vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockReturnValue(
       `data:image/png;base64,${btoa(String.fromCharCode(0x89, 0x50, 0x4e, 0x47))}`
@@ -122,12 +120,16 @@ describe('generateAssemblyMapImage', () => {
       margins: [],
       cols: 0,
       rows: 0,
+      colSizes: [],
+      rowSizes: [],
       totalWidthUnits: 0,
       totalDepthUnits: 0,
       bedLoads: 0,
       stackCount: 1,
       stackSeparatorThickness: 0,
       paddingReductionHint: null,
+      isCustomSplit: false,
+      bedOverages: [],
     };
     expect(await generateAssemblyMapImage(empty)).toBeNull();
   });

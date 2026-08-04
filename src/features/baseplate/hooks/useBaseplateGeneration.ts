@@ -335,6 +335,11 @@ export function selectGenerationTriggers(state: LayoutStoreState) {
     // but only when margins detach (buildFullParams gates it), so ignore the
     // flag otherwise to avoid regenerating when it can't change the mesh.
     detachMarginConnector: bp.detachMargins === true && bp.detachMarginConnector === true,
+    // A user-drawn split changes which pieces exist and how big each one is, so
+    // it must re-run generation. Passed by reference under the same
+    // immutability contract as `drawerOutline`/`cornerRadii`: stored params are
+    // replaced, never mutated, so a new object means a new plan.
+    splitOverride: bp.splitOverride,
   };
 }
 
