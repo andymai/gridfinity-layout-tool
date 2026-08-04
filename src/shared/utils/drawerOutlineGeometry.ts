@@ -179,6 +179,12 @@ export interface OutlineLatticeFrame {
  * translation is a pure relabelling (sockets sit at the same places relative to
  * the perimeter), so it fixes the extent interaction without costing a socket.
  *
+ * An OVERSIZE perimeter — bbox wider than the extent, what a shape drawn
+ * larger than its grid produces — centres too (#3212). Containment there runs
+ * the other way round (the lattice stays inside the material rather than the
+ * material inside the extent), which is the only sense the constraint can
+ * have when the shape is the larger of the two.
+ *
  * Zero when the outline already fills or is registered to the extent, so
  * square and full-extent plates stay byte-identical (cache-stable).
  */
@@ -222,11 +228,18 @@ function clamp(value: number, lo: number, hi: number): number {
 
 function axisLatticeShift(bboxMin: number, bboxMax: number, axis: OutlineLatticeAxis): number {
   const { extentMm, originMm, pitchMm, wholeCells } = axis;
-  // Every shift must keep the bbox inside the plate extent; a bbox wider than
-  // the extent has none, so it stays where the author put it.
-  const shiftMin = -bboxMin;
-  const shiftMax = extentMm - bboxMax;
-  if (shiftMax < shiftMin) return 0;
+  // Containment runs whichever way round the two spans sit (#3212). Normally
+  // the bbox must stay inside the extent. An OVERSIZE bbox — one wider than the
+  // extent, which is what a shape drawn larger than its grid produces — can
+  // never satisfy that, so the requirement inverts: the extent (the socket
+  // lattice) must stay inside the bbox (the material). Both are the same
+  // interval with its ends ordered, so ordering them covers both. Treating the
+  // oversize case as "no feasible shift" left the perimeter corner-anchored,
+  // and the user had to hand-enter the centring grid shift.
+  const boundA = -bboxMin;
+  const boundB = extentMm - bboxMax;
+  const shiftMin = Math.min(boundA, boundB);
+  const shiftMax = Math.max(boundA, boundB);
 
   const bboxCenter = (bboxMin + bboxMax) / 2;
   const centeringShift = extentMm / 2 - bboxCenter;

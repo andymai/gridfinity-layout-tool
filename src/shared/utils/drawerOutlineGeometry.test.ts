@@ -238,6 +238,47 @@ describe('outlineBounds', () => {
 });
 
 describe('outlineLatticeShift', () => {
+  /**
+   * #3212: a shape drawn larger than its grid used to get no registration at
+   * all — "keep the bbox inside the extent" is unsatisfiable for an oversize
+   * bbox, so it stayed corner-anchored at the author's origin and the user
+   * hand-entered the centring grid shift. The containment simply runs the
+   * other way round there: the socket lattice must stay inside the material.
+   */
+  describe('oversize bbox (#3212)', () => {
+    const rect = (w: number, d: number): DrawerOutline => ({
+      vertices: [
+        { x: 0, y: 0 },
+        { x: w, y: 0 },
+        { x: w, y: d },
+        { x: 0, y: d },
+      ],
+    });
+
+    it('centres a shape wider than its extent instead of leaving it anchored', () => {
+      // The reporter's plate: 393 x 295.5mm on an 8 x 7 grid at 48 x 42.
+      const shift = outlineLatticeShift(rect(393, 295.5), frame(8, 7, 48, 42));
+      expect(shift.x).toBeCloseTo(-4.5, 9);
+      expect(shift.y).toBeCloseTo(-0.75, 9);
+    });
+
+    it('keeps the whole lattice inside the material while centring', () => {
+      // The invariant that replaces "bbox inside extent" when the shape is the
+      // larger of the two: every socket the plate has still sits on material,
+      // so centring costs no cell (what pure bbox centring cost in #3149).
+      const shift = outlineLatticeShift(rect(393, 295.5), frame(8, 7, 48, 42));
+      expect(0 + shift.x).toBeLessThanOrEqual(0);
+      expect(393 + shift.x).toBeGreaterThanOrEqual(8 * 48);
+      expect(0 + shift.y).toBeLessThanOrEqual(0);
+      expect(295.5 + shift.y).toBeGreaterThanOrEqual(7 * 42);
+    });
+
+    it('leaves an in-extent shape exactly where registration put it', () => {
+      // The ordering change must not touch the normal case.
+      expect(outlineLatticeShift(rect(8 * U, 7 * U), frame(8, 7))).toEqual({ x: 0, y: 0 });
+    });
+  });
+
   /** Zero-padding frame over a widthU×depthU drawer. */
   const frame = (widthU: number, depthU: number, pitchX = U, pitchY = U): OutlineLatticeFrame => ({
     x: { extentMm: widthU * pitchX, originMm: 0, pitchMm: pitchX, wholeCells: Math.floor(widthU) },

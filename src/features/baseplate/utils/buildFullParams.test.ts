@@ -1232,8 +1232,9 @@ describe('outline overhang (#3169)', () => {
  */
 describe('split-piece outline frame vs. its overhang-widened slab (#3212)', () => {
   // The reporter's plate: a 393 × 295.5mm perimeter on an 8 × 7 drawer at
-  // 48 × 42 pitch (extent 384 × 294), centred by a (4.5, 0.75) grid shift — so
-  // BOTH sides of BOTH axes overhang, and a 256mm bed tiles it 2 × 2.
+  // 48 × 42 pitch (extent 384 × 294). The oversize shape auto-centres now
+  // (#3212), so no manual grid shift is needed to reach the case where BOTH
+  // sides of BOTH axes overhang. A 256mm bed tiles it 2 × 2.
   const REPORTED: DrawerOutline = {
     vertices: [
       { x: 0, y: 0 },
@@ -1266,12 +1267,22 @@ describe('split-piece outline frame vs. its overhang-widened slab (#3212)', () =
     REPORTED,
     undefined,
     42,
-    4.5,
-    0.75
+    0,
+    0
   );
 
   it('overhangs all four sides — the case a single-sided shift never reached', () => {
     expect(plate.outlineOverhang).toEqual({ left: 4.5, right: 4.5, front: 0.75, back: 0.75 });
+  });
+
+  it('auto-centres the oversize shape the reporter hand-shifted', () => {
+    // (4.5, 0.75) is exactly what they typed into the grid-shift steppers; the
+    // registration now supplies it, so the manual shift starts (and stays) 0.
+    const b = outlineBounds(plate.outline as DrawerOutline);
+    expect(b.minX).toBeCloseTo(-4.5, 9);
+    expect(b.maxX).toBeCloseTo(388.5, 9);
+    expect(b.minY).toBeCloseTo(-0.75, 9);
+    expect(b.maxY).toBeCloseTo(294.75, 9);
   });
 
   it('starts every piece outline at minus its own overhang, not at zero', () => {
