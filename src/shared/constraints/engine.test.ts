@@ -581,3 +581,54 @@ describe('constraint rule coverage', () => {
     }
   });
 });
+
+// The wall-less tray is the spacer's complement: the floor and feet stay and the
+// wall collapses to zero. Everything that lived on a wall or needed interior
+// depth goes; the lip and its colour zones are the point of the mode and stay.
+describe('resolveConstraints — wall-less tray', () => {
+  const enableTray = (params: BinParams) =>
+    resolveConstraints(params, { feature: 'base.tile', enabled: true }).params;
+
+  it('clears wall-dependent and depth-dependent features on the way in', () => {
+    const designed = makeParams({
+      base: { ...DEFAULT_BIN_PARAMS.base, tile: false },
+      scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true },
+      label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
+    });
+    const resolved = enableTray(designed);
+    expect(resolved.base.tile).toBe(true);
+    expect(resolved.scoop.enabled).toBe(false);
+    expect(resolved.label.enabled).toBe(false);
+  });
+
+  // Load-bearing for generation, not just cosmetics: with the wall at 0 the lip
+  // IS the entire shell, so a lipless tray leaves `shellStage` nothing to return.
+  it('forces the stacking lip on', () => {
+    const lipless = makeParams({
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
+    });
+    expect(enableTray(lipless).base.stackingLip).toBe(true);
+  });
+
+  // Feet + floor + no-floor cancels to nothing at all, so the pair is mutual
+  // rather than the one-way mode switch the interior features get. Mutual means
+  // BLOCKED, not silently overridden: the engine's post-check returns the params
+  // untouched, so the user turns the spacer off deliberately rather than having
+  // a mode swapped out from under them.
+  it('clears the spacer on the way in', () => {
+    const spacer = makeParams({ base: { ...DEFAULT_BIN_PARAMS.base, spacer: true } });
+    const resolved = enableTray(spacer);
+    expect(resolved.base.tile).toBe(true);
+    expect(resolved.base.spacer).toBe(false);
+  });
+
+  it('blocks the spacer while a tray is on', () => {
+    const tray = makeParams({ base: { ...DEFAULT_BIN_PARAMS.base, tile: true } });
+    expect(getFeatureStatus(tray, 'base.spacer').available).toBe(false);
+  });
+
+  it('is unavailable on a base with no feet to stand on', () => {
+    const flat = makeParams({ base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' } });
+    expect(getFeatureStatus(flat, 'base.tile').available).toBe(false);
+  });
+});

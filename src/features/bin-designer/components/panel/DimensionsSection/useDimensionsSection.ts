@@ -16,6 +16,7 @@ export function useDimensionsSection() {
     fractionalEdgeY,
     baseHalfSockets,
     baseSpacer,
+    baseTile,
     baseStyle,
     gridUnitMm,
     gridUnitMmY,
@@ -34,6 +35,7 @@ export function useDimensionsSection() {
       fractionalEdgeY: s.params.fractionalEdgeY,
       baseHalfSockets: s.params.base.halfSockets,
       baseSpacer: s.params.base.spacer,
+      baseTile: s.params.base.tile === true,
       baseStyle: s.params.base.style,
       gridUnitMm: s.params.gridUnitMm,
       gridUnitMmY: s.params.gridUnitMmY,
@@ -52,7 +54,7 @@ export function useDimensionsSection() {
   const minDepth = halfGridMode && width >= 1 ? 0.5 : 1;
   // A spacer is floorless, so it may go down to 1u (#2915) — but only an
   // EFFECTIVE one, hence the style: the flag is inert on a flat base.
-  const minHeight = minHeightUnits({ spacer: baseSpacer, style: baseStyle });
+  const minHeight = minHeightUnits({ spacer: baseSpacer, tile: baseTile, style: baseStyle });
 
   const widthMm = width * gridUnitMm;
   const depthMm = depth * (gridUnitMmY ?? gridUnitMm);
@@ -145,6 +147,10 @@ export function useDimensionsSection() {
       minWidth,
       minDepth,
       minHeight,
+      // A tray's wall is 0 and its real height comes from `assembledHeight`, so
+      // `height` drives nothing. Showing a stepper that moves an inert number
+      // would read as a broken control.
+      heightApplies: !baseTile,
       fractionalEdgeX,
       fractionalEdgeY,
       // Half-sockets mode decomposes every cell into uniform 0.5u feet, so there

@@ -76,12 +76,12 @@ export const FEATURE_MANIFESTS: Record<FeatureKey, FeatureManifest> = {
     key: 'base.tile',
     label: 'Tray',
     isEnabled: (p) => p.base.tile === true,
-    // Off is ABSENT, not `false` — a stored `false` would shift the params
-    // fingerprint of every design that has no tray. See `BaseConfig.tile`.
-    apply: (p, enabled) => {
-      const { tile: _tile, ...rest } = p.base;
-      return { base: enabled ? { ...rest, tile: true } : rest };
-    },
+    // Sets the flag rather than omitting it: `mergeParams` spreads `base`, so a
+    // patch cannot delete a key. Off must end up ABSENT, not `false`, or the
+    // params fingerprint of every design that has no tray shifts — `toggleTile`
+    // strips it on the way out, the same way `toggleLidBottom` strips
+    // `trayBottom`.
+    apply: (p, enabled) => ({ base: { ...p.base, tile: enabled } }),
   },
 
   'base.flat': {

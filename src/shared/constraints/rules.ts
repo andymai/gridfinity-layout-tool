@@ -270,18 +270,19 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
     // A tray IS feet + floor + lip. A spacer is feet + walls MINUS floor.
     // Together they cancel to nothing at all, so this pair is genuinely mutual
     // rather than the one-way mode switch the interior features get.
+    // ONE-WAY on purpose. Both of these are booleans, so a reverse rule would
+    // make each `when` true at once and the engine would flip-flop between
+    // clearing one and clearing the other until MAX_ITERATIONS, leaving BOTH
+    // set. (The spacer's mutual rules get away with it because their partners
+    // are `base.style` VALUES, where one replacing the other is not a conflict
+    // to resolve.) One rule covers both directions anyway: enabling the tray
+    // clears the spacer, and while the tray is on this same rule reports
+    // `base.spacer` unavailable so `toggleSpacer` refuses to turn it back on.
     description: 'Wall-less tray incompatible with a spacer (nothing would remain)',
     source: 'base.tile',
     when: (p) => p.base.tile === true,
     disables: ['base.spacer', 'base.lightweight'],
     reason: 'binDesigner.tileDisablesSpacer',
-  },
-  {
-    description: 'Spacer incompatible with a wall-less tray (nothing would remain)',
-    source: 'base.spacer',
-    when: (p) => p.base.spacer,
-    disables: ['base.tile'],
-    reason: 'binDesigner.spacerDisablesTile',
   },
   {
     // Mutual for the same reason the spacer's flat-base rule is: a socketless

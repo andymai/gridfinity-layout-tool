@@ -26,6 +26,24 @@ describe('minHeightUnits', () => {
     expect(minHeightUnits({ spacer: true, style: 'flat' })).toBe(DESIGNER_CONSTRAINTS.MIN_HEIGHT);
   });
 
+  // A tray's wall is pinned to 0 and its real height comes from
+  // `assembledHeight`, so `height` is inert and only has to clear the
+  // validators — it takes the same relaxed floor the spacer does.
+  it('relaxes the floor for a wall-less tray', () => {
+    expect(minHeightUnits({ spacer: false, tile: true, style: 'standard' })).toBe(
+      DESIGNER_CONSTRAINTS.MIN_SPACER_HEIGHT
+    );
+  });
+
+  it('holds a socketless base to the bin minimum even when the tray flag is set', () => {
+    expect(minHeightUnits({ spacer: false, tile: true, style: 'flat' })).toBe(
+      DESIGNER_CONSTRAINTS.MIN_HEIGHT
+    );
+    expect(minHeightUnits({ spacer: false, tile: true, style: 'lid' })).toBe(
+      DESIGNER_CONSTRAINTS.MIN_HEIGHT
+    );
+  });
+
   it('never returns a floor above the maximum height', () => {
     expect(minHeightUnits({ spacer: false, style: 'standard' })).toBeLessThan(
       DESIGNER_CONSTRAINTS.MAX_HEIGHT
