@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.365.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.364.0...gridfinity-layout-tool-v4.365.0) (2026-08-05)
+
+
+### Features
+
+* **community:** rebuild the publish flow as one review screen ([#3230](https://github.com/andymai/gridfinity-layout-tool/issues/3230)) ([4c12da5](https://github.com/andymai/gridfinity-layout-tool/commit/4c12da531aad3d5170794f1b79d6739cca8e9238))
+
 ## [4.364.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.363.5...gridfinity-layout-tool-v4.364.0) (2026-08-04)
 
 
