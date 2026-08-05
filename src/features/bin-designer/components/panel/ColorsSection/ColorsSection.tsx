@@ -15,7 +15,9 @@ import { DEFAULT_FEATURE_COLOR_CONFIG } from '@/features/bin-designer/constants/
 import {
   activeLipCells,
   computeActiveZones,
+  lidLipCellZone,
   lipCellZone,
+  parseLidLipCell,
   makeUniformLipCells,
   normalizePaletteLip,
   TOP_ACCENT_MIN_MM,
@@ -136,9 +138,17 @@ export function ColorsSection() {
   const hasScoop = activeZones.has('scoop');
   const hasDividers = activeZones.has('dividers');
   const hasLid = activeZones.has('lid');
+  const hasLidLip = activeZones.has(lidLipCellZone('frontLeft', 0));
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it; preserve the runtime fallback
   const featureColors: FeatureColorConfig = rawColors ?? DEFAULT_FEATURE_COLOR_CONFIG;
+  // Absent grid means "inherits the lid colour", so the editor is seeded with a
+  // uniform grid rather than being hidden — the user needs somewhere to start.
+  const lidLipConfig = featureColors.lidLip ?? {
+    corners: 1 as const,
+    bands: 1 as const,
+    cells: makeUniformLipCells(featureColors.lid),
+  };
   const updateFeatureColors = useDesignerStore((s) => s.updateFeatureColors);
   const setHoveredColorZone = useDesignerStore((s) => s.setHoveredColorZone);
   const startTransaction = useDesignerStore((s) => s.startTransaction);
@@ -469,6 +479,37 @@ export function ColorsSection() {
                   DEFAULT_FEATURE_COLOR_CONFIG.lid,
                   (hex) => updateFeatureColors({ lid: hex })
                 )}
+              {/* The lid's OWN top lip (its stack grid), directly under the lid
+                  swatch it inherits from. Only present on a stackable lid — a
+                  flat-topped lid builds no LID_LIP geometry to paint. */}
+              {hasLidLip && (
+                <LipColorEditor
+                  variant="lid"
+                  lip={lidLipConfig}
+                  bodyColor={featureColors.lid}
+                  hovered={hoveredColorZone}
+                  recentColors={recentColors}
+                  swapActive={swapActive}
+                  otherColorsFor={(zone) => buildOtherColors(zone, colorsByZone)}
+                  onSetCorners={(corners) => updateFeatureColors({ lidLip: { corners } })}
+                  onSetBands={(bands) => updateFeatureColors({ lidLip: { bands } })}
+                  onChangeCell={(zone, hex) => {
+                    remember(hex);
+                    // Re-formed to the `lip:...` key `lidLip.cells` is stored
+                    // under; writing the `lidLip:...` zone id would create a key
+                    // nothing reads.
+                    const cell = parseLidLipCell(zone);
+                    if (!cell) return;
+                    updateFeatureColors({
+                      lidLip: { cells: { [lipCellZone(cell.corner, cell.band)]: hex } },
+                    });
+                  }}
+                  onHover={setHoveredColorZone}
+                  onGestureStart={startTransaction}
+                  onGestureEnd={commitTransaction}
+                  onSwap={(zone) => swapZoneWithToast(zone)}
+                />
+              )}
             </ColorGroup>
           </>
         }

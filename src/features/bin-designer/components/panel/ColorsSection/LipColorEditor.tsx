@@ -17,12 +17,15 @@ import { Checkbox } from '@/design-system';
 import { SegmentedControl } from '@/design-system/SegmentedControl/SegmentedControl';
 import { useTranslation } from '@/i18n';
 import {
+  activeLidLipCells,
   activeLipCells,
+  parseLidLipCell,
   parseLipCell,
   LIP_AXIS_COUNTS,
   type ColorZone,
   type HoverableZone,
   type LipAxisCount,
+  type LidLipCellZone,
   type LipCellZone,
   type LipColorConfig,
   type LipCorner,
@@ -39,7 +42,13 @@ interface LipColorEditorProps {
   otherColorsFor: (zone: ColorZone) => readonly string[];
   onSetCorners: (n: LipAxisCount) => void;
   onSetBands: (n: LipAxisCount) => void;
-  onChangeCell: (zone: LipCellZone, hex: string) => void;
+  onChangeCell: (zone: LipCellZone | LidLipCellZone, hex: string) => void;
+  /**
+   * Which lip this grid edits. `'lid'` swaps the zone family so the same editor
+   * drives the lid's own top lip — the two live on different objects, so a
+   * shared family would make one set of colours paint both.
+   */
+  variant?: 'bin' | 'lid';
   onHover: (zone: HoverableZone | null) => void;
   onGestureStart: () => void;
   onGestureEnd: () => void;
@@ -80,6 +89,7 @@ export function LipColorEditor({
   onGestureStart,
   onGestureEnd,
   onSwap,
+  variant = 'bin',
 }: LipColorEditorProps) {
   const t = useTranslation();
   const isMultiCell = lip.corners > 1 || lip.bands > 1;
@@ -87,7 +97,10 @@ export function LipColorEditor({
   // Show the grid when the user opts in, or when a loaded design already has
   // multiple zones (so its colors are visible/editable without re-opting in).
   const showGrid = splitOpen || isMultiCell;
-  const cells = activeLipCells({ corners: lip.corners, bands: lip.bands });
+  const cells =
+    variant === 'lid'
+      ? activeLidLipCells({ corners: lip.corners, bands: lip.bands })
+      : activeLipCells({ corners: lip.corners, bands: lip.bands });
 
   const handleToggleSplit = (checked: boolean) => {
     setSplitOpen(checked);
@@ -134,7 +147,7 @@ export function LipColorEditor({
 
       <div className="space-y-0.5">
         {cells.map((zone) => {
-          const cell = parseLipCell(zone);
+          const cell = variant === 'lid' ? parseLidLipCell(zone) : parseLipCell(zone);
           if (!cell) return null;
           const cornerLabel = t(cornerLabelKey(cell.corner, lip.corners));
           const label =
