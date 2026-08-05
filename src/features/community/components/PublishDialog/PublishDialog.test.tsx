@@ -13,9 +13,16 @@ import { useSessionStore } from '@/core/sync/session/useSession';
 import type { BinParams } from '@/shared/types/bin';
 import type { CommunityDesign } from '@/shared/types/community';
 import { hashBinParams } from '@/shared/utils/binParamsHash';
+import { loadPendingPublishAction } from '@/shared/utils/communityPendingAction';
 import { INITIAL_PUBLISH_DIALOG_STATE, usePublishDialogStore } from '../../store/publishStore';
 import { saveDisplayName } from '../../utils/displayName';
-import { fetchOwnDesign, publishDesign, unpublishDesign, updateDesign } from '../../api/client';
+import {
+  fetchCommunityCapabilities,
+  fetchOwnDesign,
+  publishDesign,
+  unpublishDesign,
+  updateDesign,
+} from '../../api/client';
 import { PublishDialog } from './PublishDialog';
 
 vi.mock('../../api/client', () => ({
@@ -23,6 +30,12 @@ vi.mock('../../api/client', () => ({
   updateDesign: vi.fn(),
   unpublishDesign: vi.fn(),
   fetchOwnDesign: vi.fn(),
+  fetchCommunityCapabilities: vi.fn(),
+}));
+
+vi.mock('../../api/printsClient', () => ({
+  fetchPrints: vi.fn(() => new Promise(() => undefined)),
+  setCoverPhoto: vi.fn(),
 }));
 
 vi.mock('@/shared/analytics/posthog', () => ({
@@ -53,6 +66,10 @@ const params = {
 } as unknown as BinParams;
 
 const captures = { thumbnails: ['data:image/webp;base64,AA=='], glb: 'Z2xURg==' };
+
+function signIn(user: SessionUser = LIVE_USER) {
+  useSessionStore.setState({ status: 'authenticated', user });
+}
 
 function makeContext(
   overrides: Partial<CommunityPublishDesignContext> = {}
@@ -110,11 +127,9 @@ function openDialog(
   return handlers;
 }
 
-async function fillAndSubmit() {
-  fireEvent.change(await screen.findByLabelText('Category'), {
-    target: { value: 'tools' },
-  });
-  fireEvent.click(screen.getByText('Publish'));
+async function fillAndSubmit(label = 'Publish') {
+  fireEvent.click(await screen.findByRole('radio', { name: 'Tools' }));
+  fireEvent.click(screen.getByText(label));
 }
 
 describe('PublishDialog', () => {
@@ -127,75 +142,92 @@ describe('PublishDialog', () => {
     useSessionStore.setState({ status: 'anonymous', user: null });
     // Default: a 404 reconcile confirms a live session, so the prefill clears.
     vi.mocked(getMe).mockResolvedValue(LIVE_USER);
+    vi.mocked(fetchCommunityCapabilities).mockResolvedValue(
+      ok({ publishEnabled: true, printsEnabled: false, requireCutouts: false })
+    );
   });
 
-  it('signed out: shows the value line, sign-in buttons, and tracks the prompt', async () => {
+  it('states up front when publishing is switched off server-side', async () => {
+    // The kill switch has no client-side shadow, so without the probe this only
+    // surfaced as a 503 after a completed form was submitted.
+    signIn();
+    vi.mocked(fetchCommunityCapabilities).mockResolvedValue(
+      ok({ publishEnabled: false, printsEnabled: false, requireCutouts: false })
+    );
     openDialog(makeContext());
-    expect(
-      await screen.findByText(
-        'Share this design in the community showcase. Anyone can print it or remix it.'
-      )
-    ).toBeInTheDocument();
-    expect(screen.getByText('Sign in with Google')).toBeInTheDocument();
-    expect(screen.getByText('Sign in with GitHub')).toBeInTheDocument();
+    expect(await screen.findByText('Publishing is switched off')).toBeInTheDocument();
+    expect(screen.queryByLabelText(/Name/)).not.toBeInTheDocument();
+    expect(publishDesign).not.toHaveBeenCalled();
+  });
+
+  it('shows the form anyway when the probe itself cannot reach the server', async () => {
+    signIn();
+    saveDisplayName('Andy');
+    vi.mocked(fetchCommunityCapabilities).mockResolvedValue(err({ kind: 'network' }));
+    openDialog(makeContext());
+    expect(await screen.findByText('Publish')).toBeInTheDocument();
+  });
+
+  it('signed out: shows the whole form rather than an auth wall', async () => {
+    openDialog(makeContext());
+    expect(await screen.findByLabelText(/^Name/)).toBeInTheDocument();
+    expect(screen.getByText('Sign in & publish')).toBeInTheDocument();
     expect(trackEvent).toHaveBeenCalledWith('community_signin_prompt_shown', {
       intent: 'publish',
     });
   });
 
-  it('first publish while signed in: identity step, GitHub handle prefilled, continue reaches the form', async () => {
-    useSessionStore.setState({
-      status: 'authenticated',
-      user: {
-        userId: 'u1',
-        provider: 'github',
-        email: 'a@b.c',
-        displayName: 'Andy Fullname',
-        handle: 'octo-andy',
-      },
-    });
-    openDialog(makeContext());
-    const input = await screen.findByLabelText('Public name');
-    expect(input).toHaveValue('octo-andy');
-    fireEvent.click(screen.getByText('Continue'));
-    expect(await screen.findByText('Publish')).toBeInTheDocument();
-  });
-
-  it('never prefills the identity field from a GitHub full name when the handle is missing', async () => {
-    useSessionStore.setState({
-      status: 'authenticated',
-      user: { userId: 'u1', provider: 'github', email: 'a@b.c', displayName: 'Andy Fullname' },
-    });
-    openDialog(makeContext());
-    expect(await screen.findByLabelText('Public name')).toHaveValue('');
-  });
-
-  it('never prefills the identity field from a Google profile name', async () => {
-    useSessionStore.setState({
-      status: 'authenticated',
-      user: { userId: 'u1', provider: 'google', email: 'a@b.c', displayName: 'Andy Fullname' },
-    });
-    openDialog(makeContext());
-    expect(await screen.findByLabelText('Public name')).toHaveValue('');
-  });
-
-  it('sign-in completing while the dialog is open advances past the signin step', async () => {
+  it('signed out: stashes the typed draft across the OAuth redirect', async () => {
     saveDisplayName('Andy');
     openDialog(makeContext());
-    expect(await screen.findByText('Sign in with Google')).toBeInTheDocument();
-    useSessionStore.setState({
-      status: 'authenticated',
-      user: { userId: 'u1', provider: 'google', email: 'a@b.c' },
+    fireEvent.change(await screen.findByLabelText('Description'), {
+      target: { value: 'Print at 0.2mm' },
     });
-    expect(await screen.findByText('Publish')).toBeInTheDocument();
+    await fillAndSubmit('Sign in & publish');
+    fireEvent.click(await screen.findByText('Sign in with Google'));
+    const pending = loadPendingPublishAction();
+    expect(pending?.draft).toEqual({
+      name: 'Screw Bin',
+      description: 'Print at 0.2mm',
+      category: 'tools',
+    });
+  });
+
+  it('prefills the public name from a GitHub handle for a first-time publisher', async () => {
+    signIn({
+      userId: 'u1',
+      provider: 'github',
+      email: 'a@b.c',
+      displayName: 'Andy Fullname',
+      handle: 'octo-andy',
+    });
+    openDialog(makeContext());
+    expect(await screen.findByLabelText(/Public name/)).toHaveValue('octo-andy');
+  });
+
+  it('never prefills the public name from a GitHub full name when the handle is missing', async () => {
+    signIn({ userId: 'u1', provider: 'github', email: 'a@b.c', displayName: 'Andy Fullname' });
+    openDialog(makeContext());
+    expect(await screen.findByLabelText(/Public name/)).toHaveValue('');
+  });
+
+  it('never prefills the public name from a Google profile name', async () => {
+    signIn({ userId: 'u1', provider: 'google', email: 'a@b.c', displayName: 'Andy Fullname' });
+    openDialog(makeContext());
+    expect(await screen.findByLabelText(/Public name/)).toHaveValue('');
+  });
+
+  it('collapses the public name for a returning publisher instead of a separate step', async () => {
+    saveDisplayName('Andy');
+    signIn();
+    openDialog(makeContext());
+    expect(await screen.findByText('Publishing as')).toBeInTheDocument();
+    expect(screen.queryByLabelText(/Public name/)).not.toBeInTheDocument();
   });
 
   it('shows the preparing state and forwards retry to the opener after a capture fault', async () => {
     saveDisplayName('Andy');
-    useSessionStore.setState({
-      status: 'authenticated',
-      user: { userId: 'u1', provider: 'google', email: 'a@b.c' },
-    });
+    signIn();
     const handlers = openDialog(makeContext(), makeHandlers(), false);
     expect(await screen.findByText('Preparing preview…')).toBeInTheDocument();
     expect(screen.queryByText('Retry preview')).not.toBeInTheDocument();
@@ -205,12 +237,9 @@ describe('PublishDialog', () => {
     expect(handlers.requestRecapture).toHaveBeenCalledTimes(1);
   });
 
-  it('publishes and shows the success state with the public link', async () => {
+  it('publishes and offers both the link and a way to view it', async () => {
     saveDisplayName('Andy');
-    useSessionStore.setState({
-      status: 'authenticated',
-      user: { userId: 'u1', provider: 'google', email: 'a@b.c' },
-    });
+    signIn();
     vi.mocked(publishDesign).mockResolvedValue(
       ok({ id: 'NewId1234567', url: 'https://example.com/community/d/NewId1234567' })
     );
@@ -225,12 +254,58 @@ describe('PublishDialog', () => {
       is_remix: false,
       is_update: false,
     });
-    expect(screen.getByText('The community gallery is coming soon.')).toBeInTheDocument();
+    expect(screen.getByText('View in the gallery')).toBeInTheDocument();
   });
 
-  it('INVALID_LINEAGE: shows a real message and a strip-lineage retry that republishes standalone', async () => {
+  it('publishes under the public name the form carries', async () => {
     saveDisplayName('Andy');
-    useSessionStore.setState({ status: 'authenticated', user: LIVE_USER });
+    signIn();
+    vi.mocked(publishDesign).mockResolvedValue(
+      ok({ id: 'NewId1234567', url: 'https://example.com/community/d/NewId1234567' })
+    );
+    openDialog(makeContext());
+    await fillAndSubmit();
+    await waitFor(() => expect(publishDesign).toHaveBeenCalled());
+    expect(vi.mocked(publishDesign).mock.calls[0][0].authorName).toBe('Andy');
+  });
+
+  it('keeps the form mounted and routes a name rejection to the field', async () => {
+    saveDisplayName('Andy');
+    signIn();
+    vi.mocked(publishDesign).mockResolvedValue(
+      err({ kind: 'validation', code: 'NAME_TOO_SHORT', message: 'x' })
+    );
+    openDialog(makeContext());
+    fireEvent.change(await screen.findByLabelText(/^Name/), { target: { value: 'Bin' } });
+    await fillAndSubmit();
+    expect(
+      await screen.findByText('That name is too short. Give your design a descriptive name.')
+    ).toBeInTheDocument();
+    // No Back button, because the form never went away.
+    expect(screen.queryByText('Back')).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/^Name/)).toHaveValue('Bin');
+  });
+
+  it('keeps typed fields visible when a publish is refused', async () => {
+    saveDisplayName('Andy');
+    signIn();
+    vi.mocked(publishDesign).mockResolvedValue(err({ kind: 'contentBlocked', message: 'blocked' }));
+    openDialog(makeContext());
+    fireEvent.change(await screen.findByLabelText('Description'), {
+      target: { value: 'My long print notes' },
+    });
+    await fillAndSubmit();
+    expect(
+      await screen.findByText(
+        'Some of the text was flagged by the content filter. Reword the name or description and try again.'
+      )
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText('Description')).toHaveValue('My long print notes');
+  });
+
+  it('INVALID_LINEAGE offers a strip-lineage retry that republishes standalone', async () => {
+    saveDisplayName('Andy');
+    signIn();
     // Parent fetch 404s so no identical-params interstitial and no parent hash.
     vi.mocked(fetchOwnDesign).mockResolvedValue(err({ kind: 'notFound' }));
     vi.mocked(publishDesign)
@@ -265,26 +340,9 @@ describe('PublishDialog', () => {
     expect(vi.mocked(publishDesign).mock.calls[1][1]).toBeNull();
   });
 
-  it('shows the kill-switch message on a 503 with a way back to the form', async () => {
-    saveDisplayName('Andy');
-    useSessionStore.setState({
-      status: 'authenticated',
-      user: { userId: 'u1', provider: 'google', email: 'a@b.c' },
-    });
-    vi.mocked(publishDesign).mockResolvedValue(err({ kind: 'disabled' }));
-    openDialog(makeContext());
-    await fillAndSubmit();
-    expect(await screen.findByText('Publishing is not available yet.')).toBeInTheDocument();
-    fireEvent.click(screen.getByText('Back'));
-    expect(await screen.findByText('Publish')).toBeInTheDocument();
-  });
-
   it('shows quota message with the unpublish hint', async () => {
     saveDisplayName('Andy');
-    useSessionStore.setState({
-      status: 'authenticated',
-      user: { userId: 'u1', provider: 'google', email: 'a@b.c' },
-    });
+    signIn();
     vi.mocked(publishDesign).mockResolvedValue(err({ kind: 'quotaExceeded', message: '' }));
     openDialog(makeContext());
     await fillAndSubmit();
@@ -298,33 +356,9 @@ describe('PublishDialog', () => {
     ).toBeInTheDocument();
   });
 
-  it('keeps typed fields when returning to the form from an error', async () => {
+  it('an expired session offers sign-in without discarding the form', async () => {
     saveDisplayName('Andy');
-    useSessionStore.setState({
-      status: 'authenticated',
-      user: { userId: 'u1', provider: 'google', email: 'a@b.c' },
-    });
-    vi.mocked(publishDesign).mockResolvedValue(err({ kind: 'contentBlocked', message: 'blocked' }));
-    openDialog(makeContext());
-    fireEvent.change(await screen.findByLabelText('Description'), {
-      target: { value: 'My long print notes' },
-    });
-    await fillAndSubmit();
-    expect(
-      await screen.findByText(
-        'Some of the text was flagged by the content filter. Reword the name or description and try again.'
-      )
-    ).toBeInTheDocument();
-    fireEvent.click(screen.getByText('Back'));
-    expect(await screen.findByLabelText('Description')).toHaveValue('My long print notes');
-  });
-
-  it('re-auth error state offers sign-in again and keeps the prompt analytics', async () => {
-    saveDisplayName('Andy');
-    useSessionStore.setState({
-      status: 'authenticated',
-      user: { userId: 'u1', provider: 'google', email: 'a@b.c' },
-    });
+    signIn();
     vi.mocked(publishDesign).mockResolvedValue(err({ kind: 'needsAuth' }));
     openDialog(makeContext());
     await fillAndSubmit();
@@ -334,17 +368,12 @@ describe('PublishDialog', () => {
       )
     ).toBeInTheDocument();
     expect(screen.getByText('Sign in with Google')).toBeInTheDocument();
-    expect(trackEvent).toHaveBeenCalledWith('community_signin_prompt_shown', {
-      intent: 'publish',
-    });
+    expect(screen.getByLabelText(/^Name/)).toBeInTheDocument();
   });
 
-  it('offline error offers try again, which retries the publish', async () => {
+  it('an offline failure can be resubmitted straight from the form', async () => {
     saveDisplayName('Andy');
-    useSessionStore.setState({
-      status: 'authenticated',
-      user: { userId: 'u1', provider: 'google', email: 'a@b.c' },
-    });
+    signIn();
     vi.mocked(publishDesign)
       .mockResolvedValueOnce(err({ kind: 'network' }))
       .mockResolvedValueOnce(
@@ -355,7 +384,7 @@ describe('PublishDialog', () => {
     expect(
       await screen.findByText('You appear to be offline. Check your connection and try again.')
     ).toBeInTheDocument();
-    fireEvent.click(screen.getByText('Try again'));
+    fireEvent.click(screen.getByText('Publish'));
     expect(
       await screen.findByDisplayValue('https://example.com/community/d/NewId1234567')
     ).toBeInTheDocument();
@@ -364,10 +393,7 @@ describe('PublishDialog', () => {
 
   it('shows the identical-params interstitial for an unchanged remix, and publishes on confirm', async () => {
     saveDisplayName('Andy');
-    useSessionStore.setState({
-      status: 'authenticated',
-      user: { userId: 'u1', provider: 'google', email: 'a@b.c' },
-    });
+    signIn();
     const lineage = {
       parentId: 'Parent123456',
       rootId: 'Parent123456',
@@ -394,14 +420,11 @@ describe('PublishDialog', () => {
 
   it('update mode: prefills from the fetched record, updates in place', async () => {
     saveDisplayName('Andy');
-    useSessionStore.setState({
-      status: 'authenticated',
-      user: { userId: 'u1', provider: 'google', email: 'a@b.c' },
-    });
+    signIn();
     vi.mocked(fetchOwnDesign).mockResolvedValue(ok(publishedRecord()));
     vi.mocked(updateDesign).mockResolvedValue(ok(publishedRecord()));
     openDialog(makeContext({ publishedId: 'Pub123456789' }));
-    const nameInput = await screen.findByLabelText('Name');
+    const nameInput = await screen.findByLabelText(/^Name/);
     expect(nameInput).toHaveValue('Published Name');
     fireEvent.click(screen.getByText('Update'));
     await waitFor(() => expect(updateDesign).toHaveBeenCalledTimes(1));
@@ -414,28 +437,21 @@ describe('PublishDialog', () => {
 
   it('update mode falls back to create mode when the update hits a 404', async () => {
     saveDisplayName('Andy');
-    useSessionStore.setState({
-      status: 'authenticated',
-      user: { userId: 'u1', provider: 'google', email: 'a@b.c' },
-    });
+    signIn();
     vi.mocked(fetchOwnDesign).mockResolvedValue(ok(publishedRecord()));
     vi.mocked(updateDesign).mockResolvedValue(err({ kind: 'notFound' }));
     const handlers = openDialog(makeContext({ publishedId: 'Pub123456789' }));
-    await screen.findByLabelText('Name');
+    await screen.findByLabelText(/^Name/);
     fireEvent.click(screen.getByText('Update'));
     expect(await screen.findByText('The published record no longer exists.')).toBeInTheDocument();
     expect(handlers.onUnpublished).toHaveBeenCalledTimes(1);
-    fireEvent.click(screen.getByText('Back'));
     expect(await screen.findByText('Publish')).toBeInTheDocument();
-    expect(screen.getByLabelText('Name')).toHaveValue('Published Name');
+    expect(screen.getByLabelText(/^Name/)).toHaveValue('Published Name');
   });
 
   it('update mode blocks the form behind a retry when the record fetch fails', async () => {
     saveDisplayName('Andy');
-    useSessionStore.setState({
-      status: 'authenticated',
-      user: { userId: 'u1', provider: 'google', email: 'a@b.c' },
-    });
+    signIn();
     vi.mocked(fetchOwnDesign)
       .mockResolvedValueOnce(err({ kind: 'server' }))
       .mockResolvedValueOnce(ok(publishedRecord()));
@@ -445,18 +461,15 @@ describe('PublishDialog', () => {
         "Couldn't load the published details. Check your connection and try again."
       )
     ).toBeInTheDocument();
-    expect(screen.queryByLabelText('Name')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/^Name/)).not.toBeInTheDocument();
     expect(screen.queryByText('Update')).not.toBeInTheDocument();
     fireEvent.click(screen.getByText('Try again'));
-    expect(await screen.findByLabelText('Name')).toHaveValue('Published Name');
+    expect(await screen.findByLabelText(/^Name/)).toHaveValue('Published Name');
   });
 
   it('opens in create mode when the published-record fetch 404s', async () => {
     saveDisplayName('Andy');
-    useSessionStore.setState({
-      status: 'authenticated',
-      user: { userId: 'u1', provider: 'google', email: 'a@b.c' },
-    });
+    signIn();
     vi.mocked(fetchOwnDesign).mockResolvedValue(err({ kind: 'notFound' }));
     const handlers = openDialog(makeContext({ publishedId: 'Pub123456789' }));
     expect(await screen.findByText('Publish')).toBeInTheDocument();
@@ -466,7 +479,7 @@ describe('PublishDialog', () => {
 
   it('does NOT sever the publishedId link on a 404 when the session is not live (hidden-design trap)', async () => {
     saveDisplayName('Andy');
-    useSessionStore.setState({ status: 'authenticated', user: LIVE_USER });
+    signIn();
     // The client thinks it is signed in, but the server session is dead: the
     // API 404s a hidden-but-recoverable design. getMe returning null must keep
     // the link instead of clearing it and minting a duplicate.
@@ -478,16 +491,14 @@ describe('PublishDialog', () => {
     expect(useCommunityPublishStore.getState().context?.publishedId).toBe('Pub123456789');
   });
 
-  it('unpublish goes through the confirm dialog and closes on success', async () => {
+  it('unpublish sits outside the primary footer and goes through the confirm dialog', async () => {
     saveDisplayName('Andy');
-    useSessionStore.setState({
-      status: 'authenticated',
-      user: { userId: 'u1', provider: 'google', email: 'a@b.c' },
-    });
+    signIn();
     vi.mocked(fetchOwnDesign).mockResolvedValue(ok(publishedRecord()));
     vi.mocked(unpublishDesign).mockResolvedValue(ok({ success: true }));
     const handlers = openDialog(makeContext({ publishedId: 'Pub123456789' }));
-    fireEvent.click(await screen.findByText('Unpublish'));
+    expect(await screen.findByText('Remove from the showcase')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Unpublish'));
     expect(
       await screen.findByText(
         'It will be removed from the community showcase. Copies people already remixed are unaffected.'

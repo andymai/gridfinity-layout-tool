@@ -15,7 +15,6 @@ import { designId } from '@/core/types';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { hashBinParams } from '@/shared/utils/binParamsHash';
-import { hasQualifyingCutout } from '@/shared/utils/communityLowEffort';
 import { loadPendingPublishAction } from '@/shared/utils/communityPendingAction';
 import type { PendingPublishAction } from '@/shared/utils/communityPendingAction';
 import { useDesignerStore } from '../store/designer';
@@ -115,22 +114,23 @@ export async function openCommunityPublish(draft: CommunityPublishDraft | null):
 export interface CommunityPublishEntry {
   publishVisible: boolean;
   canPublish: boolean;
-  /** True when the launch cutout-only policy is the reason Publish is disabled. */
-  needsCutout: boolean;
   openPublish: () => void;
 }
 
+/**
+ * The cutout-only launch policy deliberately does NOT gate the button. It used
+ * to, explained only by a `title` tooltip, which does not exist on touch: a
+ * phone user got a dead button and no reason. The dialog states the policy
+ * against a preview of their design instead, so the requirement is readable
+ * and its remedy is obvious.
+ */
 export function useCommunityPublishEntry(): CommunityPublishEntry {
   const publishVisible = useFeatureFlag('community_showcase');
-  const meshReady = useDesignerStore((s) => s.itemKind === 'bin' && isMeshReady(s));
-  const needsCutout = useDesignerStore(
-    (s) => s.itemKind === 'bin' && !hasQualifyingCutout(s.params)
-  );
-  const canPublish = meshReady && !needsCutout;
+  const canPublish = useDesignerStore((s) => s.itemKind === 'bin' && isMeshReady(s));
   const openPublish = useCallback(() => {
     void openCommunityPublish(null);
   }, []);
-  return { publishVisible, canPublish, needsCutout, openPublish };
+  return { publishVisible, canPublish, openPublish };
 }
 
 /**

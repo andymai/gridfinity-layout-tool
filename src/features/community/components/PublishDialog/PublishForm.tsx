@@ -1,14 +1,21 @@
 import { useMemo, useState } from 'react';
-import { Button, Dialog, Field, Input, Select, Spinner, Textarea } from '@/design-system';
-import type { SelectOption } from '@/design-system';
+import { Alert, Button, Dialog, Field, Input, Textarea } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import type { CommunityPublishCaptures } from '@/core/store/communityPublish';
+import type { AuthProvider } from '@/core/sync/session/sessionApi';
 import type { BinParams } from '@/shared/types/bin';
 import type { CommunityCategory, CommunityDesignLineage } from '@/shared/types/community';
 import { TECHNIQUE_CONFIG } from '@/shared/types/exampleTechniques';
+import { hasQualifyingCutout } from '@/shared/utils/communityLowEffort';
 import { deriveTechniques } from '@/shared/utils/communityTechniques';
-import { CATEGORY_LABEL_KEYS } from '../../utils/categoryLabels';
+import type { CommunityClientError } from '../../api/client';
 import type { PublishDialogMode, PublishPrefill } from '../../store/publishStore';
+import { CategoryChips } from './CategoryChips';
+import { CoverImageSection } from './CoverImageSection';
+import { PublisherIdentity } from './PublisherIdentity';
+import { PublishPreview } from './PublishPreview';
+import { presentPublishError } from './publishErrors';
+import type { PublishErrorField } from './publishErrors';
 
 /** Mirrors COMMUNITY_NAME_MAX_LENGTH / COMMUNITY_DESCRIPTION_MAX_LENGTH in api/lib/communityValidation.ts. */
 const PUBLISH_NAME_MAX_LENGTH = 60;
@@ -18,6 +25,19 @@ export interface PublishFormFields {
   name: string;
   description: string;
   category: CommunityCategory;
+  publicName: string;
+}
+
+/**
+ * Whatever the user had typed when the redirect took them away. Sign-in now
+ * happens from inside the form, so the draft has to travel with it or the
+ * OAuth round trip silently discards their work.
+ */
+export interface PublishSignInDraft {
+  name: string;
+  description: string;
+  category: CommunityCategory | '';
+  publicName: string;
 }
 
 export interface PublishFormProps {
@@ -27,13 +47,22 @@ export interface PublishFormProps {
   captureFailed: boolean;
   params: BinParams;
   lineage: CommunityDesignLineage | null;
+  publicName: string;
+  /** No public name was ever saved, so the identity field opens expanded. */
+  firstTimePublisher: boolean;
+  signedIn: boolean;
+  /** Server policy: designs without a tool cutout are rejected. */
+  requireCutouts: boolean;
+  printsEnabled: boolean;
+  publishedId: string | null;
+  currentCoverUrl: string;
+  error: CommunityClientError | null;
+  onPublicNameChange: (name: string) => void;
   onSubmit: (fields: PublishFormFields) => void;
+  onSignIn: (provider: AuthProvider, draft: PublishSignInDraft) => void;
   onRetryCapture: () => void;
+  onDropRemix: () => void;
   onUnpublish: (() => void) | null;
-}
-
-function thumbnailSrc(value: string): string {
-  return value.startsWith('data:') ? value : `data:image/webp;base64,${value}`;
 }
 
 export function PublishForm({
@@ -43,8 +72,19 @@ export function PublishForm({
   captureFailed,
   params,
   lineage,
+  publicName,
+  firstTimePublisher,
+  signedIn,
+  requireCutouts,
+  printsEnabled,
+  publishedId,
+  currentCoverUrl,
+  error,
+  onPublicNameChange,
   onSubmit,
+  onSignIn,
   onRetryCapture,
+  onDropRemix,
   onUnpublish,
 }: PublishFormProps) {
   const t = useTranslation();
@@ -54,26 +94,69 @@ export function PublishForm({
   );
   const [category, setCategory] = useState<CommunityCategory | ''>(prefill.category ?? '');
   const [showErrors, setShowErrors] = useState(false);
+  const [authPrompt, setAuthPrompt] = useState(false);
+  const [edited, setEdited] = useState<Partial<Record<PublishErrorField, boolean>>>({});
+
+  const markEdited = (field: PublishErrorField) =>
+    setEdited((previous) => (previous[field] === true ? previous : { ...previous, [field]: true }));
 
   const techniques = useMemo(() => deriveTechniques(params), [params]);
-  const categoryOptions = useMemo<SelectOption[]>(
-    () =>
-      (Object.keys(CATEGORY_LABEL_KEYS) as CommunityCategory[]).map((id) => ({
-        id,
-        name: t(CATEGORY_LABEL_KEYS[id]),
-      })),
-    [t]
-  );
+  const cutoutMissing = requireCutouts && !hasQualifyingCutout(params);
 
-  const nameError = name.trim() === '' ? t('community.publish.form.nameRequired') : undefined;
-  const categoryError = category === '' ? t('community.publish.form.categoryRequired') : undefined;
+  const presented = error !== null ? presentPublishError(error) : null;
+  // A rejection stops applying to the input the moment its author starts
+  // fixing it; leaving it under a field being retyped reads as a live verdict
+  // on the new text. The banner stays until the next submit answers it.
+  const serverFieldError = (field: PublishErrorField): string | undefined =>
+    presented?.field === field && edited[field] !== true
+      ? t(presented.messageKey, presented.values)
+      : undefined;
+
+  const nameError =
+    serverFieldError('name') ??
+    (showErrors && name.trim() === '' ? t('community.publish.form.nameRequired') : undefined);
+  const categoryError =
+    serverFieldError('category') ??
+    (showErrors && category === '' ? t('community.publish.form.categoryRequired') : undefined);
+  const publicNameError =
+    serverFieldError('publicName') ??
+    (showErrors && publicName.trim() === '' ? t('community.publish.identity.required') : undefined);
+
+  const previewPending = captures === null && !captureFailed;
+  // A disabled primary must say why. Order matters: the cutout policy is a
+  // hard rejection, a missing capture is only a wait.
+  const blockedReason = cutoutMissing
+    ? t('community.publish.needsCutout.button')
+    : captures === null
+      ? previewPending
+        ? t('community.publish.form.waitingPreview')
+        : t('community.publish.form.previewRequired')
+      : null;
+
+  const signInDraft = (): PublishSignInDraft => ({
+    name: name.trim(),
+    description: description.trim(),
+    category,
+    publicName: publicName.trim(),
+  });
 
   const handleSubmit = () => {
-    if (nameError !== undefined || category === '') {
+    if (name.trim() === '' || category === '' || publicName.trim() === '') {
       setShowErrors(true);
       return;
     }
-    onSubmit({ name: name.trim(), description: description.trim(), category });
+    // Validate before sending anyone through OAuth: coming back to a form
+    // that then rejects the name wastes a full redirect round trip.
+    if (!signedIn) {
+      setAuthPrompt(true);
+      return;
+    }
+    onSubmit({
+      name: name.trim(),
+      description: description.trim(),
+      category,
+      publicName: publicName.trim(),
+    });
   };
 
   const showRootLine =
@@ -86,59 +169,87 @@ export function PublishForm({
     <>
       <Dialog.Body>
         <div className="space-y-4">
-          <div
-            role="group"
-            aria-label={t('community.publish.form.previewLabel')}
-            className="flex items-center gap-2 overflow-x-auto"
-          >
-            {captures ? (
-              captures.thumbnails.map((thumb, index) => (
-                <img
-                  key={index}
-                  src={thumbnailSrc(thumb)}
-                  alt={t('community.publish.form.previewAlt', { index: index + 1 })}
-                  className="h-20 w-20 flex-shrink-0 rounded-md border border-stroke-subtle object-cover"
-                />
-              ))
-            ) : captureFailed ? (
-              <div className="flex min-h-11 w-full items-center gap-3 rounded-md border border-stroke-subtle px-3 py-2">
-                <span role="alert" className="text-sm text-content">
-                  {t('community.publish.form.previewFailed')}
-                </span>
-                <Button variant="ghost" className="min-h-11 md:min-h-0" onClick={onRetryCapture}>
-                  {t('community.publish.form.retryPreview')}
-                </Button>
+          {presented !== null && presented.field === null && (
+            <Alert intent="error" size="md">
+              <div className="space-y-2">
+                <p>{t(presented.messageKey, presented.values)}</p>
+                {error?.kind === 'quotaExceeded' && (
+                  <p className="text-xs">{t('community.publish.error.quotaHint')}</p>
+                )}
+                {presented.needsAuth && (
+                  <div className="flex flex-wrap gap-2">
+                    <Button variant="primary" onClick={() => onSignIn('google', signInDraft())}>
+                      {t('auth.signInWithGoogle')}
+                    </Button>
+                    <Button variant="secondary" onClick={() => onSignIn('github', signInDraft())}>
+                      {t('auth.signInWithGithub')}
+                    </Button>
+                  </div>
+                )}
+                {presented.canDropRemix && (
+                  <Button variant="secondary" onClick={onDropRemix}>
+                    {t('community.publish.error.publishWithoutRemix')}
+                  </Button>
+                )}
               </div>
-            ) : (
-              <div className="flex min-h-11 w-full items-center gap-3 rounded-md border border-stroke-subtle px-3 py-2">
-                <Spinner />
-                <span className="text-sm text-content-secondary">
-                  {t('community.publish.form.preparingPreview')}
-                </span>
+            </Alert>
+          )}
+
+          {cutoutMissing && (
+            <Alert intent="warning" size="md" title={t('community.publish.needsCutout.title')}>
+              {t('community.publish.needsCutout.button')}
+            </Alert>
+          )}
+
+          {authPrompt && (
+            <Alert intent="info" size="md" title={t('community.publish.signin.title')}>
+              <div className="space-y-2">
+                <p>{t('community.publish.signin.value')}</p>
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="primary" onClick={() => onSignIn('google', signInDraft())}>
+                    {t('auth.signInWithGoogle')}
+                  </Button>
+                  <Button variant="secondary" onClick={() => onSignIn('github', signInDraft())}>
+                    {t('auth.signInWithGithub')}
+                  </Button>
+                </div>
               </div>
-            )}
-          </div>
+            </Alert>
+          )}
+
+          <PublishPreview
+            thumbnails={captures?.thumbnails ?? null}
+            captureFailed={captureFailed}
+            onRetry={onRetryCapture}
+          />
 
           <Field
             label={t('community.publish.form.nameLabel')}
             htmlFor="community-publish-name"
-            error={showErrors ? nameError : undefined}
+            error={nameError}
           >
-            <Input
-              id="community-publish-name"
-              value={name}
-              maxLength={PUBLISH_NAME_MAX_LENGTH}
-              aria-describedby={
-                showErrors && nameError ? 'community-publish-name-error' : undefined
-              }
-              aria-invalid={showErrors && nameError !== undefined}
-              onChange={(e) => setName(e.target.value)}
-            />
+            <div className="flex items-center gap-2">
+              <Input
+                id="community-publish-name"
+                value={name}
+                maxLength={PUBLISH_NAME_MAX_LENGTH}
+                placeholder={t('community.publish.form.namePlaceholder')}
+                aria-invalid={nameError !== undefined}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  markEdited('name');
+                }}
+              />
+              <span aria-hidden className="shrink-0 text-xs tabular-nums text-content-tertiary">
+                {name.length}/{PUBLISH_NAME_MAX_LENGTH}
+              </span>
+            </div>
           </Field>
 
           <Field
             label={t('community.publish.form.descriptionLabel')}
             htmlFor="community-publish-description"
+            error={serverFieldError('description')}
           >
             <Textarea
               id="community-publish-description"
@@ -147,27 +258,41 @@ export function PublishForm({
               showCount
               rows={3}
               placeholder={t('community.publish.form.descriptionPlaceholder')}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => {
+                setDescription(e.target.value);
+                markEdited('description');
+              }}
             />
           </Field>
 
           <Field
             label={t('community.publish.form.categoryLabel')}
             htmlFor="community-publish-category"
-            error={showErrors ? categoryError : undefined}
+            error={categoryError}
           >
-            <Select
+            <CategoryChips
               id="community-publish-category"
-              options={categoryOptions}
               value={category}
-              placeholder={t('community.publish.form.categoryPlaceholder')}
-              error={showErrors && categoryError !== undefined}
-              aria-describedby={
-                showErrors && categoryError ? 'community-publish-category-error' : undefined
+              invalid={categoryError !== undefined}
+              describedBy={
+                categoryError !== undefined ? 'community-publish-category-error' : undefined
               }
-              onValueChange={(value) => setCategory(value as CommunityCategory)}
+              onChange={(value) => {
+                setCategory(value);
+                markEdited('category');
+              }}
             />
           </Field>
+
+          <PublisherIdentity
+            value={publicName}
+            firstTime={firstTimePublisher}
+            error={publicNameError}
+            onChange={(value) => {
+              onPublicNameChange(value);
+              markEdited('publicName');
+            }}
+          />
 
           <div>
             <p className="text-xs font-medium text-content-tertiary">
@@ -209,6 +334,10 @@ export function PublishForm({
             </div>
           )}
 
+          {mode === 'update' && publishedId !== null && printsEnabled && (
+            <CoverImageSection designId={publishedId} currentCoverUrl={currentCoverUrl} />
+          )}
+
           <p className="text-xs text-content-tertiary">
             {t('community.publish.disclosure')}{' '}
             <a
@@ -220,21 +349,40 @@ export function PublishForm({
               {t('community.publish.disclosureTerms')}
             </a>
           </p>
+
+          {onUnpublish !== null && (
+            <div className="space-y-2 rounded-md border border-error/40 px-3 py-3">
+              <p className="text-xs font-medium text-content-tertiary">
+                {t('community.publish.unpublishSectionLabel')}
+              </p>
+              <p className="text-sm text-content-secondary">
+                {t('community.publish.unpublishSectionHint')}
+              </p>
+              <Button variant="danger" className="min-h-11 md:min-h-0" onClick={onUnpublish}>
+                {t('community.publish.unpublish')}
+              </Button>
+            </div>
+          )}
         </div>
       </Dialog.Body>
-      <Dialog.Footer>
-        {onUnpublish !== null && (
-          <Button variant="danger" className="min-h-11 md:min-h-0" onClick={onUnpublish}>
-            {t('community.publish.unpublish')}
-          </Button>
+      <Dialog.Footer bordered>
+        {blockedReason !== null && (
+          <span id="community-publish-blocked" className="mr-auto text-xs text-content-tertiary">
+            {blockedReason}
+          </span>
         )}
         <Button
           variant="primary"
           className="min-h-11 md:min-h-0"
-          disabled={captures === null}
+          disabled={captures === null || cutoutMissing}
+          aria-describedby={blockedReason !== null ? 'community-publish-blocked' : undefined}
           onClick={handleSubmit}
         >
-          {mode === 'update' ? t('community.publish.submitUpdate') : t('community.publish.submit')}
+          {mode === 'update'
+            ? t('community.publish.submitUpdate')
+            : signedIn
+              ? t('community.publish.submit')
+              : t('community.publish.submitSignedOut')}
         </Button>
       </Dialog.Footer>
     </>

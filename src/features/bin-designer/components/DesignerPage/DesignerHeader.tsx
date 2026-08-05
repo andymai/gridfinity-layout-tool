@@ -45,7 +45,7 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
   );
   const undo = useDesignerStore((s) => s.undo);
   const redo = useDesignerStore((s) => s.redo);
-  const { publishVisible, canPublish, needsCutout, openPublish } = useCommunityPublishEntry();
+  const { publishVisible, canPublish, openPublish } = useCommunityPublishEntry();
 
   const {
     isEditingName,
@@ -137,9 +137,7 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
             {/* Publish button (community showcase) */}
             {publishVisible && !canPublish && (
               <span id="community-publish-disabled-hint" className="sr-only">
-                {needsCutout
-                  ? t('community.publish.needsCutout.button')
-                  : t('community.publish.form.preparingPreview')}
+                {t('community.publish.form.preparingPreview')}
               </span>
             )}
             {publishVisible && (
@@ -148,11 +146,7 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
                 onClick={openPublish}
                 disabled={!canPublish}
                 className="px-2 py-1.5 text-sm font-normal rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5"
-                title={
-                  needsCutout
-                    ? t('community.publish.needsCutout.button')
-                    : t('community.publishButtonAria')
-                }
+                title={t('community.publishButtonAria')}
                 aria-label={t('community.publishButtonAria')}
                 aria-describedby={canPublish ? undefined : 'community-publish-disabled-hint'}
               >
@@ -314,9 +308,7 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
             {/* Publish button (community showcase) */}
             {publishVisible && !canPublish && (
               <span id="community-publish-disabled-hint" className="sr-only">
-                {needsCutout
-                  ? t('community.publish.needsCutout.button')
-                  : t('community.publish.form.preparingPreview')}
+                {t('community.publish.form.preparingPreview')}
               </span>
             )}
             {publishVisible && (
@@ -324,7 +316,6 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
                 variant="ghost"
                 onClick={openPublish}
                 disabled={!canPublish}
-                title={needsCutout ? t('community.publish.needsCutout.button') : undefined}
                 aria-label={t('community.publishButtonAria')}
                 aria-describedby={canPublish ? undefined : 'community-publish-disabled-hint'}
               >

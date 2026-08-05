@@ -11,10 +11,27 @@ Community design showcase (issue #3050): publishing bin designs, browsing them, 
 
 ## Layout
 
-- `api/client.ts`: Result-typed client for `POST/PUT/DELETE /api/community(/:id)` and owner `GET`. Errors are a typed union (`needsAuth`, `disabled`, `rateLimited`, `quotaExceeded`, `contentBlocked`, `validation`, ...) so the dialog can branch without string matching. All calls suppress the app-wide forced sign-out so a community 401 re-prompts locally instead of flipping the whole app anonymous.
-- `store/publishStore.ts`: zustand state machine for the publish dialog: `closed → signin → identity → form → publishing → success | error`.
+- `api/client.ts`: Result-typed client for `POST/PUT/DELETE /api/community(/:id)` and owner `GET`. Errors are a typed union (`needsAuth`, `disabled`, `rateLimited`, `quotaExceeded`, `contentBlocked`, `validation`, ...) so the dialog can branch without string matching. All calls suppress the app-wide forced sign-out so a community 401 re-prompts locally instead of flipping the whole app anonymous. Also carries `fetchCommunityCapabilities` (see below).
+- `store/publishStore.ts`: zustand state machine for the publish dialog: `closed → loading → form → publishing → success`, with `unavailable` as the terminal branch off `loading`.
+
+  **`error` is not a phase.** A failed publish returns to `form` with the failure attached. It used to unmount the form, so a server complaint about the name ("too short", "low effort", "duplicate") became a full-screen dead end that discarded the user's view of what they had typed.
+
 - `store/browseStore.ts`: browse engine for the gallery: caches the full card index (capped at the 2,000 newest, 5-minute staleness), holds search/category/technique/sort filters with client-side `filterAndSortCards`, and remembers the gallery scroll offset.
-- `components/PublishDialog/`: the shell-mounted publish dialog (`PublishDialog`, `PublishForm`, `IdentityStep`). Mobile renders it as a fullscreen sheet; desktop as a centered dialog.
+- `components/PublishDialog/`: the shell-mounted publish dialog. Mobile renders it as a fullscreen sheet; desktop as a centered dialog. One review screen rather than a phase gauntlet: `PublishDialog` orchestrates, `PublishForm` is the screen, and `PublishPreview` / `CategoryChips` / `PublisherIdentity` / `CoverImageSection` are its parts. `publishErrors.ts` decides where a failure appears; `useOwnDesignPrefill.ts` owns update-mode reconciliation.
+
+### Publish flow rules
+
+Four things shape it, each replacing something that failed a real user:
+
+- **Capability probe before the form.** `community_showcase` is a per-user Labs flag over the UI; `COMMUNITY_PUBLISH_ENABLED` is a deployment kill switch with no client-side shadow. Without `GET /api/community?capabilities=1` the only way to discover publishing is off is to POST a finished design and read the 503, after a sign-in and an OAuth redirect. A probe that _fails_ falls through to the form: an unreachable probe says nothing about the switch, and the publish attempt is still the real gate.
+- **Sign-in is deferred to the publish attempt**, and the fields are validated first, so an invalid name never costs an OAuth round trip. The draft rides `savePendingPublishAction`; the public name rides localStorage, which survives the redirect independently.
+- **Errors are routed, not announced.** `presentPublishError` maps each failure to a field or to the banner. The server names the field it rejected, so burying that in a dialog-level message makes the user hunt for which input is at fault. A content-filter rejection is deliberately banner-level: the filter does not say which field tripped it, and guessing points at the wrong one.
+- **The cutout policy does not gate the entry button.** It used to, explained only by a `title` tooltip, which does not exist on touch: a phone user got a dead button and no reason. The dialog states the policy against a preview of their design instead.
+
+Identity is a line on the form (`Publishing as X · Change`), not a step. As a step it was walked once by every publisher and could then never be revisited.
+
+**No photo upload at publish.** `CommunityPublishInput` carries generated renders and a GLB only. The one path a user photo reaches a gallery card is cover promotion, which the server validates against the design's own live prints, and that check is what keeps the most public surface in the app bounded. `CoverImageSection` surfaces that path in update mode rather than opening a second one.
+
 - `components/CommunityGalleryTab/`: gallery tab content with two hosts: the shell's `DesignGalleryModal` tab and the full-page `/community` route (no dialog chrome of its own). Toolbar is inline on desktop (search, technique pills, category, sort) and a single row plus a bottom filter sheet on mobile. Renders the grid in chunks of 24 with Load more, plus skeleton/empty/no-matches/error/offline states. Selecting a card opens the detail overlay through `@/core/store/communityDetail`.
 - `components/CommunityCard/`: gallery card: lazy thumbnail with a neutral placeholder, author as plain text, dims-first footer with like/remix counts, corner remix glyph. Hover/long-press angle cycling is deferred until the list index exposes per-card angle URLs (it carries a single `thumbnailUrl` today).
 - `components/CommunityPage/`: full-page host for the `/community` route. URL-driven detail: `/community/d/<id>` is pushed on open and restored on back/forward and cold deep links. Also owns the dismissible signed-out intro strip. Routing lives in `@/shared/hooks/useCommunityRouting` so the SPA-route CI guard covers the rewrite.
