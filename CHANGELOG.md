@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.367.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.366.0...gridfinity-layout-tool-v4.367.0) (2026-08-05)
+
+
+### Features
+
+* **designer:** wall-less tray base and lid top-lip colours ([#3234](https://github.com/andymai/gridfinity-layout-tool/issues/3234)) ([c8519bf](https://github.com/andymai/gridfinity-layout-tool/commit/c8519bffe079481c464f0b0a2edcaa940cb3f846))
+
 ## [4.366.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.365.0...gridfinity-layout-tool-v4.366.0) (2026-08-05)
 
 
