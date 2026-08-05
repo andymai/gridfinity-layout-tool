@@ -3568,5 +3568,7 @@
   "community.page.subtitle": "其他创客分享的设计，可自由改造和打印。",
   "community.page.publishCta": "发布设计",
   "community.publish.form.wallsSummary": "壁厚 {thickness} mm",
-  "community.publish.ownerActions": "已发布设计的操作"
+  "community.publish.ownerActions": "已发布设计的操作",
+  "community.publishNudge.message": "收纳盒不错。要分享给社区吗？",
+  "community.publishNudge.action": "发布"
 }

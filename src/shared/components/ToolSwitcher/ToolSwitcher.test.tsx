@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useCommunityDigestStore } from '@/core/store/communityDigest';
 import { ToolSwitcher } from './ToolSwitcher';
 
 const mockNavigateToDesigner = vi.fn();
@@ -48,6 +49,7 @@ describe('ToolSwitcher', () => {
     mockIsBaseplateRoute = false;
     mockIsCommunityRoute = false;
     mockCommunityEnabled = false;
+    useCommunityDigestStore.setState({ hasUnseenDeltas: false });
   });
 
   it('shows tablist', () => {
@@ -223,6 +225,32 @@ describe('ToolSwitcher', () => {
       mockCommunityEnabled = true;
       render(<ToolSwitcher iconOnly />);
       expect(screen.getByTestId('tool-experimental-dot')).toBeInTheDocument();
+    });
+
+    it('gives the marker slot to unseen community news', () => {
+      mockCommunityEnabled = true;
+      useCommunityDigestStore.setState({ hasUnseenDeltas: true });
+      render(<ToolSwitcher />);
+
+      expect(screen.getByTestId('tool-news-dot')).toBeInTheDocument();
+      expect(screen.queryByTestId('tool-experimental-dot')).not.toBeInTheDocument();
+    });
+
+    it('names both signals even though one dot shows', () => {
+      mockCommunityEnabled = true;
+      useCommunityDigestStore.setState({ hasUnseenDeltas: true });
+      render(<ToolSwitcher />);
+
+      const label = screen.getAllByRole('tab')[3].getAttribute('aria-label');
+      expect(label).toContain('New');
+      expect(label).toContain('Experimental');
+    });
+
+    it('leaves the other tools unmarked while community has news', () => {
+      mockCommunityEnabled = true;
+      useCommunityDigestStore.setState({ hasUnseenDeltas: true });
+      render(<ToolSwitcher />);
+      expect(screen.getAllByTestId('tool-news-dot')).toHaveLength(1);
     });
   });
 });

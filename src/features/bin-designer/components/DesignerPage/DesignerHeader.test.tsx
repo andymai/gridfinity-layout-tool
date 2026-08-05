@@ -57,6 +57,9 @@ function createMockNameEditor(overrides: Partial<DesignNameEditor> = {}): Design
   };
 }
 
+/** The button names itself experimental; the badge only renders at 2xl. */
+const PUBLISH_LABEL = 'Publish to the community showcase (Experimental)';
+
 describe('DesignerHeader', () => {
   beforeEach(() => {
     resetAllStores();
@@ -137,13 +140,13 @@ describe('DesignerHeader', () => {
     it('hides the Publish button while the flag is off', () => {
       setCommunityFlag(false);
       render(<DesignerHeader isDesktop nameEditor={createMockNameEditor()} />);
-      expect(screen.queryByLabelText('Publish to the community showcase')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText(PUBLISH_LABEL)).not.toBeInTheDocument();
     });
 
     it('shows a disabled Publish button next to Export until the mesh is ready', () => {
       setCommunityFlag(true);
       render(<DesignerHeader isDesktop nameEditor={createMockNameEditor()} />);
-      expect(screen.getByLabelText('Publish to the community showcase')).toBeDisabled();
+      expect(screen.getByLabelText(PUBLISH_LABEL)).toBeDisabled();
     });
 
     it('enables Publish once the mesh is ready and a qualifying cutout exists, on desktop and mobile', () => {
@@ -153,10 +156,10 @@ describe('DesignerHeader', () => {
         generation: { ...DEFAULT_GENERATION_STATE, mesh: readyMesh },
       });
       const desktop = render(<DesignerHeader isDesktop nameEditor={createMockNameEditor()} />);
-      expect(screen.getByLabelText('Publish to the community showcase')).not.toBeDisabled();
+      expect(screen.getByLabelText(PUBLISH_LABEL)).not.toBeDisabled();
       desktop.unmount();
       render(<DesignerHeader isDesktop={false} nameEditor={createMockNameEditor()} />);
-      expect(screen.getByLabelText('Publish to the community showcase')).not.toBeDisabled();
+      expect(screen.getByLabelText(PUBLISH_LABEL)).not.toBeDisabled();
     });
 
     it('stays enabled without a cutout so the dialog can explain the policy', () => {
@@ -168,11 +171,11 @@ describe('DesignerHeader', () => {
         generation: { ...DEFAULT_GENERATION_STATE, mesh: readyMesh },
       });
       const desktop = render(<DesignerHeader isDesktop nameEditor={createMockNameEditor()} />);
-      expect(screen.getByLabelText('Publish to the community showcase')).not.toBeDisabled();
+      expect(screen.getByLabelText(PUBLISH_LABEL)).not.toBeDisabled();
       desktop.unmount();
 
       render(<DesignerHeader isDesktop={false} nameEditor={createMockNameEditor()} />);
-      expect(screen.getByLabelText('Publish to the community showcase')).not.toBeDisabled();
+      expect(screen.getByLabelText(PUBLISH_LABEL)).not.toBeDisabled();
     });
   });
 });

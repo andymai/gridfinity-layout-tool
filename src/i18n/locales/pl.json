@@ -3568,5 +3568,7 @@
   "community.page.subtitle": "Projekty udostępnione przez innych twórców, możesz je dowolnie zmieniać i drukować.",
   "community.page.publishCta": "Opublikuj projekt",
   "community.publish.form.wallsSummary": "Ścianki {thickness} mm",
-  "community.publish.ownerActions": "Działania na opublikowanym projekcie"
+  "community.publish.ownerActions": "Działania na opublikowanym projekcie",
+  "community.publishNudge.message": "Niezły bin. Udostępnić go społeczności?",
+  "community.publishNudge.action": "Opublikuj"
 }

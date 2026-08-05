@@ -5,7 +5,7 @@
  * Mobile/Tablet: Compact ToolSwitcher + name (tap=list, long-press=rename) | save status + action buttons
  */
 
-import { Button, IconButton } from '@/design-system';
+import { Badge, Button, IconButton } from '@/design-system';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
@@ -145,9 +145,9 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
                 variant="ghost"
                 onClick={openPublish}
                 disabled={!canPublish}
-                className="px-2 py-1.5 text-sm font-normal rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5"
+                className="relative px-2 py-1.5 text-sm font-normal rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5"
                 title={t('community.publishButtonAria')}
-                aria-label={t('community.publishButtonAria')}
+                aria-label={`${t('community.publishButtonAria')} (${t('common.experimental')})`}
                 aria-describedby={canPublish ? undefined : 'community-publish-disabled-hint'}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -162,6 +162,17 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
                     cluster overflows into the save indicator at lg widths once
                     a fifth labeled button is present. */}
                 <span className="hidden 2xl:inline">{t('community.publishButton')}</span>
+                {/* The badge rides the label; below that breakpoint the button
+                    is an icon with no room for a word, so the same signal
+                    falls back to the dot the Community nav segment uses. */}
+                <Badge tone="info" size="sm" className="hidden 2xl:inline-flex">
+                  {t('common.experimental')}
+                </Badge>
+                <span
+                  aria-hidden="true"
+                  data-testid="publish-experimental-dot"
+                  className="absolute right-0.5 top-0.5 h-1.5 w-1.5 rounded-full bg-accent 2xl:hidden"
+                />
               </Button>
             )}
           </div>
@@ -314,9 +325,10 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
             {publishVisible && (
               <IconButton
                 variant="ghost"
+                className="relative"
                 onClick={openPublish}
                 disabled={!canPublish}
-                aria-label={t('community.publishButtonAria')}
+                aria-label={`${t('community.publishButtonAria')} (${t('common.experimental')})`}
                 aria-describedby={canPublish ? undefined : 'community-publish-disabled-hint'}
               >
                 <svg
@@ -332,6 +344,11 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
                     d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                   />
                 </svg>
+                <span
+                  aria-hidden="true"
+                  data-testid="publish-experimental-dot"
+                  className="absolute right-0.5 top-0.5 h-1.5 w-1.5 rounded-full bg-accent"
+                />
               </IconButton>
             )}
 

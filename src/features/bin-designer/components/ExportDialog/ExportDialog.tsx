@@ -18,6 +18,14 @@ import { zoneLabel } from '@/features/bin-designer/utils/zoneLabels';
 import { SlicerHandoffPreview } from './SlicerHandoffPreview';
 import { formatPrintTime, formatFilament } from '@/features/bin-designer/utils/printEstimates';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
+import {
+  hasSeenPublishNudge,
+  markPublishNudgeSeen,
+} from '@/features/bin-designer/utils/publishNudge';
+import { useCommunityPublishEntry } from '@/features/bin-designer/hooks/useCommunityPublish';
+import { loadDesign } from '@/features/bin-designer/storage/DesignerStorage';
+import { designId } from '@/core/types';
+import { isOk } from '@/core/result';
 import { getSTLFileSize, estimate3MFFileSize } from '@/shared/generation/export';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
@@ -29,6 +37,9 @@ import {
 import type { ExportFileFormat } from '@/features/bin-designer/types';
 
 /** File extension display for each format (split ZIP overrides STL) */
+/** Longer than the routine 3s export toast: this one carries an action. */
+const PUBLISH_NUDGE_DURATION_MS = 10000;
+
 const FORMAT_EXTENSIONS: Record<ExportFileFormat, string> = {
   stl: '.stl',
   step: '.step',
@@ -56,6 +67,7 @@ export function ExportDialog() {
         exportFileNameConfig: state.exportFileNameConfig,
       }))
     );
+  const { publishVisible, canPublish, openPublish } = useCommunityPublishEntry();
   const setExportDialogOpen = useDesignerStore((s) => s.setExportDialogOpen);
   const setExportFileNameConfig = useDesignerStore((s) => s.setExportFileNameConfig);
 
@@ -150,6 +162,26 @@ export function ExportDialog() {
     [t, estimates, triangleCount, fileSizeLabel]
   );
 
+  // Offered after the export rather than beside it: an export is the moment a
+  // design is finished enough to be worth sharing. Skipped entirely when the
+  // support prompt takes the success view — two asks on one action is one ask
+  // too many — and never shown for a design that is already published.
+  const offerPublish = useCallback(async () => {
+    if (!publishVisible || !canPublish || hasSeenPublishNudge()) return;
+    const activeId = useDesignerStore.getState().currentDesignId;
+    if (activeId === null) return;
+    const saved = await loadDesign(designId(activeId));
+    if (isOk(saved) && saved.value.publishedId) return;
+
+    markPublishNudgeSeen();
+    addToast({
+      message: t('community.publishNudge.message'),
+      type: 'info',
+      duration: PUBLISH_NUDGE_DURATION_MS,
+      action: { label: t('community.publishNudge.action'), onClick: openPublish },
+    });
+  }, [publishVisible, canPublish, addToast, openPublish, t]);
+
   const handleDownload = useCallback(async () => {
     // The hook owns error handling end-to-end (telemetry + Retry/Report
     // toast + captureException with rich bin context). We gate the success
@@ -182,6 +214,7 @@ export function ExportDialog() {
       addToast({ message: t('export.complete'), type: 'success', duration: 3000 });
     }
     closeDialog();
+    void offerPublish();
   }, [
     useSplitExport,
     downloadSplit,
@@ -192,6 +225,7 @@ export function ExportDialog() {
     splitPieceCount,
     addToast,
     closeDialog,
+    offerPublish,
     t,
   ]);
 

@@ -3568,5 +3568,7 @@
   "community.page.subtitle": "Дизайни, якими поділилися інші майстри, вільні для реміксу та друку.",
   "community.page.publishCta": "Опублікувати дизайн",
   "community.publish.form.wallsSummary": "Стінки {thickness} мм",
-  "community.publish.ownerActions": "Дії з опублікованим дизайном"
+  "community.publish.ownerActions": "Дії з опублікованим дизайном",
+  "community.publishNudge.message": "Гарний бін. Поділитися зі спільнотою?",
+  "community.publishNudge.action": "Опублікувати"
 }

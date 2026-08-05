@@ -3568,5 +3568,7 @@
   "community.page.subtitle": "Designer som delats av andra makare, fria att remixa och skriva ut.",
   "community.page.publishCta": "Publicera en design",
   "community.publish.form.wallsSummary": "{thickness} mm väggar",
-  "community.publish.ownerActions": "Åtgärder för publicerad design"
+  "community.publish.ownerActions": "Åtgärder för publicerad design",
+  "community.publishNudge.message": "Snyggt fack. Dela det med gemenskapen?",
+  "community.publishNudge.action": "Publicera det"
 }

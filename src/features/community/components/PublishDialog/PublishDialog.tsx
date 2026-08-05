@@ -13,6 +13,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   Alert,
+  Badge,
   Button,
   ConfirmDialog,
   CopyField,
@@ -376,7 +377,15 @@ export function PublishDialog() {
         mobilePresentation="sheet"
         dismissable={phase !== 'publishing' && !unpublishBusy}
       >
-        <Dialog.Header title={title} closeAriaLabel={t('common.closeDialog')}>
+        <Dialog.Header
+          title={
+            <span className="flex items-center gap-2">
+              {title}
+              <Badge tone="info">{t('common.experimental')}</Badge>
+            </span>
+          }
+          closeAriaLabel={t('common.closeDialog')}
+        >
           {canUnpublish && phase === 'form' && (
             <IconButton
               ref={ownerMenuRef}

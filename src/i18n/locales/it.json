@@ -3568,5 +3568,7 @@
   "community.page.subtitle": "Design condivisi da altri maker, liberi di remixare e stampare.",
   "community.page.publishCta": "Pubblica un design",
   "community.publish.form.wallsSummary": "Pareti da {thickness} mm",
-  "community.publish.ownerActions": "Azioni sul design pubblicato"
+  "community.publish.ownerActions": "Azioni sul design pubblicato",
+  "community.publishNudge.message": "Bel bin. Lo condividi con la community?",
+  "community.publishNudge.action": "Pubblicalo"
 }

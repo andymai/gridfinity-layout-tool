@@ -3568,5 +3568,7 @@
   "community.page.subtitle": "Des designs partagés par d’autres makers, libres de remixer et d’imprimer.",
   "community.page.publishCta": "Publier un design",
   "community.publish.form.wallsSummary": "Parois de {thickness} mm",
-  "community.publish.ownerActions": "Actions du design publié"
+  "community.publish.ownerActions": "Actions du design publié",
+  "community.publishNudge.message": "Joli bac. Le partager avec la communauté ?",
+  "community.publishNudge.action": "Le publier"
 }

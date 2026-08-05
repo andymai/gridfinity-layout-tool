@@ -3568,5 +3568,7 @@
   "community.page.subtitle": "Diseños compartidos por otros creadores, libres para remezclar e imprimir.",
   "community.page.publishCta": "Publicar un diseño",
   "community.publish.form.wallsSummary": "Paredes de {thickness} mm",
-  "community.publish.ownerActions": "Acciones del diseño publicado"
+  "community.publish.ownerActions": "Acciones del diseño publicado",
+  "community.publishNudge.message": "Buen bin. ¿Lo compartes con la comunidad?",
+  "community.publishNudge.action": "Publicarlo"
 }

@@ -3286,6 +3286,8 @@ const en: Record<string, string> = {
   // Community showcase publish flow
   'community.publishButton': 'Publish',
   'community.publishButtonAria': 'Publish to the community showcase',
+  'community.publishNudge.message': 'Nice bin. Share it with the community?',
+  'community.publishNudge.action': 'Publish it',
   'community.publish.needsCutout.button':
     'The community showcase is open to bins with tool cutouts to start. Add a cutout to share this one.',
   'community.publish.needsCutout.hint':

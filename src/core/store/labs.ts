@@ -8,7 +8,7 @@
 
 import { create } from 'zustand';
 import type { LabsPreferences, FeatureId } from '@/core/labs';
-import { createDefaultLabsPreferences, getFeature } from '@/core/labs';
+import { createDefaultLabsPreferences, getActiveFeatures, getFeature } from '@/core/labs';
 // Deep-import the leaf module (not the barrel) to keep this store off the
 // `metrics.ts` import path. metrics.ts imports `useLabsStore` from this file;
 // going through the barrel would close the cycle, which under some chunking
@@ -45,6 +45,20 @@ function savePreferences(prefs: LabsPreferences): Result<void, StorageError> {
     lastModified: new Date().toISOString(),
   };
   return saveToLocalStorage(LABS_STORAGE_KEY, toSave);
+}
+
+/**
+ * A flag with no stored preference falls back to its `defaultEnabled`.
+ *
+ * Every read AND every write resolves through here. Reading it in
+ * `isFeatureEnabled` alone would leave `toggleFeature` flipping a default-on
+ * flag to on, and `disableFeature` reading "never stored" as "already off",
+ * so the one control that turns the feature off would silently do nothing.
+ */
+function resolveEnabled(preferences: LabsPreferences, featureId: string): boolean {
+  const stored = preferences.enabledFeatures[featureId];
+  if (stored !== undefined) return stored;
+  return getFeature(featureId)?.defaultEnabled ?? false;
 }
 
 interface LabsState {
@@ -91,8 +105,7 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
     if (feature?.comingSoon) return OK;
 
     const { preferences } = get();
-    const currentlyEnabled = preferences.enabledFeatures[featureId] ?? false;
-    const newEnabled = !currentlyEnabled;
+    const newEnabled = !resolveEnabled(preferences, featureId);
 
     const newPrefs: LabsPreferences = {
       ...preferences,
@@ -122,7 +135,7 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
     if (feature?.comingSoon) return OK;
 
     const { preferences } = get();
-    if (preferences.enabledFeatures[featureId]) return OK;
+    if (resolveEnabled(preferences, featureId)) return OK;
 
     const newPrefs: LabsPreferences = {
       ...preferences,
@@ -146,7 +159,7 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
 
   disableFeature: (featureId) => {
     const { preferences } = get();
-    if (!preferences.enabledFeatures[featureId]) return OK;
+    if (!resolveEnabled(preferences, featureId)) return OK;
 
     const newPrefs: LabsPreferences = {
       ...preferences,
@@ -181,15 +194,14 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
     // Coming Soon features are always disabled
     if (feature?.comingSoon) return false;
 
-    return preferences.enabledFeatures[featureId] ?? false;
+    return resolveEnabled(preferences, featureId);
   },
 
   getEnabledCount: () => {
     const { preferences } = get();
-    return Object.entries(preferences.enabledFeatures).filter(([id, enabled]) => {
-      if (!enabled) return false;
-      const feature = getFeature(id);
-      return feature?.status === 'experimental' || feature?.status === 'preview';
+    return getActiveFeatures().filter((feature) => {
+      if (feature.status !== 'experimental' && feature.status !== 'preview') return false;
+      return resolveEnabled(preferences, feature.id);
     }).length;
   },
 

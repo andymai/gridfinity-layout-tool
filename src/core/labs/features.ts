@@ -192,11 +192,12 @@ export const FEATURE_FLAGS = [
     name: 'Community Showcase',
     description:
       'Publish your bin designs to a shared community showcase and remix designs from others. Publishing needs a free sign-in; anything you publish is public under CC BY 4.0.',
-    status: 'experimental',
+    status: 'preview',
     risk: 'medium',
     warning:
-      'Early feature. Publishing works, but the gallery for browsing and remixing is still rolling out, so published designs are not discoverable in-app yet.',
+      'Publishing is public and permanent enough to matter: designs appear in search engines and anyone can remix them. Switch this off to hide the Community tool and the Publish action.',
     addedAt: '2026-08',
+    defaultEnabled: true,
     requiresRefresh: false,
   },
 ] as const satisfies readonly FeatureFlag[];

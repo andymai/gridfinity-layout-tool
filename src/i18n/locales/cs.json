@@ -3568,5 +3568,7 @@
   "community.page.subtitle": "Návrhy sdílené ostatními tvůrci, volné k remixu a tisku.",
   "community.page.publishCta": "Publikovat návrh",
   "community.publish.form.wallsSummary": "Stěny {thickness} mm",
-  "community.publish.ownerActions": "Akce publikovaného návrhu"
+  "community.publish.ownerActions": "Akce publikovaného návrhu",
+  "community.publishNudge.message": "Pěkný bin. Sdílet ho s komunitou?",
+  "community.publishNudge.action": "Publikovat"
 }
