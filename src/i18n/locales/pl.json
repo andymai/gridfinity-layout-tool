@@ -1611,10 +1611,7 @@
   "community.category.other": "Inne",
   "community.category.tools": "Narzędzia",
   "community.category.toysGames": "Zabawki i gry",
-  "community.page.back": "Wróć do aplikacji",
-  "community.page.strip.cta": "Zaprojektuj własny bin",
-  "community.page.strip.dismiss": "Odrzuć",
-  "community.page.strip.text": "Gridfinity Layout Tool to darmowe narzędzie w przeglądarce do projektowania własnych binów do druku 3D i układów szuflad. Obecnie są to biny z wycięciami na narzędzia (tablice narzędziowe i dopasowane uchwyty), kolejne typy projektów pojawią się później.",
+  "community.page.designCta": "Zaprojektuj własny bin",
   "community.page.title": "Projekty społeczności",
   "community.publish.disclosure": "Opublikowane projekty są publiczne, pojawiają się w wyszukiwarkach, a każdy może je remiksować na licencji CC BY 4.0. Galeria skupia się na razie na binach z wycięciami na narzędzia, więcej typów w przyszłości.",
   "community.publish.disclosureTerms": "Warunki korzystania",
@@ -3565,5 +3562,11 @@
   "community.gapFit.fitsRotated": "Mieści się w wybranej luce, obrócony",
   "community.gapFit.tooLarge": "Za duży na wybraną lukę",
   "community.gapFit.tooTall": "Za wysoki na miejsce nad tą warstwą",
-  "community.gapFit.scaleMismatch": "Zbudowany dla innego rozmiaru siatki niż twój układ"
+  "community.gapFit.scaleMismatch": "Zbudowany dla innego rozmiaru siatki niż twój układ",
+  "common.experimental": "Eksperymentalne",
+  "header.moreLinks": "Więcej odnośników",
+  "toolSwitcher.community": "Społeczność",
+  "toolSwitcher.switchToCommunity": "Przełącz na projekty społeczności",
+  "community.page.subtitle": "Projekty udostępnione przez innych twórców, możesz je dowolnie zmieniać i drukować.",
+  "community.page.publishCta": "Opublikuj projekt"
 }

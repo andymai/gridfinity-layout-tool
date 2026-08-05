@@ -49,26 +49,43 @@ describe('HeaderSupportLinks', () => {
     expect(screen.getByLabelText('header.helpAndShortcuts')).toBeInTheDocument();
   });
 
-  it('renders GitHub link', () => {
-    render(<HeaderSupportLinks />);
-    expect(screen.getByTitle('header.starOnGithub')).toBeInTheDocument();
-    expect(screen.getByTitle('header.starOnGithub')).toHaveAttribute(
-      'href',
-      'https://github.com/andymai/gridfinity-layout-tool'
-    );
-  });
-
   it('renders Ko-fi support button', () => {
     render(<HeaderSupportLinks />);
     expect(screen.getByLabelText('header.supportOnKofi')).toBeInTheDocument();
   });
 
-  it('renders r/gridfinity community link', () => {
+  it('keeps the outbound links out of the bar until the overflow is opened', () => {
     render(<HeaderSupportLinks />);
-    expect(screen.getByTitle('common.redditCommunityAria')).toHaveAttribute(
+    expect(screen.queryByText('header.starOnGithub')).not.toBeInTheDocument();
+    expect(screen.queryByText('common.redditCommunity')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('header.moreLinks')).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('renders GitHub and r/gridfinity as real links inside the overflow', () => {
+    render(<HeaderSupportLinks />);
+
+    fireEvent.click(screen.getByLabelText('header.moreLinks'));
+
+    expect(screen.getByText('header.starOnGithub').closest('a')).toHaveAttribute(
+      'href',
+      'https://github.com/andymai/gridfinity-layout-tool'
+    );
+    expect(screen.getByText('common.redditCommunity').closest('a')).toHaveAttribute(
       'href',
       'https://www.reddit.com/r/gridfinity/'
     );
+  });
+
+  it('closes the overflow on a second click of the trigger', () => {
+    render(<HeaderSupportLinks />);
+    const trigger = screen.getByLabelText('header.moreLinks');
+
+    fireEvent.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+
+    fireEvent.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByText('header.starOnGithub')).not.toBeInTheDocument();
   });
 
   it('opens GitHub Issues on feedback click', () => {

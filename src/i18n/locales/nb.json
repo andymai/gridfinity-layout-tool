@@ -1730,10 +1730,7 @@
   "community.gallery.techniqueLabel": "Filtrer etter teknikk",
   "community.like.like": "Lik dette designet",
   "community.like.unlike": "Fjern liker for dette designet",
-  "community.page.back": "Tilbake til appen",
-  "community.page.strip.cta": "Design din egen bin",
-  "community.page.strip.dismiss": "Avvis",
-  "community.page.strip.text": "Gridfinity Layout Tool er et gratis designverktøy i nettleseren for egne 3D-printbare bins og skuffeoppsett. Akkurat nå er det bins med verktøyutskjæringer (verktøytavler og tilpassede holdere), med flere designtyper senere.",
+  "community.page.designCta": "Design din egen bin",
   "community.page.title": "Fellesskapsdesign",
   "community.publish.disclosure": "Publiserte design er offentlige, vises i søkemotorer, og alle kan remixe dem under CC BY 4.0. Utstillingen er foreløpig fokusert på bins med verktøyutskjæringer, med flere typer på vei.",
   "community.publish.disclosureTerms": "Bruksvilkår",
@@ -3565,5 +3562,11 @@
   "community.gapFit.fitsRotated": "Passer i åpningen du valgte, snudd",
   "community.gapFit.tooLarge": "For stor for åpningen du valgte",
   "community.gapFit.tooTall": "For høy for plassen over det laget",
-  "community.gapFit.scaleMismatch": "Laget for en annen rutestørrelse enn oppsettet ditt"
+  "community.gapFit.scaleMismatch": "Laget for en annen rutestørrelse enn oppsettet ditt",
+  "common.experimental": "Eksperimentell",
+  "header.moreLinks": "Flere lenker",
+  "toolSwitcher.community": "Fellesskap",
+  "toolSwitcher.switchToCommunity": "Bytt til fellesskapsdesign",
+  "community.page.subtitle": "Design delt av andre makere, fritt å remikse og skrive ut.",
+  "community.page.publishCta": "Publiser et design"
 }

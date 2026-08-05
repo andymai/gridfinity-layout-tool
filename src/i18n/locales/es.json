@@ -1618,10 +1618,7 @@
   "community.category.other": "Otro",
   "community.category.tools": "Herramientas",
   "community.category.toysGames": "Juguetes y juegos",
-  "community.page.back": "Volver a la app",
-  "community.page.strip.cta": "Diseña tu propio bin",
-  "community.page.strip.dismiss": "Descartar",
-  "community.page.strip.text": "Gridfinity Layout Tool es un diseñador gratuito en el navegador para bins personalizados imprimibles en 3D y organización de cajones. Por ahora son bins con cortes para herramientas (tableros con siluetas y soportes a medida), con más tipos de diseño más adelante.",
+  "community.page.designCta": "Diseña tu propio bin",
   "community.page.title": "Diseños de la comunidad",
   "community.publish.disclosure": "Los diseños publicados son públicos, aparecen en los buscadores y cualquiera puede remezclarlos bajo CC BY 4.0. Por ahora la vitrina se centra en bins con cortes para herramientas, con más por venir.",
   "community.publish.disclosureTerms": "Términos de uso",
@@ -3565,5 +3562,11 @@
   "community.gapFit.fitsRotated": "Cabe en el hueco elegido, girado",
   "community.gapFit.tooLarge": "Demasiado grande para el hueco elegido",
   "community.gapFit.tooTall": "Demasiado alto para el espacio sobre esa capa",
-  "community.gapFit.scaleMismatch": "Hecho para un tamaño de rejilla distinto al de tu diseño"
+  "community.gapFit.scaleMismatch": "Hecho para un tamaño de rejilla distinto al de tu diseño",
+  "common.experimental": "Experimental",
+  "header.moreLinks": "Más enlaces",
+  "toolSwitcher.community": "Comunidad",
+  "toolSwitcher.switchToCommunity": "Cambiar a diseños de la comunidad",
+  "community.page.subtitle": "Diseños compartidos por otros creadores, libres para remezclar e imprimir.",
+  "community.page.publishCta": "Publicar un diseño"
 }

@@ -2,11 +2,13 @@ import {
   useEffect,
   useLayoutEffect,
   useRef,
+  useState,
   useCallback,
   createContext,
   useContext,
   type ReactNode,
   type KeyboardEvent as ReactKeyboardEvent,
+  type MouseEvent as ReactMouseEvent,
 } from 'react';
 import { createPortal } from 'react-dom';
 import { cva, type VariantProps } from 'class-variance-authority';
@@ -305,6 +307,23 @@ export interface MenuItemProps extends Omit<ItemVariantProps, 'disabled'> {
    * Keyboard shortcut hint (displayed on the right).
    */
   shortcut?: string;
+
+  /**
+   * Render the item as an external link. Middle-click, "open in new tab" and
+   * "copy link address" all stop working once a link becomes a button, so an
+   * item that navigates somewhere must stay an anchor.
+   */
+  href?: string;
+
+  /**
+   * Accessible name when the visible label is not descriptive on its own.
+   */
+  'aria-label'?: string;
+
+  /**
+   * Native title attribute (hover hint).
+   */
+  title?: string;
 }
 
 function MenuItem({
@@ -314,34 +333,34 @@ function MenuItem({
   variant = 'default',
   disabled = false,
   shortcut,
+  href,
+  'aria-label': ariaLabel,
+  title,
 }: MenuItemProps) {
   const { onClose, registerItem } = useMenuContext();
-  const itemRef = useRef<HTMLButtonElement>(null);
+  // A callback ref rather than useRef: the item is a <button> or an <a>
+  // depending on `href`, and a single typed ref object cannot serve both.
+  const [itemElement, setItemElement] = useState<HTMLElement | null>(null);
 
   // Register for keyboard navigation
   useEffect(() => {
-    const element = itemRef.current;
-    if (!element || disabled) return;
-    return registerItem(element);
-  }, [registerItem, disabled]);
+    if (!itemElement || disabled) return;
+    return registerItem(itemElement);
+  }, [registerItem, disabled, itemElement]);
 
-  const handleClick = () => {
-    if (disabled) return;
+  // `disabled` on an anchor is advisory, so the navigation has to be stopped
+  // here rather than left to the attribute.
+  const handleClick = (event: ReactMouseEvent) => {
+    if (disabled) {
+      event.preventDefault();
+      return;
+    }
     onClick?.();
     onClose();
   };
 
-  return (
-    <button
-      ref={itemRef}
-      type="button"
-      role="menuitem"
-      tabIndex={disabled ? -1 : 0}
-      aria-disabled={disabled || undefined}
-      disabled={disabled}
-      className={cn(itemVariants({ variant, disabled }))}
-      onClick={handleClick}
-    >
+  const body = (
+    <>
       {icon && (
         <span className="w-5 h-5 flex-shrink-0" aria-hidden="true">
           {icon}
@@ -353,6 +372,43 @@ function MenuItem({
           {shortcut}
         </span>
       )}
+    </>
+  );
+
+  if (href !== undefined) {
+    return (
+      <a
+        ref={setItemElement}
+        role="menuitem"
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        tabIndex={disabled ? -1 : 0}
+        aria-disabled={disabled || undefined}
+        aria-label={ariaLabel}
+        title={title}
+        className={cn(itemVariants({ variant, disabled }))}
+        onClick={handleClick}
+      >
+        {body}
+      </a>
+    );
+  }
+
+  return (
+    <button
+      ref={setItemElement}
+      type="button"
+      role="menuitem"
+      tabIndex={disabled ? -1 : 0}
+      aria-disabled={disabled || undefined}
+      aria-label={ariaLabel}
+      title={title}
+      disabled={disabled}
+      className={cn(itemVariants({ variant, disabled }))}
+      onClick={handleClick}
+    >
+      {body}
     </button>
   );
 }

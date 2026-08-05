@@ -1611,10 +1611,7 @@
   "community.category.other": "Övrigt",
   "community.category.tools": "Verktyg",
   "community.category.toysGames": "Leksaker & spel",
-  "community.page.back": "Tillbaka till appen",
-  "community.page.strip.cta": "Designa ditt eget fack",
-  "community.page.strip.dismiss": "Avfärda",
-  "community.page.strip.text": "Gridfinity Layout Tool är ett gratis designverktyg i webbläsaren för egna 3D-utskrivbara fack och lådlayouter. Just nu är det fack med verktygsurtag (verktygstavlor och skräddarsydda hållare), med fler designtyper senare.",
+  "community.page.designCta": "Designa ditt eget fack",
   "community.page.title": "Gemenskapsdesigner",
   "community.publish.disclosure": "Publicerade designer är offentliga, visas i sökmotorer och vem som helst kan remixa dem under CC BY 4.0. Galleriet är tills vidare inriktat på fack med verktygsurtag, med fler typer på gång.",
   "community.publish.disclosureTerms": "Användarvillkor",
@@ -3565,5 +3562,11 @@
   "community.gapFit.fitsRotated": "Passar i luckan du valde, vänd",
   "community.gapFit.tooLarge": "För stor för luckan du valde",
   "community.gapFit.tooTall": "För hög för utrymmet ovanför det lagret",
-  "community.gapFit.scaleMismatch": "Byggd för en annan rutstorlek än din layout"
+  "community.gapFit.scaleMismatch": "Byggd för en annan rutstorlek än din layout",
+  "common.experimental": "Experimentell",
+  "header.moreLinks": "Fler länkar",
+  "toolSwitcher.community": "Gemenskap",
+  "toolSwitcher.switchToCommunity": "Byt till gemenskapsdesigner",
+  "community.page.subtitle": "Designer som delats av andra makare, fria att remixa och skriva ut.",
+  "community.page.publishCta": "Publicera en design"
 }

@@ -1472,10 +1472,7 @@
   "collab.participants": "Teilnehmer",
   "collab.reconnecting": "Verbindung wird wiederhergestellt",
   "collab.you": "(du)",
-  "community.page.back": "Zurück zur App",
-  "community.page.strip.cta": "Eigenen Bin entwerfen",
-  "community.page.strip.dismiss": "Schließen",
-  "community.page.strip.text": "Das Gridfinity Layout Tool ist ein kostenloser Browser-Designer für eigene 3D-druckbare Bins und Schubladen-Layouts. Aktuell geht es um Bins mit Werkzeug-Ausschnitten (Schattentafeln und passgenaue Halterungen), weitere Design-Typen folgen später.",
+  "community.page.designCta": "Eigenen Bin entwerfen",
   "community.page.title": "Community-Designs",
   "community.publishButton": "Veröffentlichen",
   "community.publishButtonAria": "In der Community-Galerie veröffentlichen",
@@ -3565,5 +3562,11 @@
   "community.gapFit.fitsRotated": "Passt in die gewählte Lücke, quer gedreht",
   "community.gapFit.tooLarge": "Zu groß für die gewählte Lücke",
   "community.gapFit.tooTall": "Zu hoch für den Platz über dieser Ebene",
-  "community.gapFit.scaleMismatch": "Für eine andere Rastergröße als dein Layout gebaut"
+  "community.gapFit.scaleMismatch": "Für eine andere Rastergröße als dein Layout gebaut",
+  "common.experimental": "Experimentell",
+  "header.moreLinks": "Weitere Links",
+  "toolSwitcher.community": "Community",
+  "toolSwitcher.switchToCommunity": "Zu Community-Designs wechseln",
+  "community.page.subtitle": "Designs von anderen Maker:innen, frei zum Remixen und Drucken.",
+  "community.page.publishCta": "Design veröffentlichen"
 }

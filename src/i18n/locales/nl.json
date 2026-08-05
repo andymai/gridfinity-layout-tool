@@ -1472,10 +1472,7 @@
   "collab.participants": "Deelnemers",
   "collab.reconnecting": "Opnieuw verbinden",
   "collab.you": "(jij)",
-  "community.page.back": "Terug naar de app",
-  "community.page.strip.cta": "Ontwerp je eigen bin",
-  "community.page.strip.dismiss": "Sluiten",
-  "community.page.strip.text": "Gridfinity Layout Tool is een gratis ontwerptool in de browser voor eigen 3D-printbare bins en lade-indelingen. Op dit moment gaat het om bins met gereedschapsuitsparingen (gereedschapsborden en op maat gemaakte houders), met meer ontwerptypen later.",
+  "community.page.designCta": "Ontwerp je eigen bin",
   "community.page.title": "Communityontwerpen",
   "community.publishButton": "Publiceren",
   "community.publishButtonAria": "Publiceren in de communitygalerij",
@@ -3565,5 +3562,11 @@
   "community.gapFit.fitsRotated": "Past in de gekozen ruimte, gedraaid",
   "community.gapFit.tooLarge": "Te groot voor de gekozen ruimte",
   "community.gapFit.tooTall": "Te hoog voor de ruimte boven die laag",
-  "community.gapFit.scaleMismatch": "Gemaakt voor een andere rastermaat dan jouw layout"
+  "community.gapFit.scaleMismatch": "Gemaakt voor een andere rastermaat dan jouw layout",
+  "common.experimental": "Experimenteel",
+  "header.moreLinks": "Meer links",
+  "toolSwitcher.community": "Community",
+  "toolSwitcher.switchToCommunity": "Naar communityontwerpen",
+  "community.page.subtitle": "Ontwerpen gedeeld door andere makers, vrij om te remixen en te printen.",
+  "community.page.publishCta": "Een ontwerp publiceren"
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, createEvent } from '@testing-library/react';
 import { Menu } from './Menu';
 
 const defaultProps = {
@@ -155,6 +155,47 @@ describe('Menu', () => {
         </Menu.Root>
       );
       expect(screen.getByRole('menuitem')).toHaveAttribute('aria-disabled', 'true');
+    });
+  });
+
+  describe('link items', () => {
+    it('renders an external anchor when href is set', () => {
+      render(
+        <Menu.Root {...defaultProps}>
+          <Menu.Item href="https://example.com">Docs</Menu.Item>
+        </Menu.Root>
+      );
+      const item = screen.getByRole('menuitem');
+      expect(item.tagName).toBe('A');
+      expect(item).toHaveAttribute('href', 'https://example.com');
+      expect(item).toHaveAttribute('target', '_blank');
+      expect(item).toHaveAttribute('rel', 'noopener noreferrer');
+    });
+
+    it('closes the menu after following a link', () => {
+      const onClose = vi.fn();
+      render(
+        <Menu.Root {...defaultProps} onClose={onClose}>
+          <Menu.Item href="https://example.com">Docs</Menu.Item>
+        </Menu.Root>
+      );
+      fireEvent.click(screen.getByRole('menuitem'));
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('suppresses navigation on a disabled link', () => {
+      const onClose = vi.fn();
+      render(
+        <Menu.Root {...defaultProps} onClose={onClose}>
+          <Menu.Item href="https://example.com" disabled>
+            Docs
+          </Menu.Item>
+        </Menu.Root>
+      );
+      const event = createEvent.click(screen.getByRole('menuitem'));
+      fireEvent(screen.getByRole('menuitem'), event);
+      expect(event.defaultPrevented).toBe(true);
+      expect(onClose).not.toHaveBeenCalled();
     });
   });
 });

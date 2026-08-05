@@ -1603,10 +1603,7 @@
   "common.unknown": "Neznámé",
   "common.width": "Šířka",
   "common.widthUnits": "Šířka (u)",
-  "community.page.back": "Zpět do aplikace",
-  "community.page.strip.cta": "Navrhnout vlastní bin",
-  "community.page.strip.dismiss": "Zavřít",
-  "community.page.strip.text": "Gridfinity Layout Tool je bezplatný nástroj v prohlížeči pro navrhování vlastních 3D tisknutelných binů a uspořádání zásuvek. Teď jde o biny s výřezy pro nástroje (nástěnky na nářadí a přesné držáky), další typy návrhů přibudou později.",
+  "community.page.designCta": "Navrhnout vlastní bin",
   "community.page.title": "Komunitní návrhy",
   "community.publishButton": "Publikovat",
   "community.publishButtonAria": "Publikovat do komunitní galerie",
@@ -3565,5 +3562,11 @@
   "community.gapFit.fitsRotated": "Vejde se do vybrané mezery, otočený",
   "community.gapFit.tooLarge": "Příliš velký na vybranou mezeru",
   "community.gapFit.tooTall": "Příliš vysoký na místo nad touto vrstvou",
-  "community.gapFit.scaleMismatch": "Vytvořeno pro jinou velikost mřížky než tvůj layout"
+  "community.gapFit.scaleMismatch": "Vytvořeno pro jinou velikost mřížky než tvůj layout",
+  "common.experimental": "Experimentální",
+  "header.moreLinks": "Další odkazy",
+  "toolSwitcher.community": "Komunita",
+  "toolSwitcher.switchToCommunity": "Přepnout na komunitní návrhy",
+  "community.page.subtitle": "Návrhy sdílené ostatními tvůrci, volné k remixu a tisku.",
+  "community.page.publishCta": "Publikovat návrh"
 }
