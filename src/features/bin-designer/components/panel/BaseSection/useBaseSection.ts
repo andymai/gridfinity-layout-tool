@@ -136,19 +136,19 @@ export function useBaseSection() {
       feature: 'base.lid',
       enabled: !isLidBottom,
     });
-    // Materialise the mating config on the way in: it is absent by default so
-    // an ordinary bin's params hash is unchanged (see `DEFAULT_BIN_PARAMS`).
-    commit(
-      resolved.base.style === 'lid'
-        ? {
-            ...resolved,
-            base: {
-              ...resolved.base,
-              trayBottom: resolved.base.trayBottom ?? DEFAULT_TRAY_BOTTOM,
-            },
-          }
-        : resolved
-    );
+    // The mating config is materialised on the way in and STRIPPED on the way
+    // out. It is absent by default so an ordinary bin's params hash is
+    // unchanged (see `DEFAULT_BIN_PARAMS`) — leaving a residue behind would
+    // make a bin that once tried the tray bottom fingerprint differently from
+    // an identical one that never did, defeating the point of the omission.
+    const { trayBottom: _dropped, ...baseWithoutTray } = resolved.base;
+    commit({
+      ...resolved,
+      base:
+        resolved.base.style === 'lid'
+          ? { ...resolved.base, trayBottom: resolved.base.trayBottom ?? DEFAULT_TRAY_BOTTOM }
+          : baseWithoutTray,
+    });
   }, [params, isLidBottom, commit]);
 
   const updateTrayBottom = useCallback(

@@ -484,11 +484,15 @@ describe('useBaseSection', () => {
       expect(base.trayBottom?.attachment).toBe('clickRails');
     });
 
-    it('toggling back off returns to the standard base', () => {
+    it('toggling back off returns to the standard base and leaves no residue', () => {
       const { result } = renderHook(() => useBaseSection());
       act(() => result.current.handlers.toggleLidBottom());
       act(() => result.current.handlers.toggleLidBottom());
-      expect(useDesignerStore.getState().params.base.style).toBe('standard');
+      const { base } = useDesignerStore.getState().params;
+      expect(base.style).toBe('standard');
+      // `params` is hashed wholesale, so a leftover `trayBottom` would make
+      // this bin fingerprint differently from one that never tried the tray.
+      expect('trayBottom' in base).toBe(false);
     });
 
     it('clears attachment hardware — there are no feet to drill', () => {
