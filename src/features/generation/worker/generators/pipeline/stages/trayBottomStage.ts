@@ -1,13 +1,8 @@
 /**
- * Tray-bottom stage — fuses a lid's mating skirt under the bin (issue #3036).
+ * Tray-bottom stage — fuses a lid's mating skirt under the bin (#3036).
  *
- * A tray bin is an ordinary, fully editable bin (compartments, dividers,
- * cutouts, label tabs) whose underside is lid geometry instead of a Gridfinity
- * base, so a shallow organiser can cap the bin below it and clear contents
- * that stick up past its rim.
- *
- * Why this composes rather than duplicating the lid builder: the bin body and
- * the lid share an outer profile exactly. The body is
+ * The bin body and the lid share an outer profile exactly, which is what lets
+ * this compose the lid builders instead of duplicating them: the body is
  * `width * gridUnit - CLEARANCE` (0.5mm) and the lid is
  * `width * gridUnit - 2 * LID_FIT_CLEARANCE` (2 x 0.25mm); the body's corner
  * radius is `BOX_CORNER_RADIUS` (3.75mm) and the lid's effective radius is
@@ -20,11 +15,10 @@
  * open at its top (Z=0) and the bin floor above closes the cavity.
  *
  * Runs after `translateStage`, which has already lifted the body by
- * `dimensions.baseOffsetZ` — the skirt's depth, exactly as it lifts a socketed
- * bin by `SOCKET_HEIGHT`. The skirt is built in lid-local coords (top face at
- * Z=0, hanging into negative Z) and raised by the same offset, so it lands in
- * `[0, baseOffsetZ]` directly under the floor and Z=0 stays the absolute
- * bottom without any further correction.
+ * `dimensions.baseOffsetZ` — the skirt's depth. The skirt is built in lid-local
+ * coords (top face at Z=0, hanging into negative Z) and raised by that same
+ * offset, so it lands in `[0, baseOffsetZ]` directly under the floor and Z=0
+ * stays the absolute bottom.
  */
 
 import { translate, unwrap, fuse, withScope } from 'brepjs';
@@ -32,7 +26,7 @@ import type { DisposalScope, Shape3D, ValidSolid } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import { checkCancelled } from '../../utils/abort';
 import { buildMatingShell } from '../../lidProfile';
-import { addClickRails } from '../../lidClickRail';
+import { addClickRails, hasAnyClickRail } from '../../lidClickRail';
 import { addLidRetentionMagnets } from '../../lidRetentionMagnets';
 import { resolveTrayBottomInputs } from '../../trayBottomInputs';
 
@@ -55,8 +49,7 @@ export const trayBottomStage: PipelineStage = {
       let skirt: Shape3D = buildMatingShell(scope, inputs);
       scope.register(skirt);
 
-      const { clickRails } = inputs;
-      if (clickRails.front || clickRails.back || clickRails.left || clickRails.right) {
+      if (hasAnyClickRail(inputs.clickRails)) {
         skirt = addClickRails(scope, skirt, inputs);
       }
       if (inputs.retentionMagnets) {

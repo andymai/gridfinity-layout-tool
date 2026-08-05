@@ -572,11 +572,7 @@ export function LidSection() {
             </div>
           </Collapsible>
 
-          {/* ── Editable tray instead of a plain lid (#3036) ────────────
-              A lid holds nothing in place; an organiser tray does. This
-              hands off to a NEW design with the footprint, grid pitch and
-              attachment already matched, because a tray is a separate
-              design and nothing else would keep the two in agreement. */}
+          {/* Hands off to a NEW design (#3036) — see `matchingTrayParams`. */}
           <section className="space-y-2 border-t border-stroke-subtle pt-3">
             <SubHeader>{t('binDesigner.lid.section.tray')}</SubHeader>
             <p className="text-xs text-content-tertiary">{t('binDesigner.lid.matchingTrayHint')}</p>

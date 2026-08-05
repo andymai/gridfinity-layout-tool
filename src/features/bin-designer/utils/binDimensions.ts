@@ -15,6 +15,12 @@
 
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import type { BinParams, OverhangConfig } from '@/features/bin-designer/types';
+import {
+  DEFAULT_TRAY_BOTTOM,
+  LID_FIT_CLEARANCE,
+  resolveLidCavityExtraMm,
+  trayBottomSkirtDepth,
+} from '@/features/bin-designer/types';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import type { CellMask } from '@/shared/utils/cellMask';
 import { resolveOverhang } from '@/shared/utils/overhang';
@@ -53,6 +59,27 @@ export interface BinDimensions {
  * beyond the result object). Callers that need only one field should
  * still call this rather than recomputing, so the math stays canonical.
  */
+/**
+ * Skirt depth of a tray bin, or null when the base is not a tray. Uses the same
+ * shared formula the worker's `deriveDimensions` does, so the preview and the
+ * mesh cannot disagree about where a tray's floor is.
+ */
+function trayBottomFloorZ(params: BinParams): number | null {
+  if (params.base.style !== 'lid') return null;
+  const trayBottom = params.base.trayBottom ?? DEFAULT_TRAY_BOTTOM;
+  const rails = trayBottom.clickRails;
+  return trayBottomSkirtDepth(
+    params.heightUnitMm,
+    LID_FIT_CLEARANCE,
+    resolveLidCavityExtraMm({
+      ...params,
+      lid: { ...params.lid, extraHeightMm: trayBottom.extraHeightMm },
+    }),
+    trayBottom.attachment === 'clickRails' &&
+      (rails.front || rails.back || rails.left || rails.right)
+  );
+}
+
 export function binDimensions(params: BinParams): BinDimensions {
   // Y axis uses gridUnitMmY when set (non-square grid); otherwise it equals the
   // X pitch, so square bins are unchanged.
@@ -63,8 +90,14 @@ export function binDimensions(params: BinParams): BinDimensions {
   const innerD = outerD - 2 * params.wallThickness;
   const totalH = params.height * params.heightUnitMm;
   const isFlat = params.base.style === 'flat';
-  const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
-  const floorZ = isFlat ? 0 : GRIDFINITY.SOCKET_HEIGHT;
+  // Mirrors the worker's `deriveDimensions`. A tray bin (#3036) is socketless
+  // like a flat one, but its floor sits on a lid skirt rather than on the bed,
+  // so `floorZ` is that skirt's depth. Everything downstream — the ghost
+  // overlays, the cutout and divider editors, the scoop bounds — reads these
+  // two numbers, so getting them wrong here misplaces all of them at once.
+  const socketless = isFlat || params.base.style === 'lid';
+  const wallHeight = socketless ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
+  const floorZ = trayBottomFloorZ(params) ?? (isFlat ? 0 : GRIDFINITY.SOCKET_HEIGHT);
   return { outerW, outerD, innerW, innerD, totalH, wallHeight, floorZ, isFlat };
 }
 

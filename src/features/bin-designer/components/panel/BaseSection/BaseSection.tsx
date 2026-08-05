@@ -1,6 +1,6 @@
 /**
- * Base section: Magnet holes, screw holes, stacking lip, flat bottom, floor
- * pattern.
+ * Base section: Magnet holes, screw holes, stacking lip, flat bottom,
+ * lid-compatible bottom, floor pattern.
  *
  * Uses smart defaults with "Customize" inline expansion for magnet/screw
  * radius and depth parameters that most users won't need to change.
@@ -15,12 +15,10 @@ import { PatternSelector } from '../WallsSection/PatternSelector';
 import {
   FLOOR_PATTERN_TYPES,
   LID_ATTACHMENTS,
-  LID_RAIL_SIDES,
-} from '@/features/bin-designer/types';
-import {
   LID_EXTRA_HEIGHT_MAX_MM,
   LID_EXTRA_HEIGHT_MIN_MM,
-} from '@/features/bin-designer/types/lid';
+  LID_RAIL_SIDES,
+} from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { useBaseSection } from './useBaseSection';
 
@@ -88,13 +86,8 @@ export function BaseSection() {
         disabledReason={handlers.flatDisabledReason}
       />
 
-      {/* ── Lid-compatible bottom (#3036) — the underside is lid mating
-          geometry instead of a Gridfinity socket, so this bin caps the one
-          below it while keeping the whole editor: compartments, dividers,
-          cutouts, labels. `extraHeight` is what makes it work for contents
-          that stick up past the lower bin's rim. Attachment labels and the
-          rail controls reuse the lid section's copy, because it is the same
-          joint described from the other side. */}
+      {/* Lid-compatible bottom (#3036). The attachment and rail controls reuse
+          the lid section's copy: it is the same joint from the other side. */}
       <FeatureToggle
         label={t('binDesigner.lidBottom')}
         checked={state.isLidBottom}

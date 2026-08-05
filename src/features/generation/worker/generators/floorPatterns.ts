@@ -228,7 +228,7 @@ export function planFloorPattern(params: BinParams, dim: BinDimensions): FloorPa
     });
   };
 
-  if (dim.isFlat) {
+  if (dim.socketless) {
     // No socket to thread the holes through — the whole cavity floor is fair
     // game, minus the rim that bonds it to the walls.
     addWindow(dim.innerOffsetX, dim.innerOffsetY, dim.innerW - 2 * border, dim.innerD - 2 * border);

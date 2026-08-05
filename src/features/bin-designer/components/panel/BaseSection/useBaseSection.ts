@@ -3,15 +3,21 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
 import { resolveConstraints, getFeatureStatus } from '@/shared/constraints';
-import { isMagnetStyle, isScrewStyle } from '@/features/bin-designer/types';
-import { DEFAULT_TRAY_BOTTOM } from '@/features/bin-designer/types/base';
-import type { TrayBottomConfig } from '@/features/bin-designer/types/base';
-import type { LidAttachment, LidRailSide } from '@/features/bin-designer/types/lid';
-import type { BinParams, FloorPatternType, WallPatternType } from '@/features/bin-designer/types';
+import type {
+  BinParams,
+  FloorPatternType,
+  LidAttachment,
+  LidRailSide,
+  TrayBottomConfig,
+  WallPatternType,
+} from '@/features/bin-designer/types';
 import {
   DEFAULT_FLOOR_PATTERN_CONFIG,
   DEFAULT_PATTERN_SCALE,
+  DEFAULT_TRAY_BOTTOM,
   FLOOR_PATTERN_TYPES,
+  isMagnetStyle,
+  isScrewStyle,
 } from '@/features/bin-designer/types';
 import { assessFloorPatternFit } from '@/features/bin-designer/utils/floorPatternFit';
 import { minHeightUnits } from '@/features/bin-designer/constants';
@@ -130,11 +136,17 @@ export function useBaseSection() {
       feature: 'base.lid',
       enabled: !isLidBottom,
     });
-    // Materialise the mating config on the way in. It is absent by default so
-    // an ordinary bin's params hash is unchanged (see paramMigration).
+    // Materialise the mating config on the way in: it is absent by default so
+    // an ordinary bin's params hash is unchanged (see `DEFAULT_BIN_PARAMS`).
     commit(
-      resolved.base.style === 'lid' && resolved.base.trayBottom === undefined
-        ? { ...resolved, base: { ...resolved.base, trayBottom: DEFAULT_TRAY_BOTTOM } }
+      resolved.base.style === 'lid'
+        ? {
+            ...resolved,
+            base: {
+              ...resolved.base,
+              trayBottom: resolved.base.trayBottom ?? DEFAULT_TRAY_BOTTOM,
+            },
+          }
         : resolved
     );
   }, [params, isLidBottom, commit]);
@@ -153,11 +165,6 @@ export function useBaseSection() {
 
   const setTrayExtraHeight = useCallback(
     (extraHeightMm: number) => updateTrayBottom({ extraHeightMm }),
-    [updateTrayBottom]
-  );
-
-  const setTrayRailCoverage = useCallback(
-    (clickRailCoverage: number) => updateTrayBottom({ clickRailCoverage }),
     [updateTrayBottom]
   );
 
@@ -266,7 +273,6 @@ export function useBaseSection() {
       toggleLidBottom,
       setTrayAttachment,
       setTrayExtraHeight,
-      setTrayRailCoverage,
       toggleTrayRail,
       setMagnetDiameter,
       setMagnetHeight,

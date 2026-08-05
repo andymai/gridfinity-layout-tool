@@ -64,7 +64,7 @@ const VALID_BASE_STYLES = [
   'magnet_and_screw',
   'weighted',
   'flat',
-  // Underside is lid mating geometry instead of a Gridfinity socket (#3036).
+  // Underside is lid mating geometry instead of a socket (#3036).
   'lid',
 ] as const;
 const VALID_LABEL_TAB_SUPPORTS = ['bracket', 'solid', 'fillet'] as const;
@@ -160,6 +160,37 @@ export type DesignerValidationResult =
   | { valid: false; error: { code: string; message: string } };
 
 /**
+ * Retention-magnet dimensions, shared by `lid.retentionMagnet` and
+ * `base.trayBottom.retentionMagnet` (#3036). Both feed the SAME worker
+ * placement code, so they must be bounded identically — validating them
+ * separately is how the tray path ended up accepting values the lid rejects.
+ *
+ * `edgeMagnets` (#2844) must be a whole number, not merely in range: the
+ * placement loop divides the span by `count + 1`, so a fractional 2.5 emits
+ * two magnets spaced for 3.5 and lands them off-centre. The cap also stops a
+ * crafted share spawning thousands of boss/pocket booleans. Mirrors
+ * LID_MAGNET_* on the client.
+ */
+function validateRetentionMagnet(magnet: unknown, path: string): string | null {
+  if (!isObject(magnet)) return `${path} must be an object`;
+  if (isNumber(magnet.diameter) && !inRange(magnet.diameter, 3, 15)) {
+    return `${path}.diameter must be 3-15`;
+  }
+  if (isNumber(magnet.depth) && !inRange(magnet.depth, 1, 6)) {
+    return `${path}.depth must be 1-6`;
+  }
+  if (
+    magnet.edgeMagnets !== undefined &&
+    (!isNumber(magnet.edgeMagnets) ||
+      !Number.isInteger(magnet.edgeMagnets) ||
+      !inRange(magnet.edgeMagnets, 0, 3))
+  ) {
+    return `${path}.edgeMagnets must be an integer 0-3`;
+  }
+  return null;
+}
+
+/**
  * Validate the `base` object of a designer payload.
  *
  * Checks that `base` is an object and that it contains a valid `style`, numeric `magnetDiameter` (1–20),
@@ -189,16 +220,17 @@ function validateBase(base: unknown): string | null {
     return 'base.spacer must be boolean';
   }
   if (base.trayBottom !== undefined) {
-    const trayBottomError = validateTrayBottom(base.trayBottom);
-    if (trayBottomError !== null) return trayBottomError;
+    const trayErr = validateTrayBottom(base.trayBottom);
+    if (trayErr) return trayErr;
   }
   return null;
 }
 
 /**
  * Validate `base.trayBottom` (#3036). Mirrors `TrayBottomConfig` in
- * `src/features/bin-designer/types/base.ts`. Bounds match the lid's, since the
- * two describe the same joint.
+ * `src/features/bin-designer/types/base.ts`. Every field is required: unlike
+ * `lid`, this object has no legacy payloads to tolerate — `migrateParams` only
+ * ever writes it whole.
  */
 function validateTrayBottom(trayBottom: unknown): string | null {
   if (!isObject(trayBottom)) return 'base.trayBottom must be an object';
@@ -219,18 +251,7 @@ function validateTrayBottom(trayBottom: unknown): string | null {
       return `base.trayBottom.clickRails.${side} must be boolean`;
     }
   }
-  const magnet = trayBottom.retentionMagnet;
-  if (!isObject(magnet)) return 'base.trayBottom.retentionMagnet must be an object';
-  if (!isNumber(magnet.diameter) || !inRange(magnet.diameter, 1, 20)) {
-    return 'base.trayBottom.retentionMagnet.diameter must be 1-20';
-  }
-  if (!isNumber(magnet.depth) || !inRange(magnet.depth, 0.5, 10)) {
-    return 'base.trayBottom.retentionMagnet.depth must be 0.5-10';
-  }
-  if (!isNumber(magnet.edgeMagnets) || !inRange(magnet.edgeMagnets, 0, 10)) {
-    return 'base.trayBottom.retentionMagnet.edgeMagnets must be 0-10';
-  }
-  return null;
+  return validateRetentionMagnet(trayBottom.retentionMagnet, 'base.trayBottom.retentionMagnet');
 }
 
 /**
@@ -295,28 +316,8 @@ function validateLid(lid: unknown): string | null {
     return 'lid.topThicknessMm must be 0.8-5';
   }
   if (lid.retentionMagnet !== undefined) {
-    const m = lid.retentionMagnet;
-    if (!isObject(m)) return 'lid.retentionMagnet must be an object';
-    if (isNumber(m.diameter) && !inRange(m.diameter, 3, 15)) {
-      return 'lid.retentionMagnet.diameter must be 3-15';
-    }
-    if (isNumber(m.depth) && !inRange(m.depth, 1, 6)) {
-      return 'lid.retentionMagnet.depth must be 1-6';
-    }
-    // Edge-magnet count (#2844). Feeds the worker's placement loop, so cap it
-    // server-side — a crafted share can't smuggle in a huge count that spawns
-    // thousands of boss/pocket booleans. Mirrors LID_MAGNET_EDGE_COUNT_*.
-    // Must be a whole number, not merely in range: the placement loop divides
-    // the span by `count + 1`, so a fractional 2.5 emits two magnets spaced for
-    // 3.5 and lands them off-centre. The client already rounds.
-    if (
-      m.edgeMagnets !== undefined &&
-      (!isNumber(m.edgeMagnets) ||
-        !Number.isInteger(m.edgeMagnets) ||
-        !inRange(m.edgeMagnets, 0, 3))
-    ) {
-      return 'lid.retentionMagnet.edgeMagnets must be an integer 0-3';
-    }
+    const magnetErr = validateRetentionMagnet(lid.retentionMagnet, 'lid.retentionMagnet');
+    if (magnetErr) return magnetErr;
   }
   if (lid.tray !== undefined) {
     const tr = lid.tray;

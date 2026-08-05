@@ -30,17 +30,25 @@ import { resolveOverhang, overhangKey, hasOverhang, overhangExpansion } from '..
 import { pitchFromParams, pitchKeySegments } from '../gridPitch';
 import { resolveTrayBottomInputs, trayBottomSkirtDepth } from '../trayBottomInputs';
 
+/**
+ * Depth of whatever sits under the body: a Gridfinity socket, a tray bin's lid
+ * skirt (#3036), or nothing at all under a flat base.
+ */
+function resolveBaseOffsetZ(params: BinParams): number {
+  if (params.base.style === 'lid') return trayBottomSkirtDepth(resolveTrayBottomInputs(params));
+  if (params.base.style === 'flat') return 0;
+  return SOCKET_HEIGHT;
+}
+
 /** Derive all dimensions from bin parameters. */
 export function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- fallback for legacy BinParams without heightUnitMm
   const heightUnit = params.heightUnitMm ?? HEIGHT_UNIT;
   const totalHeight = params.height * heightUnit;
   const isFlat = params.base.style === 'flat';
-  // Tray bin (#3036): the underside is lid mating geometry, so like a flat
-  // base there is no socket to shell, drill, halve or translate past. Kept
-  // separate from `isFlat` rather than folded into it, because the two differ
-  // where it matters — a flat base really is a plain face, whereas this one
-  // grows a skirt below Z=0 in `trayBottomStage`.
+  // Tray bin (#3036): lid mating geometry underneath, so like a flat base there
+  // is no socket to shell, drill or halve. Still distinct from `isFlat`, which
+  // ends in a plain face where this grows a skirt in `trayBottomStage`.
   const isTrayBottom = params.base.style === 'lid';
   const socketless = isFlat || isTrayBottom;
   // User flag only. When the mask has mixed half-bin detail, the socket
@@ -98,20 +106,14 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // through-hole would be a free-standing pillar — so attachment hardware is
   // suppressed here as well as ruled out by the constraint engine, keeping a
   // crafted share payload from producing a disconnected solid. Same shape of
-  // guard as `isFlat`, which has no socket to drill at all.
+  // guard as `socketless`, which has no socket to drill at all.
   const noAttachment = socketless || isSpacer;
   const withMagnet =
     !noAttachment && (params.base.style === 'magnet' || params.base.style === 'magnet_and_screw');
   const withScrew =
     !noAttachment && (params.base.style === 'screw' || params.base.style === 'magnet_and_screw');
 
-  // Depth of whatever sits under the body. A tray bin's skirt replaces the
-  // socket, so it is the same kind of quantity and is resolved the same way.
-  const baseOffsetZ = isTrayBottom
-    ? trayBottomSkirtDepth(resolveTrayBottomInputs(params))
-    : isFlat
-      ? 0
-      : SOCKET_HEIGHT;
+  const baseOffsetZ = resolveBaseOffsetZ(params);
 
   const maxDimension = Math.max(params.width * gridUnitX, params.depth * gridUnitY);
 
@@ -216,6 +218,11 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
       // Spacer punches the floor through, so it must never share a cached body
       // with the lite bin it otherwise looks like. Appended for the same reason.
       ...(isSpacer ? ['spacer'] : []),
+      // A tray bin's shell is socketless, so it must not reuse a socketed bin's
+      // cached body. `isFlat` above does not separate them: a custom
+      // `heightUnitMm` makes a socketed 13mm x 2u and a tray 7mm x 3u agree on
+      // every other segment, including `wallHeight`.
+      ...(isTrayBottom ? ['tray'] : []),
       // A solid bin's fill surface is part of its BODY (shellStage folds it into
       // `cutoutTopOffset`), so two bins differing only in the top offset are two
       // different shells. Without this the second one silently reuses the first

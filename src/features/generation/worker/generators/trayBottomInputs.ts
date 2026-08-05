@@ -1,22 +1,28 @@
 /**
  * Resolve the mating geometry for a tray bin — a bin whose underside is a lid
- * instead of a Gridfinity base (`base.style === 'lid'`, issue #3036).
+ * instead of a Gridfinity base (`base.style === 'lid'`, #3036).
  *
- * Deliberately reuses `resolveLidInputs` by synthesising the `lid` config from
- * `base.trayBottom` rather than re-deriving the footprint. Outer size, corner
+ * Reuses `resolveLidInputs` by synthesising a `lid` config from
+ * `base.trayBottom` rather than re-deriving the footprint: outer size, corner
  * radius, fit clearance, overhang expansion and the magnetic clearance relief
- * are all subtle and already correct there; duplicating them is how the two
+ * are all subtle and already correct there, and duplicating them is how the two
  * joints would drift apart and stop printing the same.
  *
- * The footprints line up exactly, which is what makes this reuse sound: a bin
- * body is `width * gridUnit - CLEARANCE` (0.5mm) and a lid is
+ * The reuse is sound because the footprints line up exactly: a bin body is
+ * `width * gridUnit - CLEARANCE` (0.5mm) and a lid is
  * `width * gridUnit - 2 * LID_FIT_CLEARANCE` (2 x 0.25mm). Same number, so the
  * shell fuses under the body with nothing to reconcile.
  */
 
-import { DEFAULT_LID_CONFIG, DEFAULT_TRAY_BOTTOM } from '@/shared/types/bin';
+import {
+  DEFAULT_LID_CONFIG,
+  DEFAULT_TRAY_BOTTOM,
+  LID_FIT_CLEARANCE,
+  trayBottomSkirtDepth as skirtDepth,
+} from '@/shared/types/bin';
+
 import type { BinParams } from '@/shared/types/bin';
-import { CLICK_RAIL_DROP_BELOW_WALL } from './lidClickRail';
+import { hasAnyClickRail } from './lidClickRail';
 import { resolveLidInputs } from './lidInputs';
 import type { LidInputs } from './lidInputs';
 
@@ -58,15 +64,20 @@ function trayBottomParams(params: BinParams): BinParams {
  * How far the skirt hangs below the tray's floor, i.e. how far the whole bin
  * must be lifted for Z=0 to remain the absolute bottom.
  *
- * `wallBottomZ` is not enough on its own: click rails hang below the mating
- * wall, which is exactly the mistake this function exists to stop anyone
- * repeating (the model sank 3.75mm under the bed until the geometry test
- * caught it).
+ * `wallBottomZ` alone is not enough: click rails hang below the mating wall,
+ * and leaving them out sinks the model 3.75mm under the print bed.
  */
 export function trayBottomSkirtDepth(inputs: LidInputs): number {
-  const { clickRails } = inputs;
-  const anyRail = clickRails.front || clickRails.back || clickRails.left || clickRails.right;
-  return -inputs.wallBottomZ + (anyRail ? CLICK_RAIL_DROP_BELOW_WALL : 0);
+  // LID_FIT_CLEARANCE, not `inputs.fitClearance`: the magnetic relief is
+  // XY-only, and `resolveLidInputs` derives `wallBottomZ` from the base value
+  // for the same reason. Feeding the relieved value here would lift the seated
+  // plane into the corner magnets' seat gap.
+  return skirtDepth(
+    inputs.heightUnitMm,
+    LID_FIT_CLEARANCE,
+    inputs.cavityExtraMm,
+    hasAnyClickRail(inputs.clickRails)
+  );
 }
 
 export function resolveTrayBottomInputs(params: BinParams): LidInputs {

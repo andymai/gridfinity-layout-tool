@@ -73,16 +73,18 @@ export const LID_WALL_THICKNESS = LID_CORNER_RADIUS - LID_FIT_CLEARANCE - LIP_BI
  *   - Inner face (INNER) pushes into the bin cavity for grip
  * ──────────────────────────────────────────────────────────────────────── */
 
-/** Click rail engagement depth (the snap "bump" height). */
-export const LID_CLICK_RAIL_BUMP = 0.6;
-/** Rail entry chamfer depth (lid slides on smoothly). */
-export const LID_CLICK_RAIL_ENTRY_CHAMFER = 0.8;
-/** Rail exit chamfer (geometry stability). */
-export const LID_CLICK_RAIL_EXIT_CHAMFER = 0.2;
-/** Vertical extension below the rail bump. */
-export const LID_CLICK_RAIL_DROP = 0.8;
-/** Final tail length below the rail body. */
-export const LID_CLICK_RAIL_TAIL = 1.25;
+// Rail depth constants live in `types/lid` so the preview can reach them
+// without pulling in brepjs; re-exported here to keep worker import paths.
+export {
+  LID_CLICK_RAIL_BUMP,
+  LID_CLICK_RAIL_ENTRY_CHAMFER,
+  LID_CLICK_RAIL_EXIT_CHAMFER,
+  LID_CLICK_RAIL_DROP,
+  LID_CLICK_RAIL_TAIL,
+  LID_CLICK_RAIL_SHOULDER,
+  LID_CLICK_RAIL_DROP_BELOW_WALL,
+} from '@/shared/types/bin';
+
 /** How far the rail's outer face protrudes from the corner-radius line. */
 export const LID_CLICK_RAIL_OUT = 1.85;
 /** Inward shift for the rail's body relative to outer protrusion. */

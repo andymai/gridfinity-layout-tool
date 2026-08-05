@@ -527,11 +527,6 @@ export function useLidSection() {
     [params.dividerPieces, setParam, updateHandles, updateLabel, updateWalls, updateWallPattern]
   );
 
-  // "Create matching tray" (#3036). A tray is a SEPARATE design so it can carry
-  // the whole editor, which means nothing structural links it to the bin it
-  // caps. Deriving it from the source here is what keeps the joint correct:
-  // footprint, grid pitch and attachment all come across rather than being
-  // retyped into a blank design.
   const createMatchingTray = useCallback(() => {
     const tray = matchingTrayParams(params);
     const name = designName.trim();

@@ -51,11 +51,10 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
   },
 
   // ── Base: lid-compatible bottom (#3036) ──────────────────────────────────
-  // The underside is lid mating geometry, so there is no socket and no feet.
-  // Everything that drills into, shells, or opens through a socket goes with
-  // them — the same set the flat base rules out, for the same reason.
-  // `base.flat` needs no rule here: both are values of `base.style`, so one
-  // replacing the other is not a conflict the engine has to resolve.
+  // Lid mating geometry underneath means no socket and no feet, so this rules
+  // out the same set the flat base does. `base.flat` itself needs no rule: both
+  // are values of `base.style`, so one replacing the other is not a conflict
+  // for the engine to resolve.
   {
     description: 'Lid-compatible bottom disables attachment features (no feet to drill)',
     source: 'base.lid',

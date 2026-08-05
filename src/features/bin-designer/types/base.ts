@@ -21,34 +21,19 @@ export function isScrewStyle(style: BaseStyle): boolean {
 }
 
 /**
- * True when the underside is lid mating geometry rather than a Gridfinity
- * socket. Grouped with the two predicates above so callers branch on intent
- * instead of on a string, and a later mating style joins in one place.
- */
-export function isLidBase(style: BaseStyle): boolean {
-  return style === 'lid';
-}
-
-/**
- * Mating geometry for a {@link BaseStyle} of `'lid'` (issue #3036): a normal,
- * fully editable bin whose underside is a lid instead of a Gridfinity base, so
- * a shallow organiser can cap the bin below it.
+ * Mating geometry for a {@link BaseStyle} of `'lid'` (#3036): a fully editable
+ * bin whose underside is a lid instead of a Gridfinity base, so it caps the bin
+ * below it.
  *
- * Deliberately a narrow subset of {@link LidConfig} rather than the whole
- * thing. Field names and units match it exactly — notably `extraHeightMm`,
- * which means the same "lengthen the skirt to clear contents that stick up"
- * it means on a lid (issue #2482), and is the reason this feature works for
- * the reporter's protruding contents. The omitted fields describe a lid's TOP
- * (`topThicknessMm`, `stackableTop`, `separateStackPlate`, `tray`); a tray
- * bin's top is its own compartment interior, so carrying them here would
- * leave inert knobs for the UI and validation to drift apart over.
+ * A narrow subset of `LidConfig`, with matching field names and units. The
+ * omitted fields all describe a lid's TOP (`topThicknessMm`, `stackableTop`,
+ * `separateStackPlate`, `tray`); a tray bin's top is its own compartment
+ * interior, so carrying them here would leave inert knobs for the UI and
+ * validation to drift apart over.
  */
 export interface TrayBottomConfig {
   readonly attachment: LidAttachment;
-  /**
-   * Extra skirt depth (mm) below the tray floor, so contents protruding from
-   * the bin underneath are cleared. `0` mates flush like a plain lid.
-   */
+  /** Extra skirt depth (mm) to clear contents protruding from the bin below. */
   readonly extraHeightMm: number;
   readonly clickRails: LidClickRails;
   readonly clickRailCoverage: number;
@@ -57,9 +42,8 @@ export interface TrayBottomConfig {
 }
 
 /**
- * Default mating geometry for a tray bin. Mirrors `DEFAULT_LID_CONFIG` field
- * for field so a tray bottom and a lid of the same attachment print the same
- * joint; only the lid's top-surface fields are absent.
+ * Mirrors `DEFAULT_LID_CONFIG` field for field, so a tray bottom and a lid of
+ * the same attachment print the same joint.
  */
 export const DEFAULT_TRAY_BOTTOM: TrayBottomConfig = {
   attachment: 'clickRails',
@@ -111,8 +95,8 @@ export interface BaseConfig {
   readonly spacer: boolean;
   /**
    * Underside mating geometry, read only when {@link style} is `'lid'`.
-   * Optional so every existing design deserialises unchanged; `migrateParams`
-   * backfills the default.
+   * Optional because it must stay out of an ordinary bin's params hash (see
+   * `DEFAULT_BIN_PARAMS`); `migrateParams` backfills it for a lid base.
    */
   readonly trayBottom?: TrayBottomConfig;
 }
