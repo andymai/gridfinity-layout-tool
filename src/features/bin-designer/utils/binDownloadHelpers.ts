@@ -25,12 +25,20 @@ import { parseSTLBinary } from '@/features/bin-designer/utils/stlParser';
 import { buildTriangleMaterialIndices } from '@/features/bin-designer/utils/materialMapping';
 import { enumerateCutoutColorUnits, anyCutoutColored } from '@/shared/generation/cutoutColorUnits';
 import {
+  collapseLidLipCell,
   computeActiveZones,
   getZoneColor,
   normalizeHex,
   resolveColorMapping,
 } from '@/features/bin-designer/types/featureColors';
 import type { ColorZone } from '@/features/bin-designer/types/featureColors';
+import {
+  classifyLipBand,
+  classifyLipCorner,
+  computeLidLipGeom,
+} from '@/features/bin-designer/utils/lipCornerClassifier';
+import { FeatureTag } from '@/shared/types/generation';
+import type { FaceGroupData } from '@/shared/types/generation';
 import { packagePiecesAsZip } from '@/shared/generation/zipExport';
 import { FORMAT_MIME_TYPES } from '@/shared/generation/exportUtils';
 import type { BinParams, ExportFileFormat } from '@/features/bin-designer/types';
@@ -306,6 +314,60 @@ function uniformColorConfig(
 }
 
 /**
+ * Per-triangle material indices for the LID piece: its shell takes the flat
+ * `lid` colour while its stack grid (`FeatureTag.LID_LIP`) is classified into
+ * the `lidLip` corner × band grid, so the lid's top lip can differ from the rest
+ * of the lid.
+ *
+ * Falls back to null when the lid carries no LID_LIP geometry (a non-stackable
+ * lid has a flat top) or when the grid is uniform — the caller then keeps the
+ * cheaper whole-object uniform config.
+ *
+ * NB: the export path flips most lids for printing (`orientForPrint`), so bands
+ * are derived from the lip's OWN Z extent via `computeLipGeom` rather than from
+ * world Z. Band 0 therefore tracks the lip's printed-down end, which matches how
+ * the bin lip's bands are derived and keeps preview and export consistent.
+ */
+function lidColorConfig(
+  featureColors: BinParams['featureColors'],
+  faceGroups: readonly FaceGroupData[],
+  triangleCount: number,
+  vertices: Float32Array
+): ThreeMFColorConfig | null {
+  const grid = featureColors.lidLip;
+  if (!grid) return null;
+  const counts = { corners: grid.corners, bands: grid.bands };
+  const triangleXYZ = (t: number) => {
+    const i = t * 9;
+    return {
+      x: (vertices[i] + vertices[i + 3] + vertices[i + 6]) / 3,
+      y: (vertices[i + 1] + vertices[i + 4] + vertices[i + 7]) / 3,
+      z: (vertices[i + 2] + vertices[i + 5] + vertices[i + 8]) / 3,
+    };
+  };
+  const geom = computeLidLipGeom(faceGroups, triangleXYZ);
+  if (!geom) return null;
+
+  const { colors, colorToIndex } = resolveColorMapping(featureColors);
+  const lidSlot = colorToIndex.get(normalizeHex(getZoneColor(featureColors, 'lid'))) ?? 0;
+  const indices = new Array<number>(triangleCount).fill(lidSlot);
+
+  for (const g of faceGroups) {
+    if (g.tag !== FeatureTag.LID_LIP) continue;
+    const start = g.start / 3;
+    const end = Math.min(start + g.count / 3, triangleCount);
+    for (let t = start; t < end; t++) {
+      const { x, y, z } = triangleXYZ(t);
+      const corner = classifyLipCorner(x, y, geom.cx, geom.cy);
+      const band = classifyLipBand(z, geom.minZ, geom.maxZ, counts.bands);
+      const zone = collapseLidLipCell(corner, band, counts);
+      indices[t] = colorToIndex.get(normalizeHex(getZoneColor(featureColors, zone))) ?? lidSlot;
+    }
+  }
+  return { materials: colors.map((c) => ({ color: c })), triangleMaterialIndices: indices };
+}
+
+/**
  * Convert a multi-piece combined export into a single 3MF Blob with named
  * objects. The first piece (bin) gets per-triangle multi-color material
  * indices; the lid and dividers ship with a uniform color slot drawn from
@@ -317,7 +379,8 @@ export function buildMultiObject3MF(
   faceGroups: CombinedExportResult['faceGroups'],
   params: BinParams,
   modelName: string,
-  threeMFPrintSettings: ThreeMFPrintSettings
+  threeMFPrintSettings: ThreeMFPrintSettings,
+  lidFaceGroups?: CombinedExportResult['lidFaceGroups']
 ): Blob {
   const objects: ThreeMFObject[] = [];
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors typed required but legacy persisted configs may omit it; runtime guard preserved
@@ -378,7 +441,13 @@ export function buildMultiObject3MF(
       const zone = pieceZone(piece.label);
       if (zone !== null) {
         const triangleCount = vertices.length / 9;
-        colorConfig = uniformColorConfig(zone, params.featureColors, triangleCount);
+        // The lid gets per-triangle paint when it has a lip grid AND the worker
+        // sent its face groups; everything else (and a lid without either) stays
+        // on the cheaper uniform slot.
+        colorConfig =
+          (zone === 'lid' && lidFaceGroups
+            ? lidColorConfig(params.featureColors, lidFaceGroups, triangleCount, vertices)
+            : null) ?? uniformColorConfig(zone, params.featureColors, triangleCount);
       }
     }
 
@@ -428,7 +497,8 @@ export function buildBinDownloadPayload(
       result.faceGroups,
       params,
       threeMFContext.modelName,
-      threeMFContext.threeMFPrintSettings
+      threeMFContext.threeMFPrintSettings,
+      result.lidFaceGroups
     );
     return { blob, downloadName: fileName };
   }

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { FeatureTag } from '@/shared/types/generation';
+import { DEFAULT_FEATURE_COLOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import {
   LIP_CELL_ZONES,
   ZONE_ORDER,
@@ -353,5 +354,55 @@ describe('topAccentCutZ', () => {
     expect(topAccentCutZ({ enabled: false, heightMm: 2, color: '#000' }, 25)).toBeNull();
     expect(topAccentCutZ({ enabled: true, heightMm: 0, color: '#000' }, 25)).toBeNull();
     expect(topAccentCutZ({ enabled: true, heightMm: 2, color: '#000' }, -Infinity)).toBeNull();
+  });
+});
+
+// The lid's own top lip. Its cells are a separate zone family from the bin
+// lip's because the two live on different objects — a shared family would make
+// one stored colour paint both.
+describe('lid lip colour zones', () => {
+  const stackableLidParams = {
+    base: { style: 'standard' as const, stackingLip: true },
+    label: { enabled: false },
+    scoop: { enabled: false },
+    lid: { enabled: true, stackableTop: true },
+    compartments: { cells: [0] },
+  };
+
+  it('activates the lid lip cells only on a stackable lid', () => {
+    const zones = computeActiveZones(stackableLidParams);
+    expect(zones.has('lidLip:frontLeft:0')).toBe(true);
+
+    const flatTop = computeActiveZones({
+      ...stackableLidParams,
+      lid: { enabled: true, stackableTop: false },
+    });
+    // A flat-topped lid builds no LID_LIP geometry, so the control would do
+    // nothing.
+    expect(flatTop.has('lidLip:frontLeft:0')).toBe(false);
+    expect(flatTop.has('lid')).toBe(true);
+  });
+
+  it('falls back to the lid colour when no grid is stored', () => {
+    const colors = { ...DEFAULT_FEATURE_COLOR_CONFIG, lid: '#123456' };
+    expect(colors.lidLip).toBeUndefined();
+    expect(getZoneColor(colors, 'lidLip:backRight:2')).toBe('#123456');
+  });
+
+  // The regression this guards: both families reach the same `default` arm of
+  // `getZoneColor`, so a missing lid branch silently returns the BIN lip's
+  // colour and the two grids appear welded together.
+  it('never reads a lid cell from the bin lip grid', () => {
+    const colors = {
+      ...DEFAULT_FEATURE_COLOR_CONFIG,
+      lid: '#123456',
+      lip: { corners: 1 as const, bands: 1 as const, cells: makeUniformLipCells('#ff0000') },
+    };
+    expect(getZoneColor(colors, 'lidLip:frontLeft:0')).toBe('#123456');
+    expect(getZoneColor(colors, 'lip:frontLeft:0')).toBe('#ff0000');
+  });
+
+  it('gives the two families disjoint material slots', () => {
+    expect(zoneIndex('lidLip:frontLeft:0')).not.toBe(zoneIndex('lip:frontLeft:0'));
   });
 });

@@ -196,7 +196,7 @@ function validateRetentionMagnet(magnet: unknown, path: string): string | null {
  * Checks that `base` is an object and that it contains a valid `style`, numeric `magnetDiameter` (1–20),
  * numeric `magnetDepth` (0.5–10), numeric `screwDiameter` (1–10), and boolean `stackingLip`.
  *
- * @param base - The value to validate as a designer `base` object (expected keys: `style`, `magnetDiameter`, `magnetDepth`, `screwDiameter`, `stackingLip`, and the optional `spacer`).
+ * @param base - The value to validate as a designer `base` object (expected keys: `style`, `magnetDiameter`, `magnetDepth`, `screwDiameter`, `stackingLip`, and the optional `spacer` and `tile`).
  * @returns A string describing the first validation error encountered, or `null` if `base` is valid.
  */
 function validateBase(base: unknown): string | null {
@@ -218,6 +218,11 @@ function validateBase(base: unknown): string | null {
   // declare it honestly rather than smuggle a truthy non-boolean past the client.
   if (base.spacer !== undefined && !isBoolean(base.spacer)) {
     return 'base.spacer must be boolean';
+  }
+  // Same reasoning for the wall-less tray: it collapses the wall to zero, which
+  // is a different solid entirely, so it must be declared as a real boolean.
+  if (base.tile !== undefined && !isBoolean(base.tile)) {
+    return 'base.tile must be boolean';
   }
   if (base.trayBottom !== undefined) {
     const trayErr = validateTrayBottom(base.trayBottom);
@@ -979,12 +984,15 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
   // inert on a flat base (no socket to shell through), so a crafted
   // `{ style: 'flat', spacer: true, height: 1 }` would otherwise buy the relaxed
   // floor while generating an ordinary 1u bin.
-  const isEffectiveSpacer =
+  // A wall-less tray (`base.tile`) takes the same relaxed floor on the same
+  // effective-flag condition: its wall height is pinned to 0, so `height` is
+  // inert and stored as 1.
+  const relaxedFloor =
     isObject(params.base) &&
-    params.base.spacer === true &&
+    (params.base.spacer === true || params.base.tile === true) &&
     params.base.style !== 'flat' &&
     params.base.style !== 'lid';
-  const minHeight = isEffectiveSpacer ? CONSTRAINTS.MIN_SPACER_HEIGHT : CONSTRAINTS.MIN_HEIGHT;
+  const minHeight = relaxedFloor ? CONSTRAINTS.MIN_SPACER_HEIGHT : CONSTRAINTS.MIN_HEIGHT;
   if (!isNumber(params.height) || !inRange(params.height, minHeight, CONSTRAINTS.MAX_HEIGHT)) {
     return validationError(
       'INVALID_PARAMS',

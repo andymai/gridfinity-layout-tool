@@ -71,6 +71,12 @@ export interface CombinedExportResult {
   readonly pieces: readonly CombinedExportPiece[];
   readonly format: ExportFormat;
   readonly faceGroups?: readonly FaceGroupData[];
+  /**
+   * Face groups for the LID piece, when one was exported. Separate from
+   * {@link faceGroups} because the lid is its own object with its own triangle
+   * list — indices from one cannot address the other.
+   */
+  readonly lidFaceGroups?: readonly FaceGroupData[];
 }
 
 /** Result from a successful split export */

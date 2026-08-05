@@ -385,6 +385,7 @@ interface LegacyFeatureColorInput {
   dividers?: string;
   text?: string;
   lid?: string;
+  lidLip?: string | LegacyLipCorners | GridLipInput;
   topAccent?: { enabled?: unknown; heightMm?: unknown; color?: unknown };
 }
 
@@ -487,6 +488,17 @@ function migrateFeatureColors(
   // when this field is added by migration.
   const text = resolveColor(raw.text, labelTab);
   const lid = resolveColor(raw.lid, body);
+  // Backfilled from the LID colour, not from `body`: a design saved before the
+  // lid had a lip grid rendered its whole lid one colour, and inheriting `body`
+  // instead would visibly repaint that lid's top on first load. Emitted ONLY
+  // when it actually diverges from `lid`, so a design that never touched the lid
+  // lip keeps its exact params fingerprint (see `FeatureColorConfig.lidLip`).
+  const lidLipRaw = raw.lidLip === undefined ? undefined : migrateLip(raw.lidLip, lid);
+  const lidLip =
+    lidLipRaw !== undefined &&
+    LIP_CELL_ZONES.some((id) => (lidLipRaw.cells[id] ?? lid).toLowerCase() !== lid.toLowerCase())
+      ? lidLipRaw
+      : undefined;
   const topAccent = migrateTopAccent(raw.topAccent, body, maxTopAccentMm);
 
   // Pre-`enabled` design counts as multi-color if body or any zone diverges
@@ -498,6 +510,7 @@ function migrateFeatureColors(
     bodyLower !== DEFAULT_FEATURE_COLOR_CONFIG.body.toLowerCase() ||
     [labelTab, base, scoop, dividers, text, lid].some(isCustom) ||
     LIP_CELL_ZONES.some((id) => isCustom(lip.cells[id] ?? body)) ||
+    lidLip !== undefined ||
     (topAccent.enabled && isCustom(topAccent.color));
 
   return {
@@ -510,6 +523,9 @@ function migrateFeatureColors(
     dividers,
     text,
     lid,
+    // Spread so the key is absent, not `undefined` — a literal `undefined`
+    // still serialises differently from an omitted key in some hashers.
+    ...(lidLip ? { lidLip } : {}),
     topAccent,
   };
 }
@@ -736,6 +752,11 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
   // hashed wholesale by `communityParamsFingerprint`, so backfilling this
   // unconditionally would shift every existing design's fingerprint and break
   // the community duplicate guard against already-published records.
+  // Absent, never `false` — a stored `false` would shift the fingerprint of a
+  // design that has no tray just as an always-present default would.
+  if (mergedBase.tile !== true) {
+    delete (mergedBase as { tile?: boolean }).tile;
+  }
   const baseConfig: BaseConfig =
     mergedBase.style === 'lid'
       ? { ...mergedBase, trayBottom: migrateTrayBottom(mergedBase.trayBottom) }

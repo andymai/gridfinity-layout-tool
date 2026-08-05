@@ -158,6 +158,27 @@ export const shellStage: PipelineStage = {
         !dim.overhang.taper;
 
       let built = withScope((scope: DisposalScope) => {
+        // Wall-less tray: `boxWallHeight` is 0, and extruding a zero-length
+        // vector is a kernel error, not an empty solid. There is genuinely no
+        // box to build — the Gridfinity base profile flares outward as it rises,
+        // so adjacent feet already merge into a continuous full-footprint
+        // surface at their top, and THAT is the tray's floor. The shell is the
+        // lip alone; `socketStage` supplies everything below it.
+        //
+        // A tray always has a lip (forced by IMPLICATION_RULES), which is what
+        // keeps this branch from having to return an empty shell.
+        if (boxWallHeight === 0) {
+          const lipBase = scope.register(
+            buildTopShape(params.width, params.depth, true, pitch, params.cellMask, dim.overhang)
+          );
+          // Same `-LIP_OVERLAP` drop the fuse path below uses. Without it the
+          // lip merely TOUCHES the socket top at z=0, and a coplanar contact
+          // fuses into a non-manifold solid instead of a single watertight one.
+          const top = translate(lipBase, [0, 0, boxWallHeight - LIP_OVERLAP]);
+          collectOrigins(top, FeatureTag.LIP, originToTag);
+          return top;
+        }
+
         if (integratedLip) {
           try {
             const integrated = buildBinBoxWithLip(

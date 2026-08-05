@@ -37,6 +37,7 @@ import { solidCutoutMatrix } from './solidCutoutMatrix';
 import { pathfinderOps } from './pathfinderOps';
 import { lightweight } from './lightweight';
 import { spacer } from './spacer';
+import { tile } from './tile';
 import { trayBottom } from './trayBottom';
 import { labelSockets } from './labelSockets';
 import { wallPatterns } from './wallPatterns';
@@ -92,5 +93,6 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...dividerPatterns,
   ...floorPatterns,
   ...spacer,
+  ...tile,
   ...trayBottom,
 ];

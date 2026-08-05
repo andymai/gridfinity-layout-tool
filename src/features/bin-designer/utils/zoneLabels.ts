@@ -4,8 +4,14 @@
  * between the panel (which builds its own labels inline) and overlay copy.
  */
 
-import { parseLipCell } from '../types/featureColors';
-import type { ColorZone, FeatureColorConfig, LipCellZone, LipCorner } from '../types/featureColors';
+import { parseLipCell, parseLidLipCell, lipCellZone } from '../types/featureColors';
+import type {
+  ColorZone,
+  FeatureColorConfig,
+  LidLipCellZone,
+  LipCellZone,
+  LipCorner,
+} from '../types/featureColors';
 import type { TFunction } from '@/i18n';
 
 const LIP_CORNER_KEY: Record<LipCorner, string> = {
@@ -15,12 +21,21 @@ const LIP_CORNER_KEY: Record<LipCorner, string> = {
   backLeft: 'binDesigner.colors.zone.lip.backLeft',
 };
 
+const LID_LIP_CORNER_KEY: Record<LipCorner, string> = {
+  frontLeft: 'binDesigner.colors.zone.lidLip.frontLeft',
+  frontRight: 'binDesigner.colors.zone.lidLip.frontRight',
+  backRight: 'binDesigner.colors.zone.lidLip.backRight',
+  backLeft: 'binDesigner.colors.zone.lidLip.backLeft',
+};
+
 /** Translation key for a zone's user-facing label. */
 export function zoneTranslationKey(zone: ColorZone): string {
+  const lidCell = parseLidLipCell(zone);
+  if (lidCell) return LID_LIP_CORNER_KEY[lidCell.corner];
   const cell = parseLipCell(zone);
   if (cell) return LIP_CORNER_KEY[cell.corner];
   // Lip cells are handled above; the remaining zones are the non-lip ones.
-  const nonLip = zone as Exclude<ColorZone, LipCellZone>;
+  const nonLip = zone as Exclude<ColorZone, LipCellZone | LidLipCellZone>;
   switch (nonLip) {
     case 'body':
       return 'binDesigner.colors.zone.body';
@@ -55,7 +70,7 @@ export function zoneTranslationKey(zone: ColorZone): string {
  */
 export function zoneLabel(zone: ColorZone, t: TFunction, lipBands = 1): string {
   const base = t(zoneTranslationKey(zone));
-  const cell = parseLipCell(zone);
+  const cell = parseLipCell(zone) ?? parseLidLipCell(zone);
   if (cell && lipBands > 1) {
     return `${base} · ${t('binDesigner.colors.lip.bandN', { n: cell.band + 1 })}`;
   }
@@ -72,7 +87,8 @@ export type ZoneColorPatch =
   | { text: string }
   | { lid: string }
   | { topAccent: Partial<FeatureColorConfig['topAccent']> }
-  | { lip: Partial<FeatureColorConfig['lip']> };
+  | { lip: Partial<FeatureColorConfig['lip']> }
+  | { lidLip: Partial<FeatureColorConfig['lidLip']> };
 
 /**
  * Build the partial patch that sets the given zone to `hex`. A lip cell zone
@@ -80,8 +96,15 @@ export type ZoneColorPatch =
  * the active grid), so the panel, 3D preview, and 3MF exporter stay in sync.
  */
 export function zoneColorPatch(zone: ColorZone, hex: string): ZoneColorPatch {
+  // `lidLip.cells` is a plain LipColorConfig keyed by `lip:...` ids, so the
+  // zone id is re-formed rather than used directly — writing the `lidLip:...`
+  // id would create a key nothing reads.
+  const lidCell = parseLidLipCell(zone);
+  if (lidCell) {
+    return { lidLip: { cells: { [lipCellZone(lidCell.corner, lidCell.band)]: hex } } };
+  }
   if (parseLipCell(zone)) return { lip: { cells: { [zone]: hex } } };
-  const nonLip = zone as Exclude<ColorZone, LipCellZone>;
+  const nonLip = zone as Exclude<ColorZone, LipCellZone | LidLipCellZone>;
   switch (nonLip) {
     case 'body':
       return { body: hex };

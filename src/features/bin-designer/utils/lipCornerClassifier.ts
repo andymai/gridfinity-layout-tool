@@ -29,6 +29,28 @@ export function computeLipGeom(
   faceGroups: readonly FaceGroupData[],
   triangleXYZ: (triangleIndex: number) => { x: number; y: number; z: number }
 ): LipGeom | null {
+  return computeTaggedGeom(faceGroups, triangleXYZ, FeatureTag.LIP);
+}
+
+/**
+ * The LID's own top lip (`FeatureTag.LID_LIP`), same derivation.
+ *
+ * Separate entry point rather than a shared default parameter so a caller
+ * cannot accidentally classify one object's triangles against the other's
+ * footprint — the bin and the lid are different meshes with different extents.
+ */
+export function computeLidLipGeom(
+  faceGroups: readonly FaceGroupData[],
+  triangleXYZ: (triangleIndex: number) => { x: number; y: number; z: number }
+): LipGeom | null {
+  return computeTaggedGeom(faceGroups, triangleXYZ, FeatureTag.LID_LIP);
+}
+
+function computeTaggedGeom(
+  faceGroups: readonly FaceGroupData[],
+  triangleXYZ: (triangleIndex: number) => { x: number; y: number; z: number },
+  tag: number
+): LipGeom | null {
   let minX = Infinity;
   let maxX = -Infinity;
   let minY = Infinity;
@@ -38,7 +60,7 @@ export function computeLipGeom(
   let any = false;
 
   for (const g of faceGroups) {
-    if (g.tag !== FeatureTag.LIP) continue;
+    if (g.tag !== tag) continue;
     const triStart = g.start / 3;
     const triEnd = triStart + g.count / 3;
     for (let i = triStart; i < triEnd; i++) {

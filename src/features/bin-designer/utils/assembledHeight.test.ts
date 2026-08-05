@@ -274,3 +274,53 @@ describe('assembledHeight', () => {
     });
   });
 });
+
+// A wall-less tray's body is its floor slab and nothing more, so its bin band is
+// SOCKET_HEIGHT rather than `height * heightUnitMm`. This is the readout drawer
+// clearance is computed from, and `height` is inert on a tray (pinned to 1 only
+// to satisfy the range validators), so reading it would overstate a 5mm body as
+// 7mm and defeat the whole point of the mode.
+describe('assembledHeight — wall-less tray', () => {
+  const tray = (overrides: Partial<BinParams['base']> = {}): BinParams =>
+    params({ height: 1, base: { ...DEFAULT_BIN_PARAMS.base, tile: true, ...overrides } });
+
+  it('reports the floor slab as the bin band, not the stored height', () => {
+    const result = assembledHeight(tray());
+    expect(bandOf('bin', result)).toBe(GRIDFINITY.SOCKET_HEIGHT);
+  });
+
+  it('stands SOCKET_HEIGHT + lip tall as a bare tray', () => {
+    const result = assembledHeight(tray());
+    expect(result.totalMm).toBeCloseTo(GRIDFINITY.SOCKET_HEIGHT + LIP_RISE, 5);
+  });
+
+  it('ignores a stored height that the validators happened to allow', () => {
+    expect(assembledHeight(tray()).totalMm).toBeCloseTo(
+      assembledHeight(params({ height: 8, base: { ...DEFAULT_BIN_PARAMS.base, tile: true } }))
+        .totalMm,
+      5
+    );
+  });
+
+  // The flag is inert on a socketless base (no feet to stand on), exactly as the
+  // spacer's is, so a crafted payload must not shrink an ordinary bin's readout.
+  it('leaves a socketless base on the ordinary derivation', () => {
+    const flatTray = params({
+      height: 3,
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat', tile: true },
+    });
+    expect(bandOf('bin', assembledHeight(flatTray))).toBe(3 * DEFAULT_BIN_PARAMS.heightUnitMm);
+  });
+
+  // A tray keeps its lip, so the lip precondition alone would seat a lid on a
+  // plate with no cavity to close and count a band the worker never builds.
+  it('never seats a lid', () => {
+    const withLid = params({
+      height: 1,
+      base: { ...DEFAULT_BIN_PARAMS.base, tile: true },
+      lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
+    });
+    expect(hasSeatedLid(withLid)).toBe(false);
+    expect(bandOf('lid', assembledHeight(withLid))).toBe(0);
+  });
+});

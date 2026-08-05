@@ -109,6 +109,7 @@ export interface DesignerState {
     dividers?: string;
     text?: string;
     lid?: string;
+    lidLip?: Partial<LipColorConfig>;
     topAccent?: Partial<TopAccentConfig>;
   }) => void;
   updateLid: (partial: Partial<LidConfig>) => void;

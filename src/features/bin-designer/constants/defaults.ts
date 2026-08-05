@@ -155,6 +155,8 @@ export const DEFAULT_FEATURE_COLOR_CONFIG: FeatureColorConfig = {
   dividers: '#d4d8dc',
   text: '#d4d8dc',
   lid: '#d4d8dc',
+  // `lidLip` is deliberately ABSENT — absent means "inherits `lid`". Adding it
+  // unconditionally would shift every existing design's params fingerprint.
   topAccent: { enabled: false, heightMm: TOP_ACCENT_DEFAULT_MM, color: '#d4d8dc' },
 } as const;
 
@@ -185,6 +187,9 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
     halfSockets: false,
     lightweight: false,
     spacer: false,
+    // `tile` is deliberately ABSENT for the same fingerprint reason as
+    // `trayBottom` below: absent means off, and only a design that actually
+    // selects the wall-less tray carries the key.
     // `trayBottom` is deliberately ABSENT. `params` is hashed wholesale by
     // `communityParamsFingerprint`, so a new always-present default field shifts
     // every design's fingerprint, including already-published designs whose

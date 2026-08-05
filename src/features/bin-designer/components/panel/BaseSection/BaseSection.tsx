@@ -173,6 +173,22 @@ export function BaseSection() {
         }
       />
 
+      {/* ── Wall-less tray — the spacer's complement. The spacer keeps the walls
+          and drops the floor; this keeps the floor and drops the walls, leaving
+          the stacking lip as the only raised edge on a 9.3mm plate. Placed
+          directly after the spacer so the pair reads as the two halves it is. */}
+      <FeatureToggle
+        label={t('binDesigner.tile')}
+        checked={state.isTile}
+        onChange={handlers.toggleTile}
+        disabledReason={handlers.tileDisabledReason}
+        primaryControls={
+          <p className="text-[11px] leading-relaxed text-content-tertiary">
+            {t('binDesigner.tileHint')}
+          </p>
+        }
+      />
+
       {/* ── Floor pattern (#2816) — drainage / ventilation. The holes pass
           through the floor slab AND the feet, staying inside each foot's flat
           underside so the baseplate-mating taper is never cut. */}

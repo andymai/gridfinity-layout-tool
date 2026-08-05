@@ -113,24 +113,28 @@ export function DimensionsSection() {
         </div>
       )}
 
-      {/* Height */}
-      <div>
-        <div className="mb-1 flex items-center justify-between">
-          <span className="text-xs text-content-tertiary">{t('common.height')}</span>
-          <span className="text-[11px] tabular-nums text-content-tertiary">{state.height}u</span>
+      {/* Height. Hidden for a wall-less tray, whose wall is 0 and whose real
+          height comes from `assembledHeight` — the stepper would move a number
+          nothing reads. */}
+      {state.heightApplies && (
+        <div>
+          <div className="mb-1 flex items-center justify-between">
+            <span className="text-xs text-content-tertiary">{t('common.height')}</span>
+            <span className="text-[11px] tabular-nums text-content-tertiary">{state.height}u</span>
+          </div>
+          <Stepper
+            value={state.height}
+            onChange={(v) => handlers.setParam('height', v)}
+            onStep={handlers.handleHeightStep}
+            min={state.minHeight}
+            max={DESIGNER_CONSTRAINTS.MAX_HEIGHT}
+            step={DESIGNER_CONSTRAINTS.HEIGHT_STEP}
+            size={stepperSize}
+            fullWidth
+            aria-label={t('common.height')}
+          />
         </div>
-        <Stepper
-          value={state.height}
-          onChange={(v) => handlers.setParam('height', v)}
-          onStep={handlers.handleHeightStep}
-          min={state.minHeight}
-          max={DESIGNER_CONSTRAINTS.MAX_HEIGHT}
-          step={DESIGNER_CONSTRAINTS.HEIGHT_STEP}
-          size={stepperSize}
-          fullWidth
-          aria-label={t('common.height')}
-        />
-      </div>
+      )}
 
       {/* Extra wall height (collar): raises the exterior walls + stacking lip
           above the nominal height while the interior stays put — extra headroom

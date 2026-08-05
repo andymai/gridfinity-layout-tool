@@ -82,9 +82,17 @@ export function baseFloorZ(base: BaseFloorSource, heightUnitMm: number, lid: Lid
   return skirt ?? GRIDFINITY.SOCKET_HEIGHT;
 }
 
-/** Wall height for a given base: a socketless base has no socket to subtract. */
-export function baseWallHeight(base: Pick<BaseConfig, 'style'>, totalH: number): number {
-  return base.style === 'flat' || base.style === 'lid' ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
+/**
+ * Wall height for a given base: a socketless base has no socket to subtract.
+ *
+ * A wall-less tray is 0 by definition, mirroring `deriveDimensions`. Without
+ * this branch the ghost overlays and the validator would place an interior rim
+ * the mesh does not build.
+ */
+export function baseWallHeight(base: Pick<BaseConfig, 'style' | 'tile'>, totalH: number): number {
+  if (base.style === 'flat' || base.style === 'lid') return totalH;
+  if (base.tile === true) return 0;
+  return totalH - GRIDFINITY.SOCKET_HEIGHT;
 }
 
 /**

@@ -260,6 +260,8 @@ export interface CombinedExportResultResponse {
   readonly format: ExportFormat;
   /** Face groups for the bin piece (provenance coloring). */
   readonly faceGroups?: readonly FaceGroupData[];
+  /** Face groups for the lid piece, so its own lip can be painted. */
+  readonly lidFaceGroups?: readonly FaceGroupData[];
 }
 
 /** A single piece from a split export */

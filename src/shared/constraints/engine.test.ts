@@ -581,3 +581,67 @@ describe('constraint rule coverage', () => {
     }
   });
 });
+
+// The wall-less tray is the spacer's complement: the floor and feet stay and the
+// wall collapses to zero. Everything that lived on a wall or needed interior
+// depth goes; the lip and its colour zones are the point of the mode and stay.
+describe('resolveConstraints — wall-less tray', () => {
+  const enableTray = (params: BinParams) =>
+    resolveConstraints(params, { feature: 'base.tile', enabled: true }).params;
+
+  it('clears wall-dependent and depth-dependent features on the way in', () => {
+    const designed = makeParams({
+      base: { ...DEFAULT_BIN_PARAMS.base, tile: false },
+      scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true },
+      label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
+    });
+    const resolved = enableTray(designed);
+    expect(resolved.base.tile).toBe(true);
+    expect(resolved.scoop.enabled).toBe(false);
+    expect(resolved.label.enabled).toBe(false);
+  });
+
+  // Load-bearing for generation, not just cosmetics: with the wall at 0 the lip
+  // IS the entire shell, so a lipless tray leaves `shellStage` nothing to return.
+  it('forces the stacking lip on', () => {
+    const lipless = makeParams({
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
+    });
+    expect(enableTray(lipless).base.stackingLip).toBe(true);
+  });
+
+  // Feet + floor + no-floor cancels to nothing at all, so the pair is mutual
+  // rather than the one-way mode switch the interior features get. Mutual means
+  // BLOCKED, not silently overridden: the engine's post-check returns the params
+  // untouched, so the user turns the spacer off deliberately rather than having
+  // a mode swapped out from under them.
+  it('clears the spacer on the way in', () => {
+    const spacer = makeParams({ base: { ...DEFAULT_BIN_PARAMS.base, spacer: true } });
+    const resolved = enableTray(spacer);
+    expect(resolved.base.tile).toBe(true);
+    expect(resolved.base.spacer).toBe(false);
+  });
+
+  it('blocks the spacer while a tray is on', () => {
+    const tray = makeParams({ base: { ...DEFAULT_BIN_PARAMS.base, tile: true } });
+    expect(getFeatureStatus(tray, 'base.spacer').available).toBe(false);
+  });
+
+  // `resolveConstraints` writes `tile: false` when a rule auto-disables the tray,
+  // and the fingerprint hazard is the same one the absent-by-default design
+  // exists to avoid: an ordinary bin that once tried the mode must hash
+  // identically to one that never did. The engine leaves the residue (a patch
+  // cannot delete a key through `mergeParams`); `useBaseSection.commit` strips
+  // it on every path, which is why the strip does not live in `toggleTile`.
+  it('leaves a tile:false residue for the caller to strip when auto-disabled', () => {
+    const tray = makeParams({ base: { ...DEFAULT_BIN_PARAMS.base, tile: true } });
+    const toFlat = resolveConstraints(tray, { feature: 'base.flat', enabled: true }).params;
+    expect(toFlat.base.style).toBe('flat');
+    expect(toFlat.base.tile).not.toBe(true);
+  });
+
+  it('is unavailable on a base with no feet to stand on', () => {
+    const flat = makeParams({ base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' } });
+    expect(getFeatureStatus(flat, 'base.tile').available).toBe(false);
+  });
+});

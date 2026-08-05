@@ -20,6 +20,7 @@
 import type { FaceGroupData } from '@/shared/types/generation';
 import type { MeshFaceGroup } from '@/shared/components/preview/useMeshGeometry';
 import {
+  LID_LIP_CELL_ZONES,
   LIP_CELL_ZONES,
   ZONE_ORDER,
   getZoneColor,
@@ -247,6 +248,10 @@ export function hoveredMaterialIndices(hover: HoverableZone | null): ReadonlySet
   if (!hover) return new Set();
   if (hover === 'lip') {
     return new Set(LIP_CELL_ZONES.map((z) => zoneIndex(z)));
+  }
+  // The lid-lip group header highlights its own 16 cells, never the bin lip's.
+  if (hover === 'lidLip') {
+    return new Set(LID_LIP_CELL_ZONES.map((z) => zoneIndex(z)));
   }
   return new Set([zoneIndex(hover)]);
 }

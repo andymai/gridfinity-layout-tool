@@ -369,6 +369,10 @@ export function hasLidBlocker(issues: readonly LidCompatibilityIssue[]): boolean
 export function shouldGenerateLid(params: BinParams): boolean {
   if (!params.lid.enabled) return false;
   if (!params.base.stackingLip) return false;
+  // A wall-less tray keeps its lip, so the usual lip precondition passes and a
+  // lid would be emitted for a plate with no cavity to close. Gated here rather
+  // than in the constraint engine because the lid is not a `FeatureKey`.
+  if (params.base.tile === true) return false;
   return !hasLidBlocker(checkLidCompatibility(params));
 }
 

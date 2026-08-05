@@ -21,6 +21,13 @@ import {
 } from '@/features/bin-designer/types';
 import { assessFloorPatternFit } from '@/features/bin-designer/utils/floorPatternFit';
 import { minHeightUnits } from '@/features/bin-designer/constants';
+import { isEffectiveTile } from '@/features/bin-designer/types/base';
+
+/** Drop the `tile` key entirely — absent is the off state, never `false`. */
+function omitTile(base: BinParams['base']): BinParams['base'] {
+  const { tile: _tile, ...rest } = base;
+  return rest;
+}
 
 /** Narrow a picker selection to the subset the floor supports. */
 function isFloorPatternType(pattern: WallPatternType): pattern is FloorPatternType {
@@ -53,6 +60,7 @@ export function useBaseSection() {
   const halfSocketsStatus = getFeatureStatus(params, 'base.halfSockets');
   const lightweightStatus = getFeatureStatus(params, 'base.lightweight');
   const spacerStatus = getFeatureStatus(params, 'base.spacer');
+  const tileStatus = getFeatureStatus(params, 'base.tile');
   const lidBottomStatus = getFeatureStatus(params, 'base.lid');
 
   // Every base toggle commits through here. Only an effective spacer may stand
@@ -67,8 +75,30 @@ export function useBaseSection() {
   // rather than the `available` status each callback guarded on.
   const commit = useCallback(
     (resolved: BinParams) => {
-      const minHeight = minHeightUnits(resolved.base);
-      setParams(resolved.height < minHeight ? { ...resolved, height: minHeight } : resolved);
+      if (isEffectiveTile(resolved.base)) {
+        // A tray's height is inert (the wall is 0 and `assembledHeight` supplies
+        // the real 9.3mm), so it is pinned rather than merely floored: two trays
+        // that differ only in a number nothing reads must not fingerprint
+        // differently and defeat the community duplicate guard. The collar is
+        // inert for the same reason — generation forces it to 0 on a tray — so
+        // it is dropped rather than left to drift the fingerprint.
+        // Explicitly `undefined`, not omitted: `setParams` merges via
+        // `Object.assign`, so leaving the key out would keep the stale value.
+        // JSON serialisation drops an undefined-valued key, so the stored design
+        // and its fingerprint come out the same as one that never had a collar.
+        setParams({ ...resolved, height: 1, extraWallHeightMm: undefined });
+        return;
+      }
+      // Off must end up ABSENT, not `false`. `resolveConstraints` writes
+      // `tile: false` whenever a rule auto-disables the tray (switching to a
+      // flat or lid base, enabling the spacer), and EVERY base toggle commits
+      // through here — so stripping only inside `toggleTile` would still leave
+      // the key behind on those paths and fingerprint an ordinary bin
+      // differently from an identical one that never tried the mode.
+      const next =
+        'tile' in resolved.base ? { ...resolved, base: omitTile(resolved.base) } : resolved;
+      const minHeight = minHeightUnits(next.base);
+      setParams(next.height < minHeight ? { ...next, height: minHeight } : next);
     },
     [setParams]
   );
@@ -84,6 +114,7 @@ export function useBaseSection() {
     ? t(lightweightStatus.reason)
     : undefined;
   const spacerDisabledReason = spacerStatus.reason ? t(spacerStatus.reason) : undefined;
+  const tileDisabledReason = tileStatus.reason ? t(tileStatus.reason) : undefined;
 
   const toggleMagnet = useCallback(() => {
     // Only block enabling — allow disabling so users can recover from invalid states
@@ -121,6 +152,13 @@ export function useBaseSection() {
     if (!base.spacer && !spacerStatus.available) return;
     commit(resolveConstraints(params, { feature: 'base.spacer', enabled: !base.spacer }).params);
   }, [params, base.spacer, spacerStatus.available, commit]);
+
+  const toggleTile = useCallback(() => {
+    const isTile = base.tile === true;
+    if (!isTile && !tileStatus.available) return;
+    // `commit` strips a `tile: false` residue on every path, this one included.
+    commit(resolveConstraints(params, { feature: 'base.tile', enabled: !isTile }).params);
+  }, [params, base.tile, tileStatus.available, commit]);
 
   const toggleHalfSockets = useCallback(() => {
     if (!hasHalfSockets && !halfSocketsStatus.available) return;
@@ -258,6 +296,7 @@ export function useBaseSection() {
       hasHalfSockets,
       hasLightweight: base.lightweight,
       isSpacer: base.spacer,
+      isTile: base.tile === true,
       floorPatternEnabled: floorPattern.enabled,
       floorPatternType: floorPattern.pattern,
       floorPatternScalePercent: Math.round((floorPattern.scale ?? DEFAULT_PATTERN_SCALE) * 100),
@@ -289,6 +328,8 @@ export function useBaseSection() {
       lightweightDisabledReason,
       toggleSpacer,
       spacerDisabledReason,
+      toggleTile,
+      tileDisabledReason,
     },
   };
 }
