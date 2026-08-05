@@ -17,6 +17,7 @@ import type {
 } from '../../bridge/types';
 import { slottedHasDividers } from '@/shared/utils/slotMath';
 import { exportBin } from '../generators/binGenerator';
+import { deriveDimensions } from '../generators/pipeline/context';
 import { getLastSolid } from '../generators/shapeCache';
 import { exportBaseplate, exportConnectorKey } from '../generators/baseplateGenerator';
 import { exportMargin } from '../generators/baseplateMargin';
@@ -244,9 +245,13 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         const outerD = params.depth * unitY - GRIDFINITY.TOLERANCE;
         const innerW = outerW - 2 * params.wallThickness;
         const innerD = outerD - 2 * params.wallThickness;
-        const totalHeight = params.height * params.heightUnitMm;
-        const isFlat = params.base.style === 'flat';
-        const wallHeight = isFlat ? totalHeight : totalHeight - GRIDFINITY.SOCKET_HEIGHT;
+        const stepDims = deriveDimensions(params, true);
+        const totalHeight = stepDims.totalHeight;
+        const wallHeight = stepDims.wallHeight;
+        // World Z of the rim. Equals `totalHeight` for a socketed or flat bin,
+        // but a tray bin (#3036) floats its floor on a skirt, so the lid seats
+        // that much higher.
+        const rimZ = stepDims.baseOffsetZ + totalHeight;
         const hasLip = params.base.stackingLip;
 
         const dividerSolids = hasDividers
@@ -258,7 +263,7 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         // try/finally releases divider + lid solids even if compound or
         // exportSTEP throws (binSolid is owned by shapeCache; don't free it).
         const lidZ =
-          totalHeight -
+          rimZ -
           lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE, resolveLidCavityExtraMm(params));
         let lidSolid = hasLid ? buildLid(params) : null;
         // Separate baseplate (glue-on) rides on top of the lid floor in the

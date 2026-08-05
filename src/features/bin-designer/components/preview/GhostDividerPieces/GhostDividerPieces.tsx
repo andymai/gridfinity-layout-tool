@@ -14,6 +14,7 @@
  */
 
 import { useMemo, useEffect, useState, useRef } from 'react';
+import { baseFloorZ, baseWallHeight } from '@/features/bin-designer/utils/binDimensions';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import { useShallow } from 'zustand/react/shallow';
@@ -115,7 +116,8 @@ export function GhostDividerPieces() {
     slotConfig,
     dividerPieces,
     hasLip,
-    baseStyle,
+    base,
+    lid,
   } = useDesignerStore(
     useShallow((s) => ({
       width: s.params.width,
@@ -129,7 +131,8 @@ export function GhostDividerPieces() {
       slotConfig: s.params.slotConfig,
       dividerPieces: s.params.dividerPieces,
       hasLip: s.params.base.stackingLip,
-      baseStyle: s.params.base.style,
+      base: s.params.base,
+      lid: s.params.lid,
     }))
   );
 
@@ -138,11 +141,10 @@ export function GhostDividerPieces() {
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
   const totalH = height * heightUnitMm;
-  const isFlat = baseStyle === 'flat';
-  const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
+  const wallHeight = baseWallHeight(base, totalH);
   // Socketed bases are translated up by SOCKET_HEIGHT in preview, placing the
   // cavity floor at SOCKET_HEIGHT + wallThickness. Flat bases have no offset.
-  const floorZ = (isFlat ? 0 : GRIDFINITY.SOCKET_HEIGHT) + wallThickness;
+  const floorZ = baseFloorZ(base, heightUnitMm, lid) + wallThickness;
 
   const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
   const lipOverhang = hasLip ? Math.max(0, lipTaperWidth - wallThickness) : 0;

@@ -7,6 +7,7 @@ export type FeatureKey =
   | 'base.magnet'
   | 'base.screw'
   | 'base.flat'
+  | 'base.lid'
   | 'base.spacer'
   | 'style.slotted'
   | 'style.solid'

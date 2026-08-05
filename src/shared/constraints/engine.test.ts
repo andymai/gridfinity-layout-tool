@@ -59,6 +59,7 @@ describe('FEATURE_MANIFESTS', () => {
       'base.magnet',
       'base.screw',
       'base.flat',
+      'base.lid',
       'style.slotted',
       'style.solid',
       'compartments',

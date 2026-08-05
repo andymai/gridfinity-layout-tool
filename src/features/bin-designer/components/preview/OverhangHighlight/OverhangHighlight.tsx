@@ -8,6 +8,7 @@
  */
 
 import { useEffect, useMemo } from 'react';
+import { baseFloorZ } from '@/features/bin-designer/utils/binDimensions';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import { useShallow } from 'zustand/react/shallow';
@@ -32,7 +33,8 @@ export function OverhangHighlight() {
     gridUnitMmY,
     heightUnitMm,
     stackingLip,
-    baseStyle,
+    base,
+    lid,
     overhang,
   } = useDesignerStore(
     useShallow((s) => ({
@@ -44,7 +46,8 @@ export function OverhangHighlight() {
       gridUnitMmY: s.params.gridUnitMmY,
       heightUnitMm: s.params.heightUnitMm,
       stackingLip: s.params.base.stackingLip,
-      baseStyle: s.params.base.style,
+      base: s.params.base,
+      lid: s.params.lid,
       overhang: s.params.overhang ?? ZERO_OVERHANG,
     }))
   );
@@ -71,7 +74,7 @@ export function OverhangHighlight() {
     const outerD = depth * gridUnitMmYEff - GRIDFINITY.TOLERANCE;
     // The overhang's flat bottom sits at the socket top (feet stay put); a flat
     // base has no socket, so it starts at z=0. Top includes the stacking lip.
-    const wallBottomZ = baseStyle === 'flat' ? 0 : GRIDFINITY.SOCKET_HEIGHT;
+    const wallBottomZ = baseFloorZ(base, heightUnitMm, lid);
     const wallTopZ = height * heightUnitMm + (stackingLip ? GRIDFINITY.LIP_HEIGHT : 0);
     return computeOverhangHighlightBoxes(side, {
       outerW,
@@ -94,7 +97,8 @@ export function OverhangHighlight() {
     gridUnitMmYEff,
     heightUnitMm,
     stackingLip,
-    baseStyle,
+    base,
+    lid,
     overhang,
   ]);
 

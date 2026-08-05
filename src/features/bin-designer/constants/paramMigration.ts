@@ -26,6 +26,8 @@ import type {
 import { DEFAULT_PATTERN_SCALE } from '../types';
 import type { FeatureColorConfig, LipAxisCount, TopAccentConfig } from '../types/featureColors';
 import { makeUniformLipCells, LIP_CELL_ZONES } from '../types/featureColors';
+import type { BaseConfig, TrayBottomConfig } from '../types/base';
+import { DEFAULT_TRAY_BOTTOM } from '../types/base';
 import {
   DEFAULT_LID_CONFIG,
   LID_CLICK_RAIL_COVERAGE_OPTIONS,
@@ -672,6 +674,20 @@ function migrateSurfaceText(raw: unknown): SurfaceTextConfig | undefined {
 }
 
 /**
+ * Merged a level deeper than the rest of `base` because `clickRails` and
+ * `retentionMagnet` are objects: a top-level spread alone would let a payload
+ * carrying only `{ clickRails: { front: true } }` drop the other three sides.
+ */
+function migrateTrayBottom(stored: Partial<TrayBottomConfig> | undefined): TrayBottomConfig {
+  return {
+    ...DEFAULT_TRAY_BOTTOM,
+    ...stored,
+    clickRails: { ...DEFAULT_TRAY_BOTTOM.clickRails, ...stored?.clickRails },
+    retentionMagnet: { ...DEFAULT_TRAY_BOTTOM.retentionMagnet, ...stored?.retentionMagnet },
+  };
+}
+
+/**
  * Populate missing bin parameters with default values.
  * Handles backward compatibility for old designs:
  * - scoop was boolean in earlier versions
@@ -715,7 +731,15 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
   const wallsConfig = migrateWalls(params.walls, DEFAULT_BIN_PARAMS.walls, DISABLED_WALL_CUTOUT);
 
   // Migrate legacy base.solid=true → style='solid'
-  const baseConfig = { ...DEFAULT_BIN_PARAMS.base, ...(params.base ?? {}) };
+  const mergedBase = { ...DEFAULT_BIN_PARAMS.base, ...(params.base ?? {}) };
+  // Backfilled ONLY for a design that actually uses the lid base. `params` is
+  // hashed wholesale by `communityParamsFingerprint`, so backfilling this
+  // unconditionally would shift every existing design's fingerprint and break
+  // the community duplicate guard against already-published records.
+  const baseConfig: BaseConfig =
+    mergedBase.style === 'lid'
+      ? { ...mergedBase, trayBottom: migrateTrayBottom(mergedBase.trayBottom) }
+      : mergedBase;
   let style = params.style ?? DEFAULT_BIN_PARAMS.style;
   if (baseConfig.solid && style !== 'solid') {
     style = 'solid';

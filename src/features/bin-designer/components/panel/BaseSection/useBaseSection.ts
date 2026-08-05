@@ -3,12 +3,21 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
 import { resolveConstraints, getFeatureStatus } from '@/shared/constraints';
-import { isMagnetStyle, isScrewStyle } from '@/features/bin-designer/types';
-import type { BinParams, FloorPatternType, WallPatternType } from '@/features/bin-designer/types';
+import type {
+  BinParams,
+  FloorPatternType,
+  LidAttachment,
+  LidRailSide,
+  TrayBottomConfig,
+  WallPatternType,
+} from '@/features/bin-designer/types';
 import {
   DEFAULT_FLOOR_PATTERN_CONFIG,
   DEFAULT_PATTERN_SCALE,
+  DEFAULT_TRAY_BOTTOM,
   FLOOR_PATTERN_TYPES,
+  isMagnetStyle,
+  isScrewStyle,
 } from '@/features/bin-designer/types';
 import { assessFloorPatternFit } from '@/features/bin-designer/utils/floorPatternFit';
 import { minHeightUnits } from '@/features/bin-designer/constants';
@@ -33,6 +42,8 @@ export function useBaseSection() {
   const hasMagnet = isMagnetStyle(base.style);
   const hasScrew = isScrewStyle(base.style);
   const isFlat = base.style === 'flat';
+  const isLidBottom = base.style === 'lid';
+  const trayBottom = base.trayBottom ?? DEFAULT_TRAY_BOTTOM;
   const hasHalfSockets = base.halfSockets;
 
   // Feature statuses and disabled reasons from constraint engine
@@ -42,6 +53,7 @@ export function useBaseSection() {
   const halfSocketsStatus = getFeatureStatus(params, 'base.halfSockets');
   const lightweightStatus = getFeatureStatus(params, 'base.lightweight');
   const spacerStatus = getFeatureStatus(params, 'base.spacer');
+  const lidBottomStatus = getFeatureStatus(params, 'base.lid');
 
   // Every base toggle commits through here. Only an effective spacer may stand
   // 1u tall (#2915), and several toggles can END one: leaving spacer mode, or
@@ -67,6 +79,7 @@ export function useBaseSection() {
   const halfSocketsDisabledReason = halfSocketsStatus.reason
     ? t(halfSocketsStatus.reason)
     : undefined;
+  const lidBottomDisabledReason = lidBottomStatus.reason ? t(lidBottomStatus.reason) : undefined;
   const lightweightDisabledReason = lightweightStatus.reason
     ? t(lightweightStatus.reason)
     : undefined;
@@ -117,6 +130,51 @@ export function useBaseSection() {
     });
     commit(resolved);
   }, [params, hasHalfSockets, halfSocketsStatus.available, commit]);
+
+  const toggleLidBottom = useCallback(() => {
+    const { params: resolved } = resolveConstraints(params, {
+      feature: 'base.lid',
+      enabled: !isLidBottom,
+    });
+    // The mating config is materialised on the way in and STRIPPED on the way
+    // out. It is absent by default so an ordinary bin's params hash is
+    // unchanged (see `DEFAULT_BIN_PARAMS`) — leaving a residue behind would
+    // make a bin that once tried the tray bottom fingerprint differently from
+    // an identical one that never did, defeating the point of the omission.
+    const { trayBottom: _dropped, ...baseWithoutTray } = resolved.base;
+    commit({
+      ...resolved,
+      base:
+        resolved.base.style === 'lid'
+          ? { ...resolved.base, trayBottom: resolved.base.trayBottom ?? DEFAULT_TRAY_BOTTOM }
+          : baseWithoutTray,
+    });
+  }, [params, isLidBottom, commit]);
+
+  const updateTrayBottom = useCallback(
+    (patch: Partial<TrayBottomConfig>) => {
+      updateBase({ trayBottom: { ...trayBottom, ...patch } });
+    },
+    [updateBase, trayBottom]
+  );
+
+  const setTrayAttachment = useCallback(
+    (attachment: LidAttachment) => updateTrayBottom({ attachment }),
+    [updateTrayBottom]
+  );
+
+  const setTrayExtraHeight = useCallback(
+    (extraHeightMm: number) => updateTrayBottom({ extraHeightMm }),
+    [updateTrayBottom]
+  );
+
+  const toggleTrayRail = useCallback(
+    (side: LidRailSide) =>
+      updateTrayBottom({
+        clickRails: { ...trayBottom.clickRails, [side]: !trayBottom.clickRails[side] },
+      }),
+    [updateTrayBottom, trayBottom]
+  );
 
   const toggleFlat = useCallback(() => {
     const { params: resolved } = resolveConstraints(params, {
@@ -195,6 +253,8 @@ export function useBaseSection() {
       hasMagnet,
       hasScrew,
       isFlat,
+      isLidBottom,
+      trayBottom,
       hasHalfSockets,
       hasLightweight: base.lightweight,
       isSpacer: base.spacer,
@@ -210,6 +270,10 @@ export function useBaseSection() {
       toggleLightweight,
       toggleHalfSockets,
       toggleFlat,
+      toggleLidBottom,
+      setTrayAttachment,
+      setTrayExtraHeight,
+      toggleTrayRail,
       setMagnetDiameter,
       setMagnetHeight,
       setScrewDiameter,
@@ -220,6 +284,7 @@ export function useBaseSection() {
       magnetDisabledReason,
       screwDisabledReason,
       flatDisabledReason,
+      lidBottomDisabledReason,
       halfSocketsDisabledReason,
       lightweightDisabledReason,
       toggleSpacer,

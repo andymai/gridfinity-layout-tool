@@ -6,6 +6,7 @@
  */
 
 import { useMemo, useEffect } from 'react';
+import { baseFloorZ, baseWallHeight } from '@/features/bin-designer/utils/binDimensions';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import { useShallow } from 'zustand/react/shallow';
@@ -28,13 +29,15 @@ export function GhostHandles() {
     width,
     depth,
     height,
-    gridUnitMm, gridUnitMmY,
+    gridUnitMm,
+    gridUnitMmY,
     heightUnitMm,
     wallThickness,
     style,
     handles,
     label,
     base,
+    lid,
     wallConfig,
     generationStatus,
   } = useDesignerStore(
@@ -50,6 +53,7 @@ export function GhostHandles() {
       handles: s.params.handles,
       label: s.params.label,
       base: s.params.base,
+      lid: s.params.lid,
       wallConfig: s.params.walls,
       generationStatus: s.generation.status,
     }))
@@ -59,10 +63,8 @@ export function GhostHandles() {
   const outerD = depth * (gridUnitMmY ?? gridUnitMm) - GRIDFINITY.TOLERANCE;
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
-
-  const isFlat = base.style === 'flat';
   const totalH = height * heightUnitMm;
-  const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
+  const wallHeight = baseWallHeight(base, totalH);
   const hasLip = base.stackingLip;
   const interiorHeight = computeInteriorHeight(wallHeight, hasLip, GRIDFINITY.LIP_SMALL_TAPER);
 
@@ -200,7 +202,7 @@ export function GhostHandles() {
 
   if (!geometry || !material) return null;
 
-  const socketZ = isFlat ? 0 : GRIDFINITY.SOCKET_HEIGHT;
+  const socketZ = baseFloorZ(base, heightUnitMm, lid);
   // Use variable vertical position for ghost mesh world-space position
   const holeZ = socketZ + interiorHeight * handles.verticalPosition;
 

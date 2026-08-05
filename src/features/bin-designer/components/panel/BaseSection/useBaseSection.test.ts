@@ -471,4 +471,70 @@ describe('useBaseSection', () => {
       expect(useDesignerStore.getState().params.floorPattern?.scale).toBeCloseTo(0.8, 6);
     });
   });
+
+  describe('lid-compatible bottom (#3036)', () => {
+    it('toggleLidBottom switches the style and materialises the mating config', () => {
+      const { result } = renderHook(() => useBaseSection());
+      act(() => result.current.handlers.toggleLidBottom());
+      const { base } = useDesignerStore.getState().params;
+      expect(base.style).toBe('lid');
+      // Absent by default so an ordinary bin's params hash is untouched, so
+      // selecting the style is what has to bring it into being.
+      expect(base.trayBottom).toBeDefined();
+      expect(base.trayBottom?.attachment).toBe('clickRails');
+    });
+
+    it('toggling back off returns to the standard base and leaves no residue', () => {
+      const { result } = renderHook(() => useBaseSection());
+      act(() => result.current.handlers.toggleLidBottom());
+      act(() => result.current.handlers.toggleLidBottom());
+      const { base } = useDesignerStore.getState().params;
+      expect(base.style).toBe('standard');
+      // `params` is hashed wholesale, so a leftover `trayBottom` would make
+      // this bin fingerprint differently from one that never tried the tray.
+      expect('trayBottom' in base).toBe(false);
+    });
+
+    it('clears attachment hardware — there are no feet to drill', () => {
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' } },
+      });
+      const { result } = renderHook(() => useBaseSection());
+      act(() => result.current.handlers.toggleLidBottom());
+      expect(useDesignerStore.getState().params.base.style).toBe('lid');
+    });
+
+    it('is greyed out with a reason on a lightweight base', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          base: { ...DEFAULT_BIN_PARAMS.base, lightweight: true },
+        },
+      });
+      const { result } = renderHook(() => useBaseSection());
+      expect(result.current.handlers.lidBottomDisabledReason).toBeDefined();
+    });
+
+    it('edits the mating config without disturbing the rest of the base', () => {
+      const { result } = renderHook(() => useBaseSection());
+      act(() => result.current.handlers.toggleLidBottom());
+      act(() => result.current.handlers.setTrayExtraHeight(12));
+      act(() => result.current.handlers.setTrayAttachment('magnetic'));
+      const { base } = useDesignerStore.getState().params;
+      expect(base.trayBottom?.extraHeightMm).toBe(12);
+      expect(base.trayBottom?.attachment).toBe('magnetic');
+      expect(base.stackingLip).toBe(DEFAULT_BIN_PARAMS.base.stackingLip);
+    });
+
+    it('toggles a single click rail side, leaving the others alone', () => {
+      const { result } = renderHook(() => useBaseSection());
+      act(() => result.current.handlers.toggleLidBottom());
+      act(() => result.current.handlers.toggleTrayRail('front'));
+      const rails = useDesignerStore.getState().params.base.trayBottom?.clickRails;
+      expect(rails?.front).toBe(false);
+      expect(rails?.back).toBe(true);
+      expect(rails?.left).toBe(true);
+      expect(rails?.right).toBe(true);
+    });
+  });
 });

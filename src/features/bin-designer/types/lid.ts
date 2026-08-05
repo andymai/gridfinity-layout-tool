@@ -478,6 +478,57 @@ export function lidWallBottomZ(
 }
 
 /**
+ * How far a click rail's profile hangs BELOW the mating wall's bottom.
+ *
+ * Summed from the steps `clickShape2D` walks down (entry chamfer, bump, its
+ * 0.1 shoulder, exit chamfer, drop, tail). Lives here rather than in the
+ * worker's `lidConstants` for the same reason the anchor formulas do: the
+ * preview needs it and cannot import brepjs.
+ */
+/** Click rail engagement depth (the snap "bump" height). */
+export const LID_CLICK_RAIL_BUMP = 0.6;
+/** Rail entry chamfer depth (lid slides on smoothly). */
+export const LID_CLICK_RAIL_ENTRY_CHAMFER = 0.8;
+/** Rail exit chamfer (geometry stability). */
+export const LID_CLICK_RAIL_EXIT_CHAMFER = 0.2;
+/** Vertical extension below the rail bump. */
+export const LID_CLICK_RAIL_DROP = 0.8;
+/** Final tail length below the rail body. */
+export const LID_CLICK_RAIL_TAIL = 1.25;
+/** Shoulder between the rail bump and its exit chamfer. */
+export const LID_CLICK_RAIL_SHOULDER = 0.1;
+
+export const LID_CLICK_RAIL_DROP_BELOW_WALL =
+  LID_CLICK_RAIL_ENTRY_CHAMFER +
+  LID_CLICK_RAIL_BUMP +
+  LID_CLICK_RAIL_SHOULDER +
+  LID_CLICK_RAIL_EXIT_CHAMFER +
+  LID_CLICK_RAIL_DROP +
+  LID_CLICK_RAIL_TAIL;
+
+/**
+ * Depth of a tray bin's skirt (#3036) — how far the mating geometry hangs
+ * below its floor, and so how far the whole bin is lifted for Z=0 to stay the
+ * absolute bottom.
+ *
+ * `wallBottomZ` alone is not enough: click rails hang below the mating wall,
+ * and omitting them sinks the model under the print bed. Shared by the
+ * worker's `deriveDimensions` and the preview's `binDimensions` so the two
+ * cannot disagree about where a tray's floor is.
+ */
+export function trayBottomSkirtDepth(
+  heightUnitMm: number,
+  fitClearance: number,
+  extraCavityMm: number,
+  hasClickRails: boolean
+): number {
+  return (
+    -lidWallBottomZ(heightUnitMm, fitClearance, extraCavityMm) +
+    (hasClickRails ? LID_CLICK_RAIL_DROP_BELOW_WALL : 0)
+  );
+}
+
+/**
  * Vertical gap (mm) between the lid boss's magnet face and the bin pad's, when
  * seated. Keeps the corner posts from bottoming out and lifting the lid off its
  * lip; the magnets pull across it. Mirrored by the worker's `lidConstants`.

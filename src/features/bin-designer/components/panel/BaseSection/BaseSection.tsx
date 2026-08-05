@@ -1,6 +1,6 @@
 /**
- * Base section: Magnet holes, screw holes, stacking lip, flat bottom, floor
- * pattern.
+ * Base section: Magnet holes, screw holes, stacking lip, flat bottom,
+ * lid-compatible bottom, floor pattern.
  *
  * Uses smart defaults with "Customize" inline expansion for magnet/screw
  * radius and depth parameters that most users won't need to change.
@@ -9,10 +9,16 @@
  */
 
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
-import { SliderInput } from '@/design-system';
+import { Button, SegmentedControl, SliderInput } from '@/design-system';
 import { FeatureToggle } from '../FeatureToggle';
 import { PatternSelector } from '../WallsSection/PatternSelector';
-import { FLOOR_PATTERN_TYPES } from '@/features/bin-designer/types';
+import {
+  FLOOR_PATTERN_TYPES,
+  LID_ATTACHMENTS,
+  LID_EXTRA_HEIGHT_MAX_MM,
+  LID_EXTRA_HEIGHT_MIN_MM,
+  LID_RAIL_SIDES,
+} from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { useBaseSection } from './useBaseSection';
 
@@ -79,6 +85,63 @@ export function BaseSection() {
         onChange={handlers.toggleFlat}
         disabledReason={handlers.flatDisabledReason}
       />
+
+      {/* Lid-compatible bottom (#3036). The attachment and rail controls reuse
+          the lid section's copy: it is the same joint from the other side. */}
+      <FeatureToggle
+        label={t('binDesigner.lidBottom')}
+        checked={state.isLidBottom}
+        onChange={handlers.toggleLidBottom}
+        disabledReason={handlers.lidBottomDisabledReason}
+      >
+        <div className="space-y-3">
+          <p className="text-xs text-content-tertiary">{t('binDesigner.lidBottom.hint')}</p>
+
+          <SegmentedControl
+            aria-label={t('binDesigner.lid.attachment')}
+            activeStyle="accent"
+            fullWidth
+            size="sm"
+            value={state.trayBottom.attachment}
+            onChange={handlers.setTrayAttachment}
+            options={LID_ATTACHMENTS.map((mode) => ({
+              value: mode,
+              label: t(`binDesigner.lid.attachment.${mode}`),
+            }))}
+          />
+
+          <SliderInput
+            label={t('binDesigner.lidBottom.extraHeight')}
+            value={state.trayBottom.extraHeightMm}
+            onChange={handlers.setTrayExtraHeight}
+            min={LID_EXTRA_HEIGHT_MIN_MM}
+            max={LID_EXTRA_HEIGHT_MAX_MM}
+            step={0.5}
+            unit="mm"
+          />
+
+          {state.trayBottom.attachment === 'clickRails' && (
+            <div>
+              <span className="mb-1 block text-xs font-medium text-content-secondary">
+                {t('binDesigner.lid.clickRails')}
+              </span>
+              <div className="flex gap-1">
+                {LID_RAIL_SIDES.map((side) => (
+                  <Button
+                    key={side}
+                    size="sm"
+                    variant={state.trayBottom.clickRails[side] ? 'primary' : 'secondary'}
+                    aria-pressed={state.trayBottom.clickRails[side]}
+                    onClick={() => handlers.toggleTrayRail(side)}
+                  >
+                    {t(`binDesigner.lid.side.${side}`)}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </FeatureToggle>
 
       <FeatureToggle
         label={t('binDesigner.halfSockets')}

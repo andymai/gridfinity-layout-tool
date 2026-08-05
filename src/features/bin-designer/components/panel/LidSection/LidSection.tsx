@@ -571,6 +571,15 @@ export function LidSection() {
               )}
             </div>
           </Collapsible>
+
+          {/* Hands off to a NEW design (#3036) — see `matchingTrayParams`. */}
+          <section className="space-y-2 border-t border-stroke-subtle pt-3">
+            <SubHeader>{t('binDesigner.lid.section.tray')}</SubHeader>
+            <p className="text-xs text-content-tertiary">{t('binDesigner.lid.matchingTrayHint')}</p>
+            <Button variant="secondary" size="sm" onClick={handlers.createMatchingTray}>
+              {t('binDesigner.lid.createMatchingTray')}
+            </Button>
+          </section>
         </>
       )}
     </div>

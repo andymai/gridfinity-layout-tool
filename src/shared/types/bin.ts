@@ -81,7 +81,19 @@ export type {
 
 export {
   MIN_PATH_POINTS,
+  // Tray-bin mating defaults (#3036): the worker synthesises a lid config from
+  // `base.trayBottom`, so it needs both baselines on this side of the boundary.
+  DEFAULT_TRAY_BOTTOM,
+  DEFAULT_LID_CONFIG,
   LID_FIT_CLEARANCE,
+  LID_CLICK_RAIL_BUMP,
+  LID_CLICK_RAIL_ENTRY_CHAMFER,
+  LID_CLICK_RAIL_EXIT_CHAMFER,
+  LID_CLICK_RAIL_DROP,
+  LID_CLICK_RAIL_TAIL,
+  LID_CLICK_RAIL_SHOULDER,
+  LID_CLICK_RAIL_DROP_BELOW_WALL,
+  trayBottomSkirtDepth,
   LID_MAGNETIC_EXTRA_CLEARANCE,
   resolveLidFootprintClearance,
   resolveLidPlateThickness,

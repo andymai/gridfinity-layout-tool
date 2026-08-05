@@ -28,6 +28,17 @@ import type { BinDimensions, PipelineContext } from './types';
 import type { PerfCollector } from './perfCollector';
 import { resolveOverhang, overhangKey, hasOverhang, overhangExpansion } from '../overhang';
 import { pitchFromParams, pitchKeySegments } from '../gridPitch';
+import { resolveTrayBottomInputs, trayBottomSkirtDepth } from '../trayBottomInputs';
+
+/**
+ * Depth of whatever sits under the body: a Gridfinity socket, a tray bin's lid
+ * skirt (#3036), or nothing at all under a flat base.
+ */
+function resolveBaseOffsetZ(params: BinParams): number {
+  if (params.base.style === 'lid') return trayBottomSkirtDepth(resolveTrayBottomInputs(params));
+  if (params.base.style === 'flat') return 0;
+  return SOCKET_HEIGHT;
+}
 
 /** Derive all dimensions from bin parameters. */
 export function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions {
@@ -35,25 +46,30 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   const heightUnit = params.heightUnitMm ?? HEIGHT_UNIT;
   const totalHeight = params.height * heightUnit;
   const isFlat = params.base.style === 'flat';
+  // Tray bin (#3036): lid mating geometry underneath, so like a flat base there
+  // is no socket to shell, drill or halve. Still distinct from `isFlat`, which
+  // ends in a plain face where this grows a skirt in `trayBottomStage`.
+  const isTrayBottom = params.base.style === 'lid';
+  const socketless = isFlat || isTrayBottom;
   // User flag only. When the mask has mixed half-bin detail, the socket
   // builder does a per-cell dispatch using the mask — it splits only
   // those 1u cells that straddle a half-bin boundary into quarter
   // sockets, leaving uniform 1u cells as one full socket. This avoids
   // decomposing every cell unnecessarily.
-  const halfSockets = params.base.halfSockets && !isFlat;
+  const halfSockets = params.base.halfSockets && !socketless;
   const solid = params.base.solid;
   // Spacer (#2869): a floorless riser that lifts a bin so mismatched heights line
   // up. Feet and stacking lip are unchanged — only the floor is gone, so every
   // height/stacking rule the bin already follows carries over. Needs a socket to
   // shell through, so it's inert on a flat base; the constraint engine also keeps
   // the two from being on together.
-  const isSpacer = params.base.spacer && !isFlat;
+  const isSpacer = params.base.spacer && !socketless;
   // Lightweight shells the socket region; a flat bin has no socket, so the
   // flag is inert there. migrateParams backfills the field on legacy designs.
   // A spacer always shells (its feet ARE the structure once the floor is gone),
   // so it takes the same build path whether or not the user asked for lite.
-  const lightweight = (params.base.lightweight || isSpacer) && !isFlat;
-  const wallHeight = isFlat ? totalHeight : totalHeight - SOCKET_HEIGHT;
+  const lightweight = (params.base.lightweight || isSpacer) && !socketless;
+  const wallHeight = socketless ? totalHeight : totalHeight - SOCKET_HEIGHT;
   // Exterior-wall collar (issue #2500): raises the outer box + lip above the
   // nominal wall height without touching the interior. Kept separate from
   // `wallHeight` so every feature stage anchors to the original top plane.
@@ -90,12 +106,14 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // through-hole would be a free-standing pillar — so attachment hardware is
   // suppressed here as well as ruled out by the constraint engine, keeping a
   // crafted share payload from producing a disconnected solid. Same shape of
-  // guard as `isFlat`, which has no socket to drill at all.
-  const noAttachment = isFlat || isSpacer;
+  // guard as `socketless`, which has no socket to drill at all.
+  const noAttachment = socketless || isSpacer;
   const withMagnet =
     !noAttachment && (params.base.style === 'magnet' || params.base.style === 'magnet_and_screw');
   const withScrew =
     !noAttachment && (params.base.style === 'screw' || params.base.style === 'magnet_and_screw');
+
+  const baseOffsetZ = resolveBaseOffsetZ(params);
 
   const maxDimension = Math.max(params.width * gridUnitX, params.depth * gridUnitY);
 
@@ -200,6 +218,11 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
       // Spacer punches the floor through, so it must never share a cached body
       // with the lite bin it otherwise looks like. Appended for the same reason.
       ...(isSpacer ? ['spacer'] : []),
+      // A tray bin's shell is socketless, so it must not reuse a socketed bin's
+      // cached body. `isFlat` above does not separate them: a custom
+      // `heightUnitMm` makes a socketed 13mm x 2u and a tray 7mm x 3u agree on
+      // every other segment, including `wallHeight`.
+      ...(isTrayBottom ? ['tray'] : []),
       // A solid bin's fill surface is part of its BODY (shellStage folds it into
       // `cutoutTopOffset`), so two bins differing only in the top offset are two
       // different shells. Without this the second one silently reuses the first
@@ -225,6 +248,9 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
     totalHeight,
     collarHeight,
     isFlat,
+    isTrayBottom,
+    socketless,
+    baseOffsetZ,
     halfSockets,
     lightweight,
     isSpacer,

@@ -19,7 +19,8 @@ import {
   LID_CLICK_RAIL_ENTRY_CHAMFER,
   LID_CLICK_RAIL_EXIT_CHAMFER,
   LID_CLICK_RAIL_DROP,
-  LID_CLICK_RAIL_TAIL,
+  LID_CLICK_RAIL_SHOULDER,
+  LID_CLICK_RAIL_DROP_BELOW_WALL,
   LID_CLICK_RAIL_OUT,
   LID_CLICK_RAIL_INSET,
   LID_CLICK_RAIL_INNER,
@@ -30,6 +31,11 @@ import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
 import { LID_MIN_RAIL_LENGTH as MIN_RAIL_LENGTH } from '@/shared/types/bin';
 import type { LidInputs } from './lidInputs';
+
+/** True when at least one side carries a rail, i.e. the lid is not friction-fit. */
+export function hasAnyClickRail(rails: LidInputs['clickRails']): boolean {
+  return rails.front || rails.back || rails.left || rails.right;
+}
 
 /**
  * Top-chamfer apex X for a rail bar, given the cavity wall's rail-local X.
@@ -62,10 +68,10 @@ function clickShape2D(wallBottomZ: number, cavityWallX: number): Drawing {
   const yTop = wallBottomZ;
   // Y heights stepping down from the rail's top.
   const y1 = yTop - LID_CLICK_RAIL_ENTRY_CHAMFER; // -0.8
-  const y2 = y1 - LID_CLICK_RAIL_BUMP - 0.1; // rail body bottom
+  const y2 = y1 - LID_CLICK_RAIL_BUMP - LID_CLICK_RAIL_SHOULDER; // rail body bottom
   const y3 = y2 - LID_CLICK_RAIL_EXIT_CHAMFER; // exit chamfer
   const y4 = y3 - LID_CLICK_RAIL_DROP; // post-bump drop
-  const y5 = y4 - LID_CLICK_RAIL_TAIL; // bottom apex
+  const y5 = yTop - LID_CLICK_RAIL_DROP_BELOW_WALL; // bottom apex (== y4 - TAIL)
 
   const chamferApexX = chamferApexXForCavityWall(cavityWallX);
   const chamferTopY = yTop + (chamferApexX - LID_CLICK_RAIL_INNER);

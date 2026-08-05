@@ -43,6 +43,22 @@ export interface BinDimensions {
    */
   readonly collarHeight: number;
   readonly isFlat: boolean;
+  /**
+   * Underside is lid mating geometry rather than a Gridfinity socket (#3036).
+   * Socket-dependent derivations treat it like `isFlat`; the difference is the
+   * skirt `trayBottomStage` fuses below the body.
+   */
+  readonly isTrayBottom: boolean;
+  /** No Gridfinity socket under the body: a flat base or a tray bottom. */
+  readonly socketless: boolean;
+  /**
+   * How far the body is lifted so Z=0 stays the absolute bottom — the depth of
+   * whatever sits under it. `SOCKET_HEIGHT` for a Gridfinity base, the skirt
+   * depth for a tray bottom, 0 for a flat one. Everything that needs the body's
+   * true Z (floor patterns, mesh imprint, the translate stage) reads this
+   * rather than re-deriving it, so a third kind of underside cannot desync them.
+   */
+  readonly baseOffsetZ: number;
   readonly halfSockets: boolean;
   /**
    * True when the base is shelled to a uniform `wallThickness` (Gridfinity

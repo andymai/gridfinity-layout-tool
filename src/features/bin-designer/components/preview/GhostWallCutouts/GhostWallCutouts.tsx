@@ -8,6 +8,7 @@
  */
 
 import { useMemo, useEffect, useRef } from 'react';
+import { baseWallHeight } from '@/features/bin-designer/utils/binDimensions';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import { useShallow } from 'zustand/react/shallow';
@@ -31,11 +32,12 @@ export function GhostWallCutouts() {
     width,
     depth,
     height,
-    gridUnitMm, gridUnitMmY,
+    gridUnitMm,
+    gridUnitMmY,
     heightUnitMm,
     wallThickness,
     walls,
-    baseStyle,
+    base,
     generationStatus,
   } = useDesignerStore(
     useShallow((s) => ({
@@ -47,7 +49,7 @@ export function GhostWallCutouts() {
       heightUnitMm: s.params.heightUnitMm,
       wallThickness: s.params.wallThickness,
       walls: s.params.walls,
-      baseStyle: s.params.base.style,
+      base: s.params.base,
       generationStatus: s.generation.status,
     }))
   );
@@ -57,8 +59,7 @@ export function GhostWallCutouts() {
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
   const totalH = height * heightUnitMm;
-  const isFlat = baseStyle === 'flat';
-  const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
+  const wallHeight = baseWallHeight(base, totalH);
 
   const shouldShow = walls.enabled && generationStatus === 'generating';
 
