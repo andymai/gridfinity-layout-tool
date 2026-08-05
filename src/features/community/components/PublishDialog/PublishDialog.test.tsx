@@ -491,14 +491,17 @@ describe('PublishDialog', () => {
     expect(useCommunityPublishStore.getState().context?.publishedId).toBe('Pub123456789');
   });
 
-  it('unpublish sits outside the primary footer and goes through the confirm dialog', async () => {
+  it('unpublish lives in the header menu and goes through the confirm dialog', async () => {
     saveDisplayName('Andy');
     signIn();
     vi.mocked(fetchOwnDesign).mockResolvedValue(ok(publishedRecord()));
     vi.mocked(unpublishDesign).mockResolvedValue(ok({ success: true }));
     const handlers = openDialog(makeContext({ publishedId: 'Pub123456789' }));
-    expect(await screen.findByText('Remove from the showcase')).toBeInTheDocument();
-    fireEvent.click(screen.getByText('Unpublish'));
+    const ownerMenu = await screen.findByLabelText('Published design actions');
+    // Destructive and out of the editing flow: nothing about it is on the form.
+    expect(screen.queryByText('Unpublish')).not.toBeInTheDocument();
+    fireEvent.click(ownerMenu);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Unpublish' }));
     expect(
       await screen.findByText(
         'It will be removed from the community showcase. Copies people already remixed are unaffected.'

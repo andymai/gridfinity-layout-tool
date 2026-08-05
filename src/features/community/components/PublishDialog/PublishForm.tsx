@@ -1,19 +1,17 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Alert, Button, Dialog, Field, Input, Textarea } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import type { CommunityPublishCaptures } from '@/core/store/communityPublish';
 import type { AuthProvider } from '@/core/sync/session/sessionApi';
 import type { BinParams } from '@/shared/types/bin';
 import type { CommunityCategory, CommunityDesignLineage } from '@/shared/types/community';
-import { TECHNIQUE_CONFIG } from '@/shared/types/exampleTechniques';
 import { hasQualifyingCutout } from '@/shared/utils/communityLowEffort';
-import { deriveTechniques } from '@/shared/utils/communityTechniques';
 import type { CommunityClientError } from '../../api/client';
 import type { PublishDialogMode, PublishPrefill } from '../../store/publishStore';
 import { CategoryChips } from './CategoryChips';
 import { CoverImageSection } from './CoverImageSection';
+import { PublishArtefact } from './PublishArtefact';
 import { PublisherIdentity } from './PublisherIdentity';
-import { PublishPreview } from './PublishPreview';
 import { presentPublishError } from './publishErrors';
 import type { PublishErrorField } from './publishErrors';
 
@@ -62,7 +60,6 @@ export interface PublishFormProps {
   onSignIn: (provider: AuthProvider, draft: PublishSignInDraft) => void;
   onRetryCapture: () => void;
   onDropRemix: () => void;
-  onUnpublish: (() => void) | null;
 }
 
 export function PublishForm({
@@ -85,7 +82,6 @@ export function PublishForm({
   onSignIn,
   onRetryCapture,
   onDropRemix,
-  onUnpublish,
 }: PublishFormProps) {
   const t = useTranslation();
   const [name, setName] = useState(() => prefill.name.slice(0, PUBLISH_NAME_MAX_LENGTH));
@@ -100,7 +96,6 @@ export function PublishForm({
   const markEdited = (field: PublishErrorField) =>
     setEdited((previous) => (previous[field] === true ? previous : { ...previous, [field]: true }));
 
-  const techniques = useMemo(() => deriveTechniques(params), [params]);
   const cutoutMissing = requireCutouts && !hasQualifyingCutout(params);
 
   const presented = error !== null ? presentPublishError(error) : null;
@@ -159,24 +154,57 @@ export function PublishForm({
     });
   };
 
-  const showRootLine =
-    lineage !== null &&
-    lineage.parentId !== lineage.rootId &&
-    lineage.rootAuthorName !== '' &&
-    lineage.rootAuthorName !== lineage.parentAuthorName;
-
   return (
     <>
-      <Dialog.Body>
-        <div className="space-y-4">
-          {presented !== null && presented.field === null && (
-            <Alert intent="error" size="md">
-              <div className="space-y-2">
-                <p>{t(presented.messageKey, presented.values)}</p>
-                {error?.kind === 'quotaExceeded' && (
-                  <p className="text-xs">{t('community.publish.error.quotaHint')}</p>
-                )}
-                {presented.needsAuth && (
+      <Dialog.Split>
+        <Dialog.Sidebar className="p-[var(--space-2xl)] md:w-80">
+          <PublishArtefact
+            thumbnails={captures?.thumbnails ?? null}
+            captureFailed={captureFailed}
+            params={params}
+            lineage={lineage}
+            onRetryCapture={onRetryCapture}
+          />
+        </Dialog.Sidebar>
+
+        <Dialog.Pane>
+          <div className="space-y-4">
+            {presented !== null && presented.field === null && (
+              <Alert intent="error" size="md">
+                <div className="space-y-2">
+                  <p>{t(presented.messageKey, presented.values)}</p>
+                  {error?.kind === 'quotaExceeded' && (
+                    <p className="text-xs">{t('community.publish.error.quotaHint')}</p>
+                  )}
+                  {presented.needsAuth && (
+                    <div className="flex flex-wrap gap-2">
+                      <Button variant="primary" onClick={() => onSignIn('google', signInDraft())}>
+                        {t('auth.signInWithGoogle')}
+                      </Button>
+                      <Button variant="secondary" onClick={() => onSignIn('github', signInDraft())}>
+                        {t('auth.signInWithGithub')}
+                      </Button>
+                    </div>
+                  )}
+                  {presented.canDropRemix && (
+                    <Button variant="secondary" onClick={onDropRemix}>
+                      {t('community.publish.error.publishWithoutRemix')}
+                    </Button>
+                  )}
+                </div>
+              </Alert>
+            )}
+
+            {cutoutMissing && (
+              <Alert intent="warning" size="md" title={t('community.publish.needsCutout.title')}>
+                {t('community.publish.needsCutout.button')}
+              </Alert>
+            )}
+
+            {authPrompt && (
+              <Alert intent="info" size="md" title={t('community.publish.signin.title')}>
+                <div className="space-y-2">
+                  <p>{t('community.publish.signin.value')}</p>
                   <div className="flex flex-wrap gap-2">
                     <Button variant="primary" onClick={() => onSignIn('google', signInDraft())}>
                       {t('auth.signInWithGoogle')}
@@ -185,192 +213,109 @@ export function PublishForm({
                       {t('auth.signInWithGithub')}
                     </Button>
                   </div>
-                )}
-                {presented.canDropRemix && (
-                  <Button variant="secondary" onClick={onDropRemix}>
-                    {t('community.publish.error.publishWithoutRemix')}
-                  </Button>
-                )}
-              </div>
-            </Alert>
-          )}
-
-          {cutoutMissing && (
-            <Alert intent="warning" size="md" title={t('community.publish.needsCutout.title')}>
-              {t('community.publish.needsCutout.button')}
-            </Alert>
-          )}
-
-          {authPrompt && (
-            <Alert intent="info" size="md" title={t('community.publish.signin.title')}>
-              <div className="space-y-2">
-                <p>{t('community.publish.signin.value')}</p>
-                <div className="flex flex-wrap gap-2">
-                  <Button variant="primary" onClick={() => onSignIn('google', signInDraft())}>
-                    {t('auth.signInWithGoogle')}
-                  </Button>
-                  <Button variant="secondary" onClick={() => onSignIn('github', signInDraft())}>
-                    {t('auth.signInWithGithub')}
-                  </Button>
                 </div>
+              </Alert>
+            )}
+
+            <Field
+              label={t('community.publish.form.nameLabel')}
+              htmlFor="community-publish-name"
+              error={nameError}
+            >
+              <div className="flex items-center gap-2">
+                <Input
+                  id="community-publish-name"
+                  value={name}
+                  maxLength={PUBLISH_NAME_MAX_LENGTH}
+                  placeholder={t('community.publish.form.namePlaceholder')}
+                  aria-invalid={nameError !== undefined}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    markEdited('name');
+                  }}
+                />
+                <span aria-hidden className="shrink-0 text-xs tabular-nums text-content-tertiary">
+                  {name.length}/{PUBLISH_NAME_MAX_LENGTH}
+                </span>
               </div>
-            </Alert>
-          )}
+            </Field>
 
-          <PublishPreview
-            thumbnails={captures?.thumbnails ?? null}
-            captureFailed={captureFailed}
-            onRetry={onRetryCapture}
-          />
-
-          <Field
-            label={t('community.publish.form.nameLabel')}
-            htmlFor="community-publish-name"
-            error={nameError}
-          >
-            <div className="flex items-center gap-2">
-              <Input
-                id="community-publish-name"
-                value={name}
-                maxLength={PUBLISH_NAME_MAX_LENGTH}
-                placeholder={t('community.publish.form.namePlaceholder')}
-                aria-invalid={nameError !== undefined}
+            <Field
+              label={t('community.publish.form.descriptionLabel')}
+              htmlFor="community-publish-description"
+              error={serverFieldError('description')}
+            >
+              <Textarea
+                id="community-publish-description"
+                value={description}
+                maxLength={PUBLISH_DESCRIPTION_MAX_LENGTH}
+                showCount
+                rows={4}
+                placeholder={t('community.publish.form.descriptionPlaceholder')}
                 onChange={(e) => {
-                  setName(e.target.value);
-                  markEdited('name');
+                  setDescription(e.target.value);
+                  markEdited('description');
                 }}
               />
-              <span aria-hidden className="shrink-0 text-xs tabular-nums text-content-tertiary">
-                {name.length}/{PUBLISH_NAME_MAX_LENGTH}
-              </span>
-            </div>
-          </Field>
+            </Field>
 
-          <Field
-            label={t('community.publish.form.descriptionLabel')}
-            htmlFor="community-publish-description"
-            error={serverFieldError('description')}
-          >
-            <Textarea
-              id="community-publish-description"
-              value={description}
-              maxLength={PUBLISH_DESCRIPTION_MAX_LENGTH}
-              showCount
-              rows={3}
-              placeholder={t('community.publish.form.descriptionPlaceholder')}
-              onChange={(e) => {
-                setDescription(e.target.value);
-                markEdited('description');
-              }}
-            />
-          </Field>
+            <Field
+              label={t('community.publish.form.categoryLabel')}
+              htmlFor="community-publish-category"
+              error={categoryError}
+            >
+              <CategoryChips
+                id="community-publish-category"
+                value={category}
+                invalid={categoryError !== undefined}
+                describedBy={
+                  categoryError !== undefined ? 'community-publish-category-error' : undefined
+                }
+                onChange={(value) => {
+                  setCategory(value);
+                  markEdited('category');
+                }}
+              />
+            </Field>
 
-          <Field
-            label={t('community.publish.form.categoryLabel')}
-            htmlFor="community-publish-category"
-            error={categoryError}
-          >
-            <CategoryChips
-              id="community-publish-category"
-              value={category}
-              invalid={categoryError !== undefined}
-              describedBy={
-                categoryError !== undefined ? 'community-publish-category-error' : undefined
-              }
+            <PublisherIdentity
+              value={publicName}
+              firstTime={firstTimePublisher}
+              error={publicNameError}
               onChange={(value) => {
-                setCategory(value);
-                markEdited('category');
+                onPublicNameChange(value);
+                markEdited('publicName');
               }}
             />
-          </Field>
 
-          <PublisherIdentity
-            value={publicName}
-            firstTime={firstTimePublisher}
-            error={publicNameError}
-            onChange={(value) => {
-              onPublicNameChange(value);
-              markEdited('publicName');
-            }}
-          />
-
-          <div>
-            <p className="text-xs font-medium text-content-tertiary">
-              {t('community.publish.form.techniquesLabel')}
-            </p>
-            {techniques.length === 0 ? (
-              <p className="mt-1 text-sm text-content-secondary">
-                {t('community.publish.form.techniquesNone')}
-              </p>
-            ) : (
-              <ul className="mt-1 flex flex-wrap gap-1.5">
-                {techniques.map((technique) => (
-                  <li
-                    key={technique}
-                    className="rounded-full bg-surface-hover px-2.5 py-0.5 text-xs text-content-secondary"
-                  >
-                    {t(TECHNIQUE_CONFIG[technique].labelKey)}
-                  </li>
-                ))}
-              </ul>
+            {mode === 'update' && publishedId !== null && printsEnabled && (
+              <CoverImageSection designId={publishedId} currentCoverUrl={currentCoverUrl} />
             )}
           </div>
-
-          {lineage !== null && (
-            <div className="rounded-md bg-surface-hover px-3 py-2 text-sm text-content-secondary">
-              <p>
-                {t('community.publish.form.lineageNotice', {
-                  parent: lineage.parentName,
-                  author: lineage.parentAuthorName,
-                })}
-              </p>
-              {showRootLine && (
-                <p>
-                  {t('community.publish.form.lineageNoticeRoot', {
-                    author: lineage.rootAuthorName,
-                  })}
-                </p>
-              )}
-            </div>
-          )}
-
-          {mode === 'update' && publishedId !== null && printsEnabled && (
-            <CoverImageSection designId={publishedId} currentCoverUrl={currentCoverUrl} />
-          )}
-
-          <p className="text-xs text-content-tertiary">
-            {t('community.publish.disclosure')}{' '}
-            <a
-              href="/terms"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline hover:text-content"
-            >
-              {t('community.publish.disclosureTerms')}
-            </a>
-          </p>
-
-          {onUnpublish !== null && (
-            <div className="space-y-2 rounded-md border border-error/40 px-3 py-3">
-              <p className="text-xs font-medium text-content-tertiary">
-                {t('community.publish.unpublishSectionLabel')}
-              </p>
-              <p className="text-sm text-content-secondary">
-                {t('community.publish.unpublishSectionHint')}
-              </p>
-              <Button variant="danger" className="min-h-11 md:min-h-0" onClick={onUnpublish}>
-                {t('community.publish.unpublish')}
-              </Button>
-            </div>
-          )}
-        </div>
-      </Dialog.Body>
-      <Dialog.Footer bordered>
-        {blockedReason !== null && (
-          <span id="community-publish-blocked" className="mr-auto text-xs text-content-tertiary">
-            {blockedReason}
-          </span>
-        )}
+        </Dialog.Pane>
+      </Dialog.Split>
+      <Dialog.Footer
+        bordered
+        leading={
+          blockedReason !== null ? (
+            <p id="community-publish-blocked" className="text-xs text-content-tertiary">
+              {blockedReason}
+            </p>
+          ) : (
+            <p className="text-xs text-content-tertiary">
+              {t('community.publish.disclosure')}{' '}
+              <a
+                href="/terms"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-content"
+              >
+                {t('community.publish.disclosureTerms')}
+              </a>
+            </p>
+          )
+        }
+      >
         <Button
           variant="primary"
           className="min-h-11 md:min-h-0"

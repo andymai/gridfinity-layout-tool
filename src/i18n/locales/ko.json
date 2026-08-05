@@ -3168,8 +3168,6 @@
   "community.publish.form.previewRequired": "게시하려면 미리보기가 필요합니다.",
   "community.publish.form.namePlaceholder": "예: 육각 비트 홀더, 12칸",
   "community.publish.submitSignedOut": "로그인하고 게시",
-  "community.publish.unpublishSectionLabel": "쇼케이스에서 내리기",
-  "community.publish.unpublishSectionHint": "이 디자인을 커뮤니티 쇼케이스에서 내립니다. 로컬 사본은 유지됩니다.",
   "community.publish.cover.label": "카드 이미지",
   "community.publish.cover.loading": "출력 사진을 확인하는 중…",
   "community.publish.cover.noPrints": "이 디자인의 카드에는 렌더가 표시됩니다. 실제 사진을 쓰려면 출력한 뒤 해당 페이지에 사진을 올리세요.",
@@ -3568,5 +3566,7 @@
   "toolSwitcher.community": "커뮤니티",
   "toolSwitcher.switchToCommunity": "커뮤니티 디자인으로 전환",
   "community.page.subtitle": "다른 메이커가 공유한 디자인입니다. 자유롭게 리믹스하고 출력하세요.",
-  "community.page.publishCta": "디자인 게시"
+  "community.page.publishCta": "디자인 게시",
+  "community.publish.form.wallsSummary": "벽 두께 {thickness} mm",
+  "community.publish.ownerActions": "게시된 디자인 작업"
 }

@@ -1772,8 +1772,6 @@
   "community.publish.form.previewRequired": "公開するにはプレビューが必要です。",
   "community.publish.form.namePlaceholder": "例: 六角ビットホルダー、12スロット",
   "community.publish.submitSignedOut": "サインインして公開",
-  "community.publish.unpublishSectionLabel": "ショーケースから削除",
-  "community.publish.unpublishSectionHint": "このデザインをコミュニティショーケースから削除します。ローカルのコピーは残ります。",
   "community.publish.cover.label": "カード画像",
   "community.publish.cover.loading": "プリント写真を確認しています…",
   "community.publish.cover.noPrints": "このデザインのカードにはレンダーが表示されています。実物の写真を使うには、印刷してそのページに写真を投稿してください。",
@@ -3568,5 +3566,7 @@
   "toolSwitcher.community": "コミュニティ",
   "toolSwitcher.switchToCommunity": "コミュニティデザインに切り替え",
   "community.page.subtitle": "他のメイカーが共有したデザイン。自由にリミックスして印刷できます。",
-  "community.page.publishCta": "デザインを公開"
+  "community.page.publishCta": "デザインを公開",
+  "community.publish.form.wallsSummary": "壁厚 {thickness} mm",
+  "community.publish.ownerActions": "公開デザインの操作"
 }

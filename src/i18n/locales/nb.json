@@ -1820,8 +1820,6 @@
   "community.publish.form.previewRequired": "En forhåndsvisning kreves for å publisere.",
   "community.publish.form.namePlaceholder": "f.eks. Holder for bits, 12 plasser",
   "community.publish.submitSignedOut": "Logg inn og publiser",
-  "community.publish.unpublishSectionLabel": "Fjern fra utstillingen",
-  "community.publish.unpublishSectionHint": "Fjerner dette designet fra fellesskapsutstillingen. Din lokale kopi beholdes.",
   "community.publish.cover.label": "Kortbilde",
   "community.publish.cover.loading": "Sjekker utskriftsbildene dine…",
   "community.publish.cover.noPrints": "Dette designets kort viser en rendering. Skriv det ut og legg ut et bilde på siden for å bruke et ekte bilde i stedet.",
@@ -3568,5 +3566,7 @@
   "toolSwitcher.community": "Fellesskap",
   "toolSwitcher.switchToCommunity": "Bytt til fellesskapsdesign",
   "community.page.subtitle": "Design delt av andre makere, fritt å remikse og skrive ut.",
-  "community.page.publishCta": "Publiser et design"
+  "community.page.publishCta": "Publiser et design",
+  "community.publish.form.wallsSummary": "{thickness} mm vegger",
+  "community.publish.ownerActions": "Handlinger for publisert design"
 }

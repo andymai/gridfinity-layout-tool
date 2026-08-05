@@ -12,6 +12,12 @@ vi.mock('../../api/printsClient', () => ({
 }));
 
 const params = {
+  width: 2,
+  depth: 4,
+  height: 4,
+  gridUnitMm: 42,
+  heightUnitMm: 7,
+  wallThickness: 1.2,
   compartments: { cells: [0, 0] },
   walls: { enabled: false },
   scoop: { enabled: true },
@@ -57,7 +63,6 @@ function renderForm(overrides: Partial<PublishFormProps> = {}) {
     onSignIn: vi.fn(),
     onRetryCapture: vi.fn(),
     onDropRemix: vi.fn(),
-    onUnpublish: null,
     ...overrides,
   };
   render(
@@ -215,6 +220,26 @@ describe('PublishForm', () => {
     expect(screen.getByText('Scoop')).toBeInTheDocument();
   });
 
+  it('puts the design beside the fields rather than above them', () => {
+    renderForm();
+    // The design column carries everything derived from the params; the field
+    // column carries everything the publisher types.
+    expect(screen.getByText('2×4×4')).toBeInTheDocument();
+    expect(screen.getByLabelText(/Name/)).toBeInTheDocument();
+  });
+
+  it('carries the licence disclosure in the footer', () => {
+    renderForm();
+    expect(screen.getByText(/anyone can remix them under CC BY 4.0/)).toBeInTheDocument();
+    expect(screen.getByText('Terms of use')).toHaveAttribute('href', '/terms');
+  });
+
+  it('replaces the disclosure with the reason the primary is blocked', () => {
+    renderForm({ captures: null });
+    expect(screen.getByText('Waiting for the preview…')).toBeInTheDocument();
+    expect(screen.queryByText(/anyone can remix them under CC BY 4.0/)).not.toBeInTheDocument();
+  });
+
   it('shows the lineage notice when lineage is present', () => {
     renderForm({ lineage });
     expect(
@@ -237,13 +262,10 @@ describe('PublishForm', () => {
     expect(screen.queryByText('Publishing as')).not.toBeInTheDocument();
   });
 
-  it('update mode renders Update and keeps Unpublish out of the primary footer', () => {
-    const onUnpublish = vi.fn();
-    renderForm({ mode: 'update', onUnpublish });
+  it('update mode renders Update and carries no owner actions of its own', () => {
+    renderForm({ mode: 'update' });
     expect(screen.getByText('Update')).toBeInTheDocument();
-    expect(screen.getByText('Remove from the showcase')).toBeInTheDocument();
-    fireEvent.click(screen.getByText('Unpublish'));
-    expect(onUnpublish).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText('Unpublish')).not.toBeInTheDocument();
   });
 
   it('offers the cover-image path only for a published design with prints enabled', () => {

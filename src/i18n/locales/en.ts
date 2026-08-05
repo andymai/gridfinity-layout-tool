@@ -3324,6 +3324,7 @@ const en: Record<string, string> = {
   'community.publish.form.descriptionPlaceholder': 'What is it for? Any print tips?',
   'community.publish.form.categoryLabel': 'Category',
   'community.publish.form.categoryRequired': 'Choose a category.',
+  'community.publish.form.wallsSummary': '{thickness} mm walls',
   'community.publish.form.techniquesLabel': 'Detected techniques',
   'community.publish.form.techniquesNone': 'None detected',
   'community.publish.form.lineageNotice': 'Will be credited as a remix of {parent} by {author}',
@@ -3338,9 +3339,7 @@ const en: Record<string, string> = {
   'community.publish.unpublishTitle': 'Unpublish this design?',
   'community.publish.unpublishMessage':
     'It will be removed from the community showcase. Copies people already remixed are unaffected.',
-  'community.publish.unpublishSectionLabel': 'Remove from the showcase',
-  'community.publish.unpublishSectionHint':
-    'Takes this design off the community showcase. Your local copy is kept.',
+  'community.publish.ownerActions': 'Published design actions',
   'community.publish.cover.label': 'Card image',
   'community.publish.cover.loading': 'Checking your print photos…',
   'community.publish.cover.noPrints':
