@@ -185,6 +185,12 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
     halfSockets: false,
     lightweight: false,
     spacer: false,
+    // `trayBottom` is deliberately ABSENT here. `params` is hashed wholesale by
+    // `communityParamsFingerprint`, so a new always-present default field
+    // shifts every design's fingerprint — including designs already published,
+    // whose server-side hashes predate the field. That would silently break the
+    // community duplicate guard and the REMIX_UNCHANGED check. It is backfilled
+    // only when the design actually selects the lid base.
   },
   style: 'standard',
   compartments: {

@@ -49,6 +49,55 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
     disables: ['base.flat'],
     reason: 'binDesigner.lightweightDisablesFlatFloor',
   },
+
+  // ── Base: lid-compatible bottom (#3036) ──────────────────────────────────
+  // The underside is lid mating geometry, so there is no socket and no feet.
+  // Everything that drills into, shells, or opens through a socket goes with
+  // them — the same set the flat base rules out, for the same reason.
+  // `base.flat` needs no rule here: both are values of `base.style`, so one
+  // replacing the other is not a conflict the engine has to resolve.
+  {
+    description: 'Lid-compatible bottom disables attachment features (no feet to drill)',
+    source: 'base.lid',
+    when: (p) => p.base.style === 'lid',
+    disables: ['base.magnet', 'base.screw'],
+    reason: 'binDesigner.lidBaseDisablesAttachment',
+  },
+  {
+    description: 'Lid-compatible bottom disables half sockets (there are no sockets)',
+    source: 'base.lid',
+    when: (p) => p.base.style === 'lid',
+    disables: ['base.halfSockets'],
+    reason: 'binDesigner.lidBaseDisablesHalfSockets',
+  },
+  {
+    description: 'Lid-compatible bottom disables lightweight and spacer (no socket to shell)',
+    source: 'base.lid',
+    when: (p) => p.base.style === 'lid',
+    disables: ['base.lightweight', 'base.spacer'],
+    reason: 'binDesigner.lidBaseDisablesShelling',
+  },
+  {
+    description: 'Half sockets incompatible with a lid-compatible bottom',
+    source: 'base.halfSockets',
+    when: (p) => p.base.halfSockets,
+    disables: ['base.lid'],
+    reason: 'binDesigner.halfSocketsDisablesLidBase',
+  },
+  {
+    description: 'Lightweight incompatible with a lid-compatible bottom',
+    source: 'base.lightweight',
+    when: (p) => p.base.lightweight,
+    disables: ['base.lid'],
+    reason: 'binDesigner.lightweightDisablesLidBase',
+  },
+  {
+    description: 'Spacer incompatible with a lid-compatible bottom (nothing to shell through)',
+    source: 'base.spacer',
+    when: (p) => p.base.spacer,
+    disables: ['base.lid'],
+    reason: 'binDesigner.spacerDisablesLidBase',
+  },
   {
     description: 'Lightweight floor disables finger scoop (would bridge the recesses)',
     source: 'base.lightweight',

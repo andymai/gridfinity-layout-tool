@@ -71,7 +71,7 @@ export const shellStage: PipelineStage = {
     // downward (no floor opening — the solid body keeps its floor).
     let liteBase: LightweightBase | null = null;
     let floorOpenings: Shape3D | null = null;
-    if (dim.lightweight && !dim.isFlat) {
+    if (dim.lightweight && !dim.socketless) {
       // Open-cavity floor for clipping cup recesses away from divider walls, so a
       // divider crossing a cup keeps a solid foot core beneath it (no bridge over
       // the recess). Only for hollow bins with rectangular compartments; tilted/
@@ -271,8 +271,9 @@ export const shellStage: PipelineStage = {
       floorOpenings.delete();
     }
 
-    // Flat bins have no base socket — the body IS the whole shell.
-    if (dim.isFlat) {
+    // No socket under a flat base or a tray bottom — the body IS the whole
+    // shell. A tray bin grows its lid skirt later, in `trayBottomStage`.
+    if (dim.socketless) {
       return { ...ctx, solid: body, deferredSolid: null };
     }
 

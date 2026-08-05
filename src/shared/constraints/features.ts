@@ -81,6 +81,15 @@ export const FEATURE_MANIFESTS: Record<FeatureKey, FeatureManifest> = {
     }),
   },
 
+  'base.lid': {
+    key: 'base.lid',
+    label: 'Lid-compatible Bottom',
+    isEnabled: (p) => p.base.style === 'lid',
+    apply: (p, enabled) => ({
+      base: { ...p.base, style: enabled ? 'lid' : 'standard' },
+    }),
+  },
+
   'style.slotted': {
     key: 'style.slotted',
     label: 'Slotted Style',

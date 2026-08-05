@@ -26,6 +26,8 @@ import type {
 import { DEFAULT_PATTERN_SCALE } from '../types';
 import type { FeatureColorConfig, LipAxisCount, TopAccentConfig } from '../types/featureColors';
 import { makeUniformLipCells, LIP_CELL_ZONES } from '../types/featureColors';
+import { DEFAULT_TRAY_BOTTOM } from '../types/base';
+import type { TrayBottomConfig } from '../types/base';
 import {
   DEFAULT_LID_CONFIG,
   LID_CLICK_RAIL_COVERAGE_OPTIONS,
@@ -715,7 +717,32 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
   const wallsConfig = migrateWalls(params.walls, DEFAULT_BIN_PARAMS.walls, DISABLED_WALL_CUTOUT);
 
   // Migrate legacy base.solid=true → style='solid'
-  const baseConfig = { ...DEFAULT_BIN_PARAMS.base, ...(params.base ?? {}) };
+  const storedBase = params.base ?? {};
+  const storedTray = (storedBase as { trayBottom?: Partial<TrayBottomConfig> }).trayBottom;
+  const merged = { ...DEFAULT_BIN_PARAMS.base, ...storedBase };
+  // Resolved ONLY for a design that actually uses the lid base. `params` is
+  // hashed wholesale by `communityParamsFingerprint`, so backfilling this
+  // unconditionally would shift every existing design's fingerprint and break
+  // the community duplicate guard against already-published records.
+  //
+  // Merged a level deeper than the rest of `base`: `clickRails` and
+  // `retentionMagnet` are objects, so a spread alone would let a payload
+  // carrying only `{ clickRails: { front: true } }` drop the other three sides.
+  const baseConfig =
+    merged.style === 'lid'
+      ? {
+          ...merged,
+          trayBottom: {
+            ...DEFAULT_TRAY_BOTTOM,
+            ...(storedTray ?? {}),
+            clickRails: { ...DEFAULT_TRAY_BOTTOM.clickRails, ...(storedTray?.clickRails ?? {}) },
+            retentionMagnet: {
+              ...DEFAULT_TRAY_BOTTOM.retentionMagnet,
+              ...(storedTray?.retentionMagnet ?? {}),
+            },
+          },
+        }
+      : merged;
   let style = params.style ?? DEFAULT_BIN_PARAMS.style;
   if (baseConfig.solid && style !== 'solid') {
     style = 'solid';

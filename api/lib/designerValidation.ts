@@ -64,6 +64,8 @@ const VALID_BASE_STYLES = [
   'magnet_and_screw',
   'weighted',
   'flat',
+  // Underside is lid mating geometry instead of a Gridfinity socket (#3036).
+  'lid',
 ] as const;
 const VALID_LABEL_TAB_SUPPORTS = ['bracket', 'solid', 'fillet'] as const;
 // Mirrors `LabelTabMode` in `src/features/bin-designer/types/index.ts` (#2666).
@@ -185,6 +187,48 @@ function validateBase(base: unknown): string | null {
   // declare it honestly rather than smuggle a truthy non-boolean past the client.
   if (base.spacer !== undefined && !isBoolean(base.spacer)) {
     return 'base.spacer must be boolean';
+  }
+  if (base.trayBottom !== undefined) {
+    const trayBottomError = validateTrayBottom(base.trayBottom);
+    if (trayBottomError !== null) return trayBottomError;
+  }
+  return null;
+}
+
+/**
+ * Validate `base.trayBottom` (#3036). Mirrors `TrayBottomConfig` in
+ * `src/features/bin-designer/types/base.ts`. Bounds match the lid's, since the
+ * two describe the same joint.
+ */
+function validateTrayBottom(trayBottom: unknown): string | null {
+  if (!isObject(trayBottom)) return 'base.trayBottom must be an object';
+  if (
+    !VALID_LID_ATTACHMENTS.includes(trayBottom.attachment as (typeof VALID_LID_ATTACHMENTS)[number])
+  ) {
+    return `base.trayBottom.attachment must be one of: ${VALID_LID_ATTACHMENTS.join(', ')}`;
+  }
+  if (!isNumber(trayBottom.extraHeightMm) || !inRange(trayBottom.extraHeightMm, 0, 100)) {
+    return 'base.trayBottom.extraHeightMm must be 0-100';
+  }
+  if (!isNumber(trayBottom.clickRailCoverage) || !inRange(trayBottom.clickRailCoverage, 0, 100)) {
+    return 'base.trayBottom.clickRailCoverage must be 0-100';
+  }
+  if (!isObject(trayBottom.clickRails)) return 'base.trayBottom.clickRails must be an object';
+  for (const side of ['front', 'back', 'left', 'right']) {
+    if (!isBoolean(trayBottom.clickRails[side])) {
+      return `base.trayBottom.clickRails.${side} must be boolean`;
+    }
+  }
+  const magnet = trayBottom.retentionMagnet;
+  if (!isObject(magnet)) return 'base.trayBottom.retentionMagnet must be an object';
+  if (!isNumber(magnet.diameter) || !inRange(magnet.diameter, 1, 20)) {
+    return 'base.trayBottom.retentionMagnet.diameter must be 1-20';
+  }
+  if (!isNumber(magnet.depth) || !inRange(magnet.depth, 0.5, 10)) {
+    return 'base.trayBottom.retentionMagnet.depth must be 0.5-10';
+  }
+  if (!isNumber(magnet.edgeMagnets) || !inRange(magnet.edgeMagnets, 0, 10)) {
+    return 'base.trayBottom.retentionMagnet.edgeMagnets must be 0-10';
   }
   return null;
 }

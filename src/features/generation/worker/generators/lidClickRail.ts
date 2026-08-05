@@ -57,6 +57,20 @@ export function chamferApexXForCavityWall(cavityWallX: number): number {
  *   this position so the rail attaches flush to the cavity wall instead
  *   of leaving an unsupported tongue hanging in midair.
  */
+/**
+ * How far the rail profile hangs BELOW the mating wall's bottom. Summed from
+ * the same steps `clickShape2D` walks down, so a change to any of them moves
+ * the tray bin's skirt depth (#3036) in lockstep instead of silently sinking
+ * the model below the print bed.
+ */
+export const CLICK_RAIL_DROP_BELOW_WALL =
+  LID_CLICK_RAIL_ENTRY_CHAMFER +
+  LID_CLICK_RAIL_BUMP +
+  0.1 +
+  LID_CLICK_RAIL_EXIT_CHAMFER +
+  LID_CLICK_RAIL_DROP +
+  LID_CLICK_RAIL_TAIL;
+
 function clickShape2D(wallBottomZ: number, cavityWallX: number): Drawing {
   // Top of polygon = top of rail = bottom of mating wall.
   const yTop = wallBottomZ;
@@ -65,7 +79,7 @@ function clickShape2D(wallBottomZ: number, cavityWallX: number): Drawing {
   const y2 = y1 - LID_CLICK_RAIL_BUMP - 0.1; // rail body bottom
   const y3 = y2 - LID_CLICK_RAIL_EXIT_CHAMFER; // exit chamfer
   const y4 = y3 - LID_CLICK_RAIL_DROP; // post-bump drop
-  const y5 = y4 - LID_CLICK_RAIL_TAIL; // bottom apex
+  const y5 = yTop - CLICK_RAIL_DROP_BELOW_WALL; // bottom apex (== y4 - TAIL)
 
   const chamferApexX = chamferApexXForCavityWall(cavityWallX);
   const chamferTopY = yTop + (chamferApexX - LID_CLICK_RAIL_INNER);
