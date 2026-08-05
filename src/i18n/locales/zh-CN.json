@@ -1701,8 +1701,6 @@
   "community.publish.form.previewRequired": "发布需要预览图。",
   "community.publish.form.namePlaceholder": "例如：六角批头架，12 个卡位",
   "community.publish.submitSignedOut": "登录并发布",
-  "community.publish.unpublishSectionLabel": "从展示区移除",
-  "community.publish.unpublishSectionHint": "将该设计从社区展示区移除。你的本地副本会保留。",
   "community.publish.cover.label": "卡片图片",
   "community.publish.cover.loading": "正在检查你的打印照片…",
   "community.publish.cover.noPrints": "该设计的卡片显示的是渲染图。打印它并在其页面发布照片，即可改用实拍照片。",
@@ -3568,5 +3566,7 @@
   "toolSwitcher.community": "社区",
   "toolSwitcher.switchToCommunity": "切换到社区设计",
   "community.page.subtitle": "其他创客分享的设计，可自由改造和打印。",
-  "community.page.publishCta": "发布设计"
+  "community.page.publishCta": "发布设计",
+  "community.publish.form.wallsSummary": "壁厚 {thickness} mm",
+  "community.publish.ownerActions": "已发布设计的操作"
 }

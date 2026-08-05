@@ -1492,8 +1492,6 @@
   "community.publish.form.previewRequired": "Een voorbeeld is nodig om te publiceren.",
   "community.publish.form.namePlaceholder": "bijv. Houder voor bits, 12 plekken",
   "community.publish.submitSignedOut": "Aanmelden en publiceren",
-  "community.publish.unpublishSectionLabel": "Uit de galerij verwijderen",
-  "community.publish.unpublishSectionHint": "Haalt dit ontwerp van de communitygalerij. Je lokale kopie blijft behouden.",
   "community.publish.cover.label": "Kaartafbeelding",
   "community.publish.cover.loading": "Je printfoto's controleren…",
   "community.publish.cover.noPrints": "De kaart van dit ontwerp toont een render. Print het en plaats een foto op de pagina om in plaats daarvan een echte foto te gebruiken.",
@@ -3568,5 +3566,7 @@
   "toolSwitcher.community": "Community",
   "toolSwitcher.switchToCommunity": "Naar communityontwerpen",
   "community.page.subtitle": "Ontwerpen gedeeld door andere makers, vrij om te remixen en te printen.",
-  "community.page.publishCta": "Een ontwerp publiceren"
+  "community.page.publishCta": "Een ontwerp publiceren",
+  "community.publish.form.wallsSummary": "Wanden van {thickness} mm",
+  "community.publish.ownerActions": "Acties voor gepubliceerd ontwerp"
 }

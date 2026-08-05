@@ -11,7 +11,17 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Button, ConfirmDialog, CopyField, Dialog, Field, Spinner } from '@/design-system';
+import {
+  Alert,
+  Button,
+  ConfirmDialog,
+  CopyField,
+  Dialog,
+  Field,
+  IconButton,
+  Menu,
+  Spinner,
+} from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { isOk, ok } from '@/core/result';
 import type { Result } from '@/core/result';
@@ -21,6 +31,7 @@ import { signInUrl } from '@/core/sync/session/sessionApi';
 import type { AuthProvider } from '@/core/sync/session/sessionApi';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { trackEvent } from '@/shared/analytics/posthog';
+import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { hashBinParams } from '@/shared/utils/binParamsHash';
 import { savePendingPublishAction } from '@/shared/utils/communityPendingAction';
 import {
@@ -93,6 +104,11 @@ export function PublishDialog() {
   /** Null until the user touches the field, so the suggestion stays live. */
   const [editedPublicName, setEditedPublicName] = useState<string | null>(null);
   const [unpublishOpen, setUnpublishOpen] = useState(false);
+  const ownerMenuRef = useRef<HTMLButtonElement>(null);
+  const [ownerMenu, setOwnerMenu] = useState<{
+    open: boolean;
+    position: { x: number; y: number };
+  }>({ open: false, position: { x: 0, y: 0 } });
   const [unpublishBusy, setUnpublishBusy] = useState(false);
   const [unpublishError, setUnpublishError] = useState<string | undefined>(undefined);
 
@@ -337,6 +353,10 @@ export function PublishDialog() {
     context.draft ??
     ownDesign.prefill ?? { name: context.designName, description: '', category: null };
 
+  // Owner actions are destructive and belong to the published record, not to
+  // the edit in progress, so they hang off the header rather than the form.
+  const canUnpublish = mode === 'update' && context.publishedId !== null;
+
   const title =
     phase === 'success'
       ? mode === 'update'
@@ -351,12 +371,52 @@ export function PublishDialog() {
       <Dialog.Root
         open
         onClose={handleClose}
-        size="lg"
+        size="3xl"
         fullScreen="mobile"
         mobilePresentation="sheet"
         dismissable={phase !== 'publishing' && !unpublishBusy}
       >
-        <Dialog.Header title={title} closeAriaLabel={t('common.closeDialog')} />
+        <Dialog.Header title={title} closeAriaLabel={t('common.closeDialog')}>
+          {canUnpublish && phase === 'form' && (
+            <IconButton
+              ref={ownerMenuRef}
+              size="sm"
+              aria-label={t('community.publish.ownerActions')}
+              aria-haspopup="menu"
+              aria-expanded={ownerMenu.open}
+              onClick={() => {
+                const rect = ownerMenuRef.current?.getBoundingClientRect();
+                setOwnerMenu((previous) =>
+                  previous.open
+                    ? { ...previous, open: false }
+                    : { open: true, position: { x: rect?.left ?? 0, y: (rect?.bottom ?? 0) + 4 } }
+                );
+              }}
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                {ICON_PATHS.dotsVertical.map((d) => (
+                  <path
+                    key={d}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d={d}
+                  />
+                ))}
+              </svg>
+            </IconButton>
+          )}
+        </Dialog.Header>
+
+        <Menu.Root
+          open={ownerMenu.open}
+          onClose={() => setOwnerMenu((previous) => ({ ...previous, open: false }))}
+          position={ownerMenu.position}
+        >
+          <Menu.Item variant="danger" onClick={() => setUnpublishOpen(true)}>
+            {t('community.publish.unpublish')}
+          </Menu.Item>
+        </Menu.Root>
 
         <div className="sr-only" role="status" aria-live="polite">
           {PHASE_ANNOUNCE_KEYS[phase] ? t(PHASE_ANNOUNCE_KEYS[phase]) : ''}
@@ -434,11 +494,6 @@ export function PublishDialog() {
                 useCommunityPublishStore.getState().handlers?.requestRecapture();
               }}
               onDropRemix={handleDropRemix}
-              onUnpublish={
-                mode === 'update' && context.publishedId !== null
-                  ? () => setUnpublishOpen(true)
-                  : null
-              }
             />
           ))}
 

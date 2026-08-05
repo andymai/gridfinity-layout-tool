@@ -1701,8 +1701,6 @@
   "community.publish.form.previewRequired": "En förhandsvisning krävs för att publicera.",
   "community.publish.form.namePlaceholder": "t.ex. Hållare för bits, 12 platser",
   "community.publish.submitSignedOut": "Logga in och publicera",
-  "community.publish.unpublishSectionLabel": "Ta bort från galleriet",
-  "community.publish.unpublishSectionHint": "Tar bort den här designen från gemenskapsgalleriet. Din lokala kopia behålls.",
   "community.publish.cover.label": "Kortbild",
   "community.publish.cover.loading": "Kontrollerar dina utskriftsfoton…",
   "community.publish.cover.noPrints": "Det här designkortet visar en rendering. Skriv ut den och lägg upp ett foto på dess sida för att använda ett riktigt foto i stället.",
@@ -3568,5 +3566,7 @@
   "toolSwitcher.community": "Gemenskap",
   "toolSwitcher.switchToCommunity": "Byt till gemenskapsdesigner",
   "community.page.subtitle": "Designer som delats av andra makare, fria att remixa och skriva ut.",
-  "community.page.publishCta": "Publicera en design"
+  "community.page.publishCta": "Publicera en design",
+  "community.publish.form.wallsSummary": "{thickness} mm väggar",
+  "community.publish.ownerActions": "Åtgärder för publicerad design"
 }

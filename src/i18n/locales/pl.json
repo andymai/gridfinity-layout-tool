@@ -1701,8 +1701,6 @@
   "community.publish.form.previewRequired": "Do opublikowania potrzebny jest podgląd.",
   "community.publish.form.namePlaceholder": "np. Uchwyt na bity hex, 12 miejsc",
   "community.publish.submitSignedOut": "Zaloguj się i opublikuj",
-  "community.publish.unpublishSectionLabel": "Usuń z galerii",
-  "community.publish.unpublishSectionHint": "Usuwa ten projekt z galerii społeczności. Twoja lokalna kopia zostaje zachowana.",
   "community.publish.cover.label": "Obraz karty",
   "community.publish.cover.loading": "Sprawdzanie Twoich zdjęć wydruków…",
   "community.publish.cover.noPrints": "Karta tego projektu pokazuje render. Wydrukuj go i dodaj zdjęcie na jego stronie, aby użyć prawdziwego zdjęcia.",
@@ -3568,5 +3566,7 @@
   "toolSwitcher.community": "Społeczność",
   "toolSwitcher.switchToCommunity": "Przełącz na projekty społeczności",
   "community.page.subtitle": "Projekty udostępnione przez innych twórców, możesz je dowolnie zmieniać i drukować.",
-  "community.page.publishCta": "Opublikuj projekt"
+  "community.page.publishCta": "Opublikuj projekt",
+  "community.publish.form.wallsSummary": "Ścianki {thickness} mm",
+  "community.publish.ownerActions": "Działania na opublikowanym projekcie"
 }

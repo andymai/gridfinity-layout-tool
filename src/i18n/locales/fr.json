@@ -1701,8 +1701,6 @@
   "community.publish.form.previewRequired": "Un aperçu est nécessaire pour publier.",
   "community.publish.form.namePlaceholder": "ex. Porte-embouts hex, 12 emplacements",
   "community.publish.submitSignedOut": "Se connecter et publier",
-  "community.publish.unpublishSectionLabel": "Retirer de la vitrine",
-  "community.publish.unpublishSectionHint": "Retire ce design de la vitrine de la communauté. Votre copie locale est conservée.",
   "community.publish.cover.label": "Image de la carte",
   "community.publish.cover.loading": "Vérification de vos photos d'impression…",
   "community.publish.cover.noPrints": "La carte de ce design affiche un rendu. Imprimez-le et publiez une photo sur sa page pour utiliser une vraie photo à la place.",
@@ -3568,5 +3566,7 @@
   "toolSwitcher.community": "Communauté",
   "toolSwitcher.switchToCommunity": "Passer aux designs de la communauté",
   "community.page.subtitle": "Des designs partagés par d’autres makers, libres de remixer et d’imprimer.",
-  "community.page.publishCta": "Publier un design"
+  "community.page.publishCta": "Publier un design",
+  "community.publish.form.wallsSummary": "Parois de {thickness} mm",
+  "community.publish.ownerActions": "Actions du design publié"
 }

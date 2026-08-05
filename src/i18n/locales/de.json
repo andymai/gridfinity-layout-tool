@@ -1492,8 +1492,6 @@
   "community.publish.form.previewRequired": "Zum Veröffentlichen ist eine Vorschau erforderlich.",
   "community.publish.form.namePlaceholder": "z. B. Halter für Bits, 12 Plätze",
   "community.publish.submitSignedOut": "Anmelden & veröffentlichen",
-  "community.publish.unpublishSectionLabel": "Aus der Galerie entfernen",
-  "community.publish.unpublishSectionHint": "Entfernt dieses Design aus der Community-Galerie. Deine lokale Kopie bleibt erhalten.",
   "community.publish.cover.label": "Kartenbild",
   "community.publish.cover.loading": "Deine Druckfotos werden geprüft…",
   "community.publish.cover.noPrints": "Die Karte dieses Designs zeigt ein Render. Drucke es und poste ein Foto auf seiner Seite, um stattdessen ein echtes Foto zu verwenden.",
@@ -3568,5 +3566,7 @@
   "toolSwitcher.community": "Community",
   "toolSwitcher.switchToCommunity": "Zu Community-Designs wechseln",
   "community.page.subtitle": "Designs von anderen Maker:innen, frei zum Remixen und Drucken.",
-  "community.page.publishCta": "Design veröffentlichen"
+  "community.page.publishCta": "Design veröffentlichen",
+  "community.publish.form.wallsSummary": "{thickness} mm Wandstärke",
+  "community.publish.ownerActions": "Aktionen für das veröffentlichte Design"
 }

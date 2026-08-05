@@ -1736,8 +1736,6 @@
   "community.publish.form.previewRequired": "Для публікації потрібен попередній перегляд.",
   "community.publish.form.namePlaceholder": "напр. Тримач для біт, 12 місць",
   "community.publish.submitSignedOut": "Увійти та опублікувати",
-  "community.publish.unpublishSectionLabel": "Прибрати з вітрини",
-  "community.publish.unpublishSectionHint": "Прибирає цей дизайн із вітрини спільноти. Ваша локальна копія залишається.",
   "community.publish.cover.label": "Зображення картки",
   "community.publish.cover.loading": "Перевіряємо ваші фото друку…",
   "community.publish.cover.noPrints": "Картка цього дизайну показує рендер. Надрукуйте його та додайте фото на його сторінці, щоб використати справжнє фото.",
@@ -3568,5 +3566,7 @@
   "toolSwitcher.community": "Спільнота",
   "toolSwitcher.switchToCommunity": "Перейти до дизайнів спільноти",
   "community.page.subtitle": "Дизайни, якими поділилися інші майстри, вільні для реміксу та друку.",
-  "community.page.publishCta": "Опублікувати дизайн"
+  "community.page.publishCta": "Опублікувати дизайн",
+  "community.publish.form.wallsSummary": "Стінки {thickness} мм",
+  "community.publish.ownerActions": "Дії з опублікованим дизайном"
 }

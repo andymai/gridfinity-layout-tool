@@ -1701,8 +1701,6 @@
   "community.publish.form.previewRequired": "É preciso uma prévia para publicar.",
   "community.publish.form.namePlaceholder": "ex. Suporte de bits hex, 12 espaços",
   "community.publish.submitSignedOut": "Entrar e publicar",
-  "community.publish.unpublishSectionLabel": "Remover da vitrine",
-  "community.publish.unpublishSectionHint": "Remove este design da vitrine da comunidade. Sua cópia local é mantida.",
   "community.publish.cover.label": "Imagem do card",
   "community.publish.cover.loading": "Verificando suas fotos de impressão…",
   "community.publish.cover.noPrints": "O card deste design mostra um render. Imprima-o e publique uma foto na página dele para usar uma foto real.",
@@ -3568,5 +3566,7 @@
   "toolSwitcher.community": "Comunidade",
   "toolSwitcher.switchToCommunity": "Ir para designs da comunidade",
   "community.page.subtitle": "Designs compartilhados por outros makers, livres para remixar e imprimir.",
-  "community.page.publishCta": "Publicar um design"
+  "community.page.publishCta": "Publicar um design",
+  "community.publish.form.wallsSummary": "Paredes de {thickness} mm",
+  "community.publish.ownerActions": "Ações do design publicado"
 }

@@ -17,7 +17,13 @@ Community design showcase (issue #3050): publishing bin designs, browsing them, 
   **`error` is not a phase.** A failed publish returns to `form` with the failure attached. It used to unmount the form, so a server complaint about the name ("too short", "low effort", "duplicate") became a full-screen dead end that discarded the user's view of what they had typed.
 
 - `store/browseStore.ts`: browse engine for the gallery: caches the full card index (capped at the 2,000 newest, 5-minute staleness), holds search/category/technique/sort filters with client-side `filterAndSortCards`, and remembers the gallery scroll offset.
-- `components/PublishDialog/`: the shell-mounted publish dialog. Mobile renders it as a fullscreen sheet; desktop as a centered dialog. One review screen rather than a phase gauntlet: `PublishDialog` orchestrates, `PublishForm` is the screen, and `PublishPreview` / `CategoryChips` / `PublisherIdentity` / `CoverImageSection` are its parts. `publishErrors.ts` decides where a failure appears; `useOwnDesignPrefill.ts` owns update-mode reconciliation.
+- `components/PublishDialog/`: the shell-mounted publish dialog. Mobile renders it as a fullscreen sheet; desktop as a centered dialog. One review screen rather than a phase gauntlet: `PublishDialog` orchestrates, `PublishForm` is the screen, and `PublishArtefact` / `PublishPreview` / `CategoryChips` / `PublisherIdentity` / `CoverImageSection` are its parts. `publishErrors.ts` decides where a failure appears; `useOwnDesignPrefill.ts` owns update-mode reconciliation.
+
+  **The screen splits by who authored what.** `PublishArtefact` (the `Dialog.Sidebar` rail) holds everything derived from the design: preview, angle strip, grid and millimetre size, detected techniques, remix lineage. The pane beside it holds everything the publisher types: name, description, category, public name. Each column stays legible while the other is being read or edited, and the whole review fits without an inner scroll box. Below `md` the split stacks, design first.
+
+  The footer's leading slot carries the licence disclosure, and swaps to the reason the primary is disabled when there is one — those never apply at the same time, and the reason has to sit where the disabled button is.
+
+  Owner actions (currently Unpublish) hang off a header `⋮` menu. They act on the published record rather than on the edit in progress, and the confirm dialog is the real guard.
 
 ### Publish flow rules
 

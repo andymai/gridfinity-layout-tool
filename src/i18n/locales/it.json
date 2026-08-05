@@ -1820,8 +1820,6 @@
   "community.publish.form.previewRequired": "Per pubblicare serve un'anteprima.",
   "community.publish.form.namePlaceholder": "es. Portainserti esagonali, 12 posti",
   "community.publish.submitSignedOut": "Accedi e pubblica",
-  "community.publish.unpublishSectionLabel": "Rimuovi dalla vetrina",
-  "community.publish.unpublishSectionHint": "Rimuove questo design dalla vetrina della community. La tua copia locale viene mantenuta.",
   "community.publish.cover.label": "Immagine della scheda",
   "community.publish.cover.loading": "Controllo delle tue foto di stampa…",
   "community.publish.cover.noPrints": "La scheda di questo design mostra un render. Stampalo e pubblica una foto sulla sua pagina per usare una foto reale.",
@@ -3568,5 +3566,7 @@
   "toolSwitcher.community": "Community",
   "toolSwitcher.switchToCommunity": "Passa ai design della community",
   "community.page.subtitle": "Design condivisi da altri maker, liberi di remixare e stampare.",
-  "community.page.publishCta": "Pubblica un design"
+  "community.page.publishCta": "Pubblica un design",
+  "community.publish.form.wallsSummary": "Pareti da {thickness} mm",
+  "community.publish.ownerActions": "Azioni sul design pubblicato"
 }

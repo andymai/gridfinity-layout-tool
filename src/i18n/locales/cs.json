@@ -1623,8 +1623,6 @@
   "community.publish.form.previewRequired": "K publikování je potřeba náhled.",
   "community.publish.form.namePlaceholder": "např. Držák na bity, 12 míst",
   "community.publish.submitSignedOut": "Přihlásit se a publikovat",
-  "community.publish.unpublishSectionLabel": "Odebrat z galerie",
-  "community.publish.unpublishSectionHint": "Odebere tenhle návrh z komunitní galerie. Tvoje lokální kopie zůstane.",
   "community.publish.cover.label": "Obrázek karty",
   "community.publish.cover.loading": "Kontrolují se tvoje fotky výtisků…",
   "community.publish.cover.noPrints": "Karta tohoto návrhu ukazuje render. Vytiskni ho a přidej fotku na jeho stránku, aby se použila skutečná fotka.",
@@ -3568,5 +3566,7 @@
   "toolSwitcher.community": "Komunita",
   "toolSwitcher.switchToCommunity": "Přepnout na komunitní návrhy",
   "community.page.subtitle": "Návrhy sdílené ostatními tvůrci, volné k remixu a tisku.",
-  "community.page.publishCta": "Publikovat návrh"
+  "community.page.publishCta": "Publikovat návrh",
+  "community.publish.form.wallsSummary": "Stěny {thickness} mm",
+  "community.publish.ownerActions": "Akce publikovaného návrhu"
 }
