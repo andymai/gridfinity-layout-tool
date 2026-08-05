@@ -70,6 +70,7 @@ const en: Record<string, string> = {
   'common.close': 'Close',
   'common.physicalUnits': 'Physical Units',
   'common.loading': 'Loading...',
+  'common.experimental': 'Experimental',
 
   // Error boundary (used via getStaticTranslation, not hooks)
   'errorBoundary.heading': 'Something went wrong',
@@ -150,6 +151,7 @@ const en: Record<string, string> = {
   'header.sendFeedback': 'Feedback',
   'header.starOnGithub': 'Star',
   'header.supportOnKofi': 'Support me on Ko-fi',
+  'header.moreLinks': 'More links',
   'common.redditCommunity': 'r/gridfinity',
   'common.redditCommunityAria': 'Gridfinity community on Reddit',
   'header.loadingLayouts': 'Loading layouts',
@@ -1586,6 +1588,8 @@ const en: Record<string, string> = {
   'toolSwitcher.switchToDesigner': 'Switch to Bin Designer (Shift+D)',
   'toolSwitcher.baseplateGenerator': 'Baseplate',
   'toolSwitcher.switchToBaseplate': 'Switch to Baseplate Generator',
+  'toolSwitcher.community': 'Community',
+  'toolSwitcher.switchToCommunity': 'Switch to Community designs',
 
   // Bin Designer
   'binDesigner.exportSTL': 'Export bin as STL',
@@ -3514,12 +3518,10 @@ const en: Record<string, string> = {
   'community.mine.unpublishFailed': "Couldn't unpublish the design. Try again.",
 
   // Public /community route (full-page host)
-  'community.page.back': 'Back to the app',
   'community.page.title': 'Community designs',
-  'community.page.strip.text':
-    'Gridfinity Layout Tool is a free in-browser designer for custom 3D-printable bins and drawer layouts. Right now it is tool-cutout bins (shadow boards and fitted holders), with more design types later.',
-  'community.page.strip.cta': 'Design your own bin',
-  'community.page.strip.dismiss': 'Dismiss',
+  'community.page.subtitle': 'Designs shared by other makers, free to remix and print.',
+  'community.page.publishCta': 'Publish a design',
+  'community.page.designCta': 'Design your own bin',
 
   // Community detail view
   'community.detail.title': 'Community design',

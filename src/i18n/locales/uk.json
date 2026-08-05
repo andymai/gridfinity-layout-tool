@@ -1646,10 +1646,7 @@
   "community.gallery.sortLabel": "Сортувати за",
   "community.gallery.techniqueAll": "Усі",
   "community.gallery.techniqueLabel": "Фільтрувати за технікою",
-  "community.page.back": "Назад до застосунку",
-  "community.page.strip.cta": "Створіть власний бін",
-  "community.page.strip.dismiss": "Закрити",
-  "community.page.strip.text": "Gridfinity Layout Tool — безкоштовний браузерний інструмент для дизайну власних бінів для 3D-друку та розкладок шухляд. Наразі це біни з вирізами для інструментів (дошки-органайзери та підігнані тримачі), інші типи дизайнів з'являться пізніше.",
+  "community.page.designCta": "Створіть власний бін",
   "community.page.title": "Дизайни спільноти",
   "community.publish.disclosure": "Опубліковані дизайни стають публічними, з'являються в пошукових системах, і будь-хто може робити з них ремікси за ліцензією CC BY 4.0. Наразі вітрина зосереджена на бінах із вирізами для інструментів, інші типи з'являться пізніше.",
   "community.publish.disclosureTerms": "Умови використання",
@@ -3565,5 +3562,11 @@
   "community.gapFit.fitsRotated": "Вміщується в обраний проміжок, якщо повернути",
   "community.gapFit.tooLarge": "Завеликий для обраного проміжку",
   "community.gapFit.tooTall": "Зависокий для місця над цим шаром",
-  "community.gapFit.scaleMismatch": "Створено для іншого розміру сітки, ніж твій макет"
+  "community.gapFit.scaleMismatch": "Створено для іншого розміру сітки, ніж твій макет",
+  "common.experimental": "Експериментальне",
+  "header.moreLinks": "Більше посилань",
+  "toolSwitcher.community": "Спільнота",
+  "toolSwitcher.switchToCommunity": "Перейти до дизайнів спільноти",
+  "community.page.subtitle": "Дизайни, якими поділилися інші майстри, вільні для реміксу та друку.",
+  "community.page.publishCta": "Опублікувати дизайн"
 }

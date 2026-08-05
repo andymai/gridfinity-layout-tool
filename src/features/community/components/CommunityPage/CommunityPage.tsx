@@ -6,17 +6,23 @@
  * filters and scroll intact (they live in the browse store, not this page).
  * The designer-facing actions arrive as props from the shell composition
  * (App.tsx) so this feature never imports the bin designer.
+ *
+ * The page renders under the app's own chrome (ToolSwitcher + support links)
+ * rather than a "back to the app" control. Community is a destination in the
+ * tool switcher, so there is nothing to go back from, and a visitor who
+ * arrived on a shared link sees the whole app rather than a detached gallery.
  */
 
 import { Suspense, useCallback, useEffect, useState } from 'react';
-import { Button, IconButton } from '@/design-system';
-import { ArrowLeftIcon, XIcon } from '@/design-system/Icon';
+import { Badge, Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { useCommunityDetailStore } from '@/core/store/communityDetail';
 import { useCommunityDigestStore } from '@/core/store/communityDigest';
-import { useSessionStore } from '@/core/sync/session/useSession';
 import type { CommunityDetailProps } from '@/shared/types/communityDetail';
 import type { CommunityGalleryTabProps } from '@/shared/types/communityGalleryTab';
+import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
+import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
+import { useResponsive } from '@/shared/hooks';
 import {
   getCommunityDesignIdFromUrl,
   syncCommunityAuthorParam,
@@ -32,16 +38,6 @@ import { hasLocalDesigns } from '../CommunityGalleryTab/hasLocalDesigns';
 const CommunityDetail = lazyWithRetry(() =>
   import('../CommunityDetail').then(namedExport('CommunityDetail'))
 );
-
-const STRIP_DISMISSED_KEY = 'gridfinity-community-strip-dismissed-v1';
-
-function isStripDismissed(): boolean {
-  try {
-    return localStorage.getItem(STRIP_DISMISSED_KEY) !== null;
-  } catch {
-    return false;
-  }
-}
 
 export interface CommunityPageProps {
   onRequestPublish: () => Promise<boolean>;
@@ -59,22 +55,22 @@ export function CommunityPage({
   onOwnDesignUnpublished,
 }: CommunityPageProps) {
   const t = useTranslation();
+  const { isMobile } = useResponsive();
   const {
     communityDesignIdFromUrl,
     communityAuthorIdFromUrl,
-    navigateHome,
     openCommunityDesignUrl,
     closeCommunityDesignUrl,
   } = useCommunityRouting();
   const request = useCommunityDetailStore((s) => s.request);
   const hasUnseenDigest = useCommunityDigestStore((s) => s.hasUnseenDeltas);
-  const sessionStatus = useSessionStore((s) => s.status);
   const setAuthor = useBrowseStore((s) => s.setAuthor);
   const authorFilterId = useBrowseStore((s) => s.filters.author?.id ?? null);
   const authorFilterName = useBrowseStore((s) => s.filters.author?.name ?? null);
   const items = useBrowseStore((s) => s.items);
 
-  const [stripDismissed, setStripDismissed] = useState(isStripDismissed);
+  // Read once on mount: the CTA must not change label under the user when a
+  // design is saved in another tab mid-visit.
   const [hadLocalDesigns] = useState(hasLocalDesigns);
 
   // URL -> store: the deep link owns which detail is open, so back/forward
@@ -137,73 +133,54 @@ export function CommunityPage({
     syncCommunityAuthorParam(authorFilterId);
   }, [authorFilterId, communityDesignIdFromUrl]);
 
-  const handleDesignYourOwn = useCallback(() => {
+  // Publishing needs the designer mounted: the dialog captures thumbnails and
+  // a GLB from the live mesh, which only exists there. So the CTA leaves for
+  // the designer first and asks it to publish, exactly as the gallery's empty
+  // state does. A visitor with nothing saved yet is just sent to the designer.
+  const handlePublish = useCallback(() => {
     window.dispatchEvent(new Event('switch-to-designer'));
-  }, []);
-
-  const dismissStrip = useCallback(() => {
-    setStripDismissed(true);
-    try {
-      localStorage.setItem(STRIP_DISMISSED_KEY, '1');
-    } catch {
-      // Session-only dismissal when storage is unavailable.
-    }
-  }, []);
+    if (hadLocalDesigns) void onRequestPublish();
+  }, [hadLocalDesigns, onRequestPublish]);
 
   // The route change already unmounts this page when a gallery/detail action
   // switches to the designer; there is no modal to dismiss on this surface.
   const noopClose = useCallback(() => {}, []);
 
-  const showStrip = !stripDismissed && sessionStatus === 'anonymous' && !hadLocalDesigns;
-
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-surface text-content">
-      <header className="flex shrink-0 items-center gap-2 border-b border-stroke-subtle px-3 py-2 md:px-4">
-        <Button
-          variant="ghost"
-          onClick={navigateHome}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm"
-        >
-          <ArrowLeftIcon size="sm" />
-          {t('community.page.back')}
-        </Button>
-        <h2 className="text-base font-semibold">
-          {t('community.page.title')}
-          {hasUnseenDigest && (
-            <>
-              <span
-                aria-hidden="true"
-                data-testid="community-digest-dot"
-                className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-accent"
-              />
-              {/* The dot is aria-hidden; without this the news signal is
-                  visual-only (GalleryTabBar folds it into the tab label). */}
-              <span className="sr-only">{` ${t('binExamples.gallery.tabs.newBadge')}`}</span>
-            </>
-          )}
-        </h2>
+      <header className="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-stroke-subtle bg-surface-secondary px-3 md:px-4">
+        <ToolSwitcher compact={isMobile} iconOnly={isMobile} />
+        {!isMobile && (
+          <div className="flex items-center gap-1">
+            <HeaderSupportLinks />
+          </div>
+        )}
       </header>
 
-      {showStrip && (
-        <div
-          data-testid="community-visitor-strip"
-          className="flex shrink-0 items-center justify-between gap-3 border-b border-stroke-subtle bg-surface-secondary px-3 py-2 md:px-4"
-        >
-          <p className="text-sm text-content-secondary">{t('community.page.strip.text')}</p>
-          <div className="flex shrink-0 items-center gap-1">
-            <Button variant="secondary" className="text-sm" onClick={handleDesignYourOwn}>
-              {t('community.page.strip.cta')}
-            </Button>
-            <IconButton
-              aria-label={t('community.page.strip.dismiss')}
-              size="sm"
-              onClick={dismissStrip}
-            >
-              <XIcon size="sm" />
-            </IconButton>
+      <div className="flex shrink-0 flex-wrap items-start justify-between gap-3 border-b border-stroke-subtle px-3 py-3 md:px-4">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <h1 className="text-base font-semibold">{t('community.page.title')}</h1>
+            <Badge tone="info">{t('common.experimental')}</Badge>
+            {hasUnseenDigest && (
+              <>
+                <span
+                  aria-hidden="true"
+                  data-testid="community-digest-dot"
+                  className="inline-block h-1.5 w-1.5 rounded-full bg-accent"
+                />
+                {/* The dot is aria-hidden; without this the news signal is
+                    visual-only (GalleryTabBar folds it into the tab label). */}
+                <span className="sr-only">{t('binExamples.gallery.tabs.newBadge')}</span>
+              </>
+            )}
           </div>
+          <p className="mt-0.5 text-sm text-content-secondary">{t('community.page.subtitle')}</p>
         </div>
-      )}
+        <Button variant="primary" className="shrink-0 text-sm" onClick={handlePublish}>
+          {hadLocalDesigns ? t('community.page.publishCta') : t('community.page.designCta')}
+        </Button>
+      </div>
 
       <CommunityGalleryTab
         onRequestClose={noopClose}

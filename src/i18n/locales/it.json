@@ -1730,10 +1730,7 @@
   "community.gallery.techniqueLabel": "Filtra per tecnica",
   "community.like.like": "Metti mi piace a questo design",
   "community.like.unlike": "Togli mi piace a questo design",
-  "community.page.back": "Torna all'app",
-  "community.page.strip.cta": "Progetta il tuo bin",
-  "community.page.strip.dismiss": "Ignora",
-  "community.page.strip.text": "Gridfinity Layout Tool è uno strumento gratuito nel browser per progettare bin stampabili in 3D e layout dei cassetti personalizzati. Per ora sono bin con tagli per utensili (pannelli portautensili e supporti su misura), con altri tipi di design in arrivo.",
+  "community.page.designCta": "Progetta il tuo bin",
   "community.page.title": "Design della community",
   "community.publish.disclosure": "I design pubblicati sono pubblici, compaiono nei motori di ricerca e chiunque può remixarli con licenza CC BY 4.0. Per ora la vetrina è dedicata ai bin con tagli per utensili, con altri in arrivo.",
   "community.publish.disclosureTerms": "Termini di utilizzo",
@@ -3565,5 +3562,11 @@
   "community.gapFit.fitsRotated": "Entra nello spazio scelto, ruotato",
   "community.gapFit.tooLarge": "Troppo grande per lo spazio scelto",
   "community.gapFit.tooTall": "Troppo alto per lo spazio sopra quel livello",
-  "community.gapFit.scaleMismatch": "Creato per una griglia diversa da quella del tuo layout"
+  "community.gapFit.scaleMismatch": "Creato per una griglia diversa da quella del tuo layout",
+  "common.experimental": "Sperimentale",
+  "header.moreLinks": "Altri link",
+  "toolSwitcher.community": "Community",
+  "toolSwitcher.switchToCommunity": "Passa ai design della community",
+  "community.page.subtitle": "Design condivisi da altri maker, liberi di remixare e stampare.",
+  "community.page.publishCta": "Pubblica un design"
 }

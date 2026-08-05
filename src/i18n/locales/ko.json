@@ -3148,10 +3148,7 @@
   "inspector.taper.height": "테이퍼 높이",
   "inspector.taper.flare": "벌어짐",
   "inspector.taper.flare.hint": "서랍 여백을 넘어 윗면을 넓혀 서랍의 곡면까지 닿게 합니다.",
-  "community.page.back": "앱으로 돌아가기",
-  "community.page.strip.cta": "나만의 수납통 디자인하기",
-  "community.page.strip.dismiss": "닫기",
-  "community.page.strip.text": "Gridfinity Layout Tool은 맞춤 3D 프린트 수납통과 서랍 레이아웃을 디자인할 수 있는 무료 브라우저 도구입니다. 현재는 공구 컷아웃이 있는 수납통(공구 정리판과 맞춤 홀더)을 지원하며, 다른 디자인 유형은 나중에 추가됩니다.",
+  "community.page.designCta": "나만의 수납통 디자인하기",
   "community.page.title": "커뮤니티 디자인",
   "community.publishButton": "게시",
   "community.publishButtonAria": "커뮤니티 쇼케이스에 게시",
@@ -3565,5 +3562,11 @@
   "community.gapFit.fitsRotated": "선택한 공간에 돌려서 들어갑니다",
   "community.gapFit.tooLarge": "선택한 공간에는 너무 큽니다",
   "community.gapFit.tooTall": "해당 레이어 위 공간에 비해 너무 높습니다",
-  "community.gapFit.scaleMismatch": "레이아웃과 다른 그리드 크기로 만들어졌습니다"
+  "community.gapFit.scaleMismatch": "레이아웃과 다른 그리드 크기로 만들어졌습니다",
+  "common.experimental": "실험적 기능",
+  "header.moreLinks": "링크 더 보기",
+  "toolSwitcher.community": "커뮤니티",
+  "toolSwitcher.switchToCommunity": "커뮤니티 디자인으로 전환",
+  "community.page.subtitle": "다른 메이커가 공유한 디자인입니다. 자유롭게 리믹스하고 출력하세요.",
+  "community.page.publishCta": "디자인 게시"
 }

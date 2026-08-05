@@ -38,6 +38,8 @@ graph TB
 | `Toast` / `ToastContainer` | Auto-dismiss notifications with pause-on-hover                           |
 | `ContextMenu*`             | Framework for consistent right-click menus                               |
 | `CollapsibleSection`       | Expandable container with arrow indicator                                |
+| `ToolSwitcher`             | Segmented nav across Layout / Bins / Baseplate / Community               |
+| `HeaderSupportLinks`       | Shared top-right cluster; outbound links live in its overflow menu       |
 
 ## Key Hooks (`hooks/`)
 

@@ -25,11 +25,29 @@ vi.mock('@/shared/hooks/useBaseplateRouting', () => ({
   }),
 }));
 
+const mockNavigateToCommunity = vi.fn();
+let mockIsCommunityRoute = false;
+
+vi.mock('@/shared/hooks/useCommunityRouting', () => ({
+  useCommunityRouting: () => ({
+    isCommunityRoute: mockIsCommunityRoute,
+    navigateToCommunity: mockNavigateToCommunity,
+  }),
+}));
+
+let mockCommunityEnabled = false;
+
+vi.mock('@/shared/hooks/useFeatureFlag', () => ({
+  useFeatureFlag: () => mockCommunityEnabled,
+}));
+
 describe('ToolSwitcher', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsDesignerRoute = false;
     mockIsBaseplateRoute = false;
+    mockIsCommunityRoute = false;
+    mockCommunityEnabled = false;
   });
 
   it('shows tablist', () => {
@@ -161,5 +179,50 @@ describe('ToolSwitcher', () => {
     expect(tabs[0]).not.toHaveAttribute('title'); // active tab
     expect(tabs[1].getAttribute('title')).toContain('Switch to Bin Designer');
     expect(tabs[2].getAttribute('title')).toContain('Switch to Baseplate Generator');
+  });
+
+  describe('community segment', () => {
+    it('is absent while the showcase flag is off', () => {
+      render(<ToolSwitcher />);
+      expect(screen.getAllByRole('tab')).toHaveLength(3);
+      expect(screen.queryByTestId('tool-experimental-dot')).not.toBeInTheDocument();
+    });
+
+    it('appears as a fourth tool when the flag is on', () => {
+      mockCommunityEnabled = true;
+      render(<ToolSwitcher />);
+      expect(screen.getAllByRole('tab')).toHaveLength(4);
+    });
+
+    it('navigates to the community route', async () => {
+      mockCommunityEnabled = true;
+      const user = userEvent.setup();
+      render(<ToolSwitcher />);
+
+      await user.click(screen.getAllByRole('tab')[3]);
+
+      expect(mockNavigateToCommunity).toHaveBeenCalledTimes(1);
+    });
+
+    it('is selected on the community route', () => {
+      mockCommunityEnabled = true;
+      mockIsCommunityRoute = true;
+      render(<ToolSwitcher />);
+      expect(screen.getAllByRole('tab')[3]).toHaveAttribute('aria-selected', 'true');
+    });
+
+    it('marks itself experimental in both the dot and the accessible name', () => {
+      mockCommunityEnabled = true;
+      render(<ToolSwitcher />);
+
+      expect(screen.getByTestId('tool-experimental-dot')).toBeInTheDocument();
+      expect(screen.getAllByRole('tab')[3].getAttribute('aria-label')).toContain('Experimental');
+    });
+
+    it('keeps the experimental marker when collapsed to icons', () => {
+      mockCommunityEnabled = true;
+      render(<ToolSwitcher iconOnly />);
+      expect(screen.getByTestId('tool-experimental-dot')).toBeInTheDocument();
+    });
   });
 });

@@ -25,6 +25,15 @@ vi.mock('../CommunityDetail', () => ({
   ),
 }));
 
+// App chrome, shared with every other surface and covered by its own tests.
+vi.mock('@/shared/components/ToolSwitcher', () => ({
+  ToolSwitcher: () => <div data-testid="tool-switcher-stub" />,
+}));
+
+vi.mock('@/shared/components/HeaderSupportLinks', () => ({
+  HeaderSupportLinks: () => <div data-testid="support-links-stub" />,
+}));
+
 const DESIGN_ID = 'Abc123456789';
 
 function card(id: string): CommunityCard {
@@ -167,49 +176,60 @@ describe('CommunityPage', () => {
     expect(screen.queryByTestId('detail-stub')).not.toBeInTheDocument();
   });
 
-  describe('visitor strip', () => {
-    it('shows for signed-out visitors without local designs', () => {
+  describe('page chrome', () => {
+    it('renders the app chrome instead of a back-to-app control', () => {
       renderPage();
-      expect(screen.getByTestId('community-visitor-strip')).toBeInTheDocument();
+      expect(screen.getByTestId('tool-switcher-stub')).toBeInTheDocument();
+      expect(screen.queryByText('community.page.back')).not.toBeInTheDocument();
     });
 
-    it('CTA dispatches switch-to-designer', () => {
-      const listener = vi.fn();
-      window.addEventListener('switch-to-designer', listener);
+    it('labels the surface as experimental', () => {
       renderPage();
-      fireEvent.click(screen.getByRole('button', { name: 'community.page.strip.cta' }));
+      expect(screen.getByText('common.experimental')).toBeInTheDocument();
+    });
+  });
+
+  describe('title row CTA', () => {
+    it('offers to design a bin when the visitor has none saved', () => {
+      const listener = vi.fn();
+      const onRequestPublish = vi.fn(async () => true);
+      window.addEventListener('switch-to-designer', listener);
+      render(
+        <CommunityPage
+          onRequestPublish={onRequestPublish}
+          onRemixDesign={vi.fn(async () => true)}
+          onEditOriginal={vi.fn(async () => 'opened' as const)}
+        />
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: 'community.page.designCta' }));
+
       expect(listener).toHaveBeenCalledTimes(1);
+      // Nothing to publish, so the designer is the whole destination.
+      expect(onRequestPublish).not.toHaveBeenCalled();
       window.removeEventListener('switch-to-designer', listener);
     });
 
-    it('hides when signed in', () => {
-      useSessionStore.setState({
-        status: 'authenticated',
-        user: { userId: 'u1', provider: 'github', email: 'andy@example.com' },
-      });
-      renderPage();
-      expect(screen.queryByTestId('community-visitor-strip')).not.toBeInTheDocument();
-    });
-
-    it('hides while the session is still resolving', () => {
-      useSessionStore.setState({ status: 'unknown', user: null });
-      renderPage();
-      expect(screen.queryByTestId('community-visitor-strip')).not.toBeInTheDocument();
-    });
-
-    it('hides when the visitor already has local designs', () => {
+    it('publishes the active design once the designer is mounted', () => {
       localStorage.setItem('gridfinity-designer-active-v1', 'design-1');
-      renderPage();
-      expect(screen.queryByTestId('community-visitor-strip')).not.toBeInTheDocument();
-    });
+      const listener = vi.fn();
+      const onRequestPublish = vi.fn(async () => true);
+      window.addEventListener('switch-to-designer', listener);
+      render(
+        <CommunityPage
+          onRequestPublish={onRequestPublish}
+          onRemixDesign={vi.fn(async () => true)}
+          onEditOriginal={vi.fn(async () => 'opened' as const)}
+        />
+      );
 
-    it('dismiss hides it and persists across visits', () => {
-      const { unmount } = renderPage();
-      fireEvent.click(screen.getByRole('button', { name: 'community.page.strip.dismiss' }));
-      expect(screen.queryByTestId('community-visitor-strip')).not.toBeInTheDocument();
-      unmount();
-      renderPage();
-      expect(screen.queryByTestId('community-visitor-strip')).not.toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: 'community.page.publishCta' }));
+
+      // Order matters: the publish dialog captures from the designer's live
+      // mesh, which only exists once the designer route is mounted.
+      expect(listener).toHaveBeenCalledTimes(1);
+      expect(onRequestPublish).toHaveBeenCalledTimes(1);
+      window.removeEventListener('switch-to-designer', listener);
     });
   });
 

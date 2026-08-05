@@ -1611,10 +1611,7 @@
   "community.category.other": "其他",
   "community.category.tools": "工具",
   "community.category.toysGames": "玩具与游戏",
-  "community.page.back": "返回应用",
-  "community.page.strip.cta": "设计你自己的收纳盒",
-  "community.page.strip.dismiss": "关闭",
-  "community.page.strip.text": "Gridfinity Layout Tool 是一款免费的浏览器设计工具，可设计自定义 3D 打印收纳盒和抽屉布局。目前支持带工具挖槽的收纳盒（工具挂板和贴合式收纳架），后续会推出更多设计类型。",
+  "community.page.designCta": "设计你自己的收纳盒",
   "community.page.title": "社区设计",
   "community.publish.disclosure": "已发布的设计是公开的，会出现在搜索引擎结果中，任何人都可以依据 CC BY 4.0 协议对其进行二次创作。目前展示区聚焦于带工具挖槽的收纳盒，后续会有更多类型加入。",
   "community.publish.disclosureTerms": "使用条款",
@@ -3565,5 +3562,11 @@
   "community.gapFit.fitsRotated": "转个方向就能放进你选的空位",
   "community.gapFit.tooLarge": "对你选的空位来说太大了",
   "community.gapFit.tooTall": "高度超过该层上方的空间",
-  "community.gapFit.scaleMismatch": "按与你的布局不同的网格尺寸制作"
+  "community.gapFit.scaleMismatch": "按与你的布局不同的网格尺寸制作",
+  "common.experimental": "实验性",
+  "header.moreLinks": "更多链接",
+  "toolSwitcher.community": "社区",
+  "toolSwitcher.switchToCommunity": "切换到社区设计",
+  "community.page.subtitle": "其他创客分享的设计，可自由改造和打印。",
+  "community.page.publishCta": "发布设计"
 }

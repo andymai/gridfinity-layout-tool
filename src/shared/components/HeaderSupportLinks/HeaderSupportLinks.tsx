@@ -1,10 +1,10 @@
-import { useEffect, useRef } from 'react';
-import { Button } from '@/design-system';
+import { useEffect, useRef, useState } from 'react';
+import { Button, IconButton, Menu } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { LanguageSelector } from '@/shared/components/LanguageSelector';
-import { GITHUB_ICON_PATH, REDDIT_ICON_PATH } from '@/shared/constants/iconPaths';
+import { GITHUB_ICON_PATH, ICON_PATHS, REDDIT_ICON_PATH } from '@/shared/constants/iconPaths';
 import {
   GITHUB_ISSUES_URL,
   GITHUB_REPO_URL,
@@ -13,14 +13,24 @@ import {
 } from '@/shared/constants/links';
 
 /**
- * Shared header support links: Language selector, Feedback, Help, GitHub, r/gridfinity, and Ko-fi tip.
+ * Shared header support links: Language selector, Feedback, Help, an overflow
+ * menu (GitHub, r/gridfinity), and the Ko-fi tip button.
  *
  * Used in the top-right of all three desktop headers (grid planner, bin designer, baseplate generator)
  * to provide a consistent set of support/engagement actions.
+ *
+ * The two outbound links sit in the overflow rather than the bar: the header
+ * has to hold the design name and the export controls at every width, and
+ * those are the actions a user came here for.
  */
 export function HeaderSupportLinks() {
   const t = useTranslation();
   const feedbackToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const overflowRef = useRef<HTMLButtonElement>(null);
+  const [overflow, setOverflow] = useState<{ open: boolean; position: { x: number; y: number } }>({
+    open: false,
+    position: { x: 0, y: 0 },
+  });
 
   useEffect(() => {
     return () => {
@@ -65,6 +75,18 @@ export function HeaderSupportLinks() {
     trackEvent('reddit_link_clicked', { source: 'header' });
   };
 
+  const toggleOverflow = () => {
+    const rect = overflowRef.current?.getBoundingClientRect();
+    setOverflow((previous) =>
+      previous.open
+        ? { ...previous, open: false }
+        : {
+            open: true,
+            position: { x: rect?.left ?? 0, y: (rect?.bottom ?? 0) + 4 },
+          }
+    );
+  };
+
   return (
     <>
       <LanguageSelector />
@@ -107,36 +129,50 @@ export function HeaderSupportLinks() {
         <span className="hidden lg:inline">{t('header.help')}</span>
       </Button>
 
-      {/* GitHub */}
-      <a
-        href={GITHUB_REPO_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="btn btn-ghost px-2.5 h-8 text-sm leading-none text-content-secondary flex items-center gap-1.5"
-        title={t('header.starOnGithub')}
-        aria-label={t('header.starOnGithub')}
+      {/* Overflow: outbound links (GitHub, r/gridfinity) */}
+      <IconButton
+        ref={overflowRef}
+        size="sm"
+        aria-label={t('header.moreLinks')}
+        aria-haspopup="menu"
+        aria-expanded={overflow.open}
+        title={t('header.moreLinks')}
+        onClick={toggleOverflow}
       >
-        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
-          <path d={GITHUB_ICON_PATH} />
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          {ICON_PATHS.dotsHorizontal.map((d) => (
+            <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+          ))}
         </svg>
-        <span className="hidden lg:inline">{t('header.starOnGithub')}</span>
-      </a>
-
-      {/* r/gridfinity — plain community link (Reddit brand mark + sub name) */}
-      <a
-        href={REDDIT_GRIDFINITY_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={handleRedditClick}
-        className="btn btn-ghost px-2.5 h-8 text-sm leading-none text-content-secondary flex items-center gap-1.5"
-        title={t('common.redditCommunityAria')}
-        aria-label={t('common.redditCommunityAria')}
+      </IconButton>
+      <Menu.Root
+        open={overflow.open}
+        onClose={() => setOverflow((previous) => ({ ...previous, open: false }))}
+        position={overflow.position}
       >
-        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path d={REDDIT_ICON_PATH} />
-        </svg>
-        <span className="hidden lg:inline">{t('common.redditCommunity')}</span>
-      </a>
+        <Menu.Item
+          href={GITHUB_REPO_URL}
+          icon={
+            <svg fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+              <path d={GITHUB_ICON_PATH} />
+            </svg>
+          }
+        >
+          {t('header.starOnGithub')}
+        </Menu.Item>
+        <Menu.Item
+          href={REDDIT_GRIDFINITY_URL}
+          onClick={handleRedditClick}
+          aria-label={t('common.redditCommunityAria')}
+          icon={
+            <svg fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path d={REDDIT_ICON_PATH} />
+            </svg>
+          }
+        >
+          {t('common.redditCommunity')}
+        </Menu.Item>
+      </Menu.Root>
 
       {/* Ko-fi support — the official Widget_2 button reproduced natively (the site's
           CSP blocks the remote ko-fi script). Accent fill via btn-primary, official

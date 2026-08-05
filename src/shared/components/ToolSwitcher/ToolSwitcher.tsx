@@ -1,10 +1,19 @@
 /**
- * Segmented control for switching between Layout, Bins, and Baseplate Generator.
+ * Segmented control for switching between Layout, Bins, Baseplate Generator
+ * and the Community gallery.
+ *
+ * Community is a destination rather than a generator, but it lives here so it
+ * is reachable from every surface and so /community renders under the same
+ * chrome as the rest of the app instead of behind a "back to app" escape
+ * hatch. It appears only while the community_showcase flag is on, and carries
+ * an experimental marker (a dot, so it survives the icon-only collapse).
  */
 
 import { Button } from '@/design-system';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
+import { useCommunityRouting } from '@/shared/hooks/useCommunityRouting';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 
@@ -15,16 +24,23 @@ interface ToolSwitcherProps {
   iconOnly?: boolean;
 }
 
-type Tool = 'planner' | 'designer' | 'baseplate';
+type Tool = 'planner' | 'designer' | 'baseplate' | 'community';
 
 interface ToolConfig {
   id: Tool;
-  labelKey: 'toolSwitcher.layout' | 'toolSwitcher.binDesigner' | 'toolSwitcher.baseplateGenerator';
+  labelKey:
+    | 'toolSwitcher.layout'
+    | 'toolSwitcher.binDesigner'
+    | 'toolSwitcher.baseplateGenerator'
+    | 'toolSwitcher.community';
   switchKey:
     | 'toolSwitcher.switchToPlanner'
     | 'toolSwitcher.switchToDesigner'
-    | 'toolSwitcher.switchToBaseplate';
+    | 'toolSwitcher.switchToBaseplate'
+    | 'toolSwitcher.switchToCommunity';
   iconPaths: readonly string[];
+  /** Marks the segment as an experimental surface. */
+  experimental?: boolean;
 }
 
 const TOOLS: ToolConfig[] = [
@@ -46,6 +62,13 @@ const TOOLS: ToolConfig[] = [
     switchKey: 'toolSwitcher.switchToBaseplate',
     iconPaths: ICON_PATHS.baseplate,
   },
+  {
+    id: 'community',
+    labelKey: 'toolSwitcher.community',
+    switchKey: 'toolSwitcher.switchToCommunity',
+    iconPaths: ICON_PATHS.community,
+    experimental: true,
+  },
 ];
 
 function getSegmentPadding(iconOnly: boolean, compact: boolean): string {
@@ -65,12 +88,18 @@ export function ToolSwitcher({ compact = false, iconOnly = false }: ToolSwitcher
   const t = useTranslation();
   const { isDesignerRoute, navigateToDesigner, navigateToPlanner } = useDesignerRouting();
   const { isBaseplateRoute, navigateToBaseplate } = useBaseplateRouting();
+  const { isCommunityRoute, navigateToCommunity } = useCommunityRouting();
+  const communityEnabled = useFeatureFlag('community_showcase');
 
-  const activeTool: Tool = isBaseplateRoute
-    ? 'baseplate'
-    : isDesignerRoute
-      ? 'designer'
-      : 'planner';
+  const tools = communityEnabled ? TOOLS : TOOLS.filter((tool) => tool.id !== 'community');
+
+  const activeTool: Tool = isCommunityRoute
+    ? 'community'
+    : isBaseplateRoute
+      ? 'baseplate'
+      : isDesignerRoute
+        ? 'designer'
+        : 'planner';
 
   const handleSwitch = (tool: Tool) => {
     if (tool === activeTool) return;
@@ -78,6 +107,8 @@ export function ToolSwitcher({ compact = false, iconOnly = false }: ToolSwitcher
       navigateToDesigner();
     } else if (tool === 'baseplate') {
       navigateToBaseplate();
+    } else if (tool === 'community') {
+      navigateToCommunity();
     } else {
       navigateToPlanner();
     }
@@ -101,16 +132,18 @@ export function ToolSwitcher({ compact = false, iconOnly = false }: ToolSwitcher
         role="tablist"
         aria-label={t('toolSwitcher.activeTool')}
       >
-        {TOOLS.map(({ id, labelKey, switchKey, iconPaths }) => (
+        {tools.map(({ id, labelKey, switchKey, iconPaths, experimental }) => (
           <Button
             key={id}
             variant="ghost"
             role="tab"
             aria-selected={activeTool === id}
-            aria-label={t(labelKey)}
+            aria-label={
+              experimental === true ? `${t(labelKey)} (${t('common.experimental')})` : t(labelKey)
+            }
             onClick={() => handleSwitch(id)}
             title={activeTool !== id ? t(switchKey) : undefined}
-            className={segmentClass(id)}
+            className={`${segmentClass(id)} relative`}
           >
             <svg className={iconSize} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               {iconPaths.map((d) => (
@@ -118,6 +151,16 @@ export function ToolSwitcher({ compact = false, iconOnly = false }: ToolSwitcher
               ))}
             </svg>
             {!iconOnly && t(labelKey)}
+            {/* Rides the corner rather than the label so the marker survives
+                the icon-only collapse; the word itself is in the aria-label
+                and on the page the segment leads to. */}
+            {experimental === true && (
+              <span
+                aria-hidden="true"
+                data-testid="tool-experimental-dot"
+                className="absolute right-0.5 top-0.5 h-1.5 w-1.5 rounded-full bg-accent"
+              />
+            )}
           </Button>
         ))}
       </div>

@@ -1611,10 +1611,7 @@
   "community.category.other": "Autre",
   "community.category.tools": "Outils",
   "community.category.toysGames": "Jouets et jeux",
-  "community.page.back": "Retour à l'app",
-  "community.page.strip.cta": "Concevez votre propre bac",
-  "community.page.strip.dismiss": "Ignorer",
-  "community.page.strip.text": "Gridfinity Layout Tool est un outil de conception gratuit dans le navigateur pour créer des bacs imprimables en 3D et organiser vos tiroirs. Pour l'instant, ce sont des bacs avec découpes pour outils (panneaux d'outils et supports ajustés), avec d'autres types de designs à venir.",
+  "community.page.designCta": "Concevez votre propre bac",
   "community.page.title": "Designs de la communauté",
   "community.publish.disclosure": "Les designs publiés sont publics, apparaissent dans les moteurs de recherche, et toute personne peut les remixer sous licence CC BY 4.0. La vitrine se concentre pour l'instant sur les bacs avec découpes pour outils, avec d'autres types à venir.",
   "community.publish.disclosureTerms": "Conditions d'utilisation",
@@ -3565,5 +3562,11 @@
   "community.gapFit.fitsRotated": "Tient dans l'espace choisi, tourné",
   "community.gapFit.tooLarge": "Trop grand pour l'espace choisi",
   "community.gapFit.tooTall": "Trop haut pour la place au-dessus de ce calque",
-  "community.gapFit.scaleMismatch": "Conçu pour une taille de grille différente de votre agencement"
+  "community.gapFit.scaleMismatch": "Conçu pour une taille de grille différente de votre agencement",
+  "common.experimental": "Expérimental",
+  "header.moreLinks": "Plus de liens",
+  "toolSwitcher.community": "Communauté",
+  "toolSwitcher.switchToCommunity": "Passer aux designs de la communauté",
+  "community.page.subtitle": "Des designs partagés par d’autres makers, libres de remixer et d’imprimer.",
+  "community.page.publishCta": "Publier un design"
 }
