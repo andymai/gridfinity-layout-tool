@@ -36,6 +36,7 @@ import {
   type TextMode,
 } from '@/features/bin-designer/types';
 import { isPartialMask } from '@/shared/utils/cellMask';
+import { matchingTrayParams } from '@/features/bin-designer/utils/matchingTray';
 import { lidWallBottomZ } from '@/features/bin-designer/components/preview/LidMesh/lidAnchorZ';
 import {
   checkLidCompatibility,
@@ -71,6 +72,10 @@ export function useLidSection() {
     setLidText,
     setSurfaceTextStyle,
     currentDesignId,
+    designName,
+    newDesign,
+    setParams,
+    setDesignName,
   } = useDesignerStore(
     useShallow((s) => ({
       lid: s.params.lid,
@@ -85,6 +90,10 @@ export function useLidSection() {
       setLidText: s.setLidText,
       setSurfaceTextStyle: s.setSurfaceTextStyle,
       currentDesignId: s.currentDesignId,
+      designName: s.designName,
+      newDesign: s.newDesign,
+      setParams: s.setParams,
+      setDesignName: s.setDesignName,
     }))
   );
 
@@ -518,6 +527,19 @@ export function useLidSection() {
     [params.dividerPieces, setParam, updateHandles, updateLabel, updateWalls, updateWallPattern]
   );
 
+  // "Create matching tray" (#3036). A tray is a SEPARATE design so it can carry
+  // the whole editor, which means nothing structural links it to the bin it
+  // caps. Deriving it from the source here is what keeps the joint correct:
+  // footprint, grid pitch and attachment all come across rather than being
+  // retyped into a blank design.
+  const createMatchingTray = useCallback(() => {
+    const tray = matchingTrayParams(params);
+    const name = designName.trim();
+    newDesign('bin');
+    setParams(tray);
+    setDesignName(name === '' ? t('binDesigner.lid.matchingTrayName') : `${name} tray`);
+  }, [params, designName, newDesign, setParams, setDesignName, t]);
+
   return {
     state: {
       enabled: effectiveEnabled,
@@ -597,6 +619,7 @@ export function useLidSection() {
       isLidTextOpen,
     },
     handlers: {
+      createMatchingTray,
       toggleEnabled,
       setAttachment,
       setTopSurface,
