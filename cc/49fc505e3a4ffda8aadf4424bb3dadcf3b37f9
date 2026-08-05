@@ -1,0 +1,73 @@
+src/i18n/locales/zh-CN.json
+  s_e4cf31c1fe56ab::t_eda5b312a82ea2 1181-1188
+src/shared/constraints/features.ts
+  s_e4cf31c1fe56ab::t_bd9812f7bf46c4 79-84
+src/features/bin-designer/components/panel/DimensionsSection/useDimensionsSection.ts
+  s_e4cf31c1fe56ab::t_1f122ae86c041c 19,38,57,150-153
+src/i18n/locales/ja.json
+  s_e4cf31c1fe56ab::t_eda5b312a82ea2 1184-1191
+src/i18n/locales/it.json
+  s_e4cf31c1fe56ab::t_eda5b312a82ea2 1184-1191
+src/i18n/locales/pt-BR.json
+  s_e4cf31c1fe56ab::t_eda5b312a82ea2 1181-1188
+src/features/bin-designer/components/panel/BaseSection/BaseSection.tsx
+  s_e4cf31c1fe56ab::t_232722d81608c2 176-191
+src/features/bin-designer/utils/assembledHeight.test.ts
+  s_e4cf31c1fe56ab::t_102994de5b4b27 277-326
+src/features/bin-designer/components/panel/BaseSection/useBaseSection.ts
+  s_e4cf31c1fe56ab::t_9569960f779f67 72-81
+  s_e4cf31c1fe56ab::t_72338dd93bd3c7 24
+  s_e4cf31c1fe56ab::t_e54659020a7826 138-140
+  s_e4cf31c1fe56ab::t_260b5a47ef2c9d 141-153
+  s_e4cf31c1fe56ab::t_3798271fd64de2 99
+  s_e4cf31c1fe56ab::t_b8cb35a95b3cea 57
+  s_e4cf31c1fe56ab::t_0818afabe0f65e 290,322-323
+src/i18n/locales/pl.json
+  s_e4cf31c1fe56ab::t_eda5b312a82ea2 1181-1188
+src/i18n/locales/nl.json
+  s_e4cf31c1fe56ab::t_eda5b312a82ea2 1184-1191
+src/i18n/locales/en.ts
+  s_e4cf31c1fe56ab::t_1fa63348978947 2080-2085,2607-2609
+src/i18n/locales/cs.json
+  s_e4cf31c1fe56ab::t_eda5b312a82ea2 1181-1188
+src/features/bin-designer/components/panel/DimensionsSection/DimensionsSection.tsx
+  s_e4cf31c1fe56ab::t_35df790fb85269 116-135,137
+src/shared/constraints/rules.ts
+  s_e4cf31c1fe56ab::t_c8a792d800ec3a 273-280
+src/i18n/locales/nb.json
+  s_e4cf31c1fe56ab::t_eda5b312a82ea2 1184-1191
+src/i18n/locales/ko.json
+  s_e4cf31c1fe56ab::t_eda5b312a82ea2 1181-1188
+src/i18n/locales/uk.json
+  s_e4cf31c1fe56ab::t_eda5b312a82ea2 1184-1191
+src/i18n/locales/sv.json
+  s_e4cf31c1fe56ab::t_eda5b312a82ea2 1181-1188
+src/features/bin-designer/constants/gridfinity.test.ts
+  s_e4cf31c1fe56ab::t_e6af1b4284e418 29-46
+src/i18n/locales/fr.json
+  s_e4cf31c1fe56ab::t_eda5b312a82ea2 1181-1188
+src/i18n/locales/es.json
+  s_e4cf31c1fe56ab::t_eda5b312a82ea2 1184-1191
+src/i18n/locales/de.json
+  s_e4cf31c1fe56ab::t_eda5b312a82ea2 1184-1191
+src/shared/constraints/engine.test.ts
+  s_e4cf31c1fe56ab::t_450ebed0a4e10a 613-617,620,625,627
+  s_e4cf31c1fe56ab::t_0819cdd3a66979 618,621-622
+  s_e4cf31c1fe56ab::t_ab0f9dc5c84069 584-612,619,623-624,626,628-634
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "cc49fc505e3a4ffda8aadf4424bb3dadcf3b37f9",
+  "prompts": {},
+  "sessions": {
+    "s_e4cf31c1fe56ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cab724f0-c25f-4fd9-bf08-ca5e4ab8428f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
