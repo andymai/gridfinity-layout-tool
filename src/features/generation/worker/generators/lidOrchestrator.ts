@@ -19,6 +19,8 @@ import { checkCancelled } from './meshUtils';
 import { shouldGenerateLid } from '@/shared/types/bin';
 import { unwrapExportBlob } from './utils/exportUnwrap';
 import { exportSolidToStl } from './utils/stlMeshFallback';
+import { FeatureTag } from './featureTags';
+import type { FaceGroupData } from '@/shared/types/generation';
 
 /**
  * Rotate the lid 180° around the X axis so the floor's outer surface
@@ -166,6 +168,14 @@ export function generateStackPlate(
 export interface LidExportResult {
   readonly data: ArrayBuffer;
   readonly fileName: string;
+  /**
+   * Per-triangle provenance for the exported STL, in the SAME tessellation the
+   * bytes were written from. Lets the 3MF assembler paint the lid's own lip
+   * (`FeatureTag.LID_LIP`) separately from its shell instead of shipping the
+   * whole object in one colour. Absent for STEP, which carries exact BREP
+   * geometry with no triangle list to index.
+   */
+  readonly faceGroups?: readonly FaceGroupData[];
 }
 
 /**
@@ -192,7 +202,10 @@ export async function exportLid(
 
   // Tray friction/magnetic lids export tray-up (unflipped) so the recess
   // prints clean; everything else flips floor-down for a support-free cavity.
-  const built = buildLid(params);
+  // Tagged build: the export path previously discarded provenance, so the lid
+  // could only ever be painted as one flat colour.
+  const originToTag = new Map<number, number>();
+  const built = buildLid(params, originToTag);
   const solid = keepsNaturalOrientation(params) ? built : orientForPrint(built);
   const name = `gridfinity-${params.width}x${params.depth}-lid`;
 
@@ -205,8 +218,17 @@ export async function exportLid(
       return { data, fileName: `${name}.step` };
     }
 
+    // Derived from the same (solid, tolerance) pair `exportSolidToStl` writes
+    // from — brepjs caches `mesh()` by shape+tolerance, so diverging here would
+    // silently misalign every per-triangle material index. Mirrors `exportBin`.
+    const m = mesh(solid, { tolerance, angularTolerance });
+    const faceGroups: FaceGroupData[] = m.faceGroups.map((g) => ({
+      start: g.start,
+      count: g.count,
+      tag: g.origin !== 0 ? g.origin : FeatureTag.UNKNOWN,
+    }));
     const data = await exportSolidToStl(solid, name, tolerance, angularTolerance);
-    return { data, fileName: `${name}.stl` };
+    return { data, fileName: `${name}.stl`, faceGroups };
   } finally {
     solid.delete();
   }

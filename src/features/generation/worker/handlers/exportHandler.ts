@@ -28,6 +28,7 @@ import { exportDividers, exportDividerPiecesSeparately } from '../generators/div
 import { buildUniqueDividerPieces } from '../generators/dividerBuilder';
 import { pitchFromParams } from '../generators/gridPitch';
 import { exportLid, exportStackPlate } from '../generators/lidOrchestrator';
+import type { FaceGroupData } from '@/shared/types/generation';
 import { buildLid, buildStackPlate } from '../generators/lidBuilder';
 import { lidAnchorZ } from '../generators/lidConstants';
 import { GRIDFINITY } from '@/shared/constants/bin';
@@ -314,10 +315,12 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         );
         pieces.push(...dividerPieces);
       }
+      let lidFaceGroups: readonly FaceGroupData[] | undefined;
       if (hasLid) {
         const lidExport = await exportLid(params, format, tolerance, angularTolerance);
         if (lidExport) {
           pieces.push({ data: lidExport.data, label: 'lid' });
+          lidFaceGroups = lidExport.faceGroups;
         }
         // Separate stack-grid baseplate ships as its own piece; the lid piece
         // above already comes out grid-less because buildLid skips the fuse
@@ -329,7 +332,7 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
       }
 
       reportProgress(requestId, 'merge', 1);
-      return { pieces, format, faceGroups: binResult.faceGroups };
+      return { pieces, format, faceGroups: binResult.faceGroups, lidFaceGroups };
     },
     'Combined export failed',
     (p) => p.pieces.map((piece: CombinedExportPiece) => piece.data),
