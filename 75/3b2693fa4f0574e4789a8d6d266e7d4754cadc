@@ -1,0 +1,125 @@
+src/features/community/components/PublishDialog/PublisherIdentity.test.tsx
+  s_2e660d8fff5696::t_6ad7ad684e4e88 45-50
+  s_2e660d8fff5696::t_597f4feda268fc 1-44,51-53
+src/features/community/components/PublishDialog/PublishDialog.test.tsx
+  s_2e660d8fff5696::t_fc04e34f91d044 16,19-25,33-38,70-73,130-132,145-147,150-156,158-174,180,183-193,196-202,205,208-209,211,214-220,222,224-225,230,240,242,257-281,283-303,306,308,345,359,361,371,374,376,387,396,423,427,440,444,449,454,464,467,472,482,494,496,500-501
+  s_2e660d8fff5696::t_6ad7ad684e4e88 181,282
+src/features/community/components/PublishDialog/PublishForm.test.tsx
+  s_2e660d8fff5696::t_e629147fb2bfbc 140-153
+  s_2e660d8fff5696::t_d21a822b851d3d 9-13,47-55,57,59,79-87,97,99-107,122,128-139,154-162,164-197,213-227,231,235-244
+src/i18n/locales/it.json
+  s_2e660d8fff5696::t_5048fd6862e5fa 1787-1813
+src/features/community/components/PublishDialog/CoverImageSection.test.tsx
+  s_2e660d8fff5696::t_60673fd044aa15 1-89
+src/i18n/locales/zh-CN.json
+  s_2e660d8fff5696::t_5048fd6862e5fa 1668-1694
+src/features/bin-designer/hooks/useCommunityPublish.ts
+  s_2e660d8fff5696::t_9954e9a666b028 120-126,129,133
+src/features/community/store/publishStore.test.ts
+  s_2e660d8fff5696::t_b296ecb75b41c6 1-2,6-13,26-71,73-94,97-137
+api/community.test.ts
+  s_2e660d8fff5696::t_a51f332df9ed9f 440
+  s_2e660d8fff5696::t_d56c9e7f045151 958-1005
+src/features/bin-designer/components/DesignerPage/DesignerHeader.tsx
+  s_2e660d8fff5696::t_a5ed0cd21bbfb6 48,140,149,311
+src/i18n/locales/sv.json
+  s_2e660d8fff5696::t_5048fd6862e5fa 1668-1694
+src/features/community/components/PublishDialog/CategoryChips.tsx
+  s_2e660d8fff5696::t_269a9159ae4d5a 2-5
+  s_2e660d8fff5696::t_8b798c4f5757d6 1,6-50
+src/features/bin-designer/components/DesignerPage/DesignerHeader.test.tsx
+  s_2e660d8fff5696::t_0c24c1d933bb4f 162-164,171,175
+src/features/community/components/PublishDialog/CoverImageSection.tsx
+  s_2e660d8fff5696::t_ff1c215c2a12f3 1-124
+src/features/community/components/PublishDialog/PublishDialog.tsx
+  s_2e660d8fff5696::t_e1caf3d6caa2b6 20
+  s_2e660d8fff5696::t_638e6e7871a2db 138-139,141,143
+  s_2e660d8fff5696::t_789e8188e7dad5 6-10,14,26-32,45-46,63-64,84-85,106,108-111,113-124,142,146-148,188-193,197-200,210,220,275,300,302-303,328-329,334-335,365,367-371,376-388,395,397,422-427,429,432,436,462-464,476,480,482-485,487
+  s_2e660d8fff5696::t_496d0cdc2a23fa 93-94
+  s_2e660d8fff5696::t_b367bfab6dbd44 126-136
+  s_2e660d8fff5696::t_7debb9fa9f455a 400
+  s_2e660d8fff5696::t_3f58cd8b3e936a 430
+  s_2e660d8fff5696::t_179399eef97e0b 44,163,338,392,405,428
+  s_2e660d8fff5696::t_10acc32b81f19a 137
+src/i18n/locales/en.ts
+  s_2e660d8fff5696::t_8e5509ace0e04f 3261,3264-3267,3270,3277-3279,3281-3284,3289,3304,3309-3319,3328-3330,3376-3377
+src/features/community/store/publishStore.ts
+  s_2e660d8fff5696::t_616c291879b6ba 3-7,10-16,18,38-41,43,49-52,56,67-68,75,77-78,80-88,91-96,98,102,114,116-117
+src/features/community/api/client.ts
+  s_2e660d8fff5696::t_c964a9cd1992d3 269-309
+src/features/community/components/PublishDialog/publishErrors.ts
+  s_2e660d8fff5696::t_0767007f2ccd09 1-116
+src/i18n/locales/pl.json
+  s_2e660d8fff5696::t_5048fd6862e5fa 1668-1694
+src/i18n/locales/ko.json
+  s_2e660d8fff5696::t_5048fd6862e5fa 3135-3161
+src/features/community/components/PublishDialog/PublishPreview.tsx
+  s_2e660d8fff5696::t_a6e7fdf480e385 1-7,9-50,53-89
+  s_2e660d8fff5696::t_d4231aa612e62d 51-52
+  s_2e660d8fff5696::t_fc43196d2f6a86 8
+src/i18n/locales/fr.json
+  s_2e660d8fff5696::t_5048fd6862e5fa 1668-1694
+src/features/community/components/PublishDialog/PublishPreview.test.tsx
+  s_2e660d8fff5696::t_3debbf5e748f3f 1-56
+src/features/community/components/PublishDialog/publishErrors.test.ts
+  s_2e660d8fff5696::t_cfabecf5785987 1-71
+src/i18n/locales/nb.json
+  s_2e660d8fff5696::t_5048fd6862e5fa 1787-1813
+src/features/community/components/PublishDialog/CategoryChips.test.tsx
+  s_2e660d8fff5696::t_df5b8b5d50d5bd 1-30
+src/features/community/components/PublishDialog/useOwnDesignPrefill.ts
+  s_2e660d8fff5696::t_e1368c07515bd3 1-103
+src/i18n/locales/cs.json
+  s_2e660d8fff5696::t_5048fd6862e5fa 1590-1616
+src/features/community/components/PublishDialog/PublisherIdentity.tsx
+  s_2e660d8fff5696::t_cc3586a2b2f086 1-74
+src/i18n/locales/es.json
+  s_2e660d8fff5696::t_5048fd6862e5fa 1675-1701
+src/features/bin-designer/hooks/useCommunityPublish.test.ts
+  s_2e660d8fff5696::t_7197aeb25774f8 258,276-278
+src/i18n/locales/nl.json
+  s_2e660d8fff5696::t_5048fd6862e5fa 1459-1485
+src/i18n/locales/ja.json
+  s_2e660d8fff5696::t_5048fd6862e5fa 1739-1765
+src/features/community/components/PublishDialog/PublishForm.tsx
+  s_2e660d8fff5696::t_95088f16181383 2,5,9,11,13-18,28,50-60,64,75-83,85,87,97,104-106,110,115-134,144,148-159,172-180,182-183,185-193,195-208,210-211,213-215,217-224,229,231-237,242-246,252,268-269,271,279-282,287-288,329-332,344-357,360-364,369-370,373-377
+  s_2e660d8fff5696::t_4ff74fa69dff2f 107-109,111-113
+  s_2e660d8fff5696::t_356310fd00e516 238-241,261-264,272-275,283-286
+  s_2e660d8fff5696::t_2938706a25ce78 62
+  s_2e660d8fff5696::t_e75272848acb99 31-40
+  s_2e660d8fff5696::t_6f6be19e40ef7f 98-101
+  s_2e660d8fff5696::t_199479e391cf45 136-141
+  s_2e660d8fff5696::t_824ffb7ec34346 181,184,209,212
+  s_2e660d8fff5696::t_08681027c7bf99 29-30,135
+api/community.ts
+  s_2e660d8fff5696::t_10ff772ad00447 823-839,843-846
+src/i18n/locales/de.json
+  s_2e660d8fff5696::t_5048fd6862e5fa 1459-1485
+src/features/community/components/PublishDialog/useOwnDesignPrefill.test.ts
+  s_2e660d8fff5696::t_3a937d6e1d8ea1 1-160
+src/features/community/README.md
+  s_2e660d8fff5696::t_1d1194e7afad78 14-17
+  s_2e660d8fff5696::t_d765b93606d974 20-33
+  s_2e660d8fff5696::t_c0fd32243150f4 18
+  s_2e660d8fff5696::t_75ab40aa179a8d 34
+src/i18n/locales/uk.json
+  s_2e660d8fff5696::t_5048fd6862e5fa 1703-1729
+src/i18n/locales/pt-BR.json
+  s_2e660d8fff5696::t_5048fd6862e5fa 1668-1694
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "753b2693fa4f0574e4789a8d6d266e7d4754cadc",
+  "prompts": {},
+  "sessions": {
+    "s_2e660d8fff5696": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b5cc0814-8f17-4ecc-adc2-7ea2ef8933ad",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
