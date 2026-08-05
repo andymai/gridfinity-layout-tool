@@ -1,0 +1,83 @@
+src/features/bin-designer/utils/matchingTray.ts
+  s_2e660d8fff5696::t_52e9dfe71f183b 1-58
+src/features/bin-designer/utils/matchingTray.test.ts
+  s_2e660d8fff5696::t_206e1010e09fd9 1-81
+src/i18n/locales/es.json
+  s_2e660d8fff5696::t_f34d97736b8dee 748-751
+  s_2e660d8fff5696::t_3f85860725911d 747,752-759
+src/i18n/locales/nb.json
+  s_2e660d8fff5696::t_f34d97736b8dee 748-751
+  s_2e660d8fff5696::t_3f85860725911d 747,752-759
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_2e660d8fff5696::t_39921715d03903 39,76-78,94-96,530-542,622
+  s_2e660d8fff5696::t_e0dca47901696c 75,93
+src/features/bin-designer/README.md
+  s_2e660d8fff5696::t_4d7b28430e12cc 99
+src/i18n/locales/pt-BR.json
+  s_2e660d8fff5696::t_f34d97736b8dee 748-751
+  s_2e660d8fff5696::t_3f85860725911d 747,752-759
+src/i18n/locales/ko.json
+  s_2e660d8fff5696::t_3f85860725911d 747,752-759
+  s_2e660d8fff5696::t_f34d97736b8dee 748-751
+src/i18n/locales/en.ts
+  s_2e660d8fff5696::t_45a47dd2c0fe5c 2046-2050
+  s_2e660d8fff5696::t_49dfaf62a42d7b 2045,2051-2059
+src/features/bin-designer/components/panel/BaseSection/useBaseSection.test.ts
+  s_2e660d8fff5696::t_213dfec12edd03 474-535
+src/i18n/locales/it.json
+  s_2e660d8fff5696::t_f34d97736b8dee 748-751
+  s_2e660d8fff5696::t_3f85860725911d 747,752-759
+src/i18n/locales/fr.json
+  s_2e660d8fff5696::t_3f85860725911d 747,752-759
+  s_2e660d8fff5696::t_f34d97736b8dee 748-751
+src/features/bin-designer/components/panel/BaseSection/useBaseSection.ts
+  s_2e660d8fff5696::t_7a0a4f006eaa31 7-9,39-40,50,128-171,266-270,281
+  s_2e660d8fff5696::t_a099fec70ae699 76,249-250
+src/i18n/locales/cs.json
+  s_2e660d8fff5696::t_3f85860725911d 747,752-759
+  s_2e660d8fff5696::t_f34d97736b8dee 748-751
+src/i18n/locales/de.json
+  s_2e660d8fff5696::t_3f85860725911d 747,752-759
+  s_2e660d8fff5696::t_f34d97736b8dee 748-751
+src/i18n/locales/sv.json
+  s_2e660d8fff5696::t_f34d97736b8dee 748-751
+  s_2e660d8fff5696::t_3f85860725911d 747,752-759
+src/i18n/locales/uk.json
+  s_2e660d8fff5696::t_f34d97736b8dee 748-751
+  s_2e660d8fff5696::t_3f85860725911d 747,752-759
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_2e660d8fff5696::t_45a47dd2c0fe5c 574-586
+src/i18n/locales/nl.json
+  s_2e660d8fff5696::t_3f85860725911d 747,752-759
+  s_2e660d8fff5696::t_f34d97736b8dee 748-751
+src/i18n/locales/ja.json
+  s_2e660d8fff5696::t_f34d97736b8dee 748-751
+  s_2e660d8fff5696::t_3f85860725911d 747,752-759
+src/i18n/locales/pl.json
+  s_2e660d8fff5696::t_3f85860725911d 747,752-759
+  s_2e660d8fff5696::t_f34d97736b8dee 748-751
+src/i18n/locales/zh-CN.json
+  s_2e660d8fff5696::t_f34d97736b8dee 748-751
+  s_2e660d8fff5696::t_3f85860725911d 747,752-759
+src/features/bin-designer/components/panel/BaseSection/BaseSection.tsx
+  s_2e660d8fff5696::t_e58638d50ea9c0 91-139,141-149
+  s_2e660d8fff5696::t_2d807716cb5ba5 140
+  s_2e660d8fff5696::t_12031ba68404c3 12,15-19
+  s_2e660d8fff5696::t_0927420a2cd0b0 20-23,150-152
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "44dd048ac475a1c62e6120d7afbbb3495383a2c6",
+  "prompts": {},
+  "sessions": {
+    "s_2e660d8fff5696": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b5cc0814-8f17-4ecc-adc2-7ea2ef8933ad",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
