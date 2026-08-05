@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.368.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.367.1...gridfinity-layout-tool-v4.368.0) (2026-08-05)
+
+
+### Features
+
+* **community:** make Community a destination in the app, not a detour ([#3239](https://github.com/andymai/gridfinity-layout-tool/issues/3239)) ([43f90b4](https://github.com/andymai/gridfinity-layout-tool/commit/43f90b42b6c2ae0260e432f1eae5c3a0636831f5))
+
 ## [4.367.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.367.0...gridfinity-layout-tool-v4.367.1) (2026-08-05)
 
 
