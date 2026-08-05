@@ -1,0 +1,101 @@
+src/i18n/locales/de.json
+  s_2a4ee505e1d992::t_c3c2f10b444953 1475,3565-3571
+src/shared/README.md
+  s_2a4ee505e1d992::t_55555d47822bee 41-42
+src/i18n/locales/pl.json
+  s_2a4ee505e1d992::t_c3c2f10b444953 1614,3565-3571
+src/design-system/Menu/Menu.test.tsx
+  s_2a4ee505e1d992::t_1dcbe1b6cfda66 160-200
+  s_2a4ee505e1d992::t_8c242e7e975b72 2
+src/shared/constants/iconPaths.ts
+  s_2a4ee505e1d992::t_992b09b2f69b82 63-66
+src/i18n/locales/cs.json
+  s_2a4ee505e1d992::t_c3c2f10b444953 1606,3565-3571
+src/shared/components/ToolSwitcher/ToolSwitcher.test.tsx
+  s_2a4ee505e1d992::t_4c6b1e3359a026 227
+  s_2a4ee505e1d992::t_ddf7c28a581fce 28-43,49-50,183-226
+src/i18n/locales/it.json
+  s_2a4ee505e1d992::t_c3c2f10b444953 1733,3565-3571
+src/i18n/locales/nl.json
+  s_2a4ee505e1d992::t_c3c2f10b444953 1475,3565-3571
+src/shared/components/HeaderSupportLinks/HeaderSupportLinks.test.tsx
+  s_2a4ee505e1d992::t_83db719bfd8b0a 89-90
+  s_2a4ee505e1d992::t_c051274401d942 52,54,57,59-61,64,66-73,79-88
+src/shared/components/HeaderSupportLinks/HeaderSupportLinks.tsx
+  s_2a4ee505e1d992::t_9e5867791ccac9 1-2,7,16-17,21-24,29-33
+  s_2a4ee505e1d992::t_7f339359354fb9 78-89
+  s_2a4ee505e1d992::t_fb0491f4636783 132-140,142-145,147-151,153-175
+src/design-system/Menu/Menu.tsx
+  s_2a4ee505e1d992::t_6a2081304bcae5 381
+  s_2a4ee505e1d992::t_e9f35973fa9230 5
+  s_2a4ee505e1d992::t_9a6fb76fe1d8c0 350
+  s_2a4ee505e1d992::t_8a3a0570fe1c22 351-357
+  s_2a4ee505e1d992::t_b750fdcd9eb8be 310-326,336-338,362-363,375-380,382-399,401-411
+  s_2a4ee505e1d992::t_2a5de2fd13bde3 400
+  s_2a4ee505e1d992::t_8ae0bf7b700cba 11
+  s_2a4ee505e1d992::t_37ae8adaaec1ec 341-343,347-349
+src/features/community/components/CommunityPage/CommunityPage.tsx
+  s_2a4ee505e1d992::t_8c0df5780b677d 136-140,142-143,151-157,160-176,178,180,182-183
+  s_2a4ee505e1d992::t_2224e6c9ff2640 58,72-73
+  s_2a4ee505e1d992::t_ccaaac045ea27e 181
+  s_2a4ee505e1d992::t_7903523701886d 9-13,17,23-25
+src/features/community/README.md
+  s_2a4ee505e1d992::t_0109319e2350d9 37-38,40
+  s_2a4ee505e1d992::t_df9717e0bd81e3 39,41
+  s_840a921b89fe7e::t_357add556c57df 42
+src/i18n/locales/pt-BR.json
+  s_2a4ee505e1d992::t_c3c2f10b444953 1614,3565-3571
+src/i18n/locales/zh-CN.json
+  s_2a4ee505e1d992::t_c3c2f10b444953 1614,3565-3571
+scripts/i18n-values-allowlist.json
+  s_2a4ee505e1d992::t_573f0639c80d86 146,280,290,295-296,301-302
+src/i18n/locales/fr.json
+  s_2a4ee505e1d992::t_c3c2f10b444953 1614,3565-3571
+src/i18n/locales/ko.json
+  s_2a4ee505e1d992::t_c3c2f10b444953 3151,3565-3571
+src/i18n/locales/nb.json
+  s_2a4ee505e1d992::t_c3c2f10b444953 1733,3565-3571
+src/features/community/components/CommunityPage/CommunityPage.test.tsx
+  s_2a4ee505e1d992::t_dec6bae2d33304 28-36
+  s_2a4ee505e1d992::t_20fd310d3cf8eb 179-180,182-183,186,188,190,192-203,205,207-210,213-232
+src/i18n/locales/sv.json
+  s_2a4ee505e1d992::t_c3c2f10b444953 1614,3565-3571
+src/shared/components/ToolSwitcher/ToolSwitcher.tsx
+  s_2a4ee505e1d992::t_ba1c8e561c28d6 135,141,143,146,154-163
+  s_2a4ee505e1d992::t_ed3997ffff345b 142
+  s_2a4ee505e1d992::t_c16d422a272e1f 91-94,96-102,110-111
+  s_2a4ee505e1d992::t_2facd890bb8f8c 2-9,15-16,27,31-35,39-40,42-43,65-70
+  s_2a4ee505e1d992::t_05e71016d2f8b5 71
+src/i18n/locales/en.ts
+  s_2a4ee505e1d992::t_23c5768ba6cc65 73,154,1591-1592,3522-3524
+src/i18n/locales/ja.json
+  s_2a4ee505e1d992::t_c3c2f10b444953 1685,3565-3571
+src/i18n/locales/uk.json
+  s_2a4ee505e1d992::t_c3c2f10b444953 1649,3565-3571
+src/i18n/locales/es.json
+  s_2a4ee505e1d992::t_c3c2f10b444953 1621,3565-3571
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "99ba2e8b96207c546e85550cceceefe52f202a48",
+  "prompts": {},
+  "sessions": {
+    "s_2a4ee505e1d992": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3b5bc396-723b-4c74-b9e4-2f78bded5f37",
+        "model": "claude-opus-5"
+      },
+      "human_author": null
+    },
+    "s_840a921b89fe7e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b807e9d7-37df-475f-8454-1b92742fd9fa",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
