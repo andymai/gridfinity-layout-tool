@@ -255,11 +255,10 @@ describe('useCommunityPublish', () => {
   });
 
   describe('useCommunityPublishEntry', () => {
-    it('is visible with the flag on and publishable with a ready mesh and a qualifying cutout', () => {
+    it('is visible with the flag on and publishable with a ready mesh', () => {
       const { result } = renderHook(() => useCommunityPublishEntry());
       expect(result.current.publishVisible).toBe(true);
       expect(result.current.canPublish).toBe(true);
-      expect(result.current.needsCutout).toBe(false);
     });
 
     it('is hidden when the flag is off', () => {
@@ -274,33 +273,12 @@ describe('useCommunityPublish', () => {
       expect(result.current.canPublish).toBe(false);
     });
 
-    it('cannot publish a bin with no tool cutout, and reports the reason', () => {
+    it('still opens for a bin with no tool cutout, so the dialog can explain the policy', () => {
+      // Gating the button left touch users with a dead control and no reason:
+      // a `title` tooltip does not exist on a phone.
       useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS, cutouts: [] } });
       const { result } = renderHook(() => useCommunityPublishEntry());
-      expect(result.current.canPublish).toBe(false);
-      expect(result.current.needsCutout).toBe(true);
-    });
-
-    it('does not gate wall cutouts as a qualifying cutout', () => {
-      useDesignerStore.setState({
-        params: {
-          ...DEFAULT_BIN_PARAMS,
-          cutouts: [],
-          walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: true },
-        },
-      });
-      const { result } = renderHook(() => useCommunityPublishEntry());
-      expect(result.current.needsCutout).toBe(true);
-    });
-
-    it('can publish once a qualifying cutout is added', () => {
-      useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS, cutouts: [] } });
-      const { result, rerender } = renderHook(() => useCommunityPublishEntry());
-      expect(result.current.canPublish).toBe(false);
-      useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS, cutouts: [qualifyingCutout] } });
-      rerender();
       expect(result.current.canPublish).toBe(true);
-      expect(result.current.needsCutout).toBe(false);
     });
   });
 

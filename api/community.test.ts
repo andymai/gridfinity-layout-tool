@@ -437,6 +437,7 @@ afterEach(() => {
   delete process.env.TOKEN_SALT;
   delete process.env.COMMUNITY_PUBLISH_ENABLED;
   delete process.env.COMMUNITY_REQUIRE_CUTOUTS;
+  delete process.env.COMMUNITY_PRINTS_ENABLED;
   delete process.env.VERCEL_ENV;
 });
 
@@ -951,6 +952,54 @@ describe('POST /api/community — deterministic mine pagination', () => {
     const res = await handle({ method: 'GET', query: { mine: '1' } });
     const ids = (res._body as { items: Array<{ id: string }> }).items.map((item) => item.id);
     expect(ids).toEqual(['aaa111111111', 'mmm111111111', 'zzz111111111']);
+  });
+});
+
+describe('GET /api/community?capabilities=1', () => {
+  it('reports the publish kill switch so the client never learns it from a 503', async () => {
+    const res = await handle({ method: 'GET', query: { capabilities: '1' } });
+    expect(res._status).toBe(200);
+    expect(res._body).toEqual({
+      publishEnabled: true,
+      printsEnabled: false,
+      requireCutouts: true,
+    });
+  });
+
+  it('reports publishing disabled when the env var is unset', async () => {
+    delete process.env.COMMUNITY_PUBLISH_ENABLED;
+    const res = await handle({ method: 'GET', query: { capabilities: '1' } });
+    expect((res._body as { publishEnabled: boolean }).publishEnabled).toBe(false);
+  });
+
+  it('treats any value but the literal "true" as off', async () => {
+    process.env.COMMUNITY_PUBLISH_ENABLED = '1';
+    const res = await handle({ method: 'GET', query: { capabilities: '1' } });
+    expect((res._body as { publishEnabled: boolean }).publishEnabled).toBe(false);
+  });
+
+  it('reflects the prints and cutout switches', async () => {
+    process.env.COMMUNITY_PRINTS_ENABLED = 'true';
+    process.env.COMMUNITY_REQUIRE_CUTOUTS = 'false';
+    const res = await handle({ method: 'GET', query: { capabilities: '1' } });
+    expect(res._body).toEqual({
+      publishEnabled: true,
+      printsEnabled: true,
+      requireCutouts: false,
+    });
+    delete process.env.COMMUNITY_PRINTS_ENABLED;
+  });
+
+  it('needs no session or Redis, so a degraded deployment still answers', async () => {
+    mocks.getRedis.mockReturnValue(null);
+    const res = await handle({ method: 'GET', query: { capabilities: '1' } });
+    expect(res._status).toBe(200);
+    expect(mocks.requireSession).not.toHaveBeenCalled();
+  });
+
+  it('does not divert the normal list GET', async () => {
+    const res = await handle({ method: 'GET', query: {} });
+    expect(res._body).not.toHaveProperty('publishEnabled');
   });
 });
 

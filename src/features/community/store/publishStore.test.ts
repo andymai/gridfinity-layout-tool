@@ -1,14 +1,16 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+import type { CommunityCapabilities } from '../api/client';
 import { INITIAL_PUBLISH_DIALOG_STATE, usePublishDialogStore } from './publishStore';
-import type { OpenPublishDialogPayload } from './publishStore';
 import { loadDisplayName, saveDisplayName } from '../utils/displayName';
 
-function openPayload(overrides: Partial<OpenPublishDialogPayload> = {}): OpenPublishDialogPayload {
-  return {
-    mode: 'create',
-    signedIn: true,
-    ...overrides,
-  };
+const ENABLED: CommunityCapabilities = {
+  publishEnabled: true,
+  printsEnabled: true,
+  requireCutouts: true,
+};
+
+function open(mode: 'create' | 'update' = 'create') {
+  usePublishDialogStore.getState().open({ mode });
 }
 
 describe('publishStore', () => {
@@ -21,148 +23,117 @@ describe('publishStore', () => {
     expect(usePublishDialogStore.getState().phase).toBe('closed');
   });
 
-  describe('open', () => {
-    it('goes to signin when signed out', () => {
-      usePublishDialogStore.getState().open(openPayload({ signedIn: false }));
-      expect(usePublishDialogStore.getState().phase).toBe('signin');
-    });
-
-    it('goes to identity when signed in without a stored display name', () => {
-      usePublishDialogStore.getState().open(openPayload());
-      expect(usePublishDialogStore.getState().phase).toBe('identity');
-    });
-
-    it('goes straight to form when signed in with a stored display name', () => {
-      saveDisplayName('Andy');
-      usePublishDialogStore.getState().open(openPayload());
-      const state = usePublishDialogStore.getState();
-      expect(state.phase).toBe('form');
-      expect(state.displayName).toBe('Andy');
-    });
-
-    it('stores the mode', () => {
-      usePublishDialogStore.getState().open(openPayload({ mode: 'update' }));
-      expect(usePublishDialogStore.getState().mode).toBe('update');
-    });
-
-    it('clears stale success and error from a previous session', () => {
-      usePublishDialogStore.setState({
-        success: { id: 'AbCdEf123456', url: 'https://x/community/AbCdEf123456' },
-        error: { kind: 'server' },
-      });
-      usePublishDialogStore.getState().open(openPayload());
-      const state = usePublishDialogStore.getState();
-      expect(state.success).toBeNull();
-      expect(state.error).toBeNull();
-    });
+  it('opens into the capability probe rather than straight to a form', () => {
+    open();
+    expect(usePublishDialogStore.getState().phase).toBe('loading');
   });
 
-  describe('completeSignIn', () => {
-    it('advances signin to identity when no display name is stored', () => {
-      usePublishDialogStore.getState().open(openPayload({ signedIn: false }));
-      usePublishDialogStore.getState().completeSignIn();
-      expect(usePublishDialogStore.getState().phase).toBe('identity');
-    });
-
-    it('advances signin to form when a display name is stored', () => {
-      saveDisplayName('Andy');
-      usePublishDialogStore.getState().open(openPayload({ signedIn: false }));
-      usePublishDialogStore.getState().completeSignIn();
-      expect(usePublishDialogStore.getState().phase).toBe('form');
-    });
-
-    it('is ignored outside signin', () => {
-      usePublishDialogStore.getState().open(openPayload());
-      usePublishDialogStore.getState().completeSignIn();
-      expect(usePublishDialogStore.getState().phase).toBe('identity');
-    });
+  it('reaches the form when the server reports publishing enabled', () => {
+    open();
+    usePublishDialogStore.getState().ready(ENABLED);
+    expect(usePublishDialogStore.getState().phase).toBe('form');
+    expect(usePublishDialogStore.getState().capabilities).toEqual(ENABLED);
   });
 
-  describe('confirmIdentity', () => {
-    it('persists the name and advances to form', () => {
-      usePublishDialogStore.getState().open(openPayload());
-      usePublishDialogStore.getState().confirmIdentity('  Andy  ');
-      const state = usePublishDialogStore.getState();
-      expect(state.phase).toBe('form');
-      expect(state.displayName).toBe('Andy');
-      expect(loadDisplayName()).toBe('Andy');
-    });
-
-    it('ignores an empty name', () => {
-      usePublishDialogStore.getState().open(openPayload());
-      usePublishDialogStore.getState().confirmIdentity('   ');
-      expect(usePublishDialogStore.getState().phase).toBe('identity');
-    });
-
-    it('is ignored outside identity', () => {
-      saveDisplayName('Andy');
-      usePublishDialogStore.getState().open(openPayload());
-      usePublishDialogStore.getState().confirmIdentity('Someone Else');
-      expect(usePublishDialogStore.getState().displayName).toBe('Andy');
-    });
+  it('stops at an explicit unavailable state when publishing is switched off', () => {
+    open();
+    usePublishDialogStore.getState().ready({ ...ENABLED, publishEnabled: false });
+    expect(usePublishDialogStore.getState().phase).toBe('unavailable');
   });
 
-  describe('publish lifecycle', () => {
-    function openToForm(): void {
-      saveDisplayName('Andy');
-      usePublishDialogStore.getState().open(openPayload());
-    }
-
-    it('form -> publishing -> success', () => {
-      openToForm();
-      usePublishDialogStore.getState().beginPublishing();
-      expect(usePublishDialogStore.getState().phase).toBe('publishing');
-      const result = { id: 'AbCdEf123456', url: 'https://x/community/AbCdEf123456' };
-      usePublishDialogStore.getState().succeed(result);
-      const state = usePublishDialogStore.getState();
-      expect(state.phase).toBe('success');
-      expect(state.success).toEqual(result);
-    });
-
-    it('form -> publishing -> error -> backToForm', () => {
-      openToForm();
-      usePublishDialogStore.getState().beginPublishing();
-      usePublishDialogStore.getState().fail({ kind: 'quotaExceeded', message: 'limit' });
-      let state = usePublishDialogStore.getState();
-      expect(state.phase).toBe('error');
-      expect(state.error).toEqual({ kind: 'quotaExceeded', message: 'limit' });
-      usePublishDialogStore.getState().backToForm();
-      state = usePublishDialogStore.getState();
-      expect(state.phase).toBe('form');
-      expect(state.error).toBeNull();
-    });
-
-    it('beginPublishing is ignored outside form', () => {
-      usePublishDialogStore.getState().open(openPayload({ signedIn: false }));
-      usePublishDialogStore.getState().beginPublishing();
-      expect(usePublishDialogStore.getState().phase).toBe('signin');
-    });
-
-    it('succeed and fail are ignored outside publishing', () => {
-      openToForm();
-      usePublishDialogStore
-        .getState()
-        .succeed({ id: 'AbCdEf123456', url: 'https://x/community/AbCdEf123456' });
-      expect(usePublishDialogStore.getState().phase).toBe('form');
-      usePublishDialogStore.getState().fail({ kind: 'server' });
-      expect(usePublishDialogStore.getState().phase).toBe('form');
-    });
-
-    it('backToForm is ignored outside error', () => {
-      openToForm();
-      usePublishDialogStore.getState().backToForm();
-      expect(usePublishDialogStore.getState().phase).toBe('form');
-    });
-  });
-
-  it('reset returns to the initial state', () => {
-    saveDisplayName('Andy');
-    usePublishDialogStore.getState().open(openPayload());
-    usePublishDialogStore.getState().beginPublishing();
-    usePublishDialogStore.getState().reset();
+  it('falls through to the form when the probe itself fails', () => {
+    // An unreachable probe says nothing about the switch, so it must not
+    // claim the feature is off.
+    open();
+    usePublishDialogStore.getState().failProbe({ kind: 'network' });
     const state = usePublishDialogStore.getState();
-    expect(state.phase).toBe('closed');
-    expect(state.success).toBeNull();
+    expect(state.phase).toBe('form');
+    expect(state.probeError).toEqual({ kind: 'network' });
+  });
+
+  it('loads a previously saved display name on open', () => {
+    saveDisplayName('andy');
+    open();
+    expect(usePublishDialogStore.getState().displayName).toBe('andy');
+  });
+
+  it('persists a trimmed display name and ignores an empty one', () => {
+    open();
+    usePublishDialogStore.getState().setDisplayName('  ada  ');
+    expect(usePublishDialogStore.getState().displayName).toBe('ada');
+    expect(loadDisplayName()).toBe('ada');
+    usePublishDialogStore.getState().setDisplayName('   ');
+    expect(usePublishDialogStore.getState().displayName).toBe('ada');
+  });
+
+  it('returns a failed publish to the form with the error attached', () => {
+    open();
+    usePublishDialogStore.getState().ready(ENABLED);
+    usePublishDialogStore.getState().beginPublishing();
+    usePublishDialogStore.getState().fail({ kind: 'server' });
+    const state = usePublishDialogStore.getState();
+    // The form must survive the failure; losing it was the whole bug.
+    expect(state.phase).toBe('form');
+    expect(state.error).toEqual({ kind: 'server' });
+  });
+
+  it('clears the error when a new publish starts', () => {
+    open();
+    usePublishDialogStore.getState().ready(ENABLED);
+    usePublishDialogStore.getState().beginPublishing();
+    usePublishDialogStore.getState().fail({ kind: 'server' });
+    usePublishDialogStore.getState().beginPublishing();
+    expect(usePublishDialogStore.getState().error).toBeNull();
+  });
+
+  it('dismisses an error without leaving the form', () => {
+    open();
+    usePublishDialogStore.getState().ready(ENABLED);
+    usePublishDialogStore.getState().beginPublishing();
+    usePublishDialogStore.getState().fail({ kind: 'network' });
+    usePublishDialogStore.getState().dismissError();
+    const state = usePublishDialogStore.getState();
     expect(state.error).toBeNull();
+    expect(state.phase).toBe('form');
+  });
+
+  it('succeeds only from the publishing phase', () => {
+    open();
+    usePublishDialogStore.getState().ready(ENABLED);
+    usePublishDialogStore.getState().succeed({ id: 'a', url: 'https://x/a' });
+    expect(usePublishDialogStore.getState().phase).toBe('form');
+    usePublishDialogStore.getState().beginPublishing();
+    usePublishDialogStore.getState().succeed({ id: 'a', url: 'https://x/a' });
+    expect(usePublishDialogStore.getState().phase).toBe('success');
+  });
+
+  it('does not begin publishing from outside the form phase', () => {
+    open();
+    usePublishDialogStore.getState().beginPublishing();
+    expect(usePublishDialogStore.getState().phase).toBe('loading');
+  });
+
+  it('ignores a probe result once the dialog moved on', () => {
+    open();
+    usePublishDialogStore.getState().ready(ENABLED);
+    usePublishDialogStore.getState().beginPublishing();
+    usePublishDialogStore.getState().ready({ ...ENABLED, publishEnabled: false });
+    expect(usePublishDialogStore.getState().phase).toBe('publishing');
+  });
+
+  it('switches an update to create without closing', () => {
+    open('update');
+    usePublishDialogStore.getState().ready(ENABLED);
+    usePublishDialogStore.getState().switchToCreate();
+    const state = usePublishDialogStore.getState();
+    expect(state.mode).toBe('create');
+    expect(state.phase).toBe('form');
+  });
+
+  it('resets back to closed', () => {
+    open();
+    usePublishDialogStore.getState().ready(ENABLED);
+    usePublishDialogStore.getState().reset();
+    expect(usePublishDialogStore.getState()).toMatchObject(INITIAL_PUBLISH_DIALOG_STATE);
   });
 });

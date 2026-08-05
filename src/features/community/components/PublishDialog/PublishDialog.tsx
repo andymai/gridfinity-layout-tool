@@ -3,22 +3,33 @@
  * community_showcase flag and driven by the core communityPublish store.
  * Composition contract: the opener (bin designer) supplies design context,
  * captures, and handlers; this dialog never imports another feature.
+ *
+ * One review screen rather than a phase gauntlet. Sign-in is deferred to the
+ * publish attempt (the pending-action stash already survives the OAuth
+ * redirect), identity is a line on the form, and a failed publish returns to
+ * the form with the failure attached rather than replacing it.
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { Button, ConfirmDialog, CopyField, Dialog, Field, Spinner } from '@/design-system';
+import { Alert, Button, ConfirmDialog, CopyField, Dialog, Field, Spinner } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { isOk, ok } from '@/core/result';
 import type { Result } from '@/core/result';
 import { useCommunityPublishStore } from '@/core/store/communityPublish';
 import { useToastStore } from '@/core/store/toast';
-import { getMe, signInUrl } from '@/core/sync/session/sessionApi';
+import { signInUrl } from '@/core/sync/session/sessionApi';
 import type { AuthProvider } from '@/core/sync/session/sessionApi';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { hashBinParams } from '@/shared/utils/binParamsHash';
 import { savePendingPublishAction } from '@/shared/utils/communityPendingAction';
-import { fetchOwnDesign, publishDesign, unpublishDesign, updateDesign } from '../../api/client';
+import {
+  fetchCommunityCapabilities,
+  fetchOwnDesign,
+  publishDesign,
+  unpublishDesign,
+  updateDesign,
+} from '../../api/client';
 import { useBrowseStore } from '../../store/browseStore';
 import { useMineStore } from '../../store/mineStore';
 import type {
@@ -29,9 +40,10 @@ import type {
 import { usePublishDialogStore } from '../../store/publishStore';
 import type { PublishPrefill } from '../../store/publishStore';
 import { claimMilestone } from '../../utils/communityMilestones';
-import { IdentityStep } from './IdentityStep';
 import { PublishForm } from './PublishForm';
-import type { PublishFormFields } from './PublishForm';
+import { useOwnDesignPrefill } from './useOwnDesignPrefill';
+import type { PublishFormFields, PublishSignInDraft } from './PublishForm';
+import { presentPublishError } from './publishErrors';
 
 function goTo(url: string): void {
   if (typeof window !== 'undefined') {
@@ -46,36 +58,13 @@ const PUBLISH_TIMEOUT_MS = 60_000;
 /** Matches useCommunityDigestCheck: a milestone gets more read time than a routine toast. */
 const MILESTONE_TOAST_DURATION_MS = 8000;
 
-const VALIDATION_CODE_KEYS: Partial<Record<string, string>> = {
-  INVALID_NAME: 'community.publish.error.invalidName',
-  INVALID_DESCRIPTION: 'community.publish.error.invalidDescription',
-  INVALID_AUTHOR_NAME: 'community.publish.error.invalidAuthorName',
-  INVALID_CATEGORY: 'community.publish.error.invalidCategory',
-  NAME_TOO_SHORT: 'community.publish.error.nameTooShort',
-  NAME_PLACEHOLDER: 'community.publish.error.namePlaceholder',
-  NAME_LOW_EFFORT: 'community.publish.error.nameLowEffort',
-  CUTOUT_REQUIRED: 'community.publish.error.cutoutRequired',
-  DUPLICATE_DESIGN: 'community.publish.error.duplicate',
-  REMIX_UNCHANGED: 'community.publish.error.remixUnchanged',
-  INVALID_LINEAGE: 'community.publish.error.invalidLineage',
-  UNDER_REVIEW: 'community.publish.error.underReview',
-  PUBLISH_IN_PROGRESS: 'community.publish.error.inProgress',
-};
-
-/** A transient conflict the user can simply retry. */
-const RETRYABLE_CODE = 'PUBLISH_IN_PROGRESS';
-
-/** Validation codes whose only recovery is to drop the remix link and retry. */
-const INVALID_LINEAGE_CODE = 'INVALID_LINEAGE';
-
 /** Screen-reader announcement per phase; the dialog stays mounted across phases. */
 const PHASE_ANNOUNCE_KEYS: Partial<Record<string, string>> = {
-  signin: 'community.publish.announce.signin',
-  identity: 'community.publish.announce.identity',
+  loading: 'community.publish.announce.loading',
+  unavailable: 'community.publish.announce.unavailable',
   form: 'community.publish.announce.form',
   publishing: 'community.publish.announce.publishing',
   success: 'community.publish.announce.success',
-  error: 'community.publish.announce.error',
 };
 
 function publicDesignUrl(id: string): string {
@@ -92,6 +81,8 @@ export function PublishDialog() {
   const sessionUser = useSessionStore((s) => s.user);
   const phase = usePublishDialogStore((s) => s.phase);
   const mode = usePublishDialogStore((s) => s.mode);
+  const capabilities = usePublishDialogStore((s) => s.capabilities);
+  const storedDisplayName = usePublishDialogStore((s) => s.displayName);
   const error = usePublishDialogStore((s) => s.error);
   const success = usePublishDialogStore((s) => s.success);
 
@@ -99,12 +90,8 @@ export function PublishDialog() {
   const openedForRef = useRef<string | null>(null);
   const [interstitialOpen, setInterstitialOpen] = useState(false);
   const [parentParamsHash, setParentParamsHash] = useState<string | null>(null);
-  const [fetchedPrefill, setFetchedPrefill] = useState<PublishPrefill | null>(null);
-  const [updateFetchPending, setUpdateFetchPending] = useState(
-    () => typeof context?.publishedId === 'string'
-  );
-  const [updateFetchFailed, setUpdateFetchFailed] = useState(false);
-  const [updateFetchAttempt, setUpdateFetchAttempt] = useState(0);
+  /** Null until the user touches the field, so the suggestion stays live. */
+  const [editedPublicName, setEditedPublicName] = useState<string | null>(null);
   const [unpublishOpen, setUnpublishOpen] = useState(false);
   const [unpublishBusy, setUnpublishBusy] = useState(false);
   const [unpublishError, setUnpublishError] = useState<string | undefined>(undefined);
@@ -115,27 +102,50 @@ export function PublishDialog() {
     openedForRef.current = context.designId;
     usePublishDialogStore.getState().open({
       mode: context.publishedId !== null ? 'update' : 'create',
-      signedIn: sessionStatus === 'authenticated',
     });
-  }, [context, sessionStatus]);
+  }, [context]);
 
+  // Ask the server what it will actually accept before showing a form. The
+  // publish kill switch is a deployment env var with no client-side shadow, so
+  // without this the only way to discover publishing is off is to POST a
+  // finished design and read the 503.
   useEffect(() => {
-    if (phase === 'signin' && sessionStatus === 'authenticated') {
-      usePublishDialogStore.getState().completeSignIn();
-    }
+    if (phase !== 'loading') return;
+    let cancelled = false;
+    void fetchCommunityCapabilities().then((result) => {
+      if (cancelled) return;
+      const store = usePublishDialogStore.getState();
+      if (isOk(result)) store.ready(result.value);
+      else store.failProbe(result.error);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [phase]);
+
+  // Derived, not seeded through an effect, so a session that resolves after
+  // mount still supplies the suggestion. A GitHub handle is only ever a
+  // suggestion for someone who has not chosen a name; a profile display name
+  // never is, since it is usually a real name.
+  const suggestedName =
+    storedDisplayName !== ''
+      ? storedDisplayName
+      : sessionUser?.provider === 'github'
+        ? (sessionUser.handle ?? '')
+        : '';
+  const publicName = editedPublicName ?? suggestedName;
+
+  // Sign-in is no longer a phase, so the prompt is "the form was shown to
+  // someone who will have to authenticate to finish".
+  useEffect(() => {
+    if (phase !== 'form' || sessionStatus === 'authenticated') return;
+    trackEvent('community_signin_prompt_shown', { intent: 'publish' });
   }, [phase, sessionStatus]);
 
-  const errorKind = error?.kind ?? null;
-  useEffect(() => {
-    if (phase === 'signin' || (phase === 'error' && errorKind === 'needsAuth')) {
-      trackEvent('community_signin_prompt_shown', { intent: 'publish' });
-    }
-  }, [phase, errorKind]);
-
   // The Dialog focus trap places initial focus once at mount, but this dialog
-  // stays open while `phase` swaps its whole body (signin -> identity -> form
-  // -> publishing -> success/error). Move focus into each new phase so keyboard
-  // and screen-reader users land on the fresh content instead of a detached
+  // stays open while `phase` swaps its whole body (loading -> form ->
+  // publishing -> success). Move focus into each new phase so keyboard and
+  // screen-reader users land on the fresh content instead of a detached
   // <body>. The aria-live region below announces the transition.
   useEffect(() => {
     if (phase === 'closed') return;
@@ -150,57 +160,7 @@ export function PublishDialog() {
   }, [phase]);
 
   const publishedId = context?.publishedId ?? null;
-  useEffect(() => {
-    if (publishedId === null) return;
-    // Prefill/reconcile only makes sense for a recognized owner. Skipping the
-    // signin phase avoids a 404 (expected while signed out) severing the link.
-    if (sessionStatus !== 'authenticated') return;
-    let cancelled = false;
-    void fetchOwnDesign(publishedId).then((result) => {
-      if (cancelled) return;
-      if (isOk(result)) {
-        setFetchedPrefill({
-          name: result.value.name,
-          description: result.value.description,
-          category: result.value.category,
-        });
-        setUpdateFetchPending(false);
-        return;
-      }
-      if (result.error.kind === 'notFound') {
-        // A 404 is definitive only from a recognized owner: the API also 404s
-        // a hidden-but-recoverable design to an expired cookie. Confirm the
-        // session is live before severing the local publishedId link, mirroring
-        // publishedIdReconcile. On an unconfirmed session, keep the link and
-        // block the form rather than mint a duplicate.
-        void getMe().then((me) => {
-          if (cancelled) return;
-          if (me === null) {
-            setUpdateFetchFailed(true);
-            setUpdateFetchPending(false);
-            return;
-          }
-          const publish = useCommunityPublishStore.getState();
-          publish.handlers?.onUnpublished();
-          publish.clearContextPublishedId();
-          usePublishDialogStore.getState().switchToCreate();
-          useToastStore.getState().addToast({
-            message: t('community.publish.error.republishAsNew'),
-            type: 'info',
-          });
-          setUpdateFetchPending(false);
-        });
-        return;
-      }
-      // Without the live record, submitting would overwrite the published
-      // name/description with local defaults; block the form instead.
-      setUpdateFetchFailed(true);
-      setUpdateFetchPending(false);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [publishedId, updateFetchAttempt, sessionStatus, t]);
+  const ownDesign = useOwnDesignPrefill(publishedId, sessionStatus);
 
   const parentId = context?.lineage?.parentId ?? null;
   useEffect(() => {
@@ -225,46 +185,21 @@ export function PublishDialog() {
     useCommunityPublishStore.getState().close();
   };
 
-  const handleSignIn = (provider: AuthProvider) => {
-    const fields = lastFields;
+  const stashAndSignIn = (provider: AuthProvider, draft: PublishSignInDraft) => {
+    // The public name lives in localStorage, which survives the redirect; the
+    // rest rides the one-shot sessionStorage pending action.
+    if (draft.publicName !== '') {
+      usePublishDialogStore.getState().setDisplayName(draft.publicName);
+    }
     savePendingPublishAction({
       designId: context.designId,
       returnSurface: 'designer',
-      draft: fields
-        ? { name: fields.name, description: fields.description, category: fields.category }
-        : (context.draft ?? null),
+      draft:
+        draft.category !== ''
+          ? { name: draft.name, description: draft.description, category: draft.category }
+          : (context.draft ?? null),
     });
     goTo(signInUrl(provider));
-  };
-
-  const errorMessage = (err: CommunityClientError): string => {
-    switch (err.kind) {
-      case 'needsAuth':
-        return t('community.publish.error.needsAuth');
-      case 'disabled':
-        return t('community.publish.error.disabled');
-      case 'rateLimited':
-        return err.retryAfterSeconds !== null
-          ? t('community.publish.error.rateLimitedWait', { seconds: err.retryAfterSeconds })
-          : t('community.publish.error.rateLimited');
-      case 'quotaExceeded':
-        return t('community.publish.error.quota');
-      case 'contentBlocked':
-        return t('community.publish.error.contentBlocked');
-      case 'validation': {
-        // Server messages are English-only; map known codes to i18n keys.
-        const key = VALIDATION_CODE_KEYS[err.code];
-        return key !== undefined ? t(key) : t('community.publish.error.generic');
-      }
-      case 'forbidden':
-        return t('community.publish.error.generic');
-      case 'notFound':
-        return t('community.publish.error.notFound');
-      case 'network':
-        return t('community.publish.error.offline');
-      case 'server':
-        return t('community.publish.error.generic');
-    }
   };
 
   const doPublish = (fields: PublishFormFields) => {
@@ -272,6 +207,7 @@ export function PublishDialog() {
     // beginPublishing no-ops outside the form phase; bail so a double
     // activation cannot fire two network publishes.
     if (store.phase !== 'form') return;
+    store.setDisplayName(fields.publicName);
     store.beginPublishing();
     const publishCaptures = useCommunityPublishStore.getState().captures;
     if (!publishCaptures) {
@@ -281,7 +217,7 @@ export function PublishDialog() {
     const input: CommunityPublishInput = {
       name: fields.name,
       description: fields.description,
-      authorName: store.displayName,
+      authorName: fields.publicName,
       category: fields.category,
       params: context.params,
       thumbnails: publishCaptures.thumbnails,
@@ -336,7 +272,7 @@ export function PublishDialog() {
       } else {
         if (isUpdate && result.error.kind === 'notFound') {
           // The published record vanished under us (unpublished elsewhere or
-          // moderated away). Drop the stale link so Back republishes as new.
+          // moderated away). Drop the stale link so a retry republishes as new.
           const publish = useCommunityPublishStore.getState();
           publish.handlers?.onUnpublished();
           publish.clearContextPublishedId();
@@ -361,25 +297,11 @@ export function PublishDialog() {
     doPublish(fields);
   };
 
-  const handleTryAgain = () => {
-    const fields = lastFields;
-    usePublishDialogStore.getState().backToForm();
-    if (fields) {
-      doPublish(fields);
-    }
-  };
-
-  const handlePublishWithoutRemix = () => {
+  const handleDropRemix = () => {
     useCommunityPublishStore.getState().clearContextLineage();
-    const fields = lastFields;
-    usePublishDialogStore.getState().backToForm();
-    if (fields) {
-      doPublish(fields);
-    }
+    usePublishDialogStore.getState().dismissError();
+    if (lastFields) doPublish(lastFields);
   };
-
-  const errorCode =
-    error?.kind === 'validation' && typeof error.code === 'string' ? error.code : null;
 
   const handleUnpublishConfirm = () => {
     if (context.publishedId === null || unpublishBusy) return;
@@ -403,16 +325,17 @@ export function PublishDialog() {
         setUnpublishOpen(false);
         handleClose();
       } else {
-        setUnpublishError(errorMessage(result.error));
+        const presented = presentPublishError(result.error);
+        setUnpublishError(t(presented.messageKey, presented.values));
       }
     });
   };
 
-  // Last-typed fields win so edits survive the error -> Back round trip
-  // (the form unmounts during publishing/error phases).
+  // Last-typed fields win so edits survive a failed publish (the form
+  // remounts when the phase leaves `form`).
   const prefill: PublishPrefill = lastFields ??
     context.draft ??
-    fetchedPrefill ?? { name: context.designName, description: '', category: null };
+    ownDesign.prefill ?? { name: context.designName, description: '', category: null };
 
   const title =
     phase === 'success'
@@ -422,20 +345,6 @@ export function PublishDialog() {
       : mode === 'update'
         ? t('community.publish.updateTitle')
         : t('community.publish.title');
-
-  const disclosure = (
-    <p className="text-xs text-content-tertiary">
-      {t('community.publish.disclosure')}{' '}
-      <a
-        href="/terms"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="underline hover:text-content"
-      >
-        {t('community.publish.disclosureTerms')}
-      </a>
-    </p>
-  );
 
   return (
     <>
@@ -453,63 +362,47 @@ export function PublishDialog() {
           {PHASE_ANNOUNCE_KEYS[phase] ? t(PHASE_ANNOUNCE_KEYS[phase]) : ''}
         </div>
 
-        {phase === 'signin' && (
+        {phase === 'loading' && (
           <Dialog.Body>
-            <div className="space-y-4">
-              <p className="text-sm text-content-secondary">
-                {t('community.publish.signin.value')}
-              </p>
-              <div className="flex flex-col gap-2">
-                <Button
-                  variant="primary"
-                  className="min-h-11 md:min-h-0"
-                  onClick={() => handleSignIn('google')}
-                >
-                  {t('auth.signInWithGoogle')}
-                </Button>
-                <Button
-                  variant="secondary"
-                  className="min-h-11 md:min-h-0"
-                  onClick={() => handleSignIn('github')}
-                >
-                  {t('auth.signInWithGithub')}
-                </Button>
-              </div>
-              {disclosure}
+            <div className="flex min-h-24 items-center gap-3">
+              <Spinner />
+              <span className="text-sm text-content-secondary">
+                {t('community.publish.checking')}
+              </span>
             </div>
           </Dialog.Body>
         )}
 
-        {phase === 'identity' && (
-          <IdentityStep
-            initialName={sessionUser?.provider === 'github' ? (sessionUser.handle ?? '') : ''}
-            onContinue={(name) => usePublishDialogStore.getState().confirmIdentity(name)}
-          />
+        {phase === 'unavailable' && (
+          <>
+            <Dialog.Body>
+              <Alert intent="info" size="md" title={t('community.publish.unavailable.title')}>
+                {t('community.publish.unavailable.body')}
+              </Alert>
+            </Dialog.Body>
+            <Dialog.Footer>
+              <Button variant="primary" className="min-h-11 md:min-h-0" onClick={handleClose}>
+                {t('common.close')}
+              </Button>
+            </Dialog.Footer>
+          </>
         )}
 
         {phase === 'form' &&
-          (updateFetchFailed ? (
+          (ownDesign.failed ? (
             <>
               <Dialog.Body>
-                <p role="alert" className="text-sm text-content">
+                <Alert intent="error" size="md">
                   {t('community.publish.error.loadFailed')}
-                </p>
+                </Alert>
               </Dialog.Body>
               <Dialog.Footer>
-                <Button
-                  variant="primary"
-                  className="min-h-11 md:min-h-0"
-                  onClick={() => {
-                    setUpdateFetchFailed(false);
-                    setUpdateFetchPending(true);
-                    setUpdateFetchAttempt((attempt) => attempt + 1);
-                  }}
-                >
+                <Button variant="primary" className="min-h-11 md:min-h-0" onClick={ownDesign.retry}>
                   {t('community.publish.error.tryAgain')}
                 </Button>
               </Dialog.Footer>
             </>
-          ) : updateFetchPending ? (
+          ) : ownDesign.pending ? (
             <Dialog.Body>
               <div className="flex min-h-24 items-center gap-3">
                 <Spinner />
@@ -526,10 +419,21 @@ export function PublishDialog() {
               captureFailed={captureFailed}
               params={context.params}
               lineage={context.lineage}
+              publicName={publicName}
+              firstTimePublisher={storedDisplayName === ''}
+              signedIn={sessionStatus === 'authenticated'}
+              requireCutouts={capabilities?.requireCutouts ?? false}
+              printsEnabled={capabilities?.printsEnabled ?? false}
+              publishedId={context.publishedId}
+              currentCoverUrl={ownDesign.coverUrl}
+              error={error}
+              onPublicNameChange={setEditedPublicName}
               onSubmit={handleSubmit}
+              onSignIn={stashAndSignIn}
               onRetryCapture={() => {
                 useCommunityPublishStore.getState().handlers?.requestRecapture();
               }}
+              onDropRemix={handleDropRemix}
               onUnpublish={
                 mode === 'update' && context.publishedId !== null
                   ? () => setUnpublishOpen(true)
@@ -555,6 +459,9 @@ export function PublishDialog() {
           <>
             <Dialog.Body>
               <div className="space-y-4">
+                <p className="text-sm text-content-secondary">
+                  {t('community.publish.success.body')}
+                </p>
                 <Field label={t('community.publish.success.linkLabel')}>
                   <CopyField
                     value={success.url}
@@ -563,75 +470,22 @@ export function PublishDialog() {
                     copiedLabel={t('community.publish.success.copied')}
                   />
                 </Field>
-                <p className="text-xs text-content-tertiary">
-                  {t('community.publish.success.viewSoon')}
-                </p>
               </div>
             </Dialog.Body>
             <Dialog.Footer>
-              <Button variant="primary" className="min-h-11 md:min-h-0" onClick={handleClose}>
+              <Button variant="ghost" className="min-h-11 md:min-h-0" onClick={handleClose}>
                 {t('community.publish.success.done')}
               </Button>
-            </Dialog.Footer>
-          </>
-        )}
-
-        {phase === 'error' && error !== null && (
-          <>
-            <Dialog.Body>
-              <div className="space-y-4">
-                <p role="alert" className="text-sm text-content">
-                  {errorMessage(error)}
-                </p>
-                {error.kind === 'needsAuth' && (
-                  <div className="flex flex-col gap-2">
-                    <Button
-                      variant="primary"
-                      className="min-h-11 md:min-h-0"
-                      onClick={() => handleSignIn('google')}
-                    >
-                      {t('auth.signInWithGoogle')}
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      className="min-h-11 md:min-h-0"
-                      onClick={() => handleSignIn('github')}
-                    >
-                      {t('auth.signInWithGithub')}
-                    </Button>
-                  </div>
-                )}
-                {error.kind === 'quotaExceeded' && (
-                  <p className="text-xs text-content-tertiary">
-                    {t('community.publish.error.quotaHint')}
-                  </p>
-                )}
-              </div>
-            </Dialog.Body>
-            <Dialog.Footer>
               <Button
-                variant="ghost"
+                variant="primary"
                 className="min-h-11 md:min-h-0"
-                onClick={() => usePublishDialogStore.getState().backToForm()}
+                onClick={() => {
+                  handleClose();
+                  goTo(success.url);
+                }}
               >
-                {t('community.publish.error.back')}
+                {t('community.publish.success.view')}
               </Button>
-              {(error.kind === 'network' ||
-                error.kind === 'server' ||
-                errorCode === RETRYABLE_CODE) && (
-                <Button variant="primary" className="min-h-11 md:min-h-0" onClick={handleTryAgain}>
-                  {t('community.publish.error.tryAgain')}
-                </Button>
-              )}
-              {errorCode === INVALID_LINEAGE_CODE && (
-                <Button
-                  variant="primary"
-                  className="min-h-11 md:min-h-0"
-                  onClick={handlePublishWithoutRemix}
-                >
-                  {t('community.publish.error.publishWithoutRemix')}
-                </Button>
-              )}
             </Dialog.Footer>
           </>
         )}

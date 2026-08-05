@@ -266,6 +266,47 @@ export async function communityFetch(input: string, init: RequestInit): Promise<
   return apiFetch(input, { ...init, suppressForcedSignOut: true });
 }
 
+/**
+ * The server switches the client cannot infer. `community_showcase` is a
+ * per-user Labs flag over the UI; these are deployment kill switches, and
+ * nothing local reflects them.
+ */
+export interface CommunityCapabilities {
+  publishEnabled: boolean;
+  printsEnabled: boolean;
+  requireCutouts: boolean;
+}
+
+function isCapabilities(value: unknown): value is CommunityCapabilities {
+  return (
+    isRecord(value) &&
+    typeof value.publishEnabled === 'boolean' &&
+    typeof value.printsEnabled === 'boolean' &&
+    typeof value.requireCutouts === 'boolean'
+  );
+}
+
+/**
+ * Probed before the publish form renders, so a disabled deployment is stated
+ * up front instead of after a completed form is POSTed.
+ */
+export async function fetchCommunityCapabilities(
+  signal?: AbortSignal
+): Promise<Result<CommunityCapabilities, CommunityClientError>> {
+  try {
+    const response = await communityFetch(`${COMMUNITY_ENDPOINT}?capabilities=1`, {
+      method: 'GET',
+      signal,
+    });
+    const data: unknown = await response.json();
+    if (!response.ok) return err(errorFromResponse(response.status, data));
+    if (isCapabilities(data)) return ok(data);
+    return err({ kind: 'server' });
+  } catch {
+    return err({ kind: 'network' });
+  }
+}
+
 export async function publishDesign(
   input: CommunityPublishInput,
   lineage: CommunityDesignLineage | null = null,

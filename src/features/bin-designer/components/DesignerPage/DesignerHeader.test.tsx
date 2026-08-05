@@ -159,33 +159,20 @@ describe('DesignerHeader', () => {
       expect(screen.getByLabelText('Publish to the community showcase')).not.toBeDisabled();
     });
 
-    it('keeps Publish disabled with the cutout reason when the mesh is ready but no cutout exists, on desktop and mobile', () => {
+    it('stays enabled without a cutout so the dialog can explain the policy', () => {
+      // A `title` tooltip does not exist on touch, so gating the button here
+      // left phone users with a dead control and no stated reason.
       setCommunityFlag(true);
       useDesignerStore.setState({
         params: { ...DEFAULT_BIN_PARAMS, cutouts: [] },
         generation: { ...DEFAULT_GENERATION_STATE, mesh: readyMesh },
       });
       const desktop = render(<DesignerHeader isDesktop nameEditor={createMockNameEditor()} />);
-      const desktopButton = screen.getByLabelText('Publish to the community showcase');
-      expect(desktopButton).toBeDisabled();
-      expect(desktopButton).toHaveAttribute(
-        'title',
-        'The community showcase is open to bins with tool cutouts to start. Add a cutout to share this one.'
-      );
-      expect(
-        screen.getByText(
-          'The community showcase is open to bins with tool cutouts to start. Add a cutout to share this one.'
-        )
-      ).toBeInTheDocument();
+      expect(screen.getByLabelText('Publish to the community showcase')).not.toBeDisabled();
       desktop.unmount();
 
       render(<DesignerHeader isDesktop={false} nameEditor={createMockNameEditor()} />);
-      const mobileButton = screen.getByLabelText('Publish to the community showcase');
-      expect(mobileButton).toBeDisabled();
-      expect(mobileButton).toHaveAttribute(
-        'title',
-        'The community showcase is open to bins with tool cutouts to start. Add a cutout to share this one.'
-      );
+      expect(screen.getByLabelText('Publish to the community showcase')).not.toBeDisabled();
     });
   });
 });
