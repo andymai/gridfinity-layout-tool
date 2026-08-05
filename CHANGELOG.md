@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.369.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.368.0...gridfinity-layout-tool-v4.369.0) (2026-08-05)
+
+
+### Features
+
+* **community:** rebuild the publish dialog as a two-column review ([#3241](https://github.com/andymai/gridfinity-layout-tool/issues/3241)) ([e362947](https://github.com/andymai/gridfinity-layout-tool/commit/e3629470c24cf33ad6e37d15ffa370bcc0990ccb))
+
 ## [4.368.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.367.1...gridfinity-layout-tool-v4.368.0) (2026-08-05)
 
 
