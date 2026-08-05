@@ -27,6 +27,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useMeshGeometry } from '@/shared/components/preview/useMeshGeometry';
 import { LID_FIT_CLEARANCE, resolveLidCavityExtraMm } from '@/features/bin-designer/types';
 import { getZoneColor } from '@/features/bin-designer/types/featureColors';
+import { buildLidColorGroups } from '@/features/bin-designer/utils/lidColorGroups';
 import { binLipTopWorldZ, lidAnchorZ } from './lidAnchorZ';
 
 /** Opacity bands for closed vs exploded views. */
@@ -97,11 +98,28 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false, xray = false }:
     })
   );
 
+  // The lid's own top lip can differ from the rest of the lid. Classified by
+  // exactly the rule the 3MF assembler uses, so the preview keeps predicting
+  // the print (the invariant GH #1654 established).
+  const lidColorData = useMemo(
+    () =>
+      featureColors?.enabled
+        ? buildLidColorGroups(
+            lidMesh?.faceGroups,
+            lidMesh?.vertices,
+            lidMesh?.indices,
+            featureColors
+          )
+        : null,
+    [featureColors, lidMesh]
+  );
+
   const { geometry, edgesGeometry, hasPrecomputedNormals } = useMeshGeometry({
     vertices: lidMesh?.vertices ?? null,
     normals: lidMesh?.normals ?? null,
     indices: lidMesh?.indices ?? null,
     edgeVertices: lidMesh?.edgeVertices ?? null,
+    faceGroups: lidColorData?.groups,
   });
 
   // In multi-color mode the lid is a single zone (`featureColors.lid`); the
@@ -136,6 +154,21 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false, xray = false }:
     [lidColor, wireframe, hasPrecomputedNormals, baseOpacity, xray]
   );
 
+  const lidMaterials = useMemo(() => {
+    if (!lidColorData) return null;
+    return lidColorData.colors.map(
+      (c) => new THREE.MeshStandardMaterial({ ...matProps, color: c })
+    );
+  }, [lidColorData, matProps]);
+
+  // Materials are owned here, so they must be released on swap/unmount or every
+  // colour edit leaks a GPU material.
+  useEffect(() => {
+    return () => {
+      if (lidMaterials) for (const m of lidMaterials) m.dispose();
+    };
+  }, [lidMaterials]);
+
   // Invalidate the R3F frame when any visual input changes.
   useEffect(() => {
     invalidate();
@@ -145,11 +178,20 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false, xray = false }:
 
   const positionZ = lidGroupZ + lidOffsetMm;
 
+  // Distinct keys force unmount/remount across the multi<->single switch, for
+  // the same reason BinMesh does it: reusing one <mesh> lets R3F's prop-diff
+  // clobber the attached material array.
+  const lidMeshNode = lidMaterials ? (
+    <mesh key="lid-multi-color" geometry={geometry} material={lidMaterials} />
+  ) : (
+    <mesh key="lid-single-color" geometry={geometry}>
+      <meshStandardMaterial {...matProps} />
+    </mesh>
+  );
+
   return (
     <group position={[0, 0, positionZ]}>
-      <mesh geometry={geometry}>
-        <meshStandardMaterial {...matProps} />
-      </mesh>
+      {lidMeshNode}
       {!wireframe && edgesGeometry && (
         <lineSegments geometry={edgesGeometry} renderOrder={1}>
           <lineBasicMaterial
