@@ -1186,7 +1186,7 @@
   "binDesigner.tileHint": "Conserve les pieds, le fond et la lèvre d'empilage et supprime les parois. Il reste une plaque plate de 9,3 mm qui se verrouille toujours dans une plaque de base et reste empilable. La lèvre est le seul bord en relief : c'est donc la partie que vous colorez.",
   "binDesigner.tileDisablesWalls": "Un plateau n'a pas de parois pour cela",
   "binDesigner.tileDisablesInterior": "Un plateau n'a pas de profondeur pour les aménagements intérieurs",
-  "binDesigner.tileDisablesStyle": "Un plateau est une plaque plate — il n'y a pas d'intérieur à façonner",
+  "binDesigner.tileDisablesStyle": "Un plateau est une plaque plate, il n'y a pas d'intérieur à façonner",
   "binDesigner.tileDisablesSpacer": "Un plateau conserve le fond qu'une entretoise supprime",
   "binDesigner.flatFloorDisablesTile": "Un plateau a besoin de pieds pour reposer",
   "binDesigner.lidBaseDisablesTile": "Un plateau a besoin de pieds pour reposer",

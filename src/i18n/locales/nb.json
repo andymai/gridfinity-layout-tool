@@ -1189,7 +1189,7 @@
   "binDesigner.tileHint": "Beholder føttene, bunnen og stablekanten og fjerner veggene. Igjen står en flat 9,3 mm-plate som fortsatt låses i en bunnplate og fortsatt kan stables. Kanten er den eneste hevede delen, og dermed den du fargelegger.",
   "binDesigner.tileDisablesWalls": "Et brett har ingen vegger til dette",
   "binDesigner.tileDisablesInterior": "Et brett har ingen dybde til innvendige funksjoner",
-  "binDesigner.tileDisablesStyle": "Et brett er en flat plate — det finnes ikke noe indre å forme",
+  "binDesigner.tileDisablesStyle": "Et brett er en flat plate, det finnes ikke noe indre å forme",
   "binDesigner.tileDisablesSpacer": "Et brett beholder bunnen en avstandsholder fjerner",
   "binDesigner.flatFloorDisablesTile": "Et brett trenger føtter å stå på",
   "binDesigner.lidBaseDisablesTile": "Et brett trenger føtter å stå på",

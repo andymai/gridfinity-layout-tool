@@ -23,6 +23,12 @@ import { assessFloorPatternFit } from '@/features/bin-designer/utils/floorPatter
 import { minHeightUnits } from '@/features/bin-designer/constants';
 import { isEffectiveTile } from '@/features/bin-designer/types/base';
 
+/** Drop the `tile` key entirely — absent is the off state, never `false`. */
+function omitTile(base: BinParams['base']): BinParams['base'] {
+  const { tile: _tile, ...rest } = base;
+  return rest;
+}
+
 /** Narrow a picker selection to the subset the floor supports. */
 function isFloorPatternType(pattern: WallPatternType): pattern is FloorPatternType {
   return (FLOOR_PATTERN_TYPES as readonly WallPatternType[]).includes(pattern);
@@ -69,18 +75,30 @@ export function useBaseSection() {
   // rather than the `available` status each callback guarded on.
   const commit = useCallback(
     (resolved: BinParams) => {
-      // A tray's height is inert (the wall is 0 and `assembledHeight` supplies
-      // the real 9.3mm), so it is pinned rather than merely floored: two trays
-      // that differ only in a number nothing reads must not fingerprint
-      // differently and defeat the community duplicate guard. Leaving the mode
-      // falls through to the clamp below, which lifts 1u back to the ordinary
-      // floor.
       if (isEffectiveTile(resolved.base)) {
-        setParams(resolved.height === 1 ? resolved : { ...resolved, height: 1 });
+        // A tray's height is inert (the wall is 0 and `assembledHeight` supplies
+        // the real 9.3mm), so it is pinned rather than merely floored: two trays
+        // that differ only in a number nothing reads must not fingerprint
+        // differently and defeat the community duplicate guard. The collar is
+        // inert for the same reason — generation forces it to 0 on a tray — so
+        // it is dropped rather than left to drift the fingerprint.
+        // Explicitly `undefined`, not omitted: `setParams` merges via
+        // `Object.assign`, so leaving the key out would keep the stale value.
+        // JSON serialisation drops an undefined-valued key, so the stored design
+        // and its fingerprint come out the same as one that never had a collar.
+        setParams({ ...resolved, height: 1, extraWallHeightMm: undefined });
         return;
       }
-      const minHeight = minHeightUnits(resolved.base);
-      setParams(resolved.height < minHeight ? { ...resolved, height: minHeight } : resolved);
+      // Off must end up ABSENT, not `false`. `resolveConstraints` writes
+      // `tile: false` whenever a rule auto-disables the tray (switching to a
+      // flat or lid base, enabling the spacer), and EVERY base toggle commits
+      // through here — so stripping only inside `toggleTile` would still leave
+      // the key behind on those paths and fingerprint an ordinary bin
+      // differently from an identical one that never tried the mode.
+      const next =
+        'tile' in resolved.base ? { ...resolved, base: omitTile(resolved.base) } : resolved;
+      const minHeight = minHeightUnits(next.base);
+      setParams(next.height < minHeight ? { ...next, height: minHeight } : next);
     },
     [setParams]
   );
@@ -138,17 +156,8 @@ export function useBaseSection() {
   const toggleTile = useCallback(() => {
     const isTile = base.tile === true;
     if (!isTile && !tileStatus.available) return;
-    const { params: resolved } = resolveConstraints(params, {
-      feature: 'base.tile',
-      enabled: !isTile,
-    });
-    // Stripped on the way out, exactly as `toggleLidBottom` strips `trayBottom`
-    // and for the same reason: the flag is absent by default so an ordinary
-    // bin's params hash is unchanged, and a leftover `tile: false` would make a
-    // bin that once tried the tray fingerprint differently from an identical
-    // one that never did.
-    const { tile: _dropped, ...baseWithoutTile } = resolved.base;
-    commit(resolved.base.tile === true ? resolved : { ...resolved, base: baseWithoutTile });
+    // `commit` strips a `tile: false` residue on every path, this one included.
+    commit(resolveConstraints(params, { feature: 'base.tile', enabled: !isTile }).params);
   }, [params, base.tile, tileStatus.available, commit]);
 
   const toggleHalfSockets = useCallback(() => {

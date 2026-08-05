@@ -1189,7 +1189,7 @@
   "binDesigner.tileHint": "Mantiene los pies, el suelo y el labio de apilado y elimina las paredes. Queda una placa plana de 9,3 mm que sigue encajando en una placa base y se sigue apilando. El labio es el único borde elevado, así que es la parte que coloreas.",
   "binDesigner.tileDisablesWalls": "Una bandeja no tiene paredes para esto",
   "binDesigner.tileDisablesInterior": "Una bandeja no tiene profundidad para elementos interiores",
-  "binDesigner.tileDisablesStyle": "Una bandeja es una placa plana — no hay interior que dar forma",
+  "binDesigner.tileDisablesStyle": "Una bandeja es una placa plana, no hay interior al que dar forma",
   "binDesigner.tileDisablesSpacer": "Una bandeja conserva el suelo que un separador elimina",
   "binDesigner.flatFloorDisablesTile": "Una bandeja necesita pies sobre los que apoyarse",
   "binDesigner.lidBaseDisablesTile": "Una bandeja necesita pies sobre los que apoyarse",

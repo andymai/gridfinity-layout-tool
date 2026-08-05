@@ -1189,7 +1189,7 @@
   "binDesigner.tileHint": "Mantiene i piedini, il fondo e il bordo di impilamento ed elimina le pareti. Resta una piastra piatta da 9,3 mm che continua a incastrarsi nella piastra base e resta impilabile. Il bordo è l'unico rilievo, quindi è la parte da colorare.",
   "binDesigner.tileDisablesWalls": "Un vassoio non ha pareti per questo",
   "binDesigner.tileDisablesInterior": "Un vassoio non ha profondità per gli elementi interni",
-  "binDesigner.tileDisablesStyle": "Un vassoio è una piastra piatta — non c'è un interno da modellare",
+  "binDesigner.tileDisablesStyle": "Un vassoio è una piastra piatta, non c'è un interno da modellare",
   "binDesigner.tileDisablesSpacer": "Un vassoio mantiene il fondo che un distanziale elimina",
   "binDesigner.flatFloorDisablesTile": "Un vassoio ha bisogno di piedini su cui appoggiarsi",
   "binDesigner.lidBaseDisablesTile": "Un vassoio ha bisogno di piedini su cui appoggiarsi",

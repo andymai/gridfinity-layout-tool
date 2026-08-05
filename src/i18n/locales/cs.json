@@ -1186,7 +1186,7 @@
   "binDesigner.tileHint": "Zachová nožičky, dno a stohovací lem a odstraní stěny. Zbude plochá deska 9,3 mm, která se stále zacvakne do základové desky a stále se stohuje. Lem je jediná vyvýšená hrana, takže je to část, kterou obarvíte.",
   "binDesigner.tileDisablesWalls": "Tác nemá stěny, které by to udržely",
   "binDesigner.tileDisablesInterior": "Tác nemá hloubku pro vnitřní prvky",
-  "binDesigner.tileDisablesStyle": "Tác je plochá deska — není co tvarovat uvnitř",
+  "binDesigner.tileDisablesStyle": "Tác je plochá deska, uvnitř není co tvarovat",
   "binDesigner.tileDisablesSpacer": "Tác zachovává dno, které rozpěrka odstraňuje",
   "binDesigner.flatFloorDisablesTile": "Tác potřebuje nožičky, na kterých stojí",
   "binDesigner.lidBaseDisablesTile": "Tác potřebuje nožičky, na kterých stojí",

@@ -2079,7 +2079,7 @@ const en: Record<string, string> = {
   'binDesigner.flatFloorDisablesSpacer': 'A spacer needs feet to open through',
   'binDesigner.tileDisablesWalls': 'A tray has no walls to hold this',
   'binDesigner.tileDisablesInterior': 'A tray has no depth to hold interior features',
-  'binDesigner.tileDisablesStyle': 'A tray is a flat plate — there is no interior to shape',
+  'binDesigner.tileDisablesStyle': 'A tray is a flat plate, so there is no interior to shape',
   'binDesigner.tileDisablesSpacer': 'A tray keeps the floor a spacer removes',
   'binDesigner.flatFloorDisablesTile': 'A tray needs feet to stand on',
   'binDesigner.lidBaseDisablesTile': 'A tray needs feet to stand on',

@@ -1186,7 +1186,7 @@
   "binDesigner.tileHint": "保留底脚、底板和堆叠唇边，去掉侧墙。剩下一块 9.3mm 的平板，仍能卡入底板并继续堆叠。唇边是唯一突起的边缘，也就是你上色的部分。",
   "binDesigner.tileDisablesWalls": "托盘没有侧墙来承载它",
   "binDesigner.tileDisablesInterior": "托盘没有容纳内部结构的深度",
-  "binDesigner.tileDisablesStyle": "托盘是一块平板 — 没有可塑造的内部",
+  "binDesigner.tileDisablesStyle": "托盘是一块平板，没有可塑造的内部",
   "binDesigner.tileDisablesSpacer": "托盘保留了垫块要去掉的底板",
   "binDesigner.flatFloorDisablesTile": "托盘需要底脚来支撑",
   "binDesigner.lidBaseDisablesTile": "托盘需要底脚来支撑",

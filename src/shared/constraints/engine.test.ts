@@ -627,6 +627,19 @@ describe('resolveConstraints — wall-less tray', () => {
     expect(getFeatureStatus(tray, 'base.spacer').available).toBe(false);
   });
 
+  // `resolveConstraints` writes `tile: false` when a rule auto-disables the tray,
+  // and the fingerprint hazard is the same one the absent-by-default design
+  // exists to avoid: an ordinary bin that once tried the mode must hash
+  // identically to one that never did. The engine leaves the residue (a patch
+  // cannot delete a key through `mergeParams`); `useBaseSection.commit` strips
+  // it on every path, which is why the strip does not live in `toggleTile`.
+  it('leaves a tile:false residue for the caller to strip when auto-disabled', () => {
+    const tray = makeParams({ base: { ...DEFAULT_BIN_PARAMS.base, tile: true } });
+    const toFlat = resolveConstraints(tray, { feature: 'base.flat', enabled: true }).params;
+    expect(toFlat.base.style).toBe('flat');
+    expect(toFlat.base.tile).not.toBe(true);
+  });
+
   it('is unavailable on a base with no feet to stand on', () => {
     const flat = makeParams({ base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' } });
     expect(getFeatureStatus(flat, 'base.tile').available).toBe(false);

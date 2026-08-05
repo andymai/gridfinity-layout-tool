@@ -1189,7 +1189,7 @@
   "binDesigner.tileHint": "Behoudt de voetjes, de bodem en de stapelrand en verwijdert de wanden. Wat overblijft is een vlakke plaat van 9,3 mm die nog steeds in een basisplaat klikt en stapelbaar blijft. De rand is de enige verhoogde kant en dus het deel dat je kleurt.",
   "binDesigner.tileDisablesWalls": "Een tray heeft hier geen wanden voor",
   "binDesigner.tileDisablesInterior": "Een tray heeft geen diepte voor interieurelementen",
-  "binDesigner.tileDisablesStyle": "Een tray is een vlakke plaat — er is geen interieur om vorm te geven",
+  "binDesigner.tileDisablesStyle": "Een tray is een vlakke plaat, er is geen interieur om vorm te geven",
   "binDesigner.tileDisablesSpacer": "Een tray behoudt de bodem die een spacer verwijdert",
   "binDesigner.flatFloorDisablesTile": "Een tray heeft voetjes nodig om op te staan",
   "binDesigner.lidBaseDisablesTile": "Een tray heeft voetjes nodig om op te staan",

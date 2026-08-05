@@ -88,6 +88,17 @@ export const tile: ScenarioCase[] = [
     },
   }),
 
+  // A collar raises the outer walls + lip above the nominal height. A tray has
+  // no walls to raise, and `assembledHeight` ignores the field entirely, so
+  // generation must too — otherwise `boxWallHeight = wallHeight + collarHeight`
+  // is non-zero, the zero-wall branch never fires, and the tray silently builds
+  // a box whose height the readout does not report.
+  defineScenario('tile', 'tray ignores an extra wall-height collar', {
+    assert: 'structural',
+    params: { width: 1, depth: 1, height: 1, base: tileBase, extraWallHeightMm: 6 },
+    customAssert: assertTotalZ(TILE_HEIGHT_MM, '1x1-tray-collar'),
+  }),
+
   // Fractional footprint — the half-width foot column still resolves.
   defineScenario('tile', '1.5×1 tray (fractional)', {
     assert: 'structural',

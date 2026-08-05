@@ -1186,7 +1186,7 @@
   "binDesigner.tileHint": "Behåller fötterna, botten och staplingskanten och tar bort väggarna. Kvar blir en platt 9,3 mm-platta som fortfarande låser fast i en bottenplatta och fortfarande går att stapla. Kanten är den enda upphöjda delen och därmed den du färgar.",
   "binDesigner.tileDisablesWalls": "En bricka har inga väggar för detta",
   "binDesigner.tileDisablesInterior": "En bricka har inget djup för inredningsdetaljer",
-  "binDesigner.tileDisablesStyle": "En bricka är en platt platta — det finns inget inre att forma",
+  "binDesigner.tileDisablesStyle": "En bricka är en platt platta, det finns inget inre att forma",
   "binDesigner.tileDisablesSpacer": "En bricka behåller botten som en distans tar bort",
   "binDesigner.flatFloorDisablesTile": "En bricka behöver fötter att stå på",
   "binDesigner.lidBaseDisablesTile": "En bricka behöver fötter att stå på",

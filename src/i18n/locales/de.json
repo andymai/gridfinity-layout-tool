@@ -1189,7 +1189,7 @@
   "binDesigner.tileHint": "Behält Füße, Boden und Stapelrand und entfernt die Wände. Übrig bleibt eine flache 9,3 mm-Platte, die weiterhin in eine Grundplatte einrastet und stapelbar bleibt. Der Rand ist die einzige erhöhte Kante und damit der Teil, den du einfärbst.",
   "binDesigner.tileDisablesWalls": "Ein Tablett hat keine Wände dafür",
   "binDesigner.tileDisablesInterior": "Ein Tablett hat keine Tiefe für Innenausstattung",
-  "binDesigner.tileDisablesStyle": "Ein Tablett ist eine flache Platte — es gibt keinen Innenraum zu gestalten",
+  "binDesigner.tileDisablesStyle": "Ein Tablett ist eine flache Platte, es gibt keinen Innenraum zu gestalten",
   "binDesigner.tileDisablesSpacer": "Ein Tablett behält den Boden, den ein Abstandshalter entfernt",
   "binDesigner.flatFloorDisablesTile": "Ein Tablett braucht Füße zum Stehen",
   "binDesigner.lidBaseDisablesTile": "Ein Tablett braucht Füße zum Stehen",

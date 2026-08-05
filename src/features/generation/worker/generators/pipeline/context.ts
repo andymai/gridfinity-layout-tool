@@ -91,7 +91,14 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // can't poison `boxWallHeight` into degenerate geometry; the full range clamp
   // (<= MAX_EXTRA_WALL_HEIGHT) lives in `migrateParams`.
   const rawCollar = params.extraWallHeightMm ?? 0;
-  const collarHeight = Number.isFinite(rawCollar) ? Math.max(0, rawCollar) : 0;
+  const finiteCollar = Number.isFinite(rawCollar) ? Math.max(0, rawCollar) : 0;
+  // A collar raises the outer WALLS (and the lip with them) above the nominal
+  // height. A tray has no walls to raise, and `assembledHeight` ignores the
+  // field for a tray, so honouring it here would build a box the readout never
+  // reports: `boxWallHeight` is `wallHeight + collarHeight`, so a stale collar
+  // on a design switched into tray mode would take the zero-wall branch away
+  // and silently produce a walled bin.
+  const collarHeight = isTile ? 0 : finiteCollar;
 
   // Per-axis grid pitch. gridUnitMmX scales width/columns, gridUnitMmY scales
   // depth/rows. They're equal for a standard square grid (gridUnitMmY omitted),

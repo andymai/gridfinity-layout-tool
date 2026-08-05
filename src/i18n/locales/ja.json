@@ -1189,7 +1189,7 @@
   "binDesigner.tileHint": "脚・底・スタッキングリップを残して壁をなくします。高さ9.3mmの平らなプレートになり、ベースプレートへの固定とスタッキングはそのままです。唯一の突起であるリップが色を付ける部分になります。",
   "binDesigner.tileDisablesWalls": "トレイにはこれを保持する壁がありません",
   "binDesigner.tileDisablesInterior": "トレイには内部機能を収める深さがありません",
-  "binDesigner.tileDisablesStyle": "トレイは平らなプレートです — 形作る内部がありません",
+  "binDesigner.tileDisablesStyle": "トレイは平らなプレートなので、形作る内部がありません",
   "binDesigner.tileDisablesSpacer": "トレイはスペーサーが取り除く底を残します",
   "binDesigner.flatFloorDisablesTile": "トレイには支える脚が必要です",
   "binDesigner.lidBaseDisablesTile": "トレイには支える脚が必要です",
