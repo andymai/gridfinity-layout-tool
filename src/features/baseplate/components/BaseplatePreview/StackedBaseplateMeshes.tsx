@@ -21,7 +21,7 @@ import {
   stackGroupsFromTiling,
   planPhysicalStacks,
   stackHeightCap,
-  bodyCenterYMm,
+  planPlateFlip,
   isUnstackedSplit,
   type StackMeshArrays,
 } from '../../utils/stackPrint';
@@ -126,10 +126,9 @@ export function StackedBaseplateMeshes({
     const isSplit = tiling?.isSplit ?? false;
 
     // The unsplit mesh is generated from the detach-adjusted body params
-    // (padding-free on detached sides), so the body centre must come from the
+    // (padding-free on detached sides), so the flip must be planned from the
     // same params or flipped copies re-seat off-axis by the removed padding.
-    const singleBody = bodyParamsForDetach(fullParams);
-    const singleBodyY = bodyCenterYMm(singleBody.paddingFront, singleBody.paddingBack);
+    const singleFlip = planPlateFlip(bodyParamsForDetach(fullParams));
 
     // Index pieces/meshes by label once: the loop and the spatial-positioning
     // pass below both look up by label, so a per-tower find() would be O(n²).
@@ -140,22 +139,21 @@ export function StackedBaseplateMeshes({
     const filteredPlan: typeof plan = [];
     for (const physical of plan) {
       let source: Parameters<typeof toMeshArrays>[0] | null = singleMesh;
-      let bodyY = singleBodyY;
+      let flip = singleFlip;
       if (isSplit) {
         source = meshByLabel.get(physical.label) ?? null;
         const piece = pieceByLabel.get(physical.label);
         if (piece) {
-          // Derive the body centre from the SAME params the mesh was generated
-          // with: pieceToBaseplateParams swaps front/back padding for
+          // Plan the flip from the SAME params the mesh was generated with:
+          // pieceToBaseplateParams swaps front/back padding for
           // preferIdenticalPieces 180° pieces, so raw piece padding would give
           // the wrong sign (the export path already uses these rotated params).
-          const genParams = pieceToBaseplateParams(piece, fullParams);
-          bodyY = bodyCenterYMm(genParams.paddingFront, genParams.paddingBack);
+          flip = planPlateFlip(pieceToBaseplateParams(piece, fullParams));
         }
       }
       const arrays = source ? toMeshArrays(source) : null;
       if (arrays) {
-        towers.push({ mesh: arrays, copies: physical.copies, bodyCenterYMm: bodyY });
+        towers.push({ mesh: arrays, copies: physical.copies, flip });
         filteredPlan.push(physical);
       }
     }

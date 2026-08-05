@@ -166,6 +166,65 @@ export function bodyCenterYMm(paddingFrontMm: number, paddingBackMm: number): nu
   return (paddingBackMm - paddingFrontMm) / 2;
 }
 
+/** Connector-free body-centre X (mm) — the X-axis twin of {@link bodyCenterYMm}. */
+function bodyCenterXMm(paddingLeftMm: number, paddingRightMm: number): number {
+  return (paddingRightMm - paddingLeftMm) / 2;
+}
+
+/** Horizontal axis a plate is turned 180° about to print it upside down. */
+export type PlateFlipAxis = 'x' | 'y';
+
+/** How the flipped copies in a tower are turned over. See {@link planPlateFlip}. */
+export interface PlateFlip {
+  readonly axis: PlateFlipAxis;
+  /** Re-seat translation (mm) along the axis the turn negates (2 × body centre). */
+  readonly offsetMm: number;
+}
+
+/** Turn about X with no re-seat — correct for any plate padded symmetrically. */
+export const DEFAULT_PLATE_FLIP: PlateFlip = { axis: 'x', offsetMm: 0 };
+
+/**
+ * Whether turning about one axis maps the socket lattice back onto itself. The
+ * lattice is centred on the origin while the slab is centred on the padding
+ * asymmetry, so the re-seat that lands the slab back on the upright plate drags
+ * the lattice off by the same asymmetry — congruent means there is none. A
+ * fractional cell disqualifies the axis outright: mirroring moves the sliver to
+ * the opposite end, which no translation can undo.
+ */
+function turnsOntoItself(padA: number, padB: number, extentUnits: number): boolean {
+  return padA === padB && Number.isInteger(extentUnits);
+}
+
+/**
+ * Pick the axis to turn a plate about when flipping it for the stack.
+ *
+ * Both axes describe the same physical flip — they differ by a 180° turn in the
+ * plate's own plane — so the choice is free, and we spend it on landing the
+ * flipped copy's sockets on the upright plate's. A plate padded on one side only
+ * (every outer piece of a split drawer, #3235) is congruent about exactly one
+ * axis; turning about the other shifts its lattice by the full padding, leaving
+ * the bottom plate visibly out of step with the rest of the tower even though
+ * the outer footprints still line up.
+ *
+ * A custom perimeter is never assumed congruent (its mirror symmetry isn't
+ * derivable from padding), so shaped plates keep the X-axis turn.
+ */
+export function planPlateFlip(
+  params: Pick<
+    ResolvedBaseplateParams,
+    'width' | 'depth' | 'paddingLeft' | 'paddingRight' | 'paddingFront' | 'paddingBack' | 'outline'
+  >
+): PlateFlip {
+  const plain = params.outline === undefined;
+  const aboutX = plain && turnsOntoItself(params.paddingFront, params.paddingBack, params.depth);
+  const aboutY = plain && turnsOntoItself(params.paddingLeft, params.paddingRight, params.width);
+  if (!aboutX && aboutY) {
+    return { axis: 'y', offsetMm: 2 * bodyCenterXMm(params.paddingLeft, params.paddingRight) };
+  }
+  return { axis: 'x', offsetMm: 2 * bodyCenterYMm(params.paddingFront, params.paddingBack) };
+}
+
 /**
  * Build the meshes for one printed tower of `copies` plates. The bottom plate
  * stays upright (best bed adhesion, no overhang); every plate above it is
@@ -173,19 +232,19 @@ export function bodyCenterYMm(paddingFrontMm: number, paddingBackMm: number): nu
  * air gap lets the tower snap apart (see the baseplate README). All copies share
  * the same body footprint and the bottom sits at Z=0.
  *
- * `bodyCenterY` is the connector-free body centre of the plate (see
- * {@link bodyCenterYMm}). `flipMeshUpsideDown` negates Y about 0, landing a body
- * centred at `c` at `−c`; translating by `2c` seats the flipped body back onto
- * the upright one. The protruding dovetail/puzzle tongue then mirrors to the
- * opposite edge instead of dragging the body off-axis — the previous full-bbox
- * re-centring offset every plate by the tongue protrusion (~1.5mm), so the socket
- * grids never lined up and the tongue overhung the plate below.
+ * `flip` comes from {@link planPlateFlip}. The turn negates the lateral axis
+ * about 0, landing a body centred at `c` at `−c`; `flip.offsetMm` (`2c`) seats
+ * the flipped body back onto the upright one. The protruding dovetail/puzzle
+ * tongue then mirrors to the opposite edge instead of dragging the body off-axis
+ * — the previous full-bbox re-centring offset every plate by the tongue
+ * protrusion (~1.5mm), so the socket grids never lined up and the tongue
+ * overhung the plate below.
  */
 export function buildTowerLayers(
   base: StackMeshArrays,
   copies: number,
   strideMm: number,
-  bodyCenterY = 0
+  flip: PlateFlip = DEFAULT_PLATE_FLIP
 ): StackMeshArrays[] {
   const n = Math.max(1, Math.floor(copies));
   const b = meshBounds(base.vertices);
@@ -193,7 +252,12 @@ export function buildTowerLayers(
   // Upright, floored to Z=0.
   const upright = translateMesh(base, 0, 0, -b.minZ);
   // Flipped about its own mid-plane, re-seated on the upright body, floored to Z=0.
-  const flipped = translateMesh(flipMeshUpsideDown(base, midZ), 0, 2 * bodyCenterY, -b.minZ);
+  const flipped = translateMesh(
+    flipMeshUpsideDown(base, midZ, flip.axis),
+    flip.axis === 'y' ? flip.offsetMm : 0,
+    flip.axis === 'x' ? flip.offsetMm : 0,
+    -b.minZ
+  );
   const layers: StackMeshArrays[] = [];
   for (let i = 0; i < n; i++) {
     const src = i === 0 ? upright : flipped;
@@ -230,26 +294,33 @@ export function translateMesh(
 }
 
 /**
- * Flip the mesh upside down for printing — a 180° rotation about the X axis
- * through `pivotZMm` mapping (x,y,z) -> (x, 2*pivotZ - z) and negating the Y
- * component. This is a proper rotation (det = +1), so triangle winding and
- * normal orientation stay consistent — no index reversal needed. Shared by
- * export and the preview, which renders the printed (upside-down) orientation.
+ * Flip the mesh upside down for printing — a 180° rotation about the `axis`
+ * horizontal axis through `pivotZMm`, mirroring Z about the pivot and negating
+ * the perpendicular lateral component (Y for an X-axis turn, X for a Y-axis
+ * one). Either is a proper rotation (det = +1), so triangle winding and normal
+ * orientation stay consistent — no index reversal needed. Shared by export and
+ * the preview, which renders the printed (upside-down) orientation.
  */
-export function flipMeshUpsideDown(mesh: StackMeshArrays, pivotZMm: number): StackMeshArrays {
+export function flipMeshUpsideDown(
+  mesh: StackMeshArrays,
+  pivotZMm: number,
+  axis: PlateFlipAxis = 'x'
+): StackMeshArrays {
+  // Component the turn negates: the one perpendicular to the rotation axis.
+  const lateral = axis === 'x' ? 1 : 0;
   const vertices = new Float32Array(mesh.vertices);
   for (let i = 0; i < vertices.length; i += 3) {
-    vertices[i + 1] = -vertices[i + 1];
+    vertices[i + lateral] = -vertices[i + lateral];
     vertices[i + 2] = 2 * pivotZMm - vertices[i + 2];
   }
   const normals = new Float32Array(mesh.normals);
   for (let i = 0; i < normals.length; i += 3) {
-    normals[i + 1] = -normals[i + 1];
+    normals[i + lateral] = -normals[i + lateral];
     normals[i + 2] = -normals[i + 2];
   }
   const edgeVertices = new Float32Array(mesh.edgeVertices);
   for (let i = 0; i < edgeVertices.length; i += 3) {
-    edgeVertices[i + 1] = -edgeVertices[i + 1];
+    edgeVertices[i + lateral] = -edgeVertices[i + lateral];
     edgeVertices[i + 2] = 2 * pivotZMm - edgeVertices[i + 2];
   }
   return { vertices, normals, indices: new Uint32Array(mesh.indices), edgeVertices };

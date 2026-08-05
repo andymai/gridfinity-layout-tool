@@ -21,6 +21,7 @@ import {
   meshBounds,
   stackStrideMm,
   type StackMeshArrays,
+  type PlateFlip,
 } from './stackPrint';
 
 /**
@@ -35,8 +36,8 @@ const TOWER_GAP_UNITS = 1;
 export interface StackPreviewTower {
   readonly mesh: StackMeshArrays;
   readonly copies: number;
-  /** Connector-free body-centre Y (mm) of the plate, for flip alignment. */
-  readonly bodyCenterYMm: number;
+  /** How the plate's flipped copies are turned over (see `planPlateFlip`). */
+  readonly flip: PlateFlip;
   /**
    * Tiling grid position of the piece this tower prints. Set only when towers
    * map 1:1 to split pieces ("no stacks"); when every tower carries both, the
@@ -124,7 +125,7 @@ export function buildStackPreviewMeshes(
 
     // Build the tower (bottom upright, rest flipped, XY-aligned to the source
     // footprint, bottom at Z=0), then recenter it on its grid cell.
-    const layers = buildTowerLayers(m.tower.mesh, m.tower.copies, stride, m.tower.bodyCenterYMm);
+    const layers = buildTowerLayers(m.tower.mesh, m.tower.copies, stride, m.tower.flip);
     const midX = (m.bounds.minX + m.bounds.maxX) / 2;
     const midY = (m.bounds.minY + m.bounds.maxY) / 2;
     for (const layer of layers) {
