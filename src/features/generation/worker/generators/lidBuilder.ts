@@ -106,7 +106,7 @@ export function buildLid(params: BinParams, originToTag?: Map<number, number>): 
     if (inputs.stackableTop && !inputs.separateStackPlate) {
       const stackGrid = scope.register(buildStackGrid(scope, inputs));
       if (originToTag) {
-        collectOrigins(stackGrid, FeatureTag.LID_BODY, originToTag);
+        collectOrigins(stackGrid, FeatureTag.LID_LIP, originToTag);
       }
       scope.register(body);
       body = unwrap(fuse(body, stackGrid));

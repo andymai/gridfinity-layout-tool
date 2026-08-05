@@ -12,10 +12,20 @@ describe('zoneLabels', () => {
     for (const zone of ZONE_ORDER) expect(zoneTranslationKey(zone)).toBeTruthy();
   });
 
-  it('gives non-lip zones distinct keys', () => {
-    const nonLip = ZONE_ORDER.filter((z) => !z.startsWith('lip:'));
-    const keys = nonLip.map(zoneTranslationKey);
-    expect(new Set(keys).size).toBe(nonLip.length);
+  // Both CELL families are excluded, not just the bin lip's: a cell's key names
+  // its corner, so the four bands within a corner deliberately share one key.
+  it('gives non-cell zones distinct keys', () => {
+    const nonCell = ZONE_ORDER.filter((z) => !z.startsWith('lip:') && !z.startsWith('lidLip:'));
+    const keys = nonCell.map(zoneTranslationKey);
+    expect(new Set(keys).size).toBe(nonCell.length);
+  });
+
+  // The two grids must never collapse onto one another's labels — that would be
+  // the symptom of the lid cells falling through to the bin lip's branch.
+  it('labels lid lip cells distinctly from bin lip cells', () => {
+    expect(zoneTranslationKey('lidLip:frontLeft:0')).not.toBe(
+      zoneTranslationKey('lip:frontLeft:0')
+    );
   });
 
   it('zoneColorPatch maps non-lip zones to flat updateFeatureColors patches', () => {

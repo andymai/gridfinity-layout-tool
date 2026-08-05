@@ -155,6 +155,8 @@ export const DEFAULT_FEATURE_COLOR_CONFIG: FeatureColorConfig = {
   dividers: '#d4d8dc',
   text: '#d4d8dc',
   lid: '#d4d8dc',
+  // `lidLip` is deliberately ABSENT — absent means "inherits `lid`". Adding it
+  // unconditionally would shift every existing design's params fingerprint.
   topAccent: { enabled: false, heightMm: TOP_ACCENT_DEFAULT_MM, color: '#d4d8dc' },
 } as const;
 

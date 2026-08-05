@@ -20,6 +20,13 @@ export const FeatureTag = {
   LID_BODY: 12,
   LID_RAIL: 13,
   TEXT: 14,
+  /**
+   * The lid's own stack grid — its top-face perimeter lip, plus the interior
+   * ridges unless `stackLipOnly`. Distinct from {@link LID_BODY} so the lid's
+   * top can be coloured separately from its shell, and distinct from
+   * {@link LIP}, which is the BIN's top-rim lip on a different object.
+   */
+  LID_LIP: 15,
   UNKNOWN: 255,
 } as const;
 

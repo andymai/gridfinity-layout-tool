@@ -91,11 +91,36 @@ export interface FeatureColorConfig {
    * single-color users see no change.
    */
   readonly lid: string;
+  /**
+   * The lid's own top-face lip (its stack grid), as a corner × band grid
+   * matching {@link lip}. Only meaningful when the lid is stackable — without a
+   * stack grid there is no `FeatureTag.LID_LIP` geometry to paint.
+   *
+   * OPTIONAL and ABSENT when the whole lid lip matches {@link lid}, for the same
+   * reason `BaseConfig.tile` is: `communityParamsFingerprint` hashes `params`
+   * wholesale, so an always-present new field would shift the fingerprint of
+   * every already-published design and break the community duplicate guard.
+   * Absent therefore means "inherits {@link lid}", which is also exactly how a
+   * design saved before this field existed should render.
+   */
+  readonly lidLip?: LipColorConfig;
   readonly topAccent: TopAccentConfig;
 }
 
 /** A lip cell zone id, `lip:${corner}:${band}`. */
 export type LipCellZone = `lip:${LipCorner}:${LipBand}`;
+
+/**
+ * A LID lip cell zone id. The lid's stack grid (`FeatureTag.LID_LIP`) is its
+ * top-face perimeter lip, and it gets the same corner × band grid the bin lip
+ * does — this is the "colour selector for the top lip" a lid previously lacked.
+ *
+ * Kept as its own zone family rather than reusing {@link LipCellZone} because
+ * the two live on DIFFERENT OBJECTS: the bin lip is classified inside the bin
+ * mesh, the lid lip inside the separately-generated lid mesh. Sharing one
+ * family would make a single stored colour paint both.
+ */
+export type LidLipCellZone = `lidLip:${LipCorner}:${LipBand}`;
 
 /**
  * All editable color zones — each backed by exactly one hex color.
@@ -105,13 +130,26 @@ export type LipCellZone = `lip:${LipCorner}:${LipBand}`;
  * group-header hover) and is not a settable color slot.
  */
 export type ColorZone =
-  'body' | LipCellZone | 'labelTab' | 'base' | 'scoop' | 'dividers' | 'text' | 'lid' | 'topAccent';
+  | 'body'
+  | LipCellZone
+  | 'labelTab'
+  | 'base'
+  | 'scoop'
+  | 'dividers'
+  | 'text'
+  | 'lid'
+  | LidLipCellZone
+  | 'topAccent';
 
-/** Hover target — accepts every ColorZone plus the lip group header. */
-export type HoverableZone = ColorZone | 'lip';
+/** Hover target — accepts every ColorZone plus the lip group headers. */
+export type HoverableZone = ColorZone | 'lip' | 'lidLip';
 
 export function lipCellZone(corner: LipCorner, band: LipBand): LipCellZone {
   return `lip:${corner}:${band}` as const;
+}
+
+export function lidLipCellZone(corner: LipCorner, band: LipBand): LidLipCellZone {
+  return `lidLip:${corner}:${band}` as const;
 }
 
 /** All 16 lip cell ids in canonical order (corner-major, band-minor). */
@@ -119,13 +157,39 @@ export const LIP_CELL_ZONES: readonly LipCellZone[] = LIP_CORNERS.flatMap((corne
   LIP_BANDS.map((band) => lipCellZone(corner, band))
 );
 
+/** The lid-lip counterparts, same canonical order. */
+export const LID_LIP_CELL_ZONES: readonly LidLipCellZone[] = LIP_CORNERS.flatMap((corner) =>
+  LIP_BANDS.map((band) => lidLipCellZone(corner, band))
+);
+
 const LIP_CELL_RE = /^lip:(frontLeft|frontRight|backRight|backLeft):([0-3])$/;
+const LID_LIP_CELL_RE = /^lidLip:(frontLeft|frontRight|backRight|backLeft):([0-3])$/;
 
 /** Parse a lip cell zone id back to its corner/band, or null if not a lip cell. */
 export function parseLipCell(zone: string): { corner: LipCorner; band: LipBand } | null {
   const m = LIP_CELL_RE.exec(zone);
   if (!m) return null;
   return { corner: m[1] as LipCorner, band: Number(m[2]) as LipBand };
+}
+
+/** Parse a LID lip cell zone id, or null if not one. */
+export function parseLidLipCell(zone: string): { corner: LipCorner; band: LipBand } | null {
+  const m = LID_LIP_CELL_RE.exec(zone);
+  if (!m) return null;
+  return { corner: m[1] as LipCorner, band: Number(m[2]) as LipBand };
+}
+
+/** Collapse a raw (corner, band) to the canonical LID lip cell of the active grid. */
+export function collapseLidLipCell(
+  corner: LipCorner,
+  band: LipBand,
+  counts: { corners: LipAxisCount; bands: LipAxisCount }
+): LidLipCellZone {
+  // Reuses the bin-lip folding rule verbatim, then re-prefixes, so the two
+  // grids can never disagree about which quadrant a centroid belongs to.
+  const folded = collapseLipCell(corner, band, counts);
+  const parsed = parseLipCell(folded);
+  return lidLipCellZone(parsed?.corner ?? corner, parsed?.band ?? band);
 }
 
 /**
@@ -219,6 +283,10 @@ export const ZONE_ORDER: readonly ColorZone[] = [
   'text',
   'lid',
   'topAccent',
+  // APPENDED, never spliced in beside the bin lip cells. `zoneIndex` is the
+  // preview's per-zone material array index; inserting here would renumber
+  // every zone after the insertion point and churn materials mid-session.
+  ...LID_LIP_CELL_ZONES,
 ] as const;
 
 /** Position of a zone in ZONE_ORDER. */
@@ -278,6 +346,20 @@ export function getZoneColor(c: FeatureColorConfig, z: ColorZone): string {
     case 'topAccent':
       return c.topAccent.color;
     default:
+      // A lid-lip cell must be resolved BEFORE the bin-lip fallback below —
+      // both are template-literal families reaching the same `default`, so
+      // without this branch a lid cell would silently read the bin lip's colour
+      // and the two grids would appear welded together.
+      // `lidLip.cells` is a plain LipColorConfig, so it is keyed by the
+      // `lip:...` cell ids `makeUniformLipCells` produces. Re-form the key
+      // rather than slicing the prefix off the zone id.
+      {
+        const lidCell = parseLidLipCell(z);
+        if (lidCell) {
+          // Absent grid → the whole lid lip is the lid colour.
+          return c.lidLip?.cells[lipCellZone(lidCell.corner, lidCell.band)] ?? c.lid;
+        }
+      }
       // lip cell — fall back to body for a missing/legacy cell.
       return c.lip.cells[z] ?? c.body;
   }
@@ -301,6 +383,12 @@ export function featureTagToColorZone(tag: number): ColorZone | null {
       return 'text';
     case FeatureTag.LIP:
       return null;
+    case FeatureTag.LID_LIP:
+      // Like LIP: needs centroid classification into a grid cell, so the caller
+      // resolves it rather than taking a flat zone.
+      return null;
+    case FeatureTag.LID_BODY:
+      return 'lid';
     default:
       return 'body';
   }
@@ -364,7 +452,7 @@ export interface ActiveZonesParams {
     readonly rowTexts?: readonly string[];
   };
   readonly scoop: { readonly enabled: boolean };
-  readonly lid: { readonly enabled: boolean };
+  readonly lid: { readonly enabled: boolean; readonly stackableTop?: boolean };
   readonly compartments: {
     readonly cells: readonly number[];
     readonly compartmentTexts?: readonly string[];
@@ -383,6 +471,8 @@ export interface ActiveZonesParams {
    */
   readonly featureColors?: {
     readonly lip: { readonly corners: LipAxisCount; readonly bands: LipAxisCount };
+    /** Active lid-lip grid sizes. Absent → a uniform 1×1 grid. */
+    readonly lidLip?: { readonly corners: LipAxisCount; readonly bands: LipAxisCount };
     /**
      * Top accent band. Exposed as an active zone whenever it's enabled with a
      * positive height — it's independent of the lip and every other feature.
@@ -406,6 +496,16 @@ export function activeLipCells(counts: {
   const corners = activeCornerColumns(counts.corners);
   const bands = LIP_BANDS.slice(0, counts.bands);
   return corners.flatMap((corner) => bands.map((band) => lipCellZone(corner, band)));
+}
+
+/** The lid-lip counterpart, so both grids expose cells by the same rule. */
+export function activeLidLipCells(counts: {
+  corners: LipAxisCount;
+  bands: LipAxisCount;
+}): LidLipCellZone[] {
+  const corners = activeCornerColumns(counts.corners);
+  const bands = LIP_BANDS.slice(0, counts.bands);
+  return corners.flatMap((corner) => bands.map((band) => lidLipCellZone(corner, band)));
 }
 
 /**
@@ -465,7 +565,19 @@ export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone>
   // Lid needs a stacking lip to click into; `shouldGenerateLid` enforces
   // the same precondition. Without this guard the panel would expose a
   // Lid color row for a config the worker won't export.
-  if (p.lid.enabled && p.base.stackingLip) zones.add('lid');
+  if (p.lid.enabled && p.base.stackingLip) {
+    zones.add('lid');
+    // The lid's lip zones exist only when there is a stack grid to paint. A
+    // non-stackable lid has a flat top and `FeatureTag.LID_LIP` geometry is
+    // never built, so offering the cells would be a control that changes
+    // nothing — the same reasoning that gates `base` on a socketed base.
+    // `separateStackPlate` still counts: the grid ships as its own solid, but it
+    // is still the user's lid lip and still takes the colour.
+    if (p.lid.stackableTop === true) {
+      const grid = p.featureColors?.lidLip ?? { corners: 1, bands: 1 };
+      for (const cell of activeLidLipCells(grid)) zones.add(cell);
+    }
+  }
   if (hasDividers) zones.add('dividers');
   if (hasTabText || hasCutoutText || hasWallText) zones.add('text');
   // Top accent is independent of every other feature — a positive-height band

@@ -25,6 +25,7 @@ import type {
 } from '@/features/bin-designer/types';
 import type { ItemEnvelope, ItemStructure } from '@/shared/types/item';
 import {
+  makeUniformLipCells,
   mergeLipConfig,
   type LipColorConfig,
   type TopAccentConfig,
@@ -177,15 +178,26 @@ export function createScopedUpdaters(set: Set) {
       dividers?: string;
       text?: string;
       lid?: string;
+      lidLip?: Partial<LipColorConfig>;
       topAccent?: Partial<TopAccentConfig>;
     }) => {
       set((state) => {
         pushHistoryEntry(state);
         const current = state.params.featureColors;
-        const { lip: lipPatch, topAccent: topAccentPatch, ...rest } = patch;
+        const { lip: lipPatch, lidLip: lidLipPatch, topAccent: topAccentPatch, ...rest } = patch;
         const nextLip: LipColorConfig = lipPatch
           ? mergeLipConfig(current.lip, lipPatch)
           : current.lip;
+        // Merged cell-by-cell through the same helper as the bin lip, so a
+        // single-cell write never drops the other 15 stored colours.
+        // Absent grid → seed a uniform one from the lid colour before merging,
+        // so the first single-cell edit does not inherit the BIN lip's cells.
+        const nextLidLip: LipColorConfig | undefined = lidLipPatch
+          ? mergeLipConfig(
+              current.lidLip ?? { corners: 1, bands: 1, cells: makeUniformLipCells(current.lid) },
+              lidLipPatch
+            )
+          : current.lidLip;
         const nextTopAccent: TopAccentConfig = topAccentPatch
           ? { ...current.topAccent, ...topAccentPatch }
           : current.topAccent;
@@ -193,6 +205,7 @@ export function createScopedUpdaters(set: Set) {
           ...current,
           ...rest,
           lip: nextLip,
+          ...(nextLidLip ? { lidLip: nextLidLip } : {}),
           topAccent: nextTopAccent,
         };
         // Multi-color toggle drives the color-tool overlay's visibility; if the
