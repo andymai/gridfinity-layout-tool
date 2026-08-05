@@ -2,8 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { mm } from '@/core/types';
 import type { DrawerOutline, StackPrintParams } from '@/core/types';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
-import { computeBaseplateTiling } from './splitPlanner';
+import { computeBaseplateTiling, pieceToBaseplateParams } from './splitPlanner';
 import { cornerCutVertices } from '@/shared/utils/cornerCutOutline';
+import { buildFullParams } from './buildFullParams';
 import type { BaseplatePiece, BaseplateTiling } from '../types/tiling';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import {
@@ -18,6 +19,7 @@ import {
   meshBounds,
   buildTowerLayers,
   bodyCenterYMm,
+  planPlateFlip,
   evaluateStackPrint,
   type StackGroup,
   type StackMeshArrays,
@@ -220,8 +222,8 @@ describe('buildTowerLayers', () => {
   }
 
   it('keeps the bottom plate upright and flips the rest, all sharing one XY footprint', () => {
-    // The plate() body spans Y[0,30], so its body centre is 15.
-    const layers = buildTowerLayers(plate(), 3, 10.2, 15);
+    // The plate() body spans Y[0,30], so re-seating it takes 2 × 15.
+    const layers = buildTowerLayers(plate(), 3, 10.2, { axis: 'x', offsetMm: 30 });
     expect(layers).toHaveLength(3);
     // Bottom plate: upright at Z[0,10], normal unchanged (down-facing).
     const b0 = meshBounds(layers[0].vertices);
@@ -244,14 +246,14 @@ describe('buildTowerLayers', () => {
   });
 
   it('clamps copies to at least 1', () => {
-    expect(buildTowerLayers(plate(), 0, 10.2, 15)).toHaveLength(1);
-    expect(buildTowerLayers(plate(), 3.9, 10.2, 15)).toHaveLength(3);
+    expect(buildTowerLayers(plate(), 0, 10.2, { axis: 'x', offsetMm: 30 })).toHaveLength(1);
+    expect(buildTowerLayers(plate(), 3.9, 10.2, { axis: 'x', offsetMm: 30 })).toHaveLength(3);
   });
 
-  it('defaults the body centre to 0 (origin-centred real meshes)', () => {
-    // plate() body spans Y[0,30]; with the default centre 0 the flip lands the
-    // body at Y[-30,0] — only correct for origin-centred input, which is what
-    // the default is for.
+  it('defaults to an X-axis turn with no re-seat (origin-centred real meshes)', () => {
+    // plate() body spans Y[0,30]; with no re-seat the flip lands the body at
+    // Y[-30,0] — only correct for origin-centred input, which is what the
+    // default is for.
     const layers = buildTowerLayers(plate(), 2, 10);
     const flipped = meshBounds(layers[1].vertices);
     expect(flipped.minY).toBeCloseTo(-30, 5);
@@ -270,7 +272,7 @@ describe('buildTowerLayers', () => {
       indices: new Uint32Array([0, 1, 2, 3, 4, 5]),
       edgeVertices: new Float32Array(0),
     };
-    const layers = buildTowerLayers(base, 2, 10, 15);
+    const layers = buildTowerLayers(base, 2, 10, { axis: 'x', offsetMm: 30 });
     // Body corners (verts 0 and 2) still span exactly Y[0,30] after the flip:
     // the body footprint is preserved (vert0 Y 0→30, vert2 Y 30→0).
     expect(layers[1].vertices[1]).toBeCloseTo(30, 5);
@@ -296,7 +298,7 @@ describe('buildTowerLayers', () => {
       indices: new Uint32Array([0, 1, 2, 3, 4, 5]),
       edgeVertices: new Float32Array(0),
     };
-    const layers = buildTowerLayers(base, 2, 8); // default bodyCenterY = 0
+    const layers = buildTowerLayers(base, 2, 8); // default flip: no re-seat
     // Upright and flipped body corners (verts 0/1 at Y=-15, vert2 at Y=15) keep
     // the same span; the body centre stays at 0 (no off-axis drift).
     expect(layers[1].vertices[1]).toBeCloseTo(15, 5); // vert0 Y: -15 → 15
@@ -316,6 +318,70 @@ describe('bodyCenterYMm', () => {
   it('tracks padding asymmetry: (back − front) / 2', () => {
     expect(bodyCenterYMm(0, 10)).toBeCloseTo(5, 5); // more back padding → +Y
     expect(bodyCenterYMm(8, 0)).toBeCloseTo(-4, 5); // front-only padding → −Y
+  });
+});
+
+describe('planPlateFlip', () => {
+  type FlipInput = Parameters<typeof planPlateFlip>[0];
+  const plate = (o: Partial<FlipInput> = {}): FlipInput => ({
+    width: 4,
+    depth: 4,
+    paddingLeft: 0,
+    paddingRight: 0,
+    paddingFront: 0,
+    paddingBack: 0,
+    ...o,
+  });
+
+  it('turns about X with no re-seat when both axes are congruent', () => {
+    expect(planPlateFlip(plate())).toEqual({ axis: 'x', offsetMm: 0 });
+    expect(planPlateFlip(plate({ paddingFront: 8.5, paddingBack: 8.5 }))).toEqual({
+      axis: 'x',
+      offsetMm: 0,
+    });
+  });
+
+  it('turns about Y when only the depth axis is padded asymmetrically (#3235)', () => {
+    // The outer piece of a split drawer: the drawer-fit padding lands on its
+    // front edge alone. Turning about X would shift its sockets by the full
+    // 8.5mm; turning about Y maps the lattice onto itself.
+    expect(planPlateFlip(plate({ paddingFront: 8.5 }))).toEqual({ axis: 'y', offsetMm: 0 });
+    expect(planPlateFlip(plate({ paddingBack: 8.5 }))).toEqual({ axis: 'y', offsetMm: 0 });
+  });
+
+  it('keeps the X turn when the width axis is the asymmetric one', () => {
+    expect(planPlateFlip(plate({ paddingLeft: 8.5 }))).toEqual({ axis: 'x', offsetMm: 0 });
+  });
+
+  it('re-seats the slab when neither axis is congruent', () => {
+    // Nothing to gain either way, so the X turn stands and the slab is re-seated
+    // by the depth-axis asymmetry as before.
+    expect(planPlateFlip(plate({ paddingFront: 8.5, paddingLeft: 3 }))).toEqual({
+      axis: 'x',
+      offsetMm: -8.5,
+    });
+  });
+
+  it('disqualifies an axis carrying a fractional cell', () => {
+    // Mirroring moves the sliver to the opposite end, which no re-seat undoes.
+    expect(planPlateFlip(plate({ width: 3.5 }))).toEqual({ axis: 'x', offsetMm: 0 });
+    expect(planPlateFlip(plate({ depth: 3.5 }))).toEqual({ axis: 'y', offsetMm: 0 });
+    expect(planPlateFlip(plate({ width: 3.5, depth: 3.5 }))).toEqual({ axis: 'x', offsetMm: 0 });
+  });
+
+  it('keeps the X turn for a custom perimeter, whose symmetry padding cannot prove', () => {
+    const outline: DrawerOutline = {
+      vertices: cornerCutVertices(4 * 42, 4 * 42, {
+        tl: { kind: 'radius', r: 42 },
+        tr: { kind: 'none' },
+        bl: { kind: 'none' },
+        br: { kind: 'none' },
+      }),
+    };
+    expect(planPlateFlip(plate({ paddingFront: 8.5, outline }))).toEqual({
+      axis: 'x',
+      offsetMm: -8.5,
+    });
   });
 });
 
@@ -469,5 +535,85 @@ describe('evaluateStackPrint', () => {
     expect(evaluateStackPrint([g('A', 6)], Number.NaN, 5, 250)).toEqual({
       kind: 'buildHeightCapped',
     });
+  });
+});
+
+describe('flip congruence on real plate geometry (#3235)', () => {
+  // Drives the real (procedural) generator rather than a fixture mesh: the
+  // socket lattice sits on the origin while the slab rides the padding
+  // asymmetry, and only a generated plate carries both. features/baseplate may
+  // not import features/generation, but this test may (see splitPlanner.test).
+  /** Plan-view vertex positions, which is where a mis-turned plate shows up. */
+  function footprint(vertices: Float32Array): Set<string> {
+    const seen = new Set<string>();
+    for (let i = 0; i < vertices.length; i += 3) {
+      seen.add(`${vertices[i].toFixed(3)},${vertices[i + 1].toFixed(3)}`);
+    }
+    return seen;
+  }
+
+  // The reported drawer: 7×12 with symmetric fit padding, which the split hands
+  // to the outer pieces one side at a time. Resolved through buildFullParams so
+  // stacking strips what it strips in the app (magnets, plain corner rounding) —
+  // a hand-built param set leaves rounded exterior corners on, which is a real
+  // asymmetry no turn can undo.
+  const parent = buildFullParams(
+    {
+      ...DEFAULT_BASEPLATE_PARAMS,
+      syncWithLayout: true,
+      paddingLeft: mm(0),
+      paddingRight: mm(0),
+      paddingFront: mm(8.5),
+      paddingBack: mm(8.5),
+      overTile: true,
+      overTileHalfGrid: true,
+      stackPrint: { enabled: true, gapMm: mm(0.2), copies: 10 },
+    },
+    7,
+    12,
+    42,
+    'end',
+    'end'
+  );
+
+  it('every tower plate keeps the same footprint as the one below it', async () => {
+    const { generateBaseplateDirect } =
+      await import('@/features/generation/worker/generators/baseplateDirectMesh');
+    const tiling = computeBaseplateTiling(parent, 256, 256);
+    expect(tiling.isSplit).toBe(true);
+    const padded = tiling.pieces.filter((p) => p.paddingFront > 0 || p.paddingBack > 0);
+    expect(padded.length).toBeGreaterThan(0);
+
+    for (const piece of tiling.pieces) {
+      const pieceParams = pieceToBaseplateParams(piece, parent);
+      const mesh = generateBaseplateDirect(pieceParams, () => {});
+      const layers = buildTowerLayers(
+        { ...mesh, edgeVertices: new Float32Array(0) },
+        2,
+        10,
+        planPlateFlip(pieceParams)
+      );
+      expect(footprint(layers[1].vertices), `piece ${piece.label}`).toEqual(
+        footprint(layers[0].vertices)
+      );
+    }
+  });
+
+  it('turning a one-side-padded plate about X instead shifts its lattice by the padding', async () => {
+    // The pre-fix behaviour, kept as the counter-example: the outer footprints
+    // still line up (the re-seat lands the slab), but the sockets do not.
+    const { generateBaseplateDirect } =
+      await import('@/features/generation/worker/generators/baseplateDirectMesh');
+    const front = computeBaseplateTiling(parent, 256, 256).pieces.find((p) => p.paddingFront > 0);
+    if (!front) throw new Error('expected a front-padded piece');
+    const pieceParams = pieceToBaseplateParams(front, parent);
+    const mesh = generateBaseplateDirect(pieceParams, () => {});
+    const base = { ...mesh, edgeVertices: new Float32Array(0) };
+    const aboutX = buildTowerLayers(base, 2, 10, {
+      axis: 'x',
+      offsetMm: 2 * bodyCenterYMm(pieceParams.paddingFront, pieceParams.paddingBack),
+    });
+    expect(meshBounds(aboutX[1].vertices).minY).toBeCloseTo(meshBounds(aboutX[0].vertices).minY, 5);
+    expect(footprint(aboutX[1].vertices)).not.toEqual(footprint(aboutX[0].vertices));
   });
 });

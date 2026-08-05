@@ -2,10 +2,10 @@ import { describe, it, expect } from 'vitest';
 import type { StackPrintParams } from '@/core/types';
 import { mm } from '@/core/types';
 import { buildStackPreviewMeshes } from './stackPreview';
-import { meshBounds, type StackMeshArrays } from './stackPrint';
+import { meshBounds, type StackMeshArrays, type PlateFlip } from './stackPrint';
 
-/** Body centre Y of plate() (footprint Y[0,30]) — passed to every tower fixture. */
-const PLATE_BODY_Y = 15;
+/** Re-seat for plate() (footprint Y[0,30], body centre 15) — every tower fixture flips about X. */
+const PLATE_FLIP: PlateFlip = { axis: 'x', offsetMm: 30 };
 
 /** A 10mm-tall plate footprint 0..20 x 0..30 as an indexed mesh (2 triangles). */
 function plate(): StackMeshArrays {
@@ -29,7 +29,7 @@ describe('buildStackPreviewMeshes', () => {
 
   it('stacks a single tower of N copies', () => {
     const out = buildStackPreviewMeshes(
-      [{ mesh: plate(), copies: 3, bodyCenterYMm: PLATE_BODY_Y }],
+      [{ mesh: plate(), copies: 3, flip: PLATE_FLIP }],
       airGap,
       0,
       42
@@ -49,13 +49,13 @@ describe('buildStackPreviewMeshes', () => {
 
   it('adds the separation slider distance to the stride', () => {
     const base = buildStackPreviewMeshes(
-      [{ mesh: plate(), copies: 2, bodyCenterYMm: PLATE_BODY_Y }],
+      [{ mesh: plate(), copies: 2, flip: PLATE_FLIP }],
       airGap,
       0,
       42
     );
     const exploded = buildStackPreviewMeshes(
-      [{ mesh: plate(), copies: 2, bodyCenterYMm: PLATE_BODY_Y }],
+      [{ mesh: plate(), copies: 2, flip: PLATE_FLIP }],
       airGap,
       20,
       42
@@ -66,8 +66,8 @@ describe('buildStackPreviewMeshes', () => {
   it('lays multiple towers in a centered grid', () => {
     const out = buildStackPreviewMeshes(
       [
-        { mesh: plate(), copies: 1, bodyCenterYMm: PLATE_BODY_Y },
-        { mesh: plate(), copies: 1, bodyCenterYMm: PLATE_BODY_Y },
+        { mesh: plate(), copies: 1, flip: PLATE_FLIP },
+        { mesh: plate(), copies: 1, flip: PLATE_FLIP },
       ],
       airGap,
       0,
@@ -105,7 +105,7 @@ describe('buildStackPreviewMeshes', () => {
         Array.from({ length: towers }, () => ({
           mesh: plate(),
           copies: 1,
-          bodyCenterYMm: PLATE_BODY_Y,
+          flip: PLATE_FLIP,
         })),
         airGap,
         0,
@@ -128,7 +128,7 @@ describe('buildStackPreviewMeshes', () => {
         [0, 1, 2, 3].map((col) => ({
           mesh: plate(),
           copies: 1,
-          bodyCenterYMm: PLATE_BODY_Y,
+          flip: PLATE_FLIP,
           col,
           row: 0,
         })),
@@ -151,8 +151,8 @@ describe('buildStackPreviewMeshes', () => {
       // flip it (the square-grid path puts row 0 on top = larger Y).
       const out = buildStackPreviewMeshes(
         [
-          { mesh: plate(), copies: 1, bodyCenterYMm: PLATE_BODY_Y, col: 0, row: 0 },
-          { mesh: plate(), copies: 1, bodyCenterYMm: PLATE_BODY_Y, col: 0, row: 1 },
+          { mesh: plate(), copies: 1, flip: PLATE_FLIP, col: 0, row: 0 },
+          { mesh: plate(), copies: 1, flip: PLATE_FLIP, col: 0, row: 1 },
         ],
         airGap,
         0,
@@ -164,8 +164,8 @@ describe('buildStackPreviewMeshes', () => {
     it('falls back to the square grid when any tower lacks a position', () => {
       const out = buildStackPreviewMeshes(
         [
-          { mesh: plate(), copies: 1, bodyCenterYMm: PLATE_BODY_Y, col: 0, row: 0 },
-          { mesh: plate(), copies: 1, bodyCenterYMm: PLATE_BODY_Y },
+          { mesh: plate(), copies: 1, flip: PLATE_FLIP, col: 0, row: 0 },
+          { mesh: plate(), copies: 1, flip: PLATE_FLIP },
         ],
         airGap,
         0,

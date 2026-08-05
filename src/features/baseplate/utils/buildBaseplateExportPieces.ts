@@ -25,7 +25,7 @@ import type {
 import type { ExportFileFormat, ExportFileNameConfig } from '@/shared/types/bin';
 import type { GenerationBridge, WorkerPool, ExportFormat } from '@/shared/generation/bridge';
 import { buildStackExportSoup } from './stackExport';
-import { planPhysicalStacks, stackHeightCap, bodyCenterYMm } from './stackPrint';
+import { planPhysicalStacks, stackHeightCap, planPlateFlip, type PlateFlip } from './stackPrint';
 import { buildFullParams } from './buildFullParams';
 import { computeBaseplateTiling, bodyParamsForDetach } from './splitPlanner';
 import { groupPiecesByFingerprint } from './pieceFingerprint';
@@ -147,11 +147,11 @@ function buildStackedFileBlob(
   copies: number,
   format: 'stl' | '3mf',
   stack: StackPrintParams,
-  bodyCenterY: number,
+  flip: PlateFlip,
   settings: BaseplateExportPrintSettings
 ): Blob {
   const { vertices, normals } = source;
-  const soup = buildStackExportSoup(vertices, normals, copies, stack, bodyCenterY);
+  const soup = buildStackExportSoup(vertices, normals, copies, stack, flip);
 
   if (format === 'stl') {
     return new Blob([buildSTLBuffer(soup.vertices, soup.normals, name)], {
@@ -385,7 +385,7 @@ export async function buildBaseplateExportPieces(
 
       if (stack && stackEnabled) {
         const source = parseStlSoup(stlData);
-        const groupBodyY = bodyCenterYMm(group.params.paddingFront, group.params.paddingBack);
+        const groupFlip = planPlateFlip(group.params);
         const towers = planPhysicalStacks(
           [{ label: name, quantity: group.indices.length * copies }],
           stackCap
@@ -398,7 +398,7 @@ export async function buildBaseplateExportPieces(
             towers[s].copies,
             format,
             stack,
-            groupBodyY,
+            groupFlip,
             printSettings
           );
           pieces.push({ data: await blob.arrayBuffer(), label });
@@ -475,14 +475,14 @@ export async function buildBaseplateExportPieces(
 
   if (stack && stackEnabled) {
     // The towers stack the BODY mesh — padding-free on detached sides, with the
-    // rails shipping as separate flat pieces alongside (#2641). The body centre
-    // must come from the same params the mesh was generated with, or the flipped
+    // rails shipping as separate flat pieces alongside (#2641). The flip must be
+    // planned from the same params the mesh was generated with, or the flipped
     // copies re-seat off-axis by the removed padding.
     const stlData = await getOrExport(buildExportCacheKey(bodyExportParams, 'stl', nozzleMm), () =>
       bridge.exportBaseplate(bodyExportParams, 'stl').then((r) => r.data)
     );
     const source = parseStlSoup(stlData);
-    const singleBodyY = bodyCenterYMm(bodyExportParams.paddingFront, bodyExportParams.paddingBack);
+    const singleFlip = planPlateFlip(bodyExportParams);
     const towers = planPhysicalStacks([{ label: 'plate', quantity: copies }], stackCap);
     const hasRails = railMargins.length > 0;
     const multiTower = towers.length > 1;
@@ -507,7 +507,7 @@ export async function buildBaseplateExportPieces(
         towers[s].copies,
         format,
         stack,
-        singleBodyY,
+        singleFlip,
         printSettings
       );
       pieces.push({ data: await blob.arrayBuffer(), label });
