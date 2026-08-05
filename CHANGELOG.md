@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.367.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.367.0...gridfinity-layout-tool-v4.367.1) (2026-08-05)
+
+
+### Bug Fixes
+
+* **baseplate:** turn stacked plates about the axis that keeps their sockets aligned ([#3237](https://github.com/andymai/gridfinity-layout-tool/issues/3237)) ([044d3db](https://github.com/andymai/gridfinity-layout-tool/commit/044d3db52a029d9a4ee6c6ad6cf4bc1cc205613a))
+
 ## [4.367.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.366.0...gridfinity-layout-tool-v4.367.0) (2026-08-05)
 
 
