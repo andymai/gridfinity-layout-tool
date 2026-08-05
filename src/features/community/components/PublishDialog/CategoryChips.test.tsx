@@ -27,4 +27,9 @@ describe('CategoryChips', () => {
     expect(group).toHaveAttribute('aria-required', 'true');
     expect(group).toHaveAttribute('aria-invalid', 'true');
   });
+
+  it('points at the error node so the reason is announced inside the group', () => {
+    render(<CategoryChips value="" invalid describedBy="category-error" onChange={vi.fn()} />);
+    expect(screen.getByRole('radiogroup')).toHaveAttribute('aria-describedby', 'category-error');
+  });
 });

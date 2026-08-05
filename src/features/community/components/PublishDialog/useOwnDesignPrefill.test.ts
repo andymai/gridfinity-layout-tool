@@ -68,6 +68,19 @@ describe('useOwnDesignPrefill', () => {
     expect(fetchOwnDesign).not.toHaveBeenCalled();
   });
 
+  it('does not hang a signed-out caller behind a spinner it will never clear', () => {
+    // The fetch is skipped entirely while anonymous, so a latched `pending`
+    // would leave update mode stuck on "loading published details" forever.
+    const { result } = renderHook(() => useOwnDesignPrefill('Pub123456789', 'anonymous'));
+    expect(result.current.pending).toBe(false);
+  });
+
+  it('keeps waiting while the session is still resolving', () => {
+    // `unknown` may yet become authenticated, so the fetch is still coming.
+    const { result } = renderHook(() => useOwnDesignPrefill('Pub123456789', 'unknown'));
+    expect(result.current.pending).toBe(true);
+  });
+
   it('returns the live record so the form edits what is actually public', async () => {
     vi.mocked(fetchOwnDesign).mockResolvedValue(
       ok(record({ coverPhotoUrl: 'https://blob/a.webp' }))

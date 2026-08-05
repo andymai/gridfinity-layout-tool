@@ -36,7 +36,7 @@ export function useOwnDesignPrefill(
   const t = useTranslation();
   const [prefill, setPrefill] = useState<PublishPrefill | null>(null);
   const [coverUrl, setCoverUrl] = useState('');
-  const [pending, setPending] = useState(() => publishedId !== null);
+  const [resolved, setResolved] = useState(false);
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
 
@@ -55,7 +55,7 @@ export function useOwnDesignPrefill(
           category: result.value.category,
         });
         setCoverUrl(result.value.coverPhotoUrl ?? '');
-        setPending(false);
+        setResolved(true);
         return;
       }
       if (result.error.kind === 'notFound') {
@@ -68,7 +68,7 @@ export function useOwnDesignPrefill(
           if (cancelled) return;
           if (me === null) {
             setFailed(true);
-            setPending(false);
+            setResolved(true);
             return;
           }
           const publish = useCommunityPublishStore.getState();
@@ -79,23 +79,29 @@ export function useOwnDesignPrefill(
             message: t('community.publish.error.republishAsNew'),
             type: 'info',
           });
-          setPending(false);
+          setResolved(true);
         });
         return;
       }
       // Without the live record, submitting would overwrite the published
       // name/description with local defaults; block the form instead.
       setFailed(true);
-      setPending(false);
+      setResolved(true);
     });
     return () => {
       cancelled = true;
     };
   }, [publishedId, attempt, sessionStatus, t]);
 
+  // Derived, not latched. A signed-out caller has nothing to wait for, since
+  // the effect skips the fetch entirely; an initial `pending` would hang update
+  // mode behind a spinner that never clears. `unknown` still waits, because the
+  // session may yet resolve to authenticated.
+  const pending = publishedId !== null && sessionStatus !== 'anonymous' && !resolved;
+
   const retry = () => {
     setFailed(false);
-    setPending(true);
+    setResolved(false);
     setAttempt((value) => value + 1);
   };
 

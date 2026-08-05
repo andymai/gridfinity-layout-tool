@@ -265,10 +265,18 @@ export function PublishForm({
             />
           </Field>
 
-          <Field label={t('community.publish.form.categoryLabel')} error={categoryError}>
+          <Field
+            label={t('community.publish.form.categoryLabel')}
+            htmlFor="community-publish-category"
+            error={categoryError}
+          >
             <CategoryChips
+              id="community-publish-category"
               value={category}
               invalid={categoryError !== undefined}
+              describedBy={
+                categoryError !== undefined ? 'community-publish-category-error' : undefined
+              }
               onChange={(value) => {
                 setCategory(value);
                 markEdited('category');

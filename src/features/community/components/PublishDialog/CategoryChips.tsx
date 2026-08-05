@@ -11,18 +11,21 @@ import type { CommunityCategory } from '@/shared/types/community';
 import { CATEGORY_LABEL_KEYS } from '../../utils/categoryLabels';
 
 export interface CategoryChipsProps {
+  id?: string;
   value: CommunityCategory | '';
   invalid: boolean;
+  /** Id of the field's error node, so the reason is announced inside the group. */
   describedBy?: string;
   onChange: (category: CommunityCategory) => void;
 }
 
 const CATEGORIES = Object.keys(CATEGORY_LABEL_KEYS) as CommunityCategory[];
 
-export function CategoryChips({ value, invalid, describedBy, onChange }: CategoryChipsProps) {
+export function CategoryChips({ id, value, invalid, describedBy, onChange }: CategoryChipsProps) {
   const t = useTranslation();
   return (
     <div
+      id={id}
       role="radiogroup"
       aria-label={t('community.publish.form.categoryLabel')}
       aria-required

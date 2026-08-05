@@ -137,6 +137,19 @@ describe('PublishForm', () => {
     expect(screen.getByText('Publish')).toBeInTheDocument();
   });
 
+  it('wires the category error to the chip group for screen readers', () => {
+    renderForm({ prefill: { name: 'Screw Bin', description: '', category: null } });
+    fireEvent.click(screen.getByText('Publish'));
+    expect(screen.getByRole('radiogroup')).toHaveAttribute(
+      'aria-describedby',
+      'community-publish-category-error'
+    );
+    expect(screen.getByText('Choose a category.')).toHaveAttribute(
+      'id',
+      'community-publish-category-error'
+    );
+  });
+
   it('drops the field rejection once the user starts fixing that field', () => {
     renderForm({ error: { kind: 'validation', code: 'NAME_LOW_EFFORT', message: 'nope' } });
     fireEvent.change(screen.getByLabelText(/^Name/), { target: { value: 'Hex bit holder' } });
