@@ -8,6 +8,7 @@
  */
 
 import { current, type Draft } from 'immer';
+import { isSocketlessBase } from '@/features/bin-designer/types/base';
 import type { BinParams, DesignerState, HistoryEntry, CachedMesh, Cutout } from '../types';
 import { DEFAULT_BIN_PARAMS, DESIGNER_CONSTRAINTS } from '../constants';
 import { loadDefaultParams } from '../storage/defaultParamsStorage';
@@ -36,7 +37,7 @@ import { trackToolActivated } from '@/shared/analytics/posthog/conversionEvents'
 export function defaultsForNewDesign(): BinParams {
   const base = loadDefaultParams() ?? DEFAULT_BIN_PARAMS;
   const halfGridOn = useHalfGridModeStore.getState().halfGridMode;
-  if (!halfGridOn || base.base.style === 'flat') {
+  if (!halfGridOn || isSocketlessBase(base.base.style)) {
     return base;
   }
   return {

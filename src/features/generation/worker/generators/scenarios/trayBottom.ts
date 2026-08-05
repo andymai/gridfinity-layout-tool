@@ -8,7 +8,7 @@
  */
 
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
-import { DEFAULT_TRAY_BOTTOM } from '@/shared/types/bin';
+import { DEFAULT_LID_CONFIG, DEFAULT_TRAY_BOTTOM } from '@/shared/types/bin';
 import type { LidAttachment } from '@/shared/types/bin';
 import { defineScenario } from '../__kernel-tests__/scenarioTypes';
 import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
@@ -72,6 +72,30 @@ export const trayBottom: ScenarioCase[] = [
       // The tray's own lip is about its TOP, so a Gridfinity bin can still
       // stack on it. Independent of the lid it presents downward.
       base: { ...trayBase('clickRails'), stackingLip: true },
+    },
+  }),
+
+  defineScenario('tray bottom', 'split tray keeps its lip on the real rim', {
+    assert: 'structural',
+    params: {
+      width: 6,
+      depth: 2,
+      height: 3,
+      // A tray's rim is `skirtDepth + totalHeight`, not `totalHeight`. Splitting
+      // it used to fuse the lip ring partway down the outside of the wall.
+      base: { ...trayBase('clickRails'), stackingLip: true },
+    },
+  }),
+
+  defineScenario('tray bottom', 'tray carrying its own magnetic lid', {
+    assert: 'structural',
+    params: {
+      width: 2,
+      depth: 2,
+      height: 3,
+      base: { ...trayBase('clickRails'), stackingLip: true },
+      // The retention pads hang off the rim, which the skirt raises.
+      lid: { ...DEFAULT_LID_CONFIG, enabled: true, attachment: 'magnetic' as const },
     },
   }),
 

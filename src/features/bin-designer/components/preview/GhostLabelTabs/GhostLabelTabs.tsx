@@ -9,6 +9,7 @@
  */
 
 import { useMemo, useEffect } from 'react';
+import { baseFloorZ, baseWallHeight } from '@/features/bin-designer/utils/binDimensions';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import { useShallow } from 'zustand/react/shallow';
@@ -40,7 +41,8 @@ export function GhostLabelTabs() {
     heightUnitMm,
     wallThickness,
     style,
-    baseStyle,
+    base,
+    lid,
     stackingLip,
     compartments,
     label,
@@ -55,7 +57,8 @@ export function GhostLabelTabs() {
       heightUnitMm: s.params.heightUnitMm,
       wallThickness: s.params.wallThickness,
       style: s.params.style,
-      baseStyle: s.params.base.style,
+      base: s.params.base,
+      lid: s.params.lid,
       stackingLip: s.params.base.stackingLip,
       compartments: s.params.compartments,
       label: s.params.label,
@@ -72,8 +75,8 @@ export function GhostLabelTabs() {
   // Floor sits at SOCKET_HEIGHT for socketed bins, at z=0 for flat. The wall
   // top is at totalH in both cases (the socket extends below the floor).
   // Mirrors `binDimensions`.
-  const wallHeightMm = baseStyle === 'flat' ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
-  const floorZ = baseStyle === 'flat' ? 0 : GRIDFINITY.SOCKET_HEIGHT;
+  const wallHeightMm = baseWallHeight(base, totalH);
+  const floorZ = baseFloorZ(base, heightUnitMm, lid);
   // World Z of the shelf TOP — the same resolution the BREP builder runs
   // (interior ceiling under the lip taper, stacking relief for click-in
   // sockets, an explicit `label.height` capped at that plane), so the ghost

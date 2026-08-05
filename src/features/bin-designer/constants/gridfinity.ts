@@ -172,7 +172,10 @@ export const DESIGNER_CONSTRAINTS = {
  * with an ordinary floor.
  */
 export function minHeightUnits(base: { readonly spacer: boolean; readonly style: string }): number {
-  const isEffectiveSpacer = base.spacer && base.style !== 'flat';
+  // Matches `deriveDimensions`: the flag is inert on any socketless base, so
+  // a `{ style: 'lid', spacer: true, height: 1 }` payload must not buy the
+  // relaxed floor either.
+  const isEffectiveSpacer = base.spacer && base.style !== 'flat' && base.style !== 'lid';
   return isEffectiveSpacer
     ? DESIGNER_CONSTRAINTS.MIN_SPACER_HEIGHT
     : DESIGNER_CONSTRAINTS.MIN_HEIGHT;

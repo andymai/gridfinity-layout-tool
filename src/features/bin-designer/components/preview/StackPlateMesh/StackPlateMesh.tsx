@@ -12,6 +12,7 @@
  */
 
 import { useEffect, useMemo } from 'react';
+import { baseFloorZ } from '@/features/bin-designer/utils/binDimensions';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -52,8 +53,14 @@ export function StackPlateMesh({
 
   const { stackPlateMesh, lidGroupZ, featureColors } = useDesignerStore(
     useShallow((s) => {
-      const { height, heightUnitMm, base, extraWallHeightMm } = s.params;
-      const lipTopZ = binLipTopWorldZ(height, heightUnitMm, base.stackingLip, extraWallHeightMm);
+      const { height, heightUnitMm, base, extraWallHeightMm, lid } = s.params;
+      const lipTopZ = binLipTopWorldZ(
+        height,
+        heightUnitMm,
+        base.stackingLip,
+        extraWallHeightMm,
+        baseFloorZ(base, heightUnitMm, lid)
+      );
       // Match the lid's mated frame including every source of cavity depth
       // (extra height #2482, thicker floor plate #2761) so the glue-on plate
       // rides on the taller lid's floor — mirrors LidMesh and the export lift.

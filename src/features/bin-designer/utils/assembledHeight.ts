@@ -14,6 +14,7 @@
  */
 
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { baseFloorZ } from './binDimensions';
 import type { BaseStyle } from '@/features/bin-designer/types/base';
 import {
   LID_FIT_CLEARANCE,
@@ -123,7 +124,10 @@ export function assembledHeight(
   // sits directly in the drawer. Counting a plate under it would overstate
   // clearance by the plate's full height, the same class of error this readout
   // exists to prevent.
-  const seatedOnPlate = plate !== undefined && params.base.style !== 'flat';
+  // A flat base and a tray bottom (#3036) both lack a socket, so neither seats
+  // on a baseplate — a tray sits on the BIN below it, via its lid skirt.
+  const seatedOnPlate =
+    plate !== undefined && params.base.style !== 'flat' && params.base.style !== 'lid';
 
   const baseplatePrintedMm = seatedOnPlate ? baseplateTotalHeight(plate) : 0;
   // The bin drops its base into the pockets, so only the solid floor under them
@@ -131,7 +135,14 @@ export function assembledHeight(
   const plateBandMm = seatedOnPlate ? baseplateFloorDepth(plate) : 0;
   const nestedMm = seatedOnPlate ? GRIDFINITY.SOCKET_HEIGHT : 0;
 
-  const binMm = params.height * params.heightUnitMm + Math.max(0, params.extraWallHeightMm ?? 0);
+  // A tray's skirt is printed material below its floor, so it counts toward the
+  // assembly's height. `extraHeightMm` is the whole point of the feature —
+  // turning it up to clear protruding contents has to move this number.
+  const skirtMm = baseFloorZ(params.base, params.heightUnitMm, params.lid);
+  const binMm =
+    params.height * params.heightUnitMm +
+    Math.max(0, params.extraWallHeightMm ?? 0) +
+    (params.base.style === 'lid' ? skirtMm : 0);
   const lipMm = params.base.stackingLip ? GRIDFINITY.LIP_HEIGHT - GRIDFINITY.LIP_OVERLAP : 0;
   const lidMm = hasSeatedLid(params) ? lidRiseMm(params) : 0;
   // The stack grid is a SOCKET_HEIGHT slab above the lid's top face, whether it

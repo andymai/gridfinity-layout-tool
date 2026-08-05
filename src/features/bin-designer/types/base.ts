@@ -21,6 +21,15 @@ export function isScrewStyle(style: BaseStyle): boolean {
 }
 
 /**
+ * True when the base has no Gridfinity socket under it — a flat base or a tray
+ * bottom. The distinction matters wherever code asks "is there a socket to
+ * shell, drill, halve, or stand this bin on".
+ */
+export function isSocketlessBase(style: BaseStyle): boolean {
+  return style === 'flat' || style === 'lid';
+}
+
+/**
  * Mating geometry for a {@link BaseStyle} of `'lid'` (#3036): a fully editable
  * bin whose underside is a lid instead of a Gridfinity base, so it caps the bin
  * below it.

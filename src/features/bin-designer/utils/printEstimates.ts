@@ -11,6 +11,7 @@
  */
 
 import type { BinParams, LabelTabSupport, WallPatternType } from '@/features/bin-designer/types';
+import { isSocketlessBase } from '@/features/bin-designer/types/base';
 import { DEFAULT_PATTERN_SCALE } from '@/features/bin-designer/types';
 import { GRIDFINITY, STYLE_WALL_THICKNESS } from '@/features/bin-designer/constants/gridfinity';
 import {
@@ -187,7 +188,7 @@ function computeBinVolume(params: BinParams): number {
  */
 function effectiveDividerHeight(params: BinParams): number {
   const totalH = params.height * params.heightUnitMm;
-  const isFlat = params.base.style === 'flat';
+  const isFlat = isSocketlessBase(params.base.style);
   const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
   const interiorHeight = computeInteriorHeight(
     wallHeight,
@@ -470,7 +471,7 @@ function computeScoopVolume(
   const rowDepth = innerD / rows;
 
   const hasLip = params.base.stackingLip;
-  const isFlat = params.base.style === 'flat';
+  const isFlat = isSocketlessBase(params.base.style);
   const totalH = params.height * params.heightUnitMm;
   const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
   const interiorHeight = computeInteriorHeight(wallHeight, hasLip, GRIDFINITY.LIP_SMALL_TAPER);
@@ -665,7 +666,7 @@ function computeFloorPatternReduction(
   if (params.base.spacer) return 0;
   if (params.width <= 0 || params.depth <= 0) return 0;
 
-  const isFlat = params.base.style === 'flat';
+  const isFlat = isSocketlessBase(params.base.style);
   const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
   const scale = floorPattern.scale ?? DEFAULT_PATTERN_SCALE;
   const openArea = (w: number, h: number): number =>

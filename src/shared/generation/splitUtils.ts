@@ -1,3 +1,5 @@
+import { isSocketlessBase } from '@/features/bin-designer/types/base';
+import type { BaseStyle } from '@/features/bin-designer/types/base';
 /** Evenly-distributed pin positions along a split edge (offsets from edge center, in mm). */
 export function computePinPositions(edgeLengthMm: number, spacingMm: number): number[] {
   if (edgeLengthMm <= 0 || spacingMm <= 0) return [];
@@ -24,7 +26,7 @@ export function splitConnectorsSuppressedByBase(base: {
   readonly spacer: boolean;
   readonly style: string;
 }): boolean {
-  return (base.lightweight || base.spacer) && base.style !== 'flat';
+  return (base.lightweight || base.spacer) && !isSocketlessBase(base.style as BaseStyle);
 }
 
 /**

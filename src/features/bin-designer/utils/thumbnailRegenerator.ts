@@ -10,6 +10,7 @@
  */
 
 import type { WebGLRenderer, BufferGeometry, MeshStandardMaterial } from 'three';
+import { binDimensions } from './binDimensions';
 import { bridgeManager } from '@/shared/generation/bridge';
 import type { BinParams } from '@/features/bin-designer/types';
 import { LID_FIT_CLEARANCE, resolveLidCavityExtraMm } from '@/features/bin-designer/types';
@@ -102,7 +103,8 @@ export async function regenerateThumbnail(
             params.height,
             params.heightUnitMm,
             params.base.stackingLip,
-            params.extraWallHeightMm
+            params.extraWallHeightMm,
+            binDimensions(params).floorZ
           ) - lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE, resolveLidCavityExtraMm(params))
         : null;
     if (lidMesh && lidGroupZ !== null && lidMesh.vertices.length > 0) {

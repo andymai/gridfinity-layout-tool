@@ -9,6 +9,7 @@
  */
 
 import { useMemo, useEffect } from 'react';
+import { baseWallHeight } from '@/features/bin-designer/utils/binDimensions';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import { useShallow } from 'zustand/react/shallow';
@@ -67,9 +68,8 @@ export function GhostScoops() {
   const innerD = outerD - 2 * wallThickness;
 
   const hasLip = base.stackingLip;
-  const isFlat = base.style === 'flat';
   const totalH = height * heightUnitMm;
-  const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
+  const wallHeight = baseWallHeight(base, totalH);
   const interiorHeight = computeInteriorHeight(wallHeight, hasLip, GRIDFINITY.LIP_SMALL_TAPER);
   const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
 

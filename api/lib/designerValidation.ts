@@ -980,7 +980,10 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
   // `{ style: 'flat', spacer: true, height: 1 }` would otherwise buy the relaxed
   // floor while generating an ordinary 1u bin.
   const isEffectiveSpacer =
-    isObject(params.base) && params.base.spacer === true && params.base.style !== 'flat';
+    isObject(params.base) &&
+    params.base.spacer === true &&
+    params.base.style !== 'flat' &&
+    params.base.style !== 'lid';
   const minHeight = isEffectiveSpacer ? CONSTRAINTS.MIN_SPACER_HEIGHT : CONSTRAINTS.MIN_HEIGHT;
   if (!isNumber(params.height) || !inRange(params.height, minHeight, CONSTRAINTS.MAX_HEIGHT)) {
     return validationError(

@@ -72,6 +72,13 @@ describe('matchingTrayParams', () => {
     expect(tray.cellMask).toBe(cellMask);
   });
 
+  it('carries the overhang, which the mating shell is sized from', () => {
+    // `resolveLidInputs` grows the shell by the overhang; a tray built to the
+    // nominal footprint would not seat over an overhung bin.
+    const overhang = { left: 2, right: 2, front: 0, back: 0, feet: false };
+    expect(matchingTrayParams(source({ overhang })).overhang).toEqual(overhang);
+  });
+
   it('leaves the source design untouched', () => {
     const original = source({ width: 3 });
     const snapshot = JSON.stringify(original);

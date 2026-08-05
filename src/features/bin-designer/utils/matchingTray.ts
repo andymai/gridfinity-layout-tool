@@ -31,6 +31,9 @@ export function matchingTrayParams(source: BinParams): BinParams {
     // Spread conditionally: a rectangular source has no mask, and writing the
     // key as `undefined` would add it to the params hash.
     ...(source.cellMask ? { cellMask: source.cellMask } : {}),
+    // `resolveLidInputs` grows the mating shell by the overhang, so a tray
+    // built to the nominal footprint will not seat over an overhung bin.
+    overhang: source.overhang,
     height: MATCHING_TRAY_HEIGHT_UNITS,
     base: {
       ...DEFAULT_BIN_PARAMS.base,

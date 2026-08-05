@@ -36,9 +36,15 @@ export function binLipTopWorldZ(
   height: number,
   heightUnitMm: number,
   hasStackingLip: boolean,
-  extraWallHeightMm?: number
+  extraWallHeightMm?: number,
+  /**
+   * Depth of whatever sits under the floor. 0 for a socketed or flat bin,
+   * whose rim is at `height * heightUnitMm` either way; a tray bin's skirt
+   * (#3036) raises the rim by its own depth. Pass `binDimensions().floorZ`.
+   */
+  baseOffsetZ = 0
 ): number {
-  const wallTop = height * heightUnitMm + Math.max(0, extraWallHeightMm ?? 0);
+  const wallTop = height * heightUnitMm + Math.max(0, extraWallHeightMm ?? 0) + baseOffsetZ;
   const lipTopZ = hasStackingLip
     ? wallTop + GRIDFINITY.LIP_HEIGHT - GRIDFINITY.LIP_OVERLAP
     : wallTop;

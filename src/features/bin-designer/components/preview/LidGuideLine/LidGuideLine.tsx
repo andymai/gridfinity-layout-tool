@@ -9,6 +9,7 @@
  */
 
 import { useEffect, useMemo, useRef } from 'react';
+import { baseFloorZ } from '@/features/bin-designer/utils/binDimensions';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -35,7 +36,8 @@ export function LidGuideLine({ lidOffsetMm, color = '#9ca3af' }: LidGuideLinePro
       s.params.height,
       s.params.heightUnitMm,
       s.params.base.stackingLip,
-      s.params.extraWallHeightMm
+      s.params.extraWallHeightMm,
+      baseFloorZ(s.params.base, s.params.heightUnitMm, s.params.lid)
     )
   );
   const lidBottomWorldZ = lipTopZ + lidOffsetMm;

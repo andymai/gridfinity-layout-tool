@@ -11,6 +11,7 @@
  */
 
 import { useMemo, useEffect, useRef } from 'react';
+import { baseFloorZ, baseWallHeight } from '@/features/bin-designer/utils/binDimensions';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import { useShallow } from 'zustand/react/shallow';
@@ -166,6 +167,7 @@ export function GhostCutouts() {
     wallThickness,
     cutouts,
     base,
+    lid,
     overhang,
     cellMask,
     generationStatus,
@@ -180,6 +182,7 @@ export function GhostCutouts() {
       wallThickness: s.params.wallThickness,
       cutouts: s.params.cutouts,
       base: s.params.base,
+      lid: s.params.lid,
       overhang: s.params.overhang,
       cellMask: s.params.cellMask,
       generationStatus: s.generation.status,
@@ -191,9 +194,8 @@ export function GhostCutouts() {
 
   const isSolid = base.solid;
   const totalH = height * heightUnitMm;
-  const isFlat = base.style === 'flat';
-  const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.BASE_HEIGHT;
-  const floorZ = isFlat ? 0 : GRIDFINITY.BASE_HEIGHT;
+  const wallHeight = baseWallHeight(base, totalH);
+  const floorZ = baseFloorZ(base, heightUnitMm, lid);
 
   const outerW = width * gridUnitMm - GRIDFINITY.TOLERANCE;
   const outerD = depth * (gridUnitMmY ?? gridUnitMm) - GRIDFINITY.TOLERANCE;

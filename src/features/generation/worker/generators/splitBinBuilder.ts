@@ -20,7 +20,7 @@ import {
 import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BinParams, SplitConnectorConfig } from '@/shared/types/bin';
 
-import { CLEARANCE, SOCKET_HEIGHT } from './generatorTypes';
+import { CLEARANCE } from './generatorTypes';
 import { buildSTLBufferFromIndexed } from '@/features/generation/export/stlExporter';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
 import { pitchFromParams, type GridPitch } from './gridPitch';
@@ -212,11 +212,16 @@ function splitSolidIntoPieces(
       ? { ...rawConnectorConfig, enabled: false }
       : rawConnectorConfig;
 
-  // Bin geometry context for connector placement
-  const isFlat = params.base.style === 'flat';
-  const totalHeight = params.height * params.heightUnitMm;
-  const wallHeight = isFlat ? totalHeight : totalHeight - SOCKET_HEIGHT;
-  const floorZ = isFlat ? 0 : SOCKET_HEIGHT;
+  // Bin geometry context for connector placement. Taken from
+  // `deriveDimensions` rather than recomputed: the body being split comes from
+  // `generateBin`, so any second opinion about where its floor and rim sit puts
+  // the separately-built lip, the wall-cutout cutters and the connector frame
+  // somewhere the body is not. A tray bin (#3036) is what exposed this — its
+  // floor sits on a skirt, not on the bed.
+  const splitDims = deriveDimensions(params, true);
+  const totalHeight = splitDims.totalHeight;
+  const wallHeight = splitDims.wallHeight;
+  const floorZ = splitDims.baseOffsetZ;
   const wallTopZ = floorZ + wallHeight;
 
   // An overhang grows the outer body past the nominal grid footprint (#1949);
