@@ -1,0 +1,85 @@
+src/features/bin-designer/utils/printEstimates.ts
+  s_e4cf31c1fe56ab::t_70c01706a4ee5f 15
+  s_e4cf31c1fe56ab::t_c509a8c05e2c1b 192
+  s_e4cf31c1fe56ab::t_52956d296d5e33 666-669
+  s_e4cf31c1fe56ab::t_8851ca24237501 475
+src/features/generation/worker/generators/splitBinBuilder.ts
+  s_e4cf31c1fe56ab::t_4cdf8683aaea07 429
+  s_e4cf31c1fe56ab::t_eb5ac295714a09 226-232
+  s_e4cf31c1fe56ab::t_2ef90a93c85822 415
+src/features/generation/worker/generators/pipeline/stages/shellStage.ts
+  s_e4cf31c1fe56ab::t_8f2eb2f7659bb0 167-169
+  s_e4cf31c1fe56ab::t_542c9f17d645aa 161-166,170,173,180-181
+  s_e4cf31c1fe56ab::t_e9197e3076eec3 171-172,174-179
+src/features/generation/worker/generators/binGenerator.export.tile.test.ts
+  s_e4cf31c1fe56ab::t_9d9002a81c2ade 1-5
+src/shared/constraints/types.ts
+  s_e4cf31c1fe56ab::t_8371f87aa14add 12
+src/features/bin-designer/types/base.ts
+  s_e4cf31c1fe56ab::t_e5ebe9e725b190 33-47
+  s_e4cf31c1fe56ab::t_b3882306c9b996 122-138,145
+  s_e4cf31c1fe56ab::t_ed578052bd9b56 139-144,146
+  s_e4cf31c1fe56ab::t_15addfebdda9c6 32,121
+src/features/generation/worker/generators/binGenerator.scenario.tile.test.ts
+  s_e4cf31c1fe56ab::t_e0adf3ffbc128a 1-2
+  s_e4cf31c1fe56ab::t_12446fd9d21a47 3-5
+src/features/bin-designer/constants/paramMigration.ts
+  s_e4cf31c1fe56ab::t_026be5baf45503 739-743
+src/shared/constraints/rules.ts
+  s_e4cf31c1fe56ab::t_66f0e83cb38620 373-381
+  s_e4cf31c1fe56ab::t_f4bdf280523a43 240-307,372
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_e4cf31c1fe56ab::t_a5127993320aac 372-375
+src/features/bin-designer/constants/gridfinity.ts
+  s_e4cf31c1fe56ab::t_b44df5467fbc54 173-178,180-184,188-190
+src/features/generation/worker/generators/scenarios/tile.ts
+  s_e4cf31c1fe56ab::t_1a9d57d7e3ae4a 1-14,16-18,20-24,26-27,29,31-46,51-52,54-133
+  s_e4cf31c1fe56ab::t_2a10a2b6298d00 19
+  s_e4cf31c1fe56ab::t_d128bfe117eb96 28,30
+  s_e4cf31c1fe56ab::t_7c6361f984ed84 25
+  s_e4cf31c1fe56ab::t_ff72c3208dd3fd 15
+  s_e4cf31c1fe56ab::t_deced5ed7c2b1c 47-50,53
+src/features/bin-designer/utils/assembledHeight.ts
+  s_e4cf31c1fe56ab::t_17546c0be38c32 147-158
+  s_e4cf31c1fe56ab::t_97c735a8544663 18
+  s_e4cf31c1fe56ab::t_bcf05ef197dd78 87
+  s_e4cf31c1fe56ab::t_f96a5754df176b 111-114
+src/features/bin-designer/constants/defaults.ts
+  s_e4cf31c1fe56ab::t_2ce3b9261ebe74 188-190
+src/shared/constraints/features.ts
+  s_e4cf31c1fe56ab::t_f87c7277430d1d 75-86
+src/features/generation/worker/generators/pipeline/context.ts
+  s_e4cf31c1fe56ab::t_dea21f28d119dd 60-63,69
+  s_e4cf31c1fe56ab::t_4d1562b6ec7a0a 81-86
+  s_e4cf31c1fe56ab::t_1ce23aa36f34cb 134-138
+  s_e4cf31c1fe56ab::t_07779993be8572 141-144
+  s_e4cf31c1fe56ab::t_c39f0b3dec65e7 247-250
+  s_e4cf31c1fe56ab::t_e4134a7c36585e 282
+  s_e4cf31c1fe56ab::t_4a1854d1230c14 64-68
+src/features/bin-designer/utils/binDimensions.ts
+  s_e4cf31c1fe56ab::t_709a7b281d3735 85-95
+src/features/generation/worker/generators/pipeline/types.ts
+  s_e4cf31c1fe56ab::t_9929359cb90f62 83-93
+src/features/generation/worker/generators/scenarios/index.ts
+  s_e4cf31c1fe56ab::t_f84bcfcb1bc794 40,96
+api/lib/designerValidation.ts
+  s_e4cf31c1fe56ab::t_fd08685a07e9e8 987-990,992,995
+  s_e4cf31c1fe56ab::t_b18bff92da2bc1 222-226
+  s_e4cf31c1fe56ab::t_af89cf970864a9 199
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "3d5db6fc7da3d60cd1e95ad49548287f20006274",
+  "prompts": {},
+  "sessions": {
+    "s_e4cf31c1fe56ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cab724f0-c25f-4fd9-bf08-ca5e4ab8428f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
