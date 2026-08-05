@@ -57,7 +57,16 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // sockets, leaving uniform 1u cells as one full socket. This avoids
   // decomposing every cell unnecessarily.
   const halfSockets = params.base.halfSockets && !socketless;
-  const solid = params.base.solid;
+  // Wall-less tray: the spacer's complement. Needs feet to stand on, so like
+  // the spacer it is inert on a socketless base and the constraint engine keeps
+  // the two from being on together.
+  const isTile = params.base.tile === true && !socketless;
+  // A wall-less tray always takes the solid path: its interior height is 0, so
+  // the cavity cut a 'standard' style would apply is a zero-height (degenerate)
+  // tool. Derived here rather than via `base.solid` because IMPLICATION_RULES
+  // force that flag false for any style other than 'solid', and the tray keeps
+  // style 'standard' so the user can switch back out of the mode.
+  const solid = params.base.solid || isTile;
   // Spacer (#2869): a floorless riser that lifts a bin so mismatched heights line
   // up. Feet and stacking lip are unchanged — only the floor is gone, so every
   // height/stacking rule the bin already follows carries over. Needs a socket to
@@ -69,7 +78,12 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // A spacer always shells (its feet ARE the structure once the floor is gone),
   // so it takes the same build path whether or not the user asked for lite.
   const lightweight = (params.base.lightweight || isSpacer) && !socketless;
-  const wallHeight = socketless ? totalHeight : totalHeight - SOCKET_HEIGHT;
+  // A tray collapses the wall to ZERO rather than shortening it: the body ends
+  // at the top of the floor slab (`SOCKET_HEIGHT`) and the lip fuses straight
+  // onto it, giving a 9.3mm plate. `params.height` is inert here — it is pinned
+  // to 1 only to satisfy the range validators (see `BaseConfig.tile`), so
+  // reading it would silently build a 7mm-tall wall instead.
+  const wallHeight = isTile ? 0 : socketless ? totalHeight : totalHeight - SOCKET_HEIGHT;
   // Exterior-wall collar (issue #2500): raises the outer box + lip above the
   // nominal wall height without touching the interior. Kept separate from
   // `wallHeight` so every feature stage anchors to the original top plane.
@@ -117,10 +131,17 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
 
   const maxDimension = Math.max(params.width * gridUnitX, params.depth * gridUnitY);
 
-  const hasLip = params.base.stackingLip;
+  // A tray's lip is its entire shell (the wall is 0), so a crafted payload with
+  // `{ tile: true, stackingLip: false }` would leave `shellStage` with nothing
+  // to return. IMPLICATION_RULES force the flag on in the UI; this is the
+  // generation-side guard that a share payload cannot bypass.
+  const hasLip = params.base.stackingLip || isTile;
   // Safety: LIP_OVERLAP (0.1mm) < LIP_SMALL_TAPER (0.7mm) so interiorHeight
   // already clears the actual lip base at wallHeight - LIP_OVERLAP.
-  const interiorHeight = hasLip ? wallHeight - LIP_SMALL_TAPER : wallHeight;
+  // Floored at 0 for the tray, whose wallHeight is 0: the subtraction would
+  // otherwise hand every downstream stage a -0.7mm interior, and a negative
+  // extrude is a degenerate solid rather than an empty one.
+  const interiorHeight = Math.max(0, hasLip ? wallHeight - LIP_SMALL_TAPER : wallHeight);
 
   // Bake compartment walls into the shell as a single multi-cavity cut when
   // the shape is amenable to that path: rectangular footprint (no polygon
@@ -223,6 +244,10 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
       // `heightUnitMm` makes a socketed 13mm x 2u and a tray 7mm x 3u agree on
       // every other segment, including `wallHeight`.
       ...(isTrayBottom ? ['tray'] : []),
+      // `quantize(wallHeight)` above is 0 for a tray, but it is also 0 for a
+      // socketed bin whose totalHeight happens to equal SOCKET_HEIGHT (a custom
+      // 5mm heightUnitMm at 1u). Those are different solids, so separate them.
+      ...(isTile ? ['tile'] : []),
       // A solid bin's fill surface is part of its BODY (shellStage folds it into
       // `cutoutTopOffset`), so two bins differing only in the top offset are two
       // different shells. Without this the second one silently reuses the first
@@ -254,6 +279,7 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
     halfSockets,
     lightweight,
     isSpacer,
+    isTile,
     solid,
     isSlotted,
     hasLip,

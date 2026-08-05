@@ -80,6 +80,17 @@ export interface BinDimensions {
    * Forced false for flat bins (nothing to shell through).
    */
   readonly isSpacer: boolean;
+  /**
+   * True for a wall-less tray: the complement of {@link isSpacer}. The floor
+   * and feet stay, {@link wallHeight} is pinned to 0, and the stacking lip
+   * fuses straight onto the floor slab, giving a 9.3mm plate that still stacks.
+   *
+   * {@link totalHeight} is NOT the tray's height — it stays `height *
+   * heightUnitMm` (7mm), because `params.height` is inert data pinned to 1 to
+   * satisfy the range validators. The body top is `baseOffsetZ + wallHeight`.
+   * Forced false for socketless bins (no feet to stand on).
+   */
+  readonly isTile: boolean;
   readonly solid: boolean;
   readonly isSlotted: boolean;
   readonly hasLip: boolean;

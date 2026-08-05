@@ -170,15 +170,24 @@ export const DESIGNER_CONSTRAINTS = {
  * through, so the flag is inert on a flat base. Keying off `base.spacer` alone
  * would let `{ style: 'flat', spacer: true, height: 1 }` through as a 1u bin
  * with an ordinary floor.
+ *
+ * A wall-less tray takes the same relaxed floor for the same reason: its wall
+ * height is pinned to 0 and its real height comes from `assembledHeight`, so
+ * `height` is inert data that only has to clear the validators. It is stored as
+ * 1 rather than its true 0.71u so no fractional-height carve-out is needed here
+ * or in the server mirror.
  */
-export function minHeightUnits(base: { readonly spacer: boolean; readonly style: string }): number {
+export function minHeightUnits(base: {
+  readonly spacer: boolean;
+  readonly tile?: boolean;
+  readonly style: string;
+}): number {
   // Matches `deriveDimensions`: the flag is inert on any socketless base, so
   // a `{ style: 'lid', spacer: true, height: 1 }` payload must not buy the
   // relaxed floor either.
-  const isEffectiveSpacer = base.spacer && base.style !== 'flat' && base.style !== 'lid';
-  return isEffectiveSpacer
-    ? DESIGNER_CONSTRAINTS.MIN_SPACER_HEIGHT
-    : DESIGNER_CONSTRAINTS.MIN_HEIGHT;
+  const socketless = base.style === 'flat' || base.style === 'lid';
+  const relaxed = (base.spacer || base.tile === true) && !socketless;
+  return relaxed ? DESIGNER_CONSTRAINTS.MIN_SPACER_HEIGHT : DESIGNER_CONSTRAINTS.MIN_HEIGHT;
 }
 
 /**

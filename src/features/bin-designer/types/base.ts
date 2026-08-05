@@ -30,6 +30,22 @@ export function isSocketlessBase(style: BaseStyle): boolean {
 }
 
 /**
+ * True when the tray flag actually takes effect. A tray is feet + floor + lip
+ * with the wall collapsed to zero, so a socketless base has nothing to build it
+ * on and the flag is inert there — exactly as `spacer` is.
+ *
+ * Shared by the height floor, the constraint engine and `deriveDimensions` so a
+ * crafted payload like `{ style: 'flat', tile: true, height: 1 }` cannot buy the
+ * relaxed 1u floor through one path that another path would reject.
+ */
+export function isEffectiveTile(base: {
+  readonly tile?: boolean;
+  readonly style: BaseStyle;
+}): boolean {
+  return base.tile === true && !isSocketlessBase(base.style);
+}
+
+/**
  * Mating geometry for a {@link BaseStyle} of `'lid'` (#3036): a fully editable
  * bin whose underside is a lid instead of a Gridfinity base, so it caps the bin
  * below it.
@@ -102,6 +118,32 @@ export interface BaseConfig {
    * are ruled out by the constraint engine; wall features still apply.
    */
   readonly spacer: boolean;
+  /**
+   * Wall-less tray mode: the exact complement of {@link spacer}. A spacer keeps
+   * the walls and drops the floor; a tray keeps the floor and drops the walls,
+   * leaving feet + floor slab + stacking lip. The lip becomes the only raised
+   * edge, so it prints as a flat colour-blockable plate that still stacks.
+   *
+   * The wall collapses to zero rather than shrinking: `deriveDimensions` pins
+   * `wallHeight` to 0, so the body ends at `SOCKET_HEIGHT` and the lip fuses
+   * straight onto the floor slab. That makes the printed height 9.3mm
+   * (5mm slab + `LIP_HEIGHT` − `LIP_OVERLAP`), which is 0.71 height units and
+   * therefore NOT expressible via {@link BinParams.height} — `height` is pinned
+   * to 1 purely so the existing range validators and their server mirror keep
+   * working, and the geometry ignores it. Anything reporting a tray's real
+   * height must go through `assembledHeight`, never `height * heightUnitMm`.
+   *
+   * Needs a socket to sit on, so like {@link spacer} the flag is inert on a
+   * socketless base; the constraint engine also keeps the two off together
+   * (feet + floor + no floor is nothing at all).
+   *
+   * Optional, and absent rather than `false` when off — for the same reason
+   * {@link trayBottom} is. `communityParamsFingerprint` hashes `params`
+   * wholesale, so an always-present new field would shift the fingerprint of
+   * every already-published design and silently break the community duplicate
+   * guard and the REMIX_UNCHANGED check.
+   */
+  readonly tile?: boolean;
   /**
    * Underside mating geometry, read only when {@link style} is `'lid'`.
    * Optional because it must stay out of an ordinary bin's params hash (see

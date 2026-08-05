@@ -736,6 +736,11 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
   // hashed wholesale by `communityParamsFingerprint`, so backfilling this
   // unconditionally would shift every existing design's fingerprint and break
   // the community duplicate guard against already-published records.
+  // Absent, never `false` — a stored `false` would shift the fingerprint of a
+  // design that has no tray just as an always-present default would.
+  if (mergedBase.tile !== true) {
+    delete (mergedBase as { tile?: boolean }).tile;
+  }
   const baseConfig: BaseConfig =
     mergedBase.style === 'lid'
       ? { ...mergedBase, trayBottom: migrateTrayBottom(mergedBase.trayBottom) }

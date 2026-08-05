@@ -223,6 +223,13 @@ function splitSolidIntoPieces(
   const wallHeight = splitDims.wallHeight;
   const floorZ = splitDims.baseOffsetZ;
   const wallTopZ = floorZ + wallHeight;
+  // Z extent a split piece of the body should retain. The body spans 0..wallTopZ,
+  // which equals `totalHeight` for socketed and flat bases, EXCEEDS it for a tray
+  // bottom (the skirt adds depth below the floor), and is far SHORTER for a
+  // wall-less tray, whose wall is zero and whose body is just the 5mm floor slab.
+  // Taking the lower of the two measures the wall-less tray against its real body
+  // while leaving every other base on the exact threshold it had.
+  const expectedBodyZ = Math.min(totalHeight, wallTopZ);
 
   // An overhang grows the outer body past the nominal grid footprint (#1949);
   // both the lip and the outermost cutting boxes must track it. Suppressed for
@@ -405,7 +412,7 @@ function splitSolidIntoPieces(
         // reporting. A solid bin has no cavity, so case (1) can't apply to it.
         const pieceBounds = getBounds(piece);
         const actualZ = pieceBounds.zMax - pieceBounds.zMin;
-        if (actualZ < totalHeight * 0.8) {
+        if (actualZ < expectedBodyZ * 0.8) {
           piece.delete();
           cuttingBox.delete();
           const isFullyInterior = col > 0 && col < numCols - 1 && row > 0 && row < numRows - 1;
@@ -419,7 +426,7 @@ function splitSolidIntoPieces(
           }
           throw new Error(
             `Split piece ${colLabel}${row + 1} lost geometry: ` +
-              `expected body Z≈${totalHeight.toFixed(1)}mm (lip fused separately), got ${actualZ.toFixed(1)}mm. ` +
+              `expected body Z≈${expectedBodyZ.toFixed(1)}mm (lip fused separately), got ${actualZ.toFixed(1)}mm. ` +
               `This usually means a cut plane landed coplanar with an internal wall — please report this bug.`
           );
         }

@@ -72,6 +72,18 @@ export const FEATURE_MANIFESTS: Record<FeatureKey, FeatureManifest> = {
     apply: (p, enabled) => ({ base: { ...p.base, spacer: enabled } }),
   },
 
+  'base.tile': {
+    key: 'base.tile',
+    label: 'Tray',
+    isEnabled: (p) => p.base.tile === true,
+    // Off is ABSENT, not `false` — a stored `false` would shift the params
+    // fingerprint of every design that has no tray. See `BaseConfig.tile`.
+    apply: (p, enabled) => {
+      const { tile: _tile, ...rest } = p.base;
+      return { base: enabled ? { ...rest, tile: true } : rest };
+    },
+  },
+
   'base.flat': {
     key: 'base.flat',
     label: 'Flat Base',

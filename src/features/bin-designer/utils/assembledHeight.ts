@@ -15,7 +15,7 @@
 
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { baseFloorZ } from './binDimensions';
-import type { BaseStyle } from '@/features/bin-designer/types/base';
+import { isSocketlessBase, type BaseStyle } from '@/features/bin-designer/types/base';
 import {
   LID_FIT_CLEARANCE,
   lidAnchorZ,
@@ -84,6 +84,7 @@ export interface AssembledHeightSource {
     readonly style: BaseStyle;
     readonly stackingLip: boolean;
     readonly magnetDepth: number;
+    readonly tile?: boolean;
   };
   readonly lid: LidConfig;
   readonly cellMask?: CellMask;
@@ -107,6 +108,10 @@ function lidRiseMm(params: AssembledHeightSource): number {
  * however the lid config is persisted.
  */
 export function hasSeatedLid(params: AssembledHeightSource): boolean {
+  // Mirrors `shouldGenerateLid`, including its wall-less tray gate: a tray keeps
+  // its lip, so the lip precondition alone would seat a lid on a plate that has
+  // no cavity to close, and the readout would count a band the worker never builds.
+  if (params.base.tile === true) return false;
   return params.lid.enabled && params.base.stackingLip;
 }
 
@@ -139,10 +144,18 @@ export function assembledHeight(
   // assembly's height. `extraHeightMm` is the whole point of the feature —
   // turning it up to clear protruding contents has to move this number.
   const skirtMm = baseFloorZ(params.base, params.heightUnitMm, params.lid);
-  const binMm =
-    params.height * params.heightUnitMm +
-    Math.max(0, params.extraWallHeightMm ?? 0) +
-    (params.base.style === 'lid' ? skirtMm : 0);
+  // A wall-less tray's body is its floor slab and nothing more, so its height is
+  // `baseFloorZ` (SOCKET_HEIGHT) rather than `height * heightUnitMm`. Reading
+  // `height` here would report 7mm for a 5mm body: the field is inert on a tray,
+  // pinned to 1 purely to satisfy the range validators (see `BaseConfig.tile`).
+  // This is the readout drawer clearance is computed from, so the whole point of
+  // the mode (a plate that barely rises above the plate it sits in) depends on it.
+  const isTile = params.base.tile === true && !isSocketlessBase(params.base.style);
+  const binMm = isTile
+    ? skirtMm
+    : params.height * params.heightUnitMm +
+      Math.max(0, params.extraWallHeightMm ?? 0) +
+      (params.base.style === 'lid' ? skirtMm : 0);
   const lipMm = params.base.stackingLip ? GRIDFINITY.LIP_HEIGHT - GRIDFINITY.LIP_OVERLAP : 0;
   const lidMm = hasSeatedLid(params) ? lidRiseMm(params) : 0;
   // The stack grid is a SOCKET_HEIGHT slab above the lid's top face, whether it

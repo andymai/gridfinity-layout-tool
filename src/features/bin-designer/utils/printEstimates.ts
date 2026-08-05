@@ -12,6 +12,7 @@
 
 import type { BinParams, LabelTabSupport, WallPatternType } from '@/features/bin-designer/types';
 import { isSocketlessBase } from '@/features/bin-designer/types/base';
+import { baseWallHeight } from './binDimensions';
 import { DEFAULT_PATTERN_SCALE } from '@/features/bin-designer/types';
 import { GRIDFINITY, STYLE_WALL_THICKNESS } from '@/features/bin-designer/constants/gridfinity';
 import {
@@ -188,8 +189,7 @@ function computeBinVolume(params: BinParams): number {
  */
 function effectiveDividerHeight(params: BinParams): number {
   const totalH = params.height * params.heightUnitMm;
-  const isFlat = isSocketlessBase(params.base.style);
-  const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
+  const wallHeight = baseWallHeight(params.base, totalH);
   const interiorHeight = computeInteriorHeight(
     wallHeight,
     params.base.stackingLip,
@@ -471,9 +471,8 @@ function computeScoopVolume(
   const rowDepth = innerD / rows;
 
   const hasLip = params.base.stackingLip;
-  const isFlat = isSocketlessBase(params.base.style);
   const totalH = params.height * params.heightUnitMm;
-  const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
+  const wallHeight = baseWallHeight(params.base, totalH);
   const interiorHeight = computeInteriorHeight(wallHeight, hasLip, GRIDFINITY.LIP_SMALL_TAPER);
   const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
 
@@ -664,6 +663,10 @@ function computeFloorPatternReduction(
   // carry one without the other.
   if (params.base.solid || params.style === 'solid' || params.base.lightweight) return 0;
   if (params.base.spacer) return 0;
+  // The generator forces a wall-less tray down the solid path, so no floor
+  // pattern is ever cut. `base.solid` above does not catch it: IMPLICATION_RULES
+  // hold that flag false while the tray keeps style 'standard'.
+  if (params.base.tile === true) return 0;
   if (params.width <= 0 || params.depth <= 0) return 0;
 
   const isFlat = isSocketlessBase(params.base.style);
