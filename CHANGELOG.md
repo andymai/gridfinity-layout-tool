@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.366.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.365.0...gridfinity-layout-tool-v4.366.0) (2026-08-05)
+
+
+### Features
+
+* **designer:** lid-compatible bottom for a normal bin ([#3232](https://github.com/andymai/gridfinity-layout-tool/issues/3232)) ([73132ca](https://github.com/andymai/gridfinity-layout-tool/commit/73132ca36b11cfa2d145bb1d1eecce3eb010769e))
+
 ## [4.365.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.364.0...gridfinity-layout-tool-v4.365.0) (2026-08-05)
 
 
