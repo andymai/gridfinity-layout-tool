@@ -34,16 +34,22 @@ export interface FilterPanelState {
  *
  * They are tracked separately so resizing across the breakpoint mid-session
  * cannot leak one into the other.
+ *
+ * `filtersAvailable` is false when there is nothing to narrow. It gates the
+ * surface without touching the rail preference, so the rail returns on its own
+ * once cards load — while the mobile view, being a full takeover, does not.
  */
-export function useFilterPanel(isMobile: boolean): FilterPanelState {
+export function useFilterPanel(isMobile: boolean, filtersAvailable = true): FilterPanelState {
   const [railOpen, setRailOpen] = useState(loadRailOpen);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [lastIsMobile, setLastIsMobile] = useState(isMobile);
+  const [lastAvailable, setLastAvailable] = useState(filtersAvailable);
 
-  // Leaving mobile ends the mobile view for good. Left standing, it would
-  // reopen on the way back to mobile width and take the whole grid over
-  // unprompted — a rail quietly reappearing is recoverable, a full-screen
-  // takeover nobody asked for is not.
+  // Both resets kill the mobile view for the same reason: it would otherwise
+  // reappear on its own — on the way back to mobile width, or the moment
+  // filters become available again — and seize the whole grid unprompted. A
+  // rail quietly reappearing is recoverable; a full-screen takeover nobody
+  // asked for is not.
   //
   // Adjusted during render rather than in an effect: React re-runs this
   // component before committing, so the stale value never reaches the DOM and
@@ -51,6 +57,10 @@ export function useFilterPanel(isMobile: boolean): FilterPanelState {
   if (lastIsMobile !== isMobile) {
     setLastIsMobile(isMobile);
     if (!isMobile) setMobileOpen(false);
+  }
+  if (lastAvailable !== filtersAvailable) {
+    setLastAvailable(filtersAvailable);
+    if (!filtersAvailable) setMobileOpen(false);
   }
 
   const toggle = useCallback(() => {
@@ -73,5 +83,5 @@ export function useFilterPanel(isMobile: boolean): FilterPanelState {
     saveRailOpen(false);
   }, [isMobile]);
 
-  return { open: isMobile ? mobileOpen : railOpen, toggle, close };
+  return { open: filtersAvailable && (isMobile ? mobileOpen : railOpen), toggle, close };
 }
