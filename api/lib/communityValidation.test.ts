@@ -16,7 +16,8 @@ import {
   COMMUNITY_REPORT_REASONS,
   COMMUNITY_TECHNIQUES,
   MAX_COMMUNITY_THUMBNAIL_BYTES,
-  communityRequiresCutouts,
+  checkCommunityDescriptionPolicy,
+  communityRequiresDescription,
   deriveCommunityTechniques,
   parseCommunityLineage,
   validateCommunityPublish,
@@ -101,16 +102,22 @@ describe('validateCommunityPublish', () => {
     expect(validateCommunityPublish(validBody({ name: '工具盒' })).valid).toBe(true);
   });
 
-  it('defaults an absent description to empty and caps its length', () => {
-    const result = validateCommunityPublish(validBody({ description: undefined }));
-    expect(result.valid).toBe(true);
-    if (!result.valid) throw new Error('expected valid');
-    expect(result.payload.description).toBe('');
-
+  it('caps description length before the policy runs', () => {
     expectError(
       validBody({ description: 'x'.repeat(COMMUNITY_DESCRIPTION_MAX_LENGTH + 1) }),
       'INVALID_DESCRIPTION'
     );
+  });
+
+  it('rejects an absent description, and defaults it to empty once relaxed', () => {
+    expectError(validBody({ description: undefined }), 'DESCRIPTION_REQUIRED');
+
+    process.env.COMMUNITY_REQUIRE_DESCRIPTION = 'false';
+    const result = validateCommunityPublish(validBody({ description: undefined }));
+    delete process.env.COMMUNITY_REQUIRE_DESCRIPTION;
+    expect(result.valid).toBe(true);
+    if (!result.valid) throw new Error('expected valid');
+    expect(result.payload.description).toBe('');
   });
 
   it('rejects a missing or empty authorName', () => {
@@ -120,7 +127,7 @@ describe('validateCommunityPublish', () => {
 
   it('content-blocks filtered name, description, and authorName', () => {
     expectError(validBody({ name: 'visit https://spam.example' }), 'CONTENT_BLOCKED');
-    expectError(validBody({ description: 'kys' }), 'CONTENT_BLOCKED');
+    expectError(validBody({ description: 'you should kys now' }), 'CONTENT_BLOCKED');
     expectError(validBody({ authorName: 'kys' }), 'CONTENT_BLOCKED');
   });
 
@@ -237,22 +244,44 @@ describe('validateCommunityPublish', () => {
   });
 });
 
-describe('communityRequiresCutouts (B1 config flag)', () => {
+describe('communityRequiresDescription (config flag)', () => {
   afterEach(() => {
-    delete process.env.COMMUNITY_REQUIRE_CUTOUTS;
+    delete process.env.COMMUNITY_REQUIRE_DESCRIPTION;
   });
 
   it('defaults ON when the flag is unset', () => {
-    expect(communityRequiresCutouts()).toBe(true);
+    expect(communityRequiresDescription()).toBe(true);
   });
 
   it('is only relaxed by the literal string "false"', () => {
-    process.env.COMMUNITY_REQUIRE_CUTOUTS = 'false';
-    expect(communityRequiresCutouts()).toBe(false);
-    process.env.COMMUNITY_REQUIRE_CUTOUTS = 'true';
-    expect(communityRequiresCutouts()).toBe(true);
-    process.env.COMMUNITY_REQUIRE_CUTOUTS = '0';
-    expect(communityRequiresCutouts()).toBe(true);
+    process.env.COMMUNITY_REQUIRE_DESCRIPTION = 'false';
+    expect(communityRequiresDescription()).toBe(false);
+    process.env.COMMUNITY_REQUIRE_DESCRIPTION = 'true';
+    expect(communityRequiresDescription()).toBe(true);
+    process.env.COMMUNITY_REQUIRE_DESCRIPTION = '0';
+    expect(communityRequiresDescription()).toBe(true);
+  });
+});
+
+describe('checkCommunityDescriptionPolicy', () => {
+  afterEach(() => {
+    delete process.env.COMMUNITY_REQUIRE_DESCRIPTION;
+  });
+
+  it('passes a description that says what the design is for', () => {
+    expect(checkCommunityDescriptionPolicy('Holds 14 AA cells upright')).toBeNull();
+  });
+
+  it('names the specific problem so the client can route it', () => {
+    expect(checkCommunityDescriptionPolicy('')?.code).toBe('DESCRIPTION_REQUIRED');
+    expect(checkCommunityDescriptionPolicy('Bit holder')?.code).toBe('DESCRIPTION_TOO_SHORT');
+    expect(checkCommunityDescriptionPolicy('aaaaaaaaaaaaaa')?.code).toBe('DESCRIPTION_LOW_EFFORT');
+  });
+
+  it('accepts anything once the policy is relaxed', () => {
+    process.env.COMMUNITY_REQUIRE_DESCRIPTION = 'false';
+    expect(checkCommunityDescriptionPolicy('')).toBeNull();
+    expect(checkCommunityDescriptionPolicy('aaaaaaaaaaaaaa')).toBeNull();
   });
 });
 

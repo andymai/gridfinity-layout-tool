@@ -800,17 +800,6 @@ describe('community/[id]', () => {
       );
     });
 
-    it('rejects an update without a tool cutout under the cutout-only policy (B1)', async () => {
-      mocks.validateCommunityPublish.mockReturnValue({
-        valid: true,
-        payload: publishPayload({ params: { width: 4, depth: 2, height: 9, gridUnitMm: 42 } }),
-      });
-      const res = await handle('PUT', { body: publishPayload() });
-      expect(res._status).toBe(400);
-      expect((res._body as { code: string }).code).toBe('CUTOUT_REQUIRED');
-      expect(mocks.put).not.toHaveBeenCalled();
-    });
-
     it('rejects an update that makes a remix identical to its parent (B4)', async () => {
       mocks.readCommunityDesignBlob
         .mockResolvedValueOnce(

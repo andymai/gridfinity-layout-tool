@@ -58,12 +58,10 @@ import type {
 import {
   COMMUNITY_REPORT_NOTE_MAX_LENGTH,
   COMMUNITY_REPORT_REASONS,
-  communityRequiresCutouts,
   validateCommunityPublish,
 } from '../lib/communityValidation.js';
 import { readCommunityPrints } from '../lib/communityPrintStore.js';
 import { communityPrintsEnabled } from '../lib/communityPrintValidation.js';
-import { hasQualifyingCutout } from '../lib/communityLowEffort.js';
 import { COMMUNITY_EXAMPLE_PARAM_HASHES } from '../lib/communityExampleParamHashes.js';
 import type { CommunityReportReason } from '../lib/communityValidation.js';
 import { isObject, isString } from '../lib/validationUtils.js';
@@ -383,15 +381,6 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string) {
     const status = await readModerationStatus(id, existing.status);
     if (status !== 'live') {
       return sendError(res, 403, ErrorCode.UNAUTHORIZED, 'This design cannot be updated.');
-    }
-
-    // B1: cutout-only launch policy gates updates too.
-    if (communityRequiresCutouts() && !hasQualifyingCutout(payload.params)) {
-      return res.status(400).json({
-        error:
-          'Community publishing is for bins with tool cutouts right now. Add a cutout to share this design.',
-        code: 'CUTOUT_REQUIRED',
-      });
     }
 
     const paramsFingerprint = communityParamsFingerprint(payload.params);

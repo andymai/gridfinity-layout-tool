@@ -18,7 +18,7 @@ import {
 import {
   COMMUNITY_CATEGORIES,
   COMMUNITY_TECHNIQUES,
-  communityRequiresCutouts,
+  communityRequiresDescription,
   isCommunityFeatureReason,
   parseCommunityLineage,
   validateCommunityPublish,
@@ -42,7 +42,6 @@ import {
   writeCommunityDesignBlob,
 } from './lib/communityStore.js';
 import { communityPrintsEnabled } from './lib/communityPrintValidation.js';
-import { hasQualifyingCutout } from './lib/communityLowEffort.js';
 import { COMMUNITY_EXAMPLE_PARAM_HASHES } from './lib/communityExampleParamHashes.js';
 import type {
   CommunityCardMetadata,
@@ -109,8 +108,8 @@ type LineageResolveResult =
  * proof-of-remix. Any live design can be claimed as a parent; only the credit
  * text is server-derived, so a spammer could inflate a victim's remix count.
  * This is bounded by the 10/day publish rate limit and the report path, and
- * further shrunk by the cutout-only gate, the remix-must-differ rule (B4), and
- * the exact-duplicate guard (B3). We deliberately do not build proof-of-remix.
+ * further shrunk by the remix-must-differ rule (B4) and the exact-duplicate
+ * guard (B3). We deliberately do not build proof-of-remix.
  */
 async function resolveLineage(
   redis: RedisClient,
@@ -272,16 +271,6 @@ async function handlePublish(req: VercelRequest, res: VercelResponse): Promise<v
     if (denied === 1) {
       // Deliberately neutral: the response must not reveal deny-listing.
       sendError(res, 403, ErrorCode.UNAUTHORIZED, 'Publishing is not available for this account.');
-      return;
-    }
-
-    // B1: cutout-only launch policy. Wall cutouts do not qualify.
-    if (communityRequiresCutouts() && !hasQualifyingCutout(payload.params)) {
-      res.status(400).json({
-        error:
-          'Community publishing is for bins with tool cutouts right now. Add a cutout to share this design.',
-        code: 'CUTOUT_REQUIRED',
-      });
       return;
     }
 
@@ -833,7 +822,7 @@ function handleCapabilities(res: VercelResponse): void {
   res.status(200).json({
     publishEnabled: process.env.COMMUNITY_PUBLISH_ENABLED === 'true',
     printsEnabled: communityPrintsEnabled(),
-    requireCutouts: communityRequiresCutouts(),
+    requireDescription: communityRequiresDescription(),
   });
 }
 

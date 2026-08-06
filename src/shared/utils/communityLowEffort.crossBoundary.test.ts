@@ -10,13 +10,13 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  classifyCommunityDescription as serverClassifyDescription,
   classifyCommunityName as serverClassifyName,
-  hasQualifyingCutout as serverHasCutout,
 } from '../../../api/lib/communityLowEffort.js';
 
 import {
+  classifyCommunityDescription as clientClassifyDescription,
   classifyCommunityName as clientClassifyName,
-  hasQualifyingCutout as clientHasCutout,
 } from './communityLowEffort';
 
 const NAME_FIXTURES: readonly string[] = [
@@ -38,12 +38,20 @@ const NAME_FIXTURES: readonly string[] = [
   'cool <script name',
 ];
 
-const CUTOUT_FIXTURES: readonly { readonly cutouts?: unknown }[] = [
-  { cutouts: [{ shape: 'circle' }] },
-  { cutouts: [] },
-  {},
-  { cutouts: undefined },
-  { cutouts: 'not-an-array' },
+const DESCRIPTION_FIXTURES: readonly string[] = [
+  'Holds 14 AA cells upright',
+  'For AA cells',
+  '  For AA cells  ',
+  'M3ネジ用の仕切り付きビン',
+  '드라이버 여섯 개를 담는 통',
+  '',
+  '   ',
+  'Bit holder',
+  'aaaaaaaaaaaaaa',
+  'abababababab',
+  '1234567890123',
+  '..............',
+  'a b c d e f g h',
 ];
 
 describe('communityLowEffort client and server mirrors agree', () => {
@@ -54,10 +62,10 @@ describe('communityLowEffort client and server mirrors agree', () => {
     }
   );
 
-  it.each(CUTOUT_FIXTURES.map((params, index) => [index, params] as const))(
-    'cutout fixture %i',
-    (_index, params) => {
-      expect(clientHasCutout(params)).toBe(serverHasCutout(params));
+  it.each(DESCRIPTION_FIXTURES.map((description, index) => [index, description] as const))(
+    'description fixture %i',
+    (_index, description) => {
+      expect(clientClassifyDescription(description)).toBe(serverClassifyDescription(description));
     }
   );
 });

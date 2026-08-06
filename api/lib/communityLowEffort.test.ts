@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
 
 import {
+  COMMUNITY_DESCRIPTION_MIN_LENGTH,
   COMMUNITY_NAME_MIN_LENGTH,
+  classifyCommunityDescription,
   classifyCommunityName,
-  hasQualifyingCutout,
 } from './communityLowEffort.js';
 
 describe('classifyCommunityName (server mirror)', () => {
@@ -24,12 +25,24 @@ describe('classifyCommunityName (server mirror)', () => {
   });
 });
 
-describe('hasQualifyingCutout (server mirror)', () => {
-  it('is true only for a non-empty tool-cutout array', () => {
-    expect(hasQualifyingCutout({ cutouts: [{ shape: 'circle' }] })).toBe(true);
-    expect(hasQualifyingCutout({ cutouts: [] })).toBe(false);
-    expect(hasQualifyingCutout({})).toBe(false);
-    const wallOnly: Record<string, unknown> = { walls: { enabled: true } };
-    expect(hasQualifyingCutout(wallOnly)).toBe(false);
+describe('classifyCommunityDescription (server mirror)', () => {
+  it('accepts a description that says what the design is for', () => {
+    expect(classifyCommunityDescription('Holds 14 AA cells upright')).toBeNull();
+    expect(classifyCommunityDescription('  For AA cells  ')).toBeNull();
+  });
+
+  it('accepts a short description in a dense script', () => {
+    expect(classifyCommunityDescription('M3ネジ用の仕切り付きビン')).toBeNull();
+    expect(classifyCommunityDescription('드라이버 여섯 개를 담는 통')).toBeNull();
+  });
+
+  it('flags empty, too-short, and keysmash descriptions', () => {
+    expect(classifyCommunityDescription('   ')).toBe('empty');
+    expect(classifyCommunityDescription('Bit holder')).toBe('too-short');
+    expect(classifyCommunityDescription('a'.repeat(COMMUNITY_DESCRIPTION_MIN_LENGTH))).toBe(
+      'low-effort'
+    );
+    expect(classifyCommunityDescription('abababababab')).toBe('low-effort');
+    expect(classifyCommunityDescription('1234567890123')).toBe('low-effort');
   });
 });

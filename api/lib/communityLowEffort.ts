@@ -38,9 +38,32 @@ export function classifyCommunityName(rawName: string): CommunityNameIssue | nul
 }
 
 /**
- * A publish qualifies for the cutout-only launch policy when it carries at
- * least one tool cutout. Wall cutouts (`params.walls`) do NOT qualify.
+ * Minimum trimmed description length. Sized against the densest script we ship
+ * ("M3ネジ用の仕切り付きビン" is 13), not against English.
  */
-export function hasQualifyingCutout(params: { readonly cutouts?: unknown }): boolean {
-  return Array.isArray(params.cutouts) && params.cutouts.length > 0;
+export const COMMUNITY_DESCRIPTION_MIN_LENGTH = 12;
+
+/**
+ * Stands in for a word count: whitespace tokenisation reports one word for a
+ * whole ja/ko/zh-CN sentence, so a word floor would reject those locales.
+ */
+export const COMMUNITY_DESCRIPTION_MIN_DISTINCT_CHARS = 5;
+
+export type CommunityDescriptionIssue = 'empty' | 'too-short' | 'low-effort';
+
+/**
+ * Classify why a description is too low-effort to publish, or null when it is
+ * acceptable.
+ */
+export function classifyCommunityDescription(
+  rawDescription: string
+): CommunityDescriptionIssue | null {
+  const trimmed = rawDescription.trim();
+  if (trimmed.length === 0) return 'empty';
+  if (trimmed.length < COMMUNITY_DESCRIPTION_MIN_LENGTH) return 'too-short';
+  if (!/\p{L}/u.test(trimmed)) return 'low-effort';
+  if (new Set(trimmed.replace(/\s+/gu, '')).size < COMMUNITY_DESCRIPTION_MIN_DISTINCT_CHARS) {
+    return 'low-effort';
+  }
+  return null;
 }

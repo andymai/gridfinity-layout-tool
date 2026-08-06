@@ -14,13 +14,16 @@ describe('presentPublishError', () => {
     ['NAME_LOW_EFFORT', 'name'],
     ['DUPLICATE_DESIGN', 'name'],
     ['INVALID_DESCRIPTION', 'description'],
+    ['DESCRIPTION_REQUIRED', 'description'],
+    ['DESCRIPTION_TOO_SHORT', 'description'],
+    ['DESCRIPTION_LOW_EFFORT', 'description'],
     ['INVALID_CATEGORY', 'category'],
     ['INVALID_AUTHOR_NAME', 'publicName'],
   ])('routes %s to the %s field', (code, field) => {
     expect(presentPublishError(validation(code)).field).toBe(field);
   });
 
-  it.each(['CUTOUT_REQUIRED', 'REMIX_UNCHANGED', 'UNDER_REVIEW', 'PUBLISH_IN_PROGRESS'])(
+  it.each(['REMIX_UNCHANGED', 'UNDER_REVIEW', 'PUBLISH_IN_PROGRESS'])(
     'keeps %s at the banner level',
     (code) => {
       expect(presentPublishError(validation(code)).field).toBeNull();
