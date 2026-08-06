@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.375.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.374.1...gridfinity-layout-tool-v4.375.0) (2026-08-06)
+
+
+### Features
+
+* **community:** replace the nested filter dialog with a filter rail ([#3264](https://github.com/andymai/gridfinity-layout-tool/issues/3264)) ([8de9601](https://github.com/andymai/gridfinity-layout-tool/commit/8de96015f7e24d769a485fd8e516ba439ea7b72c))
+
 ## [4.374.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.374.0...gridfinity-layout-tool-v4.374.1) (2026-08-06)
 
 
