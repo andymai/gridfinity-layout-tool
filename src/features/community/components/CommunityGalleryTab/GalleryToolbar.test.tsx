@@ -75,6 +75,11 @@ describe('GalleryToolbar', () => {
     expect(screen.getByTestId('community-filter-button')).toBeInTheDocument();
   });
 
+  it('drops the toggle when there is nothing to narrow', () => {
+    renderToolbar({ filtersAvailable: false });
+    expect(screen.queryByTestId('community-filter-button')).toBeNull();
+  });
+
   it('badges the toggle with the active filter count', () => {
     renderToolbar({ activeFilterCount: 3 });
     expect(screen.getByTestId('community-filter-button')).toHaveTextContent('3');

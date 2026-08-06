@@ -69,7 +69,6 @@ export function CommunityGalleryTab({
 }: CommunityGalleryTabProps) {
   const t = useTranslation();
   const { isMobile } = useResponsive();
-  const filterPanel = useFilterPanel(isMobile);
 
   const { status, items, capped, error, filters, fitsGapContext, visibleCount } = useBrowseStore(
     useShallow((s) => ({
@@ -197,10 +196,18 @@ export function CommunityGalleryTab({
     };
   }, []);
 
+  // Nothing loaded means nothing to narrow, and every control in the panel
+  // would be a dead one: all counts zero, every category and technique
+  // disabled, every size axis with an empty window. The empty state stands on
+  // its own instead.
+  const filtersAvailable = activeItems.length > 0;
+  const filterPanel = useFilterPanel(isMobile, filtersAvailable);
+  const panelOpen = filterPanel.open;
+  const mobileFiltersOpen = isMobile && panelOpen;
+
   // The mobile filter view unmounts the grid, so returning from it lands on a
   // fresh scroll container. The offset was banked by handleTogglePanel while
   // the old one was still on screen.
-  const mobileFiltersOpen = isMobile && filterPanel.open;
   useEffect(() => {
     if (mobileFiltersOpen) return;
     const el = scrollRef.current;
@@ -356,13 +363,14 @@ export function CommunityGalleryTab({
   return (
     <div className="flex min-h-0 flex-1 flex-col" data-testid="community-gallery-tab">
       <GalleryToolbar
-        panelOpen={filterPanel.open}
+        panelOpen={panelOpen}
+        filtersAvailable={filtersAvailable}
         onTogglePanel={handleTogglePanel}
         activeFilterCount={countPanelFilters(filters)}
       />
 
       <div className="flex min-h-0 flex-1">
-        {filterPanel.open && (
+        {panelOpen && (
           <FilterRail
             items={activeItems}
             counts={facetCounts}

@@ -20,12 +20,18 @@ import { browseSortOptions, isBrowseSort } from './galleryFilterOptions';
 export interface GalleryToolbarProps {
   /** Whether the filter surface (desktop rail or mobile view) is showing. */
   panelOpen: boolean;
+  /**
+   * Whether there is anything to narrow. False over an empty index, where the
+   * panel would be nothing but disabled controls.
+   */
+  filtersAvailable?: boolean;
   onTogglePanel: () => void;
   activeFilterCount: number;
 }
 
 export function GalleryToolbar({
   panelOpen,
+  filtersAvailable = true,
   onTogglePanel,
   activeFilterCount,
 }: GalleryToolbarProps) {
@@ -183,7 +189,7 @@ export function GalleryToolbar({
       <div className="flex items-center gap-2">
         {/* An open rail carries its own collapse control in its header, so a
             second one here would sit two inches away doing the same thing. */}
-        {(isMobile || !panelOpen) && (
+        {filtersAvailable && (isMobile || !panelOpen) && (
           <Button
             variant="secondary"
             onClick={onTogglePanel}

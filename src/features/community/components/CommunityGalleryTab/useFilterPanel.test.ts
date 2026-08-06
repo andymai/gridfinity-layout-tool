@@ -52,6 +52,35 @@ describe('useFilterPanel on desktop', () => {
   });
 });
 
+describe('useFilterPanel when there is nothing to narrow', () => {
+  it('reports closed without disturbing the rail preference', () => {
+    const { result, rerender } = renderHook(({ available }) => useFilterPanel(false, available), {
+      initialProps: { available: true },
+    });
+    expect(result.current.open).toBe(true);
+    rerender({ available: false });
+    expect(result.current.open).toBe(false);
+    // The rail is a layout preference, so it comes back on its own once there
+    // are cards again.
+    rerender({ available: true });
+    expect(result.current.open).toBe(true);
+  });
+
+  it('does not let the mobile view reopen on its own when filters return', () => {
+    const { result, rerender } = renderHook(({ available }) => useFilterPanel(true, available), {
+      initialProps: { available: true },
+    });
+    act(() => result.current.toggle());
+    expect(result.current.open).toBe(true);
+    // Narrowing to an empty set (an owner with nothing published) drops the
+    // view; clearing that filter must not throw the visitor back into it.
+    rerender({ available: false });
+    expect(result.current.open).toBe(false);
+    rerender({ available: true });
+    expect(result.current.open).toBe(false);
+  });
+});
+
 describe('useFilterPanel on mobile', () => {
   it('starts closed regardless of the stored rail preference', () => {
     localStorage.setItem('gridfinity-community-filter-rail-v1', 'open');
