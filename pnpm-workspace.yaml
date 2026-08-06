@@ -34,8 +34,14 @@ minimumReleaseAgeExclude:
   # entry as a `||` union, never as a second line: pnpm returns the first rule
   # whose package name matches and never unions across entries, so a second
   # `brace-expansion@...` line is silently dead and its version stays blocked.
-  # TODO: remove after 2026-08-05 once 1.1.17 has aged past the window.
-  - brace-expansion@1.1.17
+  # 5.0.9 (2026-07-30) patches GHSA-rgw5-rvv9-x895 and is younger than the
+  # window, so it is unioned into THIS entry rather than added as a second
+  # `brace-expansion@...` line, which would be silently dead per the rule above.
+  # TODO: drop 5.0.9 from this union after 2026-08-06, and 1.1.17 after 2026-08-05.
+  - brace-expansion@1.1.17 || 5.0.9
+  # fast-uri 3.1.5 (2026-07-31) patches GHSA-7p8r-x3mc-p8w7 and is inside the
+  # window. TODO: remove after 2026-08-07.
+  - fast-uri@3.1.5
 
 # Blocks Shai-Hulud-class worms that spread via npm lifecycle scripts.
 # Packages that need to build are listed in allowBuilds.
@@ -52,15 +58,15 @@ peerDependencyRules:
     vite-plugin-pwa>vite: '^8.0.0'
 
 overrides:
-  '@vercel/node>undici': '^7.28.0'
-  'undici@>=6.0.0 <6.27.0': '^6.27.0'
-  'undici@>=7.0.0 <7.28.0': '^7.28.0'
+  '@vercel/node>undici': '^7.29.0'
+  'undici@>=6.0.0 <6.28.0': '^6.28.0'
+  'undici@>=7.0.0 <7.29.0': '^7.29.0'
   path-to-regexp: '6.3.0'
   '@rollup/plugin-replace>magic-string': '0.30.21'
   '@surma/rollup-plugin-off-main-thread>magic-string': '0.30.21'
   'workbox-build>@rollup/plugin-node-resolve': '^16.0.0'
   '@apideck/better-ajv-errors>ajv': '^8.17.1'
-  fast-uri: '^3.1.4'
+  fast-uri: '^3.1.5'
   # sharp <0.35.0 inherits libvips CVE-2026-33327/33328/35590/35591
   # (GHSA-f88m-g3jw-g9cj). Only reachable transitively via
   # manifold-3d>@gltf-transform/functions>ndarray-pixels (build-time glTF
@@ -99,10 +105,10 @@ overrides:
   'vitest-axe>lodash-es': '^4.18.1'
   'picomatch@>=4.0.0 <4.0.4': '^4.0.4'
   # brace-expansion arrives only via minimatch@10 now (all consumers pinned to
-  # 10.x above), which uses the 5.x line. Force any 5.0.x below 5.0.8 up to the
-  # release patched against GHSA-mh99-v99m-4gvg. The 1.x line is gone, so its old
+  # 10.x above), which uses the 5.x line. Force any 5.0.x below 5.0.9 up to the
+  # release patched against GHSA-rgw5-rvv9-x895. The 1.x line is gone, so its old
   # `brace-expansion@<1.1.17` pin is no longer needed (#2974).
-  'brace-expansion@>=5.0.0 <5.0.8': '^5.0.8'
+  'brace-expansion@>=5.0.0 <5.0.9': '^5.0.9'
   'tar@<7.5.21': '^7.5.21'
   '@vercel/python-analysis>smol-toml': '^1.6.1'
   esbuild: '0.28.1'
