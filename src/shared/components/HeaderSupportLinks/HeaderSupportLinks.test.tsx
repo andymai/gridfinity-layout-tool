@@ -56,7 +56,7 @@ describe('HeaderSupportLinks', () => {
 
   it('keeps the outbound links out of the bar until the overflow is opened', () => {
     render(<HeaderSupportLinks />);
-    expect(screen.queryByText('header.starOnGithub')).not.toBeInTheDocument();
+    expect(screen.queryByText('header.starOnGithubLong')).not.toBeInTheDocument();
     expect(screen.queryByText('common.redditCommunity')).not.toBeInTheDocument();
     expect(screen.getByLabelText('header.moreLinks')).toHaveAttribute('aria-expanded', 'false');
   });
@@ -66,7 +66,7 @@ describe('HeaderSupportLinks', () => {
 
     fireEvent.click(screen.getByLabelText('header.moreLinks'));
 
-    expect(screen.getByText('header.starOnGithub').closest('a')).toHaveAttribute(
+    expect(screen.getByText('header.starOnGithubLong').closest('a')).toHaveAttribute(
       'href',
       'https://github.com/andymai/gridfinity-layout-tool'
     );
@@ -85,7 +85,7 @@ describe('HeaderSupportLinks', () => {
 
     fireEvent.click(trigger);
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
-    expect(screen.queryByText('header.starOnGithub')).not.toBeInTheDocument();
+    expect(screen.queryByText('header.starOnGithubLong')).not.toBeInTheDocument();
   });
 
   it('opens GitHub Issues on feedback click', () => {

@@ -157,7 +157,10 @@ export function PublishForm({
   return (
     <>
       <Dialog.Split>
-        <Dialog.Sidebar className="p-[var(--space-2xl)] md:w-80">
+        {/* The rail's divider is a right border; once Dialog.Split stacks it
+            has to become a bottom one, or it renders as a stray vertical line
+            beside the design. */}
+        <Dialog.Sidebar className="max-md:w-full max-md:border-b max-md:border-r-0 p-[var(--space-2xl)] md:w-80">
           <PublishArtefact
             thumbnails={captures?.thumbnails ?? null}
             captureFailed={captureFailed}
@@ -296,6 +299,7 @@ export function PublishForm({
       </Dialog.Split>
       <Dialog.Footer
         bordered
+        className="max-md:flex-col max-md:items-stretch"
         leading={
           blockedReason !== null ? (
             <p id="community-publish-blocked" className="text-xs text-content-tertiary">
@@ -318,7 +322,7 @@ export function PublishForm({
       >
         <Button
           variant="primary"
-          className="min-h-11 md:min-h-0"
+          className="min-h-11 whitespace-nowrap md:min-h-0"
           disabled={captures === null || cutoutMissing}
           aria-describedby={blockedReason !== null ? 'community-publish-blocked' : undefined}
           onClick={handleSubmit}

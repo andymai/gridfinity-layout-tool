@@ -3570,5 +3570,6 @@
   "community.publish.form.wallsSummary": "Paredes de {thickness} mm",
   "community.publish.ownerActions": "Acciones del diseño publicado",
   "community.publishNudge.message": "Buen bin. ¿Lo compartes con la comunidad?",
-  "community.publishNudge.action": "Publicarlo"
+  "community.publishNudge.action": "Publicarlo",
+  "header.starOnGithubLong": "Destacar en GitHub"
 }

@@ -3570,5 +3570,6 @@
   "community.publish.form.wallsSummary": "{thickness} mm väggar",
   "community.publish.ownerActions": "Åtgärder för publicerad design",
   "community.publishNudge.message": "Snyggt fack. Dela det med gemenskapen?",
-  "community.publishNudge.action": "Publicera det"
+  "community.publishNudge.action": "Publicera det",
+  "header.starOnGithubLong": "Stjärnmärk på GitHub"
 }

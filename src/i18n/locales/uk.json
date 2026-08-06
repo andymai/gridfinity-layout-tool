@@ -3570,5 +3570,6 @@
   "community.publish.form.wallsSummary": "Стінки {thickness} мм",
   "community.publish.ownerActions": "Дії з опублікованим дизайном",
   "community.publishNudge.message": "Гарний бін. Поділитися зі спільнотою?",
-  "community.publishNudge.action": "Опублікувати"
+  "community.publishNudge.action": "Опублікувати",
+  "header.starOnGithubLong": "Поставити зірку на GitHub"
 }

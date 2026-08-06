@@ -48,17 +48,40 @@ function savePreferences(prefs: LabsPreferences): Result<void, StorageError> {
 }
 
 /**
- * A flag with no stored preference falls back to its `defaultEnabled`.
+ * What the stored preference says, falling back to the flag's
+ * `defaultEnabled`.
  *
- * Every read AND every write resolves through here. Reading it in
- * `isFeatureEnabled` alone would leave `toggleFeature` flipping a default-on
- * flag to on, and `disableFeature` reading "never stored" as "already off",
- * so the one control that turns the feature off would silently do nothing.
+ * The WRITE paths resolve through here rather than reading the map, or
+ * `toggleFeature` flips a default-on flag to on, and `disableFeature` reads
+ * "never stored" as "already off" — the one control that turns the feature
+ * off would silently do nothing. Status is deliberately not consulted:
+ * enabling a graduated feature still has to write, since its stored value is
+ * what remains if it is ever un-graduated.
  */
-function resolveEnabled(preferences: LabsPreferences, featureId: string): boolean {
+function resolveStored(preferences: LabsPreferences, featureId: string): boolean {
   const stored = preferences.enabledFeatures[featureId];
   if (stored !== undefined) return stored;
   return getFeature(featureId)?.defaultEnabled ?? false;
+}
+
+/**
+ * Whether a feature is on, for READ paths. The single answer to that
+ * question: `useFeatureFlag` selects through this so a hook and a getState()
+ * call can never disagree about the same flag.
+ */
+export function resolveFeatureEnabled(preferences: LabsPreferences, featureId: string): boolean {
+  const feature = getFeature(featureId);
+
+  // Graduated features are always enabled
+  if (feature?.status === 'graduated') return true;
+
+  // Deprecated features are always disabled
+  if (feature?.status === 'deprecated') return false;
+
+  // Coming Soon features are always disabled
+  if (feature?.comingSoon) return false;
+
+  return resolveStored(preferences, featureId);
 }
 
 interface LabsState {
@@ -105,7 +128,7 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
     if (feature?.comingSoon) return OK;
 
     const { preferences } = get();
-    const newEnabled = !resolveEnabled(preferences, featureId);
+    const newEnabled = !resolveStored(preferences, featureId);
 
     const newPrefs: LabsPreferences = {
       ...preferences,
@@ -135,7 +158,7 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
     if (feature?.comingSoon) return OK;
 
     const { preferences } = get();
-    if (resolveEnabled(preferences, featureId)) return OK;
+    if (resolveStored(preferences, featureId)) return OK;
 
     const newPrefs: LabsPreferences = {
       ...preferences,
@@ -159,7 +182,7 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
 
   disableFeature: (featureId) => {
     const { preferences } = get();
-    if (!resolveEnabled(preferences, featureId)) return OK;
+    if (!resolveStored(preferences, featureId)) return OK;
 
     const newPrefs: LabsPreferences = {
       ...preferences,
@@ -181,27 +204,13 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
     return result;
   },
 
-  isFeatureEnabled: (featureId) => {
-    const { preferences } = get();
-    const feature = getFeature(featureId);
-
-    // Graduated features are always enabled
-    if (feature?.status === 'graduated') return true;
-
-    // Deprecated features are always disabled
-    if (feature?.status === 'deprecated') return false;
-
-    // Coming Soon features are always disabled
-    if (feature?.comingSoon) return false;
-
-    return resolveEnabled(preferences, featureId);
-  },
+  isFeatureEnabled: (featureId) => resolveFeatureEnabled(get().preferences, featureId),
 
   getEnabledCount: () => {
     const { preferences } = get();
     return getActiveFeatures().filter((feature) => {
       if (feature.status !== 'experimental' && feature.status !== 'preview') return false;
-      return resolveEnabled(preferences, feature.id);
+      return resolveFeatureEnabled(preferences, feature.id);
     }).length;
   },
 

@@ -92,6 +92,15 @@ export interface MenuRootProps {
   position: { x: number; y: number };
 
   /**
+   * Which edge of the menu `position.x` refers to. Use 'end' for a trigger
+   * near the right edge of the window, where a left-aligned menu grows away
+   * from its own button and reads as belonging to whatever it lands on.
+   *
+   * @default 'start'
+   */
+  align?: 'start' | 'end';
+
+  /**
    * Menu items. Use Menu.Item and Menu.Divider.
    */
   children: ReactNode;
@@ -142,7 +151,14 @@ export interface MenuRootProps {
  *   </Menu.Item>
  * </Menu.Root>
  */
-function MenuRoot({ open, onClose, position, children, className }: MenuRootProps) {
+function MenuRoot({
+  open,
+  onClose,
+  position,
+  align = 'start',
+  children,
+  className,
+}: MenuRootProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const itemsRef = useRef<HTMLElement[]>([]);
   // Use ref for focusedIndex - it only tracks position for keyboard nav calculations
@@ -181,7 +197,7 @@ function MenuRoot({ open, onClose, position, children, className }: MenuRootProp
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
-    let x = position.x;
+    let x = align === 'end' ? position.x - rect.width : position.x;
     let y = position.y;
 
     // Adjust horizontal position
@@ -199,7 +215,8 @@ function MenuRoot({ open, onClose, position, children, className }: MenuRootProp
     // Apply directly to DOM (no re-render needed)
     menu.style.left = `${x}px`;
     menu.style.top = `${y}px`;
-  }, [open, position]);
+    menu.style.visibility = 'visible';
+  }, [open, position, align]);
 
   const handleKeyDown = useCallback(
     (e: ReactKeyboardEvent) => {
@@ -268,6 +285,9 @@ function MenuRoot({ open, onClose, position, children, className }: MenuRootProp
         style={{
           left: position.x,
           top: position.y,
+          // Hidden until the layout effect has measured and placed it: an
+          // 'end'-aligned menu cannot know its own width before mount.
+          visibility: 'hidden',
         }}
         onKeyDown={handleKeyDown}
       >

@@ -152,6 +152,7 @@ const en: Record<string, string> = {
   'header.starOnGithub': 'Star',
   'header.supportOnKofi': 'Support me on Ko-fi',
   'header.moreLinks': 'More links',
+  'header.starOnGithubLong': 'Star on GitHub',
   'common.redditCommunity': 'r/gridfinity',
   'common.redditCommunityAria': 'Gridfinity community on Reddit',
   'header.loadingLayouts': 'Loading layouts',

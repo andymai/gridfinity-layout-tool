@@ -66,7 +66,7 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
         /* ---- Desktop action bar ---- */
         <>
           <div className="flex items-center gap-3 min-w-0">
-            <ToolSwitcher />
+            <ToolSwitcher collapseLabels />
 
             {/* Design name (click to rename inline) */}
             {isEditingName ? (
@@ -171,7 +171,7 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
                 <span
                   aria-hidden="true"
                   data-testid="publish-experimental-dot"
-                  className="absolute right-0.5 top-0.5 h-1.5 w-1.5 rounded-full bg-accent 2xl:hidden"
+                  className="absolute right-0.5 top-0.5 h-1.5 w-1.5 rounded-full bg-content-tertiary 2xl:hidden"
                 />
               </Button>
             )}
@@ -347,7 +347,7 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
                 <span
                   aria-hidden="true"
                   data-testid="publish-experimental-dot"
-                  className="absolute right-0.5 top-0.5 h-1.5 w-1.5 rounded-full bg-accent"
+                  className="absolute right-0.5 top-0.5 h-1.5 w-1.5 rounded-full bg-content-tertiary"
                 />
               </IconButton>
             )}

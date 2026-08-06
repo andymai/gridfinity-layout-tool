@@ -23,6 +23,12 @@ interface ToolSwitcherProps {
   compact?: boolean;
   /** Show icons only (no text labels) */
   iconOnly?: boolean;
+  /**
+   * Drop the labels below 2xl, keeping the icons. For headers that also carry
+   * a document name and its actions: the switcher is persistent global nav
+   * and its labels are worth less than the name of the thing being edited.
+   */
+  collapseLabels?: boolean;
 }
 
 type Tool = 'planner' | 'designer' | 'baseplate' | 'community';
@@ -89,7 +95,11 @@ function getIconSize(iconOnly: boolean, compact: boolean): string {
   return 'w-4 h-4';
 }
 
-export function ToolSwitcher({ compact = false, iconOnly = false }: ToolSwitcherProps) {
+export function ToolSwitcher({
+  compact = false,
+  iconOnly = false,
+  collapseLabels = false,
+}: ToolSwitcherProps) {
   const t = useTranslation();
   const { isDesignerRoute, navigateToDesigner, navigateToPlanner } = useDesignerRouting();
   const { isBaseplateRoute, navigateToBaseplate } = useBaseplateRouting();
@@ -176,7 +186,12 @@ export function ToolSwitcher({ compact = false, iconOnly = false }: ToolSwitcher
                   />
                 ))}
               </svg>
-              {!iconOnly && t(labelKey)}
+              {!iconOnly &&
+                (collapseLabels ? (
+                  <span className="hidden 2xl:inline">{t(labelKey)}</span>
+                ) : (
+                  t(labelKey)
+                ))}
               {/* Rides the corner rather than the label so the marker survives
                   the icon-only collapse. */}
               {showMarker && (

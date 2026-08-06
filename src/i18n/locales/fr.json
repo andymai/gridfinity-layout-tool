@@ -3570,5 +3570,6 @@
   "community.publish.form.wallsSummary": "Parois de {thickness} mm",
   "community.publish.ownerActions": "Actions du design publié",
   "community.publishNudge.message": "Joli bac. Le partager avec la communauté ?",
-  "community.publishNudge.action": "Le publier"
+  "community.publishNudge.action": "Le publier",
+  "header.starOnGithubLong": "Mettre une étoile sur GitHub"
 }

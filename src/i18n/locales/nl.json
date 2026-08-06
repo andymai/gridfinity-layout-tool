@@ -3570,5 +3570,6 @@
   "community.publish.form.wallsSummary": "Wanden van {thickness} mm",
   "community.publish.ownerActions": "Acties voor gepubliceerd ontwerp",
   "community.publishNudge.message": "Mooie bin. Delen met de community?",
-  "community.publishNudge.action": "Publiceren"
+  "community.publishNudge.action": "Publiceren",
+  "header.starOnGithubLong": "Ster geven op GitHub"
 }

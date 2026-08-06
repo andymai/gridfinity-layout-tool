@@ -3570,5 +3570,6 @@
   "community.publish.form.wallsSummary": "Ścianki {thickness} mm",
   "community.publish.ownerActions": "Działania na opublikowanym projekcie",
   "community.publishNudge.message": "Niezły bin. Udostępnić go społeczności?",
-  "community.publishNudge.action": "Opublikuj"
+  "community.publishNudge.action": "Opublikuj",
+  "header.starOnGithubLong": "Oznacz gwiazdką na GitHubie"
 }

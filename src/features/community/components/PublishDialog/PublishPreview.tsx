@@ -3,6 +3,15 @@
  * rather than sitting in an 80px scroll strip. Captures already arrive as
  * several angles, so the extra angles become a selectable strip instead of
  * being rendered at a size nobody can judge.
+ *
+ * The frame is square because the captures are: `captureCommunityThumbnails`
+ * renders 384x384 WebP. Any other ratio pillarboxes the render inside its own
+ * preview, which reads as the design being off-centre rather than the frame
+ * being the wrong shape.
+ *
+ * It is capped below `md`, where the split stacks: a full-width square would
+ * be the entire first screen, so the form the dialog exists to collect would
+ * start below the fold.
  */
 
 import { useState } from 'react';
@@ -39,7 +48,7 @@ export function PublishPreview({ thumbnails, captureFailed, onRetry }: PublishPr
 
   if (thumbnails === null || count === 0) {
     return (
-      <div className="flex aspect-[4/3] w-full items-center justify-center gap-3 rounded-lg border border-stroke-subtle bg-surface-hover">
+      <div className="mx-auto flex aspect-square w-full max-w-[14rem] items-center justify-center gap-3 rounded-lg border border-stroke-subtle bg-surface-hover md:max-w-none">
         <Spinner />
         <span className="text-sm text-content-secondary">
           {t('community.publish.form.preparingPreview')}
@@ -57,7 +66,7 @@ export function PublishPreview({ thumbnails, captureFailed, onRetry }: PublishPr
       <img
         src={thumbnailSrc(thumbnails[active])}
         alt={t('community.publish.form.previewAlt', { index: active + 1 })}
-        className="aspect-[4/3] w-full rounded-lg border border-stroke-subtle bg-surface-hover object-contain"
+        className="mx-auto aspect-square w-full max-w-[14rem] rounded-lg border border-stroke-subtle bg-surface-hover object-cover md:max-w-none"
       />
       {count > 1 && (
         <div

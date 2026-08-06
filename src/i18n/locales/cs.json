@@ -3570,5 +3570,6 @@
   "community.publish.form.wallsSummary": "Stěny {thickness} mm",
   "community.publish.ownerActions": "Akce publikovaného návrhu",
   "community.publishNudge.message": "Pěkný bin. Sdílet ho s komunitou?",
-  "community.publishNudge.action": "Publikovat"
+  "community.publishNudge.action": "Publikovat",
+  "header.starOnGithubLong": "Ohodnotit na GitHubu"
 }

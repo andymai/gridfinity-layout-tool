@@ -3570,5 +3570,6 @@
   "community.publish.form.wallsSummary": "壁厚 {thickness} mm",
   "community.publish.ownerActions": "公開デザインの操作",
   "community.publishNudge.message": "いいビンですね。コミュニティで共有しますか？",
-  "community.publishNudge.action": "公開する"
+  "community.publishNudge.action": "公開する",
+  "header.starOnGithubLong": "GitHub でスターを付ける"
 }

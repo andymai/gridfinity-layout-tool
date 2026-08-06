@@ -1,23 +1,20 @@
 import { useLabsStore } from '@/core/store';
-import { getFeature } from '@/core/labs';
+import { resolveFeatureEnabled } from '@/core/store/labs';
 import type { FeatureId } from '@/core/labs';
 
+/**
+ * Selects through the same resolver the store's `isFeatureEnabled` uses.
+ *
+ * This hook is what every gated surface in the UI reads, so a second copy of
+ * the rules here means the app can disagree with itself about one flag — and
+ * did: a hand-rolled `enabledFeatures[id] ?? false` ignored `defaultEnabled`,
+ * so a flag that was on everywhere else was off in every component.
+ *
+ * The selector reads `state.preferences` so zustand still tracks the
+ * dependency and re-renders on a toggle.
+ */
 export function useFeatureFlag(featureId: FeatureId): boolean {
-  return useLabsStore((state) => {
-    const feature = getFeature(featureId);
-
-    // Graduated features are always enabled
-    if (feature?.status === 'graduated') return true;
-
-    // Deprecated features are always disabled
-    if (feature?.status === 'deprecated') return false;
-
-    // Coming Soon features are always disabled
-    if (feature?.comingSoon) return false;
-
-    // Read directly from state.preferences so Zustand tracks the dependency
-    return state.preferences.enabledFeatures[featureId] ?? false;
-  });
+  return useLabsStore((state) => resolveFeatureEnabled(state.preferences, featureId));
 }
 
 export function isFeatureEnabled(featureId: FeatureId): boolean {
