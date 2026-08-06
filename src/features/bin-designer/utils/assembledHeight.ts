@@ -79,6 +79,8 @@ export interface AssembledHeight {
 export interface AssembledHeightSource {
   readonly height: number;
   readonly heightUnitMm: number;
+  /** Read only for a wall-less tray, whose whole body is a floor slab this thick. */
+  readonly wallThickness: number;
   readonly extraWallHeightMm?: number;
   readonly base: {
     readonly style: BaseStyle;
@@ -144,15 +146,16 @@ export function assembledHeight(
   // assembly's height. `extraHeightMm` is the whole point of the feature —
   // turning it up to clear protruding contents has to move this number.
   const skirtMm = baseFloorZ(params.base, params.heightUnitMm, params.lid);
-  // A wall-less tray's body is its floor slab and nothing more, so its height is
-  // `baseFloorZ` (SOCKET_HEIGHT) rather than `height * heightUnitMm`. Reading
-  // `height` here would report 7mm for a 5mm body: the field is inert on a tray,
-  // pinned to 1 purely to satisfy the range validators (see `BaseConfig.tile`).
-  // This is the readout drawer clearance is computed from, so the whole point of
-  // the mode (a plate that barely rises above the plate it sits in) depends on it.
+  // A wall-less tray's body is its feet plus a `wallThickness` floor slab and
+  // nothing more, so its height is `baseFloorZ` (SOCKET_HEIGHT) plus that slab
+  // rather than `height * heightUnitMm`. Reading `height` here would report 7mm
+  // for a 6.2mm body: the field is inert on a tray, pinned to 1 purely to satisfy
+  // the range validators (see `BaseConfig.tile`). This is the readout drawer
+  // clearance is computed from, so the whole point of the mode (a plate that
+  // barely rises above the plate it sits in) depends on it.
   const isTile = params.base.tile === true && !isSocketlessBase(params.base.style);
   const binMm = isTile
-    ? skirtMm
+    ? skirtMm + params.wallThickness
     : params.height * params.heightUnitMm +
       Math.max(0, params.extraWallHeightMm ?? 0) +
       (params.base.style === 'lid' ? skirtMm : 0);

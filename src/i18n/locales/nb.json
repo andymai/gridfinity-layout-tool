@@ -1186,7 +1186,7 @@
   "binDesigner.spacerDisablesStyle": "En avstandsdel er en åpen ramme — det finnes ingen innmat å forme",
   "binDesigner.spacerHint": "Gjør boksen til en åpen forhøyning du stabler under en annen boks, slik at bokser med ulik høyde slutter i flukt. Høyden teller som en boks av samme størrelse — en 2u avstandsdel under en 2u boks rekker toppen av en 4u.",
   "binDesigner.tile": "Brett (uten vegger)",
-  "binDesigner.tileHint": "Beholder føttene, bunnen og stablekanten og fjerner veggene. Igjen står en flat 9,3 mm-plate som fortsatt låses i en bunnplate og fortsatt kan stables. Kanten er den eneste hevede delen, og dermed den du fargelegger.",
+  "binDesigner.tileHint": "Fjerner veggene og beholder føttene og bunnen. Igjen står en flat plate som fortsatt låses i en bunnplate. Behold stablekanten for en hevet kant som fortsatt kan stables og tar fargene, eller fjern den for en glatt plate.",
   "binDesigner.tileDisablesWalls": "Et brett har ingen vegger til dette",
   "binDesigner.tileDisablesInterior": "Et brett har ingen dybde til innvendige funksjoner",
   "binDesigner.tileDisablesStyle": "Et brett er en flat plate, det finnes ikke noe indre å forme",

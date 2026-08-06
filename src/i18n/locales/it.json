@@ -1186,7 +1186,7 @@
   "binDesigner.spacerDisablesStyle": "Un distanziale è un telaio aperto: non c'è un interno da configurare",
   "binDesigner.spacerHint": "Trasforma il contenitore in un rialzo aperto da impilare sotto un altro contenitore, così contenitori di altezze diverse finiscono allo stesso livello. La sua altezza conta come un contenitore della stessa misura: un distanziale da 2u sotto un contenitore da 2u arriva in cima a uno da 4u.",
   "binDesigner.tile": "Vassoio (senza pareti)",
-  "binDesigner.tileHint": "Mantiene i piedini, il fondo e il bordo di impilamento ed elimina le pareti. Resta una piastra piatta da 9,3 mm che continua a incastrarsi nella piastra base e resta impilabile. Il bordo è l'unico rilievo, quindi è la parte da colorare.",
+  "binDesigner.tileHint": "Elimina le pareti e mantiene i piedini e il fondo. Resta una piastra piatta che continua a incastrarsi nella piastra base. Mantieni il bordo di impilamento per un rilievo che resta impilabile e porta i colori, oppure toglilo per una piastra liscia.",
   "binDesigner.tileDisablesWalls": "Un vassoio non ha pareti per questo",
   "binDesigner.tileDisablesInterior": "Un vassoio non ha profondità per gli elementi interni",
   "binDesigner.tileDisablesStyle": "Un vassoio è una piastra piatta, non c'è un interno da modellare",

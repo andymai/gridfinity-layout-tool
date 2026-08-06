@@ -371,16 +371,6 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
 
 export const IMPLICATION_RULES: readonly ImplicationRule[] = [
   {
-    // The lip is what makes a wall-less tray a tray rather than a coaster: it is
-    // the only raised edge, the thing the user paints, and the reason the plate
-    // still stacks. It is also load-bearing for generation — with the wall at 0
-    // the lip IS the entire shell, so a lipless tray would leave `shellStage`
-    // with no solid to return at all.
-    description: 'Wall-less tray forces the stacking lip on',
-    when: (p) => p.base.tile === true && !p.base.stackingLip,
-    apply: (p) => ({ base: { ...p.base, stackingLip: true } }),
-  },
-  {
     description: 'Solid style forces base.solid=true',
     when: (p) => p.style === 'solid' && !p.base.solid,
     apply: (p) => ({ base: { ...p.base, solid: true } }),

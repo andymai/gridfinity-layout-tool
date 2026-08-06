@@ -1183,7 +1183,7 @@
   "binDesigner.spacerDisablesStyle": "Um espaçador é uma moldura aberta: não há interior para configurar",
   "binDesigner.spacerHint": "Transforma a caixa em um elevador aberto para empilhar sob outra caixa, para que caixas de alturas diferentes terminem no mesmo nível. A altura conta como uma caixa do mesmo tamanho: um espaçador de 2u sob uma caixa de 2u alcança o topo de uma de 4u.",
   "binDesigner.tile": "Bandeja (sem paredes)",
-  "binDesigner.tileHint": "Mantém os pés, o fundo e a borda de empilhamento e remove as paredes. Sobra uma placa plana de 9,3 mm que continua encaixando na placa base e continua empilhável. A borda é a única parte elevada, então é a parte que você colore.",
+  "binDesigner.tileHint": "Remove as paredes e mantém os pés e o fundo. Sobra uma placa plana que continua encaixando na placa base. Mantenha a borda de empilhamento para uma parte elevada que continua empilhável e recebe as cores, ou desative para uma placa lisa.",
   "binDesigner.tileDisablesWalls": "Uma bandeja não tem paredes para isso",
   "binDesigner.tileDisablesInterior": "Uma bandeja não tem profundidade para recursos internos",
   "binDesigner.tileDisablesStyle": "Uma bandeja é uma placa plana, não há interior a moldar",

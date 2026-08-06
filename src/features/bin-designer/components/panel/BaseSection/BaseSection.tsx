@@ -175,8 +175,9 @@ export function BaseSection() {
 
       {/* ── Wall-less tray — the spacer's complement. The spacer keeps the walls
           and drops the floor; this keeps the floor and drops the walls, leaving
-          the stacking lip as the only raised edge on a 9.3mm plate. Placed
-          directly after the spacer so the pair reads as the two halves it is. */}
+          the stacking lip as the only raised edge (or nothing above the slab,
+          with the lip cleared). Placed directly after the spacer so the pair
+          reads as the two halves it is. */}
       <FeatureToggle
         label={t('binDesigner.tile')}
         checked={state.isTile}

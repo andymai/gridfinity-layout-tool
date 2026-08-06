@@ -655,6 +655,48 @@ describe('printEstimates', () => {
         expect(labelVol(both)).toBeGreaterThan(labelVol(back) * 1.8);
       });
     });
+    // A wall-less tray is feet + floor slab + an optional lip. Every other term
+    // in the estimate is fabricated for it: the wall term prices a `height`-tall
+    // wall that is never built, out of a `height` that is inert on a tray.
+    describe('wall-less tray', () => {
+      const tray = (overrides: Partial<BinParams['base']> = {}): BinParams => ({
+        ...DEFAULT_BIN_PARAMS,
+        height: 1,
+        base: { ...DEFAULT_BIN_PARAMS.base, tile: true, ...overrides },
+      });
+
+      it('costs far less than the ordinary bin at the same footprint', () => {
+        const plain = estimatePrint({ ...DEFAULT_BIN_PARAMS, height: 3 });
+        expect(estimatePrint(tray()).volumeMm3).toBeLessThan(plain.volumeMm3 * 0.75);
+      });
+
+      it('ignores the inert stored height', () => {
+        const short = estimatePrint(tray()).volumeMm3;
+        const tall = estimatePrint({ ...tray(), height: 8 }).volumeMm3;
+        expect(tall).toBeCloseTo(short, 6);
+      });
+
+      it('drops the lip term when the tray has no lip', () => {
+        const lipped = estimatePrint(tray()).volumeMm3;
+        const bare = estimatePrint(tray({ stackingLip: false })).volumeMm3;
+        expect(bare).toBeLessThan(lipped);
+      });
+
+      // The flag is inert on a socketless base (no feet to stand on), so a
+      // crafted payload must not buy the cheaper estimate.
+      it('leaves a socketless base on the ordinary derivation', () => {
+        const flat: BinParams = {
+          ...DEFAULT_BIN_PARAMS,
+          height: 3,
+          base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat', tile: true },
+        };
+        const withoutFlag: BinParams = {
+          ...flat,
+          base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' },
+        };
+        expect(estimatePrint(flat).volumeMm3).toBeCloseTo(estimatePrint(withoutFlag).volumeMm3, 6);
+      });
+    });
   });
 
   describe('calculateWallPatternSavings', () => {

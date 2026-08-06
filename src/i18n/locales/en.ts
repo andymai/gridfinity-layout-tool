@@ -2614,7 +2614,7 @@ const en: Record<string, string> = {
     'Turns the bin into an open riser you stack under another bin, so bins of different heights finish flush. Its height counts like a bin of the same size — a 2u spacer under a 2u bin reaches the top of a 4u one.',
   'binDesigner.tile': 'Tray (no walls)',
   'binDesigner.tileHint':
-    'Keeps the feet, the floor and the stacking lip and removes the walls, leaving a flat 9.3mm plate that still locks into a baseplate and still stacks. The lip is the only raised edge, so it is the part you colour.',
+    'Removes the walls and keeps the feet and the floor, leaving a flat plate that still locks into a baseplate. Keep the stacking lip for a raised edge that still stacks and takes the colours, or clear it for a bare tile.',
   'binDesigner.base.floorPattern': 'Drainage holes',
   'binDesigner.base.floorPattern.shape': 'Hole shape',
   'binDesigner.base.floorPattern.hint':

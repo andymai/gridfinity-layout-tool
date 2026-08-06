@@ -121,17 +121,22 @@ export interface BaseConfig {
   /**
    * Wall-less tray mode: the exact complement of {@link spacer}. A spacer keeps
    * the walls and drops the floor; a tray keeps the floor and drops the walls,
-   * leaving feet + floor slab + stacking lip. The lip becomes the only raised
-   * edge, so it prints as a flat colour-blockable plate that still stacks.
+   * leaving feet + floor slab + an optional stacking lip. With the lip it is a
+   * flat colour-blockable plate that still stacks; without it, a bare tile.
    *
    * The wall collapses to zero rather than shrinking: `deriveDimensions` pins
-   * `wallHeight` to 0, so the body ends at `SOCKET_HEIGHT` and the lip fuses
-   * straight onto the floor slab. That makes the printed height 9.3mm
-   * (5mm slab + `LIP_HEIGHT` − `LIP_OVERLAP`), which is 0.71 height units and
-   * therefore NOT expressible via {@link BinParams.height} — `height` is pinned
-   * to 1 purely so the existing range validators and their server mirror keep
-   * working, and the geometry ignores it. Anything reporting a tray's real
-   * height must go through `assembledHeight`, never `height * heightUnitMm`.
+   * `wallHeight` to 0 and the body becomes the floor slab alone, a
+   * {@link BinParams.wallThickness} of solid footprint on top of the feet. The
+   * slab is structural, not cosmetic — the Gridfinity feet are `CLEARANCE`
+   * narrower than their cells with rounded tops, so nothing else bridges them.
+   *
+   * That puts the printed height at `SOCKET_HEIGHT + wallThickness` (plus
+   * `LIP_HEIGHT − LIP_OVERLAP` with the lip), which is a fraction of a height
+   * unit and therefore NOT expressible via {@link BinParams.height} — `height`
+   * is pinned to 1 purely so the existing range validators and their server
+   * mirror keep working, and the geometry ignores it. Anything reporting a
+   * tray's real height must go through `assembledHeight`, never
+   * `height * heightUnitMm`.
    *
    * Needs a socket to sit on, so like {@link spacer} the flag is inert on a
    * socketless base; the constraint engine also keeps the two off together

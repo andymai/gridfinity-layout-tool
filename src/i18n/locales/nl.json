@@ -1186,7 +1186,7 @@
   "binDesigner.spacerDisablesStyle": "Een afstandhouder is een open frame — er is geen interieur om vorm te geven",
   "binDesigner.spacerHint": "Maakt van de bak een open verhoger die je onder een andere bak stapelt, zodat bakken van verschillende hoogte gelijk eindigen. De hoogte telt als een bak van hetzelfde formaat — een afstandhouder van 2u onder een bak van 2u komt tot de bovenkant van een 4u-bak.",
   "binDesigner.tile": "Tray (zonder wanden)",
-  "binDesigner.tileHint": "Behoudt de voetjes, de bodem en de stapelrand en verwijdert de wanden. Wat overblijft is een vlakke plaat van 9,3 mm die nog steeds in een basisplaat klikt en stapelbaar blijft. De rand is de enige verhoogde kant en dus het deel dat je kleurt.",
+  "binDesigner.tileHint": "Verwijdert de wanden en behoudt de voetjes en de bodem. Wat overblijft is een vlakke plaat die nog steeds in een basisplaat klikt. Houd de stapelrand voor een verhoogde kant die stapelbaar blijft en de kleuren draagt, of zet hem uit voor een gladde plaat.",
   "binDesigner.tileDisablesWalls": "Een tray heeft hier geen wanden voor",
   "binDesigner.tileDisablesInterior": "Een tray heeft geen diepte voor interieurelementen",
   "binDesigner.tileDisablesStyle": "Een tray is een vlakke plaat, er is geen interieur om vorm te geven",
