@@ -8,7 +8,13 @@
 import type { BinParams } from '@/shared/types/bin';
 import { resolveTrayFloorThickness } from '@/shared/types/bin';
 import { hashMask, isPartialMask } from '@/shared/utils/cellMask';
-import { HEIGHT_UNIT, CLEARANCE, SOCKET_HEIGHT, LIP_SMALL_TAPER } from '../generatorConstants';
+import {
+  HEIGHT_UNIT,
+  CLEARANCE,
+  SOCKET_HEIGHT,
+  LIP_SMALL_TAPER,
+  MIN_BODY_WALL_MM,
+} from '../generatorConstants';
 import {
   buildCompartmentsCacheKey,
   compartmentCavitiesAreViable,
@@ -83,7 +89,17 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // floor slab and nothing above it. `params.height` is inert here — it is
   // pinned to 1 only to satisfy the range validators (see `BaseConfig.tile`), so
   // reading it would silently build a 7mm-tall wall instead.
-  const wallHeight = isTile ? 0 : socketless ? totalHeight : totalHeight - SOCKET_HEIGHT;
+  // A socketed body subtracts the socket it stands on, which a short height unit
+  // can drive to zero or below — only a spacer can ask for it, since every other
+  // socketed base is held at MIN_HEIGHT (2u). Neither degenerate case fails
+  // loudly on its own: at exactly 0 the box extrude is a zero vector and OCCT
+  // throws EXTRUDE_ZERO_VECTOR, and below 0 OCCT extrudes DOWNWARD instead,
+  // burying an inverted box and the stacking lip inside the foot and shipping
+  // that as a bin. `minHeightUnits` keeps the UI and the server mirror above the
+  // floor; this is the guard a crafted share payload cannot bypass, and it
+  // degrades to the shortest real wall rather than losing the bin.
+  const socketedWall = Math.max(totalHeight - SOCKET_HEIGHT, MIN_BODY_WALL_MM);
+  const wallHeight = isTile ? 0 : socketless ? totalHeight : socketedWall;
   // The tray's body. Shared with `assembledHeight` so the readout and the mesh
   // cannot disagree about how tall the plate is.
   const trayFloorHeight = isTile ? resolveTrayFloorThickness(params.wallThickness) : 0;

@@ -13,6 +13,13 @@ export const CONSTRAINTS = {
   // A spacer is floorless, so the usable-cavity rationale behind MIN_HEIGHT
   // doesn't apply to it (#2915).
   MIN_SPACER_HEIGHT: 1,
+  // A spacer keeps its walls, so its body must still clear the socket it
+  // subtracts. 1u only does that at the 7mm default height unit; below 6mm a 1u
+  // spacer asks for a zero or negative wall. Mirrors the client's
+  // `MIN_BODY_WALL_MM` / `GRIDFINITY.SOCKET_HEIGHT`.
+  MIN_BODY_WALL_MM: 1,
+  SOCKET_HEIGHT: 5,
+  DEFAULT_HEIGHT_UNIT_MM: 7,
   MAX_HEIGHT: 20,
   MAX_DIVIDERS: 10,
   MIN_DIVIDER_THICKNESS: 0.8,

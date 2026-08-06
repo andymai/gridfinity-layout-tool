@@ -43,7 +43,7 @@ export interface DesignerValidationError {
  */
 export function validateBinParams(params: BinParams): Result<BinParams, DesignerValidationError> {
   const { MIN_DIMENSION, MAX_DIMENSION, MAX_HEIGHT } = DESIGNER_CONSTRAINTS;
-  const MIN_HEIGHT = minHeightUnits(params.base);
+  const MIN_HEIGHT = minHeightUnits(params.base, params.heightUnitMm);
 
   // Dimension range checks
   if (params.width < MIN_DIMENSION || params.width > MAX_DIMENSION) {

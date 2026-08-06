@@ -987,12 +987,28 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
   // A wall-less tray (`base.tile`) takes the same relaxed floor on the same
   // effective-flag condition: its wall height is pinned to 0, so `height` is
   // inert and stored as 1.
-  const relaxedFloor =
-    isObject(params.base) &&
-    (params.base.spacer === true || params.base.tile === true) &&
-    params.base.style !== 'flat' &&
-    params.base.style !== 'lid';
-  const minHeight = relaxedFloor ? CONSTRAINTS.MIN_SPACER_HEIGHT : CONSTRAINTS.MIN_HEIGHT;
+  const socketed =
+    isObject(params.base) && params.base.style !== 'flat' && params.base.style !== 'lid';
+  const effectiveTray = socketed && isObject(params.base) && params.base.tile === true;
+  const effectiveSpacer = socketed && isObject(params.base) && params.base.spacer === true;
+  // A spacer keeps its walls, so unlike the tray its 1u floor only holds while
+  // `height * heightUnitMm` clears SOCKET_HEIGHT. `heightUnitMm` is allowlisted
+  // but not range-checked here, so fall back to the default for anything that is
+  // not a sane positive number rather than dividing by it.
+  const rawHeightUnit = params.heightUnitMm;
+  const heightUnit =
+    isNumber(rawHeightUnit) && Number.isFinite(rawHeightUnit) && rawHeightUnit > 0
+      ? rawHeightUnit
+      : CONSTRAINTS.DEFAULT_HEIGHT_UNIT_MM;
+  const spacerFloor = Math.max(
+    CONSTRAINTS.MIN_SPACER_HEIGHT,
+    Math.ceil((CONSTRAINTS.SOCKET_HEIGHT + CONSTRAINTS.MIN_BODY_WALL_MM) / heightUnit)
+  );
+  const minHeight = effectiveTray
+    ? CONSTRAINTS.MIN_SPACER_HEIGHT
+    : effectiveSpacer
+      ? spacerFloor
+      : CONSTRAINTS.MIN_HEIGHT;
   if (!isNumber(params.height) || !inRange(params.height, minHeight, CONSTRAINTS.MAX_HEIGHT)) {
     return validationError(
       'INVALID_PARAMS',

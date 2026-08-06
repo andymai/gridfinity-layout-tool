@@ -98,7 +98,7 @@ export function useBaseSection() {
       // differently from an identical one that never tried the mode.
       const next =
         'tile' in resolved.base ? { ...resolved, base: omitTile(resolved.base) } : resolved;
-      const minHeight = minHeightUnits(next.base);
+      const minHeight = minHeightUnits(next.base, next.heightUnitMm);
       setParams(next.height < minHeight ? { ...next, height: minHeight } : next);
     },
     [setParams]
