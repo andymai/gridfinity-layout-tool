@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.375.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.375.0...gridfinity-layout-tool-v4.375.1) (2026-08-06)
+
+
+### Bug Fixes
+
+* **community:** hide the filter rail when there is nothing to narrow ([#3266](https://github.com/andymai/gridfinity-layout-tool/issues/3266)) ([de17645](https://github.com/andymai/gridfinity-layout-tool/commit/de17645edab27fa9a453d9939af0559929e91036))
+
 ## [4.375.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.374.1...gridfinity-layout-tool-v4.375.0) (2026-08-06)
 
 
