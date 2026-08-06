@@ -114,9 +114,10 @@ function lidRiseMm(params: AssembledHeightSource): number {
  * however the lid config is persisted.
  */
 export function hasSeatedLid(params: AssembledHeightSource): boolean {
-  // Mirrors `shouldGenerateLid`, including its base-only bin gate: a tray keeps
-  // its lip, so the lip precondition alone would seat a lid on a plate that has
-  // no cavity to close, and the readout would count a band the worker never builds.
+  // Mirrors `shouldGenerateLid`, including its base-only gate: a base-only bin
+  // keeps its lip, so the lip precondition alone would seat a lid on a plate that
+  // has no cavity to close, and the readout would count a band the worker never
+  // builds.
   if (params.base.tile === true) return false;
   return params.lid.enabled && params.base.stackingLip;
 }

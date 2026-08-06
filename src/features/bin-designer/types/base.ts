@@ -13,8 +13,8 @@ import { GRIDFINITY } from '../constants/gridfinity';
  * one the worker builds.
  *
  * A zero or non-finite thickness would extrude a degenerate slab, and unlike an
- * ordinary bin a base-only bin has no wall to stand in for it, so both fall back to the
- * spec thickness rather than to nothing.
+ * ordinary bin, a base-only one has no wall to stand in for it, so both fall back
+ * to the spec thickness rather than to nothing.
  */
 export function resolveTileFloorThickness(wallThickness: number): number {
   return Number.isFinite(wallThickness) && wallThickness > 0

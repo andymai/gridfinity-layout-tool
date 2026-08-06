@@ -55,7 +55,7 @@ function assertTotalZ(expected: number, label: string) {
     if (Math.abs(actual - expected) > 0.05) {
       throw new Error(
         `${label}: expected ${expected.toFixed(2)}mm total Z, got ${actual.toFixed(2)}mm. ` +
-          `A base-only wall is 0, so reading params.height would build a taller body.`
+          `A base-only bin's wall is 0, so reading params.height would build a taller body.`
       );
     }
   };

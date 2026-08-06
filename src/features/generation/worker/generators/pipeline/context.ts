@@ -112,7 +112,7 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   const rawCollar = params.extraWallHeightMm ?? 0;
   const finiteCollar = Number.isFinite(rawCollar) ? Math.max(0, rawCollar) : 0;
   // A collar raises the outer WALLS (and the lip with them) above the nominal
-  // height. A base-only bin has no walls to raise, and `assembledHeight` ignores the
+  // height. A base-only bin has no walls to raise, and `assembledHeight` ignores
   // the field there, so honouring it here would build a box the readout never
   // reports: `boxWallHeight` is `wallHeight + collarHeight`, so a stale collar
   // on a design switched into base-only mode would take the zero-wall branch away
