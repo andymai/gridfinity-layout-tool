@@ -24,16 +24,14 @@ describe('LabelTabsSection', () => {
 
   it('renders one engraved-text input per compartment', () => {
     render(<LabelTabsSection />);
-    // The bulk list is a primary control (shown when enabled); expand its
-    // counted disclosure to reach the inputs.
-    fireEvent.click(screen.getByRole('button', { name: /Compartment labels/ }));
+    // The list leads the section and is always expanded — the text IS the
+    // content, so it is never behind a disclosure.
     expect(screen.getByLabelText('Engraved text for compartment 1')).toBeInTheDocument();
     expect(screen.getByLabelText('Engraved text for compartment 2')).toBeInTheDocument();
   });
 
   it('commits typed text to the store on blur (deferred commit)', () => {
     render(<LabelTabsSection />);
-    fireEvent.click(screen.getByRole('button', { name: /Compartment labels/ }));
     const input = screen.getByLabelText('Engraved text for compartment 1');
     // Typing alone must NOT commit — that would regenerate the bin per keystroke.
     fireEvent.change(input, { target: { value: 'SCREWS' } });
@@ -60,6 +58,9 @@ describe('LabelTabsSection', () => {
       },
     }));
     render(<LabelTabsSection />);
+    // Per-printer calibration, not a per-label choice — it folds into the
+    // collapsed "Plate fit" group alongside socket style and the fit sample.
+    fireEvent.click(screen.getByRole('button', { name: /Plate fit/ }));
 
     fireEvent.click(screen.getByRole('button', { name: 'Increase Plate fit offset' }));
     expect(useDesignerStore.getState().params.label.plateFitOffset).toBeCloseTo(0.05);
@@ -78,7 +79,9 @@ describe('LabelTabsSection', () => {
       params: { ...s.params, label: { ...s.params.label, width: 50, alignment: 'center' } },
     }));
     render(<LabelTabsSection />);
-    fireEvent.click(screen.getByRole('button', { name: /Tab shape/ }));
+    // Alignment answers "where does the label go", so it lives under Placement
+    // alongside edges rather than with the tab's dimensions.
+    fireEvent.click(screen.getByRole('button', { name: /Placement/ }));
     expect(screen.getByRole('button', { name: 'Center', pressed: true })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Left', pressed: false })).toBeInTheDocument();
   });

@@ -220,6 +220,7 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
               stackPlateMesh,
               connectorKeyMesh,
               labelPlates: response.labelPlates,
+              labelTextOverflow: response.labelTextOverflow,
             },
             timingMs: response.timingMs,
             perfSnapshot: response.perfSnapshot,

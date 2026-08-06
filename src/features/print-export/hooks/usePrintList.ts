@@ -117,16 +117,22 @@ export function usePrintList(): UsePrintListReturn {
     [layout.bins, maxGridUnits, printSettings, config, layout.gridUnitMm, layout.heightUnitMm]
   );
 
-  // Swappable-label plates per socket-mode design (async design loads;
-  // rows gain counts as designs resolve).
-  const plateSets = useLabelPlateCounts(layout.bins);
+  // Label facts per linked design (async design loads; rows gain them as the
+  // designs resolve): swappable plate counts, and whether the tabs will print
+  // with nothing on them.
+  const labelInfos = useLabelPlateCounts(layout.bins);
   const platedRows = useMemo(() => {
-    if (plateSets.size === 0) return baseRows;
+    if (labelInfos.size === 0) return baseRows;
     return baseRows.map((row) => {
-      const set = row.linkedDesignId ? plateSets.get(row.linkedDesignId) : undefined;
-      return set ? { ...row, labelPlateCount: set.perBin * row.binCount } : row;
+      const info = row.linkedDesignId ? labelInfos.get(row.linkedDesignId) : undefined;
+      if (!info) return row;
+      return {
+        ...row,
+        ...(info.plateSet ? { labelPlateCount: info.plateSet.perBin * row.binCount } : {}),
+        ...(info.tabsWithoutText ? { labelTabsWithoutText: true } : {}),
+      };
     });
-  }, [baseRows, plateSets]);
+  }, [baseRows, labelInfos]);
 
   // Filtered and sorted rows
   const rows = useMemo(
@@ -162,7 +168,7 @@ export function usePrintList(): UsePrintListReturn {
     const totalLabelPlates = rows.reduce((sum, r) => sum + (r.labelPlateCount ?? 0), 0);
     const plateWidthCounts = new Map<LabelPlateWidthU, number>();
     for (const r of rows) {
-      const set = r.linkedDesignId ? plateSets.get(r.linkedDesignId) : undefined;
+      const set = r.linkedDesignId ? labelInfos.get(r.linkedDesignId)?.plateSet : undefined;
       if (!set) continue;
       for (const u of set.widthsU) {
         plateWidthCounts.set(u, (plateWidthCounts.get(u) ?? 0) + r.binCount);
@@ -187,7 +193,7 @@ export function usePrintList(): UsePrintListReturn {
     };
   }, [
     rows,
-    plateSets,
+    labelInfos,
     config.filamentCostPerKg,
     config.metersPerKg,
     printSettings,

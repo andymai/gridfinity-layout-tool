@@ -144,6 +144,8 @@ export interface DesignerState {
   setCompartmentText: (compartmentId: number, text: string) => void;
   /** Caption for a full-width label tab, keyed by the row hosting it (#2897). */
   setLabelRowText: (row: number, text: string) => void;
+  /** Drop every caption in one history entry, so one undo restores them all. */
+  clearLabelText: (scope: 'compartment' | 'row') => void;
   setCompartmentPlateWidth: (compartmentId: number, widthU: number | null) => void;
   /** Set a compartment's swappable-plate hardware icon (null = none). */
   setCompartmentPlateIcon: (compartmentId: number, icon: LabelPlateIconId | null) => void;
@@ -261,6 +263,10 @@ export interface DesignerState {
   setHoveredDividerKey: (key: string | null) => void;
   setDividerTiltPreview: (preview: DividerTiltPreview | null) => void;
   setHoveredCompartmentId: (id: number | null) => void;
+  /** Switch the compartment grid between editing dividers and picking a label. */
+  setCompartmentLabelMode: (on: boolean) => void;
+  /** Point both the grid and the label-text list at the same compartment. */
+  setLabelFocusCompartmentId: (id: number | null) => void;
   /** Enter a color tool overlay, or pass null to exit any active tool. */
   setColorTool: (tool: ColorTool) => void;
   /**

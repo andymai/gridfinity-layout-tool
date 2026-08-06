@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store';
+import { useLayoutStore } from '@/core/store/layout';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { useTranslation } from '@/i18n';
@@ -29,6 +30,18 @@ import type {
 } from '../../../types';
 import { withFontSizeOverride } from '../../../types';
 
+/** Collapsible group that owns a warning's control, so the section can surface
+ *  the warning at top level while that group is collapsed. */
+export type LabelWarningGroup = 'placement' | 'shape';
+
+export interface LabelWarning {
+  readonly id: string;
+  readonly group: LabelWarningGroup;
+  readonly message: string;
+  readonly fixLabel: string;
+  readonly onFix: () => void;
+}
+
 export function useLabelTabsSection() {
   const {
     compartments,
@@ -38,6 +51,11 @@ export function useLabelTabsSection() {
     setCompartmentText,
     setLabelRowText,
     labelPlates,
+    labelTextOverflow,
+    clearLabelText,
+    labelFocusCompartmentId,
+    setLabelFocusCompartmentId,
+    setCompartmentLabelMode,
     setCompartmentPlateWidth,
     setCompartmentPlateIcon,
     setTextDefaults,
@@ -52,6 +70,11 @@ export function useLabelTabsSection() {
       setCompartmentText: s.setCompartmentText,
       setLabelRowText: s.setLabelRowText,
       labelPlates: s.generation.mesh?.labelPlates ?? null,
+      labelTextOverflow: s.generation.mesh?.labelTextOverflow ?? null,
+      clearLabelText: s.clearLabelText,
+      labelFocusCompartmentId: s.ui.labelFocusCompartmentId,
+      setLabelFocusCompartmentId: s.setLabelFocusCompartmentId,
+      setCompartmentLabelMode: s.setCompartmentLabelMode,
       setCompartmentPlateWidth: s.setCompartmentPlateWidth,
       setCompartmentPlateIcon: s.setCompartmentPlateIcon,
       setTextDefaults: s.setTextDefaults,
@@ -61,6 +84,11 @@ export function useLabelTabsSection() {
   );
   const t = useTranslation();
   const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
+  // Read, never write: the planner owns its bins. The designer pulls a name
+  // rather than the planner pushing one, so a shared saved design is never
+  // mutated from a single placement.
+  const currentDesignId = useDesignerStore((s) => s.currentDesignId);
+  const layoutBins = useLayoutStore((s) => s.layout.bins);
 
   const labelStatus = getFeatureStatus(params, 'label');
 
@@ -620,10 +648,140 @@ export function useLabelTabsSection() {
     return rows;
   }, [label.span, label.edges, label.rowTexts, compartments, t]);
 
+  const spanning = label.span === true;
+
+  // The build's own verdict on which captions overflow, reported alongside the
+  // mesh because the drop leaves no trace in it. Absent while a generation is
+  // in flight, so a row's warning clears optimistically and returns with the
+  // next mesh rather than flickering on every keystroke.
+  //
+  // Matched on SCOPE as well as index: the report is compartment-indexed by
+  // default, row-indexed under `span`, and indexes a synthetic 1x1 grid when the
+  // socket plan degrades to one bin-spanning tab. Keying on index alone would
+  // let a report from one indexing scheme light up a row in another — today the
+  // `bin` scope never carries text so nothing misfires, but that is a property
+  // of `planLabelPlateSeats`, not something this list should depend on.
+  const overflowIndices = useMemo(() => {
+    const wanted = spanning ? 'row' : 'compartment';
+    const set = new Set<number>();
+    for (const o of labelTextOverflow ?? []) {
+      if (o.scope === wanted) set.add(o.index);
+    }
+    return set;
+  }, [labelTextOverflow, spanning]);
+
+  // One row per compartment carrying EVERYTHING about that compartment's label.
+  // Text and plate hardware were two lists over the same compartments, in
+  // different places, so row 3 meant a different thing depending on which one
+  // you were looking at.
+  const textRows = useMemo(() => {
+    if (spanning) {
+      return rowTextRows.map((r) => ({
+        index: r.row,
+        displayNumber: r.row + 1,
+        value: r.value,
+        overflows: overflowIndices.has(r.row),
+      }));
+    }
+    const plateById = new Map(plateWidthRows.map((p) => [p.id, p]));
+    return compartmentTextRows.map((r) => {
+      const plate = plateById.get(r.id);
+      return {
+        index: r.id,
+        displayNumber: r.displayNumber,
+        value: r.value,
+        overflows: overflowIndices.has(r.id),
+        ...(plate
+          ? {
+              plate: {
+                fittingWidthsU: plate.fittingWidthsU,
+                autoWidthU: plate.autoWidthU,
+                overrideU: plate.overrideU,
+                icon: plate.icon,
+              },
+            }
+          : {}),
+      };
+    });
+  }, [spanning, rowTextRows, compartmentTextRows, overflowIndices, plateWidthRows]);
+
+  const commitText = spanning ? setLabelRowText : setCompartmentText;
+
+  const clearAllText = useCallback(
+    () => clearLabelText(spanning ? 'row' : 'compartment'),
+    [clearLabelText, spanning]
+  );
+
+  // Widening is the only fix the panel can apply for an overflow: the auto-fit
+  // already failed at `minFontSize`, which is a legibility floor rather than a
+  // knob, and a plate's width is a per-compartment choice with its own control.
+  const canWidenTabs = !isSocketMode && label.width < DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH;
+  // Offered only when the mapping is unambiguous: EXACTLY one placed bin links
+  // to this design, and the design has one compartment. A design shared by five
+  // bins named Screws/Bolts/Nuts has no sensible name-to-compartment mapping,
+  // and guessing one would write the wrong caption onto four of them.
+  const binNameSuggestion = useMemo(() => {
+    if (currentDesignId === null || spanning) return null;
+    if (compartmentTextRows.length !== 1) return null;
+    if (compartmentTextRows[0].value.trim() !== '') return null;
+    const linked = layoutBins.filter((b) => b.linkedDesignId === currentDesignId);
+    if (linked.length !== 1) return null;
+    const name = linked[0].label.trim();
+    return name === '' ? null : { compartmentId: compartmentTextRows[0].id, name };
+  }, [currentDesignId, spanning, compartmentTextRows, layoutBins]);
+
+  const applyBinNameSuggestion = useCallback(() => {
+    if (binNameSuggestion === null) return;
+    setCompartmentText(binNameSuggestion.compartmentId, binNameSuggestion.name);
+  }, [binNameSuggestion, setCompartmentText]);
+
+  const pickLabelOnGrid = useCallback(
+    () => setCompartmentLabelMode(true),
+    [setCompartmentLabelMode]
+  );
+
+  const widenTabs = useCallback(
+    () => updateLabel({ width: DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH }),
+    [updateLabel]
+  );
+
+  // Warnings carry the group that owns their control so the section can render
+  // them at top level while that group is collapsed. Progressive disclosure
+  // hides options; it must never hide an active problem, and both of these
+  // come with a fix the user would otherwise have to find for themselves.
+  const warnings = useMemo<LabelWarning[]>(() => {
+    const list: LabelWarning[] = [];
+    if (tabsWillSilentlyDrop) {
+      list.push({
+        id: 'edges-collision',
+        group: 'placement',
+        message: t('binDesigner.tabBothCollisionWarning'),
+        fixLabel: t('binDesigner.tabAutoFix'),
+        onFix: autoFixDimensions,
+      });
+    }
+    if (lipWontFit) {
+      list.push({
+        id: 'lip-too-tall',
+        group: 'shape',
+        message: t('binDesigner.tabLipTooTallWarning'),
+        fixLabel: t('binDesigner.tabAutoFix'),
+        onFix: autoFixLip,
+      });
+    }
+    return list;
+  }, [tabsWillSilentlyDrop, lipWontFit, autoFixDimensions, autoFixLip, t]);
+
   return {
     state: {
       label,
       textDefaults,
+      spanning,
+      textRows,
+      canWidenTabs,
+      warnings,
+      binNameSuggestion,
+      labelFocusCompartmentId,
       isUnavailable,
       tabWidthMm,
       tabHeightMm,
@@ -671,6 +829,12 @@ export function useLabelTabsSection() {
       setCompartmentPlateIcon,
       autoFixDimensions,
       setCompartmentText,
+      commitText,
+      clearAllText,
+      widenTabs,
+      setLabelFocusCompartmentId,
+      pickLabelOnGrid,
+      applyBinNameSuggestion,
       setTextFont,
       setTextMode,
       setTextDepth,

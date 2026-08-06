@@ -130,6 +130,30 @@ export function createCompartmentActions(set: Set, get: Get) {
       });
     },
 
+    clearLabelText: (scope: 'compartment' | 'row') => {
+      const { params } = get();
+      const isRow = scope === 'row';
+      if (
+        isRow ? (params.label.rowTexts ?? []).length === 0 : !params.compartments.compartmentTexts
+      )
+        return;
+
+      // One entry for the whole clear, so a single undo brings every caption
+      // back — clearing row by row would bury the list under N history steps.
+      set((state) => {
+        pushHistoryEntry(state);
+        if (isRow) {
+          const { rowTexts: _drop, ...label } = state.params.label;
+          state.params.label = label;
+        } else {
+          state.params.compartments = {
+            ...state.params.compartments,
+            compartmentTexts: undefined,
+          };
+        }
+      });
+    },
+
     setCompartmentPlateWidth: (compartmentId: number, widthU: number | null) => {
       const { params } = get();
       const prev = params.compartments.labelPlateWidths ?? [];

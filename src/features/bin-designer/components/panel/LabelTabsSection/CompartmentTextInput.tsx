@@ -33,6 +33,17 @@ interface CompartmentTextInputProps {
   readonly ariaLabel: string;
   /** Writes the value to the store (clamps + dedups + pushes history). */
   readonly onCommit: (compartmentId: number, value: string) => void;
+  /** Move editing to the adjacent row. Enter and Up/Down commit first, so the
+   *  next row opens against a settled store rather than a pending draft. */
+  readonly onNavigate?: (direction: 'next' | 'prev') => void;
+  /** Take focus whenever this value CHANGES. A token rather than a boolean so
+   *  the same row can be re-targeted (repeated "next empty" presses land on the
+   *  same input while it stays empty). */
+  readonly focusToken?: number;
+  /** The caption overflows its tab and will not render. Styled and announced. */
+  readonly invalid?: boolean;
+  /** Id of the element explaining {@link invalid}, for screen readers. */
+  readonly describedBy?: string;
 }
 
 export function CompartmentTextInput({
@@ -41,9 +52,14 @@ export function CompartmentTextInput({
   placeholder,
   ariaLabel,
   onCommit,
+  onNavigate,
+  focusToken,
+  invalid = false,
+  describedBy,
 }: CompartmentTextInputProps) {
   const [draft, setDraft] = useState(committedValue);
   const focusedRef = useRef(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Stable as long as the store action and id are stable, so `onBlur`/`onChange`
@@ -95,8 +111,32 @@ export function CompartmentTextInput({
     commit(draft);
   }, [clearIdleTimer, draft, commit]);
 
+  // Tab is deliberately NOT intercepted: the rows are siblings in the DOM, so
+  // the browser already moves to the next input (the clear buttons opt out of
+  // the tab order to keep that true). Enter and Up/Down are the additions.
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (!onNavigate) return;
+      const direction =
+        e.key === 'Enter' ? (e.shiftKey ? 'prev' : 'next') : e.key === 'ArrowUp' ? 'prev' : 'next';
+      if (e.key !== 'Enter' && e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+      e.preventDefault();
+      clearIdleTimer();
+      commit(draft);
+      onNavigate(direction);
+    },
+    [onNavigate, clearIdleTimer, commit, draft]
+  );
+
+  useEffect(() => {
+    if (focusToken === undefined) return;
+    inputRef.current?.focus();
+    inputRef.current?.select();
+  }, [focusToken]);
+
   return (
     <Input
+      ref={inputRef}
       type="text"
       size="sm"
       value={draft}
@@ -104,8 +144,11 @@ export function CompartmentTextInput({
       onChange={handleChange}
       onFocus={handleFocus}
       onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
       placeholder={placeholder}
       aria-label={ariaLabel}
+      error={invalid}
+      aria-describedby={describedBy}
     />
   );
 }

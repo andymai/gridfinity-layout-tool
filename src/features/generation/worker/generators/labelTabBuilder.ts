@@ -65,6 +65,7 @@ import { sketch } from './meshUtils';
 import { buildFilletProfile } from './filletProfile';
 import { buildTextSolid, fitTextToHost } from './textBuilder';
 import type { VerticalFit } from './textBuilder';
+import type { LabelTextOverflow } from '../../bridge/types';
 
 /** Tab text fills its shelf band rather than the font's line box. Shared by the
  *  group size pass and the per-tab build — measuring different boxes would
@@ -463,6 +464,10 @@ export interface LabelPlateSeat {
   readonly plateWidthU: LabelPlateWidthU;
   readonly text: string;
   readonly icon?: LabelPlateIconId;
+  /** What `index` counts — see {@link LabelTextOverflow}. */
+  readonly scope: LabelTextOverflow['scope'];
+  /** Compartment id, row, or 0 for the bin-spanning fallback, per `scope`. */
+  readonly index: number;
 }
 
 /**
@@ -544,10 +549,73 @@ export function planLabelPlateSeats(
         plateWidthU,
         text: (texts[slot.cellId] ?? '').trim(),
         ...(isLabelPlateIconId(icon) && !spanning ? { icon } : {}),
+        scope: spanningFallback ? 'bin' : spanning ? 'row' : 'compartment',
+        index: slot.cellId,
       });
     }
   }
   return seats;
+}
+
+/**
+ * Which captions the build will drop for want of room, without building any
+ * geometry.
+ *
+ * `buildTextSolid` returns null when a run overflows even at `minFontSize`, and
+ * `resolveUniformTabTextSize` deliberately excludes that run from the group fit
+ * rather than shrinking its neighbours — so the tab prints blank with nothing
+ * left in the mesh to observe after the fact. Sharing `planLabelTabLayout` and
+ * `fitTextToHost` with the build is what keeps this answer the one the build
+ * will actually give.
+ *
+ * Text mode only: in socket mode the caption is engraved on the plate, whose
+ * host is the plate face — see `planPlateTextOverflow`.
+ */
+export function planTabTextOverflow(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number,
+  wallThickness: number
+): LabelTextOverflow[] {
+  if (!params.label.enabled) return [];
+  if ((params.label.mode ?? 'text') === 'socket') return [];
+
+  const layout = planLabelTabLayout(params, innerW, innerD, wallHeight, wallThickness);
+  if (!layout) return [];
+  const { dims, plannedRows, spanningFallback } = layout;
+
+  const scope: LabelTextOverflow['scope'] = spanningFallback
+    ? 'bin'
+    : params.label.span === true
+      ? 'row'
+      : 'compartment';
+  const style = { ...params.textDefaults, ...params.label.textStyle };
+
+  // `edges: 'both'` plans the same compartment at two anchors with identical
+  // widths, so the second visit would report a duplicate overflow.
+  const seen = new Set<number>();
+  const overflows: LabelTextOverflow[] = [];
+  for (const planned of plannedRows) {
+    for (const slot of planned.slots) {
+      if (!slot.text.trim()) continue;
+      if (seen.has(slot.cellId)) continue;
+      seen.add(slot.cellId);
+      const fit = fitTextToHost({
+        text: slot.text,
+        fontFamily: style.font,
+        mode: style.mode,
+        availW: slot.tabWidth,
+        availD: dims.tabDepth,
+        margin: style.margin,
+        minFontSize: style.minFontSize,
+        maxFontSize: style.maxFontSize,
+        verticalFit: TAB_TEXT_VERTICAL_FIT,
+      });
+      if (!fit.fits) overflows.push({ scope, index: slot.cellId });
+    }
+  }
+  return overflows;
 }
 
 function buildLabelTabsInScope(

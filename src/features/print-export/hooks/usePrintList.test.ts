@@ -474,7 +474,10 @@ describe('usePrintList', () => {
 
     it('multiplies per-bin plates by bin count and aggregates widths', () => {
       mockUseLabelPlateCounts.mockImplementation(
-        () => new Map([[D1, { perBin: 2, widthsU: [1, 2] as const }]])
+        () =>
+          new Map([
+            [D1, { plateSet: { perBin: 2, widthsU: [1, 2] as const }, tabsWithoutText: false }],
+          ])
       );
       const layout = createTestLayout([
         createTestBin({ linkedDesignId: D1, width: gridUnits(2) }),
@@ -493,7 +496,10 @@ describe('usePrintList', () => {
 
     it('excludes hidden categories from plate totals', () => {
       mockUseLabelPlateCounts.mockImplementation(
-        () => new Map([[D1, { perBin: 1, widthsU: [1] as const }]])
+        () =>
+          new Map([
+            [D1, { plateSet: { perBin: 1, widthsU: [1] as const }, tabsWithoutText: false }],
+          ])
       );
       const layout = createTestLayout([createTestBin({ linkedDesignId: D1 })]);
       useLayoutStore.setState({ layout });
