@@ -19,6 +19,9 @@ export interface BinLocationContext {
   /** Whether the bin can be rotated (swap width/depth) */
   canRotate: boolean;
 
+  /** Whether the bin's dimensions can be changed (false while size-locked) */
+  canResize: boolean;
+
   /** Whether the bin can be moved to stash */
   canMoveToStash: boolean;
 
@@ -46,10 +49,13 @@ export interface BinLocationContext {
  * }
  */
 export function getBinLocationContext(bin: Bin): BinLocationContext {
+  const canResize = !isBinLocked(bin);
+
   if (bin.layerId === STAGING_ID) {
     return {
       location: 'stash',
-      canRotate: true, // No collision checks needed
+      canRotate: canResize, // No collision checks needed
+      canResize,
       canMoveToStash: false, // Already in stash
       canEdit: true, // All properties editable
       requiresPlacementValidation: false, // No bounds/collision constraints
@@ -59,7 +65,8 @@ export function getBinLocationContext(bin: Bin): BinLocationContext {
 
   return {
     location: 'grid',
-    canRotate: true, // Requires validation
+    canRotate: canResize, // Requires validation
+    canResize,
     canMoveToStash: true, // Can be moved to stash
     canEdit: true, // All properties editable
     requiresPlacementValidation: true, // Must check bounds/collisions
@@ -101,6 +108,20 @@ export function validateBinRotation(bin: Bin, layout: Layout): RotationResult {
 
   // Grid bins: delegate to existing rotation validation
   return validateRotation(bin, layout);
+}
+
+/**
+ * Check if a bin's size is locked.
+ *
+ * A locked bin can still be moved, restyled and relabelled — only its
+ * dimensions are frozen. `bin.update` is the enforcing choke point; this
+ * predicate is what UI and cascade code use to stay out of its way.
+ *
+ * @param bin - The bin to check
+ * @returns true if the bin's dimensions are frozen
+ */
+export function isBinLocked(bin: Pick<Bin, 'locked'>): boolean {
+  return bin.locked === true;
 }
 
 /**

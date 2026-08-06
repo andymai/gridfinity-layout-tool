@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import type { PackedBin } from '@/features/staging/utils/packing';
 import { clamp, getBinTextColors } from '@/shared/utils';
+import { isBinLocked } from '@/shared/utils/binLocation';
 import { useTranslation } from '@/i18n';
 
 /** Format dimension for display - show decimal only if fractional */
@@ -283,8 +284,9 @@ export const StagingBin = memo(function StagingBin({
         </div>
       )}
 
-      {/* Rotate button - desktop only, visible on hover or selection */}
-      {!isTouchDevice && !isDragging && (isHovered || isSelected) && (
+      {/* Rotate button - desktop only, visible on hover or selection.
+          Withheld from a size-locked bin: rotation is a resize. */}
+      {!isTouchDevice && !isDragging && !isBinLocked(bin) && (isHovered || isSelected) && (
         <div
           className="absolute transition-opacity duration-150"
           style={{

@@ -20,7 +20,7 @@ graph TB
 - `hooks/useLabelSuggestions.ts` — memoized adapter feeding the engine from the active layout
 - `components/Inspector/SplitWarning.tsx` — print bed size warning indicator
 - `components/Inspector/EmptyState.tsx` — no selection state
-- `hooks/useBinInspector.ts` — selection resolution and bin data. Also exposes `applySuggestedSize` (single-`updateBin` resize for one-step undo) and `canApplySuggestedSize` (fit check), both built on a shared `resolveSuggestedRect` so the size-suggestion gate can't disagree with the actual mutation.
+- `hooks/useBinInspector.ts` — selection resolution and bin data. Also exposes `applySuggestedSize` (single-`updateBin` resize for one-step undo) and `canApplySuggestedSize` (fit check), both built on a shared `resolveSuggestedRect` so the size-suggestion gate can't disagree with the actual mutation. `toggleLock` / `setMultiLock` drive the size lock (#3229); every dimension path in the hook checks `isBinLocked` first so a locked bin fails quietly instead of through the command's error path.
 
 ## Label autocomplete
 

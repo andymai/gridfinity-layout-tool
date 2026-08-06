@@ -7,6 +7,7 @@
 
 import type { Bin } from '@/core/types';
 import { gridUnits, heightUnits } from '@/core/types';
+import { isBinLocked } from '@/shared/utils/binLocation';
 import type { BinParams } from '@/features/bin-designer';
 import type { SyncableDimensions } from '../types';
 
@@ -32,6 +33,23 @@ export function extractDesignDimensions(params: BinParams): SyncableDimensions {
     depth: params.depth,
     height: params.height,
   };
+}
+
+/**
+ * Split sync candidates into the bins a dimension change may rewrite and the
+ * ones whose size the user froze.
+ *
+ * A size-locked bin is left out of the auto-sync *and* out of the confirmation
+ * dialog: the lock already answers the question the dialog would ask, and
+ * `bin.update` would reject the write anyway.
+ */
+export function partitionSyncableByLock(bins: Bin[]): { syncable: Bin[]; locked: Bin[] } {
+  const syncable: Bin[] = [];
+  const locked: Bin[] = [];
+  for (const bin of bins) {
+    (isBinLocked(bin) ? locked : syncable).push(bin);
+  }
+  return { syncable, locked };
 }
 
 // Update Object Creation

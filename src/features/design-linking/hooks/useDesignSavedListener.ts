@@ -31,6 +31,7 @@ import {
   compareDimensions,
   checkBatchSyncEligibility,
   createBinSyncUpdate,
+  partitionSyncableByLock,
   syncDeclineKey,
 } from '../domain';
 
@@ -56,10 +57,23 @@ export function useDesignSavedListener(): void {
       const linkedBins = getBinsLinkedToDesign(layout.bins, event.designId);
       if (linkedBins.length === 0) return;
 
-      const binsNeedingSync = linkedBins.filter(
-        (bin) => !dimensionsFitAllowingRotation(extractBinDimensions(bin), event.dimensions)
+      const { syncable: binsNeedingSync, locked: lockedBins } = partitionSyncableByLock(
+        linkedBins.filter(
+          (bin) => !dimensionsFitAllowingRotation(extractBinDimensions(bin), event.dimensions)
+        )
       );
-      if (binsNeedingSync.length === 0) return;
+      if (binsNeedingSync.length === 0) {
+        if (lockedBins.length > 0) {
+          addToastRef.current({
+            message: tRef.current('designLinking.toast.syncSkippedLocked', {
+              count: lockedBins.length,
+            }),
+            type: 'info',
+            duration: 3000,
+          });
+        }
+        return;
+      }
 
       const eligibility = checkBatchSyncEligibility(binsNeedingSync, event.dimensions, layout);
       const allEligible = eligibility.every((e) => e.canSync);
@@ -73,9 +87,15 @@ export function useDesignSavedListener(): void {
         });
 
         addToastRef.current({
-          message: tRef.current('designLinking.toast.autoSynced', {
-            count: binsNeedingSync.length,
-          }),
+          message:
+            lockedBins.length > 0
+              ? tRef.current('designLinking.toast.autoSyncedSomeLocked', {
+                  count: binsNeedingSync.length,
+                  locked: lockedBins.length,
+                })
+              : tRef.current('designLinking.toast.autoSynced', {
+                  count: binsNeedingSync.length,
+                }),
           type: 'success',
           duration: 2000,
         });

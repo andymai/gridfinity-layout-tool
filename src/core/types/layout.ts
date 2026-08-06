@@ -137,6 +137,12 @@ export interface Bin {
   // moves or is resized, since the values only hold for the position they were
   // computed for.
   overhang?: OverhangConfig;
+  // Freezes the bin's size (#3229): while set, `width`, `depth` and `height`
+  // are rejected by `bin.update`, and the bin is skipped by every flow that
+  // resizes on the user's behalf (rotation, linked-design dimension sync,
+  // Expand to Fit). Position, layer and every descriptive field stay editable —
+  // a locked bin still moves.
+  locked?: boolean;
 }
 /**
  * Update payload for a bin.

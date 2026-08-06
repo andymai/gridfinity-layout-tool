@@ -3,6 +3,7 @@ import {
   getBinLocationContext,
   validateBinRotation,
   isBinInStash,
+  isBinLocked,
   isBinOnGrid,
   type BinLocation,
   type RotationResult,
@@ -41,6 +42,23 @@ describe('binLocation utility', () => {
       expect(context.canEdit).toBe(true);
       expect(context.requiresPlacementValidation).toBe(false);
       expect(context.label).toBe('Stash');
+    });
+
+    it('withholds resize and rotate from a size-locked bin', () => {
+      const gridContext = getBinLocationContext(
+        createTestBin({ layerId: layerId('layer1'), locked: true })
+      );
+      const stashContext = getBinLocationContext(
+        createTestBin({ layerId: STAGING_ID, locked: true })
+      );
+
+      for (const context of [gridContext, stashContext]) {
+        expect(context.canResize).toBe(false);
+        expect(context.canRotate).toBe(false);
+        // Locking freezes the size, not the bin: everything else stays open.
+        expect(context.canEdit).toBe(true);
+      }
+      expect(gridContext.canMoveToStash).toBe(true);
     });
 
     it('returns consistent context for same bin', () => {
@@ -332,6 +350,17 @@ describe('binLocation utility', () => {
     it('returns false for bins on grid', () => {
       const bin = createTestBin({ layerId: layerId('layer1') });
       expect(isBinInStash(bin)).toBe(false);
+    });
+  });
+
+  describe('isBinLocked', () => {
+    it('reads an absent flag as unlocked', () => {
+      expect(isBinLocked(createTestBin())).toBe(false);
+    });
+
+    it('returns true only for an explicit lock', () => {
+      expect(isBinLocked(createTestBin({ locked: true }))).toBe(true);
+      expect(isBinLocked(createTestBin({ locked: false }))).toBe(false);
     });
   });
 

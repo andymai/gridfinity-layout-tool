@@ -229,6 +229,31 @@ describe('Bin', () => {
     });
   });
 
+  describe('size lock', () => {
+    const lockedProps = { ...defaultProps, bin: { ...defaultBin, locked: true } };
+
+    it('hides resize handles on a selected locked bin', () => {
+      render(<Bin {...lockedProps} isSelected={true} />);
+      expect(screen.queryByTestId('resize-handles-primary')).not.toBeInTheDocument();
+    });
+
+    it('shows a lock badge', () => {
+      render(<Bin {...lockedProps} />);
+      expect(screen.getByLabelText('Size locked')).toBeInTheDocument();
+    });
+
+    it('leaves an unlocked bin unmarked', () => {
+      render(<Bin {...defaultProps} />);
+      expect(screen.queryByLabelText('Size locked')).not.toBeInTheDocument();
+    });
+
+    it('announces the lock to screen readers', () => {
+      const { container } = render(<Bin {...lockedProps} />);
+      const binElement = container.querySelector('[data-bin-id="test-bin-1"]');
+      expect(binElement?.getAttribute('aria-label')).toContain('size locked');
+    });
+  });
+
   describe('ghost bins', () => {
     it('applies ghost styling when isGhost is true', () => {
       const { container } = render(<Bin {...defaultProps} isGhost={true} />);

@@ -110,4 +110,25 @@ describe('BinContextMenu', () => {
     render(<BinContextMenu bin={bin} position={{ x: 0, y: 0 }} onClose={vi.fn()} />);
     expect(screen.queryByText('mobile.binMenu.expandToFit')).not.toBeInTheDocument();
   });
+
+  describe('size lock', () => {
+    it('offers to lock an unlocked bin', () => {
+      render(<BinContextMenu bin={createTestBin()} position={{ x: 0, y: 0 }} onClose={vi.fn()} />);
+      expect(screen.getByText('mobile.binMenu.lockSize')).toBeInTheDocument();
+      expect(screen.queryByText('mobile.binMenu.unlockSize')).not.toBeInTheDocument();
+    });
+
+    it('offers to unlock a locked bin', () => {
+      const bin = createTestBin({ locked: true });
+      render(<BinContextMenu bin={bin} position={{ x: 0, y: 0 }} onClose={vi.fn()} />);
+      expect(screen.getByText('mobile.binMenu.unlockSize')).toBeInTheDocument();
+    });
+
+    it('withdraws rotate and expand to fit from a locked bin', () => {
+      const bin = createTestBin({ locked: true });
+      render(<BinContextMenu bin={bin} position={{ x: 0, y: 0 }} onClose={vi.fn()} />);
+      expect(screen.queryByText('mobile.binMenu.rotate')).not.toBeInTheDocument();
+      expect(screen.queryByText('mobile.binMenu.expandToFit')).not.toBeInTheDocument();
+    });
+  });
 });

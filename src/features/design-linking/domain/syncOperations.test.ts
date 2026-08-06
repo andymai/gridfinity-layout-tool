@@ -3,6 +3,7 @@ import {
   extractBinDimensions,
   extractDesignDimensions,
   createBinSyncUpdate,
+  partitionSyncableByLock,
   formatDimensions,
   formatDimensionChange,
 } from './syncOperations';
@@ -179,6 +180,26 @@ describe('syncOperations', () => {
 
     it('formats same value (no actual change)', () => {
       expect(formatDimensionChange(2, 2)).toBe('2 → 2');
+    });
+  });
+  describe('partitionSyncableByLock', () => {
+    it('keeps size-locked bins out of the syncable set', () => {
+      const free = makeBin({ id: binId('free') });
+      const locked = makeBin({ id: binId('locked'), locked: true });
+
+      const result = partitionSyncableByLock([free, locked]);
+
+      expect(result.syncable).toEqual([free]);
+      expect(result.locked).toEqual([locked]);
+    });
+
+    it('treats an absent flag as syncable', () => {
+      const bins = [makeBin({ id: binId('a') }), makeBin({ id: binId('b'), locked: false })];
+
+      const result = partitionSyncableByLock(bins);
+
+      expect(result.syncable).toHaveLength(2);
+      expect(result.locked).toHaveLength(0);
     });
   });
 });

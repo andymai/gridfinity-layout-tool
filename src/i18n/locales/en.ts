@@ -395,6 +395,13 @@ const en: Record<string, string> = {
   'inspector.clearance': 'Clearance',
   'inspector.clearanceTooltip': 'Extra blocked space above for tall contents',
   'inspector.swapDimensions': 'Swap width ↔ depth (R)',
+  'inspector.lockSize': 'Lock size',
+  'inspector.unlockSize': 'Unlock size',
+  'inspector.lockSizeTooltip': 'Locked bins can be moved but not resized',
+  'inspector.sizeLockedHint': 'Size locked. Unlock to resize this bin.',
+  'inspector.lockAllSizes': 'Lock all sizes',
+  'inspector.unlockAllSizes': 'Unlock all sizes',
+  'inspector.someSizesLocked': '{count} of {total} selected bins are size-locked',
   'inspector.labelPlaceholder': 'Optional label',
   'inspector.labelSuggest.reason.nextInSet': 'next in set',
   'inspector.labelSuggest.reason.matchesNeighbors': 'matches neighbors',
@@ -1188,6 +1195,8 @@ const en: Record<string, string> = {
   'mobile.binMenu.editProperties': 'Edit Properties',
   'mobile.binMenu.rotate': 'Rotate',
   'mobile.binMenu.expandToFit': 'Expand to Fit',
+  'mobile.binMenu.lockSize': 'Lock Size',
+  'mobile.binMenu.unlockSize': 'Unlock Size',
   'mobile.binMenu.toStash': 'To Stash',
   'mobile.binMenu.moveToGrid': 'Move to Grid',
   'mobile.tools.instructions': 'Select a size, then tap or drag on grid to place bins.',
@@ -1416,6 +1425,8 @@ const en: Record<string, string> = {
     'Too much empty space — each bin would need to overhang more than 21mm. Use larger bins, or select more of them.',
   'toast.expandToFitNoGridAlignment':
     'The space cannot be divided onto the grid — try adjusting the drawer padding',
+  'toast.expandToFitLocked': 'Unlock the size-locked bins in the selection to expand them',
+  'toast.binSizeLocked': "This bin's size is locked",
   'toast.matchHeightComplete': 'Set {count} bin(s) to height {height}u',
   'toast.moveToLayerComplete': 'Moved {count} bin(s) to {name}',
   'toast.moveToLayerPartial':
@@ -1486,12 +1497,14 @@ const en: Record<string, string> = {
   'grid.hasNotesAriaLabel': 'Has notes',
   'grid.hasCustomPropertiesAriaLabel': 'Has custom properties',
   'grid.hasLinkedDesign': 'Has linked design',
+  'grid.sizeLocked': 'Size locked',
   'grid.clickToSeeSplitPreview': 'Click to see split preview',
 
   // Grid accessibility (screen reader)
   'grid.bin.ariaLabel': 'Bin {width} by {depth}',
   'grid.bin.ariaLabelLabeled': ', labeled {label}',
   'grid.bin.ariaLabelCategory': ', category {category}',
+  'grid.bin.ariaLabelLocked': ', size locked',
   'grid.announce.movedTo': 'Moved to {label} at column {col}, row {row}',
   'grid.announce.binDimensions': '{width} by {depth} bin',
 
@@ -3888,6 +3901,11 @@ const en: Record<string, string> = {
   'designLinking.toast.designUpdateFailed': 'Failed to update linked design',
   'designLinking.toast.edgeMatched': 'Matched half-unit edge to the layout',
   'designLinking.toast.cascadedResize': 'Updated design + {count} linked bin(s)',
+  'designLinking.toast.cascadedResizeSomeLocked':
+    'Updated design + {count} linked bin(s) — {locked} size-locked bin(s) kept their size',
+  'designLinking.toast.autoSyncedSomeLocked':
+    'Auto-synced {count} bin(s) — {locked} size-locked bin(s) kept their size',
+  'designLinking.toast.syncSkippedLocked': '{count} size-locked bin(s) kept their size',
 
   // Blocked resize dialog
   'designLinking.blockedResize.title': 'Design Not Updated',

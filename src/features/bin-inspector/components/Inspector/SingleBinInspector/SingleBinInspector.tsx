@@ -2,10 +2,10 @@ import { Suspense } from 'react';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, STAGING_ID } from '@/core/constants';
 import { mm, mmToHeightUnits, roundHeightUnits } from '@/core/types';
 import { Button, IconButton, Select, Stepper, XIcon } from '@/design-system';
-import { ArrowLeftRightIcon, RulerIcon } from '@/design-system/Icon';
+import { ArrowLeftRightIcon, LockIcon, LockOpenIcon, RulerIcon } from '@/design-system/Icon';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
-import { getBinLocationContext } from '@/shared/utils/binLocation';
+import { getBinLocationContext, isBinLocked } from '@/shared/utils/binLocation';
 import { formatHeightUnits, isStandardStackHeight, STACK_LIP_MM } from '@/shared/utils/heightUnits';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBinInspector';
 import { SplitWarning } from '../SplitWarning';
@@ -57,6 +57,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
     rotateBin,
     applySuggestedSize,
     canApplySuggestedSize,
+    toggleLock,
     existingPropertyKeys,
   } = inspector;
 
@@ -69,6 +70,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
   const isMobile = variant === 'mobile';
   const locationContext = getBinLocationContext(bin);
   const canMoveToStaging = locationContext.canMoveToStash;
+  const locked = isBinLocked(bin);
 
   // Format dimensions - show decimal if fractional (half-bin mode)
   const formatDim = (val: number) => (val % 1 === 0 ? val.toString() : val.toFixed(1));
@@ -140,6 +142,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
               min={minSize}
               max={layout.drawer.width}
               step={stepSize}
+              disabled={locked}
               size={isMobile ? 'lg' : 'md'}
               aria-label={t('common.width')}
             />
@@ -152,6 +155,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
             touchTarget={isMobile}
             type="button"
             onClick={rotateBin}
+            disabled={locked}
             className={
               isMobile
                 ? 'w-12 h-12 flex-shrink-0'
@@ -175,21 +179,45 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
               min={minSize}
               max={layout.drawer.depth}
               step={stepSize}
+              disabled={locked}
               size={isMobile ? 'lg' : 'md'}
               aria-label={t('common.depth')}
             />
           </div>
         </div>
 
-        {/* Real-world dimensions */}
-        <div className="flex items-center gap-1.5 text-sm text-content-tertiary">
-          <RulerIcon size="sm" />
-          <span className="tabular-nums">
-            {formatMmValue(bin.width * layout.gridUnitMm)} ×{' '}
-            {formatMmValue(bin.depth * layout.gridUnitMm)} ×{' '}
-            {formatMmValue(bin.height * layout.heightUnitMm)} mm
-          </span>
+        {/* Real-world dimensions, with the size lock that freezes them.
+            The lock sits on its own line rather than in the size row: at mobile
+            sizing two steppers plus the flip button already fill a phone-width
+            panel, and a fourth control would push the row past it. */}
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
+          <div className="flex items-center gap-1.5 text-sm text-content-tertiary">
+            <RulerIcon size="sm" />
+            <span className="tabular-nums">
+              {formatMmValue(bin.width * layout.gridUnitMm)} ×{' '}
+              {formatMmValue(bin.depth * layout.gridUnitMm)} ×{' '}
+              {formatMmValue(bin.height * layout.heightUnitMm)} mm
+            </span>
+          </div>
+          <Button
+            variant={locked ? 'secondary' : 'ghost'}
+            size="sm"
+            type="button"
+            onClick={toggleLock}
+            aria-pressed={locked}
+            title={t('inspector.lockSizeTooltip')}
+            className={isMobile ? 'h-9' : ''}
+          >
+            {locked ? <LockIcon size="xs" /> : <LockOpenIcon size="xs" />}
+            {locked ? t('inspector.unlockSize') : t('inspector.lockSize')}
+          </Button>
         </div>
+
+        {locked && (
+          <p className="-mt-2 text-[10px] leading-snug text-content-disabled">
+            {t('inspector.sizeLockedHint')}
+          </p>
+        )}
 
         {/* Height and Clearance - compact inline controls */}
         <div className="space-y-1.5">
@@ -211,6 +239,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
                 max={constraints.maxHeight * layout.heightUnitMm}
                 step={layout.heightUnitMm}
                 inputDecimals={2}
+                disabled={locked}
                 size={isMobile ? 'lg' : 'md'}
                 aria-label={t('inspector.single.heightAria')}
               />

@@ -24,6 +24,7 @@ import type { Bin, BinId, Layout, StoredBaseplateParams } from '@/core/types';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import { createOccupiedCellSet } from '@/shared/utils/fill';
+import { isBinLocked } from '@/shared/utils/binLocation';
 import type { OverhangConfig } from '@/core/types';
 
 /** Placement granularity. Always half-unit: an expansion may produce fractional
@@ -44,6 +45,8 @@ export type ExpandBlockedReason =
   | 'ragged'
   /** Nothing to absorb — the bins already meet their neighbours. */
   | 'no-slack'
+  /** A selected bin is size-locked, and the plan is all-or-nothing. */
+  | 'locked'
   /** A share of the slack exceeds what an overhang may cover. */
   | 'slack-exceeds-overhang'
   /**
@@ -174,6 +177,12 @@ export function resolveExpandToFit(
   const selectedSet = new Set(selectedIds);
   const selected = bins.filter((b) => selectedSet.has(b.id) && b.layerId !== STAGING_ID);
   if (selected.length === 0) return { ok: false, reason: 'ragged' };
+
+  // Expansion grows the printed body, which is the size a lock freezes. Dropping
+  // the locked bins and expanding the rest isn't an option: the plan divides one
+  // span across the whole selection, so the survivors would tile over the very
+  // bin that was meant to stay put.
+  if (selected.some(isBinLocked)) return { ok: false, reason: 'locked' };
 
   // One layer only — each layer has its own grid, so a cross-layer selection has
   // no single span to divide.

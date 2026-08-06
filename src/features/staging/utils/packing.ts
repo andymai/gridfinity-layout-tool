@@ -9,6 +9,8 @@ export interface PackedBin {
   height: number;
   category: CategoryId;
   label: string;
+  /** Carried through so the stash can withhold rotate from a size-locked bin. */
+  locked?: boolean;
 }
 
 /**

@@ -100,6 +100,33 @@ describe('useSelectionActions', () => {
     });
   });
 
+  describe('rotateAll and locks', () => {
+    it('leaves a size-locked bin unrotated and counts it as skipped', () => {
+      const bins = [
+        createTestBin({
+          id: binId('a'),
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(3),
+          locked: true,
+        }),
+      ];
+      useLayoutStore.setState({ layout: createTestLayout({ bins }) });
+      useSelectionStore.setState({ selectedBinIds: [binId('a')] });
+
+      const { result } = renderHook(() => useSelectionActions());
+
+      act(() => {
+        result.current.rotateAll();
+      });
+
+      const bin = useLayoutStore.getState().layout.bins[0];
+      expect(bin.width).toBe(2);
+      expect(bin.depth).toBe(3);
+    });
+  });
+
   describe('matchHeight', () => {
     it('sets all selected bins to the tallest height', () => {
       const bins = [
@@ -156,6 +183,40 @@ describe('useSelectionActions', () => {
       expect(updatedBins.every((b) => b.layerId === layerId('layer2'))).toBe(true);
       // Selection should be cleared after move
       expect(useSelectionStore.getState().selectedBinIds).toEqual([]);
+    });
+
+    // A locked bin still moves; only its size is frozen. Sending the target
+    // layer's default height with it would make `bin.update` reject the whole
+    // write, leaving the bin behind while the toast claimed it had moved.
+    it('moves a size-locked bin without adopting the layer height', () => {
+      const layout = createTestLayout({
+        layers: [
+          { id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) },
+          { id: layerId('layer2'), name: 'Layer 2', height: heightUnits(6) },
+        ],
+        bins: [
+          createTestBin({
+            id: binId('a'),
+            x: gridUnits(0),
+            y: gridUnits(0),
+            height: heightUnits(3),
+            layerId: layerId('layer1'),
+            locked: true,
+          }),
+        ],
+      });
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: [binId('a')] });
+
+      const { result } = renderHook(() => useSelectionActions());
+
+      act(() => {
+        result.current.moveToLayer(layerId('layer2'));
+      });
+
+      const moved = useLayoutStore.getState().layout.bins[0];
+      expect(moved.layerId).toBe(layerId('layer2'));
+      expect(moved.height).toBe(3);
     });
   });
 

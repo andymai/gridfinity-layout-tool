@@ -881,6 +881,76 @@ describe('useBinInspector', () => {
     });
   });
 
+  describe('size lock', () => {
+    const selectBins = (bins: Bin[]) => {
+      const layout = useLayoutStore.getState().layout;
+      layout.bins = bins;
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: bins.map((b) => b.id) });
+    };
+
+    const currentBin = (id: string): Bin | undefined =>
+      useLayoutStore.getState().layout.bins.find((b) => b.id === binId(id));
+
+    it('toggles the flag on the selected bin', () => {
+      selectBins([createBin('bin1', 'layer1')]);
+      const { result } = renderHook(() => useBinInspector());
+
+      act(() => result.current.toggleLock());
+      expect(currentBin('bin1')?.locked).toBe(true);
+
+      act(() => result.current.toggleLock());
+      expect(currentBin('bin1')?.locked).toBe(false);
+    });
+
+    it('refuses dimension edits on a locked bin', () => {
+      selectBins([{ ...createBin('bin1', 'layer1'), locked: true }]);
+      const { result } = renderHook(() => useBinInspector());
+
+      act(() => result.current.updateField('width', 4));
+      act(() => result.current.updateField('height', 6));
+
+      expect(currentBin('bin1')?.width).toBe(2);
+      expect(currentBin('bin1')?.height).toBe(3);
+    });
+
+    it('still accepts descriptive edits on a locked bin', () => {
+      selectBins([{ ...createBin('bin1', 'layer1'), locked: true }]);
+      const { result } = renderHook(() => useBinInspector());
+
+      act(() => result.current.updateField('label', 'M3 screws'));
+
+      expect(currentBin('bin1')?.label).toBe('M3 screws');
+    });
+
+    it('leaves a locked bin unrotated', () => {
+      selectBins([{ ...createBin('bin1', 'layer1', 0, 0, 2, 1), locked: true }]);
+      const { result } = renderHook(() => useBinInspector());
+
+      let rotated = true;
+      act(() => {
+        rotated = result.current.rotateBin();
+      });
+
+      expect(rotated).toBe(false);
+      expect(currentBin('bin1')?.width).toBe(2);
+      expect(currentBin('bin1')?.depth).toBe(1);
+    });
+
+    it('applies one lock state across a mixed selection', () => {
+      selectBins([
+        { ...createBin('bin1', 'layer1', 0, 0), locked: true },
+        createBin('bin2', 'layer1', 3, 0),
+      ]);
+      const { result } = renderHook(() => useBinInspector());
+
+      act(() => result.current.setMultiLock(true));
+
+      expect(currentBin('bin1')?.locked).toBe(true);
+      expect(currentBin('bin2')?.locked).toBe(true);
+    });
+  });
+
   describe('context', () => {
     it('returns layout and categories', () => {
       const { result } = renderHook(() => useBinInspector());

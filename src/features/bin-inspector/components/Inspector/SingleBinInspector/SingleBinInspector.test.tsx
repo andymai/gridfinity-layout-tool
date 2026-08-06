@@ -86,6 +86,8 @@ describe('SingleBinInspector', () => {
     rotateBin: vi.fn(),
     applySuggestedSize: vi.fn(),
     canApplySuggestedSize: vi.fn(),
+    toggleLock: vi.fn(),
+    setMultiLock: vi.fn(),
     confirmDelete: vi.fn(),
     cancelDelete: vi.fn(),
     deleteConfirmState: null,
@@ -437,6 +439,55 @@ describe('SingleBinInspector', () => {
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 
       expect(screen.queryByLabelText('Bin layer')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('size lock', () => {
+    const lockedInspector = () => createMockInspector({ bin: { ...mockBin, locked: true } });
+
+    it('calls toggleLock from the unlocked state', () => {
+      const inspector = createMockInspector();
+      render(<SingleBinInspector inspector={inspector} variant="desktop" />);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Lock size' }));
+
+      expect(inspector.toggleLock).toHaveBeenCalled();
+    });
+
+    it('offers the reverse action while locked', () => {
+      const inspector = lockedInspector();
+      render(<SingleBinInspector inspector={inspector} variant="desktop" />);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Unlock size' }));
+
+      expect(inspector.toggleLock).toHaveBeenCalled();
+    });
+
+    it('disables every dimension control while locked', () => {
+      render(<SingleBinInspector inspector={lockedInspector()} variant="desktop" />);
+
+      expect(screen.getByLabelText('Width')).toBeDisabled();
+      expect(screen.getByLabelText('Depth')).toBeDisabled();
+      expect(screen.getByLabelText('Bin height')).toBeDisabled();
+      expect(screen.getByLabelText('Swap width and depth')).toBeDisabled();
+    });
+
+    it('leaves the controls live when unlocked', () => {
+      render(<SingleBinInspector inspector={createMockInspector()} variant="desktop" />);
+
+      expect(screen.getByLabelText('Width')).not.toBeDisabled();
+      expect(screen.getByLabelText('Swap width and depth')).not.toBeDisabled();
+    });
+
+    it('explains the lock only while it is on', () => {
+      const { unmount } = render(
+        <SingleBinInspector inspector={createMockInspector()} variant="desktop" />
+      );
+      expect(screen.queryByText(/Size locked\./)).not.toBeInTheDocument();
+      unmount();
+
+      render(<SingleBinInspector inspector={lockedInspector()} variant="desktop" />);
+      expect(screen.getByText(/Size locked\./)).toBeInTheDocument();
     });
   });
 });

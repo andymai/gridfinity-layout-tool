@@ -20,6 +20,7 @@ export {
   extractBinDimensions,
   extractDesignDimensions,
   createBinSyncUpdate,
+  partitionSyncableByLock,
   formatDimension,
   formatDimensions,
   formatDimensionChange,

@@ -4,7 +4,9 @@ import { useLayoutStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
+import { isOk } from '@/core/result';
 import { canPlaceBin } from '@/shared/utils/validation';
+import { isBinLocked } from '@/shared/utils/binLocation';
 import { STAGING_ID } from '@/core/constants';
 import type { CategoryId, LayerId, HeightUnits } from '@/core/types';
 import { batch } from '@/core/cqrs';
@@ -74,6 +76,8 @@ export function useSelectionActions() {
     const rotatable = selected.filter((bin) => {
       // Square bins don't need rotation
       if (bin.width === bin.depth) return false;
+      // Locked bins count as skipped, so the partial toast still reports them
+      if (isBinLocked(bin)) return false;
 
       const validation = canPlaceBin(
         {
@@ -132,7 +136,8 @@ export function useSelectionActions() {
     if (selected.length === 0) return;
 
     const maxHeight = Math.max(...selected.map((b) => b.height)) as HeightUnits;
-    const candidates = selected.filter((b) => b.height !== maxHeight);
+    // A locked bin still sets the bar it just can't be raised to it.
+    const candidates = selected.filter((b) => b.height !== maxHeight && !isBinLocked(b));
     if (candidates.length === 0) return;
 
     // Validate height is legal per-layer (higher layers have less vertical budget)
@@ -190,7 +195,9 @@ export function useSelectionActions() {
             y: bin.y,
             width: bin.width,
             depth: bin.depth,
-            height: targetLayer.height,
+            // Must match the height the write below actually sends, or a locked
+            // bin is judged against a height it will never take.
+            height: isBinLocked(bin) ? bin.height : targetLayer.height,
             clearanceHeight: bin.clearanceHeight,
           },
           targetLayerId,
@@ -200,8 +207,6 @@ export function useSelectionActions() {
         );
         return validation.valid;
       });
-
-      const skipped = candidates.length - movable.length;
 
       if (movable.length === 0) {
         addToast({
@@ -217,20 +222,35 @@ export function useSelectionActions() {
         return;
       }
 
+      // Counted rather than assumed: the pre-filter and the command can
+      // disagree, and reporting `movable.length` is how a rejected write ended
+      // up announced as a successful move.
+      let moved = 0;
       batch(() => {
         for (const bin of movable) {
-          updateBin(bin.id, { layerId: targetLayerId, height: targetLayer.height });
+          // A locked bin keeps its own height, exactly as the single-bin
+          // inspector already does. Sending the layer's default height with it
+          // would make `bin.update` reject the whole write, so the bin would
+          // not move at all.
+          const result = updateBin(
+            bin.id,
+            isBinLocked(bin)
+              ? { layerId: targetLayerId }
+              : { layerId: targetLayerId, height: targetLayer.height }
+          );
+          if (isOk(result)) moved += 1;
         }
       });
 
       clearSelection();
 
-      if (skipped > 0) {
+      const notMoved = candidates.length - moved;
+      if (notMoved > 0) {
         addToast({
           message: t('toast.moveToLayerPartial', {
-            moved: movable.length,
+            moved,
             total: candidates.length,
-            skipped,
+            skipped: notMoved,
             name: targetLayer.name,
           }),
           type: 'info',
@@ -239,7 +259,7 @@ export function useSelectionActions() {
       } else {
         addToast({
           message: t('toast.moveToLayerComplete', {
-            count: movable.length,
+            count: moved,
             name: targetLayer.name,
           }),
           type: 'success',

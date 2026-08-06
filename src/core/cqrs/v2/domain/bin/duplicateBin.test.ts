@@ -65,6 +65,19 @@ describe('v2 bin.duplicate', () => {
     expect(result.ok).toBe(false);
   });
 
+  it('leaves the copy unlocked, and the label it carries over intact', () => {
+    const source = makeBin('bin_src', { locked: true, label: 'M3 screws' });
+    const layout = makeLayout({ bins: [source] });
+
+    const result = duplicateBin.handle({ id: 'bin_src' }, { aggregate: layout });
+
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    const copy = result.value.event.payload.newBin;
+    expect(copy.locked).toBeUndefined();
+    expect(copy.label).toBe('M3 screws');
+  });
+
   it('apply() round-trip: applying the event pushes the resolved newBin', () => {
     const source = makeBin('bin_src');
     const layout = makeLayout({ bins: [source] });

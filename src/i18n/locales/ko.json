@@ -3586,5 +3586,21 @@
   "community.gallery.heightAbbrev": "높이",
   "community.shelves.seeAllAria": "모두 보기: {shelf}",
   "community.shelves.scrollBack": "{shelf} 이전으로 스크롤",
-  "community.shelves.scrollForward": "{shelf} 다음으로 스크롤"
+  "community.shelves.scrollForward": "{shelf} 다음으로 스크롤",
+  "toast.expandToFitLocked": "선택 항목에서 크기가 잠긴 수납통을 잠금 해제하면 확장할 수 있습니다",
+  "toast.binSizeLocked": "이 수납통의 크기는 잠겨 있습니다",
+  "grid.sizeLocked": "크기 잠김",
+  "grid.bin.ariaLabelLocked": ", 크기 잠김",
+  "designLinking.toast.cascadedResizeSomeLocked": "디자인과 연결된 수납통 {count}개를 업데이트했습니다 (크기가 잠긴 {locked}개는 그대로)",
+  "designLinking.toast.autoSyncedSomeLocked": "수납통 {count}개를 자동 동기화했습니다 (크기가 잠긴 {locked}개는 그대로)",
+  "designLinking.toast.syncSkippedLocked": "크기가 잠긴 수납통 {count}개는 그대로 두었습니다",
+  "inspector.lockSize": "크기 잠금",
+  "inspector.unlockSize": "크기 잠금 해제",
+  "inspector.lockSizeTooltip": "잠긴 수납통은 옮길 수 있지만 크기는 바꿀 수 없습니다",
+  "inspector.sizeLockedHint": "크기가 잠겨 있습니다. 크기를 바꾸려면 잠금을 해제하세요.",
+  "inspector.lockAllSizes": "모든 크기 잠금",
+  "inspector.unlockAllSizes": "모든 크기 잠금 해제",
+  "inspector.someSizesLocked": "선택한 {total}개 중 {count}개의 크기가 잠겨 있습니다",
+  "mobile.binMenu.lockSize": "크기 잠금",
+  "mobile.binMenu.unlockSize": "크기 잠금 해제"
 }

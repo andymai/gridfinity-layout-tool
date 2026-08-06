@@ -6,6 +6,7 @@ import { useTranslation } from '@/i18n';
 import { calcMaxGridUnits, getCellSizeY, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { getBinTextColors, getBinPatternColor } from '@/shared/utils';
+import { isBinLocked } from '@/shared/utils/binLocation';
 import { getCategoryPatternIndex, getCategoryPatternStyle } from './categoryPatterns';
 import { ResizeHandles } from '../ResizeHandles';
 import { calculateBinLayout } from './calculateBinLayout';
@@ -159,6 +160,7 @@ function BinComponent({
     bin.customProperties !== undefined && Object.keys(bin.customProperties).length > 0;
   const hasLinkedDesign = !!bin.linkedDesignId;
   const hasMetadata = hasNotes || hasCustomProps;
+  const isLocked = isBinLocked(bin);
 
   // Memoize font size and label visibility calculations
   const textCalcs = useMemo(
@@ -318,7 +320,8 @@ function BinComponent({
       aria-label={
         t('grid.bin.ariaLabel', { width: bin.width, depth: bin.depth }) +
         (bin.label !== '' ? t('grid.bin.ariaLabelLabeled', { label: bin.label }) : '') +
-        (category ? t('grid.bin.ariaLabelCategory', { category: category.name }) : '')
+        (category ? t('grid.bin.ariaLabelCategory', { category: category.name }) : '') +
+        (isLocked ? t('grid.bin.ariaLabelLocked') : '')
       }
       aria-pressed={isSelected}
       tabIndex={isGhost ? -1 : 0}
@@ -356,6 +359,12 @@ function BinComponent({
           <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d={ICON_PATHS.tallArrow} clipRule="evenodd" />
           </svg>
+        </div>
+      )}
+
+      {isLocked && showBadges && (
+        <div className="absolute top-0.5 left-0.5 pointer-events-none" title={t('grid.sizeLocked')}>
+          <BinBadge small={useSmallBadges} label={t('grid.sizeLocked')} path={ICON_PATHS.lock} />
         </div>
       )}
 
@@ -463,6 +472,7 @@ function BinComponent({
       {/* Handles automatically position externally for bins with width≤1 OR depth≤1 */}
       {isSelected &&
         !isGhost &&
+        !isLocked &&
         !isMultiSelect &&
         (!interaction ||
           (interaction.type === 'resize' && interaction.binIds.includes(bin.id))) && (
@@ -478,6 +488,7 @@ function BinComponent({
       {/* Hidden when any bins are selected to avoid interfering with multi-selection clicks */}
       {!isSelected &&
         !isGhost &&
+        !isLocked &&
         isHovered &&
         !isTouchDevice &&
         !interaction &&

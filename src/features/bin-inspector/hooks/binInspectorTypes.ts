@@ -10,13 +10,7 @@ import type { Bin, Category, Layer, Layout } from '@/core/types';
 import { emitSyncEvent } from '@/shared/events/syncEventBus';
 
 export type BinField =
-  | 'width'
-  | 'depth'
-  | 'height'
-  | 'clearanceHeight'
-  | 'category'
-  | 'label'
-  | 'notes';
+  'width' | 'depth' | 'height' | 'clearanceHeight' | 'category' | 'label' | 'notes';
 
 export type MinHeightReason = 'layer_height' | 'global_minimum';
 export type MaxHeightReason = 'remaining_space' | 'drawer_height';
@@ -67,6 +61,10 @@ export interface UseBinInspectorReturn {
   rotateBin: () => boolean;
   applySuggestedSize: (size: { width: number; depth: number; height: number }) => boolean;
   canApplySuggestedSize: (size: { width: number; depth: number; height: number }) => boolean;
+  /** Freeze or release the selected bin's dimensions (single selection). */
+  toggleLock: () => void;
+  /** Apply one lock state to the whole selection (multi-selection). */
+  setMultiLock: (locked: boolean) => void;
 
   deleteConfirmState: ConfirmDeleteState | null;
 

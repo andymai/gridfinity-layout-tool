@@ -108,6 +108,7 @@ const binPartialSchema = z
         feet: z.boolean().optional(),
       })
       .nullable(),
+    locked: z.boolean(),
     id: binIdSchema,
   })
   .partial();

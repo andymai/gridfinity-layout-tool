@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { STAGING_ID, DEFAULT_CATEGORY_COLOR, CONSTRAINTS } from '@/core/constants';
 import { getGridBins } from '@/shared/utils';
+import { isBinLocked } from '@/shared/utils/binLocation';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBinInspector';
 import type { Layer } from '@/core/types';
 import { BulkIncrementControl } from '@/shared/components/BulkIncrementControl';
@@ -35,6 +36,7 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
     updateMultiLayer,
     requestDelete,
     moveToStaging,
+    setMultiLock,
     existingPropertyKeys,
   } = inspector;
 
@@ -50,6 +52,9 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
   // Sizing for mobile vs desktop
   const inputHeight = isMobile ? 'h-12' : '';
   const labelSize = isMobile ? 'text-sm mb-2' : 'text-xs mb-1';
+
+  const lockedCount = selectedBins.filter(isBinLocked).length;
+  const allLocked = lockedCount === selectedBins.length;
 
   // Check if all bins have the same category
   const commonCategory = selectedBins.every((b) => b.category === selectedBins[0]?.category)
@@ -302,6 +307,26 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
               {t('inspector.setTheSamePropertyOnAllSelectedBins')}
             </p>
           )}
+        </div>
+
+        {/* Size lock */}
+        <div>
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={() => setMultiLock(!allLocked)}
+            className={`w-full ${isMobile ? 'h-12' : ''}`}
+          >
+            {allLocked ? t('inspector.unlockAllSizes') : t('inspector.lockAllSizes')}
+          </Button>
+          <p className={`text-xs text-content-disabled ${isMobile ? 'mt-2' : 'mt-1'}`}>
+            {lockedCount > 0 && !allLocked
+              ? t('inspector.someSizesLocked', {
+                  count: lockedCount,
+                  total: selectedBins.length,
+                })
+              : t('inspector.lockSizeTooltip')}
+          </p>
         </div>
 
         {/* Actions */}
