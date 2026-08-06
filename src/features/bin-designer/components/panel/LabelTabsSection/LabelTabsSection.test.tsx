@@ -76,7 +76,9 @@ describe('LabelTabsSection', () => {
       params: { ...s.params, label: { ...s.params.label, width: 50, alignment: 'center' } },
     }));
     render(<LabelTabsSection />);
-    fireEvent.click(screen.getByRole('button', { name: /Tab shape/ }));
+    // Alignment answers "where does the label go", so it lives under Placement
+    // alongside edges rather than with the tab's dimensions.
+    fireEvent.click(screen.getByRole('button', { name: /Placement/ }));
     expect(screen.getByRole('button', { name: 'Center', pressed: true })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Left', pressed: false })).toBeInTheDocument();
   });

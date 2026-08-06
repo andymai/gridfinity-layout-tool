@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import {
   getCompartmentReadingOrder,
@@ -46,10 +47,19 @@ export function useCompartmentLabeling(
   style: string,
   compartmentCount: number
 ): CompartmentLabeling {
-  const setCompartmentText = useDesignerStore((s) => s.setCompartmentText);
-
-  const [labelModeRaw, setLabelModeRaw] = useState(false);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  // Mode and selection live in the store, not local state: the panel's label
+  // text list is in a different section with no common ancestor, and it has to
+  // be able to turn picking on and follow the pick.
+  const { setCompartmentText, labelModeRaw, selectedId, setLabelModeRaw, setSelectedId } =
+    useDesignerStore(
+      useShallow((s) => ({
+        setCompartmentText: s.setCompartmentText,
+        labelModeRaw: s.ui.compartmentLabelMode,
+        selectedId: s.ui.labelFocusCompartmentId,
+        setLabelModeRaw: s.setCompartmentLabelMode,
+        setSelectedId: s.setLabelFocusCompartmentId,
+      }))
+    );
 
   const canLabel = style === 'standard' && compartmentCount > 1;
 
@@ -72,9 +82,9 @@ export function useCompartmentLabeling(
       ? selectedId
       : firstId;
 
-  const setLabelMode = useCallback((on: boolean) => setLabelModeRaw(on), []);
+  const setLabelMode = setLabelModeRaw;
 
-  const selectCompartment = useCallback((id: number) => setSelectedId(id), []);
+  const selectCompartment = setSelectedId;
 
   const displayNumberOf = useCallback(
     (id: number) => displayNumbers.get(id) ?? 0,
@@ -98,7 +108,7 @@ export function useCompartmentLabeling(
       const next = Math.min(orderedIds.length - 1, Math.max(0, cur + delta));
       setSelectedId(orderedIds[next]);
     },
-    [editingId, orderedIds]
+    [editingId, orderedIds, setSelectedId]
   );
 
   const moveByGrid = useCallback(
@@ -115,7 +125,7 @@ export function useCompartmentLabeling(
       const target = compartments.cells[cellIndex(cols, col, row)];
       if (target !== editingId) setSelectedId(target);
     },
-    [editingId, compartments]
+    [editingId, compartments, setSelectedId]
   );
 
   return {

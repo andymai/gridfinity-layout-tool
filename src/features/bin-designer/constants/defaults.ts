@@ -277,6 +277,8 @@ export const DEFAULT_UI_STATE: DesignerUIState = {
   hoveredDividerKey: null,
   dividerTiltPreview: null,
   hoveredCompartmentId: null,
+  compartmentLabelMode: false,
+  labelFocusCompartmentId: null,
 };
 
 /** Default empty history */

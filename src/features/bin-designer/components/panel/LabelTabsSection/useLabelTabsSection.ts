@@ -29,6 +29,18 @@ import type {
 } from '../../../types';
 import { withFontSizeOverride } from '../../../types';
 
+/** Collapsible group that owns a warning's control, so the section can surface
+ *  the warning at top level while that group is collapsed. */
+export type LabelWarningGroup = 'placement' | 'shape';
+
+export interface LabelWarning {
+  readonly id: string;
+  readonly group: LabelWarningGroup;
+  readonly message: string;
+  readonly fixLabel: string;
+  readonly onFix: () => void;
+}
+
 export function useLabelTabsSection() {
   const {
     compartments,
@@ -40,6 +52,9 @@ export function useLabelTabsSection() {
     labelPlates,
     labelTextOverflow,
     clearLabelText,
+    labelFocusCompartmentId,
+    setLabelFocusCompartmentId,
+    setCompartmentLabelMode,
     setCompartmentPlateWidth,
     setCompartmentPlateIcon,
     setTextDefaults,
@@ -56,6 +71,9 @@ export function useLabelTabsSection() {
       labelPlates: s.generation.mesh?.labelPlates ?? null,
       labelTextOverflow: s.generation.mesh?.labelTextOverflow ?? null,
       clearLabelText: s.clearLabelText,
+      labelFocusCompartmentId: s.ui.labelFocusCompartmentId,
+      setLabelFocusCompartmentId: s.setLabelFocusCompartmentId,
+      setCompartmentLabelMode: s.setCompartmentLabelMode,
       setCompartmentPlateWidth: s.setCompartmentPlateWidth,
       setCompartmentPlateIcon: s.setCompartmentPlateIcon,
       setTextDefaults: s.setTextDefaults,
@@ -675,10 +693,42 @@ export function useLabelTabsSection() {
   // already failed at `minFontSize`, which is a legibility floor rather than a
   // knob, and a plate's width is a per-compartment choice with its own control.
   const canWidenTabs = !isSocketMode && label.width < DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH;
+  const pickLabelOnGrid = useCallback(
+    () => setCompartmentLabelMode(true),
+    [setCompartmentLabelMode]
+  );
+
   const widenTabs = useCallback(
     () => updateLabel({ width: DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH }),
     [updateLabel]
   );
+
+  // Warnings carry the group that owns their control so the section can render
+  // them at top level while that group is collapsed. Progressive disclosure
+  // hides options; it must never hide an active problem, and both of these
+  // come with a fix the user would otherwise have to find for themselves.
+  const warnings = useMemo<LabelWarning[]>(() => {
+    const list: LabelWarning[] = [];
+    if (tabsWillSilentlyDrop) {
+      list.push({
+        id: 'edges-collision',
+        group: 'placement',
+        message: t('binDesigner.tabBothCollisionWarning'),
+        fixLabel: t('binDesigner.tabAutoFix'),
+        onFix: autoFixDimensions,
+      });
+    }
+    if (lipWontFit) {
+      list.push({
+        id: 'lip-too-tall',
+        group: 'shape',
+        message: t('binDesigner.tabLipTooTallWarning'),
+        fixLabel: t('binDesigner.tabAutoFix'),
+        onFix: autoFixLip,
+      });
+    }
+    return list;
+  }, [tabsWillSilentlyDrop, lipWontFit, autoFixDimensions, autoFixLip, t]);
 
   return {
     state: {
@@ -687,6 +737,8 @@ export function useLabelTabsSection() {
       spanning,
       textRows,
       canWidenTabs,
+      warnings,
+      labelFocusCompartmentId,
       isUnavailable,
       tabWidthMm,
       tabHeightMm,
@@ -737,6 +789,8 @@ export function useLabelTabsSection() {
       commitText,
       clearAllText,
       widenTabs,
+      setLabelFocusCompartmentId,
+      pickLabelOnGrid,
       setTextFont,
       setTextMode,
       setTextDepth,

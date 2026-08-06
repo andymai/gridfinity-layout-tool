@@ -114,6 +114,21 @@ export interface DesignerUIState {
    * when nothing is hovered (the 3D view stays uncluttered at rest).
    */
   readonly hoveredCompartmentId: number | null;
+  /**
+   * Whether the compartment grid is picking a compartment to label rather than
+   * editing dividers.
+   *
+   * Store state rather than the grid's own `useState` so the panel's label-text
+   * list can turn it on ("pick on grid") — the two live in different panel
+   * sections and have no common React ancestor short of the whole panel.
+   */
+  readonly compartmentLabelMode: boolean;
+  /**
+   * Compartment the label list has focused, by id. Set by a grid click and by
+   * the list's own navigation, so both stay pointed at the same row. Null falls
+   * back to the first compartment in reading order.
+   */
+  readonly labelFocusCompartmentId: number | null;
 }
 
 /** In-flight divider tilt used only for live preview (see `dividerTiltPreview`). */

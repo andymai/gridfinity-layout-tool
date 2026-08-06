@@ -14,7 +14,7 @@
  * most.
  */
 
-import { useCallback, useId, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Button, InfoIcon, XIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
@@ -36,6 +36,14 @@ interface LabelTextListProps {
   readonly onToggleSpan: (spanning: boolean) => void;
   readonly onCommit: (index: number, value: string) => void;
   readonly onClearAll: () => void;
+  /** Compartment picked on the 2D grid. Focusing follows it, which is what makes
+   *  "pick on grid" a picker INTO this list rather than a second editor. */
+  readonly focusIndex?: number | null;
+  /** Report this list's own navigation back, so the grid highlight follows. */
+  readonly onFocusChange?: (index: number) => void;
+  /** Turn on the compartment grid's picking mode. Absent when there is no grid
+   *  to pick on (a single compartment, or row-indexed spanning labels). */
+  readonly onPickOnGrid?: () => void;
   /** Raising `label.width` is the one auto-fix for an overflow; absent when the
    *  tabs are already full width or the caption sits on a plate. */
   readonly onWiden?: () => void;
@@ -48,6 +56,9 @@ export function LabelTextList({
   onCommit,
   onClearAll,
   onWiden,
+  focusIndex = null,
+  onFocusChange,
+  onPickOnGrid,
 }: LabelTextListProps) {
   const t = useTranslation();
   const listId = useId();
@@ -61,9 +72,22 @@ export function LabelTextList({
   const overflowCount = useMemo(() => rows.filter((r) => r.overflows).length, [rows]);
   const filledCount = rows.length - blankCount;
 
-  const focusRow = useCallback((index: number) => {
-    setFocus((prev) => ({ index, token: (prev?.token ?? 0) + 1 }));
-  }, []);
+  const focusRow = useCallback(
+    (index: number) => {
+      setFocus((prev) => ({ index, token: (prev?.token ?? 0) + 1 }));
+      onFocusChange?.(index);
+    },
+    [onFocusChange]
+  );
+
+  // Follow a pick made on the grid. Keyed on the incoming index alone (not on a
+  // token) so this fires once per pick and never fights the list's own focus.
+  const pickedRef = useRef<number | null>(focusIndex);
+  useEffect(() => {
+    if (focusIndex === null || focusIndex === pickedRef.current) return;
+    pickedRef.current = focusIndex;
+    setFocus((prev) => ({ index: focusIndex, token: (prev?.token ?? 0) + 1 }));
+  }, [focusIndex]);
 
   const navigate = useCallback(
     (from: number, direction: 'next' | 'prev') => {
@@ -222,7 +246,21 @@ export function LabelTextList({
         })}
       </ul>
 
-      <div className="mt-2 flex items-center justify-end">
+      <div className="mt-2 flex items-center justify-between">
+        {onPickOnGrid && showNumbers ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            touchTarget={false}
+            onClick={onPickOnGrid}
+            className="px-0 text-[11px] font-medium text-accent hover:bg-transparent hover:text-accent/80"
+          >
+            {t('binDesigner.labelTextPickOnGrid')}
+          </Button>
+        ) : (
+          <span />
+        )}
         {filledCount > 0 && (
           <Button
             type="button"

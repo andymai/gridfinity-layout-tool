@@ -121,6 +121,18 @@ export function createUISlice(set: Set) {
       });
     },
 
+    setCompartmentLabelMode: (on: boolean) => {
+      set((state) => {
+        state.ui.compartmentLabelMode = on;
+      });
+    },
+
+    setLabelFocusCompartmentId: (id: number | null) => {
+      set((state) => {
+        state.ui.labelFocusCompartmentId = id;
+      });
+    },
+
     setColorTool: (tool: ColorTool) => {
       set((state) => {
         state.ui.colorTool = tool;

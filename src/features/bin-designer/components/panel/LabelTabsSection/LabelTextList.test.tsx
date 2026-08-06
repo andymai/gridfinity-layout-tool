@@ -132,6 +132,39 @@ describe('LabelTextList', () => {
     expect(screen.getByLabelText('Label text for row 1')).toBeInTheDocument();
   });
 
+  it('follows a compartment picked on the grid', () => {
+    const { rerender } = render(
+      <LabelTextList
+        rows={rows('SCREWS', '', '')}
+        spanning={false}
+        onToggleSpan={vi.fn()}
+        onCommit={vi.fn()}
+        onClearAll={vi.fn()}
+        focusIndex={null}
+      />
+    );
+    // "Pick on grid" is a picker INTO this list, not a second editor: the grid
+    // click moves focus here rather than opening a field of its own.
+    rerender(
+      <LabelTextList
+        rows={rows('SCREWS', '', '')}
+        spanning={false}
+        onToggleSpan={vi.fn()}
+        onCommit={vi.fn()}
+        onClearAll={vi.fn()}
+        focusIndex={2}
+      />
+    );
+    expect(screen.getByLabelText('Engraved text for compartment 3')).toHaveFocus();
+  });
+
+  it('reports its own navigation back so the grid highlight follows', () => {
+    const onFocusChange = vi.fn();
+    renderList({ onFocusChange });
+    fireEvent.click(screen.getByRole('button', { name: 'Next blank' }));
+    expect(onFocusChange).toHaveBeenCalledWith(1);
+  });
+
   it('renders nothing when no tab can host text', () => {
     const { container } = render(
       <LabelTextList
