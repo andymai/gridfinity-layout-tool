@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.370.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.369.0...gridfinity-layout-tool-v4.370.0) (2026-08-06)
+
+
+### Features
+
+* **community:** graduate the showcase to on-by-default, marked experimental ([#3243](https://github.com/andymai/gridfinity-layout-tool/issues/3243)) ([d1d5d6e](https://github.com/andymai/gridfinity-layout-tool/commit/d1d5d6eab9ff00c14b845479197f7874eb921ceb))
+
 ## [4.369.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.368.0...gridfinity-layout-tool-v4.369.0) (2026-08-05)
 
 
