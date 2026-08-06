@@ -1,0 +1,72 @@
+src/i18n/locales/ko.json
+  s_2a4ee505e1d992::t_77b90ae63135a2 1402-1403,3152
+src/shared/components/ToolSwitcher/ToolSwitcher.test.tsx
+  s_2a4ee505e1d992::t_25ca9e2de40509 31,173-175,180,183-185,188-190,193,195
+src/i18n/locales/ja.json
+  s_2a4ee505e1d992::t_77b90ae63135a2 1405-1406,1686
+src/i18n/locales/it.json
+  s_2a4ee505e1d992::t_77b90ae63135a2 1405-1406,1734
+src/i18n/locales/cs.json
+  s_2a4ee505e1d992::t_77b90ae63135a2 1398-1399,1607
+src/core/store/binExampleGallery.ts
+  s_2a4ee505e1d992::t_44cfc3ab088219 3-5,8-15,19,28,33-34,37-39,42
+src/shared/components/ToolSwitcher/ToolSwitcher.tsx
+  s_2a4ee505e1d992::t_c1392d68e3677e 71,75,77-81
+  s_2a4ee505e1d992::t_20f488e931a0ba 117-135
+  s_2a4ee505e1d992::t_dd99abc06935ea 2,4-8,25,29,33
+src/i18n/locales/es.json
+  s_2a4ee505e1d992::t_77b90ae63135a2 1405-1406,1622
+src/i18n/locales/fr.json
+  s_2a4ee505e1d992::t_77b90ae63135a2 1398-1399,1615
+src/i18n/locales/pl.json
+  s_2a4ee505e1d992::t_77b90ae63135a2 1398-1399,1615
+scripts/i18n-values-allowlist.json
+  s_2a4ee505e1d992::t_50cabd6ef9324a 129,165
+src/shared/hooks/useCommunityRouting.ts
+  s_2a4ee505e1d992::t_34706ee3a9f418 13-18
+src/features/community/README.md
+  s_2a4ee505e1d992::t_8c25776876c84b 50-54
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.tsx
+  s_2a4ee505e1d992::t_cd68b911b5362e 108-112,116
+  s_2a4ee505e1d992::t_445d79c7220428 113-115,117-129,131-162
+  s_2a4ee505e1d992::t_e55f49b6902d9f 27,130
+src/shell/Modals/DesignGalleryModal/useGalleryTab.test.ts
+  s_2a4ee505e1d992::t_00295467ee7614 4-7,16,55-92
+  s_2a4ee505e1d992::t_1770ace4ad5a99 93
+src/i18n/locales/de.json
+  s_2a4ee505e1d992::t_77b90ae63135a2 1405-1406,1476
+src/i18n/locales/uk.json
+  s_2a4ee505e1d992::t_77b90ae63135a2 1405-1406,1650
+src/i18n/locales/zh-CN.json
+  s_2a4ee505e1d992::t_77b90ae63135a2 1398-1399,1615
+src/i18n/locales/sv.json
+  s_2a4ee505e1d992::t_77b90ae63135a2 1398-1399,1615
+src/i18n/locales/en.ts
+  s_2a4ee505e1d992::t_77b90ae63135a2 3199-3200,3530
+src/shell/Modals/DesignGalleryModal/useGalleryTab.ts
+  s_2a4ee505e1d992::t_44cfc3ab088219 2,50-52,54,59-62
+src/i18n/locales/nb.json
+  s_2a4ee505e1d992::t_77b90ae63135a2 1405-1406,1734
+src/features/bin-designer/components/DesignerPage/DesignerHeader.tsx
+  s_2a4ee505e1d992::t_20f488e931a0ba 69
+src/i18n/locales/nl.json
+  s_2a4ee505e1d992::t_77b90ae63135a2 1405-1406,1476
+src/i18n/locales/pt-BR.json
+  s_2a4ee505e1d992::t_77b90ae63135a2 1398-1399,1615
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "a7e7bea33f228b90622428c83c6d9a5d8149926e",
+  "prompts": {},
+  "sessions": {
+    "s_2a4ee505e1d992": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3b5bc396-723b-4c74-b9e4-2f78bded5f37",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
