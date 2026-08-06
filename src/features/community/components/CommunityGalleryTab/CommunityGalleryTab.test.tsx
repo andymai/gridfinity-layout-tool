@@ -162,6 +162,24 @@ describe('CommunityGalleryTab', () => {
     window.removeEventListener('switch-to-designer', dispatched);
   });
 
+  it('leaves the empty state to stand alone, with no rail of dead filters beside it', async () => {
+    indexMock.mockResolvedValue(ok({ items: [], capped: false }));
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.getByText('community.gallery.empty.title')).toBeInTheDocument();
+    });
+    expect(screen.queryByTestId('community-filter-rail')).toBeNull();
+    expect(screen.queryByTestId('community-filter-button')).toBeNull();
+  });
+
+  it('brings the rail back as soon as there is something to narrow', async () => {
+    indexMock.mockResolvedValue(ok({ items: [card('a')], capped: false }));
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.getByTestId('community-filter-rail')).toBeInTheDocument();
+    });
+  });
+
   it('adapts the empty-state CTA when local designs exist and opens the publish flow', async () => {
     localStorage.setItem('gridfinity-designer-active-v1', 'design-id');
     indexMock.mockResolvedValue(ok({ items: [], capped: false }));
@@ -464,6 +482,26 @@ describe('CommunityGalleryTab Mine view', () => {
     fireEvent.click(screen.getByTestId('community-mine-empty-cta'));
     expect(onRequestClose).toHaveBeenCalled();
     expect(onRequestPublish).toHaveBeenCalled();
+  });
+
+  // The Mine toggle lives inside the rail, so hiding the rail over an empty
+  // Mine view would strand the visitor in it. The chip row is what the rail
+  // hands the exit back to.
+  it('keeps a way out of an empty Mine view once the rail is gone', async () => {
+    indexMock.mockResolvedValue(ok({ items: [card('public000001')], capped: false }));
+    mineIndexMock.mockResolvedValue(ok({ items: [], capped: false }));
+    activateMine();
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.getByText('community.gallery.mineEmpty.title')).toBeInTheDocument();
+    });
+    expect(screen.queryByTestId('community-filter-rail')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'community.gallery.clearNamedFilter' }));
+    expect(useBrowseStore.getState().filters.mineOnly).toBe(false);
+    await waitFor(() => {
+      expect(screen.getByTestId('community-filter-rail')).toBeInTheDocument();
+    });
   });
 
   it('falls back to the public grid when the session signs out mid-visit', async () => {
