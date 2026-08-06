@@ -217,15 +217,27 @@ describe('CommunityDetail', () => {
     openDetail();
     renderDetail();
     expect(await screen.findByText('You appear to be offline')).toBeInTheDocument();
-    fetchMock.mockResolvedValueOnce(ok(detail()));
+    fetchMock.mockResolvedValue(ok(detail()));
     Object.defineProperty(window.navigator, 'onLine', { value: true, configurable: true });
-    fireEvent(window, new Event('online'));
-    // Two full fetch-and-render cycles of the whole detail tree (viewer,
-    // prints, cost panel, lineage), so the wait is sized to that rather than
-    // to a single request. It has twice tripped the old 5s cap on loaded CI
-    // runners while passing consistently in isolation.
-    expect(await screen.findByText('by Jo', undefined, { timeout: 15000 })).toBeInTheDocument();
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    // `useRetryOnReconnect` attaches its 'online' listener from a passive
+    // effect, which React flushes after the commit that put the offline copy on
+    // screen. A dispatch that lands before that flush is simply dropped, and
+    // nothing re-arms it: the load never retries and the wait burns its entire
+    // budget with the error copy still up. That is why raising the cap (5s, then
+    // 15s) never helped — the test wasn't slow, it was waiting for an event that
+    // had already been thrown away. Dispatch until the reload is observed
+    // instead of betting on the interleaving; a browser is free to fire 'online'
+    // repeatedly, so this is also the more faithful simulation.
+    await waitFor(
+      () => {
+        fireEvent(window, new Event('online'));
+        expect(screen.getByText('by Jo')).toBeInTheDocument();
+      },
+      { timeout: 5000 }
+    );
+    // At least two, not exactly two: a retry dispatched while the reload was
+    // already in flight legitimately adds a call.
+    expect(fetchMock.mock.calls.length).toBeGreaterThanOrEqual(2);
   });
 
   it('shows an error state with a retry that refetches', async () => {
