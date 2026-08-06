@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.372.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.371.1...gridfinity-layout-tool-v4.372.0) (2026-08-06)
+
+
+### Features
+
+* **community:** mark the shelf edges that hide cards ([#3253](https://github.com/andymai/gridfinity-layout-tool/issues/3253)) ([865ab87](https://github.com/andymai/gridfinity-layout-tool/commit/865ab873f4d9de4e4408df9219cd1c284ac2c497))
+
 ## [4.371.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.371.0...gridfinity-layout-tool-v4.371.1) (2026-08-06)
 
 
