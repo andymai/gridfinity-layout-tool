@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.373.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.372.1...gridfinity-layout-tool-v4.373.0) (2026-08-06)
+
+
+### Features
+
+* **nav:** return the tool switcher to the three editors ([#3256](https://github.com/andymai/gridfinity-layout-tool/issues/3256)) ([6677a0a](https://github.com/andymai/gridfinity-layout-tool/commit/6677a0a5585c5be0d9feddb83a074f850b98512b))
+
 ## [4.372.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.372.0...gridfinity-layout-tool-v4.372.1) (2026-08-06)
 
 
