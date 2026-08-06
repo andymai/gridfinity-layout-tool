@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.371.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.370.2...gridfinity-layout-tool-v4.371.0) (2026-08-06)
+
+
+### Features
+
+* **community:** collapse the gallery toolbar to one control row ([#3249](https://github.com/andymai/gridfinity-layout-tool/issues/3249)) ([f0018c4](https://github.com/andymai/gridfinity-layout-tool/commit/f0018c471d5d1d11e0f140bbb03db548916e9cf6))
+
 ## [4.370.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.370.1...gridfinity-layout-tool-v4.370.2) (2026-08-06)
 
 
