@@ -532,6 +532,14 @@ export function RightPanel() {
                                           {row.labelPlateCount}
                                         </span>
                                       )}
+                                      {/* The tabs will print, just with nothing
+                                          on them — worth knowing before the
+                                          spool goes in, not after. */}
+                                      {row.labelTabsWithoutText === true && (
+                                        <span className="text-xxs text-warning">
+                                          {t('print.row.blankLabelTabs')}
+                                        </span>
+                                      )}
                                     </div>
                                   </td>
                                   <td className="px-2 py-2 align-top text-content-tertiary">

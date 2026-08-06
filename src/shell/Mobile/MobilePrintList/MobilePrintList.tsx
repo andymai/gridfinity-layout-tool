@@ -221,6 +221,11 @@ export function MobilePrintList() {
                         {t('print.row.labelPlates', { count: row.labelPlateCount ?? 0 })}
                       </div>
                     )}
+                    {row.labelTabsWithoutText === true && (
+                      <div className="text-xs text-warning mt-0.5">
+                        {t('print.row.blankLabelTabs')}
+                      </div>
+                    )}
                   </div>
                 </div>
 

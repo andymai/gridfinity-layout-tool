@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store';
+import { useLayoutStore } from '@/core/store/layout';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { useTranslation } from '@/i18n';
@@ -83,6 +84,11 @@ export function useLabelTabsSection() {
   );
   const t = useTranslation();
   const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
+  // Read, never write: the planner owns its bins. The designer pulls a name
+  // rather than the planner pushing one, so a shared saved design is never
+  // mutated from a single placement.
+  const currentDesignId = useDesignerStore((s) => s.currentDesignId);
+  const layoutBins = useLayoutStore((s) => s.layout.bins);
 
   const labelStatus = getFeatureStatus(params, 'label');
 
@@ -664,23 +670,40 @@ export function useLabelTabsSection() {
     return set;
   }, [labelTextOverflow, spanning]);
 
-  const textRows = useMemo(
-    () =>
-      spanning
-        ? rowTextRows.map((r) => ({
-            index: r.row,
-            displayNumber: r.row + 1,
-            value: r.value,
-            overflows: overflowIndices.has(r.row),
-          }))
-        : compartmentTextRows.map((r) => ({
-            index: r.id,
-            displayNumber: r.displayNumber,
-            value: r.value,
-            overflows: overflowIndices.has(r.id),
-          })),
-    [spanning, rowTextRows, compartmentTextRows, overflowIndices]
-  );
+  // One row per compartment carrying EVERYTHING about that compartment's label.
+  // Text and plate hardware were two lists over the same compartments, in
+  // different places, so row 3 meant a different thing depending on which one
+  // you were looking at.
+  const textRows = useMemo(() => {
+    if (spanning) {
+      return rowTextRows.map((r) => ({
+        index: r.row,
+        displayNumber: r.row + 1,
+        value: r.value,
+        overflows: overflowIndices.has(r.row),
+      }));
+    }
+    const plateById = new Map(plateWidthRows.map((p) => [p.id, p]));
+    return compartmentTextRows.map((r) => {
+      const plate = plateById.get(r.id);
+      return {
+        index: r.id,
+        displayNumber: r.displayNumber,
+        value: r.value,
+        overflows: overflowIndices.has(r.id),
+        ...(plate
+          ? {
+              plate: {
+                fittingWidthsU: plate.fittingWidthsU,
+                autoWidthU: plate.autoWidthU,
+                overrideU: plate.overrideU,
+                icon: plate.icon,
+              },
+            }
+          : {}),
+      };
+    });
+  }, [spanning, rowTextRows, compartmentTextRows, overflowIndices, plateWidthRows]);
 
   const commitText = spanning ? setLabelRowText : setCompartmentText;
 
@@ -693,6 +716,25 @@ export function useLabelTabsSection() {
   // already failed at `minFontSize`, which is a legibility floor rather than a
   // knob, and a plate's width is a per-compartment choice with its own control.
   const canWidenTabs = !isSocketMode && label.width < DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH;
+  // Offered only when the mapping is unambiguous: EXACTLY one placed bin links
+  // to this design, and the design has one compartment. A design shared by five
+  // bins named Screws/Bolts/Nuts has no sensible name-to-compartment mapping,
+  // and guessing one would write the wrong caption onto four of them.
+  const binNameSuggestion = useMemo(() => {
+    if (currentDesignId === null || spanning) return null;
+    if (compartmentTextRows.length !== 1) return null;
+    if (compartmentTextRows[0].value.trim() !== '') return null;
+    const linked = layoutBins.filter((b) => b.linkedDesignId === currentDesignId);
+    if (linked.length !== 1) return null;
+    const name = linked[0].label.trim();
+    return name === '' ? null : { compartmentId: compartmentTextRows[0].id, name };
+  }, [currentDesignId, spanning, compartmentTextRows, layoutBins]);
+
+  const applyBinNameSuggestion = useCallback(() => {
+    if (binNameSuggestion === null) return;
+    setCompartmentText(binNameSuggestion.compartmentId, binNameSuggestion.name);
+  }, [binNameSuggestion, setCompartmentText]);
+
   const pickLabelOnGrid = useCallback(
     () => setCompartmentLabelMode(true),
     [setCompartmentLabelMode]
@@ -738,6 +780,7 @@ export function useLabelTabsSection() {
       textRows,
       canWidenTabs,
       warnings,
+      binNameSuggestion,
       labelFocusCompartmentId,
       isUnavailable,
       tabWidthMm,
@@ -791,6 +834,7 @@ export function useLabelTabsSection() {
       widenTabs,
       setLabelFocusCompartmentId,
       pickLabelOnGrid,
+      applyBinNameSuggestion,
       setTextFont,
       setTextMode,
       setTextDepth,

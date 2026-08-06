@@ -26,7 +26,6 @@ import {
   LABEL_PLATE_FIT_OFFSET_MAX,
   LABEL_PLATE_FIT_OFFSET_MIN,
   LABEL_PLATE_FIT_OFFSET_STEP,
-  labelPlateWidthMm,
 } from '@/shared/constants/labelPlates';
 import type { LabelSocketStyle } from '@/shared/constants/labelPlates';
 import { LabelTextList } from './LabelTextList';
@@ -34,7 +33,6 @@ import { LabelSectionWarnings } from './LabelSectionWarnings';
 import { LabelColorControls } from './LabelColorControls';
 import { LabelPlatesControls } from './LabelPlatesControls';
 import { LabelFitSampleButton } from './LabelFitSampleButton';
-import { LabelIconPicker } from '../LabelIconPicker';
 import { useLabelTabsSection } from './useLabelTabsSection';
 import type { LabelWarningGroup } from './useLabelTabsSection';
 import type { LabelTabMode } from '../../../types';
@@ -61,7 +59,7 @@ const TEXT_DEPTH_STEP = 0.1;
 
 /** Collapsible groups below the label text. Every one starts closed: the text
  *  IS the section, and these are how it gets shaped. */
-type LabelGroupId = LabelWarningGroup | 'text' | 'colors';
+type LabelGroupId = LabelWarningGroup | 'text' | 'colors' | 'plateFit';
 const EMPTY_GROUPS: ReadonlySet<LabelGroupId> = new Set();
 
 export function LabelTabsSection() {
@@ -96,6 +94,12 @@ export function LabelTabsSection() {
     state.heightIsExplicit ? ` × ${Math.round(state.tabHeightMm * 10) / 10}` : ''
   } mm`;
 
+  const plateFitReadout = [
+    t(`binDesigner.socketStyle.${state.label.socketStyle ?? 'clickIn'}`),
+    // Technical readout, deliberately untranslated.
+    `${(state.label.plateFitOffset ?? 0).toFixed(2)} mm`,
+  ].join(' · ');
+
   const placementReadout = [
     t(`binDesigner.tabEdges.${state.label.edges ?? 'back'}`),
     state.spanning ? t('binDesigner.labelTextPerRow') : t('binDesigner.labelTextPerCompartment'),
@@ -128,6 +132,10 @@ export function LabelTabsSection() {
       focusIndex={state.spanning ? null : state.labelFocusCompartmentId}
       onFocusChange={state.spanning ? undefined : handlers.setLabelFocusCompartmentId}
       onPickOnGrid={state.spanning ? undefined : handlers.pickLabelOnGrid}
+      onPlateWidthChange={handlers.setCompartmentPlateWidth}
+      onPlateIconChange={handlers.setCompartmentPlateIcon}
+      suggestedName={state.binNameSuggestion?.name}
+      onApplySuggestedName={handlers.applyBinNameSuggestion}
     />
   );
 
@@ -232,104 +240,51 @@ export function LabelTabsSection() {
                   </span>
                 </p>
               )}
-              {state.plateWidthRows.length > 0 && (
-                <div>
-                  <span className="mb-1 block text-xs font-medium text-content-secondary">
-                    {t('binDesigner.plateWidth')}
+              <Collapsible
+                title={t('binDesigner.plateFitGroup')}
+                summary={plateFitReadout}
+                expanded={expandedGroups.has('plateFit')}
+                onExpandedChange={(open) => setGroupExpanded('plateFit', open)}
+                size="sm"
+              >
+                <div className="min-w-0">
+                  <span className="mb-1 flex items-center gap-1 text-xs font-medium text-content-secondary">
+                    {t('binDesigner.plateFitOffset')}
+                    <span title={t('binDesigner.plateFitOffsetHint')} className="inline-flex">
+                      <InfoIcon size="xs" className="text-content-tertiary" />
+                    </span>
                   </span>
-                  <ul className="flex flex-col gap-1.5">
-                    {state.plateWidthRows.map((row) => (
-                      <li key={row.id} className="flex items-center gap-2">
-                        <span className="w-20 shrink-0 text-xs text-content-tertiary tabular-nums">
-                          {row.label}
-                        </span>
-                        {row.fittingWidthsU.length === 0 || row.autoWidthU === null ? (
-                          <span className="text-xs text-warning">
-                            {t('binDesigner.plateWidthNoFit')}
-                          </span>
-                        ) : (
-                          <Select
-                            size="sm"
-                            fullWidth
-                            value={
-                              row.overrideU !== null &&
-                              row.fittingWidthsU.some((u) => u === row.overrideU)
-                                ? String(row.overrideU)
-                                : 'auto'
-                            }
-                            onChange={(e) =>
-                              handlers.setCompartmentPlateWidth(
-                                row.id,
-                                e.target.value === 'auto' ? null : Number(e.target.value)
-                              )
-                            }
-                            aria-label={t('binDesigner.plateWidthAria', {
-                              n: row.displayNumber,
-                            })}
-                            options={[
-                              {
-                                id: 'auto',
-                                name: t('binDesigner.plateWidthAuto', {
-                                  width: `${row.autoWidthU}U`,
-                                }),
-                              },
-                              ...row.fittingWidthsU.map((u): SelectOption => ({
-                                id: String(u),
-                                // Technical readout, deliberately untranslated
-                                // (same convention as dimensionsReadout).
-                                name: `${u}U · ${labelPlateWidthMm(u)} mm`,
-                              })),
-                            ]}
-                          />
-                        )}
-                        {row.autoWidthU !== null && (
-                          <LabelIconPicker
-                            value={row.icon}
-                            onChange={(icon) => handlers.setCompartmentPlateIcon(row.id, icon)}
-                            compartmentNumber={row.displayNumber}
-                          />
-                        )}
-                      </li>
-                    ))}
-                  </ul>
+                  <Stepper
+                    value={state.label.plateFitOffset ?? 0}
+                    onChange={handlers.setPlateFitOffset}
+                    onStep={(delta) =>
+                      handlers.setPlateFitOffset(
+                        Math.round(
+                          Math.min(
+                            LABEL_PLATE_FIT_OFFSET_MAX,
+                            Math.max(
+                              LABEL_PLATE_FIT_OFFSET_MIN,
+                              (state.label.plateFitOffset ?? 0) +
+                                delta * LABEL_PLATE_FIT_OFFSET_STEP
+                            )
+                          ) * 100
+                        ) / 100
+                      )
+                    }
+                    min={LABEL_PLATE_FIT_OFFSET_MIN}
+                    max={LABEL_PLATE_FIT_OFFSET_MAX}
+                    step={LABEL_PLATE_FIT_OFFSET_STEP}
+                    // Without 2-decimal rendering the default toFixed(1) shows
+                    // every 0.05 step as its 0.1 neighbor — the control looks
+                    // stuck even though the store moves in 0.05 increments.
+                    inputDecimals={2}
+                    size="md"
+                    aria-label={t('binDesigner.plateFitOffset')}
+                  />
                 </div>
-              )}
-              <div className="min-w-0">
-                <span className="mb-1 flex items-center gap-1 text-xs font-medium text-content-secondary">
-                  {t('binDesigner.plateFitOffset')}
-                  <span title={t('binDesigner.plateFitOffsetHint')} className="inline-flex">
-                    <InfoIcon size="xs" className="text-content-tertiary" />
-                  </span>
-                </span>
-                <Stepper
-                  value={state.label.plateFitOffset ?? 0}
-                  onChange={handlers.setPlateFitOffset}
-                  onStep={(delta) =>
-                    handlers.setPlateFitOffset(
-                      Math.round(
-                        Math.min(
-                          LABEL_PLATE_FIT_OFFSET_MAX,
-                          Math.max(
-                            LABEL_PLATE_FIT_OFFSET_MIN,
-                            (state.label.plateFitOffset ?? 0) + delta * LABEL_PLATE_FIT_OFFSET_STEP
-                          )
-                        ) * 100
-                      ) / 100
-                    )
-                  }
-                  min={LABEL_PLATE_FIT_OFFSET_MIN}
-                  max={LABEL_PLATE_FIT_OFFSET_MAX}
-                  step={LABEL_PLATE_FIT_OFFSET_STEP}
-                  // Without 2-decimal rendering the default toFixed(1) shows
-                  // every 0.05 step as its 0.1 neighbor — the control looks
-                  // stuck even though the store moves in 0.05 increments.
-                  inputDecimals={2}
-                  size="md"
-                  aria-label={t('binDesigner.plateFitOffset')}
-                />
-              </div>
-              <LabelFitSampleButton />
-              <LabelPlatesControls />
+                <LabelFitSampleButton />
+                <LabelPlatesControls />
+              </Collapsible>
             </>
           )}
 

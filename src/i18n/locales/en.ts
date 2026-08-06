@@ -623,6 +623,7 @@ const en: Record<string, string> = {
   'print.summary.labelPlatesTooltip':
     'Swappable label plates to print for bins with label sockets: {breakdown}',
   'print.row.labelPlates': '{count} label plate(s)',
+  'print.row.blankLabelTabs': 'Label tabs are blank',
   'print.uncategorized': 'Uncategorized',
   'print.empty.title': 'No bins to print',
   'print.empty.message': 'Add bins to the grid to see the print list',
@@ -1696,7 +1697,6 @@ const en: Record<string, string> = {
   'binDesigner.tabMode.socketHint':
     'The tab gets a click-in socket for separately printed swappable label plates. Compatible with Cullenect-standard plates (e.g. from gflabel).',
   'binDesigner.tabMode.socketTooNarrow': 'Bin is too narrow for a standard label plate',
-  'binDesigner.plateWidth': 'Plate width',
   'binDesigner.plateWidthAuto': 'Auto ({width})',
   'binDesigner.plateWidthAria': 'Plate width for compartment {n}',
   'binDesigner.plateWidthNoFit': 'No standard plate fits',
@@ -1747,6 +1747,7 @@ const en: Record<string, string> = {
   'binDesigner.plateIcon.endMill': 'End mill',
   'binDesigner.plateIcon.clip': 'Circlip',
   'binDesigner.plateFitOffset': 'Plate fit offset',
+  'binDesigner.plateFitGroup': 'Plate fit',
   'binDesigner.plateFitOffsetHint':
     'Fine-tune the socket fit for your printer: negative = tighter, positive = looser.',
   'binDesigner.plates.title': 'Label plates',
@@ -1794,6 +1795,7 @@ const en: Record<string, string> = {
     "Slots aren't supported on angled dividers — coming in v2.",
   'binDesigner.compartmentNumberLabel': 'Comp. {n}',
   'binDesigner.labelText': 'Label text',
+  'binDesigner.labelTextUseBinName': 'Use bin name “{name}”',
   'binDesigner.labelTextPickOnGrid': 'Pick on grid',
   'binDesigner.labelPlacementGroup': 'Placement',
   'binDesigner.labelColorsGroup': 'Colors',

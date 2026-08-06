@@ -165,6 +165,69 @@ describe('LabelTextList', () => {
     expect(onFocusChange).toHaveBeenCalledWith(1);
   });
 
+  it('carries the plate width and icon on the SAME row as the text', () => {
+    const onPlateWidthChange = vi.fn();
+    renderList({
+      rows: [
+        {
+          index: 0,
+          displayNumber: 1,
+          value: 'SCREWS',
+          overflows: false,
+          plate: { fittingWidthsU: [1, 2], autoWidthU: 1, overrideU: null, icon: null },
+        },
+      ],
+      onPlateWidthChange,
+      onPlateIconChange: vi.fn(),
+    });
+    // One compartment, one row: text and plate hardware were two lists over the
+    // same compartments, so row 3 meant different things in each.
+    expect(screen.getByLabelText('Engraved text for compartment 1')).toHaveValue('SCREWS');
+    fireEvent.change(screen.getByLabelText('Plate width for compartment 1'), {
+      target: { value: '2' },
+    });
+    expect(onPlateWidthChange).toHaveBeenCalledWith(0, 2);
+  });
+
+  it('says so when no standard plate fits the compartment', () => {
+    renderList({
+      rows: [
+        {
+          index: 0,
+          displayNumber: 1,
+          value: '',
+          overflows: false,
+          plate: { fittingWidthsU: [], autoWidthU: null, overrideU: null, icon: null },
+        },
+      ],
+      onPlateWidthChange: vi.fn(),
+      onPlateIconChange: vi.fn(),
+    });
+    expect(screen.getByText('No standard plate fits')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Plate width for compartment 1')).not.toBeInTheDocument();
+  });
+
+  it('shows no plate controls in text mode', () => {
+    renderList();
+    expect(screen.queryByLabelText('Plate width for compartment 1')).not.toBeInTheDocument();
+  });
+
+  it('offers the linked bin name as a starting caption', () => {
+    const onApplySuggestedName = vi.fn();
+    renderList({
+      rows: rows(''),
+      suggestedName: 'SCREWS',
+      onApplySuggestedName,
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Use bin name “SCREWS”' }));
+    expect(onApplySuggestedName).toHaveBeenCalled();
+  });
+
+  it('shows no suggestion when none was offered', () => {
+    renderList({ rows: rows('') });
+    expect(screen.queryByRole('button', { name: /Use bin name/ })).not.toBeInTheDocument();
+  });
+
   it('renders nothing when no tab can host text', () => {
     const { container } = render(
       <LabelTextList

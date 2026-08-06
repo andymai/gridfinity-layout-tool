@@ -23,6 +23,20 @@ import type { LabelPlateWidthU } from '@/shared/constants/labelPlates';
 import { useSettingsStore } from '@/core/store';
 import { planLabelPlates } from '@/shared/utils/labelSocketPlan';
 
+/**
+ * What a linked design's label tabs mean for the print list.
+ *
+ * `tabsWithoutText` is deliberately a design-level fact, not a per-tab count:
+ * counting individual blank tabs needs the worker's tab plan (which compartments
+ * can actually host one), and a count that guesses would over-report. "Tabs are
+ * on and nothing is written on any of them" is exact, and it is the failure the
+ * old collapsed-list hierarchy actually produced.
+ */
+export interface DesignLabelInfo {
+  readonly plateSet: DesignPlateSet | null;
+  readonly tabsWithoutText: boolean;
+}
+
 /** The plates one placed bin of a socket-mode design needs. */
 export interface DesignPlateSet {
   readonly perBin: number;
@@ -37,7 +51,7 @@ export interface DesignPlateSet {
 // plateSet null = not socket-mode, no fitting plate, or failed to load.
 interface CacheEntry {
   readonly key: string;
-  readonly plateSet: DesignPlateSet | null;
+  readonly info: DesignLabelInfo;
 }
 const plateSetCache = new Map<DesignId, CacheEntry>();
 const inFlight = new Set<string>();
@@ -46,6 +60,15 @@ const inFlight = new Set<string>();
 export function clearLabelPlateCountCache(): void {
   plateSetCache.clear();
   inFlight.clear();
+}
+
+function computeLabelInfo(design: SavedDesign, nozzleSizeMm: number): DesignLabelInfo {
+  const params = design.params;
+  const tabsWithoutText =
+    params?.label.enabled === true &&
+    !(params.compartments.compartmentTexts ?? []).some((t) => t.trim() !== '') &&
+    !(params.label.rowTexts ?? []).some((t) => t.trim() !== '');
+  return { plateSet: computePlateSet(design, nozzleSizeMm), tabsWithoutText };
 }
 
 function computePlateSet(design: SavedDesign, nozzleSizeMm: number): DesignPlateSet | null {
@@ -72,11 +95,13 @@ function enqueueLoad(id: DesignId, key: string, nozzleSizeMm: number, onSettled:
     .then((result) => {
       plateSetCache.set(id, {
         key,
-        plateSet: isOk(result) ? computePlateSet(result.value, nozzleSizeMm) : null,
+        info: isOk(result)
+          ? computeLabelInfo(result.value, nozzleSizeMm)
+          : { plateSet: null, tabsWithoutText: false },
       });
     })
     .catch(() => {
-      plateSetCache.set(id, { key, plateSet: null });
+      plateSetCache.set(id, { key, info: { plateSet: null, tabsWithoutText: false } });
     })
     .finally(() => {
       inFlight.delete(key);
@@ -85,11 +110,11 @@ function enqueueLoad(id: DesignId, key: string, nozzleSizeMm: number, onSettled:
 }
 
 /**
- * Resolve plate requirements for every socket-mode design linked from the
- * given bins. Designs still loading, unresolvable, or not in socket mode are
- * absent from the returned map.
+ * Resolve what every linked design's label tabs mean for the print list —
+ * swappable plate requirements, and whether the tabs carry any text at all.
+ * Designs still loading or unresolvable are absent from the returned map.
  */
-export function useLabelPlateCounts(bins: Bin[]): ReadonlyMap<DesignId, DesignPlateSet> {
+export function useLabelPlateCounts(bins: Bin[]): ReadonlyMap<DesignId, DesignLabelInfo> {
   const registry = useCustomBins();
   const [loadTick, setLoadTick] = useState(0);
   // In the cache key so a nozzle change recomputes plate widths at the new
@@ -125,11 +150,11 @@ export function useLabelPlateCounts(bins: Bin[]): ReadonlyMap<DesignId, DesignPl
   return useMemo(() => {
     // loadTick re-runs this memo when async loads land in the cache.
     void loadTick;
-    const sets = new Map<DesignId, DesignPlateSet>();
+    const infos = new Map<DesignId, DesignLabelInfo>();
     for (const [id, key] of linkedRefs) {
       const entry = plateSetCache.get(id);
-      if (entry && entry.key === key && entry.plateSet) sets.set(id, entry.plateSet);
+      if (entry && entry.key === key) infos.set(id, entry.info);
     }
-    return sets;
+    return infos;
   }, [linkedRefs, loadTick]);
 }

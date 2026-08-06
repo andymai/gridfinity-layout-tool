@@ -58,6 +58,9 @@ describe('LabelTabsSection', () => {
       },
     }));
     render(<LabelTabsSection />);
+    // Per-printer calibration, not a per-label choice — it folds into the
+    // collapsed "Plate fit" group alongside socket style and the fit sample.
+    fireEvent.click(screen.getByRole('button', { name: /Plate fit/ }));
 
     fireEvent.click(screen.getByRole('button', { name: 'Increase Plate fit offset' }));
     expect(useDesignerStore.getState().params.label.plateFitOffset).toBeCloseTo(0.05);

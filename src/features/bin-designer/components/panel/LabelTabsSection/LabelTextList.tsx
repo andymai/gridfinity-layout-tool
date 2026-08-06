@@ -15,7 +15,12 @@
  */
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { Button, InfoIcon, XIcon } from '@/design-system';
+import { Button, InfoIcon, Select, XIcon } from '@/design-system';
+import type { SelectOption } from '@/design-system';
+import { labelPlateWidthMm } from '@/shared/constants/labelPlates';
+import type { LabelPlateIconId, LabelPlateWidthU } from '@/shared/constants/labelPlates';
+import { useResponsive } from '@/shared/hooks/useResponsive';
+import { LabelIconPicker } from '../LabelIconPicker';
 import { useTranslation } from '@/i18n';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
 import { CompartmentTextInput } from './CompartmentTextInput';
@@ -28,6 +33,15 @@ export interface LabelTextRowModel {
   readonly value: string;
   /** The caption overflows its host and will not render. */
   readonly overflows: boolean;
+  /** The swappable plate this compartment hosts. Absent in text mode, and in
+   *  the socket plan's bin-spanning fallback where there is no per-compartment
+   *  plate to size. */
+  readonly plate?: {
+    readonly fittingWidthsU: readonly LabelPlateWidthU[];
+    readonly autoWidthU: LabelPlateWidthU | null;
+    readonly overrideU: number | null;
+    readonly icon: LabelPlateIconId | null;
+  };
 }
 
 interface LabelTextListProps {
@@ -44,6 +58,12 @@ interface LabelTextListProps {
   /** Turn on the compartment grid's picking mode. Absent when there is no grid
    *  to pick on (a single compartment, or row-indexed spanning labels). */
   readonly onPickOnGrid?: () => void;
+  readonly onPlateWidthChange?: (index: number, widthU: number | null) => void;
+  readonly onPlateIconChange?: (index: number, icon: LabelPlateIconId | null) => void;
+  /** The name of the one placed bin linked to this design, offered as a starting
+   *  caption. Absent unless that mapping is unambiguous. */
+  readonly suggestedName?: string;
+  readonly onApplySuggestedName?: () => void;
   /** Raising `label.width` is the one auto-fix for an overflow; absent when the
    *  tabs are already full width or the caption sits on a plate. */
   readonly onWiden?: () => void;
@@ -59,7 +79,12 @@ export function LabelTextList({
   focusIndex = null,
   onFocusChange,
   onPickOnGrid,
+  onPlateWidthChange,
+  onPlateIconChange,
+  suggestedName,
+  onApplySuggestedName,
 }: LabelTextListProps) {
+  const { isMobile } = useResponsive();
   const t = useTranslation();
   const listId = useId();
   const [focus, setFocus] = useState<{ index: number; token: number } | null>(null);
@@ -169,6 +194,19 @@ export function LabelTextList({
         </p>
       )}
 
+      {suggestedName !== undefined && onApplySuggestedName && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          touchTarget={false}
+          onClick={onApplySuggestedName}
+          className="mb-2 rounded-full border border-stroke-subtle px-2 py-0.5 text-[11px] font-medium text-content-secondary hover:bg-surface-hover"
+        >
+          {t('binDesigner.labelTextUseBinName', { name: suggestedName })}
+        </Button>
+      )}
+
       <ul className="flex flex-col gap-1.5">
         {rows.map((row) => {
           const filled = row.value.trim().length > 0;
@@ -219,6 +257,56 @@ export function LabelTextList({
                   <XIcon size="xs" />
                 </Button>
               </div>
+              {row.plate && onPlateWidthChange && onPlateIconChange && (
+                <div
+                  className={`flex items-center gap-2 ${showNumbers ? 'pl-8' : ''} ${
+                    isMobile ? 'flex-wrap' : ''
+                  }`}
+                >
+                  {row.plate.fittingWidthsU.length === 0 || row.plate.autoWidthU === null ? (
+                    <span className="text-[11px] text-warning">
+                      {t('binDesigner.plateWidthNoFit')}
+                    </span>
+                  ) : (
+                    <>
+                      <Select
+                        size="sm"
+                        value={
+                          row.plate.overrideU !== null &&
+                          row.plate.fittingWidthsU.some((u) => u === row.plate?.overrideU)
+                            ? String(row.plate.overrideU)
+                            : 'auto'
+                        }
+                        onChange={(e) =>
+                          onPlateWidthChange(
+                            row.index,
+                            e.target.value === 'auto' ? null : Number(e.target.value)
+                          )
+                        }
+                        aria-label={t('binDesigner.plateWidthAria', { n: row.displayNumber })}
+                        options={[
+                          {
+                            id: 'auto',
+                            name: t('binDesigner.plateWidthAuto', {
+                              width: `${row.plate.autoWidthU}U`,
+                            }),
+                          },
+                          ...row.plate.fittingWidthsU.map((u): SelectOption => ({
+                            id: String(u),
+                            // Technical readout, deliberately untranslated.
+                            name: `${u}U · ${labelPlateWidthMm(u)} mm`,
+                          })),
+                        ]}
+                      />
+                      <LabelIconPicker
+                        value={row.plate.icon}
+                        onChange={(icon) => onPlateIconChange(row.index, icon)}
+                        compartmentNumber={row.displayNumber}
+                      />
+                    </>
+                  )}
+                </div>
+              )}
               {row.overflows && (
                 <p
                   id={messageId}
