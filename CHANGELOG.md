@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.370.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.370.1...gridfinity-layout-tool-v4.370.2) (2026-08-06)
+
+
+### Bug Fixes
+
+* **designer:** give the wall-less tray a floor and a seatable foot ([#3244](https://github.com/andymai/gridfinity-layout-tool/issues/3244)) ([8e6de48](https://github.com/andymai/gridfinity-layout-tool/commit/8e6de48956499a2d70c102edc73cb3716839d036))
+
 ## [4.370.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.370.0...gridfinity-layout-tool-v4.370.1) (2026-08-06)
 
 
