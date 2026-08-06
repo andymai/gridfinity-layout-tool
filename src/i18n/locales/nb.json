@@ -3568,5 +3568,8 @@
   "community.page.subtitle": "Design delt av andre makere, fritt å remikse og skrive ut.",
   "community.page.publishCta": "Publiser et design",
   "community.publish.form.wallsSummary": "{thickness} mm vegger",
-  "community.publish.ownerActions": "Handlinger for publisert design"
+  "community.publish.ownerActions": "Handlinger for publisert design",
+  "community.publishNudge.message": "Fin bin. Dele den med fellesskapet?",
+  "community.publishNudge.action": "Publiser den",
+  "header.starOnGithubLong": "Gi stjerne på GitHub"
 }

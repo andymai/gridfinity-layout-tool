@@ -20,7 +20,7 @@ graph TB
 | Directory  | Purpose                                                                                                 |
 | ---------- | ------------------------------------------------------------------------------------------------------- |
 | `api/`     | Cloud sharing API client (`share.ts`, `suggestName.ts`)                                                 |
-| `labs/`    | Feature flag definitions and types (experimental/preview/graduated)                                     |
+| `labs/`    | Feature flag definitions and types (experimental/preview/graduated, plus `defaultEnabled`)              |
 | `result/`  | `Result<T, E>` type system — constructors, error catalog, combinators                                   |
 | `storage/` | Layout persistence — LayoutManager, LayoutService, ShareService, backends                               |
 | `store/`   | Zustand + Immer stores — layout, library, history, selection, interaction, view, settings               |
@@ -81,3 +81,4 @@ import type { Result, StorageError, ValidationError, LayoutError, ApiError } fro
 5. **Atomic storage** — prefer `saveLayoutWithMetadata()` over separate save + library update
 6. **Dual-write** — async ops write to IndexedDB + localStorage backup; library index stays in localStorage for cross-tab sync
 7. **Result everywhere** — layout store mutations return `Result<T, E>`; never throw for expected failures
+8. **`defaultEnabled` resolves on every read AND write** — a labs flag with no stored preference falls back to it, so `toggleFeature` / `enableFeature` / `disableFeature` go through `resolveStoredEnabled()` and `isFeatureEnabled` / `getEnabledCount` / the `useFeatureFlag` hook go through `resolveFeatureEnabled()`, both in `store/labs.ts`. Resolve it in only one of those and the app disagrees with itself: read-only, and the toggle that turns a default-on feature off does nothing because "never stored" reads as "already off"; store-only, and every gated component reads `false` while the store says `true`. Both resolvers live in the store, not beside the definitions, so they call the **imported** `getFeature` and stay reachable by the tests that mock the registry

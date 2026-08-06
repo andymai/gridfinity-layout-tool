@@ -159,6 +159,48 @@ describe('useFeatureFlag', () => {
 
       expect(result.current).toBe(false);
     });
+
+    it('honours defaultEnabled when nothing is stored', () => {
+      // The hook is what every gated surface reads. A second copy of the
+      // rules here left a default-on flag reading true from the store and
+      // false in every component that gates on it.
+      mockGetFeature.mockReturnValue({
+        id: 'default_on_feature',
+        name: 'Default On',
+        status: 'preview',
+        defaultEnabled: true,
+      });
+
+      const { result } = renderHook(() =>
+        useFeatureFlag('default_on_feature' as features.FeatureId)
+      );
+
+      expect(result.current).toBe(true);
+      expect(isFeatureEnabled('default_on_feature' as features.FeatureId)).toBe(result.current);
+    });
+
+    it('lets a stored false beat defaultEnabled', () => {
+      mockGetFeature.mockReturnValue({
+        id: 'default_on_feature',
+        name: 'Default On',
+        status: 'preview',
+        defaultEnabled: true,
+      });
+
+      useLabsStore.setState({
+        preferences: {
+          enabledFeatures: { default_on_feature: false },
+          lastModified: new Date().toISOString(),
+          version: 1,
+        },
+      });
+
+      const { result } = renderHook(() =>
+        useFeatureFlag('default_on_feature' as features.FeatureId)
+      );
+
+      expect(result.current).toBe(false);
+    });
   });
 
   describe('isFeatureEnabled function', () => {

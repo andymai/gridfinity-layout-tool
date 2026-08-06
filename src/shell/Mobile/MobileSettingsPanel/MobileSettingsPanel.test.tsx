@@ -33,7 +33,7 @@ vi.mock('@/core/store/labs', () => {
   };
   const useLabsStore = (selector: (state: Record<string, unknown>) => unknown) => selector(state);
   useLabsStore.getState = () => state;
-  return { useLabsStore };
+  return { useLabsStore, resolveFeatureEnabled: () => false };
 });
 
 vi.mock('@/core/labs', () => ({

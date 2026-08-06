@@ -82,7 +82,7 @@ export function HeaderSupportLinks() {
         ? { ...previous, open: false }
         : {
             open: true,
-            position: { x: rect?.left ?? 0, y: (rect?.bottom ?? 0) + 4 },
+            position: { x: rect?.right ?? 0, y: (rect?.bottom ?? 0) + 4 },
           }
     );
   };
@@ -149,6 +149,7 @@ export function HeaderSupportLinks() {
         open={overflow.open}
         onClose={() => setOverflow((previous) => ({ ...previous, open: false }))}
         position={overflow.position}
+        align="end"
       >
         <Menu.Item
           href={GITHUB_REPO_URL}
@@ -158,7 +159,7 @@ export function HeaderSupportLinks() {
             </svg>
           }
         >
-          {t('header.starOnGithub')}
+          {t('header.starOnGithubLong')}
         </Menu.Item>
         <Menu.Item
           href={REDDIT_GRIDFINITY_URL}

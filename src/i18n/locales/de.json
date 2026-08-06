@@ -3568,5 +3568,8 @@
   "community.page.subtitle": "Designs von anderen Maker:innen, frei zum Remixen und Drucken.",
   "community.page.publishCta": "Design veröffentlichen",
   "community.publish.form.wallsSummary": "{thickness} mm Wandstärke",
-  "community.publish.ownerActions": "Aktionen für das veröffentlichte Design"
+  "community.publish.ownerActions": "Aktionen für das veröffentlichte Design",
+  "community.publishNudge.message": "Schöner Bin. Mit der Community teilen?",
+  "community.publishNudge.action": "Veröffentlichen",
+  "header.starOnGithubLong": "Auf GitHub mit einem Stern versehen"
 }

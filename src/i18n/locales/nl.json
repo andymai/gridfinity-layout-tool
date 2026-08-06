@@ -3568,5 +3568,8 @@
   "community.page.subtitle": "Ontwerpen gedeeld door andere makers, vrij om te remixen en te printen.",
   "community.page.publishCta": "Een ontwerp publiceren",
   "community.publish.form.wallsSummary": "Wanden van {thickness} mm",
-  "community.publish.ownerActions": "Acties voor gepubliceerd ontwerp"
+  "community.publish.ownerActions": "Acties voor gepubliceerd ontwerp",
+  "community.publishNudge.message": "Mooie bin. Delen met de community?",
+  "community.publishNudge.action": "Publiceren",
+  "header.starOnGithubLong": "Ster geven op GitHub"
 }

@@ -110,8 +110,8 @@ describe('GridToolbar', () => {
     it('displays zoom controls', () => {
       render(<GridToolbar {...defaultProps} />);
 
-      // Find zoom buttons by text content
-      expect(screen.getByText(/fit/i)).toBeInTheDocument();
+      // By accessible name, not /fit/i: "Find bins that fit" also matches.
+      expect(screen.getByRole('button', { name: 'Fit grid to screen' })).toBeInTheDocument();
       expect(screen.getByText('100%')).toBeInTheDocument();
     });
 
@@ -221,7 +221,7 @@ describe('GridToolbar', () => {
     it('calls fitToScreen when fit button clicked', () => {
       render(<GridToolbar {...defaultProps} />);
 
-      fireEvent.click(screen.getByText(/fit/i));
+      fireEvent.click(screen.getByRole('button', { name: 'Fit grid to screen' }));
 
       expect(mockZoomState.fitToScreen).toHaveBeenCalled();
     });
@@ -435,12 +435,12 @@ describe('GridToolbar', () => {
     });
   });
 
-  describe('find bins that fit (community_showcase flag)', () => {
+  describe('find bins that fit (community_fits_gap flag)', () => {
     const enableCommunityFlag = () => {
       useLabsStore.setState((s) => ({
         preferences: {
           ...s.preferences,
-          enabledFeatures: { ...s.preferences.enabledFeatures, community_showcase: true },
+          enabledFeatures: { ...s.preferences.enabledFeatures, community_fits_gap: true },
         },
       }));
     };

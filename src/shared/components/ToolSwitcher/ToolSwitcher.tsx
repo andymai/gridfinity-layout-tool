@@ -10,6 +10,7 @@
  */
 
 import { Button } from '@/design-system';
+import { useCommunityDigestStore } from '@/core/store/communityDigest';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
 import { useCommunityRouting } from '@/shared/hooks/useCommunityRouting';
@@ -22,9 +23,19 @@ interface ToolSwitcherProps {
   compact?: boolean;
   /** Show icons only (no text labels) */
   iconOnly?: boolean;
+  /**
+   * Drop the labels below 2xl, keeping the icons. For headers that also carry
+   * a document name and its actions: the switcher is persistent global nav
+   * and its labels are worth less than the name of the thing being edited.
+   */
+  collapseLabels?: boolean;
 }
 
 type Tool = 'planner' | 'designer' | 'baseplate' | 'community';
+
+const NEWS_DOT_TESTID = 'tool-news-dot';
+const EXPERIMENTAL_DOT_TESTID = 'tool-experimental-dot';
+const LABEL_SUFFIX_SEPARATOR = ', ';
 
 interface ToolConfig {
   id: Tool;
@@ -84,12 +95,17 @@ function getIconSize(iconOnly: boolean, compact: boolean): string {
   return 'w-4 h-4';
 }
 
-export function ToolSwitcher({ compact = false, iconOnly = false }: ToolSwitcherProps) {
+export function ToolSwitcher({
+  compact = false,
+  iconOnly = false,
+  collapseLabels = false,
+}: ToolSwitcherProps) {
   const t = useTranslation();
   const { isDesignerRoute, navigateToDesigner, navigateToPlanner } = useDesignerRouting();
   const { isBaseplateRoute, navigateToBaseplate } = useBaseplateRouting();
   const { isCommunityRoute, navigateToCommunity } = useCommunityRouting();
   const communityEnabled = useFeatureFlag('community_showcase');
+  const hasUnseenDigest = useCommunityDigestStore((s) => s.hasUnseenDeltas);
 
   const tools = communityEnabled ? TOOLS : TOOLS.filter((tool) => tool.id !== 'community');
 
@@ -132,37 +148,64 @@ export function ToolSwitcher({ compact = false, iconOnly = false }: ToolSwitcher
         role="tablist"
         aria-label={t('toolSwitcher.activeTool')}
       >
-        {tools.map(({ id, labelKey, switchKey, iconPaths, experimental }) => (
-          <Button
-            key={id}
-            variant="ghost"
-            role="tab"
-            aria-selected={activeTool === id}
-            aria-label={
-              experimental === true ? `${t(labelKey)} (${t('common.experimental')})` : t(labelKey)
-            }
-            onClick={() => handleSwitch(id)}
-            title={activeTool !== id ? t(switchKey) : undefined}
-            className={`${segmentClass(id)} relative`}
-          >
-            <svg className={iconSize} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              {iconPaths.map((d) => (
-                <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
-              ))}
-            </svg>
-            {!iconOnly && t(labelKey)}
-            {/* Rides the corner rather than the label so the marker survives
-                the icon-only collapse; the word itself is in the aria-label
-                and on the page the segment leads to. */}
-            {experimental === true && (
-              <span
-                aria-hidden="true"
-                data-testid="tool-experimental-dot"
-                className="absolute right-0.5 top-0.5 h-1.5 w-1.5 rounded-full bg-accent"
-              />
-            )}
-          </Button>
-        ))}
+        {tools.map(({ id, labelKey, switchKey, iconPaths, experimental }) => {
+          // News wins the marker slot. A segment has room for one dot, and
+          // "there is something new in here" is actionable where "this is
+          // experimental" is a standing property already spelled out on the
+          // page the segment leads to. Both stay in the accessible name.
+          const hasNews = id === 'community' && hasUnseenDigest;
+          const showMarker = hasNews || experimental === true;
+          const suffixes = [
+            hasNews ? t('binExamples.gallery.tabs.newBadge') : null,
+            experimental === true ? t('common.experimental') : null,
+          ].filter((value): value is string => value !== null);
+
+          return (
+            <Button
+              key={id}
+              variant="ghost"
+              role="tab"
+              aria-selected={activeTool === id}
+              aria-label={
+                suffixes.length > 0
+                  ? `${t(labelKey)} (${suffixes.join(LABEL_SUFFIX_SEPARATOR)})`
+                  : t(labelKey)
+              }
+              onClick={() => handleSwitch(id)}
+              title={activeTool !== id ? t(switchKey) : undefined}
+              className={`${segmentClass(id)} relative`}
+            >
+              <svg className={iconSize} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                {iconPaths.map((d) => (
+                  <path
+                    key={d}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d={d}
+                  />
+                ))}
+              </svg>
+              {!iconOnly &&
+                (collapseLabels ? (
+                  <span className="hidden 2xl:inline">{t(labelKey)}</span>
+                ) : (
+                  t(labelKey)
+                ))}
+              {/* Rides the corner rather than the label so the marker survives
+                  the icon-only collapse. */}
+              {showMarker && (
+                <span
+                  aria-hidden="true"
+                  data-testid={hasNews ? NEWS_DOT_TESTID : EXPERIMENTAL_DOT_TESTID}
+                  className={`absolute right-0.5 top-0.5 h-1.5 w-1.5 rounded-full ${
+                    hasNews ? 'bg-accent' : 'bg-content-tertiary'
+                  }`}
+                />
+              )}
+            </Button>
+          );
+        })}
       </div>
     </div>
   );

@@ -198,19 +198,42 @@ describe('Labs Store', () => {
   });
 
   describe('enabled count', () => {
-    it('counts enabled experimental features', () => {
+    it('counts every active experimental feature, opted in or on by default', () => {
       const store = useLabsStore.getState();
 
-      expect(store.getEnabledCount()).toBe(0);
+      // community_showcase ships defaultEnabled, so it is active without an
+      // opt-in. The count has to agree with isFeatureEnabled or the badge
+      // reports a different reality than the app runs on.
+      const base = store.getEnabledCount();
+      expect(base).toBe(1);
+      expect(store.isFeatureEnabled('community_showcase')).toBe(true);
 
       store.enableFeature('show_generation_perf');
-      expect(useLabsStore.getState().getEnabledCount()).toBe(1);
+      expect(useLabsStore.getState().getEnabledCount()).toBe(base + 1);
 
       store.enableFeature('brepkit_kernel');
-      expect(useLabsStore.getState().getEnabledCount()).toBe(2);
+      expect(useLabsStore.getState().getEnabledCount()).toBe(base + 2);
 
       store.disableFeature('show_generation_perf');
-      expect(useLabsStore.getState().getEnabledCount()).toBe(1);
+      expect(useLabsStore.getState().getEnabledCount()).toBe(base + 1);
+
+      store.disableFeature('community_showcase');
+      expect(useLabsStore.getState().getEnabledCount()).toBe(base);
+    });
+
+    it('turns a default-on feature off, and back on', () => {
+      const store = useLabsStore.getState();
+
+      store.disableFeature('community_showcase');
+      expect(useLabsStore.getState().isFeatureEnabled('community_showcase')).toBe(false);
+
+      useLabsStore.getState().enableFeature('community_showcase');
+      expect(useLabsStore.getState().isFeatureEnabled('community_showcase')).toBe(true);
+    });
+
+    it('toggles a default-on feature off on the first press', () => {
+      useLabsStore.getState().toggleFeature('community_showcase');
+      expect(useLabsStore.getState().isFeatureEnabled('community_showcase')).toBe(false);
     });
   });
 

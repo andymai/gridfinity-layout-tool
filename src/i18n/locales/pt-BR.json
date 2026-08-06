@@ -3568,5 +3568,8 @@
   "community.page.subtitle": "Designs compartilhados por outros makers, livres para remixar e imprimir.",
   "community.page.publishCta": "Publicar um design",
   "community.publish.form.wallsSummary": "Paredes de {thickness} mm",
-  "community.publish.ownerActions": "Ações do design publicado"
+  "community.publish.ownerActions": "Ações do design publicado",
+  "community.publishNudge.message": "Belo bin. Compartilhar com a comunidade?",
+  "community.publishNudge.action": "Publicar",
+  "header.starOnGithubLong": "Dar estrela no GitHub"
 }

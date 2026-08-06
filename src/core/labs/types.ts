@@ -25,6 +25,12 @@ export interface FeatureFlag {
   graduatedAt?: string;
   requiresRefresh: boolean;
   comingSoon?: boolean;
+  /**
+   * On for everyone who has not decided otherwise, while the feature stays
+   * listed in Labs and stays switchable off. The state a feature sits in
+   * between "opt in to try it" and `graduated`, where the toggle disappears.
+   */
+  defaultEnabled?: boolean;
 }
 
 export interface LabsPreferences {

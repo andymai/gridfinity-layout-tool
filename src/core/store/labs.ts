@@ -8,7 +8,7 @@
 
 import { create } from 'zustand';
 import type { LabsPreferences, FeatureId } from '@/core/labs';
-import { createDefaultLabsPreferences, getFeature } from '@/core/labs';
+import { createDefaultLabsPreferences, getActiveFeatures, getFeature } from '@/core/labs';
 // Deep-import the leaf module (not the barrel) to keep this store off the
 // `metrics.ts` import path. metrics.ts imports `useLabsStore` from this file;
 // going through the barrel would close the cycle, which under some chunking
@@ -45,6 +45,47 @@ function savePreferences(prefs: LabsPreferences): Result<void, StorageError> {
     lastModified: new Date().toISOString(),
   };
   return saveToLocalStorage(LABS_STORAGE_KEY, toSave);
+}
+
+/**
+ * What the stored preference says, falling back to the flag's
+ * `defaultEnabled`.
+ *
+ * The WRITE paths resolve through here rather than reading the map, or
+ * `toggleFeature` flips a default-on flag to on, and `disableFeature` reads
+ * "never stored" as "already off" — the one control that turns the feature
+ * off would silently do nothing. Status is deliberately not consulted:
+ * enabling a graduated feature still has to write, since the stored value is
+ * what remains if it is ever un-graduated.
+ */
+function resolveStoredEnabled(preferences: LabsPreferences, featureId: string): boolean {
+  const stored = preferences.enabledFeatures[featureId];
+  if (stored !== undefined) return stored;
+  return getFeature(featureId)?.defaultEnabled ?? false;
+}
+
+/**
+ * Whether a feature is on, for READ paths. The single answer to that
+ * question: `useFeatureFlag` selects through this so a hook and a getState()
+ * call can never disagree about the same flag.
+ *
+ * It lives here rather than beside the definitions so it calls the IMPORTED
+ * `getFeature`. Inside the registry module that call would be internal, and
+ * every test that mocks `getFeature` would silently stop reaching it.
+ */
+export function resolveFeatureEnabled(preferences: LabsPreferences, featureId: string): boolean {
+  const feature = getFeature(featureId);
+
+  // Graduated features are always enabled
+  if (feature?.status === 'graduated') return true;
+
+  // Deprecated features are always disabled
+  if (feature?.status === 'deprecated') return false;
+
+  // Coming Soon features are always disabled
+  if (feature?.comingSoon) return false;
+
+  return resolveStoredEnabled(preferences, featureId);
 }
 
 interface LabsState {
@@ -91,8 +132,7 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
     if (feature?.comingSoon) return OK;
 
     const { preferences } = get();
-    const currentlyEnabled = preferences.enabledFeatures[featureId] ?? false;
-    const newEnabled = !currentlyEnabled;
+    const newEnabled = !resolveStoredEnabled(preferences, featureId);
 
     const newPrefs: LabsPreferences = {
       ...preferences,
@@ -122,7 +162,7 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
     if (feature?.comingSoon) return OK;
 
     const { preferences } = get();
-    if (preferences.enabledFeatures[featureId]) return OK;
+    if (resolveStoredEnabled(preferences, featureId)) return OK;
 
     const newPrefs: LabsPreferences = {
       ...preferences,
@@ -146,7 +186,7 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
 
   disableFeature: (featureId) => {
     const { preferences } = get();
-    if (!preferences.enabledFeatures[featureId]) return OK;
+    if (!resolveStoredEnabled(preferences, featureId)) return OK;
 
     const newPrefs: LabsPreferences = {
       ...preferences,
@@ -168,28 +208,13 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
     return result;
   },
 
-  isFeatureEnabled: (featureId) => {
-    const { preferences } = get();
-    const feature = getFeature(featureId);
-
-    // Graduated features are always enabled
-    if (feature?.status === 'graduated') return true;
-
-    // Deprecated features are always disabled
-    if (feature?.status === 'deprecated') return false;
-
-    // Coming Soon features are always disabled
-    if (feature?.comingSoon) return false;
-
-    return preferences.enabledFeatures[featureId] ?? false;
-  },
+  isFeatureEnabled: (featureId) => resolveFeatureEnabled(get().preferences, featureId),
 
   getEnabledCount: () => {
     const { preferences } = get();
-    return Object.entries(preferences.enabledFeatures).filter(([id, enabled]) => {
-      if (!enabled) return false;
-      const feature = getFeature(id);
-      return feature?.status === 'experimental' || feature?.status === 'preview';
+    return getActiveFeatures().filter((feature) => {
+      if (feature.status !== 'experimental' && feature.status !== 'preview') return false;
+      return resolveFeatureEnabled(preferences, feature.id);
     }).length;
   },
 

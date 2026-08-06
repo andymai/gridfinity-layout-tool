@@ -79,7 +79,7 @@ export function GridCanvas({
   const paintSize = useInteractionStore((state) => state.paintSize);
   const gapSelectArmed = useInteractionStore((state) => state.gapSelectArmed);
 
-  const fitsGapEnabled = useFeatureFlag('community_showcase');
+  const fitsGapEnabled = useFeatureFlag('community_fits_gap');
 
   const { getGridCoords } = useGridCoords(gridRef);
 
@@ -137,9 +137,14 @@ export function GridCanvas({
   // Bubble phase handler for normal draw mode
   const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
     if (paintSize) return;
-    // Gap selection for the community "find bins that fit" flow (labs-gated):
-    // the toolbar's armed mode claims the primary button (touch/pen included),
+    // Gap selection for the community "find bins that fit" flow: the
+    // toolbar's armed mode claims the primary button (touch/pen included),
     // and a right-button drag stays available as a desktop shortcut.
+    //
+    // Gated on its OWN flag rather than the showcase, which is on by default.
+    // Claiming the right button and suppressing the browser menu on the grid
+    // is a layout-editor interaction change, not a consequence of the
+    // showcase being available to browse.
     const fitsGap: FitsGapSource | undefined = !fitsGapEnabled
       ? undefined
       : e.button === 2

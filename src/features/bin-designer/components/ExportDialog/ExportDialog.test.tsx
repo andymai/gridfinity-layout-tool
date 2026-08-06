@@ -9,8 +9,49 @@ import {
 } from '@/features/bin-designer/constants/defaults';
 import { makeUniformLipCells } from '@/features/bin-designer/types/featureColors';
 import { DEFAULT_EXPORT_FILE_NAME_CONFIG } from '@/features/bin-designer/utils/fileNaming';
+import { ok } from '@/core/result';
+import type * as ToastStore from '@/core/store/toast';
+import type * as DesignerStorage from '@/features/bin-designer/storage/DesignerStorage';
+import type * as SharedExportDialog from '@/shared/components/ExportDialog';
 
 const mockDownloadBin = vi.fn().mockResolvedValue(undefined);
+const mockAddToast = vi.fn();
+const mockOpenPublish = vi.fn();
+const mockLoadDesign = vi.fn();
+let mockShouldPromptSupport = false;
+
+vi.mock('@/core/store/toast', async (importOriginal) => {
+  const actual = await importOriginal<typeof ToastStore>();
+  return {
+    ...actual,
+    useToastStore: Object.assign(
+      (selector: (s: { addToast: typeof mockAddToast }) => unknown) =>
+        selector({ addToast: mockAddToast }),
+      { getState: () => ({ addToast: mockAddToast }) }
+    ),
+  };
+});
+
+vi.mock('@/features/bin-designer/hooks/useCommunityPublish', () => ({
+  useCommunityPublishEntry: () => ({
+    publishVisible: true,
+    canPublish: true,
+    openPublish: mockOpenPublish,
+  }),
+}));
+
+vi.mock('@/features/bin-designer/storage/DesignerStorage', async (importOriginal) => {
+  const actual = await importOriginal<typeof DesignerStorage>();
+  return { ...actual, loadDesign: (...args: unknown[]) => mockLoadDesign(...args) };
+});
+
+vi.mock('@/shared/components/ExportDialog', async (importOriginal) => {
+  const actual = await importOriginal<typeof SharedExportDialog>();
+  return {
+    ...actual,
+    recordExportAndShouldPromptSupport: () => mockShouldPromptSupport,
+  };
+});
 
 // Mock useExport hook
 vi.mock('@/features/bin-designer/hooks/useExport', () => ({
@@ -402,6 +443,72 @@ describe('ExportDialog', () => {
       rerender(<ExportDialog />);
       expect(useDesignerStore.getState().exportFileNameConfig.format).toBe('stl');
       expect(screen.getByRole('radio', { name: 'STL' })).not.toHaveAttribute('aria-disabled');
+    });
+  });
+
+  describe('publish nudge', () => {
+    beforeEach(() => {
+      localStorage.clear();
+      mockShouldPromptSupport = false;
+      mockDownloadBin.mockResolvedValue(true);
+      mockLoadDesign.mockResolvedValue(ok({ publishedId: undefined }));
+      useDesignerStore.setState({ currentDesignId: 'design-1' });
+    });
+
+    async function download() {
+      const view = render(<ExportDialog />);
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /download stl/i }));
+      });
+      return view;
+    }
+
+    it('offers to publish after a successful export', async () => {
+      await download();
+      expect(mockAddToast).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: 'Nice bin. Share it with the community?',
+          action: expect.objectContaining({ label: 'Publish it' }),
+        })
+      );
+    });
+
+    it('opens the publish dialog from the toast action', async () => {
+      await download();
+      const nudge = mockAddToast.mock.calls
+        .map(([toast]) => toast)
+        .find((toast) => toast.action !== undefined);
+      nudge.action.onClick();
+      expect(mockOpenPublish).toHaveBeenCalledTimes(1);
+    });
+
+    it('offers once, ever', async () => {
+      const first = await download();
+      mockAddToast.mockClear();
+      first.unmount();
+
+      // The export closed the dialog; a second export reopens it.
+      setupStore({ currentDesignId: 'design-1' });
+      await download();
+      expect(mockAddToast).not.toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'Nice bin. Share it with the community?' })
+      );
+    });
+
+    it('stays quiet for a design that is already published', async () => {
+      mockLoadDesign.mockResolvedValue(ok({ publishedId: 'Pub123456789' }));
+      await download();
+      expect(mockAddToast).not.toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'Nice bin. Share it with the community?' })
+      );
+    });
+
+    it('yields to the support prompt rather than stacking two asks', async () => {
+      mockShouldPromptSupport = true;
+      await download();
+      expect(mockAddToast).not.toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'Nice bin. Share it with the community?' })
+      );
     });
   });
 });
