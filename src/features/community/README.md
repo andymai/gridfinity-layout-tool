@@ -128,6 +128,8 @@ Note the i18n key segments are camelCase (`...reason.wellMade`) while the union 
 - **Non-live and unknown ids are skipped**, and reported as `missingIds` so a curator can tell "not published yet" from "my ids are wrong".
 - **A collection with nothing left to show is dropped.** An empty shelf advertises a grouping and then fails to deliver it, so curation never has to be undone because a design went away.
 
+A derived shelf needs `SHELF_MIN_CARDS` (3) to render at all. The rails are about ten cards wide on a desktop window, so one or two read as a layout fault rather than a short list, and nothing is lost: a suppressed card is still in the grid below and still reachable through the shelf's own "See all". Curated collections are exempt, because a human chose those and a collection of one is a deliberate pick rather than a thin derivation.
+
 Curated shelves render above the derived ones: a human vouched for these, which is a stronger claim than any derived shelf can make. They carry a blurb (the reason the grouping exists) and no "See all", because a collection is a pick rather than a filter.
 
 The shipped list is deliberately empty. The mechanism is the engineering deliverable; the picks are a separate content decision, made by opening a PR against that file. Adding one means adding its two i18n keys across all locales, since editorial copy is user-facing like everything else.

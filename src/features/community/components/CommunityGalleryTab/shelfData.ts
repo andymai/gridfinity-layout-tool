@@ -4,6 +4,21 @@ export const SHELF_LANDING_MIN_DESIGNS = 12;
 
 export const SHELF_CARD_LIMIT = 8;
 
+/**
+ * A rail below this is not a shelf, it is a card sitting in a mostly empty
+ * row: the rails are ~10 cards wide on a desktop window, so one or two look
+ * like a layout fault rather than a short list.
+ *
+ * The same rule the curated collections already follow — a grouping that
+ * cannot deliver on itself is dropped — and nothing is lost by it: every card
+ * suppressed here is still in the grid below, and still reachable through the
+ * shelf's own "See all".
+ *
+ * Curated collections are exempt: a human chose those, and a collection of
+ * one is a deliberate pick rather than a thin derivation.
+ */
+export const SHELF_MIN_CARDS = 3;
+
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
 export type ShelfId = 'staff-picks' | 'proven' | 'new-this-week' | 'most-remixed';
@@ -28,7 +43,7 @@ export function buildShelves(items: readonly CommunityCard[], now: number): Shel
     .filter((card) => card.featured)
     .sort(byNewest)
     .slice(0, SHELF_CARD_LIMIT);
-  if (staffPicks.length > 0) {
+  if (staffPicks.length >= SHELF_MIN_CARDS) {
     shelves.push({ id: 'staff-picks', cards: staffPicks });
     for (const card of staffPicks) shownIds.add(card.id);
   }
@@ -43,7 +58,7 @@ export function buildShelves(items: readonly CommunityCard[], now: number): Shel
       return delta !== 0 ? delta : byNewest(a, b);
     })
     .slice(0, SHELF_CARD_LIMIT);
-  if (proven.length > 0) {
+  if (proven.length >= SHELF_MIN_CARDS) {
     shelves.push({ id: 'proven', cards: proven });
     for (const card of proven) shownIds.add(card.id);
   }
@@ -55,7 +70,7 @@ export function buildShelves(items: readonly CommunityCard[], now: number): Shel
   // Only genuinely-new designs belong under the "New this week" heading: a
   // thin week shows a short shelf, a dead week shows none, never months-old
   // designs relabeled as new.
-  if (thisWeek.length > 0) {
+  if (thisWeek.length >= SHELF_MIN_CARDS) {
     const cards = thisWeek.slice(0, SHELF_CARD_LIMIT);
     shelves.push({ id: 'new-this-week', cards });
     for (const card of cards) shownIds.add(card.id);
@@ -68,7 +83,10 @@ export function buildShelves(items: readonly CommunityCard[], now: number): Shel
     )
     .slice(0, SHELF_CARD_LIMIT);
   // An all-zero "Most remixed" rail would just repeat "New this week".
-  if (mostRemixed.some((card) => card.counts.remixes > 0)) {
+  if (
+    mostRemixed.length >= SHELF_MIN_CARDS &&
+    mostRemixed.some((card) => card.counts.remixes > 0)
+  ) {
     shelves.push({ id: 'most-remixed', cards: mostRemixed });
   }
 

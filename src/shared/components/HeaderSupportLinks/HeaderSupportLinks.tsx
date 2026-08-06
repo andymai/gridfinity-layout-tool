@@ -23,7 +23,18 @@ import {
  * has to hold the design name and the export controls at every width, and
  * those are the actions a user came here for.
  */
-export function HeaderSupportLinks() {
+export interface HeaderSupportLinksProps {
+  /**
+   * Fold every action except the language selector into the overflow menu.
+   *
+   * For narrow headers that still have to offer Help, Feedback and the rest:
+   * hiding the cluster entirely is what left the mobile /community route with
+   * no way to reach any of them.
+   */
+  compact?: boolean;
+}
+
+export function HeaderSupportLinks({ compact = false }: HeaderSupportLinksProps = {}) {
   const t = useTranslation();
   const feedbackToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const overflowRef = useRef<HTMLButtonElement>(null);
@@ -87,6 +98,73 @@ export function HeaderSupportLinks() {
     );
   };
 
+  const overflowMenu = (
+    <Menu.Root
+      open={overflow.open}
+      onClose={() => setOverflow((previous) => ({ ...previous, open: false }))}
+      position={overflow.position}
+      align="end"
+    >
+      {compact && (
+        <>
+          <Menu.Item onClick={handleFeedbackClick}>{t('header.sendFeedback')}</Menu.Item>
+          <Menu.Item onClick={handleHelpClick}>{t('header.helpAndShortcuts')}</Menu.Item>
+        </>
+      )}
+      <Menu.Item
+        href={GITHUB_REPO_URL}
+        icon={
+          <svg fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+            <path d={GITHUB_ICON_PATH} />
+          </svg>
+        }
+      >
+        {t('header.starOnGithubLong')}
+      </Menu.Item>
+      <Menu.Item
+        href={REDDIT_GRIDFINITY_URL}
+        onClick={handleRedditClick}
+        aria-label={t('common.redditCommunityAria')}
+        icon={
+          <svg fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path d={REDDIT_ICON_PATH} />
+          </svg>
+        }
+      >
+        {t('common.redditCommunity')}
+      </Menu.Item>
+      {compact && <Menu.Item onClick={handleKofiClick}>{t('header.supportOnKofi')}</Menu.Item>}
+    </Menu.Root>
+  );
+
+  const overflowTrigger = (
+    <IconButton
+      ref={overflowRef}
+      size="sm"
+      aria-label={t('header.moreLinks')}
+      aria-haspopup="menu"
+      aria-expanded={overflow.open}
+      title={t('header.moreLinks')}
+      onClick={toggleOverflow}
+    >
+      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        {ICON_PATHS.dotsHorizontal.map((d) => (
+          <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+        ))}
+      </svg>
+    </IconButton>
+  );
+
+  if (compact) {
+    return (
+      <>
+        <LanguageSelector />
+        {overflowTrigger}
+        {overflowMenu}
+      </>
+    );
+  }
+
   return (
     <>
       <LanguageSelector />
@@ -129,51 +207,8 @@ export function HeaderSupportLinks() {
         <span className="hidden lg:inline">{t('header.help')}</span>
       </Button>
 
-      {/* Overflow: outbound links (GitHub, r/gridfinity) */}
-      <IconButton
-        ref={overflowRef}
-        size="sm"
-        aria-label={t('header.moreLinks')}
-        aria-haspopup="menu"
-        aria-expanded={overflow.open}
-        title={t('header.moreLinks')}
-        onClick={toggleOverflow}
-      >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          {ICON_PATHS.dotsHorizontal.map((d) => (
-            <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
-          ))}
-        </svg>
-      </IconButton>
-      <Menu.Root
-        open={overflow.open}
-        onClose={() => setOverflow((previous) => ({ ...previous, open: false }))}
-        position={overflow.position}
-        align="end"
-      >
-        <Menu.Item
-          href={GITHUB_REPO_URL}
-          icon={
-            <svg fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
-              <path d={GITHUB_ICON_PATH} />
-            </svg>
-          }
-        >
-          {t('header.starOnGithubLong')}
-        </Menu.Item>
-        <Menu.Item
-          href={REDDIT_GRIDFINITY_URL}
-          onClick={handleRedditClick}
-          aria-label={t('common.redditCommunityAria')}
-          icon={
-            <svg fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path d={REDDIT_ICON_PATH} />
-            </svg>
-          }
-        >
-          {t('common.redditCommunity')}
-        </Menu.Item>
-      </Menu.Root>
+      {overflowTrigger}
+      {overflowMenu}
 
       {/* Ko-fi support — the official Widget_2 button reproduced natively (the site's
           CSP blocks the remote ko-fi script). Accent fill via btn-primary, official

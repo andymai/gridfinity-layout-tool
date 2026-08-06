@@ -150,11 +150,12 @@ export function CommunityPage({
     <div className="flex h-screen flex-col overflow-hidden bg-surface text-content">
       <header className="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-stroke-subtle bg-surface-secondary px-3 md:px-4">
         <ToolSwitcher compact={isMobile} iconOnly={isMobile} />
-        {!isMobile && (
-          <div className="flex items-center gap-1">
-            <HeaderSupportLinks />
-          </div>
-        )}
+        <div className="flex items-center gap-1">
+          {/* Compact on mobile rather than absent: this route has no other
+              chrome, so hiding the cluster left Help, Feedback and the
+              language selector unreachable here. */}
+          <HeaderSupportLinks compact={isMobile} />
+        </div>
       </header>
 
       <div className="flex shrink-0 flex-wrap items-start justify-between gap-3 border-b border-stroke-subtle px-3 py-3 md:px-4">
