@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.376.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.375.1...gridfinity-layout-tool-v4.376.0) (2026-08-06)
+
+
+### Features
+
+* **grid-editor:** lock a bin's size so it moves but never resizes ([#3268](https://github.com/andymai/gridfinity-layout-tool/issues/3268)) ([4b2e407](https://github.com/andymai/gridfinity-layout-tool/commit/4b2e40738dd83a1e6ea6ff52d920dd8b7866754d))
+
 ## [4.375.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.375.0...gridfinity-layout-tool-v4.375.1) (2026-08-06)
 
 
