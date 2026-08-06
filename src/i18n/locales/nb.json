@@ -3586,5 +3586,21 @@
   "community.gallery.heightAbbrev": "H",
   "community.shelves.seeAllAria": "Se alle: {shelf}",
   "community.shelves.scrollBack": "Bla {shelf} bakover",
-  "community.shelves.scrollForward": "Bla {shelf} forover"
+  "community.shelves.scrollForward": "Bla {shelf} forover",
+  "toast.expandToFitLocked": "Lås opp beholderne med låst størrelse i utvalget for å utvide dem",
+  "toast.binSizeLocked": "Størrelsen på denne beholderen er låst",
+  "grid.sizeLocked": "Størrelse låst",
+  "grid.bin.ariaLabelLocked": ", størrelse låst",
+  "designLinking.toast.cascadedResizeSomeLocked": "Oppdaterte design + {count} tilknyttede beholder(e) — {locked} med låst størrelse ble uendret",
+  "designLinking.toast.autoSyncedSomeLocked": "Auto-synkroniserte {count} beholder(e) — {locked} med låst størrelse ble uendret",
+  "designLinking.toast.syncSkippedLocked": "{count} beholder(e) med låst størrelse ble uendret",
+  "inspector.lockSize": "Lås størrelse",
+  "inspector.unlockSize": "Lås opp størrelse",
+  "inspector.lockSizeTooltip": "Låste beholdere kan flyttes, men ikke endre størrelse",
+  "inspector.sizeLockedHint": "Størrelsen er låst. Lås opp for å endre størrelse.",
+  "inspector.lockAllSizes": "Lås alle størrelser",
+  "inspector.unlockAllSizes": "Lås opp alle størrelser",
+  "inspector.someSizesLocked": "{count} av {total} valgte beholdere har låst størrelse",
+  "mobile.binMenu.lockSize": "Lås størrelse",
+  "mobile.binMenu.unlockSize": "Lås opp størrelse"
 }

@@ -3586,5 +3586,21 @@
   "community.gallery.heightAbbrev": "H",
   "community.shelves.seeAllAria": "Alles bekijken: {shelf}",
   "community.shelves.scrollBack": "{shelf} terugscrollen",
-  "community.shelves.scrollForward": "{shelf} vooruitscrollen"
+  "community.shelves.scrollForward": "{shelf} vooruitscrollen",
+  "toast.expandToFitLocked": "Ontgrendel de bins met vergrendelde afmetingen in de selectie om ze te vergroten",
+  "toast.binSizeLocked": "De afmetingen van deze bin zijn vergrendeld",
+  "grid.sizeLocked": "Afmetingen vergrendeld",
+  "grid.bin.ariaLabelLocked": ", afmetingen vergrendeld",
+  "designLinking.toast.cascadedResizeSomeLocked": "Ontwerp + {count} gekoppelde bin(s) bijgewerkt — {locked} met vergrendelde afmetingen ongewijzigd",
+  "designLinking.toast.autoSyncedSomeLocked": "Automatisch {count} bin(s) gesynchroniseerd — {locked} met vergrendelde afmetingen ongewijzigd",
+  "designLinking.toast.syncSkippedLocked": "{count} bin(s) met vergrendelde afmetingen bleven ongewijzigd",
+  "inspector.lockSize": "Afmetingen vergrendelen",
+  "inspector.unlockSize": "Afmetingen ontgrendelen",
+  "inspector.lockSizeTooltip": "Vergrendelde bins kun je verplaatsen, maar niet vergroten of verkleinen",
+  "inspector.sizeLockedHint": "Afmetingen vergrendeld. Ontgrendel om deze bin aan te passen.",
+  "inspector.lockAllSizes": "Alle afmetingen vergrendelen",
+  "inspector.unlockAllSizes": "Alle afmetingen ontgrendelen",
+  "inspector.someSizesLocked": "{count} van {total} geselecteerde bins hebben vergrendelde afmetingen",
+  "mobile.binMenu.lockSize": "Afmetingen vergrendelen",
+  "mobile.binMenu.unlockSize": "Afmetingen ontgrendelen"
 }

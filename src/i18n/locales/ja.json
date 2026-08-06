@@ -3586,5 +3586,21 @@
   "community.gallery.heightAbbrev": "高",
   "community.shelves.seeAllAria": "すべて表示：{shelf}",
   "community.shelves.scrollBack": "{shelf} を前にスクロール",
-  "community.shelves.scrollForward": "{shelf} を次にスクロール"
+  "community.shelves.scrollForward": "{shelf} を次にスクロール",
+  "toast.expandToFitLocked": "選択内のサイズがロックされたビンを解除すると拡張できます",
+  "toast.binSizeLocked": "このビンのサイズはロックされています",
+  "grid.sizeLocked": "サイズをロック中",
+  "grid.bin.ariaLabelLocked": "、サイズはロック中",
+  "designLinking.toast.cascadedResizeSomeLocked": "デザインとリンクされた{count}個のビンを更新しました（サイズをロック中の{locked}個はそのまま）",
+  "designLinking.toast.autoSyncedSomeLocked": "{count}個のビンを自動同期しました（サイズをロック中の{locked}個はそのまま）",
+  "designLinking.toast.syncSkippedLocked": "サイズをロック中の{count}個のビンはそのままです",
+  "inspector.lockSize": "サイズをロック",
+  "inspector.unlockSize": "サイズのロックを解除",
+  "inspector.lockSizeTooltip": "ロック中のビンは移動できますが、サイズは変更できません",
+  "inspector.sizeLockedHint": "サイズはロック中です。変更するにはロックを解除してください。",
+  "inspector.lockAllSizes": "すべてのサイズをロック",
+  "inspector.unlockAllSizes": "すべてのサイズのロックを解除",
+  "inspector.someSizesLocked": "選択した{total}個のうち{count}個のビンがサイズをロック中です",
+  "mobile.binMenu.lockSize": "サイズをロック",
+  "mobile.binMenu.unlockSize": "サイズのロックを解除"
 }

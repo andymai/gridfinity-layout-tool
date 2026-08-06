@@ -111,6 +111,77 @@ describe('startResize', () => {
     }
   });
 
+  it('refuses to start on a size-locked bin', () => {
+    const { addBin, updateBin, layout } = useLayoutStore.getState();
+    const layerId = layout.layers[0].id;
+    const categoryId = layout.categories[0].id;
+
+    const binId = getBinId(
+      addBin({
+        layerId,
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId,
+        label: '',
+        notes: '',
+      })
+    );
+    updateBin(binId, { locked: true });
+
+    const gridRef = createMockGridRef();
+    const { result } = renderHook(() => useInteraction(gridRef));
+
+    act(() => {
+      result.current.startResize(binId, 'e');
+    });
+
+    expect(useInteractionStore.getState().interaction).toBeNull();
+  });
+
+  it('drops size-locked bins from a multi-select resize', () => {
+    const { addBin, updateBin, layout } = useLayoutStore.getState();
+    const layerId = layout.layers[0].id;
+    const categoryId = layout.categories[0].id;
+
+    const makeBin = (x: number) =>
+      getBinId(
+        addBin({
+          layerId,
+          x: gridUnits(x),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
+          category: categoryId,
+          label: '',
+          notes: '',
+        })
+      );
+
+    const freeBin = makeBin(0);
+    const lockedBin = makeBin(5);
+    updateBin(lockedBin, { locked: true });
+
+    useSelectionStore.getState().setSelectedBins([freeBin, lockedBin]);
+
+    const gridRef = createMockGridRef();
+    const { result } = renderHook(() => useInteraction(gridRef));
+
+    act(() => {
+      result.current.startResize(freeBin, 'ne');
+    });
+
+    const interaction = useInteractionStore.getState().interaction;
+    expect(interaction?.type).toBe('resize');
+    if (interaction?.type === 'resize') {
+      expect(interaction.binIds).toEqual([freeBin]);
+      expect(interaction.startRects.has(lockedBin)).toBe(false);
+    }
+  });
+
   it('stores different handles for corner resize', () => {
     const { addBin, layout } = useLayoutStore.getState();
     const layerId = layout.layers[0].id;

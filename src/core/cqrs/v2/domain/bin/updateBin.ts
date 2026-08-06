@@ -57,6 +57,7 @@ const updatesSchema = z
       flare: z.number().min(0).optional(),
     }),
     overhang: overhangSchema,
+    locked: z.boolean(),
   })
   .partial();
 
@@ -90,7 +91,23 @@ function brandUpdates(updates: z.infer<typeof updatesSchema>): Partial<Bin> {
   if (updates.marginTaper !== undefined) result.marginTaper = updates.marginTaper;
   // `null` is the wire form of "clear it"; the field itself is just optional.
   if (updates.overhang !== undefined) result.overhang = updates.overhang ?? undefined;
+  if (updates.locked !== undefined) result.locked = updates.locked;
   return result;
+}
+
+/**
+ * A size-locked bin refuses dimension changes. Compared against the existing
+ * values rather than merely present-in-payload, so a caller that re-sends the
+ * bin's current width isn't rejected for a no-op. An update that unlocks in the
+ * same call resizes freely — `changes.locked` wins over the stored flag.
+ */
+function violatesLock(existing: Bin, changes: Partial<Bin>): boolean {
+  if (!(changes.locked ?? existing.locked)) return false;
+  return (
+    (changes.width !== undefined && changes.width !== existing.width) ||
+    (changes.depth !== undefined && changes.depth !== existing.depth) ||
+    (changes.height !== undefined && changes.height !== existing.height)
+  );
 }
 
 function capturePrevious(bin: Bin, changes: Partial<Bin>): Partial<Bin> {
@@ -127,6 +144,10 @@ export const updateBin = defineCommand({
     }
 
     const changes = brandUpdates(payload.updates);
+
+    if (violatesLock(existing, changes)) {
+      return err(layoutInvalidOperation('updateBin', `Bin ${id} is size-locked`));
+    }
 
     const spatial =
       changes.x !== undefined ||

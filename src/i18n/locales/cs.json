@@ -3586,5 +3586,21 @@
   "community.gallery.heightAbbrev": "V",
   "community.shelves.seeAllAria": "Zobrazit vše: {shelf}",
   "community.shelves.scrollBack": "Posunout {shelf} zpět",
-  "community.shelves.scrollForward": "Posunout {shelf} vpřed"
+  "community.shelves.scrollForward": "Posunout {shelf} vpřed",
+  "toast.expandToFitLocked": "Odemkněte zamčené biny ve výběru, abyste je mohli roztáhnout",
+  "toast.binSizeLocked": "Velikost tohoto binu je zamčená",
+  "grid.sizeLocked": "Velikost zamčena",
+  "grid.bin.ariaLabelLocked": ", velikost zamčena",
+  "designLinking.toast.cascadedResizeSomeLocked": "Aktualizován návrh + {count} propojených binů — {locked} se zamčenou velikostí zůstalo beze změny",
+  "designLinking.toast.autoSyncedSomeLocked": "Automaticky synchronizováno {count} binů — {locked} se zamčenou velikostí zůstalo beze změny",
+  "designLinking.toast.syncSkippedLocked": "{count} binů se zamčenou velikostí zůstalo beze změny",
+  "inspector.lockSize": "Zamknout velikost",
+  "inspector.unlockSize": "Odemknout velikost",
+  "inspector.lockSizeTooltip": "Zamčené biny lze přesouvat, ale ne měnit jejich velikost",
+  "inspector.sizeLockedHint": "Velikost je zamčená. Pro změnu velikosti bin odemkněte.",
+  "inspector.lockAllSizes": "Zamknout všechny velikosti",
+  "inspector.unlockAllSizes": "Odemknout všechny velikosti",
+  "inspector.someSizesLocked": "{count} z {total} vybraných binů má zamčenou velikost",
+  "mobile.binMenu.lockSize": "Zamknout velikost",
+  "mobile.binMenu.unlockSize": "Odemknout velikost"
 }

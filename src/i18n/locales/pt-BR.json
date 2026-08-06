@@ -3586,5 +3586,21 @@
   "community.gallery.heightAbbrev": "A",
   "community.shelves.seeAllAria": "Ver tudo: {shelf}",
   "community.shelves.scrollBack": "Rolar {shelf} para trás",
-  "community.shelves.scrollForward": "Rolar {shelf} para frente"
+  "community.shelves.scrollForward": "Rolar {shelf} para frente",
+  "toast.expandToFitLocked": "Desbloqueie os bins com tamanho bloqueado na seleção para expandi-los",
+  "toast.binSizeLocked": "O tamanho deste bin está bloqueado",
+  "grid.sizeLocked": "Tamanho bloqueado",
+  "grid.bin.ariaLabelLocked": ", tamanho bloqueado",
+  "designLinking.toast.cascadedResizeSomeLocked": "Design + {count} bin(s) vinculados atualizados — {locked} com tamanho bloqueado não mudaram",
+  "designLinking.toast.autoSyncedSomeLocked": "Sincronizados automaticamente {count} bin(s) — {locked} com tamanho bloqueado não mudaram",
+  "designLinking.toast.syncSkippedLocked": "{count} bin(s) com tamanho bloqueado não mudaram",
+  "inspector.lockSize": "Bloquear tamanho",
+  "inspector.unlockSize": "Desbloquear tamanho",
+  "inspector.lockSizeTooltip": "Bins bloqueados podem ser movidos, mas não redimensionados",
+  "inspector.sizeLockedHint": "Tamanho bloqueado. Desbloqueie para redimensionar este bin.",
+  "inspector.lockAllSizes": "Bloquear todos os tamanhos",
+  "inspector.unlockAllSizes": "Desbloquear todos os tamanhos",
+  "inspector.someSizesLocked": "{count} de {total} bins selecionados estão com o tamanho bloqueado",
+  "mobile.binMenu.lockSize": "Bloquear tamanho",
+  "mobile.binMenu.unlockSize": "Desbloquear tamanho"
 }

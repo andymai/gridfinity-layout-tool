@@ -4,6 +4,7 @@ import { canPlaceBin, getPlacementErrorMessage } from '@/shared/utils/validation
 import { snapResizeRect } from '@/shared/utils/snap';
 import { calculateResizeRect, capturePointer } from './interaction';
 import { findBinById } from '@/shared/utils/entity';
+import { isBinLocked } from '@/shared/utils/binLocation';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { emitSyncEvent } from '@/shared/events/syncEventBus';
 import { useTranslation } from '@/i18n';
@@ -54,15 +55,20 @@ export function useResizeInteraction(context: InteractionContext): ModeHandlers<
   const start = useCallback(
     (binId: BinId, handle: ResizeStartArgs[1], pointerId?: number) => {
       const bin = findBinById(layout, binId);
-      if (!bin) return;
+      if (!bin || isBinLocked(bin)) return;
 
       // Capture pointer at document level for reliable event delivery
       capturePointer(pointerId, activePointerIdRef, capturedPointerRef);
 
-      // If clicked bin is in selection, resize all selected bins
+      // If clicked bin is in selection, resize all selected bins. Locked bins
+      // drop out of the group rather than blocking it — the rest still resize,
+      // and `bin.update` would reject them anyway.
       let binIds: BinId[];
       if (selectedBinIds.includes(binId)) {
-        binIds = selectedBinIds;
+        binIds = selectedBinIds.filter((id) => {
+          const selected = findBinById(layout, id);
+          return selected !== undefined && !isBinLocked(selected);
+        });
       } else {
         binIds = [binId];
         setSelectedBin(binId);

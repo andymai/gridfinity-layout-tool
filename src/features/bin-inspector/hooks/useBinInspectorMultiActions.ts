@@ -20,6 +20,7 @@ import { getLayerZStartResult } from '@/shared/utils/collision';
 import { isErr, isOk, type Result } from '@/core/result';
 import type { LayoutError } from '@/core/result';
 import { clamp, canPlaceBin } from '@/shared/utils/validation';
+import { isBinLocked } from '@/shared/utils/binLocation';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { TFunction } from '@/i18n/context';
 import { emitLinkedBinResize } from './binInspectorTypes';
@@ -97,21 +98,25 @@ export function useBinInspectorMultiActions(deps: MultiActionDeps): MultiActions
     (delta: number) => {
       if (selectedBins.length === 0) return;
 
-      // Pre-compute new heights before execute mutates state (needed for sync events)
-      const updates = selectedBins.map((b) => {
-        const binLayer = layout.layers.find((l) => l.id === b.layerId);
-        const minHeight = Math.max(
-          CONSTRAINTS.MIN_BIN_HEIGHT,
-          binLayer?.height || CONSTRAINTS.MIN_BIN_HEIGHT
-        );
-        let binMaxHeight = layout.drawer.height as number;
-        if (b.layerId !== STAGING_ID && binLayer) {
-          const zR = getLayerZStartResult(b.layerId, layout.layers);
-          binMaxHeight = layout.drawer.height - (isOk(zR) ? zR.value : layout.drawer.height);
-        }
-        const newHeight = clamp(b.height + delta, minHeight, binMaxHeight) as HeightUnits;
-        return { bin: b, newHeight };
-      });
+      // Pre-compute new heights before execute mutates state (needed for sync events).
+      // Locked bins are dropped up front: the loop below stops at the first
+      // rejected update, so leaving one in would strand the rest of the batch.
+      const updates = selectedBins
+        .filter((b) => !isBinLocked(b))
+        .map((b) => {
+          const binLayer = layout.layers.find((l) => l.id === b.layerId);
+          const minHeight = Math.max(
+            CONSTRAINTS.MIN_BIN_HEIGHT,
+            binLayer?.height || CONSTRAINTS.MIN_BIN_HEIGHT
+          );
+          let binMaxHeight = layout.drawer.height as number;
+          if (b.layerId !== STAGING_ID && binLayer) {
+            const zR = getLayerZStartResult(b.layerId, layout.layers);
+            binMaxHeight = layout.drawer.height - (isOk(zR) ? zR.value : layout.drawer.height);
+          }
+          const newHeight = clamp(b.height + delta, minHeight, binMaxHeight) as HeightUnits;
+          return { bin: b, newHeight };
+        });
 
       const succeededBinIds = new Set<BinId>();
       batch(() => {

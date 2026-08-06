@@ -3586,5 +3586,21 @@
   "community.gallery.heightAbbrev": "高",
   "community.shelves.seeAllAria": "查看全部：{shelf}",
   "community.shelves.scrollBack": "向前滚动{shelf}",
-  "community.shelves.scrollForward": "向后滚动{shelf}"
+  "community.shelves.scrollForward": "向后滚动{shelf}",
+  "toast.expandToFitLocked": "解锁所选中已锁定尺寸的收纳盒后才能扩展",
+  "toast.binSizeLocked": "该收纳盒的尺寸已锁定",
+  "grid.sizeLocked": "尺寸已锁定",
+  "grid.bin.ariaLabelLocked": "，尺寸已锁定",
+  "designLinking.toast.cascadedResizeSomeLocked": "已更新设计和 {count} 个关联收纳盒 — {locked} 个已锁定尺寸的收纳盒保持不变",
+  "designLinking.toast.autoSyncedSomeLocked": "已自动同步 {count} 个收纳盒 — {locked} 个已锁定尺寸的收纳盒保持不变",
+  "designLinking.toast.syncSkippedLocked": "{count} 个已锁定尺寸的收纳盒保持不变",
+  "inspector.lockSize": "锁定尺寸",
+  "inspector.unlockSize": "解锁尺寸",
+  "inspector.lockSizeTooltip": "锁定的收纳盒可以移动，但不能调整尺寸",
+  "inspector.sizeLockedHint": "尺寸已锁定。解锁后即可调整此收纳盒的尺寸。",
+  "inspector.lockAllSizes": "锁定全部尺寸",
+  "inspector.unlockAllSizes": "解锁全部尺寸",
+  "inspector.someSizesLocked": "所选 {total} 个收纳盒中有 {count} 个已锁定尺寸",
+  "mobile.binMenu.lockSize": "锁定尺寸",
+  "mobile.binMenu.unlockSize": "解锁尺寸"
 }

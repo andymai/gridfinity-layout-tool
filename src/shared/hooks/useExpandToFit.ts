@@ -14,6 +14,7 @@ import type { BinId } from '@/core/types';
 const BLOCKED_MESSAGE_KEY: Record<ExpandBlockedReason, string> = {
   ragged: 'toast.expandToFitRagged',
   'no-slack': 'toast.expandToFitNoSlack',
+  locked: 'toast.expandToFitLocked',
   'slack-exceeds-overhang': 'toast.expandToFitTooMuchSlack',
   'no-grid-alignment': 'toast.expandToFitNoGridAlignment',
 };

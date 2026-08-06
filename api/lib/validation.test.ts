@@ -23,6 +23,7 @@ interface TestBin {
   notes: string;
   customProperties?: Record<string, string>;
   linkedDesignId?: string;
+  locked?: boolean;
 }
 
 /**
@@ -905,6 +906,42 @@ describe('linked designs', () => {
     (layout.bins[0] as unknown as Record<string, unknown>).linkedDesignId = 42;
 
     expect(validateShareLayout(layout, 1000).valid).toBe(false);
+  });
+});
+
+// The size lock is authoring intent, so the recipient sees the same bins frozen.
+describe('size lock', () => {
+  it('carries a locked bin through sanitization', () => {
+    const layout = createValidLayout();
+    layout.bins[0].locked = true;
+
+    const result = validateShareLayout(layout, 1000);
+
+    expect(result.valid).toBe(true);
+    if (result.valid) {
+      expect(result.layout.bins[0].locked).toBe(true);
+    }
+  });
+
+  it('omits the flag for an unlocked bin', () => {
+    const result = validateShareLayout(createValidLayout(), 1000);
+
+    expect(result.valid).toBe(true);
+    if (result.valid) {
+      expect(result.layout.bins[0].locked).toBeUndefined();
+    }
+  });
+
+  it('drops a non-boolean flag rather than rejecting the layout', () => {
+    const layout = createValidLayout();
+    (layout.bins[0] as unknown as Record<string, unknown>).locked = 'yes';
+
+    const result = validateShareLayout(layout, 1000);
+
+    expect(result.valid).toBe(true);
+    if (result.valid) {
+      expect(result.layout.bins[0].locked).toBeUndefined();
+    }
   });
 });
 

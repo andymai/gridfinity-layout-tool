@@ -5,6 +5,7 @@ import { useSelectionStore } from '@/core/store/selection';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
 import { canPlaceBin } from '@/shared/utils/validation';
+import { isBinLocked } from '@/shared/utils/binLocation';
 import { STAGING_ID } from '@/core/constants';
 import type { CategoryId, LayerId, HeightUnits } from '@/core/types';
 import { batch } from '@/core/cqrs';
@@ -74,6 +75,8 @@ export function useSelectionActions() {
     const rotatable = selected.filter((bin) => {
       // Square bins don't need rotation
       if (bin.width === bin.depth) return false;
+      // Locked bins count as skipped, so the partial toast still reports them
+      if (isBinLocked(bin)) return false;
 
       const validation = canPlaceBin(
         {
@@ -132,7 +135,8 @@ export function useSelectionActions() {
     if (selected.length === 0) return;
 
     const maxHeight = Math.max(...selected.map((b) => b.height)) as HeightUnits;
-    const candidates = selected.filter((b) => b.height !== maxHeight);
+    // A locked bin still sets the bar it just can't be raised to it.
+    const candidates = selected.filter((b) => b.height !== maxHeight && !isBinLocked(b));
     if (candidates.length === 0) return;
 
     // Validate height is legal per-layer (higher layers have less vertical budget)

@@ -17,9 +17,9 @@ import { useMobileStore } from '@/core/store/mobile';
 import { useMutations } from '@/shared/contexts';
 import { calcMaxGridUnits, CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { getLayerZStartResult } from '@/shared/utils/collision';
-import { isOk, isErr } from '@/core/result';
+import { isOk, isErr, getUserMessage } from '@/core/result';
 import { clamp, canPlaceBin, validateCustomProperties } from '@/shared/utils/validation';
-import { validateBinRotation } from '@/shared/utils/binLocation';
+import { isBinLocked, validateBinRotation } from '@/shared/utils/binLocation';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { GridUnits, HeightUnits, Bin, LayerId } from '@/core/types';
 import { layerId as toLayerId, categoryId as toCategoryId, roundHeightUnits } from '@/core/types';
@@ -151,6 +151,13 @@ export function useBinInspector(): UseBinInspectorReturn {
   const updateField = useCallback(
     (field: BinField, value: string | number) => {
       if (!bin) return;
+
+      // The controls are disabled while locked, so reaching here means a
+      // keyboard commit raced the flag. Fail quietly rather than through the
+      // command's error path.
+      if (isBinLocked(bin) && (field === 'width' || field === 'depth' || field === 'height')) {
+        return;
+      }
 
       batch(() => {
         if (field === 'width' || field === 'depth') {
@@ -356,6 +363,11 @@ export function useBinInspector(): UseBinInspectorReturn {
   const rotateBin = useCallback(() => {
     if (!bin) return false;
 
+    if (isBinLocked(bin)) {
+      addToast(t('toast.binSizeLocked'), 'info');
+      return false;
+    }
+
     const result = validateBinRotation(bin, layout);
     if (!result.valid) {
       addToast(result.message, 'error');
@@ -382,6 +394,31 @@ export function useBinInspector(): UseBinInspectorReturn {
 
     return true;
   }, [bin, layout, updateBin, addToast, t]);
+
+  const toggleLock = useCallback(() => {
+    if (!bin) return;
+    batch(() => {
+      const result = updateBin(bin.id, { locked: !isBinLocked(bin) });
+      if (isErr(result)) {
+        addToast(getUserMessage(result.error), 'error');
+      }
+    });
+  }, [bin, updateBin, addToast]);
+
+  const setMultiLock = useCallback(
+    (locked: boolean) => {
+      const changing = selectedBins.filter((b) => isBinLocked(b) !== locked);
+      if (changing.length === 0) return;
+      batch(() => {
+        for (const b of changing) {
+          // Flipping the flag can only fail if the bin is already gone; stop
+          // rather than write half a selection under one undo entry.
+          if (isErr(updateBin(b.id, { locked }))) break;
+        }
+      });
+    },
+    [selectedBins, updateBin]
+  );
 
   // Resolve the exact rect a suggested size would apply. Shared by the fit
   // check and the apply so they can never disagree — clearance is reduced to
@@ -410,7 +447,7 @@ export function useBinInspector(): UseBinInspectorReturn {
   // gate matches the actual mutation).
   const canApplySuggestedSize = useCallback(
     (size: { width: number; depth: number; height: number }): boolean => {
-      if (!bin) return false;
+      if (!bin || isBinLocked(bin)) return false;
       const rect = resolveSuggestedRect(size);
       return canPlaceBin({ x: bin.x, y: bin.y, ...rect }, bin.layerId, layout, bin.id).valid;
     },
@@ -421,7 +458,7 @@ export function useBinInspector(): UseBinInspectorReturn {
   // undoable action — one updateBin call, not three field edits.
   const applySuggestedSize = useCallback(
     (size: { width: number; depth: number; height: number }): boolean => {
-      if (!bin) return false;
+      if (!bin || isBinLocked(bin)) return false;
       const { width, depth, height, clearanceHeight } = resolveSuggestedRect(size);
       const applied = !isErr(
         batch(() => updateBin(bin.id, { width, depth, height, clearanceHeight }))
@@ -461,6 +498,8 @@ export function useBinInspector(): UseBinInspectorReturn {
     rotateBin,
     applySuggestedSize,
     canApplySuggestedSize,
+    toggleLock,
+    setMultiLock,
 
     deleteConfirmState,
 

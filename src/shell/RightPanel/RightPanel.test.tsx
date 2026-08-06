@@ -204,6 +204,8 @@ describe('RightPanel', () => {
     rotateBin: vi.fn(),
     applySuggestedSize: vi.fn(),
     canApplySuggestedSize: vi.fn(),
+    toggleLock: vi.fn(),
+    setMultiLock: vi.fn(),
     deleteConfirmState: null,
     layout: mockLayout,
     categories: mockLayout.categories,

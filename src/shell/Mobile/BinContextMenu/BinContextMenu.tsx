@@ -10,7 +10,11 @@ import {
 import { useMutations } from '@/shared/contexts';
 import { useResponsive, useExpandToFit } from '@/shared/hooks';
 import { useContextMenu } from '@/shared/hooks/useContextMenu';
-import { validateBinRotation, getBinLocationContext } from '@/shared/utils/binLocation';
+import {
+  validateBinRotation,
+  getBinLocationContext,
+  isBinLocked,
+} from '@/shared/utils/binLocation';
 import { calcMaxGridUnits } from '@/core/constants';
 import {
   ContextMenuContainer,
@@ -140,6 +144,11 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
     onClose();
   };
 
+  const handleToggleLock = () => {
+    batch(() => updateBin(bin.id, { locked: !locked }));
+    onClose();
+  };
+
   const [showLayerPicker, setShowLayerPicker] = useState(false);
 
   const handleMoveToGrid = (targetLayerId: LayerId) => {
@@ -156,6 +165,7 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
   const showEditOption = !isDesktop || rightPanelCollapsed;
 
   const locationContext = getBinLocationContext(bin);
+  const locked = isBinLocked(bin);
   const canMoveToStash = locationContext.canMoveToStash;
   const isInStash = locationContext.location === 'stash';
   // On desktop, hide rotate for stash bins since the hover rotate button is available.
@@ -234,7 +244,27 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
           />
         )}
 
-        {!isInStash && (
+        <ContextMenuItem
+          icon={
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d={
+                  locked
+                    ? 'M7 10V7a5 5 0 0110 0v3M6 10h12a1 1 0 011 1v8a1 1 0 01-1 1H6a1 1 0 01-1-1v-8a1 1 0 011-1z'
+                    : 'M7 10V7a5 5 0 019.9-1M6 10h12a1 1 0 011 1v8a1 1 0 01-1 1H6a1 1 0 01-1-1v-8a1 1 0 011-1z'
+                }
+              />
+            </svg>
+          }
+          label={locked ? t('mobile.binMenu.unlockSize') : t('mobile.binMenu.lockSize')}
+          onClick={handleToggleLock}
+        />
+
+        {/* Expansion grows the printed body, so a locked bin has nothing to offer here. */}
+        {!isInStash && !locked && (
           <ContextMenuItem
             icon={
               <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">

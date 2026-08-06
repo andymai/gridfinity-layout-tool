@@ -123,6 +123,7 @@ interface BinShape {
   notes: string;
   customProperties?: Record<string, string>;
   linkedDesignId?: string;
+  locked?: boolean;
 }
 
 interface CategoryShape {
@@ -344,6 +345,9 @@ export function validateShareLayout(data: unknown, jsonSize: number): Validation
       linkedDesignId: bin.linkedDesignId
         ? sanitizeString(bin.linkedDesignId, DESIGN_ID_MAX_LENGTH)
         : undefined,
+      // The size lock is authoring intent, so a shared drawer arrives with the
+      // same bins frozen the sender froze.
+      locked: bin.locked === true ? true : undefined,
     });
   }
 

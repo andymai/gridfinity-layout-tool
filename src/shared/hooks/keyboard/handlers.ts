@@ -12,7 +12,7 @@
 import { useLayoutStore } from '@/core/store/layout';
 import { SHORTCUTS, STAGING_ID, hasFractionalDimensions } from '@/core/constants';
 import { canPlaceBin } from '@/shared/utils/validation';
-import { validateBinRotation } from '@/shared/utils/binLocation';
+import { isBinLocked, validateBinRotation } from '@/shared/utils/binLocation';
 import { validateHalfGridModeToggle } from '@/shared/utils/halfGridConstraints';
 import { getLayerBins } from '@/shared/utils/bins';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
@@ -202,6 +202,11 @@ export function handleRotate(e: KeyboardEvent, ctx: KeyboardContext): boolean {
 
   const bin = findBinById(ctx.layout, ctx.selectedBinIds[0]);
   if (!bin) return true;
+
+  if (isBinLocked(bin)) {
+    ctx.addToast(ctx.t('toast.binSizeLocked'), 'info');
+    return true;
+  }
 
   const result = validateBinRotation(bin, ctx.layout);
   if (!result.valid) {

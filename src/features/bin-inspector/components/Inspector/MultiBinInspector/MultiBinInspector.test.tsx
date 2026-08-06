@@ -81,6 +81,8 @@ describe('MultiBinInspector', () => {
     rotateBin: vi.fn(),
     applySuggestedSize: vi.fn(),
     canApplySuggestedSize: vi.fn(),
+    toggleLock: vi.fn(),
+    setMultiLock: vi.fn(),
     confirmDelete: vi.fn(),
     cancelDelete: vi.fn(),
     deleteConfirmState: null,
@@ -336,6 +338,42 @@ describe('MultiBinInspector', () => {
       render(<MultiBinInspector inspector={inspector} variant="mobile" />);
 
       expect(screen.getByText('Delete All').className).toContain('h-12');
+    });
+  });
+
+  describe('size lock', () => {
+    it('locks the whole selection when none are locked', () => {
+      const inspector = createMockInspector();
+      render(<MultiBinInspector inspector={inspector} variant="desktop" />);
+
+      fireEvent.click(screen.getByText('Lock all sizes'));
+
+      expect(inspector.setMultiLock).toHaveBeenCalledWith(true);
+    });
+
+    it('offers unlock once every bin is locked', () => {
+      const inspector = createMockInspector({
+        selectedBins: mockBins.map((b) => ({ ...b, locked: true })),
+      });
+      render(<MultiBinInspector inspector={inspector} variant="desktop" />);
+
+      fireEvent.click(screen.getByText('Unlock all sizes'));
+
+      expect(inspector.setMultiLock).toHaveBeenCalledWith(false);
+    });
+
+    it('reports how much of a mixed selection is locked', () => {
+      const [first, ...rest] = mockBins;
+      const inspector = createMockInspector({
+        selectedBins: [{ ...first, locked: true }, ...rest],
+      });
+      render(<MultiBinInspector inspector={inspector} variant="desktop" />);
+
+      expect(
+        screen.getByText(`1 of ${mockBins.length} selected bins are size-locked`)
+      ).toBeInTheDocument();
+      // Still offers to lock the rest, not to unlock the one.
+      expect(screen.getByText('Lock all sizes')).toBeInTheDocument();
     });
   });
 

@@ -3586,5 +3586,21 @@
   "community.gallery.heightAbbrev": "W",
   "community.shelves.seeAllAria": "Zobacz wszystko: {shelf}",
   "community.shelves.scrollBack": "Przewiń {shelf} wstecz",
-  "community.shelves.scrollForward": "Przewiń {shelf} do przodu"
+  "community.shelves.scrollForward": "Przewiń {shelf} do przodu",
+  "toast.expandToFitLocked": "Odblokuj biny z zablokowanym rozmiarem w zaznaczeniu, aby je rozszerzyć",
+  "toast.binSizeLocked": "Rozmiar tego binu jest zablokowany",
+  "grid.sizeLocked": "Rozmiar zablokowany",
+  "grid.bin.ariaLabelLocked": ", rozmiar zablokowany",
+  "designLinking.toast.cascadedResizeSomeLocked": "Zaktualizowano projekt + {count} powiązanych binów — {locked} z zablokowanym rozmiarem bez zmian",
+  "designLinking.toast.autoSyncedSomeLocked": "Automatycznie zsynchronizowano {count} binów — {locked} z zablokowanym rozmiarem bez zmian",
+  "designLinking.toast.syncSkippedLocked": "{count} binów z zablokowanym rozmiarem pozostało bez zmian",
+  "inspector.lockSize": "Zablokuj rozmiar",
+  "inspector.unlockSize": "Odblokuj rozmiar",
+  "inspector.lockSizeTooltip": "Zablokowane biny można przesuwać, ale nie zmieniać ich rozmiaru",
+  "inspector.sizeLockedHint": "Rozmiar zablokowany. Odblokuj, aby zmienić rozmiar tego binu.",
+  "inspector.lockAllSizes": "Zablokuj wszystkie rozmiary",
+  "inspector.unlockAllSizes": "Odblokuj wszystkie rozmiary",
+  "inspector.someSizesLocked": "{count} z {total} zaznaczonych binów ma zablokowany rozmiar",
+  "mobile.binMenu.lockSize": "Zablokuj rozmiar",
+  "mobile.binMenu.unlockSize": "Odblokuj rozmiar"
 }

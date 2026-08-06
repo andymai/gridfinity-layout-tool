@@ -3586,5 +3586,21 @@
   "community.gallery.heightAbbrev": "H",
   "community.shelves.seeAllAria": "Alle anzeigen: {shelf}",
   "community.shelves.scrollBack": "{shelf} zurückscrollen",
-  "community.shelves.scrollForward": "{shelf} vorwärtsscrollen"
+  "community.shelves.scrollForward": "{shelf} vorwärtsscrollen",
+  "toast.expandToFitLocked": "Entsperre die größengesperrten Bins in der Auswahl, um sie zu vergrößern",
+  "toast.binSizeLocked": "Die Größe dieses Bins ist gesperrt",
+  "grid.sizeLocked": "Größe gesperrt",
+  "grid.bin.ariaLabelLocked": ", Größe gesperrt",
+  "designLinking.toast.cascadedResizeSomeLocked": "Design + {count} verknüpfte Bin(s) aktualisiert — {locked} größengesperrte Bin(s) unverändert",
+  "designLinking.toast.autoSyncedSomeLocked": "Automatisch {count} Bin(s) synchronisiert — {locked} größengesperrte Bin(s) unverändert",
+  "designLinking.toast.syncSkippedLocked": "{count} größengesperrte Bin(s) blieben unverändert",
+  "inspector.lockSize": "Größe sperren",
+  "inspector.unlockSize": "Größe entsperren",
+  "inspector.lockSizeTooltip": "Gesperrte Bins lassen sich verschieben, aber nicht in der Größe ändern",
+  "inspector.sizeLockedHint": "Größe gesperrt. Zum Ändern der Größe entsperren.",
+  "inspector.lockAllSizes": "Alle Größen sperren",
+  "inspector.unlockAllSizes": "Alle Größen entsperren",
+  "inspector.someSizesLocked": "{count} von {total} ausgewählten Bins sind größengesperrt",
+  "mobile.binMenu.lockSize": "Größe sperren",
+  "mobile.binMenu.unlockSize": "Größe entsperren"
 }

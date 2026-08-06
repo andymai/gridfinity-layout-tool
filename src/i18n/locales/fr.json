@@ -3586,5 +3586,21 @@
   "community.gallery.heightAbbrev": "H",
   "community.shelves.seeAllAria": "Tout voir : {shelf}",
   "community.shelves.scrollBack": "Faire défiler {shelf} vers l’arrière",
-  "community.shelves.scrollForward": "Faire défiler {shelf} vers l’avant"
+  "community.shelves.scrollForward": "Faire défiler {shelf} vers l’avant",
+  "toast.expandToFitLocked": "Déverrouillez les bacs à taille verrouillée de la sélection pour les agrandir",
+  "toast.binSizeLocked": "La taille de ce bac est verrouillée",
+  "grid.sizeLocked": "Taille verrouillée",
+  "grid.bin.ariaLabelLocked": ", taille verrouillée",
+  "designLinking.toast.cascadedResizeSomeLocked": "Design + {count} bac(s) lié(s) mis à jour — {locked} bac(s) à taille verrouillée inchangés",
+  "designLinking.toast.autoSyncedSomeLocked": "Synchronisé automatiquement {count} bac(s) — {locked} bac(s) à taille verrouillée inchangés",
+  "designLinking.toast.syncSkippedLocked": "{count} bac(s) à taille verrouillée sont restés inchangés",
+  "inspector.lockSize": "Verrouiller la taille",
+  "inspector.unlockSize": "Déverrouiller la taille",
+  "inspector.lockSizeTooltip": "Les bacs verrouillés peuvent être déplacés, mais pas redimensionnés",
+  "inspector.sizeLockedHint": "Taille verrouillée. Déverrouillez pour redimensionner ce bac.",
+  "inspector.lockAllSizes": "Verrouiller toutes les tailles",
+  "inspector.unlockAllSizes": "Déverrouiller toutes les tailles",
+  "inspector.someSizesLocked": "{count} bacs sur {total} sélectionnés ont une taille verrouillée",
+  "mobile.binMenu.lockSize": "Verrouiller la taille",
+  "mobile.binMenu.unlockSize": "Déverrouiller la taille"
 }

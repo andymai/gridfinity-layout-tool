@@ -90,8 +90,12 @@ export const duplicateBin = defineCommand({
             y: gridUnits(0),
           });
 
+    // The size lock marks one placement as settled, so it doesn't ride along to
+    // a copy the user is most likely about to resize.
+    const { locked: _locked, ...copyable } = source;
+
     const newBin: Bin = {
-      ...source,
+      ...copyable,
       id: generateBinId(),
       layerId: placement.layerId,
       x: placement.x,

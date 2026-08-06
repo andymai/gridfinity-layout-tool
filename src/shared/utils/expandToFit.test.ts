@@ -209,6 +209,19 @@ describe('resolveExpandToFit — blocked', () => {
     expect(result).toEqual({ ok: false, reason: 'no-slack' });
   });
 
+  it('reports locked when any selected bin has its size frozen', () => {
+    // A 2u pair in a 5u drawer has slack, so only the lock can block this.
+    const bins = [bin(0, 0, 2, 4), bin(2, 0, 2, 4, { locked: true })];
+    const l = layout(5, 4, { bins });
+    const result = resolveExpandToFit(
+      bins,
+      bins.map((b) => b.id),
+      l,
+      undefined
+    );
+    expect(result).toEqual({ ok: false, reason: 'locked' });
+  });
+
   it('reports slack-exceeds-overhang when the bins are too small for the span', () => {
     // One 1u bin in a 7u drawer: 294 - 42 = 252mm of slack, 126 per side.
     const only = bin(0, 0, 1, 4);

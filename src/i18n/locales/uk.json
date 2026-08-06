@@ -3586,5 +3586,21 @@
   "community.gallery.heightAbbrev": "В",
   "community.shelves.seeAllAria": "Переглянути всі: {shelf}",
   "community.shelves.scrollBack": "Прокрутити {shelf} назад",
-  "community.shelves.scrollForward": "Прокрутити {shelf} вперед"
+  "community.shelves.scrollForward": "Прокрутити {shelf} вперед",
+  "toast.expandToFitLocked": "Розблокуйте біни із заблокованим розміром у виділенні, щоб розширити їх",
+  "toast.binSizeLocked": "Розмір цього біна заблоковано",
+  "grid.sizeLocked": "Розмір заблоковано",
+  "grid.bin.ariaLabelLocked": ", розмір заблоковано",
+  "designLinking.toast.cascadedResizeSomeLocked": "Оновлено дизайн + {count} пов’язаних бінів — {locked} із заблокованим розміром лишилися без змін",
+  "designLinking.toast.autoSyncedSomeLocked": "Автосинхронізовано {count} бінів — {locked} із заблокованим розміром лишилися без змін",
+  "designLinking.toast.syncSkippedLocked": "{count} бінів із заблокованим розміром лишилися без змін",
+  "inspector.lockSize": "Заблокувати розмір",
+  "inspector.unlockSize": "Розблокувати розмір",
+  "inspector.lockSizeTooltip": "Заблоковані біни можна переміщати, але не змінювати їхній розмір",
+  "inspector.sizeLockedHint": "Розмір заблоковано. Розблокуйте, щоб змінити розмір цього біна.",
+  "inspector.lockAllSizes": "Заблокувати всі розміри",
+  "inspector.unlockAllSizes": "Розблокувати всі розміри",
+  "inspector.someSizesLocked": "{count} з {total} вибраних бінів мають заблокований розмір",
+  "mobile.binMenu.lockSize": "Заблокувати розмір",
+  "mobile.binMenu.unlockSize": "Розблокувати розмір"
 }

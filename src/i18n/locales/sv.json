@@ -3586,5 +3586,21 @@
   "community.gallery.heightAbbrev": "H",
   "community.shelves.seeAllAria": "Se alla: {shelf}",
   "community.shelves.scrollBack": "Bläddra {shelf} bakåt",
-  "community.shelves.scrollForward": "Bläddra {shelf} framåt"
+  "community.shelves.scrollForward": "Bläddra {shelf} framåt",
+  "toast.expandToFitLocked": "Lås upp facken med låst storlek i markeringen för att expandera dem",
+  "toast.binSizeLocked": "Storleken på det här facket är låst",
+  "grid.sizeLocked": "Storlek låst",
+  "grid.bin.ariaLabelLocked": ", storlek låst",
+  "designLinking.toast.cascadedResizeSomeLocked": "Uppdaterade design + {count} länkade fack — {locked} med låst storlek lämnades orörda",
+  "designLinking.toast.autoSyncedSomeLocked": "Auto-synkade {count} fack — {locked} med låst storlek lämnades orörda",
+  "designLinking.toast.syncSkippedLocked": "{count} fack med låst storlek lämnades orörda",
+  "inspector.lockSize": "Lås storlek",
+  "inspector.unlockSize": "Lås upp storlek",
+  "inspector.lockSizeTooltip": "Låsta fack går att flytta, men inte att ändra storlek på",
+  "inspector.sizeLockedHint": "Storleken är låst. Lås upp för att ändra storlek.",
+  "inspector.lockAllSizes": "Lås alla storlekar",
+  "inspector.unlockAllSizes": "Lås upp alla storlekar",
+  "inspector.someSizesLocked": "{count} av {total} markerade fack har låst storlek",
+  "mobile.binMenu.lockSize": "Lås storlek",
+  "mobile.binMenu.unlockSize": "Lås upp storlek"
 }

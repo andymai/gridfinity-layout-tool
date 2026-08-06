@@ -70,6 +70,12 @@ export type { PencilIconProps } from './icons/Pencil';
 export { RulerIcon } from './icons/Ruler';
 export type { RulerIconProps } from './icons/Ruler';
 
+export { LockIcon } from './icons/Lock';
+export type { LockIconProps } from './icons/Lock';
+
+export { LockOpenIcon } from './icons/LockOpen';
+export type { LockOpenIconProps } from './icons/LockOpen';
+
 export { PipetteIcon } from './icons/Pipette';
 export type { PipetteIconProps } from './icons/Pipette';
 

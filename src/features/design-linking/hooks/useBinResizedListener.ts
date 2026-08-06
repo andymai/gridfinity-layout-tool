@@ -38,6 +38,7 @@ import {
   extractBinDimensions,
   checkBatchSyncEligibility,
   createBinSyncUpdate,
+  partitionSyncableByLock,
 } from '../domain';
 
 export function useBinResizedListener(): void {
@@ -154,15 +155,22 @@ export function useBinResizedListener(): void {
         );
 
         // Only cascade to siblings whose dimensions actually differ
-        const siblingBins = allSiblings.filter(
-          (b) => !dimensionsFitAllowingRotation(extractBinDimensions(b), newDimensions)
+        const { syncable: siblingBins, locked: lockedSiblings } = partitionSyncableByLock(
+          allSiblings.filter(
+            (b) => !dimensionsFitAllowingRotation(extractBinDimensions(b), newDimensions)
+          )
         );
 
         if (siblingBins.length === 0) {
           addToastRef.current({
-            message: tRef.current('designLinking.toast.designUpdated', { name: designName }),
-            type: 'success',
-            duration: 2000,
+            message:
+              lockedSiblings.length > 0
+                ? tRef.current('designLinking.toast.syncSkippedLocked', {
+                    count: lockedSiblings.length,
+                  })
+                : tRef.current('designLinking.toast.designUpdated', { name: designName }),
+            type: lockedSiblings.length > 0 ? 'info' : 'success',
+            duration: lockedSiblings.length > 0 ? 3000 : 2000,
           });
           return;
         }
@@ -180,9 +188,15 @@ export function useBinResizedListener(): void {
           });
 
           addToastRef.current({
-            message: tRef.current('designLinking.toast.cascadedResize', {
-              count: siblingBins.length,
-            }),
+            message:
+              lockedSiblings.length > 0
+                ? tRef.current('designLinking.toast.cascadedResizeSomeLocked', {
+                    count: siblingBins.length,
+                    locked: lockedSiblings.length,
+                  })
+                : tRef.current('designLinking.toast.cascadedResize', {
+                    count: siblingBins.length,
+                  }),
             type: 'success',
             duration: 2000,
           });
