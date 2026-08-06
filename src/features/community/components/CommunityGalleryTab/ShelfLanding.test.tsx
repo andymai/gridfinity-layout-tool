@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import type { CommunityCard } from '@/shared/types/community';
 import { INITIAL_BROWSE_STATE, useBrowseStore } from '../../store/browseStore';
@@ -197,6 +197,56 @@ describe('ShelfLanding', () => {
       render(<ShelfLanding items={items} onSelect={vi.fn()} onSelectAuthor={vi.fn()} />);
 
       expect(screen.queryByTestId('community-shelf-see-all-collection-starters')).toBeNull();
+    });
+  });
+
+  describe('scroll affordance', () => {
+    function stubRail({ scrollWidth, clientWidth }: { scrollWidth: number; clientWidth: number }) {
+      // jsdom lays nothing out, so the rail has to be told it overflows.
+      Object.defineProperty(HTMLUListElement.prototype, 'scrollWidth', {
+        value: scrollWidth,
+        configurable: true,
+      });
+      Object.defineProperty(HTMLUListElement.prototype, 'clientWidth', {
+        value: clientWidth,
+        configurable: true,
+      });
+    }
+
+    afterEach(() => {
+      Reflect.deleteProperty(HTMLUListElement.prototype, 'scrollWidth');
+      Reflect.deleteProperty(HTMLUListElement.prototype, 'clientWidth');
+    });
+
+    it('offers no affordance while the rail fits', () => {
+      stubRail({ scrollWidth: 400, clientWidth: 400 });
+      render(<ShelfLanding items={manyCards(12)} onSelect={vi.fn()} onSelectAuthor={vi.fn()} />);
+      expect(screen.queryByTestId('community-shelf-fade-end')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('community-shelf-fade-start')).not.toBeInTheDocument();
+    });
+
+    it('marks only the trailing edge before the rail is scrolled', () => {
+      stubRail({ scrollWidth: 1600, clientWidth: 400 });
+      render(<ShelfLanding items={manyCards(12)} onSelect={vi.fn()} onSelectAuthor={vi.fn()} />);
+      expect(screen.getAllByTestId('community-shelf-fade-end').length).toBeGreaterThan(0);
+      expect(screen.queryByTestId('community-shelf-fade-start')).not.toBeInTheDocument();
+    });
+
+    it('scrolls the rail from its forward button', () => {
+      stubRail({ scrollWidth: 1600, clientWidth: 400 });
+      const scrollBy = vi.fn();
+      Object.defineProperty(HTMLUListElement.prototype, 'scrollBy', {
+        value: scrollBy,
+        configurable: true,
+      });
+
+      render(<ShelfLanding items={manyCards(12)} onSelect={vi.fn()} onSelectAuthor={vi.fn()} />);
+      fireEvent.click(screen.getAllByRole('button', { name: /scrollForward/ })[0]);
+
+      expect(scrollBy).toHaveBeenCalledWith(
+        expect.objectContaining({ left: expect.any(Number), behavior: 'smooth' })
+      );
+      Reflect.deleteProperty(HTMLUListElement.prototype, 'scrollBy');
     });
   });
 });

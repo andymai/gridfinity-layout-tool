@@ -3578,5 +3578,7 @@
   "community.gallery.widthAbbrev": "Š",
   "community.gallery.depthAbbrev": "H",
   "community.gallery.heightAbbrev": "V",
-  "community.shelves.seeAllAria": "Zobrazit vše: {shelf}"
+  "community.shelves.seeAllAria": "Zobrazit vše: {shelf}",
+  "community.shelves.scrollBack": "Posunout {shelf} zpět",
+  "community.shelves.scrollForward": "Posunout {shelf} vpřed"
 }

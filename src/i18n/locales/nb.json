@@ -3578,5 +3578,7 @@
   "community.gallery.widthAbbrev": "B",
   "community.gallery.depthAbbrev": "D",
   "community.gallery.heightAbbrev": "H",
-  "community.shelves.seeAllAria": "Se alle: {shelf}"
+  "community.shelves.seeAllAria": "Se alle: {shelf}",
+  "community.shelves.scrollBack": "Bla {shelf} bakover",
+  "community.shelves.scrollForward": "Bla {shelf} forover"
 }

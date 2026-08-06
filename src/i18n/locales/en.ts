@@ -3498,6 +3498,8 @@ const en: Record<string, string> = {
   'community.shelves.mostRemixed': 'Most remixed',
   'community.shelves.seeAll': 'See all',
   'community.shelves.seeAllAria': 'See all: {shelf}',
+  'community.shelves.scrollBack': 'Scroll {shelf} back',
+  'community.shelves.scrollForward': 'Scroll {shelf} forward',
   'community.authorFilterAria': 'See all designs by {author}',
   'community.card.byAuthor': 'by {author}',
   'community.card.likesLabel': '{count} likes',

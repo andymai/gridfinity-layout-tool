@@ -3578,5 +3578,7 @@
   "community.gallery.widthAbbrev": "Ш",
   "community.gallery.depthAbbrev": "Г",
   "community.gallery.heightAbbrev": "В",
-  "community.shelves.seeAllAria": "Переглянути всі: {shelf}"
+  "community.shelves.seeAllAria": "Переглянути всі: {shelf}",
+  "community.shelves.scrollBack": "Прокрутити {shelf} назад",
+  "community.shelves.scrollForward": "Прокрутити {shelf} вперед"
 }

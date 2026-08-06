@@ -128,6 +128,8 @@ Note the i18n key segments are camelCase (`...reason.wellMade`) while the union 
 - **Non-live and unknown ids are skipped**, and reported as `missingIds` so a curator can tell "not published yet" from "my ids are wrong".
 - **A collection with nothing left to show is dropped.** An empty shelf advertises a grouping and then fails to deliver it, so curation never has to be undone because a design went away.
 
+Each rail marks the edges that actually hide something: `useScrollEdges` measures the scroller and the fade plus its nudge button render only against an overflowing side. A permanent gradient is the easy version and the wrong one — on a shelf that fits it implies cards that are not there, and at the true end it veils the last card behind a hint that it is not the last card. The buttons are desktop-only and out of the tab order: touch swipes, and a keyboard already scrolls the rail by focusing the cards inside it, so they would be two extra stops to nothing new.
+
 A derived shelf needs `SHELF_MIN_CARDS` (3) to render at all. The rails are about ten cards wide on a desktop window, so one or two read as a layout fault rather than a short list, and nothing is lost: a suppressed card is still in the grid below and still reachable through the shelf's own "See all". Curated collections are exempt, because a human chose those and a collection of one is a deliberate pick rather than a thin derivation.
 
 Curated shelves render above the derived ones: a human vouched for these, which is a stronger claim than any derived shelf can make. They carry a blurb (the reason the grouping exists) and no "See all", because a collection is a pick rather than a filter.
