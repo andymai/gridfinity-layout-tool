@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.370.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.370.0...gridfinity-layout-tool-v4.370.1) (2026-08-06)
+
+
+### Bug Fixes
+
+* **deps:** advance the undici, brace-expansion and fast-uri pins ([#3245](https://github.com/andymai/gridfinity-layout-tool/issues/3245)) ([5cfff98](https://github.com/andymai/gridfinity-layout-tool/commit/5cfff98cfa7eaa61c648beb6bb877e045d291614))
+
 ## [4.370.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.369.0...gridfinity-layout-tool-v4.370.0) (2026-08-06)
 
 
