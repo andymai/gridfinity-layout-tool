@@ -1,0 +1,20 @@
+src/shell/Mobile/BinContextMenu/BinContextMenu.tsx
+  s_5391ea04eb1e07::t_b419983e3822b2 27
+  s_5391ea04eb1e07::t_17105cb29f8a01 148-153
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "a17657e2e66bed9122d0ccd3997254182dcbfe9c",
+  "prompts": {},
+  "sessions": {
+    "s_5391ea04eb1e07": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a40296bd-94e2-4b41-b083-de514b47c0dc",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
