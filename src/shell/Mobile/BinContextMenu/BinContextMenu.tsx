@@ -24,7 +24,7 @@ import {
 import { STLSearchDropdown } from '@/shell/STLSearchDropdown';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { findBinById } from '@/shared/utils/entity';
-import { isOk } from '@/core/result';
+import { isErr, isOk, getUserMessage } from '@/core/result';
 import { useTranslation } from '@/i18n';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { Button } from '@/design-system';
@@ -145,7 +145,12 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
   };
 
   const handleToggleLock = () => {
-    batch(() => updateBin(bin.id, { locked: !locked }));
+    // Mirrors handleMoveToGrid: the result leaves the batch so a bin deleted
+    // out from under the menu (collab) reports instead of closing silently.
+    const result = batch(() => updateBin(bin.id, { locked: !locked }));
+    if (isErr(result)) {
+      addToast(getUserMessage(result.error), 'error');
+    }
     onClose();
   };
 
