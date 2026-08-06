@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.374.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.373.0...gridfinity-layout-tool-v4.374.0) (2026-08-06)
+
+
+### Features
+
+* **community:** open publishing to any bin, require a description ([#3260](https://github.com/andymai/gridfinity-layout-tool/issues/3260)) ([158e471](https://github.com/andymai/gridfinity-layout-tool/commit/158e471e8e3c185f84585cdd2c3bd286ae76c00c))
+
 ## [4.373.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.372.1...gridfinity-layout-tool-v4.373.0) (2026-08-06)
 
 
