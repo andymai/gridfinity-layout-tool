@@ -70,6 +70,14 @@ describe('classifyCommunityDescription', () => {
     expect(classifyCommunityDescription('드라이버 여섯 개를 담는 통')).toBeNull();
   });
 
+  it('measures the floor in code points, not UTF-16 code units', () => {
+    // Both are 12 code units and under 12 characters.
+    expect(classifyCommunityDescription('ab😀😃😄😁😆')).toBe('too-short');
+    expect(classifyCommunityDescription('𠮷𡈁𡉏野家で使う仕')).toBe('too-short');
+    // Long enough either way: the stricter count must not reject real text.
+    expect(classifyCommunityDescription('工具箱の仕切り😀 M3ネジ用')).toBeNull();
+  });
+
   it('does not let padding whitespace inflate the distinct count', () => {
     expect(classifyCommunityDescription('a '.repeat(COMMUNITY_DESCRIPTION_MIN_LENGTH))).toBe(
       'low-effort'

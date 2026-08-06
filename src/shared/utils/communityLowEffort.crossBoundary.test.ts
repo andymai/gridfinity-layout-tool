@@ -52,6 +52,9 @@ const DESCRIPTION_FIXTURES: readonly string[] = [
   '1234567890123',
   '..............',
   'a b c d e f g h',
+  'ab😀😃😄😁😆',
+  '𠮷𡈁𡉏野家で使う仕',
+  '工具箱の仕切り😀 M3ネジ用',
 ];
 
 describe('communityLowEffort client and server mirrors agree', () => {

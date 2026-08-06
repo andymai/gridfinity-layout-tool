@@ -62,7 +62,10 @@ export function classifyCommunityDescription(
 ): CommunityDescriptionIssue | null {
   const trimmed = rawDescription.trim();
   if (trimmed.length === 0) return 'empty';
-  if (trimmed.length < COMMUNITY_DESCRIPTION_MIN_LENGTH) return 'too-short';
+  // Code points, not UTF-16 code units: `.length` counts an emoji or a
+  // supplementary-plane kanji as 2, so "ab😀😃😄😁😆" would clear a floor
+  // documented in characters with seven of them.
+  if ([...trimmed].length < COMMUNITY_DESCRIPTION_MIN_LENGTH) return 'too-short';
   if (!/\p{L}/u.test(trimmed)) return 'low-effort';
   if (new Set(trimmed.replace(/\s+/gu, '')).size < COMMUNITY_DESCRIPTION_MIN_DISTINCT_CHARS) {
     return 'low-effort';
