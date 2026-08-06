@@ -17,7 +17,8 @@ import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
 import type { BinId } from '@/core/types';
 import { binId as toBinId } from '@/core/types';
-import { isErr } from '@/core/result';
+import { isOk } from '@/core/result';
+import { isBinLocked } from '@/shared/utils/binLocation';
 import { packBins } from '@/features/staging/utils/packing';
 import {
   useStagingResize,
@@ -138,6 +139,7 @@ export function Staging() {
       height: b.height,
       category: b.category,
       label: b.label,
+      locked: b.locked,
     }));
     return packBins(bins, gridCols);
   }, [stagingBins, gridCols]);
@@ -216,9 +218,18 @@ export function Staging() {
       const bin = stagingBins.find((b) => b.id === brandedBinId);
       if (!bin) return;
 
-      batch(() => {
-        if (isErr(updateBin(brandedBinId, { width: bin.depth, depth: bin.width }))) return;
-      });
+      if (isBinLocked(bin)) {
+        addToast(t('toast.binSizeLocked'), 'info');
+        return;
+      }
+
+      // The result has to leave the batch callback: returning from inside it
+      // only ends the callback, so the toast used to claim success for a
+      // rotation the command had rejected.
+      const rotated = batch(() =>
+        isOk(updateBin(brandedBinId, { width: bin.depth, depth: bin.width }))
+      );
+      if (!rotated) return;
 
       addToast(t('toast.binRotated'), 'success');
     },

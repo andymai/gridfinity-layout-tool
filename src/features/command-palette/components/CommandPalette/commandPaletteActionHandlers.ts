@@ -30,6 +30,7 @@ import { useMutations } from '@/shared/contexts';
 import { useLayoutSwitcher } from '@/shared/hooks';
 import { getStagingBins, getLayerBins } from '@/shared/utils';
 import { findBinById } from '@/shared/utils/entity';
+import { isBinLocked } from '@/shared/utils/binLocation';
 import { useAlignBins } from '@/shared/hooks/useAlignBins';
 import { useSelectionActions } from '@/shared/hooks/useSelectionActions';
 import { useExpandToFit } from '@/shared/hooks/useExpandToFit';
@@ -228,7 +229,9 @@ export function useActionHandlers(): Record<string, ActionHandler> {
     const rotateBin = (): ActionHandler => {
       if (!hasSingleBin) return null;
       const bin = findBinById(layout, selectedBinIds[0]);
-      if (!bin) return null;
+      // Rotation is a resize, so a size-locked bin renders the row disabled
+      // rather than offering a command the store would reject in silence.
+      if (!bin || isBinLocked(bin)) return null;
       return () => {
         batch(() => {
           const result = updateBin(bin.id, { width: bin.depth, depth: bin.width });

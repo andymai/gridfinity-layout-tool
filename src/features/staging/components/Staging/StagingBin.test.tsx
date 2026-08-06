@@ -192,6 +192,17 @@ describe('StagingBin', () => {
     expect(rotateButton).toBeInTheDocument();
   });
 
+  it('hides rotate button for a size-locked bin', () => {
+    const props = defaultProps({
+      isHovered: true,
+      isTouchDevice: false,
+      bin: { locked: true },
+    });
+    renderInGrid(<StagingBin {...props} />);
+
+    expect(screen.queryByTitle('Rotate bin (R)')).not.toBeInTheDocument();
+  });
+
   it('hides rotate button on touch devices', () => {
     const props = defaultProps({
       isHovered: true,
