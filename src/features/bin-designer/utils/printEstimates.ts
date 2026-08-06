@@ -143,6 +143,16 @@ function computeBinVolume(params: BinParams): number {
   );
   let volume = shell.walls + shell.base + (params.base.stackingLip ? shell.lip : 0);
 
+  // A wall-less tray IS feet + floor slab + an optional lip, which is exactly
+  // what the `base` component is calibrated to. Every other term is fabricated
+  // here: `walls` prices a `height`-tall wall the tray never builds, out of a
+  // `height` that is inert on a tray, and the constraint engine rules out each
+  // feature delta below. Returning early keeps the estimate honest without
+  // teaching the whole function about a mode with no interior.
+  if (params.base.tile === true && !isSocketlessBase(params.base.style)) {
+    return volume - shell.walls;
+  }
+
   // Divider volumes (standard style only — slotted/solid don't use interior dividers)
   if (params.style === 'standard') {
     volume += computeDividerVolume(params, outerW, outerD, wallThickness);

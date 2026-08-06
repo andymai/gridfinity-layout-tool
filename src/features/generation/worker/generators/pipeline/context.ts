@@ -6,6 +6,7 @@
  */
 
 import type { BinParams } from '@/shared/types/bin';
+import { resolveTrayFloorThickness } from '@/shared/types/bin';
 import { hashMask, isPartialMask } from '@/shared/utils/cellMask';
 import { HEIGHT_UNIT, CLEARANCE, SOCKET_HEIGHT, LIP_SMALL_TAPER } from '../generatorConstants';
 import {
@@ -78,12 +79,14 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // A spacer always shells (its feet ARE the structure once the floor is gone),
   // so it takes the same build path whether or not the user asked for lite.
   const lightweight = (params.base.lightweight || isSpacer) && !socketless;
-  // A tray collapses the wall to ZERO rather than shortening it: the body ends
-  // at the top of the floor slab (`SOCKET_HEIGHT`) and the lip fuses straight
-  // onto it, giving a 9.3mm plate. `params.height` is inert here — it is pinned
-  // to 1 only to satisfy the range validators (see `BaseConfig.tile`), so
+  // A tray collapses the wall to ZERO rather than shortening it: the body is the
+  // floor slab and nothing above it. `params.height` is inert here — it is
+  // pinned to 1 only to satisfy the range validators (see `BaseConfig.tile`), so
   // reading it would silently build a 7mm-tall wall instead.
   const wallHeight = isTile ? 0 : socketless ? totalHeight : totalHeight - SOCKET_HEIGHT;
+  // The tray's body. Shared with `assembledHeight` so the readout and the mesh
+  // cannot disagree about how tall the plate is.
+  const trayFloorHeight = isTile ? resolveTrayFloorThickness(params.wallThickness) : 0;
   // Exterior-wall collar (issue #2500): raises the outer box + lip above the
   // nominal wall height without touching the interior. Kept separate from
   // `wallHeight` so every feature stage anchors to the original top plane.
@@ -138,11 +141,7 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
 
   const maxDimension = Math.max(params.width * gridUnitX, params.depth * gridUnitY);
 
-  // A tray's lip is its entire shell (the wall is 0), so a crafted payload with
-  // `{ tile: true, stackingLip: false }` would leave `shellStage` with nothing
-  // to return. IMPLICATION_RULES force the flag on in the UI; this is the
-  // generation-side guard that a share payload cannot bypass.
-  const hasLip = params.base.stackingLip || isTile;
+  const hasLip = params.base.stackingLip;
   // Safety: LIP_OVERLAP (0.1mm) < LIP_SMALL_TAPER (0.7mm) so interiorHeight
   // already clears the actual lip base at wallHeight - LIP_OVERLAP.
   // Floored at 0 for the tray, whose wallHeight is 0: the subtraction would
@@ -287,6 +286,7 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
     lightweight,
     isSpacer,
     isTile,
+    trayFloorHeight,
     solid,
     isSlotted,
     hasLip,

@@ -1186,7 +1186,7 @@
   "binDesigner.spacerDisablesStyle": "Ein Abstandshalter ist ein offener Rahmen — es gibt keinen Innenraum zu gestalten",
   "binDesigner.spacerHint": "Macht aus der Box einen offenen Aufsteller, den du unter eine andere Box stapelst, damit Boxen unterschiedlicher Höhe oben abschließen. Die Höhe zählt wie bei einer Box gleicher Größe — ein 2u-Abstandshalter unter einer 2u-Box reicht bis zur Oberkante einer 4u-Box.",
   "binDesigner.tile": "Tablett (ohne Wände)",
-  "binDesigner.tileHint": "Behält Füße, Boden und Stapelrand und entfernt die Wände. Übrig bleibt eine flache 9,3 mm-Platte, die weiterhin in eine Grundplatte einrastet und stapelbar bleibt. Der Rand ist die einzige erhöhte Kante und damit der Teil, den du einfärbst.",
+  "binDesigner.tileHint": "Entfernt die Wände und behält Füße und Boden. Übrig bleibt eine flache Platte, die weiterhin in eine Grundplatte einrastet. Behalte den Stapelrand für eine erhöhte Kante, die weiterhin stapelbar ist und die Farben trägt, oder entferne ihn für eine glatte Platte.",
   "binDesigner.tileDisablesWalls": "Ein Tablett hat keine Wände dafür",
   "binDesigner.tileDisablesInterior": "Ein Tablett hat keine Tiefe für Innenausstattung",
   "binDesigner.tileDisablesStyle": "Ein Tablett ist eine flache Platte, es gibt keinen Innenraum zu gestalten",

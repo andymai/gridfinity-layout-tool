@@ -191,6 +191,101 @@ export function assertWatertight(result: MeshData, label?: string): void {
   );
 }
 
+// ─── Vertical sampling ───────────────────────────────────────────────────────
+
+/**
+ * Z intervals where a vertical ray at `(x, y)` is inside the solid, bottom-up.
+ *
+ * Empty when the ray misses the mesh entirely — which is exactly how a hole in a
+ * floor reads. Use on an EXPORT mesh: the preview path meshes the base socket
+ * separately and concatenates it, so the coincident socket-top/floor-bottom
+ * faces survive and break the enter/exit pairing.
+ *
+ * Avoid sampling on a face plane (a ray along a shared triangle edge is counted
+ * by both neighbours); pick a point inside the region you mean to test.
+ */
+export function verticalSolidSpans(
+  { vertices, indices }: MeshData,
+  x: number,
+  y: number
+): Array<readonly [number, number]> {
+  const hits: number[] = [];
+  for (let i = 0; i < indices.length; i += 3) {
+    const a = indices[i] * 3;
+    const b = indices[i + 1] * 3;
+    const c = indices[i + 2] * 3;
+    const ax = vertices[a];
+    const ay = vertices[a + 1];
+    const bx = vertices[b];
+    const by = vertices[b + 1];
+    const cx = vertices[c];
+    const cy = vertices[c + 1];
+    const det = (by - cy) * (ax - cx) + (cx - bx) * (ay - cy);
+    if (Math.abs(det) < 1e-12) continue;
+    const w0 = ((by - cy) * (x - cx) + (cx - bx) * (y - cy)) / det;
+    const w1 = ((cy - ay) * (x - cx) + (ax - cx) * (y - cy)) / det;
+    const w2 = 1 - w0 - w1;
+    if (w0 < 0 || w1 < 0 || w2 < 0) continue;
+    hits.push(w0 * vertices[a + 2] + w1 * vertices[b + 2] + w2 * vertices[c + 2]);
+  }
+  hits.sort((p, q) => p - q);
+  // Collapse coincident crossings before pairing. A ray that passes exactly
+  // along a shared triangle edge — or through a vertex — is counted once per
+  // incident triangle, and the surplus hits flip the enter/exit parity for
+  // everything above them. Planar faces are fan-triangulated from the footprint
+  // centre, so the axes of a bin are full of such edges.
+  const crossings: number[] = [];
+  for (const hit of hits) {
+    if (crossings.length === 0 || Math.abs(hit - crossings[crossings.length - 1]) > 1e-4) {
+      crossings.push(hit);
+    }
+  }
+  const spans: Array<readonly [number, number]> = [];
+  for (let i = 0; i + 1 < crossings.length; i += 2) {
+    spans.push([crossings[i], crossings[i + 1]] as const);
+  }
+  return spans;
+}
+
+/** True when a vertical ray at `(x, y)` is solid across the whole `[lo, hi]` band. */
+export function isSolidThrough(
+  result: MeshData,
+  x: number,
+  y: number,
+  lo: number,
+  hi: number,
+  tolerance = 0.01
+): boolean {
+  return verticalSolidSpans(result, x, y).some(
+    ([from, to]) => from <= lo + tolerance && to >= hi - tolerance
+  );
+}
+
+/**
+ * Widest |X| the surface reaches on the plane Z — the outer profile at that
+ * height. Slices triangle edges rather than sampling vertices: a ruled loft only
+ * carries vertices on its section planes, so vertex sampling reads 0 between them.
+ */
+export function sectionHalfWidth({ vertices, indices }: MeshData, z: number): number {
+  let max = 0;
+  const edge = (a: number, b: number): void => {
+    const za = vertices[a + 2];
+    const zb = vertices[b + 2];
+    if (za === zb || z < Math.min(za, zb) || z > Math.max(za, zb)) return;
+    const t = (z - za) / (zb - za);
+    max = Math.max(max, Math.abs(vertices[a] + t * (vertices[b] - vertices[a])));
+  };
+  for (let i = 0; i < indices.length; i += 3) {
+    const a = indices[i] * 3;
+    const b = indices[i + 1] * 3;
+    const c = indices[i + 2] * 3;
+    edge(a, b);
+    edge(b, c);
+    edge(c, a);
+  }
+  return max;
+}
+
 // ─── Bounding box ────────────────────────────────────────────────────────────
 
 export interface BoundingBox {

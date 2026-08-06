@@ -1186,7 +1186,7 @@
   "binDesigner.spacerDisablesStyle": "スペーサーは開いた枠なので、形づくる内部がありません",
   "binDesigner.spacerHint": "ビンを別のビンの下に重ねる開いた台座に変え、高さの違うビンの上端をそろえます。高さは同じサイズのビンと同じように数えるので、2uのビンの下に2uのスペーサーを置くと4uのビンの高さに届きます。",
   "binDesigner.tile": "トレイ（壁なし）",
-  "binDesigner.tileHint": "脚・底・スタッキングリップを残して壁をなくします。高さ9.3mmの平らなプレートになり、ベースプレートへの固定とスタッキングはそのままです。唯一の突起であるリップが色を付ける部分になります。",
+  "binDesigner.tileHint": "壁をなくして脚と底を残します。ベースプレートに固定できる平らなプレートになります。スタッキングリップを残せば、突起としてスタッキングにも色分けにも使えます。外せば平坦なプレートになります。",
   "binDesigner.tileDisablesWalls": "トレイにはこれを保持する壁がありません",
   "binDesigner.tileDisablesInterior": "トレイには内部機能を収める深さがありません",
   "binDesigner.tileDisablesStyle": "トレイは平らなプレートなので、形作る内部がありません",

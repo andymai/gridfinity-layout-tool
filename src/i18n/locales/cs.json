@@ -1183,7 +1183,7 @@
   "binDesigner.spacerDisablesStyle": "Rozpěrka je otevřený rám — není zde vnitřek, který by šlo tvarovat",
   "binDesigner.spacerHint": "Změní box na otevřený podstavec, který naskládáte pod jiný box, aby boxy různých výšek končily v jedné úrovni. Výška se počítá jako u boxu stejné velikosti — rozpěrka 2u pod boxem 2u dosáhne na horní hranu boxu 4u.",
   "binDesigner.tile": "Tác (bez stěn)",
-  "binDesigner.tileHint": "Zachová nožičky, dno a stohovací lem a odstraní stěny. Zbude plochá deska 9,3 mm, která se stále zacvakne do základové desky a stále se stohuje. Lem je jediná vyvýšená hrana, takže je to část, kterou obarvíte.",
+  "binDesigner.tileHint": "Odstraní stěny a zachová nožičky a dno. Zbude plochá deska, která se stále zacvakne do základové desky. Stohovací lem ponechte pro vyvýšenou hranu, která se stále stohuje a nese barvy, nebo jej odeberte pro holou desku.",
   "binDesigner.tileDisablesWalls": "Tác nemá stěny, které by to udržely",
   "binDesigner.tileDisablesInterior": "Tác nemá hloubku pro vnitřní prvky",
   "binDesigner.tileDisablesStyle": "Tác je plochá deska, uvnitř není co tvarovat",

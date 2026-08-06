@@ -77,7 +77,8 @@ export function useBaseSection() {
     (resolved: BinParams) => {
       if (isEffectiveTile(resolved.base)) {
         // A tray's height is inert (the wall is 0 and `assembledHeight` supplies
-        // the real 9.3mm), so it is pinned rather than merely floored: two trays
+        // the real height from the slab), so it is pinned rather than merely
+        // floored: two trays
         // that differ only in a number nothing reads must not fingerprint
         // differently and defeat the community duplicate guard. The collar is
         // inert for the same reason — generation forces it to 0 on a tray — so

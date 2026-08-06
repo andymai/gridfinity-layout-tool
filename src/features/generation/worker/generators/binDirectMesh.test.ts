@@ -250,6 +250,12 @@ describe('binDirectMesh — canBinUseDirectMesh gate', () => {
     ['flat base', { base: { ...base, style: 'flat' } }],
     ['solid base', { base: { ...base, solid: true } }],
     ['lightweight base', { base: { ...base, lightweight: true } }],
+    // The draft models a solid floor and a full-height hollow body, so these two
+    // are the ways a base can make it draw material that is not there: a spacer
+    // has no floor, and a tray has no wall (and an inert `height` the draft
+    // would extrude anyway).
+    ['spacer base', { base: { ...base, spacer: true } }],
+    ['wall-less tray base', { base: { ...base, tile: true } }],
     ['slotted body', { style: 'slotted' }],
     ['solid body', { style: 'solid' }],
     [

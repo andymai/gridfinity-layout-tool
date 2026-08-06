@@ -601,13 +601,14 @@ describe('resolveConstraints — wall-less tray', () => {
     expect(resolved.label.enabled).toBe(false);
   });
 
-  // Load-bearing for generation, not just cosmetics: with the wall at 0 the lip
-  // IS the entire shell, so a lipless tray leaves `shellStage` nothing to return.
-  it('forces the stacking lip on', () => {
+  // The tray's body is its floor slab, so the lip is a free choice on top of it:
+  // on for a plate that still stacks, off for a bare tile. A deliberate `false`
+  // must survive the mode switch rather than be silently overridden.
+  it('leaves the stacking lip alone', () => {
     const lipless = makeParams({
       base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
     });
-    expect(enableTray(lipless).base.stackingLip).toBe(true);
+    expect(enableTray(lipless).base.stackingLip).toBe(false);
   });
 
   // Feet + floor + no-floor cancels to nothing at all, so the pair is mutual

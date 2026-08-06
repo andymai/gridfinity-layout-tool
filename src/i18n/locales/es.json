@@ -1186,7 +1186,7 @@
   "binDesigner.spacerDisablesStyle": "Un separador es un marco abierto: no hay interior que configurar",
   "binDesigner.spacerHint": "Convierte la caja en un alzador abierto que apilas bajo otra caja, para que cajas de distinta altura terminen a la misma cota. Su altura cuenta como una caja del mismo tamaño: un separador de 2u bajo una caja de 2u llega arriba de una de 4u.",
   "binDesigner.tile": "Bandeja (sin paredes)",
-  "binDesigner.tileHint": "Mantiene los pies, el suelo y el labio de apilado y elimina las paredes. Queda una placa plana de 9,3 mm que sigue encajando en una placa base y se sigue apilando. El labio es el único borde elevado, así que es la parte que coloreas.",
+  "binDesigner.tileHint": "Elimina las paredes y mantiene los pies y el suelo. Queda una placa plana que sigue encajando en una placa base. Conserva el labio de apilado para un borde elevado que se sigue apilando y admite los colores, o quítalo para una placa lisa.",
   "binDesigner.tileDisablesWalls": "Una bandeja no tiene paredes para esto",
   "binDesigner.tileDisablesInterior": "Una bandeja no tiene profundidad para elementos interiores",
   "binDesigner.tileDisablesStyle": "Una bandeja es una placa plana, no hay interior al que dar forma",

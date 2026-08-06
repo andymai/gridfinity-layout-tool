@@ -159,24 +159,52 @@ export const shellStage: PipelineStage = {
 
       let built = withScope((scope: DisposalScope) => {
         // Wall-less tray: `boxWallHeight` is 0, and extruding a zero-length
-        // vector is a kernel error, not an empty solid. There is genuinely no
-        // box to build — the Gridfinity base profile flares outward as it rises,
-        // so adjacent feet already merge into a continuous full-footprint
-        // surface at their top, and THAT is the tray's floor. The shell is the
-        // lip alone; `socketStage` supplies everything below it.
+        // vector is a kernel error, not an empty solid. The body is the floor
+        // slab and nothing above it — `trayFloorHeight` of solid footprint,
+        // exactly what `shell()` leaves under an ordinary bin's cavity.
         //
-        // A tray always has a lip (forced by IMPLICATION_RULES), which is what
-        // keeps this branch from having to return an empty shell.
-        if (boxWallHeight === 0) {
-          const lipBase = scope.register(
-            buildTopShape(params.width, params.depth, true, pitch, params.cellMask, dim.overhang)
+        // The slab is structural, not a nicety: `buildBaseSocket` sizes each
+        // foot `CLEARANCE` narrower than its cell and rounds its corners, so
+        // adjacent feet never meet. Without the slab the "floor" is one island
+        // per cell with a through-slot along every internal grid line.
+        if (dim.isTile) {
+          const floor = buildBinBox(
+            params.width,
+            params.depth,
+            dim.trayFloorHeight,
+            // The slab IS the tray's wall, so both arguments are the same
+            // resolved thickness. Passing raw `params.wallThickness` would let a
+            // crafted 0/NaN reach the box cache key and, on a tapered tray,
+            // `buildTaperedOuter` — the guard `trayFloorHeight` already applied.
+            dim.trayFloorHeight,
+            true, // solid: a slab has no cavity to shell
+            0, // no lowered fill — a tray has no interior to recess
+            pitch,
+            params.cellMask,
+            undefined,
+            undefined,
+            dim.overhang
           );
-          // Same `-LIP_OVERLAP` drop the fuse path below uses. Without it the
-          // lip merely TOUCHES the socket top at z=0, and a coplanar contact
-          // fuses into a non-manifold solid instead of a single watertight one.
-          const top = translate(lipBase, [0, 0, boxWallHeight - LIP_OVERLAP]);
+          collectOrigins(floor, FeatureTag.BASE, originToTag);
+          if (!dim.hasLip) return floor;
+
+          // `includeLip: false` drops the angled support a lip normally hangs
+          // BELOW its own base plane (to -LIP_TAPER_WIDTH) to blend into the
+          // wall it sits on. A tray has no wall: that support would land inside
+          // the foot's taper and back-fill it to full width, leaving a foot that
+          // no longer seats in a baseplate. Without it the ring's underside is a
+          // flat annulus bearing on the slab — fully supported to print, and the
+          // outer face stays flush exactly as a wall's would.
+          const lipBase = scope.register(
+            buildTopShape(params.width, params.depth, false, pitch, params.cellMask, dim.overhang)
+          );
+          // Same `-LIP_OVERLAP` drop the fuse path below uses: without it the
+          // ring merely TOUCHES the slab, and a coplanar contact fuses into a
+          // non-manifold solid instead of a single watertight one.
+          const top = scope.register(translate(lipBase, [0, 0, dim.trayFloorHeight - LIP_OVERLAP]));
           collectOrigins(top, FeatureTag.LIP, originToTag);
-          return top;
+          scope.register(floor); // consumed by fuse
+          return unwrap(fuse(floor, top));
         }
 
         if (integratedLip) {

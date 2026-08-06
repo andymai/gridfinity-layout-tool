@@ -275,23 +275,40 @@ describe('assembledHeight', () => {
   });
 });
 
-// A wall-less tray's body is its floor slab and nothing more, so its bin band is
-// SOCKET_HEIGHT rather than `height * heightUnitMm`. This is the readout drawer
-// clearance is computed from, and `height` is inert on a tray (pinned to 1 only
-// to satisfy the range validators), so reading it would overstate a 5mm body as
-// 7mm and defeat the whole point of the mode.
+// A wall-less tray's body is its feet plus a `wallThickness` floor slab and
+// nothing more, so its bin band is SOCKET_HEIGHT + that slab rather than
+// `height * heightUnitMm`. This is the readout drawer clearance is computed
+// from, and `height` is inert on a tray (pinned to 1 only to satisfy the range
+// validators), so reading it would overstate a 6.2mm body as 7mm and defeat the
+// whole point of the mode.
 describe('assembledHeight — wall-less tray', () => {
   const tray = (overrides: Partial<BinParams['base']> = {}): BinParams =>
     params({ height: 1, base: { ...DEFAULT_BIN_PARAMS.base, tile: true, ...overrides } });
+  const trayBodyMm = GRIDFINITY.SOCKET_HEIGHT + DEFAULT_BIN_PARAMS.wallThickness;
 
-  it('reports the floor slab as the bin band, not the stored height', () => {
+  it('reports feet plus the floor slab as the bin band, not the stored height', () => {
     const result = assembledHeight(tray());
-    expect(bandOf('bin', result)).toBe(GRIDFINITY.SOCKET_HEIGHT);
+    expect(bandOf('bin', result)).toBeCloseTo(trayBodyMm, 5);
   });
 
-  it('stands SOCKET_HEIGHT + lip tall as a bare tray', () => {
+  // The slab IS the tray, so its thickness has to move the readout — a tray at
+  // the thinnest wall setting is a materially shorter plate.
+  it('tracks the wall thickness the slab is built from', () => {
+    const thin = assembledHeight(params({ ...tray(), wallThickness: 0.4 }));
+    expect(bandOf('bin', thin)).toBeCloseTo(GRIDFINITY.SOCKET_HEIGHT + 0.4, 5);
+  });
+
+  it('stands the body plus lip tall as a bare tray', () => {
     const result = assembledHeight(tray());
-    expect(result.totalMm).toBeCloseTo(GRIDFINITY.SOCKET_HEIGHT + LIP_RISE, 5);
+    expect(result.totalMm).toBeCloseTo(trayBodyMm + LIP_RISE, 5);
+  });
+
+  // The lip is a genuine choice on a tray, not forced on: without it the plate
+  // is the slab alone, which is the whole appeal of the lip-less variant.
+  it('drops the lip band for a lip-less tray', () => {
+    const result = assembledHeight(tray({ stackingLip: false }));
+    expect(bandOf('stackingLip', result)).toBe(0);
+    expect(result.totalMm).toBeCloseTo(trayBodyMm, 5);
   });
 
   it('ignores a stored height that the validators happened to allow', () => {
