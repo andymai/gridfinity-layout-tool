@@ -1,0 +1,82 @@
+src/i18n/locales/ko.json
+  s_2a4ee505e1d992::t_f51cb164d4e22f 3323,3580-3581
+  s_2a4ee505e1d992::t_a4a3eecada7ec2 3574-3579
+src/i18n/locales/zh-CN.json
+  s_2a4ee505e1d992::t_a4a3eecada7ec2 3574-3579
+  s_2a4ee505e1d992::t_f51cb164d4e22f 3323,3580-3581
+src/i18n/locales/pt-BR.json
+  s_2a4ee505e1d992::t_f51cb164d4e22f 3323,3580-3581
+  s_2a4ee505e1d992::t_a4a3eecada7ec2 3574-3579
+src/i18n/locales/en.ts
+  s_2a4ee505e1d992::t_a4a3eecada7ec2 3443-3448
+  s_2a4ee505e1d992::t_f51cb164d4e22f 3499-3500
+src/features/community/components/CommunityGalleryTab/GalleryToolbar.test.tsx
+  s_2a4ee505e1d992::t_f403c0ed1f61df 42,46-57,59-67,81,98,106,108,128-135,157-158,164-213,215-216,324
+  s_2a4ee505e1d992::t_102efeba9a6a37 214,298-305,323,325-330
+src/i18n/locales/ja.json
+  s_2a4ee505e1d992::t_f51cb164d4e22f 1677,3580-3581
+  s_2a4ee505e1d992::t_a4a3eecada7ec2 3574-3579
+src/i18n/locales/it.json
+  s_2a4ee505e1d992::t_a4a3eecada7ec2 3574-3579
+  s_2a4ee505e1d992::t_f51cb164d4e22f 1724,3580-3581
+src/features/community/components/CommunityGalleryTab/GalleryToolbar.tsx
+  s_2a4ee505e1d992::t_df63897e7507d0 77-81,119-198,295
+  s_2a4ee505e1d992::t_194417ce05df41 19-20,22
+  s_2a4ee505e1d992::t_559be0d41a95f8 21
+  s_2a4ee505e1d992::t_cf1784ec5ff5d8 344-364,383,391-395,401,409
+src/i18n/locales/es.json
+  s_2a4ee505e1d992::t_f51cb164d4e22f 1785,3580-3581
+  s_2a4ee505e1d992::t_a4a3eecada7ec2 3574-3579
+src/features/community/components/CommunityGalleryTab/CommunityGalleryTab.test.tsx
+  s_2a4ee505e1d992::t_20cbfda506b1d8 611-614
+  s_2a4ee505e1d992::t_298fc6815e9c13 3
+  s_2a4ee505e1d992::t_6013e3bdc0c5cd 714-721
+src/features/community/README.md
+  s_2a4ee505e1d992::t_894c92079ac971 41-46
+src/i18n/locales/nl.json
+  s_2a4ee505e1d992::t_f51cb164d4e22f 1647,3580-3581
+  s_2a4ee505e1d992::t_a4a3eecada7ec2 3574-3579
+src/i18n/locales/uk.json
+  s_2a4ee505e1d992::t_f51cb164d4e22f 1781,3580-3581
+  s_2a4ee505e1d992::t_a4a3eecada7ec2 3574-3579
+src/i18n/locales/de.json
+  s_2a4ee505e1d992::t_f51cb164d4e22f 1647,3580-3581
+  s_2a4ee505e1d992::t_a4a3eecada7ec2 3574-3579
+src/i18n/locales/nb.json
+  s_2a4ee505e1d992::t_f51cb164d4e22f 1724,3580-3581
+  s_2a4ee505e1d992::t_a4a3eecada7ec2 3574-3579
+src/i18n/locales/sv.json
+  s_2a4ee505e1d992::t_a4a3eecada7ec2 3574-3579
+  s_2a4ee505e1d992::t_f51cb164d4e22f 3323,3580-3581
+src/i18n/locales/pl.json
+  s_2a4ee505e1d992::t_f51cb164d4e22f 3323,3580-3581
+  s_2a4ee505e1d992::t_a4a3eecada7ec2 3574-3579
+src/features/community/components/CommunityGalleryTab/ShelfLanding.tsx
+  s_2a4ee505e1d992::t_f51cb164d4e22f 125-128,132
+src/features/community/components/CommunityGalleryTab/dimensionSummary.test.ts
+  s_2a4ee505e1d992::t_83046a2f5983b5 1-57
+src/features/community/components/CommunityGalleryTab/dimensionSummary.ts
+  s_2a4ee505e1d992::t_187ea4e136eba1 1-48
+src/i18n/locales/cs.json
+  s_2a4ee505e1d992::t_f51cb164d4e22f 3323,3580-3581
+  s_2a4ee505e1d992::t_a4a3eecada7ec2 3574-3579
+src/i18n/locales/fr.json
+  s_2a4ee505e1d992::t_a4a3eecada7ec2 3574-3579
+  s_2a4ee505e1d992::t_f51cb164d4e22f 3365,3580-3581
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "9dc7cb035564316390ca5a694c56ee43c13b8a60",
+  "prompts": {},
+  "sessions": {
+    "s_2a4ee505e1d992": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3b5bc396-723b-4c74-b9e4-2f78bded5f37",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
