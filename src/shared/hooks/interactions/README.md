@@ -49,13 +49,13 @@ The parent `useInteraction` hook:
 
 ## Mode Details
 
-| Mode            | Trigger                    | Multi-bin            | Throttled | Key Behavior                                    |
-| --------------- | -------------------------- | -------------------- | --------- | ----------------------------------------------- |
-| **draw**        | Drag on empty grid         | No                   | No        | `width = end - start + minSize`                 |
-| **paint**       | Click/drag in paint mode   | Yes (bulk select)    | No        | Centers on click, fills area on drag            |
-| **drag**        | Pointerdown on bin         | Yes (selected group) | Yes (RAF) | Group constraints, swap countdown, drop targets |
-| **resize**      | Pointerdown on handle      | Yes (proportional)   | Yes (RAF) | 8 directions, half-bin aware min size           |
-| **stagingDrag** | Pointerdown on staging bin | No                   | Yes (RAF) | Ghost preview, bounds clamping                  |
+| Mode            | Trigger                    | Multi-bin            | Throttled | Key Behavior                                                  |
+| --------------- | -------------------------- | -------------------- | --------- | ------------------------------------------------------------- |
+| **draw**        | Drag on empty grid         | No                   | No        | `width = end - start + minSize`                               |
+| **paint**       | Click/drag in paint mode   | Yes (bulk select)    | No        | Centers on click, fills area on drag                          |
+| **drag**        | Pointerdown on bin         | Yes (selected group) | Yes (RAF) | Group constraints, swap countdown, drop targets               |
+| **resize**      | Pointerdown on handle      | Yes (proportional)   | Yes (RAF) | 8 directions, half-bin aware min size, skips size-locked bins |
+| **stagingDrag** | Pointerdown on staging bin | No                   | Yes (RAF) | Ghost preview, bounds clamping                                |
 
 ## Gotchas
 
@@ -67,3 +67,4 @@ The parent `useInteraction` hook:
 6. **Draw/paint never throttle** — instant visual feedback is critical for responsiveness
 7. **ML telemetry fires BEFORE mutations** — needs bin data before deletion/move changes it
 8. **Paint single-click centers** — bin is centered on cursor, clamped to drawer bounds
+9. **A size-locked bin never enters a resize** (#3229) — `start()` bails on a locked target and filters locked bins out of the selected group, so the rest of a mixed selection still resizes. Hiding the handles in `Bin.tsx` is presentation only; `bin.update` is the authority and rejects the write regardless
