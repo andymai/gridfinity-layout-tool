@@ -52,6 +52,7 @@ function toMeshPayload(result: BridgeResult): GenerationResult {
     // directly (Immer treats typed arrays as opaque leaves).
     stackPlateMesh: result.mesh.stackPlateMesh,
     labelPlates: result.mesh.labelPlates,
+    labelTextOverflow: result.mesh.labelTextOverflow,
     error: null,
     timingMs: result.timingMs,
   };
@@ -78,6 +79,7 @@ function meshDataToPayload(mesh: MeshData): GenerationResult {
       : undefined,
     stackPlateMesh: mesh.stackPlateMesh,
     labelPlates: mesh.labelPlates,
+    labelTextOverflow: mesh.labelTextOverflow,
     error: null,
     timingMs: 0,
   };

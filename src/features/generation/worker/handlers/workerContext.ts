@@ -267,6 +267,7 @@ export function runGeneration(
           }
         : {}),
       ...(labelPlates ? { labelPlates } : {}),
+      ...(meshData.labelTextOverflow ? { labelTextOverflow: meshData.labelTextOverflow } : {}),
     };
 
     const transfer = [verts.buffer, norms.buffer, idxs.buffer, edges.buffer];

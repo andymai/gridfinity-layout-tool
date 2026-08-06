@@ -1,25 +1,16 @@
 /**
  * Label tabs section.
  *
- * When enabled, the panel leads with the content (the per-compartment label
- * list) and the one common setting (edges). Advanced geometry and text styling
- * fold into collapsed "Tab shape & size" and "Engraving" groups so the default
- * view stays calm.
+ * Ordered content-first: the label type (what the captions become) and then the
+ * captions themselves. Everything below is how they are shaped, and the bulky
+ * geometry and text styling fold into collapsed groups so the default view is
+ * the text and little else.
  */
 
-import { useState } from 'react';
 import { CheckboxRow } from '@/design-system';
 import { FeatureToggle } from '../FeatureToggle';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
-import {
-  Button,
-  Select,
-  Stepper,
-  InfoIcon,
-  Badge,
-  ChevronDownIcon,
-  Collapsible,
-} from '@/design-system';
+import { Button, Select, Stepper, InfoIcon, Collapsible } from '@/design-system';
 import { LabelSizeControl } from '../../controls';
 import type { SelectOption } from '@/design-system';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
@@ -37,7 +28,7 @@ import {
   labelPlateWidthMm,
 } from '@/shared/constants/labelPlates';
 import type { LabelSocketStyle } from '@/shared/constants/labelPlates';
-import { CompartmentTextInput } from './CompartmentTextInput';
+import { LabelTextList } from './LabelTextList';
 import { LabelColorControls } from './LabelColorControls';
 import { LabelPlatesControls } from './LabelPlatesControls';
 import { LabelFitSampleButton } from './LabelFitSampleButton';
@@ -67,7 +58,6 @@ const TEXT_DEPTH_STEP = 0.1;
 
 export function LabelTabsSection() {
   const { state, handlers, meta, t } = useLabelTabsSection();
-  const [labelsOpen, setLabelsOpen] = useState(false);
 
   // tabHeightMm is a resolved plane, not the typed value — round it like
   // tabWidthMm so a fractional shelf can't print its full float expansion.
@@ -75,72 +65,19 @@ export function LabelTabsSection() {
     state.heightIsExplicit ? ` × ${Math.round(state.tabHeightMm * 10) / 10}` : ''
   } mm`;
 
-  // Bulk list goes in `primaryControls`, not a Customize child: the Customize
-  // area is clipped at a fixed max-height/overflow-hidden, so a long list (up to
-  // 144 rows) would be cut off. As a primary control it flows full-height under
-  // the panel's own scrollbar.
-  const spanning = state.label.span === true;
-  const textRows = spanning
-    ? state.rowTextRows.map((r) => ({
-        key: `row-${r.row}`,
-        index: r.row,
-        label: r.label,
-        value: r.value,
-        ariaLabel: t('binDesigner.rowEngravedTextAriaLabel', { n: r.row + 1 }),
-        onCommit: handlers.setLabelRowText,
-      }))
-    : state.compartmentTextRows.map((r) => ({
-        key: `cell-${r.id}`,
-        index: r.id,
-        label: r.label,
-        value: r.value,
-        ariaLabel: t('binDesigner.tabEngravedTextAriaLabel', { n: r.displayNumber }),
-        onCommit: handlers.setCompartmentText,
-      }));
-
-  const compartmentLabels =
-    textRows.length > 0 ? (
-      <div>
-        <Button
-          type="button"
-          variant="ghost"
-          touchTarget={false}
-          onClick={() => setLabelsOpen((open) => !open)}
-          aria-expanded={labelsOpen}
-          className="flex w-full items-center justify-between gap-2 rounded-md border border-stroke-subtle bg-surface px-2.5 py-2 text-xs font-medium text-content hover:bg-surface-hover"
-        >
-          <span className="flex items-center gap-2">
-            {spanning ? t('binDesigner.rowLabelsList') : t('binDesigner.compartmentLabelsList')}
-            <Badge>{textRows.length}</Badge>
-          </span>
-          <ChevronDownIcon
-            size="xs"
-            className={`text-content-tertiary transition-transform duration-200 ${
-              labelsOpen ? 'rotate-0' : '-rotate-90'
-            }`}
-            aria-hidden="true"
-          />
-        </Button>
-        {labelsOpen && (
-          <ul className="mt-3 flex flex-col gap-1.5">
-            {textRows.map((row) => (
-              <li key={row.key} className="flex items-center gap-2">
-                <span className="w-20 shrink-0 text-xs text-content-tertiary tabular-nums">
-                  {row.label}
-                </span>
-                <CompartmentTextInput
-                  committedValue={row.value}
-                  compartmentId={row.index}
-                  onCommit={row.onCommit}
-                  placeholder={t('binDesigner.tabEngravedTextPlaceholder')}
-                  ariaLabel={row.ariaLabel}
-                />
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    ) : null;
+  // The list stays in `primaryControls` rather than a Customize child: that area
+  // is clipped at a fixed max-height/overflow-hidden, so a long list (up to 144
+  // rows) would be cut off. Here it flows full-height under the panel's scrollbar.
+  const labelText = (
+    <LabelTextList
+      rows={state.textRows}
+      spanning={state.spanning}
+      onToggleSpan={handlers.toggleSpan}
+      onCommit={handlers.commitText}
+      onClearAll={handlers.clearAllText}
+      onWiden={state.canWidenTabs ? handlers.widenTabs : undefined}
+    />
+  );
 
   return (
     <FeatureToggle
@@ -150,22 +87,9 @@ export function LabelTabsSection() {
       disabledReason={meta.disabledReason}
       primaryControls={
         <>
-          {/* One shelf per row instead of one per compartment (#2897) — the
-              narrow-compartment case where per-compartment tabs are unreadable. */}
-          <div>
-            <CheckboxRow
-              label={t('binDesigner.tabSpanFullWidth')}
-              checked={spanning}
-              onChange={handlers.toggleSpan}
-              indent
-            />
-            <p className="mt-0.5 pl-7 text-[11px] leading-snug text-content-tertiary">
-              {t('binDesigner.tabSpanFullWidthHint')}
-            </p>
-          </div>
-
-          {/* Label style — printed-in text vs a click-in socket for
-              separately printed swappable label plates (#2666). */}
+          {/* Label type leads because it decides what the captions below become:
+              cut into the bin, or engraved on separately printed plates (#2666)
+              — which in socket mode also gives each row a plate to size. */}
           <div>
             <span className="mb-1 block text-xs font-medium text-content-secondary">
               {t('binDesigner.tabMode')}
@@ -198,6 +122,8 @@ export function LabelTabsSection() {
               </p>
             )}
           </div>
+
+          {labelText}
 
           {state.isSocketMode && (
             <>
@@ -354,8 +280,6 @@ export function LabelTabsSection() {
               <LabelPlatesControls />
             </>
           )}
-
-          {compartmentLabels}
 
           {/* Edges — the most fundamental choice (1 tab vs 2) and the entry
               point for the tuck-under-ledge use case (#1898); kept primary.

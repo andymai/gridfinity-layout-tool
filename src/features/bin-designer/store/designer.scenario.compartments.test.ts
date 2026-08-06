@@ -798,6 +798,58 @@ describe('DesignerStore - compartment actions', () => {
     });
   });
 
+  describe('clearLabelText', () => {
+    it('drops every compartment caption in ONE history entry', () => {
+      const { setCompartmentGrid, setCompartmentText, clearLabelText } =
+        useDesignerStore.getState();
+      setCompartmentGrid(3, 1);
+      setCompartmentText(0, 'SCREWS');
+      setCompartmentText(1, 'NUTS');
+      setCompartmentText(2, 'BOLTS');
+      const before = useDesignerStore.getState().history.past.length;
+
+      clearLabelText('compartment');
+
+      expect(useDesignerStore.getState().params.compartments.compartmentTexts).toBeUndefined();
+      // One entry, so one undo brings the whole list back — clearing row by
+      // row would bury the list under N undo steps.
+      expect(useDesignerStore.getState().history.past.length).toBe(before + 1);
+
+      useDesignerStore.getState().undo();
+      expect(useDesignerStore.getState().params.compartments.compartmentTexts).toEqual([
+        'SCREWS',
+        'NUTS',
+        'BOLTS',
+      ]);
+    });
+
+    it('clears row captions without touching compartment captions', () => {
+      const { setCompartmentGrid, setCompartmentText, setLabelRowText, clearLabelText } =
+        useDesignerStore.getState();
+      setCompartmentGrid(1, 2);
+      setCompartmentText(0, 'SCREWS');
+      setLabelRowText(0, 'TOP');
+
+      clearLabelText('row');
+
+      expect(useDesignerStore.getState().params.label.rowTexts).toBeUndefined();
+      // Span is a display choice; switching it off must find the
+      // per-compartment text still there.
+      expect(useDesignerStore.getState().params.compartments.compartmentTexts).toEqual(['SCREWS']);
+    });
+
+    it('does not push history when there is nothing to clear', () => {
+      const { setCompartmentGrid, clearLabelText } = useDesignerStore.getState();
+      setCompartmentGrid(2, 1);
+      const before = useDesignerStore.getState().history.past.length;
+
+      clearLabelText('compartment');
+      clearLabelText('row');
+
+      expect(useDesignerStore.getState().history.past.length).toBe(before);
+    });
+  });
+
   describe('setCompartmentPlateWidth (#2666)', () => {
     it('stores an override on the specified compartment', () => {
       const { setCompartmentGrid, setCompartmentPlateWidth } = useDesignerStore.getState();

@@ -38,6 +38,8 @@ export function useLabelTabsSection() {
     setCompartmentText,
     setLabelRowText,
     labelPlates,
+    labelTextOverflow,
+    clearLabelText,
     setCompartmentPlateWidth,
     setCompartmentPlateIcon,
     setTextDefaults,
@@ -52,6 +54,8 @@ export function useLabelTabsSection() {
       setCompartmentText: s.setCompartmentText,
       setLabelRowText: s.setLabelRowText,
       labelPlates: s.generation.mesh?.labelPlates ?? null,
+      labelTextOverflow: s.generation.mesh?.labelTextOverflow ?? null,
+      clearLabelText: s.clearLabelText,
       setCompartmentPlateWidth: s.setCompartmentPlateWidth,
       setCompartmentPlateIcon: s.setCompartmentPlateIcon,
       setTextDefaults: s.setTextDefaults,
@@ -620,10 +624,59 @@ export function useLabelTabsSection() {
     return rows;
   }, [label.span, label.edges, label.rowTexts, compartments, t]);
 
+  // The build's own verdict on which captions overflow, reported alongside the
+  // mesh because the drop leaves no trace in it. Absent while a generation is
+  // in flight, so a row's warning clears optimistically and returns with the
+  // next mesh rather than flickering on every keystroke.
+  const overflowIndices = useMemo(() => {
+    const set = new Set<number>();
+    for (const o of labelTextOverflow ?? []) set.add(o.index);
+    return set;
+  }, [labelTextOverflow]);
+
+  const spanning = label.span === true;
+
+  const textRows = useMemo(
+    () =>
+      spanning
+        ? rowTextRows.map((r) => ({
+            index: r.row,
+            displayNumber: r.row + 1,
+            value: r.value,
+            overflows: overflowIndices.has(r.row),
+          }))
+        : compartmentTextRows.map((r) => ({
+            index: r.id,
+            displayNumber: r.displayNumber,
+            value: r.value,
+            overflows: overflowIndices.has(r.id),
+          })),
+    [spanning, rowTextRows, compartmentTextRows, overflowIndices]
+  );
+
+  const commitText = spanning ? setLabelRowText : setCompartmentText;
+
+  const clearAllText = useCallback(
+    () => clearLabelText(spanning ? 'row' : 'compartment'),
+    [clearLabelText, spanning]
+  );
+
+  // Widening is the only fix the panel can apply for an overflow: the auto-fit
+  // already failed at `minFontSize`, which is a legibility floor rather than a
+  // knob, and a plate's width is a per-compartment choice with its own control.
+  const canWidenTabs = !isSocketMode && label.width < DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH;
+  const widenTabs = useCallback(
+    () => updateLabel({ width: DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH }),
+    [updateLabel]
+  );
+
   return {
     state: {
       label,
       textDefaults,
+      spanning,
+      textRows,
+      canWidenTabs,
       isUnavailable,
       tabWidthMm,
       tabHeightMm,
@@ -671,6 +724,9 @@ export function useLabelTabsSection() {
       setCompartmentPlateIcon,
       autoFixDimensions,
       setCompartmentText,
+      commitText,
+      clearAllText,
+      widenTabs,
       setTextFont,
       setTextMode,
       setTextDepth,

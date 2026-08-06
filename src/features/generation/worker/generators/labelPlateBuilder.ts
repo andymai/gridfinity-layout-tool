@@ -102,6 +102,44 @@ export const ICON_MAX_WIDTH_MM = 11.5;
 const ICON_TEXT_GAP = 1.2;
 
 /**
+ * The width a plate's caption actually gets, after the latch margins and any
+ * icon sharing the band. Mirrors the `textLeft`/`textRight` budget
+ * {@link buildLabelPlate} hands `buildTextSolid`; callers that need to know
+ * whether a caption fits must measure against this, not the plate width.
+ */
+function plateTextHostWidthMm(
+  widthU: LabelPlateWidthU,
+  icon: LabelPlateIconId | undefined
+): number {
+  const w = labelPlateWidthMm(widthU);
+  const box = icon === undefined ? null : measureIconBox(icon, TEXT_BAND_MM, ICON_MAX_WIDTH_MM);
+  const textLeft = box ? -w / 2 + TEXT_MARGIN + box.widthMm + ICON_TEXT_GAP : -w / 2 + TEXT_MARGIN;
+  return w / 2 - TEXT_MARGIN - textLeft;
+}
+
+/**
+ * Whether a plate's caption will render at all.
+ *
+ * `buildLabelPlate` ships a blank plate when the run overflows its width — a
+ * deliberate choice so one long caption can't shrink the whole set, but one
+ * with no trace in the mesh. Callers use this to say so before the print.
+ */
+export function plateTextFits(spec: LabelPlateSpec, opts: LabelPlateBuildOptions): boolean {
+  if (!spec.text.trim()) return true;
+  return fitTextToHost({
+    text: spec.text,
+    fontFamily: opts.textDefaults.font,
+    mode: plateTextMode(opts),
+    availW: plateTextHostWidthMm(spec.widthU, spec.icon),
+    availD: TEXT_BAND_MM,
+    margin: 0,
+    minFontSize: opts.textDefaults.minFontSize,
+    maxFontSize: opts.textDefaults.maxFontSize,
+    verticalFit: PLATE_TEXT_VERTICAL_FIT,
+  }).fits;
+}
+
+/**
  * Plan-view cutter for one v1 channel layer: a slot of width `w` centered at
  * `cx` spanning ±`flareY`, flaring outward with radius `r` at both ends and
  * continuing at the flared width to ±`earY` (past the plate, so the cut

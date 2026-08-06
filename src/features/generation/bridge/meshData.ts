@@ -31,6 +31,28 @@ export interface MeshData {
    * bed-sized sheet. Present only in socket mode with at least one plate.
    */
   readonly labelPlates?: LabelPlatesMeshData;
+  /**
+   * Captions the build dropped because they overflow their host even at
+   * `minFontSize`. Reported rather than inferred: the drop leaves nothing in
+   * the mesh, so the tab or plate simply prints blank and the UI would
+   * otherwise have no way to say so. Omitted when nothing overflowed.
+   *
+   * Mutable element type for the same reason as `LabelPlatesMeshData.plates` —
+   * the designer store's Immer drafts reject readonly arrays.
+   */
+  readonly labelTextOverflow?: LabelTextOverflow[];
+}
+
+/**
+ * One caption that will not render.
+ *
+ * `index` is a compartment id by default, a row index under `label.span`, and
+ * the synthetic compartment 0 when the socket plan degraded to a single
+ * bin-spanning tab. `scope` says which, so the UI can name the right thing.
+ */
+export interface LabelTextOverflow {
+  readonly scope: 'compartment' | 'row' | 'bin';
+  readonly index: number;
 }
 
 /** One swappable label plate, meshed in plate-local coords. */

@@ -12,6 +12,7 @@ export type {
   LidMeshData,
   StackPlateMeshData,
   LabelPlatesMeshData,
+  LabelTextOverflow,
   LabelPlateMeshData,
   WorkerCacheStats,
   PerfSnapshot,
