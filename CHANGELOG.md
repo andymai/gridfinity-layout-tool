@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.371.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.371.0...gridfinity-layout-tool-v4.371.1) (2026-08-06)
+
+
+### Bug Fixes
+
+* **community:** reachable support links on mobile, and no one-card shelves ([#3251](https://github.com/andymai/gridfinity-layout-tool/issues/3251)) ([c07fcb5](https://github.com/andymai/gridfinity-layout-tool/commit/c07fcb5cf1a29ac54c02f06e2aab327c4a524325))
+
 ## [4.371.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.370.2...gridfinity-layout-tool-v4.371.0) (2026-08-06)
 
 
