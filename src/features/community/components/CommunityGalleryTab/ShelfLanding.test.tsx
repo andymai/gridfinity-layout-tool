@@ -65,7 +65,7 @@ describe('ShelfLanding', () => {
   it('renders shelf sections with accessible headings and cards', () => {
     render(
       <ShelfLanding
-        items={manyCards(20, (i) => ({ featured: i === 3 }))}
+        items={manyCards(20, (i) => ({ featured: i >= 3 && i < 6 }))}
         onSelect={vi.fn()}
         onSelectAuthor={vi.fn()}
       />
@@ -88,7 +88,7 @@ describe('ShelfLanding', () => {
   it('see all on staff picks applies the featured-only filter', () => {
     render(
       <ShelfLanding
-        items={manyCards(12, (i) => ({ featured: i === 0 }))}
+        items={manyCards(12, (i) => ({ featured: i < 3 }))}
         onSelect={vi.fn()}
         onSelectAuthor={vi.fn()}
       />
@@ -106,18 +106,22 @@ describe('ShelfLanding', () => {
   });
 
   it('see-all buttons use the per-shelf label key', () => {
+    // A real clock, so the 1000-era createdAt values fall outside the
+    // new-this-week window and the remixed cards reach most-remixed instead
+    // of being consumed by recency.
+    useBrowseStore.setState({ fetchedAt: 30 * 24 * 60 * 60 * 1000 });
     render(
       <ShelfLanding
         items={manyCards(12, (i) => ({
-          featured: i === 0,
-          counts: { likes: 0, remixes: i === 1 ? 2 : 0, exports: 0 },
+          featured: i < 3,
+          counts: { likes: 0, remixes: i >= 3 && i < 6 ? 2 : 0, exports: 0 },
         }))}
         onSelect={vi.fn()}
         onSelectAuthor={vi.fn()}
       />
     );
-    // The echo mock returns the key itself; the real label interpolates the
-    // shelf title ('See all: {shelf}'), giving each button a distinct name.
+    // The visible label is the same short string on every shelf; the shelf
+    // name lives in the accessible name, which is what distinguishes them.
     expect(screen.getByTestId('community-shelf-see-all-staff-picks').textContent).toBe(
       'community.shelves.seeAll'
     );

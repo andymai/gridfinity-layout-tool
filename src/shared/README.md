@@ -30,16 +30,16 @@ graph TB
 
 ## Key Components (`components/`)
 
-| Component                  | Purpose                                                                  |
-| -------------------------- | ------------------------------------------------------------------------ |
-| `DeferredNumberInput`      | Number input that commits on blur/Enter (prevents mid-type validation)   |
-| `ItemListShell`            | Generic searchable, sortable, filterable list container (grid/list view) |
-| `ConfirmDialog`            | Modal with focus trap, Escape handling, portal rendering                 |
-| `Toast` / `ToastContainer` | Auto-dismiss notifications with pause-on-hover                           |
-| `ContextMenu*`             | Framework for consistent right-click menus                               |
-| `CollapsibleSection`       | Expandable container with arrow indicator                                |
-| `ToolSwitcher`             | Segmented nav across Layout / Bins / Baseplate / Community               |
-| `HeaderSupportLinks`       | Shared top-right cluster; outbound links live in its overflow menu       |
+| Component                  | Purpose                                                                                |
+| -------------------------- | -------------------------------------------------------------------------------------- |
+| `DeferredNumberInput`      | Number input that commits on blur/Enter (prevents mid-type validation)                 |
+| `ItemListShell`            | Generic searchable, sortable, filterable list container (grid/list view)               |
+| `ConfirmDialog`            | Modal with focus trap, Escape handling, portal rendering                               |
+| `Toast` / `ToastContainer` | Auto-dismiss notifications with pause-on-hover                                         |
+| `ContextMenu*`             | Framework for consistent right-click menus                                             |
+| `CollapsibleSection`       | Expandable container with arrow indicator                                              |
+| `ToolSwitcher`             | Segmented nav across Layout / Bins / Baseplate / Community                             |
+| `HeaderSupportLinks`       | Shared top-right cluster; outbound links in its overflow, `compact` folds all of it in |
 
 ## Key Hooks (`hooks/`)
 

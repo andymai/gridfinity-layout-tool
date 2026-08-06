@@ -139,4 +139,37 @@ describe('HeaderSupportLinks', () => {
       'noopener,noreferrer'
     );
   });
+
+  describe('compact', () => {
+    it('leaves only the language selector and the overflow in the bar', () => {
+      render(<HeaderSupportLinks compact />);
+      expect(screen.getByTestId('language-selector')).toBeInTheDocument();
+      expect(screen.getByLabelText('header.moreLinks')).toBeInTheDocument();
+      expect(screen.queryByLabelText('header.sendFeedback')).toBeNull();
+      expect(screen.queryByLabelText('header.helpAndShortcuts')).toBeNull();
+      expect(screen.queryByLabelText('header.supportOnKofi')).toBeNull();
+    });
+
+    it('still reaches every action through the overflow', () => {
+      render(<HeaderSupportLinks compact />);
+      fireEvent.click(screen.getByLabelText('header.moreLinks'));
+
+      expect(screen.getByRole('menuitem', { name: 'header.sendFeedback' })).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: 'header.helpAndShortcuts' })).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: 'header.supportOnKofi' })).toBeInTheDocument();
+      expect(screen.getByText('header.starOnGithubLong')).toBeInTheDocument();
+    });
+
+    it('dispatches the help event from the overflow', () => {
+      const handler = vi.fn();
+      window.addEventListener('open-help-modal', handler);
+      render(<HeaderSupportLinks compact />);
+
+      fireEvent.click(screen.getByLabelText('header.moreLinks'));
+      fireEvent.click(screen.getByRole('menuitem', { name: 'header.helpAndShortcuts' }));
+
+      expect(handler).toHaveBeenCalledOnce();
+      window.removeEventListener('open-help-modal', handler);
+    });
+  });
 });

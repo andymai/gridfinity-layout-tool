@@ -579,7 +579,8 @@ describe('CommunityGalleryTab shelf landing', () => {
     return Array.from({ length: count }, (_, i) =>
       card(`design${String(i).padStart(3, '0')}`, {
         createdAt: 1000 + i,
-        featured: i === 0,
+        // SHELF_MIN_CARDS: a rail needs enough cards to fill a row.
+        featured: i < 3,
       })
     );
   }
@@ -643,7 +644,7 @@ describe('CommunityGalleryTab shelf landing', () => {
     // with the filtered grid.
     expect(screen.queryByTestId('community-shelves')).not.toBeInTheDocument();
     const grid = screen.getByRole('list', { name: 'community.gallery.gridLabel' });
-    expect(within(grid).getAllByRole('listitem')).toHaveLength(1);
+    expect(within(grid).getAllByRole('listitem')).toHaveLength(3);
     expect(within(grid).getByText('Bin design000')).toBeInTheDocument();
   });
 });

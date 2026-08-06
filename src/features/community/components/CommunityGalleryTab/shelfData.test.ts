@@ -78,13 +78,25 @@ describe('buildShelves', () => {
   });
 
   it('a card exactly 7 days old still counts as this week', () => {
+    // Three in-window cards, the oldest of them exactly on the boundary: the
+    // shelf is never padded with older designs, and SHELF_MIN_CARDS keeps a
+    // one-card rail from rendering at all.
     const items = manyCards(12, (i) => ({
-      createdAt: i === 0 ? NOW - 7 * DAY_MS : NOW - (20 + i) * DAY_MS,
+      createdAt: i === 0 ? NOW - 7 * DAY_MS : i < 3 ? NOW - i * DAY_MS : NOW - (20 + i) * DAY_MS,
     }));
-    // Only one in-window card: a short shelf, never padded with old designs.
     const shelves = buildShelves(items, NOW);
     const newThisWeek = shelves.find((shelf) => shelf.id === 'new-this-week');
-    expect(newThisWeek?.cards.map((c) => c.id)).toEqual(['design000']);
+    expect(newThisWeek?.cards.map((c) => c.id)).toContain('design000');
+    expect(newThisWeek?.cards).toHaveLength(3);
+  });
+
+  it('drops a rail that cannot fill a row', () => {
+    // Two in-window cards is not a shelf, it is two cards in an empty row.
+    // They still reach the grid below, which is the point of the rule.
+    const items = manyCards(12, (i) => ({
+      createdAt: i < 2 ? NOW - i * DAY_MS : NOW - (20 + i) * DAY_MS,
+    }));
+    expect(buildShelves(items, NOW).map((s) => s.id)).not.toContain('new-this-week');
   });
 
   it('a thin week shows only the genuinely-new designs', () => {
@@ -171,17 +183,32 @@ describe('buildShelves', () => {
       const items = [
         ...Array.from({ length: 12 }, (_, i) => card(`d${i}`)),
         card('printed-low', { counts: { likes: 0, remixes: 0, exports: 0, prints: 1 } }),
+        card('printed-mid', { counts: { likes: 0, remixes: 0, exports: 0, prints: 4 } }),
         card('printed-high', { counts: { likes: 0, remixes: 0, exports: 0, prints: 9 } }),
       ];
 
       const proven = buildShelves(items, NOW).find((s) => s.id === 'proven');
-      expect(proven?.cards.map((c) => c.id)).toEqual(['printed-high', 'printed-low']);
+      expect(proven?.cards.map((c) => c.id)).toEqual([
+        'printed-high',
+        'printed-mid',
+        'printed-low',
+      ]);
+    });
+
+    it('is absent when too few designs have been printed to fill a row', () => {
+      const items = [
+        ...Array.from({ length: 12 }, (_, i) => card(`d${i}`)),
+        card('printed', { counts: { likes: 0, remixes: 0, exports: 0, prints: 3 } }),
+      ];
+      expect(buildShelves(items, NOW).map((s) => s.id)).not.toContain('proven');
     });
 
     it('ranks above new-this-week, since proof outranks recency', () => {
       const items = [
         ...Array.from({ length: 12 }, (_, i) => card(`d${i}`, { createdAt: NOW })),
-        card('printed', { counts: { likes: 0, remixes: 0, exports: 0, prints: 3 } }),
+        ...Array.from({ length: 3 }, (_, i) =>
+          card(`printed${i}`, { counts: { likes: 0, remixes: 0, exports: 0, prints: 3 } })
+        ),
       ];
 
       const ids = buildShelves(items, NOW).map((s) => s.id);
@@ -191,10 +218,15 @@ describe('buildShelves', () => {
     it('does not repeat a design already shown in staff picks', () => {
       const items = [
         ...Array.from({ length: 12 }, (_, i) => card(`d${i}`)),
+        // Enough featured designs for a staff-picks rail to exist at all.
+        ...Array.from({ length: 2 }, (_, i) => card(`feat${i}`, { featured: true })),
         card('both', {
           featured: true,
           counts: { likes: 0, remixes: 0, exports: 0, prints: 5 },
         }),
+        ...Array.from({ length: 2 }, (_, i) =>
+          card(`printed${i}`, { counts: { likes: 0, remixes: 0, exports: 0, prints: 2 } })
+        ),
       ];
 
       const proven = buildShelves(items, NOW).find((s) => s.id === 'proven');
