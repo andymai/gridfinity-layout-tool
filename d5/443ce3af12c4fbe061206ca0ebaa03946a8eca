@@ -1,0 +1,27 @@
+src/shared/utils/communityLowEffort.ts
+  s_082daac602bea9::t_2ba6a8250ff26b 65-68
+src/shared/utils/communityLowEffort.test.ts
+  s_082daac602bea9::t_8f8425c83fbfa3 73,75,79-80
+  s_082daac602bea9::t_3e84053e3546f7 74,76-78
+src/shared/utils/communityLowEffort.crossBoundary.test.ts
+  s_082daac602bea9::t_81835fdb4847f6 55
+  s_082daac602bea9::t_68979a6ef36389 56-57
+api/lib/communityLowEffort.ts
+  s_082daac602bea9::t_4f843e92719d0a 63-66
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "d5443ce3af12c4fbe061206ca0ebaa03946a8eca",
+  "prompts": {},
+  "sessions": {
+    "s_082daac602bea9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8cf04f51-f3f0-424f-978a-8e9988092e21",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
