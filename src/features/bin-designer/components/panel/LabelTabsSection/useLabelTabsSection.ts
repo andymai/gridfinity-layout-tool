@@ -624,17 +624,27 @@ export function useLabelTabsSection() {
     return rows;
   }, [label.span, label.edges, label.rowTexts, compartments, t]);
 
+  const spanning = label.span === true;
+
   // The build's own verdict on which captions overflow, reported alongside the
   // mesh because the drop leaves no trace in it. Absent while a generation is
   // in flight, so a row's warning clears optimistically and returns with the
   // next mesh rather than flickering on every keystroke.
+  //
+  // Matched on SCOPE as well as index: the report is compartment-indexed by
+  // default, row-indexed under `span`, and indexes a synthetic 1x1 grid when the
+  // socket plan degrades to one bin-spanning tab. Keying on index alone would
+  // let a report from one indexing scheme light up a row in another — today the
+  // `bin` scope never carries text so nothing misfires, but that is a property
+  // of `planLabelPlateSeats`, not something this list should depend on.
   const overflowIndices = useMemo(() => {
+    const wanted = spanning ? 'row' : 'compartment';
     const set = new Set<number>();
-    for (const o of labelTextOverflow ?? []) set.add(o.index);
+    for (const o of labelTextOverflow ?? []) {
+      if (o.scope === wanted) set.add(o.index);
+    }
     return set;
-  }, [labelTextOverflow]);
-
-  const spanning = label.span === true;
+  }, [labelTextOverflow, spanning]);
 
   const textRows = useMemo(
     () =>

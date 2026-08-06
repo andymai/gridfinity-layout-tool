@@ -145,4 +145,30 @@ describe('planLabelTextOverflow', () => {
     expect(bare).toEqual([]);
     expect(withIcon).toEqual([{ scope: 'compartment', index: 0 }]);
   });
+
+  it('reports a swappable caption once when both edges seat a plate', () => {
+    // `edges: 'both'` seats the same compartment's plate at each anchor and both
+    // carry the same text, so the raw seat list would report it twice.
+    const overflow = planLabelTextOverflow(
+      params({
+        width: 1,
+        depth: 2,
+        label: {
+          ...DEFAULT_BIN_PARAMS.label,
+          enabled: true,
+          mode: 'socket',
+          depth: 14,
+          edges: 'both',
+        },
+        compartments: {
+          cols: 1,
+          rows: 1,
+          thickness: 1.2,
+          cells: [0],
+          compartmentTexts: ['M3 CAP SCREWS A2 STAINLESS'],
+        },
+      })
+    );
+    expect(overflow).toEqual([{ scope: 'compartment', index: 0 }]);
+  });
 });

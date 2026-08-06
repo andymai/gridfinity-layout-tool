@@ -41,19 +41,32 @@ export function planLabelTextOverflow(params: BinParams): LabelTextOverflow[] {
 
   // Every planned seat, not just the previewed ones: a caption past the preview
   // ceiling still prints blank on the exported sheet.
-  return planLabelPlateSeats(
+  const seats = planLabelPlateSeats(
     params,
     dim.innerW,
     dim.innerD,
     dim.interiorHeight,
     params.wallThickness
-  )
-    .filter(
-      (seat) =>
-        !plateTextFits(
-          { widthU: seat.plateWidthU, text: seat.text, ...(seat.icon ? { icon: seat.icon } : {}) },
-          opts
-        )
-    )
-    .map((seat) => ({ scope: seat.scope, index: seat.index }));
+  );
+
+  // One entry per CAPTION, not per seat: `edges: 'both'` seats the same
+  // compartment's plate at each anchor, and both carry the same text, so the
+  // raw seat list would report that caption twice. The tab path dedupes for the
+  // same reason — keep the payload canonical rather than leaving it to whatever
+  // the consumer happens to do with it.
+  const seen = new Set<string>();
+  const overflows: LabelTextOverflow[] = [];
+  for (const seat of seats) {
+    const key = `${seat.scope}:${seat.index}`;
+    if (seen.has(key)) continue;
+    const spec = {
+      widthU: seat.plateWidthU,
+      text: seat.text,
+      ...(seat.icon ? { icon: seat.icon } : {}),
+    };
+    if (plateTextFits(spec, opts)) continue;
+    seen.add(key);
+    overflows.push({ scope: seat.scope, index: seat.index });
+  }
+  return overflows;
 }
