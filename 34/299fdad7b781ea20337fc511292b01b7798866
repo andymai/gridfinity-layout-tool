@@ -1,0 +1,25 @@
+src/shared/hooks/interactions/README.md
+  s_5391ea04eb1e07::t_823c4d5f380348 70
+  s_5391ea04eb1e07::t_031cfa0e70e968 57
+  s_5391ea04eb1e07::t_7912a0198a5a95 54-56
+  s_5391ea04eb1e07::t_7a3900d0c440ce 58
+  s_5391ea04eb1e07::t_2908a59cba6a18 52-53
+src/features/staging/README.md
+  s_5391ea04eb1e07::t_e07bcbbf6a5666 35-36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "34299fdad7b781ea20337fc511292b01b7798866",
+  "prompts": {},
+  "sessions": {
+    "s_5391ea04eb1e07": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a40296bd-94e2-4b41-b083-de514b47c0dc",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
