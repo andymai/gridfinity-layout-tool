@@ -126,6 +126,7 @@
     "binExamples.dimensions",
     "binExamples.gallery.tabs.community",
     "binExamples.popular",
+    "binExamples.sidebarEntry",
     "binList.categoryCount",
     "binList.filament",
     "collab.participantCountOne",
@@ -161,6 +162,7 @@
     "community.gallery.mineFilter",
     "community.mine.digest.remixes",
     "community.mine.digest.remixesOne",
+    "community.page.title",
     "community.print.materialLabel",
     "community.print.minutesLabel",
     "community.print.noteLabel",
@@ -277,7 +279,6 @@
     "toast.notifications",
     "toolSwitcher.baseplateGenerator",
     "toolSwitcher.binDesigner",
-    "toolSwitcher.community",
     "toolSwitcher.gridfinityLayoutTool",
     "toolSwitcher.layout"
   ],

@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { useCommunityDigestStore } from '@/core/store/communityDigest';
 import { ToolSwitcher } from './ToolSwitcher';
 
 const mockNavigateToDesigner = vi.fn();
@@ -26,20 +25,10 @@ vi.mock('@/shared/hooks/useBaseplateRouting', () => ({
   }),
 }));
 
-const mockNavigateToCommunity = vi.fn();
 let mockIsCommunityRoute = false;
 
 vi.mock('@/shared/hooks/useCommunityRouting', () => ({
-  useCommunityRouting: () => ({
-    isCommunityRoute: mockIsCommunityRoute,
-    navigateToCommunity: mockNavigateToCommunity,
-  }),
-}));
-
-let mockCommunityEnabled = false;
-
-vi.mock('@/shared/hooks/useFeatureFlag', () => ({
-  useFeatureFlag: () => mockCommunityEnabled,
+  useCommunityRouting: () => ({ isCommunityRoute: mockIsCommunityRoute }),
 }));
 
 describe('ToolSwitcher', () => {
@@ -48,8 +37,6 @@ describe('ToolSwitcher', () => {
     mockIsDesignerRoute = false;
     mockIsBaseplateRoute = false;
     mockIsCommunityRoute = false;
-    mockCommunityEnabled = false;
-    useCommunityDigestStore.setState({ hasUnseenDeltas: false });
   });
 
   it('shows tablist', () => {
@@ -183,74 +170,29 @@ describe('ToolSwitcher', () => {
     expect(tabs[2].getAttribute('title')).toContain('Switch to Baseplate Generator');
   });
 
-  describe('community segment', () => {
-    it('is absent while the showcase flag is off', () => {
+  describe('on the community route', () => {
+    it('holds only the three editors', () => {
+      mockIsCommunityRoute = true;
       render(<ToolSwitcher />);
       expect(screen.getAllByRole('tab')).toHaveLength(3);
-      expect(screen.queryByTestId('tool-experimental-dot')).not.toBeInTheDocument();
     });
 
-    it('appears as a fourth tool when the flag is on', () => {
-      mockCommunityEnabled = true;
+    it('marks nothing active, since no editor is open', () => {
+      mockIsCommunityRoute = true;
       render(<ToolSwitcher />);
-      expect(screen.getAllByRole('tab')).toHaveLength(4);
+      for (const tab of screen.getAllByRole('tab')) {
+        expect(tab).toHaveAttribute('aria-selected', 'false');
+      }
     });
 
-    it('navigates to the community route', async () => {
-      mockCommunityEnabled = true;
+    it('keeps every segment live, so the switcher is the way out', async () => {
+      mockIsCommunityRoute = true;
       const user = userEvent.setup();
       render(<ToolSwitcher />);
 
-      await user.click(screen.getAllByRole('tab')[3]);
+      await user.click(screen.getAllByRole('tab')[0]);
 
-      expect(mockNavigateToCommunity).toHaveBeenCalledTimes(1);
-    });
-
-    it('is selected on the community route', () => {
-      mockCommunityEnabled = true;
-      mockIsCommunityRoute = true;
-      render(<ToolSwitcher />);
-      expect(screen.getAllByRole('tab')[3]).toHaveAttribute('aria-selected', 'true');
-    });
-
-    it('marks itself experimental in both the dot and the accessible name', () => {
-      mockCommunityEnabled = true;
-      render(<ToolSwitcher />);
-
-      expect(screen.getByTestId('tool-experimental-dot')).toBeInTheDocument();
-      expect(screen.getAllByRole('tab')[3].getAttribute('aria-label')).toContain('Experimental');
-    });
-
-    it('keeps the experimental marker when collapsed to icons', () => {
-      mockCommunityEnabled = true;
-      render(<ToolSwitcher iconOnly />);
-      expect(screen.getByTestId('tool-experimental-dot')).toBeInTheDocument();
-    });
-
-    it('gives the marker slot to unseen community news', () => {
-      mockCommunityEnabled = true;
-      useCommunityDigestStore.setState({ hasUnseenDeltas: true });
-      render(<ToolSwitcher />);
-
-      expect(screen.getByTestId('tool-news-dot')).toBeInTheDocument();
-      expect(screen.queryByTestId('tool-experimental-dot')).not.toBeInTheDocument();
-    });
-
-    it('names both signals even though one dot shows', () => {
-      mockCommunityEnabled = true;
-      useCommunityDigestStore.setState({ hasUnseenDeltas: true });
-      render(<ToolSwitcher />);
-
-      const label = screen.getAllByRole('tab')[3].getAttribute('aria-label');
-      expect(label).toContain('New');
-      expect(label).toContain('Experimental');
-    });
-
-    it('leaves the other tools unmarked while community has news', () => {
-      mockCommunityEnabled = true;
-      useCommunityDigestStore.setState({ hasUnseenDeltas: true });
-      render(<ToolSwitcher />);
-      expect(screen.getAllByTestId('tool-news-dot')).toHaveLength(1);
+      expect(mockNavigateToPlanner).toHaveBeenCalledTimes(1);
     });
   });
 });

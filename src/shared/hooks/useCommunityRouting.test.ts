@@ -111,21 +111,6 @@ describe('useCommunityRouting', () => {
   });
 
   describe('navigation', () => {
-    it('navigateToCommunity enters the route and updates the URL', () => {
-      const { result } = renderHook(() => useCommunityRouting());
-      act(() => result.current.navigateToCommunity());
-      expect(result.current.isCommunityRoute).toBe(true);
-      expect(window.location.pathname).toBe('/community');
-    });
-
-    it('navigateHome leaves the route and returns to /', () => {
-      window.history.replaceState(null, '', '/community');
-      const { result } = renderHook(() => useCommunityRouting());
-      act(() => result.current.navigateHome());
-      expect(result.current.isCommunityRoute).toBe(false);
-      expect(window.location.pathname).toBe('/');
-    });
-
     it('openCommunityDesignUrl pushes the deep link with the marker state', () => {
       window.history.replaceState(null, '', '/community');
       const { result } = renderHook(() => useCommunityRouting());

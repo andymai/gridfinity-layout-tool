@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
 
 const GALLERY_TAB_STORAGE_KEY = 'gridfinity-design-gallery-tab-v1';
 const COMMUNITY_TAB_OPENED_KEY = 'gridfinity-design-gallery-community-opened-v1';
@@ -46,13 +47,19 @@ export interface UseGalleryTab {
 }
 
 export function useGalleryTab(): UseGalleryTab {
+  // The opener's request wins over the remembered tab: an entry point that
+  // names a tab has to land on it. Read once at mount, which is per open,
+  // since the modal only exists while the gallery is open.
   const [activeTab, setActiveTabState] = useState<GalleryTabId>(
-    () => loadStoredTab() ?? 'examples'
+    () => useBinExampleGalleryStore.getState().requestedTab ?? loadStoredTab() ?? 'examples'
   );
   // A stored active tab of 'community' implies it has been opened even if the
   // opened marker is missing, so the active tab never carries the New dot.
   const [communityOpened, setCommunityOpened] = useState<boolean>(
-    () => hasCommunityBeenOpened() || loadStoredTab() === 'community'
+    () =>
+      hasCommunityBeenOpened() ||
+      loadStoredTab() === 'community' ||
+      useBinExampleGalleryStore.getState().requestedTab === 'community'
   );
 
   const setActiveTab = useCallback((tab: GalleryTabId) => {

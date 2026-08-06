@@ -10,6 +10,12 @@
  * The whole route is gated on the community_showcase Labs flag: while the
  * flag is off, isCommunityRoute stays false and the URL falls through to the
  * layout planner as if the Vercel rewrite did not exist.
+ *
+ * Nothing in the app navigates INTO this route: browsing from inside happens
+ * in the gallery modal, and the route exists for arriving from outside on a
+ * shared /community/d/<id> link. So there is no navigateToCommunity here —
+ * only the detail-level pushes the page makes once you are already on it, and
+ * the tool switcher for leaving.
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -91,20 +97,6 @@ export function useCommunityRouting() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  const navigateToCommunity = useCallback(() => {
-    window.history.pushState(null, '', '/community');
-    setIsCommunityPathActive(true);
-    setCommunityDesignIdFromUrl(null);
-    dispatchSyntheticPopstate();
-  }, []);
-
-  const navigateHome = useCallback(() => {
-    window.history.pushState(null, '', '/');
-    setIsCommunityPathActive(false);
-    setCommunityDesignIdFromUrl(null);
-    dispatchSyntheticPopstate();
-  }, []);
-
   /**
    * Push the detail deep link over the gallery (a card was opened), so
    * browser Back returns to /community with the gallery state intact.
@@ -143,8 +135,6 @@ export function useCommunityRouting() {
     communityDesignIdFromUrl,
     /** The shareable `?author=` filter, null off the gallery path or when invalid. */
     communityAuthorIdFromUrl,
-    navigateToCommunity,
-    navigateHome,
     openCommunityDesignUrl,
     closeCommunityDesignUrl,
   };

@@ -24,6 +24,7 @@ import { OverhangSection } from '../panel/OverhangSection';
 import { LidSection } from '../panel/LidSection';
 import { PhysicalUnitsSection } from '../panel/PhysicalUnitsSection';
 import { SplitOptionsSection } from '../panel/SplitOptionsSection';
+import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { StickyGroupHeader } from '../panel/StickyGroupHeader';
 import { PanelSection } from '../panel/PanelSection';
 import { ColorsSection } from '../panel/ColorsSection';
@@ -104,6 +105,61 @@ function BinParameterPanel() {
           position deep in the scroll area extends the document and lets the whole
           page scroll into blank space below the panel. */}
       <div className="relative flex-1 overflow-y-scroll scrollbar-thin">
+        {/* Community entry, first in the panel. It is the app's main way into
+            the showcase now that the tool switcher holds only the three
+            editors, so it opens the gallery on the tab it names rather than on
+            whichever tab was last used. Examples sits beside it in that
+            modal's tab bar. */}
+        <div className="px-4 py-3 border-b border-stroke-subtle">
+          <Button
+            variant="ghost"
+            onClick={() => openExampleGallery('community')}
+            className="w-full flex items-center gap-3 text-left p-3 rounded-lg bg-gradient-to-r from-accent/10 to-info/10 hover:from-accent/20 hover:to-info/20 border border-accent/20 transition-all group"
+          >
+            <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <svg
+                className="w-5 h-5 text-accent"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d={ICON_PATHS.community[0]}
+                />
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium text-content">
+                {t('binExamples.sidebarEntry')}
+                {hasUnseenDigest && (
+                  <>
+                    <span
+                      aria-hidden="true"
+                      data-testid="community-digest-dot"
+                      className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-accent"
+                    />
+                    {/* The dot is aria-hidden; without this the news signal is
+                        visual-only (GalleryTabBar folds it into the tab label). */}
+                    <span className="sr-only">{` ${t('binExamples.gallery.tabs.newBadge')}`}</span>
+                  </>
+                )}
+              </div>
+              <div className="text-xs text-content-tertiary">{t('binExamples.sidebarHint')}</div>
+            </div>
+            <svg
+              className="w-4 h-4 text-content-tertiary group-hover:translate-x-0.5 transition-transform"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Button>
+        </div>
+
         {/* Shape group */}
         <StickyGroupHeader
           title={t('binDesigner.group.shape')}
@@ -200,57 +256,6 @@ function BinParameterPanel() {
             </PanelSection>
           </div>
         </StickyGroupHeader>
-
-        {/* Design Showcase entry — opens the bin-example gallery (below Physical Units) */}
-        <div className="px-4 py-3 border-b border-stroke-subtle">
-          <Button
-            variant="ghost"
-            onClick={openExampleGallery}
-            className="w-full flex items-center gap-3 text-left p-3 rounded-lg bg-gradient-to-r from-accent/10 to-info/10 hover:from-accent/20 hover:to-info/20 border border-accent/20 transition-all group"
-          >
-            <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <svg
-                className="w-5 h-5 text-accent"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"
-                />
-              </svg>
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-content">
-                {t('binExamples.sidebarEntry')}
-                {hasUnseenDigest && (
-                  <>
-                    <span
-                      aria-hidden="true"
-                      data-testid="community-digest-dot"
-                      className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-accent"
-                    />
-                    {/* The dot is aria-hidden; without this the news signal is
-                        visual-only (GalleryTabBar folds it into the tab label). */}
-                    <span className="sr-only">{` ${t('binExamples.gallery.tabs.newBadge')}`}</span>
-                  </>
-                )}
-              </div>
-              <div className="text-xs text-content-tertiary">{t('binExamples.sidebarHint')}</div>
-            </div>
-            <svg
-              className="w-4 h-4 text-content-tertiary group-hover:translate-x-0.5 transition-transform"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </Button>
-        </div>
 
         {itemKindsEnabled && (
           <div className="px-4 py-3 border-b border-stroke-subtle">
