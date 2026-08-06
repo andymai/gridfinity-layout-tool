@@ -1,27 +1,69 @@
 import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { Select, cn } from '@/design-system';
+import { Field, RangeSlider, Slider, cn } from '@/design-system';
+import type { RangeValue } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import type { CommunityCard } from '@/shared/types/community';
 import { useBrowseStore } from '../../store/browseStore';
-import {
-  DIMENSION_ANY,
-  cardDepthRank,
-  cardHeightRank,
-  cardWidthRank,
-  dimensionOptions,
-  parseDimensionRank,
-} from './galleryFilterOptions';
+import { formatUnits } from '../CommunityCard/cardDims';
+import type { DimensionWindow, FacetCounts } from './facetCounts';
+import { dimensionStops } from './facetCounts';
+import { cardDepthRank, cardHeightRank, cardWidthRank } from './galleryFilterOptions';
 
 export interface DimensionFiltersProps {
-  /** 'toolbar' = compact inline desktop row; 'sheet' = stacked mobile groups. */
-  variant: 'toolbar' | 'sheet';
+  /** The loaded index, for the stop list each axis is laid out on. */
+  items: readonly CommunityCard[];
+  counts: FacetCounts;
+  /** Roomier rows for touch surfaces. */
+  touchSize?: boolean;
 }
 
-const LABEL_CLASS = 'text-xs font-medium uppercase tracking-wide text-content-tertiary';
+/**
+ * Displayed bounds for one axis. An unset bound sits at the edge of what is
+ * still reachable, so a slider spanning its whole filled track means "no
+ * narrowing" rather than a bound that happens to exclude nothing.
+ */
+function displayRange(min: number | null, max: number | null, window: DimensionWindow): RangeValue {
+  if (min !== null && max !== null) return [min, max];
+  // A bound left over from a looser filter can sit outside what is currently
+  // reachable. The unset end then has to yield to it, or the two cross and the
+  // slider silently swaps which thumb is which.
+  if (min !== null) return [min, Math.max(window.max, min)];
+  if (max !== null) return [Math.min(window.min, max), max];
+  return [window.min, window.max];
+}
 
-export function DimensionFilters({ variant }: DimensionFiltersProps) {
+/**
+ * Where the thumbs may travel: the reachable window, widened to keep an
+ * already-stored bound reachable. Without the widening, a bound left behind by
+ * an earlier, looser filter would be stranded outside the track with no way to
+ * drag it back off.
+ */
+function travelRange(value: RangeValue, window: DimensionWindow): RangeValue {
+  return [Math.min(window.min, value[0]), Math.max(window.max, value[1])];
+}
+
+/** Index of the first stop at or above `value`, or the last stop when none is. */
+function stopIndex(stops: readonly number[], value: number): number {
+  const found = stops.findIndex((stop) => stop >= value);
+  return found === -1 ? Math.max(0, stops.length - 1) : found;
+}
+
+function Readout({ text, muted }: { text: string; muted: boolean }) {
+  return (
+    <span
+      className={cn(
+        'text-sm tabular-nums',
+        muted ? 'text-content-tertiary' : 'font-semibold text-content'
+      )}
+    >
+      {text}
+    </span>
+  );
+}
+
+export function DimensionFilters({ items, counts, touchSize = false }: DimensionFiltersProps) {
   const t = useTranslation();
-  const items = useBrowseStore((s) => s.items);
   const { widthMin, widthMax, depthMin, depthMax, maxHeight } = useBrowseStore(
     useShallow((s) => ({
       widthMin: s.filters.widthMin,
@@ -31,118 +73,127 @@ export function DimensionFilters({ variant }: DimensionFiltersProps) {
       maxHeight: s.filters.maxHeight,
     }))
   );
-  const setWidthMin = useBrowseStore((s) => s.setWidthMin);
-  const setWidthMax = useBrowseStore((s) => s.setWidthMax);
-  const setDepthMin = useBrowseStore((s) => s.setDepthMin);
-  const setDepthMax = useBrowseStore((s) => s.setDepthMax);
+  const setWidthRange = useBrowseStore((s) => s.setWidthRange);
+  const setDepthRange = useBrowseStore((s) => s.setDepthRange);
   const setMaxHeight = useBrowseStore((s) => s.setMaxHeight);
 
-  const sheet = variant === 'sheet';
-  const selectSize = sheet ? 'lg' : 'md';
-  const selectClass = sheet ? 'min-w-0 flex-1' : 'w-24';
+  // Each list scans the full index (up to 2,000 cards); without memo the three
+  // tracks rebuild them on every keystroke in the search field.
+  const widthStops = useMemo(() => dimensionStops(items, cardWidthRank), [items]);
+  const depthStops = useMemo(() => dimensionStops(items, cardDepthRank), [items]);
+  const heightStops = useMemo(() => dimensionStops(items, cardHeightRank), [items]);
 
-  // Each list scans the full index (up to 2,000 cards); without memo the five
-  // selects rebuild them on every keystroke in the search field.
-  const widthOptions = useMemo(() => dimensionOptions(t, items, cardWidthRank), [t, items]);
-  const depthOptions = useMemo(() => dimensionOptions(t, items, cardDepthRank), [t, items]);
-  const heightOptions = useMemo(() => dimensionOptions(t, items, cardHeightRank), [t, items]);
-
-  const rangeSelect = (
-    value: number | null,
-    onChange: (rank: number | null) => void,
-    options: ReturnType<typeof dimensionOptions>,
-    ariaLabelKey: string,
-    testId: string
-  ) => (
-    <Select
-      options={options}
-      value={value === null ? DIMENSION_ANY : String(value)}
-      onValueChange={(next) => onChange(parseDimensionRank(next))}
-      aria-label={t(ariaLabelKey)}
-      size={selectSize}
-      className={selectClass}
-      data-testid={testId}
-    />
-  );
-
-  const widthMinField = rangeSelect(
-    widthMin,
-    setWidthMin,
-    widthOptions,
-    'community.gallery.widthMinLabel',
-    'community-filter-width-min'
-  );
-  const widthMaxField = rangeSelect(
-    widthMax,
-    setWidthMax,
-    widthOptions,
-    'community.gallery.widthMaxLabel',
-    'community-filter-width-max'
-  );
-  const depthMinField = rangeSelect(
-    depthMin,
-    setDepthMin,
-    depthOptions,
-    'community.gallery.depthMinLabel',
-    'community-filter-depth-min'
-  );
-  const depthMaxField = rangeSelect(
-    depthMax,
-    setDepthMax,
-    depthOptions,
-    'community.gallery.depthMaxLabel',
-    'community-filter-depth-max'
-  );
-
-  const widthFields = (
-    <>
-      {widthMinField}
-      {widthMaxField}
-    </>
-  );
-
-  const depthFields = (
-    <>
-      {depthMinField}
-      {depthMaxField}
-    </>
-  );
-
-  const heightField = rangeSelect(
-    maxHeight,
-    setMaxHeight,
-    heightOptions,
-    'community.gallery.maxHeightLabel',
-    'community-filter-max-height'
-  );
-
-  if (sheet) {
+  const axis = (
+    label: string,
+    stops: readonly number[],
+    window: DimensionWindow | null,
+    min: number | null,
+    max: number | null,
+    apply: (min: number | null, max: number | null) => void,
+    lowerLabelKey: string,
+    upperLabelKey: string
+  ) => {
+    const empty = window === null || stops.length === 0;
+    const bounds = window ?? { min: stops.at(0) ?? 0, max: stops.at(-1) ?? 0 };
+    const value = displayRange(min, max, bounds);
+    const isDefault = min === null && max === null;
     return (
-      <div className="space-y-4" data-testid="community-dimension-filters">
-        <div className="space-y-1.5">
-          <div className={LABEL_CLASS}>{t('community.gallery.widthLabel')}</div>
-          <div className="flex items-center gap-2">{widthFields}</div>
-        </div>
-        <div className="space-y-1.5">
-          <div className={LABEL_CLASS}>{t('community.gallery.depthLabel')}</div>
-          <div className="flex items-center gap-2">{depthFields}</div>
-        </div>
-        <div className="space-y-1.5">
-          <div className={LABEL_CLASS}>{t('community.gallery.maxHeightLabel')}</div>
-          {heightField}
-        </div>
-      </div>
+      <Field
+        label={label}
+        trailing={
+          <Readout
+            muted={isDefault}
+            text={
+              isDefault
+                ? t('community.gallery.dimensionAny')
+                : `${formatUnits(value[0])}–${formatUnits(value[1])}`
+            }
+          />
+        }
+      >
+        <RangeSlider
+          stops={stops}
+          value={value}
+          selectable={travelRange(value, bounds)}
+          disabled={empty}
+          muted={isDefault}
+          formatValue={formatUnits}
+          lowerLabel={t(lowerLabelKey)}
+          upperLabel={t(upperLabelKey)}
+          onChange={([lower, upper]) => {
+            // Landing on the edge of what is reachable is the same statement
+            // as "no bound", so it clears rather than freezing a no-op filter.
+            apply(lower <= bounds.min ? null : lower, upper >= bounds.max ? null : upper);
+          }}
+        />
+      </Field>
     );
-  }
+  };
+
+  const heightWindow = counts.height;
+  const heightBounds = heightWindow ?? {
+    min: heightStops.at(0) ?? 0,
+    max: heightStops.at(-1) ?? 0,
+  };
+  const heightValue = maxHeight ?? heightBounds.max;
+  const heightIndex = stopIndex(heightStops, heightValue);
+  const heightTravelMin = Math.min(stopIndex(heightStops, heightBounds.min), heightIndex);
+  const heightTravelMax = Math.max(stopIndex(heightStops, heightBounds.max), heightIndex);
+  const heightStop = heightStops.at(heightIndex) ?? heightValue;
+
+  const widthAxis = axis(
+    t('community.gallery.widthLabel'),
+    widthStops,
+    counts.width,
+    widthMin,
+    widthMax,
+    setWidthRange,
+    'community.gallery.widthMinLabel',
+    'community.gallery.widthMaxLabel'
+  );
+  const depthAxis = axis(
+    t('community.gallery.depthLabel'),
+    depthStops,
+    counts.depth,
+    depthMin,
+    depthMax,
+    setDepthRange,
+    'community.gallery.depthMinLabel',
+    'community.gallery.depthMaxLabel'
+  );
+  const heightAxis = (
+    <Field
+      label={t('community.gallery.maxHeightLabel')}
+      trailing={
+        <Readout
+          muted={maxHeight === null}
+          text={maxHeight === null ? t('community.gallery.dimensionAny') : formatUnits(heightStop)}
+        />
+      }
+    >
+      <Slider
+        value={heightIndex}
+        min={heightTravelMin}
+        max={heightTravelMax}
+        step={1}
+        disabled={heightWindow === null || heightStops.length < 2}
+        muted={maxHeight === null}
+        aria-label={t('community.gallery.maxHeightLabel')}
+        aria-valuetext={formatUnits(heightStop)}
+        onChange={(index) => {
+          const next = heightStops.at(index);
+          if (next === undefined) return;
+          setMaxHeight(next >= heightBounds.max ? null : next);
+        }}
+      />
+    </Field>
+  );
 
   return (
-    <div className="flex flex-wrap items-center gap-2" data-testid="community-dimension-filters">
-      <span className={LABEL_CLASS}>{t('community.gallery.widthLabel')}</span>
-      {widthFields}
-      <span className={cn(LABEL_CLASS, 'ml-2')}>{t('community.gallery.depthLabel')}</span>
-      {depthFields}
-      <span className={cn(LABEL_CLASS, 'ml-2')}>{t('community.gallery.maxHeightLabel')}</span>
-      {heightField}
+    <div className={cn('space-y-2', touchSize && 'space-y-3')} data-testid="community-size-filters">
+      {widthAxis}
+      {depthAxis}
+      {heightAxis}
     </div>
   );
 }

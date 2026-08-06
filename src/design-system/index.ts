@@ -84,6 +84,10 @@ export type { ProgressBarProps } from './ProgressBar';
 export { Slider } from './Slider';
 export type { SliderProps } from './Slider';
 
+// RangeSlider (two-thumb selection over a discrete stop list)
+export { RangeSlider } from './RangeSlider';
+export type { RangeSliderProps, RangeValue } from './RangeSlider';
+
 // SliderInput (label + slider + editable value badge)
 export { SliderInput } from './SliderInput';
 export type { SliderInputProps } from './SliderInput';

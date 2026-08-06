@@ -76,6 +76,11 @@ export interface CheckboxRowProps {
    * Additional CSS classes for the row container.
    */
   className?: string;
+
+  /**
+   * Test hook on the row container.
+   */
+  'data-testid'?: string;
 }
 
 /**
@@ -103,7 +108,19 @@ export interface CheckboxRowProps {
  * <CheckboxRow indent label="Bin notes" checked={withNotes} onChange={setWithNotes} />
  */
 export const CheckboxRow = forwardRef<HTMLDivElement, CheckboxRowProps>(
-  ({ label, checked, onChange, trailing, disabled = false, indent = false, className }, ref) => {
+  (
+    {
+      label,
+      checked,
+      onChange,
+      trailing,
+      disabled = false,
+      indent = false,
+      className,
+      'data-testid': testId,
+    },
+    ref
+  ) => {
     const toggle = () => {
       if (disabled) {
         return;
@@ -128,6 +145,7 @@ export const CheckboxRow = forwardRef<HTMLDivElement, CheckboxRowProps>(
         onClick={toggle}
         onKeyDown={handleKeyDown}
         className={cn(checkboxRowVariants({ indent }), className)}
+        data-testid={testId}
       >
         <span className={labelVariants({ checked })}>{label}</span>
         <span className="flex items-center gap-2">

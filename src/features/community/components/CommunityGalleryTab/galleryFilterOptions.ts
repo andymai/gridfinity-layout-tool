@@ -8,9 +8,10 @@ import type {
 import { COMMUNITY_CATEGORIES, COMMUNITY_INDEX_SORTS } from '@/shared/types/community';
 import type { ExampleTechnique } from '@/shared/types/exampleTechniques';
 import { TECHNIQUE_CONFIG } from '@/shared/types/exampleTechniques';
-import type { BrowseSort } from '../../store/browseStore';
+import type { BrowseFilters, BrowseSort } from '../../store/browseStore';
+import { hasDimensionConstraints } from '../../store/browseStore';
 import { CATEGORY_LABEL_KEYS } from '../../utils/categoryLabels';
-import { cardDimensionUnits, formatUnits } from '../CommunityCard/cardDims';
+import { cardDimensionUnits } from '../CommunityCard/cardDims';
 
 export function cardWidthRank(card: CommunityCard): number {
   return cardDimensionUnits(card.metrics).width;
@@ -27,8 +28,6 @@ export function cardHeightRank(card: CommunityCard): number {
 export const ALL_TECHNIQUES = Object.keys(TECHNIQUE_CONFIG) as readonly ExampleTechnique[];
 
 export const CATEGORY_ALL = 'all';
-
-export const DIMENSION_ANY = '';
 
 const SORT_LABEL_KEYS: Record<CommunityIndexSort, string> = {
   newest: 'community.gallery.sort.newest',
@@ -64,25 +63,20 @@ export function browseSortOptions(t: TFunction, includeBestFit: boolean): Select
 }
 
 /**
- * Faceted options derived from the loaded index (only values that exist among
- * the cards), prefixed with an "Any" clearing sentinel.
+ * Filters the panel owns, counted as one per facet rather than one per input:
+ * the three size sliders read as a single "size" decision to the person who
+ * set them, so a width range plus a height cap is 1, not 3.
  */
-export function dimensionOptions(
-  t: TFunction,
-  items: readonly CommunityCard[],
-  rankOf: (card: CommunityCard) => number
-): SelectOption[] {
-  const ranks = Array.from(new Set(items.map(rankOf))).sort((a, b) => a - b);
-  return [
-    { id: DIMENSION_ANY, name: t('community.gallery.dimensionAny') },
-    ...ranks.map((rank) => ({ id: String(rank), name: formatUnits(rank) })),
-  ];
-}
-
-export function parseDimensionRank(value: string): number | null {
-  if (value === DIMENSION_ANY) return null;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
+export function countPanelFilters(filters: BrowseFilters): number {
+  return (
+    (filters.category !== null ? 1 : 0) +
+    (filters.technique !== null ? 1 : 0) +
+    (hasDimensionConstraints(filters) ? 1 : 0) +
+    (filters.likedOnly ? 1 : 0) +
+    (filters.recentOnly ? 1 : 0) +
+    (filters.featuredOnly ? 1 : 0) +
+    (filters.mineOnly ? 1 : 0)
+  );
 }
 
 export function isCommunityCategory(value: string): value is CommunityCategory {

@@ -8,6 +8,7 @@ import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { trackEvent } from '@/shared/analytics/posthog';
+import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useRetryOnReconnect } from '@/shared/hooks/useRetryOnReconnect';
 import type { CommunityCard as CommunityCardData } from '@/shared/types/community';
 import type { CommunityGalleryTabProps } from '@/shared/types/communityGalleryTab';
@@ -27,10 +28,15 @@ import { formatUnits } from '../CommunityCard/cardDims';
 import { MineCard } from '../CommunityCard/MineCard';
 import { AuthorSummary } from '../AuthorSummary';
 import { MineDigestSummary } from '../MineDigestSummary';
+import { computeFacetCounts } from './facetCounts';
+import { FilterRail } from './FilterRail';
 import { GalleryToolbar } from './GalleryToolbar';
+import { countPanelFilters } from './galleryFilterOptions';
 import { hasLocalDesigns } from './hasLocalDesigns';
+import { MobileFilterView } from './MobileFilterView';
 import { ShelfLanding } from './ShelfLanding';
 import { SHELF_LANDING_MIN_DESIGNS } from './shelfData';
+import { useFilterPanel } from './useFilterPanel';
 
 export { GALLERY_PAGE_SIZE } from '../../store/browseStore';
 
@@ -62,6 +68,8 @@ export function CommunityGalleryTab({
   surface = 'tab',
 }: CommunityGalleryTabProps) {
   const t = useTranslation();
+  const { isMobile } = useResponsive();
+  const filterPanel = useFilterPanel(isMobile);
 
   const { status, items, capped, error, filters, fitsGapContext, visibleCount } = useBrowseStore(
     useShallow((s) => ({
@@ -189,6 +197,24 @@ export function CommunityGalleryTab({
     };
   }, []);
 
+  // The mobile filter view unmounts the grid, so returning from it lands on a
+  // fresh scroll container. The offset was banked by handleTogglePanel while
+  // the old one was still on screen.
+  const mobileFiltersOpen = isMobile && filterPanel.open;
+  useEffect(() => {
+    if (mobileFiltersOpen) return;
+    const el = scrollRef.current;
+    if (el) el.scrollTop = useBrowseStore.getState().scrollTop;
+  }, [mobileFiltersOpen]);
+
+  const handleTogglePanel = useCallback(() => {
+    // Read the offset while the grid is still mounted: once the filter view
+    // has replaced it, the node is detached and reports 0.
+    const el = scrollRef.current;
+    if (el) useBrowseStore.getState().setScrollTop(el.scrollTop);
+    filterPanel.toggle();
+  }, [filterPanel]);
+
   // The store setters reset scrollTop to 0 on every filter change, but the
   // restore effect above only runs on mount; without this the DOM keeps its
   // old offset over freshly re-filtered results (and the unmount cleanup then
@@ -281,6 +307,22 @@ export function CommunityGalleryTab({
   );
   const visible = filtered.slice(0, visibleCount);
 
+  // Six sweeps of the index (capped at 2,000 cards), running nine predicates
+  // in total — one per facet, each with that facet's own selection
+  // neutralised. Memoised on the same inputs as the grid so a keystroke costs
+  // one recount, not one per rendered option.
+  const facetCounts = useMemo(
+    () =>
+      computeFacetCounts({
+        items: activeItems,
+        filters,
+        searchLabels,
+        recentIds,
+        fitsGapContext,
+      }),
+    [activeItems, filters, searchLabels, recentIds, fitsGapContext]
+  );
+
   const isInitialLoading = activeStatus === 'loading' && activeItems.length === 0;
   const isEmptyLibrary = !mineActive && status === 'ready' && items.length === 0;
   const isMineEmpty = mineActive && mineStatus === 'ready' && mineItems.length === 0;
@@ -299,241 +341,285 @@ export function CommunityGalleryTab({
     typeof navigator !== 'undefined' &&
     !navigator.onLine;
 
+  if (mobileFiltersOpen) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col" data-testid="community-gallery-tab">
+        <MobileFilterView
+          items={activeItems}
+          counts={facetCounts}
+          onBack={() => filterPanel.close()}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-0 flex-1 flex-col" data-testid="community-gallery-tab">
-      <GalleryToolbar />
+      <GalleryToolbar
+        panelOpen={filterPanel.open}
+        onTogglePanel={handleTogglePanel}
+        activeFilterCount={countPanelFilters(filters)}
+      />
 
-      {/* Landing affordance for the public index only: hidden in Mine, over
-          non-ready states, and once the visitor has stated any filter intent.
-          Sits outside the scrollRef div so shelf scrolling never pollutes the
-          persisted grid scrollTop. */}
-      {!mineActive &&
-        status === 'ready' &&
-        items.length >= SHELF_LANDING_MIN_DESIGNS &&
-        fitsGapContext === null &&
-        !hasActiveBrowseFilters(filters) && (
-          <ShelfLanding items={items} onSelect={handleSelect} onSelectAuthor={handleSelectAuthor} />
+      <div className="flex min-h-0 flex-1">
+        {filterPanel.open && (
+          <FilterRail
+            items={activeItems}
+            counts={facetCounts}
+            onCollapse={() => filterPanel.close()}
+          />
         )}
 
-      <div
-        ref={scrollRef}
-        data-testid="community-gallery-scroll"
-        className="flex-1 overflow-y-auto scrollbar-thin p-3 md:p-4"
-      >
-        {/* Opening Mine is what consumes the since-last-visit digest, so the
+        <div className="flex min-h-0 flex-1 flex-col">
+          {/* Landing affordance for the public index only: hidden in Mine, over
+              non-ready states, and once the visitor has stated any filter intent.
+              Sits outside the scrollRef div so shelf scrolling never pollutes the
+              persisted grid scrollTop. */}
+          {!mineActive &&
+            status === 'ready' &&
+            items.length >= SHELF_LANDING_MIN_DESIGNS &&
+            fitsGapContext === null &&
+            !hasActiveBrowseFilters(filters) && (
+              <ShelfLanding
+                items={items}
+                onSelect={handleSelect}
+                onSelectAuthor={handleSelectAuthor}
+              />
+            )}
+
+          <div
+            ref={scrollRef}
+            data-testid="community-gallery-scroll"
+            className="flex-1 overflow-y-auto scrollbar-thin p-3 md:p-4"
+          >
+            {/* Opening Mine is what consumes the since-last-visit digest, so the
             summary mounts only inside the Mine branch: browsing the public
             grid keeps the deltas unseen. */}
-        {mineActive && <MineDigestSummary />}
+            {mineActive && <MineDigestSummary />}
 
-        {/* Sits above the grid rather than replacing it: the author filter is
+            {/* Sits above the grid rather than replacing it: the author filter is
             still a gallery view, and the portrait is context for it. */}
-        {!mineActive && filters.author !== null && (
-          <AuthorSummary
-            items={items}
-            authorPublicId={filters.author.id}
-            authorName={
-              filters.author.name !== ''
-                ? filters.author.name
-                : t('community.gallery.authorFallback')
-            }
-            indexCapped={capped}
-          />
-        )}
+            {!mineActive && filters.author !== null && (
+              <AuthorSummary
+                items={items}
+                authorPublicId={filters.author.id}
+                authorName={
+                  filters.author.name !== ''
+                    ? filters.author.name
+                    : t('community.gallery.authorFallback')
+                }
+                indexCapped={capped}
+              />
+            )}
 
-        {activeStatus === 'error' && activeItems.length > 0 && (
-          <div
-            role="alert"
-            className="mb-3 flex items-center justify-between gap-2 rounded-lg border border-warning/30 bg-warning-muted px-3 py-2 text-sm text-content-secondary"
-          >
-            <span>{t('community.gallery.error.refresh')}</span>
-            <Button
-              variant="ghost"
-              onClick={() => void refreshActive()}
-              className="shrink-0 text-sm"
-            >
-              {t('community.gallery.error.retry')}
-            </Button>
-          </div>
-        )}
-
-        {isInitialLoading && (
-          <>
-            <span className="sr-only" role="status">
-              {t('community.gallery.loading')}
-            </span>
-            <GallerySkeletons />
-          </>
-        )}
-
-        {isOffline && (
-          <EmptyState
-            icon={<AlertTriangleIcon />}
-            iconStyle="circle"
-            tint="warning"
-            title={t('community.gallery.offline.title')}
-            description={t('community.gallery.offline.subtitle')}
-            actions={
-              <Button variant="secondary" className="min-h-11" onClick={() => void refreshActive()}>
-                {t('community.gallery.error.retry')}
-              </Button>
-            }
-          />
-        )}
-
-        {isBlockingError && !isOffline && (
-          <EmptyState
-            icon={<AlertTriangleIcon />}
-            iconStyle="circle"
-            tint="error"
-            title={t('community.gallery.error.title')}
-            actions={
-              <Button variant="secondary" className="min-h-11" onClick={() => void refreshActive()}>
-                {t('community.gallery.error.retry')}
-              </Button>
-            }
-          />
-        )}
-
-        {isEmptyLibrary && (
-          <EmptyState
-            icon={<LayoutGridIcon />}
-            iconStyle="circle"
-            title={t('community.gallery.empty.title')}
-            description={t('community.gallery.empty.subtitle')}
-            actions={
-              <Button variant="primary" className="min-h-11" onClick={handleGoToDesigner}>
-                {hasLocalDesigns()
-                  ? t('community.gallery.empty.publishCta')
-                  : t('community.gallery.empty.designCta')}
-              </Button>
-            }
-          />
-        )}
-
-        {isMineEmpty && (
-          <EmptyState
-            icon={<LayoutGridIcon />}
-            iconStyle="circle"
-            title={t('community.gallery.mineEmpty.title')}
-            description={t('community.gallery.mineEmpty.subtitle')}
-            actions={
-              <Button
-                variant="primary"
-                className="min-h-11"
-                onClick={handleGoToDesigner}
-                data-testid="community-mine-empty-cta"
+            {activeStatus === 'error' && activeItems.length > 0 && (
+              <div
+                role="alert"
+                className="mb-3 flex items-center justify-between gap-2 rounded-lg border border-warning/30 bg-warning-muted px-3 py-2 text-sm text-content-secondary"
               >
-                {hasLocalDesigns()
-                  ? t('community.gallery.empty.publishCta')
-                  : t('community.gallery.empty.designCta')}
-              </Button>
-            }
-          />
-        )}
-
-        {isLikedEmpty && (
-          <EmptyState
-            icon={<HeartGlyph className="h-8 w-8" />}
-            iconStyle="circle"
-            title={t('community.gallery.likedEmpty.title')}
-            description={t('community.gallery.likedEmpty.subtitle')}
-          />
-        )}
-
-        {isAuthorEmpty && (
-          <EmptyState
-            icon={<SearchIcon />}
-            iconStyle="circle"
-            title={t('community.gallery.authorEmpty.title', {
-              author:
-                filters.author.name !== ''
-                  ? filters.author.name
-                  : t('community.gallery.authorFallback'),
-            })}
-            description={t('community.gallery.authorEmpty.subtitle')}
-            actions={
-              <Button variant="secondary" className="min-h-11" onClick={() => setAuthor(null)}>
-                {t('community.gallery.showAllDesigns')}
-              </Button>
-            }
-          />
-        )}
-
-        {isNoMatches && fitsGapContext !== null && (
-          <EmptyState
-            icon={<SearchIcon />}
-            iconStyle="circle"
-            title={t('community.gallery.fitsGapEmpty.title', {
-              width: formatUnits(fitsGapContext.widthMax),
-              depth: formatUnits(fitsGapContext.depthMax),
-            })}
-            description={t('community.gallery.fitsGapEmpty.subtitle')}
-            actions={
-              <Button
-                variant="secondary"
-                className="min-h-11"
-                onClick={() => {
-                  setFitsGapContext(null);
-                  useGapFitStore.getState().clear();
-                }}
-                data-testid="community-fits-gap-empty-clear"
-              >
-                {t('community.gallery.clearFitsGap')}
-              </Button>
-            }
-          />
-        )}
-
-        {isNoMatches && !isFitsGapEmpty && !isLikedEmpty && !isAuthorEmpty && (
-          <EmptyState
-            icon={<SearchIcon />}
-            iconStyle="circle"
-            title={t('community.gallery.noMatches.title')}
-            description={t('community.gallery.noMatches.subtitle')}
-            actions={
-              <Button variant="secondary" className="min-h-11" onClick={clearFilters}>
-                {t('community.gallery.clearFilters')}
-              </Button>
-            }
-          />
-        )}
-
-        {visible.length > 0 && (
-          <>
-            {/* role="list" restores list semantics that Safari/iOS VoiceOver strips when list-style:none is applied. */}
-            {/* eslint-disable-next-line jsx-a11y/no-redundant-roles */}
-            <ul role="list" className={GRID_CLASS} aria-label={t('community.gallery.gridLabel')}>
-              {visible.map((card, index) => (
-                <li key={card.id}>
-                  {mineActive ? (
-                    <MineCard
-                      card={card}
-                      onSelect={handleSelect}
-                      onEdit={handleMineEdit}
-                      onUnpublished={onOwnDesignUnpublished}
-                      editBusy={mineEditBusy}
-                      index={index}
-                    />
-                  ) : (
-                    <CommunityCard
-                      card={card}
-                      onSelect={handleSelect}
-                      onSelectAuthor={handleSelectAuthor}
-                      index={index}
-                    />
-                  )}
-                </li>
-              ))}
-            </ul>
-            {visibleCount < filtered.length && (
-              <div className="mt-4 flex justify-center">
-                <Button variant="secondary" className="min-h-11" onClick={showMore}>
-                  {t('community.gallery.loadMore')}
+                <span>{t('community.gallery.error.refresh')}</span>
+                <Button
+                  variant="ghost"
+                  onClick={() => void refreshActive()}
+                  className="shrink-0 text-sm"
+                >
+                  {t('community.gallery.error.retry')}
                 </Button>
               </div>
             )}
-          </>
-        )}
+
+            {isInitialLoading && (
+              <>
+                <span className="sr-only" role="status">
+                  {t('community.gallery.loading')}
+                </span>
+                <GallerySkeletons />
+              </>
+            )}
+
+            {isOffline && (
+              <EmptyState
+                icon={<AlertTriangleIcon />}
+                iconStyle="circle"
+                tint="warning"
+                title={t('community.gallery.offline.title')}
+                description={t('community.gallery.offline.subtitle')}
+                actions={
+                  <Button
+                    variant="secondary"
+                    className="min-h-11"
+                    onClick={() => void refreshActive()}
+                  >
+                    {t('community.gallery.error.retry')}
+                  </Button>
+                }
+              />
+            )}
+
+            {isBlockingError && !isOffline && (
+              <EmptyState
+                icon={<AlertTriangleIcon />}
+                iconStyle="circle"
+                tint="error"
+                title={t('community.gallery.error.title')}
+                actions={
+                  <Button
+                    variant="secondary"
+                    className="min-h-11"
+                    onClick={() => void refreshActive()}
+                  >
+                    {t('community.gallery.error.retry')}
+                  </Button>
+                }
+              />
+            )}
+
+            {isEmptyLibrary && (
+              <EmptyState
+                icon={<LayoutGridIcon />}
+                iconStyle="circle"
+                title={t('community.gallery.empty.title')}
+                description={t('community.gallery.empty.subtitle')}
+                actions={
+                  <Button variant="primary" className="min-h-11" onClick={handleGoToDesigner}>
+                    {hasLocalDesigns()
+                      ? t('community.gallery.empty.publishCta')
+                      : t('community.gallery.empty.designCta')}
+                  </Button>
+                }
+              />
+            )}
+
+            {isMineEmpty && (
+              <EmptyState
+                icon={<LayoutGridIcon />}
+                iconStyle="circle"
+                title={t('community.gallery.mineEmpty.title')}
+                description={t('community.gallery.mineEmpty.subtitle')}
+                actions={
+                  <Button
+                    variant="primary"
+                    className="min-h-11"
+                    onClick={handleGoToDesigner}
+                    data-testid="community-mine-empty-cta"
+                  >
+                    {hasLocalDesigns()
+                      ? t('community.gallery.empty.publishCta')
+                      : t('community.gallery.empty.designCta')}
+                  </Button>
+                }
+              />
+            )}
+
+            {isLikedEmpty && (
+              <EmptyState
+                icon={<HeartGlyph className="h-8 w-8" />}
+                iconStyle="circle"
+                title={t('community.gallery.likedEmpty.title')}
+                description={t('community.gallery.likedEmpty.subtitle')}
+              />
+            )}
+
+            {isAuthorEmpty && (
+              <EmptyState
+                icon={<SearchIcon />}
+                iconStyle="circle"
+                title={t('community.gallery.authorEmpty.title', {
+                  author:
+                    filters.author.name !== ''
+                      ? filters.author.name
+                      : t('community.gallery.authorFallback'),
+                })}
+                description={t('community.gallery.authorEmpty.subtitle')}
+                actions={
+                  <Button variant="secondary" className="min-h-11" onClick={() => setAuthor(null)}>
+                    {t('community.gallery.showAllDesigns')}
+                  </Button>
+                }
+              />
+            )}
+
+            {isNoMatches && fitsGapContext !== null && (
+              <EmptyState
+                icon={<SearchIcon />}
+                iconStyle="circle"
+                title={t('community.gallery.fitsGapEmpty.title', {
+                  width: formatUnits(fitsGapContext.widthMax),
+                  depth: formatUnits(fitsGapContext.depthMax),
+                })}
+                description={t('community.gallery.fitsGapEmpty.subtitle')}
+                actions={
+                  <Button
+                    variant="secondary"
+                    className="min-h-11"
+                    onClick={() => {
+                      setFitsGapContext(null);
+                      useGapFitStore.getState().clear();
+                    }}
+                    data-testid="community-fits-gap-empty-clear"
+                  >
+                    {t('community.gallery.clearFitsGap')}
+                  </Button>
+                }
+              />
+            )}
+
+            {isNoMatches && !isFitsGapEmpty && !isLikedEmpty && !isAuthorEmpty && (
+              <EmptyState
+                icon={<SearchIcon />}
+                iconStyle="circle"
+                title={t('community.gallery.noMatches.title')}
+                description={t('community.gallery.noMatches.subtitle')}
+                actions={
+                  <Button variant="secondary" className="min-h-11" onClick={clearFilters}>
+                    {t('community.gallery.clearFilters')}
+                  </Button>
+                }
+              />
+            )}
+
+            {visible.length > 0 && (
+              <>
+                {/* role="list" restores list semantics that Safari/iOS VoiceOver strips when list-style:none is applied. */}
+                {/* eslint-disable-next-line jsx-a11y/no-redundant-roles */}
+                <ul
+                  role="list"
+                  className={GRID_CLASS}
+                  aria-label={t('community.gallery.gridLabel')}
+                >
+                  {visible.map((card, index) => (
+                    <li key={card.id}>
+                      {mineActive ? (
+                        <MineCard
+                          card={card}
+                          onSelect={handleSelect}
+                          onEdit={handleMineEdit}
+                          onUnpublished={onOwnDesignUnpublished}
+                          editBusy={mineEditBusy}
+                          index={index}
+                        />
+                      ) : (
+                        <CommunityCard
+                          card={card}
+                          onSelect={handleSelect}
+                          onSelectAuthor={handleSelectAuthor}
+                          index={index}
+                        />
+                      )}
+                    </li>
+                  ))}
+                </ul>
+                {visibleCount < filtered.length && (
+                  <div className="mt-4 flex justify-center">
+                    <Button variant="secondary" className="min-h-11" onClick={showMore}>
+                      {t('community.gallery.loadMore')}
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
       </div>
 
       {(activeStatus === 'ready' || activeItems.length > 0) && (

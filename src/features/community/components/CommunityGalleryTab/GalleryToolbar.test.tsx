@@ -20,11 +20,17 @@ vi.mock('@/shared/hooks/useResponsive', () => ({
   useResponsive: () => responsiveMock,
 }));
 
-function signIn(): void {
-  useSessionStore.setState({
-    status: 'authenticated',
-    user: { userId: 'u1', provider: 'github', email: 'andy@example.com' },
-  });
+function renderToolbar(props: Partial<React.ComponentProps<typeof GalleryToolbar>> = {}) {
+  const onTogglePanel = vi.fn();
+  render(
+    <GalleryToolbar
+      panelOpen={false}
+      onTogglePanel={onTogglePanel}
+      activeFilterCount={0}
+      {...props}
+    />
+  );
+  return { onTogglePanel };
 }
 
 beforeEach(() => {
@@ -38,37 +44,50 @@ afterEach(() => {
   useSessionStore.setState({ status: 'unknown', user: null });
 });
 
-describe('GalleryToolbar (desktop)', () => {
-  it('keeps the control row to search, sort and the filter disclosure', () => {
-    render(<GalleryToolbar />);
+describe('GalleryToolbar', () => {
+  it('keeps the control row to the filter toggle, search and sort', () => {
+    renderToolbar();
+    expect(screen.getByTestId('community-filter-button')).toBeInTheDocument();
     expect(screen.getByLabelText('community.gallery.searchLabel')).toBeInTheDocument();
     expect(screen.getByLabelText('community.gallery.sortLabel')).toBeInTheDocument();
-    expect(screen.getByTestId('community-filter-button')).toBeInTheDocument();
-    // The heavy controls are one click away, not three permanent rows.
+    // Every facet now lives in the panel, not in this row.
     expect(screen.queryByLabelText('community.gallery.categoryLabel')).toBeNull();
-    expect(screen.queryByTestId('community-dimension-filters')).toBeNull();
+    expect(screen.queryByTestId('community-size-filters')).toBeNull();
     expect(screen.queryAllByRole('radio')).toHaveLength(0);
   });
 
-  it('reveals category, techniques and sizes in the filter panel', () => {
-    render(<GalleryToolbar />);
-    fireEvent.click(screen.getByTestId('community-filter-button'));
-    expect(screen.getByLabelText('community.gallery.categoryLabel')).toBeInTheDocument();
-    expect(screen.getByTestId('community-dimension-filters')).toBeInTheDocument();
-    expect(screen.getAllByRole('radio')).toHaveLength(ALL_TECHNIQUES.length + 1);
+  it('reports the panel state on the toggle and hands the click back', () => {
+    const { onTogglePanel } = renderToolbar();
+    const button = screen.getByTestId('community-filter-button');
+    expect(button).toHaveAttribute('aria-expanded', 'false');
+    fireEvent.click(button);
+    expect(onTogglePanel).toHaveBeenCalledOnce();
   });
 
-  it('counts the filters hidden behind the disclosure', () => {
-    render(<GalleryToolbar />);
-    act(() => {
-      useBrowseStore.getState().setCategory('kitchen');
-      useBrowseStore.getState().setWidthMax(3);
-    });
-    expect(screen.getByTestId('community-filter-button')).toHaveTextContent('2');
+  it('drops its toggle once the rail is open, leaving the rail its own collapse control', () => {
+    renderToolbar({ panelOpen: true });
+    expect(screen.queryByTestId('community-filter-button')).toBeNull();
+  });
+
+  it('keeps the toggle on mobile, where the filter view has no rail header', () => {
+    responsiveMock.isMobile = true;
+    renderToolbar({ panelOpen: true });
+    expect(screen.getByTestId('community-filter-button')).toBeInTheDocument();
+  });
+
+  it('badges the toggle with the active filter count', () => {
+    renderToolbar({ activeFilterCount: 3 });
+    expect(screen.getByTestId('community-filter-button')).toHaveTextContent('3');
+    expect(screen.getByText('community.gallery.activeFilterCount')).toBeInTheDocument();
+  });
+
+  it('leaves the badge off when nothing is filtered', () => {
+    renderToolbar();
+    expect(screen.queryByText('community.gallery.activeFilterCount')).toBeNull();
   });
 
   it('writes search text to the browse store and clears it via the clear button', () => {
-    render(<GalleryToolbar />);
+    renderToolbar();
     const search = screen.getByLabelText('community.gallery.searchLabel');
     fireEvent.change(search, { target: { value: 'screws' } });
     expect(useBrowseStore.getState().filters.searchText).toBe('screws');
@@ -76,43 +95,16 @@ describe('GalleryToolbar (desktop)', () => {
     expect(useBrowseStore.getState().filters.searchText).toBe('');
   });
 
-  it('updates category and sort filters', () => {
-    render(<GalleryToolbar />);
-    fireEvent.click(screen.getByTestId('community-filter-button'));
-    fireEvent.change(screen.getByLabelText('community.gallery.categoryLabel'), {
-      target: { value: 'kitchen' },
-    });
-    expect(useBrowseStore.getState().filters.category).toBe('kitchen');
-    fireEvent.change(screen.getByLabelText('community.gallery.categoryLabel'), {
-      target: { value: 'all' },
-    });
-    expect(useBrowseStore.getState().filters.category).toBeNull();
+  it('updates the sort', () => {
+    renderToolbar();
     fireEvent.change(screen.getByLabelText('community.gallery.sortLabel'), {
       target: { value: 'likes' },
     });
     expect(useBrowseStore.getState().filters.sort).toBe('likes');
   });
 
-  it('selects a technique pill and toggles it off on reselect', () => {
-    render(<GalleryToolbar />);
-    fireEvent.click(screen.getByTestId('community-filter-button'));
-    const pill = screen.getAllByRole('radio')[1];
-    fireEvent.click(pill);
-    expect(useBrowseStore.getState().filters.technique).toBe(ALL_TECHNIQUES[0]);
-    fireEvent.click(pill);
-    expect(useBrowseStore.getState().filters.technique).toBeNull();
-  });
-
-  it('renders the dimension filters inside the panel', () => {
-    render(<GalleryToolbar />);
-    fireEvent.click(screen.getByTestId('community-filter-button'));
-    expect(screen.getByTestId('community-dimension-filters')).toBeInTheDocument();
-    expect(screen.getByLabelText('community.gallery.widthMinLabel')).toBeInTheDocument();
-    expect(screen.getByLabelText('community.gallery.maxHeightLabel')).toBeInTheDocument();
-  });
-
   it('offers best-fit only while a dimension constraint is active', () => {
-    render(<GalleryToolbar />);
+    renderToolbar();
     const sortSelect = screen.getByLabelText('community.gallery.sortLabel');
     const optionIds = () => Array.from(sortSelect.querySelectorAll('option')).map((o) => o.value);
     expect(optionIds()).not.toContain('best-fit');
@@ -133,168 +125,89 @@ describe('GalleryToolbar (desktop)', () => {
       gridUnitMmY: 42,
       heightUnitMm: 7,
     });
-    render(<GalleryToolbar />);
+    renderToolbar();
     const sortSelect = screen.getByLabelText('community.gallery.sortLabel');
     expect(Array.from(sortSelect.querySelectorAll('option')).map((o) => o.value)).toContain(
       'best-fit'
     );
   });
-
-  it('counts dimension filters toward the clear-filters affordance', () => {
-    render(<GalleryToolbar />);
-    expect(screen.queryByRole('button', { name: 'community.gallery.clearFilters' })).toBeNull();
-    act(() => {
-      useBrowseStore.getState().setMaxHeight(6);
-    });
-    expect(
-      screen.getByRole('button', { name: 'community.gallery.clearFilters' })
-    ).toBeInTheDocument();
-  });
-
-  it('shows a clear-filters button only when a filter is active', () => {
-    render(<GalleryToolbar />);
-    expect(screen.queryByRole('button', { name: 'community.gallery.clearFilters' })).toBeNull();
-    act(() => {
-      useBrowseStore.getState().setCategory('tools');
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'community.gallery.clearFilters' }));
-    expect(useBrowseStore.getState().filters.category).toBeNull();
-    expect(screen.queryByRole('button', { name: 'community.gallery.clearFilters' })).toBeNull();
-  });
-
-  describe('active filter chips', () => {
-    it('surfaces a hidden category filter and clears it', () => {
-      render(<GalleryToolbar />);
-      act(() => {
-        useBrowseStore.getState().setCategory('kitchen');
-      });
-
-      const chip = screen.getByTestId('community-category-chip');
-      expect(chip).toBeInTheDocument();
-      fireEvent.click(
-        screen.getByRole('button', { name: 'community.gallery.clearCategoryFilter' })
-      );
-      expect(useBrowseStore.getState().filters.category).toBeNull();
-    });
-
-    it('surfaces a hidden technique filter and clears it', () => {
-      render(<GalleryToolbar />);
-      act(() => {
-        useBrowseStore.getState().setTechnique(ALL_TECHNIQUES[0]);
-      });
-
-      expect(screen.getByTestId('community-technique-chip')).toBeInTheDocument();
-      fireEvent.click(
-        screen.getByRole('button', { name: 'community.gallery.clearTechniqueFilter' })
-      );
-      expect(useBrowseStore.getState().filters.technique).toBeNull();
-    });
-
-    it('summarises the size constraints in one chip that clears every axis', () => {
-      render(<GalleryToolbar />);
-      act(() => {
-        useBrowseStore.getState().setWidthMin(2);
-        useBrowseStore.getState().setWidthMax(4);
-        useBrowseStore.getState().setMaxHeight(6);
-      });
-
-      expect(screen.getByTestId('community-size-chip')).toHaveTextContent('2–4');
-      fireEvent.click(screen.getByRole('button', { name: 'community.gallery.clearSizeFilter' }));
-
-      const { filters } = useBrowseStore.getState();
-      expect(filters.widthMin).toBeNull();
-      expect(filters.widthMax).toBeNull();
-      expect(filters.maxHeight).toBeNull();
-    });
-
-    it('shows no chips while nothing is filtered', () => {
-      render(<GalleryToolbar />);
-      expect(screen.queryByTestId('community-category-chip')).toBeNull();
-      expect(screen.queryByTestId('community-technique-chip')).toBeNull();
-      expect(screen.queryByTestId('community-size-chip')).toBeNull();
-    });
-  });
 });
 
-describe('GalleryToolbar filter chips', () => {
-  it('opens the sign-in prompt instead of filtering for anonymous visitors', () => {
-    // A disabled chip with only a title tooltip is an unexplained dead
-    // control on touch devices; the chip stays enabled and explains itself.
-    render(<GalleryToolbar />);
-    const chip = screen.getByTestId('community-liked-chip');
-    expect(chip).toBeEnabled();
-    fireEvent.click(chip);
-    expect(useBrowseStore.getState().filters.likedOnly).toBe(false);
-    expect(screen.getByText('community.gallery.likedFilterSignedOut')).toBeInTheDocument();
-    expect(screen.getByText('auth.signInWithGoogle')).toBeInTheDocument();
+describe('GalleryToolbar active filter chips', () => {
+  it('stays out of the way while the panel shows the same state', () => {
+    useBrowseStore.getState().setCategory('kitchen');
+    renderToolbar({ panelOpen: true });
+    expect(screen.queryByTestId('community-category-chip')).toBeNull();
   });
 
-  it('toggles likedOnly for a signed-in user', () => {
-    signIn();
-    render(<GalleryToolbar />);
-    const chip = screen.getByTestId('community-liked-chip');
-    expect(chip).toBeEnabled();
-    expect(chip).toHaveAttribute('aria-pressed', 'false');
-    fireEvent.click(chip);
-    expect(useBrowseStore.getState().filters.likedOnly).toBe(true);
-    expect(screen.getByTestId('community-liked-chip')).toHaveAttribute('aria-pressed', 'true');
-    fireEvent.click(screen.getByTestId('community-liked-chip'));
-    expect(useBrowseStore.getState().filters.likedOnly).toBe(false);
+  it('records a category filter and clears it', () => {
+    renderToolbar();
+    act(() => {
+      useBrowseStore.getState().setCategory('kitchen');
+    });
+    expect(screen.getByTestId('community-category-chip')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'community.gallery.clearCategoryFilter' }));
+    expect(useBrowseStore.getState().filters.category).toBeNull();
   });
 
-  it('does not render the Mine chip for signed-out visitors', () => {
-    // Unlike Liked there is no sign-in prompt branch: a signed-out visitor
-    // structurally has no published designs.
-    render(<GalleryToolbar />);
-    expect(screen.queryByTestId('community-mine-chip')).not.toBeInTheDocument();
+  it('records a technique filter and clears it', () => {
+    renderToolbar();
+    act(() => {
+      useBrowseStore.getState().setTechnique(ALL_TECHNIQUES[0]);
+    });
+    expect(screen.getByTestId('community-technique-chip')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'community.gallery.clearTechniqueFilter' }));
+    expect(useBrowseStore.getState().filters.technique).toBeNull();
   });
 
-  it('toggles mineOnly for a signed-in user', () => {
-    signIn();
-    render(<GalleryToolbar />);
-    const chip = screen.getByTestId('community-mine-chip');
-    expect(chip).toHaveAttribute('aria-pressed', 'false');
-    fireEvent.click(chip);
-    expect(useBrowseStore.getState().filters.mineOnly).toBe(true);
-    expect(screen.getByTestId('community-mine-chip')).toHaveAttribute('aria-pressed', 'true');
-    fireEvent.click(screen.getByTestId('community-mine-chip'));
-    expect(useBrowseStore.getState().filters.mineOnly).toBe(false);
+  it('summarises the size constraints in one chip that clears every axis', () => {
+    renderToolbar();
+    act(() => {
+      useBrowseStore.getState().setWidthMin(2);
+      useBrowseStore.getState().setWidthMax(4);
+      useBrowseStore.getState().setMaxHeight(6);
+    });
+    expect(screen.getByTestId('community-size-chip')).toHaveTextContent('2–4');
+    fireEvent.click(screen.getByRole('button', { name: 'community.gallery.clearSizeFilter' }));
+    const { filters } = useBrowseStore.getState();
+    expect(filters.widthMin).toBeNull();
+    expect(filters.widthMax).toBeNull();
+    expect(filters.maxHeight).toBeNull();
   });
 
-  it('counts mineOnly toward the clear-filters affordance', () => {
-    signIn();
-    render(<GalleryToolbar />);
-    fireEvent.click(screen.getByTestId('community-mine-chip'));
-    fireEvent.click(screen.getByRole('button', { name: 'community.gallery.clearFilters' }));
-    expect(useBrowseStore.getState().filters.mineOnly).toBe(false);
-  });
-
-  it('toggles recentOnly regardless of session (local-only feature)', () => {
-    render(<GalleryToolbar />);
-    const chip = screen.getByTestId('community-recent-chip');
-    expect(chip).toBeEnabled();
-    fireEvent.click(chip);
-    expect(useBrowseStore.getState().filters.recentOnly).toBe(true);
-    fireEvent.click(screen.getByTestId('community-recent-chip'));
-    expect(useBrowseStore.getState().filters.recentOnly).toBe(false);
+  it.each([
+    ['community-liked-chip', 'likedOnly', () => useBrowseStore.getState().setLikedOnly(true)],
+    ['community-recent-chip', 'recentOnly', () => useBrowseStore.getState().setRecentOnly(true)],
+    ['community-mine-chip', 'mineOnly', () => useBrowseStore.getState().setMineOnly(true)],
+  ] as const)('records the %s show toggle and clears it', (testId, key, activate) => {
+    activate();
+    renderToolbar();
+    expect(screen.getByTestId(testId)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'community.gallery.clearNamedFilter' }));
+    expect(useBrowseStore.getState().filters[key]).toBe(false);
   });
 
   it('shows the author chip with the display name and clears it via the X', () => {
     useBrowseStore.getState().setAuthor({ id: 'a'.repeat(32), name: 'Alice' });
-    render(<GalleryToolbar />);
-    const chip = screen.getByTestId('community-author-chip');
-    expect(chip).toHaveTextContent('community.gallery.filteredByAuthor');
+    renderToolbar();
+    expect(screen.getByTestId('community-author-chip')).toHaveTextContent(
+      'community.gallery.filteredByAuthor'
+    );
     fireEvent.click(screen.getByRole('button', { name: 'community.gallery.clearAuthorFilter' }));
     expect(useBrowseStore.getState().filters.author).toBeNull();
-    expect(screen.queryByTestId('community-author-chip')).not.toBeInTheDocument();
   });
 
-  it('hides the author chip when no author filter is active', () => {
-    render(<GalleryToolbar />);
-    expect(screen.queryByTestId('community-author-chip')).not.toBeInTheDocument();
+  it('shows a clearable staff-picks chip while featuredOnly is active', () => {
+    useBrowseStore.getState().setFeaturedOnly(true);
+    renderToolbar();
+    expect(screen.getByTestId('community-featured-chip')).toHaveTextContent(
+      'community.shelves.staffPicks'
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'community.gallery.clearFeaturedFilter' }));
+    expect(useBrowseStore.getState().filters.featuredOnly).toBe(false);
   });
 
-  it('shows the fits-gap banner with the gap size while the context is active', () => {
+  it('shows the fits-gap chip with the gap size while the context is active', () => {
     useBrowseStore.getState().setFitsGapContext({
       widthMax: 2.5,
       depthMax: 3,
@@ -303,14 +216,14 @@ describe('GalleryToolbar filter chips', () => {
       gridUnitMmY: 42,
       heightUnitMm: 7,
     });
-    render(<GalleryToolbar />);
-    const chip = screen.getByTestId('community-fits-gap-chip');
+    renderToolbar();
     // i18nEcho returns the key; the size rides in as interpolation params.
-    expect(chip).toHaveTextContent('community.gallery.fitsGapBanner');
-    expect(screen.getByRole('button', { name: 'community.gallery.clearFitsGap' })).toBeEnabled();
+    expect(screen.getByTestId('community-fits-gap-chip')).toHaveTextContent(
+      'community.gallery.fitsGapBanner'
+    );
   });
 
-  it('clearing the banner ends the fits-gap context in both stores and restores normal browsing', () => {
+  it('clearing the gap chip ends the context in both stores and restores normal browsing', () => {
     useGapFitStore.getState().setConstraint({
       maxWidth: gridUnits(2.5),
       maxDepth: gridUnits(3),
@@ -329,7 +242,7 @@ describe('GalleryToolbar filter chips', () => {
       heightUnitMm: 7,
     });
     useBrowseStore.getState().setSort('best-fit');
-    render(<GalleryToolbar />);
+    renderToolbar();
 
     fireEvent.click(screen.getByRole('button', { name: 'community.gallery.clearFitsGap' }));
 
@@ -337,82 +250,28 @@ describe('GalleryToolbar filter chips', () => {
     expect(useGapFitStore.getState().constraint).toBeNull();
     // best-fit has nothing to score against once the gap clears, so the sort
     // falls back and browsing is fully back to normal.
-    expect(useBrowseStore.getState().filters.sort).toBe('newest');
     expect(useBrowseStore.getState().filters).toEqual(INITIAL_BROWSE_FILTERS);
     expect(screen.queryByTestId('community-fits-gap-chip')).not.toBeInTheDocument();
   });
 
-  it('hides the fits-gap banner when no gap context is active', () => {
-    render(<GalleryToolbar />);
-    expect(screen.queryByTestId('community-fits-gap-chip')).not.toBeInTheDocument();
+  it('shows no chips and no clear-all while nothing is filtered', () => {
+    renderToolbar();
+    expect(screen.queryByTestId('community-category-chip')).toBeNull();
+    expect(screen.queryByTestId('community-liked-chip')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'community.gallery.clearFilters' })).toBeNull();
   });
 
-  it('shows a clearable staff-picks chip while featuredOnly is active', () => {
-    useBrowseStore.getState().setFeaturedOnly(true);
-    render(<GalleryToolbar />);
-    const chip = screen.getByTestId('community-featured-chip');
-    expect(chip).toHaveTextContent('community.shelves.staffPicks');
-    fireEvent.click(screen.getByRole('button', { name: 'community.gallery.clearFeaturedFilter' }));
-    expect(useBrowseStore.getState().filters.featuredOnly).toBe(false);
-    expect(screen.queryByTestId('community-featured-chip')).not.toBeInTheDocument();
-  });
-
-  it('hides the staff-picks chip while featuredOnly is off', () => {
-    render(<GalleryToolbar />);
-    expect(screen.queryByTestId('community-featured-chip')).not.toBeInTheDocument();
-  });
-
-  it('counts the new filters toward the clear-filters affordance', () => {
+  it('clears every filter and the gap context from the chip row', () => {
     useBrowseStore.getState().setAuthor({ id: 'a'.repeat(32), name: 'Alice' });
-    render(<GalleryToolbar />);
+    renderToolbar();
     fireEvent.click(screen.getByRole('button', { name: 'community.gallery.clearFilters' }));
-    expect(useBrowseStore.getState().filters.author).toBeNull();
+    expect(useBrowseStore.getState().filters).toEqual(INITIAL_BROWSE_FILTERS);
   });
 
   it('renders the chips on mobile too', () => {
     responsiveMock.isMobile = true;
     useBrowseStore.getState().setAuthor({ id: 'a'.repeat(32), name: 'Alice' });
-    render(<GalleryToolbar />);
-    expect(screen.getByTestId('community-liked-chip')).toBeInTheDocument();
-    expect(screen.getByTestId('community-recent-chip')).toBeInTheDocument();
+    renderToolbar();
     expect(screen.getByTestId('community-author-chip')).toBeInTheDocument();
-  });
-});
-
-describe('GalleryToolbar (mobile)', () => {
-  beforeEach(() => {
-    responsiveMock.isMobile = true;
-  });
-
-  it('renders one row with search, compact sort, and a filter button; no inline pills', () => {
-    render(<GalleryToolbar />);
-    expect(screen.getByLabelText('community.gallery.searchLabel')).toBeInTheDocument();
-    expect(screen.getByLabelText('community.gallery.sortLabel')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /community.gallery.filters/ })).toBeInTheDocument();
-    expect(screen.queryByLabelText('community.gallery.categoryLabel')).toBeNull();
-    expect(screen.queryAllByRole('radio')).toHaveLength(0);
-  });
-
-  it('badges the filter button with the active filter count', () => {
-    useBrowseStore.getState().setCategory('tools');
-    useBrowseStore.getState().setTechnique('scoop');
-    render(<GalleryToolbar />);
-    expect(screen.getByText('community.gallery.activeFilterCount')).toBeInTheDocument();
-    expect(screen.getByText('2')).toBeInTheDocument();
-  });
-
-  it('counts each active dimension filter in the badge', () => {
-    useBrowseStore.getState().setWidthMin(1);
-    useBrowseStore.getState().setWidthMax(2);
-    useBrowseStore.getState().setDepthMax(3);
-    useBrowseStore.getState().setMaxHeight(6);
-    render(<GalleryToolbar />);
-    expect(screen.getByText('4')).toBeInTheDocument();
-  });
-
-  it('opens the filter sheet from the filter button', () => {
-    render(<GalleryToolbar />);
-    fireEvent.click(screen.getByRole('button', { name: /community.gallery.filters/ }));
-    expect(screen.getByText('community.gallery.filterSheetTitle')).toBeInTheDocument();
   });
 });
