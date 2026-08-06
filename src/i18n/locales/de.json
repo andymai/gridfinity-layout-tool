@@ -3578,5 +3578,7 @@
   "community.gallery.widthAbbrev": "B",
   "community.gallery.depthAbbrev": "T",
   "community.gallery.heightAbbrev": "H",
-  "community.shelves.seeAllAria": "Alle anzeigen: {shelf}"
+  "community.shelves.seeAllAria": "Alle anzeigen: {shelf}",
+  "community.shelves.scrollBack": "{shelf} zurückscrollen",
+  "community.shelves.scrollForward": "{shelf} vorwärtsscrollen"
 }

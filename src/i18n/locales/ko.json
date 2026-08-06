@@ -3578,5 +3578,7 @@
   "community.gallery.widthAbbrev": "너비",
   "community.gallery.depthAbbrev": "깊이",
   "community.gallery.heightAbbrev": "높이",
-  "community.shelves.seeAllAria": "모두 보기: {shelf}"
+  "community.shelves.seeAllAria": "모두 보기: {shelf}",
+  "community.shelves.scrollBack": "{shelf} 이전으로 스크롤",
+  "community.shelves.scrollForward": "{shelf} 다음으로 스크롤"
 }

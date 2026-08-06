@@ -3578,5 +3578,7 @@
   "community.gallery.widthAbbrev": "幅",
   "community.gallery.depthAbbrev": "奥",
   "community.gallery.heightAbbrev": "高",
-  "community.shelves.seeAllAria": "すべて表示：{shelf}"
+  "community.shelves.seeAllAria": "すべて表示：{shelf}",
+  "community.shelves.scrollBack": "{shelf} を前にスクロール",
+  "community.shelves.scrollForward": "{shelf} を次にスクロール"
 }

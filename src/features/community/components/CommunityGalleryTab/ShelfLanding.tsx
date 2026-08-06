@@ -1,5 +1,6 @@
-import { useEffect, useMemo } from 'react';
-import { Button } from '@/design-system';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { Button, IconButton, cn } from '@/design-system';
+import { ChevronDownIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 import type { CommunityCard as CommunityCardData } from '@/shared/types/community';
 import { useBrowseStore } from '../../store/browseStore';
@@ -8,6 +9,7 @@ import type { ShelfId } from './shelfData';
 import { COMMUNITY_COLLECTIONS } from '../../data/collections';
 import { resolveCollections } from '../../utils/resolveCollections';
 import { buildShelves } from './shelfData';
+import { useScrollEdges } from './useScrollEdges';
 
 const SHELF_TITLE_KEYS: Record<ShelfId, string> = {
   'staff-picks': 'community.shelves.staffPicks',
@@ -110,8 +112,23 @@ interface RailProps {
   onSeeAll?: () => void;
 }
 
+/** One nudge moves most of a rail without overshooting what you were reading. */
+const RAIL_SCROLL_FRACTION = 0.8;
+
 function Rail({ id, title, blurb, cards, onSelect, onSelectAuthor, onSeeAll }: RailProps) {
   const t = useTranslation();
+  const railRef = useRef<HTMLUListElement>(null);
+  const { atStart, atEnd } = useScrollEdges(railRef, cards.length);
+
+  const nudge = useCallback((direction: -1 | 1) => {
+    const rail = railRef.current;
+    if (!rail) return;
+    rail.scrollBy({
+      left: direction * rail.clientWidth * RAIL_SCROLL_FRACTION,
+      behavior: 'smooth',
+    });
+  }, []);
+
   return (
     <section aria-labelledby={`community-shelf-${id}`}>
       <div className="flex items-center justify-between gap-2">
@@ -136,26 +153,95 @@ function Rail({ id, title, blurb, cards, onSelect, onSelectAuthor, onSeeAll }: R
 
       {blurb !== undefined && <p className="mb-1 text-xs text-content-secondary">{blurb}</p>}
 
-      {/* motion-reduce disables the snap yank outright, not just the timing:
-          scroll-snap can still animate into place without scroll-behavior. */}
-      {/* role="list" restores list semantics that Safari/iOS VoiceOver strips when list-style:none is applied. */}
-      {/* eslint-disable-next-line jsx-a11y/no-redundant-roles */}
-      <ul
-        role="list"
-        aria-label={title}
-        className="flex list-none snap-x snap-mandatory gap-3 overflow-x-auto pb-2 motion-reduce:snap-none motion-reduce:scroll-auto"
-      >
-        {cards.map((card, index) => (
-          <li key={card.id} className="w-40 shrink-0 snap-start sm:w-44">
-            <CommunityCard
-              card={card}
-              onSelect={onSelect}
-              onSelectAuthor={onSelectAuthor}
-              index={index}
-            />
-          </li>
-        ))}
-      </ul>
+      {/* The fades and the buttons render only against an edge that actually
+          hides something. A permanent gradient implies cards that are not
+          there, and at the true end it veils the last card behind a hint that
+          it is not the last card. */}
+      <div className="relative">
+        {/* motion-reduce disables the snap yank outright, not just the timing:
+            scroll-snap can still animate into place without scroll-behavior. */}
+        {/* eslint-disable-next-line jsx-a11y/no-redundant-roles -- role="list" restores the list semantics Safari/iOS VoiceOver strips once list-style:none is applied. */}
+        <ul
+          ref={railRef}
+          role="list"
+          aria-label={title}
+          className="flex list-none snap-x snap-mandatory gap-3 overflow-x-auto pb-2 motion-reduce:snap-none motion-reduce:scroll-auto"
+        >
+          {cards.map((card, index) => (
+            <li key={card.id} className="w-40 shrink-0 snap-start sm:w-44">
+              <CommunityCard
+                card={card}
+                onSelect={onSelect}
+                onSelectAuthor={onSelectAuthor}
+                index={index}
+              />
+            </li>
+          ))}
+        </ul>
+
+        {atStart && <RailFade side="start" />}
+        {atEnd && <RailFade side="end" />}
+
+        {/* Touch scrolls by swiping and shows a scrollbar while it does; a
+            mouse gets neither, and many have no horizontal wheel at all. */}
+        {atStart && (
+          <RailButton
+            side="start"
+            label={t('community.shelves.scrollBack', { shelf: title })}
+            onClick={() => nudge(-1)}
+          />
+        )}
+        {atEnd && (
+          <RailButton
+            side="end"
+            label={t('community.shelves.scrollForward', { shelf: title })}
+            onClick={() => nudge(1)}
+          />
+        )}
+      </div>
     </section>
+  );
+}
+
+function RailFade({ side }: { side: 'start' | 'end' }) {
+  return (
+    <div
+      aria-hidden="true"
+      data-testid={`community-shelf-fade-${side}`}
+      className={cn(
+        'pointer-events-none absolute inset-y-0 w-12',
+        side === 'start'
+          ? 'left-0 bg-gradient-to-r from-surface to-transparent'
+          : 'right-0 bg-gradient-to-l from-surface to-transparent'
+      )}
+    />
+  );
+}
+
+interface RailButtonProps {
+  side: 'start' | 'end';
+  label: string;
+  onClick: () => void;
+}
+
+function RailButton({ side, label, onClick }: RailButtonProps) {
+  return (
+    <IconButton
+      size="sm"
+      aria-label={label}
+      onClick={onClick}
+      // Hidden from touch, where the swipe is the affordance, and hidden from
+      // the tab order: keyboard users already scroll the rail by focusing the
+      // cards inside it, so these would be two extra stops to nothing new.
+      tabIndex={-1}
+      className={cn(
+        'absolute top-1/2 hidden -translate-y-1/2 border border-stroke-subtle bg-surface-elevated shadow-md md:flex',
+        side === 'start' ? 'left-1' : 'right-1'
+      )}
+    >
+      {/* Rotated rather than two more icons in the set; the chevron's own
+          docs sanction it for directional variants. */}
+      <ChevronDownIcon size="sm" className={side === 'start' ? 'rotate-90' : '-rotate-90'} />
+    </IconButton>
   );
 }
