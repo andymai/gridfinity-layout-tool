@@ -1674,7 +1674,7 @@
   "community.shelves.staffPicks": "スタッフのおすすめ",
   "community.shelves.newThisWeek": "今週の新着",
   "community.shelves.mostRemixed": "リミックス人気作",
-  "community.shelves.seeAll": "すべて表示：{shelf}",
+  "community.shelves.seeAll": "すべて表示",
   "community.gallery.sort.likes": "いいねが多い順",
   "community.gallery.sort.newest": "新着順",
   "community.gallery.sort.remixes": "リミックスが多い順",
@@ -3571,5 +3571,12 @@
   "community.publish.ownerActions": "公開デザインの操作",
   "community.publishNudge.message": "いいビンですね。コミュニティで共有しますか？",
   "community.publishNudge.action": "公開する",
-  "header.starOnGithubLong": "GitHub でスターを付ける"
+  "header.starOnGithubLong": "GitHub でスターを付ける",
+  "community.gallery.clearCategoryFilter": "カテゴリフィルターを解除",
+  "community.gallery.clearTechniqueFilter": "テクニックフィルターを解除",
+  "community.gallery.clearSizeFilter": "サイズフィルターを解除",
+  "community.gallery.widthAbbrev": "幅",
+  "community.gallery.depthAbbrev": "奥",
+  "community.gallery.heightAbbrev": "高",
+  "community.shelves.seeAllAria": "すべて表示：{shelf}"
 }

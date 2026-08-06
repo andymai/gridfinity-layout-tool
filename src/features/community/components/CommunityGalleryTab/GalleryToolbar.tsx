@@ -15,16 +15,11 @@ import {
 import { HeartGlyph } from '../CommunityCard/CommunityCard';
 import { formatUnits } from '../CommunityCard/cardDims';
 import { CommunitySignInPrompt } from '../SignInPrompt';
-import { CommunityTechniquePills } from './CommunityTechniquePills';
-import { DimensionFilters } from './DimensionFilters';
 import { FilterSheet } from './FilterSheet';
-import {
-  CATEGORY_ALL,
-  browseSortOptions,
-  categoryOptions,
-  isBrowseSort,
-  isCommunityCategory,
-} from './galleryFilterOptions';
+import { summariseDimensionFilters } from './dimensionSummary';
+import { browseSortOptions, isBrowseSort } from './galleryFilterOptions';
+import { CATEGORY_LABEL_KEYS } from '../../utils/categoryLabels';
+import { TECHNIQUE_CONFIG } from '@/shared/types/exampleTechniques';
 
 function UserGlyph() {
   return (
@@ -79,6 +74,11 @@ export function GalleryToolbar() {
   const setRecentOnly = useBrowseStore((s) => s.setRecentOnly);
   const setFeaturedOnly = useBrowseStore((s) => s.setFeaturedOnly);
   const setMineOnly = useBrowseStore((s) => s.setMineOnly);
+  const setWidthMin = useBrowseStore((s) => s.setWidthMin);
+  const setWidthMax = useBrowseStore((s) => s.setWidthMax);
+  const setDepthMin = useBrowseStore((s) => s.setDepthMin);
+  const setDepthMax = useBrowseStore((s) => s.setDepthMax);
+  const setMaxHeight = useBrowseStore((s) => s.setMaxHeight);
   const setFitsGapContext = useBrowseStore((s) => s.setFitsGapContext);
   const clearFilters = useBrowseStore((s) => s.clearFilters);
   const sessionStatus = useSessionStore((s) => s.status);
@@ -115,6 +115,86 @@ export function GalleryToolbar() {
     filters.author !== null && filters.author.name !== ''
       ? filters.author.name
       : t('community.gallery.authorFallback');
+
+  const dimensionSummary = summariseDimensionFilters(filters, {
+    width: t('community.gallery.widthAbbrev'),
+    depth: t('community.gallery.depthAbbrev'),
+    height: t('community.gallery.heightAbbrev'),
+  });
+
+  const clearDimensions = () => {
+    setWidthMin(null);
+    setWidthMax(null);
+    setDepthMin(null);
+    setDepthMax(null);
+    setMaxHeight(null);
+  };
+
+  // Category, technique and size live behind the filter disclosure now, so
+  // each active one needs a chip out here. Otherwise closing the panel hides
+  // the reason the grid is short, and a filtered gallery reads as an empty
+  // one.
+  const activeFilterChips = (
+    <>
+      {filters.category !== null && (
+        <Badge
+          tone="accent"
+          shape="pill"
+          size="sm"
+          className="inline-flex items-center gap-1"
+          data-testid="community-category-chip"
+        >
+          {t(CATEGORY_LABEL_KEYS[filters.category])}
+          <IconButton
+            aria-label={t('community.gallery.clearCategoryFilter')}
+            size="sm"
+            touchTarget={isMobile}
+            onClick={() => setCategory(null)}
+          >
+            <XIcon className="h-3 w-3" />
+          </IconButton>
+        </Badge>
+      )}
+      {filters.technique !== null && (
+        <Badge
+          tone="accent"
+          shape="pill"
+          size="sm"
+          className="inline-flex items-center gap-1"
+          data-testid="community-technique-chip"
+        >
+          {t(TECHNIQUE_CONFIG[filters.technique].labelKey)}
+          <IconButton
+            aria-label={t('community.gallery.clearTechniqueFilter')}
+            size="sm"
+            touchTarget={isMobile}
+            onClick={() => setTechnique(null)}
+          >
+            <XIcon className="h-3 w-3" />
+          </IconButton>
+        </Badge>
+      )}
+      {dimensionSummary !== null && (
+        <Badge
+          tone="accent"
+          shape="pill"
+          size="sm"
+          className="inline-flex items-center gap-1"
+          data-testid="community-size-chip"
+        >
+          {dimensionSummary}
+          <IconButton
+            aria-label={t('community.gallery.clearSizeFilter')}
+            size="sm"
+            touchTarget={isMobile}
+            onClick={clearDimensions}
+          >
+            <XIcon className="h-3 w-3" />
+          </IconButton>
+        </Badge>
+      )}
+    </>
+  );
 
   const filterChips = (
     <div className="flex flex-wrap items-center gap-2">
@@ -212,6 +292,7 @@ export function GalleryToolbar() {
         <ClockGlyph />
         {t('community.gallery.recentFilter')}
       </Button>
+      {activeFilterChips}
       {filters.author !== null && (
         <Badge
           tone="accent"
@@ -260,6 +341,27 @@ export function GalleryToolbar() {
     />
   );
 
+  const filterButton = (
+    <Button
+      variant="secondary"
+      onClick={() => setSheetOpen(true)}
+      aria-haspopup="dialog"
+      aria-expanded={sheetOpen}
+      className={cn('shrink-0', isMobile && 'min-h-11')}
+      data-testid="community-filter-button"
+    >
+      {t('community.gallery.filters')}
+      {activeSheetFilterCount > 0 && (
+        <Badge tone="accent" shape="pill" size="sm" className="ml-1.5">
+          <span aria-hidden="true">{activeSheetFilterCount}</span>
+          <span className="sr-only">
+            {t('community.gallery.activeFilterCount', { count: activeSheetFilterCount })}
+          </span>
+        </Badge>
+      )}
+    </Button>
+  );
+
   const sortField = (
     <Select
       options={browseSortOptions(t, bestFitAvailable)}
@@ -278,21 +380,7 @@ export function GalleryToolbar() {
         <div className="flex items-center gap-2">
           {searchField}
           {sortField}
-          <Button
-            variant="secondary"
-            onClick={() => setSheetOpen(true)}
-            className="min-h-11 shrink-0"
-          >
-            {t('community.gallery.filters')}
-            {activeSheetFilterCount > 0 && (
-              <Badge tone="accent" shape="pill" size="sm" className="ml-1.5">
-                <span aria-hidden="true">{activeSheetFilterCount}</span>
-                <span className="sr-only">
-                  {t('community.gallery.activeFilterCount', { count: activeSheetFilterCount })}
-                </span>
-              </Badge>
-            )}
-          </Button>
+          {filterButton}
         </div>
         {filterChips}
         <FilterSheet open={sheetOpen} onClose={() => setSheetOpen(false)} />
@@ -300,29 +388,25 @@ export function GalleryToolbar() {
     );
   }
 
+  // Desktop and mobile now share one shape: a single control row, then the
+  // chips. The five size selects and ten technique pills were three permanent
+  // rows of chrome — roughly a third of a short window spent on filters
+  // nobody had asked for yet — so they sit behind the same disclosure mobile
+  // already used, and whatever is active comes back as a chip.
   return (
     <div className="shrink-0 space-y-2 border-b border-stroke-subtle px-4 py-2">
       <div className="flex items-center gap-2">
         {searchField}
-        <Select
-          options={categoryOptions(t)}
-          value={filters.category ?? CATEGORY_ALL}
-          onValueChange={(value) => {
-            setCategory(isCommunityCategory(value) ? value : null);
-          }}
-          aria-label={t('community.gallery.categoryLabel')}
-          className="w-44"
-        />
         {sortField}
+        {filterButton}
         {hasActiveFilters && (
           <Button variant="ghost" onClick={clearFilters} className="shrink-0 text-sm">
             {t('community.gallery.clearFilters')}
           </Button>
         )}
       </div>
-      <DimensionFilters variant="toolbar" />
-      <CommunityTechniquePills selected={filters.technique} onChange={setTechnique} />
       {filterChips}
+      <FilterSheet open={sheetOpen} onClose={() => setSheetOpen(false)} />
     </div>
   );
 }

@@ -3320,7 +3320,7 @@
   "community.shelves.staffPicks": "员工精选",
   "community.shelves.newThisWeek": "本周新作",
   "community.shelves.mostRemixed": "二创热门",
-  "community.shelves.seeAll": "查看全部：{shelf}",
+  "community.shelves.seeAll": "查看全部",
   "community.authorFilterAria": "查看 {author} 的所有设计",
   "community.card.byAuthor": "作者：{author}",
   "community.card.likesLabel": "{count} 个赞",
@@ -3571,5 +3571,12 @@
   "community.publish.ownerActions": "已发布设计的操作",
   "community.publishNudge.message": "收纳盒不错。要分享给社区吗？",
   "community.publishNudge.action": "发布",
-  "header.starOnGithubLong": "在 GitHub 上加星"
+  "header.starOnGithubLong": "在 GitHub 上加星",
+  "community.gallery.clearCategoryFilter": "清除分类筛选",
+  "community.gallery.clearTechniqueFilter": "清除技法筛选",
+  "community.gallery.clearSizeFilter": "清除尺寸筛选",
+  "community.gallery.widthAbbrev": "宽",
+  "community.gallery.depthAbbrev": "深",
+  "community.gallery.heightAbbrev": "高",
+  "community.shelves.seeAllAria": "查看全部：{shelf}"
 }

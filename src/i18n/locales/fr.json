@@ -3362,7 +3362,7 @@
   "community.shelves.staffPicks": "Choix de l'équipe",
   "community.shelves.newThisWeek": "Nouveautés de la semaine",
   "community.shelves.mostRemixed": "Les plus remixés",
-  "community.shelves.seeAll": "Tout voir : {shelf}",
+  "community.shelves.seeAll": "Tout voir",
   "community.authorFilterAria": "Voir tous les designs de {author}",
   "community.detail.report": "Signaler",
   "community.detail.moreActions": "Plus d'actions",
@@ -3571,5 +3571,12 @@
   "community.publish.ownerActions": "Actions du design publié",
   "community.publishNudge.message": "Joli bac. Le partager avec la communauté ?",
   "community.publishNudge.action": "Le publier",
-  "header.starOnGithubLong": "Mettre une étoile sur GitHub"
+  "header.starOnGithubLong": "Mettre une étoile sur GitHub",
+  "community.gallery.clearCategoryFilter": "Effacer le filtre de catégorie",
+  "community.gallery.clearTechniqueFilter": "Effacer le filtre de technique",
+  "community.gallery.clearSizeFilter": "Effacer les filtres de taille",
+  "community.gallery.widthAbbrev": "L",
+  "community.gallery.depthAbbrev": "P",
+  "community.gallery.heightAbbrev": "H",
+  "community.shelves.seeAllAria": "Tout voir : {shelf}"
 }

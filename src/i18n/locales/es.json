@@ -1782,7 +1782,7 @@
   "community.shelves.staffPicks": "Selección del equipo",
   "community.shelves.newThisWeek": "Novedades de la semana",
   "community.shelves.mostRemixed": "Los más remezclados",
-  "community.shelves.seeAll": "Ver todo: {shelf}",
+  "community.shelves.seeAll": "Ver todo",
   "community.authorFilterAria": "Ver todos los diseños de {author}",
   "community.card.byAuthor": "por {author}",
   "community.card.likesLabel": "{count} me gusta",
@@ -3571,5 +3571,12 @@
   "community.publish.ownerActions": "Acciones del diseño publicado",
   "community.publishNudge.message": "Buen bin. ¿Lo compartes con la comunidad?",
   "community.publishNudge.action": "Publicarlo",
-  "header.starOnGithubLong": "Destacar en GitHub"
+  "header.starOnGithubLong": "Destacar en GitHub",
+  "community.gallery.clearCategoryFilter": "Quitar el filtro de categoría",
+  "community.gallery.clearTechniqueFilter": "Quitar el filtro de técnica",
+  "community.gallery.clearSizeFilter": "Quitar los filtros de tamaño",
+  "community.gallery.widthAbbrev": "An",
+  "community.gallery.depthAbbrev": "P",
+  "community.gallery.heightAbbrev": "Al",
+  "community.shelves.seeAllAria": "Ver todo: {shelf}"
 }

@@ -39,13 +39,32 @@ afterEach(() => {
 });
 
 describe('GalleryToolbar (desktop)', () => {
-  it('renders search, the full technique pill enum, category, and sort controls', () => {
+  it('keeps the control row to search, sort and the filter disclosure', () => {
     render(<GalleryToolbar />);
     expect(screen.getByLabelText('community.gallery.searchLabel')).toBeInTheDocument();
-    expect(screen.getByLabelText('community.gallery.categoryLabel')).toBeInTheDocument();
     expect(screen.getByLabelText('community.gallery.sortLabel')).toBeInTheDocument();
+    expect(screen.getByTestId('community-filter-button')).toBeInTheDocument();
+    // The heavy controls are one click away, not three permanent rows.
+    expect(screen.queryByLabelText('community.gallery.categoryLabel')).toBeNull();
+    expect(screen.queryByTestId('community-dimension-filters')).toBeNull();
+    expect(screen.queryAllByRole('radio')).toHaveLength(0);
+  });
+
+  it('reveals category, techniques and sizes in the filter panel', () => {
+    render(<GalleryToolbar />);
+    fireEvent.click(screen.getByTestId('community-filter-button'));
+    expect(screen.getByLabelText('community.gallery.categoryLabel')).toBeInTheDocument();
+    expect(screen.getByTestId('community-dimension-filters')).toBeInTheDocument();
     expect(screen.getAllByRole('radio')).toHaveLength(ALL_TECHNIQUES.length + 1);
-    expect(screen.queryByRole('button', { name: /community.gallery.filters/ })).toBeNull();
+  });
+
+  it('counts the filters hidden behind the disclosure', () => {
+    render(<GalleryToolbar />);
+    act(() => {
+      useBrowseStore.getState().setCategory('kitchen');
+      useBrowseStore.getState().setWidthMax(3);
+    });
+    expect(screen.getByTestId('community-filter-button')).toHaveTextContent('2');
   });
 
   it('writes search text to the browse store and clears it via the clear button', () => {
@@ -59,6 +78,7 @@ describe('GalleryToolbar (desktop)', () => {
 
   it('updates category and sort filters', () => {
     render(<GalleryToolbar />);
+    fireEvent.click(screen.getByTestId('community-filter-button'));
     fireEvent.change(screen.getByLabelText('community.gallery.categoryLabel'), {
       target: { value: 'kitchen' },
     });
@@ -75,6 +95,7 @@ describe('GalleryToolbar (desktop)', () => {
 
   it('selects a technique pill and toggles it off on reselect', () => {
     render(<GalleryToolbar />);
+    fireEvent.click(screen.getByTestId('community-filter-button'));
     const pill = screen.getAllByRole('radio')[1];
     fireEvent.click(pill);
     expect(useBrowseStore.getState().filters.technique).toBe(ALL_TECHNIQUES[0]);
@@ -82,8 +103,9 @@ describe('GalleryToolbar (desktop)', () => {
     expect(useBrowseStore.getState().filters.technique).toBeNull();
   });
 
-  it('renders the dimension filter row on desktop', () => {
+  it('renders the dimension filters inside the panel', () => {
     render(<GalleryToolbar />);
+    fireEvent.click(screen.getByTestId('community-filter-button'));
     expect(screen.getByTestId('community-dimension-filters')).toBeInTheDocument();
     expect(screen.getByLabelText('community.gallery.widthMinLabel')).toBeInTheDocument();
     expect(screen.getByLabelText('community.gallery.maxHeightLabel')).toBeInTheDocument();
@@ -103,16 +125,14 @@ describe('GalleryToolbar (desktop)', () => {
   });
 
   it('offers best-fit while a fits-gap context is set without toolbar constraints', () => {
-    useBrowseStore
-      .getState()
-      .setFitsGapContext({
-        widthMax: 2,
-        depthMax: 3,
-        maxHeight: null,
-        gridUnitMm: 42,
-        gridUnitMmY: 42,
-        heightUnitMm: 7,
-      });
+    useBrowseStore.getState().setFitsGapContext({
+      widthMax: 2,
+      depthMax: 3,
+      maxHeight: null,
+      gridUnitMm: 42,
+      gridUnitMmY: 42,
+      heightUnitMm: 7,
+    });
     render(<GalleryToolbar />);
     const sortSelect = screen.getByLabelText('community.gallery.sortLabel');
     expect(Array.from(sortSelect.querySelectorAll('option')).map((o) => o.value)).toContain(
@@ -134,12 +154,65 @@ describe('GalleryToolbar (desktop)', () => {
   it('shows a clear-filters button only when a filter is active', () => {
     render(<GalleryToolbar />);
     expect(screen.queryByRole('button', { name: 'community.gallery.clearFilters' })).toBeNull();
-    fireEvent.change(screen.getByLabelText('community.gallery.categoryLabel'), {
-      target: { value: 'tools' },
+    act(() => {
+      useBrowseStore.getState().setCategory('tools');
     });
     fireEvent.click(screen.getByRole('button', { name: 'community.gallery.clearFilters' }));
     expect(useBrowseStore.getState().filters.category).toBeNull();
     expect(screen.queryByRole('button', { name: 'community.gallery.clearFilters' })).toBeNull();
+  });
+
+  describe('active filter chips', () => {
+    it('surfaces a hidden category filter and clears it', () => {
+      render(<GalleryToolbar />);
+      act(() => {
+        useBrowseStore.getState().setCategory('kitchen');
+      });
+
+      const chip = screen.getByTestId('community-category-chip');
+      expect(chip).toBeInTheDocument();
+      fireEvent.click(
+        screen.getByRole('button', { name: 'community.gallery.clearCategoryFilter' })
+      );
+      expect(useBrowseStore.getState().filters.category).toBeNull();
+    });
+
+    it('surfaces a hidden technique filter and clears it', () => {
+      render(<GalleryToolbar />);
+      act(() => {
+        useBrowseStore.getState().setTechnique(ALL_TECHNIQUES[0]);
+      });
+
+      expect(screen.getByTestId('community-technique-chip')).toBeInTheDocument();
+      fireEvent.click(
+        screen.getByRole('button', { name: 'community.gallery.clearTechniqueFilter' })
+      );
+      expect(useBrowseStore.getState().filters.technique).toBeNull();
+    });
+
+    it('summarises the size constraints in one chip that clears every axis', () => {
+      render(<GalleryToolbar />);
+      act(() => {
+        useBrowseStore.getState().setWidthMin(2);
+        useBrowseStore.getState().setWidthMax(4);
+        useBrowseStore.getState().setMaxHeight(6);
+      });
+
+      expect(screen.getByTestId('community-size-chip')).toHaveTextContent('2–4');
+      fireEvent.click(screen.getByRole('button', { name: 'community.gallery.clearSizeFilter' }));
+
+      const { filters } = useBrowseStore.getState();
+      expect(filters.widthMin).toBeNull();
+      expect(filters.widthMax).toBeNull();
+      expect(filters.maxHeight).toBeNull();
+    });
+
+    it('shows no chips while nothing is filtered', () => {
+      render(<GalleryToolbar />);
+      expect(screen.queryByTestId('community-category-chip')).toBeNull();
+      expect(screen.queryByTestId('community-technique-chip')).toBeNull();
+      expect(screen.queryByTestId('community-size-chip')).toBeNull();
+    });
   });
 });
 
@@ -222,16 +295,14 @@ describe('GalleryToolbar filter chips', () => {
   });
 
   it('shows the fits-gap banner with the gap size while the context is active', () => {
-    useBrowseStore
-      .getState()
-      .setFitsGapContext({
-        widthMax: 2.5,
-        depthMax: 3,
-        maxHeight: 6,
-        gridUnitMm: 42,
-        gridUnitMmY: 42,
-        heightUnitMm: 7,
-      });
+    useBrowseStore.getState().setFitsGapContext({
+      widthMax: 2.5,
+      depthMax: 3,
+      maxHeight: 6,
+      gridUnitMm: 42,
+      gridUnitMmY: 42,
+      heightUnitMm: 7,
+    });
     render(<GalleryToolbar />);
     const chip = screen.getByTestId('community-fits-gap-chip');
     // i18nEcho returns the key; the size rides in as interpolation params.
@@ -249,16 +320,14 @@ describe('GalleryToolbar filter chips', () => {
       heightUnitMm: 7 as Mm,
       targetPosition: { x: gridUnits(0), y: gridUnits(0), layerId: layerId('layer_1') },
     });
-    useBrowseStore
-      .getState()
-      .setFitsGapContext({
-        widthMax: 2.5,
-        depthMax: 3,
-        maxHeight: 6,
-        gridUnitMm: 42,
-        gridUnitMmY: 42,
-        heightUnitMm: 7,
-      });
+    useBrowseStore.getState().setFitsGapContext({
+      widthMax: 2.5,
+      depthMax: 3,
+      maxHeight: 6,
+      gridUnitMm: 42,
+      gridUnitMmY: 42,
+      heightUnitMm: 7,
+    });
     useBrowseStore.getState().setSort('best-fit');
     render(<GalleryToolbar />);
 

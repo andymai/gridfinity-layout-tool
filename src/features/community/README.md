@@ -38,7 +38,12 @@ Identity is a line on the form (`Publishing as X · Change`), not a step. As a s
 
 **No photo upload at publish.** `CommunityPublishInput` carries generated renders and a GLB only. The one path a user photo reaches a gallery card is cover promotion, which the server validates against the design's own live prints, and that check is what keeps the most public surface in the app bounded. `CoverImageSection` surfaces that path in update mode rather than opening a second one.
 
-- `components/CommunityGalleryTab/`: gallery tab content with two hosts: the shell's `DesignGalleryModal` tab and the full-page `/community` route (no dialog chrome of its own). Toolbar is inline on desktop (search, technique pills, category, sort) and a single row plus a bottom filter sheet on mobile. Renders the grid in chunks of 24 with Load more, plus skeleton/empty/no-matches/error/offline states. Selecting a card opens the detail overlay through `@/core/store/communityDetail`.
+- `components/CommunityGalleryTab/`: gallery tab content with two hosts: the shell's `DesignGalleryModal` tab and the full-page `/community` route (no dialog chrome of its own). Toolbar is one control row (search, sort, filter disclosure) plus a chip row, on every width. Renders the grid in chunks of 24 with Load more, plus skeleton/empty/no-matches/error/offline states. Selecting a card opens the detail overlay through `@/core/store/communityDetail`.
+
+  **The filter disclosure is the whole toolbar's shape.** Category, the ten technique pills and the five size selects live in `FilterSheet` on desktop as well as mobile. Inline they were three permanent rows of chrome — roughly a third of a short window spent on filters nobody had asked for yet — before a single card was visible.
+
+  Collapsing them makes surfacing the active ones mandatory, not optional: `GalleryToolbar` renders a removable chip per active category, technique and size constraint, because otherwise closing the panel hides the reason the grid is short and a filtered gallery reads as an empty one. `dimensionSummary.ts` folds the five size fields into one chip (`W 2–4 · H ≤6`) whose dismiss clears every axis.
+
 - `components/CommunityCard/`: gallery card: lazy thumbnail with a neutral placeholder, author as plain text, dims-first footer with like/remix counts, corner remix glyph. Hover/long-press angle cycling is deferred until the list index exposes per-card angle URLs (it carries a single `thumbnailUrl` today).
 - `components/CommunityPage/`: full-page host for the `/community` route. URL-driven detail: `/community/d/<id>` is pushed on open and restored on back/forward and cold deep links. Routing lives in `@/shared/hooks/useCommunityRouting` so the SPA-route CI guard covers the rewrite.
 

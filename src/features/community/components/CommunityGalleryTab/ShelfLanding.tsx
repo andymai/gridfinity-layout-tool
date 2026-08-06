@@ -122,10 +122,14 @@ function Rail({ id, title, blurb, cards, onSelect, onSelectAuthor, onSeeAll }: R
           <Button
             variant="ghost"
             onClick={onSeeAll}
+            // The visible label does not repeat the heading it sits beside;
+            // the accessible name still names the shelf, since a screen
+            // reader may reach the button without the heading for context.
+            aria-label={t('community.shelves.seeAllAria', { shelf: title })}
             className="shrink-0 text-sm"
             data-testid={`community-shelf-see-all-${id}`}
           >
-            {t('community.shelves.seeAll', { shelf: title })}
+            {t('community.shelves.seeAll')}
           </Button>
         )}
       </div>
