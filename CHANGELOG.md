@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.374.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.374.0...gridfinity-layout-tool-v4.374.1) (2026-08-06)
+
+
+### Bug Fixes
+
+* **deps:** bump brepjs to 18.119.9 and brepkit-wasm to 2.129.8 ([#3262](https://github.com/andymai/gridfinity-layout-tool/issues/3262)) ([70fb3f6](https://github.com/andymai/gridfinity-layout-tool/commit/70fb3f6db6ad92238eb23f620482cfa431cf217b))
+
 ## [4.374.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.373.0...gridfinity-layout-tool-v4.374.0) (2026-08-06)
 
 
