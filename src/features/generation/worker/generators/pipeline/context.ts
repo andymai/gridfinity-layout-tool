@@ -6,7 +6,7 @@
  */
 
 import type { BinParams } from '@/shared/types/bin';
-import { resolveTrayFloorThickness } from '@/shared/types/bin';
+import { resolveTileFloorThickness } from '@/shared/types/bin';
 import { hashMask, isPartialMask } from '@/shared/utils/cellMask';
 import {
   HEIGHT_UNIT,
@@ -64,14 +64,14 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // sockets, leaving uniform 1u cells as one full socket. This avoids
   // decomposing every cell unnecessarily.
   const halfSockets = params.base.halfSockets && !socketless;
-  // Wall-less tray: the spacer's complement. Needs feet to stand on, so like
+  // Base-only bin: the spacer's complement. Needs feet to stand on, so like
   // the spacer it is inert on a socketless base and the constraint engine keeps
   // the two from being on together.
   const isTile = params.base.tile === true && !socketless;
-  // A wall-less tray always takes the solid path: its interior height is 0, so
+  // A base-only bin always takes the solid path: its interior height is 0, so
   // the cavity cut a 'standard' style would apply is a zero-height (degenerate)
   // tool. Derived here rather than via `base.solid` because IMPLICATION_RULES
-  // force that flag false for any style other than 'solid', and the tray keeps
+  // force that flag false for any style other than 'solid', and base-only keeps
   // style 'standard' so the user can switch back out of the mode.
   const solid = params.base.solid || isTile;
   // Spacer (#2869): a floorless riser that lifts a bin so mismatched heights line
@@ -85,7 +85,7 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // A spacer always shells (its feet ARE the structure once the floor is gone),
   // so it takes the same build path whether or not the user asked for lite.
   const lightweight = (params.base.lightweight || isSpacer) && !socketless;
-  // A tray collapses the wall to ZERO rather than shortening it: the body is the
+  // Base-only collapses the wall to ZERO rather than shortening it: the body is the
   // floor slab and nothing above it. `params.height` is inert here — it is
   // pinned to 1 only to satisfy the range validators (see `BaseConfig.tile`), so
   // reading it would silently build a 7mm-tall wall instead.
@@ -100,9 +100,9 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // degrades to the shortest real wall rather than losing the bin.
   const socketedWall = Math.max(totalHeight - SOCKET_HEIGHT, MIN_BODY_WALL_MM);
   const wallHeight = isTile ? 0 : socketless ? totalHeight : socketedWall;
-  // The tray's body. Shared with `assembledHeight` so the readout and the mesh
+  // The base-only body. Shared with `assembledHeight` so the readout and the mesh
   // cannot disagree about how tall the plate is.
-  const trayFloorHeight = isTile ? resolveTrayFloorThickness(params.wallThickness) : 0;
+  const tileFloorHeight = isTile ? resolveTileFloorThickness(params.wallThickness) : 0;
   // Exterior-wall collar (issue #2500): raises the outer box + lip above the
   // nominal wall height without touching the interior. Kept separate from
   // `wallHeight` so every feature stage anchors to the original top plane.
@@ -112,10 +112,10 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   const rawCollar = params.extraWallHeightMm ?? 0;
   const finiteCollar = Number.isFinite(rawCollar) ? Math.max(0, rawCollar) : 0;
   // A collar raises the outer WALLS (and the lip with them) above the nominal
-  // height. A tray has no walls to raise, and `assembledHeight` ignores the
-  // field for a tray, so honouring it here would build a box the readout never
+  // height. A base-only bin has no walls to raise, and `assembledHeight` ignores the
+  // the field there, so honouring it here would build a box the readout never
   // reports: `boxWallHeight` is `wallHeight + collarHeight`, so a stale collar
-  // on a design switched into tray mode would take the zero-wall branch away
+  // on a design switched into base-only mode would take the zero-wall branch away
   // and silently produce a walled bin.
   const collarHeight = isTile ? 0 : finiteCollar;
 
@@ -160,7 +160,7 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   const hasLip = params.base.stackingLip;
   // Safety: LIP_OVERLAP (0.1mm) < LIP_SMALL_TAPER (0.7mm) so interiorHeight
   // already clears the actual lip base at wallHeight - LIP_OVERLAP.
-  // Floored at 0 for the tray, whose wallHeight is 0: the subtraction would
+  // Floored at 0 for base-only, whose wallHeight is 0: the subtraction would
   // otherwise hand every downstream stage a -0.7mm interior, and a negative
   // extrude is a degenerate solid rather than an empty one.
   const interiorHeight = Math.max(0, hasLip ? wallHeight - LIP_SMALL_TAPER : wallHeight);
@@ -263,10 +263,10 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
       ...(isSpacer ? ['spacer'] : []),
       // A tray bin's shell is socketless, so it must not reuse a socketed bin's
       // cached body. `isFlat` above does not separate them: a custom
-      // `heightUnitMm` makes a socketed 13mm x 2u and a tray 7mm x 3u agree on
+      // `heightUnitMm` makes a socketed 13mm x 2u and a tray-bottom 7mm x 3u agree on
       // every other segment, including `wallHeight`.
       ...(isTrayBottom ? ['tray'] : []),
-      // `quantize(wallHeight)` above is 0 for a tray, but it is also 0 for a
+      // `quantize(wallHeight)` above is 0 for base-only, but it is also 0 for a
       // socketed bin whose totalHeight happens to equal SOCKET_HEIGHT (a custom
       // 5mm heightUnitMm at 1u). Those are different solids, so separate them.
       ...(isTile ? ['tile'] : []),
@@ -302,7 +302,7 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
     lightweight,
     isSpacer,
     isTile,
-    trayFloorHeight,
+    tileFloorHeight,
     solid,
     isSlotted,
     hasLip,

@@ -255,7 +255,7 @@ describe('binDirectMesh — canBinUseDirectMesh gate', () => {
     // has no floor, and a tray has no wall (and an inert `height` the draft
     // would extrude anyway).
     ['spacer base', { base: { ...base, spacer: true } }],
-    ['wall-less tray base', { base: { ...base, tile: true } }],
+    ['base-only bin base', { base: { ...base, tile: true } }],
     ['slotted body', { style: 'slotted' }],
     ['solid body', { style: 'solid' }],
     [

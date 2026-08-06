@@ -143,7 +143,7 @@ function computeBinVolume(params: BinParams): number {
   );
   let volume = shell.walls + shell.base + (params.base.stackingLip ? shell.lip : 0);
 
-  // A wall-less tray IS feet + floor slab + an optional lip, which is exactly
+  // A base-only bin IS feet + floor slab + an optional lip, which is exactly
   // what the `base` component is calibrated to. Every other term is fabricated
   // here: `walls` prices a `height`-tall wall the tray never builds, out of a
   // `height` that is inert on a tray, and the constraint engine rules out each
@@ -673,7 +673,7 @@ function computeFloorPatternReduction(
   // carry one without the other.
   if (params.base.solid || params.style === 'solid' || params.base.lightweight) return 0;
   if (params.base.spacer) return 0;
-  // The generator forces a wall-less tray down the solid path, so no floor
+  // The generator forces a base-only bin down the solid path, so no floor
   // pattern is ever cut. `base.solid` above does not catch it: IMPLICATION_RULES
   // hold that flag false while the tray keeps style 'standard'.
   if (params.base.tile === true) return 0;

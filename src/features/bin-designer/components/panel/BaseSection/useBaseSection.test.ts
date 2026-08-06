@@ -491,7 +491,7 @@ describe('useBaseSection', () => {
       const { base } = useDesignerStore.getState().params;
       expect(base.style).toBe('standard');
       // `params` is hashed wholesale, so a leftover `trayBottom` would make
-      // this bin fingerprint differently from one that never tried the tray.
+      // this bin fingerprint differently from one that never tried base-only mode.
       expect('trayBottom' in base).toBe(false);
     });
 
@@ -540,11 +540,11 @@ describe('useBaseSection', () => {
 });
 
 // Regression (PR #3234 review): `resolveConstraints` writes `tile: false`
-// whenever a rule auto-disables the tray, and EVERY base toggle commits through
+// whenever a rule auto-disables base-only mode, and EVERY base toggle commits through
 // `commit` — so stripping only inside `toggleTile` left the key behind on the
 // flat/lid/spacer paths and fingerprinted an ordinary bin differently from an
 // identical one that never tried the mode.
-describe('useBaseSection — wall-less tray residue', () => {
+describe('useBaseSection — base-only bin residue', () => {
   // Own reset: this block sits outside the suite above, so it would otherwise
   // inherit whatever base the previous test left behind and the toggle would
   // no-op on its availability guard.
@@ -552,7 +552,7 @@ describe('useBaseSection — wall-less tray residue', () => {
     useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS } });
   });
 
-  it('leaves no tile key behind when the flat base auto-disables the tray', () => {
+  it('leaves no tile key behind when the flat base auto-disables base-only mode', () => {
     const { result } = renderHook(() => useBaseSection());
     act(() => result.current.handlers.toggleTile());
     expect(useDesignerStore.getState().params.base.tile).toBe(true);
@@ -563,7 +563,7 @@ describe('useBaseSection — wall-less tray residue', () => {
     expect('tile' in base).toBe(false);
   });
 
-  it('drops the inert collar when entering tray mode', () => {
+  it('drops the inert collar when entering base-only mode', () => {
     useDesignerStore.getState().setParams({
       ...useDesignerStore.getState().params,
       extraWallHeightMm: 6,
@@ -572,7 +572,7 @@ describe('useBaseSection — wall-less tray residue', () => {
     act(() => result.current.handlers.toggleTile());
     const params = useDesignerStore.getState().params;
     expect(params.base.tile).toBe(true);
-    // Generation forces the collar to 0 on a tray, so carrying the value would
+    // Generation forces the collar to 0 there, so carrying the value would
     // only drift the fingerprint.
     expect(params.extraWallHeightMm).toBeUndefined();
     expect(params.height).toBe(1);

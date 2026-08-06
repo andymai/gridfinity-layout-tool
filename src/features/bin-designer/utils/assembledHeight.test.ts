@@ -275,13 +275,13 @@ describe('assembledHeight', () => {
   });
 });
 
-// A wall-less tray's body is its feet plus a `wallThickness` floor slab and
+// A base-only bin's body is its feet plus a `wallThickness` floor slab and
 // nothing more, so its bin band is SOCKET_HEIGHT + that slab rather than
 // `height * heightUnitMm`. This is the readout drawer clearance is computed
 // from, and `height` is inert on a tray (pinned to 1 only to satisfy the range
 // validators), so reading it would overstate a 6.2mm body as 7mm and defeat the
 // whole point of the mode.
-describe('assembledHeight — wall-less tray', () => {
+describe('assembledHeight — base-only bin', () => {
   const tray = (overrides: Partial<BinParams['base']> = {}): BinParams =>
     params({ height: 1, base: { ...DEFAULT_BIN_PARAMS.base, tile: true, ...overrides } });
   const trayBodyMm = GRIDFINITY.SOCKET_HEIGHT + DEFAULT_BIN_PARAMS.wallThickness;

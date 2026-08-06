@@ -85,7 +85,7 @@ export function baseFloorZ(base: BaseFloorSource, heightUnitMm: number, lid: Lid
 /**
  * Wall height for a given base: a socketless base has no socket to subtract.
  *
- * A wall-less tray is 0 by definition, mirroring `deriveDimensions`. Without
+ * A base-only bin is 0 by definition, mirroring `deriveDimensions`. Without
  * this branch the ghost overlays and the validator would place an interior rim
  * the mesh does not build.
  */

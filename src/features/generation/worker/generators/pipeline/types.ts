@@ -81,27 +81,27 @@ export interface BinDimensions {
    */
   readonly isSpacer: boolean;
   /**
-   * True for a wall-less tray: the complement of {@link isSpacer}. The feet and
+   * True for a base-only bin: the complement of {@link isSpacer}. The feet and
    * the floor stay, {@link wallHeight} is pinned to 0, and the stacking lip
    * fuses onto the floor slab, giving a plate that still stacks.
    *
-   * {@link totalHeight} is NOT the tray's height — it stays `height *
+   * {@link totalHeight} is NOT its height — it stays `height *
    * heightUnitMm` (7mm), because `params.height` is inert data pinned to 1 to
    * satisfy the range validators. The body top is
-   * `baseOffsetZ + wallHeight + trayFloorHeight`.
+   * `baseOffsetZ + wallHeight + tileFloorHeight`.
    * Forced false for socketless bins (no feet to stand on).
    */
   readonly isTile: boolean;
   /**
-   * Thickness of the slab that IS a wall-less tray's body, in mm; `0` for every
-   * other base. A tray has no box, so nothing else would bridge the gap between
+   * Thickness of the slab that IS a base-only bin's body, in mm; `0` for every
+   * other base. It has no box, so nothing else would bridge the gap between
    * its feet: `buildBaseSocket` sizes each foot `CLEARANCE` narrower than its
    * cell and rounds its corners, so the feet meet nowhere — the tops are
    * separate islands with a slot along every internal grid line. This is the
    * same slab `shell()` leaves under an ordinary bin's cavity, which is why it
    * takes {@link BinParams.wallThickness}.
    */
-  readonly trayFloorHeight: number;
+  readonly tileFloorHeight: number;
   readonly solid: boolean;
   readonly isSlotted: boolean;
   readonly hasLip: boolean;

@@ -150,7 +150,7 @@ export function useDimensionsSection() {
       minWidth,
       minDepth,
       minHeight,
-      // A tray's wall is 0 and its real height comes from `assembledHeight`, so
+      // A base-only bin's wall is 0 and its real height comes from `assembledHeight`, so
       // `height` drives nothing. Showing a stepper that moves an inert number
       // would read as a broken control.
       heightApplies: !baseTile,

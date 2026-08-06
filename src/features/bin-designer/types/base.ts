@@ -7,16 +7,16 @@ import type { LidAttachment, LidClickRails, LidMagnetConfig } from './lid';
 import { GRIDFINITY } from '../constants/gridfinity';
 
 /**
- * Thickness of the slab that IS a wall-less tray's body, in mm — the ONLY
+ * Thickness of the slab that IS a base-only bin's body, in mm — the ONLY
  * source for it, so `deriveDimensions` and every readout built on top of it
  * (drawer clearance, print estimate) cannot describe a different plate than the
  * one the worker builds.
  *
  * A zero or non-finite thickness would extrude a degenerate slab, and unlike an
- * ordinary bin a tray has no wall to stand in for it, so both fall back to the
+ * ordinary bin a base-only bin has no wall to stand in for it, so both fall back to the
  * spec thickness rather than to nothing.
  */
-export function resolveTrayFloorThickness(wallThickness: number): number {
+export function resolveTileFloorThickness(wallThickness: number): number {
   return Number.isFinite(wallThickness) && wallThickness > 0
     ? wallThickness
     : GRIDFINITY.WALL_THICKNESS;
@@ -47,7 +47,7 @@ export function isSocketlessBase(style: BaseStyle): boolean {
 }
 
 /**
- * True when the tray flag actually takes effect. A tray is feet + floor + lip
+ * True when the base-only flag actually takes effect. It is feet + floor + lip
  * with the wall collapsed to zero, so a socketless base has nothing to build it
  * on and the flag is inert there — exactly as `spacer` is.
  *
@@ -136,8 +136,8 @@ export interface BaseConfig {
    */
   readonly spacer: boolean;
   /**
-   * Wall-less tray mode: the exact complement of {@link spacer}. A spacer keeps
-   * the walls and drops the floor; a tray keeps the floor and drops the walls,
+   * Base-only mode: the exact complement of {@link spacer}. A spacer keeps
+   * the walls and drops the floor; this keeps the floor and drops the walls,
    * leaving feet + floor slab + an optional stacking lip. With the lip it is a
    * flat colour-blockable plate that still stacks; without it, a bare tile.
    *
@@ -152,7 +152,7 @@ export interface BaseConfig {
    * unit and therefore NOT expressible via {@link BinParams.height} — `height`
    * is pinned to 1 purely so the existing range validators and their server
    * mirror keep working, and the geometry ignores it. Anything reporting a
-   * tray's real height must go through `assembledHeight`, never
+   * bin's real height must go through `assembledHeight`, never
    * `height * heightUnitMm`.
    *
    * Needs a socket to sit on, so like {@link spacer} the flag is inert on a
