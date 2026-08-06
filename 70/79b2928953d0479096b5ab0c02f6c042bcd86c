@@ -1,0 +1,126 @@
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTextList.test.tsx
+  s_555c7390ea438f::t_3ca5ca3fd4a5ec 1-147
+src/features/bin-designer/components/panel/LabelTabsSection/CompartmentTextInput.tsx
+  s_555c7390ea438f::t_d49b3d69d5ce7e 58
+  s_555c7390ea438f::t_599481079fbbb7 36-44,55-57,62
+  s_555c7390ea438f::t_b097713e904f43 45-46
+  s_555c7390ea438f::t_02298e3dce2460 150-151
+  s_555c7390ea438f::t_a830450c2cd7d1 114-136,139,147
+src/i18n/locales/pl.json
+  s_555c7390ea438f::t_9809ca71c1c12e 414-425
+src/i18n/locales/sv.json
+  s_555c7390ea438f::t_9809ca71c1c12e 414-425
+src/features/bin-designer/types/generation.ts
+  s_555c7390ea438f::t_7a65a6ff7706bf 7
+  s_555c7390ea438f::t_318a8fd42d0c10 52-54
+src/i18n/locales/ja.json
+  s_555c7390ea438f::t_9809ca71c1c12e 414-425
+src/shared/types/generation.ts
+  s_555c7390ea438f::t_35a8311a0e3bc1 15
+src/features/generation/bridge/meshData.ts
+  s_555c7390ea438f::t_33a3a48975b874 34-55
+src/i18n/locales/nl.json
+  s_555c7390ea438f::t_9809ca71c1c12e 414-425
+src/features/generation/bridge/bridgeMessageHandler.ts
+  s_555c7390ea438f::t_01573512d4bb11 223
+src/i18n/locales/de.json
+  s_555c7390ea438f::t_9809ca71c1c12e 414-425
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.tsx
+  s_555c7390ea438f::t_6f97a30fdf25ae 90-92
+  s_555c7390ea438f::t_ac9791fc78b470 31
+  s_555c7390ea438f::t_dc2dc8114ece43 126-127
+  s_555c7390ea438f::t_46da4c38a2f309 68-80
+  s_555c7390ea438f::t_02946bd2533a97 4-7
+  s_555c7390ea438f::t_2fc7436949937c 13
+src/i18n/locales/it.json
+  s_555c7390ea438f::t_9809ca71c1c12e 414-425
+src/features/bin-designer/store/slices/paramSlice/compartmentActions.ts
+  s_555c7390ea438f::t_29b429c421b1fa 133-154,156
+  s_638644fdff411b::t_19d6e2de3891fc 155
+src/i18n/locales/es.json
+  s_555c7390ea438f::t_9809ca71c1c12e 414-425
+src/i18n/locales/ko.json
+  s_555c7390ea438f::t_9809ca71c1c12e 414-425
+src/features/generation/worker/generators/labelTabBuilder.ts
+  s_555c7390ea438f::t_848231b2c5c04a 68
+  s_555c7390ea438f::t_c5035eb8a94038 467-470
+  s_555c7390ea438f::t_724efd399fff3b 561-562,567-569,572,574,580,588,593,598,604,606-607,610-613,615,618
+  s_555c7390ea438f::t_37dff04b6535fc 552-553
+  s_555c7390ea438f::t_8daecdd2679c6b 560,563-566,570-571,573,575-579,581-587,589-592,594-597,599-603,605,608-609,614,616-617,619-620
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.test.tsx
+  s_555c7390ea438f::t_712f89bda438ac 27-28
+src/features/bin-designer/components/panel/LabelTabsSection/useLabelTabsSection.ts
+  s_555c7390ea438f::t_0c19e372b40885 57-58
+  s_555c7390ea438f::t_78504e9757512c 627-672,677-679
+  s_555c7390ea438f::t_e3774113d72081 41-42
+  s_555c7390ea438f::t_02743afcfc5758 727-729
+src/features/generation/worker/generators/labelTextFit.ts
+  s_555c7390ea438f::t_635d1b713db493 1-59
+src/features/bin-designer/store/designer.scenario.compartments.test.ts
+  s_555c7390ea438f::t_00af75d942adb4 801-852
+src/features/generation/worker/handlers/generateHandler.ts
+  s_555c7390ea438f::t_e2b4dbd66941e0 120-138
+  s_555c7390ea438f::t_018bab392fff2f 18
+  s_555c7390ea438f::t_196e67b60a6f5f 90-93
+src/features/bin-designer/hooks/useGeneration.ts
+  s_555c7390ea438f::t_c47ef6ec158174 55,82
+src/i18n/locales/en.ts
+  s_555c7390ea438f::t_66dd1be6dc3860 1797-1808
+src/features/generation/bridge/responses.ts
+  s_555c7390ea438f::t_6aa32b3d9becaa 214-215
+  s_555c7390ea438f::t_26b5f53c4eaa70 11
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTextList.tsx
+  s_555c7390ea438f::t_985306a3eab136 95-97
+  s_555c7390ea438f::t_2eeab25ae12e4e 157
+  s_555c7390ea438f::t_2bc037437194ae 102
+  s_555c7390ea438f::t_52d7e7df12c5fc 1-17,19-94,98-101,103-156,158-247
+  s_555c7390ea438f::t_abae2a9e0739b9 18
+src/features/bin-designer/types/designerState.ts
+  s_555c7390ea438f::t_f062ff4cdd0066 147-148
+src/i18n/locales/zh-CN.json
+  s_555c7390ea438f::t_9809ca71c1c12e 414-425
+src/features/generation/worker/generators/labelPlateBuilder.ts
+  s_555c7390ea438f::t_fbb15b2ba03093 105-109,111-117,140-141
+  s_555c7390ea438f::t_2b4b914cbf7dcd 104,110,118-139
+src/i18n/locales/cs.json
+  s_555c7390ea438f::t_9809ca71c1c12e 414-425
+src/features/generation/worker/generators/labelTextFit.test.ts
+  s_555c7390ea438f::t_c3306d240aaf26 126-129,131,144
+  s_555c7390ea438f::t_73cfb0f3d73f0a 1-30,39-112,137,139,142-143,147-148
+  s_555c7390ea438f::t_e18c06f38f60ee 113-125,130,132-136,138,140-141,145-146
+  s_555c7390ea438f::t_7b6650c3f43dea 31-38
+src/i18n/locales/uk.json
+  s_555c7390ea438f::t_9809ca71c1c12e 414-425
+src/i18n/locales/fr.json
+  s_555c7390ea438f::t_9809ca71c1c12e 414-425
+src/features/generation/worker/handlers/workerContext.ts
+  s_555c7390ea438f::t_a43a1347e4d3b7 270
+src/i18n/locales/nb.json
+  s_555c7390ea438f::t_9809ca71c1c12e 414-425
+src/i18n/locales/pt-BR.json
+  s_555c7390ea438f::t_9809ca71c1c12e 414-425
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "7079b2928953d0479096b5ab0c02f6c042bcd86c",
+  "prompts": {},
+  "sessions": {
+    "s_555c7390ea438f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f789b3c0-f602-4afe-9b9d-9b600599e525",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_638644fdff411b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0e007429-ee5b-4225-8328-687d3a33df55",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
