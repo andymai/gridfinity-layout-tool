@@ -3320,7 +3320,7 @@
   "community.shelves.staffPicks": "Výběr týmu",
   "community.shelves.newThisWeek": "Novinky tohoto týdne",
   "community.shelves.mostRemixed": "Nejvíce remixované",
-  "community.shelves.seeAll": "Zobrazit vše: {shelf}",
+  "community.shelves.seeAll": "Zobrazit vše",
   "community.authorFilterAria": "Zobrazit všechny návrhy od {author}",
   "community.card.byAuthor": "od {author}",
   "community.card.likesLabel": "{count} lajků",
@@ -3571,5 +3571,12 @@
   "community.publish.ownerActions": "Akce publikovaného návrhu",
   "community.publishNudge.message": "Pěkný bin. Sdílet ho s komunitou?",
   "community.publishNudge.action": "Publikovat",
-  "header.starOnGithubLong": "Ohodnotit na GitHubu"
+  "header.starOnGithubLong": "Ohodnotit na GitHubu",
+  "community.gallery.clearCategoryFilter": "Zrušit filtr kategorie",
+  "community.gallery.clearTechniqueFilter": "Zrušit filtr techniky",
+  "community.gallery.clearSizeFilter": "Zrušit filtry velikosti",
+  "community.gallery.widthAbbrev": "Š",
+  "community.gallery.depthAbbrev": "H",
+  "community.gallery.heightAbbrev": "V",
+  "community.shelves.seeAllAria": "Zobrazit vše: {shelf}"
 }

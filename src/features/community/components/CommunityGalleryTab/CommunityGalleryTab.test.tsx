@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { act, render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { ok, err } from '@/core/result';
 import { trackEvent } from '@/shared/analytics/posthog';
 import {
@@ -608,8 +608,10 @@ describe('CommunityGalleryTab shelf landing', () => {
     await waitFor(() => {
       expect(screen.getByTestId('community-shelves')).toBeInTheDocument();
     });
-    fireEvent.change(screen.getByLabelText('community.gallery.categoryLabel'), {
-      target: { value: 'kitchen' },
+    // Category lives behind the filter disclosure now; set it on the store so
+    // the assertion stays about the shelves, not about reaching the control.
+    act(() => {
+      useBrowseStore.getState().setCategory('kitchen');
     });
     expect(screen.queryByTestId('community-shelves')).not.toBeInTheDocument();
     const clearButtons = screen.getAllByRole('button', { name: 'community.gallery.clearFilters' });
@@ -709,16 +711,14 @@ describe('CommunityGalleryTab fits-gap sync', () => {
 
   it('drops a stale gap context when the handoff has been cleared', async () => {
     indexMock.mockResolvedValue(ok({ items: [card('design001')], capped: false }));
-    useBrowseStore
-      .getState()
-      .setFitsGapContext({
-        widthMax: 2,
-        depthMax: 2,
-        maxHeight: 6,
-        gridUnitMm: 42,
-        gridUnitMmY: 42,
-        heightUnitMm: 7,
-      });
+    useBrowseStore.getState().setFitsGapContext({
+      widthMax: 2,
+      depthMax: 2,
+      maxHeight: 6,
+      gridUnitMm: 42,
+      gridUnitMmY: 42,
+      heightUnitMm: 7,
+    });
     render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
 
     await waitFor(() => {

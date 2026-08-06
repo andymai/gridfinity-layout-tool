@@ -1778,7 +1778,7 @@
   "community.shelves.staffPicks": "Вибір команди",
   "community.shelves.newThisWeek": "Нове цього тижня",
   "community.shelves.mostRemixed": "Найбільш реміксовані",
-  "community.shelves.seeAll": "Переглянути всі: {shelf}",
+  "community.shelves.seeAll": "Переглянути всі",
   "community.authorFilterAria": "Переглянути всі дизайни від {author}",
   "community.detail.report": "Поскаржитися",
   "community.detail.moreActions": "Більше дій",
@@ -3571,5 +3571,12 @@
   "community.publish.ownerActions": "Дії з опублікованим дизайном",
   "community.publishNudge.message": "Гарний бін. Поділитися зі спільнотою?",
   "community.publishNudge.action": "Опублікувати",
-  "header.starOnGithubLong": "Поставити зірку на GitHub"
+  "header.starOnGithubLong": "Поставити зірку на GitHub",
+  "community.gallery.clearCategoryFilter": "Очистити фільтр категорії",
+  "community.gallery.clearTechniqueFilter": "Очистити фільтр техніки",
+  "community.gallery.clearSizeFilter": "Очистити фільтри розміру",
+  "community.gallery.widthAbbrev": "Ш",
+  "community.gallery.depthAbbrev": "Г",
+  "community.gallery.heightAbbrev": "В",
+  "community.shelves.seeAllAria": "Переглянути всі: {shelf}"
 }

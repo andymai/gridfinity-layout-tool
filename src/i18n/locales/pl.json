@@ -3320,7 +3320,7 @@
   "community.shelves.staffPicks": "Wybór zespołu",
   "community.shelves.newThisWeek": "Nowości w tym tygodniu",
   "community.shelves.mostRemixed": "Najczęściej remiksowane",
-  "community.shelves.seeAll": "Zobacz wszystko: {shelf}",
+  "community.shelves.seeAll": "Zobacz wszystko",
   "community.authorFilterAria": "Zobacz wszystkie projekty autorstwa {author}",
   "community.card.byAuthor": "autor: {author}",
   "community.card.likesLabel": "{count} polubień",
@@ -3571,5 +3571,12 @@
   "community.publish.ownerActions": "Działania na opublikowanym projekcie",
   "community.publishNudge.message": "Niezły bin. Udostępnić go społeczności?",
   "community.publishNudge.action": "Opublikuj",
-  "header.starOnGithubLong": "Oznacz gwiazdką na GitHubie"
+  "header.starOnGithubLong": "Oznacz gwiazdką na GitHubie",
+  "community.gallery.clearCategoryFilter": "Wyczyść filtr kategorii",
+  "community.gallery.clearTechniqueFilter": "Wyczyść filtr techniki",
+  "community.gallery.clearSizeFilter": "Wyczyść filtry rozmiaru",
+  "community.gallery.widthAbbrev": "S",
+  "community.gallery.depthAbbrev": "G",
+  "community.gallery.heightAbbrev": "W",
+  "community.shelves.seeAllAria": "Zobacz wszystko: {shelf}"
 }

@@ -1721,7 +1721,7 @@
   "community.shelves.staffPicks": "Teamets utvalgte",
   "community.shelves.newThisWeek": "Nytt denne uken",
   "community.shelves.mostRemixed": "Mest remixet",
-  "community.shelves.seeAll": "Se alle: {shelf}",
+  "community.shelves.seeAll": "Se alle",
   "community.gallery.sort.likes": "Mest likt",
   "community.gallery.sort.newest": "Nyeste",
   "community.gallery.sort.remixes": "Mest remixet",
@@ -3571,5 +3571,12 @@
   "community.publish.ownerActions": "Handlinger for publisert design",
   "community.publishNudge.message": "Fin bin. Dele den med fellesskapet?",
   "community.publishNudge.action": "Publiser den",
-  "header.starOnGithubLong": "Gi stjerne på GitHub"
+  "header.starOnGithubLong": "Gi stjerne på GitHub",
+  "community.gallery.clearCategoryFilter": "Fjern kategorifilteret",
+  "community.gallery.clearTechniqueFilter": "Fjern teknikkfilteret",
+  "community.gallery.clearSizeFilter": "Fjern størrelsesfiltrene",
+  "community.gallery.widthAbbrev": "B",
+  "community.gallery.depthAbbrev": "D",
+  "community.gallery.heightAbbrev": "H",
+  "community.shelves.seeAllAria": "Se alle: {shelf}"
 }

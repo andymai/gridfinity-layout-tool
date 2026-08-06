@@ -1721,7 +1721,7 @@
   "community.shelves.staffPicks": "Scelti dal team",
   "community.shelves.newThisWeek": "Novità della settimana",
   "community.shelves.mostRemixed": "I più remixati",
-  "community.shelves.seeAll": "Vedi tutto: {shelf}",
+  "community.shelves.seeAll": "Vedi tutto",
   "community.gallery.sortLabel": "Ordina per",
   "community.gallery.sort.likes": "Più apprezzati",
   "community.gallery.sort.newest": "Più recenti",
@@ -3571,5 +3571,12 @@
   "community.publish.ownerActions": "Azioni sul design pubblicato",
   "community.publishNudge.message": "Bel bin. Lo condividi con la community?",
   "community.publishNudge.action": "Pubblicalo",
-  "header.starOnGithubLong": "Metti una stella su GitHub"
+  "header.starOnGithubLong": "Metti una stella su GitHub",
+  "community.gallery.clearCategoryFilter": "Rimuovi il filtro categoria",
+  "community.gallery.clearTechniqueFilter": "Rimuovi il filtro tecnica",
+  "community.gallery.clearSizeFilter": "Rimuovi i filtri dimensione",
+  "community.gallery.widthAbbrev": "L",
+  "community.gallery.depthAbbrev": "P",
+  "community.gallery.heightAbbrev": "A",
+  "community.shelves.seeAllAria": "Vedi tutto: {shelf}"
 }

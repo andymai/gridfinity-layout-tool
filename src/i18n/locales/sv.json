@@ -3320,7 +3320,7 @@
   "community.shelves.staffPicks": "Teamets favoriter",
   "community.shelves.newThisWeek": "Nytt denna vecka",
   "community.shelves.mostRemixed": "Mest remixade",
-  "community.shelves.seeAll": "Se alla: {shelf}",
+  "community.shelves.seeAll": "Se alla",
   "community.authorFilterAria": "Visa alla designer av {author}",
   "community.card.byAuthor": "av {author}",
   "community.card.likesLabel": "{count} gillningar",
@@ -3571,5 +3571,12 @@
   "community.publish.ownerActions": "Åtgärder för publicerad design",
   "community.publishNudge.message": "Snyggt fack. Dela det med gemenskapen?",
   "community.publishNudge.action": "Publicera det",
-  "header.starOnGithubLong": "Stjärnmärk på GitHub"
+  "header.starOnGithubLong": "Stjärnmärk på GitHub",
+  "community.gallery.clearCategoryFilter": "Rensa kategorifiltret",
+  "community.gallery.clearTechniqueFilter": "Rensa teknikfiltret",
+  "community.gallery.clearSizeFilter": "Rensa storleksfiltren",
+  "community.gallery.widthAbbrev": "B",
+  "community.gallery.depthAbbrev": "D",
+  "community.gallery.heightAbbrev": "H",
+  "community.shelves.seeAllAria": "Se alla: {shelf}"
 }

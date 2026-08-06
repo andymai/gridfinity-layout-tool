@@ -3320,7 +3320,7 @@
   "community.shelves.staffPicks": "스태프 추천",
   "community.shelves.newThisWeek": "이번 주 신규",
   "community.shelves.mostRemixed": "리믹스 인기작",
-  "community.shelves.seeAll": "모두 보기: {shelf}",
+  "community.shelves.seeAll": "모두 보기",
   "community.authorFilterAria": "{author}님의 모든 디자인 보기",
   "community.card.byAuthor": "{author}님 제작",
   "community.card.likesLabel": "좋아요 {count}개",
@@ -3571,5 +3571,12 @@
   "community.publish.ownerActions": "게시된 디자인 작업",
   "community.publishNudge.message": "멋진 수납통이네요. 커뮤니티에 공유할까요?",
   "community.publishNudge.action": "게시하기",
-  "header.starOnGithubLong": "GitHub에서 스타 주기"
+  "header.starOnGithubLong": "GitHub에서 스타 주기",
+  "community.gallery.clearCategoryFilter": "카테고리 필터 지우기",
+  "community.gallery.clearTechniqueFilter": "기법 필터 지우기",
+  "community.gallery.clearSizeFilter": "크기 필터 지우기",
+  "community.gallery.widthAbbrev": "너비",
+  "community.gallery.depthAbbrev": "깊이",
+  "community.gallery.heightAbbrev": "높이",
+  "community.shelves.seeAllAria": "모두 보기: {shelf}"
 }
