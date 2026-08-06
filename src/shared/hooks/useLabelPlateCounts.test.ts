@@ -80,7 +80,9 @@ describe('useLabelPlateCounts', () => {
 
     // Single full-width compartment on a 100mm interior: a 2U socket
     // (80.3mm outer) fits, a 3U (122.3mm) does not.
-    await waitFor(() => expect(result.current.get(D1)).toEqual({ perBin: 1, widthsU: [2] }));
+    await waitFor(() =>
+      expect(result.current.get(D1)?.plateSet).toEqual({ perBin: 1, widthsU: [2] })
+    );
   });
 
   it('counts one plate per socketed compartment', async () => {
@@ -92,7 +94,9 @@ describe('useLabelPlateCounts', () => {
     const bins = [createTestBin({ linkedDesignId: D1 })];
     const { result } = renderHook(() => useLabelPlateCounts(bins));
 
-    await waitFor(() => expect(result.current.get(D1)).toEqual({ perBin: 2, widthsU: [1, 1] }));
+    await waitFor(() =>
+      expect(result.current.get(D1)?.plateSet).toEqual({ perBin: 2, widthsU: [1, 1] })
+    );
   });
 
   // #2910: the print list quoted one plate per compartment while the worker
@@ -112,7 +116,7 @@ describe('useLabelPlateCounts', () => {
     const { result } = renderHook(() => useLabelPlateCounts(bins));
 
     await waitFor(() =>
-      expect(result.current.get(D1)).toEqual({ perBin: 4, widthsU: [1, 1, 1, 1] })
+      expect(result.current.get(D1)?.plateSet).toEqual({ perBin: 4, widthsU: [1, 1, 1, 1] })
     );
   });
 
@@ -126,7 +130,7 @@ describe('useLabelPlateCounts', () => {
     const { result } = renderHook(() => useLabelPlateCounts(bins));
 
     await waitFor(() => expect(mockLoadDesign).toHaveBeenCalledTimes(1));
-    await waitFor(() => expect(result.current.size).toBe(0));
+    await waitFor(() => expect(result.current.get(D1)?.plateSet ?? null).toBeNull());
   });
 
   it('omits designs that fail to load', async () => {
@@ -139,7 +143,7 @@ describe('useLabelPlateCounts', () => {
     const { result } = renderHook(() => useLabelPlateCounts(bins));
 
     await waitFor(() => expect(mockLoadDesign).toHaveBeenCalledTimes(1));
-    expect(result.current.size).toBe(0);
+    expect(result.current.get(D1)?.plateSet ?? null).toBeNull();
   });
 
   it('serves repeat renders from the cache', async () => {
@@ -168,5 +172,86 @@ describe('useLabelPlateCounts', () => {
     const second = renderHook(() => useLabelPlateCounts(bins));
     await waitFor(() => expect(second.result.current.size).toBe(1));
     expect(mockLoadDesign).toHaveBeenCalledTimes(2);
+  });
+
+  it('flags a design whose label tabs carry no text at all', async () => {
+    mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
+    mockLoadDesign.mockResolvedValue(ok(makeSocketDesign()));
+
+    const { result } = renderHook(() =>
+      useLabelPlateCounts([createTestBin({ linkedDesignId: D1 })])
+    );
+
+    // Every tab in the row prints blank — worth knowing before the spool goes
+    // in. Design-level, not a per-tab count: counting individual blanks needs
+    // the worker's tab plan, and a guess would over-report.
+    await waitFor(() => expect(result.current.get(D1)?.tabsWithoutText).toBe(true));
+  });
+
+  it('does not flag a design that has text on a tab', async () => {
+    mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
+    mockLoadDesign.mockResolvedValue(
+      ok(
+        makeSocketDesign({
+          compartments: { cols: 1, rows: 1, cells: [0], thickness: 1.2, compartmentTexts: ['M3'] },
+        })
+      )
+    );
+
+    const { result } = renderHook(() =>
+      useLabelPlateCounts([createTestBin({ linkedDesignId: D1 })])
+    );
+
+    await waitFor(() => expect(result.current.get(D1)?.tabsWithoutText).toBe(false));
+  });
+
+  it('flags a span design whose rows are blank despite stale compartment captions', async () => {
+    mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
+    mockLoadDesign.mockResolvedValue(
+      ok(
+        makeSocketDesign({
+          label: { enabled: true, mode: 'socket', depth: 12, span: true },
+          compartments: { cols: 1, rows: 1, cells: [0], thickness: 1.2, compartmentTexts: ['M3'] },
+        })
+      )
+    );
+
+    const { result } = renderHook(() =>
+      useLabelPlateCounts([createTestBin({ linkedDesignId: D1 })])
+    );
+
+    // Span mode prints `label.rowTexts`, so the leftover compartment caption
+    // never reaches a tab. Reading both arrays would call this design labelled.
+    await waitFor(() => expect(result.current.get(D1)?.tabsWithoutText).toBe(true));
+  });
+
+  it('does not flag a span design that has row text', async () => {
+    mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
+    mockLoadDesign.mockResolvedValue(
+      ok(
+        makeSocketDesign({
+          label: { enabled: true, mode: 'socket', depth: 12, span: true, rowTexts: ['DRILL BITS'] },
+        })
+      )
+    );
+
+    const { result } = renderHook(() =>
+      useLabelPlateCounts([createTestBin({ linkedDesignId: D1 })])
+    );
+
+    await waitFor(() => expect(result.current.get(D1)?.tabsWithoutText).toBe(false));
+  });
+
+  it('does not flag a design with no label tabs at all', async () => {
+    mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
+    mockLoadDesign.mockResolvedValue(
+      ok(makeSocketDesign({ label: { enabled: false, mode: 'socket', depth: 12 } }))
+    );
+
+    const { result } = renderHook(() =>
+      useLabelPlateCounts([createTestBin({ linkedDesignId: D1 })])
+    );
+
+    await waitFor(() => expect(result.current.get(D1)?.tabsWithoutText).toBe(false));
   });
 });

@@ -20,8 +20,23 @@ import {
 } from '@/features/bin-designer';
 import { effectiveLabelSocketClearance } from '@/shared/constants/labelPlates';
 import type { LabelPlateWidthU } from '@/shared/constants/labelPlates';
+import type { BinParams } from '@/shared/types/bin';
 import { useSettingsStore } from '@/core/store';
 import { planLabelPlates } from '@/shared/utils/labelSocketPlan';
+
+/**
+ * What a linked design's label tabs mean for the print list.
+ *
+ * `tabsWithoutText` is deliberately a design-level fact, not a per-tab count:
+ * counting individual blank tabs needs the worker's tab plan (which compartments
+ * can actually host one), and a count that guesses would over-report. "Tabs are
+ * on and nothing is written on any of them" is exact, and it is the failure the
+ * old collapsed-list hierarchy actually produced.
+ */
+export interface DesignLabelInfo {
+  readonly plateSet: DesignPlateSet | null;
+  readonly tabsWithoutText: boolean;
+}
 
 /** The plates one placed bin of a socket-mode design needs. */
 export interface DesignPlateSet {
@@ -37,7 +52,7 @@ export interface DesignPlateSet {
 // plateSet null = not socket-mode, no fitting plate, or failed to load.
 interface CacheEntry {
   readonly key: string;
-  readonly plateSet: DesignPlateSet | null;
+  readonly info: DesignLabelInfo;
 }
 const plateSetCache = new Map<DesignId, CacheEntry>();
 const inFlight = new Set<string>();
@@ -46,6 +61,24 @@ const inFlight = new Set<string>();
 export function clearLabelPlateCountCache(): void {
   plateSetCache.clear();
   inFlight.clear();
+}
+
+// Both generation paths print exactly ONE of the two caption arrays, chosen by
+// `label.span` (`labelTabBuilder` for tabs, `labelSocketPlan` for plates), and
+// nothing copies captions across when the mode is toggled. Requiring both to be
+// empty would stay silent on a span design whose rows are blank while stale
+// compartment captions linger, which is the case the warning exists for.
+function printedLabelTexts(params: BinParams): readonly string[] {
+  return params.label.span === true
+    ? (params.label.rowTexts ?? [])
+    : (params.compartments.compartmentTexts ?? []);
+}
+
+function computeLabelInfo(design: SavedDesign, nozzleSizeMm: number): DesignLabelInfo {
+  const params = design.params;
+  const tabsWithoutText =
+    params?.label.enabled === true && !printedLabelTexts(params).some((t) => t.trim() !== '');
+  return { plateSet: computePlateSet(design, nozzleSizeMm), tabsWithoutText };
 }
 
 function computePlateSet(design: SavedDesign, nozzleSizeMm: number): DesignPlateSet | null {
@@ -72,11 +105,13 @@ function enqueueLoad(id: DesignId, key: string, nozzleSizeMm: number, onSettled:
     .then((result) => {
       plateSetCache.set(id, {
         key,
-        plateSet: isOk(result) ? computePlateSet(result.value, nozzleSizeMm) : null,
+        info: isOk(result)
+          ? computeLabelInfo(result.value, nozzleSizeMm)
+          : { plateSet: null, tabsWithoutText: false },
       });
     })
     .catch(() => {
-      plateSetCache.set(id, { key, plateSet: null });
+      plateSetCache.set(id, { key, info: { plateSet: null, tabsWithoutText: false } });
     })
     .finally(() => {
       inFlight.delete(key);
@@ -85,11 +120,13 @@ function enqueueLoad(id: DesignId, key: string, nozzleSizeMm: number, onSettled:
 }
 
 /**
- * Resolve plate requirements for every socket-mode design linked from the
- * given bins. Designs still loading, unresolvable, or not in socket mode are
- * absent from the returned map.
+ * Resolve what every linked design's label tabs mean for the print list —
+ * swappable plate requirements, and whether the tabs carry any text at all.
+ * Designs still loading are absent from the returned map. One that failed to
+ * load resolves to the inert entry (no plates, no warning) so a storage error
+ * cannot fabricate a blank-tab warning against a design nobody could read.
  */
-export function useLabelPlateCounts(bins: Bin[]): ReadonlyMap<DesignId, DesignPlateSet> {
+export function useLabelPlateCounts(bins: Bin[]): ReadonlyMap<DesignId, DesignLabelInfo> {
   const registry = useCustomBins();
   const [loadTick, setLoadTick] = useState(0);
   // In the cache key so a nozzle change recomputes plate widths at the new
@@ -125,11 +162,11 @@ export function useLabelPlateCounts(bins: Bin[]): ReadonlyMap<DesignId, DesignPl
   return useMemo(() => {
     // loadTick re-runs this memo when async loads land in the cache.
     void loadTick;
-    const sets = new Map<DesignId, DesignPlateSet>();
+    const infos = new Map<DesignId, DesignLabelInfo>();
     for (const [id, key] of linkedRefs) {
       const entry = plateSetCache.get(id);
-      if (entry && entry.key === key && entry.plateSet) sets.set(id, entry.plateSet);
+      if (entry && entry.key === key) infos.set(id, entry.info);
     }
-    return sets;
+    return infos;
   }, [linkedRefs, loadTick]);
 }

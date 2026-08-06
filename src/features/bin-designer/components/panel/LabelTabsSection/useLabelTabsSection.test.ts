@@ -788,4 +788,42 @@ describe('useLabelTabsSection', () => {
       expect(useDesignerStore.getState().params.label.plateFitOffset).toBe(0.1);
     });
   });
+
+  describe('overflow report scoping', () => {
+    const withOverflow = (
+      overflow: { scope: 'compartment' | 'row' | 'bin'; index: number }[],
+      span = false
+    ) => {
+      useDesignerStore.setState((prev) => ({
+        params: {
+          ...prev.params,
+          label: { ...prev.params.label, enabled: true, span },
+          compartments: { cols: 2, rows: 1, thickness: 1.2, cells: [0, 1] },
+        },
+        generation: {
+          ...prev.generation,
+          mesh: { ...(prev.generation.mesh ?? {}), labelTextOverflow: overflow },
+        },
+      }));
+      return renderHook(() => useLabelTabsSection());
+    };
+
+    it('applies a compartment-scoped report in per-compartment mode', () => {
+      const { result } = withOverflow([{ scope: 'compartment', index: 1 }]);
+      expect(result.current.state.textRows.map((r) => r.overflows)).toEqual([false, true]);
+    });
+
+    it('ignores a row-scoped report in per-compartment mode', () => {
+      // Index alone is ambiguous — the report is compartment-indexed by default
+      // and row-indexed under `span`, so row 1 must not light up compartment 1.
+      const { result } = withOverflow([{ scope: 'row', index: 1 }]);
+      expect(result.current.state.textRows.every((r) => !r.overflows)).toBe(true);
+    });
+
+    it('ignores a bin-scoped report rather than blaming compartment 0', () => {
+      // The socket plan's bin-spanning fallback indexes a synthetic 1x1 grid.
+      const { result } = withOverflow([{ scope: 'bin', index: 0 }]);
+      expect(result.current.state.textRows.every((r) => !r.overflows)).toBe(true);
+    });
+  });
 });

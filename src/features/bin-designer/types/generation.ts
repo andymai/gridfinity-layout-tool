@@ -4,6 +4,7 @@ import type {
   PerfSnapshot,
   StackPlateMeshData,
   LabelPlatesMeshData,
+  LabelTextOverflow,
 } from '@/shared/types/generation';
 import type { BinParams } from './binParams';
 
@@ -48,6 +49,9 @@ export interface GenerationResult {
   readonly stackPlateMesh?: StackPlateMeshData;
   /** Swappable label plates with their seated poses (socket mode, preview only). */
   readonly labelPlates?: LabelPlatesMeshData;
+  /** Captions the build dropped because they overflow their host. Reported by
+   *  the worker because the drop leaves no trace in the mesh to observe. */
+  readonly labelTextOverflow?: LabelTextOverflow[];
 }
 
 /** Generation state tracked in the store */

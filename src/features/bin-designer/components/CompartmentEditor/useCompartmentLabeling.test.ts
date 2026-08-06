@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useCompartmentLabeling } from './useCompartmentLabeling';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
+import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
 import {
   createUniformGrid,
   createSingleCell,
@@ -17,7 +17,12 @@ const render = (config: CompartmentConfig, style = 'standard') =>
 
 describe('useCompartmentLabeling', () => {
   beforeEach(() => {
-    useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS } });
+    // `ui` too: mode and selection moved into the store so the panel's label
+    // list can drive them, so they now leak between cases unless reset.
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS },
+      ui: { ...DEFAULT_UI_STATE },
+    });
   });
 
   describe('canLabel gating', () => {

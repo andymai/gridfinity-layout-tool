@@ -48,7 +48,6 @@ import { DividerHeightControl } from './DividerHeightControl';
 import { DividerTiltSubsection } from './DividerTiltSubsection';
 import { rowKeyOf } from './useDividerTiltSubsection';
 import { useCompartmentLabeling } from './useCompartmentLabeling';
-import { CompartmentLabelField } from './CompartmentLabelField';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
 
 const EMPTY_HIGHLIGHT_SET: ReadonlySet<number> = new Set();
@@ -801,12 +800,14 @@ export function CompartmentEditor() {
 
           {labeling.labelMode && (
             <>
-              <CompartmentLabelField labeling={labeling} />
+              {/* No input here: clicking a cell focuses that compartment's row in
+                  the Label tabs list, which is the single editor. A second field
+                  on this surface was the same data with its own draft state. */}
               <div className="mt-2 flex items-start gap-2 text-xs text-content-tertiary">
                 <InfoIcon size="xs" className="mt-0.5 shrink-0" />
                 {labelEnabled ? (
                   <span className="flex-1">
-                    {t('binDesigner.compartmentEditor.labelsEngraveOnTabs')}
+                    {t('binDesigner.compartmentEditor.labelsEditInPanel')}
                   </span>
                 ) : (
                   <>

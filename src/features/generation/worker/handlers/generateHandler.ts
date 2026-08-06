@@ -15,6 +15,7 @@ import { generateBaseplate } from '../generators/baseplateGenerator';
 import { generateMargin } from '../generators/baseplateMargin';
 import { generateLid, generateStackPlate } from '../generators/lidOrchestrator';
 import { generateLabelPlates } from '../generators/labelPlateGenerator';
+import { planLabelTextOverflow } from '../generators/labelTextFit';
 import type { BinParams } from '@/shared/types/bin';
 import { isAbortError } from '../generators/utils/abort';
 import { prepareMeshImprints } from '../generators/meshImprint';
@@ -86,7 +87,10 @@ export async function handleGenerate(message: GenerateMessage): Promise<void> {
 
         console.warn('[BinGen] Stack-plate generation failed; skipping baseplate:', e);
       }
-      return wantPlates ? withLabelPlates(result, params, signal) : result;
+      return withLabelTextOverflow(
+        wantPlates ? withLabelPlates(result, params, signal) : result,
+        params
+      );
     },
     requestId,
     'BinGen',
@@ -109,6 +113,25 @@ function withLabelPlates(result: MeshData, params: BinParams, signal?: AbortSign
     if (isAbortError(e)) throw e;
 
     console.warn('[BinGen] Label plate preview failed; skipping plates:', e);
+    return result;
+  }
+}
+
+/**
+ * Attach the list of captions this build dropped for want of room.
+ *
+ * Unconditional, unlike the plate preview: a blank tab is the same surprise
+ * whether or not the caller asked for plate meshes. Best-effort — a reporting
+ * failure must never cost the user their mesh.
+ */
+function withLabelTextOverflow(result: MeshData, params: BinParams): MeshData {
+  try {
+    const labelTextOverflow = planLabelTextOverflow(params);
+    return labelTextOverflow.length > 0 ? { ...result, labelTextOverflow } : result;
+  } catch (e) {
+    if (isAbortError(e)) throw e;
+
+    console.warn('[BinGen] Label text fit check failed; skipping overflow report:', e);
     return result;
   }
 }

@@ -8,7 +8,7 @@
 
 import type { MeshAsset, MeshImportErrorReason } from '@/shared/generation/meshAsset';
 import type { KernelName, ExportFormat } from './messages';
-import type { LabelPlatesMeshData } from './meshData';
+import type { LabelPlatesMeshData, LabelTextOverflow } from './meshData';
 /** Coarse LOD mesh data for distance-based rendering (preview only). */
 export interface CoarseLODData {
   readonly vertices: Float32Array;
@@ -211,6 +211,8 @@ export interface MeshResultResponse {
    * fixed companions above stay flat for back-compat.
    */
   readonly labelPlates?: LabelPlatesMeshData;
+  /** Captions the build dropped for want of room. See {@link LabelTextOverflow}. */
+  readonly labelTextOverflow?: LabelTextOverflow[];
   /**
    * Fine-grained timing breakdown. The worker always emits one — overhead
    * is a handful of `performance.now()` calls — but the field is `?` so
