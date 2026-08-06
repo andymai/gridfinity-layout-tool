@@ -38,6 +38,20 @@ export interface FilterPanelState {
 export function useFilterPanel(isMobile: boolean): FilterPanelState {
   const [railOpen, setRailOpen] = useState(loadRailOpen);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [lastIsMobile, setLastIsMobile] = useState(isMobile);
+
+  // Leaving mobile ends the mobile view for good. Left standing, it would
+  // reopen on the way back to mobile width and take the whole grid over
+  // unprompted — a rail quietly reappearing is recoverable, a full-screen
+  // takeover nobody asked for is not.
+  //
+  // Adjusted during render rather than in an effect: React re-runs this
+  // component before committing, so the stale value never reaches the DOM and
+  // no second render pass is queued.
+  if (lastIsMobile !== isMobile) {
+    setLastIsMobile(isMobile);
+    if (!isMobile) setMobileOpen(false);
+  }
 
   const toggle = useCallback(() => {
     if (isMobile) {

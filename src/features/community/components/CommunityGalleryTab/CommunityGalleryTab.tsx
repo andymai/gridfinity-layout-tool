@@ -307,9 +307,10 @@ export function CommunityGalleryTab({
   );
   const visible = filtered.slice(0, visibleCount);
 
-  // Nine passes over the index (capped at 2,000 cards) — one per facet, each
-  // with that facet's own selection neutralised. Memoised on the same inputs
-  // as the grid so a keystroke costs one recount, not one per rendered option.
+  // Six sweeps of the index (capped at 2,000 cards), running nine predicates
+  // in total — one per facet, each with that facet's own selection
+  // neutralised. Memoised on the same inputs as the grid so a keystroke costs
+  // one recount, not one per rendered option.
   const facetCounts = useMemo(
     () =>
       computeFacetCounts({

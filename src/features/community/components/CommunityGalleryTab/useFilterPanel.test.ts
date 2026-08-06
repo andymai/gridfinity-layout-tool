@@ -78,9 +78,19 @@ describe('useFilterPanel on mobile', () => {
     // default, rather than inheriting the mobile view's state.
     rerender({ mobile: false });
     expect(result.current.open).toBe(true);
+  });
+
+  it('does not bring the mobile view back after a round trip across the breakpoint', () => {
+    const { result, rerender } = renderHook(({ mobile }) => useFilterPanel(mobile), {
+      initialProps: { mobile: true },
+    });
+    act(() => result.current.toggle());
+    rerender({ mobile: false });
     act(() => result.current.close());
     expect(result.current.open).toBe(false);
+    // Back at mobile width the grid stays on screen: the filter view is a
+    // navigation state, and nothing navigated to it.
     rerender({ mobile: true });
-    expect(result.current.open).toBe(true);
+    expect(result.current.open).toBe(false);
   });
 });

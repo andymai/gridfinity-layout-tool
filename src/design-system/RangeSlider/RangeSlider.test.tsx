@@ -102,6 +102,16 @@ describe('RangeSlider', () => {
     expect(upper).toBeDisabled();
   });
 
+  it('keeps a complete ARIA value state when there are no stops yet', () => {
+    const { lower, upper } = setup({ stops: [], value: [0, 0] });
+    for (const thumb of [lower, upper]) {
+      expect(thumb).toHaveAttribute('aria-valuenow', '0');
+      expect(thumb).toHaveAttribute('aria-valuemin', '0');
+      expect(thumb).toHaveAttribute('aria-valuemax', '0');
+      expect(thumb).toBeDisabled();
+    }
+  });
+
   it('ignores keyboard input while disabled', () => {
     const { lower, onChange } = setup({ disabled: true });
     fireEvent.keyDown(lower, { key: 'ArrowRight' });

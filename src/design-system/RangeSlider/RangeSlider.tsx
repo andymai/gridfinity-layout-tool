@@ -218,6 +218,11 @@ export const RangeSlider = forwardRef<HTMLDivElement, RangeSliderProps>(
       [inert, lowerIndex, upperIndex, windowMin, windowMax, emit]
     );
 
+    // An empty stop list still renders (disabled) while an index loads, and a
+    // slider whose ARIA value state is `undefined` is worse than one parked
+    // at a placeholder.
+    const valueAt = (index: number): number => stops.at(index) ?? 0;
+
     const thumbInput = (thumb: Thumb) => {
       const isLower = thumb === 'lower';
       const index = isLower ? lowerIndex : upperIndex;
@@ -239,9 +244,9 @@ export const RangeSlider = forwardRef<HTMLDivElement, RangeSliderProps>(
           // otherwise run its own native drag against ours.
           className="pointer-events-none absolute inset-0 h-full w-full opacity-0"
           aria-label={isLower ? lowerLabel : upperLabel}
-          aria-valuenow={stops[index]}
-          aria-valuemin={stops[isLower ? windowMin : lowerIndex]}
-          aria-valuemax={stops[isLower ? upperIndex : windowMax]}
+          aria-valuenow={valueAt(index)}
+          aria-valuemin={valueAt(isLower ? windowMin : lowerIndex)}
+          aria-valuemax={valueAt(isLower ? upperIndex : windowMax)}
           aria-valuetext={format(index)}
           tabIndex={inert ? -1 : 0}
         />
