@@ -230,7 +230,12 @@ describe('CommunityDetail', () => {
     // repeatedly, so this is also the more faithful simulation.
     await waitFor(
       () => {
-        fireEvent(window, new Event('online'));
+        // Only while the reload hasn't landed: dispatching on the winning pass
+        // too could bump `attempt` once more in the window before the listener
+        // is torn down, stranding a fetch that resolves after the test ends.
+        if (screen.queryByText('by Jo') === null) {
+          fireEvent(window, new Event('online'));
+        }
         expect(screen.getByText('by Jo')).toBeInTheDocument();
       },
       { timeout: 5000 }
