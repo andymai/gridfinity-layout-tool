@@ -77,10 +77,14 @@ export const tile: ScenarioCase[] = [
     forExport: true,
     params: { width: 2, depth: 2, height: 1, base: tileBase },
     customAssert: (result) => {
+      // The gap between two feet spans only x ∈ [-0.25, 0.25], so these sit
+      // mid-gap on one axis and are nudged off the other — a planar face is
+      // fan-triangulated from the footprint centre, and a ray exactly along a
+      // shared edge leans on the coincident-hit collapse rather than avoiding it.
       const columns: ReadonlyArray<readonly [number, number]> = [
-        [0, 0], // four-foot junction — the widest void
-        [0, 21], // along an internal grid line
-        [21, 0], // the perpendicular one
+        [0, 0.4], // four-foot junction — the widest void
+        [0, 21.3], // along an internal grid line
+        [21.3, 0], // the perpendicular one
       ];
       for (const [x, y] of columns) {
         if (!isSolidThrough(result, x, y, SOCKET_HEIGHT, TRAY_BODY_MM)) {
@@ -128,7 +132,7 @@ export const tile: ScenarioCase[] = [
     customAssert: (result) => {
       assertTotalZ(TRAY_BODY_MM, '2x2-tray-lipless')(result);
       assertWatertight(result, '2x2-tray-lipless');
-      if (!isSolidThrough(result, 0, 21, SOCKET_HEIGHT, TRAY_BODY_MM)) {
+      if (!isSolidThrough(result, 0, 21.3, SOCKET_HEIGHT, TRAY_BODY_MM)) {
         throw new Error('2x2-tray-lipless: the slab lost its floor once the lip was cleared.');
       }
     },
@@ -203,8 +207,9 @@ export const tile: ScenarioCase[] = [
     customAssert: (result) => {
       assertWatertight(result, 'ring-tray');
       assertTotalZ(TILE_HEIGHT_MM, 'ring-tray')(result);
-      // A filled cell of the frame, away from both the hole and the perimeter.
-      if (!isSolidThrough(result, 42, 0, SOCKET_HEIGHT, TRAY_BODY_MM)) {
+      // A filled cell of the frame, away from both the hole and the perimeter,
+      // and off the axes for the same reason the 2x2 columns are.
+      if (!isSolidThrough(result, 42, 6.7, SOCKET_HEIGHT, TRAY_BODY_MM)) {
         throw new Error('ring-tray: the frame lost its floor slab.');
       }
     },

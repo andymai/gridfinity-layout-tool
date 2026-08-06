@@ -15,7 +15,11 @@
 
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { baseFloorZ } from './binDimensions';
-import { isSocketlessBase, type BaseStyle } from '@/features/bin-designer/types/base';
+import {
+  isSocketlessBase,
+  resolveTrayFloorThickness,
+  type BaseStyle,
+} from '@/features/bin-designer/types/base';
 import {
   LID_FIT_CLEARANCE,
   lidAnchorZ,
@@ -155,7 +159,7 @@ export function assembledHeight(
   // barely rises above the plate it sits in) depends on it.
   const isTile = params.base.tile === true && !isSocketlessBase(params.base.style);
   const binMm = isTile
-    ? skirtMm + params.wallThickness
+    ? skirtMm + resolveTrayFloorThickness(params.wallThickness)
     : params.height * params.heightUnitMm +
       Math.max(0, params.extraWallHeightMm ?? 0) +
       (params.base.style === 'lid' ? skirtMm : 0);

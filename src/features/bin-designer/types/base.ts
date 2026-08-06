@@ -4,6 +4,23 @@ import {
   LID_MAGNET_EDGE_COUNT_DEFAULT,
 } from './lid';
 import type { LidAttachment, LidClickRails, LidMagnetConfig } from './lid';
+import { GRIDFINITY } from '../constants/gridfinity';
+
+/**
+ * Thickness of the slab that IS a wall-less tray's body, in mm — the ONLY
+ * source for it, so `deriveDimensions` and every readout built on top of it
+ * (drawer clearance, print estimate) cannot describe a different plate than the
+ * one the worker builds.
+ *
+ * A zero or non-finite thickness would extrude a degenerate slab, and unlike an
+ * ordinary bin a tray has no wall to stand in for it, so both fall back to the
+ * spec thickness rather than to nothing.
+ */
+export function resolveTrayFloorThickness(wallThickness: number): number {
+  return Number.isFinite(wallThickness) && wallThickness > 0
+    ? wallThickness
+    : GRIDFINITY.WALL_THICKNESS;
+}
 
 /** Base attachment style for bin-to-baseplate connection */
 export type BaseStyle =

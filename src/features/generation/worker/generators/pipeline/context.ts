@@ -6,7 +6,7 @@
  */
 
 import type { BinParams } from '@/shared/types/bin';
-import { GRIDFINITY } from '@/shared/constants/bin';
+import { resolveTrayFloorThickness } from '@/shared/types/bin';
 import { hashMask, isPartialMask } from '@/shared/utils/cellMask';
 import { HEIGHT_UNIT, CLEARANCE, SOCKET_HEIGHT, LIP_SMALL_TAPER } from '../generatorConstants';
 import {
@@ -84,14 +84,9 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // pinned to 1 only to satisfy the range validators (see `BaseConfig.tile`), so
   // reading it would silently build a 7mm-tall wall instead.
   const wallHeight = isTile ? 0 : socketless ? totalHeight : totalHeight - SOCKET_HEIGHT;
-  // The tray's body. Guarded the same way `collarHeight` is below: a zero or
-  // non-finite thickness would extrude a degenerate slab, and unlike an ordinary
-  // bin the tray has no wall left to stand in for it.
-  const floorThickness =
-    Number.isFinite(params.wallThickness) && params.wallThickness > 0
-      ? params.wallThickness
-      : GRIDFINITY.WALL_THICKNESS;
-  const trayFloorHeight = isTile ? floorThickness : 0;
+  // The tray's body. Shared with `assembledHeight` so the readout and the mesh
+  // cannot disagree about how tall the plate is.
+  const trayFloorHeight = isTile ? resolveTrayFloorThickness(params.wallThickness) : 0;
   // Exterior-wall collar (issue #2500): raises the outer box + lip above the
   // nominal wall height without touching the interior. Kept separate from
   // `wallHeight` so every feature stage anchors to the original top plane.
