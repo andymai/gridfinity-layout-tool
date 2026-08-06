@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.372.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.372.0...gridfinity-layout-tool-v4.372.1) (2026-08-06)
+
+
+### Bug Fixes
+
+* **designer:** keep a spacer's body above the socket it stands on ([#3255](https://github.com/andymai/gridfinity-layout-tool/issues/3255)) ([031c83b](https://github.com/andymai/gridfinity-layout-tool/commit/031c83b5187b6414c14ff90b36d7e1b68db3035b))
+
 ## [4.372.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.371.1...gridfinity-layout-tool-v4.372.0) (2026-08-06)
 
 
