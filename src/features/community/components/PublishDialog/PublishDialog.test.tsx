@@ -143,7 +143,7 @@ describe('PublishDialog', () => {
     // Default: a 404 reconcile confirms a live session, so the prefill clears.
     vi.mocked(getMe).mockResolvedValue(LIVE_USER);
     vi.mocked(fetchCommunityCapabilities).mockResolvedValue(
-      ok({ publishEnabled: true, printsEnabled: false, requireCutouts: false })
+      ok({ publishEnabled: true, printsEnabled: false, requireDescription: false })
     );
   });
 
@@ -152,7 +152,7 @@ describe('PublishDialog', () => {
     // surfaced as a 503 after a completed form was submitted.
     signIn();
     vi.mocked(fetchCommunityCapabilities).mockResolvedValue(
-      ok({ publishEnabled: false, printsEnabled: false, requireCutouts: false })
+      ok({ publishEnabled: false, printsEnabled: false, requireDescription: false })
     );
     openDialog(makeContext());
     expect(await screen.findByText('Publishing is switched off')).toBeInTheDocument();

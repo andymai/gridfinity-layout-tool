@@ -491,7 +491,7 @@ export function PublishDialog() {
               publicName={publicName}
               firstTimePublisher={storedDisplayName === ''}
               signedIn={sessionStatus === 'authenticated'}
-              requireCutouts={capabilities?.requireCutouts ?? false}
+              requireDescription={capabilities?.requireDescription ?? false}
               printsEnabled={capabilities?.printsEnabled ?? false}
               publishedId={context.publishedId}
               currentCoverUrl={ownDesign.coverUrl}

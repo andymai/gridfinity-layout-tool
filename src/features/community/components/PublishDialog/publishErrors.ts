@@ -50,7 +50,18 @@ const VALIDATION_PRESENTATION: Partial<Record<string, ValidationPresentation>> =
     field: 'publicName',
     messageKey: 'community.publish.error.invalidAuthorName',
   },
-  CUTOUT_REQUIRED: { field: null, messageKey: 'community.publish.error.cutoutRequired' },
+  DESCRIPTION_REQUIRED: {
+    field: 'description',
+    messageKey: 'community.publish.error.descriptionRequired',
+  },
+  DESCRIPTION_TOO_SHORT: {
+    field: 'description',
+    messageKey: 'community.publish.error.descriptionTooShort',
+  },
+  DESCRIPTION_LOW_EFFORT: {
+    field: 'description',
+    messageKey: 'community.publish.error.descriptionLowEffort',
+  },
   REMIX_UNCHANGED: { field: null, messageKey: 'community.publish.error.remixUnchanged' },
   INVALID_LINEAGE: {
     field: null,

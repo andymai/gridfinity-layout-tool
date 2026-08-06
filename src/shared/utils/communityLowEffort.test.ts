@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
 
 import {
+  COMMUNITY_DESCRIPTION_MIN_LENGTH,
   COMMUNITY_NAME_MIN_LENGTH,
+  classifyCommunityDescription,
   classifyCommunityName,
-  hasQualifyingCutout,
 } from './communityLowEffort';
 
 describe('classifyCommunityName', () => {
@@ -40,16 +41,47 @@ describe('classifyCommunityName', () => {
   });
 });
 
-describe('hasQualifyingCutout', () => {
-  it('is true only when the tool-cutout array is non-empty', () => {
-    expect(hasQualifyingCutout({ cutouts: [{ shape: 'circle' }] })).toBe(true);
-    expect(hasQualifyingCutout({ cutouts: [] })).toBe(false);
-    expect(hasQualifyingCutout({})).toBe(false);
-    expect(hasQualifyingCutout({ cutouts: undefined })).toBe(false);
+describe('classifyCommunityDescription', () => {
+  it('accepts a description that says what the design is for', () => {
+    expect(classifyCommunityDescription('Holds 14 AA cells upright')).toBeNull();
+    expect(classifyCommunityDescription('  For AA cells  ')).toBeNull();
   });
 
-  it('does not count wall cutouts as qualifying', () => {
-    const wallOnly: Record<string, unknown> = { walls: { enabled: true }, cutouts: [] };
-    expect(hasQualifyingCutout(wallOnly)).toBe(false);
+  it('flags empty and too-short descriptions', () => {
+    expect(classifyCommunityDescription('')).toBe('empty');
+    expect(classifyCommunityDescription('   ')).toBe('empty');
+    expect(classifyCommunityDescription('Bit holder')).toBe('too-short');
+    expect(classifyCommunityDescription('x'.repeat(COMMUNITY_DESCRIPTION_MIN_LENGTH - 1))).toBe(
+      'too-short'
+    );
+  });
+
+  it('flags text that clears the length floor without saying anything', () => {
+    expect(classifyCommunityDescription('a'.repeat(COMMUNITY_DESCRIPTION_MIN_LENGTH))).toBe(
+      'low-effort'
+    );
+    expect(classifyCommunityDescription('abababababab')).toBe('low-effort');
+    expect(classifyCommunityDescription('1234567890123')).toBe('low-effort');
+    expect(classifyCommunityDescription('..............')).toBe('low-effort');
+  });
+
+  it('accepts a short description in a script that does not space its words', () => {
+    expect(classifyCommunityDescription('M3ネジ用の仕切り付きビン')).toBeNull();
+    expect(classifyCommunityDescription('드라이버 여섯 개를 담는 통')).toBeNull();
+  });
+
+  it('measures the floor in code points, not UTF-16 code units', () => {
+    // Both are 12 code units and under 12 characters.
+    expect(classifyCommunityDescription('ab😀😃😄😁😆')).toBe('too-short');
+    expect(classifyCommunityDescription('𠮷𡈁𡉏野家で使う仕')).toBe('too-short');
+    // Long enough either way: the stricter count must not reject real text.
+    expect(classifyCommunityDescription('工具箱の仕切り😀 M3ネジ用')).toBeNull();
+  });
+
+  it('does not let padding whitespace inflate the distinct count', () => {
+    expect(classifyCommunityDescription('a '.repeat(COMMUNITY_DESCRIPTION_MIN_LENGTH))).toBe(
+      'low-effort'
+    );
+    expect(classifyCommunityDescription('a b c d e f g')).toBeNull();
   });
 });

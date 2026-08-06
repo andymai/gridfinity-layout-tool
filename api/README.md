@@ -60,7 +60,7 @@ graph TB
 | `/api/supporters`               | GET            | 120/min    | Public supporter list for /supporters                            |
 | `/api/community`                | POST           | 10/day     | Publish a design to the community showcase                       |
 | `/api/community`                | GET            | 240/min    | Browse/paginate the community showcase index                     |
-| `/api/community?capabilities=1` | GET            | none       | Report the publish/prints/cutout server switches                 |
+| `/api/community?capabilities=1` | GET            | none       | Report the publish/prints/description server switches            |
 | `/api/community/[id]`           | GET            | 240/min    | Fetch a single community design's detail                         |
 | `/api/community/[id]`           | PUT            | 60/day     | Update a published design (owner only)                           |
 | `/api/community/[id]`           | DELETE         | 60/day     | Unpublish a design (owner, or admin via `COMMUNITY_ADMIN_TOKEN`) |

@@ -12,7 +12,12 @@ import { checkText, filterDisplayName, filterSharedDesignsContent } from './cont
 import { validateDesignerShare } from './designerValidation.js';
 import { isValidShareId } from './shared.js';
 import { isObject, isString, validationError } from './validationUtils.js';
-import { classifyCommunityName, COMMUNITY_NAME_MIN_LENGTH } from './communityLowEffort.js';
+import {
+  classifyCommunityDescription,
+  classifyCommunityName,
+  COMMUNITY_DESCRIPTION_MIN_LENGTH,
+  COMMUNITY_NAME_MIN_LENGTH,
+} from './communityLowEffort.js';
 import type { CommunityLineage } from './communityStore.js';
 
 /**
@@ -43,12 +48,40 @@ export type CommunityReportReason = (typeof COMMUNITY_REPORT_REASONS)[number];
 export const COMMUNITY_REPORT_NOTE_MAX_LENGTH = 500;
 
 /**
- * B1 cutout-only launch policy toggle. Default ON; set COMMUNITY_REQUIRE_CUTOUTS
- * to the literal string 'false' to relax the requirement later. The server is
- * the final authority. Documented in CLAUDE.md's env section.
+ * Description-required publish policy toggle. Default ON; set
+ * COMMUNITY_REQUIRE_DESCRIPTION to the literal string 'false' to relax it. The
+ * server is the final authority. Documented in CLAUDE.md's env section.
  */
-export function communityRequiresCutouts(): boolean {
-  return process.env.COMMUNITY_REQUIRE_CUTOUTS !== 'false';
+export function communityRequiresDescription(): boolean {
+  return process.env.COMMUNITY_REQUIRE_DESCRIPTION !== 'false';
+}
+
+/**
+ * The rejection to send for a description, or null when it passes. Each issue
+ * gets its own code so the client can route it to the field.
+ */
+export function checkCommunityDescriptionPolicy(
+  description: string
+): { code: string; message: string } | null {
+  if (!communityRequiresDescription()) return null;
+  const issue = classifyCommunityDescription(description);
+  if (issue === null) return null;
+  if (issue === 'too-short') {
+    return {
+      code: 'DESCRIPTION_TOO_SHORT',
+      message: `Description must be at least ${COMMUNITY_DESCRIPTION_MIN_LENGTH} characters.`,
+    };
+  }
+  if (issue === 'low-effort') {
+    return {
+      code: 'DESCRIPTION_LOW_EFFORT',
+      message: 'Description is too generic; say what this design is for.',
+    };
+  }
+  return {
+    code: 'DESCRIPTION_REQUIRED',
+    message: 'Add a description saying what this design is for.',
+  };
 }
 
 /**
@@ -338,6 +371,12 @@ export function validateCommunityPublish(body: unknown): CommunityValidationResu
       'INVALID_DESCRIPTION',
       `description must be at most ${COMMUNITY_DESCRIPTION_MAX_LENGTH} characters`
     );
+  }
+  // Must stay ahead of the content filter: that rejection cannot name a field,
+  // so keysmash would surface as "prohibited content" on no input.
+  const descriptionRejection = checkCommunityDescriptionPolicy(description);
+  if (descriptionRejection !== null) {
+    return validationError(descriptionRejection.code, descriptionRejection.message);
   }
 
   if (!isString(body.authorName)) {

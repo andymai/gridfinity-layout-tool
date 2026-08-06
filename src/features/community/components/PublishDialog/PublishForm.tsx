@@ -5,7 +5,8 @@ import type { CommunityPublishCaptures } from '@/core/store/communityPublish';
 import type { AuthProvider } from '@/core/sync/session/sessionApi';
 import type { BinParams } from '@/shared/types/bin';
 import type { CommunityCategory, CommunityDesignLineage } from '@/shared/types/community';
-import { hasQualifyingCutout } from '@/shared/utils/communityLowEffort';
+import { trackEvent } from '@/shared/analytics/posthog';
+import { classifyCommunityDescription } from '@/shared/utils/communityLowEffort';
 import type { CommunityClientError } from '../../api/client';
 import type { PublishDialogMode, PublishPrefill } from '../../store/publishStore';
 import { CategoryChips } from './CategoryChips';
@@ -49,8 +50,8 @@ export interface PublishFormProps {
   /** No public name was ever saved, so the identity field opens expanded. */
   firstTimePublisher: boolean;
   signedIn: boolean;
-  /** Server policy: designs without a tool cutout are rejected. */
-  requireCutouts: boolean;
+  /** Server policy: designs without a real description are rejected. */
+  requireDescription: boolean;
   printsEnabled: boolean;
   publishedId: string | null;
   currentCoverUrl: string;
@@ -72,7 +73,7 @@ export function PublishForm({
   publicName,
   firstTimePublisher,
   signedIn,
-  requireCutouts,
+  requireDescription,
   printsEnabled,
   publishedId,
   currentCoverUrl,
@@ -96,7 +97,17 @@ export function PublishForm({
   const markEdited = (field: PublishErrorField) =>
     setEdited((previous) => (previous[field] === true ? previous : { ...previous, [field]: true }));
 
-  const cutoutMissing = requireCutouts && !hasQualifyingCutout(params);
+  const descriptionIssue = requireDescription ? classifyCommunityDescription(description) : null;
+  const descriptionIssueMessage =
+    descriptionIssue === null
+      ? undefined
+      : t(
+          descriptionIssue === 'too-short'
+            ? 'community.publish.error.descriptionTooShort'
+            : descriptionIssue === 'low-effort'
+              ? 'community.publish.error.descriptionLowEffort'
+              : 'community.publish.error.descriptionRequired'
+        );
 
   const presented = error !== null ? presentPublishError(error) : null;
   // A rejection stops applying to the input the moment its author starts
@@ -113,15 +124,18 @@ export function PublishForm({
   const categoryError =
     serverFieldError('category') ??
     (showErrors && category === '' ? t('community.publish.form.categoryRequired') : undefined);
+  // Held back until the first submit, so an untouched form is not pre-flagged.
+  const descriptionError =
+    serverFieldError('description') ?? (showErrors ? descriptionIssueMessage : undefined);
   const publicNameError =
     serverFieldError('publicName') ??
     (showErrors && publicName.trim() === '' ? t('community.publish.identity.required') : undefined);
 
   const previewPending = captures === null && !captureFailed;
-  // A disabled primary must say why. Order matters: the cutout policy is a
-  // hard rejection, a missing capture is only a wait.
-  const blockedReason = cutoutMissing
-    ? t('community.publish.needsCutout.button')
+  // A disabled primary must say why. The description is actionable here; a
+  // missing capture is only a wait.
+  const blockedReason = descriptionIssueMessage
+    ? descriptionIssueMessage
     : captures === null
       ? previewPending
         ? t('community.publish.form.waitingPreview')
@@ -136,8 +150,18 @@ export function PublishForm({
   });
 
   const handleSubmit = () => {
-    if (name.trim() === '' || category === '' || publicName.trim() === '') {
+    if (
+      name.trim() === '' ||
+      category === '' ||
+      publicName.trim() === '' ||
+      descriptionIssue !== null
+    ) {
       setShowErrors(true);
+      if (descriptionIssue !== null) {
+        trackEvent('community_publish_blocked', {
+          reason: `description_${descriptionIssue.replace('-', '_')}`,
+        });
+      }
       return;
     }
     // Validate before sending anyone through OAuth: coming back to a form
@@ -198,12 +222,6 @@ export function PublishForm({
               </Alert>
             )}
 
-            {cutoutMissing && (
-              <Alert intent="warning" size="md" title={t('community.publish.needsCutout.title')}>
-                {t('community.publish.needsCutout.button')}
-              </Alert>
-            )}
-
             {authPrompt && (
               <Alert intent="info" size="md" title={t('community.publish.signin.title')}>
                 <div className="space-y-2">
@@ -246,7 +264,12 @@ export function PublishForm({
             <Field
               label={t('community.publish.form.descriptionLabel')}
               htmlFor="community-publish-description"
-              error={serverFieldError('description')}
+              hint={
+                requireDescription && descriptionError === undefined
+                  ? t('community.publish.form.descriptionHint')
+                  : undefined
+              }
+              error={descriptionError}
             >
               <Textarea
                 id="community-publish-description"
@@ -255,6 +278,7 @@ export function PublishForm({
                 showCount
                 rows={4}
                 placeholder={t('community.publish.form.descriptionPlaceholder')}
+                aria-invalid={descriptionError !== undefined}
                 onChange={(e) => {
                   setDescription(e.target.value);
                   markEdited('description');
@@ -323,7 +347,7 @@ export function PublishForm({
         <Button
           variant="primary"
           className="min-h-11 whitespace-nowrap md:min-h-0"
-          disabled={captures === null || cutoutMissing}
+          disabled={captures === null || (showErrors && descriptionIssue !== null)}
           aria-describedby={blockedReason !== null ? 'community-publish-blocked' : undefined}
           onClick={handleSubmit}
         >

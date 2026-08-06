@@ -305,7 +305,6 @@ function publishBody(overrides: Record<string, unknown> = {}): Record<string, un
     description: 'Holds 24 sockets.',
     authorName: 'Andy',
     category: 'tools',
-    // A tool cutout so the default publish clears the B1 cutout-only gate.
     params: {
       width: 2,
       depth: 3,
@@ -436,7 +435,7 @@ beforeEach(() => {
 afterEach(() => {
   delete process.env.TOKEN_SALT;
   delete process.env.COMMUNITY_PUBLISH_ENABLED;
-  delete process.env.COMMUNITY_REQUIRE_CUTOUTS;
+  delete process.env.COMMUNITY_REQUIRE_DESCRIPTION;
   delete process.env.COMMUNITY_PRINTS_ENABLED;
   delete process.env.VERCEL_ENV;
 });
@@ -792,18 +791,30 @@ describe('POST /api/community (publish)', () => {
 });
 
 describe('POST /api/community — hardening guards', () => {
-  const noCutoutParams = { width: 2, depth: 3, height: 6, gridUnitMm: 42, heightUnitMm: 7 };
+  const plainParams = { width: 2, depth: 3, height: 6, gridUnitMm: 42, heightUnitMm: 7 };
 
-  it('rejects a publish without a tool cutout under the default cutout-only policy (B1)', async () => {
-    const res = await handle({ body: publishBody({ params: noCutoutParams }) });
+  it('publishes a bin with no tool cutout, which the launch policy used to reject', async () => {
+    const res = await handle({ body: publishBody({ params: plainParams }) });
+    expect(res._status).toBe(201);
+  });
+
+  it('rejects a publish with no description under the default policy', async () => {
+    const res = await handle({ body: publishBody({ description: '' }) });
     expect(res._status).toBe(400);
-    expect((res._body as { code: string }).code).toBe('CUTOUT_REQUIRED');
+    expect((res._body as { code: string }).code).toBe('DESCRIPTION_REQUIRED');
     expect(mocks.put).not.toHaveBeenCalled();
   });
 
-  it('allows a cutout-free publish when COMMUNITY_REQUIRE_CUTOUTS=false (B1 relax lever)', async () => {
-    process.env.COMMUNITY_REQUIRE_CUTOUTS = 'false';
-    const res = await handle({ body: publishBody({ params: noCutoutParams }) });
+  it('names which description problem it hit', async () => {
+    const short = await handle({ body: publishBody({ description: 'Bit holder' }) });
+    expect((short._body as { code: string }).code).toBe('DESCRIPTION_TOO_SHORT');
+    const junk = await handle({ body: publishBody({ description: 'aaaaaaaaaaaaaa' }) });
+    expect((junk._body as { code: string }).code).toBe('DESCRIPTION_LOW_EFFORT');
+  });
+
+  it('allows a description-free publish when COMMUNITY_REQUIRE_DESCRIPTION=false (relax lever)', async () => {
+    process.env.COMMUNITY_REQUIRE_DESCRIPTION = 'false';
+    const res = await handle({ body: publishBody({ description: '' }) });
     expect(res._status).toBe(201);
   });
 
@@ -862,7 +873,6 @@ describe('POST /api/community — hardening guards', () => {
   });
 
   it('rejects a verbatim re-upload of a built-in example (B3)', async () => {
-    process.env.COMMUNITY_REQUIRE_CUTOUTS = 'false';
     const { EXAMPLE_DESIGNS } = await import('@/features/bin-designer/data/examples');
     // importActual bypasses the top-level designerValidation mock so the params
     // fingerprint matches the committed example-hash set (built from
@@ -962,7 +972,7 @@ describe('GET /api/community?capabilities=1', () => {
     expect(res._body).toEqual({
       publishEnabled: true,
       printsEnabled: false,
-      requireCutouts: true,
+      requireDescription: true,
     });
   });
 
@@ -978,14 +988,14 @@ describe('GET /api/community?capabilities=1', () => {
     expect((res._body as { publishEnabled: boolean }).publishEnabled).toBe(false);
   });
 
-  it('reflects the prints and cutout switches', async () => {
+  it('reflects the prints and description switches', async () => {
     process.env.COMMUNITY_PRINTS_ENABLED = 'true';
-    process.env.COMMUNITY_REQUIRE_CUTOUTS = 'false';
+    process.env.COMMUNITY_REQUIRE_DESCRIPTION = 'false';
     const res = await handle({ method: 'GET', query: { capabilities: '1' } });
     expect(res._body).toEqual({
       publishEnabled: true,
       printsEnabled: true,
-      requireCutouts: false,
+      requireDescription: false,
     });
     delete process.env.COMMUNITY_PRINTS_ENABLED;
   });

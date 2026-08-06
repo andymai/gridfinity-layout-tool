@@ -274,7 +274,7 @@ export async function communityFetch(input: string, init: RequestInit): Promise<
 export interface CommunityCapabilities {
   publishEnabled: boolean;
   printsEnabled: boolean;
-  requireCutouts: boolean;
+  requireDescription: boolean;
 }
 
 function isCapabilities(value: unknown): value is CommunityCapabilities {
@@ -282,7 +282,7 @@ function isCapabilities(value: unknown): value is CommunityCapabilities {
     isRecord(value) &&
     typeof value.publishEnabled === 'boolean' &&
     typeof value.printsEnabled === 'boolean' &&
-    typeof value.requireCutouts === 'boolean'
+    typeof value.requireDescription === 'boolean'
   );
 }
 

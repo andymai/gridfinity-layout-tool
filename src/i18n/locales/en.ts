@@ -3288,11 +3288,6 @@ const en: Record<string, string> = {
   'community.publishButtonAria': 'Publish to the community showcase',
   'community.publishNudge.message': 'Nice bin. Share it with the community?',
   'community.publishNudge.action': 'Publish it',
-  'community.publish.needsCutout.button':
-    'The community showcase is open to bins with tool cutouts to start. Add a cutout to share this one.',
-  'community.publish.needsCutout.hint':
-    'Bins with tool cutouts can be shared to the community showcase. More design types are coming later.',
-  'community.publish.needsCutout.title': 'This design needs a tool cutout',
   'community.publish.title': 'Publish to the community',
   'community.publish.updateTitle': 'Update published design',
   'community.publish.checking': 'Checking the showcase…',
@@ -3324,6 +3319,8 @@ const en: Record<string, string> = {
   'community.publish.form.nameRequired': 'Enter a name for this design.',
   'community.publish.form.descriptionLabel': 'Description',
   'community.publish.form.descriptionPlaceholder': 'What is it for? Any print tips?',
+  'community.publish.form.descriptionHint':
+    'Required. A line about what it holds helps people find and print it.',
   'community.publish.form.categoryLabel': 'Category',
   'community.publish.form.categoryRequired': 'Choose a category.',
   'community.publish.form.wallsSummary': '{thickness} mm walls',
@@ -3393,8 +3390,12 @@ const en: Record<string, string> = {
     'That name is too short. Give your design a descriptive name.',
   'community.publish.error.namePlaceholder': 'Give your design a name before publishing.',
   'community.publish.error.nameLowEffort': 'Give your design a real, descriptive name.',
-  'community.publish.error.cutoutRequired':
-    'The community showcase is open to bins with tool cutouts to start. Add a cutout to share this one.',
+  'community.publish.error.descriptionRequired':
+    'Add a description saying what this design is for.',
+  'community.publish.error.descriptionTooShort':
+    'That description is too short. Say what the design holds or what it is for.',
+  'community.publish.error.descriptionLowEffort':
+    'Write a real description saying what this design is for.',
   'community.publish.error.duplicate':
     'This design matches one that is already in the showcase (or a built-in example).',
   'community.publish.error.remixUnchanged': 'Change the design before publishing your remix.',

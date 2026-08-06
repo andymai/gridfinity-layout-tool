@@ -11,6 +11,12 @@ vi.mock('../../api/printsClient', () => ({
   setCoverPhoto: vi.fn(),
 }));
 
+vi.mock('@/shared/analytics/posthog', () => ({
+  trackEvent: vi.fn(),
+}));
+
+import { trackEvent } from '@/shared/analytics/posthog';
+
 const params = {
   width: 2,
   depth: 4,
@@ -53,7 +59,7 @@ function renderForm(overrides: Partial<PublishFormProps> = {}) {
     publicName: 'andy',
     firstTimePublisher: false,
     signedIn: true,
-    requireCutouts: false,
+    requireDescription: false,
     printsEnabled: false,
     publishedId: null,
     currentCoverUrl: '',
@@ -183,10 +189,41 @@ describe('PublishForm', () => {
     expect(props.onDropRemix).toHaveBeenCalledTimes(1);
   });
 
-  it('states the cutout policy and blocks submit instead of leaving a dead button', () => {
-    renderForm({ requireCutouts: true });
-    expect(screen.getByText('This design needs a tool cutout')).toBeInTheDocument();
+  it('states the description policy in the footer before the user submits', () => {
+    renderForm({ requireDescription: true });
+    expect(
+      screen.getByText('Add a description saying what this design is for.')
+    ).toBeInTheDocument();
+    // Disabled on mount would swallow the click that explains the block.
+    expect(screen.getByText('Publish')).toBeEnabled();
+  });
+
+  it('blocks submit on a missing description and clears once it qualifies', () => {
+    const props = renderForm({
+      requireDescription: true,
+      prefill: { name: 'Screw Bin', description: '', category: 'tools' },
+    });
+    fireEvent.click(screen.getByText('Publish'));
+    expect(props.onSubmit).not.toHaveBeenCalled();
     expect(screen.getByText('Publish')).toBeDisabled();
+
+    fireEvent.change(screen.getByLabelText('Description'), {
+      target: { value: 'Holds 14 AA cells upright' },
+    });
+    expect(screen.getByText('Publish')).toBeEnabled();
+    fireEvent.click(screen.getByText('Publish'));
+    expect(props.onSubmit).toHaveBeenCalledTimes(1);
+  });
+
+  it('reports which description problem blocked the publish', () => {
+    renderForm({
+      requireDescription: true,
+      prefill: { name: 'Screw Bin', description: 'Bit holder', category: 'tools' },
+    });
+    fireEvent.click(screen.getByText('Publish'));
+    expect(trackEvent).toHaveBeenCalledWith('community_publish_blocked', {
+      reason: 'description_too_short',
+    });
   });
 
   it('defers sign-in until the fields validate', () => {

@@ -6,7 +6,7 @@ import { loadDisplayName, saveDisplayName } from '../utils/displayName';
 const ENABLED: CommunityCapabilities = {
   publishEnabled: true,
   printsEnabled: true,
-  requireCutouts: true,
+  requireDescription: true,
 };
 
 function open(mode: 'create' | 'update' = 'create') {
