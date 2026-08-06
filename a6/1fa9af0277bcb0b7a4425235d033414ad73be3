@@ -1,0 +1,40 @@
+src/shared/hooks/useSelectionActions.ts
+  s_5391ea04eb1e07::t_778d4d9e3e14dd 198-200
+  s_5391ea04eb1e07::t_8e35a7d39f4c9a 7
+  s_5391ea04eb1e07::t_751d0efd966b91 231-233,236-240
+  s_5391ea04eb1e07::t_ad5f9cdea9e738 225-228,234-235,241,247-248,251,253,262
+src/features/command-palette/components/CommandPalette/commandPaletteActionHandlers.ts
+  s_5391ea04eb1e07::t_6d87af084a7a32 33
+  s_5391ea04eb1e07::t_d8c6c786f36773 232-234
+src/shared/hooks/useSelectionActions.test.ts
+  s_5391ea04eb1e07::t_c82bf078744b98 103-129,187-220
+src/features/staging/components/Staging/StagingBin.test.tsx
+  s_5391ea04eb1e07::t_de7a45d1b09226 195-205
+src/features/staging/components/Staging/StagingBin.tsx
+  s_5391ea04eb1e07::t_697770bbaab767 287-289
+  s_5391ea04eb1e07::t_03a74de1ae592f 4
+src/features/staging/components/Staging/Staging.tsx
+  s_5391ea04eb1e07::t_4c3ecc3a94928a 21
+  s_5391ea04eb1e07::t_f3876d6356185e 20
+  s_5391ea04eb1e07::t_2ecf248fc36f45 226-231
+  s_5391ea04eb1e07::t_e231475e3aded9 142
+  s_5391ea04eb1e07::t_54fce18a5bc5eb 221-225,232
+src/features/staging/utils/packing.ts
+  s_5391ea04eb1e07::t_0e3ce43964d1c9 12-13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "a61fa9af0277bcb0b7a4425235d033414ad73be3",
+  "prompts": {},
+  "sessions": {
+    "s_5391ea04eb1e07": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a40296bd-94e2-4b41-b083-de514b47c0dc",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
