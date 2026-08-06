@@ -582,10 +582,10 @@ describe('constraint rule coverage', () => {
   });
 });
 
-// The wall-less tray is the spacer's complement: the floor and feet stay and the
+// The base-only bin is the spacer's complement: the floor and feet stay and the
 // wall collapses to zero. Everything that lived on a wall or needed interior
 // depth goes; the lip and its colour zones are the point of the mode and stay.
-describe('resolveConstraints — wall-less tray', () => {
+describe('resolveConstraints — base-only bin', () => {
   const enableTray = (params: BinParams) =>
     resolveConstraints(params, { feature: 'base.tile', enabled: true }).params;
 

@@ -370,7 +370,7 @@ export function canBinUseDirectMesh(params: BinParams): boolean {
   // A spacer punches the floor through every cell — the procedural draft models a
   // solid floor, so drafting it would show a bin that isn't there.
   //
-  // A wall-less tray is the opposite miss: the draft extrudes a full-height
+  // A base-only bin is the opposite miss: the draft extrudes a full-height
   // hollow body from `params.height`, which is inert on a tray (pinned to 1 for
   // the range validators), so it would draw a walled 7mm bin over a plate whose
   // body is a `wallThickness` slab — walls that flash up and then vanish when

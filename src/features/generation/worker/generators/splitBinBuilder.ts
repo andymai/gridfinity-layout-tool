@@ -222,13 +222,13 @@ function splitSolidIntoPieces(
   const totalHeight = splitDims.totalHeight;
   const wallHeight = splitDims.wallHeight;
   const floorZ = splitDims.baseOffsetZ;
-  const wallTopZ = floorZ + wallHeight + splitDims.trayFloorHeight;
+  const wallTopZ = floorZ + wallHeight + splitDims.tileFloorHeight;
   // Z extent a split piece of the body should retain. The body spans 0..wallTopZ,
   // which equals `totalHeight` for socketed and flat bases, EXCEEDS it for a tray
   // bottom (the skirt adds depth below the floor), and is far SHORTER for a
-  // wall-less tray, whose wall is zero and whose body is the feet plus a
+  // base-only bin, whose wall is zero and whose body is the feet plus a
   // `wallThickness` floor slab. Taking the lower of the two measures the
-  // wall-less tray against its real body while leaving every other base on the
+  // base-only bin against its real body while leaving every other base on the
   // exact threshold it had.
   const expectedBodyZ = Math.min(totalHeight, wallTopZ);
 
@@ -251,7 +251,7 @@ function splitSolidIntoPieces(
     const lipBase = buildTopShape(
       params.width,
       params.depth,
-      // A wall-less tray drops the angled support, exactly as `shellStage` does:
+      // A base-only bin drops the angled support, exactly as `shellStage` does:
       // it hangs LIP_TAPER_WIDTH below the lip's base plane to blend into a wall,
       // and a tray's is zero, so the support would land inside the foot's taper
       // and fill it out to full width. Split pieces must match the whole bin.

@@ -184,7 +184,7 @@ export const DESIGNER_CONSTRAINTS = {
  * would let `{ style: 'flat', spacer: true, height: 1 }` through as a 1u bin
  * with an ordinary floor.
  *
- * A wall-less tray takes the same relaxed floor for the same reason: its wall
+ * A base-only bin takes the same relaxed floor for the same reason: its wall
  * height is pinned to 0 and its real height comes from `assembledHeight`, so
  * `height` is inert data that only has to clear the validators. It is stored as
  * 1 rather than its true 0.71u so no fractional-height carve-out is needed here

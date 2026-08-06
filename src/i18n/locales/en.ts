@@ -2080,12 +2080,13 @@ const en: Record<string, string> = {
   'binDesigner.spacerDisablesAttachment': 'A spacer has no floor to hold a magnet or screw',
   'binDesigner.spacerDisablesBase': 'The spacer already opens the base right through',
   'binDesigner.flatFloorDisablesSpacer': 'A spacer needs feet to open through',
-  'binDesigner.tileDisablesWalls': 'A tray has no walls to hold this',
-  'binDesigner.tileDisablesInterior': 'A tray has no depth to hold interior features',
-  'binDesigner.tileDisablesStyle': 'A tray is a flat plate, so there is no interior to shape',
-  'binDesigner.tileDisablesSpacer': 'A tray keeps the floor a spacer removes',
-  'binDesigner.flatFloorDisablesTile': 'A tray needs feet to stand on',
-  'binDesigner.lidBaseDisablesTile': 'A tray needs feet to stand on',
+  'binDesigner.tileDisablesWalls': 'A base-only bin has no walls to hold this',
+  'binDesigner.tileDisablesInterior': 'A base-only bin has no depth to hold interior features',
+  'binDesigner.tileDisablesStyle':
+    'A base-only bin is a flat plate, so there is no interior to shape',
+  'binDesigner.tileDisablesSpacer': 'A base-only bin keeps the floor a spacer removes',
+  'binDesigner.flatFloorDisablesTile': 'A base-only bin needs feet to stand on',
+  'binDesigner.lidBaseDisablesTile': 'A base-only bin needs feet to stand on',
   'binDesigner.solidDisablesCavity': 'Not available for solid bins',
   'binDesigner.stylesMutuallyExclusive': 'Only one bin style can be active',
   'binDesigner.group.shape': 'Shape',
@@ -2611,9 +2612,9 @@ const en: Record<string, string> = {
   'binDesigner.spacer': 'Spacer (no floor)',
   'binDesigner.spacerHint':
     'Turns the bin into an open riser you stack under another bin, so bins of different heights finish flush. Its height counts like a bin of the same size — a 2u spacer under a 2u bin reaches the top of a 4u one.',
-  'binDesigner.tile': 'Tray (no walls)',
+  'binDesigner.tile': 'Base only',
   'binDesigner.tileHint':
-    'Removes the walls and keeps the feet and the floor, leaving a flat plate that still locks into a baseplate. Keep the stacking lip for a raised edge that still stacks and takes the colours, or clear it for a bare tile.',
+    'Removes the walls and keeps the feet and the floor, so the bin is just its Gridfinity base. It still locks into a baseplate. Keep the stacking lip for a raised edge that still stacks and takes the colours, or clear it for a flat plate.',
   'binDesigner.base.floorPattern': 'Drainage holes',
   'binDesigner.base.floorPattern.shape': 'Hole shape',
   'binDesigner.base.floorPattern.hint':

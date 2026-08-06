@@ -655,10 +655,10 @@ describe('printEstimates', () => {
         expect(labelVol(both)).toBeGreaterThan(labelVol(back) * 1.8);
       });
     });
-    // A wall-less tray is feet + floor slab + an optional lip. Every other term
+    // A base-only bin is feet + floor slab + an optional lip. Every other term
     // in the estimate is fabricated for it: the wall term prices a `height`-tall
     // wall that is never built, out of a `height` that is inert on a tray.
-    describe('wall-less tray', () => {
+    describe('base-only bin', () => {
       const tray = (overrides: Partial<BinParams['base']> = {}): BinParams => ({
         ...DEFAULT_BIN_PARAMS,
         height: 1,

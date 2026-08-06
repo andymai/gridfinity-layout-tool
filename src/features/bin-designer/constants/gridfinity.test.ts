@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DESIGNER_CONSTRAINTS, minHeightUnits } from './gridfinity';
+import { DESIGNER_CONSTRAINTS, GRIDFINITY, minHeightUnits } from './gridfinity';
 
 describe('minHeightUnits', () => {
   it('holds an ordinary bin to the usable-cavity minimum', () => {
@@ -32,7 +32,7 @@ describe('minHeightUnits', () => {
 
     // The whole reachable range of the Physical Units control.
     it.each([3, 4, 5, 6, 7, 10, 20])('clears the socket at a %dmm height unit', (unit) => {
-      const wallMm = spacerFloor(unit) * unit - 5;
+      const wallMm = spacerFloor(unit) * unit - GRIDFINITY.SOCKET_HEIGHT;
       expect(wallMm).toBeGreaterThanOrEqual(DESIGNER_CONSTRAINTS.MIN_BODY_WALL_MM);
     });
 
@@ -67,7 +67,7 @@ describe('minHeightUnits', () => {
   // A tray's wall is pinned to 0 and its real height comes from
   // `assembledHeight`, so `height` is inert and only has to clear the
   // validators — it takes the same relaxed floor the spacer does.
-  it('relaxes the floor for a wall-less tray', () => {
+  it('relaxes the floor for a base-only bin', () => {
     expect(minHeightUnits({ spacer: false, tile: true, style: 'standard' })).toBe(
       DESIGNER_CONSTRAINTS.MIN_SPACER_HEIGHT
     );

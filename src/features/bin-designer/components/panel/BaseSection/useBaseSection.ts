@@ -76,12 +76,12 @@ export function useBaseSection() {
   const commit = useCallback(
     (resolved: BinParams) => {
       if (isEffectiveTile(resolved.base)) {
-        // A tray's height is inert (the wall is 0 and `assembledHeight` supplies
-        // the real height from the slab), so it is pinned rather than merely
-        // floored: two trays
+        // A base-only bin's height is inert (the wall is 0 and `assembledHeight`
+        // supplies the real height from the slab), so it is pinned rather than
+        // merely floored: two base-only bins
         // that differ only in a number nothing reads must not fingerprint
         // differently and defeat the community duplicate guard. The collar is
-        // inert for the same reason — generation forces it to 0 on a tray — so
+        // inert for the same reason — generation forces it to 0 there — so
         // it is dropped rather than left to drift the fingerprint.
         // Explicitly `undefined`, not omitted: `setParams` merges via
         // `Object.assign`, so leaving the key out would keep the stale value.
@@ -91,7 +91,7 @@ export function useBaseSection() {
         return;
       }
       // Off must end up ABSENT, not `false`. `resolveConstraints` writes
-      // `tile: false` whenever a rule auto-disables the tray (switching to a
+      // `tile: false` whenever a rule auto-disables base-only mode (switching to a
       // flat or lid base, enabling the spacer), and EVERY base toggle commits
       // through here — so stripping only inside `toggleTile` would still leave
       // the key behind on those paths and fingerprint an ordinary bin

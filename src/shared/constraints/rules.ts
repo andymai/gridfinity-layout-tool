@@ -237,14 +237,14 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
     reason: 'binDesigner.flatFloorDisablesSpacer',
   },
 
-  // ── Base: wall-less tray ─────────────────────────────────────────────────
+  // ── Base: base-only bin ─────────────────────────────────────────────────
   // The exact complement of the spacer: the floor and feet stay, the wall
   // collapses to zero, and the stacking lip fuses straight onto the floor slab.
   // Anything that lived on, in, or through a wall has no wall left to live on;
   // anything that needed interior depth has none. The lip and the colour zones
   // are the whole point of the mode and deliberately survive.
   {
-    description: 'Wall-less tray disables every wall-dependent feature',
+    description: 'Base-only bin disables every wall-dependent feature',
     source: 'base.tile',
     when: (p) => p.base.tile === true,
     disables: ['wallPattern', 'wallCutouts', 'handles', 'slotConfig'],
@@ -253,21 +253,21 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
   {
     // Split from the wall rule so the copy fits: a greyed-out compartment grid
     // needs "no depth to hold them", not "there is no wall".
-    description: 'Wall-less tray disables every depth-dependent interior feature',
+    description: 'Base-only bin disables every depth-dependent interior feature',
     source: 'base.tile',
     when: (p) => p.base.tile === true,
     disables: ['compartments', 'label', 'scoop', 'floorPattern', 'inserts', 'cutouts'],
     reason: 'binDesigner.tileDisablesInterior',
   },
   {
-    description: 'Wall-less tray disables the interior styles (there is no interior to shape)',
+    description: 'Base-only bin disables the interior styles (there is no interior to shape)',
     source: 'base.tile',
     when: (p) => p.base.tile === true,
     disables: ['style.slotted', 'style.solid'],
     reason: 'binDesigner.tileDisablesStyle',
   },
   {
-    // A tray IS feet + floor + lip. A spacer is feet + walls MINUS floor.
+    // A base-only bin IS feet + floor + lip. A spacer is feet + walls MINUS floor.
     // Together they cancel to nothing at all, so this pair is genuinely mutual
     // rather than the one-way mode switch the interior features get.
     // ONE-WAY on purpose. Both of these are booleans, so a reverse rule would
@@ -275,10 +275,10 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
     // clearing one and clearing the other until MAX_ITERATIONS, leaving BOTH
     // set. (The spacer's mutual rules get away with it because their partners
     // are `base.style` VALUES, where one replacing the other is not a conflict
-    // to resolve.) One rule covers both directions anyway: enabling the tray
-    // clears the spacer, and while the tray is on this same rule reports
+    // to resolve.) One rule covers both directions anyway: enabling base-only
+    // clears the spacer, and while it is on this same rule reports
     // `base.spacer` unavailable so `toggleSpacer` refuses to turn it back on.
-    description: 'Wall-less tray incompatible with a spacer (nothing would remain)',
+    description: 'Base-only bin incompatible with a spacer (nothing would remain)',
     source: 'base.tile',
     when: (p) => p.base.tile === true,
     disables: ['base.spacer', 'base.lightweight'],
@@ -286,22 +286,22 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
   },
   {
     // Mutual for the same reason the spacer's flat-base rule is: a socketless
-    // plate has no feet, and feet are half of what a tray is.
-    description: 'Flat base incompatible with a wall-less tray (no feet to stand on)',
+    // plate has no feet, and feet are half of what a base-only bin is.
+    description: 'Flat base incompatible with a base-only bin (no feet to stand on)',
     source: 'base.flat',
     when: (p) => p.base.style === 'flat',
     disables: ['base.tile'],
     reason: 'binDesigner.flatFloorDisablesTile',
   },
   {
-    description: 'Lid-compatible bottom incompatible with a wall-less tray (no feet to stand on)',
+    description: 'Lid-compatible bottom incompatible with a base-only bin (no feet to stand on)',
     source: 'base.lid',
     when: (p) => p.base.style === 'lid',
     disables: ['base.tile'],
     reason: 'binDesigner.lidBaseDisablesTile',
   },
   // Deliberately ONE-WAY from the interior features, exactly as the spacer is:
-  // the tray is a mode switch that must stay reachable from a fully-designed
+  // base-only is a mode switch that must stay reachable from a fully-designed
   // bin and clear the incompatible set on the way in. A reverse rule would grey
   // the toggle out and leave the user hand-clearing compartments, scoop, label,
   // handles and wall patterns first.

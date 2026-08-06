@@ -1639,7 +1639,7 @@ describe('validateDesignerShare — spacer height floor tracks the height unit',
 
   // A tray's height is pinned to 1 by the store rather than floored, and its
   // wall is 0, so it must keep the flat relaxed floor at every height unit.
-  it('leaves a wall-less tray on the flat relaxed floor', () => {
+  it('leaves a base-only bin on the flat relaxed floor', () => {
     const p = validPayload();
     const tray = {
       ...p,

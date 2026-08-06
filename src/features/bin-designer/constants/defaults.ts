@@ -189,7 +189,7 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
     spacer: false,
     // `tile` is deliberately ABSENT for the same fingerprint reason as
     // `trayBottom` below: absent means off, and only a design that actually
-    // selects the wall-less tray carries the key.
+    // selects the base-only bin carries the key.
     // `trayBottom` is deliberately ABSENT. `params` is hashed wholesale by
     // `communityParamsFingerprint`, so a new always-present default field shifts
     // every design's fingerprint, including already-published designs whose

@@ -219,7 +219,7 @@ function validateBase(base: unknown): string | null {
   if (base.spacer !== undefined && !isBoolean(base.spacer)) {
     return 'base.spacer must be boolean';
   }
-  // Same reasoning for the wall-less tray: it collapses the wall to zero, which
+  // Same reasoning for the base-only bin: it collapses the wall to zero, which
   // is a different solid entirely, so it must be declared as a real boolean.
   if (base.tile !== undefined && !isBoolean(base.tile)) {
     return 'base.tile must be boolean';
@@ -984,7 +984,7 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
   // inert on a flat base (no socket to shell through), so a crafted
   // `{ style: 'flat', spacer: true, height: 1 }` would otherwise buy the relaxed
   // floor while generating an ordinary 1u bin.
-  // A wall-less tray (`base.tile`) takes the same relaxed floor on the same
+  // A base-only bin (`base.tile`) takes the same relaxed floor on the same
   // effective-flag condition: its wall height is pinned to 0, so `height` is
   // inert and stored as 1.
   const socketed =

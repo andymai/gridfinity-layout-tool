@@ -113,7 +113,7 @@ export function DimensionsSection() {
         </div>
       )}
 
-      {/* Height. Hidden for a wall-less tray, whose wall is 0 and whose real
+      {/* Height. Hidden for a base-only bin, whose wall is 0 and whose real
           height comes from `assembledHeight` — the stepper would move a number
           nothing reads. */}
       {state.heightApplies && (
