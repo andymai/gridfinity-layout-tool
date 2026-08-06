@@ -172,7 +172,11 @@ export const shellStage: PipelineStage = {
             params.width,
             params.depth,
             dim.trayFloorHeight,
-            params.wallThickness,
+            // The slab IS the tray's wall, so both arguments are the same
+            // resolved thickness. Passing raw `params.wallThickness` would let a
+            // crafted 0/NaN reach the box cache key and, on a tapered tray,
+            // `buildTaperedOuter` — the guard `trayFloorHeight` already applied.
+            dim.trayFloorHeight,
             true, // solid: a slab has no cavity to shell
             0, // no lowered fill — a tray has no interior to recess
             pitch,
