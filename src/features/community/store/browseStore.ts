@@ -168,6 +168,10 @@ interface BrowseActions {
   setDepthMin: (depthMin: number | null) => void;
   setDepthMax: (depthMax: number | null) => void;
   setMaxHeight: (maxHeight: number | null) => void;
+  /** Both bounds in one write: a range slider drag moves them together. */
+  setWidthRange: (widthMin: number | null, widthMax: number | null) => void;
+  setDepthRange: (depthMin: number | null, depthMax: number | null) => void;
+  clearDimensionFilters: () => void;
   setFitsGapContext: (fitsGapContext: FitsGapContext | null) => void;
   setMineOnly: (mineOnly: boolean) => void;
   clearFilters: () => void;
@@ -235,13 +239,19 @@ function compareCards(
   return b.createdAt - a.createdAt;
 }
 
-export function filterAndSortCards(
-  items: readonly CommunityCard[],
+interface MatchContext {
+  readonly matches: (card: CommunityCard) => boolean;
+  /** Non-null only while the recently-viewed filter is active; also drives its ordering. */
+  readonly recentRank: Map<string, number> | null;
+  readonly bounds: BestFitBounds;
+}
+
+function buildMatchContext(
   filters: BrowseFilters,
-  searchLabels?: (card: CommunityCard) => string,
-  recentIds: readonly string[] = [],
-  fitsGapContext: FitsGapContext | null = null
-): CommunityCard[] {
+  searchLabels: ((card: CommunityCard) => string) | undefined,
+  recentIds: readonly string[],
+  fitsGapContext: FitsGapContext | null
+): MatchContext {
   const recentRank = filters.recentOnly ? new Map(recentIds.map((id, index) => [id, index])) : null;
   // An explicit toolbar bound always wins over the ambient gap context: it is
   // the more specific, more recent signal.
@@ -263,7 +273,7 @@ export function filterAndSortCards(
   const fitsFootprintMax = (width: number, depth: number): boolean =>
     (effectiveWidthMax === null || width <= effectiveWidthMax) &&
     (effectiveDepthMax === null || depth <= effectiveDepthMax);
-  const matched = items.filter((card) => {
+  const matches = (card: CommunityCard): boolean => {
     const dims = cardDimensionUnits(card.metrics);
     // With a gap context the verdict comes from gapFitVerdict, the same
     // function the detail view renders, so filtering a card out of the grid
@@ -290,13 +300,50 @@ export function filterAndSortCards(
       (recentRank === null || recentRank.has(card.id)) &&
       matchesSearch(card, filters.searchText, searchLabels?.(card) ?? '')
     );
-  });
+  };
+  return {
+    matches,
+    recentRank,
+    bounds: { widthMax: effectiveWidthMax, depthMax: effectiveDepthMax },
+  };
+}
+
+/**
+ * The grid's own membership test, exposed so facet counts are computed with
+ * the exact predicate that decides what the grid shows. A second, parallel
+ * implementation would eventually promise a count the grid does not deliver.
+ *
+ * `mineOnly` is deliberately absent: it swaps the card source rather than
+ * filtering the public index (see BrowseFilters).
+ */
+export function createCardMatcher(
+  filters: BrowseFilters,
+  searchLabels?: (card: CommunityCard) => string,
+  recentIds: readonly string[] = [],
+  fitsGapContext: FitsGapContext | null = null
+): (card: CommunityCard) => boolean {
+  return buildMatchContext(filters, searchLabels, recentIds, fitsGapContext).matches;
+}
+
+export function filterAndSortCards(
+  items: readonly CommunityCard[],
+  filters: BrowseFilters,
+  searchLabels?: (card: CommunityCard) => string,
+  recentIds: readonly string[] = [],
+  fitsGapContext: FitsGapContext | null = null
+): CommunityCard[] {
+  const { matches, recentRank, bounds } = buildMatchContext(
+    filters,
+    searchLabels,
+    recentIds,
+    fitsGapContext
+  );
+  const matched = items.filter(matches);
   if (recentRank !== null) {
     // Most-recent-first is the point of the recently-viewed chip, so it
     // overrides the sort control while active.
     return matched.sort((a, b) => (recentRank.get(a.id) ?? 0) - (recentRank.get(b.id) ?? 0));
   }
-  const bounds: BestFitBounds = { widthMax: effectiveWidthMax, depthMax: effectiveDepthMax };
   return matched.sort((a, b) => compareCards(a, b, filters.sort, bounds));
 }
 
@@ -479,6 +526,23 @@ export const useBrowseStore = create<BrowseStore>((set, get) => {
     },
     setMaxHeight: (maxHeight) => {
       set((state) => withDimensionPatch(state, { maxHeight }));
+    },
+    setWidthRange: (widthMin, widthMax) => {
+      set((state) => withDimensionPatch(state, { widthMin, widthMax }));
+    },
+    setDepthRange: (depthMin, depthMax) => {
+      set((state) => withDimensionPatch(state, { depthMin, depthMax }));
+    },
+    clearDimensionFilters: () => {
+      set((state) =>
+        withDimensionPatch(state, {
+          widthMin: null,
+          widthMax: null,
+          depthMin: null,
+          depthMax: null,
+          maxHeight: null,
+        })
+      );
     },
     setFitsGapContext: (fitsGapContext) => {
       set((state) => ({

@@ -591,7 +591,11 @@ describe('CommunityGalleryTab shelf landing', () => {
     await waitFor(() => {
       expect(screen.getByTestId('community-shelves')).toBeInTheDocument();
     });
-    expect(screen.getByText('community.shelves.staffPicks')).toBeInTheDocument();
+    // The rail carries a Staff picks toggle of its own, so scope the shelf
+    // heading to the shelves.
+    expect(
+      within(screen.getByTestId('community-shelves')).getByText('community.shelves.staffPicks')
+    ).toBeInTheDocument();
   });
 
   it('keeps the plain grid below the threshold', async () => {

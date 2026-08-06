@@ -22,6 +22,12 @@ export interface SliderProps {
   step?: number;
   /** Whether the slider is disabled */
   disabled?: boolean;
+  /**
+   * Renders the filled track in a neutral tone. Use when the current value
+   * places no constraint, so a full track does not read as an active one
+   * purely because it is full.
+   */
+  muted?: boolean;
   /** Accessible label */
   'aria-label': string;
   /** ID of element describing this slider */
@@ -51,6 +57,7 @@ export const Slider = forwardRef<HTMLDivElement, SliderProps>(
       max,
       step = 1,
       disabled = false,
+      muted = false,
       'aria-label': ariaLabel,
       'aria-describedby': ariaDescribedBy,
       'aria-valuetext': ariaValueText,
@@ -186,7 +193,10 @@ export const Slider = forwardRef<HTMLDivElement, SliderProps>(
           {/* Filled track */}
           <div
             data-testid="slider-fill"
-            className="absolute top-1/2 left-0 h-1.5 -translate-y-1/2 rounded-full bg-accent"
+            className={cn(
+              'absolute top-1/2 left-0 h-1.5 -translate-y-1/2 rounded-full',
+              muted ? 'bg-stroke' : 'bg-accent'
+            )}
             style={{ width: `${percent}%` }}
           />
 

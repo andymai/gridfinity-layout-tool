@@ -2,8 +2,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import type { CommunityCard } from '@/shared/types/community';
-import { INITIAL_BROWSE_STATE, useBrowseStore } from '../../store/browseStore';
+import {
+  INITIAL_BROWSE_FILTERS,
+  INITIAL_BROWSE_STATE,
+  useBrowseStore,
+} from '../../store/browseStore';
 import { DimensionFilters } from './DimensionFilters';
+import { computeFacetCounts } from './facetCounts';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
@@ -27,68 +32,108 @@ function card(id: string, overrides: Partial<CommunityCard> = {}): CommunityCard
   };
 }
 
-beforeEach(() => {
-  useBrowseStore.setState({
-    ...INITIAL_BROWSE_STATE,
-    items: [
-      card('a', { metrics: { width: 62.5, depth: 41.5, height: 21, gridUnitMm: 42 } }),
-      card('b', { metrics: { width: 83.5, depth: 125.5, height: 42, gridUnitMm: 42 } }),
-    ],
+// Widths 1.5 and 2, depths 1 and 3, heights 3 and 6.
+const ITEMS = [
+  card('a', { metrics: { width: 62.5, depth: 41.5, height: 21, gridUnitMm: 42 } }),
+  card('b', { metrics: { width: 83.5, depth: 125.5, height: 42, gridUnitMm: 42 } }),
+];
+
+function renderFilters(items: readonly CommunityCard[] = ITEMS) {
+  const counts = computeFacetCounts({
+    items,
+    filters: useBrowseStore.getState().filters,
+    recentIds: [],
+    fitsGapContext: null,
   });
+  return render(<DimensionFilters items={items} counts={counts} />);
+}
+
+beforeEach(() => {
+  useBrowseStore.setState({ ...INITIAL_BROWSE_STATE, items: ITEMS });
 });
 
 describe('DimensionFilters', () => {
-  it('renders faceted options from the loaded index, half units included', () => {
-    render(<DimensionFilters variant="toolbar" />);
+  it('lays each axis out on the values present in the index', () => {
+    renderFilters();
     const widthMin = screen.getByLabelText('community.gallery.widthMinLabel');
-    const optionLabels = Array.from(widthMin.querySelectorAll('option')).map(
-      (option) => option.textContent
+    expect(widthMin).toHaveAttribute('aria-valuenow', '1.5');
+    expect(screen.getByLabelText('community.gallery.widthMaxLabel')).toHaveAttribute(
+      'aria-valuenow',
+      '2'
     );
-    expect(optionLabels).toEqual(['community.gallery.dimensionAny', '1.5', '2']);
   });
 
-  it('writes width bounds to the browse store and clears via the Any sentinel', () => {
-    render(<DimensionFilters variant="toolbar" />);
-    fireEvent.change(screen.getByLabelText('community.gallery.widthMinLabel'), {
-      target: { value: '1.5' },
+  it('reads as unfiltered until a thumb is moved off the reachable edge', () => {
+    renderFilters();
+    expect(screen.getAllByText('community.gallery.dimensionAny')).toHaveLength(3);
+    expect(useBrowseStore.getState().filters.widthMin).toBeNull();
+  });
+
+  it('writes a width bound when the lower thumb moves inward', () => {
+    renderFilters();
+    fireEvent.keyDown(screen.getByLabelText('community.gallery.widthMinLabel'), {
+      key: 'ArrowRight',
     });
-    expect(useBrowseStore.getState().filters.widthMin).toBe(1.5);
-    fireEvent.change(screen.getByLabelText('community.gallery.widthMaxLabel'), {
-      target: { value: '2' },
-    });
-    expect(useBrowseStore.getState().filters.widthMax).toBe(2);
-    fireEvent.change(screen.getByLabelText('community.gallery.widthMinLabel'), {
-      target: { value: '' },
+    expect(useBrowseStore.getState().filters.widthMin).toBe(2);
+    expect(useBrowseStore.getState().filters.widthMax).toBeNull();
+  });
+
+  it('clears the bound again when the thumb returns to the edge', () => {
+    useBrowseStore.getState().setWidthRange(2, null);
+    renderFilters();
+    fireEvent.keyDown(screen.getByLabelText('community.gallery.widthMinLabel'), {
+      key: 'ArrowLeft',
     });
     expect(useBrowseStore.getState().filters.widthMin).toBeNull();
   });
 
-  it('writes depth bounds and the height ceiling to the browse store', () => {
-    render(<DimensionFilters variant="sheet" />);
-    fireEvent.change(screen.getByLabelText('community.gallery.depthMinLabel'), {
-      target: { value: '1' },
+  it('writes a depth bound from the upper thumb', () => {
+    renderFilters();
+    fireEvent.keyDown(screen.getByLabelText('community.gallery.depthMaxLabel'), {
+      key: 'ArrowLeft',
     });
-    fireEvent.change(screen.getByLabelText('community.gallery.depthMaxLabel'), {
-      target: { value: '3' },
-    });
-    fireEvent.change(screen.getByLabelText('community.gallery.maxHeightLabel'), {
-      target: { value: '6' },
-    });
-    const { filters } = useBrowseStore.getState();
-    expect(filters.depthMin).toBe(1);
-    expect(filters.depthMax).toBe(3);
-    expect(filters.maxHeight).toBe(6);
+    expect(useBrowseStore.getState().filters.depthMax).toBe(1);
   });
 
-  it('reflects the current store values in the selects', () => {
-    useBrowseStore.getState().setMaxHeight(6);
-    render(<DimensionFilters variant="toolbar" />);
-    expect(screen.getByLabelText('community.gallery.maxHeightLabel')).toHaveValue('6');
-    expect(screen.getByLabelText('community.gallery.widthMinLabel')).toHaveValue('');
+  it('caps the height from the single-bound slider', () => {
+    renderFilters();
+    fireEvent.keyDown(screen.getByLabelText('community.gallery.maxHeightLabel'), {
+      key: 'ArrowLeft',
+    });
+    expect(useBrowseStore.getState().filters.maxHeight).toBe(3);
   });
 
-  it('shows visible group labels in the sheet variant', () => {
-    render(<DimensionFilters variant="sheet" />);
+  it('shows the selected span instead of the unset label', () => {
+    useBrowseStore.getState().setWidthRange(2, 2);
+    renderFilters();
+    expect(screen.getByText('2–2')).toBeInTheDocument();
+  });
+
+  it('keeps a stored bound reachable after another filter shrinks the window', () => {
+    // Only the 1.5-wide card clears the height cap, so the stored width bound
+    // of 2 now sits outside the reachable window.
+    useBrowseStore.getState().setWidthRange(2, null);
+    useBrowseStore.getState().setMaxHeight(3);
+    renderFilters();
+    const widthMin = screen.getByLabelText('community.gallery.widthMinLabel');
+    expect(widthMin).toHaveAttribute('aria-valuenow', '2');
+    fireEvent.keyDown(widthMin, { key: 'ArrowLeft' });
+    expect(useBrowseStore.getState().filters.widthMin).toBeNull();
+  });
+
+  it('disables an axis with nothing left to reach', () => {
+    const counts = computeFacetCounts({
+      items: ITEMS,
+      filters: { ...INITIAL_BROWSE_FILTERS, searchText: 'no-such-design' },
+      recentIds: [],
+      fitsGapContext: null,
+    });
+    render(<DimensionFilters items={ITEMS} counts={counts} />);
+    expect(screen.getByLabelText('community.gallery.widthMinLabel')).toBeDisabled();
+  });
+
+  it('labels each axis', () => {
+    renderFilters();
     expect(screen.getByText('community.gallery.widthLabel')).toBeInTheDocument();
     expect(screen.getByText('community.gallery.depthLabel')).toBeInTheDocument();
     expect(screen.getByText('community.gallery.maxHeightLabel')).toBeInTheDocument();
