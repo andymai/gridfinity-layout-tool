@@ -54,7 +54,10 @@ export function useDimensionsSection() {
   const minDepth = halfGridMode && width >= 1 ? 0.5 : 1;
   // A spacer is floorless, so it may go down to 1u (#2915) — but only an
   // EFFECTIVE one, hence the style: the flag is inert on a flat base.
-  const minHeight = minHeightUnits({ spacer: baseSpacer, tile: baseTile, style: baseStyle });
+  const minHeight = minHeightUnits(
+    { spacer: baseSpacer, tile: baseTile, style: baseStyle },
+    heightUnitMm
+  );
 
   const widthMm = width * gridUnitMm;
   const depthMm = depth * (gridUnitMmY ?? gridUnitMm);

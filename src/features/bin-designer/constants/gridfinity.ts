@@ -9,6 +9,9 @@
  */
 
 export { GRIDFINITY_SPEC as GRIDFINITY } from '@/shared/printSettings/gridfinityGeometry';
+// The re-export above is not a local binding, so `minHeightUnits` needs its own
+// import to read the socket height it has to clear.
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 
 /** Wall thickness per bin style (mm) */
 export const STYLE_WALL_THICKNESS: Record<string, number> = {
@@ -26,6 +29,16 @@ export const DESIGNER_CONSTRAINTS = {
   // doesn't apply — 1u is what lets a stack be shimmed from odd to even total
   // height and back (#2915).
   MIN_SPACER_HEIGHT: 1, // height units
+  /**
+   * Shortest wall (mm) a socketed body may be built with. `wallHeight` is
+   * `height * heightUnitMm - SOCKET_HEIGHT`, so a short height unit can drive it
+   * to zero or below: at 0 the box extrude is a zero vector and generation
+   * throws, and below 0 OCCT happily extrudes DOWNWARD, burying an inverted box
+   * and the stacking lip inside the foot. Only a spacer can reach it — every
+   * other socketed base is held at `MIN_HEIGHT` (2u), which clears the socket at
+   * any permitted height unit.
+   */
+  MIN_BODY_WALL_MM: 1,
   MAX_HEIGHT: 20, // height units (expanded: tall bins for tools/bottles)
   HEIGHT_STEP: 1, // height units
   // Compartment grid
@@ -177,17 +190,39 @@ export const DESIGNER_CONSTRAINTS = {
  * 1 rather than its true 0.71u so no fractional-height carve-out is needed here
  * or in the server mirror.
  */
-export function minHeightUnits(base: {
-  readonly spacer: boolean;
-  readonly tile?: boolean;
-  readonly style: string;
-}): number {
+export function minHeightUnits(
+  base: {
+    readonly spacer: boolean;
+    readonly tile?: boolean;
+    readonly style: string;
+  },
+  /**
+   * Height unit in mm. Only a spacer reads it, and only to keep its body above
+   * the socket it stands on; omit it to accept the 7mm default, at which the
+   * spacer floor is 1u either way.
+   */
+  heightUnitMm: number = GRIDFINITY_SPEC.HEIGHT_UNIT
+): number {
   // Matches `deriveDimensions`: the flag is inert on any socketless base, so
   // a `{ style: 'lid', spacer: true, height: 1 }` payload must not buy the
   // relaxed floor either.
   const socketless = base.style === 'flat' || base.style === 'lid';
-  const relaxed = (base.spacer || base.tile === true) && !socketless;
-  return relaxed ? DESIGNER_CONSTRAINTS.MIN_SPACER_HEIGHT : DESIGNER_CONSTRAINTS.MIN_HEIGHT;
+  if (socketless) return DESIGNER_CONSTRAINTS.MIN_HEIGHT;
+  // A tray's wall is pinned to 0 and its height is inert data stored as 1, so it
+  // takes the flat relaxed floor and must NOT take the spacer's socket-clearing
+  // one: raising it would reject every tray at a height unit of 5mm or less,
+  // since the store pins the field rather than floors it.
+  if (base.tile === true) return DESIGNER_CONSTRAINTS.MIN_SPACER_HEIGHT;
+  if (!base.spacer) return DESIGNER_CONSTRAINTS.MIN_HEIGHT;
+  // A spacer keeps its walls, so its body has to reach above the 5mm socket it
+  // subtracts. 1u only clears that at the 7mm default; at a 3mm unit a 1u spacer
+  // asks for a -2mm wall. Ceil so the floor lands on a whole height unit.
+  const unit =
+    Number.isFinite(heightUnitMm) && heightUnitMm > 0 ? heightUnitMm : GRIDFINITY_SPEC.HEIGHT_UNIT;
+  const clearsSocket = Math.ceil(
+    (GRIDFINITY_SPEC.SOCKET_HEIGHT + DESIGNER_CONSTRAINTS.MIN_BODY_WALL_MM) / unit
+  );
+  return Math.max(DESIGNER_CONSTRAINTS.MIN_SPACER_HEIGHT, clearsSocket);
 }
 
 /**

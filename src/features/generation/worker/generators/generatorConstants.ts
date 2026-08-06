@@ -5,7 +5,7 @@
  * Sources: Gridfinity spec v5, measured from reference models.
  */
 
-import { GRIDFINITY } from '@/shared/constants/bin';
+import { GRIDFINITY, DESIGNER_CONSTRAINTS } from '@/shared/constants/bin';
 import { OVER_TILE_MIN_MARGIN_MM } from '@/core/constants';
 import { clamp } from '@/shared/utils/math';
 import { MAGNET_FLOOR } from '@/shared/printSettings/gridfinityGeometry';
@@ -18,6 +18,12 @@ export const CLEARANCE = GRIDFINITY.TOLERANCE;
 export const CORNER_RADIUS = GRIDFINITY.SOCKET_CORNER_RADIUS;
 export const BOX_CORNER_RADIUS = GRIDFINITY.BOX_CORNER_RADIUS;
 export const SOCKET_HEIGHT = GRIDFINITY.SOCKET_HEIGHT;
+/**
+ * Shortest wall a socketed body is built with — the same floor `minHeightUnits`
+ * holds the UI and the server mirror to, so a payload that slips past them
+ * degrades to this rather than to a degenerate (or inverted) extrude.
+ */
+export const MIN_BODY_WALL_MM = DESIGNER_CONSTRAINTS.MIN_BODY_WALL_MM;
 export const SOCKET_SMALL_TAPER = GRIDFINITY.SOCKET_SMALL_TAPER;
 export const SOCKET_BIG_TAPER = GRIDFINITY.SOCKET_BIG_TAPER;
 export const SOCKET_VERTICAL_PART = SOCKET_HEIGHT - SOCKET_SMALL_TAPER - SOCKET_BIG_TAPER;
