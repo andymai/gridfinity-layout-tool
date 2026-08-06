@@ -1589,8 +1589,6 @@ const en: Record<string, string> = {
   'toolSwitcher.switchToDesigner': 'Switch to Bin Designer (Shift+D)',
   'toolSwitcher.baseplateGenerator': 'Baseplate',
   'toolSwitcher.switchToBaseplate': 'Switch to Baseplate Generator',
-  'toolSwitcher.community': 'Community',
-  'toolSwitcher.switchToCommunity': 'Switch to Community designs',
 
   // Bin Designer
   'binDesigner.exportSTL': 'Export bin as STL',
@@ -3198,8 +3196,8 @@ const en: Record<string, string> = {
   'commandPalette.footer.commandCount': '{count} commands',
 
   // Bin example gallery entry points
-  'binExamples.sidebarEntry': 'Design Showcase',
-  'binExamples.sidebarHint': 'See what the bin designer can do',
+  'binExamples.sidebarEntry': 'Community',
+  'binExamples.sidebarHint': 'Bins other makers shared',
 
   // Bin example gallery UI
   'binExamples.gallery.title': 'Design showcase',
@@ -3529,7 +3527,7 @@ const en: Record<string, string> = {
   'community.mine.unpublishFailed': "Couldn't unpublish the design. Try again.",
 
   // Public /community route (full-page host)
-  'community.page.title': 'Community designs',
+  'community.page.title': 'Community',
   'community.page.subtitle': 'Designs shared by other makers, free to remix and print.',
   'community.page.publishCta': 'Publish a design',
   'community.page.designCta': 'Design your own bin',

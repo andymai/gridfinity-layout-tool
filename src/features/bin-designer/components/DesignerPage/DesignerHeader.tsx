@@ -66,7 +66,7 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
         /* ---- Desktop action bar ---- */
         <>
           <div className="flex items-center gap-3 min-w-0">
-            <ToolSwitcher collapseLabels />
+            <ToolSwitcher />
 
             {/* Design name (click to rename inline) */}
             {isEditingName ? (

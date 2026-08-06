@@ -1,20 +1,17 @@
 /**
- * Segmented control for switching between Layout, Bins, Baseplate Generator
- * and the Community gallery.
+ * Segmented control for switching between Layout, Bins and Baseplate.
  *
- * Community is a destination rather than a generator, but it lives here so it
- * is reachable from every surface and so /community renders under the same
- * chrome as the rest of the app instead of behind a "back to app" escape
- * hatch. It appears only while the community_showcase flag is on, and carries
- * an experimental marker (a dot, so it survives the icon-only collapse).
+ * Three editors of one drawer, which is what the grouping means. Destinations
+ * that are not editors do not belong here: a fourth segment made the control
+ * wide enough to truncate the design name beside it, and spent the header's
+ * best space on its least frequent action. /community reaches the app through
+ * this same switcher with no segment active, since you are not in an editor.
  */
 
 import { Button } from '@/design-system';
-import { useCommunityDigestStore } from '@/core/store/communityDigest';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
 import { useCommunityRouting } from '@/shared/hooks/useCommunityRouting';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 
@@ -23,35 +20,18 @@ interface ToolSwitcherProps {
   compact?: boolean;
   /** Show icons only (no text labels) */
   iconOnly?: boolean;
-  /**
-   * Drop the labels below 2xl, keeping the icons. For headers that also carry
-   * a document name and its actions: the switcher is persistent global nav
-   * and its labels are worth less than the name of the thing being edited.
-   */
-  collapseLabels?: boolean;
 }
 
-type Tool = 'planner' | 'designer' | 'baseplate' | 'community';
-
-const NEWS_DOT_TESTID = 'tool-news-dot';
-const EXPERIMENTAL_DOT_TESTID = 'tool-experimental-dot';
-const LABEL_SUFFIX_SEPARATOR = ', ';
+type Tool = 'planner' | 'designer' | 'baseplate';
 
 interface ToolConfig {
   id: Tool;
-  labelKey:
-    | 'toolSwitcher.layout'
-    | 'toolSwitcher.binDesigner'
-    | 'toolSwitcher.baseplateGenerator'
-    | 'toolSwitcher.community';
+  labelKey: 'toolSwitcher.layout' | 'toolSwitcher.binDesigner' | 'toolSwitcher.baseplateGenerator';
   switchKey:
     | 'toolSwitcher.switchToPlanner'
     | 'toolSwitcher.switchToDesigner'
-    | 'toolSwitcher.switchToBaseplate'
-    | 'toolSwitcher.switchToCommunity';
+    | 'toolSwitcher.switchToBaseplate';
   iconPaths: readonly string[];
-  /** Marks the segment as an experimental surface. */
-  experimental?: boolean;
 }
 
 const TOOLS: ToolConfig[] = [
@@ -73,13 +53,6 @@ const TOOLS: ToolConfig[] = [
     switchKey: 'toolSwitcher.switchToBaseplate',
     iconPaths: ICON_PATHS.baseplate,
   },
-  {
-    id: 'community',
-    labelKey: 'toolSwitcher.community',
-    switchKey: 'toolSwitcher.switchToCommunity',
-    iconPaths: ICON_PATHS.community,
-    experimental: true,
-  },
 ];
 
 function getSegmentPadding(iconOnly: boolean, compact: boolean): string {
@@ -95,22 +68,17 @@ function getIconSize(iconOnly: boolean, compact: boolean): string {
   return 'w-4 h-4';
 }
 
-export function ToolSwitcher({
-  compact = false,
-  iconOnly = false,
-  collapseLabels = false,
-}: ToolSwitcherProps) {
+export function ToolSwitcher({ compact = false, iconOnly = false }: ToolSwitcherProps) {
   const t = useTranslation();
   const { isDesignerRoute, navigateToDesigner, navigateToPlanner } = useDesignerRouting();
   const { isBaseplateRoute, navigateToBaseplate } = useBaseplateRouting();
-  const { isCommunityRoute, navigateToCommunity } = useCommunityRouting();
-  const communityEnabled = useFeatureFlag('community_showcase');
-  const hasUnseenDigest = useCommunityDigestStore((s) => s.hasUnseenDeltas);
+  const { isCommunityRoute } = useCommunityRouting();
 
-  const tools = communityEnabled ? TOOLS : TOOLS.filter((tool) => tool.id !== 'community');
-
-  const activeTool: Tool = isCommunityRoute
-    ? 'community'
+  // Null on /community: you are not in an editor, and highlighting the one
+  // you last used would claim otherwise. Every segment stays live, so the
+  // switcher is also the way out of that route.
+  const activeTool: Tool | null = isCommunityRoute
+    ? null
     : isBaseplateRoute
       ? 'baseplate'
       : isDesignerRoute
@@ -123,8 +91,6 @@ export function ToolSwitcher({
       navigateToDesigner();
     } else if (tool === 'baseplate') {
       navigateToBaseplate();
-    } else if (tool === 'community') {
-      navigateToCommunity();
     } else {
       navigateToPlanner();
     }
@@ -148,64 +114,25 @@ export function ToolSwitcher({
         role="tablist"
         aria-label={t('toolSwitcher.activeTool')}
       >
-        {tools.map(({ id, labelKey, switchKey, iconPaths, experimental }) => {
-          // News wins the marker slot. A segment has room for one dot, and
-          // "there is something new in here" is actionable where "this is
-          // experimental" is a standing property already spelled out on the
-          // page the segment leads to. Both stay in the accessible name.
-          const hasNews = id === 'community' && hasUnseenDigest;
-          const showMarker = hasNews || experimental === true;
-          const suffixes = [
-            hasNews ? t('binExamples.gallery.tabs.newBadge') : null,
-            experimental === true ? t('common.experimental') : null,
-          ].filter((value): value is string => value !== null);
-
-          return (
-            <Button
-              key={id}
-              variant="ghost"
-              role="tab"
-              aria-selected={activeTool === id}
-              aria-label={
-                suffixes.length > 0
-                  ? `${t(labelKey)} (${suffixes.join(LABEL_SUFFIX_SEPARATOR)})`
-                  : t(labelKey)
-              }
-              onClick={() => handleSwitch(id)}
-              title={activeTool !== id ? t(switchKey) : undefined}
-              className={`${segmentClass(id)} relative`}
-            >
-              <svg className={iconSize} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                {iconPaths.map((d) => (
-                  <path
-                    key={d}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d={d}
-                  />
-                ))}
-              </svg>
-              {!iconOnly &&
-                (collapseLabels ? (
-                  <span className="hidden 2xl:inline">{t(labelKey)}</span>
-                ) : (
-                  t(labelKey)
-                ))}
-              {/* Rides the corner rather than the label so the marker survives
-                  the icon-only collapse. */}
-              {showMarker && (
-                <span
-                  aria-hidden="true"
-                  data-testid={hasNews ? NEWS_DOT_TESTID : EXPERIMENTAL_DOT_TESTID}
-                  className={`absolute right-0.5 top-0.5 h-1.5 w-1.5 rounded-full ${
-                    hasNews ? 'bg-accent' : 'bg-content-tertiary'
-                  }`}
-                />
-              )}
-            </Button>
-          );
-        })}
+        {TOOLS.map(({ id, labelKey, switchKey, iconPaths }) => (
+          <Button
+            key={id}
+            variant="ghost"
+            role="tab"
+            aria-selected={activeTool === id}
+            aria-label={t(labelKey)}
+            onClick={() => handleSwitch(id)}
+            title={activeTool !== id ? t(switchKey) : undefined}
+            className={segmentClass(id)}
+          >
+            <svg className={iconSize} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              {iconPaths.map((d) => (
+                <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+              ))}
+            </svg>
+            {!iconOnly && t(labelKey)}
+          </Button>
+        ))}
       </div>
     </div>
   );
