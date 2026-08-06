@@ -23,7 +23,7 @@ describe('MobileGridToolbar', () => {
     expect(screen.getByText(/100%/)).toBeInTheDocument();
   });
 
-  it('hides the find-bins button while community_showcase is off', () => {
+  it('hides the find-bins button while community_fits_gap is off', () => {
     render(<MobileGridToolbar onFitToScreen={vi.fn()} />);
     expect(screen.queryByTestId('mobile-toolbar-find-bins-that-fit')).not.toBeInTheDocument();
   });
@@ -32,7 +32,7 @@ describe('MobileGridToolbar', () => {
     useLabsStore.setState((s) => ({
       preferences: {
         ...s.preferences,
-        enabledFeatures: { ...s.preferences.enabledFeatures, community_showcase: true },
+        enabledFeatures: { ...s.preferences.enabledFeatures, community_fits_gap: true },
       },
     }));
     render(<MobileGridToolbar onFitToScreen={vi.fn()} />);

@@ -55,10 +55,10 @@ function savePreferences(prefs: LabsPreferences): Result<void, StorageError> {
  * `toggleFeature` flips a default-on flag to on, and `disableFeature` reads
  * "never stored" as "already off" — the one control that turns the feature
  * off would silently do nothing. Status is deliberately not consulted:
- * enabling a graduated feature still has to write, since its stored value is
+ * enabling a graduated feature still has to write, since the stored value is
  * what remains if it is ever un-graduated.
  */
-function resolveStored(preferences: LabsPreferences, featureId: string): boolean {
+function resolveStoredEnabled(preferences: LabsPreferences, featureId: string): boolean {
   const stored = preferences.enabledFeatures[featureId];
   if (stored !== undefined) return stored;
   return getFeature(featureId)?.defaultEnabled ?? false;
@@ -68,6 +68,10 @@ function resolveStored(preferences: LabsPreferences, featureId: string): boolean
  * Whether a feature is on, for READ paths. The single answer to that
  * question: `useFeatureFlag` selects through this so a hook and a getState()
  * call can never disagree about the same flag.
+ *
+ * It lives here rather than beside the definitions so it calls the IMPORTED
+ * `getFeature`. Inside the registry module that call would be internal, and
+ * every test that mocks `getFeature` would silently stop reaching it.
  */
 export function resolveFeatureEnabled(preferences: LabsPreferences, featureId: string): boolean {
   const feature = getFeature(featureId);
@@ -81,7 +85,7 @@ export function resolveFeatureEnabled(preferences: LabsPreferences, featureId: s
   // Coming Soon features are always disabled
   if (feature?.comingSoon) return false;
 
-  return resolveStored(preferences, featureId);
+  return resolveStoredEnabled(preferences, featureId);
 }
 
 interface LabsState {
@@ -128,7 +132,7 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
     if (feature?.comingSoon) return OK;
 
     const { preferences } = get();
-    const newEnabled = !resolveStored(preferences, featureId);
+    const newEnabled = !resolveStoredEnabled(preferences, featureId);
 
     const newPrefs: LabsPreferences = {
       ...preferences,
@@ -158,7 +162,7 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
     if (feature?.comingSoon) return OK;
 
     const { preferences } = get();
-    if (resolveStored(preferences, featureId)) return OK;
+    if (resolveStoredEnabled(preferences, featureId)) return OK;
 
     const newPrefs: LabsPreferences = {
       ...preferences,
@@ -182,7 +186,7 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
 
   disableFeature: (featureId) => {
     const { preferences } = get();
-    if (!resolveStored(preferences, featureId)) return OK;
+    if (!resolveStoredEnabled(preferences, featureId)) return OK;
 
     const newPrefs: LabsPreferences = {
       ...preferences,

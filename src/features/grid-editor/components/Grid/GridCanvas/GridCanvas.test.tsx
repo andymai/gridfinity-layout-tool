@@ -35,6 +35,15 @@ vi.mock('@/features/grid-editor/hooks/useGridCoords', () => ({
   }),
 }));
 
+function setCommunityFlag(enabled: boolean): void {
+  useLabsStore.setState((s) => ({
+    preferences: {
+      ...s.preferences,
+      enabledFeatures: { ...s.preferences.enabledFeatures, community_fits_gap: enabled },
+    },
+  }));
+}
+
 describe('GridCanvas', () => {
   const mockStartDraw = vi.fn();
   const mockStartDrag = vi.fn();
@@ -439,16 +448,7 @@ describe('GridCanvas', () => {
     });
   });
 
-  describe('Fits-gap gesture (community_showcase flag)', () => {
-    const setCommunityFlag = (enabled: boolean) => {
-      useLabsStore.setState((s) => ({
-        preferences: {
-          ...s.preferences,
-          enabledFeatures: { ...s.preferences.enabledFeatures, community_showcase: enabled },
-        },
-      }));
-    };
-
+  describe('Fits-gap gesture (community_fits_gap flag)', () => {
     it('flag off: a right-button press leaves no trace', () => {
       mockGetGridCoords.mockReturnValue({ x: 3, y: 4 });
       const { container } = renderGridCanvas();

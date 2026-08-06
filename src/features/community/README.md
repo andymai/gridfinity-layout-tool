@@ -93,6 +93,8 @@ Backend lives in `api/community/prints.ts` (`GET`/`PUT`/`DELETE`/`POST report`),
 
 `utils/gapFit.ts` answers whether a design fits the gap the viewer picked in the layout editor. It is the **single** implementation: the browse filter and the detail view both call it, because filtering a card out of the grid and telling someone "this will not fit" are the same question and must never disagree.
 
+**The gap-picking gesture has its own flag, `community_fits_gap`, opt-in.** It claims the right button on the grid and suppresses the browser context menu there, which is a layout-editor interaction change rather than a consequence of the showcase being available. `community_showcase` gates the gallery, the publish action and the Community tool; it deliberately does not reach into the grid.
+
 It encodes three things that are easy to get wrong:
 
 - **Rotation counts.** Placement probes both orientations, so a 2x3 design does fit a 3x2 gap. The verdict distinguishes `fits` from `fits-rotated` so the detail can say which.

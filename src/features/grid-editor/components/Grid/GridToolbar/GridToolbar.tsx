@@ -72,7 +72,7 @@ export const GridToolbar = memo(function GridToolbar({
       setGapSelectArmed: state.setGapSelectArmed,
     }))
   );
-  const fitsGapEnabled = useFeatureFlag('community_showcase');
+  const fitsGapEnabled = useFeatureFlag('community_fits_gap');
   const { showIsometricPreview, toggleIsometricPreview } = useViewStore(
     useShallow((state) => ({
       showIsometricPreview: state.showIsometricPreview,
