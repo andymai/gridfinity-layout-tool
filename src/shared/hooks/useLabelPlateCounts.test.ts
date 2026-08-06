@@ -205,6 +205,43 @@ describe('useLabelPlateCounts', () => {
     await waitFor(() => expect(result.current.get(D1)?.tabsWithoutText).toBe(false));
   });
 
+  it('flags a span design whose rows are blank despite stale compartment captions', async () => {
+    mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
+    mockLoadDesign.mockResolvedValue(
+      ok(
+        makeSocketDesign({
+          label: { enabled: true, mode: 'socket', depth: 12, span: true },
+          compartments: { cols: 1, rows: 1, cells: [0], thickness: 1.2, compartmentTexts: ['M3'] },
+        })
+      )
+    );
+
+    const { result } = renderHook(() =>
+      useLabelPlateCounts([createTestBin({ linkedDesignId: D1 })])
+    );
+
+    // Span mode prints `label.rowTexts`, so the leftover compartment caption
+    // never reaches a tab. Reading both arrays would call this design labelled.
+    await waitFor(() => expect(result.current.get(D1)?.tabsWithoutText).toBe(true));
+  });
+
+  it('does not flag a span design that has row text', async () => {
+    mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
+    mockLoadDesign.mockResolvedValue(
+      ok(
+        makeSocketDesign({
+          label: { enabled: true, mode: 'socket', depth: 12, span: true, rowTexts: ['DRILL BITS'] },
+        })
+      )
+    );
+
+    const { result } = renderHook(() =>
+      useLabelPlateCounts([createTestBin({ linkedDesignId: D1 })])
+    );
+
+    await waitFor(() => expect(result.current.get(D1)?.tabsWithoutText).toBe(false));
+  });
+
   it('does not flag a design with no label tabs at all', async () => {
     mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
     mockLoadDesign.mockResolvedValue(

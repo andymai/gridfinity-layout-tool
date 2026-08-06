@@ -20,6 +20,7 @@ import {
 } from '@/features/bin-designer';
 import { effectiveLabelSocketClearance } from '@/shared/constants/labelPlates';
 import type { LabelPlateWidthU } from '@/shared/constants/labelPlates';
+import type { BinParams } from '@/shared/types/bin';
 import { useSettingsStore } from '@/core/store';
 import { planLabelPlates } from '@/shared/utils/labelSocketPlan';
 
@@ -62,12 +63,21 @@ export function clearLabelPlateCountCache(): void {
   inFlight.clear();
 }
 
+// Both generation paths print exactly ONE of the two caption arrays, chosen by
+// `label.span` (`labelTabBuilder` for tabs, `labelSocketPlan` for plates), and
+// nothing copies captions across when the mode is toggled. Requiring both to be
+// empty would stay silent on a span design whose rows are blank while stale
+// compartment captions linger, which is the case the warning exists for.
+function printedLabelTexts(params: BinParams): readonly string[] {
+  return params.label.span === true
+    ? (params.label.rowTexts ?? [])
+    : (params.compartments.compartmentTexts ?? []);
+}
+
 function computeLabelInfo(design: SavedDesign, nozzleSizeMm: number): DesignLabelInfo {
   const params = design.params;
   const tabsWithoutText =
-    params?.label.enabled === true &&
-    !(params.compartments.compartmentTexts ?? []).some((t) => t.trim() !== '') &&
-    !(params.label.rowTexts ?? []).some((t) => t.trim() !== '');
+    params?.label.enabled === true && !printedLabelTexts(params).some((t) => t.trim() !== '');
   return { plateSet: computePlateSet(design, nozzleSizeMm), tabsWithoutText };
 }
 
@@ -112,7 +122,9 @@ function enqueueLoad(id: DesignId, key: string, nozzleSizeMm: number, onSettled:
 /**
  * Resolve what every linked design's label tabs mean for the print list —
  * swappable plate requirements, and whether the tabs carry any text at all.
- * Designs still loading or unresolvable are absent from the returned map.
+ * Designs still loading are absent from the returned map. One that failed to
+ * load resolves to the inert entry (no plates, no warning) so a storage error
+ * cannot fabricate a blank-tab warning against a design nobody could read.
  */
 export function useLabelPlateCounts(bins: Bin[]): ReadonlyMap<DesignId, DesignLabelInfo> {
   const registry = useCustomBins();

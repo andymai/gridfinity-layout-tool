@@ -59,13 +59,13 @@ export function planLabelTextOverflow(params: BinParams): LabelTextOverflow[] {
   for (const seat of seats) {
     const key = `${seat.scope}:${seat.index}`;
     if (seen.has(key)) continue;
+    seen.add(key);
     const spec = {
       widthU: seat.plateWidthU,
       text: seat.text,
       ...(seat.icon ? { icon: seat.icon } : {}),
     };
     if (plateTextFits(spec, opts)) continue;
-    seen.add(key);
     overflows.push({ scope: seat.scope, index: seat.index });
   }
   return overflows;
