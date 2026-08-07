@@ -97,7 +97,10 @@ export const DEFAULT_SLIDE_CONFIG: SlideConfig = {
   trayWidthUnits: 1,
   trayDepthMm: 20,
   trayWallMm: 1.2,
-  railDropMm: 0,
+  // Sinks the default tray fully inside a bin rather than leaving it standing
+  // ~18mm proud of the rim. Matches `trayDepthMm` + a millimetre; a user who
+  // changes the tray depth has to revisit this, which the panel should warn on.
+  railDropMm: 21,
   railProtrusionMm: 2,
   railThicknessMm: 2,
   clearanceMm: 0.45,

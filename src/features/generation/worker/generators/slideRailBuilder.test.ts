@@ -3,7 +3,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { getBounds, withScope, intersect, draw } from 'brepjs';
 import type { DisposalScope, ValidSolid } from 'brepjs';
 import { buildSlideRails, buildSlideTray } from './slideRailBuilder';
-import { resolveSlideGeometry, rimTrackBaseZ } from './slideGeometry';
+import { resolveSlideGeometry, rimTrackBaseZ, sectionBounds } from './slideGeometry';
 import type { SlideGeometryInput } from './slideGeometry';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import { buildParams } from './__kernel-tests__/scenarioTypes';
@@ -52,8 +52,8 @@ describe('slide rail solids', () => {
       return getBounds(scope.register(rails));
     });
     const xs = planned.rails.flatMap((r) => [r.xMin, r.xMax]);
-    const ys = planned.rails.flatMap((r) => [r.yMin, r.yMax]);
-    const zs = planned.rails.flatMap((r) => [r.zMin, r.zMax]);
+    const ys = planned.rails.flatMap((r) => [sectionBounds(r).yMin, sectionBounds(r).yMax]);
+    const zs = planned.rails.flatMap((r) => [sectionBounds(r).zMin, sectionBounds(r).zMax]);
     expect(b.xMin).toBeCloseTo(Math.min(...xs), 3);
     expect(b.xMax).toBeCloseTo(Math.max(...xs), 3);
     expect(b.yMin).toBeCloseTo(Math.min(...ys), 3);
@@ -146,7 +146,8 @@ describe('slide rails on a generated bin', () => {
     const plain = generate();
     const railed = generate({ railMount: 'rim', railThicknessMm: 2 });
     expect(railed.zMax).toBeGreaterThan(plain.zMax);
-    expect(railed.zMax).toBeCloseTo(rimTrackBaseZ(6 * 7, 0, true) + 2, 2);
+    // Shelf then guide, so the L tops out two thicknesses above the lip.
+    expect(railed.zMax).toBeCloseTo(rimTrackBaseZ(6 * 7, 0, true) + 2 * 2, 2);
   });
 
   it('leaves the rim untouched on an interior mount but adds material', () => {

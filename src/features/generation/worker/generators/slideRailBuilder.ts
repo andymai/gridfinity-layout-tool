@@ -12,10 +12,28 @@ import type { Shape3D, DisposalScope, ValidSolid } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import { resolveSlideGeometry } from './slideGeometry';
-import type { SlideRailBar, SlideGeometryInput } from './slideGeometry';
+import type { SlideRailSection, SlideGeometryInput } from './slideGeometry';
+
+/**
+ * Sweep a rail's YZ cross-section along X.
+ *
+ * Sketched on YZ and extruded along +X, then translated to the section's start.
+ * A box path would not do: a shelf's underside is chamfered, which is what
+ * keeps it off the support-material list.
+ */
+function railSolid(scope: DisposalScope, bar: SlideRailSection): Shape3D {
+  const [first, ...rest] = bar.section;
+  let pen = draw([first[0], first[1]]);
+  for (const [y, z] of rest) pen = pen.lineTo([y, z]);
+  const extruded = scope.register(sketch(pen.close(), 'YZ').extrude(bar.xMax - bar.xMin));
+  return scope.register(translate(extruded, [bar.xMin, 0, 0]));
+}
 
 /** Axis-aligned box as a solid, from bin-centred mm bounds. */
-function boxSolid(scope: DisposalScope, b: SlideRailBar): Shape3D {
+function boxSolid(
+  scope: DisposalScope,
+  b: { xMin: number; xMax: number; yMin: number; yMax: number; zMin: number; zMax: number }
+): Shape3D {
   const profile = draw([b.xMin, b.yMin])
     .lineTo([b.xMax, b.yMin])
     .lineTo([b.xMax, b.yMax])
@@ -31,7 +49,7 @@ export function buildSlideRails(input: SlideGeometryInput): Shape3D | null {
   if (geometry.rails.length === 0) return null;
 
   return withScope((scope: DisposalScope): Shape3D | null => {
-    const bars = geometry.rails.map((bar) => boxSolid(scope, bar));
+    const bars = geometry.rails.map((bar) => railSolid(scope, bar));
     if (bars.length === 0) return null;
     const fused =
       bars.length === 1 ? bars[0] : scope.register(unwrap(fuseAll(bars as ValidSolid[])));
