@@ -3,13 +3,13 @@
  * (corner presets, freehand pen, cell paint) all produce the same outline, so
  * they collapse into one trigger rather than competing for sidebar width.
  *
- * Mirrors ColorsActionsMenu: ghost IconButton + Popover of role="menuitem"
- * buttons.
+ * Built on `Menu` rather than a bare `Popover` of buttons: the menu/menuitem
+ * roles promise arrow-key traversal and focus moving into the list on open,
+ * and the primitive is what implements that contract.
  */
 
-import { useCallback, useRef, useState, type ReactNode } from 'react';
-import { Button, IconButton } from '@/design-system';
-import { Popover } from '@/design-system/Popover/Popover';
+import { useCallback, useRef, useState } from 'react';
+import { IconButton, Menu } from '@/design-system';
 import { Grid3x3Icon, MoreHorizontalIcon, PencilIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 
@@ -28,18 +28,18 @@ export function DrawerShapeActionsMenu({
   onOpenEditor,
 }: DrawerShapeActionsMenuProps) {
   const t = useTranslation();
-  const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const [menu, setMenu] = useState({ open: false, position: { x: 0, y: 0 } });
 
-  const closeMenu = useCallback(() => setOpen(false), []);
+  const closeMenu = useCallback(() => setMenu((m) => ({ ...m, open: false })), []);
 
-  const run = useCallback(
-    (action: () => void) => () => {
-      closeMenu();
-      action();
-    },
-    [closeMenu]
-  );
+  const toggleMenu = useCallback(() => {
+    const rect = triggerRef.current?.getBoundingClientRect();
+    setMenu((m) => ({
+      open: !m.open,
+      position: { x: rect?.left ?? 0, y: (rect?.bottom ?? 0) + 4 },
+    }));
+  }, []);
 
   const label = t('drawerShape.actions');
 
@@ -51,70 +51,41 @@ export function DrawerShapeActionsMenu({
         size="sm"
         touchTarget={false}
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={toggleMenu}
         className="flex h-6 w-6 items-center justify-center rounded text-content-tertiary hover:bg-surface-hover hover:text-content-secondary"
         aria-label={label}
         aria-haspopup="menu"
-        aria-expanded={open}
+        aria-expanded={menu.open}
         title={label}
       >
         <MoreHorizontalIcon size="sm" />
       </IconButton>
 
-      {open && (
-        <Popover
-          anchorRef={triggerRef}
-          isOpen
-          onClose={closeMenu}
-          placement="bottom-start"
-          aria-label={label}
-        >
-          <div role="menu" className="w-48 p-1 text-xs">
-            <MenuButton icon={<CornerCutIcon />} onClick={run(onOpenCorners)}>
-              {t('drawerShape.corners.open')}
-            </MenuButton>
-            <MenuButton icon={<PencilIcon size="sm" />} onClick={run(onOpenPen)}>
-              {t('drawerShape.penOpen')}
-            </MenuButton>
-            {hasOutline && (
-              <MenuButton icon={<Grid3x3Icon size="sm" />} onClick={run(onOpenEditor)}>
-                {t('drawerShape.edit')}
-              </MenuButton>
-            )}
-          </div>
-        </Popover>
-      )}
+      <Menu.Root
+        open={menu.open}
+        onClose={closeMenu}
+        position={menu.position}
+        className="min-w-[12rem]"
+      >
+        <Menu.Item icon={<CornerCutIcon />} onClick={onOpenCorners}>
+          {t('drawerShape.corners.open')}
+        </Menu.Item>
+        <Menu.Item icon={<PencilIcon />} onClick={onOpenPen}>
+          {t('drawerShape.penOpen')}
+        </Menu.Item>
+        {hasOutline && (
+          <Menu.Item icon={<Grid3x3Icon />} onClick={onOpenEditor}>
+            {t('drawerShape.edit')}
+          </Menu.Item>
+        )}
+      </Menu.Root>
     </>
-  );
-}
-
-function MenuButton({
-  icon,
-  onClick,
-  children,
-}: {
-  icon: ReactNode;
-  onClick: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <Button
-      variant="ghost"
-      type="button"
-      onClick={onClick}
-      role="menuitem"
-      className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-content-secondary hover:bg-surface-hover hover:text-content focus-visible:bg-surface-hover focus-visible:outline-none"
-    >
-      <span className="text-content-tertiary">{icon}</span>
-      <span className="flex-1 font-normal">{children}</span>
-    </Button>
   );
 }
 
 function CornerCutIcon() {
   return (
     <svg
-      className="w-4 h-4"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
