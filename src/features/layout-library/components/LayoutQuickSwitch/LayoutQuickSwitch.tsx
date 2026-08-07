@@ -7,6 +7,7 @@ import { LayoutThumbnail } from '@/shell/LayoutThumbnail';
 import type { LayoutPreview } from '@/core/types';
 import { layoutId } from '@/core/types';
 import { useTranslation } from '@/i18n';
+import { useMenuKeyboardNav } from '@/shared/hooks/useMenuKeyboardNav';
 import { Button } from '@/design-system';
 
 interface LayoutQuickSwitchProps {
@@ -84,6 +85,9 @@ export function LayoutQuickSwitch({ onManage }: LayoutQuickSwitchProps) {
   const currentLayout = useLayoutStore((s) => s.layout);
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const closeMenu = useCallback(() => setOpen(false), []);
+  const onMenuKeyDown = useMenuKeyboardNav({ isOpen: open, menuRef, onClose: closeMenu });
 
   // In shared-preview / embed mode the active layout isn't a library entry, so
   // the trigger reflects the live layout store instead of mislabeling itself
@@ -141,7 +145,10 @@ export function LayoutQuickSwitch({ onManage }: LayoutQuickSwitchProps) {
 
       {open && (
         <div
+          ref={menuRef}
           role="menu"
+          tabIndex={-1}
+          onKeyDown={onMenuKeyDown}
           className="absolute left-0 top-full z-50 mt-1 max-h-[70vh] w-64 overflow-auto rounded-lg border border-stroke bg-surface-elevated py-1 shadow-lg"
         >
           {library.entries.map((entry) => {

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { LinkedDesignSection } from './LinkedDesignSection';
 import { resetAllStores, createTestBin } from '@/test/testUtils';
 import type { Bin } from '@/core/types';
@@ -207,5 +207,30 @@ describe('LinkedDesignSection', () => {
     fireEvent.click(moreButton);
 
     expect(screen.getByRole('menu')).toBeInTheDocument();
+  });
+
+  // Wiring guard: the menu role advertises arrow traversal, so the shared
+  // keyboard hook must stay attached (#3277).
+  it('focuses the first item on open and traverses with the arrow keys', async () => {
+    vi.mocked(useLinkedDesign).mockReturnValue({
+      linkedDesign: {
+        id: designId('design-1'),
+        name: 'My Design',
+        width: 2,
+        depth: 3,
+        height: 5,
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      },
+      isStale: false,
+      hasLink: true,
+    });
+
+    render(<LinkedDesignSection bin={testBin} variant="desktop" />);
+    fireEvent.click(screen.getByTitle('common.moreOptions'));
+
+    const items = screen.getAllByRole('menuitem');
+    await waitFor(() => expect(items[0]).toHaveFocus());
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'ArrowDown' });
+    expect(items[1]).toHaveFocus();
   });
 });

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
 import { LayoutActions } from '@/features/layout-library/components/LayoutManagerModal/LayoutActions';
 import type { LayoutEntry } from '@/core/types';
 import { gridUnits, heightUnits, layoutId } from '@/core/types';
@@ -73,6 +73,18 @@ describe('LayoutActions', () => {
       fireEvent.click(screen.getByLabelText('More actions for Test Layout'));
 
       expect(screen.getByRole('menu')).toBeInTheDocument();
+    });
+
+    // Wiring guard: the menu role advertises arrow traversal, so the shared
+    // keyboard hook must stay attached (#3277).
+    it('focuses the first item on open and traverses with the arrow keys', async () => {
+      render(<LayoutActions {...defaultProps} />);
+      fireEvent.click(screen.getByLabelText('More actions for Test Layout'));
+
+      const items = screen.getAllByRole('menuitem');
+      await waitFor(() => expect(items[0]).toHaveFocus());
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'ArrowDown' });
+      expect(items[1]).toHaveFocus();
     });
 
     it('shows copy link option', () => {

@@ -32,6 +32,7 @@ graph TB
 | `useLayoutSwitcher.ts`  | Atomic layout CRUD: switch, create, delete, duplicate, import            |
 | `useBinGeometry.ts`     | Three.js geometry generation for 3D bin preview                          |
 | `useContextMenu.ts`     | Right-click menu lifecycle (position, outside-click, escape)             |
+| `useMenuKeyboardNav.ts` | The keyboard contract `role="menu"` promises: focus-in, arrows, Home/End |
 | `useDesignerRouting.ts` | Bin Designer URL navigation with history integration                     |
 
 ## Collaborative Hooks
@@ -71,3 +72,9 @@ See [`interactions/README.md`](./interactions/README.md) for the FSM architectur
    `isNonLayoutRoute`; without it a Bin Designer `Delete`/`r`/`w` also reaches the layout (#2896)
 7. **Half-bin remediation** — `handleRemediate()` moves fractional bins to staging before disabling mode
 8. **Layout switch side effects** — clears undo history, resets selection, updates URL slug, resets ML session
+9. **`role="menu"` obliges keyboard nav** — any container with `role="menu"` MUST attach
+   `useMenuKeyboardNav`, or use the `Menu` design-system primitive which has it built in.
+   Declaring the role without arrow traversal is worse than declaring nothing: AT announces
+   navigation that does not exist and the user follows it into a dead end (#3277). The hook
+   matches `menuitem`, `menuitemcheckbox` and `menuitemradio` — a menu of toggles uses the
+   latter two, and matching only `menuitem` leaves it with nothing to traverse.

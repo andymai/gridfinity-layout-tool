@@ -124,6 +124,19 @@ describe('BaseplateLibraryModal', () => {
     expect(screen.getByLabelText('baseplate.library.designName')).toBeInTheDocument();
   });
 
+  // Wiring guard: the menu role advertises arrow traversal, so the shared
+  // keyboard hook must stay attached (#3277).
+  it('focuses the first item on open and traverses with the arrow keys', async () => {
+    render(<BaseplateLibraryModal isOpen onClose={vi.fn()} />);
+    await screen.findByText('One');
+    fireEvent.click(screen.getAllByRole('button', { name: /moreActions/ })[0]);
+
+    const items = screen.getAllByRole('menuitem');
+    await waitFor(() => expect(items[0]).toHaveFocus());
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'ArrowDown' });
+    expect(items[1]).toHaveFocus();
+  });
+
   it('delete opens the warning dialog and confirming orphans the current layout', async () => {
     render(<BaseplateLibraryModal isOpen onClose={vi.fn()} />);
     await screen.findByText('One');

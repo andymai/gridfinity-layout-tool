@@ -7,6 +7,7 @@ export { useCrossTabSync } from './useCrossTabSync';
 export { usePWAUpdate } from './usePWAUpdate';
 export { usePrefetchChunks } from './usePrefetchChunks';
 export { useFocusTrap } from './useFocusTrap';
+export { useMenuKeyboardNav } from './useMenuKeyboardNav';
 export { useInlineEdit } from './useInlineEdit';
 export { useKeyboard } from './useKeyboard';
 export { usePrefersReducedMotion } from './usePrefersReducedMotion';

@@ -1,6 +1,6 @@
 import type * as DesignSystem from '@/design-system';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { GridToolbar } from './GridToolbar';
 import { useViewStore, useInteractionStore, useLabsStore } from '@/core/store';
 import { resetAllStores } from '@/test/testUtils';
@@ -364,6 +364,23 @@ describe('GridToolbar', () => {
         fireEvent.mouseDown(document.body);
         expect(screen.queryByRole('menu')).not.toBeInTheDocument();
       }
+    });
+
+    // Wiring guard: the menu role advertises arrow traversal, so the shared
+    // keyboard hook must stay attached (#3277).
+    // This menu holds a single toggle, so there is nothing to traverse — the
+    // guard is that focus enters the menu rather than stranding on the trigger.
+    // Its item carries menuitemcheckbox, which the hook must match alongside
+    // menuitem.
+    it('moves focus onto the item when the menu opens', async () => {
+      const { container } = render(<GridToolbar {...defaultProps} isNarrowToolbar={true} />);
+
+      const overflowButton = container.querySelector('[aria-haspopup="menu"]');
+      expect(overflowButton).toBeInTheDocument();
+      fireEvent.click(overflowButton as Element);
+
+      const item = screen.getByRole('menuitemcheckbox');
+      await waitFor(() => expect(item).toHaveFocus());
     });
 
     it('closes overflow menu on Escape key', () => {

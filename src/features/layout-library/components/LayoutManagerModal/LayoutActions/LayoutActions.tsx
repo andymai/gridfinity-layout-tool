@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import type { LayoutEntry } from '@/core/types';
 import { useTranslation } from '@/i18n';
+import { useMenuKeyboardNav } from '@/shared/hooks/useMenuKeyboardNav';
 import { useTwoClickDelete } from '@/shared/components';
 import { Button, IconButton } from '@/design-system';
 
@@ -33,6 +34,8 @@ export function LayoutActions({
   const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({});
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const closeMenu = useCallback(() => setIsMenuOpen(false), []);
+  const onMenuKeyDown = useMenuKeyboardNav({ isOpen: isMenuOpen, menuRef, onClose: closeMenu });
 
   // Two-click delete state
   const {
@@ -154,6 +157,8 @@ export function LayoutActions({
             <div
               ref={menuRef}
               role="menu"
+              tabIndex={-1}
+              onKeyDown={onMenuKeyDown}
               style={menuStyle}
               className="w-40 bg-surface-elevated border border-stroke rounded-lg shadow-lg py-1 z-50"
             >
