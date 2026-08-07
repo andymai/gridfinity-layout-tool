@@ -212,7 +212,9 @@ describe('resolveSlideGeometry', () => {
       // it were borrowed here.
       const g = resolveSlideGeometry(input({ railMount: 'interior', clearanceMm: 0.25 }));
       const inp = input({ railMount: 'interior' });
-      expect(inp.innerD - (g.tray?.depthMm ?? 0)).toBeCloseTo(0.5, 9);
+      expect(g.tray).not.toBeNull();
+      if (!g.tray) return;
+      expect(inp.innerD - g.tray.depthMm).toBeCloseTo(0.5, 9);
     });
   });
 
