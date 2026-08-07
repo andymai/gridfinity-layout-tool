@@ -10,6 +10,8 @@ import type {
   BinParams,
   LidAttachment,
   LidCompatibilitySide,
+  LidGripMode,
+  LidGripSides,
   TextFontFamily,
   TextMode,
 } from '@/shared/types/bin';
@@ -20,6 +22,9 @@ import {
   resolveLidFootprintClearance,
   resolveLidPlateThickness,
   resolveLidCavityExtraMm,
+  resolveLidGripDepth,
+  hasLidGrip,
+  hasBinLipDip,
 } from '@/shared/types/bin';
 import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
 import { LID_FIT_CLEARANCE, LID_CORNER_RADIUS, lidAnchorZ, lidWallBottomZ } from './lidConstants';
@@ -153,6 +158,28 @@ export interface LidInputs {
    * midpoint to save filament. Ignored when `clickRails === false`.
    */
   readonly clickRailCoverage: number;
+  /**
+   * Grip relief (#3272), already gated: `mode` is forced to `'none'` when the
+   * feature is off or its depth clamp left nothing useful, so builders can
+   * test `mode` alone. `coverage` stays a 0-100 percentage here (unlike
+   * `clickRailCoverage`) because `resolveLidGripSpanMm` owns the conversion
+   * and the clamp together.
+   */
+  readonly grip: {
+    readonly mode: LidGripMode;
+    readonly sides: LidGripSides;
+    readonly coverage: number;
+  };
+  /** Resolved inward cut depth (mm) for the relief; 0 when there is none. */
+  readonly gripDepthMm: number;
+  /**
+   * Whether the click rails give way behind the relief.
+   *
+   * Tracks `binDip`: relief and rail occupy disjoint Z bands, so interrupting
+   * the rail buys an easier opening at the cost of snap strength, and only a
+   * user who also dipped the bin's lip has asked for that trade.
+   */
+  readonly gripSoftensSnap: boolean;
   /** Z of the bin's lip top in lid-local coords when snapped (the "anchor" line). */
   readonly anchorZ: number;
   /** Z of the bottom of the mating wall (where the wall ends and rails begin). */
@@ -250,6 +277,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   // Every millimetre of plate past the 0.8mm baseline is a millimetre stolen
   // from the cavity the lip enters, so it deepens the anchor in lockstep.
   const cavityExtra = resolveLidCavityExtraMm(params);
+  const gripActive = hasLidGrip(params);
 
   // Overhang grows the bin's outer body + stacking lip outward (and shifts it
   // when the two opposite sides differ). The lid wraps that expanded body, so
@@ -331,6 +359,17 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     // Coverage stored as 0–100 percentage on LidConfig; converted to
     // a 0–1 fraction here for direct multiplication against rail lengths.
     clickRailCoverage: params.lid.clickRailCoverage / 100,
+    // Gate once, here: `hasLidGrip` folds in the mode, the per-side toggles and
+    // the depth clamp, so no builder has to re-derive whether a relief exists.
+    grip: gripActive
+      ? {
+          mode: params.lid.grip.mode,
+          sides: params.lid.grip.sides,
+          coverage: params.lid.grip.coverage,
+        }
+      : { mode: 'none', sides: params.lid.grip.sides, coverage: params.lid.grip.coverage },
+    gripDepthMm: gripActive ? resolveLidGripDepth(params).depthMm : 0,
+    gripSoftensSnap: hasBinLipDip(params),
     // `extraHeightMm` (issue #2482) deepens the cavity above the lip so tall
     // contents poking out of a short bin are enclosed; 0 = standard lid.
     // Base clearance, NOT `fitClearance` — the magnetic relief is XY-only, and

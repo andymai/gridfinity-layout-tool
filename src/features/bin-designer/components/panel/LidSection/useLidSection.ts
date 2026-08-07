@@ -30,8 +30,18 @@ import {
   LID_TRAY_WALL_MIN_MM,
   LID_TRAY_WALL_MAX_MM,
   LID_TRAY_DIMENSION_STEP_MM,
+  LID_GRIP_MODES,
+  LID_GRIP_COVERAGE_MIN,
+  LID_GRIP_COVERAGE_MAX,
+  LID_GRIP_COVERAGE_STEP,
+  lidAnchorZ,
+  lidGripModeAllowed,
+  hasLidGrip,
+  resolveLidGripDepth,
+  resolveLidGripHeightMm,
   isMagnetStyle,
   type LidAttachment,
+  type LidGripMode,
   type LidRailSide,
   type TextMode,
 } from '@/features/bin-designer/types';
@@ -307,6 +317,33 @@ export function useLidSection() {
     [updateLid, topThicknessMin]
   );
 
+  const setGripMode = useCallback(
+    (mode: LidGripMode) => {
+      updateLid({ grip: { ...lid.grip, mode } });
+    },
+    [lid.grip, updateLid]
+  );
+
+  const toggleGripSide = useCallback(
+    (side: LidRailSide) => {
+      updateLid({
+        grip: { ...lid.grip, sides: { ...lid.grip.sides, [side]: !lid.grip.sides[side] } },
+      });
+    },
+    [lid.grip, updateLid]
+  );
+
+  const setGripCoverage = useCallback(
+    (coverage: number) => {
+      updateLid({ grip: { ...lid.grip, coverage } });
+    },
+    [lid.grip, updateLid]
+  );
+
+  const toggleGripBinDip = useCallback(() => {
+    updateLid({ grip: { ...lid.grip, binDip: !lid.grip.binDip } });
+  }, [lid.grip, updateLid]);
+
   const toggleClickRailSide = useCallback(
     (side: LidRailSide) => {
       updateLid({
@@ -388,6 +425,16 @@ export function useLidSection() {
   // Readout mirrors `lidBuilder.resolveLidInputs` so the panel matches the
   // generated geometry. Plate thickness and cavity depth come from the shared
   // resolvers rather than a local copy of the same arithmetic.
+  // Coverage stops, mirroring how the rail slider is fed. The span itself is
+  // clamped to a hand-sized range downstream, so these are intent, not mm.
+  const gripCoverageOptions: SnappingSliderOption[] = useMemo(() => {
+    const stops: SnappingSliderOption[] = [];
+    for (let v = LID_GRIP_COVERAGE_MIN; v <= LID_GRIP_COVERAGE_MAX; v += LID_GRIP_COVERAGE_STEP) {
+      stops.push({ value: v, description: '' });
+    }
+    return stops;
+  }, []);
+
   const lidDimensions = useMemo(() => {
     // Footprint uses the mode-aware clearance so the readout shrinks by
     // 0.3mm when the user switches to magnetic retention (#2761); the
@@ -407,7 +454,14 @@ export function useLidSection() {
     );
     const topThickness = resolveLidPlateThickness(params);
     const lidH = Math.abs(wallBottomZ) + topThickness;
-    return { width: lidOuterW, depth: lidOuterD, height: lidH, topThickness };
+    // The seam plane, which is what bounds how tall a grip relief can be:
+    // everything between it and Z=0 is the lid's visible skirt.
+    const anchorZ = lidAnchorZ(
+      params.heightUnitMm,
+      LID_FIT_CLEARANCE,
+      resolveLidCavityExtraMm(params)
+    );
+    return { width: lidOuterW, depth: lidOuterD, height: lidH, topThickness, anchorZ };
   }, [params]);
 
   // Lid height shifts in sub-mm steps when magnets toggle on; 1-decimal
@@ -572,6 +626,18 @@ export function useLidSection() {
       clickRails: lid.clickRails,
       anyRail,
       clickRailCoverage: lid.clickRailCoverage,
+      // Grip relief (#3272). `gripDepth` carries the clamp's own account of
+      // itself so the panel can say WHY a relief is shallower than its mode
+      // asks for, rather than leaving the user to read it as a defect.
+      grip: lid.grip,
+      gripModes: LID_GRIP_MODES,
+      gripModeAllowed: (mode: LidGripMode) => lidGripModeAllowed(params, mode),
+      gripAnySide:
+        lid.grip.sides.front || lid.grip.sides.back || lid.grip.sides.left || lid.grip.sides.right,
+      gripActive: hasLidGrip(params),
+      gripDepth: resolveLidGripDepth(params),
+      gripHeightMm: resolveLidGripHeightMm(lid.grip.mode, lidDimensions.anchorZ),
+      gripCoverageOptions: gripCoverageOptions,
       extraHeightMm: lid.extraHeightMm,
       extraHeightMin: LID_EXTRA_HEIGHT_MIN_MM,
       extraHeightMax: LID_EXTRA_HEIGHT_MAX_MM,
@@ -623,6 +689,10 @@ export function useLidSection() {
       toggleSeparateStackPlate,
       toggleClickRailSide,
       setClickRailCoverage,
+      setGripMode,
+      toggleGripSide,
+      setGripCoverage,
+      toggleGripBinDip,
       setExtraHeight,
       setTopThickness,
       setRetentionMagnetDiameter,

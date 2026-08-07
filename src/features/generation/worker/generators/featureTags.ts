@@ -29,6 +29,13 @@ export const FeatureTag = {
   LID_LIP: 15,
   /** The sliding tray's track, fused onto the bin's front and back walls. */
   SLIDE_RAIL: 16,
+  /**
+   * Faces created by the lid's grip relief (#3272) — the chamfer, groove, or
+   * scallop cut at the lid/bin seam, and the matching dip in the BIN's
+   * stacking lip. Tagged so the seam treatment can be highlighted on hover
+   * without also lighting up the shell it was cut from.
+   */
+  LID_GRIP: 17,
   UNKNOWN: 255,
 } as const;
 

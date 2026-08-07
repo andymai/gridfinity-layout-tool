@@ -32,6 +32,7 @@ import { collectOrigins } from './pipeline/collectOrigins';
 import { resolveLidInputs } from './lidInputs';
 import { buildLidFloor, buildMatingShell } from './lidProfile';
 import { addClickRails } from './lidClickRail';
+import { addGripRelief } from './lidGripRelief';
 import { buildStackGrid } from './lidStackGrid';
 import { cutMagnetHoles } from './lidMagnets';
 import { addLidRetentionMagnets } from './lidRetentionMagnets';
@@ -85,6 +86,14 @@ export function buildLid(params: BinParams, originToTag?: Map<number, number>): 
     if (inputs.retentionMagnets) {
       body = addLidRetentionMagnets(scope, body, inputs, originToTag);
     }
+
+    // 2c. Grip relief (#3272) — the seam treatment that gives a fingernail or
+    //     fingertip somewhere to pull from. Cut AFTER the rails so a rail that
+    //     was split around the relief keeps its flanking segments intact, and
+    //     before the stack grid, which sits above the relief's reach.
+    //     `resolveLidInputs` has already forced the mode to `'none'` when the
+    //     depth clamp left nothing useful, so no extra gate is needed here.
+    body = addGripRelief(scope, body, inputs, originToTag);
 
     // 3. Optional magnet holes through the floor.
     //    Cut BEFORE the stack grid fuses on top: the cylinder's 0.1mm

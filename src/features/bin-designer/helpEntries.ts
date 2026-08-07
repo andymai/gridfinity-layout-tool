@@ -58,6 +58,16 @@ export const helpEntries: FeatureHelpEntry[] = [
     target: { surface: 'binDesigner:lid', controlId: 'bd-lid' },
   },
   {
+    id: 'feature/bin-designer/lid-grip',
+    kind: 'feature',
+    titleKey: 'help.target.binDesigner.lidGrip.title',
+    descriptionKey: 'help.target.binDesigner.lidGrip.description',
+    keywordsKey: 'help.target.binDesigner.lidGrip.keywords',
+    category: 'shape',
+    routes: ['designer'],
+    target: { surface: 'binDesigner:lid', controlId: 'bd-lid-grip' },
+  },
+  {
     id: 'feature/bin-designer/colors',
     kind: 'feature',
     titleKey: 'help.target.binDesigner.colors.title',

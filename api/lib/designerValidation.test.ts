@@ -1478,6 +1478,74 @@ describe('validateDesignerShare', () => {
       expect(res.valid).toBe(false);
     });
 
+    describe('grip relief (#3272)', () => {
+      it('accepts a fully specified grip', () => {
+        const res = validateDesignerShare(
+          withLid({
+            enabled: true,
+            grip: {
+              mode: 'scallop',
+              sides: { front: true, back: true, left: false, right: false },
+              coverage: 50,
+              binDip: true,
+            },
+          }),
+          1000
+        );
+        expect(res.valid).toBe(true);
+      });
+
+      it('accepts a lid with no grip at all (pre-#3272 designs)', () => {
+        expect(validateDesignerShare(withLid({ enabled: true }), 1000).valid).toBe(true);
+      });
+
+      it('rejects an unknown mode', () => {
+        expect(validateDesignerShare(withLid({ grip: { mode: 'notch' } }), 1000).valid).toBe(false);
+      });
+
+      it('rejects coverage outside its bounds', () => {
+        expect(validateDesignerShare(withLid({ grip: { coverage: 0 } }), 1000).valid).toBe(false);
+        expect(validateDesignerShare(withLid({ grip: { coverage: 101 } }), 1000).valid).toBe(false);
+      });
+
+      it('rejects unknown keys on the grip and on its sides', () => {
+        expect(validateDesignerShare(withLid({ grip: { depthMm: 9 } }), 1000).valid).toBe(false);
+        expect(validateDesignerShare(withLid({ grip: { sides: { top: true } } }), 1000).valid).toBe(
+          false
+        );
+      });
+
+      it('rejects non-boolean side and binDip values', () => {
+        expect(
+          validateDesignerShare(withLid({ grip: { sides: { front: 'yes' } } }), 1000).valid
+        ).toBe(false);
+        expect(validateDesignerShare(withLid({ grip: { binDip: 1 } }), 1000).valid).toBe(false);
+      });
+
+      it('rejects a reveal on a stackable top, which has no valid geometry', () => {
+        // The reveal steps the lid's outer face in; that face is what a bin
+        // stacked on the lid registers against. Mirrors `lidGripModeAllowed`.
+        expect(
+          validateDesignerShare(withLid({ stackableTop: true, grip: { mode: 'reveal' } }), 1000)
+            .valid
+        ).toBe(false);
+        expect(
+          validateDesignerShare(
+            withLid({ separateStackPlate: true, grip: { mode: 'reveal' } }),
+            1000
+          ).valid
+        ).toBe(false);
+      });
+
+      it('allows the other modes on a stackable top', () => {
+        for (const mode of ['chamfer', 'scallop']) {
+          expect(
+            validateDesignerShare(withLid({ stackableTop: true, grip: { mode } }), 1000).valid
+          ).toBe(true);
+        }
+      });
+    });
+
     it('rejects an out-of-range retention magnet diameter', () => {
       const res = validateDesignerShare(
         withLid({ retentionMagnet: { diameter: 999, depth: 2 } }),

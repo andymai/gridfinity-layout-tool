@@ -30,6 +30,7 @@ import { maskToPolygon, MASK_CELL_SIZE } from '@/shared/utils/cellMask';
 import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
 import { LID_MIN_RAIL_LENGTH as MIN_RAIL_LENGTH } from '@/shared/types/bin';
+import { gripPlacements } from './lidGripRelief';
 import type { LidInputs } from './lidInputs';
 
 /** True when at least one side carries a rail, i.e. the lid is not friction-fit. */
@@ -113,7 +114,7 @@ function buildClickRailBar(
  * ('x' or 'y') and which way does the bump point (+1 or -1 along the
  * perpendicular axis).
  */
-interface RailPlacement {
+export interface RailPlacement {
   /** Rail center position in world coords. */
   readonly centerX: number;
   readonly centerY: number;
@@ -280,15 +281,88 @@ function railPlacementsForRectangle(inputs: LidInputs): RailPlacement[] {
   return placements;
 }
 
+/**
+ * Quiet zone (mm) kept between a grip relief and the nearest rail segment.
+ *
+ * Not a clearance — a relief cuts UPWARD from `anchorZ` and a rail's top sits
+ * at `wallBottomZ`, below it, so the two never touch. The margin widens the
+ * soft zone past the relief's own span.
+ */
+const GRIP_RAIL_MARGIN = 2;
+
+/**
+ * Interrupt each rail that runs behind a grip relief, leaving a segment on
+ * either side.
+ *
+ * Gated on `binDip`, NOT on the relief alone. Since relief and rail never
+ * intersect, splitting is not a fix for anything — it trades snap retention
+ * for an easier opening, and only a user who also dipped the bin's lip has
+ * asked for that trade. A plain chamfer or shadow line keeps its rails whole.
+ *
+ * Rails and reliefs are matched on their ALONG-wall centre (plus orientation),
+ * not on side name: a polygon lid can carry two edges facing the same way, and
+ * only the one the relief was placed on may be split.
+ *
+ * Both flanking segments are the same length, so when one is too short to be
+ * worth printing the other is too — that wall goes fully friction-fit.
+ */
+export function splitRailsAroundGrip(
+  placements: readonly RailPlacement[],
+  inputs: LidInputs
+): RailPlacement[] {
+  if (!inputs.gripSoftensSnap) return [...placements];
+  const grips = gripPlacements(inputs);
+  if (grips.length === 0) return [...placements];
+
+  const alongAxisIsX = (rotationDeg: number): boolean => rotationDeg === 0 || rotationDeg === 180;
+  const out: RailPlacement[] = [];
+
+  for (const rail of placements) {
+    const alongX = alongAxisIsX(rail.rotationDeg);
+    const railAlong = alongX ? rail.centerX : rail.centerY;
+    const grip = grips.find(
+      (g) =>
+        g.rotationDeg === rail.rotationDeg &&
+        Math.abs((alongX ? g.centerX : g.centerY) - railAlong) < 1e-6
+    );
+    if (!grip) {
+      out.push(rail);
+      continue;
+    }
+
+    const gap = grip.spanMm + 2 * GRIP_RAIL_MARGIN;
+    const segmentLen = (rail.length - gap) / 2;
+    if (segmentLen < MIN_RAIL_LENGTH) continue;
+
+    const offset = gap / 2 + segmentLen / 2;
+    for (const dir of [-1, 1] as const) {
+      out.push({
+        ...rail,
+        length: segmentLen,
+        centerX: alongX ? rail.centerX + dir * offset : rail.centerX,
+        centerY: alongX ? rail.centerY : rail.centerY + dir * offset,
+      });
+    }
+  }
+  return out;
+}
+
+/**
+ * Full-length rail placements for this lid, before any grip relief interrupts
+ * them. Exported so tests exercise the real placements rather than a
+ * re-derivation of the same arithmetic.
+ */
+export function railPlacements(inputs: LidInputs): RailPlacement[] {
+  return inputs.cellMask ? railPlacementsForPolygon(inputs) : railPlacementsForRectangle(inputs);
+}
+
 export function addClickRails(
   scope: DisposalScope,
   body: Shape3D,
   inputs: LidInputs,
   originToTag?: Map<number, number>
 ): Shape3D {
-  const placements = inputs.cellMask
-    ? railPlacementsForPolygon(inputs)
-    : railPlacementsForRectangle(inputs);
+  const placements = splitRailsAroundGrip(railPlacements(inputs), inputs);
 
   // Cavity wall position in rail-local X (where +X is outward from the
   // spine). The spine sits at `lidCornerR` from the lid outer; the cavity

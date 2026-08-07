@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent, act, within } from '@testing-library/react';
 import { LidSection } from './LidSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
@@ -610,5 +610,84 @@ describe('LidSection', () => {
       expect(backChip).toBeDisabled();
       expect(backChip.getAttribute('title')).toMatch(/auto-disabled/i);
     });
+  });
+});
+
+describe('LidSection grip relief (#3272)', () => {
+  function enabled(grip: Partial<(typeof DEFAULT_BIN_PARAMS)['lid']['grip']> = {}) {
+    resetStore({
+      lid: {
+        ...DEFAULT_BIN_PARAMS.lid,
+        enabled: true,
+        grip: { ...DEFAULT_BIN_PARAMS.lid.grip, ...grip },
+      },
+    });
+  }
+
+  beforeEach(() => enabled());
+
+  it('starts with no relief, so an existing design is unchanged', () => {
+    render(<LidSection />);
+    expect(useDesignerStore.getState().params.lid.grip.mode).toBe('none');
+    // The per-side toggles only appear once a mode is chosen.
+    expect(screen.queryByText('Walls')).not.toBeInTheDocument();
+  });
+
+  it('selects a mode and reveals the side toggles', () => {
+    render(<LidSection />);
+    fireEvent.click(screen.getByRole('radio', { name: 'Scallop' }));
+    expect(useDesignerStore.getState().params.lid.grip.mode).toBe('scallop');
+    expect(screen.getByText('Walls')).toBeInTheDocument();
+  });
+
+  it('toggles a wall', () => {
+    enabled({ mode: 'scallop' });
+    render(<LidSection />);
+    const gripWalls = screen.getByText('Walls').parentElement;
+    const left = within(gripWalls as HTMLElement).getByRole('switch', { name: 'Left' });
+    fireEvent.click(left);
+    expect(useDesignerStore.getState().params.lid.grip.sides.left).toBe(true);
+  });
+
+  it('warns when the user turned every wall off', () => {
+    enabled({ mode: 'scallop', sides: { front: false, back: false, left: false, right: false } });
+    render(<LidSection />);
+    expect(screen.getByText('Pick at least one wall for the relief.')).toBeInTheDocument();
+  });
+
+  it('reports the effective depth and height the clamp resolved', () => {
+    enabled({ mode: 'scallop' });
+    render(<LidSection />);
+    expect(screen.getByText(/Cuts .*mm deep, .*mm tall/)).toBeInTheDocument();
+  });
+
+  it('explains a clamp rather than leaving a shallow relief looking like a defect', () => {
+    resetStore({
+      lid: {
+        ...DEFAULT_BIN_PARAMS.lid,
+        enabled: true,
+        tray: { enabled: true, depthMm: 4, wallMm: 2 },
+        grip: { ...DEFAULT_BIN_PARAMS.lid.grip, mode: 'scallop' },
+      },
+    });
+    render(<LidSection />);
+    expect(screen.getByText(/Limited by the tray wall/)).toBeInTheDocument();
+  });
+
+  it('disables the shadow line on a stackable top, which has no valid geometry', () => {
+    resetStore({
+      lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, stackableTop: true },
+    });
+    render(<LidSection />);
+    expect(screen.getByRole('radio', { name: 'Shadow line' })).toBeDisabled();
+  });
+
+  it('toggles the bin lip dip and states what it costs', () => {
+    enabled({ mode: 'scallop' });
+    render(<LidSection />);
+    const dip = screen.getByRole('checkbox', { name: /dip the bin/i });
+    fireEvent.click(dip);
+    expect(useDesignerStore.getState().params.lid.grip.binDip).toBe(true);
+    expect(screen.getByText(/nothing to locate against/)).toBeInTheDocument();
   });
 });

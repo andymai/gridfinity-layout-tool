@@ -17,6 +17,17 @@ import {
   LID_EXTRA_HEIGHT_MIN_MM,
   LID_EXTRA_HEIGHT_MAX_MM,
   LID_EXTRA_HEIGHT_STEP_MM,
+  LID_CORNER_RADIUS,
+  LID_MAGNET_LIP_CLEARANCE,
+  LID_GRIP_SPAN_MIN_MM,
+  LID_GRIP_SPAN_MAX_MM,
+  LID_GRIP_MIN_WALL_MM,
+  resolveLidGripSpanMm,
+  resolveLidGripDepth,
+  lidGripRequestedDepthMm,
+  hasLidGrip,
+  hasBinLipDip,
+  lidGripModeAllowed,
   type LidConfig,
 } from './lid';
 
@@ -239,5 +250,164 @@ describe('resolveLidTrayBreakdown', () => {
   it('reports the same total the geometry builds from', () => {
     const p = params({ tray: { enabled: true, depthMm: 3, wallMm: 2 }, topThicknessMm: 1 });
     expect(resolveLidTrayBreakdown(p)?.overallMm).toBe(resolveLidPlateThickness(p));
+  });
+});
+
+describe('resolveLidGripSpanMm', () => {
+  it('clamps a wide wall down to a hand-sized span', () => {
+    // 6-wide lid: 50% of the straight run is a 100mm+ trench nobody needs.
+    expect(resolveLidGripSpanMm(244, 50)).toBe(LID_GRIP_SPAN_MAX_MM);
+  });
+
+  it('clamps a narrow wall up to a fingertip', () => {
+    expect(resolveLidGripSpanMm(60, 10)).toBe(LID_GRIP_SPAN_MIN_MM);
+  });
+
+  it('never exceeds the wall it sits on', () => {
+    // A wall shorter than the minimum span gets the whole wall, not an
+    // overhanging relief.
+    expect(resolveLidGripSpanMm(9, 100)).toBe(9);
+  });
+
+  it('scales with coverage between the bounds', () => {
+    expect(resolveLidGripSpanMm(60, 50)).toBe(30);
+  });
+});
+
+describe('resolveLidGripDepth', () => {
+  const params = (lid: Partial<BinParams['lid']>): BinParams => ({
+    ...DEFAULT_BIN_PARAMS,
+    lid: { ...DEFAULT_BIN_PARAMS.lid, ...lid },
+  });
+  const grip = (g: Partial<BinParams['lid']['grip']>): Partial<BinParams['lid']> => ({
+    grip: { ...DEFAULT_LID_CONFIG.grip, mode: 'scallop', ...g },
+  });
+
+  it('suppresses a disabled relief', () => {
+    const plan = resolveLidGripDepth(params(grip({ mode: 'none' })));
+    expect(plan.depthMm).toBe(0);
+    expect(plan.suppressed).toBe(true);
+  });
+
+  it('gives each mode its requested depth on a plain lid', () => {
+    for (const mode of ['chamfer', 'reveal', 'scallop'] as const) {
+      const plan = resolveLidGripDepth(params(grip({ mode })));
+      expect(plan.depthMm).toBeCloseTo(lidGripRequestedDepthMm(mode), 6);
+      expect(plan.clamped).toBe(false);
+      expect(plan.limitedBy).toBeNull();
+    }
+  });
+
+  it('leaves at least the minimum wall in front of the cavity', () => {
+    const plan = resolveLidGripDepth(params(grip({ mode: 'scallop' })));
+    const cavityInset = LID_CORNER_RADIUS - LID_FIT_CLEARANCE;
+    expect(cavityInset - plan.depthMm).toBeGreaterThanOrEqual(LID_GRIP_MIN_WALL_MM);
+  });
+
+  it('clamps against a thin tray wall and says so', () => {
+    const plan = resolveLidGripDepth(
+      params({
+        ...grip({ mode: 'scallop' }),
+        tray: { enabled: true, depthMm: 4, wallMm: 2 },
+      })
+    );
+    expect(plan.depthMm).toBeCloseTo(2 - LID_GRIP_MIN_WALL_MM, 6);
+    expect(plan.clamped).toBe(true);
+    expect(plan.limitedBy).toBe('trayWall');
+  });
+
+  it('ignores the tray budget when a stackable top disables the tray', () => {
+    const plan = resolveLidGripDepth(
+      params({
+        ...grip({ mode: 'scallop' }),
+        tray: { enabled: true, depthMm: 4, wallMm: 2 },
+        stackableTop: true,
+      })
+    );
+    expect(plan.clamped).toBe(false);
+  });
+
+  it('keeps every mode clear of a mid-span edge magnet boss', () => {
+    // The boss's nearest face sits LID_MAGNET_LIP_CLEARANCE inboard of the
+    // footprint edge — mid-span, exactly where a centered relief cuts. No
+    // current mode is deep enough to reach it, so this asserts the invariant
+    // rather than a clamp: raising a mode's depth past the boss must reduce
+    // the relief, not silently intersect it. An intersecting boss leaves the
+    // lid watertight, so nothing cheaper catches it.
+    for (const mode of ['chamfer', 'reveal', 'scallop'] as const) {
+      const plan = resolveLidGripDepth(
+        params({
+          ...grip({ mode }),
+          attachment: 'magnetic',
+          retentionMagnet: { ...DEFAULT_LID_CONFIG.retentionMagnet, edgeMagnets: 2 },
+        })
+      );
+      expect(plan.depthMm + LID_GRIP_MIN_WALL_MM).toBeLessThanOrEqual(LID_MAGNET_LIP_CLEARANCE);
+    }
+  });
+
+  it('suppresses the relief when no useful depth survives', () => {
+    const plan = resolveLidGripDepth(
+      params({
+        ...grip({ mode: 'scallop' }),
+        tray: { enabled: true, depthMm: 4, wallMm: LID_GRIP_MIN_WALL_MM + 0.1 },
+      })
+    );
+    expect(plan.suppressed).toBe(true);
+  });
+});
+
+describe('hasLidGrip / hasBinLipDip', () => {
+  const params = (g: Partial<BinParams['lid']['grip']>): BinParams => ({
+    ...DEFAULT_BIN_PARAMS,
+    lid: { ...DEFAULT_BIN_PARAMS.lid, grip: { ...DEFAULT_LID_CONFIG.grip, ...g } },
+  });
+
+  it('is off by default, so pre-#3272 designs are unchanged', () => {
+    expect(hasLidGrip(DEFAULT_BIN_PARAMS)).toBe(false);
+    expect(hasBinLipDip(DEFAULT_BIN_PARAMS)).toBe(false);
+  });
+
+  it('needs a mode and at least one side', () => {
+    expect(hasLidGrip(params({ mode: 'scallop' }))).toBe(true);
+    expect(
+      hasLidGrip(
+        params({ mode: 'scallop', sides: { front: false, back: false, left: false, right: false } })
+      )
+    ).toBe(false);
+  });
+
+  it('does not dip the bin lip without a relief above it to reach through', () => {
+    expect(hasBinLipDip(params({ mode: 'none', binDip: true }))).toBe(false);
+    expect(hasBinLipDip(params({ mode: 'scallop', binDip: true }))).toBe(true);
+  });
+});
+
+describe('lidGripModeAllowed', () => {
+  const params = (lid: Partial<BinParams['lid']>): BinParams => ({
+    ...DEFAULT_BIN_PARAMS,
+    lid: { ...DEFAULT_BIN_PARAMS.lid, ...lid },
+  });
+
+  it('allows every mode on a plain lid', () => {
+    for (const mode of ['none', 'chamfer', 'reveal', 'scallop'] as const) {
+      expect(lidGripModeAllowed(params({}), mode)).toBe(true);
+    }
+  });
+
+  it('rejects only reveal on a stackable top', () => {
+    for (const lid of [{ stackableTop: true }, { separateStackPlate: true }]) {
+      expect(lidGripModeAllowed(params(lid), 'reveal')).toBe(false);
+      expect(lidGripModeAllowed(params(lid), 'chamfer')).toBe(true);
+      expect(lidGripModeAllowed(params(lid), 'scallop')).toBe(true);
+    }
+  });
+
+  it('builds no geometry for the disallowed combination', () => {
+    expect(
+      hasLidGrip(
+        params({ stackableTop: true, grip: { ...DEFAULT_LID_CONFIG.grip, mode: 'reveal' } })
+      )
+    ).toBe(false);
   });
 });

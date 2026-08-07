@@ -79,6 +79,10 @@ const VALID_INSERT_SHAPES = ['rectangle', 'circle', 'hexagon', 'rounded-rect', '
 const VALID_WALL_CUTOUT_SHAPES = ['u-shape', 'scoop', 'funnel'] as const;
 // Mirrors `LidAttachment` in `src/features/bin-designer/types/lid.ts` (#2694).
 const VALID_LID_ATTACHMENTS = ['friction', 'clickRails', 'magnetic'] as const;
+// Mirrors `LidGripMode` / `LidGripSides` in the same module (#3272).
+const VALID_LID_GRIP_MODES = ['none', 'chamfer', 'reveal', 'scallop'] as const;
+const VALID_LID_GRIP_SIDES = ['front', 'back', 'left', 'right'] as const;
+const ALLOWED_LID_GRIP_KEYS = new Set(['mode', 'sides', 'coverage', 'binDip']);
 const VALID_ROTATIONS = [0, 90, 180, 270] as const;
 const VALID_TEXT_FONTS = ['atkinson', 'jetbrains-mono', 'allerta-stencil'] as const;
 const VALID_TEXT_MODES = ['engrave', 'emboss', 'through-cut'] as const;
@@ -385,6 +389,58 @@ function validateLid(lid: unknown): string | null {
       return 'lid.tray.enabled must be boolean';
     if (isNumber(tr.depthMm) && !inRange(tr.depthMm, 1, 30)) return 'lid.tray.depthMm must be 1-30';
     if (isNumber(tr.wallMm) && !inRange(tr.wallMm, 1, 10)) return 'lid.tray.wallMm must be 1-10';
+  }
+  if (lid.grip !== undefined) {
+    const gripErr = validateLidGrip(lid.grip, lid);
+    if (gripErr) return gripErr;
+  }
+  return null;
+}
+
+/**
+ * Grip relief (#3272). Mirrors `LidGripConfig` in
+ * `src/features/bin-designer/types/lid.ts`.
+ *
+ * The depth and span clamps deliberately live only on the client: they resolve
+ * against the design's own tray/magnet geometry and produce a SAFE result for
+ * any input, so there is nothing here for a crafted payload to smuggle past.
+ * What the server does enforce is the shape of the field, the coverage bound,
+ * and the one combination that has no valid geometry.
+ */
+function validateLidGrip(grip: unknown, lid: Record<string, unknown>): string | null {
+  if (!isObject(grip)) return 'lid.grip must be an object';
+
+  for (const key of Object.keys(grip)) {
+    if (!ALLOWED_LID_GRIP_KEYS.has(key)) return `lid.grip has unknown key: ${key}`;
+  }
+  if (
+    grip.mode !== undefined &&
+    !VALID_LID_GRIP_MODES.includes(grip.mode as (typeof VALID_LID_GRIP_MODES)[number])
+  ) {
+    return `lid.grip.mode must be one of: ${VALID_LID_GRIP_MODES.join(', ')}`;
+  }
+  if (
+    grip.coverage !== undefined &&
+    (!isNumber(grip.coverage) || !inRange(grip.coverage, 10, 100))
+  ) {
+    return 'lid.grip.coverage must be 10-100';
+  }
+  if (grip.binDip !== undefined && !isBoolean(grip.binDip)) {
+    return 'lid.grip.binDip must be boolean';
+  }
+  if (grip.sides !== undefined) {
+    if (!isObject(grip.sides)) return 'lid.grip.sides must be an object';
+    for (const key of Object.keys(grip.sides)) {
+      if (!VALID_LID_GRIP_SIDES.includes(key as (typeof VALID_LID_GRIP_SIDES)[number])) {
+        return `lid.grip.sides has unknown key: ${key}`;
+      }
+      if (!isBoolean(grip.sides[key])) return `lid.grip.sides.${key} must be boolean`;
+    }
+  }
+  // A reveal steps the lid's outer face in, and that face is what a bin
+  // stacked on the lid registers against. Every other mode leaves it alone.
+  if (grip.mode === 'reveal' && (lid.stackableTop === true || lid.separateStackPlate === true)) {
+    return 'lid.grip.mode "reveal" cannot combine with a stackable top';
   }
   return null;
 }
