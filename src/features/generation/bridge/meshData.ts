@@ -117,11 +117,6 @@ export interface LidMeshData {
 }
 
 /**
- * Mesh data for the separate stack-grid baseplate (glue-on companion slab).
- * A single lid-colored zone — no face groups. Carries edge lines so the pocket
- * ring reads crisply in the preview.
- */
-/**
  * Mesh data for the sliding tray. A single uniform part with no face groups,
  * built floor-down at the origin; the preview places it on its rail.
  */
@@ -135,6 +130,11 @@ export interface SlideTrayMeshData {
   readonly restZ: number;
 }
 
+/**
+ * Mesh data for the separate stack-grid baseplate (glue-on companion slab).
+ * A single lid-colored zone — no face groups. Carries edge lines so the pocket
+ * ring reads crisply in the preview.
+ */
 export interface StackPlateMeshData {
   readonly vertices: Float32Array;
   readonly normals: Float32Array;
