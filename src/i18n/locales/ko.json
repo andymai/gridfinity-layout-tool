@@ -3630,7 +3630,7 @@
   "binDesigner.lid.gripSides": "벽",
   "binDesigner.lid.gripNoSides": "홈을 넣을 벽을 하나 이상 선택하세요.",
   "binDesigner.lid.gripCoverage": "너비",
-  "binDesigner.lid.gripEffective": "깊이 {{depth}}mm, 높이 {{height}}mm로 깎습니다",
+  "binDesigner.lid.gripEffective": "깊이 {depth}mm, 높이 {height}mm로 깎습니다",
   "binDesigner.lid.gripClamped.cavity": "뚜껑 벽에 의해 제한됩니다. 더 깊으면 통을 잡는 공동으로 뚫립니다.",
   "binDesigner.lid.gripClamped.trayWall": "트레이 벽에 의해 제한됩니다. 벽이 두꺼우면 더 깊은 홈을 낼 수 있습니다.",
   "binDesigner.lid.gripClamped.edgeMagnet": "이 벽 뒤의 가장자리 자석에 의해 제한됩니다.",

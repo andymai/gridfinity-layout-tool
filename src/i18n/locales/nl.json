@@ -3630,7 +3630,7 @@
   "binDesigner.lid.gripSides": "Wanden",
   "binDesigner.lid.gripNoSides": "Kies minstens één wand voor de uitsparing.",
   "binDesigner.lid.gripCoverage": "Breedte",
-  "binDesigner.lid.gripEffective": "Snijdt {{depth}} mm diep en {{height}} mm hoog",
+  "binDesigner.lid.gripEffective": "Snijdt {depth} mm diep en {height} mm hoog",
   "binDesigner.lid.gripClamped.cavity": "Begrensd door de dekselwand — dieper zou doorbreken in de holte die de bak vastgrijpt.",
   "binDesigner.lid.gripClamped.trayWall": "Begrensd door de trayrand. Een dikkere trayrand laat een diepere uitsparing toe.",
   "binDesigner.lid.gripClamped.edgeMagnet": "Begrensd door de randmagneten achter deze wand.",

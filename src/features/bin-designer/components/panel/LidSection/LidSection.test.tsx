@@ -658,7 +658,9 @@ describe('LidSection grip relief (#3272)', () => {
   it('reports the effective depth and height the clamp resolved', () => {
     enabled({ mode: 'scallop' });
     render(<LidSection />);
-    expect(screen.getByText(/Cuts .*mm deep, .*mm tall/)).toBeInTheDocument();
+    // Digits, not `.*`: a loose pattern matches the un-substituted string too,
+    // which is how `{{depth}}` shipped past this test in every locale.
+    expect(screen.getByText(/Cuts \d+(\.\d+)?mm deep, \d+(\.\d+)?mm tall/)).toBeInTheDocument();
   });
 
   it('explains a clamp rather than leaving a shallow relief looking like a defect', () => {

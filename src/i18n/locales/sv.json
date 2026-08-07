@@ -3630,7 +3630,7 @@
   "binDesigner.lid.gripSides": "Väggar",
   "binDesigner.lid.gripNoSides": "Välj minst en vägg för urtaget.",
   "binDesigner.lid.gripCoverage": "Bredd",
-  "binDesigner.lid.gripEffective": "Skär {{depth}} mm djupt och {{height}} mm högt",
+  "binDesigner.lid.gripEffective": "Skär {depth} mm djupt och {height} mm högt",
   "binDesigner.lid.gripClamped.cavity": "Begränsas av lockväggen — djupare skulle bryta igenom till hålrummet som greppar lådan.",
   "binDesigner.lid.gripClamped.trayWall": "Begränsas av brickans vägg. En tjockare vägg tillåter ett djupare urtag.",
   "binDesigner.lid.gripClamped.edgeMagnet": "Begränsas av kantmagneterna bakom den här väggen.",

@@ -60,6 +60,7 @@ describe('LidGripControls', () => {
 
   it('reports the depth and height the clamp actually resolved', () => {
     renderControls({ mode: 'scallop' });
-    expect(screen.getByText(/Cuts .*mm deep, .*mm tall/)).toBeInTheDocument();
+    // Digits, not `.*`: a loose pattern matches the un-substituted string too.
+    expect(screen.getByText(/Cuts \d+(\.\d+)?mm deep, \d+(\.\d+)?mm tall/)).toBeInTheDocument();
   });
 });

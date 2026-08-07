@@ -3630,7 +3630,7 @@
   "binDesigner.lid.gripSides": "Stěny",
   "binDesigner.lid.gripNoSides": "Vyberte alespoň jednu stěnu pro výřez.",
   "binDesigner.lid.gripCoverage": "Šířka",
-  "binDesigner.lid.gripEffective": "Zařezává {{depth}} mm do hloubky a {{height}} mm na výšku",
+  "binDesigner.lid.gripEffective": "Zařezává {depth} mm do hloubky a {height} mm na výšku",
   "binDesigner.lid.gripClamped.cavity": "Omezeno stěnou víka — hlouběji by se prorazilo do dutiny, která svírá box.",
   "binDesigner.lid.gripClamped.trayWall": "Omezeno stěnou tácku. Silnější stěna umožní hlubší výřez.",
   "binDesigner.lid.gripClamped.edgeMagnet": "Omezeno okrajovými magnety za touto stěnou.",

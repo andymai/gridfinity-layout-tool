@@ -3630,7 +3630,7 @@
   "binDesigner.lid.gripSides": "Wände",
   "binDesigner.lid.gripNoSides": "Wählen Sie mindestens eine Wand für die Aussparung.",
   "binDesigner.lid.gripCoverage": "Breite",
-  "binDesigner.lid.gripEffective": "Schneidet {{depth}} mm tief, {{height}} mm hoch",
+  "binDesigner.lid.gripEffective": "Schneidet {depth} mm tief, {height} mm hoch",
   "binDesigner.lid.gripClamped.cavity": "Durch die Deckelwand begrenzt — tiefer würde in den Hohlraum durchbrechen, der die Box greift.",
   "binDesigner.lid.gripClamped.trayWall": "Durch die Einsatzwand begrenzt. Eine dickere Einsatzwand erlaubt eine tiefere Aussparung.",
   "binDesigner.lid.gripClamped.edgeMagnet": "Durch die Randmagnete hinter dieser Wand begrenzt.",

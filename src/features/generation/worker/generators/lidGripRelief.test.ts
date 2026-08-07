@@ -34,6 +34,14 @@ function makeParams(grip: Partial<LidGripConfig>, over: Partial<BinParams> = {})
 const placementsFor = (grip: Partial<LidGripConfig>, over: Partial<BinParams> = {}) =>
   gripPlacements(resolveLidInputs(makeParams(grip, over)));
 
+/** The straight run a square lid of `size` units offers, corners excluded. */
+function usableRunFor(size: number, coverage: number): number {
+  const inputs = resolveLidInputs(
+    makeParams({ mode: 'scallop', coverage }, { width: size, depth: size })
+  );
+  return inputs.lidOuterW - 2 * inputs.lidCornerR;
+}
+
 describe('gripPlacements', () => {
   it('produces nothing when the relief is off', () => {
     expect(placementsFor({ mode: 'none' })).toHaveLength(0);
@@ -85,8 +93,18 @@ describe('gripPlacements', () => {
           { width: size, depth: size }
         )) {
           expect(p.spanMm).toBeLessThanOrEqual(LID_GRIP_SPAN_MAX_MM);
-          // The floor gives way only on a wall too short to hold it.
-          expect(p.spanMm).toBeGreaterThan(Math.min(LID_GRIP_SPAN_MIN_MM, p.spanMm) - 1e-9);
+          // The floor applies unless the wall itself is shorter than it, in
+          // which case the span is the whole wall. Comparing against
+          // `min(FLOOR, spanMm)` would be true of any value, including 0.
+          const run = usableRunFor(size, coverage);
+          expect(p.spanMm).toBeCloseTo(
+            Math.min(
+              Math.max(run * (coverage / 100), LID_GRIP_SPAN_MIN_MM),
+              LID_GRIP_SPAN_MAX_MM,
+              run
+            ),
+            6
+          );
         }
       }
     }

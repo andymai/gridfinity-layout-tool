@@ -3630,7 +3630,7 @@
   "binDesigner.lid.gripSides": "Vegger",
   "binDesigner.lid.gripNoSides": "Velg minst én vegg for utsparingen.",
   "binDesigner.lid.gripCoverage": "Bredde",
-  "binDesigner.lid.gripEffective": "Skjærer {{depth}} mm dypt og {{height}} mm høyt",
+  "binDesigner.lid.gripEffective": "Skjærer {depth} mm dypt og {height} mm høyt",
   "binDesigner.lid.gripClamped.cavity": "Begrenset av lokkveggen — dypere ville brutt gjennom til hulrommet som griper kassen.",
   "binDesigner.lid.gripClamped.trayWall": "Begrenset av brettveggen. En tykkere vegg gir en dypere utsparing.",
   "binDesigner.lid.gripClamped.edgeMagnet": "Begrenset av kantmagnetene bak denne veggen.",

@@ -3630,7 +3630,7 @@
   "binDesigner.lid.gripSides": "侧壁",
   "binDesigner.lid.gripNoSides": "请至少选择一面侧壁。",
   "binDesigner.lid.gripCoverage": "宽度",
-  "binDesigner.lid.gripEffective": "切深 {{depth}} 毫米，高 {{height}} 毫米",
+  "binDesigner.lid.gripEffective": "切深 {depth} 毫米，高 {height} 毫米",
   "binDesigner.lid.gripClamped.cavity": "受盖子壁厚限制——再深就会切穿抓住盒体的内腔。",
   "binDesigner.lid.gripClamped.trayWall": "受托盘壁厚限制。加厚托盘壁可以让位更深。",
   "binDesigner.lid.gripClamped.edgeMagnet": "受这面墙后方的边缘磁铁限制。",

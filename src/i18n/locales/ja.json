@@ -3630,7 +3630,7 @@
   "binDesigner.lid.gripSides": "壁",
   "binDesigner.lid.gripNoSides": "逃がしを入れる壁を1つ以上選んでください。",
   "binDesigner.lid.gripCoverage": "幅",
-  "binDesigner.lid.gripEffective": "深さ {{depth}} mm、高さ {{height}} mm を削ります",
+  "binDesigner.lid.gripEffective": "深さ {depth} mm、高さ {height} mm を削ります",
   "binDesigner.lid.gripClamped.cavity": "ふたの壁で制限されています。これ以上深くすると、本体をつかむ空洞に突き抜けます。",
   "binDesigner.lid.gripClamped.trayWall": "トレイの壁で制限されています。壁を厚くすると、より深い逃がしにできます。",
   "binDesigner.lid.gripClamped.edgeMagnet": "この壁の裏にある縁のマグネットで制限されています。",

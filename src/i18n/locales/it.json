@@ -3630,7 +3630,7 @@
   "binDesigner.lid.gripSides": "Pareti",
   "binDesigner.lid.gripNoSides": "Scegli almeno una parete per lo scasso.",
   "binDesigner.lid.gripCoverage": "Larghezza",
-  "binDesigner.lid.gripEffective": "Taglia {{depth}} mm di profondità e {{height}} mm di altezza",
+  "binDesigner.lid.gripEffective": "Taglia {depth} mm di profondità e {height} mm di altezza",
   "binDesigner.lid.gripClamped.cavity": "Limitato dalla parete del coperchio: più a fondo sfonderebbe la cavità che afferra il contenitore.",
   "binDesigner.lid.gripClamped.trayWall": "Limitato dalla parete del vassoio. Una parete più spessa consente uno scasso più profondo.",
   "binDesigner.lid.gripClamped.edgeMagnet": "Limitato dai magneti di bordo dietro questa parete.",

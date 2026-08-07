@@ -121,18 +121,19 @@ export function LidGripControls({
             <Hint>{t(`binDesigner.lid.gripClamped.${gripDepth.limitedBy}`)}</Hint>
           )}
 
-          <label className="flex items-start gap-2 text-xs text-content-secondary">
-            <input
-              type="checkbox"
-              checked={grip.binDip}
-              onChange={handlers.toggleGripBinDip}
-              className="mt-0.5"
-            />
-            <span>
-              {t('binDesigner.lid.gripBinDip')}
-              <Hint>{t('binDesigner.lid.gripBinDipWarning')}</Hint>
-            </span>
-          </label>
+          <div>
+            <label className="flex items-start gap-2 text-xs text-content-secondary">
+              <input
+                type="checkbox"
+                checked={grip.binDip}
+                onChange={handlers.toggleGripBinDip}
+                className="mt-0.5"
+              />
+              <span>{t('binDesigner.lid.gripBinDip')}</span>
+            </label>
+            {/* Outside the label: `Hint` is a <p>, which cannot nest in a <span>. */}
+            <Hint>{t('binDesigner.lid.gripBinDipWarning')}</Hint>
+          </div>
         </>
       )}
     </div>

@@ -3630,7 +3630,7 @@
   "binDesigner.lid.gripSides": "Стінки",
   "binDesigner.lid.gripNoSides": "Виберіть щонайменше одну стінку для виїмки.",
   "binDesigner.lid.gripCoverage": "Ширина",
-  "binDesigner.lid.gripEffective": "Заглиблюється на {{depth}} мм і має висоту {{height}} мм",
+  "binDesigner.lid.gripEffective": "Заглиблюється на {depth} мм і має висоту {height} мм",
   "binDesigner.lid.gripClamped.cavity": "Обмежено стінкою кришки — глибше прорізало б порожнину, що охоплює контейнер.",
   "binDesigner.lid.gripClamped.trayWall": "Обмежено стінкою лотка. Товща стінка дозволяє глибшу виїмку.",
   "binDesigner.lid.gripClamped.edgeMagnet": "Обмежено крайовими магнітами за цією стінкою.",

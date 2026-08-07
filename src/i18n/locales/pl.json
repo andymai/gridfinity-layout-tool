@@ -3630,7 +3630,7 @@
   "binDesigner.lid.gripSides": "Ściany",
   "binDesigner.lid.gripNoSides": "Wybierz co najmniej jedną ścianę dla podcięcia.",
   "binDesigner.lid.gripCoverage": "Szerokość",
-  "binDesigner.lid.gripEffective": "Wcina się na {{depth}} mm w głąb i {{height}} mm wzwyż",
+  "binDesigner.lid.gripEffective": "Wcina się na {depth} mm w głąb i {height} mm wzwyż",
   "binDesigner.lid.gripClamped.cavity": "Ograniczone ścianą pokrywy — głębiej przebiłoby się do wnęki obejmującej pojemnik.",
   "binDesigner.lid.gripClamped.trayWall": "Ograniczone ścianą tacki. Grubsza ścianka pozwala na głębsze podcięcie.",
   "binDesigner.lid.gripClamped.edgeMagnet": "Ograniczone magnesami krawędziowymi za tą ścianą.",

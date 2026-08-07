@@ -2090,7 +2090,7 @@ const en: Record<string, string> = {
   'binDesigner.lid.gripSides': 'Walls',
   'binDesigner.lid.gripNoSides': 'Pick at least one wall for the relief.',
   'binDesigner.lid.gripCoverage': 'Width',
-  'binDesigner.lid.gripEffective': 'Cuts {{depth}}mm deep, {{height}}mm tall',
+  'binDesigner.lid.gripEffective': 'Cuts {depth}mm deep, {height}mm tall',
   'binDesigner.lid.gripClamped.cavity':
     'Limited by the lid wall — any deeper would break into the cavity that grips the bin.',
   'binDesigner.lid.gripClamped.trayWall':

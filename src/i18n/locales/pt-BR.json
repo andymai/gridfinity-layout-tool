@@ -3630,7 +3630,7 @@
   "binDesigner.lid.gripSides": "Paredes",
   "binDesigner.lid.gripNoSides": "Escolha pelo menos uma parede para o rebaixo.",
   "binDesigner.lid.gripCoverage": "Largura",
-  "binDesigner.lid.gripEffective": "Corta {{depth}} mm de profundidade e {{height}} mm de altura",
+  "binDesigner.lid.gripEffective": "Corta {depth} mm de profundidade e {height} mm de altura",
   "binDesigner.lid.gripClamped.cavity": "Limitado pela parede da tampa — mais fundo romperia a cavidade que prende o compartimento.",
   "binDesigner.lid.gripClamped.trayWall": "Limitado pela parede da bandeja. Uma parede mais grossa permite um rebaixo mais fundo.",
   "binDesigner.lid.gripClamped.edgeMagnet": "Limitado pelos ímãs de borda atrás desta parede.",

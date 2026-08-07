@@ -69,6 +69,18 @@ function solidOver(mesh: MeshData, x: number, y: number, lo: number, hi: number)
   return verticalSolidSpans(mesh, x, y).some(([from, to]) => from <= lo + 0.01 && to >= hi - 0.01);
 }
 
+/**
+ * Narrow a possibly-null mesh at the point of use.
+ *
+ * `generateLid` returns null when the lid is gated off; every call here
+ * expects one, and CLAUDE.md prohibits non-null assertions, so the check and
+ * the narrowing happen together and name what was missing.
+ */
+function requireMesh(mesh: MeshData | null, label: string): MeshData {
+  if (mesh === null) throw new Error(`expected ${label} to build a lid`);
+  return mesh;
+}
+
 const MODES: readonly LidGripMode[] = ['chamfer', 'reveal', 'scallop'];
 
 beforeAll(async () => {
@@ -78,19 +90,20 @@ beforeAll(async () => {
 describe('grip relief geometry', () => {
   it('leaves the lid untouched when the mode is none', async () => {
     const { generateLid } = await import('./lidOrchestrator');
-    const off = generateLid(makeParams({ mode: 'none' }));
-    const noSides = generateLid(
-      makeParams({
-        mode: 'scallop',
-        sides: { front: false, back: false, left: false, right: false },
-      })
+    const off = requireMesh(generateLid(makeParams({ mode: 'none' })), 'a disabled relief');
+    const noSides = requireMesh(
+      generateLid(
+        makeParams({
+          mode: 'scallop',
+          sides: { front: false, back: false, left: false, right: false },
+        })
+      ),
+      'a relief with no enabled wall'
     );
-    expect(off).not.toBeNull();
-    expect(noSides).not.toBeNull();
     // A relief with no enabled wall must be byte-for-byte the disabled lid,
     // not a lid that happened to be cut somewhere harmless.
-    expect(noSides!.indices.length).toBe(off!.indices.length);
-    expect(noSides!.vertices.length).toBe(off!.vertices.length);
+    expect(noSides.indices.length).toBe(off.indices.length);
+    expect(noSides.vertices.length).toBe(off.vertices.length);
   });
 
   for (const mode of MODES) {
@@ -101,12 +114,10 @@ describe('grip relief geometry', () => {
           mode,
           sides: { front: true, back: true, left: false, right: false },
         });
-        const withGrip = generateLid(params);
-        const without = generateLid(makeParams({ mode: 'none' }));
-        expect(withGrip).not.toBeNull();
-        expect(without).not.toBeNull();
-        assertStructurallyValid(withGrip!, `${mode} relief`);
-        assertWatertight(withGrip!, `${mode} relief`);
+        const withGrip = requireMesh(generateLid(params), `${mode} relief`);
+        const without = requireMesh(generateLid(makeParams({ mode: 'none' })), 'a plain lid');
+        assertStructurallyValid(withGrip, `${mode} relief`);
+        assertWatertight(withGrip, `${mode} relief`);
 
         const anchorZ = seamZ(params);
         const depth = resolveLidGripDepth(params).depthMm;
@@ -116,14 +127,14 @@ describe('grip relief geometry', () => {
 
         // The BACK wall's outer face, at the centre of its span. Probe just
         // inside the face so the ray runs through what the relief removed.
-        const bb = boundingBox(withGrip!.vertices);
+        const bb = boundingBox(withGrip.vertices);
         const probeY = bb.maxY - depth / 2;
         // A band strictly inside the relief, clear of its own edges.
         const lo = anchorZ + Math.min(0.1, height / 4);
         const hi = anchorZ + height - Math.min(0.1, height / 4);
 
-        expect(solidOver(without!, 0, probeY, lo, hi)).toBe(true);
-        expect(solidOver(withGrip!, 0, probeY, lo, hi)).toBe(false);
+        expect(solidOver(without, 0, probeY, lo, hi)).toBe(true);
+        expect(solidOver(withGrip, 0, probeY, lo, hi)).toBe(false);
       });
 
       it('does not reach the corners', async () => {
@@ -132,17 +143,16 @@ describe('grip relief geometry', () => {
           mode,
           sides: { front: true, back: true, left: false, right: false },
         });
-        const mesh = generateLid(params);
-        expect(mesh).not.toBeNull();
+        const mesh = requireMesh(generateLid(params), `${mode} relief`);
 
         const anchorZ = seamZ(params);
         const depth = resolveLidGripDepth(params).depthMm;
         const height = resolveLidGripHeightMm(mode, anchorZ);
-        const bb = boundingBox(mesh!.vertices);
+        const bb = boundingBox(mesh.vertices);
         // Just inside the corner pillar, on the same wall the relief cuts.
         const cornerX = bb.maxX - LID_CORNER_RADIUS - 0.5;
         expect(
-          solidOver(mesh!, cornerX, bb.maxY - depth / 2, anchorZ + 0.1, anchorZ + height - 0.1)
+          solidOver(mesh, cornerX, bb.maxY - depth / 2, anchorZ + 0.1, anchorZ + height - 0.1)
         ).toBe(true);
       });
 
@@ -152,8 +162,7 @@ describe('grip relief geometry', () => {
           mode,
           sides: { front: true, back: true, left: true, right: true },
         });
-        const mesh = generateLid(params);
-        expect(mesh).not.toBeNull();
+        const mesh = requireMesh(generateLid(params), `${mode} relief`);
 
         // The wall between the relief's deepest point and the cavity must
         // still be solid. A breach here leaves the lid watertight and passes
@@ -161,9 +170,9 @@ describe('grip relief geometry', () => {
         // only thing standing between a clamp bug and a hole in the lid.
         const anchorZ = seamZ(params);
         const depth = resolveLidGripDepth(params).depthMm;
-        const bb = boundingBox(mesh!.vertices);
+        const bb = boundingBox(mesh.vertices);
         const wallMidY = bb.maxY - depth - LID_GRIP_MIN_WALL_MM / 2;
-        expect(solidOver(mesh!, 0, wallMidY, anchorZ + 0.05, anchorZ + 0.3)).toBe(true);
+        expect(solidOver(mesh, 0, wallMidY, anchorZ + 0.05, anchorZ + 0.3)).toBe(true);
       });
 
       it('leaves a wall the user did not enable untouched', async () => {
@@ -172,20 +181,19 @@ describe('grip relief geometry', () => {
           mode,
           sides: { front: false, back: true, left: false, right: false },
         });
-        const mesh = generateLid(params);
-        expect(mesh).not.toBeNull();
+        const mesh = requireMesh(generateLid(params), `${mode} relief`);
 
         const anchorZ = seamZ(params);
         const depth = resolveLidGripDepth(params).depthMm;
         const height = resolveLidGripHeightMm(mode, anchorZ);
-        const bb = boundingBox(mesh!.vertices);
+        const bb = boundingBox(mesh.vertices);
         const lo = anchorZ + Math.min(0.1, height / 4);
         const hi = anchorZ + height - Math.min(0.1, height / 4);
 
         // Back is cut, front is not — proves the placement respects sides and
         // that rotation put each cutter on the wall it was addressed to.
-        expect(solidOver(mesh!, 0, bb.maxY - depth / 2, lo, hi)).toBe(false);
-        expect(solidOver(mesh!, 0, bb.minY + depth / 2, lo, hi)).toBe(true);
+        expect(solidOver(mesh, 0, bb.maxY - depth / 2, lo, hi)).toBe(false);
+        expect(solidOver(mesh, 0, bb.minY + depth / 2, lo, hi)).toBe(true);
       });
     });
   }
@@ -248,19 +256,18 @@ describe('grip relief variant matrix', () => {
             },
           },
         };
-        const mesh = generateLid(params);
-        expect(mesh).not.toBeNull();
-        assertStructurallyValid(mesh!, `${variant.name}/${mode}`);
-        assertWatertight(mesh!, `${variant.name}/${mode}`);
+        const mesh = requireMesh(generateLid(params), `${variant.name}/${mode}`);
+        assertStructurallyValid(mesh, `${variant.name}/${mode}`);
+        assertWatertight(mesh, `${variant.name}/${mode}`);
 
         // Whatever the variant clamped the depth to, the wall in front of the
         // cavity must survive it.
         const plan = resolveLidGripDepth(params);
         if (plan.suppressed) return;
         const anchorZ = seamZ(params);
-        const bb = boundingBox(mesh!.vertices);
+        const bb = boundingBox(mesh.vertices);
         const wallMidY = bb.maxY - plan.depthMm - LID_GRIP_MIN_WALL_MM / 2;
-        expect(solidOver(mesh!, 0, wallMidY, anchorZ + 0.05, anchorZ + 0.3)).toBe(true);
+        expect(solidOver(mesh, 0, wallMidY, anchorZ + 0.05, anchorZ + 0.3)).toBe(true);
       });
     }
   }
@@ -278,15 +285,19 @@ describe('grip relief face provenance', () => {
     const tags = (mesh: MeshData): Set<number> =>
       new Set((mesh.faceGroups ?? []).map((g) => g.tag));
 
-    const plain = generateLid(makeParams({ mode: 'none' }));
-    const relieved = generateLid(
-      makeParams({ mode: 'scallop', sides: { front: true, back: true, left: false, right: false } })
+    const plain = requireMesh(generateLid(makeParams({ mode: 'none' })), 'a plain lid');
+    const relieved = requireMesh(
+      generateLid(
+        makeParams({
+          mode: 'scallop',
+          sides: { front: true, back: true, left: false, right: false },
+        })
+      ),
+      'a relieved lid'
     );
-    expect(plain).not.toBeNull();
-    expect(relieved).not.toBeNull();
 
-    const plainTags = tags(plain!);
-    const relievedTags = tags(relieved!);
+    const plainTags = tags(plain);
+    const relievedTags = tags(relieved);
     expect(plainTags.size).toBeGreaterThan(0);
     for (const tag of plainTags) {
       expect(relievedTags.has(tag), `tag ${tag} was wiped by the relief`).toBe(true);

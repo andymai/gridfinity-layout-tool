@@ -3630,7 +3630,7 @@
   "binDesigner.lid.gripSides": "Paredes",
   "binDesigner.lid.gripNoSides": "Elige al menos una pared para el rebaje.",
   "binDesigner.lid.gripCoverage": "Anchura",
-  "binDesigner.lid.gripEffective": "Corta {{depth}} mm de profundidad y {{height}} mm de alto",
+  "binDesigner.lid.gripEffective": "Corta {depth} mm de profundidad y {height} mm de alto",
   "binDesigner.lid.gripClamped.cavity": "Limitado por la pared de la tapa: más profundo rompería la cavidad que agarra el cajetín.",
   "binDesigner.lid.gripClamped.trayWall": "Limitado por la pared de la bandeja. Una pared más gruesa permite un rebaje más profundo.",
   "binDesigner.lid.gripClamped.edgeMagnet": "Limitado por los imanes de borde situados tras esta pared.",

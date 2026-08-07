@@ -3630,7 +3630,7 @@
   "binDesigner.lid.gripSides": "Parois",
   "binDesigner.lid.gripNoSides": "Choisissez au moins une paroi pour le dégagement.",
   "binDesigner.lid.gripCoverage": "Largeur",
-  "binDesigner.lid.gripEffective": "Coupe {{depth}} mm de profondeur, {{height}} mm de hauteur",
+  "binDesigner.lid.gripEffective": "Coupe {depth} mm de profondeur, {height} mm de hauteur",
   "binDesigner.lid.gripClamped.cavity": "Limité par la paroi du couvercle — plus profond percerait la cavité qui agrippe le bac.",
   "binDesigner.lid.gripClamped.trayWall": "Limité par la paroi du plateau. Une paroi plus épaisse permet un dégagement plus profond.",
   "binDesigner.lid.gripClamped.edgeMagnet": "Limité par les aimants de bord situés derrière cette paroi.",
