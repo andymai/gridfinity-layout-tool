@@ -1,10 +1,13 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { BinFeaturesSection } from './BinFeaturesSection';
 import { useDesignerStore } from '../../store';
 import { DEFAULT_BIN_PARAMS } from '../../constants';
 
-const LIP = 'Stacking lip';
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
+
+const LIP = 'assembledHeight.stackingLip';
+const LID_PAUSED = 'binDesigner.cutoutEditor.lipOffPausesLid';
 
 function setParams(overrides: Partial<typeof DEFAULT_BIN_PARAMS> = {}) {
   useDesignerStore.setState({
@@ -69,7 +72,7 @@ describe('BinFeaturesSection', () => {
     });
     render(<BinFeaturesSection />);
 
-    expect(screen.getByText(/lid needs the stacking lip/i)).toBeInTheDocument();
+    expect(screen.getByText(LID_PAUSED)).toBeInTheDocument();
   });
 
   it('stays quiet about the lid while the lip is on', () => {
@@ -79,7 +82,7 @@ describe('BinFeaturesSection', () => {
     });
     render(<BinFeaturesSection />);
 
-    expect(screen.queryByText(/lid needs the stacking lip/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(LID_PAUSED)).not.toBeInTheDocument();
   });
 
   it('stays quiet when there is no lid to pause', () => {
@@ -89,6 +92,6 @@ describe('BinFeaturesSection', () => {
     });
     render(<BinFeaturesSection />);
 
-    expect(screen.queryByText(/lid needs the stacking lip/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(LID_PAUSED)).not.toBeInTheDocument();
   });
 });

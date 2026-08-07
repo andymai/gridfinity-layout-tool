@@ -77,6 +77,13 @@ vi.mock('./BinSizeSection', () => ({
   ),
 }));
 
+// Stubbed for the same reason as BinSizeSection: it is self-wired to the
+// designer store, and this suite is about what InspectorContent renders in each
+// selection state, not what the store holds.
+vi.mock('./BinFeaturesSection', () => ({
+  BinFeaturesSection: () => <div data-testid="bin-features-section" />,
+}));
+
 const createCutout = (overrides: Partial<Cutout> = {}): Cutout => ({
   id: 'cutout1',
   shape: 'rectangle',
@@ -124,6 +131,22 @@ describe('InspectorContent', () => {
       />
     );
     expect(screen.getByTestId('bin-size-section')).toBeInTheDocument();
+  });
+
+  // Bin-level controls are the ones you must not have to change selection to
+  // reach — the stacking lip included, which is why it lives here rather than
+  // in the no-selection board settings.
+  it.each([
+    ['nothing selected', [] as Cutout[], new Set<string>()],
+    ['a single selection', [createCutout()], new Set(['cutout1'])],
+    [
+      'a multi-selection',
+      [createCutout({ id: 'a' }), createCutout({ id: 'b' })],
+      new Set(['a', 'b']),
+    ],
+  ])('keeps the bin-features controls on screen with %s', (_label, cutouts, selection) => {
+    render(<InspectorContent {...defaultProps} cutouts={cutouts} selection={selection} />);
+    expect(screen.getByTestId('bin-features-section')).toBeInTheDocument();
   });
 
   it('renders X/Y/W/H inputs and rotation/depth sliders for a single selection', () => {
