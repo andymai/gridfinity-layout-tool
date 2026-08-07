@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.379.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.379.1...gridfinity-layout-tool-v4.379.2) (2026-08-07)
+
+
+### Bug Fixes
+
+* **bin-designer:** halve the sliding-tray clearance to the Gridfinity value ([#3291](https://github.com/andymai/gridfinity-layout-tool/issues/3291)) ([c7a461b](https://github.com/andymai/gridfinity-layout-tool/commit/c7a461bb7660ca719a225637955308c5092353ae))
+
 ## [4.379.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.379.0...gridfinity-layout-tool-v4.379.1) (2026-08-07)
 
 
