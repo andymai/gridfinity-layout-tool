@@ -57,6 +57,54 @@ describe('ToggleRow', () => {
     expect(screen.queryByText('H')).not.toBeInTheDocument();
   });
 
+  // role="checkbox" is Children Presentational, so a nested trailing button
+  // would be dropped from the accessibility tree entirely.
+  it('exposes a trailing control alongside the checkbox rather than inside it', () => {
+    render(
+      <ToggleRow
+        label="Custom drawer shape"
+        checked={false}
+        onChange={vi.fn()}
+        trailing={<button type="button">Options</button>}
+      />
+    );
+    const checkbox = screen.getByRole('checkbox');
+    const trailing = screen.getByRole('button', { name: 'Options' });
+    expect(trailing).toBeInTheDocument();
+    expect(checkbox.contains(trailing)).toBe(false);
+  });
+
+  it('does not fire onChange when the trailing control is clicked', () => {
+    const onChange = vi.fn();
+    render(
+      <ToggleRow
+        label="Custom drawer shape"
+        checked={false}
+        onChange={onChange}
+        trailing={<button type="button">Options</button>}
+      />
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Options' }));
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('omits the trailing slot by default', () => {
+    render(<ToggleRow label="Half-grid mode" checked={false} onChange={vi.fn()} />);
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  it('keeps the tooltip reachable on the row hit area', () => {
+    render(
+      <ToggleRow
+        label="Half-grid mode"
+        checked={false}
+        onChange={vi.fn()}
+        tooltip="Snap bins to half units"
+      />
+    );
+    expect(screen.getByRole('checkbox')).toHaveAttribute('title', 'Snap bins to half units');
+  });
+
   it('applies the help target to the row so deep-link pulses land on it', () => {
     const { container } = render(
       <ToggleRow

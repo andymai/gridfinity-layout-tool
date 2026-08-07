@@ -1,16 +1,19 @@
 /**
  * Compact "Baseplate" switcher for the planner sidebar: a Select bound to the
- * global baseplate library plus a "Manage…" affordance that opens the library
+ * global baseplate library plus a manage affordance that opens the library
  * modal.
  *
  * Built on `Collapsible size="md"` with the manage button in `actions` so this
- * slot reads as a peer of Layers and Categories rather than a lone label.
+ * slot reads as a peer of Layers and Categories rather than a lone label — the
+ * icon button matches their spec exactly, since all three sit in the same
+ * column.
  */
 
 import { useCallback } from 'react';
 import { useViewStore } from '@/core/store/view';
 import { useTranslation } from '@/i18n';
-import { Button, Collapsible, Select } from '@/design-system';
+import { Collapsible, IconButton, Select } from '@/design-system';
+import { LayoutGridIcon } from '@/design-system/Icon';
 import { baseplateDesignId } from '@/core/types';
 import { useBaseplateLibrary } from '@/features/baseplate/hooks/useBaseplateLibrary';
 
@@ -29,14 +32,16 @@ export function ActiveBaseplatePanel() {
   );
 
   const manageButton = (
-    <Button
-      variant="ghost"
+    <IconButton
       size="sm"
+      touchTarget={false}
       onClick={() => setShowBaseplateLibrary(true)}
-      className="text-xs text-content-tertiary hover:text-content"
+      className="w-7 h-7"
+      title={t('baseplate.library.manage')}
+      aria-label={t('baseplate.library.manage')}
     >
-      {t('baseplate.library.manage')}
-    </Button>
+      <LayoutGridIcon className="w-4 h-4" />
+    </IconButton>
   );
 
   return (
