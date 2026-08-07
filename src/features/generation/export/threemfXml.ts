@@ -1,4 +1,9 @@
-import type { IndexedMesh, ThreeMFColorConfig, ThreeMFOptions } from './threemfTypes';
+import type {
+  IndexedMesh,
+  ThreeMFColorConfig,
+  ThreeMFOptions,
+  ThreeMFPlacement,
+} from './threemfTypes';
 import { centeringTranslation, computeBBox, mergeBBoxes } from './threemfGeometry';
 import {
   activeColorConfig,
@@ -64,6 +69,7 @@ export function buildMultiObjectModelXML(
     mesh: IndexedMesh;
     name: string;
     colorConfig?: ThreeMFColorConfig;
+    placement?: ThreeMFPlacement;
   }[],
   options: ThreeMFOptions
 ): string {
@@ -78,9 +84,12 @@ export function buildMultiObjectModelXML(
   });
 
   const anyHasColors = resolved.some((obj) => obj.colorConfig !== undefined);
+  const placed = resolved.some((obj) => obj.placement !== undefined);
 
   // Single shared offset across all objects so the bin + dividers + lid keep
-  // their relative positions and the assembly lands centered together.
+  // their relative positions and the assembly lands centered together. Only
+  // used when the file has no plate layout: a placed export positions each part
+  // independently, so a shared offset would stack them all on one spot.
   const combinedBBox = mergeBBoxes(resolved.map((obj) => computeBBox(obj.mesh.vertices)));
   const offset = centeringTranslation(combinedBBox);
 
@@ -98,15 +107,38 @@ export function buildMultiObjectModelXML(
 
   xml += '  </resources>\n';
   xml += '  <build>\n';
-  const tx = formatFloat(offset.x);
-  const ty = formatFloat(offset.y);
-  const tz = formatFloat(offset.z);
-  for (const id of objectIds) {
-    xml += `    <item objectid="${id}" transform="1 0 0 0 1 0 0 0 1 ${tx} ${ty} ${tz}" />\n`;
+  if (placed) {
+    resolved.forEach((obj, i) => {
+      xml += `    <item objectid="${objectIds[i]}" transform="1 0 0 0 1 0 0 0 1 ${placedTranslation(obj)}" />\n`;
+    });
+  } else {
+    const tx = formatFloat(offset.x);
+    const ty = formatFloat(offset.y);
+    const tz = formatFloat(offset.z);
+    for (const id of objectIds) {
+      xml += `    <item objectid="${id}" transform="1 0 0 0 1 0 0 0 1 ${tx} ${ty} ${tz}" />\n`;
+    }
   }
   xml += '  </build>\n';
   xml += '</model>';
   return xml;
+}
+
+/**
+ * Translation that carries one part's mesh to its packed spot: footprint centre
+ * onto the placement, underside onto the bed. An object without a placement in
+ * an otherwise-placed export falls back to its own centre so it lands on plate
+ * 1 rather than wherever its authored coordinates happen to sit.
+ */
+function placedTranslation(obj: { mesh: IndexedMesh; placement?: ThreeMFPlacement }): string {
+  const bbox = computeBBox(obj.mesh.vertices);
+  if (!bbox) return '0 0 0';
+  const centreX = (bbox.min.x + bbox.max.x) / 2;
+  const centreY = (bbox.min.y + bbox.max.y) / 2;
+  const target = obj.placement ?? centeringTranslation(bbox);
+  const x = obj.placement ? target.x - centreX : target.x;
+  const y = obj.placement ? target.y - centreY : target.y;
+  return `${formatFloat(x)} ${formatFloat(y)} ${formatFloat(-bbox.min.z)}`;
 }
 
 function buildMetadataXml(options: ThreeMFOptions, flags: { bambuCompat: boolean }): string {

@@ -3,11 +3,31 @@ export interface ThreeMFColorConfig {
   readonly triangleMaterialIndices: readonly number[];
 }
 
+/**
+ * Where a part sits when the file carries build plates.
+ *
+ * `x`/`y` are WORLD coordinates with the plate's own origin already applied,
+ * because BambuStudio/OrcaSlicer lay plates out as a grid in one world space
+ * (`PartPlateList`, stride = bed size * 1.2). Resolving the origin in the
+ * caller keeps the grid math in one tested place: the transform written here
+ * and the `plater_id` written into `model_settings.config` come from the same
+ * computation, and a slicer shows parts floating off their plate if they
+ * disagree.
+ */
+export interface ThreeMFPlacement {
+  /** Zero-based plate index. Serialised as a 1-based `plater_id`. */
+  readonly plate: number;
+  /** World centre of the part's footprint, in mm. */
+  readonly x: number;
+  readonly y: number;
+}
+
 export interface ThreeMFObject {
   readonly vertices: Float32Array;
   readonly normals: Float32Array;
   readonly name: string;
   readonly colorConfig?: ThreeMFColorConfig;
+  readonly placement?: ThreeMFPlacement;
 }
 
 export interface ThreeMFOptions {

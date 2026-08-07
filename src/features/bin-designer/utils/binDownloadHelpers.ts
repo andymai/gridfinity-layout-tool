@@ -176,6 +176,33 @@ export function buildSinglePiece3MF(
   threeMFPrintSettings: ThreeMFPrintSettings,
   applyMultiColor: boolean
 ): Blob {
+  const object = buildSinglePiece3MFObject(
+    pieceData,
+    faceGroups,
+    params,
+    modelName,
+    applyMultiColor
+  );
+  return export3MF(object.vertices, object.normals, {
+    name: modelName,
+    colorConfig: object.colorConfig,
+    printSettings: threeMFPrintSettings,
+  });
+}
+
+/**
+ * The coloured mesh behind {@link buildSinglePiece3MF}, before it is sealed
+ * into a file. Exposed so a whole-layout PROJECT export can carry the same
+ * `colorConfig` into a shared multi-plate file instead of re-deriving it (or,
+ * worse, shipping the part uncoloured).
+ */
+export function buildSinglePiece3MFObject(
+  pieceData: ArrayBuffer,
+  faceGroups: CombinedExportResult['faceGroups'],
+  params: BinParams,
+  modelName: string,
+  applyMultiColor: boolean
+): ThreeMFObject {
   const parseResult = parseSTLBinary(pieceData);
   if (isErr(parseResult)) {
     throw new Error(getUserMessage(parseResult.error));
@@ -210,11 +237,7 @@ export function buildSinglePiece3MF(
     }
   }
 
-  return export3MF(vertices, normals, {
-    name: modelName,
-    colorConfig,
-    printSettings: threeMFPrintSettings,
-  });
+  return { vertices, normals, name: modelName, colorConfig };
 }
 
 /** Map ancillary piece label → the ColorZone whose color paints the piece. */
@@ -382,6 +405,25 @@ export function buildMultiObject3MF(
   threeMFPrintSettings: ThreeMFPrintSettings,
   lidFaceGroups?: CombinedExportResult['lidFaceGroups']
 ): Blob {
+  return export3MFMultiObject(
+    buildMultiObject3MFObjects(pieces, faceGroups, params, lidFaceGroups),
+    { name: modelName, printSettings: threeMFPrintSettings }
+  );
+}
+
+/**
+ * The coloured objects behind {@link buildMultiObject3MF}, before they are
+ * sealed into a file. Exposed for the same reason as
+ * {@link buildSinglePiece3MFObject}: a whole-layout PROJECT export packs these
+ * onto build plates itself, and re-deriving the colour mapping there would
+ * duplicate the zone/cutout logic that lives here.
+ */
+export function buildMultiObject3MFObjects(
+  pieces: CombinedExportResult['pieces'],
+  faceGroups: CombinedExportResult['faceGroups'],
+  params: BinParams,
+  lidFaceGroups?: CombinedExportResult['lidFaceGroups']
+): ThreeMFObject[] {
   const objects: ThreeMFObject[] = [];
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors typed required but legacy persisted configs may omit it; runtime guard preserved
   const featureColorsEnabled: boolean = params.featureColors?.enabled ?? false;
@@ -459,10 +501,7 @@ export function buildMultiObject3MF(
     });
   }
 
-  return export3MFMultiObject(objects, {
-    name: modelName,
-    printSettings: threeMFPrintSettings,
-  });
+  return objects;
 }
 
 /**

@@ -1315,4 +1315,126 @@ describe('threemfExporter', () => {
       }
     });
   });
+
+  describe('build plates', () => {
+    /** Unit square at a known spot, so its footprint centre is predictable. */
+    function square(x0: number, y0: number) {
+      const vertices = new Float32Array([
+        x0,
+        y0,
+        0,
+        x0 + 10,
+        y0,
+        0,
+        x0 + 10,
+        y0 + 10,
+        0,
+        x0,
+        y0,
+        0,
+        x0 + 10,
+        y0 + 10,
+        0,
+        x0,
+        y0 + 10,
+        0,
+      ]);
+      const normals = new Float32Array(Array.from({ length: 18 }, (_, i) => (i % 3 === 2 ? 1 : 0)));
+      return { vertices, normals };
+    }
+
+    const settingsOf = (buffer: Uint8Array): string =>
+      strFromU8(unzipSync(buffer)['Metadata/model_settings.config'] ?? new Uint8Array());
+
+    it('omits the sidecar entirely when nothing is placed or coloured', () => {
+      const buffer = build3MFMultiObjectBuffer([{ ...square(0, 0), name: 'a' }], { name: 'plain' });
+      expect(unzipSync(buffer)['Metadata/model_settings.config']).toBeUndefined();
+    });
+
+    it('declares one plate per occupied index with 1-based plater_id', () => {
+      const buffer = build3MFMultiObjectBuffer(
+        [
+          { ...square(0, 0), name: 'a', placement: { plate: 0, x: 50, y: 50 } },
+          { ...square(0, 0), name: 'b', placement: { plate: 1, x: 60, y: 60 } },
+        ],
+        { name: 'plates' }
+      );
+      const settings = settingsOf(buffer);
+      expect(settings).toContain('<metadata key="plater_id" value="1"/>');
+      expect(settings).toContain('<metadata key="plater_id" value="2"/>');
+      expect(settings.match(/<plate>/g) ?? []).toHaveLength(2);
+    });
+
+    it('assigns each object to its own plate by object_id', () => {
+      const buffer = build3MFMultiObjectBuffer(
+        [
+          { ...square(0, 0), name: 'a', placement: { plate: 0, x: 50, y: 50 } },
+          { ...square(0, 0), name: 'b', placement: { plate: 1, x: 60, y: 60 } },
+          { ...square(0, 0), name: 'c', placement: { plate: 0, x: 90, y: 50 } },
+        ],
+        { name: 'plates' }
+      );
+      const plates = settingsOf(buffer).split('<plate>').slice(1);
+      // Objects are numbered in emission order, so a and c (ids 1 and 3) share
+      // plate 1 and b (id 2) is alone on plate 2.
+      expect(plates[0]).toContain('value="1"');
+      expect(plates[0]).toContain('value="3"');
+      expect(plates[1]).toContain('value="2"');
+    });
+
+    it('emits an empty plate rather than renumbering around a gap', () => {
+      // A skipped plate index must still produce a <plate>: dropping it would
+      // shift every later plate down one and move parts off the plate they were
+      // packed onto.
+      const buffer = build3MFMultiObjectBuffer(
+        [{ ...square(0, 0), name: 'a', placement: { plate: 2, x: 50, y: 50 } }],
+        { name: 'gap' }
+      );
+      const settings = settingsOf(buffer);
+      expect(settings.match(/<plate>/g) ?? []).toHaveLength(3);
+      expect(settings).toContain('<metadata key="plater_id" value="3"/>');
+    });
+
+    it('carries each placed part to its own spot instead of a shared centre', () => {
+      const buffer = build3MFMultiObjectBuffer(
+        [
+          { ...square(0, 0), name: 'a', placement: { plate: 0, x: 50, y: 50 } },
+          { ...square(0, 0), name: 'b', placement: { plate: 0, x: 150, y: 90 } },
+        ],
+        { name: 'placed' }
+      );
+      const xml = strFromU8(unzipSync(buffer)['3D/3dmodel.model']);
+      const items = [
+        ...xml.matchAll(/<item objectid="\d+" transform="[^"]*?([-\d.]+) ([-\d.]+) ([-\d.]+)"/g),
+      ];
+      expect(items).toHaveLength(2);
+      // Footprint centre of the square is (5, 5), so the translation is the
+      // placement minus that centre.
+      expect(Number(items[0][1])).toBeCloseTo(45, 6);
+      expect(Number(items[0][2])).toBeCloseTo(45, 6);
+      expect(Number(items[1][1])).toBeCloseTo(145, 6);
+      expect(Number(items[1][2])).toBeCloseTo(85, 6);
+    });
+
+    it('sits every placed part on the bed', () => {
+      const raised = square(0, 0);
+      const lifted = new Float32Array(raised.vertices);
+      for (let i = 2; i < lifted.length; i += 3) lifted[i] += 12;
+      const buffer = build3MFMultiObjectBuffer(
+        [
+          {
+            vertices: lifted,
+            normals: raised.normals,
+            name: 'a',
+            placement: { plate: 0, x: 50, y: 50 },
+          },
+        ],
+        { name: 'bed' }
+      );
+      const xml = strFromU8(unzipSync(buffer)['3D/3dmodel.model']);
+      const m = xml.match(/<item objectid="\d+" transform="[^"]*?([-\d.]+) ([-\d.]+) ([-\d.]+)"/);
+      expect(m).not.toBeNull();
+      expect(Number(m?.[3])).toBeCloseTo(-12, 6);
+    });
+  });
 });
