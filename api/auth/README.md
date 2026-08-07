@@ -63,7 +63,7 @@ The OAuth state cookie works the same way: the server stores no secret on it, ju
 ```
 sign-in:    /login/[p] → state cookie set → 302 to provider
             provider → /callback/[p] → state matches? code → tokens
-            → derive userId from sub → upsert profile → mint session → 302 /
+            → resolve userId via identity map → upsert profile → mint session → 302 /
 
 session:    cookie + KV row, 30-day TTL. Refresh on use is *not* implemented;
             the cookie is replaced on each new sign-in.
@@ -106,13 +106,21 @@ Mutating endpoints (`POST /logout`, future sync `PUT/DELETE`) layer three checks
 
 `GET /me` is read-only, so only checks (1) and (2) apply; (3) is enforced for non-safe methods.
 
-## User-id derivation
+## User-id resolution
 
 ```ts
-userId = sha256(`${provider}:${providerSubject}`).slice(0, 32);
+identity:{sha256(`${TOKEN_SALT}:identity:${provider}:${providerSubject}`).slice(0, 32)} -> userId
 ```
 
-32 hex chars, stable across re-logins. Pseudonymous: the raw provider subject lives in `users:{uid}:profile` for support/debugging but is never used as a primary key. The hash means a leak of any single index/profile key doesn't reveal which Google account owns it.
+The id is a **random** 32-hex value, not a derivation, resolved through that salted map (`lib/userId.ts:resolveUserId`). Stable across re-logins; the raw provider subject lives in `users:{uid}:profile` for support/debugging and is never a primary key.
+
+It used to be `sha256(`${provider}:${providerSubject}`)` with no salt. GitHub's `providerSubject` is a public, sequential, bounded (~2^28) account id, so that whole output space was precomputable: anyone holding one Redis key of these ids (a `community:reports:{id}` set from a backup, say) could match every member against a rainbow table and name the account behind each pseudonymous reporter, liker and publisher. A random id has no input to recover, so it is unreversible even to someone who holds `TOKEN_SALT`.
+
+Both halves matter. The map key must stay salted: an unsalted `sha256(github:N) -> userId` entry rebuilds exactly the join the random id removes.
+
+**Accounts created before the map are adopted, not rotated.** On the first sign-in after deploy, a map miss falls back to the legacy derivation and, if a profile exists under it, adopts that id — nothing moves, nothing breaks, and the account keeps its layouts and published designs. Those ids stay reversible, deliberately: `authorPublicId` derives from `userId` and is baked into print-photo Blob paths that are already public URLs, so rotating an existing id means rewriting content already handed out. Closing that residue means pinning `authorPublicId` to a stored value first.
+
+Sign-in now **fails closed without `TOKEN_SALT`** (503) rather than writing an unsalted key, joining community blob paths, print photo paths and `authorPublicId` in depending on that salt — treat it as permanent per deployment.
 
 ## Privacy posture
 
