@@ -197,7 +197,7 @@
     "globals": "^17.8.0",
     "gltf-pipeline": "^4.3.1",
     "husky": "^9.1.7",
-    "js-yaml": "^5.2.2",
+    "js-yaml": "^5.2.3",
     "jsdom": "^29.1.1",
     "knip": "^6.27.0",
     "lint-staged": "^17.1.0",
