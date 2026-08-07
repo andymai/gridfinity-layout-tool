@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.383.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.382.0...gridfinity-layout-tool-v4.383.0) (2026-08-07)
+
+
+### Features
+
+* **bin-designer:** add the sliding tray panel ([#3306](https://github.com/andymai/gridfinity-layout-tool/issues/3306)) ([d1ae592](https://github.com/andymai/gridfinity-layout-tool/commit/d1ae592275799c954495460ee8ca962a882eed22))
+
 ## [4.382.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.381.0...gridfinity-layout-tool-v4.382.0) (2026-08-07)
 
 
