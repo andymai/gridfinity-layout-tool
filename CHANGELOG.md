@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.378.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.378.0...gridfinity-layout-tool-v4.378.1) (2026-08-07)
+
+
+### Bug Fixes
+
+* **bin-designer:** square wall-cutout corners where no wall remains ([#3283](https://github.com/andymai/gridfinity-layout-tool/issues/3283)) ([cb3ca38](https://github.com/andymai/gridfinity-layout-tool/commit/cb3ca3840bb52a8ed04a5062e85fef47591af5b7))
+
 ## [4.378.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.377.1...gridfinity-layout-tool-v4.378.0) (2026-08-07)
 
 
