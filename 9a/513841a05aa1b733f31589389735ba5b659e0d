@@ -1,0 +1,74 @@
+src/i18n/locales/sv.json
+  s_a82670dcba0dfd::t_8bbdee62db12f6 3326
+src/i18n/locales/es.json
+  s_a82670dcba0dfd::t_8bbdee62db12f6 1786
+src/shell/Modals/DesignGalleryModal/DesignGalleryModal.test.tsx
+  s_a82670dcba0dfd::t_3e5ebdf82a69f2 60-83
+src/i18n/locales/pt-BR.json
+  s_a82670dcba0dfd::t_8bbdee62db12f6 3326
+src/features/community/components/CommunityDetail/CommunityDetailContent.test.tsx
+  s_a82670dcba0dfd::t_f80c1165c0549b 9-10,130,139-141
+src/i18n/locales/ja.json
+  s_a82670dcba0dfd::t_8bbdee62db12f6 1691
+src/i18n/locales/en.ts
+  s_a82670dcba0dfd::t_8bbdee62db12f6 3594
+src/i18n/locales/uk.json
+  s_a82670dcba0dfd::t_8bbdee62db12f6 1795
+src/i18n/locales/it.json
+  s_a82670dcba0dfd::t_8bbdee62db12f6 1738
+src/i18n/locales/fr.json
+  s_a82670dcba0dfd::t_8bbdee62db12f6 3381
+src/features/community/components/CommunityDetail/DesignMediaPanel.test.tsx
+  s_a82670dcba0dfd::t_50930d387a36ff 77,82-84,87-112
+src/features/community/README.md
+  s_a82670dcba0dfd::t_a4e4911561ae7c 109
+src/i18n/locales/zh-CN.json
+  s_a82670dcba0dfd::t_8bbdee62db12f6 3326
+src/i18n/locales/pl.json
+  s_a82670dcba0dfd::t_8bbdee62db12f6 3326
+src/features/community/components/CommunityDetail/DesignMediaPanel.tsx
+  s_a82670dcba0dfd::t_3cc2c6ebf4fa6f 20-25,51-56,59-60,73-86
+  s_a82670dcba0dfd::t_92923f04a9d44d 87,93,141,143-145
+src/features/community/components/PrintsSection/PrintsSection.tsx
+  s_a82670dcba0dfd::t_4db7ae61d726b4 10,105-109
+src/i18n/locales/nb.json
+  s_a82670dcba0dfd::t_8bbdee62db12f6 1738
+src/features/community/components/PrintsSection/PrintCard.test.tsx
+  s_a82670dcba0dfd::t_5d2847ecf5ef75 118-146
+src/features/community/components/MediaLightbox/MediaLightbox.tsx
+  s_a82670dcba0dfd::t_1bd09f5cd2918a 11,21-25,68,76-77
+src/features/community/components/PrintsSection/PrintsSection.test.tsx
+  s_a82670dcba0dfd::t_98359646153266 129-160
+src/i18n/locales/ko.json
+  s_a82670dcba0dfd::t_8bbdee62db12f6 3326
+src/shared/components/GlbViewer/GlbViewer.tsx
+  s_a82670dcba0dfd::t_4db7ae61d726b4 1-9,37-40
+src/i18n/locales/cs.json
+  s_a82670dcba0dfd::t_8bbdee62db12f6 3326
+src/features/community/components/CommunityDetail/CommunityDetail.tsx
+  s_a82670dcba0dfd::t_297e7af2390f28 141-144,659,797-800
+src/features/community/components/PrintsSection/PrintCard.tsx
+  s_a82670dcba0dfd::t_a4e4911561ae7c 31-32,35,53-55,62-65
+  s_a82670dcba0dfd::t_ba804c3e0257b6 1,111-119,168-203
+  s_a82670dcba0dfd::t_2d8eb51def3a0d 204-205
+src/i18n/locales/de.json
+  s_a82670dcba0dfd::t_8bbdee62db12f6 1648
+src/i18n/locales/nl.json
+  s_a82670dcba0dfd::t_8bbdee62db12f6 1648
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "9a513841a05aa1b733f31589389735ba5b659e0d",
+  "prompts": {},
+  "sessions": {
+    "s_a82670dcba0dfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d987972e-c153-431c-ac53-1462d0253029",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
