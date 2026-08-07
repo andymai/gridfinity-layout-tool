@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.386.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.386.1...gridfinity-layout-tool-v4.386.2) (2026-08-07)
+
+
+### Bug Fixes
+
+* **security:** resolve 14 findings from the 2026-08-07 audit ([#3315](https://github.com/andymai/gridfinity-layout-tool/issues/3315)) ([80ab258](https://github.com/andymai/gridfinity-layout-tool/commit/80ab258e9318b80fa74dd422ce20e82445d8f4d8))
+
 ## [4.386.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.386.0...gridfinity-layout-tool-v4.386.1) (2026-08-07)
 
 
