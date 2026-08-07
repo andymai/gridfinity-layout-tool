@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.379.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.379.0...gridfinity-layout-tool-v4.379.1) (2026-08-07)
+
+
+### Bug Fixes
+
+* **generation:** make the sliding tray actually rest on its rail ([#3289](https://github.com/andymai/gridfinity-layout-tool/issues/3289)) ([341df44](https://github.com/andymai/gridfinity-layout-tool/commit/341df44f5717bfc375a22d3eb1994a182870cfc5))
+
 ## [4.379.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.378.1...gridfinity-layout-tool-v4.379.0) (2026-08-07)
 
 
