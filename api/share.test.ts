@@ -11,6 +11,8 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import type * as ValidationModule from './lib/validation.js';
+import type * as ContentFilterModule from './lib/contentFilter.js';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 const mocks = vi.hoisted(() => ({
@@ -41,21 +43,34 @@ vi.mock('@vercel/blob', () => ({
   del: mocks.del,
 }));
 
-vi.mock('./lib/validation.js', () => ({
-  validateShareLayout: mocks.validateShareLayout,
-  isValidationError: mocks.isValidationError,
-  validateSharedDesigns: mocks.validateSharedDesigns,
-  isSharedDesignsError: mocks.isSharedDesignsError,
-}));
+// sanitizeString stays real: it is the control-character half of the
+// authorName fix, so mocking it away would hollow out those assertions.
+vi.mock('./lib/validation.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof ValidationModule>();
+  return {
+    ...actual,
+    validateShareLayout: mocks.validateShareLayout,
+    isValidationError: mocks.isValidationError,
+    validateSharedDesigns: mocks.validateSharedDesigns,
+    isSharedDesignsError: mocks.isSharedDesignsError,
+  };
+});
 
 vi.mock('./lib/designerValidation.js', () => ({
   validateDesignerShare: mocks.validateDesignerShare,
 }));
 
-vi.mock('./lib/contentFilter.js', () => ({
-  filterLayoutContent: mocks.filterLayoutContent,
-  filterSharedDesignsContent: mocks.filterSharedDesignsContent,
-}));
+// The layout-side filters stay mocked (the layout tests assert on the branch,
+// not the blocklist), but the designer-params and display-name filters run for
+// real: they are the controls under test in the designer/authorName cases.
+vi.mock('./lib/contentFilter.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof ContentFilterModule>();
+  return {
+    ...actual,
+    filterLayoutContent: mocks.filterLayoutContent,
+    filterSharedDesignsContent: mocks.filterSharedDesignsContent,
+  };
+});
 
 function createResponse() {
   const res = {
@@ -197,6 +212,83 @@ describe('share (create)', () => {
     const res = await handle({ layoutId: VALID_ID, type: 'designer', params: {} });
     expect(res._status).toBe(201);
     expect((res._body as { url: string }).url).toContain(`/d/${VALID_ID}`);
+  });
+
+  // The designer branch ran validateDesignerShare and nothing else, so the
+  // text engraved into a shared design's geometry reached every recipient of
+  // the public /d/{id} link without meeting the blocklist the layout branch
+  // has always enforced.
+  describe('designer share content moderation', () => {
+    function designerShare(params: Record<string, unknown>) {
+      mocks.validateDesignerShare.mockReturnValue({ valid: true, payload: { params } });
+      return handle({ layoutId: VALID_ID, type: 'designer', params });
+    }
+
+    it('blocks offensive lid text', async () => {
+      const res = await designerShare({ surfaceText: { lidText: 'kill yourself' } });
+      expect(res._status).toBe(400);
+      expect((res._body as { code: string }).code).toBe('CONTENT_BLOCKED');
+      expect(mocks.put).not.toHaveBeenCalled();
+    });
+
+    it('blocks an offensive compartment caption', async () => {
+      const res = await designerShare({ compartments: { compartmentTexts: ['screws', 'kys'] } });
+      expect(res._status).toBe(400);
+      expect(mocks.put).not.toHaveBeenCalled();
+    });
+
+    it('blocks an offensive cutout label', async () => {
+      const res = await designerShare({ cutouts: [{ id: 'c1', label: 'kys' }] });
+      expect(res._status).toBe(400);
+    });
+
+    it('still creates a designer share with clean text', async () => {
+      const res = await designerShare({
+        surfaceText: { lidText: 'Workshop', walls: { front: 'M3 screws' } },
+      });
+      expect(res._status).toBe(201);
+    });
+  });
+
+  describe('authorName moderation', () => {
+    it('blocks an offensive author name', async () => {
+      const res = await handle(layoutBody({ authorName: 'kys' }));
+      expect(res._status).toBe(400);
+      expect((res._body as { code: string }).code).toBe('CONTENT_BLOCKED');
+      expect(mocks.put).not.toHaveBeenCalled();
+    });
+
+    it('strips control characters from the stored author name', async () => {
+      const res = await handle(layoutBody({ authorName: 'Jo\x1b[2Jinjected' }));
+      expect(res._status).toBe(201);
+
+      const blobJson = mocks.put.mock.calls[0][1] as string;
+      const stored = (JSON.parse(blobJson) as { metadata: { authorName?: string } }).metadata
+        .authorName;
+      // The ESC byte is what makes this a control sequence; the remaining
+      // "[2J" is inert printable text.
+      expect(stored).not.toContain('\x1b');
+      expect(stored).toBe('Jo[2Jinjected');
+    });
+
+    it('drops an author name that sanitizes to nothing rather than storing empty', async () => {
+      const res = await handle(layoutBody({ authorName: '\x00\x01' }));
+      expect(res._status).toBe(201);
+
+      const blobJson = mocks.put.mock.calls[0][1] as string;
+      const metadata = (JSON.parse(blobJson) as { metadata: { authorName?: string } }).metadata;
+      expect(metadata.authorName).toBeUndefined();
+    });
+
+    it('truncates a long author name to 64 characters', async () => {
+      const res = await handle(layoutBody({ authorName: 'abcdefghijklmnopqrstuvwxyz'.repeat(3) }));
+      expect(res._status).toBe(201);
+
+      const blobJson = mocks.put.mock.calls[0][1] as string;
+      const stored = (JSON.parse(blobJson) as { metadata: { authorName?: string } }).metadata
+        .authorName;
+      expect(stored).toHaveLength(64);
+    });
   });
 
   it('409s when losing the id race (blob already exists)', async () => {

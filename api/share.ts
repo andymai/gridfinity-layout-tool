@@ -10,7 +10,13 @@ import {
   type SharedDesignShape,
 } from './lib/validation.js';
 import { validateDesignerShare } from './lib/designerValidation.js';
-import { filterLayoutContent, filterSharedDesignsContent } from './lib/contentFilter.js';
+import {
+  filterDesignParamsContent,
+  filterDisplayName,
+  filterLayoutContent,
+  filterSharedDesignsContent,
+} from './lib/contentFilter.js';
+import { sanitizeString } from './lib/validation.js';
 import {
   isValidShareId,
   hashToken,
@@ -89,6 +95,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
       }
 
+      // The designer branch used to stop at structural validation, so the
+      // engraved text in its params (lid text, wall text, compartment
+      // captions, cutout labels) reached every recipient of the public /d/{id}
+      // link without ever meeting the blocklist the layout branch enforces.
+      const designerContent = filterDesignParamsContent(result.payload.params);
+      if (!designerContent.passed) {
+        return sendError(
+          res,
+          400,
+          ErrorCode.CONTENT_BLOCKED,
+          `Content blocked: ${designerContent.reason}`
+        );
+      }
+
       sharePayload = result.payload;
     } else {
       // Layout share: validate layout structure
@@ -141,6 +161,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
+    // authorName is shown to every recipient in the "Shared with me" list, so
+    // it gets the same treatment as every other recipient-facing field on this
+    // endpoint. It used to be stored with only a length truncation, skipping
+    // both control-character stripping and the blocklist.
+    let cleanAuthorName: string | undefined;
+    if (typeof authorName === 'string') {
+      cleanAuthorName = sanitizeString(authorName, 64);
+      if (cleanAuthorName !== '') {
+        const authorContent = filterDisplayName(cleanAuthorName);
+        if (!authorContent.passed) {
+          return sendError(
+            res,
+            400,
+            ErrorCode.CONTENT_BLOCKED,
+            `Content blocked: ${authorContent.reason}`
+          );
+        }
+      } else {
+        cleanAuthorName = undefined;
+      }
+    }
+
     // Use client-provided layoutId as the share ID
     const shareId = layoutId;
     const blobPath = `shares/${shareId}.json`;
@@ -170,7 +212,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         createdAt: nowIso,
         lastUpdatedAt: nowIso,
         permission,
-        authorName: typeof authorName === 'string' ? authorName.slice(0, 64) : undefined,
+        authorName: cleanAuthorName,
       },
     };
 

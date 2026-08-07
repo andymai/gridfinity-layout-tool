@@ -136,6 +136,37 @@ describe('validateCommunityPublish', () => {
     expectError(body, 'CONTENT_BLOCKED');
   });
 
+  // These fields are printed to a moderator's TTY by the community-admin CLI.
+  // trim() only reaches the ends, and the content filter normalizes Unicode
+  // tricks but not raw ESC/CR, so an interior control byte survived to storage.
+  describe('control characters in display fields', () => {
+    it('strips an escape sequence from the name', () => {
+      const result = validateCommunityPublish(validBody({ name: 'Screw\x1b[2J Tray' }));
+      expect(result.valid).toBe(true);
+      if (!result.valid) return;
+      expect(result.payload.name).not.toContain('\x1b');
+      expect(result.payload.name).toBe('Screw[2J Tray');
+    });
+
+    it('strips a carriage return from the authorName', () => {
+      const result = validateCommunityPublish(validBody({ authorName: 'Andy\rFAKE' }));
+      expect(result.valid).toBe(true);
+      if (!result.valid) return;
+      expect(result.payload.authorName).toBe('AndyFAKE');
+    });
+
+    it('strips C1 control bytes too', () => {
+      const result = validateCommunityPublish(validBody({ authorName: 'An\x9bdy' }));
+      expect(result.valid).toBe(true);
+      if (!result.valid) return;
+      expect(result.payload.authorName).toBe('Andy');
+    });
+
+    it('rejects an authorName that is nothing but control characters', () => {
+      expectError(validBody({ authorName: '\x1b\x07\x00' }), 'INVALID_AUTHOR_NAME');
+    });
+  });
+
   it('rejects unknown categories and accepts every preset', () => {
     expectError(validBody({ category: 'gardening' }), 'INVALID_CATEGORY');
     expectError(validBody({ category: undefined }), 'INVALID_CATEGORY');
