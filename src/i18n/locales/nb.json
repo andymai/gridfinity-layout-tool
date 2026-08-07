@@ -473,6 +473,8 @@
   "binDesigner.customSplit": "Del",
   "binDesigner.cutoutDesktopOnly": "Utskjæringsredigereren er tilgjengelig på datamaskinen. Bytt til en bredere skjerm for å bruke denne funksjonen.",
   "binDesigner.cutoutEditor.binSize": "Bin-størrelse",
+  "binDesigner.cutoutEditor.binFeatures": "Bin-funksjoner",
+  "binDesigner.cutoutEditor.lipOffPausesLid": "Lokket trenger stablekanten, så det blir ikke generert før du slår kanten på igjen.",
   "binDesigner.cutoutEditor.boardCutouts": "Utskjæringer",
   "binDesigner.cutoutEditor.boardSettings": "Brett",
   "binDesigner.cutoutEditor.boardSize": "Brettstørrelse",

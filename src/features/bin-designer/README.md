@@ -36,7 +36,10 @@ graph TB
   a docked, resizable/collapsible `InspectorDock` (width + collapsed state persisted via
   `inspectorDockStorage`), not a floating overlay. `InspectorContent` switches between
   single-select sections, multi-select shared fields (mixed values show a "—" placeholder),
-  and an empty board-settings state; number-first `CompactNumberInput` (drag-scrub + type)
+  and an empty board-settings state, above a bin-level block (`BinSizeSection`,
+  `BinFeaturesSection`) that stays put across every selection state so the board can be
+  resized and the stacking lip cleared without leaving the editor; those two are self-wired
+  to the designer store rather than prop-drilled. Number-first `CompactNumberInput` (drag-scrub + type)
   replaces sliders, and hardware-size presets surface as quick-pick chips. The multi-select
   section leads with `AlignControls` (align/distribute, backed by the pure
   `panel/CutoutsSection/geometryAlign.ts`) and batch-edits position, size, rotation, cut depth,
@@ -334,6 +337,10 @@ estimates), and the source file name.
    `params.base.stackingLip` at every layer (orchestrator, export handler,
    `useLidSection`). The mating cavity wraps the lip; without a lip there is
    nothing for the lid to clip onto, so the lid is silently skipped.
+   `lid.enabled` stays persisted through all of it, so the skip is invisible
+   in the params — any surface that lets the lip be cleared owes the user that
+   warning. The Lid section carries it in the main panel; the cutout editor's
+   `BinFeaturesSection` repeats it, because that panel is off screen there.
 10. **Two-piece export** — when `hasLid`, the `EXPORT_COMBINED` flow emits the
     lid as its own labeled piece for STL/3MF (main thread ZIPs them) and
     folds it into the STEP compound. The STEP path must `translate()` the

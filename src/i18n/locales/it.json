@@ -473,6 +473,8 @@
   "binDesigner.customSplit": "Dividi",
   "binDesigner.cutoutDesktopOnly": "L'editor dei ritagli è disponibile su desktop. Passa a uno schermo più ampio per usare questa funzione.",
   "binDesigner.cutoutEditor.binSize": "Dimensione bin",
+  "binDesigner.cutoutEditor.binFeatures": "Funzioni del bin",
+  "binDesigner.cutoutEditor.lipOffPausesLid": "Il coperchio richiede il bordo di impilamento, quindi non verrà generato finché non lo riattivi.",
   "binDesigner.cutoutEditor.boardCutouts": "Ritagli",
   "binDesigner.cutoutEditor.boardSettings": "Pannello",
   "binDesigner.cutoutEditor.boardSize": "Dimensione pannello",

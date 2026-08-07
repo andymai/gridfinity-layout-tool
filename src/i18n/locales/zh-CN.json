@@ -473,6 +473,8 @@
   "binDesigner.customSplit": "拆分",
   "binDesigner.cutoutDesktopOnly": "挖槽编辑器仅在桌面端可用。请切换到更宽的屏幕以使用此功能。",
   "binDesigner.cutoutEditor.binSize": "收纳盒尺寸",
+  "binDesigner.cutoutEditor.binFeatures": "收纳盒功能",
+  "binDesigner.cutoutEditor.lipOffPausesLid": "盖子需要堆叠唇边，重新开启唇边之前不会生成盖子。",
   "binDesigner.cutoutEditor.boardCutouts": "挖槽",
   "binDesigner.cutoutEditor.boardSettings": "画板",
   "binDesigner.cutoutEditor.boardSize": "画板尺寸",

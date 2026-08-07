@@ -473,6 +473,8 @@
   "binDesigner.customSplit": "Podziel",
   "binDesigner.cutoutDesktopOnly": "Edytor wycięć jest dostępny na komputerze. Przełącz się na szerszy ekran, aby użyć tej funkcji.",
   "binDesigner.cutoutEditor.binSize": "Rozmiar bina",
+  "binDesigner.cutoutEditor.binFeatures": "Funkcje bina",
+  "binDesigner.cutoutEditor.lipOffPausesLid": "Pokrywa wymaga rantu sztaplującego, więc nie zostanie wygenerowana, dopóki go nie włączysz z powrotem.",
   "binDesigner.cutoutEditor.boardCutouts": "Wycięcia",
   "binDesigner.cutoutEditor.boardSettings": "Płyta",
   "binDesigner.cutoutEditor.boardSize": "Rozmiar płyty",

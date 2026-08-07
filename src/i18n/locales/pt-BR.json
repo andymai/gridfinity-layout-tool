@@ -473,6 +473,8 @@
   "binDesigner.customSplit": "Dividir",
   "binDesigner.cutoutDesktopOnly": "O editor de recortes está disponível no desktop. Mude para uma tela mais larga para usar este recurso.",
   "binDesigner.cutoutEditor.binSize": "Tamanho de bin",
+  "binDesigner.cutoutEditor.binFeatures": "Recursos do bin",
+  "binDesigner.cutoutEditor.lipOffPausesLid": "A tampa precisa da borda de empilhamento, então ela não será gerada até você ligar a borda de novo.",
   "binDesigner.cutoutEditor.boardCutouts": "Recortes",
   "binDesigner.cutoutEditor.boardSettings": "Placa",
   "binDesigner.cutoutEditor.boardSize": "Tamanho da placa",

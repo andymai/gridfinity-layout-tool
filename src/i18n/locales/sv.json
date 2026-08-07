@@ -473,6 +473,8 @@
   "binDesigner.customSplit": "Dela",
   "binDesigner.cutoutDesktopOnly": "Urtagsredigeraren är tillgänglig på dator. Byt till en bredare skärm för att använda denna funktion.",
   "binDesigner.cutoutEditor.binSize": "Fackstorlek",
+  "binDesigner.cutoutEditor.binFeatures": "Bin-funktioner",
+  "binDesigner.cutoutEditor.lipOffPausesLid": "Locket behöver staplingskanten, så det genereras inte förrän du slår på kanten igen.",
   "binDesigner.cutoutEditor.boardCutouts": "Urtag",
   "binDesigner.cutoutEditor.boardSettings": "Bräda",
   "binDesigner.cutoutEditor.boardSize": "Brädstorlek",

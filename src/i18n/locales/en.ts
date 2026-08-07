@@ -2466,6 +2466,9 @@ const en: Record<string, string> = {
   'binDesigner.cutoutEditor.boardSize': 'Board size',
   'binDesigner.cutoutEditor.boardCutouts': 'Cutouts',
   'binDesigner.cutoutEditor.binSize': 'Bin size',
+  'binDesigner.cutoutEditor.binFeatures': 'Bin features',
+  'binDesigner.cutoutEditor.lipOffPausesLid':
+    "The lid needs the stacking lip, so it won't be generated until you turn the lip back on.",
   'binDesigner.cutoutEditor.offBoardWarning': '{count} cutout(s) outside the board',
   'binDesigner.cutoutEditor.bringBackIn': 'Bring back in',
   'binDesigner.cutoutEditor.growBinToFit': 'Grow bin to {width} × {depth}',

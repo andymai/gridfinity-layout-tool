@@ -473,6 +473,8 @@
   "binDesigner.customSplit": "Rozdělit",
   "binDesigner.cutoutDesktopOnly": "Editor výřezů je dostupný na počítači. Pro použití této funkce přejdi prosím na širší obrazovku.",
   "binDesigner.cutoutEditor.binSize": "Velikost binu",
+  "binDesigner.cutoutEditor.binFeatures": "Funkce binu",
+  "binDesigner.cutoutEditor.lipOffPausesLid": "Víko potřebuje stohovací lem, takže se nevygeneruje, dokud lem znovu nezapnete.",
   "binDesigner.cutoutEditor.boardCutouts": "Výřezy",
   "binDesigner.cutoutEditor.boardSettings": "Deska",
   "binDesigner.cutoutEditor.boardSize": "Velikost desky",

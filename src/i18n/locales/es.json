@@ -473,6 +473,8 @@
   "binDesigner.customSplit": "Dividir",
   "binDesigner.cutoutDesktopOnly": "El editor de recortes está disponible en escritorio. Cambie a una pantalla más ancha para usar esta función.",
   "binDesigner.cutoutEditor.binSize": "Tamaño de bin",
+  "binDesigner.cutoutEditor.binFeatures": "Funciones del bin",
+  "binDesigner.cutoutEditor.lipOffPausesLid": "La tapa necesita el borde de apilado, así que no se generará hasta que vuelvas a activarlo.",
   "binDesigner.cutoutEditor.boardCutouts": "Recortes",
   "binDesigner.cutoutEditor.boardSettings": "Tablero",
   "binDesigner.cutoutEditor.boardSize": "Tamaño del tablero",

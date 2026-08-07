@@ -473,6 +473,8 @@
   "binDesigner.customSplit": "Teilen",
   "binDesigner.cutoutDesktopOnly": "Der Ausschnitt-Editor ist auf dem Desktop verfügbar. Bitte wechseln Sie zu einem breiteren Bildschirm, um diese Funktion zu nutzen.",
   "binDesigner.cutoutEditor.binSize": "Bin-Größe",
+  "binDesigner.cutoutEditor.binFeatures": "Bin-Funktionen",
+  "binDesigner.cutoutEditor.lipOffPausesLid": "Der Deckel braucht den Stapelrand und wird erst erzeugt, wenn du den Rand wieder aktivierst.",
   "binDesigner.cutoutEditor.boardCutouts": "Aussparungen",
   "binDesigner.cutoutEditor.boardSettings": "Platte",
   "binDesigner.cutoutEditor.boardSize": "Plattengröße",

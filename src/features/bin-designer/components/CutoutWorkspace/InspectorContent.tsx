@@ -18,6 +18,7 @@ import { SingleCutoutInspector } from './SingleCutoutInspector';
 import { CutoutColorControls } from './CutoutColorControls';
 import { CutoutBoardSettings } from './CutoutBoardSettings';
 import { BinSizeSection } from './BinSizeSection';
+import { BinFeaturesSection } from './BinFeaturesSection';
 import { AlignControls } from './AlignControls';
 
 /** Matches the per-cutout minimum the single-cutout inspector enforces. */
@@ -122,21 +123,24 @@ export function InspectorContent({
     [cutouts, selection]
   );
 
-  // Bin-size controls stay visible across every selection state so the user can
-  // resize without leaving the editor.
-  const binSize = (
-    <BinSizeSection
-      offBoardCount={offBoardCount}
-      onClampOffBoard={onClampOffBoard}
-      growTarget={growTarget}
-      onGrowToFit={onGrowToFit}
-    />
+  // Bin-level controls stay visible across every selection state so the user can
+  // resize the board and clear the stacking lip without leaving the editor.
+  const binControls = (
+    <>
+      <BinSizeSection
+        offBoardCount={offBoardCount}
+        onClampOffBoard={onClampOffBoard}
+        growTarget={growTarget}
+        onGrowToFit={onGrowToFit}
+      />
+      <BinFeaturesSection />
+    </>
   );
 
   if (selectedCutouts.length === 0) {
     return (
       <div className="space-y-1.5">
-        {binSize}
+        {binControls}
         {board ? (
           <CutoutBoardSettings
             gridSize={board.gridSize}
@@ -251,7 +255,7 @@ export function InspectorContent({
 
   return (
     <div className="space-y-1.5">
-      {binSize}
+      {binControls}
       {singleCutout && (
         <SingleCutoutInspector
           cutout={singleCutout}

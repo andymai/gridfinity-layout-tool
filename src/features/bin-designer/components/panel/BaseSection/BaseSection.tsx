@@ -28,8 +28,10 @@ export function BaseSection() {
 
   return (
     <div className="space-y-3">
+      {/* Shares the assembled-height breakdown's noun — the same lip, named
+          once — rather than duplicating the string across every locale. */}
       <FeatureToggle
-        label="Stacking lip"
+        label={t('assembledHeight.stackingLip')}
         checked={state.base.stackingLip}
         onChange={handlers.toggleStackingLip}
       />

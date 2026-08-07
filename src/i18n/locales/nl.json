@@ -473,6 +473,8 @@
   "binDesigner.customSplit": "Splitsen",
   "binDesigner.cutoutDesktopOnly": "De uitsnijdingseditor is beschikbaar op desktop. Schakel over naar een breder scherm om deze functie te gebruiken.",
   "binDesigner.cutoutEditor.binSize": "Bin-grootte",
+  "binDesigner.cutoutEditor.binFeatures": "Bin-functies",
+  "binDesigner.cutoutEditor.lipOffPausesLid": "Het deksel heeft de stapelrand nodig en wordt pas gegenereerd als je de rand weer inschakelt.",
   "binDesigner.cutoutEditor.boardCutouts": "Uitsparingen",
   "binDesigner.cutoutEditor.boardSettings": "Bord",
   "binDesigner.cutoutEditor.boardSize": "Bordgrootte",
