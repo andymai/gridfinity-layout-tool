@@ -39,6 +39,7 @@ import { lightweight } from './lightweight';
 import { spacer } from './spacer';
 import { tile } from './tile';
 import { trayBottom } from './trayBottom';
+import { slideTray } from './slideTray';
 import { labelSockets } from './labelSockets';
 import { wallPatterns } from './wallPatterns';
 import { kumikoComposition } from './kumikoComposition';
@@ -95,4 +96,5 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...spacer,
   ...tile,
   ...trayBottom,
+  ...slideTray,
 ];

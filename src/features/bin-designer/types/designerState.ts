@@ -31,6 +31,7 @@ import type {
   OverhangHighlightSide,
   WallPatternConfig,
 } from './walls';
+import type { SlideConfig } from './slide';
 import type { FloorPatternConfig } from './floor';
 import type { BinParams, Insert } from './binParams';
 import type {
@@ -95,6 +96,7 @@ export interface DesignerState {
   updateLabel: (partial: Partial<LabelTabConfig>) => void;
   updateScoop: (partial: Partial<ScoopConfig>) => void;
   updateWalls: (partial: Partial<WallConfig>) => void;
+  updateSlide: (partial: Partial<SlideConfig>) => void;
   updateOverhang: (partial: Partial<OverhangConfig>) => void;
   updateWallSide: (side: WallSide, partial: Partial<WallCutout>) => void;
   updateHandles: (partial: Partial<HandleConfig>) => void;

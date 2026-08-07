@@ -143,6 +143,7 @@ export * from './compartments';
 export * from './labelTabs';
 export * from './handles';
 export * from './walls';
+export * from './slide';
 export * from './floor';
 export * from './splitConnector';
 export * from './binParams';

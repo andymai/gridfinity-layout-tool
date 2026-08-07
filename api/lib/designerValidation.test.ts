@@ -1653,3 +1653,61 @@ describe('validateDesignerShare — spacer height floor tracks the height unit',
     expect(validateDesignerShare(tray, 500).valid).toBe(true);
   });
 });
+
+describe('slide (sliding tray)', () => {
+  const withSlide = (slide: unknown) => {
+    const p = validPayload();
+    return { ...p, params: { ...p.params, slide } };
+  };
+
+  it('accepts a well-formed config', () => {
+    expect(
+      validateDesignerShare(
+        withSlide({
+          enabled: true,
+          railMount: 'rim',
+          trayWidthUnits: 2,
+          trayDepthMm: 20,
+          trayWallMm: 1.2,
+          railDropMm: 0,
+          railProtrusionMm: 2,
+          railThicknessMm: 2,
+          clearanceMm: 0.45,
+        }),
+        500
+      ).valid
+    ).toBe(true);
+  });
+
+  it('accepts a partial config from an older client', () => {
+    expect(validateDesignerShare(withSlide({ enabled: true }), 500).valid).toBe(true);
+  });
+
+  it('rejects an unknown rail mount', () => {
+    expect(validateDesignerShare(withSlide({ railMount: 'sideways' }), 500).valid).toBe(false);
+  });
+
+  it('rejects a runaway rail protrusion', () => {
+    // Every numeric field feeds BREP directly, so out-of-range values are the
+    // thing a crafted share would use to drive runaway geometry.
+    expect(validateDesignerShare(withSlide({ railProtrusionMm: 5000 }), 500).valid).toBe(false);
+  });
+
+  it('rejects a clearance below the floor', () => {
+    expect(validateDesignerShare(withSlide({ clearanceMm: 0 }), 500).valid).toBe(false);
+  });
+
+  it('rejects a non-object slide', () => {
+    expect(validateDesignerShare(withSlide('rim'), 500).valid).toBe(false);
+  });
+
+  it('keeps the key through param sanitization', () => {
+    // pickAllowedParams strips unknown top-level keys, so a missing entry in
+    // ALLOWED_PARAM_KEYS would silently drop the whole feature from shares.
+    const result = validateDesignerShare(withSlide({ enabled: true }), 500);
+    expect(result.valid).toBe(true);
+    if (result.valid) {
+      expect(result.payload.params.slide).toEqual({ enabled: true });
+    }
+  });
+});

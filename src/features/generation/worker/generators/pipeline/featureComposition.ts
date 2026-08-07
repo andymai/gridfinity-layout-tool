@@ -18,6 +18,7 @@ import { labelTabsFeature } from '../labelTabBuilder';
 import { handlesFeature } from '../handleBuilder';
 import { scoopRampsFeature } from '../scoopRampBuilder';
 import { wallCutoutsFeature } from '../wallCutoutBuilder';
+import { slideRailsFeature } from '../slideRailBuilder';
 import { dividerBlendFeature } from '../dividerBlendBuilder';
 import { wallTextCutFeature, wallTextEmbossFeature } from '../wallTextBuilder';
 
@@ -29,6 +30,7 @@ export const BIN_FEATURE_BUILDERS: readonly FeatureBuilder[] = [
   handlesFeature,
   scoopRampsFeature,
   wallCutoutsFeature,
+  slideRailsFeature,
   dividerBlendFeature,
   wallTextCutFeature,
   wallTextEmbossFeature,

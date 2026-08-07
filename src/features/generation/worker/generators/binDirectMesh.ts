@@ -395,6 +395,10 @@ export function canBinUseDirectMesh(params: BinParams): boolean {
   // the open top — and the feet the draft draws solid.
   if (params.floorPattern?.enabled === true) return false;
   if (params.lid.enabled) return false;
+  // Slide rails are fused onto the front/back walls by the BREP pipeline;
+  // the procedural emitters draw plain walls, so a draft would show a bare
+  // bin and then visibly grow a track when exact generation lands.
+  if (params.slide.enabled) return false;
   // Wall surface text (#2695) engraves/embosses the camera-visible outer
   // walls; the procedural emitters don't render glyphs.
   const wallTexts = params.surfaceText?.walls;

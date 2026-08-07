@@ -60,6 +60,8 @@ export type {
   HandleSide,
   HandleWallSide,
   LidConfig,
+  SlideConfig,
+  SlideRailMount,
   LidAttachment,
   LidMagnetConfig,
   LidTrayConfig,

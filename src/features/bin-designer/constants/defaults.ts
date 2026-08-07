@@ -29,6 +29,7 @@ import {
 import type { FeatureColorConfig } from '../types/featureColors';
 import { makeUniformLipCells, TOP_ACCENT_DEFAULT_MM } from '../types/featureColors';
 import { DEFAULT_LID_CONFIG } from '../types/lid';
+import { DEFAULT_SLIDE_CONFIG } from '../types/slide';
 import { DEFAULT_TEXT_STYLE_DEFAULTS } from '../types/text';
 import { DESIGNER_CONSTRAINTS } from './gridfinity';
 
@@ -240,6 +241,7 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
   floorPattern: DEFAULT_FLOOR_PATTERN_CONFIG,
   featureColors: DEFAULT_FEATURE_COLOR_CONFIG,
   lid: DEFAULT_LID_CONFIG,
+  slide: DEFAULT_SLIDE_CONFIG,
   textDefaults: DEFAULT_TEXT_STYLE_DEFAULTS,
   overhang: { left: 0, right: 0, front: 0, back: 0, feet: false },
   extraWallHeightMm: 0,

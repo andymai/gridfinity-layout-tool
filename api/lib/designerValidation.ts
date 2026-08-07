@@ -14,7 +14,11 @@ import {
   validationError,
 } from './validationUtils.js';
 import { sanitizeString } from './validation.js';
-import { CONSTRAINTS } from './designerValidationConstants.js';
+import {
+  CONSTRAINTS,
+  SLIDE_CONSTRAINTS,
+  VALID_SLIDE_RAIL_MOUNTS,
+} from './designerValidationConstants.js';
 import {
   validateDividers,
   validateCellMask,
@@ -129,6 +133,7 @@ const ALLOWED_PARAM_KEYS = new Set<string>([
   'splitConnectors',
   'featureColors',
   'lid',
+  'slide',
   'textDefaults',
   'surfaceText',
   'meshAssets',
@@ -287,6 +292,55 @@ function validateWalls(walls: unknown): string | null {
       if (isNumber(sideConfig.depth) && !inRange(sideConfig.depth, 0, 100)) {
         return `walls.${side}.depth must be 0-100`;
       }
+    }
+  }
+  return null;
+}
+
+/**
+ * Validate the sliding-tray sub-object. Every field here feeds the generator
+ * directly, so a crafted share could otherwise drive a runaway rail or tray.
+ * Bounds mirror `SLIDE_CONSTRAINTS` in
+ * `src/features/bin-designer/types/slide.ts`. Fields are individually optional
+ * so a payload written by an older client still validates.
+ */
+function validateSlide(slide: unknown): string | null {
+  if (!isObject(slide)) return 'slide must be an object';
+  if (slide.enabled !== undefined && !isBoolean(slide.enabled)) {
+    return 'slide.enabled must be boolean';
+  }
+  if (
+    slide.railMount !== undefined &&
+    !VALID_SLIDE_RAIL_MOUNTS.includes(slide.railMount as string)
+  ) {
+    return `slide.railMount must be one of: ${VALID_SLIDE_RAIL_MOUNTS.join(', ')}`;
+  }
+  const ranges: readonly [string, number, number][] = [
+    [
+      'trayWidthUnits',
+      SLIDE_CONSTRAINTS.MIN_TRAY_WIDTH_UNITS,
+      SLIDE_CONSTRAINTS.MAX_TRAY_WIDTH_UNITS,
+    ],
+    ['trayDepthMm', SLIDE_CONSTRAINTS.MIN_TRAY_DEPTH_MM, SLIDE_CONSTRAINTS.MAX_TRAY_DEPTH_MM],
+    ['trayWallMm', SLIDE_CONSTRAINTS.MIN_TRAY_WALL_MM, SLIDE_CONSTRAINTS.MAX_TRAY_WALL_MM],
+    ['railDropMm', SLIDE_CONSTRAINTS.MIN_RAIL_DROP_MM, SLIDE_CONSTRAINTS.MAX_RAIL_DROP_MM],
+    [
+      'railProtrusionMm',
+      SLIDE_CONSTRAINTS.MIN_RAIL_PROTRUSION_MM,
+      SLIDE_CONSTRAINTS.MAX_RAIL_PROTRUSION_MM,
+    ],
+    [
+      'railThicknessMm',
+      SLIDE_CONSTRAINTS.MIN_RAIL_THICKNESS_MM,
+      SLIDE_CONSTRAINTS.MAX_RAIL_THICKNESS_MM,
+    ],
+    ['clearanceMm', SLIDE_CONSTRAINTS.MIN_CLEARANCE_MM, SLIDE_CONSTRAINTS.MAX_CLEARANCE_MM],
+  ];
+  for (const [field, min, max] of ranges) {
+    const value = slide[field];
+    if (value === undefined) continue;
+    if (!isNumber(value) || !inRange(value, min, max)) {
+      return `slide.${field} must be a number between ${min} and ${max}`;
     }
   }
   return null;
@@ -1074,6 +1128,11 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
   if (params.lid !== undefined) {
     const lidErr = validateLid(params.lid);
     if (lidErr) return validationError('INVALID_PARAMS', lidErr);
+  }
+
+  if (params.slide !== undefined) {
+    const slideErr = validateSlide(params.slide);
+    if (slideErr) return validationError('INVALID_PARAMS', slideErr);
   }
 
   // Custom-shape footprint: structurally-valid masks are enforced here so
