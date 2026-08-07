@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ColorsActionsMenu } from './ColorsActionsMenu';
 import { useSettingsStore } from '@/core/store';
 import { DEFAULT_SETTINGS } from '@/core/store/settings.types';
@@ -36,6 +36,20 @@ describe('ColorsActionsMenu', () => {
     );
     fireEvent.click(screen.getByLabelText('binDesigner.colors.actions'));
     expect(screen.getByText('binDesigner.colors.matchAllToBody')).toBeInTheDocument();
+  });
+
+  // Wiring guard: the menu role advertises arrow traversal, so the shared
+  // keyboard hook must stay attached (#3277).
+  it('focuses the first item on open and traverses with the arrow keys', async () => {
+    render(
+      <ColorsActionsMenu featureColors={fc} onMatchAllToBody={vi.fn()} onApplyPalette={vi.fn()} />
+    );
+    fireEvent.click(screen.getByLabelText('binDesigner.colors.actions'));
+
+    const items = screen.getAllByRole('menuitem');
+    await waitFor(() => expect(items[0]).toHaveFocus());
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'ArrowDown' });
+    expect(items[1]).toHaveFocus();
   });
 
   it('invokes onMatchAllToBody when the menu item is clicked', () => {

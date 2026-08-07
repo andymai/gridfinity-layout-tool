@@ -1,6 +1,7 @@
-import { useEffect, useLayoutEffect, useCallback } from 'react';
+import { useLayoutEffect } from 'react';
 import type { RefObject } from 'react';
 import { useTranslation } from '@/i18n';
+import { useMenuKeyboardNav } from '@/shared/hooks/useMenuKeyboardNav';
 
 /** Margin from viewport edges (px) */
 const VIEWPORT_MARGIN = 8;
@@ -74,59 +75,7 @@ export function ContextMenuContainer({
     menu.style.top = `${y}px`;
   }, [isOpen, position, menuRef]);
 
-  // Focus first menu item when menu opens
-  useEffect(() => {
-    if (!isOpen || !menuRef.current) return;
-    const firstItem = menuRef.current.querySelector<HTMLElement>(
-      '[role="menuitem"]:not([disabled])'
-    );
-    firstItem?.focus();
-  }, [isOpen, menuRef]);
-
-  // Keyboard navigation handler
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (!menuRef.current) return;
-
-      const items = Array.from(
-        menuRef.current.querySelectorAll<HTMLElement>('[role="menuitem"]:not([disabled])')
-      );
-      if (items.length === 0) return;
-
-      const currentIndex = items.indexOf(document.activeElement as HTMLElement);
-
-      switch (e.key) {
-        case 'ArrowDown': {
-          e.preventDefault();
-          const nextIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
-          items[nextIndex].focus();
-          break;
-        }
-        case 'ArrowUp': {
-          e.preventDefault();
-          const prevIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
-          items[prevIndex].focus();
-          break;
-        }
-        case 'Home': {
-          e.preventDefault();
-          items[0].focus();
-          break;
-        }
-        case 'End': {
-          e.preventDefault();
-          items[items.length - 1].focus();
-          break;
-        }
-        case 'Escape': {
-          e.preventDefault();
-          onClose();
-          break;
-        }
-      }
-    },
-    [menuRef, onClose]
-  );
+  const handleKeyDown = useMenuKeyboardNav({ isOpen, menuRef, onClose });
 
   if (!isOpen) return null;
 

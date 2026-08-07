@@ -1,4 +1,4 @@
-import { memo, useState, useEffect, useRef, type RefObject } from 'react';
+import { memo, useState, useEffect, useRef, type RefObject, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useViewStore } from '@/core/store/view';
 import { useInteractionStore } from '@/core/store/interaction';
@@ -14,6 +14,7 @@ import {
 import { trackEvent } from '@/shared/analytics/posthog';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useTranslation } from '@/i18n';
+import { useMenuKeyboardNav } from '@/shared/hooks/useMenuKeyboardNav';
 import type { Layer } from '@/core/types';
 import type { GridZoomState } from '@/features/grid-editor/hooks/useGridZoom';
 
@@ -83,6 +84,13 @@ export const GridToolbar = memo(function GridToolbar({
   // Overflow menu state
   const overflowMenuRef = useRef<HTMLDivElement>(null);
   const [overflowMenuOpen, setOverflowMenuOpen] = useState(false);
+  const overflowMenuListRef = useRef<HTMLDivElement>(null);
+  const closeOverflowMenu = useCallback(() => setOverflowMenuOpen(false), []);
+  const onOverflowMenuKeyDown = useMenuKeyboardNav({
+    isOpen: overflowMenuOpen,
+    menuRef: overflowMenuListRef,
+    onClose: closeOverflowMenu,
+  });
 
   // Close overflow menu when clicking outside or pressing Escape
   useEffect(() => {
@@ -351,8 +359,11 @@ export const GridToolbar = memo(function GridToolbar({
             {/* Overflow dropdown */}
             {overflowMenuOpen && (
               <div
+                ref={overflowMenuListRef}
                 className="absolute right-0 top-full mt-1 py-2 px-1 bg-surface-elevated border border-stroke-subtle rounded-lg shadow-lg z-50 min-w-[160px]"
                 role="menu"
+                tabIndex={-1}
+                onKeyDown={onOverflowMenuKeyDown}
               >
                 {layers.length > 1 && (
                   <div

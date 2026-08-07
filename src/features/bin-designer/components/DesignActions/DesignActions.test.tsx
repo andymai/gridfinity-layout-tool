@@ -47,6 +47,18 @@ describe('DesignActions', () => {
     });
   });
 
+  // Wiring guard: the menu role advertises arrow traversal, so the shared
+  // keyboard hook must stay attached (#3277).
+  it('focuses the first item on open and traverses with the arrow keys', async () => {
+    render(<DesignActions {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button', { name: /more actions/i }));
+
+    const items = await screen.findAllByRole('menuitem');
+    await waitFor(() => expect(items[0]).toHaveFocus());
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'ArrowDown' });
+    expect(items[1]).toHaveFocus();
+  });
+
   it('shows Load option when not active', async () => {
     render(<DesignActions {...defaultProps} isActive={false} />);
 

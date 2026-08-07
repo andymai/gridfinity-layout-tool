@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import type * as SharedHooks from '@/shared/hooks';
 
 const switchLayout = vi.fn().mockResolvedValue({ ok: true, value: undefined });
@@ -55,6 +55,18 @@ describe('LayoutQuickSwitch', () => {
     fireEvent.click(screen.getByRole('button', { name: /switch layout/i }));
     expect(screen.getByRole('menuitem', { name: /Kitchen Drawer/i })).toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: /Garage Bench/i })).toBeInTheDocument();
+  });
+
+  // Wiring guard: the menu role advertises arrow traversal, so the shared
+  // keyboard hook must stay attached (#3277).
+  it('focuses the first item on open and traverses with the arrow keys', async () => {
+    render(<LayoutQuickSwitch onManage={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: /switch layout/i }));
+
+    const items = screen.getAllByRole('menuitem');
+    await waitFor(() => expect(items[0]).toHaveFocus());
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'ArrowDown' });
+    expect(items[1]).toHaveFocus();
   });
 
   it('switches to a different layout on click', () => {

@@ -16,6 +16,7 @@ import { useToastStore } from '@/core/store/toast';
 import { useMutations } from '@/shared/contexts';
 import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
+import { useMenuKeyboardNav } from '@/shared/hooks/useMenuKeyboardNav';
 import { useInlineEdit, useResponsive } from '@/shared/hooks';
 import { Button, IconButton, XIcon } from '@/design-system';
 import type { BaseplateDesignId } from '@/core/types';
@@ -354,6 +355,8 @@ function BaseplateCardActions({
   const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({});
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const closeMenu = useCallback(() => setIsMenuOpen(false), []);
+  const onMenuKeyDown = useMenuKeyboardNav({ isOpen: isMenuOpen, menuRef, onClose: closeMenu });
 
   useEffect(() => {
     if (!isMenuOpen) return;
@@ -419,6 +422,8 @@ function BaseplateCardActions({
           <div
             ref={menuRef}
             role="menu"
+            tabIndex={-1}
+            onKeyDown={onMenuKeyDown}
             style={menuStyle}
             className="w-40 bg-surface-elevated border border-stroke rounded-lg shadow-lg py-1 z-50"
           >

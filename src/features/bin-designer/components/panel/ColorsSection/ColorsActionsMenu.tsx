@@ -24,6 +24,7 @@ import { COLOR_PALETTE_CONSTRAINTS } from '@/core/store/settings.types';
 import type { SavedColorPalette } from '@/core/store/settings.types';
 import { normalizePaletteLip, lipCellZone } from '@/features/bin-designer/types/featureColors';
 import { useTranslation } from '@/i18n';
+import { useMenuKeyboardNav } from '@/shared/hooks/useMenuKeyboardNav';
 import type { FeatureColorConfig } from '@/features/bin-designer/types/featureColors';
 
 interface ColorsActionsMenuProps {
@@ -47,6 +48,7 @@ export function ColorsActionsMenu({
   const [draftName, setDraftName] = useState('');
   const triggerRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const { palettes, updateSettings } = useSettingsStore(
     useShallow((s) => ({
@@ -69,6 +71,8 @@ export function ColorsActionsMenu({
     setSaveMode(false);
     setDraftName('');
   }, []);
+
+  const onMenuKeyDown = useMenuKeyboardNav({ isOpen: open, menuRef, onClose: closeMenu });
 
   const commitSave = useCallback(() => {
     const name = draftName.trim().slice(0, COLOR_PALETTE_CONSTRAINTS.NAME_MAX_LENGTH);
@@ -129,7 +133,13 @@ export function ColorsActionsMenu({
 
       {open && (
         <Popover anchorRef={triggerRef} isOpen onClose={closeMenu} placement="bottom-end">
-          <div role="menu" className="w-56 p-1 text-xs">
+          <div
+            ref={menuRef}
+            role="menu"
+            tabIndex={-1}
+            className="w-56 p-1 text-xs"
+            onKeyDown={onMenuKeyDown}
+          >
             <MenuButton
               icon={<RotateCcwIcon size="sm" />}
               onClick={() => {

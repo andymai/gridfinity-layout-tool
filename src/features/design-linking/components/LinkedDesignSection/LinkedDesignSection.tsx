@@ -14,6 +14,7 @@ import { ConfirmDialog } from '@/shared/components';
 import { useDesignThumbnail } from '@/features/bin-designer';
 import { Button, IconButton, PlusIcon, AlertTriangleIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { useMenuKeyboardNav } from '@/shared/hooks/useMenuKeyboardNav';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { hasFractionalEdgeMismatch } from '@/shared/utils/fractionalEdge';
@@ -41,11 +42,13 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
   const bins = useLayoutStore(useShallow((s) => s.layout.bins));
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
   const [confirmUnlink, setConfirmUnlink] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [matchingEdges, setMatchingEdges] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const onMenuKeyDown = useMenuKeyboardNav({ isOpen: menuOpen, menuRef, onClose: closeMenu });
 
   const isMobile = variant === 'mobile';
   const buttonHeight = isMobile ? 'h-11' : 'h-8';
@@ -382,6 +385,8 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
               ref={menuRef}
               className="absolute right-0 mt-1 w-40 py-1 bg-surface-secondary border border-stroke rounded-lg shadow-lg z-10"
               role="menu"
+              tabIndex={-1}
+              onKeyDown={onMenuKeyDown}
             >
               <Button
                 variant="ghost"
