@@ -1,0 +1,21 @@
+src/features/generation/worker/generators/lidGripDip.scenario.test.ts
+  s_bac7c136858af0::t_71257c7b732c76 37,332
+api/lib/communityExampleParamHashes.ts
+  s_bac7c136858af0::t_23a1603d44493b 15-25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "9d3a33e1491816498fbf473d0d21d35ecd3f9e45",
+  "prompts": {},
+  "sessions": {
+    "s_bac7c136858af0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "29368394-f6f8-4df8-b911-c423585d9619",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
