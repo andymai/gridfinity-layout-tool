@@ -198,4 +198,27 @@ export const wallCutouts: ScenarioCase[] = [
     },
     timeout: 60_000,
   }),
+  defineScenario('wall cutouts', 'full-width cutout squares its bottom corners', {
+    assert: 'structural',
+    params: {
+      width: 2,
+      depth: 2,
+      height: 5,
+      walls: {
+        enabled: true,
+        shape: 'u-shape',
+        width: 0,
+        depth: 0,
+        // 100% width leaves no wall for the bottom fillet to blend into, so the
+        // arc used to stand up as a fin in each corner.
+        front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 100, depth: 60 },
+        back: DISABLED_WALL_CUTOUT,
+        left: DISABLED_WALL_CUTOUT,
+        right: DISABLED_WALL_CUTOUT,
+        interior: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 100, depth: 60 },
+      },
+      compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 },
+    },
+    timeout: 60_000,
+  }),
 ];
