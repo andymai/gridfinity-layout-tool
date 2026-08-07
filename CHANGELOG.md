@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.379.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.379.2...gridfinity-layout-tool-v4.379.3) (2026-08-07)
+
+
+### Bug Fixes
+
+* **generation:** stop wall patterns carving away the sliding-tray rail ([#3293](https://github.com/andymai/gridfinity-layout-tool/issues/3293)) ([7802f2e](https://github.com/andymai/gridfinity-layout-tool/commit/7802f2e45d539af109c8ccd31f7717db3fc56f24))
+
 ## [4.379.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.379.1...gridfinity-layout-tool-v4.379.2) (2026-08-07)
 
 
