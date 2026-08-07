@@ -14,7 +14,7 @@ import { exportSTEP, mesh, meshEdges, getKernelCapabilities } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import type { ExportFormat, SlideTrayMeshData } from '../../bridge/types';
 import { buildSlideTray } from './slideRailBuilder';
-import { resolveSlideGeometry, slideInputFromDims } from './slideGeometry';
+import { resolveSlideGeometry, slideInputFromDims } from '@/shared/utils/slideGeometry';
 import { deriveDimensions } from './pipeline/context';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { toIndexedMeshData, creaseEdges } from './utils';

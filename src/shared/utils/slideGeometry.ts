@@ -1,7 +1,9 @@
 /**
  * Sliding-tray geometry resolver.
  *
- * Pure and separate from the BREP builders so the relationship that actually
+ * Lives in `shared` so the bin designer's panel and the worker's builders read
+ * ONE resolver: the panel explains a rejection with the same rule that produced
+ * it. Pure and separate from the BREP builders so the relationship that actually
  * matters — that the tray is narrower than the track it runs in, by the
  * clearance, on every face — can be asserted without a kernel. Both the rail
  * fused onto the bin and the companion tray are derived from ONE call here, so
@@ -26,8 +28,16 @@
  * here needs support material.
  */
 
-import { LIP_HEIGHT, LIP_TAPER_WIDTH, BOX_CORNER_RADIUS } from './generatorConstants';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings';
 import type { SlideConfig } from '@/shared/types/bin';
+
+// Mirrors `generatorConstants`, which lives in the generation feature and so
+// cannot be imported here. This module is shared precisely so the panel can
+// answer "why did nothing appear?" from the SAME resolver the worker builds
+// from — the alternative is a second, drifting copy of the rules.
+const LIP_HEIGHT = GRIDFINITY_SPEC.LIP_HEIGHT;
+const LIP_TAPER_WIDTH = GRIDFINITY_SPEC.LIP_SMALL_TAPER + GRIDFINITY_SPEC.LIP_BIG_TAPER;
+const BOX_CORNER_RADIUS = GRIDFINITY_SPEC.BOX_CORNER_RADIUS;
 
 /**
  * One rail, as a cross-section in the YZ plane swept along X.
