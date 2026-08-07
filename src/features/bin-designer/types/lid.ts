@@ -739,6 +739,11 @@ export interface LidGripDepthPlan {
   readonly suppressed: boolean;
 }
 
+interface GripDepthBudget {
+  readonly limit: number;
+  readonly by: Exclude<LidGripDepthPlan['limitedBy'], null>;
+}
+
 /**
  * Resolve how deep a grip relief may cut on this design.
  *
@@ -761,21 +766,18 @@ export function resolveLidGripDepth(params: LidGeometrySource): LidGripDepthPlan
     return { depthMm: 0, requestedDepthMm: 0, clamped: false, limitedBy: null, suppressed: true };
   }
 
-  const budgets: readonly {
-    readonly limit: number;
-    readonly by: 'cavity' | 'trayWall' | 'edgeMagnet';
-  }[] = [
+  const budgets: GripDepthBudget[] = [
     {
       limit: LID_CORNER_RADIUS - resolveLidFootprintClearance(params) - LID_GRIP_MIN_WALL_MM,
       by: 'cavity',
     },
-    ...(params.lid.tray.enabled && !params.lid.stackableTop
-      ? ([{ limit: params.lid.tray.wallMm - LID_GRIP_MIN_WALL_MM, by: 'trayWall' }] as const)
-      : []),
-    ...(params.lid.attachment === 'magnetic' && params.lid.retentionMagnet.edgeMagnets > 0
-      ? ([{ limit: LID_MAGNET_LIP_CLEARANCE - LID_GRIP_MIN_WALL_MM, by: 'edgeMagnet' }] as const)
-      : []),
   ];
+  if (params.lid.tray.enabled && !params.lid.stackableTop) {
+    budgets.push({ limit: params.lid.tray.wallMm - LID_GRIP_MIN_WALL_MM, by: 'trayWall' });
+  }
+  if (params.lid.attachment === 'magnetic' && params.lid.retentionMagnet.edgeMagnets > 0) {
+    budgets.push({ limit: LID_MAGNET_LIP_CLEARANCE - LID_GRIP_MIN_WALL_MM, by: 'edgeMagnet' });
+  }
 
   const tightest = budgets.reduce((a, b) => (b.limit < a.limit ? b : a));
   const depthMm = Math.max(Math.min(requestedDepthMm, tightest.limit), 0);
@@ -807,13 +809,23 @@ export function lidGripModeAllowed(params: LidGeometrySource, mode: LidGripMode)
   return !params.lid.stackableTop && !params.lid.separateStackPlate;
 }
 
+/**
+ * Whether any wall carries the relief. Shared with the panel, which has to
+ * warn about "no walls selected" before the depth clamp gets a say.
+ */
+export function hasAnyLidGripSide(sides: LidGripSides): boolean {
+  return LID_RAIL_SIDES.some((side) => sides[side]);
+}
+
 /** Whether this design generates any grip relief at all. */
 export function hasLidGrip(params: LidGeometrySource): boolean {
   const { mode, sides } = params.lid.grip;
-  if (mode === 'none') return false;
-  if (!lidGripModeAllowed(params, mode)) return false;
-  if (!sides.front && !sides.back && !sides.left && !sides.right) return false;
-  return !resolveLidGripDepth(params).suppressed;
+  return (
+    mode !== 'none' &&
+    lidGripModeAllowed(params, mode) &&
+    hasAnyLidGripSide(sides) &&
+    !resolveLidGripDepth(params).suppressed
+  );
 }
 
 /**

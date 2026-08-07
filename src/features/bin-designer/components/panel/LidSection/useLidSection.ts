@@ -37,6 +37,7 @@ import {
   lidAnchorZ,
   lidGripModeAllowed,
   hasLidGrip,
+  hasAnyLidGripSide,
   resolveLidGripDepth,
   resolveLidGripHeightMm,
   isMagnetStyle,
@@ -67,6 +68,17 @@ import {
 
 export { LID_TOP_SURFACES, lidValueSummary };
 export type { LidTopSurface };
+
+/**
+ * Drop a stored `reveal` when the lid gains a stackable top. A shadow line
+ * moves the face an upper bin registers against; left stored it would be a
+ * mode the geometry silently drops and the SERVER rejects outright on
+ * share/publish (`validateLidGrip`) — an invalid design the user never chose.
+ * Every other mode leaves that face alone and is kept as-is.
+ */
+function clearRevealGrip(grip: LidGripConfig): LidGripConfig {
+  return grip.mode === 'reveal' ? { ...grip, mode: 'none' } : grip;
+}
 
 export function useLidSection() {
   const t = useTranslation();
@@ -154,6 +166,16 @@ export function useLidSection() {
     [t]
   );
 
+  // The span itself is clamped to a hand-sized range downstream, so these
+  // stops are intent, not mm.
+  const gripCoverageOptions: SnappingSliderOption[] = useMemo(() => {
+    const stops: SnappingSliderOption[] = [];
+    for (let v = LID_GRIP_COVERAGE_MIN; v <= LID_GRIP_COVERAGE_MAX; v += LID_GRIP_COVERAGE_STEP) {
+      stops.push({ value: v, description: '' });
+    }
+    return stops;
+  }, []);
+
   const toggleEnabled = useCallback(() => {
     if (lid.enabled) {
       updateLid({ enabled: false });
@@ -187,11 +209,6 @@ export function useLidSection() {
       ? 'tray'
       : 'flat';
 
-  // Drop a stored `reveal` when the lid becomes stackable. Every other mode
-  // leaves the registration face alone and is kept as-is.
-  const clearRevealGrip = (grip: LidGripConfig, stackable: boolean): LidGripConfig =>
-    stackable && grip.mode === 'reveal' ? { ...grip, mode: 'none' } : grip;
-
   const setTopSurface = useCallback(
     (mode: LidTopSurface) => {
       if (mode === 'stackable') {
@@ -202,11 +219,7 @@ export function useLidSection() {
           stackableTop: true,
           stackLipOnly: lid.stackableTop && lid.stackLipOnly,
           tray: { ...lid.tray, enabled: false },
-          // A shadow line moves the face an upper bin registers against, so it
-          // cannot survive here. Left stored it would be a mode the geometry
-          // silently drops and the SERVER rejects outright on share/publish
-          // (`validateLidGrip`) — an invalid design the user never chose.
-          grip: clearRevealGrip(lid.grip, true),
+          grip: clearRevealGrip(lid.grip),
         });
       } else {
         // Flat or tray: no stack grid, so magnet pockets, the lip-only variant,
@@ -285,7 +298,10 @@ export function useLidSection() {
   const toggleSeparateStackPlate = useCallback(() => {
     if (!lid.stackableTop) return; // Gated; UI also hides the switch.
     const separateStackPlate = !lid.separateStackPlate;
-    updateLid({ separateStackPlate, grip: clearRevealGrip(lid.grip, separateStackPlate) });
+    updateLid({
+      separateStackPlate,
+      grip: separateStackPlate ? clearRevealGrip(lid.grip) : lid.grip,
+    });
   }, [lid.stackableTop, lid.separateStackPlate, lid.grip, updateLid]);
 
   const setClickRailCoverage = useCallback(
@@ -437,16 +453,6 @@ export function useLidSection() {
   // Readout mirrors `lidBuilder.resolveLidInputs` so the panel matches the
   // generated geometry. Plate thickness and cavity depth come from the shared
   // resolvers rather than a local copy of the same arithmetic.
-  // Coverage stops, mirroring how the rail slider is fed. The span itself is
-  // clamped to a hand-sized range downstream, so these are intent, not mm.
-  const gripCoverageOptions: SnappingSliderOption[] = useMemo(() => {
-    const stops: SnappingSliderOption[] = [];
-    for (let v = LID_GRIP_COVERAGE_MIN; v <= LID_GRIP_COVERAGE_MAX; v += LID_GRIP_COVERAGE_STEP) {
-      stops.push({ value: v, description: '' });
-    }
-    return stops;
-  }, []);
-
   const lidDimensions = useMemo(() => {
     // Footprint uses the mode-aware clearance so the readout shrinks by
     // 0.3mm when the user switches to magnetic retention (#2761); the
@@ -459,20 +465,13 @@ export function useLidSection() {
     // Lid Z extent = mating-shell depth (|wallBottomZ|) + floor plate. Both
     // grow with the cavity knobs, so the readout shows the user why the lid
     // gets taller when they add height, magnets, a tray, or plate thickness.
-    const wallBottomZ = lidWallBottomZ(
-      params.heightUnitMm,
-      LID_FIT_CLEARANCE,
-      resolveLidCavityExtraMm(params)
-    );
+    const cavityExtra = resolveLidCavityExtraMm(params);
+    const wallBottomZ = lidWallBottomZ(params.heightUnitMm, LID_FIT_CLEARANCE, cavityExtra);
     const topThickness = resolveLidPlateThickness(params);
     const lidH = Math.abs(wallBottomZ) + topThickness;
     // The seam plane, which is what bounds how tall a grip relief can be:
     // everything between it and Z=0 is the lid's visible skirt.
-    const anchorZ = lidAnchorZ(
-      params.heightUnitMm,
-      LID_FIT_CLEARANCE,
-      resolveLidCavityExtraMm(params)
-    );
+    const anchorZ = lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE, cavityExtra);
     return { width: lidOuterW, depth: lidOuterD, height: lidH, topThickness, anchorZ };
   }, [params]);
 
@@ -644,12 +643,11 @@ export function useLidSection() {
       grip: lid.grip,
       gripModes: LID_GRIP_MODES,
       gripModeAllowed: (mode: LidGripMode) => lidGripModeAllowed(params, mode),
-      gripAnySide:
-        lid.grip.sides.front || lid.grip.sides.back || lid.grip.sides.left || lid.grip.sides.right,
+      gripAnySide: hasAnyLidGripSide(lid.grip.sides),
       gripActive: hasLidGrip(params),
       gripDepth: resolveLidGripDepth(params),
       gripHeightMm: resolveLidGripHeightMm(lid.grip.mode, lidDimensions.anchorZ),
-      gripCoverageOptions: gripCoverageOptions,
+      gripCoverageOptions,
       extraHeightMm: lid.extraHeightMm,
       extraHeightMin: LID_EXTRA_HEIGHT_MIN_MM,
       extraHeightMax: LID_EXTRA_HEIGHT_MAX_MM,

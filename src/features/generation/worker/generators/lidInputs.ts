@@ -361,13 +361,11 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     clickRailCoverage: params.lid.clickRailCoverage / 100,
     // Gate once, here: `hasLidGrip` folds in the mode, the per-side toggles and
     // the depth clamp, so no builder has to re-derive whether a relief exists.
-    grip: gripActive
-      ? {
-          mode: params.lid.grip.mode,
-          sides: params.lid.grip.sides,
-          coverage: params.lid.grip.coverage,
-        }
-      : { mode: 'none', sides: params.lid.grip.sides, coverage: params.lid.grip.coverage },
+    grip: {
+      mode: gripActive ? params.lid.grip.mode : 'none',
+      sides: params.lid.grip.sides,
+      coverage: params.lid.grip.coverage,
+    },
     gripDepthMm: gripActive ? resolveLidGripDepth(params).depthMm : 0,
     gripSoftensSnap: hasBinLipDip(params),
     // `extraHeightMm` (issue #2482) deepens the cavity above the lip so tall

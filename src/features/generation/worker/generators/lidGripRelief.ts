@@ -62,11 +62,16 @@ export interface GripPlacement {
 }
 
 /**
- * Outward direction → side name and the Z rotation that maps the canonical
- * back-wall cutter onto it. Shared by both placement paths so the rectangle
- * and polygon cases cannot disagree about which wall is `left`.
+ * Outward direction → side name and the Z rotation that maps a canonical
+ * back-wall shape onto it.
+ *
+ * Shared with `lidClickRail`'s polygon path as well as this module's: a rail
+ * and a relief on the same edge are matched by orientation in
+ * `splitRailsAroundGrip`, so two copies of this mapping that drifted would
+ * split the wrong wall. Returns `null` for a non-axis-aligned edge, which a
+ * cellMask polygon should never produce.
  */
-function sideForOutward(
+export function sideForOutward(
   outX: number,
   outY: number
 ): { side: LidRailSide; rotationDeg: number } | null {
@@ -90,49 +95,56 @@ function gripPlacementsForRectangle(inputs: LidInputs): GripPlacement[] {
   const { lidOuterW, lidOuterD, lidCornerR, grip, outerOffsetX: offX, outerOffsetY: offY } = inputs;
   const runX = usableRun(lidOuterW, lidCornerR);
   const runY = usableRun(lidOuterD, lidCornerR);
-  const spanX = resolveLidGripSpanMm(runX, grip.coverage);
-  const spanY = resolveLidGripSpanMm(runY, grip.coverage);
   const halfW = lidOuterW / 2;
   const halfD = lidOuterD / 2;
 
-  const candidates: readonly (GripPlacement & { readonly run: number })[] = [
-    {
-      side: 'back',
-      centerX: offX,
-      centerY: halfD + offY,
-      spanMm: spanX,
-      rotationDeg: 0,
-      run: runX,
-    },
-    {
-      side: 'front',
-      centerX: offX,
-      centerY: -halfD + offY,
-      spanMm: spanX,
-      rotationDeg: 180,
-      run: runX,
-    },
-    {
-      side: 'right',
-      centerX: halfW + offX,
-      centerY: offY,
-      spanMm: spanY,
-      rotationDeg: -90,
-      run: runY,
-    },
-    {
-      side: 'left',
-      centerX: -halfW + offX,
-      centerY: offY,
-      spanMm: spanY,
-      rotationDeg: 90,
-      run: runY,
-    },
-  ];
+  const placements: GripPlacement[] = [];
 
-  return candidates
-    .filter((c) => grip.sides[c.side] && c.run > 0)
-    .map(({ run: _run, ...placement }) => placement);
+  if (runX > 0) {
+    const spanMm = resolveLidGripSpanMm(runX, grip.coverage);
+    if (grip.sides.back) {
+      placements.push({
+        side: 'back',
+        centerX: offX,
+        centerY: halfD + offY,
+        spanMm,
+        rotationDeg: 0,
+      });
+    }
+    if (grip.sides.front) {
+      placements.push({
+        side: 'front',
+        centerX: offX,
+        centerY: -halfD + offY,
+        spanMm,
+        rotationDeg: 180,
+      });
+    }
+  }
+
+  if (runY > 0) {
+    const spanMm = resolveLidGripSpanMm(runY, grip.coverage);
+    if (grip.sides.right) {
+      placements.push({
+        side: 'right',
+        centerX: halfW + offX,
+        centerY: offY,
+        spanMm,
+        rotationDeg: -90,
+      });
+    }
+    if (grip.sides.left) {
+      placements.push({
+        side: 'left',
+        centerX: -halfW + offX,
+        centerY: offY,
+        spanMm,
+        rotationDeg: 90,
+      });
+    }
+  }
+
+  return placements;
 }
 
 function gripPlacementsForPolygon(inputs: LidInputs): GripPlacement[] {

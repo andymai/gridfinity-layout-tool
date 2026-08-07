@@ -8,6 +8,7 @@
  */
 import { Button, SegmentedControl } from '@/design-system';
 import { LID_RAIL_SIDES } from '@/features/bin-designer/types';
+import type { LidGripSides, LidRailSide } from '@/features/bin-designer/types';
 import type { useTranslation } from '@/i18n';
 import { SnappingSlider } from '../../controls/SnappingSlider';
 import { Hint, Readout } from '../shared';
@@ -21,12 +22,12 @@ type Translator = ReturnType<typeof useTranslation>;
  * a given wall, so the only thing that turns one off is the user.
  */
 function GripSides({
-  state,
+  sides,
   onToggle,
   t,
 }: {
-  state: ReturnType<typeof useLidSection>['state'];
-  onToggle: (side: (typeof LID_RAIL_SIDES)[number]) => void;
+  sides: LidGripSides;
+  onToggle: (side: LidRailSide) => void;
   t: Translator;
 }) {
   return (
@@ -36,7 +37,7 @@ function GripSides({
       </span>
       <div className="flex gap-1">
         {LID_RAIL_SIDES.map((side) => {
-          const isActive = state.grip.sides[side];
+          const isActive = sides[side];
           return (
             <Button
               key={side}
@@ -61,9 +62,6 @@ function GripSides({
 }
 
 /**
- * Grip relief controls (#3272) — the answer to "the lid fits so well I needed
- * a screwdriver".
- *
  * The effective readout is the point of this block, not decoration: depth and
  * height are both clamped by the design's own geometry, and a relief that came
  * out shallower than its mode asks for reads as a defect unless the panel says
@@ -79,6 +77,8 @@ export function LidGripControls({
   t: Translator;
 }) {
   const { grip, gripDepth } = state;
+  const modeSelected = grip.mode !== 'none';
+  const modeAllowed = state.gripModeAllowed(grip.mode);
   return (
     <div className="space-y-2">
       <span className="mb-1 block text-xs font-medium text-content-secondary">
@@ -94,13 +94,11 @@ export function LidGripControls({
           disabled: !state.gripModeAllowed(mode),
         }))}
       />
-      {grip.mode !== 'none' && !state.gripModeAllowed(grip.mode) && (
-        <Hint>{t('binDesigner.lid.gripModeStackConflict')}</Hint>
-      )}
+      {modeSelected && !modeAllowed && <Hint>{t('binDesigner.lid.gripModeStackConflict')}</Hint>}
 
-      {grip.mode !== 'none' && state.gripModeAllowed(grip.mode) && (
+      {modeSelected && modeAllowed && (
         <>
-          <GripSides state={state} onToggle={handlers.toggleGripSide} t={t} />
+          <GripSides sides={grip.sides} onToggle={handlers.toggleGripSide} t={t} />
           {!state.gripAnySide && <Hint>{t('binDesigner.lid.gripNoSides')}</Hint>}
 
           <SnappingSlider

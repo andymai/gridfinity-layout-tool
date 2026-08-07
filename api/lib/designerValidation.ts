@@ -79,10 +79,11 @@ const VALID_INSERT_SHAPES = ['rectangle', 'circle', 'hexagon', 'rounded-rect', '
 const VALID_WALL_CUTOUT_SHAPES = ['u-shape', 'scoop', 'funnel'] as const;
 // Mirrors `LidAttachment` in `src/features/bin-designer/types/lid.ts` (#2694).
 const VALID_LID_ATTACHMENTS = ['friction', 'clickRails', 'magnetic'] as const;
-// Mirrors `LidGripMode` / `LidGripSides` in the same module (#3272).
+// Mirrors `LidGripMode` / `LidGripConfig` / `LidGripSides` in the same
+// module (#3272).
 const VALID_LID_GRIP_MODES = ['none', 'chamfer', 'reveal', 'scallop'] as const;
-const VALID_LID_GRIP_SIDES = ['front', 'back', 'left', 'right'] as const;
 const ALLOWED_LID_GRIP_KEYS = new Set(['mode', 'sides', 'coverage', 'binDip']);
+const ALLOWED_LID_GRIP_SIDE_KEYS = new Set(['front', 'back', 'left', 'right']);
 const VALID_ROTATIONS = [0, 90, 180, 270] as const;
 const VALID_TEXT_FONTS = ['atkinson', 'jetbrains-mono', 'allerta-stencil'] as const;
 const VALID_TEXT_MODES = ['engrave', 'emboss', 'through-cut'] as const;
@@ -431,7 +432,7 @@ function validateLidGrip(grip: unknown, lid: Record<string, unknown>): string | 
   if (grip.sides !== undefined) {
     if (!isObject(grip.sides)) return 'lid.grip.sides must be an object';
     for (const key of Object.keys(grip.sides)) {
-      if (!VALID_LID_GRIP_SIDES.includes(key as (typeof VALID_LID_GRIP_SIDES)[number])) {
+      if (!ALLOWED_LID_GRIP_SIDE_KEYS.has(key)) {
         return `lid.grip.sides has unknown key: ${key}`;
       }
       if (!isBoolean(grip.sides[key])) return `lid.grip.sides.${key} must be boolean`;

@@ -116,6 +116,7 @@ export {
   lidGripRequestedDepthMm,
   lidGripHeightMm,
   hasLidGrip,
+  hasAnyLidGripSide,
   hasBinLipDip,
   lidGripModeAllowed,
 } from './lid';

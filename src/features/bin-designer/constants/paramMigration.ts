@@ -356,14 +356,11 @@ function migrateGrip(raw: unknown): LidGripConfig {
   >;
   // Absent sides fall back to the default arrangement; an explicit `false`
   // survives, so a user who turned every side off keeps it off.
-  const sides = LID_RAIL_SIDES.reduce(
-    (acc, side) => ({
-      ...acc,
-      [side]:
-        typeof rawSides[side] === 'boolean' ? rawSides[side] : DEFAULT_LID_CONFIG.grip.sides[side],
-    }),
-    {} as Record<LidRailSide, boolean>
-  );
+  const sides: Record<LidRailSide, boolean> = { ...DEFAULT_LID_CONFIG.grip.sides };
+  for (const side of LID_RAIL_SIDES) {
+    const value = rawSides[side];
+    if (typeof value === 'boolean') sides[side] = value;
+  }
   return {
     mode: LID_GRIP_MODES.includes(obj.mode as LidGripMode)
       ? (obj.mode as LidGripMode)

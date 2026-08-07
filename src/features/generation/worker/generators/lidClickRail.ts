@@ -30,7 +30,7 @@ import { maskToPolygon, MASK_CELL_SIZE } from '@/shared/utils/cellMask';
 import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
 import { LID_MIN_RAIL_LENGTH as MIN_RAIL_LENGTH } from '@/shared/types/bin';
-import { gripPlacements } from './lidGripRelief';
+import { gripPlacements, sideForOutward } from './lidGripRelief';
 import type { LidInputs } from './lidInputs';
 
 /** True when at least one side carries a rail, i.e. the lid is not friction-fit. */
@@ -185,26 +185,14 @@ function railPlacementsForPolygon(inputs: LidInputs): RailPlacement[] {
     const inX = -outX;
     const inY = -outY;
 
-    // Classify the edge by outward direction so we can apply the
-    // user's per-side toggle. Non-axis-aligned edges (shouldn't happen
-    // for cellMask polygons) are skipped before this check.
-    let rotationDeg: number;
-    let side: 'front' | 'back' | 'left' | 'right';
-    if (outX === 0 && outY === 1) {
-      rotationDeg = 0;
-      side = 'back';
-    } else if (outX === 0 && outY === -1) {
-      rotationDeg = 180;
-      side = 'front';
-    } else if (outX === 1 && outY === 0) {
-      rotationDeg = -90;
-      side = 'right';
-    } else if (outX === -1 && outY === 0) {
-      rotationDeg = 90;
-      side = 'left';
-    } else {
-      continue;
-    }
+    // Classify the edge by outward direction so we can apply the user's
+    // per-side toggle. `null` is a non-axis-aligned edge, which a cellMask
+    // polygon should never produce. Shared with the grip relief so the two
+    // cannot disagree about which wall is `left` or how it is rotated — they
+    // are matched against each other in `splitRailsAroundGrip`.
+    const classified = sideForOutward(outX, outY);
+    if (!classified) continue;
+    const { side, rotationDeg } = classified;
 
     if (!clickRails[side]) continue;
     if (disabledRails.has(side)) continue;
@@ -314,11 +302,11 @@ export function splitRailsAroundGrip(
   const grips = gripPlacements(inputs);
   if (grips.length === 0) return [...placements];
 
-  const alongAxisIsX = (rotationDeg: number): boolean => rotationDeg === 0 || rotationDeg === 180;
   const out: RailPlacement[] = [];
 
   for (const rail of placements) {
-    const alongX = alongAxisIsX(rail.rotationDeg);
+    // Front/back walls run along X; left/right along Y.
+    const alongX = rail.rotationDeg === 0 || rail.rotationDeg === 180;
     const railAlong = alongX ? rail.centerX : rail.centerY;
     const grip = grips.find(
       (g) =>
