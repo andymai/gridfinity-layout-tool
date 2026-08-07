@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.380.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.379.4...gridfinity-layout-tool-v4.380.0) (2026-08-07)
+
+
+### Features
+
+* **generation:** ship the sliding tray as an export piece, with end stops ([#3298](https://github.com/andymai/gridfinity-layout-tool/issues/3298)) ([0339a05](https://github.com/andymai/gridfinity-layout-tool/commit/0339a05ae13d4a736142b02c7afcb527215752f8))
+
 ## [4.379.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.379.3...gridfinity-layout-tool-v4.379.4) (2026-08-07)
 
 
