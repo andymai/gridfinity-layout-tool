@@ -10,13 +10,17 @@
  * orientation (walls up, no overhangs, nothing to bridge).
  */
 
-import { exportSTEP } from 'brepjs';
+import { exportSTEP, mesh, meshEdges, getKernelCapabilities } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
-import type { ExportFormat } from '../../bridge/types';
+import type { ExportFormat, SlideTrayMeshData } from '../../bridge/types';
 import { buildSlideTray } from './slideRailBuilder';
 import { resolveSlideGeometry, slideInputFromDims } from './slideGeometry';
 import { deriveDimensions } from './pipeline/context';
 import { isPartialMask } from '@/shared/utils/cellMask';
+import { toIndexedMeshData, creaseEdges } from './utils';
+import { EDGE_ANGULAR_TOLERANCE_RAD } from '@/shared/constants/tessellation';
+import { computeTessellationTolerances } from './utils/tolerances';
+import { checkCancelled } from './meshUtils';
 import { unwrapExportBlob } from './utils/exportUnwrap';
 import { exportSolidToStl } from './utils/stlMeshFallback';
 
@@ -58,6 +62,54 @@ export async function exportSlideTray(
     }
     const data = await exportSolidToStl(solid, name, tolerance, angularTolerance);
     return { data, fileName: `${name}.stl` };
+  } finally {
+    solid.delete();
+  }
+}
+
+/**
+ * Tessellate the tray for the 3D preview, or null when the config makes none.
+ *
+ * `restZ` rides along so the preview can seat the tray on its rail. The solid
+ * itself is built floor-down at the origin (its print orientation), so placing
+ * it is the renderer's job, not the builder's.
+ */
+export function generateSlideTray(
+  params: BinParams,
+  signal?: AbortSignal
+): SlideTrayMeshData | null {
+  const input = slideInputForParams(params);
+  const { tray } = resolveSlideGeometry(input);
+  if (!tray) return null;
+
+  checkCancelled(signal);
+  const solid = buildSlideTray(input);
+  if (!solid) return null;
+
+  // Same WASM-heap discipline as generateLid: release the OCCT solid once
+  // tessellated, or it leaks on every param change.
+  try {
+    checkCancelled(signal);
+    const maxDimension = Math.max(tray.widthMm, tray.depthMm);
+    const { tolerance, angularTolerance } = computeTessellationTolerances(
+      false,
+      true,
+      maxDimension
+    );
+    const shapeMesh = mesh(solid, { tolerance, angularTolerance });
+    const edgeLines =
+      getKernelCapabilities().tessellationModel === 'build-time'
+        ? creaseEdges(shapeMesh)
+        : meshEdges(solid, { tolerance, angularTolerance: EDGE_ANGULAR_TOLERANCE_RAD }).lines;
+    const indexed = toIndexedMeshData(shapeMesh, edgeLines);
+    return {
+      vertices: indexed.vertices,
+      normals: indexed.normals,
+      indices: indexed.indices,
+      edgeVertices: indexed.edgeVertices,
+      triangleCount: indexed.triangleCount,
+      restZ: tray.restZ,
+    };
   } finally {
     solid.delete();
   }

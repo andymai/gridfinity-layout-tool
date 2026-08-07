@@ -187,6 +187,18 @@ export function runGeneration(
         }
       : undefined;
 
+    // Prepare sliding-tray buffers when present (rides the bin's rail)
+    const slideTray = meshData.slideTrayMesh
+      ? {
+          vertices: maybeCopy(meshData.slideTrayMesh.vertices),
+          normals: maybeCopy(meshData.slideTrayMesh.normals),
+          indices: maybeCopy(meshData.slideTrayMesh.indices),
+          edgeVertices: maybeCopy(meshData.slideTrayMesh.edgeVertices),
+          triangleCount: meshData.slideTrayMesh.triangleCount,
+          restZ: meshData.slideTrayMesh.restZ,
+        }
+      : undefined;
+
     // Prepare separate stack-grid baseplate buffers when present (glue-on companion)
     const stackPlate = meshData.stackPlateMesh
       ? {
@@ -258,6 +270,16 @@ export function runGeneration(
             stackPlateTriangleCount: stackPlate.triangleCount,
           }
         : {}),
+      ...(slideTray
+        ? {
+            slideTrayVertices: slideTray.vertices,
+            slideTrayNormals: slideTray.normals,
+            slideTrayIndices: slideTray.indices,
+            slideTrayEdgeVertices: slideTray.edgeVertices,
+            slideTrayTriangleCount: slideTray.triangleCount,
+            slideTrayRestZ: slideTray.restZ,
+          }
+        : {}),
       ...(connectorKey
         ? {
             connectorKeyVertices: connectorKey.vertices,
@@ -288,6 +310,14 @@ export function runGeneration(
         stackPlate.normals.buffer,
         stackPlate.indices.buffer,
         stackPlate.edgeVertices.buffer
+      );
+    }
+    if (slideTray) {
+      transfer.push(
+        slideTray.vertices.buffer,
+        slideTray.normals.buffer,
+        slideTray.indices.buffer,
+        slideTray.edgeVertices.buffer
       );
     }
     if (connectorKey) {

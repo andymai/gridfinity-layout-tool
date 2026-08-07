@@ -24,6 +24,7 @@ import {
   BinMesh,
   LidMesh,
   StackPlateMesh,
+  SlideTrayMesh,
   LabelPlateMeshes,
   LidGuideLine,
   LidExplodeSlider,
@@ -437,6 +438,16 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
                 params.lid.separateStackPlate produced a mesh) — floats above
                 the lid to show the glue-on split. */}
               <StackPlateMesh
+                color={previewColor}
+                lidOffsetMm={lidOffsetMm}
+                wireframe={wireframe}
+                xray={xray}
+              />
+              {/* Sliding tray, seated on its rail (renders only when
+                params.slide produced a mesh). Shown in place because the
+                mechanism is the point, and how far it stands proud of the rim
+                is only obvious when you can see it sitting there. */}
+              <SlideTrayMesh
                 color={previewColor}
                 lidOffsetMm={lidOffsetMm}
                 wireframe={wireframe}
