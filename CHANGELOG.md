@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.386.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.386.2...gridfinity-layout-tool-v4.386.3) (2026-08-07)
+
+
+### Bug Fixes
+
+* **auth:** make the user id unreversible ([#3318](https://github.com/andymai/gridfinity-layout-tool/issues/3318)) ([a3bef37](https://github.com/andymai/gridfinity-layout-tool/commit/a3bef37ec974600846a80f3aa2f19cbfdd3c390a))
+
 ## [4.386.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.386.1...gridfinity-layout-tool-v4.386.2) (2026-08-07)
 
 
