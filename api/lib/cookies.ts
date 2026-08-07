@@ -6,10 +6,11 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
  * Three cookies in play:
  *   1. Session cookie  — `__Host-gflt_session` (prod) / `gflt_session` (dev). 30d TTL.
  *      Holds the opaque session token; verified by KV lookup, not signature.
- *   2. OAuth state     — `gflt_oauth_state`. Short-lived (10 min). CSRF token for
- *      the OAuth round-trip; compared byte-for-byte against the provider's `state`
- *      param on callback.
- *   3. PKCE verifier   — `gflt_oauth_verifier`. Short-lived (10 min). Only set for
+ *   2. OAuth state     — `__Host-gflt_oauth_state` (prod) / `gflt_oauth_state`
+ *      (dev). Short-lived (10 min). CSRF token for the OAuth round-trip;
+ *      compared byte-for-byte against the provider's `state` param on callback.
+ *   3. PKCE verifier   — `__Host-gflt_oauth_verifier` (prod) /
+ *      `gflt_oauth_verifier` (dev). Short-lived (10 min). Only set for
  *      providers that use PKCE (Google). GitHub doesn't use PKCE.
  *
  * Why no HMAC signing: with `HttpOnly + Secure + SameSite=Lax`, client JS can't
@@ -20,12 +21,22 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
  * The `__Host-` prefix in production enforces Path=/ + Secure + no Domain
  * attribute, which prevents subdomain confusion attacks. The prefix requires
  * Secure (HTTPS), so we drop it in local dev where HTTP is fine.
+ *
+ * All THREE carry the prefix, not just the session. Cookie integrity is the
+ * only anti-CSRF defense the OAuth callback has: it is a cross-site top-level
+ * GET, so checkCsrfDefense cannot apply, the state comparison has no
+ * per-victim binding, and GitHub uses no PKCE. Without the prefix these two
+ * can be scoped to the registrable domain and planted by a sibling subdomain
+ * (cookie tossing), which turns the state check into a formality and lets an
+ * attacker sign a victim into the attacker's own account.
  */
 
 const SESSION_COOKIE_NAME_PROD = '__Host-gflt_session';
 const SESSION_COOKIE_NAME_DEV = 'gflt_session';
-const STATE_COOKIE_NAME = 'gflt_oauth_state';
-const VERIFIER_COOKIE_NAME = 'gflt_oauth_verifier';
+const STATE_COOKIE_NAME_PROD = '__Host-gflt_oauth_state';
+const STATE_COOKIE_NAME_DEV = 'gflt_oauth_state';
+const VERIFIER_COOKIE_NAME_PROD = '__Host-gflt_oauth_verifier';
+const VERIFIER_COOKIE_NAME_DEV = 'gflt_oauth_verifier';
 
 const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60; // 30 days
 const OAUTH_TEMP_MAX_AGE_SECONDS = 10 * 60; // 10 minutes
@@ -36,6 +47,14 @@ function isSecureContext(): boolean {
 
 export function getSessionCookieName(): string {
   return isSecureContext() ? SESSION_COOKIE_NAME_PROD : SESSION_COOKIE_NAME_DEV;
+}
+
+function getStateCookieName(): string {
+  return isSecureContext() ? STATE_COOKIE_NAME_PROD : STATE_COOKIE_NAME_DEV;
+}
+
+function getVerifierCookieName(): string {
+  return isSecureContext() ? VERIFIER_COOKIE_NAME_PROD : VERIFIER_COOKIE_NAME_DEV;
 }
 
 interface CookieOptions {
@@ -80,20 +99,20 @@ export function clearSessionCookie(res: VercelResponse): void {
 export function setOAuthStateCookie(res: VercelResponse, state: string): void {
   appendSetCookie(
     res,
-    buildCookie(STATE_COOKIE_NAME, state, { maxAgeSeconds: OAUTH_TEMP_MAX_AGE_SECONDS })
+    buildCookie(getStateCookieName(), state, { maxAgeSeconds: OAUTH_TEMP_MAX_AGE_SECONDS })
   );
 }
 
 export function setOAuthVerifierCookie(res: VercelResponse, verifier: string): void {
   appendSetCookie(
     res,
-    buildCookie(VERIFIER_COOKIE_NAME, verifier, { maxAgeSeconds: OAUTH_TEMP_MAX_AGE_SECONDS })
+    buildCookie(getVerifierCookieName(), verifier, { maxAgeSeconds: OAUTH_TEMP_MAX_AGE_SECONDS })
   );
 }
 
 export function clearOAuthCookies(res: VercelResponse): void {
-  appendSetCookie(res, buildClearCookie(STATE_COOKIE_NAME));
-  appendSetCookie(res, buildClearCookie(VERIFIER_COOKIE_NAME));
+  appendSetCookie(res, buildClearCookie(getStateCookieName()));
+  appendSetCookie(res, buildClearCookie(getVerifierCookieName()));
 }
 
 export function readSessionCookie(req: VercelRequest): string | null {
@@ -101,11 +120,11 @@ export function readSessionCookie(req: VercelRequest): string | null {
 }
 
 export function readOAuthStateCookie(req: VercelRequest): string | null {
-  return readCookie(req, STATE_COOKIE_NAME);
+  return readCookie(req, getStateCookieName());
 }
 
 export function readOAuthVerifierCookie(req: VercelRequest): string | null {
-  return readCookie(req, VERIFIER_COOKIE_NAME);
+  return readCookie(req, getVerifierCookieName());
 }
 
 function readCookie(req: VercelRequest, name: string): string | null {

@@ -186,3 +186,58 @@ describe('CollabGhosts', () => {
     expect(container.querySelector('[aria-hidden="true"]')).toBeInTheDocument();
   });
 });
+
+/**
+ * presence.color is written by the remote client and is neither schema
+ * validated by Liveblocks nor re-validated by the server. It lands in a CSS
+ * `background` shorthand, which accepts a comma-separated url() layer, so a
+ * crafted value needs no ';' breakout to make the victim's browser fetch an
+ * attacker URL — and the site's CSP is report-only, so nothing downstream
+ * blocks the request.
+ */
+describe('CollabGhosts — untrusted presence colour', () => {
+  beforeEach(() => {
+    resetAllStores();
+    vi.clearAllMocks();
+  });
+
+  function renderWithColor(color: unknown) {
+    vi.mocked(useOthers).mockReturnValue([
+      {
+        connectionId: 1,
+        presence: {
+          cursor: { x: gridUnits(0.5), y: gridUnits(0.5) },
+          name: 'User 1',
+          color: color as string,
+          interaction: {
+            type: 'drawing',
+            start: { x: gridUnits(0), y: gridUnits(0) },
+            current: { x: gridUnits(2), y: gridUnits(2) },
+          },
+        },
+      },
+    ]);
+    return render(<CollabGhosts />);
+  }
+
+  it('never emits a url() from an injected colour', () => {
+    const { container } = renderWithColor('red),url(https://evil.example/x)/*');
+    expect(container.innerHTML).not.toContain('url(');
+    expect(container.innerHTML).not.toContain('evil.example');
+  });
+
+  it('still renders the ghost, using the fallback colour', () => {
+    const { container } = renderWithColor('red),url(https://evil.example/x)/*');
+    expect(container.firstChild).not.toBeNull();
+  });
+
+  it('leaves a legitimate colour intact', () => {
+    const { container } = renderWithColor('#3B82F6');
+    expect(container.innerHTML.toLowerCase()).toContain('#3b82f6');
+  });
+
+  it('survives a non-string colour', () => {
+    const { container } = renderWithColor(undefined);
+    expect(container.firstChild).not.toBeNull();
+  });
+});

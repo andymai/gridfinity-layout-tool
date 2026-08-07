@@ -184,6 +184,23 @@ export function communityDenylistKey(): string {
 }
 
 /**
+ * SET of `contentHash` values whose design was taken down by moderation.
+ *
+ * Moderation status lives on a design's card hash, which the owner can shed —
+ * by deleting the design, or by deleting their account (the cascade purges the
+ * card, the reports and the reasons). Both leave the content itself free to be
+ * re-published as a fresh, un-flagged design. This set is what survives: it is
+ * keyed by content, not by design id or account, and nothing deletes from it
+ * except an explicit admin restore.
+ *
+ * Deliberately holds no user identifier, so an account deletion still erases
+ * everything that points back to a person.
+ */
+export function communityModeratedContentKey(): string {
+  return 'community:moderated:content';
+}
+
+/**
  * HASH of one user's print report for one design. The (designId, authorPublicId)
  * pair IS the record's identity, so addressing a print never needs a reverse
  * index and an id carries no information the card did not already publish.

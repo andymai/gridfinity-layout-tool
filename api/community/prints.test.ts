@@ -625,6 +625,58 @@ describe('DELETE', () => {
     expect(res._status).toBe(404);
   });
 
+  // The upsert path refuses to edit a hidden print back into visibility, but
+  // delete-then-repost reached the same place: with the record gone, the
+  // re-visibility check found nothing and wrote a fresh 'live' one.
+  describe('moderated print', () => {
+    async function seedHiddenOwnPrint(): Promise<string> {
+      await handle({ method: 'PUT', body: validPrintBody({ photos: [webpBase64()] }) });
+      const author = authorIdFor(USER_ID);
+      redis.hashes.get(communityPrintKey(DESIGN_ID, author))?.set('status', 'hidden');
+      return author;
+    }
+
+    it('409s a delete of a report-hidden print', async () => {
+      const author = await seedHiddenOwnPrint();
+
+      const res = await handle({ method: 'DELETE' });
+
+      expect(res._status).toBe(409);
+      expect((res._body as { code: string }).code).toBe('UNDER_REVIEW');
+      expect(redis.hashes.has(communityPrintKey(DESIGN_ID, author))).toBe(true);
+    });
+
+    it('re-creates as hidden when the persisted reporter set is still over threshold', async () => {
+      const author = await seedHiddenOwnPrint();
+      const reports = new Set<string>();
+      for (let i = 0; i < 5; i++) reports.add(`reporter-${i}`);
+      redis.sets.set(communityPrintReportsKey(DESIGN_ID, author), reports);
+      // Simulate the record being gone by any route (the delete guard above is
+      // the first line of defence; this is the second). Mirrors what
+      // deleteCommunityPrint clears — note it deliberately keeps the reporter
+      // set, which is what makes this recovery possible.
+      redis.hashes.delete(communityPrintKey(DESIGN_ID, author));
+      redis.zsets.get(communityPrintsKey(DESIGN_ID))?.delete(author);
+
+      const res = await handle({ method: 'PUT', body: validPrintBody({ photos: [webpBase64()] }) });
+
+      expect(res._status).toBe(201);
+      expect(redis.hashes.get(communityPrintKey(DESIGN_ID, author))?.get('status')).toBe('hidden');
+      // Hidden means out of the public list and out of the printer count.
+      expect(redis.zsets.get(communityPrintsKey(DESIGN_ID))?.has(author)).toBeFalsy();
+    });
+
+    it('re-creates as live when the reporter set is below threshold', async () => {
+      const author = await seedHiddenOwnPrint();
+      redis.sets.set(communityPrintReportsKey(DESIGN_ID, author), new Set(['reporter-0']));
+      redis.hashes.delete(communityPrintKey(DESIGN_ID, author));
+
+      await handle({ method: 'PUT', body: validPrintBody({ photos: [webpBase64()] }) });
+
+      expect(redis.hashes.get(communityPrintKey(DESIGN_ID, author))?.get('status')).toBe('live');
+    });
+  });
+
   it('requires a session', async () => {
     signedOut();
     const res = await handle({ method: 'DELETE' });

@@ -16,6 +16,7 @@ import { useOthers } from '@/liveblocks.config';
 import { useViewStore, useLayoutStore } from '@/core/store';
 import { getBaseCellSize } from '@/core/constants';
 import { useResponsive } from '@/shared/hooks';
+import { safePresenceColor } from '@/shared/utils/guestNames';
 import type { InteractionHint } from '@/liveblocks.config';
 import type { Bin } from '@/core/types';
 
@@ -333,8 +334,12 @@ export function CollabGhosts({ className }: CollabGhostsProps) {
   const ghostElements: React.ReactNode[] = [];
 
   for (const { connectionId, presence } of usersWithInteractions) {
-    const { interaction, color } = presence;
+    const { interaction } = presence;
     if (!interaction || interaction.type === 'idle') continue;
+
+    // presence.color is written by the remote client and lands in a CSS
+    // `background` shorthand below, where a url() layer needs no ';' breakout.
+    const color = safePresenceColor(presence.color);
 
     const keyPrefix = `ghost-${connectionId}`;
 

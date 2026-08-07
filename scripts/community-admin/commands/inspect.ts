@@ -2,7 +2,7 @@ import { isValidShareId } from '../../../api/lib/shared.js';
 import { readCommunityCards, readCommunityDesignBlob } from '../../../api/lib/communityStore.js';
 import { communityReportsKey } from '../../../api/lib/redisKeys.js';
 import type { Args } from '../lib/args.js';
-import { colors } from '../lib/output.js';
+import { colors, sanitizeForTerminal } from '../lib/output.js';
 import { connect } from '../lib/redis.js';
 
 export async function inspect(args: Args): Promise<number> {
@@ -37,8 +37,10 @@ export async function inspect(args: Args): Promise<number> {
 
     console.log(colors.bold(`=== community design ${id} ===`));
     if (record) {
-      console.log(`name:        ${record.name}`);
-      console.log(`author:      ${record.authorName} (${record.authorPublicId})`);
+      console.log(`name:        ${sanitizeForTerminal(record.name)}`);
+      console.log(
+        `author:      ${sanitizeForTerminal(record.authorName)} (${record.authorPublicId})`
+      );
       console.log(`category:    ${record.category}`);
       console.log(`techniques:  ${record.techniques.join(', ') || '(none)'}`);
       console.log(`status:      ${record.status}`);

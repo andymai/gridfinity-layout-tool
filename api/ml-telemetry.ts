@@ -147,6 +147,7 @@ import {
   aggregateUndo,
 } from './lib/mlTelemetry/aggregators.js';
 import { validateEvent } from './lib/mlTelemetry/validators.js';
+import { KNOWN_EVENT_TYPES } from './lib/mlTelemetry/validators.constants.js';
 
 // ============================================
 // HANDLER
@@ -217,9 +218,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   for (const event of events) {
     if (!validateEvent(event)) {
       failedCount++;
-      // Track failures by event type (extract from potentially invalid event)
+      // Track failures by event type. The type is caller-supplied and this
+      // bucket lives in a lifetime hash (ML_LIFETIME_KEYS — never expired,
+      // never pruned), so an unrecognized type must collapse into one fixed
+      // bucket rather than minting a permanent field per distinct string.
       const maybeType = (event as Record<string, unknown>).type;
-      const eventType = typeof maybeType === 'string' ? maybeType : 'unknown';
+      const eventType =
+        typeof maybeType === 'string' && KNOWN_EVENT_TYPES.has(maybeType) ? maybeType : 'other';
       failedByType[eventType] = (failedByType[eventType] || 0) + 1;
       continue;
     }
@@ -325,9 +330,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     if (failedCount > 0) {
       pipe.incrby('ml:meta:validation:failed', failedCount);
       for (const [eventType, count] of Object.entries(failedByType)) {
-        // Sanitize event type for Redis key (only allow alphanumeric and underscore)
-        const safeType = eventType.replace(/[^a-z0-9_]/gi, '_').slice(0, 32) || 'unknown';
-        pipe.hincrby('ml:meta:validation:failed_by_type', safeType, count);
+        // Already collapsed to KNOWN_EVENT_TYPES ∪ {'other'} at collection, so
+        // the field name is from a fixed set and needs no sanitizing here.
+        pipe.hincrby('ml:meta:validation:failed_by_type', eventType, count);
       }
     }
 

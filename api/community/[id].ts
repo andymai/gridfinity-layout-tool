@@ -44,6 +44,7 @@ import {
   deleteCommunityDesignBlob,
   deriveCommunityMetrics,
   readCommunityDesignBlob,
+  recordModerationTombstone,
   removeFromCommunityIndexes,
   setCommunityDesignStatus,
   toggleCommunityLike,
@@ -823,9 +824,18 @@ async function handleLikeAction(
   // A15: only a NEW like requires a live design. Withdrawing a like (unlike)
   // must keep working after the design was hidden/removed, or a user could
   // never clear a heart on a moderated design.
-  if (like && !(await requireLiveDesign(redis, id))) return designNotFound(res);
+  const isLive = await requireLiveDesign(redis, id);
+  if (like && !isLive) return designNotFound(res);
 
   const { likes, likedByMe } = await toggleCommunityLike(redis, session.userId, id, like);
+
+  // The unlike above really did clear the heart, but the stored count must not
+  // come back for a non-live design: the Lua script reads `likes` off the card
+  // hash whatever the status, so a hidden design answers {likes: N} where a
+  // deleted one answers {likes: 0}. That difference confirms a takedown and
+  // leaks the pre-takedown count. Answer as the missing design would.
+  if (!isLive) return res.status(200).json({ likes: 0, likedByMe: false });
+
   return res.status(200).json({ likes, likedByMe });
 }
 
@@ -841,6 +851,10 @@ async function autoHideCommunityDesign(redis: Redis, id: string): Promise<boolea
   // Distinguishes this hide from a deny-list sweep in the owner's Mine view;
   // everyone else keeps seeing a plain 404 either way.
   await redis.hset(communityDesignKey(id), { hiddenReason: 'reports' });
+  // The hide must outlive this design id. Deleting the design (or the whole
+  // account) purges the card hash and the reports, and a re-publish of the
+  // same payload would otherwise mint a fresh live design with zero reports.
+  await recordModerationTombstone(redis, id);
   logger.warn('Community design auto-hidden by reports', { id });
   return true;
 }

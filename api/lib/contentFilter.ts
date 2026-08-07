@@ -218,29 +218,68 @@ export function checkText(text: string): ContentFilterResult {
  * recipient — engraved surface text, cutout labels. Keyed rather than scanning
  * every string so enum values, hex colours, font names and ids don't get run
  * through the blocklist.
+ *
+ * Every one of these is engraved into geometry the recipient sees, so adding a
+ * new user-authored text field to `BinParams` means adding its key here. The
+ * designer validators accept the field either way; this set is the only thing
+ * that decides whether it is moderated.
  */
-const TEXT_BEARING_KEYS = new Set(['text', 'label', 'name']);
+const TEXT_BEARING_KEYS = new Set([
+  'text',
+  'label',
+  'name',
+  // surfaceText.lidText, surfaceText.walls.{front,back,left,right}
+  'lidText',
+  'front',
+  'back',
+  'left',
+  'right',
+  // Arrays of strings: compartments.compartmentTexts[], label.rowTexts[]
+  'compartmentTexts',
+  'rowTexts',
+]);
 
 /** Bounds the walk over attacker-supplied params (depth and total strings). */
 const MAX_PARAM_DEPTH = 8;
 const MAX_TEXT_FIELDS = 500;
 
-/** Collect user-authored strings nested anywhere inside a design's params. */
-function collectDesignText(value: unknown, out: string[], depth = 0): void {
-  if (depth > MAX_PARAM_DEPTH || out.length >= MAX_TEXT_FIELDS) return;
+/**
+ * Collect one past the cap so a caller can tell "exactly at the cap, fully
+ * collected" from "truncated". Without the sentinel those are the same length
+ * and truncation is undetectable.
+ */
+const COLLECT_LIMIT = MAX_TEXT_FIELDS + 1;
+
+/**
+ * Collect user-authored strings nested anywhere inside a design's params.
+ *
+ * A string reached through an array carries its ARRAY's key, not its index —
+ * `compartmentTexts[3]` is prose because `compartmentTexts` is a text-bearing
+ * key. Without threading that key down, array elements hit the "not an object"
+ * return and every entry of `compartmentTexts` / `rowTexts` escaped the filter.
+ */
+function collectDesignText(value: unknown, out: string[], depth = 0, key?: string): void {
+  if (depth > MAX_PARAM_DEPTH || out.length >= COLLECT_LIMIT) return;
 
   if (Array.isArray(value)) {
-    for (const entry of value) collectDesignText(entry, out, depth + 1);
+    for (const entry of value) {
+      if (out.length >= COLLECT_LIMIT) return;
+      if (typeof entry === 'string') {
+        if (key !== undefined && TEXT_BEARING_KEYS.has(key)) out.push(entry);
+      } else {
+        collectDesignText(entry, out, depth + 1, key);
+      }
+    }
     return;
   }
   if (typeof value !== 'object' || value === null) return;
 
-  for (const [key, nested] of Object.entries(value)) {
-    if (out.length >= MAX_TEXT_FIELDS) return;
+  for (const [nestedKey, nested] of Object.entries(value)) {
+    if (out.length >= COLLECT_LIMIT) return;
     if (typeof nested === 'string') {
-      if (TEXT_BEARING_KEYS.has(key)) out.push(nested);
+      if (TEXT_BEARING_KEYS.has(nestedKey)) out.push(nested);
     } else {
-      collectDesignText(nested, out, depth + 1);
+      collectDesignText(nested, out, depth + 1, nestedKey);
     }
   }
 }
@@ -261,16 +300,42 @@ export function filterSharedDesignsContent(
       return { passed: false, reason: `Design name: ${nameResult.reason}` };
     }
 
-    const texts: string[] = [];
-    collectDesignText(design.params, texts);
-    for (const text of texts) {
-      const result = checkText(text);
-      if (!result.passed) {
-        return { passed: false, reason: `Design "${design.name}" text: ${result.reason}` };
-      }
+    const result = filterDesignParamsContent(design.params);
+    if (!result.passed) {
+      return { passed: false, reason: `Design "${design.name}" text: ${result.reason}` };
     }
   }
 
+  return { passed: true };
+}
+
+/**
+ * Check the engraved text inside one design's params.
+ *
+ * Split out of `filterSharedDesignsContent` so the standalone designer share
+ * (`POST /api/share` with `type: 'designer'`) runs the same gate: its params
+ * carry exactly the same user-authored text, and it only ever passed through
+ * structural validation. Two filter implementations would drift; one cannot.
+ */
+export function filterDesignParamsContent(params: unknown): ContentFilterResult {
+  const texts: string[] = [];
+  collectDesignText(params, texts);
+
+  // Fail CLOSED on truncation. The walk stops at the cap, so passing what it
+  // did collect would let an attacker pad the first MAX_TEXT_FIELDS entries
+  // with benign strings and park the blocked content past the cutoff — the
+  // filter would report "passed" on text it never looked at. No legitimate
+  // design comes close: the engraved-text fields are individually bounded
+  // (MAX_COMPARTMENT_GRID, MAX_INSERTS, MAX_MESH_ASSETS, five surfaceText
+  // fields), so reaching the cap means the params were built to reach it.
+  if (texts.length > MAX_TEXT_FIELDS) {
+    return { passed: false, reason: 'contains too many text fields to moderate' };
+  }
+
+  for (const text of texts) {
+    const result = checkText(text);
+    if (!result.passed) return result;
+  }
   return { passed: true };
 }
 

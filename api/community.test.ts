@@ -66,6 +66,7 @@ import {
   communityDesignKey,
   communityIndexKey,
   communityLikedKey,
+  communityModeratedContentKey,
   communityParamsHashKey,
   communityPublishedKey,
   communityPublishLockKey,
@@ -887,6 +888,58 @@ describe('POST /api/community — hardening guards', () => {
     const res = await handle({ body: publishBody({ params: EXAMPLE_DESIGNS[0].params }) });
     expect(res._status).toBe(409);
     expect((res._body as { code: string }).code).toBe('DUPLICATE_DESIGN');
+  });
+
+  // A takedown must survive the design id it was applied to. The owner cannot
+  // DELETE a hidden design (409) or PUT it back into view (403), but re-POSTing
+  // the identical payload used to mint a brand-new live design with an empty
+  // reports set, because findPublishedIdByContentHash and isExactDuplicate both
+  // only match LIVE designs.
+  describe('moderation tombstone', () => {
+    async function publishThenTombstone(): Promise<string> {
+      const first = await handle({ body: publishBody() });
+      expect(first._status).toBe(201);
+      const id = (first._body as { id: string }).id;
+      const contentHash = await fake.hget(communityDesignKey(id), 'contentHash');
+      expect(contentHash).not.toBeNull();
+      // What the report auto-hide does: flip the status and tombstone the
+      // content so the takedown is not tied to this design id.
+      await fake.hset(communityDesignKey(id), { status: 'hidden' });
+      await fake.sadd(communityModeratedContentKey(), String(contentHash));
+      return id;
+    }
+
+    it('refuses to re-publish content that was taken down', async () => {
+      await publishThenTombstone();
+
+      const again = await handle({ body: publishBody() });
+      expect(again._status).toBe(403);
+      expect(designBlobCalls()).toHaveLength(1);
+    });
+
+    it('answers neutrally, without confirming the takedown', async () => {
+      await publishThenTombstone();
+      const again = await handle({ body: publishBody() });
+      expect((again._body as { code: string }).code).toBe('UNAUTHORIZED');
+      expect(JSON.stringify(again._body)).not.toMatch(/hidden|report|moderat/i);
+    });
+
+    // The account-deletion cascade purges the card hash, the reports and the
+    // reasons. The tombstone is keyed by content and lives outside all of that.
+    it('survives the design and every per-user key being purged', async () => {
+      const id = await publishThenTombstone();
+
+      await fake.del(communityDesignKey(id), communityPublishedKey('user-1'));
+
+      const again = await handle({ body: publishBody() });
+      expect(again._status).toBe(403);
+    });
+
+    it('lets unrelated content through', async () => {
+      await publishThenTombstone();
+      const other = await handle({ body: publishBody({ name: 'A different design' }) });
+      expect(other._status).toBe(201);
+    });
   });
 
   it('does not resurface a hidden own design as an idempotency hit (A8)', async () => {

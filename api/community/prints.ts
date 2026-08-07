@@ -46,6 +46,7 @@ import {
 import type { CommunityReportReason } from '../lib/communityValidation.js';
 import { communityPrintsEnabled, validateCommunityPrint } from '../lib/communityPrintValidation.js';
 import {
+  clearCommunityCoverIfFromPhotos,
   communityPrintPhotoBlobPath,
   countCommunityPrints,
   deleteCommunityPrint,
@@ -56,8 +57,7 @@ import {
   syncCommunityPrintCount,
   writeCommunityPrint,
 } from '../lib/communityPrintStore.js';
-import type { CommunityPrintRecord } from '../lib/communityPrintStore.js';
-import { readCommunityDesignBlob, writeCommunityDesignBlob } from '../lib/communityStore.js';
+import type { CommunityPrintRecord, CommunityPrintStatus } from '../lib/communityPrintStore.js';
 
 const COMMUNITY_DESIGN_ID_REGEX = /^[a-zA-Z0-9]{12}$/;
 const AUTHOR_PUBLIC_ID_REGEX = /^[a-f0-9]{32}$/;
@@ -182,37 +182,6 @@ function toPrintResponse(record: CommunityPrintRecord): PrintResponse {
     updatedAt: record.updatedAt,
     status: record.status,
   };
-}
-
-/**
- * Drop the design's promoted cover when it came from a print that is no longer
- * publicly visible.
- *
- * Without this, hiding a print leaves its photo on the design's card: the most
- * public surface in the app would keep showing an image moderation just took
- * down, which defeats the report path entirely.
- */
-async function clearCoverIfFromPhotos(
-  redis: Redis,
-  designId: string,
-  photos: readonly string[]
-): Promise<void> {
-  if (photos.length === 0) return;
-  const cover = await redis.hget(communityDesignKey(designId), 'coverPhotoUrl');
-  if (cover === null || cover === '' || !photos.includes(cover)) return;
-  await redis.hset(communityDesignKey(designId), { coverPhotoUrl: '' });
-  const record = await readCommunityDesignBlob(designId);
-  if (record !== null) {
-    await writeCommunityDesignBlob(
-      { ...record, coverPhotoUrl: '' },
-      { allowOverwrite: true }
-    ).catch((err: unknown) => {
-      logger.warn('Community cover: clear-on-moderation blob mirror failed', {
-        designId,
-        error: err instanceof Error ? err.message : String(err),
-      });
-    });
-  }
 }
 
 async function handleList(
@@ -406,6 +375,15 @@ async function handleUpsert(
     photo.kind === 'keep' ? photo.url : uploaded[uploadIndex++].url
   );
 
+  // Reporter sets outlive the record they moderated (deleteCommunityPrint
+  // deliberately keeps them, so the per-account dedupe still holds). On a
+  // CREATE, consult them: if this (design, author) pair already crossed the
+  // threshold, the print comes back moderated rather than live. Belt to the
+  // delete guard's braces — recreation must never launder the status.
+  const priorReports =
+    existing === null ? await redis.scard(communityPrintReportsKey(designId, authorPublicId)) : 0;
+  const status: CommunityPrintStatus = priorReports >= REPORT_THRESHOLD ? 'hidden' : 'live';
+
   const record: CommunityPrintRecord = {
     designId,
     authorPublicId,
@@ -425,12 +403,16 @@ async function handleUpsert(
     // does not reshuffle every time someone fixes a typo.
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
-    status: 'live',
+    status,
   };
 
   try {
     await writeCommunityPrint(redis, record);
-    await redis.zadd(communityPrintsKey(designId), record.createdAt, authorPublicId);
+    // Only a live print joins the public ZSET — that membership IS the list
+    // and the distinct-printer count.
+    if (status === 'live') {
+      await redis.zadd(communityPrintsKey(designId), record.createdAt, authorPublicId);
+    }
     await redis.sadd(communityPrintedKey(session.userId), designId);
   } catch (writeErr) {
     // The photos are already at public, predictable paths; without this the
@@ -452,7 +434,7 @@ async function handleUpsert(
   // Best-effort, because the record is already correct and a failed cleanup
   // must not fail a successful edit.
   const orphaned = existingPhotos.filter((url) => !photos.includes(url));
-  await clearCoverIfFromPhotos(redis, designId, orphaned);
+  await clearCommunityCoverIfFromPhotos(redis, designId, orphaned);
   if (orphaned.length > 0) {
     await del(orphaned).catch((delErr: unknown) => {
       logger.warn('Community print: dropped-photo cleanup failed', {
@@ -503,9 +485,21 @@ async function handleDelete(
     return;
   }
 
+  // Mirrors the design DELETE guard: a moderated print cannot be deleted. The
+  // upsert path already refuses to edit a hidden print back into visibility,
+  // but delete-then-repost reached the same place — the record is gone, so the
+  // re-visibility check finds nothing and writes a fresh 'live' record.
+  if (existing.status !== 'live') {
+    res.status(409).json({
+      error: 'This print report is under moderation review and cannot be deleted.',
+      code: 'UNDER_REVIEW',
+    });
+    return;
+  }
+
   await deleteCommunityPrint(redis, designId, authorPublicId, session.userId);
   const count = await syncCommunityPrintCount(redis, designId);
-  await clearCoverIfFromPhotos(redis, designId, existing.photos);
+  await clearCommunityCoverIfFromPhotos(redis, designId, existing.photos);
 
   if (existing.photos.length > 0) {
     await del(existing.photos).catch((delErr: unknown) => {
@@ -629,7 +623,7 @@ async function handleReport(
     });
     await redis.zrem(communityPrintsKey(designId), targetPublicId);
     await syncCommunityPrintCount(redis, designId);
-    await clearCoverIfFromPhotos(redis, designId, existing.photos);
+    await clearCommunityCoverIfFromPhotos(redis, designId, existing.photos);
     hidden = true;
   }
 

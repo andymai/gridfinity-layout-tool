@@ -19,6 +19,7 @@ import {
   communityIndexKey,
   communityLikedKey,
   communityLikesKey,
+  communityModeratedContentKey,
 } from './redisKeys.js';
 
 export type CommunityDesignStatus = 'live' | 'hidden' | 'removed';
@@ -405,6 +406,37 @@ export async function setCommunityDesignStatus(
   } else {
     await removeFromCommunityIndexes(redis, designId);
   }
+}
+
+/**
+ * Tombstone a taken-down design's content so re-publishing it cannot mint a
+ * fresh, un-flagged design.
+ *
+ * Called on every takedown path (report auto-hide, admin hide, deny-list
+ * sweep). Reads the `contentHash` the publish path stamped on the card; a
+ * design published before that field existed simply has nothing to tombstone,
+ * which is why this is best-effort rather than a hard failure.
+ */
+export async function recordModerationTombstone(redis: Redis, designId: string): Promise<void> {
+  const contentHash = await redis.hget(communityDesignKey(designId), 'contentHash');
+  if (contentHash === null || contentHash === '') return;
+  await redis.sadd(communityModeratedContentKey(), contentHash);
+}
+
+/**
+ * Lift a content tombstone. An admin restore is an explicit judgement that the
+ * content is acceptable, so leaving the tombstone would let the restore stand
+ * while still blocking the author from ever re-publishing the same design.
+ */
+export async function clearModerationTombstone(redis: Redis, designId: string): Promise<void> {
+  const contentHash = await redis.hget(communityDesignKey(designId), 'contentHash');
+  if (contentHash === null || contentHash === '') return;
+  await redis.srem(communityModeratedContentKey(), contentHash);
+}
+
+/** Whether this exact content was taken down by moderation. */
+export async function isModeratedContent(redis: Redis, contentHash: string): Promise<boolean> {
+  return (await redis.sismember(communityModeratedContentKey(), contentHash)) === 1;
 }
 
 /**

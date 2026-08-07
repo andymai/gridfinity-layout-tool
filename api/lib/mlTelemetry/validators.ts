@@ -1,5 +1,8 @@
 import type { ConfidenceBreakdown, EdgeUsage, MLTelemetryEvent, SpatialPattern } from './types.js';
 import {
+  MAX_CATEGORY_DISTRIBUTION_ENTRIES,
+  MAX_DOMAIN_DISTRIBUTION_ENTRIES,
+  MAX_SIZE_DISTRIBUTION_ENTRIES,
   VALID_ABANDONMENT_TYPES,
   VALID_ARCHETYPES,
   VALID_BIN_SIZE_REGEX,
@@ -91,11 +94,19 @@ function validateNullableDomain(value: unknown): value is string | null {
 
 /**
  * Validate size distribution object (all keys are valid bin sizes, values are positive numbers).
+ *
+ * The entry cap matters as much as the key pattern: `VALID_BIN_SIZE_REGEX`
+ * admits an unbounded set of distinct valid keys ("1x1x1.1", "1x1x1.11", …)
+ * and the aggregator turns each one into a Redis hash field with a refreshed
+ * 90-day TTL. Rejecting (rather than truncating) matches every other cap in
+ * this file — no honest client comes close to the limit.
  */
 function validateSizeDistribution(value: unknown): value is Record<string, number> {
   if (!value || typeof value !== 'object') return false;
   const obj = value as Record<string, unknown>;
-  for (const [key, val] of Object.entries(obj)) {
+  const entries = Object.entries(obj);
+  if (entries.length > MAX_SIZE_DISTRIBUTION_ENTRIES) return false;
+  for (const [key, val] of entries) {
     if (!VALID_BIN_SIZE_REGEX.test(key)) return false;
     if (typeof val !== 'number' || val < 0 || val > 10000) return false;
   }
@@ -104,11 +115,19 @@ function validateSizeDistribution(value: unknown): value is Record<string, numbe
 
 /**
  * Validate category/domain distribution object (keys are valid IDs, values are positive numbers).
+ *
+ * `maxEntries` bounds Redis hash-field cardinality — see `validateSizeDistribution`.
  */
-function validateDistribution(value: unknown, keyPattern: RegExp): value is Record<string, number> {
+function validateDistribution(
+  value: unknown,
+  keyPattern: RegExp,
+  maxEntries: number
+): value is Record<string, number> {
   if (!value || typeof value !== 'object') return false;
   const obj = value as Record<string, unknown>;
-  for (const [key, val] of Object.entries(obj)) {
+  const entries = Object.entries(obj);
+  if (entries.length > maxEntries) return false;
+  for (const [key, val] of entries) {
     if (!keyPattern.test(key) && key !== 'uncategorized' && key !== 'unknown') return false;
     if (typeof val !== 'number' || val < 0 || val > 10000) return false;
   }
@@ -252,8 +271,12 @@ export function validateEvent(event: unknown): event is MLTelemetryEvent {
           (VALID_PURPOSES.has(e.purpose) || VALID_PURPOSE_REGEX.test(e.purpose)))) &&
       isCount(e.bin_count) &&
       validateSizeDistribution(e.size_distribution) &&
-      validateDistribution(e.category_distribution, VALID_CATEGORY_ID_REGEX) &&
-      validateDistribution(e.domain_distribution, /^[a-z_]+$/) &&
+      validateDistribution(
+        e.category_distribution,
+        VALID_CATEGORY_ID_REGEX,
+        MAX_CATEGORY_DISTRIBUTION_ENTRIES
+      ) &&
+      validateDistribution(e.domain_distribution, /^[a-z_]+$/, MAX_DOMAIN_DISTRIBUTION_ENTRIES) &&
       validateLabelHashArray(e.top_label_hashes) &&
       (e.label_size_pairs === undefined || validateLabelSizePairs(e.label_size_pairs)) &&
       isFillPct(e.fill_percentage) &&

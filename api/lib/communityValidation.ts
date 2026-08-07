@@ -101,6 +101,20 @@ export function isCommunityFeatureReason(value: string): value is CommunityFeatu
   return (COMMUNITY_FEATURE_REASONS as readonly string[]).includes(value);
 }
 
+/**
+ * Drop C0/C1 control bytes from a user-authored display string.
+ *
+ * `trim()` only removes control characters at the ends, and the content filter
+ * normalizes Unicode tricks but not raw ESC/CR. These fields are later printed
+ * to a moderator's TTY by the community-admin CLI, where an interior ESC can
+ * rewrite the screen the operator is deciding from. The CLI escapes on output
+ * too — this keeps newly-stored data clean at the door.
+ */
+function stripControlChars(value: string): string {
+  // eslint-disable-next-line no-control-regex -- the point is to match control bytes
+  return value.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
+}
+
 export const COMMUNITY_NAME_MAX_LENGTH = 60;
 export const COMMUNITY_DESCRIPTION_MAX_LENGTH = 500;
 /** Matches MAX_DISPLAY_NAME_LENGTH in supporters.ts: one cap for every rendered public name. */
@@ -327,7 +341,7 @@ export function validateCommunityPublish(body: unknown): CommunityValidationResu
   if (!isString(body.name)) {
     return validationError('INVALID_NAME', 'name must be a string');
   }
-  const name = body.name.trim();
+  const name = stripControlChars(body.name).trim();
   if (name.length > COMMUNITY_NAME_MAX_LENGTH) {
     return validationError(
       'INVALID_NAME',
@@ -382,7 +396,7 @@ export function validateCommunityPublish(body: unknown): CommunityValidationResu
   if (!isString(body.authorName)) {
     return validationError('INVALID_AUTHOR_NAME', 'authorName must be a string');
   }
-  const authorName = body.authorName.trim();
+  const authorName = stripControlChars(body.authorName).trim();
   if (authorName.length < 1 || authorName.length > COMMUNITY_AUTHOR_NAME_MAX_LENGTH) {
     return validationError(
       'INVALID_AUTHOR_NAME',

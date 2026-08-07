@@ -203,8 +203,8 @@ describe('login/[provider]', () => {
     expect(res._redirect?.url).toContain('accounts.google.com');
     expect(mockGoogleProvider.buildAuthorizationUrl).toHaveBeenCalledWith('state-fixed');
     const arr = setCookies(res);
-    expect(arr.some((c) => c.startsWith('gflt_oauth_state=state-fixed'))).toBe(true);
-    expect(arr.some((c) => c.startsWith('gflt_oauth_verifier=verifier-fixed'))).toBe(true);
+    expect(arr.some((c) => c.startsWith('__Host-gflt_oauth_state=state-fixed'))).toBe(true);
+    expect(arr.some((c) => c.startsWith('__Host-gflt_oauth_verifier=verifier-fixed'))).toBe(true);
   });
 
   it('redirects to GitHub authorize URL with state cookie only (no PKCE)', async () => {
@@ -213,8 +213,8 @@ describe('login/[provider]', () => {
     await handler(makeReq({ query: { provider: 'github' } }), res as unknown as VercelResponse);
     expect(res._redirect?.url).toContain('github.com');
     const arr = setCookies(res);
-    expect(arr.some((c) => c.includes('gflt_oauth_state=state-fixed'))).toBe(true);
-    expect(arr.some((c) => c.includes('gflt_oauth_verifier='))).toBe(false);
+    expect(arr.some((c) => c.includes('__Host-gflt_oauth_state=state-fixed'))).toBe(true);
+    expect(arr.some((c) => c.includes('__Host-gflt_oauth_verifier='))).toBe(false);
   });
 
   it('returns 500 with config error when buildAuthorizationUrl throws', async () => {
@@ -278,7 +278,7 @@ describe('callback/[provider]', () => {
     await handler(
       makeReq({
         query: { provider: 'google', code: 'c', state: 'qs' },
-        cookie: 'gflt_oauth_state=DIFFERENT',
+        cookie: '__Host-gflt_oauth_state=DIFFERENT',
       }),
       res as unknown as VercelResponse
     );
@@ -292,7 +292,7 @@ describe('callback/[provider]', () => {
     await handler(
       makeReq({
         query: { provider: 'google', code: 'authcode', state: 'S' },
-        cookie: 'gflt_oauth_state=S; gflt_oauth_verifier=V',
+        cookie: '__Host-gflt_oauth_state=S; __Host-gflt_oauth_verifier=V',
       }),
       res as unknown as VercelResponse
     );
@@ -318,7 +318,9 @@ describe('callback/[provider]', () => {
     const arr = setCookies(res);
     expect(arr.some((c) => c.includes('__Host-gflt_session='))).toBe(true);
     expect(
-      arr.filter((c) => c.includes('gflt_oauth_state=')).every((c) => c.includes('Max-Age=0'))
+      arr
+        .filter((c) => c.includes('__Host-gflt_oauth_state='))
+        .every((c) => c.includes('Max-Age=0'))
     ).toBe(true);
   });
 
@@ -329,7 +331,7 @@ describe('callback/[provider]', () => {
     await handler(
       makeReq({
         query: { provider: 'github', code: 'authcode', state: 'S' },
-        cookie: 'gflt_oauth_state=S',
+        cookie: '__Host-gflt_oauth_state=S',
       }),
       res as unknown as VercelResponse
     );
@@ -353,7 +355,7 @@ describe('callback/[provider]', () => {
     await handler(
       makeReq({
         query: { provider: 'google', code: 'c', state: 'S' },
-        cookie: 'gflt_oauth_state=S; gflt_oauth_verifier=V',
+        cookie: '__Host-gflt_oauth_state=S; __Host-gflt_oauth_verifier=V',
       }),
       res as unknown as VercelResponse
     );

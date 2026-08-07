@@ -9,6 +9,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { ML_AGGREGATE_TTL_SECONDS, ML_LIFETIME_KEYS } from './lib/mlTelemetry/retention.js';
+import { KNOWN_EVENT_TYPES } from './lib/mlTelemetry/validators.constants.js';
 
 interface Recorded {
   cmd: string;
@@ -174,6 +175,44 @@ describe('ml-telemetry', () => {
       await handle('POST', [BIN_PLACED]);
       const expired = keysOf('expire');
       for (const key of ML_LIFETIME_KEYS) expect(expired).not.toContain(key);
+    });
+  });
+
+  // failed_by_type is a lifetime key: nothing expires or prunes it, so an
+  // attacker-controlled field name there is a permanent allocation primitive.
+  describe('validation failure buckets', () => {
+    beforeEach(() => {
+      process.env.REDIS_URL = 'redis://localhost:6379';
+    });
+
+    const failureFields = () =>
+      cmds('hincrby')
+        .filter((r) => r.args[0] === 'ml:meta:validation:failed_by_type')
+        .map((r) => r.args[1] as string);
+
+    it('collapses unknown event types into a single bucket', async () => {
+      const events = Array.from({ length: 50 }, (_, i) => ({ type: `evil_${'a'.repeat(i)}` }));
+      const res = await handle('POST', events);
+
+      expect(res._body).toEqual({ ok: true, processed: 0, failed: 50 });
+      expect(failureFields()).toEqual(['other']);
+    });
+
+    it('still buckets a known event type under its own name', async () => {
+      await handle('POST', [{ type: 'bin_placed' }]);
+      expect(failureFields()).toEqual(['bin_placed']);
+    });
+
+    it('never writes a field outside the known set plus "other"', async () => {
+      await handle('POST', [
+        { type: 'layout_snapshot' },
+        { type: '../../injected' },
+        { type: 42 },
+        {},
+      ]);
+      for (const field of failureFields()) {
+        expect(KNOWN_EVENT_TYPES.has(field) || field === 'other').toBe(true);
+      }
     });
   });
 });

@@ -8,6 +8,7 @@ import {
   filterDisplayName,
   filterLayoutContent,
   filterSharedDesignsContent,
+  filterDesignParamsContent,
 } from '../../api/lib/contentFilter.js';
 
 describe('filterLayoutContent', () => {
@@ -391,6 +392,78 @@ describe('filterSharedDesignsContent', () => {
 
     expect(filterSharedDesignsContent([design({ params: deep })]).passed).toBe(true);
   });
+
+  // These are all accepted and stored by the designer validators and engraved
+  // into the geometry the recipient sees, but the collector only looked at
+  // {text,label,name} and never descended into arrays of strings, so every one
+  // of them reached the public gallery unmoderated.
+  describe('engraved text fields the collector used to miss', () => {
+    it('blocks an offensive compartment caption', () => {
+      const result = filterSharedDesignsContent([
+        design({ params: { compartments: { compartmentTexts: ['screws', 'kys'] } } }),
+      ]);
+
+      expect(result.passed).toBe(false);
+    });
+
+    it('blocks an offensive label row caption', () => {
+      const result = filterSharedDesignsContent([
+        design({ params: { label: { rowTexts: ['bolts', 'faggot'] } } }),
+      ]);
+
+      expect(result.passed).toBe(false);
+    });
+
+    it('blocks offensive lid text', () => {
+      const result = filterSharedDesignsContent([
+        design({ params: { surfaceText: { lidText: 'kill yourself' } } }),
+      ]);
+
+      expect(result.passed).toBe(false);
+    });
+
+    it.each(['front', 'back', 'left', 'right'])('blocks offensive %s wall text', (side) => {
+      const result = filterSharedDesignsContent([
+        design({ params: { surfaceText: { walls: { [side]: 'kys' } } } }),
+      ]);
+
+      expect(result.passed).toBe(false);
+    });
+
+    it('blocks a phishing URL engraved into a compartment', () => {
+      const result = filterSharedDesignsContent([
+        design({ params: { compartments: { compartmentTexts: ['https://evil.example'] } } }),
+      ]);
+
+      expect(result.passed).toBe(false);
+    });
+
+    it('still passes the same fields with clean text', () => {
+      const result = filterSharedDesignsContent([
+        design({
+          params: {
+            compartments: { compartmentTexts: ['M3 screws', 'M4 screws'] },
+            label: { rowTexts: ['Top row'] },
+            surfaceText: { lidText: 'Workshop', walls: { front: 'Hardware' } },
+          },
+        }),
+      ]);
+
+      expect(result.passed).toBe(true);
+    });
+
+    // The wall-cutout config shares the front/back/left/right key names but
+    // holds objects, not prose — it must not start tripping the blocklist.
+    it('leaves the wall cutout config alone', () => {
+      const result = filterSharedDesignsContent([
+        design({
+          params: { walls: { enabled: true, shape: 'kys', front: { width: 10, depth: 5 } } },
+        }),
+      ]);
+
+      expect(result.passed).toBe(true);
+    });
+  });
 });
 
 describe('checkText', () => {
@@ -412,5 +485,42 @@ describe('checkText', () => {
     for (const text of sample) {
       expect(checkText(text).passed).toBe(filterDisplayName(text).passed);
     }
+  });
+});
+
+/**
+ * The walk stops at MAX_TEXT_FIELDS. Returning "passed" on a truncated
+ * collection would report success on text the filter never read, so an
+ * attacker could pad the first 500 entries with benign strings and park the
+ * blocked content past the cutoff.
+ */
+describe('filterDesignParamsContent — collection cap', () => {
+  const padded = (count: number, tail: string[] = []) => ({
+    compartments: { compartmentTexts: [...Array.from({ length: count }, () => 'ok'), ...tail] },
+  });
+
+  it('passes a design comfortably under the cap', () => {
+    expect(filterDesignParamsContent(padded(100)).passed).toBe(true);
+  });
+
+  it('fails closed rather than passing a truncated walk', () => {
+    const result = filterDesignParamsContent(padded(600));
+    expect(result.passed).toBe(false);
+    expect(result.reason).toContain('too many text fields');
+  });
+
+  it('does not let padding hide blocked content past the cutoff', () => {
+    expect(filterDesignParamsContent(padded(600, ['kys'])).passed).toBe(false);
+  });
+
+  it('still reports a blocked string that sits within the cap', () => {
+    const result = filterDesignParamsContent(padded(10, ['kys']));
+    expect(result.passed).toBe(false);
+    expect(result.reason).toContain('prohibited');
+  });
+
+  it('applies through the shared-designs entry point too', () => {
+    const result = filterSharedDesignsContent([{ name: 'Padded', params: padded(600, ['kys']) }]);
+    expect(result.passed).toBe(false);
   });
 });

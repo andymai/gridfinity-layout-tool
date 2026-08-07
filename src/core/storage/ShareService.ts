@@ -18,6 +18,7 @@ import type { Result, ValidationError } from '@/core/result';
 import { ok, err, validationImportFailed, isOk } from '@/core/result';
 import { getDesignStorePort } from './designStorePort';
 import type { BinParams } from '@/shared/types/bin';
+import { hasOversizedMeshAsset } from '@/shared/generation/meshAsset';
 export interface LinkedDesignExport {
   readonly id: string;
   readonly name: string;
@@ -210,7 +211,12 @@ export async function restoreEmbeddedDesigns(
       'name' in linkedDesign &&
       'params' in linkedDesign &&
       typeof linkedDesign.id === 'string' &&
-      typeof linkedDesign.name === 'string'
+      typeof linkedDesign.name === 'string' &&
+      // The cloud paths bound each asset server-side; a locally-imported file
+      // reaches storage with its meshAssets verbatim, so this is where an
+      // over-budget asset would otherwise get in and be handed to the decoder
+      // on every preview.
+      !hasOversizedMeshAsset(linkedDesign.params)
     ) {
       const result = await port.saveDesign({
         name: linkedDesign.name,

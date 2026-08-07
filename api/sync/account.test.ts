@@ -93,6 +93,47 @@ const mockRedis = {
     redisZsets.set(k, z);
     return 1;
   }),
+  hgetall: vi.fn(async (k: string) => Object.fromEntries(redisHashes.get(k) ?? new Map())),
+  zcard: vi.fn(async (k: string) => redisZsets.get(k)?.size ?? 0),
+  // The print purge routes its writes through the store helpers, which
+  // pipeline. Applying each queued command against the same maps keeps the
+  // fake's end-state honest instead of silently no-oping.
+  pipeline: vi.fn(() => {
+    const queued: (() => Promise<unknown>)[] = [];
+    const chain = {
+      del: (...keys: string[]) => {
+        queued.push(() => mockRedis.del(...keys));
+        return chain;
+      },
+      zrem: (k: string, ...members: string[]) => {
+        queued.push(() => mockRedis.zrem(k, ...members));
+        return chain;
+      },
+      srem: (k: string, ...members: string[]) => {
+        queued.push(() => mockRedis.srem(k, ...members));
+        return chain;
+      },
+      hset: (k: string, fields: Record<string, string>) => {
+        queued.push(() => mockRedis.hset(k, fields));
+        return chain;
+      },
+      // zadd XX: update an existing member's score, never add one.
+      zadd: (k: string, ...args: unknown[]) => {
+        queued.push(async () => {
+          const [flag, score, member] = args as [string, number, string];
+          if (flag === 'XX' && !redisZsets.get(k)?.has(member)) return 0;
+          return mockRedis.zadd(k, score, member);
+        });
+        return chain;
+      },
+      exec: async () => {
+        const results: [null, unknown][] = [];
+        for (const run of queued) results.push([null, await run()]);
+        return results;
+      },
+    };
+    return chain;
+  }),
 };
 
 vi.mock('../lib/rateLimit', () => ({
@@ -512,6 +553,169 @@ describe('DELETE /api/sync/account', () => {
     expect(res._status).toBe(204);
     expect(redisHashes.get('community:design:hidden-1')?.get('likes')).toBe('1');
     expect(redisZsets.get('community:index:likes')?.has('hidden-1')).not.toBe(true);
+  });
+
+  // A print report carries the user's display name and their uploaded photos
+  // and is served publicly for any still-live design, so the cascade skipping
+  // it left the most personally-identifiable content of all in place forever.
+  describe('community prints', () => {
+    const PHOTO = 'https://blob.example/community/prints/design-a-photo-0.webp';
+
+    function seedOwnPrint(designId: string, authorPublicId: string): void {
+      setHash(`community:print:${designId}:${authorPublicId}`, {
+        designId,
+        authorPublicId,
+        authorName: 'Printer Pat',
+        photos: JSON.stringify([PHOTO]),
+        material: 'pla',
+        nozzleMm: '0.4',
+        layerHeightMm: '0.2',
+        printMinutes: '120',
+        filamentGrams: '30',
+        printer: 'other',
+        printerOther: 'Homebrew',
+        fitVerdict: 'as-designed',
+        note: '',
+        rev: '1',
+        createdAt: '1000',
+        updatedAt: '1000',
+        status: 'live',
+      });
+      setZset(`community:prints:${designId}`, { [authorPublicId]: 1000 });
+      setSet('community:printed:user-1', [designId]);
+      setHash(`community:design:${designId}`, { id: designId, status: 'live', prints: '1' });
+    }
+
+    async function runCascade(): Promise<void> {
+      const { default: handler } = await import('./account');
+      const res = makeRes();
+      await handler(makeReq(), res as unknown as VercelResponse);
+      expect(res._status).toBe(204);
+    }
+
+    it('purges the print record, its list membership, and its photo blobs', async () => {
+      const { deriveAuthorPublicId } = await import('../lib/communityIds');
+      const author = deriveAuthorPublicId('user-1');
+      expect(author).not.toBeNull();
+      seedOwnPrint('design-a', String(author));
+      blobStore.set(PHOTO, {});
+
+      await runCascade();
+
+      expect(redisHashes.has(`community:print:design-a:${String(author)}`)).toBe(false);
+      expect(redisZsets.get('community:prints:design-a')?.size ?? 0).toBe(0);
+      expect(redisSets.has('community:printed:user-1')).toBe(false);
+      expect(deleteBlobMock).toHaveBeenCalledWith(PHOTO);
+    });
+
+    it('resyncs the surviving design print count', async () => {
+      const { deriveAuthorPublicId } = await import('../lib/communityIds');
+      seedOwnPrint('design-a', String(deriveAuthorPublicId('user-1')));
+
+      await runCascade();
+
+      expect(redisHashes.get('community:design:design-a')?.get('prints')).toBe('0');
+    });
+
+    it('clears a design cover promoted from a deleted print photo', async () => {
+      const { deriveAuthorPublicId } = await import('../lib/communityIds');
+      seedOwnPrint('design-a', String(deriveAuthorPublicId('user-1')));
+      redisHashes.get('community:design:design-a')?.set('coverPhotoUrl', PHOTO);
+
+      await runCascade();
+
+      expect(redisHashes.get('community:design:design-a')?.get('coverPhotoUrl')).toBe('');
+    });
+
+    it('drops the user from every print they reported', async () => {
+      setSet('community:printReported:user-1', ['design-b:authorxyz']);
+      setSet('community:printReports:design-b:authorxyz', ['user-1', 'user-7']);
+
+      await runCascade();
+
+      expect(redisSets.get('community:printReports:design-b:authorxyz')).toEqual(
+        new Set(['user-7'])
+      );
+      expect(redisSets.has('community:printReported:user-1')).toBe(false);
+    });
+
+    // The community cascade DELs the cards for designs this user published
+    // before the print purge runs. syncCommunityPrintCount HSETs the card, and
+    // HSET creates the key — so resyncing unconditionally resurrected the just
+    // deleted design as a malformed, never-expiring hash holding only `prints`.
+    it('does not resurrect the card of a design the user published and printed', async () => {
+      const { deriveAuthorPublicId } = await import('../lib/communityIds');
+      const author = String(deriveAuthorPublicId('user-1'));
+      seedCommunityDesign('own-design', author);
+      setSet('community:published:user-1', ['own-design']);
+      seedOwnPrint('own-design', author);
+
+      await runCascade();
+
+      expect(redisHashes.has('community:design:own-design')).toBe(false);
+    });
+
+    it('still resyncs the count on someone else design', async () => {
+      const { deriveAuthorPublicId } = await import('../lib/communityIds');
+      seedOwnPrint('design-a', String(deriveAuthorPublicId('user-1')));
+      setSet('community:published:user-2', ['design-a']);
+
+      await runCascade();
+
+      expect(redisHashes.get('community:design:design-a')?.get('prints')).toBe('0');
+    });
+
+    // A print is addressed by the SALTED author id. If TOKEN_SALT was rotated,
+    // the derived id names keys that never existed, every delete no-ops, and
+    // dropping the reverse index would orphan the photos with nothing left
+    // pointing at them.
+    it('keeps the reverse index when no print could be resolved', async () => {
+      setSet('community:printed:user-1', ['design-unresolvable']);
+
+      await runCascade();
+
+      expect(redisSets.get('community:printed:user-1')).toEqual(new Set(['design-unresolvable']));
+    });
+
+    it('drops the reverse index once the prints are actually purged', async () => {
+      const { deriveAuthorPublicId } = await import('../lib/communityIds');
+      seedOwnPrint('design-a', String(deriveAuthorPublicId('user-1')));
+
+      await runCascade();
+
+      expect(redisSets.has('community:printed:user-1')).toBe(false);
+    });
+
+    // Partial success still leaves unreadable records with photos on the CDN,
+    // and dropping the reverse index removes the only handle on them.
+    it('keeps the reverse index when only some prints resolve', async () => {
+      const { deriveAuthorPublicId } = await import('../lib/communityIds');
+      const author = String(deriveAuthorPublicId('user-1'));
+      seedOwnPrint('design-a', author);
+      // A second indexed design with no readable record under this author id.
+      redisSets.get('community:printed:user-1')?.add('design-ghost');
+
+      await runCascade();
+
+      expect(redisSets.get('community:printed:user-1')).toEqual(new Set(['design-ghost']));
+    });
+
+    it('leaves another user print untouched', async () => {
+      setHash('community:print:design-c:otherauthor', {
+        designId: 'design-c',
+        authorPublicId: 'otherauthor',
+        material: 'pla',
+        fitVerdict: 'as-designed',
+        status: 'live',
+        photos: '[]',
+      });
+      setZset('community:prints:design-c', { otherauthor: 5 });
+
+      await runCascade();
+
+      expect(redisHashes.has('community:print:design-c:otherauthor')).toBe(true);
+      expect(redisZsets.get('community:prints:design-c')?.has('otherauthor')).toBe(true);
+    });
   });
 
   it('returns 405 for non-DELETE methods', async () => {
