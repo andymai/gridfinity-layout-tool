@@ -1,0 +1,24 @@
+src/features/community/components/CommunityDetail/DesignMediaPanel.test.tsx
+  s_609e32c2c9753b::t_c2fae71e4e5da7 163-176
+src/features/community/components/CommunityDetail/DesignMediaPanel.tsx
+  s_609e32c2c9753b::t_ee690727fb12f8 137-139
+  s_609e32c2c9753b::t_de2c980187d753 80
+  s_609e32c2c9753b::t_b40cf150fcb189 135-136,140-142
+  s_609e32c2c9753b::t_4a51750797eb34 77-79
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "75b0938e6d9b764fe54ebea03c29f5248e55e881",
+  "prompts": {},
+  "sessions": {
+    "s_609e32c2c9753b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d90bc437-2a38-4d80-bf51-323dc9459de6",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
