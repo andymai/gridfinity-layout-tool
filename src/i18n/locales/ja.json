@@ -473,6 +473,8 @@
   "binDesigner.customSplit": "分割",
   "binDesigner.cutoutDesktopOnly": "切り抜きエディターはデスクトップ専用です。より大きい画面に切り替えてご利用ください。",
   "binDesigner.cutoutEditor.binSize": "ビンサイズ",
+  "binDesigner.cutoutEditor.binFeatures": "ビンの機能",
+  "binDesigner.cutoutEditor.lipOffPausesLid": "フタにはスタッキングリップが必要です。リップをオンに戻すまでフタは生成されません。",
   "binDesigner.cutoutEditor.boardCutouts": "切り抜き",
   "binDesigner.cutoutEditor.boardSettings": "ボード",
   "binDesigner.cutoutEditor.boardSize": "ボードサイズ",

@@ -473,6 +473,8 @@
   "binDesigner.customSplit": "Diviser",
   "binDesigner.cutoutDesktopOnly": "L'éditeur de découpes est disponible sur ordinateur. Veuillez passer à un écran plus large pour utiliser cette fonctionnalité.",
   "binDesigner.cutoutEditor.binSize": "Taille de bin",
+  "binDesigner.cutoutEditor.binFeatures": "Fonctions du bin",
+  "binDesigner.cutoutEditor.lipOffPausesLid": "Le couvercle a besoin de la lèvre d'empilage : il ne sera pas généré tant que vous ne l'aurez pas réactivée.",
   "binDesigner.cutoutEditor.boardCutouts": "Découpes",
   "binDesigner.cutoutEditor.boardSettings": "Plateau",
   "binDesigner.cutoutEditor.boardSize": "Taille du plateau",

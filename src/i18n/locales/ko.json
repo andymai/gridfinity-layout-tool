@@ -473,6 +473,8 @@
   "binDesigner.customSplit": "분할",
   "binDesigner.cutoutDesktopOnly": "컷아웃 편집기는 데스크톱에서 사용할 수 있습니다. 이 기능을 사용하려면 더 넓은 화면으로 전환하세요.",
   "binDesigner.cutoutEditor.binSize": "수납통 크기",
+  "binDesigner.cutoutEditor.binFeatures": "빈 기능",
+  "binDesigner.cutoutEditor.lipOffPausesLid": "뚜껑에는 스태킹 립이 필요하므로 립을 다시 켤 때까지 뚜껑은 생성되지 않습니다.",
   "binDesigner.cutoutEditor.boardCutouts": "컷아웃",
   "binDesigner.cutoutEditor.boardSettings": "보드",
   "binDesigner.cutoutEditor.boardSize": "보드 크기",

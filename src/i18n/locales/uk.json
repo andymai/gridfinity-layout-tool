@@ -473,6 +473,8 @@
   "binDesigner.customSplit": "Розділити",
   "binDesigner.cutoutDesktopOnly": "Редактор вирізів доступний на десктопі. Перейдіть на ширший екран, щоб скористатися цією функцією.",
   "binDesigner.cutoutEditor.binSize": "Розмір біна",
+  "binDesigner.cutoutEditor.binFeatures": "Функції біна",
+  "binDesigner.cutoutEditor.lipOffPausesLid": "Кришці потрібен штабелювальний бортик, тож вона не згенерується, доки ви не ввімкнете бортик знову.",
   "binDesigner.cutoutEditor.boardCutouts": "Вирізи",
   "binDesigner.cutoutEditor.boardSettings": "Дошка",
   "binDesigner.cutoutEditor.boardSize": "Розмір дошки",
