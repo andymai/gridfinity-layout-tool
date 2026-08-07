@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.386.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.386.0...gridfinity-layout-tool-v4.386.1) (2026-08-07)
+
+
+### Bug Fixes
+
+* **community:** stop the detail filmstrip collapsing, and align modal chrome ([#3314](https://github.com/andymai/gridfinity-layout-tool/issues/3314)) ([5bfe7ae](https://github.com/andymai/gridfinity-layout-tool/commit/5bfe7aeb31b0a5809c28cde667ec0b2a6958f511))
+
 ## [4.386.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.385.0...gridfinity-layout-tool-v4.386.0) (2026-08-07)
 
 
