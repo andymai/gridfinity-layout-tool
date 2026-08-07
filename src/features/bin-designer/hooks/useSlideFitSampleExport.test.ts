@@ -75,6 +75,32 @@ describe('useSlideFitSampleExport', () => {
     expect(triggerDownload).toHaveBeenCalled();
   });
 
+  it('converts to 3MF through the STL parser rather than shipping raw STL', async () => {
+    // The 3MF branch is a different path: it exports STL from the worker, then
+    // re-wraps it on the main thread. A regression there would download a file
+    // named .3mf containing STL bytes.
+    const spy = vi.fn().mockResolvedValue({ data: new ArrayBuffer(8) });
+    activeBridge = { exportSlideFitSample: spy };
+    const { result } = renderHook(() => useSlideFitSampleExport());
+    await act(async () => {
+      await result.current.downloadSample('3mf');
+    });
+    expect(spy).toHaveBeenCalledWith('stl', expect.anything());
+    expect(vi.mocked(triggerDownload).mock.calls[0][1]).toBe('slide-fit-sample.3mf');
+  });
+
+  it('reports failure and stops exporting when the bridge throws', async () => {
+    activeBridge = { exportSlideFitSample: vi.fn().mockRejectedValue(new Error('kernel died')) };
+    const { result } = renderHook(() => useSlideFitSampleExport());
+    let ok = true;
+    await act(async () => {
+      ok = await result.current.downloadSample('stl');
+    });
+    expect(ok).toBe(false);
+    expect(result.current.isExporting).toBe(false);
+    expect(triggerDownload).not.toHaveBeenCalled();
+  });
+
   it('names the download after the card', async () => {
     activeBridge = {
       exportSlideFitSample: vi.fn().mockResolvedValue({ data: new ArrayBuffer(8) }),
