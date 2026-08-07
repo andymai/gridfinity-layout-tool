@@ -27,6 +27,8 @@ export const FeatureTag = {
    * {@link LIP}, which is the BIN's top-rim lip on a different object.
    */
   LID_LIP: 15,
+  /** The sliding tray's track, fused onto the bin's front and back walls. */
+  SLIDE_RAIL: 16,
   UNKNOWN: 255,
 } as const;
 
