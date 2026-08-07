@@ -25,14 +25,14 @@ The spanning variant breaks a boundary the designer does not currently cross: th
 
 ## Precedent worth copying
 
-| Existing thing                       | Where                           | What to take from it                                                                                                                                                                                                  |
-| ------------------------------------ | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `LidClickRails`                      | `bin-designer/types/lid.ts:295` | Per-side independent boolean flags, so a user can rail left+right only. Exactly the shape a rail config needs.                                                                                                        |
-| `LidAttachment`                      | same file                       | The "exactly one of friction / clickRails / magnetic" mode union, with migration deriving the mode from legacy per-side flags. A tray's retention (free-sliding vs detented vs end-stopped) wants the same treatment. |
-| `lidClickRail.ts`                    | `worker/generators/`            | An existing rail solid swept along a chosen wall. The closest geometry to a slide rail.                                                                                                                               |
-| `CLEARANCE` (`GRIDFINITY.TOLERANCE`) | `generatorConstants.ts:17`      | The project's single fit tolerance. A sliding fit needs its own, larger, value — do not reuse this one.                                                                                                               |
-| `design-linking`                     | `features/design-linking/`      | Machinery for keeping related designs in sync, including `useBinResizedListener` and the blocked-resize dialog. The natural home for "these two designs are a sliding pair".                                          |
-| Size lock (`locked: true`)           | gotcha 11 in CLAUDE.md          | `bin.update` is the only enforcement point for refusing a resize. A sliding pair needs the same discipline.                                                                                                           |
+| Existing thing                       | Where                                                             | What to take from it                                                                                                                                                                                                  |
+| ------------------------------------ | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `LidClickRails`                      | `src/features/bin-designer/types/lid.ts`                          | Per-side independent boolean flags, so a user can rail left+right only. Exactly the shape a rail config needs.                                                                                                        |
+| `LidAttachment`                      | same file                                                         | The "exactly one of friction / clickRails / magnetic" mode union, with migration deriving the mode from legacy per-side flags. A tray's retention (free-sliding vs detented vs end-stopped) wants the same treatment. |
+| `lidClickRail.ts`                    | `src/features/generation/worker/generators/`                      | An existing rail solid swept along a chosen wall. The closest geometry to a slide rail.                                                                                                                               |
+| `CLEARANCE` (`GRIDFINITY.TOLERANCE`) | `src/features/generation/worker/generators/generatorConstants.ts` | 0.5mm, the bin-to-baseplate seating clearance. Read it for the order of magnitude, but a sliding fit needs its OWN parameter rather than borrowing a spec value with a different job.                                 |
+| `design-linking`                     | `src/features/design-linking/`                                    | Machinery for keeping related designs in sync, including `useBinResizedListener` and the blocked-resize dialog. The natural home for "these two designs are a sliding pair".                                          |
+| Size lock (`locked: true`)           | gotcha 11 in CLAUDE.md                                            | `bin.update` is the only enforcement point for refusing a resize. A sliding pair needs the same discipline.                                                                                                           |
 
 ---
 
@@ -46,7 +46,7 @@ The tray spans a gap the layout defines. Its width is derived from the two host 
 
 - Correct for what was asked.
 - Requires a part whose dimensions are computed from layout state, which the bin designer has no concept of. Either the designer gains a "sized by layout" mode, or the tray becomes a new kind of object owned by the layout rather than by a design.
-- Moving either host bin silently invalidates the tray. That needs the same guard rail as the size lock: refuse or re-derive, never quietly diverge.
+- Moving either host bin silently invalidates the tray, and **a move is not a resize**. `design-linking` today reacts to dimension changes; dragging a bin across the grid changes the span without changing any design at all. Tracking placement, not just size, is a requirement of this option rather than a detail of it.
 
 ### Option B — the tray is a normal design, the user sets its width
 
@@ -85,12 +85,12 @@ A rail is a shelf plus a lip, swept along the host wall's top region, with the m
 
 Parameters:
 
-| Name             | Meaning                                | Notes                                                                                                                                                                                        |
-| ---------------- | -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `railHeightMm`   | shelf thickness                        | Must clear the host's stacking lip. See below.                                                                                                                                               |
-| `railDepthMm`    | how far the shelf protrudes inward     | Bounded by the host's wall thickness and its cavity.                                                                                                                                         |
-| `slideClearance` | per-face gap                           | New constant. `CLEARANCE` (0.25mm) is an interference fit and will bind. Start near 0.35–0.4mm and make it a parameter, since it is the number users will actually need to tune per printer. |
-| `railZ`          | height of the rail above the bin floor | For the spanning variant this must be identical on both hosts.                                                                                                                               |
+| Name             | Meaning                                | Notes                                                                                                                                                                                                                                                                                                                              |
+| ---------------- | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `railHeightMm`   | shelf thickness                        | Must clear the host's stacking lip. See below.                                                                                                                                                                                                                                                                                     |
+| `railDepthMm`    | how far the shelf protrudes inward     | Bounded by the host's wall thickness and its cavity.                                                                                                                                                                                                                                                                               |
+| `slideClearance` | per-face gap                           | New parameter. Do NOT reuse `CLEARANCE`: it is 0.5mm and it describes the bin-to-baseplate seating fit, not a general tolerance, so borrowing it couples a sliding surface to an unrelated spec value that may change. Start around 0.4-0.5mm per face and expose it, since it is the number users will actually tune per printer. |
+| `railZ`          | height of the rail above the bin floor | For the spanning variant this must be identical on both hosts.                                                                                                                                                                                                                                                                     |
 
 ### The stacking-lip collision
 
@@ -105,7 +105,7 @@ A rail must therefore either sit clear of `LIP_HEIGHT + LIP_TAPER_WIDTH` from th
 
 ### Wall pattern clipping
 
-Gotcha 5: any feature cutting through a wall needs matching border clipping in `wallPatternBuilder.ts`. A rail and its groove both qualify. Without it, hex prisms will bleed into the rail and produce a jagged sliding surface, which is worse here than cosmetically, because it is the bearing face.
+Gotcha 5: any feature cutting through a wall needs matching border clipping in `src/features/generation/worker/generators/wallPatternBuilder.ts`. A rail and its groove both qualify. Without it, hex prisms will bleed into the rail and produce a jagged sliding surface, which is worse here than cosmetically, because it is the bearing face.
 
 ### Print orientation
 
@@ -142,14 +142,14 @@ Hangs off `BinParams` as `slide`. Migration: absent means disabled, so old desig
 
 Each row is a reviewable PR.
 
-| #   | Scope                                                                            | Notes                                                                                                                                      |
-| --- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1   | `SlideProfile` type, defaults, migration, `api/lib/designerValidation.ts` mirror | Server rejects unknown params, so the mirror is not optional.                                                                              |
-| 2   | Rail + groove geometry in the worker, with lip suppression                       | The real work. Needs `__kernel-tests__` probes for the lip interaction, since it is invisible to standard assertions.                      |
-| 3   | Wall pattern border clipping for rail and groove                                 | Gotcha 5.                                                                                                                                  |
-| 4   | Panel UI, ghost overlay, i18n across 15 locales                                  | Ghost overlay matters: users need to see where the rail sits before printing.                                                              |
-| 5   | Design pairing via `design-linking`, derived tray width, blocked-resize guard    | Option C. The part that makes it trustworthy.                                                                                              |
-| 6   | Fit-test coupon                                                                  | A short rail + groove pair users print to tune `clearanceMm` before committing to a full set. Precedent: the existing calibration coupons. |
+| #   | Scope                                                                                                                   | Notes                                                                                                                                                                           |
+| --- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `SlideProfile` type, defaults, migration, `api/lib/designerValidation.ts` mirror                                        | Server rejects unknown params, so the mirror is not optional.                                                                                                                   |
+| 2   | Rail + groove geometry in the worker, with lip suppression                                                              | The real work. Needs `__kernel-tests__` probes for the lip interaction, since it is invisible to standard assertions.                                                           |
+| 3   | Wall pattern border clipping for rail and groove                                                                        | Gotcha 5.                                                                                                                                                                       |
+| 4   | Panel UI, ghost overlay, i18n across 15 locales                                                                         | Ghost overlay matters: users need to see where the rail sits before printing.                                                                                                   |
+| 5   | Design pairing via `src/features/design-linking/`, derived tray width, blocked-resize guard, and **placement tracking** | Option C. The part that makes it trustworthy. Placement is the easy thing to forget: a host dragged one cell sideways changes the span while every design stays byte-identical. |
+| 6   | Fit-test coupon                                                                                                         | A short rail + groove pair users print to tune `clearanceMm` before committing to a full set. Precedent: the existing calibration coupons.                                      |
 
 Items 1–4 deliver the internal variant. 5 adds the spanning variant.
 
@@ -159,7 +159,7 @@ Items 1–4 deliver the internal variant. 5 adds the spanning variant.
 
 Standard assertions will not catch the failure modes here.
 
-- **Rail thinned by the lip taper** — invisible to bounding box, triangle count and watertightness. Probe the volume with `isSolidThrough` / `sectionHalfWidth` from `__kernel-tests__/meshAssertions`, the same approach that caught the foot and lip defects in gotcha 10.
+- **Rail thinned by the lip taper** — invisible to bounding box, triangle count and watertightness. Probe the volume with `isSolidThrough` / `sectionHalfWidth` from `src/features/generation/worker/generators/__kernel-tests__/meshAssertions.ts`, the same approach that caught the foot and lip defects in gotcha 10.
 - **The pair actually slides** — assert `groove − rail ≥ 2 × clearanceMm` on every face analytically, from the same parameters that drive both solids. This is the equivalent of the plate/transform agreement test in the project-file work: two independently generated things that must agree, pinned by one shared derivation.
 - **Rail heights match across a pair** — a scenario building both host and tray from a linked pair and comparing `railZMm`.
 - **Overhang** — run the existing stack-print overhang audit over a railed bin.
