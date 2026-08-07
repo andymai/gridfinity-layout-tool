@@ -139,10 +139,11 @@ describe('resolveSlideGeometry', () => {
     const rim = (slide: Partial<SlideConfig> = {}, over: Partial<SlideGeometryInput> = {}) =>
       resolveSlideGeometry(input({ railMount: 'rim', ...slide }, over));
 
-    it('builds a shelf and a guide on each side', () => {
+    it('builds a shelf and a guide on each side, plus end stops', () => {
+      // Two shelves, two guides, and one stop at each end of each shelf.
       const g = rim();
       expect(g.rejection).toBeNull();
-      expect(g.rails).toHaveLength(4);
+      expect(g.rails).toHaveLength(8);
     });
 
     it('rests the tray on the shelf, above the lip', () => {
@@ -168,7 +169,10 @@ describe('resolveSlideGeometry', () => {
       const g = rim();
       const inp = input({ railMount: 'rim' });
       const shelfTop = rimTrackBaseZ(42, 0, true) + DEFAULT_SLIDE_CONFIG.railThicknessMm;
-      const guides = g.rails.map(sectionBounds).filter((b) => b.zMin >= shelfTop - 1e-9);
+      // Guides run a full thickness tall; the end stops also start at the
+      // shelf top but are much shorter, so filter on the top, not the base.
+      const guideTop = shelfTop + DEFAULT_SLIDE_CONFIG.railThicknessMm;
+      const guides = g.rails.map(sectionBounds).filter((b) => Math.abs(b.zMax - guideTop) < 1e-9);
       expect(guides).toHaveLength(2);
       for (const guide of guides) {
         expect(Math.min(Math.abs(guide.yMin), Math.abs(guide.yMax))).toBeGreaterThanOrEqual(
@@ -235,6 +239,39 @@ describe('resolveSlideGeometry', () => {
       // exists so the panel can SAY why nothing appeared.
       const g = resolveSlideGeometry({ ...input(), isPolygon: true });
       expect(g.rejection).toBe('unsupported-shape');
+    });
+  });
+
+  describe('end stops', () => {
+    it('caps a rim track at both ends', () => {
+      // Rim rails deliberately run the bin's full length so a neighbour's track
+      // continues them, which is also what lets a tray keep going past the last
+      // bin. Interior needs none: the bin's own side walls bound the travel.
+      const g = resolveSlideGeometry(input({ railMount: 'rim' }));
+      const shelfTop = rimTrackBaseZ(42, 0, true) + DEFAULT_SLIDE_CONFIG.railThicknessMm;
+      const guideTop = shelfTop + DEFAULT_SLIDE_CONFIG.railThicknessMm;
+      // Stops rise above the shelf but stop short of the guides, and they bite
+      // down into the shelf so the fuse has a volume to merge rather than a
+      // coplanar face.
+      const stops = g.rails
+        .map(sectionBounds)
+        .filter((b) => b.zMax > shelfTop + 1e-9 && b.zMax < guideTop - 1e-9);
+      expect(stops).toHaveLength(4);
+      for (const stop of stops) expect(stop.zMin).toBeLessThan(shelfTop);
+    });
+
+    it('leaves an interior track uncapped', () => {
+      const g = resolveSlideGeometry(input({ railMount: 'interior' }));
+      expect(g.rails).toHaveLength(2);
+    });
+
+    it('never lets a stop outgrow the track it sits on', () => {
+      // A tiny bin would otherwise get stops longer than the rail.
+      const g = resolveSlideGeometry(input({ railMount: 'rim' }, { outerW: 42, innerW: 39.6 }));
+      for (const rail of g.rails) {
+        expect(rail.xMax - rail.xMin).toBeGreaterThan(0);
+        expect(rail.xMax).toBeLessThanOrEqual(42 / 2 - 3.75 + 1e-9);
+      }
     });
   });
 
