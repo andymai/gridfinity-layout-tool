@@ -184,6 +184,30 @@ const MIN_TRAY_INTERIOR_MM = 2;
 const RAIL_FUSION_MARGIN_MM = 0.5;
 
 /**
+ * End stops on a `rim` track, so the tray cannot run off the end.
+ *
+ * `interior` needs none: its travel is already bounded by the bin's own side
+ * walls. Rim rails run the full length of the bin precisely so a neighbour's
+ * track continues them, which is exactly what lets a tray keep going past the
+ * last bin. Every mature sliding design surveyed has a stop of some kind.
+ *
+ * Sized to be clicked past by hand rather than to lock: the tray still lifts
+ * straight out, so a stop that could not be overridden would only make the
+ * thing harder to load.
+ */
+const END_STOP_HEIGHT_MM = 0.6;
+const END_STOP_LENGTH_MM = 3;
+/**
+ * How far a stop bites into the shelf below it and the guide beside it.
+ *
+ * Sitting exactly ON those faces makes coplanar contact, which fuses into
+ * non-manifold edges: the export stayed watertight and the bounding box was
+ * unchanged, and only the manifold check caught it. Interpenetrating instead
+ * gives the boolean a real volume to merge.
+ */
+const END_STOP_BITE_MM = 0.3;
+
+/**
  * Highest an `interior` rail's top may sit.
  *
  * The stacking lip reaches `LIP_TAPER_WIDTH` BELOW its own base plane for the
@@ -366,6 +390,30 @@ export function resolveSlideGeometry(input: SlideGeometryInput): SlideGeometry {
     boxSection(-xEnd, xEnd, -outerD / 2, -innerHalf, shelfTop, shelfTop + thickness),
     boxSection(-xEnd, xEnd, innerHalf, outerD / 2, shelfTop, shelfTop + thickness),
   ];
+
+  // End stops sit ON the shelf at both extremities, inside the guides, so they
+  // meet the tray's floor edge rather than its wall.
+  const stopLen = Math.min(END_STOP_LENGTH_MM, xEnd);
+  for (const sign of [-1, 1] as const) {
+    for (const side of [-1, 1] as const) {
+      // Inset from the very end: three solids terminating on one plane makes a
+      // T-junction the fuse resolves as a non-manifold edge, and a stop flush
+      // with the end has nothing for the tray to seat against anyway.
+      rails.push(
+        boxSection(
+          sign < 0 ? -xEnd + END_STOP_BITE_MM : xEnd - END_STOP_BITE_MM - stopLen,
+          sign < 0 ? -xEnd + END_STOP_BITE_MM + stopLen : xEnd - END_STOP_BITE_MM,
+          // Kept strictly on the shelf's EXPOSED top (inboard of the guide) so
+          // each stop interpenetrates exactly one solid. Reaching the guide as
+          // well makes a three-way junction the fuse leaves non-manifold.
+          side < 0 ? -innerHalf + END_STOP_BITE_MM : shelfInnerY,
+          side < 0 ? -shelfInnerY : innerHalf - END_STOP_BITE_MM,
+          shelfTop - END_STOP_BITE_MM,
+          shelfTop + END_STOP_HEIGHT_MM
+        )
+      );
+    }
+  }
 
   return {
     rails,

@@ -28,6 +28,7 @@ import { exportDividers, exportDividerPiecesSeparately } from '../generators/div
 import { buildUniqueDividerPieces } from '../generators/dividerBuilder';
 import { pitchFromParams } from '../generators/gridPitch';
 import { exportLid, exportStackPlate } from '../generators/lidOrchestrator';
+import { exportSlideTray } from '../generators/slideOrchestrator';
 import type { FaceGroupData } from '@/shared/types/generation';
 import { buildLid, buildStackPlate } from '../generators/lidBuilder';
 import { lidAnchorZ } from '../generators/lidConstants';
@@ -329,6 +330,13 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         if (plateExport) {
           pieces.push({ data: plateExport.data, label: 'lid-baseplate' });
         }
+      }
+
+      // The sliding tray is the part that RIDES the rail the bin carries. It
+      // returns null for every config the resolver rejects, so no gate here.
+      const trayExport = await exportSlideTray(params, format, tolerance, angularTolerance);
+      if (trayExport) {
+        pieces.push({ data: trayExport.data, label: 'slide-tray' });
       }
 
       reportProgress(requestId, 'merge', 1);
