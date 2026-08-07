@@ -1,0 +1,82 @@
+src/features/bin-designer/components/panel/WallsSection/WallsSection.tsx
+  s_e694fe720ed7bc::t_6a377b79dc06d9 23,199
+src/features/bin-designer/components/panel/SlideTraySection/SlideTraySection.tsx
+  s_e694fe720ed7bc::t_0da854cedaf8a5 19,43,54,58-59,66,70-71,88,100,104-105
+  s_e694fe720ed7bc::t_2d0ffe44798ea9 92-93
+  s_e694fe720ed7bc::t_44842200df65b8 1-18,20-37,39-42,44-53,55-57,60-65,67-69,72-87,89-91,94-99,101-103,106-113
+  s_e694fe720ed7bc::t_5c220183678f89 38
+src/i18n/locales/zh-CN.json
+  s_e694fe720ed7bc::t_285f8b450b2a66 3641-3665
+src/i18n/locales/ko.json
+  s_e694fe720ed7bc::t_285f8b450b2a66 3641-3665
+src/i18n/locales/ja.json
+  s_e694fe720ed7bc::t_285f8b450b2a66 3641-3665
+src/i18n/locales/es.json
+  s_e694fe720ed7bc::t_285f8b450b2a66 3641-3665
+src/i18n/locales/cs.json
+  s_e694fe720ed7bc::t_285f8b450b2a66 3641-3665
+src/i18n/locales/pl.json
+  s_e694fe720ed7bc::t_285f8b450b2a66 3641-3665
+src/i18n/locales/pt-BR.json
+  s_e694fe720ed7bc::t_285f8b450b2a66 3641-3665
+src/i18n/locales/fr.json
+  s_e694fe720ed7bc::t_285f8b450b2a66 3641-3665
+src/features/bin-designer/components/panel/SlideTraySection/useSlideTraySection.test.ts
+  s_e694fe720ed7bc::t_87cd0843d3b505 1-73
+src/shared/utils/slideGeometry.ts
+  s_e694fe720ed7bc::t_09589d4ff8e92b 1-464
+src/shared/utils/slideGeometry.test.ts
+  s_e694fe720ed7bc::t_09589d4ff8e92b 1-337
+src/features/generation/worker/generators/slideRailBuilder.test.ts
+  s_e694fe720ed7bc::t_09589d4ff8e92b 6-7
+src/i18n/locales/nl.json
+  s_e694fe720ed7bc::t_285f8b450b2a66 3641-3665
+src/features/generation/worker/generators/wallPatternBuilder.ts
+  s_e694fe720ed7bc::t_09589d4ff8e92b 70
+  s_e694fe720ed7bc::t_8597afc84d0c07 71-73
+src/features/generation/worker/generators/slideOrchestrator.test.ts
+  s_e694fe720ed7bc::t_46c61d6695fe47 7
+scripts/i18n-values-allowlist.json
+  s_e694fe720ed7bc::t_cba10ecb2032ab 102
+src/features/bin-designer/components/panel/SlideTraySection/index.ts
+  s_e694fe720ed7bc::t_6a377b79dc06d9 1
+src/i18n/locales/nb.json
+  s_e694fe720ed7bc::t_285f8b450b2a66 3641-3665
+src/i18n/locales/de.json
+  s_e694fe720ed7bc::t_285f8b450b2a66 3641-3665
+src/i18n/locales/it.json
+  s_e694fe720ed7bc::t_285f8b450b2a66 3641-3665
+src/features/bin-designer/components/panel/SlideTraySection/SlideTraySection.test.tsx
+  s_e694fe720ed7bc::t_f62235d8b8010b 1-47
+src/features/generation/worker/generators/slideRailBuilder.ts
+  s_e694fe720ed7bc::t_09589d4ff8e92b 15-16,156-157
+src/i18n/locales/en.ts
+  s_e694fe720ed7bc::t_05f82488731e54 2582-2605
+  s_e694fe720ed7bc::t_c26519656f0457 2606-2608
+src/i18n/locales/sv.json
+  s_e694fe720ed7bc::t_285f8b450b2a66 3641-3665
+src/i18n/locales/uk.json
+  s_e694fe720ed7bc::t_285f8b450b2a66 3641-3665
+src/features/bin-designer/components/panel/SlideTraySection/useSlideTraySection.ts
+  s_e694fe720ed7bc::t_fdf92c8b3b5ccd 1-6,9-59,61-139
+  s_e694fe720ed7bc::t_0da854cedaf8a5 7-8
+  s_e694fe720ed7bc::t_5c220183678f89 60
+src/features/generation/worker/generators/slideOrchestrator.ts
+  s_e694fe720ed7bc::t_09589d4ff8e92b 17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "b6bb5e1985e06669c0be0391537c3ca6fa007796",
+  "prompts": {},
+  "sessions": {
+    "s_e694fe720ed7bc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "11bd0478-b0a5-44b1-9201-aee9d7b1ff5d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
