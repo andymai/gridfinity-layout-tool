@@ -116,6 +116,11 @@ export function resolveSlideGeometry(input: SlideGeometryInput): SlideGeometry {
 
   const trayWidth = slide.trayWidthUnits * input.gridUnitMmX - clearance;
   if (trayWidth <= MIN_TRAY_INTERIOR_MM) return none('bin-too-narrow');
+  // Walls are checked against BOTH axes. Only checking depth let a thick wall
+  // on a narrow tray collapse the cavity in X, and the builder then returned
+  // the un-hollowed outer solid: a printable block that the resolver still
+  // reported as a tray.
+  if (trayWidth - 2 * slide.trayWallMm <= MIN_TRAY_INTERIOR_MM) return none('tray-too-thin');
 
   if (slide.railMount === 'interior') {
     const ceiling = interiorRailCeiling(wallHeight, input.hasLip);

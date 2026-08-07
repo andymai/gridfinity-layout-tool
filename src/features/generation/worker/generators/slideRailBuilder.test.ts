@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
-import { getBounds, withScope } from 'brepjs';
-import type { DisposalScope } from 'brepjs';
+import { getBounds, withScope, intersect, draw } from 'brepjs';
+import type { DisposalScope, ValidSolid } from 'brepjs';
 import { buildSlideRails, buildSlideTray } from './slideRailBuilder';
 import { resolveSlideGeometry, rimTrackBaseZ } from './slideGeometry';
 import type { SlideGeometryInput } from './slideGeometry';
@@ -62,7 +62,7 @@ describe('slide rail solids', () => {
     expect(b.zMax).toBeCloseTo(Math.max(...zs), 3);
   });
 
-  it('builds a hollow tray, not a solid block', () => {
+  it('sits at the planned outer size, floor down', () => {
     const inp = input();
     const planned = resolveSlideGeometry(inp);
     const b = withScope((scope: DisposalScope) => {
@@ -76,6 +76,39 @@ describe('slide rail solids', () => {
     // still have the right bounding box height.
     expect(b.zMin).toBeCloseTo(0, 3);
     expect(b.zMax).toBeCloseTo(planned.tray?.heightMm ?? 0, 3);
+  });
+
+  it('is actually hollow', () => {
+    // Bounding box says nothing here: a failed cavity boolean returns the outer
+    // solid at exactly these bounds. Probe the middle of where the cavity
+    // should be — a hollow tray has no material there.
+    const inp = input();
+    const planned = resolveSlideGeometry(inp);
+    const height = planned.tray?.heightMm ?? 0;
+    const empty = withScope((scope: DisposalScope) => {
+      const tray = scope.register(buildSlideTray(inp) as ValidSolid);
+      const probe = scope.register(
+        draw([-1, -1])
+          .lineTo([1, -1])
+          .lineTo([1, 1])
+          .lineTo([-1, 1])
+          .close()
+          .sketchOnPlane('XY', height / 2)
+          .extrude(1)
+      );
+      const hit = intersect(tray, probe as ValidSolid);
+      if (!hit.ok) return true;
+      // An empty intersection has no geometry to bound, and the kernel throws
+      // rather than returning a degenerate box — that throw IS the "nothing
+      // there" answer.
+      try {
+        const hb = getBounds(scope.register(hit.value));
+        return hb.xMax - hb.xMin < 1e-6;
+      } catch {
+        return true;
+      }
+    });
+    expect(empty).toBe(true);
   });
 });
 

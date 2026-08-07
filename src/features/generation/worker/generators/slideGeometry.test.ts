@@ -59,6 +59,17 @@ describe('resolveSlideGeometry', () => {
     expect(g.rejection).toBe('disabled');
   });
 
+  it('rejects a wall thick enough to collapse the tray in X', () => {
+    // Depth alone was checked at first, so a fat wall on a narrow tray closed
+    // the cavity in X and the builder returned the un-hollowed outer solid: a
+    // printable block the resolver still called a tray.
+    const g = resolveSlideGeometry(
+      input({ trayWidthUnits: 0.5, trayWallMm: 2.4 }, { gridUnitMmX: 12 })
+    );
+    expect(g.rejection).toBe('tray-too-thin');
+    expect(g.tray).toBeNull();
+  });
+
   describe('interior mount', () => {
     const interior = (slide: Partial<SlideConfig> = {}) =>
       resolveSlideGeometry(input({ railMount: 'interior', ...slide }));
