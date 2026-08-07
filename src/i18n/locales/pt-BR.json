@@ -3662,5 +3662,14 @@
   "binDesigner.slideTray.unavailable.noBearing": "O trilho avança menos que a folga, então não sustentaria a bandeja.",
   "binDesigner.slideTray.unavailable.railBelowFloor": "Este compartimento é baixo demais para esse rebaixo. Reduza-o ou aumente a altura.",
   "binDesigner.slideTray.unavailable.binTooShallow": "Este compartimento é raso demais para uma bandeja caber entre os trilhos.",
-  "binDesigner.slideTray.unavailable.trayTooSmall": "A bandeja não teria interior aproveitável neste tamanho."
+  "binDesigner.slideTray.unavailable.trayTooSmall": "A bandeja não teria interior aproveitável neste tamanho.",
+  "binDesigner.slideTray.fitSample.button": "Imprimir teste de ajuste",
+  "binDesigner.slideTray.fitSample.dialogTitle": "Teste de ajuste da bandeja deslizante",
+  "binDesigner.slideTray.fitSample.dialogDescription": "Cinco trechos de trilho com folgas diferentes e uma bandeja de teste que percorre todos.",
+  "binDesigner.slideTray.fitSample.tipsTitle": "Como interpretar",
+  "binDesigner.slideTray.fitSample.tip1": "Os trilhos vão do mais apertado ao mais folgado. O primeiro em que a bandeja desliza livremente é a sua folga.",
+  "binDesigner.slideTray.fitSample.tip2": "A escala vai de 0,15 mm a 0,35 mm em passos de 0,05 mm; o terceiro trilho é o padrão de 0,25 mm.",
+  "binDesigner.slideTray.fitSample.tip3": "Imprima com o mesmo filamento e bico que usará no compartimento.",
+  "binDesigner.slideTray.fitSample.exportComplete": "Teste de ajuste baixado",
+  "binDesigner.slideTray.fitSample.exportFailed": "Não foi possível exportar o teste de ajuste"
 }

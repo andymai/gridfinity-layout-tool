@@ -2579,6 +2579,19 @@ const en: Record<string, string> = {
   'binDesigner.walls.text.disabledSolid': 'Not available for solid bins.',
   'binDesigner.walls.text.hint':
     'Text auto-fits into the clear area of each wall, avoiding cutouts and handles. Wall patterns are cleared behind it.',
+  'binDesigner.slideTray.fitSample.button': 'Print a fit test',
+  'binDesigner.slideTray.fitSample.dialogTitle': 'Sliding tray fit test',
+  'binDesigner.slideTray.fitSample.dialogDescription':
+    'Five rail stubs at different clearances, plus one tray stub that runs in all of them.',
+  'binDesigner.slideTray.fitSample.tipsTitle': 'How to read it',
+  'binDesigner.slideTray.fitSample.tip1':
+    'Rails are ordered tightest to loosest. The first one the stub slides in freely is your clearance.',
+  'binDesigner.slideTray.fitSample.tip2':
+    'The ladder runs 0.15mm to 0.35mm in 0.05mm steps; the third rail is the default 0.25mm.',
+  'binDesigner.slideTray.fitSample.tip3':
+    'Print it with the same filament and nozzle you will use for the bin.',
+  'binDesigner.slideTray.fitSample.exportComplete': 'Fit test downloaded',
+  'binDesigner.slideTray.fitSample.exportFailed': 'Could not export the fit test',
   'binDesigner.slideTray.title': 'Sliding tray',
   'binDesigner.slideTray.summary': '{{width}}u, {{mount}}',
   'binDesigner.slideTray.mount.interior': 'Inside bin',

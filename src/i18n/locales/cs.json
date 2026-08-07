@@ -3662,5 +3662,14 @@
   "binDesigner.slideTray.unavailable.noBearing": "Kolejnice zasahuje méně než vůle, takže by zásobník neunesla.",
   "binDesigner.slideTray.unavailable.railBelowFloor": "Tato přihrádka je příliš nízká pro pokles kolejnice. Snižte pokles nebo přihrádku zvyšte.",
   "binDesigner.slideTray.unavailable.binTooShallow": "Tato přihrádka je příliš mělká, aby se zásobník vešel mezi kolejnice.",
-  "binDesigner.slideTray.unavailable.trayTooSmall": "Zásobník by v této velikosti neměl použitelný vnitřek."
+  "binDesigner.slideTray.unavailable.trayTooSmall": "Zásobník by v této velikosti neměl použitelný vnitřek.",
+  "binDesigner.slideTray.fitSample.button": "Vytisknout zkoušku uložení",
+  "binDesigner.slideTray.fitSample.dialogTitle": "Zkouška uložení posuvného zásobníku",
+  "binDesigner.slideTray.fitSample.dialogDescription": "Pět úseků kolejnic s různými vůlemi a jeden zkušební zásobník, který jimi všemi projede.",
+  "binDesigner.slideTray.fitSample.tipsTitle": "Jak ji číst",
+  "binDesigner.slideTray.fitSample.tip1": "Kolejnice jsou seřazeny od nejtěsnější po nejvolnější. První, ve které zásobník volně klouže, je vaše vůle.",
+  "binDesigner.slideTray.fitSample.tip2": "Žebřík jde od 0,15 mm do 0,35 mm po 0,05 mm; třetí kolejnice je výchozích 0,25 mm.",
+  "binDesigner.slideTray.fitSample.tip3": "Tiskněte se stejným filamentem a tryskou, jaké použijete pro přihrádku.",
+  "binDesigner.slideTray.fitSample.exportComplete": "Zkouška uložení stažena",
+  "binDesigner.slideTray.fitSample.exportFailed": "Zkoušku uložení se nepodařilo exportovat"
 }

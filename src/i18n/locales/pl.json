@@ -3662,5 +3662,14 @@
   "binDesigner.slideTray.unavailable.noBearing": "Szyna sięga mniej niż luz, więc nie utrzymałaby tacy.",
   "binDesigner.slideTray.unavailable.railBelowFloor": "Ten pojemnik jest za niski dla takiego obniżenia szyny. Zmniejsz obniżenie lub podwyższ pojemnik.",
   "binDesigner.slideTray.unavailable.binTooShallow": "Ten pojemnik jest za płytki, by taca zmieściła się między szynami.",
-  "binDesigner.slideTray.unavailable.trayTooSmall": "Taca nie miałaby użytecznego wnętrza przy tym rozmiarze."
+  "binDesigner.slideTray.unavailable.trayTooSmall": "Taca nie miałaby użytecznego wnętrza przy tym rozmiarze.",
+  "binDesigner.slideTray.fitSample.button": "Wydrukuj test dopasowania",
+  "binDesigner.slideTray.fitSample.dialogTitle": "Test dopasowania przesuwnej tacy",
+  "binDesigner.slideTray.fitSample.dialogDescription": "Pięć odcinków szyny o różnych luzach oraz jedna próbka tacy, która przesuwa się w każdym.",
+  "binDesigner.slideTray.fitSample.tipsTitle": "Jak go czytać",
+  "binDesigner.slideTray.fitSample.tip1": "Szyny są ułożone od najciaśniejszej do najluźniejszej. Pierwsza, w której taca przesuwa się swobodnie, to twój luz.",
+  "binDesigner.slideTray.fitSample.tip2": "Skala biegnie od 0,15 mm do 0,35 mm co 0,05 mm; trzecia szyna to domyślne 0,25 mm.",
+  "binDesigner.slideTray.fitSample.tip3": "Wydrukuj go tym samym filamentem i dyszą, których użyjesz do pojemnika.",
+  "binDesigner.slideTray.fitSample.exportComplete": "Pobrano test dopasowania",
+  "binDesigner.slideTray.fitSample.exportFailed": "Nie udało się wyeksportować testu dopasowania"
 }

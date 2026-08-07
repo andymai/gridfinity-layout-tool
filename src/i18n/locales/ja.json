@@ -3662,5 +3662,14 @@
   "binDesigner.slideTray.unavailable.noBearing": "レールの張り出しがクリアランスより小さいため、トレーを支えられません。",
   "binDesigner.slideTray.unavailable.railBelowFloor": "このビンはレール下げ量に対して低すぎます。下げ量を減らすかビンを高くしてください。",
   "binDesigner.slideTray.unavailable.binTooShallow": "このビンは浅すぎて、レールの間にトレーが収まりません。",
-  "binDesigner.slideTray.unavailable.trayTooSmall": "このサイズではトレーの内側が使えません。"
+  "binDesigner.slideTray.unavailable.trayTooSmall": "このサイズではトレーの内側が使えません。",
+  "binDesigner.slideTray.fitSample.button": "フィットテストを印刷",
+  "binDesigner.slideTray.fitSample.dialogTitle": "スライドトレーのフィットテスト",
+  "binDesigner.slideTray.fitSample.dialogDescription": "クリアランスの異なる5本のレール片と、そのすべてで走らせる1つのトレー片。",
+  "binDesigner.slideTray.fitSample.tipsTitle": "読み方",
+  "binDesigner.slideTray.fitSample.tip1": "レールはきつい順に並んでいます。トレー片がスムーズに滑る最初のレールがあなたのクリアランスです。",
+  "binDesigner.slideTray.fitSample.tip2": "0.15mm から 0.35mm まで 0.05mm 刻み。3本目が既定の 0.25mm です。",
+  "binDesigner.slideTray.fitSample.tip3": "ビンに使うのと同じフィラメントとノズルで印刷してください。",
+  "binDesigner.slideTray.fitSample.exportComplete": "フィットテストをダウンロードしました",
+  "binDesigner.slideTray.fitSample.exportFailed": "フィットテストを書き出せませんでした"
 }

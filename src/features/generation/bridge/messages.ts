@@ -11,6 +11,7 @@ import type {
   SplitConnectorConfig,
   MarginPiece,
   TextStyleDefaults,
+  SlideConfig,
 } from '@/shared/types/bin';
 import type { GridfinityItem } from '@/shared/types/item';
 import type { LabelPlateIconId } from '@/shared/constants/labelPlates';
@@ -38,6 +39,7 @@ export type WorkerMessage =
   | ExportConnectorSampleMessage
   | ExportLabelPlatesMessage
   | ExportLabelFitSampleMessage
+  | ExportSlideFitSampleMessage
   | ExportDividersMessage
   | ExportCombinedMessage
   | ExportSplitMessage
@@ -262,6 +264,24 @@ export interface ExportLabelPlatesPayload {
  * fully standard-defined, so the payload carries nothing beyond the format.
  * Reuses the BASEPLATE_EXPORT_RESULT response shape.
  */
+/**
+ * Export the sliding-tray fit-calibration card: a clearance ladder of rail
+ * stubs plus one tray stub that runs in all of them. The card's own sizes are
+ * standard-defined, but the rail PROFILE follows the design's slide config, so
+ * the coupon tests the same shelf the bin would carry.
+ * Reuses the BASEPLATE_EXPORT_RESULT response shape.
+ */
+export interface ExportSlideFitSampleMessage {
+  readonly type: 'EXPORT_SLIDE_FIT_SAMPLE';
+  readonly payload: ExportSlideFitSamplePayload;
+}
+
+export interface ExportSlideFitSamplePayload {
+  readonly requestId: string;
+  readonly format: ExportFormat;
+  readonly slide: SlideConfig;
+}
+
 export interface ExportLabelFitSampleMessage {
   readonly type: 'EXPORT_LABEL_FIT_SAMPLE';
   readonly payload: ExportLabelFitSamplePayload;

@@ -3662,5 +3662,14 @@
   "binDesigner.slideTray.unavailable.noBearing": "Skenan når kortare in än spelet och skulle därför inte bära brickan.",
   "binDesigner.slideTray.unavailable.railBelowFloor": "Den här lådan är för låg för skensänkningen. Minska sänkningen eller gör lådan högre.",
   "binDesigner.slideTray.unavailable.binTooShallow": "Den här lådan är för grund för att en bricka ska rymmas mellan skenorna.",
-  "binDesigner.slideTray.unavailable.trayTooSmall": "Brickan skulle inte få något användbart innerutrymme i den här storleken."
+  "binDesigner.slideTray.unavailable.trayTooSmall": "Brickan skulle inte få något användbart innerutrymme i den här storleken.",
+  "binDesigner.slideTray.fitSample.button": "Skriv ut ett passningstest",
+  "binDesigner.slideTray.fitSample.dialogTitle": "Passningstest för skjutbricka",
+  "binDesigner.slideTray.fitSample.dialogDescription": "Fem skenstumpar med olika spel, plus en brickstump som går i alla.",
+  "binDesigner.slideTray.fitSample.tipsTitle": "Så läser du det",
+  "binDesigner.slideTray.fitSample.tip1": "Skenorna går från trängst till lösast. Den första brickstumpen glider fritt i är ditt spel.",
+  "binDesigner.slideTray.fitSample.tip2": "Stegen går från 0,15 mm till 0,35 mm i steg om 0,05 mm; tredje skenan är standardvärdet 0,25 mm.",
+  "binDesigner.slideTray.fitSample.tip3": "Skriv ut det med samma filament och munstycke som du ska använda till lådan.",
+  "binDesigner.slideTray.fitSample.exportComplete": "Passningstest nedladdat",
+  "binDesigner.slideTray.fitSample.exportFailed": "Kunde inte exportera passningstestet"
 }

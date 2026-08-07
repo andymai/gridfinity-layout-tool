@@ -3662,5 +3662,14 @@
   "binDesigner.slideTray.unavailable.noBearing": "El riel entra menos que la holgura, así que no sostendría la bandeja.",
   "binDesigner.slideTray.unavailable.railBelowFloor": "Este cajón es demasiado bajo para ese descenso del riel. Redúcelo o haz el cajón más alto.",
   "binDesigner.slideTray.unavailable.binTooShallow": "Este cajón es demasiado poco profundo para que quepa una bandeja entre los rieles.",
-  "binDesigner.slideTray.unavailable.trayTooSmall": "La bandeja no tendría interior aprovechable a este tamaño."
+  "binDesigner.slideTray.unavailable.trayTooSmall": "La bandeja no tendría interior aprovechable a este tamaño.",
+  "binDesigner.slideTray.fitSample.button": "Imprimir prueba de ajuste",
+  "binDesigner.slideTray.fitSample.dialogTitle": "Prueba de ajuste de la bandeja deslizante",
+  "binDesigner.slideTray.fitSample.dialogDescription": "Cinco tramos de riel con holguras distintas y una bandeja de prueba que recorre todos.",
+  "binDesigner.slideTray.fitSample.tipsTitle": "Cómo interpretarla",
+  "binDesigner.slideTray.fitSample.tip1": "Los rieles van de más ajustado a más holgado. El primero por el que la bandeja se desliza con soltura es tu holgura.",
+  "binDesigner.slideTray.fitSample.tip2": "La escala va de 0,15 mm a 0,35 mm en pasos de 0,05 mm; el tercer riel es el valor por defecto de 0,25 mm.",
+  "binDesigner.slideTray.fitSample.tip3": "Imprímela con el mismo filamento y la misma boquilla que usarás para el cajón.",
+  "binDesigner.slideTray.fitSample.exportComplete": "Prueba de ajuste descargada",
+  "binDesigner.slideTray.fitSample.exportFailed": "No se pudo exportar la prueba de ajuste"
 }

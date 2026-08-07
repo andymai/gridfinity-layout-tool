@@ -16,6 +16,7 @@ import { FeatureToggle } from '../FeatureToggle';
 import { StepperField } from '../shared';
 import { SegmentedControl } from '@/design-system';
 import { useSlideTraySection } from './useSlideTraySection';
+import { SlideFitSampleButton } from './SlideFitSampleButton';
 import type { SlideRailMount } from '@/features/bin-designer/types';
 
 const MOUNTS: readonly SlideRailMount[] = ['interior', 'rim'];
@@ -108,6 +109,7 @@ export function SlideTraySection() {
       <p className="text-[11px] leading-relaxed text-content-tertiary">
         {t('binDesigner.slideTray.clearanceHint')}
       </p>
+      <SlideFitSampleButton />
     </FeatureToggle>
   );
 }

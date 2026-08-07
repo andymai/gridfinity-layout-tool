@@ -3662,5 +3662,14 @@
   "binDesigner.slideTray.unavailable.noBearing": "La guida rientra meno del gioco, quindi non reggerebbe il vassoio.",
   "binDesigner.slideTray.unavailable.railBelowFloor": "Questo contenitore è troppo basso per tale abbassamento. Riducilo o alza il contenitore.",
   "binDesigner.slideTray.unavailable.binTooShallow": "Questo contenitore è troppo poco profondo perché un vassoio stia tra le guide.",
-  "binDesigner.slideTray.unavailable.trayTooSmall": "Il vassoio non avrebbe interno utilizzabile a questa misura."
+  "binDesigner.slideTray.unavailable.trayTooSmall": "Il vassoio non avrebbe interno utilizzabile a questa misura.",
+  "binDesigner.slideTray.fitSample.button": "Stampa prova di accoppiamento",
+  "binDesigner.slideTray.fitSample.dialogTitle": "Prova di accoppiamento del vassoio scorrevole",
+  "binDesigner.slideTray.fitSample.dialogDescription": "Cinque tratti di guida con giochi diversi più un vassoio di prova che scorre in tutti.",
+  "binDesigner.slideTray.fitSample.tipsTitle": "Come leggerla",
+  "binDesigner.slideTray.fitSample.tip1": "Le guide vanno dalla più stretta alla più larga. La prima in cui il vassoio scorre liberamente è il tuo gioco.",
+  "binDesigner.slideTray.fitSample.tip2": "La scala va da 0,15 mm a 0,35 mm a passi di 0,05 mm; la terza guida è il valore predefinito di 0,25 mm.",
+  "binDesigner.slideTray.fitSample.tip3": "Stampala con lo stesso filamento e ugello che userai per il contenitore.",
+  "binDesigner.slideTray.fitSample.exportComplete": "Prova di accoppiamento scaricata",
+  "binDesigner.slideTray.fitSample.exportFailed": "Impossibile esportare la prova di accoppiamento"
 }

@@ -13,6 +13,7 @@ import type {
   ResolvedBaseplateParams,
   SplitConnectorConfig,
   MarginPiece,
+  SlideConfig,
 } from '@/shared/types/bin';
 import type { GridfinityItem } from '@/shared/types/item';
 import type {
@@ -409,6 +410,26 @@ export function exportLabelPlates(
     (requestId) => ({
       type: 'EXPORT_LABEL_PLATES',
       payload: { plates, options, requestId, format },
+    })
+  );
+}
+
+/**
+ * Export the sliding-tray fit-calibration card. Fixed small workload (five
+ * rail stubs plus one tray stub), so it shares the fixed export ceiling.
+ */
+export function exportSlideFitSample(
+  ctx: BridgeExportContext,
+  format: ExportFormat,
+  slide: SlideConfig
+): Promise<BaseplateExportResult> {
+  return runExport<BaseplateExportResult>(
+    ctx,
+    'export',
+    CONNECTOR_SAMPLE_TIMEOUT_MS,
+    (requestId) => ({
+      type: 'EXPORT_SLIDE_FIT_SAMPLE',
+      payload: { requestId, format, slide },
     })
   );
 }

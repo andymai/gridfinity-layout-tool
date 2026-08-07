@@ -3662,5 +3662,14 @@
   "binDesigner.slideTray.unavailable.noBearing": "De rail steekt minder ver in dan de speling en zou de lade dus niet dragen.",
   "binDesigner.slideTray.unavailable.railBelowFloor": "Deze bak is te laag voor die railverlaging. Verklein de verlaging of maak de bak hoger.",
   "binDesigner.slideTray.unavailable.binTooShallow": "Deze bak is te ondiep om een lade tussen de rails te laten passen.",
-  "binDesigner.slideTray.unavailable.trayTooSmall": "De lade zou bij deze maat geen bruikbare binnenruimte hebben."
+  "binDesigner.slideTray.unavailable.trayTooSmall": "De lade zou bij deze maat geen bruikbare binnenruimte hebben.",
+  "binDesigner.slideTray.fitSample.button": "Pasvormtest printen",
+  "binDesigner.slideTray.fitSample.dialogTitle": "Pasvormtest schuiflade",
+  "binDesigner.slideTray.fitSample.dialogDescription": "Vijf railstukken met verschillende speling, plus één ladestuk dat er in alle loopt.",
+  "binDesigner.slideTray.fitSample.tipsTitle": "Hoe lees je hem",
+  "binDesigner.slideTray.fitSample.tip1": "De rails lopen van strak naar ruim. De eerste waarin het ladestuk soepel glijdt, is jouw speling.",
+  "binDesigner.slideTray.fitSample.tip2": "De reeks loopt van 0,15 mm tot 0,35 mm in stappen van 0,05 mm; de derde rail is de standaard 0,25 mm.",
+  "binDesigner.slideTray.fitSample.tip3": "Print hem met hetzelfde filament en dezelfde nozzle als de bak.",
+  "binDesigner.slideTray.fitSample.exportComplete": "Pasvormtest gedownload",
+  "binDesigner.slideTray.fitSample.exportFailed": "Kon de pasvormtest niet exporteren"
 }

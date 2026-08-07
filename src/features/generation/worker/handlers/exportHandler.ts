@@ -11,6 +11,7 @@ import type {
   ExportConnectorSampleMessage,
   ExportLabelPlatesMessage,
   ExportLabelFitSampleMessage,
+  ExportSlideFitSampleMessage,
   ExportDividersMessage,
   ExportCombinedMessage,
   CombinedExportPiece,
@@ -29,6 +30,7 @@ import { buildUniqueDividerPieces } from '../generators/dividerBuilder';
 import { pitchFromParams } from '../generators/gridPitch';
 import { exportLid, exportStackPlate } from '../generators/lidOrchestrator';
 import { exportSlideTray } from '../generators/slideOrchestrator';
+import { exportSlideFitSample } from '../generators/slideFitSample';
 import type { FaceGroupData } from '@/shared/types/generation';
 import { buildLid, buildStackPlate } from '../generators/lidBuilder';
 import { lidAnchorZ } from '../generators/lidConstants';
@@ -176,6 +178,23 @@ export async function handleExportLabelFitSample(
       return { data: result.data, format: payload.format, fileName: result.fileName };
     },
     'Label fit sample export failed',
+    (p) => [p.data],
+    classifyExportError
+  );
+}
+
+export async function handleExportSlideFitSample(
+  message: ExportSlideFitSampleMessage
+): Promise<void> {
+  const payload = message.payload;
+  await runExport(
+    payload.requestId,
+    'BASEPLATE_EXPORT_RESULT',
+    async () => {
+      const result = await exportSlideFitSample(payload.format, payload.slide);
+      return { data: result.data, format: payload.format, fileName: result.fileName };
+    },
+    'Slide fit sample export failed',
     (p) => [p.data],
     classifyExportError
   );
