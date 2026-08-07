@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import type { CommunityDesign } from '@/shared/types/community';
 import type { BinParams } from '@/shared/types/bin';
 import { INITIAL_BROWSE_STATE, useBrowseStore } from '../../store/browseStore';
+import { buildDesignImages } from '../../utils/designMedia';
 
 vi.mock('@/shared/components/GlbViewer', () => ({
   GlbViewer: ({
@@ -55,12 +56,15 @@ function renderContent(
   overrides: Partial<CommunityDesign> = {},
   props: Partial<Parameters<typeof CommunityDetailContent>[0]> = {}
 ) {
+  const subject = design(overrides);
   return render(
     <CommunityDetailContent
-      design={design(overrides)}
+      design={subject}
       counts={{ likes: 12, remixes: 4, exports: 9 }}
       isMobile={false}
       parentResolution={{ kind: 'snapshot' }}
+      images={buildDesignImages(subject.thumbnails, [])}
+      onOpenLightbox={vi.fn()}
       {...props}
     />
   );
@@ -124,27 +128,48 @@ describe('CommunityDetailContent', () => {
     expect(screen.getByTestId('glb-viewer')).toHaveAttribute('data-load', 'tap');
   });
 
-  it('switches the poster through the thumbnail angle strip', () => {
+  it('opens on the 3D model with the first render as its poster', () => {
     renderContent();
     expect(screen.getByTestId('glb-viewer')).toHaveAttribute(
       'data-poster',
       'https://blob.example/t0.webp'
     );
-    const second = screen.getByLabelText('Show preview angle 2');
-    expect(second).toHaveAttribute('aria-pressed', 'false');
-    fireEvent.click(second);
-    expect(second).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByTestId('glb-viewer')).toHaveAttribute(
-      'data-poster',
-      'https://blob.example/t1.webp'
-    );
+    expect(screen.getByTestId('design-media-tile-model')).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('hides the angle strip once the model is live', () => {
+  it('swaps the hero to a filmstrip image, replacing the model', () => {
     renderContent();
-    expect(screen.getByLabelText('Show preview angle 2')).toBeInTheDocument();
+    const second = screen.getByLabelText('Show preview angle 2');
+    expect(second).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(second);
+
+    expect(second).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('design-media-hero')).toBeInTheDocument();
+    expect(screen.queryByTestId('glb-viewer')).not.toBeInTheDocument();
+  });
+
+  it('keeps the filmstrip up once the model is live, so the renders stay reachable', () => {
+    renderContent();
     fireEvent.click(screen.getByTestId('mock-model-ready'));
-    expect(screen.queryByLabelText('Show preview angle 2')).not.toBeInTheDocument();
+    // The old angle strip unmounted here, which left every render unreachable
+    // and gave the print photos nowhere to appear.
+    expect(screen.getByLabelText('Show preview angle 2')).toBeInTheDocument();
+  });
+
+  it('enlarges the selected image through the hero', () => {
+    const onOpenLightbox = vi.fn();
+    renderContent({}, { onOpenLightbox });
+
+    fireEvent.click(screen.getByLabelText('Show preview angle 2'));
+    fireEvent.click(screen.getByTestId('design-media-hero'));
+
+    expect(onOpenLightbox).toHaveBeenCalledWith(1);
+  });
+
+  it('renders the primary actions in the rail rather than the footer', () => {
+    renderContent({}, { primaryActions: <button type="button">Remix</button> });
+    expect(screen.getByTestId('community-detail-primary-actions')).toHaveTextContent('Remix');
   });
 
   it('renders the lineage snapshot with the root credit when deeper than one level', () => {

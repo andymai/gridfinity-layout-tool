@@ -1,9 +1,7 @@
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { Badge, Button, IconButton, cn } from '@/design-system';
 import { useTranslation } from '@/i18n';
-import { GlbViewer } from '@/shared/components/GlbViewer';
-import { GradientBackground } from '@/shared/components/preview/GradientBackground';
 import type {
   CommunityDesign,
   CommunityDesignCounts,
@@ -13,7 +11,9 @@ import type {
 import { TECHNIQUE_CONFIG } from '@/shared/types/exampleTechniques';
 import { HeartGlyph } from '../CommunityCard/CommunityCard';
 import { CATEGORY_LABEL_KEYS } from '../../utils/categoryLabels';
+import type { DesignImage } from '../../utils/designMedia';
 import { REPORT_REASON_LABEL_KEYS } from '../../utils/reportReasonLabels';
+import { DesignMediaPanel } from './DesignMediaPanel';
 import { DirectRemixList } from './DirectRemixList';
 import { RemixLineage } from './RemixLineage';
 import { SimilarRail } from './SimilarRail';
@@ -48,6 +48,16 @@ interface CommunityDetailContentProps {
   counts: CommunityDesignCounts | null;
   isMobile: boolean;
   parentResolution: ParentResolution;
+  /** Every render and print photo, in the order the lightbox steps through them. */
+  images: readonly DesignImage[];
+  /** Opens the enlarged view on an index of `images`. */
+  onOpenLightbox: (index: number) => void;
+  /**
+   * The design-acting buttons (remix, place, edit original). They sit in the
+   * rail under the author rather than in the dialog footer: the decision button
+   * should not be the thing you scroll past.
+   */
+  primaryActions?: ReactNode;
   /** Optional so fixtures without like wiring keep compiling; absent hides the heart. */
   like?: DetailLikeState | null;
   /** Filters the gallery to this design's author (the author-view entry point). */
@@ -83,6 +93,9 @@ export function CommunityDetailContent({
   counts,
   isMobile,
   parentResolution,
+  images,
+  onOpenLightbox,
+  primaryActions,
   like = null,
   onFilterByAuthor,
   ownerModeration = null,
@@ -93,61 +106,18 @@ export function CommunityDetailContent({
   onOpenDesign,
 }: CommunityDetailContentProps) {
   const t = useTranslation();
-  const [angleIndex, setAngleIndex] = useState(0);
-  const [viewerReady, setViewerReady] = useState(false);
   const [remixListOpen, setRemixListOpen] = useState(false);
-  const handleModelReady = useCallback(() => setViewerReady(true), []);
 
-  const poster = design.thumbnails.at(angleIndex) ?? design.thumbnails.at(0) ?? '';
   const { params, metrics, lineage } = design;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto md:flex-row md:overflow-hidden">
-      {/* Viewer column */}
-      <div className="flex flex-col items-center gap-3 bg-surface p-4 md:flex-1 md:justify-center md:overflow-y-auto">
-        <div
-          className="relative w-full max-w-xl"
-          style={{ aspectRatio: '1 / 1', maxHeight: isMobile ? '45vh' : '55vh' }}
-        >
-          <GlbViewer
-            meshUrl={design.meshUrl}
-            posterUrl={poster}
-            alt={design.name}
-            loadBehavior={isMobile ? 'tap' : 'auto'}
-            onModelReady={handleModelReady}
-            className="h-full w-full"
-          >
-            <GradientBackground />
-          </GlbViewer>
-        </div>
-
-        {/* Angle selection swaps the poster, which the loaded canvas covers;
-            hide the strip once the model is live so it cannot appear inert. */}
-        {!viewerReady && design.thumbnails.length > 1 && (
-          <div
-            role="group"
-            aria-label={t('community.detail.anglesLabel')}
-            className="flex items-center gap-2"
-          >
-            {design.thumbnails.map((thumbnail, index) => (
-              <Button
-                key={thumbnail}
-                variant="ghost"
-                touchTarget={false}
-                onClick={() => setAngleIndex(index)}
-                aria-label={t('community.detail.angleAria', { index: index + 1 })}
-                aria-pressed={index === angleIndex}
-                className={cn(
-                  'h-12 w-12 overflow-hidden rounded-lg border p-0',
-                  index === angleIndex ? 'border-accent' : 'border-stroke-subtle'
-                )}
-              >
-                <img src={thumbnail} alt="" className="h-full w-full object-cover" />
-              </Button>
-            ))}
-          </div>
-        )}
-      </div>
+      <DesignMediaPanel
+        design={design}
+        images={images}
+        isMobile={isMobile}
+        onOpenLightbox={onOpenLightbox}
+      />
 
       {/* Details rail */}
       <div className="space-y-4 p-4 md:w-80 md:shrink-0 md:overflow-y-auto md:border-l md:border-stroke-subtle">
@@ -231,54 +201,11 @@ export function CommunityDetailContent({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded bg-surface-secondary px-2 py-1 text-xs uppercase tracking-wide text-content-secondary">
-            {t(CATEGORY_LABEL_KEYS[design.category])}
-          </span>
-          {design.techniques.map((technique) => (
-            <span
-              key={technique}
-              className="rounded bg-surface-secondary px-2 py-1 text-xs uppercase tracking-wide text-content-tertiary"
-            >
-              {t(TECHNIQUE_CONFIG[technique].labelKey)}
-            </span>
-          ))}
-        </div>
-
-        <div>
-          <h3 className="mb-1 text-sm font-medium text-content">
-            {t('community.detail.descriptionTitle')}
-          </h3>
-          {design.description.trim() === '' ? (
-            <p className="text-sm text-content-tertiary">{t('community.detail.noDescription')}</p>
-          ) : (
-            <p className="whitespace-pre-line break-words text-sm text-content-secondary">
-              {design.description}
-            </p>
-          )}
-        </div>
-
-        <div>
-          <h3 className="mb-1 text-sm font-medium text-content">
-            {t('community.detail.dimensionsTitle')}
-          </h3>
-          <p className="text-sm text-content-secondary">
-            {t('community.detail.gridUnits', {
-              width: params.width,
-              depth: params.depth,
-              height: params.height,
-            })}
-          </p>
-          <p className="text-xs text-content-tertiary">
-            {t('community.detail.millimeters', {
-              width: formatMm(metrics.width),
-              depth: formatMm(metrics.depth),
-              height: formatMm(metrics.height),
-            })}
-          </p>
-        </div>
-
-        {costSlot}
+        {primaryActions !== undefined && (
+          <div className="flex flex-col gap-2" data-testid="community-detail-primary-actions">
+            {primaryActions}
+          </div>
+        )}
 
         {counts !== null && (
           <>
@@ -329,6 +256,55 @@ export function CommunityDetailContent({
             )}
           </>
         )}
+
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="rounded bg-surface-secondary px-2 py-1 text-xs uppercase tracking-wide text-content-secondary">
+            {t(CATEGORY_LABEL_KEYS[design.category])}
+          </span>
+          {design.techniques.map((technique) => (
+            <span
+              key={technique}
+              className="rounded bg-surface-secondary px-2 py-1 text-xs uppercase tracking-wide text-content-tertiary"
+            >
+              {t(TECHNIQUE_CONFIG[technique].labelKey)}
+            </span>
+          ))}
+        </div>
+
+        <div>
+          <h3 className="mb-1 text-sm font-medium text-content">
+            {t('community.detail.descriptionTitle')}
+          </h3>
+          {design.description.trim() === '' ? (
+            <p className="text-sm text-content-tertiary">{t('community.detail.noDescription')}</p>
+          ) : (
+            <p className="whitespace-pre-line break-words text-sm text-content-secondary">
+              {design.description}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <h3 className="mb-1 text-sm font-medium text-content">
+            {t('community.detail.dimensionsTitle')}
+          </h3>
+          <p className="text-sm text-content-secondary">
+            {t('community.detail.gridUnits', {
+              width: params.width,
+              depth: params.depth,
+              height: params.height,
+            })}
+          </p>
+          <p className="text-xs text-content-tertiary">
+            {t('community.detail.millimeters', {
+              width: formatMm(metrics.width),
+              depth: formatMm(metrics.depth),
+              height: formatMm(metrics.height),
+            })}
+          </p>
+        </div>
+
+        {costSlot}
 
         {lineage !== null && (
           <RemixLineage

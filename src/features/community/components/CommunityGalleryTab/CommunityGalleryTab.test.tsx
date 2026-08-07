@@ -629,10 +629,10 @@ describe('CommunityGalleryTab shelf landing', () => {
     await waitFor(() => {
       expect(screen.getByTestId('community-shelves')).toBeInTheDocument();
     });
-    // The rail carries a Staff picks toggle of its own, so scope the shelf
+    // The rail carries a the featured shelf toggle of its own, so scope the shelf
     // heading to the shelves.
     expect(
-      within(screen.getByTestId('community-shelves')).getByText('community.shelves.staffPicks')
+      within(screen.getByTestId('community-shelves')).getByText('community.shelves.featured')
     ).toBeInTheDocument();
   });
 
@@ -680,7 +680,7 @@ describe('CommunityGalleryTab shelf landing', () => {
     await waitFor(() => {
       expect(screen.getByTestId('community-shelves')).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByTestId('community-shelf-see-all-staff-picks'));
+    fireEvent.click(screen.getByTestId('community-shelf-see-all-featured'));
     expect(useBrowseStore.getState().filters.featuredOnly).toBe(true);
     // The shelves are a landing affordance; an active filter replaces them
     // with the filtered grid.

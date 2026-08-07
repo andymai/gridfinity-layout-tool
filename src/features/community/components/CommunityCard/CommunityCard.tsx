@@ -56,7 +56,9 @@ export function PrintGlyph() {
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
-        d="M6 9V3h12v6M6 18H4a1 1 0 01-1-1v-5a2 2 0 012-2h14a2 2 0 012 2v5a1 1 0 01-1 1h-2M6 14h12v7H6v-7z"
+        // A nozzle over a build plate, not a paper printer with a tray and a
+        // sheet: this counts 3D prints.
+        d="M8.5 3h7l-1.5 6.5h-4Z M12 9.5v4 M4.5 19.5h15"
       />
     </svg>
   );

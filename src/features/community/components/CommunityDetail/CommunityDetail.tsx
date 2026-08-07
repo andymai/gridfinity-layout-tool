@@ -22,6 +22,7 @@ import type { CommunityPrint, CommunityPrintSummary } from '@/shared/types/commu
 import type { CommunityDetailProps } from '@/shared/types/communityDetail';
 import { savePendingLikeAction } from '@/shared/utils/communityPendingLikeAction';
 import { fetchCommunityDesign } from '../../api/client';
+import { buildDesignImages, findPhotoIndex } from '../../utils/designMedia';
 import { useLikeToggle } from '../../hooks/useLikeToggle';
 import type { LikeToggleTarget } from '../../hooks/useLikeToggle';
 import { useBrowseStore } from '../../store/browseStore';
@@ -34,6 +35,7 @@ import { usePrintDialogStore } from '../../store/printDialogStore';
 import { PrintDialog } from '../PrintDialog';
 import { PrintCostPanel } from '../PrintCostPanel';
 import { PrintsSection } from '../PrintsSection';
+import { MediaLightbox } from '../MediaLightbox';
 import { CommunityDetailContent } from './CommunityDetailContent';
 import type { OwnerModeration, ParentResolution } from './CommunityDetailContent';
 import { useDetailHistoryTrap } from './useDetailHistoryTrap';
@@ -41,6 +43,9 @@ import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useRetryOnReconnect } from '@/shared/hooks/useRetryOnReconnect';
 
 type DetailPhase = 'loading' | 'ready' | 'gone' | 'error';
+
+/** Stable empty reference so the media memo does not churn every render. */
+const EMPTY_PRINTS: readonly CommunityPrint[] = [];
 
 type BusyAction = 'remix' | 'edit' | 'duplicate' | 'place' | null;
 
@@ -133,6 +138,13 @@ function CommunityDetailDialog({
   // CTA and the list must agree on whether the viewer has a print.
   const [printsRefresh, setPrintsRefresh] = useState(0);
   const [reportPrintTarget, setReportPrintTarget] = useState<CommunityPrint | null>(null);
+  // Stamped like ownPrint: the overlay is reused across designs, and an
+  // unstamped list would caption design B's filmstrip with design A's printers.
+  const [printItems, setPrintItems] = useState<{
+    designId: string;
+    items: readonly CommunityPrint[];
+  } | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [ownerModeration, setOwnerModeration] = useState<OwnerModeration | null>(null);
   const [offline, setOffline] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -419,6 +431,7 @@ function CommunityDetailDialog({
           print: result.value.mine,
           summary: result.value.summary,
         });
+        setPrintItems({ designId: printsDesignId, items: result.value.items });
         return;
       }
       // The kill switch is the one failure worth acting on: a CTA that opens a
@@ -438,6 +451,31 @@ function CommunityDetailDialog({
   const stampedPrints = design !== null && ownPrint?.designId === design.id ? ownPrint : null;
   const myPrint = stampedPrints?.print ?? null;
   const printSummary = stampedPrints?.summary ?? null;
+
+  const mediaPrints =
+    design !== null && printItems?.designId === design.id ? printItems.items : EMPTY_PRINTS;
+  const images = useMemo(
+    () => buildDesignImages(design?.thumbnails ?? [], mediaPrints),
+    [design?.thumbnails, mediaPrints]
+  );
+
+  const handlePrintItemsChange = useCallback(
+    (items: readonly CommunityPrint[]) => {
+      if (design === null) return;
+      setPrintItems({ designId: design.id, items });
+    },
+    [design]
+  );
+
+  const handleOpenPhoto = useCallback(
+    (printId: string, photoIndex: number) => {
+      const index = findPhotoIndex(images, mediaPrints, printId, photoIndex);
+      if (index >= 0) setLightboxIndex(index);
+    },
+    [images, mediaPrints]
+  );
+
+  const closeLightbox = useCallback(() => setLightboxIndex(null), []);
 
   const printDialogOpen = usePrintDialogStore((s) => s.phase !== 'closed');
 
@@ -478,20 +516,64 @@ function CommunityDetailDialog({
 
   const title = design?.name ?? card?.name ?? t('community.detail.title');
 
-  // Shared between the owner and non-owner footers: in the fits-gap flow
-  // placing at the selected gap is the primary intent for both.
-  const placeButton = (
-    <Button
-      variant="primary"
-      touchTarget={isMobile}
-      loading={busy === 'place'}
-      disabled={busy !== null && busy !== 'place'}
-      onClick={() => void handlePlaceInLayout()}
-      data-testid="community-place-in-layout"
-    >
-      {t('community.detail.placeInLayout')}
-    </Button>
-  );
+  /**
+   * The buttons that act on the design itself. They live in the rail under the
+   * author rather than in the dialog footer, so the decision button sits with
+   * the thing it acts on instead of below a rail you have to scroll past.
+   *
+   * Share, report and the owner's Duplicate as new stay in the footer: those
+   * act on the record, not on what you are deciding to print.
+   */
+  const primaryActions =
+    design === null ? undefined : (
+      <>
+        {placeAvailable && (
+          <Button
+            // Fits-gap context: placing at the selected gap is the primary
+            // intent, for the owner as much as for anyone else.
+            variant="primary"
+            touchTarget={isMobile}
+            loading={busy === 'place'}
+            disabled={busy !== null && busy !== 'place'}
+            onClick={() => void handlePlaceInLayout()}
+            className="w-full justify-center"
+            data-testid="community-place-in-layout"
+          >
+            {t('community.detail.placeInLayout')}
+          </Button>
+        )}
+        {isOwner ? (
+          <Button
+            variant={placeAvailable ? 'secondary' : 'primary'}
+            touchTarget={isMobile}
+            loading={busy === 'edit'}
+            // Hidden designs reject updates server-side (PUT 403s while
+            // non-live); disabling up front spares the owner a publish flow
+            // guaranteed to fail at submit.
+            disabled={(busy !== null && busy !== 'edit') || design.status !== 'live'}
+            title={design.status !== 'live' ? t('community.detail.editDisabledHidden') : undefined}
+            onClick={() => void handleEditOriginal()}
+            className="w-full justify-center"
+          >
+            {t('community.detail.editOriginal')}
+          </Button>
+        ) : (
+          <Button
+            variant={placeAvailable ? 'secondary' : 'primary'}
+            touchTarget={isMobile}
+            loading={busy === 'remix'}
+            disabled={busy !== null && busy !== 'remix'}
+            onClick={handleRemix}
+            className="w-full justify-center"
+          >
+            {t(placeAvailable ? 'community.detail.openInDesigner' : 'community.detail.remix')}
+          </Button>
+        )}
+        {!isOwner && (
+          <p className="text-xs text-content-tertiary">{t('community.detail.remixHint')}</p>
+        )}
+      </>
+    );
 
   return (
     <Dialog.Root
@@ -551,6 +633,9 @@ function CommunityDetailDialog({
             counts={counts}
             isMobile={isMobile}
             parentResolution={parentResolution}
+            images={images}
+            onOpenLightbox={setLightboxIndex}
+            primaryActions={primaryActions}
             like={
               liveCard !== null || detailStats !== null
                 ? { likedByMe, onToggle: handleToggleLike }
@@ -577,6 +662,8 @@ function CommunityDetailDialog({
                   onReport={setReportPrintTarget}
                   isOwner={isOwner}
                   coverPhotoUrl={design.coverPhotoUrl ?? ''}
+                  onOpenPhoto={handleOpenPhoto}
+                  onItemsChange={handlePrintItemsChange}
                 />
               ) : undefined
             }
@@ -589,13 +676,6 @@ function CommunityDetailDialog({
         <Dialog.Footer
           bordered
           className="max-md:flex-col-reverse max-md:items-stretch max-md:gap-2"
-          leading={
-            isOwner ? undefined : (
-              <p className="text-xs text-content-tertiary max-md:hidden">
-                {t('community.detail.remixHint')}
-              </p>
-            )
-          }
         >
           <Button variant="ghost" touchTarget={isMobile} onClick={() => void handleShare()}>
             {t('community.detail.share')}
@@ -612,76 +692,19 @@ function CommunityDetailDialog({
             >
               <MoreHorizontalIcon />
             </IconButton>
+          ) : isOwner ? (
+            <Button
+              variant="secondary"
+              loading={busy === 'duplicate'}
+              disabled={busy !== null && busy !== 'duplicate'}
+              onClick={handleDuplicate}
+            >
+              {t('community.detail.duplicateAsNew')}
+            </Button>
           ) : (
-            !isOwner && (
-              <Button variant="ghost" onClick={handleReportEntry}>
-                {t('community.detail.report')}
-              </Button>
-            )
-          )}
-          {isOwner ? (
-            <>
-              {!isMobile && (
-                <Button
-                  variant="secondary"
-                  loading={busy === 'duplicate'}
-                  disabled={busy !== null && busy !== 'duplicate'}
-                  onClick={handleDuplicate}
-                >
-                  {t('community.detail.duplicateAsNew')}
-                </Button>
-              )}
-              <Button
-                // In the fits-gap flow placing at the selected gap is the
-                // primary intent even for the design's owner.
-                variant={placeAvailable ? 'secondary' : 'primary'}
-                touchTarget={isMobile}
-                loading={busy === 'edit'}
-                // Hidden designs reject updates server-side (PUT 403s while
-                // non-live); disabling up front spares the owner a publish
-                // flow guaranteed to fail at submit.
-                disabled={(busy !== null && busy !== 'edit') || design.status !== 'live'}
-                title={
-                  design.status !== 'live' ? t('community.detail.editDisabledHidden') : undefined
-                }
-                onClick={() => void handleEditOriginal()}
-              >
-                {t('community.detail.editOriginal')}
-              </Button>
-              {placeAvailable && placeButton}
-            </>
-          ) : placeAvailable ? (
-            <>
-              {/* Fits-gap context: placing at the selected gap is primary;
-                  the remix path stays available as "Open in designer". */}
-              <Button
-                variant="secondary"
-                touchTarget={isMobile}
-                loading={busy === 'remix'}
-                disabled={busy !== null && busy !== 'remix'}
-                onClick={handleRemix}
-              >
-                {t('community.detail.openInDesigner')}
-              </Button>
-              {placeButton}
-            </>
-          ) : (
-            <>
-              <Button
-                variant="primary"
-                touchTarget={isMobile}
-                loading={busy === 'remix'}
-                disabled={busy !== null && busy !== 'remix'}
-                onClick={handleRemix}
-              >
-                {t('community.detail.remix')}
-              </Button>
-              {/* Last child + max-md:flex-col-reverse = the hint lands above
-                  the mobile action stack; desktop shows it via `leading`. */}
-              <p className="text-center text-xs text-content-tertiary md:hidden">
-                {t('community.detail.remixHint')}
-              </p>
-            </>
+            <Button variant="ghost" onClick={handleReportEntry}>
+              {t('community.detail.report')}
+            </Button>
           )}
         </Dialog.Footer>
       )}
@@ -764,6 +787,15 @@ function CommunityDetailDialog({
             trackEvent('community_signin_prompt_shown', { intent: 'report' });
             setSignInIntent('report');
           }}
+        />
+      )}
+
+      {lightboxIndex !== null && design !== null && (
+        <MediaLightbox
+          images={images}
+          startIndex={lightboxIndex}
+          designName={design.name}
+          onClose={closeLightbox}
         />
       )}
 

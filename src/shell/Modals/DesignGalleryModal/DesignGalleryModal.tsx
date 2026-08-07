@@ -79,8 +79,10 @@ export function DesignGalleryModal({ onClose }: DesignGalleryModalProps) {
         closeOnOverlayClick
       >
         <Dialog.Header
-          title={t('binExamples.gallery.title')}
-          bordered={!communityEnabled}
+          title={t(
+            communityEnabled ? 'binExamples.gallery.title' : 'binExamples.gallery.tabs.examples'
+          )}
+          bordered
           closeAriaLabel={t('common.close')}
         />
         {communityEnabled && (

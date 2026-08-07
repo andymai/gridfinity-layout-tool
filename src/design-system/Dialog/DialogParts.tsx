@@ -201,13 +201,24 @@ export function DialogBody({
   padding = 'default',
   scroll = true,
 }: DialogBodyProps) {
-  const { descriptionId, registerDescription } = useDialogContext();
+  const { descriptionId, registerDescription, hasFooter } = useDialogContext();
 
   // useLayoutEffect so aria-describedby is wired before first paint.
   useLayoutEffect(() => registerDescription(), [registerDescription]);
 
   return (
-    <div id={descriptionId} className={cn(bodyVariants({ padding, scroll }), className)}>
+    <div
+      id={descriptionId}
+      className={cn(
+        bodyVariants({ padding, scroll }),
+        // The body has no vertical padding of its own: the header's bottom
+        // inset and the footer's top inset bracket it. Without a footer the
+        // bottom one never arrives and the last control sits on the dialog's
+        // edge, so supply it here. `padding="none"` bodies own their insets.
+        !hasFooter && padding !== 'none' && 'pb-[var(--space-2xl)]',
+        className
+      )}
+    >
       {children}
     </div>
   );
@@ -283,6 +294,12 @@ export function DialogFooter({
   bordered = false,
   leading,
 }: DialogFooterProps) {
+  const { registerFooter } = useDialogContext();
+
+  // useLayoutEffect so the body's fallback bottom inset resolves before first
+  // paint, rather than as a visible reflow.
+  useLayoutEffect(() => registerFooter(), [registerFooter]);
+
   return (
     <div className={cn(footerVariants({ justify, bordered }), className)}>
       {leading && <div className="mr-auto flex items-center gap-3">{leading}</div>}

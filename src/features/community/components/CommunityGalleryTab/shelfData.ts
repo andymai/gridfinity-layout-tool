@@ -21,7 +21,7 @@ export const SHELF_MIN_CARDS = 3;
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
-export type ShelfId = 'staff-picks' | 'proven' | 'new-this-week' | 'most-remixed';
+export type ShelfId = 'featured' | 'proven' | 'new-this-week' | 'most-remixed';
 
 export interface Shelf {
   readonly id: ShelfId;
@@ -39,16 +39,16 @@ export function buildShelves(items: readonly CommunityCard[], now: number): Shel
   // shelf, so a small library doesn't show the same card three times.
   const shownIds = new Set<string>();
 
-  const staffPicks = items
+  const featuredCards = items
     .filter((card) => card.featured)
     .sort(byNewest)
     .slice(0, SHELF_CARD_LIMIT);
-  if (staffPicks.length >= SHELF_MIN_CARDS) {
-    shelves.push({ id: 'staff-picks', cards: staffPicks });
-    for (const card of staffPicks) shownIds.add(card.id);
+  if (featuredCards.length >= SHELF_MIN_CARDS) {
+    shelves.push({ id: 'featured', cards: featuredCards });
+    for (const card of featuredCards) shownIds.add(card.id);
   }
 
-  // Sits directly under staff picks, above recency: a design other people
+  // Sits directly under the featured shelf, above recency: a design other people
   // have actually printed is the strongest recommendation the library has,
   // and it is the one signal here that nobody can inflate by posting.
   const proven = [...items]

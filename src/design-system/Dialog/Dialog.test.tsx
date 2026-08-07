@@ -505,6 +505,39 @@ describe('Dialog', () => {
       expect(body.className).toContain('overflow-hidden');
       expect(body.className).not.toContain('overflow-y-auto');
     });
+
+    it('supplies the bottom inset itself when the dialog has no footer', () => {
+      render(
+        <Dialog.Root open={true} onClose={vi.fn()}>
+          <Dialog.Header title="Test" />
+          <Dialog.Body>Content</Dialog.Body>
+        </Dialog.Root>
+      );
+      expect(screen.getByText('Content').className).toContain('pb-[var(--space-2xl)]');
+    });
+
+    it('leaves the bottom inset to the footer when one is mounted', () => {
+      render(
+        <Dialog.Root open={true} onClose={vi.fn()}>
+          <Dialog.Header title="Test" />
+          <Dialog.Body>Content</Dialog.Body>
+          <Dialog.Footer>
+            <button type="button">OK</button>
+          </Dialog.Footer>
+        </Dialog.Root>
+      );
+      expect(screen.getByText('Content').className).not.toContain('pb-[var(--space-2xl)]');
+    });
+
+    it('does not add a bottom inset to a padding-none body, which owns its own', () => {
+      render(
+        <Dialog.Root open={true} onClose={vi.fn()}>
+          <Dialog.Header title="Test" />
+          <Dialog.Body padding="none">Content</Dialog.Body>
+        </Dialog.Root>
+      );
+      expect(screen.getByText('Content').className).not.toContain('pb-[var(--space-2xl)]');
+    });
   });
 
   describe('split layout', () => {

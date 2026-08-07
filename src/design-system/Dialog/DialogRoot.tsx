@@ -25,6 +25,13 @@ interface DialogContextValue {
   dismissable: boolean;
   registerTitle: () => () => void;
   registerDescription: () => () => void;
+  registerFooter: () => () => void;
+  /**
+   * Whether a Dialog.Footer is mounted. The body carries no vertical padding of
+   * its own because the header's bottom inset and the footer's top inset are
+   * meant to bracket it, so a footerless dialog has to supply the missing one.
+   */
+  hasFooter: boolean;
 }
 
 const DialogContext = createContext<DialogContextValue | null>(null);
@@ -250,6 +257,7 @@ export function DialogRoot({
 
   const [titleRegistrations, setTitleRegistrations] = useState(0);
   const [descriptionRegistrations, setDescriptionRegistrations] = useState(0);
+  const [footerRegistrations, setFooterRegistrations] = useState(0);
 
   const registerTitle = useCallback(() => {
     setTitleRegistrations((count) => count + 1);
@@ -259,6 +267,11 @@ export function DialogRoot({
   const registerDescription = useCallback(() => {
     setDescriptionRegistrations((count) => count + 1);
     return () => setDescriptionRegistrations((count) => count - 1);
+  }, []);
+
+  const registerFooter = useCallback(() => {
+    setFooterRegistrations((count) => count + 1);
+    return () => setFooterRegistrations((count) => count - 1);
   }, []);
 
   // Restore focus via effect cleanup so it also runs when the dialog closes
@@ -332,6 +345,8 @@ export function DialogRoot({
         dismissable,
         registerTitle,
         registerDescription,
+        registerFooter,
+        hasFooter: footerRegistrations > 0,
       }}
     >
       {/* Overlay */}

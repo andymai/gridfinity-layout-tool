@@ -2,17 +2,19 @@
 import type { ReactNode } from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { BufferAttribute, BufferGeometry, Group, Mesh, MeshStandardMaterial } from 'three';
+import type { Object3D } from 'three';
 import { GlbViewer } from './GlbViewer';
 
 interface GltfTestState {
-  impl: () => { scene: Record<string, unknown> };
+  impl: () => { scene: Object3D };
   calls: string[];
   setDecoderPath: ReturnType<typeof vi.fn>;
   orbitProps: Record<string, unknown>;
 }
 
 const gltfState = vi.hoisted((): GltfTestState => ({
-  impl: () => ({ scene: {} }),
+  impl: () => ({ scene: new Group() }),
   calls: [],
   setDecoderPath: vi.fn(),
   orbitProps: {},
@@ -56,7 +58,7 @@ const defaultProps = {
 
 describe('GlbViewer', () => {
   beforeEach(() => {
-    gltfState.impl = () => ({ scene: {} });
+    gltfState.impl = () => ({ scene: new Group() });
     gltfState.calls = [];
     gltfState.orbitProps = {};
     reducedMotion.value = false;
@@ -95,6 +97,25 @@ describe('GlbViewer', () => {
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
   });
 
+  it('gives a normal-less loaded scene computed normals before the first paint', () => {
+    const geometry = new BufferGeometry();
+    geometry.setAttribute(
+      'position',
+      new BufferAttribute(new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]), 3)
+    );
+    const material = new MeshStandardMaterial({ flatShading: true });
+    const scene = new Group();
+    scene.add(new Mesh(geometry, material));
+    gltfState.impl = () => ({ scene });
+
+    render(<GlbViewer {...defaultProps} />);
+
+    // Without these the GPU derives the normal per fragment and NaNs out on
+    // sliver triangles, speckling the model with white pixels.
+    expect(geometry.hasAttribute('normal')).toBe(true);
+    expect(material.flatShading).toBe(false);
+  });
+
   it('notifies onModelReady when the model resolves, not before', () => {
     gltfState.impl = () => {
       // eslint-disable-next-line @typescript-eslint/only-throw-error -- suspend forever, the React Suspense protocol
@@ -106,7 +127,7 @@ describe('GlbViewer', () => {
     render(<GlbViewer {...defaultProps} onModelReady={pendingReady} />);
     expect(pendingReady).not.toHaveBeenCalled();
 
-    gltfState.impl = () => ({ scene: {} });
+    gltfState.impl = () => ({ scene: new Group() });
     const onModelReady = vi.fn();
     render(<GlbViewer {...defaultProps} onModelReady={onModelReady} />);
     expect(onModelReady).toHaveBeenCalledTimes(1);

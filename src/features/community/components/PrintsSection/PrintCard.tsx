@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { Badge, Button, cn } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import type { CommunityPrint } from '@/shared/types/communityPrint';
 import { printerLabel } from '@/shared/types/communityPrinters';
 import { formatGrams, formatMillimetres, formatPrintDuration } from '../../utils/printFormat';
+import { PRINT_VERDICT_LABEL_KEYS, PRINT_VERDICT_TONES } from '../../utils/printVerdict';
 
 export interface PrintCardProps {
   print: CommunityPrint;
@@ -17,19 +19,75 @@ export interface PrintCardProps {
   onPromoteCover?: (photoUrl: string) => void;
   /** The design's current cover, so the promoted photo can label itself. */
   coverPhotoUrl?: string;
+  /** Opens the enlarged view on this print's nth photo; absent leaves tiles inert. */
+  onOpenPhoto?: (printId: string, photoIndex: number) => void;
 }
 
-const VERDICT_KEYS: Record<CommunityPrint['fitVerdict'], string> = {
-  'as-designed': 'community.print.fit.asDesigned',
-  adjusted: 'community.print.fit.adjusted',
-  'did-not-fit': 'community.print.fit.didNotFit',
-};
+interface PrintPhotoTileProps {
+  url: string;
+  alt: string;
+  isCover: boolean;
+  onOpen?: () => void;
+}
 
-const VERDICT_TONES: Record<CommunityPrint['fitVerdict'], 'success' | 'warning' | 'error'> = {
-  'as-designed': 'success',
-  adjusted: 'warning',
-  'did-not-fit': 'error',
-};
+function PrintPhotoTile({ url, alt, isCover, onOpen }: PrintPhotoTileProps) {
+  const t = useTranslation();
+  const [failed, setFailed] = useState(false);
+
+  if (failed) {
+    return (
+      <span
+        className="flex aspect-square items-center justify-center rounded-lg border border-stroke-subtle px-2 text-center text-xs text-content-tertiary"
+        data-testid="print-photo-missing"
+      >
+        {t('community.prints.photoMissing')}
+      </span>
+    );
+  }
+
+  const image = (
+    <img
+      src={url}
+      alt={alt}
+      loading="lazy"
+      decoding="async"
+      // Squared up front so a photo arriving mid-scroll cannot shove the rest
+      // of the grid down as it loads.
+      width={300}
+      height={300}
+      onError={() => setFailed(true)}
+      className="h-full w-full object-cover"
+    />
+  );
+
+  if (onOpen === undefined) {
+    return (
+      <span
+        className={cn(
+          'block aspect-square overflow-hidden rounded-lg border',
+          isCover ? 'border-accent' : 'border-stroke-subtle'
+        )}
+      >
+        {image}
+      </span>
+    );
+  }
+
+  return (
+    <Button
+      variant="ghost"
+      touchTarget={false}
+      onClick={onOpen}
+      aria-label={alt}
+      className={cn(
+        'aspect-square h-auto w-full overflow-hidden rounded-lg border p-0',
+        isCover ? 'border-accent' : 'border-stroke-subtle'
+      )}
+    >
+      {image}
+    </Button>
+  );
+}
 
 export function PrintCard({
   print,
@@ -37,6 +95,7 @@ export function PrintCard({
   onReport,
   onPromoteCover,
   coverPhotoUrl,
+  onOpenPhoto,
 }: PrintCardProps) {
   const t = useTranslation();
   const { settings } = print;
@@ -78,30 +137,30 @@ export function PrintCard({
 
         <Badge
           size="sm"
-          tone={VERDICT_TONES[print.fitVerdict]}
+          tone={PRINT_VERDICT_TONES[print.fitVerdict]}
           data-testid={`print-verdict-${print.fitVerdict}`}
         >
-          {t(VERDICT_KEYS[print.fitVerdict])}
+          {t(PRINT_VERDICT_LABEL_KEYS[print.fitVerdict])}
         </Badge>
       </div>
 
       {print.photos.length > 0 && (
-        <ul className="mt-2 flex gap-2 overflow-x-auto scrollbar-thin">
+        // A grid rather than the old 96px scrolling row: a drawer shot cropped
+        // to a thumbnail shows a patch of filament, and half the photos sat
+        // off the edge of a 320px rail.
+        <ul className="mt-2 grid grid-cols-2 gap-2">
           {print.photos.map((photo, index) => (
             // Index-qualified: the server does not dedupe the photo array, so
             // two identical URLs would otherwise collide as keys.
-            <li key={`${index}-${photo}`} className="shrink-0">
-              <img
-                src={photo}
+            <li key={`${index}-${photo}`}>
+              <PrintPhotoTile
+                url={photo}
                 alt={t('community.prints.photoAlt', {
                   index: index + 1,
                   author: print.authorName,
                 })}
-                loading="lazy"
-                className={cn(
-                  'h-24 w-24 rounded-lg border object-cover',
-                  photo === coverPhotoUrl ? 'border-accent' : 'border-stroke-subtle'
-                )}
+                isCover={photo === coverPhotoUrl}
+                onOpen={onOpenPhoto === undefined ? undefined : () => onOpenPhoto(print.id, index)}
               />
               {onPromoteCover !== undefined &&
                 (photo === coverPhotoUrl ? (
@@ -112,7 +171,7 @@ export function PrintCard({
                   <Button
                     variant="ghost"
                     onClick={() => onPromoteCover(photo)}
-                    className="mt-1 h-auto w-24 justify-center p-0 text-[11px] font-normal text-content-tertiary underline-offset-2 hover:underline"
+                    className="mt-1 h-auto w-full justify-center p-0 text-[11px] font-normal text-content-tertiary underline-offset-2 hover:underline"
                     data-testid={`print-promote-${index}`}
                   >
                     {t('community.prints.useAsCover')}

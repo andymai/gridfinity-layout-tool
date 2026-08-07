@@ -52,19 +52,19 @@ describe('buildShelves', () => {
   it('staff picks holds featured cards newest-first, capped at the shelf limit', () => {
     const items = manyCards(20, (i) => ({ featured: i < 10 }));
     const shelves = buildShelves(items, NOW);
-    const staffPicks = shelves.find((shelf) => shelf.id === 'staff-picks');
-    expect(staffPicks).toBeDefined();
-    expect(staffPicks?.cards).toHaveLength(SHELF_CARD_LIMIT);
-    expect(staffPicks?.cards.every((c) => c.featured)).toBe(true);
-    expect(staffPicks?.cards[0].id).toBe('design009');
-    expect(staffPicks?.cards.map((c) => c.createdAt)).toEqual(
-      [...(staffPicks?.cards ?? [])].map((c) => c.createdAt).sort((a, b) => b - a)
+    const featuredCards = shelves.find((shelf) => shelf.id === 'featured');
+    expect(featuredCards).toBeDefined();
+    expect(featuredCards?.cards).toHaveLength(SHELF_CARD_LIMIT);
+    expect(featuredCards?.cards.every((c) => c.featured)).toBe(true);
+    expect(featuredCards?.cards[0].id).toBe('design009');
+    expect(featuredCards?.cards.map((c) => c.createdAt)).toEqual(
+      [...(featuredCards?.cards ?? [])].map((c) => c.createdAt).sort((a, b) => b - a)
     );
   });
 
   it('omits staff picks entirely when nothing is featured', () => {
     const shelves = buildShelves(manyCards(20), NOW);
-    expect(shelves.find((shelf) => shelf.id === 'staff-picks')).toBeUndefined();
+    expect(shelves.find((shelf) => shelf.id === 'featured')).toBeUndefined();
   });
 
   it('new this week keeps cards inside the 7-day window, newest first', () => {
@@ -157,13 +157,9 @@ describe('buildShelves', () => {
       };
     });
     const shelves = buildShelves(items, NOW);
-    expect(shelves.map((shelf) => shelf.id)).toEqual([
-      'staff-picks',
-      'new-this-week',
-      'most-remixed',
-    ]);
-    const [staffPicks, newThisWeek, mostRemixed] = shelves;
-    expect(staffPicks.cards).toHaveLength(8);
+    expect(shelves.map((shelf) => shelf.id)).toEqual(['featured', 'new-this-week', 'most-remixed']);
+    const [featuredCards, newThisWeek, mostRemixed] = shelves;
+    expect(featuredCards.cards).toHaveLength(8);
     expect(newThisWeek.cards).toHaveLength(7);
     expect(mostRemixed.cards).toHaveLength(5);
     // The highest-remix group was already shown under "New this week" and
@@ -218,7 +214,7 @@ describe('buildShelves', () => {
     it('does not repeat a design already shown in staff picks', () => {
       const items = [
         ...Array.from({ length: 12 }, (_, i) => card(`d${i}`)),
-        // Enough featured designs for a staff-picks rail to exist at all.
+        // Enough featured designs for a featured rail to exist at all.
         ...Array.from({ length: 2 }, (_, i) => card(`feat${i}`, { featured: true })),
         card('both', {
           featured: true,
