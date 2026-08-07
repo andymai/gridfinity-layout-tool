@@ -65,6 +65,39 @@ export const MAX_MESH_ASSETS_PER_DESIGN = 8;
 /** Max total silhouette points across all outlines of one asset. */
 export const MAX_MESH_OUTLINE_POINTS = 4000;
 
+/**
+ * Max base64 length of one asset's `data`.
+ *
+ * MIRROR: `CONSTRAINTS.MAX_MESH_DATA_LENGTH` in
+ * `api/lib/designerValidationConstants.ts`. The server has always enforced this
+ * on the share/publish paths; the local-import path stored `meshAssets`
+ * verbatim, so a hand-crafted file was the one route by which an asset far
+ * outside the codec's own budget could reach the decoder.
+ */
+export const MAX_MESH_ASSET_DATA_LENGTH = 900_000;
+
+/**
+ * Whether a design's `meshAssets` carry more than the codec's budget allows.
+ *
+ * Deliberately checks the ENCODED length: it is the only bound available
+ * without decompressing, which is the work we are trying not to do on hostile
+ * input. `decodeMeshData` enforces the decompressed ceiling separately.
+ */
+export function hasOversizedMeshAsset(params: unknown): boolean {
+  if (typeof params !== 'object' || params === null) return false;
+  const assets = (params as { meshAssets?: unknown }).meshAssets;
+  if (typeof assets !== 'object' || assets === null) return false;
+
+  const entries = Object.values(assets as Record<string, unknown>);
+  if (entries.length > MAX_MESH_ASSETS_PER_DESIGN) return true;
+
+  return entries.some((asset) => {
+    if (typeof asset !== 'object' || asset === null) return false;
+    const data = (asset as { data?: unknown }).data;
+    return typeof data === 'string' && data.length > MAX_MESH_ASSET_DATA_LENGTH;
+  });
+}
+
 const MAGIC = 0x314d4741; // 'GMA1'
 const HEADER_BYTES = 4 + 4 + 4 + 6 * 4;
 const QUANT_MAX = 65535;
@@ -82,6 +115,61 @@ async function pipeThrough(
   const src = new Blob([input as BlobPart]).stream().pipeThrough(stream);
   const buffer = await new Response(src).arrayBuffer();
   return new Uint8Array(buffer);
+}
+
+/**
+ * Largest decoded payload a legitimately-encoded asset can produce.
+ *
+ * Derived from the codec layout at the triangle budget: an indexed mesh has at
+ * most 3 vertices per triangle, so `HEADER + 3·tCount·(3·u16) + tCount·(3·u32)`
+ * with `tCount = MAX_MESH_ASSET_TRIANGLES`. Rounded up for headroom.
+ */
+export const MAX_DECODED_MESH_BYTES = HEADER_BYTES + MAX_MESH_ASSET_TRIANGLES * (3 * 6 + 12) * 2;
+
+/**
+ * Inflate `input`, aborting the moment output exceeds `limit`.
+ *
+ * The size checks in `decodeMeshData` all run on the FULLY decompressed buffer,
+ * so on their own they cannot stop a deflate bomb: peak memory is already the
+ * whole decompressed size by the time the first check executes. A tiny asset
+ * that inflates to tens of gigabytes OOMs the tab or the generation worker
+ * before any of them is reached.
+ *
+ * Reading the stream reader-by-chunk instead of `Response.arrayBuffer()` is
+ * what makes the ceiling real: the accumulated length is checked between
+ * chunks and the stream is cancelled on the first one that crosses it, so
+ * peak memory is bounded by `limit` rather than by the attacker's ratio.
+ */
+async function inflateBounded(input: Uint8Array, limit: number): Promise<Uint8Array> {
+  const stream = new Blob([input as BlobPart])
+    .stream()
+    .pipeThrough(new DecompressionStream('deflate'));
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > limit) {
+        await reader.cancel();
+        throw new Error('mesh asset exceeds the decompressed size limit');
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  const out = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    out.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return out;
 }
 
 export function bytesToBase64(bytes: Uint8Array): string {
@@ -172,7 +260,7 @@ export async function decodeMeshData(
 ): Promise<Result<DecodedMeshData, ValidationError>> {
   let raw: Uint8Array;
   try {
-    raw = await pipeThrough(base64ToBytes(data), new DecompressionStream('deflate'));
+    raw = await inflateBounded(base64ToBytes(data), MAX_DECODED_MESH_BYTES);
   } catch {
     return err(validationImportFailed(['Mesh decode failed: corrupt asset data']));
   }

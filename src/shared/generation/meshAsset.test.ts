@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { encodeMeshData, decodeMeshData } from './meshAsset';
+import {
+  encodeMeshData,
+  decodeMeshData,
+  bytesToBase64,
+  hasOversizedMeshAsset,
+  MAX_MESH_ASSET_DATA_LENGTH,
+  MAX_MESH_ASSETS_PER_DESIGN,
+  MAX_DECODED_MESH_BYTES,
+} from './meshAsset';
 import { isOk, isErr, unwrap } from '@/core/result';
 
 /** A unit tetrahedron scaled to tool-ish dimensions (mm). */
@@ -106,5 +114,70 @@ describe('meshAsset codec', () => {
     const rawBytes = positions.byteLength + indices.byteLength;
     // base64 inflates by 4/3; still expect a large net win on structured data
     expect(result.value.length).toBeLessThan(rawBytes / 2);
+  });
+});
+
+/**
+ * decodeMeshData's structural checks all run on the fully decompressed buffer,
+ * so on their own they cannot stop a deflate bomb: peak memory is already the
+ * whole decompressed size by the time the first one executes.
+ */
+describe('decompression ceiling', () => {
+  /** A highly compressible payload that inflates well past the ceiling. */
+  async function deflateBomb(bytes: number): Promise<string> {
+    const zeros = new Uint8Array(bytes);
+    const stream = new Blob([zeros as BlobPart])
+      .stream()
+      .pipeThrough(new CompressionStream('deflate'));
+    const compressed = new Uint8Array(await new Response(stream).arrayBuffer());
+    return bytesToBase64(compressed);
+  }
+
+  it('rejects a payload that inflates past the ceiling', async () => {
+    const bomb = await deflateBomb(MAX_DECODED_MESH_BYTES + 1_000_000);
+    const result = await decodeMeshData(bomb);
+    expect(isErr(result)).toBe(true);
+  });
+
+  it('compresses to a tiny fraction of what it inflates to', async () => {
+    // Confirms the test payload really is a bomb: a small input that the
+    // pre-fix code would have expanded into memory in full.
+    const bomb = await deflateBomb(MAX_DECODED_MESH_BYTES + 1_000_000);
+    expect(bomb.length).toBeLessThan(MAX_DECODED_MESH_BYTES / 100);
+  });
+
+  it('still decodes a legitimate asset', async () => {
+    const { positions, indices } = tetrahedron();
+    const encoded = unwrap(await encodeMeshData(positions, indices));
+    expect(isOk(await decodeMeshData(encoded))).toBe(true);
+  });
+});
+
+describe('hasOversizedMeshAsset', () => {
+  const asset = (dataLength: number) => ({ data: 'A'.repeat(dataLength) });
+
+  it('accepts an asset within the budget', () => {
+    expect(hasOversizedMeshAsset({ meshAssets: { a: asset(1000) } })).toBe(false);
+  });
+
+  it('flags an asset over the per-asset data cap', () => {
+    expect(
+      hasOversizedMeshAsset({ meshAssets: { a: asset(MAX_MESH_ASSET_DATA_LENGTH + 1) } })
+    ).toBe(true);
+  });
+
+  it('flags more assets than a design may carry', () => {
+    const meshAssets = Object.fromEntries(
+      Array.from({ length: MAX_MESH_ASSETS_PER_DESIGN + 1 }, (_, i) => [`a${i}`, asset(10)])
+    );
+    expect(hasOversizedMeshAsset({ meshAssets })).toBe(true);
+  });
+
+  it('tolerates params with no assets or a malformed shape', () => {
+    expect(hasOversizedMeshAsset(undefined)).toBe(false);
+    expect(hasOversizedMeshAsset(null)).toBe(false);
+    expect(hasOversizedMeshAsset({})).toBe(false);
+    expect(hasOversizedMeshAsset({ meshAssets: 'nope' })).toBe(false);
+    expect(hasOversizedMeshAsset({ meshAssets: { a: null } })).toBe(false);
   });
 });

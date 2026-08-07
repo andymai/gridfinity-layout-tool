@@ -10,6 +10,7 @@
  * - Activity indicator showing current operation (Drawing, Moving, etc.)
  */
 
+import { safePresenceColor } from '@/shared/utils/guestNames';
 import type { UserPresence, InteractionHint } from '@/liveblocks.config';
 import type { InterpolatedPosition } from '@/shared/hooks/useInterpolatedPresence';
 
@@ -48,8 +49,10 @@ function getActivityText(interaction?: InteractionHint): string | null {
  * for smooth 60fps animation while keeping network updates throttled.
  */
 export function CollabCursor({ presence, position }: CollabCursorProps) {
-  const { name, color, interaction } = presence;
+  const { name, interaction } = presence;
   const activityText = getActivityText(interaction);
+  // Remote-written value reaching a CSS sink — see safePresenceColor.
+  const color = safePresenceColor(presence.color);
 
   const style = {
     transform: `translate(${position.x}px, ${position.y}px)`,

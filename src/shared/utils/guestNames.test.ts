@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { generateGuestName, generateGuestColor } from '@/shared/utils/guestNames';
+import {
+  generateGuestName,
+  generateGuestColor,
+  safePresenceColor,
+} from '@/shared/utils/guestNames';
 
 describe('generateGuestName', () => {
   it('generates a name with adjective and animal', () => {
@@ -129,6 +133,57 @@ describe('generateGuestColor', () => {
     for (let i = 0; i < 30; i++) {
       const color = generateGuestColor(i);
       expect(KNOWN_COLORS).toContain(color);
+    }
+  });
+});
+
+/**
+ * presence.color is written entirely client-side by each collaborator: neither
+ * Liveblocks nor the auth endpoint validates it (liveblocks-auth assigns a
+ * separate userInfo.color). It is interpolated into style strings including the
+ * `background` shorthand, which accepts a comma-separated url() layer — so a
+ * crafted value needs no ';' breakout to make a victim's browser fetch an
+ * attacker URL, and the site's CSP is report-only.
+ */
+describe('safePresenceColor', () => {
+  it('passes a well-formed hex colour through unchanged', () => {
+    expect(safePresenceColor('#3B82F6')).toBe('#3B82F6');
+    expect(safePresenceColor('#abcdef')).toBe('#abcdef');
+  });
+
+  it('rejects a url()-injecting payload', () => {
+    const payload = 'red),url(https://evil.example/x)/*';
+    const safe = safePresenceColor(payload);
+    expect(safe).not.toContain('url(');
+    expect(safe).toMatch(/^#[0-9a-fA-F]{6}$/);
+  });
+
+  it('rejects values that would break out of a style declaration', () => {
+    for (const attack of [
+      '#fff;background-image:url(https://evil.example/x)',
+      'red)',
+      'url(https://evil.example/x)',
+      '#fff/*',
+      'expression(alert(1))',
+    ]) {
+      expect(safePresenceColor(attack)).toMatch(/^#[0-9a-fA-F]{6}$/);
+    }
+  });
+
+  it('rejects a 3-digit hex, since the CSS sinks append an alpha pair', () => {
+    expect(safePresenceColor('#fff')).not.toBe('#fff');
+  });
+
+  it('falls back for non-string values', () => {
+    for (const value of [undefined, null, 42, {}, []]) {
+      expect(safePresenceColor(value)).toMatch(/^#[0-9a-fA-F]{6}$/);
+    }
+  });
+
+  it('accepts every colour the generator produces', () => {
+    for (let i = 0; i < 24; i++) {
+      const generated = generateGuestColor(i);
+      expect(safePresenceColor(generated)).toBe(generated);
     }
   });
 });

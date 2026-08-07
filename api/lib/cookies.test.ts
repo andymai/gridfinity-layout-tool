@@ -94,9 +94,33 @@ describe('cookies — set/clear/read roundtrip', () => {
   });
 
   it('reads OAuth state and verifier cookies', () => {
-    const req = reqWithCookies('gflt_oauth_state=ST; gflt_oauth_verifier=VR');
+    const req = reqWithCookies('__Host-gflt_oauth_state=ST; __Host-gflt_oauth_verifier=VR');
     expect(readOAuthStateCookie(req)).toBe('ST');
     expect(readOAuthVerifierCookie(req)).toBe('VR');
+  });
+
+  // The OAuth callback is a cross-site top-level GET, so the state cookie's
+  // integrity is its only anti-CSRF defense — checkCsrfDefense cannot apply and
+  // GitHub uses no PKCE. Without __Host- a sibling subdomain can plant these
+  // scoped to the registrable domain and the state comparison becomes a
+  // formality, letting an attacker sign a victim into the attacker's account.
+  it('carries the __Host- prefix on the OAuth cookies, not just the session', () => {
+    const res = createMockRes();
+    setOAuthStateCookie(res as unknown as VercelResponse, 'ST');
+    setOAuthVerifierCookie(res as unknown as VercelResponse, 'VR');
+
+    for (const cookie of setCookies(res)) {
+      expect(cookie.startsWith('__Host-')).toBe(true);
+      // __Host- is only honoured with Secure + Path=/ + no Domain.
+      expect(cookie).toContain('Secure');
+      expect(cookie).toContain('Path=/');
+      expect(cookie).not.toContain('Domain=');
+    }
+  });
+
+  it('ignores an unprefixed state cookie a sibling subdomain could set', () => {
+    const req = reqWithCookies('gflt_oauth_state=TOSSED');
+    expect(readOAuthStateCookie(req)).toBe(null);
   });
 
   it('accumulates multiple Set-Cookie headers (state + verifier together)', () => {

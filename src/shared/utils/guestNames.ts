@@ -132,6 +132,34 @@ export function generateGuestColor(id: string | number): string {
   return COLORS[colorIndex];
 }
 
+/** Fallback when a collaborator's presence colour is unusable. */
+const PRESENCE_COLOR_FALLBACK = '#6B7280';
+
+/** Exactly `#rrggbb`. Six digits, because the CSS sinks append an alpha pair. */
+const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/;
+
+/**
+ * Normalize a collaborator's presence colour before it reaches a CSS sink.
+ *
+ * `presence.color` is written entirely client-side by each collaborator and is
+ * neither schema-validated by Liveblocks nor re-validated by the server (the
+ * auth endpoint assigns its own `userInfo.color`, a different field). It is
+ * then interpolated into style strings — including the `background` shorthand,
+ * which accepts a comma-separated `url()` layer, so a value like
+ * `red),url(https://attacker/x)/*` needs no `;` breakout to make a victim's
+ * browser fetch an attacker URL. The site's CSP is report-only, so nothing
+ * downstream blocks it.
+ *
+ * Callers must run every presence colour through here rather than trusting the
+ * `string` type: the sinks append alpha suffixes (`${color}20`), which only
+ * behaves for a 6-digit hex anyway.
+ */
+export function safePresenceColor(color: unknown): string {
+  return typeof color === 'string' && HEX_COLOR_PATTERN.test(color)
+    ? color
+    : PRESENCE_COLOR_FALLBACK;
+}
+
 /**
  * Get initials from a name.
  * Returns first two letters for single word,

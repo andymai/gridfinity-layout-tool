@@ -16,6 +16,7 @@ import { useOthers } from '@/liveblocks.config';
 import { useLayoutStore, useViewStore } from '@/core/store';
 import { getBaseCellSize, STAGING_ID } from '@/core/constants';
 import { useResponsive } from '@/shared/hooks';
+import { safePresenceColor } from '@/shared/utils/guestNames';
 
 interface CollabSelectionRingsProps {
   /** Optional className for the container */
@@ -63,8 +64,11 @@ export function CollabSelectionRings({ className }: CollabSelectionRingsProps) {
     const rings: SelectionRing[] = [];
 
     for (const { connectionId, presence } of others) {
-      const { selectedBinIds = [], color } = presence;
+      const { selectedBinIds = [] } = presence;
       if (selectedBinIds.length === 0) continue;
+
+      // Remote-written value reaching a CSS sink — see safePresenceColor.
+      const color = safePresenceColor(presence.color);
 
       for (const binId of selectedBinIds) {
         const bin = bins.find((b) => b.id === binId);
