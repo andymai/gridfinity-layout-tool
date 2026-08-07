@@ -1,0 +1,36 @@
+src/features/generation/worker/generators/__kernel-tests__/mixedSocketStageCapture.test.ts
+  s_c50459ee60c4b2::t_629f1284350854 1,3,8-20,22,25-41,44-47,49-52,54-56,58-64,66,76,83-86,89-90,92-107
+  s_c50459ee60c4b2::t_a04aa1f46d0a65 2,4-7,21,23-24,42-43,48,53,57,65,67-75,77-82,87-88,91
+  s_c50459ee60c4b2::t_ba0a00a2cf6595 108-110
+  s_e694fe720ed7bc::t_4c7ffeebe0ae6b 111-136
+package.json
+  s_c50459ee60c4b2::t_902a4e00547d53 132-133
+pnpm-lock.yaml
+  s_c50459ee60c4b2::t_8ed77e6555095b 43,81-82,84-85,3197-3198,3215-3216,8738,8743,8746
+pnpm-workspace.yaml
+  s_c50459ee60c4b2::t_4156485c342cc2 118
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "0377c65542dadf9b1ff4cc2473c4702596687860",
+  "prompts": {},
+  "sessions": {
+    "s_c50459ee60c4b2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b3031a2-edb8-4ab0-8da9-38e0a72c2580",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_e694fe720ed7bc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "11bd0478-b0a5-44b1-9201-aee9d7b1ff5d",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
