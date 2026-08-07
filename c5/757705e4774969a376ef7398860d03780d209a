@@ -1,0 +1,37 @@
+src/features/community/components/CommunityGalleryTab/MobileFilterView.tsx
+  s_609e32c2c9753b::t_5a32528a994037 12-13
+  s_609e32c2c9753b::t_555650b144f00c 21,23
+  s_609e32c2c9753b::t_c50374d88819f9 37,39
+src/features/community/components/CommunityGalleryTab/CommunityGalleryTab.tsx
+  s_609e32c2c9753b::t_21cc8979ea2e16 363
+  s_609e32c2c9753b::t_f90e9b703fbbea 73-77
+  s_609e32c2c9753b::t_a4a4b85b4c11ab 384
+src/features/community/components/CommunityGalleryTab/MobileFilterView.test.tsx
+  s_609e32c2c9753b::t_df5f3810cece2a 51-52,57-58
+  s_609e32c2c9753b::t_158a64f656a7d1 31-36,38
+  s_609e32c2c9753b::t_30732aa85a0252 25,44,53-56
+src/features/community/components/CommunityGalleryTab/FilterRail.tsx
+  s_609e32c2c9753b::t_03c5c3ea685568 12-18
+  s_609e32c2c9753b::t_66926ec6f423d3 26,28
+  s_609e32c2c9753b::t_4b39867eecbfee 37,39
+src/features/community/components/CommunityGalleryTab/FilterRail.test.tsx
+  s_609e32c2c9753b::t_95a80df94a0f0f 37-43,45
+  s_609e32c2c9753b::t_df5f3810cece2a 51-53
+  s_609e32c2c9753b::t_30732aa85a0252 25,33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "c5757705e4774969a376ef7398860d03780d209a",
+  "prompts": {},
+  "sessions": {
+    "s_609e32c2c9753b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d90bc437-2a38-4d80-bf51-323dc9459de6",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
