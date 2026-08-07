@@ -45,6 +45,7 @@ import {
   handleExportConnectorSample,
   handleExportLabelPlates,
   handleExportLabelFitSample,
+  handleExportSlideFitSample,
   handleExportDividers,
   handleExportCombined,
 } from './handlers/exportHandler';
@@ -165,6 +166,10 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
 
       case 'EXPORT_LABEL_FIT_SAMPLE':
         await handleExportLabelFitSample(message);
+        break;
+
+      case 'EXPORT_SLIDE_FIT_SAMPLE':
+        await handleExportSlideFitSample(message);
         break;
 
       case 'EXPORT_DIVIDERS':

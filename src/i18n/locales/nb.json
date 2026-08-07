@@ -3662,5 +3662,14 @@
   "binDesigner.slideTray.unavailable.noBearing": "Skinnen stikker kortere inn enn klaringen, så den ville ikke bære brettet.",
   "binDesigner.slideTray.unavailable.railBelowFloor": "Denne boksen er for lav for skinnesenkingen. Reduser senkingen eller gjør boksen høyere.",
   "binDesigner.slideTray.unavailable.binTooShallow": "Denne boksen er for grunn til at et brett får plass mellom skinnene.",
-  "binDesigner.slideTray.unavailable.trayTooSmall": "Brettet ville ikke hatt brukbart innvendig rom i denne størrelsen."
+  "binDesigner.slideTray.unavailable.trayTooSmall": "Brettet ville ikke hatt brukbart innvendig rom i denne størrelsen.",
+  "binDesigner.slideTray.fitSample.button": "Skriv ut en passtest",
+  "binDesigner.slideTray.fitSample.dialogTitle": "Passtest for skyvebrett",
+  "binDesigner.slideTray.fitSample.dialogDescription": "Fem skinnestubber med ulik klaring, pluss én brettstubb som går i alle.",
+  "binDesigner.slideTray.fitSample.tipsTitle": "Slik leser du den",
+  "binDesigner.slideTray.fitSample.tip1": "Skinnene går fra trangest til løsest. Den første brettstubben glir fritt i, er din klaring.",
+  "binDesigner.slideTray.fitSample.tip2": "Stigen går fra 0,15 mm til 0,35 mm i trinn på 0,05 mm; tredje skinne er standard 0,25 mm.",
+  "binDesigner.slideTray.fitSample.tip3": "Skriv den ut med samme filament og dyse som du skal bruke til boksen.",
+  "binDesigner.slideTray.fitSample.exportComplete": "Passtest lastet ned",
+  "binDesigner.slideTray.fitSample.exportFailed": "Kunne ikke eksportere passtesten"
 }

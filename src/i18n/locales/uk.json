@@ -3662,5 +3662,14 @@
   "binDesigner.slideTray.unavailable.noBearing": "Напрямна виступає менше, ніж зазор, тож не втримала б лоток.",
   "binDesigner.slideTray.unavailable.railBelowFloor": "Цей контейнер занадто низький для такого опускання. Зменште опускання або зробіть контейнер вищим.",
   "binDesigner.slideTray.unavailable.binTooShallow": "Цей контейнер занадто мілкий, щоб лоток помістився між напрямними.",
-  "binDesigner.slideTray.unavailable.trayTooSmall": "За такого розміру лоток не мав би корисного внутрішнього простору."
+  "binDesigner.slideTray.unavailable.trayTooSmall": "За такого розміру лоток не мав би корисного внутрішнього простору.",
+  "binDesigner.slideTray.fitSample.button": "Надрукувати тест припасування",
+  "binDesigner.slideTray.fitSample.dialogTitle": "Тест припасування висувного лотка",
+  "binDesigner.slideTray.fitSample.dialogDescription": "П'ять відрізків напрямної з різними зазорами та один пробний лоток, який іде в усіх.",
+  "binDesigner.slideTray.fitSample.tipsTitle": "Як його читати",
+  "binDesigner.slideTray.fitSample.tip1": "Напрямні впорядковані від найтіснішої до найвільнішої. Перша, у якій лоток ковзає вільно, — ваш зазор.",
+  "binDesigner.slideTray.fitSample.tip2": "Шкала йде від 0,15 мм до 0,35 мм із кроком 0,05 мм; третя напрямна — типові 0,25 мм.",
+  "binDesigner.slideTray.fitSample.tip3": "Друкуйте його тим самим філаментом і соплом, які використаєте для контейнера.",
+  "binDesigner.slideTray.fitSample.exportComplete": "Тест припасування завантажено",
+  "binDesigner.slideTray.fitSample.exportFailed": "Не вдалося експортувати тест припасування"
 }

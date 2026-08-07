@@ -3662,5 +3662,14 @@
   "binDesigner.slideTray.unavailable.noBearing": "레일이 여유보다 적게 뻗어 있어 트레이를 지지하지 못합니다.",
   "binDesigner.slideTray.unavailable.railBelowFloor": "이 빈은 레일 낮춤에 비해 너무 낮습니다. 낮춤을 줄이거나 빈을 높이세요.",
   "binDesigner.slideTray.unavailable.binTooShallow": "이 빈은 너무 얕아 레일 사이에 트레이가 들어가지 않습니다.",
-  "binDesigner.slideTray.unavailable.trayTooSmall": "이 크기에서는 트레이 내부를 쓸 수 없습니다."
+  "binDesigner.slideTray.unavailable.trayTooSmall": "이 크기에서는 트레이 내부를 쓸 수 없습니다.",
+  "binDesigner.slideTray.fitSample.button": "맞춤 테스트 출력",
+  "binDesigner.slideTray.fitSample.dialogTitle": "슬라이딩 트레이 맞춤 테스트",
+  "binDesigner.slideTray.fitSample.dialogDescription": "여유가 각기 다른 레일 조각 다섯 개와 모두에서 움직이는 트레이 조각 하나.",
+  "binDesigner.slideTray.fitSample.tipsTitle": "읽는 방법",
+  "binDesigner.slideTray.fitSample.tip1": "레일은 빡빡한 순서로 정렬되어 있습니다. 트레이 조각이 부드럽게 미끄러지는 첫 레일이 여러분의 여유입니다.",
+  "binDesigner.slideTray.fitSample.tip2": "0.15mm에서 0.35mm까지 0.05mm 간격이며, 세 번째 레일이 기본값 0.25mm입니다.",
+  "binDesigner.slideTray.fitSample.tip3": "빈에 사용할 필라멘트와 노즐로 출력하세요.",
+  "binDesigner.slideTray.fitSample.exportComplete": "맞춤 테스트를 내려받았습니다",
+  "binDesigner.slideTray.fitSample.exportFailed": "맞춤 테스트를 내보내지 못했습니다"
 }

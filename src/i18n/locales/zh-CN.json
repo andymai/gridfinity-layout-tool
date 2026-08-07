@@ -3662,5 +3662,14 @@
   "binDesigner.slideTray.unavailable.noBearing": "导轨伸入量小于间隙，无法承托托盘。",
   "binDesigner.slideTray.unavailable.railBelowFloor": "此箱高度不足以容纳该导轨下沉量。请减小下沉量或增加箱体高度。",
   "binDesigner.slideTray.unavailable.binTooShallow": "此箱过浅，托盘无法装入导轨之间。",
-  "binDesigner.slideTray.unavailable.trayTooSmall": "在此尺寸下托盘将没有可用的内部空间。"
+  "binDesigner.slideTray.unavailable.trayTooSmall": "在此尺寸下托盘将没有可用的内部空间。",
+  "binDesigner.slideTray.fitSample.button": "打印配合测试件",
+  "binDesigner.slideTray.fitSample.dialogTitle": "滑动托盘配合测试",
+  "binDesigner.slideTray.fitSample.dialogDescription": "五段间隙不同的导轨，以及一个可在全部导轨中滑动的托盘试件。",
+  "binDesigner.slideTray.fitSample.tipsTitle": "如何判读",
+  "binDesigner.slideTray.fitSample.tip1": "导轨按由紧到松排列。试件能顺畅滑动的第一段即为你的间隙。",
+  "binDesigner.slideTray.fitSample.tip2": "梯度从 0.15mm 到 0.35mm，步进 0.05mm；第三段为默认的 0.25mm。",
+  "binDesigner.slideTray.fitSample.tip3": "请使用与箱体相同的耗材和喷嘴打印。",
+  "binDesigner.slideTray.fitSample.exportComplete": "已下载配合测试件",
+  "binDesigner.slideTray.fitSample.exportFailed": "无法导出配合测试件"
 }

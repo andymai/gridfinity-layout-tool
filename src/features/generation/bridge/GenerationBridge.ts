@@ -22,6 +22,7 @@ import type {
   ResolvedBaseplateParams,
   SplitConnectorConfig,
   MarginPiece,
+  SlideConfig,
 } from '@/shared/types/bin';
 import type { GridfinityItem } from '@/shared/types/item';
 import type {
@@ -77,6 +78,7 @@ import {
   exportConnectorSample as exportConnectorSampleImpl,
   exportLabelPlates as exportLabelPlatesImpl,
   exportLabelFitSample as exportLabelFitSampleImpl,
+  exportSlideFitSample as exportSlideFitSampleImpl,
 } from './bridgeExports';
 import type { KernelName } from './types';
 
@@ -591,6 +593,10 @@ export class GenerationBridge {
     nozzleSizeMm?: number
   ): Promise<BaseplateExportResult> {
     return exportLabelFitSampleImpl(this, format, nozzleSizeMm);
+  }
+
+  exportSlideFitSample(format: ExportFormat, slide: SlideConfig): Promise<BaseplateExportResult> {
+    return exportSlideFitSampleImpl(this, format, slide);
   }
 
   /** Whether the bridge has been destroyed */
