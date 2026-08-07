@@ -1,0 +1,19 @@
+src/features/generation/bridge/meshData.ts
+  s_e694fe720ed7bc::t_1ba21f86437166 133-137
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "d1427cec8c2d78d1117c8d0cf8a7aa8b980e436c",
+  "prompts": {},
+  "sessions": {
+    "s_e694fe720ed7bc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "11bd0478-b0a5-44b1-9201-aee9d7b1ff5d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
