@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.384.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.383.0...gridfinity-layout-tool-v4.384.0) (2026-08-07)
+
+
+### Features
+
+* **bin-designer:** add the sliding-tray fit test button ([#3308](https://github.com/andymai/gridfinity-layout-tool/issues/3308)) ([0e021b6](https://github.com/andymai/gridfinity-layout-tool/commit/0e021b696277dda4c1ad7308b59b4a348d8ef647))
+
 ## [4.383.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.382.0...gridfinity-layout-tool-v4.383.0) (2026-08-07)
 
 
