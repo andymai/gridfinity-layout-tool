@@ -11,6 +11,7 @@ import { draw, translate, withScope, clone, unwrap, fuseAll, cut } from 'brepjs'
 import type { Shape3D, DisposalScope, ValidSolid } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
+import { isPartialMask } from '@/shared/utils/cellMask';
 import { resolveSlideGeometry } from './slideGeometry';
 import type { SlideRailSection, SlideGeometryInput } from './slideGeometry';
 
@@ -106,6 +107,9 @@ export function slideInputFromContext(ctx: PipelineContext): SlideGeometryInput 
   const { params, dimensions: dim } = ctx;
   return {
     slide: params.slide,
+    isSlotted: dim.isSlotted,
+    isSolid: dim.solid,
+    isPolygon: isPartialMask(params.cellMask),
     innerW: dim.innerW,
     innerD: dim.innerD,
     outerW: dim.outerW,
@@ -122,7 +126,8 @@ export const slideRailsFeature: FeatureBuilder = {
   name: 'slideRails',
   tag: FeatureTag.SLIDE_RAIL,
   target: 'fuse',
-  shouldBuild: (ctx: PipelineContext) => ctx.params.slide.enabled,
+  shouldBuild: (ctx: PipelineContext) =>
+    ctx.params.slide.enabled && !ctx.dimensions.isSlotted && !ctx.dimensions.solid,
   cacheKey: (ctx: PipelineContext) => {
     const { dimensions: dim, params } = ctx;
     return compactKey(

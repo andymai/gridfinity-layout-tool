@@ -67,6 +67,7 @@ import { computeWallTextLayouts } from './wallTextLayout';
 import type { WallTextLayout } from './wallTextLayout';
 import type { BinParams } from '@/shared/types/bin';
 import type { BinDimensions } from './pipeline/types';
+import { resolveSlideGeometry, slideInputFromDims, slidePatternKeepOut } from './slideGeometry';
 
 /**
  * Build the extruded 2D element stamped at each pattern center.
@@ -110,6 +111,8 @@ export interface WallClipSet {
   readonly clip: CutoutClipParams | null;
   readonly handleClip: HandleClipParams | null;
   readonly textClip: HandleClipParams | null;
+  /** Keep-out for the sliding-tray rail, which the pattern would otherwise cut away. */
+  readonly slideClip: HandleClipParams | null;
   readonly rampClip: RampZoneClipParams | null;
   /** True when the expanded cutout consumes the whole wall — emit no pattern. */
   readonly skipWall: boolean;
@@ -179,8 +182,11 @@ export function computeWallClipContext(
   // wall-def convention, so rect bins need the defs even with handles off.
   const wallTextLayouts = computeWallTextLayouts(params, dim);
   const wallTextBySide = new Map<string, WallTextLayout>(wallTextLayouts.map((l) => [l.side, l]));
-  const textWallDefs =
-    wallTextLayouts.length > 0 && !isPolygon ? buildHandleWallDefs(innerW, innerD) : [];
+  // Built for wall TEXT originally, and now also for the sliding-tray rail's
+  // keep-out. Gating them on text alone left the rail clip silently unbuildable
+  // on every bin without text, which is nearly all of them.
+  const needsWallDefs = wallTextLayouts.length > 0 || params.slide.enabled;
+  const textWallDefs = needsWallDefs && !isPolygon ? buildHandleWallDefs(innerW, innerD) : [];
   const textWallDefForSide = new Map(textWallDefs.map((d) => [d.side, d]));
 
   return {
@@ -319,6 +325,32 @@ export function computeWallClips(
     };
   }
 
+  // Sliding-tray rail keep-out. The pipeline fuses the rail and THEN pattern-
+  // cuts, so without this the hex pattern carves the rail away entirely.
+  let slideClip: HandleClipParams | null = null;
+  const slideWall = clipCtx.textWallDefForSide.get(wall.side);
+  if (wall.allowClip && params.slide.enabled && slideWall) {
+    const keepOut = slidePatternKeepOut(
+      resolveSlideGeometry(slideInputFromDims(params, dim, isPolygon)),
+      wall.side
+    );
+    if (keepOut) {
+      // `buildHandleClipBoxes` adds CUTOUT_BORDER_WIDTH, which is not enough on
+      // its own: a hex prism with a radius larger than the border bleeds past
+      // it and back into the rail. Same reason divider junction clips use
+      // max(CUTOUT_BORDER_WIDTH, shapeRadius) — inflate by the radius here so
+      // the band scales with the pattern.
+      const bleed = 2 * Math.max(CUTOUT_BORDER_WIDTH, shapeRadius);
+      slideClip = {
+        segments: [{ offset: 0, width: keepOut.width + bleed }],
+        effectiveHeight: keepOut.height + bleed,
+        centerZ: keepOut.centerZ,
+        clipExtrudeDepth,
+        handleWall: slideWall,
+      };
+    }
+  }
+
   const cutoutKeyPart = cutoutCfg?.enabled
     ? buildCacheKey(
         'clip',
@@ -395,6 +427,15 @@ export function computeWallClips(
       )
     : 'noramp';
 
+  const slideKeyPart = slideClip
+    ? buildCacheKey(
+        'slide',
+        quantize(slideClip.segments[0].width),
+        quantize(slideClip.centerZ),
+        quantize(slideClip.effectiveHeight)
+      )
+    : 'noslide';
+
   const textKeyPart = textClip
     ? buildCacheKey(
         'txt',
@@ -409,9 +450,10 @@ export function computeWallClips(
     clip,
     handleClip,
     textClip,
+    slideClip,
     rampClip,
     skipWall,
-    keyPart: buildCacheKey(cutoutKeyPart, handleKeyPart, rampKeyPart, textKeyPart),
+    keyPart: buildCacheKey(cutoutKeyPart, handleKeyPart, rampKeyPart, textKeyPart, slideKeyPart),
   };
 }
 
@@ -504,7 +546,8 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
         clips.clip,
         clips.handleClip,
         clips.rampClip,
-        clips.textClip
+        clips.textClip,
+        clips.slideClip
       );
       if (built) {
         setFeatureCache(WALL_PATTERN_CLIPPED_CACHE, clippedKey, built);

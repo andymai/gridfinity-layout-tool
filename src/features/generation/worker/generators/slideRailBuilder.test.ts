@@ -6,6 +6,9 @@ import { buildSlideRails, buildSlideTray } from './slideRailBuilder';
 import { resolveSlideGeometry, rimTrackBaseZ, sectionBounds } from './slideGeometry';
 import type { SlideGeometryInput } from './slideGeometry';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
+import { verticalSolidSpans } from './__kernel-tests__/meshAssertions';
+import type { MeshData } from '@/features/generation/bridge/types';
+import type * as BinExporterModule from './binExporter';
 import { buildParams } from './__kernel-tests__/scenarioTypes';
 import { clearAllCaches } from './shapeCache';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
@@ -155,5 +158,101 @@ describe('slide rails on a generated bin', () => {
     const railed = generate({ railMount: 'interior' });
     expect(railed.zMax).toBeCloseTo(plain.zMax, 2);
     expect(railed.triangles).toBeGreaterThan(plain.triangles);
+  });
+});
+
+describe('rail survives other wall features', () => {
+  let exportBin: typeof BinExporterModule.exportBin;
+
+  beforeAll(async () => {
+    await initBrepjs();
+    exportBin = (await import('./binExporter')).exportBin;
+  }, 120_000);
+
+  /** Minimal binary-STL reader: verticalSolidSpans needs the fused export mesh. */
+  function parseStl(data: ArrayBuffer): MeshData {
+    const bytes = new Uint8Array(data);
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    const count = view.getUint32(80, true);
+    const vertices = new Float32Array(count * 9);
+    const indices = new Uint32Array(count * 3);
+    for (let t = 0; t < count; t++) {
+      for (let v = 0; v < 3; v++) {
+        const o = 84 + t * 50 + 12 + v * 12;
+        vertices[t * 9 + v * 3] = view.getFloat32(o, true);
+        vertices[t * 9 + v * 3 + 1] = view.getFloat32(o + 4, true);
+        vertices[t * 9 + v * 3 + 2] = view.getFloat32(o + 8, true);
+        indices[t * 3 + v] = t * 3 + v;
+      }
+    }
+    return { vertices, indices } as MeshData;
+  }
+
+  it('is not carved away by a wall pattern', async () => {
+    // The pipeline fuses the rail and THEN pattern-cuts, so without a keep-out
+    // the hex prisms carve it out entirely. Measured 0/23 before the keep-out
+    // existed, and the keep-out was itself inert until the wall defs it needs
+    // stopped being gated on wall text being present.
+    const mesh = parseStl(
+      (
+        await exportBin(
+          buildParams({
+            width: 3,
+            depth: 2,
+            height: 6,
+            wallPattern: { ...DEFAULT_BIN_PARAMS.wallPattern, enabled: true },
+            slide: { ...DEFAULT_BIN_PARAMS.slide, enabled: true, railMount: 'interior' },
+          }),
+          'stl'
+        )
+      ).data
+    );
+    let present = 0;
+    let total = 0;
+    for (let x = -55; x <= 55; x += 5) {
+      total++;
+      if (verticalSolidSpans(mesh, x, 39.0).some(([lo, hi]) => lo < 20.95 && hi > 20.95)) {
+        present++;
+      }
+    }
+    expect(present).toBe(total);
+  }, 120_000);
+});
+
+describe('style gates', () => {
+  beforeAll(async () => {
+    await initBrepjs();
+  }, 120_000);
+
+  const triangles = (params: Parameters<typeof buildParams>[0]): number => {
+    clearAllCaches();
+    const mesh = getGenerateBin()(buildParams(params));
+    return (mesh.vertices?.length ?? 0) / 9;
+  };
+
+  const withSlide = { ...DEFAULT_BIN_PARAMS.slide, enabled: true, railMount: 'interior' as const };
+
+  it('builds nothing on a solid bin', () => {
+    // No cavity, so a tray has nowhere to sit and the rail would be buried in
+    // filled material. Note `dim.solid` comes from base.solid, NOT style.
+    const base = { ...DEFAULT_BIN_PARAMS.base, solid: true };
+    expect(triangles({ width: 3, depth: 2, height: 6, base, slide: withSlide })).toBe(
+      triangles({ width: 3, depth: 2, height: 6, base })
+    );
+  });
+
+  it('builds nothing on a slotted bin', () => {
+    // slotBuilder cuts divider slots into the FRONT and BACK walls, which is
+    // exactly where the rail runs, and cuts are applied after fuses — so the
+    // slots would notch the rail's bearing face.
+    expect(triangles({ width: 3, depth: 2, height: 6, style: 'slotted', slide: withSlide })).toBe(
+      triangles({ width: 3, depth: 2, height: 6, style: 'slotted' })
+    );
+  });
+
+  it('still builds on a standard bin', () => {
+    expect(triangles({ width: 3, depth: 2, height: 6, slide: withSlide })).toBeGreaterThan(
+      triangles({ width: 3, depth: 2, height: 6 })
+    );
   });
 });

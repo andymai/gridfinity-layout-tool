@@ -85,7 +85,10 @@ export const SLIDE_CONSTRAINTS = {
  * Defaults chosen so enabling the feature on a stock bin produces something
  * printable without further tuning:
  *
- * - `rim` mount, because crossing between bins is what was actually asked for.
+ * - `interior` mount: it matches the arrangement the ecosystem actually
+ *   builds (a tray sliding within one bin), so someone enabling the feature
+ *   blind gets the mechanism that is known to work. `rim` remains available
+ *   for the multi-bin case the request described.
  * - `clearanceMm: 0.25` — the SAME per-side gap Gridfinity itself uses (a
  *   41.5mm foot in a 42mm cell is 0.5mm total), so a printer already calibrated
  *   to seat bins in a baseplate needs no retuning. It is deliberately a little
@@ -99,7 +102,7 @@ export const SLIDE_CONSTRAINTS = {
  */
 export const DEFAULT_SLIDE_CONFIG: SlideConfig = {
   enabled: false,
-  railMount: 'rim',
+  railMount: 'interior',
   trayWidthUnits: 1,
   trayDepthMm: 20,
   trayWallMm: 1.2,

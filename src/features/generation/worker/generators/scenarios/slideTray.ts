@@ -40,6 +40,17 @@ export const slideTray: ScenarioCase[] = [
     },
     timeout: 60_000,
   }),
+  defineScenario('slide tray', 'interior ledges under a wall pattern', {
+    assert: 'structural',
+    params: {
+      width: 3,
+      depth: 2,
+      height: 6,
+      wallPattern: { ...DEFAULT_BIN_PARAMS.wallPattern, enabled: true },
+      slide: slide({ railMount: 'interior' }),
+    },
+    timeout: 90_000,
+  }),
   defineScenario('slide tray', 'interior ledges with compartments and a lid', {
     assert: 'structural',
     params: {

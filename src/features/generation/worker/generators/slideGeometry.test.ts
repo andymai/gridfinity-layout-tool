@@ -218,6 +218,26 @@ describe('resolveSlideGeometry', () => {
     });
   });
 
+  describe('style and shape gates', () => {
+    it('rejects a solid bin: no cavity for a tray', () => {
+      const g = resolveSlideGeometry({ ...input(), isSolid: true });
+      expect(g.rejection).toBe('no-cavity');
+      expect(g.rails).toEqual([]);
+    });
+
+    it('rejects a slotted bin: divider slots share the rail walls', () => {
+      const g = resolveSlideGeometry({ ...input(), isSlotted: true });
+      expect(g.rejection).toBe('slot-conflict');
+    });
+
+    it('rejects a custom-shape bin explicitly rather than silently', () => {
+      // The pipeline already filters builders without supportsCellMask, so this
+      // exists so the panel can SAY why nothing appeared.
+      const g = resolveSlideGeometry({ ...input(), isPolygon: true });
+      expect(g.rejection).toBe('unsupported-shape');
+    });
+  });
+
   describe('bearing (both mounts)', () => {
     // The invariant that the first `rim` design violated: its strips sat
     // OUTBOARD of the tray, so the tray was narrower than the opening, rested

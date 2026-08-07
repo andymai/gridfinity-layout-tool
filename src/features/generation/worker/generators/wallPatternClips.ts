@@ -177,7 +177,8 @@ export function applyWallPatternClips(
   clip: CutoutClipParams | null,
   handleClip: HandleClipParams | null,
   rampClip: RampZoneClipParams | null,
-  textClip: HandleClipParams | null = null
+  textClip: HandleClipParams | null = null,
+  slideClip: HandleClipParams | null = null
 ): Shape3D | null {
   const tools: Shape3D[] = [];
 
@@ -193,6 +194,12 @@ export function applyWallPatternClips(
     // shape as a handle clip (single segment), so the builder is reused.
     if (textClip && textClip.segments.length > 0) {
       tools.push(...buildHandleClipBoxes(textClip));
+    }
+    // Sliding-tray rail (gotcha 5): the rail is fused BEFORE the pattern cut,
+    // so without clearing this band the pattern carves it away and the feature
+    // silently disappears. Same box shape as a handle/text clip.
+    if (slideClip && slideClip.segments.length > 0) {
+      tools.push(...buildHandleClipBoxes(slideClip));
     }
     if (rampClip && rampClip.zones.length > 0) {
       tools.push(...buildRampClipBoxes(wall, rampClip));
