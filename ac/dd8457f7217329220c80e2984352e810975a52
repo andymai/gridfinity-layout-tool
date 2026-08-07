@@ -1,0 +1,34 @@
+api/auth/auth.test.ts
+  s_f34a534f86dba9::t_f04c245336deb9 361-365,385,387-390,393-404,408,410,418
+  s_f34a534f86dba9::t_aef075f852f039 38-41,45,179-181
+  s_f34a534f86dba9::t_0b86c98cbcf793 13,357-360,366-384,386,391-392,405-407,409,411-417,419-421
+  s_f34a534f86dba9::t_ada53a579d2a2c 422-423
+api/lib/redisKeys.ts
+  s_f34a534f86dba9::t_59f20f0e912090 45-46
+  s_f34a534f86dba9::t_52b3301f953cec 15
+  s_f34a534f86dba9::t_56b24ec333cdf4 82-105
+api/lib/userId.test.ts
+  s_f34a534f86dba9::t_7ebfc2b59c5a82 1-12,14-52,55-157,160-163,166-168
+api/auth/README.md
+  s_f34a534f86dba9::t_322e4302e7d380 66,109,112,115-123
+api/auth/callback/[provider].ts
+  s_f34a534f86dba9::t_d5977a670167d2 24,101-110
+api/lib/userId.ts
+  s_f34a534f86dba9::t_ad9187ff1f5fe7 1-3,8,10-16,18,21-88
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "acdd8457f7217329220c80e2984352e810975a52",
+  "prompts": {},
+  "sessions": {
+    "s_f34a534f86dba9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5923dc09-0bc9-40c6-8947-2bd62961138a",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
