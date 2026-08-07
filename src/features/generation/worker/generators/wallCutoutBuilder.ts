@@ -33,6 +33,31 @@ export function autoCornerRadius(cutWidth: number): number {
 /** Funnel taper ratio: bottom width is 60% of top width. */
 const FUNNEL_TAPER_RATIO = 0.6;
 
+/** Wall material left standing on each side of a cutout, in mm along the span. */
+export interface CornerSlack {
+  readonly left: number;
+  readonly right: number;
+}
+
+/** No neighbouring wall constraint: used by callers that don't sit in a span. */
+const UNBOUNDED_SLACK: CornerSlack = { left: Infinity, right: Infinity };
+
+/**
+ * Wall left standing on each side of a cutout that spans `cutWidth` and is
+ * centred `centerOffset` from the wall's midpoint.
+ */
+export function cornerSlackFor(
+  wallSpan: number,
+  cutWidth: number,
+  centerOffset: number
+): CornerSlack {
+  const halfSpan = wallSpan / 2;
+  return {
+    left: Math.max(0, centerOffset - cutWidth / 2 + halfSpan),
+    right: Math.max(0, halfSpan - (centerOffset + cutWidth / 2)),
+  };
+}
+
 /**
  * Build a 2D cutout profile (Drawing) for the given shape.
  *
@@ -48,7 +73,8 @@ export function buildCutoutProfile(
   cutoutShape: WallCutoutShape,
   cutWidth: number,
   userCutHeight: number,
-  overshoot: number
+  overshoot: number,
+  cornerSlack: CornerSlack = UNBOUNDED_SLACK
 ): Drawing {
   const totalHeight = userCutHeight + overshoot;
 
@@ -80,6 +106,14 @@ export function buildCutoutProfile(
       // it trimmed away by the boolean (#3173).
       const cornerR = autoCornerRadius(cutWidth);
       const safeR = Math.min(cornerR, cutWidth / 2 - 0.01, userCutHeight / 2 - 0.01);
+      // A bottom fillet only reads as a blend when there is wall beyond the cut
+      // edge for it to run into. Cap each corner by the material actually left
+      // on that side: a full-width cut has none, so the arc would stand up as a
+      // free tapering fin against the side wall instead of rounding anything.
+      // Per-corner because alignment/offset can leave one end flush and the
+      // other deep in material.
+      const safeRight = Math.min(safeR, cornerSlack.right);
+      const safeLeft = Math.min(safeR, cornerSlack.left);
 
       const topHW = cutWidth / 2;
       const bottomHW = cutoutShape === 'funnel' ? (cutWidth * FUNNEL_TAPER_RATIO) / 2 : topHW;
@@ -88,9 +122,9 @@ export function buildCutoutProfile(
 
       // top-left -> top-right -> bottom-right -> bottom-left -> close
       let pen = draw([-topHW, topY]).lineTo([topHW, topY]).lineTo([bottomHW, bottomY]);
-      if (safeR > 0.1) pen = pen.customCorner(safeR);
+      if (safeRight > 0.1) pen = pen.customCorner(safeRight);
       pen = pen.lineTo([-bottomHW, bottomY]);
-      if (safeR > 0.1) pen = pen.customCorner(safeR);
+      if (safeLeft > 0.1) pen = pen.customCorner(safeLeft);
       return pen.close();
     }
   }
@@ -113,9 +147,10 @@ function buildSingleCutoutInScope(
   overshoot: number,
   extrudeDepth: number,
   wallHeight: number,
-  position: { x: number; y: number; rotateZ: number }
+  position: { x: number; y: number; rotateZ: number },
+  cornerSlack: CornerSlack
 ): Shape3D {
-  const profile = buildCutoutProfile(cutoutShape, cutWidth, userCutHeight, overshoot);
+  const profile = buildCutoutProfile(cutoutShape, cutWidth, userCutHeight, overshoot, cornerSlack);
 
   // Sketch on XZ plane: X = horizontal span, Z = vertical height.
   // Extrusion goes along -Y (through the wall).
@@ -150,7 +185,8 @@ export function buildSingleCutout(
   overshoot: number,
   extrudeDepth: number,
   wallHeight: number,
-  position: { x: number; y: number; rotateZ: number }
+  position: { x: number; y: number; rotateZ: number },
+  cornerSlack: CornerSlack = UNBOUNDED_SLACK
 ): Shape3D {
   return withScope((scope: DisposalScope) => {
     const tracked = buildSingleCutoutInScope(
@@ -161,7 +197,8 @@ export function buildSingleCutout(
       overshoot,
       extrudeDepth,
       wallHeight,
-      position
+      position,
+      cornerSlack
     );
     // Clone so the scope-owned original can be safely disposed while the
     // caller receives a fresh, independently-owned handle.
@@ -204,6 +241,8 @@ export interface InteriorDividerCutout {
   readonly y: number;
   /** In-plane rotation (deg) so the window lies in the (possibly tilted) wall. */
   readonly rotateZ: number;
+  /** Divider material left standing at each end of the window. */
+  readonly cornerSlack: CornerSlack;
 }
 
 /**
@@ -253,6 +292,7 @@ export function computeInteriorDividerCutouts(
       x: seg.x + centerOffset * Math.cos(rad),
       y: seg.y + centerOffset * Math.sin(rad),
       rotateZ: seg.rotateZ,
+      cornerSlack: cornerSlackFor(seg.wallLen, cutW, centerOffset),
     });
   }
   return out;
@@ -336,7 +376,8 @@ function buildWallCutoutCutsInScope(
           x: side.rotateZ === 0 ? side.x + centerOffset : side.x,
           y: side.rotateZ !== 0 ? side.y + centerOffset : side.y,
           rotateZ: side.rotateZ,
-        }
+        },
+        cornerSlackFor(side.wallSpan, cutWidth, centerOffset)
       )
     );
   }
@@ -357,7 +398,8 @@ function buildWallCutoutCutsInScope(
         overshoot,
         extrudeDepth,
         wallHeight,
-        c
+        c,
+        c.cornerSlack
       )
     );
   }

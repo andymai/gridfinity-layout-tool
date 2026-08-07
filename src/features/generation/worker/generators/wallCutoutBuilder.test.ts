@@ -6,7 +6,9 @@ import {
   autoCornerRadius,
   buildSingleCutout,
   computeInteriorDividerCutouts,
+  cornerSlackFor,
 } from './wallCutoutBuilder';
+import type { CornerSlack } from './wallCutoutBuilder';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams, DividerOverride, WallCutoutShape } from '@/features/bin-designer/types';
@@ -251,6 +253,27 @@ describe('autoCornerRadius', () => {
   });
 });
 
+describe('cornerSlackFor', () => {
+  it('splits the leftover wall evenly for a centred cut', () => {
+    expect(cornerSlackFor(80, 60, 0)).toEqual({ left: 10, right: 10 });
+  });
+
+  it('reports zero on both sides for a full-width cut', () => {
+    expect(cornerSlackFor(80, 80, 0)).toEqual({ left: 0, right: 0 });
+  });
+
+  it('tracks an off-centre cut asymmetrically', () => {
+    // Shifted 5mm toward +X: 15mm of wall left behind it, 5mm ahead.
+    expect(cornerSlackFor(80, 60, 5)).toEqual({ left: 15, right: 5 });
+  });
+
+  it('never reports negative slack when a cut overruns its span', () => {
+    // Callers clamp cut width to the span, so this is a guard rather than a
+    // reachable state: a negative radius cap would throw inside the pen.
+    expect(cornerSlackFor(80, 100, 0)).toEqual({ left: 0, right: 0 });
+  });
+});
+
 describe('buildSingleCutout corner placement', () => {
   beforeAll(async () => {
     await initBrepjs();
@@ -278,7 +301,12 @@ describe('buildSingleCutout corner placement', () => {
    * both, and this exercises the real overshoot/`cutZ` placement — the half of
    * #3173 that decides whether an arc reaches the rim at all.
    */
-  const spanAtZ = (shape: WallCutoutShape, z: number, cutHeight: number = CUT_HEIGHT): number =>
+  const spanAtZ = (
+    shape: WallCutoutShape,
+    z: number,
+    cutHeight: number = CUT_HEIGHT,
+    cornerSlack?: CornerSlack
+  ): number =>
     withScope((scope: DisposalScope) => {
       const cut = scope.register(
         buildSingleCutout(
@@ -288,7 +316,8 @@ describe('buildSingleCutout corner placement', () => {
           OVERSHOOT,
           EXTRUDE_DEPTH,
           WALL_HEIGHT,
-          CENTERED
+          CENTERED,
+          cornerSlack
         )
       );
       const slab = scope.register(
@@ -353,6 +382,34 @@ describe('buildSingleCutout corner placement', () => {
     // corners stay square and the floor spans the full width.
     const tinyHeight = 0.2;
     expect(spanAtZ('u-shape', WALL_HEIGHT - tinyHeight, tinyHeight)).toBeCloseTo(CUT_WIDTH, 2);
+  });
+
+  it('squares the bottom corners when the cut spans the whole wall', () => {
+    // The reported artifact: with no wall left beyond the cut edge, a 5mm bottom
+    // fillet has nothing to blend into and stands up as a tapering fin welded to
+    // the side wall. Zero slack must reach the floor at full width instead.
+    expect(spanAtZ('u-shape', FLOOR_Z, CUT_HEIGHT, { left: 0, right: 0 })).toBeCloseTo(
+      CUT_WIDTH,
+      2
+    );
+  });
+
+  it('caps each bottom corner by the wall left on its own side', () => {
+    // Alignment can leave one end flush and the other deep in material, so the
+    // radii are resolved per corner rather than from a single worst case.
+    const r = autoCornerRadius(CUT_WIDTH);
+    const flushLeft = spanAtZ('u-shape', FLOOR_Z, CUT_HEIGHT, { left: 0, right: Infinity });
+    expect(flushLeft).toBeCloseTo(CUT_WIDTH - r, 0);
+  });
+
+  it('shrinks the fillet to the available slack rather than dropping it', () => {
+    // Slack below the auto radius keeps a proportional fillet: the blend stays,
+    // scaled to the column it runs into, so there is no cliff at exactly 100%.
+    const slack = 2;
+    expect(spanAtZ('u-shape', FLOOR_Z, CUT_HEIGHT, { left: slack, right: slack })).toBeCloseTo(
+      CUT_WIDTH - 2 * slack,
+      0
+    );
   });
 
   it('leaves the funnel and scoop top corners square', () => {
