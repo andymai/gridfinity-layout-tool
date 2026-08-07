@@ -1,0 +1,14 @@
+src/features/generation/worker/generators/wallPatterns.test.ts
+  h_b755e1950659f4 10,495,508
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "88f6567694795eac6db11ece7d5120b681315f1e",
+  "prompts": {},
+  "humans": {
+    "h_b755e1950659f4": {
+      "author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
