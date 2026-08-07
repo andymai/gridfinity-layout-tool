@@ -1,0 +1,41 @@
+src/features/generation/worker/generators/__kernel-tests__/wallCutoutCornerProbe.test.ts
+  s_e694fe720ed7bc::t_eee504d28c6784 6-9,12,17,19-20,22-40,42,51,69,72,74,85,91-92,94
+  s_e694fe720ed7bc::t_1e16214332d548 1-5,10-11,13-16,18,21,41,43-50,52-68,70-71,73,75-84,86-90,93,95-97
+src/features/generation/worker/generators/wallCutoutBuilder.test.ts
+  s_e694fe720ed7bc::t_98b1e51367b178 256-265,268-276
+  s_e694fe720ed7bc::t_43f29900097587 388-414
+  s_e694fe720ed7bc::t_c780df27db1b10 304-309,319-320
+  s_e694fe720ed7bc::t_6482b7be4820a5 387
+  s_e694fe720ed7bc::t_6b22e4b85e2197 9,11
+  s_e694fe720ed7bc::t_177022a897ae5e 266-267
+src/features/generation/worker/generators/scenarios/wallCutouts.ts
+  s_e694fe720ed7bc::t_fdd8de0a01a8d1 201
+  s_e694fe720ed7bc::t_8a9fff7581e0a5 202-223
+src/features/generation/worker/generators/wallCutoutBuilder.ts
+  s_e694fe720ed7bc::t_4326a71145f0ab 76-77
+  s_e694fe720ed7bc::t_a6f56484e9cd35 109-111,115-116,125,127
+  s_e694fe720ed7bc::t_dcb282e8148d68 244-245
+  s_e694fe720ed7bc::t_de396b31dfb838 112-114
+  s_e694fe720ed7bc::t_ce8c8de6bf598a 379-380
+  s_e694fe720ed7bc::t_cfba08e0b69af1 150-151,153
+  s_e694fe720ed7bc::t_4c2b3ea1d5e594 401-402
+  s_e694fe720ed7bc::t_78ec6cd195a301 295
+  s_e694fe720ed7bc::t_2d5c95e669330a 188-189,200-201
+  s_e694fe720ed7bc::t_bd530de9bc4a23 36-60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "f4c076f463a6f1d9813f4e5216071e73982152bc",
+  "prompts": {},
+  "sessions": {
+    "s_e694fe720ed7bc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "11bd0478-b0a5-44b1-9201-aee9d7b1ff5d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
