@@ -11,9 +11,16 @@
  *
  *  - `interior` — two ledges protrude inward from the front/back walls. The
  *    tray's floor rests on them and the walls above the ledges guide it in Y.
- *  - `rim` — two strips stand on the front/back wall tops. The tray's floor
- *    bridges the opening, resting on the wall tops, guided in Y by the strips.
- *    Because it sits above every wall, it crosses to an adjacent railed bin.
+ *  - `rim` — the same L, lifted to sit on top of the stacking lip: a shelf
+ *    reaches inward over the opening and a guide stands outboard of it. The
+ *    tray rides above every wall, so it crosses to an adjacent railed bin.
+ *
+ * Both mounts are therefore the same L-section rail (shelf to carry, guide to
+ * locate) at two heights, and both hold the SAME bearing overlap,
+ * `railProtrusionMm - clearanceMm`. An earlier `rim` sat the strips on the wall
+ * band with the tray between them, which left the tray narrower than the
+ * opening: it rested on nothing, dropped onto the lip's taper and was never
+ * touched by the strips at all.
  *
  * Fewer mating faces means fewer places for a fit to go wrong, and nothing
  * here needs support material.
@@ -22,19 +29,98 @@
 import { LIP_HEIGHT, LIP_TAPER_WIDTH, BOX_CORNER_RADIUS } from './generatorConstants';
 import type { SlideConfig } from '@/shared/types/bin';
 
-/** One rail bar, as an axis-aligned box in bin-centred mm. */
-export interface SlideRailBar {
+/**
+ * One rail, as a cross-section in the YZ plane swept along X.
+ *
+ * A section rather than a box because a shelf's underside is chamfered 45deg
+ * back to the wall it grows from. A square shelf is a 90deg cantilever running
+ * the full length of the bin, which slicers can only produce with support or a
+ * drooping first layer, and it measured ~490mm2 of support-needing area on a
+ * 3-wide bin. The chamfer removes all of it.
+ */
+export interface SlideRailSection {
   readonly xMin: number;
   readonly xMax: number;
-  readonly yMin: number;
-  readonly yMax: number;
-  readonly zMin: number;
-  readonly zMax: number;
+  /** Closed polygon of [y, z] points in bin-centred mm. */
+  readonly section: readonly (readonly [number, number])[];
+}
+
+/** YZ extent of a rail section, for callers that only need its envelope. */
+export function sectionBounds(bar: SlideRailSection): {
+  yMin: number;
+  yMax: number;
+  zMin: number;
+  zMax: number;
+} {
+  const ys = bar.section.map(([y]) => y);
+  const zs = bar.section.map(([, z]) => z);
+  return {
+    yMin: Math.min(...ys),
+    yMax: Math.max(...ys),
+    zMin: Math.min(...zs),
+    zMax: Math.max(...zs),
+  };
+}
+
+/** Axis-aligned box helper, for the parts that genuinely are boxes. */
+export function boxSection(
+  xMin: number,
+  xMax: number,
+  yMin: number,
+  yMax: number,
+  zMin: number,
+  zMax: number
+): SlideRailSection {
+  return {
+    xMin,
+    xMax,
+    section: [
+      [yMin, zMin],
+      [yMax, zMin],
+      [yMax, zMax],
+      [yMin, zMax],
+    ],
+  };
+}
+
+/**
+ * A shelf growing inward from a wall, with its underside chamfered 45deg back
+ * to that wall so nothing overhangs.
+ *
+ * @param wallY   the wall face the shelf grows from
+ * @param inward  +1 when the shelf reaches toward +Y, -1 toward -Y
+ * @param reach   how far it protrudes from the wall
+ * @param top     Z of the bearing face
+ * @param tip     thickness at the free tip
+ * @param sink    extra depth at the wall, to bury the root in what it welds to
+ */
+export function shelfSection(
+  xMin: number,
+  xMax: number,
+  wallY: number,
+  inward: -1 | 1,
+  reach: number,
+  top: number,
+  tip: number,
+  sink = 0
+): SlideRailSection {
+  const tipY = wallY + inward * reach;
+  return {
+    xMin,
+    xMax,
+    section: [
+      [wallY, top],
+      [tipY, top],
+      [tipY, top - tip],
+      // 45deg run back to the wall: drop equals reach.
+      [wallY, top - tip - reach - sink],
+    ],
+  };
 }
 
 export interface SlideGeometry {
-  /** Front and back rail bars. Empty when the config cannot produce a rail. */
-  readonly rails: readonly SlideRailBar[];
+  /** Rail sections swept along X. Empty when the config produces no rail. */
+  readonly rails: readonly SlideRailSection[];
   /** Companion tray outer footprint and height, in mm. */
   readonly tray: {
     readonly widthMm: number;
@@ -52,7 +138,12 @@ export interface SlideGeometry {
 }
 
 export type SlideRejection =
-  'disabled' | 'bin-too-shallow' | 'bin-too-narrow' | 'tray-too-thin' | 'rail-below-floor';
+  | 'disabled'
+  | 'bin-too-shallow'
+  | 'bin-too-narrow'
+  | 'tray-too-thin'
+  | 'rail-below-floor'
+  | 'no-bearing';
 
 export interface SlideGeometryInput {
   readonly slide: SlideConfig;
@@ -114,6 +205,11 @@ export function resolveSlideGeometry(input: SlideGeometryInput): SlideGeometry {
   const thickness = slide.railThicknessMm;
   const clearance = slide.clearanceMm;
 
+  // The tray is held back from each guide by the clearance, so a shelf that
+  // reaches in less than that carries nothing: the tray passes straight by it.
+  // Same relationship for both mounts, which is why it is checked once here.
+  if (protrusion <= clearance) return none('no-bearing');
+
   const trayWidth = slide.trayWidthUnits * input.gridUnitMmX - clearance;
   if (trayWidth <= MIN_TRAY_INTERIOR_MM) return none('bin-too-narrow');
   // Walls are checked against BOTH axes. Only checking depth let a thick wall
@@ -125,7 +221,9 @@ export function resolveSlideGeometry(input: SlideGeometryInput): SlideGeometry {
   if (slide.railMount === 'interior') {
     const ceiling = interiorRailCeiling(wallHeight, input.hasLip);
     const railTop = Math.min(ceiling, wallHeight - slide.railDropMm);
-    const railBottom = railTop - thickness;
+    // The gusset's 45deg underside runs `protrusion` back to the wall, so the
+    // rail reaches this far down where it meets the wall.
+    const railBottom = railTop - thickness - protrusion;
     // The rail must stand clear of the floor slab, or it is a solid block
     // filling the cavity rather than a ledge.
     if (railBottom <= wallThickness) return none('rail-below-floor');
@@ -136,23 +234,9 @@ export function resolveSlideGeometry(input: SlideGeometryInput): SlideGeometry {
     // Overlap onto each ledge must leave the tray with a floor between them.
     if (protrusion * 2 >= trayDepth) return none('bin-too-shallow');
 
-    const rails: SlideRailBar[] = [
-      {
-        xMin: -innerW / 2,
-        xMax: innerW / 2,
-        yMin: -innerD / 2,
-        yMax: -innerD / 2 + protrusion,
-        zMin: railBottom,
-        zMax: railTop,
-      },
-      {
-        xMin: -innerW / 2,
-        xMax: innerW / 2,
-        yMin: innerD / 2 - protrusion,
-        yMax: innerD / 2,
-        zMin: railBottom,
-        zMax: railTop,
-      },
+    const rails: SlideRailSection[] = [
+      shelfSection(-innerW / 2, innerW / 2, -innerD / 2, 1, protrusion, railTop, thickness),
+      shelfSection(-innerW / 2, innerW / 2, innerD / 2, -1, protrusion, railTop, thickness),
     ];
 
     return {
@@ -162,45 +246,61 @@ export function resolveSlideGeometry(input: SlideGeometryInput): SlideGeometry {
         depthMm: trayDepth,
         heightMm: slide.trayDepthMm,
         wallMm: slide.trayWallMm,
-        restZ: railTop + clearance,
+        // Resting ON the shelf, not floating a clearance above it: clearance
+        // is a SIDE gap, and gravity settles the tray onto its shelf. Both
+        // mounts report the shelf top so the bearing check reads the same.
+        restZ: railTop,
       },
       rejection: null,
     };
   }
 
-  // `rim`: strips stand on the wall tops at the OUTER edge, so the channel
-  // between them is the full opening plus both wall thicknesses. The tray
-  // bridges it, resting on the wall tops.
+  // `rim`: the interior L lifted onto the lip. The shelf reaches inward over
+  // the opening to carry the tray; the guide stands on the wall band outboard
+  // of it to locate the tray in Y. Sitting above every wall is what lets the
+  // tray cross to a neighbouring railed bin.
   const baseZ = rimTrackBaseZ(wallHeight, input.collarHeight, input.hasLip);
-  // Keep the strips on the straight part of the wall: the footprint's corners
-  // are arcs of BOX_CORNER_RADIUS, and a bar run into them would hang off the
-  // silhouette. Stopping short also leaves the corner clear for the neighbour's
-  // strip to pick up the track.
+  // Keep the bars on the straight part of the wall: the footprint's corners are
+  // arcs of BOX_CORNER_RADIUS, and a bar run into them would hang off the
+  // silhouette. The gap is also what lets a neighbour's rail pick the track up.
   const xEnd = input.outerW / 2 - BOX_CORNER_RADIUS;
   if (xEnd <= 0) return none('bin-too-narrow');
 
-  const stripInnerY = outerD / 2 - wallThickness;
-  const channel = 2 * stripInnerY;
-  const trayDepth = channel - 2 * clearance;
+  const innerHalf = innerD / 2;
+  const shelfInnerY = innerHalf - protrusion;
+  if (shelfInnerY <= 0) return none('bin-too-shallow');
+
+  const shelfTop = baseZ + thickness;
+  const trayDepth = innerD - 2 * clearance;
   if (trayDepth - 2 * slide.trayWallMm <= MIN_TRAY_INTERIOR_MM) return none('bin-too-shallow');
 
-  const rails: SlideRailBar[] = [
-    {
-      xMin: -xEnd,
-      xMax: xEnd,
-      yMin: -outerD / 2,
-      yMax: -stripInnerY,
-      zMin: baseZ - RAIL_FUSION_MARGIN_MM,
-      zMax: baseZ + thickness,
-    },
-    {
-      xMin: -xEnd,
-      xMax: xEnd,
-      yMin: stripInnerY,
-      yMax: outerD / 2,
-      zMin: baseZ - RAIL_FUSION_MARGIN_MM,
-      zMax: baseZ + thickness,
-    },
+  const rails: SlideRailSection[] = [
+    // Shelves reach inward over the opening, chamfered back to the wall, and
+    // sink into the lip so they weld (see RAIL_FUSION_MARGIN_MM).
+    shelfSection(
+      -xEnd,
+      xEnd,
+      -innerHalf,
+      1,
+      protrusion,
+      shelfTop,
+      thickness,
+      RAIL_FUSION_MARGIN_MM
+    ),
+    shelfSection(
+      -xEnd,
+      xEnd,
+      innerHalf,
+      -1,
+      protrusion,
+      shelfTop,
+      thickness,
+      RAIL_FUSION_MARGIN_MM
+    ),
+    // Guides stand on the wall band only, so they never overhang the opening
+    // and the tray's edge runs against their inner faces.
+    boxSection(-xEnd, xEnd, -outerD / 2, -innerHalf, shelfTop, shelfTop + thickness),
+    boxSection(-xEnd, xEnd, innerHalf, outerD / 2, shelfTop, shelfTop + thickness),
   ];
 
   return {
@@ -210,7 +310,7 @@ export function resolveSlideGeometry(input: SlideGeometryInput): SlideGeometry {
       depthMm: trayDepth,
       heightMm: slide.trayDepthMm,
       wallMm: slide.trayWallMm,
-      restZ: baseZ,
+      restZ: shelfTop,
     },
     rejection: null,
   };

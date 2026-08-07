@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { resolveSlideGeometry, interiorRailCeiling, rimTrackBaseZ } from './slideGeometry';
+import {
+  resolveSlideGeometry,
+  interiorRailCeiling,
+  rimTrackBaseZ,
+  sectionBounds,
+} from './slideGeometry';
 import type { SlideGeometryInput } from './slideGeometry';
 import { DEFAULT_SLIDE_CONFIG } from '@/features/bin-designer/types/slide';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
@@ -78,7 +83,7 @@ describe('resolveSlideGeometry', () => {
       const g = interior();
       expect(g.rejection).toBeNull();
       expect(g.rails).toHaveLength(2);
-      const [front, back] = g.rails;
+      const [front, back] = g.rails.map(sectionBounds);
       expect(front.yMin).toBeLessThan(0);
       expect(back.yMax).toBeGreaterThan(0);
       // Mirrored about Y=0, so the tray sits level.
@@ -88,12 +93,12 @@ describe('resolveSlideGeometry', () => {
 
     it('clamps the rail top under the lip taper even at zero drop', () => {
       const g = interior({ railDropMm: 0 });
-      expect(g.rails[0].zMax).toBe(interiorRailCeiling(42, true));
+      expect(sectionBounds(g.rails[0]).zMax).toBe(interiorRailCeiling(42, true));
     });
 
     it('honours a drop below that ceiling', () => {
       const g = interior({ railDropMm: 10 });
-      expect(g.rails[0].zMax).toBe(32);
+      expect(sectionBounds(g.rails[0]).zMax).toBe(32);
     });
 
     it('leaves the tray narrower than its track by the clearance', () => {
@@ -106,9 +111,10 @@ describe('resolveSlideGeometry', () => {
       expect(inp.innerD - (g.tray?.depthMm ?? 0)).toBeCloseTo(2 * 0.45, 9);
     });
 
-    it('rests the tray above the ledge by the clearance', () => {
+    it('rests the tray on the ledge', () => {
+      // Clearance is a SIDE gap; vertically the tray settles onto its shelf.
       const g = interior({ clearanceMm: 0.3 });
-      expect(g.tray?.restZ).toBeCloseTo(g.rails[0].zMax + 0.3, 9);
+      expect(g.tray?.restZ).toBeCloseTo(sectionBounds(g.rails[0]).zMax, 9);
     });
 
     it('rejects a rail that would sit in the floor slab', () => {
@@ -133,46 +139,48 @@ describe('resolveSlideGeometry', () => {
     const rim = (slide: Partial<SlideConfig> = {}, over: Partial<SlideGeometryInput> = {}) =>
       resolveSlideGeometry(input({ railMount: 'rim', ...slide }, over));
 
-    it('tops the strips out one thickness above the lip', () => {
+    it('builds a shelf and a guide on each side', () => {
       const g = rim();
       expect(g.rejection).toBeNull();
-      expect(g.rails).toHaveLength(2);
-      expect(g.rails[0].zMax).toBe(
-        rimTrackBaseZ(42, 0, true) + DEFAULT_SLIDE_CONFIG.railThicknessMm
+      expect(g.rails).toHaveLength(4);
+    });
+
+    it('rests the tray on the shelf, above the lip', () => {
+      const g = rim();
+      const shelfTop = rimTrackBaseZ(42, 0, true) + DEFAULT_SLIDE_CONFIG.railThicknessMm;
+      expect(g.tray?.restZ).toBe(shelfTop);
+      // Above every wall, which is what lets it cross to a neighbouring bin.
+      expect(g.tray?.restZ).toBeGreaterThan(42);
+    });
+
+    it('sinks the shelf below the nominal lip top so it welds', () => {
+      // The lip's peak is filleted a little below `wallHeight + LIP_HEIGHT`, so
+      // a bar starting exactly at the nominal height can float clear of it.
+      const g = rim();
+      expect(Math.min(...g.rails.map((r) => sectionBounds(r).zMin))).toBeLessThan(
+        rimTrackBaseZ(42, 0, true)
       );
     });
 
-    it('sinks the strips below the nominal lip top so they weld', () => {
-      // The lip's peak is filleted a little below `wallHeight + LIP_HEIGHT`, so
-      // a strip starting exactly at the nominal height floats clear of it and
-      // fuses as a disconnected island — watertight, right bounding box, and it
-      // falls off the print.
-      const g = rim();
-      expect(g.rails[0].zMin).toBeLessThan(rimTrackBaseZ(42, 0, true));
-    });
-
-    it('stops the strips short of the corner arcs', () => {
-      // A bar run into the rounded corner hangs off the silhouette, and the
-      // gap is what lets a neighbour's strip pick the track up.
+    it('keeps the guide off the opening so it never overhangs', () => {
+      // The guide stands on the wall band only. Reaching inward would put an
+      // unsupported bar over the cavity.
       const g = rim();
       const inp = input({ railMount: 'rim' });
-      expect(g.rails[0].xMax).toBeLessThan(inp.outerW / 2);
+      const shelfTop = rimTrackBaseZ(42, 0, true) + DEFAULT_SLIDE_CONFIG.railThicknessMm;
+      const guides = g.rails.map(sectionBounds).filter((b) => b.zMin >= shelfTop - 1e-9);
+      expect(guides).toHaveLength(2);
+      for (const guide of guides) {
+        expect(Math.min(Math.abs(guide.yMin), Math.abs(guide.yMax))).toBeGreaterThanOrEqual(
+          inp.innerD / 2 - 1e-9
+        );
+      }
+    });
+
+    it('stops the bars short of the corner arcs', () => {
+      const g = rim();
+      const inp = input({ railMount: 'rim' });
       expect(g.rails[0].xMax).toBeCloseTo(inp.outerW / 2 - 3.75, 9);
-    });
-
-    it('puts the tray above every wall so it can cross to a neighbour', () => {
-      const g = rim();
-      const inp = input({ railMount: 'rim' });
-      const rimTop = inp.wallHeight + inp.collarHeight + LIP_HEIGHT;
-      expect(g.tray?.restZ).toBeGreaterThanOrEqual(rimTop);
-    });
-
-    it('fits the tray into the channel between the strips', () => {
-      const g = rim({ clearanceMm: 0.5 });
-      const inp = input({ railMount: 'rim' });
-      const channel = 2 * (inp.outerD / 2 - inp.wallThickness);
-      expect(g.tray?.depthMm).toBeCloseTo(channel - 1, 9);
-      expect(g.tray?.depthMm).toBeLessThan(channel);
     });
 
     it('sizes the tray from grid units, not from the host bin', () => {
@@ -187,6 +195,61 @@ describe('resolveSlideGeometry', () => {
     it('rejects a tray width that collapses to nothing', () => {
       const g = rim({ trayWidthUnits: 0.5 }, { gridUnitMmX: 2 });
       expect(g.rejection).toBe('bin-too-narrow');
+    });
+  });
+
+  describe('bearing (both mounts)', () => {
+    // The invariant that the first `rim` design violated: its strips sat
+    // OUTBOARD of the tray, so the tray was narrower than the opening, rested
+    // on nothing and dropped onto the lip's taper. Every structural assertion
+    // passed. This is the check that catches it, and it is deliberately
+    // written against both mounts so neither can drift.
+    for (const railMount of ['interior', 'rim'] as const) {
+      it(`carries the tray on real material (${railMount})`, () => {
+        const slide = { railMount, railProtrusionMm: 2, clearanceMm: 0.45 };
+        const g = resolveSlideGeometry(input(slide));
+        const tray = g.tray;
+        expect(tray).not.toBeNull();
+        if (!tray) return;
+        const trayHalf = tray.depthMm / 2;
+        // The shelf a tray actually lands on is the bar whose top is at restZ.
+        const shelves = g.rails
+          .map(sectionBounds)
+          .filter((b) => Math.abs(b.zMax - tray.restZ) < 1e-6);
+        expect(shelves.length).toBeGreaterThan(0);
+        const reach = Math.min(...shelves.map((b) => Math.min(Math.abs(b.yMin), Math.abs(b.yMax))));
+        expect(trayHalf - reach).toBeCloseTo(2 - 0.45, 9);
+        expect(trayHalf).toBeGreaterThan(reach);
+      });
+    }
+
+    it('rejects a shelf that reaches in less than the clearance', () => {
+      // Held back by the clearance, the tray would pass straight by such a
+      // shelf and fall through.
+      const g = resolveSlideGeometry(input({ railProtrusionMm: 0.8, clearanceMm: 1.5 }));
+      expect(g.rejection).toBe('no-bearing');
+      expect(g.tray).toBeNull();
+    });
+  });
+
+  describe('tray vertical extent', () => {
+    it('rejects rather than half-building on a bin too short for the default drop', () => {
+      // The default sinks the tray ~21mm, which a 3u bin (21mm of wall) cannot
+      // give. Rejecting is the safe outcome, but it is SILENT: the panel has to
+      // surface `rejection`, or the user enables the feature and nothing
+      // appears. Pinned so that stays a known behaviour rather than a surprise.
+      const g = resolveSlideGeometry(input({ railMount: 'interior' }, { wallHeight: 21 }));
+      expect(g.rejection).toBe('rail-below-floor');
+      expect(g.rails).toEqual([]);
+      expect(g.tray).toBeNull();
+    });
+
+    it('keeps the default interior tray inside the bin', () => {
+      // The shipped default used to leave the tray standing ~18mm proud of the
+      // rim, which breaks stacking and looks like a bug.
+      const g = resolveSlideGeometry(input({ railMount: 'interior' }));
+      const top = (g.tray?.restZ ?? 0) + (g.tray?.heightMm ?? 0);
+      expect(top).toBeLessThanOrEqual(42);
     });
   });
 });
