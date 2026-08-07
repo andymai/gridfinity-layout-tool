@@ -244,6 +244,13 @@ const MAX_PARAM_DEPTH = 8;
 const MAX_TEXT_FIELDS = 500;
 
 /**
+ * Collect one past the cap so a caller can tell "exactly at the cap, fully
+ * collected" from "truncated". Without the sentinel those are the same length
+ * and truncation is undetectable.
+ */
+const COLLECT_LIMIT = MAX_TEXT_FIELDS + 1;
+
+/**
  * Collect user-authored strings nested anywhere inside a design's params.
  *
  * A string reached through an array carries its ARRAY's key, not its index —
@@ -252,11 +259,11 @@ const MAX_TEXT_FIELDS = 500;
  * return and every entry of `compartmentTexts` / `rowTexts` escaped the filter.
  */
 function collectDesignText(value: unknown, out: string[], depth = 0, key?: string): void {
-  if (depth > MAX_PARAM_DEPTH || out.length >= MAX_TEXT_FIELDS) return;
+  if (depth > MAX_PARAM_DEPTH || out.length >= COLLECT_LIMIT) return;
 
   if (Array.isArray(value)) {
     for (const entry of value) {
-      if (out.length >= MAX_TEXT_FIELDS) return;
+      if (out.length >= COLLECT_LIMIT) return;
       if (typeof entry === 'string') {
         if (key !== undefined && TEXT_BEARING_KEYS.has(key)) out.push(entry);
       } else {
@@ -268,7 +275,7 @@ function collectDesignText(value: unknown, out: string[], depth = 0, key?: strin
   if (typeof value !== 'object' || value === null) return;
 
   for (const [nestedKey, nested] of Object.entries(value)) {
-    if (out.length >= MAX_TEXT_FIELDS) return;
+    if (out.length >= COLLECT_LIMIT) return;
     if (typeof nested === 'string') {
       if (TEXT_BEARING_KEYS.has(nestedKey)) out.push(nested);
     } else {
@@ -313,6 +320,18 @@ export function filterSharedDesignsContent(
 export function filterDesignParamsContent(params: unknown): ContentFilterResult {
   const texts: string[] = [];
   collectDesignText(params, texts);
+
+  // Fail CLOSED on truncation. The walk stops at the cap, so passing what it
+  // did collect would let an attacker pad the first MAX_TEXT_FIELDS entries
+  // with benign strings and park the blocked content past the cutoff — the
+  // filter would report "passed" on text it never looked at. No legitimate
+  // design comes close: the engraved-text fields are individually bounded
+  // (MAX_COMPARTMENT_GRID, MAX_INSERTS, MAX_MESH_ASSETS, five surfaceText
+  // fields), so reaching the cap means the params were built to reach it.
+  if (texts.length > MAX_TEXT_FIELDS) {
+    return { passed: false, reason: 'contains too many text fields to moderate' };
+  }
+
   for (const text of texts) {
     const result = checkText(text);
     if (!result.passed) return result;

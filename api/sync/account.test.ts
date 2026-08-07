@@ -686,6 +686,20 @@ describe('DELETE /api/sync/account', () => {
       expect(redisSets.has('community:printed:user-1')).toBe(false);
     });
 
+    // Partial success still leaves unreadable records with photos on the CDN,
+    // and dropping the reverse index removes the only handle on them.
+    it('keeps the reverse index when only some prints resolve', async () => {
+      const { deriveAuthorPublicId } = await import('../lib/communityIds');
+      const author = String(deriveAuthorPublicId('user-1'));
+      seedOwnPrint('design-a', author);
+      // A second indexed design with no readable record under this author id.
+      redisSets.get('community:printed:user-1')?.add('design-ghost');
+
+      await runCascade();
+
+      expect(redisSets.get('community:printed:user-1')).toEqual(new Set(['design-ghost']));
+    });
+
     it('leaves another user print untouched', async () => {
       setHash('community:print:design-c:otherauthor', {
         designId: 'design-c',

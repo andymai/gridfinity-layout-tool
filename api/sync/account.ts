@@ -326,10 +326,16 @@ async function purgeCommunityPrints(
     }
   }
 
-  if (resolved === 0) {
-    logger.error('account-delete: no community print resolved; author id likely stale', {
+  // Every entry must have resolved. Partial success still leaves unreadable
+  // records with photos on the CDN, and the caller drops the reverse index on
+  // `true` — the only handle left on them. Resolved entries have already been
+  // SREM'd by deleteCommunityPrint, so a retry sees an index narrowed to
+  // exactly the unresolved ones.
+  if (resolved < designIds.length) {
+    logger.error('account-delete: community prints unresolved; keeping the reverse index', {
       userId,
       indexed: designIds.length,
+      resolved,
     });
     return false;
   }

@@ -8,6 +8,7 @@ import {
   filterDisplayName,
   filterLayoutContent,
   filterSharedDesignsContent,
+  filterDesignParamsContent,
 } from '../../api/lib/contentFilter.js';
 
 describe('filterLayoutContent', () => {
@@ -484,5 +485,42 @@ describe('checkText', () => {
     for (const text of sample) {
       expect(checkText(text).passed).toBe(filterDisplayName(text).passed);
     }
+  });
+});
+
+/**
+ * The walk stops at MAX_TEXT_FIELDS. Returning "passed" on a truncated
+ * collection would report success on text the filter never read, so an
+ * attacker could pad the first 500 entries with benign strings and park the
+ * blocked content past the cutoff.
+ */
+describe('filterDesignParamsContent — collection cap', () => {
+  const padded = (count: number, tail: string[] = []) => ({
+    compartments: { compartmentTexts: [...Array.from({ length: count }, () => 'ok'), ...tail] },
+  });
+
+  it('passes a design comfortably under the cap', () => {
+    expect(filterDesignParamsContent(padded(100)).passed).toBe(true);
+  });
+
+  it('fails closed rather than passing a truncated walk', () => {
+    const result = filterDesignParamsContent(padded(600));
+    expect(result.passed).toBe(false);
+    expect(result.reason).toContain('too many text fields');
+  });
+
+  it('does not let padding hide blocked content past the cutoff', () => {
+    expect(filterDesignParamsContent(padded(600, ['kys'])).passed).toBe(false);
+  });
+
+  it('still reports a blocked string that sits within the cap', () => {
+    const result = filterDesignParamsContent(padded(10, ['kys']));
+    expect(result.passed).toBe(false);
+    expect(result.reason).toContain('prohibited');
+  });
+
+  it('applies through the shared-designs entry point too', () => {
+    const result = filterSharedDesignsContent([{ name: 'Padded', params: padded(600, ['kys']) }]);
+    expect(result.passed).toBe(false);
   });
 });
