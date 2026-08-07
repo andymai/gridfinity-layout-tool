@@ -10,6 +10,7 @@ import type {
   LabelTabConfig,
   ScoopConfig,
   WallConfig,
+  SlideConfig,
   OverhangConfig,
   WallCutout,
   WallSide,
@@ -81,6 +82,13 @@ export function createScopedUpdaters(set: Set) {
       set((state) => {
         pushHistoryEntry(state);
         state.params.walls = { ...state.params.walls, ...partial };
+      });
+    },
+
+    updateSlide: (partial: Partial<SlideConfig>) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        state.params.slide = { ...state.params.slide, ...partial };
       });
     },
 

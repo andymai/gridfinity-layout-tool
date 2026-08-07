@@ -10,6 +10,7 @@ import { FLOOR_PATTERN_TYPES, WALL_PATTERN_TYPES } from '../types';
 import { DESIGNER_CONSTRAINTS } from './gridfinity';
 import { validateBinParams } from '../utils/validation';
 import { makeUniformLipCells } from '../types/featureColors';
+import { DEFAULT_SLIDE_CONFIG } from '../types/slide';
 import { expectOk } from '@/test/testUtils';
 import type { BinParams } from '../types';
 
@@ -1224,6 +1225,37 @@ describe('migrateParams', () => {
       });
       expect(result.cutouts[0].scoopRadiusW).toBeUndefined();
       expect(result.cutouts[0].scoopRadiusD).toBeUndefined();
+    });
+  });
+
+  describe('sliding tray migration', () => {
+    it('backfills the whole config for designs predating the feature', () => {
+      const result = migrateParams({});
+      expect(result.slide).toEqual(DEFAULT_SLIDE_CONFIG);
+    });
+
+    it('completes a partially-stored config from the default', () => {
+      // A design saved mid-feature carries some fields and not others; the
+      // generator must never see a half-formed config.
+      const result = migrateParams({
+        slide: { enabled: true, trayWidthUnits: 2 } as BinParams['slide'],
+      });
+      expect(result.slide.enabled).toBe(true);
+      expect(result.slide.trayWidthUnits).toBe(2);
+      expect(result.slide.clearanceMm).toBe(DEFAULT_SLIDE_CONFIG.clearanceMm);
+      expect(result.slide.railMount).toBe(DEFAULT_SLIDE_CONFIG.railMount);
+    });
+
+    it('coerces an unknown railMount back to the default', () => {
+      const result = migrateParams({
+        slide: { railMount: 'sideways' } as unknown as BinParams['slide'],
+      });
+      expect(result.slide.railMount).toBe(DEFAULT_SLIDE_CONFIG.railMount);
+    });
+
+    it('is idempotent', () => {
+      const once = migrateParams({ slide: { enabled: true } as BinParams['slide'] });
+      expect(migrateParams({ slide: once.slide }).slide).toEqual(once.slide);
     });
   });
 });

@@ -26,6 +26,8 @@ import type {
 import { DEFAULT_PATTERN_SCALE } from '../types';
 import type { FeatureColorConfig, LipAxisCount, TopAccentConfig } from '../types/featureColors';
 import { makeUniformLipCells, LIP_CELL_ZONES } from '../types/featureColors';
+import type { SlideConfig, SlideRailMount } from '../types/slide';
+import { DEFAULT_SLIDE_CONFIG, SLIDE_RAIL_MOUNTS } from '../types/slide';
 import type { BaseConfig, TrayBottomConfig } from '../types/base';
 import { DEFAULT_TRAY_BOTTOM } from '../types/base';
 import {
@@ -888,8 +890,22 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     dividers: _legacyDividers,
     eco: _legacyEco,
     handles: _handlesHandled,
+    slide: _slideHandled,
     ...rest
   } = params as Record<string, unknown>;
+
+  // Designs predating the sliding tray have no `slide` at all, and one saved
+  // mid-feature may be missing individual fields; both re-complete from the
+  // default rather than reaching the generator half-formed.
+  const slideConfig: SlideConfig = {
+    ...DEFAULT_SLIDE_CONFIG,
+    ...((params.slide as Partial<SlideConfig> | undefined) ?? {}),
+    railMount: SLIDE_RAIL_MOUNTS.includes(
+      (params.slide as Partial<SlideConfig> | undefined)?.railMount as SlideRailMount
+    )
+      ? ((params.slide as Partial<SlideConfig>).railMount as SlideRailMount)
+      : DEFAULT_SLIDE_CONFIG.railMount,
+  };
 
   // Wall top (height units × mm/unit, plus any exterior-wall collar), matching
   // the top-accent slider cap in the Colors panel. Used to clamp a persisted
@@ -936,6 +952,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     scoop: scoopConfig,
     label: { ...DEFAULT_BIN_PARAMS.label, ...(params.label ?? {}) },
     walls: wallsConfig,
+    slide: slideConfig,
     handles: handlesConfig,
     slotConfig,
     dividerPieces,

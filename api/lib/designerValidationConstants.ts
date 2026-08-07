@@ -97,3 +97,31 @@ export const VALID_LABEL_PLATE_ICONS: readonly string[] = [
   'washer',
   'nail',
 ];
+
+/**
+ * Sliding-tray bounds. Mirrors `SLIDE_CONSTRAINTS` in
+ * `src/features/bin-designer/types/slide.ts` — keep in sync, or valid client
+ * payloads 400 on sync.
+ *
+ * These are the numbers a crafted share could otherwise use to drive runaway
+ * BREP: the rail and tray dimensions feed the generator directly.
+ */
+export const SLIDE_CONSTRAINTS = {
+  MIN_TRAY_WIDTH_UNITS: 0.5,
+  MAX_TRAY_WIDTH_UNITS: 16,
+  MIN_TRAY_DEPTH_MM: 3,
+  MAX_TRAY_DEPTH_MM: 140,
+  MIN_TRAY_WALL_MM: 0.4,
+  MAX_TRAY_WALL_MM: 2.4,
+  MIN_RAIL_DROP_MM: 0,
+  MAX_RAIL_DROP_MM: 140,
+  MIN_RAIL_PROTRUSION_MM: 0.8,
+  MAX_RAIL_PROTRUSION_MM: 6,
+  MIN_RAIL_THICKNESS_MM: 0.8,
+  MAX_RAIL_THICKNESS_MM: 6,
+  MIN_CLEARANCE_MM: 0.1,
+  MAX_CLEARANCE_MM: 2,
+} as const;
+
+/** Mirrors `SLIDE_RAIL_MOUNTS` in `src/features/bin-designer/types/slide.ts`. */
+export const VALID_SLIDE_RAIL_MOUNTS: readonly string[] = ['interior', 'rim'];

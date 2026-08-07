@@ -7,6 +7,7 @@ import type { CompartmentConfig, ScoopConfig } from './compartments';
 import type { LabelTabConfig } from './labelTabs';
 import type { HandleConfig } from './handles';
 import type { WallConfig, WallPatternConfig, OverhangConfig } from './walls';
+import type { SlideConfig } from './slide';
 import type { FloorPatternConfig } from './floor';
 import type { SplitConnectorConfig } from './splitConnector';
 import type { FeatureColorConfig } from './featureColors';
@@ -62,6 +63,8 @@ export interface BinParams {
   readonly scoop: ScoopConfig;
   readonly label: LabelTabConfig;
   readonly walls: WallConfig;
+  /** Sliding tray: a rail on this bin plus the companion tray that rides it. */
+  readonly slide: SlideConfig;
   readonly handles: HandleConfig;
   readonly slotConfig: SlotConfig;
   readonly dividerPieces: DividerPieceConfig;
