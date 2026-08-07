@@ -70,6 +70,11 @@ export function CommunityGalleryTab({
   const t = useTranslation();
   const { isMobile } = useResponsive();
 
+  // The /community route heads the page with an h1, so its sections are h2.
+  // Every other surface is the gallery dialog, whose own title is already an
+  // h2, so the same sections drop to h3 there.
+  const sectionHeadingLevel = surface === 'route' ? 2 : 3;
+
   const { status, items, capped, error, filters, fitsGapContext, visibleCount } = useBrowseStore(
     useShallow((s) => ({
       status: s.status,
@@ -355,6 +360,7 @@ export function CommunityGalleryTab({
           items={activeItems}
           counts={facetCounts}
           onBack={() => filterPanel.close()}
+          headingLevel={sectionHeadingLevel}
         />
       </div>
     );
@@ -375,6 +381,7 @@ export function CommunityGalleryTab({
             items={activeItems}
             counts={facetCounts}
             onCollapse={() => filterPanel.close()}
+            headingLevel={sectionHeadingLevel}
           />
         )}
 

@@ -22,7 +22,7 @@ beforeEach(() => {
 
 describe('FilterRail', () => {
   it('is a labelled landmark, not a dialog stacked on the gallery', () => {
-    render(<FilterRail items={[]} counts={EMPTY_COUNTS} onCollapse={vi.fn()} />);
+    render(<FilterRail items={[]} counts={EMPTY_COUNTS} onCollapse={vi.fn()} headingLevel={3} />);
     const rail = screen.getByTestId('community-filter-rail');
     expect(rail.tagName).toBe('ASIDE');
     expect(rail).toHaveAttribute('aria-label', 'community.gallery.filterPanelLabel');
@@ -30,22 +30,27 @@ describe('FilterRail', () => {
   });
 
   it('holds the filter panel', () => {
-    render(<FilterRail items={[]} counts={EMPTY_COUNTS} onCollapse={vi.fn()} />);
+    render(<FilterRail items={[]} counts={EMPTY_COUNTS} onCollapse={vi.fn()} headingLevel={3} />);
     expect(screen.getByTestId('community-filter-panel')).toBeInTheDocument();
   });
 
-  // The gallery mounts inside DesignGalleryModal, whose Dialog title is an h2,
-  // and under CommunityPage's h1. An h2 here was a peer of the dialog title.
-  it('titles itself below the surface heading, level with the other sections', () => {
-    render(<FilterRail items={[]} counts={EMPTY_COUNTS} onCollapse={vi.fn()} />);
+  // The gallery mounts under two different headings: the gallery dialog's own
+  // h2 title, and the /community route's h1. A hardcoded level is a peer of
+  // the dialog title in one host or skips a level in the other.
+  it.each([2, 3] as const)('titles itself at the depth its host dictates (h%i)', (level) => {
+    render(
+      <FilterRail items={[]} counts={EMPTY_COUNTS} onCollapse={vi.fn()} headingLevel={level} />
+    );
     expect(
-      screen.getByRole('heading', { level: 3, name: 'community.gallery.filterPanelLabel' })
+      screen.getByRole('heading', { level, name: 'community.gallery.filterPanelLabel' })
     ).toBeInTheDocument();
   });
 
   it('collapses from its own header control', () => {
     const onCollapse = vi.fn();
-    render(<FilterRail items={[]} counts={EMPTY_COUNTS} onCollapse={onCollapse} />);
+    render(
+      <FilterRail items={[]} counts={EMPTY_COUNTS} onCollapse={onCollapse} headingLevel={3} />
+    );
     fireEvent.click(screen.getByTestId('community-filter-rail-collapse'));
     expect(onCollapse).toHaveBeenCalledOnce();
   });

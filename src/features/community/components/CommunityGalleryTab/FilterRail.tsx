@@ -9,6 +9,13 @@ export interface FilterRailProps {
   items: readonly CommunityCard[];
   counts: FacetCounts;
   onCollapse: () => void;
+  /**
+   * Depth of this section's title, which depends on the host: under the
+   * gallery dialog's own h2 title it is an h3, under the /community route's
+   * h1 it is an h2. Hardcoding either one flattens or skips a level in the
+   * other surface.
+   */
+  headingLevel: 2 | 3;
 }
 
 /**
@@ -16,8 +23,9 @@ export interface FilterRailProps {
  * results stay visible and there is no second focus trap, overlay or scroll
  * lock on top of the gallery dialog.
  */
-export function FilterRail({ items, counts, onCollapse }: FilterRailProps) {
+export function FilterRail({ items, counts, onCollapse, headingLevel }: FilterRailProps) {
   const t = useTranslation();
+  const Heading = `h${headingLevel}` as const;
 
   return (
     <aside
@@ -26,13 +34,9 @@ export function FilterRail({ items, counts, onCollapse }: FilterRailProps) {
       data-testid="community-filter-rail"
     >
       <div className="flex shrink-0 items-center justify-between gap-2 border-b border-stroke-subtle px-3 py-2">
-        {/* h3, matching the shelf and filter-group headings: the gallery renders
-            both inside DesignGalleryModal, whose Dialog title is already an h2,
-            and under CommunityPage's h1. h2 here made it a peer of the dialog
-            title in the modal. */}
-        <h3 className="text-sm font-semibold text-content">
+        <Heading className="text-sm font-semibold text-content">
           {t('community.gallery.filterPanelLabel')}
-        </h3>
+        </Heading>
         <IconButton
           variant="ghost"
           size="sm"
