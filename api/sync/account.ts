@@ -216,9 +216,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     //     design, so a deletion request that skipped it would leave the most
     //     personally-identifiable content of all in place. The two reverse
     //     indexes exist for exactly this cascade (see redisKeys.ts).
-    if (authorPublicId !== null) {
-      await purgeCommunityPrints(redis, userId, authorPublicId);
-    }
+    //     Prints are addressed by the SALTED author id, so an unset or rotated
+    //     TOKEN_SALT means we cannot name this user's print keys at all. The
+    //     reverse index is then the only handle left on those records, and
+    //     dropping it below would orphan the photos permanently.
+    const printsPurged =
+      authorPublicId === null ? false : await purgeCommunityPrints(redis, userId, authorPublicId);
 
     const printReportedIds = await redis.smembers(communityPrintReportedKey(userId));
     for (const printId of printReportedIds) {
@@ -244,8 +247,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       communityLikedKey(userId),
       communityPublishedKey(userId),
       communityReportedKey(userId),
-      communityPrintedKey(userId),
       communityPrintReportedKey(userId),
+      ...(printsPurged ? [communityPrintedKey(userId)] : []),
       ...(authorPublicId === null ? [] : [communityAuthorKey(authorPublicId)])
     );
 
@@ -265,19 +268,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
  * Delete every print report this user posted: the record hash, its membership
  * in each design's public ZSET, and the photo blobs.
  *
- * The print's own count is resynced per design so a surviving design does not
- * advertise a printer that no longer exists. Photo deletes are best-effort for
- * the same reason the layout-blob deletes are — a stuck blob must not strand
- * the rest of an account deletion — but they are attempted first so a failure
- * is visible in logs rather than silently skipped.
+ * Photo deletes are best-effort for the same reason the layout-blob deletes are
+ * — a stuck blob must not strand the rest of an account deletion.
+ *
+ * Returns whether the purge can be trusted to have found this user's prints.
+ * A print is addressed by `(designId, authorPublicId)`, and `authorPublicId` is
+ * salted with TOKEN_SALT: if the salt was ROTATED (not merely unset, which the
+ * caller's fallback covers) the derived id addresses keys that never existed,
+ * so every delete is a no-op. The caller must not drop the reverse index in
+ * that case — it is the only remaining handle on the orphaned records.
  */
 async function purgeCommunityPrints(
   redis: Redis,
   userId: string,
   authorPublicId: string
-): Promise<void> {
+): Promise<boolean> {
   const designIds = await redis.smembers(communityPrintedKey(userId));
-  if (designIds.length === 0) return;
+  // Nothing indexed is a complete purge, not a failed one — this is also what
+  // a replay of an already-finished cascade sees, so it stays idempotent.
+  if (designIds.length === 0) return true;
+
+  let resolved = 0;
 
   for (const designId of designIds) {
     const print = await readCommunityPrint(redis, designId, authorPublicId).catch(
@@ -289,17 +300,40 @@ async function purgeCommunityPrints(
         return null;
       }
     );
+    // A record we cannot read is a record we cannot address. Deleting anyway
+    // would be a no-op on the hash and the ZSET but would still SREM this
+    // entry from the reverse index — destroying the only handle on a record
+    // the rotated salt has already hidden from us.
+    if (print === null) continue;
+    resolved += 1;
 
     await deleteCommunityPrint(redis, designId, authorPublicId, userId);
-    await syncCommunityPrintCount(redis, designId).catch(() => undefined);
 
-    if (print !== null && print.photos.length > 0) {
+    // Resync only a design whose card still exists. The community cascade
+    // above has already DEL'd the cards for designs this user published, and
+    // HSET would recreate one as a malformed, never-expiring hash holding
+    // nothing but `prints` — the exact index/blob drift `pnpm sync-admin`
+    // exists to hunt. A user printing their own design is the common case.
+    if ((await redis.exists(communityDesignKey(designId))) === 1) {
+      await syncCommunityPrintCount(redis, designId).catch(() => undefined);
+    }
+
+    if (print.photos.length > 0) {
       // A design's cover can point at one of these photos; clearing it keeps
       // the gallery card from rendering a now-deleted image.
       await clearCommunityCoverIfFromPhotos(redis, designId, print.photos);
       await Promise.all(print.photos.map((url) => deleteBlobSafe(url, userId)));
     }
   }
+
+  if (resolved === 0) {
+    logger.error('account-delete: no community print resolved; author id likely stale', {
+      userId,
+      indexed: designIds.length,
+    });
+    return false;
+  }
+  return true;
 }
 
 async function readCommunityDesignSafe(

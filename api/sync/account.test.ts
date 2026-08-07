@@ -639,6 +639,53 @@ describe('DELETE /api/sync/account', () => {
       expect(redisSets.has('community:printReported:user-1')).toBe(false);
     });
 
+    // The community cascade DELs the cards for designs this user published
+    // before the print purge runs. syncCommunityPrintCount HSETs the card, and
+    // HSET creates the key — so resyncing unconditionally resurrected the just
+    // deleted design as a malformed, never-expiring hash holding only `prints`.
+    it('does not resurrect the card of a design the user published and printed', async () => {
+      const { deriveAuthorPublicId } = await import('../lib/communityIds');
+      const author = String(deriveAuthorPublicId('user-1'));
+      seedCommunityDesign('own-design', author);
+      setSet('community:published:user-1', ['own-design']);
+      seedOwnPrint('own-design', author);
+
+      await runCascade();
+
+      expect(redisHashes.has('community:design:own-design')).toBe(false);
+    });
+
+    it('still resyncs the count on someone else design', async () => {
+      const { deriveAuthorPublicId } = await import('../lib/communityIds');
+      seedOwnPrint('design-a', String(deriveAuthorPublicId('user-1')));
+      setSet('community:published:user-2', ['design-a']);
+
+      await runCascade();
+
+      expect(redisHashes.get('community:design:design-a')?.get('prints')).toBe('0');
+    });
+
+    // A print is addressed by the SALTED author id. If TOKEN_SALT was rotated,
+    // the derived id names keys that never existed, every delete no-ops, and
+    // dropping the reverse index would orphan the photos with nothing left
+    // pointing at them.
+    it('keeps the reverse index when no print could be resolved', async () => {
+      setSet('community:printed:user-1', ['design-unresolvable']);
+
+      await runCascade();
+
+      expect(redisSets.get('community:printed:user-1')).toEqual(new Set(['design-unresolvable']));
+    });
+
+    it('drops the reverse index once the prints are actually purged', async () => {
+      const { deriveAuthorPublicId } = await import('../lib/communityIds');
+      seedOwnPrint('design-a', String(deriveAuthorPublicId('user-1')));
+
+      await runCascade();
+
+      expect(redisSets.has('community:printed:user-1')).toBe(false);
+    });
+
     it('leaves another user print untouched', async () => {
       setHash('community:print:design-c:otherauthor', {
         designId: 'design-c',
