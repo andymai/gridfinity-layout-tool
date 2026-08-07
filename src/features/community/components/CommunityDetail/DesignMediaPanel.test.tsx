@@ -160,6 +160,20 @@ describe('DesignMediaPanel', () => {
     expect(onOpenLightbox).toHaveBeenCalledWith(visible);
   });
 
+  // No layout engine in jsdom, so this guards the class contract the way the
+  // other community rails do. `overflow-x-auto` computes overflow-y to `auto`,
+  // which drops the strip's min-content floor as a flex item: without
+  // `shrink-0` the height-capped media column crushed it to 40px and showed a
+  // vertical scrollbar on any viewport under ~850px.
+  it('keeps the strip from being crushed by the column it sits in', () => {
+    renderPanel();
+    const strip = screen.getByTestId('design-media-filmstrip');
+    expect(strip.className).toContain('shrink-0');
+    expect(strip.className).toContain('overflow-x-auto');
+    // Reserves room for the horizontal scrollbar instead of it sitting on the tiles.
+    expect(strip.className).toContain('pb-2');
+  });
+
   it('drops the strip entirely for a design with no imagery', () => {
     renderPanel([]);
     expect(screen.queryByTestId('design-media-filmstrip')).not.toBeInTheDocument();
