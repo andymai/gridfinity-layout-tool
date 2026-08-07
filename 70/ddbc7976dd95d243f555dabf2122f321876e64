@@ -1,0 +1,75 @@
+src/features/drawer-shape/README.md
+  s_6814d9e22d0759::t_046b2e809bbb84 22-30
+src/features/baseplate/components/ActiveBaseplatePanel/ActiveBaseplatePanel.test.tsx
+  s_6814d9e22d0759::t_a3a3d6c93f7965 61,64-73
+  s_6814d9e22d0759::t_c1d348d3d56b11 74
+src/i18n/locales/it.json
+  s_6814d9e22d0759::t_23c31496c93977 134,2017,2023,2038,2068
+src/i18n/locales/zh-CN.json
+  s_6814d9e22d0759::t_23c31496c93977 134,1843,1849,1864,1894
+src/i18n/locales/nl.json
+  s_6814d9e22d0759::t_23c31496c93977 134,2017,2023,2038,2068
+src/shared/components/ToggleRow/ToggleRow.test.tsx
+  s_6814d9e22d0759::t_56c4e950f51d38 60-107
+src/i18n/locales/cs.json
+  s_6814d9e22d0759::t_23c31496c93977 134,1843,1849,1864,1894
+src/shared/components/ToggleRow/ToggleRow.tsx
+  s_6814d9e22d0759::t_ad70f387a84e1b 21-26
+  s_6814d9e22d0759::t_4eb951a8ae55de 1
+  s_6814d9e22d0759::t_d77d2e67a90deb 37-41,52,58,60-77,85-88
+src/i18n/locales/pt-BR.json
+  s_6814d9e22d0759::t_23c31496c93977 134,1843,1849,1864,1894
+src/features/baseplate/components/ActiveBaseplatePanel/ActiveBaseplatePanel.tsx
+  s_6814d9e22d0759::t_dc94208ab13a5f 35,37,39-41,43-44
+  s_6814d9e22d0759::t_0e061bdbad3c69 3,7-9,15-16
+src/i18n/locales/en.ts
+  s_6814d9e22d0759::t_eb27e5af485ba6 3031,3972,3986,4036
+  s_6814d9e22d0759::t_8cfc435c88b75a 3971
+src/i18n/locales/pl.json
+  s_6814d9e22d0759::t_23c31496c93977 134,1843,1849,1864,1894
+e2e/drawer-shape.spec.ts
+  s_6814d9e22d0759::t_9fa4cbd57f7557 43-44,95
+src/i18n/locales/nb.json
+  s_6814d9e22d0759::t_23c31496c93977 134,2017,2023,2038,2068
+src/features/drawer-shape/components/DrawerShapeActionsMenu/DrawerShapeActionsMenu.tsx
+  s_6814d9e22d0759::t_0b6899c1cfe7fd 1-129
+src/features/drawer-shape/components/DrawerShapeSection/DrawerShapeSection.tsx
+  s_6814d9e22d0759::t_ebc4683a980a3d 76-83
+  s_6814d9e22d0759::t_bec7374c5184b5 12
+src/i18n/locales/de.json
+  s_6814d9e22d0759::t_23c31496c93977 134,2017,2023,2038,2068
+src/i18n/locales/ja.json
+  s_6814d9e22d0759::t_23c31496c93977 134,2017,2023,2038,2068
+src/i18n/locales/fr.json
+  s_6814d9e22d0759::t_23c31496c93977 134,1843,1849,1864,1894
+src/i18n/locales/uk.json
+  s_6814d9e22d0759::t_23c31496c93977 134,2017,2023,2038,2068
+src/i18n/locales/sv.json
+  s_6814d9e22d0759::t_23c31496c93977 134,1843,1849,1864,1894
+src/i18n/locales/es.json
+  s_6814d9e22d0759::t_23c31496c93977 134,2017,2023,2038,2068
+src/i18n/locales/ko.json
+  s_6814d9e22d0759::t_23c31496c93977 134,1735,1741,1756,1786
+src/features/drawer-shape/components/DrawerShapeActionsMenu/DrawerShapeActionsMenu.test.tsx
+  s_6814d9e22d0759::t_0fc3be7b2abffd 1-17,19-63
+  s_6814d9e22d0759::t_78b8f3d1746a2b 18
+src/features/drawer-shape/components/DrawerShapeSection/DrawerShapeSection.test.tsx
+  s_6814d9e22d0759::t_a54df9836927a7 49-51,59-61,64-71,78,80-82,85-94,99-101
+  s_6814d9e22d0759::t_346cf71ad94fda 72-75
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "70ddbc7976dd95d243f555dabf2122f321876e64",
+  "prompts": {},
+  "sessions": {
+    "s_6814d9e22d0759": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5eb177ad-bfba-43bd-93bd-d768bd7a3630",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
