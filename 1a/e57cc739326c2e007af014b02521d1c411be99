@@ -1,0 +1,80 @@
+src/shared/components/ContextMenu/ContextMenuContainer/ContextMenuContainer.tsx
+  s_6814d9e22d0759::t_03c2f163d8c2d7 1,4,78
+src/features/bin-designer/components/panel/ColorsSection/ColorsActionsMenu.tsx
+  s_6814d9e22d0759::t_2014ed06035d0e 27,51
+  s_6814d9e22d0759::t_873ed8fc3f76b3 75
+  s_6814d9e22d0759::t_f0368f56dcebd7 136-142
+  s_6814d9e22d0759::t_b86e8e76ca3d65 76
+src/shared/hooks/index.ts
+  s_6814d9e22d0759::t_4e0fc3a7edc034 10
+src/features/layout-library/components/LayoutManagerModal/LayoutActions/LayoutActions.test.tsx
+  s_6814d9e22d0759::t_bca1f76c48d217 2,78-87
+  s_6814d9e22d0759::t_602d67324c16cf 88-89
+src/features/grid-editor/components/Grid/GridToolbar/GridToolbar.test.tsx
+  s_6814d9e22d0759::t_3f7cca868c8c20 3,369-370,376-381
+  s_6814d9e22d0759::t_381541c8cb8311 371-375,382-383
+  s_6814d9e22d0759::t_4bb5527c5f6e2c 384-385
+src/features/baseplate/components/BaseplateLibraryModal/BaseplateLibraryModal.tsx
+  s_6814d9e22d0759::t_7557ec7dc1022c 358-359
+  s_6814d9e22d0759::t_d69013febf9d6c 19,426
+  s_6814d9e22d0759::t_1648ca0c7ac0a7 425
+src/features/design-linking/components/LinkedDesignSection/LinkedDesignSection.tsx
+  s_6814d9e22d0759::t_448214662a736a 51
+  s_6814d9e22d0759::t_1648ca0c7ac0a7 388
+  s_6814d9e22d0759::t_d69013febf9d6c 17,45,389
+src/features/layout-library/components/LayoutManagerModal/LayoutActions/LayoutActions.tsx
+  s_6814d9e22d0759::t_1648ca0c7ac0a7 160
+  s_6814d9e22d0759::t_d69013febf9d6c 5,161
+  s_6814d9e22d0759::t_7557ec7dc1022c 37-38
+  s_6814d9e22d0759::t_448214662a736a 1
+src/shared/hooks/README.hooks.md
+  s_6814d9e22d0759::t_f149ac1c98fe68 35,75-80
+src/shared/hooks/useMenuKeyboardNav.test.tsx
+  s_6814d9e22d0759::t_bcaf0d5d6beb31 1-22,24-105,155-159
+  s_6814d9e22d0759::t_3eb51c017bb6f9 106-112,114-134,136-154
+  s_6814d9e22d0759::t_1648ca0c7ac0a7 23,113,135
+src/features/baseplate/components/BaseplateLibraryModal/BaseplateLibraryModal.test.tsx
+  s_6814d9e22d0759::t_bca1f76c48d217 127-139
+src/features/bin-designer/components/DesignActions/DesignActions.test.tsx
+  s_6814d9e22d0759::t_bca1f76c48d217 50-61
+src/features/bin-designer/components/panel/ColorsSection/ColorsActionsMenu.test.tsx
+  s_6814d9e22d0759::t_bca1f76c48d217 2,41-52
+  s_6814d9e22d0759::t_2d7d33ef1c369e 53-54
+src/features/design-linking/components/LinkedDesignSection/LinkedDesignSection.test.tsx
+  s_6814d9e22d0759::t_bca1f76c48d217 2,211-234
+  s_6814d9e22d0759::t_c547463d16b181 235
+src/features/bin-designer/components/DesignActions/DesignActions.tsx
+  s_6814d9e22d0759::t_7557ec7dc1022c 39-40
+  s_6814d9e22d0759::t_1648ca0c7ac0a7 136
+  s_6814d9e22d0759::t_d69013febf9d6c 4,137
+  s_6814d9e22d0759::t_448214662a736a 1
+src/features/layout-library/components/LayoutQuickSwitch/LayoutQuickSwitch.test.tsx
+  s_6814d9e22d0759::t_bca1f76c48d217 3,60-69
+  s_6814d9e22d0759::t_127265888039eb 70-71
+src/features/grid-editor/components/Grid/GridToolbar/GridToolbar.tsx
+  s_6814d9e22d0759::t_91ace2a726c469 1
+  s_6814d9e22d0759::t_5bef079e0512a0 17,87-93,362,366
+  s_6814d9e22d0759::t_1648ca0c7ac0a7 365
+src/features/layout-library/components/LayoutQuickSwitch/LayoutQuickSwitch.tsx
+  s_6814d9e22d0759::t_5bef079e0512a0 10,88-90,148,151
+  s_6814d9e22d0759::t_1648ca0c7ac0a7 150
+src/shared/hooks/useMenuKeyboardNav.ts
+  s_6814d9e22d0759::t_6c60ceb6a5ee8b 7-16,28-36,40-46,48-64,66-90
+  s_6814d9e22d0759::t_dfc7fb05a63a28 1-6,17-27,37-39,47,65
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "1ae57cc739326c2e007af014b02521d1c411be99",
+  "prompts": {},
+  "sessions": {
+    "s_6814d9e22d0759": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5eb177ad-bfba-43bd-93bd-d768bd7a3630",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
