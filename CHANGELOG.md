@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.377.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.376.0...gridfinity-layout-tool-v4.377.0) (2026-08-07)
+
+
+### Features
+
+* **bin-designer:** rebuild the label text information hierarchy ([#3276](https://github.com/andymai/gridfinity-layout-tool/issues/3276)) ([a063308](https://github.com/andymai/gridfinity-layout-tool/commit/a06330834548ac1841febc960649aeb6ddbb1354))
+
 ## [4.376.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.375.1...gridfinity-layout-tool-v4.376.0) (2026-08-06)
 
 
