@@ -7,6 +7,7 @@ import {
   BOTTOM_SOLID_SKIRT,
   getExpandedCutoutDimensions,
 } from './wallPatterns';
+import { BOX_CORNER_RADIUS } from './generatorConstants';
 import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
 import type { BinParams, WallPatternSides } from '@/shared/types/bin';
 import type { CellMask } from '@/shared/utils/cellMask';
@@ -491,7 +492,7 @@ describe('getPatternDescriptors — corner keep-out (#2865)', () => {
     // The inner wall curves away over the last innerCornerRadius of the span;
     // a stamp reaching into that zone scallops the curved corner obliquely.
     // Lipped and lip-less bins both stay clear of it.
-    const innerCornerRadius = 3.75 - params.wallThickness;
+    const innerCornerRadius = Math.max(BOX_CORNER_RADIUS - params.wallThickness, 0);
     const withLip = frontCornerGap(params, innerW, innerD, true);
     expect(withLip.gap).toBeGreaterThanOrEqual(innerCornerRadius);
     // No lip additionally keeps the #2865 printability margin.
@@ -504,7 +505,7 @@ describe('getPatternDescriptors — corner keep-out (#2865)', () => {
     // corner (gap > corner keep-out), so the clamp drops nothing — identical
     // output with and without a lip.
     const params = boldRound(0.5);
-    const innerCornerRadius = 3.75 - params.wallThickness;
+    const innerCornerRadius = Math.max(BOX_CORNER_RADIUS - params.wallThickness, 0);
     const withLip = frontCornerGap(params, innerW, innerD, true);
     expect(withLip.gap).toBeGreaterThan(innerCornerRadius);
     const noLip = frontCornerGap(params, innerW, innerD, false);
