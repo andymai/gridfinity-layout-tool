@@ -1,5 +1,7 @@
 src/features/generation/worker/generators/lidGripDip.scenario.test.ts
   s_bac7c136858af0::t_71257c7b732c76 37,332
+api/lib/communityExampleParamHashes.ts
+  s_bac7c136858af0::t_7a3aa6659bec9c 15-25
 ---
 {
   "schema_version": "authorship/3.0.0",
