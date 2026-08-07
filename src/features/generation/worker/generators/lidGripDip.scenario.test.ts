@@ -301,3 +301,49 @@ describe('bin lip dip across base styles', () => {
     });
   }
 });
+
+describe('bin lip dip on other lid variants', () => {
+  it('reaches the bin face on a magnetic lid, whose footprint is inboard of it', async () => {
+    const { generateBin } = await import('./binOrchestrator');
+    const magnetic = (binDip: boolean): BinParams => {
+      const base = makeParams({ mode: 'scallop', binDip });
+      return { ...base, lid: { ...base.lid, attachment: 'magnetic' } };
+    };
+    const dipped = generateBin(magnetic(true));
+    const undipped = generateBin(magnetic(false));
+    assertWatertight(dipped, 'magnetic dipped bin');
+
+    // The cutter is placed on the LID's perimeter, which sits
+    // LID_MAGNETIC_EXTRA_CLEARANCE inboard of the bin's here. If its outward
+    // overshoot did not cover that, a skin of lip would survive and the volume
+    // removed would fall short.
+    const removed = meshVolume(undipped) - meshVolume(dipped);
+    const span = resolveLidGripSpanMm(
+      resolveLidInputs(magnetic(true)).lidOuterW - 2 * resolveLidInputs(magnetic(true)).lidCornerR,
+      DEFAULT_BIN_PARAMS.lid.grip.coverage
+    );
+    expect(removed).toBeGreaterThan(span * LIP_HEIGHT * LIP_TAPER_WIDTH * 0.5);
+  });
+
+  it('dips a polygon footprint', async () => {
+    const { generateBin } = await import('./binOrchestrator');
+    // 3x3 L-shape, top-right unit removed.
+    const cellMask = {
+      cols: 6,
+      rows: 6,
+      cells: [
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1,
+        1, 1, 1, 0, 0,
+      ],
+    };
+    const poly = (binDip: boolean): BinParams => ({
+      ...makeParams({ mode: 'scallop', binDip }),
+      width: 3,
+      depth: 3,
+      cellMask,
+    });
+    const dipped = generateBin(poly(true));
+    assertWatertight(dipped, 'polygon dipped bin');
+    expect(meshVolume(generateBin(poly(false))) - meshVolume(dipped)).toBeGreaterThan(0);
+  });
+});
