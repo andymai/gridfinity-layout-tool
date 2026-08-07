@@ -1,0 +1,45 @@
+src/features/generation/worker/generators/slideGeometry.ts
+  s_e694fe720ed7bc::t_683e60f313d2f2 146-152,156-159,258-266
+  s_e694fe720ed7bc::t_c10d9e4142a558 382-406
+  s_e694fe720ed7bc::t_1155db729ad17b 204-247
+  s_e694fe720ed7bc::t_2aa2d6550132ac 267
+src/features/generation/worker/generators/scenarios/slideTray.ts
+  s_e694fe720ed7bc::t_81579d02fb0dd7 43-53
+src/features/bin-designer/types/slide.ts
+  s_e694fe720ed7bc::t_683e60f313d2f2 88-91,105
+src/features/generation/worker/generators/slideRailBuilder.test.ts
+  s_e694fe720ed7bc::t_ce7a899a6ca334 9-10,166,169,172-209,214-215,218-219
+  s_e694fe720ed7bc::t_a0b98341a4e333 11,165
+  s_e694fe720ed7bc::t_c7067b747d747e 163-164,167-168,170-171,210-213,216-217,220-258
+src/features/generation/worker/generators/slideGeometry.test.ts
+  s_e694fe720ed7bc::t_c7067b747d747e 221-240
+src/features/generation/worker/generators/slideRailBuilder.ts
+  s_e694fe720ed7bc::t_683e60f313d2f2 14,110-112,129-130
+api/lib/communityExampleParamHashes.ts
+  s_e694fe720ed7bc::t_24d014e7cf7548 15-25
+src/features/generation/worker/generators/wallPatternBuilder.ts
+  s_e694fe720ed7bc::t_2b2eb423aa258d 185-189,343
+  s_e694fe720ed7bc::t_3afa6fff3d2a26 338-342,345-346
+  s_e694fe720ed7bc::t_1155db729ad17b 70,114-115,328-337,344,347-353,430-438,453,456,549-550
+src/features/generation/worker/generators/wallPatternClips.ts
+  s_e694fe720ed7bc::t_ed37db11088ff3 180-181,198-202
+  s_e694fe720ed7bc::t_1eb1a0cd2536fb 203
+src/features/generation/worker/generators/wallPatternCompound.ts
+  s_e694fe720ed7bc::t_ed37db11088ff3 116-117,121
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "b5c2326c708e12d20b33e2d36ad4ea1ea0b9074a",
+  "prompts": {},
+  "sessions": {
+    "s_e694fe720ed7bc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "11bd0478-b0a5-44b1-9201-aee9d7b1ff5d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
