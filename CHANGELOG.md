@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.379.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.379.3...gridfinity-layout-tool-v4.379.4) (2026-08-07)
+
+
+### Bug Fixes
+
+* **generation:** interlock the triangle wall pattern and keep stamps off corner arcs ([#3294](https://github.com/andymai/gridfinity-layout-tool/issues/3294)) ([415d51d](https://github.com/andymai/gridfinity-layout-tool/commit/415d51d53ee3bd853c52991e63d52b64662baa1a))
+
 ## [4.379.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.379.2...gridfinity-layout-tool-v4.379.3) (2026-08-07)
 
 
