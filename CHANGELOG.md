@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.379.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.378.1...gridfinity-layout-tool-v4.379.0) (2026-08-07)
+
+
+### Features
+
+* sliding-tray model and rail geometry ([#3287](https://github.com/andymai/gridfinity-layout-tool/issues/3287)) ([dbf08f2](https://github.com/andymai/gridfinity-layout-tool/commit/dbf08f208e4c5d2a692cdb7633b8181e20f056bb))
+
 ## [4.378.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.378.0...gridfinity-layout-tool-v4.378.1) (2026-08-07)
 
 
