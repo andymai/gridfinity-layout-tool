@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.386.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.385.0...gridfinity-layout-tool-v4.386.0) (2026-08-07)
+
+
+### Features
+
+* **community:** rebuild the design detail viewing experience ([#3311](https://github.com/andymai/gridfinity-layout-tool/issues/3311)) ([a1dac50](https://github.com/andymai/gridfinity-layout-tool/commit/a1dac50316777b466ae354de04d55c3845f5c54e))
+
 ## [4.385.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.384.0...gridfinity-layout-tool-v4.385.0) (2026-08-07)
 
 
