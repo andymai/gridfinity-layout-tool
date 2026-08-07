@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useLabsStore } from '@/core/store';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { SlideTraySection } from './SlideTraySection';
 
@@ -10,9 +11,27 @@ function setParams(over: Partial<typeof DEFAULT_BIN_PARAMS>): void {
   });
 }
 
-beforeEach(() => setParams({}));
+function setSlideFlag(enabled: boolean): void {
+  useLabsStore.setState((s) => ({
+    preferences: {
+      ...s.preferences,
+      enabledFeatures: { ...s.preferences.enabledFeatures, sliding_tray: enabled },
+    },
+  }));
+}
+
+beforeEach(() => {
+  setParams({});
+  setSlideFlag(true);
+});
 
 describe('SlideTraySection', () => {
+  it('renders nothing while the labs flag is off', () => {
+    setSlideFlag(false);
+    const { container } = render(<SlideTraySection />);
+    expect(container).toBeEmptyDOMElement();
+  });
+
   it('renders the feature toggle', () => {
     render(<SlideTraySection />);
     expect(screen.getByText('Sliding tray')).toBeInTheDocument();
