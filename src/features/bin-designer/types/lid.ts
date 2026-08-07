@@ -365,34 +365,125 @@ export const LID_GRIP_SCALLOP_DEPTH_MM = 1.5;
 /** Height of the reveal groove above the seam (mm). */
 export const LID_GRIP_REVEAL_HEIGHT_MM = 1.6;
 /**
- * How far a scallop ASKS to reach above the seam (mm).
+ * How far a scallop ASKS to reach above the seam (mm) when
+ * {@link LidGripConfig.heightMm} is left on auto.
  *
  * A request, not a height: the whole skirt above the seam is only `|anchorZ|`
  * tall — about 2.1mm on a default lid, since a lid is a thin cap — so this is
- * clamped by {@link resolveLidGripHeightMm}. Set generously so lids that are
+ * clamped by {@link resolveLidGripHeightPlan}. Set generously so lids that are
  * genuinely taller (`extraHeightMm`, a thick floor plate) get the deeper
  * pocket their extra skirt allows.
  */
 export const LID_GRIP_SCALLOP_HEIGHT_MM = 4;
 
 /**
- * Solid lid kept above a relief (mm).
+ * Bounds for a user-set {@link LidGripConfig.heightMm}.
  *
- * Without it a scallop on a standard lid reaches past `Z = 0` and notches the
- * lid's top face, turning a grip pocket into a bite out of the outline.
+ * The floor is four layers at 0.2mm; below that a pocket stops reading as a
+ * pocket. The ceiling serves the tall lid the request came from: a deep
+ * `extraHeightMm` skirt can carry a genuine fingertip pocket, not just a nail
+ * catch. Both bounds land on whole layers at the common layer height, since
+ * layer adhesion is the thing being traded here.
  */
-export const LID_GRIP_TOP_SKIN_MM = 0.4;
+export const LID_GRIP_HEIGHT_MIN_MM = 0.8;
+export const LID_GRIP_HEIGHT_MAX_MM = 10;
+export const LID_GRIP_HEIGHT_STEP_MM = 0.2;
 
 /**
- * Effective height (mm) of a relief above the seam.
+ * Solid lid kept above a relief (mm).
+ *
+ * Two jobs. It stops a scallop on a standard lid reaching past `Z = 0` and
+ * notching the top face, turning a grip pocket into a bite out of the outline.
+ * And it is the load path: the lid exports rotated 180°, so this skin's layer
+ * lines run across the pocket and a thin one peels there rather than breaks.
+ * That is the failure the reporter of #3272 predicted at the original 0.4mm,
+ * which is two layers. Four layers hold. Raising it shortens an already skirt-bound relief
+ * on existing designs, which is the intended trade.
+ */
+export const LID_GRIP_TOP_SKIN_MM = 0.8;
+
+/**
+ * How tall the relief ASKS to be (mm): the user's value, or the mode's own
+ * request when left on auto.
+ *
+ * Only the two modes with a height independent of their depth read the stored
+ * value; see {@link lidGripHeightAdjustable}. A chamfer's 45° section is sized
+ * by whichever of depth and height is scarcer, so it has no height control,
+ * and a knob the user cannot see must not move the geometry. Switching scallop
+ * → chamfer therefore lands on exactly the chamfer that mode built before this
+ * field existed.
+ */
+export function lidGripRequestedHeightMm(grip: Pick<LidGripConfig, 'mode' | 'heightMm'>): number {
+  if (!lidGripHeightAdjustable(grip.mode) || grip.heightMm === null) {
+    return lidGripHeightMm(grip.mode);
+  }
+  return Math.min(Math.max(grip.heightMm, LID_GRIP_HEIGHT_MIN_MM), LID_GRIP_HEIGHT_MAX_MM);
+}
+
+/**
+ * Whether {@link LidGripConfig.heightMm} means anything in this mode, and so
+ * whether the panel offers the control. Shared with the panel so a mode that
+ * ignores the field can never be shown a field that does nothing.
+ */
+export function lidGripHeightAdjustable(mode: LidGripMode): boolean {
+  return mode === 'reveal' || mode === 'scallop';
+}
+
+/**
+ * The resolved height of a grip relief, what bounded it, and what it leaves
+ * behind. Same contract as {@link LidGripDepthPlan}: the geometry silently
+ * takes less than was asked for, and the panel needs enough to say why.
+ */
+export interface LidGripHeightPlan {
+  /** What the geometry actually cuts above the seam. */
+  readonly heightMm: number;
+  readonly requestedMm: number;
+  /** Whole skirt above the seam: the budget `heightMm` is drawn from. */
+  readonly skirtMm: number;
+  /** Solid lid left above the relief. Never below {@link LID_GRIP_TOP_SKIN_MM}. */
+  readonly skinMm: number;
+  readonly clamped: boolean;
+  /**
+   * `skirt`: the lid is not tall enough; a taller lid buys more.
+   * `depth`: a chamfer's 45° section ran out of depth first, which the depth
+   *          clamp's own hint already explains.
+   */
+  readonly limitedBy: 'skirt' | 'depth' | null;
+}
+
+/**
+ * Resolve how tall a grip relief may cut, and how much lid that leaves above
+ * it.
  *
  * `anchorZ` is the seam plane in lid-local Z (negative, from
- * {@link lidAnchorZ}); the lid's top face is Z = 0. Shared with the panel so
- * the readout and the geometry cannot disagree.
+ * {@link lidAnchorZ}); the lid's top face is Z = 0. `depthMm` is the resolved
+ * cut depth ({@link resolveLidGripDepth}), which a chamfer's height is tied
+ * to. Folding that in here rather than at the cutter keeps the panel's readout
+ * describing the geometry that is actually built.
+ *
+ * Shared with the panel so the readout and the geometry cannot disagree.
  */
-export function resolveLidGripHeightMm(mode: LidGripMode, anchorZ: number): number {
-  const available = Math.max(-anchorZ - LID_GRIP_TOP_SKIN_MM, 0);
-  return Math.min(lidGripHeightMm(mode), available);
+export function resolveLidGripHeightPlan(
+  grip: Pick<LidGripConfig, 'mode' | 'heightMm'>,
+  anchorZ: number,
+  depthMm: number
+): LidGripHeightPlan {
+  const skirtMm = Math.max(-anchorZ, 0);
+  const available = Math.max(skirtMm - LID_GRIP_TOP_SKIN_MM, 0);
+  const requestedMm = lidGripRequestedHeightMm(grip);
+  const fitsSkirt = Math.min(requestedMm, available);
+  // A 45° wedge's two legs are equal, so a chamfer is sized by whichever of
+  // depth and height is scarcer.
+  const heightMm = grip.mode === 'chamfer' ? Math.min(fitsSkirt, depthMm) : fitsSkirt;
+
+  return {
+    heightMm,
+    requestedMm,
+    skirtMm,
+    skinMm: Math.max(skirtMm - heightMm, 0),
+    clamped: heightMm < requestedMm,
+    limitedBy: fitsSkirt < requestedMm ? 'skirt' : heightMm < requestedMm ? 'depth' : null,
+  };
 }
 
 /** Below this effective depth a relief is not worth generating (mm). */
@@ -420,6 +511,21 @@ export interface LidGripConfig {
   /** Percentage of each wall's straight run, centered, then clamped to
    *  [{@link LID_GRIP_SPAN_MIN_MM}, {@link LID_GRIP_SPAN_MAX_MM}]. */
   readonly coverage: number;
+  /**
+   * How far the relief reaches above the seam (mm), or `null` for the mode's
+   * own request (4mm for a scallop, 1.6mm for a shadow line).
+   *
+   * `null` rather than a number so a saved design carries no opinion until the
+   * user forms one, and so switching modes tracks the mode rather than
+   * stranding a value the new mode never asked for. Always a REQUEST:
+   * {@link resolveLidGripHeightPlan} still clamps it against the skirt, and a
+   * chamfer ignores it entirely.
+   *
+   * The knob exists because the auto height is generous by design and the lid
+   * prints upside down: on a tall lid a 4mm scallop leaves the material above
+   * it thin enough to peel along a layer line (#3272).
+   */
+  readonly heightMm: number | null;
   /**
    * Also dip the BIN's stacking lip to full lip height across the relief span,
    * so a finger gets under the lid rather than only against it.
@@ -575,6 +681,7 @@ export const DEFAULT_LID_CONFIG: LidConfig = {
     mode: 'none',
     sides: { front: true, back: true, left: false, right: false },
     coverage: LID_GRIP_COVERAGE_DEFAULT,
+    heightMm: null,
     binDip: false,
   },
 } as const;

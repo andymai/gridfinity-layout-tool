@@ -82,7 +82,7 @@ const VALID_LID_ATTACHMENTS = ['friction', 'clickRails', 'magnetic'] as const;
 // Mirrors `LidGripMode` / `LidGripConfig` / `LidGripSides` in the same
 // module (#3272).
 const VALID_LID_GRIP_MODES = ['none', 'chamfer', 'reveal', 'scallop'] as const;
-const ALLOWED_LID_GRIP_KEYS = new Set(['mode', 'sides', 'coverage', 'binDip']);
+const ALLOWED_LID_GRIP_KEYS = new Set(['mode', 'sides', 'coverage', 'heightMm', 'binDip']);
 const ALLOWED_LID_GRIP_SIDE_KEYS = new Set(['front', 'back', 'left', 'right']);
 const VALID_ROTATIONS = [0, 90, 180, 270] as const;
 const VALID_TEXT_FONTS = ['atkinson', 'jetbrains-mono', 'allerta-stencil'] as const;
@@ -405,8 +405,8 @@ function validateLid(lid: unknown): string | null {
  * The depth and span clamps deliberately live only on the client: they resolve
  * against the design's own tray/magnet geometry and produce a SAFE result for
  * any input, so there is nothing here for a crafted payload to smuggle past.
- * What the server does enforce is the shape of the field, the coverage bound,
- * and the one combination that has no valid geometry.
+ * What the server does enforce is the shape of the field, the coverage and
+ * height bounds, and the one combination that has no valid geometry.
  */
 function validateLidGrip(grip: unknown, lid: Record<string, unknown>): string | null {
   if (!isObject(grip)) return 'lid.grip must be an object';
@@ -425,6 +425,16 @@ function validateLidGrip(grip: unknown, lid: Record<string, unknown>): string | 
     (!isNumber(grip.coverage) || !inRange(grip.coverage, 10, 100))
   ) {
     return 'lid.grip.coverage must be 10-100';
+  }
+  // `null` is the auto height (the mode's own request), and is what every
+  // design carries until a user sets one, so it has to survive the round trip
+  // as a value rather than being rejected as a non-number.
+  if (
+    grip.heightMm !== undefined &&
+    grip.heightMm !== null &&
+    (!isNumber(grip.heightMm) || !inRange(grip.heightMm, 0.8, 10))
+  ) {
+    return 'lid.grip.heightMm must be null or 0.8-10';
   }
   if (grip.binDip !== undefined && !isBoolean(grip.binDip)) {
     return 'lid.grip.binDip must be boolean';

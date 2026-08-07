@@ -46,6 +46,7 @@ export type {
   LidGripMode,
   LidGripSides,
   LidGripDepthPlan,
+  LidGripHeightPlan,
 } from './lid';
 export {
   DEFAULT_LID_CONFIG,
@@ -110,7 +111,12 @@ export {
   LID_GRIP_SCALLOP_DEPTH_MM,
   LID_GRIP_SCALLOP_HEIGHT_MM,
   LID_GRIP_TOP_SKIN_MM,
-  resolveLidGripHeightMm,
+  LID_GRIP_HEIGHT_MIN_MM,
+  LID_GRIP_HEIGHT_MAX_MM,
+  LID_GRIP_HEIGHT_STEP_MM,
+  resolveLidGripHeightPlan,
+  lidGripRequestedHeightMm,
+  lidGripHeightAdjustable,
   resolveLidGripSpanMm,
   resolveLidGripDepth,
   lidGripRequestedDepthMm,

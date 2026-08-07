@@ -22,7 +22,7 @@ import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import {
   lidAnchorZ,
   resolveLidGripDepth,
-  resolveLidGripHeightMm,
+  resolveLidGripHeightPlan,
   resolveLidCavityExtraMm,
   LID_FIT_CLEARANCE,
   LID_CORNER_RADIUS,
@@ -121,7 +121,7 @@ describe('grip relief geometry', () => {
 
         const anchorZ = seamZ(params);
         const depth = resolveLidGripDepth(params).depthMm;
-        const height = resolveLidGripHeightMm(mode, anchorZ);
+        const height = resolveLidGripHeightPlan(params.lid.grip, anchorZ, depth).heightMm;
         expect(depth).toBeGreaterThan(0);
         expect(height).toBeGreaterThan(0);
 
@@ -147,7 +147,7 @@ describe('grip relief geometry', () => {
 
         const anchorZ = seamZ(params);
         const depth = resolveLidGripDepth(params).depthMm;
-        const height = resolveLidGripHeightMm(mode, anchorZ);
+        const height = resolveLidGripHeightPlan(params.lid.grip, anchorZ, depth).heightMm;
         const bb = boundingBox(mesh.vertices);
         // Just inside the corner pillar, on the same wall the relief cuts.
         const cornerX = bb.maxX - LID_CORNER_RADIUS - 0.5;
@@ -185,7 +185,7 @@ describe('grip relief geometry', () => {
 
         const anchorZ = seamZ(params);
         const depth = resolveLidGripDepth(params).depthMm;
-        const height = resolveLidGripHeightMm(mode, anchorZ);
+        const height = resolveLidGripHeightPlan(params.lid.grip, anchorZ, depth).heightMm;
         const bb = boundingBox(mesh.vertices);
         const lo = anchorZ + Math.min(0.1, height / 4);
         const hi = anchorZ + height - Math.min(0.1, height / 4);
@@ -197,6 +197,77 @@ describe('grip relief geometry', () => {
       });
     });
   }
+});
+
+/**
+ * The user-set relief height (#3272 follow-up).
+ *
+ * The reporter's complaint was not the pocket but what was left above it: the
+ * lid exports upside down, so that skin's layer lines run across the pocket and
+ * a thin one peels. A shorter pocket has to put material BACK in the band the
+ * auto height cut, which no bounding box or triangle count can see: both lids
+ * are closed surfaces of near-identical size.
+ */
+describe('grip relief height knob', () => {
+  // A tall lid, so the auto 4mm scallop is not already clamped by the skirt and
+  // there is room for the two heights to differ.
+  const TALL = { extraHeightMm: 12 };
+
+  function tallScallop(heightMm: number | null): BinParams {
+    const params = makeParams({
+      mode: 'scallop',
+      heightMm,
+      sides: { front: false, back: true, left: false, right: false },
+    });
+    return { ...params, lid: { ...params.lid, ...TALL } };
+  }
+
+  it('cuts a short pocket and leaves the band above it solid', async () => {
+    const { generateLid } = await import('./lidOrchestrator');
+    const autoParams = tallScallop(null);
+    const shortParams = tallScallop(1.5);
+
+    const auto = requireMesh(generateLid(autoParams), 'an auto-height scallop');
+    const short = requireMesh(generateLid(shortParams), 'a 1.5mm scallop');
+    assertStructurallyValid(short, 'a 1.5mm scallop');
+    assertWatertight(short, 'a 1.5mm scallop');
+
+    const anchorZ = seamZ(shortParams);
+    const depth = resolveLidGripDepth(shortParams).depthMm;
+    expect(resolveLidGripHeightPlan(autoParams.lid.grip, anchorZ, depth).heightMm).toBe(4);
+    expect(resolveLidGripHeightPlan(shortParams.lid.grip, anchorZ, depth).heightMm).toBe(1.5);
+
+    const bb = boundingBox(short.vertices);
+    const probeY = bb.maxY - depth / 2;
+    // A band the 4mm pocket removes and the 1.5mm one does not.
+    const lo = anchorZ + 2;
+    const hi = anchorZ + 3.5;
+
+    expect(solidOver(auto, 0, probeY, lo, hi)).toBe(false);
+    expect(solidOver(short, 0, probeY, lo, hi)).toBe(true);
+    // ...and the short pocket is still a pocket, not a no-op.
+    expect(solidOver(short, 0, probeY, anchorZ + 0.3, anchorZ + 1.2)).toBe(false);
+  });
+
+  it('ignores a stored height in chamfer mode', async () => {
+    const { generateLid } = await import('./lidOrchestrator');
+    const params = makeParams({
+      mode: 'chamfer',
+      sides: { front: false, back: true, left: false, right: false },
+    });
+    const plain = { ...params, lid: { ...params.lid, ...TALL } };
+    const carried = {
+      ...plain,
+      lid: { ...plain.lid, grip: { ...plain.lid.grip, heightMm: 8 } },
+    };
+
+    // The panel offers no height for a chamfer, so a value left over from
+    // another mode must not change a single triangle.
+    const a = requireMesh(generateLid(plain), 'a chamfer');
+    const b = requireMesh(generateLid(carried), 'a chamfer with a stored height');
+    expect(b.indices.length).toBe(a.indices.length);
+    expect(b.vertices.length).toBe(a.vertices.length);
+  });
 });
 
 /**

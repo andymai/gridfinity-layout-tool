@@ -1034,9 +1034,9 @@ const en: Record<string, string> = {
   'help.target.binDesigner.lid.keywords': 'lid|cap|cover|top|click-lock|stacking lip',
   'help.target.binDesigner.lidGrip.title': 'Lid grip',
   'help.target.binDesigner.lidGrip.description':
-    "Removes material where the lid meets the bin so you can get it off again. A chamfer cuts a small V at the seam for a fingernail. A shadow line cuts a groove with a lip to hook under, and reads as a deliberate design line. A scallop is a rounded pocket for a fingertip, and the deepest of the three. Pick the walls it goes on and how wide it is; the depth and height are set for you from what the lid can spare. Dipping the bin's lip as well gets a fingertip right under the lid, at the cost of anything stacked on top having nothing to locate against there.",
+    "Removes material where the lid meets the bin so you can get it off again. A chamfer cuts a small V at the seam for a fingernail. A shadow line cuts a groove with a lip to hook under, and reads as a deliberate design line. A scallop is a rounded pocket for a fingertip, and the deepest of the three. Pick the walls it goes on, how wide it is and how tall; the depth is set for you from what the lid can spare, and a relief is shortened if the lid is not tall enough for it. Dipping the bin's lip as well gets a fingertip right under the lid, at the cost of anything stacked on top having nothing to locate against there.",
   'help.target.binDesigner.lidGrip.keywords':
-    'grip|pry|chamfer|shadow line|scallop|open|remove lid|stuck|fingernail|relief|notch',
+    'grip|pry|chamfer|shadow line|scallop|open|remove lid|stuck|fingernail|relief|notch|height',
   'help.target.binDesigner.colors.title': 'Multi-color zones',
   'help.target.binDesigner.colors.description':
     'Assign different filament colors to different regions of the bin. Experimental — supports multi-material printing.',
@@ -2090,7 +2090,12 @@ const en: Record<string, string> = {
   'binDesigner.lid.gripSides': 'Walls',
   'binDesigner.lid.gripNoSides': 'Pick at least one wall for the relief.',
   'binDesigner.lid.gripCoverage': 'Width',
-  'binDesigner.lid.gripEffective': 'Cuts {depth}mm deep, {height}mm tall',
+  'binDesigner.lid.gripHeight': 'Height',
+  'binDesigner.lid.gripHeightAuto': 'Auto',
+  'binDesigner.lid.gripEffective':
+    'Cuts {depth}mm deep, {height}mm tall, leaving {skin}mm of lid above it',
+  'binDesigner.lid.gripHeightClamped':
+    'Shortened to fit: this lid has {skirt}mm above the seam, and some of it has to stay as solid material. A taller lid allows a taller relief.',
   'binDesigner.lid.gripClamped.cavity':
     'Limited by the lid wall — any deeper would break into the cavity that grips the bin.',
   'binDesigner.lid.gripClamped.trayWall':

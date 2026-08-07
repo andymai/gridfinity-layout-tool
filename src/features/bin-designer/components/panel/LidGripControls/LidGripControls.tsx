@@ -7,11 +7,11 @@
  * in pushed that file well past the 500-line ceiling.
  */
 import { Button, SegmentedControl } from '@/design-system';
-import { LID_RAIL_SIDES } from '@/features/bin-designer/types';
+import { LID_RAIL_SIDES, lidGripHeightAdjustable } from '@/features/bin-designer/types';
 import type { LidGripSides, LidRailSide } from '@/features/bin-designer/types';
 import type { useTranslation } from '@/i18n';
 import { SnappingSlider } from '../../controls/SnappingSlider';
-import { Hint, Readout } from '../shared';
+import { Hint, Readout, StepperField } from '../shared';
 import type { useLidSection } from '../LidSection/useLidSection';
 
 type Translator = ReturnType<typeof useTranslation>;
@@ -76,9 +76,13 @@ export function LidGripControls({
   handlers: ReturnType<typeof useLidSection>['handlers'];
   t: Translator;
 }) {
-  const { grip, gripDepth } = state;
+  const { grip, gripDepth, gripHeight } = state;
   const modeSelected = grip.mode !== 'none';
   const modeAllowed = state.gripModeAllowed(grip.mode);
+  // A chamfer's 45° section is its depth, so it has no independent height to
+  // set, and `lidGripRequestedHeightMm` ignores a stored value there. One
+  // predicate decides both, or the panel offers a field that does nothing.
+  const heightAdjustable = lidGripHeightAdjustable(grip.mode);
   return (
     <div className="space-y-2">
       <span className="mb-1 block text-xs font-medium text-content-secondary">
@@ -109,16 +113,60 @@ export function LidGripControls({
             unit="%"
           />
 
+          {heightAdjustable && (
+            <div className="flex items-end gap-2">
+              <StepperField
+                label={t('binDesigner.lid.gripHeight')}
+                unit="mm"
+                // The auto height is a REQUEST: on a standard lid the skirt
+                // clamps it well short. Showing the request rather than the
+                // resolved height keeps the field agreeing with the number
+                // the user typed; the readout below reports what was cut.
+                value={gripHeight.requestedMm}
+                onChange={handlers.setGripHeight}
+                onStep={(delta) =>
+                  handlers.setGripHeight(gripHeight.requestedMm + delta * state.gripHeightStep)
+                }
+                min={state.gripHeightMin}
+                max={state.gripHeightMax}
+                step={state.gripHeightStep}
+                size="md"
+                aria-label={t('binDesigner.lid.gripHeight')}
+                commitMode="deferred"
+              />
+              {grip.heightMm !== null && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => handlers.setGripHeight(null)}
+                  className="mb-1 shrink-0 rounded px-2 py-1 text-xs font-medium text-content-secondary"
+                >
+                  {t('binDesigner.lid.gripHeightAuto')}
+                </Button>
+              )}
+            </div>
+          )}
+
           {state.gripActive && (
             <Readout>
               {t('binDesigner.lid.gripEffective', {
                 depth: gripDepth.depthMm.toFixed(1),
-                height: state.gripHeightMm.toFixed(1),
+                height: gripHeight.heightMm.toFixed(1),
+                skin: gripHeight.skinMm.toFixed(1),
               })}
             </Readout>
           )}
           {gripDepth.clamped && gripDepth.limitedBy && (
             <Hint>{t(`binDesigner.lid.gripClamped.${gripDepth.limitedBy}`)}</Hint>
+          )}
+          {/* Only the skirt bound gets its own line: a chamfer cut short by the
+              depth clamp is already explained by the hint above it. */}
+          {state.gripActive && gripHeight.limitedBy === 'skirt' && (
+            <Hint>
+              {t('binDesigner.lid.gripHeightClamped', {
+                skirt: gripHeight.skirtMm.toFixed(1),
+              })}
+            </Hint>
           )}
 
           <div>

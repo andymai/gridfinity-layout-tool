@@ -1487,12 +1487,32 @@ describe('validateDesignerShare', () => {
               mode: 'scallop',
               sides: { front: true, back: true, left: false, right: false },
               coverage: 50,
+              heightMm: 2.4,
               binDip: true,
             },
           }),
           1000
         );
         expect(res.valid).toBe(true);
+      });
+
+      it('accepts a null grip height, which is what auto is on the wire', () => {
+        // Every design carries `null` until a user sets a height, so rejecting
+        // it as a non-number would reject the common case.
+        expect(
+          validateDesignerShare(withLid({ grip: { mode: 'scallop', heightMm: null } }), 1000).valid
+        ).toBe(true);
+        expect(
+          validateDesignerShare(withLid({ grip: { mode: 'scallop', heightMm: 2.4 } }), 1000).valid
+        ).toBe(true);
+      });
+
+      it('rejects a grip height outside its bounds', () => {
+        expect(validateDesignerShare(withLid({ grip: { heightMm: 0.4 } }), 1000).valid).toBe(false);
+        expect(validateDesignerShare(withLid({ grip: { heightMm: 11 } }), 1000).valid).toBe(false);
+        expect(validateDesignerShare(withLid({ grip: { heightMm: 'tall' } }), 1000).valid).toBe(
+          false
+        );
       });
 
       it('accepts a lid with no grip at all (pre-#3272 designs)', () => {

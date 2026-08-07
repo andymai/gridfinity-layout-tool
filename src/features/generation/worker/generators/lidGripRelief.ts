@@ -31,11 +31,7 @@
 import { draw, drawRoundedRectangle, unwrap, cutAll, rotate, translate } from 'brepjs';
 import type { Shape3D, DisposalScope, ValidSolid, Drawing } from 'brepjs';
 import { maskToPolygon, MASK_CELL_SIZE } from '@/shared/utils/cellMask';
-import {
-  resolveLidGripSpanMm,
-  resolveLidGripHeightMm,
-  LID_GRIP_MIN_USEFUL_DEPTH_MM,
-} from '@/shared/types/bin';
+import { resolveLidGripSpanMm, LID_GRIP_MIN_USEFUL_DEPTH_MM } from '@/shared/types/bin';
 import type { LidGripMode, LidRailSide } from '@/shared/types/bin';
 import { LID_COPLANAR_MARGIN } from './lidConstants';
 import { FeatureTag } from './featureTags';
@@ -248,11 +244,11 @@ function buildCutter(
 
   // Section profiles read (outward, z) — outward is +Y on the canonical wall,
   // so inward depths are negative.
-  // A 45° wedge's two legs are equal, so the chamfer is sized by whichever of
-  // depth and height is scarcer. Taking `depthMm` alone would let it climb past
-  // the skirt the height clamp reserved — and would make the panel's height
-  // readout, which reports the clamped value, describe geometry that isn't there.
-  const chamferMm = Math.min(depthMm, heightMm);
+  // A chamfer's two legs are equal, and `resolveLidGripHeightPlan` has already
+  // taken the smaller of depth and the skirt budget, so the height IS the leg.
+  // Re-deriving `min(depth, height)` here would be a second copy of that rule,
+  // free to drift from the readout that reports it.
+  const chamferMm = heightMm;
 
   const profile: Drawing =
     mode === 'chamfer'
@@ -286,8 +282,7 @@ export function addGripRelief(
   const placements = gripPlacements(inputs);
   if (placements.length === 0) return body;
 
-  const { grip, gripDepthMm, anchorZ } = inputs;
-  const heightMm = resolveLidGripHeightMm(grip.mode, anchorZ);
+  const { grip, gripDepthMm, gripHeightMm: heightMm, anchorZ } = inputs;
   if (heightMm <= 0) return body;
 
   const cutters: Shape3D[] = [];
