@@ -1,0 +1,19 @@
+docs/design/sliding-tray.md
+  s_e694fe720ed7bc::t_65889c5d0eb5e5 1,3,7,11,13,15,17-18,20-25,27-28,31,33,35,37,39,41,43,45,47-53,55,57,59,61,63,67,69,71,73,75,77,79,81,85,87-90
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "73ff138eb27c487732f7cda9c21d689b4b09652f",
+  "prompts": {},
+  "sessions": {
+    "s_e694fe720ed7bc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "11bd0478-b0a5-44b1-9201-aee9d7b1ff5d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
