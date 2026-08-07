@@ -1,0 +1,208 @@
+src/shared/types/bin.ts
+  s_bac7c136858af0::t_b18b2e285d2c3c 145
+  s_bac7c136858af0::t_8f59163b576d41 71
+  s_bac7c136858af0::t_27a78cf0cbc5bc 68-70,72
+  s_bac7c136858af0::t_ca9e2cc394c1fc 137-138
+  s_bac7c136858af0::t_5a84b39d110214 121-136,139-144
+src/features/generation/worker/generators/lidClickRail.ts
+  s_bac7c136858af0::t_eaa74e540b5de6 117,309
+  s_bac7c136858af0::t_7d6bdd66bc7fb8 288-289,297-301,313
+  s_bac7c136858af0::t_0297f45bc10f50 350-358,365
+  s_bac7c136858af0::t_08f93116ecb8d2 284-287,290-296,302-308,310-312,314-349
+  s_bac7c136858af0::t_3133c3efedbc3a 33
+src/i18n/locales/zh-CN.json
+  s_bac7c136858af0::t_4d2b2919988f47 3638-3641
+  s_bac7c136858af0::t_33d04736b07310 3621-3637
+src/features/generation/worker/generators/lidGripDip.scenario.test.ts
+  s_bac7c136858af0::t_aec00a713dca3b 32
+  s_bac7c136858af0::t_583c80d1c2662c 55-64,124,145,163
+  s_bac7c136858af0::t_6517462ad327a9 157-161,169
+  s_bac7c136858af0::t_b07e4a3c98938f 1-3,7,20-28,30-31,33-52,72-73,93-96,98-105,111-112,114-119,132-133,135,152-153,155-156,170-171,173,183,199-200
+  s_bac7c136858af0::t_12d0fdb8d83586 8-14,16-19,53-54,65-71,75,77-79,81-90,92,113,120-123,125-131,134,136-141,143-144,146-151,162,164-168
+  s_bac7c136858af0::t_df2011a4ed49ee 4-6,15,29,74,76,80,91,97,106-110,142,154,172,174-182,184-198
+src/features/generation/worker/generators/__kernel-tests__/lidGripParity.test.ts
+  s_bac7c136858af0::t_21f5bb92d70e42 1-81
+src/features/generation/worker/generators/lidGripRelief.ts
+  s_bac7c136858af0::t_627d3e23236d7a 1-14,18-19,29-99,101,103,105-189,192,205-213,216-217,230,235-236,252,254-291
+  s_bac7c136858af0::t_27c1df5c33e39e 220-224,231-232,234
+  s_bac7c136858af0::t_13cb38f4aa5b36 190-191,193-204,214-215,218-219,225-229,233,237-251,253
+  s_bac7c136858af0::t_577a65e21947f2 15-17,20-28
+  s_bac7c136858af0::t_7cb2058b063fd6 100,102,104
+src/i18n/locales/it.json
+  s_bac7c136858af0::t_33d04736b07310 3621-3637
+  s_bac7c136858af0::t_4d2b2919988f47 3638-3641
+src/features/bin-designer/components/panel/LidGripControls/LidGripControls.test.tsx
+  s_bac7c136858af0::t_9c4d611d0403f7 1-65
+src/features/generation/worker/generators/lidConstants.ts
+  s_bac7c136858af0::t_b2a415955a7d7e 26
+  s_bac7c136858af0::t_46315797d769a3 47
+  s_bac7c136858af0::t_c6f102c134d327 123-124
+src/features/generation/worker/generators/lidGripRailSplit.test.ts
+  s_bac7c136858af0::t_710386b68fa3cc 34-35,50-62
+  s_bac7c136858af0::t_07fb653f8eeb7e 10-12
+  s_bac7c136858af0::t_186ea4c45f7538 117-120,122-129
+  s_bac7c136858af0::t_bca4269ded39a2 103-106,112-116,121
+  s_bac7c136858af0::t_00f4751e2bd329 4-6,19,40-41,43-44,49,63,67-72,84-87,89,92-93,107-111,135,137-145
+  s_bac7c136858af0::t_d370eddd6b766d 1-3,7-9,13-18,20-33,36-39,42,45-48,64-66,73-83,88,90-91,94-102,130-134,136,146-153
+src/features/generation/worker/generators/binOrchestrator.ts
+  s_bac7c136858af0::t_b6f48ad7285ece 21,47,55
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_bac7c136858af0::t_73285bb04a103b 561-563,565
+  s_bac7c136858af0::t_69e6a11f48f228 25
+  s_bac7c136858af0::t_97ebb3b04f7bb3 23,564
+  s_bac7c136858af0::t_ff2bb5d68727fa 566
+src/i18n/locales/en.ts
+  s_bac7c136858af0::t_4d2b2919988f47 1035-1039
+  s_bac7c136858af0::t_d3328a80bb9bc4 2080-2102
+src/features/generation/worker/generators/lidGripRelief.scenario.test.ts
+  s_bac7c136858af0::t_995c86b642363e 1-30,33-74,79-91,96-122,127-182,258-259
+  s_bac7c136858af0::t_e55c1cd110d902 31,75-78,92-95,123-126
+  s_bac7c136858af0::t_a963d2aeffa097 32,183-257
+src/features/generation/worker/generators/lidInputs.ts
+  s_bac7c136858af0::t_9b9c8e9e32daa1 13-14,25-26,280
+  s_bac7c136858af0::t_62e1f340ba9600 27,175-182,372
+  s_bac7c136858af0::t_da4566efc0520b 161-174,362-371
+src/features/bin-designer/components/panel/LidGripControls/index.ts
+  s_bac7c136858af0::t_0f13d8e8e61601 1
+src/features/bin-designer/components/panel/shared/panelText.test.tsx
+  s_bac7c136858af0::t_e076c977ef1511 1-15
+src/features/generation/worker/generators/lidBuilder.ts
+  s_bac7c136858af0::t_afe63c2ab55e8f 35
+  s_bac7c136858af0::t_46c747881ad6b5 90-97
+api/lib/designerValidation.test.ts
+  s_bac7c136858af0::t_86876ecb6fda78 1481-1550
+CLAUDE.md
+  s_bac7c136858af0::t_37d48d8aac9a62 37-38
+src/features/generation/README.md
+  s_bac7c136858af0::t_f0ac919b949b37 50
+api/lib/designerValidation.ts
+  s_bac7c136858af0::t_25be13f7d46747 82-85
+  s_bac7c136858af0::t_98d6c97131b736 393-444
+src/i18n/locales/fr.json
+  s_bac7c136858af0::t_4d2b2919988f47 3638-3641
+  s_bac7c136858af0::t_33d04736b07310 3621-3637
+src/features/bin-designer/types/lid.test.ts
+  s_bac7c136858af0::t_d3659af8dec987 20-29,255-329,347-382
+  s_bac7c136858af0::t_b18b2e285d2c3c 30,383-411
+  s_bac7c136858af0::t_e902991b72de8f 330-346
+src/i18n/locales/ja.json
+  s_bac7c136858af0::t_33d04736b07310 3621-3637
+  s_bac7c136858af0::t_4d2b2919988f47 3638-3641
+src/features/bin-designer/components/panel/shared/index.ts
+  s_bac7c136858af0::t_e076c977ef1511 6
+src/i18n/locales/ko.json
+  s_bac7c136858af0::t_33d04736b07310 3621-3637
+  s_bac7c136858af0::t_4d2b2919988f47 3638-3641
+src/i18n/locales/nb.json
+  s_bac7c136858af0::t_33d04736b07310 3621-3637
+  s_bac7c136858af0::t_4d2b2919988f47 3638-3641
+src/i18n/locales/uk.json
+  s_bac7c136858af0::t_4d2b2919988f47 3638-3641
+  s_bac7c136858af0::t_33d04736b07310 3621-3637
+src/features/generation/worker/generators/__scratch_dip.test.ts
+  s_bac7c136858af0::t_27c1df5c33e39e 1-57
+src/i18n/locales/sv.json
+  s_bac7c136858af0::t_33d04736b07310 3621-3637
+  s_bac7c136858af0::t_4d2b2919988f47 3638-3641
+src/features/bin-designer/components/panel/LidGripControls/LidGripControls.tsx
+  s_bac7c136858af0::t_0f13d8e8e61601 1-11,13-144
+  s_bac7c136858af0::t_52d3d435c87ab6 12
+src/features/bin-designer/types/lid.ts
+  s_bac7c136858af0::t_ee87a5acd8ac02 315-366,376,397-434
+  s_bac7c136858af0::t_8e29cb0eb6632d 94,685-771,773-798,816-819,821-834
+  s_bac7c136858af0::t_79a2fedd626189 367-375,377-396
+  s_bac7c136858af0::t_5ac2f0d2f2d849 570-579,582-586
+  s_bac7c136858af0::t_e61c8e3937e811 95-106
+  s_bac7c136858af0::t_71588b1c307bd0 529-533
+  s_bac7c136858af0::t_8e0c3a1bbcf2e5 799-815,820
+  s_e694fe720ed7bc::t_541f9061ba3f5d 587,772
+src/features/bin-designer/types/index.ts
+  s_bac7c136858af0::t_51c3984192bcaa 45-48
+  s_bac7c136858af0::t_82f47a6938c874 97-112,115-120
+  s_bac7c136858af0::t_b18b2e285d2c3c 121
+  s_bac7c136858af0::t_ca9e2cc394c1fc 113-114
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_bac7c136858af0::t_671b3b0ab875a7 431
+  s_bac7c136858af0::t_c0a96f35953e2e 33-41,44
+  s_bac7c136858af0::t_ce2bb698959387 455-462
+  s_bac7c136858af0::t_68be63ba37be0e 320-344,627-640,693-696
+  s_bac7c136858af0::t_365138eec06137 426-430,432-435,641
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_bac7c136858af0::t_8e843c646ed416 1001,1003-1006
+  s_bac7c136858af0::t_90a2bd1d30d3f3 1002
+src/features/generation/worker/generators/pipeline/stages/lidGripDipStage.ts
+  s_bac7c136858af0::t_6517462ad327a9 19-25
+  s_bac7c136858af0::t_11672bdc242f59 93-100,109-110
+  s_bac7c136858af0::t_7530be65a62c23 75-80
+  s_bac7c136858af0::t_7aac53e7b9effd 1-18,26-39,41-74,81-92,101-108,111-118,120-123
+  s_bac7c136858af0::t_aec00a713dca3b 40
+  s_bac7c136858af0::t_5f9faad77ada55 119
+src/features/bin-designer/constants/paramMigration.ts
+  s_bac7c136858af0::t_86b04a8a3574b3 352-354,357-366,371
+  s_bac7c136858af0::t_d08feda9bd97d5 1057
+  s_bac7c136858af0::t_6fc14cc5a7c100 54
+  s_bac7c136858af0::t_ab27bc3ade03ac 1027
+  s_bac7c136858af0::t_1f7d97cb181454 348-351,355-356,367-370,372-381
+  s_bac7c136858af0::t_d5c6dcab3be93a 51-53,62-64
+  s_bac7c136858af0::t_d8d044af97e07d 347
+src/i18n/locales/cs.json
+  s_bac7c136858af0::t_4d2b2919988f47 3638-3641
+  s_bac7c136858af0::t_33d04736b07310 3621-3637
+src/i18n/locales/pt-BR.json
+  s_bac7c136858af0::t_33d04736b07310 3621-3637
+  s_bac7c136858af0::t_4d2b2919988f47 3638-3641
+src/features/bin-designer/components/panel/shared/panelText.tsx
+  s_bac7c136858af0::t_e076c977ef1511 1-16
+src/i18n/locales/es.json
+  s_bac7c136858af0::t_4d2b2919988f47 3638-3641
+  s_bac7c136858af0::t_33d04736b07310 3621-3637
+src/i18n/locales/de.json
+  s_bac7c136858af0::t_33d04736b07310 3621-3637
+  s_bac7c136858af0::t_4d2b2919988f47 3638-3641
+src/i18n/locales/pl.json
+  s_bac7c136858af0::t_33d04736b07310 3621-3637
+  s_bac7c136858af0::t_4d2b2919988f47 3638-3641
+src/features/bin-designer/helpEntries.ts
+  s_bac7c136858af0::t_9bb49ddeccdf3c 61-69
+  s_bac7c136858af0::t_8d749a134fb34d 60
+src/features/generation/worker/generators/__scratch_dims.test.ts
+  s_bac7c136858af0::t_ae3a53a45ecf38 1-11
+  s_bac7c136858af0::t_45689e13d6a7ea 12-13
+src/i18n/locales/nl.json
+  s_bac7c136858af0::t_33d04736b07310 3621-3637
+  s_bac7c136858af0::t_4d2b2919988f47 3638-3641
+src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
+  s_bac7c136858af0::t_ee26123e77ab19 2,615-692
+  s_bac7c136858af0::t_af23dfd6e8b3e4 693
+src/features/generation/worker/generators/featureTags.ts
+  s_bac7c136858af0::t_3eb9e531ed859e 32-38
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_bac7c136858af0::t_936fd2e52057d5 28,319,321-322,326
+  s_bac7c136858af0::t_3f9b7ca933d6ba 85-88
+src/features/generation/worker/generators/__scratch_dip2.test.ts
+  s_bac7c136858af0::t_d90f74504c2f83 1-59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "858dd6bfe15aeac2e8438bb9b6033d77cecfc2af",
+  "prompts": {},
+  "sessions": {
+    "s_bac7c136858af0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "29368394-f6f8-4df8-b911-c423585d9619",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_e694fe720ed7bc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "11bd0478-b0a5-44b1-9201-aee9d7b1ff5d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
