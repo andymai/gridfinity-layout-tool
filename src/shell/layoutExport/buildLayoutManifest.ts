@@ -88,6 +88,18 @@ export interface LayoutManifestInput {
   } | null;
   /** Present when socket-mode designs shipped swappable label plates. */
   readonly labels?: readonly ManifestLabelGroup[] | null;
+  /**
+   * Present when the parts were folded into one slicer project file. The
+   * archive then holds a single model file, so the per-bin paths listed below
+   * name objects inside it rather than files on disk.
+   */
+  readonly project?: {
+    readonly fileName: string;
+    readonly plateCount: number;
+    readonly partCount: number;
+    /** Parts that exceed the print bed and landed on a plate of their own. */
+    readonly oversizeNames: readonly string[];
+  } | null;
   readonly skipped: ManifestSkipped;
   readonly totals: { readonly filamentGrams: number; readonly printTimeMinutes: number };
 }
@@ -130,7 +142,7 @@ function formatTime(minutes: number): string {
 }
 
 export function buildLayoutManifest(input: LayoutManifestInput): string {
-  const { layoutName, format, bins, baseplate, skipped, totals } = input;
+  const { layoutName, format, bins, baseplate, skipped, totals, project } = input;
   const totalBinFiles = bins.length;
   const totalBinUnits = bins.reduce((sum, b) => sum + b.quantity, 0);
 
@@ -147,6 +159,24 @@ export function buildLayoutManifest(input: LayoutManifestInput): string {
     lines.push(`  Baseplate: ${baseplate.pieceCount} ${plural(baseplate.pieceCount, 'file')}`);
   }
   lines.push('');
+
+  if (project) {
+    lines.push(
+      '─── Project file ────────────────────────────────',
+      '',
+      `  ${project.fileName}`,
+      `    ${project.partCount} ${plural(project.partCount, 'part')} arranged on ` +
+        `${project.plateCount} build ${plural(project.plateCount, 'plate')}.`,
+      '    Open it in Bambu Studio or OrcaSlicer and every plate is ready to slice.',
+      '    PrusaSlicer has no multi-plate concept and will load the parts onto one plate.'
+    );
+    if (project.oversizeNames.length > 0) {
+      lines.push(
+        `    Too large for the bed, each on its own plate: ${project.oversizeNames.join(', ')}`
+      );
+    }
+    lines.push('');
+  }
 
   lines.push('─── Bins ────────────────────────────────────────', '');
   if (bins.length === 0) {

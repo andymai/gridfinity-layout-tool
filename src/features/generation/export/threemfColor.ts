@@ -146,11 +146,23 @@ function dominantSlot(triangleMaterialIndices: readonly number[]): number {
  * sidecar fall back to today's paint_color-only behavior, so it can't regress
  * the already-working multi-zone bin.
  *
- * Returns undefined when no object carries colors (single-color assemblies
- * need no extruder overrides).
+ * The same file also declares BUILD PLATES. A `<plate>` carries its 1-based
+ * `plater_id` and one `<model_instance>` per part assigned to it, referencing
+ * the object by the same id the model XML used. That reference is the whole
+ * mechanism: the part's world transform decides where it is drawn, this decides
+ * which plate owns it, and a slicer renders a part floating off its plate if
+ * the two disagree. Note the key is `plater_name`, not `plate_name` (an
+ * upstream spelling that stuck).
+ *
+ * Returns undefined when no object carries colors AND no plates are declared
+ * (single-color single-plate assemblies need no sidecar at all).
  */
 export function buildModelSettingsConfig(
-  meshes: readonly { name: string; colorConfig?: ThreeMFColorConfig }[]
+  meshes: readonly {
+    name: string;
+    colorConfig?: ThreeMFColorConfig;
+    placement?: { plate: number };
+  }[]
 ): string | undefined {
   const entries: string[] = [];
   meshes.forEach((m, i) => {
@@ -165,8 +177,49 @@ export function buildModelSettingsConfig(
         `  </object>\n`
     );
   });
-  if (entries.length === 0) return undefined;
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<config>\n${entries.join('')}</config>\n`;
+
+  const plates = buildPlateEntries(meshes);
+  if (entries.length === 0 && plates.length === 0) return undefined;
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<config>\n${entries.join('')}${plates.join('')}</config>\n`;
+}
+
+function buildPlateEntries(
+  meshes: readonly { placement?: { plate: number } }[]
+): readonly string[] {
+  const byPlate = new Map<number, number[]>();
+  meshes.forEach((m, i) => {
+    if (!m.placement) return;
+    const ids = byPlate.get(m.placement.plate);
+    if (ids) ids.push(i + 1);
+    else byPlate.set(m.placement.plate, [i + 1]);
+  });
+  if (byPlate.size === 0) return [];
+
+  // Emit every plate from 0 to the highest occupied index, in order. A gap
+  // would renumber the plates that follow it, silently moving parts to a
+  // different plate than the one they were packed onto.
+  const maxPlate = Math.max(...byPlate.keys());
+  const out: string[] = [];
+  for (let plate = 0; plate <= maxPlate; plate++) {
+    const ids = byPlate.get(plate) ?? [];
+    const instances = ids
+      .map(
+        (id) =>
+          `    <model_instance>\n` +
+          `      <metadata key="object_id" value="${id}"/>\n` +
+          `      <metadata key="instance_id" value="0"/>\n` +
+          `    </model_instance>\n`
+      )
+      .join('');
+    out.push(
+      `  <plate>\n` +
+        `    <metadata key="plater_id" value="${plate + 1}"/>\n` +
+        `    <metadata key="plater_name" value=""/>\n` +
+        instances +
+        `  </plate>\n`
+    );
+  }
+  return out;
 }
 
 /**

@@ -15,7 +15,7 @@ import { effectiveGridUnitMmY } from '@/core/types';
 import { useSettingsStore } from '@/core/store/settings';
 import { useToastStore } from '@/core/store/toast';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
-import { isOk, getUserMessage } from '@/core/result';
+import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
 import { trackEvent, trackToolConverted } from '@/shared/analytics/posthog';
 import { getErrorMessage } from '@/shared/utils/errors';
@@ -23,9 +23,6 @@ import { bridgeManager, workerPoolManager } from '@/shared/generation/bridge';
 import type { GenerationBridge } from '@/shared/generation/bridge';
 import type { ExportFormat, CombinedExportResult } from '@/shared/generation/bridge';
 import { withSocketNozzle } from '@/shared/generation/socketNozzle';
-import { export3MF } from '@/shared/generation/export';
-import type { FaceGroupData } from '@/shared/types/generation';
-import type { FeatureColorConfig } from '@/shared/types/bin';
 // Deep import (not the barrel): this code only runs inside the lazy
 // layout-export chunk (same rationale as planLabelPlateExport's deep imports).
 import { buildLabelPlateColorConfig } from '@/features/bin-designer/utils/labelPlateColors';
@@ -46,6 +43,7 @@ import type { BinParams } from '@/features/bin-designer';
 import {
   buildBinDownloadPayload,
   buildThreeMFPrintSettings,
+  buildMultiObject3MFObjects,
 } from '@/features/bin-designer/utils/binDownloadHelpers';
 import { getLinkedDesignIds } from '@/features/design-linking';
 import { planLayoutBinExport } from './planLayoutBinExport';
@@ -58,6 +56,7 @@ import { snapTextDepthToLayers } from '@/shared/constants/labelPlates';
 import type { LabelPlateExportSpec } from '@/shared/generation/bridge';
 import { buildLayoutManifest } from './buildLayoutManifest';
 import type { ManifestLabelGroup } from './buildLayoutManifest';
+import { buildLayoutProjectFile, createProjectPartCollector } from './buildProjectFile';
 
 type Progress = { current: number; total: number; label?: string } | null;
 
@@ -72,42 +71,6 @@ interface UseLayoutExportReturn {
   ) => Promise<boolean>;
 }
 
-/** Convert STL bytes to 3MF bytes (the bridge emits STL only). `plateColors`
- *  adds label-plate paint_color zones (#2666) derived from the worker's face
- *  provenance against the parsed triangle count. */
-async function stlTo3mf(
-  stl: ArrayBuffer,
-  name: string,
-  printSettings: { layerHeightMm: number; infillPercent: number },
-  plateColors?: {
-    faceGroups: readonly FaceGroupData[] | undefined;
-    featureColors: FeatureColorConfig | undefined;
-  }
-): Promise<ArrayBuffer> {
-  const parsed = parseSTLBinary(stl);
-  if (!isOk(parsed)) throw new Error(getUserMessage(parsed.error));
-  const colorConfig = plateColors
-    ? buildLabelPlateColorConfig(
-        plateColors.faceGroups,
-        parsed.value.vertices.length / 9,
-        plateColors.featureColors
-      )
-    : undefined;
-  const blob = export3MF(parsed.value.vertices, parsed.value.normals, {
-    name,
-    colorConfig,
-    printSettings: {
-      layerHeight: printSettings.layerHeightMm,
-      infillPercent: printSettings.infillPercent,
-      material: 'PLA',
-      supportRequired: false,
-      estimatedMinutes: 0,
-      estimatedGrams: 0,
-    },
-  });
-  return blob.arrayBuffer();
-}
-
 function baseNameOf(path: string): string {
   return (path.split('/').pop() ?? path).replace(/\.[^.]+$/, '');
 }
@@ -118,12 +81,18 @@ function baseNameOf(path: string): string {
  * 3MF packs everything into one multi-object file and STEP into one compound —
  * reusing the bin designer's packaging so colours/orientation match.
  */
+/**
+ * Format a part file can take. A whole-layout 3MF export is a PROJECT file, so
+ * 3MF never reaches the per-part writers; naming that in the type keeps a dead
+ * per-part 3MF branch from creeping back in.
+ */
+type PartFileFormat = Exclude<ExportFileFormat, '3mf'>;
+
 async function combinedFiles(
   result: CombinedExportResult,
-  format: ExportFileFormat,
+  format: PartFileFormat,
   basePath: string,
-  params: BinParams,
-  printSettings: { layerHeightMm: number; infillPercent: number }
+  params: BinParams
 ): Promise<ZipBinaryFile[]> {
   if (format === 'stl') {
     const baseNoExt = basePath.replace(/\.[^.]+$/, '');
@@ -133,18 +102,7 @@ async function combinedFiles(
     }));
   }
 
-  const name = baseNameOf(basePath);
-  const threeMFContext =
-    format === '3mf'
-      ? {
-          modelName: name,
-          threeMFPrintSettings: buildThreeMFPrintSettings(printSettings, {
-            printTimeMinutes: 0,
-            gramsFilament: 0,
-          }),
-        }
-      : null;
-  const { blob } = buildBinDownloadPayload(format, result, params, name, threeMFContext);
+  const { blob } = buildBinDownloadPayload(format, result, params, baseNameOf(basePath), null);
   return [{ path: basePath, data: await blob.arrayBuffer() }];
 }
 
@@ -197,18 +155,10 @@ async function splitFiles(
     }
   }
 
-  const files: ZipBinaryFile[] = [];
-  for (const piece of pieces) {
-    const path = `${baseNoExt}/${piece.label}.${format}`;
-    // Name the 3MF model after the design plus the piece, not the bare label —
-    // "A1" alone in a slicer's object list says nothing about which bin it is.
-    const data =
-      format === '3mf'
-        ? await stlTo3mf(piece.data, `${baseNameOf(baseNoExt)}_${piece.label}`, printSettings)
-        : piece.data;
-    files.push({ path, data });
-  }
-  return files;
+  return pieces.map((piece) => ({
+    path: `${baseNoExt}/${piece.label}.${format}`,
+    data: piece.data,
+  }));
 }
 
 export function useLayoutExport(): UseLayoutExportReturn {
@@ -259,17 +209,30 @@ export function useLayoutExport(): UseLayoutExportReturn {
           loaded.push({ id, design: isOk(res) ? res.value : null });
         }
 
+        // A whole-layout 3MF export is a slicer PROJECT: one file holding every
+        // part, already packed onto build plates, instead of a pile of models
+        // the user arranges by hand. Every phase below still produces plain
+        // STL parts (`partFormat`); they are folded into the project file once
+        // the file list is complete, so a new part type joins it for free.
+        const projectMode = format === '3mf';
+        const partFormat: ExportFileFormat = projectMode ? 'stl' : format;
+
+        // Parts destined for the project file. A part joins this collector
+        // INSTEAD of the archive, carrying whatever colorConfig its own builder
+        // derived.
+        const projectParts = createProjectPartCollector();
+
         // The dialog's custom name applies to the ZIP archive only; inner files
         // fall back to a descriptive style (a single custom name across many
         // files would just collide). Descriptive/compact pass straight through.
         const innerConfig: ExportFileNameConfig =
           fileNameConfig.style === 'custom'
-            ? { style: 'descriptive', customName: '', format }
+            ? { style: 'descriptive', customName: '', format: partFormat }
             : fileNameConfig;
         const plan = planLayoutBinExport({
           bins,
           loaded,
-          format,
+          format: partFormat,
           fileNameConfig: innerConfig,
           printSettings,
           drawer: layout.drawer,
@@ -284,7 +247,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
         // Phase 1 — bins. The bridge emits STL/STEP only; 3MF + companion parts
         // are packaged here. Worker format: STEP stays STEP, STL and 3MF both
         // export STL geometry.
-        const workerFormat: ExportFormat = format === 'step' ? 'step' : 'stl';
+        const workerFormat: ExportFormat = partFormat === 'step' ? 'step' : 'stl';
         const binTotal = plan.exportable.length + plan.meshExportable.length;
         const binLabel = (current: number): string =>
           t('layoutExport.progress.bins', { current, total: binTotal });
@@ -322,11 +285,8 @@ export function useLayoutExport(): UseLayoutExportReturn {
             }
           }
           for (let i = 0; i < simple.length; i++) {
-            const data =
-              format === '3mf'
-                ? await stlTo3mf(bytes[i], baseNameOf(simple[i].path), printSettings)
-                : bytes[i];
-            binFiles.push({ path: simple[i].path, data });
+            if (projectMode) projectParts.addStl(baseNameOf(simple[i].path), bytes[i]);
+            else binFiles.push({ path: simple[i].path, data: bytes[i] });
           }
           done = simple.length;
           setExportProgress({ current: done, total: binTotal, label: binLabel(done) });
@@ -337,7 +297,20 @@ export function useLayoutExport(): UseLayoutExportReturn {
             withSocketNozzle(e.params, printSettings.nozzleSizeMm),
             workerFormat
           );
-          binFiles.push(...(await combinedFiles(result, format, e.path, e.params, printSettings)));
+          if (projectMode) {
+            // Each companion is its own print, so they enter the packer as
+            // independent parts rather than as one pre-arranged assembly.
+            projectParts.addObjects(
+              buildMultiObject3MFObjects(
+                result.pieces,
+                result.faceGroups,
+                e.params,
+                result.lidFaceGroups
+              )
+            );
+          } else {
+            binFiles.push(...(await combinedFiles(result, partFormat, e.path, e.params)));
+          }
           done++;
           setExportProgress({ current: done, total: binTotal, label: binLabel(done) });
         }
@@ -347,9 +320,19 @@ export function useLayoutExport(): UseLayoutExportReturn {
         // instead of one part that doesn't fit the machine (#3074).
         for (const e of splits) {
           if (!e.split) continue;
-          binFiles.push(
-            ...(await splitFiles(bridge, e, e.split, format, printSettings, workerFormat))
+          const pieces = await splitFiles(
+            bridge,
+            e,
+            e.split,
+            partFormat,
+            printSettings,
+            workerFormat
           );
+          if (projectMode) {
+            for (const piece of pieces) projectParts.addStl(baseNameOf(piece.path), piece.data);
+          } else {
+            binFiles.push(...pieces);
+          }
           done++;
           setExportProgress({ current: done, total: binTotal, label: binLabel(done) });
         }
@@ -367,9 +350,8 @@ export function useLayoutExport(): UseLayoutExportReturn {
               decoded.value.indices,
               baseNameOf(m.path)
             );
-            const data =
-              format === '3mf' ? await stlTo3mf(stl, baseNameOf(m.path), printSettings) : stl;
-            binFiles.push({ path: m.path, data });
+            if (projectMode) projectParts.addStl(baseNameOf(m.path), stl);
+            else binFiles.push({ path: m.path, data: stl });
           }
           done++;
           setExportProgress({ current: done, total: binTotal, label: binLabel(done) });
@@ -398,7 +380,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
                         .toLowerCase()
                         .replace(/[^a-z0-9]+/g, '-')
                         .replace(/^-+|-+$/g, '') || 'design'
-                    }_plates_${si + 1}.${format}`
+                    }_plates_${si + 1}.${partFormat}`
                 )
               )
             );
@@ -431,14 +413,22 @@ export function useLayoutExport(): UseLayoutExportReturn {
                   position: p.position,
                 }));
                 const result = await bridge.exportLabelPlates(specs, options, workerFormat);
-                const data =
-                  format === '3mf'
-                    ? await stlTo3mf(result.data, baseNameOf(path), printSettings, {
-                        faceGroups: result.faceGroups,
-                        featureColors: group.featureColors,
-                      })
-                    : result.data;
-                labelFiles.push({ path, data });
+                if (projectMode) {
+                  const parsed = parseSTLBinary(result.data);
+                  projectParts.addStl(
+                    baseNameOf(path),
+                    result.data,
+                    isOk(parsed)
+                      ? buildLabelPlateColorConfig(
+                          result.faceGroups,
+                          parsed.value.vertices.length / 9,
+                          group.featureColors
+                        )
+                      : undefined
+                  );
+                } else {
+                  labelFiles.push({ path, data: result.data });
+                }
                 sheetPaths.push(path);
                 sheetsDone++;
                 setExportProgress({
@@ -477,7 +467,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
           gridShiftY: layout.drawer.gridShiftY ?? 0,
           printBedWidthMm: layout.printBedSize,
           printBedDepthMm: layout.printBedDepth ?? layout.printBedSize,
-          format,
+          format: partFormat,
           splitEnabled: true,
           fileNameConfig: innerConfig,
           printSettings: {
@@ -527,6 +517,53 @@ export function useLayoutExport(): UseLayoutExportReturn {
             : []),
         ];
 
+        // Pack every collected part onto build plates and seal them into one
+        // project file. The baseplate's pieces are gathered here rather than at
+        // their phase because they are produced after it. Non-model artefacts
+        // (the assembly map) ride along untouched, and a failure keeps whatever
+        // individual parts exist rather than shipping an archive with no
+        // geometry.
+        let projectPlateCount = 0;
+        let projectPartCount = 0;
+        let projectOversize: readonly string[] = [];
+        if (projectMode) {
+          if (bp) {
+            for (const piece of bp.pieces) {
+              projectParts.addStl(
+                piece.label ? `${bp.baseNameNoExt}_${piece.label}` : bp.baseNameNoExt,
+                piece.data
+              );
+            }
+          }
+          try {
+            const project = await buildLayoutProjectFile(projectParts.parts, {
+              name: zipBaseName,
+              bedWidthMm: layout.printBedSize,
+              bedDepthMm: layout.printBedDepth ?? layout.printBedSize,
+              printSettings: buildThreeMFPrintSettings(printSettings, {
+                printTimeMinutes: plan.totals.printTimeMinutes,
+                gramsFilament: plan.totals.filamentGrams,
+              }),
+            });
+            if (project) {
+              binaryFiles.length = 0;
+              binaryFiles.push(
+                { path: `${zipBaseName}.3mf`, data: project.data },
+                ...(bp?.assemblyImage
+                  ? [{ path: 'baseplate/assembly-map.png', data: bp.assemblyImage }]
+                  : [])
+              );
+              projectPlateCount = project.plateCount;
+              projectPartCount = project.partCount;
+              projectOversize = project.oversizeNames;
+            }
+          } catch {
+            // Keep the individual parts. A project file that failed to build is
+            // a worse outcome than a ZIP of models the user arranges by hand,
+            // but an archive with no geometry at all is worse than both.
+          }
+        }
+
         const manifest = buildLayoutManifest({
           layoutName: layout.name,
           format,
@@ -539,6 +576,15 @@ export function useLayoutExport(): UseLayoutExportReturn {
               }
             : null,
           labels: manifestLabels.length > 0 ? manifestLabels : null,
+          project:
+            projectPlateCount > 0
+              ? {
+                  fileName: `${zipBaseName}.3mf`,
+                  plateCount: projectPlateCount,
+                  partCount: projectPartCount,
+                  oversizeNames: projectOversize,
+                }
+              : null,
           skipped: plan.skipped,
           totals: plan.totals,
         });

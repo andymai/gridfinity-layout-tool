@@ -47,6 +47,7 @@ export function build3MFMultiObjectBuffer(
     mesh: deduplicateVertices(obj.vertices),
     name: obj.name,
     colorConfig: obj.colorConfig,
+    placement: obj.placement,
   }));
 
   const palette = unifiedPalette(meshes.map((m) => m.colorConfig));
