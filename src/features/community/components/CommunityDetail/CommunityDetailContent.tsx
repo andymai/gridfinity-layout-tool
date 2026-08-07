@@ -185,7 +185,7 @@ export function CommunityDetailContent({
   const { params, metrics, lineage } = design;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto md:flex-row md:overflow-hidden">
+    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto scrollbar-thin md:flex-row md:overflow-hidden">
       <DesignMediaPanel
         design={design}
         images={images}
@@ -194,7 +194,10 @@ export function CommunityDetailContent({
       />
 
       {/* Details rail */}
-      <div className="space-y-4 p-4 md:w-80 md:shrink-0 md:overflow-y-auto md:border-l md:border-stroke-subtle">
+      {/* `scrollbar-thin` is a plain CSS class, not a Tailwind utility, so it
+          takes no `md:` prefix. Harmless unprefixed: it only styles a scrollbar
+          that exists, and this rail only scrolls at md and up. */}
+      <div className="space-y-4 p-6 scrollbar-thin md:w-80 md:shrink-0 md:overflow-y-auto md:border-l md:border-stroke-subtle">
         {ownerModeration !== null && <HiddenNotice moderation={ownerModeration} />}
 
         <div>

@@ -9,6 +9,8 @@ export interface MobileFilterViewProps {
   items: readonly CommunityCard[];
   counts: FacetCounts;
   onBack: () => void;
+  /** Host-dependent title depth. See {@link FilterRailProps.headingLevel}. */
+  headingLevel: 2 | 3;
 }
 
 /**
@@ -16,8 +18,9 @@ export interface MobileFilterViewProps {
  * opening a sheet: the gallery is already a fullscreen dialog, and a second
  * one stacks a focus trap and a scroll lock on top of the first.
  */
-export function MobileFilterView({ items, counts, onBack }: MobileFilterViewProps) {
+export function MobileFilterView({ items, counts, onBack, headingLevel }: MobileFilterViewProps) {
   const t = useTranslation();
+  const Heading = `h${headingLevel}` as const;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col" data-testid="community-mobile-filters">
@@ -31,9 +34,9 @@ export function MobileFilterView({ items, counts, onBack }: MobileFilterViewProp
         >
           <ArrowLeftIcon className="h-5 w-5" />
         </IconButton>
-        <h2 className="min-w-0 flex-1 truncate text-base font-semibold text-content">
+        <Heading className="min-w-0 flex-1 truncate text-base font-semibold text-content">
           {t('community.gallery.filterSheetTitle')}
-        </h2>
+        </Heading>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin px-3 py-3">

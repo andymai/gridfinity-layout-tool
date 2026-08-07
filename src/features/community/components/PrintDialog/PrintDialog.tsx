@@ -202,11 +202,15 @@ function PrintDialogOpen({ onSaved, onDeleted }: PrintDialogProps) {
         open
         onClose={reset}
         size="lg"
+        // `fullScreen` and `mobilePresentation` are mutually exclusive mobile
+        // layouts: together they emit both `rounded-none` and `rounded-t-2xl`,
+        // which tailwind-merge keeps, leaving stylesheet order to pick the
+        // corners of a full-height box pinned to the bottom. A long form wants
+        // the whole screen, so this keeps `fullScreen` and drops the sheet.
         fullScreen="mobile"
-        mobilePresentation="sheet"
         dismissable={!busy}
       >
-        <Dialog.Header title={title} closeAriaLabel={t('common.closeDialog')} />
+        <Dialog.Header title={title} bordered closeAriaLabel={t('common.closeDialog')} />
 
         {phase === 'signin' && (
           <Dialog.Body>
@@ -267,7 +271,7 @@ function PrintDialogOpen({ onSaved, onDeleted }: PrintDialogProps) {
               />
             </Dialog.Body>
 
-            <Dialog.Footer>
+            <Dialog.Footer bordered>
               <div className="flex w-full items-center justify-between gap-2">
                 {mode === 'edit' ? (
                   <Button

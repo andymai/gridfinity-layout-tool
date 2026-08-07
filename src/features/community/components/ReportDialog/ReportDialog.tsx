@@ -124,6 +124,7 @@ export function ReportDialog({ designId, onClose, onNeedsAuth, submit, title }: 
       <Dialog.Header
         title={title ?? t('community.report.title')}
         closeAriaLabel={t('common.closeDialog')}
+        bordered
       />
       <Dialog.Body>
         <div className="space-y-4">

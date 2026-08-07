@@ -74,7 +74,10 @@ export function DesignMediaPanel({
   const hiddenCount = images.length - visibleCount;
 
   return (
-    <div className="flex flex-col items-center gap-3 bg-surface p-4 md:flex-1 md:justify-center md:overflow-y-auto">
+    // `safe center`, not `center`: once the column overflows, centred content
+    // sits partly above the scrollport, and scrollTop cannot go negative to
+    // reach it. `safe` drops back to start-alignment exactly then.
+    <div className="flex flex-col items-center gap-3 bg-surface p-6 scrollbar-thin md:flex-1 md:justify-center-safe md:overflow-y-auto">
       <div
         className="relative w-full max-w-xl"
         style={{ aspectRatio: '1 / 1', maxHeight: isMobile ? '45vh' : '55vh' }}
@@ -129,7 +132,14 @@ export function DesignMediaPanel({
         <div
           role="group"
           aria-label={t('community.media.filmstripLabel')}
-          className="flex w-full max-w-xl items-center gap-2 overflow-x-auto scrollbar-thin"
+          // `shrink-0` is load-bearing, not defensive. `overflow-x-auto`
+          // computes overflow-y to `auto` too, and a flex item whose block-axis
+          // overflow is not `visible` loses its min-content floor. That left
+          // the strip the only thing in this column that could be crushed (the
+          // hero's aspect-ratio floors it), so it absorbed the whole shortfall
+          // on any viewport under ~850px: 40px-tall tiles and a vertical
+          // scrollbar. `pb-2` keeps the horizontal scrollbar off the tiles.
+          className="flex w-full max-w-xl shrink-0 items-center gap-2 overflow-x-auto pb-2 scrollbar-thin"
           data-testid="design-media-filmstrip"
         >
           <Button

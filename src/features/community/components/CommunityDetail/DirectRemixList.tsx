@@ -50,7 +50,7 @@ export function DirectRemixList({ designId, remixCount }: DirectRemixListProps) 
         <ul
           role="list"
           aria-label={t('community.detail.buildsOnThis', { count: remixCount })}
-          className="flex list-none gap-2 overflow-x-auto pb-1"
+          className="flex list-none gap-2 overflow-x-auto pb-2 scrollbar-thin"
         >
           {remixes.map((card) => (
             <li key={card.id} className="shrink-0">
