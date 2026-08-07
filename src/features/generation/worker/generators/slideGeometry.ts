@@ -143,10 +143,20 @@ export type SlideRejection =
   | 'bin-too-narrow'
   | 'tray-too-thin'
   | 'rail-below-floor'
-  | 'no-bearing';
+  | 'no-bearing'
+  /** Slotted bins carry divider slots on the very walls the rail runs along. */
+  | 'slot-conflict'
+  /** Custom-shape (cellMask) bins: the rail has no polygon-edge mapping yet. */
+  | 'unsupported-shape'
+  /** A solid bin has no cavity, so a tray has nowhere to sit. */
+  | 'no-cavity';
 
 export interface SlideGeometryInput {
   readonly slide: SlideConfig;
+  /** Style/shape gates. Resolved here so the panel and the worker agree. */
+  readonly isSlotted?: boolean;
+  readonly isSolid?: boolean;
+  readonly isPolygon?: boolean;
   readonly innerW: number;
   readonly innerD: number;
   readonly outerW: number;
@@ -191,6 +201,50 @@ export function rimTrackBaseZ(wallHeight: number, collarHeight: number, hasLip: 
   return wallHeight + collarHeight + (hasLip ? LIP_HEIGHT : 0);
 }
 
+/**
+ * Resolver input from bin params plus resolved dimensions.
+ *
+ * Shared by the rail builder and the wall-pattern keep-out so the band the
+ * pattern clears is derived from the SAME rail the pipeline fuses. Deriving it
+ * twice is how a keep-out drifts off the thing it is protecting.
+ */
+export function slideInputFromDims(
+  params: {
+    slide: SlideConfig;
+    wallThickness: number;
+    cellMask?: unknown;
+  },
+  dim: {
+    innerW: number;
+    innerD: number;
+    outerW: number;
+    outerD: number;
+    wallHeight: number;
+    collarHeight: number;
+    hasLip: boolean;
+    gridUnitMmX: number;
+    isSlotted: boolean;
+    solid: boolean;
+  },
+  isPolygon: boolean
+): SlideGeometryInput {
+  return {
+    slide: params.slide,
+    isSlotted: dim.isSlotted,
+    isSolid: dim.solid,
+    isPolygon,
+    innerW: dim.innerW,
+    innerD: dim.innerD,
+    outerW: dim.outerW,
+    outerD: dim.outerD,
+    wallThickness: params.wallThickness,
+    wallHeight: dim.wallHeight,
+    collarHeight: dim.collarHeight,
+    hasLip: dim.hasLip,
+    gridUnitMmX: dim.gridUnitMmX,
+  };
+}
+
 export function resolveSlideGeometry(input: SlideGeometryInput): SlideGeometry {
   const { slide, innerW, innerD, outerD, wallThickness, wallHeight } = input;
   const none = (rejection: SlideRejection): SlideGeometry => ({
@@ -200,6 +254,16 @@ export function resolveSlideGeometry(input: SlideGeometryInput): SlideGeometry {
   });
 
   if (!slide.enabled) return none('disabled');
+
+  // Style gates, resolved before any geometry so the panel can explain a bin
+  // that produces nothing rather than leaving the user to guess.
+  //
+  // Slotted is the subtle one: `slotBuilder` cuts divider slots into the FRONT
+  // and BACK walls, which is exactly where the rail runs, and the pipeline cuts
+  // after it fuses — so the slots would notch the rail's bearing face.
+  if (input.isSolid === true) return none('no-cavity');
+  if (input.isSlotted === true) return none('slot-conflict');
+  if (input.isPolygon === true) return none('unsupported-shape');
 
   const protrusion = slide.railProtrusionMm;
   const thickness = slide.railThicknessMm;
@@ -314,4 +378,29 @@ export function resolveSlideGeometry(input: SlideGeometryInput): SlideGeometry {
     },
     rejection: null,
   };
+}
+
+/**
+ * The band a wall pattern must keep clear so the rail survives.
+ *
+ * The pipeline fuses before it pattern-cuts, so a hex pattern carves straight
+ * through an already-fused rail and the feature silently ceases to exist. This
+ * is the gotcha-5 rule (any feature living on a wall needs a matching keep-out)
+ * applied to the rail; `buildHandleClipBoxes` adds CUTOUT_BORDER_WIDTH around
+ * whatever it is given, so the rail also gets solid material to bond to.
+ *
+ * Returns null when this wall carries no rail. Only the front and back walls
+ * ever do — the rail runs along X.
+ */
+export function slidePatternKeepOut(
+  geometry: SlideGeometry,
+  side: string
+): { readonly centerZ: number; readonly height: number; readonly width: number } | null {
+  if (side !== 'front' && side !== 'back') return null;
+  if (geometry.rails.length === 0) return null;
+  const bounds = geometry.rails.map(sectionBounds);
+  const zMin = Math.min(...bounds.map((b) => b.zMin));
+  const zMax = Math.max(...bounds.map((b) => b.zMax));
+  const width = Math.max(...geometry.rails.map((r) => r.xMax - r.xMin));
+  return { centerZ: (zMin + zMax) / 2, height: zMax - zMin, width };
 }
