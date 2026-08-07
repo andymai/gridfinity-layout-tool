@@ -1735,7 +1735,7 @@
   "community.gallery.clearFitsGap": "Fjern hullfilter",
   "community.gallery.fitsGapEmpty.title": "Ingenting passer i hullet på {width}×{depth} ennå",
   "community.gallery.fitsGapEmpty.subtitle": "Prøv å velge et større hull, eller fjern hullfilteret for å bla gjennom alt.",
-  "community.gallery.clearFeaturedFilter": "Fjern filter for teamets utvalgte",
+  "community.gallery.clearFeaturedFilter": "Fjern filteret Utvalgte",
   "community.gallery.sort.bestFit": "Best tilpasning",
   "community.gallery.widthLabel": "Bredde (rutenettenheter)",
   "community.gallery.depthLabel": "Dybde (rutenettenheter)",

@@ -1,4 +1,12 @@
-import { Component, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Component,
+  Suspense,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import type { ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Bounds, Center, OrbitControls, useGLTF, useProgress } from '@react-three/drei';
@@ -26,9 +34,10 @@ interface GlbViewerProps {
 
 function Model({ url, onReady }: { url: string; onReady: () => void }) {
   const gltf = useGLTF(url, true);
-  // During render, not in an effect: an effect commits after the first paint,
-  // so the NaN-speckled frame this repairs would be shown before it ran.
-  useMemo(() => ensureVertexNormals(gltf.scene), [gltf.scene]);
+  // Layout effect, not a passive one: this must land before the first frame is
+  // drawn, and React runs layout effects before the browser paints and before
+  // the render loop's next animation frame.
+  useLayoutEffect(() => ensureVertexNormals(gltf.scene), [gltf.scene]);
   // useGLTF suspends until the asset resolves, so reaching here means the model
   // is loaded; signal the overlay to fade out after commit (not during render).
   useEffect(() => {

@@ -3323,7 +3323,7 @@
   "community.gallery.clearFitsGap": "清除空缺筛选",
   "community.gallery.fitsGapEmpty.title": "还没有适合 {width}×{depth} 空缺的设计",
   "community.gallery.fitsGapEmpty.subtitle": "试试选择更大的空缺，或清除空缺筛选浏览全部设计。",
-  "community.gallery.clearFeaturedFilter": "清除员工精选筛选",
+  "community.gallery.clearFeaturedFilter": "清除精选筛选",
   "community.gallery.sort.bestFit": "最佳适配",
   "community.gallery.widthLabel": "宽度（网格单位）",
   "community.gallery.depthLabel": "深度（网格单位）",

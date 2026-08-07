@@ -1645,7 +1645,7 @@
   "community.gallery.clearFitsGap": "Gatfilter wissen",
   "community.gallery.fitsGapEmpty.title": "Er past nog niets in je gat van {width}×{depth}",
   "community.gallery.fitsGapEmpty.subtitle": "Probeer een groter gat te selecteren, of wis het gatfilter om alles te bekijken.",
-  "community.gallery.clearFeaturedFilter": "Filter aanraders van het team wissen",
+  "community.gallery.clearFeaturedFilter": "Filter Uitgelicht wissen",
   "community.gallery.sort.bestFit": "Beste passing",
   "community.gallery.widthLabel": "Breedte (rastereenheden)",
   "community.gallery.depthLabel": "Diepte (rastereenheden)",

@@ -3323,7 +3323,7 @@
   "community.gallery.clearFitsGap": "Vymazat filtr mezery",
   "community.gallery.fitsGapEmpty.title": "Do mezery {width}×{depth} se zatím nic nevejde",
   "community.gallery.fitsGapEmpty.subtitle": "Zkuste vybrat větší mezeru, nebo vymažte filtr mezery a procházejte vše.",
-  "community.gallery.clearFeaturedFilter": "Vymazat filtr výběru týmu",
+  "community.gallery.clearFeaturedFilter": "Zrušit filtr doporučených",
   "community.gallery.sort.bestFit": "Nejlepší velikostní shoda",
   "community.gallery.widthLabel": "Šířka (jednotky mřížky)",
   "community.gallery.depthLabel": "Hloubka (jednotky mřížky)",

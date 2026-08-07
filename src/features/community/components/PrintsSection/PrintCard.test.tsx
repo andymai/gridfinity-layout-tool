@@ -115,6 +115,35 @@ describe('PrintCard', () => {
     expect(image).toHaveAttribute('height');
   });
 
+  it('renders no tile for an empty photo slot, which would open nothing', () => {
+    render(
+      <PrintCard
+        print={print({ photos: ['', 'https://blob.example/b.webp'] })}
+        isMine={false}
+        onOpenPhoto={vi.fn()}
+      />
+    );
+
+    expect(screen.getAllByRole('button', { name: 'community.prints.photoAlt' })).toHaveLength(1);
+  });
+
+  it('withdraws cover promotion once a photo is known to be dead', () => {
+    render(
+      <PrintCard
+        print={print({ photos: ['https://blob.example/gone.webp'] })}
+        isMine={false}
+        onPromoteCover={vi.fn()}
+      />
+    );
+    expect(screen.getByTestId('print-promote-0')).toBeInTheDocument();
+
+    fireEvent.error(screen.getByRole('img'));
+
+    // The server only checks the URL belongs to a live print, so a dead photo
+    // would sail onto the gallery grid, the most public surface in the app.
+    expect(screen.queryByTestId('print-promote-0')).not.toBeInTheDocument();
+  });
+
   it('falls back to a label rather than a broken-image glyph', () => {
     render(
       <PrintCard print={print({ photos: ['https://blob.example/gone.webp'] })} isMine={false} />

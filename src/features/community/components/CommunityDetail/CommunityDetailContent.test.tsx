@@ -6,18 +6,8 @@ import { INITIAL_BROWSE_STATE, useBrowseStore } from '../../store/browseStore';
 import { buildDesignImages } from '../../utils/designMedia';
 
 vi.mock('@/shared/components/GlbViewer', () => ({
-  GlbViewer: ({
-    loadBehavior,
-    posterUrl,
-    onModelReady,
-  }: {
-    loadBehavior?: string;
-    posterUrl: string;
-    onModelReady?: () => void;
-  }) => (
-    <div data-testid="glb-viewer" data-load={loadBehavior ?? 'auto'} data-poster={posterUrl}>
-      <button type="button" data-testid="mock-model-ready" onClick={onModelReady} />
-    </div>
+  GlbViewer: ({ loadBehavior, posterUrl }: { loadBehavior?: string; posterUrl: string }) => (
+    <div data-testid="glb-viewer" data-load={loadBehavior ?? 'auto'} data-poster={posterUrl} />
   ),
 }));
 
@@ -137,7 +127,7 @@ describe('CommunityDetailContent', () => {
     expect(screen.getByTestId('design-media-tile-model')).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('swaps the hero to a filmstrip image, replacing the model', () => {
+  it('layers a filmstrip image over the viewer without tearing it down', () => {
     renderContent();
     const second = screen.getByLabelText('Show preview angle 2');
     expect(second).toHaveAttribute('aria-pressed', 'false');
@@ -146,15 +136,9 @@ describe('CommunityDetailContent', () => {
 
     expect(second).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByTestId('design-media-hero')).toBeInTheDocument();
-    expect(screen.queryByTestId('glb-viewer')).not.toBeInTheDocument();
-  });
-
-  it('keeps the filmstrip up once the model is live, so the renders stay reachable', () => {
-    renderContent();
-    fireEvent.click(screen.getByTestId('mock-model-ready'));
-    // The old angle strip unmounted here, which left every render unreachable
-    // and gave the print photos nowhere to appear.
-    expect(screen.getByLabelText('Show preview angle 2')).toBeInTheDocument();
+    // Unmounting it would drop the tap-to-load flag and the orbit camera, so a
+    // mobile visitor would be back at "Show 3D" after every photo.
+    expect(screen.getByTestId('glb-viewer')).toBeInTheDocument();
   });
 
   it('enlarges the selected image through the hero', () => {

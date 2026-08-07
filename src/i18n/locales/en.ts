@@ -3591,7 +3591,7 @@ const en: Record<string, string> = {
   'community.gallery.fitsGapEmpty.title': 'Nothing fits your {width}×{depth} gap yet',
   'community.gallery.fitsGapEmpty.subtitle':
     'Try selecting a larger gap, or clear the gap filter to browse everything.',
-  'community.gallery.clearFeaturedFilter': 'Clear staff picks filter',
+  'community.gallery.clearFeaturedFilter': 'Clear the Featured filter',
   'community.gallery.sort.bestFit': 'Best fit',
   'community.gallery.widthLabel': 'Width (grid units)',
   'community.gallery.depthLabel': 'Depth (grid units)',

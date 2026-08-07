@@ -74,15 +74,42 @@ describe('DesignMediaPanel', () => {
     expect(screen.getByTestId('design-media-tile-2')).toBeInTheDocument();
   });
 
-  it('swaps the hero to the picked image and back to the model', () => {
+  it('layers the picked image over the viewer, then reveals it again', () => {
     renderPanel();
 
     fireEvent.click(screen.getByTestId('design-media-tile-2'));
-    expect(screen.queryByTestId('glb-viewer')).not.toBeInTheDocument();
     expect(screen.getByTestId('design-media-hero')).toBeInTheDocument();
+    // Kept mounted: it owns the tap-to-load flag and the orbit camera, so a
+    // mobile visitor would otherwise be back at "Show 3D" after every photo.
+    expect(screen.getByTestId('glb-viewer')).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('design-media-tile-model'));
-    expect(screen.getByTestId('glb-viewer')).toBeInTheDocument();
+    expect(screen.queryByTestId('design-media-hero')).not.toBeInTheDocument();
+  });
+
+  it('falls back to the model when the picked photo slides out from under it', () => {
+    const { rerender } = render(
+      <DesignMediaPanel design={DESIGN} images={IMAGES} isMobile={false} onOpenLightbox={vi.fn()} />
+    );
+    fireEvent.click(screen.getByTestId('design-media-tile-2'));
+    expect(screen.getByTestId('design-media-hero')).toBeInTheDocument();
+
+    // Posting a print prepends it, sliding every photo's index along. Showing
+    // whatever landed in the slot would be worse than showing the model.
+    const shifted: DesignImage[] = [
+      { kind: 'photo', url: 'newer.webp', authorName: 'Bea', fitVerdict: 'adjusted', note: '' },
+      ...IMAGES,
+    ];
+    rerender(
+      <DesignMediaPanel
+        design={DESIGN}
+        images={shifted}
+        isMobile={false}
+        onOpenLightbox={vi.fn()}
+      />
+    );
+
+    expect(screen.queryByTestId('design-media-hero')).not.toBeInTheDocument();
   });
 
   it('enlarges the hero image on click', () => {

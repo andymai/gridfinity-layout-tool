@@ -3323,7 +3323,7 @@
   "community.gallery.clearFitsGap": "Rensa luckfilter",
   "community.gallery.fitsGapEmpty.title": "Inget passar i din lucka på {width}×{depth} ännu",
   "community.gallery.fitsGapEmpty.subtitle": "Prova att välja en större lucka, eller rensa luckfiltret för att bläddra bland allt.",
-  "community.gallery.clearFeaturedFilter": "Rensa filtret för teamets favoriter",
+  "community.gallery.clearFeaturedFilter": "Rensa filtret Utvalda",
   "community.gallery.sort.bestFit": "Bästa passform",
   "community.gallery.widthLabel": "Bredd (rutnätsenheter)",
   "community.gallery.depthLabel": "Djup (rutnätsenheter)",

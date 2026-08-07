@@ -57,6 +57,30 @@ describe('DesignGalleryModal', () => {
     expect(screen.queryByTestId('community-content')).not.toBeInTheDocument();
   });
 
+  it('flag off: titles itself Examples rather than mislabelling a pure examples gallery', async () => {
+    render(<DesignGalleryModal onClose={vi.fn()} />);
+
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Examples');
+  });
+
+  it('flag on: titles itself Community Designs', async () => {
+    setCommunityFlag(true);
+    render(<DesignGalleryModal onClose={vi.fn()} />);
+
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Community Designs');
+  });
+
+  it('gives its title the same bordered spacing every other modal has', async () => {
+    setCommunityFlag(true);
+    render(<DesignGalleryModal onClose={vi.fn()} />);
+
+    // Without the border variant the header collapses to pb-2, half of what
+    // every other dialog title gets.
+    expect(
+      screen.getByRole('heading', { level: 2 }).parentElement?.parentElement?.className
+    ).toContain('border-b');
+  });
+
   it('flag off: ignores a stored community tab and shows examples', async () => {
     localStorage.setItem('gridfinity-design-gallery-tab-v1', 'community');
     render(<DesignGalleryModal onClose={vi.fn()} />);

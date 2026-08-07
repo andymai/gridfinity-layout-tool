@@ -1645,7 +1645,7 @@
   "community.gallery.clearFitsGap": "Lückenfilter zurücksetzen",
   "community.gallery.fitsGapEmpty.title": "In deine {width}×{depth}-Lücke passt noch nichts",
   "community.gallery.fitsGapEmpty.subtitle": "Wähle eine größere Lücke oder setze den Lückenfilter zurück, um alles zu durchsuchen.",
-  "community.gallery.clearFeaturedFilter": "Team-Empfehlungen-Filter zurücksetzen",
+  "community.gallery.clearFeaturedFilter": "Filter „Empfohlen“ zurücksetzen",
   "community.gallery.sort.bestFit": "Beste Passform",
   "community.gallery.widthLabel": "Breite (Rastereinheiten)",
   "community.gallery.depthLabel": "Tiefe (Rastereinheiten)",

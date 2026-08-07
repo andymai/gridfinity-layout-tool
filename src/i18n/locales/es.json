@@ -1783,7 +1783,7 @@
   "community.gallery.clearFitsGap": "Borrar filtro de hueco",
   "community.gallery.fitsGapEmpty.title": "Todavía no hay nada que quepa en tu hueco de {width}×{depth}",
   "community.gallery.fitsGapEmpty.subtitle": "Prueba a seleccionar un hueco más grande o borra el filtro de hueco para explorarlo todo.",
-  "community.gallery.clearFeaturedFilter": "Borrar filtro de selección del equipo",
+  "community.gallery.clearFeaturedFilter": "Quitar el filtro de destacados",
   "community.gallery.sort.bestFit": "Mejor ajuste",
   "community.gallery.widthLabel": "Ancho (unidades de cuadrícula)",
   "community.gallery.depthLabel": "Profundidad (unidades de cuadrícula)",

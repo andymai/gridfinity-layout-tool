@@ -106,7 +106,7 @@ Backend lives in `api/community/prints.ts` (`GET`/`PUT`/`DELETE`/`POST report`),
 
 - **Card count**: `counts.prints` rides the list index and renders on the card in full-strength text, where likes and remixes are tertiary. Proof of print outranks the engagement counts by design.
 - **`prints` is a queryable sort** (`community:index:prints`, a member of `COMMUNITY_INDEX_SORTS`). Newest stays the default so new publishers still get seen.
-- **Proven shelf** sits directly under staff picks, above recency: a design other people actually printed is the strongest recommendation the library has, and it is the one signal nobody can inflate by posting.
+- **Proven shelf** sits directly under the featured shelf, above recency: a design other people actually printed is the strongest recommendation the library has, and it is the one signal nobody can inflate by posting.
 - **Cover promotion** is owner opt-in and server-validated against the design's own **live** prints. The gallery grid is the most public surface in the app, and this is the only path by which a user-supplied image can reach it, so the check that the URL belongs to a live print of that design is load-bearing, not defensive. A hidden print's photo is not promotable.
 
 ### Detail media

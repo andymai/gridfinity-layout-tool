@@ -1792,7 +1792,7 @@
   "community.gallery.clearFitsGap": "Очистити фільтр проміжку",
   "community.gallery.fitsGapEmpty.title": "Поки що ніщо не вміщується у проміжок {width}×{depth}",
   "community.gallery.fitsGapEmpty.subtitle": "Спробуйте вибрати більший проміжок або очистіть фільтр проміжку, щоб переглянути все.",
-  "community.gallery.clearFeaturedFilter": "Очистити фільтр вибору команди",
+  "community.gallery.clearFeaturedFilter": "Очистити фільтр «Вибране»",
   "community.gallery.sort.bestFit": "Найкраща відповідність",
   "community.gallery.widthLabel": "Ширина (одиниці сітки)",
   "community.gallery.depthLabel": "Глибина (одиниці сітки)",

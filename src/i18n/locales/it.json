@@ -1735,7 +1735,7 @@
   "community.gallery.clearFitsGap": "Cancella filtro spazio",
   "community.gallery.fitsGapEmpty.title": "Non c'è ancora nulla che entri nel tuo spazio {width}×{depth}",
   "community.gallery.fitsGapEmpty.subtitle": "Prova a selezionare uno spazio più grande, oppure cancella il filtro spazio per sfogliare tutto.",
-  "community.gallery.clearFeaturedFilter": "Cancella filtro scelti dal team",
+  "community.gallery.clearFeaturedFilter": "Rimuovi il filtro In evidenza",
   "community.gallery.sort.bestFit": "Miglior adattamento",
   "community.gallery.widthLabel": "Larghezza (unità di griglia)",
   "community.gallery.depthLabel": "Profondità (unità di griglia)",

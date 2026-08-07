@@ -3323,7 +3323,7 @@
   "community.gallery.clearFitsGap": "Limpar filtro de lacuna",
   "community.gallery.fitsGapEmpty.title": "Ainda não há nada que caiba na sua lacuna de {width}×{depth}",
   "community.gallery.fitsGapEmpty.subtitle": "Tente selecionar uma lacuna maior ou limpe o filtro de lacuna para explorar tudo.",
-  "community.gallery.clearFeaturedFilter": "Limpar filtro de escolhas da equipe",
+  "community.gallery.clearFeaturedFilter": "Limpar o filtro Destaques",
   "community.gallery.sort.bestFit": "Melhor encaixe",
   "community.gallery.widthLabel": "Largura (unidades de grade)",
   "community.gallery.depthLabel": "Profundidade (unidades de grade)",

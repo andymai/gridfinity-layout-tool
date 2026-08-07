@@ -1688,7 +1688,7 @@
   "community.gallery.clearFitsGap": "隙間フィルターをクリア",
   "community.gallery.fitsGapEmpty.title": "{width}×{depth}の隙間に収まるものはまだありません",
   "community.gallery.fitsGapEmpty.subtitle": "より大きな隙間を選択するか、隙間フィルターをクリアしてすべてを閲覧してください。",
-  "community.gallery.clearFeaturedFilter": "スタッフのおすすめフィルターをクリア",
+  "community.gallery.clearFeaturedFilter": "おすすめフィルターを解除",
   "community.gallery.sort.bestFit": "ベストフィット",
   "community.gallery.widthLabel": "幅（グリッド単位）",
   "community.gallery.depthLabel": "奥行き（グリッド単位）",

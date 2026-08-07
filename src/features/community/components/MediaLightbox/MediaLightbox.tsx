@@ -8,7 +8,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { TouchEvent } from 'react';
+import type { TouchEvent, TouchList as ReactTouchList } from 'react';
 import { Badge, Dialog, IconButton } from '@/design-system';
 import { ChevronDownIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
@@ -17,6 +17,11 @@ import { PRINT_VERDICT_LABEL_KEYS, PRINT_VERDICT_TONES } from '../../utils/print
 
 /** Below this a swipe is indistinguishable from a tap that drifted. */
 const SWIPE_THRESHOLD_PX = 48;
+
+function firstTouchX(touches: ReactTouchList): number | null {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- TouchList's index signature is typed non-nullable, but an empty list is reachable at runtime
+  return touches[0]?.clientX ?? null;
+}
 
 export interface MediaLightboxProps {
   images: readonly DesignImage[];
@@ -60,7 +65,7 @@ export function MediaLightbox({ images, startIndex, designName, onClose }: Media
   }, [step, total]);
 
   const handleTouchStart = useCallback((event: TouchEvent<HTMLDivElement>) => {
-    touchStartX.current = event.changedTouches[0]?.clientX ?? null;
+    touchStartX.current = firstTouchX(event.changedTouches);
   }, []);
 
   const handleTouchEnd = useCallback(
@@ -68,8 +73,8 @@ export function MediaLightbox({ images, startIndex, designName, onClose }: Media
       const start = touchStartX.current;
       touchStartX.current = null;
       if (start === null || total < 2) return;
-      const end = event.changedTouches[0]?.clientX;
-      if (end === undefined) return;
+      const end = firstTouchX(event.changedTouches);
+      if (end === null) return;
       const travel = end - start;
       if (Math.abs(travel) < SWIPE_THRESHOLD_PX) return;
       step(travel < 0 ? 1 : -1);

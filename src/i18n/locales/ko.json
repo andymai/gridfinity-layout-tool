@@ -3323,7 +3323,7 @@
   "community.gallery.clearFitsGap": "빈 공간 필터 지우기",
   "community.gallery.fitsGapEmpty.title": "{width}×{depth} 빈 공간에 맞는 디자인이 아직 없습니다",
   "community.gallery.fitsGapEmpty.subtitle": "더 큰 빈 공간을 선택하거나 빈 공간 필터를 지우고 전체를 둘러보세요.",
-  "community.gallery.clearFeaturedFilter": "스태프 추천 필터 지우기",
+  "community.gallery.clearFeaturedFilter": "추천 필터 지우기",
   "community.gallery.sort.bestFit": "최적 맞춤",
   "community.gallery.widthLabel": "너비(그리드 단위)",
   "community.gallery.depthLabel": "깊이(그리드 단위)",

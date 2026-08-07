@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Badge, Button, cn } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import type { CommunityPrint } from '@/shared/types/communityPrint';
@@ -28,9 +28,11 @@ interface PrintPhotoTileProps {
   alt: string;
   isCover: boolean;
   onOpen?: () => void;
+  /** Reported up so the owner cannot promote a dead photo to the gallery cover. */
+  onFailed: () => void;
 }
 
-function PrintPhotoTile({ url, alt, isCover, onOpen }: PrintPhotoTileProps) {
+function PrintPhotoTile({ url, alt, isCover, onOpen, onFailed }: PrintPhotoTileProps) {
   const t = useTranslation();
   const [failed, setFailed] = useState(false);
 
@@ -48,14 +50,19 @@ function PrintPhotoTile({ url, alt, isCover, onOpen }: PrintPhotoTileProps) {
   const image = (
     <img
       src={url}
-      alt={alt}
+      // The wrapping button already carries `alt` as its accessible name, so
+      // repeating it here reads the photo out twice.
+      alt={onOpen === undefined ? alt : ''}
       loading="lazy"
       decoding="async"
       // Squared up front so a photo arriving mid-scroll cannot shove the rest
       // of the grid down as it loads.
       width={300}
       height={300}
-      onError={() => setFailed(true)}
+      onError={() => {
+        setFailed(true);
+        onFailed();
+      }}
       className="h-full w-full object-cover"
     />
   );
@@ -100,6 +107,15 @@ export function PrintCard({
   const t = useTranslation();
   const { settings } = print;
   const { hours, minutes } = formatPrintDuration(settings.printMinutes);
+
+  // Promotion puts a photo on the gallery grid, the most public surface in the
+  // app, and the server only checks that the URL belongs to a live print of
+  // this design. A photo whose blob is gone passes that check, so the button
+  // has to withdraw itself once the image is known to be dead.
+  const [deadPhotos, setDeadPhotos] = useState<ReadonlySet<number>>(() => new Set());
+  const markPhotoDead = useCallback((index: number) => {
+    setDeadPhotos((current) => new Set(current).add(index));
+  }, []);
 
   const duration =
     hours === 0
@@ -149,36 +165,44 @@ export function PrintCard({
         // to a thumbnail shows a patch of filament, and half the photos sat
         // off the edge of a 320px rail.
         <ul className="mt-2 grid grid-cols-2 gap-2">
-          {print.photos.map((photo, index) => (
-            // Index-qualified: the server does not dedupe the photo array, so
-            // two identical URLs would otherwise collide as keys.
-            <li key={`${index}-${photo}`}>
-              <PrintPhotoTile
-                url={photo}
-                alt={t('community.prints.photoAlt', {
-                  index: index + 1,
-                  author: print.authorName,
-                })}
-                isCover={photo === coverPhotoUrl}
-                onOpen={onOpenPhoto === undefined ? undefined : () => onOpenPhoto(print.id, index)}
-              />
-              {onPromoteCover !== undefined &&
-                (photo === coverPhotoUrl ? (
-                  <p className="mt-1 text-center text-[11px] text-accent">
-                    {t('community.prints.coverCurrent')}
-                  </p>
-                ) : (
-                  <Button
-                    variant="ghost"
-                    onClick={() => onPromoteCover(photo)}
-                    className="mt-1 h-auto w-full justify-center p-0 text-[11px] font-normal text-content-tertiary underline-offset-2 hover:underline"
-                    data-testid={`print-promote-${index}`}
-                  >
-                    {t('community.prints.useAsCover')}
-                  </Button>
-                ))}
-            </li>
-          ))}
+          {print.photos.map((photo, index) =>
+            // Dropped rather than rendered as an inert tile: the flat media
+            // sequence skips empty slots too, so a tile here would open nothing.
+            photo === '' ? null : (
+              // Index-qualified: the server does not dedupe the photo array, so
+              // two identical URLs would otherwise collide as keys.
+              <li key={`${index}-${photo}`}>
+                <PrintPhotoTile
+                  url={photo}
+                  alt={t('community.prints.photoAlt', {
+                    index: index + 1,
+                    author: print.authorName,
+                  })}
+                  isCover={photo === coverPhotoUrl}
+                  onOpen={
+                    onOpenPhoto === undefined ? undefined : () => onOpenPhoto(print.id, index)
+                  }
+                  onFailed={() => markPhotoDead(index)}
+                />
+                {onPromoteCover !== undefined &&
+                  !deadPhotos.has(index) &&
+                  (photo === coverPhotoUrl ? (
+                    <p className="mt-1 text-center text-[11px] text-accent">
+                      {t('community.prints.coverCurrent')}
+                    </p>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      onClick={() => onPromoteCover(photo)}
+                      className="mt-1 h-auto w-full justify-center p-0 text-[11px] font-normal text-content-tertiary underline-offset-2 hover:underline"
+                      data-testid={`print-promote-${index}`}
+                    >
+                      {t('community.prints.useAsCover')}
+                    </Button>
+                  ))}
+              </li>
+            )
+          )}
         </ul>
       )}
 

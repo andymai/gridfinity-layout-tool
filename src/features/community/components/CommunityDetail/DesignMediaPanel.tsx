@@ -17,7 +17,12 @@ import type { CommunityDesign } from '@/shared/types/community';
 import type { DesignImage } from '../../utils/designMedia';
 import { FILMSTRIP_MAX_TILES } from '../../utils/designMedia';
 
-type Selection = { readonly kind: 'model' } | { readonly kind: 'image'; readonly index: number };
+type Selection =
+  | { readonly kind: 'model' }
+  // The url rides along so a shifted list can be detected: prints are listed
+  // newest-first, so posting one PREPENDS it and slides every photo's index.
+  // Without this the hero would silently swap to a different picture.
+  | { readonly kind: 'image'; readonly index: number; readonly url: string };
 
 export interface DesignMediaPanelProps {
   design: CommunityDesign;
@@ -43,11 +48,16 @@ export function DesignMediaPanel({
   const [selection, setSelection] = useState<Selection>({ kind: 'model' });
 
   const poster = images.find((image) => image.kind === 'render')?.url ?? '';
-  const selected = selection.kind === 'image' ? images.at(selection.index) : undefined;
+  const candidate = selection.kind === 'image' ? images.at(selection.index) : undefined;
+  // Falls back to the model rather than showing whatever slid into the slot.
+  const selected =
+    candidate?.url === (selection.kind === 'image' ? selection.url : undefined)
+      ? candidate
+      : undefined;
 
   const handleEnlarge = useCallback(() => {
-    if (selection.kind === 'image') onOpenLightbox(selection.index);
-  }, [onOpenLightbox, selection]);
+    if (selected !== undefined && selection.kind === 'image') onOpenLightbox(selection.index);
+  }, [onOpenLightbox, selected, selection]);
 
   // The 3D tile occupies one slot, so the strip shows one fewer image than the
   // tile budget before it collapses the remainder.
@@ -60,23 +70,27 @@ export function DesignMediaPanel({
         className="relative w-full max-w-xl"
         style={{ aspectRatio: '1 / 1', maxHeight: isMobile ? '45vh' : '55vh' }}
       >
-        {selected === undefined ? (
-          <GlbViewer
-            meshUrl={design.meshUrl}
-            posterUrl={poster}
-            alt={design.name}
-            loadBehavior={isMobile ? 'tap' : 'auto'}
-            className="h-full w-full"
-          >
-            <GradientBackground />
-          </GlbViewer>
-        ) : (
+        {/* The viewer stays mounted under the image rather than being swapped
+            out for it. It owns the tap-to-load flag and the orbit camera, so
+            unmounting it sent a mobile visitor back to "Show 3D" and a fresh
+            GLB download every time they looked at a photo. */}
+        <GlbViewer
+          meshUrl={design.meshUrl}
+          posterUrl={poster}
+          alt={design.name}
+          loadBehavior={isMobile ? 'tap' : 'auto'}
+          autoRotate={selected === undefined}
+          className="h-full w-full"
+        >
+          <GradientBackground />
+        </GlbViewer>
+        {selected !== undefined && (
           <Button
             variant="ghost"
             touchTarget={false}
             onClick={handleEnlarge}
             aria-label={t('community.media.enlarge')}
-            className="h-full w-full overflow-hidden rounded-lg border border-stroke-subtle p-0"
+            className="absolute inset-0 h-full w-full overflow-hidden rounded-lg border border-stroke-subtle bg-surface p-0"
             data-testid="design-media-hero"
           >
             <img
@@ -124,9 +138,11 @@ export function DesignMediaPanel({
               key={`${index}-${image.url}`}
               variant="ghost"
               touchTarget={false}
-              onClick={() => setSelection({ kind: 'image', index })}
+              onClick={() => setSelection({ kind: 'image', index, url: image.url })}
               aria-label={imageLabel(image, t)}
-              aria-pressed={selection.kind === 'image' && selection.index === index}
+              aria-pressed={
+                selected !== undefined && selection.kind === 'image' && selection.index === index
+              }
               className={cn(
                 'h-20 w-20 shrink-0 overflow-hidden rounded-lg border p-0',
                 selection.kind === 'image' && selection.index === index

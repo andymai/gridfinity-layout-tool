@@ -7,7 +7,7 @@
  * otherwise have to stay in sync through the parent.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { Button, Spinner } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { isOk } from '@/core/result';
@@ -102,7 +102,11 @@ export function PrintsSection({
     };
   }, [designId, requestKey]);
 
-  useEffect(() => {
+  // Layout effect, not a passive one: Load more renders the new photo tiles as
+  // clickable in the same commit, and the parent resolves a click against its
+  // own copy of the list. A passive effect leaves a window where those tiles
+  // exist but the parent cannot place them, and the click resolves to nothing.
+  useLayoutEffect(() => {
     onItemsChange?.(items);
   }, [items, onItemsChange]);
 

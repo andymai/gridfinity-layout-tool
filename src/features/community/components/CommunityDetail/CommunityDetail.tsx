@@ -138,8 +138,10 @@ function CommunityDetailDialog({
   // CTA and the list must agree on whether the viewer has a print.
   const [printsRefresh, setPrintsRefresh] = useState(0);
   const [reportPrintTarget, setReportPrintTarget] = useState<CommunityPrint | null>(null);
-  // Stamped like ownPrint: the overlay is reused across designs, and an
-  // unstamped list would caption design B's filmstrip with design A's printers.
+  // Stamped with its design as a guard, not as the mechanism: the dialog is
+  // keyed by designId, so switching designs remounts it. The stamp is what
+  // stops an in-flight response for the previous design from being read as
+  // this one's if that key ever goes away.
   const [printItems, setPrintItems] = useState<{
     designId: string;
     items: readonly CommunityPrint[];
@@ -654,7 +656,7 @@ function CommunityDetailDialog({
               />
             }
             printsSlot={
-              printsAvailable && design !== null ? (
+              printsAvailable ? (
                 <PrintsSection
                   designId={design.id}
                   ownPrint={myPrint}
@@ -792,6 +794,10 @@ function CommunityDetailDialog({
 
       {lightboxIndex !== null && design !== null && (
         <MediaLightbox
+          // Keyed so each open mounts fresh: the viewer tracks its own position
+          // once mounted, so without this a later open would resume where the
+          // previous one was left rather than on the image just clicked.
+          key={lightboxIndex}
           images={images}
           startIndex={lightboxIndex}
           designName={design.name}

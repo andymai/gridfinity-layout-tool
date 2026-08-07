@@ -3323,7 +3323,7 @@
   "community.gallery.clearFitsGap": "Wyczyść filtr luki",
   "community.gallery.fitsGapEmpty.title": "Nic jeszcze nie pasuje do luki {width}×{depth}",
   "community.gallery.fitsGapEmpty.subtitle": "Spróbuj zaznaczyć większą lukę albo wyczyść filtr luki, aby przeglądać wszystko.",
-  "community.gallery.clearFeaturedFilter": "Wyczyść filtr wyboru zespołu",
+  "community.gallery.clearFeaturedFilter": "Wyczyść filtr Polecane",
   "community.gallery.sort.bestFit": "Najlepsze dopasowanie",
   "community.gallery.widthLabel": "Szerokość (jednostki siatki)",
   "community.gallery.depthLabel": "Głębokość (jednostki siatki)",
