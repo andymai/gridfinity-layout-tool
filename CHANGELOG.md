@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.382.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.381.0...gridfinity-layout-tool-v4.382.0) (2026-08-07)
+
+
+### Features
+
+* **bin-designer:** add a grip relief so a tight lid can be opened ([#3297](https://github.com/andymai/gridfinity-layout-tool/issues/3297)) ([2cf15e6](https://github.com/andymai/gridfinity-layout-tool/commit/2cf15e68af16608078d92ccf8ff77faa577f6308))
+
 ## [4.381.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.380.0...gridfinity-layout-tool-v4.381.0) (2026-08-07)
 
 
