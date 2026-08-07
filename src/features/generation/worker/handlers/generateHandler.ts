@@ -8,12 +8,14 @@ import type {
   GenerateBaseplateMarginMessage,
   WarmMessage,
   LidMeshData,
+  SlideTrayMeshData,
   MeshData,
 } from '../../bridge/types';
 import { generateBin } from '../generators/binGenerator';
 import { generateBaseplate } from '../generators/baseplateGenerator';
 import { generateMargin } from '../generators/baseplateMargin';
 import { generateLid, generateStackPlate } from '../generators/lidOrchestrator';
+import { generateSlideTray } from '../generators/slideOrchestrator';
 import { generateLabelPlates } from '../generators/labelPlateGenerator';
 import { planLabelTextOverflow } from '../generators/labelTextFit';
 import type { BinParams } from '@/shared/types/bin';
@@ -69,13 +71,30 @@ export async function handleGenerate(message: GenerateMessage): Promise<void> {
 
         console.warn('[BinGen] Lid generation failed; falling back to bin-only:', e);
       }
+      // The sliding tray is independent of the lid, so it is resolved before
+      // the bin-only early return below — otherwise a bin with a tray and no
+      // lid would silently lose its tray. Same secondary-feature contract:
+      // a build failure degrades, a cancellation aborts.
+      let slideTrayMesh: SlideTrayMeshData | null = null;
+      try {
+        slideTrayMesh = generateSlideTray(params, signal);
+      } catch (e) {
+        if (isAbortError(e)) throw e;
+
+        console.warn('[BinGen] Slide-tray generation failed; skipping tray:', e);
+      }
+
       if (!lidMesh) {
         // Lid generation failed (or is disabled) → bin-only. The baseplate is a
         // companion to the lid, so emitting it here would leave a lone
         // baseplate with no lid; skip it and degrade cleanly to bin-only.
-        return binMesh;
+        return slideTrayMesh ? { ...binMesh, slideTrayMesh } : binMesh;
       }
-      let result: MeshData = { ...binMesh, lidMesh };
+      let result: MeshData = {
+        ...binMesh,
+        lidMesh,
+        ...(slideTrayMesh ? { slideTrayMesh } : {}),
+      };
       // Separate stack-grid baseplate (glue-on companion). Same secondary-
       // feature contract as the lid: a build failure degrades to lid+bin, but
       // a cancellation still aborts the whole request.

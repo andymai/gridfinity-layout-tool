@@ -200,6 +200,14 @@ export interface MeshResultResponse {
   readonly stackPlateIndices?: Uint32Array;
   readonly stackPlateEdgeVertices?: Float32Array;
   readonly stackPlateTriangleCount?: number;
+  /** Sliding-tray mesh — the companion part that rides the bin's rail. All
+   *  six fields land or are absent together. */
+  readonly slideTrayVertices?: Float32Array;
+  readonly slideTrayNormals?: Float32Array;
+  readonly slideTrayIndices?: Uint32Array;
+  readonly slideTrayEdgeVertices?: Float32Array;
+  readonly slideTrayTriangleCount?: number;
+  readonly slideTrayRestZ?: number;
   /** Seated snap-clip connector mesh — present only for split snap-clip plates. */
   readonly connectorKeyVertices?: Float32Array;
   readonly connectorKeyNormals?: Float32Array;

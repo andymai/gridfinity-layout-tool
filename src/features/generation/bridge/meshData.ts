@@ -19,6 +19,8 @@ export interface MeshData {
   /** Optional separate stack-grid baseplate mesh — the glue-on companion slab,
    *  present only when the lid uses `separateStackPlate`. */
   readonly stackPlateMesh?: StackPlateMeshData;
+  /** Optional sliding-tray mesh — the companion part that rides the bin's rail. */
+  readonly slideTrayMesh?: SlideTrayMeshData;
   /**
    * Optional seated snap-clip connector mesh — the exact relieved part the
    * baseplate ships, so the preview can render it instead of an approximation.
@@ -112,6 +114,20 @@ export interface LidMeshData {
   readonly triangleCount: number;
   /** Per-face provenance for rail vs body rendering. */
   readonly faceGroups?: readonly FaceGroupData[];
+}
+
+/**
+ * Mesh data for the sliding tray. A single uniform part with no face groups,
+ * built floor-down at the origin; the preview places it on its rail.
+ */
+export interface SlideTrayMeshData {
+  readonly vertices: Float32Array;
+  readonly normals: Float32Array;
+  readonly indices: Uint32Array;
+  readonly edgeVertices: Float32Array;
+  readonly triangleCount: number;
+  /** Z the tray's underside rests at, in the bin's own (box) frame. */
+  readonly restZ: number;
 }
 
 /**

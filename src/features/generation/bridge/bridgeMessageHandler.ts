@@ -194,6 +194,23 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
                   triangleCount: response.stackPlateTriangleCount,
                 }
               : undefined;
+          // Sliding-tray mesh is optional; all six fields arrive together.
+          const slideTrayMesh =
+            response.slideTrayVertices &&
+            response.slideTrayNormals &&
+            response.slideTrayIndices &&
+            response.slideTrayEdgeVertices &&
+            response.slideTrayTriangleCount !== undefined &&
+            response.slideTrayRestZ !== undefined
+              ? {
+                  vertices: response.slideTrayVertices,
+                  normals: response.slideTrayNormals,
+                  indices: response.slideTrayIndices,
+                  edgeVertices: response.slideTrayEdgeVertices,
+                  triangleCount: response.slideTrayTriangleCount,
+                  restZ: response.slideTrayRestZ,
+                }
+              : undefined;
           // Seated snap-clip mesh is optional; all four fields arrive together.
           const connectorKeyMesh =
             response.connectorKeyVertices &&
@@ -218,6 +235,7 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
               coarseLOD: response.coarseLOD,
               lidMesh,
               stackPlateMesh,
+              slideTrayMesh,
               connectorKeyMesh,
               labelPlates: response.labelPlates,
               labelTextOverflow: response.labelTextOverflow,

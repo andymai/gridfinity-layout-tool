@@ -3,6 +3,7 @@ import type {
   CoarseLODData,
   PerfSnapshot,
   StackPlateMeshData,
+  SlideTrayMeshData,
   LabelPlatesMeshData,
   LabelTextOverflow,
 } from '@/shared/types/generation';
@@ -47,6 +48,8 @@ export interface GenerationResult {
    *  only when the lid uses `separateStackPlate`. No face groups, so the shared
    *  readonly shape is ingested directly. */
   readonly stackPlateMesh?: StackPlateMeshData;
+  /** Optional sliding-tray mesh — the companion part that rides the bin's rail. */
+  readonly slideTrayMesh?: SlideTrayMeshData;
   /** Swappable label plates with their seated poses (socket mode, preview only). */
   readonly labelPlates?: LabelPlatesMeshData;
   /** Captions the build dropped because they overflow their host. Reported by

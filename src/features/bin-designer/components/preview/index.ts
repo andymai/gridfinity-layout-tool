@@ -1,6 +1,7 @@
 export { BinMesh } from './BinMesh';
 export { LidMesh } from './LidMesh';
 export { StackPlateMesh } from './StackPlateMesh';
+export { SlideTrayMesh } from './SlideTrayMesh';
 export { LabelPlateMeshes } from './LabelPlateMeshes';
 export { LidGuideLine } from './LidGuideLine';
 export {

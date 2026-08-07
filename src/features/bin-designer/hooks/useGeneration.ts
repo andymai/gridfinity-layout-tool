@@ -51,6 +51,7 @@ function toMeshPayload(result: BridgeResult): GenerationResult {
     // Stack plate has no face groups; the readonly typed arrays are ingested
     // directly (Immer treats typed arrays as opaque leaves).
     stackPlateMesh: result.mesh.stackPlateMesh,
+    slideTrayMesh: result.mesh.slideTrayMesh,
     labelPlates: result.mesh.labelPlates,
     labelTextOverflow: result.mesh.labelTextOverflow,
     error: null,
@@ -78,6 +79,7 @@ function meshDataToPayload(mesh: MeshData): GenerationResult {
         }
       : undefined,
     stackPlateMesh: mesh.stackPlateMesh,
+    slideTrayMesh: mesh.slideTrayMesh,
     labelPlates: mesh.labelPlates,
     labelTextOverflow: mesh.labelTextOverflow,
     error: null,

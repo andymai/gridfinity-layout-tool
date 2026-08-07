@@ -11,6 +11,7 @@ export type {
   CoarseLODData,
   LidMeshData,
   StackPlateMeshData,
+  SlideTrayMeshData,
   LabelPlatesMeshData,
   LabelTextOverflow,
   LabelPlateMeshData,
