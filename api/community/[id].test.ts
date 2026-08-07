@@ -34,6 +34,7 @@ import {
   communityExportedKey,
   communityLikedKey,
   communityLikesKey,
+  communityModeratedContentKey,
   communityOpenedKey,
   communityPublishedKey,
   communityReportReasonKey,
@@ -1192,6 +1193,32 @@ describe('community/[id]', () => {
         expect(res._status).toBe(200);
         expect(mocks.toggleCommunityLike).toHaveBeenCalledWith(redis, USER_ID, VALID_ID, false);
       });
+
+      // The toggle reads `likes` off the card hash whatever the status, so a
+      // hidden design answered {likes: 13} where a deleted one answers
+      // {likes: 0} — a 200-vs-200 oracle confirming a takedown and leaking the
+      // pre-takedown count to anyone who kept the id.
+      it('answers an unlike on a hidden design exactly as a missing one', async () => {
+        redis.hget.mockImplementation((_key: string, field: string) =>
+          field === 'status' ? 'hidden' : null
+        );
+        const hidden = await handle('POST', { body: { action: 'unlike' } });
+
+        redis.hget.mockResolvedValue(null);
+        const missing = await handle('POST', { body: { action: 'unlike' } });
+
+        expect(hidden._status).toBe(missing._status);
+        expect(hidden._body).toEqual(missing._body);
+        expect(hidden._body).toEqual({ likes: 0, likedByMe: false });
+      });
+
+      it('still clears the heart on a hidden design despite the neutral body', async () => {
+        redis.hget.mockImplementation((_key: string, field: string) =>
+          field === 'status' ? 'hidden' : null
+        );
+        await handle('POST', { body: { action: 'unlike' } });
+        expect(mocks.toggleCommunityLike).toHaveBeenCalledWith(redis, USER_ID, VALID_ID, false);
+      });
     });
 
     describe('report', () => {
@@ -1287,6 +1314,37 @@ describe('community/[id]', () => {
         expect(redis.hset).not.toHaveBeenCalledWith(communityDesignKey(VALID_ID), {
           purgePending: '1',
         });
+      });
+
+      // The hide has to outlive this design id: DELETE and PUT block a
+      // moderation reset, but a re-publish of the identical payload used to
+      // mint a fresh live design with an empty reports set, because both the
+      // idempotency and duplicate checks only match LIVE designs.
+      it('tombstones the content hash so a re-publish cannot reset moderation', async () => {
+        mocks.readCommunityDesignBlob.mockResolvedValue(designRecord());
+        redis.scard.mockResolvedValue(5);
+        redis.hget.mockImplementation((_key: string, field: string) =>
+          field === 'contentHash' ? 'c'.repeat(32) : 'live'
+        );
+
+        const res = await handle('POST', { body: reportBody });
+
+        expect((res._body as { autoHidden: boolean }).autoHidden).toBe(true);
+        expect(redis.sadd).toHaveBeenCalledWith(communityModeratedContentKey(), 'c'.repeat(32));
+      });
+
+      it('does not tombstone below the threshold', async () => {
+        redis.scard.mockResolvedValue(4);
+        redis.hget.mockImplementation((_key: string, field: string) =>
+          field === 'contentHash' ? 'c'.repeat(32) : 'live'
+        );
+
+        await handle('POST', { body: reportBody });
+
+        expect(redis.sadd).not.toHaveBeenCalledWith(
+          communityModeratedContentKey(),
+          expect.anything()
+        );
       });
 
       it('works with the publish kill switch off', async () => {

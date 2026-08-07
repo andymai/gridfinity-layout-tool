@@ -26,6 +26,8 @@ import {
   COMMUNITY_PRINT_FIT_VERDICTS,
   COMMUNITY_PRINT_MATERIALS,
 } from './communityPrintValidation.js';
+import { readCommunityDesignBlob, writeCommunityDesignBlob } from './communityStore.js';
+import { logger } from './logger.js';
 
 /** Mirrors CommunityPrintStatus in `src/shared/types/communityPrint.ts`. */
 export type CommunityPrintStatus = 'live' | 'hidden' | 'removed';
@@ -318,4 +320,37 @@ export function summarizeCommunityPrints(
         .filter((grams): grams is number => grams !== null && Number.isFinite(grams))
     ),
   };
+}
+
+/**
+ * Drop the design's promoted cover when it came from a print that is no longer
+ * publicly visible.
+ *
+ * Without this, hiding a print leaves its photo on the design's card: the most
+ * public surface in the app would keep showing an image moderation just took
+ * down, which defeats the report path entirely. The account-deletion cascade
+ * needs the same guarantee for a deleted user's photos, which is why this lives
+ * here rather than beside the one handler that used to own it.
+ */
+export async function clearCommunityCoverIfFromPhotos(
+  redis: Redis,
+  designId: string,
+  photos: readonly string[]
+): Promise<void> {
+  if (photos.length === 0) return;
+  const cover = await redis.hget(communityDesignKey(designId), 'coverPhotoUrl');
+  if (cover === null || cover === '' || !photos.includes(cover)) return;
+  await redis.hset(communityDesignKey(designId), { coverPhotoUrl: '' });
+  const record = await readCommunityDesignBlob(designId);
+  if (record !== null) {
+    await writeCommunityDesignBlob(
+      { ...record, coverPhotoUrl: '' },
+      { allowOverwrite: true }
+    ).catch((err: unknown) => {
+      logger.warn('Community cover: clear-on-moderation blob mirror failed', {
+        designId,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    });
+  }
 }

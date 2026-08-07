@@ -1,5 +1,9 @@
 import { isValidShareId } from '../../../api/lib/shared.js';
-import { readCommunityCards, setCommunityDesignStatus } from '../../../api/lib/communityStore.js';
+import {
+  clearModerationTombstone,
+  readCommunityCards,
+  setCommunityDesignStatus,
+} from '../../../api/lib/communityStore.js';
 import {
   communityDesignKey,
   communityReportReasonKey,
@@ -35,6 +39,10 @@ export async function restore(args: Args): Promise<number> {
     // reports that crossed the auto-hide threshold survive the restore and a
     // single fresh report instantly re-hides the just-restored design.
     await redis.del(communityReportsKey(id), communityReportReasonKey(id));
+    // Same reasoning as the reports: a restore is a judgement that the content
+    // is acceptable, so the content tombstone has to go too. Leaving it would
+    // restore the design while still barring the author from re-publishing it.
+    await clearModerationTombstone(redis, id);
     console.log(colors.cyan(`restored to live: ${id} (was ${card.status})`));
     return 0;
   } finally {

@@ -33,6 +33,8 @@ function createRedis() {
   return {
     hdel: vi.fn(async () => 1),
     del: vi.fn(async () => 1),
+    hget: vi.fn(async () => 'contenthash'),
+    srem: vi.fn(async () => 1),
     quit: vi.fn(async () => undefined),
   };
 }

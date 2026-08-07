@@ -34,6 +34,7 @@ import {
   communityThumbBlobPath,
   deleteCommunityDesignBlob,
   deriveCommunityMetrics,
+  isModeratedContent,
   readCommunityCards,
   readCommunityDesignBlob,
   removeFromCommunityIndexes,
@@ -300,6 +301,19 @@ async function handlePublish(req: VercelRequest, res: VercelResponse): Promise<v
         authorName: payload.authorName,
         lineage: lineageParse.lineage,
       });
+      // Content taken down by moderation cannot come back, and that outranks
+      // every check below including idempotency. The dedupe checks deliberately
+      // only match LIVE designs, so a hidden original is invisible to them and
+      // a re-post of the identical payload would otherwise mint a fresh design
+      // with an empty reports set. The tombstone is keyed by content, so it
+      // survives the design — and the whole account — being deleted. Neutral
+      // 403, matching the deny-list response: the reply must not confirm that a
+      // takedown happened.
+      if (await isModeratedContent(redis, contentHash)) {
+        sendError(res, 403, ErrorCode.UNAUTHORIZED, 'Publishing is not available for this design.');
+        return;
+      }
+
       // Idempotency runs before quota: a retry of an already-published design
       // must return its id even when the user sits at the live-design cap.
       const existingId = await findPublishedIdByContentHash(redis, session.userId, contentHash);

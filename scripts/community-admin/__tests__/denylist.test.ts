@@ -23,6 +23,7 @@ interface FakeRedis {
   sadd: (key: string, member: string) => Promise<number>;
   smembers: (key: string) => Promise<string[]>;
   hset: (key: string, fields: Record<string, string>) => Promise<number>;
+  hget: (key: string, field: string) => Promise<string | null>;
   hmget: (key: string, ...fields: string[]) => Promise<(string | null)[]>;
   pipeline: () => {
     hgetall: (key: string) => unknown;
@@ -56,6 +57,9 @@ function createFakeRedis(): FakeRedis {
       for (const [field, value] of Object.entries(fields)) hash.set(field, String(value));
       hashes.set(key, hash);
       return Object.keys(fields).length;
+    },
+    async hget(key, field) {
+      return hashes.get(key)?.get(field) ?? null;
     },
     async hmget(key, ...fields) {
       const hash = hashes.get(key);

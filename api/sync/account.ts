@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import type { Redis } from 'ioredis';
 import { requireMethod } from '../lib/method.js';
 import { rateLimited, serviceUnavailable, serverError } from '../lib/shared.js';
 import { logger } from '../lib/logger.js';
@@ -14,6 +15,9 @@ import {
   communityIndexKey,
   communityLikedKey,
   communityLikesKey,
+  communityPrintedKey,
+  communityPrintReportedKey,
+  communityPrintReportsKey,
   communityPublishedKey,
   communityReportedKey,
   communityReportReasonKey,
@@ -31,6 +35,12 @@ import {
   readCommunityDesignBlob,
   type CommunityDesignRecord,
 } from '../lib/communityStore.js';
+import {
+  clearCommunityCoverIfFromPhotos,
+  deleteCommunityPrint,
+  readCommunityPrint,
+  syncCommunityPrintCount,
+} from '../lib/communityPrintStore.js';
 import { deriveAuthorPublicId } from '../lib/communityIds.js';
 
 /**
@@ -193,13 +203,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       await redis.srem(communityReportsKey(reportedId), userId);
     }
 
-    // 4. Drop all per-user KV state in one DEL. The author set falls back to
-    //    the publicId stored on a published record so the key still clears if
-    //    TOKEN_SALT was rotated out since publish.
+    // The author set falls back to the publicId stored on a published record
+    // so the print keys and the author key still resolve if TOKEN_SALT was
+    // rotated out since publish.
     const authorPublicId =
       deriveAuthorPublicId(userId) ??
       records.find((record) => record !== null)?.authorPublicId ??
       null;
+
+    // 3b. Community prints. A print report carries the user's display name and
+    //     their uploaded photos and is served publicly for any still-live
+    //     design, so a deletion request that skipped it would leave the most
+    //     personally-identifiable content of all in place. The two reverse
+    //     indexes exist for exactly this cascade (see redisKeys.ts).
+    if (authorPublicId !== null) {
+      await purgeCommunityPrints(redis, userId, authorPublicId);
+    }
+
+    const printReportedIds = await redis.smembers(communityPrintReportedKey(userId));
+    for (const printId of printReportedIds) {
+      // Members are `${designId}:${authorPublicId}`; the author id is the last
+      // segment, and a design id never contains ':'.
+      const separator = printId.lastIndexOf(':');
+      if (separator <= 0) continue;
+      await redis.srem(
+        communityPrintReportsKey(printId.slice(0, separator), printId.slice(separator + 1)),
+        userId
+      );
+    }
+
+    // 4. Drop all per-user KV state in one DEL.
     await redis.del(
       userIndexKey(userId, 'layouts'),
       userIndexKey(userId, 'designs'),
@@ -211,6 +244,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       communityLikedKey(userId),
       communityPublishedKey(userId),
       communityReportedKey(userId),
+      communityPrintedKey(userId),
+      communityPrintReportedKey(userId),
       ...(authorPublicId === null ? [] : [communityAuthorKey(authorPublicId)])
     );
 
@@ -223,6 +258,47 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       error: error instanceof Error ? error.message : String(error),
     });
     serverError(res);
+  }
+}
+
+/**
+ * Delete every print report this user posted: the record hash, its membership
+ * in each design's public ZSET, and the photo blobs.
+ *
+ * The print's own count is resynced per design so a surviving design does not
+ * advertise a printer that no longer exists. Photo deletes are best-effort for
+ * the same reason the layout-blob deletes are — a stuck blob must not strand
+ * the rest of an account deletion — but they are attempted first so a failure
+ * is visible in logs rather than silently skipped.
+ */
+async function purgeCommunityPrints(
+  redis: Redis,
+  userId: string,
+  authorPublicId: string
+): Promise<void> {
+  const designIds = await redis.smembers(communityPrintedKey(userId));
+  if (designIds.length === 0) return;
+
+  for (const designId of designIds) {
+    const print = await readCommunityPrint(redis, designId, authorPublicId).catch(
+      (error: unknown) => {
+        logger.error('account-delete: community print read failed', {
+          userId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        return null;
+      }
+    );
+
+    await deleteCommunityPrint(redis, designId, authorPublicId, userId);
+    await syncCommunityPrintCount(redis, designId).catch(() => undefined);
+
+    if (print !== null && print.photos.length > 0) {
+      // A design's cover can point at one of these photos; clearing it keeps
+      // the gallery card from rendering a now-deleted image.
+      await clearCommunityCoverIfFromPhotos(redis, designId, print.photos);
+      await Promise.all(print.photos.map((url) => deleteBlobSafe(url, userId)));
+    }
   }
 }
 

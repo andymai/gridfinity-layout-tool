@@ -35,7 +35,12 @@ function baseArgs(positional: string[]): Args {
 }
 
 function createRedis() {
-  return { hset: vi.fn(async () => 1), quit: vi.fn(async () => undefined) };
+  return {
+    hset: vi.fn(async () => 1),
+    hget: vi.fn(async () => 'contenthash'),
+    sadd: vi.fn(async () => 1),
+    quit: vi.fn(async () => undefined),
+  };
 }
 
 beforeEach(() => {

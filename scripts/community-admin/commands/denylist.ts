@@ -1,5 +1,9 @@
 import { deriveAuthorPublicId } from '../../../api/lib/communityIds.js';
-import { readCommunityCards, setCommunityDesignStatus } from '../../../api/lib/communityStore.js';
+import {
+  readCommunityCards,
+  recordModerationTombstone,
+  setCommunityDesignStatus,
+} from '../../../api/lib/communityStore.js';
 import {
   communityAuthorKey,
   communityDenylistKey,
@@ -43,6 +47,7 @@ export async function denylist(args: Args): Promise<number> {
       liveIds.map(async (id) => {
         await setCommunityDesignStatus(redis, id, 'hidden');
         await redis.hset(communityDesignKey(id), { hiddenReason: 'denylist' });
+        await recordModerationTombstone(redis, id);
         await purgeCommunityAssets(id);
       })
     );
