@@ -12,7 +12,7 @@ import type { CellMask } from '@/shared/utils/cellMask';
 import { MASK_CELL_SIZE, isPartialMask, maskToPolygon } from '@/shared/utils/cellMask';
 import { slottedWalls } from '@/shared/utils/slotMath';
 import { resolveWallPatternSides } from '@/shared/utils/wallPatternSides';
-import { CLEARANCE } from './generatorConstants';
+import { BOX_CORNER_RADIUS, CLEARANCE } from './generatorConstants';
 import { findPolygonEdgeForSide } from './maskPolygonEdges';
 import type { PatternCenter, StampPatternCalculator } from './patterns';
 import { getPatternCalculator, isStampCalculator, PATTERN_REGISTRY } from './patterns';
@@ -160,11 +160,17 @@ function getWallPatternDescriptors(
     zRotation?: number,
     allowClip = true
   ): void => {
-    // Corner keep-out (#2865): on a lip-less bin, trim the outermost pattern
-    // column clear of both wall ends so a bold pattern can't leave a razor-thin
-    // corner post. `wallSpan` stays the full inner span so cutout/handle clip
-    // anchoring is unaffected; only the stamped centers shrink.
-    const centerFillW = hasLip ? fillW : Math.max(0, fillW - 2 * WALL_CORNER_KEEP_OUT);
+    // Corner keep-out: keep every stamp on the FLAT wall span. The inner wall
+    // curves into the corner arc over the last innerCornerRadius of the span,
+    // and a stamp reaching into that zone cuts an oblique scallop through the
+    // curved corner (visible as a mangled hole at every wall end). Lip-less
+    // bins additionally keep the #2865 printability margin so a bold pattern
+    // can't leave a razor-thin corner post. `wallSpan` stays the full inner
+    // span so cutout/handle clip anchoring is unaffected; only the stamped
+    // centers shrink.
+    const innerCornerRadius = Math.max(BOX_CORNER_RADIUS - params.wallThickness, 0);
+    const cornerKeepOut = Math.max(innerCornerRadius, hasLip ? 0 : WALL_CORNER_KEEP_OUT);
+    const centerFillW = Math.max(0, fillW - 2 * cornerKeepOut);
     const centers = calculator.calculateCenters({ fillW: centerFillW, fillH: patternHeight });
     if (centers.length === 0) return;
     const [first, ...rest] = centers;

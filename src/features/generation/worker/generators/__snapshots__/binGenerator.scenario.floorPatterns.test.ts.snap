@@ -6,7 +6,7 @@ exports[`floor patterns > custom-shape bin patterns only its filled feet 1`] = `
 
 exports[`floor patterns > flat base takes one interior-wide window 1`] = `5176`;
 
-exports[`floor patterns > floor and wall patterns compose 1`] = `10332`;
+exports[`floor patterns > floor and wall patterns compose 1`] = `9852`;
 
 exports[`floor patterns > fractional edge foot carries a narrower window 1`] = `5924`;
 
