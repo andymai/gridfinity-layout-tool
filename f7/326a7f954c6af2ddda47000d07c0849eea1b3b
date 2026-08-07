@@ -1,0 +1,23 @@
+src/features/generation/worker/generators/scenarios/slideTray.ts
+  s_e694fe720ed7bc::t_e53fd9f86cafa9 54-64
+src/features/generation/worker/generators/slideRailBuilder.test.ts
+  s_e694fe720ed7bc::t_e53fd9f86cafa9 220-252
+src/features/generation/worker/generators/kumikoWrapBuilder.ts
+  s_e694fe720ed7bc::t_a7ad4059056da9 1036-1039,1118-1119
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "f7326a7f954c6af2ddda47000d07c0849eea1b3b",
+  "prompts": {},
+  "sessions": {
+    "s_e694fe720ed7bc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "11bd0478-b0a5-44b1-9201-aee9d7b1ff5d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
