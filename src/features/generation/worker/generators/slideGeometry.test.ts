@@ -198,6 +198,24 @@ describe('resolveSlideGeometry', () => {
     });
   });
 
+  describe('clearance default', () => {
+    it('matches the per-side gap Gridfinity itself uses', () => {
+      // 41.5mm foot in a 42mm cell is 0.5mm total, so 0.25mm per side. A
+      // printer calibrated to seat bins in a baseplate needs no retuning, and
+      // the earlier 0.45 was nearly double this and would have rattled.
+      expect(DEFAULT_SLIDE_CONFIG.clearanceMm).toBe(0.25);
+    });
+
+    it('holds the gap on each side, not across the pair', () => {
+      // The total is TWICE the parameter. Reading it as a total is how the
+      // shared CLEARANCE (0.5mm, measured across a whole cell) would double if
+      // it were borrowed here.
+      const g = resolveSlideGeometry(input({ railMount: 'interior', clearanceMm: 0.25 }));
+      const inp = input({ railMount: 'interior' });
+      expect(inp.innerD - (g.tray?.depthMm ?? 0)).toBeCloseTo(0.5, 9);
+    });
+  });
+
   describe('bearing (both mounts)', () => {
     // The invariant that the first `rim` design violated: its strips sat
     // OUTBOARD of the tray, so the tray was narrower than the opening, rested
@@ -206,7 +224,7 @@ describe('resolveSlideGeometry', () => {
     // written against both mounts so neither can drift.
     for (const railMount of ['interior', 'rim'] as const) {
       it(`carries the tray on real material (${railMount})`, () => {
-        const slide = { railMount, railProtrusionMm: 2, clearanceMm: 0.45 };
+        const slide = { railMount, railProtrusionMm: 2, clearanceMm: 0.25 };
         const g = resolveSlideGeometry(input(slide));
         const tray = g.tray;
         expect(tray).not.toBeNull();
@@ -218,7 +236,7 @@ describe('resolveSlideGeometry', () => {
           .filter((b) => Math.abs(b.zMax - tray.restZ) < 1e-6);
         expect(shelves.length).toBeGreaterThan(0);
         const reach = Math.min(...shelves.map((b) => Math.min(Math.abs(b.yMin), Math.abs(b.yMax))));
-        expect(trayHalf - reach).toBeCloseTo(2 - 0.45, 9);
+        expect(trayHalf - reach).toBeCloseTo(2 - 0.25, 9);
         expect(trayHalf).toBeGreaterThan(reach);
       });
     }
