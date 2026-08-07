@@ -486,24 +486,27 @@ describe('getPatternDescriptors — corner keep-out (#2865)', () => {
   const innerW = 2 * 42 - 2 * 0.8;
   const innerD = 3 * 42 - 2 * 0.8;
 
-  it('a lip-less bin whose pattern reaches the corner gets a solid keep-out band', () => {
+  it('every bin keeps its stamps on the flat wall span, clear of the corner arc', () => {
     const params = boldRound(0.7);
-    // Pre-fix behaviour (a lip re-joins the walls, so no keep-out is applied):
-    // the hole reaches to within a sliver of the corner.
+    // The inner wall curves away over the last innerCornerRadius of the span;
+    // a stamp reaching into that zone scallops the curved corner obliquely.
+    // Lipped and lip-less bins both stay clear of it.
+    const innerCornerRadius = 3.75 - params.wallThickness;
     const withLip = frontCornerGap(params, innerW, innerD, true);
-    expect(withLip.gap).toBeLessThan(WALL_CORNER_KEEP_OUT);
-    // No lip → keep-out clears the outermost column(s), restoring a solid band.
+    expect(withLip.gap).toBeGreaterThanOrEqual(innerCornerRadius);
+    // No lip additionally keeps the #2865 printability margin.
     const noLip = frontCornerGap(params, innerW, innerD, false);
-    expect(noLip.gap).toBeGreaterThanOrEqual(WALL_CORNER_KEEP_OUT);
-    expect(noLip.cols).toBeLessThan(withLip.cols);
+    expect(noLip.gap).toBeGreaterThanOrEqual(Math.max(innerCornerRadius, WALL_CORNER_KEEP_OUT));
   });
 
   it('leaves a pattern that already clears the corner untouched (targeted, no churn)', () => {
     // At the neutral scale this bin's pattern already stops well clear of the
-    // corner (gap > keep-out), so the keep-out drops nothing — identical output.
+    // corner (gap > corner keep-out), so the clamp drops nothing — identical
+    // output with and without a lip.
     const params = boldRound(0.5);
+    const innerCornerRadius = 3.75 - params.wallThickness;
     const withLip = frontCornerGap(params, innerW, innerD, true);
-    expect(withLip.gap).toBeGreaterThan(WALL_CORNER_KEEP_OUT);
+    expect(withLip.gap).toBeGreaterThan(innerCornerRadius);
     const noLip = frontCornerGap(params, innerW, innerD, false);
     expect(noLip.cols).toBe(withLip.cols);
     expect(noLip.gap).toBeCloseTo(withLip.gap, 5);

@@ -1,11 +1,12 @@
 /**
  * Triangular-grid pattern calculator.
  *
- * A staggered field of equilateral-triangle holes whose orientation alternates
- * up / down in a checkerboard, reading as a classic triangular pattern. This is
- * a PERFORATION (solid web between every triangle), not a zero-web tessellation
- * — the web keeps the wall printable and rigid rather than leaving knife-edge
- * struts. Per-element flip is carried on each center's `rotation`.
+ * An interlocked field of equilateral-triangle holes: apex-down triangles nest
+ * between the apex-up ones (centroid R/2 above, half a period over), reading
+ * as the classic triangular tessellation. This is a PERFORATION (uniform solid
+ * web between every triangle), not a zero-web tessellation — the web keeps the
+ * wall printable and rigid rather than leaving knife-edge struts. Per-element
+ * flip is carried on each center's `rotation`.
  *
  * Equilateral triangle, circumradius R:
  *   side       = √3 R
@@ -41,29 +42,45 @@ export class TrianglePatternCalculator implements StampPatternCalculator {
   calculateCenters(config: PatternGridConfig): PatternCenter[] {
     const { fillW, fillH } = config;
     const R = this.radius;
+    const w = this.webThickness;
     const halfWidth = (Math.sqrt(3) / 2) * R;
-    const colSpacing = Math.sqrt(3) * R + this.webThickness;
-    const rowSpacing = 1.5 * R + this.webThickness;
+    // Interlocked classic tiling: each apex-down triangle nests between two
+    // apex-up neighbours, its centroid R/2 ABOVE the up row and half a period
+    // over. The slant web is exact: the gap between an up's right edge and
+    // the next down's left edge is (sqrt3*dx + dy)/2 - R for a (dx, dy)
+    // centroid offset, so dy = R/2 gives dx = sqrt3*R/2 + 2w/sqrt3.
+    const dx = halfWidth + (2 / Math.sqrt(3)) * w;
+    const period = 2 * dx;
+    const rowSpacing = 1.5 * R + w;
     const maxX = fillW / 2 - halfWidth;
     const maxY = fillH / 2 - R;
 
     if (maxX < 0 || maxY < 0) return [];
 
     const centers: PatternCenter[] = [];
-    const startRow = Math.floor(-maxY / rowSpacing);
+    // A down row rides R/2 above its up row, so up rows just below the
+    // window can still contribute their downs.
+    const startRow = Math.floor((-maxY - R / 2) / rowSpacing);
     const endRow = Math.ceil(maxY / rowSpacing);
 
     for (let row = startRow; row <= endRow; row++) {
-      const y = row * rowSpacing;
-      if (Math.abs(y) > maxY) continue;
-      const xOffset = (row & 1) === 1 ? colSpacing / 2 : 0;
-      const startCol = Math.ceil((-maxX - xOffset) / colSpacing);
-      const endCol = Math.floor((maxX - xOffset) / colSpacing);
-      for (let col = startCol; col <= endCol; col++) {
-        const x = col * colSpacing + xOffset;
-        // Checkerboard flip: alternate apex up / down across rows and columns.
-        const rotation = ((row + col) & 1) === 0 ? APEX_UP_DEG : APEX_DOWN_DEG;
-        centers.push({ x, y, rotation });
+      const yUp = row * rowSpacing;
+      const xOffset = (row & 1) === 1 ? period / 2 : 0;
+      if (Math.abs(yUp) <= maxY) {
+        const startCol = Math.ceil((-maxX - xOffset) / period);
+        const endCol = Math.floor((maxX - xOffset) / period);
+        for (let col = startCol; col <= endCol; col++) {
+          centers.push({ x: col * period + xOffset, y: yUp, rotation: APEX_UP_DEG });
+        }
+      }
+      const yDown = yUp + R / 2;
+      if (Math.abs(yDown) <= maxY) {
+        const off = xOffset + dx;
+        const startCol = Math.ceil((-maxX - off) / period);
+        const endCol = Math.floor((maxX - off) / period);
+        for (let col = startCol; col <= endCol; col++) {
+          centers.push({ x: col * period + off, y: yDown, rotation: APEX_DOWN_DEG });
+        }
       }
     }
     return centers;
