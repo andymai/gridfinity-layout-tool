@@ -1,6 +1,11 @@
 import { createHash, randomBytes } from 'node:crypto';
 import type { Redis } from 'ioredis';
-import { userIdentityKey, userProfileKey } from './redisKeys.js';
+import {
+  communityPublishedKey,
+  userIdentityKey,
+  userIndexKey,
+  userProfileKey,
+} from './redisKeys.js';
 
 export type AuthProvider = 'google' | 'github';
 
@@ -41,8 +46,8 @@ function generateUserId(): string {
  *
  * Three cases, in order:
  *   1. The identity is already mapped — return it. The steady state.
- *   2. No mapping, but an account exists under the legacy derivation — ADOPT
- *      that id into the map and return it. The user keeps their layouts,
+ *   2. No mapping, but DURABLE state exists under the legacy derivation —
+ *      ADOPT that id into the map and return it. The user keeps their layouts,
  *      designs and published community records, and not a single key or blob
  *      moves. Their id stays reversible, which is the deliberate limit of this
  *      change: `authorPublicId` is derived from `userId` and is baked into
@@ -71,10 +76,23 @@ export async function resolveUserId(
   if (mapped !== null && mapped !== '') return mapped;
 
   const legacyId = deriveLegacyUserId(provider, providerSubject);
-  // The profile is the account's tombstone-proof marker: it is written on
-  // every sign-in and is the last per-user key the deletion cascade drops, so
-  // its presence is the honest test for "this account already exists".
-  const legacyExists = (await redis.exists(userProfileKey(legacyId))) === 1;
+  // Probe the DURABLE keys, not just the profile. The profile carries a 1-year
+  // TTL refreshed on sign-in, while the sync indexes and the published set
+  // have none — so a user dormant for over a year has an expired profile and
+  // fully intact data. Testing the profile alone would mint them a new id and
+  // sign them into an empty account while their layouts, designs and published
+  // community records sat stranded under the legacy id, unreachable.
+  //
+  // EXISTS takes multiple keys and returns how many are present, so this stays
+  // one round trip.
+  const legacyExists =
+    (await redis.exists(
+      userProfileKey(legacyId),
+      userIndexKey(legacyId, 'layouts'),
+      userIndexKey(legacyId, 'designs'),
+      userIndexKey(legacyId, 'baseplates'),
+      communityPublishedKey(legacyId)
+    )) > 0;
 
   const candidate = legacyExists ? legacyId : generateUserId();
   const won = await redis.set(identityKey, candidate, 'NX');

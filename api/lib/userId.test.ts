@@ -14,7 +14,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createHash } from 'node:crypto';
 import { resolveUserId } from './userId';
-import { userIdentityKey, userProfileKey } from './redisKeys';
+import { communityPublishedKey, userIdentityKey, userIndexKey, userProfileKey } from './redisKeys';
 
 const SALT = 'test-salt';
 
@@ -28,7 +28,8 @@ function createRedis() {
   return {
     strings,
     get: vi.fn(async (key: string) => strings.get(key) ?? null),
-    exists: vi.fn(async (key: string) => (strings.has(key) ? 1 : 0)),
+    // Mirrors Redis EXISTS: takes many keys, returns how many are present.
+    exists: vi.fn(async (...keys: string[]) => keys.filter((k) => strings.has(k)).length),
     set: vi.fn(async (key: string, value: string, ...args: unknown[]) => {
       if (args.includes('NX') && strings.has(key)) return null;
       strings.set(key, value);
@@ -103,7 +104,29 @@ describe('resolveUserId', () => {
       expect(redis.strings.get(String(key))).toBe(legacy);
     });
 
-    it('mints a fresh id when no legacy profile exists', async () => {
+    // The profile carries a 1-year TTL refreshed on sign-in; the sync indexes
+    // and the published set have none. A user dormant for over a year has an
+    // expired profile and fully intact data, so probing the profile alone
+    // signed them into an empty account and stranded everything they owned.
+    it.each([
+      ['layouts index', (uid: string) => userIndexKey(uid, 'layouts')],
+      ['designs index', (uid: string) => userIndexKey(uid, 'designs')],
+      ['baseplates index', (uid: string) => userIndexKey(uid, 'baseplates')],
+      ['published set', (uid: string) => communityPublishedKey(uid)],
+    ])('adopts on a surviving %s when the profile has expired', async (_label, keyFor) => {
+      const legacy = legacyUserId('google', 'dormant');
+      redis.strings.set(keyFor(legacy), 'present');
+
+      expect(await resolveUserId(asRedis(redis), 'google', 'dormant')).toBe(legacy);
+    });
+
+    it('probes the durable keys in one round trip', async () => {
+      await resolveUserId(asRedis(redis), 'google', 'dormant');
+      expect(redis.exists).toHaveBeenCalledTimes(1);
+      expect(redis.exists.mock.calls[0].length).toBeGreaterThan(1);
+    });
+
+    it('mints a fresh id when no legacy state exists at all', async () => {
       const uid = await resolveUserId(asRedis(redis), 'github', '999');
       expect(uid).not.toBe(legacyUserId('github', '999'));
     });
