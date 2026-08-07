@@ -1032,6 +1032,11 @@ const en: Record<string, string> = {
   'help.target.binDesigner.lid.description':
     'Generate a companion lid that mates with the stacking lip on top of the bin. Requires stacking lip enabled.',
   'help.target.binDesigner.lid.keywords': 'lid|cap|cover|top|click-lock|stacking lip',
+  'help.target.binDesigner.lidGrip.title': 'Lid grip',
+  'help.target.binDesigner.lidGrip.description':
+    "Removes material where the lid meets the bin so you can get it off again. A chamfer cuts a small V at the seam for a fingernail. A shadow line cuts a groove with a lip to hook under, and reads as a deliberate design line. A scallop is a rounded pocket for a fingertip, and the deepest of the three. Pick the walls it goes on and how wide it is; the depth and height are set for you from what the lid can spare. Dipping the bin's lip as well gets a fingertip right under the lid, at the cost of anything stacked on top having nothing to locate against there.",
+  'help.target.binDesigner.lidGrip.keywords':
+    'grip|pry|chamfer|shadow line|scallop|open|remove lid|stuck|fingernail|relief|notch',
   'help.target.binDesigner.colors.title': 'Multi-color zones',
   'help.target.binDesigner.colors.description':
     'Assign different filament colors to different regions of the bin. Experimental — supports multi-material printing.',
@@ -2072,6 +2077,28 @@ const en: Record<string, string> = {
   'binDesigner.flatFloor': 'Flat base (no socket)',
   'binDesigner.flatFloorDisablesAttachment': 'Not available with flat base',
   'binDesigner.lidBottom': 'Lid-compatible bottom',
+  'binDesigner.lid.section.grip': 'Lid grip',
+  'binDesigner.lid.gripHint':
+    'A well-fitting lid can be hard to get off again. This removes a little material where the lid meets the bin, so there is something to get a nail or a fingertip under.',
+  'binDesigner.lid.gripMode': 'Relief',
+  'binDesigner.lid.gripMode.none': 'None',
+  'binDesigner.lid.gripMode.chamfer': 'Chamfer',
+  'binDesigner.lid.gripMode.reveal': 'Shadow line',
+  'binDesigner.lid.gripMode.scallop': 'Scallop',
+  'binDesigner.lid.gripModeStackConflict':
+    "A shadow line moves the lid's outer face, which is what a bin stacked on top registers against. Use a chamfer or a scallop instead.",
+  'binDesigner.lid.gripSides': 'Walls',
+  'binDesigner.lid.gripNoSides': 'Pick at least one wall for the relief.',
+  'binDesigner.lid.gripCoverage': 'Width',
+  'binDesigner.lid.gripEffective': 'Cuts {depth}mm deep, {height}mm tall',
+  'binDesigner.lid.gripClamped.cavity':
+    'Limited by the lid wall — any deeper would break into the cavity that grips the bin.',
+  'binDesigner.lid.gripClamped.trayWall':
+    'Limited by the tray wall. A thicker tray wall allows a deeper relief.',
+  'binDesigner.lid.gripClamped.edgeMagnet': 'Limited by the edge magnets sitting behind this wall.',
+  'binDesigner.lid.gripBinDip': "Also dip the bin's lip",
+  'binDesigner.lid.gripBinDipWarning':
+    'Removes the stacking lip across the same span so a fingertip gets under the lid, and eases the click rails there. A bin stacked on top has nothing to locate against along that stretch.',
   'binDesigner.lid.section.tray': 'Organiser tray',
   'binDesigner.lid.matchingTrayHint':
     'A lid keeps dust out; a tray keeps things from sliding. This starts a new design sized to this bin, with a lid-compatible bottom already set up.',

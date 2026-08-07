@@ -48,6 +48,10 @@ import {
   LID_TRAY_WALL_MAX_MM,
   LID_TOP_THICKNESS_MIN_MM,
   LID_TOP_THICKNESS_MAX_MM,
+  LID_GRIP_MODES,
+  LID_GRIP_COVERAGE_MIN,
+  LID_GRIP_COVERAGE_MAX,
+  LID_RAIL_SIDES,
 } from '../types/lid';
 import type {
   LidClickRails,
@@ -55,6 +59,9 @@ import type {
   LidConfig,
   LidMagnetConfig,
   LidTrayConfig,
+  LidGripConfig,
+  LidGripMode,
+  LidRailSide,
 } from '../types/lid';
 import type {
   SurfaceTextConfig,
@@ -334,6 +341,38 @@ function migrateTray(raw: unknown): LidTrayConfig {
       LID_TRAY_WALL_MAX_MM,
       DEFAULT_LID_CONFIG.tray.wallMm
     ),
+  };
+}
+
+/**
+ * Clamp the grip-relief config; legacy-absent → factory default (mode `none`),
+ * so a design saved before #3272 regenerates byte-identically.
+ */
+function migrateGrip(raw: unknown): LidGripConfig {
+  if (!raw || typeof raw !== 'object') return DEFAULT_LID_CONFIG.grip;
+  const obj = raw as Partial<LidGripConfig>;
+  const rawSides = (obj.sides && typeof obj.sides === 'object' ? obj.sides : {}) as Partial<
+    Record<LidRailSide, unknown>
+  >;
+  // Absent sides fall back to the default arrangement; an explicit `false`
+  // survives, so a user who turned every side off keeps it off.
+  const sides: Record<LidRailSide, boolean> = { ...DEFAULT_LID_CONFIG.grip.sides };
+  for (const side of LID_RAIL_SIDES) {
+    const value = rawSides[side];
+    if (typeof value === 'boolean') sides[side] = value;
+  }
+  return {
+    mode: LID_GRIP_MODES.includes(obj.mode as LidGripMode)
+      ? (obj.mode as LidGripMode)
+      : DEFAULT_LID_CONFIG.grip.mode,
+    sides,
+    coverage: clampNumber(
+      obj.coverage,
+      LID_GRIP_COVERAGE_MIN,
+      LID_GRIP_COVERAGE_MAX,
+      DEFAULT_LID_CONFIG.grip.coverage
+    ),
+    binDip: obj.binDip === true,
   };
 }
 
@@ -982,6 +1021,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         topThicknessMm: rawTopThickness,
         retentionMagnet: rawRetentionMagnet,
         tray: rawTray,
+        grip: rawGrip,
         ...stored
       } = raw;
       // Rails migrate first — `attachment` derives from them for legacy
@@ -1011,6 +1051,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         // can't drive runaway pocket/recess geometry.
         retentionMagnet: migrateRetentionMagnet(rawRetentionMagnet),
         tray: migrateTray(rawTray),
+        grip: migrateGrip(rawGrip),
       };
     })(),
     ...(params.splitConnectors !== undefined

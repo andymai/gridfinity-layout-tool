@@ -19,9 +19,10 @@
 import { useState } from 'react';
 import { Button, SegmentedControl, Collapsible } from '@/design-system';
 import { Switch } from '@/design-system/Switch';
-import { RulerIcon } from '@/design-system/Icon';
 import { SnappingSlider } from '../../controls/SnappingSlider';
+import { LidGripControls } from '../LidGripControls';
 import { StepperField } from '../shared/StepperField';
+import { Hint, Readout } from '../shared';
 import type {
   LidCompatibilityId,
   LidCompatibilityIssue,
@@ -44,21 +45,6 @@ function SubHeader({ children }: { children: string }) {
     <span className="block text-[11px] font-semibold uppercase tracking-wider text-content-tertiary">
       {children}
     </span>
-  );
-}
-
-/** Small tertiary hint paragraph reused across the section. */
-function Hint({ children }: { children: string }) {
-  return <p className="text-[11px] leading-relaxed text-content-tertiary">{children}</p>;
-}
-
-/** Read-out row (ruler icon + tabular text). */
-function Readout({ children }: { children: string }) {
-  return (
-    <div className="flex items-center gap-1.5 text-xs text-content-tertiary">
-      <RulerIcon size="xs" />
-      <span className="tabular-nums">{children}</span>
-    </div>
   );
 }
 
@@ -571,6 +557,15 @@ export function LidSection() {
               )}
             </div>
           </Collapsible>
+
+          <section
+            data-help-target="bd-lid-grip"
+            className="space-y-2 border-t border-stroke-subtle pt-3"
+          >
+            <SubHeader>{t('binDesigner.lid.section.grip')}</SubHeader>
+            <p className="text-xs text-content-tertiary">{t('binDesigner.lid.gripHint')}</p>
+            <LidGripControls state={state} handlers={handlers} t={t} />
+          </section>
 
           {/* Hands off to a NEW design (#3036) — see `matchingTrayParams`. */}
           <section className="space-y-2 border-t border-stroke-subtle pt-3">

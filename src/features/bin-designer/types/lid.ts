@@ -92,6 +92,19 @@ export const LID_TOP_THICKNESS_STEP_MM = 0.2;
 export const LID_MAGNET_CEILING = 0.6;
 
 /**
+ * Radial gap (mm) kept between the lid's magnet boss and the stacking lip's
+ * inner face. The magnet centre is inset from the nominal corner by
+ * `LID_MAGNET_LIP_CLEARANCE + bossRadius`, so the boss hangs into the bin mouth
+ * clear of the lip when the lid seats.
+ *
+ * Lives here rather than in the worker's `lidConstants` because three
+ * main-thread callers need it — the compatibility checks, the panel, and the
+ * grip-relief depth clamp, which has to know how close a mid-span edge magnet
+ * sits to the wall it would cut into.
+ */
+export const LID_MAGNET_LIP_CLEARANCE = 3.5;
+
+/**
  * Minimum solid floor kept below a tray recess (mm) so the recess can't break
  * through into the mating cavity, and the default that floor sits at.
  *
@@ -299,6 +312,126 @@ export interface LidClickRails {
   readonly right: boolean;
 }
 
+/**
+ * Grip-relief mode — how material is removed at the lid/bin seam so the lid
+ * can be got off again (discussion #3272: a well-fitting click-lock lid has
+ * no purchase for a fingernail and came off with a screwdriver).
+ *
+ * All three remove material from the lid only; `chamfer` and `reveal` treat
+ * the seam line, `scallop` cuts a fingertip pocket that also bites into the
+ * floor plate's outer edge.
+ */
+export type LidGripMode = 'none' | 'chamfer' | 'reveal' | 'scallop';
+
+export const LID_GRIP_MODES: readonly LidGripMode[] = [
+  'none',
+  'chamfer',
+  'reveal',
+  'scallop',
+] as const;
+
+/**
+ * Span bounds (mm) for a relief along one wall.
+ *
+ * Coverage is a percentage so it reads like `clickRailCoverage`, but a rail
+ * wants to scale with the wall (more rail = more retention) and a grip does
+ * not: 50% of a 6-wide lid is a 126mm trench, and no hand needs that. The
+ * clamp keeps the span between "one fingertip" and "a whole hand" whatever
+ * the lid measures.
+ */
+export const LID_GRIP_SPAN_MIN_MM = 15;
+export const LID_GRIP_SPAN_MAX_MM = 40;
+
+/** Coverage bounds (%) for {@link LidGripConfig.coverage}. */
+export const LID_GRIP_COVERAGE_MIN = 10;
+export const LID_GRIP_COVERAGE_MAX = 100;
+export const LID_GRIP_COVERAGE_STEP = 5;
+export const LID_GRIP_COVERAGE_DEFAULT = 50;
+
+/**
+ * Material kept between a relief's inner face and the mating cavity (mm).
+ *
+ * Three perimeters at 0.4mm. Below this the wall stops being a wall — and the
+ * failure is invisible to every cheap assertion, since a lid whose relief has
+ * broken through into the cavity is still a closed, watertight surface.
+ */
+export const LID_GRIP_MIN_WALL_MM = 1.2;
+
+/** Requested (pre-clamp) inward depth per mode, in mm. */
+export const LID_GRIP_CHAMFER_MM = 1;
+export const LID_GRIP_REVEAL_DEPTH_MM = 1;
+export const LID_GRIP_SCALLOP_DEPTH_MM = 1.5;
+
+/** Height of the reveal groove above the seam (mm). */
+export const LID_GRIP_REVEAL_HEIGHT_MM = 1.6;
+/**
+ * How far a scallop ASKS to reach above the seam (mm).
+ *
+ * A request, not a height: the whole skirt above the seam is only `|anchorZ|`
+ * tall — about 2.1mm on a default lid, since a lid is a thin cap — so this is
+ * clamped by {@link resolveLidGripHeightMm}. Set generously so lids that are
+ * genuinely taller (`extraHeightMm`, a thick floor plate) get the deeper
+ * pocket their extra skirt allows.
+ */
+export const LID_GRIP_SCALLOP_HEIGHT_MM = 4;
+
+/**
+ * Solid lid kept above a relief (mm).
+ *
+ * Without it a scallop on a standard lid reaches past `Z = 0` and notches the
+ * lid's top face, turning a grip pocket into a bite out of the outline.
+ */
+export const LID_GRIP_TOP_SKIN_MM = 0.4;
+
+/**
+ * Effective height (mm) of a relief above the seam.
+ *
+ * `anchorZ` is the seam plane in lid-local Z (negative, from
+ * {@link lidAnchorZ}); the lid's top face is Z = 0. Shared with the panel so
+ * the readout and the geometry cannot disagree.
+ */
+export function resolveLidGripHeightMm(mode: LidGripMode, anchorZ: number): number {
+  const available = Math.max(-anchorZ - LID_GRIP_TOP_SKIN_MM, 0);
+  return Math.min(lidGripHeightMm(mode), available);
+}
+
+/** Below this effective depth a relief is not worth generating (mm). */
+export const LID_GRIP_MIN_USEFUL_DEPTH_MM = 0.4;
+
+/**
+ * Per-side relief toggles. Structurally identical to {@link LidClickRails} and
+ * indexed by the same {@link LidRailSide}, so a side that carries both is
+ * directly comparable when the rail has to be split around the relief.
+ */
+export interface LidGripSides {
+  readonly front: boolean;
+  readonly back: boolean;
+  readonly left: boolean;
+  readonly right: boolean;
+}
+
+/** Grip relief configuration. Nested on {@link LidConfig}. */
+export interface LidGripConfig {
+  /** `'none'` disables the feature entirely — the default, so a saved design
+   *  from before this existed regenerates byte-identically. */
+  readonly mode: LidGripMode;
+  /** Which walls carry the relief. Ignored when `mode` is `'none'`. */
+  readonly sides: LidGripSides;
+  /** Percentage of each wall's straight run, centered, then clamped to
+   *  [{@link LID_GRIP_SPAN_MIN_MM}, {@link LID_GRIP_SPAN_MAX_MM}]. */
+  readonly coverage: number;
+  /**
+   * Also dip the BIN's stacking lip to full lip height across the relief span,
+   * so a finger gets under the lid rather than only against it.
+   *
+   * Placement is inherited from the fields above rather than configured
+   * separately: a dip that does not line up with the lid's own relief is a
+   * wasted pair of prints. Off by default — this changes bin geometry, and the
+   * lip it removes is what an upper bin registers against when stacked.
+   */
+  readonly binDip: boolean;
+}
+
 /** Click-lock lid configuration. Stored as a sub-object on `BinParams`. */
 export interface LidConfig {
   /** Master toggle. When false, no lid is generated regardless of other fields. */
@@ -393,6 +526,11 @@ export interface LidConfig {
    * lid is not stackable (a stack grid owns the top surface otherwise).
    */
   readonly tray: LidTrayConfig;
+  /**
+   * Grip relief at the lid/bin seam (discussion #3272). Opt-in; see
+   * {@link LidGripConfig}.
+   */
+  readonly grip: LidGripConfig;
 }
 
 /**
@@ -428,6 +566,16 @@ export const DEFAULT_LID_CONFIG: LidConfig = {
     enabled: false,
     depthMm: LID_TRAY_DEPTH_DEFAULT_MM,
     wallMm: LID_TRAY_WALL_DEFAULT_MM,
+  },
+  // Off, so every pre-#3272 design regenerates byte-identically. The values
+  // below are what a user gets on first enable: a scallop on the two long
+  // walls is the arrangement the reporter asked for, and the one that most
+  // obviously solves "I had to use a screwdriver".
+  grip: {
+    mode: 'none',
+    sides: { front: true, back: true, left: false, right: false },
+    coverage: LID_GRIP_COVERAGE_DEFAULT,
+    binDip: false,
   },
 } as const;
 
@@ -526,6 +674,168 @@ export function trayBottomSkirtDepth(
     -lidWallBottomZ(heightUnitMm, fitClearance, extraCavityMm) +
     (hasClickRails ? LID_CLICK_RAIL_DROP_BELOW_WALL : 0)
   );
+}
+
+/**
+ * Span (mm) a relief occupies on one wall, given that wall's straight run.
+ *
+ * `usableEdgeMm` is the run between the corner radii — the same quantity
+ * `buildClickRails` shortens rails against — so a relief can never wrap a
+ * corner. The clamp is applied after the percentage, then re-clamped to the
+ * run itself so a short wall gets a short relief rather than an overhanging
+ * one.
+ */
+export function resolveLidGripSpanMm(usableEdgeMm: number, coveragePct: number): number {
+  const requested = usableEdgeMm * (coveragePct / 100);
+  const clamped = Math.min(Math.max(requested, LID_GRIP_SPAN_MIN_MM), LID_GRIP_SPAN_MAX_MM);
+  return Math.min(clamped, usableEdgeMm);
+}
+
+/** Pre-clamp inward depth (mm) the chosen mode asks for. */
+export function lidGripRequestedDepthMm(mode: LidGripMode): number {
+  switch (mode) {
+    case 'none':
+      return 0;
+    case 'chamfer':
+      return LID_GRIP_CHAMFER_MM;
+    case 'reveal':
+      return LID_GRIP_REVEAL_DEPTH_MM;
+    case 'scallop':
+      return LID_GRIP_SCALLOP_DEPTH_MM;
+  }
+}
+
+/** How far above the seam (mm) the chosen mode reaches. */
+export function lidGripHeightMm(mode: LidGripMode): number {
+  switch (mode) {
+    case 'none':
+      return 0;
+    case 'chamfer':
+      return LID_GRIP_CHAMFER_MM;
+    case 'reveal':
+      return LID_GRIP_REVEAL_HEIGHT_MM;
+    case 'scallop':
+      return LID_GRIP_SCALLOP_HEIGHT_MM;
+  }
+}
+
+/**
+ * The resolved depth of a grip relief and why it is what it is.
+ *
+ * `depthMm` is what the geometry actually cuts. It is silently reduced from
+ * `requestedDepthMm` whenever a variant leaves less material than the mode
+ * asks for, because the alternative — refusing to generate — makes legal lid
+ * configurations unreachable for a reason the user did not choose. The panel
+ * reads `clamped`/`limitedBy` to say so rather than leaving a shallow relief
+ * looking like a defect.
+ */
+export interface LidGripDepthPlan {
+  readonly depthMm: number;
+  readonly requestedDepthMm: number;
+  readonly clamped: boolean;
+  /** What bound the depth, when clamped. `null` when the mode got what it asked for. */
+  readonly limitedBy: 'cavity' | 'trayWall' | 'edgeMagnet' | null;
+  /** True when nothing useful survives the clamp and the relief is dropped. */
+  readonly suppressed: boolean;
+}
+
+interface GripDepthBudget {
+  readonly limit: number;
+  readonly by: Exclude<LidGripDepthPlan['limitedBy'], null>;
+}
+
+/**
+ * Resolve how deep a grip relief may cut on this design.
+ *
+ * Three independent budgets, each the distance from the lid's outer face to
+ * something the relief must not reach, less {@link LID_GRIP_MIN_WALL_MM}:
+ *
+ * - `cavity`   — the mating cavity, at `LID_CORNER_RADIUS - fitClearance`.
+ *   Always binding; breaching it opens the lid into its own lip pocket.
+ * - `trayWall` — a tray recess is inset from the outer face by `tray.wallMm`,
+ *   and a scallop cutting the plate edge would open the tray's side.
+ * - `edgeMagnet` — a magnetic lid's mid-span edge bosses sit
+ *   {@link LID_MAGNET_LIP_CLEARANCE} inboard of the footprint edge, which is
+ *   exactly where a centered relief cuts. Corner bosses are not a factor: a
+ *   relief never reaches a corner.
+ */
+export function resolveLidGripDepth(params: LidGeometrySource): LidGripDepthPlan {
+  const mode = params.lid.grip.mode;
+  const requestedDepthMm = lidGripRequestedDepthMm(mode);
+  if (mode === 'none') {
+    return { depthMm: 0, requestedDepthMm: 0, clamped: false, limitedBy: null, suppressed: true };
+  }
+
+  const budgets: GripDepthBudget[] = [
+    {
+      limit: LID_CORNER_RADIUS - resolveLidFootprintClearance(params) - LID_GRIP_MIN_WALL_MM,
+      by: 'cavity',
+    },
+  ];
+  if (params.lid.tray.enabled && !params.lid.stackableTop) {
+    budgets.push({ limit: params.lid.tray.wallMm - LID_GRIP_MIN_WALL_MM, by: 'trayWall' });
+  }
+  if (params.lid.attachment === 'magnetic' && params.lid.retentionMagnet.edgeMagnets > 0) {
+    budgets.push({ limit: LID_MAGNET_LIP_CLEARANCE - LID_GRIP_MIN_WALL_MM, by: 'edgeMagnet' });
+  }
+
+  const tightest = budgets.reduce((a, b) => (b.limit < a.limit ? b : a));
+  const depthMm = Math.max(Math.min(requestedDepthMm, tightest.limit), 0);
+  const clamped = depthMm < requestedDepthMm;
+
+  return {
+    depthMm,
+    requestedDepthMm,
+    clamped,
+    limitedBy: clamped ? tightest.by : null,
+    suppressed: depthMm < LID_GRIP_MIN_USEFUL_DEPTH_MM,
+  };
+}
+
+/**
+ * Whether a mode can be built on this design.
+ *
+ * Only one combination is impossible: a `reveal` steps the lid's outer face
+ * inward, and that face is what a bin stacked on the lid registers against.
+ * `chamfer` and `scallop` cut above the seam without moving the registration
+ * surface, so they compose with a stackable top freely.
+ *
+ * The server mirrors this rule in `api/lib/designerValidation.ts`; a synced
+ * design that violated it would be rejected there, so the UI must not offer it
+ * and the geometry must not build it.
+ */
+export function lidGripModeAllowed(params: LidGeometrySource, mode: LidGripMode): boolean {
+  if (mode !== 'reveal') return true;
+  return !params.lid.stackableTop && !params.lid.separateStackPlate;
+}
+
+/**
+ * Whether any wall carries the relief. Shared with the panel, which has to
+ * warn about "no walls selected" before the depth clamp gets a say.
+ */
+export function hasAnyLidGripSide(sides: LidGripSides): boolean {
+  return LID_RAIL_SIDES.some((side) => sides[side]);
+}
+
+/** Whether this design generates any grip relief at all. */
+export function hasLidGrip(params: LidGeometrySource): boolean {
+  const { mode, sides } = params.lid.grip;
+  return (
+    mode !== 'none' &&
+    lidGripModeAllowed(params, mode) &&
+    hasAnyLidGripSide(sides) &&
+    !resolveLidGripDepth(params).suppressed
+  );
+}
+
+/**
+ * Whether the bin's stacking lip gets dipped under the relief.
+ *
+ * Gated on the relief actually existing: a dip on its own would cut a gap in
+ * the lip with no lid feature above it to reach through.
+ */
+export function hasBinLipDip(params: LidGeometrySource): boolean {
+  return params.lid.grip.binDip && hasLidGrip(params);
 }
 
 /**

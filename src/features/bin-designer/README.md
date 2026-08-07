@@ -69,6 +69,7 @@ graph TB
   off the baseplate-mating taper, so a drifted copy would mispredict exactly the bins the geometry
   refuses to pattern
 - `components/panel/LidSection/` — click-lock lid toggle, fit pills, top-surface picker with its magnet / lip-only / separate-baseplate sub-toggles, thickness sliders
+- `components/panel/LidGripControls/` — grip relief (#3272): the chamfer / shadow-line / scallop cut at the lid↔bin seam that gives a fingernail somewhere to go, plus the opt-in bin lip dip. Its readout reports the depth and height the clamps actually resolved (and which dimension ran out), because the requested values are bounded by the design's own tray / magnet / skirt geometry and a shortened relief otherwise reads as a defect. The shadow line is unavailable on a stackable top — it moves the face an upper bin registers against; `lidGripModeAllowed` is the rule, mirrored server-side
 - `components/panel/ColorsSection/` — multi-color zone editor: per-zone rows, picker, palette CRUD, eyedropper + swap entry points
 - `components/PreviewCanvas/ColorToolOverlay.tsx` — banner + click-anchored ColorPicker for the eyedropper tool, ESC-to-exit
 - `utils/zoneResolver.ts` — pure raycast triangle → ColorZone mapping (reused across hit-test, preview, and 3MF export gating)

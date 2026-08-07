@@ -18,6 +18,7 @@ import { booleanStage } from './pipeline/stages/booleanStage';
 import { translateStage } from './pipeline/stages/translateStage';
 import { trayBottomStage } from './pipeline/stages/trayBottomStage';
 import { lidRetentionStage } from './pipeline/stages/lidRetentionStage';
+import { lidGripDipStage } from './pipeline/stages/lidGripDipStage';
 import { tessellateStage } from './pipeline/stages/tessellateStage';
 import { meshImprintStage } from './pipeline/stages/meshImprintStage';
 import type { PerfCollector } from './pipeline/perfCollector';
@@ -43,7 +44,7 @@ function assertValidMask(params: BinParams): void {
   if (err) throw new Error(`cellMask is invalid: ${err.message}`);
 }
 
-/** Default generation pipeline: shell -> features -> boolean -> translate -> tray-bottom -> lid-retention -> tessellate -> mesh imprint */
+/** Default generation pipeline: shell -> features -> boolean -> translate -> tray-bottom -> lid-retention -> lid-grip-dip -> tessellate -> mesh imprint */
 const DEFAULT_PIPELINE: readonly PipelineStage[] = [
   shellStage,
   featuresStage,
@@ -51,6 +52,7 @@ const DEFAULT_PIPELINE: readonly PipelineStage[] = [
   translateStage,
   trayBottomStage,
   lidRetentionStage,
+  lidGripDipStage,
   tessellateStage,
   meshImprintStage,
 ];

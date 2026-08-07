@@ -23,6 +23,7 @@ import {
   LID_TRAY_FLOOR,
   LID_EXTRA_HEIGHT,
   LID_MAGNET_SEAT_GAP,
+  LID_MAGNET_LIP_CLEARANCE,
   lidAnchorZ,
   lidWallBottomZ,
 } from '@/shared/types/bin';
@@ -43,6 +44,7 @@ export {
   // (compatibility checks, preview) can use the same formula the worker does.
   LID_EXTRA_HEIGHT,
   LID_MAGNET_SEAT_GAP,
+  LID_MAGNET_LIP_CLEARANCE,
   lidAnchorZ,
   lidWallBottomZ,
 };
@@ -118,14 +120,8 @@ export const LID_COPLANAR_MARGIN = 0.1;
  *  lip-side edge and the magnet mating stay put. */
 export const LID_MAGNET_BOSS_WALL = 1.0;
 
-/**
- * Radial gap (mm) kept between the lid's magnet boss and the stacking lip's
- * inner face. The magnet centre is inset from the nominal corner by
- * `LID_MAGNET_LIP_CLEARANCE + bossRadius`, so the boss hangs into the bin mouth
- * clear of the lip when the lid seats, and the footprint stays drawer-safe (the
- * magnets sit well inboard of every wall).
- */
-export const LID_MAGNET_LIP_CLEARANCE = 3.5;
+/* `LID_MAGNET_LIP_CLEARANCE` is re-exported from the shared types module above
+ * — the panel and the grip-relief depth clamp need it on the main thread. */
 
 /** Retaining floor kept below a bin-post magnet pocket (mm). */
 export const LID_MAGNET_POST_FLOOR = 0.6;

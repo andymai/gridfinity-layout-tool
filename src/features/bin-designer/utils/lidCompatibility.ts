@@ -25,7 +25,7 @@ import { isPartialMask, maskToPolygon } from '@/shared/utils/cellMask';
 import { computeHandleHoleGeometry } from '@/shared/utils/handleCutoutClip';
 import { hasAnyPatternedWall } from '@/shared/utils/wallPatternSides';
 import type { BinParams, HandleConfig, HandleSide } from '../types';
-import { resolveLidCavityExtraMm } from '../types/lid';
+import { LID_MAGNET_LIP_CLEARANCE, resolveLidCavityExtraMm } from '../types/lid';
 
 /** Wall side affected by a per-side issue (e.g. wall cutouts). */
 export type LidCompatibilitySide = 'front' | 'back' | 'left' | 'right';
@@ -82,13 +82,12 @@ const TALL_LID_LEVERAGE_WARN_MM = 10;
 const MAGNET_POST_MIN_FLOOR = 0.6;
 
 /**
- * Local mirrors of the worker's `LID_MAGNET_LIP_CLEARANCE` (3.5) and
- * `LID_MAGNET_BOSS_WALL` (1.0), used to reject bins too small to place the four
- * corner magnets. Duplicated as literals to avoid importing worker-side
- * geometry constants across the feature boundary — keep in sync by hand with
+ * Local mirror of the worker's `LID_MAGNET_BOSS_WALL` (1.0), used with
+ * {@link LID_MAGNET_LIP_CLEARANCE} to reject bins too small to place the four
+ * corner magnets. Duplicated as a literal to avoid importing a worker-side
+ * geometry constant across the feature boundary — keep in sync by hand with
  * `retentionMagnetGeometry.ts` / `lidConstants.ts`.
  */
-const MAGNET_LIP_CLEARANCE = 3.5;
 const MAGNET_BOSS_WALL = 1.0;
 
 /**
@@ -317,14 +316,14 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
     } else {
       const diameter = params.lid.retentionMagnet.diameter;
       // XY bounds: the four corner gusset pads are inset from each edge by
-      // `MAGNET_LIP_CLEARANCE + bossRadius` and each extends inward by a further
+      // `LID_MAGNET_LIP_CLEARANCE + bossRadius` and each extends inward by a further
       // `bossRadius`, so opposite pads only stay apart when each half-extent >=
-      // inset + bossRadius = MAGNET_LIP_CLEARANCE + 2*bossRadius
-      // = MAGNET_LIP_CLEARANCE + diameter + 2*MAGNET_BOSS_WALL (bossRadius =
+      // inset + bossRadius = LID_MAGNET_LIP_CLEARANCE + 2*bossRadius
+      // = LID_MAGNET_LIP_CLEARANCE + diameter + 2*MAGNET_BOSS_WALL (bossRadius =
       // diameter/2 + MAGNET_BOSS_WALL). A smaller bin would merge the pads at
       // the centre, so block it — the design can't place four clean corners.
       const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
-      const minHalfMm = MAGNET_LIP_CLEARANCE + diameter + 2 * MAGNET_BOSS_WALL;
+      const minHalfMm = LID_MAGNET_LIP_CLEARANCE + diameter + 2 * MAGNET_BOSS_WALL;
       const tooSmall =
         (params.width * params.gridUnitMm) / 2 < minHalfMm ||
         (params.depth * gridUnitMmY) / 2 < minHalfMm;

@@ -998,6 +998,12 @@ describe('migrateParams', () => {
       topThicknessMm: 2,
       retentionMagnet: { diameter: 8, depth: 3, edgeMagnets: 2 },
       tray: { enabled: true, depthMm: 5, wallMm: 3 },
+      grip: {
+        mode: 'scallop' as const,
+        sides: { front: true, back: true, left: false, right: false },
+        coverage: 40,
+        binDip: true,
+      },
     };
     const result = migrateParams({ lid });
     expect(result.lid).toEqual(lid);
