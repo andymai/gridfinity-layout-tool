@@ -67,7 +67,11 @@ import { computeWallTextLayouts } from './wallTextLayout';
 import type { WallTextLayout } from './wallTextLayout';
 import type { BinParams } from '@/shared/types/bin';
 import type { BinDimensions } from './pipeline/types';
-import { resolveSlideGeometry, slideInputFromDims, slidePatternKeepOut } from './slideGeometry';
+import {
+  resolveSlideGeometry,
+  slideInputFromDims,
+  slidePatternKeepOut,
+} from '@/shared/utils/slideGeometry';
 
 /**
  * Build the extruded 2D element stamped at each pattern center.

@@ -20,6 +20,7 @@ import { useWallsSection } from './useWallsSection';
 import { PatternSelector } from './PatternSelector';
 import { WallCutoutsSection } from '../WallCutoutsSection';
 import { HandleSection } from '../HandleSection';
+import { SlideTraySection } from '../SlideTraySection';
 import { FeatureToggle } from '../FeatureToggle';
 import { CompartmentTextInput } from '../LabelTabsSection/CompartmentTextInput';
 import { SideSelector, type SideState } from '../shared';
@@ -195,6 +196,7 @@ export function WallsSection() {
       />
       <WallCutoutsSection />
       <HandleSection />
+      <SlideTraySection />
     </div>
   );
 }

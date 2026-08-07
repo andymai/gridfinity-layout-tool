@@ -6,8 +6,13 @@ import {
   sectionBounds,
 } from './slideGeometry';
 import type { SlideGeometryInput } from './slideGeometry';
-import { DEFAULT_SLIDE_CONFIG } from '@/features/bin-designer/types/slide';
-import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
+import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+
+const DEFAULT_SLIDE_CONFIG = DEFAULT_BIN_PARAMS.slide;
+import { GRIDFINITY_SPEC } from '@/shared/printSettings';
+
+const LIP_HEIGHT = GRIDFINITY_SPEC.LIP_HEIGHT;
+const LIP_TAPER_WIDTH = GRIDFINITY_SPEC.LIP_SMALL_TAPER + GRIDFINITY_SPEC.LIP_BIG_TAPER;
 import type { SlideConfig } from '@/shared/types/bin';
 
 /** A 3x2x6 bin at stock wall thickness. */

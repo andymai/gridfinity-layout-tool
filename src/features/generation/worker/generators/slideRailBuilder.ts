@@ -12,8 +12,8 @@ import type { Shape3D, DisposalScope, ValidSolid } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import { isPartialMask } from '@/shared/utils/cellMask';
-import { resolveSlideGeometry } from './slideGeometry';
-import type { SlideRailSection, SlideGeometryInput } from './slideGeometry';
+import { resolveSlideGeometry } from '@/shared/utils/slideGeometry';
+import type { SlideRailSection, SlideGeometryInput } from '@/shared/utils/slideGeometry';
 
 /**
  * Sweep a rail's YZ cross-section along X.
@@ -153,8 +153,8 @@ export const slideRailsFeature: FeatureBuilder = {
 };
 
 /** Re-exported so callers outside the pipeline can resolve the same geometry. */
-export type { SlideGeometryInput } from './slideGeometry';
-export { resolveSlideGeometry } from './slideGeometry';
+export type { SlideGeometryInput } from '@/shared/utils/slideGeometry';
+export { resolveSlideGeometry } from '@/shared/utils/slideGeometry';
 
 /** Convenience for callers holding raw params rather than a pipeline context. */
 export function slideInputFromParams(

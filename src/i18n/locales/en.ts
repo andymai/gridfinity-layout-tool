@@ -2579,6 +2579,38 @@ const en: Record<string, string> = {
   'binDesigner.walls.text.disabledSolid': 'Not available for solid bins.',
   'binDesigner.walls.text.hint':
     'Text auto-fits into the clear area of each wall, avoiding cutouts and handles. Wall patterns are cleared behind it.',
+  'binDesigner.slideTray.title': 'Sliding tray',
+  'binDesigner.slideTray.summary': '{{width}}u, {{mount}}',
+  'binDesigner.slideTray.mount.interior': 'Inside bin',
+  'binDesigner.slideTray.mount.rim': 'Over the rim',
+  'binDesigner.slideTray.mountAria': 'Rail position',
+  'binDesigner.slideTray.mountHint.interior': 'The tray drops into this bin and slides within it.',
+  'binDesigner.slideTray.mountHint.rim':
+    'The tray rides above the rim and can slide onto a neighbouring bin with the same rail.',
+  'binDesigner.slideTray.trayWidth': 'Tray width',
+  'binDesigner.slideTray.trayWidthAria': 'Tray width in grid units',
+  'binDesigner.slideTray.trayHeight': 'Tray height',
+  'binDesigner.slideTray.trayHeightAria': 'Tray height in millimetres',
+  'binDesigner.slideTray.railDrop': 'Rail drop',
+  'binDesigner.slideTray.railDropAria': 'Rail drop below the rim in millimetres',
+  'binDesigner.slideTray.clearance': 'Clearance',
+  'binDesigner.slideTray.clearanceAria': 'Sliding clearance in millimetres',
+  'binDesigner.slideTray.clearanceHint':
+    'Gap on each side between tray and rail. Print the fit test if the tray binds or rattles.',
+  'binDesigner.slideTray.protrudes':
+    'The tray stands {{mm}}mm above the rim. Increase the rail drop to sink it inside.',
+  'binDesigner.slideTray.unavailable.noCavity': 'A solid bin has no cavity for a tray to sit in.',
+  'binDesigner.slideTray.unavailable.slotConflict':
+    'Slotted bins carry divider slots on the walls the rail needs.',
+  'binDesigner.slideTray.unavailable.unsupportedShape': 'Not available on custom-shaped bins yet.',
+  'binDesigner.slideTray.unavailable.noBearing':
+    'The rail reaches in less than the clearance, so it would not carry the tray.',
+  'binDesigner.slideTray.unavailable.railBelowFloor':
+    'This bin is too short for the rail drop. Reduce the drop or make the bin taller.',
+  'binDesigner.slideTray.unavailable.binTooShallow':
+    'This bin is too shallow for a tray to fit between the rails.',
+  'binDesigner.slideTray.unavailable.trayTooSmall':
+    'The tray would have no usable interior at this size.',
   'binDesigner.wallCutouts': 'Wall cutouts',
   'binDesigner.wallCutouts.span': 'Span',
   'binDesigner.wallCutouts.height': 'Height',

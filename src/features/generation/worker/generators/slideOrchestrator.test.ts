@@ -4,7 +4,7 @@ import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { buildParams } from './__kernel-tests__/scenarioTypes';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { exportSlideTray, shouldGenerateSlideTray, slideInputForParams } from './slideOrchestrator';
-import { resolveSlideGeometry } from './slideGeometry';
+import { resolveSlideGeometry } from '@/shared/utils/slideGeometry';
 
 const enabled = { ...DEFAULT_BIN_PARAMS.slide, enabled: true };
 
