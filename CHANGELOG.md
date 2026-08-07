@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.385.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.384.0...gridfinity-layout-tool-v4.385.0) (2026-08-07)
+
+
+### Features
+
+* **labs:** gate the sliding tray behind a labs flag ([#3310](https://github.com/andymai/gridfinity-layout-tool/issues/3310)) ([78d9f55](https://github.com/andymai/gridfinity-layout-tool/commit/78d9f55073f434a4a125a6c3e96732b5319e75b6))
+
 ## [4.384.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.383.0...gridfinity-layout-tool-v4.384.0) (2026-08-07)
 
 
