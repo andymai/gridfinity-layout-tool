@@ -88,6 +88,27 @@ export function computeLayoutHash(layout: Layout): string {
 }
 
 /**
+ * Entry caps mirroring `api/lib/mlTelemetry/validators.constants.ts`. The
+ * server REJECTS a whole snapshot whose distribution exceeds its cap, so a
+ * client that emitted an oversized map would lose the event entirely and
+ * silently. Truncating here keeps the highest-count (highest-signal) entries
+ * and the event. Keep these in step with the server constants.
+ */
+const MAX_SIZE_DISTRIBUTION_ENTRIES = 100;
+const MAX_CATEGORY_DISTRIBUTION_ENTRIES = 100;
+const MAX_DOMAIN_DISTRIBUTION_ENTRIES = 16;
+
+/** Keep the `max` largest-count entries of a distribution map. */
+function capDistribution(
+  distribution: Record<string, number>,
+  max: number
+): Record<string, number> {
+  const entries = Object.entries(distribution);
+  if (entries.length <= max) return distribution;
+  return Object.fromEntries(entries.sort((a, b) => b[1] - a[1]).slice(0, max));
+}
+
+/**
  * Compute size distribution from bins.
  */
 export function computeSizeDistribution(bins: Bin[]): Record<string, number> {
@@ -96,7 +117,7 @@ export function computeSizeDistribution(bins: Bin[]): Record<string, number> {
     const size = `${bin.width}x${bin.depth}x${bin.height}`;
     distribution[size] = (distribution[size] || 0) + 1;
   }
-  return distribution;
+  return capDistribution(distribution, MAX_SIZE_DISTRIBUTION_ENTRIES);
 }
 
 /**
@@ -108,7 +129,7 @@ export function computeCategoryDistribution(bins: Bin[]): Record<string, number>
     const category = bin.category || 'uncategorized';
     distribution[category] = (distribution[category] || 0) + 1;
   }
-  return distribution;
+  return capDistribution(distribution, MAX_CATEGORY_DISTRIBUTION_ENTRIES);
 }
 
 /**
@@ -127,7 +148,7 @@ export function computeDomainDistribution(
     const domain = labelData.domain ?? 'unknown';
     distribution[domain] = (distribution[domain] ?? 0) + 1;
   }
-  return distribution;
+  return capDistribution(distribution, MAX_DOMAIN_DISTRIBUTION_ENTRIES);
 }
 
 /**

@@ -524,6 +524,42 @@ describe('computeSizeDistribution', () => {
     expect(result['3x2x6']).toBe(1);
     expect(result['1x1x3']).toBe(1);
   });
+
+  // The server rejects a snapshot whose size_distribution exceeds 100 entries,
+  // so an uncapped client would lose the whole event rather than some detail.
+  it('caps the map at 100 entries, keeping the highest counts', () => {
+    const bins = Array.from({ length: 150 }, (_, i) =>
+      createTestBin({
+        id: binId(`b${i}`),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        // Distinct height per bin ⇒ 150 distinct size keys.
+        height: heightUnits(i + 1),
+        layerId: layerId('layer1'),
+      })
+    );
+    // Give '1x1x1' a count of 3 so it must survive truncation.
+    bins.push(
+      createTestBin({
+        id: binId('extra1'),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(1),
+        layerId: layerId('layer1'),
+      }),
+      createTestBin({
+        id: binId('extra2'),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(1),
+        layerId: layerId('layer1'),
+      })
+    );
+
+    const result = computeSizeDistribution(bins);
+    expect(Object.keys(result)).toHaveLength(100);
+    expect(result['1x1x1']).toBe(3);
+  });
 });
 
 // ============================================

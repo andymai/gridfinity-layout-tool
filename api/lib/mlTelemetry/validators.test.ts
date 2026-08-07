@@ -428,6 +428,46 @@ describe('validateEvent — layout_snapshot', () => {
     const pairs = Array.from({ length: 501 }, () => ({ hash: LABEL_HASH, size: BIN_SIZE }));
     expect(validateEvent({ ...valid, label_size_pairs: pairs })).toBe(false);
   });
+
+  // The key regexes admit an unbounded set of distinct valid keys, and every
+  // distinct key becomes a Redis hash field with a refreshed 90-day TTL.
+  describe('distribution entry caps', () => {
+    it('accepts size_distribution at the 100-entry cap', () => {
+      const distribution = Object.fromEntries(
+        Array.from({ length: 100 }, (_, i) => [`1x1x${i + 1}`, 1])
+      );
+      expect(validateEvent({ ...valid, size_distribution: distribution })).toBe(true);
+    });
+
+    it('rejects size_distribution above the cap even when every key is valid', () => {
+      const distribution = Object.fromEntries(
+        Array.from({ length: 101 }, (_, i) => [`1x1x${i + 1}`, 1])
+      );
+      expect(validateEvent({ ...valid, size_distribution: distribution })).toBe(false);
+    });
+
+    it('rejects size_distribution padded with fractional keys the regex admits', () => {
+      // "1x1x1.1", "1x1x1.11", … all match VALID_BIN_SIZE_REGEX.
+      const distribution = Object.fromEntries(
+        Array.from({ length: 200 }, (_, i) => [`1x1x1.${'1'.repeat(i + 1)}`, 1])
+      );
+      expect(validateEvent({ ...valid, size_distribution: distribution })).toBe(false);
+    });
+
+    it('rejects category_distribution above the cap', () => {
+      const distribution = Object.fromEntries(
+        Array.from({ length: 101 }, (_, i) => [`cat_${i}`, 1])
+      );
+      expect(validateEvent({ ...valid, category_distribution: distribution })).toBe(false);
+    });
+
+    it('rejects domain_distribution above the cap', () => {
+      const distribution = Object.fromEntries(
+        Array.from({ length: 17 }, (_, i) => [`domain_${'x'.repeat(i)}`, 1])
+      );
+      expect(validateEvent({ ...valid, domain_distribution: distribution })).toBe(false);
+    });
+  });
 });
 
 // ─────────────────────────────────────────────

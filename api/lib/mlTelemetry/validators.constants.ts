@@ -12,6 +12,12 @@
  * Security note 2: the allowed-value sets are exported as `ReadonlySet<string>`
  * to prevent importers from calling `.add()` / `.delete()` and silently
  * weakening these security-sensitive validators at runtime.
+ *
+ * Security note 3: a validator that admits an open-ended key space needs an
+ * entry cap as well as a key pattern. Every distinct key of a distribution map
+ * becomes a distinct Redis hash field with a refreshed TTL, so a permissive
+ * key regex without a `MAX_*_ENTRIES` bound is an unbounded write primitive
+ * for an unauthenticated caller.
  */
 
 export const VALID_BIN_SIZE_REGEX = /^\d+(\.\d+)?x\d+(\.\d+)?x\d+(\.\d+)?$/;
@@ -133,4 +139,43 @@ export const VALID_SPATIAL_PATTERNS: ReadonlySet<string> = new Set([
   'category_grouped',
   'edge_aligned',
   'center_out',
+]);
+
+// Distribution entry caps. Each key of a distribution map fans out into Redis
+// hash fields (ml:drawer_sizes:*, ml:purpose_sizes:*, ml:tier_sizes:*,
+// ml:clusters:*, ml:domains:*), so these bound field cardinality, not payload
+// size. Tuned per field: a real drawer has a handful of distinct bin sizes,
+// and the domain vocabulary is a closed set.
+export const MAX_SIZE_DISTRIBUTION_ENTRIES = 100;
+export const MAX_CATEGORY_DISTRIBUTION_ENTRIES = 100;
+export const MAX_DOMAIN_DISTRIBUTION_ENTRIES = 16;
+
+/**
+ * Every event type `validateEvent` knows how to validate.
+ *
+ * The ingest handler buckets validation failures by event type into a
+ * lifetime (never-expiring) Redis hash. The type is caller-supplied, so it is
+ * collapsed against this set before it becomes a hash field — otherwise the
+ * bucket name is an unbounded, permanent key space.
+ */
+export const KNOWN_EVENT_TYPES: ReadonlySet<string> = new Set([
+  'bin_placed',
+  'label_updated',
+  'layout_snapshot',
+  'layout_quality',
+  'drawer_purpose',
+  'category_changed',
+  'bin_resized',
+  'bin_deleted',
+  'bin_abandoned',
+  'bin_moved',
+  'drawer_resized',
+  'fill_operation',
+  'layer_move',
+  'bin_rotated',
+  'placement_rejected',
+  'undo',
+  'quick_correction',
+  'session_summary',
+  'cross_layout_pattern',
 ]);
