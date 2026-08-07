@@ -794,9 +794,10 @@ function CommunityDetailDialog({
 
       {lightboxIndex !== null && design !== null && (
         <MediaLightbox
-          // Keyed so each open mounts fresh: the viewer tracks its own position
-          // once mounted, so without this a later open would resume where the
-          // previous one was left rather than on the image just clicked.
+          // A guard, not a fix: closing already unmounts this, so startIndex is
+          // read fresh on every open today. The key is what keeps that true if
+          // an opener ever becomes reachable without closing first, since the
+          // viewer only reads startIndex on mount.
           key={lightboxIndex}
           images={images}
           startIndex={lightboxIndex}

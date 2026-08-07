@@ -112,9 +112,12 @@ export function PrintCard({
   // app, and the server only checks that the URL belongs to a live print of
   // this design. A photo whose blob is gone passes that check, so the button
   // has to withdraw itself once the image is known to be dead.
-  const [deadPhotos, setDeadPhotos] = useState<ReadonlySet<number>>(() => new Set());
-  const markPhotoDead = useCallback((index: number) => {
-    setDeadPhotos((current) => new Set(current).add(index));
+  // Keyed by url rather than by slot, so it agrees with the tile's own failure
+  // flag: the tile remounts when the url at a slot changes, and an index-keyed
+  // entry would outlive it and suppress promotion of the healthy replacement.
+  const [deadPhotos, setDeadPhotos] = useState<ReadonlySet<string>>(() => new Set());
+  const markPhotoDead = useCallback((url: string) => {
+    setDeadPhotos((current) => new Set(current).add(url));
   }, []);
 
   const duration =
@@ -182,10 +185,10 @@ export function PrintCard({
                   onOpen={
                     onOpenPhoto === undefined ? undefined : () => onOpenPhoto(print.id, index)
                   }
-                  onFailed={() => markPhotoDead(index)}
+                  onFailed={() => markPhotoDead(photo)}
                 />
                 {onPromoteCover !== undefined &&
-                  !deadPhotos.has(index) &&
+                  !deadPhotos.has(photo) &&
                   (photo === coverPhotoUrl ? (
                     <p className="mt-1 text-center text-[11px] text-accent">
                       {t('community.prints.coverCurrent')}

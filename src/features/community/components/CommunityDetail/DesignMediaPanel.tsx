@@ -59,7 +59,10 @@ export function DesignMediaPanel({
 
   const poster = images.find((image) => image.kind === 'render')?.url ?? '';
   const selected = resolveSelected(images, selection);
-  const activeIndex = selection.kind === 'image' ? selection.index : null;
+  // Derived from the resolved selection, not the raw one: a stale index would
+  // otherwise keep the accent ring on whichever image slid into that slot while
+  // the hero had already fallen back to the model.
+  const activeIndex = selected !== undefined && selection.kind === 'image' ? selection.index : null;
 
   const handleEnlarge = useCallback(() => {
     if (selected !== undefined && selection.kind === 'image') onOpenLightbox(selection.index);
@@ -80,16 +83,26 @@ export function DesignMediaPanel({
             out for it. It owns the tap-to-load flag and the orbit camera, so
             unmounting it sent a mobile visitor back to "Show 3D" and a fresh
             GLB download every time they looked at a photo. */}
-        <GlbViewer
-          meshUrl={design.meshUrl}
-          posterUrl={poster}
-          alt={design.name}
-          loadBehavior={isMobile ? 'tap' : 'auto'}
-          autoRotate={selected === undefined}
+        <div
           className="h-full w-full"
+          // Mounted but covered, so it has to leave the tab order and the
+          // a11y tree: its "Show 3D" button spans the full frame on mobile and
+          // would otherwise be reachable behind the photo, starting a GLB
+          // download with nothing to show for it.
+          inert={selected !== undefined}
+          aria-hidden={selected !== undefined}
         >
-          <GradientBackground />
-        </GlbViewer>
+          <GlbViewer
+            meshUrl={design.meshUrl}
+            posterUrl={poster}
+            alt={design.name}
+            loadBehavior={isMobile ? 'tap' : 'auto'}
+            autoRotate={selected === undefined}
+            className="h-full w-full"
+          >
+            <GradientBackground />
+          </GlbViewer>
+        </div>
         {selected !== undefined && (
           <Button
             variant="ghost"
@@ -146,7 +159,7 @@ export function DesignMediaPanel({
               touchTarget={false}
               onClick={() => setSelection({ kind: 'image', index, url: image.url })}
               aria-label={imageLabel(image, t)}
-              aria-pressed={selected !== undefined && index === activeIndex}
+              aria-pressed={index === activeIndex}
               className={cn(
                 'h-20 w-20 shrink-0 overflow-hidden rounded-lg border p-0',
                 index === activeIndex ? 'border-accent' : 'border-stroke-subtle'

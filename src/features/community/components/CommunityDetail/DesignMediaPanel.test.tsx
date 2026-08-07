@@ -110,6 +110,22 @@ describe('DesignMediaPanel', () => {
     );
 
     expect(screen.queryByTestId('design-media-hero')).not.toBeInTheDocument();
+    // The ring follows the resolved selection too. Left on the raw index it
+    // would mark someone else's photo as picked while the hero showed the model.
+    expect(screen.getByTestId('design-media-tile-2')).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('takes the covered viewer out of the tab order and the a11y tree', () => {
+    renderPanel();
+    const frame = screen.getByTestId('glb-viewer').parentElement;
+    expect(frame).not.toHaveAttribute('aria-hidden', 'true');
+
+    fireEvent.click(screen.getByTestId('design-media-tile-2'));
+
+    // Its "Show 3D" button spans the whole frame on mobile, so left reachable
+    // it would start a GLB download with nothing to show for it.
+    expect(frame).toHaveAttribute('aria-hidden', 'true');
+    expect(frame).toHaveAttribute('inert');
   });
 
   it('enlarges the hero image on click', () => {
