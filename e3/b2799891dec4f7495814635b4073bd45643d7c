@@ -1,0 +1,69 @@
+src/features/generation/export/threemfTypes.ts
+  s_e694fe720ed7bc::t_dc850d8b9046d6 6-24,30
+src/features/generation/export/threemfColor.ts
+  s_e694fe720ed7bc::t_dc850d8b9046d6 149-158,161-165,180-222
+src/features/generation/export/threemfXml.ts
+  s_e694fe720ed7bc::t_dc850d8b9046d6 1-6,72,87,90-92,110-120,127-141
+  s_e694fe720ed7bc::t_1c7a463fa3d613 142-143
+src/shell/layoutExport/buildLayoutManifest.ts
+  s_e694fe720ed7bc::t_e625b758d8c849 91-102
+  s_e694fe720ed7bc::t_b1bb36fa7d9a2c 145
+  s_e694fe720ed7bc::t_aabb7170571739 163-180
+src/shell/layoutExport/platePacking.test.ts
+  s_e694fe720ed7bc::t_dc850d8b9046d6 1-148
+src/shell/layoutExport/buildProjectFile.test.ts
+  s_e694fe720ed7bc::t_85e2d1d29e3baa 137-140
+  s_e694fe720ed7bc::t_07e1f42795c89c 1-42,44-136,141-160,163-203
+  s_e694fe720ed7bc::t_53b6b9faef07ad 43
+  s_e694fe720ed7bc::t_febf5b2adb4e9e 161-162
+src/features/generation/export/threemfExporter.test.ts
+  s_e694fe720ed7bc::t_dc850d8b9046d6 1318-1416
+  s_e694fe720ed7bc::t_86fe6cfde44889 1417-1419
+src/shell/layoutExport/useLayoutExport.ts
+  s_e694fe720ed7bc::t_e56cc45e919eaf 212-219,230
+  s_e694fe720ed7bc::t_a3b56637cf3388 528
+  s_e694fe720ed7bc::t_9584be189a9f3a 59,220-222,304-310
+  s_e694fe720ed7bc::t_dae4f9d69a0bce 46,224,289,300-302,311-312
+  s_e694fe720ed7bc::t_be3ede6e31efb3 18,313
+  s_e694fe720ed7bc::t_66f249722b02ea 84-90,93,95,105,158-161
+  s_e694fe720ed7bc::t_36bacf5f8417c8 223,288,303,333,354,419,533,540
+  s_e694fe720ed7bc::t_f6e2ce3c3f6369 235,250
+  s_e694fe720ed7bc::t_ffd32b603ab63e 521-526,531-532,534-538,541-548,551-556
+  s_e694fe720ed7bc::t_dc774afbfe56eb 558
+  s_e694fe720ed7bc::t_f3f38e2ab35aca 580-587
+  s_e694fe720ed7bc::t_7d56b2eb5436a4 324-329,331-332,334-335,417-418,420-431
+  s_e694fe720ed7bc::t_282f13a240b5c3 561-564
+  s_e694fe720ed7bc::t_5c88ee6367260f 527,529-530,539,549-550,557,559-560,565-566
+  s_e694fe720ed7bc::t_48d4ed951c1658 323
+  s_e694fe720ed7bc::t_7f5727f64635ab 353
+  s_e694fe720ed7bc::t_914fc685dbf36e 416
+  s_e694fe720ed7bc::t_4f8c691a4adf03 520
+  s_e694fe720ed7bc::t_4f99be54f131d2 579
+src/shell/layoutExport/platePacking.ts
+  s_e694fe720ed7bc::t_dc850d8b9046d6 1-174
+src/shell/layoutExport/buildProjectFile.ts
+  s_e694fe720ed7bc::t_bee59f3eacfdbb 1,4,9-15,18,24-35,37-46,82-100,104-105,107-108,111-112,114-121,123-130,132-139,141,143-147,150-151
+  s_e694fe720ed7bc::t_54d06706a19c70 2-3,5-8,36,80-81,101-103,106,109-110,113,122,131,140,142,148-149
+  s_e694fe720ed7bc::t_9584be189a9f3a 16-17,19-23
+  s_e694fe720ed7bc::t_efa60389930cfe 47-79
+src/features/bin-designer/utils/binDownloadHelpers.ts
+  s_e694fe720ed7bc::t_8a5cc078487bb9 179-205,240,408-426,504
+src/features/generation/export/threemfExporter.ts
+  s_e694fe720ed7bc::t_dc850d8b9046d6 50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "e3b2799891dec4f7495814635b4073bd45643d7c",
+  "prompts": {},
+  "sessions": {
+    "s_e694fe720ed7bc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "11bd0478-b0a5-44b1-9201-aee9d7b1ff5d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
