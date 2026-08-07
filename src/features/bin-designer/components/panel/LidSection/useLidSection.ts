@@ -41,6 +41,7 @@ import {
   resolveLidGripHeightMm,
   isMagnetStyle,
   type LidAttachment,
+  type LidGripConfig,
   type LidGripMode,
   type LidRailSide,
   type TextMode,
@@ -186,6 +187,11 @@ export function useLidSection() {
       ? 'tray'
       : 'flat';
 
+  // Drop a stored `reveal` when the lid becomes stackable. Every other mode
+  // leaves the registration face alone and is kept as-is.
+  const clearRevealGrip = (grip: LidGripConfig, stackable: boolean): LidGripConfig =>
+    stackable && grip.mode === 'reveal' ? { ...grip, mode: 'none' } : grip;
+
   const setTopSurface = useCallback(
     (mode: LidTopSurface) => {
       if (mode === 'stackable') {
@@ -196,6 +202,11 @@ export function useLidSection() {
           stackableTop: true,
           stackLipOnly: lid.stackableTop && lid.stackLipOnly,
           tray: { ...lid.tray, enabled: false },
+          // A shadow line moves the face an upper bin registers against, so it
+          // cannot survive here. Left stored it would be a mode the geometry
+          // silently drops and the SERVER rejects outright on share/publish
+          // (`validateLidGrip`) — an invalid design the user never chose.
+          grip: clearRevealGrip(lid.grip, true),
         });
       } else {
         // Flat or tray: no stack grid, so magnet pockets, the lip-only variant,
@@ -210,7 +221,7 @@ export function useLidSection() {
         });
       }
     },
-    [lid.stackableTop, lid.stackLipOnly, lid.tray, updateLid]
+    [lid.stackableTop, lid.stackLipOnly, lid.tray, lid.grip, updateLid]
   );
 
   const setRetentionMagnetDiameter = useCallback(
@@ -273,8 +284,9 @@ export function useLidSection() {
 
   const toggleSeparateStackPlate = useCallback(() => {
     if (!lid.stackableTop) return; // Gated; UI also hides the switch.
-    updateLid({ separateStackPlate: !lid.separateStackPlate });
-  }, [lid.stackableTop, lid.separateStackPlate, updateLid]);
+    const separateStackPlate = !lid.separateStackPlate;
+    updateLid({ separateStackPlate, grip: clearRevealGrip(lid.grip, separateStackPlate) });
+  }, [lid.stackableTop, lid.separateStackPlate, lid.grip, updateLid]);
 
   const setClickRailCoverage = useCallback(
     (clickRailCoverage: number) => {

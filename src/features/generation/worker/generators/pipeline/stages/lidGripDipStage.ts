@@ -5,11 +5,14 @@
  * other half: it takes the bin's stacking lip down over the same span so a
  * fingertip gets UNDER the lid's skirt rather than only against it.
  *
- * Registration is free rather than arranged. The lid's outer perimeter is
- * `width * pitch - 2 * LID_FIT_CLEARANCE` and the bin's is
- * `width * pitch - CLEARANCE`, and those are the same number — the seam is
- * flush — so the dip reuses `gripPlacements` outright and cannot land out of
- * line with the relief above it.
+ * Registration comes free from reusing `gripPlacements`: the dip and the lid's
+ * own relief are derived from one span, so they cannot drift apart. But the
+ * placements are on the LID's perimeter, and only a friction or click-rail lid
+ * shares the bin's — `width * pitch - 2 * LID_FIT_CLEARANCE` equals
+ * `width * pitch - CLEARANCE` at the base clearance and no other. A magnetic
+ * lid sits `LID_MAGNETIC_EXTRA_CLEARANCE` further in per side, so the cutter
+ * has to reach back out that far or it stops short of the bin's face and
+ * leaves a skin of lip standing across the whole dip.
  *
  * Two bounds, both deliberate:
  *
@@ -35,9 +38,15 @@
 import { draw, rotate, translate, unwrap, cutAll } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
-import { hasBinLipDip, LID_GRIP_MIN_WALL_MM } from '@/shared/types/bin';
+import {
+  hasBinLipDip,
+  shouldGenerateLid,
+  resolveLidFootprintClearance,
+  LID_FIT_CLEARANCE,
+  LID_GRIP_MIN_WALL_MM,
+} from '@/shared/types/bin';
 import { checkCancelled } from '../../utils/abort';
-import { LIP_HEIGHT, LIP_TAPER_WIDTH } from '../../generatorConstants';
+import { LIP_HEIGHT, LIP_OVERLAP, LIP_TAPER_WIDTH } from '../../generatorConstants';
 import { LID_COPLANAR_MARGIN } from '../../lidConstants';
 import { resolveLidInputs } from '../../lidInputs';
 import { gripPlacements } from '../../lidGripRelief';
@@ -59,8 +68,12 @@ export const lidGripDipStage: PipelineStage = {
 
   shouldRun(ctx: PipelineContext): boolean {
     // `hasBinLipDip` folds in the relief's own gating — mode, enabled sides and
-    // the depth clamp — so a dip can never outlive the relief it belongs to.
-    return ctx.solid !== null && hasBinLipDip(ctx.params);
+    // the depth clamp — but says nothing about whether a lid is being built at
+    // all. `shouldGenerateLid` is the other half, exactly as `lidRetentionStage`
+    // pairs them: without it a design with `lid.enabled: false`, or one a
+    // compatibility blocker has disqualified, would ship a bin with a notched
+    // stacking lip and no lid to justify it.
+    return ctx.solid !== null && hasBinLipDip(ctx.params) && shouldGenerateLid(ctx.params);
   },
 
   execute(ctx: PipelineContext): PipelineContext {
@@ -80,13 +93,30 @@ export const lidGripDipStage: PipelineStage = {
     );
     if (depthMm <= 0) return ctx;
 
-    // Same rim derivation as `lidRetentionStage`: a tray bin's floor sits on a
-    // skirt, so `totalHeight` alone would place the dip down inside it.
-    const rimZ = dim.baseOffsetZ + dim.totalHeight;
-    const lipBottomZ = rimZ - LIP_HEIGHT;
-    const M = LID_COPLANAR_MARGIN;
+    // The lip's own base plane, derived the way `shellStage` places it:
+    // `buildTopShape` is translated to `wallHeight + collarHeight - LIP_OVERLAP`
+    // and `translateStage` then lifts everything by `baseOffsetZ`.
+    //
+    // `baseOffsetZ + totalHeight` is NOT this number and must not be used:
+    // `totalHeight` is `height * heightUnitMm`, which excludes the collar
+    // entirely and does not track `wallHeight` across base styles. It reads
+    // 0.7mm high on a standard bin, 4.3mm LOW on a flat one and 8.3mm low with
+    // a 9mm collar — far enough that the cutter lands inside the wall and, at
+    // `LIP_TAPER_WIDTH` deep against a 1.2mm wall, opens a slot straight into
+    // the cavity. The result is still watertight, so only a probe finds it.
+    const lipBottomZ = dim.baseOffsetZ + dim.wallHeight + dim.collarHeight - LIP_OVERLAP;
+    // Outward overshoot: the coplanar margin PLUS however far the lid's
+    // footprint is inboard of the bin's, so the cut reaches the bin face on a
+    // magnetic lid as well as a flush one.
+    const M = LID_COPLANAR_MARGIN + (resolveLidFootprintClearance(params) - LID_FIT_CLEARANCE);
 
+    // Every `rotate`/`translate` returns a NEW OCCT shape. This stage runs
+    // outside a DisposalScope, so each intermediate has to be freed by hand or
+    // it leaks on every regeneration — and the designer regenerates on each
+    // parameter change. `lidRetentionStage` frees its wedge intermediates the
+    // same way.
     const cutters: Shape3D[] = [];
+    const scratch: Shape3D[] = [];
     for (const place of placements) {
       // Elevation in (along-wall, vertical): full depth across the span, ramping
       // out to nothing over DIP_RAMP_MM at each end. Drawn in XY and stood
@@ -108,15 +138,23 @@ export const lidGripDipStage: PipelineStage = {
       const slab = elevation.sketchOnPlane('XY', 0).extrude(depthMm + M);
       const upright = rotate(slab, 90, { axis: [1, 0, 0] });
       const centred = translate(upright, [0, M, lipBottomZ]);
+      scratch.push(slab, upright, centred);
       const oriented =
         place.rotationDeg === 0 ? centred : rotate(centred, place.rotationDeg, { axis: [0, 0, 1] });
-      cutters.push(translate(oriented, [place.centerX, place.centerY, 0]));
+      if (oriented !== centred) scratch.push(oriented);
+      const positioned = translate(oriented, [place.centerX, place.centerY, 0]);
+      // Tag the CUTTER, never the result. `setShapeOrigin` replaces a shape's
+      // whole face-origin map, so tagging the post-boolean solid would stamp
+      // the entire bin `LID_GRIP` — taking `LIP` with it, which is the sole key
+      // the per-cell multicolour lip is built from.
+      collectOrigins(positioned, FeatureTag.LID_GRIP, ctx.originToTag);
+      cutters.push(positioned);
     }
 
     const result = unwrap(cutAll(ctx.solid as ValidSolid, cutters as ValidSolid[]));
     for (const cutter of cutters) cutter.delete();
+    for (const shape of scratch) shape.delete();
     if (result !== ctx.solid) ctx.solid.delete();
-    collectOrigins(result, FeatureTag.LID_GRIP, ctx.originToTag);
 
     return { ...ctx, solid: result };
   },

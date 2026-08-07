@@ -23,6 +23,7 @@ import {
   lidAnchorZ,
   resolveLidGripDepth,
   resolveLidGripHeightMm,
+  resolveLidCavityExtraMm,
   LID_FIT_CLEARANCE,
   LID_CORNER_RADIUS,
   LID_GRIP_MIN_WALL_MM,
@@ -46,9 +47,16 @@ function makeParams(grip: Partial<LidGripConfig>, over: Partial<BinParams> = {})
   };
 }
 
-/** Seam plane in lid-local Z for a default-cavity lid. */
+/**
+ * Seam plane in lid-local Z.
+ *
+ * `resolveLidCavityExtraMm` is not optional here: a tray lid's plate pushes the
+ * cavity 4.8mm deeper, so a hardcoded 0 puts every probe that far above the
+ * relief — in material the cutter never reaches, which is how the tray
+ * variant's clamp came to be "covered" without being tested at all.
+ */
 function seamZ(params: BinParams): number {
-  return lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE, 0);
+  return lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE, resolveLidCavityExtraMm(params));
 }
 
 /**
@@ -256,4 +264,32 @@ describe('grip relief variant matrix', () => {
       });
     }
   }
+});
+
+describe('grip relief face provenance', () => {
+  /**
+   * `setShapeOrigin` REPLACES a shape's whole face-origin map, so tagging the
+   * post-boolean solid stamps every face on the lid `LID_GRIP` and takes
+   * LID_BODY / LID_RAIL / LID_LIP with it — silently killing the rail
+   * hover-glow and any per-face colouring. The cutters carry the tag instead.
+   */
+  it('leaves the lid’s other feature tags intact', async () => {
+    const { generateLid } = await import('./lidOrchestrator');
+    const tags = (mesh: MeshData): Set<number> =>
+      new Set((mesh.faceGroups ?? []).map((g) => g.tag));
+
+    const plain = generateLid(makeParams({ mode: 'none' }));
+    const relieved = generateLid(
+      makeParams({ mode: 'scallop', sides: { front: true, back: true, left: false, right: false } })
+    );
+    expect(plain).not.toBeNull();
+    expect(relieved).not.toBeNull();
+
+    const plainTags = tags(plain!);
+    const relievedTags = tags(relieved!);
+    expect(plainTags.size).toBeGreaterThan(0);
+    for (const tag of plainTags) {
+      expect(relievedTags.has(tag), `tag ${tag} was wiped by the relief`).toBe(true);
+    }
+  });
 });

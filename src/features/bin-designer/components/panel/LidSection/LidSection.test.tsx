@@ -691,3 +691,39 @@ describe('LidSection grip relief (#3272)', () => {
     expect(screen.getByText(/nothing to locate against/)).toBeInTheDocument();
   });
 });
+
+describe('LidSection grip / stackable-top conflict (#3272)', () => {
+  /**
+   * A stored `reveal` on a stackable top is a state the geometry silently
+   * drops AND the server rejects on share (`validateLidGrip`). The panel has
+   * to clear it on the way in, not just disable the option.
+   */
+  it('clears a reveal when the top becomes stackable', () => {
+    resetStore({
+      lid: {
+        ...DEFAULT_BIN_PARAMS.lid,
+        enabled: true,
+        grip: { ...DEFAULT_BIN_PARAMS.lid.grip, mode: 'reveal' },
+      },
+    });
+    render(<LidSection />);
+    fireEvent.click(screen.getByRole('radio', { name: 'Stackable' }));
+    expect(useDesignerStore.getState().params.lid.grip.mode).toBe('none');
+  });
+
+  it('leaves the other modes alone when the top becomes stackable', () => {
+    for (const mode of ['chamfer', 'scallop'] as const) {
+      resetStore({
+        lid: {
+          ...DEFAULT_BIN_PARAMS.lid,
+          enabled: true,
+          grip: { ...DEFAULT_BIN_PARAMS.lid.grip, mode },
+        },
+      });
+      const view = render(<LidSection />);
+      fireEvent.click(screen.getByRole('radio', { name: 'Stackable' }));
+      expect(useDesignerStore.getState().params.lid.grip.mode).toBe(mode);
+      view.unmount();
+    }
+  });
+});

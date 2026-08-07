@@ -580,12 +580,6 @@ export const DEFAULT_LID_CONFIG: LidConfig = {
 } as const;
 
 /**
- * Mode a `'none'` grip falls back to when the user enables the feature from
- * the UI without picking a shape.
- */
-export const LID_GRIP_DEFAULT_MODE: LidGripMode = 'scallop';
-
-/**
  * Extra clearance baked into the anchor calculation to compensate for
  * first-layer squish (mm).
  */

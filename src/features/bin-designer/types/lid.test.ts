@@ -24,6 +24,11 @@ import {
   LID_GRIP_MIN_WALL_MM,
   resolveLidGripSpanMm,
   resolveLidGripDepth,
+  resolveLidGripHeightMm,
+  LID_GRIP_CHAMFER_MM,
+  LID_GRIP_REVEAL_HEIGHT_MM,
+  LID_GRIP_SCALLOP_HEIGHT_MM,
+  LID_GRIP_TOP_SKIN_MM,
   lidGripRequestedDepthMm,
   hasLidGrip,
   hasBinLipDip,
@@ -409,5 +414,30 @@ describe('lidGripModeAllowed', () => {
         params({ stackableTop: true, grip: { ...DEFAULT_LID_CONFIG.grip, mode: 'reveal' } })
       )
     ).toBe(false);
+  });
+});
+
+describe('resolveLidGripHeightMm', () => {
+  it('gives each mode its requested height on a lid with skirt to spare', () => {
+    // A deep cavity leaves plenty of skirt above the seam.
+    const anchorZ = -20;
+    expect(resolveLidGripHeightMm('chamfer', anchorZ)).toBe(LID_GRIP_CHAMFER_MM);
+    expect(resolveLidGripHeightMm('reveal', anchorZ)).toBe(LID_GRIP_REVEAL_HEIGHT_MM);
+    expect(resolveLidGripHeightMm('scallop', anchorZ)).toBe(LID_GRIP_SCALLOP_HEIGHT_MM);
+  });
+
+  it('keeps a solid skin above the relief on a standard lid', () => {
+    // The whole skirt above the seam is only ~2.1mm — a lid is a thin cap — so
+    // the scallop's 4mm request cannot be honoured without notching the top face.
+    const anchorZ = -2.09;
+    const height = resolveLidGripHeightMm('scallop', anchorZ);
+    expect(height).toBeLessThan(LID_GRIP_SCALLOP_HEIGHT_MM);
+    // The clamp binds, so the relief stops exactly at the reserved skin.
+    expect(anchorZ + height).toBeCloseTo(-LID_GRIP_TOP_SKIN_MM, 9);
+  });
+
+  it('never returns a negative height when the seam is at the top face', () => {
+    expect(resolveLidGripHeightMm('scallop', 0)).toBe(0);
+    expect(resolveLidGripHeightMm('scallop', -0.1)).toBe(0);
   });
 });

@@ -389,6 +389,13 @@ export function featureTagToColorZone(tag: number): ColorZone | null {
       return null;
     case FeatureTag.LID_BODY:
       return 'lid';
+    case FeatureTag.LID_GRIP:
+      // The grip relief cuts the lid's own skirt, and its bin-side dip cuts the
+      // stacking lip. Both are treated like the surfaces they were cut from —
+      // `null` sends them through the same centroid classification `LIP` and
+      // `LID_LIP` use, rather than dropping a notch of body colour into the
+      // middle of a per-cell lip.
+      return null;
     default:
       return 'body';
   }

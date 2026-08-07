@@ -558,7 +558,10 @@ export function LidSection() {
             </div>
           </Collapsible>
 
-          <section className="space-y-2 border-t border-stroke-subtle pt-3">
+          <section
+            data-help-target="bd-lid-grip"
+            className="space-y-2 border-t border-stroke-subtle pt-3"
+          >
             <SubHeader>{t('binDesigner.lid.section.grip')}</SubHeader>
             <p className="text-xs text-content-tertiary">{t('binDesigner.lid.gripHint')}</p>
             <LidGripControls state={state} handlers={handlers} t={t} />

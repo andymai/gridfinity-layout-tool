@@ -236,12 +236,18 @@ function buildCutter(
 
   // Section profiles read (outward, z) — outward is +Y on the canonical wall,
   // so inward depths are negative.
+  // A 45° wedge's two legs are equal, so the chamfer is sized by whichever of
+  // depth and height is scarcer. Taking `depthMm` alone would let it climb past
+  // the skirt the height clamp reserved — and would make the panel's height
+  // readout, which reports the clamped value, describe geometry that isn't there.
+  const chamferMm = Math.min(depthMm, heightMm);
+
   const profile: Drawing =
     mode === 'chamfer'
-      ? // 45° wedge: deepest at the seam, running out to nothing `depthMm` above it.
-        draw([-depthMm, anchorZ])
+      ? // Deepest at the seam, running out to nothing `chamferMm` above it.
+        draw([-chamferMm, anchorZ])
           .lineTo([M, anchorZ])
-          .lineTo([M, anchorZ + depthMm + M])
+          .lineTo([M, anchorZ + chamferMm + M])
           .close()
       : // Crisp rectangular groove, leaving a downward-facing ledge at its top.
         draw([-depthMm, anchorZ])
@@ -279,13 +285,17 @@ export function addGripRelief(
       place.rotationDeg === 0
         ? cutter
         : scope.register(rotate(cutter, place.rotationDeg, { axis: [0, 0, 1] }));
-    cutters.push(scope.register(translate(oriented, [place.centerX, place.centerY, 0])));
+    const positioned = scope.register(translate(oriented, [place.centerX, place.centerY, 0]));
+    // Tag the CUTTER, never the result. `setShapeOrigin` replaces a shape's
+    // whole face-origin map, so tagging the post-boolean solid would stamp
+    // every face on the lid `LID_GRIP` and wipe LID_BODY/LID_RAIL/LID_LIP with
+    // it — the rail hover-glow and any per-face colouring go with them.
+    if (originToTag) {
+      collectOrigins(positioned, FeatureTag.LID_GRIP, originToTag);
+    }
+    cutters.push(positioned);
   }
 
   scope.register(body);
-  const result = unwrap(cutAll(body as ValidSolid, cutters as ValidSolid[]));
-  if (originToTag) {
-    collectOrigins(result, FeatureTag.LID_GRIP, originToTag);
-  }
-  return result;
+  return unwrap(cutAll(body as ValidSolid, cutters as ValidSolid[]));
 }

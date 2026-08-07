@@ -30,6 +30,8 @@ import {
 } from './__kernel-tests__/meshAssertions';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
+import { resolveLidGripSpanMm } from '@/shared/types/bin';
+import { resolveLidInputs } from './lidInputs';
 import type { BinParams, LidGripConfig } from '@/features/bin-designer/types';
 import type { MeshData } from '@/features/generation/bridge/types';
 
@@ -191,10 +193,111 @@ describe('bin lip dip', () => {
     expect(removedTwo / removedOne).toBeCloseTo(2, 1);
 
     // Bounded by the box the dip is cut from; the 45° end ramps leave some of
-    // that box behind, so the actual removal is a fraction of it.
-    const span = 34; // 50% coverage on a 3-wide wall, under the 40mm cap
+    // that box behind, so the actual removal is a fraction of it. The span is
+    // read from the resolver rather than restated — on a 3-wide wall the 40mm
+    // cap binds, which a hand-written number got wrong by 15%.
+    const inputs = resolveLidInputs(DIPPED);
+    const span = resolveLidGripSpanMm(
+      inputs.lidOuterW - 2 * inputs.lidCornerR,
+      inputs.grip.coverage
+    );
     const boxVolume = span * LIP_HEIGHT * LIP_TAPER_WIDTH;
     expect(removedOne).toBeLessThan(boxVolume);
     expect(removedOne).toBeGreaterThan(boxVolume * 0.5);
   });
+});
+
+describe('bin lip dip gating', () => {
+  /**
+   * The dip changes the BIN, so it has to answer to the same question the
+   * magnet pads do: is a lid actually being built? `hasBinLipDip` only knows
+   * about the relief's own settings.
+   */
+  it('does not cut the lip when the lid is disabled', async () => {
+    const { generateBin } = await import('./binOrchestrator');
+    const params = makeParams({ mode: 'scallop', binDip: true });
+    const lidOff = generateBin({ ...params, lid: { ...params.lid, enabled: false } });
+    const plain = generateBin({ ...PLAIN, lid: { ...PLAIN.lid, enabled: false } });
+    expect(lidOff.vertices.length).toBe(plain.vertices.length);
+  });
+
+  it('does not cut the lip when the bin has no stacking lip to dip', async () => {
+    const { generateBin } = await import('./binOrchestrator');
+    const base = { ...DEFAULT_BIN_PARAMS.base, stackingLip: false };
+    const params = makeParams({ mode: 'scallop', binDip: true });
+    const noLip = generateBin({ ...params, base });
+    const plain = generateBin({ ...PLAIN, base });
+    expect(noLip.vertices.length).toBe(plain.vertices.length);
+  });
+});
+
+describe('bin lip dip face provenance', () => {
+  /**
+   * `setShapeOrigin` REPLACES a shape's whole face-origin map, so tagging the
+   * post-boolean solid would stamp the entire bin `LID_GRIP` — taking `LIP`
+   * with it, which is the only key the per-cell multicolour lip is built from.
+   * The cutters carry the tag instead.
+   */
+  it('leaves the bin’s other feature tags intact', async () => {
+    const { generateBin } = await import('./binOrchestrator');
+    const tags = (mesh: MeshData): Set<number> =>
+      new Set((mesh.faceGroups ?? []).map((g) => g.tag));
+
+    const plainTags = tags(generateBin(UNDIPPED));
+    const dippedTags = tags(generateBin(DIPPED));
+
+    expect(plainTags.size).toBeGreaterThan(0);
+    for (const tag of plainTags) {
+      expect(dippedTags.has(tag), `tag ${tag} was wiped by the dip`).toBe(true);
+    }
+  });
+});
+
+describe('bin lip dip across base styles', () => {
+  /**
+   * The lip's Z is `baseOffsetZ + wallHeight + collarHeight - LIP_OVERLAP`,
+   * and `baseOffsetZ + totalHeight` is a different number on every one of
+   * these: 0.7mm high on a standard bin, 4.3mm low on a flat one, 8.3mm low
+   * with a collar. Low enough and the cutter is inside the WALL, where
+   * `LIP_TAPER_WIDTH` of depth against a 1.2mm wall opens a slot into the
+   * cavity — and leaves the mesh watertight, so only this probe finds it.
+   */
+  const STYLES = [
+    { name: 'standard socket', over: {} as Partial<BinParams> },
+    {
+      name: 'flat base',
+      over: { base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true, style: 'flat' as const } },
+    },
+    { name: 'wall collar', over: { extraWallHeightMm: 9 } as Partial<BinParams> },
+  ];
+
+  for (const style of STYLES) {
+    it(`cuts the lip and not the wall on a ${style.name}`, async () => {
+      const { generateBin } = await import('./binOrchestrator');
+      const dipped = generateBin({ ...DIPPED, ...style.over });
+      const undipped = generateBin({ ...UNDIPPED, ...style.over });
+      assertWatertight(dipped, style.name);
+
+      const bb = boundingBox(undipped.vertices);
+      const lip: Box = {
+        xLimit: WINDOW_X,
+        yMin: bb.maxY - LIP_TAPER_WIDTH,
+        yMax: bb.maxY,
+        zMin: bb.maxZ - LIP_HEIGHT,
+        zMax: bb.maxZ,
+      };
+      const wall: Box = {
+        xLimit: WINDOW_X,
+        yMin: bb.maxY - LIP_TAPER_WIDTH,
+        yMax: bb.maxY,
+        zMin: bb.maxZ - LIP_HEIGHT - 4,
+        zMax: bb.maxZ - LIP_HEIGHT - 0.5,
+      };
+
+      // Cut lands in the lip band...
+      expect(verticesInBox(dipped, lip)).toBeGreaterThan(0);
+      // ...and adds nothing below it.
+      expect(verticesInBox(dipped, wall)).toBe(verticesInBox(undipped, wall));
+    });
+  }
 });
