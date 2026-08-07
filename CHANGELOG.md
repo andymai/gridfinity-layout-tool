@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.378.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.377.1...gridfinity-layout-tool-v4.378.0) (2026-08-07)
+
+
+### Features
+
+* **bin-designer:** let the cutout editor clear the stacking lip ([#3281](https://github.com/andymai/gridfinity-layout-tool/issues/3281)) ([e696f24](https://github.com/andymai/gridfinity-layout-tool/commit/e696f2498911763f503f4512b0bf853cefb4dd57))
+
 ## [4.377.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.377.0...gridfinity-layout-tool-v4.377.1) (2026-08-07)
 
 
