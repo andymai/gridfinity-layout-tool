@@ -1,0 +1,38 @@
+api/lib/mlTelemetry/validators.test.ts
+  s_f34a534f86dba9::t_984e1732542663 431-470
+api/lib/mlTelemetry/validators.ts
+  s_f34a534f86dba9::t_be16e39860d3e2 3-5
+  s_f34a534f86dba9::t_cb59aa03a659ce 97-102,107-109,118-119,121-125,128-130
+  s_f34a534f86dba9::t_55346df6c9b37e 274-279
+api/lib/mlTelemetry/validators.constants.ts
+  s_f34a534f86dba9::t_069123b94f787e 15-20
+  s_f34a534f86dba9::t_9a1868ace7d3ce 143-181
+src/shared/analytics/mlTelemetry/computations.ts
+  s_f34a534f86dba9::t_4b8a80a6119964 91-110,120,132,151
+  s_f34a534f86dba9::t_d64006e17503de 90
+api/ml-telemetry.test.ts
+  s_f34a534f86dba9::t_9eeed76b9686cd 12
+  s_f34a534f86dba9::t_99b2104c169a79 180-217
+src/shared/analytics/mlTelemetry/computations.test.ts
+  s_f34a534f86dba9::t_729d3a5414e2a3 527-562
+api/ml-telemetry.ts
+  s_f34a534f86dba9::t_5c3338537a231a 333-335
+  s_f34a534f86dba9::t_3d7dec51aef0cc 221-224,226-227
+  s_f34a534f86dba9::t_e5c76f9f7e4b42 150
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "a1bdc5a08379559f694c566e88aa26006679cfbf",
+  "prompts": {},
+  "sessions": {
+    "s_f34a534f86dba9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5923dc09-0bc9-40c6-8947-2bd62961138a",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
