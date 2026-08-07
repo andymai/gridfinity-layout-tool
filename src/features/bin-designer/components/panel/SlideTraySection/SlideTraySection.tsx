@@ -9,9 +9,15 @@
  * When the bin cannot carry a tray at all the toggle is disabled with the
  * reason, rather than letting a user switch the feature on and watch nothing
  * appear.
+ *
+ * The `sliding_tray` gate lives here rather than at the mount site: this
+ * section is the only thing in the app that can set `slide.enabled`, so gating
+ * the component itself keeps a future second mount point from reopening the
+ * feature while it is unfinished.
  */
 
 import { useTranslation } from '@/i18n';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { FeatureToggle } from '../FeatureToggle';
 import { StepperField } from '../shared';
 import { SegmentedControl } from '@/design-system';
@@ -23,7 +29,10 @@ const MOUNTS: readonly SlideRailMount[] = ['interior', 'rim'];
 
 export function SlideTraySection() {
   const t = useTranslation();
+  const enabled = useFeatureFlag('sliding_tray');
   const { slide, meta, blockedReason, protrusionMm, constraints, handlers } = useSlideTraySection();
+
+  if (!enabled) return null;
 
   return (
     <FeatureToggle

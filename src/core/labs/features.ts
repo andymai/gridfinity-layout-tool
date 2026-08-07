@@ -200,6 +200,18 @@ export const FEATURE_FLAGS = [
     requiresRefresh: false,
   },
   {
+    id: 'sliding_tray',
+    name: 'Sliding Tray',
+    description:
+      'Add a rail to a bin and a companion tray that slides along it, so small parts ride above the bin floor and pull aside to reach what is underneath.',
+    status: 'experimental',
+    risk: 'medium',
+    warning:
+      'Unfinished. The rail and tray geometry is still changing, the printed fit is unverified, and a design saved with a tray may not reopen the same way once this ships.',
+    addedAt: '2026-08',
+    requiresRefresh: false,
+  },
+  {
     id: 'community_showcase',
     name: 'Community Showcase',
     description:
