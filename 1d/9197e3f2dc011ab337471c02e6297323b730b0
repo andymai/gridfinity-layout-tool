@@ -1,0 +1,20 @@
+src/features/bin-designer/components/panel/SlideTraySection/SlideTraySection.tsx
+  s_b3d32d7f87cac5::t_c19cafdccf87ed 16-19
+  s_b3d32d7f87cac5::t_f98295da3c858f 34-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "1d9197e3f2dc011ab337471c02e6297323b730b0",
+  "prompts": {},
+  "sessions": {
+    "s_b3d32d7f87cac5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e5f569db-ca7f-4550-9f5d-923f3f27e561",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
