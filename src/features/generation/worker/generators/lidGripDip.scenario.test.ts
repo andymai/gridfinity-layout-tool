@@ -34,6 +34,7 @@ import { resolveLidGripSpanMm } from '@/shared/types/bin';
 import { resolveLidInputs } from './lidInputs';
 import type { BinParams, LidGripConfig } from '@/features/bin-designer/types';
 import type { MeshData } from '@/features/generation/bridge/types';
+import type { CellMask } from '@/shared/utils/cellMask';
 
 const DIMS = { width: 3, depth: 2, height: 4 } as const;
 
@@ -328,7 +329,7 @@ describe('bin lip dip on other lid variants', () => {
   it('dips a polygon footprint', async () => {
     const { generateBin } = await import('./binOrchestrator');
     // 3x3 L-shape, top-right unit removed.
-    const cellMask = {
+    const cellMask: CellMask = {
       cols: 6,
       rows: 6,
       cells: [
