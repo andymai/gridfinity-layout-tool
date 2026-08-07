@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { Button } from '@/design-system';
 import { ConfirmDialog, ToggleRow } from '@/shared/components';
 import { useLayoutStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
@@ -10,6 +9,7 @@ import { GridAlignmentControls } from '../GridAlignmentControls/GridAlignmentCon
 import { ShapeEditorDialog } from '../ShapeEditorDialog/ShapeEditorDialog';
 import { CornerCutsDialog } from '../CornerCutsDialog/CornerCutsDialog';
 import { PenShapeDialog } from '../PenShapeDialog/PenShapeDialog';
+import { DrawerShapeActionsMenu } from '../DrawerShapeActionsMenu/DrawerShapeActionsMenu';
 
 interface DrawerShapeSectionProps {
   /** Platform variant, forwarded to the toggle row's sizing. */
@@ -65,9 +65,6 @@ export function DrawerShapeSection({ variant = 'desktop' }: DrawerShapeSectionPr
     mutations.setDrawerOutline(null);
   }, [mutations]);
 
-  // 44px on mobile to match the touch target the rest of the settings sheet uses.
-  const actionClass = variant === 'mobile' ? 'text-sm h-11 px-3' : 'text-xs h-8 px-2';
-
   return (
     <>
       <ToggleRow
@@ -76,38 +73,15 @@ export function DrawerShapeSection({ variant = 'desktop' }: DrawerShapeSectionPr
         onChange={handleToggle}
         helpTarget="drawer-shape"
         variant={variant}
+        trailing={
+          <DrawerShapeActionsMenu
+            hasOutline={hasOutline}
+            onOpenCorners={handleOpenCorners}
+            onOpenPen={handleOpenPen}
+            onOpenEditor={handleOpenEditor}
+          />
+        }
       />
-      <div className="flex justify-end gap-1 pt-1">
-        <Button
-          variant="ghost"
-          size="sm"
-          type="button"
-          onClick={handleOpenCorners}
-          className={actionClass}
-        >
-          {t('drawerShape.corners.open')}
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          type="button"
-          onClick={handleOpenPen}
-          className={actionClass}
-        >
-          {t('drawerShape.penOpen')}
-        </Button>
-        {hasOutline && (
-          <Button
-            variant="ghost"
-            size="sm"
-            type="button"
-            onClick={handleOpenEditor}
-            className={actionClass}
-          >
-            {t('drawerShape.edit')}
-          </Button>
-        )}
-      </div>
       {hasOutline && <GridAlignmentControls variant={variant} />}
       <ShapeEditorDialog open={editorOpen} onClose={() => setEditorOpen(false)} />
       <CornerCutsDialog open={cornersOpen} onClose={() => setCornersOpen(false)} />

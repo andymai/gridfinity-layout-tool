@@ -46,8 +46,9 @@ describe('DrawerShapeSection', () => {
 
   it('offers corner cuts even with no outline drawn', () => {
     render(<DrawerShapeSection />);
-    expect(screen.getByRole('button', { name: 'drawerShape.corners.open' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'drawerShape.edit' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'drawerShape.actions' }));
+    expect(screen.getByRole('menuitem', { name: 'drawerShape.corners.open' })).toBeInTheDocument();
+    expect(screen.queryByRole('menuitem', { name: 'drawerShape.edit' })).not.toBeInTheDocument();
   });
 
   it('offers editing the shape once an outline exists', () => {
@@ -55,33 +56,49 @@ describe('DrawerShapeSection', () => {
       layout: { ...s.layout, drawer: { ...s.layout.drawer, outline: L_OUTLINE } },
     }));
     render(<DrawerShapeSection />);
-    expect(screen.getByRole('button', { name: 'drawerShape.edit' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'drawerShape.corners.open' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'drawerShape.actions' }));
+    expect(screen.getByRole('menuitem', { name: 'drawerShape.edit' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'drawerShape.corners.open' })).toBeInTheDocument();
   });
 
-  it('gives the mobile variant a 44px action touch target', () => {
-    render(<DrawerShapeSection variant="mobile" />);
-    expect(screen.getByRole('button', { name: 'drawerShape.corners.open' })).toHaveClass('h-11');
-  });
-
-  it('keeps the compact action height on desktop', () => {
-    render(<DrawerShapeSection />);
-    expect(screen.getByRole('button', { name: 'drawerShape.corners.open' })).toHaveClass('h-8');
-  });
-
-  it('renders the actions as right-aligned links, not full-width buttons', () => {
+  // The three authoring routes used to be three ghost text links stacked under
+  // the row; they collapse into one trigger so the sidebar has a single visual
+  // grammar for section actions.
+  it('exposes exactly one action affordance on the row', () => {
     useLayoutStore.setState((s) => ({
       layout: { ...s.layout, drawer: { ...s.layout.drawer, outline: L_OUTLINE } },
     }));
     render(<DrawerShapeSection />);
-    const corners = screen.getByRole('button', { name: 'drawerShape.corners.open' });
-    const edit = screen.getByRole('button', { name: 'drawerShape.edit' });
-    for (const action of [corners, edit]) {
-      expect(action).not.toHaveClass('w-full');
-      expect(action).toHaveClass('bg-transparent');
+    expect(screen.getByRole('button', { name: 'drawerShape.actions' })).toBeInTheDocument();
+    for (const label of ['drawerShape.corners.open', 'drawerShape.penOpen', 'drawerShape.edit']) {
+      expect(screen.queryByText(label)).not.toBeInTheDocument();
     }
-    expect(corners.parentElement).toHaveClass('justify-end');
-    expect(corners.compareDocumentPosition(edit)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+
+  it('opens the corner cuts dialog from the menu', () => {
+    render(<DrawerShapeSection />);
+    fireEvent.click(screen.getByRole('button', { name: 'drawerShape.actions' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'drawerShape.corners.open' }));
+    expect(screen.getByText('drawerShape.corners.title')).toBeInTheDocument();
+  });
+
+  it('opens the pen dialog from the menu', () => {
+    render(<DrawerShapeSection />);
+    fireEvent.click(screen.getByRole('button', { name: 'drawerShape.actions' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'drawerShape.penOpen' }));
+    expect(screen.getByText('drawerShape.penTitle')).toBeInTheDocument();
+  });
+
+  // The trigger sits inside the row; a click on it must not reach the row's
+  // checkbox overlay and toggle the shape off.
+  it('does not toggle the row when the menu is opened', () => {
+    useLayoutStore.setState((s) => ({
+      layout: { ...s.layout, drawer: { ...s.layout.drawer, outline: L_OUTLINE } },
+    }));
+    render(<DrawerShapeSection />);
+    fireEvent.click(screen.getByRole('button', { name: 'drawerShape.actions' }));
+    expect(screen.queryByText('drawerShape.resetConfirmTitle')).not.toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'drawerShape.toggle' })).toBeChecked();
   });
 
   it('confirms before resetting an existing shape', () => {

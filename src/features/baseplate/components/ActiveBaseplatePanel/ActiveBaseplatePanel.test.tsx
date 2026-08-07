@@ -58,7 +58,18 @@ describe('ActiveBaseplatePanel', () => {
 
   it('opens the library modal from Manage', () => {
     render(<ActiveBaseplatePanel />);
-    fireEvent.click(screen.getByText('baseplate.library.manage'));
+    fireEvent.click(screen.getByRole('button', { name: 'baseplate.library.manage' }));
     expect(mocks.setShowBaseplateLibrary).toHaveBeenCalledWith(true);
+  });
+
+  // Layers and Categories sit in the same sidebar column with the same header
+  // action spec; a text link here reads as a hyperlink among icon buttons.
+  it('renders Manage as a 28px icon button, matching the peer section headers', () => {
+    render(<ActiveBaseplatePanel />);
+    const manage = screen.getByRole('button', { name: 'baseplate.library.manage' });
+    expect(manage).toHaveClass('w-7', 'h-7');
+    expect(manage).toHaveAttribute('title', 'baseplate.library.manage');
+    expect(manage.querySelector('svg')).toBeInTheDocument();
+    expect(manage).not.toHaveTextContent('baseplate.library.manage');
   });
 });

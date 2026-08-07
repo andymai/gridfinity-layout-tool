@@ -19,9 +19,15 @@ by the frame (#3149).
 - `components/DrawerShapeSection` — Sidebar entry: toggle on opens the editor;
   toggle off resets to a rectangle after a confirm. Uses the shared
   `ToggleRow` (a `Checkbox`), **not** `FeatureToggle` — the sidebar's boolean
-  rows are checkboxes, and this sits directly under Half-grid mode. Corner
-  cuts stay reachable with no outline: they build one from the plain
-  rectangle. Takes `variant` so the mobile settings sheet gets `lg` hit areas.
+  rows are checkboxes, and this sits directly under Half-grid mode. Takes
+  `variant` so the mobile settings sheet gets `lg` hit areas.
+- `components/DrawerShapeActionsMenu` — the row's `trailing` control: one
+  ghost `IconButton` opening a `Popover` of the three authoring routes, after
+  `ColorsActionsMenu`. Corner cuts and the pen stay reachable with no outline
+  (they build one from the plain rectangle); the cell editor needs one first.
+  It is a `trailing` slot rather than a child of the row because `ToggleRow`
+  puts `role="checkbox"` on an inset overlay — Children Presentational would
+  drop a nested button from the accessibility tree.
 - `components/GridAlignmentControls` — grid↔perimeter alignment (#3157/#3108):
   X/Y mm steppers writing `drawer.gridShiftX/Y` through `drawer.update`
   (undoable, displaces newly-outside bins), a reset, and a hint reporting the
