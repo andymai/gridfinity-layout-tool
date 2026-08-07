@@ -38,6 +38,16 @@ function imageLabel(image: DesignImage, t: ReturnType<typeof useTranslation>): s
     : t('community.media.selectPhoto', { author: image.authorName });
 }
 
+/** Undefined once the picked image has slid out of its slot, which shows the model instead. */
+function resolveSelected(
+  images: readonly DesignImage[],
+  selection: Selection
+): DesignImage | undefined {
+  if (selection.kind !== 'image') return undefined;
+  const candidate = images.at(selection.index);
+  return candidate?.url === selection.url ? candidate : undefined;
+}
+
 export function DesignMediaPanel({
   design,
   images,
@@ -48,12 +58,8 @@ export function DesignMediaPanel({
   const [selection, setSelection] = useState<Selection>({ kind: 'model' });
 
   const poster = images.find((image) => image.kind === 'render')?.url ?? '';
-  const candidate = selection.kind === 'image' ? images.at(selection.index) : undefined;
-  // Falls back to the model rather than showing whatever slid into the slot.
-  const selected =
-    candidate?.url === (selection.kind === 'image' ? selection.url : undefined)
-      ? candidate
-      : undefined;
+  const selected = resolveSelected(images, selection);
+  const activeIndex = selection.kind === 'image' ? selection.index : null;
 
   const handleEnlarge = useCallback(() => {
     if (selected !== undefined && selection.kind === 'image') onOpenLightbox(selection.index);
@@ -140,14 +146,10 @@ export function DesignMediaPanel({
               touchTarget={false}
               onClick={() => setSelection({ kind: 'image', index, url: image.url })}
               aria-label={imageLabel(image, t)}
-              aria-pressed={
-                selected !== undefined && selection.kind === 'image' && selection.index === index
-              }
+              aria-pressed={selected !== undefined && index === activeIndex}
               className={cn(
                 'h-20 w-20 shrink-0 overflow-hidden rounded-lg border p-0',
-                selection.kind === 'image' && selection.index === index
-                  ? 'border-accent'
-                  : 'border-stroke-subtle'
+                index === activeIndex ? 'border-accent' : 'border-stroke-subtle'
               )}
               data-testid={`design-media-tile-${index}`}
             >

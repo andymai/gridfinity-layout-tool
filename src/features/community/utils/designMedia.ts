@@ -74,16 +74,15 @@ export function findPhotoIndex(
   if (cursor === -1) return -1;
 
   for (const print of prints) {
-    const photos = print.photos.filter((url) => url !== '');
-    if (print.id === printId) {
-      const url = print.photos.at(photoIndex);
-      if (url === undefined || url === '') return -1;
-      // Empty slots are dropped from the flat list, so the offset is the
-      // position among the kept photos, not the raw array index.
-      const kept = print.photos.slice(0, photoIndex).filter((entry) => entry !== '').length;
-      return cursor + kept;
+    if (print.id !== printId) {
+      cursor += print.photos.filter((url) => url !== '').length;
+      continue;
     }
-    cursor += photos.length;
+    const url = print.photos.at(photoIndex);
+    if (url === undefined || url === '') return -1;
+    // Empty slots are dropped from the flat list, so the offset is the
+    // position among the kept photos, not the raw array index.
+    return cursor + print.photos.slice(0, photoIndex).filter((entry) => entry !== '').length;
   }
 
   return -1;

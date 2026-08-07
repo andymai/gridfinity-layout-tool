@@ -76,6 +76,80 @@ interface CommunityDetailContentProps {
   onOpenDesign?: (designId: string) => void;
 }
 
+interface HiddenNoticeCopy {
+  readonly tone: 'error' | 'warning';
+  readonly frameClass: string;
+  readonly badgeTestId: string;
+  readonly badgeKey: string;
+  readonly body: string;
+  /** "A moderator will review it.", so only a hide that still awaits one. */
+  readonly reviewNote: boolean;
+}
+
+function hiddenNoticeCopy(
+  moderation: OwnerModeration,
+  t: ReturnType<typeof useTranslation>
+): HiddenNoticeCopy {
+  switch (moderation.hiddenReason) {
+    case 'denylist':
+      return {
+        tone: 'error',
+        frameClass: 'border-error/30 bg-error/5',
+        badgeTestId: 'community-denylisted-badge',
+        badgeKey: 'community.mine.badge.accountRestricted',
+        body: t('community.detail.hidden.restricted'),
+        reviewNote: false,
+      };
+    case 'moderation':
+      // A manual takedown already had its review: no report reason and no
+      // "a moderator will review it" promise.
+      return {
+        tone: 'warning',
+        frameClass: 'border-warning/30 bg-warning-muted',
+        badgeTestId: 'community-moderation-badge',
+        badgeKey: 'community.mine.badge.hiddenModeration',
+        body: t('community.detail.hidden.moderation'),
+        reviewNote: false,
+      };
+    default:
+      return {
+        tone: 'warning',
+        frameClass: 'border-warning/30 bg-warning-muted',
+        badgeTestId: 'community-hidden-badge',
+        badgeKey: 'community.mine.badge.hiddenReports',
+        body:
+          moderation.hiddenReasonCategory !== null
+            ? t('community.detail.hidden.explanationWithReason', {
+                reason: t(REPORT_REASON_LABEL_KEYS[moderation.hiddenReasonCategory]),
+              })
+            : t('community.detail.hidden.explanation'),
+        reviewNote: true,
+      };
+  }
+}
+
+function HiddenNotice({ moderation }: { moderation: OwnerModeration }) {
+  const t = useTranslation();
+  const copy = hiddenNoticeCopy(moderation, t);
+
+  return (
+    <div
+      role="status"
+      className={cn('space-y-1 rounded-lg border px-3 py-2', copy.frameClass)}
+      data-testid="community-detail-hidden-notice"
+    >
+      <Badge tone={copy.tone} data-testid={copy.badgeTestId}>
+        {t(copy.badgeKey)}
+      </Badge>
+      <p className="text-sm text-content-secondary">{copy.body}</p>
+      {copy.reviewNote && (
+        // Deliberately no ETA or imminence: "A moderator will review it." verbatim.
+        <p className="text-xs text-content-tertiary">{t('community.detail.hidden.reviewNote')}</p>
+      )}
+    </div>
+  );
+}
+
 function formatMm(value: number): string {
   return String(Number(value.toFixed(1)));
 }
@@ -121,57 +195,7 @@ export function CommunityDetailContent({
 
       {/* Details rail */}
       <div className="space-y-4 p-4 md:w-80 md:shrink-0 md:overflow-y-auto md:border-l md:border-stroke-subtle">
-        {ownerModeration !== null &&
-          (ownerModeration.hiddenReason === 'denylist' ? (
-            <div
-              role="status"
-              className="space-y-1 rounded-lg border border-error/30 bg-error/5 px-3 py-2"
-              data-testid="community-detail-hidden-notice"
-            >
-              <Badge tone="error" data-testid="community-denylisted-badge">
-                {t('community.mine.badge.accountRestricted')}
-              </Badge>
-              <p className="text-sm text-content-secondary">
-                {t('community.detail.hidden.restricted')}
-              </p>
-            </div>
-          ) : ownerModeration.hiddenReason === 'moderation' ? (
-            // A manual takedown already had its review: no report reason and
-            // no "a moderator will review it" promise.
-            <div
-              role="status"
-              className="space-y-1 rounded-lg border border-warning/30 bg-warning-muted px-3 py-2"
-              data-testid="community-detail-hidden-notice"
-            >
-              <Badge tone="warning" data-testid="community-moderation-badge">
-                {t('community.mine.badge.hiddenModeration')}
-              </Badge>
-              <p className="text-sm text-content-secondary">
-                {t('community.detail.hidden.moderation')}
-              </p>
-            </div>
-          ) : (
-            <div
-              role="status"
-              className="space-y-1 rounded-lg border border-warning/30 bg-warning-muted px-3 py-2"
-              data-testid="community-detail-hidden-notice"
-            >
-              <Badge tone="warning" data-testid="community-hidden-badge">
-                {t('community.mine.badge.hiddenReports')}
-              </Badge>
-              <p className="text-sm text-content-secondary">
-                {ownerModeration.hiddenReasonCategory !== null
-                  ? t('community.detail.hidden.explanationWithReason', {
-                      reason: t(REPORT_REASON_LABEL_KEYS[ownerModeration.hiddenReasonCategory]),
-                    })
-                  : t('community.detail.hidden.explanation')}
-              </p>
-              {/* Deliberately no ETA or imminence: "A moderator will review it." verbatim. */}
-              <p className="text-xs text-content-tertiary">
-                {t('community.detail.hidden.reviewNote')}
-              </p>
-            </div>
-          ))}
+        {ownerModeration !== null && <HiddenNotice moderation={ownerModeration} />}
 
         <div>
           {onFilterByAuthor !== undefined ? (

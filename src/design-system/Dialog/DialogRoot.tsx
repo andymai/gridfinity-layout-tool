@@ -43,6 +43,20 @@ export function useDialogContext() {
   }
   return context;
 }
+
+/**
+ * Counts the mounted instances of one optional slot. Root cannot inspect its
+ * children, so each part registers on mount and Root reads the count.
+ */
+function useRegistrationCount(): [count: number, register: () => () => void] {
+  const [count, setCount] = useState(0);
+  const register = useCallback(() => {
+    setCount((current) => current + 1);
+    return () => setCount((current) => current - 1);
+  }, []);
+  return [count, register];
+}
+
 const overlayVariants = cva(['fixed inset-0', 'bg-overlay-dark', 'animate-fade-in']);
 
 const contentVariants = cva(
@@ -255,24 +269,9 @@ export function DialogRoot({
 
   const { depth } = useDialogStack(dialogId, open);
 
-  const [titleRegistrations, setTitleRegistrations] = useState(0);
-  const [descriptionRegistrations, setDescriptionRegistrations] = useState(0);
-  const [footerRegistrations, setFooterRegistrations] = useState(0);
-
-  const registerTitle = useCallback(() => {
-    setTitleRegistrations((count) => count + 1);
-    return () => setTitleRegistrations((count) => count - 1);
-  }, []);
-
-  const registerDescription = useCallback(() => {
-    setDescriptionRegistrations((count) => count + 1);
-    return () => setDescriptionRegistrations((count) => count - 1);
-  }, []);
-
-  const registerFooter = useCallback(() => {
-    setFooterRegistrations((count) => count + 1);
-    return () => setFooterRegistrations((count) => count - 1);
-  }, []);
+  const [titleRegistrations, registerTitle] = useRegistrationCount();
+  const [descriptionRegistrations, registerDescription] = useRegistrationCount();
+  const [footerRegistrations, registerFooter] = useRegistrationCount();
 
   // Restore focus via effect cleanup so it also runs when the dialog closes
   // by unmounting (open kept literally true and the parent conditionally
