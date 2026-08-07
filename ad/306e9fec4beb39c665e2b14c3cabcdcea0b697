@@ -1,0 +1,44 @@
+src/features/generation/worker/generators/lidGripDip.scenario.test.ts
+  s_bac7c136858af0::t_50039113f6d6a6 209-254
+  s_bac7c136858af0::t_5770045967a336 33-34,196-203
+  s_bac7c136858af0::t_b8f6d8b86fb66e 255-303
+src/features/bin-designer/types/featureColors.ts
+  s_bac7c136858af0::t_4a0e5ee94cc590 392-398
+src/features/generation/worker/generators/lidGripRelief.scenario.test.ts
+  s_bac7c136858af0::t_5770045967a336 26,50-57,59
+  s_bac7c136858af0::t_e048357d926ad9 268-295
+src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
+  s_bac7c136858af0::t_a91234f3df5367 694-729
+src/features/bin-designer/types/lid.test.ts
+  s_bac7c136858af0::t_e6e8a8b012d898 435-436
+  s_bac7c136858af0::t_53cfb0b15e1b7f 27-31,419-434,437-442
+  s_bac7c136858af0::t_64172c8cf0a55e 443
+src/features/generation/worker/generators/lidGripRelief.ts
+  s_bac7c136858af0::t_53cfb0b15e1b7f 239-244,247-248,250
+  s_bac7c136858af0::t_b09e4987187cbf 288-296,300
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_bac7c136858af0::t_a898cf58685334 44,190-194,205-209,287-289
+  s_bac7c136858af0::t_80629499dbd84a 224
+src/features/generation/worker/generators/pipeline/stages/lidGripDipStage.ts
+  s_bac7c136858af0::t_53b8b3504986a3 49,71-76,96-107,113-117,119,141,144-151,156
+  s_bac7c136858af0::t_50039113f6d6a6 8
+  s_bac7c136858af0::t_e2e9bd7ea6a0fb 9-15,41-47,108-111
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_bac7c136858af0::t_65d3b4f3331372 561-564
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "ad306e9fec4beb39c665e2b14c3cabcdcea0b697",
+  "prompts": {},
+  "sessions": {
+    "s_bac7c136858af0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "29368394-f6f8-4df8-b911-c423585d9619",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
