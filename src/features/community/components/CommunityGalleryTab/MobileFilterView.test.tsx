@@ -28,6 +28,15 @@ describe('MobileFilterView', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
+  // Same surface as FilterRail: an h2 here was a peer of the gallery dialog's
+  // own h2 title rather than a section under it.
+  it('titles itself below the surface heading, level with the other sections', () => {
+    render(<MobileFilterView items={[]} counts={EMPTY_COUNTS} onBack={vi.fn()} />);
+    expect(
+      screen.getByRole('heading', { level: 3, name: 'community.gallery.filterSheetTitle' })
+    ).toBeInTheDocument();
+  });
+
   it('returns to the results from the back control', () => {
     const onBack = vi.fn();
     render(<MobileFilterView items={[]} counts={EMPTY_COUNTS} onBack={onBack} />);

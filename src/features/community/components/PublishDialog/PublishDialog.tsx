@@ -373,8 +373,11 @@ export function PublishDialog() {
         open
         onClose={handleClose}
         size="3xl"
+        // Mutually exclusive with `mobilePresentation`: together they emit both
+        // `rounded-none` and `rounded-t-2xl`, which tailwind-merge keeps, so
+        // stylesheet order picked the corners of a full-height box pinned to
+        // the bottom. The publish form wants the whole screen on mobile.
         fullScreen="mobile"
-        mobilePresentation="sheet"
         dismissable={phase !== 'publishing' && !unpublishBusy}
       >
         <Dialog.Header
@@ -385,6 +388,7 @@ export function PublishDialog() {
             </span>
           }
           closeAriaLabel={t('common.closeDialog')}
+          bordered
         >
           {canUnpublish && phase === 'form' && (
             <IconButton
@@ -449,7 +453,7 @@ export function PublishDialog() {
                 {t('community.publish.unavailable.body')}
               </Alert>
             </Dialog.Body>
-            <Dialog.Footer>
+            <Dialog.Footer bordered>
               <Button variant="primary" className="min-h-11 md:min-h-0" onClick={handleClose}>
                 {t('common.close')}
               </Button>
@@ -465,7 +469,7 @@ export function PublishDialog() {
                   {t('community.publish.error.loadFailed')}
                 </Alert>
               </Dialog.Body>
-              <Dialog.Footer>
+              <Dialog.Footer bordered>
                 <Button variant="primary" className="min-h-11 md:min-h-0" onClick={ownDesign.retry}>
                   {t('community.publish.error.tryAgain')}
                 </Button>
@@ -536,7 +540,7 @@ export function PublishDialog() {
                 </Field>
               </div>
             </Dialog.Body>
-            <Dialog.Footer>
+            <Dialog.Footer bordered>
               <Button variant="ghost" className="min-h-11 md:min-h-0" onClick={handleClose}>
                 {t('community.publish.success.done')}
               </Button>

@@ -26,9 +26,13 @@ export function FilterRail({ items, counts, onCollapse }: FilterRailProps) {
       data-testid="community-filter-rail"
     >
       <div className="flex shrink-0 items-center justify-between gap-2 border-b border-stroke-subtle px-3 py-2">
-        <h2 className="text-sm font-semibold text-content">
+        {/* h3, matching the shelf and filter-group headings: the gallery renders
+            both inside DesignGalleryModal, whose Dialog title is already an h2,
+            and under CommunityPage's h1. h2 here made it a peer of the dialog
+            title in the modal. */}
+        <h3 className="text-sm font-semibold text-content">
           {t('community.gallery.filterPanelLabel')}
-        </h2>
+        </h3>
         <IconButton
           variant="ghost"
           size="sm"

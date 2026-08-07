@@ -165,7 +165,7 @@ function Rail({ id, title, blurb, cards, onSelect, onSelectAuthor, onSeeAll }: R
           ref={railRef}
           role="list"
           aria-label={title}
-          className="flex list-none snap-x snap-mandatory gap-3 overflow-x-auto pb-2 motion-reduce:snap-none motion-reduce:scroll-auto"
+          className="flex list-none snap-x snap-mandatory gap-3 overflow-x-auto pb-2 scrollbar-thin motion-reduce:snap-none motion-reduce:scroll-auto"
         >
           {cards.map((card, index) => (
             <li key={card.id} className="w-40 shrink-0 snap-start sm:w-44">

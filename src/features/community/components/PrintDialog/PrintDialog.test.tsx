@@ -91,6 +91,19 @@ describe('PrintDialog', () => {
     expect(screen.queryByTestId('print-form')).toBeNull();
   });
 
+  // `fullScreen` and `mobilePresentation` are mutually exclusive mobile
+  // layouts. Passing both emitted `rounded-none` and `rounded-t-2xl` together
+  // (tailwind-merge keeps both, since rounded-t does not supersede rounded),
+  // leaving stylesheet order to decide the corners of a full-height box that
+  // was simultaneously pinned to the bottom.
+  it('picks one mobile layout rather than stacking two contradictory ones', () => {
+    renderOpen();
+    const dialog = screen.getByRole('dialog');
+    expect(dialog.className).toContain('max-md:h-dvh');
+    expect(dialog.className).not.toContain('max-md:rounded-t-2xl');
+    expect(dialog.className).not.toContain('max-md:bottom-0');
+  });
+
   it('shows the sign-in step for an anonymous caller', () => {
     renderOpen({}, null, false);
     expect(screen.getByText('community.print.signinMessage')).toBeInTheDocument();

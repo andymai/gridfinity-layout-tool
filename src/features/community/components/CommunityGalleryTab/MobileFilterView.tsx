@@ -31,9 +31,9 @@ export function MobileFilterView({ items, counts, onBack }: MobileFilterViewProp
         >
           <ArrowLeftIcon className="h-5 w-5" />
         </IconButton>
-        <h2 className="min-w-0 flex-1 truncate text-base font-semibold text-content">
+        <h3 className="min-w-0 flex-1 truncate text-base font-semibold text-content">
           {t('community.gallery.filterSheetTitle')}
-        </h2>
+        </h3>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin px-3 py-3">

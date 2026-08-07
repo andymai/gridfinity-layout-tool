@@ -34,6 +34,15 @@ describe('FilterRail', () => {
     expect(screen.getByTestId('community-filter-panel')).toBeInTheDocument();
   });
 
+  // The gallery mounts inside DesignGalleryModal, whose Dialog title is an h2,
+  // and under CommunityPage's h1. An h2 here was a peer of the dialog title.
+  it('titles itself below the surface heading, level with the other sections', () => {
+    render(<FilterRail items={[]} counts={EMPTY_COUNTS} onCollapse={vi.fn()} />);
+    expect(
+      screen.getByRole('heading', { level: 3, name: 'community.gallery.filterPanelLabel' })
+    ).toBeInTheDocument();
+  });
+
   it('collapses from its own header control', () => {
     const onCollapse = vi.fn();
     render(<FilterRail items={[]} counts={EMPTY_COUNTS} onCollapse={onCollapse} />);

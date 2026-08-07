@@ -589,7 +589,7 @@ function CommunityDetailDialog({
       <Dialog.Header title={title} bordered closeAriaLabel={t('common.close')} />
       <Dialog.Body padding="none" scroll={false}>
         {phase === 'loading' && (
-          <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8">
+          <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6">
             {card !== null && card.thumbnailUrl !== '' && (
               <img
                 src={card.thumbnailUrl}

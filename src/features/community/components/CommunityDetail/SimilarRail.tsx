@@ -84,7 +84,7 @@ export function SimilarRail({ design }: SimilarRailProps) {
       <ul
         role="list"
         aria-label={t('community.detail.similarTitle')}
-        className="flex list-none gap-2 overflow-x-auto pb-1"
+        className="flex list-none gap-2 overflow-x-auto pb-2 scrollbar-thin"
       >
         {similar.map((card) => (
           <li key={card.id} className="shrink-0">
