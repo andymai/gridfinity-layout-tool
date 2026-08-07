@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.377.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.377.0...gridfinity-layout-tool-v4.377.1) (2026-08-07)
+
+
+### Bug Fixes
+
+* **a11y:** give every role="menu" the keyboard contract it advertises ([#3279](https://github.com/andymai/gridfinity-layout-tool/issues/3279)) ([8120f04](https://github.com/andymai/gridfinity-layout-tool/commit/8120f049ffdd6f041863531c84b1a7a959fc3d8f))
+
 ## [4.377.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.376.0...gridfinity-layout-tool-v4.377.0) (2026-08-07)
 
 
