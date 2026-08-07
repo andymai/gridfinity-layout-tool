@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.381.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.380.0...gridfinity-layout-tool-v4.381.0) (2026-08-07)
+
+
+### Features
+
+* **bin-designer:** preview the sliding tray in place, add a fit coupon ([#3300](https://github.com/andymai/gridfinity-layout-tool/issues/3300)) ([58a6328](https://github.com/andymai/gridfinity-layout-tool/commit/58a63285e306286bbee8017b2b22ff500a208e1b))
+
 ## [4.380.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.379.4...gridfinity-layout-tool-v4.380.0) (2026-08-07)
 
 
