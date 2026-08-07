@@ -1,0 +1,41 @@
+src/features/generation/worker/generators/slideRailBuilder.ts
+  s_e694fe720ed7bc::t_57193e0f63b4b8 15-30,33-36,52
+src/features/generation/worker/generators/slideRailBuilder.test.ts
+  s_e694fe720ed7bc::t_f3253f7953cf40 149-150
+  s_e694fe720ed7bc::t_fcb80c27223c58 6,55-56
+src/features/bin-designer/types/slide.ts
+  s_e694fe720ed7bc::t_f1c83638c6c6f8 100-103
+api/lib/communityExampleParamHashes.ts
+  s_e694fe720ed7bc::t_083ca5a8b1d5b3 15-25
+src/features/generation/worker/generators/slideGeometry.test.ts
+  s_e694fe720ed7bc::t_dcecef4e4bdd5e 114-115
+  s_e694fe720ed7bc::t_fcb80c27223c58 2-7,86,96,101,117,160-162,170-171,216-218,220
+  s_e694fe720ed7bc::t_f1c83638c6c6f8 142,145,148,150-153,156-158,165-167,172-177,180-181,183,200-215,219,221-235,247-252,254
+  s_e694fe720ed7bc::t_a55b1025b87156 236-246,253
+src/features/generation/worker/generators/slideGeometry.ts
+  s_e694fe720ed7bc::t_32763c1f0e75a9 122-123,224-226,237-239,277-285
+  s_e694fe720ed7bc::t_dcecef4e4bdd5e 249-252
+  s_e694fe720ed7bc::t_e99f10264738ad 14-23,141-146,208-212,258-261,263-265,269-274,295
+  s_e694fe720ed7bc::t_611b3e4646f737 32-41,44-47,65-118,288,298-299
+  s_e694fe720ed7bc::t_fcb80c27223c58 48-64
+  s_e694fe720ed7bc::t_7c3ffa56f4c700 286-287
+  s_e694fe720ed7bc::t_ef3e167c805b00 289-294
+  s_e694fe720ed7bc::t_8be7317c271324 296-297
+  s_e694fe720ed7bc::t_129d5e6c212774 300-302
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "4097ab22fc11ed74a5325e6d885229646f3dd8d7",
+  "prompts": {},
+  "sessions": {
+    "s_e694fe720ed7bc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "11bd0478-b0a5-44b1-9201-aee9d7b1ff5d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
