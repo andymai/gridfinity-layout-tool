@@ -86,8 +86,14 @@ export const SLIDE_CONSTRAINTS = {
  * printable without further tuning:
  *
  * - `rim` mount, because crossing between bins is what was actually asked for.
- * - `clearanceMm: 0.45` — a running fit at typical FDM tolerances. Below ~0.3
- *   most printers bind; above ~0.6 the tray rattles.
+ * - `clearanceMm: 0.25` — the SAME per-side gap Gridfinity itself uses (a
+ *   41.5mm foot in a 42mm cell is 0.5mm total), so a printer already calibrated
+ *   to seat bins in a baseplate needs no retuning. It is deliberately a little
+ *   LOOSER than the usual FDM sliding fit (0.1-0.2mm per side), which is the
+ *   right direction for a tray up to 250mm long: over that span binding is a
+ *   worse failure than a little play, and warp adds error the short Gridfinity
+ *   foot never sees. It matches what entry-level printers are advised to use
+ *   (0.2-0.25mm per side).
  * - `railProtrusion` 2mm on a 1.2mm wall gives a shelf that supports the tray
  *   without eating the cavity.
  */
@@ -103,5 +109,5 @@ export const DEFAULT_SLIDE_CONFIG: SlideConfig = {
   railDropMm: 21,
   railProtrusionMm: 2,
   railThicknessMm: 2,
-  clearanceMm: 0.45,
+  clearanceMm: 0.25,
 } as const;
