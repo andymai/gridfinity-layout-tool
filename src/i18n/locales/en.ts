@@ -3298,11 +3298,11 @@ const en: Record<string, string> = {
   'commandPalette.footer.commandCount': '{count} commands',
 
   // Bin example gallery entry points
-  'binExamples.sidebarEntry': 'Community',
+  'binExamples.sidebarEntry': 'Community Designs',
   'binExamples.sidebarHint': 'Bins other makers shared',
 
   // Bin example gallery UI
-  'binExamples.gallery.title': 'Design showcase',
+  'binExamples.gallery.title': 'Community Designs',
   'binExamples.gallery.subtitle': 'A showcase of what the bin designer can create',
   'binExamples.gallery.count': '{count} examples',
   'binExamples.gallery.gridLabel': 'Bin example designs',
@@ -3591,7 +3591,7 @@ const en: Record<string, string> = {
   'community.gallery.fitsGapEmpty.title': 'Nothing fits your {width}×{depth} gap yet',
   'community.gallery.fitsGapEmpty.subtitle':
     'Try selecting a larger gap, or clear the gap filter to browse everything.',
-  'community.gallery.clearFeaturedFilter': 'Clear staff picks filter',
+  'community.gallery.clearFeaturedFilter': 'Clear the Featured filter',
   'community.gallery.sort.bestFit': 'Best fit',
   'community.gallery.widthLabel': 'Width (grid units)',
   'community.gallery.depthLabel': 'Depth (grid units)',
@@ -3601,7 +3601,7 @@ const en: Record<string, string> = {
   'community.gallery.depthMinLabel': 'Minimum depth',
   'community.gallery.depthMaxLabel': 'Maximum depth',
   'community.gallery.dimensionAny': 'Any',
-  'community.shelves.staffPicks': 'Staff picks',
+  'community.shelves.featured': 'Featured',
   'community.shelves.proven': 'People have printed these',
   'community.shelves.newThisWeek': 'New this week',
   'community.shelves.mostRemixed': 'Most remixed',
@@ -3638,7 +3638,7 @@ const en: Record<string, string> = {
   'community.mine.unpublishFailed': "Couldn't unpublish the design. Try again.",
 
   // Public /community route (full-page host)
-  'community.page.title': 'Community',
+  'community.page.title': 'Community Designs',
   'community.page.subtitle': 'Designs shared by other makers, free to remix and print.',
   'community.page.publishCta': 'Publish a design',
   'community.page.designCta': 'Design your own bin',
@@ -3658,7 +3658,6 @@ const en: Record<string, string> = {
   'community.detail.dimensionsTitle': 'Dimensions',
   'community.detail.gridUnits': '{width}×{depth}×{height} grid units',
   'community.detail.millimeters': '{width}×{depth}×{height} mm',
-  'community.detail.anglesLabel': 'Preview angles',
   'community.detail.angleAria': 'Show preview angle {index}',
   'community.detail.stats.likes': 'Likes',
   'community.detail.stats.remixes': 'Remixes',
@@ -3804,6 +3803,23 @@ const en: Record<string, string> = {
   'community.print.toast.updated': 'Print updated.',
   'community.print.toast.deleted': 'Print removed.',
 
+  // Detail-view media: the hero panel, its filmstrip, and the enlarged viewer.
+  // Renders and print photos share one sequence, so one set of keys covers both.
+  'community.media.filmstripLabel': 'Design media',
+  'community.media.model': 'Show the 3D model',
+  'community.media.modelBadge': '3D',
+  'community.media.selectPhoto': 'Show the print photo by {author}',
+  'community.media.enlarge': 'Enlarge image',
+  'community.media.renderAlt': '{name}, preview angle {angle}',
+  'community.media.photoAlt': 'Print photo by {author}',
+  'community.media.photoBy': 'Printed by {author}',
+  'community.media.renderCaption': 'Preview angle {angle}',
+  'community.media.counter': '{index} of {total}',
+  'community.media.previous': 'Previous image',
+  'community.media.next': 'Next image',
+  'community.media.more': '+{count}',
+  'community.media.moreAria': 'Show all {count} images',
+
   // Print list and derived summary on the design detail view.
   'community.prints.title': 'Prints',
   'community.prints.countOne': 'Printed by 1 person',
@@ -3820,6 +3836,7 @@ const en: Record<string, string> = {
   'community.prints.durationMinutes': '{minutes}m',
   'community.prints.filament': '{grams}g filament',
   'community.prints.photoAlt': 'Print photo {index} by {author}',
+  'community.prints.photoMissing': 'Photo unavailable',
   'community.prints.report': 'Report this print',
   'community.prints.yours': 'Your print',
   'community.prints.useAsCover': 'Use as cover',

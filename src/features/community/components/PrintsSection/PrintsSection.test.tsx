@@ -126,6 +126,38 @@ describe('PrintsSection', () => {
     expect(screen.queryByTestId('prints-load-more')).toBeNull();
   });
 
+  it('reports its loaded records upward so the parent can place a photo', async () => {
+    const onItemsChange = vi.fn();
+    setup({ onItemsChange });
+
+    await waitFor(() => expect(screen.getByTestId('prints-section')).toBeInTheDocument());
+
+    expect(onItemsChange).toHaveBeenLastCalledWith([print('a')]);
+  });
+
+  it('reports the appended page too, so Load more photos are addressable', async () => {
+    const onItemsChange = vi.fn();
+    api.fetchPrints.mockResolvedValueOnce(page([print('a')], 'cursor-1'));
+    setup({ onItemsChange });
+    await waitFor(() => expect(screen.getByTestId('prints-load-more')).toBeInTheDocument());
+
+    api.fetchPrints.mockResolvedValueOnce(page([print('b')]));
+    fireEvent.click(screen.getByTestId('prints-load-more'));
+
+    await waitFor(() => expect(onItemsChange).toHaveBeenLastCalledWith([print('a'), print('b')]));
+  });
+
+  it('passes the enlarge handler down to each photo tile', async () => {
+    const onOpenPhoto = vi.fn();
+    api.fetchPrints.mockResolvedValue(page([print('a', { photos: ['https://blob/x.webp'] })]));
+    setup({ onOpenPhoto });
+    await waitFor(() => expect(screen.getByTestId('prints-section')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'community.prints.photoAlt' }));
+
+    expect(onOpenPhoto).toHaveBeenCalledWith('a', 0);
+  });
+
   it('refetches when the parent bumps the refresh token', async () => {
     const { rerender } = setup();
     await waitFor(() => expect(api.fetchPrints).toHaveBeenCalledTimes(1));

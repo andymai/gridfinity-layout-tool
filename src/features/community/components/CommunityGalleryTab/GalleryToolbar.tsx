@@ -147,7 +147,7 @@ export function GalleryToolbar({
     chips.push(
       chip(
         'community-featured-chip',
-        t('community.shelves.staffPicks'),
+        t('community.shelves.featured'),
         t('community.gallery.clearFeaturedFilter'),
         () => setFeaturedOnly(false)
       )

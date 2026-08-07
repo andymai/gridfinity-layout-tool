@@ -1,10 +1,19 @@
-import { Component, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import {
+  Component,
+  Suspense,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import type { ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Bounds, Center, OrbitControls, useGLTF, useProgress } from '@react-three/drei';
 import { Button, ProgressBar, cn } from '@/design-system';
 import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion';
 import { useTranslation } from '@/i18n';
+import { ensureVertexNormals } from './ensureVertexNormals';
 
 // Self-hosted Draco decoder (public/draco/): CSP forbids the default gstatic CDN.
 useGLTF.setDecoderPath('/draco/');
@@ -25,6 +34,10 @@ interface GlbViewerProps {
 
 function Model({ url, onReady }: { url: string; onReady: () => void }) {
   const gltf = useGLTF(url, true);
+  // Layout effect, not a passive one: this must land before the first frame is
+  // drawn, and React runs layout effects before the browser paints and before
+  // the render loop's next animation frame.
+  useLayoutEffect(() => ensureVertexNormals(gltf.scene), [gltf.scene]);
   // useGLTF suspends until the asset resolves, so reaching here means the model
   // is loaded; signal the overlay to fade out after commit (not during render).
   useEffect(() => {

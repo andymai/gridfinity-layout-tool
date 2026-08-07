@@ -12,7 +12,7 @@ import { buildShelves } from './shelfData';
 import { useScrollEdges } from './useScrollEdges';
 
 const SHELF_TITLE_KEYS: Record<ShelfId, string> = {
-  'staff-picks': 'community.shelves.staffPicks',
+  featured: 'community.shelves.featured',
   proven: 'community.shelves.proven',
   'new-this-week': 'community.shelves.newThisWeek',
   'most-remixed': 'community.shelves.mostRemixed',
@@ -56,7 +56,7 @@ export function ShelfLanding({ items, onSelect, onSelectAuthor }: ShelfLandingPr
   // New-this-week has no action: the grid below already shows newest-first,
   // so its "See all" would be a visible no-op.
   const handleSeeAll = (id: ShelfId): void => {
-    if (id === 'staff-picks') {
+    if (id === 'featured') {
       setFeaturedOnly(true);
     } else if (id === 'most-remixed') {
       setSort('remixes');

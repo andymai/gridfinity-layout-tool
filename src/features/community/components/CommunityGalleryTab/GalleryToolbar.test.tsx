@@ -202,11 +202,11 @@ describe('GalleryToolbar active filter chips', () => {
     expect(useBrowseStore.getState().filters.author).toBeNull();
   });
 
-  it('shows a clearable staff-picks chip while featuredOnly is active', () => {
+  it('shows a clearable featured chip while featuredOnly is active', () => {
     useBrowseStore.getState().setFeaturedOnly(true);
     renderToolbar();
     expect(screen.getByTestId('community-featured-chip')).toHaveTextContent(
-      'community.shelves.staffPicks'
+      'community.shelves.featured'
     );
     fireEvent.click(screen.getByRole('button', { name: 'community.gallery.clearFeaturedFilter' }));
     expect(useBrowseStore.getState().filters.featuredOnly).toBe(false);

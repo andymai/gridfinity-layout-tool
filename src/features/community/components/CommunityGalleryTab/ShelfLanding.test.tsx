@@ -70,9 +70,9 @@ describe('ShelfLanding', () => {
         onSelectAuthor={vi.fn()}
       />
     );
-    expect(screen.getByText('community.shelves.staffPicks')).toBeInTheDocument();
+    expect(screen.getByText('community.shelves.featured')).toBeInTheDocument();
     expect(screen.getByText('community.shelves.newThisWeek')).toBeInTheDocument();
-    expect(screen.getByRole('list', { name: 'community.shelves.staffPicks' })).toBeInTheDocument();
+    expect(screen.getByRole('list', { name: 'community.shelves.featured' })).toBeInTheDocument();
     expect(screen.getByText('Bin design003')).toBeInTheDocument();
   });
 
@@ -93,7 +93,7 @@ describe('ShelfLanding', () => {
         onSelectAuthor={vi.fn()}
       />
     );
-    fireEvent.click(screen.getByTestId('community-shelf-see-all-staff-picks'));
+    fireEvent.click(screen.getByTestId('community-shelf-see-all-featured'));
     const { filters } = useBrowseStore.getState();
     expect(filters.featuredOnly).toBe(true);
     expect(filters.sort).toBe('newest');
@@ -122,7 +122,7 @@ describe('ShelfLanding', () => {
     );
     // The visible label is the same short string on every shelf; the shelf
     // name lives in the accessible name, which is what distinguishes them.
-    expect(screen.getByTestId('community-shelf-see-all-staff-picks').textContent).toBe(
+    expect(screen.getByTestId('community-shelf-see-all-featured').textContent).toBe(
       'community.shelves.seeAll'
     );
     expect(screen.getByTestId('community-shelf-see-all-most-remixed').textContent).toBe(

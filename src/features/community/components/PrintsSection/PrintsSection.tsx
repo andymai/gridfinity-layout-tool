@@ -7,7 +7,7 @@
  * otherwise have to stay in sync through the parent.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { Button, Spinner } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { isOk } from '@/core/result';
@@ -28,6 +28,14 @@ export interface PrintsSectionProps {
   isOwner?: boolean;
   /** The design's current cover photo, '' when it still uses the render. */
   coverPhotoUrl?: string;
+  /** Opens the enlarged view on a print's nth photo. */
+  onOpenPhoto?: (printId: string, photoIndex: number) => void;
+  /**
+   * Reports the loaded records upward. The detail view builds the media
+   * sequence from them, and this section is the only place that paginates, so
+   * without it a photo revealed by Load more would have no index to open on.
+   */
+  onItemsChange?: (items: readonly CommunityPrint[]) => void;
 }
 
 type LoadStatus = 'loading' | 'ready' | 'error';
@@ -39,6 +47,8 @@ export function PrintsSection({
   onReport,
   isOwner = false,
   coverPhotoUrl = '',
+  onOpenPhoto,
+  onItemsChange,
 }: PrintsSectionProps) {
   const t = useTranslation();
 
@@ -91,6 +101,14 @@ export function PrintsSection({
       cancelled = true;
     };
   }, [designId, requestKey]);
+
+  // Layout effect, not a passive one: Load more renders the new photo tiles as
+  // clickable in the same commit, and the parent resolves a click against its
+  // own copy of the list. A passive effect leaves a window where those tiles
+  // exist but the parent cannot place them, and the click resolves to nothing.
+  useLayoutEffect(() => {
+    onItemsChange?.(items);
+  }, [items, onItemsChange]);
 
   const applyCover = useCallback(
     (photoUrl: string | null) => {
@@ -187,6 +205,7 @@ export function PrintsSection({
                 onReport={onReport}
                 onPromoteCover={isOwner ? applyCover : undefined}
                 coverPhotoUrl={cover}
+                onOpenPhoto={onOpenPhoto}
               />
             ))}
           </ul>

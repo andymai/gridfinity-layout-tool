@@ -86,6 +86,75 @@ describe('PrintCard', () => {
     expect(screen.getByRole('img')).toHaveAttribute('alt', 'community.prints.photoAlt');
   });
 
+  it('opens the enlarged view on the photo that was clicked', () => {
+    const onOpenPhoto = vi.fn();
+    render(
+      <PrintCard
+        print={print({ photos: ['https://blob.example/a.webp', 'https://blob.example/b.webp'] })}
+        isMine={false}
+        onOpenPhoto={onOpenPhoto}
+      />
+    );
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'community.prints.photoAlt' })[1]);
+
+    expect(onOpenPhoto).toHaveBeenCalledWith('abc123def456:aaa', 1);
+  });
+
+  it('leaves photos inert when no enlarge handler is wired', () => {
+    render(<PrintCard print={print({ photos: ['https://blob.example/a.webp'] })} isMine={false} />);
+    expect(
+      screen.queryByRole('button', { name: 'community.prints.photoAlt' })
+    ).not.toBeInTheDocument();
+  });
+
+  it('gives photos explicit dimensions so a late load cannot shift the grid', () => {
+    render(<PrintCard print={print({ photos: ['https://blob.example/a.webp'] })} isMine={false} />);
+    const image = screen.getByRole('img');
+    expect(image).toHaveAttribute('width');
+    expect(image).toHaveAttribute('height');
+  });
+
+  it('renders no tile for an empty photo slot, which would open nothing', () => {
+    render(
+      <PrintCard
+        print={print({ photos: ['', 'https://blob.example/b.webp'] })}
+        isMine={false}
+        onOpenPhoto={vi.fn()}
+      />
+    );
+
+    expect(screen.getAllByRole('button', { name: 'community.prints.photoAlt' })).toHaveLength(1);
+  });
+
+  it('withdraws cover promotion once a photo is known to be dead', () => {
+    render(
+      <PrintCard
+        print={print({ photos: ['https://blob.example/gone.webp'] })}
+        isMine={false}
+        onPromoteCover={vi.fn()}
+      />
+    );
+    expect(screen.getByTestId('print-promote-0')).toBeInTheDocument();
+
+    fireEvent.error(screen.getByRole('img'));
+
+    // The server only checks the URL belongs to a live print, so a dead photo
+    // would sail onto the gallery grid, the most public surface in the app.
+    expect(screen.queryByTestId('print-promote-0')).not.toBeInTheDocument();
+  });
+
+  it('falls back to a label rather than a broken-image glyph', () => {
+    render(
+      <PrintCard print={print({ photos: ['https://blob.example/gone.webp'] })} isMine={false} />
+    );
+
+    fireEvent.error(screen.getByRole('img'));
+
+    expect(screen.getByTestId('print-photo-missing')).toBeInTheDocument();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+  });
+
   it("offers reporting on someone else's print", () => {
     const onReport = vi.fn();
     render(<PrintCard print={print()} isMine={false} onReport={onReport} />);

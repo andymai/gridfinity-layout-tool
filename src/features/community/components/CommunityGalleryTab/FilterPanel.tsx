@@ -182,7 +182,7 @@ export function FilterPanel({ items, counts, touchSize = false }: FilterPanelPro
     ),
     toggleRow(
       'featured',
-      t('community.shelves.staffPicks'),
+      t('community.shelves.featured'),
       filters.featuredOnly,
       counts.featured,
       () => setFeaturedOnly(!filters.featuredOnly)

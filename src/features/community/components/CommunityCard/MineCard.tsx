@@ -17,7 +17,7 @@ import type { CommunityCard as CommunityCardData } from '@/shared/types/communit
 import { unpublishDesign } from '../../api/client';
 import { useBrowseStore } from '../../store/browseStore';
 import { useMineStore } from '../../store/mineStore';
-import { HeartGlyph, RemixGlyph } from './CommunityCard';
+import { HeartGlyph, PrintGlyph, RemixGlyph } from './CommunityCard';
 import { formatCardDims } from './cardDims';
 
 export interface MineCardProps {
@@ -30,25 +30,6 @@ export interface MineCardProps {
   /** True while another card's Edit action is in flight. */
   editBusy: boolean;
   index: number;
-}
-
-function PrinterGlyph() {
-  return (
-    <svg
-      aria-hidden="true"
-      className="h-3 w-3"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
-      />
-    </svg>
-  );
 }
 
 function PlaceholderGlyph() {
@@ -240,7 +221,7 @@ export function MineCard({
           </span>
           <span aria-hidden="true">·</span>
           <span className="inline-flex items-center gap-0.5">
-            <PrinterGlyph />
+            <PrintGlyph />
             <span aria-hidden="true">{card.counts.exports}</span>
             <span className="sr-only">
               {t('community.mine.printsLabel', { count: card.counts.exports })}

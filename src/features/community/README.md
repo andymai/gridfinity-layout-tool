@@ -46,7 +46,7 @@ Identity is a line on the form (`Publishing as X · Change`), not a step. As a s
 
   **The filter surface is never a dialog.** One host is already a dialog, so a filter dialog would stack a second focus trap, scroll lock and Escape target on the first. `FilterPanel` holds every narrowing control and is mounted two ways: `FilterRail` (a collapsible `<aside>` inside the gallery body, open by default, collapse persisted by `useFilterPanel`) and `MobileFilterView` (replaces the grid in place, with a live "Show N designs" bar as the way back). Because the mobile view unmounts the grid, `CommunityGalleryTab` banks the scroll offset in the toggle handler — a detached node reports `scrollTop` 0, so an effect cleanup is too late.
 
-  **One home for narrowing, chips only when it is out of sight.** Liked/Mine/Recent/Staff picks live in the panel beside category, size and technique; author and the fits-gap handoff pin to a "Viewing" block above them, since they arrive from elsewhere rather than being ticked. `GalleryToolbar` renders a removable chip per active filter **only while the panel is hidden** — visible together they would show the same state twice, hidden they are the sole record of why the grid is short. `dimensionSummary.ts` folds the size bounds into one chip (`W 2–4 · H ≤6`) whose dismiss clears every axis.
+  **One home for narrowing, chips only when it is out of sight.** Liked/Mine/Recent/Featured live in the panel beside category, size and technique; author and the fits-gap handoff pin to a "Viewing" block above them, since they arrive from elsewhere rather than being ticked. `GalleryToolbar` renders a removable chip per active filter **only while the panel is hidden** — visible together they would show the same state twice, hidden they are the sole record of why the grid is short. `dimensionSummary.ts` folds the size bounds into one chip (`W 2–4 · H ≤6`) whose dismiss clears every axis.
 
   **Counts come from the grid's own predicate.** `facetCounts.ts` calls `createCardMatcher` (exported from `browseStore`, the same function `filterAndSortCards` filters with) once per facet with that facet's own selection neutralised, so picking "Tools" does not zero out every other category and a promised count can never disagree with what the grid delivers. A zero-count option is disabled unless it is the current selection, which stays live as the way back out. `categoryAll`/`techniqueAll` are separate fields for exactly this reason: the "All" option's count is the facet-neutral total, not `total`, which is already narrowed by the selection it would clear.
 
@@ -63,7 +63,10 @@ Identity is a line on the form (`Publishing as X · Change`), not a step. As a s
 
   That CTA leaves for the designer **before** asking to publish. The publish dialog captures thumbnails and a GLB from the live mesh, which only exists while the designer is mounted, so publishing straight from this route would open a dialog that can never finish its preview. A visitor with nothing saved is sent to the designer alone.
 
-- `components/CommunityDetail/`: the detail overlay (viewer, lineage, remix/owner actions, history trap). Desktop streams the GLB immediately; mobile is deliberately tap-to-load ("View in 3D") to spare cellular data, a planned deviation from always-instant 3D. The angle strip hides once the model is live, since angle posters sit behind the canvas.
+- `components/CommunityDetail/`: the detail overlay (media panel, lineage, remix/owner actions, history trap). Desktop streams the GLB immediately; mobile is deliberately tap-to-load ("View in 3D") to spare cellular data, a planned deviation from always-instant 3D.
+
+  **The design-acting buttons live in the rail, not the dialog footer.** Remix, Place in layout and Edit original sit under the author line, beside the design they act on. The footer keeps what acts on the _record_ rather than on the decision: share, report, and the owner's Duplicate as new.
+
 - `utils/displayName.ts`: explicit localStorage persistence of the chosen public display name (this repo has no zustand persist middleware).
 - `@/shared/utils/communityPendingAction`: sessionStorage stash of a pending publish intent (plus form draft) across the OAuth redirect. Lives in shared, not here, because the designer reads it on mount to resume the flow (the callback always lands on `/`).
 
@@ -103,8 +106,22 @@ Backend lives in `api/community/prints.ts` (`GET`/`PUT`/`DELETE`/`POST report`),
 
 - **Card count**: `counts.prints` rides the list index and renders on the card in full-strength text, where likes and remixes are tertiary. Proof of print outranks the engagement counts by design.
 - **`prints` is a queryable sort** (`community:index:prints`, a member of `COMMUNITY_INDEX_SORTS`). Newest stays the default so new publishers still get seen.
-- **Proven shelf** sits directly under staff picks, above recency: a design other people actually printed is the strongest recommendation the library has, and it is the one signal nobody can inflate by posting.
+- **Proven shelf** sits directly under the featured shelf, above recency: a design other people actually printed is the strongest recommendation the library has, and it is the one signal nobody can inflate by posting.
 - **Cover promotion** is owner opt-in and server-validated against the design's own **live** prints. The gallery grid is the most public surface in the app, and this is the only path by which a user-supplied image can reach it, so the check that the URL belongs to a live print of that design is load-bearing, not defensive. A hidden print's photo is not promotable.
+
+### Detail media
+
+`utils/designMedia.ts` flattens a design's imagery into one ordered `DesignImage[]`: the generated angle renders, then every photo from every print. `DesignMediaPanel` renders it as a hero panel over a filmstrip, and `MediaLightbox` is the enlarged view.
+
+**One sequence, addressed by index.** The filmstrip, the print grid and the lightbox all identify an image by its position in that single list, so opening the viewer from any of them lands on the same picture and steps through the same set. Building the list twice is how "photo 3" comes to mean two different things, which is why `findPhotoIndex` resolves a print's photo by print identity rather than by URL: the server does not dedupe photos, so two prints can carry the same URL.
+
+**The strip is permanent.** It replaced an angle picker that unmounted once the model went live. That left every render unreachable the moment the GLB loaded, and gave print photos nowhere to appear but the bottom of a 320px rail.
+
+**The strip is capped** at `FILMSTRIP_MAX_TILES`, with a `+N` tile that opens the lightbox on the first image it could not show — a capped strip must never make an image unreachable. `PrintsSection` is the only surface that paginates, so it reports its loaded records upward through `onItemsChange`; without that, a photo revealed by Load more would have no index to open on.
+
+Photos enlarge with their attribution and `fitVerdict`. The verdict is what decides whether you print the thing, so a photo shown without it is decoration rather than evidence.
+
+Zoom is deliberately fit-to-screen only: `printPhoto.ts` caps uploads at 1200px, so on a typical window that is already near 1:1 and a zoom control would magnify WebP artefacts rather than reveal detail.
 
 ### Gap fit
 
