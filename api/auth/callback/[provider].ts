@@ -21,7 +21,7 @@ import {
   SESSION_TTL_SECONDS,
   type SessionRecord,
 } from '../../lib/session.js';
-import { deriveUserId, type AuthProvider } from '../../lib/userId.js';
+import { resolveUserId, type AuthProvider } from '../../lib/userId.js';
 import { userProfileKey } from '../../lib/redisKeys.js';
 import { getProvider, isSupportedProvider, type ProviderProfile } from '../providers/index.js';
 
@@ -98,7 +98,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     return;
   }
 
-  const userId = deriveUserId(provider, profile.subject);
+  // Resolves through the salted identity map: an existing account keeps its
+  // id (including a pre-map account, adopted on first sign-in after deploy),
+  // a new one gets a random, unreversible id.
+  const userId = await resolveUserId(redis, provider, profile.subject);
+  if (userId === null) {
+    logger.error('Sign-in failed: TOKEN_SALT is not configured');
+    clearOAuthCookies(res);
+    serviceUnavailable(res);
+    return;
+  }
   const now = Date.now();
 
   const profileKey = userProfileKey(userId);

@@ -12,6 +12,7 @@
  *   ratelimit:{action}:{scope}      → sliding-window rate-limit counter
  *   session:{token}                 → user session record (sync feature)
  *   scan:session:{token}            → ephemeral phone-scan handoff (traced SVG)
+ *   identity:{saltedHash}           → OAuth identity → user id (see userIdentityKey)
  *   users:{uid}:sessions            → SET of session tokens owned by a user
  *   users:{uid}:profile             → user profile (email, provider, etc.)
  *   users:{uid}:index:{kind}        → HASH of a user's synced layouts/designs
@@ -40,6 +41,8 @@
  *   community:exported:{id}         → SET of clientId dedupe tokens for the "export" (printed) counter, 7d TTL
  *   community:viewed:{id}           → SET of hashed-IP dedupe tokens for the "views" counter, 7d TTL
  */
+
+import { createHash } from 'node:crypto';
 
 export type SyncItemKind = 'layouts' | 'designs' | 'baseplates';
 
@@ -74,6 +77,30 @@ export function sessionKey(token: string): string {
 /** Ephemeral phone-scan handoff record (traced SVG awaiting desktop pickup). */
 export function scanSessionKey(token: string): string {
   return `scan:session:${token}`;
+}
+
+/**
+ * Maps an OAuth identity to this deployment's user id.
+ *
+ * The key is a SALTED hash of `(provider, subject)` and the value is an opaque
+ * random id, so neither half is precomputable. An unsalted key would let
+ * anyone with read access build `sha256(github:N) -> userId` across GitHub's
+ * bounded, public account-id space — reproducing the very join the random id
+ * exists to prevent.
+ *
+ * Returns null without TOKEN_SALT; callers must fail the sign-in rather than
+ * write an unsalted key. This does make sign-in one more thing a TOKEN_SALT
+ * rotation would break, alongside community blob paths, print photo paths and
+ * `authorPublicId` — the salt is already effectively permanent per deployment.
+ */
+export function userIdentityKey(provider: string, providerSubject: string): string | null {
+  const salt = process.env.TOKEN_SALT;
+  if (!salt) return null;
+  const digest = createHash('sha256')
+    .update(`${salt}:identity:${provider}:${providerSubject}`)
+    .digest('hex')
+    .slice(0, 32);
+  return `identity:${digest}`;
 }
 
 /** SET of session tokens for a user (for cascade invalidation on sign-out / account delete). */

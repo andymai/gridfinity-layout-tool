@@ -10,6 +10,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import type { OAuthProvider, ProviderProfile } from './providers/index';
 import type * as ProvidersModule from './providers/index';
+import { createHash } from 'node:crypto';
 
 const mockGoogleProvider = {
   buildAuthorizationUrl: vi.fn(),
@@ -34,10 +35,14 @@ let redisStore: Map<string, string>;
 let redisSets: Map<string, Set<string>>;
 const mockRedis = {
   get: vi.fn(async (k: string) => redisStore.get(k) ?? null),
-  set: vi.fn(async (k: string, v: string) => {
+  // NX-aware: the identity map uses SET NX to decide the winner when two
+  // first sign-ins for one identity race.
+  set: vi.fn(async (k: string, v: string, ...args: unknown[]) => {
+    if (args.includes('NX') && redisStore.has(k)) return null;
     redisStore.set(k, v);
     return 'OK';
   }),
+  exists: vi.fn(async (k: string) => (redisStore.has(k) ? 1 : 0)),
   del: vi.fn(async (k: string) => {
     redisStore.delete(k);
     return 1;
@@ -171,6 +176,9 @@ function makeReq(opts: {
 beforeEach(() => {
   redisStore = new Map();
   redisSets = new Map();
+  // Sign-in resolves the user id through the salted identity map, which
+  // refuses to derive a key without a salt.
+  vi.stubEnv('TOKEN_SALT', 'test-salt');
   vi.clearAllMocks();
   mockGoogleProvider.buildAuthorizationUrl.mockReturnValue({
     url: new URL('https://accounts.google.com/o/oauth2/v2/auth?state=mock'),
@@ -344,6 +352,73 @@ describe('callback/[provider]', () => {
     const profile = JSON.parse(redisStore.get(profileKey ?? '') ?? '{}');
     expect(profile.email).toBe('al@example.com');
     expect(profile.provider).toBe('github');
+  });
+
+  // The id is now random and resolved through a salted identity map, so an
+  // existing account is only recognized by that map (or, once, by its legacy
+  // profile) — never by re-deriving a hash of the provider subject.
+  describe('user id resolution', () => {
+    // githubProfile()'s subject is '42' — a realistic sequential GitHub id,
+    // and the value the legacy scheme would have hashed.
+    const GITHUB_SUBJECT = '42';
+
+    async function signInGitHub() {
+      mockGitHubProvider.exchangeCode.mockResolvedValueOnce(githubProfile());
+      const { default: handler } = await import('./callback/[provider]');
+      const res = makeRes();
+      await handler(
+        makeReq({
+          query: { provider: 'github', code: 'authcode', state: 'S' },
+          cookie: '__Host-gflt_oauth_state=S',
+        }),
+        res as unknown as VercelResponse
+      );
+      return res;
+    }
+
+    function storedUserId(): string | undefined {
+      const profileKey = [...redisStore.keys()].find((k) => k.endsWith(':profile'));
+      return profileKey?.split(':')[1];
+    }
+
+    it('does not store the unsalted hash of the provider subject as the id', async () => {
+      await signInGitHub();
+      const uid = storedUserId();
+      const unsalted = createHash('sha256')
+        .update(`github:${GITHUB_SUBJECT}`)
+        .digest('hex')
+        .slice(0, 32);
+      expect(uid).toMatch(/^[a-f0-9]{32}$/);
+      expect(uid).not.toBe(unsalted);
+    });
+
+    it('adopts an existing legacy account instead of stranding it', async () => {
+      const legacy = createHash('sha256')
+        .update(`github:${GITHUB_SUBJECT}`)
+        .digest('hex')
+        .slice(0, 32);
+      redisStore.set(`users:${legacy}:profile`, JSON.stringify({ userId: legacy }));
+
+      await signInGitHub();
+
+      expect(storedUserId()).toBe(legacy);
+    });
+
+    it('reuses the same id on a second sign-in', async () => {
+      await signInGitHub();
+      const first = storedUserId();
+      await signInGitHub();
+      expect(storedUserId()).toBe(first);
+    });
+
+    // Failing closed matters more than signing the user in: an unsalted map
+    // key would rebuild the sha256(github:N) -> userId join outright.
+    it('fails the sign-in rather than minting an account without TOKEN_SALT', async () => {
+      vi.stubEnv('TOKEN_SALT', '');
+      const res = await signInGitHub();
+      expect(res._status).toBe(503);
+      expect([...redisStore.keys()].some((k) => k.endsWith(':profile'))).toBe(false);
+    });
   });
 
   it('rejects with 400 when the provider exchangeCode throws', async () => {
