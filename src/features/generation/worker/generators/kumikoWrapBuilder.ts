@@ -1033,7 +1033,10 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): Shape3D[] {
       (wc.clips.clip !== null ||
         wc.clips.handleClip !== null ||
         wc.clips.rampClip !== null ||
-        wc.clips.textClip !== null)
+        wc.clips.textClip !== null ||
+        // Without this a bin whose ONLY clip is the sliding-tray keep-out
+        // skips the clipping pass altogether and the pattern eats the rail.
+        wc.clips.slideClip !== null)
     );
   };
   const anyClips = wallSides.some(hasClips);
@@ -1112,7 +1115,8 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): Shape3D[] {
             wc.clips.clip,
             wc.clips.handleClip,
             wc.clips.rampClip,
-            wc.clips.textClip
+            wc.clips.textClip,
+            wc.clips.slideClip
           );
         }
         if (!current) {

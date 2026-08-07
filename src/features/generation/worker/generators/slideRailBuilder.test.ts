@@ -217,6 +217,39 @@ describe('rail survives other wall features', () => {
     }
     expect(present).toBe(total);
   }, 120_000);
+
+  it('is not carved away by a kumiko wrap either', async () => {
+    // Kumiko has its own clipping call site, which did not pass the keep-out at
+    // first. A bin whose ONLY clip is the rail also used to skip the clipping
+    // pass entirely, so both the guard and the call had to learn about it.
+    const mesh = parseStl(
+      (
+        await exportBin(
+          buildParams({
+            width: 3,
+            depth: 2,
+            height: 6,
+            wallPattern: {
+              ...DEFAULT_BIN_PARAMS.wallPattern,
+              enabled: true,
+              pattern: 'mitsukude',
+            },
+            slide: { ...DEFAULT_BIN_PARAMS.slide, enabled: true, railMount: 'interior' },
+          }),
+          'stl'
+        )
+      ).data
+    );
+    let present = 0;
+    let total = 0;
+    for (let x = -55; x <= 55; x += 5) {
+      total++;
+      if (verticalSolidSpans(mesh, x, 39.0).some(([lo, hi]) => lo < 20.95 && hi > 20.95)) {
+        present++;
+      }
+    }
+    expect(present).toBe(total);
+  }, 180_000);
 });
 
 describe('style gates', () => {
