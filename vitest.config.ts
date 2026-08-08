@@ -92,15 +92,21 @@ export default defineConfig({
         '**/*.config.*',
         '**/types.ts',
         '**/index.ts',
-        'api/**',
+        // api/ is NOT excluded. Its tests already run in the unit project, so
+        // excluding it only suppressed the report: a well-covered, security-
+        // sensitive surface (auth, moderation, quotas, rate limits) sat under
+        // no threshold at all, and a regression there registered as nothing.
         'src/shell/Collab/**',
         'src/shared/hooks/usePresence.ts',
       ],
+      // Set just under what the suite actually achieves (84.0 / 77.3 / 80.9 /
+      // 82.5), leaving room for ordinary churn. They had drifted 6-9 points
+      // below reality, so a real regression could land without tripping one.
       thresholds: {
-        lines: 76,
-        branches: 68,
-        functions: 74,
-        statements: 75,
+        lines: 82,
+        branches: 75,
+        functions: 79,
+        statements: 81,
       },
     },
     projects: [
