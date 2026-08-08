@@ -1,0 +1,68 @@
+src/i18n/locales/ja.json
+  s_08ffc81f33fef3::t_e7d602b7b8acf1 1645-1646
+src/i18n/locales/nb.json
+  s_08ffc81f33fef3::t_e7d602b7b8acf1 1692-1693
+src/i18n/locales/it.json
+  s_08ffc81f33fef3::t_e7d602b7b8acf1 1692-1693
+src/i18n/locales/es.json
+  s_08ffc81f33fef3::t_e7d602b7b8acf1 1838-1839
+src/i18n/locales/sv.json
+  s_08ffc81f33fef3::t_e7d602b7b8acf1 3378-3379
+src/i18n/locales/cs.json
+  s_08ffc81f33fef3::t_e7d602b7b8acf1 3378-3379
+src/i18n/locales/nl.json
+  s_08ffc81f33fef3::t_e7d602b7b8acf1 1700
+  s_08ffc81f33fef3::t_3fc6e3b42f151b 1701
+src/i18n/locales/uk.json
+  s_08ffc81f33fef3::t_e7d602b7b8acf1 1639-1640
+src/i18n/locales/zh-CN.json
+  s_08ffc81f33fef3::t_e7d602b7b8acf1 3441-3442
+src/features/community/components/CommunityGalleryTab/CommunityGalleryTab.test.tsx
+  s_08ffc81f33fef3::t_ff71b1e1de01fa 227-266
+src/i18n/locales/en.ts
+  s_08ffc81f33fef3::t_e7d602b7b8acf1 3671-3672
+src/i18n/locales/de.json
+  s_08ffc81f33fef3::t_e7d602b7b8acf1 1700-1701
+src/features/community/components/CommunityGalleryTab/CommunityTechniquePills.tsx
+  s_08ffc81f33fef3::t_11f44b8b27e9ed 76-78,80
+src/design-system/Badge/Badge.tsx
+  s_08ffc81f33fef3::t_b4b39f0e67a2eb 12-14
+src/i18n/locales/fr.json
+  s_08ffc81f33fef3::t_e7d602b7b8acf1 3347-3348
+src/i18n/locales/ko.json
+  s_08ffc81f33fef3::t_e7d602b7b8acf1 3378-3379
+src/i18n/locales/pl.json
+  s_08ffc81f33fef3::t_e7d602b7b8acf1 3378-3379
+src/features/community/components/CommunityGalleryTab/CommunityGalleryTab.tsx
+  s_08ffc81f33fef3::t_95fe8365db6844 331-349
+  s_08ffc81f33fef3::t_4cad15f9705ad3 454
+src/i18n/locales/pt-BR.json
+  s_08ffc81f33fef3::t_e7d602b7b8acf1 3378-3379
+src/design-system/Badge/Badge.test.tsx
+  s_08ffc81f33fef3::t_30c4c68fbf8de1 43
+src/features/community/components/CommunityDetail/CommunityDetailContent.test.tsx
+  s_08ffc81f33fef3::t_ca8c133b7ecf19 105-112,116-123
+  s_08ffc81f33fef3::t_cf78e03fc73bd0 124
+scripts/i18n-values-allowlist.json
+  s_08ffc81f33fef3::t_3fc6e3b42f151b 160
+src/features/community/components/CommunityDetail/CommunityDetailContent.tsx
+  s_08ffc81f33fef3::t_b875d82f731ee0 276-278,280,283-291
+src/features/community/README.md
+  s_08ffc81f33fef3::t_befc7d3e74ba8e 85-87,217
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "15bdf8773934599197d8239065fcef1d7dfb35e6",
+  "prompts": {},
+  "sessions": {
+    "s_08ffc81f33fef3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3fab88d2-9c87-4fa2-bf2e-c65f3d4a493d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
