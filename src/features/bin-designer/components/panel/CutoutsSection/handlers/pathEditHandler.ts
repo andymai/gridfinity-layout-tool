@@ -90,8 +90,17 @@ export function handleVertexEditPointerDown(
     }
   }
 
-  if (mode.selectedPointIndex !== null) {
-    const pt = path[mode.selectedPointIndex];
+  // The index can outlive the point it named: the path shrinks whenever a
+  // vertex is deleted, an undo lands, or a remote edit arrives, and none of
+  // those go through this handler. Reading past the end here threw a
+  // TypeError and took the editor down with it, so a stale index is treated
+  // as no selection and the click falls through to the segment test below.
+  const selectedPoint =
+    mode.selectedPointIndex === null ? undefined : path[mode.selectedPointIndex];
+
+  if (selectedPoint !== undefined && mode.selectedPointIndex !== null) {
+    const pt = selectedPoint;
+    const selectedIndex = mode.selectedPointIndex;
 
     if (pt.handleIn) {
       const hx = pt.x + pt.handleIn.dx;
@@ -99,7 +108,7 @@ export function handleVertexEditPointerDown(
       if (isNearPoint(event.mmX, event.mmY, hx, hy, threshold)) {
         setters.setMode({
           ...mode,
-          dragTarget: { type: 'handle', index: mode.selectedPointIndex, handleType: 'in' },
+          dragTarget: { type: 'handle', index: selectedIndex, handleType: 'in' },
         });
         return;
       }
@@ -111,7 +120,7 @@ export function handleVertexEditPointerDown(
       if (isNearPoint(event.mmX, event.mmY, hx, hy, threshold)) {
         setters.setMode({
           ...mode,
-          dragTarget: { type: 'handle', index: mode.selectedPointIndex, handleType: 'out' },
+          dragTarget: { type: 'handle', index: selectedIndex, handleType: 'out' },
         });
         return;
       }
@@ -186,7 +195,18 @@ export function handleVertexEditPointerMove(
 
     setters.setPreview(new Map([[cutout.id, { path: updatedPath }]]));
   } else {
+    // Same stale-index hazard as the pointer-down hit test: the path can
+    // shrink mid-drag (an undo, a remote edit), and reading past its end threw
+    // rather than simply dropping the frame.
     const pt = path[dragTarget.index];
+    if (pt === undefined) {
+      // Dropping the frame is not enough. The last preview was computed
+      // against the longer path and pointer-up commits whatever it finds, so
+      // leaving it would put the removed points back and overwrite whatever
+      // shrank the path.
+      setters.setPreview(new Map());
+      return;
+    }
     // Clamp handle endpoint to bin bounds
     const clampedX = Math.max(0, Math.min(event.mmX, bounds.binWidth));
     const clampedY = Math.max(0, Math.min(event.mmY, bounds.binDepth));
@@ -264,6 +284,10 @@ export function handleVertexEditKeyDown(
     case 'Delete':
     case 'Backspace': {
       if (mode.selectedPointIndex === null) return;
+      // An index past the end splices nothing, so the "updated" path came back
+      // identical and was committed anyway — an undo entry that undoes to
+      // itself. The path shrinks outside this handler, so the index can lead.
+      if (mode.selectedPointIndex >= path.length) return;
 
       const updated = removePoint(path, mode.selectedPointIndex);
       if (!updated) return; // would drop below MIN_PATH_POINTS anchors
