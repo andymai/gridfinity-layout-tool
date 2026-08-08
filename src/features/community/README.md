@@ -82,7 +82,9 @@ Identity is a line on the form (`Publishing as X · Change`), not a step. As a s
 
   That CTA leaves for the designer **before** asking to publish. The publish dialog captures thumbnails and a GLB from the live mesh, which only exists while the designer is mounted, so publishing straight from this route would open a dialog that can never finish its preview. A visitor with nothing saved is sent to the designer alone.
 
-- `components/CommunityDetail/`: the detail overlay (media panel, lineage, remix/owner actions, history trap). Desktop streams the GLB immediately; mobile is deliberately tap-to-load ("View in 3D") to spare cellular data, a planned deviation from always-instant 3D.
+- `components/CommunityDetail/`: the detail overlay (media panel, lineage, remix/owner actions, history trap).
+
+  **The grid's scroll offset is banked on scroll, not when the overlay opens.** Opening it collapses the grid's scroll height, and the browser clamps the offset to 0 as a native consequence — there is no assignment to intercept, and by the time an effect runs the offset is already gone. `CommunityGalleryTab` therefore records it from the grid's own `onScroll`, and only while no detail is open, since the clamp fires a scroll event of its own that would otherwise bank the 0 over it. Desktop streams the GLB immediately; mobile is deliberately tap-to-load ("View in 3D") to spare cellular data, a planned deviation from always-instant 3D.
 
   **The design-acting buttons live in the rail, not the dialog footer.** Remix, Place in layout and Edit original sit under the author line, beside the design they act on. The footer keeps what acts on the _record_ rather than on the decision: share, report, and the owner's Duplicate as new.
 
@@ -212,7 +214,7 @@ The estimator itself is bin-designer internal, so the wrapper lives in `shared/`
 
 Bed fit compares the footprint against the viewer's configured bed and allows rotation, since every slicer will rotate it for you.
 
-Note that `counts.exports` means file downloads, not prints. The two are different signals and the UI must not conflate them.
+Note that `counts.exports` means file downloads, not prints. The two are different signals and the UI must not conflate them — the detail's stats row did exactly that, labelling `counts.exports` "Prints", which put a hard `Prints 0` beside a design whose own print list was rendering directly below it. It now reads "Downloads", and prints are a separate stat sourced from `counts.prints`, rendered only when someone has actually reported one: an absent count means the card snapshot predates the field, and must not read as a measured zero.
 
 ## Deferred to later PRs
 

@@ -157,6 +157,7 @@
     "community.cost.filamentLabel",
     "community.detail.millimeters",
     "community.detail.remix",
+    "community.detail.stats.downloads",
     "community.detail.stats.likes",
     "community.detail.stats.remixes",
     "community.gallery.countLabel",

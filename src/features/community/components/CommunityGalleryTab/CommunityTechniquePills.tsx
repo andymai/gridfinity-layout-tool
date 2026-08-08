@@ -73,8 +73,11 @@ export function CommunityTechniquePills({
     cn(
       'flex items-center gap-1.5 whitespace-nowrap rounded-full text-sm font-medium transition-all duration-150',
       touchSize ? 'min-h-11 px-4 py-2' : 'px-3 py-1.5',
+      // text-on-accent, not text-on-dark: the accent is amber, so 92% white
+      // over it measured 2.01:1. Every design-system component that fills with
+      // bg-accent pairs it with this token for the same reason.
       isSelected
-        ? 'bg-accent text-on-dark shadow-sm hover:bg-accent hover:text-on-dark'
+        ? 'bg-accent text-on-accent shadow-sm hover:bg-accent hover:text-on-accent'
         : 'bg-surface text-content-secondary hover:bg-surface-hover hover:text-content',
       disabled && 'opacity-40'
     );

@@ -224,6 +224,46 @@ describe('CommunityGalleryTab', () => {
     expect(grid.className).toContain('auto-fill');
   });
 
+  it('returns the grid to where it was after a detail closes', async () => {
+    indexMock.mockResolvedValue(ok({ items: manyCards(30), capped: false }));
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.getAllByText('Bin design000').length).toBeGreaterThan(0);
+    });
+    const scroller = screen.getByTestId('community-gallery-scroll');
+    scroller.scrollTop = 500;
+    fireEvent.scroll(scroller);
+
+    act(() => useCommunityDetailStore.getState().open('Design000001'));
+    // The overlay collapses the grid's scroll height and the browser clamps
+    // the offset. That is a native consequence, not an assignment, so it is
+    // reproduced here rather than intercepted.
+    scroller.scrollTop = 0;
+
+    act(() => useCommunityDetailStore.getState().close());
+    expect(scroller.scrollTop).toBe(500);
+  });
+
+  it('does not bank an offset recorded while a detail was open', async () => {
+    indexMock.mockResolvedValue(ok({ items: manyCards(30), capped: false }));
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.getAllByText('Bin design000').length).toBeGreaterThan(0);
+    });
+    const scroller = screen.getByTestId('community-gallery-scroll');
+    scroller.scrollTop = 500;
+    fireEvent.scroll(scroller);
+
+    act(() => useCommunityDetailStore.getState().open('Design000001'));
+    // The clamp fires a scroll event of its own; banking that would overwrite
+    // the offset the user actually left behind with a 0.
+    scroller.scrollTop = 0;
+    fireEvent.scroll(scroller);
+
+    act(() => useCommunityDetailStore.getState().close());
+    expect(scroller.scrollTop).toBe(500);
+  });
+
   it('resets the scroll position when the filters change', async () => {
     indexMock.mockResolvedValue(ok({ items: manyCards(30), capped: false }));
     render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
