@@ -10,8 +10,28 @@ on:
 permissions:
   contents: read
 
+# A PR shares one group across its pushes and cancels the superseded run: once
+# the branch moves, the older result is worthless. Main gets a group PER COMMIT
+# instead, so a push there can never cancel the one before it. Every commit on
+# main is a release candidate and its run is the only full-suite signal that
+# commit will ever get, so cancelling threw away the answer rather than an
+# obsolete one.
+#
+# Cancelling on main was near-total, not occasional: release-please pushes its
+# release commit within a minute of the merge that triggered it, and the main
+# suite takes ~30 minutes, so almost every run was killed by the next push. The
+# tell is `Unit Tests Complete: failure` under an otherwise all-`cancelled` run
+# — the gate is `if: always()`, so it outlives its own cancelled dependencies and
+# then fails them for not being `success`. Main read as red because nothing had
+# finished, which looks identical to a real failure at a glance.
+#
+# Per-commit groups rather than one queue: main runs are independent, and
+# serialising them would put each behind ~30 minutes of backlog during a burst of
+# merges. Only `github.sha`/`ref`/`event_name` appear here, all trusted — gating
+# on the commit MESSAGE would be attacker-influenceable, since a PR title becomes
+# the squash commit subject.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name == 'push' && github.sha || 'other' }}
   cancel-in-progress: true
 
 env:
