@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.387.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.387.0...gridfinity-layout-tool-v4.387.1) (2026-08-08)
+
+
+### Bug Fixes
+
+* **community:** browse layout blowout, accessibility, and control polish ([#3322](https://github.com/andymai/gridfinity-layout-tool/issues/3322)) ([ccb7301](https://github.com/andymai/gridfinity-layout-tool/commit/ccb7301f32ae2eae92fcfe4cfc55088c6ae898de))
+
 ## [4.387.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.386.3...gridfinity-layout-tool-v4.387.0) (2026-08-08)
 
 
