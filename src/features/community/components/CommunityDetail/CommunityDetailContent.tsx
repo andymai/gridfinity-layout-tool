@@ -273,10 +273,22 @@ export function CommunityDetailContent({
                   <span className="font-semibold text-content">{counts.remixes}</span>
                 </span>
               )}
+              {/* Downloads, not prints. counts.exports is file downloads, and
+                  labelling it "Prints" put a hard 0 beside a design whose own
+                  print list was rendering below it. */}
               <span>
-                {t('community.detail.stats.exports')}{' '}
+                {t('community.detail.stats.downloads')}{' '}
                 <span className="font-semibold text-content">{counts.exports}</span>
               </span>
+              {/* Only when someone reported one: absent means the card snapshot
+                  predates the field, and an unknown count must not read as a
+                  measured zero. The print list below is the full account. */}
+              {counts.prints !== undefined && counts.prints > 0 && (
+                <span data-testid="community-detail-prints-stat">
+                  {t('community.detail.stats.prints')}{' '}
+                  <span className="font-semibold text-content">{counts.prints}</span>
+                </span>
+              )}
             </div>
             {remixListOpen && counts.remixes > 0 && (
               <DirectRemixList designId={design.id} remixCount={counts.remixes} />

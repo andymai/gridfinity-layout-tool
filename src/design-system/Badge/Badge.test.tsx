@@ -40,7 +40,7 @@ describe('Badge', () => {
   describe('tone', () => {
     it('defaults to neutral', () => {
       render(<Badge>3</Badge>);
-      expect(screen.getByText('3')).toHaveClass('bg-surface-hover', 'text-content-tertiary');
+      expect(screen.getByText('3')).toHaveClass('bg-surface-hover', 'text-content-secondary');
     });
 
     it('applies accent classes', () => {

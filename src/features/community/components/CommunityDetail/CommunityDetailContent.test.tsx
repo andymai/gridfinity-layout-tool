@@ -102,7 +102,24 @@ describe('CommunityDetailContent', () => {
     expect(screen.getByText('9')).toBeInTheDocument();
     expect(screen.getByText('Likes')).toBeInTheDocument();
     expect(screen.getByText('Remixes')).toBeInTheDocument();
+    // counts.exports is file downloads. Labelling it "Prints" put a hard 0
+    // beside a design whose own print list was rendering below it.
+    expect(screen.getByText('Downloads')).toBeInTheDocument();
+  });
+
+  it('reports prints separately, and only once someone has reported one', () => {
+    renderContent({}, { counts: { likes: 12, remixes: 4, exports: 9, prints: 3 } });
+    expect(screen.getByTestId('community-detail-prints-stat')).toHaveTextContent('3');
     expect(screen.getByText('Prints')).toBeInTheDocument();
+  });
+
+  it('omits the print stat when the count is absent or zero', () => {
+    // Absent means the card snapshot predates the field; an unknown count must
+    // not read as a measured zero.
+    renderContent({}, { counts: { likes: 12, remixes: 4, exports: 9 } });
+    expect(screen.queryByTestId('community-detail-prints-stat')).not.toBeInTheDocument();
+    renderContent({}, { counts: { likes: 12, remixes: 4, exports: 9, prints: 0 } });
+    expect(screen.queryByTestId('community-detail-prints-stat')).not.toBeInTheDocument();
   });
 
   it('hides the stats row without card counts', () => {

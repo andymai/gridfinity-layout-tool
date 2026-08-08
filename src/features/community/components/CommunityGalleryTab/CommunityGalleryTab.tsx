@@ -328,6 +328,25 @@ export function CommunityGalleryTab({
     return loadRecentlyViewedIds();
   }, [detailRequest]);
 
+  // Tracked on every scroll rather than read when the detail opens: the
+  // overlay collapses the grid's scroll height, and the browser clamps the
+  // offset to 0 as a native consequence of that — no assignment to intercept,
+  // and by the time an effect runs the offset is already gone.
+  const offsetBeforeDetailRef = useRef(0);
+  const handleGridScroll = useCallback(() => {
+    if (useCommunityDetailStore.getState().request === null) {
+      offsetBeforeDetailRef.current = scrollRef.current?.scrollTop ?? 0;
+    }
+  }, []);
+
+  // Closing a detail returns to the grid, so it returns to where the grid was.
+  useEffect(() => {
+    if (detailRequest !== null) return;
+    const el = scrollRef.current;
+    const banked = offsetBeforeDetailRef.current;
+    if (el !== null && banked > 0 && el.scrollTop === 0) el.scrollTop = banked;
+  }, [detailRequest]);
+
   // The toolbar's search/category/technique filters still apply within Mine;
   // mineOnly itself is not a predicate (the source switch above handles it).
   const filtered = useMemo(
@@ -432,6 +451,7 @@ export function CommunityGalleryTab({
             // moves the viewport but leaves focus behind in the filter rail,
             // so the next Tab returns there.
             tabIndex={-1}
+            onScroll={handleGridScroll}
             data-testid="community-gallery-scroll"
             className="flex-1 overflow-y-auto scrollbar-thin p-3 focus-visible:outline-none md:p-4"
           >

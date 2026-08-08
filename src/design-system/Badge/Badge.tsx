@@ -9,7 +9,9 @@ const badgeVariants = cva(
   {
     variants: {
       tone: {
-        neutral: ['bg-surface-hover', 'text-content-tertiary'],
+        // Secondary, not tertiary: tertiary is the 4.5:1 token against the base
+        // surface, and surface-hover is lighter, so the pair measured 4.22:1.
+        neutral: ['bg-surface-hover', 'text-content-secondary'],
         accent: ['bg-accent', 'text-on-accent'],
         success: [intentBackgrounds.success, intentText.success],
         warning: [intentBackgrounds.warning, intentText.warning],
