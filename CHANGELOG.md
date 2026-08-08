@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.389.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.388.4...gridfinity-layout-tool-v4.389.0) (2026-08-08)
+
+
+### Features
+
+* **community:** give shared design links their own preview ([#3336](https://github.com/andymai/gridfinity-layout-tool/issues/3336)) ([83625c1](https://github.com/andymai/gridfinity-layout-tool/commit/83625c1e873f3da03709528234e78b4f4e4619bd))
+
 ## [4.388.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.388.3...gridfinity-layout-tool-v4.388.4) (2026-08-08)
 
 
