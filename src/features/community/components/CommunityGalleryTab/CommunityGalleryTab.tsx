@@ -44,7 +44,15 @@ const SKELETON_COUNT = 10;
 
 const NO_ITEMS: readonly CommunityCardData[] = [];
 
-const GRID_CLASS = 'grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-4';
+// Tracks the space available rather than the viewport class: the rail opening
+// or closing changes the grid's width without changing the breakpoint, and a
+// fixed column count then sizes cards to a width that is no longer there.
+// The track minimums are chosen to reproduce the column counts the fixed
+// breakpoints gave (2 up to sm, 5 on a 1440 window with the rail open) while
+// deriving them from the space actually available: the rail is 240px wide, so
+// opening it changes the room for cards without changing the breakpoint.
+const GRID_CLASS =
+  'grid grid-cols-[repeat(auto-fill,minmax(8.5rem,1fr))] gap-3 md:grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] md:gap-4';
 
 function GallerySkeletons() {
   return (
@@ -375,7 +383,7 @@ export function CommunityGalleryTab({
         activeFilterCount={countPanelFilters(filters)}
       />
 
-      <div className="flex min-h-0 flex-1">
+      <div className="flex min-h-0 min-w-0 flex-1">
         {panelOpen && (
           <FilterRail
             items={activeItems}
@@ -385,7 +393,13 @@ export function CommunityGalleryTab({
           />
         )}
 
-        <div className="flex min-h-0 flex-1 flex-col">
+        {/* min-w-0 is load-bearing, not tidying: a flex item defaults to
+            min-width:auto, so without it this column refuses to shrink below
+            the widest card's min-content and sizes the grid to that instead of
+            to the viewport. Because the scroller below computes overflow-x to
+            auto, the result is a silently side-scrolling grid with columns
+            wider than the screen rather than a visibly broken page. */}
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           {/* Landing affordance for the public index only: hidden in Mine, over
               non-ready states, and once the visitor has stated any filter intent.
               Sits outside the scrollRef div so shelf scrolling never pollutes the
@@ -603,7 +617,7 @@ export function CommunityGalleryTab({
                   aria-label={t('community.gallery.gridLabel')}
                 >
                   {visible.map((card, index) => (
-                    <li key={card.id}>
+                    <li key={card.id} className="min-w-0">
                       {mineActive ? (
                         <MineCard
                           card={card}

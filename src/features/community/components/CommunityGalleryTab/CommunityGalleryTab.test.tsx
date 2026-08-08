@@ -140,7 +140,7 @@ describe('CommunityGalleryTab', () => {
     await waitFor(() => {
       expect(screen.getByText('Bin target123456')).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByRole('button', { name: /Bin target123456/ }));
+    fireEvent.click(screen.getByRole('link', { name: /Bin target123456/ }));
     const request = useCommunityDetailStore.getState().request;
     expect(request?.designId).toBe('target123456');
     expect(request?.card).toEqual(target);
@@ -196,6 +196,32 @@ describe('CommunityGalleryTab', () => {
     fireEvent.click(screen.getByRole('button', { name: 'community.gallery.empty.publishCta' }));
     expect(onRequestClose).toHaveBeenCalled();
     expect(onRequestPublish).toHaveBeenCalled();
+  });
+
+  // jsdom does no layout, so the geometry itself is asserted in the seeded
+  // Playwright spec. What is guarded here is the class that produces it: the
+  // gallery body is a flex item, so without min-w-0 its automatic minimum size
+  // is the widest card's min-content and the grid sizes to that instead of to
+  // the viewport. The scroller's overflow-x then computes to auto, so the
+  // failure is a silently side-scrolling grid rather than a visible break.
+  it('keeps the gallery body shrinkable so the grid cannot outgrow the viewport', async () => {
+    indexMock.mockResolvedValue(ok({ items: manyCards(30), capped: false }));
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.getAllByText('Bin design000').length).toBeGreaterThan(0);
+    });
+    const scroller = screen.getByTestId('community-gallery-scroll');
+    for (
+      let el = scroller.parentElement;
+      el !== null && !el.hasAttribute('data-testid');
+      el = el.parentElement
+    ) {
+      expect(el.className).toContain('min-w-0');
+    }
+    // The grid tracks available space; a fixed column count would keep sizing
+    // cards to a width the rail may have just taken away.
+    const grid = screen.getByRole('list', { name: 'community.gallery.gridLabel' });
+    expect(grid.className).toContain('auto-fill');
   });
 
   it('resets the scroll position when the filters change', async () => {
@@ -409,10 +435,7 @@ describe('CommunityGalleryTab', () => {
     await waitFor(() => {
       expect(screen.queryByText('Bin unviewed0001')).not.toBeInTheDocument();
     });
-    const names = screen
-      .getAllByTestId('community-card-author')
-      .map((el) => el.closest('[data-community-card]'))
-      .map((el) => el?.getAttribute('aria-label'));
+    const names = screen.getAllByTestId('community-card-link').map((el) => el.textContent);
     expect(names).toEqual(['Bin second000001', 'Bin first0000001']);
   });
 

@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import type { KeyboardEvent, MouseEvent } from 'react';
+import type { MouseEvent } from 'react';
 import { Badge, Button, IconButton, cn } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { communityDesignPath } from '@/shared/hooks/useCommunityRouting';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import type { CommunityCard as CommunityCardData } from '@/shared/types/community';
 import { savePendingLikeAction } from '@/shared/utils/communityPendingLikeAction';
@@ -122,40 +123,38 @@ export function CommunityCard({ card, onSelect, onSelectAuthor, index }: Communi
     card.featureReason === undefined ? undefined : FEATURE_REASON_KEYS[card.featureReason];
 
   const handleLike = (event: MouseEvent<HTMLButtonElement>) => {
-    // The card root is itself a click target; a heart tap must not also
-    // open the detail view.
+    // The heart sits over the title's stretched hit area; without this the
+    // click also reaches the link underneath and opens the detail view.
     event.stopPropagation();
     void toggleLike(card).then((outcome) => {
       if (outcome === 'signin-required') setSignInOpen(true);
     });
   };
 
-  // Only activate on the card surface itself: Enter/Space on the nested
-  // heart button bubbles here and must stay a like, not a select.
-  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.target !== event.currentTarget) return;
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      onSelect(card);
+  // A modified click is the browser's to handle: it opens the design in a new
+  // tab from the real href. Only the plain click is ours, and it opens the
+  // overlay in place rather than navigating.
+  const handleOpen = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
+      return;
     }
+    event.preventDefault();
+    onSelect(card);
   };
 
   return (
     <>
-      {/* Not a design-system Button: the footer heart is a real nested
-          IconButton, and button-in-button is invalid HTML. */}
+      {/* A plain container, not role="button": the author and heart are real
+          nested buttons, and a button may not contain focusable descendants
+          (axe nested-interactive). The whole card is still one hit target,
+          via the title link's stretched ::after. */}
       <div
-        role="button"
-        tabIndex={0}
-        aria-label={card.name}
-        onClick={() => onSelect(card)}
-        onKeyDown={handleKeyDown}
         className={cn(
-          'group h-auto w-full cursor-pointer select-none flex-col items-stretch justify-start',
-          'flex rounded-lg bg-surface-secondary p-2 text-left text-sm font-normal',
-          'border-2 border-transparent hover:border-accent/50 hover:bg-surface-secondary',
+          'group relative flex h-full w-full min-w-0 flex-col items-stretch justify-start',
+          'rounded-lg bg-surface-secondary p-2 text-left text-sm font-normal',
+          'border-2 border-transparent hover:border-accent/50',
           'transition-colors motion-safe:animate-fade-in-up',
-          'focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent'
+          'has-[a:focus-visible]:border-accent'
         )}
         style={{ animationDelay }}
         data-community-card
@@ -206,15 +205,28 @@ export function CommunityCard({ card, onSelect, onSelectAuthor, index }: Communi
           )}
         </span>
 
-        <span
-          className="line-clamp-1 text-sm font-medium leading-tight text-content"
+        {/* The ::after covers the card, so the link is the card's hit area and
+            its focus ring is the card's border. Everything the user can also
+            click sits above it on z-10. */}
+        <a
+          href={communityDesignPath(card.id)}
+          onClick={handleOpen}
+          className={cn(
+            'block min-w-0 text-sm font-medium leading-tight text-content',
+            'after:absolute after:inset-0 after:rounded-md after:content-[""]',
+            'focus-visible:outline-none'
+          )}
           title={card.name}
+          data-testid="community-card-link"
         >
-          {card.name}
-        </span>
+          {/* Truncation lives on the inner span: overflow:hidden on the anchor
+              itself would put the stretched ::after at the mercy of
+              containing-block clipping. */}
+          <span className="block truncate">{card.name}</span>
+        </a>
 
         {onSelectAuthor !== undefined ? (
-          <span className="mt-0.5 flex min-w-0">
+          <span className="relative z-10 mt-0.5 flex min-w-0">
             <Button
               variant="ghost"
               // 44px hit area on touch layouts, where a mis-tap falls through
@@ -232,21 +244,29 @@ export function CommunityCard({ card, onSelect, onSelectAuthor, index }: Communi
               className="h-auto min-w-0 justify-start p-0 text-xs font-normal text-content-secondary underline-offset-2 hover:underline"
               data-testid="community-card-author"
             >
-              <span className="line-clamp-1">
+              {/* truncate, not line-clamp-1: the clamp breaks by line, so a
+                  handle with no break opportunity wraps to a line that is then
+                  clamped away and the label renders as "by…", naming nobody.
+                  Truncation cuts mid-handle instead. */}
+              <span className="truncate">
                 {t('community.card.byAuthor', { author: card.authorName })}
               </span>
             </Button>
           </span>
         ) : (
-          <span className="mt-0.5 line-clamp-1 text-xs text-content-secondary">
+          <span className="mt-0.5 truncate text-xs text-content-secondary">
             {t('community.card.byAuthor', { author: card.authorName })}
           </span>
         )}
 
-        <span className="mt-1 flex items-center gap-1 text-xs text-content-tertiary">
-          <span>{dims}</span>
+        {/* Wraps rather than clips. The stat groups are shrink-0 so a narrow
+            column takes a second line instead of slicing a count in half; the
+            dimensions yield first, being the one part that reads fine
+            truncated. The touch-sized heart is what makes this tight. */}
+        <span className="relative z-10 mt-1 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-xs text-content-tertiary">
+          <span className="min-w-0 truncate">{dims}</span>
           <span aria-hidden="true">·</span>
-          <span className="inline-flex items-center gap-0.5">
+          <span className="inline-flex shrink-0 items-center gap-0.5">
             <IconButton
               aria-label={t(liked ? 'community.like.unlike' : 'community.like.like')}
               pressed={liked}
@@ -264,7 +284,7 @@ export function CommunityCard({ card, onSelect, onSelectAuthor, index }: Communi
             </span>
           </span>
           <span aria-hidden="true">·</span>
-          <span className="inline-flex items-center gap-0.5">
+          <span className="inline-flex shrink-0 items-center gap-0.5">
             <RemixGlyph />
             <span aria-hidden="true">{card.counts.remixes}</span>
             <span className="sr-only">
@@ -277,7 +297,7 @@ export function CommunityCard({ card, onSelect, onSelectAuthor, index }: Communi
               {/* Proof-of-print outranks the engagement counts, so it renders
                   in full-strength text where likes and remixes are tertiary. */}
               <span
-                className="inline-flex items-center gap-0.5 text-content-secondary"
+                className="inline-flex shrink-0 items-center gap-0.5 text-content-secondary"
                 data-testid="community-card-prints"
               >
                 <PrintGlyph />

@@ -145,7 +145,7 @@ describe('ShelfLanding', () => {
   it('shelf cards select through the shared handler', () => {
     const onSelect = vi.fn();
     render(<ShelfLanding items={manyCards(12)} onSelect={onSelect} onSelectAuthor={vi.fn()} />);
-    fireEvent.click(screen.getAllByRole('button', { name: /Bin design011/ })[0]);
+    fireEvent.click(screen.getAllByRole('link', { name: /Bin design011/ })[0]);
     expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ id: 'design011' }));
   });
 

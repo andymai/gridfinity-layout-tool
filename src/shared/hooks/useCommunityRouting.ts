@@ -46,6 +46,17 @@ export function getCommunityDesignIdFromUrl(): string | null {
   return match === null ? null : match[1];
 }
 
+/**
+ * The detail URL for a design. Gallery cards carry it as a real href so a
+ * middle-click or ctrl-click opens the design in a new tab and the browser can
+ * offer "copy link address"; the plain click is still intercepted and opens the
+ * overlay in place. Both hosts use it — in the modal the href is never followed
+ * on a plain click, but a modified click correctly opens a new tab.
+ */
+export function communityDesignPath(designId: string): string {
+  return `/community/d/${designId}`;
+}
+
 /** The `?author=` filter on /community, making the author view shareable. */
 export function getCommunityAuthorIdFromUrl(): string | null {
   if (!isCommunityGalleryPath()) return null;
