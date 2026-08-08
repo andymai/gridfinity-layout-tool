@@ -14,8 +14,9 @@ name: Smoke (Preview)
 # status check on its own — a green run may mean "nothing was tested".
 
 on:
+  # Unfiltered by base branch so a stacked PR that opted into a preview is
+  # smoked too -- see ci.yml. paths-ignore stays; only the base filter goes.
   pull_request:
-    branches: [main]
     paths-ignore:
       - '**/*.md'
       - 'docs/**'

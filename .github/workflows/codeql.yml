@@ -3,8 +3,9 @@ name: CodeQL
 on:
   push:
     branches: [main]
+  # Unfiltered by base branch so a PR stacked on another PR is analysed too --
+  # see ci.yml for why the `branches:` filter silently exempted those.
   pull_request:
-    branches: [main]
   schedule:
     - cron: '0 6 * * 1' # Weekly Monday 6am UTC
 

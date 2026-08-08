@@ -4,8 +4,16 @@ on:
   push:
     branches:
       - main
+  # No `branches:` filter on pull_request. That filter matches the BASE branch,
+  # so a PR stacked on another PR's branch drew no Build, test, quality or OSV
+  # run at all -- and reported green, because a rollup over zero jobs is green.
+  # The checks that did appear on such a PR were exactly the ones without this
+  # filter (pr-title, Vercel, the review bots), which is what made it look like
+  # CI had run.
+  #
+  # Push stays pinned to main: branches are gated as pull requests, and a bare
+  # branch push should not spend a full suite.
   pull_request:
-    branches: [main]
 
 permissions:
   contents: read

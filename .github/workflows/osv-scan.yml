@@ -6,8 +6,9 @@ name: OSV Scan
 # a feature PR); main + weekly schedule fail closed so the dashboard stays loud.
 
 on:
+  # Unfiltered by base branch so a PR stacked on another PR is scanned too --
+  # see ci.yml for why the `branches:` filter silently exempted those.
   pull_request:
-    branches: [main]
   push:
     branches: [main]
   schedule:
