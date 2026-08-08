@@ -13,8 +13,13 @@ on:
   schedule:
     - cron: '0 6 * * 1'
 
+# Per-commit group on push, so the BLOCKING main scan is never cancelled by the
+# next push; PRs keep sharing a group and cancelling superseded runs. A cancelled
+# blocking scan is the worst case here: it reports neither pass nor fail, so a
+# lockfile regression on main could land with no scan ever completing on it. See
+# ci.yml for the full rationale.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name == 'push' && github.sha || 'other' }}
   cancel-in-progress: true
 
 jobs:

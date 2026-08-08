@@ -13,8 +13,12 @@ permissions:
   contents: read
   security-events: write
 
+# Per-commit group on push so a main commit's analysis is never cancelled by the
+# next one; PRs keep sharing a group and cancelling superseded runs. See ci.yml
+# for the full rationale — release-please pushes land inside the run window, so a
+# ref-keyed group meant main's scans were routinely killed before finishing.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}-${{ github.event_name == 'push' && github.sha || 'other' }}
   cancel-in-progress: true
 
 jobs:
