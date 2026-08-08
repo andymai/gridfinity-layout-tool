@@ -7,9 +7,27 @@ permissions:
   contents: write
   pull-requests: write
 
+# Deliberately the OPPOSITE of ci.yml's per-commit groups. Two release-please
+# runs against the same branch would race on the same release PR and the same
+# tag, so these must stay mutually exclusive: one shared group, and they QUEUE.
+#
+# `cancel-in-progress: false` because the job below is a stateful sequence, not
+# an idempotent check. release-please creates or updates the release PR, and only
+# then does a separate step approve it and a third enable auto-merge — the last
+# one looping up to six times with 10s sleeps while the PR's required checks
+# register. A cancel anywhere after the first step leaves the release PR created
+# but never approved and never set to auto-merge, which is exactly the "release
+# PR sits open, no versions ship" stall in the release-and-ci skill. Pushes to
+# main land seconds apart during a merge burst, and that ~50s retry window is
+# wide open to them.
+#
+# Queueing is affordable here in a way it would not be in ci.yml: this run takes
+# about a minute, so the queue drains as fast as merges arrive. Sequential runs
+# are also the intended usage — each one reconciles the release PR against
+# current main, so the last to run produces the correct result.
 concurrency:
   group: release-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   release-please:
