@@ -1,0 +1,74 @@
+src/i18n/locales/es.json
+  s_08ffc81f33fef3::t_7776bf9033e079 1636
+src/i18n/locales/pl.json
+  s_08ffc81f33fef3::t_7776bf9033e079 1629
+src/i18n/locales/uk.json
+  s_08ffc81f33fef3::t_7776bf9033e079 1677
+src/shell/styles/themes.css
+  s_08ffc81f33fef3::t_1cd7b9ae58ec74 54
+src/design-system/Badge/Badge.test.tsx
+  s_08ffc81f33fef3::t_6e8b71ae6c83d1 68
+src/i18n/locales/zh-CN.json
+  s_08ffc81f33fef3::t_7776bf9033e079 1629
+src/features/community/components/CommunityGalleryTab/CommunityGalleryTab.tsx
+  s_08ffc81f33fef3::t_05cfb9a5bb1f91 84-86
+  s_08ffc81f33fef3::t_06a2865c307971 423-427,429
+  s_08ffc81f33fef3::t_8d419ddd16f6c9 43-45
+src/i18n/locales/en.ts
+  s_08ffc81f33fef3::t_2c48a0ee069418 3650
+src/i18n/locales/ko.json
+  s_08ffc81f33fef3::t_7776bf9033e079 3168
+src/design-system/variants.ts
+  s_08ffc81f33fef3::t_0ba6ad2d96f87a 188-190
+src/design-system/Kbd/Kbd.test.tsx
+  s_08ffc81f33fef3::t_6e8b71ae6c83d1 23
+src/i18n/locales/nl.json
+  s_08ffc81f33fef3::t_7776bf9033e079 1490
+src/i18n/locales/cs.json
+  s_08ffc81f33fef3::t_7776bf9033e079 1621
+index.html
+  s_08ffc81f33fef3::t_2caff8712feea4 5-9
+src/i18n/locales/it.json
+  s_08ffc81f33fef3::t_7776bf9033e079 1761
+src/features/community/components/CommunityPage/CommunityPage.tsx
+  s_08ffc81f33fef3::t_e354c08bd6856d 33
+  s_08ffc81f33fef3::t_442964ebec7848 151-157
+  s_08ffc81f33fef3::t_6e1f5ad54e6eee 171-174
+  s_08ffc81f33fef3::t_96fa6c7b4400b6 196-207
+src/i18n/locales/fr.json
+  s_08ffc81f33fef3::t_7776bf9033e079 1629
+src/features/community/components/CommunityGalleryTab/index.ts
+  s_08ffc81f33fef3::t_df2484680b2293 1
+src/index.css
+  s_08ffc81f33fef3::t_7f0850906174f5 43-46
+  s_08ffc81f33fef3::t_9a47dd435dcafe 117-119
+src/i18n/locales/de.json
+  s_08ffc81f33fef3::t_7776bf9033e079 1490
+src/i18n/locales/ja.json
+  s_08ffc81f33fef3::t_7776bf9033e079 1713
+src/i18n/locales/sv.json
+  s_08ffc81f33fef3::t_7776bf9033e079 1629
+src/features/community/components/CommunityPage/CommunityPage.test.tsx
+  s_08ffc81f33fef3::t_ac12843bbe7310 17,19
+  s_08ffc81f33fef3::t_6d25cf4c0e6567 191-210
+src/i18n/locales/nb.json
+  s_08ffc81f33fef3::t_7776bf9033e079 1761
+src/i18n/locales/pt-BR.json
+  s_08ffc81f33fef3::t_7776bf9033e079 1629
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "aa0c6aa0acf13498103915da421f63c32d04241d",
+  "prompts": {},
+  "sessions": {
+    "s_08ffc81f33fef3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3fab88d2-9c87-4fa2-bf2e-c65f3d4a493d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
