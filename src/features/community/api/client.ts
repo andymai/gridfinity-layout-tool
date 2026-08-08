@@ -247,7 +247,7 @@ interface CommunityListPage {
    * concurrent windows. Optional: an older deployment omits it and the fetch
    * falls back to paging sequentially.
    */
-  indexSlots?: number;
+  indexSlots?: unknown;
 }
 
 function isListPage(value: unknown): value is CommunityListPage {
@@ -258,7 +258,10 @@ function isListPage(value: unknown): value is CommunityListPage {
     (value.nextCursor === null || typeof value.nextCursor === 'string') &&
     (value.likedIds === undefined ||
       (Array.isArray(value.likedIds) && value.likedIds.every((id) => typeof id === 'string'))) &&
-    (value.indexSlots === undefined || typeof value.indexSlots === 'number')
+    // indexSlots is deliberately not validated here. It is an optimisation
+    // hint, and a corrupt hint must not reject a page of real designs; it is
+    // read through readIndexSlots, which treats anything unusable as absent.
+    true
   );
 }
 
@@ -412,6 +415,19 @@ async function fetchCommunityPage(
  * sorted set, so a publish landing between two page requests shifts every
  * offset and re-serves the boundary card on the next page.
  */
+/**
+ * The slot count, or null when the server did not send a usable one.
+ *
+ * Integer-checked rather than typeof-checked: NaN is a number, and it would
+ * make the planner's `offset < slots` false on the first comparison, leaving
+ * the entire remainder of the index unrequested — a silently short gallery,
+ * which is the exact failure the windowing exists to avoid.
+ */
+function readIndexSlots(page: CommunityListPage): number | null {
+  const slots = page.indexSlots;
+  return typeof slots === 'number' && Number.isInteger(slots) && slots >= 0 ? slots : null;
+}
+
 /** Slots per windowed request; must not exceed the server's LIST_MAX_WINDOW. */
 const INDEX_WINDOW = 48;
 
@@ -485,8 +501,9 @@ export async function fetchCommunityIndex(
     // The first response reports how many slots the index has, which is what
     // makes the rest requestable at once. Its own cursor is the offset to
     // start those windows from, so nothing is fetched twice.
-    if (request === 0 && page.value.indexSlots !== undefined && page.value.nextCursor !== null) {
-      return fetchIndexWindows(page.value, page.value.indexSlots, signal);
+    if (request === 0 && page.value.nextCursor !== null) {
+      const slots = readIndexSlots(page.value);
+      if (slots !== null) return fetchIndexWindows(page.value, slots, signal);
     }
 
     const likedIds = new Set(page.value.likedIds ?? []);

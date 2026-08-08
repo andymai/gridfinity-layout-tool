@@ -836,12 +836,12 @@ async function handleList(req: VercelRequest, res: VercelResponse): Promise<void
     let window: number | null = null;
     if (windowParam !== undefined) {
       if (!CURSOR_REGEX.test(windowParam)) {
-        badRequest(res, 'window must be a non-negative integer');
+        badRequest(res, `window must be an integer between 1 and ${LIST_MAX_WINDOW}`);
         return;
       }
       window = Number(windowParam);
       if (window < 1 || window > LIST_MAX_WINDOW) {
-        badRequest(res, `window must be between 1 and ${LIST_MAX_WINDOW}`);
+        badRequest(res, `window must be an integer between 1 and ${LIST_MAX_WINDOW}`);
         return;
       }
     }

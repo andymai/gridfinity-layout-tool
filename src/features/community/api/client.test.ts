@@ -354,6 +354,24 @@ describe('fetchCommunityIndex windowed mode', () => {
     expect(isOk(result)).toBe(false);
   });
 
+  it.each([NaN, Infinity, -1, 1.5, '100'])(
+    'ignores a malformed slot count (%s) and pages sequentially instead',
+    async (indexSlots) => {
+      // NaN in particular passes a typeof check and then makes the window
+      // planner's `offset < slots` false on the first comparison, which would
+      // leave the whole remainder unrequested and the gallery silently short.
+      fetchMock
+        .mockResolvedValueOnce(
+          jsonResponse(200, { items: [card('a')], nextCursor: '24', indexSlots })
+        )
+        .mockResolvedValueOnce(jsonResponse(200, { items: [card('b')], nextCursor: null }));
+      const result = await fetchCommunityIndex();
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) expect(result.value.items.map((i) => i.id)).toEqual(['a', 'b']);
+      expect(requestedUrl(1)).toBe('/api/community?sort=newest&cursor=24');
+    }
+  );
+
   it('falls back to sequential paging when the server reports no slot count', async () => {
     // A client ahead of a deployment still loads.
     fetchMock
