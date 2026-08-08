@@ -25,11 +25,12 @@ import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { useResponsive } from '@/shared/hooks';
 import {
   getCommunityDesignIdFromUrl,
-  syncCommunityAuthorParam,
+  syncCommunityGalleryQuery,
   useCommunityRouting,
 } from '@/shared/hooks/useCommunityRouting';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { useBrowseStore } from '../../store/browseStore';
+import { decodeBrowseParams, encodeBrowseParams } from '../../utils/browseUrlState';
 import { CommunityGalleryTab, GALLERY_RESULTS_ID } from '../CommunityGalleryTab';
 import { hasLocalDesigns } from '../CommunityGalleryTab/hasLocalDesigns';
 
@@ -58,13 +59,15 @@ export function CommunityPage({
   const { isMobile } = useResponsive();
   const {
     communityDesignIdFromUrl,
-    communityAuthorIdFromUrl,
+    communityGalleryQuery,
     openCommunityDesignUrl,
     closeCommunityDesignUrl,
   } = useCommunityRouting();
   const request = useCommunityDetailStore((s) => s.request);
   const hasUnseenDigest = useCommunityDigestStore((s) => s.hasUnseenDeltas);
   const setAuthor = useBrowseStore((s) => s.setAuthor);
+  const applyUrlFilters = useBrowseStore((s) => s.applyUrlFilters);
+  const filters = useBrowseStore((s) => s.filters);
   const authorFilterId = useBrowseStore((s) => s.filters.author?.id ?? null);
   const authorFilterName = useBrowseStore((s) => s.filters.author?.name ?? null);
   const items = useBrowseStore((s) => s.items);
@@ -108,31 +111,29 @@ export function CommunityPage({
     }
   }, [request, openCommunityDesignUrl, closeCommunityDesignUrl]);
 
-  // URL -> store: a shared /community?author= link applies the filter. The
-  // display name is unknown on a cold visit ('' placeholder); the effect
-  // below resolves it once the index holds one of the author's cards.
+  // URL -> store: a shared link, a reload, or Back out of a detail applies
+  // whatever the query carries. Only runs when the query actually changed,
+  // and the write below uses replaceState (which fires no popstate), so the
+  // two directions cannot feed each other.
   useEffect(() => {
-    if (communityAuthorIdFromUrl === null) return;
-    const current = useBrowseStore.getState().filters.author;
-    if (current?.id === communityAuthorIdFromUrl) return;
-    const match = useBrowseStore
-      .getState()
-      .items.find((c) => c.authorPublicId === communityAuthorIdFromUrl);
-    setAuthor({ id: communityAuthorIdFromUrl, name: match?.authorName ?? '' });
-  }, [communityAuthorIdFromUrl, setAuthor]);
+    applyUrlFilters(decodeBrowseParams(new URLSearchParams(communityGalleryQuery)));
+  }, [communityGalleryQuery, applyUrlFilters]);
 
+  // The URL carries the author's id but not their name, which is not in it to
+  // carry: it resolves once the index holds one of their cards.
   useEffect(() => {
     if (authorFilterId === null || authorFilterName !== '') return;
     const match = items.find((c) => c.authorPublicId === authorFilterId);
     if (match !== undefined) setAuthor({ id: authorFilterId, name: match.authorName });
   }, [items, authorFilterId, authorFilterName, setAuthor]);
 
-  // Store -> URL: keeps the author view shareable. Skipped while a detail
-  // deep link owns the path; re-runs when it closes back to /community.
+  // Store -> URL: keeps the narrowed view shareable and reload-safe. Skipped
+  // while a detail deep link owns the path; the gallery's query is restored
+  // from history when the detail closes.
   useEffect(() => {
     if (communityDesignIdFromUrl !== null) return;
-    syncCommunityAuthorParam(authorFilterId);
-  }, [authorFilterId, communityDesignIdFromUrl]);
+    syncCommunityGalleryQuery(encodeBrowseParams(filters).toString());
+  }, [filters, communityDesignIdFromUrl]);
 
   // Publishing needs the designer mounted: the dialog captures thumbnails and
   // a GLB from the live mesh, which only exists there. So the CTA leaves for

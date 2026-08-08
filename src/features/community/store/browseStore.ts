@@ -174,6 +174,13 @@ interface BrowseActions {
   clearDimensionFilters: () => void;
   setFitsGapContext: (fitsGapContext: FitsGapContext | null) => void;
   setMineOnly: (mineOnly: boolean) => void;
+  /**
+   * Applies the filters carried by the URL in one write. A patch rather than a
+   * whole `BrowseFilters` because the URL deliberately does not carry
+   * `mineOnly` or the gap context, and a shared link must not clear the
+   * viewer's own account state or a gap handed over by the layout editor.
+   */
+  applyUrlFilters: (patch: Partial<BrowseFilters>) => void;
   clearFilters: () => void;
   setScrollTop: (scrollTop: number) => void;
   showMore: () => void;
@@ -558,6 +565,9 @@ export const useBrowseStore = create<BrowseStore>((set, get) => {
         scrollTop: 0,
         visibleCount: GALLERY_PAGE_SIZE,
       }));
+    },
+    applyUrlFilters: (patch) => {
+      set((state) => withDimensionPatch(state, patch));
     },
     clearFilters: () => {
       set({ filters: INITIAL_BROWSE_FILTERS, scrollTop: 0, visibleCount: GALLERY_PAGE_SIZE });

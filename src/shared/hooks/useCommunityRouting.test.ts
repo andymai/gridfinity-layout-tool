@@ -3,9 +3,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useLabsStore } from '@/core/store';
 import {
-  getCommunityAuthorIdFromUrl,
+  getCommunityGalleryQuery,
   getCommunityDesignIdFromUrl,
-  syncCommunityAuthorParam,
+  syncCommunityGalleryQuery,
   useCommunityRouting,
 } from '@/shared/hooks/useCommunityRouting';
 
@@ -181,66 +181,66 @@ describe('useCommunityRouting', () => {
     });
   });
 
-  describe('author view query param', () => {
-    it('reads a valid ?author= on the gallery path', () => {
-      window.history.replaceState(null, '', `/community?author=${AUTHOR_ID}`);
-      expect(getCommunityAuthorIdFromUrl()).toBe(AUTHOR_ID);
+  describe('gallery query string', () => {
+    it('reads the query on the gallery path, without the leading ?', () => {
+      window.history.replaceState(null, '', `/community?author=${AUTHOR_ID}&cat=tools`);
+      expect(getCommunityGalleryQuery()).toBe(`author=${AUTHOR_ID}&cat=tools`);
     });
 
-    it('exposes the author id through the hook and re-derives it on popstate', () => {
-      window.history.replaceState(null, '', `/community?author=${AUTHOR_ID}`);
+    it('is empty off the gallery path even with a query present', () => {
+      window.history.replaceState(null, '', `/community/d/${DESIGN_ID}?author=${AUTHOR_ID}`);
+      expect(getCommunityGalleryQuery()).toBe('');
+    });
+
+    it('exposes the query through the hook and re-derives it on popstate', () => {
+      window.history.replaceState(null, '', '/community?cat=tools');
       const { result } = renderHook(() => useCommunityRouting());
-      expect(result.current.communityAuthorIdFromUrl).toBe(AUTHOR_ID);
+      expect(result.current.communityGalleryQuery).toBe('cat=tools');
       act(() => {
         window.history.replaceState(null, '', '/community');
         window.dispatchEvent(new PopStateEvent('popstate'));
       });
-      expect(result.current.communityAuthorIdFromUrl).toBeNull();
+      expect(result.current.communityGalleryQuery).toBe('');
     });
 
-    it.each(['not-an-id', 'ABCDEF', 'a'.repeat(31), 'a'.repeat(33), 'G'.repeat(32)])(
-      'rejects invalid author value %s',
-      (value) => {
-        window.history.replaceState(null, '', `/community?author=${value}`);
-        expect(getCommunityAuthorIdFromUrl()).toBeNull();
-      }
-    );
-
-    it('returns null off the gallery path even with the param present', () => {
-      window.history.replaceState(null, '', `/community/d/${DESIGN_ID}?author=${AUTHOR_ID}`);
-      expect(getCommunityAuthorIdFromUrl()).toBeNull();
-    });
-
-    it('syncCommunityAuthorParam writes, rewrites, and removes the param in place', () => {
+    it('writes, rewrites, and clears the query in place', () => {
       window.history.replaceState(null, '', '/community');
-      syncCommunityAuthorParam(AUTHOR_ID);
-      expect(window.location.search).toBe(`?author=${AUTHOR_ID}`);
-      const other = 'f'.repeat(32);
-      syncCommunityAuthorParam(other);
-      expect(window.location.search).toBe(`?author=${other}`);
-      syncCommunityAuthorParam(null);
+      syncCommunityGalleryQuery('cat=tools');
+      expect(window.location.search).toBe('?cat=tools');
+      syncCommunityGalleryQuery('cat=kitchen&liked=1');
+      expect(window.location.search).toBe('?cat=kitchen&liked=1');
+      syncCommunityGalleryQuery('');
       expect(window.location.search).toBe('');
       expect(window.location.pathname).toBe('/community');
     });
 
-    it('syncCommunityAuthorParam replaces instead of pushing history entries', () => {
+    it('replaces instead of pushing history entries', () => {
+      // Narrowing a gallery is not navigation: pushing would mean a dozen
+      // Back presses to leave a page filtered a dozen times.
       window.history.replaceState(null, '', '/community');
       const pushSpy = vi.spyOn(window.history, 'pushState');
       const replaceSpy = vi.spyOn(window.history, 'replaceState');
-      syncCommunityAuthorParam(AUTHOR_ID);
+      syncCommunityGalleryQuery('cat=tools');
       expect(pushSpy).not.toHaveBeenCalled();
       expect(replaceSpy).toHaveBeenCalledTimes(1);
     });
 
-    it('syncCommunityAuthorParam is a no-op off the gallery path', () => {
+    it('does not touch history when the query is unchanged', () => {
+      window.history.replaceState(null, '', '/community?cat=tools');
+      const replaceSpy = vi.spyOn(window.history, 'replaceState');
+      syncCommunityGalleryQuery('cat=tools');
+      expect(replaceSpy).not.toHaveBeenCalled();
+    });
+
+    it('is a no-op off the gallery path', () => {
       window.history.replaceState(null, '', `/community/d/${DESIGN_ID}`);
-      syncCommunityAuthorParam(AUTHOR_ID);
+      syncCommunityGalleryQuery('cat=tools');
       expect(window.location.search).toBe('');
     });
 
-    it('syncCommunityAuthorParam preserves the detail marker state', () => {
+    it('preserves the detail marker state', () => {
       window.history.replaceState({ communityRouteDetail: true }, '', '/community');
-      syncCommunityAuthorParam(AUTHOR_ID);
+      syncCommunityGalleryQuery('cat=tools');
       expect(window.history.state).toEqual({ communityRouteDetail: true });
     });
   });

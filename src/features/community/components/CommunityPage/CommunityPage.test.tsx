@@ -276,7 +276,85 @@ describe('CommunityPage', () => {
     });
   });
 
-  describe('shareable author view (?author=)', () => {
+  describe('shareable filter state', () => {
+    it('cold visit applies every filter the query carries', () => {
+      window.history.replaceState(null, '', '/community?q=hex&cat=tools&sort=prints&w=2-4&liked=1');
+      renderPage();
+      const { filters } = useBrowseStore.getState();
+      expect(filters.searchText).toBe('hex');
+      expect(filters.category).toBe('tools');
+      expect(filters.sort).toBe('prints');
+      expect(filters.widthMin).toBe(2);
+      expect(filters.widthMax).toBe(4);
+      expect(filters.likedOnly).toBe(true);
+    });
+
+    it('narrowing the gallery writes the query in place', () => {
+      renderPage();
+      act(() => {
+        useBrowseStore.getState().setCategory('kitchen');
+        useBrowseStore.getState().setSearchText('bit');
+      });
+      expect(window.location.pathname).toBe('/community');
+      expect(window.location.search).toBe('?q=bit&cat=kitchen');
+    });
+
+    it('clearing every filter leaves a bare /community', () => {
+      window.history.replaceState(null, '', '/community?cat=tools&liked=1');
+      renderPage();
+      act(() => {
+        useBrowseStore.getState().clearFilters();
+      });
+      expect(window.location.search).toBe('');
+    });
+
+    it('never pushes a history entry for a filter change', () => {
+      // Narrowing is not navigation: pushing would mean a Back press per
+      // filter tweak just to leave the page.
+      renderPage();
+      const pushSpy = vi.spyOn(window.history, 'pushState');
+      act(() => {
+        useBrowseStore.getState().setCategory('tools');
+        useBrowseStore.getState().setCategory('kitchen');
+        useBrowseStore.getState().setLikedOnly(true);
+      });
+      expect(pushSpy).not.toHaveBeenCalled();
+      expect(window.location.search).toBe('?cat=kitchen&liked=1');
+    });
+
+    it('leaves the layout editor gap context out of the URL', () => {
+      // It describes a gap in the sender's drawer and means nothing in a
+      // recipient's browser.
+      renderPage();
+      act(() => {
+        useBrowseStore.getState().setFitsGapContext({
+          widthMax: 3,
+          depthMax: 2,
+          maxHeight: 6,
+          gridUnitMm: 42,
+          gridUnitMmY: 42,
+          heightUnitMm: 7,
+        });
+      });
+      expect(window.location.search).toBe('');
+    });
+
+    it('a shared link does not clear the viewer’s own Mine view', () => {
+      // mineOnly is resolved per account, so the URL neither carries nor
+      // clears it.
+      renderPage();
+      act(() => {
+        useBrowseStore.getState().setMineOnly(true);
+      });
+      expect(window.location.search).toBe('');
+      act(() => {
+        window.history.replaceState(null, '', '/community?cat=tools');
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      });
+      expect(useBrowseStore.getState().filters.mineOnly).toBe(true);
+      expect(useBrowseStore.getState().filters.category).toBe('tools');
+    });
+
     const AUTHOR_ID = 'a'.repeat(32);
 
     function authorCard(id: string): CommunityCard {
