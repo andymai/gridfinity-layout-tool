@@ -115,9 +115,16 @@ export function CommunityPage({
   // whatever the query carries. Only runs when the query actually changed,
   // and the write below uses replaceState (which fires no popstate), so the
   // two directions cannot feed each other.
+  //
+  // Skipped while a detail deep link owns the path, mirroring the guard on the
+  // write below. A detail URL carries no query, so without this the open would
+  // apply an empty one: clearing the gallery's filters underneath the overlay
+  // and resetting the scroll offset and page count that Back is supposed to
+  // return to.
   useEffect(() => {
+    if (communityDesignIdFromUrl !== null) return;
     applyUrlFilters(decodeBrowseParams(new URLSearchParams(communityGalleryQuery)));
-  }, [communityGalleryQuery, applyUrlFilters]);
+  }, [communityGalleryQuery, communityDesignIdFromUrl, applyUrlFilters]);
 
   // The URL carries the author's id but not their name, which is not in it to
   // carry: it resolves once the index holds one of their cards.

@@ -8,7 +8,7 @@ import {
 } from '@/core/store/communityDetail';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import type { CommunityCard } from '@/shared/types/community';
-import { INITIAL_BROWSE_STATE, useBrowseStore } from '../../store/browseStore';
+import { GALLERY_PAGE_SIZE, INITIAL_BROWSE_STATE, useBrowseStore } from '../../store/browseStore';
 import { CommunityPage } from './CommunityPage';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
@@ -320,6 +320,58 @@ describe('CommunityPage', () => {
       });
       expect(pushSpy).not.toHaveBeenCalled();
       expect(window.location.search).toBe('?cat=kitchen&liked=1');
+    });
+
+    it('opening a detail does not clear the gallery underneath it', () => {
+      // A detail URL carries no query, so the reader has to stand down while
+      // one owns the path: applying its empty query would wipe the filters
+      // behind the overlay and reset the paging Back is meant to return to.
+      window.history.replaceState(null, '', '/community?q=hex&cat=tools');
+      renderPage();
+      act(() => {
+        useBrowseStore.getState().showMore();
+      });
+      const pagedTo = useBrowseStore.getState().visibleCount;
+
+      act(() => {
+        useCommunityDetailStore.getState().open('DesignAAAAAA');
+      });
+      const during = useBrowseStore.getState();
+      expect(during.filters.searchText).toBe('hex');
+      expect(during.filters.category).toBe('tools');
+      expect(during.visibleCount).toBe(pagedTo);
+    });
+
+    it('returning from a detail replays the same query without resetting paging', () => {
+      window.history.replaceState(null, '', '/community?q=hex');
+      renderPage();
+      act(() => {
+        useBrowseStore.getState().showMore();
+      });
+      const pagedTo = useBrowseStore.getState().visibleCount;
+
+      act(() => {
+        window.history.replaceState(null, '', '/community?q=hex');
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      });
+      // The replay is a no-op, so it must not count as a filter change: those
+      // legitimately reset scroll and page count, and Back is not one.
+      expect(useBrowseStore.getState().visibleCount).toBe(pagedTo);
+      expect(useBrowseStore.getState().filters.searchText).toBe('hex');
+    });
+
+    it('a query that really changes still resets paging', () => {
+      window.history.replaceState(null, '', '/community?q=hex');
+      renderPage();
+      act(() => {
+        useBrowseStore.getState().showMore();
+      });
+      expect(useBrowseStore.getState().visibleCount).toBeGreaterThan(GALLERY_PAGE_SIZE);
+      act(() => {
+        window.history.replaceState(null, '', '/community?q=bit');
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      });
+      expect(useBrowseStore.getState().visibleCount).toBe(GALLERY_PAGE_SIZE);
     });
 
     it('leaves the layout editor gap context out of the URL', () => {

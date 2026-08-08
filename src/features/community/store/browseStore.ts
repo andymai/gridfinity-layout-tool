@@ -370,6 +370,31 @@ function withBestFitFallback(
   return { ...filters, sort: 'newest' };
 }
 
+/**
+ * Value equality over the filters. `author` is the only non-primitive, and it
+ * is compared by id and name rather than by reference: the URL rebuilds it on
+ * every decode, so a reference check would report a change on every replay.
+ */
+export function sameBrowseFilters(a: BrowseFilters, b: BrowseFilters): boolean {
+  return (
+    a.searchText === b.searchText &&
+    a.category === b.category &&
+    a.technique === b.technique &&
+    a.sort === b.sort &&
+    a.likedOnly === b.likedOnly &&
+    a.recentOnly === b.recentOnly &&
+    a.featuredOnly === b.featuredOnly &&
+    a.mineOnly === b.mineOnly &&
+    a.widthMin === b.widthMin &&
+    a.widthMax === b.widthMax &&
+    a.depthMin === b.depthMin &&
+    a.depthMax === b.depthMax &&
+    a.maxHeight === b.maxHeight &&
+    a.author?.id === b.author?.id &&
+    a.author?.name === b.author?.name
+  );
+}
+
 function withDimensionPatch(
   state: Pick<BrowseState, 'filters' | 'fitsGapContext'>,
   patch: Partial<BrowseFilters>
@@ -567,7 +592,14 @@ export const useBrowseStore = create<BrowseStore>((set, get) => {
       }));
     },
     applyUrlFilters: (patch) => {
-      set((state) => withDimensionPatch(state, patch));
+      set((state) => {
+        const next = withDimensionPatch(state, patch);
+        // A no-op re-apply must stay a no-op. Returning from a detail replays
+        // the same query, and withDimensionPatch zeroes scrollTop and
+        // visibleCount, so without this Back lands at the top of a gallery
+        // that has forgotten every Load more.
+        return sameBrowseFilters(state.filters, next.filters) ? {} : next;
+      });
     },
     clearFilters: () => {
       set({ filters: INITIAL_BROWSE_FILTERS, scrollTop: 0, visibleCount: GALLERY_PAGE_SIZE });
