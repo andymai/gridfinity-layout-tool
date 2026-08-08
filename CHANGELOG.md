@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.388.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.388.3...gridfinity-layout-tool-v4.388.4) (2026-08-08)
+
+
+### Bug Fixes
+
+* **deps:** scope every security override to the major line it floors ([#3327](https://github.com/andymai/gridfinity-layout-tool/issues/3327)) ([1901e51](https://github.com/andymai/gridfinity-layout-tool/commit/1901e51b1e986d4e54d4a79456324b7f53488ddb))
+
 ## [4.388.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.388.2...gridfinity-layout-tool-v4.388.3) (2026-08-08)
 
 
