@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.388.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.388.0...gridfinity-layout-tool-v4.388.1) (2026-08-08)
+
+
+### Bug Fixes
+
+* **community:** correct the detail view's print stat and two contrast failures ([#3328](https://github.com/andymai/gridfinity-layout-tool/issues/3328)) ([abe5373](https://github.com/andymai/gridfinity-layout-tool/commit/abe5373e52c62ffb7cf171a981c82eb7e2bebab2))
+
 ## [4.388.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.387.1...gridfinity-layout-tool-v4.388.0) (2026-08-08)
 
 
