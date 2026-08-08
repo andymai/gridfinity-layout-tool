@@ -557,6 +557,52 @@ describe('PUT (edit)', () => {
     expect(body.print.photoThumbs).toEqual(['']);
   });
 
+  it('cleans up the copy of a photo an edit dropped', async () => {
+    const author = await seedOwnPrint();
+    await handle({
+      method: 'PUT',
+      body: validPrintBody({
+        photos: [
+          { photo: webpBase64(1200, 900), thumb: webpBase64(400, 300) },
+          { photo: webpBase64(1100, 800), thumb: webpBase64(360, 260) },
+        ],
+      }),
+    });
+    const stored = JSON.parse(
+      redis.hashes.get(communityPrintKey(DESIGN_ID, author))?.get('photos') ?? '[]'
+    ) as string[];
+    mocks.del.mockClear();
+
+    // Keep the first, drop the second.
+    await handle({ method: 'PUT', body: validPrintBody({ photos: [stored[0]] }) });
+
+    const deleted = (mocks.del.mock.calls[0] as [string[]])[0];
+    expect(deleted).toHaveLength(2);
+    expect(deleted.filter((url) => url.includes('-t.webp'))).toHaveLength(1);
+  });
+
+  it('rolls back both sizes when the write fails', async () => {
+    await seedOwnPrint();
+    // Fail the record write after the uploads have already landed.
+    const original = redis.hset;
+    redis.hset = vi.fn(async () => {
+      throw new Error('redis down');
+    });
+    mocks.del.mockClear();
+
+    await handle({
+      method: 'PUT',
+      body: validPrintBody({
+        photos: [{ photo: webpBase64(1200, 900), thumb: webpBase64(400, 300) }],
+      }),
+    });
+    redis.hset = original;
+
+    const rolledBack = (mocks.del.mock.calls[0] as [string[]])[0];
+    expect(rolledBack).toHaveLength(2);
+    expect(rolledBack.some((url) => url.includes('-t.webp'))).toBe(true);
+  });
+
   it('rejects a kept URL that does not belong to this print', async () => {
     await seedOwnPrint([webpBase64()]);
 
@@ -699,6 +745,24 @@ describe('DELETE', () => {
     await handle({ method: 'DELETE' });
 
     expect(redis.hashes.get(communityDesignKey(DESIGN_ID))?.get('coverPhotoUrl')).toBe('');
+  });
+
+  it('deletes the browsing copies along with the photos', async () => {
+    // Both sizes sit at public paths; deleting only the photos would strand
+    // its copy on the CDN with no record naming it.
+    await handle({
+      method: 'PUT',
+      body: validPrintBody({
+        photos: [{ photo: webpBase64(1200, 900), thumb: webpBase64(400, 300) }],
+      }),
+    });
+    mocks.del.mockClear();
+
+    await handle({ method: 'DELETE' });
+
+    const deleted = (mocks.del.mock.calls[0] as [string[]])[0];
+    expect(deleted).toHaveLength(2);
+    expect(deleted.some((url) => url.includes('-t.webp'))).toBe(true);
   });
 
   it('drops the cover’s browsing copy with it', async () => {

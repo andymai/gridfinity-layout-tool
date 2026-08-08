@@ -439,7 +439,12 @@ async function handleUpsert(
     // The photos are already at public, predictable paths; without this the
     // failed edit strands CDN assets no record references.
     if (uploaded.length > 0) {
-      await del(uploaded.map((blob) => blob.url)).catch((delErr: unknown) => {
+      // Both sizes: each upload wrote up to two blobs, and rolling back only
+      // the photo would strand its copy at a public path no record names.
+      const orphans = uploaded.flatMap((blob) =>
+        blob.thumbUrl === '' ? [blob.url] : [blob.url, blob.thumbUrl]
+      );
+      await del(orphans).catch((delErr: unknown) => {
         logger.error('Rollback failed: orphan print photos left after write failure', {
           designId,
           error: delErr instanceof Error ? delErr.message : String(delErr),
@@ -454,10 +459,15 @@ async function handleUpsert(
   // Post-commit: photos the edit dropped are no longer referenced by anything.
   // Best-effort, because the record is already correct and a failed cleanup
   // must not fail a successful edit.
+  // Indexed against the previous record so each dropped photo takes its copy
+  // with it; the two arrays are the same length by construction.
   const orphaned = existingPhotos.filter((url) => !photos.includes(url));
+  const orphanedThumbs = existingPhotos
+    .map((url, index) => (photos.includes(url) ? '' : (existingThumbs[index] ?? '')))
+    .filter((url) => url !== '' && !photoThumbs.includes(url));
   await clearCommunityCoverIfFromPhotos(redis, designId, orphaned);
-  if (orphaned.length > 0) {
-    await del(orphaned).catch((delErr: unknown) => {
+  if (orphaned.length > 0 || orphanedThumbs.length > 0) {
+    await del([...orphaned, ...orphanedThumbs]).catch((delErr: unknown) => {
       logger.warn('Community print: dropped-photo cleanup failed', {
         designId,
         error: delErr instanceof Error ? delErr.message : String(delErr),
@@ -522,8 +532,9 @@ async function handleDelete(
   const count = await syncCommunityPrintCount(redis, designId);
   await clearCommunityCoverIfFromPhotos(redis, designId, existing.photos);
 
-  if (existing.photos.length > 0) {
-    await del(existing.photos).catch((delErr: unknown) => {
+  const deadAssets = [...existing.photos, ...existing.photoThumbs.filter((url) => url !== '')];
+  if (deadAssets.length > 0) {
+    await del(deadAssets).catch((delErr: unknown) => {
       logger.warn('Community print: photo cleanup failed after delete', {
         designId,
         error: delErr instanceof Error ? delErr.message : String(delErr),
