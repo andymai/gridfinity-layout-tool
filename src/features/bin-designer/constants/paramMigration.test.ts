@@ -1002,6 +1002,7 @@ describe('migrateParams', () => {
         mode: 'scallop' as const,
         sides: { front: true, back: true, left: false, right: false },
         coverage: 40,
+        heightMm: 2.4,
         binDip: true,
       },
     };
@@ -1039,6 +1040,29 @@ describe('migrateParams', () => {
     expect(result.lid.retentionMagnet.edgeMagnets).toBe(3); // max
     expect(result.lid.tray.depthMm).toBe(30); // max
     expect(result.lid.tray.wallMm).toBe(1); // min
+  });
+
+  it('reads a grip height of auto for a design saved before the knob existed', () => {
+    const result = migrateParams({
+      lid: { enabled: true, grip: { mode: 'scallop', coverage: 50 } } as never,
+    });
+    // `null` is auto, the mode's own request, so the lid regenerates exactly
+    // as it did before the field existed.
+    expect(result.lid.grip.heightMm).toBeNull();
+  });
+
+  it('clamps a stored grip height and rejects a non-numeric one', () => {
+    expect(
+      migrateParams({ lid: { grip: { mode: 'scallop', heightMm: 999 } } as never }).lid.grip
+        .heightMm
+    ).toBe(10);
+    expect(
+      migrateParams({ lid: { grip: { mode: 'scallop', heightMm: 0 } } as never }).lid.grip.heightMm
+    ).toBe(0.8);
+    expect(
+      migrateParams({ lid: { grip: { mode: 'scallop', heightMm: 'tall' } } as never }).lid.grip
+        .heightMm
+    ).toBeNull();
   });
 
   it('backfills separateStackPlate=false for legacy lid configs missing the field', () => {

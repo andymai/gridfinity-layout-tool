@@ -78,6 +78,7 @@
     "binDesigner.labelColor",
     "binDesigner.layout",
     "binDesigner.lid.attachment.friction",
+    "binDesigner.lid.gripHeightAuto",
     "binDesigner.lid.outerDimensions",
     "binDesigner.lid.railsTwoAxis",
     "binDesigner.lid.summary",

@@ -24,7 +24,10 @@ import {
   LID_GRIP_MIN_WALL_MM,
   resolveLidGripSpanMm,
   resolveLidGripDepth,
-  resolveLidGripHeightMm,
+  resolveLidGripHeightPlan,
+  lidGripRequestedHeightMm,
+  LID_GRIP_HEIGHT_MIN_MM,
+  LID_GRIP_HEIGHT_MAX_MM,
   LID_GRIP_CHAMFER_MM,
   LID_GRIP_REVEAL_HEIGHT_MM,
   LID_GRIP_SCALLOP_HEIGHT_MM,
@@ -35,6 +38,7 @@ import {
   lidGripModeAllowed,
   type LidConfig,
 } from './lid';
+import type { LidGripConfig } from './lid';
 
 describe('DEFAULT_LID_CONFIG', () => {
   it('is disabled by default', () => {
@@ -417,27 +421,96 @@ describe('lidGripModeAllowed', () => {
   });
 });
 
-describe('resolveLidGripHeightMm', () => {
+describe('resolveLidGripHeightPlan', () => {
+  const grip = (over: Partial<LidGripConfig> = {}): LidGripConfig => ({
+    ...DEFAULT_LID_CONFIG.grip,
+    ...over,
+  });
+  // A deep cavity leaves plenty of skirt above the seam, so nothing clamps.
+  const ROOMY = -20;
+  // The whole skirt above the seam on a standard lid, which is a thin cap.
+  const STANDARD = -2.09;
+
   it('gives each mode its requested height on a lid with skirt to spare', () => {
-    // A deep cavity leaves plenty of skirt above the seam.
-    const anchorZ = -20;
-    expect(resolveLidGripHeightMm('chamfer', anchorZ)).toBe(LID_GRIP_CHAMFER_MM);
-    expect(resolveLidGripHeightMm('reveal', anchorZ)).toBe(LID_GRIP_REVEAL_HEIGHT_MM);
-    expect(resolveLidGripHeightMm('scallop', anchorZ)).toBe(LID_GRIP_SCALLOP_HEIGHT_MM);
+    expect(resolveLidGripHeightPlan(grip({ mode: 'chamfer' }), ROOMY, 5).heightMm).toBe(
+      LID_GRIP_CHAMFER_MM
+    );
+    expect(resolveLidGripHeightPlan(grip({ mode: 'reveal' }), ROOMY, 5).heightMm).toBe(
+      LID_GRIP_REVEAL_HEIGHT_MM
+    );
+    expect(resolveLidGripHeightPlan(grip({ mode: 'scallop' }), ROOMY, 5).heightMm).toBe(
+      LID_GRIP_SCALLOP_HEIGHT_MM
+    );
+  });
+
+  it('cuts to a user-set height instead of the mode request', () => {
+    const plan = resolveLidGripHeightPlan(grip({ mode: 'scallop', heightMm: 2.4 }), ROOMY, 5);
+    expect(plan.heightMm).toBe(2.4);
+    expect(plan.requestedMm).toBe(2.4);
+    expect(plan.clamped).toBe(false);
+    expect(plan.limitedBy).toBeNull();
+  });
+
+  it('clamps a user-set height to the knob bounds', () => {
+    expect(
+      resolveLidGripHeightPlan(grip({ mode: 'scallop', heightMm: 99 }), ROOMY, 5).heightMm
+    ).toBe(LID_GRIP_HEIGHT_MAX_MM);
+    expect(
+      resolveLidGripHeightPlan(grip({ mode: 'scallop', heightMm: 0.1 }), ROOMY, 5).heightMm
+    ).toBe(LID_GRIP_HEIGHT_MIN_MM);
+  });
+
+  it('ignores a stored height in chamfer mode', () => {
+    // The panel offers no height control for a chamfer, so a value carried
+    // over from another mode must not move its geometry.
+    expect(
+      resolveLidGripHeightPlan(grip({ mode: 'chamfer', heightMm: 6 }), ROOMY, 5).heightMm
+    ).toBe(LID_GRIP_CHAMFER_MM);
+  });
+
+  it("ties a chamfer's height to its depth, and says which bound bit", () => {
+    const plan = resolveLidGripHeightPlan(grip({ mode: 'chamfer' }), ROOMY, 0.6);
+    expect(plan.heightMm).toBe(0.6);
+    expect(plan.limitedBy).toBe('depth');
   });
 
   it('keeps a solid skin above the relief on a standard lid', () => {
-    // The whole skirt above the seam is only ~2.1mm — a lid is a thin cap — so
-    // the scallop's 4mm request cannot be honoured without notching the top face.
-    const anchorZ = -2.09;
-    const height = resolveLidGripHeightMm('scallop', anchorZ);
-    expect(height).toBeLessThan(LID_GRIP_SCALLOP_HEIGHT_MM);
+    // The scallop's 4mm request cannot be honoured without notching the top face.
+    const plan = resolveLidGripHeightPlan(grip({ mode: 'scallop' }), STANDARD, 5);
+    expect(plan.heightMm).toBeLessThan(LID_GRIP_SCALLOP_HEIGHT_MM);
+    expect(plan.clamped).toBe(true);
+    expect(plan.limitedBy).toBe('skirt');
     // The clamp binds, so the relief stops exactly at the reserved skin.
-    expect(anchorZ + height).toBeCloseTo(-LID_GRIP_TOP_SKIN_MM, 9);
+    expect(plan.skinMm).toBeCloseTo(LID_GRIP_TOP_SKIN_MM, 9);
+    expect(STANDARD + plan.heightMm).toBeCloseTo(-LID_GRIP_TOP_SKIN_MM, 9);
+  });
+
+  it('reports the material left above a relief that fits', () => {
+    // The point of the height knob (#3272): the reporter needed to see, and
+    // then raise, the lid left over a pocket that prints upside down.
+    const plan = resolveLidGripHeightPlan(grip({ mode: 'scallop', heightMm: 4 }), -8, 5);
+    expect(plan.skirtMm).toBeCloseTo(8, 9);
+    expect(plan.skinMm).toBeCloseTo(4, 9);
   });
 
   it('never returns a negative height when the seam is at the top face', () => {
-    expect(resolveLidGripHeightMm('scallop', 0)).toBe(0);
-    expect(resolveLidGripHeightMm('scallop', -0.1)).toBe(0);
+    expect(resolveLidGripHeightPlan(grip({ mode: 'scallop' }), 0, 5).heightMm).toBe(0);
+    expect(resolveLidGripHeightPlan(grip({ mode: 'scallop' }), -0.1, 5).heightMm).toBe(0);
+    expect(resolveLidGripHeightPlan(grip({ mode: 'scallop' }), -0.1, 5).skinMm).toBeCloseTo(0.1, 9);
+  });
+});
+
+describe('lidGripRequestedHeightMm', () => {
+  it('falls back to the mode request when the height is auto', () => {
+    expect(lidGripRequestedHeightMm({ mode: 'scallop', heightMm: null })).toBe(
+      LID_GRIP_SCALLOP_HEIGHT_MM
+    );
+    expect(lidGripRequestedHeightMm({ mode: 'reveal', heightMm: null })).toBe(
+      LID_GRIP_REVEAL_HEIGHT_MM
+    );
+  });
+
+  it('is zero for a lid with no relief', () => {
+    expect(lidGripRequestedHeightMm({ mode: 'none', heightMm: 4 })).toBe(0);
   });
 });

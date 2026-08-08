@@ -39,7 +39,10 @@ import {
   hasLidGrip,
   hasAnyLidGripSide,
   resolveLidGripDepth,
-  resolveLidGripHeightMm,
+  resolveLidGripHeightPlan,
+  LID_GRIP_HEIGHT_MIN_MM,
+  LID_GRIP_HEIGHT_MAX_MM,
+  LID_GRIP_HEIGHT_STEP_MM,
   isMagnetStyle,
   type LidAttachment,
   type LidGripConfig,
@@ -368,6 +371,25 @@ export function useLidSection() {
     [lid.grip, updateLid]
   );
 
+  /**
+   * `null` returns the height to the mode's own request. Numbers are clamped
+   * and rounded to one decimal here, for the same reason `setTopThickness`
+   * does: a 0.2mm step accumulated in floating point otherwise writes
+   * 1.7999999999999998 into the shared design JSON.
+   */
+  const setGripHeight = useCallback(
+    (heightMm: number | null) => {
+      const value =
+        heightMm === null
+          ? null
+          : Math.round(
+              Math.min(Math.max(heightMm, LID_GRIP_HEIGHT_MIN_MM), LID_GRIP_HEIGHT_MAX_MM) * 10
+            ) / 10;
+      updateLid({ grip: { ...lid.grip, heightMm: value } });
+    },
+    [lid.grip, updateLid]
+  );
+
   const toggleGripBinDip = useCallback(() => {
     updateLid({ grip: { ...lid.grip, binDip: !lid.grip.binDip } });
   }, [lid.grip, updateLid]);
@@ -600,6 +622,11 @@ export function useLidSection() {
     setDesignName(name === '' ? t('binDesigner.lid.matchingTrayName') : `${name} tray`);
   }, [params, designName, newDesign, setParams, setDesignName, t]);
 
+  // The relief's two clamps, resolved once: the height reads the depth, since
+  // a chamfer's 45° section is sized by whichever of the two is scarcer.
+  const gripDepth = resolveLidGripDepth(params);
+  const gripHeight = resolveLidGripHeightPlan(lid.grip, lidDimensions.anchorZ, gripDepth.depthMm);
+
   return {
     state: {
       enabled: effectiveEnabled,
@@ -645,8 +672,14 @@ export function useLidSection() {
       gripModeAllowed: (mode: LidGripMode) => lidGripModeAllowed(params, mode),
       gripAnySide: hasAnyLidGripSide(lid.grip.sides),
       gripActive: hasLidGrip(params),
-      gripDepth: resolveLidGripDepth(params),
-      gripHeightMm: resolveLidGripHeightMm(lid.grip.mode, lidDimensions.anchorZ),
+      gripDepth,
+      // `gripHeight` reports the skirt budget and the skin left above the cut
+      // as well as the height itself: the reason the knob exists is the
+      // material above a pocket, and that number is invisible in the model.
+      gripHeight,
+      gripHeightMin: LID_GRIP_HEIGHT_MIN_MM,
+      gripHeightMax: LID_GRIP_HEIGHT_MAX_MM,
+      gripHeightStep: LID_GRIP_HEIGHT_STEP_MM,
       gripCoverageOptions,
       extraHeightMm: lid.extraHeightMm,
       extraHeightMin: LID_EXTRA_HEIGHT_MIN_MM,
@@ -702,6 +735,7 @@ export function useLidSection() {
       setGripMode,
       toggleGripSide,
       setGripCoverage,
+      setGripHeight,
       toggleGripBinDip,
       setExtraHeight,
       setTopThickness,

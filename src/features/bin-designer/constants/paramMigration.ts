@@ -51,6 +51,8 @@ import {
   LID_GRIP_MODES,
   LID_GRIP_COVERAGE_MIN,
   LID_GRIP_COVERAGE_MAX,
+  LID_GRIP_HEIGHT_MIN_MM,
+  LID_GRIP_HEIGHT_MAX_MM,
   LID_RAIL_SIDES,
 } from '../types/lid';
 import type {
@@ -372,6 +374,18 @@ function migrateGrip(raw: unknown): LidGripConfig {
       LID_GRIP_COVERAGE_MAX,
       DEFAULT_LID_CONFIG.grip.coverage
     ),
+    // A number is a height the user chose. Anything else (absent on a design
+    // saved before the knob existed, or out of range) means auto, the mode's
+    // own request.
+    heightMm:
+      typeof obj.heightMm === 'number' && Number.isFinite(obj.heightMm)
+        ? clampNumber(
+            obj.heightMm,
+            LID_GRIP_HEIGHT_MIN_MM,
+            LID_GRIP_HEIGHT_MAX_MM,
+            LID_GRIP_HEIGHT_MIN_MM
+          )
+        : null,
     binDip: obj.binDip === true,
   };
 }

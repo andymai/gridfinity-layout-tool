@@ -23,6 +23,7 @@ import {
   resolveLidPlateThickness,
   resolveLidCavityExtraMm,
   resolveLidGripDepth,
+  resolveLidGripHeightPlan,
   hasLidGrip,
   hasBinLipDip,
 } from '@/shared/types/bin';
@@ -173,6 +174,12 @@ export interface LidInputs {
   /** Resolved inward cut depth (mm) for the relief; 0 when there is none. */
   readonly gripDepthMm: number;
   /**
+   * Resolved height (mm) the relief reaches above the seam; 0 when there is
+   * none. Carries the user's `heightMm` request, the skirt clamp, and (for a
+   * chamfer) the tie to `gripDepthMm`, so the cutter reads one number.
+   */
+  readonly gripHeightMm: number;
+  /**
    * Whether the click rails give way behind the relief.
    *
    * Tracks `binDip`: relief and rail occupy disjoint Z bands, so interrupting
@@ -305,6 +312,12 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   const lidCornerR = LID_CORNER_RADIUS - fitClearance;
   const cavityInset = lidCornerR;
 
+  // The seam plane, and the two relief numbers measured against it. Resolved
+  // here rather than inline below because the height reads the depth: a
+  // chamfer's 45° section is sized by whichever of the two is scarcer.
+  const anchorZ = lidAnchorZ(heightUnitMm, LID_FIT_CLEARANCE, cavityExtra);
+  const gripDepthMm = gripActive ? resolveLidGripDepth(params).depthMm : 0;
+
   return {
     lidOuterW,
     lidOuterD,
@@ -366,7 +379,10 @@ export function resolveLidInputs(params: BinParams): LidInputs {
       sides: params.lid.grip.sides,
       coverage: params.lid.grip.coverage,
     },
-    gripDepthMm: gripActive ? resolveLidGripDepth(params).depthMm : 0,
+    gripDepthMm,
+    gripHeightMm: gripActive
+      ? resolveLidGripHeightPlan(params.lid.grip, anchorZ, gripDepthMm).heightMm
+      : 0,
     gripSoftensSnap: hasBinLipDip(params),
     // `extraHeightMm` (issue #2482) deepens the cavity above the lip so tall
     // contents poking out of a short bin are enclosed; 0 = standard lid.
@@ -375,7 +391,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     // magnets' seat gap. `cavityExtra` (not just `extraHeightMm`) keeps the
     // plate from eating the lip's space; every non-worker `lidAnchorZ` caller
     // resolves the same pair so preview/thumbnail/export can't drift.
-    anchorZ: lidAnchorZ(heightUnitMm, LID_FIT_CLEARANCE, cavityExtra),
+    anchorZ,
     wallBottomZ: lidWallBottomZ(heightUnitMm, LID_FIT_CLEARANCE, cavityExtra),
     cellMask,
     text,
