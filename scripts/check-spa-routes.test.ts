@@ -73,6 +73,19 @@ describe('SPA routes are served by Vercel', () => {
     const source = '/community/d/:id([a-zA-Z0-9]{12})';
     const rewrite = rewrites.find((r) => r.source === source);
     expect(rewrite, `vercel.json needs a rewrite for "${source}"`).toBeDefined();
-    expect(rewrite?.destination).toBe('/api/community/page?id=$id');
+    // :id, not $id. Vercel interpolates named parameters with the colon form
+    // used by every other rewrite in the file; $id would arrive literally,
+    // fail the handler's id check, and silently serve the generic shell for
+    // every design — the feature would ship doing nothing.
+    expect(rewrite?.destination).toBe('/api/community/page?id=:id');
+  });
+
+  it('no rewrite destination uses $param interpolation', () => {
+    // Vercel substitutes :name, not $name. A $ reference is passed through
+    // literally, so the handler receives the placeholder as the value — which
+    // fails silently rather than erroring, and is invisible until someone
+    // notices the feature never worked.
+    const dollarRefs = rewrites.filter((r) => /\$[A-Za-z_]\w*/.test(r.destination));
+    expect(dollarRefs.map((r) => `${r.source} -> ${r.destination}`)).toEqual([]);
   });
 });

@@ -450,7 +450,7 @@
     },
     {
       "source": "/community/d/:id([a-zA-Z0-9]{12})",
-      "destination": "/api/community/page?id=$id"
+      "destination": "/api/community/page?id=:id"
     },
     {
       "source": "/s/:id([a-zA-Z0-9]{12})",
