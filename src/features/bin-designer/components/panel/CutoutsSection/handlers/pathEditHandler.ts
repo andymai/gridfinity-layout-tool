@@ -199,7 +199,14 @@ export function handleVertexEditPointerMove(
     // shrink mid-drag (an undo, a remote edit), and reading past its end threw
     // rather than simply dropping the frame.
     const pt = path[dragTarget.index];
-    if (pt === undefined) return;
+    if (pt === undefined) {
+      // Dropping the frame is not enough. The last preview was computed
+      // against the longer path and pointer-up commits whatever it finds, so
+      // leaving it would put the removed points back and overwrite whatever
+      // shrank the path.
+      setters.setPreview(new Map());
+      return;
+    }
     // Clamp handle endpoint to bin bounds
     const clampedX = Math.max(0, Math.min(event.mmX, bounds.binWidth));
     const clampedY = Math.max(0, Math.min(event.mmY, bounds.binDepth));

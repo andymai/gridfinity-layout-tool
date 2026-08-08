@@ -124,10 +124,10 @@ describe('handleCutoutKeyDown — deletion and selection', () => {
     expect(event.preventDefault).toHaveBeenCalled();
   });
 
-  it('does not preventDefault on Delete with nothing selected', () => {
-    // Backspace has to stay available to the browser when it is not ours.
+  it.each(['Delete', 'Backspace'])('leaves %s to the browser when nothing is selected', (key) => {
+    // Backspace in particular has to stay available when it is not ours.
     const ctx = makeCtx();
-    const event = press('Backspace');
+    const event = press(key);
     handleCutoutKeyDown(event, ctx);
     expect(ctx.deleteSelected).not.toHaveBeenCalled();
     expect(event.preventDefault).not.toHaveBeenCalled();

@@ -304,6 +304,23 @@ describe('handleVertexEditPointerMove', () => {
     expect(updated?.handleIn).toEqual({ dx: -4, dy: -3 });
   });
 
+  it('drops the stale preview so pointer-up cannot resurrect deleted vertices', () => {
+    // Bailing out of the drag is not enough on its own: the last preview
+    // computed against the longer path stays in the map, and pointer-up
+    // commits whatever it finds there — putting the removed points back and
+    // overwriting whatever shrank the path in the first place.
+    const setters = { setPreview: vi.fn(), setSegmentHover: vi.fn() };
+    handleVertexEditPointerMove(
+      makeMode({ dragTarget: { type: 'handle', index: 9, handleType: 'in' } }),
+      at(5, 5),
+      makeCutout(),
+      BOUNDS,
+      noSnap,
+      setters
+    );
+    expect(setters.setPreview).toHaveBeenCalledWith(new Map());
+  });
+
   it('survives a drag target left behind by a shorter path', () => {
     const setters = { setPreview: vi.fn(), setSegmentHover: vi.fn() };
     expect(() =>
