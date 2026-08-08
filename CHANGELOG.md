@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.388.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.387.1...gridfinity-layout-tool-v4.388.0) (2026-08-08)
+
+
+### Features
+
+* **community:** make a narrowed gallery shareable and reload-safe ([#3324](https://github.com/andymai/gridfinity-layout-tool/issues/3324)) ([6f709dc](https://github.com/andymai/gridfinity-layout-tool/commit/6f709dcbc5bdd6005e1b63bdae836caf5f75e602))
+
 ## [4.387.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.387.0...gridfinity-layout-tool-v4.387.1) (2026-08-08)
 
 
