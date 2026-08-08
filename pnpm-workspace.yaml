@@ -53,23 +53,40 @@ peerDependencyRules:
   allowedVersions:
     vite-plugin-pwa>vite: '^8.0.0'
 
+# A security override is a FLOOR, and its selector has to say which major line
+# it floors. A bare `pkg: '^X'` matches every major, so a consumer that asks for
+# a newer major gets silently dragged DOWN to X; an unbounded `pkg@<X` matches
+# every older major, so an old consumer gets dragged UP across a breaking
+# boundary. Both read as ordinary pins and neither fails loudly. Range-scope per
+# major instead, one entry per affected line, and let OSV flag a major that has
+# no rule yet rather than guessing at one. `parent>child` entries are exempt --
+# naming the parent already bounds the blast radius.
 overrides:
   '@vercel/node>undici': '^7.29.0'
   'undici@>=6.0.0 <6.28.0': '^6.28.0'
   'undici@>=7.0.0 <7.29.0': '^7.29.0'
-  path-to-regexp: '6.3.0'
+  # GHSA-9wv6-86v2-598j — ReDoS, fixed at 6.3.0 for the 4.x-6.x range with no
+  # backport. Scoped to 6.x, the only line in the tree (@vercel/node pins 6.1.0).
+  # The 7.x and 8.x lines have their own advisories and their own fixes; a bare
+  # rule here would have pinned either of them back to 6.3.0.
+  'path-to-regexp@>=6.0.0 <6.3.0': '6.3.0'
   '@rollup/plugin-replace>magic-string': '0.30.21'
   '@surma/rollup-plugin-off-main-thread>magic-string': '0.30.21'
   'workbox-build>@rollup/plugin-node-resolve': '^16.0.0'
   '@apideck/better-ajv-errors>ajv': '^8.17.1'
-  fast-uri: '^3.1.5'
+  # ajv pins ^3.0.1; the 4.x line has separate advisories fixed at 4.1.2.
+  'fast-uri@>=3.0.0 <3.1.5': '^3.1.5'
   # sharp <0.35.0 inherits libvips CVE-2026-33327/33328/35590/35591
   # (GHSA-f88m-g3jw-g9cj). Only reachable transitively via
   # manifold-3d>@gltf-transform/functions>ndarray-pixels (build-time glTF
   # texture processing, never bundled into the browser). ndarray-pixels pins
   # sharp ^0.34.0; there is no patched 0.34.x, so force the 0.35 line.
   sharp: '^0.35.0'
-  serialize-javascript: '^7.0.3'
+  # Floor raised 7.0.3 -> 7.0.5: GHSA-qj8w-gfj5-8c6v affects [5.0.0, 7.0.5), so
+  # the old floor was itself a vulnerable version. It never resolved there --
+  # @rollup/plugin-terser asks for ^7.0.3 and gets 7.0.7 -- so OSV stayed green
+  # and the stale floor never surfaced.
+  'serialize-javascript@>=7.0.0 <7.0.5': '^7.0.5'
   'eslint-plugin-react-hooks>eslint': '^10.0.3'
   'eslint-plugin-jsx-a11y>eslint': '^10.0.3'
   # All minimatch consumers are pinned to the 10.x line, the only line pulling a
@@ -92,9 +109,10 @@ overrides:
   '@vercel/python-analysis>minimatch': '^10.2.3'
   '@vercel/static-config>ajv': '^8.18.0'
   'glob>minimatch': '^10.2.3'
-  flatted: '^3.4.2'
-  dompurify: '^3.4.13'
-  '@babel/core@<7.29.6': '^7.29.6'
+  'flatted@>=3.0.0 <3.4.2': '^3.4.2'
+  # posthog-js (^3.3.2) and @cesium/engine (^3.3.0) both sit on 3.x.
+  'dompurify@>=3.0.0 <3.4.13': '^3.4.13'
+  '@babel/core@>=7.0.0 <7.29.6': '^7.29.6'
   # GHSA-5p4m-2wfm-xmqj (quadratic CPU in !!omap resolution) is fixed in 4.3.1
   # on the 4.x line and 3.15.1 on 3.x, with no single version covering both.
   # Range-scoped per line so a 3.x consumer is bumped within its own major —
@@ -110,7 +128,17 @@ overrides:
   # major cannot be patched in place anyway — OSV would flag it and it gets its
   # own rule then. The 4.x–5.x affected range is not in the tree.
   'nanoid@>=3.0.0 <3.3.17': '^3.3.17'
-  protobufjs: '^7.6.4'
+  # The bare `protobufjs: ^7.6.4` this replaces was not latent -- it was firing.
+  # @cesium/engine asks for ^8.6.5 and was being pinned back to the 7.x line,
+  # two majors of API behind what it declares, for no security gain: 8.x resolves
+  # above its own last advisory (8.6.6) and is clean. Splitting per line lets
+  # cesium have the major it asked for and keeps a floor on each.
+  #
+  # The 7.x floor also moves 7.6.4 -> 7.6.5: GHSA-j3f2-48v5-ccww affects
+  # [7.5.0, 7.6.5), so the old floor was a vulnerable version that only stayed
+  # green because `^` resolved past it.
+  'protobufjs@>=7.0.0 <7.6.5': '^7.6.5'
+  'protobufjs@>=8.0.0 <8.6.6': '^8.6.6'
   'eslint-plugin-i18next>lodash': '^4.18.1'
   'vitest-axe>lodash-es': '^4.18.1'
   'picomatch@>=4.0.0 <4.0.4': '^4.0.4'
@@ -119,7 +147,10 @@ overrides:
   # release patched against GHSA-rgw5-rvv9-x895. The 1.x line is gone, so its old
   # `brace-expansion@<1.1.17` pin is no longer needed (#2974).
   'brace-expansion@>=5.0.0 <5.0.9': '^5.0.9'
-  'tar@<7.5.21': '^7.5.21'
+  # @mapbox/node-pre-gyp asks for ^7.4.0. Lower-bounded because tar 6.x is very
+  # common transitively and an unbounded `<7.5.21` would have forced any that
+  # appeared onto 7.x, which is an ESM/API break.
+  'tar@>=7.0.0 <7.5.21': '^7.5.21'
   '@vercel/python-analysis>smol-toml': '^1.6.1'
   esbuild: '0.28.1'
 
