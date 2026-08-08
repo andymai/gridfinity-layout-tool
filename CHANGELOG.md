@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.388.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.388.2...gridfinity-layout-tool-v4.388.3) (2026-08-08)
+
+
+### Performance
+
+* **community:** build the browse index from concurrent windows ([#3330](https://github.com/andymai/gridfinity-layout-tool/issues/3330)) ([87de862](https://github.com/andymai/gridfinity-layout-tool/commit/87de8621acf4688c935075fe16c568936faf5332))
+
 ## [4.388.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.388.1...gridfinity-layout-tool-v4.388.2) (2026-08-08)
 
 
