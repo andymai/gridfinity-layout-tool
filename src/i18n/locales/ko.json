@@ -3334,6 +3334,7 @@
   "community.gallery.depthMinLabel": "최소 깊이",
   "community.gallery.depthMaxLabel": "최대 깊이",
   "community.gallery.dimensionAny": "전체",
+  "community.gallery.dimensionOnlyValue": "이 축에서는 모든 디자인이 {{value}}입니다",
   "community.shelves.featured": "추천",
   "community.shelves.newThisWeek": "이번 주 신규",
   "community.shelves.mostRemixed": "리믹스 인기작",

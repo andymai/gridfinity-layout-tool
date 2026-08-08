@@ -75,6 +75,24 @@ describe('GalleryToolbar', () => {
     expect(screen.getByTestId('community-filter-button')).toBeInTheDocument();
   });
 
+  it('gives search its own row on mobile rather than a third of one', () => {
+    responsiveMock.isMobile = true;
+    renderToolbar();
+    // Sharing a row with the filter button and the sort select left search
+    // about 120px on a 390px phone, narrow enough to cut the placeholder
+    // mid-word. basis-full wraps it onto its own line instead.
+    const search = screen.getByLabelText('community.gallery.searchLabel');
+    const wrapper = search.closest('div');
+    expect(wrapper?.className).toContain('basis-full');
+    expect(wrapper?.className).toContain('order-last');
+  });
+
+  it('keeps all three controls on one row on desktop', () => {
+    renderToolbar();
+    const wrapper = screen.getByLabelText('community.gallery.searchLabel').closest('div');
+    expect(wrapper?.className).not.toContain('basis-full');
+  });
+
   it('drops the toggle when there is nothing to narrow', () => {
     renderToolbar({ filtersAvailable: false });
     expect(screen.queryByTestId('community-filter-button')).toBeNull();

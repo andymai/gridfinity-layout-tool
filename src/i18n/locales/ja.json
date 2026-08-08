@@ -1698,6 +1698,7 @@
   "community.gallery.depthMinLabel": "最小奥行き",
   "community.gallery.depthMaxLabel": "最大奥行き",
   "community.gallery.dimensionAny": "指定なし",
+  "community.gallery.dimensionOnlyValue": "この軸ではすべてのデザインが {{value}} です",
   "community.shelves.featured": "おすすめ",
   "community.shelves.newThisWeek": "今週の新着",
   "community.shelves.mostRemixed": "リミックス人気作",

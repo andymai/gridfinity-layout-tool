@@ -1803,6 +1803,7 @@
   "community.gallery.depthMinLabel": "Мінімальна глибина",
   "community.gallery.depthMaxLabel": "Максимальна глибина",
   "community.gallery.dimensionAny": "Будь-яка",
+  "community.gallery.dimensionOnlyValue": "Усі дизайни мають {{value}} на цій осі",
   "community.shelves.featured": "Вибране",
   "community.shelves.newThisWeek": "Нове цього тижня",
   "community.shelves.mostRemixed": "Найбільш реміксовані",

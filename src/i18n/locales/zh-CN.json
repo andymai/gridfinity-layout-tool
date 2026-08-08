@@ -3334,6 +3334,7 @@
   "community.gallery.depthMinLabel": "最小深度",
   "community.gallery.depthMaxLabel": "最大深度",
   "community.gallery.dimensionAny": "不限",
+  "community.gallery.dimensionOnlyValue": "所有设计在此轴上均为 {{value}}",
   "community.shelves.featured": "精选",
   "community.shelves.newThisWeek": "本周新作",
   "community.shelves.mostRemixed": "二创热门",

@@ -83,6 +83,21 @@ export function DimensionFilters({ items, counts, touchSize = false }: Dimension
   const depthStops = useMemo(() => dimensionStops(items, cardDepthRank), [items]);
   const heightStops = useMemo(() => dimensionStops(items, cardHeightRank), [items]);
 
+  /**
+   * An axis every loaded design shares. The slider is inert at one stop either
+   * way, but drawing the track anyway puts a full-width control with both
+   * thumbs collapsed at its left end beside a readout saying "Any", which
+   * reads as a filter pinned to its minimum rather than as an axis with
+   * nothing to choose.
+   */
+  const singleValueAxis = (label: string, stop: number) => (
+    <Field label={label} trailing={<Readout muted text={formatUnits(stop)} />}>
+      <span className="sr-only">
+        {t('community.gallery.dimensionOnlyValue', { value: formatUnits(stop) })}
+      </span>
+    </Field>
+  );
+
   const axis = (
     label: string,
     stops: readonly number[],
@@ -97,6 +112,7 @@ export function DimensionFilters({ items, counts, touchSize = false }: Dimension
     const bounds = window ?? { min: stops.at(0) ?? 0, max: stops.at(-1) ?? 0 };
     const value = displayRange(min, max, bounds);
     const isDefault = min === null && max === null;
+    if (!empty && stops.length < 2) return singleValueAxis(label, stops[0]);
     return (
       <Field
         label={label}
@@ -161,7 +177,8 @@ export function DimensionFilters({ items, counts, touchSize = false }: Dimension
     'community.gallery.depthMinLabel',
     'community.gallery.depthMaxLabel'
   );
-  const heightAxis = (
+  const heightSingleValue = heightWindow !== null && heightStops.length === 1;
+  const heightSlider = (
     <Field
       label={t('community.gallery.maxHeightLabel')}
       trailing={
@@ -193,7 +210,9 @@ export function DimensionFilters({ items, counts, touchSize = false }: Dimension
     <div className={cn('space-y-2', touchSize && 'space-y-3')} data-testid="community-size-filters">
       {widthAxis}
       {depthAxis}
-      {heightAxis}
+      {heightSingleValue
+        ? singleValueAxis(t('community.gallery.maxHeightLabel'), heightStops[0])
+        : heightSlider}
     </div>
   );
 }

@@ -37,6 +37,13 @@ export interface CommunityGalleryTabProps {
    * design's dangling publishedId pointer. Implemented by the shell.
    */
   onOwnDesignUnpublished?: (publishedId: string) => Promise<void>;
+  /**
+   * Fires when the mobile filter view takes over the grid. The view replaces
+   * the whole gallery, so a host with chrome of its own (the route's title,
+   * description and publish CTA) can stand down for it: on a 390px phone that
+   * chrome left the filter list under 400px of a 664px viewport.
+   */
+  onFilterViewChange?: (open: boolean) => void;
   /** @default 'tab' */
   surface?: CommunityGallerySurface;
 }

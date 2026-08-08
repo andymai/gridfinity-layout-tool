@@ -1794,6 +1794,7 @@
   "community.gallery.depthMinLabel": "Profundidad mínima",
   "community.gallery.depthMaxLabel": "Profundidad máxima",
   "community.gallery.dimensionAny": "Cualquiera",
+  "community.gallery.dimensionOnlyValue": "Todos los diseños miden {{value}} en este eje",
   "community.shelves.featured": "Destacados",
   "community.shelves.newThisWeek": "Novedades de la semana",
   "community.shelves.mostRemixed": "Los más remezclados",

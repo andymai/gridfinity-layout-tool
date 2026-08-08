@@ -3334,6 +3334,7 @@
   "community.gallery.depthMinLabel": "Minimální hloubka",
   "community.gallery.depthMaxLabel": "Maximální hloubka",
   "community.gallery.dimensionAny": "Libovolná",
+  "community.gallery.dimensionOnlyValue": "Všechny návrhy mají na této ose {{value}}",
   "community.shelves.featured": "Doporučené",
   "community.shelves.newThisWeek": "Novinky tohoto týdne",
   "community.shelves.mostRemixed": "Nejvíce remixované",

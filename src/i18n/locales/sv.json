@@ -3334,6 +3334,7 @@
   "community.gallery.depthMinLabel": "Minsta djup",
   "community.gallery.depthMaxLabel": "Största djup",
   "community.gallery.dimensionAny": "Alla",
+  "community.gallery.dimensionOnlyValue": "Alla designer är {{value}} på den här axeln",
   "community.shelves.featured": "Utvalda",
   "community.shelves.newThisWeek": "Nytt denna vecka",
   "community.shelves.mostRemixed": "Mest remixade",

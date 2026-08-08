@@ -1745,6 +1745,7 @@
   "community.gallery.depthMinLabel": "Profondità minima",
   "community.gallery.depthMaxLabel": "Profondità massima",
   "community.gallery.dimensionAny": "Qualsiasi",
+  "community.gallery.dimensionOnlyValue": "Tutti i progetti misurano {{value}} su questo asse",
   "community.shelves.featured": "In evidenza",
   "community.shelves.newThisWeek": "Novità della settimana",
   "community.shelves.mostRemixed": "I più remixati",

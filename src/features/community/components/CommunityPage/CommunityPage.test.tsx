@@ -15,8 +15,18 @@ vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 vi.mock('../CommunityGalleryTab', () => ({
   GALLERY_RESULTS_ID: 'community-results',
-  CommunityGalleryTab: ({ surface }: { surface?: string }) => (
-    <div id="community-results" data-testid="gallery-stub" data-surface={surface ?? 'tab'} />
+  CommunityGalleryTab: ({
+    surface,
+    onFilterViewChange,
+  }: {
+    surface?: string;
+    onFilterViewChange?: (open: boolean) => void;
+  }) => (
+    <div id="community-results" data-testid="gallery-stub" data-surface={surface ?? 'tab'}>
+      <button type="button" onClick={() => onFilterViewChange?.(true)}>
+        open-filter-view
+      </button>
+    </div>
   ),
 }));
 
@@ -198,6 +208,18 @@ describe('CommunityPage', () => {
       // made a screen reader announce the page title twice.
       expect(container.querySelector('h1')).toBeNull();
       expect(screen.getByRole('heading', { level: 2, name: 'community.page.title' })).toBeVisible();
+    });
+
+    it('stands the title row down while the mobile filter view has the screen', () => {
+      renderPage();
+      const titleRow = screen.getByTestId('community-page-title-row');
+      expect(titleRow).not.toHaveAttribute('hidden');
+
+      // The view replaces the grid entirely, so leaving the title, blurb and
+      // CTA above it spent roughly a third of a phone screen on chrome the
+      // user is not looking at.
+      fireEvent.click(screen.getByText('open-filter-view'));
+      expect(titleRow).toHaveAttribute('hidden');
     });
 
     it('offers a skip link past the filter rail to the results', () => {

@@ -3334,6 +3334,7 @@
   "community.gallery.depthMinLabel": "Minimalna głębokość",
   "community.gallery.depthMaxLabel": "Maksymalna głębokość",
   "community.gallery.dimensionAny": "Dowolna",
+  "community.gallery.dimensionOnlyValue": "Wszystkie projekty mają {{value}} na tej osi",
   "community.shelves.featured": "Polecane",
   "community.shelves.newThisWeek": "Nowości w tym tygodniu",
   "community.shelves.mostRemixed": "Najczęściej remiksowane",

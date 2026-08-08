@@ -1656,6 +1656,7 @@
   "community.gallery.depthMinLabel": "Minimale diepte",
   "community.gallery.depthMaxLabel": "Maximale diepte",
   "community.gallery.dimensionAny": "Alle",
+  "community.gallery.dimensionOnlyValue": "Alle ontwerpen zijn {{value}} op deze as",
   "community.shelves.featured": "Uitgelicht",
   "community.shelves.newThisWeek": "Nieuw deze week",
   "community.shelves.mostRemixed": "Meest geremixt",

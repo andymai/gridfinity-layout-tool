@@ -72,6 +72,7 @@ export function CommunityPage({
   // Read once on mount: the CTA must not change label under the user when a
   // design is saved in another tab mid-visit.
   const [hadLocalDesigns] = useState(hasLocalDesigns);
+  const [filterViewOpen, setFilterViewOpen] = useState(false);
 
   // URL -> store: the deep link owns which detail is open, so back/forward
   // and cold visits to /community/d/<id> both resolve through here. The card
@@ -165,7 +166,14 @@ export function CommunityPage({
         </div>
       </header>
 
-      <div className="flex shrink-0 flex-wrap items-start justify-between gap-3 border-b border-stroke-subtle px-3 py-3 md:px-4">
+      {/* Stands down for the mobile filter view, which replaces the grid
+          entirely: leaving the title, blurb and CTA above it spent roughly a
+          third of a phone screen on chrome the user is not looking at. */}
+      <div
+        hidden={filterViewOpen}
+        data-testid="community-page-title-row"
+        className="flex shrink-0 flex-wrap items-start justify-between gap-3 border-b border-stroke-subtle px-3 py-3 md:px-4"
+      >
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             {/* h2, not h1: App renders the route-aware h1 for every surface,
@@ -202,6 +210,7 @@ export function CommunityPage({
           onRequestPublish={onRequestPublish}
           onEditOwnDesign={onEditOwnDesign}
           onOwnDesignUnpublished={onOwnDesignUnpublished}
+          onFilterViewChange={setFilterViewOpen}
           surface="route"
         />
       </main>

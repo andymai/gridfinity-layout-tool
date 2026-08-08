@@ -1656,6 +1656,7 @@
   "community.gallery.depthMinLabel": "Minimale Tiefe",
   "community.gallery.depthMaxLabel": "Maximale Tiefe",
   "community.gallery.dimensionAny": "Beliebig",
+  "community.gallery.dimensionOnlyValue": "Alle Designs haben auf dieser Achse {{value}}",
   "community.shelves.featured": "Empfohlen",
   "community.shelves.newThisWeek": "Neu diese Woche",
   "community.shelves.mostRemixed": "Meistgeremixt",

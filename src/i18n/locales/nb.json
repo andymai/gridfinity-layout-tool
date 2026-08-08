@@ -1745,6 +1745,7 @@
   "community.gallery.depthMinLabel": "Minste dybde",
   "community.gallery.depthMaxLabel": "Største dybde",
   "community.gallery.dimensionAny": "Alle",
+  "community.gallery.dimensionOnlyValue": "Alle design er {{value}} på denne aksen",
   "community.shelves.featured": "Utvalgte",
   "community.shelves.newThisWeek": "Nytt denne uken",
   "community.shelves.mostRemixed": "Mest remixet",

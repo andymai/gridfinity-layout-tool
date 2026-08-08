@@ -3389,6 +3389,7 @@
   "community.gallery.depthMinLabel": "Profondeur minimale",
   "community.gallery.depthMaxLabel": "Profondeur maximale",
   "community.gallery.dimensionAny": "Indifférent",
+  "community.gallery.dimensionOnlyValue": "Toutes les créations font {{value}} sur cet axe",
   "community.shelves.featured": "À la une",
   "community.shelves.newThisWeek": "Nouveautés de la semaine",
   "community.shelves.mostRemixed": "Les plus remixés",

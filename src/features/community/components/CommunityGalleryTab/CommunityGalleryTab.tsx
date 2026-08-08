@@ -76,6 +76,7 @@ export function CommunityGalleryTab({
   onRequestPublish,
   onEditOwnDesign,
   onOwnDesignUnpublished,
+  onFilterViewChange,
   surface = 'tab',
 }: CommunityGalleryTabProps) {
   const t = useTranslation();
@@ -228,6 +229,12 @@ export function CommunityGalleryTab({
     const el = scrollRef.current;
     if (el) el.scrollTop = useBrowseStore.getState().scrollTop;
   }, [mobileFiltersOpen]);
+
+  // The view is a full takeover of the gallery, so a host with chrome of its
+  // own is told to stand down for it rather than sitting above a cramped list.
+  useEffect(() => {
+    onFilterViewChange?.(mobileFiltersOpen);
+  }, [mobileFiltersOpen, onFilterViewChange]);
 
   const handleTogglePanel = useCallback(() => {
     // Read the offset while the grid is still mounted: once the filter view

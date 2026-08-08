@@ -3334,6 +3334,7 @@
   "community.gallery.depthMinLabel": "Profundidade mínima",
   "community.gallery.depthMaxLabel": "Profundidade máxima",
   "community.gallery.dimensionAny": "Qualquer",
+  "community.gallery.dimensionOnlyValue": "Todos os designs têm {{value}} neste eixo",
   "community.shelves.featured": "Destaques",
   "community.shelves.newThisWeek": "Novidades da semana",
   "community.shelves.mostRemixed": "Os mais remixados",

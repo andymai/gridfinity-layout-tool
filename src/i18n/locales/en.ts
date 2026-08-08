@@ -3606,6 +3606,7 @@ const en: Record<string, string> = {
   'community.gallery.depthMinLabel': 'Minimum depth',
   'community.gallery.depthMaxLabel': 'Maximum depth',
   'community.gallery.dimensionAny': 'Any',
+  'community.gallery.dimensionOnlyValue': 'Every design is {{value}} on this axis',
   'community.shelves.featured': 'Featured',
   'community.shelves.proven': 'People have printed these',
   'community.shelves.newThisWeek': 'New this week',
