@@ -76,6 +76,14 @@ Identity is a line on the form (`Publishing as X · Change`), not a step. As a s
 
   Writes go through `replaceState`: narrowing a gallery is not navigation, and pushing would mean a Back press per filter tweak just to leave the page. `replaceState` fires no popstate, which is also what keeps the two directions from feeding each other — the reader only re-runs on a real popstate or mount.
 
+**Shared links carry the design's own preview.** `/community/d/<id>` rewrites to `api/community/page.ts`, which serves the app shell with that design's title, description and image injected. Without it every shared design unfurled as the generic site card and opened with the generic tab title, on the one surface whose purpose is being shared.
+
+It is deliberately not an indexing change: `robots.txt` disallows `/community/d/` until the showcase graduates from its Labs flag, and that stands. Social scrapers unfurl regardless, and the tab title is for the person who followed the link. The sitemap therefore lists `/community` and no individual designs — advertising URLs the same file forbids crawling would be a contradiction.
+
+Three rules hold it together. The shell is **fetched from the deployment's own root**, not bundled, so the injected page stays byte-identical to the real one (CSP hashes included); `/` is not rewritten here, so there is no loop. A tag is replaced **only when the shell has exactly one of it** — a shell that changed shape should lose the injection rather than gain a second conflicting `og:title`. And **any failure serves the unmodified shell**: a design that cannot be read costs the preview, never the page, so the SPA still boots. Hidden and removed designs fall into that same path, so a moderated design stops unfurling its name and picture.
+
+Swapping `og:image` also strips the shell's `og:image:width`/`height`: those describe the 1200x630 site card, while a design's is a 384px square render or a promoted photo of some other shape.
+
 - `components/CommunityPage/`: full-page host for the `/community` route. URL-driven detail: `/community/d/<id>` is pushed on open and restored on back/forward and cold deep links. Routing lives in `@/shared/hooks/useCommunityRouting` so the SPA-route CI guard covers the rewrite. That module owns _where_ the query lives (`getCommunityGalleryQuery` / `syncCommunityGalleryQuery`); what the parameters _mean_ stays in this feature, since `shared/` cannot import from it.
 
   **The page wears the app's chrome.** It renders `ToolSwitcher` + `HeaderSupportLinks` like every other surface, so a visitor who followed a shared link has the whole app in the header. Below it, a title row carries the page name, the `Experimental` badge and one CTA.

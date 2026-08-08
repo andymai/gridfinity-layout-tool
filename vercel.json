@@ -3,18 +3,42 @@
   "ignoreCommand": "bash scripts/vercel-ignore.sh",
   "trailingSlash": false,
   "redirects": [
-    { "source": "/generator", "destination": "/gridfinity-generator", "permanent": true },
-    { "source": "/generators", "destination": "/gridfinity-generator", "permanent": true },
-    { "source": "/sizes", "destination": "/gridfinity-sizes", "permanent": true }
+    {
+      "source": "/generator",
+      "destination": "/gridfinity-generator",
+      "permanent": true
+    },
+    {
+      "source": "/generators",
+      "destination": "/gridfinity-generator",
+      "permanent": true
+    },
+    {
+      "source": "/sizes",
+      "destination": "/gridfinity-sizes",
+      "permanent": true
+    }
   ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
-        { "key": "Cross-Origin-Embedder-Policy", "value": "credentialless" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin"
+        },
+        {
+          "key": "Cross-Origin-Embedder-Policy",
+          "value": "credentialless"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
         {
           "key": "Strict-Transport-Security",
           "value": "max-age=63072000; includeSubDomains"
@@ -32,16 +56,31 @@
     {
       "source": "/api/(.*)",
       "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "https://gridfinitylayouttool.com" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, PUT, DELETE" },
-        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, x-delete-token" }
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "https://gridfinitylayouttool.com"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, x-delete-token"
+        }
       ]
     },
     {
       "source": "/storage-bridge.html",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },
-        { "key": "Cross-Origin-Resource-Policy", "value": "cross-origin" },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "Cross-Origin-Resource-Policy",
+          "value": "cross-origin"
+        },
         {
           "key": "Content-Security-Policy",
           "value": "frame-ancestors https://www.gridfinitylayouttool.com"
@@ -159,7 +198,10 @@
     {
       "source": "/de/:path((?!api/).*)",
       "headers": [
-        { "key": "Content-Language", "value": "de" },
+        {
+          "key": "Content-Language",
+          "value": "de"
+        },
         {
           "key": "Cache-Control",
           "value": "public, max-age=3600, stale-while-revalidate=86400"
@@ -169,7 +211,10 @@
     {
       "source": "/pl/:path((?!api/).*)",
       "headers": [
-        { "key": "Content-Language", "value": "pl" },
+        {
+          "key": "Content-Language",
+          "value": "pl"
+        },
         {
           "key": "Cache-Control",
           "value": "public, max-age=3600, stale-while-revalidate=86400"
@@ -179,7 +224,10 @@
     {
       "source": "/zh-CN/:path((?!api/).*)",
       "headers": [
-        { "key": "Content-Language", "value": "zh-CN" },
+        {
+          "key": "Content-Language",
+          "value": "zh-CN"
+        },
         {
           "key": "Cache-Control",
           "value": "public, max-age=3600, stale-while-revalidate=86400"
@@ -189,7 +237,10 @@
     {
       "source": "/cs/:path((?!api/).*)",
       "headers": [
-        { "key": "Content-Language", "value": "cs" },
+        {
+          "key": "Content-Language",
+          "value": "cs"
+        },
         {
           "key": "Cache-Control",
           "value": "public, max-age=3600, stale-while-revalidate=86400"
@@ -199,7 +250,10 @@
     {
       "source": "/ko/:path((?!api/).*)",
       "headers": [
-        { "key": "Content-Language", "value": "ko" },
+        {
+          "key": "Content-Language",
+          "value": "ko"
+        },
         {
           "key": "Cache-Control",
           "value": "public, max-age=3600, stale-while-revalidate=86400"
@@ -209,7 +263,10 @@
     {
       "source": "/fr/:path((?!api/).*)",
       "headers": [
-        { "key": "Content-Language", "value": "fr" },
+        {
+          "key": "Content-Language",
+          "value": "fr"
+        },
         {
           "key": "Cache-Control",
           "value": "public, max-age=3600, stale-while-revalidate=86400"
@@ -219,7 +276,10 @@
     {
       "source": "/es/:path((?!api/).*)",
       "headers": [
-        { "key": "Content-Language", "value": "es" },
+        {
+          "key": "Content-Language",
+          "value": "es"
+        },
         {
           "key": "Cache-Control",
           "value": "public, max-age=3600, stale-while-revalidate=86400"
@@ -229,7 +289,10 @@
     {
       "source": "/pt-BR/:path((?!api/).*)",
       "headers": [
-        { "key": "Content-Language", "value": "pt-BR" },
+        {
+          "key": "Content-Language",
+          "value": "pt-BR"
+        },
         {
           "key": "Cache-Control",
           "value": "public, max-age=3600, stale-while-revalidate=86400"
@@ -239,7 +302,10 @@
     {
       "source": "/nl/:path((?!api/).*)",
       "headers": [
-        { "key": "Content-Language", "value": "nl" },
+        {
+          "key": "Content-Language",
+          "value": "nl"
+        },
         {
           "key": "Cache-Control",
           "value": "public, max-age=3600, stale-while-revalidate=86400"
@@ -249,7 +315,10 @@
     {
       "source": "/sv/:path((?!api/).*)",
       "headers": [
-        { "key": "Content-Language", "value": "sv" },
+        {
+          "key": "Content-Language",
+          "value": "sv"
+        },
         {
           "key": "Cache-Control",
           "value": "public, max-age=3600, stale-while-revalidate=86400"
@@ -259,7 +328,10 @@
     {
       "source": "/nb/:path((?!api/).*)",
       "headers": [
-        { "key": "Content-Language", "value": "nb" },
+        {
+          "key": "Content-Language",
+          "value": "nb"
+        },
         {
           "key": "Cache-Control",
           "value": "public, max-age=3600, stale-while-revalidate=86400"
@@ -269,7 +341,10 @@
     {
       "source": "/uk/:path((?!api/).*)",
       "headers": [
-        { "key": "Content-Language", "value": "uk" },
+        {
+          "key": "Content-Language",
+          "value": "uk"
+        },
         {
           "key": "Cache-Control",
           "value": "public, max-age=3600, stale-while-revalidate=86400"
@@ -357,14 +432,38 @@
       "source": "/:locale(de|fr|es|pt-BR|nl|sv|nb|uk|pl|zh-CN|cs|ko)/:slug(what-is-gridfinity|guide|gridfinity-generator|gridfinity-bin-generator|gridfinity-baseplate-generator|gridfinity-sizes)",
       "destination": "/:locale/:slug/index.html"
     },
-    { "source": "/designer", "destination": "/" },
-    { "source": "/baseplate", "destination": "/" },
-    { "source": "/supporters", "destination": "/" },
-    { "source": "/community", "destination": "/" },
-    { "source": "/community/d/:id([a-zA-Z0-9]{12})", "destination": "/" },
-    { "source": "/s/:id([a-zA-Z0-9]{12})", "destination": "/" },
-    { "source": "/l/:id([a-zA-Z0-9]{12})", "destination": "/" },
-    { "source": "/l/:id([a-zA-Z0-9]{12})/:slug*", "destination": "/" },
+    {
+      "source": "/designer",
+      "destination": "/"
+    },
+    {
+      "source": "/baseplate",
+      "destination": "/"
+    },
+    {
+      "source": "/supporters",
+      "destination": "/"
+    },
+    {
+      "source": "/community",
+      "destination": "/"
+    },
+    {
+      "source": "/community/d/:id([a-zA-Z0-9]{12})",
+      "destination": "/api/community/page?id=:id"
+    },
+    {
+      "source": "/s/:id([a-zA-Z0-9]{12})",
+      "destination": "/"
+    },
+    {
+      "source": "/l/:id([a-zA-Z0-9]{12})",
+      "destination": "/"
+    },
+    {
+      "source": "/l/:id([a-zA-Z0-9]{12})/:slug*",
+      "destination": "/"
+    },
     {
       "source": "/l/:uuid([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})",
       "destination": "/"

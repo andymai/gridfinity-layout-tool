@@ -980,6 +980,10 @@ const CONTENT_LASTMOD = '2026-07-26';
 const APP_ROUTES: Record<string, SitemapPage> = {
   designer: { basePriority: 0.9, changefreq: 'monthly' },
   baseplate: { basePriority: 0.9, changefreq: 'monthly' },
+  // The gallery index only. Individual designs stay out: robots.txt disallows
+  // /community/d/ until the showcase graduates from its flag, and a sitemap
+  // advertising URLs the same file forbids crawling is a contradiction.
+  community: { basePriority: 0.7, changefreq: 'daily' },
 };
 
 const SITEMAP_PAGES: Record<string, SitemapPage> = {
