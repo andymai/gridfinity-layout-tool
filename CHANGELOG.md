@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.389.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.389.0...gridfinity-layout-tool-v4.389.1) (2026-08-08)
+
+
+### Bug Fixes
+
+* **bin-designer:** guard three stale-index faults in the path vertex editor ([#3339](https://github.com/andymai/gridfinity-layout-tool/issues/3339)) ([a135171](https://github.com/andymai/gridfinity-layout-tool/commit/a1351719eea4a417771fedaa9826e88fcddfff93))
+
 ## [4.389.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.388.4...gridfinity-layout-tool-v4.389.0) (2026-08-08)
 
 
