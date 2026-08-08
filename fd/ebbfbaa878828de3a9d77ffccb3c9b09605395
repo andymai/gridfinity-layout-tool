@@ -1,0 +1,37 @@
+src/features/community/components/CommunityPage/CommunityPage.tsx
+  s_08ffc81f33fef3::t_c41718b202e796 28,33,62,69-70
+  s_08ffc81f33fef3::t_cee6cee6159980 114-117,119-120,122-123,130-132,135-136
+src/features/community/components/CommunityPage/CommunityPage.test.tsx
+  s_08ffc81f33fef3::t_06f3fb4d7daaab 279-357
+src/shared/hooks/useCommunityRouting.ts
+  s_08ffc81f33fef3::t_02b1f5f86b51ef 54-64,68-73,75,77
+  s_08ffc81f33fef3::t_cca8a3c919d3ba 95,101,143-144
+src/features/community/store/browseStore.ts
+  s_08ffc81f33fef3::t_16b28d34a8fe87 177-183
+  s_08ffc81f33fef3::t_8665adfdffc486 569-571
+src/features/community/utils/browseUrlState.test.ts
+  s_08ffc81f33fef3::t_32e5c65f87bde8 1-164
+src/features/community/README.md
+  s_08ffc81f33fef3::t_68e1f1fe5614be 67-75
+src/features/community/utils/browseUrlState.ts
+  s_08ffc81f33fef3::t_523bfe9deafc2b 1-55,76-222
+  s_08ffc81f33fef3::t_b8ad4382041efb 56-75
+src/shared/hooks/useCommunityRouting.test.ts
+  s_08ffc81f33fef3::t_e447baa3982b4b 6,8,184-187,190-196,198,203,206,208-212,217-219,223,228-235,237,241,243
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "fdebbfbaa878828de3a9d77ffccb3c9b09605395",
+  "prompts": {},
+  "sessions": {
+    "s_08ffc81f33fef3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3fab88d2-9c87-4fa2-bf2e-c65f3d4a493d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
