@@ -1,0 +1,23 @@
+src/features/bin-designer/components/panel/CutoutsSection/handlers/keyboardHandler.test.ts
+  s_08ffc81f33fef3::t_db882565115156 127-128
+src/features/bin-designer/components/panel/CutoutsSection/handlers/pathEditHandler.ts
+  s_08ffc81f33fef3::t_1b86cd4131c455 202-209
+src/features/bin-designer/components/panel/CutoutsSection/handlers/pathEditHandler.test.ts
+  s_08ffc81f33fef3::t_d935d3ca18740c 307-323
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "de53f725e85a5aa87d3d154aca35e549cd98f7f4",
+  "prompts": {},
+  "sessions": {
+    "s_08ffc81f33fef3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3fab88d2-9c87-4fa2-bf2e-c65f3d4a493d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
