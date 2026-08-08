@@ -203,6 +203,10 @@ class FakeRedis {
     return entries.slice(start, stop + 1).map(([member]) => member);
   }
 
+  async zcard(key: string): Promise<number> {
+    return (this.zsets.get(key) ?? new Map<string, number>()).size;
+  }
+
   pipeline(): {
     hget: (key: string, field: string) => unknown;
     hgetall: (key: string) => unknown;
@@ -1114,6 +1118,56 @@ describe('GET /api/community (list)', () => {
       'd00',
     ]);
     expect(secondBody.nextCursor).toBeNull();
+  });
+
+  it('reports the index slot count so a client can request the rest at once', async () => {
+    for (let i = 0; i < 30; i++) {
+      await seedCard({ id: `d${String(i).padStart(2, '0')}` });
+    }
+    const res = await handle({ method: 'GET' });
+    expect((res._body as { indexSlots: number }).indexSlots).toBe(30);
+  });
+
+  it('window mode scans exactly the requested slots', async () => {
+    for (let i = 0; i < 30; i++) {
+      await seedCard({ id: `d${String(i).padStart(2, '0')}`, createdAt: 1_000 + i });
+    }
+    const res = await handle({ method: 'GET', query: { window: '10' } });
+    const body = res._body as { items: Array<{ id: string }>; nextCursor: string | null };
+    expect(body.items).toHaveLength(10);
+    expect(body.items[0].id).toBe('d29');
+    expect(body.nextCursor).toBe('10');
+
+    const next = await handle({ method: 'GET', query: { cursor: '10', window: '10' } });
+    expect((next._body as { items: Array<{ id: string }> }).items[0].id).toBe('d19');
+  });
+
+  it('window mode returns short without shortening the stride', async () => {
+    // This is what makes concurrent windows safe: a window holding a hidden
+    // design yields fewer items but still advances a full window, so the
+    // caller's next disjoint window starts where this one ended and no slot
+    // goes unrequested.
+    for (let i = 0; i < 10; i++) {
+      await seedCard({ id: `d${String(i).padStart(2, '0')}`, createdAt: 1_000 + i });
+    }
+    // An index entry whose card hash is gone: it occupies a slot and yields
+    // nothing, which is exactly the case that makes item counts unusable as
+    // page boundaries.
+    await fake.zadd(communityIndexKey('newest'), 9_999, 'orphan000000');
+
+    const res = await handle({ method: 'GET', query: { window: '5' } });
+    const body = res._body as { items: Array<{ id: string }>; nextCursor: string | null };
+    expect(body.items.map((i) => i.id)).not.toContain('orphan000000');
+    expect(body.items).toHaveLength(4);
+    // Advanced by the full window, not by the four items it produced.
+    expect(body.nextCursor).toBe('5');
+  });
+
+  it('rejects a window outside the allowed range', async () => {
+    for (const window of ['0', '49', 'abc']) {
+      const res = await handle({ method: 'GET', query: { window } });
+      expect(res._status).toBe(400);
+    }
   });
 
   it('sorts by likes with counts from the card hash', async () => {

@@ -76,6 +76,12 @@ const LIST_SCAN_BATCH = 48;
 // the scan from nextCursor instead of one request walking the whole index.
 const LIST_MAX_SCAN = 960;
 
+/**
+ * Upper bound on a windowed scan. Matches LIST_SCAN_BATCH so a window costs the
+ * same single zrevrange the sequential mode's inner batch does.
+ */
+const LIST_MAX_WINDOW = 48;
+
 const AUTHOR_PUBLIC_ID_REGEX = /^[a-f0-9]{32}$/;
 const CURSOR_REGEX = /^\d{1,9}$/;
 
@@ -704,6 +710,39 @@ async function listMine(
   };
 }
 
+/**
+ * Scans exactly `window` slots of the index from `cursor` and returns whatever
+ * is live in them, rather than collecting until a page is full.
+ *
+ * The distinction matters for concurrent callers. `cursor` is a raw offset into
+ * the sorted set, and the sequential mode advances it per slot *scanned* while
+ * stopping at LIST_PAGE_SIZE items *collected*, so a stretch containing hidden
+ * or unreadable entries consumes more slots than it yields and the next
+ * boundary cannot be predicted from the item count. Requesting fixed strides in
+ * parallel against that would leave gaps — silently missing designs, which is
+ * worse than the serial latency it saves. A fixed window is exact: disjoint
+ * windows cover the set by construction, and a window with dead entries simply
+ * returns short.
+ */
+async function listWindow(
+  redis: RedisClient,
+  filters: ListFilters,
+  cursor: number,
+  window: number
+): Promise<ListPage> {
+  const ids = await redis.zrevrange(communityIndexKey(filters.sort), cursor, cursor + window - 1);
+  const cards = await readCommunityCards(redis, ids);
+  const items = cards
+    .filter(
+      (card): card is CommunityCardRecord =>
+        card !== null && card.status === 'live' && matchesFilters(card, filters)
+    )
+    .map(toListItem);
+  // Short of the window means the index ended inside it.
+  const nextCursor = ids.length < window ? null : String(cursor + ids.length);
+  return { items, nextCursor };
+}
+
 async function listPublic(
   redis: RedisClient,
   filters: ListFilters,
@@ -790,6 +829,23 @@ async function handleList(req: VercelRequest, res: VercelResponse): Promise<void
       cursor = Number(cursorParam);
     }
 
+    // Opt-in windowed mode, for a caller building the whole index concurrently.
+    // Bounded like any other scan so it cannot be used to pull the set in one
+    // request.
+    const windowParam = singleParam(req.query.window);
+    let window: number | null = null;
+    if (windowParam !== undefined) {
+      if (!CURSOR_REGEX.test(windowParam)) {
+        badRequest(res, 'window must be a non-negative integer');
+        return;
+      }
+      window = Number(windowParam);
+      if (window < 1 || window > LIST_MAX_WINDOW) {
+        badRequest(res, `window must be between 1 and ${LIST_MAX_WINDOW}`);
+        return;
+      }
+    }
+
     const mineParam = singleParam(req.query.mine);
     const mine = mineParam === '1' || mineParam === 'true';
 
@@ -809,11 +865,18 @@ async function handleList(req: VercelRequest, res: VercelResponse): Promise<void
       return;
     }
 
-    const page = await listPublic(redis, filters, cursor);
+    const page =
+      window === null
+        ? await listPublic(redis, filters, cursor)
+        : await listWindow(redis, filters, cursor, window);
     const session = await readOptionalSession(req);
     const likedIds =
       session === null ? [] : await resolveLikedIds(redis, session.userId, page.items);
-    res.status(200).json({ ...page, likedIds });
+    // Slots in the index, not designs that survive filtering: it tells a
+    // concurrent caller how many windows to request, and cannot promise a
+    // filtered count without scanning the whole set to produce it.
+    const indexSlots = await redis.zcard(communityIndexKey(filters.sort));
+    res.status(200).json({ ...page, likedIds, indexSlots });
   } catch (error) {
     logger.error('Community list error', {
       error: error instanceof Error ? error.message : String(error),

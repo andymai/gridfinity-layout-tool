@@ -16,6 +16,10 @@ Community design showcase (issue #3050): publishing bin designs, browsing them, 
 
   **`error` is not a phase.** A failed publish returns to `form` with the failure attached. It used to unmount the form, so a server complaint about the name ("too short", "low effort", "duplicate") became a full-screen dead end that discarded the user's view of what they had typed.
 
+- `api/client.ts` builds the index as **concurrent windows**, not sequential pages. The list response carries `indexSlots` (the index's cardinality), and `?window=n` scans exactly `n` slots and returns whatever is live in them.
+
+  The window mode exists because the cursor is a raw offset into the sorted set while the sequential mode stops at a full _page_: a stretch holding hidden or orphaned entries consumes more slots than it yields, so the next boundary cannot be predicted from an item count. Striding blind in parallel would leave **gaps** — a silently short gallery, which is worse than a slow one. Disjoint windows cover the index by construction, and a window with dead slots simply returns short while still advancing a full window. A client whose server predates `indexSlots` falls back to the sequential walk.
+
 - `store/browseStore.ts`: browse engine for the gallery: caches the full card index (capped at the 2,000 newest, 5-minute staleness), holds search/category/technique/sort filters with client-side `filterAndSortCards`, and remembers the gallery scroll offset. `createCardMatcher` exposes the per-card predicate on its own so facet counts are computed with it rather than a second copy.
 - `components/PublishDialog/`: the shell-mounted publish dialog. Mobile renders it as a fullscreen sheet; desktop as a centered dialog. One review screen rather than a phase gauntlet: `PublishDialog` orchestrates, `PublishForm` is the screen, and `PublishArtefact` / `PublishPreview` / `CategoryChips` / `PublisherIdentity` / `CoverImageSection` are its parts. `publishErrors.ts` decides where a failure appears; `useOwnDesignPrefill.ts` owns update-mode reconciliation.
 

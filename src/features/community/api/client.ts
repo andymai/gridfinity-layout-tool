@@ -242,6 +242,12 @@ interface CommunityListPage {
   nextCursor: string | null;
   /** Ids on this page the session user has liked; empty for anonymous callers. */
   likedIds?: string[];
+  /**
+   * Slots in the server's index, so the whole thing can be requested as
+   * concurrent windows. Optional: an older deployment omits it and the fetch
+   * falls back to paging sequentially.
+   */
+  indexSlots?: number;
 }
 
 function isListPage(value: unknown): value is CommunityListPage {
@@ -251,7 +257,8 @@ function isListPage(value: unknown): value is CommunityListPage {
     value.items.every(isCommunityCard) &&
     (value.nextCursor === null || typeof value.nextCursor === 'string') &&
     (value.likedIds === undefined ||
-      (Array.isArray(value.likedIds) && value.likedIds.every((id) => typeof id === 'string')))
+      (Array.isArray(value.likedIds) && value.likedIds.every((id) => typeof id === 'string'))) &&
+    (value.indexSlots === undefined || typeof value.indexSlots === 'number')
   );
 }
 
@@ -374,12 +381,14 @@ export interface CommunityIndexResult {
 async function fetchCommunityPage(
   cursor: string | null,
   signal?: AbortSignal,
-  mine = false
+  mine = false,
+  window?: number
 ): Promise<Result<CommunityListPage, CommunityClientError>> {
   try {
     const params = new URLSearchParams({ sort: 'newest' });
     if (mine) params.set('mine', '1');
     if (cursor !== null) params.set('cursor', cursor);
+    if (window !== undefined) params.set('window', String(window));
     const response = await communityFetch(`${COMMUNITY_ENDPOINT}?${params.toString()}`, {
       method: 'GET',
       signal,
@@ -403,6 +412,66 @@ async function fetchCommunityPage(
  * sorted set, so a publish landing between two page requests shifts every
  * offset and re-serves the boundary card on the next page.
  */
+/** Slots per windowed request; must not exceed the server's LIST_MAX_WINDOW. */
+const INDEX_WINDOW = 48;
+
+/** Concurrent windows in flight. Enough to collapse the wait without burying the API in a burst. */
+const INDEX_CONCURRENCY = 6;
+
+/**
+ * Fetches the whole index as concurrent windows once the first response says
+ * how many slots there are.
+ *
+ * Windows rather than page cursors: the cursor is a raw offset into the index
+ * and the sequential mode advances it per slot *scanned* while stopping at a
+ * full *page*, so a stretch holding hidden entries consumes more slots than it
+ * yields and the next boundary cannot be predicted. Striding blind would leave
+ * gaps, and a silently short gallery is worse than a slow one. Disjoint windows
+ * cover the index by construction.
+ *
+ * Falls back to the sequential walk when the server does not report its slot
+ * count, so a client ahead of a deployment still loads.
+ */
+async function fetchIndexWindows(
+  first: CommunityListPage,
+  slots: number,
+  signal?: AbortSignal
+): Promise<Result<CommunityIndexResult, CommunityClientError>> {
+  const pages: CommunityListPage[] = [first];
+  const offsets: number[] = [];
+  const start = Number(first.nextCursor);
+  if (!Number.isFinite(start)) return ok({ items: [...first.items], capped: false });
+  for (let offset = start; offset < slots; offset += INDEX_WINDOW) offsets.push(offset);
+
+  for (let i = 0; i < offsets.length; i += INDEX_CONCURRENCY) {
+    const batch = offsets.slice(i, i + INDEX_CONCURRENCY);
+    const results = await Promise.all(
+      batch.map((offset) => fetchCommunityPage(String(offset), signal, false, INDEX_WINDOW))
+    );
+    for (const result of results) {
+      if (isErr(result)) return result;
+      pages.push(result.value);
+    }
+    // Windows are ordered, so the cap is reachable before every batch lands.
+    if (pages.reduce((n, page) => n + page.items.length, 0) >= COMMUNITY_INDEX_CAP) break;
+  }
+
+  const items: CommunityCard[] = [];
+  const seenIds = new Set<string>();
+  for (const page of pages) {
+    const likedIds = new Set(page.likedIds ?? []);
+    for (const card of page.items) {
+      if (seenIds.has(card.id)) continue;
+      seenIds.add(card.id);
+      items.push({ ...card, likedByMe: likedIds.has(card.id) });
+    }
+  }
+  return ok({
+    items: items.slice(0, COMMUNITY_INDEX_CAP),
+    capped: items.length > COMMUNITY_INDEX_CAP || slots > COMMUNITY_INDEX_CAP,
+  });
+}
+
 export async function fetchCommunityIndex(
   signal?: AbortSignal
 ): Promise<Result<CommunityIndexResult, CommunityClientError>> {
@@ -412,6 +481,14 @@ export async function fetchCommunityIndex(
   for (let request = 0; request < INDEX_MAX_REQUESTS; request++) {
     const page = await fetchCommunityPage(cursor, signal);
     if (isErr(page)) return page;
+
+    // The first response reports how many slots the index has, which is what
+    // makes the rest requestable at once. Its own cursor is the offset to
+    // start those windows from, so nothing is fetched twice.
+    if (request === 0 && page.value.indexSlots !== undefined && page.value.nextCursor !== null) {
+      return fetchIndexWindows(page.value, page.value.indexSlots, signal);
+    }
+
     const likedIds = new Set(page.value.likedIds ?? []);
     for (const card of page.value.items) {
       if (seenIds.has(card.id)) continue;

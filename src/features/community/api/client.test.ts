@@ -293,6 +293,88 @@ function requestedUrl(callIndex: number): string {
   return String(fetchMock.mock.calls[callIndex]?.[0]);
 }
 
+describe('fetchCommunityIndex windowed mode', () => {
+  it('requests the remainder as concurrent windows once the slot count is known', async () => {
+    // 100 slots: the first sequential page covers 0-23, so windows start at
+    // its cursor and stride by 48 until the count is passed.
+    fetchMock
+      .mockResolvedValueOnce(
+        jsonResponse(200, { items: [card('a')], nextCursor: '24', indexSlots: 100 })
+      )
+      .mockResolvedValueOnce(jsonResponse(200, { items: [card('b')], nextCursor: '72' }))
+      .mockResolvedValueOnce(jsonResponse(200, { items: [card('c')], nextCursor: null }));
+
+    const result = await fetchCommunityIndex();
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) expect(result.value.items.map((i) => i.id)).toEqual(['a', 'b', 'c']);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(requestedUrl(1)).toBe('/api/community?sort=newest&cursor=24&window=48');
+    expect(requestedUrl(2)).toBe('/api/community?sort=newest&cursor=72&window=48');
+  });
+
+  it('covers the index with disjoint windows rather than guessing page boundaries', async () => {
+    // A window holding hidden entries returns short. That must not shorten the
+    // stride, or the slots it did not yield would never be requested.
+    fetchMock
+      .mockResolvedValueOnce(
+        jsonResponse(200, { items: [card('a')], nextCursor: '24', indexSlots: 130 })
+      )
+      .mockResolvedValueOnce(jsonResponse(200, { items: [], nextCursor: '72' }))
+      .mockResolvedValueOnce(jsonResponse(200, { items: [card('c')], nextCursor: '120' }))
+      .mockResolvedValueOnce(jsonResponse(200, { items: [card('d')], nextCursor: null }));
+
+    const result = await fetchCommunityIndex();
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) expect(result.value.items.map((i) => i.id)).toEqual(['a', 'c', 'd']);
+    expect(requestedUrl(1)).toBe('/api/community?sort=newest&cursor=24&window=48');
+    expect(requestedUrl(2)).toBe('/api/community?sort=newest&cursor=72&window=48');
+    expect(requestedUrl(3)).toBe('/api/community?sort=newest&cursor=120&window=48');
+  });
+
+  it('dedupes a card served by two windows', async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        jsonResponse(200, { items: [card('a')], nextCursor: '24', indexSlots: 60 })
+      )
+      .mockResolvedValueOnce(
+        jsonResponse(200, { items: [card('a'), card('b')], nextCursor: null })
+      );
+    const result = await fetchCommunityIndex();
+    if (isOk(result)) expect(result.value.items.map((i) => i.id)).toEqual(['a', 'b']);
+  });
+
+  it('surfaces a window failure rather than a silently short gallery', async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        jsonResponse(200, { items: [card('a')], nextCursor: '24', indexSlots: 100 })
+      )
+      .mockResolvedValueOnce(jsonResponse(500, {}))
+      .mockResolvedValueOnce(jsonResponse(200, { items: [card('c')], nextCursor: null }));
+    const result = await fetchCommunityIndex();
+    expect(isOk(result)).toBe(false);
+  });
+
+  it('falls back to sequential paging when the server reports no slot count', async () => {
+    // A client ahead of a deployment still loads.
+    fetchMock
+      .mockResolvedValueOnce(jsonResponse(200, { items: [card('a')], nextCursor: '24' }))
+      .mockResolvedValueOnce(jsonResponse(200, { items: [card('b')], nextCursor: null }));
+    const result = await fetchCommunityIndex();
+    if (isOk(result)) expect(result.value.items.map((i) => i.id)).toEqual(['a', 'b']);
+    expect(requestedUrl(1)).toBe('/api/community?sort=newest&cursor=24');
+  });
+
+  it('reports the cap when the index has more slots than the cap', async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        jsonResponse(200, { items: [card('a')], nextCursor: '24', indexSlots: 5000 })
+      )
+      .mockResolvedValue(jsonResponse(200, { items: [], nextCursor: null }));
+    const result = await fetchCommunityIndex();
+    if (isOk(result)) expect(result.value.capped).toBe(true);
+  });
+});
+
 describe('fetchCommunityIndex', () => {
   it('assembles pages until the cursor is exhausted, passing the cursor through', async () => {
     fetchMock
