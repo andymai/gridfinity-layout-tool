@@ -64,7 +64,15 @@ Identity is a line on the form (`Publishing as X · Change`), not a step. As a s
 
   **The footer wraps; it does not clip.** `touchTarget` grows the heart to 44px on touch, which is what makes the row too wide. The stat groups are `shrink-0` so a narrow column takes a second line rather than slicing a count in half, and the dimensions truncate first.
 
-- `components/CommunityPage/`: full-page host for the `/community` route. URL-driven detail: `/community/d/<id>` is pushed on open and restored on back/forward and cold deep links. Routing lives in `@/shared/hooks/useCommunityRouting` so the SPA-route CI guard covers the rewrite.
+- `utils/browseUrlState.ts`: query-string codec for the browse filters, making a narrowed gallery shareable, bookmarkable and reload-safe. `q`, `cat`, `tech`, `sort`, `w`, `d`, `h`, `liked`, `recent`, `featured`, `author`.
+
+  **Defaults are omitted**, so an unfiltered gallery is a bare `/community` and a link carries only what the sender chose. **Ranges are `min-max`** with either side droppable (`w=2-` is "at least 2"); a crossed or unparseable range is dropped whole, because half of one renders a slider with its thumbs swapped. **A bad value costs its own parameter, never the view** — these strings are user-editable and outlive deploys, so a retired category or a hand-typed `w=banana` drops that key and leaves the rest. Re-encoding after decode means the URL visibly self-heals.
+
+  **Three things deliberately do not travel.** `fitsGapContext` describes a gap in the sender's drawer and means nothing in a recipient's browser. `mineOnly` is resolved per account, so a shared link would show the recipient their own designs instead of the sender's view. `best-fit` depends on the gap it cannot carry and falls back to `newest` the moment no dimension constraint remains. That is why decoding returns a **patch** rather than a whole `BrowseFilters`, applied through `applyUrlFilters`: a key absent from the patch is left alone, so a shared link cannot clear the viewer's own state. Everything the URL _does_ own resets to its default when absent, or navigating back to an unfiltered view would keep whatever the store was holding.
+
+  Writes go through `replaceState`: narrowing a gallery is not navigation, and pushing would mean a Back press per filter tweak just to leave the page. `replaceState` fires no popstate, which is also what keeps the two directions from feeding each other — the reader only re-runs on a real popstate or mount.
+
+- `components/CommunityPage/`: full-page host for the `/community` route. URL-driven detail: `/community/d/<id>` is pushed on open and restored on back/forward and cold deep links. Routing lives in `@/shared/hooks/useCommunityRouting` so the SPA-route CI guard covers the rewrite. That module owns _where_ the query lives (`getCommunityGalleryQuery` / `syncCommunityGalleryQuery`); what the parameters _mean_ stays in this feature, since `shared/` cannot import from it.
 
   **The page wears the app's chrome.** It renders `ToolSwitcher` + `HeaderSupportLinks` like every other surface, so a visitor who followed a shared link has the whole app in the header. Below it, a title row carries the page name, the `Experimental` badge and one CTA.
 

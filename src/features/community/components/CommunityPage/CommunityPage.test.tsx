@@ -8,7 +8,7 @@ import {
 } from '@/core/store/communityDetail';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import type { CommunityCard } from '@/shared/types/community';
-import { INITIAL_BROWSE_STATE, useBrowseStore } from '../../store/browseStore';
+import { GALLERY_PAGE_SIZE, INITIAL_BROWSE_STATE, useBrowseStore } from '../../store/browseStore';
 import { CommunityPage } from './CommunityPage';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
@@ -276,7 +276,137 @@ describe('CommunityPage', () => {
     });
   });
 
-  describe('shareable author view (?author=)', () => {
+  describe('shareable filter state', () => {
+    it('cold visit applies every filter the query carries', () => {
+      window.history.replaceState(null, '', '/community?q=hex&cat=tools&sort=prints&w=2-4&liked=1');
+      renderPage();
+      const { filters } = useBrowseStore.getState();
+      expect(filters.searchText).toBe('hex');
+      expect(filters.category).toBe('tools');
+      expect(filters.sort).toBe('prints');
+      expect(filters.widthMin).toBe(2);
+      expect(filters.widthMax).toBe(4);
+      expect(filters.likedOnly).toBe(true);
+    });
+
+    it('narrowing the gallery writes the query in place', () => {
+      renderPage();
+      act(() => {
+        useBrowseStore.getState().setCategory('kitchen');
+        useBrowseStore.getState().setSearchText('bit');
+      });
+      expect(window.location.pathname).toBe('/community');
+      expect(window.location.search).toBe('?q=bit&cat=kitchen');
+    });
+
+    it('clearing every filter leaves a bare /community', () => {
+      window.history.replaceState(null, '', '/community?cat=tools&liked=1');
+      renderPage();
+      act(() => {
+        useBrowseStore.getState().clearFilters();
+      });
+      expect(window.location.search).toBe('');
+    });
+
+    it('never pushes a history entry for a filter change', () => {
+      // Narrowing is not navigation: pushing would mean a Back press per
+      // filter tweak just to leave the page.
+      renderPage();
+      const pushSpy = vi.spyOn(window.history, 'pushState');
+      act(() => {
+        useBrowseStore.getState().setCategory('tools');
+        useBrowseStore.getState().setCategory('kitchen');
+        useBrowseStore.getState().setLikedOnly(true);
+      });
+      expect(pushSpy).not.toHaveBeenCalled();
+      expect(window.location.search).toBe('?cat=kitchen&liked=1');
+    });
+
+    it('opening a detail does not clear the gallery underneath it', () => {
+      // A detail URL carries no query, so the reader has to stand down while
+      // one owns the path: applying its empty query would wipe the filters
+      // behind the overlay and reset the paging Back is meant to return to.
+      window.history.replaceState(null, '', '/community?q=hex&cat=tools');
+      renderPage();
+      act(() => {
+        useBrowseStore.getState().showMore();
+      });
+      const pagedTo = useBrowseStore.getState().visibleCount;
+
+      act(() => {
+        useCommunityDetailStore.getState().open('DesignAAAAAA');
+      });
+      const during = useBrowseStore.getState();
+      expect(during.filters.searchText).toBe('hex');
+      expect(during.filters.category).toBe('tools');
+      expect(during.visibleCount).toBe(pagedTo);
+    });
+
+    it('returning from a detail replays the same query without resetting paging', () => {
+      window.history.replaceState(null, '', '/community?q=hex');
+      renderPage();
+      act(() => {
+        useBrowseStore.getState().showMore();
+      });
+      const pagedTo = useBrowseStore.getState().visibleCount;
+
+      act(() => {
+        window.history.replaceState(null, '', '/community?q=hex');
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      });
+      // The replay is a no-op, so it must not count as a filter change: those
+      // legitimately reset scroll and page count, and Back is not one.
+      expect(useBrowseStore.getState().visibleCount).toBe(pagedTo);
+      expect(useBrowseStore.getState().filters.searchText).toBe('hex');
+    });
+
+    it('a query that really changes still resets paging', () => {
+      window.history.replaceState(null, '', '/community?q=hex');
+      renderPage();
+      act(() => {
+        useBrowseStore.getState().showMore();
+      });
+      expect(useBrowseStore.getState().visibleCount).toBeGreaterThan(GALLERY_PAGE_SIZE);
+      act(() => {
+        window.history.replaceState(null, '', '/community?q=bit');
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      });
+      expect(useBrowseStore.getState().visibleCount).toBe(GALLERY_PAGE_SIZE);
+    });
+
+    it('leaves the layout editor gap context out of the URL', () => {
+      // It describes a gap in the sender's drawer and means nothing in a
+      // recipient's browser.
+      renderPage();
+      act(() => {
+        useBrowseStore.getState().setFitsGapContext({
+          widthMax: 3,
+          depthMax: 2,
+          maxHeight: 6,
+          gridUnitMm: 42,
+          gridUnitMmY: 42,
+          heightUnitMm: 7,
+        });
+      });
+      expect(window.location.search).toBe('');
+    });
+
+    it('a shared link does not clear the viewer’s own Mine view', () => {
+      // mineOnly is resolved per account, so the URL neither carries nor
+      // clears it.
+      renderPage();
+      act(() => {
+        useBrowseStore.getState().setMineOnly(true);
+      });
+      expect(window.location.search).toBe('');
+      act(() => {
+        window.history.replaceState(null, '', '/community?cat=tools');
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      });
+      expect(useBrowseStore.getState().filters.mineOnly).toBe(true);
+      expect(useBrowseStore.getState().filters.category).toBe('tools');
+    });
+
     const AUTHOR_ID = 'a'.repeat(32);
 
     function authorCard(id: string): CommunityCard {
