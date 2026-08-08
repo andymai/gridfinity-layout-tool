@@ -41,7 +41,7 @@ coverage/
 bundle-analysis.*
 
 # Local Redis snapshot (written into the repo root by a dev `redis-server`)
-dump.rdb
+/dump.rdb
 
 .env
 .vercel
