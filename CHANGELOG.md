@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.387.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.386.3...gridfinity-layout-tool-v4.387.0) (2026-08-08)
+
+
+### Features
+
+* **bin-designer:** give the lid grip relief a height knob ([#3320](https://github.com/andymai/gridfinity-layout-tool/issues/3320)) ([45dd7c7](https://github.com/andymai/gridfinity-layout-tool/commit/45dd7c7349858868e27ff018d9f1882927a087dc))
+
 ## [4.386.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.386.2...gridfinity-layout-tool-v4.386.3) (2026-08-07)
 
 
