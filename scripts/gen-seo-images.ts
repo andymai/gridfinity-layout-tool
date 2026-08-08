@@ -318,6 +318,14 @@ const OG_CARDS: OgCard[] = [
     inset: 'baseplate-preview.png',
   },
   {
+    slug: 'community',
+    title: 'Community Gridfinity Designs',
+    subtitle: 'Designs shared by other makers — free to remix and print',
+    style: 'dark',
+    inset: 'multicolor-organizer-bin.png',
+    insetPosition: 'center',
+  },
+  {
     slug: 'gridfinity-generator',
     title: 'Gridfinity Generator',
     subtitle: 'Bins and baseplates, generated in your browser — STL, STEP & 3MF',

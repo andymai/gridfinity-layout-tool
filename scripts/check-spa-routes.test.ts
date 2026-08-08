@@ -65,13 +65,14 @@ describe('SPA routes are served by Vercel', () => {
   // The derivation above only sees literal pathname comparisons. The
   // community detail deep link is matched by regex in useCommunityRouting.ts,
   // so its parameterized rewrite has to be asserted by hand here.
-  it('/community/d/:id rewrites to the SPA', () => {
+  // It resolves to api/community/page rather than straight to the SPA: that
+  // handler serves the same shell with the design's own title and social image
+  // injected, and falls back to the unmodified shell on any failure, so the
+  // route still boots the SPA either way.
+  it('/community/d/:id resolves to the meta-injecting shell handler', () => {
     const source = '/community/d/:id([a-zA-Z0-9]{12})';
     const rewrite = rewrites.find((r) => r.source === source);
-    expect(
-      rewrite,
-      `vercel.json needs { "source": "${source}", "destination": "/" }`
-    ).toBeDefined();
-    expect(rewrite?.destination).toBe('/');
+    expect(rewrite, `vercel.json needs a rewrite for "${source}"`).toBeDefined();
+    expect(rewrite?.destination).toBe('/api/community/page?id=$id');
   });
 });

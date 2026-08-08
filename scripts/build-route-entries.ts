@@ -107,6 +107,16 @@ function breadcrumbs(slug: string, name: string): object {
   };
 }
 
+const communityApp = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: 'Community Gridfinity Designs',
+  url: `${SITE_URL}/community`,
+  description:
+    'Gridfinity bin designs shared by other makers, free to remix and print. Browse by category, size, and technique, with print reports from people who actually made them.',
+  isPartOf: { '@type': 'WebSite', name: 'Gridfinity Layout Tool', url: SITE_URL },
+};
+
 const ROUTES: RouteEntry[] = [
   {
     slug: 'designer',
@@ -162,6 +172,34 @@ const ROUTES: RouteEntry[] = [
           <a href="/gridfinity-baseplate-generator">Baseplate Generator Guide</a> ·
           <a href="/what-is-gridfinity">What is Gridfinity?</a> ·
           <a href="/gridfinity-sizes">Sizes Reference</a> ·
+          <a href="/">Layout Planner</a>
+        </p>`,
+  },
+  {
+    slug: 'community',
+    title: 'Community Gridfinity Designs — Free to Remix and Print',
+    description:
+      'Browse Gridfinity bin designs shared by other makers. Filter by category, size, and technique, see real print reports, then remix any design or drop it straight into your drawer layout. Free, no account.',
+    keywords:
+      'gridfinity community designs, gridfinity bin library, shared gridfinity bins, gridfinity remix, community gridfinity models, free gridfinity STL',
+    ogImage: `${SITE_URL}/og/community.png`,
+    ogImageAlt: 'A gallery of community-shared Gridfinity bin designs',
+    structuredData: [communityApp, breadcrumbs('community', 'Community Designs')],
+    fallbackHtml: `
+        <h1>Community Gridfinity Designs</h1>
+        <p>Gridfinity bin designs shared by other makers, free to remix and print. Every design carries its grid footprint and millimetre size, the techniques it uses, and print reports from people who have actually made it.</p>
+        <h2>Browsing</h2>
+        <ul>
+          <li>Filter by category, width, depth, and height on the 42mm grid</li>
+          <li>Filter by technique: compartments, wall cutouts, scoop, label tabs, lids, handles</li>
+          <li>Sort by newest, most liked, most remixed, or most printed</li>
+          <li>Remix any design into the bin designer, or place it in a drawer layout</li>
+        </ul>
+        <p>
+          Learn more:
+          <a href="/designer">Bin Designer</a> ·
+          <a href="/gridfinity-bin-generator">Bin Generator Guide</a> ·
+          <a href="/what-is-gridfinity">What is Gridfinity?</a> ·
           <a href="/">Layout Planner</a>
         </p>`,
   },
