@@ -3647,6 +3647,7 @@ const en: Record<string, string> = {
   'community.page.subtitle': 'Designs shared by other makers, free to remix and print.',
   'community.page.publishCta': 'Publish a design',
   'community.page.designCta': 'Design your own bin',
+  'community.page.skipToResults': 'Skip to designs',
 
   // Community detail view
   'community.detail.title': 'Community design',

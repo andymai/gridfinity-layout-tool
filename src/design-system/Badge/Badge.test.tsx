@@ -65,7 +65,7 @@ describe('Badge', () => {
 
     it('applies info intent classes', () => {
       render(<Badge tone="info">New</Badge>);
-      expect(screen.getByText('New')).toHaveClass('bg-info-muted', 'text-info');
+      expect(screen.getByText('New')).toHaveClass('bg-info-muted', 'text-info-strong');
     });
 
     it('applies overlay classes', () => {

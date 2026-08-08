@@ -40,6 +40,9 @@ import { useFilterPanel } from './useFilterPanel';
 
 export { GALLERY_PAGE_SIZE } from '../../store/browseStore';
 
+/** Target for the route's skip link; exported so the two cannot drift apart. */
+export const GALLERY_RESULTS_ID = 'community-results';
+
 const SKELETON_COUNT = 10;
 
 const NO_ITEMS: readonly CommunityCardData[] = [];
@@ -78,10 +81,9 @@ export function CommunityGalleryTab({
   const t = useTranslation();
   const { isMobile } = useResponsive();
 
-  // The /community route heads the page with an h1, so its sections are h2.
-  // Every other surface is the gallery dialog, whose own title is already an
-  // h2, so the same sections drop to h3 there.
-  const sectionHeadingLevel = surface === 'route' ? 2 : 3;
+  // 3 on both surfaces: the route's page title and the modal's dialog title
+  // are each an h2, so the gallery's own sections nest one level under them.
+  const sectionHeadingLevel = 3;
 
   const { status, items, capped, error, filters, fitsGapContext, visibleCount } = useBrowseStore(
     useShallow((s) => ({
@@ -418,8 +420,13 @@ export function CommunityGalleryTab({
 
           <div
             ref={scrollRef}
+            id={GALLERY_RESULTS_ID}
+            // Focusable only as a skip-link destination: without it the jump
+            // moves the viewport but leaves focus behind in the filter rail,
+            // so the next Tab returns there.
+            tabIndex={-1}
             data-testid="community-gallery-scroll"
-            className="flex-1 overflow-y-auto scrollbar-thin p-3 md:p-4"
+            className="flex-1 overflow-y-auto scrollbar-thin p-3 focus-visible:outline-none md:p-4"
           >
             {/* Opening Mine is what consumes the since-last-visit digest, so the
             summary mounts only inside the Mine branch: browsing the public

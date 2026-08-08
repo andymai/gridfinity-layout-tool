@@ -40,6 +40,10 @@
   --color-error: #ef4444;
   --color-danger: #dc2626;
   --color-info: #3b82f6;
+  /* Info text on an info-muted background. Separate from --color-info because
+     that one also paints solid surfaces (toasts, status dots), where a lighter
+     blue would cost the contrast of the text sitting on top of it. */
+  --color-info-strong: #60a5fa;
   --color-accent: var(--color-primary);
   --color-accent-hover: var(--color-primary-hover);
 
@@ -110,6 +114,9 @@
   --color-danger-muted: rgba(220, 38, 38, 0.15);
   --color-info: #3b82f6; /* Informational */
   --color-info-muted: rgba(59, 130, 246, 0.15);
+  /* #3b82f6 measured 4.42:1 on info-muted over the dark surface, just under
+     AA; this clears it at 6.4:1. The light theme picks its own value. */
+  --color-info-strong: #60a5fa;
 
   /* Interactive/Accent Colors — only these 3 change per accent */
   --color-primary: #f59e0b; /* Amber - primary accent */

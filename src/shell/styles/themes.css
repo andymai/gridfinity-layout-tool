@@ -51,6 +51,7 @@ html[data-theme='light'] {
   --color-danger-muted: rgba(185, 28, 28, 0.08);
   --color-info: #2563eb; /* Deeper blue — 4.5:1 on white */
   --color-info-muted: rgba(37, 99, 235, 0.08);
+  --color-info-strong: #2563eb; /* 4.65:1 on info-muted over white */
 
   /* ---- Contrast Text (on colored backgrounds) ---- */
   --text-on-light: rgba(0, 0, 0, 0.78);
