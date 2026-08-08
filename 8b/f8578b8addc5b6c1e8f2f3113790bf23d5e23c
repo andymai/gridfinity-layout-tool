@@ -1,0 +1,23 @@
+scripts/check-spa-routes.test.ts
+  s_08ffc81f33fef3::t_7576d60ce8bd3f 82-89
+  s_08ffc81f33fef3::t_4353e6567a6269 76-80
+  s_08ffc81f33fef3::t_c327c6a2bf4393 81
+vercel.json
+  s_08ffc81f33fef3::t_4353e6567a6269 453
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "8bf8578b8addc5b6c1e8f2f3113790bf23d5e23c",
+  "prompts": {},
+  "sessions": {
+    "s_08ffc81f33fef3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3fab88d2-9c87-4fa2-bf2e-c65f3d4a493d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
