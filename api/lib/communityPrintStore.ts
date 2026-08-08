@@ -37,6 +37,13 @@ export interface CommunityPrintRecord {
   authorPublicId: string;
   authorName: string;
   photos: string[];
+  /**
+   * Browsing-sized copies, one per photo and in the same order; '' where a
+   * photo predates the field. Same length as `photos` by construction — the
+   * write path builds both in one pass — so an index into one is valid in the
+   * other and a reader can pick per photo without a lookup.
+   */
+  photoThumbs: string[];
   material: CommunityPrintMaterial;
   nozzleMm: number;
   layerHeightMm: number;
@@ -83,6 +90,20 @@ export function communityPrintPhotoBlobPath(
   return `community/prints/${designId}-${authorPublicId}-${secret}-${rev}-${index}.webp`;
 }
 
+/**
+ * The browsing-sized copy sits beside its photo under the same salted secret,
+ * so a hidden print's thumbnails are no more guessable than its photos.
+ */
+export function communityPrintThumbBlobPath(
+  designId: string,
+  authorPublicId: string,
+  rev: number,
+  index: number
+): string {
+  const secret = printPathSecret(designId, authorPublicId);
+  return `community/prints/${designId}-${authorPublicId}-${secret}-${rev}-${index}-t.webp`;
+}
+
 function isMaterial(value: string): value is CommunityPrintMaterial {
   return (COMMUNITY_PRINT_MATERIALS as readonly string[]).includes(value);
 }
@@ -101,20 +122,29 @@ function parsePrint(fields: Record<string, string | undefined>): CommunityPrintR
   // defaultable: silently coercing it to 'pla'/'as-designed' would feed a
   // fabricated value into the aggregate summary.
   if (!isMaterial(material) || !isFitVerdict(fitVerdict)) return null;
-  let photos: string[] = [];
-  try {
-    const parsed: unknown = JSON.parse(fields.photos ?? '[]');
-    if (Array.isArray(parsed))
-      photos = parsed.filter((url): url is string => typeof url === 'string');
-  } catch {
-    photos = [];
-  }
+  const parseUrlArray = (raw: string | undefined): string[] => {
+    try {
+      const parsed: unknown = JSON.parse(raw ?? '[]');
+      return Array.isArray(parsed)
+        ? parsed.filter((url): url is string => typeof url === 'string')
+        : [];
+    } catch {
+      return [];
+    }
+  };
+  const photos = parseUrlArray(fields.photos);
+  // Normalised to the photo count on read, so every record — including the
+  // ones written before this field existed — satisfies the same-length
+  // invariant and a reader can index one from the other without checking.
+  const storedThumbs = parseUrlArray(fields.photoThumbs);
+  const photoThumbs = photos.map((_, index) => storedThumbs[index] ?? '');
   const filamentGrams = fields.filamentGrams;
   return {
     designId: fields.designId,
     authorPublicId: fields.authorPublicId,
     authorName: fields.authorName ?? '',
     photos,
+    photoThumbs,
     material,
     nozzleMm: Number(fields.nozzleMm ?? 0),
     layerHeightMm: Number(fields.layerHeightMm ?? 0),
@@ -141,6 +171,7 @@ export async function writeCommunityPrint(
     authorPublicId: record.authorPublicId,
     authorName: record.authorName,
     photos: JSON.stringify(record.photos),
+    photoThumbs: JSON.stringify(record.photoThumbs),
     material: record.material,
     nozzleMm: String(record.nozzleMm),
     layerHeightMm: String(record.layerHeightMm),
@@ -340,7 +371,13 @@ export async function clearCommunityCoverIfFromPhotos(
   if (photos.length === 0) return;
   const cover = await redis.hget(communityDesignKey(designId), 'coverPhotoUrl');
   if (cover === null || cover === '' || !photos.includes(cover)) return;
-  await redis.hset(communityDesignKey(designId), { coverPhotoUrl: '' });
+  // Both, or the card keeps rendering the deleted photo: the browsing copy is
+  // the field the gallery actually reads, so clearing only the full URL leaves
+  // the picture exactly where it was.
+  await redis.hset(communityDesignKey(designId), {
+    coverPhotoUrl: '',
+    coverPhotoThumbUrl: '',
+  });
   const record = await readCommunityDesignBlob(designId);
   if (record !== null) {
     await writeCommunityDesignBlob(

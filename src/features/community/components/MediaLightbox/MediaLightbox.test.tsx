@@ -6,11 +6,22 @@ import { MediaLightbox } from './MediaLightbox';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
-const RENDER_A: DesignImage = { kind: 'render', url: 'render-a.webp', angle: 1 };
-const RENDER_B: DesignImage = { kind: 'render', url: 'render-b.webp', angle: 2 };
+const RENDER_A: DesignImage = {
+  kind: 'render',
+  url: 'render-a.webp',
+  thumbUrl: 'render-a.webp',
+  angle: 1,
+};
+const RENDER_B: DesignImage = {
+  kind: 'render',
+  url: 'render-b.webp',
+  thumbUrl: 'render-b.webp',
+  angle: 2,
+};
 const PHOTO: DesignImage = {
   kind: 'photo',
   url: 'photo.webp',
+  thumbUrl: 'photo.webp',
   authorName: 'Ada',
   fitVerdict: 'adjusted',
   note: 'Scaled to 101%.',

@@ -114,6 +114,13 @@ export interface CommunityDesignRecord {
    * the gallery grid is the most public surface in the app.
    */
   coverPhotoUrl?: string;
+  /**
+   * Browsing-sized copy of the promoted cover, captured at promote time from
+   * the print that owns the photo. The gallery grid renders ~200px cells, and
+   * a promoted photo is stored at 1200px, so without this the most-viewed
+   * surface in the app pulls a full-size image per card.
+   */
+  coverPhotoThumbUrl?: string;
   featured: boolean;
   /**
    * Why it was featured. Absent entirely on a blob written before the field
@@ -229,6 +236,13 @@ export interface CommunityCardRecord extends CommunityCardMetadata {
   prints?: number;
   /** Owner-promoted print photo, or '' for the render. Never written by the metadata writer. */
   coverPhotoUrl?: string;
+  /**
+   * Browsing-sized copy of the promoted cover, captured at promote time from
+   * the print that owns the photo. The gallery grid renders ~200px cells, and
+   * a promoted photo is stored at 1200px, so without this the most-viewed
+   * surface in the app pulls a full-size image per card.
+   */
+  coverPhotoThumbUrl?: string;
   /** Curator's stated reason for featuring; set by the admin path only. */
   featureReason?: string;
   /** Present only after a hide; consulted only while status is 'hidden'. */
@@ -293,6 +307,7 @@ function parseCard(fields: Record<string, string | undefined>): CommunityCardRec
     views: Number(fields.views ?? 0),
     prints: Number(fields.prints ?? 0),
     coverPhotoUrl: fields.coverPhotoUrl ?? '',
+    coverPhotoThumbUrl: fields.coverPhotoThumbUrl ?? '',
     featureReason: fields.featureReason ?? '',
     ...((fields.hiddenReason === 'reports' ||
       fields.hiddenReason === 'denylist' ||

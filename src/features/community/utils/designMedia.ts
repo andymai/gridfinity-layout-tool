@@ -10,11 +10,26 @@
 
 import type { CommunityPrint } from '@/shared/types/communityPrint';
 
+/**
+ * Every image carries both the full asset and a browsing-sized copy.
+ *
+ * `url` is what the hero and the lightbox show; `thumbUrl` is what the
+ * filmstrip and the print grid show, and it falls back to `url` when there is
+ * no smaller copy. Keeping the pair on one entry is what lets all three
+ * surfaces keep addressing an image by the same index while still fetching
+ * different bytes for it.
+ */
 export type DesignImage =
-  | { readonly kind: 'render'; readonly url: string; readonly angle: number }
+  | {
+      readonly kind: 'render';
+      readonly url: string;
+      readonly thumbUrl: string;
+      readonly angle: number;
+    }
   | {
       readonly kind: 'photo';
       readonly url: string;
+      readonly thumbUrl: string;
       readonly authorName: string;
       readonly fitVerdict: CommunityPrint['fitVerdict'];
       readonly note: string;
@@ -37,20 +52,24 @@ export function buildDesignImages(
     // A design published before a given angle existed carries '' in its slot;
     // an empty src renders as a broken image rather than nothing.
     if (url === '') return;
-    images.push({ kind: 'render', url, angle: index + 1 });
+    // Renders are already 384px; they are their own browsing copy.
+    images.push({ kind: 'render', url, thumbUrl: url, angle: index + 1 });
   });
 
   for (const print of prints) {
-    for (const url of print.photos) {
-      if (url === '') continue;
+    print.photos.forEach((url, index) => {
+      if (url === '') return;
       images.push({
         kind: 'photo',
         url,
+        // Indexed rather than zipped: photoThumbs is absent on a record from
+        // before the field, and short or '' for any photo that never got one.
+        thumbUrl: print.photoThumbs?.[index] || url,
         authorName: print.authorName,
         fitVerdict: print.fitVerdict,
         note: print.note,
       });
-    }
+    });
   }
 
   return images;

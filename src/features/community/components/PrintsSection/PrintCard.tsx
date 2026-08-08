@@ -176,7 +176,10 @@ export function PrintCard({
               // two identical URLs would otherwise collide as keys.
               <li key={`${index}-${photo}`}>
                 <PrintPhotoTile
-                  url={photo}
+                  // The browsing copy: these tiles are ~117px and the photo
+                  // behind them is 1200px. Falls back to the full one for a
+                  // photo uploaded before the smaller copy existed.
+                  url={print.photoThumbs?.[index] || photo}
                   alt={t('community.prints.photoAlt', {
                     index: index + 1,
                     author: print.authorName,

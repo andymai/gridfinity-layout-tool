@@ -26,6 +26,10 @@ export const COMMUNITY_PRINT_PRINTER_OTHER_MAX_LENGTH = 40;
 export const COMMUNITY_PRINT_PHOTO_MAX_EDGE_PX = 1200;
 export const COMMUNITY_PRINT_PHOTO_MAX_BYTES = 400_000;
 
+/** Mirror of the client's browsing-sized copy bounds; see communityPrint.ts. */
+export const COMMUNITY_PRINT_THUMB_MAX_EDGE_PX = 400;
+export const COMMUNITY_PRINT_THUMB_MAX_BYTES = 120_000;
+
 export const COMMUNITY_PRINT_RANGES = {
   nozzleMm: { min: 0.1, max: 2 },
   layerHeightMm: { min: 0.02, max: 1.2 },
@@ -114,13 +118,89 @@ export function readWebpDimensions(header: Buffer): { width: number; height: num
  * belongs to the record being edited; this module only classifies the shape.
  */
 export type CommunityPrintPhotoEntry =
-  { kind: 'new'; base64: string } | { kind: 'keep'; url: string };
+  | {
+      kind: 'new';
+      base64: string;
+      /**
+       * Browsing-sized copy of the same image, absent when the client predates
+       * the field. It rides the entry rather than a parallel `photoThumbs`
+       * array on the wire: the handler rebuilds the photo list on every edit,
+       * splicing fresh uploads between kept slots, and a second array ordered
+       * by position is the drift that gotcha 6 in CLAUDE.md is about.
+       */
+      thumbBase64: string | null;
+    }
+  | { kind: 'keep'; url: string };
 
 const PHOTO_URL_MAX_LENGTH = 512;
 
 type PhotoCheck = { ok: true; entry: CommunityPrintPhotoEntry } | { ok: false; message: string };
 
+/**
+ * Validates one encoded WebP image against a byte and edge ceiling, returning
+ * the bare base64. Shared by the photo and its browsing-sized copy so the
+ * smaller one cannot skip a check the larger one gets — in particular the
+ * dimension read, without which a client could post a full-size image in the
+ * thumbnail field and defeat the whole point of having one.
+ */
+function checkEncodedImage(
+  base64Input: string,
+  label: string,
+  maxBytes: number,
+  maxEdgePx: number
+): { ok: true; base64: string } | { ok: false; message: string } {
+  let base64 = base64Input;
+  if (base64.startsWith('data:')) {
+    if (!base64.startsWith(WEBP_DATA_URL_PREFIX)) {
+      return { ok: false, message: `${label} must be an image/webp data URL` };
+    }
+    base64 = base64.slice(WEBP_DATA_URL_PREFIX.length);
+  }
+  if (base64.length === 0) {
+    return { ok: false, message: `${label} is empty` };
+  }
+  // Length gate precedes the regex so it never walks an unbounded string.
+  if (base64.length > maxEncodedLength(maxBytes)) {
+    return { ok: false, message: `${label} exceeds ${maxBytes} decoded bytes` };
+  }
+  if (!BASE64_REGEX.test(base64)) {
+    return { ok: false, message: `${label} must be base64` };
+  }
+  if (decodedBase64Bytes(base64) > maxBytes) {
+    return { ok: false, message: `${label} exceeds ${maxBytes} decoded bytes` };
+  }
+  // 64 base64 chars decode to 48 bytes, past the furthest header field (VP8 's
+  // dimensions end at byte 30), without touching the compressed body.
+  const dimensions = readWebpDimensions(Buffer.from(base64.slice(0, 64), 'base64'));
+  if (dimensions === null) {
+    return { ok: false, message: `${label} is not a WebP image` };
+  }
+  if (dimensions.width > maxEdgePx || dimensions.height > maxEdgePx) {
+    return { ok: false, message: `${label} exceeds ${maxEdgePx}px on its longest edge` };
+  }
+  return { ok: true, base64 };
+}
+
 function checkPhoto(value: unknown, index: number): PhotoCheck {
+  if (isObject(value)) {
+    const photo = checkPhoto(value.photo, index);
+    if (!photo.ok || photo.entry.kind === 'keep') return photo;
+    const rawThumb = value.thumb;
+    if (rawThumb === undefined || rawThumb === null) {
+      return { ok: true, entry: { ...photo.entry, thumbBase64: null } };
+    }
+    if (!isString(rawThumb)) {
+      return { ok: false, message: `photos[${index}].thumb must be a string` };
+    }
+    const thumb = checkEncodedImage(
+      rawThumb,
+      `photos[${index}].thumb`,
+      COMMUNITY_PRINT_THUMB_MAX_BYTES,
+      COMMUNITY_PRINT_THUMB_MAX_EDGE_PX
+    );
+    if (!thumb.ok) return { ok: false, message: thumb.message };
+    return { ok: true, entry: { ...photo.entry, thumbBase64: thumb.base64 } };
+  }
   if (!isString(value)) {
     return { ok: false, message: `photos[${index}] must be a string` };
   }
@@ -130,48 +210,14 @@ function checkPhoto(value: unknown, index: number): PhotoCheck {
     }
     return { ok: true, entry: { kind: 'keep', url: value } };
   }
-  let base64 = value;
-  if (base64.startsWith('data:')) {
-    if (!base64.startsWith(WEBP_DATA_URL_PREFIX)) {
-      return { ok: false, message: `photos[${index}] must be an image/webp data URL` };
-    }
-    base64 = base64.slice(WEBP_DATA_URL_PREFIX.length);
-  }
-  if (base64.length === 0) {
-    return { ok: false, message: `photos[${index}] is empty` };
-  }
-  // Length gate precedes the regex so it never walks an unbounded string.
-  if (base64.length > maxEncodedLength(COMMUNITY_PRINT_PHOTO_MAX_BYTES)) {
-    return {
-      ok: false,
-      message: `photos[${index}] exceeds ${COMMUNITY_PRINT_PHOTO_MAX_BYTES} decoded bytes`,
-    };
-  }
-  if (!BASE64_REGEX.test(base64)) {
-    return { ok: false, message: `photos[${index}] must be base64` };
-  }
-  if (decodedBase64Bytes(base64) > COMMUNITY_PRINT_PHOTO_MAX_BYTES) {
-    return {
-      ok: false,
-      message: `photos[${index}] exceeds ${COMMUNITY_PRINT_PHOTO_MAX_BYTES} decoded bytes`,
-    };
-  }
-  // 64 base64 chars decode to 48 bytes, past the furthest header field (VP8 's
-  // dimensions end at byte 30), without touching the compressed body.
-  const dimensions = readWebpDimensions(Buffer.from(base64.slice(0, 64), 'base64'));
-  if (dimensions === null) {
-    return { ok: false, message: `photos[${index}] is not a WebP image` };
-  }
-  if (
-    dimensions.width > COMMUNITY_PRINT_PHOTO_MAX_EDGE_PX ||
-    dimensions.height > COMMUNITY_PRINT_PHOTO_MAX_EDGE_PX
-  ) {
-    return {
-      ok: false,
-      message: `photos[${index}] exceeds ${COMMUNITY_PRINT_PHOTO_MAX_EDGE_PX}px on its longest edge`,
-    };
-  }
-  return { ok: true, entry: { kind: 'new', base64 } };
+  const checked = checkEncodedImage(
+    value,
+    `photos[${index}]`,
+    COMMUNITY_PRINT_PHOTO_MAX_BYTES,
+    COMMUNITY_PRINT_PHOTO_MAX_EDGE_PX
+  );
+  if (!checked.ok) return { ok: false, message: checked.message };
+  return { ok: true, entry: { kind: 'new', base64: checked.base64, thumbBase64: null } };
 }
 
 function checkRange(

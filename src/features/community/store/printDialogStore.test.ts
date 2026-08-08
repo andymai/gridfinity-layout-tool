@@ -115,7 +115,7 @@ describe('photos', () => {
   it('appends new photos as unsaved slots', () => {
     usePrintDialogStore.getState().addPhoto('data:image/webp;base64,AAA');
     expect(usePrintDialogStore.getState().photos).toEqual([
-      { kind: 'new', url: 'data:image/webp;base64,AAA' },
+      { kind: 'new', url: 'data:image/webp;base64,AAA', thumbUrl: null },
     ]);
   });
 

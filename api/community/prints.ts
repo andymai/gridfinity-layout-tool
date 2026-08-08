@@ -48,6 +48,7 @@ import { communityPrintsEnabled, validateCommunityPrint } from '../lib/community
 import {
   clearCommunityCoverIfFromPhotos,
   communityPrintPhotoBlobPath,
+  communityPrintThumbBlobPath,
   countCommunityPrints,
   deleteCommunityPrint,
   listCommunityPrinterIds,
@@ -144,6 +145,7 @@ interface PrintResponse {
   authorPublicId: string;
   authorName: string;
   photos: string[];
+  photoThumbs: string[];
   settings: {
     material: string;
     nozzleMm: number;
@@ -167,6 +169,7 @@ function toPrintResponse(record: CommunityPrintRecord): PrintResponse {
     authorPublicId: record.authorPublicId,
     authorName: record.authorName,
     photos: record.photos,
+    photoThumbs: record.photoThumbs,
     settings: {
       material: record.material,
       nozzleMm: record.nozzleMm,
@@ -342,9 +345,7 @@ async function handleUpsert(
   }
 
   const now = Date.now();
-  const newPhotos = payload.photos.filter(
-    (photo): photo is { kind: 'new'; base64: string } => photo.kind === 'new'
-  );
+  const newPhotos = payload.photos.filter((photo) => photo.kind === 'new');
   // Only an upload advances the revision. Blob paths are (rev, index) and
   // upload at `allowOverwrite: false`, so every batch needs a rev of its own or
   // an edit that adds one photo while keeping another would target the kept
@@ -353,27 +354,46 @@ async function handleUpsert(
   const previousRev = existing?.rev ?? 0;
   const rev = newPhotos.length > 0 ? previousRev + 1 : Math.max(previousRev, 1);
 
+  const uploadWebp = (path: string, base64: string): Promise<{ url: string }> =>
+    put(path, Buffer.from(base64, 'base64'), {
+      access: 'public',
+      contentType: 'image/webp',
+      addRandomSuffix: false,
+      allowOverwrite: false,
+    });
+
   const uploaded = await Promise.all(
-    newPhotos.map((photo, index) =>
-      put(
+    newPhotos.map(async (photo, index) => {
+      const full = await uploadWebp(
         communityPrintPhotoBlobPath(designId, authorPublicId, rev, index),
-        Buffer.from(photo.base64, 'base64'),
-        {
-          access: 'public',
-          contentType: 'image/webp',
-          addRandomSuffix: false,
-          allowOverwrite: false,
-        }
-      )
-    )
+        photo.base64
+      );
+      if (photo.thumbBase64 === null) return { url: full.url, thumbUrl: '' };
+      const thumb = await uploadWebp(
+        communityPrintThumbBlobPath(designId, authorPublicId, rev, index),
+        photo.thumbBase64
+      );
+      return { url: full.url, thumbUrl: thumb.url };
+    })
   );
 
   // Rebuild in the order the client asked for, splicing fresh URLs into the
   // 'new' slots so a reorder-plus-add edit keeps the intended sequence.
+  //
+  // Both lists are built in this one pass, from the same entry, so they cannot
+  // drift out of step — the failure mode gotcha 6 warns about. A kept slot
+  // carries its existing thumb forward by looking the photo up in the previous
+  // record; '' where there is none, which is every photo uploaded before this
+  // field existed.
+  const existingThumbs = existing?.photoThumbs ?? [];
   let uploadIndex = 0;
-  const photos = payload.photos.map((photo) =>
-    photo.kind === 'keep' ? photo.url : uploaded[uploadIndex++].url
-  );
+  const rebuilt = payload.photos.map((photo) => {
+    if (photo.kind === 'new') return uploaded[uploadIndex++];
+    const previousIndex = existingPhotos.indexOf(photo.url);
+    return { url: photo.url, thumbUrl: existingThumbs[previousIndex] ?? '' };
+  });
+  const photos = rebuilt.map((entry) => entry.url);
+  const photoThumbs = rebuilt.map((entry) => entry.thumbUrl);
 
   // Reporter sets outlive the record they moderated (deleteCommunityPrint
   // deliberately keeps them, so the per-account dedupe still holds). On a
@@ -389,6 +409,7 @@ async function handleUpsert(
     authorPublicId,
     authorName: payload.authorName,
     photos,
+    photoThumbs,
     material: payload.material,
     nozzleMm: payload.nozzleMm,
     layerHeightMm: payload.layerHeightMm,

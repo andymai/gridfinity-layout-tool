@@ -3,6 +3,7 @@ import {
   COMMUNITY_PRINT_MAX_PHOTOS,
   COMMUNITY_PRINT_NOTE_MAX_LENGTH,
   COMMUNITY_PRINT_PHOTO_MAX_BYTES,
+  COMMUNITY_PRINT_THUMB_MAX_BYTES,
   communityPrintsEnabled,
   readWebpDimensions,
   validateCommunityPrint,
@@ -258,7 +259,9 @@ describe('validateCommunityPrint', () => {
     const result = validateCommunityPrint(validBody({ photos: [photo(lossyWebp(1200, 900))] }));
     expect(result.valid).toBe(true);
     if (!result.valid) return;
-    expect(result.payload.photos).toEqual([{ kind: 'new', base64: photo(lossyWebp(1200, 900)) }]);
+    expect(result.payload.photos).toEqual([
+      { kind: 'new', base64: photo(lossyWebp(1200, 900)), thumbBase64: null },
+    ]);
   });
 
   it('accepts a data-URL prefixed photo', () => {
@@ -268,12 +271,74 @@ describe('validateCommunityPrint', () => {
     );
     expect(result.valid).toBe(true);
     if (!result.valid) return;
-    expect(result.payload.photos).toEqual([{ kind: 'new', base64 }]);
+    expect(result.payload.photos).toEqual([{ kind: 'new', base64, thumbBase64: null }]);
   });
 
   it('classifies an https entry as a keep instruction', () => {
     const url = 'https://blob.example/community/prints/abc.webp';
     const result = validateCommunityPrint(validBody({ photos: [url] }));
+    expect(result.valid).toBe(true);
+    if (!result.valid) return;
+    expect(result.payload.photos).toEqual([{ kind: 'keep', url }]);
+  });
+
+  it('accepts a browsing-sized copy attached to its upload', () => {
+    const base64 = photo(lossyWebp(1200, 900));
+    const thumb = photo(lossyWebp(400, 300));
+    const result = validateCommunityPrint(validBody({ photos: [{ photo: base64, thumb }] }));
+    expect(result.valid).toBe(true);
+    if (!result.valid) return;
+    expect(result.payload.photos).toEqual([{ kind: 'new', base64, thumbBase64: thumb }]);
+  });
+
+  it('accepts an upload whose copy is absent', () => {
+    // A browser that could not encode one still gets to post the print.
+    const base64 = photo(lossyWebp(1200, 900));
+    for (const thumb of [null, undefined]) {
+      const result = validateCommunityPrint(validBody({ photos: [{ photo: base64, thumb }] }));
+      expect(result.valid).toBe(true);
+      if (!result.valid) return;
+      expect(result.payload.photos).toEqual([{ kind: 'new', base64, thumbBase64: null }]);
+    }
+  });
+
+  it('rejects a copy that is not actually small', () => {
+    // Without the dimension check the field is just a second full-size upload
+    // slot, which defeats the entire point of having it.
+    const result = validateCommunityPrint(
+      validBody({
+        photos: [{ photo: photo(lossyWebp(1200, 900)), thumb: photo(lossyWebp(1200, 900)) }],
+      })
+    );
+    expect(result.valid).toBe(false);
+    if (result.valid) return;
+    expect(result.error.message).toContain('photos[0].thumb');
+  });
+
+  it('rejects a copy that is not a WebP', () => {
+    const result = validateCommunityPrint(
+      validBody({ photos: [{ photo: photo(lossyWebp(1200, 900)), thumb: 'bm90LWEtd2VicA==' }] })
+    );
+    expect(result.valid).toBe(false);
+  });
+
+  it('rejects a copy over its byte ceiling', () => {
+    const fat = photo(lossyWebp(400, 300, COMMUNITY_PRINT_THUMB_MAX_BYTES + 1_000));
+    const result = validateCommunityPrint(
+      validBody({ photos: [{ photo: photo(lossyWebp(1200, 900)), thumb: fat }] })
+    );
+    expect(result.valid).toBe(false);
+    if (result.valid) return;
+    expect(result.error.message).toContain(String(COMMUNITY_PRINT_THUMB_MAX_BYTES));
+  });
+
+  it('rejects a copy hung off a keep entry', () => {
+    // The server already holds the copy for a kept photo; accepting a
+    // client-supplied one would let a caller point a card at any blob.
+    const url = 'https://blob.example/a.webp';
+    const result = validateCommunityPrint(
+      validBody({ photos: [{ photo: url, thumb: photo(lossyWebp(400, 300)) }] })
+    );
     expect(result.valid).toBe(true);
     if (!result.valid) return;
     expect(result.payload.photos).toEqual([{ kind: 'keep', url }]);
@@ -287,7 +352,7 @@ describe('validateCommunityPrint', () => {
     if (!result.valid) return;
     expect(result.payload.photos).toEqual([
       { kind: 'keep', url },
-      { kind: 'new', base64 },
+      { kind: 'new', base64, thumbBase64: null },
     ]);
   });
 

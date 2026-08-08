@@ -25,7 +25,7 @@ export interface PrintFormProps {
   disabled: boolean;
   onDraftChange: (patch: Partial<PrintDraft>) => void;
   onDisplayNameChange: (name: string) => void;
-  onAddPhoto: (dataUrl: string) => void;
+  onAddPhoto: (dataUrl: string, thumbDataUrl: string | null) => void;
   onRemovePhoto: (index: number) => void;
   onPhotoError: (message: string | null) => void;
 }

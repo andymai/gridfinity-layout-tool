@@ -4,6 +4,8 @@ import { isErr, isOk } from '@/core/result';
 import {
   COMMUNITY_PRINT_PHOTO_MAX_BYTES,
   COMMUNITY_PRINT_PHOTO_MAX_EDGE_PX,
+  COMMUNITY_PRINT_THUMB_MAX_BYTES,
+  COMMUNITY_PRINT_THUMB_MAX_EDGE_PX,
 } from '@/shared/types/communityPrint';
 import { PRINT_PHOTO_MAX_SOURCE_BYTES, preparePrintPhoto } from './printPhoto';
 
@@ -128,12 +130,49 @@ describe('downscaling', () => {
   });
 });
 
+describe('the browsing-sized copy', () => {
+  it('is produced alongside a full-size photo', async () => {
+    blobSizes = [1000, 200];
+    const result = await preparePrintPhoto(imageFile());
+    expect(isOk(result) && result.value.thumbDataUrl).toBe('data:image/webp;base64,QUJD');
+    // Drawn twice: once at the photo size, once at the browsing size, both
+    // from the one decode rather than re-reading the file.
+    expect(drawn).toHaveLength(2);
+    expect(Math.max(drawn[1].width, drawn[1].height)).toBe(COMMUNITY_PRINT_THUMB_MAX_EDGE_PX);
+  });
+
+  it('is skipped for a photo already inside the browsing size', async () => {
+    // Such a photo is its own thumbnail; a second copy costs an upload and
+    // saves nothing.
+    vi.stubGlobal(
+      'createImageBitmap',
+      vi.fn(async () => ({ width: 320, height: 240, close: vi.fn() }))
+    );
+    blobSizes = [1000];
+    const result = await preparePrintPhoto(imageFile());
+    expect(isOk(result) && result.value.thumbDataUrl).toBeNull();
+    expect(drawn).toHaveLength(1);
+  });
+
+  it('is null rather than fatal when it will not fit its cap', async () => {
+    // A print with photos and no browsing copies is worth more than no print;
+    // every reader falls back to the full image.
+    const tooBig = COMMUNITY_PRINT_THUMB_MAX_BYTES + 1;
+    blobSizes = [1000, tooBig, tooBig, tooBig, tooBig, tooBig];
+    const result = await preparePrintPhoto(imageFile());
+    expect(isOk(result)).toBe(true);
+    expect(isOk(result) && result.value.thumbDataUrl).toBeNull();
+  });
+});
+
 describe('the quality ladder', () => {
   it('accepts the first encode that fits', async () => {
     blobSizes = [1000];
     const result = await preparePrintPhoto(imageFile());
     expect(isOk(result)).toBe(true);
-    expect(blobCalls).toEqual([0.82]);
+    // The photo takes the first rung; the trailing call is the browsing-sized
+    // copy, which walks its own ladder from the top.
+    expect(blobCalls).toEqual([0.82, 0.82]);
   });
 
   it('steps quality down until the encode fits the byte cap', async () => {
@@ -141,7 +180,7 @@ describe('the quality ladder', () => {
     blobSizes = [tooBig, tooBig, 1000];
     const result = await preparePrintPhoto(imageFile());
     expect(isOk(result) && result.value.bytes).toBe(1000);
-    expect(blobCalls).toEqual([0.82, 0.7, 0.6]);
+    expect(blobCalls).toEqual([0.82, 0.7, 0.6, 0.82]);
   });
 
   it('falls back to shrinking once the quality ladder is exhausted', async () => {

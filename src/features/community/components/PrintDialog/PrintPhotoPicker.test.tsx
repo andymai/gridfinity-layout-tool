@@ -37,7 +37,9 @@ describe('PrintPhotoPicker', () => {
   it('adds a prepared photo', async () => {
     const props = setup();
     fireEvent.change(screen.getByTestId('print-photo-input'), { target: { files: [file()] } });
-    await waitFor(() => expect(props.onAdd).toHaveBeenCalledWith('data:image/webp;base64,AAA'));
+    await waitFor(() =>
+      expect(props.onAdd).toHaveBeenCalledWith('data:image/webp;base64,AAA', undefined)
+    );
   });
 
   it('surfaces a preparation failure instead of adding', async () => {
