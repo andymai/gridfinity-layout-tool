@@ -1,0 +1,19 @@
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_3c6248da438c28::t_98401de044c380 1047,1056-1057,1060,1063
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "11ecad84e854c1d54d7c9d2456831639d9816894",
+  "prompts": {},
+  "sessions": {
+    "s_3c6248da438c28": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4aeb1335-fc67-4029-b950-d032b484474e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
