@@ -1,0 +1,76 @@
+src/shared/types/communityGalleryTab.ts
+  s_08ffc81f33fef3::t_c8c54be454eb7e 40-46
+src/i18n/locales/nb.json
+  s_08ffc81f33fef3::t_576f0a15735041 1748
+src/i18n/locales/fr.json
+  s_08ffc81f33fef3::t_576f0a15735041 3392
+src/i18n/locales/de.json
+  s_08ffc81f33fef3::t_576f0a15735041 1659
+src/design-system/Input/Input.tsx
+  s_08ffc81f33fef3::t_6eeafab7546fd3 192-194
+src/i18n/locales/cs.json
+  s_08ffc81f33fef3::t_576f0a15735041 3337
+src/i18n/locales/ko.json
+  s_08ffc81f33fef3::t_576f0a15735041 3337
+src/i18n/locales/sv.json
+  s_08ffc81f33fef3::t_576f0a15735041 3337
+src/features/community/components/CommunityGalleryTab/DimensionFilters.tsx
+  s_08ffc81f33fef3::t_3a88f663da7d67 115
+  s_08ffc81f33fef3::t_efee4cb06662f8 213-215
+  s_08ffc81f33fef3::t_79806e96fb8ccb 86-100
+  s_08ffc81f33fef3::t_4e6a851a838184 180
+  s_08ffc81f33fef3::t_759c1ab8f8c0a9 181
+src/features/community/components/CommunityGalleryTab/CommunityGalleryTab.tsx
+  s_08ffc81f33fef3::t_6542713c22d1d3 79
+  s_08ffc81f33fef3::t_bcb5f21143980c 233-238
+src/features/community/components/CommunityGalleryTab/DimensionFilters.test.tsx
+  s_08ffc81f33fef3::t_58578603060240 66-84
+src/features/community/components/CommunityGalleryTab/GalleryToolbar.test.tsx
+  s_08ffc81f33fef3::t_ba25329c4206d9 78-95
+src/features/community/components/CommunityPage/CommunityPage.test.tsx
+  s_08ffc81f33fef3::t_6dae79977b961b 18-29
+  s_08ffc81f33fef3::t_730b3fd70cac35 213-214,216-224
+  s_08ffc81f33fef3::t_1b34118d23222e 215
+src/i18n/locales/nl.json
+  s_08ffc81f33fef3::t_576f0a15735041 1659
+src/i18n/locales/ja.json
+  s_08ffc81f33fef3::t_576f0a15735041 1701
+src/features/community/components/CommunityGalleryTab/GalleryToolbar.tsx
+  s_08ffc81f33fef3::t_46eb4c11e15175 233,242
+  s_08ffc81f33fef3::t_8b64a65aa06491 189-192
+src/i18n/locales/es.json
+  s_08ffc81f33fef3::t_576f0a15735041 1797
+src/i18n/locales/pl.json
+  s_08ffc81f33fef3::t_576f0a15735041 3337
+src/i18n/locales/it.json
+  s_08ffc81f33fef3::t_576f0a15735041 1748
+src/i18n/locales/pt-BR.json
+  s_08ffc81f33fef3::t_576f0a15735041 3337
+src/i18n/locales/zh-CN.json
+  s_08ffc81f33fef3::t_576f0a15735041 3337
+src/i18n/locales/en.ts
+  s_08ffc81f33fef3::t_576f0a15735041 3609
+src/features/community/components/CommunityPage/CommunityPage.tsx
+  s_08ffc81f33fef3::t_2148e5f4db1ddc 169-173,175-176
+  s_08ffc81f33fef3::t_5b22884936f336 213
+  s_08ffc81f33fef3::t_7b0b7aa21d63c2 75
+  s_08ffc81f33fef3::t_9308690e3db29a 174
+src/i18n/locales/uk.json
+  s_08ffc81f33fef3::t_576f0a15735041 1806
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "9f220bac9f4dfa2ee4c815ea1950e6003f7871bb",
+  "prompts": {},
+  "sessions": {
+    "s_08ffc81f33fef3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3fab88d2-9c87-4fa2-bf2e-c65f3d4a493d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
