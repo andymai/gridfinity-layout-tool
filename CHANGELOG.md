@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.389.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.389.1...gridfinity-layout-tool-v4.389.2) (2026-08-08)
+
+
+### Performance
+
+* **community:** store a browsing-sized copy of every print photo ([#3342](https://github.com/andymai/gridfinity-layout-tool/issues/3342)) ([2b1d05c](https://github.com/andymai/gridfinity-layout-tool/commit/2b1d05ce954b0dc49ae8e98cf6e2410aad799a6c))
+
 ## [4.389.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.389.0...gridfinity-layout-tool-v4.389.1) (2026-08-08)
 
 
