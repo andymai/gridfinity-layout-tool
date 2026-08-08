@@ -400,6 +400,15 @@ const OG_CARDS: OgCard[] = [
     inset: 'bit-organizer-bin.png',
     insetPosition: 'center',
   },
+  // Dark against the light content cards: this one is an article, not a
+  // product page, and it is the card every external link renders.
+  {
+    slug: 'how-this-was-built',
+    title: '1,000 Releases in 213 Days',
+    subtitle: 'How this tool got built, the gates that held, and what the pace cost',
+    style: 'dark',
+    inset: 'tool-drawer-layout.png',
+  },
 ];
 
 function ogCardHtml(card: OgCard, insetDataUrl: string): string {

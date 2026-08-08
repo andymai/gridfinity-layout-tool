@@ -12,6 +12,14 @@ Plan and design [Gridfinity](https://www.youtube.com/c/ZackFreedman) drawer orga
 
 ### → [**gridfinitylayouttool.com**](https://gridfinitylayouttool.com)
 
+**1,000 releases in 213 days.** [How this was built →](https://gridfinitylayouttool.com/how-this-was-built)
+
+| Releases | Commits | PRs merged | Test files | Languages | Reverts |
+| -------- | ------- | ---------- | ---------- | --------- | ------- |
+| 1,001    | 3,437   | 3,345      | 1,580      | 16        | 4       |
+
+<sub>As of release #1,000 on 8 August 2026.</sub>
+
 </div>
 
 <img width="1436" height="847" alt="image" src="https://github.com/user-attachments/assets/17dba424-3a01-4064-b3e9-7742687fc2d5" />
