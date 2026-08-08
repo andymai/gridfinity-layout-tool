@@ -30,7 +30,7 @@ import {
 } from '@/shared/hooks/useCommunityRouting';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { useBrowseStore } from '../../store/browseStore';
-import { CommunityGalleryTab } from '../CommunityGalleryTab';
+import { CommunityGalleryTab, GALLERY_RESULTS_ID } from '../CommunityGalleryTab';
 import { hasLocalDesigns } from '../CommunityGalleryTab/hasLocalDesigns';
 
 // Lazy for the same reason as in DesignGalleryModal: the detail pulls the GLB
@@ -72,6 +72,7 @@ export function CommunityPage({
   // Read once on mount: the CTA must not change label under the user when a
   // design is saved in another tab mid-visit.
   const [hadLocalDesigns] = useState(hasLocalDesigns);
+  const [filterViewOpen, setFilterViewOpen] = useState(false);
 
   // URL -> store: the deep link owns which detail is open, so back/forward
   // and cold visits to /community/d/<id> both resolve through here. The card
@@ -148,6 +149,13 @@ export function CommunityPage({
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-surface text-content">
+      {/* The filter rail sits before the grid in DOM order, so reaching the
+          first design by keyboard otherwise means tabbing every narrowing
+          control on the page. */}
+      <a href={`#${GALLERY_RESULTS_ID}`} className="skip-to-content">
+        {t('community.page.skipToResults')}
+      </a>
+
       <header className="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-stroke-subtle bg-surface-secondary px-3 md:px-4">
         <ToolSwitcher compact={isMobile} iconOnly={isMobile} />
         <div className="flex items-center gap-1">
@@ -158,10 +166,20 @@ export function CommunityPage({
         </div>
       </header>
 
-      <div className="flex shrink-0 flex-wrap items-start justify-between gap-3 border-b border-stroke-subtle px-3 py-3 md:px-4">
+      {/* Stands down for the mobile filter view, which replaces the grid
+          entirely: leaving the title, blurb and CTA above it spent roughly a
+          third of a phone screen on chrome the user is not looking at. */}
+      <div
+        hidden={filterViewOpen}
+        data-testid="community-page-title-row"
+        className="flex shrink-0 flex-wrap items-start justify-between gap-3 border-b border-stroke-subtle px-3 py-3 md:px-4"
+      >
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <h1 className="text-base font-semibold">{t('community.page.title')}</h1>
+            {/* h2, not h1: App renders the route-aware h1 for every surface,
+                and a second one here made a screen reader announce the page
+                title twice. The gallery's own sections nest under this. */}
+            <h2 className="text-base font-semibold">{t('community.page.title')}</h2>
             <Badge tone="info">{t('common.experimental')}</Badge>
             {hasUnseenDigest && (
               <>
@@ -183,13 +201,19 @@ export function CommunityPage({
         </Button>
       </div>
 
-      <CommunityGalleryTab
-        onRequestClose={noopClose}
-        onRequestPublish={onRequestPublish}
-        onEditOwnDesign={onEditOwnDesign}
-        onOwnDesignUnpublished={onOwnDesignUnpublished}
-        surface="route"
-      />
+      {/* The route had no landmark at all, so every element on it counted as
+          outside one (axe landmark-one-main / region). The modal host supplies
+          its own dialog landmark, which is why this lives here. */}
+      <main className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <CommunityGalleryTab
+          onRequestClose={noopClose}
+          onRequestPublish={onRequestPublish}
+          onEditOwnDesign={onEditOwnDesign}
+          onOwnDesignUnpublished={onOwnDesignUnpublished}
+          onFilterViewChange={setFilterViewOpen}
+          surface="route"
+        />
+      </main>
 
       {request !== null && (
         <Suspense fallback={null}>

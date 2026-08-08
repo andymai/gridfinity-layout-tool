@@ -20,7 +20,7 @@ describe('Kbd', () => {
   it('applies info tone classes', () => {
     render(<Kbd tone="info">⌘Z</Kbd>);
     const kbd = screen.getByText('⌘Z');
-    expect(kbd).toHaveClass('bg-info/20', 'border-info/30', 'text-info');
+    expect(kbd).toHaveClass('bg-info/20', 'border-info/30', 'text-info-strong');
     expect(kbd).not.toHaveClass('font-mono');
   });
 

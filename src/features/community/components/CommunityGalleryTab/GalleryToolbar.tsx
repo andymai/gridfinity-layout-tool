@@ -186,7 +186,10 @@ export function GalleryToolbar({
 
   return (
     <div className="shrink-0 space-y-2 border-b border-stroke-subtle px-3 py-2 md:px-4">
-      <div className="flex items-center gap-2">
+      {/* Search takes its own row on mobile. Sharing one with the filter
+          button and the sort select left it about 120px on a 390px phone,
+          narrow enough to cut the placeholder mid-word. */}
+      <div className="flex flex-wrap items-center gap-2">
         {/* An open rail carries its own collapse control in its header, so a
             second one here would sit two inches away doing the same thing. */}
         {filtersAvailable && (isMobile || !panelOpen) && (
@@ -227,7 +230,7 @@ export function GalleryToolbar({
               </IconButton>
             ) : undefined
           }
-          wrapperClassName="min-w-0 flex-1"
+          wrapperClassName={cn('min-w-0 flex-1', isMobile && 'order-last basis-full')}
         />
         <Select
           options={browseSortOptions(t, bestFitAvailable)}
@@ -236,7 +239,7 @@ export function GalleryToolbar({
             if (isBrowseSort(value)) setSort(value);
           }}
           aria-label={t('community.gallery.sortLabel')}
-          className={isMobile ? 'w-32' : 'w-40'}
+          className={isMobile ? 'min-w-0 flex-1' : 'w-40'}
         />
       </div>
 

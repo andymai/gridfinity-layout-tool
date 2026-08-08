@@ -189,6 +189,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             inputVariants({ size }),
             leftIcon && 'pl-0',
             rightIcon && 'pr-0',
+            // Chromium paints its own clear button inside type="search", which
+            // lands beside ours and shows the user two ways to clear one field.
+            '[&::-webkit-search-cancel-button]:appearance-none',
             className
           )}
           {...props}

@@ -40,11 +40,22 @@ import { useFilterPanel } from './useFilterPanel';
 
 export { GALLERY_PAGE_SIZE } from '../../store/browseStore';
 
+/** Target for the route's skip link; exported so the two cannot drift apart. */
+export const GALLERY_RESULTS_ID = 'community-results';
+
 const SKELETON_COUNT = 10;
 
 const NO_ITEMS: readonly CommunityCardData[] = [];
 
-const GRID_CLASS = 'grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-4';
+// Tracks the space available rather than the viewport class: the rail opening
+// or closing changes the grid's width without changing the breakpoint, and a
+// fixed column count then sizes cards to a width that is no longer there.
+// The track minimums are chosen to reproduce the column counts the fixed
+// breakpoints gave (2 up to sm, 5 on a 1440 window with the rail open) while
+// deriving them from the space actually available: the rail is 240px wide, so
+// opening it changes the room for cards without changing the breakpoint.
+const GRID_CLASS =
+  'grid grid-cols-[repeat(auto-fill,minmax(8.5rem,1fr))] gap-3 md:grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] md:gap-4';
 
 function GallerySkeletons() {
   return (
@@ -65,15 +76,15 @@ export function CommunityGalleryTab({
   onRequestPublish,
   onEditOwnDesign,
   onOwnDesignUnpublished,
+  onFilterViewChange,
   surface = 'tab',
 }: CommunityGalleryTabProps) {
   const t = useTranslation();
   const { isMobile } = useResponsive();
 
-  // The /community route heads the page with an h1, so its sections are h2.
-  // Every other surface is the gallery dialog, whose own title is already an
-  // h2, so the same sections drop to h3 there.
-  const sectionHeadingLevel = surface === 'route' ? 2 : 3;
+  // 3 on both surfaces: the route's page title and the modal's dialog title
+  // are each an h2, so the gallery's own sections nest one level under them.
+  const sectionHeadingLevel = 3;
 
   const { status, items, capped, error, filters, fitsGapContext, visibleCount } = useBrowseStore(
     useShallow((s) => ({
@@ -218,6 +229,12 @@ export function CommunityGalleryTab({
     const el = scrollRef.current;
     if (el) el.scrollTop = useBrowseStore.getState().scrollTop;
   }, [mobileFiltersOpen]);
+
+  // The view is a full takeover of the gallery, so a host with chrome of its
+  // own is told to stand down for it rather than sitting above a cramped list.
+  useEffect(() => {
+    onFilterViewChange?.(mobileFiltersOpen);
+  }, [mobileFiltersOpen, onFilterViewChange]);
 
   const handleTogglePanel = useCallback(() => {
     // Read the offset while the grid is still mounted: once the filter view
@@ -375,7 +392,7 @@ export function CommunityGalleryTab({
         activeFilterCount={countPanelFilters(filters)}
       />
 
-      <div className="flex min-h-0 flex-1">
+      <div className="flex min-h-0 min-w-0 flex-1">
         {panelOpen && (
           <FilterRail
             items={activeItems}
@@ -385,7 +402,13 @@ export function CommunityGalleryTab({
           />
         )}
 
-        <div className="flex min-h-0 flex-1 flex-col">
+        {/* min-w-0 is load-bearing, not tidying: a flex item defaults to
+            min-width:auto, so without it this column refuses to shrink below
+            the widest card's min-content and sizes the grid to that instead of
+            to the viewport. Because the scroller below computes overflow-x to
+            auto, the result is a silently side-scrolling grid with columns
+            wider than the screen rather than a visibly broken page. */}
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           {/* Landing affordance for the public index only: hidden in Mine, over
               non-ready states, and once the visitor has stated any filter intent.
               Sits outside the scrollRef div so shelf scrolling never pollutes the
@@ -404,8 +427,13 @@ export function CommunityGalleryTab({
 
           <div
             ref={scrollRef}
+            id={GALLERY_RESULTS_ID}
+            // Focusable only as a skip-link destination: without it the jump
+            // moves the viewport but leaves focus behind in the filter rail,
+            // so the next Tab returns there.
+            tabIndex={-1}
             data-testid="community-gallery-scroll"
-            className="flex-1 overflow-y-auto scrollbar-thin p-3 md:p-4"
+            className="flex-1 overflow-y-auto scrollbar-thin p-3 focus-visible:outline-none md:p-4"
           >
             {/* Opening Mine is what consumes the since-last-visit digest, so the
             summary mounts only inside the Mine branch: browsing the public
@@ -603,7 +631,7 @@ export function CommunityGalleryTab({
                   aria-label={t('community.gallery.gridLabel')}
                 >
                   {visible.map((card, index) => (
-                    <li key={card.id}>
+                    <li key={card.id} className="min-w-0">
                       {mineActive ? (
                         <MineCard
                           card={card}

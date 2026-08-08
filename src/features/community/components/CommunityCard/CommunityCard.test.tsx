@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, createEvent, waitFor } from '@testing-library/react';
 import { ok } from '@/core/result';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import type { CommunityCard as CommunityCardData } from '@/shared/types/community';
@@ -68,7 +68,9 @@ describe('CommunityCard', () => {
     expect(screen.getByText('Screw Sorter')).toBeInTheDocument();
     expect(screen.queryByRole('heading')).not.toBeInTheDocument();
     expect(screen.getByText('community.card.byAuthor')).toBeInTheDocument();
-    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+    // The title is the only link; the author stays plain text until the
+    // author view is wired in, and never becomes a second navigation target.
+    expect(screen.getAllByRole('link')).toHaveLength(1);
     expect(screen.getByText('2×3×6')).toBeInTheDocument();
     expect(screen.getByText('12')).toBeInTheDocument();
     expect(screen.getByText('4')).toBeInTheDocument();
@@ -76,15 +78,33 @@ describe('CommunityCard', () => {
     expect(screen.getByText('community.card.remixesLabel')).toBeInTheDocument();
   });
 
-  it('keeps a keyboard-activatable card surface despite the nested heart button', () => {
+  it('exposes the card as a real link to the design, not a role=button container', () => {
+    const { container } = render(<CommunityCard card={card()} onSelect={vi.fn()} index={0} />);
+    const link = screen.getByRole('link', { name: 'Screw Sorter' });
+    expect(link).toHaveAttribute('href', '/community/d/abc123def456');
+    // The nested-interactive violation: a button may not contain focusable
+    // descendants, and this card contains the heart (and optionally the
+    // author). No ancestor of them may claim button semantics.
+    expect(container.querySelector('[role="button"]')).toBeNull();
+    expect(container.querySelector('[data-community-card]')).not.toHaveAttribute('tabindex');
+  });
+
+  it('opens in place on a plain click but leaves a modified click to the browser', () => {
     const onSelect = vi.fn();
     render(<CommunityCard card={card()} onSelect={onSelect} index={0} />);
-    const surface = screen.getByRole('button', { name: 'Screw Sorter' });
-    expect(surface.tagName).not.toBe('BUTTON');
-    expect(surface).toHaveAttribute('tabindex', '0');
-    fireEvent.keyDown(surface, { key: 'Enter' });
-    fireEvent.keyDown(surface, { key: ' ' });
-    expect(onSelect).toHaveBeenCalledTimes(2);
+    const link = screen.getByRole('link', { name: 'Screw Sorter' });
+
+    // A new-tab click must navigate for real, so the handler neither
+    // preventDefaults nor opens the in-place overlay.
+    const modified = createEvent.click(link, { ctrlKey: true, bubbles: true, cancelable: true });
+    fireEvent(link, modified);
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(modified.defaultPrevented).toBe(false);
+
+    const plain = createEvent.click(link, { bubbles: true, cancelable: true });
+    fireEvent(link, plain);
+    expect(onSelect).toHaveBeenCalledExactlyOnceWith(card());
+    expect(plain.defaultPrevented).toBe(true);
   });
 
   it('shows the corner remix glyph only for remixes', () => {
@@ -117,7 +137,7 @@ describe('CommunityCard', () => {
   it('calls onSelect with the card on click', () => {
     const onSelect = vi.fn();
     render(<CommunityCard card={card()} onSelect={onSelect} index={0} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Screw Sorter' }));
+    fireEvent.click(screen.getByRole('link', { name: 'Screw Sorter' }));
     expect(onSelect).toHaveBeenCalledTimes(1);
     expect(onSelect).toHaveBeenCalledWith(card());
   });

@@ -63,6 +63,25 @@ describe('DimensionFilters', () => {
     );
   });
 
+  it('states the value instead of drawing a track for an axis with one stop', () => {
+    // Every design 2 wide, so width has a single stop while depth and height
+    // still vary. The slider is inert at one stop either way; drawn, it shows
+    // both thumbs collapsed at the left beside a readout saying "Any", which
+    // reads as a filter pinned to its minimum.
+    const oneWidth = [
+      card('a', { metrics: { width: 83.5, depth: 41.5, height: 21, gridUnitMm: 42 } }),
+      card('b', { metrics: { width: 83.5, depth: 125.5, height: 42, gridUnitMm: 42 } }),
+    ];
+    renderFilters(oneWidth);
+
+    expect(screen.queryByLabelText('community.gallery.widthMinLabel')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('community.gallery.widthMaxLabel')).not.toBeInTheDocument();
+    expect(screen.getByText('community.gallery.dimensionOnlyValue')).toBeInTheDocument();
+    // The axes that can still narrow keep their sliders.
+    expect(screen.getByLabelText('community.gallery.depthMinLabel')).toBeInTheDocument();
+    expect(screen.getByLabelText('community.gallery.maxHeightLabel')).toBeInTheDocument();
+  });
+
   it('reads as unfiltered until a thumb is moved off the reachable edge', () => {
     renderFilters();
     expect(screen.getAllByText('community.gallery.dimensionAny')).toHaveLength(3);

@@ -2,7 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <!-- Pinch-zoom stays available: blocking it is a WCAG 1.4.4 failure, and on
+         the community gallery it is the only way to look closely at a design
+         thumbnail or a print photo. The grid editor handles its own gestures on
+         its canvas, so it does not need the whole document locked. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Gridfinity Planner & Layout Tool — Free Online Drawer Organizer</title>
 
     <!-- SEO Meta Tags -->

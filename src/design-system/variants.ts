@@ -185,5 +185,7 @@ export const intentText = {
   success: 'text-success',
   warning: 'text-warning',
   error: 'text-error',
-  info: 'text-info',
+  // Paired with intentBackgrounds.info, where plain text-info measured 4.42:1
+  // in the dark theme. See --color-info-strong.
+  info: 'text-info-strong',
 } as const;
