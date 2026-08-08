@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.388.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.388.1...gridfinity-layout-tool-v4.388.2) (2026-08-08)
+
+
+### Bug Fixes
+
+* **deps,security:** patch nanoid, js-yaml, and dompurify; drop committed Redis dump ([#3325](https://github.com/andymai/gridfinity-layout-tool/issues/3325)) ([2eb6681](https://github.com/andymai/gridfinity-layout-tool/commit/2eb668145c4e6e05512e4fcf8cf6c6ded67a9902))
+
 ## [4.388.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.388.0...gridfinity-layout-tool-v4.388.1) (2026-08-08)
 
 
