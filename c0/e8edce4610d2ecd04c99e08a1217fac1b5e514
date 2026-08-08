@@ -1,0 +1,40 @@
+src/features/bin-designer/components/panel/CutoutsSection/handlers/pathEditHandler.test.ts
+  s_08ffc81f33fef3::t_48129b63e4b8da 2
+  s_08ffc81f33fef3::t_662975b6252d1a 1,3-324,328-335,337-393,395-399,401-423,437-465
+  s_08ffc81f33fef3::t_36dcb17cc6611c 325-327
+  s_08ffc81f33fef3::t_10f2c2400e7b73 336
+  s_08ffc81f33fef3::t_23a24eeedacb11 424-436
+  s_08ffc81f33fef3::t_6f523638b99f09 394,400
+src/features/bin-designer/components/panel/CutoutsSection/handlers/pathEditHandler.ts
+  s_08ffc81f33fef3::t_a3beaeef956eb6 198-200,202
+  s_08ffc81f33fef3::t_45c76fa8b068e7 101,103,111,123
+  s_08ffc81f33fef3::t_4b9b0493411450 280-283
+  s_08ffc81f33fef3::t_97e05d02eb34de 93-100,102
+src/features/bin-designer/components/panel/CutoutsSection/handlers/keyboardHandler.test.ts
+  s_08ffc81f33fef3::t_e3e9bbfbc8c1ca 1-135,137-454,457-497
+  s_89ebab1cd8d9f3::t_87ab5567571581 136,455-456
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "c0e8edce4610d2ecd04c99e08a1217fac1b5e514",
+  "prompts": {},
+  "sessions": {
+    "s_08ffc81f33fef3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3fab88d2-9c87-4fa2-bf2e-c65f3d4a493d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_89ebab1cd8d9f3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d66a1fbe-8127-4890-8649-771e75111e0d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
