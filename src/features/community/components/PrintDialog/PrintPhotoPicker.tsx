@@ -18,7 +18,7 @@ const PHOTO_ERROR_KEYS: Record<PrintPhotoError['kind'], string> = {
 
 export interface PrintPhotoPickerProps {
   photos: readonly PrintPhotoSlot[];
-  onAdd: (dataUrl: string) => void;
+  onAdd: (dataUrl: string, thumbDataUrl: string | null) => void;
   onRemove: (index: number) => void;
   error: string | null;
   onError: (message: string | null) => void;
@@ -54,7 +54,7 @@ export function PrintPhotoPicker({
             onError(t(PHOTO_ERROR_KEYS[result.error.kind]));
             return;
           }
-          onAdd(result.value.dataUrl);
+          onAdd(result.value.dataUrl, result.value.thumbDataUrl);
         }
       } finally {
         setBusy(false);

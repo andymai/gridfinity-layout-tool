@@ -176,7 +176,16 @@ export function DesignMediaPanel({
               )}
               data-testid={`design-media-tile-${index}`}
             >
-              <img src={image.url} alt="" loading="lazy" className="h-full w-full object-cover" />
+              {/* The browsing copy, not the full asset: these tiles are 78px
+                  and the photo behind them is 1200px. The hero above still
+                  shows the full one. */}
+              <img
+                src={image.thumbUrl}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                className="h-full w-full object-cover"
+              />
             </Button>
           ))}
 

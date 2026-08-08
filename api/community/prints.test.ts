@@ -476,6 +476,133 @@ describe('PUT (edit)', () => {
     expect(kept[0]).not.toContain('-2-0.webp');
   });
 
+  it('uploads a browsing-sized copy beside its photo', async () => {
+    const res = await handle({
+      method: 'PUT',
+      body: validPrintBody({
+        photos: [{ photo: webpBase64(1200, 900), thumb: webpBase64(400, 300) }],
+      }),
+    });
+    // No existing record, so this is a create.
+    expect(res._status).toBe(201);
+    const paths = mocks.put.mock.calls.map((call) => (call as [string])[0]);
+    expect(paths).toHaveLength(2);
+    expect(paths[1]).toContain('-t.webp');
+    const body = res._body as { print: { photos: string[]; photoThumbs: string[] } };
+    expect(body.print.photoThumbs[0]).toContain('-t.webp');
+  });
+
+  it('records an empty copy when the client sent none', async () => {
+    const res = await handle({
+      method: 'PUT',
+      body: validPrintBody({ photos: [webpBase64(1200, 900)] }),
+    });
+    const body = res._body as { print: { photos: string[]; photoThumbs: string[] } };
+    // Same length as photos regardless, so a reader can index one from the
+    // other without checking.
+    expect(body.print.photoThumbs).toEqual(['']);
+    expect(mocks.put).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps each copy with its own photo across a reorder-plus-add edit', async () => {
+    // The two lists are rebuilt in one pass from the same entry precisely so
+    // they cannot drift; this is the edit that would expose it if they did.
+    const author = await seedOwnPrint();
+    await handle({
+      method: 'PUT',
+      body: validPrintBody({
+        photos: [
+          { photo: webpBase64(1200, 900), thumb: webpBase64(400, 300) },
+          { photo: webpBase64(1100, 800), thumb: webpBase64(360, 260) },
+        ],
+      }),
+    });
+    const stored = JSON.parse(
+      redis.hashes.get(communityPrintKey(DESIGN_ID, author))?.get('photos') ?? '[]'
+    ) as string[];
+    const storedThumbs = JSON.parse(
+      redis.hashes.get(communityPrintKey(DESIGN_ID, author))?.get('photoThumbs') ?? '[]'
+    ) as string[];
+
+    // Reverse them and splice a fresh upload into the middle.
+    const res = await handle({
+      method: 'PUT',
+      body: validPrintBody({
+        photos: [
+          stored[1],
+          { photo: webpBase64(900, 700), thumb: webpBase64(300, 240) },
+          stored[0],
+        ],
+      }),
+    });
+
+    const body = res._body as { print: { photos: string[]; photoThumbs: string[] } };
+    expect(body.print.photos).toHaveLength(3);
+    expect(body.print.photoThumbs).toHaveLength(3);
+    // Each kept photo still carries the copy it arrived with.
+    expect(body.print.photos[0]).toBe(stored[1]);
+    expect(body.print.photoThumbs[0]).toBe(storedThumbs[1]);
+    expect(body.print.photos[2]).toBe(stored[0]);
+    expect(body.print.photoThumbs[2]).toBe(storedThumbs[0]);
+    expect(body.print.photoThumbs[1]).toContain('-t.webp');
+  });
+
+  it('carries no copy forward for a photo that never had one', async () => {
+    const author = await seedOwnPrint([webpBase64()]);
+    const kept = JSON.parse(
+      redis.hashes.get(communityPrintKey(DESIGN_ID, author))?.get('photos') ?? '[]'
+    ) as string[];
+    const res = await handle({ method: 'PUT', body: validPrintBody({ photos: kept }) });
+    const body = res._body as { print: { photoThumbs: string[] } };
+    expect(body.print.photoThumbs).toEqual(['']);
+  });
+
+  it('cleans up the copy of a photo an edit dropped', async () => {
+    const author = await seedOwnPrint();
+    await handle({
+      method: 'PUT',
+      body: validPrintBody({
+        photos: [
+          { photo: webpBase64(1200, 900), thumb: webpBase64(400, 300) },
+          { photo: webpBase64(1100, 800), thumb: webpBase64(360, 260) },
+        ],
+      }),
+    });
+    const stored = JSON.parse(
+      redis.hashes.get(communityPrintKey(DESIGN_ID, author))?.get('photos') ?? '[]'
+    ) as string[];
+    mocks.del.mockClear();
+
+    // Keep the first, drop the second.
+    await handle({ method: 'PUT', body: validPrintBody({ photos: [stored[0]] }) });
+
+    const deleted = (mocks.del.mock.calls[0] as [string[]])[0];
+    expect(deleted).toHaveLength(2);
+    expect(deleted.filter((url) => url.includes('-t.webp'))).toHaveLength(1);
+  });
+
+  it('rolls back both sizes when the write fails', async () => {
+    await seedOwnPrint();
+    // Fail the record write after the uploads have already landed.
+    const original = redis.hset;
+    redis.hset = vi.fn(async () => {
+      throw new Error('redis down');
+    });
+    mocks.del.mockClear();
+
+    await handle({
+      method: 'PUT',
+      body: validPrintBody({
+        photos: [{ photo: webpBase64(1200, 900), thumb: webpBase64(400, 300) }],
+      }),
+    });
+    redis.hset = original;
+
+    const rolledBack = (mocks.del.mock.calls[0] as [string[]])[0];
+    expect(rolledBack).toHaveLength(2);
+    expect(rolledBack.some((url) => url.includes('-t.webp'))).toBe(true);
+  });
+
   it('rejects a kept URL that does not belong to this print', async () => {
     await seedOwnPrint([webpBase64()]);
 
@@ -618,6 +745,47 @@ describe('DELETE', () => {
     await handle({ method: 'DELETE' });
 
     expect(redis.hashes.get(communityDesignKey(DESIGN_ID))?.get('coverPhotoUrl')).toBe('');
+  });
+
+  it('deletes the browsing copies along with the photos', async () => {
+    // Both sizes sit at public paths; deleting only the photos would strand
+    // its copy on the CDN with no record naming it.
+    await handle({
+      method: 'PUT',
+      body: validPrintBody({
+        photos: [{ photo: webpBase64(1200, 900), thumb: webpBase64(400, 300) }],
+      }),
+    });
+    mocks.del.mockClear();
+
+    await handle({ method: 'DELETE' });
+
+    const deleted = (mocks.del.mock.calls[0] as [string[]])[0];
+    expect(deleted).toHaveLength(2);
+    expect(deleted.some((url) => url.includes('-t.webp'))).toBe(true);
+  });
+
+  it('drops the cover’s browsing copy with it', async () => {
+    // Leaving it behind would keep the deleted photo rendering on the gallery
+    // card, since that is the field the card actually reads.
+    await handle({
+      method: 'PUT',
+      body: validPrintBody({
+        photos: [{ photo: webpBase64(1200, 900), thumb: webpBase64(400, 300) }],
+      }),
+    });
+    const author = authorIdFor(USER_ID);
+    const photos = JSON.parse(
+      redis.hashes.get(communityPrintKey(DESIGN_ID, author))?.get('photos') ?? '[]'
+    ) as string[];
+    const design = redis.hashes.get(communityDesignKey(DESIGN_ID));
+    design?.set('coverPhotoUrl', photos[0]);
+    design?.set('coverPhotoThumbUrl', 'https://blob.example/cover-t.webp');
+
+    await handle({ method: 'DELETE' });
+
+    expect(design?.get('coverPhotoUrl')).toBe('');
+    expect(design?.get('coverPhotoThumbUrl')).toBe('');
   });
 
   it('404s when there is nothing to delete', async () => {

@@ -66,7 +66,7 @@ function toPositiveNumber(value: string): number | null {
 function toInput(
   draft: PrintDraft,
   displayName: string,
-  photos: readonly { url: string }[]
+  photos: readonly { url: string; thumbUrl?: string | null }[]
 ): CommunityPrintInput | null {
   const printMinutes = draftPrintMinutes(draft);
   const nozzleMm = toNumber(draft.nozzleMm);
@@ -87,8 +87,13 @@ function toInput(
     fitVerdict: draft.fitVerdict,
     note: draft.note.trim(),
     // Kept URLs and new data URLs travel in one ordered array; the server
-    // classifies each and verifies a kept URL belongs to this record.
-    photos: photos.map((photo) => photo.url),
+    // classifies each and verifies a kept URL belongs to this record. A new
+    // photo with a browsing-sized copy sends both together, so the pair cannot
+    // be separated by a later reorder.
+    photos: photos.map((photo) => {
+      const thumb = photo.thumbUrl ?? null;
+      return thumb === null ? photo.url : { photo: photo.url, thumb };
+    }),
   };
 }
 

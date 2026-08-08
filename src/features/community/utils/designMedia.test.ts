@@ -67,6 +67,9 @@ describe('buildDesignImages', () => {
     expect(images[0]).toEqual({
       kind: 'photo',
       url: 'photo-1.webp',
+      // No smaller copy on this record, so the browsing surfaces fall back to
+      // the full asset rather than rendering nothing.
+      thumbUrl: 'photo-1.webp',
       authorName: 'Ada',
       fitVerdict: 'adjusted',
       note: 'Scaled 101%.',

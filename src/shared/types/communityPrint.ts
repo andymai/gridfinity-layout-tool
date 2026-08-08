@@ -52,6 +52,25 @@ export const COMMUNITY_PRINT_PHOTO_MAX_EDGE_PX = 1200;
 export const COMMUNITY_PRINT_PHOTO_MAX_BYTES = 400_000;
 
 /**
+ * Longest edge of the browsing-sized copy stored alongside each photo.
+ *
+ * Every surface that lists photos renders them small — a 78px filmstrip tile,
+ * a 117px print-grid cell, a ~200px gallery card — while the stored photo is
+ * 1200px. Sending the full one to those was ~295KB of overdraw on a single
+ * detail view. 400 covers the largest of those slots at 2x without becoming a
+ * second full-size asset.
+ */
+export const COMMUNITY_PRINT_THUMB_MAX_EDGE_PX = 400;
+
+/**
+ * A third of the full photo's ceiling. Scaled by area a 400px copy is ~9x
+ * smaller, so this is loose enough that the quality ladder never has to reach
+ * for it and tight enough that a client cannot smuggle a full-size image
+ * through the thumbnail field.
+ */
+export const COMMUNITY_PRINT_THUMB_MAX_BYTES = 120_000;
+
+/**
  * Inclusive numeric bounds. Wide enough for real hardware (0.1mm micro nozzles
  * through 2.0mm high-flow), tight enough that a fat-fingered entry cannot skew
  * an aggregate summary.
@@ -89,6 +108,12 @@ export interface CommunityPrint {
   readonly authorPublicId: string;
   readonly authorName: string;
   readonly photos: readonly string[];
+  /**
+   * Browsing-sized copy per photo, same order, '' where a photo has none
+   * (uploaded before the field existed, or already small enough to be its
+   * own). Optional so pre-field fixtures and cached responses keep parsing.
+   */
+  readonly photoThumbs?: readonly string[];
   readonly settings: CommunityPrintSettings;
   readonly fitVerdict: CommunityPrintFitVerdict;
   readonly note: string;

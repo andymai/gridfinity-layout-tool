@@ -69,6 +69,7 @@ function print(overrides: Partial<CommunityPrintRecord> = {}): CommunityPrintRec
     authorPublicId: AUTHOR,
     authorName: 'Casey',
     photos: [],
+    photoThumbs: [],
     material: 'pla',
     nozzleMm: 0.4,
     layerHeightMm: 0.2,
@@ -175,6 +176,10 @@ describe('readCommunityPrint', () => {
     expect(await readCommunityPrint(redis, DESIGN_ID, AUTHOR)).toEqual(
       print({
         photos: ['https://blob.example/p0.webp'],
+        // Normalised to the photo count on read: a record written before the
+        // field still satisfies the same-length invariant, so a reader can
+        // index one array from the other without checking.
+        photoThumbs: [''],
         material: 'petg',
         nozzleMm: 0.6,
         layerHeightMm: 0.28,

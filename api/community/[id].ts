@@ -760,13 +760,18 @@ async function handleSetCoverAction(
     return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'photoUrl must be a string or null');
   }
 
+  // Captured in the same pass as the ownership check: the print that proves
+  // the photo is promotable is also the only thing that knows its
+  // browsing-sized copy, and the gallery grid needs that rather than the
+  // 1200px original.
+  let coverPhotoThumbUrl = '';
   if (photoUrl !== null) {
     const printerIds = await redis.zrange(communityPrintsKey(id), 0, -1);
     const prints = await readCommunityPrints(redis, id, printerIds);
-    const promotable = prints.some(
+    const owner = prints.find(
       (print) => print !== null && print.status === 'live' && print.photos.includes(photoUrl)
     );
-    if (!promotable) {
+    if (!owner) {
       return sendError(
         res,
         400,
@@ -774,9 +779,16 @@ async function handleSetCoverAction(
         'photoUrl must be a photo from a live print of this design'
       );
     }
+    // Optional-chained: a record that reached here without going through
+    // parsePrint has no normalised array, and a missing browsing copy must
+    // cost the optimisation, not 500 the promote.
+    coverPhotoThumbUrl = owner.photoThumbs?.[owner.photos.indexOf(photoUrl)] ?? '';
   }
 
-  await redis.hset(communityDesignKey(id), { coverPhotoUrl: photoUrl ?? '' });
+  await redis.hset(communityDesignKey(id), {
+    coverPhotoUrl: photoUrl ?? '',
+    coverPhotoThumbUrl,
+  });
 
   // Mirror onto the record blob so a detail fetch and the card agree; the hash
   // is the one the gallery reads, so a blob failure must not fail the action.

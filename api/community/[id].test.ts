@@ -1087,6 +1087,37 @@ describe('community/[id]', () => {
         );
       });
 
+      it('captures the photo’s browsing copy for the gallery card', async () => {
+        // The print that proves the photo is promotable is the only thing that
+        // knows its smaller copy, so it is read in the same pass rather than
+        // re-fetched later.
+        const THUMB = 'https://blob.example/community/prints/a-t.webp';
+        printStoreMocks.readCommunityPrints.mockResolvedValue([
+          {
+            status: 'live',
+            photos: [PHOTO],
+            photoThumbs: [THUMB],
+            designId: VALID_ID,
+            authorPublicId: 'a'.repeat(32),
+          },
+        ]);
+        await handle('POST', { body: { action: 'setCover', photoUrl: PHOTO } });
+        expect(redis.hset).toHaveBeenCalledWith(
+          communityDesignKey(VALID_ID),
+          expect.objectContaining({ coverPhotoUrl: PHOTO, coverPhotoThumbUrl: THUMB })
+        );
+      });
+
+      it('promotes a photo that has no browsing copy without failing', async () => {
+        // A photo uploaded before the copy existed still promotes; the card
+        // falls back to the full image.
+        await handle('POST', { body: { action: 'setCover', photoUrl: PHOTO } });
+        expect(redis.hset).toHaveBeenCalledWith(
+          communityDesignKey(VALID_ID),
+          expect.objectContaining({ coverPhotoThumbUrl: '' })
+        );
+      });
+
       it('rejects a URL that is not on any print of this design', async () => {
         // Without this the field would accept any URL, which is the entire
         // risk owner opt-in exists to contain.

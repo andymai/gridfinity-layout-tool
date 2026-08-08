@@ -17,6 +17,8 @@ import { err, ok } from '@/core/result';
 import {
   COMMUNITY_PRINT_PHOTO_MAX_BYTES,
   COMMUNITY_PRINT_PHOTO_MAX_EDGE_PX,
+  COMMUNITY_PRINT_THUMB_MAX_BYTES,
+  COMMUNITY_PRINT_THUMB_MAX_EDGE_PX,
 } from '@/shared/types/communityPrint';
 
 export type PrintPhotoError =
@@ -96,6 +98,47 @@ export interface PreparedPrintPhoto {
   readonly width: number;
   readonly height: number;
   readonly bytes: number;
+  /**
+   * Browsing-sized copy of the same image, or null when the browser could not
+   * produce one.
+   *
+   * Every surface that lists photos renders them small — a 78px filmstrip
+   * tile, a 117px print-grid cell, a ~200px gallery card — so shipping the
+   * 1200px original to those was most of a detail view's image weight. It is
+   * cut here, from the decoded bitmap already in hand, rather than server-side:
+   * the bytes are already passing through a canvas for the EXIF strip, so the
+   * second encode costs one more draw and no new infrastructure.
+   *
+   * Null rather than fatal: a print with photos and no thumbnails is worth
+   * more than no print, and every reader falls back to the full image.
+   */
+  readonly thumbDataUrl: string | null;
+}
+
+/**
+ * Encode `bitmap` at `maxEdge`, walking the quality ladder until it fits.
+ * Returns null rather than throwing — see thumbDataUrl on why a missing
+ * browsing copy is not a failure.
+ */
+async function encodeThumb(
+  bitmap: ImageBitmap,
+  maxEdge: number,
+  maxBytes: number
+): Promise<string | null> {
+  const { width, height } = fittedSize(bitmap.width, bitmap.height, maxEdge);
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext('2d');
+  if (context === null) return null;
+  context.drawImage(bitmap, 0, 0, width, height);
+  for (const quality of QUALITY_STEPS) {
+    const blob = await canvasToWebp(canvas, quality);
+    if (blob === null) continue;
+    if (blob.size > maxBytes) continue;
+    return await blobToDataUrl(blob);
+  }
+  return null;
 }
 
 export async function preparePrintPhoto(
@@ -131,7 +174,17 @@ export async function preparePrintPhoto(
         if (blob.size > COMMUNITY_PRINT_PHOTO_MAX_BYTES) continue;
         const dataUrl = await blobToDataUrl(blob);
         if (dataUrl === null) return err({ kind: 'encodeFailed' });
-        return ok({ dataUrl, width, height, bytes: blob.size });
+        // A photo already inside the browsing size is its own thumbnail;
+        // storing a second copy of it would cost an upload and save nothing.
+        const thumbDataUrl =
+          Math.max(width, height) <= COMMUNITY_PRINT_THUMB_MAX_EDGE_PX
+            ? null
+            : await encodeThumb(
+                bitmap,
+                COMMUNITY_PRINT_THUMB_MAX_EDGE_PX,
+                COMMUNITY_PRINT_THUMB_MAX_BYTES
+              );
+        return ok({ dataUrl, width, height, bytes: blob.size, thumbDataUrl });
       }
     }
 

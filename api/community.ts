@@ -554,6 +554,11 @@ interface CommunityListItem {
 
 function coverThumbnail(card: CommunityCardRecord): string {
   if (!communityPrintsEnabled()) return card.thumbnailUrl;
+  // Prefer the browsing-sized copy of the cover: the grid renders ~200px
+  // cells and a promoted photo is stored at 1200px. Falls back to the full
+  // cover for one promoted before the copy existed, then to the render.
+  const coverThumb = card.coverPhotoThumbUrl ?? '';
+  if (coverThumb !== '') return coverThumb;
   const cover = card.coverPhotoUrl ?? '';
   return cover !== '' ? cover : card.thumbnailUrl;
 }

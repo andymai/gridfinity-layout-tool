@@ -35,8 +35,12 @@ export interface CommunityPrintInput {
    * Ordered desired photo set. A `data:image/webp;base64,...` entry is a new
    * upload; an `https://` entry keeps a photo the record already has. Mixing
    * them is how an edit adds a photo without re-uploading the others.
+   *
+   * The object form attaches a browsing-sized copy to the upload it belongs
+   * to. It rides the entry rather than a second array so the two cannot fall
+   * out of order when the server splices fresh uploads between kept slots.
    */
-  photos: readonly string[];
+  photos: readonly (string | { photo: string; thumb: string | null })[];
 }
 
 export interface CommunityPrintPage {

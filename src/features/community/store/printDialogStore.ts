@@ -22,6 +22,13 @@ export type PrintDialogMode = 'create' | 'edit';
 export interface PrintPhotoSlot {
   readonly kind: 'kept' | 'new';
   readonly url: string;
+  /**
+   * Browsing-sized copy of a freshly prepared photo, travelling with it rather
+   * than in a second array so the two cannot fall out of order when slots are
+   * added, removed or reordered. Null on a kept slot (the server already holds
+   * its copy) and on a photo small enough to be its own.
+   */
+  readonly thumbUrl?: string | null;
 }
 
 /**
@@ -67,7 +74,7 @@ interface PrintDialogActions {
   completeSignIn: () => void;
   setDraft: (patch: Partial<PrintDraft>) => void;
   setDisplayName: (name: string) => void;
-  addPhoto: (dataUrl: string) => void;
+  addPhoto: (dataUrl: string, thumbDataUrl?: string | null) => void;
   removePhoto: (index: number) => void;
   setPhotoError: (message: string | null) => void;
   beginSaving: () => void;
@@ -150,10 +157,10 @@ export const usePrintDialogStore = create<PrintDialogStore>((set, get) => ({
 
   setDisplayName: (displayName) => set({ displayName }),
 
-  addPhoto: (url) => {
+  addPhoto: (url, thumbUrl = null) => {
     const photos = get().photos;
     if (photos.length >= COMMUNITY_PRINT_MAX_PHOTOS) return;
-    set({ photos: [...photos, { kind: 'new', url }], photoError: null });
+    set({ photos: [...photos, { kind: 'new', url, thumbUrl }], photoError: null });
   },
 
   removePhoto: (index) => set({ photos: get().photos.filter((_, position) => position !== index) }),

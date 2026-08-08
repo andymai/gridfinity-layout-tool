@@ -29,7 +29,13 @@ function setup(overrides: Partial<React.ComponentProps<typeof PrintPhotoPicker>>
 beforeEach(() => {
   vi.clearAllMocks();
   prepare.mockResolvedValue(
-    ok({ dataUrl: 'data:image/webp;base64,AAA', width: 1, height: 1, bytes: 1 })
+    ok({
+      dataUrl: 'data:image/webp;base64,AAA',
+      width: 1,
+      height: 1,
+      bytes: 1,
+      thumbDataUrl: null,
+    })
   );
 });
 
@@ -37,7 +43,29 @@ describe('PrintPhotoPicker', () => {
   it('adds a prepared photo', async () => {
     const props = setup();
     fireEvent.change(screen.getByTestId('print-photo-input'), { target: { files: [file()] } });
-    await waitFor(() => expect(props.onAdd).toHaveBeenCalledWith('data:image/webp;base64,AAA'));
+    await waitFor(() =>
+      expect(props.onAdd).toHaveBeenCalledWith('data:image/webp;base64,AAA', null)
+    );
+  });
+
+  it('passes the browsing-sized copy through to the store', async () => {
+    prepare.mockResolvedValue(
+      ok({
+        dataUrl: 'data:image/webp;base64,AAA',
+        width: 1200,
+        height: 900,
+        bytes: 1,
+        thumbDataUrl: 'data:image/webp;base64,TTT',
+      })
+    );
+    const props = setup();
+    fireEvent.change(screen.getByTestId('print-photo-input'), { target: { files: [file()] } });
+    await waitFor(() =>
+      expect(props.onAdd).toHaveBeenCalledWith(
+        'data:image/webp;base64,AAA',
+        'data:image/webp;base64,TTT'
+      )
+    );
   });
 
   it('surfaces a preparation failure instead of adding', async () => {

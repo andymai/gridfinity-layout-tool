@@ -43,9 +43,16 @@ const DESIGN: CommunityDesign = {
 };
 
 const IMAGES: DesignImage[] = [
-  { kind: 'render', url: 't0.webp', angle: 1 },
-  { kind: 'render', url: 't1.webp', angle: 2 },
-  { kind: 'photo', url: 'photo.webp', authorName: 'Ada', fitVerdict: 'as-designed', note: '' },
+  { kind: 'render', url: 't0.webp', thumbUrl: 't0.webp', angle: 1 },
+  { kind: 'render', url: 't1.webp', thumbUrl: 't1.webp', angle: 2 },
+  {
+    kind: 'photo',
+    url: 'photo.webp',
+    thumbUrl: 'photo.webp',
+    authorName: 'Ada',
+    fitVerdict: 'as-designed',
+    note: '',
+  },
 ];
 
 function renderPanel(images: readonly DesignImage[] = IMAGES, onOpenLightbox = vi.fn()) {
@@ -97,7 +104,14 @@ describe('DesignMediaPanel', () => {
     // Posting a print prepends it, sliding every photo's index along. Showing
     // whatever landed in the slot would be worse than showing the model.
     const shifted: DesignImage[] = [
-      { kind: 'photo', url: 'newer.webp', authorName: 'Bea', fitVerdict: 'adjusted', note: '' },
+      {
+        kind: 'photo',
+        url: 'newer.webp',
+        thumbUrl: 'newer.webp',
+        authorName: 'Bea',
+        fitVerdict: 'adjusted',
+        note: '',
+      },
       ...IMAGES,
     ];
     rerender(
@@ -146,6 +160,7 @@ describe('DesignMediaPanel', () => {
     const many: DesignImage[] = Array.from({ length: 12 }, (_, index) => ({
       kind: 'render',
       url: `r${index}.webp`,
+      thumbUrl: `r${index}.webp`,
       angle: index + 1,
     }));
     const onOpenLightbox = renderPanel(many);
