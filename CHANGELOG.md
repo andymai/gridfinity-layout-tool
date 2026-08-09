@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.391.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.390.0...gridfinity-layout-tool-v4.391.0) (2026-08-09)
+
+
+### Features
+
+* **seo:** make /what-is-gridfinity the canonical answer for the head term ([#3353](https://github.com/andymai/gridfinity-layout-tool/issues/3353)) ([b204589](https://github.com/andymai/gridfinity-layout-tool/commit/b2045892722e4a4edcb6c781a8847cd2b9465456))
+
 ## [4.390.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.389.2...gridfinity-layout-tool-v4.390.0) (2026-08-09)
 
 
