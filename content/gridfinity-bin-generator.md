@@ -96,7 +96,7 @@ A parametric bin generator that runs in your browser. Set your dimensions, add c
 
 For items that need to stay in place, **floor inserts** cut shaped cavities into the floor — circles for batteries, hexagons for bits, rectangles for components. Set the depth and rotation to match what you're storing.
 
-The **cutout editor** handles unusual shapes. Switch to solid mode, carve from the top, and use the pen tool to draw freeform paths for wrenches, pliers, or anything with an odd profile.
+The **cutout editor** handles unusual shapes. Switch to solid mode, carve from the top, and use the pen tool to draw freeform paths for wrenches, pliers, or anything with an odd profile. It also imprints a cavity from an imported STL — see the [cutout generator](/gridfinity-cutout-generator).
 
 ## Base Attachment Options
 

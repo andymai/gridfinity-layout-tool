@@ -169,6 +169,15 @@
       ]
     },
     {
+      "source": "/gridfinity-cutout-generator",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
       "source": "/gridfinity-tool-drawer",
       "headers": [
         {
@@ -425,7 +434,7 @@
       "destination": "https://us.i.posthog.com/:path"
     },
     {
-      "source": "/:slug(what-is-gridfinity|guide|privacy|terms|gridfinity-generator|gridfinity-bin-generator|gridfinity-baseplate-generator|gridfinity-calculator|gridfinity-sizes|gridfinity-tool-drawer|gridfinity-kitchen-drawer|gridfinity-software)",
+      "source": "/:slug(what-is-gridfinity|guide|privacy|terms|gridfinity-generator|gridfinity-bin-generator|gridfinity-baseplate-generator|gridfinity-calculator|gridfinity-sizes|gridfinity-tool-drawer|gridfinity-kitchen-drawer|gridfinity-software|gridfinity-cutout-generator)",
       "destination": "/:slug/index.html"
     },
     {

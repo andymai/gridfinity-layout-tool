@@ -181,7 +181,7 @@ Most bins are rectangles, but the generator also supports custom footprints via 
 
 ### Cutout Editor
 
-For shapes that don't fit any preset, the cutout editor lets you draw freeform paths with a pen tool. Bezier handles let you make smooth curves; corner mode locks angles for straight cuts. Carve out the silhouette of a wrench, a multitool, or anything else — the generator creates the cavity automatically.
+For shapes that don't fit any preset, the cutout editor lets you draw freeform paths with a pen tool. Bezier handles let you make smooth curves; corner mode locks angles for straight cuts. Carve out the silhouette of a wrench, a multitool, or anything else — the generator creates the cavity automatically. The [cutout generator](/gridfinity-cutout-generator) covers every shape it can make, including imprints from an imported STL.
 
 ## Baseplate Generator: What You Can Configure
 

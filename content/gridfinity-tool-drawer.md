@@ -79,7 +79,7 @@ Generic bins handle most tools, but some deserve fitted storage. The [bin genera
 - **Hex floor cutouts** hold screwdriver bits and driver inserts upright in a grid.
 - **Circle cutouts** fit sockets, batteries, and collets — set the diameter per row.
 - **Slot cutouts** hold blades, wrenches, and feeler gauges on edge.
-- **The pen tool** draws freeform outlines for pliers, snips, or anything with an odd profile — the bin prints with a fitted cavity.
+- **The pen tool** draws freeform outlines for pliers, snips, or anything with an odd profile — the bin prints with a fitted cavity. The [cutout generator](/gridfinity-cutout-generator) goes through each shape, and can imprint one from an STL.
 - **Label tabs** keep every bin identified, with bracket or solid supports.
 
 ![Custom Gridfinity bin with hexagonal floor cutouts holding screwdriver bits in a 3D preview](/images/landing/bit-organizer-bin.png '1200x675')
