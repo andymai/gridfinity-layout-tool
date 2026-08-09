@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.390.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.389.2...gridfinity-layout-tool-v4.390.0) (2026-08-09)
+
+
+### Features
+
+* **seo:** fix SERP thumbnails, title truncation, and answer-giving snippets ([#3350](https://github.com/andymai/gridfinity-layout-tool/issues/3350)) ([4e2b6ff](https://github.com/andymai/gridfinity-layout-tool/commit/4e2b6ff4f5eb8a90c3e60b6cd6d16bf1e3cdce8c))
+
 ## [4.389.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.389.1...gridfinity-layout-tool-v4.389.2) (2026-08-08)
 
 
