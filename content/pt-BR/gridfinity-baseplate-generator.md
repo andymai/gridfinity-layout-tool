@@ -1,6 +1,6 @@
 ---
 title: Gerador de placas-base Gridfinity — Criador STL online gratuito
-description: Gerador de placas-base Gridfinity com prévia 3D em tempo real. Configure tamanho da grade, furos de ímã, conectores e folgas. Exporte para STL, STEP ou 3MF. Ferramenta gratuita no navegador.
+description: Gerador de placas-base Gridfinity com prévia 3D. Configure tamanho da grade, furos de ímã e folgas. Exporte para STL, STEP ou 3MF. Gratuito.
 keywords: gerador placa gridfinity, gridfinity baseplate, placa gridfinity personalizada, gridfinity STL, placa para gaveta, placa com ímã
 schema: HowTo
 breadcrumbs:

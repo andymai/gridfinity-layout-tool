@@ -1,6 +1,6 @@
 ---
 title: Gridfinity-bodemplaat-generator — Gratis online STL-maker
-description: Gridfinity-bodemplaat-generator met realtime 3D-preview. Stel rastergrootte, magneetgaten, verbindingsnoppen en randpadding in. Exporteer als STL, STEP of 3MF. Gratis browser-tool.
+description: Gridfinity-bodemplaat-generator met realtime 3D-preview. Stel rastergrootte, magneetgaten en randpadding in. Exporteer als STL, STEP of 3MF.
 keywords: gridfinity bodemplaat generator, gridfinity baseplate, eigen gridfinity bodemplaat, gridfinity STL, lade-bodemplaat, magneet-bodemplaat
 schema: HowTo
 breadcrumbs:

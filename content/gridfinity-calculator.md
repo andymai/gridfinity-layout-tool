@@ -1,6 +1,6 @@
 ---
 title: Gridfinity Calculator — Drawer Size to Grid Units
-description: Free Gridfinity calculator. Convert drawer measurements in millimeters to Gridfinity grid units, see leftover space, and find the tallest bin that fits. Includes baseplate and bin size math.
+description: Convert drawer measurements in millimeters to Gridfinity grid units. See leftover space and the tallest bin that fits. Free, and no account needed.
 keywords: gridfinity calculator, gridfinity drawer calculator, gridfinity size calculator, gridfinity bin calculator, gridfinity base calculator, gridfinity grid units, gridfinity rechner, 42mm grid calculator
 schema: Article
 breadcrumbs:
@@ -38,7 +38,7 @@ faqs:
   - q: What do I do with the leftover millimeters?
     a: Generate a baseplate with edge padding — the baseplate generator can distribute the leftover space to any side as a solid border, so bins still fill the drawer edge to edge. Half-bin mode can also reclaim space in 21 mm steps.
   - q: How do I calculate Gridfinity bin height?
-    a: Bin heights are multiples of 7 mm, called units (a 3U bin is 21 mm of usable wall). To find the tallest bin a drawer can take, subtract about 5 mm for the baseplate from the interior height and divide by 7, rounding down.
+    a: Bin heights are multiples of 7 mm, called units, and the count includes the base (a 3U bin stands 21 mm tall with about 14 mm inside). To find the tallest bin a drawer can take, subtract about 5 mm for the baseplate from the interior height and divide by 7, rounding down.
   - q: Why 42 mm?
     a: Zack Freedman picked 42 mm as the Gridfinity base unit — big enough for useful bins, small enough for fine-grained layouts, and yes, also the answer to everything. Every Gridfinity bin and baseplate uses multiples of it, which is what makes the whole system interchangeable.
   - q: Does this calculator handle half-size bins?

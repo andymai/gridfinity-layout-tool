@@ -1,6 +1,6 @@
 ---
 title: Gridfinity Kitchen Drawer Organizer — Utensils, Cutlery & Junk Drawers
-description: Organize kitchen drawers with 3D-printed Gridfinity bins. Plan utensil, cutlery, spice, and junk drawer layouts in your browser, then print bins that fit exactly. Free, no account.
+description: Organize kitchen drawers with 3D-printed Gridfinity bins. Plan utensil, cutlery, and junk drawer layouts, then print bins that fit exactly. Free.
 keywords: gridfinity kitchen drawer, gridfinity kitchen drawer organizer, gridfinity utensil drawer, gridfinity silverware organizer, gridfinity cutlery organizer, gridfinity junk drawer, 3d printed kitchen drawer organizer
 schema: HowTo
 breadcrumbs:
@@ -38,7 +38,7 @@ faqs:
   - q: What filament should I use for kitchen drawer bins?
     a: PLA is the easiest and works well in drawers. If the drawer sits near a dishwasher vent or oven where it gets warm, PETG handles heat better. Both print the standard Gridfinity profile without supports.
   - q: My kitchen drawers are shallow. Will bins fit?
-    a: Yes. Gridfinity heights come in 7 mm units, so a 2U bin is just 14 mm of wall plus the base. Measure the drawer's interior height, subtract about 5 mm for the baseplate, and divide by 7 — most kitchen drawers fit 3U to 6U bins comfortably.
+    a: Yes. Gridfinity heights come in 7 mm units and the count includes the base, so a 2U bin stands 14 mm tall with about 7 mm inside. Measure the drawer's interior height, subtract about 5 mm for the baseplate, and divide by 7 — most kitchen drawers fit 3U to 6U bins comfortably.
   - q: How is this better than store-bought drawer organizers?
     a: Store-bought trays never match your drawer or your utensils. With Gridfinity you print bins sized to the actual drawer, rearrange them anytime, and replace a single bin when needs change — no glue, no cutting, no wasted corners.
   - q: Can I do a junk drawer with this?

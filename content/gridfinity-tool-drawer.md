@@ -1,6 +1,6 @@
 ---
 title: Gridfinity Tool Drawer Organizer — Plan, Generate, and Print
-description: Organize a tool drawer or toolbox with Gridfinity. Plan the layout in your browser, generate custom bins for wrenches, bits, and pliers, and print exactly what fits. Free, no account.
+description: Organize a tool drawer with Gridfinity. Plan the layout in your browser, generate bins for wrenches, bits, and pliers, and print exactly what fits.
 keywords: gridfinity tool drawer, gridfinity toolbox, gridfinity tool organizer, gridfinity tool storage, gridfinity tool drawer organizer, gridfinity workshop storage, gridfinity bit organizer, 3d printed tool drawer organizer
 schema: HowTo
 breadcrumbs:

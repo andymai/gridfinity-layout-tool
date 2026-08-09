@@ -1,6 +1,6 @@
 ---
 title: Gerador de bins Gridfinity — Criador STL online gratuito
-description: Gerador de bins Gridfinity com editor visual e prévia 3D em tempo real. Defina dimensões, adicione compartimentos e recortes, exporte para STL, STEP ou 3MF. Ferramenta gratuita no navegador.
+description: Gerador de bins Gridfinity com editor visual e prévia 3D. Defina dimensões, adicione compartimentos e recortes, exporte para STL, STEP ou 3MF.
 keywords: gridfinity gerador, gerador de bins gridfinity, gerador STL gridfinity, bins gridfinity personalizados, designer gridfinity, gridfinity online
 schema: HowTo
 breadcrumbs:

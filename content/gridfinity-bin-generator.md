@@ -1,6 +1,6 @@
 ---
 title: Gridfinity Bin Generator — Free Online STL Creator
-description: Gridfinity bin generator with visual editor and real-time 3D preview. Set dimensions, add compartments and cutouts, export STL, STEP, or 3MF. Free browser tool.
+description: Gridfinity bin generator with visual editor and real-time 3D preview. Set dimensions, add compartments and cutouts, export STL, STEP, or 3MF.
 keywords: gridfinity generator, gridfinity bin generator, gridfinity STL generator, custom gridfinity bins, gridfinity designer, online gridfinity generator
 schema: HowTo
 breadcrumbs:

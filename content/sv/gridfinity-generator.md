@@ -1,6 +1,6 @@
 ---
 title: Gridfinity-generator — Gratis bin- och bottenplatta-generator online
-description: Gratis Gridfinity-generator. Skapa anpassade bins och bottenplattor i din webbläsare, förhandsgranska i 3D och exportera som STL, STEP eller 3MF. Ingen installation, inget konto, fungerar offline.
+description: Gratis Gridfinity-generator. Skapa bins och bottenplattor i din webbläsare, förhandsgranska i 3D och exportera som STL, STEP eller 3MF. Utan konto.
 keywords: gridfinity generator, gridfinity bin-generator, gridfinity bottenplatta-generator, gridfinity STL, gridfinity online, gridfinity gratis
 schema: HowTo
 breadcrumbs:
