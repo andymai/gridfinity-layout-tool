@@ -1,5 +1,5 @@
 ---
-title: Генератор основ Gridfinity — Безкоштовний онлайн-конструктор STL
+title: 'Генератор основ Gridfinity: безкоштовний конструктор STL'
 description: Генератор основ Gridfinity з 3D-переглядом. Налаштуйте розмір сітки, магнітні отвори та відступ по краях. Експорт у STL, STEP або 3MF. Безкоштовно.
 keywords: генератор основ gridfinity, gridfinity baseplate, власна основа gridfinity, gridfinity STL, основа для шухляди, магнітна основа
 schema: HowTo

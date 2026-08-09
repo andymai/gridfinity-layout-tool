@@ -1,5 +1,5 @@
 ---
-title: Генератор Gridfinity bin — Безкоштовний онлайн-конструктор STL
+title: 'Генератор Gridfinity bin: безкоштовний конструктор STL'
 description: Генератор Gridfinity bin із візуальним редактором і 3D-переглядом. Задайте розміри, додайте відсіки та вирізи, експортуйте у STL, STEP або 3MF.
 keywords: gridfinity генератор, генератор bin gridfinity, gridfinity STL, власні gridfinity bins, gridfinity дизайнер, gridfinity онлайн
 schema: HowTo

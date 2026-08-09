@@ -1,5 +1,5 @@
 ---
-title: Gridfinity-Generator — Kostenloser Online-Bin- und Grundplatten-Generator
+title: 'Gridfinity-Generator: Bins und Grundplatten kostenlos erstellen'
 description: Kostenloser Gridfinity-Generator. Erstelle Bins und Grundplatten im Browser, sieh sie in 3D vorab und exportiere als STL, STEP oder 3MF. Ohne Konto.
 keywords: gridfinity generator, gridfinity bin generator, gridfinity grundplatte generator, gridfinity STL generator, online gridfinity generator, kostenloser gridfinity generator
 schema: HowTo

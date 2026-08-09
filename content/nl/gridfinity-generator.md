@@ -1,5 +1,5 @@
 ---
-title: Gridfinity-generator — Gratis online bin- en bodemplaat-generator
+title: 'Gridfinity-generator: gratis bins en bodemplaten online'
 description: Gratis Gridfinity-generator. Maak eigen bins en bodemplaten in je browser, bekijk in 3D en exporteer als STL, STEP of 3MF. Zonder account.
 keywords: gridfinity generator, gridfinity bin generator, gridfinity bodemplaat generator, gridfinity STL, gridfinity online, gridfinity gratis
 schema: HowTo
