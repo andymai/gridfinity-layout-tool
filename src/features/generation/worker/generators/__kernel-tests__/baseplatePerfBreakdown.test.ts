@@ -113,7 +113,9 @@ function measureOnce(params: ResolvedBaseplateParams): Breakdown {
       prev = m.at;
     }
     // Whatever the last probe did not cover, so the parts always sum to the whole.
-    if (builtAt - prev > 0.5) stages.push({ label: '(post-final build)', ms: builtAt - prev });
+    // Pushed unconditionally: `report` medians stage i across samples, so a row
+    // that appears in only some of them shifts every later row in those samples.
+    stages.push({ label: '(post-final build)', ms: builtAt - prev });
     stages.push({ label: 'mesh', ms: meshedAt - meshStart });
     stages.push({ label: 'creaseEdges', ms: creasedAt - meshedAt });
 
