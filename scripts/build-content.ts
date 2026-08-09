@@ -885,16 +885,6 @@ function processFile(
     process.exit(1);
   }
 
-  // marked passes HTML comments straight through to the built page, so an
-  // unreviewed AI-drafted passage in a first-person article would publish
-  // silently under the author's byline. Fail the build instead.
-  if (content.includes('<!-- ANDY:')) {
-    console.error(
-      `${filePath} still contains an unreviewed <!-- ANDY: --> passage. Rewrite or cut it, then delete the markers.`
-    );
-    process.exit(1);
-  }
-
   if (frontmatter.softwareApplication) {
     const sa = frontmatter.softwareApplication;
     if (!sa.name || !sa.applicationCategory) {
@@ -983,7 +973,7 @@ interface SitemapPage {
 // Bump CONTENT_LASTMOD when shipping a substantive content change so search
 // engines re-crawl the affected URLs. Hardcoded (not `new Date()`) to avoid
 // every build advertising the entire sitemap as updated.
-const CONTENT_LASTMOD = '2026-08-08';
+const CONTENT_LASTMOD = '2026-07-26';
 
 // SPA routes with their own static HTML entry (see scripts/build-route-entries.ts).
 // English-only, no locale variants.
@@ -1007,7 +997,6 @@ const SITEMAP_PAGES: Record<string, SitemapPage> = {
   'gridfinity-kitchen-drawer': { basePriority: 0.8, changefreq: 'monthly' },
   'gridfinity-calculator': { basePriority: 0.8, changefreq: 'monthly' },
   'gridfinity-software': { basePriority: 0.7, changefreq: 'monthly' },
-  'how-this-was-built': { basePriority: 0.5, changefreq: 'yearly' },
 };
 
 function sitemapImageXml(slug: string): string {

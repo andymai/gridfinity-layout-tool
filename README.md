@@ -12,7 +12,7 @@ Plan and design [Gridfinity](https://www.youtube.com/c/ZackFreedman) drawer orga
 
 ### → [**gridfinitylayouttool.com**](https://gridfinitylayouttool.com)
 
-**1,000 releases in 213 days.** [How this was built →](https://gridfinitylayouttool.com/how-this-was-built)
+**[1,000 releases](https://github.com/andymai/gridfinity-layout-tool/releases/tag/gridfinity-layout-tool-v4.389.1) in 213 days.**
 
 | Releases | Commits | PRs merged | Test files | Languages | Reverts |
 | -------- | ------- | ---------- | ---------- | --------- | ------- |
