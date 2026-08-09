@@ -1,6 +1,6 @@
 ---
 title: 'Gridfinity Sizes & Dimensions: Full Tables in mm and Inches'
-description: Every Gridfinity bin and baseplate dimension in one table, in millimeters and inches, plus a converter that turns drawer measurements into grid units.
+description: Every Gridfinity bin and baseplate dimension in millimeters and inches, plus height units, common bin sizes, and how to convert a drawer to grid units.
 keywords: gridfinity sizes, gridfinity dimensions, gridfinity bin sizes, gridfinity height units, gridfinity 42mm, gridfinity grid size, standard gridfinity size, why is gridfinity 42mm
 schema: Article
 breadcrumbs:
@@ -25,7 +25,7 @@ faqs:
 
 # Gridfinity Sizes & Dimensions
 
-Every Gridfinity bin and baseplate size, tabulated in millimeters and inches, with a converter that turns your own drawer measurements into grid units. Look up a size in the tables below, or measure the drawer and let the converter work out the grid that fits.
+Every Gridfinity bin and baseplate size, tabulated in millimeters and inches: grid units, height units, common bin sizes, and what fits on a print bed. Look up a size in the tables below, or measure your drawer and convert it to grid units in three steps.
 
 **One Gridfinity grid unit is 42mm × 42mm (width and depth), and one height unit (1U) is 7mm.** Every size on this page is a multiple of those two numbers: a 2×3 bin at 6U measures 84mm × 126mm × 42mm. Half-bin mode adds 0.5-unit (21mm) steps.
 
@@ -91,6 +91,8 @@ Gap at edges:  2mm width, 16mm depth
 ```
 
 Small gaps at the edges are normal. Baseplates don't need to fill every millimeter. Most people center the baseplates and ignore the gap.
+
+To skip the arithmetic, the [drawer calculator](/gridfinity-calculator) does the same conversion and reports the leftover space and the tallest bin that fits.
 
 ## Common Bin Sizes
 
