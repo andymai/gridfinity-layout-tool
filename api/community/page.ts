@@ -6,10 +6,17 @@
  * unfurls as the generic site card and opens with the generic tab title — on a
  * surface whose whole purpose is being shared.
  *
- * This is deliberately NOT about search indexing. `robots.txt` disallows
- * `/community/d/` until the showcase graduates from its Labs flag, and that
- * decision stands; social scrapers unfurl regardless of it, and the tab title
- * is for the person who followed the link.
+ * The shell's `#seo-fallback` block is swapped for the design's own content too.
+ * Injecting meta alone left every design page serving the homepage's planner
+ * copy under an `<h1>Gridfinity Planner & Layout Tool</h1>`, so N designs were N
+ * pages of identical text — which is why `/community/d/` was disallowed rather
+ * than indexed. The body has to differ before crawling it is worth allowing.
+ *
+ * Indexing is gated per design by `isIndexable`, not by the route: a design
+ * below the bar still gets its own title, preview and fallback copy (social
+ * scrapers and the person who followed the link want those regardless) but
+ * carries `noindex, follow`, so the crawl budget goes to designs someone has
+ * actually used.
  *
  * The shell is fetched from the deployment's own root rather than bundled: `/`
  * is not rewritten here, so there is no loop, and it keeps the injected page
@@ -81,6 +88,159 @@ export interface DesignMeta {
   readonly authorName: string;
   readonly description: string;
   readonly thumbnailUrl: string;
+  readonly category: string;
+  readonly metrics: {
+    readonly width: number;
+    readonly depth: number;
+    readonly height: number;
+    readonly gridUnitMm: number;
+  };
+  readonly counts: {
+    readonly likes: number;
+    readonly remixes: number;
+    readonly prints: number;
+  };
+  readonly featured: boolean;
+}
+
+/** Height units are a 7mm increment, independent of the 42mm grid unit. */
+const HEIGHT_UNIT_MM = 7;
+
+/**
+ * The default name a layout carries before anyone renames it. These arrive in
+ * bulk and describe nothing, so they never earn an indexable page — the export
+ * that prompted this work already had `/l/AAd0hpIhpNak/untitled-layout` in it.
+ */
+const PLACEHOLDER_NAME = /^untitled\b/i;
+
+/**
+ * Whether a design earns `index, follow`.
+ *
+ * Two independent bars, both required. Complete metadata means the page has
+ * something to say: a real name, a render to show, and real dimensions.
+ * A signal of real use means someone other than the author engaged with it —
+ * exports and views are excluded deliberately, since an author generates those
+ * on their own design just by working on it.
+ */
+export function isIndexable(design: DesignMeta): boolean {
+  const name = design.name.trim();
+  const complete =
+    name !== '' &&
+    !PLACEHOLDER_NAME.test(name) &&
+    design.thumbnailUrl !== '' &&
+    design.metrics.width > 0 &&
+    design.metrics.depth > 0 &&
+    design.metrics.height > 0;
+  const used =
+    design.featured ||
+    design.counts.likes > 0 ||
+    design.counts.prints > 0 ||
+    design.counts.remixes > 0;
+  return complete && used;
+}
+
+/** Grid footprint in whole units, from the millimetre size and the grid pitch. */
+function gridFootprint(metrics: DesignMeta['metrics']): string | null {
+  const { width, depth, height, gridUnitMm } = metrics;
+  if (gridUnitMm <= 0 || width <= 0 || depth <= 0) return null;
+  const w = Math.round(width / gridUnitMm);
+  const d = Math.round(depth / gridUnitMm);
+  if (w < 1 || d < 1) return null;
+  const u = Math.round(height / HEIGHT_UNIT_MM);
+  return u >= 1 ? `${w}×${d} at ${u}U` : `${w}×${d}`;
+}
+
+/**
+ * The design's own crawlable copy, replacing the homepage planner text.
+ *
+ * Written for someone who arrived on this page cold: what the design is, how
+ * big it is in both unit systems, and where to go next. The dimensions are the
+ * part a snippet cannot summarise away.
+ */
+export function renderDesignFallback(design: DesignMeta, url: string): string {
+  const name = escapeAttr(design.name.trim() === '' ? 'Untitled design' : design.name);
+  const author = escapeAttr(design.authorName);
+  const { width, depth, height } = design.metrics;
+  const footprint = gridFootprint(design.metrics);
+  const mm = width > 0 && depth > 0 ? `${width}mm × ${depth}mm × ${height}mm` : null;
+
+  const facts: string[] = [];
+  if (footprint !== null) facts.push(`<li>Grid footprint: ${footprint}</li>`);
+  if (mm !== null) facts.push(`<li>Size: ${mm}</li>`);
+  if (design.category !== '') facts.push(`<li>Category: ${escapeAttr(design.category)}</li>`);
+  if (design.counts.prints > 0) facts.push(`<li>Print reports: ${design.counts.prints}</li>`);
+  if (design.counts.remixes > 0) facts.push(`<li>Remixes: ${design.counts.remixes}</li>`);
+
+  // Mirrors the shell: the block is display:none, and this is what reveals it
+  // when JS is off. Dropping it would hide the fallback from the only visitors
+  // who actually read it.
+  const parts = [
+    '    <noscript><style>#seo-fallback{display:block!important}</style></noscript>',
+    `        <h1>${name}</h1>`,
+  ];
+  parts.push(
+    `        <p>A Gridfinity bin design shared by ${author}, free to remix and print under CC BY 4.0.</p>`
+  );
+  if (design.description.trim() !== '') {
+    parts.push(`        <p>${escapeAttr(truncate(design.description, 600))}</p>`);
+  }
+  if (design.thumbnailUrl !== '') {
+    parts.push(
+      `        <img src="${escapeAttr(design.thumbnailUrl)}" alt="${name}, a Gridfinity bin design by ${author}" width="384" height="384">`
+    );
+  }
+  if (facts.length > 0) {
+    parts.push(
+      '        <h2>Design details</h2>',
+      `        <ul>\n${facts.map((f) => `          ${f}`).join('\n')}\n        </ul>`
+    );
+  }
+  parts.push(
+    '        <p>',
+    `          <a href="${escapeAttr(url)}">Open this design</a> ·`,
+    '          <a href="/community">All community designs</a> ·',
+    '          <a href="/designer">Bin Designer</a> ·',
+    '          <a href="/gridfinity-sizes">Sizes Reference</a> ·',
+    '          <a href="/">Layout Planner</a>',
+    '        </p>'
+  );
+  return `\n${parts.join('\n')}\n      `;
+}
+
+/**
+ * Schema for an indexable design. `CreativeWork` rather than `Product`: there
+ * is no price, no offer and nothing for sale, and claiming otherwise invites a
+ * structured-data penalty rather than a rich result.
+ */
+export function designJsonLd(design: DesignMeta, url: string): string {
+  const graph: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'CreativeWork',
+    '@id': url,
+    url,
+    name: design.name,
+    author: { '@type': 'Person', name: design.authorName },
+    license: 'https://creativecommons.org/licenses/by/4.0/',
+    isAccessibleForFree: true,
+    inLanguage: 'en',
+  };
+  if (design.description.trim() !== '') {
+    graph.description = truncate(design.description, MAX_DESCRIPTION);
+  }
+  if (design.thumbnailUrl !== '') graph.image = design.thumbnailUrl;
+  if (design.category !== '') graph.genre = design.category;
+  if (design.counts.likes > 0) {
+    graph.interactionStatistic = {
+      '@type': 'InteractionCounter',
+      interactionType: 'https://schema.org/LikeAction',
+      userInteractionCount: design.counts.likes,
+    };
+  }
+  // A design name is user text, and inside a <script> block HTML escaping does
+  // not apply — only the literal `</script>` matters, so a name containing one
+  // would close the element and everything after it becomes markup. Escaping
+  // `<` as \u003c is still valid JSON and leaves no way out of the block.
+  return `<script type="application/ld+json">${JSON.stringify(graph).replace(/</g, '\\u003c')}</script>`;
 }
 
 /**
@@ -142,6 +302,36 @@ export function injectDesignMeta(shell: string, design: DesignMeta, siteUrl: str
       `<meta property="${property}" content="${escapeAttr(value)}">`
     );
   }
+
+  const indexable = isIndexable(design);
+  if (!indexable) {
+    html = replaceOne(
+      html,
+      /<meta name="robots" content="[^"]*">/,
+      '<meta name="robots" content="noindex, follow">'
+    );
+  }
+
+  // The fallback carries no nested <div>, so the first close is its own. Guarded
+  // by replaceOne: a shell that grew one should lose the swap, not truncate.
+  // The opening tag is carried over rather than rebuilt so its inline style (the
+  // display:none the shell relies on) survives verbatim. replaceOne replaces via
+  // a function, so `$` in a design name stays literal and capture syntax would
+  // not expand — hence the explicit concatenation.
+  const fallbackOpen = /<div id="seo-fallback"[^>]*>/.exec(html)?.[0];
+  if (fallbackOpen !== undefined) {
+    html = replaceOne(
+      html,
+      /<div id="seo-fallback"[^>]*>[\s\S]*?<\/div>/,
+      `${fallbackOpen}${renderDesignFallback(design, url)}</div>`
+    );
+  }
+
+  // Schema only for pages Google is allowed to keep. Advertising structured
+  // data on a noindex page spends nothing and claims something.
+  if (indexable) {
+    html = replaceOne(html, /<\/head>/, `${designJsonLd(design, url)}</head>`);
+  }
   return html;
 }
 
@@ -159,6 +349,22 @@ async function readDesignMeta(designId: string): Promise<DesignMeta | null> {
     authorName: card.authorName,
     description: record?.description ?? '',
     thumbnailUrl: card.thumbnailUrl,
+    category: card.category,
+    // The stored record is flat; the API's nested `metrics`/`counts` shape is
+    // assembled elsewhere. `prints` is optional in the record for fixture
+    // ergonomics, so it needs the default here.
+    metrics: {
+      width: card.width,
+      depth: card.depth,
+      height: card.height,
+      gridUnitMm: card.gridUnitMm,
+    },
+    counts: {
+      likes: card.likes,
+      remixes: card.remixes,
+      prints: card.prints ?? 0,
+    },
+    featured: card.featured,
   };
 }
 

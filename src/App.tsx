@@ -147,7 +147,7 @@ export default function App() {
   const { isSupportersRoute, navigateToSupporters } = useSupportersRouting();
   // False while the community_showcase flag is off (gated inside the hook),
   // so the /community URL falls through to the layout planner.
-  const { isCommunityRoute } = useCommunityRouting();
+  const { isCommunityRoute, communityDesignIdFromUrl } = useCommunityRouting();
   // Dev-only thumbnail capture route. Suppresses layout/designer routing so
   // those hooks don't rewrite the URL and strip the query params we depend on.
   const isDevThumbnailRoute =
@@ -197,6 +197,12 @@ export default function App() {
   // baseplate) — no early return — so back-navigation restores the homepage
   // meta. Depends on `t` so it re-applies when locale flips mid-session.
   useEffect(() => {
+    // On /community/d/<id> the meta in the document is the design's own, served
+    // by api/community/page.ts. Overwriting it with the gallery's generic title
+    // would give every design page the same title in the rendered DOM, which is
+    // what Google indexes — so the route could not be indexed at all. The server
+    // value is authoritative here; leave it alone.
+    if (communityDesignIdFromUrl !== null) return;
     const titleKey = isDesignerRoute
       ? 'seo.designer.title'
       : isBaseplateRoute
@@ -223,7 +229,14 @@ export default function App() {
     document.querySelector('meta[property="og:description"]')?.setAttribute('content', desc);
     document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', title);
     document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', desc);
-  }, [isDesignerRoute, isBaseplateRoute, isSupportersRoute, isCommunityRoute, t]);
+  }, [
+    isDesignerRoute,
+    isBaseplateRoute,
+    isSupportersRoute,
+    isCommunityRoute,
+    communityDesignIdFromUrl,
+    t,
+  ]);
   const { isMobile, isTablet } = useResponsive();
 
   const { shouldShowDrawTutorial } = useOnboarding();
