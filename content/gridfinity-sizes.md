@@ -123,6 +123,6 @@ Most FDM printers have a 220–256mm bed, which handles bins up to about 5×5 or
 
 Now that you know the sizes, [generate a custom bin](/gridfinity-bin-generator) or open the [layout planner](/) to see how bins fit in your drawer.
 
-New to Gridfinity? [Here's a quick overview](/what-is-gridfinity) of how the system works.
+New to Gridfinity? [How the Gridfinity system works](/what-is-gridfinity) covers bins, baseplates, and the 42mm grid from the beginning.
 
 [CTA: Plan Your Layout](/)
