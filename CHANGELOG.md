@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.391.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.391.0...gridfinity-layout-tool-v4.391.1) (2026-08-09)
+
+
+### Bug Fixes
+
+* **seo:** bring every meta description under the SERP budget ([#3355](https://github.com/andymai/gridfinity-layout-tool/issues/3355)) ([854df86](https://github.com/andymai/gridfinity-layout-tool/commit/854df8603cc809d9d8a0cc7cc9c37fc76b42bba0))
+
 ## [4.391.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.390.0...gridfinity-layout-tool-v4.391.0) (2026-08-09)
 
 
