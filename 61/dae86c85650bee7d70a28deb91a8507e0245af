@@ -1,0 +1,29 @@
+content/gridfinity-calculator.md
+  s_d519c1d1344a2c::t_d6321c4df0ae13 95
+content/gridfinity-generator.md
+  s_d519c1d1344a2c::t_989c7d293c0051 122
+content/what-is-gridfinity.md
+  s_d519c1d1344a2c::t_538a70c8b8efef 4,15,21,24-27,30-33,35,38-39,48-50,52,54,56,60-78,81-103,105,107,109,111-143,147-155,157-165,170-171,173
+content/gridfinity-baseplate-generator.md
+  s_d519c1d1344a2c::t_3b31a949ebfb63 105-106
+content/guide.md
+  s_d519c1d1344a2c::t_09ba3f591141ba 32
+content/gridfinity-sizes.md
+  s_d519c1d1344a2c::t_ae3f14ba1a44e5 126
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "61dae86c85650bee7d70a28deb91a8507e0245af",
+  "prompts": {},
+  "sessions": {
+    "s_d519c1d1344a2c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b41d01c2-0dec-4459-b18b-8bb09c52591d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
