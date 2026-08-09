@@ -24,6 +24,7 @@ import {
   useSharePopoverStore,
 } from '@/core/store';
 import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
+import { trackEvent } from '@/shared/analytics/posthog';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { batch } from '@/core/cqrs';
 import { useMutations } from '@/shared/contexts';
@@ -94,6 +95,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
     zoomOut,
     toggleShowOtherLayers,
     setPrintModalOpen,
+    setLayoutExportOpen,
     setShowLayoutManager,
     setShowBaseplateLibrary,
     showIsometricPreview,
@@ -105,6 +107,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       zoomOut: s.zoomOut,
       toggleShowOtherLayers: s.toggleShowOtherLayers,
       setPrintModalOpen: s.setPrintModalOpen,
+      setLayoutExportOpen: s.setLayoutExportOpen,
       setShowLayoutManager: s.setShowLayoutManager,
       setShowBaseplateLibrary: s.setShowBaseplateLibrary,
       showIsometricPreview: s.showIsometricPreview,
@@ -447,6 +450,10 @@ export function useActionHandlers(): Record<string, ActionHandler> {
     };
 
     const exportActions: Record<string, ActionHandler> = {
+      'export-layout-3d': () => {
+        trackEvent('ui.modalOpen', { modal: 'layoutExport', source: 'commandPalette' });
+        setLayoutExportOpen(true);
+      },
       'download-layout': () => dispatchWindowEvent('download-layout'),
       'copy-share-link': () => {
         useSharePopoverStore.getState().open();
@@ -494,6 +501,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
     setShowLayoutManager,
     setShowBaseplateLibrary,
     setPrintModalOpen,
+    setLayoutExportOpen,
     toggleIsometricPreview,
     togglePreviewExpanded,
     toggleShowOtherLayers,

@@ -4,7 +4,8 @@ import { Header } from '@/shell/Header';
 import { useLayoutStore } from '@/core/store';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useViewStore } from '@/core/store/view';
-import { resetAllStores } from '@/test/testUtils';
+import { resetAllStores, createTestBin, createTestLayout } from '@/test/testUtils';
+import { binId, designId } from '@/core/types';
 import type * as SharedHooks from '@/shared/hooks';
 
 // Mock the LayoutManagerModal to avoid deep component tree
@@ -50,6 +51,24 @@ vi.mock('@/features/print-export/components/PrintModal', () => ({
         }}
       >
         Print Modal
+      </div>
+    ) : null,
+}));
+
+// Mock the LayoutExportDialog — the real one pulls the 3D kernel
+vi.mock('@/shell/layoutExport/LayoutExportDialog', () => ({
+  LayoutExportDialog: ({ open, onClose }: { open: boolean; onClose: () => void }) =>
+    open ? (
+      <div
+        data-testid="layout-export-dialog"
+        role="button"
+        tabIndex={0}
+        onClick={onClose}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') onClose();
+        }}
+      >
+        Layout Export Dialog
       </div>
     ) : null,
 }));
@@ -201,6 +220,63 @@ describe('Header', () => {
       fireEvent.blur(input);
 
       expect(useLayoutStore.getState().layout.name).toBe('Trimmed');
+    });
+  });
+
+  describe('layout export button', () => {
+    const renderWithLinkedBins = (count: number) => {
+      useLayoutStore.setState({
+        layout: createTestLayout({
+          bins: Array.from({ length: count }, (_, i) =>
+            createTestBin({
+              id: binId(`linked-${i}`),
+              linkedDesignId: designId(`design-${i}`),
+            })
+          ),
+        }),
+      });
+      render(<Header {...defaultProps} />);
+    };
+
+    it('renders with a visible label rather than icon-only', () => {
+      renderWithLinkedBins(1);
+
+      expect(screen.getByText('Export')).toBeInTheDocument();
+    });
+
+    it('is enabled when at least one bin is linked to a design', () => {
+      renderWithLinkedBins(1);
+
+      expect(screen.getByLabelText('Export layout (3D)')).toBeEnabled();
+    });
+
+    it('is rendered but disabled when no bins are linked', () => {
+      useLayoutStore.setState({
+        layout: createTestLayout({ bins: [createTestBin({ id: binId('unlinked') })] }),
+      });
+      render(<Header {...defaultProps} />);
+
+      expect(screen.getByLabelText('Export layout (3D)')).toBeDisabled();
+    });
+
+    it('opens the export dialog via the view store', () => {
+      renderWithLinkedBins(1);
+
+      expect(useViewStore.getState().layoutExportOpen).toBe(false);
+      fireEvent.click(screen.getByLabelText('Export layout (3D)'));
+
+      expect(useViewStore.getState().layoutExportOpen).toBe(true);
+    });
+
+    it('does not open the dialog when disabled', () => {
+      useLayoutStore.setState({
+        layout: createTestLayout({ bins: [createTestBin({ id: binId('unlinked') })] }),
+      });
+      render(<Header {...defaultProps} />);
+
+      fireEvent.click(screen.getByLabelText('Export layout (3D)'));
+
+      expect(useViewStore.getState().layoutExportOpen).toBe(false);
     });
   });
 
