@@ -36,7 +36,7 @@ const PrintModal = lazyWithRetry(() =>
   import('@/features/print-export/components/PrintModal').then(namedExport('PrintModal'))
 );
 const LayoutExportDialog = lazyWithRetry(() =>
-  import('../layoutExport/LayoutExportDialog').then(namedExport('LayoutExportDialog'))
+  import('@/shell/layoutExport/LayoutExportDialog').then(namedExport('LayoutExportDialog'))
 );
 // Presence avatars pull the Liveblocks client. Most layouts never enter a
 // collab session, so keep it out of the eager Header bundle — load only when
