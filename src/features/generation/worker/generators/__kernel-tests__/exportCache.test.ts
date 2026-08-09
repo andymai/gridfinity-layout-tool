@@ -15,6 +15,14 @@ const vol = (s: unknown): number => {
   return typeof v === 'number' ? v : unwrap(v as never);
 };
 
+// What this measures: shape-cache reuse WITHIN generateBin, not the production
+// re-export path. `exportBin` short-circuits a repeat export of the same design
+// via `isLastSolidReusableFor(paramsFingerprint(params))` and never re-enters
+// generateBin at all, and whole-layout export emits one file per UNIQUE design.
+// So the work this second pass still does — notably the deferred socket fuse in
+// tessellateStage — is a once-per-design cost in production, not a per-export
+// one. Do not treat the second number here as "what a user waits for on a
+// re-export" (brepkit#1500 read it that way).
 describe('export shell cache', () => {
   it('caches the fused shell; re-export is faster with identical geometry', () => {
     const gen = getGenerateBin();

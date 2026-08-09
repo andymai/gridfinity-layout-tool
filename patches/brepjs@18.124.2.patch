@@ -1,28 +1,8 @@
-diff --git a/dist/blueprintSketcher-BrqUJtEJ.js b/dist/blueprintSketcher-BrqUJtEJ.js
-index feb74c737d2e7afc98368e8490efd6fce22f0e22..57d50307423dd9199dda0ed35926fdcab766b267 100644
---- a/dist/blueprintSketcher-BrqUJtEJ.js
-+++ b/dist/blueprintSketcher-BrqUJtEJ.js
-@@ -540,7 +540,14 @@ function hilbert(x, y) {
- * ```
- */
- var intersectCurves = (first, second, precision = 1e-9) => {
--	if (first.boundingBox.isOut(second.boundingBox)) return ok({
-+	const __bb1 = first.boundingBox;
-+	const __bb2 = second.boundingBox;
-+	const __out = __bb1.isOut(__bb2);
-+	if (first._boundingBox === __bb1) first._boundingBox = null;
-+	if (second._boundingBox === __bb2) second._boundingBox = null;
-+	if (typeof __bb1.delete === "function") __bb1.delete();
-+	if (typeof __bb2.delete === "function") __bb2.delete();
-+	if (__out) return ok({
- 		intersections: [],
- 		commonSegments: [],
- 		commonSegmentsPoints: []
-diff --git a/dist/blueprintSketcher-BwrJrjxs.cjs b/dist/blueprintSketcher-BwrJrjxs.cjs
-index 11652aad4aca001a4196fad0737090f906a67cb5..a1a0d390ecbdd53c152417befb171db3e50cf0e4 100644
---- a/dist/blueprintSketcher-BwrJrjxs.cjs
-+++ b/dist/blueprintSketcher-BwrJrjxs.cjs
-@@ -540,7 +540,14 @@ function hilbert(x, y) {
+diff --git a/dist/blueprintSketcher-4e0yYtCY.cjs b/dist/blueprintSketcher-4e0yYtCY.cjs
+index 6cd976e4109615d4d3b5072656653cf51b8eb4fc..ca29949dfe2b1d95b622fb870f5cf27eadd96a99 100644
+--- a/dist/blueprintSketcher-4e0yYtCY.cjs
++++ b/dist/blueprintSketcher-4e0yYtCY.cjs
+@@ -542,7 +542,14 @@ function hilbert(x, y) {
  * ```
  */
  var intersectCurves = (first, second, precision = 1e-9) => {
@@ -35,6 +15,26 @@ index 11652aad4aca001a4196fad0737090f906a67cb5..a1a0d390ecbdd53c152417befb171db3
 +	if (typeof __bb1.delete === "function") __bb1.delete();
 +	if (typeof __bb2.delete === "function") __bb2.delete();
 +	if (__out) return require_errors.ok({
+ 		intersections: [],
+ 		commonSegments: [],
+ 		commonSegmentsPoints: []
+diff --git a/dist/blueprintSketcher-BjBjj2cK.js b/dist/blueprintSketcher-BjBjj2cK.js
+index fd3422fe25f688d89f05d315614591f34c1e71c4..734eee024d475097d8a48776edaf2f876c55cf2d 100644
+--- a/dist/blueprintSketcher-BjBjj2cK.js
++++ b/dist/blueprintSketcher-BjBjj2cK.js
+@@ -542,7 +542,14 @@ function hilbert(x, y) {
+ * ```
+ */
+ var intersectCurves = (first, second, precision = 1e-9) => {
+-	if (first.boundingBox.isOut(second.boundingBox)) return ok({
++	const __bb1 = first.boundingBox;
++	const __bb2 = second.boundingBox;
++	const __out = __bb1.isOut(__bb2);
++	if (first._boundingBox === __bb1) first._boundingBox = null;
++	if (second._boundingBox === __bb2) second._boundingBox = null;
++	if (typeof __bb1.delete === "function") __bb1.delete();
++	if (typeof __bb2.delete === "function") __bb2.delete();
++	if (__out) return ok({
  		intersections: [],
  		commonSegments: [],
  		commonSegmentsPoints: []
