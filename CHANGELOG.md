@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.393.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.392.2...gridfinity-layout-tool-v4.393.0) (2026-08-09)
+
+
+### Features
+
+* **seo:** give community design pages their own crawlable content ([#3367](https://github.com/andymai/gridfinity-layout-tool/issues/3367)) ([f062b33](https://github.com/andymai/gridfinity-layout-tool/commit/f062b3397155587fab93e282fb04045f6015b5a2))
+
 ## [4.392.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.392.1...gridfinity-layout-tool-v4.392.2) (2026-08-09)
 
 
