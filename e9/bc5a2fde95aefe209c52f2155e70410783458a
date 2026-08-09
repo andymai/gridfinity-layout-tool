@@ -1,0 +1,22 @@
+content/how-this-was-built.md
+  s_da4825d19b1bd1::t_fe688f5102adaf 26-39
+  s_da4825d19b1bd1::t_17476b50f5ef68 91,93,95,97,99
+  s_da4825d19b1bd1::t_6a995b466008e6 16,18,20,22,24,41,43,45,47,49,51,53,55,57,65,70,73-74,77-87,89,101,103,105,107,109,111,113,115,117,119,121,123,125,127,129,131,133,135,137,151,153,155-167,173,175,177,179,181,183
+  s_da4825d19b1bd1::t_b5f1453696ca6a 139,141,143,145,147,149
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "e9bc5a2fde95aefe209c52f2155e70410783458a",
+  "prompts": {},
+  "sessions": {
+    "s_da4825d19b1bd1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5a433b04-17bf-4cf2-9176-674a13494983",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
