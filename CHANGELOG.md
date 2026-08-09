@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.391.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.391.1...gridfinity-layout-tool-v4.391.2) (2026-08-09)
+
+
+### Bug Fixes
+
+* **seo:** bring every page title under the SERP pixel budget ([#3358](https://github.com/andymai/gridfinity-layout-tool/issues/3358)) ([24ee5ad](https://github.com/andymai/gridfinity-layout-tool/commit/24ee5ad56543f14c6d1b5d0b13fa90aa175c513b))
+
 ## [4.391.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.391.0...gridfinity-layout-tool-v4.391.1) (2026-08-09)
 
 
