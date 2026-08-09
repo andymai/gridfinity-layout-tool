@@ -194,7 +194,7 @@ export function STLSearchDropdown({
           fullWidth
           type="button"
           onClick={handleClick}
-          className={`justify-start px-4 py-3 gap-3 rounded-none text-content hover:bg-surface-hover ${className}`}
+          className={`flex justify-start px-4 py-3 gap-3 rounded-none text-content hover:bg-surface-hover ${className}`}
           aria-label={t('stlSearch.searchFor', {
             width: formatDimension(width),
             depth: formatDimension(depth),
