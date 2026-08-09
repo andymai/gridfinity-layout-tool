@@ -248,7 +248,7 @@ The generator wins for generic bins (you need a 2x3 with a scoop), exact sizes (
 
 ### Workshop and tool drawers
 
-The most common use of the Gridfinity Generator is organizing tool drawers in a workshop or garage. Wrenches go in long thin bins with scoop ramps; sockets in compartmented bins with circular floor inserts sized to the socket diameter; small parts (screws, washers, O-rings) in 1x1 or 1x2 bins with magnet bases so a closing drawer doesn't fling them around. Label tabs along the back of each bin make tool inventory glanceable, which matters when the drawer is at knee height.
+The most common use of the Gridfinity Generator is organizing tool drawers in a workshop or garage. Wrenches go in long thin bins with scoop ramps; sockets in compartmented bins with circular floor inserts sized to the socket diameter; small parts (screws, washers, O-rings) in 1x1 or 1x2 bins with magnet bases so a closing drawer doesn't fling them around. Label tabs along the back of each bin make tool inventory glanceable, which matters when the drawer is at knee height. The [tool drawer walkthrough](/gridfinity-tool-drawer) takes one from measurement to print list.
 
 ### Electronics workbench
 
@@ -256,7 +256,7 @@ For an electronics bench, the generator handles the stuff that doesn't fit anywh
 
 ### Kitchen drawers
 
-Kitchen-drawer Gridfinity has become a thing in the last year. The generator's per-side wall cutouts are useful for utensil drawers (a U-cutout lets a long wooden spoon stick out one end), and the half-bin mode covers awkward drawer widths. PETG is the recommended material for kitchen use because of its higher temperature tolerance.
+Kitchen-drawer Gridfinity has become a thing in the last year. The generator's per-side wall cutouts are useful for utensil drawers (a U-cutout lets a long wooden spoon stick out one end), and the half-bin mode covers awkward drawer widths. PETG is the recommended material for kitchen use because of its higher temperature tolerance. There is a [kitchen drawer walkthrough](/gridfinity-kitchen-drawer) covering utensils, spices and the cutlery tray.
 
 ### Hobby and craft supplies
 
