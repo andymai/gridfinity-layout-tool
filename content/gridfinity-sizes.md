@@ -1,6 +1,6 @@
 ---
-title: Gridfinity Sizes & Dimensions — 42mm Grid + 7mm Heights
-description: Every Gridfinity dimension in one place — the 42mm grid, 7mm height units, and full bin-size tables in mm and inches, plus how to convert your drawer measurements into grid units. Free quick reference.
+title: 'Gridfinity Sizes & Dimensions: Full Tables in mm and Inches'
+description: Every Gridfinity bin and baseplate dimension in one table, in millimeters and inches, plus a converter that turns drawer measurements into grid units.
 keywords: gridfinity sizes, gridfinity dimensions, gridfinity bin sizes, gridfinity height units, gridfinity 42mm, gridfinity grid size, standard gridfinity size, why is gridfinity 42mm
 schema: Article
 breadcrumbs:
@@ -25,7 +25,7 @@ faqs:
 
 # Gridfinity Sizes & Dimensions
 
-**Standard Gridfinity sizes: one grid unit is 42mm × 42mm (width and depth), and one height unit (1U) is 7mm.** Every bin and baseplate is a multiple of these two numbers — a 2×3 bin at 6U measures 84mm × 126mm × 42mm. Half-bin mode adds 0.5-unit (21mm) steps. Once you know these two numbers, you can work out what fits in your drawer and which bins to print.
+**One Gridfinity grid unit is 42mm × 42mm (width and depth), and one height unit (1U) is 7mm.** Full size tables for every bin and baseplate, in millimeters and inches, are below. Every size is a multiple of those two numbers: a 2×3 bin at 6U measures 84mm × 126mm × 42mm. Half-bin mode adds 0.5-unit (21mm) steps, and the drawer converter turns your own measurements into grid units.
 
 ## Grid Units (Width & Depth)
 

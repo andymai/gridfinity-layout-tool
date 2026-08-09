@@ -593,6 +593,18 @@ async function main(): Promise<void> {
         // backdrop, so the silhouette dissolves at thumbnail scale.
         zoomSteps: 9,
       });
+      // A distinct subject per page: repeating one render across the SERP
+      // teaches Google nothing about which page it belongs to.
+      await captureSerpThumbnail(browser, {
+        outFile: resolve(SERP_OUT, 'gridfinity-sizes.png'),
+        query: `example=hero-honeycomb-caddy&body=${encodeURIComponent('#e0552e')}`,
+        zoomSteps: 9,
+      });
+      await captureSerpThumbnail(browser, {
+        outFile: resolve(SERP_OUT, 'what-is-gridfinity.png'),
+        query: `example=hero-handled-tote&body=${encodeURIComponent('#2e6fd4')}`,
+        zoomSteps: 9,
+      });
     }
     if (want('baseplate')) {
       await captureBaseplate(browser, resolve(LANDING_OUT, 'baseplate-preview.png'));
