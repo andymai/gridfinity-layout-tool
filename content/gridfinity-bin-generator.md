@@ -125,6 +125,6 @@ It also exports STEP and 3MF — not just STL — and works on your phone if you
 
 ## Next Steps
 
-New to Gridfinity? Read [What is Gridfinity?](/what-is-gridfinity) for the basics. Already know what you need? Check the [sizes reference](/gridfinity-sizes) to figure out your dimensions, or jump into the [planning guide](/guide) to lay out a whole drawer. For one planned end to end, see the [tool drawer](/gridfinity-tool-drawer) and [kitchen drawer](/gridfinity-kitchen-drawer) walkthroughs.
+New to Gridfinity? Read [What is Gridfinity?](/what-is-gridfinity) for the basics. Already know what you need? Check the [sizes reference](/gridfinity-sizes) to figure out your dimensions, or jump into the [planning guide](/guide) to lay out a whole drawer. For a drawer planned end-to-end, see the [tool drawer](/gridfinity-tool-drawer) and [kitchen drawer](/gridfinity-kitchen-drawer) walkthroughs.
 
 [CTA: Start Making a Bin](/designer)

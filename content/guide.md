@@ -143,7 +143,7 @@ Your tallest bin plus baseplate (about 5mm) needs to fit when the drawer closes.
 
 ## Worked Examples
 
-Two drawers planned end to end, if you would rather follow one than start from a blank grid: a [tool drawer](/gridfinity-tool-drawer) for wrenches, bits and pliers, and a [kitchen drawer](/gridfinity-kitchen-drawer) for utensils and spices.
+Two drawers planned end-to-end, if you would rather follow one than start from a blank grid: a [tool drawer](/gridfinity-tool-drawer) for wrenches, bits and pliers, and a [kitchen drawer](/gridfinity-kitchen-drawer) for utensils and spices.
 
 ![Gridfinity layout planner showing a fully planned tool drawer with labeled, color-coded bins](/images/landing/tool-drawer-layout.png '1200x675')
 [CTA: Open the Layout Tool](/)
