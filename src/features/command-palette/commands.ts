@@ -340,6 +340,12 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     keywords: ['auto', 'complete'],
   },
   {
+    id: 'export-layout-3d',
+    labelKey: 'commandPalette.exportLayout3D',
+    category: 'export',
+    keywords: ['zip', '3d', 'stl', 'step', 'model', 'print', 'download'],
+  },
+  {
     id: 'download-layout',
     labelKey: 'commandPalette.downloadLayout',
     category: 'export',

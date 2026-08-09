@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, Suspense } from 'react';
+import { useState, useRef, useEffect, useMemo, Suspense } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore, useViewStore } from '@/core/store';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
@@ -6,12 +6,14 @@ import { useMutations } from '@/shared/contexts';
 import { useResponsive } from '@/shared/hooks';
 import { useCollabMode } from '@/shared/hooks/useCollabMode';
 import { CONSTRAINTS, DEFAULT_LAYOUT_NAME } from '@/core/constants';
-import { activePress, Button, IconButton } from '@/design-system';
+import { activePress, Button, IconButton, Tooltip } from '@/design-system';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { ShareButton } from '@/features/cloud-share/components/ShareButton';
 import { ShareModal } from '@/features/cloud-share/components/ShareModal';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { LayoutQuickSwitch } from '@/features/layout-library';
+import { getLinkedBins } from '@/features/design-linking';
+import { trackEvent } from '@/shared/analytics/posthog';
 import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
@@ -32,6 +34,9 @@ const BaseplateLibraryModal = lazyWithRetry(() =>
 );
 const PrintModal = lazyWithRetry(() =>
   import('@/features/print-export/components/PrintModal').then(namedExport('PrintModal'))
+);
+const LayoutExportDialog = lazyWithRetry(() =>
+  import('@/shell/layoutExport/LayoutExportDialog').then(namedExport('LayoutExportDialog'))
 );
 // Presence avatars pull the Liveblocks client. Most layouts never enter a
 // collab session, so keep it out of the eager Header bundle — load only when
@@ -64,6 +69,8 @@ export function Header({ saveStatus }: HeaderProps) {
   const {
     printModalOpen,
     setPrintModalOpen,
+    layoutExportOpen,
+    setLayoutExportOpen,
     showLayoutManager,
     setShowLayoutManager,
     showBaseplateLibrary,
@@ -72,12 +79,18 @@ export function Header({ saveStatus }: HeaderProps) {
     useShallow((state) => ({
       printModalOpen: state.printModalOpen,
       setPrintModalOpen: state.setPrintModalOpen,
+      layoutExportOpen: state.layoutExportOpen,
+      setLayoutExportOpen: state.setLayoutExportOpen,
       showLayoutManager: state.showLayoutManager,
       setShowLayoutManager: state.setShowLayoutManager,
       showBaseplateLibrary: state.showBaseplateLibrary,
       setShowBaseplateLibrary: state.setShowBaseplateLibrary,
     }))
   );
+
+  // Only bins linked to a saved design have printable geometry, so the 3D
+  // export stays disabled (rather than hidden) until at least one exists.
+  const canExportLayout = useMemo(() => getLinkedBins(layout.bins).length > 0, [layout.bins]);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(layout.name);
@@ -173,6 +186,39 @@ export function Header({ saveStatus }: HeaderProps) {
         >
           {!isTablet && <span className="hidden sm:inline">{t('header.print')}</span>}
         </Button>
+
+        {/* Export Button — label stays visible at every width because the
+            tooltip that would otherwise explain it is suppressed on touch. */}
+        <Tooltip
+          content={canExportLayout ? t('layoutExport.button') : t('layoutExport.noLinkedBins')}
+        >
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={!canExportLayout}
+            onClick={() => {
+              trackEvent('ui.modalOpen', { modal: 'layoutExport', source: 'header' });
+              setLayoutExportOpen(true);
+            }}
+            className={`px-2 h-8 text-sm gap-1.5 ${activePress} text-content-secondary`}
+            aria-label={t('layoutExport.button')}
+            leftIcon={
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                {ICON_PATHS.download.map((d) => (
+                  <path
+                    key={d}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d={d}
+                  />
+                ))}
+              </svg>
+            }
+          >
+            <span>{t('header.export')}</span>
+          </Button>
+        </Tooltip>
       </div>
 
       <div className="flex items-center gap-1 flex-shrink-0">
@@ -316,6 +362,12 @@ export function Header({ saveStatus }: HeaderProps) {
       <Suspense fallback={null}>
         <PrintModal isOpen={printModalOpen} onClose={() => setPrintModalOpen(false)} />
       </Suspense>
+
+      {layoutExportOpen && (
+        <Suspense fallback={<LoadingFallback variant="overlay" />}>
+          <LayoutExportDialog open={layoutExportOpen} onClose={() => setLayoutExportOpen(false)} />
+        </Suspense>
+      )}
     </header>
   );
 }

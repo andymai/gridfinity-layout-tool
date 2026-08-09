@@ -138,6 +138,7 @@ const en: Record<string, string> = {
   'header.manageLayouts': 'Manage layouts',
   'header.print': 'Print',
   'header.printLayout': 'Print layout',
+  'header.export': 'Export',
   'header.saving': 'Saving...',
   'header.saved': 'Saved',
   'header.saveFailed': 'Save failed',
@@ -3273,6 +3274,7 @@ const en: Record<string, string> = {
   'commandPalette.fillGaps': 'Fill Layer Gaps',
 
   // Export commands
+  'commandPalette.exportLayout3D': 'Export Layout as ZIP (3D)',
   'commandPalette.downloadLayout': 'Download Layout',
   'commandPalette.copyShareLink': 'Copy Share Link',
 

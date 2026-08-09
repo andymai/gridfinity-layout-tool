@@ -4,7 +4,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { RightPanel } from '@/shell/RightPanel';
 import { useLayoutStore, useViewStore, useSettingsStore } from '@/core/store';
 import type { EnhancedPrintRow } from '@/core/types';
-import { binId, categoryId, gridUnits, heightUnits } from '@/core/types';
+import { binId, categoryId, designId, gridUnits, heightUnits } from '@/core/types';
 import { resetAllStores, createTestBin, createTestLayout } from '@/test/testUtils';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector';
 import type { UsePrintListReturn } from '@/features/print-export/hooks/usePrintList';
@@ -573,6 +573,60 @@ describe('RightPanel', () => {
       expect(svg).toHaveClass('text-success');
 
       vi.useRealTimers();
+    });
+  });
+
+  describe('print list - layout export shortcut', () => {
+    const linkedLayout = createTestLayout({
+      categories: mockLayout.categories,
+      bins: [createTestBin({ id: binId('bin1'), linkedDesignId: designId('design1') })],
+    });
+
+    beforeEach(() => {
+      mockPrintListReturn = createMockPrintList({
+        rows: [
+          {
+            size: '2×2',
+            height: heightUnits(3),
+            binCount: 1,
+            binIds: [binId('bin1')],
+            labels: [],
+            notes: '',
+            needsSplit: false,
+            pieces: [],
+            totalPieces: 1,
+            filament: 0.8,
+            categoryIds: [categoryId('coral')],
+            area: 4,
+            costEstimate: 0.06,
+            spoolPercentage: 0.2,
+          },
+        ],
+        totalBins: 1,
+      });
+    });
+
+    it('hides the shortcut when no bins are linked to a design', () => {
+      render(<RightPanel />);
+
+      expect(screen.queryByLabelText('Export layout (3D)')).not.toBeInTheDocument();
+    });
+
+    it('shows the shortcut when a bin is linked to a design', () => {
+      mockUseBinInspector.mockReturnValue(createMockInspector({ layout: linkedLayout }));
+      render(<RightPanel />);
+
+      expect(screen.getByLabelText('Export layout (3D)')).toBeInTheDocument();
+    });
+
+    it('opens the export dialog through the view store', () => {
+      mockUseBinInspector.mockReturnValue(createMockInspector({ layout: linkedLayout }));
+      render(<RightPanel />);
+
+      expect(useViewStore.getState().layoutExportOpen).toBe(false);
+      fireEvent.click(screen.getByLabelText('Export layout (3D)'));
+
+      expect(useViewStore.getState().layoutExportOpen).toBe(true);
     });
   });
 

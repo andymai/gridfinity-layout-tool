@@ -31,10 +31,6 @@ const SnapshotHistory = lazyWithRetry(() =>
   import('@/features/snapshots').then(namedExport('SnapshotHistory'))
 );
 
-const LayoutExportDialog = lazyWithRetry(() =>
-  import('../layoutExport/LayoutExportDialog').then(namedExport('LayoutExportDialog'))
-);
-
 type RightPanelTab = 'inspector' | 'history';
 
 export function RightPanel() {
@@ -42,7 +38,6 @@ export function RightPanel() {
   const [activeTab, setActiveTab] = useState<RightPanelTab>('inspector');
   const [printListExpanded, setPrintListExpanded] = useState(true);
   const [copyFeedback, setCopyFeedback] = useState(false);
-  const [layoutExportOpen, setLayoutExportOpen] = useState(false);
   const [expandedSplitRow, setExpandedSplitRow] = useState<number | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -53,10 +48,11 @@ export function RightPanel() {
     }
   }, []);
 
-  const { collapsed, toggle } = useViewStore(
+  const { collapsed, toggle, setLayoutExportOpen } = useViewStore(
     useShallow((state) => ({
       collapsed: state.rightPanelCollapsed,
       toggle: state.toggleRightPanel,
+      setLayoutExportOpen: state.setLayoutExportOpen,
     }))
   );
 
@@ -306,7 +302,13 @@ export function RightPanel() {
                         <IconButton
                           size="sm"
                           touchTarget={false}
-                          onClick={() => setLayoutExportOpen(true)}
+                          onClick={() => {
+                            trackEvent('ui.modalOpen', {
+                              modal: 'layoutExport',
+                              source: 'binList',
+                            });
+                            setLayoutExportOpen(true);
+                          }}
                           title={t('layoutExport.button')}
                           aria-label={t('layoutExport.button')}
                         >
@@ -644,12 +646,6 @@ export function RightPanel() {
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
       />
-
-      {layoutExportOpen && (
-        <Suspense fallback={null}>
-          <LayoutExportDialog open={layoutExportOpen} onClose={() => setLayoutExportOpen(false)} />
-        </Suspense>
-      )}
     </aside>
   );
 }
