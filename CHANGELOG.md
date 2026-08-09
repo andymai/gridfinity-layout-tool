@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.392.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.391.2...gridfinity-layout-tool-v4.392.0) (2026-08-09)
+
+
+### Features
+
+* **shell:** surface layout ZIP export as a header button ([#3361](https://github.com/andymai/gridfinity-layout-tool/issues/3361)) ([498ef19](https://github.com/andymai/gridfinity-layout-tool/commit/498ef19795dfa046f01527e7129af0de81198ee3))
+
 ## [4.391.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.391.1...gridfinity-layout-tool-v4.391.2) (2026-08-09)
 
 
