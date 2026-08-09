@@ -1,6 +1,6 @@
 ---
 title: Gridfinity-maten — Bin-afmetingen en eenheden-gids
-description: Alle maten voor Gridfinity-bins en bodemplaten: tabellen met rastereenheden en hoogtes, gangbare formaten en het omrekenen van je lade.
+description: 'Alle maten voor Gridfinity-bins en bodemplaten: tabellen met rastereenheden en hoogtes, gangbare formaten en het omrekenen van je lade.'
 keywords: gridfinity maten, gridfinity afmetingen, gridfinity bin maten, gridfinity hoogte-eenheden, gridfinity 42mm, gridfinity raster
 schema: Article
 breadcrumbs:

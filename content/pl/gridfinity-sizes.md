@@ -1,6 +1,6 @@
 ---
 title: 'Rozmiary Gridfinity: tabele wymiarów Binów i płyt bazowych'
-description: Wszystkie wymiary Binów i płyt bazowych Gridfinity: tabele jednostek siatki i wysokości, popularne rozmiary oraz przeliczanie szuflady.
+description: 'Wszystkie wymiary Binów i płyt bazowych Gridfinity: tabele jednostek siatki i wysokości, popularne rozmiary oraz przeliczanie szuflady.'
 keywords: rozmiary gridfinity, wymiary gridfinity, rozmiary binów gridfinity, jednostki wysokości gridfinity, gridfinity 42mm, rozmiar siatki gridfinity, standardowy rozmiar gridfinity, dlaczego gridfinity ma 42mm
 schema: Article
 breadcrumbs:

@@ -1,6 +1,6 @@
 ---
 title: Gridfinity-storlekar — Bin-mått och enhetsguide
-description: Alla mått för Gridfinity-bins och bottenplattor: tabeller för rutnätsenheter och höjder, vanliga storlekar och omräkning av din låda.
+description: 'Alla mått för Gridfinity-bins och bottenplattor: tabeller för rutnätsenheter och höjder, vanliga storlekar och omräkning av din låda.'
 keywords: gridfinity storlekar, gridfinity mått, gridfinity bin-storlekar, gridfinity höjdenheter, gridfinity 42mm, gridfinity rutnät
 schema: Article
 breadcrumbs:
