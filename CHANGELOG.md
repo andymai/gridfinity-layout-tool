@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.393.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.393.0...gridfinity-layout-tool-v4.393.1) (2026-08-09)
+
+
+### Bug Fixes
+
+* **seo:** link the two worked-drawer pages from where readers already are ([#3369](https://github.com/andymai/gridfinity-layout-tool/issues/3369)) ([a50424d](https://github.com/andymai/gridfinity-layout-tool/commit/a50424dd84b79b49d5c92f6f5121ed46d59a3b14))
+
 ## [4.393.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.392.2...gridfinity-layout-tool-v4.393.0) (2026-08-09)
 
 
