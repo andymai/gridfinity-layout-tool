@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.393.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.393.1...gridfinity-layout-tool-v4.393.2) (2026-08-09)
+
+
+### Bug Fixes
+
+* **seo:** stop the locale reference pages answering in the SERP ([#3370](https://github.com/andymai/gridfinity-layout-tool/issues/3370)) ([72a432f](https://github.com/andymai/gridfinity-layout-tool/commit/72a432f1376e9296a034a00864d54fc41c9789a3))
+
 ## [4.393.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.393.0...gridfinity-layout-tool-v4.393.1) (2026-08-09)
 
 
