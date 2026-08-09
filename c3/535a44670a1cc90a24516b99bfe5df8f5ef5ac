@@ -1,0 +1,19 @@
+content/how-this-was-built.md
+  s_da4825d19b1bd1::t_829e111a711a69 18,20,39,43,45,47,51,53,73,79,81,83,87,89,91,101,105,107,111,115,117,121,123,125,127,129,131,133,135,137,139,141,147,149,151,153,159,161,167
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "c3535a44670a1cc90a24516b99bfe5df8f5ef5ac",
+  "prompts": {},
+  "sessions": {
+    "s_da4825d19b1bd1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5a433b04-17bf-4cf2-9176-674a13494983",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
