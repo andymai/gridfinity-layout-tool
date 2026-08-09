@@ -1,0 +1,21 @@
+scripts/build-content.ts
+  s_da4825d19b1bd1::t_8e350066a56485 976
+README.md
+  s_da4825d19b1bd1::t_2b44230d4e70a7 15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "dc3c942224ca7510e0a53c2046e7080df54a0391",
+  "prompts": {},
+  "sessions": {
+    "s_da4825d19b1bd1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5a433b04-17bf-4cf2-9176-674a13494983",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
