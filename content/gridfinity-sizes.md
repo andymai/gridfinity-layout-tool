@@ -25,7 +25,9 @@ faqs:
 
 # Gridfinity Sizes & Dimensions
 
-**One Gridfinity grid unit is 42mm × 42mm (width and depth), and one height unit (1U) is 7mm.** Full size tables for every bin and baseplate, in millimeters and inches, are below. Every size is a multiple of those two numbers: a 2×3 bin at 6U measures 84mm × 126mm × 42mm. Half-bin mode adds 0.5-unit (21mm) steps, and the drawer converter turns your own measurements into grid units.
+Every Gridfinity bin and baseplate size, tabulated in millimeters and inches, with a converter that turns your own drawer measurements into grid units. Look up a size in the tables below, or measure the drawer and let the converter work out the grid that fits.
+
+**One Gridfinity grid unit is 42mm × 42mm (width and depth), and one height unit (1U) is 7mm.** Every size on this page is a multiple of those two numbers: a 2×3 bin at 6U measures 84mm × 126mm × 42mm. Half-bin mode adds 0.5-unit (21mm) steps.
 
 ## Grid Units (Width & Depth)
 
