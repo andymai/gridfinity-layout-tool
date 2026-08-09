@@ -1,0 +1,41 @@
+content/de/what-is-gridfinity.md
+  s_8ef36982a73345::t_0bac98d10d1188 3,34
+  s_8ef36982a73345::t_c7c45261506b08 35
+content/pl/what-is-gridfinity.md
+  s_8ef36982a73345::t_0bac98d10d1188 3,34
+  s_8ef36982a73345::t_2c14a4acbbc25a 35
+content/nl/what-is-gridfinity.md
+  s_8ef36982a73345::t_0bac98d10d1188 3,34
+  s_8ef36982a73345::t_664d3b56c4cfca 35
+content/de/gridfinity-sizes.md
+  s_8ef36982a73345::t_0bac98d10d1188 3,24
+  s_8ef36982a73345::t_26f0f880865431 25
+content/sv/gridfinity-sizes.md
+  s_8ef36982a73345::t_0bac98d10d1188 3,24
+  s_8ef36982a73345::t_15170fff020af4 25
+content/sv/what-is-gridfinity.md
+  s_8ef36982a73345::t_0bac98d10d1188 3,34
+  s_8ef36982a73345::t_4d6977671873dd 35
+content/pl/gridfinity-sizes.md
+  s_8ef36982a73345::t_0bac98d10d1188 2-3,28
+  s_8ef36982a73345::t_d54910121c1283 29
+content/nl/gridfinity-sizes.md
+  s_8ef36982a73345::t_0bac98d10d1188 3,24
+  s_8ef36982a73345::t_72a61e02fb2b71 25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "74b6f292421df670fad0cab076af01e68d893995",
+  "prompts": {},
+  "sessions": {
+    "s_8ef36982a73345": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dd9e847a-d93b-482a-8001-e5ffffb86c18",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
