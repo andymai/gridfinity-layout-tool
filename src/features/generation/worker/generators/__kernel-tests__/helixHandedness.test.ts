@@ -5,9 +5,11 @@
  *
  * The two cases here fail for OPPOSITE reasons — read the one that broke:
  *
- *   1. Tripwire. `makeHelixWire` takes no handedness input, so sketchHelix's
- *      left-handed flag is a NO-OP: both flags give the same right-handed
- *      sweep. A FAILURE means upstream gained handedness.
+ *   1. Tripwire, occt-wasm only. `makeHelixWire` takes no handedness input, so
+ *      sketchHelix's left-handed flag is a NO-OP there: both flags give the same
+ *      right-handed sweep. A FAILURE means occt-wasm gained handedness.
+ *      brepkit already honours the flag, so under any other kernel the case
+ *      asserts the opposite (divergence) — see occt-wasm#268.
  *
  *   2. Regression guard. `mirror` on a helical sweep used to yield an empty
  *      solid; as of brepjs 18.119.2 it yields a true reflection, so a mirrored
@@ -22,7 +24,7 @@
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { sketchHelix, drawRoundedRectangle, mesh, mirror, measureVolume, unwrap } from 'brepjs';
-import { initBrepjs } from './wasmInit';
+import { initBrepjs, getKernelName } from './wasmInit';
 
 beforeAll(async () => {
   await initBrepjs();
@@ -61,10 +63,23 @@ function sweepAndMeasure(lefthand: boolean, mirrored = false): SweepFootprint {
 }
 
 describe('helix handedness tripwire', () => {
-  it('left-handed flag is still a no-op (else retire the kumiko chord-box workaround)', () => {
+  it('left-handed flag is still a no-op on occt-wasm (brepkit honours it)', () => {
     const right = sweepAndMeasure(false);
     const left = sweepAndMeasure(true);
     expect(right.vol).toBeGreaterThan(0);
+
+    // brepkit implements handedness, so the flag diverges there by design
+    // (occt-wasm#268 asks occt to honour it or reject it rather than drop it
+    // silently). Asserting occt's no-op under every kernel made a capability
+    // difference read as a brepkit failure.
+    if (getKernelName() !== 'occt-wasm') {
+      expect(
+        Math.abs(left.phiMin - right.phiMin),
+        `${getKernelName()} should honour the left-handed flag`
+      ).toBeGreaterThan(0.1);
+      return;
+    }
+
     expect(
       left.phiMin,
       'left-handed sketchHelix now diverges from right-handed — occt-wasm gained handedness; retire the chord-box approximation in kumikoWrapBuilder'
