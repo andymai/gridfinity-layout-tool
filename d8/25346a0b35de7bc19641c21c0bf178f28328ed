@@ -1,0 +1,21 @@
+content/gridfinity-sizes.md
+  s_8ef36982a73345::t_de87dc0809c367 95-96
+  s_8ef36982a73345::t_5567d8c31f5211 28
+  s_8ef36982a73345::t_ab2c2326e137df 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "d825346a0b35de7bc19641c21c0bf178f28328ed",
+  "prompts": {},
+  "sessions": {
+    "s_8ef36982a73345": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dd9e847a-d93b-482a-8001-e5ffffb86c18",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
