@@ -1,0 +1,64 @@
+src/features/bin-designer/components/DevThumbnailRoute/recolorBody.ts
+  s_d519c1d1344a2c::t_fff77d7e37fbb4 1-41
+src/features/bin-designer/utils/thumbnail.ts
+  s_d519c1d1344a2c::t_378979000b24c1 223-227
+  s_d519c1d1344a2c::t_cf4a136783ff26 207-222,228-230
+scripts/serpTitle.ts
+  s_d519c1d1344a2c::t_b07049a541db72 1-4,9,11-39,41-57,59-74,77-81
+  s_d519c1d1344a2c::t_7247f6667211a1 5-8,10,40,58,75-76
+src/global.d.ts
+  s_d519c1d1344a2c::t_581a80c7483364 20
+src/features/bin-designer/utils/thumbnail.test.ts
+  s_d519c1d1344a2c::t_c85541c6f96691 3-12,22
+  s_d519c1d1344a2c::t_f5794f4007eecb 388-446
+scripts/gen-seo-images.ts
+  s_d519c1d1344a2c::t_ba1c69e7b1ec52 284-286,292
+  s_d519c1d1344a2c::t_e56d5048504582 261-283,287-291,293-329
+  s_d519c1d1344a2c::t_eb9286e644b084 591-593
+  s_d519c1d1344a2c::t_fe51398fa96c10 587-589,594-596
+  s_d519c1d1344a2c::t_f57b742c850479 553
+  s_d519c1d1344a2c::t_9608cb6c4bee25 590
+  s_d519c1d1344a2c::t_5380344da136b5 26,30-33
+content/gridfinity-generator.md
+  s_d519c1d1344a2c::t_158938c0c96b07 114
+  s_d519c1d1344a2c::t_2eeb9954daf09d 3
+scripts/build-content.ts
+  s_d519c1d1344a2c::t_5b642912a3d0f6 703
+  s_d519c1d1344a2c::t_83731e55e61d41 563-582
+  s_d519c1d1344a2c::t_4084ed0fa0ee46 447
+  s_d519c1d1344a2c::t_2a8410752d081f 468
+  s_d519c1d1344a2c::t_a82aef6ec59cd4 678
+  s_d519c1d1344a2c::t_fd2a2161ebaf63 478
+  s_d519c1d1344a2c::t_864db3c1826844 34-39
+  s_d519c1d1344a2c::t_69e395a97b9aa4 14
+  s_d519c1d1344a2c::t_9c98d18c1f0ae0 694
+  s_d519c1d1344a2c::t_48a63be9c957ac 369-378
+  s_d519c1d1344a2c::t_e80bd202aa3c9a 42-45
+  s_d519c1d1344a2c::t_81b87b22780f4b 482-484,486
+src/features/bin-designer/components/DevThumbnailRoute/recolorBody.test.ts
+  s_d519c1d1344a2c::t_3f08a72ef76127 1-64
+src/features/bin-designer/components/DevThumbnailRoute/DevThumbnailRoute.tsx
+  s_d519c1d1344a2c::t_76fafde66d9f44 23
+  s_d519c1d1344a2c::t_b534d967d4638a 47,50
+  s_d519c1d1344a2c::t_7584919ad0480f 18
+  s_d519c1d1344a2c::t_785431c07724bd 111
+  s_d519c1d1344a2c::t_46dd58945c3525 43
+scripts/serpTitle.test.ts
+  s_d519c1d1344a2c::t_fa579277a964a0 1-55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "138ff71f5cf69f82a538e9973cdf091ab22a162c",
+  "prompts": {},
+  "sessions": {
+    "s_d519c1d1344a2c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b41d01c2-0dec-4459-b18b-8bb09c52591d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
