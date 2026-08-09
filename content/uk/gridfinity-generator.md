@@ -1,6 +1,6 @@
 ---
 title: Генератор Gridfinity — Безкоштовний онлайн-генератор bin і основ
-description: Безкоштовний генератор Gridfinity. Створюйте власні bin і основи у браузері, переглядайте у 3D і експортуйте у STL, STEP або 3MF. Без встановлення, без облікового запису, працює офлайн.
+description: Безкоштовний генератор Gridfinity. Створюйте bin і основи у браузері, переглядайте у 3D і експортуйте у STL, STEP або 3MF. Без облікового запису.
 keywords: генератор gridfinity, gridfinity bin generator, gridfinity baseplate generator, gridfinity STL, gridfinity онлайн, gridfinity безкоштовно
 schema: HowTo
 breadcrumbs:

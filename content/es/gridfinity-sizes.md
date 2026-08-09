@@ -1,6 +1,6 @@
 ---
 title: Tamaños Gridfinity — Dimensiones de bins y guía de unidades
-description: ¿Cuánto mide una unidad Gridfinity? Cuadrícula de 42 mm, incrementos de altura de 7 mm. Tablas de referencia para bins, conversión de cajón y qué entra dónde.
+description: ¿Cuánto mide una unidad Gridfinity? Tablas completas de bins y placas base en mm y pulgadas, más un conversor de medidas de cajón a unidades.
 keywords: tamaños gridfinity, dimensiones gridfinity, tamaños bin gridfinity, unidades altura gridfinity, gridfinity 42mm, cuadrícula gridfinity
 schema: Article
 breadcrumbs:

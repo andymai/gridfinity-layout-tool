@@ -12,7 +12,7 @@ faqs:
   - q: What size is a Gridfinity grid unit?
     a: One Gridfinity grid unit is 42mm × 42mm. A 2×3 bin is 84mm wide and 126mm deep. All Gridfinity bins and baseplates use this standard.
   - q: How tall is a Gridfinity height unit?
-    a: One height unit (1U) is 7mm. A 3U bin has about 21mm of internal height. Common heights range from 2U (14mm) to 10U (70mm).
+    a: One height unit (1U) is 7mm, and the count includes the base. A 3U bin stands 21mm tall with about 14mm of usable depth inside. Common bin heights range from 2U (14mm tall) to 10U (70mm tall).
   - q: How do I calculate how many Gridfinity units fit in my drawer?
     a: Measure your drawer's inside width and depth in millimeters. Divide each by 42 and round down. For example, a 380mm × 260mm drawer fits 9 × 6 Gridfinity units.
   - q: What is half-bin mode?
@@ -56,20 +56,20 @@ The 42mm grid is the single standard that makes every Gridfinity bin and basepla
 
 ## Height Units
 
-**1 height unit (1U) = 7mm.** This is how much vertical space you get inside the bin. A 3U bin holds items up to about 21mm tall.
+**1 height unit (1U) = 7mm.** The unit count includes the base, so a bin's usable depth is one unit less than its height: `(units − 1) × 7mm`. A 3U bin stands 21mm tall and holds items up to about 14mm.
 
-| Height | Internal (mm) | Typical Use                           |
-| ------ | ------------- | ------------------------------------- |
-| 2U     | 14mm          | SD cards, small screws, paper clips   |
-| 3U     | 21mm          | USB drives, AA batteries, bolts       |
-| 4U     | 28mm          | Pens, markers, drill bits             |
-| 5U     | 35mm          | Scissors, tape rolls, small tools     |
-| 6U     | 42mm          | Screwdrivers, pliers (standard depth) |
-| 7U     | 49mm          | Spray cans, larger hand tools         |
-| 8U     | 56mm          | Glue bottles, tall containers         |
-| 10U    | 70mm          | Deep storage, bulky items             |
+| Height | Bin height (mm) | Usable depth (mm) | Typical Use                           |
+| ------ | --------------- | ----------------- | ------------------------------------- |
+| 2U     | 14mm            | 7mm               | SD cards, small screws, paper clips   |
+| 3U     | 21mm            | 14mm              | USB drives, AA batteries, bolts       |
+| 4U     | 28mm            | 21mm              | Pens, markers, drill bits             |
+| 5U     | 35mm            | 28mm              | Scissors, tape rolls, small tools     |
+| 6U     | 42mm            | 35mm              | Screwdrivers, pliers (standard depth) |
+| 7U     | 49mm            | 42mm              | Spray cans, larger hand tools         |
+| 8U     | 56mm            | 49mm              | Glue bottles, tall containers         |
+| 10U    | 70mm            | 63mm              | Deep storage, bulky items             |
 
-> **Clearance check:** Your tallest bin plus the baseplate (~5mm) must fit when the drawer is closed. Measure the inside height of your closed drawer before committing to tall bins.
+> **Clearance check:** Your tallest bin, plus the baseplate (~5mm) and the stacking lip (~4.4mm), must fit when the drawer is closed. Measure the inside height of your closed drawer before committing to tall bins.
 
 ## How to Convert Your Drawer Measurements
 

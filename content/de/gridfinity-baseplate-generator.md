@@ -1,6 +1,6 @@
 ---
 title: Gridfinity-Grundplatten-Generator — Kostenloser Online-STL-Creator
-description: Gridfinity-Grundplatten-Generator mit Echtzeit-3D-Vorschau. Rastergröße, Magnetlöcher, Verbindungsnoppen und Randabstand konfigurieren. Export als STL, STEP oder 3MF. Kostenloses Browser-Tool.
+description: Gridfinity-Grundplatten-Generator mit Echtzeit-3D-Vorschau. Rastergröße, Magnetlöcher und Randabstand konfigurieren. Export als STL, STEP oder 3MF.
 keywords: gridfinity grundplatte generator, gridfinity baseplate, individuelle gridfinity grundplatte, gridfinity STL, schubladen grundplatte, magnet grundplatte
 schema: HowTo
 breadcrumbs:
