@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.392.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.392.0...gridfinity-layout-tool-v4.392.1) (2026-08-09)
+
+
+### Bug Fixes
+
+* **seo:** open reference pages with the promise, not the answer ([#3363](https://github.com/andymai/gridfinity-layout-tool/issues/3363)) ([c1a06e6](https://github.com/andymai/gridfinity-layout-tool/commit/c1a06e6e0ff6f328a39a1b877429953654597d76))
+
 ## [4.392.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.391.2...gridfinity-layout-tool-v4.392.0) (2026-08-09)
 
 
