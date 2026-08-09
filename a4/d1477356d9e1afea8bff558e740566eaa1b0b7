@@ -1,0 +1,34 @@
+src/shared/analytics/posthog/eventsPerformance.ts
+  s_00c24d62e2c432::t_d5354cf1bdeb78 85-86
+  s_00c24d62e2c432::t_e7cec9ff67b576 11
+  s_00c24d62e2c432::t_ba1103ed9eef64 46-47,49
+  s_00c24d62e2c432::t_1af263bb760daa 97
+src/shared/analytics/posthog/perfSampling.test.ts
+  s_00c24d62e2c432::t_1cf9df11da9bb9 1-30
+src/shared/analytics/posthog/eventsPerformance.test.ts
+  s_00c24d62e2c432::t_fa1f744e0bb48b 5,14-24,28
+  s_00c24d62e2c432::t_1e67eeca651c9a 135-167
+  s_00c24d62e2c432::t_f6f337cea53b14 42
+  s_00c24d62e2c432::t_da9c402d8c496b 65
+scripts/vercel-ignore.sh
+  s_00c24d62e2c432::t_6773dd76edc75a 25-26,29-37
+  s_00c24d62e2c432::t_645ebb1885777f 27-28
+src/shared/analytics/posthog/perfSampling.ts
+  s_00c24d62e2c432::t_578a0af0b79fce 1-26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "a4d1477356d9e1afea8bff558e740566eaa1b0b7",
+  "prompts": {},
+  "sessions": {
+    "s_00c24d62e2c432": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f604f475-de3f-43b5-a84b-2759976bc6eb",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
