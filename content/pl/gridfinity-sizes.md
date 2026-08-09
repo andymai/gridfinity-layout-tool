@@ -1,6 +1,6 @@
 ---
-title: Rozmiary Gridfinity — siatka 42 mm i wysokości 7 mm
-description: Jak duża jest jednostka Gridfinity? Siatka 42 mm, wysokości 7 mm. Szybka ściąga rozmiarów Binów, przeliczania szuflady i tego, co gdzie pasuje.
+title: 'Rozmiary Gridfinity: tabele wymiarów Binów i płyt bazowych'
+description: Wszystkie wymiary Binów i płyt bazowych Gridfinity: tabele jednostek siatki i wysokości, popularne rozmiary oraz przeliczanie szuflady.
 keywords: rozmiary gridfinity, wymiary gridfinity, rozmiary binów gridfinity, jednostki wysokości gridfinity, gridfinity 42mm, rozmiar siatki gridfinity, standardowy rozmiar gridfinity, dlaczego gridfinity ma 42mm
 schema: Article
 breadcrumbs:
@@ -24,6 +24,8 @@ faqs:
 ---
 
 # Rozmiary i wymiary Gridfinity
+
+Wszystkie wymiary Binów i płyt bazowych Gridfinity: jednostki siatki, jednostki wysokości, popularne rozmiary i co zmieści się na stole drukarki. Znajdź rozmiar w tabelach poniżej albo zmierz szufladę i przelicz ją na jednostki siatki w trzech krokach.
 
 **Standardowe rozmiary Gridfinity: jedna jednostka siatki to 42 mm × 42 mm (szerokość i głębokość), a jedna jednostka wysokości (1U) to 7 mm.** Każdy Bin i każda płyta bazowa są wielokrotnością tych dwóch liczb — Bin 2×3 o wysokości 6U ma 84 mm × 126 mm × 42 mm. Tryb pół-Bina dodaje kroki co 0,5 jednostki (21 mm). Gdy znasz te dwie liczby, potrafisz ustalić, co zmieści się w twojej szufladzie i które Biny wydrukować.
 

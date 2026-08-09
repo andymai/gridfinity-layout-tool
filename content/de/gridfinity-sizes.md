@@ -1,6 +1,6 @@
 ---
 title: Gridfinity-Größen — Bin-Maße und Einheiten-Übersicht
-description: Wie groß ist eine Gridfinity-Einheit? 42-mm-Raster, 7-mm-Höhenstufen. Schnellreferenz für Bin-Größen, Schubladenumrechnung und was wohin passt.
+description: Alle Maße für Gridfinity-Bins und Grundplatten: Tabellen für Rastereinheiten und Höhen, gängige Größen und die Umrechnung deiner Schublade.
 keywords: gridfinity größen, gridfinity maße, gridfinity bin größen, gridfinity höheneinheiten, gridfinity 42mm, gridfinity rastergröße
 schema: Article
 breadcrumbs:
@@ -20,6 +20,8 @@ faqs:
 ---
 
 # Gridfinity-Größen und Maße
+
+Alle Maße für Gridfinity-Bins und Grundplatten: Rastereinheiten, Höheneinheiten, gängige Bin-Größen und was auf dein Druckbett passt. Suche unten eine Größe, oder miss deine Schublade und rechne sie in drei Schritten in Rastereinheiten um.
 
 **Die Standard-Gridfinity-Maße: eine Rastereinheit ist 42 mm × 42 mm (Breite und Tiefe), eine Höheneinheit (1U) ist 7 mm.** Jeder Bin und jede Grundplatte ist ein Vielfaches dieser zwei Zahlen — ein 2×3-Bin mit 6U misst 84 mm × 126 mm × 42 mm. Der Halb-Bin-Modus ergänzt 0,5er-Schritte (21 mm). Sobald du diese zwei Zahlen kennst, weißt du, was in deine Schublade passt und welche Bins du drucken solltest.
 

@@ -1,6 +1,6 @@
 ---
 title: Gridfinity-maten — Bin-afmetingen en eenheden-gids
-description: Hoe groot is een Gridfinity-eenheid? 42-mm-raster, hoogtestappen van 7 mm. Snelle referentietabellen voor bins, lade-conversie en wat waar past.
+description: Alle maten voor Gridfinity-bins en bodemplaten: tabellen met rastereenheden en hoogtes, gangbare formaten en het omrekenen van je lade.
 keywords: gridfinity maten, gridfinity afmetingen, gridfinity bin maten, gridfinity hoogte-eenheden, gridfinity 42mm, gridfinity raster
 schema: Article
 breadcrumbs:
@@ -20,6 +20,8 @@ faqs:
 ---
 
 # Gridfinity-maten en -afmetingen
+
+Alle maten voor Gridfinity-bins en bodemplaten: rastereenheden, hoogte-eenheden, gangbare bin-formaten en wat op je printbed past. Zoek hieronder een maat op, of meet je lade en reken die in drie stappen om naar rastereenheden.
 
 **Standaard Gridfinity-maten: één rastereenheid is 42 mm × 42 mm (breedte en diepte), en één hoogte-eenheid (1U) is 7 mm.** Elke bin en elke bodemplaat is een veelvoud van deze twee getallen — een 2×3-bin van 6U meet 84 mm × 126 mm × 42 mm. De halve-bin-modus voegt stappen van 0,5 eenheid (21 mm) toe. Als je deze twee getallen kent, weet je wat in je lade past en welke bins je print.
 

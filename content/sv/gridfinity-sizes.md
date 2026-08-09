@@ -1,6 +1,6 @@
 ---
 title: Gridfinity-storlekar — Bin-mått och enhetsguide
-description: Hur stor är en Gridfinity-enhet? 42-mm-rutnät, höjdsteg om 7 mm. Snabba referenstabeller för bins, lådomvandling och vad som passar var.
+description: Alla mått för Gridfinity-bins och bottenplattor: tabeller för rutnätsenheter och höjder, vanliga storlekar och omräkning av din låda.
 keywords: gridfinity storlekar, gridfinity mått, gridfinity bin-storlekar, gridfinity höjdenheter, gridfinity 42mm, gridfinity rutnät
 schema: Article
 breadcrumbs:
@@ -20,6 +20,8 @@ faqs:
 ---
 
 # Gridfinity-storlekar och -mått
+
+Alla mått för Gridfinity-bins och bottenplattor: rutnätsenheter, höjdenheter, vanliga bin-storlekar och vad som får plats på din skrivarbädd. Slå upp en storlek i tabellerna nedan, eller mät din låda och räkna om den till rutnätsenheter i tre steg.
 
 **Standardstorlekar för Gridfinity: en rutnätsenhet är 42 mm × 42 mm (bredd och djup), och en höjdenhet (1U) är 7 mm.** Varje bin och varje bottenplatta är en multipel av dessa två tal — en 2×3-bin på 6U mäter 84 mm × 126 mm × 42 mm. Halv-bin-läget lägger till steg om 0,5 enheter (21 mm). När du känner dessa två tal vet du vad som ryms i din låda och vilka bins du ska skriva ut.
 

@@ -1,6 +1,6 @@
 ---
 title: Vad är Gridfinity? Modulärt 42 mm-system
-description: Gridfinity är ett gratis, modulärt system med öppen källkod, 3D-utskrivet på ett 42 mm-rutnät. Lådor, bottenplattor och 7 mm-höjder — gör ditt eget gratis.
+description: Hur Gridfinity fungerar, vad du behöver för att börja och hur du planerar en låda som passar. Praktisk guide till det 3D-utskrivna systemet.
 keywords: gridfinity, vad är gridfinity, lådorganisatör, 3D-utskrift, modulär förvaring, Zack Freedman
 schema: Article
 breadcrumbs:
@@ -30,6 +30,8 @@ faqs:
 ---
 
 # Vad är Gridfinity?
+
+En praktisk guide till det 3D-utskrivna förvaringssystemet: hur Gridfinity fungerar, vad du behöver för att börja och hur du planerar en låda som passar. Börja här om du har en 3D-skrivare och en låda som spårat ur.
 
 Gridfinity är ett gratis modulärt förvaringssystem med öppen källkod som du skriver ut själv i 3D: bins i standardstorlekar vilar på ett 42 mm bottenplatterutnät, så varje design från varje maker är kompatibel. Zack Freedman, en maker och YouTuber, skapade det 2022, och det finns nu över 10 000 gratis designer bara på Printables.
 
