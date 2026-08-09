@@ -1,0 +1,43 @@
+content/nl/gridfinity-generator.md
+  s_d519c1d1344a2c::t_c7c2ae12bdaae0 2
+content/es/gridfinity-baseplate-generator.md
+  s_d519c1d1344a2c::t_c7c2ae12bdaae0 2
+content/uk/gridfinity-baseplate-generator.md
+  s_d519c1d1344a2c::t_c7c2ae12bdaae0 2
+content/uk/gridfinity-generator.md
+  s_d519c1d1344a2c::t_c7c2ae12bdaae0 2
+content/nb/gridfinity-generator.md
+  s_d519c1d1344a2c::t_c7c2ae12bdaae0 2
+content/pt-BR/gridfinity-generator.md
+  s_d519c1d1344a2c::t_c7c2ae12bdaae0 2
+content/de/gridfinity-generator.md
+  s_d519c1d1344a2c::t_c7c2ae12bdaae0 2
+content/de/gridfinity-baseplate-generator.md
+  s_d519c1d1344a2c::t_c7c2ae12bdaae0 2
+content/sv/gridfinity-generator.md
+  s_d519c1d1344a2c::t_c7c2ae12bdaae0 2
+content/uk/gridfinity-bin-generator.md
+  s_d519c1d1344a2c::t_c7c2ae12bdaae0 2
+content/fr/gridfinity-baseplate-generator.md
+  s_d519c1d1344a2c::t_c7c2ae12bdaae0 2
+content/gridfinity-kitchen-drawer.md
+  s_d519c1d1344a2c::t_c7c2ae12bdaae0 2
+content/gridfinity-software.md
+  s_d519c1d1344a2c::t_c7c2ae12bdaae0 2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "105efcdad762d0e38ac298ee2fe5abd69660ec31",
+  "prompts": {},
+  "sessions": {
+    "s_d519c1d1344a2c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b41d01c2-0dec-4459-b18b-8bb09c52591d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
