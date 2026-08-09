@@ -1,6 +1,15 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { Scene, PerspectiveCamera, Mesh, BoxGeometry, MeshStandardMaterial } from 'three';
+import {
+  Scene,
+  PerspectiveCamera,
+  Mesh,
+  BoxGeometry,
+  MeshStandardMaterial,
+  LineSegments,
+  EdgesGeometry,
+  LineBasicMaterial,
+} from 'three';
 import type { WebGLRenderer } from 'three';
 import {
   captureThumbnail,
@@ -10,6 +19,7 @@ import {
   setPreviewCanvas,
   setPreviewContext,
   clearPreviewCanvas,
+  __setEdgeVisibility,
 } from './thumbnail';
 import type { BinFramingDimensions } from './thumbnail';
 
@@ -374,5 +384,64 @@ describe('exportCommunityGlb', () => {
     setPreviewContext(renderer, new Scene(), new PerspectiveCamera(45));
 
     await expect(exportCommunityGlb()).resolves.toBeNull();
+  });
+
+  describe('__setEdgeVisibility', () => {
+    function sceneWithEdges(): { scene: Scene; edges: LineSegments; mesh: Mesh } {
+      const scene = new Scene();
+      const mesh = new Mesh(new BoxGeometry(1, 1, 1), new MeshStandardMaterial());
+      const edges = new LineSegments(
+        new EdgesGeometry(new BoxGeometry(1, 1, 1)),
+        new LineBasicMaterial()
+      );
+      scene.add(mesh, edges);
+      return { scene, edges, mesh };
+    }
+
+    it('hides every edge overlay and reports how many it touched', () => {
+      const { scene, edges } = sceneWithEdges();
+      const renderer = { render: vi.fn() } as unknown as WebGLRenderer;
+      setPreviewContext(renderer, scene, new PerspectiveCamera(45));
+
+      expect(__setEdgeVisibility(false)).toBe(1);
+      expect(edges.visible).toBe(false);
+    });
+
+    it('leaves meshes alone', () => {
+      const { scene, mesh } = sceneWithEdges();
+      const renderer = { render: vi.fn() } as unknown as WebGLRenderer;
+      setPreviewContext(renderer, scene, new PerspectiveCamera(45));
+
+      __setEdgeVisibility(false);
+
+      expect(mesh.visible).toBe(true);
+    });
+
+    it('redraws, since frameloop="demand" would otherwise keep the old frame', () => {
+      const { scene } = sceneWithEdges();
+      const renderer = { render: vi.fn() } as unknown as WebGLRenderer;
+      setPreviewContext(renderer, scene, new PerspectiveCamera(45));
+
+      __setEdgeVisibility(false);
+
+      expect(renderer.render).toHaveBeenCalledTimes(1);
+    });
+
+    it('is reversible', () => {
+      const { scene, edges } = sceneWithEdges();
+      const renderer = { render: vi.fn() } as unknown as WebGLRenderer;
+      setPreviewContext(renderer, scene, new PerspectiveCamera(45));
+
+      __setEdgeVisibility(false);
+      __setEdgeVisibility(true);
+
+      expect(edges.visible).toBe(true);
+    });
+
+    it('reports zero when no context is registered', () => {
+      clearPreviewCanvas();
+
+      expect(__setEdgeVisibility(false)).toBe(0);
+    });
   });
 });

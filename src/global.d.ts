@@ -17,4 +17,5 @@ interface Window {
   __captureThumbnail?: () => string | null;
   __exportGlb?: () => Promise<string | null>;
   __debugScene?: () => unknown;
+  __setEdgeVisibility?: (visible: boolean) => number;
 }

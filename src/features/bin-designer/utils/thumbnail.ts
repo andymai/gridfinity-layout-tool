@@ -204,6 +204,30 @@ function positionVertexCount(geo: BufferGeometry): number {
   return pos ? pos.count : 0;
 }
 
+/**
+ * Toggle the preview's black edge overlay, for marketing captures only.
+ *
+ * The outline pass is what makes the preview read as a CAD viewport, which is
+ * right in the designer and wrong in a search-result thumbnail. Returns the
+ * number of overlays toggled so a capture script can fail loudly instead of
+ * silently shipping an image that still has them.
+ */
+export function __setEdgeVisibility(visible: boolean): number {
+  if (!previewScene) return 0;
+  let toggled = 0;
+  previewScene.traverse((obj) => {
+    if (!isLineSegments(obj)) return;
+    obj.visible = visible;
+    toggled++;
+  });
+  // The canvas runs frameloop="demand", so a visibility change alone never
+  // reaches the drawing buffer the capture reads.
+  if (previewRenderer && previewCamera) {
+    previewRenderer.render(previewScene, previewCamera);
+  }
+  return toggled;
+}
+
 export function __debugSceneMaterials(): unknown {
   if (!previewScene) return null;
   const out: unknown[] = [];

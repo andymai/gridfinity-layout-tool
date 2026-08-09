@@ -1,6 +1,6 @@
 ---
 title: Gridfinity Generator — Free Online Bin & Baseplate Generator
-description: Free Gridfinity generator. Make custom bins and baseplates in your browser, preview in 3D, and export STL, STEP, or 3MF. No installation, no account, runs offline.
+description: Free Gridfinity generator for bins and baseplates. Set the size, preview in 3D, and export STL, STEP, or 3MF. No install, no account, works offline.
 keywords: gridfinity generator, gridfinity bin generator, gridfinity baseplate generator, gridfinity STL generator, online gridfinity generator, free gridfinity generator, custom gridfinity, gridfinity 3MF, gridfinity STEP
 schema: HowTo
 breadcrumbs:
@@ -111,7 +111,7 @@ navCta:
 
 # Gridfinity Generator
 
-A free online Gridfinity generator for storage bins and baseplates. Set the dimensions, pick the features you need, and download an STL, STEP, or 3MF file. It runs in your browser — nothing to install — and works offline once loaded. Two generators, one tool, no account. And unlike standalone bin makers, both are built into a [drawer layout planner](/) — measure the drawer once, plan the whole layout, and generate every bin to fit.
+A free online Gridfinity generator for bins and baseplates, built into a [drawer layout planner](/). Set the size, download STL, STEP, or 3MF. No account. Everything runs in your browser, nothing to install, and it works offline once loaded. Measure the drawer once, plan the whole layout, and generate every bin to fit: a combination standalone bin makers don't offer.
 
 [CTA: Open Bin Generator](/designer?utm_source=gridfinity-generator&utm_medium=hero&utm_campaign=bin) &nbsp; [CTA: Open Baseplate Generator](/baseplate?utm_source=gridfinity-generator&utm_medium=hero&utm_campaign=baseplate)
 
