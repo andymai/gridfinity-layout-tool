@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.394.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.393.2...gridfinity-layout-tool-v4.394.0) (2026-08-09)
+
+
+### Features
+
+* **seo:** add a Gridfinity cutout generator page ([#3373](https://github.com/andymai/gridfinity-layout-tool/issues/3373)) ([fa83f67](https://github.com/andymai/gridfinity-layout-tool/commit/fa83f67c2c30592927de3c0895901ec87a40bff1))
+
 ## [4.393.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.393.1...gridfinity-layout-tool-v4.393.2) (2026-08-09)
 
 
