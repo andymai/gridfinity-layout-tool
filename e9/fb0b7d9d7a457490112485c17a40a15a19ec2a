@@ -1,0 +1,27 @@
+package.json
+  s_89ebab1cd8d9f3::t_0c1b3949665b93 132,144
+patches/brepjs@18.123.0.patch
+  s_89ebab1cd8d9f3::t_eaeb4dab5b60a1 1-4,21-24
+pnpm-lock.yaml
+  s_89ebab1cd8d9f3::t_58a80ada1af234 46,84-85,120-121,3173-3174,3180,4727-4728,8694,8700,10255
+pnpm-workspace.yaml
+  s_89ebab1cd8d9f3::t_d535d53e5f351b 159
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.dividerPatterns.test.ts.snap
+  s_89ebab1cd8d9f3::t_398ac9beb07077 15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "e9fb0b7d9d7a457490112485c17a40a15a19ec2a",
+  "prompts": {},
+  "sessions": {
+    "s_89ebab1cd8d9f3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d66a1fbe-8127-4890-8649-771e75111e0d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
