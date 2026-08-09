@@ -156,5 +156,5 @@ overrides:
 
 patchedDependencies:
   '@ts-morph/common@0.11.1': patches/@ts-morph__common@0.11.1.patch
-  brepjs@18.120.0: patches/brepjs@18.120.0.patch
+  brepjs@18.123.0: patches/brepjs@18.123.0.patch
   eslint-plugin-jsx-a11y@6.10.2: patches/eslint-plugin-jsx-a11y@6.10.2.patch
