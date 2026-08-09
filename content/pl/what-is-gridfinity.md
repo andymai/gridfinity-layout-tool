@@ -1,6 +1,6 @@
 ---
 title: Czym jest Gridfinity? System modułowy 42 mm
-description: Gridfinity to darmowy, otwartoźródłowy system modułowy drukowany 3D na siatce 42 mm. Poznaj Biny, płyty bazowe i wysokości 7 mm — zaprojektuj własny.
+description: Jak działa Gridfinity, co jest potrzebne na start i jak zaplanować szufladę, która pasuje. Praktyczny przewodnik po drukowanym systemie.
 keywords: gridfinity, czym jest gridfinity, organizer do szuflady, druk 3D, modułowy system przechowywania, Zack Freedman
 schema: Article
 breadcrumbs:
@@ -30,6 +30,8 @@ faqs:
 ---
 
 # Czym jest Gridfinity?
+
+Praktyczny przewodnik po drukowanym systemie przechowywania: jak działa Gridfinity, co jest potrzebne na start i jak zaplanować szufladę, która pasuje. Zacznij tutaj, jeśli masz drukarkę 3D i szufladę, która wymknęła się z rąk.
 
 Gridfinity to darmowy, otwartoźródłowy modułowy system przechowywania, który drukujesz samodzielnie w 3D: Biny w standardowych rozmiarach spoczywają na siatce płyt bazowych 42 mm, więc każdy projekt każdego twórcy jest wymienny. Zack Freedman, maker i youtuber, stworzył go w 2022 roku — dziś tylko na Printables jest ponad 10 000 darmowych projektów.
 
