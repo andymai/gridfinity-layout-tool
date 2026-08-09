@@ -40,7 +40,10 @@ export function ContextMenuItem({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'justify-start gap-3 rounded-none px-4 py-3 font-normal',
+        // Block-level `flex`, not the Button default `inline-flex`: the menu container is
+        // shrink-to-fit, and `w-full` is a percentage that intrinsic sizing ignores — so
+        // inline items would share one line and their max-content widths would sum.
+        'flex justify-start gap-3 rounded-none px-4 py-3 font-normal',
         destructive ? 'text-error hover:text-error' : 'text-content'
       )}
     >

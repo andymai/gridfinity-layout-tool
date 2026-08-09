@@ -51,6 +51,16 @@ describe('ContextMenuItem', () => {
     expect(handleClick).not.toHaveBeenCalled();
   });
 
+  // Inline-level items share a line during the shrink-to-fit container's max-content
+  // pass, so their widths sum and the menu balloons to the total. jsdom has no layout,
+  // so pin the display class instead.
+  it('is block-level, not inline-flex', () => {
+    render(<ContextMenuItem icon={mockIcon} label="Edit" onClick={vi.fn()} />);
+    const button = screen.getByRole('menuitem');
+    expect(button).toHaveClass('flex');
+    expect(button).not.toHaveClass('inline-flex');
+  });
+
   it('has menuitem role', () => {
     render(<ContextMenuItem icon={mockIcon} label="Menu Item" onClick={vi.fn()} />);
     expect(screen.getByRole('menuitem')).toBeInTheDocument();
