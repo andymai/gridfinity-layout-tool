@@ -2,6 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const trackEventMock = vi.fn();
+const isPerfSampledMock = vi.fn(() => true);
 
 vi.mock('./trackEvent', () => ({
   trackEvent: (name: string, properties?: Record<string, unknown>) => {
@@ -10,10 +11,21 @@ vi.mock('./trackEvent', () => ({
   getDeviceType: () => 'desktop',
 }));
 
-import { trackBooleanFallbacks, trackCachePerformance } from './eventsPerformance';
+vi.mock('./perfSampling', () => ({
+  isPerfSampled: () => isPerfSampledMock(),
+  PERF_SAMPLE_RATE: 0.1,
+  resetPerfSampling: () => {},
+}));
+
+import {
+  trackBooleanFallbacks,
+  trackCachePerformance,
+  trackKernelPerformance,
+} from './eventsPerformance';
 
 beforeEach(() => {
   trackEventMock.mockReset();
+  isPerfSampledMock.mockReturnValue(true);
 });
 
 describe('trackCachePerformance', () => {
@@ -27,6 +39,7 @@ describe('trackCachePerformance', () => {
     });
 
     expect(trackEventMock).toHaveBeenCalledWith('generation_cache_stats', {
+      sample_rate: 0.1,
       total_hits: 12,
       total_misses: 4,
       total_evictions: 1,
@@ -49,6 +62,7 @@ describe('trackCachePerformance', () => {
     });
 
     expect(trackEventMock).toHaveBeenCalledWith('generation_cache_stats', {
+      sample_rate: 0.1,
       total_hits: 10,
       total_misses: 10,
       total_evictions: 2,
@@ -115,6 +129,39 @@ describe('trackCachePerformance', () => {
     const props = trackEventMock.mock.calls[0]?.[1] as Record<string, number>;
     expect(props).toHaveProperty('cache_used_hit_rate', 1);
     expect(props).not.toHaveProperty('cache_idle_hit_rate');
+  });
+});
+
+describe('generation diagnostics sampling', () => {
+  it('emits nothing from the per-generation diagnostics in an unsampled session', () => {
+    isPerfSampledMock.mockReturnValue(false);
+
+    trackCachePerformance({
+      total_hits: 12,
+      total_misses: 4,
+      total_evictions: 1,
+      hit_rate: 0.75,
+      cache_count: 3,
+    });
+    trackKernelPerformance({ stats: { boolean: { totalMs: 12.34, count: 2 } } });
+
+    expect(trackEventMock).not.toHaveBeenCalled();
+  });
+
+  it('carries the sample rate on kernel timings so aggregates can be scaled back up', () => {
+    trackKernelPerformance({ stats: { boolean: { totalMs: 12.34, count: 2 } } });
+
+    expect(trackEventMock).toHaveBeenCalledWith('generation_kernel_perf', {
+      boolean_ms: 12.3,
+      boolean_count: 2,
+      sample_rate: 0.1,
+    });
+  });
+
+  it('stays silent when no kernel category did work, sampled or not', () => {
+    trackKernelPerformance({ stats: { boolean: { totalMs: 0, count: 0 } } });
+
+    expect(trackEventMock).not.toHaveBeenCalled();
   });
 });
 

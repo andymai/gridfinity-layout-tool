@@ -8,6 +8,7 @@
 
 import type { WorkerCacheStats } from '@/shared/types/generation';
 import { trackEvent } from './trackEvent';
+import { isPerfSampled, PERF_SAMPLE_RATE } from './perfSampling';
 
 const toCacheKey = (name: string): string =>
   name
@@ -42,7 +43,10 @@ export function trackCachePerformance(stats: {
   cache_count: number;
   per_cache?: readonly WorkerCacheStats[];
 }): void {
+  if (!isPerfSampled()) return;
+
   const properties: Record<string, number> = {
+    sample_rate: PERF_SAMPLE_RATE,
     total_hits: stats.total_hits,
     total_misses: stats.total_misses,
     total_evictions: stats.total_evictions,
@@ -78,6 +82,8 @@ const toSnakeCase = (s: string): string => s.replace(/[A-Z]/g, (c) => `_${c.toLo
 export function trackKernelPerformance(payload: {
   stats: Readonly<Record<string, { totalMs: number; count: number }>>;
 }): void {
+  if (!isPerfSampled()) return;
+
   // Flatten stats into snake_case properties: boolean_ms, edge_mesh_count, etc.
   const properties: Record<string, number> = {};
   for (const [category, { totalMs, count }] of Object.entries(payload.stats)) {
@@ -88,7 +94,7 @@ export function trackKernelPerformance(payload: {
     }
   }
   if (Object.keys(properties).length > 0) {
-    trackEvent('generation_kernel_perf', properties);
+    trackEvent('generation_kernel_perf', { ...properties, sample_rate: PERF_SAMPLE_RATE });
   }
 }
 

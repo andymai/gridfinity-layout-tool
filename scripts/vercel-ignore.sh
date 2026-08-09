@@ -22,6 +22,19 @@ fi
 if [ "$VERCEL_GIT_COMMIT_REF" = "main" ]; then
   echo "Main branch: checking for SPA changes..."
 
+  # A release-please merge bumps only the version and changelog, but it touches
+  # package.json, which the watch list below counts as a real change. Those
+  # merges are ~40% of main's commits. The bumped version ships with the next
+  # source commit.
+  if [[ "$VERCEL_GIT_COMMIT_MESSAGE" == "chore(main): release "* ]]; then
+    non_release_files="$(git diff --name-only HEAD^ HEAD |
+      grep -vE '^(package\.json|CHANGELOG\.md|\.release-please-manifest\.json)$' || true)"
+    if [ -z "$non_release_files" ]; then
+      echo "Release-only commit (version + changelog). Skipping build."
+      exit 0
+    fi
+  fi
+
   # Check if any SPA-related files changed compared to previous commit
   # If git diff --quiet exits 0, no changes were found (skip build)
   # If git diff --quiet exits 1, changes were found (proceed with build)
