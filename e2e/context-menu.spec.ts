@@ -12,6 +12,11 @@ import {
 const MAX_REASONABLE_MENU_WIDTH = 320;
 
 test.describe('Bin context menu', () => {
+  // The container clamps itself to the viewport, so a narrow one hides an oversized
+  // menu behind the clamp: on a 393px-wide project the regression measured 323px,
+  // barely over the bound. Pin a wide viewport so the width is purely intrinsic.
+  test.use({ viewport: { width: 1280, height: 800 } });
+
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await waitForAppReady(page);
