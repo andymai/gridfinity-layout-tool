@@ -11,6 +11,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { marked } from 'marked';
 import { load as loadYaml } from 'js-yaml';
+import { composeSerpTitle, estimateTitlePx, SERP_TITLE_MAX_PX } from './serpTitle';
 
 const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/;
 
@@ -30,12 +31,17 @@ const CONTENT_DIR = path.join(process.cwd(), 'content');
 const OUTPUT_DIR = path.join(process.cwd(), 'public');
 const SITE_URL = 'https://gridfinitylayouttool.com';
 
-// SERP truncation guards (see PR #2292). Google shows ~60 chars of the title and
-// ~155 of the description. Every content title carries a " | {siteName}" brand
-// suffix that is expected to truncate, so we guard the UNIQUE title — the part
-// that must stay readable — rather than the rendered length.
-const MAX_TITLE_LEN = 55;
+// SERP truncation guards (see PR #2292). The " | {siteName}" brand suffix is
+// appended only when the composed title still fits Google's title column, so a
+// title that fits keeps its brand and one that doesn't keeps its own tail
+// instead of spending it on a suffix that never renders. What this guard
+// catches is the remaining case: a unique title already too wide on its own,
+// which only the author can shorten.
 const MAX_DESCRIPTION_LEN = 155;
+
+// Edge length of the square thumbnails in public/images/serp/, kept in sync
+// with SERP_SHOT_VIEWPORT in scripts/gen-seo-images.ts.
+const SERP_THUMBNAIL_PX = 1200;
 
 const SUPPORTED_LOCALES = [
   'en',
@@ -360,6 +366,16 @@ function perPageOgImage(slug: string): string | null {
     : null;
 }
 
+// Square thumbnail nominated to Google via `primaryImageOfPage`. Distinct from
+// the OG card on purpose: Google's guidance is to keep text out of the image it
+// picks for Search and Discover, and every card in public/og/ has its headline
+// baked in. Locale variants share the English page's thumbnail, like OG images.
+function perPageSerpImage(slug: string): string | null {
+  return fs.existsSync(path.join(OUTPUT_DIR, 'images', 'serp', `${slug}.png`))
+    ? `${SITE_URL}/images/serp/${slug}.png`
+    : null;
+}
+
 function getUrl(slug: string, locale: Locale): string {
   return locale === DEFAULT_LOCALE ? `${SITE_URL}/${slug}` : `${SITE_URL}/${locale}/${slug}`;
 }
@@ -428,6 +444,7 @@ interface Frontmatter {
   description: string;
   keywords?: string;
   ogImage?: string;
+  serpImage?: string;
   schema?: 'Article' | 'HowTo';
   faqs?: FaqEntry[];
   breadcrumbs?: BreadcrumbEntry[];
@@ -448,6 +465,7 @@ function generateHtml(
     description,
     keywords,
     ogImage,
+    serpImage,
     schema,
     faqs,
     breadcrumbs,
@@ -457,12 +475,15 @@ function generateHtml(
   } = frontmatter;
   const canonicalUrl = getUrl(slug, locale);
   const image = ogImage || perPageOgImage(slug) || `${SITE_URL}/og-image.png`;
+  const thumbnail = serpImage || perPageSerpImage(slug);
   const labels = LOCALE_LABELS[locale];
 
   const pageId = locale === DEFAULT_LOCALE ? slug : `${locale}/${slug}`;
-  if (title.length > MAX_TITLE_LEN) {
+  const serpTitle = composeSerpTitle(title, labels.siteName);
+  const titlePx = Math.round(estimateTitlePx(title));
+  if (titlePx > SERP_TITLE_MAX_PX) {
     console.warn(
-      `⚠ ${pageId}: title ${title.length} chars (>${MAX_TITLE_LEN}) — may truncate before the " | ${labels.siteName}" suffix in SERPs`
+      `⚠ ${pageId}: title ~${titlePx}px (>${SERP_TITLE_MAX_PX}) — truncates in SERPs even without the brand suffix`
     );
   }
   if (description.length > MAX_DESCRIPTION_LEN) {
@@ -538,6 +559,26 @@ function generateHtml(
         };
 
   const structuredDataBlocks: object[] = [primarySchema];
+
+  // Nominate the square thumbnail for the Search result. Google treats this as
+  // advisory and still drops an image it judges unrepresentative, so the markup
+  // only works paired with an asset that survives a square crop.
+  if (thumbnail) {
+    structuredDataBlocks.push({
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      '@id': canonicalUrl,
+      url: canonicalUrl,
+      name: title,
+      description,
+      primaryImageOfPage: {
+        '@type': 'ImageObject',
+        url: thumbnail,
+        width: SERP_THUMBNAIL_PX,
+        height: SERP_THUMBNAIL_PX,
+      },
+    });
+  }
 
   if (softwareApplication) {
     const sa = softwareApplication;
@@ -634,7 +675,7 @@ ${safeJsonLd(block)}
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${escapeHtml(title)} | ${labels.siteName}</title>
+  <title>${escapeHtml(serpTitle)}</title>
 
   <!-- SEO Meta Tags -->
   <meta name="description" content="${escapeHtml(description)}">
@@ -650,7 +691,7 @@ ${xDefaultLink}
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="article">
   <meta property="og:url" content="${canonicalUrl}">
-  <meta property="og:title" content="${escapeHtml(title)} | ${labels.siteName}">
+  <meta property="og:title" content="${escapeHtml(serpTitle)}">
   <meta property="og:description" content="${escapeHtml(description)}">
   <meta property="og:image" content="${image}">
   <meta property="og:site_name" content="${labels.siteName}">
@@ -659,7 +700,7 @@ ${xDefaultLink}
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:url" content="${canonicalUrl}">
-  <meta name="twitter:title" content="${escapeHtml(title)} | ${labels.siteName}">
+  <meta name="twitter:title" content="${escapeHtml(serpTitle)}">
   <meta name="twitter:description" content="${escapeHtml(description)}">
   <meta name="twitter:image" content="${image}">
 

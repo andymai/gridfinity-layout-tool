@@ -23,9 +23,14 @@ import { resolve } from 'node:path';
 const BASE = process.env.BASE_URL ?? 'http://localhost:5173';
 const LANDING_OUT = resolve(process.cwd(), 'public/images/landing');
 const OG_OUT = resolve(process.cwd(), 'public/og');
+const SERP_OUT = resolve(process.cwd(), 'public/images/serp');
 
 const SHOT_VIEWPORT = { width: 1200, height: 675 };
 const OG_VIEWPORT = { width: 1200, height: 630 };
+// Square, and wide enough for Discover's 1200px floor. Kept in sync with
+// SERP_THUMBNAIL_PX in scripts/build-content.ts, which declares these
+// dimensions in the ImageObject.
+const SERP_VIEWPORT = { width: 1200, height: 1200 };
 
 // ---------------------------------------------------------------------------
 // Seeded layouts
@@ -245,6 +250,75 @@ async function captureDesignerRender(browser: Browser, spec: RenderSpec): Promis
     }
     // Let orbit-control damping settle before sampling.
     await page.waitForTimeout(900);
+    const canvas = page.locator('#dev-thumbnail-route canvas');
+    writeFileSync(spec.outFile, await canvas.screenshot({ type: 'png' }));
+    console.log(`wrote ${spec.outFile}`);
+  } finally {
+    await page.close();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Square SERP thumbnails
+// ---------------------------------------------------------------------------
+
+/**
+ * Google crops the search-result thumbnail to a square from the center and
+ * serves it around 92px, so a subject that reads at 1200x675 disappears here.
+ * These shots are square at the source and framed tight, and they are nominated
+ * per page through `primaryImageOfPage` in scripts/build-content.ts.
+ *
+ * They are deliberately not the OG cards: Google's guidance is to keep text out
+ * of the image it picks for Search and Discover, and every card in public/og/
+ * carries its headline.
+ */
+interface SerpSpec {
+  outFile: string;
+  query: string;
+  zoomSteps: number;
+}
+
+async function captureSerpThumbnail(browser: Browser, spec: SerpSpec): Promise<void> {
+  const page = await browser.newPage({ viewport: SERP_VIEWPORT, deviceScaleFactor: 1 });
+  try {
+    // The colored heroes render from featureColors, not the single-color
+    // previewColor, so the body color rides along in the query as `body=`.
+    await page.addInitScript(() => {
+      try {
+        window.localStorage.setItem('gridfinity-settings-v1', JSON.stringify({ theme: 'light' }));
+      } catch (e) {
+        console.error('[gen-seo-images] serp seed failed', e);
+      }
+    });
+    await page.goto(`${BASE}/?devThumbnails=1&${spec.query}`);
+    await page.waitForFunction(
+      () => (window as unknown as { __thumbnailReady?: boolean }).__thumbnailReady === true,
+      null,
+      { timeout: 120000 }
+    );
+
+    await page.mouse.move(SERP_VIEWPORT.width / 2, SERP_VIEWPORT.height / 2);
+    for (let i = 0; i < spec.zoomSteps; i++) {
+      await page.mouse.wheel(0, -240);
+      await page.waitForTimeout(120);
+    }
+    await page.waitForTimeout(900);
+
+    // Drop the black outline pass last: it renders on demand, so anything that
+    // schedules a later frame (orbit damping, the zoom above) would draw the
+    // edges back in.
+    const hidden = await page.evaluate(
+      () =>
+        (
+          window as unknown as { __setEdgeVisibility?: (v: boolean) => number }
+        ).__setEdgeVisibility?.(false) ?? 0
+    );
+    if (hidden === 0) {
+      throw new Error(
+        `${spec.outFile}: no edge overlays found — __setEdgeVisibility bridge is missing or the scene changed`
+      );
+    }
+
     const canvas = page.locator('#dev-thumbnail-route canvas');
     writeFileSync(spec.outFile, await canvas.screenshot({ type: 'png' }));
     console.log(`wrote ${spec.outFile}`);
@@ -476,6 +550,7 @@ async function renderOgCards(browser: Browser): Promise<void> {
 async function main(): Promise<void> {
   mkdirSync(LANDING_OUT, { recursive: true });
   mkdirSync(OG_OUT, { recursive: true });
+  mkdirSync(SERP_OUT, { recursive: true });
   const browser = await chromium.launch();
   try {
     const only = process.env.ONLY?.split(',').map((s) => s.trim());
@@ -507,6 +582,28 @@ async function main(): Promise<void> {
         query: `params=${encodeURIComponent(Buffer.from(JSON.stringify(BIT_ORGANIZER_PARAMS)).toString('base64'))}`,
         theme: 'light',
         zoomSteps: 5,
+      });
+    }
+    if (want('serp')) {
+      await captureSerpThumbnail(browser, {
+        outFile: resolve(SERP_OUT, 'gridfinity-generator.png'),
+        query: `example=hero-multicolor-organizer&body=${encodeURIComponent('#2ea3a3')}`,
+        // Teal body against the example's amber lip and coral scoop. The
+        // gallery's neutral body sits at nearly the same value as the light
+        // backdrop, so the silhouette dissolves at thumbnail scale.
+        zoomSteps: 9,
+      });
+      // A distinct subject per page: repeating one render across the SERP
+      // teaches Google nothing about which page it belongs to.
+      await captureSerpThumbnail(browser, {
+        outFile: resolve(SERP_OUT, 'gridfinity-sizes.png'),
+        query: `example=hero-honeycomb-caddy&body=${encodeURIComponent('#e0552e')}`,
+        zoomSteps: 9,
+      });
+      await captureSerpThumbnail(browser, {
+        outFile: resolve(SERP_OUT, 'what-is-gridfinity.png'),
+        query: `example=hero-handled-tote&body=${encodeURIComponent('#2e6fd4')}`,
+        zoomSteps: 9,
       });
     }
     if (want('baseplate')) {

@@ -15,10 +15,12 @@ import { PreviewCanvas } from '@/features/bin-designer/components/PreviewCanvas'
 import { useGeneration } from '@/features/bin-designer/hooks/useGeneration';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { EXAMPLE_DESIGNS } from '@/features/bin-designer/data/examples';
+import { recolorBody } from './recolorBody';
 import {
   captureThumbnailAtPreset,
   exportCommunityGlb,
   __debugSceneMaterials,
+  __setEdgeVisibility,
 } from '@/features/bin-designer/utils/thumbnail';
 
 const THUMBNAIL_SIZE = 512;
@@ -38,12 +40,14 @@ export function DevThumbnailRoute() {
   // Load the requested example's params into the store once on mount.
   // `params=<base64 JSON>` renders an arbitrary partial-params design instead
   // (used by gen-seo-images for marketing renders with no gallery example).
+  // `body=<hex>` restyles an example's body color without forking it.
   useEffect(() => {
     const search = new URLSearchParams(window.location.search);
     const id = search.get('example');
+    const body = search.get('body');
     const example = EXAMPLE_DESIGNS.find((e) => e.id === id);
     if (example) {
-      setParams(example.params);
+      setParams(body ? recolorBody(example.params, body) : example.params);
       return;
     }
     const rawParams = search.get('params');
@@ -104,6 +108,7 @@ export function DevThumbnailRoute() {
           );
         window.__exportGlb = exportCommunityGlb;
         window.__debugScene = __debugSceneMaterials;
+        window.__setEdgeVisibility = __setEdgeVisibility;
         window.__thumbnailReady = true;
         return;
       }
