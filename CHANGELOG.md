@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.392.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.392.1...gridfinity-layout-tool-v4.392.2) (2026-08-09)
+
+
+### Bug Fixes
+
+* **ui:** size the context menu to its widest item ([#3365](https://github.com/andymai/gridfinity-layout-tool/issues/3365)) ([c7d240a](https://github.com/andymai/gridfinity-layout-tool/commit/c7d240ae1d03218db2c4ed5f6206ea537dee50b2))
+
 ## [4.392.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.392.0...gridfinity-layout-tool-v4.392.1) (2026-08-09)
 
 
