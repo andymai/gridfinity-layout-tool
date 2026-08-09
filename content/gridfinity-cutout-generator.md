@@ -82,11 +82,11 @@ Carve a cavity shaped like the thing you are storing, so it sits in its own rece
 1. **Start solid.** Set the bin size in grid units, then switch the interior to solid so there is material to cut into. An ordinary hollow bin has nothing to carve.
 2. **Add the cutout.** Choose a shape, place it on the floor, and set how deep it goes. Depth is what decides whether a socket sits flush or stands proud.
 3. **Refine the fit.** Rotate it, nudge it, and add an entry chamfer so the part drops in without catching on the edge.
-4. **Export.** STL for the slicer, STEP if you want to keep editing in CAD, 3MF for colour and material data.
+4. **Export.** STL for the slicer, STEP if you want to keep editing in CAD, 3MF for color and material data.
 
 ## Cutout Shapes
 
-**Rectangle, circle, and slot** cover most parts: batteries, drill bits, allen keys, USB drives. Set the size in millimetres and the depth separately, so a shallow tray and a deep socket well come from the same control.
+**Rectangle, circle, and slot** cover most parts: batteries, drill bits, allen keys, USB drives. Set the size in millimeters and the depth separately, so a shallow tray and a deep socket well come from the same control.
 
 **Polygon** suits anything with flat faces — hex bits, nuts, a hex-shafted driver.
 
@@ -108,7 +108,7 @@ A wall cutout is a notch in the side of a bin, not a recess in its floor — a U
 
 ## Shadow Boards
 
-Give a cavity its own colour, on the floor or on the floor and interior walls, and you get the dark backing that makes a missing tool obvious from across the room. It needs a multi-material printer or a mid-print filament change to appear in the print, but the file carries the assignment either way.
+Give a cavity its own color, on the floor or on the floor and interior walls, and you get the dark backing that makes a missing tool obvious from across the room. It needs a multi-material printer or a mid-print filament change to appear in the print, but the file carries the assignment either way.
 
 ## Next Steps
 
