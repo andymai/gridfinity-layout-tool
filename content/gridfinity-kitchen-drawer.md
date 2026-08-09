@@ -1,5 +1,5 @@
 ---
-title: Gridfinity Kitchen Drawer Organizer — Utensils, Cutlery & Junk Drawers
+title: 'Gridfinity Kitchen Drawer Organizer: Utensils & Cutlery'
 description: Organize kitchen drawers with 3D-printed Gridfinity bins. Plan utensil, cutlery, and junk drawer layouts, then print bins that fit exactly. Free.
 keywords: gridfinity kitchen drawer, gridfinity kitchen drawer organizer, gridfinity utensil drawer, gridfinity silverware organizer, gridfinity cutlery organizer, gridfinity junk drawer, 3d printed kitchen drawer organizer
 schema: HowTo

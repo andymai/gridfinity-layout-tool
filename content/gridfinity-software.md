@@ -1,5 +1,5 @@
 ---
-title: Gridfinity Software Compared — Online Generators vs CAD Plugins
+title: 'Gridfinity Software Compared: Generators vs CAD Plugins'
 description: Online generators, OpenSCAD, Fusion 360 and Blender plugins, and STL libraries compared. Which way to make Gridfinity bins fits your workflow, and when.
 keywords: gridfinity software, gridfinity generator online, gridfinity fusion 360, gridfinity plugin, blender gridfinity, gridfinity openscad, gridfinity configurator, gridfinity customizer, online gridfinity generator
 schema: Article
