@@ -119,7 +119,7 @@ A free online Gridfinity generator for bins and baseplates, built into a [drawer
 
 ## What This Generator Makes
 
-Gridfinity is a modular storage system designed by Zack Freedman. It defines a 42mm grid where bins click into baseplates. To actually use Gridfinity, you need both pieces — bins sized to your stuff, and baseplates sized to your drawer. This generator handles both.
+[Gridfinity](/what-is-gridfinity) is a modular storage system designed by Zack Freedman. It defines a 42mm grid where bins click into baseplates. To actually use Gridfinity, you need both pieces: bins sized to your stuff, and baseplates sized to your drawer. This generator handles both.
 
 **Bins** are the open-top containers that hold your stuff. The bin generator lets you pick a size, choose a base attachment style (plain, magnet, screw, weighted, or flat), then layer on features — compartments to subdivide the interior, scoop ramps for easy access, label tabs for the back wall, wall cutouts for sliding things out sideways, floor inserts shaped to specific items (circles for batteries, hexagons for bits), and decorative wall patterns.
 

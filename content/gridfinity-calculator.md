@@ -92,7 +92,7 @@ Convert your drawer measurements to Gridfinity grid units. Enter the interior di
 
 ## The Math Behind It
 
-Gridfinity is built on two numbers:
+[Gridfinity](/what-is-gridfinity) is built on two numbers:
 
 | Dimension       | Unit  | Rule                                                                 |
 | --------------- | ----- | -------------------------------------------------------------------- |

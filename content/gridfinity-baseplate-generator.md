@@ -102,4 +102,6 @@ A parametric baseplate generator that runs in your browser. Set your grid size, 
 
 Need custom bins to go with your baseplate? Use the [bin generator](/gridfinity-bin-generator) to create bins with compartments, cutouts, and label tabs. Plan your whole drawer with the [layout planner](/), or check the [sizes reference](/gridfinity-sizes) to figure out your dimensions.
 
+New to the system? [How the Gridfinity system works](/what-is-gridfinity) covers baseplates, bins, and the 42mm grid from the beginning.
+
 [CTA: Start Generating](/baseplate?standalone=1)
