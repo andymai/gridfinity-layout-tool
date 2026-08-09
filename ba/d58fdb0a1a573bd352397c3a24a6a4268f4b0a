@@ -1,0 +1,88 @@
+content/de/gridfinity-generator.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/nl/gridfinity-generator.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/uk/gridfinity-baseplate-generator.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/de/gridfinity-bin-generator.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/es/gridfinity-baseplate-generator.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/nl/gridfinity-baseplate-generator.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/fr/gridfinity-baseplate-generator.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/nb/gridfinity-baseplate-generator.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/pt-BR/gridfinity-bin-generator.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/pt-BR/gridfinity-sizes.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/gridfinity-baseplate-generator.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/de/gridfinity-baseplate-generator.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/fr/gridfinity-generator.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/gridfinity-calculator.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+  s_d519c1d1344a2c::t_a76d0e1d241c5a 41
+content/sv/gridfinity-baseplate-generator.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/pt-BR/gridfinity-baseplate-generator.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/es/gridfinity-sizes.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/gridfinity-software.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/uk/gridfinity-generator.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/fr/gridfinity-bin-generator.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/uk/gridfinity-bin-generator.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/gridfinity-sizes.md
+  s_d519c1d1344a2c::t_464f4d449996fa 59,61-70,72
+  s_d519c1d1344a2c::t_d51d949c3542ff 15
+content/fr/gridfinity-sizes.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/gridfinity-kitchen-drawer.md
+  s_d519c1d1344a2c::t_fdf02a7d0e1d68 41
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/nl/gridfinity-bin-generator.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/es/gridfinity-bin-generator.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/gridfinity-bin-generator.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/nb/gridfinity-bin-generator.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/nb/gridfinity-generator.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/gridfinity-tool-drawer.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/es/gridfinity-generator.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/sv/gridfinity-generator.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/pt-BR/gridfinity-generator.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+content/sv/gridfinity-bin-generator.md
+  s_d519c1d1344a2c::t_c812b1393cfcd6 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "bad58fdb0a1a573bd352397c3a24a6a4268f4b0a",
+  "prompts": {},
+  "sessions": {
+    "s_d519c1d1344a2c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b41d01c2-0dec-4459-b18b-8bb09c52591d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
