@@ -1,0 +1,23 @@
+content/guide.md
+  s_8ef36982a73345::t_07833789eb7a25 146
+content/gridfinity-generator.md
+  s_8ef36982a73345::t_3ac4ac0f5a031d 251
+content/gridfinity-bin-generator.md
+  s_8ef36982a73345::t_668c1197e180d8 128
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "34913806ea5fb617eeffabf4ae5c646096e2ee82",
+  "prompts": {},
+  "sessions": {
+    "s_8ef36982a73345": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dd9e847a-d93b-482a-8001-e5ffffb86c18",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
