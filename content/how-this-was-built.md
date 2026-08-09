@@ -13,59 +13,48 @@ navCta:
   href: /
 ---
 
-# How This Gridfinity Tool Was Built
+# How this Gridfinity tool was built
 
-On 8 August 2026, release number 1,000 of this tool went out. The first commit landed on 7 January of the same year, which puts 213 days between them.
+Release 1,000 went out on 8 August 2026. The first commit was 7 January, which makes it 213 days, or about 4.7 releases a day if you average it out.
 
-That is 4.7 releases a day, sustained, for seven months. Including the days I did not open the laptop.
+The averaging is doing some work there. Plenty of days had nothing. On 2 August there were 23.
 
-I want to write down how that happened, because the number on its own is meaningless and I would rather give you the useful version.
+I don't think the number means much on its own, but a few people have asked how the pace was possible, and the answer is mostly infrastructure rather than heroics. So here is the actual mechanism.
 
-## The numbers, as of release #1,000
+## The numbers, frozen at release 1,000
 
-Every figure below is frozen at 8 August 2026. They will be wrong tomorrow, which is sort of the point.
+|                         |          |
+| ----------------------- | -------- |
+| Releases                | 1,001    |
+| Days since first commit | 213      |
+| Commits                 | 3,437    |
+| Pull requests merged    | 3,345    |
+| Feature commits         | 703      |
+| Fix commits             | 789      |
+| Reverts                 | 4        |
+| TypeScript files        | ~4,000   |
+| Test files              | 1,580    |
+| Lines of TypeScript     | ~634,000 |
+| Languages supported     | 16       |
+| License                 | AGPL-3.0 |
 
-|                         |                            |
-| ----------------------- | -------------------------- |
-| Releases                | 1,001                      |
-| Days since first commit | 213                        |
-| Commits                 | 3,437                      |
-| Pull requests merged    | 3,345                      |
-| Feature commits         | 703                        |
-| Fix commits             | 789                        |
-| Reverts                 | 4                          |
-| TypeScript files        | ~4,000                     |
-| Test files              | 1,580                      |
-| Lines of TypeScript     | ~634,000                   |
-| Languages supported     | 16                         |
-| Busiest month           | July 2026, 219 releases    |
-| Busiest day             | 23 releases, 2 August 2026 |
-| License                 | AGPL-3.0                   |
+Accurate as of 8 August 2026, and drifting immediately.
 
-The one I would point at is not the release count. It is **four reverts in 1,001 releases**.
+## Where the release count comes from
 
-## What "release" means here, so the number is not a lie
+Worth addressing early, because a release count is easy to inflate and nobody checks. `git tag` is free.
 
-It would be trivial to inflate this. `git tag` is free and nobody audits it.
+Every release here is cut by [release-please](https://github.com/googleapis/release-please) running as a GitHub Action. Changes reach `main` only through a pull request, since the branch is protected and I haven't exempted myself. Commit messages follow the [Conventional Commits](https://www.conventionalcommits.org/) spec, checked in CI by a `pr-title` workflow that fails the PR outright if the title doesn't parse. release-please reads those messages, works out patch versus minor versus major, and keeps an open release PR with the version bump and changelog. Merging it cuts the tag.
 
-That is not what happened. Every release in that count is produced by [release-please](https://github.com/googleapis/release-please), wired into the repository as a GitHub Action. The mechanism is boring and that is its value:
+So the 1,001 figure counts merged, CI-passing pull requests that changed behaviour. The version sits at 4.389.2 for the boring reason that 389 minor releases have happened.
 
-1. Every change reaches `main` through a pull request. The branch is protected, so there is no other route, including for me.
-2. Every commit message is a [Conventional Commit](https://www.conventionalcommits.org/), enforced in CI by a dedicated `pr-title` workflow that fails the PR if the title does not parse.
-3. release-please reads those messages, works out whether the change is a `fix` (patch), a `feat` (minor), or breaking (major), and maintains a release pull request with the version bump and generated changelog.
-4. Merging that release PR cuts the tag and publishes the release.
+The side effect I didn't plan for is that the changelog became a genuine record. When I say there have been 789 fix commits against 703 feature commits, that isn't modesty, it's just what the tooling counted.
 
-So the 1,001 figure is a count of merged, conventionally-described, CI-passing pull requests that changed shipped behaviour. It is an artifact of a gate, not of enthusiasm with a tagging command. The version number reached 4.389.2 by arithmetic, not by ambition.
+## Why it didn't collapse
 
-This also means the release history is a genuine record. `789` fix commits is not me being modest. It is what the tooling counted.
+Shipping several times a day breaks your ability to review your own work. Not through carelessness. The volume just exceeds the attention available. At three or four merged PRs a day I could hold a change in my head; at sixteen commits a day across a BREP geometry kernel, a React app, serverless endpoints and sixteen locales, I couldn't, and pretending otherwise would have produced a mess fairly quickly.
 
-## Why it did not fall apart
-
-Here is the thing nobody tells you about shipping five times a day: **you stop being able to review your own work.**
-
-Not because you get lazy. Because the volume exceeds the attention. At three or four merged PRs a day you can hold the whole change in your head. At sixteen commits a day, across a 3D geometry kernel, a React app, a serverless API, and sixteen translation files, you cannot. Something has to hold the standard when you are not holding it.
-
-The answer I landed on was to make the machine refuse.
+What I did instead was push the standard into tooling that runs whether I'm paying attention or not.
 
 ### The pre-commit gate
 
@@ -73,104 +62,122 @@ Ten checks run before a commit is allowed to exist:
 
 ```
 lint-staged
-check:boundaries:staged      module boundary violations
+check:boundaries:staged      cross-feature imports
 check:design-system:staged   raw elements where a primitive exists
 check:i18n                   key parity across all 16 locales
 check:i18n:values            untranslated strings
 check:i18n:interpolation     mismatched {{placeholders}}
-check:i18n:unused            orphaned keys (only when i18n files are staged)
+check:i18n:unused            orphaned keys
 check:exhaustiveness         switch statements missing union cases
 check:component-structure    component file layout
-check:missing-tests          a component without a sibling test
-check:readme-reminders       docs that drift from the code they describe
+check:missing-tests          components without a sibling test
+check:readme-reminders       docs that drift from the code
 ```
 
-Most of these are shell scripts and small TypeScript programs in `scripts/`. None of them are clever. `check:missing-tests` is exactly what it sounds like: if you touched a component and there is no `Foo.test.tsx` next to `Foo.tsx`, the commit does not happen.
+They're shell scripts and small TypeScript programs in `scripts/`, and none of them are sophisticated. `check-missing-tests.sh` does what the name says: touch a component with no `Foo.test.tsx` beside `Foo.tsx` and the commit doesn't happen.
 
-That last one deserves emphasis, because it is the single highest-leverage rule in the repository. It is the reason there are 1,580 test files. Not discipline. A script that says no.
+That one is responsible for most of the 1,580 test files. I'd like to claim discipline, but it was a script refusing to let me past.
 
-### The custom lint rules
+### Rules written for this codebase specifically
 
-Generic linting catches generic mistakes. The interesting failures are project-specific, so some rules are hand-written for this codebase:
+Off-the-shelf linting catches off-the-shelf mistakes, so a few rules here are hand-written.
 
-- **`no-init-time-imported-call`**: bans calling an imported function at module initialisation time. This exists because a Zustand store that computes its initial state from an imported call creates an import cycle that only manifests as a blank page in a production build, never in dev. It cost a real outage to learn and now it is a lint error.
-- **A ban on `React.lazy`** in favour of a `lazyWithRetry` wrapper, because a chunk load failure after a deploy should retry rather than white-screen.
-- **A ban on arithmetic against `GRID_SIZE`**, because half-bin mode makes naive grid maths silently wrong.
+One is called `no-init-time-imported-call`, and it bans calling an imported function at module initialisation time. It exists because a Zustand store computing its initial state from an imported call creates an import cycle that only surfaces as a blank page in a production build. Never in dev. That took an embarrassing amount of time to track down and is now a lint error.
 
-Each of these is a bug that happened once, converted into a bug that cannot happen again. That conversion is the entire methodology.
+`React.lazy` is banned in favour of a `lazyWithRetry` wrapper, since a chunk that fails to load after a deploy should retry instead of white-screening. Arithmetic against `GRID_SIZE` is banned too, because half-bin mode makes the obvious grid maths wrong in ways that look fine until someone uses a 0.5 offset.
 
-### The one that is not automatable
+Each of these started as a bug that shipped. Converting them into rules is most of what I do between features now.
 
-`CLAUDE.md` in the repository root carries a numbered list of thirteen gotchas. It is not documentation in the usual sense. It is a list of traps that are invisible at the call site, written for whoever (or whatever) touches the code next.
+### Keeping the surface area from growing together
 
-A representative entry, lightly compressed:
+The other thing that degrades quickly at volume is structure. Anything in `src/features/X` can import from shared code, core, the design system, or itself, and that's it. Cross-feature imports fail the commit. There's a small allowlist for the handful of legitimate exceptions, written as `source-feature:target-feature` pairs with a note on each, so an integration layer like design linking can reach the bin designer through its barrel and nothing else.
 
-> **The feet never touch, and a stacking lip is not self-contained.** `buildBaseSocket` sizes each foot 0.5mm narrower than its cell, so adjacent feet stop short of each other. The continuous floor comes from the box's wall-thickness slab, never from the feet. Any base that skips the box must build that slab itself or it is one island per cell with a through-slot along every internal grid line.
+The allowlist matters more than the rule. It's five lines long after seven months, and every entry had to be argued for, which is a much better signal than a dependency graph nobody reads.
 
-The list exists because that class of defect cannot be caught by a gate. It can only be known.
+Translations get the same treatment, because sixteen locales times 3,693 keys is not something you eyeball. Four separate checks run on every commit: keys present in every locale, no values left identical to the English source, `{{placeholder}}` names matching what the code actually passes, and no orphaned keys once the i18n files themselves are touched. Each check exists because that specific failure shipped once.
 
-## The part where AI is genuinely bad at this
+Bundle size has hard budgets too, checked in CI rather than pre-commit: 190 kB gzipped for the main bundle, 260 kB for eager initial JS. A budget that fails the build is the only version of a performance goal I've ever seen hold.
 
-Most of this project was built with AI assistance. I have written [a separate disclosure](https://github.com/andymai/gridfinity-layout-tool/blob/main/AI-DISCLOSURE.md) about that, and I would rather be straightforward about where it works and where it does not.
+### The part that can't be automated
 
-Where it does not: **3D geometry.**
+There's a numbered list in `CLAUDE.md` at the repository root. Thirteen entries, all of them traps that are invisible at the call site. It's written for whoever touches the code next, including the model.
 
-The bin and baseplate generators are built on a BREP kernel (`brepjs` 18.120.0, with `brepkit-wasm` 3.0.2 running as a second kernel). Geometry code has a property that makes it uniquely hostile to confident code generation: **it compiles, it runs, it produces a mesh, and the mesh is wrong.** There is no exception. There is no type error. There is a shape, and the shape is subtly not the shape you asked for.
+One of them, compressed:
 
-Two worked examples from this repository.
+> The feet never touch. `buildBaseSocket` sizes each foot 0.5mm narrower than its cell, so adjacent feet stop short of each other, and the continuous floor comes from the box's wall-thickness slab instead. Any base that skips the box has to build that slab itself, or it's one island per cell with a through-slot along every internal grid line.
 
-### The rotation that hides on symmetric profiles
+No gate catches that. You either know it or you reintroduce it.
 
-To stand a 2D elevation upright you rotate it about the X axis. `rotate(-90, {axis: [1,0,0]})` maps `(x, y, z)` to `(x, z, -y)`, which inverts the drawing's vertical axis. `rotate(+90, ...)` maps it to `(x, -z, y)`, which is what you actually want: the drawing's vertical becomes `+Z`.
+## Where AI tooling needs the most supervision
 
-Use the wrong sign and a profile built upward from a plane comes out built downward from it.
+Most of this project was built with AI assistance, which I've written about [separately](https://github.com/andymai/gridfinity-layout-tool/blob/main/AI-DISCLOSURE.md). The short version is that it's been very good for the "how" while I've stayed in charge of the "what" and "why".
 
-Now the part that makes it nasty. **The bug is invisible on any vertically symmetric profile.** The lid's scallop cut tolerated `-90` indefinitely, because upside-down and right-way-up are the same shape. It only surfaced on an asymmetric profile, where a lip dip was cut 3.8mm low, into the wall instead of into the lip. Correct-looking code, passing tests, shipped geometry, wrong part.
+The area that needs the most watching is 3D geometry.
 
-### The defect that every reasonable assertion misses
+The generators run on a BREP kernel (`brepjs` 18.120.0, with `brepkit-wasm` 3.0.2 as a second kernel). Geometry code fails in an awkward way: it compiles, it runs, it produces a mesh, and the mesh is quietly the wrong shape. No exception, no type error, no crash. Just a part that doesn't fit.
 
-A Gridfinity base is a ring of feet. If you build one without the box slab underneath, you get a ring of feet joined by a stacking lip.
+Two examples from this repository.
 
-Ask yourself what that fails. Bounding box? Correct. Triangle count? Plausible. Watertight? **Yes, it passes.** A ring of feet joined by a lip is a closed surface. It is a perfectly valid, manifold, exportable solid with a through-slot along every internal grid line, and it will slice, print, and fail in the drawer.
+### A rotation that only breaks on asymmetric profiles
 
-The only way to catch it is to probe inside the volume. This repository has `isSolidThrough` and `sectionHalfWidth` helpers in a `__kernel-tests__` directory for exactly this, and they exist because the obvious assertions all returned green.
+To stand a 2D elevation upright you rotate about X. `rotate(-90, {axis: [1,0,0]})` maps `(x, y, z)` to `(x, z, -y)`, which flips the drawing's vertical axis. `+90` maps it to `(x, -z, y)`, so the drawing's vertical becomes `+Z`, which is what you actually want.
 
-The general lesson, which applies well beyond geometry: **the test that catches your real bug is rarely the test you would write by default.** AI is extremely good at writing the default test. It will produce a watertightness assertion without being asked. It will not know that watertightness is the assertion that fails to fail.
+Get the sign wrong and a profile built upward from a plane comes out built downward from it.
 
-### What that costs in CI
+The catch is that this is invisible on a vertically symmetric profile. The lid's scallop cut used `-90` for months without anyone noticing, because upside-down and right-way-up are the same shape there. It only showed up on an asymmetric profile, where a lip dip got cut 3.8mm low, into the wall rather than the lip.
 
-The consequence is a large, slow, real-kernel test suite. The generator tests carry roughly 3,700 seconds of WASM CPU. One export test file runs for fourteen minutes on its own and cannot be split, because Vitest shards by file path and never parallelises within a file.
+### A defect that passes every assertion you'd think to write
 
-So CI splits into six generator shards and three core shards, sized deliberately rather than evenly, because the heavy WASM files would otherwise cluster onto one shard by hash luck and dominate wall time. Some of that now runs on a self-hosted machine, which took the generator suite from 450 seconds to 224.
+A Gridfinity base is a ring of feet. Build one without the box slab underneath and you get a ring of feet joined at the top by the stacking lip.
 
-None of this is glamorous. All of it is the price of letting a machine write geometry code.
+Bounding box: correct. Triangle count: plausible. Watertight: passes, because a ring of feet joined by a lip is a closed surface. It's a valid manifold solid that slices and prints, with a through-slot along every internal grid line.
 
-## What it actually cost
+Catching it means probing inside the volume, which is why there are `isSolidThrough` and `sectionHalfWidth` helpers in a `__kernel-tests__` directory. They exist because every obvious assertion came back green.
 
-<!-- ANDY: everything in this section is my invention. Rewrite in your own words or cut it entirely. I have no way to know any of this. -->
+This generalises past geometry. A model will write you a watertightness check without being asked, and write it well. What it won't know is that watertightness is the specific assertion that fails to fail here.
 
-The honest accounting is that this pace is not free, and I would be selling you something if I implied otherwise.
+### The same problem in the API, minus the mesh
 
-The volume of merged changes went up. My confidence in any individual change went down. I traded deep familiarity with each line for broad familiarity with the shape of the system, and that trade is real: there are corners of this codebase I have read carefully once, in review, and not since. The gates are load-bearing precisely because I am not.
+Geometry makes this vivid because you can hold the wrong part in your hand, but the pattern shows up anywhere correctness isn't local to the function.
 
-There were weeks where the tooling made me productive and weeks where it made me busy, and telling those apart in the moment is harder than it sounds. Four reverts in 1,001 releases looks like a quality metric. It is also a survivorship metric, because it only counts the mistakes that were bad enough to notice.
+The community gallery lets people publish designs, which means it needs moderation, which is where I got it wrong. Hiding a reported design wrote the moderation state onto that design's record. Reasonable, and wrong: the state belonged to the owner's data, so the owner could shed it. Deleting the account or republishing the same payload dropped the record, the reports and the reasons together, and since the duplicate checks only compared against live designs, the hidden original was invisible to them as well. The takedown undid itself.
 
-What I would not trade is the thing the disclosure already says: this let me build something substantial without giving up the evenings. That was the whole point, and it worked.
+The fix was to key takedowns on a hash of the content rather than on the design or the user, with no user identifier in the key so that deleting an account is still a real erasure. Only an admin restore lifts one.
+
+There was a subtler one next to it. Any response that differs between a hidden design and a missing design tells you which is which, and that holds even when both return 200. The unlike endpoint leaked exactly this, because the Lua script toggling the like read the count straight off the record regardless of its moderation status. Two designs, two 200s, one of them returning a number.
+
+Nothing in either case looks wrong at the call site, no test fails, and neither is the kind of thing you notice by reading the diff. They're in `CLAUDE.md` now.
+
+### The CI bill for that
+
+The consequence is a slow test suite running against the real kernel. The generator tests carry roughly 3,700 seconds of WASM CPU, and one export test file takes fourteen minutes by itself and can't be split, since Vitest shards by file path and won't parallelise within a file.
+
+CI splits into six generator shards and three core shards. The asymmetry is deliberate: otherwise the heavy WASM files cluster onto one shard by hash luck and set the wall time for everything else. Some of it now runs on a self-hosted machine, which took the generator suite from 450 seconds to 224.
+
+## What it cost
+
+<!-- ANDY: I invented this entire section. None of it is derivable from git and I have no way to know any of it. Rewrite it in your own words or delete it. -->
+
+I'd be selling something if I implied the pace was free.
+
+The honest version is that I traded depth for breadth. There are parts of this codebase I read carefully once, during review, and haven't opened since. The gates are load-bearing precisely because I'm not always the one holding the standard, and I'm aware that's a different way of working than I'd have defended a few years ago.
+
+Some weeks the tooling made me productive and some weeks it made me busy. Telling those apart while inside them is harder than it sounds, and I got it wrong more than once.
+
+Four reverts across 1,001 releases reads like a quality number. It's also a survivorship number, since it only counts the mistakes bad enough that someone noticed.
 
 <!-- /ANDY -->
 
 ## On the AI question
 
-I would rather state my position than let you infer it.
+I'd rather state my position than have it inferred.
 
-Most of this project was created with AI tooling. I am a software engineer with decades of experience, and I remain firmly in control of the "what" and the "why" while delegating a great deal of the "how". The full statement lives in [AI-DISCLOSURE.md](https://github.com/andymai/gridfinity-layout-tool/blob/main/AI-DISCLOSURE.md), written without AI assistance, and it says this better than a summary can.
+Most of this was created with AI tooling. I've been a software engineer for a long time, I'm still in control of what gets built and why, and I've handed over a lot of the how. The full statement is in [AI-DISCLOSURE.md](https://github.com/andymai/gridfinity-layout-tool/blob/main/AI-DISCLOSURE.md), written without any AI assistance, and it puts this better than a summary would.
 
-The reason I put the gates in this article rather than the prompts is that the gates are the transferable part. Anyone can generate a lot of code now. The question that decides whether that produces a product or a mess is what you are willing to let the machine refuse to accept from you.
+The reason this article is about gates rather than prompts is that the gates are the transferable part. Generating a lot of code isn't the hard problem any more. Deciding what you'll let through is.
 
-## Where the code is
+## The code
 
-Everything is [on GitHub](https://github.com/andymai/gridfinity-layout-tool) under AGPL-3.0. The tool itself is free, runs entirely in your browser, and needs no account: layouts live in local storage unless you choose to sign in and sync them.
+Everything is [on GitHub](https://github.com/andymai/gridfinity-layout-tool) under AGPL-3.0. The tool is free and runs in the browser with no account: layouts stay in local storage unless you sign in to sync them.
 
-If you want to see the traps, `CLAUDE.md` is the most interesting file in the repository, and it is thirteen entries long for now.
-
-Here is to the next thousand.
+If you want the interesting file, it's `CLAUDE.md`. Thirteen entries so far.
