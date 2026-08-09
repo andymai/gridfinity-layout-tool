@@ -111,6 +111,61 @@ describe('injectDesignMeta', () => {
     expect(html).toContain('<h1>Hex Driver Nest</h1>');
   });
 
+  it('also gates the bot-specific robots directives', () => {
+    // googlebot/bingbot meta OVERRIDE the generic robots meta for those
+    // crawlers, so gating only the generic one would let exactly the two
+    // crawlers that matter index a design the gate rejected.
+    const shell = SHELL.replace(
+      '<meta name="robots" content="index, follow">',
+      [
+        '<meta name="robots" content="index, follow">',
+        '<meta name="googlebot" content="index, follow, max-image-preview:large">',
+        '<meta name="bingbot" content="index, follow, max-snippet:-1">',
+      ].join('')
+    );
+    const html = injectDesignMeta(
+      shell,
+      design({ counts: { likes: 0, remixes: 0, prints: 0 } }),
+      SITE
+    );
+    expect(html).toContain('<meta name="googlebot" content="noindex, follow">');
+    expect(html).toContain('<meta name="bingbot" content="noindex, follow">');
+    expect(html).not.toContain('content="index, follow, max-image-preview:large"');
+  });
+
+  it('leaves the bot directives alone for an indexable design', () => {
+    const shell = SHELL.replace(
+      '<meta name="robots" content="index, follow">',
+      '<meta name="robots" content="index, follow"><meta name="googlebot" content="index, follow, max-snippet:-1">'
+    );
+    const html = injectDesignMeta(shell, design(), SITE);
+    expect(html).toContain('<meta name="googlebot" content="index, follow, max-snippet:-1">');
+  });
+
+  it('finds the fallback’s real close when the block has a nested div', () => {
+    // Matching to the first </div> would truncate the element and leave broken
+    // markup on every design page.
+    const shell = SHELL.replace(
+      '<p>A free Gridfinity planner for making bins.</p>',
+      '<div class="wrap"><p>A free Gridfinity planner for making bins.</p></div>'
+    );
+    const html = injectDesignMeta(shell, design(), SITE);
+    expect(html).toContain('<h1>Hex Driver Nest</h1>');
+    expect(html).not.toContain('A free Gridfinity planner for making bins.');
+    expect(html).not.toContain('<div class="wrap">');
+    // The shell after the block is intact: root close, boot script, document end.
+    expect(html).toContain('</div></div><script>boot()</script></body></html>');
+  });
+
+  it('leaves the document alone when the fallback has no balanced close', () => {
+    const shell = SHELL.replace('</div></div>', '');
+    const html = injectDesignMeta(shell, design(), SITE);
+    expect(html).toContain('<h1>Gridfinity Planner &amp; Layout Tool</h1>');
+    expect(html).not.toContain('<h1>Hex Driver Nest</h1>');
+    // Meta injection still happened; only the body swap backed out.
+    expect(html).toContain('<title>Hex Driver Nest by ada — Gridfinity Community</title>');
+  });
+
   it('leaves an indexable design indexable and adds its schema', () => {
     const html = injectDesignMeta(SHELL, design(), SITE);
     expect(html).toContain('<meta name="robots" content="index, follow">');

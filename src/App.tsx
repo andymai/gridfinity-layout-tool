@@ -202,7 +202,12 @@ export default function App() {
     // would give every design page the same title in the rendered DOM, which is
     // what Google indexes — so the route could not be indexed at all. The server
     // value is authoritative here; leave it alone.
-    if (communityDesignIdFromUrl !== null) return;
+    //
+    // Gated on isCommunityRoute as well: the design id comes straight off the
+    // URL and is not flag-aware, so with community_showcase off this route falls
+    // through to the planner, and skipping the swap would leave a design's title
+    // over the planner UI.
+    if (isCommunityRoute && communityDesignIdFromUrl !== null) return;
     const titleKey = isDesignerRoute
       ? 'seo.designer.title'
       : isBaseplateRoute

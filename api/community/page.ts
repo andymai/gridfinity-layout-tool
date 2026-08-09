@@ -254,6 +254,37 @@ function replaceOne(html: string, pattern: RegExp, replacement: string): string 
   return html.replace(pattern, () => replacement);
 }
 
+/**
+ * Swaps the SEO fallback's contents, finding the block's end by balancing
+ * nested `<div>`s rather than assuming the first `</div>` closes it.
+ *
+ * Matching to the first close silently truncates the element the moment the
+ * shell grows a wrapper inside the block, and every design page would then
+ * serve malformed markup — a single-match guard does not catch it, because the
+ * truncated form still matches exactly once. The opening tag is left in place
+ * rather than rebuilt, so the inline `display:none` the shell depends on
+ * survives verbatim.
+ *
+ * Returns the html untouched when the block, or a balanced close for it, is
+ * missing: a shell that changed shape should lose the injection, never be
+ * corrupted by it.
+ */
+function replaceFallbackContent(html: string, inner: string): string {
+  const open = /<div id="seo-fallback"[^>]*>/.exec(html);
+  if (open === null) return html;
+  const contentStart = open.index + open[0].length;
+  const divTag = /<div\b[^>]*>|<\/div\s*>/gi;
+  divTag.lastIndex = contentStart;
+  let depth = 1;
+  for (let match = divTag.exec(html); match !== null; match = divTag.exec(html)) {
+    depth += match[0].startsWith('</') ? -1 : 1;
+    if (depth === 0) {
+      return `${html.slice(0, contentStart)}${inner}${html.slice(match.index)}`;
+    }
+  }
+  return html;
+}
+
 export function injectDesignMeta(shell: string, design: DesignMeta, siteUrl: string): string {
   const url = `${siteUrl}/community/d/${design.id}`;
   const title = `${design.name} by ${design.authorName} — Gridfinity Community`;
@@ -305,27 +336,21 @@ export function injectDesignMeta(shell: string, design: DesignMeta, siteUrl: str
 
   const indexable = isIndexable(design);
   if (!indexable) {
-    html = replaceOne(
-      html,
-      /<meta name="robots" content="[^"]*">/,
-      '<meta name="robots" content="noindex, follow">'
-    );
+    // Every robots directive in the shell, not just the generic one: a
+    // bot-specific `googlebot`/`bingbot` meta OVERRIDES `robots` for that
+    // crawler, so leaving those at index would let exactly the two crawlers
+    // that matter index a page the gate rejected. No-ops if the shell drops
+    // them, since replaceOne leaves a pattern it cannot find alone.
+    for (const bot of ['robots', 'googlebot', 'bingbot']) {
+      html = replaceOne(
+        html,
+        new RegExp(`<meta name="${bot}" content="[^"]*">`),
+        `<meta name="${bot}" content="noindex, follow">`
+      );
+    }
   }
 
-  // The fallback carries no nested <div>, so the first close is its own. Guarded
-  // by replaceOne: a shell that grew one should lose the swap, not truncate.
-  // The opening tag is carried over rather than rebuilt so its inline style (the
-  // display:none the shell relies on) survives verbatim. replaceOne replaces via
-  // a function, so `$` in a design name stays literal and capture syntax would
-  // not expand — hence the explicit concatenation.
-  const fallbackOpen = /<div id="seo-fallback"[^>]*>/.exec(html)?.[0];
-  if (fallbackOpen !== undefined) {
-    html = replaceOne(
-      html,
-      /<div id="seo-fallback"[^>]*>[\s\S]*?<\/div>/,
-      `${fallbackOpen}${renderDesignFallback(design, url)}</div>`
-    );
-  }
+  html = replaceFallbackContent(html, renderDesignFallback(design, url));
 
   // Schema only for pages Google is allowed to keep. Advertising structured
   // data on a noindex page spends nothing and claims something.
