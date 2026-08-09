@@ -1038,6 +1038,7 @@ const SITEMAP_PAGES: Record<string, SitemapPage> = {
   'gridfinity-tool-drawer': { basePriority: 0.8, changefreq: 'monthly' },
   'gridfinity-kitchen-drawer': { basePriority: 0.8, changefreq: 'monthly' },
   'gridfinity-calculator': { basePriority: 0.8, changefreq: 'monthly' },
+  'gridfinity-cutout-generator': { basePriority: 0.8, changefreq: 'monthly' },
   'gridfinity-software': { basePriority: 0.7, changefreq: 'monthly' },
 };
 

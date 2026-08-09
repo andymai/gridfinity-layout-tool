@@ -460,6 +460,13 @@ const OG_CARDS: OgCard[] = [
     inset: 'kitchen-drawer-layout.png',
   },
   {
+    slug: 'gridfinity-cutout-generator',
+    title: 'Gridfinity Cutout Generator',
+    subtitle: 'Shaped cavities for any tool, drawn or imprinted from an STL',
+    style: 'light',
+    inset: 'tool-drawer-layout.png',
+  },
+  {
     slug: 'gridfinity-calculator',
     title: 'Gridfinity Calculator',
     subtitle: 'Drawer millimeters → grid units, leftover space & max bin height',

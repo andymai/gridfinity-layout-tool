@@ -23,6 +23,7 @@ const SLUGS = [
   'gridfinity-tool-drawer',
   'gridfinity-kitchen-drawer',
   'gridfinity-software',
+  'gridfinity-cutout-generator',
 ];
 
 // Localized variants exist only for the original content set. privacy/terms are
