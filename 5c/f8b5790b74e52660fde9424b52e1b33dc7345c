@@ -1,0 +1,31 @@
+src/shared/sync/useDeleteAccountFlow.tsx
+  s_00c24d62e2c432::t_ebbe4e00e701ca 4
+src/shared/sync/SyncSessionMount.tsx
+  s_00c24d62e2c432::t_ebbe4e00e701ca 4
+src/shell/Modals/HelpModal/helpEntryAggregator.ts
+  s_00c24d62e2c432::t_ebbe4e00e701ca 20
+src/shell/layoutExport/useLayoutExport.ts
+  s_00c24d62e2c432::t_ebbe4e00e701ca 38-41
+src/shared/sync/useSignOutFlow.tsx
+  s_00c24d62e2c432::t_747d26e22933c0 3-9
+src/shell/layoutExport/useLayoutExport.test.ts
+  s_00c24d62e2c432::t_9d2c7a7b464a19 35-37,47
+vite.config.ts
+  s_00c24d62e2c432::t_3c7c457dfe16a1 450-455
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "5cf8b5790b74e52660fde9424b52e1b33dc7345c",
+  "prompts": {},
+  "sessions": {
+    "s_00c24d62e2c432": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f604f475-de3f-43b5-a84b-2759976bc6eb",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
