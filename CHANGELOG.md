@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.394.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.394.2...gridfinity-layout-tool-v4.394.3) (2026-08-10)
+
+
+### Performance
+
+* **analytics:** cut ingested event volume by ~75% ([#3380](https://github.com/andymai/gridfinity-layout-tool/issues/3380)) ([2b26647](https://github.com/andymai/gridfinity-layout-tool/commit/2b26647202207b13b40b8cee3a49d436ef71f185))
+
 ## [4.394.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.394.1...gridfinity-layout-tool-v4.394.2) (2026-08-10)
 
 
