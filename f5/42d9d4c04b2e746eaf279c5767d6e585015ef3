@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/__kernel-tests__/kernelParityMatrix.test.ts
+  s_2f618620b68e41::t_240e90fe5cc602 27,46,49,52,57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "f542d9d4c04b2e746eaf279c5767d6e585015ef3",
+  "prompts": {},
+  "sessions": {
+    "s_2f618620b68e41": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3bcb011a-3551-4a7b-9260-b1610f4b7906",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
