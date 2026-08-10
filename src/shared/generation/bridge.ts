@@ -14,6 +14,12 @@ export {
   BURST_EXACT_SKIP_MS,
 } from '@/features/generation/bridge/types';
 export { createDraftSkipGate } from '@/features/generation/bridge/draftPolicy';
+export {
+  awaitPoolWithin,
+  poolIsUsable,
+  shouldWaitForPool,
+  POOL_WAIT_MS,
+} from '@/features/generation/bridge/poolReadiness';
 export type {
   WorkerResponse,
   MeshData,

@@ -1,17 +1,18 @@
 /**
  * Hook that manages the GenerationBridge lifecycle for the standalone baseplate page.
  *
- * Two-phase generation:
+ * Three-tier generation (`planPreviewDrafts` picks the ladder per edit):
  *
- *   1. Direct-mesh preview — synchronous procedural generation that runs on
- *      every params change, before WASM is even loaded. Produces a visually
- *      equivalent placeholder mesh in <100 ms (versus 2-8 s for BREP cold-start).
- *      The user sees something orbitable immediately.
+ *   1. Direct-mesh preview — synchronous procedural generation that runs before
+ *      WASM is even loaded, painting an orbitable mesh in ~11 ms.
  *
- *   2. BREP generation — runs in the background once the WASM bridge is ready.
- *      The high-fidelity result silently replaces the direct-mesh once it lands.
- *      For split tilings, BREP pieces are generated in parallel via the worker
- *      pool and replace direct-mesh tiles one-by-one as they complete.
+ *   2. Manifold draft — a WASM round-trip running the real generator at draft
+ *      quality, refining tier 1 rather than replacing it.
+ *
+ *   3. BREP generation — the exact build, which supersedes both. For split
+ *      tilings its pieces run in parallel across the worker pool; the split path
+ *      waits briefly for a pool still initializing rather than falling back to
+ *      generating every piece sequentially (see poolReadiness).
  *
  * Lifecycle:
  *   1. Mount: kick off direct-mesh immediately + acquire bridge in background
@@ -30,7 +31,14 @@ import type { StoredBaseplateParams, DrawerOutline } from '@/core/types';
 import { useTranslation } from '@/i18n';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { hasEffectivePerimeter } from '../utils/buildFullParams';
-import { bridgeManager, workerPoolManager, createDraftSkipGate } from '@/shared/generation/bridge';
+import {
+  bridgeManager,
+  workerPoolManager,
+  createDraftSkipGate,
+  awaitPoolWithin,
+  poolIsUsable,
+  shouldWaitForPool,
+} from '@/shared/generation/bridge';
 import type { GenerationBridge } from '@/shared/generation/bridge';
 import type { WorkerPool } from '@/shared/generation/bridge';
 import { handleWasmLoadFailure } from '@/shared/generation/captureWasmLoadFailure';
@@ -345,6 +353,8 @@ export function useBaseplateGeneration(): void {
   const bridgeRef = useRef<GenerationBridge | null>(null);
   const previewBridgeRef = useRef<GenerationBridge | null>(null);
   const poolRef = useRef<WorkerPool | null>(null);
+  /** In-flight pool acquisition, so a split generation can wait on it. */
+  const poolPendingRef = useRef<Promise<WorkerPool | null> | null>(null);
   const initializedRef = useRef(false);
   /**
    * Highest epoch whose exact (BREP) result has been applied. The Manifold
@@ -591,7 +601,6 @@ export function useBaseplateGeneration(): void {
           setConnectorKeyMesh(null);
           setGenerationStatus('complete');
         } else {
-          const pool = poolRef.current;
           const groups = groupPiecesByFingerprint(tiling.pieces, fullParams);
           const uniqueGroups = [...groups.values()];
           const uniqueCount = uniqueGroups.length;
@@ -601,10 +610,22 @@ export function useBaseplateGeneration(): void {
           setDedupStats({ uniqueCount, totalCount, duplicatesSkipped });
           setSplitProgress({ current: 0, total: uniqueCount });
 
+          // The pool is acquired in the background, so the FIRST generation of a
+          // session always finds it missing and used to run every piece
+          // sequentially on the single bridge — the 10.1x cold penalty on split
+          // plates, against 3.4x on unsplit ones where the pool cannot help.
+          // Wait for the in-flight acquisition instead, bounded so a pool that
+          // never lands still degrades to the sequential path.
+          let pool = poolRef.current;
+          if (shouldWaitForPool(pool, uniqueCount)) {
+            pool = await awaitPoolWithin(poolPendingRef.current);
+            if (generationEpochRef.current !== epoch) return;
+          }
+
           const uniqueParams = uniqueGroups.map((g) => g.params);
           let uniqueResults: GenerationResult[];
 
-          if (pool && !pool.isDestroyed && pool.size > 1) {
+          if (poolIsUsable(pool)) {
             uniqueResults = await pool.generateBaseplates(uniqueParams, (completed, pieceTotal) =>
               setSplitProgress({ current: completed, total: pieceTotal })
             );
@@ -808,19 +829,25 @@ export function useBaseplateGeneration(): void {
         setWasmStatus('ready');
         initializedRef.current = true;
 
-        // Acquire shared worker pool in the background (don't block initial generation)
-        void workerPoolManager
+        // Acquire the shared worker pool in the background, so the first draft
+        // and BREP are not held behind N more WASM instances. The promise is
+        // kept: a SPLIT generation that finds no pool yet waits briefly on it
+        // rather than running every piece sequentially (see poolReadiness).
+        const pending = workerPoolManager
           .acquire()
           .then((pool) => {
             if (cancelled) {
               workerPoolManager.release();
-              return;
+              return null;
             }
             poolRef.current = pool;
+            return pool;
           })
           .catch(() => {
             // Non-fatal — falls back to sequential generation
+            return null;
           });
+        poolPendingRef.current = pending;
 
         // Best-effort Manifold draft-preview bridge (null when manifold_preview
         // is off or the kernel fails to load — drafts fall back to direct-mesh).
