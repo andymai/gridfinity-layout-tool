@@ -59,8 +59,8 @@ import {
   buildLightweightFloorCutters,
   buildPartialCellFloorCutters,
 } from './lightweightFloorCutter';
-import { meshResultCache, slabWithPocketsCache } from './baseplateCaches';
-import { meshCacheKey, slabPocketsCacheKey } from './baseplateCacheKeys';
+import { slabWithPocketsCache } from './baseplateCaches';
+import { slabPocketsCacheKey } from './baseplateCacheKeys';
 import { sanitizeParams, tagOp, buildSlabProfile } from './baseplateSlab';
 import { cutInBatches } from './baseplateBatchOps';
 import { getPocketTemplate } from './baseplatePockets';
@@ -138,14 +138,6 @@ export function generateBaseplate(
   onProgress('base', 0);
   checkCancelled(signal);
 
-  // Mesh cache short-circuits BREP booleans + tessellation entirely
-  const cacheKey = meshCacheKey(params, forExport, draft);
-  const cached = meshResultCache.get(cacheKey);
-  if (cached !== undefined) {
-    onProgress('base', 1);
-    return cached;
-  }
-
   const baseplate = buildBaseplateSolid(
     params,
     forExport,
@@ -211,9 +203,7 @@ export function generateBaseplate(
     // socket-relieved part instead of a procedural approximation. Same for every
     // junction, so the main thread reuses one copy across all seats.
     const connectorKeyMesh = buildConnectorKeyMeshIfNeeded(params);
-    const result = connectorKeyMesh ? { ...baseMesh, connectorKeyMesh } : baseMesh;
-    meshResultCache.set(cacheKey, result);
-    return result;
+    return connectorKeyMesh ? { ...baseMesh, connectorKeyMesh } : baseMesh;
   } finally {
     baseplate.delete();
   }
