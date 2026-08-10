@@ -1,0 +1,25 @@
+src/features/generation/worker/generators/lidClickRail.ts
+  s_13df2c0005cd75::t_fdfe83e356d1d0 280-287,388-396,424,427
+  s_13df2c0005cd75::t_dcf55c33d0e56d 428
+  s_13df2c0005cd75::t_70036aac120d46 279
+src/features/generation/worker/generators/lidGripLabelInteraction.test.ts
+  s_13df2c0005cd75::t_f77f582a030ae4 19,106-147,153-156,159
+  s_13df2c0005cd75::t_267ba2af76191e 148-152,157-158,160-167
+  s_13df2c0005cd75::t_9785e5fc447281 168-169
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "c4400796d8bff1f46b8e3747d8205fc3dccd07c4",
+  "prompts": {},
+  "sessions": {
+    "s_13df2c0005cd75": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d24b17f0-5df1-4244-a105-d33cb0ec4ae8",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
