@@ -28,7 +28,6 @@ import type { GridfinityItem } from '@/shared/types/item';
 import type {
   WorkerMessage,
   WorkerResponse,
-  WorkerCacheStats,
   ExportFormat,
   LabelPlateExportOptions,
   LabelPlateExportSpec,
@@ -50,9 +49,6 @@ import {
   type SplitExportResult,
   type SplitPreviewResult,
   type BaseplateExportResult,
-  type CacheStatsCallback,
-  type KernelPerfStatsCallback,
-  type BooleanFallbackStatsCallback,
   type ThreadingInfo,
   type DedupCache,
   type ExportSlot,
@@ -91,12 +87,6 @@ export type {
   SplitExportResult,
   SplitPreviewResult,
   BaseplateExportResult,
-  CacheStatsPayload,
-  CacheStatsCallback,
-  KernelPerfStatsPayload,
-  KernelPerfStatsCallback,
-  BooleanFallbackStatsPayload,
-  BooleanFallbackStatsCallback,
   ThreadingInfo,
   MeshImportOutcome,
 } from './bridgeTypes';
@@ -132,15 +122,6 @@ export class GenerationBridge {
   binCache: DedupCache = createDedupCache();
   baseplateCache: DedupCache = createDedupCache();
   itemCache: DedupCache = createDedupCache();
-
-  /** Optional callback for cache performance stats (called after each generation). */
-  onCacheStats: CacheStatsCallback | null = null;
-
-  /** Optional callback for kernel performance stats (called after each generation). */
-  onKernelPerfStats: KernelPerfStatsCallback | null = null;
-
-  /** Optional callback for boolean fallback stats (called after each generation that had ≥1 fallback). */
-  onBooleanFallbackStats: BooleanFallbackStatsCallback | null = null;
 
   /** Pending export requests keyed by slot. Only one per slot at a time. */
   readonly pendingExports: PendingExportMap = new Map();
@@ -688,30 +669,6 @@ export class GenerationBridge {
 
   private setupMessageHandler(): void {
     installMessageHandler(this);
-  }
-
-  handleCacheStats(caches: readonly WorkerCacheStats[]): void {
-    if (!this.onCacheStats) return;
-
-    let totalHits = 0;
-    let totalMisses = 0;
-    let totalEvictions = 0;
-    for (const c of caches) {
-      totalHits += c.hits;
-      totalMisses += c.misses;
-      totalEvictions += c.evictions;
-    }
-    const total = totalHits + totalMisses;
-    if (total === 0) return;
-
-    this.onCacheStats({
-      total_hits: totalHits,
-      total_misses: totalMisses,
-      total_evictions: totalEvictions,
-      hit_rate: Math.round((totalHits / total) * 1000) / 1000,
-      cache_count: caches.length,
-      per_cache: caches,
-    });
   }
 
   cancelCurrentRequest(): void {

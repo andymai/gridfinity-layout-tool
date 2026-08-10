@@ -4,7 +4,6 @@
  */
 
 import type {
-  WorkerCacheStats,
   MeshData,
   GenerationStage,
   ExportFormat,
@@ -14,8 +13,6 @@ import type {
   CombinedExportPiece,
   FaceGroupData,
   KernelName,
-  KernelPerfCategory,
-  BooleanFallbackEntry,
   PerfSnapshot,
 } from './types';
 import type { MeshAsset, MeshImportErrorReason } from '@/shared/generation/meshAsset';
@@ -100,35 +97,6 @@ export interface BaseplateExportResult {
    */
   readonly faceGroups?: readonly FaceGroupData[];
 }
-
-/** Aggregated cache performance stats for analytics. */
-export interface CacheStatsPayload {
-  readonly total_hits: number;
-  readonly total_misses: number;
-  readonly total_evictions: number;
-  readonly hit_rate: number;
-  readonly cache_count: number;
-  readonly per_cache: readonly WorkerCacheStats[];
-}
-
-/** Callback for cache stats reporting */
-export type CacheStatsCallback = (stats: CacheStatsPayload) => void;
-
-/** Payload for kernel performance stats callback */
-export interface KernelPerfStatsPayload {
-  readonly stats: Readonly<Record<string, KernelPerfCategory>>;
-}
-
-/** Callback for kernel perf stats reporting */
-export type KernelPerfStatsCallback = (payload: KernelPerfStatsPayload) => void;
-
-/** Payload for boolean fallback stats callback */
-export interface BooleanFallbackStatsPayload {
-  readonly records: readonly BooleanFallbackEntry[];
-}
-
-/** Callback for boolean fallback stats reporting */
-export type BooleanFallbackStatsCallback = (payload: BooleanFallbackStatsPayload) => void;
 
 /** Information about the WASM threading capabilities */
 export interface ThreadingInfo {
