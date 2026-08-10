@@ -1,5 +1,4 @@
 import { createRoot } from 'react-dom/client';
-import { Analytics } from '@vercel/analytics/react';
 import './index.css';
 import App from './App.tsx';
 import { ErrorBoundary } from '@/shell/ErrorBoundary';
@@ -153,7 +152,6 @@ if (isSmokeMode()) {
           <LocaleProvider initialLocale={initialLocale} onLocaleChange={handleLocaleChange}>
             {initError ? <InitErrorFallback error={initError} /> : <App />}
           </LocaleProvider>
-          <Analytics />
         </ErrorBoundary>
       );
     });

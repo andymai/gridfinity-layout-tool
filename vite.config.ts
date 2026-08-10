@@ -10,6 +10,62 @@ import { contentRoutesPlugin } from './scripts/vite-plugin-content-routes';
 import { mediapipeAssetsPlugin } from './scripts/vite-plugin-mediapipe-assets';
 import { minifyJsonAssets } from './scripts/vite-plugin-minify-json-assets';
 
+// The prerendered content pages, mirroring the rewrites in vercel.json. They are
+// standalone static HTML, reachable from search rather than from inside the app,
+// so they are deliberately kept out of the precache: bundling all 85 of them into
+// every install put 85 requests on each cold load and 12 more on each deploy that
+// touched content. Being out of the precache means navigation to one has to be
+// denied the SPA fallback, or the service worker answers it with the app shell.
+const CONTENT_LOCALES = 'cs|de|es|fr|ko|nb|nl|pl|pt-BR|sv|uk|zh-CN';
+const CONTENT_SLUGS = [
+  'what-is-gridfinity',
+  'guide',
+  'privacy',
+  'terms',
+  'gridfinity-generator',
+  'gridfinity-bin-generator',
+  'gridfinity-baseplate-generator',
+  'gridfinity-calculator',
+  'gridfinity-sizes',
+  'gridfinity-tool-drawer',
+  'gridfinity-kitchen-drawer',
+  'gridfinity-software',
+  'gridfinity-cutout-generator',
+].join('|');
+// Two anchorings of one route set. A workbox urlPattern must be a RegExp value,
+// never a closure: vite-plugin-pwa serializes the service worker by stringifying
+// functions, so an identifier referenced from inside one resolves to nothing at
+// runtime and every matching navigation throws.
+const CONTENT_ROUTE_SOURCE = `/(?:(?:${CONTENT_LOCALES})/)?(?:${CONTENT_SLUGS})(?:[/?#]|$)`;
+// NavigationRoute tests its denylist against the pathname, so this one anchors.
+const CONTENT_ROUTE = new RegExp(`^${CONTENT_ROUTE_SOURCE}`);
+// RegExpRoute tests against the full href, where a leading ^ could never match.
+const CONTENT_ROUTE_HREF = new RegExp(CONTENT_ROUTE_SOURCE);
+
+// Chunks reachable from the entry by static import, i.e. the ones the app needs
+// to boot. Collected from the bundle graph so the precache can hold the boot
+// graph and nothing else: precaching every emitted chunk downloads all ~190 of
+// them on install, including the designer, community and baseplate code that a
+// given visitor may never open, which is the code splitting paid for twice.
+const eagerChunks = new Set<string>();
+
+const collectEagerChunks = (): PluginOption => ({
+  name: 'collect-eager-chunks',
+  generateBundle(_options, bundle) {
+    eagerChunks.clear();
+    const walk = (fileName: string): void => {
+      if (eagerChunks.has(fileName)) return;
+      const chunk = bundle[fileName];
+      if (!chunk || chunk.type !== 'chunk') return;
+      eagerChunks.add(fileName);
+      for (const imported of chunk.imports) walk(imported);
+    };
+    for (const chunk of Object.values(bundle)) {
+      if (chunk.type === 'chunk' && chunk.isEntry) walk(chunk.fileName);
+    }
+  },
+});
+
 // https://vite.dev/config/
 export default defineConfig({
   server: {
@@ -50,6 +106,7 @@ export default defineConfig({
     contentRoutesPlugin(),
     mediapipeAssetsPlugin(),
     minifyJsonAssets(),
+    collectEagerChunks(),
     VitePWA({
       // 'prompt' so the smoke gate (src/shared/pwa/smokeGate.ts) controls activation.
       // With 'autoUpdate' the new SW would auto-skip-waiting on install, defeating the gate.
@@ -85,7 +142,10 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        // html is absent by design: only the app shell is precached, and the
+        // prerendered content pages are runtime-cached on first visit (see
+        // CONTENT_ROUTE above and the 'content-pages' rule below).
+        globPatterns: ['**/*.{js,css,ico,png,svg,woff2}', 'index.html'],
         // Exclude manifest icons from glob - they're auto-added via manifest.icons
         // This prevents duplicate precache entries
         globIgnores: [
@@ -109,6 +169,36 @@ export default defineConfig({
           // The MediaPipe JS chunk (~130KB) is only used by the /scan phone route.
           // Don't precache it for every (desktop) user; it lazy-loads on first scan.
           'assets/vision_bundle-*.js',
+          // Social cards. Only ever requested by a link unfurler reading the meta
+          // tags, never by a browser rendering the app, so shipping 1.5 MB of them
+          // to every install buys nothing.
+          'og/**',
+          'og-image.png',
+          'og-image.svg',
+          // Imagery and styles belonging to the prerendered content pages, which
+          // are themselves no longer precached. kofi-cup.png stays: the supporters
+          // panel and the export prompt render it inside the app.
+          'images/landing/**',
+          'images/serp/**',
+          'content*.css',
+          'calculator.js',
+          // Draco decoder, fetched by GlbViewer only when a GLB preview mounts.
+          // Same reasoning as the MediaPipe segmenter above.
+          'draco/**',
+        ],
+        // Hold the boot graph, drop the rest. globPatterns cannot express "only
+        // the chunks the entry statically imports" because the hashed names are
+        // not known until the bundle exists, so the filtering happens here, against
+        // the graph collected in generateBundle. A lazy chunk left out is fetched
+        // and runtime-cached the first time its route is opened; the tradeoff is
+        // that a route never visited online is not available offline.
+        manifestTransforms: [
+          (entries) => {
+            const manifest = entries.filter(
+              (entry) => !/^assets\/.*\.js$/.test(entry.url) || eagerChunks.has(entry.url)
+            );
+            return { manifest, warnings: [] };
+          },
         ],
         // Prefix all cache names to prevent conflicts
         cacheId: 'gridfinity-v1',
@@ -130,13 +220,48 @@ export default defineConfig({
           /^\/api\//,
           /^\/sitemap\.xml$/,
           /^\/robots\.txt$/,
-          /^\/what-is-gridfinity(?:\/|$)/,
-          /^\/guide(?:\/|$)/,
-          /^\/privacy(?:\/|$)/,
-          /^\/terms(?:\/|$)/,
+          CONTENT_ROUTE,
           /^\/storage-bridge\.html$/,
         ],
         runtimeCaching: [
+          {
+            // The prerendered content pages, cached on first visit rather than
+            // precached for everyone. NetworkFirst because they are SEO surfaces
+            // whose copy is edited far more often than the app shell, and a stale
+            // one served from CacheFirst would outlive the deploy that fixed it.
+            urlPattern: CONTENT_ROUTE_HREF,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'content-pages',
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+              },
+              cacheableResponse: {
+                statuses: [200],
+              },
+            },
+          },
+          {
+            // Lazy route chunks, which the precache no longer carries. Cached on
+            // first use so a route stays available offline once it has been opened.
+            // CacheFirst is safe for the same reason it is on .wasm below: the
+            // filenames are content-hashed, so a new build is a new URL and a stale
+            // copy is unreachable rather than wrong. maxEntries is generous because
+            // the whole point is that a given visitor only ever pulls their subset.
+            urlPattern: /\/assets\/.*\.js$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'lazy-chunks',
+              expiration: {
+                maxEntries: 120,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+              },
+              cacheableResponse: {
+                statuses: [200],
+              },
+            },
+          },
           {
             // Cache shared layout API responses for offline viewing
             urlPattern: /\/api\/share\/[a-zA-Z0-9]+$/,
