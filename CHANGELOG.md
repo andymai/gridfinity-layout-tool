@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.394.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.394.0...gridfinity-layout-tool-v4.394.1) (2026-08-10)
+
+
+### Performance
+
+* cut Vercel edge requests and build minutes ([#3376](https://github.com/andymai/gridfinity-layout-tool/issues/3376)) ([51de39e](https://github.com/andymai/gridfinity-layout-tool/commit/51de39ec9fa37ae6920eafc0568b2ccd27d71635))
+
 ## [4.394.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.393.2...gridfinity-layout-tool-v4.394.0) (2026-08-09)
 
 
