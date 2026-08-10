@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.398.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.397.0...gridfinity-layout-tool-v4.398.0) (2026-08-10)
+
+
+### Features
+
+* **lid:** keep back rails in the gaps label tabs leave ([#3401](https://github.com/andymai/gridfinity-layout-tool/issues/3401)) ([#3408](https://github.com/andymai/gridfinity-layout-tool/issues/3408)) ([b7a7ff1](https://github.com/andymai/gridfinity-layout-tool/commit/b7a7ff19e833add6e73f24149563d4443290484c))
+
 ## [4.397.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.396.0...gridfinity-layout-tool-v4.397.0) (2026-08-10)
 
 
