@@ -582,18 +582,30 @@ describe('checkLidCompatibility', () => {
       expect(computeDisabledRails(checkLidCompatibility(DEFAULT_BIN_PARAMS)).size).toBe(0);
     });
 
-    it('disables only the BACK rail when label tabs are enabled', () => {
+    it('disables no rail for label tabs, which the builder segments around', () => {
+      // Label tabs used to disable their anchor wall outright. Since #3401 the
+      // rail builder splits the run around the tab footprints and keeps any
+      // stretch left over, so deciding here would throw those gaps away before
+      // anything measured them. A wall the tabs fully cover still ends up with
+      // no rail, but that is the segmentation's call, not this function's.
       const params = withOverrides({
         label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
       });
       const set = computeDisabledRails(checkLidCompatibility(params));
-      expect(set.has('back')).toBe(true);
-      expect(set.has('front')).toBe(false);
-      expect(set.has('left')).toBe(false);
-      expect(set.has('right')).toBe(false);
+      expect(set.size).toBe(0);
     });
 
-    it('aggregates wall cutouts + label tabs across multiple sides', () => {
+    it('still reports the anchor wall on the label-tab issue itself', () => {
+      // The warning copy names the wall, so the issue keeps its `sides` even
+      // though they no longer force a disable.
+      const params = withOverrides({
+        label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
+      });
+      const issue = checkLidCompatibility(params).find((i) => i.id === 'labelTabs');
+      expect(issue?.sides).toEqual(['back']);
+    });
+
+    it('aggregates only the issues that really take a whole wall', () => {
       // Explicitly disable right (default is enabled) so we only assert
       // the left-only wall cutout case.
       const params = withOverrides({
@@ -606,8 +618,11 @@ describe('checkLidCompatibility', () => {
         },
       });
       const set = computeDisabledRails(checkLidCompatibility(params));
-      expect(set.has('back')).toBe(true);
+      // Only the cutout disables a wall. A cutout removes the lip material the
+      // rail grips along the WHOLE wall, so there is nothing to segment around;
+      // a label tab takes only the span it occupies.
       expect(set.has('left')).toBe(true);
+      expect(set.has('back')).toBe(false);
       expect(set.has('front')).toBe(false);
       expect(set.has('right')).toBe(false);
     });

@@ -37,6 +37,8 @@ interface Case {
   readonly tabDepth: number;
   readonly support: LabelTabSupport;
   readonly overhang?: BinParams['overhang'];
+  /** Tab width as a percentage of its compartment; defaults to full width. */
+  readonly tabWidth?: number;
 }
 
 /** Every case here interfered before the fix except the two marked baseline. */
@@ -115,6 +117,24 @@ const CASES: readonly Case[] = [
     overhang: { left: 4, right: 4, front: 4, back: 4, feet: false },
   },
   {
+    name: 'partial back rails beside a narrow tab',
+    depth: 3,
+    coverage: 100,
+    edges: 'back',
+    tabDepth: 12,
+    support: 'bracket',
+    tabWidth: 40,
+  },
+  {
+    name: 'partial back rails beside a narrow front tab',
+    depth: 3,
+    coverage: 100,
+    edges: 'front',
+    tabDepth: 12,
+    support: 'bracket',
+    tabWidth: 40,
+  },
+  {
     name: 'asymmetric overhang at 100%',
     depth: 3,
     coverage: 100,
@@ -137,7 +157,8 @@ function makeParams(c: Case): BinParams {
       enabled: true,
       support: c.support,
       depth: c.tabDepth,
-      width: 100,
+      width: c.tabWidth ?? 100,
+      alignment: 'center',
       edges: c.edges,
     },
     lid: {

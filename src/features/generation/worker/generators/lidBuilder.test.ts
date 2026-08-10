@@ -181,14 +181,18 @@ describe('resolveLidInputs', () => {
     expect(inputs.magnetDepth).toBe(2.5);
   });
 
-  it('disables only the BACK rail when bin has label tabs (label sits on back wall)', () => {
+  it('disables no rail for label tabs, and carries their footprints instead', () => {
+    // Label tabs used to disable their anchor wall here. Since #3401 the rail
+    // builder segments the run around the footprints and keeps any stretch
+    // left over, so the decision moved from this set to the geometry. A
+    // full-width tab still ends up with no back rail; a narrow one keeps the
+    // gaps either side.
     const withLabel = resolveLidInputs(
       makeParams({}, { label: { ...DEFAULT_BIN_PARAMS.label, enabled: true } })
     );
-    expect(withLabel.disabledRails.has('back')).toBe(true);
-    expect(withLabel.disabledRails.has('front')).toBe(false);
-    expect(withLabel.disabledRails.has('left')).toBe(false);
-    expect(withLabel.disabledRails.has('right')).toBe(false);
+    expect(withLabel.disabledRails.size).toBe(0);
+    expect(withLabel.labelFootprints.length).toBeGreaterThan(0);
+    expect(withLabel.labelFootprints.every((f) => f.anchor === 'back')).toBe(true);
   });
 
   it('keeps all four rails when bin has no label tabs', () => {

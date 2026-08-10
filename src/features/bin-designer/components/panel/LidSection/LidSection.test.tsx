@@ -601,14 +601,32 @@ describe('LidSection', () => {
     });
 
     it('disables the per-side rail toggle when a feature conflict skips that side', () => {
+      // A wall cutout removes the lip material the rail grips along the whole
+      // wall, so that side really is off.
       resetStore({
         lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
-        label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
+        walls: {
+          ...DEFAULT_BIN_PARAMS.walls,
+          enabled: true,
+          back: { ...DEFAULT_BIN_PARAMS.walls.back, enabled: true },
+        },
       });
       render(<LidSection />);
       const backChip = screen.getByRole('switch', { name: 'Back' });
       expect(backChip).toBeDisabled();
       expect(backChip.getAttribute('title')).toMatch(/auto-disabled/i);
+    });
+
+    it('leaves the rail toggle live for label tabs, which only take part of the wall', () => {
+      // Pre-#3401 this chip was auto-disabled. The builder now segments the run
+      // around the tabs, so the wall can still carry rails in the gaps and the
+      // user's choice has to survive to be honoured.
+      resetStore({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
+        label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
+      });
+      render(<LidSection />);
+      expect(screen.getByRole('switch', { name: 'Back' })).not.toBeDisabled();
     });
   });
 });
