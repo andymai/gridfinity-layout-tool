@@ -547,8 +547,8 @@ export function useLabelTabsSection() {
     // disagree with the geometry (a wider nozzle can drop a compartment from
     // a 2U plate to 1U).
     const clearanceMm = effectiveLabelSocketClearance(nozzleSizeMm, label.plateFitOffset);
-    return planLabelSockets(compartments, innerW, clearanceMm);
-  }, [params, compartments, label.plateFitOffset, nozzleSizeMm]);
+    return planLabelSockets(compartments, innerW, clearanceMm, label.width);
+  }, [params, compartments, label.plateFitOffset, label.width, nozzleSizeMm]);
 
   // Socket segment disabled when no standard plate fits anywhere, even
   // bin-spanning \u2014 sockets are never emitted at nonstandard widths.
@@ -584,9 +584,9 @@ export function useLabelTabsSection() {
     if (!label.enabled) return undefined;
     const supportName = t(`binDesigner.tabSupport.${label.support}`);
     const parts = isSocketMode
-      ? [t('binDesigner.tabMode.socket'), supportName]
+      ? [t('binDesigner.tabMode.socket'), supportName, `${label.width}%`]
       : [supportName, `${label.width}%`];
-    if (!isSocketMode && label.alignment !== 'left') {
+    if (label.alignment !== 'left') {
       parts.push(t(`binDesigner.alignment.${label.alignment}`));
     }
     return parts.join(' \u00b7 ');
@@ -715,7 +715,7 @@ export function useLabelTabsSection() {
   // Widening is the only fix the panel can apply for an overflow: the auto-fit
   // already failed at `minFontSize`, which is a legibility floor rather than a
   // knob, and a plate's width is a per-compartment choice with its own control.
-  const canWidenTabs = !isSocketMode && label.width < DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH;
+  const canWidenTabs = label.width < DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH;
   // Offered only when the mapping is unambiguous: EXACTLY one placed bin links
   // to this design, and the design has one compartment. A design shared by five
   // bins named Screws/Bolts/Nuts has no sensible name-to-compartment mapping,

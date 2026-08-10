@@ -100,7 +100,7 @@ export function GhostLabelTabs() {
     // (The rare bin-spanning fallback — no compartment fits a plate — still
     // ghosts as per-compartment shelves; the overlay is a transient
     // approximation and the exact mesh replaces it.)
-    const widthPercent = (label.mode ?? 'text') === 'socket' ? 100 : label.width;
+    const widthPercent = label.width;
     // Use `label.depth` directly (not clamped to cellD) so the ghost reflects
     // the actual shelf depth the worker would produce. The collision and
     // depth-vs-compartment guards below silently drop tabs that won't fit.

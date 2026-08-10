@@ -767,6 +767,23 @@ function migrateTrayBottom(stored: Partial<TrayBottomConfig> | undefined): TrayB
  * @param params - Partial bin parameters to migrate; any fields not provided will be filled from `DEFAULT_BIN_PARAMS`.
  * @returns A complete `BinParams` object with unspecified fields taken from `DEFAULT_BIN_PARAMS`.
  */
+/**
+ * Merge a stored label config over the defaults, and neutralise a stale width
+ * on a socket-mode design.
+ *
+ * Socket mode used to force the shelf full-width and the panel hid the width
+ * control because of it, so a design that set a width in TEXT mode and then
+ * switched to socket carries a value that was never visible and never applied.
+ * Now that the width does apply (#3402), leaving it stored would narrow that
+ * design's shelf the next time it opened: a changed printed part the user never
+ * asked for. Reset to 100 so every existing socket design regenerates
+ * byte-identically and narrowing stays a deliberate act.
+ */
+function migrateLabel(stored: Partial<BinParams['label']> | undefined): BinParams['label'] {
+  const label = { ...DEFAULT_BIN_PARAMS.label, ...(stored ?? {}) };
+  return label.mode === 'socket' ? { ...label, width: 100 } : label;
+}
+
 export function migrateParams(params: MigrateParamsInput): BinParams {
   // Migrate old boolean scoop format to ScoopConfig
   let scoopConfig = DEFAULT_BIN_PARAMS.scoop;
@@ -1003,7 +1020,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     base: baseConfig,
     compartments: compartmentsConfig,
     scoop: scoopConfig,
-    label: { ...DEFAULT_BIN_PARAMS.label, ...(params.label ?? {}) },
+    label: migrateLabel(params.label),
     walls: wallsConfig,
     slide: slideConfig,
     handles: handlesConfig,

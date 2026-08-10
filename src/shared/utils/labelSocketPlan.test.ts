@@ -290,3 +290,31 @@ describe('planLabelPlates', () => {
     });
   });
 });
+
+describe('planLabelSockets width percentage (#3402)', () => {
+  const grid = { cols: 1, rows: 1, thickness: 1.2, cells: [0] };
+
+  it('plans against the full span by default', () => {
+    // A 3x1 bin's single compartment takes the widest standard plate.
+    const plan = planLabelSockets(grid, 123.1, 0.3);
+    expect(plan.compartments[0].autoWidthU).toBe(3);
+  });
+
+  it('steps the plate down as the tab narrows', () => {
+    // The plate must follow the TAB: keeping the compartment's 3u here would
+    // size a pocket for room the shelf no longer has.
+    expect(planLabelSockets(grid, 123.1, 0.3, 70).compartments[0].autoWidthU).toBe(2);
+    expect(planLabelSockets(grid, 123.1, 0.3, 40).compartments[0].autoWidthU).toBe(1);
+  });
+
+  it('reports the narrowed span, not the compartment span', () => {
+    const full = planLabelSockets(grid, 123.1, 0.3).compartments[0].availableWidthMm;
+    const half = planLabelSockets(grid, 123.1, 0.3, 50).compartments[0].availableWidthMm;
+    expect(half).toBeCloseTo(full / 2, 5);
+  });
+
+  it('leaves no plate fitting once the tab is too narrow for even 1u', () => {
+    const plan = planLabelSockets(grid, 123.1, 0.3, 10);
+    expect(plan.compartments[0].plateWidthU).toBeNull();
+  });
+});
