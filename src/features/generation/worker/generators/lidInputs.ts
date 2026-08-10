@@ -28,6 +28,8 @@ import {
   hasBinLipDip,
 } from '@/shared/types/bin';
 import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
+import { railFoulingLabelFootprints } from '@/shared/utils/labelTabPlan';
+import type { LabelTabFootprint } from '@/shared/utils/labelTabPlan';
 import { LID_FIT_CLEARANCE, LID_CORNER_RADIUS, lidAnchorZ, lidWallBottomZ } from './lidConstants';
 import { resolveOverhang, overhangExpansion, hasOverhang } from './overhang';
 
@@ -159,6 +161,17 @@ export interface LidInputs {
    * midpoint to save filament. Ignored when `clickRails === false`.
    */
   readonly clickRailCoverage: number;
+  /**
+   * Label tabs on the bin's outer walls that reach into the click rails' Z
+   * band, in the bin-interior frame. Rails clip their usable span against
+   * these so a shelf and a rail can't occupy the same millimetre (#3401) —
+   * they are separate solids, so nothing about either mesh reveals the clash.
+   *
+   * Empty when the bin has no tabs, when they sit clear of the rail band (a
+   * shelf tucked under the rim), or on a polygon bin, whose tabs the builder
+   * gates off anyway.
+   */
+  readonly labelFootprints: readonly LabelTabFootprint[];
   /**
    * Grip relief (#3272), already gated: `mode` is forced to `'none'` when the
    * feature is off or its depth clamp left nothing useful, so builders can
@@ -362,6 +375,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     // Z range). Centralised in `lidCompatibility.computeDisabledRails`
     // so the UI rail-summary and the worker placement code stay in sync.
     disabledRails: computeDisabledRails(checkLidCompatibility(params)),
+    labelFootprints: isPartialMask(params.cellMask) ? [] : railFoulingLabelFootprints(params),
     // Rails only engage in clickRails mode; friction/magnetic force them off so
     // the builder's rail pass is a no-op while the user's per-side choice is
     // preserved on the persisted config.

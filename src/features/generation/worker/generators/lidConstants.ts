@@ -85,6 +85,7 @@ export {
   LID_CLICK_RAIL_TAIL,
   LID_CLICK_RAIL_SHOULDER,
   LID_CLICK_RAIL_DROP_BELOW_WALL,
+  LID_CLICK_RAIL_TOP_CHAMFER,
 } from '@/shared/types/bin';
 
 /** How far the rail's outer face protrudes from the corner-radius line. */
@@ -93,8 +94,6 @@ export const LID_CLICK_RAIL_OUT = 1.85;
 export const LID_CLICK_RAIL_INSET = 0.8;
 /** Inner face of the rail (inside the bin cavity). */
 export const LID_CLICK_RAIL_INNER = -0.8;
-/** Top entry chamfer (lid slides over lip easily). */
-export const LID_CLICK_RAIL_TOP_CHAMFER = 0.8;
 
 /* ──────────────────────────────────────────────────────────────────────
  * Magnet positions are shared with the bin base via magnetPositionsForCell

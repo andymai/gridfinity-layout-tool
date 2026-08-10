@@ -90,5 +90,9 @@ export function resolveTrayBottomInputs(params: BinParams): LidInputs {
     // rails because of geometry on the wrong part. The user's per-side choice
     // stands.
     disabledRails: new Set(),
+    // Same reasoning as `disabledRails`: the tab geometry lives on the covered
+    // bin's design, not this tray's, so reading this tray's labels would clip
+    // rails against a shelf on the wrong part.
+    labelFootprints: [],
   };
 }

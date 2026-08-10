@@ -24,6 +24,7 @@ import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { isPartialMask, maskToPolygon } from '@/shared/utils/cellMask';
 import { computeHandleHoleGeometry } from '@/shared/utils/handleCutoutClip';
 import { hasAnyPatternedWall } from '@/shared/utils/wallPatternSides';
+import { railFoulingLabelFootprints } from '@/shared/utils/labelTabPlan';
 import type { BinParams, HandleConfig, HandleSide } from '../types';
 import { LID_MAGNET_LIP_CLEARANCE, resolveLidCavityExtraMm } from '../types/lid';
 
@@ -234,13 +235,23 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
     issues.push({ id: 'cellMaskHoles', severity: 'warning' });
   }
 
-  // 6. Label tabs. Tabs always sit on the BACK wall — the lid's click
-  //    rail on that wall can't run under the tab without colliding with
-  //    it, so the back rail is auto-skipped during placement. The front
-  //    rail is fine. Warn so the user understands why the back rail
-  //    summary changes when label tabs are on.
+  // 6. Label tabs. A tab's shelf occupies the same Z band the click rail
+  //    sweeps, so a rail on the tab's own anchor wall has nowhere to go and
+  //    is skipped during placement. Which wall that is comes from the tab
+  //    geometry, not a constant: `label.edges` may anchor tabs to the FRONT
+  //    (or both), and a shelf dropped clear of the rail band (#1898's
+  //    tuck-under pocket, or an inset that pulls the body off the wall)
+  //    fouls nothing at all and must keep its rail.
+  //
+  //    Rails on the PERPENDICULAR walls are not disabled — they are clipped
+  //    short of the tab instead (`clipSpanToLabelTabs`), which is what makes
+  //    75%/100% coverage usable with tabs at all (#3401).
   if (params.label.enabled && !isPolygon && !isMagnetic) {
-    issues.push({ id: 'labelTabs', severity: 'warning', sides: ['back'] });
+    const anchored = new Set(railFoulingLabelFootprints(params).map((fp) => fp.anchor));
+    const sides = WALL_SIDES.filter((side) => anchored.has(side as 'front' | 'back'));
+    if (sides.length > 0) {
+      issues.push({ id: 'labelTabs', severity: 'warning', sides });
+    }
   }
 
   // 7. Handles. Handles cut through the wall body; when the hole's top

@@ -898,7 +898,7 @@
   "binDesigner.lid.compat.handles": "Håndtak på {sides} når opp i stablekanten — klikkrennen på de veggene hoppes automatisk over.",
   "binDesigner.lid.compat.handlesAllSides": "Håndtak på alle fire sider når opp i stablekanten — lokket har ingen vegg å gripe i.",
   "binDesigner.lid.compat.heading": "Kompatibilitetsnotater",
-  "binDesigner.lid.compat.labelTabs": "Etikettknager sitter på bakveggen — klikkrennen på den veggen hoppes automatisk over for å frigjøre knaggen.",
+  "binDesigner.lid.compat.labelTabs": "Etikettknager opptar veggen de henger fra — klikkrennen på {sides} hoppes automatisk over for å frigjøre dem. Rennene på de øvrige veggene stopper i stedet like før knaggene.",
   "binDesigner.lid.compat.magnetBinTooSmall": "Beholderen er for liten for hjørnemagneter — bruk en større beholder eller mindre magnetdiameter.",
   "binDesigner.lid.compat.magnetTooDeepForBin": "Festemagneten er dypere enn beholderens innside rommer — reduser dybden eller bruk en høyere beholder.",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "Egendefinerte former kan ikke plassere hjørnemagneter — lokket faller tilbake til friksjonsfeste uten magneter.",

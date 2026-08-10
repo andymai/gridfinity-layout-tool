@@ -32,6 +32,8 @@ import { collectOrigins } from './pipeline/collectOrigins';
 import { LID_MIN_RAIL_LENGTH as MIN_RAIL_LENGTH } from '@/shared/types/bin';
 import { gripPlacements, sideForOutward } from './lidGripRelief';
 import type { LidInputs } from './lidInputs';
+import type { LabelTabFootprint } from '@/shared/utils/labelTabPlan';
+import type { LidCompatibilitySide } from '@/shared/types/bin';
 
 /** True when at least one side carries a rail, i.e. the lid is not friction-fit. */
 export function hasAnyClickRail(rails: LidInputs['clickRails']): boolean {
@@ -214,11 +216,7 @@ function railPlacementsForPolygon(inputs: LidInputs): RailPlacement[] {
 /** Compute rail placements for a rectangular bin (4 walls). */
 function railPlacementsForRectangle(inputs: LidInputs): RailPlacement[] {
   const { lidOuterW, lidOuterD, lidCornerR, disabledRails, clickRails, clickRailCoverage } = inputs;
-  const { outerOffsetX: offX, outerOffsetY: offY } = inputs;
-  // Rail spans wall length minus corner radii on both ends, then shrunk
-  // to `clickRailCoverage` (centered on the wall) to save filament.
-  const railLengthX = (lidOuterW - 2 * lidCornerR) * clickRailCoverage;
-  const railLengthY = (lidOuterD - 2 * lidCornerR) * clickRailCoverage;
+  const { outerOffsetX: offX, outerOffsetY: offY, labelFootprints } = inputs;
   // Wall midlines, shifted by the overhang offset so rails ride the lid's
   // (possibly off-center) perimeter rather than the nominal socket grid.
   const corneredOuterX = lidOuterW / 2 - lidCornerR;
@@ -226,45 +224,35 @@ function railPlacementsForRectangle(inputs: LidInputs): RailPlacement[] {
 
   const placements: RailPlacement[] = [];
 
-  const wantBack = clickRails.back && !disabledRails.has('back') && railLengthX >= MIN_RAIL_LENGTH;
-  const wantFront =
-    clickRails.front && !disabledRails.has('front') && railLengthX >= MIN_RAIL_LENGTH;
-  const wantRight =
-    clickRails.right && !disabledRails.has('right') && railLengthY >= MIN_RAIL_LENGTH;
-  const wantLeft = clickRails.left && !disabledRails.has('left') && railLengthY >= MIN_RAIL_LENGTH;
+  /**
+   * One wall's rail, clipped clear of any label tab then re-centred on what
+   * survives. Coverage applies to the CLIPPED span, so the control keeps
+   * meaning what it says on a bin whose tabs eat one end of the wall.
+   */
+  const push = (
+    side: LidCompatibilitySide,
+    alongX: boolean,
+    railCross: number,
+    rotationDeg: number
+  ): void => {
+    if (!clickRails[side] || disabledRails.has(side)) return;
+    const half = alongX ? corneredOuterX : corneredOuterY;
+    const { lo, hi } = clipSpanToLabelTabs(-half, half, alongX, railCross, labelFootprints);
+    const length = (hi - lo) * clickRailCoverage;
+    if (length < MIN_RAIL_LENGTH) return;
+    const centre = (lo + hi) / 2;
+    placements.push({
+      centerX: (alongX ? centre : railCross) + offX,
+      centerY: (alongX ? railCross : centre) + offY,
+      length,
+      rotationDeg,
+    });
+  };
 
-  if (wantBack) {
-    placements.push({
-      centerX: offX,
-      centerY: corneredOuterY + offY,
-      length: railLengthX,
-      rotationDeg: 0,
-    });
-  }
-  if (wantFront) {
-    placements.push({
-      centerX: offX,
-      centerY: -corneredOuterY + offY,
-      length: railLengthX,
-      rotationDeg: 180,
-    });
-  }
-  if (wantRight) {
-    placements.push({
-      centerX: corneredOuterX + offX,
-      centerY: offY,
-      length: railLengthY,
-      rotationDeg: -90,
-    });
-  }
-  if (wantLeft) {
-    placements.push({
-      centerX: -corneredOuterX + offX,
-      centerY: offY,
-      length: railLengthY,
-      rotationDeg: 90,
-    });
-  }
+  push('back', true, corneredOuterY, 0);
+  push('front', true, -corneredOuterY, 180);
+  push('right', false, corneredOuterX, -90);
+  push('left', false, -corneredOuterX, 90);
 
   return placements;
 }
@@ -277,6 +265,67 @@ function railPlacementsForRectangle(inputs: LidInputs): RailPlacement[] {
  * soft zone past the relief's own span.
  */
 const GRIP_RAIL_MARGIN = 2;
+
+/**
+ * Air (mm) kept between a rail's end and a label tab's footprint.
+ *
+ * Unlike {@link GRIP_RAIL_MARGIN} this IS a clearance: rail and shelf occupy
+ * the same Z band, so without it the two interpenetrate by up to the shelf's
+ * overlap with the rail profile (measured at 1.25mm on a stock lid) and the
+ * lid simply will not seat. Sized to survive a print's worth of tolerance
+ * rather than to be geometrically minimal.
+ */
+const LABEL_RAIL_MARGIN = 2;
+
+/**
+ * Half-width (mm) of the rail's own cross-section, used to decide whether a
+ * footprint sits in its path. Spans the profile from its inner face
+ * ({@link LID_CLICK_RAIL_INNER}, negative) to its outer bump.
+ */
+const RAIL_HALF_WIDTH = (LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INNER) / 2;
+
+/**
+ * Shrink a wall's usable rail span so the rail stops clear of any label tab.
+ *
+ * Rails run along a wall; a tab anchored to a PERPENDICULAR wall eats into the
+ * end of that run. Clipping the usable span and applying coverage to what is
+ * left keeps 100% meaning "as much rail as physically fits" — shortening a
+ * centred rail instead would shed just as much length at the far end, where
+ * nothing was ever in the way.
+ *
+ * `lo`/`hi` are the wall's along-axis extent (already inset by the corner
+ * radius). Footprints whose along-axis span does not reach the run, or whose
+ * cross-axis span misses the rail's own X band, leave it untouched.
+ */
+export function clipSpanToLabelTabs(
+  lo: number,
+  hi: number,
+  alongX: boolean,
+  railCross: number,
+  footprints: readonly LabelTabFootprint[]
+): { readonly lo: number; readonly hi: number } {
+  let outLo = lo;
+  let outHi = hi;
+  for (const fp of footprints) {
+    // The tab's extent along the rail's run, and across it.
+    const [crossMin, crossMax] = alongX ? [fp.yMin, fp.yMax] : [fp.xMin, fp.xMax];
+    const [alongMin, alongMax] = alongX ? [fp.xMin, fp.xMax] : [fp.yMin, fp.yMax];
+    // A tab on the wall this rail runs along blocks it outright; that case is
+    // handled by `disabledRails`, not here, so skip anything that does not
+    // straddle the rail's own line.
+    if (railCross < crossMin - RAIL_HALF_WIDTH || railCross > crossMax + RAIL_HALF_WIDTH) continue;
+    if (alongMax < outLo || alongMin > outHi) continue;
+    // Eat from whichever end the tab is nearer — a tab spanning the whole run
+    // leaves nothing, which the MIN_RAIL_LENGTH check downstream rejects.
+    // Compared on the tab's CENTRE, not an edge: a tab whose far edge lands on
+    // the midpoint sits wholly in one half, and testing that edge would clip
+    // the opposite end and wipe out the run that was actually clear.
+    const fromHigh = (alongMin + alongMax) / 2 >= (outLo + outHi) / 2;
+    if (fromHigh) outHi = Math.min(outHi, alongMin - LABEL_RAIL_MARGIN);
+    else outLo = Math.max(outLo, alongMax + LABEL_RAIL_MARGIN);
+  }
+  return { lo: outLo, hi: outHi };
+}
 
 /**
  * Interrupt each rail that runs behind a grip relief, leaving a segment on
