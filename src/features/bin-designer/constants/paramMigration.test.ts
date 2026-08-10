@@ -1199,15 +1199,18 @@ describe('migrateParams', () => {
     expect(result.lid.clickRailCoverage).toBe(75);
   });
 
-  it('neutralises a stale tab width on a socket-mode design', () => {
-    // Socket mode used to force the shelf full-width and the panel hid the
-    // control, so a width set in TEXT mode then carried into socket mode was
-    // never visible and never applied. Now that it applies (#3402), keeping it
-    // would narrow that design's shelf on next open with no notice.
-    const result = migrateParams({
-      label: { ...DEFAULT_BIN_PARAMS.label, mode: 'socket', width: 40 },
-    });
-    expect(result.label.width).toBe(100);
+  it('leaves a socket-mode tab width exactly as stored', () => {
+    // `migrateParams` runs on EVERY load, so it cannot "normalise once". It
+    // also cannot tell a width the user deliberately set in socket mode
+    // (#3402) from one left over in storage from a stint in text mode, so it
+    // must not touch either — resetting would wipe the new control's value
+    // every time the design reopened.
+    for (const width of [40, 100]) {
+      const result = migrateParams({
+        label: { ...DEFAULT_BIN_PARAMS.label, mode: 'socket', width },
+      });
+      expect(result.label.width).toBe(width);
+    }
   });
 
   it('leaves a text-mode tab width alone', () => {

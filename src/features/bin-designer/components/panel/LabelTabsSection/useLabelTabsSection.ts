@@ -277,10 +277,8 @@ export function useLabelTabsSection() {
     } else if (compartments.cols >= 3) {
       availableWidth -= compartments.thickness;
     }
-    // Socket mode forces full-width tabs (the pocket needs the room).
-    const widthPercent = (label.mode ?? 'text') === 'socket' ? 100 : label.width;
-    return Math.round(((availableWidth * widthPercent) / 100) * 10) / 10;
-  }, [params, compartments.cols, compartments.thickness, label.width, label.mode]);
+    return Math.round(((availableWidth * label.width) / 100) * 10) / 10;
+  }, [params, compartments.cols, compartments.thickness, label.width]);
 
   // The plane the builder actually anchors to, cap included.
   const tabHeightMm = useMemo(
