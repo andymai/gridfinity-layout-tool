@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.394.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.394.1...gridfinity-layout-tool-v4.394.2) (2026-08-10)
+
+
+### Performance
+
+* **bundle:** stop preloading the 3D stack and Liveblocks on first paint ([#3378](https://github.com/andymai/gridfinity-layout-tool/issues/3378)) ([ef81499](https://github.com/andymai/gridfinity-layout-tool/commit/ef814997c8cbfe72d7b95b16b292bce957ed07f5))
+
 ## [4.394.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.394.0...gridfinity-layout-tool-v4.394.1) (2026-08-10)
 
 
