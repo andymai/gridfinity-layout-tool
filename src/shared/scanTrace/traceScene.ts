@@ -1,20 +1,24 @@
 /**
- * Trace a photo that may contain a reference card alongside the tool.
+ * Trace a photo that may contain a size reference alongside the tool.
  *
  * Two front doors share one tail:
  *  - `traceScene` — classical Otsu mask (fallback when the ML segmenter can't
- *    load). The tool is the largest non-card foreground blob.
+ *    load). The tool is the largest foreground blob that isn't the reference.
  *  - `traceSceneSegmented` — the tool mask comes from the tap-prompted ML
  *    segmenter; we trust it (plus the user's tap) to have isolated the object.
  *
- * Both detect the card on the classical auto threshold and share the
+ * Both resolve the size reference the same way (`detectReference`) and share the
  * `finishTrace` tail (simplify → curve-fit smooth → optional symmetry → optional
- * card homography). They differ in how the tool contour is obtained:
- * `traceScene` traces the largest component of a binary mask (`buildToolTrace`),
- * while `traceSceneSegmented` traces the soft confidence mask sub-pixel via
- * marching squares (`buildToolTraceSoft`). With a card present the outline is
- * rectified to true millimetres; without one it stays in pixels and the desktop
- * asks for a real dimension.
+ * rectification). They differ in how the tool contour is obtained: `traceScene`
+ * traces the largest component of a binary mask (`buildToolTrace`), while
+ * `traceSceneSegmented` traces the soft confidence mask sub-pixel via marching
+ * squares (`buildToolTraceSoft`).
+ *
+ * The reference is the printed calibration sheet when one is in frame and a
+ * wallet card otherwise — the sheet first, because it solves the same map from
+ * ~18 markers spanning the whole scanned area instead of one quad's four
+ * corners. With either the outline is rectified to true millimetres; with
+ * neither it stays in pixels and the desktop asks for a real dimension.
  */
 
 import type { Result } from '@/core/result';
@@ -30,22 +34,44 @@ import { rectifyPoints } from './perspective';
 import { fitSmoothPolygon } from './curveFit';
 import { traceSoftContour, binarize, type SoftMask } from './softContour';
 import { symmetrizeIfRegular } from './symmetry';
+import { detectCalibrationGrid, type GridDetectOptions } from './gridDetect';
+import { detectBaseplateGrid, type BaseplateDetectOptions } from './baseplateDetect';
+import type { LatticeFit } from './latticeFit';
+import type { CellQuad } from './latticeBlobs';
 
 export interface SceneCard {
   readonly corners: readonly [Point, Point, Point, Point];
   readonly fitness: number;
 }
 
+/** Which lattice sized the scan — they differ in how much you should trust them. */
+export type SceneGridKind = 'sheet' | 'baseplate';
+
+export interface SceneGrid {
+  readonly kind: SceneGridKind;
+  /** Detected cell outlines in image pixels — for overlaying on the photo. */
+  readonly cells: readonly CellQuad[];
+  /** How well the over-constrained fit agrees with itself, in millimetres. */
+  readonly rmsMm: number;
+}
+
+/** Whatever pinned the scene to millimetres. At most one applies. */
+export type SceneReference =
+  | { readonly kind: SceneGridKind; readonly fit: LatticeFit }
+  | { readonly kind: 'card'; readonly card: SceneCard };
+
 export interface SceneTrace {
   /** Tool outline in image pixels — for overlaying on the photo. */
   readonly imagePoints: readonly Point[];
-  /** Tool outline to emit: millimetres if a card was found, else pixels. */
+  /** Tool outline to emit: millimetres if a reference was found, else pixels. */
   readonly outputPoints: readonly Point[];
   readonly units: 'mm' | 'px';
   readonly card: SceneCard | null;
+  readonly grid: SceneGrid | null;
 }
 
-export interface SceneTraceOptions extends CardDetectOptions {
+export interface SceneTraceOptions
+  extends CardDetectOptions, GridDetectOptions, BaseplateDetectOptions {
   readonly threshold?: number;
   readonly simplifyTolerance?: number;
   readonly minToolAreaPx?: number;
@@ -113,20 +139,69 @@ export function detectCard(
 }
 
 /**
+ * Resolve what pins this photo to millimetres, best reference first.
+ *
+ * The order is an accuracy ranking, not a convenience one:
+ *
+ *  1. **The printed calibration sheet** — many markers over the whole scanned
+ *     area, least-squares fitted, and printed at a size you can verify against
+ *     its own 100mm bar.
+ *  2. **A Gridfinity baseplate** — the same kind of lattice and the same solve,
+ *     but its true pitch depends on the printer that made it, so it is a
+ *     convenience rather than a standard (see `baseplateDetect`).
+ *  3. **A wallet card** — four coplanar points off to one side of the tool,
+ *     which is the minimum a homography admits and the reason this feature
+ *     needed the other two.
+ *
+ * Each detector declines cheaply on a photo without its reference, so the
+ * cheaper paths cost nothing extra when a better one is present.
+ *
+ * `excludeMask` (the tool's own pixels) applies only to the card search — a
+ * tool cannot masquerade as a lattice-consistent set of cells.
+ */
+export function detectReference(
+  image: ImageDataLike,
+  options: SceneTraceOptions = {},
+  excludeMask?: Mask
+): SceneReference | null {
+  const sheet = detectCalibrationGrid(image, options);
+  if (sheet) return { kind: 'sheet', fit: sheet };
+  const baseplate = detectBaseplateGrid(image, options);
+  if (baseplate) return { kind: 'baseplate', fit: baseplate };
+  const card = detectCard(image, options, excludeMask);
+  return card ? { kind: 'card', card } : null;
+}
+
+/** Every image region the reference occupies, so the tool trace can skip them. */
+function referenceQuads(reference: SceneReference | null): readonly (readonly Point[])[] {
+  if (!reference) return [];
+  return reference.kind === 'card'
+    ? [reference.card.corners]
+    : reference.fit.cells.map((cell) => cell.outline);
+}
+
+/**
  * Shared tail: simplify + smooth a raw contour, optionally symmetrize a
- * manufactured tool's outline, and rectify through the card homography.
+ * manufactured tool's outline, and rectify through the reference's homography.
  */
 function finishTrace(
   rawContour: readonly Point[],
   width: number,
   height: number,
-  card: SceneCard | null,
+  reference: SceneReference | null,
   options: SceneTraceOptions
 ): Result<SceneTrace, TraceError> {
   const tolerance = options.simplifyTolerance ?? defaultTolerance(width, height);
-  const simplified = simplifyRdp(rawContour, tolerance);
+  // The curve fit reads the RAW contour, not the simplified one. Its error
+  // metric only samples the points it is given, so fitting the RDP polygon lets
+  // a cubic bow far outside a long straight edge while scoring a perfect fit at
+  // the two endpoints that edge was reduced to — a silent OUTWARD offset that
+  // measured ~4.5mm on a 68mm tool, dwarfing everything the size reference
+  // contributes. Against the dense contour the tolerance means what it says.
   let imagePoints =
-    options.smooth === false ? simplified : fitSmoothPolygon(simplified, (tolerance * 0.5) ** 2);
+    options.smooth === false
+      ? simplifyRdp(rawContour, tolerance)
+      : fitSmoothPolygon(rawContour, (tolerance * 0.5) ** 2);
   // Clean up the slight lopsidedness of a symmetric tool (controller, pliers).
   // Gated internally on a symmetry score, so an asymmetric tool is untouched.
   if (options.smooth !== false && options.symmetrize !== false) {
@@ -136,7 +211,23 @@ function finishTrace(
     return err({ code: 'DEGENERATE', detail: 'Outline collapsed to a line' });
   }
 
-  if (card) {
+  if (reference?.kind === 'sheet' || reference?.kind === 'baseplate') {
+    const { fit } = reference;
+    return ok({
+      imagePoints,
+      outputPoints: rectifyPoints(imagePoints, fit.homography),
+      units: 'mm',
+      card: null,
+      grid: {
+        kind: reference.kind,
+        cells: fit.cells.map((cell) => cell.outline),
+        rmsMm: fit.rmsMm,
+      },
+    });
+  }
+
+  if (reference?.kind === 'card') {
+    const { card } = reference;
     const h = cardHomography(card.corners, options.widthMm, options.heightMm);
     if (h) {
       return ok({
@@ -144,11 +235,12 @@ function finishTrace(
         outputPoints: rectifyPoints(imagePoints, h),
         units: 'mm',
         card,
+        grid: null,
       });
     }
   }
 
-  return ok({ imagePoints, outputPoints: imagePoints, units: 'px', card: null });
+  return ok({ imagePoints, outputPoints: imagePoints, units: 'px', card: null, grid: null });
 }
 
 /**
@@ -157,6 +249,9 @@ function finishTrace(
  * The card's image corners are already solved, so only the image→mm map
  * changes: no re-detection and no re-segmentation. Cheap enough to re-run on
  * every keystroke while the user types a caliper-measured card size.
+ *
+ * A no-op on a scene sized by the calibration sheet: the sheet's dimensions are
+ * printed, not measured, so there is nothing for the user to correct.
  */
 export function withCardSize(scene: SceneTrace, widthMm: number, heightMm: number): SceneTrace {
   if (!scene.card) return scene;
@@ -167,7 +262,7 @@ export function withCardSize(scene: SceneTrace, widthMm: number, heightMm: numbe
 
 export function buildToolTrace(
   toolMask: Mask,
-  card: SceneCard | null,
+  reference: SceneReference | null,
   options: SceneTraceOptions = {}
 ): Result<SceneTrace, TraceError> {
   const { width, height } = toolMask;
@@ -176,7 +271,13 @@ export function buildToolTrace(
   if (component.start === null || component.area < minArea) {
     return err({ code: 'NO_OBJECT', detail: 'No tool found' });
   }
-  return finishTrace(traceContour(component.mask, component.start), width, height, card, options);
+  return finishTrace(
+    traceContour(component.mask, component.start),
+    width,
+    height,
+    reference,
+    options
+  );
 }
 
 /**
@@ -187,7 +288,7 @@ export function buildToolTrace(
  */
 export function buildToolTraceSoft(
   toolSoft: SoftMask,
-  card: SceneCard | null,
+  reference: SceneReference | null,
   options: SceneTraceOptions = {}
 ): Result<SceneTrace, TraceError> {
   const { width, height } = toolSoft;
@@ -196,10 +297,27 @@ export function buildToolTraceSoft(
   if (contour.length < 3 || polygonArea(contour) < minArea) {
     return err({ code: 'NO_OBJECT', detail: 'No tool found' });
   }
-  return finishTrace(contour, width, height, card, options);
+  return finishTrace(contour, width, height, reference, options);
 }
 
-/** Classical fallback: Otsu tool mask (largest non-card blob), card excluded. */
+/**
+ * Classical fallback: Otsu tool mask (largest blob that isn't the reference).
+ *
+ * The reference's regions are zeroed before the largest blob is picked. With a
+ * calibration sheet that is every marker: the sheet's markers are printed black
+ * and so are foreground on the same threshold the tool is, and a marker left in
+ * would out-mass a small tool or graft itself onto a large one.
+ *
+ * Known limit, and the reason the sheet asks you to lay the tool INSIDE its
+ * marker frame: only DETECTED cells can be excluded, and a cell the tool
+ * half-covers never gets detected — it merges with the tool. Its uncovered
+ * sliver then reads as part of the silhouette and the tool measures oversize.
+ * This bites hardest on a baseplate, where the tool necessarily sits on top of
+ * the sockets. The cells cannot simply be excluded wholesale either: on a
+ * baseplate the tool occupies the same image region, so blanking every expected
+ * cell would eat the tool. The ML path (`traceSceneSegmented`) is unaffected —
+ * its mask comes from the segmenter, not from a threshold.
+ */
 export function traceScene(
   image: ImageDataLike,
   options: SceneTraceOptions = {}
@@ -207,10 +325,10 @@ export function traceScene(
   const { width, height } = image;
   if (width <= 0 || height <= 0) return err({ code: 'NO_OBJECT', detail: 'Empty image' });
 
-  const card = detectCard(image, options);
+  const reference = detectReference(image, options);
   const toolMask = buildMask(image, { threshold: options.threshold });
-  if (card) excludeQuad(toolMask, card.corners);
-  return buildToolTrace(toolMask, card, options);
+  for (const quad of referenceQuads(reference)) excludeQuad(toolMask, quad);
+  return buildToolTrace(toolMask, reference, options);
 }
 
 /**
@@ -226,14 +344,15 @@ export function traceSceneSegmented(
 ): Result<SceneTrace, TraceError> {
   const { width, height } = image;
   if (width <= 0 || height <= 0) return err({ code: 'NO_OBJECT', detail: 'Empty image' });
-  const card = detectCard(image, options, binarize(toolMask));
-  return buildToolTraceSoft(toolMask, card, options);
+  const reference = detectReference(image, options, binarize(toolMask));
+  return buildToolTraceSoft(toolMask, reference, options);
 }
 
 /**
  * A normalized (0–1) seed point for the segmenter's first, no-tap pass: the
- * centroid of the largest non-card foreground blob, falling back to the image
- * center. The user can always tap to override it.
+ * centroid of the largest foreground blob that isn't part of the size
+ * reference, falling back to the image center. The user can always tap to
+ * override it.
  */
 export function computeAutoSeed(
   image: ImageDataLike,
@@ -243,9 +362,9 @@ export function computeAutoSeed(
   const center = { x: 0.5, y: 0.5 };
   if (width <= 0 || height <= 0) return center;
 
-  const card = detectCard(image, options);
+  const reference = detectReference(image, options);
   const mask = buildMask(image);
-  if (card) excludeQuad(mask, card.corners);
+  for (const quad of referenceQuads(reference)) excludeQuad(mask, quad);
   const component = largestComponent(mask);
   if (component.start === null) return center;
 

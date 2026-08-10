@@ -1319,6 +1319,8 @@ const en: Record<string, string> = {
   'scan.capture.heading': 'Snap a photo of your tool',
   'scan.capture.tip.surface': 'Lay it on a plain, uncluttered surface',
   'scan.capture.tip.card': 'Place a bank, transit, or ID card beside it for exact sizing',
+  'scan.capture.tip.sheet':
+    'Best of all: print the calibration sheet, or lay the tool on a Gridfinity baseplate',
   'scan.capture.tip.topDown': 'Shoot straight down, with the whole tool in frame',
   'scan.capture.exampleAlt':
     'Example photo: a tool and a bank card laid flat on a plain surface, photographed from straight above',
@@ -1327,6 +1329,12 @@ const en: Record<string, string> = {
   'scan.capture.label.topDown': 'Straight down',
   'scan.capture.privacy': 'Your photo stays on your phone — only the outline is sent.',
   'scan.cardMeasured': 'Measured to scale from your card.',
+  'scan.gridMeasured': 'Measured to scale from the calibration sheet.',
+  'scan.gridDetail': '{count} markers · fit agrees within {rms} mm',
+  'scan.baseplateMeasured': 'Measured to scale from your baseplate grid.',
+  'scan.baseplateDetail': '{count} sockets · fit agrees within {rms} mm',
+  'scan.baseplateAccuracyHint':
+    'A printed baseplate is only as accurate as the printer that made it. The calibration sheet is exact.',
   'scan.cardSize.label': 'Card size',
   'scan.cardSize.value': '{long} × {short} mm',
   'scan.cardSize.change': 'Change',
@@ -2443,6 +2451,14 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.scanImport.hint':
     'Photograph an object on a plain background to trace its outline, or upload a traced outline below.',
   'binDesigner.cutouts.scanImport.upload': 'Upload outline (SVG)',
+  'binDesigner.cutouts.scanImport.calibrationSheet': 'Print calibration sheet',
+  'binDesigner.cutouts.scanImport.calibrationSheetHelp':
+    'More accurate than a card: print at 100%, then lay the tool inside the printed frame.',
+  'binDesigner.cutouts.scanImport.sheetTitle': 'Gridfinity Layout Tool — scan calibration sheet',
+  'binDesigner.cutouts.scanImport.sheetPrintHint':
+    'Print at 100% (actual size): the bar above must measure exactly 100 mm.',
+  'binDesigner.cutouts.scanImport.sheetPlaceHint':
+    'Place the tool inside the marker frame and photograph it straight down.',
   'binDesigner.cutouts.scanImport.scaleLabel': 'Real-world size (longest side, mm)',
   'binDesigner.cutouts.scanImport.scaleHelp':
     'Enter the measured length so the cutout prints to scale.',

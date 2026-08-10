@@ -77,6 +77,138 @@ export function solveHomography(
   return [h[0], h[1], h[2], h[3], h[4], h[5], h[6], h[7], 1];
 }
 
+/** A single point correspondence for an over-constrained fit. */
+export interface PointPair {
+  readonly src: Point;
+  readonly dst: Point;
+}
+
+/** Row-major 3×3 product. */
+function multiply3(a: Homography, b: Homography): Homography {
+  const out = new Array<number>(9);
+  for (let r = 0; r < 3; r++) {
+    for (let c = 0; c < 3; c++) {
+      out[r * 3 + c] = a[r * 3] * b[c] + a[r * 3 + 1] * b[3 + c] + a[r * 3 + 2] * b[6 + c];
+    }
+  }
+  return out;
+}
+
+/**
+ * Isotropic (Hartley) normalization: the similarity that moves a point set's
+ * centroid to the origin and scales it so the mean distance from the centroid
+ * is √2, plus its inverse.
+ *
+ * The DLT's design matrix multiplies source by destination coordinates, so a
+ * raw pixel/millimetre fit carries entries spanning ~10⁵ into an 8×8 normal-
+ * equation solve that squares that spread again. Normalizing first keeps every
+ * entry O(1), which is the difference between a usable least-squares fit and
+ * one dominated by round-off. Returns null for a set with no spread.
+ */
+function normalizer(
+  points: readonly Point[]
+): { readonly forward: Homography; readonly inverse: Homography } | null {
+  const n = points.length;
+  if (n === 0) return null;
+  let cx = 0;
+  let cy = 0;
+  for (const p of points) {
+    cx += p.x;
+    cy += p.y;
+  }
+  cx /= n;
+  cy /= n;
+
+  let meanDist = 0;
+  for (const p of points) meanDist += Math.hypot(p.x - cx, p.y - cy);
+  meanDist /= n;
+  if (!(meanDist > 1e-9)) return null;
+
+  const s = Math.SQRT2 / meanDist;
+  return {
+    forward: [s, 0, -s * cx, 0, s, -s * cy, 0, 0, 1],
+    inverse: [1 / s, 0, cx, 0, 1 / s, cy, 0, 0, 1],
+  };
+}
+
+/**
+ * Least-squares homography over any number (≥4) of correspondences.
+ *
+ * Four points determine a homography exactly, which means every corner-
+ * detection error lands in the map itself — undetectable, and amplified across
+ * the rest of the frame. With more points the system is over-determined and no
+ * single bad correspondence dominates; {@link homographyRmsError} then reports
+ * how well the whole set agrees, which four points can never tell you.
+ *
+ * Solved in the inhomogeneous form (h8 pinned to 1) via the normal equations,
+ * which is well behaved once both point sets are Hartley-normalized. Returns
+ * null for degenerate input.
+ */
+export function solveHomographyLeastSquares(pairs: readonly PointPair[]): Homography | null {
+  if (pairs.length < 4) return null;
+  const srcNorm = normalizer(pairs.map((p) => p.src));
+  const dstNorm = normalizer(pairs.map((p) => p.dst));
+  if (!srcNorm || !dstNorm) return null;
+
+  const ata: number[][] = Array.from({ length: 8 }, () => new Array<number>(8).fill(0));
+  const atb = new Array<number>(8).fill(0);
+  const row = new Array<number>(8);
+
+  const accumulate = (rhs: number): void => {
+    for (let i = 0; i < 8; i++) {
+      atb[i] += row[i] * rhs;
+      for (let j = 0; j < 8; j++) ata[i][j] += row[i] * row[j];
+    }
+  };
+
+  for (const pair of pairs) {
+    const { x, y } = applyHomography(srcNorm.forward, pair.src);
+    const { x: u, y: v } = applyHomography(dstNorm.forward, pair.dst);
+
+    row[0] = x;
+    row[1] = y;
+    row[2] = 1;
+    row[3] = 0;
+    row[4] = 0;
+    row[5] = 0;
+    row[6] = -x * u;
+    row[7] = -y * u;
+    accumulate(u);
+
+    row[0] = 0;
+    row[1] = 0;
+    row[2] = 0;
+    row[3] = x;
+    row[4] = y;
+    row[5] = 1;
+    row[6] = -x * v;
+    row[7] = -y * v;
+    accumulate(v);
+  }
+
+  const h = solveLinearSystem(ata, atb);
+  if (!h) return null;
+  const normalized: Homography = [h[0], h[1], h[2], h[3], h[4], h[5], h[6], h[7], 1];
+  const denormalized = multiply3(dstNorm.inverse, multiply3(normalized, srcNorm.forward));
+  return denormalized.every(Number.isFinite) ? denormalized : null;
+}
+
+/**
+ * Root-mean-square distance, in destination units, between where `h` sends each
+ * source point and where it was supposed to land. Zero for an exact four-point
+ * solve; on an over-constrained fit it is the honest measure of how well the
+ * reference was detected.
+ */
+export function homographyRmsError(h: Homography, pairs: readonly PointPair[]): number {
+  if (pairs.length === 0) return 0;
+  let sum = 0;
+  for (const pair of pairs) {
+    const mapped = applyHomography(h, pair.src);
+    sum += (mapped.x - pair.dst.x) ** 2 + (mapped.y - pair.dst.y) ** 2;
+  }
+  return Math.sqrt(sum / pairs.length);
+}
+
 /** Map a single point through a homography. */
 export function applyHomography(h: Homography, p: Point): Point {
   const w = h[6] * p.x + h[7] * p.y + h[8];

@@ -6,9 +6,10 @@
  * confirm/retap, then uploads the outline SVG to the scan session the desktop
  * is polling. The photo never leaves the device — only the traced outline.
  *
- * When a reference card is in frame, the outline is rectified to true
- * millimetres (perspective + scale solved); otherwise it falls back to a pixel
- * outline and the desktop asks for one real dimension.
+ * When a size reference is in frame — the printed calibration sheet, or a
+ * wallet card — the outline is rectified to true millimetres (perspective +
+ * scale solved); otherwise it falls back to a pixel outline and the desktop
+ * asks for one real dimension.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -61,6 +62,11 @@ type Status =
 type Step = 'capture' | 'review' | 'done';
 
 const round1 = (n: number): number => Math.round(n * 10) / 10;
+
+function measuredFromKey(grid: SceneTrace['grid']): string {
+  if (!grid) return 'scan.cardMeasured';
+  return grid.kind === 'sheet' ? 'scan.gridMeasured' : 'scan.baseplateMeasured';
+}
 
 function bounds(points: readonly Point[]): { minX: number; minY: number; w: number; h: number } {
   const xs = points.map((p) => p.x);
@@ -311,6 +317,15 @@ export function ScanPage({ token }: ScanPageProps) {
                       vectorEffect="non-scaling-stroke"
                     />
                   )}
+                  {scene.grid?.cells.map((cell, i) => (
+                    <polygon
+                      key={i}
+                      points={cell.map((p) => `${p.x},${p.y}`).join(' ')}
+                      className="stroke-success"
+                      strokeWidth={2}
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  ))}
                   <polygon
                     points={scene.imagePoints.map((p) => `${p.x},${p.y}`).join(' ')}
                     className="fill-accent/15 stroke-accent"
@@ -339,7 +354,25 @@ export function ScanPage({ token }: ScanPageProps) {
                         depth: round1(measured.h),
                       })}
                     </p>
-                    <p className="text-xs text-success">{t('scan.cardMeasured')}</p>
+                    <p className="text-xs text-success">{t(measuredFromKey(scene.grid))}</p>
+                    {/* A lattice fit is over-constrained, so it can report how
+                        well it agrees with itself — the card's never can. */}
+                    {scene.grid && (
+                      <p className="text-xs text-content-secondary">
+                        {t(
+                          scene.grid.kind === 'sheet' ? 'scan.gridDetail' : 'scan.baseplateDetail',
+                          { count: scene.grid.cells.length, rms: round1(scene.grid.rmsMm) }
+                        )}
+                      </p>
+                    )}
+                    {/* Worth saying once, at the moment it applies: the plate
+                        was made by a printer whose calibration is the unknown
+                        this whole feature exists to work around. */}
+                    {scene.grid?.kind === 'baseplate' && (
+                      <p className="text-xs text-content-tertiary">
+                        {t('scan.baseplateAccuracyHint')}
+                      </p>
+                    )}
                     {cardSteep && (
                       <p className="text-xs text-warning">{t('scan.cardSteepAngle')}</p>
                     )}
@@ -548,6 +581,7 @@ function CaptureGuide({ t }: { readonly t: ReturnType<typeof useTranslation> }) 
       <ul className="flex w-full flex-col gap-3">
         <GuideTip text={t('scan.capture.tip.surface')} />
         <GuideTip text={t('scan.capture.tip.card')} />
+        <GuideTip text={t('scan.capture.tip.sheet')} />
         <GuideTip text={t('scan.capture.tip.topDown')} />
       </ul>
       <PrivacyNote text={t('scan.capture.privacy')} />
