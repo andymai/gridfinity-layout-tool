@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { solveHomography, applyHomography, rectifyPoints, type Homography } from './perspective';
+import {
+  solveHomography,
+  solveHomographyLeastSquares,
+  homographyRmsError,
+  applyHomography,
+  rectifyPoints,
+  type Homography,
+  type PointPair,
+} from './perspective';
 import type { Point } from './types';
 
 // A forward homography (mm → image) with a real perspective component (h6/h7),
@@ -88,5 +96,126 @@ describe('solveHomography', () => {
       { x: 3, y: 3 },
     ];
     expect(solveHomography(collinear, CARD)).toBeNull();
+  });
+});
+
+// A calibration-sheet-like lattice of marker corners in mm, spanning the whole
+// scanned area rather than one small card.
+const PITCH = 42;
+const HALF_MARKER = 7;
+function latticeCorners(cols: number, rows: number): Point[] {
+  const pts: Point[] = [];
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      if (col !== 0 && col !== cols - 1 && row !== 0 && row !== rows - 1) continue;
+      for (const [sx, sy] of [
+        [-1, -1],
+        [1, -1],
+        [1, 1],
+        [-1, 1],
+      ]) {
+        pts.push({ x: col * PITCH + sx * HALF_MARKER, y: row * PITCH + sy * HALF_MARKER });
+      }
+    }
+  }
+  return pts;
+}
+
+/** Deterministic ±`amount` jitter — reproducible corner-detection error. */
+function jitterer(amount: number, seed = 12345) {
+  let state = seed;
+  const next = (): number => {
+    state = (state * 1664525 + 1013904223) % 4294967296;
+    return (state / 4294967296) * 2 - 1;
+  };
+  return (p: Point): Point => ({ x: p.x + next() * amount, y: p.y + next() * amount });
+}
+
+describe('solveHomographyLeastSquares', () => {
+  it('reproduces the exact solve when the correspondences are noise-free', () => {
+    const mm = latticeCorners(5, 6);
+    const pairs: PointPair[] = mm.map((p) => ({ src: applyHomography(FORWARD, p), dst: p }));
+    const h = solveHomographyLeastSquares(pairs);
+    expect(h).not.toBeNull();
+    if (!h) return;
+
+    mm.forEach((p, i) => expectClose(applyHomography(h, pairs[i].src), p));
+    expect(homographyRmsError(h, pairs)).toBeLessThan(1e-6);
+  });
+
+  it('needs at least four correspondences', () => {
+    const mm = latticeCorners(5, 6).slice(0, 3);
+    expect(solveHomographyLeastSquares(mm.map((p) => ({ src: p, dst: p })))).toBeNull();
+  });
+
+  it('returns null when the points carry no spread', () => {
+    const same: PointPair[] = Array.from({ length: 8 }, () => ({
+      src: { x: 5, y: 5 },
+      dst: { x: 1, y: 1 },
+    }));
+    expect(solveHomographyLeastSquares(same)).toBeNull();
+  });
+
+  // The reason the calibration sheet exists: four points fit ANY corner error
+  // exactly, so it lands in the map and gets amplified across the frame. Many
+  // points cannot, so the error averages down instead.
+  it('beats an exact four-point solve when the corners are noisy', () => {
+    const mm = latticeCorners(5, 6);
+    const jitter = jitterer(1.5);
+    const observed = mm.map((p) => jitter(applyHomography(FORWARD, p)));
+
+    const leastSquares = solveHomographyLeastSquares(
+      mm.map((p, i) => ({ src: observed[i], dst: p }))
+    );
+    // The four-point alternative sees the same photo: the four outermost
+    // corners of the same lattice, observed with the same error. Marker (0,0)
+    // occupies points 0-3 and the last row starts at point 52, so these are the
+    // extreme TL / TR / BR / BL of the whole sheet.
+    const cornerIdx = [0, 17, 70, 55];
+    const pick = <T>(from: readonly T[]): [T, T, T, T] => [
+      from[cornerIdx[0]],
+      from[cornerIdx[1]],
+      from[cornerIdx[2]],
+      from[cornerIdx[3]],
+    ];
+    const exact = solveHomography(pick(observed), pick(mm));
+    expect(leastSquares).not.toBeNull();
+    expect(exact).not.toBeNull();
+    if (!leastSquares || !exact) return;
+
+    // Score both on a tool outline neither was fitted to, in the sheet's middle.
+    const toolMm: Point[] = [
+      { x: 60, y: 60 },
+      { x: 120, y: 65 },
+      { x: 118, y: 150 },
+      { x: 58, y: 145 },
+    ];
+    const toolInImage = toolMm.map((p) => applyHomography(FORWARD, p));
+    const worstError = (h: Homography): number =>
+      Math.max(
+        ...toolInImage.map((p, i) => {
+          const got = applyHomography(h, p);
+          return Math.hypot(got.x - toolMm[i].x, got.y - toolMm[i].y);
+        })
+      );
+
+    // Not merely better — the noise averages down, so it more than halves.
+    expect(worstError(leastSquares)).toBeLessThan(worstError(exact) / 2);
+    expect(worstError(leastSquares)).toBeLessThan(0.2);
+  });
+
+  it('reports its own disagreement in destination units', () => {
+    const mm = latticeCorners(5, 6);
+    const jitter = jitterer(2, 999);
+    const pairs: PointPair[] = mm.map((p) => ({
+      src: jitter(applyHomography(FORWARD, p)),
+      dst: p,
+    }));
+    const h = solveHomographyLeastSquares(pairs);
+    expect(h).not.toBeNull();
+    if (!h) return;
+    const rms = homographyRmsError(h, pairs);
+    expect(rms).toBeGreaterThan(0);
+    expect(rms).toBeLessThan(1);
   });
 });

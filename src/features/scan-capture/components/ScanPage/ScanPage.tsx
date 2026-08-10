@@ -6,9 +6,10 @@
  * confirm/retap, then uploads the outline SVG to the scan session the desktop
  * is polling. The photo never leaves the device — only the traced outline.
  *
- * When a reference card is in frame, the outline is rectified to true
- * millimetres (perspective + scale solved); otherwise it falls back to a pixel
- * outline and the desktop asks for one real dimension.
+ * When a size reference is in frame — the printed calibration sheet, or a
+ * wallet card — the outline is rectified to true millimetres (perspective +
+ * scale solved); otherwise it falls back to a pixel outline and the desktop
+ * asks for one real dimension.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -311,6 +312,15 @@ export function ScanPage({ token }: ScanPageProps) {
                       vectorEffect="non-scaling-stroke"
                     />
                   )}
+                  {scene.grid?.markers.map((marker, i) => (
+                    <polygon
+                      key={i}
+                      points={marker.map((p) => `${p.x},${p.y}`).join(' ')}
+                      className="stroke-success"
+                      strokeWidth={2}
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  ))}
                   <polygon
                     points={scene.imagePoints.map((p) => `${p.x},${p.y}`).join(' ')}
                     className="fill-accent/15 stroke-accent"
@@ -339,7 +349,19 @@ export function ScanPage({ token }: ScanPageProps) {
                         depth: round1(measured.h),
                       })}
                     </p>
-                    <p className="text-xs text-success">{t('scan.cardMeasured')}</p>
+                    <p className="text-xs text-success">
+                      {scene.grid ? t('scan.gridMeasured') : t('scan.cardMeasured')}
+                    </p>
+                    {/* The sheet's fit is over-constrained, so it can report how
+                        well it agrees with itself — the card's never can. */}
+                    {scene.grid && (
+                      <p className="text-xs text-content-secondary">
+                        {t('scan.gridDetail', {
+                          count: scene.grid.markers.length,
+                          rms: round1(scene.grid.rmsMm),
+                        })}
+                      </p>
+                    )}
                     {cardSteep && (
                       <p className="text-xs text-warning">{t('scan.cardSteepAngle')}</p>
                     )}
@@ -548,6 +570,7 @@ function CaptureGuide({ t }: { readonly t: ReturnType<typeof useTranslation> }) 
       <ul className="flex w-full flex-col gap-3">
         <GuideTip text={t('scan.capture.tip.surface')} />
         <GuideTip text={t('scan.capture.tip.card')} />
+        <GuideTip text={t('scan.capture.tip.sheet')} />
         <GuideTip text={t('scan.capture.tip.topDown')} />
       </ul>
       <PrivacyNote text={t('scan.capture.privacy')} />

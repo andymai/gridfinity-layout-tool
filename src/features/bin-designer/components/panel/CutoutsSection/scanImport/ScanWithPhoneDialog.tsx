@@ -18,6 +18,7 @@ import { parseScanSvg, rescaleToLongestMm, type ParsedScan } from './scanIngest'
 import { useScanImport } from './useScanImport';
 import { useScanSession } from './useScanSession';
 import { ScanQrCode } from './ScanQrCode';
+import { buildCalibrationSheetSvg, CALIBRATION_SHEET_FILENAME } from './calibrationSheetSvg';
 
 interface ScanWithPhoneDialogProps {
   readonly open: boolean;
@@ -157,6 +158,24 @@ export function ScanWithPhoneDialog({ open, onClose }: ScanWithPhoneDialogProps)
     [addToast, t, ingestSvg]
   );
 
+  // The sheet is printed on the computer, not the phone, so the offer belongs
+  // here rather than on the capture page.
+  const handleDownloadSheet = useCallback(() => {
+    const svg = buildCalibrationSheetSvg({
+      title: t('binDesigner.cutouts.scanImport.sheetTitle'),
+      printHint: t('binDesigner.cutouts.scanImport.sheetPrintHint'),
+      placeHint: t('binDesigner.cutouts.scanImport.sheetPlaceHint'),
+    });
+    const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = CALIBRATION_SHEET_FILENAME;
+    link.click();
+    // Revoking synchronously can cancel the download in some browsers.
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+    trackEvent('scan_calibration_sheet_download');
+  }, [t]);
+
   const handleConfirm = useCallback(() => {
     if (stage.kind !== 'review') return;
     const targetMm = parseFloat(stage.targetText);
@@ -226,6 +245,14 @@ export function ScanWithPhoneDialog({ open, onClose }: ScanWithPhoneDialogProps)
                   <Spinner size="sm" />
                   {t('binDesigner.cutouts.scanImport.waiting')}
                 </p>
+                <div className="flex w-full flex-col items-center gap-1 rounded-lg border border-stroke-subtle bg-surface-elevated px-3 py-2.5">
+                  <Button type="button" variant="ghost" size="sm" onClick={handleDownloadSheet}>
+                    {t('binDesigner.cutouts.scanImport.calibrationSheet')}
+                  </Button>
+                  <p className="text-xs text-content-tertiary">
+                    {t('binDesigner.cutouts.scanImport.calibrationSheetHelp')}
+                  </p>
+                </div>
                 <PrivacyHint text={t('scan.capture.privacy')} />
               </>
             ) : (
