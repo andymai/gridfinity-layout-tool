@@ -1,0 +1,21 @@
+package.json
+  s_db468712ebed57::t_a2bcfe8454d5a9 200
+pnpm-lock.yaml
+  s_db468712ebed57::t_46590a376613d0 256-257,302,317,4224-4225,8444,8490,9837,11350,11352,11379
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "9db4a4b1822702952679f7394249466b8f2bfb01",
+  "prompts": {},
+  "sessions": {
+    "s_db468712ebed57": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9e3eb938-03fe-4e65-baa9-063bdd169e44",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
