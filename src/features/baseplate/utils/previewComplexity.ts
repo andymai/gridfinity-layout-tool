@@ -113,3 +113,49 @@ export function shouldDeferBrepPreview(
 export function shouldSkipManifoldDraft(params: ResolvedBaseplateParams): boolean {
   return params.outline !== undefined;
 }
+
+/**
+ * Which drafts to paint on the leading edge of an edit, before the exact BREP.
+ *
+ * - `none` — leave the last good mesh on screen.
+ * - `direct` — the synchronous procedural mesh only.
+ * - `direct-then-manifold` — procedural first, then refine with the Manifold draft.
+ */
+export type PreviewDraftPlan = 'none' | 'direct' | 'direct-then-manifold';
+
+/**
+ * Pick the draft ladder for one edit.
+ *
+ * The two drafts are complements, not alternatives: the procedural mesh is
+ * synchronous and lands in ~11 ms, while the Manifold draft is a WASM round-trip
+ * (~350 ms typical, seconds on a cold kernel) that runs the real generator and so
+ * shows magnet holes and chamfers the procedural one approximates. Running only
+ * the faithful one leaves the previous, wrong-size plate on screen for that whole
+ * window — the lag users actually perceive — so a bridge-backed edit paints the
+ * cheap one first and lets Manifold, then BREP, refine it.
+ */
+export function planPreviewDrafts(options: {
+  params: ResolvedBaseplateParams;
+  hasPreviewBridge: boolean;
+  /** Wall-clock of the last successful exact build; null until one completes. */
+  lastBrepMs: number | null;
+  /** Below this predicted exact time a draft is pure flicker (see draftPolicy). */
+  skipBelowMs: number;
+}): PreviewDraftPlan {
+  const { params, hasPreviewBridge, lastBrepMs, skipBelowMs } = options;
+
+  // Shaped plate: the procedural mesh draws rectangles only, so it would show
+  // the wrong outline, and a Manifold draft would repeat the exact build's own
+  // expensive coplanar outline clip for an indistinguishable result.
+  if (shouldSkipManifoldDraft(params)) return 'none';
+
+  // No draft kernel — the procedural mesh is the only fill available, and it is
+  // cheap enough to paint even when the exact is predicted fast.
+  if (!hasPreviewBridge) return 'direct';
+
+  // A quick exact crossfades in on its own; a draft replaced almost immediately
+  // is just an intermediate jump.
+  if (lastBrepMs !== null && lastBrepMs < skipBelowMs) return 'none';
+
+  return 'direct-then-manifold';
+}

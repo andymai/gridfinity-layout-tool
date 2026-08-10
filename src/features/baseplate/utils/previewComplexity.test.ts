@@ -3,6 +3,7 @@ import {
   estimatePreviewComplexity,
   shouldDeferBrepPreview,
   shouldSkipManifoldDraft,
+  planPreviewDrafts,
   DEFER_MAX_PIECE_CELLS,
   DEFER_TOTAL_CELLS,
   DEFER_LAST_BREP_MS,
@@ -140,5 +141,61 @@ describe('shouldSkipManifoldDraft', () => {
 
   it('keeps the draft for a rectangular plate (no outline)', () => {
     expect(shouldSkipManifoldDraft(makeParams())).toBe(false);
+  });
+});
+
+describe('planPreviewDrafts', () => {
+  const plan = (
+    overrides: Partial<Parameters<typeof planPreviewDrafts>[0]> = {}
+  ): ReturnType<typeof planPreviewDrafts> =>
+    planPreviewDrafts({
+      params: makeParams(),
+      hasPreviewBridge: true,
+      lastBrepMs: null,
+      skipBelowMs: 150,
+      ...overrides,
+    });
+
+  /**
+   * Regression: the two drafts are complements, not alternatives. When the
+   * Manifold draft graduated it replaced the procedural one via an `else if`,
+   * which traded an ~11 ms first frame for a ~350 ms one (p90 ~1.3 s, and ~5 s
+   * on a cold kernel) on the majority of baseplate previews. The procedural mesh
+   * must paint FIRST and let Manifold refine it.
+   */
+  it('paints the procedural mesh before the Manifold draft on a bridge-backed edit', () => {
+    expect(plan()).toBe('direct-then-manifold');
+  });
+
+  it('still paints the procedural mesh when no draft kernel is available', () => {
+    expect(plan({ hasPreviewBridge: false })).toBe('direct');
+  });
+
+  /**
+   * Without a draft kernel the procedural mesh is the only fill there is, and it
+   * is cheap enough to be worth painting even when the exact is predicted fast.
+   */
+  it('paints the procedural mesh without a bridge even when the exact is predicted fast', () => {
+    expect(plan({ hasPreviewBridge: false, lastBrepMs: 10 })).toBe('direct');
+  });
+
+  it('skips both drafts when the exact build is predicted faster than the gate', () => {
+    expect(plan({ lastBrepMs: 149 })).toBe('none');
+  });
+
+  it('drafts when the last exact build was at or above the gate', () => {
+    expect(plan({ lastBrepMs: 150 })).toBe('direct-then-manifold');
+  });
+
+  /**
+   * A shaped plate gets neither draft: the procedural mesh draws rectangles only
+   * (wrong outline) and a Manifold draft repeats the exact build's own coplanar
+   * outline clip for an indistinguishable result.
+   */
+  it('skips both drafts for a shaped plate, whatever the bridge or timing says', () => {
+    const shaped = makeParams({ outline: rectOutline(252, 252) });
+    expect(plan({ params: shaped })).toBe('none');
+    expect(plan({ params: shaped, hasPreviewBridge: false })).toBe('none');
+    expect(plan({ params: shaped, lastBrepMs: 5000 })).toBe('none');
   });
 });
