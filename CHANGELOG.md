@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.395.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.395.0...gridfinity-layout-tool-v4.395.1) (2026-08-10)
+
+
+### Bug Fixes
+
+* **lid:** stop click rails running into label tabs ([#3401](https://github.com/andymai/gridfinity-layout-tool/issues/3401)) ([#3404](https://github.com/andymai/gridfinity-layout-tool/issues/3404)) ([824eec1](https://github.com/andymai/gridfinity-layout-tool/commit/824eec194c01c3299b4e70e5db1786aa4cf4cf58))
+
 ## [4.395.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.394.7...gridfinity-layout-tool-v4.395.0) (2026-08-10)
 
 
