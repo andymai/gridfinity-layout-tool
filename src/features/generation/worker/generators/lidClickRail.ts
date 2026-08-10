@@ -301,6 +301,30 @@ export interface RailSegment {
 }
 
 /**
+ * Remove `[blockLo, blockHi]` from a set of disjoint, ascending spans.
+ *
+ * Shared by the label-tab and grip-relief passes: both are "this stretch of
+ * wall is unavailable, keep what is left", and a rail landing in the middle of
+ * an obstruction has to yield two pieces, not one shortened one.
+ */
+function subtractSpan(
+  spans: readonly RailSegment[],
+  blockLo: number,
+  blockHi: number
+): RailSegment[] {
+  const out: RailSegment[] = [];
+  for (const seg of spans) {
+    if (blockHi <= seg.lo || blockLo >= seg.hi) {
+      out.push(seg);
+      continue;
+    }
+    if (blockLo > seg.lo) out.push({ lo: seg.lo, hi: blockLo });
+    if (blockHi < seg.hi) out.push({ lo: blockHi, hi: seg.hi });
+  }
+  return out;
+}
+
+/**
  * Split a wall's rail run into the stretches no label tab occupies.
  *
  * Clipping and segmenting turn out to be the same operation seen from two
@@ -336,16 +360,7 @@ export function railSegmentsClearOfLabelTabs(
     const blockLo = alongMin - LABEL_RAIL_MARGIN;
     const blockHi = alongMax + LABEL_RAIL_MARGIN;
 
-    const next: RailSegment[] = [];
-    for (const seg of segments) {
-      if (blockHi <= seg.lo || blockLo >= seg.hi) {
-        next.push(seg);
-        continue;
-      }
-      if (blockLo > seg.lo) next.push({ lo: seg.lo, hi: blockLo });
-      if (blockHi < seg.hi) next.push({ lo: blockHi, hi: seg.hi });
-    }
-    segments = next;
+    segments = subtractSpan(segments, blockLo, blockHi);
     if (segments.length === 0) break;
   }
 
@@ -361,12 +376,17 @@ export function railSegmentsClearOfLabelTabs(
  * for an easier opening, and only a user who also dipped the bin's lip has
  * asked for that trade. A plain chamfer or shadow line keeps its rails whole.
  *
- * Rails and reliefs are matched on their ALONG-wall centre (plus orientation),
+ * Rails and reliefs are matched by OVERLAP along the wall (plus orientation),
  * not on side name: a polygon lid can carry two edges facing the same way, and
  * only the one the relief was placed on may be split.
  *
- * Both flanking segments are the same length, so when one is too short to be
- * worth printing the other is too — that wall goes fully friction-fit.
+ * Matching used to compare the two CENTRES for exact equality, which held only
+ * while every rail was centred on its wall. A rail clipped short of a label tab
+ * (#3404), or one of the stretches between tabs (#3401), sits off-centre and
+ * silently failed to match — so the relief's requested snap-softening did not
+ * happen, on a lid that still looks entirely correct. Subtracting the grip's
+ * blocked span from the rail's own span handles every position, and a rail
+ * wholly behind the grip drops out rather than being split into two slivers.
  */
 export function splitRailsAroundGrip(
   placements: readonly RailPlacement[],
@@ -382,27 +402,28 @@ export function splitRailsAroundGrip(
     // Front/back walls run along X; left/right along Y.
     const alongX = rail.rotationDeg === 0 || rail.rotationDeg === 180;
     const railAlong = alongX ? rail.centerX : rail.centerY;
-    const grip = grips.find(
-      (g) =>
-        g.rotationDeg === rail.rotationDeg &&
-        Math.abs((alongX ? g.centerX : g.centerY) - railAlong) < 1e-6
-    );
-    if (!grip) {
-      out.push(rail);
-      continue;
+
+    let spans: RailSegment[] = [
+      { lo: railAlong - rail.length / 2, hi: railAlong + rail.length / 2 },
+    ];
+    for (const grip of grips) {
+      if (grip.rotationDeg !== rail.rotationDeg) continue;
+      const gripAlong = alongX ? grip.centerX : grip.centerY;
+      const blockLo = gripAlong - grip.spanMm / 2 - GRIP_RAIL_MARGIN;
+      const blockHi = gripAlong + grip.spanMm / 2 + GRIP_RAIL_MARGIN;
+      spans = subtractSpan(spans, blockLo, blockHi);
+      if (spans.length === 0) break;
     }
 
-    const gap = grip.spanMm + 2 * GRIP_RAIL_MARGIN;
-    const segmentLen = (rail.length - gap) / 2;
-    if (segmentLen < MIN_RAIL_LENGTH) continue;
-
-    const offset = gap / 2 + segmentLen / 2;
-    for (const dir of [-1, 1] as const) {
+    for (const span of spans) {
+      const length = span.hi - span.lo;
+      if (length < MIN_RAIL_LENGTH) continue;
+      const centre = (span.lo + span.hi) / 2;
       out.push({
         ...rail,
-        length: segmentLen,
-        centerX: alongX ? rail.centerX + dir * offset : rail.centerX,
-        centerY: alongX ? rail.centerY : rail.centerY + dir * offset,
+        length,
+        centerX: alongX ? centre : rail.centerX,
+        centerY: alongX ? rail.centerY : centre,
       });
     }
   }
