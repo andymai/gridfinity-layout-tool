@@ -10,6 +10,38 @@ import { contentRoutesPlugin } from './scripts/vite-plugin-content-routes';
 import { mediapipeAssetsPlugin } from './scripts/vite-plugin-mediapipe-assets';
 import { minifyJsonAssets } from './scripts/vite-plugin-minify-json-assets';
 
+// The prerendered content pages, mirroring the rewrites in vercel.json. They are
+// standalone static HTML, reachable from search rather than from inside the app,
+// so they are deliberately kept out of the precache: bundling all 85 of them into
+// every install put 85 requests on each cold load and 12 more on each deploy that
+// touched content. Being out of the precache means navigation to one has to be
+// denied the SPA fallback, or the service worker answers it with the app shell.
+const CONTENT_LOCALES = 'cs|de|es|fr|ko|nb|nl|pl|pt-BR|sv|uk|zh-CN';
+const CONTENT_SLUGS = [
+  'what-is-gridfinity',
+  'guide',
+  'privacy',
+  'terms',
+  'gridfinity-generator',
+  'gridfinity-bin-generator',
+  'gridfinity-baseplate-generator',
+  'gridfinity-calculator',
+  'gridfinity-sizes',
+  'gridfinity-tool-drawer',
+  'gridfinity-kitchen-drawer',
+  'gridfinity-software',
+  'gridfinity-cutout-generator',
+].join('|');
+// Two anchorings of one route set. A workbox urlPattern must be a RegExp value,
+// never a closure: vite-plugin-pwa serializes the service worker by stringifying
+// functions, so an identifier referenced from inside one resolves to nothing at
+// runtime and every matching navigation throws.
+const CONTENT_ROUTE_SOURCE = `/(?:(?:${CONTENT_LOCALES})/)?(?:${CONTENT_SLUGS})(?:[/?#]|$)`;
+// NavigationRoute tests its denylist against the pathname, so this one anchors.
+const CONTENT_ROUTE = new RegExp(`^${CONTENT_ROUTE_SOURCE}`);
+// RegExpRoute tests against the full href, where a leading ^ could never match.
+const CONTENT_ROUTE_HREF = new RegExp(CONTENT_ROUTE_SOURCE);
+
 // https://vite.dev/config/
 export default defineConfig({
   server: {
@@ -85,7 +117,10 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        // html is absent by design: only the app shell is precached, and the
+        // prerendered content pages are runtime-cached on first visit (see
+        // CONTENT_ROUTE above and the 'content-pages' rule below).
+        globPatterns: ['**/*.{js,css,ico,png,svg,woff2}', 'index.html'],
         // Exclude manifest icons from glob - they're auto-added via manifest.icons
         // This prevents duplicate precache entries
         globIgnores: [
@@ -130,13 +165,28 @@ export default defineConfig({
           /^\/api\//,
           /^\/sitemap\.xml$/,
           /^\/robots\.txt$/,
-          /^\/what-is-gridfinity(?:\/|$)/,
-          /^\/guide(?:\/|$)/,
-          /^\/privacy(?:\/|$)/,
-          /^\/terms(?:\/|$)/,
+          CONTENT_ROUTE,
           /^\/storage-bridge\.html$/,
         ],
         runtimeCaching: [
+          {
+            // The prerendered content pages, cached on first visit rather than
+            // precached for everyone. NetworkFirst because they are SEO surfaces
+            // whose copy is edited far more often than the app shell, and a stale
+            // one served from CacheFirst would outlive the deploy that fixed it.
+            urlPattern: CONTENT_ROUTE_HREF,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'content-pages',
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+              },
+              cacheableResponse: {
+                statuses: [200],
+              },
+            },
+          },
           {
             // Cache shared layout API responses for offline viewing
             urlPattern: /\/api\/share\/[a-zA-Z0-9]+$/,
