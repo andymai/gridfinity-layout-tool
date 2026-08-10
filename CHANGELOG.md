@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.397.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.396.0...gridfinity-layout-tool-v4.397.0) (2026-08-10)
+
+
+### Features
+
+* **labels:** apply tab width in socket mode ([#3402](https://github.com/andymai/gridfinity-layout-tool/issues/3402)) ([#3407](https://github.com/andymai/gridfinity-layout-tool/issues/3407)) ([299716e](https://github.com/andymai/gridfinity-layout-tool/commit/299716eed03f8f015e745bb71f727a80a6edaac6))
+
 ## [4.396.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.395.1...gridfinity-layout-tool-v4.396.0) (2026-08-10)
 
 
