@@ -29,6 +29,8 @@ const CASES: readonly (readonly [string, Partial<BinParams>])[] = [
   ['flat base', { base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' } }],
   ['tray base', { base: { ...DEFAULT_BIN_PARAMS.base, style: 'lid' } }],
   ['custom height unit', { height: 3, heightUnitMm: 10 }],
+  ['symmetric overhang', { overhang: { left: 4, right: 4, front: 4, back: 4, feet: false } }],
+  ['asymmetric overhang', { overhang: { left: 0, right: 6, front: 2, back: 0, feet: false } }],
 ];
 
 describe('labelTabInteriorDims tracks deriveDimensions', () => {

@@ -32,6 +32,8 @@ import {
 import type { LabelPlateWidthU, LabelSocketStyle } from '@/shared/constants/labelPlates';
 import { planLabelSockets } from '@/shared/utils/labelSocketPlan';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
+import { resolveOverhang, overhangExpansion, hasOverhang } from '@/shared/utils/overhang';
+import { isPartialMask } from '@/shared/utils/cellMask';
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants/gridfinity';
 import {
   LID_CLICK_RAIL_DROP_BELOW_WALL,
@@ -602,8 +604,15 @@ export function labelTabInteriorDims(params: BinParams): {
   const gridUnitY = params.gridUnitMmY ?? params.gridUnitMm;
   const outerW = params.width * params.gridUnitMm - GRIDFINITY_SPEC.TOLERANCE;
   const outerD = params.depth * gridUnitY - GRIDFINITY_SPEC.TOLERANCE;
-  const innerW = outerW - 2 * params.wallThickness;
-  const innerD = outerD - 2 * params.wallThickness;
+  // Overhang widens the shell and the cavity together, so a tab's anchor wall
+  // moves out with it. Omitting this put every footprint on an overhang bin
+  // several mm inboard of the real shelf, which is exactly where the rail
+  // clipping then fails to bite. Suppressed for polygon masks, matching the
+  // pipeline (the mask defines its own footprint).
+  const overhang = resolveOverhang(isPartialMask(params.cellMask) ? undefined : params.overhang);
+  const expansion = hasOverhang(overhang) ? overhangExpansion(overhang) : null;
+  const innerW = outerW + (expansion?.addW ?? 0) - 2 * params.wallThickness;
+  const innerD = outerD + (expansion?.addD ?? 0) - 2 * params.wallThickness;
 
   const totalHeight = params.height * params.heightUnitMm;
   // `flat` and `lid` bases carry no socket, so their whole height is wall.

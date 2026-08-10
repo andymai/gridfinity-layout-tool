@@ -17,7 +17,7 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
-import { verticalSolidSpans } from './__kernel-tests__/meshAssertions';
+import { boundingBox, verticalSolidSpans } from './__kernel-tests__/meshAssertions';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import {
@@ -36,6 +36,7 @@ interface Case {
   readonly edges: LabelTabEdges;
   readonly tabDepth: number;
   readonly support: LabelTabSupport;
+  readonly overhang?: BinParams['overhang'];
 }
 
 /** Every case here interfered before the fix except the two marked baseline. */
@@ -104,6 +105,24 @@ const CASES: readonly Case[] = [
     tabDepth: 12,
     support: 'bracket',
   },
+  {
+    name: 'symmetric overhang at 100%',
+    depth: 3,
+    coverage: 100,
+    edges: 'back',
+    tabDepth: 12,
+    support: 'bracket',
+    overhang: { left: 4, right: 4, front: 4, back: 4, feet: false },
+  },
+  {
+    name: 'asymmetric overhang at 100%',
+    depth: 3,
+    coverage: 100,
+    edges: 'back',
+    tabDepth: 12,
+    support: 'bracket',
+    overhang: { left: 0, right: 6, front: 2, back: 0, feet: false },
+  },
 ];
 
 function makeParams(c: Case): BinParams {
@@ -112,6 +131,7 @@ function makeParams(c: Case): BinParams {
     width: 2,
     depth: c.depth,
     height: 6,
+    ...(c.overhang ? { overhang: c.overhang } : {}),
     label: {
       ...DEFAULT_BIN_PARAMS.label,
       enabled: true,
@@ -163,23 +183,27 @@ function interferenceAt(bin: MeshData, lid: MeshData, x: number, y: number, dz: 
  * spine alone: the rail profile is 2.65mm wide and the shelf it clashes with
  * is thin, so a single-column probe can slip between them and report clean.
  */
-function worstInterference(bin: MeshData, lid: MeshData, p: BinParams, dz: number): number {
-  const lidOuterW = p.width * p.gridUnitMm - GRIDFINITY.TOLERANCE - 2 * LID_FIT_CLEARANCE;
-  const lidOuterD = p.depth * p.gridUnitMm - GRIDFINITY.TOLERANCE - 2 * LID_FIT_CLEARANCE;
-  const spineX = lidOuterW / 2 - LID_CORNER_RADIUS;
-  const spineY = lidOuterD / 2 - LID_CORNER_RADIUS;
+function worstInterference(bin: MeshData, lid: MeshData, dz: number): number {
+  // Probe positions come from the LID's own bounds rather than a re-derivation
+  // of its width: overhang both widens and shifts the lid, and an arithmetic
+  // slip there would move every probe off the rails and quietly report clean.
+  const bb = boundingBox(lid.vertices);
+  const cx = (bb.minX + bb.maxX) / 2;
+  const cy = (bb.minY + bb.maxY) / 2;
+  const spineX = (bb.maxX - bb.minX) / 2 - LID_CORNER_RADIUS;
+  const spineY = (bb.maxY - bb.minY) / 2 - LID_CORNER_RADIUS;
 
   let worst = 0;
   for (const off of [-0.6, -0.2, 0, 0.6, 1.4]) {
     // Left and right rails: sweep along Y at the rail's X.
-    for (let y = -spineY; y <= spineY; y += 1) {
-      for (const sx of [spineX + off, -spineX - off]) {
+    for (let y = cy - spineY; y <= cy + spineY; y += 1) {
+      for (const sx of [cx + spineX + off, cx - spineX - off]) {
         worst = Math.max(worst, interferenceAt(bin, lid, sx, y, dz));
       }
     }
     // Front and back rails: sweep along X at the rail's Y.
-    for (let x = -spineX; x <= spineX; x += 1) {
-      for (const sy of [spineY + off, -spineY - off]) {
+    for (let x = cx - spineX; x <= cx + spineX; x += 1) {
+      for (const sy of [cy + spineY + off, cy - spineY - off]) {
         worst = Math.max(worst, interferenceAt(bin, lid, x, sy, dz));
       }
     }
@@ -204,7 +228,7 @@ describe('lid click rails clear label tabs', () => {
 
       // 0.05mm absorbs mesh tessellation noise on the curved corner blends;
       // the defect this guards against measured 1.25mm.
-      expect(worstInterference(bin, lid, params, lidZOffset(params))).toBeLessThan(0.05);
+      expect(worstInterference(bin, lid, lidZOffset(params))).toBeLessThan(0.05);
     },
     300000
   );
