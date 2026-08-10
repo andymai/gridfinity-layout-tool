@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.394.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.394.3...gridfinity-layout-tool-v4.394.4) (2026-08-10)
+
+
+### Performance
+
+* **generation:** let wall-patterned bins resume the booleaned body ([#3382](https://github.com/andymai/gridfinity-layout-tool/issues/3382)) ([5dc43c9](https://github.com/andymai/gridfinity-layout-tool/commit/5dc43c9b50198e0c4998c076ab4495eecd529dd6))
+
 ## [4.394.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.394.2...gridfinity-layout-tool-v4.394.3) (2026-08-10)
 
 
