@@ -105,17 +105,37 @@ export const featuresStage: PipelineStage = {
     // only bind clipping to the outermost edge per cardinal — non-outermost
     // step walls get pure pattern.
     const wallPatternEnabled = params.wallPattern.enabled;
+    let wallPatternKeys: string[] = [];
+    let unkeyedPatternCuts = false;
     if (wallPatternEnabled) {
       // Stamp patterns and kumiko wrapped-lattice patterns are mutually
       // exclusive per pattern type; each builder no-ops for the other's types.
-      const patternShapes = buildWallPatterns(ctx);
-      targets.patternCutTargets.push(...patternShapes);
+      const patterns = buildWallPatterns(ctx);
+      // The two arrays are appended in lockstep; a mismatch would mean a shape
+      // whose identity is missing from the resume key, which is the one failure
+      // that surfaces as wrong geometry rather than a slow rebuild.
+      if (patterns.keys.length !== patterns.shapes.length) {
+        throw new Error('wall pattern targets and keys are misaligned');
+      }
+      targets.patternCutTargets.push(...patterns.shapes);
+      wallPatternKeys = patterns.keys;
       const kumikoShapes = buildKumikoWallPatterns(ctx);
       targets.patternCutTargets.push(...kumikoShapes);
       // Divider walls (#2811) carry the same pattern when opted in. Both
       // pipelines are handled inside, so this is one call for either type.
-      targets.patternCutTargets.push(...buildDividerPatterns(ctx));
+      const dividerShapes = buildDividerPatterns(ctx);
+      targets.patternCutTargets.push(...dividerShapes);
+      // Neither builder reports the identity of what it emitted (both compute
+      // it internally, the divider one inside a panel-factory closure), so a
+      // bin carrying either keeps the resume cache off.
+      unkeyedPatternCuts = kumikoShapes.length > 0 || dividerShapes.length > 0;
     }
+
+    // The floor pattern stays unkeyed regardless: its shapes also carve the
+    // deferred socket, and a resume hit would be worse than stale — the cached
+    // body would come back with holes while the freshly built socket flowed
+    // through uncut.
+    const resumable = !unkeyedPatternCuts && floorPatternShapes.length === 0;
 
     return {
       ...ctx,
@@ -123,12 +143,16 @@ export const featuresStage: PipelineStage = {
       cutTargets: targets.cutTargets,
       patternCutTargets: targets.patternCutTargets,
       deferredCutTargets: floorPatternShapes,
-      // Pattern cuts aren't keyed through feature builders, so their geometry
-      // isn't in `featuresKey` — disable the resume cache rather than risk a
-      // stale body when only the pattern changes. For the floor pattern a
-      // resume hit would be worse than stale: the cached body would come back
-      // with holes while the freshly built socket flowed through uncut.
-      featuresKey: wallPatternEnabled || floorPatternShapes.length > 0 ? null : targets.featuresKey,
+      // Wall-pattern cuts ride in `featuresKey` via the same per-wall identity
+      // the pattern cache trusts, so a patterned bin can resume the post-boolean
+      // body like any other. That matters most here: the honeycomb-plus-cutouts
+      // bins are both the slowest to boolean and, until now, the only ones
+      // barred from the cache that exists to skip it.
+      featuresKey: resumable
+        ? wallPatternKeys.length > 0
+          ? JSON.stringify(['wallpattern-v1', targets.featuresKey, wallPatternKeys])
+          : targets.featuresKey
+        : null,
     };
   },
 };

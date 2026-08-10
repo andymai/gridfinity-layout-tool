@@ -49,10 +49,14 @@ describe('post-boolean body resume cache (#2333)', () => {
     expect(binBodyStats()).toEqual({ hits: 0, misses: 2 });
   }, 60_000);
 
-  it('disables the resume cache for wall-pattern bins (featuresKey null)', () => {
+  // Stamp wall patterns DO resume now — they report a per-wall identity that
+  // rides in `featuresKey`. See `binBodyResumeCache.test.ts`. The wrapped-lattice
+  // (kumiko) pipeline reports no such identity, so it stays opted out; without
+  // that a lattice change would resume a stale body.
+  it('disables the resume cache for kumiko wrapped-lattice bins (featuresKey null)', () => {
     const generateBin = getGenerateBin();
     const params = buildParams({
-      wallPattern: { ...DEFAULT_BIN_PARAMS.wallPattern, enabled: true },
+      wallPattern: { ...DEFAULT_BIN_PARAMS.wallPattern, enabled: true, pattern: 'asanoha' },
     });
 
     clearAllCaches();

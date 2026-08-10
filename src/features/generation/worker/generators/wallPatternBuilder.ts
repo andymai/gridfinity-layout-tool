@@ -462,19 +462,35 @@ export function computeWallClips(
 }
 
 /**
+ * Wall pattern cut targets plus the geometry identity of each one.
+ *
+ * `keys[i]` is the identity of `shapes[i]` — the same `clippedKey` the per-wall
+ * cache uses to decide two results are interchangeable. The resume cache in
+ * `booleanStage` keys on these rather than on a separately-derived digest of
+ * the pattern params: a second derivation is a second thing to keep in sync,
+ * and the failure mode when it drifts is a stale body, not a crash. Anything
+ * incomplete here would already be serving the wrong shape from the wall cache.
+ */
+export interface WallPatternTargets {
+  readonly shapes: Shape3D[];
+  readonly keys: string[];
+}
+
+/**
  * Build wall pattern shapes for all walls with per-wall caching
  * and optional cutout clipping.
  *
  * Returns shapes to be pushed into patternCutTargets. Each shape
  * is a clone owned by the caller (cache owns the originals).
  */
-export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
+export function buildWallPatterns(ctx: PipelineContext): WallPatternTargets {
   const { params, dimensions: dim, signal, originToTag, perfCollector } = ctx;
   const { innerW, innerD, interiorHeight, innerOffsetX, innerOffsetY } = dim;
   const patternCutTargets: Shape3D[] = [];
+  const patternCutKeys: string[] = [];
 
   const patternResult = getPatternDescriptors(params, innerW, innerD, interiorHeight, dim.hasLip);
-  if (!patternResult) return patternCutTargets;
+  if (!patternResult) return { shapes: patternCutTargets, keys: patternCutKeys };
 
   // patternResult.calculator is a StampPatternCalculator: getPatternDescriptors
   // filters motif/wrapped-lattice patterns out of this pipeline (they build via
@@ -575,11 +591,14 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
         old.delete();
       }
       collectOrigins(shape, FeatureTag.WALL_PATTERN, originToTag);
+      // Pushed together so the two arrays cannot fall out of alignment; the
+      // caller asserts the lengths match before trusting the keys.
       patternCutTargets.push(shape);
+      patternCutKeys.push(clippedKey);
     }
   }
 
   if (perfCollector) perfCollector.setPatternCutToolCount(patternCutTargets.length);
 
-  return patternCutTargets;
+  return { shapes: patternCutTargets, keys: patternCutKeys };
 }
