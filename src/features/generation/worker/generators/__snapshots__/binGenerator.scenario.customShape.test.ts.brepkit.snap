@@ -1,27 +1,31 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`custom-shape > 1.5×1.5 half-bin L user halfSockets off 1`] = `3671`;
+exports[`custom-shape > 1.5×1.5 half-bin L user halfSockets off 1`] = `2726`;
 
-exports[`custom-shape > 1.5×1.5 half-bin L with lip 1`] = `7013`;
+exports[`custom-shape > 1.5×1.5 half-bin L with lip 1`] = `4146`;
 
-exports[`custom-shape > 2×2 mixed-detail per-cell half sockets 1`] = `5628`;
+exports[`custom-shape > 2×2 mixed-detail per-cell half sockets 1`] = `3670`;
 
-exports[`custom-shape > 3×3 L flat base no lip 1`] = `508`;
+exports[`custom-shape > 3×3 L flat base no lip 1`] = `316`;
 
-exports[`custom-shape > 3×3 L with front cutout (polygon-aware side mapping) 1`] = `7137`;
+exports[`custom-shape > 3×3 L with front cutout (polygon-aware side mapping) 1`] = `4348`;
 
-exports[`custom-shape > 3×3 L with front handle (polygon-aware side mapping) 1`] = `7778`;
+exports[`custom-shape > 3×3 L with front handle (polygon-aware side mapping) 1`] = `4698`;
 
-exports[`custom-shape > 3×3 L with honeycomb pattern (polygon edge enumeration) 1`] = `22353`;
+exports[`custom-shape > 3×3 L with honeycomb + front cutout (outermost-edge clip) 1`] = `6988`;
 
-exports[`custom-shape > 3×3 L with lip 1`] = `6947`;
+exports[`custom-shape > 3×3 L with honeycomb pattern (polygon edge enumeration) 1`] = `6998`;
 
-exports[`custom-shape > 3×3 O-shape (ring) with lip 1`] = `8386`;
+exports[`custom-shape > 3×3 L with lip 1`] = `4254`;
 
-exports[`custom-shape > 3×3 T with lip 1`] = `5651`;
+exports[`custom-shape > 3×3 O-shape (ring) with lip 1`] = `4016`;
 
-exports[`custom-shape > 3×3 U with front + left handles (multi-side polygon) 1`] = `4708`;
+exports[`custom-shape > 3×3 T with lip 1`] = `4246`;
 
-exports[`custom-shape > 3×3 U with front cutout (single candidate edge) 1`] = `4708`;
+exports[`custom-shape > 3×3 U with front + left handles (multi-side polygon) 1`] = `5246`;
 
-exports[`custom-shape > 3×3 U with lip 1`] = `4708`;
+exports[`custom-shape > 3×3 U with front cutout (single candidate edge) 1`] = `4892`;
+
+exports[`custom-shape > 3×3 U with honeycomb pattern (multi-side polygon pattern) 1`] = `8442`;
+
+exports[`custom-shape > 3×3 U with lip 1`] = `4802`;
