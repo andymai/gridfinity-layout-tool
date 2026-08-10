@@ -752,6 +752,11 @@ export const LID_CLICK_RAIL_DROP = 0.8;
 export const LID_CLICK_RAIL_TAIL = 1.25;
 /** Shoulder between the rail bump and its exit chamfer. */
 export const LID_CLICK_RAIL_SHOULDER = 0.1;
+/** Top entry chamfer: the rail's apex climbs this far above its own top face,
+ *  blending it into the lid's cavity wall. Lives here rather than in the
+ *  worker's `lidConstants` because the rail's swept Z band is what a label tab
+ *  has to stay clear of, and that check runs on the main thread too. */
+export const LID_CLICK_RAIL_TOP_CHAMFER = 0.8;
 
 export const LID_CLICK_RAIL_DROP_BELOW_WALL =
   LID_CLICK_RAIL_ENTRY_CHAMFER +

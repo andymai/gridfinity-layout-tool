@@ -898,7 +898,7 @@
   "binDesigner.lid.compat.handles": "Griffe an {sides} reichen in den Stapelrand — die Klemmleiste an diesen Wänden wird automatisch ausgelassen.",
   "binDesigner.lid.compat.handlesAllSides": "Griffe an allen vier Seiten reichen in den Stapelrand — der Deckel hat keine Wand zum Greifen.",
   "binDesigner.lid.compat.heading": "Kompatibilitätshinweise",
-  "binDesigner.lid.compat.labelTabs": "Beschriftungslaschen sitzen an der Rückwand — die Klemmleiste an dieser Wand wird automatisch ausgelassen, um die Lasche freizuhalten.",
+  "binDesigner.lid.compat.labelTabs": "Beschriftungslaschen belegen die Wand, an der sie hängen — die Klemmleiste an {sides} wird automatisch ausgelassen, um sie freizuhalten. Die Leisten an den übrigen Wänden enden stattdessen kurz vor den Laschen.",
   "binDesigner.lid.compat.magnetBinTooSmall": "Der Behälter ist zu klein für Eckmagnete — verwende einen größeren Behälter oder einen kleineren Magnetdurchmesser.",
   "binDesigner.lid.compat.magnetTooDeepForBin": "Der Rückhaltemagnet ist tiefer als der Innenraum des Behälters fassen kann — verringere die Tiefe oder verwende einen höheren Behälter.",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "Bei Sonderformen lassen sich keine Eckmagnete platzieren — der Deckel fällt auf Reibschluss ohne Magnete zurück.",

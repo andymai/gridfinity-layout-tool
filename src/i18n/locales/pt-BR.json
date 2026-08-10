@@ -898,7 +898,7 @@
   "binDesigner.lid.compat.handles": "As alças em {sides} chegam ao lábio — a guia de clique nessas paredes é ignorada automaticamente.",
   "binDesigner.lid.compat.handlesAllSides": "Alças nos quatro lados chegam ao lábio — a tampa não tem parede para segurar.",
   "binDesigner.lid.compat.heading": "Notas de compatibilidade",
-  "binDesigner.lid.compat.labelTabs": "As abas de rótulo ficam na parede traseira — a guia de clique nessa parede é ignorada automaticamente para liberar a aba.",
+  "binDesigner.lid.compat.labelTabs": "As abas de rótulo ocupam a parede em que ficam presas — a guia de clique em {sides} é ignorada automaticamente para liberá-las. As guias das outras paredes param antes das abas.",
   "binDesigner.lid.compat.magnetBinTooSmall": "O compartimento é pequeno demais para ímãs de canto — use um compartimento maior ou um ímã de menor diâmetro.",
   "binDesigner.lid.compat.magnetTooDeepForBin": "O ímã de retenção é mais profundo do que o interior do compartimento comporta — reduza a profundidade ou use um compartimento mais alto.",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "Formas personalizadas não permitem ímãs de canto — a tampa volta ao encaixe por atrito sem ímãs.",

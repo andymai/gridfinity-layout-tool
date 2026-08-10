@@ -898,7 +898,7 @@
   "binDesigner.lid.compat.handles": "Uchwyty na {sides} sięgają w kołnierz — szyna zatrzaskowa na tych ściankach jest automatycznie pomijana.",
   "binDesigner.lid.compat.handlesAllSides": "Uchwyty na wszystkich czterech bokach sięgają w kołnierz — żadna ścianka nie zostaje, by pokrywa mogła się chwycić.",
   "binDesigner.lid.compat.heading": "Uwagi o zgodności",
-  "binDesigner.lid.compat.labelTabs": "Zakładki etykiet spoczywają na tylnej ściance — szyna zatrzaskowa na tej ściance jest automatycznie pomijana, aby zrobić miejsce dla zakładki.",
+  "binDesigner.lid.compat.labelTabs": "Zakładki etykiet zajmują ściankę, na której są osadzone — szyna zatrzaskowa na {sides} jest automatycznie pomijana, aby zrobić im miejsce. Szyny na pozostałych ściankach kończą się tuż przed zakładkami.",
   "binDesigner.lid.compat.magnetBinTooSmall": "Bin jest zbyt mały, aby zmieścić magnesy narożne — użyj większego bina lub magnesu o mniejszej średnicy.",
   "binDesigner.lid.compat.magnetTooDeepForBin": "Magnes mocujący jest głębszy niż wnętrze bina może pomieścić — zmniejsz jego głębokość lub użyj wyższego bina.",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "Własne kształty nie mogą umieszczać magnesów narożnych — pokrywa wraca do dopasowania na tarcie bez magnesów.",

@@ -1975,7 +1975,7 @@ const en: Record<string, string> = {
   'binDesigner.lid.compat.compartmentDividers':
     'Compartment dividers extend up to the lip — they may press against the lid’s mating shell where they meet the bin walls.',
   'binDesigner.lid.compat.labelTabs':
-    'Label tabs sit on the back wall — the click rail on that wall is auto-skipped to clear the tab.',
+    'Label tabs occupy the wall they hang from — the click rail on {sides} is auto-skipped to clear them. Rails on the other walls stop short of the tabs instead.',
   'binDesigner.lid.compat.handles':
     'Handles on {sides} reach into the lip — the click rail on those walls is auto-skipped.',
   'binDesigner.lid.compat.handlesAllSides':
