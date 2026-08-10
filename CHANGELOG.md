@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.396.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.395.1...gridfinity-layout-tool-v4.396.0) (2026-08-10)
+
+
+### Features
+
+* **lid:** finer click-rail coverage steps ([#3401](https://github.com/andymai/gridfinity-layout-tool/issues/3401)) ([#3406](https://github.com/andymai/gridfinity-layout-tool/issues/3406)) ([40432f6](https://github.com/andymai/gridfinity-layout-tool/commit/40432f618fbf89a3533819f29887acac24389bd3))
+
 ## [4.395.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.395.0...gridfinity-layout-tool-v4.395.1) (2026-08-10)
 
 
