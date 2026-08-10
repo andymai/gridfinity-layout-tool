@@ -10,14 +10,11 @@
  * — a narrow view of the private fields it needs to mutate.
  */
 
-import type { WorkerResponse, WorkerCacheStats } from './types';
+import type { WorkerResponse } from './types';
 import type { AdaptiveDebounce } from './adaptiveDebounce';
 import type {
   ProgressCallback,
   GenerationResult,
-  CacheStatsCallback,
-  KernelPerfStatsCallback,
-  BooleanFallbackStatsCallback,
   DedupCache,
   ExportSlot,
   PendingExport,
@@ -35,9 +32,6 @@ export interface MessageHandlerContext {
   pendingResolve: ((result: GenerationResult) => void) | null;
   pendingReject: ((error: Error) => void) | null;
   onProgress: ProgressCallback | null;
-  onCacheStats: CacheStatsCallback | null;
-  onKernelPerfStats: KernelPerfStatsCallback | null;
-  onBooleanFallbackStats: BooleanFallbackStatsCallback | null;
   readonly adaptiveDebounce: AdaptiveDebounce;
   readonly binCache: DedupCache;
   readonly baseplateCache: DedupCache;
@@ -56,7 +50,6 @@ export interface MessageHandlerContext {
   resolveExport: (slot: ExportSlot, requestId: string, result: unknown) => boolean;
   rejectExportByRequestId: (requestId: string, error: Error) => boolean;
   commitDedupCache: (cache: DedupCache, result: GenerationResult) => void;
-  handleCacheStats: (caches: readonly WorkerCacheStats[]) => void;
 }
 
 /**
@@ -307,18 +300,6 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
         ctx.resolveExport('splitPreview', response.requestId, {
           pieces: response.pieces,
         });
-        break;
-
-      case 'CACHE_STATS':
-        ctx.handleCacheStats(response.caches);
-        break;
-
-      case 'KERNEL_PERF_STATS':
-        ctx.onKernelPerfStats?.({ stats: response.stats });
-        break;
-
-      case 'BOOLEAN_FALLBACK_STATS':
-        ctx.onBooleanFallbackStats?.({ records: response.records });
         break;
 
       case 'INIT_READY':

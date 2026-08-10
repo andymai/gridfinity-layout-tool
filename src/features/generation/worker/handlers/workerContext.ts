@@ -6,25 +6,11 @@
  * progress reporting, and error handling.
  */
 
-import { getPerformanceStats, resetPerformanceStats } from 'brepjs';
 import type { WorkerResponse, MeshData, KernelName, ExportErrorCode } from '../../bridge/types';
-import { stageStats } from './stageStats';
-import {
-  getAllShapeCacheStats,
-  resetAllShapeCacheStats,
-  clearAllCaches,
-} from '../generators/shapeCache';
-import {
-  getBaseplateCacheStats,
-  resetBaseplateCacheStats,
-  clearBaseplateCaches,
-} from '../generators/baseplateGenerator';
+import { clearAllCaches } from '../generators/shapeCache';
+import { clearBaseplateCaches } from '../generators/baseplateGenerator';
 import { clearMeshImprintCache } from '../generators/meshImprint';
 import { recoverBrepkitKernel, getLastBrepkitPanic } from '../wasmInstantiator';
-import {
-  getBooleanFallbackStats,
-  resetBooleanFallbackStats,
-} from '../generators/pipeline/stages/booleanStage';
 import { isAbortError } from '../generators/utils/abort';
 import { PerfCollector } from '../generators/pipeline/perfCollector';
 import { recordCompletedGeneration } from '../generators/estimateBin';
@@ -141,8 +127,6 @@ export function runGeneration(
   const perfCollector = new PerfCollector();
 
   try {
-    resetPerformanceStats();
-    resetBooleanFallbackStats();
     const meshData = generator(signal, perfCollector);
 
     if (activeRequestId !== requestId) return;
@@ -150,13 +134,6 @@ export function runGeneration(
     const timingMs = performance.now() - startTime;
     const perfSnapshot = perfCollector.snapshot(timingMs);
     recordCompletedGeneration(perfSnapshot);
-    // brepjs's perf categories are populated only by the legacy opencascade
-    // adapter. occt-wasm (the default kernel) routes booleans through its C++
-    // BooleanPipeline and doesn't instrument mesh timing, so getPerformanceStats
-    // returns all-zero counts and `generation_kernel_perf` would never fire
-    // (its emit guard drops zero-count categories). Fold in the kernel-agnostic
-    // pipeline stage timings so the metric survives any kernel.
-    const kernelPerfStats = { ...getPerformanceStats(), ...stageStats(perfSnapshot) };
 
     const maybeCopy = <T extends Float32Array | Uint32Array>(buf: T): T =>
       (copyBuffers ? buf.slice() : buf) as T;
@@ -334,30 +311,6 @@ export function runGeneration(
     }
     const nonEmptyTransfer = transfer.filter((b) => b.byteLength > 0);
     self.postMessage(response, { transfer: nonEmptyTransfer });
-
-    const cacheStats = [...getAllShapeCacheStats(), ...getBaseplateCacheStats()];
-    respond({ type: 'CACHE_STATS', requestId, caches: cacheStats });
-    resetAllShapeCacheStats();
-    resetBaseplateCacheStats();
-
-    respond({ type: 'KERNEL_PERF_STATS', requestId, stats: kernelPerfStats });
-
-    const fallbackRecords = getBooleanFallbackStats();
-    if (fallbackRecords.length > 0) {
-      respond({
-        type: 'BOOLEAN_FALLBACK_STATS',
-        requestId,
-        records: fallbackRecords.map((r) => ({
-          category: r.category,
-          totalInputs: r.totalInputs,
-          batchAttempts: r.batchAttempts,
-          batchSucceeded: r.batchSucceeded,
-          singletonFallbacks: r.singletonFallbacks,
-          failedInputCount: r.failedInputCount,
-        })),
-      });
-      resetBooleanFallbackStats();
-    }
   } catch (e) {
     if (isAbortError(e)) return;
     const errorMsg = formatError(e);

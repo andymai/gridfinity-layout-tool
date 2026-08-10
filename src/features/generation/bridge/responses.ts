@@ -38,9 +38,6 @@ export type WorkerResponse =
   | SplitExportResultResponse
   | ImportMeshResultResponse
   | ImportMeshErrorResponse
-  | CacheStatsResponse
-  | KernelPerfStatsResponse
-  | BooleanFallbackStatsResponse
   | CleanupDoneResponse
   | WarmDoneResponse
   | ErrorResponse;
@@ -55,13 +52,6 @@ export interface WorkerCacheStats {
   readonly maxSize: number;
 }
 
-/** Aggregated cache stats posted after each generation. */
-export interface CacheStatsResponse {
-  readonly type: 'CACHE_STATS';
-  readonly requestId: string;
-  readonly caches: readonly WorkerCacheStats[];
-}
-
 export interface CleanupDoneResponse {
   readonly type: 'CLEANUP_DONE';
 }
@@ -69,19 +59,6 @@ export interface CleanupDoneResponse {
 export interface WarmDoneResponse {
   readonly type: 'WARM_DONE';
   readonly requestId: string;
-}
-
-/** Per-category kernel performance timing from brepjs. */
-export interface KernelPerfCategory {
-  readonly totalMs: number;
-  readonly count: number;
-}
-
-/** Kernel performance stats posted after each generation. */
-export interface KernelPerfStatsResponse {
-  readonly type: 'KERNEL_PERF_STATS';
-  readonly requestId: string;
-  readonly stats: Readonly<Record<string, KernelPerfCategory>>;
 }
 
 /**
@@ -120,33 +97,6 @@ export interface PerfSnapshot {
   readonly hexCenterCount: number;
   /** Number of pattern compounds fed into the final pattern_cut pass. */
   readonly patternCutToolCount: number;
-}
-
-/**
- * Boolean fallback occurrence — one record per boolean op where bisect
- * recovery kicked in (`batchAttempts > 1` or `singletonFallbacks > 0`).
- * `failedInputCount` over `totalInputs` separates concentrated failures
- * (1-2 bad tools — bisect wins) from structural failures (all tools fail —
- * bisect bottoms out at pairwise).
- */
-export interface BooleanFallbackEntry {
-  readonly category: 'fuse' | 'cut' | 'pattern_cut';
-  readonly totalInputs: number;
-  readonly batchAttempts: number;
-  readonly batchSucceeded: number;
-  readonly singletonFallbacks: number;
-  readonly failedInputCount: number;
-}
-
-/**
- * Boolean fallback stats posted after a generation if (and only if) at least
- * one bisect-recovery event fired in the boolean stage. The worker omits this
- * response on the common no-recovery path to keep worker/main chatter minimal.
- */
-export interface BooleanFallbackStatsResponse {
-  readonly type: 'BOOLEAN_FALLBACK_STATS';
-  readonly requestId: string;
-  readonly records: readonly BooleanFallbackEntry[];
 }
 
 export interface InitReadyResponse {
