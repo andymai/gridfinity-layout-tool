@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.395.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.394.7...gridfinity-layout-tool-v4.395.0) (2026-08-10)
+
+
+### Features
+
+* **scan:** size scans from a calibration lattice, not one card ([#3038](https://github.com/andymai/gridfinity-layout-tool/issues/3038)) ([#3399](https://github.com/andymai/gridfinity-layout-tool/issues/3399)) ([c1cf715](https://github.com/andymai/gridfinity-layout-tool/commit/c1cf71591bb1d6a79d05196a3780647df80c3092))
+
 ## [4.394.7](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.394.6...gridfinity-layout-tool-v4.394.7) (2026-08-10)
 
 
