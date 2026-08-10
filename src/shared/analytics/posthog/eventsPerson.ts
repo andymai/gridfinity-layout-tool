@@ -7,8 +7,8 @@
  * a user has touched a feature once — used for adoption funnels.
  *
  * Kept in its own module so the lower-level event trackers
- * (`eventsCore`, `eventsHeartbeat`) can call it without dragging the
- * full events catalog into a circular import.
+ * (`eventsCore`) can call it without dragging the full events
+ * catalog into a circular import.
  */
 
 import { useLayoutStore } from '@/core/store/layout';
@@ -31,8 +31,29 @@ export function computeEngagementTier(
 }
 
 /**
+ * Serialized copy of the last `$set` payload we sent, and whether the
+ * once-only traits have gone out yet this page session.
+ *
+ * `setPersonProperties` does not diff: every call emits a billable `$set`
+ * event whether or not a value changed. This is called after any significant
+ * action, so without a client-side guard a session emits one `$set` per
+ * action (plus a second for the `$set_once` block) to restate values that
+ * almost never move.
+ */
+let lastSetPayload: string | null = null;
+let sentOnceTraits = false;
+
+/** Test seam: clears the memoized person-property payload. */
+export function resetPersonPropertyCache(): void {
+  lastSetPayload = null;
+  sentOnceTraits = false;
+}
+
+/**
  * Update person properties in PostHog.
  * Call this after significant actions to keep user profile up-to-date.
+ *
+ * No-ops when nothing has changed since the last call.
  */
 export function updatePersonProperties(): void {
   const posthogInstance = getPosthogInstance();
@@ -62,12 +83,15 @@ export function updatePersonProperties(): void {
     // schema. The `?? false` collapses the missing-key case.
     const flag = (key: string): boolean => flags[key] ?? false;
 
-    // Properties that can change ($set)
-    posthogInstance.setPersonProperties({
+    // Properties that can change ($set).
+    //
+    // Deliberately no `last_active` timestamp: it would differ on every call
+    // and defeat the dedupe below, and PostHog already derives last-seen from
+    // the event stream.
+    const setProps = {
       // Usage metrics
       layout_count: layoutCount,
       total_bins_estimate: totalBinsEstimate,
-      last_active: new Date().toISOString(),
 
       // Feature adoption (has ever used)
       uses_multi_layer: metrics.feature_multi_layer || flag('multi_layer'),
@@ -84,7 +108,13 @@ export function updatePersonProperties(): void {
 
       // Device preference
       primary_device: getDeviceType(),
-    });
+    };
+
+    const serialized = JSON.stringify(setProps);
+    if (serialized !== lastSetPayload) {
+      lastSetPayload = serialized;
+      posthogInstance.setPersonProperties(setProps);
+    }
 
     // Properties set only once ($set_once) — immutable user traits.
     // Use the two-arg `setPersonProperties({}, onceProps)` form so PostHog
@@ -92,14 +122,20 @@ export function updatePersonProperties(): void {
     // evaluation context, not once-only persistence, and would let
     // `document.referrer` (which can change between navigations) overwrite
     // the original initial_referrer.
-    posthogInstance.setPersonProperties(
-      {},
-      {
-        first_seen: getFirstSeenDate(),
-        initial_referrer: document.referrer || 'direct',
-        initial_device: getDeviceType(),
-      }
-    );
+    //
+    // $set_once is server-side idempotent, so resending only costs events.
+    // Once per page session is enough to cover a first-ever visit.
+    if (!sentOnceTraits) {
+      sentOnceTraits = true;
+      posthogInstance.setPersonProperties(
+        {},
+        {
+          first_seen: getFirstSeenDate(),
+          initial_referrer: document.referrer || 'direct',
+          initial_device: getDeviceType(),
+        }
+      );
+    }
 
     // Track feature adoption in consolidated storage for persistence
     const adoptionChecks: Array<[boolean, string]> = [

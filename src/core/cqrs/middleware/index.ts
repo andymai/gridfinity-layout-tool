@@ -6,7 +6,6 @@ export { undoCaptureMiddleware, batch } from './undoCapture';
 /** @internal Test-only — reset the undo capture state */
 export { _resetUndoCaptureState } from './undoCapture';
 export { loggingMiddleware } from './logging';
-export { analyticsMiddleware } from './analytics';
 export { getMiddlewareFlags } from './middlewareConfig';
 export type { MiddlewareFlags, MiddlewareProfile } from './middlewareConfig';
 
@@ -15,14 +14,13 @@ import type { DomainEvent } from '../events';
 import type { Middleware } from '../types';
 import { validationMiddleware } from '../validation/validationMiddleware';
 import { loggingMiddleware } from './logging';
-import { analyticsMiddleware } from './analytics';
 import { undoCaptureMiddleware } from './undoCapture';
 
 /**
  * Build the default middleware pipeline.
  *
- * Order: validation (fail-fast) -> undoCapture -> analytics -> logging.
+ * Order: validation (fail-fast) -> undoCapture -> logging.
  */
 export function getDefaultPipeline(): ReadonlyArray<Middleware<Command, DomainEvent>> {
-  return [validationMiddleware, undoCaptureMiddleware, analyticsMiddleware, loggingMiddleware];
+  return [validationMiddleware, undoCaptureMiddleware, loggingMiddleware];
 }

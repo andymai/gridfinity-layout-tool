@@ -12,8 +12,6 @@ import type { Bin } from '@/core/types';
 vi.mock('@/shared/analytics/posthog', () => ({
   trackEvent: vi.fn(),
   trackLayoutSnapshot: vi.fn(),
-  trackHeartbeat: vi.fn(),
-  getActivityContext: vi.fn(() => 'viewing'),
 }));
 
 function makeGridBins(count: number): Bin[] {
@@ -143,50 +141,6 @@ describe('useAnalytics', () => {
 
       // If the hook properly initialized, it shouldn't throw
       expect(after - before).toBeGreaterThanOrEqual(0);
-    });
-  });
-
-  describe('PostHog heartbeat', () => {
-    // Note: These tests verify the heartbeat logic
-    // In dev mode, heartbeats are disabled (early return)
-    // The tests verify the hook structure and cleanup work correctly
-
-    it('does not send heartbeat in dev mode', () => {
-      vi.useFakeTimers();
-
-      renderHook(() => useAnalytics());
-
-      // Fast forward past initial timeout
-      vi.advanceTimersByTime(6000);
-
-      // In dev mode, heartbeat should not be sent
-      // (import.meta.env.DEV = true causes early return)
-      expect(analytics.trackHeartbeat).not.toHaveBeenCalled();
-
-      vi.useRealTimers();
-    });
-
-    it('uses trackHeartbeat for heartbeat events', () => {
-      // Verify trackHeartbeat is exported and callable
-      expect(analytics.trackHeartbeat).toBeDefined();
-      expect(typeof analytics.trackHeartbeat).toBe('function');
-    });
-  });
-
-  describe('idle detection', () => {
-    it('does not send heartbeat when user is idle', () => {
-      vi.useFakeTimers();
-
-      renderHook(() => useAnalytics());
-
-      // In dev mode, heartbeat is disabled so this validates structure
-      // Advance past idle threshold (60s) + initial delay (5s)
-      vi.advanceTimersByTime(65000);
-
-      // No heartbeat should be sent (dev mode early return)
-      expect(analytics.trackHeartbeat).not.toHaveBeenCalled();
-
-      vi.useRealTimers();
     });
   });
 });

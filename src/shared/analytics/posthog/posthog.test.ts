@@ -1,14 +1,11 @@
 // @vitest-environment jsdom
 import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
-import type { Bin, Category, Coord, Drawer, Layer, LayerId, Layout } from '@/core/types';
+import type { Bin, Category, Drawer, Layer, LayerId, Layout } from '@/core/types';
 import { binId, categoryId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
 import {
   computeLayoutMetrics,
   computeLabsMetrics,
   getDeviceType,
-  getActivityContext,
-  buildHeartbeatPayload,
-  trackHeartbeat,
   trackLayoutSnapshot,
   trackEvent,
   track3DPreview,
@@ -19,18 +16,10 @@ import {
   listenForPwaInstall,
   captureUtmParameters,
 } from '@/shared/analytics/posthog';
-import {
-  useInteractionStore,
-  useLabsStore,
-  useViewStore,
-  useHalfGridModeStore,
-} from '@/core/store';
-import { useLayoutStore } from '@/core/store/layout';
+import { useLabsStore } from '@/core/store';
 import { createDefaultLabsPreferences } from '@/core/labs';
 import { STAGING_ID } from '@/core/constants';
 import { createTestLayout as baseCreateTestLayout } from '@/test/testUtils';
-
-const coord = (x: number, y: number): Coord => ({ x: gridUnits(x), y: gridUnits(y) });
 
 const makeDrawer = (
   width: number,
@@ -584,102 +573,6 @@ describe('tracking functions', () => {
   });
 });
 
-describe('getActivityContext', () => {
-  afterEach(() => {
-    // Reset interaction store to initial state
-    useInteractionStore.setState({
-      interaction: null,
-      paintSize: null,
-      keyboardDragMode: false,
-      keyboardResizeMode: false,
-    });
-  });
-
-  it('returns viewing when no interaction is active', () => {
-    expect(getActivityContext()).toBe('viewing');
-  });
-
-  it('returns drawing when in draw mode', () => {
-    useInteractionStore.setState({
-      interaction: { type: 'draw', start: coord(0, 0), current: coord(1, 1) },
-    });
-    expect(getActivityContext()).toBe('drawing');
-  });
-
-  it('returns drawing when in paint mode', () => {
-    useInteractionStore.setState({
-      interaction: {
-        type: 'paint',
-        start: coord(0, 0),
-        current: coord(2, 2),
-        paintSize: { width: 1, depth: 1 },
-      },
-    });
-    expect(getActivityContext()).toBe('drawing');
-  });
-
-  it('returns drawing when paintSize is set (paint mode active)', () => {
-    useInteractionStore.setState({
-      paintSize: { width: 2, depth: 2 },
-    });
-    expect(getActivityContext()).toBe('drawing');
-  });
-
-  it('returns editing when in drag mode', () => {
-    useInteractionStore.setState({
-      interaction: {
-        type: 'drag',
-        binIds: [binId('bin1')],
-        startCoord: coord(0, 0),
-        currentCoord: coord(1, 1),
-        valid: true,
-        isOverGrid: true,
-      },
-    });
-    expect(getActivityContext()).toBe('editing');
-  });
-
-  it('returns editing when in resize mode', () => {
-    useInteractionStore.setState({
-      interaction: {
-        type: 'resize',
-        binIds: [binId('bin1')],
-        handle: 'e',
-        startRects: new Map(),
-        currentRects: new Map(),
-        valid: true,
-      },
-    });
-    expect(getActivityContext()).toBe('editing');
-  });
-
-  it('returns editing when in stagingDrag mode', () => {
-    useInteractionStore.setState({
-      interaction: {
-        type: 'stagingDrag',
-        binId: binId('bin1'),
-        currentCoord: coord(1, 1),
-        valid: true,
-      },
-    });
-    expect(getActivityContext()).toBe('editing');
-  });
-
-  it('returns editing when keyboard drag mode is active', () => {
-    useInteractionStore.setState({
-      keyboardDragMode: true,
-    });
-    expect(getActivityContext()).toBe('editing');
-  });
-
-  it('returns editing when keyboard resize mode is active', () => {
-    useInteractionStore.setState({
-      keyboardResizeMode: true,
-    });
-    expect(getActivityContext()).toBe('editing');
-  });
-});
-
 describe('initAnalytics', () => {
   it('does not throw when called in dev mode', () => {
     // In dev mode, initAnalytics returns early at line 25 and does nothing
@@ -738,129 +631,6 @@ describe('computeLabsMetrics', () => {
     const metrics = computeLabsMetrics();
     // Unknown features should be excluded since getFeature returns null
     expect(metrics.labs_enabled_features).not.toContain('unknown_feature');
-  });
-});
-
-describe('buildHeartbeatPayload', () => {
-  beforeEach(() => {
-    // Reset stores to known state
-    useInteractionStore.setState({
-      interaction: null,
-      paintSize: null,
-      keyboardDragMode: false,
-      keyboardResizeMode: false,
-    });
-    useViewStore.setState({
-      leftPanelCollapsed: false,
-      rightPanelCollapsed: false,
-      showIsometricPreview: false,
-      isPreviewExpanded: false,
-      layerViewMode: 'stack',
-    });
-    useHalfGridModeStore.setState({ halfGridMode: false });
-  });
-
-  it('returns correct engagement fields', () => {
-    const payload = buildHeartbeatPayload(5);
-
-    expect(payload.session_minutes).toBe(5);
-    expect(payload.context).toBe('viewing');
-  });
-
-  it('reads layout complexity from layout store', () => {
-    const layout = useLayoutStore.getState().layout;
-    layout.drawer = makeDrawer(10, 8, 12);
-    layout.layers = [makeLayer('layer1', 'Layer 1', 3), makeLayer('layer2', 'Layer 2', 6)];
-    layout.categories = [
-      makeCategory('coral', 'Coral', '#FF6B6B'),
-      makeCategory('sky', 'Sky', '#38bdf8'),
-      makeCategory('custom1', 'Custom', '#00FF00'),
-    ];
-    layout.bins = [
-      makeBin({ id: 'bin1', x: 0, y: 0, width: 2, depth: 2, height: 3 }),
-      makeBin({ id: 'bin2', layerId: STAGING_ID, x: 0, y: 0, width: 1, depth: 1, height: 3 }),
-    ];
-    useLayoutStore.setState({ layout });
-
-    const payload = buildHeartbeatPayload(0);
-
-    expect(payload.bin_count).toBe(2);
-    expect(payload.bins_in_staging).toBe(1);
-    expect(payload.layer_count).toBe(2);
-    expect(payload.category_count).toBe(3);
-    expect(payload.drawer_width).toBe(10);
-    expect(payload.drawer_depth).toBe(8);
-  });
-
-  it('computes grid utilization correctly', () => {
-    const layout = useLayoutStore.getState().layout;
-    layout.drawer = makeDrawer(10, 8, 12); // 80 sq units
-    layout.layers = [makeLayer('layer1', 'Layer 1', 3)];
-    layout.bins = [
-      // 2x2 = 4 sq units on grid
-      makeBin({ id: 'bin1', x: 0, y: 0, width: 2, depth: 2, height: 3 }),
-      // 4x2 = 8 sq units on grid
-      makeBin({ id: 'bin2', x: 2, y: 0, width: 4, depth: 2, height: 3 }),
-    ];
-    useLayoutStore.setState({ layout });
-
-    const payload = buildHeartbeatPayload(0);
-
-    // (4 + 8) / 80 = 0.15
-    expect(payload.grid_utilization).toBe(0.15);
-  });
-
-  it('returns 0 grid utilization for empty drawer', () => {
-    const layout = useLayoutStore.getState().layout;
-    layout.drawer = makeDrawer(0, 0, 12);
-    layout.bins = [];
-    useLayoutStore.setState({ layout });
-
-    const payload = buildHeartbeatPayload(0);
-
-    expect(payload.grid_utilization).toBe(0);
-  });
-
-  it('reads feature flags from interaction and view stores', () => {
-    useInteractionStore.setState({
-      paintSize: { width: 2, depth: 2 },
-    });
-    useViewStore.setState({
-      showIsometricPreview: true,
-      isPreviewExpanded: true,
-      layerViewMode: 'all',
-      leftPanelCollapsed: true,
-      rightPanelCollapsed: false,
-    });
-    useHalfGridModeStore.setState({ halfGridMode: true });
-
-    const payload = buildHeartbeatPayload(0);
-
-    expect(payload.half_bin_mode).toBe(true);
-    expect(payload.layer_view_mode).toBe('all');
-    expect(payload.is_3d_preview_open).toBe(true);
-    expect(payload.is_preview_expanded).toBe(true);
-    expect(payload.paint_mode_active).toBe(true);
-    expect(payload.left_panel_collapsed).toBe(true);
-    expect(payload.right_panel_collapsed).toBe(false);
-  });
-
-  it('defaults feature flags to inactive states', () => {
-    const payload = buildHeartbeatPayload(0);
-
-    expect(payload.half_bin_mode).toBe(false);
-    expect(payload.layer_view_mode).toBe('stack');
-    expect(payload.is_3d_preview_open).toBe(false);
-    expect(payload.is_preview_expanded).toBe(false);
-    expect(payload.paint_mode_active).toBe(false);
-    expect(payload.left_panel_collapsed).toBe(false);
-    expect(payload.right_panel_collapsed).toBe(false);
-  });
-});
-
-describe('trackHeartbeat', () => {
-  it('does not throw', () => {
-    expect(() => trackHeartbeat(5)).not.toThrow();
   });
 });
 

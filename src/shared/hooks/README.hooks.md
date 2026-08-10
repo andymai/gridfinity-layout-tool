@@ -50,7 +50,7 @@ graph TB
 
 | Hook                      | Purpose                                                          |
 | ------------------------- | ---------------------------------------------------------------- |
-| `useAnalytics.ts`         | PostHog heartbeat (3 min) + session tracking with idle detection |
+| `useAnalytics.ts`         | Engaged-session tracking via visibilitychange                    |
 | `useFeatureFlag.ts`       | Reactive flag check + non-reactive `isFeatureEnabled()`          |
 | `useStorageMigration.ts`  | One-time localStorage → IndexedDB migration (idle, non-blocking) |
 | `useTabletPanels.ts`      | Tablet overlay panel open/close with auto-collapse on mode entry |

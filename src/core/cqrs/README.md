@@ -15,8 +15,8 @@ commandBus.dispatch(command)
     |
     v
 [Middleware Pipeline]
-    validation  ->  undoCapture  ->  analytics  ->  logging
-    (Zod)           (domain only)    (PostHog)      (dev only)
+    validation  ->  undoCapture  ->  logging
+    (Zod)           (domain only)    (dev only)
     |
     v
 Command Handler
@@ -72,9 +72,8 @@ src/core/cqrs/
 │   ├── designerHandlers.ts # Designer commands (still v1 by design)
 │   └── restoreHandlers.ts  # layout.restore (undo/redo path)
 ├── middleware/
-│   ├── index.ts          # Pipeline: validation -> undoCapture -> analytics -> logging
+│   ├── index.ts          # Pipeline: validation -> undoCapture -> logging
 │   ├── middlewareConfig.ts # COMMAND_PROFILES: which middleware runs per command
-│   ├── analytics.ts      # PostHog bridge
 │   ├── logging.ts        # Dev-only console.debug
 │   └── undoCapture.ts    # Snapshot-based undo + batch() transactions
 ├── undo/
@@ -136,7 +135,7 @@ commands intentionally remain v1 (`handlers/designerHandlers.ts`,
      emitted: 'domain.myActionDone',
      schemaVersion: 1,
      descriptionKey: 'undo.action.myAction',
-     middleware: { undoCapture: true, validate: true, analytics: true },
+     middleware: { undoCapture: true, validate: true },
      handle: (payload, ctx) => {
        // read-only planning against ctx.aggregate; brand payload values at
        // this boundary; generate ids AFTER validation; put everything
