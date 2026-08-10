@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { layoutAdapter } from '@/core/sync/adapters/layoutAdapter';
 import { designAdapter } from '@/features/bin-designer';
-import { baseplateAdapter } from '@/features/baseplate';
+import { baseplateAdapter } from '@/features/baseplate/sync/baseplateAdapter';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import {
   runDeleteAccount,

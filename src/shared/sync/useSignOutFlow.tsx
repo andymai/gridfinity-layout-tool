@@ -1,7 +1,12 @@
 import { useCallback, useState } from 'react';
 import { layoutAdapter } from '@/core/sync/adapters/layoutAdapter';
-import { designAdapter } from '@/features/bin-designer';
-import { baseplateAdapter } from '@/features/baseplate';
+// Deep imports, not the feature barrels. This module is statically reachable from
+// the entry (App → Sidebar → UserDock), so pulling either barrel drags its whole
+// feature onto first paint — the baseplate barrel re-exports BaseplatePage and the
+// thumbnail helper, which is how three, @react-three/fiber and drei (~1.2 MB) ended
+// up eagerly preloaded. Same reasoning as the Liveblocks note in shared/hooks/index.ts.
+import { designAdapter } from '@/features/bin-designer/sync/designAdapter';
+import { baseplateAdapter } from '@/features/baseplate/sync/baseplateAdapter';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { runSignOut, type KeepLocalPromptResult } from '@/core/sync/signOut';
 import { SignOutDialog } from '@/core/sync/dialogs/SignOutDialog';

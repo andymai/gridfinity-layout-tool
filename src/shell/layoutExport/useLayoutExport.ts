@@ -35,7 +35,10 @@ import { triggerDownload } from '@/shared/generation/exportUtils';
 import { packageFilesAsZip } from '@/shared/generation/zipExport';
 import type { ZipBinaryFile, ZipTextFile } from '@/shared/generation/zipExport';
 import type { ExportFileFormat, ExportFileNameConfig } from '@/shared/types/bin';
-import { buildBaseplateExportPieces, BaseplateBedOverageError } from '@/features/baseplate';
+import {
+  buildBaseplateExportPieces,
+  BaseplateBedOverageError,
+} from '@/features/baseplate/utils/buildBaseplateExportPieces';
 import { loadDesign } from '@/features/bin-designer';
 import type { BinParams } from '@/features/bin-designer';
 // Deep import (not the barrel): the bin-designer barrel is eagerly loaded by App;

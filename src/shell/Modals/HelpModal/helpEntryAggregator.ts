@@ -17,7 +17,7 @@ import { helpEntries as gridEditorHelpEntries } from '@/features/grid-editor';
 import { helpEntries as layersHelpEntries } from '@/features/layers';
 import { helpEntries as categoriesHelpEntries } from '@/features/categories';
 import { helpEntries as binDesignerHelpEntries } from '@/features/bin-designer';
-import { helpEntries as baseplateHelpEntries } from '@/features/baseplate';
+import { helpEntries as baseplateHelpEntries } from '@/features/baseplate/helpEntries';
 import { helpEntries as shellHelpEntries } from './shellHelpEntries';
 import { shortcutCatalogToHelpEntries } from './shellShortcuts';
 import type { HelpEntry, HelpRoute } from '@/shared/help/helpEntry';

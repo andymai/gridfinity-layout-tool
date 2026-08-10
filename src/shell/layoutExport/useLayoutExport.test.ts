@@ -32,7 +32,9 @@ vi.mock('@/shared/analytics/posthog', async (orig) => ({
   ...(await orig<Record<string, unknown>>()),
   trackEvent: h.trackEvent,
 }));
-vi.mock('@/features/baseplate', async (orig) => ({
+// Mock the defining module, not the feature barrel: useLayoutExport deep-imports
+// it so the barrel does not drag the 3D stack onto first paint.
+vi.mock('@/features/baseplate/utils/buildBaseplateExportPieces', async (orig) => ({
   ...(await orig<Record<string, unknown>>()),
   buildBaseplateExportPieces: h.buildBaseplateExportPieces,
 }));
@@ -42,7 +44,7 @@ vi.mock('@/features/bin-designer', async (orig) => ({
 }));
 
 import { useLayoutExport } from './useLayoutExport';
-import { BaseplateBedOverageError } from '@/features/baseplate';
+import { BaseplateBedOverageError } from '@/features/baseplate/utils/buildBaseplateExportPieces';
 import { useToastStore } from '@/core/store/toast';
 
 function design(id: string, name: string, params: Partial<typeof DEFAULT_BIN_PARAMS> = {}) {

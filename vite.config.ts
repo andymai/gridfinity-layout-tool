@@ -447,8 +447,12 @@ export default defineConfig({
               priority: 90,
               test: /[\\/]node_modules[\\/](?:three[\\/]|@react-three[\\/]|three-stdlib[\\/]|troika-[^\\/]+[\\/]|bidi-js[\\/]|webgl-sdf-generator[\\/]|maath[\\/]|meshline[\\/]|camera-controls[\\/]|stats\.js[\\/]|stats-gl[\\/]|suspend-react[\\/]|its-fine[\\/]|react-use-measure[\\/]|tunnel-rat[\\/]|@use-gesture[\\/]|potpack[\\/])/,
             },
-            // Liveblocks — only loaded when collaborative editing is active (Labs).
-            { name: 'liveblocks', priority: 80, test: /[\\/]node_modules[\\/]@liveblocks[\\/]/ },
+            // Liveblocks deliberately has NO group. Pinning it to a named chunk made
+            // that chunk a static import of the entry, so index.html modulepreloaded
+            // 240 kB of collaboration client on every first paint even though nothing
+            // eager imports @liveblocks — only the lazy CollabProvider subtree does.
+            // Ungrouped, rolldown folds it into the lazy chunk that needs it, with no
+            // duplication (total JS is unchanged either way).
           ],
         },
         // Note: posthog-js is dynamically imported in src/shared/analytics/posthog.ts
