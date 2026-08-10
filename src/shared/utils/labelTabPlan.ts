@@ -172,7 +172,7 @@ export function planLabelTabLayout(
       params.nozzleSizeMm,
       params.label.plateFitOffset
     );
-    const plan = planLabelSockets(params.compartments, innerW, clearanceMm);
+    const plan = planLabelSockets(params.compartments, innerW, clearanceMm, params.label.width);
     spanningWidthU = plan.spanningWidthU;
     const plateByCompartment = new Map<number, LabelPlateWidthU>();
     if (spanningWidthU !== null) {
@@ -184,7 +184,8 @@ export function planLabelTabLayout(
         planLabelSockets(
           { cols: 1, rows: 1, thickness: params.compartments.thickness, cells: [0] },
           innerW,
-          clearanceMm
+          clearanceMm,
+          params.label.width
         ).compartments[0]?.plateWidthU ?? null;
       if (widthU !== null) {
         for (let row = 0; row < params.compartments.rows; row++) {
@@ -284,7 +285,7 @@ export function planTabsAtRow(
   const widthPercent = params.label.width;
   const alignment = params.label.alignment;
   const inset = params.label.inset ?? 0;
-  const { innerW, innerD, cellD, tabDepth, socket } = dims;
+  const { innerW, innerD, cellD, tabDepth } = dims;
 
   const depthSign: 1 | -1 = anchor === 'back' ? -1 : 1;
 
@@ -363,7 +364,6 @@ export function planTabsAtRow(
       positionY: anchorY + depthSign * inset,
       widthPercent,
       alignment,
-      socket: socket !== null,
     });
     if (slot) slots.push(slot);
     col = groupEnd;
@@ -416,7 +416,6 @@ export function planSpanningTabAtRow(
     positionY: anchorY + depthSign * inset,
     widthPercent: params.label.width,
     alignment: params.label.alignment,
-    socket: dims.socket !== null,
   });
   return slot ? [slot] : [];
 }
@@ -438,19 +437,20 @@ export function fitTabInSpan(args: {
   readonly positionY: number;
   readonly widthPercent: number;
   readonly alignment: LabelTabAlignment;
-  readonly socket: boolean;
 }): TabSlot | null {
-  const { availableLeft, availableRight, alignment, socket } = args;
+  const { availableLeft, availableRight, alignment } = args;
   const availableWidth = availableRight - availableLeft;
 
-  // Socket mode ignores the width percentage and always spans the full
-  // available width — the pocket needs the room, and `alignment` instead
-  // positions the socket within the tab.
-  const tabWidth = socket ? availableWidth : (availableWidth * args.widthPercent) / 100;
+  // Socket mode used to force the full available width, which meant a user
+  // fitting a centred 1u plate still got a shelf spanning the whole
+  // compartment (#3402). The width now applies in both modes; the socket plan
+  // is fed the same percentage, so a narrower shelf simply picks a narrower
+  // plate rather than keeping one that no longer fits.
+  const tabWidth = (availableWidth * args.widthPercent) / 100;
   if (tabWidth <= 0) return null;
 
   let tabXStart: number;
-  if (socket || alignment === 'left') {
+  if (alignment === 'left') {
     tabXStart = availableLeft;
   } else if (alignment === 'right') {
     tabXStart = availableRight - tabWidth;

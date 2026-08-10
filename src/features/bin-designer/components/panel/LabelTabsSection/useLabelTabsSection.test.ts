@@ -128,6 +128,31 @@ describe('useLabelTabsSection', () => {
     expect(result.current.state.tabWidthMm).toBeGreaterThan(0);
   });
 
+  it('reports the narrowed width in socket mode, not the whole compartment', () => {
+    // The readout used to hardcode 100% for socket mode because the builder
+    // forced full-width tabs. Since #3402 the width applies there, so a
+    // readout stuck at the compartment span would describe a shelf the
+    // generator does not build.
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, mode: 'socket', width: 100 },
+      },
+    });
+    const full = renderHook(() => useLabelTabsSection()).result.current.state.tabWidthMm;
+
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, mode: 'socket', width: 50 },
+      },
+    });
+    const half = renderHook(() => useLabelTabsSection()).result.current.state.tabWidthMm;
+
+    // The readout rounds to 0.1mm, so allow that much slack.
+    expect(Math.abs(half - full / 2)).toBeLessThanOrEqual(0.1);
+  });
+
   describe('tab height', () => {
     it('heightIsExplicit is false by default and tabHeightMm falls back to the interior ceiling', () => {
       const { result } = renderHook(() => useLabelTabsSection());

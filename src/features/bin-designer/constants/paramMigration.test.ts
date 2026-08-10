@@ -1199,6 +1199,27 @@ describe('migrateParams', () => {
     expect(result.lid.clickRailCoverage).toBe(75);
   });
 
+  it('leaves a socket-mode tab width exactly as stored', () => {
+    // `migrateParams` runs on EVERY load, so it cannot "normalise once". It
+    // also cannot tell a width the user deliberately set in socket mode
+    // (#3402) from one left over in storage from a stint in text mode, so it
+    // must not touch either — resetting would wipe the new control's value
+    // every time the design reopened.
+    for (const width of [40, 100]) {
+      const result = migrateParams({
+        label: { ...DEFAULT_BIN_PARAMS.label, mode: 'socket', width },
+      });
+      expect(result.label.width).toBe(width);
+    }
+  });
+
+  it('leaves a text-mode tab width alone', () => {
+    const result = migrateParams({
+      label: { ...DEFAULT_BIN_PARAMS.label, mode: 'text', width: 40 },
+    });
+    expect(result.label.width).toBe(40);
+  });
+
   it('backfills clickRailCoverage from defaults for legacy lid configs missing the field', () => {
     const result = migrateParams({
       lid: {

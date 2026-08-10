@@ -141,3 +141,47 @@ describe('railFoulingLabelFootprints', () => {
     ).toEqual([]);
   });
 });
+
+describe('socket-mode tab width (#3402)', () => {
+  const dims = { innerW: 123.1, innerD: 81.1, interiorHeight: 36.3 };
+  const socketParams = (width: number): BinParams => ({
+    ...withLabel({ width }),
+    width: 3,
+    depth: 2,
+    label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, depth: 12, width, mode: 'socket' },
+  });
+  const spans = (p: BinParams) =>
+    labelTabFootprints(p, dims.innerW, dims.innerD, dims.interiorHeight, p.wallThickness).map(
+      (f) => f.xMax - f.xMin
+    );
+
+  it('narrows the shelf instead of forcing the full compartment', () => {
+    // The pre-#3402 builder ignored the percentage here outright, so a user
+    // fitting a centred 1u plate still got a shelf across the whole bin.
+    const full = spans(socketParams(100));
+    const half = spans(socketParams(50));
+    expect(full.length).toBeGreaterThan(0);
+    expect(half.length).toBe(full.length);
+    for (let i = 0; i < full.length; i++) {
+      expect(half[i]).toBeCloseTo(full[i] / 2, 3);
+    }
+  });
+
+  it('centres a narrowed socket tab when alignment asks for it', () => {
+    const p = {
+      ...socketParams(50),
+      label: { ...socketParams(50).label, alignment: 'center' as const },
+    };
+    const fps = labelTabFootprints(
+      p,
+      dims.innerW,
+      dims.innerD,
+      dims.interiorHeight,
+      p.wallThickness
+    );
+    expect(fps.length).toBeGreaterThan(0);
+    for (const fp of fps) {
+      expect((fp.xMin + fp.xMax) / 2).toBeCloseTo(0, 3);
+    }
+  });
+});

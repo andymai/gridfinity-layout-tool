@@ -352,10 +352,9 @@ export function LabelTabsSection() {
 
               {/* Alignment — hidden at width=100% because the control has no
                   visible effect when the tab spans the whole column (#1898).
-                  Always shown in socket mode, where it positions the socket
-                  within the (always full-width) tab instead. */}
-              {(state.isSocketMode ||
-                state.label.width < DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH) && (
+                  Since #3402 that holds in socket mode too: the width applies
+                  there, so a full-width socket tab has nothing to align. */}
+              {state.label.width < DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH && (
                 <div>
                   <span className="mb-1 flex items-center gap-1 text-xs font-medium text-content-secondary">
                     {t('binDesigner.tabAlignment')}
@@ -423,35 +422,31 @@ export function LabelTabsSection() {
               </div>
 
               <div className="grid grid-cols-2 gap-2">
-                {/* Width % hidden in socket mode — the tab always spans the
-                      full compartment so the pocket has room. */}
-                {!state.isSocketMode && (
-                  <div className="min-w-0">
-                    <span className="mb-1 block text-xs text-content-tertiary">
-                      {t('binDesigner.tabWidth')}
-                    </span>
-                    <Stepper
-                      value={state.label.width}
-                      onChange={handlers.setTabWidth}
-                      onStep={(delta) =>
-                        handlers.setTabWidth(
-                          Math.min(
-                            DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH,
-                            Math.max(
-                              DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_WIDTH,
-                              state.label.width + delta * DESIGNER_CONSTRAINTS.LABEL_TAB_WIDTH_STEP
-                            )
+                <div className="min-w-0">
+                  <span className="mb-1 block text-xs text-content-tertiary">
+                    {t('binDesigner.tabWidth')}
+                  </span>
+                  <Stepper
+                    value={state.label.width}
+                    onChange={handlers.setTabWidth}
+                    onStep={(delta) =>
+                      handlers.setTabWidth(
+                        Math.min(
+                          DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH,
+                          Math.max(
+                            DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_WIDTH,
+                            state.label.width + delta * DESIGNER_CONSTRAINTS.LABEL_TAB_WIDTH_STEP
                           )
                         )
-                      }
-                      min={DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_WIDTH}
-                      max={DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH}
-                      step={DESIGNER_CONSTRAINTS.LABEL_TAB_WIDTH_STEP}
-                      size="md"
-                      aria-label={t('binDesigner.labelTabs.widthAria')}
-                    />
-                  </div>
-                )}
+                      )
+                    }
+                    min={DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_WIDTH}
+                    max={DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH}
+                    step={DESIGNER_CONSTRAINTS.LABEL_TAB_WIDTH_STEP}
+                    size="md"
+                    aria-label={t('binDesigner.labelTabs.widthAria')}
+                  />
+                </div>
                 <div className="min-w-0">
                   <span className="mb-1 block text-xs text-content-tertiary">
                     {t('binDesigner.tabDepth')}
