@@ -24,6 +24,7 @@ import { meshTopologyStats, meshVolume, boundingBox } from './meshAssertions';
 import { makeInsert } from './scenarioTypes';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
 import type { BinParams, ResolvedBaseplateParams } from '@/shared/types/bin';
+import type { MeshData } from '@/features/generation/bridge/types';
 
 const OUT = process.env['PARITY_OUT'] ?? `/tmp/perfbench/parity_${getKernelName()}.json`;
 
@@ -42,21 +43,18 @@ interface Row {
 
 const rows: Row[] = [];
 
-function record(
-  name: string,
-  run: () => { triangleCount: number } & Record<string, unknown>
-): void {
+function record(name: string, run: () => MeshData): void {
   try {
     const t0 = performance.now();
-    const mesh = run() as never;
+    const mesh = run();
     const ms = performance.now() - t0;
     const stats = meshTopologyStats(mesh);
-    const bb = boundingBox((mesh as { vertices: Float32Array }).vertices);
+    const bb = boundingBox(mesh.vertices);
     rows.push({
       name,
       ok: true,
       ms: Math.round(ms),
-      triangles: (mesh as { triangleCount: number }).triangleCount,
+      triangles: mesh.triangleCount,
       volume: Number(meshVolume(mesh).toFixed(3)),
       boundaryEdges: stats.boundaryEdges,
       nonManifoldEdges: stats.nonManifoldEdges,
