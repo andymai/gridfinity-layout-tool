@@ -426,12 +426,26 @@ export function isLidBlockedBySection(params: BinParams, section: LidConflictSec
  * warning rows and the worker's actual rail placements draw from one
  * source of truth.
  */
+/**
+ * Issues whose `sides` describe where a conflict IS, not a wall to switch off.
+ *
+ * A label tab does not necessarily take its whole wall. The rail builder
+ * segments the run around the tabs and keeps whatever stretches are left
+ * (#3401), so a wall the tabs fully cover still ends up friction-fit while a
+ * wall with gaps keeps rails in them. Deciding that here, up front, would
+ * throw the gaps away before anything measured them.
+ *
+ * Cutouts and intruding handles are different: they remove the lip material a
+ * rail grips along the whole wall, so there is nothing to segment around.
+ */
+const SIDES_ARE_ADVISORY: ReadonlySet<LidCompatibilityId> = new Set(['labelTabs']);
+
 export function computeDisabledRails(
   issues: readonly LidCompatibilityIssue[]
 ): ReadonlySet<LidCompatibilitySide> {
   const disabled = new Set<LidCompatibilitySide>();
   for (const issue of issues) {
-    if (!issue.sides) continue;
+    if (!issue.sides || SIDES_ARE_ADVISORY.has(issue.id)) continue;
     // Only side-bearing issues affect per-side rail placement.
     // wallCutoutsAllSides/handlesAllSides are blockers — they short-circuit
     // generation entirely via `shouldGenerateLid`, so we don't need to

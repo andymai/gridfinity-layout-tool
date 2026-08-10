@@ -1,13 +1,14 @@
 /**
- * Rail-span clipping around label tabs (#3401) — the arithmetic on its own.
+ * Rail-run segmentation around label tabs (#3401) — the arithmetic on its own.
  *
  * The assembled-geometry proof lives in `lidLabelTabClearance.scenario`; this
- * covers the branches that are awkward to reach through a whole bin (a tab
- * that eats a whole wall, one that misses the rail's line entirely).
+ * covers the branches that are awkward to reach through a whole bin (a tab that
+ * eats a whole wall, one that misses the rail's line entirely, gaps between
+ * per-compartment tabs).
  */
 // @vitest-environment node
 import { describe, it, expect } from 'vitest';
-import { clipSpanToLabelTabs } from './lidClickRail';
+import { railSegmentsClearOfLabelTabs } from './lidClickRail';
 import type { LabelTabFootprint } from '@/shared/utils/labelTabPlan';
 
 /** A back-wall tab spanning the given X range, `depth` mm deep from `wallY`. */
@@ -24,51 +25,67 @@ function backTab(xMin: number, xMax: number, wallY: number, depth: number): Labe
   };
 }
 
-describe('clipSpanToLabelTabs', () => {
-  it('leaves a span alone when there are no tabs', () => {
-    expect(clipSpanToLabelTabs(-50, 50, false, 37.5, [])).toEqual({ lo: -50, hi: 50 });
+describe('railSegmentsClearOfLabelTabs', () => {
+  it('leaves the whole run when there are no tabs', () => {
+    expect(railSegmentsClearOfLabelTabs(-50, 50, false, 37.5, [])).toEqual([{ lo: -50, hi: 50 }]);
   });
 
-  it('pulls the high end back past a tab, with clearance', () => {
-    // Left/right rails run along Y, so `alongX` is false and the tab's Y span
-    // is what eats the run.
-    const { lo, hi } = clipSpanToLabelTabs(-50, 50, false, 37.5, [backTab(-40, 40, 50, 12)]);
-    expect(lo).toBe(-50);
+  it('eats one end for a tab on a perpendicular wall', () => {
+    // Left/right rails run along Y, so the tab's Y span shortens the run.
+    const segs = railSegmentsClearOfLabelTabs(-50, 50, false, 37.5, [backTab(-40, 40, 50, 12)]);
+    expect(segs).toHaveLength(1);
+    expect(segs[0].lo).toBe(-50);
     // Tab front edge at 38, less the 2mm margin.
-    expect(hi).toBeCloseTo(36, 5);
+    expect(segs[0].hi).toBeCloseTo(36, 5);
   });
 
   it('ignores a tab that does not reach the rail line', () => {
-    // A narrow, centred tab leaves the rails at x = ±37.5 untouched.
-    expect(clipSpanToLabelTabs(-50, 50, false, 37.5, [backTab(-10, 10, 50, 12)])).toEqual({
-      lo: -50,
-      hi: 50,
-    });
+    // A narrow, centred tab leaves the rails at x = ±37.5 alone.
+    expect(railSegmentsClearOfLabelTabs(-50, 50, false, 37.5, [backTab(-10, 10, 50, 12)])).toEqual([
+      { lo: -50, hi: 50 },
+    ]);
   });
 
-  it('clips from both ends when tabs sit on both walls', () => {
+  it('eats both ends when tabs sit on opposite walls', () => {
     const both = [
       backTab(-40, 40, 50, 12),
       { ...backTab(-40, 40, -38, 12), anchor: 'front' as const },
     ];
-    const { lo, hi } = clipSpanToLabelTabs(-50, 50, false, 37.5, both);
-    expect(hi).toBeCloseTo(36, 5);
-    // The front tab's box runs [-50, -38]; its far edge is -38, plus margin.
-    expect(lo).toBeCloseTo(-36, 5);
+    const segs = railSegmentsClearOfLabelTabs(-50, 50, false, 37.5, both);
+    expect(segs).toHaveLength(1);
+    expect(segs[0].lo).toBeCloseTo(-36, 5);
+    expect(segs[0].hi).toBeCloseTo(36, 5);
   });
 
-  it('can collapse the span entirely, leaving the caller to drop the rail', () => {
-    // A tab as deep as the whole wall leaves nothing worth printing; the
-    // MIN_RAIL_LENGTH check downstream is what turns this into "no rail".
-    const { lo, hi } = clipSpanToLabelTabs(-50, 50, false, 37.5, [backTab(-40, 40, 50, 100)]);
-    expect(hi - lo).toBeLessThan(0);
+  it('leaves nothing when a tab covers the whole run', () => {
+    // A full-width tab on the wall the rail runs along: that wall stays
+    // friction-fit, exactly as it did before partial rails existed.
+    expect(railSegmentsClearOfLabelTabs(-40, 40, true, 50, [backTab(-40, 40, 50, 12)])).toEqual([]);
+  });
+
+  it('leaves a stretch either side of a centred tab', () => {
+    // The #3401 ask: a tab narrower than its wall leaves usable run at both
+    // ends, which the lid previously threw away by disabling the wall outright.
+    const segs = railSegmentsClearOfLabelTabs(-40, 40, true, 50, [backTab(-10, 10, 50, 12)]);
+    expect(segs).toHaveLength(2);
+    expect(segs[0]).toEqual({ lo: -40, hi: -12 });
+    expect(segs[1]).toEqual({ lo: 12, hi: 40 });
+  });
+
+  it('leaves the gaps between per-compartment tabs', () => {
+    // Three compartments, each with a tab narrower than its column.
+    const tabs = [backTab(-38, -22, 50, 12), backTab(-8, 8, 50, 12), backTab(22, 38, 50, 12)];
+    const segs = railSegmentsClearOfLabelTabs(-40, 40, true, 50, tabs);
+    expect(segs).toEqual([
+      { lo: -20, hi: -10 },
+      { lo: 10, hi: 20 },
+    ]);
   });
 
   it('measures a front/back rail against the tab X span, not its depth', () => {
-    // Front and back rails run along X (`alongX` true), so a tab on the BACK
-    // wall blocks them by its X extent. This rail sits on the back wall line.
-    const { lo, hi } = clipSpanToLabelTabs(-40, 40, true, 50, [backTab(-40, 0, 50, 12)]);
-    expect(lo).toBeCloseTo(2, 5);
-    expect(hi).toBe(40);
+    const segs = railSegmentsClearOfLabelTabs(-40, 40, true, 50, [backTab(-40, 0, 50, 12)]);
+    expect(segs).toHaveLength(1);
+    expect(segs[0].lo).toBeCloseTo(2, 5);
+    expect(segs[0].hi).toBe(40);
   });
 });

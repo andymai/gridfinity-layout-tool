@@ -225,9 +225,12 @@ function railPlacementsForRectangle(inputs: LidInputs): RailPlacement[] {
   const placements: RailPlacement[] = [];
 
   /**
-   * One wall's rail, clipped clear of any label tab then re-centred on what
-   * survives. Coverage applies to the CLIPPED span, so the control keeps
-   * meaning what it says on a bin whose tabs eat one end of the wall.
+   * Every rail this wall can carry: one per stretch left clear of the label
+   * tabs, each re-centred on its own stretch. Coverage applies per stretch, so
+   * the control keeps meaning what it says on a wall whose tabs eat part of it.
+   *
+   * A wall fully covered by tabs yields no stretch long enough and goes
+   * friction-fit, which is what `disabledRails` used to decide for it up front.
    */
   const push = (
     side: LidCompatibilitySide,
@@ -237,16 +240,23 @@ function railPlacementsForRectangle(inputs: LidInputs): RailPlacement[] {
   ): void => {
     if (!clickRails[side] || disabledRails.has(side)) return;
     const half = alongX ? corneredOuterX : corneredOuterY;
-    const { lo, hi } = clipSpanToLabelTabs(-half, half, alongX, railCross, labelFootprints);
-    const length = (hi - lo) * clickRailCoverage;
-    if (length < MIN_RAIL_LENGTH) return;
-    const centre = (lo + hi) / 2;
-    placements.push({
-      centerX: (alongX ? centre : railCross) + offX,
-      centerY: (alongX ? railCross : centre) + offY,
-      length,
-      rotationDeg,
-    });
+    for (const seg of railSegmentsClearOfLabelTabs(
+      -half,
+      half,
+      alongX,
+      railCross,
+      labelFootprints
+    )) {
+      const length = (seg.hi - seg.lo) * clickRailCoverage;
+      if (length < MIN_RAIL_LENGTH) continue;
+      const centre = (seg.lo + seg.hi) / 2;
+      placements.push({
+        centerX: (alongX ? centre : railCross) + offX,
+        centerY: (alongX ? railCross : centre) + offY,
+        length,
+        rotationDeg,
+      });
+    }
   };
 
   push('back', true, corneredOuterY, 0);
@@ -284,47 +294,62 @@ const LABEL_RAIL_MARGIN = 2;
  */
 const RAIL_HALF_WIDTH = (LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INNER) / 2;
 
+/** One run of wall a rail may occupy, in along-axis coordinates. */
+export interface RailSegment {
+  readonly lo: number;
+  readonly hi: number;
+}
+
 /**
- * Shrink a wall's usable rail span so the rail stops clear of any label tab.
+ * Split a wall's rail run into the stretches no label tab occupies.
  *
- * Rails run along a wall; a tab anchored to a PERPENDICULAR wall eats into the
- * end of that run. Clipping the usable span and applying coverage to what is
- * left keeps 100% meaning "as much rail as physically fits" — shortening a
- * centred rail instead would shed just as much length at the far end, where
- * nothing was ever in the way.
+ * Clipping and segmenting turn out to be the same operation seen from two
+ * sides. A tab on a PERPENDICULAR wall eats one end of the run and leaves a
+ * single shorter stretch, which is what keeps 100% coverage meaning "as much
+ * rail as physically fits" instead of capping out below the tab. A tab on the
+ * wall the rail runs ALONG eats the middle: a full-width tab leaves nothing, so
+ * that wall stays friction-fit exactly as it always has, while a narrow one
+ * leaves a stretch either side. Those stretches are retention the lid used to
+ * throw away, and #3401 asked for them back.
  *
- * `lo`/`hi` are the wall's along-axis extent (already inset by the corner
- * radius). Footprints whose along-axis span does not reach the run, or whose
- * cross-axis span misses the rail's own X band, leave it untouched.
+ * Coverage is applied by the caller to each surviving stretch, so a wall with
+ * two gaps gets two rails rather than one rail sized for a run it cannot use.
+ *
+ * `lo`/`hi` are the wall's along-axis extent, already inset by the corner
+ * radius. Footprints whose cross-axis span misses the rail's own line are
+ * ignored.
  */
-export function clipSpanToLabelTabs(
+export function railSegmentsClearOfLabelTabs(
   lo: number,
   hi: number,
   alongX: boolean,
   railCross: number,
   footprints: readonly LabelTabFootprint[]
-): { readonly lo: number; readonly hi: number } {
-  let outLo = lo;
-  let outHi = hi;
+): RailSegment[] {
+  let segments: RailSegment[] = [{ lo, hi }];
+
   for (const fp of footprints) {
-    // The tab's extent along the rail's run, and across it.
     const [crossMin, crossMax] = alongX ? [fp.yMin, fp.yMax] : [fp.xMin, fp.xMax];
-    const [alongMin, alongMax] = alongX ? [fp.xMin, fp.xMax] : [fp.yMin, fp.yMax];
-    // A tab on the wall this rail runs along blocks it outright; that case is
-    // handled by `disabledRails`, not here, so skip anything that does not
-    // straddle the rail's own line.
     if (railCross < crossMin - RAIL_HALF_WIDTH || railCross > crossMax + RAIL_HALF_WIDTH) continue;
-    if (alongMax < outLo || alongMin > outHi) continue;
-    // Eat from whichever end the tab is nearer — a tab spanning the whole run
-    // leaves nothing, which the MIN_RAIL_LENGTH check downstream rejects.
-    // Compared on the tab's CENTRE, not an edge: a tab whose far edge lands on
-    // the midpoint sits wholly in one half, and testing that edge would clip
-    // the opposite end and wipe out the run that was actually clear.
-    const fromHigh = (alongMin + alongMax) / 2 >= (outLo + outHi) / 2;
-    if (fromHigh) outHi = Math.min(outHi, alongMin - LABEL_RAIL_MARGIN);
-    else outLo = Math.max(outLo, alongMax + LABEL_RAIL_MARGIN);
+
+    const [alongMin, alongMax] = alongX ? [fp.xMin, fp.xMax] : [fp.yMin, fp.yMax];
+    const blockLo = alongMin - LABEL_RAIL_MARGIN;
+    const blockHi = alongMax + LABEL_RAIL_MARGIN;
+
+    const next: RailSegment[] = [];
+    for (const seg of segments) {
+      if (blockHi <= seg.lo || blockLo >= seg.hi) {
+        next.push(seg);
+        continue;
+      }
+      if (blockLo > seg.lo) next.push({ lo: seg.lo, hi: blockLo });
+      if (blockHi < seg.hi) next.push({ lo: blockHi, hi: seg.hi });
+    }
+    segments = next;
+    if (segments.length === 0) break;
   }
-  return { lo: outLo, hi: outHi };
+
+  return segments;
 }
 
 /**
