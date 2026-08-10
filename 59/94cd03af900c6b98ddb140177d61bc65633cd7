@@ -1,0 +1,25 @@
+vite.config.ts
+  s_00c24d62e2c432::t_7bd6dba7bfaf6f 13-34,44
+  s_00c24d62e2c432::t_0b5ddd029041db 177
+  s_00c24d62e2c432::t_d8c70e2cee3223 35-43
+  s_00c24d62e2c432::t_7f30f7a8ba2922 120-123
+  s_00c24d62e2c432::t_44830bf3482058 168
+  s_00c24d62e2c432::t_f21631043541f4 173-176,178-189
+  s_00c24d62e2c432::t_a35b2708ccd2bd 172
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "5994cd03af900c6b98ddb140177d61bc65633cd7",
+  "prompts": {},
+  "sessions": {
+    "s_00c24d62e2c432": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f604f475-de3f-43b5-a84b-2759976bc6eb",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
