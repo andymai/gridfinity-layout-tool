@@ -1,0 +1,42 @@
+src/shared/utils/labelTabPlan.test.ts
+  s_13df2c0005cd75::t_744a3b6f5f4bc4 144-170,172-178
+  s_13df2c0005cd75::t_7f1e3c331a7f1d 171
+  s_13df2c0005cd75::t_bd77c31d1027c5 179-181
+src/shared/utils/labelSocketPlan.test.ts
+  s_13df2c0005cd75::t_7420fc4f76ab38 293-297,299,301-302,308-320
+  s_13df2c0005cd75::t_560cb9cc359e77 298,300,303-307
+src/features/bin-designer/constants/paramMigration.ts
+  s_13df2c0005cd75::t_fbdd53fd7f76c0 770-786,1023
+src/shared/utils/labelTabPlan.ts
+  s_13df2c0005cd75::t_df8c6b42856623 288
+  s_13df2c0005cd75::t_1c9a4cd69cdd0d 175,187-188,444-449,453
+  s_13df2c0005cd75::t_a736a2ba6cdd6d 441
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_13df2c0005cd75::t_810aa64d9b38ce 1181-1198
+src/shared/utils/labelSocketPlan.ts
+  s_13df2c0005cd75::t_211f9a23771042 109,144-145,193-203,219,237
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.tsx
+  s_13df2c0005cd75::t_a3d8e088bf974b 425-438,441-448
+  s_13df2c0005cd75::t_4607459a99663e 355-357
+  s_13df2c0005cd75::t_b9c7edd5b235b1 449
+src/features/bin-designer/components/panel/LabelTabsSection/useLabelTabsSection.ts
+  s_13df2c0005cd75::t_4607459a99663e 550-551,587,589,718
+src/features/bin-designer/components/preview/GhostLabelTabs/GhostLabelTabs.tsx
+  s_13df2c0005cd75::t_a3d8e088bf974b 103
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "2d4bc24c05832e506cdcf240b14928863cfb4419",
+  "prompts": {},
+  "sessions": {
+    "s_13df2c0005cd75": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d24b17f0-5df1-4244-a105-d33cb0ec4ae8",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
