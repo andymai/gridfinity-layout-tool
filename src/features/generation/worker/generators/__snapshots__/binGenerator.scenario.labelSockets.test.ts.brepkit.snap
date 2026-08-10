@@ -1,0 +1,19 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`label sockets > 1×1 lipped socket sinks by the stacking relief 1`] = `2134`;
+
+exports[`label sockets > 1×1 socket hosts a 1U plate 1`] = `1186`;
+
+exports[`label sockets > 1×1 text mode unchanged 1`] = `822`;
+
+exports[`label sockets > 2×1 four columns → bin-spanning 2U socket 1`] = `1580`;
+
+exports[`label sockets > 2×1 two compartments, two 1U sockets 1`] = `900`;
+
+exports[`label sockets > 3u lipped socket at the tightest height budget 1`] = `2160`;
+
+exports[`label sockets > 3×1 override forces a 1U plate 1`] = `1634`;
+
+exports[`label sockets > 3×1 socket auto-quantizes to 3U 1`] = `1718`;
+
+exports[`label sockets > 3×1 socket on a 0.6mm nozzle widens the pocket 1`] = `1630`;
