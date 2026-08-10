@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.394.7](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.394.6...gridfinity-layout-tool-v4.394.7) (2026-08-10)
+
+
+### Performance
+
+* **baseplate:** let the first split plate use the worker pool ([#3395](https://github.com/andymai/gridfinity-layout-tool/issues/3395)) ([671b73a](https://github.com/andymai/gridfinity-layout-tool/commit/671b73a2405cc30845c49bba97329ca88a75969d))
+
 ## [4.394.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.394.5...gridfinity-layout-tool-v4.394.6) (2026-08-10)
 
 
