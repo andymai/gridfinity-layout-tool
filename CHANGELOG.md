@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.394.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.394.4...gridfinity-layout-tool-v4.394.5) (2026-08-10)
+
+
+### Performance
+
+* **baseplate:** drop the mesh-result cache that never hits ([#3385](https://github.com/andymai/gridfinity-layout-tool/issues/3385)) ([bf94740](https://github.com/andymai/gridfinity-layout-tool/commit/bf947407dbe239a140838e70b6ed2f680da26dab))
+
 ## [4.394.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.394.3...gridfinity-layout-tool-v4.394.4) (2026-08-10)
 
 
