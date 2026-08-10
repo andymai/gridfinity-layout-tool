@@ -277,6 +277,15 @@ function railPlacementsForRectangle(inputs: LidInputs): RailPlacement[] {
 const GRIP_RAIL_MARGIN = 2;
 
 /**
+ * Slack (mm) on the rail-to-grip wall-line match.
+ *
+ * The nominal gap is exactly `lidCornerR`; this only absorbs floating-point
+ * drift. It must stay far below the distance between two parallel same-facing
+ * edges of a polygon lid (a grid unit, 42mm) or the two would alias.
+ */
+const GRIP_WALL_MATCH_TOL = 0.01;
+
+/**
  * Air (mm) kept between a rail's end and a label tab's footprint.
  *
  * Unlike {@link GRIP_RAIL_MARGIN} this IS a clearance: rail and shelf occupy
@@ -376,9 +385,15 @@ export function railSegmentsClearOfLabelTabs(
  * for an easier opening, and only a user who also dipped the bin's lip has
  * asked for that trade. A plain chamfer or shadow line keeps its rails whole.
  *
- * Rails and reliefs are matched by OVERLAP along the wall (plus orientation),
- * not on side name: a polygon lid can carry two edges facing the same way, and
- * only the one the relief was placed on may be split.
+ * Rails and reliefs are matched on the wall LINE (cross-axis position) plus
+ * orientation, then by overlap along it. All three terms are load-bearing: a
+ * polygon lid can carry two parallel edges facing the same way, so orientation
+ * and along-overlap alone would let one edge's relief cut the other's rail,
+ * and matching on side name has the same defect. Both placement paths put a
+ * grip exactly `lidCornerR` outboard of its own rail (the grip sits on the
+ * outer face, the rail on the corner-radius line), while two parallel
+ * same-facing edges are at least a grid unit apart, so that gap identifies the
+ * wall unambiguously.
  *
  * Matching used to compare the two CENTRES for exact equality, which held only
  * while every rail was centred on its wall. A rail clipped short of a label tab
@@ -406,8 +421,11 @@ export function splitRailsAroundGrip(
     let spans: RailSegment[] = [
       { lo: railAlong - rail.length / 2, hi: railAlong + rail.length / 2 },
     ];
+    const railCross = alongX ? rail.centerY : rail.centerX;
     for (const grip of grips) {
       if (grip.rotationDeg !== rail.rotationDeg) continue;
+      const gripCross = alongX ? grip.centerY : grip.centerX;
+      if (Math.abs(gripCross - railCross) > inputs.lidCornerR + GRIP_WALL_MATCH_TOL) continue;
       const gripAlong = alongX ? grip.centerX : grip.centerY;
       const blockLo = gripAlong - grip.spanMm / 2 - GRIP_RAIL_MARGIN;
       const blockHi = gripAlong + grip.spanMm / 2 + GRIP_RAIL_MARGIN;

@@ -16,6 +16,7 @@ import { railPlacements, splitRailsAroundGrip } from './lidClickRail';
 import { resolveLidInputs } from './lidInputs';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams } from '@/features/bin-designer/types';
+import type { CellMask } from '@/shared/utils/cellMask';
 
 /**
  * A lid whose grip relief is set to soften the snap, optionally with label
@@ -99,6 +100,70 @@ describe('grip relief interrupts rails that label tabs have moved', () => {
     for (const r of left) {
       const half = r.length / 2;
       expect(Math.abs(r.centerY) > half).toBe(true);
+    }
+  });
+});
+
+describe('grip reliefs stay on their own wall', () => {
+  /**
+   * 3x3 U opening toward +Y: the centre-top unit is removed, so the notch is
+   * bounded by two edges that face the same way as two outer edges. A matcher
+   * keyed on orientation and along-overlap alone lets one prong's relief cut
+   * the other prong's rail.
+   */
+  const U_SHAPE: CellMask = {
+    cols: 6,
+    rows: 6,
+    // Rows run bottom-to-top; the top two rows lose their middle two columns.
+    cells: [
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1,
+      1, 0, 0, 1, 1,
+    ],
+  };
+
+  function uParams(): BinParams {
+    return {
+      ...DEFAULT_BIN_PARAMS,
+      width: 3,
+      depth: 3,
+      height: 6,
+      cellMask: U_SHAPE,
+      lid: {
+        ...DEFAULT_BIN_PARAMS.lid,
+        enabled: true,
+        attachment: 'clickRails',
+        clickRails: { front: true, back: true, left: true, right: true },
+        clickRailCoverage: 100,
+        grip: {
+          ...DEFAULT_BIN_PARAMS.lid.grip,
+          mode: 'scallop',
+          sides: { front: false, back: false, left: false, right: true },
+          binDip: true,
+        },
+      },
+    };
+  }
+
+  it('does not let one right-facing edge relief cut a parallel one', () => {
+    // `grip.sides.right` gives EVERY right-facing edge its own relief, so both
+    // lines are legitimately interrupted. The tell for aliasing is how many
+    // times a single line gets cut: one grip on a line can split its rail into
+    // at most two pieces, so a third piece means a relief from the other,
+    // parallel line reached across and cut it too.
+    const inputs = resolveLidInputs(uParams());
+    const before = railPlacements(inputs).filter((p) => p.rotationDeg === -90);
+    const after = splitRailsAroundGrip(before, inputs).filter((p) => p.rotationDeg === -90);
+
+    // More than one right-facing edge is what makes the aliasing reachable.
+    expect(new Set(before.map((r) => r.centerX.toFixed(3))).size).toBeGreaterThan(1);
+
+    const perLine = new Map<string, number>();
+    for (const r of after) {
+      const key = r.centerX.toFixed(3);
+      perLine.set(key, (perLine.get(key) ?? 0) + 1);
+    }
+    for (const [line, count] of perLine) {
+      expect({ line, count }).toEqual({ line, count: Math.min(count, 2) });
     }
   });
 });
