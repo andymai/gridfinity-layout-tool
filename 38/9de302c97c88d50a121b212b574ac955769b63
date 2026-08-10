@@ -1,0 +1,25 @@
+src/features/generation/bridge/bridgeMessageHandler.ts
+  s_3f9cdc8f2ffc1c::t_1ea19a21336cd8 13
+src/features/generation/worker/generators/pipeline/stages/booleanStage.ts
+  s_3f9cdc8f2ffc1c::t_e804535f0df820 7,14,28
+  s_3f9cdc8f2ffc1c::t_f79b89a91bfa1f 51
+  s_3f9cdc8f2ffc1c::t_95b73a078115c7 149,155,160
+src/features/generation/worker/handlers/workerContext.ts
+  s_3f9cdc8f2ffc1c::t_7e63dfdd623759 10-11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "389de302c97c88d50a121b212b574ac955769b63",
+  "prompts": {},
+  "sessions": {
+    "s_3f9cdc8f2ffc1c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0edd835a-6d49-463b-9a38-cb13d3023aae",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
