@@ -1,0 +1,24 @@
+src/shared/utils/labelTabPlan.ts
+  s_13df2c0005cd75::t_2c7a86f28a5d65 35-36,607-613
+  s_13df2c0005cd75::t_efb9439bc26848 614-615
+src/features/generation/worker/generators/labelTabPlanDims.test.ts
+  s_13df2c0005cd75::t_f6846b0226512a 32-33
+src/features/generation/worker/generators/lidLabelTabClearance.scenario.test.ts
+  s_13df2c0005cd75::t_72234275786962 20,39,108-125,134,186-194,199-200,205-206,231
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "0cf6e90f604207f5e1df2bf7fff0b7a03a8473d2",
+  "prompts": {},
+  "sessions": {
+    "s_13df2c0005cd75": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d24b17f0-5df1-4244-a105-d33cb0ec4ae8",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
