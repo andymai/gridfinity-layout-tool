@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { layoutAdapter } from '@/core/sync/adapters/layoutAdapter';
 import { designAdapter } from '@/features/bin-designer';
-import { baseplateAdapter } from '@/features/baseplate';
+import { baseplateAdapter } from '@/features/baseplate/sync/baseplateAdapter';
 import { runClaim, type AccountMismatchChoice } from '@/core/sync/claim';
 import { start, stop } from '@/core/sync/engine';
 import { useSessionLifecycle, useSessionStore } from '@/core/sync/session/useSession';
