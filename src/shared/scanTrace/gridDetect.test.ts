@@ -146,7 +146,7 @@ describe('detectCalibrationGrid', () => {
     const grid = detectCalibrationGrid(renderSheet());
     expect(grid).not.toBeNull();
     if (!grid) return;
-    expect(grid.markers).toHaveLength(calibrationNodes().length);
+    expect(grid.cells).toHaveLength(calibrationNodes().length);
     expect(grid.rmsMm).toBeLessThan(0.5);
   });
 
@@ -172,7 +172,7 @@ describe('detectCalibrationGrid', () => {
     const grid = detectCalibrationGrid(renderSheet({ camera, sideways: true }));
     expect(grid).not.toBeNull();
     if (!grid) return;
-    expect(grid.markers.length).toBeGreaterThanOrEqual(calibrationNodes().length - 1);
+    expect(grid.cells.length).toBeGreaterThanOrEqual(calibrationNodes().length - 1);
 
     // Orientation is free to differ (the sheet is turned), so measure a
     // distance rather than coordinates.
@@ -193,8 +193,8 @@ describe('detectCalibrationGrid', () => {
     const grid = detectCalibrationGrid(renderSheet({ camera, tool: wideTool }));
     expect(grid).not.toBeNull();
     if (!grid) return;
-    expect(grid.markers.length).toBeLessThan(calibrationNodes().length);
-    expect(grid.markers.length).toBeGreaterThanOrEqual(8);
+    expect(grid.cells.length).toBeLessThan(calibrationNodes().length);
+    expect(grid.cells.length).toBeGreaterThanOrEqual(8);
 
     const a = applyHomography(grid.homography, camera(PROBE_A));
     const b = applyHomography(grid.homography, camera(PROBE_B));
@@ -206,7 +206,7 @@ describe('detectCalibrationGrid', () => {
   it.each([20, 120, 235])('survives a table at luma %i', (table) => {
     const grid = detectCalibrationGrid(renderSheet({ table }));
     expect(grid).not.toBeNull();
-    expect(grid?.markers.length).toBeGreaterThanOrEqual(calibrationNodes().length - 1);
+    expect(grid?.cells.length).toBeGreaterThanOrEqual(calibrationNodes().length - 1);
   });
 
   it('declines when too few markers are in frame', () => {

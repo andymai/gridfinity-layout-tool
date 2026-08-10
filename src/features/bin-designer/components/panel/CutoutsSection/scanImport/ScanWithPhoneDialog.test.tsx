@@ -62,6 +62,28 @@ describe('ScanWithPhoneDialog', () => {
     expect(screen.getByText('scan.capture.privacy')).toBeInTheDocument();
   });
 
+  // The sheet is printed on the computer, not the phone, so the offer lives
+  // beside the QR code rather than on the capture page.
+  it('downloads the calibration sheet from the awaiting state', () => {
+    session.current = { phase: 'waiting', url: 'https://example.com/scan/abc' };
+    render(<ScanWithPhoneDialog open onClose={vi.fn()} />);
+
+    const clicks: HTMLAnchorElement[] = [];
+    const realClick = HTMLAnchorElement.prototype.click;
+    HTMLAnchorElement.prototype.click = function mockClick(this: HTMLAnchorElement) {
+      clicks.push(this);
+    };
+    try {
+      fireEvent.click(screen.getByText('binDesigner.cutouts.scanImport.calibrationSheet'));
+    } finally {
+      HTMLAnchorElement.prototype.click = realClick;
+    }
+
+    expect(clicks).toHaveLength(1);
+    expect(clicks[0].download).toBe('gridfinity-calibration-sheet.svg');
+    expect(URL.createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
+  });
+
   it('moves to review with an empty scale field after a valid upload', async () => {
     render(<ScanWithPhoneDialog open onClose={vi.fn()} />);
     uploadSvg(RECT_SVG);

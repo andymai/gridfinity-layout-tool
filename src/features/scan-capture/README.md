@@ -14,13 +14,77 @@ The photo never leaves the device — segmentation runs locally and only the tra
 SVG is uploaded. The segmentation **model asset** is fetched from our own origin (see
 "Segmentation" below); the photo is never sent anywhere.
 
-## Perspective + scale (the card)
+## Perspective + scale (the size reference)
 
-If a card is in frame next to the tool, `traceScene` detects it, recovers the
-image→mm homography from its four corners, and rectifies the tool outline through
-it. This removes keystone distortion **and** pins true millimetres in one step, so
-the shot can be taken from any angle and the desktop receives a correctly-sized
-outline (no manual scale step).
+Something of known real-world size has to be in frame. `traceScene` finds it,
+recovers the image→mm homography from it, and rectifies the tool outline
+through that. This removes keystone distortion **and** pins true millimetres in
+one step, so the shot can be taken from any angle and the desktop receives a
+correctly-sized outline (no manual scale step).
+
+`detectReference` tries three, and the order is an **accuracy** ranking rather
+than a convenience one:
+
+| Reference                 | Points                     | Verifiable?                              |
+| ------------------------- | -------------------------- | ---------------------------------------- |
+| Printed calibration sheet | ~18 markers, 72 corners    | Yes — its own 100mm bar                  |
+| Gridfinity baseplate      | Every visible socket       | No — see below                           |
+| Wallet card               | 4 corners, off to one side | Card stock is accurate to well under 1mm |
+
+**Why more points matter.** Four points determine a homography _exactly_: the
+fit is zero-residual by construction, so any corner-detection error is absorbed
+silently into the map and then amplified across the frame — small at the
+reference, several millimetres at the tool (#3038). A lattice spanning the whole
+scanned area is over-determined, so a bad corner averages out instead of
+dominating, and the fit can report how well it agrees with itself. Ranging over
+the whole area matters as much as the count: the card sits off to one side, so
+the tool is solved by extrapolation, while ring markers bracket it.
+
+**Why the baseplate ranks below paper.** It is the same kind of lattice and the
+same solve, but a 3D-printed baseplate is not a length standard: its true pitch
+carries the owner's own shrinkage and flow calibration — the same uncalibrated
+process the scan exists to work around — and nothing on the part reveals the
+error. Paper printed at 100% carries a bar you can put calipers on. The phone
+says so, once, when the baseplate is what sized the scan.
+
+### The lattice references (sheet + baseplate)
+
+`latticeFit.ts` does the solve and is blind to which reference produced the
+cells; `latticeBlobs.ts` finds square-ish blobs for either. Two front ends
+supply candidates:
+
+- `gridDetect.ts` — the printed sheet. Markers are ink on paper, so the polarity
+  is known ("darker than the threshold", unconditionally — **not** `buildMask`,
+  whose border-inferred polarity flips on a dark table). The extent is known
+  too, so only the transposed one is tried (a sheet photographed sideways).
+  Each marker contributes all **four corners**.
+- `baseplateDetect.ts` — a baseplate. Contrast is shading rather than ink, so
+  both polarities and several thresholds are swept; the visible extent is
+  discovered by fitting every plausible one. Sockets are rounded squares, whose
+  extracted corners sit inside the true ones by the corner radius — a bias that
+  would land straight in the pitch — so only the **centre** is used, which
+  symmetry leaves unbiased.
+
+The printable itself is `scanImport/calibrationSheetSvg.ts`, built from the same
+constants (A4 page, also inside US Letter; 5×6 ring of 14mm markers at
+Gridfinity's 42mm pitch, so the sheet's lattice and a baseplate's are the same
+lattice).
+
+**Two traps worth knowing about**, both in `latticeFit.ts`:
+
+1. **Every integer multiple of a lattice fits it exactly.** A 4×4 socket grid
+   fitted against a 7×7 trial pins its corners to nodes 0 and 6, so every socket
+   lands on an even node with _zero residual, at twice the true scale_ — and it
+   assigns more cells than the correct fit, so it wins on count. Residual, span
+   and cell-count checks all pass. The cure is `medianGap`: the fitted lattice
+   must be the finest one consistent with the data (median gap between occupied
+   columns and rows = 1). Occlusion survives it; doubling does not.
+2. **A rotated cell poisons the fit invisibly.** Corner _i_ is paired with slot
+   _i_, which is right almost always; when it is wrong the four correspondences
+   are individually plausible and jointly rotated, which least squares cannot
+   see as an outlier. Each point is checked against its own slot instead.
+
+### The card
 
 Detection is purely **geometric** — it never reads numbers, logos, or the chip.
 It picks the cleanest quadrilateral whose perspective-corrected aspect ratio is
@@ -37,16 +101,25 @@ works too. Because the card's corners are already solved by the time the editor
 is on screen, an edit only re-solves the homography (`withCardSize`) — it never
 re-detects or re-segments, so the measured size updates as you type.
 
-With no card, the outline falls back to pixels and the desktop asks for one real
-dimension. The card must be a _separate_ object beside the tool (not underneath
-it). When a card is found but the shot is steeply tilted (`cardPerspectiveSkew`
+With no reference at all, the outline falls back to pixels and the desktop asks
+for one real dimension. The card must be a _separate_ object beside the tool
+(not underneath it) — unlike the sheet and the baseplate, which the tool sits
+on. When a card is found but the shot is steeply tilted (`cardPerspectiveSkew`
 above `STEEP_CARD_SKEW`), the phone cautions that sizing accuracy degrades and to
 shoot flatter.
+
+**Classical-path limit.** Only DETECTED reference cells are excluded from the
+Otsu tool mask, and a cell the tool half-covers is never detected — it merges
+with the tool, and its uncovered sliver reads as part of the silhouette. This
+bites hardest on a baseplate, where the tool necessarily sits on the sockets;
+they cannot be blanked wholesale either, because the tool occupies the same
+pixels. The ML path is unaffected (its mask comes from the segmenter), and the
+sheet asks you to lay the tool inside the marker frame partly for this reason.
 
 ## Segmentation
 
 The tool is isolated with MediaPipe's **Interactive Segmenter** ("Magic Touch", on-device).
-On capture an auto-seed (the largest non-card blob's centroid, via `computeAutoSeed`) drives
+On capture an auto-seed (the largest non-reference blob's centroid, via `computeAutoSeed`) drives
 a first pass; the user can **tap the tool** to re-segment around that point. This replaced
 the old global Otsu threshold + "adjust outline" slider, which had no notion of _which_
 object was the tool and frequently traced the background, the card, or a sub-region.
@@ -81,8 +154,20 @@ and the fit fully tunable on the desktop.
   redo) → upload. App-like full-bleed layout with safe-area handling and a fixed action bar.
 - `cardSize.ts` — the reference card's real dimensions (long/short, not width/height,
   because that is what `cardHomography` consumes), validated and remembered per device.
+  The sheet and the baseplate have no equivalent: their sizes are printed or moulded in,
+  so `withCardSize` is a no-op on a lattice-sized scene.
 - `components/CardSizeEditor/` — collapsed readout + caliper entry for that size, shown on
   the review screen only when a card was actually detected.
+
+In `@/shared/scanTrace`, for the lattice references:
+
+- `latticeFit.ts` — the reference-agnostic solve (bootstrap → label → least-squares refit,
+  plus the span, `medianGap` and residual gates).
+- `latticeBlobs.ts` — square-ish blob scan, parameterised by size band and polarity.
+- `calibrationGrid.ts` — the printed sheet's lattice (5×6 ring, 42mm pitch, 14mm markers).
+- `gridDetect.ts` / `baseplateDetect.ts` — the two front ends.
+- `perspective.ts` — `solveHomographyLeastSquares` (Hartley-normalized DLT) and
+  `homographyRmsError`, which is what lets a fit be judged at all.
 
 ## Boot path & bundle isolation
 

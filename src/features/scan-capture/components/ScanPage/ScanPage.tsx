@@ -63,6 +63,11 @@ type Step = 'capture' | 'review' | 'done';
 
 const round1 = (n: number): number => Math.round(n * 10) / 10;
 
+function measuredFromKey(grid: SceneTrace['grid']): string {
+  if (!grid) return 'scan.cardMeasured';
+  return grid.kind === 'sheet' ? 'scan.gridMeasured' : 'scan.baseplateMeasured';
+}
+
 function bounds(points: readonly Point[]): { minX: number; minY: number; w: number; h: number } {
   const xs = points.map((p) => p.x);
   const ys = points.map((p) => p.y);
@@ -312,10 +317,10 @@ export function ScanPage({ token }: ScanPageProps) {
                       vectorEffect="non-scaling-stroke"
                     />
                   )}
-                  {scene.grid?.markers.map((marker, i) => (
+                  {scene.grid?.cells.map((cell, i) => (
                     <polygon
                       key={i}
-                      points={marker.map((p) => `${p.x},${p.y}`).join(' ')}
+                      points={cell.map((p) => `${p.x},${p.y}`).join(' ')}
                       className="stroke-success"
                       strokeWidth={2}
                       vectorEffect="non-scaling-stroke"
@@ -349,17 +354,23 @@ export function ScanPage({ token }: ScanPageProps) {
                         depth: round1(measured.h),
                       })}
                     </p>
-                    <p className="text-xs text-success">
-                      {scene.grid ? t('scan.gridMeasured') : t('scan.cardMeasured')}
-                    </p>
-                    {/* The sheet's fit is over-constrained, so it can report how
+                    <p className="text-xs text-success">{t(measuredFromKey(scene.grid))}</p>
+                    {/* A lattice fit is over-constrained, so it can report how
                         well it agrees with itself — the card's never can. */}
                     {scene.grid && (
                       <p className="text-xs text-content-secondary">
-                        {t('scan.gridDetail', {
-                          count: scene.grid.markers.length,
-                          rms: round1(scene.grid.rmsMm),
-                        })}
+                        {t(
+                          scene.grid.kind === 'sheet' ? 'scan.gridDetail' : 'scan.baseplateDetail',
+                          { count: scene.grid.cells.length, rms: round1(scene.grid.rmsMm) }
+                        )}
+                      </p>
+                    )}
+                    {/* Worth saying once, at the moment it applies: the plate
+                        was made by a printer whose calibration is the unknown
+                        this whole feature exists to work around. */}
+                    {scene.grid?.kind === 'baseplate' && (
+                      <p className="text-xs text-content-tertiary">
+                        {t('scan.baseplateAccuracyHint')}
                       </p>
                     )}
                     {cardSteep && (

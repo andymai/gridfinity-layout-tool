@@ -150,7 +150,7 @@ describe('the printed sheet round-trips through the detector', () => {
     const grid = detectCalibrationGrid(photograph(rects));
     expect(grid).not.toBeNull();
     if (!grid) return;
-    expect(grid.markers).toHaveLength(calibrationNodes().length);
+    expect(grid.cells).toHaveLength(calibrationNodes().length);
 
     // Two points 130mm apart on the page, inside the marker frame.
     const a = applyHomography(grid.homography, camera({ x: 50, y: 70 }));

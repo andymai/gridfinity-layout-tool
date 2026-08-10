@@ -20,18 +20,14 @@
  * with a baseplate if you happen to have one under the paper.
  */
 
+import { fullLatticeNodes, type GridNode } from './latticeFit';
+
+export type { GridNode };
+
 export const CALIBRATION_PITCH_MM = 42;
 export const CALIBRATION_MARKER_MM = 14;
 export const CALIBRATION_COLS = 5;
 export const CALIBRATION_ROWS = 6;
-
-export interface GridNode {
-  readonly col: number;
-  readonly row: number;
-  /** Marker centre in sheet millimetres, origin at the top-left node. */
-  readonly x: number;
-  readonly y: number;
-}
 
 /**
  * The lattice's marker centres, in millimetres. `cols`/`rows` are parameters
@@ -43,14 +39,9 @@ export function calibrationNodes(
   rows: number = CALIBRATION_ROWS,
   pitchMm: number = CALIBRATION_PITCH_MM
 ): GridNode[] {
-  const nodes: GridNode[] = [];
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      if (col !== 0 && col !== cols - 1 && row !== 0 && row !== rows - 1) continue;
-      nodes.push({ col, row, x: col * pitchMm, y: row * pitchMm });
-    }
-  }
-  return nodes;
+  return fullLatticeNodes(cols, rows, pitchMm).filter(
+    (n) => n.col === 0 || n.col === cols - 1 || n.row === 0 || n.row === rows - 1
+  );
 }
 
 /** Outer dimensions of the lattice (node centre to node centre), in millimetres. */

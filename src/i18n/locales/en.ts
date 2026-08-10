@@ -1320,7 +1320,7 @@ const en: Record<string, string> = {
   'scan.capture.tip.surface': 'Lay it on a plain, uncluttered surface',
   'scan.capture.tip.card': 'Place a bank, transit, or ID card beside it for exact sizing',
   'scan.capture.tip.sheet':
-    'Or print the calibration sheet on your computer and lay the tool inside its frame',
+    'Best of all: print the calibration sheet, or lay the tool on a Gridfinity baseplate',
   'scan.capture.tip.topDown': 'Shoot straight down, with the whole tool in frame',
   'scan.capture.exampleAlt':
     'Example photo: a tool and a bank card laid flat on a plain surface, photographed from straight above',
@@ -1331,6 +1331,10 @@ const en: Record<string, string> = {
   'scan.cardMeasured': 'Measured to scale from your card.',
   'scan.gridMeasured': 'Measured to scale from the calibration sheet.',
   'scan.gridDetail': '{count} markers · fit agrees within {rms} mm',
+  'scan.baseplateMeasured': 'Measured to scale from your baseplate grid.',
+  'scan.baseplateDetail': '{count} sockets · fit agrees within {rms} mm',
+  'scan.baseplateAccuracyHint':
+    'A printed baseplate is only as accurate as the printer that made it. The calibration sheet is exact.',
   'scan.cardSize.label': 'Card size',
   'scan.cardSize.value': '{long} × {short} mm',
   'scan.cardSize.change': 'Change',

@@ -146,7 +146,7 @@ describe('calibration sheet sizing', () => {
     if (!isOk(result)) return;
 
     expect(result.value.units).toBe('mm');
-    expect(result.value.grid).not.toBeNull();
+    expect(result.value.grid?.kind).toBe('sheet');
     expect(result.value.card).toBeNull();
 
     const out = bbox(result.value.outputPoints);
@@ -174,7 +174,7 @@ describe('calibration sheet sizing', () => {
   it('reports the fit it actually achieved', () => {
     const result = traceScene(scene, { smooth: false });
     if (!isOk(result) || !result.value.grid) throw new Error('fixture failed');
-    expect(result.value.grid.markers).toHaveLength(calibrationNodes().length);
+    expect(result.value.grid.cells).toHaveLength(calibrationNodes().length);
     expect(result.value.grid.rmsMm).toBeLessThan(0.5);
   });
 
@@ -199,6 +199,28 @@ describe('calibration sheet sizing', () => {
     expect(seed.x * W).toBeLessThan(Math.min(...xs) + expected.w);
     expect(seed.y * H).toBeGreaterThan(Math.min(...ys));
     expect(seed.y * H).toBeLessThan(Math.min(...ys) + expected.h);
+  });
+
+  // Smoothing must not resize the tool. The curve fit's error metric only
+  // samples the points it is handed, so fitting the RDP-simplified polygon let
+  // a cubic bow outside a long straight edge while scoring a perfect fit at the
+  // two endpoints that edge had been reduced to — a silent outward offset that
+  // measured ~4.5mm on a 68mm tool, independent of the size reference and
+  // larger than anything the reference contributes.
+  it('smooths the outline without inflating it', () => {
+    const raw = traceScene(scene, { smooth: false });
+    const smoothed = traceScene(scene, {});
+    if (!isOk(raw) || !isOk(smoothed)) throw new Error('fixture failed');
+
+    // Genuinely smoothed: many more vertices than the simplified polygon.
+    expect(smoothed.value.outputPoints.length).toBeGreaterThan(raw.value.outputPoints.length * 3);
+
+    const rawBox = bbox(raw.value.outputPoints);
+    const smoothBox = bbox(smoothed.value.outputPoints);
+    expect(Math.abs(smoothBox.w - rawBox.w)).toBeLessThan(0.5);
+    expect(Math.abs(smoothBox.h - rawBox.h)).toBeLessThan(0.5);
+    expect(Math.abs(smoothBox.w - TOOL_W)).toBeLessThan(0.6);
+    expect(Math.abs(smoothBox.h - TOOL_H)).toBeLessThan(0.6);
   });
 
   // The sheet's dimensions are printed, not measured, so there is nothing for
