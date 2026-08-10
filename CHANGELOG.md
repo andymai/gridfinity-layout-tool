@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.394.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.394.5...gridfinity-layout-tool-v4.394.6) (2026-08-10)
+
+
+### Performance
+
+* **baseplate:** paint the instant draft before the Manifold one ([#3393](https://github.com/andymai/gridfinity-layout-tool/issues/3393)) ([3755bbe](https://github.com/andymai/gridfinity-layout-tool/commit/3755bbed4e0b80f55a76a3f71d8b858134887e5a))
+
 ## [4.394.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.394.4...gridfinity-layout-tool-v4.394.5) (2026-08-10)
 
 
