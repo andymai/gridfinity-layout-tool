@@ -13,6 +13,7 @@ export { getActiveBridge } from './bridgeRef';
 export { bridgeManager, getActiveKernel } from './BridgeManager';
 export { WorkerPool } from './WorkerPool';
 export { WorkerPoolManager, workerPoolManager } from './WorkerPoolManager';
+export { awaitPoolWithin, poolIsUsable, shouldWaitForPool, POOL_WAIT_MS } from './poolReadiness';
 export type {
   WorkerMessage,
   WorkerResponse,
