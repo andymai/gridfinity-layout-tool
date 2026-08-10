@@ -1,0 +1,37 @@
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_13df2c0005cd75::t_e07a46a8c4d50c 429-442,448
+src/features/generation/worker/generators/lidClickRailLabelClip.test.ts
+  s_13df2c0005cd75::t_084fd034ac2cb5 2,5-7,11,28-30,33-37,39,43-46,49,54-57,60-82,86-89
+src/features/generation/worker/generators/lidClickRail.ts
+  s_13df2c0005cd75::t_5a18c10a803c8a 228-233,243-259
+  s_13df2c0005cd75::t_64faa4a59991b2 297-302,304-313,315-316,318-320,322,328-330,334-349,351-352
+src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
+  s_13df2c0005cd75::t_f9de26f98071a3 604-605,608-612,619-629
+  s_13df2c0005cd75::t_27b7474e6866ae 630
+src/features/generation/worker/generators/lidClickRailPartial.test.ts
+  s_13df2c0005cd75::t_78b6ac430e9897 1-84
+src/features/bin-designer/utils/lidCompatibility.test.ts
+  s_13df2c0005cd75::t_55289aaa428cfc 585-590,595-605,608,621-623,625
+src/features/generation/worker/generators/lidLabelTabClearance.scenario.test.ts
+  s_13df2c0005cd75::t_294ec5397a6c79 40-41,119-136,160-161
+src/features/generation/worker/generators/lidBuilder.test.ts
+  s_13df2c0005cd75::t_a52aa73a3c9009 184-189,193-195
+src/features/generation/README.md
+  s_13df2c0005cd75::t_cdc28f5b81293b 224
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "58011ceb83b3261b80c8f59617def33b440fc1c6",
+  "prompts": {},
+  "sessions": {
+    "s_13df2c0005cd75": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d24b17f0-5df1-4244-a105-d33cb0ec4ae8",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
