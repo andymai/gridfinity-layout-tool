@@ -59,11 +59,7 @@ function measureOnce(params: BinParams): Tick {
   };
 }
 
-/**
- * Walk a sequence of DISTINCT configs from a cold cache, dropping the first
- * (it pays the one-time cold build every scrub shares). The median of the rest
- * is the marginal cost of one slider tick.
- */
+/** Per-cache hit rate over whatever window the stats were last reset to. */
 function cacheLine(): string {
   return getAllShapeCacheStats()
     .filter((s) => s.hits + s.misses > 0)
@@ -71,6 +67,11 @@ function cacheLine(): string {
     .join('  ');
 }
 
+/**
+ * Walk a sequence of DISTINCT configs from a cold cache, dropping the first
+ * (it pays the one-time cold build every scrub shares). The median of the rest
+ * is the marginal cost of one slider tick.
+ */
 function scrub(label: string, configs: readonly BinParams[]): void {
   clearAllCaches();
   const ticks: Tick[] = [];
@@ -82,7 +83,7 @@ function scrub(label: string, configs: readonly BinParams[]): void {
   const replay: Tick[] = [];
   for (const cfg of configs) replay.push(measureOnce(cfg));
 
-  const missed = cacheLine();
+  const replayHits = cacheLine();
 
   const first = ticks[0];
   const rest = ticks.slice(1);
@@ -103,7 +104,7 @@ function scrub(label: string, configs: readonly BinParams[]): void {
     `  base ${med((t) => t.base, replay).toFixed(0)}  feat ${med((t) => t.features, replay).toFixed(0)}` +
     `  bool ${med((t) => t.boolean, replay).toFixed(0)}  merge ${med((t) => t.merge, replay).toFixed(0)}\n` +
     `    fresh cache hits  ${freshHits}\n` +
-    `    replay cache hits ${missed}`;
+    `    replay cache hits ${replayHits}`;
   appendFileSync(OUT, line + '\n');
 }
 
