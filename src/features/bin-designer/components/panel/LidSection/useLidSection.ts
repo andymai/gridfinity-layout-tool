@@ -83,6 +83,9 @@ function clearRevealGrip(grip: LidGripConfig): LidGripConfig {
   return grip.mode === 'reveal' ? { ...grip, mode: 'none' } : grip;
 }
 
+/** Coverage stops that carry their own copy; the rest render bare. */
+const DESCRIBED_RAIL_COVERAGES = new Set([50, 75, 100]);
+
 export function useLidSection() {
   const t = useTranslation();
   const {
@@ -160,11 +163,16 @@ export function useLidSection() {
   // hint when the user toggles magnets without a stack grid above).
   const binHasMagnets = isMagnetStyle(base.style);
 
+  // Only the three original stops carry copy. The intermediate steps (#3401)
+  // are self-explanatory percentages between them, and inventing a caption for
+  // each would put eight more strings into fourteen locales to say nothing.
   const railCoverageOptions: SnappingSliderOption[] = useMemo(
     () =>
       LID_CLICK_RAIL_COVERAGE_OPTIONS.map((value) => ({
         value,
-        description: t(`binDesigner.lid.clickRailCoverage.${value}`),
+        description: DESCRIBED_RAIL_COVERAGES.has(value)
+          ? t(`binDesigner.lid.clickRailCoverage.${value}`)
+          : '',
       })),
     [t]
   );

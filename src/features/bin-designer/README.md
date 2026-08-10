@@ -147,7 +147,12 @@ graph TB
   encloses items that poke up out of a short bin, e.g. toothpicks; 0 = the
   standard one-grid-unit lid), the top-surface picker and its sub-toggles
   (magnet pockets, lip-only stack top, separate baseplate), per-side
-  click-rail snaps with a coverage slider, and the floor-plate
+  click-rail snaps with a coverage slider (`LID_CLICK_RAIL_COVERAGE_OPTIONS`,
+  50-100% in 5% steps — **5 rather than the requested 10 because
+  `migrateClickRailCoverage` snaps every persisted value to the NEAREST listed
+  option, so dropping 75 would silently re-render every design saved at
+  three-quarter coverage as 70**; only 50/75/100 carry description copy, the
+  rest render bare like `gripCoverageOptions`), and the floor-plate
   thickness (`topThicknessMm`, 0.8–5mm — a thicker top for a stiffer, less
   translucent lid on large bins; 0.8 = the historical plate). Wall thickness and
   fit clearance stay locked-down constants in `lidConstants.ts` (a single
