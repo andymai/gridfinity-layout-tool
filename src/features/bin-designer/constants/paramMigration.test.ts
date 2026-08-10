@@ -1178,6 +1178,27 @@ describe('migrateParams', () => {
     });
   });
 
+  it('keeps every previously-shippable coverage as an exact stop', () => {
+    // The stop list went from 50/75/100 to 5% steps (#3401). Because
+    // `migrateClickRailCoverage` snaps to the NEAREST option, dropping a value
+    // that designs were saved with would silently re-render them at a
+    // different coverage — a changed printed part with no notice. 75 is the
+    // one at risk, and it is why the step is 5 and not the requested 10.
+    for (const coverage of [50, 75, 100]) {
+      const result = migrateParams({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, clickRailCoverage: coverage },
+      });
+      expect(result.lid.clickRailCoverage).toBe(coverage);
+    }
+  });
+
+  it('snaps an off-stop coverage to the nearest supported one', () => {
+    const result = migrateParams({
+      lid: { ...DEFAULT_BIN_PARAMS.lid, clickRailCoverage: 73 },
+    });
+    expect(result.lid.clickRailCoverage).toBe(75);
+  });
+
   it('backfills clickRailCoverage from defaults for legacy lid configs missing the field', () => {
     const result = migrateParams({
       lid: {

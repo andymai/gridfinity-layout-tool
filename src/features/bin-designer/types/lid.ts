@@ -136,7 +136,25 @@ export const LID_EXTRA_HEIGHT_STEP_MM = 1;
  * Lower values save filament; higher values give more grip surface.
  * 100% = full edge-to-edge rails.
  */
-export const LID_CLICK_RAIL_COVERAGE_OPTIONS: readonly number[] = [50, 75, 100] as const;
+export const LID_CLICK_RAIL_COVERAGE_MIN = 50;
+export const LID_CLICK_RAIL_COVERAGE_MAX = 100;
+/**
+ * 5% rather than the requested 10% (#3401) for one reason: `migrateClickRailCoverage`
+ * snaps every persisted value to the nearest listed option, so dropping 75 would
+ * silently re-render every design saved at three-quarter coverage as 70 — a real
+ * change to a printed part, with no notice. A 5% step is finer than asked for,
+ * costs nothing, and keeps 75 an exact stop.
+ */
+export const LID_CLICK_RAIL_COVERAGE_STEP = 5;
+
+export const LID_CLICK_RAIL_COVERAGE_OPTIONS: readonly number[] = Array.from(
+  {
+    length:
+      (LID_CLICK_RAIL_COVERAGE_MAX - LID_CLICK_RAIL_COVERAGE_MIN) / LID_CLICK_RAIL_COVERAGE_STEP +
+      1,
+  },
+  (_, i) => LID_CLICK_RAIL_COVERAGE_MIN + i * LID_CLICK_RAIL_COVERAGE_STEP
+);
 
 /**
  * How the lid retains onto the bin. Mutually exclusive — a lid holds by

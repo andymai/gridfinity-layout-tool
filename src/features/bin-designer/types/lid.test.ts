@@ -18,6 +18,10 @@ import {
   LID_EXTRA_HEIGHT_MAX_MM,
   LID_EXTRA_HEIGHT_STEP_MM,
   LID_CORNER_RADIUS,
+  LID_CLICK_RAIL_COVERAGE_OPTIONS,
+  LID_CLICK_RAIL_COVERAGE_MIN,
+  LID_CLICK_RAIL_COVERAGE_MAX,
+  LID_CLICK_RAIL_COVERAGE_STEP,
   LID_MAGNET_LIP_CLEARANCE,
   LID_GRIP_SPAN_MIN_MM,
   LID_GRIP_SPAN_MAX_MM,
@@ -512,5 +516,31 @@ describe('lidGripRequestedHeightMm', () => {
 
   it('is zero for a lid with no relief', () => {
     expect(lidGripRequestedHeightMm({ mode: 'none', heightMm: 4 })).toBe(0);
+  });
+});
+
+describe('LID_CLICK_RAIL_COVERAGE_OPTIONS', () => {
+  it('runs 50 to 100 with no gaps', () => {
+    expect(LID_CLICK_RAIL_COVERAGE_OPTIONS[0]).toBe(LID_CLICK_RAIL_COVERAGE_MIN);
+    expect(LID_CLICK_RAIL_COVERAGE_OPTIONS.at(-1)).toBe(LID_CLICK_RAIL_COVERAGE_MAX);
+    for (let i = 1; i < LID_CLICK_RAIL_COVERAGE_OPTIONS.length; i++) {
+      expect(LID_CLICK_RAIL_COVERAGE_OPTIONS[i] - LID_CLICK_RAIL_COVERAGE_OPTIONS[i - 1]).toBe(
+        LID_CLICK_RAIL_COVERAGE_STEP
+      );
+    }
+  });
+
+  it('still contains the three stops designs were saved with', () => {
+    // Dropping any of these would make `migrateClickRailCoverage` snap saved
+    // designs onto a neighbour and quietly change a printed lid.
+    for (const legacy of [50, 75, 100]) {
+      expect(LID_CLICK_RAIL_COVERAGE_OPTIONS).toContain(legacy);
+    }
+  });
+
+  it('holds whole percentages only, so nothing lands between UI stops', () => {
+    for (const v of LID_CLICK_RAIL_COVERAGE_OPTIONS) {
+      expect(Number.isInteger(v)).toBe(true);
+    }
   });
 });
