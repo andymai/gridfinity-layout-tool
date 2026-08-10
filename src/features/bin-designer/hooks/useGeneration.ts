@@ -15,12 +15,6 @@ import {
 } from '@/shared/generation/meshPersistence';
 import type { MeshData } from '@/shared/types/generation';
 import { validateCompartmentSizes } from '../utils/validation';
-import {
-  trackWasmThreadingStatus,
-  trackCachePerformance,
-  trackKernelPerformance,
-  trackBooleanFallbacks,
-} from '@/shared/analytics/posthog';
 import type { BinParams, GenerationResult } from '../types';
 import type { GridfinityItem } from '@/shared/types/item';
 
@@ -416,17 +410,6 @@ export function useGeneration(): void {
         // Manifold WASM load (which can lag the exact bridge) do nothing at all.
         // Edits in that brief window simply run exact-only until the preview joins.
         initializedRef.current = true;
-
-        // Track WASM threading capabilities for analytics
-        const threadingInfo = bridge.getThreadingInfo();
-        if (threadingInfo) {
-          trackWasmThreadingStatus(threadingInfo.isThreaded, threadingInfo.hardwareConcurrency);
-        }
-
-        // Wire up cache stats and kernel perf reporting to PostHog
-        bridge.onCacheStats = trackCachePerformance;
-        bridge.onKernelPerfStats = trackKernelPerformance;
-        bridge.onBooleanFallbackStats = trackBooleanFallbacks;
 
         // Trigger the initial generation immediately — deliberately NOT gated on
         // the preview bridge. The first render runs exact-only; gating it on

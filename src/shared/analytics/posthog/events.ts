@@ -8,10 +8,8 @@
  *
  * Sub-modules:
  *   - `eventsCore`         — layout/bin events + engagement milestones
- *   - `eventsHeartbeat`    — activity context + heartbeat payload
  *   - `eventsPerson`       — person properties + feature-adoption flags
  *   - `eventsErrors`       — exception capture + failure tracking
- *   - `eventsPerformance`  — WASM threading + cache + kernel + baseplate timing
  *   - `binExportEvents`    — sibling file (kept for line-cap headroom)
  */
 
@@ -42,13 +40,6 @@ export {
   type DrawerShapeAppliedProperties,
   type DrawerShapeEditor,
 } from './eventsCore';
-export {
-  getActivityContext,
-  buildHeartbeatPayload,
-  trackHeartbeat,
-  type ActivityContext,
-  type HeartbeatPayload,
-} from './eventsHeartbeat';
 export { computeEngagementTier, updatePersonProperties, markFeatureUsed } from './eventsPerson';
 export {
   captureException,
@@ -57,13 +48,6 @@ export {
   track3DRenderError,
   trackTemplateLoadError,
 } from './eventsErrors';
-export {
-  trackWasmThreadingStatus,
-  trackCachePerformance,
-  trackKernelPerformance,
-  trackBooleanFallbacks,
-  trackBaseplatePreviewTiming,
-} from './eventsPerformance';
 
 // PWA INSTALL TRACKING
 

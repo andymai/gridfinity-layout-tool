@@ -34,13 +34,6 @@ import { bridgeManager, workerPoolManager, createDraftSkipGate } from '@/shared/
 import type { GenerationBridge } from '@/shared/generation/bridge';
 import type { WorkerPool } from '@/shared/generation/bridge';
 import { handleWasmLoadFailure } from '@/shared/generation/captureWasmLoadFailure';
-import {
-  trackWasmThreadingStatus,
-  trackCachePerformance,
-  trackKernelPerformance,
-  trackBooleanFallbacks,
-  trackBaseplatePreviewTiming,
-} from '@/shared/analytics/posthog';
 import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
 import { getStaticTranslation } from '@/i18n';
@@ -614,12 +607,8 @@ export function useBaseplateGeneration(): void {
       if (!bridge || bridge.isDestroyed) return;
 
       const brepStart = performance.now();
-      // Cold = first BREP this session. Captured here (not via initializedRef)
-      // because the mount handler sets initializedRef BEFORE kicking off this
-      // very first BREP, so reading initializedRef would always say "warm".
-      const wasmCold = !firstBrepDoneRef.current;
-      // `shouldTrack` stays false for cancellation/unmount paths so PostHog
-      // isn't polluted by `success:false` events that aren't real failures.
+      // Stays false for cancellation/unmount paths, so those don't count as a
+      // completed first BREP and leave a later real run looking warm.
       let shouldTrack = false;
       let succeeded = false;
       setGenerationStatus('generating');
@@ -759,15 +748,6 @@ export function useBaseplateGeneration(): void {
         if (succeeded) lastBrepMsRef.current = performance.now() - brepStart;
         if (shouldTrack) {
           firstBrepDoneRef.current = true;
-          trackBaseplatePreviewTiming({
-            directMeshMs: directMeshDurationRef.current,
-            previewKind: previewKindRef.current,
-            brepMs: performance.now() - brepStart,
-            pieceCount: tiling.pieces.length,
-            isSplit: tiling.isSplit,
-            wasmCold,
-            success: succeeded,
-          });
         }
       }
     },
@@ -812,16 +792,6 @@ export function useBaseplateGeneration(): void {
         // Claim this epoch as final so a late async draft can't overwrite it.
         finalizedEpochRef.current = epoch;
         setGenerationStatus('complete');
-        trackBaseplatePreviewTiming({
-          directMeshMs: directMeshDurationRef.current,
-          previewKind: 'direct',
-          brepMs: 0,
-          pieceCount: tiling.pieces.length,
-          isSplit: tiling.isSplit,
-          wasmCold: !firstBrepDoneRef.current,
-          success: true,
-          deferred: true,
-        });
         return;
       }
 
@@ -899,16 +869,6 @@ export function useBaseplateGeneration(): void {
         bridgeRef.current = bridge;
         setWasmStatus('ready');
         initializedRef.current = true;
-
-        const threadingInfo = bridge.getThreadingInfo();
-        if (threadingInfo) {
-          trackWasmThreadingStatus(threadingInfo.isThreaded, threadingInfo.hardwareConcurrency);
-        }
-
-        // Wire up cache stats and kernel perf reporting to PostHog
-        bridge.onCacheStats = trackCachePerformance;
-        bridge.onKernelPerfStats = trackKernelPerformance;
-        bridge.onBooleanFallbackStats = trackBooleanFallbacks;
 
         // Acquire shared worker pool in the background (don't block initial generation)
         void workerPoolManager
