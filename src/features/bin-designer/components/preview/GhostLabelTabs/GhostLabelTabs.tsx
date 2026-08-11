@@ -96,7 +96,6 @@ export function GhostLabelTabs() {
     if (!shouldShow) return null;
 
     const cellD = innerD / rows;
-    // Socket mode (#2666) forces full-width tabs in the worker; mirror that.
     // (The rare bin-spanning fallback — no compartment fits a plate — still
     // ghosts as per-compartment shelves; the overlay is a transient
     // approximation and the exact mesh replaces it.)

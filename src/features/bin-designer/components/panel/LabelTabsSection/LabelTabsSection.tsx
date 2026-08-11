@@ -352,9 +352,12 @@ export function LabelTabsSection() {
 
               {/* Alignment — hidden at width=100% because the control has no
                   visible effect when the tab spans the whole column (#1898).
-                  Since #3402 that holds in socket mode too: the width applies
-                  there, so a full-width socket tab has nothing to align. */}
-              {state.label.width < DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH && (
+                  Socket mode is the exception even at 100%: `applySocket`
+                  positions the POCKET inside the tab by the same field, and a
+                  per-compartment plate override can leave that pocket far
+                  narrower than the shelf it sits on. */}
+              {(state.isSocketMode ||
+                state.label.width < DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH) && (
                 <div>
                   <span className="mb-1 flex items-center gap-1 text-xs font-medium text-content-secondary">
                     {t('binDesigner.tabAlignment')}

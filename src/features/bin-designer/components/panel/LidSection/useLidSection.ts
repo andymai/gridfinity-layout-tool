@@ -51,6 +51,8 @@ import {
   type TextMode,
 } from '@/features/bin-designer/types';
 import { isPartialMask } from '@/shared/utils/cellMask';
+import { railFoulingLabelFootprints } from '@/shared/utils/labelTabPlan';
+import { resolveOverhang, overhangExpansion, hasOverhang } from '@/shared/utils/overhang';
 import { matchingTrayParams } from '@/features/bin-designer/utils/matchingTray';
 import { lidWallBottomZ } from '@/features/bin-designer/components/preview/LidMesh/lidAnchorZ';
 import {
@@ -139,6 +141,16 @@ export function useLidSection() {
     () => computeDisabledRails(compatibilityIssues),
     [compatibilityIssues]
   );
+  // Label tabs no longer disable a whole side, so the rail summary has to read
+  // the same footprints the worker segments against or it reports rails on a
+  // wall the tabs have taken.
+  const labelFootprints = useMemo(() => railFoulingLabelFootprints(params), [params]);
+  // The lid wraps the bin's overhang-expanded body, so the readout has to use
+  // the same walls the worker places rails on.
+  const outerExpansion = useMemo(() => {
+    const resolved = resolveOverhang(isPartialMask(params.cellMask) ? undefined : params.overhang);
+    return hasOverhang(resolved) ? overhangExpansion(resolved) : { addW: 0, addD: 0 };
+  }, [params.cellMask, params.overhang]);
 
   const blockerReason = useMemo(() => {
     const blockers = compatibilityIssues.filter((i) => i.severity === 'blocker');
@@ -528,7 +540,9 @@ export function useLidSection() {
             disabledRails,
             params.cellMask,
             lid.clickRails,
-            params.gridUnitMmY ?? params.gridUnitMm
+            params.gridUnitMmY ?? params.gridUnitMm,
+            labelFootprints,
+            outerExpansion
           )
         : { count: 0, lengths: [] as readonly number[] },
     [
@@ -539,6 +553,8 @@ export function useLidSection() {
       params.gridUnitMmY,
       params.cellMask,
       disabledRails,
+      labelFootprints,
+      outerExpansion,
       lid.clickRails,
       lid.clickRailCoverage,
     ]
@@ -561,11 +577,20 @@ export function useLidSection() {
         count: railSummary.count,
       });
     }
-    // Rectangular: 1 or 2 distinct lengths.
     const distinct = Array.from(new Set(railSummary.lengths.map((n) => Math.round(n))));
     if (distinct.length === 1) {
       return t('binDesigner.lid.railsCount', {
         length: distinct[0].toString(),
+        count: railSummary.count,
+      });
+    }
+    // Segmenting around label tabs (#3401) can leave more than the two lengths
+    // a rectangle used to have (one per axis), and the two-axis form would drop
+    // the third and mislabel its rails with the second's length.
+    if (distinct.length > 2) {
+      return t('binDesigner.lid.railsRange', {
+        min: distinct[distinct.length - 1].toString(),
+        max: distinct[0].toString(),
         count: railSummary.count,
       });
     }

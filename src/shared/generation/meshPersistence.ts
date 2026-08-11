@@ -33,12 +33,18 @@ const META_STORE = 'binMeshMeta';
 
 /**
  * Bumped whenever the generated mesh bytes can change for the same params —
- * a brepjs/occt-wasm upgrade or a tessellation-tolerance change. A bump changes
- * every key, so old entries never match again and are evicted by the LRU budget.
- * Preview always uses the occt-wasm exact kernel at `forExport=false`, so the
- * kernel and quality are folded into this constant rather than the per-entry key.
+ * a brepjs/occt-wasm upgrade, a tessellation-tolerance change, or a geometry
+ * fix. A bump changes every key, so old entries never match again and are
+ * evicted by the LRU budget. Preview always uses the occt-wasm exact kernel at
+ * `forExport=false`, so the kernel and quality are folded into this constant
+ * rather than the per-entry key.
+ *
+ * `v7`: label tabs stopped being forced full-width in socket mode (#3402), so
+ * the same params cut a different shelf. `useLinkedDesignMeshes` serves a hit
+ * without regenerating, so without this bump a linked design in the layout
+ * planner would render its pre-fix bin until the entry was evicted.
  */
-const MESH_CACHE_VERSION = 'v6-brepjs18.123.0';
+const MESH_CACHE_VERSION = 'v7-brepjs18.123.0';
 
 /** Evict oldest entries once the total stored mesh bytes exceed this budget. */
 let maxCacheBytes = 64 * 1024 * 1024;

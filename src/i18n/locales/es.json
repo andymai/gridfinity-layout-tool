@@ -898,7 +898,7 @@
   "binDesigner.lid.compat.handles": "Las asas en {sides} alcanzan el labio — la guía de clic en esas paredes se omite automáticamente.",
   "binDesigner.lid.compat.handlesAllSides": "Las asas en los cuatro lados alcanzan el labio — la tapa no tiene pared a la que agarrarse.",
   "binDesigner.lid.compat.heading": "Notas de compatibilidad",
-  "binDesigner.lid.compat.labelTabs": "Las pestañas de etiqueta ocupan la pared de la que cuelgan — la guía de clic en {sides} se omite automáticamente para liberarlas. Las guías de las demás paredes se detienen antes de las pestañas.",
+  "binDesigner.lid.compat.labelTabs": "Las pestañas de etiqueta ocupan la pared de la que cuelgan. La guía de clic en {sides} solo rellena los huecos que dejan, y las guías de las demás paredes se detienen antes de ellas.",
   "binDesigner.lid.compat.magnetBinTooSmall": "La caja es demasiado pequeña para imanes en las esquinas — usa una caja más grande o un imán de menor diámetro.",
   "binDesigner.lid.compat.magnetTooDeepForBin": "El imán de retención es más profundo de lo que cabe en el interior de la caja — reduce su profundidad o usa una caja más alta.",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "Las formas personalizadas no pueden colocar imanes en las esquinas — la tapa vuelve al ajuste por fricción sin imanes.",

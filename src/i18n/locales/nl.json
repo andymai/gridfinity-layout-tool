@@ -898,7 +898,7 @@
   "binDesigner.lid.compat.handles": "Handgrepen op {sides} reiken tot in de stapelrand — de kliklat op die wanden wordt automatisch overgeslagen.",
   "binDesigner.lid.compat.handlesAllSides": "Handgrepen op alle vier de zijden reiken tot in de stapelrand — het deksel heeft geen wand om vast te grijpen.",
   "binDesigner.lid.compat.heading": "Compatibiliteitsnotities",
-  "binDesigner.lid.compat.labelTabs": "Labellipjes bezetten de wand waaraan ze hangen — de kliklat op {sides} wordt automatisch overgeslagen om ze vrij te houden. De latten op de andere wanden stoppen net voor de lipjes.",
+  "binDesigner.lid.compat.labelTabs": "Labellipjes bezetten de wand waaraan ze hangen. De kliklat op {sides} vult alleen de overgebleven openingen, en de latten op de andere wanden stoppen net voor de lipjes.",
   "binDesigner.lid.compat.magnetBinTooSmall": "De bak is te klein voor hoekmagneten — gebruik een grotere bak of een kleinere magneetdiameter.",
   "binDesigner.lid.compat.magnetTooDeepForBin": "De retentiemagneet is dieper dan het binnenwerk van de bak aankan — verklein de diepte of gebruik een hogere bak.",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "Bij aangepaste vormen kunnen geen hoekmagneten worden geplaatst — het deksel valt terug op klemvast zonder magneten.",

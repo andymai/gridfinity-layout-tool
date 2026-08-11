@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildBlockerReason, computeRailSummary, lidValueSummary } from './useLidSection.helpers';
+import type { LabelTabFootprint } from '@/shared/utils/labelTabPlan';
 import { DEFAULT_LID_CONFIG, type LidClickRails } from '@/features/bin-designer/types';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type {
@@ -16,6 +17,46 @@ const ALL_RAILS: LidClickRails = { front: true, back: true, left: true, right: t
 const NO_DISABLED: ReadonlySet<LidCompatibilitySide> = new Set();
 
 describe('computeRailSummary', () => {
+  // Since #3401 the worker cuts a wall's run around the label tabs, so the
+  // summary has to do the same or it advertises rails that are not built.
+  const backTab = (xMin: number, xMax: number): LabelTabFootprint => ({
+    anchor: 'back',
+    xMin,
+    xMax,
+    // Bin depth 3 -> innerD/2 is ~61.5; a 12mm tab hangs off the back wall.
+    yMin: 49.5,
+    yMax: 61.5,
+    zMin: 20,
+    zMax: 36,
+    onOuterWall: true,
+  });
+
+  it('drops the back rail when a full-width tab takes that wall', () => {
+    const plain = computeRailSummary(2, 3, GRID, 100, NO_DISABLED, undefined, ALL_RAILS);
+    const tabbed = computeRailSummary(2, 3, GRID, 100, NO_DISABLED, undefined, ALL_RAILS, GRID, [
+      backTab(-40, 40),
+    ]);
+    expect(tabbed.count).toBe(plain.count - 1);
+  });
+
+  it('counts a rail either side of a narrow tab', () => {
+    const tabbed = computeRailSummary(2, 3, GRID, 100, NO_DISABLED, undefined, ALL_RAILS, GRID, [
+      backTab(-10, 10),
+    ]);
+    const plain = computeRailSummary(2, 3, GRID, 100, NO_DISABLED, undefined, ALL_RAILS);
+    // The back wall's one rail becomes two shorter ones.
+    expect(tabbed.count).toBe(plain.count + 1);
+  });
+
+  it('shortens the side rails a back tab reaches into', () => {
+    const plain = computeRailSummary(2, 3, GRID, 100, NO_DISABLED, undefined, ALL_RAILS);
+    const tabbed = computeRailSummary(2, 3, GRID, 100, NO_DISABLED, undefined, ALL_RAILS, GRID, [
+      backTab(-40, 40),
+    ]);
+    // Longest surviving rail is a side one, now clipped short of the tab.
+    expect(tabbed.lengths[0]).toBeLessThan(plain.lengths[0]);
+  });
+
   it('reports both axis lengths for a full-coverage rectangle with every rail on', () => {
     // lidCornerR = LID_CORNER_RADIUS(4) - LID_FIT_CLEARANCE(0.25) = 3.75.
     // railLenX = (2*42 - 0.5 - 7.5) = 76; railLenY = (3*42 - 0.5 - 7.5) = 118.

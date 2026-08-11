@@ -898,7 +898,7 @@
   "binDesigner.lid.compat.handles": "{sides}의 손잡이가 립까지 뻗습니다 — 그 벽의 딸깍 레일이 자동으로 생략됩니다.",
   "binDesigner.lid.compat.handlesAllSides": "네 면 모두의 손잡이가 립까지 뻗습니다 — 뚜껑이 잡을 벽이 남지 않습니다.",
   "binDesigner.lid.compat.heading": "호환성 참고",
-  "binDesigner.lid.compat.labelTabs": "라벨 탭은 매달린 벽을 차지합니다 — {sides}의 딸깍 레일은 탭을 피하려고 자동으로 생략됩니다. 나머지 벽의 레일은 탭 앞에서 멈춥니다.",
+  "binDesigner.lid.compat.labelTabs": "라벨 탭은 매달린 벽을 차지합니다. {sides}의 딸깍 레일은 남은 틈만 채우고, 다른 벽의 레일은 탭 앞에서 멈춥니다.",
   "binDesigner.lid.compat.magnetBinTooSmall": "수납통이 모서리 자석을 넣기에 너무 작습니다 — 더 큰 수납통이나 더 작은 자석 지름을 사용하세요.",
   "binDesigner.lid.compat.magnetTooDeepForBin": "고정 자석이 수납통 내부가 담을 수 있는 것보다 깊습니다 — 깊이를 줄이거나 더 높은 수납통을 사용하세요.",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "맞춤 모양에는 모서리 자석을 넣을 수 없습니다 — 뚜껑은 자석 없는 마찰 끼움으로 대체됩니다.",

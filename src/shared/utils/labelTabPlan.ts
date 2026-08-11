@@ -7,10 +7,6 @@
  * into it, and the panel warnings that explain why a rail went missing.
  * Re-deriving the placement in each of those is exactly the drift CLAUDE.md
  * gotcha #9 warns about, so they all read this plan instead.
- *
- * Nothing here touches geometry — `planLabelTabLayout` was already documented
- * as pure and separate from the build, and this file is that separation made
- * physical.
  */
 
 import type { BinParams, LabelTabAlignment, LabelTabFit, TabAnchorSide } from '@/shared/types/bin';
@@ -38,9 +34,9 @@ import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants/gridfini
 import {
   LID_CLICK_RAIL_DROP_BELOW_WALL,
   LID_CLICK_RAIL_TOP_CHAMFER,
+  LID_CLICK_RAIL_OUT,
+  LID_CLICK_RAIL_INNER,
 } from '@/features/bin-designer/types/lid';
-
-export type TabAnchor = 'back' | 'front';
 
 /** Socket-mode build inputs resolved once per bin from the shared plan. */
 export interface SocketBuildInfo {
@@ -92,7 +88,7 @@ export interface TabSlot {
 /** One row/anchor's planned slots plus the inputs its geometry needs. */
 export interface PlannedTabRow {
   readonly params: BinParams;
-  readonly anchor: TabAnchor;
+  readonly anchor: TabAnchorSide;
   readonly dims: TabBuildDimensions;
   readonly slots: readonly TabSlot[];
 }
@@ -223,7 +219,7 @@ export function planLabelTabLayout(
   };
 
   const edges = params.label.edges ?? 'back';
-  const anchors: TabAnchor[] = [];
+  const anchors: TabAnchorSide[] = [];
   if (edges === 'back' || edges === 'both') anchors.push('back');
   if (edges === 'front' || edges === 'both') anchors.push('front');
 
@@ -274,10 +270,10 @@ export function planLabelTabLayout(
  * emits one slot per group, so merged columns get a single spanning tab rather
  * than per-column tabs with incorrect divider deductions.
  */
-export function planTabsAtRow(
+function planTabsAtRow(
   params: BinParams,
   row: number,
-  anchor: TabAnchor,
+  anchor: TabAnchorSide,
   dims: TabBuildDimensions,
   bothEdges: boolean
 ): TabSlot[] {
@@ -379,10 +375,10 @@ export function planTabsAtRow(
  * one-column grid: the tilt and depth guards below read `dividerOverrides` and
  * real bounds, and would silently pass on a fabricated config.
  */
-export function planSpanningTabAtRow(
+function planSpanningTabAtRow(
   params: BinParams,
   row: number,
-  anchor: TabAnchor,
+  anchor: TabAnchorSide,
   dims: TabBuildDimensions
 ): TabSlot[] {
   const { cols, cells } = params.compartments;
@@ -427,7 +423,7 @@ export function planSpanningTabAtRow(
  * the two can never drift on width percentage, socket override, alignment or
  * wall-contact rules. Returns null when the span leaves no room for a tab.
  */
-export function fitTabInSpan(args: {
+function fitTabInSpan(args: {
   readonly cellId: number;
   readonly text: string;
   readonly availableLeft: number;
@@ -441,11 +437,8 @@ export function fitTabInSpan(args: {
   const { availableLeft, availableRight, alignment } = args;
   const availableWidth = availableRight - availableLeft;
 
-  // Socket mode used to force the full available width, which meant a user
-  // fitting a centred 1u plate still got a shelf spanning the whole
-  // compartment (#3402). The width now applies in both modes; the socket plan
-  // is fed the same percentage, so a narrower shelf simply picks a narrower
-  // plate rather than keeping one that no longer fits.
+  // The socket plan is fed this same percentage, so a narrower shelf picks a
+  // narrower plate rather than keeping one that no longer fits (#3402).
   const tabWidth = (availableWidth * args.widthPercent) / 100;
   if (tabWidth <= 0) return null;
 
@@ -564,12 +557,22 @@ export function labelTabFootprints(
  * lid-local Z so it can be compared directly against a tab footprint, which
  * only ever knows about the cavity floor.
  */
-export function clickRailZBandAboveFloor(interiorHeight: number): {
+export function clickRailZBandAboveFloor(
+  interiorHeight: number,
+  /**
+   * Exterior-wall collar (#2500). It raises the outer box and the lip with it
+   * while deliberately leaving the interior plane alone, so the lid seats that
+   * much higher above an unmoved shelf. Omitting it puts the band below where
+   * the rail really is and reports a foul on a tab the rail clears.
+   */
+  collarHeight = 0
+): {
   readonly lo: number;
   readonly hi: number;
 } {
   const lipTop =
     interiorHeight +
+    collarHeight +
     GRIDFINITY_SPEC.LIP_SMALL_TAPER +
     GRIDFINITY_SPEC.LIP_HEIGHT -
     GRIDFINITY_SPEC.LIP_OVERLAP;
@@ -581,34 +584,37 @@ export function clickRailZBandAboveFloor(interiorHeight: number): {
 }
 
 /** Does this footprint reach into the band a click rail sweeps through? */
-export function footprintFoulsRailBand(fp: LabelTabFootprint, interiorHeight: number): boolean {
-  const band = clickRailZBandAboveFloor(interiorHeight);
+export function footprintFoulsRailBand(
+  fp: LabelTabFootprint,
+  interiorHeight: number,
+  collarHeight = 0
+): boolean {
+  const band = clickRailZBandAboveFloor(interiorHeight, collarHeight);
   return fp.zMax > band.lo && fp.zMin < band.hi;
 }
 
 /**
  * Interior dimensions a label tab is planned against, from params alone.
  *
- * Mirrors `createPipelineContext` (pipeline/context.ts), which is the real
- * source — the lid is generated independently of the bin pipeline, so it has
- * no context to read and must re-derive. `labelTabPlan.dims.test.ts` pins the
- * two together against the real context for a matrix of params; if that test
- * fails, context.ts moved and this must follow.
+ * Mirrors `deriveDimensions` (pipeline/context.ts), which is the real source.
+ * The lid is generated independently of the bin pipeline, so it has no context
+ * to read and must re-derive. `generators/labelTabPlanDims.test.ts` pins the
+ * two together for a matrix of params; if that test fails, context.ts moved
+ * and this must follow.
  */
 export function labelTabInteriorDims(params: BinParams): {
   readonly innerW: number;
   readonly innerD: number;
   readonly interiorHeight: number;
+  readonly collarHeight: number;
 } | null {
   if (params.base.tile === true) return null;
   const gridUnitY = params.gridUnitMmY ?? params.gridUnitMm;
   const outerW = params.width * params.gridUnitMm - GRIDFINITY_SPEC.TOLERANCE;
   const outerD = params.depth * gridUnitY - GRIDFINITY_SPEC.TOLERANCE;
   // Overhang widens the shell and the cavity together, so a tab's anchor wall
-  // moves out with it. Omitting this put every footprint on an overhang bin
-  // several mm inboard of the real shelf, which is exactly where the rail
-  // clipping then fails to bite. Suppressed for polygon masks, matching the
-  // pipeline (the mask defines its own footprint).
+  // moves out with it; omitting it puts every footprint inboard of the real
+  // shelf. Suppressed for polygon masks, matching the pipeline.
   const overhang = resolveOverhang(isPartialMask(params.cellMask) ? undefined : params.overhang);
   const expansion = hasOverhang(overhang) ? overhangExpansion(overhang) : null;
   const innerW = outerW + (expansion?.addW ?? 0) - 2 * params.wallThickness;
@@ -624,8 +630,13 @@ export function labelTabInteriorDims(params: BinParams): {
     0,
     params.base.stackingLip ? wallHeight - GRIDFINITY_SPEC.LIP_SMALL_TAPER : wallHeight
   );
+  // Kept out of `interiorHeight` exactly as the pipeline keeps it out, so
+  // interior features stay on their plane; the lip and the lid ride on it.
+  const rawCollar = params.extraWallHeightMm ?? 0;
+  const collarHeight = Number.isFinite(rawCollar) ? Math.max(0, rawCollar) : 0;
+
   if (innerW <= 0 || innerD <= 0 || interiorHeight <= 0) return null;
-  return { innerW, innerD, interiorHeight };
+  return { innerW, innerD, interiorHeight, collarHeight };
 }
 
 /**
@@ -638,7 +649,9 @@ export function labelTabInteriorDims(params: BinParams): {
  * never disagree about which wall is fouled.
  */
 export function railFoulingLabelFootprints(params: BinParams): readonly LabelTabFootprint[] {
-  if (!params.label.enabled) return [];
+  // A polygon bin's tabs are gated off by the builder, so it has none to foul
+  // anything. Decided here so both callers cannot disagree about it.
+  if (!params.label.enabled || isPartialMask(params.cellMask)) return [];
   const dims = labelTabInteriorDims(params);
   if (!dims) return [];
   return labelTabFootprints(
@@ -647,5 +660,96 @@ export function railFoulingLabelFootprints(params: BinParams): readonly LabelTab
     dims.innerD,
     dims.interiorHeight,
     params.wallThickness
-  ).filter((fp) => fp.onOuterWall && footprintFoulsRailBand(fp, dims.interiorHeight));
+  ).filter(
+    (fp) => fp.onOuterWall && footprintFoulsRailBand(fp, dims.interiorHeight, dims.collarHeight)
+  );
+}
+
+/**
+ * Air (mm) kept between a rail's end and a label tab's footprint.
+ *
+ * A real clearance, unlike the grip relief's quiet zone: rail and shelf occupy
+ * the same Z band, so without it the two interpenetrate by up to the shelf's
+ * overlap with the rail profile (measured at 1.25mm on a stock lid) and the
+ * lid simply will not seat. Sized to survive a print's worth of tolerance
+ * rather than to be geometrically minimal.
+ */
+const LABEL_RAIL_MARGIN = 2;
+
+/**
+ * Slack (mm) allowed either side of a rail's spine when deciding whether a
+ * footprint sits in its path.
+ *
+ * A deliberate symmetric over-estimate: the real profile is asymmetric,
+ * reaching 0.8mm inboard and 1.85mm outboard, and this uses their mean in both
+ * directions. Every resulting error over-blocks except one, which needs a tab
+ * under ~1.2mm wide on a side wall — narrower than `MIN_LABEL_TAB_WIDTH` can
+ * produce.
+ */
+const RAIL_HALF_WIDTH = (LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INNER) / 2;
+
+/** One run of wall a rail may occupy, in along-axis coordinates. */
+export interface RailSegment {
+  readonly lo: number;
+  readonly hi: number;
+}
+
+/**
+ * Remove `[blockLo, blockHi]` from a set of disjoint, ascending spans.
+ *
+ * Shared by the label-tab and grip-relief passes: both are "this stretch of
+ * wall is unavailable, keep what is left", and a rail landing in the middle of
+ * an obstruction has to yield two pieces, not one shortened one.
+ */
+export function subtractSpan(
+  spans: readonly RailSegment[],
+  blockLo: number,
+  blockHi: number
+): RailSegment[] {
+  const out: RailSegment[] = [];
+  for (const seg of spans) {
+    if (blockHi <= seg.lo || blockLo >= seg.hi) {
+      out.push(seg);
+      continue;
+    }
+    if (blockLo > seg.lo) out.push({ lo: seg.lo, hi: blockLo });
+    if (blockHi < seg.hi) out.push({ lo: blockHi, hi: seg.hi });
+  }
+  return out;
+}
+
+/**
+ * Split a wall's rail run into the stretches no label tab occupies.
+ *
+ * A tab on a PERPENDICULAR wall eats one end, leaving a single shorter
+ * stretch. A tab on the wall the rail runs ALONG eats the middle: full-width
+ * leaves nothing (that wall goes friction-fit), narrow leaves a stretch either
+ * side. The caller applies coverage to each surviving stretch, so a wall with
+ * two gaps gets two rails rather than one sized for a run it cannot use.
+ *
+ * `lo`/`hi` are the wall's along-axis extent, already inset by the corner
+ * radius. Footprints whose cross-axis span misses the rail's line are ignored.
+ */
+export function railSegmentsClearOfLabelTabs(
+  lo: number,
+  hi: number,
+  alongX: boolean,
+  railCross: number,
+  footprints: readonly LabelTabFootprint[]
+): RailSegment[] {
+  let segments: RailSegment[] = [{ lo, hi }];
+
+  for (const fp of footprints) {
+    const [crossMin, crossMax] = alongX ? [fp.yMin, fp.yMax] : [fp.xMin, fp.xMax];
+    if (railCross < crossMin - RAIL_HALF_WIDTH || railCross > crossMax + RAIL_HALF_WIDTH) continue;
+
+    const [alongMin, alongMax] = alongX ? [fp.xMin, fp.xMax] : [fp.yMin, fp.yMax];
+    const blockLo = alongMin - LABEL_RAIL_MARGIN;
+    const blockHi = alongMax + LABEL_RAIL_MARGIN;
+
+    segments = subtractSpan(segments, blockLo, blockHi);
+    if (segments.length === 0) break;
+  }
+
+  return segments;
 }
