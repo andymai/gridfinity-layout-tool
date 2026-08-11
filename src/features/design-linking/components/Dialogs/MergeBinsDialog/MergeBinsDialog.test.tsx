@@ -25,9 +25,14 @@ vi.mock('@/i18n', () => ({
 function plan(overrides: Partial<MergePlan> = {}): MergePlan {
   return {
     // Only the fields the dialog reads; the domain tests cover the rest.
-    params: { width: 3, depth: 2 } as MergePlan['params'],
+    params: {
+      width: 3,
+      depth: 2,
+      compartments: { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 1.2 },
+    } as MergePlan['params'],
     isRectangular: true,
     compartmentCount: 4,
+    gapCompartmentIds: [],
     warnings: {
       raisedHeightBinIds: [],
       linkedDesignBinIds: [],

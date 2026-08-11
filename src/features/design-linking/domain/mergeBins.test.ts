@@ -163,6 +163,27 @@ describe('planMergedBin', () => {
       expect(cells[1]).toBe(cells[cols + 1]);
     });
 
+    it('reports which compartment IDs are gaps, renumbered to match cells', () => {
+      // 3x2 with the bottom-right unit empty.
+      const plan = expectOk(
+        planMergedBin([bin('a', 0, 0, 2, 1), bin('b', 0, 1, 1, 1), bin('c', 1, 1, 2, 1)], layout)
+      );
+
+      expect(plan.gapCompartmentIds).toHaveLength(1);
+      // The ID has to index `cells` directly, i.e. it must be post-normalize.
+      const gapId = plan.gapCompartmentIds[0];
+      expect(plan.params.compartments.cells).toContain(gapId);
+      // Bottom row, rightmost column is the empty unit.
+      const { cells, cols } = plan.params.compartments;
+      expect(cells[cols - 1]).toBe(gapId);
+    });
+
+    it('reports no gap IDs for a selection that tiles its bounding box', () => {
+      const plan = expectOk(planMergedBin([bin('a', 0, 0, 1, 1), bin('b', 1, 0, 1, 1)], layout));
+
+      expect(plan.gapCompartmentIds).toEqual([]);
+    });
+
     it('never emits a cellMask, because a masked bin would export undivided', () => {
       const plan = expectOk(planMergedBin([bin('a', 0, 0, 1, 1), bin('b', 2, 2, 1, 1)], layout));
 

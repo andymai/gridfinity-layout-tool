@@ -71,6 +71,12 @@ export interface MergePlan {
   /** False when the selection left gaps inside its bounding box. */
   readonly isRectangular: boolean;
   readonly compartmentCount: number;
+  /**
+   * Compartment IDs that came from empty space rather than a bin, AFTER
+   * `normalizeIds` renumbering — so they index `cells` and `compartmentTexts`
+   * directly. Lets the preview draw them apart from the ones the user placed.
+   */
+  readonly gapCompartmentIds: readonly number[];
   readonly warnings: MergeWarnings;
 }
 
@@ -232,6 +238,11 @@ export function planMergedBin(
 
   const rawCells = assigned.map((id) => id ?? 0);
   const { cells, remap } = normalizeIdsWithRemap(rawCells);
+  // Gap rectangles were numbered from `bins.length` up, before normalization.
+  const gapCompartmentIds = [...remap.entries()]
+    .filter(([rawId]) => rawId >= bins.length)
+    .map(([, newId]) => newId)
+    .sort((a, b) => a - b);
   const compartmentTexts = remapCompartmentTexts(labelByBinIndex, remap);
   const hasAnyLabel = compartmentTexts.some((t) => t.length > 0);
 
@@ -290,6 +301,7 @@ export function planMergedBin(
     params: validated.value,
     isRectangular: gapCompartmentCount === 0,
     compartmentCount: bins.length + gapCompartmentCount,
+    gapCompartmentIds,
     warnings: {
       raisedHeightBinIds,
       linkedDesignBinIds,

@@ -13,6 +13,7 @@ import { Dialog, Button, CheckboxRow, AlertTriangleIcon } from '@/design-system'
 import { useTranslation } from '@/i18n';
 import { isOk } from '@/core/result';
 import type { MergeBlockedReason, MergePlan } from '../../../domain/mergeBins';
+import { CompartmentPreview } from './CompartmentPreview';
 import { useMergeBins } from '../../../hooks/useMergeBins';
 import type { MergeScope } from '../../../hooks/useMergeBins';
 
@@ -126,6 +127,18 @@ export function MergeBinsDialog({ open, onClose, scope }: MergeBinsDialogProps) 
             depth: plan.params.depth,
           })}
         </p>
+
+        <div className="mb-3">
+          <CompartmentPreview
+            cols={plan.params.compartments.cols}
+            rows={plan.params.compartments.rows}
+            cells={plan.params.compartments.cells}
+            widthUnits={plan.params.width}
+            depthUnits={plan.params.depth}
+            gapCompartmentIds={plan.gapCompartmentIds}
+            compartmentTexts={plan.params.compartments.compartmentTexts}
+          />
+        </div>
 
         <div className="mb-3">
           <CheckboxRow

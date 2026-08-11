@@ -4053,6 +4053,10 @@ const en: Record<string, string> = {
     'The result is one insert of {compartments} compartments, {width} x {depth} grid units. Your layout is not changed.',
   'designLinking.merge.scope.selection': 'Merging the {count} bins you selected.',
   'designLinking.merge.scope.layer': 'Merging all {count} bins on this layer.',
+  'designLinking.merge.preview.alt':
+    'Plan view of the merged bin: {count} compartments across {width} x {depth} grid units.',
+  'designLinking.merge.preview.gapCompartment': 'Compartment made from empty space',
+  'designLinking.merge.preview.unlabelled': 'Compartment with no label',
   'designLinking.merge.flatBase': 'Flat bottom (drawer insert, no Gridfinity feet)',
   'designLinking.merge.confirm': 'Merge and Edit',
   'designLinking.merge.designName': '{layout} insert',
