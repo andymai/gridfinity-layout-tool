@@ -1,0 +1,19 @@
+src/features/design-linking/README.md
+  s_70df152ecb9b2f::t_58e16a0525b8ac 27,71-76
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "2a4e14dd96675d4c6528fea6f4988f691c75fa79",
+  "prompts": {},
+  "sessions": {
+    "s_70df152ecb9b2f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a4933800-393d-4b0e-b39d-551a876b884c",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
