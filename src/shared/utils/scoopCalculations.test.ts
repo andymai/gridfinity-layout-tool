@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { DESIGNER_CONSTRAINTS } from '@/shared/constants/bin';
-import { LID_CLICK_RAIL_BAND_BELOW_WALL_TOP } from '@/shared/types/bin';
+// Leaf module, not the `@/shared/types/bin` barrel: that barrel re-exports
+// `lidCompatibility`, which imports the module under test.
+import { LID_CLICK_RAIL_BAND_BELOW_WALL_TOP } from '@/features/bin-designer/types/lid';
 import type { ScoopConfig } from '@/shared/types/bin';
 import {
   resolveScoopProfile,

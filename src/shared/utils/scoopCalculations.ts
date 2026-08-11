@@ -8,9 +8,12 @@
  */
 
 import { DESIGNER_CONSTRAINTS } from '@/shared/constants/bin';
-// Straight from the types module, not the `@/shared/types/bin` barrel: that
-// barrel re-exports `lidCompatibility`, which imports this file.
-import { LID_CLICK_RAIL_BAND_BELOW_WALL_TOP } from '@/features/bin-designer/types';
+// The leaf module, not the `@/shared/types/bin` barrel: that barrel re-exports
+// `lidCompatibility`, which imports this file. `types/lid` is the shared home
+// for lid geometry constants — it exists precisely because the preview and the
+// worker both need them and the worker's own `lidConstants` pulls in brepjs —
+// and `@/shared/types/bin` re-exports it wholesale as the public surface.
+import { LID_CLICK_RAIL_BAND_BELOW_WALL_TOP } from '@/features/bin-designer/types/lid';
 import type { ScoopConfig, ScoopStyle, ScoopSide } from '@/shared/types/bin';
 
 /** Compartment extent in grid cells, as returned by the compartment-bounds helpers. */

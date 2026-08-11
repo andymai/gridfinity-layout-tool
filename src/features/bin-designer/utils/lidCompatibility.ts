@@ -189,15 +189,18 @@ function scoopReachesRailBand(params: BinParams, side: ScoopSide): boolean {
     if (!bounds) return false;
     const placement = resolveScoopPlacement(side, bounds, { cols, rows, innerW, innerD });
     if (!placement.isOuter) return false;
+    // Both flags come from the data rather than the caller's gate: hard-coding
+    // them true would go quietly wrong the day that gate changes shape.
+    const hasLip = params.base.stackingLip;
     const profile = resolveScoopProfile(
       params.scoop,
       placement.span,
       placement.depth,
-      true,
-      true,
+      placement.isOuter,
+      hasLip,
       wallHeight,
       interiorHeight,
-      computeLipOffset(true, true, LIP_TAPER_WIDTH, params.wallThickness)
+      computeLipOffset(hasLip, placement.isOuter, LIP_TAPER_WIDTH, params.wallThickness)
     );
     if (!profile) return false;
     // Slack, because `autoScoopCeiling` resolves to exactly `wallHeight - band`
