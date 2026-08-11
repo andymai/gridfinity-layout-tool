@@ -89,6 +89,22 @@ describe('findViolations', () => {
       expect(find('const a = <input type="hidden" value="x" />;')).toEqual([]);
     });
 
+    it('ignores a file input, which is a mechanism rather than a styled control', () => {
+      expect(find('const a = <input type="file" onChange={f} />;')).toEqual([]);
+    });
+
+    it('points a range at Slider, not Input', () => {
+      expect(find('const a = <input type="range" />;')[0].use).toBe('<Slider>');
+    });
+
+    it('points a colour at ColorSwatch, not Input', () => {
+      expect(find('const a = <input type="color" />;')[0].use).toBe('<ColorSwatch>');
+    });
+
+    it('names the type it found, so the report says which input it means', () => {
+      expect(find('const a = <input type="search" />;')[0].found).toBe('<input type="search">');
+    });
+
     it('does not assume a computed type is safe', () => {
       // Could be "checkbox" at runtime, so it is still surfaced.
       const found = find('const a = <input type={kind} />;');

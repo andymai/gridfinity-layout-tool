@@ -96,9 +96,16 @@ function describe(
   if (type === 'checkbox') {
     return { found: '<input type="checkbox">', use: '<Checkbox>', blocking: true };
   }
-  // `hidden` carries no UI and has no design-system equivalent.
-  if (type === 'hidden') return null;
-  return { found: '<input>', use: '<Input>', blocking: false };
+  // No design-system equivalent, so there is nothing to recommend:
+  // `hidden` renders nothing, and a file input is a mechanism rather than a
+  // styled control — the pattern is a hidden input a Button clicks via a ref.
+  if (type === 'hidden' || type === 'file') return null;
+  // These have their own components; pointing them at <Input> was wrong.
+  if (type === 'range') return { found: '<input type="range">', use: '<Slider>', blocking: false };
+  if (type === 'color') {
+    return { found: '<input type="color">', use: '<ColorSwatch>', blocking: false };
+  }
+  return { found: `<input${type ? ` type="${type}"` : ''}>`, use: '<Input>', blocking: false };
 }
 
 export function findViolations(file: string, source: string): Violation[] {
@@ -229,11 +236,17 @@ function main(): void {
   }
 
   if (warnings.length > 0) {
-    const files = new Set(warnings.map((w) => w.file));
-    console.log(
-      `${YELLOW}⚠${NC}  ${warnings.length} text <input>(s) across ${files.size} file(s) ` +
-        `could use ${GREEN}<Input>${NC} ${DIM}(reported, not blocking)${NC}`
-    );
+    const byUse = new Map<string, Set<string>>();
+    for (const w of warnings) {
+      const files = byUse.get(w.use) ?? new Set<string>();
+      files.add(w.file);
+      byUse.set(w.use, files);
+    }
+    console.log(`${YELLOW}⚠${NC}  Raw elements with a design-system equivalent, not blocking:`);
+    for (const [use, files] of [...byUse].sort()) {
+      const count = warnings.filter((w) => w.use === use).length;
+      console.log(`     ${count} could use ${GREEN}${use}${NC} ${DIM}(${files.size} file(s))${NC}`);
+    }
     console.log('');
   }
 
