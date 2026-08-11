@@ -1,0 +1,122 @@
+src/i18n/locales/sv.json
+  s_143ab944de1d05::t_c42b45fffc8c6e 3619
+  s_143ab944de1d05::t_2347a08e8de33e 3644-3657,3667
+src/features/generation/worker/generators/pipeline/context.ts
+  s_143ab944de1d05::t_9c841f6f8feeb1 175-182
+src/features/generation/worker/generators/compartmentBuilder.scenario.manifold.test.ts
+  s_143ab944de1d05::t_eede019d7d8cf2 206-214
+src/i18n/locales/uk.json
+  s_143ab944de1d05::t_c42b45fffc8c6e 3619
+  s_143ab944de1d05::t_2347a08e8de33e 3644-3657,3667
+src/features/design-linking/components/index.ts
+  s_143ab944de1d05::t_8331cad598f047 10
+src/features/design-linking/README.md
+  s_143ab944de1d05::t_029fbdae67b71c 25,27,53-70
+  s_143ab944de1d05::t_59ad1929378ab6 71
+src/i18n/locales/en.ts
+  s_143ab944de1d05::t_15fd5827e30e57 1206,4051-4072
+  s_143ab944de1d05::t_e2ddecf086b184 139
+  s_143ab944de1d05::t_4ba185f0221ffb 4073
+src/i18n/locales/cs.json
+  s_143ab944de1d05::t_2347a08e8de33e 3644-3657,3667
+  s_143ab944de1d05::t_c42b45fffc8c6e 3619
+src/i18n/locales/nb.json
+  s_143ab944de1d05::t_c42b45fffc8c6e 3619
+  s_143ab944de1d05::t_2347a08e8de33e 3644-3657,3667
+src/shell/Header/Header.tsx
+  s_143ab944de1d05::t_e2ddecf086b184 399-400
+  s_143ab944de1d05::t_7c2a1cf98cbf7e 15-16,96-97,193-216
+  s_143ab944de1d05::t_4b7c22291f4624 217
+src/i18n/locales/zh-CN.json
+  s_143ab944de1d05::t_c42b45fffc8c6e 3619
+  s_143ab944de1d05::t_2347a08e8de33e 3644-3657,3667
+src/features/design-linking/domain/mergeBins.test.ts
+  s_143ab944de1d05::t_32d8806d8a5fb0 1-95,97-102,104-125,129-131,151-243,245-262,264-311
+  s_143ab944de1d05::t_d1f438d273b1a2 96,103,139,244,263
+  s_143ab944de1d05::t_7b90dd3ded2bc1 126-128,132-134,141-145,147-150
+  s_143ab944de1d05::t_30b30534d9f305 135-138,140,146
+  s_143ab944de1d05::t_b00a1c5aa114c4 312-315
+src/i18n/locales/es.json
+  s_143ab944de1d05::t_c42b45fffc8c6e 3619
+  s_143ab944de1d05::t_2347a08e8de33e 3644-3657,3667
+src/i18n/locales/pt-BR.json
+  s_143ab944de1d05::t_c42b45fffc8c6e 3619
+  s_143ab944de1d05::t_2347a08e8de33e 3644-3657,3667
+src/features/design-linking/components/Dialogs/MergeBinsDialog/MergeBinsDialog.tsx
+  s_143ab944de1d05::t_565f3dfaba5d1a 112,114-121,123-130,132-137,139-140,147-149
+  s_143ab944de1d05::t_4be90d134339f3 1-61,84,86-111,113,122,131,138,141-146,150-153
+  s_143ab944de1d05::t_9e46cd7b6c8955 62-83,85
+src/features/design-linking/components/Dialogs/index.ts
+  s_143ab944de1d05::t_d5e0fd9257ca44 10
+src/features/design-linking/hooks/useMergeBins.ts
+  s_143ab944de1d05::t_30f78dd29ee4e3 1-90
+src/i18n/locales/ko.json
+  s_143ab944de1d05::t_c42b45fffc8c6e 3619
+  s_143ab944de1d05::t_2347a08e8de33e 3644-3657,3667
+src/shared/constants/bin.ts
+  s_143ab944de1d05::t_d316a2fae2ee9a 11
+src/shell/Mobile/MultiBinContextMenu/MultiBinContextMenu.tsx
+  s_143ab944de1d05::t_198a056256e6ff 19-20,60-61,78-81
+  s_143ab944de1d05::t_aa30c0e2403b2d 295-311,331-339
+  s_143ab944de1d05::t_b17a101fc10b83 82
+src/features/design-linking/components/Dialogs/MergeBinsDialog/index.ts
+  s_143ab944de1d05::t_c33496cddbfc62 1-2
+src/i18n/locales/fr.json
+  s_143ab944de1d05::t_c42b45fffc8c6e 3619
+  s_143ab944de1d05::t_2347a08e8de33e 3644-3657,3667
+src/features/generation/worker/generators/compartmentBuilder.scenario.polygonGap.test.ts
+  s_143ab944de1d05::t_db3e1499fa1bf8 1-176
+  s_143ab944de1d05::t_d0a413d0d0c63b 177-179
+  s_143ab944de1d05::t_3bb18ca82b6fdb 180-181
+src/features/design-linking/domain/mergeBins.ts
+  s_143ab944de1d05::t_1b4aa1ab07ac5d 103-107,109-110
+  s_143ab944de1d05::t_9524d6a8e37fb6 23
+  s_143ab944de1d05::t_be7e68afc7ac3c 25-29
+  s_143ab944de1d05::t_d6f8cd59b48cdd 279
+  s_143ab944de1d05::t_2db47da8913660 1-22,24,30-32,34-53,55-102,108,111-182,191-269,271-278,280-298
+  s_143ab944de1d05::t_b38f969a8c602c 183-190
+  s_143ab944de1d05::t_04e9489d29f632 270
+  s_143ab944de1d05::t_22d3887097c7c2 33
+  s_143ab944de1d05::t_9f58b334f1d106 54
+src/core/labs/features.ts
+  s_143ab944de1d05::t_508e76e472c676 227-238
+src/features/design-linking/index.ts
+  s_143ab944de1d05::t_8331cad598f047 71,79
+src/i18n/locales/de.json
+  s_143ab944de1d05::t_c42b45fffc8c6e 3619
+  s_143ab944de1d05::t_2347a08e8de33e 3644-3657,3667
+src/i18n/locales/pl.json
+  s_143ab944de1d05::t_c42b45fffc8c6e 3619
+  s_143ab944de1d05::t_2347a08e8de33e 3644-3657,3667
+src/i18n/locales/it.json
+  s_143ab944de1d05::t_2347a08e8de33e 3644-3657,3667
+  s_143ab944de1d05::t_c42b45fffc8c6e 3619
+src/i18n/locales/nl.json
+  s_143ab944de1d05::t_c42b45fffc8c6e 3619
+  s_143ab944de1d05::t_2347a08e8de33e 3644-3657,3667
+src/i18n/locales/ja.json
+  s_143ab944de1d05::t_c42b45fffc8c6e 3619
+  s_143ab944de1d05::t_2347a08e8de33e 3644-3657,3667
+src/features/bin-designer/index.ts
+  s_143ab944de1d05::t_41ba31709f1b1b 25-28
+  s_143ab944de1d05::t_9a062fd7e7017d 60-64
+src/features/design-linking/components/Dialogs/MergeBinsDialog/MergeBinsDialog.test.tsx
+  s_143ab944de1d05::t_08ac2c3cdc41ec 1-145
+  s_143ab944de1d05::t_b986f062817916 146-148
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "fea3fd0a7b297ee3a79ed61db9173bef2998e1e5",
+  "prompts": {},
+  "sessions": {
+    "s_143ab944de1d05": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d893cac8-ca27-46d0-9bd4-15f949f575f6",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
