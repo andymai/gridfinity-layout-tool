@@ -24,7 +24,7 @@ graph TB
 - `domain/linkageQueries.ts` — query bins/designs by link status
 - `domain/mergeBins.ts` — converts a set of layout bins into one divided `BinParams`
 - `hooks/useBinLinking.ts` — link/unlink/create actions
-- `hooks/useMergeBins.ts` — merge scope resolution, save + navigate
+- `hooks/useMergeBins.ts` — merge scope, save + navigate
 - `hooks/useLinkedDesign.ts` — resolve linked design for a bin
 - `hooks/useLinkedBins.ts` — find all bins linked to a design
 - `hooks/useQuickExport.ts` — STL export for linked designs (internal)
@@ -68,6 +68,12 @@ rectangles tiling a uniform grid. Behind the `merge_bins_to_design` labs flag.
   layouts under `MAX_COMPARTMENT_GRID` (12).
 - **Single layer only.** `bin.height` is measured from the layer's own base
   plane, so `max(height)` across layers would be meaningless.
+- **Scope is an argument, never inferred.** `useMergeBins('layer' | 'selection')`.
+  A global "selection, else layer" rule let one stray selected bin hijack the
+  whole-layer entry point, which then reported "Combine 1 bins".
+- **Two bins minimum, enforced in `planMergedBin`.** One bin would emit a
+  single-compartment copy of itself. Guarding only in the UI left the header
+  and the dialog able to skip it.
 
 ## Gotchas
 
