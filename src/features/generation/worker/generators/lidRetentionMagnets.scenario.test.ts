@@ -357,7 +357,7 @@ describe('magnet seat gap survives every knob that moves the lid in Z', () => {
 
     const params = makeParams({ attachment: 'magnetic', ...lid }, extra);
     const dim = deriveDimensions(params, true);
-    const { lidFaceZ, binFaceZ } = retentionSeatPlanes(params, dim.totalHeight);
+    const { lidFaceZ, binFaceZ } = retentionSeatPlanes(params, dim.lipTopZ);
 
     // Every case here is a buildable config, so `checkLidCompatibility` must
     // agree — otherwise the assertions below are describing geometry the app
@@ -366,11 +366,11 @@ describe('magnet seat gap survives every knob that moves the lid in Z', () => {
 
     // The two magnet faces meet across exactly one seat gap.
     expect(lidFaceZ - binFaceZ).toBeCloseTo(LID_MAGNET_SEAT_GAP, 9);
-    // The bin's pad must have bin to sit in: recessed below the body top, and
+    // The bin's pad must have bin to sit in: recessed below the lip top, and
     // above the interior floor so its pocket can't punch through. Deepening the
     // cavity must never push it out of that band — the boss lengthens instead.
-    expect(binFaceZ).toBeLessThan(dim.totalHeight);
-    expect(binFaceZ).toBeGreaterThan(dim.totalHeight - dim.interiorHeight);
+    expect(binFaceZ).toBeLessThan(dim.lipTopZ);
+    expect(binFaceZ).toBeGreaterThan(dim.wallTopZ - dim.interiorHeight);
   });
 
   // The whole point of anchoring the boss to the cavity bottom: the bin's pad
@@ -382,7 +382,7 @@ describe('magnet seat gap survives every knob that moves the lid in Z', () => {
 
     const at = (lid: Partial<LidConfig>) => {
       const p = makeParams({ attachment: 'magnetic', ...lid });
-      return retentionSeatPlanes(p, deriveDimensions(p, true).totalHeight).binFaceZ;
+      return retentionSeatPlanes(p, deriveDimensions(p, true).lipTopZ).binFaceZ;
     };
     const baseline = at({});
     expect(at({ extraHeightMm: 12 })).toBeCloseTo(baseline, 9);
@@ -410,7 +410,7 @@ describe('magnet seat gap survives every knob that moves the lid in Z', () => {
     // Reproduce exportHandler's lift, then place the lid's magnet face through
     // it independently of retentionSeatPlanes.
     const exportLift =
-      dim.totalHeight -
+      dim.lipTopZ -
       lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE, resolveLidCavityExtraMm(params));
     const { LID_TOP_THICKNESS_BASE } = await import('./lidConstants');
     const inputs = resolveLidInputs(params);
@@ -418,7 +418,7 @@ describe('magnet seat gap survives every knob that moves the lid in Z', () => {
       -(LID_TOP_THICKNESS_BASE + params.lid.retentionMagnet.depth) - inputs.cavityExtraMm;
     const lidFaceViaExport = interfaceZ + exportLift;
 
-    expect(retentionSeatPlanes(params, dim.totalHeight).lidFaceZ).toBeCloseTo(lidFaceViaExport, 9);
+    expect(retentionSeatPlanes(params, dim.lipTopZ).lidFaceZ).toBeCloseTo(lidFaceViaExport, 9);
   });
 });
 

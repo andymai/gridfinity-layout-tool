@@ -42,6 +42,23 @@ export interface BinDimensions {
    * plane. `0` when the bin has no collar. See `shellStage`.
    */
   readonly collarHeight: number;
+  /**
+   * World Z of the body's top face, where the stacking lip fuses on.
+   *
+   * `totalHeight` is NOT this number, and neither is `baseOffsetZ +
+   * totalHeight`: `totalHeight` is `height * heightUnitMm`, which already spans
+   * the socket, excludes the collar, and does not track `wallHeight` across
+   * base styles. Adding `baseOffsetZ` to it double-counts a Gridfinity socket
+   * (5mm) while still missing the collar, and is right only for a tray bottom
+   * — whose skirt is the one underside `wallHeight` does not already subtract.
+   * Anything anchored to the rim reads this instead (#3431).
+   */
+  readonly wallTopZ: number;
+  /**
+   * World Z of the stacking lip's top face — the plane a lid's `anchorZ` maps
+   * to when it is seated. Equals {@link wallTopZ} on a bin with no lip.
+   */
+  readonly lipTopZ: number;
   readonly isFlat: boolean;
   /**
    * Underside is lid mating geometry rather than a Gridfinity socket (#3036).

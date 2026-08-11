@@ -10,7 +10,6 @@
  */
 
 import type { WebGLRenderer, BufferGeometry, MeshStandardMaterial } from 'three';
-import { binDimensions } from './binDimensions';
 import { bridgeManager } from '@/shared/generation/bridge';
 import type { BinParams } from '@/features/bin-designer/types';
 import { LID_FIT_CLEARANCE, resolveLidCavityExtraMm } from '@/features/bin-designer/types';
@@ -99,13 +98,8 @@ export async function regenerateThumbnail(
     let lidEdgesGeometry: BufferGeometry | null = null;
     const lidGroupZ =
       lidMesh && params.lid.enabled && params.base.stackingLip
-        ? binLipTopWorldZ(
-            params.height,
-            params.heightUnitMm,
-            params.base.stackingLip,
-            params.extraWallHeightMm,
-            binDimensions(params).floorZ
-          ) - lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE, resolveLidCavityExtraMm(params))
+        ? binLipTopWorldZ(params) -
+          lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE, resolveLidCavityExtraMm(params))
         : null;
     if (lidMesh && lidGroupZ !== null && lidMesh.vertices.length > 0) {
       lidGeometry = new THREE.BufferGeometry();

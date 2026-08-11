@@ -93,18 +93,14 @@ export const lidGripDipStage: PipelineStage = {
     );
     if (depthMm <= 0) return ctx;
 
-    // The lip's own base plane, derived the way `shellStage` places it:
-    // `buildTopShape` is translated to `wallHeight + collarHeight - LIP_OVERLAP`
-    // and `translateStage` then lifts everything by `baseOffsetZ`.
-    //
-    // `baseOffsetZ + totalHeight` is NOT this number and must not be used:
-    // `totalHeight` is `height * heightUnitMm`, which excludes the collar
-    // entirely and does not track `wallHeight` across base styles. It reads
-    // 0.7mm high on a standard bin, 4.3mm LOW on a flat one and 8.3mm low with
-    // a 9mm collar — far enough that the cutter lands inside the wall and, at
-    // `LIP_TAPER_WIDTH` deep against a 1.2mm wall, opens a slot straight into
-    // the cavity. The result is still watertight, so only a probe finds it.
-    const lipBottomZ = dim.baseOffsetZ + dim.wallHeight + dim.collarHeight - LIP_OVERLAP;
+    // The lip's own base plane: `shellStage` fuses the lip `LIP_OVERLAP` below
+    // the body top, which `dimensions.wallTopZ` derives once. Do not restate it
+    // from `totalHeight` — that is `height * heightUnitMm`, which excludes the
+    // collar and does not track `wallHeight` across base styles, and a cutter
+    // `LIP_TAPER_WIDTH` deep landed a millimetre off opens a slot straight into
+    // the cavity through a 1.2mm wall. The result is still watertight, so only
+    // a probe finds it.
+    const lipBottomZ = dim.wallTopZ - LIP_OVERLAP;
     // Outward overshoot: the coplanar margin PLUS however far the lid's
     // footprint is inboard of the bin's, so the cut reaches the bin face on a
     // magnetic lid as well as a flush one.

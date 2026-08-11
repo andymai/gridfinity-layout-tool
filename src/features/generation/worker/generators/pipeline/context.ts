@@ -12,6 +12,8 @@ import {
   HEIGHT_UNIT,
   CLEARANCE,
   SOCKET_HEIGHT,
+  LIP_HEIGHT,
+  LIP_OVERLAP,
   LIP_SMALL_TAPER,
   MIN_BODY_WALL_MM,
 } from '../generatorConstants';
@@ -165,6 +167,15 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // extrude is a degenerate solid rather than an empty one.
   const interiorHeight = Math.max(0, hasLip ? wallHeight - LIP_SMALL_TAPER : wallHeight);
 
+  // The rim, derived once. `shellStage` extrudes the outer box to `wallHeight +
+  // collarHeight` (or a base-only bin's slab to `tileFloorHeight`) and fuses
+  // the lip `LIP_OVERLAP` below its top; `translateStage` then lifts the whole
+  // body by `baseOffsetZ`. Every consumer that anchors to the rim reads these
+  // rather than restating that chain — the restatements landed a lid's magnet
+  // posts 0.7mm proud on a socketed bin and 4.3mm short on a flat one (#3431).
+  const wallTopZ = baseOffsetZ + wallHeight + tileFloorHeight + collarHeight;
+  const lipTopZ = wallTopZ + (hasLip ? LIP_HEIGHT - LIP_OVERLAP : 0);
+
   // Bake compartment walls into the shell as a single multi-cavity cut when
   // the shape is amenable to that path: rectangular footprint (no polygon
   // mask), not solid mode, not slotted, the compartments are rectangles
@@ -298,6 +309,8 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
     wallHeight,
     totalHeight,
     collarHeight,
+    wallTopZ,
+    lipTopZ,
     isFlat,
     isTrayBottom,
     socketless,
