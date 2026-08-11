@@ -13,6 +13,7 @@ import type {
   SplitPieceMeshEntry,
   DividerTiltPreview,
   OverhangHighlightSide,
+  InteriorCard,
 } from '../../types';
 import type { ColorZone, HoverableZone } from '../../types/featureColors';
 import { parseLipCell } from '../../types/featureColors';
@@ -50,6 +51,23 @@ export function createUISlice(set: Set) {
     setCutoutEditorOpen: (open: boolean) => {
       set((state) => {
         state.ui.cutoutEditorOpen = open;
+        if (open) state.ui.bentoWorkspaceOpen = false;
+      });
+    },
+
+    setBentoWorkspaceOpen: (open: boolean) => {
+      set((state) => {
+        state.ui.bentoWorkspaceOpen = open;
+        // The two workspaces both replace the sidebar; letting both flags stand
+        // would leave whichever DesignerMainContent checks first silently
+        // winning, and the other's exit button pointing at nothing.
+        if (open) state.ui.cutoutEditorOpen = false;
+      });
+    },
+
+    setInteriorCard: (card: InteriorCard) => {
+      set((state) => {
+        state.ui.interiorCard = card;
       });
     },
 

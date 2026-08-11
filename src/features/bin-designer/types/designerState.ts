@@ -21,6 +21,7 @@ import type {
 } from './cutout';
 import type { BaseConfig } from './base';
 import type { CompartmentConfig, ScoopConfig } from './compartments';
+import type { InteriorCard } from './interior';
 import type { LabelTabConfig } from './labelTabs';
 import type { HandleConfig, HandleSide, HandleWallSide } from './handles';
 import type {
@@ -256,6 +257,8 @@ export interface DesignerState {
   setDesignListOpen: (open: boolean) => void;
   setWireframeMode: (enabled: boolean) => void;
   setCutoutEditorOpen: (open: boolean) => void;
+  setBentoWorkspaceOpen: (open: boolean) => void;
+  setInteriorCard: (card: InteriorCard) => void;
   setShapeEditorOpen: (open: boolean) => void;
   setSplitViewMode: (mode: SplitViewMode) => void;
   setSplitPieceMeshes: (meshes: readonly SplitPieceMeshEntry[]) => void;
