@@ -98,13 +98,14 @@ export function LayoutListItem({
           {isEditing ? (
             <Input
               ref={inputRef}
-              type="text"
               value={editingValue}
               onChange={(e) => handleChange(e.target.value)}
               onBlur={handleFinish}
               onKeyDown={handleKeyDown}
               onClick={(e) => e.stopPropagation()}
-              className="w-full bg-surface px-2 py-1 rounded border border-stroke focus:border-accent focus:ring-1 focus:ring-accent focus:outline-none text-content text-sm"
+              size="sm"
+              fullWidth
+              className="text-sm"
               maxLength={64}
               aria-label={t('layouts.layoutName')}
             />

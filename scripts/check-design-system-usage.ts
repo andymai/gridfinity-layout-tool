@@ -93,8 +93,26 @@ function isVisuallyHidden(attributes: ts.JsxAttributes): boolean {
   for (const property of attributes.properties) {
     if (!ts.isJsxAttribute(property)) continue;
     if (property.name.getText() !== 'className') continue;
-    const text = property.initializer?.getText() ?? '';
-    return /\bsr-only\b|\bopacity-0\b/.test(text);
+
+    // Only a plain string literal can be judged. A computed className such as
+    // `cn(hidden && 'sr-only')` hides the element only sometimes, so treating
+    // it as always-hidden would suppress a genuine violation.
+    const { initializer } = property;
+    let literal: string | null = null;
+    if (initializer && ts.isStringLiteral(initializer)) literal = initializer.text;
+    else if (
+      initializer &&
+      ts.isJsxExpression(initializer) &&
+      initializer.expression &&
+      ts.isStringLiteral(initializer.expression)
+    ) {
+      literal = initializer.expression.text;
+    }
+    if (literal === null) return false;
+
+    // Exact tokens only: `group-hover:opacity-0` is visible until hovered, and
+    // a substring match would have let it through.
+    return literal.split(/\s+/).some((token) => token === 'sr-only' || token === 'opacity-0');
   }
   return false;
 }
