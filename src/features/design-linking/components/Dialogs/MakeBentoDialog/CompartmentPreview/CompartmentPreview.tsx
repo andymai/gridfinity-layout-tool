@@ -51,7 +51,7 @@ export function CompartmentPreview({
       className="w-full h-auto max-h-40 rounded-md bg-surface"
       preserveAspectRatio="xMidYMid meet"
       role="img"
-      aria-label={t('designLinking.merge.preview.alt', {
+      aria-label={t('designLinking.bento.preview.alt', {
         count: rects.length,
         width: widthUnits,
         depth: depthUnits,
@@ -78,8 +78,8 @@ export function CompartmentPreview({
         >
           <title>
             {rect.isGap
-              ? t('designLinking.merge.preview.gapCompartment')
-              : rect.label || t('designLinking.merge.preview.unlabelled')}
+              ? t('designLinking.bento.preview.gapCompartment')
+              : rect.label || t('designLinking.bento.preview.unlabelled')}
           </title>
         </rect>
       ))}

@@ -64,6 +64,14 @@ export interface MergeWarnings {
   readonly gapCompartmentCount: number;
   /** True when the piece exceeds the print bed and split connectors were enabled. */
   readonly splitEnabled: boolean;
+  /**
+   * Bins on this layer that were NOT chosen but sit inside the bento's
+   * footprint. The piece is built from the bounding box, so their space becomes
+   * gap compartments and the printed part would occupy the drawer cells they
+   * already stand in. Two parts in one place is not a preference, so the caller
+   * must resolve these before committing rather than warn and continue.
+   */
+  readonly trappedBinIds: readonly BinId[];
 }
 
 export interface MergePlan {
@@ -83,6 +91,13 @@ export interface MergePlan {
 export interface MergeOptions {
   /** `'flat'` produces a socketless drawer insert instead of a Gridfinity base. */
   readonly baseStyle?: 'standard' | 'flat';
+  /**
+   * Height in units. Defaults to the tallest bin in the selection — the only
+   * value that cannot crop what a bin already holds.
+   */
+  readonly heightUnits?: number;
+  /** Divider wall thickness in mm. Defaults to {@link MERGED_DIVIDER_THICKNESS}. */
+  readonly dividerThickness?: number;
 }
 
 function gcd(a: number, b: number): number {
@@ -246,9 +261,27 @@ export function planMergedBin(
   const compartmentTexts = remapCompartmentTexts(labelByBinIndex, remap);
   const hasAnyLabel = compartmentTexts.some((t) => t.length > 0);
 
-  const heightUnits = Math.max(...bins.map((b) => b.height));
+  const tallest = Math.max(...bins.map((b) => b.height));
+  const heightUnits = options.heightUnits ?? tallest;
   const raisedHeightBinIds = bins.filter((b) => b.height < heightUnits).map((b) => b.id);
   const linkedDesignBinIds = bins.filter((b) => b.linkedDesignId !== undefined).map((b) => b.id);
+
+  // Bins left out of the selection that the piece would nonetheless be built
+  // over. Scoped to the layer the selection is on, since bins on other layers
+  // sit at a different height in the drawer and do not share this space.
+  const chosen = new Set<BinId>(bins.map((b) => b.id));
+  const layerId = bins[0].layerId;
+  const trappedBinIds = layout.bins
+    .filter(
+      (b) =>
+        b.layerId === layerId &&
+        !chosen.has(b.id) &&
+        b.x < maxX &&
+        b.x + b.width > minX &&
+        b.y < maxY &&
+        b.y + b.depth > minY
+    )
+    .map((b) => b.id);
 
   const gridUnitMm = layout.gridUnitMm;
   const gridUnitMmY = effectiveGridUnitMmY(layout);
@@ -271,7 +304,7 @@ export function planMergedBin(
       cols,
       rows,
       cells,
-      thickness: MERGED_DIVIDER_THICKNESS,
+      thickness: options.dividerThickness ?? MERGED_DIVIDER_THICKNESS,
       ...(hasAnyLabel ? { compartmentTexts } : {}),
     },
     // Tabs exist to carry the labels; without any text they would only add
@@ -307,6 +340,7 @@ export function planMergedBin(
       linkedDesignBinIds,
       gapCompartmentCount,
       splitEnabled,
+      trappedBinIds,
     },
   });
 }

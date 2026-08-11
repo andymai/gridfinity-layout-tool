@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { Suspense, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useMutations } from '@/shared/contexts';
 import { useSelectionStore } from '@/core/store/selection';
@@ -13,6 +13,16 @@ import { useTranslation } from '@/i18n';
 import { SizeSelectorPopover } from './SizeSelectorPopover';
 import { useLayerFillActions } from '../../hooks/useLayerFillActions';
 import { batch } from '@/core/cqrs';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
+import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
+
+// Lazy for the same reason the inspector's copy is: the dialog pulls in the
+// whole merge planner and most sessions never open it.
+const MakeBentoDialog = lazyWithRetry(() =>
+  import('@/features/design-linking/components/Dialogs/MakeBentoDialog').then(
+    namedExport('MakeBentoDialog')
+  )
+);
 
 export function ActiveLayerPanel() {
   const t = useTranslation();
@@ -42,6 +52,8 @@ export function ActiveLayerPanel() {
     fillWithSize,
   } = useLayerFillActions();
   const hasBins = layerBins.length > 0;
+  const bentoEnabled = useFeatureFlag('merge_bins_to_design');
+  const [showBento, setShowBento] = useState(false);
 
   const handleFill = () => {
     if (!paintSize) return;
@@ -207,6 +219,37 @@ export function ActiveLayerPanel() {
             : t('layers.clearLayerLabel')}
         </Button>
       </div>
+
+      {bentoEnabled && layerBins.length > 1 && (
+        <Button
+          variant="secondary"
+          size="sm"
+          className="w-full justify-start gap-2"
+          onClick={() => setShowBento(true)}
+        >
+          <svg
+            className="w-4 h-4 shrink-0"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <path d="M13 3v18" />
+            <path d="M3 11h10" />
+            <path d="M13 14h8" />
+          </svg>
+          {t('layers.makeBento')}
+        </Button>
+      )}
+
+      {showBento && (
+        <Suspense fallback={null}>
+          <MakeBentoDialog open scope="layer" onClose={() => setShowBento(false)} />
+        </Suspense>
+      )}
 
       {/* Size selector popover */}
       <SizeSelectorPopover

@@ -179,6 +179,8 @@
     "community.publish.form.nameLabel",
     "community.report.reason.spam",
     "dashboard.filament",
+    "designLinking.bento.designName",
+    "designLinking.bento.nameLabel",
     "designLinking.experimental",
     "dock.syncStatusOffline",
     "export.format",

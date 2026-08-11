@@ -68,7 +68,7 @@ export {
 export { useLinkingStore } from './store';
 
 export { useBinLinking, useLinkedDesign, useLinkedBins } from './hooks';
-export { useMergeBins } from './hooks/useMergeBins';
+export { useBento } from './hooks/useBento';
 
 export {
   CreateDesignDialog,
@@ -76,5 +76,5 @@ export {
   DeleteDesignWarningDialog,
   LinkedDesignSection,
   DesignLinkingDialogs,
-  MergeBinsDialog,
+  MakeBentoDialog,
 } from './components';

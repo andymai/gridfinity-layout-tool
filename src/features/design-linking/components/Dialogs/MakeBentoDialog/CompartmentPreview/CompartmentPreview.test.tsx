@@ -43,7 +43,7 @@ describe('CompartmentPreview', () => {
 
     expect(screen.getByRole('img')).toHaveAttribute(
       'aria-label',
-      expect.stringContaining('designLinking.merge.preview.alt')
+      expect.stringContaining('designLinking.bento.preview.alt')
     );
   });
 
@@ -75,7 +75,7 @@ describe('CompartmentPreview', () => {
     );
 
     const titles = [...container.querySelectorAll('title')].map((n) => n.textContent);
-    expect(titles).toEqual(['Screws', 'designLinking.merge.preview.gapCompartment']);
+    expect(titles).toEqual(['Screws', 'designLinking.bento.preview.gapCompartment']);
   });
 
   it('falls back to an unlabelled name rather than an empty title', () => {
@@ -84,7 +84,7 @@ describe('CompartmentPreview', () => {
     );
 
     expect(container.querySelector('title')?.textContent).toBe(
-      'designLinking.merge.preview.unlabelled'
+      'designLinking.bento.preview.unlabelled'
     );
   });
 });

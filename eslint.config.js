@@ -248,6 +248,11 @@ export default defineConfig([
             from: { element: { type: 'feature', captured: { featureName: 'bin-inspector' } } },
             allow: [{ to: { element: { type: 'feature', captured: { featureName: 'bin-recommender' } } } }],
           },
+          // Exception: layers -> design-linking (lazy-loaded Make Bento dialog)
+          {
+            from: { element: { type: 'feature', captured: { featureName: 'layers' } } },
+            allow: [{ to: { element: { type: 'feature', captured: { featureName: 'design-linking' } } } }],
+          },
           // `core/` is infrastructure — it must not depend on features or the
           // app shell. (`core/` -> `shared/` is intentionally allowed; many
           // `core/storage/*` modules use shared utilities/analytics.)
