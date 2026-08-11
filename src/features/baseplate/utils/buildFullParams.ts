@@ -20,6 +20,8 @@ import {
   hasOutlineOverhang,
   resolveOutlineFrame,
 } from '@/shared/utils/outlineFrame';
+import { screwPadThicknessMm } from '@/shared/generation/screwHolePlan';
+import { baseplateFloorDepthBeforeScrews } from '@/shared/printSettings/baseplateHeight';
 import { normalizeSplitOverride } from './splitOverride';
 
 /**
@@ -307,6 +309,33 @@ export function buildFullParams(
   // at its stored values here — `emitMargins` and the camera/dimension overlay
   // need the true outer extent; the body mesh zeroes detached sides downstream.
   const detachMargins = stored.detachMargins === true && outline === undefined;
+  // Mount-down screws (#3425). Stacking flips alternate tiles, which would put a
+  // head recess on the underside, and per-tile hole differences break the
+  // uniform-tile assumption stacking relies on: the same two reasons magnets and
+  // the solid floor are stripped. The stored value returns on toggle-off.
+  const screwHoles = stackingOn ? undefined : stored.screwHoles;
+  // The pad is provisioned whenever screws are on, not only when this plate's
+  // own bands fall short. The split plan is not known here, and a split plate
+  // almost always needs it: a corner piece's seam-side anchors have no margin
+  // band and a fully interior piece has none at all, so deriving from the
+  // unsplit plate would leave interior pieces unfastened, the exact failure
+  // per-piece placement exists to prevent. With magnets the shortfall is
+  // typically 0.6mm, since the magnet floor already covers most of the recess.
+  const screwPad =
+    screwHoles?.enabled === true
+      ? screwPadThicknessMm(
+          screwHoles,
+          baseplateFloorDepthBeforeScrews({
+            magnetHoles: stackingOn ? false : stored.magnetHoles,
+            magnetDepth: stored.magnetDepth,
+            solidFloor: stackingOn ? false : stored.solidFloor,
+            solidFloorThickness: stored.solidFloorThickness,
+          }),
+          stored.magnetHoles && !stackingOn
+            ? { diameterMm: stored.magnetDiameter, depthMm: stored.magnetDepth }
+            : undefined
+        )
+      : undefined;
   // The connector is only meaningful when margins actually detach. When
   // stacking strips a snapClip style to undefined, the seam gate downstream
   // would read undefined as the dovetail default and emit seams the unstacked
@@ -372,6 +401,8 @@ export function buildFullParams(
     // while stacking (restored when stacking is off, like magnets above).
     solidFloor: stackingOn ? false : stored.solidFloor,
     solidFloorThickness: stored.solidFloorThickness,
+    screwHoles,
+    screwPadThicknessMm: screwPad,
     cornerRadius: roundingOn ? stored.cornerRadius : 0,
     cornerRadii: roundingOn ? stored.cornerRadii : undefined,
     detachMargins,

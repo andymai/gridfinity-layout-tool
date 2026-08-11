@@ -1,21 +1,38 @@
 /**
  * Section 3 of the baseplate panel: connectors (when split), magnet holes,
- * solid floor, and corner radius. While stacking, magnets and the solid floor
- * are stripped so they hide, but connectors stay reachable (dovetail styles
- * stack fine) and corner rounding stays too — a radius now shapes the stacked
- * tiles (#3113). The group only renders when it still has content, so it never
- * shows as an empty collapsible group.
+ * solid floor, mount-down screw holes, and corner radius. While stacking,
+ * magnets, the solid floor and the screws are stripped so they hide, but
+ * connectors stay reachable (dovetail styles stack fine) and corner rounding
+ * stays too, since a radius now shapes the stacked tiles (#3113). The group only
+ * renders when it still has content, so it never shows as an empty collapsible
+ * group.
  */
 
 import { useSettingsStore } from '@/core/store/settings';
-import { SOLID_FLOOR_DEFAULT_MM, SOLID_FLOOR_MIN_MM, SOLID_FLOOR_MAX_MM } from '@/core/constants';
+import {
+  SOLID_FLOOR_DEFAULT_MM,
+  SOLID_FLOOR_MIN_MM,
+  SOLID_FLOOR_MAX_MM,
+  SCREW_HOLE_DEFAULT_DIAMETER_MM,
+  SCREW_HOLE_MIN_DIAMETER_MM,
+  SCREW_HOLE_MAX_DIAMETER_MM,
+  SCREW_HEAD_MIN_DIAMETER_MM,
+  SCREW_HEAD_MAX_DIAMETER_MM,
+  SCREW_COUNTERBORE_DEFAULT_DEPTH_MM,
+  SCREW_COUNTERBORE_MAX_DEPTH_MM,
+  SCREWS_PER_PIECE_DEFAULT,
+  SCREWS_PER_PIECE_MIN,
+  SCREWS_PER_PIECE_MAX,
+} from '@/core/constants';
 import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
+import { resolveScrewHeadDiameter } from '@/shared/generation/screwHolePlan';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { Checkbox } from '@/design-system/Checkbox/Checkbox';
 import { useTranslation } from '@/i18n';
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
-import { SliderInput } from '@/design-system';
+import { SegmentedControl, SliderInput } from '@/design-system';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { CornerRadiusControl } from './CornerRadiusControl';
 import { ConnectorSampleButton } from './ConnectorSampleButton';
@@ -23,6 +40,7 @@ import { ConnectorPicker } from './ConnectorPicker';
 import type { ConnectorChoice } from './ConnectorPicker';
 import { isSeatedConnectorStyle } from '@/shared/types/bin';
 import { maxCornerRadiusMm } from '../../utils/buildFullParams';
+import type { ScrewHeadStyle, ScrewHoleParams } from '@/core/types';
 import { Stepper } from '@/design-system/Stepper';
 import {
   CONNECTOR_FIT_OFFSET_MIN,
@@ -58,20 +76,45 @@ export function BaseSection() {
     useBaseplatePanelDerived();
   const tiling = useBaseplatePageStore((s) => s.tiling);
   const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
+  const screwHolesAvailable = useFeatureFlag('baseplate_screw_holes');
 
   // Render when the section has any content: connectors (split), magnets/floor
   // (not stacking), or the corner-radius control (no drawn shape) — which now
   // shows under stacking too, since a radius shapes the stacked tiles (#3113).
   if (!(tiling?.isSplit || !stackEnabled || !outlineActive)) return null;
 
+  const screwHoles = baseplateParams.screwHoles;
+  const screwHolesOn = screwHoles?.enabled === true;
+  const screwDiameter = screwHoles?.diameter ?? mm(SCREW_HOLE_DEFAULT_DIAMETER_MM);
+  const screwHeadStyle: ScrewHeadStyle = screwHoles?.headStyle ?? 'countersink';
+  const screwsPerPiece = screwHoles?.screwsPerPiece ?? SCREWS_PER_PIECE_DEFAULT;
+  const screwSummary = t('baseplate.screwHoles.summary', {
+    diameter: screwDiameter,
+    count: screwsPerPiece,
+  });
+
+  const updateScrewHoles = (patch: Partial<ScrewHoleParams>): void => {
+    updateParam('screwHoles', {
+      enabled: true,
+      diameter: mm(SCREW_HOLE_DEFAULT_DIAMETER_MM),
+      headStyle: 'countersink',
+      ...screwHoles,
+      ...patch,
+    });
+  };
+
+  const summaryParts: string[] = [];
+  if (!stackEnabled && baseplateParams.magnetHoles) {
+    summaryParts.push(`ø${baseplateParams.magnetDiameter}mm × ${baseplateParams.magnetDepth}mm`);
+  }
+  if (!stackEnabled && screwHolesAvailable && screwHolesOn) {
+    summaryParts.push(screwSummary);
+  }
+
   return (
     <StickyGroupHeader
       title={t('baseplate.sectionBase')}
-      summary={
-        !stackEnabled && baseplateParams.magnetHoles
-          ? `ø${baseplateParams.magnetDiameter}mm × ${baseplateParams.magnetDepth}mm`
-          : undefined
-      }
+      summary={summaryParts.length > 0 ? summaryParts.join(' · ') : undefined}
     >
       <div className="space-y-3 px-4 py-3">
         {tiling?.isSplit && (
@@ -223,6 +266,89 @@ export function BaseSection() {
                 }
               />
             </div>
+            {screwHolesAvailable && (
+              <div className="border-t border-stroke-subtle pt-3">
+                <FeatureToggle
+                  label={t('baseplate.screwHoles.label')}
+                  checked={screwHolesOn}
+                  onChange={() => updateScrewHoles({ enabled: !screwHolesOn })}
+                  valueSummary={screwSummary}
+                  primaryControls={
+                    <p className="text-[11px] leading-relaxed text-content-tertiary">
+                      {t('baseplate.screwHoles.info')}
+                    </p>
+                  }
+                >
+                  <SliderInput
+                    label={t('baseplate.screwHoles.diameter.label')}
+                    value={screwDiameter}
+                    onChange={(v) => updateScrewHoles({ diameter: mm(v) })}
+                    min={SCREW_HOLE_MIN_DIAMETER_MM}
+                    max={SCREW_HOLE_MAX_DIAMETER_MM}
+                    step={0.1}
+                    unit="mm"
+                    info={t('baseplate.screwHoles.diameter.info')}
+                  />
+                  <SettingsRow
+                    label={t('baseplate.screwHoles.headStyle.label')}
+                    tooltip={t('baseplate.screwHoles.headStyle.info')}
+                  >
+                    <SegmentedControl<ScrewHeadStyle>
+                      aria-label={t('baseplate.screwHoles.headStyle.label')}
+                      size="sm"
+                      options={[
+                        {
+                          value: 'countersink',
+                          label: t('baseplate.screwHoles.headStyle.countersink'),
+                        },
+                        {
+                          value: 'counterbore',
+                          label: t('baseplate.screwHoles.headStyle.counterbore'),
+                        },
+                      ]}
+                      value={screwHeadStyle}
+                      // Head width is dropped with the style: the two defaults
+                      // differ (ø8 cone vs ø5.5 pocket), so carrying an explicit
+                      // countersink width into a counterbore oversizes the pocket.
+                      onChange={(style) =>
+                        updateScrewHoles({ headStyle: style, headDiameter: undefined })
+                      }
+                    />
+                  </SettingsRow>
+                  <SliderInput
+                    label={t('baseplate.screwHoles.headDiameter.label')}
+                    value={resolveScrewHeadDiameter(screwHeadStyle, screwHoles?.headDiameter)}
+                    onChange={(v) => updateScrewHoles({ headDiameter: mm(v) })}
+                    min={SCREW_HEAD_MIN_DIAMETER_MM}
+                    max={SCREW_HEAD_MAX_DIAMETER_MM}
+                    step={0.1}
+                    unit="mm"
+                    info={t('baseplate.screwHoles.headDiameter.info')}
+                  />
+                  {screwHeadStyle === 'counterbore' && (
+                    <SliderInput
+                      label={t('baseplate.screwHoles.counterboreDepth.label')}
+                      value={screwHoles?.counterboreDepth ?? SCREW_COUNTERBORE_DEFAULT_DEPTH_MM}
+                      onChange={(v) => updateScrewHoles({ counterboreDepth: mm(v) })}
+                      min={1}
+                      max={SCREW_COUNTERBORE_MAX_DEPTH_MM}
+                      step={0.1}
+                      unit="mm"
+                      info={t('baseplate.screwHoles.counterboreDepth.info')}
+                    />
+                  )}
+                  <SliderInput
+                    label={t('baseplate.screwHoles.perPiece.label')}
+                    value={screwsPerPiece}
+                    onChange={(v) => updateScrewHoles({ screwsPerPiece: v })}
+                    min={SCREWS_PER_PIECE_MIN}
+                    max={SCREWS_PER_PIECE_MAX}
+                    step={1}
+                    info={t('baseplate.screwHoles.perPiece.info')}
+                  />
+                </FeatureToggle>
+              </div>
+            )}
           </>
         )}
         {/* Corner rounding is zeroed whenever an outline is active (the shape

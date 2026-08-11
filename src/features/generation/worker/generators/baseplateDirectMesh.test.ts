@@ -1,7 +1,19 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
+import type { ScrewHoleParams } from '@/core/types/baseplate';
+import { mm } from '@/core/types';
 import { pocketCornerRadius, MAGNET_FLOOR } from './generatorConstants';
+import { SOCKET_HEIGHT } from './generatorTypes';
+import { CANCEL_EPSILON, CIRCLE_SEGMENTS } from './directMeshBuilder';
+import {
+  effectiveMarginBands,
+  planPieceScrews,
+  resolveScrewHeadDiameter,
+  screwPadThicknessMm,
+} from '@/shared/generation/screwHolePlan';
+import { resolveScrewHoles, screwFloorCandidates } from './baseplateScrews';
+import type { ResolvedScrewHole } from './baseplateScrews';
 import { initTestKernel } from '@/test/initTestKernel';
 
 // BREP generator requires OpenCascade WASM init
@@ -682,5 +694,183 @@ describe('direct mesh — over-tile margin pockets', () => {
     expect(magnetFloorArea(false)).toBeGreaterThan(0);
     // Dropping it as solid leftover removes those magnets from the preview too.
     expect(magnetFloorArea(true)).toBeLessThan(magnetFloorArea(false));
+  });
+});
+
+describe('direct mesh mount-down screw holes (#3425)', () => {
+  const SCREWS: ScrewHoleParams = {
+    enabled: true,
+    diameter: mm(3.4),
+    headStyle: 'countersink',
+  };
+  const PAD = screwPadThicknessMm(SCREWS, 0);
+
+  /**
+   * The positions the exact build cuts, derived through the same planner the
+   * draft is wired to. Divergence here means the preview is lying about where
+   * the plate will be drilled.
+   */
+  function expectedHoles(
+    params: ResolvedBaseplateParams,
+    screws: ScrewHoleParams
+  ): ResolvedScrewHole[] {
+    const totalW = params.width * params.gridUnitMm + params.paddingLeft + params.paddingRight;
+    const totalD = params.depth * params.gridUnitMm + params.paddingFront + params.paddingBack;
+    const headRadius = resolveScrewHeadDiameter(screws.headStyle, screws.headDiameter) / 2;
+    return resolveScrewHoles(
+      planPieceScrews(screws, {
+        widthMm: totalW,
+        depthMm: totalD,
+        bands: effectiveMarginBands(params),
+        cornerRadii: params.cornerRadii,
+        floorPadProvisioned: true,
+      }),
+      screwFloorCandidates(
+        params.width,
+        params.depth,
+        Math.max(headRadius, params.magnetDiameter / 2),
+        {
+          fractionalEdgeX: params.fractionalEdgeX,
+          fractionalEdgeY: params.fractionalEdgeY,
+          gridUnitMm: params.gridUnitMm,
+        }
+      )
+    );
+  }
+
+  /**
+   * Centres of the horizontal cancel discs sitting at plane `z` and facing
+   * `sign`. A disc's rim points cancel around its axis, so the mean of a
+   * cluster is its centre.
+   */
+  function discCentresAt(
+    mesh: IndexedMesh,
+    z: number,
+    sign: 1 | -1
+  ): Array<readonly [number, number]> {
+    const groups: Array<Array<readonly [number, number]>> = [];
+    for (let i = 0; i < mesh.vertices.length; i += 3) {
+      if (Math.abs(mesh.vertices[i + 2] - z) > 1e-3) continue;
+      const nz = mesh.normals[i + 2];
+      if (sign > 0 ? nz < 0.9 : nz > -0.9) continue;
+      const pt = [mesh.vertices[i], mesh.vertices[i + 1]] as const;
+      const group = groups.find((g) => Math.hypot(g[0][0] - pt[0], g[0][1] - pt[1]) < 10);
+      if (group) group.push(pt);
+      else groups.push([pt]);
+    }
+    return groups.map(
+      (g) =>
+        [
+          g.reduce((sum, p) => sum + p[0], 0) / g.length,
+          g.reduce((sum, p) => sum + p[1], 0) / g.length,
+        ] as const
+    );
+  }
+
+  const keys = (points: ReadonlyArray<readonly [number, number]>): string[] =>
+    points.map(([x, y]) => `${x.toFixed(2)},${y.toFixed(2)}`).sort();
+
+  it('adds geometry rather than silently rendering a solid plate', () => {
+    const plain = defaults({ width: 3, depth: 3 });
+    const screwed = { ...plain, screwHoles: SCREWS, screwPadThicknessMm: PAD };
+
+    const withoutScrews = generateDirect(plain, noop);
+    const withScrews = generateDirect(screwed, noop);
+
+    expect(withScrews.triangleCount).toBeGreaterThan(withoutScrews.triangleCount);
+    expect(withScrews.vertices.length).toBeGreaterThan(withoutScrews.vertices.length);
+  });
+
+  it('drills the floor sites the exact build resolves, at the pocket floor', () => {
+    const params = defaults({
+      width: 3,
+      depth: 3,
+      screwHoles: SCREWS,
+      screwPadThicknessMm: PAD,
+    });
+    const holes = expectedHoles(params, SCREWS);
+    expect(holes).toHaveLength(4);
+    expect(holes.every((h) => h.site === 'floor')).toBe(true);
+
+    const mesh = generateDirect(params, noop);
+    // Entry: a floor screw opens at the pocket floor (z = PAD), never at the
+    // top face, or the cone would carve through the socket a bin seats in.
+    expect(keys(discCentresAt(mesh, PAD - CANCEL_EPSILON, -1))).toEqual(
+      keys(holes.map((h) => [h.x, h.y] as const))
+    );
+    // Exit: the shaft has to punch the slab bottom too.
+    expect(keys(discCentresAt(mesh, CANCEL_EPSILON, 1))).toEqual(
+      keys(holes.map((h) => [h.x, h.y] as const))
+    );
+  });
+
+  it('drills the margin sites at the top face when the padding hosts them', () => {
+    const params = defaults({
+      width: 3,
+      depth: 3,
+      paddingLeft: 14,
+      paddingRight: 14,
+      paddingFront: 14,
+      paddingBack: 14,
+      screwHoles: SCREWS,
+      screwPadThicknessMm: 0,
+    });
+    const holes = expectedHoles(params, SCREWS);
+    expect(holes).toHaveLength(4);
+    expect(holes.every((h) => h.site === 'margin')).toBe(true);
+
+    const mesh = generateDirect(params, noop);
+    expect(keys(discCentresAt(mesh, SOCKET_HEIGHT - CANCEL_EPSILON, -1))).toEqual(
+      keys(holes.map((h) => [h.x, h.y] as const))
+    );
+    expect(keys(discCentresAt(mesh, CANCEL_EPSILON, 1))).toEqual(
+      keys(holes.map((h) => [h.x, h.y] as const))
+    );
+  });
+
+  it('keeps every hole inside the slab it was cut from', () => {
+    const params = defaults({
+      width: 3,
+      depth: 3,
+      screwHoles: SCREWS,
+      screwPadThicknessMm: PAD,
+    });
+    const bare = computeBounds(generateDirect({ ...params, screwHoles: undefined }, noop).vertices);
+    const bb = computeBounds(generateDirect(params, noop).vertices);
+
+    expect(bb.minZ).toBeCloseTo(bare.minZ, 6);
+    expect(bb.maxZ).toBeCloseTo(bare.maxZ, 6);
+    expect(bb.minX).toBeCloseTo(bare.minX, 6);
+    expect(bb.maxX).toBeCloseTo(bare.maxX, 6);
+  });
+
+  it('gives a counterbore the flat shoulder its head seats on', () => {
+    const bore: ScrewHoleParams = { ...SCREWS, headStyle: 'counterbore' };
+    const params = defaults({
+      width: 3,
+      depth: 3,
+      screwHoles: bore,
+      screwPadThicknessMm: screwPadThicknessMm(bore, 0),
+    });
+    const mesh = generateDirect(params, noop);
+    const floorZ = screwPadThicknessMm(bore, 0);
+
+    expect(discCentresAt(mesh, floorZ - CANCEL_EPSILON, -1)).toHaveLength(4);
+    // The flat shoulder a socket head seats on: one +Z annulus per hole.
+    const shoulderZ = floorZ - 3;
+    let shoulderVerts = 0;
+    for (let i = 0; i < mesh.vertices.length; i += 3) {
+      if (Math.abs(mesh.vertices[i + 2] - shoulderZ) > 1e-3) continue;
+      if (mesh.normals[i + 2] > 0.9) shoulderVerts++;
+    }
+    expect(shoulderVerts).toBe(4 * 2 * CIRCLE_SEGMENTS);
+  });
+
+  it('leaves the plate untouched when screws are disabled', () => {
+    const off: ScrewHoleParams = { ...SCREWS, enabled: false };
+    const plain = defaults({ width: 3, depth: 3 });
+    expect(generateDirect({ ...plain, screwHoles: off }, noop).triangleCount).toBe(
+      generateDirect(plain, noop).triangleCount
+    );
   });
 });

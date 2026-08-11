@@ -24,9 +24,9 @@ import { isMarginSeamStyle } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
 import {
   SOCKET_HEIGHT,
+  baseplateFloorDepth,
   frameCells,
   toIndexedMeshData,
-  MAGNET_FLOOR,
   MIN_PRINTABLE_TILE_MM,
   resolveCornerRadii,
 } from './generatorTypes';
@@ -49,7 +49,11 @@ interface RailDims {
 /** Rail footprint in its own (origin-centered) frame and slab height. */
 function railDims(params: ResolvedBaseplateParams, margin: MarginPiece): RailDims {
   const horizontal = margin.side === 'front' || margin.side === 'back';
-  const floorDepth = params.magnetHoles ? MAGNET_FLOOR + params.magnetDepth : 0;
+  // Via the shared derivation, never restated here: a rail and the body it butts
+  // against must be the same thickness or the assembled plate is stepped. The
+  // local form had already drifted past `solidFloor`, and the mount-down screw
+  // pad would have compounded it.
+  const floorDepth = baseplateFloorDepth(params);
   return {
     railW: horizontal ? margin.lengthMm : margin.bandThicknessMm,
     railD: horizontal ? margin.bandThicknessMm : margin.lengthMm,
@@ -96,6 +100,7 @@ function buildMarginSolid(
   forExport: boolean = true
 ): Shape3D {
   const { railW, railD, totalHeight } = railDims(params, margin);
+  const floorDepth = baseplateFloorDepth(params);
   const cornerRadii = railCornerRadii(params, margin, railW, railD);
 
   // Centered slab profile (rail-local frame). buildSlabProfile with no `edges`
@@ -113,7 +118,7 @@ function buildMarginSolid(
       front: params.paddingFront,
       back: params.paddingBack,
     };
-    const throughCut = !params.magnetHoles;
+    const throughCut = floorDepth === 0;
     const halfW = railW / 2;
     const halfD = railD / 2;
     const { x: ox, y: oy } = margin.worldOffsetMm;
@@ -134,7 +139,7 @@ function buildMarginSolid(
       if (Math.abs(lx) > halfW + 1e-6 || Math.abs(ly) > halfD + 1e-6) continue;
       const cellW = cell.widthUnits * params.gridUnitMm;
       const cellD = cell.depthUnits * params.gridUnitMm;
-      const pocket = getPocketTemplate(cellW, cellD, forExport, throughCut);
+      const pocket = getPocketTemplate(cellW, cellD, forExport, throughCut, floorDepth);
       pockets.push(translate(pocket, [lx, ly, 0]));
       pocket.delete();
     }

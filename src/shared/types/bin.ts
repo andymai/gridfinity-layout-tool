@@ -9,6 +9,7 @@ import type {
   DrawerOutline,
   MagnetAnchor,
   OutlineOverhang,
+  ScrewHoleParams,
   SplitOverride,
   StackPrintParams,
 } from '@/core/types';
@@ -590,6 +591,21 @@ export interface ResolvedBaseplateParams {
   readonly solidFloor?: boolean;
   /** Thickness (mm) of the {@link solidFloor}; defaults to 0.8mm when omitted. */
   readonly solidFloorThickness?: number;
+  /**
+   * Mount-down screw holes (#3425). Omitted ⇒ none, keeping plates saved before
+   * this field byte-identical.
+   */
+  readonly screwHoles?: ScrewHoleParams;
+  /**
+   * Extra slab thickness (mm) a floor-sited screw needs to recess its head, or 0
+   * when every screw rides the solid margin.
+   *
+   * Resolved ONCE at plate level (`buildFullParams`, via `screwPadThicknessMm`)
+   * and handed to every piece, because pieces of one plate share a slab height:
+   * if any piece needs the pad, all of them must carry it or the assembly comes
+   * out stepped. Never recompute this per piece.
+   */
+  readonly screwPadThicknessMm?: number;
   /** Uniform outer corner radius in mm. */
   readonly cornerRadius?: number;
   /** Per-corner radius overrides (tl/tr/bl/br in mm). */

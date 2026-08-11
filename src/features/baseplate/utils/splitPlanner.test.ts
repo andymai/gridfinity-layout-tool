@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { gridUnits } from '@gridfinity/branded-types';
+import { gridUnits, mm } from '@gridfinity/branded-types';
 import {
   computeBaseplateTiling,
   pieceToBaseplateParams,
@@ -859,6 +859,42 @@ describe('pieceToBaseplateParams', () => {
     expect(result.magnetDepth).toBe(3);
     expect(result.paddingLeft).toBe(5); // edge piece
     expect(result.paddingRight).toBe(0); // join edge
+  });
+
+  it('propagates screw holes and the resolved pad to every piece', () => {
+    // The params object is built field by field rather than spread, so a new
+    // field is dropped unless it is listed. Dropping these two would leave every
+    // split piece unfastened and thinner than the plate it belongs to.
+    const parent = makeParams({
+      width: 10,
+      depth: 8,
+      paddingLeft: 12,
+      paddingRight: 12,
+      screwHoles: { enabled: true, diameter: mm(3.4), headStyle: 'countersink' },
+      screwPadThicknessMm: 3.1,
+    });
+    const tiling = computeBaseplateTiling(parent, 256);
+    expect(tiling.isSplit).toBe(true);
+    for (const piece of tiling.pieces) {
+      const result = pieceToBaseplateParams(piece, parent);
+      expect(result.screwHoles?.enabled).toBe(true);
+      expect(result.screwPadThicknessMm).toBe(3.1);
+    }
+  });
+
+  it('gives every piece of a plate the same slab height', () => {
+    // Pieces assemble flush only if they agree on the pad; a piece deriving its
+    // own would be a different thickness from its neighbours.
+    const parent = makeParams({
+      width: 10,
+      depth: 8,
+      screwHoles: { enabled: true, diameter: mm(3.4), headStyle: 'countersink' },
+      screwPadThicknessMm: 3.1,
+    });
+    const heights = computeBaseplateTiling(parent, 256).pieces.map(
+      (piece) => pieceToBaseplateParams(piece, parent).screwPadThicknessMm
+    );
+    expect(new Set(heights).size).toBe(1);
   });
 
   it('propagates overTile to pieces so split plates fill their margins', () => {

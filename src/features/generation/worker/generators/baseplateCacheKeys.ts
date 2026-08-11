@@ -37,8 +37,18 @@ export function slabPocketsCacheKey(
     params.magnetHoles,
     quantize(params.magnetDepth),
     // The resolved floor depth sets the slab height + whether pockets are
-    // through-cut (0 = through). Captures the solidFloor thickness too.
+    // through-cut (0 = through). Captures the solidFloor thickness and the
+    // mount-down screw pad too.
     quantize(baseplateFloorDepth(params)),
+    // Screw holes decide PER CELL which pockets keep a floor, so they change the
+    // cached slab-with-pockets itself, not just a later cut. Head geometry is
+    // included because it moves that per-cell decision via the placement.
+    params.screwHoles?.enabled === true,
+    quantize(params.screwHoles?.diameter ?? 0),
+    params.screwHoles?.headStyle ?? '',
+    quantize(params.screwHoles?.headDiameter ?? 0),
+    quantize(params.screwHoles?.counterboreDepth ?? 0),
+    params.screwHoles?.screwsPerPiece ?? 0,
     quantize(params.paddingLeft),
     quantize(params.paddingRight),
     quantize(params.paddingFront),

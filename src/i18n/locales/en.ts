@@ -2978,6 +2978,27 @@ const en: Record<string, string> = {
   'baseplate.solidFloorThickness': 'Floor thickness',
   'baseplate.solidFloorHeightNote':
     'Added below the standard grid. Total height of the plate increases by this amount to accommodate.',
+  'baseplate.screwHoles.label': 'Screw down',
+  'baseplate.screwHoles.summary': 'ø{diameter}mm, {count} per piece',
+  'baseplate.screwHoles.info':
+    'Vertical holes to fasten the plate to a drawer bottom, bench or wall. They sit in the solid drawer-fit padding where it is wide enough, and in the pocket floor otherwise, which makes the plate slightly taller.',
+  'baseplate.screwHoles.diameter.label': 'Hole diameter',
+  'baseplate.screwHoles.diameter.info':
+    'Clearance for the screw shaft, not a pilot hole: 3.4mm passes an M3. A hole that bites into the threads holds the plate off the surface instead of pulling it down.',
+  'baseplate.screwHoles.headStyle.label': 'Head recess',
+  'baseplate.screwHoles.headStyle.info':
+    'How the head is sunk so it finishes flush. A head left standing proud lifts any bin seated over it.',
+  'baseplate.screwHoles.headStyle.countersink': 'Countersink',
+  'baseplate.screwHoles.headStyle.counterbore': 'Counterbore',
+  'baseplate.screwHoles.headDiameter.label': 'Head diameter',
+  'baseplate.screwHoles.headDiameter.info':
+    'Width of the recess at the surface: 8mm suits an M3 flat head, 5.5mm a socket head cap.',
+  'baseplate.screwHoles.counterboreDepth.label': 'Counterbore depth',
+  'baseplate.screwHoles.counterboreDepth.info':
+    'Depth of the flat pocket. Match it to the height of your screw head so the head ends up level with the surface.',
+  'baseplate.screwHoles.perPiece.label': 'Screws per piece',
+  'baseplate.screwHoles.perPiece.info':
+    'Holes placed in every split piece, so no printed piece is left unfastened. Four fill the corners; higher counts add the edge midpoints.',
   'baseplate.gridUnitTooltip': 'Width of one grid square (standard: 42mm)',
   'baseplate.gridUnitY': 'Grid unit Y',
   'baseplate.gridUnitYTooltip':

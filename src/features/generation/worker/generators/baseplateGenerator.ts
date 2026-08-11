@@ -66,6 +66,11 @@ import { cutInBatches } from './baseplateBatchOps';
 import { getPocketTemplate } from './baseplatePockets';
 import { buildMagnetHoles, buildPartialCellMagnetHoles } from './baseplateMagnets';
 import {
+  buildScrewCutters,
+  planBaseplateScrewHoles,
+  screwAwareHoleRadius,
+} from './baseplateScrews';
+import {
   buildConnectors,
   buildDovetailKey,
   buildSnapClip,
@@ -369,6 +374,40 @@ export function buildBaseplateSolid(
     shapedPocketCells = [...nominalCells, ...overTileFrame];
     pocketDecisions = shapedPocketCells.map(pocketDecision);
   }
+  // Mount-down screw holes (#3425). Planned here, before the slab is cached,
+  // because which cells keep a floor is part of the pocket geometry.
+  const screwParams = params.screwHoles?.enabled === true ? params.screwHoles : undefined;
+  const screwPadMm = params.screwPadThicknessMm ?? 0;
+  const screwHoles =
+    screwParams !== undefined
+      ? planBaseplateScrewHoles(screwParams, params, {
+          totalWidthMm: totalW,
+          totalDepthMm: totalD,
+          gridW: width,
+          gridD: depth,
+          pitch,
+          cellOpts,
+          magnetRadius: magnetDiameter / 2,
+          magnetAnchor,
+          cellFilter:
+            outline !== undefined
+              ? (cell: CellInfo): boolean => classifyCell(cell) === 'inside'
+              : undefined,
+        })
+      : [];
+  /** True when a floor-sited screw lands inside this cell, so it keeps a floor. */
+  const cellHoldsScrew = (cell: CellInfo): boolean => {
+    if (screwHoles.length === 0) return false;
+    const halfW = (cell.widthUnits * gridUnitMm) / 2;
+    const halfD = (cell.depthUnits * gridUnitMmY) / 2;
+    return screwHoles.some(
+      (h) =>
+        h.site === 'floor' &&
+        Math.abs(h.x - cell.centerX) <= halfW &&
+        Math.abs(h.y - cell.centerY) <= halfD
+    );
+  };
+
   const pocketMaskHash = pocketDecisions ? hashPocketDecisions(pocketDecisions) : undefined;
 
   // Cached separately so that toggling magnets or connectors doesn't redo the
@@ -402,14 +441,28 @@ export function buildBaseplateSolid(
 
     onProgress?.(0.2);
 
-    // Cut pockets — through-cut only when nothing leaves a floor; magnets and the
-    // standalone solidFloor option both stop the pocket at SOCKET_HEIGHT depth.
-    const throughCut = floorDepth === 0;
+    // Cut pockets. A cell keeps its floor when something needs to sit in it:
+    // magnets, the standalone solidFloor option, or a mount-down screw pad.
+    //
+    // The screw pad is per-cell (#3425) rather than plate-wide. Magnets and
+    // solidFloor floor EVERY cell, but only the handful of cells that actually
+    // carry a screw need the pad, so the rest stay through-cut and the plate
+    // costs a few pads of plastic instead of a full floor. Cells that stay
+    // through-cut must clear the taller slab, which is what `floorDepth` does
+    // here: a fixed extension would leave them a floor they never asked for.
+    const floorsEveryCell = floorDepth - screwPadMm > 0;
     const pockets: Shape3D[] = [];
     const addPocket = (cell: CellInfo): void => {
       const cellW_mm = cell.widthUnits * gridUnitMm;
       const cellD_mm = cell.depthUnits * gridUnitMmY;
-      const pocket = getPocketTemplate(cellW_mm, cellD_mm, forExport, throughCut);
+      const keepsFloor = floorsEveryCell || cellHoldsScrew(cell);
+      const pocket = getPocketTemplate(
+        cellW_mm,
+        cellD_mm,
+        forExport,
+        !keepsFloor,
+        keepsFloor ? 0 : floorDepth
+      );
       // pocket from getPocketTemplate is a clone owned by caller — translate
       // produces a new shape, so dispose the pre-translation clone.
       const positioned = translate(pocket, [cell.centerX, cell.centerY, 0]);
@@ -559,7 +612,10 @@ export function buildBaseplateSolid(
     const floorCutters = buildLightweightFloorCutters(
       width,
       depth,
-      magnetDiameter / 2,
+      // Pads are sized from this radius. A countersink concentric with a magnet
+      // is wider than the magnet, so the bare magnet radius would let the cone
+      // breach the pad edge into the cross cutout.
+      screwAwareHoleRadius(magnetDiameter / 2, screwParams),
       magnetDepth,
       cellOpts,
       params.lightweight,
@@ -573,7 +629,7 @@ export function buildBaseplateSolid(
       floorCutters.push(
         ...buildPartialCellFloorCutters(
           floorFrame,
-          magnetDiameter / 2,
+          screwAwareHoleRadius(magnetDiameter / 2, screwParams),
           magnetDepth,
           pitch,
           params.lightweight,
@@ -584,6 +640,14 @@ export function buildBaseplateSolid(
     }
     baseplate = cutInBatches(baseplate, floorCutters);
     probe?.('lightweightFloorCut', baseplate);
+  }
+
+  // Screw holes last among the underside features: the lightweight pass has
+  // already shaped the pads, so the recess is cut into material that is final.
+  if (screwHoles.length > 0 && screwParams !== undefined) {
+    const cutters = buildScrewCutters(screwHoles, screwParams, totalHeight);
+    baseplate = cutInBatches(baseplate, cutters);
+    probe?.('screwHolesCut', baseplate);
   }
 
   onProgress?.(0.4);

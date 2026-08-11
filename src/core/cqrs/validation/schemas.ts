@@ -9,7 +9,18 @@
  */
 
 import * as z from 'zod';
-import { CONSTRAINTS, SOLID_FLOOR_MIN_MM, SOLID_FLOOR_MAX_MM } from '@/core/constants';
+import {
+  CONSTRAINTS,
+  SOLID_FLOOR_MIN_MM,
+  SOLID_FLOOR_MAX_MM,
+  SCREW_HOLE_MIN_DIAMETER_MM,
+  SCREW_HOLE_MAX_DIAMETER_MM,
+  SCREW_HEAD_MIN_DIAMETER_MM,
+  SCREW_HEAD_MAX_DIAMETER_MM,
+  SCREW_COUNTERBORE_MAX_DEPTH_MM,
+  SCREWS_PER_PIECE_MIN,
+  SCREWS_PER_PIECE_MAX,
+} from '@/core/constants';
 import { STACK_PRINT_MIN_GAP_MM, STACK_PRINT_MAX_GAP_MM } from '@/core/types';
 import { BASEPLATE_CONNECTOR_STYLES } from '@/shared/types/bin';
 import { GRID_PITCH_MM_MAX } from '@/shared/utils/drawerOutline';
@@ -313,6 +324,28 @@ const baseplateParamsSchema = z.object({
     })
     .optional(),
   splitOverride: z.object({ cols: splitChunkSizes, rows: splitChunkSizes }).optional(),
+  // Paired with `api/lib/baseplateValidation.ts`, which is deliberately no
+  // tighter than this: a value the client accepts but the server rejects fails
+  // the whole cloud sync rather than the one field.
+  screwHoles: z
+    .object({
+      enabled: z.boolean(),
+      diameter: z.number().min(SCREW_HOLE_MIN_DIAMETER_MM).max(SCREW_HOLE_MAX_DIAMETER_MM),
+      headStyle: z.enum(['countersink', 'counterbore']),
+      headDiameter: z
+        .number()
+        .min(SCREW_HEAD_MIN_DIAMETER_MM)
+        .max(SCREW_HEAD_MAX_DIAMETER_MM)
+        .optional(),
+      counterboreDepth: z.number().min(0).max(SCREW_COUNTERBORE_MAX_DEPTH_MM).optional(),
+      screwsPerPiece: z
+        .number()
+        .int()
+        .min(SCREWS_PER_PIECE_MIN)
+        .max(SCREWS_PER_PIECE_MAX)
+        .optional(),
+    })
+    .optional(),
 });
 
 /** layout.setBaseplateParams */

@@ -225,6 +225,18 @@ export const FEATURE_FLAGS = [
     requiresRefresh: false,
   },
   {
+    id: 'baseplate_screw_holes',
+    name: 'Screw a Baseplate Down',
+    description:
+      'Add vertical holes through a baseplate so you can screw it to a drawer bottom, bench or wall. Four holes go into every printed piece, recessed so the head finishes flush and a bin still seats over it.',
+    status: 'experimental',
+    risk: 'medium',
+    warning:
+      'Holes sit in the drawer-fit padding where it is wide enough and in the pocket floor otherwise, which makes the plate slightly taller. Print one piece and check it against your drawer before running a full set.',
+    addedAt: '2026-08',
+    requiresRefresh: false,
+  },
+  {
     id: 'merge_bins_to_design',
     name: 'Merge Bins Into One Insert',
     description:

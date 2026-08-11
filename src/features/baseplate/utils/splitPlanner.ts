@@ -1432,6 +1432,11 @@ export function pieceToBaseplateParams(
     lightweight: parentParams.lightweight,
     solidFloor: parentParams.solidFloor,
     solidFloorThickness: parentParams.solidFloorThickness,
+    screwHoles: parentParams.screwHoles,
+    // Inherited, never re-derived. Pieces of one plate share a slab height, so a
+    // piece that computed its own pad would come out a different thickness from
+    // its neighbours and the assembly would be stepped.
+    screwPadThicknessMm: parentParams.screwPadThicknessMm,
     cornerRadius: parentParams.cornerRadius,
     cornerRadii,
   };
