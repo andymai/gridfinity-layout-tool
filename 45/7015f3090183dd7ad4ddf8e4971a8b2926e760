@@ -1,0 +1,26 @@
+src/features/design-linking/components/Dialogs/MergeBinsDialog/MergeBinsDialog.tsx
+  s_143ab944de1d05::t_b2a4e62e7566e2 59-61
+src/features/design-linking/hooks/useMergeBins.test.ts
+  s_143ab944de1d05::t_9b13274c78d753 124,126,129,143,145,148-149
+src/features/design-linking/hooks/useMergeBins.ts
+  s_143ab944de1d05::t_b2a4e62e7566e2 40-45,76,89
+src/features/design-linking/components/Dialogs/MergeBinsDialog/MergeBinsDialog.test.tsx
+  s_143ab944de1d05::t_9b13274c78d753 52,117-125
+  s_143ab944de1d05::t_ca34d1c4108a01 126-127
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "457015f3090183dd7ad4ddf8e4971a8b2926e760",
+  "prompts": {},
+  "sessions": {
+    "s_143ab944de1d05": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d893cac8-ca27-46d0-9bd4-15f949f575f6",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
