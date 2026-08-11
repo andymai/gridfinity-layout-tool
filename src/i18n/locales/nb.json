@@ -876,6 +876,7 @@
   "binDesigner.openBentoWorkspace": "Bento-arbeidsområde",
   "binDesigner.openBentoWorkspaceSubtitle": "Dra vegger for å tilpasse hvert rom",
   "binDesigner.bento.summary": "{cols}×{rows} rutenett · {count} rom",
+  "binDesigner.bento.interiorReadout": "Innvendig {width} × {depth} mm",
   "binDesigner.interiorSummary": "{count} rom",
   "binDesigner.invalidDesignFile": "Ugyldig designfil",
   "binDesigner.itemKind.bin": "Bin",

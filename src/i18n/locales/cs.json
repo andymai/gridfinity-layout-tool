@@ -876,6 +876,7 @@
   "binDesigner.openBentoWorkspace": "Pracovní plocha Bento",
   "binDesigner.openBentoWorkspaceSubtitle": "Tažením stěn nastavte velikost přihrádek",
   "binDesigner.bento.summary": "Mřížka {cols}×{rows} · {count} přihrádek",
+  "binDesigner.bento.interiorReadout": "Vnitřek {width} × {depth} mm",
   "binDesigner.interiorSummary": "{count} přihrádek",
   "binDesigner.invalidDesignFile": "Neplatný soubor návrhu",
   "binDesigner.itemKind.bin": "Bin",

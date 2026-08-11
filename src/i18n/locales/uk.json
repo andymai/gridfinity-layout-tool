@@ -876,6 +876,7 @@
   "binDesigner.openBentoWorkspace": "Робоча область «Бенто»",
   "binDesigner.openBentoWorkspaceSubtitle": "Перетягуйте стінки, щоб задати розмір відділень",
   "binDesigner.bento.summary": "Сітка {cols}×{rows} · {count} відділень",
+  "binDesigner.bento.interiorReadout": "Всередині {width} × {depth} мм",
   "binDesigner.interiorSummary": "{count} відсіків",
   "binDesigner.invalidDesignFile": "Недійсний файл дизайну",
   "binDesigner.itemKind.bin": "Bin",

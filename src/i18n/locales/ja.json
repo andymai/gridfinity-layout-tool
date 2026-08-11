@@ -876,6 +876,7 @@
   "binDesigner.openBentoWorkspace": "弁当箱ワークスペース",
   "binDesigner.openBentoWorkspaceSubtitle": "壁をドラッグして各仕切りのサイズを調整",
   "binDesigner.bento.summary": "{cols}×{rows} グリッド · 仕切り {count} 個",
+  "binDesigner.bento.interiorReadout": "内寸 {width} × {depth} mm",
   "binDesigner.interiorSummary": "{count}個の区画",
   "binDesigner.invalidDesignFile": "無効なデザインファイルです",
   "binDesigner.itemKind.bin": "Bin",

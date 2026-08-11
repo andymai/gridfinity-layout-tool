@@ -876,6 +876,7 @@
   "binDesigner.openBentoWorkspace": "Bento-arbetsyta",
   "binDesigner.openBentoWorkspaceSubtitle": "Dra i väggarna för att anpassa varje fack",
   "binDesigner.bento.summary": "Rutnät {cols}×{rows} · {count} fack",
+  "binDesigner.bento.interiorReadout": "Innermått {width} × {depth} mm",
   "binDesigner.interiorSummary": "{count} fack",
   "binDesigner.invalidDesignFile": "Ogiltig designfil",
   "binDesigner.itemKind.bin": "Bin",

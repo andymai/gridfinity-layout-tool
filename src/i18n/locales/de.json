@@ -876,6 +876,7 @@
   "binDesigner.openBentoWorkspace": "Bento-Arbeitsbereich",
   "binDesigner.openBentoWorkspaceSubtitle": "Wände ziehen, um jedes Fach zu bemessen",
   "binDesigner.bento.summary": "Raster {cols}×{rows} · {count} Fächer",
+  "binDesigner.bento.interiorReadout": "Innenraum {width} × {depth} mm",
   "binDesigner.interiorSummary": "{count} Fach/Fächer",
   "binDesigner.invalidDesignFile": "Ungültige Design-Datei",
   "binDesigner.itemKind.bin": "Bin",

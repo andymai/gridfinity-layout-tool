@@ -12,6 +12,7 @@ import { useState } from 'react';
 import { ParameterPanel } from '@/features/bin-designer/components/ParameterPanel';
 import { PreviewCanvas } from '@/features/bin-designer/components/PreviewCanvas';
 import { CutoutWorkspace } from '@/features/bin-designer/components/CutoutWorkspace';
+import { BentoWorkspace } from '@/features/bin-designer/components/BentoWorkspace';
 import { ResizeDivider } from '@/features/bin-designer/components/CutoutWorkspace/ResizeDivider';
 import { loadSplitRatio } from '@/features/bin-designer/components/CutoutWorkspace/splitRatioStorage';
 import { CutoutDesktopOnlyBanner } from './CutoutDesktopOnlyBanner';
@@ -23,6 +24,7 @@ interface DesignerMainContentProps {
   isMobile: boolean;
   isLandscape: boolean;
   cutoutEditorOpen: boolean;
+  bentoWorkspaceOpen: boolean;
 }
 
 export function DesignerMainContent({
@@ -30,15 +32,25 @@ export function DesignerMainContent({
   isMobile,
   isLandscape,
   cutoutEditorOpen,
+  bentoWorkspaceOpen,
 }: DesignerMainContentProps) {
   const [splitRatio, setSplitRatio] = useState(loadSplitRatio);
 
-  if (isDesktop && cutoutEditorOpen) {
-    /* Desktop: cutout workspace + resizable divider + 3D preview */
+  // Both workspaces replace the sidebar and share the split ratio, so they
+  // render through one branch. The store keeps the two flags mutually
+  // exclusive; this only has to pick which one to draw.
+  const workspace = cutoutEditorOpen ? (
+    <CutoutWorkspace />
+  ) : bentoWorkspaceOpen ? (
+    <BentoWorkspace />
+  ) : null;
+
+  if (isDesktop && workspace) {
+    /* Desktop: workspace + resizable divider + 3D preview */
     return (
       <main className="flex flex-1 overflow-hidden">
         <div className="overflow-hidden" style={{ width: `${splitRatio * 100}%` }}>
-          <CutoutWorkspace />
+          {workspace}
         </div>
         <ResizeDivider ratio={splitRatio} onRatioChange={setSplitRatio} />
         <div className="relative flex-1 overflow-hidden">

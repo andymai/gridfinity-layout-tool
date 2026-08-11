@@ -876,6 +876,7 @@
   "binDesigner.openBentoWorkspace": "Area di lavoro Bento",
   "binDesigner.openBentoWorkspaceSubtitle": "Trascina le pareti per dimensionare ogni scomparto",
   "binDesigner.bento.summary": "Griglia {cols}×{rows} · {count} scomparti",
+  "binDesigner.bento.interiorReadout": "Interno {width} × {depth} mm",
   "binDesigner.interiorSummary": "{count} scomparti",
   "binDesigner.invalidDesignFile": "File di design non valido",
   "binDesigner.itemKind.bin": "Bin",

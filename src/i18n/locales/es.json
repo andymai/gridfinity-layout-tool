@@ -876,6 +876,7 @@
   "binDesigner.openBentoWorkspace": "Espacio de trabajo Bento",
   "binDesigner.openBentoWorkspaceSubtitle": "Arrastra las paredes para dimensionar cada compartimento",
   "binDesigner.bento.summary": "Cuadrícula {cols}×{rows} · {count} compartimentos",
+  "binDesigner.bento.interiorReadout": "Espacio interior {width} × {depth} mm",
   "binDesigner.interiorSummary": "{count} compartimento(s)",
   "binDesigner.invalidDesignFile": "Archivo de diseño no válido",
   "binDesigner.itemKind.bin": "Bin",

@@ -10,6 +10,7 @@
 
 import { useTranslation } from '@/i18n';
 import { Button } from '@/design-system';
+import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { getCompartmentCount } from '@/features/bin-designer/utils/compartments';
 import { CompartmentEditor } from '../../CompartmentEditor';
@@ -62,7 +63,14 @@ const MODE_CONFIG: Record<InteriorCard, ModeConfig> = {
 function BentoModeContent() {
   const setBentoWorkspaceOpen = useDesignerStore((s) => s.setBentoWorkspaceOpen);
   const compartments = useDesignerStore((s) => s.params.compartments);
+  const { isDesktop } = useResponsive();
   const t = useTranslation();
+
+  // The workspace needs room the panel does not have, so off desktop the card
+  // expands to the same compartment editor Grid Dividers uses. A launcher that
+  // opened nothing would be worse than no launcher: DesignerMainContent only
+  // renders the workspace on desktop.
+  if (!isDesktop) return <CompartmentEditor />;
 
   return (
     <div className="space-y-2">

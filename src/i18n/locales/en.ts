@@ -2702,6 +2702,7 @@ const en: Record<string, string> = {
   'binDesigner.openBentoWorkspace': 'Bento Workspace',
   'binDesigner.openBentoWorkspaceSubtitle': 'Drag walls to size each compartment',
   'binDesigner.bento.summary': '{cols}×{rows} grid · {count} compartments',
+  'binDesigner.bento.interiorReadout': 'Interior {width} × {depth} mm',
   'binDesigner.interior.slotted.title': 'Removable Dividers',
   'binDesigner.interior.slotted.description': 'Slots for insertable dividers',
   'binDesigner.interior.solid.title': 'Custom Cutouts',

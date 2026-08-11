@@ -876,6 +876,7 @@
   "binDesigner.openBentoWorkspace": "便当工作区",
   "binDesigner.openBentoWorkspaceSubtitle": "拖动隔墙调整每个隔层的大小",
   "binDesigner.bento.summary": "{cols}×{rows} 网格 · {count} 个隔层",
+  "binDesigner.bento.interiorReadout": "内部 {width} × {depth} 毫米",
   "binDesigner.interiorSummary": "{count} 个隔间",
   "binDesigner.invalidDesignFile": "无效的设计文件",
   "binDesigner.itemKind.bin": "收纳盒",

@@ -876,6 +876,7 @@
   "binDesigner.openBentoWorkspace": "Espace de travail Bento",
   "binDesigner.openBentoWorkspaceSubtitle": "Faites glisser les cloisons pour dimensionner chaque compartiment",
   "binDesigner.bento.summary": "Grille {cols}×{rows} · {count} compartiments",
+  "binDesigner.bento.interiorReadout": "Intérieur {width} × {depth} mm",
   "binDesigner.interiorSummary": "{count} compartiment(s)",
   "binDesigner.invalidDesignFile": "Fichier de design invalide",
   "binDesigner.itemKind.bin": "Bin",

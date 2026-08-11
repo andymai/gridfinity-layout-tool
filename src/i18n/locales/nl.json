@@ -876,6 +876,7 @@
   "binDesigner.openBentoWorkspace": "Bento-werkruimte",
   "binDesigner.openBentoWorkspaceSubtitle": "Sleep wanden om elk vak te dimensioneren",
   "binDesigner.bento.summary": "Raster {cols}×{rows} · {count} vakken",
+  "binDesigner.bento.interiorReadout": "Binnenwerk {width} × {depth} mm",
   "binDesigner.interiorSummary": "{count} compartiment(en)",
   "binDesigner.invalidDesignFile": "Ongeldig ontwerpbestand",
   "binDesigner.itemKind.bin": "Bin",
