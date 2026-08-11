@@ -1,0 +1,31 @@
+src/shared/utils/zz_probe.test.ts
+  s_13df2c0005cd75::t_5cc711c92fff5b 1-44
+  s_13df2c0005cd75::t_cd9eee38676a4e 45-47
+  s_9effa2f8624ec1::t_5f72e901ad84e0 48-80
+src/features/generation/README.md
+  s_13df2c0005cd75::t_eee1caca420c44 224
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "2d5ac58bbf31bd2c40055ee2d961a2ddad854357",
+  "prompts": {},
+  "sessions": {
+    "s_13df2c0005cd75": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d24b17f0-5df1-4244-a105-d33cb0ec4ae8",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_9effa2f8624ec1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a0a9c7ff94547297d",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
