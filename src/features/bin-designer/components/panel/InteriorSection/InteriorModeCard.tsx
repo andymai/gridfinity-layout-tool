@@ -3,19 +3,25 @@
  *
  * Displays mode icon, title, description, and optional summary.
  * Expands inline to show mode-specific editor when selected.
+ *
+ * Keyed by {@link InteriorCard}, not `BinStyle`: Bento and Grid Dividers are
+ * two authoring surfaces over the same `standard` style.
  */
 
 import { useTranslation } from '@/i18n';
 import { Button } from '@/design-system';
+import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { getCompartmentCount } from '@/features/bin-designer/utils/compartments';
 import { CompartmentEditor } from '../../CompartmentEditor';
 import { SlotConfigurator } from '../../SlotConfigurator/SlotConfigurator';
-import { Grid3x3Icon, DividerIcon, ScissorsIcon } from './icons';
-import type { BinStyle } from '../../../types';
+import { WorkspaceLaunchButton } from './WorkspaceLaunchButton';
+import { Grid3x3Icon, BentoIcon, DividerIcon, ScissorsIcon } from './icons';
+import type { InteriorCard } from '../../../types';
 import type { ReactNode } from 'react';
 
 interface InteriorModeCardProps {
-  mode: BinStyle;
+  card: InteriorCard;
   isExpanded: boolean;
   onSelect: () => void;
 }
@@ -27,12 +33,18 @@ interface ModeConfig {
   content: ReactNode;
 }
 
-const MODE_CONFIG: Record<BinStyle, ModeConfig> = {
+const MODE_CONFIG: Record<InteriorCard, ModeConfig> = {
   standard: {
     icon: <Grid3x3Icon size={20} className="text-content-secondary" />,
     titleKey: 'binDesigner.interior.standard.title',
     descriptionKey: 'binDesigner.interior.standard.description',
     content: <CompartmentEditor />,
+  },
+  bento: {
+    icon: <BentoIcon size={20} className="text-content-secondary" />,
+    titleKey: 'binDesigner.interior.bento.title',
+    descriptionKey: 'binDesigner.interior.bento.description',
+    content: <BentoModeContent />,
   },
   slotted: {
     icon: <DividerIcon size={20} className="text-content-secondary" />,
@@ -47,6 +59,37 @@ const MODE_CONFIG: Record<BinStyle, ModeConfig> = {
     content: <SolidModeContent />,
   },
 };
+
+function BentoModeContent() {
+  const setBentoWorkspaceOpen = useDesignerStore((s) => s.setBentoWorkspaceOpen);
+  const compartments = useDesignerStore((s) => s.params.compartments);
+  const { isDesktop } = useResponsive();
+  const t = useTranslation();
+
+  // The workspace needs room the panel does not have, so off desktop the card
+  // expands to the same compartment editor Grid Dividers uses. A launcher that
+  // opened nothing would be worse than no launcher: DesignerMainContent only
+  // renders the workspace on desktop.
+  if (!isDesktop) return <CompartmentEditor />;
+
+  return (
+    <div className="space-y-2">
+      <WorkspaceLaunchButton
+        illustration={<BentoIcon size={24} className="text-accent/70" />}
+        title={t('binDesigner.openBentoWorkspace')}
+        subtitle={t('binDesigner.openBentoWorkspaceSubtitle')}
+        onClick={() => setBentoWorkspaceOpen(true)}
+      />
+      <p className="px-1 text-[10px] text-content-tertiary">
+        {t('binDesigner.bento.summary', {
+          cols: compartments.cols,
+          rows: compartments.rows,
+          count: getCompartmentCount(compartments),
+        })}
+      </p>
+    </div>
+  );
+}
 
 function SolidModeContent() {
   const setCutoutEditorOpen = useDesignerStore((s) => s.setCutoutEditorOpen);
@@ -70,52 +113,31 @@ function SolidModeContent() {
   }
 
   return (
-    <Button
-      type="button"
-      variant="ghost"
-      onClick={() => setCutoutEditorOpen(true)}
-      className="group h-auto w-full justify-start rounded-lg border border-accent/20 bg-gradient-to-r from-accent/10 to-info/10 p-3 text-left font-normal transition-all hover:from-accent/20 hover:to-info/20 hover:bg-transparent"
-    >
-      <div className="flex w-full items-center gap-3">
-        {/* Mini illustration: top-view of a bin with cutout shapes */}
-        <div className="flex-shrink-0 w-10 h-10 rounded bg-surface/60 border border-accent/20 flex items-center justify-center">
-          <svg
-            className="w-6 h-6 text-accent/70"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-          >
-            <rect x="3" y="3" width="18" height="18" rx="2" />
-            <path d="M8 10 h3 v4 h-3 z" fill="currentColor" opacity="0.4" stroke="none" />
-            <circle cx="16" cy="12" r="2.5" fill="currentColor" opacity="0.4" stroke="none" />
-          </svg>
-        </div>
-        <div className="flex-1 min-w-0">
-          <span className="text-xs font-semibold text-accent group-hover:text-accent/90">
-            {t('binDesigner.editCutouts')}
-          </span>
-          <p className="text-[10px] text-content-tertiary mt-0.5 leading-relaxed">
-            {t('binDesigner.editCutoutsSubtitle')}
-          </p>
-        </div>
+    <WorkspaceLaunchButton
+      illustration={
+        /* Mini illustration: top-view of a bin with cutout shapes */
         <svg
-          className="w-4 h-4 text-accent/50 flex-shrink-0 group-hover:translate-x-0.5 transition-transform"
-          fill="none"
+          className="w-6 h-6 text-accent/70"
           viewBox="0 0 24 24"
+          fill="none"
           stroke="currentColor"
-          strokeWidth={2}
+          strokeWidth="1.5"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 18l6-6-6-6" />
+          <rect x="3" y="3" width="18" height="18" rx="2" />
+          <path d="M8 10 h3 v4 h-3 z" fill="currentColor" opacity="0.4" stroke="none" />
+          <circle cx="16" cy="12" r="2.5" fill="currentColor" opacity="0.4" stroke="none" />
         </svg>
-      </div>
-    </Button>
+      }
+      title={t('binDesigner.editCutouts')}
+      subtitle={t('binDesigner.editCutoutsSubtitle')}
+      onClick={() => setCutoutEditorOpen(true)}
+    />
   );
 }
 
-export function InteriorModeCard({ mode, isExpanded, onSelect }: InteriorModeCardProps) {
+export function InteriorModeCard({ card, isExpanded, onSelect }: InteriorModeCardProps) {
   const t = useTranslation();
-  const config = MODE_CONFIG[mode];
+  const config = MODE_CONFIG[card];
 
   return (
     <div

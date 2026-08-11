@@ -1,5 +1,6 @@
 import type { ColorZone, HoverableZone } from './featureColors';
 import type { CompartmentConfig } from './compartments';
+import type { InteriorCard } from './interior';
 import type { HistoryEntry, SplitPieceMeshEntry } from './generation';
 import type { OverhangHighlightSide } from './walls';
 
@@ -42,6 +43,19 @@ export interface DesignerUIState {
   readonly halfGridMode: boolean;
   /** Whether the full-workspace cutout editor is open (desktop only) */
   readonly cutoutEditorOpen: boolean;
+  /** Whether the full-workspace bento editor is open (desktop only) */
+  readonly bentoWorkspaceOpen: boolean;
+  /**
+   * Which interior card the panel shows as selected. Bento and Grid Dividers
+   * are both `style: 'standard'`, so the style alone cannot tell them apart.
+   *
+   * Seeded from `deriveInteriorCard` when a design loads and sticky thereafter:
+   * `remapDividerOverrides` drops every override on a cell renumber, so a
+   * continuously-derived card would flip to Grid Dividers the moment a bento's
+   * walls were reset by a merge. Never persisted — no `BinParams` field means
+   * no shift in `communityParamsFingerprint`.
+   */
+  readonly interiorCard: InteriorCard;
   /** Preview compartments during drag-to-merge/split (shown as ghost in 3D view) */
   readonly previewCompartments: CompartmentConfig | null;
   /** Preview selection info for 3D ghost overlay */

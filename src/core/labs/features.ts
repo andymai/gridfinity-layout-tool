@@ -237,14 +237,17 @@ export const FEATURE_FLAGS = [
     requiresRefresh: false,
   },
   {
+    // Id kept from the feature's first name: it is the key your opt-in is
+    // stored under, so renaming it would switch the feature back off for
+    // everyone who had already turned it on.
     id: 'merge_bins_to_design',
-    name: 'Merge Bins Into One Insert',
+    name: 'Make Bento',
     description:
-      'Turn a group of bins — or a whole layer — into a single divided insert you print in one piece, with the dividers where the bin walls were and your bin labels carried across.',
+      'Select a group of bins and print them as one divided tray, like a bento box, with walls where the bin edges were and your labels carried across. Select two or more bins, then use Bento in the toolbar or the selection panel.',
     status: 'experimental',
     risk: 'low',
     warning:
-      'Merging only works when the bins line up on a common grid. Selections that need more than 12 rows or columns are refused, and a merged piece keeps one height for every compartment.',
+      'Only works when the bins line up on a common grid. Selections needing more than 12 rows or columns are refused, and one bento has a single height throughout. A bin you leave out but which sits inside the bento has to be added or stashed first.',
     addedAt: '2026-08',
     requiresRefresh: false,
   },

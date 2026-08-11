@@ -516,6 +516,7 @@ const en: Record<string, string> = {
   'layers.cannotAddLayerTallBins':
     'Cannot add layer: bins on {layerName} are {binHeight}u tall but layer is only {layerHeight}u. Adjusting would exceed drawer height. Try reducing bin heights or increasing drawer height.',
   'layers.clearLayerLabel': 'Clear layer',
+  'layers.makeBento': 'Make this layer a bento',
   'layers.noBinsToClear': 'No bins to clear',
   'layers.noGaps': 'No gaps',
   'layers.noGapsToFill': 'No gaps to fill',
@@ -1201,7 +1202,7 @@ const en: Record<string, string> = {
   'mobile.binMenu.editProperties': 'Edit Properties',
   'mobile.binMenu.rotate': 'Rotate',
   'mobile.binMenu.expandToFit': 'Expand to Fit',
-  'mobile.binMenu.mergeIntoOne': 'Merge Into One Bin',
+  'mobile.binMenu.mergeIntoOne': 'Make Bento',
   'mobile.binMenu.lockSize': 'Lock Size',
   'mobile.binMenu.unlockSize': 'Unlock Size',
   'mobile.binMenu.toStash': 'To Stash',
@@ -2699,6 +2700,17 @@ const en: Record<string, string> = {
   'binDesigner.tabSupport.fillet': 'Curved',
   'binDesigner.interior.standard.title': 'Grid Dividers',
   'binDesigner.interior.standard.description': 'Compartments with walls',
+  'binDesigner.interior.bento.title': 'Bento',
+  'binDesigner.interior.bento.description': 'Compartments any size, walls where you want them',
+  'binDesigner.openBentoWorkspace': 'Bento Workspace',
+  'binDesigner.openBentoWorkspaceSubtitle': 'Drag walls to size each compartment',
+  'binDesigner.bento.summary': '{cols}×{rows} grid · {count} compartments',
+  'binDesigner.bento.interiorReadout': 'Interior {width} × {depth} mm',
+  'binDesigner.bento.labelFor': 'Label for compartment {number}',
+  'binDesigner.bento.quickstart.title': 'Building a bento',
+  'binDesigner.bento.quickstart.merge': 'Drag across cells to merge them into one compartment.',
+  'binDesigner.bento.quickstart.dragWalls': 'Drag a wall to resize the compartments either side.',
+  'binDesigner.bento.quickstart.freeDrag': 'Walls snap every 0.5mm. Hold Alt to place one freely.',
   'binDesigner.interior.slotted.title': 'Removable Dividers',
   'binDesigner.interior.slotted.description': 'Slots for insertable dividers',
   'binDesigner.interior.solid.title': 'Custom Cutouts',
@@ -4071,34 +4083,45 @@ const en: Record<string, string> = {
   'designLinking.blockedResize.reasons.compartments': 'Has custom compartment layout',
 
   // Merge bins into one divided insert
-  'designLinking.merge.title': 'Merge Into One Bin',
-  'designLinking.merge.description':
+  'designLinking.bento.title': 'Make Bento',
+  'designLinking.bento.description':
     'The result is one insert of {compartments} compartments, {width} x {depth} grid units. Your layout is not changed.',
-  'designLinking.merge.scope.selection': 'Merging the {count} bins you selected.',
-  'designLinking.merge.scope.layer': 'Merging all {count} bins on this layer.',
-  'designLinking.merge.preview.alt':
+  'designLinking.bento.scope.selection': 'Merging the {count} bins you selected.',
+  'designLinking.bento.scope.layer': 'Merging all {count} bins on this layer.',
+  'designLinking.bento.preview.alt':
     'Plan view of the merged bin: {count} compartments across {width} x {depth} grid units.',
-  'designLinking.merge.preview.gapCompartment': 'Compartment made from empty space',
-  'designLinking.merge.preview.unlabelled': 'Compartment with no label',
-  'designLinking.merge.flatBase': 'Flat bottom (drawer insert, no Gridfinity feet)',
-  'designLinking.merge.confirm': 'Merge and Edit',
-  'designLinking.merge.designName': '{layout} insert',
-  'designLinking.merge.warning.gaps':
+  'designLinking.bento.preview.gapCompartment': 'Compartment made from empty space',
+  'designLinking.bento.preview.unlabelled': 'Compartment with no label',
+  'designLinking.bento.nameLabel': 'Name',
+  'designLinking.bento.heightLabel': 'Height (units)',
+  'designLinking.bento.dividerLabel': 'Divider walls (mm)',
+  'designLinking.bento.replaceBins': 'Replace the {count} bins with this bento',
+  'designLinking.bento.trapped':
+    '{count} bin(s) outside your selection sit inside the bento. It would be printed through them.',
+  'designLinking.bento.trappedInclude': 'Add them to the bento',
+  'designLinking.bento.trappedStash': 'Move them to the stash',
+  'designLinking.bento.trappedBlocks': 'Resolve the trapped bins first',
+  'designLinking.bento.flatBase': 'Flat bottom (drawer insert, no Gridfinity feet)',
+  'designLinking.bento.confirm': 'Create Bento',
+  'designLinking.bento.designName': '{layout} bento',
+  'designLinking.bento.warning.gaps':
     'That total includes {count} compartment(s) made from empty space between the bins.',
-  'designLinking.merge.warning.raisedHeight':
+  'designLinking.bento.warning.raisedHeight':
     '{count} bin(s) are made taller to match the tallest one.',
-  'designLinking.merge.warning.linkedDesigns':
+  'designLinking.bento.warning.linkedDesigns':
     '{count} bin(s) lose the custom shape of their linked design.',
-  'designLinking.merge.warning.split':
+  'designLinking.bento.warning.split':
     'Too big for your print bed, so it will be split into pieces that key together.',
-  'designLinking.merge.blocked.tooFewBins':
+  'designLinking.bento.blocked.tooFewBins':
     'Merging needs at least two bins on one layer, and this is {count}.',
-  'designLinking.merge.blocked.gridOverflow':
+  'designLinking.bento.blocked.gridOverflow':
     'These bins need a {cols} x {rows} compartment grid, and the limit is {max}. Merge a smaller group, or line the bins up on a coarser grid.',
-  'designLinking.merge.blocked.tooLarge':
+  'designLinking.bento.blocked.tooLarge':
     'A merged bin can be at most {max} grid units on a side. Merge a smaller group.',
-  'designLinking.merge.toast.created': 'Merged into one bin of {count} compartments.',
-  'designLinking.merge.toast.saveFailed': 'Could not save the merged bin.',
+  'designLinking.bento.toast.created': 'Bento created with {count} compartments.',
+  'designLinking.bento.toast.replaceFailed':
+    'Bento created, but it would not fit where those bins were, so they were left in place.',
+  'designLinking.bento.toast.saveFailed': 'Could not save the bento.',
 
   // Designer-updated dialog (shown when bin resize pushes to open designer)
   'designLinking.designerUpdated.title': 'Designer Updated',

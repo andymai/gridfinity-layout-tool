@@ -33,6 +33,7 @@ ALLOWED_CROSS_FEATURE=(
   # create a bash-vs-eslint verdict split. Deep static imports stay violations.
   "bin-inspector:design-linking" # Lazy-loaded linked design section
   "bin-inspector:bin-recommender" # Lazy-loaded size suggestion
+  "layers:design-linking" # Lazy-loaded Make Bento dialog on the active layer
 )
 
 VIOLATIONS_FOUND=0

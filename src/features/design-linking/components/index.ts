@@ -7,7 +7,7 @@ export {
   SyncDimensionsDialog,
   DeleteDesignWarningDialog,
   LinkDesignDialog,
-  MergeBinsDialog,
+  MakeBentoDialog,
 } from './Dialogs';
 
 export { LinkedDesignSection } from './LinkedDesignSection';

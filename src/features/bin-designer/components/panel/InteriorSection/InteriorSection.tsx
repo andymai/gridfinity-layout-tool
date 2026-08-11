@@ -1,9 +1,10 @@
 /**
  * Interior section: Card-based mode selector.
  *
- * Three vertically-stacked cards for Fixed (compartment grid),
- * Removable (divider slots), and Cutout (custom shapes) interior styles.
- * Each card shows icon, title, description, and expands inline with controls.
+ * Four vertically-stacked cards for Grid Dividers (uniform compartment grid),
+ * Bento (compartments sized freely), Removable (divider slots), and Cutout
+ * (custom shapes). Each card shows icon, title, description, and expands
+ * inline with controls or a workspace launcher.
  */
 
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -12,15 +13,19 @@ import { useTranslation } from '@/i18n';
 import { InteriorModeCard } from './InteriorModeCard';
 import { useInteriorSection } from './useInteriorSection';
 import { FeatureGate } from '../FeatureGate';
-import type { BinStyle } from '../../../types';
-
-const MODES: BinStyle[] = ['standard', 'slotted', 'solid'];
+import { INTERIOR_CARDS } from '../../../types';
+import type { InteriorCard } from '../../../types';
 
 /**
- * Standard (compartment grid) and Slotted (divider slots) assume a rectangular
- * interior; Solid (cutouts) is polygon-aware and stays interactive on custom shapes.
+ * Grid Dividers, Bento (compartment grids) and Slotted (divider slots) assume a
+ * rectangular interior; Solid (cutouts) is polygon-aware and stays interactive
+ * on custom shapes.
  */
-const MODES_REQUIRING_RECTANGULAR_SHAPE: ReadonlySet<BinStyle> = new Set(['standard', 'slotted']);
+const CARDS_REQUIRING_RECTANGULAR_SHAPE: ReadonlySet<InteriorCard> = new Set([
+  'standard',
+  'bento',
+  'slotted',
+]);
 
 export function InteriorSection() {
   const { state, handlers } = useInteriorSection();
@@ -38,30 +43,30 @@ export function InteriorSection() {
 
   return (
     <div className="space-y-2">
-      {MODES.map((mode) => {
-        const card = (
+      {INTERIOR_CARDS.map((card) => {
+        const element = (
           <InteriorModeCard
-            key={mode}
-            mode={mode}
-            isExpanded={state.style === mode}
-            onSelect={() => handlers.setStyle(mode)}
+            key={card}
+            card={card}
+            isExpanded={state.card === card}
+            onSelect={() => handlers.selectCard(card)}
           />
         );
-        if (isCustomShape && MODES_REQUIRING_RECTANGULAR_SHAPE.has(mode)) {
+        if (isCustomShape && CARDS_REQUIRING_RECTANGULAR_SHAPE.has(card)) {
           return (
-            <FeatureGate key={mode} disabled reason={customShapeReason}>
-              {card}
+            <FeatureGate key={card} disabled reason={customShapeReason}>
+              {element}
             </FeatureGate>
           );
         }
-        if (mode === 'slotted' && hasAngledDividers) {
+        if (card === 'slotted' && hasAngledDividers) {
           return (
-            <FeatureGate key={mode} disabled reason={slottedAngledReason}>
-              {card}
+            <FeatureGate key={card} disabled reason={slottedAngledReason}>
+              {element}
             </FeatureGate>
           );
         }
-        return card;
+        return element;
       })}
     </div>
   );

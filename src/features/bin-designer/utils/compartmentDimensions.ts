@@ -19,7 +19,7 @@
  */
 
 import type { CompartmentConfig } from '../types';
-import { getCompartmentBounds } from './compartments';
+import { getCompartmentBounds, dividerShift } from './compartments';
 
 /** Format a millimeter value compactly: nearest 0.1mm, dropping a trailing `.0`. */
 export function formatCompactMm(value: number): string {
@@ -115,5 +115,55 @@ export function compartmentCavity(
     yMin,
     yMax,
     ...bounds,
+  };
+}
+
+/**
+ * {@link compartmentCavity} with `dividerOverrides` applied, so the extents
+ * follow walls that have been moved off their grid line.
+ *
+ * Kept separate from `compartmentCavity` rather than folded into it: that one
+ * is documented as mirroring the generator's `cavityCorners` and is consumed by
+ * the 3D dimension overlay, so silently changing what it returns would move a
+ * readout users already rely on. This is what the Bento workspace reads,
+ * because a bento's whole premise is walls that are NOT on the grid — printing
+ * a nominal size there would describe a part nobody is going to get.
+ */
+export function compartmentCavityExact(
+  config: CompartmentConfig,
+  compartmentId: number,
+  innerW: number,
+  innerD: number
+): CompartmentCavity | null {
+  const base = compartmentCavity(config, compartmentId, innerW, innerD);
+  if (!base) return null;
+
+  const { cols, rows } = config;
+  const bounds = {
+    minCol: base.minCol,
+    maxCol: base.maxCol,
+    minRow: base.minRow,
+    maxRow: base.maxRow,
+  };
+  const hasLeft = base.minCol > 0;
+  const hasRight = base.maxCol < cols - 1;
+  const hasBottom = base.minRow > 0;
+  const hasTop = base.maxRow < rows - 1;
+
+  // Sign handling mirrors `compartmentTabXSpan`: a near edge moves WITH the
+  // shift, a far edge moves against it.
+  const xMin = base.xMin + (hasLeft ? dividerShift(config, compartmentId, bounds, 'left') : 0);
+  const xMax = base.xMax + (hasRight ? dividerShift(config, compartmentId, bounds, 'right') : 0);
+  const yMin = base.yMin + (hasBottom ? dividerShift(config, compartmentId, bounds, 'bottom') : 0);
+  const yMax = base.yMax + (hasTop ? dividerShift(config, compartmentId, bounds, 'top') : 0);
+
+  return {
+    ...base,
+    width: Math.max(0, xMax - xMin),
+    depth: Math.max(0, yMax - yMin),
+    xMin,
+    xMax,
+    yMin,
+    yMax,
   };
 }

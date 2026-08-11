@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { planMergedBin } from './mergeBins';
 import { createTestBin, createTestLayout, expectOk, expectErr } from '@/test/testUtils';
 import type { Bin } from '@/core/types';
-import { binId, gridUnits, heightUnits, mm } from '@/core/types';
+import { binId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
 
 function bin(
   id: string,
@@ -343,5 +343,97 @@ describe('planMergedBin', () => {
     const plan = expectOk(planMergedBin([bin('a', 0, 0, 1, 1), bin('b', 1, 0, 1, 1)], layout));
 
     expect(plan.params.compartments.thickness).toBe(1.2);
+  });
+
+  it('takes an explicit divider thickness', () => {
+    const plan = expectOk(
+      planMergedBin([bin('a', 0, 0, 1, 1), bin('b', 1, 0, 1, 1)], layout, {
+        dividerThickness: 2.4,
+      })
+    );
+
+    expect(plan.params.compartments.thickness).toBe(2.4);
+  });
+
+  describe('height', () => {
+    it('defaults to the tallest bin, the only value that cannot crop what one holds', () => {
+      const plan = expectOk(
+        planMergedBin(
+          [
+            bin('a', 0, 0, 1, 1, { height: heightUnits(3) }),
+            bin('b', 1, 0, 1, 1, { height: heightUnits(6) }),
+          ],
+          layout
+        )
+      );
+
+      expect(plan.params.height).toBe(6);
+      expect(plan.warnings.raisedHeightBinIds).toEqual([binId('a')]);
+    });
+
+    it('takes an explicit height and reports every bin it raises', () => {
+      const plan = expectOk(
+        planMergedBin(
+          [
+            bin('a', 0, 0, 1, 1, { height: heightUnits(3) }),
+            bin('b', 1, 0, 1, 1, { height: heightUnits(6) }),
+          ],
+          layout,
+          { heightUnits: 9 }
+        )
+      );
+
+      expect(plan.params.height).toBe(9);
+      expect(plan.warnings.raisedHeightBinIds).toEqual([binId('a'), binId('b')]);
+    });
+  });
+
+  describe('trapped bins', () => {
+    const inside = bin('trapped', 1, 0, 1, 1);
+    const chosenPair = [bin('a', 0, 0, 1, 1), bin('c', 2, 0, 1, 1)];
+
+    it('reports an unchosen bin standing inside the footprint', () => {
+      // The piece spans x 0..3, so 'trapped' at x=1 is built straight through.
+      const plan = expectOk(
+        planMergedBin(chosenPair, createTestLayout({ bins: [...chosenPair, inside] }))
+      );
+
+      expect(plan.warnings.trappedBinIds).toEqual([binId('trapped')]);
+    });
+
+    it('ignores bins outside the footprint', () => {
+      const outside = bin('outside', 8, 0, 1, 1);
+      const plan = expectOk(
+        planMergedBin(chosenPair, createTestLayout({ bins: [...chosenPair, outside] }))
+      );
+
+      expect(plan.warnings.trappedBinIds).toEqual([]);
+    });
+
+    it('ignores bins on other layers, which sit at a different height', () => {
+      const elsewhere = bin('other-layer', 1, 0, 1, 1, { layerId: layerId('layer2') });
+      const plan = expectOk(
+        planMergedBin(chosenPair, createTestLayout({ bins: [...chosenPair, elsewhere] }))
+      );
+
+      expect(plan.warnings.trappedBinIds).toEqual([]);
+    });
+
+    it('never reports a chosen bin as trapped', () => {
+      const three = [...chosenPair, inside];
+      const plan = expectOk(planMergedBin(three, createTestLayout({ bins: three })));
+
+      expect(plan.warnings.trappedBinIds).toEqual([]);
+    });
+
+    it('treats a merely touching bin as clear, not trapped', () => {
+      // Edge-adjacent at x=3 shares a boundary but no area.
+      const touching = bin('touching', 3, 0, 1, 1);
+      const plan = expectOk(
+        planMergedBin(chosenPair, createTestLayout({ bins: [...chosenPair, touching] }))
+      );
+
+      expect(plan.warnings.trappedBinIds).toEqual([]);
+    });
   });
 });

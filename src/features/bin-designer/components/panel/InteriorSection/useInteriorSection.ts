@@ -2,14 +2,17 @@ import { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { resolveConstraints } from '@/shared/constraints';
-import type { BinStyle } from '../../../types';
+import { cardToStyle } from '../../../types';
+import type { BinStyle, InteriorCard } from '../../../types';
 
 export function useInteriorSection() {
-  const { style, params, setParams } = useDesignerStore(
+  const { style, params, setParams, card, setInteriorCard } = useDesignerStore(
     useShallow((s) => ({
       style: s.params.style,
       params: s.params,
       setParams: s.setParams,
+      card: s.ui.interiorCard,
+      setInteriorCard: s.setInteriorCard,
     }))
   );
 
@@ -46,11 +49,26 @@ export function useInteriorSection() {
     [style, params, setParams]
   );
 
+  /**
+   * Selecting a card always records the card, then reconciles the style.
+   * Bento and Grid Dividers both resolve to `'standard'`, so switching between
+   * them is a pure UI move — `setStyle` no-ops and no params change, which is
+   * what keeps toggling between the two from touching the design or the undo
+   * stack.
+   */
+  const selectCard = useCallback(
+    (next: InteriorCard) => {
+      setInteriorCard(next);
+      setStyle(cardToStyle(next));
+    },
+    [setInteriorCard, setStyle]
+  );
+
   const isSlotted = style === 'slotted';
   const isSolid = style === 'solid';
 
   return {
-    state: { style, isSlotted, isSolid },
-    handlers: { setStyle },
+    state: { style, card, isSlotted, isSolid },
+    handlers: { setStyle, selectCard },
   };
 }

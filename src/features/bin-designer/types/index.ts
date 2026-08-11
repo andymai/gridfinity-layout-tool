@@ -179,6 +179,7 @@ export { TECHNIQUE_CONFIG } from '@/shared/types/exampleTechniques';
 export * from './base';
 export * from './dividers';
 export * from './compartments';
+export * from './interior';
 export * from './labelTabs';
 export * from './handles';
 export * from './walls';

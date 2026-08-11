@@ -17,7 +17,7 @@ import type { BinId, CategoryId, GridUnits, LayerId } from '@/core/types';
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
-import { MergeBinsDialog } from '@/features/design-linking';
+import { MakeBentoDialog } from '@/features/design-linking';
 
 interface MultiBinContextMenuProps {
   binIds: BinId[];
@@ -329,7 +329,7 @@ export function MultiBinContextMenu({
         />
       </div>
       {showMergeDialog && (
-        <MergeBinsDialog
+        <MakeBentoDialog
           open
           scope="selection"
           onClose={() => {

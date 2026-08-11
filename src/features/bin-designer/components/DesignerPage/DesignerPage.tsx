@@ -81,6 +81,7 @@ export function DesignerPage() {
 
   const { isDesktop, isMobile, isLandscape } = useResponsive();
   const cutoutEditorOpen = useDesignerStore((s) => s.ui.cutoutEditorOpen);
+  const bentoWorkspaceOpen = useDesignerStore((s) => s.ui.bentoWorkspaceOpen);
   const designListOpen = useDesignerStore((s) => s.ui.designListOpen);
   const setDesignListOpen = useDesignerStore((s) => s.setDesignListOpen);
 
@@ -125,6 +126,7 @@ export function DesignerPage() {
         isMobile={isMobile}
         isLandscape={isLandscape}
         cutoutEditorOpen={cutoutEditorOpen}
+        bentoWorkspaceOpen={bentoWorkspaceOpen}
       />
 
       {/* First-run orientation card (desktop/tablet — mobile has no room for it) */}

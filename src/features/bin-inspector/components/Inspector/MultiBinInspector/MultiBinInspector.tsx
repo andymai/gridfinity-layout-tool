@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { STAGING_ID, DEFAULT_CATEGORY_COLOR, CONSTRAINTS } from '@/core/constants';
 import { getGridBins } from '@/shared/utils';
 import { isBinLocked } from '@/shared/utils/binLocation';
@@ -8,6 +8,16 @@ import { BulkIncrementControl } from '@/shared/components/BulkIncrementControl';
 import { Button, IconButton, Input, Select, XIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { formatHeightUnits } from '@/shared/utils/heightUnits';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
+import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
+
+// Lazy, matching SingleBinInspector's linked-design section: the dialog pulls
+// in the whole merge planner and most selections never open it.
+const MakeBentoDialog = lazyWithRetry(() =>
+  import('@/features/design-linking/components/Dialogs/MakeBentoDialog').then(
+    namedExport('MakeBentoDialog')
+  )
+);
 
 const formatMm = (units: number, heightUnitMm: number): string =>
   String(Number((units * heightUnitMm).toFixed(1)));
@@ -40,6 +50,8 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
     existingPropertyKeys,
   } = inspector;
 
+  const [showBento, setShowBento] = useState(false);
+  const bentoEnabled = useFeatureFlag('merge_bins_to_design');
   const [showPropertyForm, setShowPropertyForm] = useState(false);
   const [propertyKey, setPropertyKey] = useState('');
   const [propertyValue, setPropertyValue] = useState('');
@@ -330,6 +342,17 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
         </div>
 
         {/* Actions */}
+        {bentoEnabled && selectedBins.length > 1 && (
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={() => setShowBento(true)}
+            className={`w-full ${isMobile ? 'h-12' : ''}`}
+          >
+            {t('mobile.binMenu.mergeIntoOne')}
+          </Button>
+        )}
+
         <div className="flex gap-2">
           {canMoveToStaging && (
             <Button
@@ -350,6 +373,12 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
             {t('inspector.deleteAll')}
           </Button>
         </div>
+
+        {showBento && (
+          <Suspense fallback={null}>
+            <MakeBentoDialog open scope="selection" onClose={() => setShowBento(false)} />
+          </Suspense>
+        )}
       </div>
     </div>
   );

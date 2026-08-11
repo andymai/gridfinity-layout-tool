@@ -6,13 +6,13 @@ import { useMutations } from '@/shared/contexts';
 import { useResponsive } from '@/shared/hooks';
 import { useCollabMode } from '@/shared/hooks/useCollabMode';
 import { CONSTRAINTS, DEFAULT_LAYOUT_NAME } from '@/core/constants';
-import { activePress, Button, IconButton, InlineEditText, Menu, Tooltip } from '@/design-system';
+import { activePress, Button, IconButton, InlineEditText, Tooltip } from '@/design-system';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { ShareButton } from '@/features/cloud-share/components/ShareButton';
 import { ShareModal } from '@/features/cloud-share/components/ShareModal';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { LayoutQuickSwitch } from '@/features/layout-library';
-import { getLinkedBins, MergeBinsDialog } from '@/features/design-linking';
+import { getLinkedBins, MakeBentoDialog } from '@/features/design-linking';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
@@ -94,7 +94,7 @@ export function Header({ saveStatus }: HeaderProps) {
   const canExportLayout = useMemo(() => getLinkedBins(layout.bins).length > 0, [layout.bins]);
 
   const [showMergeDialog, setShowMergeDialog] = useState(false);
-  const mergeEnabled = useFeatureFlag('merge_bins_to_design');
+  const bentoEnabled = useFeatureFlag('merge_bins_to_design');
   // Platform detection for keyboard shortcut hints
   const isMac = typeof navigator !== 'undefined' && /mac/i.test(navigator.userAgent);
   const modKey = isMac ? '⌘' : 'Ctrl';
@@ -173,6 +173,43 @@ export function Header({ saveStatus }: HeaderProps) {
             <span>{t('header.export')}</span>
           </Button>
         </Tooltip>
+
+        {/* Bento — a top-level action, not a support-menu item: turning a
+            drawer into one printed tray is layout work, and it was unfindable
+            next to the documentation links. */}
+        {bentoEnabled && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              trackEvent('ui.modalOpen', { modal: 'mergeBins', source: 'header' });
+              setShowMergeDialog(true);
+            }}
+            className={`px-2 h-8 text-sm gap-1.5 ${activePress} text-content-secondary`}
+            title={t('designLinking.bento.title')}
+            aria-label={t('designLinking.bento.title')}
+            leftIcon={
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <path d="M13 3v18" />
+                <path d="M3 11h10" />
+                <path d="M13 14h8" />
+              </svg>
+            }
+          >
+            {!isTablet && (
+              <span className="hidden sm:inline">{t('designLinking.bento.title')}</span>
+            )}
+          </Button>
+        )}
       </div>
 
       <div className="flex items-center gap-1 flex-shrink-0">
@@ -282,20 +319,7 @@ export function Header({ saveStatus }: HeaderProps) {
 
         <div className="w-px h-6 bg-stroke-subtle mx-2" />
 
-        <HeaderSupportLinks
-          leadingItems={
-            mergeEnabled ? (
-              <Menu.Item
-                onClick={() => {
-                  trackEvent('ui.modalOpen', { modal: 'mergeBins', source: 'header' });
-                  setShowMergeDialog(true);
-                }}
-              >
-                {t('mobile.binMenu.mergeIntoOne')}
-              </Menu.Item>
-            ) : undefined
-          }
-        />
+        <HeaderSupportLinks />
       </div>
 
       {/* Lazy-loaded modals - only load chunks when modal is opened */}
@@ -337,7 +361,7 @@ export function Header({ saveStatus }: HeaderProps) {
       )}
 
       {showMergeDialog && (
-        <MergeBinsDialog open scope="layer" onClose={() => setShowMergeDialog(false)} />
+        <MakeBentoDialog open scope="layer" onClose={() => setShowMergeDialog(false)} />
       )}
     </header>
   );

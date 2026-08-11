@@ -4,7 +4,7 @@
 
 import type { Draft } from 'immer';
 import type { DesignerState, SaveStatus, ExportFileNameConfig, SavedDesign } from '../../types';
-import { THUMBNAIL_VERSION } from '../../types';
+import { THUMBNAIL_VERSION, deriveInteriorCard } from '../../types';
 import { migrateParams } from '../../constants';
 import { DEFAULT_EXPORT_FILE_NAME_CONFIG } from '../../utils/fileNaming';
 import { defaultsForNewDesign, paramsNeedHalfGridMode, setPendingMeshCache } from '../helpers';
@@ -73,6 +73,8 @@ export function createPersistenceSlice(set: Set) {
         state.generation.epoch += 1;
         state.itemKind = kind;
         state.ui.shapeEditorOpen = false;
+        state.ui.bentoWorkspaceOpen = false;
+        state.ui.interiorCard = 'standard';
 
         state.lineage = null;
 
@@ -163,6 +165,12 @@ export function createPersistenceSlice(set: Set) {
         // saved designs doesn't leak the previous session's toggles.
         state.ui.halfGridMode = paramsNeedHalfGridMode(migrated);
         state.ui.shapeEditorOpen = isPartialMask(migrated.cellMask);
+        // Same reasoning for the interior card: Bento and Grid Dividers are
+        // both `style: 'standard'`, so only the loaded params can say which
+        // surface this design was authored on. Seeded here and sticky after,
+        // because a cell renumber drops the overrides it derives from.
+        state.ui.interiorCard = deriveInteriorCard(migrated.style, migrated.compartments);
+        state.ui.bentoWorkspaceOpen = false;
         setPendingMeshCache(null);
       });
     },
