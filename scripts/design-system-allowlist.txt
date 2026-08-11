@@ -4,9 +4,19 @@
 # (<button>, <select>, <input type="checkbox">, text <input>). The
 # check:design-system gate is ENABLED — any new raw element is blocked.
 #
-# Migration is complete: there are no grandfathered files. Feature and
-# component code uses the design system:
-#   import { Button, IconButton, Select, Input, Checkbox } from '@/design-system';
+# The files below predate a fix to the checker itself. Until #3416 the check
+# grepped line by line, so it only saw `<input type="checkbox">` when the tag
+# and the attribute landed on the SAME line — and Prettier routinely splits
+# them. These five raw checkboxes were invisible to the gate the whole time.
+#
+# They are listed rather than migrated so that the checker fix stays a checker
+# fix; swapping them to <Checkbox> changes four panels' markup and belongs in
+# its own change. Delete each line as its file is migrated.
 #
 # To grant a temporary exception, add the file path below (one per line),
 # then delete it once the file is migrated.
+
+src/features/bin-designer/components/panel/HandleSection/HandleSection.tsx
+src/features/bin-designer/components/panel/LidGripControls/LidGripControls.tsx
+src/features/bin-designer/components/panel/WallCutoutsSection/WallCutoutsSection.tsx
+src/shared/components/ExportDialog/ExportDialog.tsx
