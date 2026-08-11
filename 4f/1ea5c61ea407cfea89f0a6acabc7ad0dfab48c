@@ -1,0 +1,68 @@
+src/features/bin-designer/hooks/useBentoQuickstart.test.ts
+  s_c8797b5dd06871::t_7e1f4197ed56df 1-4,8-21,23-24,28-29
+  s_c8797b5dd06871::t_4b349ddc0f5165 5-7,22,25-27
+src/features/bin-designer/components/BentoWorkspace/BentoWorkspace.test.tsx
+  s_c8797b5dd06871::t_b2af0faa3f0f0a 9-10,62-72,90,147-164,166
+  s_c8797b5dd06871::t_663e99ed1d1e77 165,167
+src/features/bin-designer/components/BentoWorkspace/BentoQuickstartOverlay.tsx
+  s_c8797b5dd06871::t_2cb14b3e5fa70e 1-71
+src/features/bin-designer/components/BentoWorkspace/BentoQuickstartOverlay.test.tsx
+  s_c8797b5dd06871::t_58ce493a869c0e 1-47
+src/i18n/locales/it.json
+  s_c8797b5dd06871::t_2e7b7b88e47d7d 865-868
+src/i18n/locales/pt-BR.json
+  s_c8797b5dd06871::t_2e7b7b88e47d7d 865-868
+src/features/bin-designer/components/BentoWorkspace/BentoWorkspace.tsx
+  s_c8797b5dd06871::t_119ae6a11177b5 23-24,33,52,56,98
+  s_c8797b5dd06871::t_5eb44cc43eb0a0 99
+src/i18n/locales/es.json
+  s_c8797b5dd06871::t_2e7b7b88e47d7d 865-868
+src/features/bin-designer/hooks/quickstartFlag.ts
+  s_c8797b5dd06871::t_85f38ff8b3f365 1-59
+src/i18n/locales/nb.json
+  s_c8797b5dd06871::t_2e7b7b88e47d7d 865-868
+src/i18n/locales/pl.json
+  s_c8797b5dd06871::t_2e7b7b88e47d7d 865-868
+src/features/bin-designer/hooks/useBentoQuickstart.ts
+  s_c8797b5dd06871::t_acfe132febe8b5 1-20
+src/i18n/locales/fr.json
+  s_c8797b5dd06871::t_2e7b7b88e47d7d 865-868
+src/i18n/locales/ko.json
+  s_c8797b5dd06871::t_2e7b7b88e47d7d 865-868
+src/i18n/locales/zh-CN.json
+  s_c8797b5dd06871::t_2e7b7b88e47d7d 865-868
+src/i18n/locales/ja.json
+  s_c8797b5dd06871::t_2e7b7b88e47d7d 865-868
+src/i18n/locales/de.json
+  s_c8797b5dd06871::t_2e7b7b88e47d7d 865-868
+src/i18n/locales/cs.json
+  s_c8797b5dd06871::t_2e7b7b88e47d7d 865-868
+src/i18n/locales/nl.json
+  s_c8797b5dd06871::t_2e7b7b88e47d7d 865-868
+src/i18n/locales/en.ts
+  s_c8797b5dd06871::t_26dff4e8e726e2 2708-2711
+src/i18n/locales/sv.json
+  s_c8797b5dd06871::t_2e7b7b88e47d7d 865-868
+src/core/labs/features.ts
+  s_c8797b5dd06871::t_30ef8cf530a9b7 228-230,232,234,238
+src/features/bin-designer/hooks/quickstartFlag.test.ts
+  s_c8797b5dd06871::t_d5e675ec1f53a4 1-59
+src/i18n/locales/uk.json
+  s_c8797b5dd06871::t_2e7b7b88e47d7d 865-868
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "4f1ea5c61ea407cfea89f0a6acabc7ad0dfab48c",
+  "prompts": {},
+  "sessions": {
+    "s_c8797b5dd06871": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7ca1e340-9a92-4182-8bfc-ac6b7bbe0f30",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
