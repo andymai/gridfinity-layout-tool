@@ -38,7 +38,13 @@ export function BentoWorkspace() {
   // Reuse the panel inspector's divider rows: they already carry the geometry
   // envelope, the committed angle and the shift a drag starts from.
   const { rows, handlers } = useDividerTiltSubsection();
-  const drag = useDividerDrag(box.scaleX, box.scaleY, handlers.previewTilt, handlers.commitTilt);
+  const drag = useDividerDrag(
+    box.scaleX,
+    box.scaleY,
+    handlers.previewTilt,
+    handlers.commitTilt,
+    handlers.cancelTilt
+  );
 
   const onDividerDragStart = useCallback(
     (key: string, event: React.PointerEvent) => {

@@ -55,7 +55,7 @@ vi.mock('./useBentoCanvasBox', () => ({
 vi.mock('../CompartmentEditor/useDividerTiltSubsection', () => ({
   useDividerTiltSubsection: () => ({
     rows: [{ key: '0-1', axis: 'vertical', angleDeg: 0, shiftMm: 0, geometry: {} }],
-    handlers: { previewTilt: vi.fn(), commitTilt: vi.fn() },
+    handlers: { previewTilt: vi.fn(), commitTilt: vi.fn(), cancelTilt: vi.fn() },
   }),
 }));
 

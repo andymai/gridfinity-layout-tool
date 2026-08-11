@@ -24,11 +24,11 @@ function makeRow(axis: 'vertical' | 'horizontal', overrides: Partial<TiltRow> = 
 // 2 px per mm on both axes keeps the arithmetic obvious.
 const SCALE = 2;
 
-function mountDrag(previewTilt = vi.fn(), commitTilt = vi.fn()) {
+function mountDrag(previewTilt = vi.fn(), commitTilt = vi.fn(), cancelTilt = vi.fn()) {
   let handlers: DividerDragHandlers | null = null;
 
   function Harness() {
-    handlers = useDividerDrag(SCALE, SCALE, previewTilt, commitTilt);
+    handlers = useDividerDrag(SCALE, SCALE, previewTilt, commitTilt, cancelTilt);
     return createElement('div', {
       'data-testid': 'handle',
       onPointerDown: (e: React.PointerEvent) => handlers?.onDragStart(currentRow, e),
@@ -41,6 +41,8 @@ function mountDrag(previewTilt = vi.fn(), commitTilt = vi.fn()) {
   return {
     previewTilt,
     commitTilt,
+    cancelTilt,
+    unmount: utils.unmount,
     get draggingKey() {
       return handlers?.draggingKey ?? null;
     },
@@ -191,5 +193,30 @@ describe('useDividerDrag', () => {
 
     expect(d.commitTilt).toHaveBeenCalledTimes(1);
     expect(d.draggingKey).toBeNull();
+  });
+
+  it('drops the preview when the workspace closes mid-drag', () => {
+    const d = mountDrag();
+    d.start(makeRow('vertical'), 100, 100);
+    d.move(120, 100);
+
+    act(() => {
+      d.unmount();
+    });
+
+    // Cancelled, not committed: the wall was never released, so an override
+    // here would write a position the user did not confirm.
+    expect(d.cancelTilt).toHaveBeenCalledTimes(1);
+    expect(d.commitTilt).not.toHaveBeenCalled();
+  });
+
+  it('leaves the preview alone when nothing was being dragged', () => {
+    const d = mountDrag();
+
+    act(() => {
+      d.unmount();
+    });
+
+    expect(d.cancelTilt).not.toHaveBeenCalled();
   });
 });

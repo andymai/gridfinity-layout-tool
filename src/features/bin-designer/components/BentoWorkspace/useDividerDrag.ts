@@ -65,7 +65,8 @@ export function useDividerDrag(
     row: TiltRow,
     next: { angleDeg: number; shiftMm: number },
     source?: 'panel_input' | 'canvas_drag'
-  ) => void
+  ) => void,
+  cancelTilt: () => void
 ): DividerDragHandlers {
   const [draggingKey, setDraggingKey] = useState<string | null>(null);
   const dragRef = useRef<DragState | null>(null);
@@ -74,10 +75,12 @@ export function useDividerDrag(
   // re-running the effect would tear down the listeners between pointermoves.
   const previewRef = useRef(previewTilt);
   const commitRef = useRef(commitTilt);
+  const cancelRef = useRef(cancelTilt);
   useEffect(() => {
     previewRef.current = previewTilt;
     commitRef.current = commitTilt;
-  }, [previewTilt, commitTilt]);
+    cancelRef.current = cancelTilt;
+  }, [previewTilt, commitTilt, cancelTilt]);
 
   const shiftFor = useCallback(
     (e: PointerEvent, drag: DragState): number => {
@@ -128,6 +131,21 @@ export function useDividerDrag(
       window.removeEventListener('pointercancel', onUp);
     };
   }, [draggingKey, shiftFor]);
+
+  // Mount-scoped so it runs only on teardown: the listener effect above
+  // re-subscribes whenever the canvas is remeasured, and its cleanup cannot
+  // tell a re-subscribe from an unmount. Escape closes the workspace with the
+  // pointer still down, and once the listeners are gone `pointerup` never
+  // arrives to clear the preview — which outlives this canvas, so the next one
+  // to show divider handles would paint a wall where it isn't.
+  useEffect(
+    () => () => {
+      if (!dragRef.current) return;
+      dragRef.current = null;
+      cancelRef.current();
+    },
+    []
+  );
 
   const onDragStart = useCallback((row: TiltRow, event: React.PointerEvent) => {
     if (!row.geometry) return;

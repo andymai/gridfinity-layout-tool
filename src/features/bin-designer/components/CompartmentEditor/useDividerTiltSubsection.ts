@@ -170,6 +170,13 @@ export function useDividerTiltSubsection() {
     [setDividerTiltPreview]
   );
 
+  // Abandon an in-flight drag: drop the preview without writing an override.
+  // The preview lives in the store, so it outlives the canvas that painted it —
+  // an interrupted drag would otherwise leave a wall drawn somewhere it isn't.
+  const cancelTilt = useCallback(() => {
+    setDividerTiltPreview(null);
+  }, [setDividerTiltPreview]);
+
   // Commit: clamp, write the real override (one history entry), drop preview.
   const commitTilt = useCallback(
     (row: TiltRow, next: AngleShift, source: 'panel_input' | 'canvas_drag' = 'panel_input') => {
@@ -218,6 +225,7 @@ export function useDividerTiltSubsection() {
       hoverDivider,
       previewTilt,
       commitTilt,
+      cancelTilt,
       resetRow,
       resetAll,
     },
