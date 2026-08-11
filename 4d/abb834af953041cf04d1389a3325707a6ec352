@@ -1,0 +1,19 @@
+src/shell/Modals/DesignGalleryModal/DesignGalleryModal.tsx
+  s_43de54381c6a74::t_bc90188e844560 81-83
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "4dabb834af953041cf04d1389a3325707a6ec352",
+  "prompts": {},
+  "sessions": {
+    "s_43de54381c6a74": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7f79ba8b-679d-4023-9205-9ed707886872",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
