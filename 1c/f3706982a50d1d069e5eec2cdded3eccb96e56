@@ -1,0 +1,43 @@
+src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
+  s_13df2c0005cd75::t_5498a0a939aebb 590-594,600-617
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_13df2c0005cd75::t_a8a6eb6684ba0e 642
+src/shared/generation/meshPersistence.ts
+  s_13df2c0005cd75::t_ef089bc776dc4f 42-43,49
+api/lib/designerValidation.ts
+  s_13df2c0005cd75::t_3330b29eb12e9b 376-385
+src/features/generation/worker/generators/dividerPatterns.ts
+  s_13df2c0005cd75::t_ef089bc776dc4f 252-256
+  s_13df2c0005cd75::t_83e3259a2e489a 214-218,235-240,257
+src/features/generation/worker/generators/dividerPatterns.test.ts
+  s_13df2c0005cd75::t_a69cfc40fbc569 239-266,270-280
+  s_13df2c0005cd75::t_90a20d4cb6241f 267-269
+src/features/bin-designer/components/panel/LidSection/useLidSection.helpers.ts
+  s_13df2c0005cd75::t_09ef740e0797e6 197-201
+api/lib/designerValidation.test.ts
+  s_2c51b92e8c5547::t_f526d7ae132199 1476-1496
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "1cf3706982a50d1d069e5eec2cdded3eccb96e56",
+  "prompts": {},
+  "sessions": {
+    "s_13df2c0005cd75": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d24b17f0-5df1-4244-a105-d33cb0ec4ae8",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_2c51b92e8c5547": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a173b1362bd88a909",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
