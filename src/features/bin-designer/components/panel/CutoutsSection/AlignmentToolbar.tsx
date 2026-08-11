@@ -8,7 +8,7 @@
 
 import { useState } from 'react';
 import type { Cutout, GroupOp, ReorderDirection } from '@/features/bin-designer/types';
-import { Button, IconButton } from '@/design-system';
+import { Button, IconButton, Input } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import {
   computeBounds,
@@ -315,11 +315,12 @@ export function AlignmentToolbar({
         </Button>
         <label className="flex items-center gap-1 text-[11px] text-content-tertiary">
           {t('binDesigner.cutouts.gap')}
-          <input
+          <Input
             type="number"
             value={gap}
             onChange={(e) => setGap(Math.max(0, Number(e.target.value)))}
-            className="w-12 rounded border border-stroke-subtle bg-surface px-1.5 py-0.5 text-xs text-content"
+            size="sm"
+            wrapperClassName="w-12"
             min={0}
             max={20}
             step={0.5}

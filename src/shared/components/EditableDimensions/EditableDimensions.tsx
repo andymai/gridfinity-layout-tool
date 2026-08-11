@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Button } from '@/design-system';
+import { Button, Input } from '@/design-system';
 import { PencilIcon } from '@/design-system/Icon';
 import { clamp as clampRange } from '@/shared/utils/math';
 
@@ -72,10 +72,14 @@ export function EditableDimensions({
     variant === 'secondary'
       ? 'text-xs text-content-secondary'
       : 'text-sm font-semibold text-content';
-  const inputClass =
+  // The accent border and ring are kept on the wrapper rather than left to
+  // `focus-within`: these only render while editing, and all of them carried
+  // the accent at once even though just one holds focus.
+  const inputWrapperClass = 'w-14 border-accent ring-1 ring-accent';
+  const inputTextClass =
     variant === 'secondary'
-      ? 'w-14 rounded border border-accent bg-surface px-1 py-0.5 text-center text-xs tabular-nums text-content outline-none ring-1 ring-accent'
-      : 'w-14 rounded border border-accent bg-surface px-1 py-0.5 text-center text-sm font-semibold tabular-nums text-content outline-none ring-1 ring-accent';
+      ? 'text-center text-xs tabular-nums'
+      : 'text-center text-sm font-semibold tabular-nums';
   const hasHeight = heightMm !== undefined;
   const [editing, setEditing] = useState(false);
   const [localWidth, setLocalWidth] = useState('');
@@ -162,7 +166,7 @@ export function EditableDimensions({
         role="group"
         aria-label={ariaLabel}
       >
-        <input
+        <Input
           ref={widthRef}
           type="number"
           inputMode="decimal"
@@ -172,11 +176,13 @@ export function EditableDimensions({
           onKeyDown={handleKeyDown}
           min={minMm}
           max={maxMm}
-          className={inputClass}
+          size="sm"
+          wrapperClassName={inputWrapperClass}
+          className={inputTextClass}
           aria-label={widthLabel}
         />
         <span className={separatorClass}>&times;</span>
-        <input
+        <Input
           type="number"
           inputMode="decimal"
           step={0.1}
@@ -185,13 +191,15 @@ export function EditableDimensions({
           onKeyDown={handleKeyDown}
           min={minMm}
           max={maxMm}
-          className={inputClass}
+          size="sm"
+          wrapperClassName={inputWrapperClass}
+          className={inputTextClass}
           aria-label={depthLabel}
         />
         {hasHeight && (
           <>
             <span className={separatorClass}>&times;</span>
-            <input
+            <Input
               type="number"
               inputMode="decimal"
               step={0.1}
@@ -200,7 +208,9 @@ export function EditableDimensions({
               onKeyDown={handleKeyDown}
               min={minHeightMm ?? minMm}
               max={maxHeightMm ?? maxMm}
-              className={inputClass}
+              size="sm"
+              wrapperClassName={inputWrapperClass}
+              className={inputTextClass}
               aria-label={heightLabel}
             />
           </>

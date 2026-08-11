@@ -9,7 +9,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from '@/i18n';
-import { Button, IconButton, XIcon } from '@/design-system';
+import { Button, IconButton, Input, XIcon } from '@/design-system';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { STYLES, getModifierKey } from './helpModalStyles';
 import { SHORTCUT_CATEGORIES } from './helpModalShortcutData';
@@ -162,12 +162,14 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                     />
                   ))}
                 </svg>
-                <input
-                  type="text"
+                <Input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={t('help.searchPlaceholder')}
-                  className="w-full pl-9 pr-3 py-1.5 text-sm rounded-md bg-surface border border-stroke-subtle text-content placeholder:text-content-tertiary"
+                  fullWidth
+                  // The search icon stays absolutely positioned alongside the
+                  // clear button, so the inner input keeps its own padding.
+                  className="pl-9 pr-3"
                 />
                 {searchQuery && (
                   <IconButton

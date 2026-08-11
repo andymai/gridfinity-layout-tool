@@ -13,7 +13,7 @@
 import { useState } from 'react';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
-import { Button } from '@/design-system';
+import { Button, Input } from '@/design-system';
 import { flipSelectionHorizontal, flipSelectionVertical } from './geometryFlips';
 import { buildGroupRotationUpdates } from './pathfinderHelpers';
 import { getSegmentClass } from '@/shared/components/segmentedControlClasses';
@@ -139,9 +139,11 @@ export function TransformControls({
           <path d="M7 13l-2-2 2-2" />
         </svg>
       )}
-      <input
+      <Input
         type="number"
-        className="w-12 rounded border border-stroke-subtle bg-surface px-1 py-0.5 text-[11px] text-content disabled:opacity-50"
+        size="sm"
+        wrapperClassName="w-12"
+        className="text-[11px]"
         value={angle}
         min={-359}
         max={359}

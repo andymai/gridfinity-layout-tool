@@ -1,6 +1,6 @@
 import { useId, useState } from 'react';
 import { CONSTRAINTS } from '@/core/constants';
-import { Button } from '@/design-system';
+import { Button, Input } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { solveHeightUnitMm, stackedTotalMm, STACK_LIP_MM } from '@/shared/utils/heightUnits';
 // Relative, not via the '@/shared/components' barrel — this file is inside it.
@@ -51,10 +51,11 @@ export function HeightUnitSolver({
   const stackTotalMm =
     suggested !== null ? round2(stackedTotalMm(unitsPerBin, suggested, bins)) : 0;
 
-  const inputClass =
-    variant === 'mobile'
-      ? 'input w-20 h-10 text-center'
-      : 'input w-14 py-0.5 px-1 text-xs text-right';
+  // Split across the component's slots: the box is the wrapper, the alignment
+  // belongs to the inner input.
+  const inputSize = variant === 'mobile' ? 'md' : 'sm';
+  const inputWrapperClass = variant === 'mobile' ? 'w-20 h-10' : 'w-14';
+  const inputTextClass = variant === 'mobile' ? 'text-center' : 'text-right';
 
   // Raw inputs rather than DeferredNumberInput: the solve previews live as you
   // type, and `target` starts empty (no suggestion until asked), neither of
@@ -65,7 +66,7 @@ export function HeightUnitSolver({
         {t('stackSolver.description', { lip: round2(STACK_LIP_MM) })}
       </p>
       <SettingsRow label={t('stackSolver.targetLabel')} htmlFor={`${uid}-target`} variant={variant}>
-        <input
+        <Input
           id={`${uid}-target`}
           type="number"
           inputMode="decimal"
@@ -73,19 +74,23 @@ export function HeightUnitSolver({
           value={target}
           onChange={(e) => setTarget(e.target.value)}
           placeholder={TARGET_PLACEHOLDER_MM}
-          className={inputClass}
+          size={inputSize}
+          wrapperClassName={inputWrapperClass}
+          className={inputTextClass}
           aria-label={t('stackSolver.targetLabel')}
         />
       </SettingsRow>
       <SettingsRow label={t('stackSolver.binsLabel')} htmlFor={`${uid}-bins`} variant={variant}>
-        <input
+        <Input
           id={`${uid}-bins`}
           type="number"
           min={1}
           step={1}
           value={bins}
           onChange={(e) => setBins(Math.max(1, Math.round(Number(e.target.value) || 1)))}
-          className={inputClass}
+          size={inputSize}
+          wrapperClassName={inputWrapperClass}
+          className={inputTextClass}
           aria-label={t('stackSolver.binsLabel')}
         />
       </SettingsRow>
@@ -94,14 +99,16 @@ export function HeightUnitSolver({
         htmlFor={`${uid}-units`}
         variant={variant}
       >
-        <input
+        <Input
           id={`${uid}-units`}
           type="number"
           min={1}
           step={1}
           value={unitsPerBin}
           onChange={(e) => setUnitsPerBin(Math.max(1, Math.round(Number(e.target.value) || 1)))}
-          className={inputClass}
+          size={inputSize}
+          wrapperClassName={inputWrapperClass}
+          className={inputTextClass}
           aria-label={t('stackSolver.unitsPerBinLabel')}
         />
       </SettingsRow>
