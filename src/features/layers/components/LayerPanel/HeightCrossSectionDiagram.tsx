@@ -3,7 +3,7 @@ import type { KeyboardEvent } from 'react';
 import type { Layer, LayerId } from '@/core/types';
 import { CONSTRAINTS } from '@/core/constants';
 import { clamp } from '@/shared/utils/math';
-import { IconButton } from '@/design-system';
+import { IconButton, Input } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 const HEIGHT_EXPONENT = 0.55;
@@ -323,9 +323,8 @@ export function HeightCrossSectionDiagram({
                   {isActive && segH >= 20 ? (
                     <>
                       {isEditing ? (
-                        <input
+                        <Input
                           ref={nameInputRef}
-                          type="text"
                           value={layer.name}
                           onChange={(e) => {
                             e.stopPropagation();
@@ -337,7 +336,9 @@ export function HeightCrossSectionDiagram({
                             if (e.key === 'Enter') onEditingEnd();
                           }}
                           onClick={(e) => e.stopPropagation()}
-                          className="flex-1 bg-surface-elevated rounded px-1 py-0.5 text-xs font-medium outline-none text-content min-w-0"
+                          size="sm"
+                          wrapperClassName="min-w-0 flex-1"
+                          className="px-1 text-xs font-medium"
                           aria-label={t('layers.layerNamePlaceholder')}
                         />
                       ) : (

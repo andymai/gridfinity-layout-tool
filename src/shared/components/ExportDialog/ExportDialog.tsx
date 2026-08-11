@@ -8,7 +8,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
-import { Button, Checkbox } from '@/design-system';
+import { Button, Checkbox, Input } from '@/design-system';
 import { Dialog } from '@/design-system/Dialog';
 import { ProgressBar } from '@/design-system/ProgressBar';
 import { useTranslation } from '@/i18n';
@@ -230,12 +230,14 @@ export function ExportDialog({
               </label>
               <div className="flex items-center rounded-md border border-stroke-subtle bg-surface">
                 {fileNameConfig.style === 'custom' ? (
-                  <input
+                  <Input
                     ref={customInputRef}
-                    type="text"
                     value={fileNameConfig.customName}
                     onChange={(e) => handleCustomNameChange(e.target.value)}
-                    className="min-w-0 flex-1 bg-transparent px-3 py-2 text-sm text-content outline-none"
+                    // This field sits inside a row that already draws the
+                    // border and background, so the component's own chrome is
+                    // stripped rather than nested inside it.
+                    wrapperClassName="min-w-0 flex-1 border-0 bg-transparent focus-within:ring-0"
                     placeholder={t('export.filenamePlaceholder')}
                     aria-label={t('export.customFileName')}
                     maxLength={128}

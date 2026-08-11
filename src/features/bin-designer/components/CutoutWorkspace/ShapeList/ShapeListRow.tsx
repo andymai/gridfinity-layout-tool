@@ -11,7 +11,7 @@
  */
 
 import { useEffect, useRef, useState, type DragEvent, type KeyboardEvent } from 'react';
-import { Button } from '@/design-system';
+import { Button, Input } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import type { Cutout } from '@/features/bin-designer/types';
 import {
@@ -212,14 +212,16 @@ export function ShapeListRow({
         )}
 
         {editing && cutout ? (
-          <input
+          <Input
             ref={inputRef}
             defaultValue={cutout.name ?? ''}
             placeholder={t('binDesigner.shapeList.renamePlaceholder')}
             aria-label={t('binDesigner.shapeList.rename')}
             onBlur={(e) => commitRename(e.currentTarget.value)}
             onKeyDown={handleKeyDown}
-            className="min-w-0 flex-1 rounded bg-surface px-1 text-[11px] text-content outline-none ring-1 ring-accent"
+            size="sm"
+            wrapperClassName="min-w-0 flex-1 ring-1 ring-accent"
+            className="px-1 text-[11px]"
           />
         ) : (
           <Button
