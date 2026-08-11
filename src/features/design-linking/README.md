@@ -24,8 +24,9 @@ graph TB
 - `domain/linkageQueries.ts` — query bins/designs by link status
 - `domain/mergeBins.ts` — converts a set of layout bins into one divided `BinParams`
 - `hooks/useBinLinking.ts` — link/unlink/create actions
-- `hooks/useMergeBins.ts` — merge scope, save + navigate
-- `components/Dialogs/MergeBinsDialog/CompartmentPreview/` — plan view of the result
+- `hooks/useBento.ts` — bento scope, save + navigate, optional bin replacement
+- `components/Dialogs/MakeBentoDialog/` — confirm step, options, trapped-bin block
+- `components/Dialogs/MakeBentoDialog/CompartmentPreview/` — plan view of the result
 - `hooks/useLinkedDesign.ts` — resolve linked design for a bin
 - `hooks/useLinkedBins.ts` — find all bins linked to a design
 - `hooks/useQuickExport.ts` — STL export for linked designs (internal)
@@ -51,13 +52,19 @@ graph TB
 | Link existing      | Select unlinked bin → "Link Existing" → pick compatible design → linked      |
 | Sync dimensions    | Design changed → "Sync" → eligible bins update, ineligible bins unlink       |
 
-## Merging Bins Into One Insert
+## Make Bento
 
 `planMergedBin` maps a layer's bins onto a `CompartmentConfig`: both are
 rectangles tiling a uniform grid. Behind the `merge_bins_to_design` labs flag.
 
-- **Non-destructive.** The layout is never modified; the merge only writes a
-  new saved design. There is deliberately no CQRS command and no undo entry.
+- **Non-destructive by default.** The merge writes a new saved design and
+  leaves the layout alone. Opting into "replace bins" swaps the sources for one
+  bin over the footprint carrying `linkedDesignId`, in a single `batch()` so a
+  half-applied replace cannot leave the drawer holding neither.
+- **A trapped bin blocks.** The piece is built from the bounding box, so a bin
+  left out of the selection but standing inside it would be printed through.
+  `warnings.trappedBinIds` reports them and the dialog refuses to commit until
+  they are added or stashed.
 - **Never emits a `cellMask`.** A masked bin exports with no dividers and no
   label tabs at all (`featuresStage` filters both builders out), so a ragged
   selection squares off to its bounding box and the uncovered cells become
@@ -69,7 +76,7 @@ rectangles tiling a uniform grid. Behind the `merge_bins_to_design` labs flag.
   layouts under `MAX_COMPARTMENT_GRID` (12).
 - **Single layer only.** `bin.height` is measured from the layer's own base
   plane, so `max(height)` across layers would be meaningless.
-- **Scope is an argument, never inferred.** `useMergeBins('layer' | 'selection')`.
+- **Scope is an argument, never inferred.** `useBento('layer' | 'selection')`.
   A global "selection, else layer" rule let one stray selected bin hijack the
   whole-layer entry point, which then reported "Combine 1 bins".
 - **The preview's vertical axis is flipped.** `cells` is row-major with row 0
