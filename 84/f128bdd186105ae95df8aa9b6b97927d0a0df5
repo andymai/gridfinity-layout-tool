@@ -1,0 +1,36 @@
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_13df2c0005cd75::t_16a6206861deb5 55,148-153,544-545,557
+  s_13df2c0005cd75::t_14e9236d1ebcaa 587-593
+  s_13df2c0005cd75::t_9d0d6cf541a03b 594-596
+src/features/bin-designer/components/panel/LidSection/useLidSection.helpers.ts
+  s_13df2c0005cd75::t_16a6206861deb5 108-116,167-168
+src/shared/generation/meshPersistence.ts
+  s_13df2c0005cd75::t_f2f44b19dcf414 36-45,47
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.tsx
+  s_13df2c0005cd75::t_2285072259470a 355-360
+src/features/bin-designer/README.md
+  s_13df2c0005cd75::t_323bbd400d359f 330
+src/features/generation/worker/generators/labelTabPlanDims.test.ts
+  s_13df2c0005cd75::t_2710eca6b614c0 46-48
+src/shared/utils/labelTabPlan.ts
+  s_13df2c0005cd75::t_48e69b9b278a25 671,680-687,689
+  s_13df2c0005cd75::t_984b85e01b1d89 560-569,575,587-592,609,633-637,639,663-665
+src/shared/utils/labelTabPlan.test.ts
+  s_13df2c0005cd75::t_52285239e765f9 174-195
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "84f128bdd186105ae95df8aa9b6b97927d0a0df5",
+  "prompts": {},
+  "sessions": {
+    "s_13df2c0005cd75": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d24b17f0-5df1-4244-a105-d33cb0ec4ae8",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
