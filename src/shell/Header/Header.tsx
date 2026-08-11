@@ -12,7 +12,8 @@ import { ShareButton } from '@/features/cloud-share/components/ShareButton';
 import { ShareModal } from '@/features/cloud-share/components/ShareModal';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { LayoutQuickSwitch } from '@/features/layout-library';
-import { getLinkedBins } from '@/features/design-linking';
+import { getLinkedBins, MergeBinsDialog } from '@/features/design-linking';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
 import { useTranslation } from '@/i18n';
@@ -92,6 +93,8 @@ export function Header({ saveStatus }: HeaderProps) {
   // export stays disabled (rather than hidden) until at least one exists.
   const canExportLayout = useMemo(() => getLinkedBins(layout.bins).length > 0, [layout.bins]);
 
+  const [showMergeDialog, setShowMergeDialog] = useState(false);
+  const mergeEnabled = useFeatureFlag('merge_bins_to_design');
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(layout.name);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -186,6 +189,31 @@ export function Header({ saveStatus }: HeaderProps) {
         >
           {!isTablet && <span className="hidden sm:inline">{t('header.print')}</span>}
         </Button>
+
+        {/* Merge Into One Bin — with nothing selected this targets the whole
+            active layer, which the selection-scoped context menu cannot reach. */}
+        {mergeEnabled && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowMergeDialog(true)}
+            className={`px-2 h-8 text-sm gap-1.5 ${activePress} text-content-secondary`}
+            title={t('mobile.binMenu.mergeIntoOne')}
+            aria-label={t('mobile.binMenu.mergeIntoOne')}
+            leftIcon={
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4h16v16H4zM12 4v16"
+                />
+              </svg>
+            }
+          >
+            {!isTablet && <span className="hidden sm:inline">{t('header.merge')}</span>}
+          </Button>
+        )}
 
         {/* Export Button — label stays visible at every width because the
             tooltip that would otherwise explain it is suppressed on touch. */}
@@ -368,6 +396,8 @@ export function Header({ saveStatus }: HeaderProps) {
           <LayoutExportDialog open={layoutExportOpen} onClose={() => setLayoutExportOpen(false)} />
         </Suspense>
       )}
+
+      {showMergeDialog && <MergeBinsDialog open onClose={() => setShowMergeDialog(false)} />}
     </header>
   );
 }

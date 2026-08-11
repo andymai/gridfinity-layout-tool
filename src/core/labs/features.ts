@@ -224,6 +224,18 @@ export const FEATURE_FLAGS = [
     defaultEnabled: true,
     requiresRefresh: false,
   },
+  {
+    id: 'merge_bins_to_design',
+    name: 'Merge Bins Into One Insert',
+    description:
+      'Turn a group of bins — or a whole layer — into a single divided insert you print in one piece, with the dividers where the bin walls were and your bin labels carried across.',
+    status: 'experimental',
+    risk: 'low',
+    warning:
+      'Merging only works when the bins line up on a common grid. Selections that need more than 12 rows or columns are refused, and a merged piece keeps one height for every compartment.',
+    addedAt: '2026-08',
+    requiresRefresh: false,
+  },
 ] as const satisfies readonly FeatureFlag[];
 
 export type FeatureId = (typeof FEATURE_FLAGS)[number]['id'];

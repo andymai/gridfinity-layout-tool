@@ -8,6 +8,7 @@
 export {
   DEFAULT_BIN_PARAMS,
   DEFAULT_HANDLE_SIDE,
+  DEFAULT_SPLIT_CONNECTOR_CONFIG,
   DISABLED_WALL_CUTOUT,
 } from '@/features/bin-designer/constants/defaults';
 export { GRIDFINITY, DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants/gridfinity';

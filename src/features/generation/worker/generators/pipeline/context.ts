@@ -172,10 +172,14 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // has viable post-inset dimensions. This avoids the fuse T-junction at
   // the cavity floor that BambuStudio flagged as non-manifold (#1753).
   //
-  // TODO #1753: polygon-mask bins (L/T/U footprints) with compartments
-  // still use the additive-fuse path and remain susceptible to the
-  // T-junction non-manifold bug. See the skipped scenario in
-  // `compartmentBuilder.scenario.manifold.test.ts` ("polygon-mask gap").
+  // Polygon-mask bins (L/T/U footprints) do not take the additive-fuse path
+  // either — they get NO dividers at all. `featuresStage` runs only builders
+  // declaring `supportsCellMask` once the mask is partial, and
+  // `compartmentWallsFeature` does not declare it, so a masked bin carrying a
+  // populated `compartments` grid exports as an undivided shell. The mask
+  // check below is therefore about which of two divider paths a RECTANGULAR
+  // bin takes, not about masked bins having a fallback.
+  // Locked in by `compartmentBuilder.scenario.polygonGap.test.ts`.
   const overridesAllowCutPath =
     !hasDividerOverrides(params) ||
     (compartmentEdgesAreSinglePair(params) &&

@@ -203,9 +203,15 @@ describe('compartmentBuilder — partition export manifold-ness (issue #1753)', 
   );
 
   // ── Non-rectangular footprints (polygon mask + compartments) ────────────
-  // A masked bin takes a different compartment path than a plain rectangle,
-  // so it needs its own manifold coverage. Masks are at half-bin resolution
-  // (MASK_CELLS_PER_UNIT), hence a 2×2 bin carrying a 4×4 mask.
+  // Masks are at half-bin resolution (MASK_CELLS_PER_UNIT), hence a 2×2 bin
+  // carrying a 4×4 mask.
+  //
+  // NOTE: the `compartments` passed below are INERT. `featuresStage` runs only
+  // `supportsCellMask` builders on a masked bin and `compartmentWallsFeature`
+  // is not one, so these export as undivided polygon shells — which is why
+  // they are trivially watertight. The value here is coverage of the masked
+  // BODY, not of masked compartments; do not read these as evidence that
+  // dividers survive a mask. See `compartmentBuilder.scenario.polygonGap.test.ts`.
   it(
     'L-shaped (polygon-mask) bin with compartments exports watertight STL',
     async () => {

@@ -7,6 +7,7 @@ export {
   SyncDimensionsDialog,
   DeleteDesignWarningDialog,
   LinkDesignDialog,
+  MergeBinsDialog,
 } from './Dialogs';
 
 export { LinkedDesignSection } from './LinkedDesignSection';

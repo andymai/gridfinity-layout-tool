@@ -136,6 +136,7 @@ const en: Record<string, string> = {
   'header.layoutName': 'Layout name',
   'header.switchLayout': 'Switch layout (current: {name})',
   'header.manageLayouts': 'Manage layouts',
+  'header.merge': 'Merge',
   'header.print': 'Print',
   'header.printLayout': 'Print layout',
   'header.export': 'Export',
@@ -1202,6 +1203,7 @@ const en: Record<string, string> = {
   'mobile.binMenu.editProperties': 'Edit Properties',
   'mobile.binMenu.rotate': 'Rotate',
   'mobile.binMenu.expandToFit': 'Expand to Fit',
+  'mobile.binMenu.mergeIntoOne': 'Merge Into One Bin',
   'mobile.binMenu.lockSize': 'Lock Size',
   'mobile.binMenu.unlockSize': 'Unlock Size',
   'mobile.binMenu.toStash': 'To Stash',
@@ -4045,6 +4047,29 @@ const en: Record<string, string> = {
   'designLinking.blockedResize.reasons.inserts': 'Has floor inserts',
   'designLinking.blockedResize.reasons.cutouts': 'Has cutouts',
   'designLinking.blockedResize.reasons.compartments': 'Has custom compartment layout',
+
+  // Merge bins into one divided insert
+  'designLinking.merge.title': 'Merge Into One Bin',
+  'designLinking.merge.description':
+    'Combine {bins} bins into a single insert with {compartments} compartments, {width} x {depth} grid units. Your layout is not changed.',
+  'designLinking.merge.flatBase': 'Flat bottom (drawer insert, no Gridfinity feet)',
+  'designLinking.merge.confirm': 'Merge and Edit',
+  'designLinking.merge.designName': '{layout} insert',
+  'designLinking.merge.warning.gaps':
+    'Empty space in the selection becomes {count} extra compartments.',
+  'designLinking.merge.warning.raisedHeight':
+    '{count} bins are made taller to match the tallest one.',
+  'designLinking.merge.warning.linkedDesigns':
+    '{count} bins lose the custom shape of their linked design.',
+  'designLinking.merge.warning.split':
+    'Too big for your print bed, so it will be split into pieces that key together.',
+  'designLinking.merge.blocked.noBins': 'Select at least two bins on one layer to merge.',
+  'designLinking.merge.blocked.gridOverflow':
+    'These bins need a {cols} x {rows} compartment grid, and the limit is {max}. Merge a smaller group, or line the bins up on a coarser grid.',
+  'designLinking.merge.blocked.tooLarge':
+    'A merged bin can be at most {max} grid units on a side. Merge a smaller group.',
+  'designLinking.merge.toast.created': 'Merged into one bin with {count} compartments.',
+  'designLinking.merge.toast.saveFailed': 'Could not save the merged bin.',
 
   // Designer-updated dialog (shown when bin resize pushes to open designer)
   'designLinking.designerUpdated.title': 'Designer Updated',
