@@ -1,6 +1,6 @@
 ---
 name: feature-slices
-description: Anatomy of a src/features/ slice and the UI layer rules — adding a new slice, module boundaries (check-module-boundaries.sh, eslint boundaries), design-system-only primitives (check-design-system-usage.sh), lazyWithRetry, and the three responsive shell trees in App.tsx. Load when creating a feature/panel/modal, when a commit is blocked by VIOLATION/design-system/component-structure checks, or when a feature works on desktop but is missing on mobile/tablet.
+description: Anatomy of a src/features/ slice and the UI layer rules — adding a new slice, module boundaries (check-module-boundaries.sh, eslint boundaries), design-system-only primitives (check-design-system-usage.ts), lazyWithRetry, and the three responsive shell trees in App.tsx. Load when creating a feature/panel/modal, when a commit is blocked by VIOLATION/design-system/component-structure checks, or when a feature works on desktop but is missing on mobile/tablet.
 ---
 
 # Feature Slices, Shell, and Design System
@@ -8,7 +8,7 @@ description: Anatomy of a src/features/ slice and the UI layer rules — adding 
 ## When to use
 
 - Adding a new feature slice, panel, modal, or other UI surface.
-- Commit blocked by `check-module-boundaries.sh`, `check-design-system-usage.sh`, or `check-component-structure.sh`.
+- Commit blocked by `check-module-boundaries.sh`, `check-design-system-usage.ts`, or `check-component-structure.sh`.
 - A feature renders on desktop but is unreachable on a phone or tablet.
 - Deciding where code belongs: `features/` vs `shared/` vs `shell/` vs `design-system/`.
 
