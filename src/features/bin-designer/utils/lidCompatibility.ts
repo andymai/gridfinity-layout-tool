@@ -364,6 +364,10 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   //     `deriveDimensions` folds the spacer in (it always shells) and drops
   //     both on a socketless base, where the flag has no socket to act on and
   //     the ramp is built after all.
+  //
+  //     Unlike the checks above this one is rail-specific, not lip-specific:
+  //     the fill takes nothing away from the lip, so a friction shell still
+  //     seats on it. Only a rail needs the pocket, so only `clickRails` cares.
   const socketless = params.base.style === 'flat' || params.base.style === 'lid';
   const liteFloor = (params.base.lightweight || params.base.spacer) && !socketless;
   if (
@@ -371,7 +375,7 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
     params.style === 'standard' &&
     params.base.stackingLip &&
     !liteFloor &&
-    !isMagnetic &&
+    params.lid.attachment === 'clickRails' &&
     computeLipOffset(true, true, LIP_TAPER_WIDTH, params.wallThickness) > 0
   ) {
     const side = resolveScoopSide(params.scoop);

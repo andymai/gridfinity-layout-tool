@@ -657,6 +657,13 @@ describe('checkLidCompatibility', () => {
       ).toBeUndefined();
     });
 
+    it('skips for a friction lid, whose shell seats on a lip the fill never removes', () => {
+      const params = scooped({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, attachment: 'friction' },
+      });
+      expect(checkLidCompatibility(params).find((i) => i.id === 'scoopFillsLip')).toBeUndefined();
+    });
+
     it('skips for a magnetic lid, which holds by corner magnets rather than rails', () => {
       const params = scooped({
         lid: { ...DEFAULT_BIN_PARAMS.lid, attachment: 'magnetic' },
