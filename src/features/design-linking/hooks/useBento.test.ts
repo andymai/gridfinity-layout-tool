@@ -159,6 +159,16 @@ describe('useBento', () => {
       );
     });
 
+    it('labels the replacement with the same fallback name the design got', async () => {
+      seed([bin('a', 0), bin('b', 1)]);
+
+      await commit({ name: '   ', replaceBins: true });
+
+      expect(addBin).toHaveBeenCalledWith(
+        expect.objectContaining({ label: 'designLinking.bento.designName' })
+      );
+    });
+
     it('reports a save failure instead of navigating to a design that does not exist', async () => {
       seed([bin('a', 0), bin('b', 1)]);
       saveDesign.mockResolvedValue(err({ kind: 'storage' }));

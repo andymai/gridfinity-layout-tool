@@ -82,8 +82,13 @@ export function useBento(scope: BentoScope): UseBento {
 
   const commitBento = useCallback(
     async ({ plan, name, replaceBins }: CommitBentoInput) => {
+      // Resolved once: the design and the bin that links to it have to carry the
+      // same name, or clearing the field leaves an unlabelled bin pointing at a
+      // design called something else.
+      const resolvedName =
+        name.trim() || t('designLinking.bento.designName', { layout: layout.name });
       const saved = await saveDesign({
-        name: name.trim() || t('designLinking.bento.designName', { layout: layout.name }),
+        name: resolvedName,
         params: plan.params,
         thumbnail: null,
         exportFileNameConfig: null,
@@ -111,7 +116,7 @@ export function useBento(scope: BentoScope): UseBento {
           depth: gridUnits(plan.params.depth),
           height: heightUnits(plan.params.height),
           category: sources[0].category,
-          label: name.trim(),
+          label: resolvedName,
           notes: '',
           linkedDesignId: saved.value.id,
         };
