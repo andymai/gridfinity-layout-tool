@@ -1,0 +1,29 @@
+scripts/check-design-system-usage.ts
+  s_143ab944de1d05::t_a0a0fde4441cef 86-101,106-107
+src/features/snapshots/components/SnapshotEntry/SnapshotEntry.test.tsx
+  s_143ab944de1d05::t_a79442b3cee081 103-142
+scripts/check-design-system-usage.test.ts
+  s_143ab944de1d05::t_a0a0fde4441cef 92-105
+src/features/inspiration-gallery/components/InspirationGallery/InspirationGallery.tsx
+  s_143ab944de1d05::t_421eaeebdc02a7 22,322,326
+src/shell/Mobile/MobileHeader/MobileHeader.test.tsx
+  s_143ab944de1d05::t_cb2cb907ba0c83 59
+  s_143ab944de1d05::t_b94767e9b0a4a5 2,55-58,60-63
+  s_143ab944de1d05::t_7c283898290787 64
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "ec2d8a27dda0e5c590be59f94396c6bdad3fd2f6",
+  "prompts": {},
+  "sessions": {
+    "s_143ab944de1d05": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d893cac8-ca27-46d0-9bd4-15f949f575f6",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
