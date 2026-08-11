@@ -1,0 +1,21 @@
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_2bffca064be328::t_8c66d6f86a0081 362-368,373
+src/features/bin-designer/utils/lidCompatibility.test.ts
+  s_2bffca064be328::t_3db800dc7f4067 630-650
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "b16a66b5e4efcd42fd109ef0143416bf82a7b0e0",
+  "prompts": {},
+  "sessions": {
+    "s_2bffca064be328": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "47168adb-946f-4a71-a9f8-7604ef5373ad",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
