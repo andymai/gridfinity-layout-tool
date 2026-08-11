@@ -1,0 +1,23 @@
+src/shared/utils/scoopCalculations.test.ts
+  s_5e3bb37717759a::t_30290f33f012b3 3-5
+src/shared/utils/scoopCalculations.ts
+  s_5e3bb37717759a::t_4b166bc9d01d57 11-16
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_5e3bb37717759a::t_983a494ad358fa 192-194,199-200,203
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "9029f37af3d9d6031889aae41c16a4b6e426c563",
+  "prompts": {},
+  "sessions": {
+    "s_5e3bb37717759a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b7ad2ab6-f2b4-4238-805e-58c274496c5d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
