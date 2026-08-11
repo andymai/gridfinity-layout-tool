@@ -1,0 +1,27 @@
+src/features/bin-designer/components/CompartmentEditor/CompartmentGridView.tsx
+  s_c8797b5dd06871::t_53a542a5193c39 1-159
+  s_c8797b5dd06871::t_06e4805208c666 160-161
+src/features/bin-designer/components/CompartmentEditor/useCompartmentGrid.ts
+  s_c8797b5dd06871::t_4b679b9bb3a928 1-413
+src/features/bin-designer/components/CompartmentEditor/CompartmentGridView.test.tsx
+  s_c8797b5dd06871::t_48abf9bf315e0f 1-160
+  s_c8797b5dd06871::t_44b125219a6a4b 161-162
+src/features/bin-designer/components/CompartmentEditor/CompartmentEditor.tsx
+  s_c8797b5dd06871::t_cbc4a744eeb178 2,14-19,22,38-39,50-51,53-72,90,99,372-378
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "8104e1128a3c301faa24813141e2ca532c8f5f6d",
+  "prompts": {},
+  "sessions": {
+    "s_c8797b5dd06871": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7ca1e340-9a92-4182-8bfc-ac6b7bbe0f30",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}

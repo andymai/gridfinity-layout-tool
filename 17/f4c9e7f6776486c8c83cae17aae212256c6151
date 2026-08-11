@@ -1,0 +1,122 @@
+src/i18n/locales/sv.json
+  s_c8797b5dd06871::t_380242ca3c6784 2371
+  s_c8797b5dd06871::t_499075df5caff7 3665-3691,3701
+src/shell/Mobile/MultiBinContextMenu/MultiBinContextMenu.tsx
+  s_c8797b5dd06871::t_b98cbe33634b4f 20,332
+src/features/bin-inspector/components/Inspector/MultiBinInspector/MultiBinInspector.tsx
+  s_c8797b5dd06871::t_109d0045f17472 1,11-20,345-355,376-381
+  s_c8797b5dd06871::t_1b968519bdd55d 53-54
+src/shell/Header/Header.tsx
+  s_c8797b5dd06871::t_b98cbe33634b4f 15,364
+  s_c8797b5dd06871::t_5fc83e1ebf3406 97,176-212,322
+src/i18n/locales/cs.json
+  s_c8797b5dd06871::t_380242ca3c6784 2371
+  s_c8797b5dd06871::t_499075df5caff7 3665-3691,3701
+src/features/design-linking/components/Dialogs/MakeBentoDialog/MakeBentoDialog.test.tsx
+  s_c8797b5dd06871::t_a482bbf7d3b6ff 1-4,6-128,130-133,135-147,149-155,157-168
+  s_c8797b5dd06871::t_8571ea13ba5dd3 5,129,134,148,156
+src/features/design-linking/hooks/useBento.test.ts
+  s_c8797b5dd06871::t_012807c0b82cba 1-219
+src/i18n/locales/zh-CN.json
+  s_c8797b5dd06871::t_499075df5caff7 3665-3691,3701
+  s_c8797b5dd06871::t_380242ca3c6784 2371
+src/features/design-linking/domain/mergeBins.ts
+  s_c8797b5dd06871::t_4da9e3b9fa77de 343
+  s_c8797b5dd06871::t_eb622f6fbcc51a 67-74
+  s_c8797b5dd06871::t_2cbfc52517e2d7 264-265,269-284
+  s_c8797b5dd06871::t_e96a37e45298c7 307
+  s_c8797b5dd06871::t_ff81518c2f5365 94-100
+  s_f099a1cdb8cd0e::t_68e5df4a7808c4 285
+src/i18n/locales/es.json
+  s_c8797b5dd06871::t_499075df5caff7 3665-3691,3701
+  s_c8797b5dd06871::t_380242ca3c6784 2563
+src/i18n/locales/ja.json
+  s_c8797b5dd06871::t_380242ca3c6784 2563
+  s_c8797b5dd06871::t_499075df5caff7 3665-3691,3701
+src/i18n/locales/nb.json
+  s_c8797b5dd06871::t_380242ca3c6784 2563
+  s_c8797b5dd06871::t_499075df5caff7 3665-3691,3701
+src/features/design-linking/components/index.ts
+  s_c8797b5dd06871::t_b98cbe33634b4f 10
+src/i18n/locales/pt-BR.json
+  s_c8797b5dd06871::t_380242ca3c6784 2371
+  s_c8797b5dd06871::t_499075df5caff7 3665-3691,3701
+src/features/design-linking/components/Dialogs/MakeBentoDialog/CompartmentPreview/CompartmentPreview.test.tsx
+  s_c8797b5dd06871::t_04b3da7214aff9 1-90
+src/i18n/locales/de.json
+  s_c8797b5dd06871::t_499075df5caff7 3665-3691,3701
+  s_c8797b5dd06871::t_380242ca3c6784 2563
+src/features/design-linking/components/Dialogs/MakeBentoDialog/CompartmentPreview/CompartmentPreview.tsx
+  s_c8797b5dd06871::t_04b3da7214aff9 1-88
+src/features/design-linking/index.ts
+  s_c8797b5dd06871::t_b98cbe33634b4f 71,79
+src/features/design-linking/domain/mergeBins.test.ts
+  s_c8797b5dd06871::t_c0e9ee9bc8d2b6 5
+  s_c8797b5dd06871::t_e7e92944e9dee5 347-438
+src/i18n/locales/uk.json
+  s_c8797b5dd06871::t_499075df5caff7 3665-3691,3701
+  s_c8797b5dd06871::t_380242ca3c6784 2563
+src/features/layers/components/ActiveLayerPanel/ActiveLayerPanel.tsx
+  s_c8797b5dd06871::t_fa58ed58d3558d 1,16-25,55-56,223-252
+  s_c8797b5dd06871::t_8e6c3dd123e681 253
+scripts/i18n-values-allowlist.json
+  s_c8797b5dd06871::t_4183f04fb16949 182-183
+src/i18n/locales/en.ts
+  s_c8797b5dd06871::t_499075df5caff7 1205,4079-4080,4082-4084,4086-4100,4102,4104,4106,4108,4110,4112,4114-4115
+  s_c8797b5dd06871::t_380242ca3c6784 519
+src/features/design-linking/hooks/useBento.ts
+  s_c8797b5dd06871::t_eadafa98014777 99-116,121
+  s_c8797b5dd06871::t_9e9b02dce5d14f 19-20
+  s_c8797b5dd06871::t_65cc333c8607a4 1-18,21-98,117-120,122-145
+src/i18n/locales/ko.json
+  s_c8797b5dd06871::t_499075df5caff7 3665-3691,3701
+  s_c8797b5dd06871::t_380242ca3c6784 2262
+eslint.config.js
+  s_c8797b5dd06871::t_fcaa2074cad124 251-255
+src/i18n/locales/it.json
+  s_c8797b5dd06871::t_380242ca3c6784 2563
+  s_c8797b5dd06871::t_499075df5caff7 3665-3691,3701
+src/i18n/locales/nl.json
+  s_c8797b5dd06871::t_380242ca3c6784 2563
+  s_c8797b5dd06871::t_499075df5caff7 3665-3691,3701
+src/features/design-linking/components/Dialogs/MakeBentoDialog/index.ts
+  s_c8797b5dd06871::t_cfb6a6631969ea 1-2
+src/i18n/locales/fr.json
+  s_c8797b5dd06871::t_499075df5caff7 3665-3691,3701
+  s_c8797b5dd06871::t_380242ca3c6784 2371
+src/features/design-linking/components/Dialogs/index.ts
+  s_c8797b5dd06871::t_cfb6a6631969ea 10
+src/i18n/locales/pl.json
+  s_c8797b5dd06871::t_499075df5caff7 3665-3691,3701
+  s_c8797b5dd06871::t_380242ca3c6784 2371
+src/features/design-linking/components/Dialogs/MakeBentoDialog/MakeBentoDialog.tsx
+  s_c8797b5dd06871::t_52e5d232ace0d1 65,147
+  s_c8797b5dd06871::t_f6011de88d8d10 1-29,31-64,66-146,148-282
+  s_c8797b5dd06871::t_b98cbe33634b4f 30
+scripts/check-module-boundaries.sh
+  s_c8797b5dd06871::t_a4b6aed01dcac9 36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "17f4c9e7f6776486c8c83cae17aae212256c6151",
+  "prompts": {},
+  "sessions": {
+    "s_c8797b5dd06871": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7ca1e340-9a92-4182-8bfc-ac6b7bbe0f30",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_f099a1cdb8cd0e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0435f880-966b-4e2c-af78-6b0f1fb42753",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
