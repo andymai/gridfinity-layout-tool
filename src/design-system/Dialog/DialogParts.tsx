@@ -6,16 +6,28 @@ import { XIcon } from '../Icon';
 import { DialogRoot, useDialogContext } from './DialogRoot';
 
 const headerVariants = cva(
-  [
-    'flex items-center justify-between',
-    'px-[var(--space-2xl)] pt-[var(--space-2xl)] pb-2',
-    'flex-shrink-0',
-  ],
+  ['flex items-center justify-between gap-3', 'px-[var(--space-2xl)]', 'flex-shrink-0'],
   {
     variants: {
-      bordered: {
-        true: 'border-b border-stroke-subtle pb-4',
+      density: {
+        default: 'pt-[var(--space-2xl)]',
+        // No bottom inset by design: this density exists for a header whose
+        // trailing slot is a tab row, and a tab underline only reads as one
+        // when it sits on the header's own border.
+        compact: 'pt-2',
       },
+      bordered: {
+        true: 'border-b border-stroke-subtle',
+        false: '',
+      },
+    },
+    compoundVariants: [
+      { density: 'default', bordered: false, class: 'pb-2' },
+      { density: 'default', bordered: true, class: 'pb-4' },
+    ],
+    defaultVariants: {
+      density: 'default',
+      bordered: false,
     },
   }
 );
@@ -97,6 +109,14 @@ export interface DialogHeaderProps {
   bordered?: boolean;
 
   /**
+   * `compact` shrinks the title and drops the bottom inset, for a header that
+   * carries a tab row in its trailing slot instead of standing alone above
+   * one. Saves the height a separate SubHeader row would have cost.
+   * @default 'default'
+   */
+  density?: 'default' | 'compact';
+
+  /**
    * Whether to show the close button.
    * @default true
    */
@@ -118,6 +138,7 @@ export function DialogHeader({
   title,
   leading,
   bordered = false,
+  density = 'default',
   showCloseButton = true,
   closeAriaLabel = 'Close dialog',
   children,
@@ -133,11 +154,17 @@ export function DialogHeader({
   }, [hasTitle, registerTitle]);
 
   return (
-    <div className={headerVariants({ bordered })}>
+    <div className={headerVariants({ bordered, density })}>
       <div className="flex min-w-0 items-center gap-3">
         {leading}
         {hasTitle && (
-          <h2 id={titleId} className="text-xl font-semibold text-content">
+          <h2
+            id={titleId}
+            className={cn(
+              'font-semibold text-content',
+              density === 'compact' ? 'truncate text-base' : 'text-xl'
+            )}
+          >
             {title}
           </h2>
         )}

@@ -219,10 +219,13 @@ export function CommunityCard({ card, onSelect, onSelectAuthor, index }: Communi
           title={card.name}
           data-testid="community-card-link"
         >
-          {/* Truncation lives on the inner span: overflow:hidden on the anchor
+          {/* Two lines, then clipped. Most names need the second one, and a
+              truncated title is the one piece of a card that cannot be
+              recovered by looking harder at the thumbnail.
+              The clamp lives on the inner span: overflow:hidden on the anchor
               itself would put the stretched ::after at the mercy of
               containing-block clipping. */}
-          <span className="block truncate">{card.name}</span>
+          <span className="line-clamp-2 block">{card.name}</span>
         </a>
 
         {onSelectAuthor !== undefined ? (
@@ -259,11 +262,14 @@ export function CommunityCard({ card, onSelect, onSelectAuthor, index }: Communi
           </span>
         )}
 
-        {/* Wraps rather than clips. The stat groups are shrink-0 so a narrow
+        {/* mt-auto pins this to the bottom of the card: titles now run to two
+            lines, and without it every card in a row would put its stats at a
+            different height.
+            Wraps rather than clips. The stat groups are shrink-0 so a narrow
             column takes a second line instead of slicing a count in half; the
             dimensions yield first, being the one part that reads fine
             truncated. The touch-sized heart is what makes this tight. */}
-        <span className="relative z-10 mt-1 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-xs text-content-tertiary">
+        <span className="relative z-10 mt-auto flex flex-wrap items-center gap-x-1 gap-y-0.5 pt-1 text-xs text-content-tertiary">
           <span className="min-w-0 truncate">{dims}</span>
           <span aria-hidden="true">·</span>
           <span className="inline-flex shrink-0 items-center gap-0.5">
@@ -283,14 +289,22 @@ export function CommunityCard({ card, onSelect, onSelectAuthor, index }: Communi
               {t('community.card.likesLabel', { count: card.counts.likes })}
             </span>
           </span>
-          <span aria-hidden="true">·</span>
-          <span className="inline-flex shrink-0 items-center gap-0.5">
-            <RemixGlyph />
-            <span aria-hidden="true">{card.counts.remixes}</span>
-            <span className="sr-only">
-              {t('community.card.remixesLabel', { count: card.counts.remixes })}
-            </span>
-          </span>
+          {/* Suppressed at zero, as prints already are: on most cards "0
+              remixes" was a glyph and a digit that said nothing, and it was
+              the piece pushing this row onto a second line. The heart stays
+              at zero because it is a control, not a statistic. */}
+          {card.counts.remixes > 0 && (
+            <>
+              <span aria-hidden="true">·</span>
+              <span className="inline-flex shrink-0 items-center gap-0.5">
+                <RemixGlyph />
+                <span aria-hidden="true">{card.counts.remixes}</span>
+                <span className="sr-only">
+                  {t('community.card.remixesLabel', { count: card.counts.remixes })}
+                </span>
+              </span>
+            </>
+          )}
           {prints > 0 && (
             <>
               <span aria-hidden="true">·</span>

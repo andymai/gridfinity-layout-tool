@@ -78,22 +78,25 @@ export function DesignGalleryModal({ onClose }: DesignGalleryModalProps) {
         fullScreen="mobile"
         closeOnOverlayClick
       >
+        {/* Title and tabs share one row. As two, they spent ~110px of a fixed
+            -height dialog on chrome before the first card, which the gallery
+            body was then short of. */}
         <Dialog.Header
           title={t(
             communityEnabled ? 'binExamples.gallery.title' : 'binExamples.gallery.tabs.examples'
           )}
           bordered
+          density={communityEnabled ? 'compact' : 'default'}
           closeAriaLabel={t('common.close')}
-        />
-        {communityEnabled && (
-          <Dialog.SubHeader className="py-0">
+        >
+          {communityEnabled && (
             <GalleryTabBar
               activeTab={effectiveTab}
               onTabChange={setActiveTab}
               showNewDot={showNewDot || hasUnseenDigest}
             />
-          </Dialog.SubHeader>
-        )}
+          )}
+        </Dialog.Header>
         <Dialog.Body padding="none" scroll={false}>
           <div
             key={effectiveTab}

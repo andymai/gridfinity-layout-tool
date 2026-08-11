@@ -8,7 +8,7 @@ import { CommunityCard } from '../CommunityCard';
 import type { ShelfId } from './shelfData';
 import { COMMUNITY_COLLECTIONS } from '../../data/collections';
 import { resolveCollections } from '../../utils/resolveCollections';
-import { buildShelves } from './shelfData';
+import { buildShelves, MAX_LANDING_RAILS } from './shelfData';
 import { useScrollEdges } from './useScrollEdges';
 
 const SHELF_TITLE_KEYS: Record<ShelfId, string> = {
@@ -49,7 +49,6 @@ export function ShelfLanding({ items, onSelect, onSelectAuthor }: ShelfLandingPr
       }
     }
   }, [collections]);
-  if (shelves.length === 0 && collections.length === 0) return null;
 
   // Deliberately not clearFilters(): if a filter raced in from another tab,
   // "See all" should apply this one change, not silently wipe the rest.
@@ -65,37 +64,36 @@ export function ShelfLanding({ items, onSelect, onSelectAuthor }: ShelfLandingPr
     }
   };
 
-  return (
-    <div
-      className="shrink-0 space-y-2 border-b border-stroke-subtle px-3 pt-2 md:px-4"
-      data-testid="community-shelves"
-    >
-      {/* Curated collections lead: a human vouched for these, which is a
-          stronger claim than any of the derived shelves can make. */}
-      {collections.map((collection) => (
-        <Rail
-          key={collection.id}
-          id={`collection-${collection.id}`}
-          title={t(collection.titleKey)}
-          blurb={t(collection.blurbKey)}
-          cards={collection.cards}
-          onSelect={onSelect}
-          onSelectAuthor={onSelectAuthor}
-        />
-      ))}
+  // Curated collections lead: a human vouched for these, which is a stronger
+  // claim than any of the derived shelves can make. The cap then falls on
+  // whatever the weakest derived shelf is that day.
+  const rails: RailProps[] = [
+    ...collections.map((collection) => ({
+      id: `collection-${collection.id}`,
+      title: t(collection.titleKey),
+      blurb: t(collection.blurbKey),
+      cards: collection.cards,
+      onSelect,
+      onSelectAuthor,
+    })),
+    ...shelves.map((shelf) => ({
+      id: shelf.id,
+      title: t(SHELF_TITLE_KEYS[shelf.id]),
+      cards: shelf.cards,
+      onSelect,
+      onSelectAuthor,
+      // New-this-week has no action: the grid below is already newest-first,
+      // so its "See all" would be a visible no-op.
+      onSeeAll: shelf.id === 'new-this-week' ? undefined : () => handleSeeAll(shelf.id),
+    })),
+  ].slice(0, MAX_LANDING_RAILS);
 
-      {shelves.map((shelf) => (
-        <Rail
-          key={shelf.id}
-          id={shelf.id}
-          title={t(SHELF_TITLE_KEYS[shelf.id])}
-          cards={shelf.cards}
-          onSelect={onSelect}
-          onSelectAuthor={onSelectAuthor}
-          // New-this-week has no action: the grid below is already
-          // newest-first, so its "See all" would be a visible no-op.
-          onSeeAll={shelf.id === 'new-this-week' ? undefined : () => handleSeeAll(shelf.id)}
-        />
+  if (rails.length === 0) return null;
+
+  return (
+    <div className="space-y-3 px-3 pb-1 pt-3 md:px-4" data-testid="community-shelves">
+      {rails.map((rail) => (
+        <Rail key={rail.id} {...rail} />
       ))}
     </div>
   );

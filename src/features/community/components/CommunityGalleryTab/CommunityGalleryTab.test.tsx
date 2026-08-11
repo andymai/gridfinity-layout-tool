@@ -16,7 +16,7 @@ import type { Mm } from '@/core/types';
 import { fetchCommunityIndex, fetchMineIndex } from '../../api/client';
 import { INITIAL_BROWSE_STATE, useBrowseStore } from '../../store/browseStore';
 import { INITIAL_MINE_STATE, useMineStore } from '../../store/mineStore';
-import { CommunityGalleryTab, GALLERY_PAGE_SIZE } from './CommunityGalleryTab';
+import { CommunityGalleryTab, GALLERY_PAGE_SIZE, GALLERY_RESULTS_ID } from './CommunityGalleryTab';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
@@ -751,6 +751,93 @@ describe('CommunityGalleryTab shelf landing', () => {
     const grid = screen.getByRole('list', { name: 'community.gallery.gridLabel' });
     expect(within(grid).getAllByRole('listitem')).toHaveLength(3);
     expect(within(grid).getByText('Bin design000')).toBeInTheDocument();
+  });
+
+  it('scrolls the shelves and the grid together in one scroller', async () => {
+    indexMock.mockResolvedValue(ok({ items: shelfCards(12), capped: false }));
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.getByTestId('community-shelves')).toBeInTheDocument();
+    });
+    // Two scrollers split the height between a permanent band of rails and
+    // whatever the results were left with, which on a short window was one
+    // clipped row of cards.
+    const scroller = screen.getByTestId('community-gallery-scroll');
+    expect(scroller).toContainElement(screen.getByTestId('community-shelves'));
+    expect(scroller).toContainElement(
+      screen.getByRole('list', { name: 'community.gallery.gridLabel' })
+    );
+  });
+
+  it('lands the skip link on the grid rather than the rails it exists to skip', async () => {
+    indexMock.mockResolvedValue(ok({ items: shelfCards(12), capped: false }));
+    const { container } = render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.getByTestId('community-shelves')).toBeInTheDocument();
+    });
+    const target = container.querySelector(`#${GALLERY_RESULTS_ID}`);
+    expect(target).not.toBeNull();
+    expect(target).not.toContainElement(screen.getByTestId('community-shelves'));
+    expect(target).toContainElement(
+      screen.getByRole('list', { name: 'community.gallery.gridLabel' })
+    );
+  });
+});
+
+describe('CommunityGalleryTab results header', () => {
+  it('marks the grid off as its own section while the rails are above it', async () => {
+    indexMock.mockResolvedValue(
+      ok({
+        items: Array.from({ length: 12 }, (_, i) =>
+          card(`design${String(i).padStart(3, '0')}`, { createdAt: 1000 + i, featured: i < 3 })
+        ),
+        capped: false,
+      })
+    );
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.getByTestId('community-results-header')).toBeInTheDocument();
+    });
+    expect(
+      within(screen.getByTestId('community-results-header')).getByRole('heading', {
+        name: 'community.gallery.allDesigns',
+      })
+    ).toBeInTheDocument();
+  });
+
+  it('drops the section name once a filter narrows the grid', async () => {
+    indexMock.mockResolvedValue(ok({ items: manyCards(12), capped: false }));
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.getByTestId('community-results-header')).toBeInTheDocument();
+    });
+    act(() => {
+      useBrowseStore.getState().setCategory('kitchen');
+    });
+    expect(
+      within(screen.getByTestId('community-results-header')).queryByRole('heading')
+    ).toBeNull();
+  });
+
+  it('carries the live result count that the footer bar used to', async () => {
+    indexMock.mockResolvedValue(ok({ items: manyCards(3), capped: false }));
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.getByTestId('community-results-header')).toBeInTheDocument();
+    });
+    const count = within(screen.getByTestId('community-results-header')).getByText(
+      'community.gallery.countLabel'
+    );
+    expect(count).toHaveAttribute('aria-live', 'polite');
+  });
+
+  it('stands down over an index with nothing to sort or count', async () => {
+    indexMock.mockResolvedValue(ok({ items: [], capped: false }));
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.getByText('community.gallery.empty.title')).toBeInTheDocument();
+    });
+    expect(screen.queryByTestId('community-results-header')).not.toBeInTheDocument();
   });
 });
 

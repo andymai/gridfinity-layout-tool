@@ -230,6 +230,37 @@ describe('CommunityCard', () => {
     });
   });
 
+  describe('remix count', () => {
+    it('is absent until somebody has remixed it', () => {
+      // "0 remixes" was a glyph and a digit that said nothing on most cards,
+      // and it was the piece pushing the stat row onto a second line.
+      render(
+        <CommunityCard
+          card={card({ counts: { likes: 2, remixes: 0, exports: 0 } })}
+          onSelect={vi.fn()}
+          index={0}
+        />
+      );
+      expect(screen.queryByText('community.card.remixesLabel')).toBeNull();
+    });
+
+    it('shows once there is one', () => {
+      render(<CommunityCard card={card()} onSelect={vi.fn()} index={0} />);
+      expect(screen.getByText('community.card.remixesLabel')).toBeInTheDocument();
+    });
+
+    it('keeps the like control at zero, being a control and not a statistic', () => {
+      render(
+        <CommunityCard
+          card={card({ counts: { likes: 0, remixes: 0, exports: 0 } })}
+          onSelect={vi.fn()}
+          index={0}
+        />
+      );
+      expect(screen.getByTestId('community-card-like')).toBeInTheDocument();
+    });
+  });
+
   describe('featured', () => {
     it('says nothing when the design is not featured', () => {
       render(<CommunityCard card={card()} onSelect={vi.fn()} index={0} />);
