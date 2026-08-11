@@ -6,7 +6,7 @@ import { useMutations } from '@/shared/contexts';
 import { useResponsive } from '@/shared/hooks';
 import { useCollabMode } from '@/shared/hooks/useCollabMode';
 import { CONSTRAINTS, DEFAULT_LAYOUT_NAME } from '@/core/constants';
-import { activePress, Button, IconButton, Tooltip } from '@/design-system';
+import { activePress, Button, IconButton, Menu, Tooltip } from '@/design-system';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { ShareButton } from '@/features/cloud-share/components/ShareButton';
 import { ShareModal } from '@/features/cloud-share/components/ShareModal';
@@ -190,31 +190,6 @@ export function Header({ saveStatus }: HeaderProps) {
           {!isTablet && <span className="hidden sm:inline">{t('header.print')}</span>}
         </Button>
 
-        {/* Merge Into One Bin — with nothing selected this targets the whole
-            active layer, which the selection-scoped context menu cannot reach. */}
-        {mergeEnabled && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowMergeDialog(true)}
-            className={`px-2 h-8 text-sm gap-1.5 ${activePress} text-content-secondary`}
-            title={t('mobile.binMenu.mergeIntoOne')}
-            aria-label={t('mobile.binMenu.mergeIntoOne')}
-            leftIcon={
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4h16v16H4zM12 4v16"
-                />
-              </svg>
-            }
-          >
-            {!isTablet && <span className="hidden sm:inline">{t('header.merge')}</span>}
-          </Button>
-        )}
-
         {/* Export Button — label stays visible at every width because the
             tooltip that would otherwise explain it is suppressed on touch. */}
         <Tooltip
@@ -356,7 +331,20 @@ export function Header({ saveStatus }: HeaderProps) {
 
         <div className="w-px h-6 bg-stroke-subtle mx-2" />
 
-        <HeaderSupportLinks />
+        <HeaderSupportLinks
+          leadingItems={
+            mergeEnabled ? (
+              <Menu.Item
+                onClick={() => {
+                  trackEvent('ui.modalOpen', { modal: 'mergeBins', source: 'header' });
+                  setShowMergeDialog(true);
+                }}
+              >
+                {t('mobile.binMenu.mergeIntoOne')}
+              </Menu.Item>
+            ) : undefined
+          }
+        />
       </div>
 
       {/* Lazy-loaded modals - only load chunks when modal is opened */}
@@ -397,7 +385,9 @@ export function Header({ saveStatus }: HeaderProps) {
         </Suspense>
       )}
 
-      {showMergeDialog && <MergeBinsDialog open onClose={() => setShowMergeDialog(false)} />}
+      {showMergeDialog && (
+        <MergeBinsDialog open scope="layer" onClose={() => setShowMergeDialog(false)} />
+      )}
     </header>
   );
 }

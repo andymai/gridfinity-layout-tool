@@ -40,7 +40,7 @@ const HALF_UNITS_PER_GRID = 2;
 const MERGED_DIVIDER_THICKNESS = 1.2;
 
 export type MergeBlockedReason =
-  | { readonly kind: 'no-bins' }
+  | { readonly kind: 'too-few-bins'; readonly count: number }
   | {
       readonly kind: 'grid-overflow';
       readonly cols: number;
@@ -168,7 +168,9 @@ export function planMergedBin(
   layout: Layout,
   options: MergeOptions = {}
 ): Result<MergePlan, MergeBlockedReason> {
-  if (bins.length === 0) return err({ kind: 'no-bins' });
+  // One bin is not a merge — it would emit a single-compartment copy of that
+  // bin. Enforced here rather than only in the UI so no entry point can skip it.
+  if (bins.length < 2) return err({ kind: 'too-few-bins', count: bins.length });
 
   const minX = Math.min(...bins.map((b) => b.x));
   const minY = Math.min(...bins.map((b) => b.y));

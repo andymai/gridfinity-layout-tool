@@ -9,21 +9,24 @@
  */
 
 import { useCallback, useMemo, useState } from 'react';
-import { Dialog, Button, AlertTriangleIcon } from '@/design-system';
+import { Dialog, Button, CheckboxRow, AlertTriangleIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { isOk } from '@/core/result';
 import type { MergeBlockedReason, MergePlan } from '../../../domain/mergeBins';
 import { useMergeBins } from '../../../hooks/useMergeBins';
+import type { MergeScope } from '../../../hooks/useMergeBins';
 
 export interface MergeBinsDialogProps {
   readonly open: boolean;
   readonly onClose: () => void;
+  /** Which bins the invoking entry point means. */
+  readonly scope: MergeScope;
 }
 
 function blockedMessage(reason: MergeBlockedReason, t: ReturnType<typeof useTranslation>): string {
   switch (reason.kind) {
-    case 'no-bins':
-      return t('designLinking.merge.blocked.noBins');
+    case 'too-few-bins':
+      return t('designLinking.merge.blocked.tooFewBins', { count: reason.count });
     case 'grid-overflow':
       return t('designLinking.merge.blocked.gridOverflow', {
         cols: reason.cols,
@@ -37,9 +40,9 @@ function blockedMessage(reason: MergeBlockedReason, t: ReturnType<typeof useTran
   }
 }
 
-export function MergeBinsDialog({ open, onClose }: MergeBinsDialogProps) {
+export function MergeBinsDialog({ open, onClose, scope }: MergeBinsDialogProps) {
   const t = useTranslation();
-  const { mergeableBins, previewMerge, commitMerge } = useMergeBins();
+  const { mergeableBins, previewMerge, commitMerge } = useMergeBins(scope);
   const [flatBase, setFlatBase] = useState(false);
   const [busy, setBusy] = useState(false);
 
@@ -111,23 +114,26 @@ export function MergeBinsDialog({ open, onClose }: MergeBinsDialogProps) {
     <Dialog.Root open={open} onClose={onClose} size="sm">
       <Dialog.Header title={t('designLinking.merge.title')} showCloseButton={false} />
       <Dialog.Body>
+        <p className="mb-1 text-sm text-content">
+          {scope === 'selection'
+            ? t('designLinking.merge.scope.selection', { count: mergeableBins.length })
+            : t('designLinking.merge.scope.layer', { count: mergeableBins.length })}
+        </p>
         <p className="mb-3 text-sm text-content-secondary">
           {t('designLinking.merge.description', {
-            bins: mergeableBins.length,
             compartments: plan.compartmentCount,
             width: plan.params.width,
             depth: plan.params.depth,
           })}
         </p>
 
-        <label className="flex items-center gap-2 mb-3 text-sm text-content-secondary">
-          <input
-            type="checkbox"
+        <div className="mb-3">
+          <CheckboxRow
+            label={t('designLinking.merge.flatBase')}
             checked={flatBase}
-            onChange={(e) => setFlatBase(e.target.checked)}
+            onChange={setFlatBase}
           />
-          {t('designLinking.merge.flatBase')}
-        </label>
+        </div>
 
         {warnings.length > 0 && (
           <div className="p-2.5 bg-surface rounded-lg border border-stroke-subtle space-y-1">

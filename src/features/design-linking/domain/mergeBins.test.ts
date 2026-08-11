@@ -26,7 +26,14 @@ describe('planMergedBin', () => {
   const layout = createTestLayout();
 
   it('rejects an empty selection', () => {
-    expect(expectErr(planMergedBin([], layout)).kind).toBe('no-bins');
+    expect(expectErr(planMergedBin([], layout)).kind).toBe('too-few-bins');
+  });
+
+  it('rejects a single bin, which would only copy it into one compartment', () => {
+    const reason = expectErr(planMergedBin([bin('a', 0, 0, 1, 1)], layout));
+
+    expect(reason.kind).toBe('too-few-bins');
+    if (reason.kind === 'too-few-bins') expect(reason.count).toBe(1);
   });
 
   it('maps two side-by-side bins onto a 2x1 compartment grid', () => {
@@ -96,7 +103,9 @@ describe('planMergedBin', () => {
       const wide = createTestLayout({
         drawer: { width: gridUnits(40), depth: gridUnits(8), height: heightUnits(12) },
       });
-      const reason = expectErr(planMergedBin([bin('a', 0, 0, 17, 1)], wide));
+      // Two 9-unit bins: an 18-unit span whose GCD keeps the grid at 2 columns,
+      // so this reaches the size cap rather than tripping grid-overflow first.
+      const reason = expectErr(planMergedBin([bin('a', 0, 0, 9, 1), bin('b', 9, 0, 9, 1)], wide));
 
       expect(reason.kind).toBe('too-large');
     });
@@ -105,7 +114,7 @@ describe('planMergedBin', () => {
       const wide = createTestLayout({
         drawer: { width: gridUnits(40), depth: gridUnits(8), height: heightUnits(12) },
       });
-      const plan = expectOk(planMergedBin([bin('a', 0, 0, 16, 1)], wide));
+      const plan = expectOk(planMergedBin([bin('a', 0, 0, 8, 1), bin('b', 8, 0, 8, 1)], wide));
 
       expect(plan.params.width).toBe(16);
       expect(plan.params.cellMask).toBeUndefined();
@@ -247,7 +256,7 @@ describe('planMergedBin', () => {
         printBedSize: mm(180),
         drawer: { width: gridUnits(20), depth: gridUnits(8), height: heightUnits(12) },
       });
-      const plan = expectOk(planMergedBin([bin('a', 0, 0, 8, 1)], small));
+      const plan = expectOk(planMergedBin([bin('a', 0, 0, 4, 1), bin('b', 4, 0, 4, 1)], small));
 
       expect(plan.warnings.splitEnabled).toBe(true);
       expect(plan.params.splitConnectors?.enabled).toBe(true);
@@ -255,7 +264,7 @@ describe('planMergedBin', () => {
     });
 
     it('leaves them alone when the piece fits', () => {
-      const plan = expectOk(planMergedBin([bin('a', 0, 0, 2, 1)], layout));
+      const plan = expectOk(planMergedBin([bin('a', 0, 0, 1, 1), bin('b', 1, 0, 1, 1)], layout));
 
       expect(plan.warnings.splitEnabled).toBe(false);
     });
@@ -266,7 +275,7 @@ describe('planMergedBin', () => {
         printBedDepth: mm(120),
         drawer: { width: gridUnits(20), depth: gridUnits(20), height: heightUnits(12) },
       });
-      const plan = expectOk(planMergedBin([bin('a', 0, 0, 4, 4)], shallow));
+      const plan = expectOk(planMergedBin([bin('a', 0, 0, 4, 2), bin('b', 0, 2, 4, 2)], shallow));
 
       expect(plan.warnings.splitEnabled).toBe(true);
     });
@@ -279,7 +288,7 @@ describe('planMergedBin', () => {
         gridUnitMmY: mm(35),
         heightUnitMm: mm(6),
       });
-      const plan = expectOk(planMergedBin([bin('a', 0, 0, 1, 1)], custom));
+      const plan = expectOk(planMergedBin([bin('a', 0, 0, 1, 1), bin('b', 1, 0, 1, 1)], custom));
 
       expect(plan.params.gridUnitMm).toBe(40);
       expect(plan.params.gridUnitMmY).toBe(35);
@@ -287,7 +296,7 @@ describe('planMergedBin', () => {
     });
 
     it('falls back to a square Y pitch when the layout has none', () => {
-      const plan = expectOk(planMergedBin([bin('a', 0, 0, 1, 1)], layout));
+      const plan = expectOk(planMergedBin([bin('a', 0, 0, 1, 1), bin('b', 1, 0, 1, 1)], layout));
 
       expect(plan.params.gridUnitMmY).toBe(plan.params.gridUnitMm);
     });
@@ -295,13 +304,15 @@ describe('planMergedBin', () => {
 
   describe('base style', () => {
     it('defaults to a Gridfinity base', () => {
-      const plan = expectOk(planMergedBin([bin('a', 0, 0, 1, 1)], layout));
+      const plan = expectOk(planMergedBin([bin('a', 0, 0, 1, 1), bin('b', 1, 0, 1, 1)], layout));
 
       expect(plan.params.base.style).toBe('standard');
     });
 
     it('produces a socketless insert when asked for flat', () => {
-      const plan = expectOk(planMergedBin([bin('a', 0, 0, 1, 1)], layout, { baseStyle: 'flat' }));
+      const plan = expectOk(
+        planMergedBin([bin('a', 0, 0, 1, 1), bin('b', 1, 0, 1, 1)], layout, { baseStyle: 'flat' })
+      );
 
       expect(plan.params.base.style).toBe('flat');
     });

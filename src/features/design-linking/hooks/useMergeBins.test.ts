@@ -63,15 +63,27 @@ describe('useMergeBins', () => {
     it('falls back to the whole active layer when nothing is selected', () => {
       seed([bin('a', 0), bin('b', 1)]);
 
-      const { result } = renderHook(() => useMergeBins());
+      const { result } = renderHook(() => useMergeBins('layer'));
 
       expect(result.current.mergeableBins.map((b) => b.id)).toEqual([binId('a'), binId('b')]);
+    });
+
+    it("ignores the selection under 'layer' scope, so a stray selection cannot hijack it", () => {
+      seed([bin('a', 0), bin('b', 1), bin('c', 2)], ['a']);
+
+      const { result } = renderHook(() => useMergeBins('layer'));
+
+      expect(result.current.mergeableBins.map((b) => b.id)).toEqual([
+        binId('a'),
+        binId('b'),
+        binId('c'),
+      ]);
     });
 
     it('uses the selection when there is one', () => {
       seed([bin('a', 0), bin('b', 1), bin('c', 2)], ['a', 'c']);
 
-      const { result } = renderHook(() => useMergeBins());
+      const { result } = renderHook(() => useMergeBins('selection'));
 
       expect(result.current.mergeableBins.map((b) => b.id)).toEqual([binId('a'), binId('c')]);
     });
@@ -79,7 +91,7 @@ describe('useMergeBins', () => {
     it('drops bins on other layers, since height is measured per layer', () => {
       seed([bin('a', 0), bin('b', 1), bin('other', 2, 'layer2')]);
 
-      const { result } = renderHook(() => useMergeBins());
+      const { result } = renderHook(() => useMergeBins('layer'));
 
       expect(result.current.mergeableBins.map((b) => b.id)).toEqual([binId('a'), binId('b')]);
     });
@@ -87,7 +99,7 @@ describe('useMergeBins', () => {
     it('drops staged bins, which have no place on the grid', () => {
       seed([bin('a', 0), bin('b', 1), bin('stashed', 2, STAGING_ID)]);
 
-      const { result } = renderHook(() => useMergeBins());
+      const { result } = renderHook(() => useMergeBins('layer'));
 
       expect(result.current.mergeableBins.map((b) => b.id)).toEqual([binId('a'), binId('b')]);
     });
@@ -95,7 +107,7 @@ describe('useMergeBins', () => {
     it('cannot merge a single bin', () => {
       seed([bin('a', 0)]);
 
-      const { result } = renderHook(() => useMergeBins());
+      const { result } = renderHook(() => useMergeBins('layer'));
 
       expect(result.current.canMerge).toBe(false);
     });
@@ -104,7 +116,7 @@ describe('useMergeBins', () => {
   describe('commit', () => {
     it('saves the design and navigates to it in the designer', async () => {
       seed([bin('a', 0), bin('b', 1)]);
-      const { result } = renderHook(() => useMergeBins());
+      const { result } = renderHook(() => useMergeBins('layer'));
       const plan = result.current.previewMerge();
       expect(plan.ok).toBe(true);
       if (!plan.ok) return;
@@ -122,7 +134,7 @@ describe('useMergeBins', () => {
     it('reports a save failure instead of navigating to a design that does not exist', async () => {
       seed([bin('a', 0), bin('b', 1)]);
       saveDesign.mockResolvedValue(err({ kind: 'storage' }));
-      const { result } = renderHook(() => useMergeBins());
+      const { result } = renderHook(() => useMergeBins('layer'));
       const plan = result.current.previewMerge();
       if (!plan.ok) throw new Error('expected a plan');
 

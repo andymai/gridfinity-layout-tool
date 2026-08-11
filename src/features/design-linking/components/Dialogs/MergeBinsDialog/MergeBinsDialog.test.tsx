@@ -48,13 +48,13 @@ describe('MergeBinsDialog', () => {
   });
 
   it('describes what the merge will produce', () => {
-    render(<MergeBinsDialog open onClose={vi.fn()} />);
+    render(<MergeBinsDialog open scope="selection" onClose={vi.fn()} />);
 
     expect(screen.getByText(/designLinking\.merge\.description/)).toBeInTheDocument();
   });
 
   it('lists no warnings for a clean rectangular merge', () => {
-    render(<MergeBinsDialog open onClose={vi.fn()} />);
+    render(<MergeBinsDialog open scope="selection" onClose={vi.fn()} />);
 
     expect(screen.queryByText(/designLinking\.merge\.warning/)).not.toBeInTheDocument();
   });
@@ -73,7 +73,7 @@ describe('MergeBinsDialog', () => {
         })
       )
     );
-    render(<MergeBinsDialog open onClose={vi.fn()} />);
+    render(<MergeBinsDialog open scope="selection" onClose={vi.fn()} />);
 
     expect(screen.getByText(/designLinking\.merge\.warning\.gaps/)).toBeInTheDocument();
   });
@@ -94,7 +94,7 @@ describe('MergeBinsDialog', () => {
         })
       )
     );
-    render(<MergeBinsDialog open onClose={vi.fn()} />);
+    render(<MergeBinsDialog open scope="selection" onClose={vi.fn()} />);
 
     expect(screen.getByText(/warning\.raisedHeight/)).toBeInTheDocument();
     expect(screen.getByText(/warning\.linkedDesigns/)).toBeInTheDocument();
@@ -102,7 +102,7 @@ describe('MergeBinsDialog', () => {
   });
 
   it('re-plans with a flat base when the toggle is checked', () => {
-    render(<MergeBinsDialog open onClose={vi.fn()} />);
+    render(<MergeBinsDialog open scope="selection" onClose={vi.fn()} />);
 
     fireEvent.click(screen.getByRole('checkbox'));
 
@@ -111,7 +111,7 @@ describe('MergeBinsDialog', () => {
 
   it('commits the plan and closes on confirm', async () => {
     const onClose = vi.fn();
-    render(<MergeBinsDialog open onClose={onClose} />);
+    render(<MergeBinsDialog open scope="selection" onClose={onClose} />);
 
     fireEvent.click(screen.getByText('designLinking.merge.confirm'));
 
@@ -126,21 +126,21 @@ describe('MergeBinsDialog', () => {
 
     it('explains a grid overflow with the numbers involved', () => {
       blockWith({ kind: 'grid-overflow', cols: 14, rows: 3, max: 12 });
-      render(<MergeBinsDialog open onClose={vi.fn()} />);
+      render(<MergeBinsDialog open scope="selection" onClose={vi.fn()} />);
 
       expect(screen.getByText(/blocked\.gridOverflow.*14/)).toBeInTheDocument();
     });
 
     it('offers no confirm action, so a blocked merge cannot be committed', () => {
       blockWith({ kind: 'too-large', width: 20, depth: 2, max: 16 });
-      render(<MergeBinsDialog open onClose={vi.fn()} />);
+      render(<MergeBinsDialog open scope="selection" onClose={vi.fn()} />);
 
       expect(screen.queryByText('designLinking.merge.confirm')).not.toBeInTheDocument();
     });
 
     it('surfaces a validation failure message verbatim', () => {
       blockWith({ kind: 'invalid-params', code: 'COMPARTMENT_TOO_SMALL', message: 'Too small' });
-      render(<MergeBinsDialog open onClose={vi.fn()} />);
+      render(<MergeBinsDialog open scope="selection" onClose={vi.fn()} />);
 
       expect(screen.getByText('Too small')).toBeInTheDocument();
     });

@@ -331,6 +331,7 @@ export function MultiBinContextMenu({
       {showMergeDialog && (
         <MergeBinsDialog
           open
+          scope="selection"
           onClose={() => {
             setShowMergeDialog(false);
             onClose();

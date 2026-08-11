@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { Button, IconButton, Menu } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
@@ -32,9 +33,22 @@ export interface HeaderSupportLinksProps {
    * no way to reach any of them.
    */
   compact?: boolean;
+
+  /**
+   * Extra items pinned above the links, with a divider beneath them.
+   *
+   * Lets the header park a secondary LAYOUT action here rather than spend a
+   * top-level slot on it. The header row already collides at 1280px, so a new
+   * button there is not free. Kept as a slot so this shared component stays
+   * ignorant of any feature.
+   */
+  leadingItems?: ReactNode;
 }
 
-export function HeaderSupportLinks({ compact = false }: HeaderSupportLinksProps = {}) {
+export function HeaderSupportLinks({
+  compact = false,
+  leadingItems,
+}: HeaderSupportLinksProps = {}) {
   const t = useTranslation();
   const feedbackToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const overflowRef = useRef<HTMLButtonElement>(null);
@@ -105,6 +119,12 @@ export function HeaderSupportLinks({ compact = false }: HeaderSupportLinksProps 
       position={overflow.position}
       align="end"
     >
+      {leadingItems && (
+        <>
+          {leadingItems}
+          <Menu.Divider />
+        </>
+      )}
       {compact && (
         <>
           <Menu.Item onClick={handleFeedbackClick}>{t('header.sendFeedback')}</Menu.Item>

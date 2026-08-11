@@ -6,10 +6,12 @@
  * and every export format come along without this feature reimplementing any
  * of them.
  *
- * Scope follows the selection when there is one and the active layer
- * otherwise. Either way the bins are narrowed to a single layer first — bins on
- * different layers sit at different heights in the drawer, so `max(height)`
- * across them would be meaningless.
+ * Scope is chosen by the CALLER, not inferred. A global "selection, else layer"
+ * rule let an incidental selection hijack the whole-layer entry point: with one
+ * bin selected, "merge this drawer" quietly became "merge that one bin".
+ *
+ * Either scope narrows to a single layer first. Bins on different layers sit at
+ * different heights in the drawer, so `max(height)` across them is meaningless.
  */
 
 import { useCallback, useMemo } from 'react';
@@ -25,8 +27,11 @@ import { dispatchSyntheticPopstate } from '@/shared/hooks/useDesignerRouting';
 import { planMergedBin } from '../domain/mergeBins';
 import type { MergeBlockedReason, MergeOptions, MergePlan } from '../domain/mergeBins';
 
+/** Which bins an entry point means. Never inferred from app state. */
+export type MergeScope = 'selection' | 'layer';
+
 export interface UseMergeBins {
-  /** Bins the merge would consume: the selection, else the active layer. */
+  /** Bins the merge would consume, per the requested scope. */
   readonly mergeableBins: readonly Bin[];
   /** True when there is enough to merge for the action to be worth offering. */
   readonly canMerge: boolean;
@@ -36,7 +41,7 @@ export interface UseMergeBins {
   readonly commitMerge: (plan: MergePlan) => Promise<void>;
 }
 
-export function useMergeBins(): UseMergeBins {
+export function useMergeBins(scope: MergeScope): UseMergeBins {
   const t = useTranslation();
   const layout = useLayoutStore(useShallow((s) => s.layout));
   const activeLayerId = useSelectionStore((s) => s.activeLayerId);
@@ -44,9 +49,9 @@ export function useMergeBins(): UseMergeBins {
   const addToast = useToastStore((s) => s.addToast);
 
   const mergeableBins = useMemo(() => {
-    const scoped = selectedBins.length > 0 ? selectedBins : layout.bins;
+    const scoped = scope === 'selection' ? selectedBins : layout.bins;
     return getLayerBins([...scoped], activeLayerId);
-  }, [selectedBins, layout.bins, activeLayerId]);
+  }, [scope, selectedBins, layout.bins, activeLayerId]);
 
   const previewMerge = useCallback(
     (options: MergeOptions = {}) => planMergedBin(mergeableBins, layout, options),
