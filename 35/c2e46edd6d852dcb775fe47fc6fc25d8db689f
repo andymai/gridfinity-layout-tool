@@ -1,0 +1,35 @@
+src/shell/Modals/HelpModal/HelpModal.tsx
+  s_143ab944de1d05::t_1a188290baa692 12
+  s_143ab944de1d05::t_dc1df68f8eca4d 165,169-172
+src/shared/components/HeightUnitSolver/HeightUnitSolver.tsx
+  s_143ab944de1d05::t_77ed9d11b40bea 3
+  s_143ab944de1d05::t_331aa046786f95 54-58,69,77-79,84,91-93,102,109-111
+src/features/bin-designer/components/panel/CutoutsSection/AlignmentToolbar.tsx
+  s_143ab944de1d05::t_f5b4304add0249 11
+  s_143ab944de1d05::t_bd77c6bad00224 318,322-323
+src/shared/components/EditableDimensions/EditableDimensions.tsx
+  s_143ab944de1d05::t_77ed9d11b40bea 2
+  s_143ab944de1d05::t_331aa046786f95 75-79,81-82,169,179-181,185,194-196,202,211-213
+src/features/bin-designer/components/panel/CutoutsSection/TransformControls.tsx
+  s_143ab944de1d05::t_f5b4304add0249 16
+  s_143ab944de1d05::t_bd77c6bad00224 142,144-146
+src/shared/components/ItemListShell/ItemSearch/ItemSearch.tsx
+  s_143ab944de1d05::t_c3849ef6ec4391 27,32-41
+  s_143ab944de1d05::t_dc1df68f8eca4d 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "35c2e46edd6d852dcb775fe47fc6fc25d8db689f",
+  "prompts": {},
+  "sessions": {
+    "s_143ab944de1d05": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d893cac8-ca27-46d0-9bd4-15f949f575f6",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
