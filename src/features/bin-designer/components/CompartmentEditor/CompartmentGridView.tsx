@@ -11,6 +11,7 @@
 
 import { GridCell, GhostPreview } from './CompartmentEditorParts';
 import { DividerHitTargets } from './DividerHitTargets';
+import { CompartmentSizeOverlay } from './CompartmentSizeOverlay';
 import type { CompartmentGridApi } from './useCompartmentGrid';
 import type { CSSProperties } from 'react';
 
@@ -31,6 +32,11 @@ export interface CompartmentGridViewProps {
     readonly onDragStart: (key: string, event: React.PointerEvent) => void;
     readonly draggingKey: string | null;
   };
+  /**
+   * Drawn size in CSS pixels. Supplying it turns on the per-compartment mm
+   * readout, which needs real pixels to know which labels would not fit.
+   */
+  readonly measuredBox?: { readonly width: number; readonly height: number };
 }
 
 export function CompartmentGridView({
@@ -39,6 +45,7 @@ export function CompartmentGridView({
   className = '',
   describedById,
   dividerDrag,
+  measuredBox,
 }: CompartmentGridViewProps) {
   const {
     compartments,
@@ -158,6 +165,16 @@ export function CompartmentGridView({
           rowLabel={rowLabelForHitTarget}
           onDragStart={dividerDrag?.onDragStart}
           draggingKey={dividerDrag?.draggingKey ?? null}
+        />
+      )}
+      {/* Per-compartment mm, hidden mid-drag so the ghost reads cleanly */}
+      {measuredBox && !isDragging && (
+        <CompartmentSizeOverlay
+          compartments={compartments}
+          interiorW={interiorW}
+          interiorD={interiorD}
+          boxWidthPx={measuredBox.width}
+          boxHeightPx={measuredBox.height}
         />
       )}
       {/* Ghost preview overlay during cell-select drag */}

@@ -490,34 +490,67 @@ export interface CompartmentTabSpan {
  * override, so every bordering row is folded in: the tab is one rectangle and
  * has to clear all of them.
  */
+/**
+ * How far a compartment's edge has been pushed off its grid line by
+ * `dividerOverrides`, in mm.
+ *
+ * The two axes are the same problem with rows and columns swapped: a positive
+ * offset moves a vertical divider toward +X and a horizontal one toward +Y, so
+ * the near side ('left'/'bottom') takes the most-positive offset and the far
+ * side ('right'/'top') the most-negative. Taking the extreme is deliberate —
+ * a tilted wall has two different endpoint offsets, and the compartment's
+ * usable extent is bounded by whichever end intrudes furthest.
+ */
+export function dividerShift(
+  config: CompartmentConfig,
+  compartmentId: number,
+  bounds: { minCol: number; maxCol: number; minRow: number; maxRow: number },
+  side: 'left' | 'right' | 'bottom' | 'top'
+): number {
+  const overrides = config.dividerOverrides;
+  if (!overrides || overrides.length === 0) return 0;
+  const { cols, rows, cells } = config;
+  const isX = side === 'left' || side === 'right';
+  const isNear = side === 'left' || side === 'bottom';
+
+  const neighborIndex = isX
+    ? isNear
+      ? bounds.minCol - 1
+      : bounds.maxCol + 1
+    : isNear
+      ? bounds.minRow - 1
+      : bounds.maxRow + 1;
+  const limit = isX ? cols : rows;
+  if (neighborIndex < 0 || neighborIndex >= limit) return 0;
+
+  const spanStart = isX ? bounds.minRow : bounds.minCol;
+  const spanEnd = isX ? bounds.maxRow : bounds.maxCol;
+
+  let shift = isNear ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY;
+  for (let i = spanStart; i <= spanEnd; i++) {
+    const neighborId = isX ? cells[i * cols + neighborIndex] : cells[neighborIndex * cols + i];
+    if (neighborId === compartmentId) continue;
+    const a = Math.min(compartmentId, neighborId);
+    const b = Math.max(compartmentId, neighborId);
+    const ov = overrides.find((o) => o.compartmentA === a && o.compartmentB === b);
+    // A bordering row/column with no override pins the boundary to its grid line.
+    const stepShift = ov
+      ? isNear
+        ? Math.max(ov.offsetStart, ov.offsetEnd)
+        : Math.min(ov.offsetStart, ov.offsetEnd)
+      : 0;
+    shift = isNear ? Math.max(shift, stepShift) : Math.min(shift, stepShift);
+  }
+  return Number.isFinite(shift) ? shift : 0;
+}
+
 function dividerXShift(
   config: CompartmentConfig,
   compartmentId: number,
   bounds: { minCol: number; maxCol: number; minRow: number; maxRow: number },
   side: 'left' | 'right'
 ): number {
-  const overrides = config.dividerOverrides;
-  if (!overrides || overrides.length === 0) return 0;
-  const { cols, cells } = config;
-  const neighborCol = side === 'left' ? bounds.minCol - 1 : bounds.maxCol + 1;
-  if (neighborCol < 0 || neighborCol >= cols) return 0;
-
-  let shift = side === 'left' ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY;
-  for (let row = bounds.minRow; row <= bounds.maxRow; row++) {
-    const neighborId = cells[row * cols + neighborCol];
-    if (neighborId === compartmentId) continue;
-    const a = Math.min(compartmentId, neighborId);
-    const b = Math.max(compartmentId, neighborId);
-    const ov = overrides.find((o) => o.compartmentA === a && o.compartmentB === b);
-    // A bordering row with no override pins the boundary to its grid line.
-    const rowShift = ov
-      ? side === 'left'
-        ? Math.max(ov.offsetStart, ov.offsetEnd)
-        : Math.min(ov.offsetStart, ov.offsetEnd)
-      : 0;
-    shift = side === 'left' ? Math.max(shift, rowShift) : Math.min(shift, rowShift);
-  }
-  return Number.isFinite(shift) ? shift : 0;
+  return dividerShift(config, compartmentId, bounds, side);
 }
 
 /**

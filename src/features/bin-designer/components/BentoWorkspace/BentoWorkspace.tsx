@@ -85,6 +85,7 @@ export function BentoWorkspace() {
                   onDragStart: onDividerDragStart,
                   draggingKey: drag.draggingKey,
                 }}
+                measuredBox={{ width: box.width, height: box.height }}
               />
             </div>
           </div>
