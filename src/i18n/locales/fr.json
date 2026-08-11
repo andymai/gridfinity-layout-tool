@@ -917,7 +917,7 @@
   "binDesigner.lid.compat.magnetBinTooSmall": "Le bac est trop petit pour des aimants d'angle — utilisez un bac plus grand ou un aimant de plus petit diamètre.",
   "binDesigner.lid.compat.magnetTooDeepForBin": "L'aimant de maintien est plus profond que ne peut le contenir l'intérieur du bac — réduisez sa profondeur ou utilisez un bac plus haut.",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "Les formes personnalisées ne peuvent pas placer d'aimants d'angle — le couvercle revient à un ajustement par friction sans aimants.",
-  "binDesigner.lid.compat.scoopFillsLip": "La rampe sur {sides} comble la lèvre pour que les objets glissent sans accrocher. La glissière de verrouillage de cette paroi n’a alors plus de prise et elle est automatiquement ignorée.",
+  "binDesigner.lid.compat.scoopFillsLip": "La rampe sur {sides} atteint le haut de la paroi et comble la gorge où s’accroche la glissière de verrouillage : cette glissière est donc automatiquement ignorée. Réduisez la hauteur de la rampe, ou passez-la en Auto, pour la conserver.",
   "binDesigner.lid.compat.shortBin": "Le bac fait 1U de haut — le couvercle se pose mais le maintien est marginal.",
   "binDesigner.lid.compat.tallDividerPieces": "Les séparateurs sont plus hauts que l'intérieur du bac — le couvercle ne s'assied pas avec eux insérés.",
   "binDesigner.lid.compat.tallLidShortBin": "Un couvercle haut sur un bac 1U a un long bras de levier sur cette prise marginale — un choc peut le faire sauter. Envisagez un bac plus haut ou plus de côtés à clip.",

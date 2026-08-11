@@ -578,9 +578,14 @@ describe('checkLidCompatibility', () => {
   });
 
   describe('finger scoop at the lip', () => {
+    // A radius that lands in the click rail's band. `autoScoopCeiling` holds an
+    // AUTO scoop clear of it (#3434), so only a height the user typed can get
+    // there — which is exactly what this warning is now about.
+    const TALL_SCOOP = { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, radius: 40 } as const;
+
     const scooped = (over: Partial<BinParams> = {}): BinParams =>
       withOverrides({
-        scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, side: 'front' },
+        scoop: { ...TALL_SCOOP, side: 'front' },
         base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
         ...over,
       });
@@ -591,23 +596,32 @@ describe('checkLidCompatibility', () => {
       expect(issue?.sides).toEqual(['front']);
     });
 
-    it('follows the configured side', () => {
+    it('leaves an auto scoop alone — it is held clear of the band (#3434)', () => {
+      // The regression #3432 shipped: every scooped wall lost its rail, because
+      // the gate asked whether the ramp took a lip offset rather than whether
+      // it reached the band the rail drops into.
       const params = scooped({
-        scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, side: 'left' },
+        scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, radius: 'auto', side: 'front' },
       });
+      expect(checkLidCompatibility(params).find((i) => i.id === 'scoopFillsLip')).toBeUndefined();
+      expect(computeDisabledRails(checkLidCompatibility(params)).size).toBe(0);
+    });
+
+    it('follows the configured side', () => {
+      const params = scooped({ scoop: { ...TALL_SCOOP, side: 'left' } });
       expect(checkLidCompatibility(params).find((i) => i.id === 'scoopFillsLip')?.sides).toEqual([
         'left',
       ]);
     });
 
     it('treats a side-less legacy scoop as front, matching resolveScoopSide', () => {
-      const params = scooped({ scoop: { enabled: true, radius: 'auto' } });
+      const params = scooped({ scoop: { enabled: true, radius: 40 } });
       expect(checkLidCompatibility(params).find((i) => i.id === 'scoopFillsLip')?.sides).toEqual([
         'front',
       ]);
     });
 
-    it('skips without a stacking lip, which is what the fill reaches up to', () => {
+    it('skips without a stacking lip, which is what the ramp reaches up to', () => {
       const params = scooped({ base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false } });
       expect(checkLidCompatibility(params).find((i) => i.id === 'scoopFillsLip')).toBeUndefined();
     });
@@ -639,7 +653,7 @@ describe('checkLidCompatibility', () => {
 
     it('still warns on a socketless base, where the lite flag is inert', () => {
       // A tray bottom has no socket to shell, so `dimensions.lightweight` is
-      // false and the ramp is built, lip fill and all.
+      // false and the ramp is built.
       const params = scooped({
         base: { ...DEFAULT_BIN_PARAMS.base, style: 'lid', stackingLip: true, lightweight: true },
       });
@@ -648,16 +662,24 @@ describe('checkLidCompatibility', () => {
       ]);
     });
 
-    it('skips when the wall is as thick as the lip inset (no overhang to fill)', () => {
-      // computeLipOffset is max(0, LIP_TAPER_WIDTH - wallThickness): at 2.6mm
-      // the lip no longer protrudes past the wall, so neither the fill nor the
-      // rail's pocket exists.
+    it('still warns when the wall is as thick as the lip inset', () => {
+      // At 2.6mm `computeLipOffset` is 0, so there is no inward offset and no
+      // chute. #3432 gated on that and kept the rail; the ramp's own arc still
+      // fills the band, which is what actually buries the rail.
       expect(
         checkLidCompatibility(scooped({ wallThickness: 2.6 })).find((i) => i.id === 'scoopFillsLip')
-      ).toBeUndefined();
+          ?.sides
+      ).toEqual(['front']);
     });
 
-    it('skips for a friction lid, whose shell seats on a lip the fill never removes', () => {
+    it('skips a scoop that stops short of the band', () => {
+      const params = scooped({
+        scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, radius: 6, side: 'front' },
+      });
+      expect(checkLidCompatibility(params).find((i) => i.id === 'scoopFillsLip')).toBeUndefined();
+    });
+
+    it('skips for a friction lid, whose shell seats on a lip the ramp never removes', () => {
       const params = scooped({
         lid: { ...DEFAULT_BIN_PARAMS.lid, attachment: 'friction' },
       });

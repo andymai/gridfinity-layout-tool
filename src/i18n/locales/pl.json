@@ -917,7 +917,7 @@
   "binDesigner.lid.compat.magnetBinTooSmall": "Bin jest zbyt mały, aby zmieścić magnesy narożne — użyj większego bina lub magnesu o mniejszej średnicy.",
   "binDesigner.lid.compat.magnetTooDeepForBin": "Magnes mocujący jest głębszy niż wnętrze bina może pomieścić — zmniejsz jego głębokość lub użyj wyższego bina.",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "Własne kształty nie mogą umieszczać magnesów narożnych — pokrywa wraca do dopasowania na tarcie bez magnesów.",
-  "binDesigner.lid.compat.scoopFillsLip": "Podbieranie palcem na {sides} wypełnia kołnierz, aby przedmioty wysuwały się bez zaczepiania. Szyna zatrzaskowa na tej ściance nie ma się o co zaczepić, więc jest automatycznie pomijana.",
+  "binDesigner.lid.compat.scoopFillsLip": "Podbieranie palcem na {sides} sięga górnej krawędzi ścianki i wypełnia rowek, o który zaczepia się szyna zatrzaskowa, więc ta szyna jest automatycznie pomijana. Zmniejsz wysokość podbierania albo przełącz je na Auto, aby ją zachować.",
   "binDesigner.lid.compat.shortBin": "Bin ma 1U wysokości — pokrywa nadal siada, ale chwyt jest marginalny.",
   "binDesigner.lid.compat.tallDividerPieces": "Elementy przegródek są wyższe niż wnętrze bina — pokrywa nie siądzie z nimi włożonymi.",
   "binDesigner.lid.compat.tallLidShortBin": "Wysoka pokrywa na binie 1U ma długą dźwignię na tym marginalnym chwycie — uderzenie może ją zrzucić. Rozważ wyższy bin lub więcej boków zatrzaskowych.",

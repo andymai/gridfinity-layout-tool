@@ -27,10 +27,20 @@ import { isPartialMask, maskToPolygon } from '@/shared/utils/cellMask';
 import { computeHandleHoleGeometry } from '@/shared/utils/handleCutoutClip';
 import { hasAnyPatternedWall } from '@/shared/utils/wallPatternSides';
 import { railFoulingLabelFootprints } from '@/shared/utils/labelTabPlan';
-import { computeLipOffset, resolveScoopSide } from '@/shared/utils/scoopCalculations';
+import {
+  computeLipOffset,
+  resolveScoopPlacement,
+  resolveScoopProfile,
+  resolveScoopSide,
+} from '@/shared/utils/scoopCalculations';
 import type { BinParams, HandleConfig, HandleSide, ScoopSide } from '../types';
-import { LID_MAGNET_LIP_CLEARANCE, resolveLidCavityExtraMm } from '../types/lid';
-import { compartmentHasTiltedEdge } from './compartments';
+import {
+  LID_CLICK_RAIL_BAND_BELOW_WALL_TOP,
+  LID_MAGNET_LIP_CLEARANCE,
+  resolveLidCavityExtraMm,
+} from '../types/lid';
+import { compartmentHasTiltedEdge, getCompartmentBounds } from './compartments';
+import { binDimensions } from './binDimensions';
 
 /** Wall side affected by a per-side issue (e.g. wall cutouts). */
 export type LidCompatibilitySide = 'front' | 'back' | 'left' | 'right';
@@ -148,7 +158,14 @@ function handleSideIntrudesLip(
 const LIP_TAPER_WIDTH = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
 
 /**
- * Does any compartment against `side` actually get a ramp there?
+ * Does a ramp on `side` reach up into the band a click rail drops into?
+ *
+ * Not "is there a ramp": the ramp's inward offset and the thin chute above it
+ * cost the rail 0.07mm against a 0.64mm snap baseline, which is nothing. What
+ * buries a rail is the ramp's own ARC reaching the band — its surface runs
+ * inboard fast, 12.8mm at the rail's lowest point on a 2x2x4 scooped to the
+ * wall top (#3434). Auto scoops are held clear by `autoScoopCeiling`; a radius
+ * the user typed is honoured, and this is what warns about it.
  *
  * Only compartments touching the outer wall take the lip offset (`isOuter` in
  * `resolveScoopPlacement`), and `buildScoopRamps` skips any compartment with a
@@ -156,14 +173,38 @@ const LIP_TAPER_WIDTH = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
  * math can't describe. A wall whose compartments are all tilted keeps a usable
  * lip, so it keeps its rail.
  */
-function scoopFillsWall(params: BinParams, side: ScoopSide): boolean {
+function scoopReachesRailBand(params: BinParams, side: ScoopSide): boolean {
   const { cols, rows, cells } = params.compartments;
+  const { innerW, innerD, wallHeight } = binDimensions(params);
+  const interiorHeight = computeInteriorHeight(params);
   const idAt = (col: number, row: number): number => cells[row * cols + col];
   const against =
     side === 'front' || side === 'back'
       ? Array.from({ length: cols }, (_, col) => idAt(col, side === 'front' ? 0 : rows - 1))
       : Array.from({ length: rows }, (_, row) => idAt(side === 'left' ? 0 : cols - 1, row));
-  return against.some((id) => !compartmentHasTiltedEdge(params.compartments, id));
+
+  return against.some((id) => {
+    if (compartmentHasTiltedEdge(params.compartments, id)) return false;
+    const bounds = getCompartmentBounds(params.compartments, id);
+    if (!bounds) return false;
+    const placement = resolveScoopPlacement(side, bounds, { cols, rows, innerW, innerD });
+    if (!placement.isOuter) return false;
+    const profile = resolveScoopProfile(
+      params.scoop,
+      placement.span,
+      placement.depth,
+      true,
+      true,
+      wallHeight,
+      interiorHeight,
+      computeLipOffset(true, true, LIP_TAPER_WIDTH, params.wallThickness)
+    );
+    if (!profile) return false;
+    // Slack, because `autoScoopCeiling` resolves to exactly `wallHeight - band`
+    // and that subtraction does not round-trip: a clamped auto scoop would
+    // otherwise land a few ULPs inside its own limit and warn about itself.
+    return wallHeight - profile.height < LID_CLICK_RAIL_BAND_BELOW_WALL_TOP - 1e-6;
+  });
 }
 
 /**
@@ -346,19 +387,18 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
     issues.push({ id: 'compartmentDividers', severity: 'warning' });
   }
 
-  // 10. Finger scoop against an outer wall (#3426). With a stacking lip,
-  //     `buildScoopRamps` offsets the ramp inward by the lip's overhang and
-  //     fills the wall solid from the ramp up to the lip base, so items slide
-  //     out without catching on the lip. That fill occupies the pocket UNDER
-  //     the lip, which is the same volume the click rail's bump drops into to
-  //     hook the lip's underside, so a rail on the scooped wall is buried in
-  //     bin material (1.1mm of interference on a 2x2x4 at the default wall
-  //     thickness) and props that edge of the lid off the rim.
+  // 10. Finger scoop reaching the click rail's band (#3426, #3434). A ramp
+  //     against an outer wall of a lipped bin rises toward the lip, and where
+  //     it reaches the top ~3.15mm of the wall its arc fills the pocket the
+  //     rail's bump drops into to hook the lip's underside — so that edge of
+  //     the lid is propped off the rim.
   //
-  //     The conditions mirror what `buildScoopRamps` actually builds under, so
-  //     a scoop the generator skips doesn't cost a rail. Wall thickness is one
-  //     of them: `computeLipOffset` is zero once the wall is as thick as the
-  //     lip, and then there is neither a fill nor an undercut to lose.
+  //     The gate is how HIGH the ramp resolves, not whether it takes a lip
+  //     offset. #3432 gated on the offset and dropped the rail for every
+  //     scooped wall; the offset and its chute cost 0.07mm against a 0.64mm
+  //     snap baseline, and the ramp reaching the top costs 0.39mm. Auto scoops
+  //     are now held clear by `autoScoopCeiling`, so this fires only for a
+  //     radius the user typed that lands in the band.
   //
   //     The lite floor is `dimensions.lightweight`, not `base.lightweight`:
   //     `deriveDimensions` folds the spacer in (it always shells) and drops
@@ -366,7 +406,7 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   //     the ramp is built after all.
   //
   //     Unlike the checks above this one is rail-specific, not lip-specific:
-  //     the fill takes nothing away from the lip, so a friction shell still
+  //     the ramp takes nothing away from the lip, so a friction shell still
   //     seats on it. Only a rail needs the pocket, so only `clickRails` cares.
   const socketless = params.base.style === 'flat' || params.base.style === 'lid';
   const liteFloor = (params.base.lightweight || params.base.spacer) && !socketless;
@@ -375,11 +415,10 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
     params.style === 'standard' &&
     params.base.stackingLip &&
     !liteFloor &&
-    params.lid.attachment === 'clickRails' &&
-    computeLipOffset(true, true, LIP_TAPER_WIDTH, params.wallThickness) > 0
+    params.lid.attachment === 'clickRails'
   ) {
     const side = resolveScoopSide(params.scoop);
-    if (scoopFillsWall(params, side)) {
+    if (scoopReachesRailBand(params, side)) {
       issues.push({ id: 'scoopFillsLip', severity: 'warning', sides: [side] });
     }
   }
