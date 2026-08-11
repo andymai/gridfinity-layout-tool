@@ -320,6 +320,25 @@ describe('plate-level pad provisioning', () => {
   });
 });
 
+describe('custom perimeter', () => {
+  const bands = { left: 12, right: 12, front: 12, back: 12 };
+
+  it('re-sites a screw the perimeter excludes, rather than dropping it', () => {
+    // An outline is resolved-param data known as early as padding, so it may
+    // decide the site. A shaped plate keeps its four fasteners and buys a pad.
+    const shaped = piece({ bands, isInsidePerimeter: (x, y) => !(x < 0 && y < 0) });
+    const plan = planPieceScrews(COUNTERSINK, shaped);
+    expect(plan.slots).toHaveLength(4);
+    expect(plan.slots.find((s) => s.anchor === 'bl')?.site).toBe('floor');
+    expect(pieceNeedsFloorPad(COUNTERSINK, shaped)).toBe(true);
+  });
+
+  it('leaves a plain rectangle untouched when no perimeter is supplied', () => {
+    const plan = planPieceScrews(COUNTERSINK, piece({ bands }));
+    expect(plan.slots.every((s) => s.site === 'margin')).toBe(true);
+  });
+});
+
 describe('disabled screws', () => {
   const off: ScrewHoleParams = { ...COUNTERSINK, enabled: false };
 

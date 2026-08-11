@@ -98,9 +98,23 @@ export interface ScrewPieceInput {
   /** Outer rounding, so a hole is not placed in material the arc removes. */
   readonly cornerRadii?: ScrewCornerRadii;
   /**
+   * True when a disc of `radius` at (x, y) lies wholly inside a custom
+   * perimeter. Piece-centred mm. Absent ⇒ the piece is a plain rectangle.
+   *
+   * Consulted while ASSIGNING sites, not while pruning, because an outline is
+   * resolved-param data known exactly as early as padding is. A shaped plate
+   * whose corner falls outside the perimeter therefore falls back to the floor
+   * and gets its pad, instead of silently shipping with fewer fasteners.
+   */
+  readonly isInsidePerimeter?: (x: number, y: number, radius: number) => boolean;
+  /**
    * True when a candidate collides with something that owns that material: a
-   * connector tongue or groove, a seam, or the outside of a shaped perimeter.
-   * Piece-centred mm; `radius` is the head radius.
+   * connector tongue or groove, or a seam. Piece-centred mm; `radius` is the
+   * head radius.
+   *
+   * Consulted only while PRUNING. Unlike the perimeter, connector geometry is
+   * computed downstream and is not reliably known when plate height is decided,
+   * so it may remove a screw but never move one between sites.
    */
   readonly isBlocked?: (x: number, y: number, radius: number) => boolean;
   /**
@@ -344,10 +358,14 @@ export function assignAnchorSites(
   return SCREW_ANCHORS.map((anchor) => {
     const cornerR = anchorCornerRadius(anchor, input.cornerRadii);
     const margin = marginPosition(anchor, input, headDiameterMm);
-    return margin !== undefined &&
-      discFitsRoundedRect(margin[0], margin[1], halfW, halfD, cornerR, headRadius)
-      ? ({ anchor, site: 'margin', target: margin } as const)
-      : ({ anchor, site: 'floor', target: anchorTarget(anchor, halfW, halfD) } as const);
+    if (
+      margin !== undefined &&
+      discFitsRoundedRect(margin[0], margin[1], halfW, halfD, cornerR, headRadius) &&
+      input.isInsidePerimeter?.(margin[0], margin[1], headRadius) !== false
+    ) {
+      return { anchor, site: 'margin', target: margin } as const;
+    }
+    return { anchor, site: 'floor', target: anchorTarget(anchor, halfW, halfD) } as const;
   });
 }
 
