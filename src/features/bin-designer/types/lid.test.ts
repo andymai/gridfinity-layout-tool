@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
+import { migrateParams } from '../constants/paramMigration';
 import type { BinParams } from './index';
 import {
   DEFAULT_LID_CONFIG,
@@ -21,7 +22,6 @@ import {
   LID_CLICK_RAIL_COVERAGE_OPTIONS,
   LID_CLICK_RAIL_COVERAGE_MIN,
   LID_CLICK_RAIL_COVERAGE_MAX,
-  LID_CLICK_RAIL_COVERAGE_STEP,
   LID_MAGNET_LIP_CLEARANCE,
   LID_GRIP_SPAN_MIN_MM,
   LID_GRIP_SPAN_MAX_MM,
@@ -520,13 +520,23 @@ describe('lidGripRequestedHeightMm', () => {
 });
 
 describe('LID_CLICK_RAIL_COVERAGE_OPTIONS', () => {
-  it('runs 50 to 100 with no gaps', () => {
-    expect(LID_CLICK_RAIL_COVERAGE_OPTIONS[0]).toBe(LID_CLICK_RAIL_COVERAGE_MIN);
+  it('reaches the maximum exactly', () => {
+    // The list is generated as MIN + i*STEP, so start and spacing are
+    // tautologies of the generator. Landing ON the maximum is not: a step that
+    // does not divide the range would stop short.
     expect(LID_CLICK_RAIL_COVERAGE_OPTIONS.at(-1)).toBe(LID_CLICK_RAIL_COVERAGE_MAX);
-    for (let i = 1; i < LID_CLICK_RAIL_COVERAGE_OPTIONS.length; i++) {
-      expect(LID_CLICK_RAIL_COVERAGE_OPTIONS[i] - LID_CLICK_RAIL_COVERAGE_OPTIONS[i - 1]).toBe(
-        LID_CLICK_RAIL_COVERAGE_STEP
-      );
+    expect(LID_CLICK_RAIL_COVERAGE_OPTIONS[0]).toBe(LID_CLICK_RAIL_COVERAGE_MIN);
+  });
+
+  it('round-trips every option through migration unchanged', () => {
+    // The property the stop list actually has to hold: `migrateClickRailCoverage`
+    // snaps to the nearest option, so any value that is a stop must survive a
+    // load. Dropping one silently re-renders every design saved at it.
+    for (const coverage of LID_CLICK_RAIL_COVERAGE_OPTIONS) {
+      const result = migrateParams({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, clickRailCoverage: coverage },
+      });
+      expect(result.lid.clickRailCoverage).toBe(coverage);
     }
   });
 
@@ -535,12 +545,6 @@ describe('LID_CLICK_RAIL_COVERAGE_OPTIONS', () => {
     // designs onto a neighbour and quietly change a printed lid.
     for (const legacy of [50, 75, 100]) {
       expect(LID_CLICK_RAIL_COVERAGE_OPTIONS).toContain(legacy);
-    }
-  });
-
-  it('holds whole percentages only, so nothing lands between UI stops', () => {
-    for (const v of LID_CLICK_RAIL_COVERAGE_OPTIONS) {
-      expect(Number.isInteger(v)).toBe(true);
     }
   });
 });

@@ -39,9 +39,21 @@ interface Case {
   readonly overhang?: BinParams['overhang'];
   /** Tab width as a percentage of its compartment; defaults to full width. */
   readonly tabWidth?: number;
+  /**
+   * Rails expected on the tab's own wall. Set only where the point of the case
+   * is that segments SURVIVE beside a narrow tab: absence-of-collision is
+   * satisfied by building no rail at all, which is exactly what the pre-#3401
+   * code did.
+   */
+  readonly expectAnchorRails?: number;
 }
 
-/** Every case here interfered before the fix except the two marked baseline. */
+/**
+ * Most cases interfered before the fix. The two baselines never did (the rail
+ * did not reach the tab), and neither did the two partial-rail cases: the old
+ * code dropped the whole wall, so a narrow tab had nothing to collide with.
+ * Those two carry a positive assertion instead, below.
+ */
 const CASES: readonly Case[] = [
   {
     name: 'baseline 50% clears',
@@ -118,6 +130,7 @@ const CASES: readonly Case[] = [
   },
   {
     name: 'partial back rails beside a narrow tab',
+    expectAnchorRails: 2,
     depth: 3,
     coverage: 100,
     edges: 'back',
@@ -127,6 +140,7 @@ const CASES: readonly Case[] = [
   },
   {
     name: 'partial back rails beside a narrow front tab',
+    expectAnchorRails: 2,
     depth: 3,
     coverage: 100,
     edges: 'front',
@@ -250,7 +264,43 @@ describe('lid click rails clear label tabs', () => {
       // 0.05mm absorbs mesh tessellation noise on the curved corner blends;
       // the defect this guards against measured 1.25mm.
       expect(worstInterference(bin, lid, lidZOffset(params))).toBeLessThan(0.05);
+
+      if (c.expectAnchorRails !== undefined) {
+        const { railPlacements } = await import('./lidClickRail');
+        const { resolveLidInputs } = await import('./lidInputs');
+        const anchorRotation = c.edges === 'front' ? 180 : 0;
+        const onAnchorWall = railPlacements(resolveLidInputs(params)).filter(
+          (p) => p.rotationDeg === anchorRotation
+        );
+        expect(onAnchorWall).toHaveLength(c.expectAnchorRails);
+      }
     },
     300000
   );
+
+  it('the probe can see a real clash', async () => {
+    // Control for the twelve assertions above. Builds the pre-fix pairing by
+    // hand: a bin WITH tabs, and a lid generated as though they were not there
+    // (which is what the old code did once it dropped the conflicting side).
+    // If the probe stops finding either solid, or `lidZOffset` drifts, every
+    // other case in this file passes while guarding nothing.
+    const { generateLid } = await import('./lidOrchestrator');
+    const params = makeParams({
+      name: 'control',
+      depth: 3,
+      coverage: 100,
+      edges: 'back',
+      tabDepth: 12,
+      support: 'bracket',
+    });
+    const bin = getGenerateBin()(params, undefined, false);
+    const blindLid = generateLid({
+      ...params,
+      label: { ...params.label, enabled: false },
+    });
+    if (!bin) throw new Error('expected the bin to build');
+    if (!blindLid) throw new Error('expected the lid to build');
+
+    expect(worstInterference(bin, blindLid, lidZOffset(params))).toBeGreaterThan(1);
+  }, 300000);
 });

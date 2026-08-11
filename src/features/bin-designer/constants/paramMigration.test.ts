@@ -1205,7 +1205,9 @@ describe('migrateParams', () => {
     // (#3402) from one left over in storage from a stint in text mode, so it
     // must not touch either; resetting would wipe the new control's value
     // every time the design reopened.
-    for (const width of [40, 100]) {
+    // Both non-default (the default is 100), so neither iteration can pass by
+    // the merge-over-defaults spread happening to land on the right value.
+    for (const width of [40, 65]) {
       const result = migrateParams({
         label: { ...DEFAULT_BIN_PARAMS.label, mode: 'socket', width },
       });

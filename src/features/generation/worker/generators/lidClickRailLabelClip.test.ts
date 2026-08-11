@@ -46,6 +46,23 @@ describe('railSegmentsClearOfLabelTabs', () => {
     ]);
   });
 
+  it('decides on the rail line within the profile half-width, not loosely', () => {
+    // RAIL_HALF_WIDTH is 1.325mm. Without a case straddling it the constant
+    // could be anything from just above zero to tens of mm and every other
+    // case here would still pass.
+    const railCross = 37.5;
+    // Tab's cross span ends just INSIDE the rail's half-width: still blocks.
+    const inside = railSegmentsClearOfLabelTabs(-50, 50, false, railCross, [
+      backTab(-40, railCross - 1.3, 50, 12),
+    ]);
+    expect(inside[0].hi).toBeLessThan(50);
+    // Just OUTSIDE it: the rail is untouched.
+    const outside = railSegmentsClearOfLabelTabs(-50, 50, false, railCross, [
+      backTab(-40, railCross - 1.4, 50, 12),
+    ]);
+    expect(outside).toEqual([{ lo: -50, hi: 50 }]);
+  });
+
   it('eats both ends when tabs sit on opposite walls', () => {
     const both = [
       backTab(-40, 40, 50, 12),
