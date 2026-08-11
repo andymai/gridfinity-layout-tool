@@ -917,6 +917,7 @@
   "binDesigner.lid.compat.magnetBinTooSmall": "Beholderen er for liten for hjørnemagneter — bruk en større beholder eller mindre magnetdiameter.",
   "binDesigner.lid.compat.magnetTooDeepForBin": "Festemagneten er dypere enn beholderens innside rommer — reduser dybden eller bruk en høyere beholder.",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "Egendefinerte former kan ikke plassere hjørnemagneter — lokket faller tilbake til friksjonsfeste uten magneter.",
+  "binDesigner.lid.compat.scoopFillsLip": "Fingergropen på {sides} fyller stablekanten slik at ting glir rent ut. Klikkrennen på den veggen får dermed ikke tak, og den hoppes automatisk over.",
   "binDesigner.lid.compat.shortBin": "Boksen er bare 1U høy — lokket sitter, men grepet er marginalt.",
   "binDesigner.lid.compat.tallDividerPieces": "Skilleplater er høyere enn boksens innside — lokket vil ikke sitte med dem satt inn.",
   "binDesigner.lid.compat.tallLidShortBin": "Et høyt lokk på en 1U-beholder har en lang vektarm på det marginale grepet — et støt kan sprette det av. Vurder en høyere beholder eller flere klikksider.",

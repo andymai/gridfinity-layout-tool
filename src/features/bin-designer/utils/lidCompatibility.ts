@@ -10,6 +10,8 @@
  *      pieces, very tall inserts) — the lid's mating shell physically
  *      collides with it.
  *   3. Makes the bin too short for the rail extension (1U bins).
+ *   4. Fills the pocket under the lip (a finger scoop against an outer
+ *      wall), leaving the click rail's bump nothing to hook beneath.
  *
  * `checkLidCompatibility(params)` returns a typed list of issues so
  * `LidSection` can render warnings inline. Each issue has an `id`
@@ -25,8 +27,10 @@ import { isPartialMask, maskToPolygon } from '@/shared/utils/cellMask';
 import { computeHandleHoleGeometry } from '@/shared/utils/handleCutoutClip';
 import { hasAnyPatternedWall } from '@/shared/utils/wallPatternSides';
 import { railFoulingLabelFootprints } from '@/shared/utils/labelTabPlan';
-import type { BinParams, HandleConfig, HandleSide } from '../types';
+import { computeLipOffset, resolveScoopSide } from '@/shared/utils/scoopCalculations';
+import type { BinParams, HandleConfig, HandleSide, ScoopSide } from '../types';
 import { LID_MAGNET_LIP_CLEARANCE, resolveLidCavityExtraMm } from '../types/lid';
+import { compartmentHasTiltedEdge } from './compartments';
 
 /** Wall side affected by a per-side issue (e.g. wall cutouts). */
 export type LidCompatibilitySide = 'front' | 'back' | 'left' | 'right';
@@ -51,6 +55,7 @@ export type LidCompatibilityId =
   | 'handles'
   | 'handlesAllSides'
   | 'topDownCutoutsAtLip'
+  | 'scoopFillsLip'
   // Magnetic-retention (#2694) specific:
   | 'magnetsPolygonUnsupported'
   | 'magnetTooDeepForBin'
@@ -137,6 +142,28 @@ function handleSideIntrudesLip(
   );
   const topZ = centerZ + effectiveHeight / 2;
   return topZ > lipBottomZ(interiorHeight);
+}
+
+/** Horizontal distance the lip's inner face reaches in from the outer wall. */
+const LIP_TAPER_WIDTH = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
+
+/**
+ * Does any compartment against `side` actually get a ramp there?
+ *
+ * Only compartments touching the outer wall take the lip offset (`isOuter` in
+ * `resolveScoopPlacement`), and `buildScoopRamps` skips any compartment with a
+ * tilted edge, because a `dividerOverride` makes the floor a wedge the ramp
+ * math can't describe. A wall whose compartments are all tilted keeps a usable
+ * lip, so it keeps its rail.
+ */
+function scoopFillsWall(params: BinParams, side: ScoopSide): boolean {
+  const { cols, rows, cells } = params.compartments;
+  const idAt = (col: number, row: number): number => cells[row * cols + col];
+  const against =
+    side === 'front' || side === 'back'
+      ? Array.from({ length: cols }, (_, col) => idAt(col, side === 'front' ? 0 : rows - 1))
+      : Array.from({ length: rows }, (_, row) => idAt(side === 'left' ? 0 : cols - 1, row));
+  return against.some((id) => !compartmentHasTiltedEdge(params.compartments, id));
 }
 
 /**
@@ -319,7 +346,34 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
     issues.push({ id: 'compartmentDividers', severity: 'warning' });
   }
 
-  // 10. Magnetic retention (#2694).
+  // 10. Finger scoop against an outer wall (#3426). With a stacking lip,
+  //     `buildScoopRamps` offsets the ramp inward by the lip's overhang and
+  //     fills the wall solid from the ramp up to the lip base, so items slide
+  //     out without catching on the lip. That fill occupies the pocket UNDER
+  //     the lip, which is the same volume the click rail's bump drops into to
+  //     hook the lip's underside, so a rail on the scooped wall is buried in
+  //     bin material (1.1mm of interference on a 2x2x4 at the default wall
+  //     thickness) and props that edge of the lid off the rim.
+  //
+  //     The conditions mirror what `buildScoopRamps` actually builds under, so
+  //     a scoop the generator skips doesn't cost a rail. Wall thickness is one
+  //     of them: `computeLipOffset` is zero once the wall is as thick as the
+  //     lip, and then there is neither a fill nor an undercut to lose.
+  if (
+    params.scoop.enabled &&
+    params.style === 'standard' &&
+    params.base.stackingLip &&
+    !params.base.lightweight &&
+    !isMagnetic &&
+    computeLipOffset(true, true, LIP_TAPER_WIDTH, params.wallThickness) > 0
+  ) {
+    const side = resolveScoopSide(params.scoop);
+    if (scoopFillsWall(params, side)) {
+      issues.push({ id: 'scoopFillsLip', severity: 'warning', sides: [side] });
+    }
+  }
+
+  // 11. Magnetic retention (#2694).
   if (isMagnetic) {
     // Corner magnet placement isn't defined on an arbitrary polygon outline,
     // so a magnetic custom-shape lid falls back to a plain friction lid with

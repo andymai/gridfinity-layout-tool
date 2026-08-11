@@ -917,6 +917,7 @@
   "binDesigner.lid.compat.magnetBinTooSmall": "ビンが小さすぎてコーナーマグネットが入りません — 大きいビンを使うか、マグネット直径を小さくしてください。",
   "binDesigner.lid.compat.magnetTooDeepForBin": "保持マグネットがビン内部に収まらないほど深くなっています — 深さを減らすか、背の高いビンを使用してください。",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "カスタム形状ではコーナーマグネットを配置できません — ふたはマグネットなしの摩擦ばめに戻ります。",
+  "binDesigner.lid.compat.scoopFillsLip": "{sides}のフィンガースクープがリップを埋めるため、中身がスムーズに取り出せます。その壁のクリックレールは引っ掛かるところがなくなるので、自動的にスキップされます。",
   "binDesigner.lid.compat.shortBin": "ビンの高さが1Uです — 蓋は装着できますがグリップは弱めです。",
   "binDesigner.lid.compat.tallDividerPieces": "仕切り板パーツがビン内部より高くなっています — 装着した状態では蓋が収まりません。",
   "binDesigner.lid.compat.tallLidShortBin": "1U のビンに高いふたを付けると、わずかな噛み合わせに長いてこの力がかかり、衝撃で外れることがあります。ビンを高くするか、スナップ面を増やすことを検討してください。",

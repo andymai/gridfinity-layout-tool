@@ -917,6 +917,7 @@
   "binDesigner.lid.compat.magnetBinTooSmall": "Il contenitore è troppo piccolo per i magneti d'angolo — usa un contenitore più grande o un magnete di diametro minore.",
   "binDesigner.lid.compat.magnetTooDeepForBin": "Il magnete di ritenzione è più profondo di quanto l'interno del contenitore possa contenere — riducine la profondità o usa un contenitore più alto.",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "Le forme personalizzate non possono ospitare magneti d'angolo — il coperchio torna all'attrito senza magneti.",
+  "binDesigner.lid.compat.scoopFillsLip": "La rampa su {sides} riempie il labbro perché gli oggetti escano senza impuntarsi. La guida a incastro su quella parete resta senza appiglio e viene saltata automaticamente.",
   "binDesigner.lid.compat.shortBin": "Il bin è alto 1U; il coperchio si posiziona comunque ma la presa è marginale.",
   "binDesigner.lid.compat.tallDividerPieces": "I pezzi divisori sono più alti dell'interno del bin; il coperchio non si posizionerà con essi inseriti.",
   "binDesigner.lid.compat.tallLidShortBin": "Un coperchio alto su un bin da 1U ha un lungo braccio di leva su quella presa marginale; un urto potrebbe farlo saltare via. Valuta un bin più alto o più lati a incastro.",
