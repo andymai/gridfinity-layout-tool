@@ -16,6 +16,8 @@ import { findBinsByIds } from '@/shared/utils/entity';
 import type { BinId, CategoryId, GridUnits, LayerId } from '@/core/types';
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
+import { MergeBinsDialog } from '@/features/design-linking';
 
 interface MultiBinContextMenuProps {
   binIds: BinId[];
@@ -55,6 +57,8 @@ export function MultiBinContextMenu({
   const { expandBins } = useExpandToFit();
   const [showLayerPicker, setShowLayerPicker] = useState(false);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+  const [showMergeDialog, setShowMergeDialog] = useState(false);
+  const mergeEnabled = useFeatureFlag('merge_bins_to_design');
 
   // Get bins and categorize them
   const bins = findBinsByIds(layout, binIds);
@@ -70,6 +74,11 @@ export function MultiBinContextMenu({
     expandBins(gridBins.map((b) => b.id));
     onClose();
   };
+
+  // Merging reads the live selection rather than `binIds`, so the menu closes
+  // only once the dialog is dismissed — closing here would clear the selection
+  // the dialog is about to merge.
+  const canMerge = mergeEnabled && gridBins.length > 1;
 
   const handleDeleteAll = () => {
     // Track deletion BEFORE executing (need bin data)
@@ -283,6 +292,23 @@ export function MultiBinContextMenu({
           />
         )}
 
+        {canMerge && (
+          <ContextMenuItem
+            icon={
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4h16v16H4zM12 4v16"
+                />
+              </svg>
+            }
+            label={t('mobile.binMenu.mergeIntoOne')}
+            onClick={() => setShowMergeDialog(true)}
+          />
+        )}
+
         <ContextMenuDivider />
 
         {/* Delete All */}
@@ -302,6 +328,16 @@ export function MultiBinContextMenu({
           destructive
         />
       </div>
+      {showMergeDialog && (
+        <MergeBinsDialog
+          open
+          scope="selection"
+          onClose={() => {
+            setShowMergeDialog(false);
+            onClose();
+          }}
+        />
+      )}
     </ContextMenuContainer>
   );
 }

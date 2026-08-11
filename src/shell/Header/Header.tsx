@@ -6,13 +6,14 @@ import { useMutations } from '@/shared/contexts';
 import { useResponsive } from '@/shared/hooks';
 import { useCollabMode } from '@/shared/hooks/useCollabMode';
 import { CONSTRAINTS, DEFAULT_LAYOUT_NAME } from '@/core/constants';
-import { activePress, Button, IconButton, Tooltip } from '@/design-system';
+import { activePress, Button, IconButton, Menu, Tooltip } from '@/design-system';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { ShareButton } from '@/features/cloud-share/components/ShareButton';
 import { ShareModal } from '@/features/cloud-share/components/ShareModal';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { LayoutQuickSwitch } from '@/features/layout-library';
-import { getLinkedBins } from '@/features/design-linking';
+import { getLinkedBins, MergeBinsDialog } from '@/features/design-linking';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
 import { useTranslation } from '@/i18n';
@@ -92,6 +93,8 @@ export function Header({ saveStatus }: HeaderProps) {
   // export stays disabled (rather than hidden) until at least one exists.
   const canExportLayout = useMemo(() => getLinkedBins(layout.bins).length > 0, [layout.bins]);
 
+  const [showMergeDialog, setShowMergeDialog] = useState(false);
+  const mergeEnabled = useFeatureFlag('merge_bins_to_design');
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(layout.name);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -328,7 +331,20 @@ export function Header({ saveStatus }: HeaderProps) {
 
         <div className="w-px h-6 bg-stroke-subtle mx-2" />
 
-        <HeaderSupportLinks />
+        <HeaderSupportLinks
+          leadingItems={
+            mergeEnabled ? (
+              <Menu.Item
+                onClick={() => {
+                  trackEvent('ui.modalOpen', { modal: 'mergeBins', source: 'header' });
+                  setShowMergeDialog(true);
+                }}
+              >
+                {t('mobile.binMenu.mergeIntoOne')}
+              </Menu.Item>
+            ) : undefined
+          }
+        />
       </div>
 
       {/* Lazy-loaded modals - only load chunks when modal is opened */}
@@ -367,6 +383,10 @@ export function Header({ saveStatus }: HeaderProps) {
         <Suspense fallback={<LoadingFallback variant="overlay" />}>
           <LayoutExportDialog open={layoutExportOpen} onClose={() => setLayoutExportOpen(false)} />
         </Suspense>
+      )}
+
+      {showMergeDialog && (
+        <MergeBinsDialog open scope="layer" onClose={() => setShowMergeDialog(false)} />
       )}
     </header>
   );

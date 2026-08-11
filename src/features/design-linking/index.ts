@@ -68,6 +68,7 @@ export {
 export { useLinkingStore } from './store';
 
 export { useBinLinking, useLinkedDesign, useLinkedBins } from './hooks';
+export { useMergeBins } from './hooks/useMergeBins';
 
 export {
   CreateDesignDialog,
@@ -75,4 +76,5 @@ export {
   DeleteDesignWarningDialog,
   LinkedDesignSection,
   DesignLinkingDialogs,
+  MergeBinsDialog,
 } from './components';

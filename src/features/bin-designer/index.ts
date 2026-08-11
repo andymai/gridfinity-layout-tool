@@ -22,7 +22,10 @@ export {
 } from './store';
 
 // --- Storage ---
-export { loadDesign, deleteDesign, listDesigns, updateDesignParams } from './storage';
+// `saveDesign` is exposed for design-linking's layout→single-bin merge, which
+// must persist a full BinParams (compartment cells, texts) before navigating.
+// The `createFrom=bin` query-string handoff cannot carry that payload.
+export { loadDesign, deleteDesign, listDesigns, updateDesignParams, saveDesign } from './storage';
 
 // Concrete DesignStorePort. Exposed for `shared/storage/` to register with the
 // core-owned port so core/storage can persist/read designs without a
@@ -54,6 +57,11 @@ export { designFootprint, isBinDesign } from './utils/designKind';
 // Exposed for the layout 3D preview (shared/hooks/useLinkedDesignDividers) to
 // derive compartment divider walls for bins linked to saved designs.
 export { deriveWallSegments } from './utils/compartments';
+// Exposed for design-linking's layout→single-bin merge, which builds a
+// CompartmentConfig from a set of layout bins and must keep the parallel
+// `compartmentTexts` in lockstep with the renumbered cells.
+export { normalizeIdsWithRemap, remapCompartmentTexts } from './utils/compartments';
+export { validateBinParams } from './utils/validation';
 // Exposed for shared/hooks/useLabelPlateCounts (print-list plate counts) to
 // feed the same innerW into planLabelPlates that the worker uses.
 export { binDimensions } from './utils/binDimensions';
