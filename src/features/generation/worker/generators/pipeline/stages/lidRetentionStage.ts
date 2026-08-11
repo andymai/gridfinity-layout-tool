@@ -106,7 +106,13 @@ export const lidRetentionStage: PipelineStage = {
     // don't fit), but clamp to >= 0 defensively so a marginal design never
     // inverts the pocket. The pad bottom is additionally clamped to the interior
     // floor so a deep magnet can never dig a pocket through it.
-    const floorTopZ = dim.wallTopZ - dim.interiorHeight;
+    //
+    // Measured down from the NOMINAL wall top, not `wallTopZ`: a collar raises
+    // the outer wall and the lip without touching the interior, so
+    // `interiorHeight` is still measured from where the wall would have ended.
+    // Subtracting it from `wallTopZ` would put the floor a whole collar too
+    // high, truncating the pad's taper above the floor it should weld into.
+    const floorTopZ = dim.wallTopZ - dim.collarHeight - dim.interiorHeight;
     const availableForPocket = Math.max(0, magnetTopZ - floorTopZ - LID_MAGNET_POST_FLOOR);
     const pocketDepth = Math.min(depth, availableForPocket);
     const padBottomZ = Math.max(floorTopZ, magnetTopZ - pocketDepth - LID_MAGNET_POST_FLOOR);

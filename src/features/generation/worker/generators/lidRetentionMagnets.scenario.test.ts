@@ -126,65 +126,99 @@ describe('magnetic-retention lid geometry', () => {
     expect(Math.abs(d7 - d4)).toBeLessThan(d4 * 0.5);
   });
 
-  it('pad undersides taper at 45° — no flat overhang needing supports (#2712)', async () => {
+  /**
+   * Downward-facing triangle area in the corner-pad window, split by whether a
+   * slicer would need supports under it.
+   *
+   * The window is inboard of the walls and lip (3mm) but within the pads' reach
+   * of the corners (16mm), above the base/floor plate and below the rim — on a
+   * default bin the pads are the only geometry in it. A face needs supports
+   * when it is closer to horizontal than the 45 degree FDM limit: nz below
+   * -cos(45) ~ -0.707. The threshold sits at -0.72 so the taper's exact 45
+   * degree plane (nz = -0.7071) stays on the printable side while ANY steeper
+   * overhang — the pre-#2712 flat underside (nz ~ -1) or a partial transition
+   * anywhere in between — counts as a violation, with no unclassified gap.
+   */
+  const cornerUndersideAreas = (mesh: MeshData): { unsupported: number; taper: number } => {
+    const bb = boundingBox(mesh.vertices);
+    let unsupported = 0;
+    let taper = 0;
+    for (let i = 0; i < mesh.indices.length; i += 3) {
+      const a = mesh.indices[i];
+      const b = mesh.indices[i + 1];
+      const c = mesh.indices[i + 2];
+      const cx = (mesh.vertices[a * 3] + mesh.vertices[b * 3] + mesh.vertices[c * 3]) / 3;
+      const cy =
+        (mesh.vertices[a * 3 + 1] + mesh.vertices[b * 3 + 1] + mesh.vertices[c * 3 + 1]) / 3;
+      const cz =
+        (mesh.vertices[a * 3 + 2] + mesh.vertices[b * 3 + 2] + mesh.vertices[c * 3 + 2]) / 3;
+      const inCornerZone =
+        Math.abs(cx) > bb.maxX - 16 &&
+        Math.abs(cx) < bb.maxX - 3 &&
+        Math.abs(cy) > bb.maxY - 16 &&
+        Math.abs(cy) < bb.maxY - 3 &&
+        cz > 8 &&
+        cz < bb.maxZ - 0.5;
+      if (!inCornerZone) continue;
+      // Winding-based geometric normal, not the stored vertex normals: the
+      // index winding is consistently outward-oriented (bin floor bottoms
+      // read -1), while stored normals have flipped on boolean-result faces
+      // before and would silently blind this check.
+      const nz = triangleNormalZ(mesh.vertices, a, b, c);
+      const area = triangleArea(mesh.vertices, a, b, c);
+      if (nz < -0.72) unsupported += area;
+      else if (nz < -0.65) taper += area;
+    }
+    return { unsupported, taper };
+  };
+
+  it('pad undersides taper at 45 degrees — no flat overhang needing supports (#2712)', async () => {
     const generateBin = getGenerateBin();
     const base = { width: 2, depth: 2, height: 4 };
     const magnetic = generateBin(makeParams({ attachment: 'magnetic' }, base));
     const plain = generateBin(makeParams({ attachment: 'clickRails' }, base));
     assertStructurallyValid(magnetic, '2x2 bin with tapered gusset pads');
 
-    // Sum downward-facing triangle area inside the corner-pad window: inboard
-    // of the walls and lip (3mm) but within the pads' reach of the corners
-    // (16mm), above the base/floor plate and below the rim. In this window
-    // the pads are the only geometry on a default bin. A face needs supports
-    // when it is closer to horizontal than the 45° FDM limit: nz below
-    // -cos(45°) ≈ -0.707. The threshold sits at -0.72 so the taper's exact
-    // 45° plane (nz = -0.7071) stays on the printable side while ANY steeper
-    // overhang — the pre-#2712 flat underside (nz ≈ -1) or a partial
-    // transition anywhere in between — counts as a violation, with no
-    // unclassified gap.
-    const downFacingAreas = (mesh: MeshData): { unsupported: number; taper: number } => {
-      const bb = boundingBox(mesh.vertices);
-      let unsupported = 0;
-      let taper = 0;
-      for (let i = 0; i < mesh.indices.length; i += 3) {
-        const a = mesh.indices[i];
-        const b = mesh.indices[i + 1];
-        const c = mesh.indices[i + 2];
-        const cx = (mesh.vertices[a * 3] + mesh.vertices[b * 3] + mesh.vertices[c * 3]) / 3;
-        const cy =
-          (mesh.vertices[a * 3 + 1] + mesh.vertices[b * 3 + 1] + mesh.vertices[c * 3 + 1]) / 3;
-        const cz =
-          (mesh.vertices[a * 3 + 2] + mesh.vertices[b * 3 + 2] + mesh.vertices[c * 3 + 2]) / 3;
-        const inCornerZone =
-          Math.abs(cx) > bb.maxX - 16 &&
-          Math.abs(cx) < bb.maxX - 3 &&
-          Math.abs(cy) > bb.maxY - 16 &&
-          Math.abs(cy) < bb.maxY - 3 &&
-          cz > 8 &&
-          cz < bb.maxZ - 0.5;
-        if (!inCornerZone) continue;
-        // Winding-based geometric normal, not the stored vertex normals: the
-        // index winding is consistently outward-oriented (bin floor bottoms
-        // read -1), while stored normals have flipped on boolean-result faces
-        // before and would silently blind this check.
-        const nz = triangleNormalZ(mesh.vertices, a, b, c);
-        const area = triangleArea(mesh.vertices, a, b, c);
-        if (nz < -0.72) unsupported += area;
-        else if (nz < -0.65) taper += area;
-      }
-      return { unsupported, taper };
-    };
-
-    const pads = downFacingAreas(magnetic);
+    const pads = cornerUndersideAreas(magnetic);
     // No support-requiring downward faces: the taper meets the pad bottom at
-    // the tongue tip, so only sub-mm² tessellation slivers may register.
+    // the tongue tip, so only sub-mm2 tessellation slivers may register.
     expect(pads.unsupported).toBeLessThan(2);
-    // The 45° underside itself must be present in force (4 pads' worth).
+    // The 45 degree underside itself must be present in force (4 pads' worth).
     expect(pads.taper).toBeGreaterThan(100);
     // Control: the window really isolates the pads — a plain bin has nothing
     // sloping down there, so the taper signal above comes from the pads.
-    expect(downFacingAreas(plain).taper).toBeLessThan(5);
+    expect(cornerUndersideAreas(plain).taper).toBeLessThan(5);
+  });
+
+  it('an exterior wall collar lifts the pads without reshaping their taper (#3431)', async () => {
+    const generateBin = getGenerateBin();
+    // `interiorHeight` is measured from the NOMINAL wall top, so a floor plane
+    // taken from the collared `wallTopZ` sits a whole collar too high and
+    // truncates the pad's taper into a flat step — the overhang #2712 removed.
+    // It only shows where the taper runs near the floor (`wallHeight < 13.03`)
+    // with a collar tall enough to lift the wrong floor above it
+    // (`wallHeight + collar > 13.03`); a 4u bin ends clear of both and reads
+    // identical either way. The solid stays watertight throughout, so the
+    // underside is the only place to look.
+    const collared = generateBin(
+      makeParams(
+        { attachment: 'magnetic' },
+        { width: 2, depth: 2, height: 2, extraWallHeightMm: 9 }
+      )
+    );
+    assertStructurallyValid(collared, '2x2x2 bin with a 9mm collar and gusset pads');
+
+    // An untruncated taper's area is a property of the FOOTPRINT alone, so a
+    // pad that clears the floor measures the same on any bin it fits in. The
+    // truncated one does not: the flat step adds its own near-vertical sides.
+    const reference = generateBin(
+      makeParams({ attachment: 'magnetic' }, { width: 2, depth: 2, height: 4 })
+    );
+    expect(cornerUndersideAreas(collared).taper).toBeCloseTo(
+      cornerUndersideAreas(reference).taper,
+      3
+    );
+    expect(cornerUndersideAreas(collared).unsupported).toBeLessThan(2);
   });
 
   it('produces a valid lid mesh with edge retention magnets (#2844)', async () => {
