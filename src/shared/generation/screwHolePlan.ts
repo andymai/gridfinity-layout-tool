@@ -11,11 +11,17 @@
  * always needs the pocket-floor fallback — and if any one piece needs the pad,
  * every piece must carry the same taller slab or the assembled plate is stepped.
  *
- * This module deliberately does NOT resolve a floor site to millimetres. Those
- * positions come from `magnetPositionsForCell` (features/generation), which is
- * also what the magnets, the lightweight pads and the bin base all use; keeping
- * one source for them is what stops the shelf-off-its-wall class of bug where
- * three layers each compute "the same" position slightly differently.
+ * Every slot carries a `target` in piece-centred mm, whatever its site. A margin
+ * target IS the hole centre. A floor target is the IDEAL point, and the geometry
+ * layer snaps it to the nearest legal `magnetPositionsForCell` position. Stating
+ * the snap as one rule — "nearest magnet position to the anchor" — is what keeps
+ * the exact build, the draft mesh and the margin path from each inventing their
+ * own "corner cell" and drifting apart.
+ *
+ * Plan against a PIECE's own resolved params, never the parent plate's. Under
+ * `preferIdenticalPieces` a piece is built in a canonical orientation and rotated
+ * 180° at placement, and padding/edges/corner radii are already rotated for it;
+ * planning from those keeps the screws rotating in lockstep.
  */
 
 import {
@@ -25,6 +31,7 @@ import {
   SCREW_COUNTERSINK_INCLUDED_ANGLE_DEG,
   SCREW_PAD_MIN_RETAIN_MM,
   SCREWS_PER_PIECE_DEFAULT,
+  SCREWS_PER_PIECE_MAX,
 } from '@/core/constants';
 import type { ScrewHeadStyle, ScrewHoleParams } from '@/core/types/baseplate';
 
@@ -38,25 +45,33 @@ export const SCREW_MARGIN_MIN_WALL_MM = 1.2;
 /** Which material a screw passes through. */
 export type ScrewSite = 'margin' | 'floor';
 
-/** The four corners of a piece, in the order holes are assigned. */
-export const SCREW_CORNERS = ['bl', 'br', 'tr', 'tl'] as const;
-export type ScrewCorner = (typeof SCREW_CORNERS)[number];
+/**
+ * Where on a piece a screw can sit, in the order slots are filled: the four
+ * corners first (a piece fastened only at its corners cannot pivot), then the
+ * four edge midpoints for counts above four.
+ *
+ * The corner block is deliberately a complete set of four. Under
+ * `preferIdenticalPieces` a piece may be placed 180° rotated, which maps
+ * bl↔tr and br↔tl; a full set is invariant under that, a partial one is not and
+ * would break the rotated pair's shared fingerprint.
+ */
+export const SCREW_ANCHORS = ['bl', 'br', 'tr', 'tl', 'b', 'r', 't', 'l'] as const;
+export type ScrewAnchor = (typeof SCREW_ANCHORS)[number];
 
-/** A margin-sited screw carries its position; a floor-sited one is resolved to
- * millimetres later, by the layer that owns `magnetPositionsForCell`. */
-export type ScrewPlacement =
-  | {
-      readonly site: 'margin';
-      readonly corner: ScrewCorner;
-      readonly x: number;
-      readonly y: number;
-    }
-  | { readonly site: 'floor'; readonly corner: ScrewCorner };
+export interface ScrewSlot {
+  readonly anchor: ScrewAnchor;
+  readonly site: ScrewSite;
+  /**
+   * Piece-centred mm. Exact hole centre for a margin slot; for a floor slot the
+   * ideal point that the geometry layer snaps to the nearest magnet position.
+   */
+  readonly target: readonly [number, number];
+}
 
 export interface ScrewPiecePlan {
-  readonly placements: readonly ScrewPlacement[];
-  /** Corners that had no legal position at all and carry no screw. */
-  readonly dropped: readonly ScrewCorner[];
+  readonly slots: readonly ScrewSlot[];
+  /** Anchors that had no legal position and carry no screw. */
+  readonly dropped: readonly ScrewAnchor[];
 }
 
 /** Per-side solid margin band widths (mm) available on a piece. */
@@ -67,17 +82,57 @@ export interface ScrewMarginBands {
   readonly back: number;
 }
 
+/** Corner radii (mm) of the piece's outer profile, matching `CornerRadii`. */
+export interface ScrewCornerRadii {
+  readonly tl: number;
+  readonly tr: number;
+  readonly bl: number;
+  readonly br: number;
+}
+
 export interface ScrewPieceInput {
-  /** Piece footprint in mm, excluding nothing — the full printed extent. */
+  /** Full printed footprint of the piece in mm. */
   readonly widthMm: number;
   readonly depthMm: number;
   readonly bands: ScrewMarginBands;
+  /** Outer rounding, so a hole is not placed in material the arc removes. */
+  readonly cornerRadii?: ScrewCornerRadii;
   /**
-   * True when a candidate position collides with something that owns that
-   * material: a connector tongue or groove, a seam, or the outside of a shaped
-   * perimeter. Coordinates are piece-centred mm; `radius` is the head radius.
+   * True when a candidate collides with something that owns that material: a
+   * connector tongue or groove, a seam, or the outside of a shaped perimeter.
+   * Piece-centred mm; `radius` is the head radius.
    */
   readonly isBlocked?: (x: number, y: number, radius: number) => boolean;
+  /**
+   * False when the pocket floor cannot host a screw at this anchor — most often
+   * a fractional (sub-unit) corner cell, which carries no magnet positions to
+   * snap to. Defaults to available.
+   */
+  readonly isFloorAvailable?: (anchor: ScrewAnchor) => boolean;
+}
+
+/**
+ * Margin bands a piece can actually put a screw in.
+ *
+ * Padding survives in resolved params under `overTile`, but the material there
+ * is functional grid rather than the solid ring a screw needs, so those bands
+ * read as zero. `detachMargins` needs no handling here: it already zeroes the
+ * body's padding, and each detached rail is planned as its own piece.
+ */
+export function effectiveMarginBands(params: {
+  readonly paddingLeft: number;
+  readonly paddingRight: number;
+  readonly paddingFront: number;
+  readonly paddingBack: number;
+  readonly overTile?: boolean;
+}): ScrewMarginBands {
+  if (params.overTile === true) return { left: 0, right: 0, front: 0, back: 0 };
+  return {
+    left: params.paddingLeft,
+    right: params.paddingRight,
+    front: params.paddingFront,
+    back: params.paddingBack,
+  };
 }
 
 /** Resolved head diameter for a style, honouring an explicit override. */
@@ -119,6 +174,9 @@ export interface MagnetPocket {
  * head and still retain material beneath it. Returns 0 when the plate already
  * has somewhere for the head to go.
  *
+ * `existingFloorDepthMm` must be the floor the plate has WITHOUT this pad, or
+ * the two feed back into each other and the plate grows on every recompute.
+ *
  * The magnet case is not just "a deeper floor". Because a screw is placed
  * concentric with a magnet, the ø6.5 × 2mm magnet pocket IS the head recess: the
  * screw goes in first, the magnet drops in over it, and the 0.5mm retaining
@@ -152,96 +210,239 @@ export function minBandForHead(headDiameterMm: number): number {
   return headDiameterMm + 2 * SCREW_MARGIN_MIN_WALL_MM;
 }
 
-/** The two bands adjacent to a corner, nearest-first along X then Y. */
-function cornerBands(
-  corner: ScrewCorner,
+/**
+ * Whether a disc of `radius` centred at (x, y) fits inside a rounded rectangle.
+ * Shrinking the rectangle by the radius reduces this to a point-containment
+ * test, including the corner arcs — which is what stops a screw being placed in
+ * material a large corner radius has already cut away.
+ */
+export function discFitsRoundedRect(
+  x: number,
+  y: number,
+  halfW: number,
+  halfD: number,
+  cornerR: number,
+  radius: number
+): boolean {
+  const hw = halfW - radius;
+  const hd = halfD - radius;
+  if (hw <= 0 || hd <= 0) return false;
+  // A corner radius can never exceed half the shorter side; a caller passing a
+  // larger one (the max-radius bound used for edge anchors) would otherwise put
+  // the arc centre outside the rectangle and invert the test.
+  const clampedCornerR = Math.min(cornerR, halfW, halfD);
+  const r = Math.max(0, Math.min(clampedCornerR - radius, hw, hd));
+  const ax = Math.abs(x);
+  const ay = Math.abs(y);
+  if (ax > hw || ay > hd) return false;
+  const dx = ax - (hw - r);
+  const dy = ay - (hd - r);
+  if (dx <= 0 || dy <= 0) return true;
+  return Math.hypot(dx, dy) <= r;
+}
+
+/** Unit direction of an anchor: 0 on an axis means "centred on that axis". */
+function anchorSigns(anchor: ScrewAnchor): readonly [number, number] {
+  switch (anchor) {
+    case 'bl':
+      return [-1, -1];
+    case 'br':
+      return [1, -1];
+    case 'tr':
+      return [1, 1];
+    case 'tl':
+      return [-1, 1];
+    case 'b':
+      return [0, -1];
+    case 'r':
+      return [1, 0];
+    case 't':
+      return [0, 1];
+    case 'l':
+      return [-1, 0];
+  }
+}
+
+/** Band width on each side an anchor touches; 0 where it touches none. */
+function anchorBands(
+  anchor: ScrewAnchor,
   bands: ScrewMarginBands
 ): { readonly xBand: number; readonly yBand: number } {
-  const xBand = corner === 'bl' || corner === 'tl' ? bands.left : bands.right;
-  const yBand = corner === 'bl' || corner === 'br' ? bands.front : bands.back;
+  const [sx, sy] = anchorSigns(anchor);
+  const xBand = sx === 0 ? 0 : sx < 0 ? bands.left : bands.right;
+  const yBand = sy === 0 ? 0 : sy < 0 ? bands.front : bands.back;
   return { xBand, yBand };
 }
 
-/** Sign of a corner along each axis (-1 = low side, +1 = high side). */
-function cornerSigns(corner: ScrewCorner): readonly [number, number] {
-  const sx = corner === 'bl' || corner === 'tl' ? -1 : 1;
-  const sy = corner === 'bl' || corner === 'br' ? -1 : 1;
-  return [sx, sy];
+/** Corner radius nearest an anchor, used for the containment test. */
+function anchorCornerRadius(anchor: ScrewAnchor, radii: ScrewCornerRadii | undefined): number {
+  if (radii === undefined) return 0;
+  const [sx, sy] = anchorSigns(anchor);
+  // An edge-midpoint anchor sits far from every arc, so the largest radius is a
+  // safe bound without needing to know which corner it drifts toward.
+  if (sx === 0 || sy === 0) return Math.max(radii.tl, radii.tr, radii.bl, radii.br);
+  if (sx < 0) return sy < 0 ? radii.bl : radii.tl;
+  return sy < 0 ? radii.br : radii.tr;
+}
+
+/** The ideal point for an anchor, used as the floor snap target. */
+function anchorTarget(
+  anchor: ScrewAnchor,
+  halfW: number,
+  halfD: number
+): readonly [number, number] {
+  const [sx, sy] = anchorSigns(anchor);
+  return [sx * halfW, sy * halfD];
 }
 
 /**
- * Place one corner's screw in the margin if either adjacent band can host it.
+ * Hole centre for an anchor riding the margin, or undefined when neither
+ * adjacent band can host the head.
  *
- * Prefers the wider band, and sits the hole centred across that band's width and
- * inset from the piece's end by the same clearance — so the screw lands in the
- * corner of the L-shaped margin rather than drifting down one arm.
+ * Rides the wider band, centred across its width and pushed toward the anchor
+ * along the run, so a corner screw lands in the corner of the L-shaped margin
+ * rather than drifting down one arm.
  */
-function planMarginPlacement(
-  corner: ScrewCorner,
+function marginPosition(
+  anchor: ScrewAnchor,
   input: ScrewPieceInput,
   headDiameterMm: number
-): ScrewPlacement | undefined {
-  const { xBand, yBand } = cornerBands(corner, input.bands);
+): readonly [number, number] | undefined {
+  const { xBand, yBand } = anchorBands(anchor, input.bands);
   const needed = minBandForHead(headDiameterMm);
   if (xBand < needed && yBand < needed) return undefined;
 
-  const [sx, sy] = cornerSigns(corner);
+  const [sx, sy] = anchorSigns(anchor);
   const halfW = input.widthMm / 2;
   const halfD = input.depthMm / 2;
   const endInset = headDiameterMm / 2 + SCREW_MARGIN_MIN_WALL_MM;
 
-  // Ride the wider band; the hole is centred across it and pushed toward the
-  // corner along the run.
-  const useX = xBand >= yBand;
+  const useX = xBand >= yBand && xBand >= needed;
   const x = useX ? sx * (halfW - xBand / 2) : sx * (halfW - endInset);
   const y = useX ? sy * (halfD - endInset) : sy * (halfD - yBand / 2);
-
-  if (input.isBlocked?.(x, y, headDiameterMm / 2) === true) return undefined;
-  return { site: 'margin', corner, x, y };
+  return [x, y];
 }
 
 /**
- * Decide a site for every screw on one piece.
+ * Assign every anchor a site from DIMENSIONS ALONE.
  *
- * Each corner tries the margin first, then falls back to the pocket floor. A
- * corner is only dropped when the margin cannot host it AND the caller reports
- * the floor candidate blocked too — the caller owns that test because floor
- * positions are resolved against `magnetPositionsForCell` downstream.
- *
- * `screwsPerPiece` above four repeats the corner cycle, so a long piece can take
- * eight by going round twice; the geometry layer walks inward for the repeats.
+ * This is the height-critical half of planning and it deliberately takes no
+ * collision callbacks. Band widths, over-tile and corner radii are all known
+ * early and deterministically; connector collisions are not, and letting one
+ * flip an anchor to the floor would make the plate 3.1mm taller because a screw
+ * moved. See {@link planPieceScrews} for the invariant that follows from this.
  */
-export function planPieceScrews(
+export function assignAnchorSites(
   params: ScrewHoleParams,
-  input: ScrewPieceInput,
-  floorBlocked?: (corner: ScrewCorner) => boolean
-): ScrewPiecePlan {
-  const count = params.screwsPerPiece ?? SCREWS_PER_PIECE_DEFAULT;
+  input: ScrewPieceInput
+): readonly ScrewSlot[] {
   const headDiameterMm = resolveScrewHeadDiameter(params.headStyle, params.headDiameter);
+  const headRadius = headDiameterMm / 2;
+  const halfW = input.widthMm / 2;
+  const halfD = input.depthMm / 2;
 
-  const placements: ScrewPlacement[] = [];
-  const dropped: ScrewCorner[] = [];
-
-  for (let i = 0; i < count; i++) {
-    const corner = SCREW_CORNERS[i % SCREW_CORNERS.length];
-    const margin = planMarginPlacement(corner, input, headDiameterMm);
-    if (margin !== undefined) {
-      placements.push(margin);
-      continue;
-    }
-    if (floorBlocked?.(corner) === true) {
-      dropped.push(corner);
-      continue;
-    }
-    placements.push({ site: 'floor', corner });
-  }
-
-  return { placements, dropped };
+  return SCREW_ANCHORS.map((anchor) => {
+    const cornerR = anchorCornerRadius(anchor, input.cornerRadii);
+    const margin = marginPosition(anchor, input, headDiameterMm);
+    return margin !== undefined &&
+      discFitsRoundedRect(margin[0], margin[1], halfW, halfD, cornerR, headRadius)
+      ? ({ anchor, site: 'margin', target: margin } as const)
+      : ({ anchor, site: 'floor', target: anchorTarget(anchor, halfW, halfD) } as const);
+  });
 }
 
-/** True when any placement in a plate's plans needs the pocket-floor fallback. */
-export function planNeedsFloorPad(plans: readonly ScrewPiecePlan[]): boolean {
-  return plans.some((plan) => plan.placements.some((p) => p.site === 'floor'));
+/**
+ * Whether a piece needs the pocket-floor pad, from dimensions alone.
+ *
+ * Reads the first `screwsPerPiece` anchors, which is what the piece would use
+ * with nothing in the way. Because blocking may only prune (never re-site), this
+ * answer cannot change once collisions are known.
+ */
+export function pieceNeedsFloorPad(params: ScrewHoleParams, input: ScrewPieceInput): boolean {
+  if (!params.enabled) return false;
+  return needsFloorPad(assignAnchorSites(params, input), wantedScrewCount(params));
+}
+
+/** Shared by the height query and the slot walk, so the two cannot drift. */
+function needsFloorPad(assignments: readonly ScrewSlot[], wanted: number): boolean {
+  return assignments.slice(0, wanted).some((slot) => slot.site === 'floor');
+}
+
+function wantedScrewCount(params: ScrewHoleParams): number {
+  const requested = params.screwsPerPiece ?? SCREWS_PER_PIECE_DEFAULT;
+  return Math.min(Math.max(0, requested), SCREWS_PER_PIECE_MAX, SCREW_ANCHORS.length);
+}
+
+/**
+ * Fill up to `screwsPerPiece` slots on one piece.
+ *
+ * Walks {@link SCREW_ANCHORS} in order and skips any anchor that is not legal,
+ * so a corner a connector owns shifts the screw to the next anchor rather than
+ * being silently lost. Anchors are never reused, so a count above the anchor
+ * list is capped rather than stacking two holes on one spot.
+ *
+ * INVARIANT: blocking prunes, it never re-sites. When the piece's nominal
+ * anchors all fit margins, the plate carries no floor pad — so a later anchor
+ * that would have been floor-sited is dropped rather than placed into material
+ * that was never provisioned for it. That is what keeps the plate's printed
+ * height a pure function of its dimensions.
+ *
+ * Floor targets are still only IDEAL points here. The geometry layer snaps each
+ * to the nearest legal magnet position and owns the containment check for the
+ * snapped result; this function has already done that check for margin slots.
+ */
+export function planPieceScrews(params: ScrewHoleParams, input: ScrewPieceInput): ScrewPiecePlan {
+  if (!params.enabled) return { slots: [], dropped: [] };
+
+  const wanted = wantedScrewCount(params);
+  const assignments = assignAnchorSites(params, input);
+  const floorPadProvisioned = needsFloorPad(assignments, wanted);
+  const headRadius = resolveScrewHeadDiameter(params.headStyle, params.headDiameter) / 2;
+
+  const slots: ScrewSlot[] = [];
+  const dropped: ScrewAnchor[] = [];
+
+  for (const slot of assignments) {
+    const anchor = slot.anchor;
+    if (slots.length >= wanted) break;
+
+    if (slot.site === 'margin') {
+      if (input.isBlocked?.(slot.target[0], slot.target[1], headRadius) === true) {
+        dropped.push(anchor);
+        continue;
+      }
+    } else {
+      // No pad was provisioned, so there is no material here to cut into.
+      if (!floorPadProvisioned) {
+        dropped.push(anchor);
+        continue;
+      }
+      if (input.isFloorAvailable?.(anchor) === false) {
+        dropped.push(anchor);
+        continue;
+      }
+    }
+
+    slots.push(slot);
+  }
+
+  return { slots, dropped };
+}
+
+/**
+ * True when any piece of a plate needs the pocket-floor fallback.
+ *
+ * Derived from each piece's DIMENSIONS, not from its resolved slots. Pruning can
+ * empty a piece's floor slots (a fractional corner cell, a connector), and
+ * reading the slots would then quietly retract a pad the plate was already built
+ * around, leaving the remaining floor screws cutting into material that is not
+ * there.
+ */
+export function plateNeedsFloorPad(
+  params: ScrewHoleParams,
+  pieces: readonly ScrewPieceInput[]
+): boolean {
+  return pieces.some((input) => pieceNeedsFloorPad(params, input));
 }
 
 /**
@@ -251,10 +452,10 @@ export function planNeedsFloorPad(plans: readonly ScrewPiecePlan[]): boolean {
  */
 export function platePadThicknessMm(
   params: ScrewHoleParams,
-  plans: readonly ScrewPiecePlan[],
+  pieces: readonly ScrewPieceInput[],
   existingFloorDepthMm: number,
   magnetPocket?: MagnetPocket
 ): number {
-  if (!planNeedsFloorPad(plans)) return 0;
+  if (!plateNeedsFloorPad(params, pieces)) return 0;
   return screwPadThicknessMm(params, existingFloorDepthMm, magnetPocket);
 }

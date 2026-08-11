@@ -304,10 +304,15 @@ export const SCREW_COUNTERSINK_INCLUDED_ANGLE_DEG = 90;
  */
 export const SCREW_PAD_MIN_RETAIN_MM = 0.8;
 
-/** Screws placed per split piece, so no printed piece is left unfastened. */
+/**
+ * Screws placed per split piece, so no printed piece is left unfastened. Four
+ * corners is the default and the useful floor; the max is the size of the anchor
+ * list (four corners plus four edge midpoints), because anchors are never reused
+ * and a higher count would otherwise stack holes on one spot.
+ */
 export const SCREWS_PER_PIECE_DEFAULT = 4;
 export const SCREWS_PER_PIECE_MIN = 1;
-export const SCREWS_PER_PIECE_MAX = 12;
+export const SCREWS_PER_PIECE_MAX = 8;
 
 /** Default baseplate parameters: no magnets, no padding */
 export const DEFAULT_BASEPLATE_PARAMS: StoredBaseplateParams = {
