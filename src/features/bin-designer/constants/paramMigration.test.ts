@@ -1182,7 +1182,7 @@ describe('migrateParams', () => {
     // The stop list went from 50/75/100 to 5% steps (#3401). Because
     // `migrateClickRailCoverage` snaps to the NEAREST option, dropping a value
     // that designs were saved with would silently re-render them at a
-    // different coverage — a changed printed part with no notice. 75 is the
+    // different coverage: a changed printed part with no notice. 75 is the
     // one at risk, and it is why the step is 5 and not the requested 10.
     for (const coverage of [50, 75, 100]) {
       const result = migrateParams({
@@ -1203,7 +1203,7 @@ describe('migrateParams', () => {
     // `migrateParams` runs on EVERY load, so it cannot "normalise once". It
     // also cannot tell a width the user deliberately set in socket mode
     // (#3402) from one left over in storage from a stint in text mode, so it
-    // must not touch either — resetting would wipe the new control's value
+    // must not touch either; resetting would wipe the new control's value
     // every time the design reopened.
     for (const width of [40, 100]) {
       const result = migrateParams({

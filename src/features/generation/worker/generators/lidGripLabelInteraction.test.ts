@@ -7,7 +7,7 @@
  * centre moves and the match silently fails: the rail is passed through whole
  * and the grip's requested snap-softening does not happen.
  *
- * Nothing about the resulting lid looks wrong — it is a valid solid with a
+ * Nothing about the resulting lid looks wrong: it is a valid solid with a
  * relief and a rail, just a rail that was supposed to give way and does not.
  */
 // @vitest-environment node
