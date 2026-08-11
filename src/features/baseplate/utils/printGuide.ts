@@ -13,7 +13,7 @@ import type { BaseplatePiece, BaseplateTiling } from '../types/tiling';
 import type { PieceGroup } from './pieceFingerprint';
 import { colToLetter } from './splitPlanner';
 import { planPhysicalStacks } from './stackPrint';
-import { GRIDFINITY_SPEC, MAGNET_FLOOR } from '@/shared/printSettings/gridfinityGeometry';
+import { baseplateTotalHeight } from '@/shared/printSettings/baseplateHeight';
 import {
   TONGUE_PROTRUSION,
   TONGUE_CLEARANCE,
@@ -22,7 +22,6 @@ import {
   effectiveClearance,
 } from '@/shared/constants/connectors';
 
-const SOCKET_HEIGHT = GRIDFINITY_SPEC.SOCKET_HEIGHT;
 
 export interface PrintGuideInput {
   readonly tiling: BaseplateTiling;
@@ -406,8 +405,10 @@ function generatePieceTable(
       params.paddingBack +
       (params.edges?.front === 'join' && (isPaired || startMale) ? tongue : 0) +
       (params.edges?.back === 'join' && (isPaired || !startMale) ? tongue : 0);
-    const heightMm =
-      SOCKET_HEIGHT + (parentParams.magnetHoles ? MAGNET_FLOOR + parentParams.magnetDepth : 0);
+    // Via the shared derivation, not a local restatement: this had drifted and
+    // omitted the solid floor, so a weighted plate's guide understated its own
+    // printed height.
+    const heightMm = baseplateTotalHeight(parentParams);
 
     // Under preferIdenticalPieces opposite-corner pieces share a mesh, so one
     // of each pair is assembled rotated 180° around its center. Annotate the

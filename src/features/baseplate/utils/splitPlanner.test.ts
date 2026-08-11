@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { gridUnits } from '@gridfinity/branded-types';
+import { gridUnits, mm } from '@gridfinity/branded-types';
 import {
   computeBaseplateTiling,
   pieceToBaseplateParams,
@@ -870,7 +870,7 @@ describe('pieceToBaseplateParams', () => {
       depth: 8,
       paddingLeft: 12,
       paddingRight: 12,
-      screwHoles: { enabled: true, diameter: 3.4, headStyle: 'countersink' },
+      screwHoles: { enabled: true, diameter: mm(3.4), headStyle: 'countersink' },
       screwPadThicknessMm: 3.1,
     });
     const tiling = computeBaseplateTiling(parent, 256);
@@ -888,7 +888,7 @@ describe('pieceToBaseplateParams', () => {
     const parent = makeParams({
       width: 10,
       depth: 8,
-      screwHoles: { enabled: true, diameter: 3.4, headStyle: 'countersink' },
+      screwHoles: { enabled: true, diameter: mm(3.4), headStyle: 'countersink' },
       screwPadThicknessMm: 3.1,
     });
     const heights = computeBaseplateTiling(parent, 256).pieces.map(
