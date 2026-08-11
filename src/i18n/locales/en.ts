@@ -133,7 +133,6 @@ const en: Record<string, string> = {
 
   // Header
   'header.editLayoutName': 'Click to edit layout name',
-  'header.layoutName': 'Layout name',
   'header.switchLayout': 'Switch layout (current: {name})',
   'header.manageLayouts': 'Manage layouts',
   'header.print': 'Print',
@@ -2999,7 +2998,7 @@ const en: Record<string, string> = {
     'Depth of the flat pocket. Match it to the height of your screw head so the head ends up level with the surface.',
   'baseplate.screwHoles.perPiece.label': 'Screws per piece',
   'baseplate.screwHoles.perPiece.info':
-    'Holes placed in every split piece, so no printed piece is left unfastened. Four fills the corners; higher counts add the edge midpoints.',
+    'Holes placed in every split piece, so no printed piece is left unfastened. Four fill the corners; higher counts add the edge midpoints.',
   'baseplate.gridUnitTooltip': 'Width of one grid square (standard: 42mm)',
   'baseplate.gridUnitY': 'Grid unit Y',
   'baseplate.gridUnitYTooltip':

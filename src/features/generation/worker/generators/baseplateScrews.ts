@@ -204,6 +204,15 @@ function buildScrewTemplate(
     axis: [0, 0, -1],
   });
 
+  // No recess to cut when the head is no wider than the shaft: a countersink
+  // would loft between coincident sections and a counterbore would be a pocket
+  // narrower than the hole through it. Both kernels happen to tolerate the
+  // degenerate loft today, which is not something to depend on. Reachable from
+  // the UI, where the shaft tops out at the countersink head's default width.
+  if (headRadius <= shaftRadius || recessDepth <= 0) {
+    return shaft;
+  }
+
   let recess: Shape3D;
   try {
     if (params.headStyle === 'counterbore') {

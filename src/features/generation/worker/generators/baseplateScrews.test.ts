@@ -210,6 +210,34 @@ describe('buildScrewCutters', () => {
     }
   });
 
+  it('survives a head no wider than the shaft', () => {
+    // Reachable from the UI: the shaft slider tops out at 8mm and the
+    // countersink head defaults to 8mm, so the cone collapses to zero depth and
+    // a loft between two coincident sections would throw.
+    const flat: ScrewHoleParams = { ...COUNTERSINK, diameter: mm(8) };
+    const cutters = buildScrewCutters([{ x: 0, y: 0, site: 'floor' }], flat, totalHeight);
+    try {
+      expect(cutters).toHaveLength(1);
+      const bb = bbox(cutters[0]);
+      expect(bb.maxX - bb.minX).toBeCloseTo(8, 1);
+      expect(bb.minZ).toBeLessThanOrEqual(-totalHeight);
+    } finally {
+      for (const c of cutters) c.delete();
+    }
+  });
+
+  it('survives a head narrower than the shaft', () => {
+    const inverted: ScrewHoleParams = { ...COUNTERSINK, diameter: mm(6), headDiameter: mm(4) };
+    const cutters = buildScrewCutters([{ x: 0, y: 0, site: 'floor' }], inverted, totalHeight);
+    try {
+      expect(cutters).toHaveLength(1);
+      const bb = bbox(cutters[0]);
+      expect(bb.maxX - bb.minX).toBeCloseTo(6, 1);
+    } finally {
+      for (const c of cutters) c.delete();
+    }
+  });
+
   it('makes a counterbore a flat pocket of the head diameter', () => {
     const [cutter] = buildScrewCutters([{ x: 0, y: 0, site: 'floor' }], COUNTERBORE, totalHeight);
     try {
