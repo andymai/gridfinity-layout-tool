@@ -6,7 +6,7 @@
  * trio plus the effective readout is a block of its own, and folding it back
  * in pushed that file well past the 500-line ceiling.
  */
-import { Button, SegmentedControl } from '@/design-system';
+import { Button, Checkbox, SegmentedControl } from '@/design-system';
 import { LID_RAIL_SIDES, lidGripHeightAdjustable } from '@/features/bin-designer/types';
 import type { LidGripSides, LidRailSide } from '@/features/bin-designer/types';
 import type { useTranslation } from '@/i18n';
@@ -170,15 +170,15 @@ export function LidGripControls({
           )}
 
           <div>
-            <label className="flex items-start gap-2 text-xs text-content-secondary">
-              <input
-                type="checkbox"
-                checked={grip.binDip}
-                onChange={handlers.toggleGripBinDip}
-                className="mt-0.5"
-              />
-              <span>{t('binDesigner.lid.gripBinDip')}</span>
-            </label>
+            {/* `items-start` overrides the component's centring: this label is long
+                enough to wrap, and centring would put the box beside the middle
+                line. No nudge needed — text-xs and the box are both 16px tall. */}
+            <Checkbox
+              className="items-start"
+              checked={grip.binDip}
+              onChange={handlers.toggleGripBinDip}
+              label={t('binDesigner.lid.gripBinDip')}
+            />
             {/* Outside the label: `Hint` is a <p>, which cannot nest in a <span>. */}
             <Hint>{t('binDesigner.lid.gripBinDipWarning')}</Hint>
           </div>

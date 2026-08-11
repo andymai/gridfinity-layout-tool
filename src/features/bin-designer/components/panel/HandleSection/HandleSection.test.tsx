@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { HandleSection } from './HandleSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
@@ -31,6 +31,20 @@ describe('HandleSection', () => {
     expect(screen.getByText('Back')).toBeDefined();
     expect(screen.getByText('Left')).toBeDefined();
     expect(screen.getByText('Right')).toBeDefined();
+  });
+
+  it('toggles the chamfer through the store', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        handles: { ...DEFAULT_BIN_PARAMS.handles, enabled: true, chamfer: false },
+      },
+    });
+    render(<HandleSection />);
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Chamfer edges' }));
+
+    expect(useDesignerStore.getState().params.handles.chamfer).toBe(true);
   });
 
   it('renders the back side chip as off + disabled when a label tab blocks it', () => {

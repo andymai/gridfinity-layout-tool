@@ -8,7 +8,7 @@
  */
 
 import { useTranslation } from '@/i18n';
-import { Button } from '@/design-system';
+import { Button, Checkbox } from '@/design-system';
 import { FeatureToggle } from '../FeatureToggle';
 import {
   ShapePicker,
@@ -306,15 +306,12 @@ export function WallCutoutsSection() {
 
           {/* Interior walls */}
           <div className="border-t border-stroke-subtle/50 pt-2">
-            <label className="flex cursor-pointer items-center gap-2 text-xs text-content-secondary">
-              <input
-                type="checkbox"
-                checked={walls.interior.enabled}
-                onChange={() => handlers.toggleSide('interior')}
-                className="h-3.5 w-3.5 rounded border-stroke-subtle text-accent focus:ring-accent"
-              />
-              {t('binDesigner.wallCutouts.interior')}
-            </label>
+            <Checkbox
+              size="sm"
+              checked={walls.interior.enabled}
+              onChange={() => handlers.toggleSide('interior')}
+              label={t('binDesigner.wallCutouts.interior')}
+            />
             {walls.interior.enabled && !linked && (
               <div className="ml-6 mt-2">
                 <SizeControls

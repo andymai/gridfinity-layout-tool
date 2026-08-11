@@ -18,7 +18,7 @@ import {
   type SideState,
 } from '../shared';
 import { RulerIcon } from '@/design-system/Icon';
-import { Button } from '@/design-system';
+import { Button, Checkbox } from '@/design-system';
 import { clamp } from '@/shared/utils/math';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import { useHandleSection, HANDLE_SIDES } from './useHandleSection';
@@ -258,26 +258,20 @@ export function HandleSection() {
 
               {/* Behavior toggles — separated visually */}
               <div className="space-y-2 border-t border-stroke-subtle/50 pt-2">
-                <label className="flex cursor-pointer items-center gap-2 text-xs text-content-secondary">
-                  <input
-                    type="checkbox"
-                    checked={handles.chamfer}
-                    onChange={handlers.toggleChamfer}
-                    className="h-3.5 w-3.5 rounded border-stroke-subtle text-accent focus:ring-accent"
-                  />
-                  {t('binDesigner.handles.chamfer')}
-                </label>
+                <Checkbox
+                  size="sm"
+                  checked={handles.chamfer}
+                  onChange={handlers.toggleChamfer}
+                  label={t('binDesigner.handles.chamfer')}
+                />
 
                 {hasCompartments && (
-                  <label className="flex cursor-pointer items-center gap-2 text-xs text-content-secondary">
-                    <input
-                      type="checkbox"
-                      checked={handles.interior}
-                      onChange={handlers.toggleInterior}
-                      className="h-3.5 w-3.5 rounded border-stroke-subtle text-accent focus:ring-accent"
-                    />
-                    {t('binDesigner.handles.interior')}
-                  </label>
+                  <Checkbox
+                    size="sm"
+                    checked={handles.interior}
+                    onChange={handlers.toggleInterior}
+                    label={t('binDesigner.handles.interior')}
+                  />
                 )}
               </div>
 

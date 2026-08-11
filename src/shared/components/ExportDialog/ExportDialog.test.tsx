@@ -92,6 +92,46 @@ describe('ExportDialog', () => {
     expect(screen.getByText('Enable split')).toBeInTheDocument();
   });
 
+  it('reports the toggled value when the split checkbox is clicked', () => {
+    // Checkbox hands its onChange the next boolean directly; the raw <input>
+    // this replaced had to read e.target.checked, so the contract changed.
+    const onCheckedChange = vi.fn();
+    render(
+      <ExportDialog
+        {...defaultProps}
+        splitBanner={{
+          message: 'Split needed',
+          checkboxLabel: 'Enable split',
+          checked: false,
+          onCheckedChange,
+        }}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Enable split' }));
+
+    expect(onCheckedChange).toHaveBeenCalledWith(true);
+  });
+
+  it('unchecks from a checked split banner', () => {
+    const onCheckedChange = vi.fn();
+    render(
+      <ExportDialog
+        {...defaultProps}
+        splitBanner={{
+          message: 'Split needed',
+          checkboxLabel: 'Enable split',
+          checked: true,
+          onCheckedChange,
+        }}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Enable split' }));
+
+    expect(onCheckedChange).toHaveBeenCalledWith(false);
+  });
+
   it('shows estimates when provided', () => {
     render(
       <ExportDialog

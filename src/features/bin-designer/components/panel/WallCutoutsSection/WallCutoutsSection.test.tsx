@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { WallCutoutsSection } from './WallCutoutsSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
@@ -16,6 +16,24 @@ describe('WallCutoutsSection', () => {
     render(<WallCutoutsSection />);
     const labels = screen.getAllByText('Wall cutouts');
     expect(labels.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('toggles the interior wall cutout through the store', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        walls: {
+          ...DEFAULT_BIN_PARAMS.walls,
+          enabled: true,
+          interior: { ...DEFAULT_BIN_PARAMS.walls.interior, enabled: false },
+        },
+      },
+    });
+    render(<WallCutoutsSection />);
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Interior walls' }));
+
+    expect(useDesignerStore.getState().params.walls.interior.enabled).toBe(true);
   });
 
   it('shows side chips and controls when enabled', () => {
