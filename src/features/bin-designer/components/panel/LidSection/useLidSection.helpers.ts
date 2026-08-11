@@ -194,11 +194,15 @@ export function computeRailSummary(
  * compartments, or editing a specific cutout — so we don't surface a
  * "Fix" button for them.
  */
+// `labelTabs` is deliberately absent. Its one-click fix deleted every label on
+// the bin, which was proportionate while a tab cost the whole wall's rail; since
+// #3401 the rail is only segmented around the tabs, so the button offered to
+// destroy user content to recover part of one wall. The warning still explains
+// the trade and the user can turn labels off themselves.
 export const FIXABLE_IDS: ReadonlySet<LidCompatibilityId> = new Set<LidCompatibilityId>([
   'wallCutouts',
   'wallCutoutsAllSides',
   'wallPattern',
-  'labelTabs',
   'handles',
   'handlesAllSides',
   'tallDividerPieces',

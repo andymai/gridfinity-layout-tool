@@ -373,6 +373,16 @@ function validateLid(lid: unknown): string | null {
   ) {
     return 'lid.extraHeightMm must be 0-100';
   }
+  // Range only, not the stop list: `migrateClickRailCoverage` snaps a stored
+  // value to the nearest supported option on load, so an off-stop number is
+  // legal input. What it cannot absorb is a value outside the range, which
+  // `railPlacements` turns into a rail longer than its own wall.
+  if (
+    lid.clickRailCoverage !== undefined &&
+    (!isNumber(lid.clickRailCoverage) || !inRange(lid.clickRailCoverage, 0, 100))
+  ) {
+    return 'lid.clickRailCoverage must be 0-100';
+  }
   if (
     lid.topThicknessMm !== undefined &&
     (!isNumber(lid.topThicknessMm) || !inRange(lid.topThicknessMm, 0.8, 5))

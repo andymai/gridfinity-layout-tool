@@ -587,17 +587,34 @@ describe('LidSection', () => {
   });
 
   describe('compatibility issues', () => {
-    it('shows a Fix button on the label-tabs warning that disables the feature', () => {
+    it('offers no one-click Fix on the label-tabs warning', () => {
+      // The button deleted every label on the bin. That was proportionate while
+      // a tab cost the whole wall's rail; since #3401 the rail is only
+      // segmented around the tabs, so it offered to destroy user content to
+      // recover part of one wall. The warning itself still shows.
       resetStore({
         lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
         label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
       });
       render(<LidSection />);
-      const fixButtons = screen.getAllByRole('button', { name: /^Fix:/ });
-      const labelFix = fixButtons.find((b) => b.getAttribute('aria-label')?.includes('Label tabs'));
-      expect(labelFix).toBeDefined();
-      fireEvent.click(labelFix!);
-      expect(useDesignerStore.getState().params.label.enabled).toBe(false);
+      const fixButtons = screen.queryAllByRole('button', { name: /^Fix:/ });
+      expect(
+        fixButtons.find((b) => b.getAttribute('aria-label')?.includes('Label tabs'))
+      ).toBeUndefined();
+      expect(screen.getByText(/Label tabs take the wall they hang from/)).toBeInTheDocument();
+    });
+
+    it('still offers a Fix on a warning that really blocks the lid', () => {
+      resetStore({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
+        walls: {
+          ...DEFAULT_BIN_PARAMS.walls,
+          enabled: true,
+          back: { ...DEFAULT_BIN_PARAMS.walls.back, enabled: true },
+        },
+      });
+      render(<LidSection />);
+      expect(screen.getAllByRole('button', { name: /^Fix:/ }).length).toBeGreaterThan(0);
     });
 
     it('disables the per-side rail toggle when a feature conflict skips that side', () => {

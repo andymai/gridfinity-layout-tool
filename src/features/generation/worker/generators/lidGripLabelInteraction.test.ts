@@ -7,7 +7,7 @@
  * centre moves and the match silently fails: the rail is passed through whole
  * and the grip's requested snap-softening does not happen.
  *
- * Nothing about the resulting lid looks wrong — it is a valid solid with a
+ * Nothing about the resulting lid looks wrong: it is a valid solid with a
  * relief and a rail, just a rail that was supposed to give way and does not.
  */
 // @vitest-environment node
@@ -60,20 +60,26 @@ describe('grip relief interrupts rails that label tabs have moved', () => {
   });
 
   it('still splits the front rail when a front tab has shortened it', () => {
-    // A narrow front tab leaves stretches either side of itself, and the grip
-    // sits on that same wall. Each surviving stretch that runs behind the grip
-    // has to give way, exactly as the whole rail did.
-    const rails = frontRails(makeParams({ edges: 'front', width: 40, alignment: 'center' }));
-    expect(rails.length).toBeGreaterThan(0);
-    const gripSpan = resolveLidInputs(
-      makeParams({ edges: 'front', width: 40, alignment: 'center' })
-    ).grip;
-    expect(gripSpan.mode).toBe('scallop');
-    // No surviving rail may straddle the wall centre, which is where the grip
-    // is. A rail that skipped its split would.
-    for (const r of rails) {
-      const half = r.length / 2;
-      expect(Math.abs(r.centerX) > half).toBe(true);
+    // The tab must leave ONE off-centre stretch that still crosses the grip.
+    // A centred tab splits the run itself and leaves two stretches either side
+    // of the grip already, so the grip pass has nothing to subtract and the
+    // test would pass with the matcher reverted to exact-centre equality.
+    const params = makeParams({ edges: 'front', width: 30, alignment: 'left' });
+    const inputs = resolveLidInputs(params);
+    const before = railPlacements(inputs).filter((p) => p.rotationDeg === 180);
+    const after = splitRailsAroundGrip(railPlacements(inputs), inputs).filter(
+      (p) => p.rotationDeg === 180
+    );
+
+    // One surviving stretch, sitting off-centre because the tab took the left
+    // end. That is the shape the old exact-centre match could not recognise.
+    expect(before).toHaveLength(1);
+    expect(Math.abs(before[0].centerX)).toBeGreaterThan(1);
+    expect(after.length).toBeGreaterThan(before.length);
+
+    // And nothing that survived may still run behind the grip.
+    for (const r of after) {
+      expect(Math.abs(r.centerX) > r.length / 2).toBe(true);
     }
   });
 
@@ -162,8 +168,8 @@ describe('grip reliefs stay on their own wall', () => {
       const key = r.centerX.toFixed(3);
       perLine.set(key, (perLine.get(key) ?? 0) + 1);
     }
-    for (const [line, count] of perLine) {
-      expect({ line, count }).toEqual({ line, count: Math.min(count, 2) });
-    }
+    // Both bounds. An upper bound alone would also pass if the grip pass
+    // stopped splitting altogether and left one whole rail per line.
+    expect([...perLine.values()].sort()).toEqual([2, 2]);
   });
 });

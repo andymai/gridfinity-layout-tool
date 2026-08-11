@@ -4,7 +4,7 @@
  * The lid is generated independently of the bin pipeline, so it has no
  * `BinDimensions` to read and `labelTabInteriorDims` re-derives the interior
  * from params. That re-derivation is only safe while it agrees with the real
- * one — a silent divergence would put the label footprints at the wrong Z and
+ * one. A silent divergence would put the label footprints at the wrong Z and
  * quietly stop clipping the click rails (#3401), with no failing geometry
  * assertion anywhere, since both solids stay perfectly valid.
  *

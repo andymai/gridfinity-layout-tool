@@ -1473,6 +1473,27 @@ describe('validateDesignerShare', () => {
       expect(res.valid).toBe(true);
     });
 
+    it('rejects a click-rail coverage outside 0-100', () => {
+      // `railPlacements` multiplies the wall length by this, so an out-of-range
+      // value builds a rail longer than the wall it sits on. The client can
+      // only produce listed stops; a crafted payload is the gap.
+      for (const clickRailCoverage of [-10, 101, 1e6]) {
+        expect(
+          validateDesignerShare(withLid({ attachment: 'clickRails', clickRailCoverage }), 1000)
+            .valid
+        ).toBe(false);
+      }
+    });
+
+    it('accepts an off-stop coverage, which migration snaps on load', () => {
+      // Deliberately a range check, not a stop-list check: a value between the
+      // supported stops is legal input and `migrateClickRailCoverage` rounds it.
+      expect(
+        validateDesignerShare(withLid({ attachment: 'clickRails', clickRailCoverage: 73 }), 1000)
+          .valid
+      ).toBe(true);
+    });
+
     it('rejects an unknown attachment mode', () => {
       const res = validateDesignerShare(withLid({ attachment: 'glue' }), 1000);
       expect(res.valid).toBe(false);

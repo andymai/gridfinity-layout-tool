@@ -96,7 +96,6 @@ export function useLidSection() {
     params,
     updateLid,
     updateWalls,
-    updateLabel,
     updateHandles,
     updateWallPattern,
     setParam,
@@ -114,7 +113,6 @@ export function useLidSection() {
       params: s.params,
       updateLid: s.updateLid,
       updateWalls: s.updateWalls,
-      updateLabel: s.updateLabel,
       updateHandles: s.updateHandles,
       updateWallPattern: s.updateWallPattern,
       setParam: s.setParam,
@@ -625,9 +623,6 @@ export function useLidSection() {
         case 'wallPattern':
           updateWallPattern({ enabled: false });
           return;
-        case 'labelTabs':
-          updateLabel({ enabled: false });
-          return;
         case 'handles':
         case 'handlesAllSides':
           updateHandles({ enabled: false });
@@ -644,7 +639,7 @@ export function useLidSection() {
           return;
       }
     },
-    [params.dividerPieces, setParam, updateHandles, updateLabel, updateWalls, updateWallPattern]
+    [params.dividerPieces, setParam, updateHandles, updateWalls, updateWallPattern]
   );
 
   const createMatchingTray = useCallback(() => {

@@ -211,11 +211,11 @@ export function scoopKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepO
 /**
  * Label tab footprints in world space.
  *
- * The tab's own width is capped per compartment inside `labelTabBuilder`;
- * rather than duplicate that resolution here, each compartment contributes a
- * box spanning its FULL width. That clears marginally more pattern than the
- * tab strictly occupies — the safe direction, since a shelf or gusset landing
- * on a perforated divider has nothing to bond to.
+ * X is deliberately the compartment's FULL width rather than the tab's placed
+ * span: clearing more pattern than the tab occupies is the safe direction,
+ * since a shelf or gusset landing on a perforated divider has nothing to bond
+ * to. Y is NOT approximated — it has to track `inset` and the anchor edge, or
+ * the box misses the tab body entirely and the feature does nothing.
  */
 function labelTabKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut[] {
   if (!params.label.enabled) return [];
@@ -232,7 +232,12 @@ function labelTabKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut[]
   const { cols, rows, cells } = params.compartments;
   const cellW = innerW / cols;
   const cellD = innerD / rows;
-  const bothEdges = params.label.edges === 'both';
+  const edges = params.label.edges ?? 'back';
+  const wantBack = edges === 'back' || edges === 'both';
+  const wantFront = edges === 'front' || edges === 'both';
+  // Slides the body inward from its anchor wall (#1898). Without it the box
+  // stays pinned to the wall while the tab has moved off it.
+  const inset = params.label.inset ?? 0;
 
   const out: WorldKeepOut[] = [];
   const seen = new Set<number>();
@@ -244,10 +249,12 @@ function labelTabKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut[]
     const { minCol, maxCol, minRow, maxRow } = bounds;
     const xMin = -innerW / 2 + minCol * cellW;
     const xMax = -innerW / 2 + (maxCol + 1) * cellW;
-    const backY = -innerD / 2 + (maxRow + 1) * cellD;
-    out.push({ xMin, xMax, yMin: backY - tabDepth, yMax: backY, zMin, zMax });
-    if (bothEdges) {
-      const frontY = -innerD / 2 + minRow * cellD;
+    if (wantBack) {
+      const backY = -innerD / 2 + (maxRow + 1) * cellD - inset;
+      out.push({ xMin, xMax, yMin: backY - tabDepth, yMax: backY, zMin, zMax });
+    }
+    if (wantFront) {
+      const frontY = -innerD / 2 + minRow * cellD + inset;
       out.push({ xMin, xMax, yMin: frontY, yMax: frontY + tabDepth, zMin, zMax });
     }
   }

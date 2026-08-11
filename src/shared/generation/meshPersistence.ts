@@ -39,12 +39,14 @@ const META_STORE = 'binMeshMeta';
  * `forExport=false`, so the kernel and quality are folded into this constant
  * rather than the per-entry key.
  *
+ * `v8`: label-tab keep-outs on patterned dividers follow `inset` and the
+ * anchor edge, so a bin with either cuts a different divider pattern.
  * `v7`: label tabs stopped being forced full-width in socket mode (#3402), so
  * the same params cut a different shelf. `useLinkedDesignMeshes` serves a hit
  * without regenerating, so without this bump a linked design in the layout
  * planner would render its pre-fix bin until the entry was evicted.
  */
-const MESH_CACHE_VERSION = 'v7-brepjs18.123.0';
+const MESH_CACHE_VERSION = 'v8-brepjs18.123.0';
 
 /** Evict oldest entries once the total stored mesh bytes exceed this budget. */
 let maxCacheBytes = 64 * 1024 * 1024;

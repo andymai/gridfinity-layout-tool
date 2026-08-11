@@ -236,3 +236,45 @@ describe('widestClearRun', () => {
     expect(run).toBe(0);
   });
 });
+
+describe('label tab keep-outs', () => {
+  const label = (over: Partial<BinParams['label']> = {}): BinParams['label'] => ({
+    ...DEFAULT_BIN_PARAMS.label,
+    enabled: true,
+    depth: 10,
+    ...over,
+  });
+
+  /** Every keep-out on a divider running along X (a row boundary). */
+  function tabKeepOuts(params: BinParams) {
+    const result = plan(params);
+    return (result?.targets ?? []).flatMap((t) => t.keepOuts);
+  }
+
+  const span = (ks: readonly { uMin: number; uMax: number }[]) =>
+    ks
+      .map((k) => `${k.uMin.toFixed(2)},${k.uMax.toFixed(2)}`)
+      .sort()
+      .join('|');
+
+  it('follows the tab inward when `inset` moves it off its wall', () => {
+    // `inset` (#1898) slides the tab body away from its anchor wall. A keep-out
+    // pinned to the wall leaves the deepest `inset` mm of the tab sitting on
+    // perforated divider, which is the one thing it exists to prevent.
+    const plain = tabKeepOuts(makeParams({ label: label({ inset: 0 }) }));
+    const inset = tabKeepOuts(makeParams({ label: label({ inset: 6 }) }));
+    expect(plain.length).toBeGreaterThan(0);
+    // Moving the tab can take it off a divider entirely, so the counts may
+    // differ; what must not happen is the two being identical.
+    expect(span(inset)).not.toBe(span(plain));
+  });
+
+  it('puts the keep-out on the FRONT wall for front-anchored tabs', () => {
+    const back = tabKeepOuts(makeParams({ label: label({ edges: 'back' }) }));
+    const front = tabKeepOuts(makeParams({ label: label({ edges: 'front' }) }));
+    expect(back.length).toBeGreaterThan(0);
+    expect(front.length).toBeGreaterThan(0);
+    // Mirrored anchors must not produce identical spans.
+    expect(span(front)).not.toBe(span(back));
+  });
+});
