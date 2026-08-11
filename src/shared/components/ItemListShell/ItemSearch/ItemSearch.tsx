@@ -37,8 +37,9 @@ export function ItemSearch({
             ))}
           </svg>
         }
-        // Room for the absolutely-positioned clear button.
-        className="pr-8"
+        // `leftIcon` sets pl-0 on the input, which butts the text against the
+        // magnifier; pl-2 restores the gap. pr-8 is room for the clear button.
+        className="pl-2 pr-8"
         aria-label={ariaLabel}
       />
       {value && (
