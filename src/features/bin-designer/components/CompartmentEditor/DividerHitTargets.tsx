@@ -32,6 +32,14 @@ interface DividerHitTargetsProps {
   readonly onSelect: (key: string) => void;
   readonly onHoverChange: (key: string | null) => void;
   readonly rowLabel: (a: number, b: number) => string;
+  /**
+   * Enables direct dragging of the wall. Omitted by the sidebar, where the hit
+   * target is a click-to-select affordance for the tilt inspector and there is
+   * no room to see what a drag is doing.
+   */
+  readonly onDragStart?: (key: string, event: React.PointerEvent) => void;
+  /** Key of the wall being dragged right now, so it can render as active. */
+  readonly draggingKey?: string | null;
 }
 
 export function DividerHitTargets({
@@ -45,6 +53,8 @@ export function DividerHitTargets({
   onSelect,
   onHoverChange,
   rowLabel,
+  onDragStart,
+  draggingKey = null,
 }: DividerHitTargetsProps) {
   return (
     <div className="pointer-events-none absolute inset-2 z-10">
@@ -100,11 +110,13 @@ export function DividerHitTargets({
             dotY={dot.cy}
             isHovered={hoveredKey === key}
             isSelected={selectedKey === key}
+            isDragging={draggingKey === key}
             isTilted={isTilted}
             label={rowLabel(d.compartmentA + 1, d.compartmentB + 1)}
             onClick={() => onSelect(key)}
             onHoverEnter={() => onHoverChange(key)}
             onHoverLeave={() => onHoverChange(null)}
+            onDragStart={onDragStart ? (event) => onDragStart(key, event) : undefined}
           />
         );
       })}
@@ -118,11 +130,13 @@ interface DividerHitLineProps {
   readonly dotY: number;
   readonly isHovered: boolean;
   readonly isSelected: boolean;
+  readonly isDragging: boolean;
   readonly isTilted: boolean;
   readonly label: string;
   readonly onClick: () => void;
   readonly onHoverEnter: () => void;
   readonly onHoverLeave: () => void;
+  readonly onDragStart?: (event: React.PointerEvent) => void;
 }
 
 /** Hit target thickness in px. Generous so touch users can hit it. */
@@ -134,11 +148,13 @@ function DividerHitLine({
   dotY,
   isHovered,
   isSelected,
+  isDragging,
   isTilted,
   label,
   onClick,
   onHoverEnter,
   onHoverLeave,
+  onDragStart,
 }: DividerHitLineProps) {
   const isVertical = span.axis === 'vertical';
   const perpPct = (span.axisCoord / span.perpDim) * 100;
@@ -163,13 +179,22 @@ function DividerHitLine({
 
   // Discoverability dot at the divider midpoint; brightens + grows on hover and
   // selection. Subtle by default so dense grids don't get noisy.
-  const dotState = isSelected
-    ? 'bg-accent scale-125'
-    : isHovered
-      ? 'bg-accent scale-110'
-      : isTilted
-        ? 'bg-accent/70'
-        : 'bg-accent/30';
+  const dotState =
+    isSelected || isDragging
+      ? 'bg-accent scale-125'
+      : isHovered
+        ? 'bg-accent scale-110'
+        : isTilted
+          ? 'bg-accent/70'
+          : 'bg-accent/30';
+
+  // Draggable walls advertise the axis they move along; without a drag handler
+  // the target is a click-to-select affordance and stays a plain pointer.
+  const cursorClass = onDragStart
+    ? isVertical
+      ? 'cursor-col-resize'
+      : 'cursor-row-resize'
+    : 'cursor-pointer';
 
   return (
     <>
@@ -181,9 +206,10 @@ function DividerHitLine({
         onFocus={onHoverEnter}
         onBlur={onHoverLeave}
         onClick={onClick}
+        onPointerDown={onDragStart}
         aria-label={label}
         aria-pressed={isSelected}
-        className="pointer-events-auto absolute cursor-pointer hover:bg-transparent focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
+        className={`pointer-events-auto absolute ${cursorClass} hover:bg-transparent focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2`}
         style={containerStyle}
       />
       <span

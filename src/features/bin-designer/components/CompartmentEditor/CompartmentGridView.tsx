@@ -21,6 +21,16 @@ export interface CompartmentGridViewProps {
   readonly className?: string;
   /** Element id holding the instruction text, for `aria-describedby`. */
   readonly describedById?: string;
+  /**
+   * Makes the walls draggable. Supplying this also shows the divider overlay
+   * unconditionally: the sidebar keeps it behind the `angledDividersEnabled`
+   * opt-in so dense grids stay legible (#2044), but in the Bento workspace
+   * moving walls IS the mode, so hiding the handles would hide the feature.
+   */
+  readonly dividerDrag?: {
+    readonly onDragStart: (key: string, event: React.PointerEvent) => void;
+    readonly draggingKey: string | null;
+  };
 }
 
 export function CompartmentGridView({
@@ -28,6 +38,7 @@ export function CompartmentGridView({
   style,
   className = '',
   describedById,
+  dividerDrag,
 }: CompartmentGridViewProps) {
   const {
     compartments,
@@ -133,7 +144,7 @@ export function CompartmentGridView({
       {/* Divider hit targets: clickable lines above the cells, transparent
           container with per-line pointer-events so cell drag-merge still
           works. Hidden during cell-merge drag to keep the surface calm. */}
-      {!isDragging && angledDividersEnabled && eligibleDividers.length > 0 && (
+      {!isDragging && (angledDividersEnabled || dividerDrag) && eligibleDividers.length > 0 && (
         <DividerHitTargets
           compartments={compartments}
           dividers={eligibleDividers}
@@ -145,6 +156,8 @@ export function CompartmentGridView({
           onSelect={setSelectedDividerKey}
           onHoverChange={setHoveredDividerKey}
           rowLabel={rowLabelForHitTarget}
+          onDragStart={dividerDrag?.onDragStart}
+          draggingKey={dividerDrag?.draggingKey ?? null}
         />
       )}
       {/* Ghost preview overlay during cell-select drag */}

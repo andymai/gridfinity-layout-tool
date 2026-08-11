@@ -10,11 +10,13 @@
  * Escape closes it, matching the cutout workspace and the editor's other modes.
  */
 
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
 import { useCompartmentGrid } from '../CompartmentEditor/useCompartmentGrid';
 import { CompartmentGridView } from '../CompartmentEditor/CompartmentGridView';
+import { useDividerTiltSubsection } from '../CompartmentEditor/useDividerTiltSubsection';
+import { useDividerDrag } from './useDividerDrag';
 import { TopRuler, LeftRuler, RulerCorner } from '../CutoutWorkspace/Rulers';
 import { BentoWorkspaceHeader } from './BentoWorkspaceHeader';
 import { useBentoCanvasBox } from './useBentoCanvasBox';
@@ -28,6 +30,19 @@ export function BentoWorkspace() {
 
   const containerRef = useRef<HTMLDivElement>(null);
   const box = useBentoCanvasBox(containerRef, aspectRatio, interiorW, interiorD);
+
+  // Reuse the panel inspector's divider rows: they already carry the geometry
+  // envelope, the committed angle and the shift a drag starts from.
+  const { rows, handlers } = useDividerTiltSubsection();
+  const drag = useDividerDrag(box.scaleX, box.scaleY, handlers.previewTilt, handlers.commitTilt);
+
+  const onDividerDragStart = useCallback(
+    (key: string, event: React.PointerEvent) => {
+      const row = rows.find((r) => r.key === key);
+      if (row) drag.onDragStart(row, event);
+    },
+    [rows, drag]
+  );
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -66,6 +81,10 @@ export function BentoWorkspace() {
                 grid={grid}
                 style={{ width: `${box.width}px`, height: `${box.height}px` }}
                 describedById="bento-workspace-instructions"
+                dividerDrag={{
+                  onDragStart: onDividerDragStart,
+                  draggingKey: drag.draggingKey,
+                }}
               />
             </div>
           </div>

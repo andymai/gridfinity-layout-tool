@@ -172,7 +172,7 @@ export function useDividerTiltSubsection() {
 
   // Commit: clamp, write the real override (one history entry), drop preview.
   const commitTilt = useCallback(
-    (row: TiltRow, next: AngleShift) => {
+    (row: TiltRow, next: AngleShift, source: 'panel_input' | 'canvas_drag' = 'panel_input') => {
       if (!row.geometry) return;
       const result = applyAngleShift(next, row.geometry);
       setDividerTiltPreview(null);
@@ -181,7 +181,7 @@ export function useDividerTiltSubsection() {
         axis: row.axis,
         offset_start_mm: result.offsetStart,
         offset_end_mm: result.offsetEnd,
-        source: 'panel_input',
+        source,
       });
     },
     [setDividerOverride, setDividerTiltPreview]
