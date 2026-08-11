@@ -121,10 +121,12 @@ describe('useMergeBins', () => {
       expect(plan.ok).toBe(true);
       if (!plan.ok) return;
 
+      let outcome: boolean | undefined;
       await act(async () => {
-        await result.current.commitMerge(plan.value);
+        outcome = await result.current.commitMerge(plan.value);
       });
 
+      expect(outcome).toBe(true);
       expect(saveDesign).toHaveBeenCalledWith(
         expect.objectContaining({ params: plan.value.params })
       );
@@ -138,10 +140,13 @@ describe('useMergeBins', () => {
       const plan = result.current.previewMerge();
       if (!plan.ok) throw new Error('expected a plan');
 
+      let outcome: boolean | undefined;
       await act(async () => {
-        await result.current.commitMerge(plan.value);
+        outcome = await result.current.commitMerge(plan.value);
       });
 
+      // The caller needs this to keep its dialog open.
+      expect(outcome).toBe(false);
       expect(addToast).toHaveBeenCalledWith(expect.objectContaining({ type: 'error' }));
       expect(window.location.pathname).toBe('/');
     });

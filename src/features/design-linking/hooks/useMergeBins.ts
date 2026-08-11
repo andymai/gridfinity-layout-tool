@@ -37,8 +37,12 @@ export interface UseMergeBins {
   readonly canMerge: boolean;
   /** Dry run — drives the confirmation dialog's warnings without side effects. */
   readonly previewMerge: (options?: MergeOptions) => Result<MergePlan, MergeBlockedReason>;
-  /** Persist the plan and navigate to the designer. */
-  readonly commitMerge: (plan: MergePlan) => Promise<void>;
+  /**
+   * Persist the plan and navigate to the designer. Resolves `false` when the
+   * save failed, so the caller can keep its dialog open rather than dismissing
+   * it and leaving a transient toast as the only trace.
+   */
+  readonly commitMerge: (plan: MergePlan) => Promise<boolean>;
 }
 
 export function useMergeBins(scope: MergeScope): UseMergeBins {
@@ -69,7 +73,7 @@ export function useMergeBins(scope: MergeScope): UseMergeBins {
 
       if (!isOk(saved)) {
         addToast({ message: t('designLinking.merge.toast.saveFailed'), type: 'error' });
-        return;
+        return false;
       }
 
       window.history.pushState(null, '', `/designer?id=${encodeURIComponent(saved.value.id)}`);
@@ -82,6 +86,7 @@ export function useMergeBins(scope: MergeScope): UseMergeBins {
         type: 'success',
         duration: 4000,
       });
+      return true;
     },
     [layout.name, addToast, t]
   );

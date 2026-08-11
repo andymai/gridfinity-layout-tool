@@ -49,7 +49,7 @@ describe('MergeBinsDialog', () => {
     vi.clearAllMocks();
     document.body.innerHTML = '';
     previewMerge.mockReturnValue(ok(plan()));
-    commitMerge.mockResolvedValue(undefined);
+    commitMerge.mockResolvedValue(true);
   });
 
   it('describes what the merge will produce', () => {
@@ -112,6 +112,17 @@ describe('MergeBinsDialog', () => {
     fireEvent.click(screen.getByRole('checkbox'));
 
     expect(previewMerge).toHaveBeenLastCalledWith({ baseStyle: 'flat' });
+  });
+
+  it('stays open when the save fails, so the toast is not the only trace', async () => {
+    commitMerge.mockResolvedValue(false);
+    const onClose = vi.fn();
+    render(<MergeBinsDialog open scope="selection" onClose={onClose} />);
+
+    fireEvent.click(screen.getByText('designLinking.merge.confirm'));
+
+    await waitFor(() => expect(commitMerge).toHaveBeenCalledTimes(1));
+    expect(onClose).not.toHaveBeenCalled();
   });
 
   it('commits the plan and closes on confirm', async () => {

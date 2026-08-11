@@ -56,8 +56,9 @@ export function MergeBinsDialog({ open, onClose, scope }: MergeBinsDialogProps) 
     if (!isOk(result)) return;
     setBusy(true);
     try {
-      await commitMerge(result.value);
-      onClose();
+      // Stay open when the save failed: dismissing here would leave a toast as
+      // the only evidence, with the user's chosen options gone.
+      if (await commitMerge(result.value)) onClose();
     } finally {
       setBusy(false);
     }
