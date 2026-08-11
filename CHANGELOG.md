@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.398.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.398.1...gridfinity-layout-tool-v4.398.2) (2026-08-11)
+
+
+### Bug Fixes
+
+* **generation:** clip divider pattern under insetted and front-anchored tabs ([#3414](https://github.com/andymai/gridfinity-layout-tool/issues/3414)) ([7484ce1](https://github.com/andymai/gridfinity-layout-tool/commit/7484ce18387b2391aad17c0f03aa675b7cb276b8))
+
 ## [4.398.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.398.0...gridfinity-layout-tool-v4.398.1) (2026-08-11)
 
 
