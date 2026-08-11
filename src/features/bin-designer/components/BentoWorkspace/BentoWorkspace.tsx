@@ -21,6 +21,7 @@ import { TopRuler, LeftRuler, RulerCorner } from '../CutoutWorkspace/Rulers';
 import { BentoWorkspaceHeader } from './BentoWorkspaceHeader';
 import { useBentoCanvasBox } from './useBentoCanvasBox';
 import { BentoQuickstartOverlay } from './BentoQuickstartOverlay';
+import { BentoLabelBar } from './BentoLabelBar';
 import { useBentoQuickstart } from '../../hooks/useBentoQuickstart';
 
 export function BentoWorkspace() {
@@ -96,6 +97,8 @@ export function BentoWorkspace() {
       </div>
 
       {!quickstartSeen && <BentoQuickstartOverlay onDismiss={markQuickstartSeen} />}
+
+      <BentoLabelBar grid={grid} />
 
       <footer className="flex flex-shrink-0 items-center gap-3 border-t border-stroke-subtle bg-surface-secondary px-4 py-2">
         <p

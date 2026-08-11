@@ -877,6 +877,7 @@
   "binDesigner.openBentoWorkspaceSubtitle": "Sleep wanden om elk vak te dimensioneren",
   "binDesigner.bento.summary": "Raster {cols}×{rows} · {count} vakken",
   "binDesigner.bento.interiorReadout": "Binnenwerk {width} × {depth} mm",
+  "binDesigner.bento.labelFor": "Label voor vak {number}",
   "binDesigner.bento.quickstart.title": "Een bento bouwen",
   "binDesigner.bento.quickstart.merge": "Sleep over cellen om ze samen te voegen tot één vak.",
   "binDesigner.bento.quickstart.dragWalls": "Sleep een wand om de vakken aan weerszijden te verkleinen of vergroten.",

@@ -877,6 +877,7 @@
   "binDesigner.openBentoWorkspaceSubtitle": "Tažením stěn nastavte velikost přihrádek",
   "binDesigner.bento.summary": "Mřížka {cols}×{rows} · {count} přihrádek",
   "binDesigner.bento.interiorReadout": "Vnitřek {width} × {depth} mm",
+  "binDesigner.bento.labelFor": "Popisek přihrádky {number}",
   "binDesigner.bento.quickstart.title": "Stavba benta",
   "binDesigner.bento.quickstart.merge": "Tažením přes buňky je spojíte do jedné přihrádky.",
   "binDesigner.bento.quickstart.dragWalls": "Tažením stěny změníte velikost přihrádek po obou stranách.",

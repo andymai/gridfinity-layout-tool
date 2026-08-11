@@ -877,6 +877,7 @@
   "binDesigner.openBentoWorkspaceSubtitle": "Faites glisser les cloisons pour dimensionner chaque compartiment",
   "binDesigner.bento.summary": "Grille {cols}×{rows} · {count} compartiments",
   "binDesigner.bento.interiorReadout": "Intérieur {width} × {depth} mm",
+  "binDesigner.bento.labelFor": "Étiquette du compartiment {number}",
   "binDesigner.bento.quickstart.title": "Construire un bento",
   "binDesigner.bento.quickstart.merge": "Faites glisser sur les cellules pour les fusionner en un compartiment.",
   "binDesigner.bento.quickstart.dragWalls": "Faites glisser une cloison pour redimensionner les compartiments de part et d'autre.",

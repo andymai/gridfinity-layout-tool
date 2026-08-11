@@ -877,6 +877,7 @@
   "binDesigner.openBentoWorkspaceSubtitle": "Wände ziehen, um jedes Fach zu bemessen",
   "binDesigner.bento.summary": "Raster {cols}×{rows} · {count} Fächer",
   "binDesigner.bento.interiorReadout": "Innenraum {width} × {depth} mm",
+  "binDesigner.bento.labelFor": "Beschriftung für Fach {number}",
   "binDesigner.bento.quickstart.title": "Ein Bento bauen",
   "binDesigner.bento.quickstart.merge": "Über Zellen ziehen, um sie zu einem Fach zu verbinden.",
   "binDesigner.bento.quickstart.dragWalls": "Eine Wand ziehen, um die Fächer beiderseits zu ändern.",

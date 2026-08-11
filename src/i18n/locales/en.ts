@@ -2704,6 +2704,7 @@ const en: Record<string, string> = {
   'binDesigner.openBentoWorkspaceSubtitle': 'Drag walls to size each compartment',
   'binDesigner.bento.summary': '{cols}×{rows} grid · {count} compartments',
   'binDesigner.bento.interiorReadout': 'Interior {width} × {depth} mm',
+  'binDesigner.bento.labelFor': 'Label for compartment {number}',
   'binDesigner.bento.quickstart.title': 'Building a bento',
   'binDesigner.bento.quickstart.merge': 'Drag across cells to merge them into one compartment.',
   'binDesigner.bento.quickstart.dragWalls': 'Drag a wall to resize the compartments either side.',

@@ -877,6 +877,7 @@
   "binDesigner.openBentoWorkspaceSubtitle": "拖动隔墙调整每个隔层的大小",
   "binDesigner.bento.summary": "{cols}×{rows} 网格 · {count} 个隔层",
   "binDesigner.bento.interiorReadout": "内部 {width} × {depth} 毫米",
+  "binDesigner.bento.labelFor": "隔层 {number} 的标签",
   "binDesigner.bento.quickstart.title": "制作便当",
   "binDesigner.bento.quickstart.merge": "拖过多个单元格可将它们合并为一个隔层。",
   "binDesigner.bento.quickstart.dragWalls": "拖动隔墙可调整两侧隔层的大小。",

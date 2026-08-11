@@ -877,6 +877,7 @@
   "binDesigner.openBentoWorkspaceSubtitle": "Trascina le pareti per dimensionare ogni scomparto",
   "binDesigner.bento.summary": "Griglia {cols}×{rows} · {count} scomparti",
   "binDesigner.bento.interiorReadout": "Interno {width} × {depth} mm",
+  "binDesigner.bento.labelFor": "Etichetta dello scomparto {number}",
   "binDesigner.bento.quickstart.title": "Costruire un bento",
   "binDesigner.bento.quickstart.merge": "Trascina sulle celle per unirle in un unico scomparto.",
   "binDesigner.bento.quickstart.dragWalls": "Trascina una parete per ridimensionare gli scomparti ai due lati.",

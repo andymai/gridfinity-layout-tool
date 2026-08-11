@@ -877,6 +877,7 @@
   "binDesigner.openBentoWorkspaceSubtitle": "Arraste as paredes para dimensionar cada compartimento",
   "binDesigner.bento.summary": "Grade {cols}×{rows} · {count} compartimentos",
   "binDesigner.bento.interiorReadout": "Espaço interno {width} × {depth} mm",
+  "binDesigner.bento.labelFor": "Etiqueta do compartimento {number}",
   "binDesigner.bento.quickstart.title": "Montando um bento",
   "binDesigner.bento.quickstart.merge": "Arraste sobre as células para uni-las em um compartimento.",
   "binDesigner.bento.quickstart.dragWalls": "Arraste uma parede para redimensionar os compartimentos de cada lado.",

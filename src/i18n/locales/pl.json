@@ -877,6 +877,7 @@
   "binDesigner.openBentoWorkspaceSubtitle": "Przeciągaj ścianki, aby dopasować każdą przegrodę",
   "binDesigner.bento.summary": "Siatka {cols}×{rows} · {count} przegród",
   "binDesigner.bento.interiorReadout": "Wnętrze {width} × {depth} mm",
+  "binDesigner.bento.labelFor": "Etykieta przegrody {number}",
   "binDesigner.bento.quickstart.title": "Budowanie bento",
   "binDesigner.bento.quickstart.merge": "Przeciągnij po komórkach, aby połączyć je w jedną przegrodę.",
   "binDesigner.bento.quickstart.dragWalls": "Przeciągnij ściankę, aby zmienić rozmiar przegród po obu stronach.",

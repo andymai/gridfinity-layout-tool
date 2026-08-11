@@ -66,6 +66,10 @@ vi.mock('../../hooks/useBentoQuickstart', () => ({
   }),
 }));
 
+vi.mock('./BentoLabelBar', () => ({
+  BentoLabelBar: () => <div data-testid="label-bar" />,
+}));
+
 vi.mock('./BentoQuickstartOverlay', () => ({
   BentoQuickstartOverlay: () => <div data-testid="quickstart" />,
 }));
