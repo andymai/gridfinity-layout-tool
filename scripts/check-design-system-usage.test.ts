@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { findViolations, shouldExclude } from './check-design-system-usage';
+import type { Violation } from './check-design-system-usage';
 
-function find(source: string) {
+function find(source: string): Violation[] {
   return findViolations('src/features/x/X.tsx', source);
 }
 
