@@ -1,21 +1,16 @@
 import { useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { Badge, Button, IconButton, Input, Select, cn } from '@/design-system';
+import { Badge, Button, IconButton, Input, cn } from '@/design-system';
 import { SearchIcon, XIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 import { useGapFitStore } from '@/core/store/gapFit';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { TECHNIQUE_CONFIG } from '@/shared/types/exampleTechniques';
-import {
-  hasActiveBrowseFilters,
-  hasDimensionConstraints,
-  useBrowseStore,
-} from '../../store/browseStore';
+import { hasActiveBrowseFilters, useBrowseStore } from '../../store/browseStore';
 import { CATEGORY_LABEL_KEYS } from '../../utils/categoryLabels';
 import { formatUnits } from '../CommunityCard/cardDims';
 import { summariseDimensionFilters } from './dimensionSummary';
-import { browseSortOptions, isBrowseSort } from './galleryFilterOptions';
 
 export interface GalleryToolbarProps {
   /** Whether the filter surface (desktop rail or mobile view) is showing. */
@@ -44,7 +39,6 @@ export function GalleryToolbar({
   const setSearchText = useBrowseStore((s) => s.setSearchText);
   const setCategory = useBrowseStore((s) => s.setCategory);
   const setTechnique = useBrowseStore((s) => s.setTechnique);
-  const setSort = useBrowseStore((s) => s.setSort);
   const setAuthor = useBrowseStore((s) => s.setAuthor);
   const setLikedOnly = useBrowseStore((s) => s.setLikedOnly);
   const setRecentOnly = useBrowseStore((s) => s.setRecentOnly);
@@ -52,8 +46,6 @@ export function GalleryToolbar({
   const setMineOnly = useBrowseStore((s) => s.setMineOnly);
   const setFitsGapContext = useBrowseStore((s) => s.setFitsGapContext);
   const clearDimensionFilters = useBrowseStore((s) => s.clearDimensionFilters);
-
-  const bestFitAvailable = hasDimensionConstraints(filters) || fitsGapContext !== null;
 
   // Clearing the banner ends the whole fits-gap context, core handoff
   // included: browsing returns to normal and the detail view's "Place in
@@ -186,9 +178,9 @@ export function GalleryToolbar({
 
   return (
     <div className="shrink-0 space-y-2 border-b border-stroke-subtle px-3 py-2 md:px-4">
-      {/* Search takes its own row on mobile. Sharing one with the filter
-          button and the sort select left it about 120px on a 390px phone,
-          narrow enough to cut the placeholder mid-word. */}
+      {/* Search shares this row with the filter button alone: sort moved down
+          to the results header, which is what freed the width that used to
+          push search onto a row of its own on a phone. */}
       <div className="flex flex-wrap items-center gap-2">
         {/* An open rail carries its own collapse control in its header, so a
             second one here would sit two inches away doing the same thing. */}
@@ -230,16 +222,7 @@ export function GalleryToolbar({
               </IconButton>
             ) : undefined
           }
-          wrapperClassName={cn('min-w-0 flex-1', isMobile && 'order-last basis-full')}
-        />
-        <Select
-          options={browseSortOptions(t, bestFitAvailable)}
-          value={filters.sort}
-          onValueChange={(value) => {
-            if (isBrowseSort(value)) setSort(value);
-          }}
-          aria-label={t('community.gallery.sortLabel')}
-          className={isMobile ? 'min-w-0 flex-1' : 'w-40'}
+          wrapperClassName="min-w-0 flex-1"
         />
       </div>
 

@@ -1,21 +1,25 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Button, CheckboxRow, IconButton, cn } from '@/design-system';
-import { XIcon } from '@/design-system/Icon';
+import { ChevronDownIcon, XIcon } from '@/design-system/Icon';
 import { useGapFitStore } from '@/core/store/gapFit';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { useTranslation } from '@/i18n';
 import { trackEvent } from '@/shared/analytics/posthog';
 import type { CommunityCard, CommunityCategory } from '@/shared/types/community';
 import { COMMUNITY_CATEGORIES } from '@/shared/types/community';
+import { TECHNIQUE_CONFIG } from '@/shared/types/exampleTechniques';
 import { hasActiveBrowseFilters, useBrowseStore } from '../../store/browseStore';
 import { CATEGORY_LABEL_KEYS } from '../../utils/categoryLabels';
 import { formatUnits } from '../CommunityCard/cardDims';
 import { CommunitySignInPrompt } from '../SignInPrompt';
 import { CommunityTechniquePills } from './CommunityTechniquePills';
 import { DimensionFilters } from './DimensionFilters';
+import { summariseDimensionFilters } from './dimensionSummary';
 import type { FacetCounts } from './facetCounts';
+import type { FilterSectionId, FilterSectionState } from './filterSectionPrefs';
+import { loadFilterSections, saveFilterSections } from './filterSectionPrefs';
 
 export interface FilterPanelProps {
   items: readonly CommunityCard[];
@@ -24,13 +28,88 @@ export interface FilterPanelProps {
   touchSize?: boolean;
 }
 
+const SECTION_TITLE_CLASS = 'text-xs font-semibold uppercase tracking-wide text-content-tertiary';
+
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="space-y-2">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-content-tertiary">
-        {title}
-      </h3>
+    <section className="space-y-1.5">
+      <h3 className={SECTION_TITLE_CLASS}>{title}</h3>
       {children}
+    </section>
+  );
+}
+
+interface CollapsibleSectionProps {
+  title: string;
+  /**
+   * What the section is currently holding, shown on the header at all times.
+   * A folded section must never be able to hide a filter it is applying.
+   */
+  summary: string;
+  expanded: boolean;
+  onToggle: () => void;
+  touchSize: boolean;
+  testId: string;
+  children: ReactNode;
+}
+
+/**
+ * A panel section that folds away. Hand-rolled rather than the design system's
+ * Collapsible for one reason: the trigger has to sit inside the section's own
+ * h3, or the panel loses the heading that lets a screen reader jump between
+ * its sections. The design-system component owns its trigger markup.
+ */
+function CollapsibleSection({
+  title,
+  summary,
+  expanded,
+  onToggle,
+  touchSize,
+  testId,
+  children,
+}: CollapsibleSectionProps) {
+  const contentId = useId();
+  const triggerId = useId();
+
+  return (
+    <section>
+      <h3>
+        <Button
+          variant="ghost"
+          id={triggerId}
+          aria-expanded={expanded}
+          aria-controls={contentId}
+          onClick={onToggle}
+          className={cn(
+            'flex w-full items-center gap-1.5 rounded-md p-1.5 -mx-1.5 text-left font-normal',
+            touchSize && 'min-h-11'
+          )}
+          data-testid={testId}
+        >
+          <ChevronDownIcon
+            size="xs"
+            aria-hidden="true"
+            className={cn(
+              'shrink-0 text-content-tertiary transition-transform duration-200',
+              !expanded && '-rotate-90'
+            )}
+          />
+          <span className={SECTION_TITLE_CLASS}>{title}</span>
+          <span className="ml-auto min-w-0 truncate text-xs text-content-secondary">{summary}</span>
+        </Button>
+      </h3>
+      {/* `hidden`, not a height animation: a collapsed section has to leave the
+          tab order and the accessibility tree, and the sliders inside it are
+          focusable controls. */}
+      <div
+        id={contentId}
+        role="group"
+        aria-labelledby={triggerId}
+        hidden={!expanded}
+        className="pt-2"
+      >
+        {children}
+      </div>
     </section>
   );
 }
@@ -60,6 +139,50 @@ export function FilterPanel({ items, counts, touchSize = false }: FilterPanelPro
   const setFitsGapContext = useBrowseStore((s) => s.setFitsGapContext);
   const clearFilters = useBrowseStore((s) => s.clearFilters);
   const signedIn = useSessionStore((s) => s.status) === 'authenticated';
+
+  const sizeSummary = summariseDimensionFilters(filters, {
+    width: t('community.gallery.widthAbbrev'),
+    depth: t('community.gallery.depthAbbrev'),
+    height: t('community.gallery.heightAbbrev'),
+  });
+  const sizeActive = sizeSummary !== null;
+  const techniqueActive = filters.technique !== null;
+
+  // Seeded from the stored preference, but a filter that is already applied on
+  // arrival (a shared URL, another tab) opens its section regardless: a stored
+  // "collapsed" is a preference about an idle section, not an instruction to
+  // fold a live filter out of sight.
+  const [sections, setSections] = useState<FilterSectionState>(() => {
+    const stored = loadFilterSections();
+    return { size: stored.size || sizeActive, technique: stored.technique || techniqueActive };
+  });
+  const [lastSizeActive, setLastSizeActive] = useState(sizeActive);
+  const [lastTechniqueActive, setLastTechniqueActive] = useState(techniqueActive);
+
+  // Adjusted during render rather than in an effect, the same way the rail's
+  // own open state is: React re-runs this component before committing, so the
+  // folded frame never reaches the DOM.
+  //
+  // Only the rising edge opens a section, and the opening is not written back
+  // to storage: the user's own clicks are the preference, this is a nudge.
+  // Functional updates, not `{ ...sections }`: clearing every filter at once
+  // flips both flags in the same render, and the second spread of a value
+  // captured before the first would drop it.
+  if (lastSizeActive !== sizeActive) {
+    setLastSizeActive(sizeActive);
+    if (sizeActive) setSections((prev) => (prev.size ? prev : { ...prev, size: true }));
+  }
+  if (lastTechniqueActive !== techniqueActive) {
+    setLastTechniqueActive(techniqueActive);
+    if (techniqueActive)
+      setSections((prev) => (prev.technique ? prev : { ...prev, technique: true }));
+  }
+
+  const toggleSection = (id: FilterSectionId): void => {
+    const next = { ...sections, [id]: !sections[id] };
+    setSections(next);
+    saveFilterSections(next);
+  };
 
   // Mirrors CheckboxRow's own row metrics so the single-select category list
   // sits on the same rhythm as the multi-select rows above it.
@@ -190,7 +313,7 @@ export function FilterPanel({ items, counts, touchSize = false }: FilterPanelPro
   );
 
   return (
-    <div className="space-y-5" data-testid="community-filter-panel">
+    <div className="space-y-4" data-testid="community-filter-panel">
       {hasViewingContext && (
         <Section title={t('community.gallery.viewingSection')}>
           <div className="space-y-1.5">{viewingRows}</div>
@@ -244,11 +367,29 @@ export function FilterPanel({ items, counts, touchSize = false }: FilterPanelPro
         </div>
       </Section>
 
-      <Section title={t('community.gallery.sizeLabel')}>
+      <CollapsibleSection
+        title={t('community.gallery.sizeLabel')}
+        summary={sizeSummary ?? t('community.gallery.dimensionAny')}
+        expanded={sections.size}
+        onToggle={() => toggleSection('size')}
+        touchSize={touchSize}
+        testId="community-filter-section-size"
+      >
         <DimensionFilters items={items} counts={counts} touchSize={touchSize} />
-      </Section>
+      </CollapsibleSection>
 
-      <Section title={t('community.gallery.techniqueLabel')}>
+      <CollapsibleSection
+        title={t('community.gallery.techniqueLabel')}
+        summary={
+          filters.technique === null
+            ? t('community.gallery.techniqueAll')
+            : t(TECHNIQUE_CONFIG[filters.technique].labelKey)
+        }
+        expanded={sections.technique}
+        onToggle={() => toggleSection('technique')}
+        touchSize={touchSize}
+        testId="community-filter-section-technique"
+      >
         <CommunityTechniquePills
           selected={filters.technique}
           onChange={setTechnique}
@@ -256,7 +397,7 @@ export function FilterPanel({ items, counts, touchSize = false }: FilterPanelPro
           allCount={counts.techniqueAll}
           touchSize={touchSize}
         />
-      </Section>
+      </CollapsibleSection>
 
       <div className="border-t border-stroke-subtle pt-3">
         <Button

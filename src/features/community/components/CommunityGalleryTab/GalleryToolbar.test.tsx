@@ -45,15 +45,17 @@ afterEach(() => {
 });
 
 describe('GalleryToolbar', () => {
-  it('keeps the control row to the filter toggle, search and sort', () => {
+  it('keeps the control row to the filter toggle and search', () => {
     renderToolbar();
     expect(screen.getByTestId('community-filter-button')).toBeInTheDocument();
     expect(screen.getByLabelText('community.gallery.searchLabel')).toBeInTheDocument();
-    expect(screen.getByLabelText('community.gallery.sortLabel')).toBeInTheDocument();
     // Every facet now lives in the panel, not in this row.
     expect(screen.queryByLabelText('community.gallery.categoryLabel')).toBeNull();
     expect(screen.queryByTestId('community-size-filters')).toBeNull();
     expect(screen.queryAllByRole('radio')).toHaveLength(0);
+    // Sort belongs to the results, so it sits on the results header where it
+    // stays reachable from deep in the grid.
+    expect(screen.queryByLabelText('community.gallery.sortLabel')).toBeNull();
   });
 
   it('reports the panel state on the toggle and hands the click back', () => {
@@ -75,19 +77,18 @@ describe('GalleryToolbar', () => {
     expect(screen.getByTestId('community-filter-button')).toBeInTheDocument();
   });
 
-  it('gives search its own row on mobile rather than a third of one', () => {
+  it('keeps search beside the toggle even on mobile', () => {
     responsiveMock.isMobile = true;
     renderToolbar();
-    // Sharing a row with the filter button and the sort select left search
-    // about 120px on a 390px phone, narrow enough to cut the placeholder
-    // mid-word. basis-full wraps it onto its own line instead.
-    const search = screen.getByLabelText('community.gallery.searchLabel');
-    const wrapper = search.closest('div');
-    expect(wrapper?.className).toContain('basis-full');
-    expect(wrapper?.className).toContain('order-last');
+    // Sharing a row with the filter button AND the sort select left search
+    // about 120px on a 390px phone, so it used to wrap to its own line. With
+    // sort moved to the results header the two fit, and the row it used to
+    // need is height the grid gets back.
+    const wrapper = screen.getByLabelText('community.gallery.searchLabel').closest('div');
+    expect(wrapper?.className).not.toContain('basis-full');
   });
 
-  it('keeps all three controls on one row on desktop', () => {
+  it('keeps both controls on one row on desktop', () => {
     renderToolbar();
     const wrapper = screen.getByLabelText('community.gallery.searchLabel').closest('div');
     expect(wrapper?.className).not.toContain('basis-full');
@@ -116,43 +117,6 @@ describe('GalleryToolbar', () => {
     expect(useBrowseStore.getState().filters.searchText).toBe('screws');
     fireEvent.click(screen.getByRole('button', { name: 'community.gallery.clearSearch' }));
     expect(useBrowseStore.getState().filters.searchText).toBe('');
-  });
-
-  it('updates the sort', () => {
-    renderToolbar();
-    fireEvent.change(screen.getByLabelText('community.gallery.sortLabel'), {
-      target: { value: 'likes' },
-    });
-    expect(useBrowseStore.getState().filters.sort).toBe('likes');
-  });
-
-  it('offers best-fit only while a dimension constraint is active', () => {
-    renderToolbar();
-    const sortSelect = screen.getByLabelText('community.gallery.sortLabel');
-    const optionIds = () => Array.from(sortSelect.querySelectorAll('option')).map((o) => o.value);
-    expect(optionIds()).not.toContain('best-fit');
-    act(() => {
-      useBrowseStore.getState().setWidthMax(2);
-    });
-    expect(optionIds()).toContain('best-fit');
-    fireEvent.change(sortSelect, { target: { value: 'best-fit' } });
-    expect(useBrowseStore.getState().filters.sort).toBe('best-fit');
-  });
-
-  it('offers best-fit while a fits-gap context is set without toolbar constraints', () => {
-    useBrowseStore.getState().setFitsGapContext({
-      widthMax: 2,
-      depthMax: 3,
-      maxHeight: null,
-      gridUnitMm: 42,
-      gridUnitMmY: 42,
-      heightUnitMm: 7,
-    });
-    renderToolbar();
-    const sortSelect = screen.getByLabelText('community.gallery.sortLabel');
-    expect(Array.from(sortSelect.querySelectorAll('option')).map((o) => o.value)).toContain(
-      'best-fit'
-    );
   });
 });
 

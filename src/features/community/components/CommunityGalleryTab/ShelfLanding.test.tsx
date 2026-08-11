@@ -4,7 +4,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import type { CommunityCard } from '@/shared/types/community';
 import { INITIAL_BROWSE_STATE, useBrowseStore } from '../../store/browseStore';
 import { ShelfLanding } from './ShelfLanding';
-import { SHELF_LANDING_MIN_DESIGNS } from './shelfData';
+import { MAX_LANDING_RAILS, SHELF_LANDING_MIN_DESIGNS } from './shelfData';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
@@ -140,6 +140,34 @@ describe('ShelfLanding', () => {
     );
     fireEvent.click(screen.getByTestId('community-shelf-see-all-most-remixed'));
     expect(useBrowseStore.getState().filters.sort).toBe('remixes');
+  });
+
+  it('caps the landing so the grid stays about one flick away', () => {
+    // Enough signal for all four derived shelves to qualify: featured,
+    // printed, new-this-week (fetchedAt is 0, so every card is inside the
+    // window) and most-remixed.
+    render(
+      <ShelfLanding
+        items={manyCards(24, (i) => ({
+          featured: i < 3,
+          counts: {
+            likes: 0,
+            remixes: i >= 12 ? 5 : 0,
+            exports: 0,
+            prints: i >= 3 && i < 6 ? 2 : 0,
+          },
+        }))}
+        onSelect={vi.fn()}
+        onSelectAuthor={vi.fn()}
+      />
+    );
+    expect(screen.getAllByRole('list')).toHaveLength(MAX_LANDING_RAILS);
+    expect(screen.getByText('community.shelves.featured')).toBeInTheDocument();
+    expect(screen.getByText('community.shelves.proven')).toBeInTheDocument();
+    expect(screen.getByText('community.shelves.newThisWeek')).toBeInTheDocument();
+    // Dropped, not lost: its cards are all in the grid below, and its own
+    // sort is still one click away in the results header.
+    expect(screen.queryByText('community.shelves.mostRemixed')).not.toBeInTheDocument();
   });
 
   it('shelf cards select through the shared handler', () => {

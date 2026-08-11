@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { act, cleanup, render, screen, fireEvent } from '@testing-library/react';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { useGapFitStore } from '@/core/store/gapFit';
 import type { CommunityCard } from '@/shared/types/community';
@@ -57,6 +57,9 @@ beforeEach(() => {
   useBrowseStore.setState({ ...INITIAL_BROWSE_STATE, items: ITEMS });
   useGapFitStore.setState({ constraint: null });
   useSessionStore.setState({ status: 'anonymous', user: null });
+  // The folded-section preference outlives a render, so a leftover from an
+  // earlier case would decide the next one's starting state.
+  localStorage.clear();
 });
 
 afterEach(() => {
@@ -221,8 +224,77 @@ describe('FilterPanel sections', () => {
     expect(screen.getByText('community.gallery.categoryLabel')).toBeInTheDocument();
     expect(screen.getByText('community.gallery.sizeLabel')).toBeInTheDocument();
     expect(screen.getByTestId('community-size-filters')).toBeInTheDocument();
+    // Folded, so out of the accessibility tree until it is opened.
+    fireEvent.click(screen.getByTestId('community-filter-section-technique'));
     expect(
       screen.getByRole('radiogroup', { name: 'community.gallery.techniqueLabel' })
     ).toBeInTheDocument();
+  });
+});
+
+describe('FilterPanel folded sections', () => {
+  const sizeSection = () => screen.getByTestId('community-filter-section-size');
+  const techniqueSection = () => screen.getByTestId('community-filter-section-technique');
+
+  it('starts with size and technique folded', () => {
+    renderPanel();
+    expect(sizeSection()).toHaveAttribute('aria-expanded', 'false');
+    expect(techniqueSection()).toHaveAttribute('aria-expanded', 'false');
+    // Show and Category are the facets most narrowing goes through, so they
+    // never cost a click.
+    expect(screen.getByTestId('community-filter-liked')).toBeVisible();
+    expect(screen.getByTestId('community-filter-category-all')).toBeVisible();
+  });
+
+  it('keeps the folded controls out of the tab order', () => {
+    renderPanel();
+    expect(screen.getByTestId('community-size-filters').closest('[hidden]')).not.toBeNull();
+  });
+
+  it('states the value it is holding while folded', () => {
+    renderPanel();
+    expect(sizeSection()).toHaveTextContent('community.gallery.dimensionAny');
+    expect(techniqueSection()).toHaveTextContent('community.gallery.techniqueAll');
+  });
+
+  it('unfolds on click and remembers it', () => {
+    renderPanel();
+    fireEvent.click(sizeSection());
+    expect(sizeSection()).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByTestId('community-size-filters').closest('[hidden]')).toBeNull();
+
+    cleanup();
+    renderPanel();
+    expect(sizeSection()).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('unfolds a section whose filter is already applied on arrival', () => {
+    // A shared URL or another tab can apply a size bound before this panel
+    // ever mounts; a stored "folded" is a preference about an idle section,
+    // not licence to hide a live filter.
+    useBrowseStore.getState().setWidthMax(2);
+    renderPanel();
+    expect(sizeSection()).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('unfolds when a filter is applied from elsewhere mid-session', () => {
+    renderPanel();
+    expect(techniqueSection()).toHaveAttribute('aria-expanded', 'false');
+    act(() => {
+      useBrowseStore.getState().setTechnique('compartments');
+    });
+    expect(techniqueSection()).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('does not re-fold a section the user opened when its filter clears', () => {
+    renderPanel();
+    fireEvent.click(techniqueSection());
+    act(() => {
+      useBrowseStore.getState().setTechnique('compartments');
+    });
+    act(() => {
+      useBrowseStore.getState().setTechnique(null);
+    });
+    expect(techniqueSection()).toHaveAttribute('aria-expanded', 'true');
   });
 });

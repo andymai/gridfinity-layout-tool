@@ -3,7 +3,7 @@
  *
  * Key naming convention: feature.context.element
  * Examples:
- *   header.layoutName      → Header component, layout name button
+ *   header.editLayoutName  → Header component, layout name button
  *   toast.binsDeleted      → Toast notification for deleted bins
  *
  * Interpolation uses {variableName} syntax:
@@ -133,7 +133,6 @@ const en: Record<string, string> = {
 
   // Header
   'header.editLayoutName': 'Click to edit layout name',
-  'header.layoutName': 'Layout name',
   'header.switchLayout': 'Switch layout (current: {name})',
   'header.manageLayouts': 'Manage layouts',
   'header.print': 'Print',
@@ -3581,6 +3580,7 @@ const en: Record<string, string> = {
   'community.gallery.heightAbbrev': 'H',
   'community.gallery.clearAll': 'Clear all',
   'community.gallery.gridLabel': 'Community designs',
+  'community.gallery.allDesigns': 'All designs',
   'community.gallery.loadMore': 'Load more',
   'community.gallery.capNotice': 'Showing the {count} newest designs',
   'community.gallery.countLabel': '{count} designs',

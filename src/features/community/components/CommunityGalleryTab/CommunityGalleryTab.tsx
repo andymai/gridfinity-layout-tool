@@ -34,6 +34,7 @@ import { GalleryToolbar } from './GalleryToolbar';
 import { countPanelFilters } from './galleryFilterOptions';
 import { hasLocalDesigns } from './hasLocalDesigns';
 import { MobileFilterView } from './MobileFilterView';
+import { ResultsHeader } from './ResultsHeader';
 import { ShelfLanding } from './ShelfLanding';
 import { SHELF_LANDING_MIN_DESIGNS } from './shelfData';
 import { useFilterPanel } from './useFilterPanel';
@@ -371,6 +372,16 @@ export function CommunityGalleryTab({
     [activeItems, filters, searchLabels, recentIds, fitsGapContext]
   );
 
+  // The landing is for an undirected visit to the public index: it stands down
+  // in Mine, over non-ready states, and the moment the visitor states any
+  // filter intent.
+  const shelvesVisible =
+    !mineActive &&
+    status === 'ready' &&
+    items.length >= SHELF_LANDING_MIN_DESIGNS &&
+    fitsGapContext === null &&
+    !hasActiveBrowseFilters(filters);
+
   const isInitialLoading = activeStatus === 'loading' && activeItems.length === 0;
   const isEmptyLibrary = !mineActive && status === 'ready' && items.length === 0;
   const isMineEmpty = mineActive && mineStatus === 'ready' && mineItems.length === 0;
@@ -421,40 +432,37 @@ export function CommunityGalleryTab({
           />
         )}
 
-        {/* min-w-0 is load-bearing, not tidying: a flex item defaults to
+        {/* One scroller for the landing rails and the grid together. Two of
+            them split the height between a permanent band of rails and
+            whatever was left for the results, which on a short window was a
+            single clipped row of cards.
+
+            min-w-0 on it is load-bearing, not tidying: a flex item defaults to
             min-width:auto, so without it this column refuses to shrink below
             the widest card's min-content and sizes the grid to that instead of
-            to the viewport. Because the scroller below computes overflow-x to
+            to the viewport. Because overflow-y-auto makes overflow-x compute to
             auto, the result is a silently side-scrolling grid with columns
             wider than the screen rather than a visibly broken page. */}
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-          {/* Landing affordance for the public index only: hidden in Mine, over
-              non-ready states, and once the visitor has stated any filter intent.
-              Sits outside the scrollRef div so shelf scrolling never pollutes the
-              persisted grid scrollTop. */}
-          {!mineActive &&
-            status === 'ready' &&
-            items.length >= SHELF_LANDING_MIN_DESIGNS &&
-            fitsGapContext === null &&
-            !hasActiveBrowseFilters(filters) && (
-              <ShelfLanding
-                items={items}
-                onSelect={handleSelect}
-                onSelectAuthor={handleSelectAuthor}
-              />
-            )}
+        <div
+          ref={scrollRef}
+          tabIndex={-1}
+          onScroll={handleGridScroll}
+          data-testid="community-gallery-scroll"
+          className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto scrollbar-thin focus-visible:outline-none"
+        >
+          {shelvesVisible && (
+            <ShelfLanding
+              items={items}
+              onSelect={handleSelect}
+              onSelectAuthor={handleSelectAuthor}
+            />
+          )}
 
-          <div
-            ref={scrollRef}
-            id={GALLERY_RESULTS_ID}
-            // Focusable only as a skip-link destination: without it the jump
-            // moves the viewport but leaves focus behind in the filter rail,
-            // so the next Tab returns there.
-            tabIndex={-1}
-            onScroll={handleGridScroll}
-            data-testid="community-gallery-scroll"
-            className="flex-1 overflow-y-auto scrollbar-thin p-3 focus-visible:outline-none md:p-4"
-          >
+          {/* Everything that frames the results and scrolls away above them.
+              empty:hidden rather than a condition on the wrapper: the digest
+              summary renders nothing when there are no unseen deltas, which
+              nothing out here can know. */}
+          <div className="px-3 pt-3 empty:hidden md:px-4 md:pt-4">
             {/* Opening Mine is what consumes the since-last-visit digest, so the
             summary mounts only inside the Mine branch: browsing the public
             grid keeps the deltas unseen. */}
@@ -490,7 +498,29 @@ export function CommunityGalleryTab({
                 </Button>
               </div>
             )}
+          </div>
 
+          {filtersAvailable && (
+            <ResultsHeader
+              count={filtered.length}
+              // Named only where rails sit above it and the grid needs marking
+              // off as its own section. Over a narrowed view the count is the
+              // whole story and "All designs" would contradict it.
+              title={shelvesVisible ? t('community.gallery.allDesigns') : undefined}
+              headingLevel={sectionHeadingLevel}
+            />
+          )}
+
+          <div
+            id={GALLERY_RESULTS_ID}
+            // Focusable only as a skip-link destination: without it the jump
+            // moves the viewport but leaves focus behind in the filter rail,
+            // so the next Tab returns there. It is the grid that carries the
+            // id, not the scroller, or the jump would land on the rails the
+            // link exists to skip.
+            tabIndex={-1}
+            className="p-3 focus-visible:outline-none md:p-4"
+          >
             {isInitialLoading && (
               <>
                 <span className="sr-only" role="status">
@@ -681,23 +711,23 @@ export function CommunityGalleryTab({
                 )}
               </>
             )}
+
+            {/* Under the last card rather than pinned to the bottom of the
+                gallery: the cap only means anything once you have reached the
+                end of what it let through. That includes reaching the end at
+                zero results, where "we only loaded the newest N" is the most
+                useful thing the gallery can say about a search that found
+                nothing. */}
+            {!mineActive && capped && visibleCount >= filtered.length && (
+              <p className="mt-4 text-center text-xs text-content-tertiary">
+                {t('community.gallery.capNotice', {
+                  count: COMMUNITY_INDEX_CAP.toLocaleString(),
+                })}
+              </p>
+            )}
           </div>
         </div>
       </div>
-
-      {(activeStatus === 'ready' || activeItems.length > 0) && (
-        <div
-          aria-live="polite"
-          className="flex shrink-0 items-center justify-between gap-2 border-t border-stroke-subtle px-3 py-1.5 text-xs text-content-tertiary"
-        >
-          <span>{t('community.gallery.countLabel', { count: filtered.length })}</span>
-          {!mineActive && capped && (
-            <span>
-              {t('community.gallery.capNotice', { count: COMMUNITY_INDEX_CAP.toLocaleString() })}
-            </span>
-          )}
-        </div>
-      )}
     </div>
   );
 }

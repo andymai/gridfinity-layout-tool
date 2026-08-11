@@ -19,6 +19,17 @@ export const SHELF_CARD_LIMIT = 8;
  */
 export const SHELF_MIN_CARDS = 3;
 
+/**
+ * Rails and the grid share one scroller, so every rail is distance between the
+ * visitor and the library. Three is about one flick: past that the landing
+ * stops being an entry point and becomes something to get through.
+ *
+ * Curated collections claim slots first, so adding one displaces the weakest
+ * derived shelf rather than deepening the landing. Nothing is lost either way:
+ * a suppressed rail's cards are all in the grid below.
+ */
+export const MAX_LANDING_RAILS = 3;
+
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
 export type ShelfId = 'featured' | 'proven' | 'new-this-week' | 'most-remixed';

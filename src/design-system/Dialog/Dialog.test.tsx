@@ -462,6 +462,35 @@ describe('Dialog', () => {
       );
       expect(screen.getByText('Fancy')).toBeInTheDocument();
     });
+
+    it('keeps the default density roomy', () => {
+      render(
+        <Dialog.Root open={true} onClose={vi.fn()}>
+          <Dialog.Header title="Test" bordered />
+          <Dialog.Body>Content</Dialog.Body>
+        </Dialog.Root>
+      );
+      const header = screen.getByText('Test').parentElement?.parentElement;
+      expect(header?.className).toContain('pb-4');
+      expect(screen.getByText('Test').className).toContain('text-xl');
+    });
+
+    it('drops the bottom inset at compact density so a tab row sits on the border', () => {
+      render(
+        <Dialog.Root open={true} onClose={vi.fn()}>
+          <Dialog.Header title="Test" bordered density="compact">
+            <span>Tabs</span>
+          </Dialog.Header>
+          <Dialog.Body>Content</Dialog.Body>
+        </Dialog.Root>
+      );
+      const header = screen.getByText('Test').parentElement?.parentElement;
+      // A tab underline only reads as one when it meets the header's border.
+      expect(header?.className).not.toContain('pb-4');
+      expect(header?.className).not.toContain('pb-2');
+      expect(header?.className).toContain('border-b');
+      expect(screen.getByText('Test').className).toContain('text-base');
+    });
   });
 
   describe('sub header', () => {
