@@ -1,4 +1,4 @@
-import { IconButton, XIcon } from '@/design-system';
+import { IconButton, Input, XIcon } from '@/design-system';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 
 interface ItemSearchProps {
@@ -24,25 +24,22 @@ export function ItemSearch({
 }: ItemSearchProps) {
   return (
     <div className="relative">
-      <svg
-        className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-content-tertiary"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        aria-hidden="true"
-      >
-        {ICON_PATHS.search.map((d) => (
-          <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
-        ))}
-      </svg>
-      <input
+      <Input
         ref={inputRef}
-        type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        data-focus-ring
-        className="w-full pl-9 pr-8 py-2 bg-surface border border-stroke rounded-lg text-sm text-content placeholder:text-content-tertiary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+        fullWidth
+        leftIcon={
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            {ICON_PATHS.search.map((d) => (
+              <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+            ))}
+          </svg>
+        }
+        // `leftIcon` sets pl-0 on the input, which butts the text against the
+        // magnifier; pl-2 restores the gap. pr-8 is room for the clear button.
+        className="pl-2 pr-8"
         aria-label={ariaLabel}
       />
       {value && (

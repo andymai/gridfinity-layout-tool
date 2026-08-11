@@ -89,6 +89,39 @@ describe('findViolations', () => {
       expect(find('const a = <input type="hidden" value="x" />;')).toEqual([]);
     });
 
+    it('ignores an opacity-0 range, a keyboard handle behind custom visuals', () => {
+      expect(
+        find('const a = <input type="range" className="absolute inset-0 opacity-0" />;')
+      ).toEqual([]);
+    });
+
+    it('ignores an sr-only colour input', () => {
+      expect(find('const a = <input type="color" className="sr-only" />;')).toEqual([]);
+    });
+
+    it('still flags a range hidden only on hover', () => {
+      // `group-hover:opacity-0` is visible until hovered; a substring match
+      // treated it as always hidden.
+      expect(
+        find('const a = <input type="range" className="group-hover:opacity-0" />;')[0].use
+      ).toBe('<Slider>');
+    });
+
+    it('still flags a range whose className is computed', () => {
+      // cn(hidden && 'sr-only') hides it only sometimes, so it cannot be judged.
+      expect(
+        find('const a = <input type="range" className={cn(h && \'sr-only\')} />;')
+      ).toHaveLength(1);
+    });
+
+    it('accepts a braced string literal', () => {
+      expect(find('const a = <input type="range" className={"opacity-0"} />;')).toEqual([]);
+    });
+
+    it('still flags a visible range', () => {
+      expect(find('const a = <input type="range" className="w-16" />;')[0].use).toBe('<Slider>');
+    });
+
     it('ignores a file input, which is a mechanism rather than a styled control', () => {
       expect(find('const a = <input type="file" onChange={f} />;')).toEqual([]);
     });

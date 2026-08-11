@@ -1,5 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
-import { Button, IconButton } from '@/design-system';
+import { Button, IconButton, InlineEditText } from '@/design-system';
 import { LayoutThumbnail } from '@/shell/LayoutThumbnail';
 import { useRelativeTime } from '../../hooks/useRelativeTime';
 import { useTranslation } from '@/i18n';
@@ -23,25 +22,6 @@ export function SnapshotEntry({
 }: SnapshotEntryProps) {
   const t = useTranslation();
   const relativeTime = useRelativeTime(snapshot.timestamp);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState(snapshot.label ?? '');
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-    }
-  }, [isEditing]);
-
-  const handleLabelSubmit = () => {
-    const trimmed = editValue.trim();
-    if (trimmed && trimmed !== snapshot.label) {
-      onUpdateLabel(snapshot.id, trimmed);
-    }
-    setIsEditing(false);
-  };
-
   return (
     <div
       className="flex items-start gap-3 pl-2 pr-4 py-3 hover:bg-surface-hover transition-colors group"
@@ -57,39 +37,17 @@ export function SnapshotEntry({
       </div>
 
       <div className="flex-1 min-w-0">
-        {isEditing ? (
-          <input
-            ref={inputRef}
-            type="text"
-            value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
-            onBlur={handleLabelSubmit}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleLabelSubmit();
-              if (e.key === 'Escape') {
-                setEditValue(snapshot.label ?? '');
-                setIsEditing(false);
-              }
-            }}
-            className="w-full text-xs font-medium bg-surface border border-stroke rounded px-1.5 py-0.5"
-            placeholder={t('snapshots.labelPlaceholder')}
-            aria-label={t('snapshots.editLabel')}
-          />
-        ) : (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setEditValue(snapshot.label ?? '');
-              setIsEditing(true);
-            }}
-            className="text-xs font-medium text-content truncate block max-w-full bg-transparent hover:bg-transparent text-left !px-0 h-auto"
-            title={t('snapshots.editLabel')}
-          >
-            {snapshot.label ?? t('snapshots.autoSaved')}
-          </Button>
-        )}
+        <InlineEditText
+          value={snapshot.label ?? ''}
+          // An unlabelled snapshot reads "Auto-saved" but must edit as empty,
+          // so the display string and the editable value differ here.
+          displayValue={snapshot.label ?? t('snapshots.autoSaved')}
+          onCommit={(label) => onUpdateLabel(snapshot.id, label)}
+          placeholder={t('snapshots.labelPlaceholder')}
+          aria-label={t('snapshots.editLabel')}
+          displayClassName="!px-0 h-auto max-w-full text-xs font-medium text-content hover:bg-transparent"
+          inputClassName="w-full text-xs font-medium"
+        />
 
         <div className="text-[11px] text-content-tertiary mt-0.5">
           <span>{relativeTime}</span>

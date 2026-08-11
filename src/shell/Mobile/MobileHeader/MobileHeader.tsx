@@ -8,7 +8,7 @@ import { CONSTRAINTS, DEFAULT_LAYOUT_NAME } from '@/core/constants';
 import { GITHUB_REPO_URL, KOFI_URL } from '@/shared/constants/links';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import type { SaveStatus } from '@/shared/hooks';
-import { Button, IconButton } from '@/design-system';
+import { Button, IconButton, Input } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
@@ -114,15 +114,17 @@ export function MobileHeader({ onMenuClick, saveStatus }: MobileHeaderProps) {
         {/* Center: Layout name - tap to open layouts panel, long press to edit */}
         <div className="flex-1 mx-3 min-w-0">
           {isEditing ? (
-            <input
+            <Input
               ref={inputRef}
-              type="text"
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
               onBlur={handleNameSubmit}
               onKeyDown={handleNameKeyDown}
               maxLength={CONSTRAINTS.NAME_MAX_LENGTH}
-              className="w-full px-2 py-1 rounded text-sm text-center bg-surface-elevated border border-accent text-content"
+              size="sm"
+              fullWidth
+              wrapperClassName="border-accent"
+              className="text-center text-sm"
             />
           ) : (
             <Button

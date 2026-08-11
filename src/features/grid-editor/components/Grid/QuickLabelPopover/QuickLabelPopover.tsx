@@ -7,7 +7,7 @@ import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
 import { batch } from '@/core/cqrs';
 import { trackEvent } from '@/shared/analytics/posthog';
-import { IconButton, XIcon } from '@/design-system';
+import { IconButton, Input, XIcon } from '@/design-system';
 
 /**
  * Small popover that appears near a bin for quick label editing.
@@ -141,16 +141,17 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
         {/* Input area */}
         <div className="p-3">
           <div className="relative">
-            <input
+            <Input
               ref={inputRef}
-              type="text"
               value={value}
               onChange={(e) => setValue(e.target.value)}
               onKeyDown={handleKeyDown}
               maxLength={CONSTRAINTS.LABEL_MAX_LENGTH}
               placeholder={t('gridEditor.quickLabel.placeholder')}
-              className="input w-full px-3 py-2 pr-8 text-sm"
-              style={{ minWidth: '200px' }}
+              fullWidth
+              wrapperClassName="min-w-[200px]"
+              // Room for the absolutely-positioned clear button.
+              className="pr-8"
             />
             {value && (
               <IconButton

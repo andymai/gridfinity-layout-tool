@@ -23,7 +23,7 @@ import type { Layout } from '@/core/types';
 import { layoutId } from '@/core/types';
 import { isOk } from '@/core/result';
 import { useTranslation, useFormatting } from '@/i18n';
-import { Button } from '@/design-system';
+import { Button, Input } from '@/design-system';
 import { SvgIcon, ActionSheet, ShareOptionButton, ICON_PATHS } from './MobileLayoutsPanelParts';
 import { LayoutListItem, findEntry } from './MobileLayoutsListItem';
 import { MobileCloudSharePanel } from './MobileCloudSharePanel';
@@ -377,9 +377,8 @@ export function MobileLayoutsPanel() {
           <h3 className="text-lg font-semibold text-content mb-4">
             {t('mobile.layouts.renameLayout')}
           </h3>
-          <input
+          <Input
             ref={renameInputRef}
-            type="text"
             value={renameValue}
             onChange={(e) => setRenameValue(e.target.value)}
             onKeyDown={(e) => {
@@ -389,7 +388,9 @@ export function MobileLayoutsPanel() {
                 dismissRename();
               }
             }}
-            className="w-full bg-surface px-4 py-3 rounded-lg border border-stroke focus:border-accent focus:outline-none text-content text-base"
+            fullWidth
+            size="lg"
+            className="text-base"
             placeholder={t('layouts.layoutNamePlaceholder')}
             maxLength={64}
             // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX

@@ -1,1 +1,1 @@
-import '../src/index.css';
+import './ct.css';

@@ -83,10 +83,46 @@ function literalInputType(attributes: ts.JsxAttributes): string | null {
   return null;
 }
 
+/**
+ * Whether the element is visually hidden, so there is no appearance to
+ * standardise. The pattern is a native control kept for keyboard and ARIA
+ * behind custom-drawn visuals — an `opacity-0` range overlaying a painted
+ * track, or an `sr-only` colour input behind a pipette button.
+ */
+function isVisuallyHidden(attributes: ts.JsxAttributes): boolean {
+  for (const property of attributes.properties) {
+    if (!ts.isJsxAttribute(property)) continue;
+    if (property.name.getText() !== 'className') continue;
+
+    // Only a plain string literal can be judged. A computed className such as
+    // `cn(hidden && 'sr-only')` hides the element only sometimes, so treating
+    // it as always-hidden would suppress a genuine violation.
+    const { initializer } = property;
+    let literal: string | null = null;
+    if (initializer && ts.isStringLiteral(initializer)) literal = initializer.text;
+    else if (
+      initializer &&
+      ts.isJsxExpression(initializer) &&
+      initializer.expression &&
+      ts.isStringLiteral(initializer.expression)
+    ) {
+      literal = initializer.expression.text;
+    }
+    if (literal === null) return false;
+
+    // Exact tokens only: `group-hover:opacity-0` is visible until hovered, and
+    // a substring match would have let it through.
+    return literal.split(/\s+/).some((token) => token === 'sr-only' || token === 'opacity-0');
+  }
+  return false;
+}
+
 function describe(
   tagName: string,
   attributes: ts.JsxAttributes
 ): { found: string; use: string; blocking: boolean } | null {
+  if (isVisuallyHidden(attributes)) return null;
+
   const simple = SIMPLE_REPLACEMENTS[tagName];
   if (simple !== undefined) return { found: `<${tagName}>`, use: simple, blocking: true };
 

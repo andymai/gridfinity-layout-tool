@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { CONSTRAINTS, RESERVED_PROPERTY_KEYS } from '@/core/constants';
-import { Button, IconButton, XIcon } from '@/design-system';
+import { Input, Button, IconButton, XIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 interface CustomPropertiesEditorProps {
@@ -174,8 +174,7 @@ export function CustomPropertiesEditor({
                   <XIcon className="w-3.5 h-3.5" />
                 </IconButton>
               </div>
-              <input
-                type="text"
+              <Input
                 value={value}
                 onChange={(e) =>
                   handleUpdate(
@@ -184,7 +183,8 @@ export function CustomPropertiesEditor({
                   )
                 }
                 maxLength={CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH}
-                className={`input w-full ${inputHeight}`}
+                fullWidth
+                wrapperClassName={inputHeight}
                 placeholder={t('inspector.customProps.multiValuePlaceholder')}
                 aria-label={`Value for ${key}`}
               />
@@ -196,8 +196,7 @@ export function CustomPropertiesEditor({
       {/* Add new property form */}
       {isAdding && (
         <div className="bg-surface-elevated border border-stroke-subtle rounded p-2.5 space-y-2">
-          <input
-            type="text"
+          <Input
             value={newKey}
             onChange={(e) => {
               setNewKey(e.target.value.slice(0, CONSTRAINTS.CUSTOM_PROPERTY_KEY_MAX_LENGTH));
@@ -205,14 +204,15 @@ export function CustomPropertiesEditor({
             }}
             onKeyDown={(e) => handleKeyDown(e, handleAdd)}
             maxLength={CONSTRAINTS.CUSTOM_PROPERTY_KEY_MAX_LENGTH}
-            className={`input w-full ${inputHeight} ${error ? 'border-error' : ''}`}
+            fullWidth
+            wrapperClassName={inputHeight}
+            error={error !== null}
             placeholder={t('inspector.customProps.keyPlaceholder')}
             aria-label={t('inspector.newPropertyName')}
             // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
             autoFocus
           />
-          <input
-            type="text"
+          <Input
             value={newValue}
             onChange={(e) => {
               setNewValue(e.target.value.slice(0, CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH));
@@ -220,7 +220,8 @@ export function CustomPropertiesEditor({
             }}
             onKeyDown={(e) => handleKeyDown(e, handleAdd)}
             maxLength={CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH}
-            className={`input w-full ${inputHeight}`}
+            fullWidth
+            wrapperClassName={inputHeight}
             placeholder={t('inspector.customProps.multiValuePlaceholder')}
             aria-label={t('inspector.newPropertyValue')}
           />

@@ -7,7 +7,7 @@ import { CONSTRAINTS } from '@/core/constants';
 import { getGridBins, getLayerBins } from '@/shared/utils';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useTranslation } from '@/i18n';
-import { Button, IconButton, PlusIcon, MinusIcon } from '@/design-system';
+import { Button, IconButton, Input, PlusIcon, MinusIcon } from '@/design-system';
 import { useLayerListController } from '@/features/layers/hooks/useLayerListController';
 
 /**
@@ -356,9 +356,8 @@ export function LayersTab() {
             >
               <div className="w-10 h-1 bg-content-disabled rounded-full mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-content mb-4">{t('mobile.renameLayer')}</h3>
-              <input
+              <Input
                 ref={renameInputRef}
-                type="text"
                 value={renameValue}
                 onChange={(e) => setRenameValue(e.target.value)}
                 onKeyDown={(e) => {
@@ -369,7 +368,9 @@ export function LayersTab() {
                     setRenameValue('');
                   }
                 }}
-                className="w-full bg-surface px-4 py-3 rounded-lg border border-stroke focus:border-accent focus:outline-none text-content text-base"
+                fullWidth
+                size="lg"
+                className="text-base"
                 placeholder={t('layers.layerNamePlaceholder')}
                 maxLength={CONSTRAINTS.LABEL_MAX_LENGTH}
                 // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX

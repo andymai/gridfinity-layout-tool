@@ -17,7 +17,7 @@ import {
 import { useShallow } from 'zustand/react/shallow';
 import { useLinkingStore } from '../../../store';
 import { useBinLinking } from '../../../hooks';
-import { Button, IconButton, XIcon } from '@/design-system';
+import { Button, IconButton, Input, XIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 export function LinkDesignDialog() {
@@ -183,12 +183,13 @@ export function LinkDesignDialog() {
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                 />
               </svg>
-              <input
-                type="text"
+              <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t('designLinking.linkDialog.searchPlaceholder')}
-                className="w-full pl-8 pr-3 py-1.5 text-sm bg-surface border border-stroke rounded-md transition-colors"
+                fullWidth
+                // Room for the absolutely-positioned search icon.
+                className="pl-8"
               />
               {searchQuery && (
                 <IconButton

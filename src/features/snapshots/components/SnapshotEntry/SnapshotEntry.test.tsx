@@ -100,4 +100,44 @@ describe('SnapshotEntry', () => {
     // Timeline line hidden
     expect(container.querySelector('.bg-stroke-subtle')).not.toBeInTheDocument();
   });
+
+  describe('label editing', () => {
+    it('commits a typed label', () => {
+      const onUpdateLabel = vi.fn();
+      const snapshot = makeSnapshot({ label: 'Old name' });
+      render(<SnapshotEntry snapshot={snapshot} {...defaultProps} onUpdateLabel={onUpdateLabel} />);
+
+      fireEvent.click(screen.getByRole('button', { name: /edit label/i }));
+      const input = screen.getByRole('textbox');
+      fireEvent.change(input, { target: { value: 'New name' } });
+      fireEvent.keyDown(input, { key: 'Enter' });
+
+      expect(onUpdateLabel).toHaveBeenCalledWith(snapshot.id, 'New name');
+    });
+
+    it('shows the auto-saved text but edits from empty', () => {
+      // An unlabelled snapshot displays a placeholder it must never commit.
+      const snapshot = makeSnapshot({ label: undefined });
+      render(<SnapshotEntry snapshot={snapshot} {...defaultProps} />);
+
+      expect(screen.getByRole('button', { name: /edit label/i })).toHaveTextContent(/auto/i);
+      fireEvent.click(screen.getByRole('button', { name: /edit label/i }));
+
+      expect(screen.getByRole('textbox')).toHaveValue('');
+    });
+
+    it('reverts on Escape without committing', () => {
+      const onUpdateLabel = vi.fn();
+      const snapshot = makeSnapshot({ label: 'Old name' });
+      render(<SnapshotEntry snapshot={snapshot} {...defaultProps} onUpdateLabel={onUpdateLabel} />);
+
+      fireEvent.click(screen.getByRole('button', { name: /edit label/i }));
+      const input = screen.getByRole('textbox');
+      fireEvent.change(input, { target: { value: 'Discarded' } });
+      fireEvent.keyDown(input, { key: 'Escape' });
+
+      expect(onUpdateLabel).not.toHaveBeenCalled();
+      expect(screen.getByRole('button', { name: /edit label/i })).toHaveTextContent('Old name');
+    });
+  });
 });

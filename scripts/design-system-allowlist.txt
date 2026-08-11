@@ -4,9 +4,16 @@
 # (<button>, <select>, <input type="checkbox">, text <input>). The
 # check:design-system gate is ENABLED — any new raw element is blocked.
 #
-# Migration is complete: there are no grandfathered files. Feature and
-# component code uses the design system:
+# Feature and component code uses the design system:
 #   import { Button, IconButton, Select, Input, Checkbox } from '@/design-system';
+#
+# The two files below are deliberate, not pending work. They ARE this app's
+# numeric input abstraction — each layers commit-on-blur and peak-tracking
+# behaviour over a raw input — so rebuilding them on <Input> would put that
+# logic at risk for styling alone.
 #
 # To grant a temporary exception, add the file path below (one per line),
 # then delete it once the file is migrated.
+
+src/shared/components/CompactNumberInput/CompactNumberInput.tsx
+src/shared/components/DeferredNumberInput/DeferredNumberInput.tsx

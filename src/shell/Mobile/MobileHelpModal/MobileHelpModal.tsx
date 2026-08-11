@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
-import { IconButton, XIcon } from '@/design-system';
+import { IconButton, Input, XIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { getAllHelpEntries } from '@/shell/Modals/HelpModal/helpEntryAggregator';
@@ -147,13 +147,15 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
                 <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
               ))}
             </svg>
-            <input
-              type="text"
+            <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('help.searchPlaceholder')}
               aria-label={t('help.searchPlaceholder')}
-              className="w-full pl-9 pr-9 py-2 text-sm rounded-md bg-surface border border-stroke-subtle text-content placeholder:text-content-tertiary"
+              fullWidth
+              // The search icon and clear button are both absolutely
+              // positioned over the field, so the padding stays here.
+              className="pl-9 pr-9"
             />
             {searchQuery && (
               <IconButton

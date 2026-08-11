@@ -11,7 +11,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLinkingStore } from '../../../store';
 import { useBinLinking } from '../../../hooks';
 import { formatDimensions } from '../../../domain';
-import { Button } from '@/design-system';
+import { Button, Input } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 export function CreateDesignDialog() {
@@ -123,14 +123,13 @@ export function CreateDesignDialog() {
               {t('designLinking.createDialog.nameLabel')}
             </label>
             <div className="flex gap-2">
-              <input
+              <Input
                 ref={inputRef}
                 id="design-name"
-                type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={t('designLinking.createDialog.namePlaceholder')}
-                className="input flex-1"
+                wrapperClassName="flex-1"
                 maxLength={64}
                 // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
                 autoFocus

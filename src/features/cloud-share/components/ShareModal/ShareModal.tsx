@@ -13,7 +13,7 @@ import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useLatestRef } from '@/shared/hooks';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { useTranslation } from '@/i18n';
-import { Button, IconButton, XIcon } from '@/design-system';
+import { Button, IconButton, Input, XIcon } from '@/design-system';
 import type { Layout } from '@/core/types';
 
 interface ShareModalProps {
@@ -197,13 +197,13 @@ function ShareModalBody({ layout, onClose }: { layout: Layout; onClose: () => vo
             <div className="space-y-4">
               <p className="text-sm text-content-secondary">{t('share.link.description')}</p>
               <div className="flex gap-2">
-                <input
+                <Input
                   ref={urlInputRef}
-                  type="text"
                   value={shareURL}
                   readOnly
                   onClick={() => urlInputRef.current?.select()}
-                  className="flex-1 bg-surface text-content p-3 rounded font-mono text-sm"
+                  wrapperClassName="flex-1"
+                  className="font-mono"
                 />
                 <Button variant="primary" onClick={handleCopyURL}>
                   {copied ? t('common.copied') : t('common.copy')}

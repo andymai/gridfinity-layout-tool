@@ -4,6 +4,7 @@ import { LayoutThumbnail } from '@/shell/LayoutThumbnail';
 import { LayoutActions } from '../LayoutActions';
 import { useInlineEdit } from '../useInlineEdit';
 import { useTranslation, useFormatting } from '@/i18n';
+import { Input } from '@/design-system';
 
 interface LayoutListItemProps {
   entry: LayoutEntry;
@@ -95,15 +96,16 @@ export function LayoutListItem({
         {/* Name and Info */}
         <div className="flex-1 min-w-0">
           {isEditing ? (
-            <input
+            <Input
               ref={inputRef}
-              type="text"
               value={editingValue}
               onChange={(e) => handleChange(e.target.value)}
               onBlur={handleFinish}
               onKeyDown={handleKeyDown}
               onClick={(e) => e.stopPropagation()}
-              className="w-full bg-surface px-2 py-1 rounded border border-stroke focus:border-accent focus:ring-1 focus:ring-accent focus:outline-none text-content text-sm"
+              size="sm"
+              fullWidth
+              className="text-sm"
               maxLength={64}
               aria-label={t('layouts.layoutName')}
             />

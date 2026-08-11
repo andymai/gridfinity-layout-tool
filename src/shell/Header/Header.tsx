@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo, Suspense } from 'react';
+import { useState, useMemo, Suspense } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore, useViewStore } from '@/core/store';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
@@ -6,7 +6,7 @@ import { useMutations } from '@/shared/contexts';
 import { useResponsive } from '@/shared/hooks';
 import { useCollabMode } from '@/shared/hooks/useCollabMode';
 import { CONSTRAINTS, DEFAULT_LAYOUT_NAME } from '@/core/constants';
-import { activePress, Button, IconButton, Menu, Tooltip } from '@/design-system';
+import { activePress, Button, IconButton, InlineEditText, Menu, Tooltip } from '@/design-system';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { ShareButton } from '@/features/cloud-share/components/ShareButton';
 import { ShareModal } from '@/features/cloud-share/components/ShareModal';
@@ -95,37 +95,6 @@ export function Header({ saveStatus }: HeaderProps) {
 
   const [showMergeDialog, setShowMergeDialog] = useState(false);
   const mergeEnabled = useFeatureFlag('merge_bins_to_design');
-  const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState(layout.name);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  // Focus input when editing starts
-  useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-    }
-  }, [isEditing]);
-
-  const handleNameClick = () => {
-    setEditValue(layout.name);
-    setIsEditing(true);
-  };
-
-  const handleNameSubmit = () => {
-    setName(editValue.trim() || DEFAULT_LAYOUT_NAME);
-    setIsEditing(false);
-  };
-
-  const handleNameKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleNameSubmit();
-    } else if (e.key === 'Escape') {
-      setEditValue(layout.name);
-      setIsEditing(false);
-    }
-  };
-
   // Platform detection for keyboard shortcut hints
   const isMac = typeof navigator !== 'undefined' && /mac/i.test(navigator.userAgent);
   const modKey = isMac ? '⌘' : 'Ctrl';
@@ -139,32 +108,14 @@ export function Header({ saveStatus }: HeaderProps) {
         <div className="w-px h-6 bg-stroke-subtle" />
 
         {/* Layout name */}
-        {isEditing ? (
-          <input
-            ref={inputRef}
-            type="text"
-            value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
-            onBlur={handleNameSubmit}
-            onKeyDown={handleNameKeyDown}
-            maxLength={CONSTRAINTS.NAME_MAX_LENGTH}
-            aria-label={t('header.layoutName')}
-            className="px-3 py-1.5 rounded-md text-sm transition-all bg-surface-elevated border border-accent text-content"
-            style={{
-              boxShadow: '0 0 0 3px var(--color-primary-muted)',
-            }}
-          />
-        ) : (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleNameClick}
-            className={`px-3 h-8 text-sm hover:scale-[1.02] ${activePress} text-content-secondary max-w-[200px]`}
-            title={t('header.editLayoutName')}
-          >
-            <span className="min-w-0 truncate">{layout.name}</span>
-          </Button>
-        )}
+        <InlineEditText
+          value={layout.name}
+          onCommit={setName}
+          fallback={DEFAULT_LAYOUT_NAME}
+          maxLength={CONSTRAINTS.NAME_MAX_LENGTH}
+          aria-label={t('header.editLayoutName')}
+          displayClassName="h-8 max-w-[200px]"
+        />
 
         <LayoutQuickSwitch onManage={() => setShowLayoutManager(true)} />
 

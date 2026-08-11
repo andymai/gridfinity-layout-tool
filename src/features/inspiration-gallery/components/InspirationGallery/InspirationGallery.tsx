@@ -19,7 +19,7 @@ import type { InspirationLayout, InspirationTheme } from '../../types';
 import { ThemeFilterPills } from '../ThemeFilterPills';
 import { LayoutCard } from '../LayoutCard';
 import { LayoutPreviewOverlay } from '../LayoutPreviewOverlay';
-import { Button, IconButton, XIcon } from '@/design-system';
+import { Button, IconButton, Slider, XIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 interface InspirationGalleryProps {
@@ -319,12 +319,11 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
                       d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
                     />
                   </svg>
-                  <input
-                    type="range"
+                  <Slider
                     min={3}
                     max={8}
                     value={gridColumns}
-                    onChange={(e) => setGridColumns(Number(e.target.value))}
+                    onChange={setGridColumns}
                     className="w-16"
                     aria-label={t('gallery.gridColumns')}
                   />

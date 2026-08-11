@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { MobileHeader } from './MobileHeader';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
@@ -51,5 +51,15 @@ describe('MobileHeader', () => {
   it('renders the tip link', () => {
     render(<MobileHeader onMenuClick={vi.fn()} saveStatus="idle" />);
     expect(screen.getByText('sidebar.tip')).toBeInTheDocument();
+  });
+
+  it('swaps the layout name for a text field on long press', () => {
+    // Rename is the context-menu path here; a plain tap opens the layouts
+    // panel instead, which is why this name is not click-to-edit.
+    render(<MobileHeader onMenuClick={vi.fn()} saveStatus="idle" />);
+
+    fireEvent.contextMenu(screen.getByText('Test Layout'));
+
+    expect(screen.getByRole('textbox')).toHaveValue('Test Layout');
   });
 });

@@ -5,7 +5,7 @@ import { isBinLocked } from '@/shared/utils/binLocation';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBinInspector';
 import type { Layer } from '@/core/types';
 import { BulkIncrementControl } from '@/shared/components/BulkIncrementControl';
-import { Button, IconButton, Select, XIcon } from '@/design-system';
+import { Button, IconButton, Input, Select, XIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { formatHeightUnits } from '@/shared/utils/heightUnits';
 
@@ -239,15 +239,15 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
           </div>
           {showPropertyForm ? (
             <div className="bg-surface-elevated border border-stroke-subtle rounded p-2.5 space-y-2">
-              <input
-                type="text"
+              <Input
                 value={propertyKey}
                 onChange={(e) =>
                   setPropertyKey(
                     e.target.value.slice(0, CONSTRAINTS.CUSTOM_PROPERTY_KEY_MAX_LENGTH)
                   )
                 }
-                className={`input w-full ${inputHeight}`}
+                fullWidth
+                wrapperClassName={inputHeight}
                 placeholder={t('inspector.customProps.multiKeyPlaceholder')}
                 aria-label={t('inspector.customProps.multiKeyPlaceholder')}
                 list="property-key-suggestions"
@@ -259,15 +259,15 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
                   <option key={key} value={key} />
                 ))}
               </datalist>
-              <input
-                type="text"
+              <Input
                 value={propertyValue}
                 onChange={(e) =>
                   setPropertyValue(
                     e.target.value.slice(0, CONSTRAINTS.CUSTOM_PROPERTY_VALUE_MAX_LENGTH)
                   )
                 }
-                className={`input w-full ${inputHeight}`}
+                fullWidth
+                wrapperClassName={inputHeight}
                 placeholder={t('inspector.customProps.multiValuePlaceholder')}
                 aria-label={t('inspector.propertyValue')}
               />

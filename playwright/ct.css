@@ -1,0 +1,11 @@
+/*
+ * Stylesheet for the component-test harness.
+ *
+ * Imports the app's real stylesheet, then tells Tailwind explicitly where to
+ * scan. Under the CT build the project root differs from the app's, so
+ * Tailwind's automatic source detection found no files and emitted zero
+ * utilities — hand-written CSS like `.input` still applied, which is why the
+ * suite screenshotted unstyled components and passed.
+ */
+@import '../src/index.css';
+@source '../src';

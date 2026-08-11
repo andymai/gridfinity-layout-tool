@@ -5,7 +5,7 @@
  * Mobile/Tablet: Compact ToolSwitcher + name (tap=list, long-press=rename) | save status + action buttons
  */
 
-import { Badge, Button, IconButton } from '@/design-system';
+import { Badge, Button, IconButton, Input } from '@/design-system';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
@@ -70,19 +70,17 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
 
             {/* Design name (click to rename inline) */}
             {isEditingName ? (
-              <input
+              <Input
                 ref={nameInputRef}
-                type="text"
                 value={editNameValue}
                 onChange={(e) => setEditNameValue(e.target.value)}
                 onBlur={handleNameSubmit}
                 onKeyDown={handleNameKeyDown}
                 maxLength={50}
                 aria-label={t('binDesigner.designName')}
-                className="px-3 py-1.5 rounded-md text-sm transition-all bg-surface-elevated border border-accent text-content max-w-[200px]"
-                style={{
-                  boxShadow: '0 0 0 3px var(--color-primary-muted)',
-                }}
+                size="sm"
+                wrapperClassName="max-w-[200px] border-accent shadow-[0_0_0_3px_var(--color-primary-muted)]"
+                className="text-sm"
               />
             ) : (
               <Button
@@ -228,19 +226,17 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
 
           {/* Design name - center, tap opens design list, long-press/context-menu renames */}
           {isEditingName ? (
-            <input
+            <Input
               ref={nameInputRef}
-              type="text"
               value={editNameValue}
               onChange={(e) => setEditNameValue(e.target.value)}
               onBlur={handleNameSubmit}
               onKeyDown={handleNameKeyDown}
               maxLength={50}
               aria-label={t('binDesigner.designName')}
-              className="flex-1 mx-3 min-w-0 px-2 py-1 rounded-md text-sm bg-surface-elevated border border-accent text-content"
-              style={{
-                boxShadow: '0 0 0 3px var(--color-primary-muted)',
-              }}
+              size="sm"
+              wrapperClassName="mx-3 min-w-0 flex-1 border-accent shadow-[0_0_0_3px_var(--color-primary-muted)]"
+              className="text-sm"
             />
           ) : (
             <Button

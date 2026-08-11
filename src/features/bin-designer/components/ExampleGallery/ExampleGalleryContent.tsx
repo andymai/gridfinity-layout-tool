@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Button } from '@/design-system';
+import { Button, Input } from '@/design-system';
 import { EXAMPLE_DESIGNS } from '@/features/bin-designer/data/examples';
 import type { ExampleDesign } from '@/features/bin-designer/types/exampleGallery';
 import { useTranslation } from '@/i18n';
@@ -38,12 +38,12 @@ export function ExampleGalleryContent({ onRequestClose }: ExampleGalleryContentP
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="shrink-0 space-y-2 border-b border-stroke-subtle px-4 py-2">
         <p className="text-sm text-content-secondary">{t('binExamples.gallery.subtitle')}</p>
-        <input
+        <Input
           type="search"
           value={filters.search}
           onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
           placeholder={t('binExamples.searchPlaceholder')}
-          className="w-full text-sm bg-surface border border-stroke-subtle rounded-lg px-3 py-1.5 text-content placeholder:text-content-disabled"
+          fullWidth
           aria-label={t('binExamples.searchLabel')}
         />
         <TechniqueFilterPills

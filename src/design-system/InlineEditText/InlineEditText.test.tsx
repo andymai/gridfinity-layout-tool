@@ -161,4 +161,89 @@ describe('InlineEditText', () => {
     fireEvent.click(button);
     expect(screen.getByRole('textbox')).toHaveClass('w-full');
   });
+
+  describe('displayValue', () => {
+    it('shows the display text while editing the underlying value', () => {
+      render(
+        <InlineEditText
+          value=""
+          displayValue="Auto-saved"
+          onCommit={vi.fn()}
+          aria-label="Rename snapshot"
+        />
+      );
+
+      expect(screen.getByRole('button', { name: 'Rename snapshot' })).toHaveTextContent(
+        'Auto-saved'
+      );
+    });
+
+    it('starts the input from value, not the display text', () => {
+      render(
+        <InlineEditText
+          value=""
+          displayValue="Auto-saved"
+          onCommit={vi.fn()}
+          aria-label="Rename snapshot"
+        />
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: 'Rename snapshot' }));
+
+      // Committing "Auto-saved" as the label is exactly the bug this avoids.
+      expect(screen.getByRole('textbox')).toHaveValue('');
+    });
+
+    it('falls back to value when no display text is given', () => {
+      render(<InlineEditText value="Drawer 1" onCommit={vi.fn()} aria-label="Rename" />);
+
+      expect(screen.getByRole('button', { name: 'Rename' })).toHaveTextContent('Drawer 1');
+    });
+  });
+
+  describe('stopPropagation', () => {
+    it('keeps a click from reaching a clickable ancestor', () => {
+      const onCardClick = vi.fn();
+      render(
+        // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- simulates the clickable card these fields sit inside
+        <div onClick={onCardClick}>
+          <InlineEditText value="Design 1" onCommit={vi.fn()} stopPropagation aria-label="Rename" />
+        </div>
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: 'Rename' }));
+
+      expect(screen.getByRole('textbox')).toBeInTheDocument();
+      expect(onCardClick).not.toHaveBeenCalled();
+    });
+
+    it('keeps typing from reaching an ancestor key handler', () => {
+      const onCardKeyDown = vi.fn();
+      render(
+        // eslint-disable-next-line jsx-a11y/no-static-element-interactions -- simulates the clickable card these fields sit inside
+        <div onKeyDown={onCardKeyDown}>
+          <InlineEditText value="Design 1" onCommit={vi.fn()} stopPropagation aria-label="Rename" />
+        </div>
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: 'Rename' }));
+      fireEvent.keyDown(screen.getByRole('textbox'), { key: 'a' });
+
+      expect(onCardKeyDown).not.toHaveBeenCalled();
+    });
+
+    it('bubbles by default, so existing callers are unaffected', () => {
+      const onCardClick = vi.fn();
+      render(
+        // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- simulates the clickable card these fields sit inside
+        <div onClick={onCardClick}>
+          <InlineEditText value="Design 1" onCommit={vi.fn()} aria-label="Rename" />
+        </div>
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: 'Rename' }));
+
+      expect(onCardClick).toHaveBeenCalled();
+    });
+  });
 });

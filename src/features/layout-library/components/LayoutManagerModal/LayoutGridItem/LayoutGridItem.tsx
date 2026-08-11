@@ -3,6 +3,7 @@ import { LayoutThumbnail } from '@/shell/LayoutThumbnail';
 import { LayoutActions } from '../LayoutActions';
 import { useInlineEdit } from '../useInlineEdit';
 import { useTranslation, useFormatting } from '@/i18n';
+import { Input } from '@/design-system';
 
 interface LayoutGridItemProps {
   entry: LayoutEntry;
@@ -98,7 +99,7 @@ export function LayoutGridItem({
 
       <div className="px-2 py-1.5 bg-surface-secondary">
         {isEditing ? (
-          <input
+          <Input
             ref={inputRef}
             type="text"
             value={editingValue}
@@ -106,7 +107,9 @@ export function LayoutGridItem({
             onBlur={handleFinish}
             onKeyDown={handleKeyDown}
             onClick={(e) => e.stopPropagation()}
-            className="w-full bg-surface px-1.5 py-0.5 rounded border border-stroke focus:border-accent focus:ring-1 focus:ring-accent focus:outline-none text-content text-sm"
+            size="sm"
+            fullWidth
+            className="text-sm"
             maxLength={64}
             aria-label={t('layouts.layoutName')}
           />
