@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.400.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.399.2...gridfinity-layout-tool-v4.400.0) (2026-08-11)
+
+
+### Features
+
+* **baseplate:** parametric mount-down screw holes ([#3428](https://github.com/andymai/gridfinity-layout-tool/issues/3428)) ([decbbf6](https://github.com/andymai/gridfinity-layout-tool/commit/decbbf6c33dddff73af6dd652759d737fb235ba1))
+
 ## [4.399.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.399.1...gridfinity-layout-tool-v4.399.2) (2026-08-11)
 
 
