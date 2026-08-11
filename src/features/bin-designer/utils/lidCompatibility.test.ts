@@ -627,6 +627,27 @@ describe('checkLidCompatibility', () => {
       expect(checkLidCompatibility(params).find((i) => i.id === 'scoopFillsLip')).toBeUndefined();
     });
 
+    it('skips on a spacer, which shells its floor away whatever the lite flag says', () => {
+      // `deriveDimensions` folds the spacer into `dimensions.lightweight`, and
+      // that is what suppresses the ramp. Reading `base.lightweight` alone
+      // would drop a rail the worker never puts a fill against.
+      const params = scooped({
+        base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true, spacer: true },
+      });
+      expect(checkLidCompatibility(params).find((i) => i.id === 'scoopFillsLip')).toBeUndefined();
+    });
+
+    it('still warns on a socketless base, where the lite flag is inert', () => {
+      // A tray bottom has no socket to shell, so `dimensions.lightweight` is
+      // false and the ramp is built, lip fill and all.
+      const params = scooped({
+        base: { ...DEFAULT_BIN_PARAMS.base, style: 'lid', stackingLip: true, lightweight: true },
+      });
+      expect(checkLidCompatibility(params).find((i) => i.id === 'scoopFillsLip')?.sides).toEqual([
+        'front',
+      ]);
+    });
+
     it('skips when the wall is as thick as the lip inset (no overhang to fill)', () => {
       // computeLipOffset is max(0, LIP_TAPER_WIDTH - wallThickness): at 2.6mm
       // the lip no longer protrudes past the wall, so neither the fill nor the

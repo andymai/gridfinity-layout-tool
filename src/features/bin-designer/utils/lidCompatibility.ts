@@ -359,11 +359,18 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   //     a scoop the generator skips doesn't cost a rail. Wall thickness is one
   //     of them: `computeLipOffset` is zero once the wall is as thick as the
   //     lip, and then there is neither a fill nor an undercut to lose.
+  //
+  //     The lite floor is `dimensions.lightweight`, not `base.lightweight`:
+  //     `deriveDimensions` folds the spacer in (it always shells) and drops
+  //     both on a socketless base, where the flag has no socket to act on and
+  //     the ramp is built after all.
+  const socketless = params.base.style === 'flat' || params.base.style === 'lid';
+  const liteFloor = (params.base.lightweight || params.base.spacer) && !socketless;
   if (
     params.scoop.enabled &&
     params.style === 'standard' &&
     params.base.stackingLip &&
-    !params.base.lightweight &&
+    !liteFloor &&
     !isMagnetic &&
     computeLipOffset(true, true, LIP_TAPER_WIDTH, params.wallThickness) > 0
   ) {
