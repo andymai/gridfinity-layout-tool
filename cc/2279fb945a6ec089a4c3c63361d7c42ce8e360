@@ -1,0 +1,19 @@
+src/features/generation/README.md
+  s_13df2c0005cd75::t_eee1caca420c44 224
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "cc2279fb945a6ec089a4c3c63361d7c42ce8e360",
+  "prompts": {},
+  "sessions": {
+    "s_13df2c0005cd75": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d24b17f0-5df1-4244-a105-d33cb0ec4ae8",
+        "model": "claude-opus-5"
+      },
+      "human_author": null
+    }
+  }
+}
