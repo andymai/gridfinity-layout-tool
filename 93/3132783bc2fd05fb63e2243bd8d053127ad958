@@ -1,0 +1,22 @@
+scripts/check-design-system-usage.test.ts
+  s_143ab944de1d05::t_c8aaf7397af6c1 92-107
+scripts/check-design-system-usage.ts
+  s_143ab944de1d05::t_d7dd721cf218de 239-249
+  s_143ab944de1d05::t_fabeabae065c10 99-108
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "933132783bc2fd05fb63e2243bd8d053127ad958",
+  "prompts": {},
+  "sessions": {
+    "s_143ab944de1d05": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d893cac8-ca27-46d0-9bd4-15f949f575f6",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
