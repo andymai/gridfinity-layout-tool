@@ -9,6 +9,7 @@ src/features/bin-inspector/components/Inspector/MultiBinInspector/MultiBinInspec
 src/shell/Header/Header.tsx
   s_c8797b5dd06871::t_b98cbe33634b4f 15,364
   s_c8797b5dd06871::t_5fc83e1ebf3406 97,176-212,322
+  s_c8797b5dd06871::t_fefc7ca00e1292 9
 src/i18n/locales/cs.json
   s_c8797b5dd06871::t_380242ca3c6784 2371
   s_c8797b5dd06871::t_499075df5caff7 3665-3691,3701
