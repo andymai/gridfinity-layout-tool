@@ -20,6 +20,8 @@ import { useDividerDrag } from './useDividerDrag';
 import { TopRuler, LeftRuler, RulerCorner } from '../CutoutWorkspace/Rulers';
 import { BentoWorkspaceHeader } from './BentoWorkspaceHeader';
 import { useBentoCanvasBox } from './useBentoCanvasBox';
+import { BentoQuickstartOverlay } from './BentoQuickstartOverlay';
+import { useBentoQuickstart } from '../../hooks/useBentoQuickstart';
 
 export function BentoWorkspace() {
   const t = useTranslation();
@@ -28,6 +30,7 @@ export function BentoWorkspace() {
   const { aspectRatio, interiorW, interiorD, isDragging, selectionAction, hoveredIsSplittable } =
     grid;
 
+  const { quickstartSeen, markQuickstartSeen } = useBentoQuickstart();
   const containerRef = useRef<HTMLDivElement>(null);
   const box = useBentoCanvasBox(containerRef, aspectRatio, interiorW, interiorD);
 
@@ -46,11 +49,11 @@ export function BentoWorkspace() {
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setBentoWorkspaceOpen(false);
+      if (e.key === 'Escape' && quickstartSeen) setBentoWorkspaceOpen(false);
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [setBentoWorkspaceOpen]);
+  }, [setBentoWorkspaceOpen, quickstartSeen]);
 
   return (
     <div className="flex h-full flex-col bg-surface">
@@ -91,6 +94,8 @@ export function BentoWorkspace() {
           </div>
         )}
       </div>
+
+      {!quickstartSeen && <BentoQuickstartOverlay onDismiss={markQuickstartSeen} />}
 
       <footer className="flex flex-shrink-0 items-center gap-3 border-t border-stroke-subtle bg-surface-secondary px-4 py-2">
         <p
