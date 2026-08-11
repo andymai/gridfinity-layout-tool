@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.399.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.399.0...gridfinity-layout-tool-v4.399.1) (2026-08-11)
+
+
+### Bug Fixes
+
+* **scripts:** parse JSX in the design-system check instead of grepping lines ([#3418](https://github.com/andymai/gridfinity-layout-tool/issues/3418)) ([548dc91](https://github.com/andymai/gridfinity-layout-tool/commit/548dc91054c139dfaa7979d37b4d5f452a383498))
+
 ## [4.399.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.398.2...gridfinity-layout-tool-v4.399.0) (2026-08-11)
 
 
