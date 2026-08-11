@@ -1,0 +1,69 @@
+src/features/generation/worker/generators/pipeline/stages/lidGripDipStage.ts
+  s_5e3bb37717759a::t_163e33e6ef81ef 96-103
+src/features/generation/worker/generators/pipeline/stages/lidRetentionStage.ts
+  s_5e3bb37717759a::t_c671b6f6985af7 95-101
+  s_5e3bb37717759a::t_3d58a1247745c3 27-29
+  s_5e3bb37717759a::t_ddc90dab30045a 109-110
+src/features/generation/worker/generators/lidMagnetSeating.scenario.test.ts
+  s_5e3bb37717759a::t_42113d29750ca6 62-69
+  s_5e3bb37717759a::t_dab4b22da10b50 38-44,47-48,54,56
+  s_5e3bb37717759a::t_57f2d081d827b8 16
+  s_5e3bb37717759a::t_b626f94c22b715 1-15,17-18,20,22-28,30-37,45-46,49-53,55,57-61,70-73
+  s_5e3bb37717759a::t_67e4bc5cb093a2 19,21,29
+  s_5e3bb37717759a::t_9d19adbbabec54 74-76
+  s_5e3bb37717759a::t_9ae2722bbfb965 77
+CLAUDE.md
+  s_5e3bb37717759a::t_cc7d959e90ea9e 41-42
+src/features/bin-designer/components/preview/LidGuideLine/LidGuideLine.tsx
+  s_5e3bb37717759a::t_552f91d54316fc 33
+src/features/generation/worker/generators/__kernel-tests__/lidSeating.ts
+  s_5e3bb37717759a::t_7c2bab8b0f3218 13
+  s_5e3bb37717759a::t_6d781242ba4524 112-118,139-140,142
+  s_5e3bb37717759a::t_b43ca01c53f4d0 21-25
+  s_5e3bb37717759a::t_13427251ce8bbd 104-111,119-138,141,143-148
+  s_5e3bb37717759a::t_44447d9796fc2d 36-40,43-44
+  s_5e3bb37717759a::t_fd6886e69a5343 102-103
+src/features/generation/worker/generators/__kernel-tests__/meshAssertions.ts
+  s_5e3bb37717759a::t_45c62a48d9a9f9 262
+  s_5e3bb37717759a::t_45a0d88c6f8aaf 208,212-230
+src/features/generation/worker/handlers/exportHandler.ts
+  s_5e3bb37717759a::t_2ce522cf80e9b4 277-280,284
+src/features/bin-designer/components/preview/LidMesh/LidMesh.tsx
+  s_5e3bb37717759a::t_640edad9ef41fe 70-71
+src/features/bin-designer/components/preview/StackPlateMesh/StackPlateMesh.tsx
+  s_5e3bb37717759a::t_e6fed37453fa58 55-56
+src/features/generation/worker/generators/lidRetentionMagnets.scenario.test.ts
+  s_5e3bb37717759a::t_06e455eaf5204e 413,421
+  s_5e3bb37717759a::t_2978939194a00a 360
+  s_5e3bb37717759a::t_b79e5e306110fb 385
+  s_5e3bb37717759a::t_e9577cf6660bb5 369,372-373
+src/features/generation/worker/generators/pipeline/types.ts
+  s_5e3bb37717759a::t_32aabe7cbd7275 45-61
+src/features/generation/README.md
+  s_5e3bb37717759a::t_0e53246fb1a70c 211
+src/features/bin-designer/utils/thumbnailRegenerator.ts
+  s_5e3bb37717759a::t_ba575efd3e6adf 101-102
+src/features/bin-designer/components/preview/LidMesh/lidAnchorZ.ts
+  s_5e3bb37717759a::t_4908a44dcf3a75 15-22
+  s_5e3bb37717759a::t_37da8a5178997e 33-34,36-42,45-47,49-55
+src/features/generation/worker/generators/pipeline/context.ts
+  s_5e3bb37717759a::t_466dd5711936ef 170-178
+  s_5e3bb37717759a::t_54b4805577e0e4 15-16
+  s_5e3bb37717759a::t_f284c6753e6b72 312-313
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "01beead4a4852d36668dfdcaf672ede386e5eb52",
+  "prompts": {},
+  "sessions": {
+    "s_5e3bb37717759a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b7ad2ab6-f2b4-4238-805e-58c274496c5d",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
