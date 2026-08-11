@@ -1,0 +1,29 @@
+src/features/bin-designer/types/lid.test.ts
+  s_13df2c0005cd75::t_e4598335862478 3,523-526,528-539
+src/features/generation/worker/generators/lidGripLabelInteraction.test.ts
+  s_13df2c0005cd75::t_1c67b1c9c2d0e1 63-82
+  s_13df2c0005cd75::t_d6ce917ca5ba33 171-173
+src/features/generation/worker/generators/lidClickRailLabelClip.test.ts
+  s_13df2c0005cd75::t_c8294173341a59 49-65
+src/features/generation/worker/generators/lidLabelTabClearance.scenario.test.ts
+  s_13df2c0005cd75::t_8d4c3c312ebb63 42-48,51-56,133,143
+  s_13df2c0005cd75::t_f501778b02955f 267-276,280-305
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_13df2c0005cd75::t_e4598335862478 1208-1210
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "ebde0350ee3cbbcd62ac7b0b07494ff3b24e329d",
+  "prompts": {},
+  "sessions": {
+    "s_13df2c0005cd75": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d24b17f0-5df1-4244-a105-d33cb0ec4ae8",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
