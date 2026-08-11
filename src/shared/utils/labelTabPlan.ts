@@ -557,12 +557,22 @@ export function labelTabFootprints(
  * lid-local Z so it can be compared directly against a tab footprint, which
  * only ever knows about the cavity floor.
  */
-export function clickRailZBandAboveFloor(interiorHeight: number): {
+export function clickRailZBandAboveFloor(
+  interiorHeight: number,
+  /**
+   * Exterior-wall collar (#2500). It raises the outer box and the lip with it
+   * while deliberately leaving the interior plane alone, so the lid seats that
+   * much higher above an unmoved shelf. Omitting it puts the band below where
+   * the rail really is and reports a foul on a tab the rail clears.
+   */
+  collarHeight = 0
+): {
   readonly lo: number;
   readonly hi: number;
 } {
   const lipTop =
     interiorHeight +
+    collarHeight +
     GRIDFINITY_SPEC.LIP_SMALL_TAPER +
     GRIDFINITY_SPEC.LIP_HEIGHT -
     GRIDFINITY_SPEC.LIP_OVERLAP;
@@ -574,8 +584,12 @@ export function clickRailZBandAboveFloor(interiorHeight: number): {
 }
 
 /** Does this footprint reach into the band a click rail sweeps through? */
-export function footprintFoulsRailBand(fp: LabelTabFootprint, interiorHeight: number): boolean {
-  const band = clickRailZBandAboveFloor(interiorHeight);
+export function footprintFoulsRailBand(
+  fp: LabelTabFootprint,
+  interiorHeight: number,
+  collarHeight = 0
+): boolean {
+  const band = clickRailZBandAboveFloor(interiorHeight, collarHeight);
   return fp.zMax > band.lo && fp.zMin < band.hi;
 }
 
@@ -592,6 +606,7 @@ export function labelTabInteriorDims(params: BinParams): {
   readonly innerW: number;
   readonly innerD: number;
   readonly interiorHeight: number;
+  readonly collarHeight: number;
 } | null {
   if (params.base.tile === true) return null;
   const gridUnitY = params.gridUnitMmY ?? params.gridUnitMm;
@@ -615,8 +630,13 @@ export function labelTabInteriorDims(params: BinParams): {
     0,
     params.base.stackingLip ? wallHeight - GRIDFINITY_SPEC.LIP_SMALL_TAPER : wallHeight
   );
+  // Kept out of `interiorHeight` exactly as the pipeline keeps it out, so
+  // interior features stay on their plane; the lip and the lid ride on it.
+  const rawCollar = params.extraWallHeightMm ?? 0;
+  const collarHeight = Number.isFinite(rawCollar) ? Math.max(0, rawCollar) : 0;
+
   if (innerW <= 0 || innerD <= 0 || interiorHeight <= 0) return null;
-  return { innerW, innerD, interiorHeight };
+  return { innerW, innerD, interiorHeight, collarHeight };
 }
 
 /**
@@ -640,13 +660,15 @@ export function railFoulingLabelFootprints(params: BinParams): readonly LabelTab
     dims.innerD,
     dims.interiorHeight,
     params.wallThickness
-  ).filter((fp) => fp.onOuterWall && footprintFoulsRailBand(fp, dims.interiorHeight));
+  ).filter(
+    (fp) => fp.onOuterWall && footprintFoulsRailBand(fp, dims.interiorHeight, dims.collarHeight)
+  );
 }
 
 /**
  * Air (mm) kept between a rail's end and a label tab's footprint.
  *
- * Unlike {@link GRIP_RAIL_MARGIN} this IS a clearance: rail and shelf occupy
+ * A real clearance, unlike the grip relief's quiet zone: rail and shelf occupy
  * the same Z band, so without it the two interpenetrate by up to the shelf's
  * overlap with the rail profile (measured at 1.25mm on a stock lid) and the
  * lid simply will not seat. Sized to survive a print's worth of tolerance
@@ -655,11 +677,16 @@ export function railFoulingLabelFootprints(params: BinParams): readonly LabelTab
 const LABEL_RAIL_MARGIN = 2;
 
 /**
- * Half-width (mm) of the rail's own cross-section, used to decide whether a
- * footprint sits in its path. Spans the profile from its inner face
- * ({@link LID_CLICK_RAIL_INNER}, negative) to its outer bump.
+ * Slack (mm) allowed either side of a rail's spine when deciding whether a
+ * footprint sits in its path.
+ *
+ * A deliberate symmetric over-estimate: the real profile is asymmetric,
+ * reaching 0.8mm inboard and 1.85mm outboard, and this uses their mean in both
+ * directions. Every resulting error over-blocks except one, which needs a tab
+ * under ~1.2mm wide on a side wall — narrower than `MIN_LABEL_TAB_WIDTH` can
+ * produce.
  */
-export const RAIL_HALF_WIDTH = (LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INNER) / 2;
+const RAIL_HALF_WIDTH = (LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INNER) / 2;
 
 /** One run of wall a rail may occupy, in along-axis coordinates. */
 export interface RailSegment {

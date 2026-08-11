@@ -105,7 +105,15 @@ export function computeRailSummary(
    * Label tabs that foul the rail band. Empty for a bin without them, and for
    * polygon bins, whose tabs the builder gates off.
    */
-  footprints: readonly LabelTabFootprint[] = []
+  footprints: readonly LabelTabFootprint[] = [],
+  /**
+   * Per-axis overhang growth, from `overhangExpansion`. The lid wraps the
+   * bin's expanded body, so without this the readout's wall lines sit inboard
+   * of the worker's — and since those lines are what the footprints are
+   * compared against, an overhang bin could disagree on the rail COUNT near a
+   * tab edge, not merely on the length.
+   */
+  outerExpansion: { readonly addW: number; readonly addD: number } = { addW: 0, addD: 0 }
 ): RailSummary {
   const fitClearance = LID_FIT_CLEARANCE;
   const lidCornerR = LID_CORNER_RADIUS - fitClearance;
@@ -156,8 +164,8 @@ export function computeRailSummary(
   // same `railSegmentsClearOfLabelTabs` the worker places rails from rather
   // than assuming one full-length rail per enabled wall: a wall the tabs cover
   // yields nothing, and a partly-covered one yields several short rails.
-  const lidOuterW = width * gridUnitMm - 2 * fitClearance;
-  const lidOuterD = depth * gridUnitMmY - 2 * fitClearance;
+  const lidOuterW = width * gridUnitMm - 2 * fitClearance + outerExpansion.addW;
+  const lidOuterD = depth * gridUnitMmY - 2 * fitClearance + outerExpansion.addD;
   const corneredOuterX = lidOuterW / 2 - lidCornerR;
   const corneredOuterY = lidOuterD / 2 - lidCornerR;
 

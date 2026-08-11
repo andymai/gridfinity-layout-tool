@@ -43,5 +43,8 @@ describe('labelTabInteriorDims tracks deriveDimensions', () => {
     expect(mirrored.innerW).toBeCloseTo(real.innerW, 6);
     expect(mirrored.innerD).toBeCloseTo(real.innerD, 6);
     expect(mirrored.interiorHeight).toBeCloseTo(real.interiorHeight, 6);
+    // The collar is what lifts the lip (and so the rail band) above an
+    // unmoved shelf, so the mirror has to track it separately.
+    expect(mirrored.collarHeight).toBeCloseTo(real.collarHeight, 6);
   });
 });

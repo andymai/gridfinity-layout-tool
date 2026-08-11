@@ -171,6 +171,28 @@ describe('railFoulingLabelFootprints', () => {
     expect(tucked).toEqual([]);
   });
 
+  it('reports nothing once a wall collar lifts the rail clear of the shelf', () => {
+    // `extraWallHeightMm` (#2500) raises the outer box and the lip with it,
+    // leaving the interior plane (and so the shelf) where it was. The lid then
+    // seats that much higher, so a tab it used to foul it now clears. Reading
+    // the band off `interiorHeight` alone blocks the wall for a conflict that
+    // does not exist: lost retention plus a warning about nothing.
+    const plain = railFoulingLabelFootprints(withLabel({ edges: 'back' }));
+    expect(plain.length).toBeGreaterThan(0);
+
+    const collared = railFoulingLabelFootprints(
+      withLabel({ edges: 'back' }, { extraWallHeightMm: 12 })
+    );
+    expect(collared).toEqual([]);
+  });
+
+  it('still fouls when the collar is too small to clear the shelf', () => {
+    const barely = railFoulingLabelFootprints(
+      withLabel({ edges: 'back' }, { extraWallHeightMm: 0.5 })
+    );
+    expect(barely.length).toBeGreaterThan(0);
+  });
+
   it('reports nothing when label tabs are disabled', () => {
     expect(
       railFoulingLabelFootprints({
