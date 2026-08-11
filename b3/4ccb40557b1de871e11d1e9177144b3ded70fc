@@ -1,0 +1,86 @@
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_13df2c0005cd75::t_1c681fd3130181 434-444
+  s_13df2c0005cd75::t_80c46e6c4f1f9e 246-248,250-253
+src/features/bin-designer/components/panel/LidSection/useLidSection.helpers.ts
+  s_13df2c0005cd75::t_e2466979cfcf59 103-108,155-158,161-163,165-177
+  s_13df2c0005cd75::t_00f2d75dcd1c84 10-11
+src/features/generation/worker/generators/lidClickRail.ts
+  s_13df2c0005cd75::t_bce2aef2623b9a 35-39
+  s_13df2c0005cd75::t_e46e70c237056a 232-234,236,242,253,255-256,263-266,308-310
+src/features/generation/worker/generators/lidInputs.ts
+  s_13df2c0005cd75::t_f2f3bb8af86541 373-376
+  s_13df2c0005cd75::t_44bb55c20c7d87 379
+src/shared/utils/labelTabPlan.ts
+  s_13df2c0005cd75::t_80c46e6c4f1f9e 585-589
+  s_13df2c0005cd75::t_192d3af5c4738d 37-38,91,222,273,276,378,381,426,440-441,601-602,632-634,645-728
+src/features/bin-designer/components/panel/LidSection/useLidSection.helpers.test.ts
+  s_13df2c0005cd75::t_5fccb8eb049c6c 3,20-59
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_13df2c0005cd75::t_ed2f89efd04ec8 54,143-146,536-537,548
+src/features/bin-designer/types/index.ts
+  s_13df2c0005cd75::t_ecce745cea65a5 61-62
+src/features/bin-designer/types/lid.ts
+  s_13df2c0005cd75::t_2c7418d7264670 773-776
+src/features/generation/worker/generators/lidClickRailLabelClip.test.ts
+  s_13df2c0005cd75::t_5c6b9505f6c245 11
+src/i18n/locales/de.json
+  s_13df2c0005cd75::t_9c41a92722bc30 901
+src/i18n/locales/en.ts
+  s_13df2c0005cd75::t_1c90f66e68ed4e 1978
+src/i18n/locales/es.json
+  s_13df2c0005cd75::t_756260e3e29096 901
+src/i18n/locales/fr.json
+  s_13df2c0005cd75::t_1757eec50f959e 901
+src/i18n/locales/it.json
+  s_13df2c0005cd75::t_025d369feb0bbe 901
+src/i18n/locales/ja.json
+  s_13df2c0005cd75::t_009aee97a47905 901
+src/i18n/locales/ko.json
+  s_13df2c0005cd75::t_2f59e00b9f54c6 901
+src/i18n/locales/nb.json
+  s_13df2c0005cd75::t_8cb9bdc0c6059e 901
+src/i18n/locales/nl.json
+  s_13df2c0005cd75::t_8ef01901037a4c 901
+src/i18n/locales/pl.json
+  s_13df2c0005cd75::t_cf92af9fdd540f 901
+src/i18n/locales/pt-BR.json
+  s_13df2c0005cd75::t_10311199f2cc56 901
+src/i18n/locales/sv.json
+  s_13df2c0005cd75::t_65fd623dd2b394 901
+src/i18n/locales/uk.json
+  s_13df2c0005cd75::t_616a09fdb46f7b 901
+src/i18n/locales/zh-CN.json
+  s_13df2c0005cd75::t_fb6ac646a08b02 901
+src/shared/types/bin.ts
+  s_13df2c0005cd75::t_16f1e1bf5c94bf 104-105
+src/shared/utils/labelSocketPlan.ts
+  s_13df2c0005cd75::t_b2cca5bec36502 190-195
+src/shared/utils/labelTabPlan.test.ts
+  s_13df2c0005cd75::t_2504b2e32a6ed5 112-150
+src/features/generation/worker/generators/lidConstants.ts
+  s_8f510e43645c40::t_2acf5ae5a11052 89-90
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "b34ccb40557b1de871e11d1e9177144b3ded70fc",
+  "prompts": {},
+  "sessions": {
+    "s_13df2c0005cd75": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d24b17f0-5df1-4244-a105-d33cb0ec4ae8",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_8f510e43645c40": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a594da3dabd043d1d",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
