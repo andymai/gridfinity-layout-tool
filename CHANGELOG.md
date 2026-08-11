@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.399.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.398.2...gridfinity-layout-tool-v4.399.0) (2026-08-11)
+
+
+### Features
+
+* **design-linking:** merge layout bins into one divided insert ([#3416](https://github.com/andymai/gridfinity-layout-tool/issues/3416)) ([5794a7d](https://github.com/andymai/gridfinity-layout-tool/commit/5794a7da05bb86fe4764b90c0fd51c5b79aad784))
+
 ## [4.398.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.398.1...gridfinity-layout-tool-v4.398.2) (2026-08-11)
 
 
