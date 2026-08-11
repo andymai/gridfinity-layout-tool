@@ -8,7 +8,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
-import { Button } from '@/design-system';
+import { Button, Checkbox } from '@/design-system';
 import { Dialog } from '@/design-system/Dialog';
 import { ProgressBar } from '@/design-system/ProgressBar';
 import { useTranslation } from '@/i18n';
@@ -281,17 +281,15 @@ export function ExportDialog({
             {splitBanner && (
               <div className="mb-4 rounded-lg border border-warning bg-warning-muted p-3">
                 <p className="mb-2 text-xs text-warning">{splitBanner.message}</p>
-                <label className="flex cursor-pointer items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={splitBanner.checked}
-                    onChange={(e) => splitBanner.onCheckedChange(e.target.checked)}
-                    className="h-4 w-4 rounded border-warning text-warning focus:ring-warning"
-                  />
-                  <span className="text-xs font-medium text-warning">
-                    {splitBanner.checkboxLabel}
-                  </span>
-                </label>
+                {/* The label span is restyled from here because Checkbox renders it
+                    with the standard content colour, and this one sits inside a
+                    warning banner whose copy is all `text-warning`. */}
+                <Checkbox
+                  className="[&>span]:font-medium [&>span]:text-warning"
+                  checked={splitBanner.checked}
+                  onChange={splitBanner.onCheckedChange}
+                  label={splitBanner.checkboxLabel}
+                />
               </div>
             )}
 
