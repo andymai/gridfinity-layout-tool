@@ -1,0 +1,40 @@
+src/features/bin-designer/components/panel/LidGripControls/LidGripControls.test.tsx
+  s_143ab944de1d05::t_ab5cb76bb4fbf2 55-62
+src/shared/components/ExportDialog/ExportDialog.tsx
+  s_143ab944de1d05::t_b8ed603be4615f 11,284-292
+src/features/bin-designer/components/panel/WallCutoutsSection/WallCutoutsSection.tsx
+  s_143ab944de1d05::t_34868c26467c97 11,309-314
+src/shared/components/ExportDialog/ExportDialog.test.tsx
+  s_143ab944de1d05::t_2a5a5969d92e6b 95-134
+scripts/design-system-allowlist.txt
+  s_143ab944de1d05::t_aabe28a7190b60 7-9
+src/features/bin-designer/components/panel/WallCutoutsSection/WallCutoutsSection.test.tsx
+  s_143ab944de1d05::t_a87d9e65b9a412 2,21-36
+  s_143ab944de1d05::t_32aca1282653b6 37-38
+src/features/bin-designer/components/panel/HandleSection/HandleSection.test.tsx
+  s_143ab944de1d05::t_6a80b1ccb9b5e1 2,36-47
+  s_143ab944de1d05::t_7bae5f5b1abf5d 48-49
+src/features/bin-designer/components/panel/HandleSection/HandleSection.tsx
+  s_143ab944de1d05::t_34868c26467c97 21,261-266,269-274
+.claude/skills/quality-gates/SKILL.md
+  s_143ab944de1d05::t_7e9f066f8f8a2a 55
+src/features/bin-designer/components/panel/LidGripControls/LidGripControls.tsx
+  s_143ab944de1d05::t_0fbc7943c5aa1d 174-175,177
+  s_143ab944de1d05::t_b8ed603be4615f 9,173,176,178-181
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "b5e40b11b4e95d1846c7978d64a1d0a2ea4553f5",
+  "prompts": {},
+  "sessions": {
+    "s_143ab944de1d05": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d893cac8-ca27-46d0-9bd4-15f949f575f6",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
