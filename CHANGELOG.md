@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.399.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.399.1...gridfinity-layout-tool-v4.399.2) (2026-08-11)
+
+
+### Bug Fixes
+
+* **scripts:** stop recommending &lt;Input&gt; for file, range and colour inputs ([#3421](https://github.com/andymai/gridfinity-layout-tool/issues/3421)) ([531cb56](https://github.com/andymai/gridfinity-layout-tool/commit/531cb56a26465d52dcb1f462ade11f2adb21cd02))
+
 ## [4.399.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.399.0...gridfinity-layout-tool-v4.399.1) (2026-08-11)
 
 
