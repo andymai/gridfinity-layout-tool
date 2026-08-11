@@ -1,0 +1,44 @@
+src/features/generation/worker/generators/baseplatePockets.ts
+  s_f099a1cdb8cd0e::t_7c4b0465732a5c 35-36,38-45,72-80,82-87,102,115-116,125,139-140,142,148-149
+src/features/generation/worker/generators/baseplateGenerator.ts
+  s_f099a1cdb8cd0e::t_f3f7a940a40191 68-78,467-476,481-488
+  s_f099a1cdb8cd0e::t_6199d23fc38692 383-433
+  s_f099a1cdb8cd0e::t_e7cc1428f3e12a 638-641,655,668-673
+  s_f099a1cdb8cd0e::t_3663d2bd44524e 674-675
+src/features/generation/worker/generators/baseplateGenerator.scenario.screws.test.ts
+  s_f099a1cdb8cd0e::t_ad6799ad558f3a 1-150
+src/features/baseplate/utils/pieceFingerprint.ts
+  s_f099a1cdb8cd0e::t_97fe1c7558d86b 70-81
+src/shared/types/bin.ts
+  s_f099a1cdb8cd0e::t_fa5c91d541e320 12
+  s_f099a1cdb8cd0e::t_059a2043b87439 594-608
+src/shared/printSettings/baseplateHeight.ts
+  s_f099a1cdb8cd0e::t_ae5bfb5b4f49c2 22-28
+  s_f099a1cdb8cd0e::t_a8d253e57b7c1b 36,41-43,46,50-58
+src/shared/generation/screwHolePlan.ts
+  s_f099a1cdb8cd0e::t_2959f2a0958809 126-136
+  s_f099a1cdb8cd0e::t_bed37e782b710d 463
+src/features/baseplate/utils/buildFullParams.ts
+  s_f099a1cdb8cd0e::t_1b593775158c57 402-405,407
+  s_f099a1cdb8cd0e::t_8a325d1535d72c 312-336
+  s_f099a1cdb8cd0e::t_3b2377753e7778 24
+  s_f099a1cdb8cd0e::t_39aa914b6f5be7 23,406
+src/features/generation/worker/generators/baseplateCacheKeys.ts
+  s_f099a1cdb8cd0e::t_97fe1c7558d86b 40-41,43-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "9076edf2f6db5e5a253b475ca331bdedf467e1f5",
+  "prompts": {},
+  "sessions": {
+    "s_f099a1cdb8cd0e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0435f880-966b-4e2c-af78-6b0f1fb42753",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
