@@ -1,0 +1,45 @@
+src/design-system/InlineEditText/useInlineEdit.ts
+  s_88eff0cac2e17e::t_c9711bb693f458 4-17
+  s_88eff0cac2e17e::t_0e03ab79a961f2 1-3
+  s_88eff0cac2e17e::t_e040962badc370 18-19
+  s_88eff0cac2e17e::t_6b3aa3d61b8a48 26-30,43-47,51-54,64,74-77,80,87
+src/features/bin-designer/components/DesignListItem/DesignListItem.tsx
+  s_88eff0cac2e17e::t_aa9679f7083851 2
+src/design-system/InlineEditText/InlineEditText.tsx
+  s_88eff0cac2e17e::t_631dd23f5a1114 1,3
+  s_88eff0cac2e17e::t_b493b502d742f2 80-85
+  s_88eff0cac2e17e::t_48a04870c63651 154
+  s_88eff0cac2e17e::t_26f74c9deeade3 119-128,132-133,145
+src/features/layout-library/components/LayoutManagerModal/LayoutGridItem/LayoutGridItem.tsx
+  s_88eff0cac2e17e::t_e93553e9cf4980 5
+src/design-system/index.ts
+  s_88eff0cac2e17e::t_c4b07886d1566d 163,166
+src/design-system/InlineEditText/index.ts
+  s_88eff0cac2e17e::t_397006c57bc9b6 3
+src/features/layout-library/README.md
+  s_88eff0cac2e17e::t_8150b238e88a6c 31-34
+src/features/bin-designer/components/DesignGridItem/DesignGridItem.tsx
+  s_88eff0cac2e17e::t_9ad797e852ccd2 2
+src/features/baseplate/components/BaseplateLibraryModal/BaseplateLibraryModal.tsx
+  s_88eff0cac2e17e::t_66af38b57f2d17 20-21
+src/design-system/InlineEditText/useInlineEdit.test.tsx
+  s_88eff0cac2e17e::t_464fa8d76af4a9 10,15-17,21,26-29,31,34,37-38,40-43,45-48,52,55-56,58-63,65,67,70-71,73-81,83-84,87-88,90-93,95-96,98,102,105-106,108-111,113-116,118,121,127,129-132,134-137,142-144,147-211
+src/features/layout-library/components/LayoutManagerModal/LayoutListItem/LayoutListItem.tsx
+  s_88eff0cac2e17e::t_a63b7de2f27dae 6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "d0edc4fb5ee65f8d14692f64e1dee3f746cefe73",
+  "prompts": {},
+  "sessions": {
+    "s_88eff0cac2e17e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "690fb093-3f9a-4cd5-897f-965eceb5ae6f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
