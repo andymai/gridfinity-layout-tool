@@ -1,13 +1,17 @@
 /**
- * Lid-vs-finger-scoop clearance (#3426).
+ * Lid-vs-finger-scoop clearance (#3426, #3434).
  *
- * A scoop against an outer wall does not just ramp the floor: with a stacking
- * lip it is offset inward by the lip's overhang and fills the wall solid from
- * the ramp up to the lip base, so items slide out without catching. That fill
- * closes the pocket under the lip, which is the pocket the click rail's bump
- * drops into. The rail on the scooped wall then sits 1.1mm inside bin material
- * (measured at the probe below on a 2x2x4), so that edge never clicks and the
- * lid is propped off the rim.
+ * A scoop against an outer wall of a lipped bin rises toward the lip. Where its
+ * arc reaches the top ~3.15mm of the wall it fills the pocket the lid's click
+ * rail bump drops into, so that edge never clicks and the lid is propped off
+ * the rim. `autoScoopCeiling` holds an auto scoop clear of that band, and
+ * `checkLidCompatibility` drops the rail only for a height the user typed that
+ * still reaches it.
+ *
+ * The ramp's inward offset and the chute above it are NOT what does the damage:
+ * they cost 0.07mm against a 0.64mm snap baseline, while a ramp taken to the
+ * wall top costs 0.39mm. #3432 gated on the offset and dropped the rail on
+ * every scooped wall for it.
  *
  * Both meshes stay watertight and plausibly sized either way, so only mating
  * them shows it.
@@ -50,11 +54,13 @@ beforeAll(async () => {
   await initBrepjs();
 }, 180000);
 
-describe('lid click rails clear the scoop lip fill', () => {
+describe('lid click rails clear the scoop', () => {
   it.each(SIDES)(
-    'a %s scoop leaves the seated lid clear',
+    'a %s scoop keeps all four rails and still seats clear',
     async (side) => {
       const { generateLid } = await import('./lidOrchestrator');
+      const { railPlacements } = await import('./lidClickRail');
+      const { resolveLidInputs } = await import('./lidInputs');
       const params = makeParams({
         scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, radius: 'auto', side },
       });
@@ -63,7 +69,11 @@ describe('lid click rails clear the scoop lip fill', () => {
       if (!bin) throw new Error('expected the bin to build');
       if (!lid) throw new Error('expected the lid to build');
 
-      // 0.15mm covers tessellation noise plus the 0.1mm ledge the fill leaves
+      // The rail the scoop used to cost (#3434) is back.
+      expect(new Set(railPlacements(resolveLidInputs(params)).map((p) => p.rotationDeg))).toContain(
+        ROTATION[side]
+      );
+      // 0.15mm covers tessellation noise plus the 0.1mm ledge the chute leaves
       // where it runs to the wall top while the lip fuses LIP_OVERLAP below it.
       // The defect this guards against measured 1.1mm.
       expect(worstRailInterference(bin, lid, lidZOffset(params))).toBeLessThan(0.15);
@@ -71,11 +81,13 @@ describe('lid click rails clear the scoop lip fill', () => {
     300000
   );
 
-  it.each(SIDES)('a %s scoop drops the rail on its own wall only', async (side) => {
+  it.each(SIDES)('a %s scoop taken to the wall top drops that rail only', async (side) => {
     const { railPlacements } = await import('./lidClickRail');
     const { resolveLidInputs } = await import('./lidInputs');
+    // 40mm exceeds the 23mm wall, so it clamps to the wall top — squarely in
+    // the rail's band. Auto never gets here; only a typed radius does.
     const params = makeParams({
-      scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, radius: 'auto', side },
+      scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, radius: 40, side },
     });
     const rotations = railPlacements(resolveLidInputs(params)).map((p) => p.rotationDeg);
 
@@ -84,25 +96,28 @@ describe('lid click rails clear the scoop lip fill', () => {
     expect(new Set(rotations).size).toBe(3);
   });
 
-  it('keeps every rail when the scoop cannot reach the lip', async () => {
-    const { railPlacements } = await import('./lidClickRail');
-    const { resolveLidInputs } = await import('./lidInputs');
-    // A wall as thick as the lip's inset leaves no overhang to fill, so the
-    // scoop meets the wall flush and the rail keeps its pocket.
-    const params = makeParams({ wallThickness: 2.6 });
+  it('a wall-top scoop with its rail dropped still seats clear', async () => {
+    const { generateLid } = await import('./lidOrchestrator');
+    const params = makeParams({
+      scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, radius: 40, side: 'front' },
+    });
+    const bin = getGenerateBin()(params, undefined, false);
+    const lid = generateLid(params);
+    if (!bin) throw new Error('expected the bin to build');
+    if (!lid) throw new Error('expected the lid to build');
 
-    expect(new Set(railPlacements(resolveLidInputs(params)).map((p) => p.rotationDeg)).size).toBe(
-      4
-    );
-  });
+    expect(worstRailInterference(bin, lid, lidZOffset(params))).toBeLessThan(0.15);
+  }, 300000);
 
   it('the probe can see a real clash', async () => {
-    // Control for the four seating assertions above: a scooped bin paired with
-    // a lid built as though the scoop were not there, which is what shipped
-    // before this fix. Without it, every case above passes if the probe stops
-    // finding a solid or `lidZOffset` drifts.
+    // Control for the seating assertions above: a bin scooped to the wall top
+    // paired with a lid built as though the scoop were not there, which is what
+    // shipped before #3432. Without it, every case above passes if the probe
+    // stops finding a solid or `lidZOffset` drifts.
     const { generateLid } = await import('./lidOrchestrator');
-    const params = makeParams();
+    const params = makeParams({
+      scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, radius: 40, side: 'front' },
+    });
     const bin = getGenerateBin()(params, undefined, false);
     const blindLid = generateLid({
       ...params,

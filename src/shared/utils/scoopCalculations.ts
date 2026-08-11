@@ -8,6 +8,12 @@
  */
 
 import { DESIGNER_CONSTRAINTS } from '@/shared/constants/bin';
+// The leaf module, not the `@/shared/types/bin` barrel: that barrel re-exports
+// `lidCompatibility`, which imports this file. `types/lid` is the shared home
+// for lid geometry constants — it exists precisely because the preview and the
+// worker both need them and the worker's own `lidConstants` pulls in brepjs —
+// and `@/shared/types/bin` re-exports it wholesale as the public surface.
+import { LID_CLICK_RAIL_BAND_BELOW_WALL_TOP } from '@/features/bin-designer/types/lid';
 import type { ScoopConfig, ScoopStyle, ScoopSide } from '@/shared/types/bin';
 
 /** Compartment extent in grid cells, as returned by the compartment-bounds helpers. */
@@ -137,6 +143,28 @@ export function resolveScoopPlacement(
   }
 }
 
+/**
+ * Ceiling (mm) an AUTO scoop's rise is held to, so it stays out of the band a
+ * seated lid's click rail drops into (#3434).
+ *
+ * A scoop against an outer wall does not need the wall top: `lipOffset` is what
+ * makes its exit flush with the lip's inner face, and below `wallHeight` the
+ * ramp builder carries a vertical chute at that offset from the ramp's top up
+ * to the lip base. A ramp that reaches the top instead fills the band with its
+ * own arc — 12.8mm of material inboard at the rail's lowest point on a 2x4 —
+ * and the rail has to be dropped for it. The thin chute costs 0.07mm against a
+ * 0.64mm baseline, so leaving that in the band is free.
+ *
+ * Auto only. A radius the user typed is honoured as typed, and
+ * `checkLidCompatibility` warns when that choice reaches the band.
+ */
+export function autoScoopCeiling(isOuter: boolean, hasLip: boolean, wallHeight: number): number {
+  if (!isOuter || !hasLip) return Infinity;
+  // Floored at 1mm: `resolveScoopProfile` drops anything below that, and a bin
+  // barely taller than the band would otherwise resolve to a negative rise.
+  return Math.max(1, wallHeight - LID_CLICK_RAIL_BAND_BELOW_WALL_TOP);
+}
+
 /** A scoop resolved to concrete geometry: run along the floor, rise up the wall, and profile shape. */
 export interface ResolvedScoopProfile {
   /** Length along the compartment floor in mm. */
@@ -152,10 +180,10 @@ export interface ResolvedScoopProfile {
  *
  * Auto mode: proportional (run === height), sized from
  * min(smallerDim/3, max(15, wallHeight*0.5), depth/3) and capped at
- * `scoop.autoMaxHeight` (default MAX_SCOOP_RADIUS). For outer-wall scoops with a
- * stacking lip the height is raised toward wallHeight so the scoop top meets the
- * lip's inner face. Both axes are then clamped symmetrically so the auto ramp
- * stays a quarter shape.
+ * `scoop.autoMaxHeight` (default MAX_SCOOP_RADIUS). Against an outer wall of a
+ * lipped bin it is additionally held out of the click rail's band — see
+ * {@link autoScoopCeiling}. Both axes are then clamped symmetrically so the
+ * auto ramp stays a quarter shape.
  *
  * Legacy custom (numeric `radius`, no `run`): symmetric quarter shape clamped to
  * min(radius, maxHeight, maxRun) — preserves the pre-two-variable geometry byte
@@ -204,14 +232,10 @@ export function resolveScoopProfile(
     //  - depth/3: preserve ≥2/3 of depth for storage (volume)
     let r = Math.min(minDim / 3, Math.max(15, wallHeight * 0.5), depth / 3);
 
-    // For outer-wall scoops with lip, auto radius reaches wallHeight so the
-    // scoop top meets the lip's inner face.
-    if (hasLip && isOuter) r = Math.max(r, wallHeight);
-
     // The auto height ceiling is user-tunable (default MAX_SCOOP_RADIUS). Then
     // clamp both axes together so the auto ramp stays a symmetric quarter shape.
     const autoCap = scoop.autoMaxHeight ?? DESIGNER_CONSTRAINTS.MAX_SCOOP_RADIUS;
-    r = Math.min(r, autoCap, maxHeight, maxRun);
+    r = Math.min(r, autoCap, maxHeight, autoScoopCeiling(isOuter, hasLip, wallHeight), maxRun);
     height = r;
     run = r;
   } else if (scoop.run === undefined) {

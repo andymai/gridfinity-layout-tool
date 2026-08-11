@@ -1983,7 +1983,7 @@ const en: Record<string, string> = {
   'binDesigner.lid.compat.topDownCutoutsAtLip':
     'A solid-bin cutout reaches up into the lip — the lid may sit loosely above it.',
   'binDesigner.lid.compat.scoopFillsLip':
-    'The finger scoop fills the lip on {sides} so items slide out cleanly. That leaves the click rail on that wall nothing to hook under, so it is auto-skipped.',
+    'The finger scoop reaches the top of the wall on {sides}, filling the recess the click rail hooks under, so that rail is auto-skipped. Lower the scoop height, or switch it to Auto, to keep it.',
   'binDesigner.lid.compat.magnetsPolygonUnsupported':
     'Custom shapes can’t place corner magnets — the lid falls back to friction-fit with no magnets.',
   'binDesigner.lid.compat.magnetTooDeepForBin':

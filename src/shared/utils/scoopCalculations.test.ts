@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { DESIGNER_CONSTRAINTS } from '@/shared/constants/bin';
+// Leaf module, not the `@/shared/types/bin` barrel: that barrel re-exports
+// `lidCompatibility`, which imports the module under test.
+import { LID_CLICK_RAIL_BAND_BELOW_WALL_TOP } from '@/features/bin-designer/types/lid';
 import type { ScoopConfig } from '@/shared/types/bin';
 import {
   resolveScoopProfile,
@@ -73,9 +76,27 @@ describe('resolveScoopProfile', () => {
       expect(p).toBeNull();
     });
 
-    it('increases auto height to wallHeight for front-row scoops with lip', () => {
-      const p = resolveScoopProfile(scoop(), 39, 39, true, true, wallHeight, interiorHeight, 1.4);
-      expect(p?.height).toBe(wallHeight);
+    it('holds an outer-wall scoop a click-rail band below the wall top (#3434)', () => {
+      // A tall compartment would otherwise resolve to the 15mm floor, which on
+      // this 3U wall is 1mm from the top — inside the band a seated lid's rail
+      // drops into. The ramp's exit stays flush with the lip either way: the
+      // builder carries a chute at `lipOffset` from the ramp's top to the lip.
+      const p = resolveScoopProfile(scoop(), 164, 164, true, true, wallHeight, interiorHeight, 1.4);
+      expect(p?.height).toBeCloseTo(wallHeight - LID_CLICK_RAIL_BAND_BELOW_WALL_TOP, 6);
+      // Auto stays a symmetric quarter shape, so the run follows the rise down.
+      expect(p?.run).toBeCloseTo(p?.height ?? 0, 6);
+    });
+
+    it('leaves the ceiling off without a lip — there is no rail band to clear', () => {
+      const p = resolveScoopProfile(scoop(), 164, 164, true, false, wallHeight, interiorHeight, 0);
+      expect(p?.height).toBe(15);
+    });
+
+    it('does not lower a scoop that already clears the band', () => {
+      // minDim/3 = 10 here, a full 6mm below the 16mm wall top, so the ceiling
+      // never binds and the three-factor rule is left alone.
+      const p = resolveScoopProfile(scoop(), 30, 30, true, true, wallHeight, interiorHeight, 1.4);
+      expect(p?.height).toBeCloseTo(10, 5);
     });
 
     it('does not increase height for interior rows even with lip', () => {

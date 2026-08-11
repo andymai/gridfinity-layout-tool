@@ -917,7 +917,7 @@
   "binDesigner.lid.compat.magnetBinTooSmall": "De bak is te klein voor hoekmagneten — gebruik een grotere bak of een kleinere magneetdiameter.",
   "binDesigner.lid.compat.magnetTooDeepForBin": "De retentiemagneet is dieper dan het binnenwerk van de bak aankan — verklein de diepte of gebruik een hogere bak.",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "Bij aangepaste vormen kunnen geen hoekmagneten worden geplaatst — het deksel valt terug op klemvast zonder magneten.",
-  "binDesigner.lid.compat.scoopFillsLip": "De vingerschep op {sides} vult de stapelrand op zodat spullen er soepel uit glijden. De kliklat op die wand heeft daardoor niets om achter te haken en wordt automatisch overgeslagen.",
+  "binDesigner.lid.compat.scoopFillsLip": "De vingerschep op {sides} reikt tot de bovenkant van de wand en vult de groef waarin de kliklat haakt, dus die lat wordt automatisch overgeslagen. Verlaag de hoogte van de schep, of zet hem op Automatisch, om hem te behouden.",
   "binDesigner.lid.compat.shortBin": "Bak is slechts 1U hoog — het deksel zit, maar de grip is marginaal.",
   "binDesigner.lid.compat.tallDividerPieces": "Verdeelstukken zijn hoger dan de bakbinnenkant — het deksel zal niet zitten met ze geplaatst.",
   "binDesigner.lid.compat.tallLidShortBin": "Een hoog deksel op een 1U-bak heeft een lange hefboom op die marginale grip — een stoot kan het eraf laten springen. Overweeg een hogere bak of meer klikzijden.",

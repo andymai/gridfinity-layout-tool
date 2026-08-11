@@ -917,7 +917,7 @@
   "binDesigner.lid.compat.magnetBinTooSmall": "O compartimento é pequeno demais para ímãs de canto — use um compartimento maior ou um ímã de menor diâmetro.",
   "binDesigner.lid.compat.magnetTooDeepForBin": "O ímã de retenção é mais profundo do que o interior do compartimento comporta — reduza a profundidade ou use um compartimento mais alto.",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "Formas personalizadas não permitem ímãs de canto — a tampa volta ao encaixe por atrito sem ímãs.",
-  "binDesigner.lid.compat.scoopFillsLip": "A rampa em {sides} preenche o lábio para que as peças deslizem sem prender. A guia de clique nessa parede fica sem onde se encaixar e é ignorada automaticamente.",
+  "binDesigner.lid.compat.scoopFillsLip": "A rampa em {sides} chega até o topo da parede e preenche o rebaixo onde a guia de clique se encaixa, então essa guia é ignorada automaticamente. Reduza a altura da rampa, ou mude para Automático, para mantê-la.",
   "binDesigner.lid.compat.shortBin": "Caixa tem apenas 1U de altura — a tampa se assenta mas a fixação é marginal.",
   "binDesigner.lid.compat.tallDividerPieces": "Divisórias são mais altas que o interior da caixa — a tampa não se assentará com elas inseridas.",
   "binDesigner.lid.compat.tallLidShortBin": "Uma tampa alta em um compartimento de 1U tem um braço de alavanca longo sobre essa fixação marginal — um esbarrão pode soltá-la. Considere um compartimento mais alto ou mais lados com encaixe.",

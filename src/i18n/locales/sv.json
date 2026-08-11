@@ -917,7 +917,7 @@
   "binDesigner.lid.compat.magnetBinTooSmall": "Lådan är för liten för hörnmagneter — använd en större låda eller en mindre magnetdiameter.",
   "binDesigner.lid.compat.magnetTooDeepForBin": "Fästmagneten är djupare än vad lådans insida rymmer — minska djupet eller använd en högre låda.",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "Anpassade former kan inte placera hörnmagneter — locket återgår till friktionsfäste utan magneter.",
-  "binDesigner.lid.compat.scoopFillsLip": "Fingerurtaget på {sides} fyller läppen så att sakerna glider ut rent. Klickskenan på den väggen får då inget att haka i och hoppas automatiskt över.",
+  "binDesigner.lid.compat.scoopFillsLip": "Fingerurtaget på {sides} når ända upp till väggens överkant och fyller spåret som klickskenan hakar i, så den skenan hoppas automatiskt över. Sänk urtagets höjd, eller ställ det på Auto, för att behålla den.",
   "binDesigner.lid.compat.shortBin": "Facket är 1U högt — locket sitter fortfarande, men greppet är marginellt.",
   "binDesigner.lid.compat.tallDividerPieces": "Avdelardelar är högre än fackets interiör — locket sitter inte med dem isatta.",
   "binDesigner.lid.compat.tallLidShortBin": "Ett högt lock på en 1U-låda har en lång hävarm på det marginella greppet — en stöt kan få det att lossna. Överväg en högre låda eller fler snäppsidor.",
