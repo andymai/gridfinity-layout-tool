@@ -8,7 +8,7 @@
  */
 // @vitest-environment node
 import { describe, it, expect } from 'vitest';
-import { railSegmentsClearOfLabelTabs } from './lidClickRail';
+import { railSegmentsClearOfLabelTabs } from '@/shared/utils/labelTabPlan';
 import type { LabelTabFootprint } from '@/shared/utils/labelTabPlan';
 
 /** A back-wall tab spanning the given X range, `depth` mm deep from `wallY`. */

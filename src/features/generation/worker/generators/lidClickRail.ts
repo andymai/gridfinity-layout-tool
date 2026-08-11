@@ -32,7 +32,11 @@ import { collectOrigins } from './pipeline/collectOrigins';
 import { LID_MIN_RAIL_LENGTH as MIN_RAIL_LENGTH } from '@/shared/types/bin';
 import { gripPlacements, sideForOutward } from './lidGripRelief';
 import type { LidInputs } from './lidInputs';
-import type { LabelTabFootprint } from '@/shared/utils/labelTabPlan';
+import {
+  railSegmentsClearOfLabelTabs,
+  subtractSpan,
+  type RailSegment,
+} from '@/shared/utils/labelTabPlan';
 import type { LidCompatibilitySide } from '@/shared/types/bin';
 
 /** True when at least one side carries a rail, i.e. the lid is not friction-fit. */
@@ -225,20 +229,17 @@ function railPlacementsForRectangle(inputs: LidInputs): RailPlacement[] {
   const placements: RailPlacement[] = [];
 
   /**
-   * Every rail this wall can carry: one per stretch left clear of the label
-   * tabs, each re-centred on its own stretch. Coverage applies per stretch, so
-   * the control keeps meaning what it says on a wall whose tabs eat part of it.
-   *
-   * A wall fully covered by tabs yields no stretch long enough and goes
-   * friction-fit, which is what `disabledRails` used to decide for it up front.
+   * Coverage applies per surviving stretch, not per wall, so a wall the tabs
+   * partly cover yields several short rails rather than one sized for a run it
+   * cannot use. A wall they fully cover yields none and goes friction-fit.
    */
-  const push = (
+  const pushWallRails = (
     side: LidCompatibilitySide,
-    alongX: boolean,
     railCross: number,
     rotationDeg: number
   ): void => {
     if (!clickRails[side] || disabledRails.has(side)) return;
+    const alongX = rotationDeg === 0 || rotationDeg === 180;
     const half = alongX ? corneredOuterX : corneredOuterY;
     for (const seg of railSegmentsClearOfLabelTabs(
       -half,
@@ -249,20 +250,20 @@ function railPlacementsForRectangle(inputs: LidInputs): RailPlacement[] {
     )) {
       const length = (seg.hi - seg.lo) * clickRailCoverage;
       if (length < MIN_RAIL_LENGTH) continue;
-      const centre = (seg.lo + seg.hi) / 2;
+      const center = (seg.lo + seg.hi) / 2;
       placements.push({
-        centerX: (alongX ? centre : railCross) + offX,
-        centerY: (alongX ? railCross : centre) + offY,
+        centerX: (alongX ? center : railCross) + offX,
+        centerY: (alongX ? railCross : center) + offY,
         length,
         rotationDeg,
       });
     }
   };
 
-  push('back', true, corneredOuterY, 0);
-  push('front', true, -corneredOuterY, 180);
-  push('right', false, corneredOuterX, -90);
-  push('left', false, -corneredOuterX, 90);
+  pushWallRails('back', corneredOuterY, 0);
+  pushWallRails('front', -corneredOuterY, 180);
+  pushWallRails('right', corneredOuterX, -90);
+  pushWallRails('left', -corneredOuterX, 90);
 
   return placements;
 }
@@ -286,97 +287,6 @@ const GRIP_RAIL_MARGIN = 2;
 const GRIP_WALL_MATCH_TOL = 0.01;
 
 /**
- * Air (mm) kept between a rail's end and a label tab's footprint.
- *
- * Unlike {@link GRIP_RAIL_MARGIN} this IS a clearance: rail and shelf occupy
- * the same Z band, so without it the two interpenetrate by up to the shelf's
- * overlap with the rail profile (measured at 1.25mm on a stock lid) and the
- * lid simply will not seat. Sized to survive a print's worth of tolerance
- * rather than to be geometrically minimal.
- */
-const LABEL_RAIL_MARGIN = 2;
-
-/**
- * Half-width (mm) of the rail's own cross-section, used to decide whether a
- * footprint sits in its path. Spans the profile from its inner face
- * ({@link LID_CLICK_RAIL_INNER}, negative) to its outer bump.
- */
-const RAIL_HALF_WIDTH = (LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INNER) / 2;
-
-/** One run of wall a rail may occupy, in along-axis coordinates. */
-export interface RailSegment {
-  readonly lo: number;
-  readonly hi: number;
-}
-
-/**
- * Remove `[blockLo, blockHi]` from a set of disjoint, ascending spans.
- *
- * Shared by the label-tab and grip-relief passes: both are "this stretch of
- * wall is unavailable, keep what is left", and a rail landing in the middle of
- * an obstruction has to yield two pieces, not one shortened one.
- */
-function subtractSpan(
-  spans: readonly RailSegment[],
-  blockLo: number,
-  blockHi: number
-): RailSegment[] {
-  const out: RailSegment[] = [];
-  for (const seg of spans) {
-    if (blockHi <= seg.lo || blockLo >= seg.hi) {
-      out.push(seg);
-      continue;
-    }
-    if (blockLo > seg.lo) out.push({ lo: seg.lo, hi: blockLo });
-    if (blockHi < seg.hi) out.push({ lo: blockHi, hi: seg.hi });
-  }
-  return out;
-}
-
-/**
- * Split a wall's rail run into the stretches no label tab occupies.
- *
- * Clipping and segmenting turn out to be the same operation seen from two
- * sides. A tab on a PERPENDICULAR wall eats one end of the run and leaves a
- * single shorter stretch, which is what keeps 100% coverage meaning "as much
- * rail as physically fits" instead of capping out below the tab. A tab on the
- * wall the rail runs ALONG eats the middle: a full-width tab leaves nothing, so
- * that wall stays friction-fit exactly as it always has, while a narrow one
- * leaves a stretch either side. Those stretches are retention the lid used to
- * throw away, and #3401 asked for them back.
- *
- * Coverage is applied by the caller to each surviving stretch, so a wall with
- * two gaps gets two rails rather than one rail sized for a run it cannot use.
- *
- * `lo`/`hi` are the wall's along-axis extent, already inset by the corner
- * radius. Footprints whose cross-axis span misses the rail's own line are
- * ignored.
- */
-export function railSegmentsClearOfLabelTabs(
-  lo: number,
-  hi: number,
-  alongX: boolean,
-  railCross: number,
-  footprints: readonly LabelTabFootprint[]
-): RailSegment[] {
-  let segments: RailSegment[] = [{ lo, hi }];
-
-  for (const fp of footprints) {
-    const [crossMin, crossMax] = alongX ? [fp.yMin, fp.yMax] : [fp.xMin, fp.xMax];
-    if (railCross < crossMin - RAIL_HALF_WIDTH || railCross > crossMax + RAIL_HALF_WIDTH) continue;
-
-    const [alongMin, alongMax] = alongX ? [fp.xMin, fp.xMax] : [fp.yMin, fp.yMax];
-    const blockLo = alongMin - LABEL_RAIL_MARGIN;
-    const blockHi = alongMax + LABEL_RAIL_MARGIN;
-
-    segments = subtractSpan(segments, blockLo, blockHi);
-    if (segments.length === 0) break;
-  }
-
-  return segments;
-}
-
-/**
  * Interrupt each rail that runs behind a grip relief, leaving a segment on
  * either side.
  *
@@ -395,13 +305,9 @@ export function railSegmentsClearOfLabelTabs(
  * same-facing edges are at least a grid unit apart, so that gap identifies the
  * wall unambiguously.
  *
- * Matching used to compare the two CENTRES for exact equality, which held only
- * while every rail was centred on its wall. A rail clipped short of a label tab
- * (#3404), or one of the stretches between tabs (#3401), sits off-centre and
- * silently failed to match — so the relief's requested snap-softening did not
- * happen, on a lid that still looks entirely correct. Subtracting the grip's
- * blocked span from the rail's own span handles every position, and a rail
- * wholly behind the grip drops out rather than being split into two slivers.
+ * Subtracting the grip's blocked span from the rail's own span handles a rail
+ * sitting anywhere along its wall, which a label tab routinely causes. A rail
+ * wholly behind the grip drops out rather than splitting into two slivers.
  */
 export function splitRailsAroundGrip(
   placements: readonly RailPlacement[],

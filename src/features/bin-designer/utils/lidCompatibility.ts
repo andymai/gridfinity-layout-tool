@@ -243,12 +243,14 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   //    tuck-under pocket, or an inset that pulls the body off the wall)
   //    fouls nothing at all and must keep its rail.
   //
-  //    Rails on the PERPENDICULAR walls are not disabled — they are clipped
-  //    short of the tab instead (`clipSpanToLabelTabs`), which is what makes
-  //    75%/100% coverage usable with tabs at all (#3401).
+  //    No side is disabled outright: `railSegmentsClearOfLabelTabs` cuts each
+  //    wall's run around the tabs and keeps whatever is left, which is what
+  //    makes 75%/100% coverage usable with tabs at all (#3401).
   if (params.label.enabled && !isPolygon && !isMagnetic) {
-    const anchored = new Set(railFoulingLabelFootprints(params).map((fp) => fp.anchor));
-    const sides = WALL_SIDES.filter((side) => anchored.has(side as 'front' | 'back'));
+    const anchored: ReadonlySet<string> = new Set(
+      railFoulingLabelFootprints(params).map((fp) => fp.anchor)
+    );
+    const sides = WALL_SIDES.filter((side) => anchored.has(side));
     if (sides.length > 0) {
       issues.push({ id: 'labelTabs', severity: 'warning', sides });
     }
@@ -416,17 +418,6 @@ export function isLidBlockedBySection(params: BinParams, section: LidConflictSec
 }
 
 /**
- * Per-side rail engagement: which sides should NOT receive a click rail
- * due to a conflicting feature on that wall.
- *
- * Takes the already-computed compatibility issue list so callers that
- * have memoized it (the `useLidSection` panel) don't trigger a second
- * `checkLidCompatibility` scan. Aggregating from issues — rather than
- * re-deriving conflicts from `params` — guarantees the panel's
- * warning rows and the worker's actual rail placements draw from one
- * source of truth.
- */
-/**
  * Issues whose `sides` describe where a conflict IS, not a wall to switch off.
  *
  * A label tab does not necessarily take its whole wall. The rail builder
@@ -440,6 +431,17 @@ export function isLidBlockedBySection(params: BinParams, section: LidConflictSec
  */
 const SIDES_ARE_ADVISORY: ReadonlySet<LidCompatibilityId> = new Set(['labelTabs']);
 
+/**
+ * Per-side rail engagement: which sides should NOT receive a click rail
+ * due to a conflicting feature on that wall.
+ *
+ * Takes the already-computed compatibility issue list so callers that
+ * have memoized it (the `useLidSection` panel) don't trigger a second
+ * `checkLidCompatibility` scan. Aggregating from issues — rather than
+ * re-deriving conflicts from `params` — guarantees the panel's
+ * warning rows and the worker's actual rail placements draw from one
+ * source of truth.
+ */
 export function computeDisabledRails(
   issues: readonly LidCompatibilityIssue[]
 ): ReadonlySet<LidCompatibilitySide> {

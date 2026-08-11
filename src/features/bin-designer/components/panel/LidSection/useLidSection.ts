@@ -51,6 +51,7 @@ import {
   type TextMode,
 } from '@/features/bin-designer/types';
 import { isPartialMask } from '@/shared/utils/cellMask';
+import { railFoulingLabelFootprints } from '@/shared/utils/labelTabPlan';
 import { matchingTrayParams } from '@/features/bin-designer/utils/matchingTray';
 import { lidWallBottomZ } from '@/features/bin-designer/components/preview/LidMesh/lidAnchorZ';
 import {
@@ -139,6 +140,10 @@ export function useLidSection() {
     () => computeDisabledRails(compatibilityIssues),
     [compatibilityIssues]
   );
+  // Label tabs no longer disable a whole side, so the rail summary has to read
+  // the same footprints the worker segments against or it reports rails on a
+  // wall the tabs have taken.
+  const labelFootprints = useMemo(() => railFoulingLabelFootprints(params), [params]);
 
   const blockerReason = useMemo(() => {
     const blockers = compatibilityIssues.filter((i) => i.severity === 'blocker');
@@ -528,7 +533,8 @@ export function useLidSection() {
             disabledRails,
             params.cellMask,
             lid.clickRails,
-            params.gridUnitMmY ?? params.gridUnitMm
+            params.gridUnitMmY ?? params.gridUnitMm,
+            labelFootprints
           )
         : { count: 0, lengths: [] as readonly number[] },
     [
@@ -539,6 +545,7 @@ export function useLidSection() {
       params.gridUnitMmY,
       params.cellMask,
       disabledRails,
+      labelFootprints,
       lid.clickRails,
       lid.clickRailCoverage,
     ]

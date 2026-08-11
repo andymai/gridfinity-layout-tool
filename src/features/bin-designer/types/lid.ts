@@ -770,6 +770,10 @@ export const LID_CLICK_RAIL_DROP = 0.8;
 export const LID_CLICK_RAIL_TAIL = 1.25;
 /** Shoulder between the rail bump and its exit chamfer. */
 export const LID_CLICK_RAIL_SHOULDER = 0.1;
+/** How far the rail's outer face protrudes from the corner-radius line. */
+export const LID_CLICK_RAIL_OUT = 1.85;
+/** Inner face of the rail, inside the bin cavity (negative = inboard). */
+export const LID_CLICK_RAIL_INNER = -0.8;
 /** Top entry chamfer: the rail's apex climbs this far above its own top face,
  *  blending it into the lid's cavity wall. Lives here rather than in the
  *  worker's `lidConstants` because the rail's swept Z band is what a label tab

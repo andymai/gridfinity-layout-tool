@@ -7,6 +7,8 @@ import {
   type LidRailSide,
 } from '@/features/bin-designer/types';
 import type { useTranslation } from '@/i18n';
+import { railSegmentsClearOfLabelTabs } from '@/shared/utils/labelTabPlan';
+import type { LabelTabFootprint } from '@/shared/utils/labelTabPlan';
 import {
   isPartialMask,
   maskToPolygon,
@@ -98,7 +100,12 @@ export function computeRailSummary(
   cellMask: CellMask | undefined,
   clickRails: LidClickRails,
   // Y-axis pitch for non-square grids; defaults to the X pitch (square).
-  gridUnitMmY: number = gridUnitMm
+  gridUnitMmY: number = gridUnitMm,
+  /**
+   * Label tabs that foul the rail band. Empty for a bin without them, and for
+   * polygon bins, whose tabs the builder gates off.
+   */
+  footprints: readonly LabelTabFootprint[] = []
 ): RailSummary {
   const fitClearance = LID_FIT_CLEARANCE;
   const lidCornerR = LID_CORNER_RADIUS - fitClearance;
@@ -145,21 +152,29 @@ export function computeRailSummary(
     };
   }
 
-  // Rectangular path: at most two distinct lengths (X-axis walls vs Y-axis walls).
+  // Rectangular path. Label tabs cut the run into stretches, so this walks the
+  // same `railSegmentsClearOfLabelTabs` the worker places rails from rather
+  // than assuming one full-length rail per enabled wall: a wall the tabs cover
+  // yields nothing, and a partly-covered one yields several short rails.
   const lidOuterW = width * gridUnitMm - 2 * fitClearance;
   const lidOuterD = depth * gridUnitMmY - 2 * fitClearance;
-  const railLenX = (lidOuterW - 2 * lidCornerR) * coverage;
-  const railLenY = (lidOuterD - 2 * lidCornerR) * coverage;
-  // Per-side count: 1 if that wall has a rail enabled AND its side isn't
-  // disabled by a feature conflict. Front+back run along X axis.
-  const railOn = (side: LidRailSide) => clickRails[side] && !disabledRails.has(side);
-  const countX = (railOn('back') ? 1 : 0) + (railOn('front') ? 1 : 0);
-  const countY = (railOn('right') ? 1 : 0) + (railOn('left') ? 1 : 0);
-  const xValid = railLenX >= LID_MIN_RAIL_LENGTH ? countX : 0;
-  const yValid = railLenY >= LID_MIN_RAIL_LENGTH ? countY : 0;
+  const corneredOuterX = lidOuterW / 2 - lidCornerR;
+  const corneredOuterY = lidOuterD / 2 - lidCornerR;
+
   const lengths: number[] = [];
-  for (let i = 0; i < xValid; i++) lengths.push(railLenX);
-  for (let i = 0; i < yValid; i++) lengths.push(railLenY);
+  const collect = (side: LidRailSide, alongX: boolean, railCross: number): void => {
+    if (!clickRails[side] || disabledRails.has(side)) return;
+    const half = alongX ? corneredOuterX : corneredOuterY;
+    for (const seg of railSegmentsClearOfLabelTabs(-half, half, alongX, railCross, footprints)) {
+      const len = (seg.hi - seg.lo) * coverage;
+      if (len >= LID_MIN_RAIL_LENGTH) lengths.push(len);
+    }
+  };
+  collect('back', true, corneredOuterY);
+  collect('front', true, -corneredOuterY);
+  collect('right', false, corneredOuterX);
+  collect('left', false, -corneredOuterX);
+
   return { count: lengths.length, lengths: lengths.sort((a, b) => b - a) };
 }
 

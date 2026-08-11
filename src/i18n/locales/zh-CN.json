@@ -898,7 +898,7 @@
   "binDesigner.lid.compat.handles": "{sides} 上的把手伸入唇边 — 那些壁上的卡扣导轨会自动跳过。",
   "binDesigner.lid.compat.handlesAllSides": "四面都有把手，都伸入唇边 — 没有留给盖子抓握的壁。",
   "binDesigner.lid.compat.heading": "兼容性说明",
-  "binDesigner.lid.compat.labelTabs": "标签片占据其所依附的壁 — {sides} 上的卡扣导轨会自动跳过以让开标签片。其他壁上的导轨则会在标签片前停止。",
+  "binDesigner.lid.compat.labelTabs": "标签片占据其所依附的壁。{sides} 上的卡扣导轨只填补剩余的空隙，其他壁上的导轨则会在标签片前停止。",
   "binDesigner.lid.compat.magnetBinTooSmall": "收纳盒太小，放不下边角磁铁 — 请使用更大的收纳盒或更小的磁铁直径。",
   "binDesigner.lid.compat.magnetTooDeepForBin": "固定磁铁比收纳盒内部所能容纳的更深 — 请减小其深度或使用更高的收纳盒。",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "自定义形状无法放置边角磁铁 — 盖子退回为无磁铁的摩擦贴合。",

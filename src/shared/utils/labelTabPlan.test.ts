@@ -109,6 +109,45 @@ describe('labelTabFootprints', () => {
   });
 });
 
+describe('alignment and spanning tabs', () => {
+  const dims = { innerW: 123.1, innerD: 81.1, interiorHeight: 36.3 };
+  const build = (p: BinParams) =>
+    labelTabFootprints(p, dims.innerW, dims.innerD, dims.interiorHeight, p.wallThickness);
+
+  it('pushes a narrowed tab to each edge it is aligned to', () => {
+    // Alignment moves the whole tab in both modes since #3402, so the three
+    // settings have to land it in three different places.
+    const at = (alignment: 'left' | 'center' | 'right') =>
+      build(withLabel({ width: 40, alignment })).map((f) => (f.xMin + f.xMax) / 2);
+
+    const left = at('left');
+    const centre = at('center');
+    const right = at('right');
+    expect(left.length).toBeGreaterThan(0);
+    for (let i = 0; i < left.length; i++) {
+      expect(left[i]).toBeLessThan(centre[i]);
+      expect(right[i]).toBeGreaterThan(centre[i]);
+    }
+  });
+
+  it('spans wall to wall in full-width row mode', () => {
+    // `label.span` plans one shelf per row instead of one per compartment, and
+    // its footprint is what a back rail has to clear.
+    const fps = build(withLabel({ span: true, rowTexts: ['row'] }));
+    expect(fps.length).toBeGreaterThan(0);
+    for (const fp of fps) {
+      expect(fp.xMin).toBeCloseTo(-dims.innerW / 2, 3);
+      expect(fp.xMax).toBeCloseTo(dims.innerW / 2, 3);
+    }
+  });
+
+  it('narrows a spanning tab with the width percentage too', () => {
+    const full = build(withLabel({ span: true, rowTexts: ['row'] }));
+    const half = build(withLabel({ span: true, rowTexts: ['row'], width: 50 }));
+    expect(half[0].xMax - half[0].xMin).toBeCloseTo((full[0].xMax - full[0].xMin) / 2, 3);
+  });
+});
+
 describe('railFoulingLabelFootprints', () => {
   it('reports the back wall for a default back-anchored tab', () => {
     const anchors = railFoulingLabelFootprints(withLabel({ edges: 'back' })).map((f) => f.anchor);

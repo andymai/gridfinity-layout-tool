@@ -898,7 +898,7 @@
   "binDesigner.lid.compat.handles": "{sides}のハンドルがリップに達しています — これらの壁のクリックレールは自動的にスキップされます。",
   "binDesigner.lid.compat.handlesAllSides": "4辺すべてのハンドルがリップに達しています — 蓋を支える壁が残っていません。",
   "binDesigner.lid.compat.heading": "互換性に関する注意点",
-  "binDesigner.lid.compat.labelTabs": "ラベルタブは取り付けられた壁を占有します — {sides}のクリックレールはタブを避けるため自動的にスキップされます。他の壁のレールはタブの手前で止まります。",
+  "binDesigner.lid.compat.labelTabs": "ラベルタブは取り付けられた壁を占有します。{sides}のクリックレールは残った隙間だけを埋め、他の壁のレールはタブの手前で止まります。",
   "binDesigner.lid.compat.magnetBinTooSmall": "ビンが小さすぎてコーナーマグネットが入りません — 大きいビンを使うか、マグネット直径を小さくしてください。",
   "binDesigner.lid.compat.magnetTooDeepForBin": "保持マグネットがビン内部に収まらないほど深くなっています — 深さを減らすか、背の高いビンを使用してください。",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "カスタム形状ではコーナーマグネットを配置できません — ふたはマグネットなしの摩擦ばめに戻ります。",

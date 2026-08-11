@@ -898,7 +898,7 @@
   "binDesigner.lid.compat.handles": "Les poignées sur {sides} atteignent la lèvre — la glissière de verrouillage sur ces parois est automatiquement ignorée.",
   "binDesigner.lid.compat.handlesAllSides": "Les poignées sur les quatre côtés atteignent la lèvre — le couvercle n’a aucune paroi à laquelle s’accrocher.",
   "binDesigner.lid.compat.heading": "Notes de compatibilité",
-  "binDesigner.lid.compat.labelTabs": "Les onglets d’étiquette occupent la paroi à laquelle ils sont fixés — la glissière de verrouillage sur {sides} est automatiquement ignorée pour les libérer. Sur les autres parois, les glissières s’arrêtent avant les onglets.",
+  "binDesigner.lid.compat.labelTabs": "Les onglets d’étiquette occupent la paroi à laquelle ils sont fixés. La glissière de verrouillage sur {sides} ne remplit que les espaces libres, et sur les autres parois les glissières s’arrêtent avant les onglets.",
   "binDesigner.lid.compat.magnetBinTooSmall": "Le bac est trop petit pour des aimants d'angle — utilisez un bac plus grand ou un aimant de plus petit diamètre.",
   "binDesigner.lid.compat.magnetTooDeepForBin": "L'aimant de maintien est plus profond que ne peut le contenir l'intérieur du bac — réduisez sa profondeur ou utilisez un bac plus haut.",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "Les formes personnalisées ne peuvent pas placer d'aimants d'angle — le couvercle revient à un ajustement par friction sans aimants.",

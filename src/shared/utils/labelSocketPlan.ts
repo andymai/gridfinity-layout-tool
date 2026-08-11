@@ -187,19 +187,16 @@ export function planLabelPlates(input: LabelPlatePlanInput): LabelPlatePlanEntry
   return plates;
 }
 
+/**
+ * Plate choice follows the TAB, not the compartment: narrowing the shelf to fit
+ * a 1u plate must not leave a 2u plate planned for a pocket that no longer has
+ * the room. `widthPercent` is the tab width as a percentage of the compartment
+ * span (#3402); 100 is the whole span.
+ */
 export function planLabelSockets(
   compartments: CompartmentConfig,
   innerWmm: number,
   clearanceMm: number,
-  /**
-   * Tab width as a percentage of the compartment span (#3402). The shelf used
-   * to be forced full-width in socket mode, so this was implicitly 100.
-   *
-   * Plate choice follows the TAB, not the compartment: narrowing the shelf to
-   * fit a 1u plate must not leave a 2u plate planned for a pocket that no
-   * longer has the room. Sizing the plate off the compartment and clamping the
-   * width to it would invert the control the user is actually holding.
-   */
   widthPercent = 100
 ): LabelSocketPlan {
   const { cols, rows, cells } = compartments;

@@ -370,12 +370,13 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     gridUnitMm,
     gridUnitMmY,
     heightUnitMm,
-    // Per-side rail skips derived from feature conflicts (label tabs,
-    // wall cutouts on specific sides, handles intruding into the lip
-    // Z range). Centralised in `lidCompatibility.computeDisabledRails`
+    // Per-side rail skips derived from feature conflicts: wall cutouts and
+    // handles that intrude into the lip Z range. Label tabs are deliberately
+    // NOT here (see `SIDES_ARE_ADVISORY`) — they get segmented around instead,
+    // via `labelFootprints` below. Centralised in `lidCompatibility.computeDisabledRails`
     // so the UI rail-summary and the worker placement code stay in sync.
     disabledRails: computeDisabledRails(checkLidCompatibility(params)),
-    labelFootprints: isPartialMask(params.cellMask) ? [] : railFoulingLabelFootprints(params),
+    labelFootprints: railFoulingLabelFootprints(params),
     // Rails only engage in clickRails mode; friction/magnetic force them off so
     // the builder's rail pass is a no-op while the user's per-side choice is
     // preserved on the persisted config.

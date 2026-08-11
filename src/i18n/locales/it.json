@@ -898,7 +898,7 @@
   "binDesigner.lid.compat.handles": "Le maniglie su {sides} arrivano nel labbro; la guida a incastro su quelle pareti viene saltata automaticamente.",
   "binDesigner.lid.compat.handlesAllSides": "Le maniglie su tutti e quattro i lati arrivano nel labbro; non resta alcuna parete su cui il coperchio possa fare presa.",
   "binDesigner.lid.compat.heading": "Note di compatibilità",
-  "binDesigner.lid.compat.labelTabs": "Le linguette etichetta occupano la parete a cui sono fissate; la guida a incastro su {sides} viene saltata automaticamente per liberarle. Sulle altre pareti le guide si fermano prima delle linguette.",
+  "binDesigner.lid.compat.labelTabs": "Le linguette etichetta occupano la parete a cui sono fissate. La guida a incastro su {sides} riempie solo gli spazi rimasti, e sulle altre pareti le guide si fermano prima delle linguette.",
   "binDesigner.lid.compat.magnetBinTooSmall": "Il contenitore è troppo piccolo per i magneti d'angolo — usa un contenitore più grande o un magnete di diametro minore.",
   "binDesigner.lid.compat.magnetTooDeepForBin": "Il magnete di ritenzione è più profondo di quanto l'interno del contenitore possa contenere — riducine la profondità o usa un contenitore più alto.",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "Le forme personalizzate non possono ospitare magneti d'angolo — il coperchio torna all'attrito senza magneti.",

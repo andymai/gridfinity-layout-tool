@@ -898,7 +898,7 @@
   "binDesigner.lid.compat.handles": "Handtag på {sides} når upp i läppen — klickskenan på de väggarna hoppas automatiskt över.",
   "binDesigner.lid.compat.handlesAllSides": "Handtag på alla fyra sidor når upp i läppen — locket har ingen vägg att greppa i.",
   "binDesigner.lid.compat.heading": "Kompatibilitetsanmärkningar",
-  "binDesigner.lid.compat.labelTabs": "Etikettflikar upptar väggen de hänger från — klickskenan på {sides} hoppas automatiskt över för att frigöra dem. Skenorna på de övriga väggarna stannar i stället strax före flikarna.",
+  "binDesigner.lid.compat.labelTabs": "Etikettflikar upptar väggen de hänger från. Klickskenan på {sides} fyller bara de luckor som blir kvar, och skenorna på de övriga väggarna stannar strax före flikarna.",
   "binDesigner.lid.compat.magnetBinTooSmall": "Lådan är för liten för hörnmagneter — använd en större låda eller en mindre magnetdiameter.",
   "binDesigner.lid.compat.magnetTooDeepForBin": "Fästmagneten är djupare än vad lådans insida rymmer — minska djupet eller använd en högre låda.",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "Anpassade former kan inte placera hörnmagneter — locket återgår till friktionsfäste utan magneter.",
