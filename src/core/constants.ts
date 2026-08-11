@@ -268,6 +268,47 @@ export const SOLID_FLOOR_DEFAULT_MM = 0.8;
 export const SOLID_FLOOR_MIN_MM = 0.4;
 export const SOLID_FLOOR_MAX_MM = 5;
 
+/**
+ * Mount-down screw hole bounds + defaults (mm). The plate is fastened to a
+ * drawer bottom or bench through these, so the shaft hole is a CLEARANCE hole,
+ * not a pilot hole: a thread biting the plastic would hold the plate off the
+ * surface instead of pulling it down. 3.4mm is M3 clearance.
+ */
+export const SCREW_HOLE_DEFAULT_DIAMETER_MM = 3.4;
+export const SCREW_HOLE_MIN_DIAMETER_MM = 2;
+export const SCREW_HOLE_MAX_DIAMETER_MM = 8;
+
+/**
+ * Head recess defaults (mm), from kennetek's `standard.scad` so plates match the
+ * wider ecosystem: countersink widens the shaft by 2×2.3mm, counterbore is a
+ * flat ø5.5 × 3mm pocket for a socket-head cap.
+ */
+export const SCREW_COUNTERSINK_DEFAULT_DIAMETER_MM = 8;
+export const SCREW_COUNTERBORE_DEFAULT_DIAMETER_MM = 5.5;
+export const SCREW_COUNTERBORE_DEFAULT_DEPTH_MM = 3;
+export const SCREW_HEAD_MIN_DIAMETER_MM = 3;
+export const SCREW_HEAD_MAX_DIAMETER_MM = 16;
+
+/**
+ * Included angle of the countersink cone. 90° is the near-universal flat-head
+ * standard, and it makes the cone depth exactly half the radial widening —
+ * see `screwHeadRecessDepth`.
+ */
+export const SCREW_COUNTERSINK_INCLUDED_ANGLE_DEG = 90;
+
+/**
+ * Plastic kept below a head recess when a screw falls back to the pocket floor
+ * and has to carry its own pad. The pad is sized `recessDepth + this`, because a
+ * 2.3mm countersink cannot be recessed into a 0.8mm floor — the head would stand
+ * proud and lift any bin seated in that cell.
+ */
+export const SCREW_PAD_MIN_RETAIN_MM = 0.8;
+
+/** Screws placed per split piece, so no printed piece is left unfastened. */
+export const SCREWS_PER_PIECE_DEFAULT = 4;
+export const SCREWS_PER_PIECE_MIN = 1;
+export const SCREWS_PER_PIECE_MAX = 12;
+
 /** Default baseplate parameters: no magnets, no padding */
 export const DEFAULT_BASEPLATE_PARAMS: StoredBaseplateParams = {
   magnetHoles: false,
