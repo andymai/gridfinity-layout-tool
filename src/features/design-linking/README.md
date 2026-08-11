@@ -25,6 +25,7 @@ graph TB
 - `domain/mergeBins.ts` — converts a set of layout bins into one divided `BinParams`
 - `hooks/useBinLinking.ts` — link/unlink/create actions
 - `hooks/useMergeBins.ts` — merge scope, save + navigate
+- `components/Dialogs/MergeBinsDialog/CompartmentPreview/` — plan view of the result
 - `hooks/useLinkedDesign.ts` — resolve linked design for a bin
 - `hooks/useLinkedBins.ts` — find all bins linked to a design
 - `hooks/useQuickExport.ts` — STL export for linked designs (internal)
@@ -71,6 +72,10 @@ rectangles tiling a uniform grid. Behind the `merge_bins_to_design` labs flag.
 - **Scope is an argument, never inferred.** `useMergeBins('layer' | 'selection')`.
   A global "selection, else layer" rule let one stray selected bin hijack the
   whole-layer entry point, which then reported "Combine 1 bins".
+- **The preview's vertical axis is flipped.** `cells` is row-major with row 0
+  at the BOTTOM; SVG's y grows downward. `compartmentRects` is split out from
+  the component so that flip has its own test, since a mirrored preview is
+  invisible on a symmetric layout.
 - **Two bins minimum, enforced in `planMergedBin`.** One bin would emit a
   single-compartment copy of itself. Guarding only in the UI left the header
   and the dialog able to skip it.
