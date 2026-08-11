@@ -15,24 +15,6 @@ vi.mock('../LayoutActions', () => ({
   LayoutActions: () => <div data-testid="layout-actions">Actions</div>,
 }));
 
-vi.mock('../useInlineEdit', () => ({
-  useInlineEdit: ({
-    initialValue,
-    onSave: _onSave,
-  }: {
-    initialValue: string;
-    onSave: (value: string) => void;
-  }) => ({
-    isEditing: false,
-    editingValue: initialValue,
-    inputRef: { current: null },
-    startEditing: vi.fn(),
-    handleChange: vi.fn(),
-    handleFinish: vi.fn(),
-    handleKeyDown: vi.fn(),
-  }),
-}));
-
 vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string, params?: Record<string, unknown>) => {
     if (params) {

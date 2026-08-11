@@ -1,6 +1,5 @@
 import { useTranslation, useFormatting } from '@/i18n';
-import { useInlineEdit } from '@/shared/hooks';
-import { Checkbox, Input } from '@/design-system';
+import { Checkbox, Input, useInlineEdit } from '@/design-system';
 import { BinDesignThumbnail } from '../BinDesignThumbnail';
 import { DesignActions } from '../DesignActions';
 import { DesignTagChips } from '../DesignTagChips';
