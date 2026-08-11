@@ -1,0 +1,32 @@
+src/features/cloud-share/components/ShareModal/ShareModal.tsx
+  s_143ab944de1d05::t_badea1c3ddfded 16,200,205-206
+src/features/bin-inspector/components/Inspector/CustomPropertiesEditor/CustomPropertiesEditor.tsx
+  s_143ab944de1d05::t_c05c5b7bc22dba 3
+  s_143ab944de1d05::t_6f243e911e17ae 177,186-187,199,207-209,215,223-224
+src/features/design-linking/components/Dialogs/CreateDesignDialog/CreateDesignDialog.tsx
+  s_143ab944de1d05::t_badea1c3ddfded 14,126,132
+src/features/categories/components/CategoriesPanel/CategoriesPanel.tsx
+  s_143ab944de1d05::t_f49782583a6270 12,210-211,215
+src/features/cloud-share/components/ShareButton/ShareLinkSection.tsx
+  s_143ab944de1d05::t_badea1c3ddfded 2,38,43-44
+src/shell/Mobile/MobileCategoriesPanel/MobileCategoriesPanel.tsx
+  s_143ab944de1d05::t_f49782583a6270 6,65,69
+src/features/bin-inspector/components/Inspector/MultiBinInspector/MultiBinInspector.tsx
+  s_143ab944de1d05::t_f49782583a6270 8,242,249-250,262,269-270
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "577dd43642aa1f76d104c8196a13c6c68a080261",
+  "prompts": {},
+  "sessions": {
+    "s_143ab944de1d05": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d893cac8-ca27-46d0-9bd4-15f949f575f6",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
