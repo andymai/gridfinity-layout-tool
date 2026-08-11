@@ -18,7 +18,7 @@ import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
 import { useMenuKeyboardNav } from '@/shared/hooks/useMenuKeyboardNav';
 import { useInlineEdit, useResponsive } from '@/shared/hooks';
-import { Button, IconButton, XIcon } from '@/design-system';
+import { Button, IconButton, Input, XIcon } from '@/design-system';
 import type { BaseplateDesignId } from '@/core/types';
 import type { SavedBaseplateDesign } from '@/features/baseplate/types/library';
 import { listDesigns } from '@/features/baseplate/storage/BaseplateStorage';
@@ -305,7 +305,7 @@ function BaseplateCard({
 
       <div className="px-2 py-1.5 bg-surface-secondary flex items-center justify-between gap-1">
         {isEditing ? (
-          <input
+          <Input
             ref={inputRef}
             type="text"
             value={editingValue}
@@ -313,7 +313,9 @@ function BaseplateCard({
             onBlur={handleFinish}
             onKeyDown={handleKeyDown}
             onClick={(e) => e.stopPropagation()}
-            className="w-full bg-surface px-1.5 py-0.5 rounded border border-stroke focus:border-accent focus:ring-1 focus:ring-accent focus:outline-none text-content text-sm"
+            size="sm"
+            fullWidth
+            className="text-sm"
             maxLength={64}
             aria-label={t('baseplate.library.designName')}
           />

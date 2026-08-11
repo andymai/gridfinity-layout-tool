@@ -43,6 +43,24 @@ export interface InlineEditTextProps {
   editOnContextMenu?: boolean;
 
   /**
+   * Text for display mode when it must differ from the editable value, e.g. an
+   * unlabelled snapshot that reads "Auto-saved" but edits as empty. Defaults
+   * to {@link value}; the edit input always starts from {@link value}.
+   */
+  displayValue?: string;
+
+  /**
+   * Keep click and key events from reaching an ancestor.
+   *
+   * These fields commonly sit inside a clickable card or row, where entering
+   * edit must not also select or open the item. Applies in both modes: typing
+   * in the input would otherwise bubble to a card's own key handling.
+   *
+   * @default false
+   */
+  stopPropagation?: boolean;
+
+  /**
    * Additional classes for the display-mode button.
    */
   displayClassName?: string;
@@ -86,6 +104,8 @@ export function InlineEditText({
   placeholder,
   'aria-label': ariaLabel,
   editOnContextMenu = false,
+  displayValue,
+  stopPropagation = false,
   displayClassName,
   inputClassName,
 }: InlineEditTextProps): React.JSX.Element {
@@ -131,6 +151,7 @@ export function InlineEditText({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (stopPropagation) e.stopPropagation();
     if (e.key === 'Enter') {
       commit();
     } else if (e.key === 'Escape') {
@@ -147,6 +168,7 @@ export function InlineEditText({
         onChange={(e) => setDraft(e.target.value)}
         onBlur={commit}
         onKeyDown={handleKeyDown}
+        onClick={stopPropagation ? (e) => e.stopPropagation() : undefined}
         maxLength={maxLength}
         placeholder={placeholder}
         aria-label={ariaLabel}
@@ -166,7 +188,10 @@ export function InlineEditText({
     <button
       ref={buttonRef}
       type="button"
-      onClick={enterEdit}
+      onClick={(e) => {
+        if (stopPropagation) e.stopPropagation();
+        enterEdit();
+      }}
       onContextMenu={
         editOnContextMenu
           ? (e) => {
@@ -175,7 +200,7 @@ export function InlineEditText({
             }
           : undefined
       }
-      title={value}
+      title={displayValue ?? value}
       aria-label={ariaLabel}
       className={cn(
         'px-3 py-1.5 text-sm rounded-md truncate',
@@ -187,7 +212,7 @@ export function InlineEditText({
         displayClassName
       )}
     >
-      {value}
+      {displayValue ?? value}
     </button>
   );
 }

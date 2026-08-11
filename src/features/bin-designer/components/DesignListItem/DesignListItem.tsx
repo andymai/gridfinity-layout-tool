@@ -1,6 +1,6 @@
 import { useTranslation, useFormatting } from '@/i18n';
 import { useInlineEdit } from '@/shared/hooks';
-import { Checkbox } from '@/design-system';
+import { Checkbox, Input } from '@/design-system';
 import { BinDesignThumbnail } from '../BinDesignThumbnail';
 import { DesignActions } from '../DesignActions';
 import { DesignTagChips } from '../DesignTagChips';
@@ -148,13 +148,16 @@ export function DesignListItem({
       {/* Name, dimensions & date */}
       <div className="min-w-0 flex-1">
         {isEditing ? (
-          <input
+          <Input
             ref={inputRef}
             value={editingValue}
             onChange={(e) => handleChange(e.target.value)}
             onBlur={handleFinish}
             onKeyDown={handleKeyDown}
-            className="w-full rounded border border-accent bg-surface px-1.5 py-0.5 text-sm text-content outline-none"
+            size="sm"
+            fullWidth
+            wrapperClassName="border-accent"
+            className="text-sm"
             aria-label={t('binDesigner.designName')}
             onClick={(e) => e.stopPropagation()}
           />

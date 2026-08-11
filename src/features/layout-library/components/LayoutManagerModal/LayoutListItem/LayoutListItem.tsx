@@ -4,6 +4,7 @@ import { LayoutThumbnail } from '@/shell/LayoutThumbnail';
 import { LayoutActions } from '../LayoutActions';
 import { useInlineEdit } from '../useInlineEdit';
 import { useTranslation, useFormatting } from '@/i18n';
+import { Input } from '@/design-system';
 
 interface LayoutListItemProps {
   entry: LayoutEntry;
@@ -95,7 +96,7 @@ export function LayoutListItem({
         {/* Name and Info */}
         <div className="flex-1 min-w-0">
           {isEditing ? (
-            <input
+            <Input
               ref={inputRef}
               type="text"
               value={editingValue}
