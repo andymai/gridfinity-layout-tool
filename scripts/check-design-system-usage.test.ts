@@ -89,6 +89,20 @@ describe('findViolations', () => {
       expect(find('const a = <input type="hidden" value="x" />;')).toEqual([]);
     });
 
+    it('ignores an opacity-0 range, a keyboard handle behind custom visuals', () => {
+      expect(
+        find('const a = <input type="range" className="absolute inset-0 opacity-0" />;')
+      ).toEqual([]);
+    });
+
+    it('ignores an sr-only colour input', () => {
+      expect(find('const a = <input type="color" className="sr-only" />;')).toEqual([]);
+    });
+
+    it('still flags a visible range', () => {
+      expect(find('const a = <input type="range" className="w-16" />;')[0].use).toBe('<Slider>');
+    });
+
     it('ignores a file input, which is a mechanism rather than a styled control', () => {
       expect(find('const a = <input type="file" onChange={f} />;')).toEqual([]);
     });

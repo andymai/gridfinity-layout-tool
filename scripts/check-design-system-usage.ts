@@ -83,10 +83,28 @@ function literalInputType(attributes: ts.JsxAttributes): string | null {
   return null;
 }
 
+/**
+ * Whether the element is visually hidden, so there is no appearance to
+ * standardise. The pattern is a native control kept for keyboard and ARIA
+ * behind custom-drawn visuals — an `opacity-0` range overlaying a painted
+ * track, or an `sr-only` colour input behind a pipette button.
+ */
+function isVisuallyHidden(attributes: ts.JsxAttributes): boolean {
+  for (const property of attributes.properties) {
+    if (!ts.isJsxAttribute(property)) continue;
+    if (property.name.getText() !== 'className') continue;
+    const text = property.initializer?.getText() ?? '';
+    return /\bsr-only\b|\bopacity-0\b/.test(text);
+  }
+  return false;
+}
+
 function describe(
   tagName: string,
   attributes: ts.JsxAttributes
 ): { found: string; use: string; blocking: boolean } | null {
+  if (isVisuallyHidden(attributes)) return null;
+
   const simple = SIMPLE_REPLACEMENTS[tagName];
   if (simple !== undefined) return { found: `<${tagName}>`, use: simple, blocking: true };
 
