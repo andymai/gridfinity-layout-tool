@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.400.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.400.1...gridfinity-layout-tool-v4.400.2) (2026-08-11)
+
+
+### Bug Fixes
+
+* **lid:** seat magnet posts on the lip, not a socket above it ([#3431](https://github.com/andymai/gridfinity-layout-tool/issues/3431)) ([#3435](https://github.com/andymai/gridfinity-layout-tool/issues/3435)) ([60190fe](https://github.com/andymai/gridfinity-layout-tool/commit/60190fefeb4f033808807b1b648fe4377811b2af))
+
 ## [4.400.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.400.0...gridfinity-layout-tool-v4.400.1) (2026-08-11)
 
 
