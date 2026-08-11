@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.400.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.400.0...gridfinity-layout-tool-v4.400.1) (2026-08-11)
+
+
+### Bug Fixes
+
+* **lid:** skip the click rail on a scooped wall ([#3426](https://github.com/andymai/gridfinity-layout-tool/issues/3426)) ([#3432](https://github.com/andymai/gridfinity-layout-tool/issues/3432)) ([9e9fdea](https://github.com/andymai/gridfinity-layout-tool/commit/9e9fdeabdefb660c14a566a8ad7fce28c6631c7c))
+
 ## [4.400.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.399.2...gridfinity-layout-tool-v4.400.0) (2026-08-11)
 
 
