@@ -5,32 +5,30 @@ import { Button } from '../Button';
 import { XIcon } from '../Icon';
 import { DialogRoot, useDialogContext } from './DialogRoot';
 
-const headerVariants = cva(
-  ['flex items-center justify-between gap-3', 'px-[var(--space-2xl)]', 'flex-shrink-0'],
-  {
-    variants: {
-      density: {
-        default: 'pt-[var(--space-2xl)]',
-        // No bottom inset by design: this density exists for a header whose
-        // trailing slot is a tab row, and a tab underline only reads as one
-        // when it sits on the header's own border.
-        compact: 'pt-2',
-      },
-      bordered: {
-        true: 'border-b border-stroke-subtle',
-        false: '',
-      },
+const headerVariants = cva(['flex items-center justify-between gap-3', 'flex-shrink-0'], {
+  variants: {
+    density: {
+      default: 'px-[var(--space-2xl)] pt-[var(--space-2xl)]',
+      // No bottom inset by design: this density exists for a header whose
+      // trailing slot is a tab row, and a tab underline only reads as one
+      // when it sits on the header's own border. The side inset yields on a
+      // phone, where the title and the tabs are competing for the width.
+      compact: 'px-4 pt-2 md:px-[var(--space-2xl)]',
     },
-    compoundVariants: [
-      { density: 'default', bordered: false, class: 'pb-2' },
-      { density: 'default', bordered: true, class: 'pb-4' },
-    ],
-    defaultVariants: {
-      density: 'default',
-      bordered: false,
+    bordered: {
+      true: 'border-b border-stroke-subtle',
+      false: '',
     },
-  }
-);
+  },
+  compoundVariants: [
+    { density: 'default', bordered: false, class: 'pb-2' },
+    { density: 'default', bordered: true, class: 'pb-4' },
+  ],
+  defaultVariants: {
+    density: 'default',
+    bordered: false,
+  },
+});
 
 const subHeaderVariants = cva([
   'px-[var(--space-2xl)] py-3',

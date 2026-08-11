@@ -9,7 +9,7 @@ export type FilterSectionState = Readonly<Record<FilterSectionId, boolean>>;
  * Both closed on a first visit. Show and Category answer most of the narrowing
  * anyone does here and stay open; the size sliders and the technique pills are
  * what pushed the rail past the fold, and each states its current value on its
- * own header while closed, so nothing is hidden — only folded.
+ * own header while closed, so nothing is hidden, only folded.
  */
 export const DEFAULT_FILTER_SECTIONS: FilterSectionState = { size: false, technique: false };
 

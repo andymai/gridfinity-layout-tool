@@ -20,8 +20,8 @@ export interface ResultsHeaderProps {
 /**
  * The boundary between the landing rails and the grid, and the grid's own
  * controls. Sticks to the top of the shared scroller so sort and the live
- * result count stay reachable once the rails have scrolled away — they are
- * the two things a visitor reaches for from deep in a long grid.
+ * result count stay reachable once the rails have scrolled away: they are the
+ * two things a visitor reaches for from deep in a long grid.
  */
 export function ResultsHeader({ count, title, headingLevel }: ResultsHeaderProps) {
   const t = useTranslation();
@@ -44,9 +44,9 @@ export function ResultsHeader({ count, title, headingLevel }: ResultsHeaderProps
     >
       {/* Announced rather than silent: a filter change repaints the grid below
           the fold, so for a screen reader this count is the only report that
-          anything happened. Beside the heading it shows as a bare number —
-          "All designs · 12 designs" says "designs" twice — but the announced
-          text stays the full label, which has to stand on its own. */}
+          anything happened. Beside the heading it shows as a bare number
+          (because "All designs · 12 designs" says "designs" twice), while the
+          announced text stays the full label, which has to stand on its own. */}
       <div className="flex min-w-0 items-baseline gap-2">
         {title !== undefined && (
           <Heading className="truncate text-sm font-semibold text-content">{title}</Heading>

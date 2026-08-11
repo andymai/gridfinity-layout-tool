@@ -709,17 +709,21 @@ export function CommunityGalleryTab({
                     </Button>
                   </div>
                 )}
-                {/* Under the last card rather than pinned to the bottom of the
-                    gallery: the cap only means anything to someone who has
-                    reached the end of what it let through. */}
-                {!mineActive && capped && visibleCount >= filtered.length && (
-                  <p className="mt-4 text-center text-xs text-content-tertiary">
-                    {t('community.gallery.capNotice', {
-                      count: COMMUNITY_INDEX_CAP.toLocaleString(),
-                    })}
-                  </p>
-                )}
               </>
+            )}
+
+            {/* Under the last card rather than pinned to the bottom of the
+                gallery: the cap only means anything once you have reached the
+                end of what it let through. That includes reaching the end at
+                zero results, where "we only loaded the newest N" is the most
+                useful thing the gallery can say about a search that found
+                nothing. */}
+            {!mineActive && capped && visibleCount >= filtered.length && (
+              <p className="mt-4 text-center text-xs text-content-tertiary">
+                {t('community.gallery.capNotice', {
+                  count: COMMUNITY_INDEX_CAP.toLocaleString(),
+                })}
+              </p>
             )}
           </div>
         </div>

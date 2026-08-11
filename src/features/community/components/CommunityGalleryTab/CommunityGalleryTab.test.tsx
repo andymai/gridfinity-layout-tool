@@ -133,6 +133,35 @@ describe('CommunityGalleryTab', () => {
     });
   });
 
+  it('keeps the cap notice under a search that matched nothing', async () => {
+    // The likeliest reason a search of a capped index finds nothing is that
+    // what it was looking for never loaded, so this is exactly where the cap
+    // has something to say.
+    indexMock.mockResolvedValue(ok({ items: manyCards(2), capped: true }));
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.getByText('community.gallery.capNotice')).toBeInTheDocument();
+    });
+    act(() => {
+      useBrowseStore.getState().setSearchText('nothing matches this');
+    });
+    expect(screen.getByText('community.gallery.noMatches.title')).toBeInTheDocument();
+    expect(screen.getByText('community.gallery.capNotice')).toBeInTheDocument();
+  });
+
+  it('drops the cap notice while more results are still paged out', async () => {
+    indexMock.mockResolvedValue(ok({ items: manyCards(GALLERY_PAGE_SIZE + 5), capped: true }));
+    render(<CommunityGalleryTab onRequestClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: 'community.gallery.loadMore' })
+      ).toBeInTheDocument();
+    });
+    expect(screen.queryByText('community.gallery.capNotice')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'community.gallery.loadMore' }));
+    expect(screen.getByText('community.gallery.capNotice')).toBeInTheDocument();
+  });
+
   it('opens the detail overlay through the community detail store when a card is selected', async () => {
     const target = card('target123456');
     indexMock.mockResolvedValue(ok({ items: [target], capped: false }));
