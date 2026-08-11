@@ -577,6 +577,136 @@ describe('checkLidCompatibility', () => {
     });
   });
 
+  describe('finger scoop at the lip', () => {
+    const scooped = (over: Partial<BinParams> = {}): BinParams =>
+      withOverrides({
+        scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, side: 'front' },
+        base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+        ...over,
+      });
+
+    it('warns on the scooped wall only', () => {
+      const issue = checkLidCompatibility(scooped()).find((i) => i.id === 'scoopFillsLip');
+      expect(issue?.severity).toBe('warning');
+      expect(issue?.sides).toEqual(['front']);
+    });
+
+    it('follows the configured side', () => {
+      const params = scooped({
+        scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, side: 'left' },
+      });
+      expect(checkLidCompatibility(params).find((i) => i.id === 'scoopFillsLip')?.sides).toEqual([
+        'left',
+      ]);
+    });
+
+    it('treats a side-less legacy scoop as front, matching resolveScoopSide', () => {
+      const params = scooped({ scoop: { enabled: true, radius: 'auto' } });
+      expect(checkLidCompatibility(params).find((i) => i.id === 'scoopFillsLip')?.sides).toEqual([
+        'front',
+      ]);
+    });
+
+    it('skips without a stacking lip, which is what the fill reaches up to', () => {
+      const params = scooped({ base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false } });
+      expect(checkLidCompatibility(params).find((i) => i.id === 'scoopFillsLip')).toBeUndefined();
+    });
+
+    it('skips on styles where buildScoopRamps builds nothing', () => {
+      for (const style of ['slotted', 'solid'] as const) {
+        expect(
+          checkLidCompatibility(scooped({ style })).find((i) => i.id === 'scoopFillsLip')
+        ).toBeUndefined();
+      }
+    });
+
+    it('skips on a lightweight floor, which suppresses the ramp', () => {
+      const params = scooped({
+        base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true, lightweight: true },
+      });
+      expect(checkLidCompatibility(params).find((i) => i.id === 'scoopFillsLip')).toBeUndefined();
+    });
+
+    it('skips on a spacer, which shells its floor away whatever the lite flag says', () => {
+      // `deriveDimensions` folds the spacer into `dimensions.lightweight`, and
+      // that is what suppresses the ramp. Reading `base.lightweight` alone
+      // would drop a rail the worker never puts a fill against.
+      const params = scooped({
+        base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true, spacer: true },
+      });
+      expect(checkLidCompatibility(params).find((i) => i.id === 'scoopFillsLip')).toBeUndefined();
+    });
+
+    it('still warns on a socketless base, where the lite flag is inert', () => {
+      // A tray bottom has no socket to shell, so `dimensions.lightweight` is
+      // false and the ramp is built, lip fill and all.
+      const params = scooped({
+        base: { ...DEFAULT_BIN_PARAMS.base, style: 'lid', stackingLip: true, lightweight: true },
+      });
+      expect(checkLidCompatibility(params).find((i) => i.id === 'scoopFillsLip')?.sides).toEqual([
+        'front',
+      ]);
+    });
+
+    it('skips when the wall is as thick as the lip inset (no overhang to fill)', () => {
+      // computeLipOffset is max(0, LIP_TAPER_WIDTH - wallThickness): at 2.6mm
+      // the lip no longer protrudes past the wall, so neither the fill nor the
+      // rail's pocket exists.
+      expect(
+        checkLidCompatibility(scooped({ wallThickness: 2.6 })).find((i) => i.id === 'scoopFillsLip')
+      ).toBeUndefined();
+    });
+
+    it('skips for a friction lid, whose shell seats on a lip the fill never removes', () => {
+      const params = scooped({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, attachment: 'friction' },
+      });
+      expect(checkLidCompatibility(params).find((i) => i.id === 'scoopFillsLip')).toBeUndefined();
+    });
+
+    it('skips for a magnetic lid, which holds by corner magnets rather than rails', () => {
+      const params = scooped({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, attachment: 'magnetic' },
+      });
+      expect(checkLidCompatibility(params).find((i) => i.id === 'scoopFillsLip')).toBeUndefined();
+    });
+
+    it('skips when every compartment on that wall has a tilted edge', () => {
+      // `buildScoopRamps` skips a compartment one end of a `dividerOverride`,
+      // so a wall made only of those keeps its lip and its rail.
+      const params = scooped({
+        compartments: {
+          cols: 1,
+          rows: 2,
+          cells: [0, 1],
+          thickness: 0.8,
+          dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 3, offsetEnd: -3 }],
+        },
+      });
+      expect(checkLidCompatibility(params).find((i) => i.id === 'scoopFillsLip')).toBeUndefined();
+    });
+
+    it('still warns when an untilted compartment shares the wall', () => {
+      const params = scooped({
+        compartments: {
+          cols: 2,
+          rows: 2,
+          cells: [0, 1, 2, 3],
+          thickness: 0.8,
+          dividerOverrides: [{ compartmentA: 0, compartmentB: 2, offsetStart: 3, offsetEnd: -3 }],
+        },
+      });
+      expect(checkLidCompatibility(params).find((i) => i.id === 'scoopFillsLip')?.sides).toEqual([
+        'front',
+      ]);
+    });
+
+    it('disables the rail on that wall', () => {
+      const set = computeDisabledRails(checkLidCompatibility(scooped()));
+      expect([...set]).toEqual(['front']);
+    });
+  });
+
   describe('computeDisabledRails', () => {
     it('is empty for a vanilla bin', () => {
       expect(computeDisabledRails(checkLidCompatibility(DEFAULT_BIN_PARAMS)).size).toBe(0);

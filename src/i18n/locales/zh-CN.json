@@ -917,6 +917,7 @@
   "binDesigner.lid.compat.magnetBinTooSmall": "收纳盒太小，放不下边角磁铁 — 请使用更大的收纳盒或更小的磁铁直径。",
   "binDesigner.lid.compat.magnetTooDeepForBin": "固定磁铁比收纳盒内部所能容纳的更深 — 请减小其深度或使用更高的收纳盒。",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "自定义形状无法放置边角磁铁 — 盖子退回为无磁铁的摩擦贴合。",
+  "binDesigner.lid.compat.scoopFillsLip": "{sides} 上的取物斜面填平了唇边，物品可以顺畅滑出。那面壁上的卡扣导轨因此无处卡住，会自动跳过。",
   "binDesigner.lid.compat.shortBin": "收纳盒高 1U — 盖子仍能就位，但抓握勉强。",
   "binDesigner.lid.compat.tallDividerPieces": "隔板分段高于收纳盒内部 — 插入它们后盖子无法就位。",
   "binDesigner.lid.compat.tallLidShortBin": "1U 收纳盒上的高盖子对这勉强的抓握形成长力臂 — 一磕可能就把它弹开。可考虑更高的收纳盒或增加卡扣侧边。",

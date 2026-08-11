@@ -917,6 +917,7 @@
   "binDesigner.lid.compat.magnetBinTooSmall": "Der Behälter ist zu klein für Eckmagnete — verwende einen größeren Behälter oder einen kleineren Magnetdurchmesser.",
   "binDesigner.lid.compat.magnetTooDeepForBin": "Der Rückhaltemagnet ist tiefer als der Innenraum des Behälters fassen kann — verringere die Tiefe oder verwende einen höheren Behälter.",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "Bei Sonderformen lassen sich keine Eckmagnete platzieren — der Deckel fällt auf Reibschluss ohne Magnete zurück.",
+  "binDesigner.lid.compat.scoopFillsLip": "Die Fingermulde an {sides} füllt den Stapelrand aus, damit Teile sauber herausgleiten. Die Klemmleiste an dieser Wand findet dadurch keinen Halt und wird automatisch ausgelassen.",
   "binDesigner.lid.compat.shortBin": "Behälter ist nur 1U hoch — der Deckel sitzt zwar, aber der Halt ist grenzwertig.",
   "binDesigner.lid.compat.tallDividerPieces": "Trennwände sind höher als der Behälter-Innenraum — der Deckel passt nicht, wenn sie eingesetzt sind.",
   "binDesigner.lid.compat.tallLidShortBin": "Ein hoher Deckel auf einem 1U-Behälter hat einen langen Hebelarm an diesem grenzwertigen Halt — ein Stoß kann ihn abspringen lassen. Erwäge einen höheren Behälter oder mehr Schnappseiten.",

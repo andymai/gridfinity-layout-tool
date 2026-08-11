@@ -917,6 +917,7 @@
   "binDesigner.lid.compat.magnetBinTooSmall": "La caja es demasiado pequeña para imanes en las esquinas — usa una caja más grande o un imán de menor diámetro.",
   "binDesigner.lid.compat.magnetTooDeepForBin": "El imán de retención es más profundo de lo que cabe en el interior de la caja — reduce su profundidad o usa una caja más alta.",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "Las formas personalizadas no pueden colocar imanes en las esquinas — la tapa vuelve al ajuste por fricción sin imanes.",
+  "binDesigner.lid.compat.scoopFillsLip": "La rampa en {sides} rellena el labio para que las piezas salgan sin engancharse. La guía de clic de esa pared se queda sin nada donde agarrar, así que se omite automáticamente.",
   "binDesigner.lid.compat.shortBin": "El contenedor mide 1U de alto — la tapa se asienta pero la sujeción es marginal.",
   "binDesigner.lid.compat.tallDividerPieces": "Las piezas divisorias son más altas que el interior — la tapa no se asentará con ellas insertadas.",
   "binDesigner.lid.compat.tallLidShortBin": "Una tapa alta sobre un cajetín de 1U tiene un brazo de palanca largo sobre ese agarre marginal: un golpe puede soltarla. Considera un cajetín más alto o más lados con clip.",

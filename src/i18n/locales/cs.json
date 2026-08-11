@@ -917,6 +917,7 @@
   "binDesigner.lid.compat.magnetBinTooSmall": "Bin je příliš malý pro rohové magnety — použij větší bin nebo menší průměr magnetu.",
   "binDesigner.lid.compat.magnetTooDeepForBin": "Přídržný magnet je hlubší, než vnitřek binu unese — sniž jeho hloubku nebo použij vyšší bin.",
   "binDesigner.lid.compat.magnetsPolygonUnsupported": "Vlastní tvary neumí umístit rohové magnety — víko se vrátí k třecímu uložení bez magnetů.",
+  "binDesigner.lid.compat.scoopFillsLip": "Naběrák na {sides} vyplňuje lem, aby předměty snadno vyklouzly. Kolejnice na té stěně se tak nemá čeho zachytit a automaticky se vynechá.",
   "binDesigner.lid.compat.shortBin": "Bin je 1U vysoký — víko stále dosedne, ale úchop je hraniční.",
   "binDesigner.lid.compat.tallDividerPieces": "Díly přepážek jsou vyšší než vnitřek binu — víko s nimi zasunutými nedosedne.",
   "binDesigner.lid.compat.tallLidShortBin": "Vysoké víko na binu 1U má na tom hraničním úchopu dlouhé rameno — náraz ho může odklopit. Zvaž vyšší bin nebo více zaklapávacích stran.",
