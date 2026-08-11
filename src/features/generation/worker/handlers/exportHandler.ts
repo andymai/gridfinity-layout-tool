@@ -267,24 +267,21 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         const innerW = outerW - 2 * params.wallThickness;
         const innerD = outerD - 2 * params.wallThickness;
         const stepDims = deriveDimensions(params, true);
-        const totalHeight = stepDims.totalHeight;
         const wallHeight = stepDims.wallHeight;
-        // World Z of the rim. Equals `totalHeight` for a socketed or flat bin,
-        // but a tray bin (#3036) floats its floor on a skirt, so the lid seats
-        // that much higher.
-        const rimZ = stepDims.baseOffsetZ + totalHeight;
         const hasLip = params.base.stackingLip;
 
         const dividerSolids = hasDividers
           ? buildUniqueDividerPieces(params, innerW, innerD, wallHeight, hasLip).map((p) => p.shape)
           : [];
         // Lid is built in lid-local Z (Y=0 = lid floor top). Lift it so the
-        // mating cavity (Y = anchorZ, negative) sits at world Z = totalHeight
-        // (the bin's stacking lip top), matching the preview's lidGroupZ.
+        // mating cavity (Y = anchorZ, negative) sits on the bin's stacking-lip
+        // top, matching the preview's lidGroupZ. `lipTopZ` rather than a local
+        // restatement of it: the bin's own magnet posts derive from the same
+        // plane, so a second opinion here parts them (#3431).
         // try/finally releases divider + lid solids even if compound or
         // exportSTEP throws (binSolid is owned by shapeCache; don't free it).
         const lidZ =
-          rimZ -
+          stepDims.lipTopZ -
           lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE, resolveLidCavityExtraMm(params));
         let lidSolid = hasLid ? buildLid(params) : null;
         // Separate baseplate (glue-on) rides on top of the lid floor in the

@@ -12,6 +12,14 @@
  */
 
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { baseFloorZ, baseWallHeight } from '@/features/bin-designer/utils/binDimensions';
+import type { BinParams } from '@/features/bin-designer/types';
+
+/** The params {@link binLipTopWorldZ} reads — narrow so partial callers fit. */
+export type LidSeatSource = Pick<
+  BinParams,
+  'height' | 'heightUnitMm' | 'base' | 'lid' | 'extraWallHeightMm'
+>;
 
 // The anchor formulas now live in `@/features/bin-designer/types/lid` — a
 // main-thread-safe module both this preview and the worker import, so the two
@@ -22,30 +30,29 @@ export { LID_EXTRA_HEIGHT, lidAnchorZ, lidWallBottomZ } from '@/features/bin-des
 export const PREVIEW_Z_OFFSET = 0.1;
 
 /**
- * World-Z of the bin's stacking-lip top in the R3F preview frame.
+ * World-Z of the bin's stacking-lip top in the R3F preview frame — the plane a
+ * seated lid's `anchorZ` lands on. Mirrors the worker's `dimensions.lipTopZ`.
  *
- * In the final mesh frame the wall top sits at `height * heightUnitMm`
- * (the pipeline's translate stage already shifted non-flat bins up by
- * SOCKET_HEIGHT). An exterior-wall collar (`extraWallHeightMm`, issue #2500)
- * raises the walls + lip by that amount, so it adds directly to the wall top.
- * With the stacking lip the top face lands `LIP_HEIGHT − LIP_OVERLAP` above;
+ * The wall top is `floorZ + wallHeight`, and it is worth spelling out why that
+ * is NOT `floorZ + height * heightUnitMm`: `wallHeight` already has the
+ * Gridfinity socket subtracted, so adding the floor back on top of the nominal
+ * height double-counts it (#3431). The two agree only for a socketless base,
+ * where `floorZ` is the skirt or zero. An exterior-wall collar
+ * (`extraWallHeightMm`, #2500) raises the walls and the lip with them. With the
+ * stacking lip the top face lands `LIP_HEIGHT − LIP_OVERLAP` above the wall;
  * without it the lid mates with the bare wall. `PREVIEW_Z_OFFSET` accounts for
  * BinMesh's group offset.
+ *
+ * Takes the params rather than loose scalars so the two derivations can't be
+ * fed inconsistent halves of the same bin.
  */
-export function binLipTopWorldZ(
-  height: number,
-  heightUnitMm: number,
-  hasStackingLip: boolean,
-  extraWallHeightMm?: number,
-  /**
-   * Depth of whatever sits under the floor. 0 for a socketed or flat bin,
-   * whose rim is at `height * heightUnitMm` either way; a tray bin's skirt
-   * (#3036) raises the rim by its own depth. Pass `binDimensions().floorZ`.
-   */
-  baseOffsetZ = 0
-): number {
-  const wallTop = height * heightUnitMm + Math.max(0, extraWallHeightMm ?? 0) + baseOffsetZ;
-  const lipTopZ = hasStackingLip
+export function binLipTopWorldZ(params: LidSeatSource): number {
+  const { height, heightUnitMm, base, lid } = params;
+  const wallTop =
+    baseFloorZ(base, heightUnitMm, lid) +
+    baseWallHeight(base, height * heightUnitMm) +
+    Math.max(0, params.extraWallHeightMm ?? 0);
+  const lipTopZ = base.stackingLip
     ? wallTop + GRIDFINITY.LIP_HEIGHT - GRIDFINITY.LIP_OVERLAP
     : wallTop;
   return lipTopZ + PREVIEW_Z_OFFSET;

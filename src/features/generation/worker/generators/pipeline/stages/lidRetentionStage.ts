@@ -24,9 +24,9 @@
  * The physical bin needs the pads whether or not the lid is exported in the same
  * action, so this keys off `usesMagneticLid` (not on the lid being emitted).
  *
- * Runs AFTER translate so the solid is in final world Z (rim at
- * `baseOffsetZ + totalHeight`); XY comes from the shared `retentionMagnetPositions`
- * so the pads line up with the lid's bosses.
+ * Runs AFTER translate so the solid is in final world Z (`dimensions.lipTopZ`);
+ * XY comes from the shared `retentionMagnetPositions` so the pads line up with
+ * the lid's bosses.
  */
 
 import { cylinder, draw, rotate, translate, unwrap, fuse, cut, cutAll } from 'brepjs';
@@ -92,13 +92,13 @@ export const lidRetentionStage: PipelineStage = {
     // Both magnet faces come from the shared seat-plane helper so the bin pad
     // and the lid boss can't drift apart in Z (the XY equivalent of
     // `retentionMagnetPositions`).
-    // World Z of the rim. For a socketed or flat bin this is `totalHeight`,
-    // because `baseOffsetZ + wallHeight === totalHeight` for both. A tray bin
-    // (#3036) breaks that identity — its floor sits on a skirt — so the rim is
-    // `baseOffsetZ + totalHeight` and reading `totalHeight` alone would build
-    // the pads down inside the skirt cavity.
-    const rimZ = dim.baseOffsetZ + dim.totalHeight;
-    const { binFaceZ: magnetTopZ } = retentionSeatPlanes(params, rimZ);
+    //
+    // The seat plane is the LIP TOP — that is the plane a seated lid's
+    // `anchorZ` lands on, and the boss hangs a fixed distance below it into the
+    // bin mouth. `dimensions` derives it once; every restatement of that chain
+    // has been wrong (#3431), and by less than a millimetre, which is enough to
+    // turn the designed 0.2mm seat gap into 0.5mm of solid overlap.
+    const { binFaceZ: magnetTopZ } = retentionSeatPlanes(params, dim.lipTopZ);
 
     // Cap the pocket at what the recessed pad can hold while keeping POST_FLOOR
     // of pad below the magnet. `availableForPocket` is guaranteed positive when
@@ -106,12 +106,14 @@ export const lidRetentionStage: PipelineStage = {
     // don't fit), but clamp to >= 0 defensively so a marginal design never
     // inverts the pocket. The pad bottom is additionally clamped to the interior
     // floor so a deep magnet can never dig a pocket through it.
-    const floorTopZ = rimZ - dim.interiorHeight;
-    const recessDepth = rimZ - magnetTopZ;
-    const availableForPocket = Math.max(
-      0,
-      dim.interiorHeight - recessDepth - LID_MAGNET_POST_FLOOR
-    );
+    //
+    // Measured down from the NOMINAL wall top, not `wallTopZ`: a collar raises
+    // the outer wall and the lip without touching the interior, so
+    // `interiorHeight` is still measured from where the wall would have ended.
+    // Subtracting it from `wallTopZ` would put the floor a whole collar too
+    // high, truncating the pad's taper above the floor it should weld into.
+    const floorTopZ = dim.wallTopZ - dim.collarHeight - dim.interiorHeight;
+    const availableForPocket = Math.max(0, magnetTopZ - floorTopZ - LID_MAGNET_POST_FLOOR);
     const pocketDepth = Math.min(depth, availableForPocket);
     const padBottomZ = Math.max(floorTopZ, magnetTopZ - pocketDepth - LID_MAGNET_POST_FLOOR);
 

@@ -205,10 +205,29 @@ export function assertWatertight(result: MeshData, label?: string): void {
  * by both neighbours); pick a point inside the region you mean to test.
  */
 export function verticalSolidSpans(
-  { vertices, indices }: MeshData,
+  mesh: MeshData,
   x: number,
   y: number
 ): Array<readonly [number, number]> {
+  const crossings = columnCrossings(mesh, x, y);
+  const spans: Array<readonly [number, number]> = [];
+  for (let i = 0; i + 1 < crossings.length; i += 2) {
+    spans.push([crossings[i], crossings[i + 1]] as const);
+  }
+  return spans;
+}
+
+/**
+ * Sorted Z values where a vertical ray at `(x, y)` crosses the surface.
+ *
+ * Parity-free, which {@link verticalSolidSpans} is not: an odd crossing count —
+ * what a coincident face leaves behind — pairs every interval above it into the
+ * void instead of the solid, and reads a lower surface as an upper one. The
+ * first and last entries are the lowest and highest surface over that column
+ * whatever happens in between, so a check that only needs the outermost faces
+ * should measure them here.
+ */
+export function columnCrossings({ vertices, indices }: MeshData, x: number, y: number): number[] {
   const hits: number[] = [];
   for (let i = 0; i < indices.length; i += 3) {
     const a = indices[i] * 3;
@@ -240,11 +259,7 @@ export function verticalSolidSpans(
       crossings.push(hit);
     }
   }
-  const spans: Array<readonly [number, number]> = [];
-  for (let i = 0; i + 1 < crossings.length; i += 2) {
-    spans.push([crossings[i], crossings[i + 1]] as const);
-  }
-  return spans;
+  return crossings;
 }
 
 /** True when a vertical ray at `(x, y)` is solid across the whole `[lo, hi]` band. */

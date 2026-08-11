@@ -10,7 +10,7 @@
  * copy would be a second chance to get it wrong.
  */
 
-import { boundingBox, verticalSolidSpans } from './meshAssertions';
+import { boundingBox, columnCrossings, verticalSolidSpans } from './meshAssertions';
 import { LIP_HEIGHT, LIP_OVERLAP } from '../generatorConstants';
 import {
   lidAnchorZ,
@@ -18,6 +18,11 @@ import {
   LID_FIT_CLEARANCE,
   LID_CORNER_RADIUS,
 } from '@/shared/types/bin';
+import {
+  retentionBossRadius,
+  retentionMagnetInset,
+  retentionMagnetPositions,
+} from '../retentionMagnetGeometry';
 import type { BinParams } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
 
@@ -28,9 +33,15 @@ import type { MeshData } from '@/features/generation/bridge/types';
  * is the bin's real lip top minus that. `PREVIEW_Z_OFFSET` is deliberately
  * absent — that is a preview-only group nudge, and including it would open a
  * 0.1mm gap that hides exactly the interference being measured.
+ *
+ * Stated from the params rather than read off `deriveDimensions`, so it stays
+ * an independent opinion about where the rim is: the seat plane is exactly what
+ * these probes exist to check. Covers a socketed, flat or collared bin — a tray
+ * bottom's skirt (#3036) raises the rim further and is not modelled here.
  */
 export function lidZOffset(p: BinParams): number {
-  const lipTop = p.height * p.heightUnitMm + LIP_HEIGHT - LIP_OVERLAP;
+  const wallTop = p.height * p.heightUnitMm + Math.max(0, p.extraWallHeightMm ?? 0);
+  const lipTop = wallTop + LIP_HEIGHT - LIP_OVERLAP;
   return lipTop - lidAnchorZ(p.heightUnitMm, LID_FIT_CLEARANCE, resolveLidCavityExtraMm(p));
 }
 
@@ -87,4 +98,51 @@ export function worstRailInterference(bin: MeshData, lid: MeshData, dz: number):
     }
   }
   return worst;
+}
+
+/**
+ * Narrowest gap (mm) between a bin magnet pad's top face and the seated lid
+ * boss's magnet face, across every magnet. Negative means they interpenetrate,
+ * so the pads prop the lid off its lip.
+ *
+ * This is the number the design is built around (`LID_MAGNET_SEAT_GAP`), and
+ * measuring it on the two real meshes is the only check independent of the
+ * seat-plane arithmetic — every helper on both sides derives from that one
+ * expression, so a test written in terms of it can only prove self-consistency.
+ *
+ * Probes the solid ring between the pocket wall and the boss wall: on the magnet
+ * axis BOTH parts are hollow, so a centre column measures pocket floors rather
+ * than mating faces. The angles stay off the X/Y axes, which are full of
+ * fan-triangulation edges. Reads the outermost crossings rather than paired
+ * spans — the bin's coincident socket seam leaves an odd crossing count, which
+ * pairs the pad's underside up as though it were the top face.
+ */
+export function magnetSeatGap(bin: MeshData, lid: MeshData, p: BinParams, dz: number): number {
+  const { diameter, edgeMagnets } = p.lid.retentionMagnet;
+  const bossR = retentionBossRadius(diameter);
+  const positions = retentionMagnetPositions(
+    p.width,
+    p.depth,
+    p.gridUnitMm,
+    p.gridUnitMmY ?? p.gridUnitMm,
+    retentionMagnetInset(diameter),
+    edgeMagnets,
+    bossR
+  );
+  const r = (diameter / 2 + bossR) / 2;
+  let narrowest = Infinity;
+  for (const { x, y } of positions) {
+    for (const deg of [30, 120, 210, 300]) {
+      const t = (deg * Math.PI) / 180;
+      const px = x + r * Math.cos(t);
+      const py = y + r * Math.sin(t);
+      const padTop = columnCrossings(bin, px, py).at(-1);
+      const bossBottom = columnCrossings(lid, px, py).at(0);
+      if (padTop === undefined || bossBottom === undefined) {
+        throw new Error(`no surface at magnet probe (${px.toFixed(2)}, ${py.toFixed(2)})`);
+      }
+      narrowest = Math.min(narrowest, bossBottom + dz - padTop);
+    }
+  }
+  return narrowest;
 }

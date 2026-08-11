@@ -19,7 +19,6 @@
  */
 
 import { useEffect, useMemo } from 'react';
-import { baseFloorZ } from '@/features/bin-designer/utils/binDimensions';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -68,14 +67,8 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false, xray = false }:
 
   const { lidMesh, lidGroupZ, featureColors } = useDesignerStore(
     useShallow((s) => {
-      const { height, heightUnitMm, base, extraWallHeightMm, lid } = s.params;
-      const lipTopZ = binLipTopWorldZ(
-        height,
-        heightUnitMm,
-        base.stackingLip,
-        extraWallHeightMm,
-        baseFloorZ(base, heightUnitMm, lid)
-      );
+      const { heightUnitMm } = s.params;
+      const lipTopZ = binLipTopWorldZ(s.params);
       // The cavity deepens for the extraHeightMm knob (#2482) AND for any
       // floor plate thicker than the baseline (#2761); both raise the lid
       // floor above the lip. Resolved centrally so this matches the worker.
