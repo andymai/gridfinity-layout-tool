@@ -32,9 +32,17 @@ function pocketCacheKey(
   cellW: number,
   cellD: number,
   forExport: boolean,
-  throughCut: boolean
+  throughCut: boolean,
+  belowSocketMm: number
 ): string {
-  return buildCacheKey('v1', quantize(cellW), quantize(cellD), forExport, throughCut);
+  return buildCacheKey(
+    'v2',
+    quantize(cellW),
+    quantize(cellD),
+    forExport,
+    throughCut,
+    quantize(belowSocketMm)
+  );
 }
 
 function pocketSection(
@@ -61,11 +69,22 @@ function pocketSection(
  *   Z=-4.2:  same inset (vertical wall section)
  *   Z=-5.0:  max inset (bottom)
  *
- * When throughCut is true (no magnets), the cutter extends below SOCKET_HEIGHT
- * to cut completely through the slab. When false (magnets enabled), the pocket
- * stops at SOCKET_HEIGHT depth, leaving a solid floor for magnet holes.
+ * When throughCut is true the cutter extends past SOCKET_HEIGHT to clear the
+ * whole slab; when false the pocket stops at SOCKET_HEIGHT, leaving a floor for
+ * magnet or screw holes.
+ *
+ * `belowSocketMm` is the solid depth under the socket the cut must still clear.
+ * It was implicitly zero while through-cutting only ever happened on a floorless
+ * plate, but a mount-down screw pad (#3425) makes the slab taller while other
+ * cells stay through-cut, and a fixed 1mm extension would leave those cells a
+ * floor they were never meant to have.
  */
-function buildPocketCutter(cellW_mm: number, cellD_mm: number, throughCut: boolean): Shape3D {
+function buildPocketCutter(
+  cellW_mm: number,
+  cellD_mm: number,
+  throughCut: boolean,
+  belowSocketMm: number
+): Shape3D {
   const cornerR = pocketCornerRadius(cellW_mm, cellD_mm);
   const s = (z: number, inset: number): Sketch =>
     pocketSection(cellW_mm, cellD_mm, cornerR, z, inset);
@@ -80,7 +99,7 @@ function buildPocketCutter(cellW_mm: number, cellD_mm: number, throughCut: boole
   ];
 
   if (throughCut) {
-    sections.push(s(-SOCKET_HEIGHT - COPLANAR_MARGIN, INSET_BOT));
+    sections.push(s(-SOCKET_HEIGHT - belowSocketMm - COPLANAR_MARGIN, INSET_BOT));
   }
 
   return s0.loftWith(sections, { ruled: true });
@@ -93,7 +112,8 @@ function buildPocketCutter(cellW_mm: number, cellD_mm: number, throughCut: boole
 function buildSimplifiedPocketCutter(
   cellW_mm: number,
   cellD_mm: number,
-  throughCut: boolean
+  throughCut: boolean,
+  belowSocketMm: number
 ): Shape3D {
   const cornerR = pocketCornerRadius(cellW_mm, cellD_mm);
   const s = (z: number, inset: number): Sketch =>
@@ -102,7 +122,7 @@ function buildSimplifiedPocketCutter(
   const s0 = s(COPLANAR_MARGIN, INSET_TOP);
   const sections = [s(-SOCKET_HEIGHT, INSET_BOT)];
   if (throughCut) {
-    sections.push(s(-SOCKET_HEIGHT - COPLANAR_MARGIN, INSET_BOT));
+    sections.push(s(-SOCKET_HEIGHT - belowSocketMm - COPLANAR_MARGIN, INSET_BOT));
   }
 
   return s0.loftWith(sections, { ruled: true });
@@ -116,16 +136,17 @@ export function getPocketTemplate(
   cellW_mm: number,
   cellD_mm: number,
   forExport: boolean,
-  throughCut: boolean
+  throughCut: boolean,
+  belowSocketMm = 0
 ): Shape3D {
-  const key = pocketCacheKey(cellW_mm, cellD_mm, forExport, throughCut);
+  const key = pocketCacheKey(cellW_mm, cellD_mm, forExport, throughCut, belowSocketMm);
   const cached = pocketTemplateCache.get(key);
   if (cached !== undefined) {
     return unwrap(clone(cached));
   }
   const template = forExport
-    ? buildPocketCutter(cellW_mm, cellD_mm, throughCut)
-    : buildSimplifiedPocketCutter(cellW_mm, cellD_mm, throughCut);
+    ? buildPocketCutter(cellW_mm, cellD_mm, throughCut, belowSocketMm)
+    : buildSimplifiedPocketCutter(cellW_mm, cellD_mm, throughCut, belowSocketMm);
   pocketTemplateCache.set(key, template);
   return unwrap(clone(template));
 }

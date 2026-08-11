@@ -123,6 +123,17 @@ export interface ScrewPieceInput {
    * snap to. Defaults to available.
    */
   readonly isFloorAvailable?: (anchor: ScrewAnchor) => boolean;
+  /**
+   * Whether the PLATE provisioned the floor pad, from
+   * `ResolvedBaseplateParams.screwPadThicknessMm`.
+   *
+   * The plate decides and the piece obeys. A piece cannot derive this for
+   * itself: pieces of one plate share a slab height, and a piece that concluded
+   * "I need a pad" would cut floor screws into material the plate never made
+   * room for. Omitted ⇒ derived from this piece alone, which is only correct
+   * for an unsplit plate.
+   */
+  readonly floorPadProvisioned?: boolean;
 }
 
 /**
@@ -449,7 +460,7 @@ export function planPieceScrews(params: ScrewHoleParams, input: ScrewPieceInput)
 
   const wanted = wantedScrewCount(params);
   const assignments = assignAnchorSites(params, input);
-  const floorPadProvisioned = needsFloorPad(assignments, wanted);
+  const floorPadProvisioned = input.floorPadProvisioned ?? needsFloorPad(assignments, wanted);
   const headRadius = resolveScrewHeadDiameter(params.headStyle, params.headDiameter) / 2;
 
   const slots: ScrewSlot[] = [];
