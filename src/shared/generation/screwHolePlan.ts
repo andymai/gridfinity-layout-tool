@@ -225,6 +225,41 @@ export function minBandForHead(headDiameterMm: number): number {
 }
 
 /**
+ * Where a screw's features sit, measured DOWN from the plate's top face.
+ *
+ * Expressed against that one datum because the two geometry layers disagree on
+ * the origin: the BREP build puts the top face at Z=0 and grows downward, while
+ * the direct-mesh draft puts the slab bottom at Z=0 and grows up. Each converts
+ * once, at the edge, instead of open-coding a sign.
+ *
+ * A margin screw enters at the top face. A floor screw enters at the pocket
+ * floor, which is `SOCKET_HEIGHT` below it, and both run out through the
+ * underside so the screw can reach the drawer.
+ */
+export interface ScrewCutDepths {
+  /** Depth of the entry plane below the top face. */
+  readonly entryBelowTop: number;
+  /** How far the head recess sinks below the entry plane. */
+  readonly recessDepth: number;
+  /** Depth of the underside below the entry plane, i.e. the shaft's run. */
+  readonly throughDepth: number;
+}
+
+export function screwCutDepths(
+  params: ScrewHoleParams,
+  site: ScrewSite,
+  socketHeightMm: number,
+  totalHeightMm: number
+): ScrewCutDepths {
+  const entryBelowTop = site === 'margin' ? 0 : socketHeightMm;
+  return {
+    entryBelowTop,
+    recessDepth: screwHeadRecessDepth(params),
+    throughDepth: totalHeightMm - entryBelowTop,
+  };
+}
+
+/**
  * Whether a disc of `radius` centred at (x, y) fits inside a rounded rectangle.
  * Shrinking the rectangle by the radius reduces this to a point-containment
  * test, including the corner arcs — which is what stops a screw being placed in
