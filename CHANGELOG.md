@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.400.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.400.2...gridfinity-layout-tool-v4.400.3) (2026-08-11)
+
+
+### Bug Fixes
+
+* **scoop:** keep the auto ramp out of the click rail's band ([#3434](https://github.com/andymai/gridfinity-layout-tool/issues/3434)) ([#3436](https://github.com/andymai/gridfinity-layout-tool/issues/3436)) ([3217cf9](https://github.com/andymai/gridfinity-layout-tool/commit/3217cf9582167f68648bf4aa6e49725118ef34f5))
+
 ## [4.400.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.400.1...gridfinity-layout-tool-v4.400.2) (2026-08-11)
 
 
