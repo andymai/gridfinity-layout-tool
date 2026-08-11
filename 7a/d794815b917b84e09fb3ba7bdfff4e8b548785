@@ -1,0 +1,155 @@
+src/features/generation/worker/generators/baseplateDirectMesh.ts
+  s_f099a1cdb8cd0e::t_f906fef5214a6c 308-309,320-324
+  s_f099a1cdb8cd0e::t_1f6bd2a73b88cb 22-24,28
+  s_f099a1cdb8cd0e::t_e4608ee6d9dd7a 59
+  s_f099a1cdb8cd0e::t_5953b37cfe464b 57
+  s_f099a1cdb8cd0e::t_e141d25d2e2ee6 305-307,310-319
+src/features/baseplate/utils/printGuide.ts
+  s_f099a1cdb8cd0e::t_0ff2d9e415746b 407-408
+src/features/generation/worker/generators/baseplateGenerator.ts
+  s_f099a1cdb8cd0e::t_0e7b9741ea0815 452
+  s_f099a1cdb8cd0e::t_862cf1bb58d5f0 70
+  s_f099a1cdb8cd0e::t_4860543810f739 383-392,396
+src/core/constants.ts
+  s_f099a1cdb8cd0e::t_4469c8ce5a8ae5 309
+  s_f099a1cdb8cd0e::t_f594c5ff96a73e 301-302
+  s_f099a1cdb8cd0e::t_6ab7fb51d9487b 293-298
+  s_f099a1cdb8cd0e::t_d6a5cee2093fc3 292
+src/shared/types/bin.ts
+  s_f099a1cdb8cd0e::t_929b7239a6e16f 603-606
+src/i18n/locales/nl.json
+  s_f099a1cdb8cd0e::t_d4392dfe141ae9 219-233
+src/shared/printSettings/baseplateHeight.ts
+  s_f099a1cdb8cd0e::t_1012fec44327e6 54-56
+src/shared/generation/screwHolePlan.ts
+  s_f099a1cdb8cd0e::t_74173468759bb4 2,11,17
+  s_f099a1cdb8cd0e::t_2f0a0b238cabf3 196
+  s_f099a1cdb8cd0e::t_bcb8ad8a6fbaec 264
+  s_f099a1cdb8cd0e::t_3fefe17943c9ff 383
+  s_f099a1cdb8cd0e::t_d861ff816ecf95 421-424,430-434,447-448,450,456
+src/features/generation/worker/generators/baseplateGenerator.scenario.screws.test.ts
+  s_f099a1cdb8cd0e::t_3f299a6bf11814 7
+src/features/generation/worker/generators/directMeshScrews.test.ts
+  s_f099a1cdb8cd0e::t_928dca55fc96e4 1-124,128-130,144-154
+  s_f099a1cdb8cd0e::t_ee59db7733bb5d 131-143
+  s_f099a1cdb8cd0e::t_b13f052fd17dbe 125-127
+src/i18n/locales/es.json
+  s_f099a1cdb8cd0e::t_d4392dfe141ae9 219-233
+api/lib/baseplateValidation.test.ts
+  s_f099a1cdb8cd0e::t_85d272ca06aad7 85-205
+  s_f099a1cdb8cd0e::t_7ab636a01bc1de 206-207
+src/i18n/locales/uk.json
+  s_f099a1cdb8cd0e::t_d4392dfe141ae9 219-233
+src/features/baseplate/components/BaseplatePanel/BaseSection.test.tsx
+  s_f099a1cdb8cd0e::t_5b8a9442daefb7 140-189,203-220
+  s_f099a1cdb8cd0e::t_d32fd76b810d3a 190-202
+  s_f099a1cdb8cd0e::t_5c05f27bc56f20 6,9
+src/i18n/locales/nb.json
+  s_f099a1cdb8cd0e::t_d4392dfe141ae9 219-233
+src/features/generation/worker/generators/baseplateMargin.ts
+  s_f099a1cdb8cd0e::t_dde7f36a95799b 27,52-56,121,142
+  s_f099a1cdb8cd0e::t_81b1741691705a 103
+src/i18n/locales/ja.json
+  s_f099a1cdb8cd0e::t_d4392dfe141ae9 219-233
+src/i18n/locales/pt-BR.json
+  s_f099a1cdb8cd0e::t_d4392dfe141ae9 219-233
+src/core/types/baseplate.ts
+  s_f099a1cdb8cd0e::t_b8c9da37793ad4 97
+  s_f099a1cdb8cd0e::t_ba1569e368bb81 104
+  s_f099a1cdb8cd0e::t_c59d64c0202e5c 86
+src/features/generation/worker/generators/baseplateScrews.test.ts
+  s_f099a1cdb8cd0e::t_1c4009511e1179 69,77,90,103,115,122
+  s_f099a1cdb8cd0e::t_5d524a6b8aa6d9 85,100,112
+src/i18n/locales/ko.json
+  s_f099a1cdb8cd0e::t_d4392dfe141ae9 219-233
+src/i18n/locales/en.ts
+  s_f099a1cdb8cd0e::t_40c46dac2d544b 2982-3002
+src/i18n/locales/zh-CN.json
+  s_f099a1cdb8cd0e::t_d4392dfe141ae9 219-233
+src/features/generation/worker/generators/baseplateScrews.ts
+  s_f099a1cdb8cd0e::t_127aad5b024834 123-133,135-174
+  s_f099a1cdb8cd0e::t_ea68896afbb85b 6-9,23,25-26,30,35
+  s_f099a1cdb8cd0e::t_2da2e8937f7a6e 134
+  s_f099a1cdb8cd0e::t_ef6f37f64680a2 82,90,93,96
+  s_f099a1cdb8cd0e::t_f891299545a020 51
+api/lib/baseplateValidation.ts
+  s_f099a1cdb8cd0e::t_fce80158ef71f9 253-316,318-321
+  s_f099a1cdb8cd0e::t_f639a186688c24 37-43,55-71
+  s_f099a1cdb8cd0e::t_67a6fb398603a4 317
+  s_f099a1cdb8cd0e::t_3033eb700d32c0 44-46,53
+  s_f099a1cdb8cd0e::t_8e74292f377aa2 12-19
+  s_f099a1cdb8cd0e::t_16c83272bc0ef1 112
+  s_f099a1cdb8cd0e::t_702d76df2d1f5b 47-52,54
+src/shared/generation/screwHolePlan.test.ts
+  s_f099a1cdb8cd0e::t_cc6608150afbcf 314-317,322
+  s_f099a1cdb8cd0e::t_2f34fe2231afc7 163,167-169,173-175,179-180,186,190,194-195,203,207,215-216,221-222,226-228,235,242-243,249,256,260,264,272-273,284-286,290-291,309-310,318,323
+  s_f099a1cdb8cd0e::t_f3a41898e8c0da 299,307-308,319-321
+src/features/generation/README.md
+  s_f099a1cdb8cd0e::t_e50de4109d1819 75
+  s_f099a1cdb8cd0e::t_b442ed0f3ee7ab 227
+  s_f099a1cdb8cd0e::t_d41e25c078de7f 228
+src/i18n/locales/cs.json
+  s_f099a1cdb8cd0e::t_d4392dfe141ae9 219-233
+src/features/generation/worker/generators/directMeshScrews.ts
+  s_f099a1cdb8cd0e::t_cddaf808869498 126
+  s_f099a1cdb8cd0e::t_b69fa41015a979 131-134
+  s_f099a1cdb8cd0e::t_4a0a6d4558b3ef 143
+  s_f099a1cdb8cd0e::t_d9eaa0d0e41066 32-34
+  s_f099a1cdb8cd0e::t_9b0b111d9b19c8 1-7,9-10,14-17,20-31,35-80,82-125,127-130,135-142,144-151,153-162
+  s_f099a1cdb8cd0e::t_e50de4109d1819 8,81
+  s_f099a1cdb8cd0e::t_dc7b44abea2f96 11-13,18-19
+  s_f099a1cdb8cd0e::t_2b73727123c5c5 152
+src/i18n/locales/sv.json
+  s_f099a1cdb8cd0e::t_d4392dfe141ae9 219-233
+src/features/baseplate/components/BaseplatePanel/BaseSection.tsx
+  s_f099a1cdb8cd0e::t_ead99efe38748d 12-21,23-26,28-29,35
+  s_f099a1cdb8cd0e::t_53e5073583e926 6
+  s_f099a1cdb8cd0e::t_ac2f2db85582a5 79,86-113,117
+  s_f099a1cdb8cd0e::t_d3eb6fe9a53f26 43
+  s_f099a1cdb8cd0e::t_1fe289894751bb 22
+  s_f099a1cdb8cd0e::t_c0a9f76a314cab 3-5,7-8
+  s_f099a1cdb8cd0e::t_2c15a2a5e931cf 333
+  s_f099a1cdb8cd0e::t_f46da68f576d8d 269-332,334-351
+src/core/labs/features.ts
+  s_f099a1cdb8cd0e::t_173d4b6d7adb7e 228-238
+  s_f099a1cdb8cd0e::t_76beb3fe28b934 227
+src/features/generation/worker/generators/baseplateDirectMesh.test.ts
+  s_f099a1cdb8cd0e::t_591cb3bf0bd117 4-5,7-16
+  s_f099a1cdb8cd0e::t_edfd2d12b95b2a 728-732
+  s_f099a1cdb8cd0e::t_8b26a7cbedf2e1 777-778,780-781
+  s_f099a1cdb8cd0e::t_814074db18025a 699,701-727,733-776,779,782-846,848-876
+  s_f099a1cdb8cd0e::t_e50de4109d1819 700
+  s_f099a1cdb8cd0e::t_77bdde1e7489a1 847
+src/i18n/locales/fr.json
+  s_f099a1cdb8cd0e::t_d4392dfe141ae9 219-233
+src/features/baseplate/utils/buildFullParams.ts
+  s_f099a1cdb8cd0e::t_44ab8e686687c3 312-315,321
+src/i18n/locales/it.json
+  s_f099a1cdb8cd0e::t_d4392dfe141ae9 219-233
+src/i18n/locales/de.json
+  s_f099a1cdb8cd0e::t_d4392dfe141ae9 219-233
+src/i18n/locales/pl.json
+  s_f099a1cdb8cd0e::t_d4392dfe141ae9 219-233
+src/core/cqrs/validation/schemas.ts
+  s_f099a1cdb8cd0e::t_9fde26b02bd67c 340
+  s_f099a1cdb8cd0e::t_6c931c933bade2 20
+  s_f099a1cdb8cd0e::t_64494c4c2842c8 330-339,341-348
+  s_f099a1cdb8cd0e::t_7b21fd6d8081eb 12-19,21-23
+  s_f099a1cdb8cd0e::t_9065ce5fa9dffa 327-329
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "7ad794815b917b84e09fb3ba7bdfff4e8b548785",
+  "prompts": {},
+  "sessions": {
+    "s_f099a1cdb8cd0e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0435f880-966b-4e2c-af78-6b0f1fb42753",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
