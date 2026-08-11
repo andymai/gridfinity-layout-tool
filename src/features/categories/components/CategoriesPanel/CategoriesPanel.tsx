@@ -9,7 +9,7 @@ import { useToastStore } from '@/core/store/toast';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
 import { useCategoryManager } from '../../hooks/useCategoryManager';
-import { Button, Collapsible, IconButton, PlusIcon, XIcon } from '@/design-system';
+import { Button, Collapsible, IconButton, Input, PlusIcon, XIcon } from '@/design-system';
 
 interface ColorPaletteGridProps {
   selectedColor: string;
@@ -207,12 +207,12 @@ export function CategoriesPanel() {
                     onClick={(e) => e.stopPropagation()}
                   >
                     {/* Name input - auto-saves on change */}
-                    <input
-                      type="text"
+                    <Input
+                      size="sm"
                       value={category.name}
                       onChange={(e) => updateCategoryField(category.id, 'name', e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && setEditingId(null)}
-                      className="input w-full py-1 px-2 text-sm"
+                      fullWidth
                       // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
                       autoFocus
                       placeholder={t('categories.categoryNamePlaceholder')}

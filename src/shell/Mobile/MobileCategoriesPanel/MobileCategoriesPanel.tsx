@@ -3,7 +3,7 @@ import { useMobileStore } from '@/core/store';
 import type { CategoryId } from '@/core/types';
 import { CONSTRAINTS, CATEGORY_COLOR_PALETTE } from '@/core/constants';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
-import { Button, IconButton, PlusIcon } from '@/design-system';
+import { Button, IconButton, Input, PlusIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { useCategoryManager } from '@/features/categories/hooks/useCategoryManager';
 
@@ -62,12 +62,11 @@ export function MobileCategoriesPanel() {
               {isEditing ? (
                 <div className="p-4 space-y-3">
                   {/* Name input */}
-                  <input
-                    type="text"
+                  <Input
                     value={category.name}
                     onChange={(e) => handleUpdateName(category.id, e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && setEditingId(null)}
-                    className="input w-full"
+                    fullWidth
                     placeholder={t('categories.categoryNamePlaceholder')}
                     // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
                     autoFocus

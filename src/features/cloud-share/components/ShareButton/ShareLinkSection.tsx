@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { Button, Select } from '@/design-system';
+import { Button, Input, Select } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import type { SharePermission } from '@/core/types';
 
@@ -35,13 +35,13 @@ export function ShareLinkSection({
   return (
     <>
       <div className="flex gap-2">
-        <input
+        <Input
           ref={inputRef}
-          type="text"
           value={shareUrl}
           readOnly
           onClick={() => inputRef.current?.select()}
-          className="flex-1 bg-surface text-content text-xs px-3 py-2 rounded border border-stroke focus:outline-none font-mono truncate"
+          wrapperClassName="flex-1"
+          className="truncate font-mono text-xs"
         />
         <Button
           variant={urlCopied ? 'secondary' : 'primary'}
