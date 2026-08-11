@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.398.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.398.0...gridfinity-layout-tool-v4.398.1) (2026-08-11)
+
+
+### Bug Fixes
+
+* **lid:** correct the rail readout, the collar band, and the socket alignment control ([#3412](https://github.com/andymai/gridfinity-layout-tool/issues/3412)) ([9fe47f0](https://github.com/andymai/gridfinity-layout-tool/commit/9fe47f03c7dcafe4adac7920a44afcd411e988d2))
+
 ## [4.398.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.397.0...gridfinity-layout-tool-v4.398.0) (2026-08-10)
 
 
