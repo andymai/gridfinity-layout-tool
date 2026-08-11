@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.401.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.400.3...gridfinity-layout-tool-v4.401.0) (2026-08-11)
+
+
+### Features
+
+* rebrand the merge-bins lab as Bento and rebuild its UX ([#3430](https://github.com/andymai/gridfinity-layout-tool/issues/3430)) ([4b79b06](https://github.com/andymai/gridfinity-layout-tool/commit/4b79b06acb2665723fc2041e43a55e8d97e56627))
+
 ## [4.400.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.400.2...gridfinity-layout-tool-v4.400.3) (2026-08-11)
 
 
