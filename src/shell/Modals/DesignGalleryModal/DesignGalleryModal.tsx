@@ -78,9 +78,9 @@ export function DesignGalleryModal({ onClose }: DesignGalleryModalProps) {
         fullScreen="mobile"
         closeOnOverlayClick
       >
-        {/* Title and tabs share one row. As two, they spent ~110px of a fixed
-            -height dialog on chrome before the first card, which the gallery
-            body was then short of. */}
+        {/* Title and tabs share one row. As two rows they spent ~110px on
+            chrome before the first card, and this dialog has a fixed height,
+            so that came straight out of the gallery body. */}
         <Dialog.Header
           title={t(
             communityEnabled ? 'binExamples.gallery.title' : 'binExamples.gallery.tabs.examples'
