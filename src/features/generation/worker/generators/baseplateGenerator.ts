@@ -67,15 +67,9 @@ import { getPocketTemplate } from './baseplatePockets';
 import { buildMagnetHoles, buildPartialCellMagnetHoles } from './baseplateMagnets';
 import {
   buildScrewCutters,
-  resolveScrewHoles,
+  planBaseplateScrewHoles,
   screwAwareHoleRadius,
-  screwFloorCandidates,
 } from './baseplateScrews';
-import {
-  effectiveMarginBands,
-  planPieceScrews,
-  resolveScrewHeadDiameter,
-} from '@/shared/generation/screwHolePlan';
 import {
   buildConnectors,
   buildDovetailKey,
@@ -382,41 +376,24 @@ export function buildBaseplateSolid(
   }
   // Mount-down screw holes (#3425). Planned here, before the slab is cached,
   // because which cells keep a floor is part of the pocket geometry.
-  //
-  // The site decision itself was already made at plate level: `buildFullParams`
-  // provisions the pad whenever screws are enabled, so a floor site always has
-  // material to cut into and this piece may not second-guess it. Pieces of one
-  // plate share a slab height, and a piece that decided for itself would cut
-  // screws into a slab the others never grew.
   const screwParams = params.screwHoles?.enabled === true ? params.screwHoles : undefined;
   const screwPadMm = params.screwPadThicknessMm ?? 0;
-  const screwHeadRadius =
-    screwParams !== undefined
-      ? resolveScrewHeadDiameter(screwParams.headStyle, screwParams.headDiameter) / 2
-      : 0;
   const screwHoles =
     screwParams !== undefined
-      ? resolveScrewHoles(
-          planPieceScrews(screwParams, {
-            widthMm: totalW,
-            depthMm: totalD,
-            bands: effectiveMarginBands(params),
-            cornerRadii: params.cornerRadii,
-            floorPadProvisioned: true,
-          }),
-          // Sized with the widest cutter at the position, so a countersink wider
-          // than a magnet cannot be clamped nearer a wall than it fits.
-          screwFloorCandidates(
-            width,
-            depth,
-            Math.max(screwHeadRadius, magnetDiameter / 2),
-            { ...cellOpts, gridUnitMm: pitch },
+      ? planBaseplateScrewHoles(screwParams, params, {
+          totalWidthMm: totalW,
+          totalDepthMm: totalD,
+          gridW: width,
+          gridD: depth,
+          pitch,
+          cellOpts,
+          magnetRadius: magnetDiameter / 2,
+          magnetAnchor,
+          cellFilter:
             outline !== undefined
               ? (cell: CellInfo): boolean => classifyCell(cell) === 'inside'
               : undefined,
-            magnetAnchor
-          )
-        )
+        })
       : [];
   /** True when a floor-sited screw lands inside this cell, so it keeps a floor. */
   const cellHoldsScrew = (cell: CellInfo): boolean => {
@@ -472,7 +449,7 @@ export function buildBaseplateSolid(
     // carry a screw need the pad, so the rest stay through-cut and the plate
     // costs a few pads of plastic instead of a full floor. Cells that stay
     // through-cut must clear the taller slab, which is what `floorDepth` does
-    // here — a fixed extension would leave them a floor they never asked for.
+    // here: a fixed extension would leave them a floor they never asked for.
     const floorsEveryCell = floorDepth - screwPadMm > 0;
     const pockets: Shape3D[] = [];
     const addPocket = (cell: CellInfo): void => {

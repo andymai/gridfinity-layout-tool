@@ -22,7 +22,6 @@ import {
   effectiveClearance,
 } from '@/shared/constants/connectors';
 
-
 export interface PrintGuideInput {
   readonly tiling: BaseplateTiling;
   readonly groups: Map<string, PieceGroup>;
@@ -405,9 +404,8 @@ function generatePieceTable(
       params.paddingBack +
       (params.edges?.front === 'join' && (isPaired || startMale) ? tongue : 0) +
       (params.edges?.back === 'join' && (isPaired || !startMale) ? tongue : 0);
-    // Via the shared derivation, not a local restatement: this had drifted and
-    // omitted the solid floor, so a weighted plate's guide understated its own
-    // printed height.
+    // Via the shared derivation, never restated here: a local form had already
+    // drifted past the solid floor and understated a weighted plate's height.
     const heightMm = baseplateTotalHeight(parentParams);
 
     // Under preferIdenticalPieces opposite-corner pieces share a mesh, so one

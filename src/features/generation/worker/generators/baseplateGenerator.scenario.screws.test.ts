@@ -4,7 +4,7 @@
  *
  * Locks the two things a bounding box alone would not catch: that the plate
  * actually grows by the resolved pad when a screw falls back to the pocket
- * floor, and that a floor-sited screw does NOT floor every cell — only the ones
+ * floor, and that a floor-sited screw does NOT floor every cell: only the ones
  * carrying a screw keep material, so the plate costs a few pads rather than a
  * full floor.
  */

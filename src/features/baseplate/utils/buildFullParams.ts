@@ -309,14 +309,16 @@ export function buildFullParams(
   // at its stored values here — `emitMargins` and the camera/dimension overlay
   // need the true outer extent; the body mesh zeroes detached sides downstream.
   const detachMargins = stored.detachMargins === true && outline === undefined;
-  // Mount-down screws (#3425). Stacking strips them for the same reasons it
-  // strips magnets, so read the stripped value rather than the stored one.
+  // Mount-down screws (#3425). Stacking flips alternate tiles, which would put a
+  // head recess on the underside, and per-tile hole differences break the
+  // uniform-tile assumption stacking relies on: the same two reasons magnets and
+  // the solid floor are stripped. The stored value returns on toggle-off.
   const screwHoles = stackingOn ? undefined : stored.screwHoles;
   // The pad is provisioned whenever screws are on, not only when this plate's
   // own bands fall short. The split plan is not known here, and a split plate
   // almost always needs it: a corner piece's seam-side anchors have no margin
   // band and a fully interior piece has none at all, so deriving from the
-  // unsplit plate would leave interior pieces unfastened — the exact failure
+  // unsplit plate would leave interior pieces unfastened, the exact failure
   // per-piece placement exists to prevent. With magnets the shortfall is
   // typically 0.6mm, since the magnet floor already covers most of the recess.
   const screwPad =
@@ -399,10 +401,6 @@ export function buildFullParams(
     // while stacking (restored when stacking is off, like magnets above).
     solidFloor: stackingOn ? false : stored.solidFloor,
     solidFloorThickness: stored.solidFloorThickness,
-    // Stacking flips alternate tiles, which would put a head recess on the
-    // underside, and per-tile hole differences break the uniform-tile
-    // assumption stacking relies on — the same two reasons magnets and the
-    // solid floor are stripped above. The stored value returns on toggle-off.
     screwHoles,
     screwPadThicknessMm: screwPad,
     cornerRadius: roundingOn ? stored.cornerRadius : 0,

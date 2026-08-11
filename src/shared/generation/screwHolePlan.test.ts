@@ -7,10 +7,7 @@ import {
   discFitsRoundedRect,
   effectiveMarginBands,
   minBandForHead,
-  pieceNeedsFloorPad,
   planPieceScrews,
-  plateNeedsFloorPad,
-  platePadThicknessMm,
   resolveScrewHeadDiameter,
   screwHeadRecessDepth,
   screwPadThicknessMm,
@@ -163,39 +160,39 @@ describe('minBandForHead', () => {
 
 describe('planPieceScrews', () => {
   it('sites four corner screws in the margin when the bands are wide enough', () => {
-    const plan = planPieceScrews(
+    const slots = planPieceScrews(
       COUNTERSINK,
       piece({ bands: { left: 12, right: 12, front: 12, back: 12 } })
     );
-    expect(plan.slots).toHaveLength(4);
-    expect(plan.slots.every((s) => s.site === 'margin')).toBe(true);
-    expect(plan.slots.map((s) => s.anchor)).toEqual(['bl', 'br', 'tr', 'tl']);
+    expect(slots).toHaveLength(4);
+    expect(slots.every((s) => s.site === 'margin')).toBe(true);
+    expect(slots.map((s) => s.anchor)).toEqual(['bl', 'br', 'tr', 'tl']);
   });
 
   it('falls back to the floor when no band can host the head', () => {
-    const plan = planPieceScrews(COUNTERSINK, piece());
-    expect(plan.slots).toHaveLength(4);
-    expect(plan.slots.every((s) => s.site === 'floor')).toBe(true);
+    const slots = planPieceScrews(COUNTERSINK, piece());
+    expect(slots).toHaveLength(4);
+    expect(slots.every((s) => s.site === 'floor')).toBe(true);
   });
 
   it('targets the piece corners for floor slots, so the snap is unambiguous', () => {
-    const plan = planPieceScrews(COUNTERSINK, piece());
-    const bl = plan.slots.find((s) => s.anchor === 'bl');
+    const slots = planPieceScrews(COUNTERSINK, piece());
+    const bl = slots.find((s) => s.anchor === 'bl');
     expect(bl?.target).toEqual([-42, -42]);
   });
 
   it('treats a band one hair under the threshold as unusable', () => {
     const justUnder = minBandForHead(8) - 0.01;
-    const plan = planPieceScrews(
+    const slots = planPieceScrews(
       COUNTERSINK,
       piece({ bands: { left: justUnder, right: 0, front: justUnder, back: 0 } })
     );
-    expect(plan.slots.every((s) => s.site === 'floor')).toBe(true);
+    expect(slots.every((s) => s.site === 'floor')).toBe(true);
   });
 
   it('mixes sites when only some sides carry a usable band', () => {
-    const plan = planPieceScrews(COUNTERSINK, piece({ bands: { left: 12 } }));
-    const bySite = plan.slots.map((s) => `${s.anchor}:${s.site}`);
+    const slots = planPieceScrews(COUNTERSINK, piece({ bands: { left: 12 } }));
+    const bySite = slots.map((s) => `${s.anchor}:${s.site}`);
     expect(bySite).toContain('bl:margin');
     expect(bySite).toContain('tl:margin');
     expect(bySite).toContain('br:floor');
@@ -203,11 +200,11 @@ describe('planPieceScrews', () => {
   });
 
   it('rides the wider of the two bands adjacent to a corner', () => {
-    const plan = planPieceScrews(
+    const slots = planPieceScrews(
       COUNTERSINK,
       piece({ bands: { left: 11, right: 0, front: 20, back: 0 } })
     );
-    const bl = plan.slots.find((s) => s.anchor === 'bl');
+    const bl = slots.find((s) => s.anchor === 'bl');
     expect(bl?.site).toBe('margin');
     expect(bl?.target[1]).toBeCloseTo(-(84 / 2 - 20 / 2), 6);
   });
@@ -215,74 +212,56 @@ describe('planPieceScrews', () => {
   it('never emits two slots on the same anchor', () => {
     // Regression: cycling the corner list for counts above four put two
     // coincident holes on the same spot.
-    const plan = planPieceScrews({ ...COUNTERSINK, screwsPerPiece: 8 }, piece());
-    const anchors = plan.slots.map((s) => s.anchor);
+    const slots = planPieceScrews({ ...COUNTERSINK, screwsPerPiece: 8 }, piece());
+    const anchors = slots.map((s) => s.anchor);
     expect(new Set(anchors).size).toBe(anchors.length);
   });
 
   it('extends to edge midpoints for counts above four', () => {
-    const plan = planPieceScrews({ ...COUNTERSINK, screwsPerPiece: 6 }, piece());
-    expect(plan.slots.map((s) => s.anchor)).toEqual(['bl', 'br', 'tr', 'tl', 'b', 'r']);
+    const slots = planPieceScrews({ ...COUNTERSINK, screwsPerPiece: 6 }, piece());
+    expect(slots.map((s) => s.anchor)).toEqual(['bl', 'br', 'tr', 'tl', 'b', 'r']);
   });
 
   it('caps a count beyond the anchor list rather than stacking holes', () => {
-    const plan = planPieceScrews({ ...COUNTERSINK, screwsPerPiece: 99 }, piece());
-    expect(plan.slots).toHaveLength(SCREW_ANCHORS.length);
-    const anchors = plan.slots.map((s) => s.anchor);
+    const slots = planPieceScrews({ ...COUNTERSINK, screwsPerPiece: 99 }, piece());
+    expect(slots).toHaveLength(SCREW_ANCHORS.length);
+    const anchors = slots.map((s) => s.anchor);
     expect(new Set(anchors).size).toBe(anchors.length);
   });
 
   it('shifts to the next anchor when one is blocked, keeping the count', () => {
     // A connector owns the bottom-left corner. The screw moves on rather than
     // being lost, so the piece still gets its four fasteners.
-    const plan = planPieceScrews(
+    const slots = planPieceScrews(
       COUNTERSINK,
       piece({
         bands: { left: 12, right: 12, front: 12, back: 12 },
         isBlocked: (x, y) => x < 0 && y < 0,
-        isFloorAvailable: (anchor) => anchor !== 'bl',
       })
     );
-    expect(plan.slots).toHaveLength(4);
-    expect(plan.slots.map((s) => s.anchor)).not.toContain('bl');
-    expect(plan.dropped).toContain('bl');
-  });
-
-  it('drops an anchor whose floor cannot host a screw', () => {
-    // A fractional corner cell carries no magnet positions to snap to.
-    const plan = planPieceScrews(
-      COUNTERSINK,
-      piece({ isFloorAvailable: (anchor) => anchor !== 'bl' })
-    );
-    expect(plan.dropped).toContain('bl');
-    expect(plan.slots.map((s) => s.anchor)).not.toContain('bl');
-  });
-
-  it('drops everything when no anchor is legal anywhere', () => {
-    const plan = planPieceScrews(COUNTERSINK, piece({ isFloorAvailable: () => false }));
-    expect(plan.slots).toEqual([]);
-    expect(plan.dropped).toHaveLength(SCREW_ANCHORS.length);
+    expect(slots).toHaveLength(4);
+    expect(slots.map((s) => s.anchor)).not.toContain('bl');
   });
 
   it('rejects a margin position that corner rounding has cut away', () => {
     // A pill-radius corner removes the material the corner screw wanted, so it
     // falls back to the floor rather than being placed in air.
-    const plan = planPieceScrews(
+    const slots = planPieceScrews(
       COUNTERSINK,
       piece({
         bands: { left: 12, right: 12, front: 12, back: 12 },
         cornerRadii: { tl: 40, tr: 40, bl: 40, br: 40 },
       })
     );
-    expect(plan.slots.every((s) => s.site === 'floor')).toBe(true);
+    expect(slots.every((s) => s.site === 'floor')).toBe(true);
   });
 
   it('keeps every margin hole inside the piece footprint', () => {
-    const plan = planPieceScrews(
+    const slots = planPieceScrews(
       COUNTERSINK,
       piece({ bands: { left: 14, right: 14, front: 14, back: 14 } })
     );
-    for (const s of plan.slots) {
+    for (const s of slots) {
       if (s.site !== 'margin') continue;
       expect(Math.abs(s.target[0])).toBeLessThan(42);
       expect(Math.abs(s.target[1])).toBeLessThan(42);
@@ -290,33 +269,8 @@ describe('planPieceScrews', () => {
   });
 
   it('places nothing when zero screws are requested', () => {
-    const plan = planPieceScrews({ ...COUNTERSINK, screwsPerPiece: 0 }, piece());
-    expect(plan.slots).toEqual([]);
-  });
-});
-
-describe('plate-level pad provisioning', () => {
-  const marginPiece = piece({ bands: { left: 12, right: 12, front: 12, back: 12 } });
-  const floorPiece = piece();
-
-  it('charges nothing when every piece can host its screws in margins', () => {
-    expect(plateNeedsFloorPad(COUNTERSINK, [marginPiece, marginPiece])).toBe(false);
-    expect(platePadThicknessMm(COUNTERSINK, [marginPiece, marginPiece], 0)).toBe(0);
-  });
-
-  it('charges the whole plate when a single piece needs the floor', () => {
-    // Pieces of one plate share a slab height, so an interior piece with no
-    // margin makes every piece carry the pad or the assembly is stepped.
-    expect(plateNeedsFloorPad(COUNTERSINK, [marginPiece, floorPiece])).toBe(true);
-    expect(platePadThicknessMm(COUNTERSINK, [marginPiece, floorPiece], 0)).toBeCloseTo(3.1, 6);
-  });
-
-  it('keeps the pad even when pruning empties a piece of floor slots', () => {
-    // Reading resolved slots here would retract a pad the plate was already
-    // built around, leaving other pieces' floor screws cutting into nothing.
-    const pruned = piece({ isFloorAvailable: () => false });
-    expect(planPieceScrews(COUNTERSINK, pruned).slots).toEqual([]);
-    expect(plateNeedsFloorPad(COUNTERSINK, [pruned, floorPiece])).toBe(true);
+    const slots = planPieceScrews({ ...COUNTERSINK, screwsPerPiece: 0 }, piece());
+    expect(slots).toEqual([]);
   });
 });
 
@@ -327,15 +281,14 @@ describe('custom perimeter', () => {
     // An outline is resolved-param data known as early as padding, so it may
     // decide the site. A shaped plate keeps its four fasteners and buys a pad.
     const shaped = piece({ bands, isInsidePerimeter: (x, y) => !(x < 0 && y < 0) });
-    const plan = planPieceScrews(COUNTERSINK, shaped);
-    expect(plan.slots).toHaveLength(4);
-    expect(plan.slots.find((s) => s.anchor === 'bl')?.site).toBe('floor');
-    expect(pieceNeedsFloorPad(COUNTERSINK, shaped)).toBe(true);
+    const slots = planPieceScrews(COUNTERSINK, shaped);
+    expect(slots).toHaveLength(4);
+    expect(slots.find((s) => s.anchor === 'bl')?.site).toBe('floor');
   });
 
   it('leaves a plain rectangle untouched when no perimeter is supplied', () => {
-    const plan = planPieceScrews(COUNTERSINK, piece({ bands }));
-    expect(plan.slots.every((s) => s.site === 'margin')).toBe(true);
+    const slots = planPieceScrews(COUNTERSINK, piece({ bands }));
+    expect(slots.every((s) => s.site === 'margin')).toBe(true);
   });
 });
 
@@ -343,43 +296,30 @@ describe('disabled screws', () => {
   const off: ScrewHoleParams = { ...COUNTERSINK, enabled: false };
 
   it('plans nothing, so a caller cannot forget to check the flag', () => {
-    expect(planPieceScrews(off, piece()).slots).toEqual([]);
-    expect(planPieceScrews(off, piece()).dropped).toEqual([]);
-  });
-
-  it('never charges the plate a pad', () => {
-    expect(pieceNeedsFloorPad(off, piece())).toBe(false);
-    expect(platePadThicknessMm(off, [piece()], 0)).toBe(0);
+    expect(planPieceScrews(off, piece())).toEqual([]);
   });
 });
 
 describe('site stability invariant', () => {
   const bands = { left: 12, right: 12, front: 12, back: 12 };
 
-  it('does not let a collision change whether the plate needs a pad', () => {
-    // The height-critical decision must be a pure function of dimensions, or a
-    // connector nudging one hole silently makes the plate 3.1mm taller.
-    const clear = piece({ bands });
-    const obstructed = piece({ bands, isBlocked: () => true });
-    expect(pieceNeedsFloorPad(COUNTERSINK, clear)).toBe(false);
-    expect(pieceNeedsFloorPad(COUNTERSINK, obstructed)).toBe(false);
-  });
-
   it('drops a blocked margin screw rather than re-siting it to the floor', () => {
-    const plan = planPieceScrews(COUNTERSINK, piece({ bands, isBlocked: () => true }));
-    expect(plan.slots).toEqual([]);
-    expect(plan.dropped.length).toBeGreaterThan(0);
+    // Blocking may only prune. Re-siting to the floor would make the plate
+    // 3.1mm taller because a connector nudged one hole.
+    const slots = planPieceScrews(COUNTERSINK, piece({ bands, isBlocked: () => true }));
+    expect(slots).toEqual([]);
   });
 
   it('never emits a floor slot on a plate that provisioned no pad', () => {
-    // Only the left band is usable, so bl/tl are margin and br/tr would be
-    // floor. With four margin-capable anchors unavailable, the floor ones must
-    // be dropped, not cut into a slab that was never made taller.
-    const input = piece({ bands: { left: 12 } });
-    expect(pieceNeedsFloorPad(COUNTERSINK, input)).toBe(true);
-
-    const marginOnly = piece({ bands: { left: 12, right: 12, front: 12, back: 12 } });
-    const plan = planPieceScrews(COUNTERSINK, marginOnly);
-    expect(plan.slots.every((s) => s.site === 'margin')).toBe(true);
+    // Only the left band is usable, so bl/tl/l are margin and every other
+    // anchor would be floor. With no pad provisioned those must be dropped
+    // rather than cut into a slab that was never made taller, which is why the
+    // piece ends up with three screws instead of its requested four.
+    const slots = planPieceScrews(
+      COUNTERSINK,
+      piece({ bands: { left: 12 }, floorPadProvisioned: false })
+    );
+    expect(slots.map((s) => s.anchor)).toEqual(['bl', 'tl', 'l']);
+    expect(slots.every((s) => s.site === 'margin')).toBe(true);
   });
 });

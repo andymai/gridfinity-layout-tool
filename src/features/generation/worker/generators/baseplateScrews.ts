@@ -3,10 +3,10 @@
  *
  * Splits into two halves so the draft mesh and the BREP build can share the
  * decisions without sharing a kernel:
- *   - {@link resolveScrewHoles} — pure. Turns a {@link ScrewPiecePlan}'s slots
- *     into absolute XY positions, snapping each floor target to a real magnet
- *     position. No brepjs, so `baseplateDirectMesh` can call it too.
- *   - {@link buildScrewCutters} — the BREP cutters, built as one template per
+ *   - {@link planBaseplateScrewHoles} and {@link resolveScrewHoles}: pure. Turn
+ *     a piece's params into absolute XY positions, snapping each floor target to
+ *     a real magnet position. No brepjs, so `baseplateDirectMesh` calls them too.
+ *   - {@link buildScrewCutters}: the BREP cutters, built as one template per
  *     site and cloned per position, the same way magnets and pockets are.
  *
  * The floor snap is why this lives beside `baseplateMagnets` rather than in
@@ -20,16 +20,19 @@ import type { Shape3D, Sketch } from 'brepjs';
 import type { MagnetAnchor } from '@/core/types';
 import { DEFAULT_MAGNET_ANCHOR } from '@/core/types';
 import type { ScrewHoleParams } from '@/core/types/baseplate';
+import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import {
+  effectiveMarginBands,
+  planPieceScrews,
   resolveScrewHeadDiameter,
   screwCutDepths,
-  type ScrewPiecePlan,
   type ScrewSite,
+  type ScrewSlot,
 } from '@/shared/generation/screwHolePlan';
 import { SOCKET_HEIGHT, COPLANAR_MARGIN, forEachCell } from './generatorTypes';
 import type { ForEachCellOptions, CellInfo } from './generatorTypes';
 import { magnetPositionsForCell } from './baseplateMagnets';
-import { resolvePitch, type GridUnitInput } from './gridPitch';
+import { resolvePitch, type GridPitch, type GridUnitInput } from './gridPitch';
 
 export interface ResolvedScrewHole {
   readonly x: number;
@@ -45,7 +48,7 @@ export interface ResolvedScrewHole {
  * magnet, so passing the magnet radius alone would let the placement clamp a
  * position closer to a wall than the cone can actually fit.
  *
- * Fractional cells are skipped, matching `buildMagnetHoles` — the plate carries
+ * Fractional cells are skipped, matching `buildMagnetHoles`: the plate carries
  * no magnets there, so there is no pad for a screw either. A fractional corner
  * simply snaps to the nearest full cell instead.
  */
@@ -76,7 +79,7 @@ export function screwFloorCandidates(
  * Turn planned slots into absolute positions.
  *
  * A margin slot already carries its exact centre. A floor slot carries only an
- * ideal target, and is snapped to the nearest candidate — the single rule that
+ * ideal target, and is snapped to the nearest candidate: the single rule that
  * stops each layer inventing its own notion of "the corner cell".
  *
  * Candidates are consumed as they are taken. Without that, every anchor on a
@@ -84,13 +87,13 @@ export function screwFloorCandidates(
  * and stack coincident holes there; a slot with nothing left is dropped.
  */
 export function resolveScrewHoles(
-  plan: ScrewPiecePlan,
+  slots: readonly ScrewSlot[],
   candidates: ReadonlyArray<readonly [number, number]>
 ): ResolvedScrewHole[] {
-  const available = candidates.map((c) => c);
+  const available = [...candidates];
   const holes: ResolvedScrewHole[] = [];
 
-  for (const slot of plan.slots) {
+  for (const slot of slots) {
     if (slot.site === 'margin') {
       holes.push({ x: slot.target[0], y: slot.target[1], site: 'margin' });
       continue;
@@ -115,6 +118,58 @@ export function resolveScrewHoles(
   }
 
   return holes;
+}
+
+/** Everything a piece contributes to its own screw placement. */
+export interface ScrewPlacementInput {
+  /** Padded printed footprint of the piece in mm. */
+  readonly totalWidthMm: number;
+  readonly totalDepthMm: number;
+  /** Grid extent in units, which is what the floor candidate lattice spans. */
+  readonly gridW: number;
+  readonly gridD: number;
+  readonly pitch: GridPitch;
+  readonly cellOpts: ForEachCellOptions;
+  readonly magnetRadius: number;
+  readonly magnetAnchor?: MagnetAnchor;
+  /** Restricts floor candidates to the cells a shaped plate actually keeps. */
+  readonly cellFilter?: (cell: CellInfo) => boolean;
+}
+
+/**
+ * Plan and resolve a piece's screw holes.
+ *
+ * The BREP build and the direct-mesh draft both go through here so they cannot
+ * put a hole in different places for the same plate.
+ *
+ * `floorPadProvisioned` is always true: `buildFullParams` provisions the pad
+ * whenever screws are enabled, so a floor site always has material to cut into.
+ * A piece may not second-guess that. Pieces of one plate share a slab height,
+ * and one that decided for itself would cut screws into a slab the others never
+ * grew.
+ */
+export function planBaseplateScrewHoles(
+  screwParams: ScrewHoleParams,
+  params: ResolvedBaseplateParams,
+  input: ScrewPlacementInput
+): ResolvedScrewHole[] {
+  return resolveScrewHoles(
+    planPieceScrews(screwParams, {
+      widthMm: input.totalWidthMm,
+      depthMm: input.totalDepthMm,
+      bands: effectiveMarginBands(params),
+      cornerRadii: params.cornerRadii,
+      floorPadProvisioned: true,
+    }),
+    screwFloorCandidates(
+      input.gridW,
+      input.gridD,
+      screwAwareHoleRadius(input.magnetRadius, screwParams),
+      { ...input.cellOpts, gridUnitMm: input.pitch },
+      input.cellFilter,
+      input.magnetAnchor
+    )
+  );
 }
 
 /**

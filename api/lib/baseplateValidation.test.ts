@@ -82,4 +82,127 @@ describe('validateBaseplateShare', () => {
       expect(result.valid).toBe(true);
     });
   });
+
+  describe('screwHoles (#3425)', () => {
+    const screwHoles = {
+      enabled: true,
+      diameter: 3.4,
+      headStyle: 'countersink',
+      headDiameter: 8,
+      counterboreDepth: 3,
+      screwsPerPiece: 4,
+    };
+
+    it('accepts a fully specified object and preserves it through the allowlist', () => {
+      const result = validate({ ...validParams, screwHoles });
+      expect(result.valid).toBe(true);
+      if (result.valid) expect(result.payload.params.screwHoles).toEqual(screwHoles);
+    });
+
+    it('accepts an object carrying only the required fields', () => {
+      const result = validate({
+        ...validParams,
+        screwHoles: { enabled: false, diameter: 3.4, headStyle: 'counterbore' },
+      });
+      expect(result.valid).toBe(true);
+    });
+
+    // Plates saved before the field existed must keep syncing untouched.
+    it('accepts a payload with no screwHoles at all', () => {
+      const result = validate(validParams);
+      expect(result.valid).toBe(true);
+      if (result.valid) expect(result.payload.params).not.toHaveProperty('screwHoles');
+    });
+
+    it('rejects a non-object', () => {
+      expect(validate({ ...validParams, screwHoles: 'yes please' }).valid).toBe(false);
+      expect(validate({ ...validParams, screwHoles: [screwHoles] }).valid).toBe(false);
+    });
+
+    // The nested object is closed, so an attacker cannot smuggle bulk through it.
+    it('rejects an unknown nested key', () => {
+      expect(validate({ ...validParams, screwHoles: { ...screwHoles, evil: 1 } }).valid).toBe(
+        false
+      );
+      expect(
+        validate({ ...validParams, screwHoles: { ...screwHoles, padding: 'x'.repeat(1000) } }).valid
+      ).toBe(false);
+    });
+
+    it('rejects a missing or mistyped enabled flag', () => {
+      const { enabled: _enabled, ...withoutEnabled } = screwHoles;
+      expect(validate({ ...validParams, screwHoles: withoutEnabled }).valid).toBe(false);
+      expect(
+        validate({ ...validParams, screwHoles: { ...screwHoles, enabled: 'true' } }).valid
+      ).toBe(false);
+    });
+
+    it('rejects a missing, mistyped or out-of-range diameter', () => {
+      const { diameter: _diameter, ...withoutDiameter } = screwHoles;
+      expect(validate({ ...validParams, screwHoles: withoutDiameter }).valid).toBe(false);
+      expect(
+        validate({ ...validParams, screwHoles: { ...screwHoles, diameter: '3.4' } }).valid
+      ).toBe(false);
+      expect(validate({ ...validParams, screwHoles: { ...screwHoles, diameter: 1.9 } }).valid).toBe(
+        false
+      );
+      expect(validate({ ...validParams, screwHoles: { ...screwHoles, diameter: 8.1 } }).valid).toBe(
+        false
+      );
+    });
+
+    it('rejects a missing or unrecognized head style', () => {
+      const { headStyle: _headStyle, ...withoutHeadStyle } = screwHoles;
+      expect(validate({ ...validParams, screwHoles: withoutHeadStyle }).valid).toBe(false);
+      expect(
+        validate({ ...validParams, screwHoles: { ...screwHoles, headStyle: 'plain' } }).valid
+      ).toBe(false);
+      expect(validate({ ...validParams, screwHoles: { ...screwHoles, headStyle: 1 } }).valid).toBe(
+        false
+      );
+    });
+
+    it('rejects a mistyped or out-of-range head diameter', () => {
+      expect(
+        validate({ ...validParams, screwHoles: { ...screwHoles, headDiameter: '8' } }).valid
+      ).toBe(false);
+      expect(
+        validate({ ...validParams, screwHoles: { ...screwHoles, headDiameter: 2.9 } }).valid
+      ).toBe(false);
+      expect(
+        validate({ ...validParams, screwHoles: { ...screwHoles, headDiameter: 16.1 } }).valid
+      ).toBe(false);
+    });
+
+    // The recess sets the pad the plate grows under a floor-sited screw, so an
+    // unbounded depth is an unbounded printed plate, not just bad data.
+    it('rejects a mistyped or out-of-range counterbore depth', () => {
+      expect(
+        validate({ ...validParams, screwHoles: { ...screwHoles, counterboreDepth: '3' } }).valid
+      ).toBe(false);
+      expect(
+        validate({ ...validParams, screwHoles: { ...screwHoles, counterboreDepth: -0.1 } }).valid
+      ).toBe(false);
+      expect(
+        validate({ ...validParams, screwHoles: { ...screwHoles, counterboreDepth: 1e6 } }).valid
+      ).toBe(false);
+    });
+
+    // Each screw is a boolean cut on every split piece, so the count is a
+    // resource bound rather than a preference.
+    it('rejects a fractional or out-of-range screw count', () => {
+      expect(
+        validate({ ...validParams, screwHoles: { ...screwHoles, screwsPerPiece: 2.5 } }).valid
+      ).toBe(false);
+      expect(
+        validate({ ...validParams, screwHoles: { ...screwHoles, screwsPerPiece: 0 } }).valid
+      ).toBe(false);
+      expect(
+        validate({ ...validParams, screwHoles: { ...screwHoles, screwsPerPiece: 9 } }).valid
+      ).toBe(false);
+      expect(
+        validate({ ...validParams, screwHoles: { ...screwHoles, screwsPerPiece: '4' } }).valid
+      ).toBe(false);
+    });
+  });
 });

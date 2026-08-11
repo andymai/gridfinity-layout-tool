@@ -290,16 +290,23 @@ export const SCREW_HEAD_MIN_DIAMETER_MM = 3;
 export const SCREW_HEAD_MAX_DIAMETER_MM = 16;
 
 /**
+ * Ceiling on the counterbore pocket depth (mm). A floor-sited screw buys a pad
+ * of `depth + SCREW_PAD_MIN_RETAIN_MM`, so this is what keeps a deep pocket from
+ * doubling the plate's printed height.
+ */
+export const SCREW_COUNTERBORE_MAX_DEPTH_MM = 6;
+
+/**
  * Included angle of the countersink cone. 90° is the near-universal flat-head
- * standard, and it makes the cone depth exactly half the radial widening —
- * see `screwHeadRecessDepth`.
+ * standard, and it makes the cone depth exactly half the radial widening (see
+ * `screwHeadRecessDepth`).
  */
 export const SCREW_COUNTERSINK_INCLUDED_ANGLE_DEG = 90;
 
 /**
  * Plastic kept below a head recess when a screw falls back to the pocket floor
  * and has to carry its own pad. The pad is sized `recessDepth + this`, because a
- * 2.3mm countersink cannot be recessed into a 0.8mm floor — the head would stand
+ * 2.3mm countersink cannot be recessed into a 0.8mm floor: the head would stand
  * proud and lift any bin seated in that cell.
  */
 export const SCREW_PAD_MIN_RETAIN_MM = 0.8;

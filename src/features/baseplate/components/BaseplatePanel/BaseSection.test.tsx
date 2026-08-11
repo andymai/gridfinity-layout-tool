@@ -3,8 +3,10 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { mm } from '@gridfinity/branded-types';
 import { BaseSection } from './BaseSection';
 import { useLayoutStore } from '@/core/store/layout';
+import { useLabsStore } from '@/core/store';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import type { BaseplatePiece } from '../../types/tiling';
+import type { ScrewHeadStyle } from '@/core/types';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { resetAllStores } from '@/test/testUtils';
 
@@ -132,6 +134,87 @@ describe('BaseSection', () => {
       render(<BaseSection />);
       fireEvent.click(screen.getByRole('checkbox', { name: 'baseplate.connectorSlotsAllEdges' }));
       expect(useLayoutStore.getState().layout.baseplateParams?.connectorSlotsAllEdges).toBe(true);
+    });
+  });
+
+  describe('mount-down screw holes (issue #3425)', () => {
+    function setScrewFlag(enabled: boolean): void {
+      useLabsStore.setState((s) => ({
+        preferences: {
+          ...s.preferences,
+          enabledFeatures: { ...s.preferences.enabledFeatures, baseplate_screw_holes: enabled },
+        },
+      }));
+    }
+
+    function enableScrews(headStyle: ScrewHeadStyle): void {
+      useLayoutStore.getState().setBaseplateParams({
+        ...DEFAULT_BASEPLATE_PARAMS,
+        screwHoles: { enabled: true, diameter: mm(3.4), headStyle },
+      });
+    }
+
+    it('offers the toggle while the labs flag is on', () => {
+      setScrewFlag(true);
+      render(<BaseSection />);
+      expect(screen.getByText('baseplate.screwHoles.label')).toBeInTheDocument();
+    });
+
+    it('hides the toggle while the labs flag is off', () => {
+      setScrewFlag(false);
+      render(<BaseSection />);
+      expect(screen.queryByText('baseplate.screwHoles.label')).not.toBeInTheDocument();
+    });
+
+    it('hides the toggle while stacking, which strips the screws', () => {
+      setScrewFlag(true);
+      useLayoutStore.getState().setBaseplateParams({
+        ...DEFAULT_BASEPLATE_PARAMS,
+        stackPrint: { enabled: true, copies: 2, gapMm: mm(0.2) },
+      });
+      render(<BaseSection />);
+      expect(screen.queryByText('baseplate.screwHoles.label')).not.toBeInTheDocument();
+    });
+
+    it('writes the defaults through to the layout store on toggle', () => {
+      setScrewFlag(true);
+      render(<BaseSection />);
+      fireEvent.click(screen.getByRole('switch', { name: 'baseplate.screwHoles.label' }));
+      expect(useLayoutStore.getState().layout.baseplateParams?.screwHoles).toEqual({
+        enabled: true,
+        diameter: 3.4,
+        headStyle: 'countersink',
+      });
+    });
+
+    it('adds the screw summary to the section header beside the magnet one', () => {
+      setScrewFlag(true);
+      useLayoutStore.getState().setBaseplateParams({
+        ...DEFAULT_BASEPLATE_PARAMS,
+        magnetHoles: true,
+        screwHoles: { enabled: true, diameter: mm(3.4), headStyle: 'countersink' },
+      });
+      render(<BaseSection />);
+      expect(
+        screen.getByText(/ø6\.5mm × 2mm · baseplate\.screwHoles\.summary/)
+      ).toBeInTheDocument();
+    });
+
+    it('shows the counterbore depth only for a counterbore head', () => {
+      setScrewFlag(true);
+      enableScrews('counterbore');
+      render(<BaseSection />);
+      expect(screen.getByText('baseplate.screwHoles.counterboreDepth.label')).toBeInTheDocument();
+    });
+
+    it('hides the counterbore depth for a countersink head, whose depth is derived', () => {
+      setScrewFlag(true);
+      enableScrews('countersink');
+      render(<BaseSection />);
+      expect(screen.getByText('baseplate.screwHoles.headDiameter.label')).toBeInTheDocument();
+      expect(
+        screen.queryByText('baseplate.screwHoles.counterboreDepth.label')
+      ).not.toBeInTheDocument();
     });
   });
 

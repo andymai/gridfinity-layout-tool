@@ -51,9 +51,9 @@ export function baseplateFloorDepth(params: BaseplateHeightParams): number {
 }
 
 /**
- * Floor depth WITHOUT the screw pad — the input `platePadThicknessMm` measures
- * the shortfall against. Keeping it separate is what stops the pad feeding back
- * into its own derivation and growing the plate on every recompute.
+ * Floor depth WITHOUT the screw pad, which is what `screwPadThicknessMm`
+ * measures its shortfall against. Keeping it separate is what stops the pad
+ * feeding back into its own derivation and growing the plate on every recompute.
  */
 export function baseplateFloorDepthBeforeScrews(params: BaseplateHeightParams): number {
   const magnetFloor = params.magnetHoles ? MAGNET_FLOOR + params.magnetDepth : 0;

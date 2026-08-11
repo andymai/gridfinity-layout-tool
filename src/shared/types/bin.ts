@@ -600,10 +600,10 @@ export interface ResolvedBaseplateParams {
    * Extra slab thickness (mm) a floor-sited screw needs to recess its head, or 0
    * when every screw rides the solid margin.
    *
-   * Resolved ONCE at plate level (see `platePadThicknessMm`) and handed to every
-   * piece, because pieces of one plate share a slab height: if any piece needs
-   * the pad, all of them must carry it or the assembly comes out stepped. Never
-   * recompute this per piece.
+   * Resolved ONCE at plate level (`buildFullParams`, via `screwPadThicknessMm`)
+   * and handed to every piece, because pieces of one plate share a slab height:
+   * if any piece needs the pad, all of them must carry it or the assembly comes
+   * out stepped. Never recompute this per piece.
    */
   readonly screwPadThicknessMm?: number;
   /** Uniform outer corner radius in mm. */

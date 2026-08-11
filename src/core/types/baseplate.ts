@@ -83,7 +83,7 @@ export type ScrewHeadStyle = 'countersink' | 'counterbore';
  * join plates to each other).
  *
  * Positions are derived, never authored: {@link screwsPerPiece} holes are placed
- * per SPLIT PIECE — not per plate — because an unfastened piece floats however
+ * per SPLIT PIECE, not per plate, because an unfastened piece floats however
  * well its neighbours are screwed down.
  *
  * Each hole prefers the solid drawer-fit margin, which is full plate height and
@@ -94,14 +94,14 @@ export type ScrewHeadStyle = 'countersink' | 'counterbore';
  *
  * A magnet plate can escape that cost, but not automatically. Because the screw
  * is concentric with a magnet, the ø6.5 × 2mm magnet pocket can serve as the
- * head recess — screw in first, magnet dropped in over it. That only holds while
+ * head recess (screw in first, magnet dropped in over it). That only holds while
  * the head fits the pocket, so the ø8 countersink default (too wide) and the 3mm
  * counterbore default (too deep) each still buy their own pad. See
  * `screwPadThicknessMm`.
  */
 export interface ScrewHoleParams {
   readonly enabled: boolean;
-  /** Shaft CLEARANCE diameter — a thread-biting pilot hole would hold the plate
+  /** Shaft CLEARANCE diameter. A thread-biting pilot hole would hold the plate
    * off the mounting surface rather than pull it down. */
   readonly diameter: Mm;
   readonly headStyle: ScrewHeadStyle;

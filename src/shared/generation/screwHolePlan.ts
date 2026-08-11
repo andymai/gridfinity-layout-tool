@@ -1,5 +1,5 @@
 /**
- * Mount-down screw hole planning (#3425) — pure geometry, no BREP kernel.
+ * Mount-down screw hole planning (#3425): pure geometry, no BREP kernel.
  *
  * Owns the ONE decision every layer has to agree on: for each screw, does it sit
  * in the solid drawer-fit margin, or does it fall back to the pocket floor?
@@ -8,13 +8,13 @@
  *
  * Why plate level: each split piece is generated from its own params, but the
  * pieces have to assemble flush. An interior piece has no margin at all, so it
- * always needs the pocket-floor fallback — and if any one piece needs the pad,
+ * always needs the pocket-floor fallback, and if any one piece needs the pad,
  * every piece must carry the same taller slab or the assembled plate is stepped.
  *
  * Every slot carries a `target` in piece-centred mm, whatever its site. A margin
  * target IS the hole centre. A floor target is the IDEAL point, and the geometry
  * layer snaps it to the nearest legal `magnetPositionsForCell` position. Stating
- * the snap as one rule — "nearest magnet position to the anchor" — is what keeps
+ * the snap as one rule ("nearest magnet position to the anchor") is what keeps
  * the exact build, the draft mesh and the margin path from each inventing their
  * own "corner cell" and drifting apart.
  *
@@ -68,12 +68,6 @@ export interface ScrewSlot {
   readonly target: readonly [number, number];
 }
 
-export interface ScrewPiecePlan {
-  readonly slots: readonly ScrewSlot[];
-  /** Anchors that had no legal position and carry no screw. */
-  readonly dropped: readonly ScrewAnchor[];
-}
-
 /** Per-side solid margin band widths (mm) available on a piece. */
 export interface ScrewMarginBands {
   readonly left: number;
@@ -117,12 +111,6 @@ export interface ScrewPieceInput {
    * so it may remove a screw but never move one between sites.
    */
   readonly isBlocked?: (x: number, y: number, radius: number) => boolean;
-  /**
-   * False when the pocket floor cannot host a screw at this anchor — most often
-   * a fractional (sub-unit) corner cell, which carries no magnet positions to
-   * snap to. Defaults to available.
-   */
-  readonly isFloorAvailable?: (anchor: ScrewAnchor) => boolean;
   /**
    * Whether the PLATE provisioned the floor pad, from
    * `ResolvedBaseplateParams.screwPadThicknessMm`.
@@ -205,7 +193,7 @@ export interface MagnetPocket {
  * The magnet case is not just "a deeper floor". Because a screw is placed
  * concentric with a magnet, the ø6.5 × 2mm magnet pocket IS the head recess: the
  * screw goes in first, the magnet drops in over it, and the 0.5mm retaining
- * floor below only has to pass the shaft. So no pad is needed at all — but only
+ * floor below only has to pass the shaft. So no pad is needed at all, but only
  * while the head actually fits that envelope. A ø8 countersink is wider than the
  * pocket and a 3mm counterbore is deeper than it, so either one still has to buy
  * its own pad.
@@ -273,7 +261,7 @@ export function screwCutDepths(
 /**
  * Whether a disc of `radius` centred at (x, y) fits inside a rounded rectangle.
  * Shrinking the rectangle by the radius reduces this to a point-containment
- * test, including the corner arcs — which is what stops a screw being placed in
+ * test, corner arcs included, which is what stops a screw being placed in
  * material a large corner radius has already cut away.
  */
 export function discFitsRoundedRect(
@@ -392,10 +380,7 @@ function marginPosition(
  * flip an anchor to the floor would make the plate 3.1mm taller because a screw
  * moved. See {@link planPieceScrews} for the invariant that follows from this.
  */
-export function assignAnchorSites(
-  params: ScrewHoleParams,
-  input: ScrewPieceInput
-): readonly ScrewSlot[] {
+function assignAnchorSites(params: ScrewHoleParams, input: ScrewPieceInput): readonly ScrewSlot[] {
   const headDiameterMm = resolveScrewHeadDiameter(params.headStyle, params.headDiameter);
   const headRadius = headDiameterMm / 2;
   const halfW = input.widthMm / 2;
@@ -415,19 +400,6 @@ export function assignAnchorSites(
   });
 }
 
-/**
- * Whether a piece needs the pocket-floor pad, from dimensions alone.
- *
- * Reads the first `screwsPerPiece` anchors, which is what the piece would use
- * with nothing in the way. Because blocking may only prune (never re-site), this
- * answer cannot change once collisions are known.
- */
-export function pieceNeedsFloorPad(params: ScrewHoleParams, input: ScrewPieceInput): boolean {
-  if (!params.enabled) return false;
-  return needsFloorPad(assignAnchorSites(params, input), wantedScrewCount(params));
-}
-
-/** Shared by the height query and the slot walk, so the two cannot drift. */
 function needsFloorPad(assignments: readonly ScrewSlot[], wanted: number): boolean {
   return assignments.slice(0, wanted).some((slot) => slot.site === 'floor');
 }
@@ -446,17 +418,20 @@ function wantedScrewCount(params: ScrewHoleParams): number {
  * list is capped rather than stacking two holes on one spot.
  *
  * INVARIANT: blocking prunes, it never re-sites. When the piece's nominal
- * anchors all fit margins, the plate carries no floor pad — so a later anchor
- * that would have been floor-sited is dropped rather than placed into material
- * that was never provisioned for it. That is what keeps the plate's printed
- * height a pure function of its dimensions.
+ * anchors all fit margins the plate carries no floor pad, so a later anchor that
+ * would have been floor-sited is dropped rather than placed into material that
+ * was never provisioned for it. That is what keeps the plate's printed height a
+ * pure function of its dimensions.
  *
  * Floor targets are still only IDEAL points here. The geometry layer snaps each
  * to the nearest legal magnet position and owns the containment check for the
  * snapped result; this function has already done that check for margin slots.
  */
-export function planPieceScrews(params: ScrewHoleParams, input: ScrewPieceInput): ScrewPiecePlan {
-  if (!params.enabled) return { slots: [], dropped: [] };
+export function planPieceScrews(
+  params: ScrewHoleParams,
+  input: ScrewPieceInput
+): readonly ScrewSlot[] {
+  if (!params.enabled) return [];
 
   const wanted = wantedScrewCount(params);
   const assignments = assignAnchorSites(params, input);
@@ -464,62 +439,19 @@ export function planPieceScrews(params: ScrewHoleParams, input: ScrewPieceInput)
   const headRadius = resolveScrewHeadDiameter(params.headStyle, params.headDiameter) / 2;
 
   const slots: ScrewSlot[] = [];
-  const dropped: ScrewAnchor[] = [];
 
   for (const slot of assignments) {
-    const anchor = slot.anchor;
     if (slots.length >= wanted) break;
 
     if (slot.site === 'margin') {
-      if (input.isBlocked?.(slot.target[0], slot.target[1], headRadius) === true) {
-        dropped.push(anchor);
-        continue;
-      }
-    } else {
+      if (input.isBlocked?.(slot.target[0], slot.target[1], headRadius) === true) continue;
+    } else if (!floorPadProvisioned) {
       // No pad was provisioned, so there is no material here to cut into.
-      if (!floorPadProvisioned) {
-        dropped.push(anchor);
-        continue;
-      }
-      if (input.isFloorAvailable?.(anchor) === false) {
-        dropped.push(anchor);
-        continue;
-      }
+      continue;
     }
 
     slots.push(slot);
   }
 
-  return { slots, dropped };
-}
-
-/**
- * True when any piece of a plate needs the pocket-floor fallback.
- *
- * Derived from each piece's DIMENSIONS, not from its resolved slots. Pruning can
- * empty a piece's floor slots (a fractional corner cell, a connector), and
- * reading the slots would then quietly retract a pad the plate was already built
- * around, leaving the remaining floor screws cutting into material that is not
- * there.
- */
-export function plateNeedsFloorPad(
-  params: ScrewHoleParams,
-  pieces: readonly ScrewPieceInput[]
-): boolean {
-  return pieces.some((input) => pieceNeedsFloorPad(params, input));
-}
-
-/**
- * Pad thickness (mm) for a whole plate: the pieces share one slab height, so a
- * single floor-sited screw anywhere makes every piece carry the pad. Returns 0
- * when every screw found a margin, which is the common unsplit, padded case.
- */
-export function platePadThicknessMm(
-  params: ScrewHoleParams,
-  pieces: readonly ScrewPieceInput[],
-  existingFloorDepthMm: number,
-  magnetPocket?: MagnetPocket
-): number {
-  if (!plateNeedsFloorPad(params, pieces)) return 0;
-  return screwPadThicknessMm(params, existingFloorDepthMm, magnetPocket);
+  return slots;
 }

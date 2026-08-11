@@ -2,7 +2,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { mm } from '@/core/types';
 import type { ScrewHoleParams } from '@/core/types/baseplate';
-import type { ScrewPiecePlan } from '@/shared/generation/screwHolePlan';
 import { mesh } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import { initTestKernel } from '@/test/initTestKernel';
@@ -22,16 +21,6 @@ const COUNTERSINK: ScrewHoleParams = {
 };
 
 const COUNTERBORE: ScrewHoleParams = { ...COUNTERSINK, headStyle: 'counterbore' };
-
-function plan(
-  slots: Array<{
-    anchor: 'bl' | 'br' | 'tr' | 'tl';
-    site: 'margin' | 'floor';
-    target: [number, number];
-  }>
-): ScrewPiecePlan {
-  return { slots, dropped: [] };
-}
 
 describe('screwFloorCandidates', () => {
   const cellOpts = { gridUnitMm: 42, fractionalEdgeX: 'end', fractionalEdgeY: 'end' } as const;
@@ -77,7 +66,7 @@ describe('resolveScrewHoles', () => {
 
   it('passes a margin slot through at its exact centre', () => {
     const holes = resolveScrewHoles(
-      plan([{ anchor: 'bl', site: 'margin', target: [-40, -40] }]),
+      [{ anchor: 'bl', site: 'margin', target: [-40, -40] }],
       candidates
     );
     expect(holes).toEqual([{ x: -40, y: -40, site: 'margin' }]);
@@ -85,7 +74,7 @@ describe('resolveScrewHoles', () => {
 
   it('snaps a floor slot to the nearest magnet position', () => {
     const holes = resolveScrewHoles(
-      plan([{ anchor: 'bl', site: 'floor', target: [-42, -42] }]),
+      [{ anchor: 'bl', site: 'floor', target: [-42, -42] }],
       candidates
     );
     expect(holes).toEqual([{ x: -13, y: -13, site: 'floor' }]);
@@ -93,12 +82,12 @@ describe('resolveScrewHoles', () => {
 
   it('snaps each corner to its own magnet', () => {
     const holes = resolveScrewHoles(
-      plan([
+      [
         { anchor: 'bl', site: 'floor', target: [-42, -42] },
         { anchor: 'br', site: 'floor', target: [42, -42] },
         { anchor: 'tr', site: 'floor', target: [42, 42] },
         { anchor: 'tl', site: 'floor', target: [-42, 42] },
-      ]),
+      ],
       candidates
     );
     expect(holes.map((h) => `${h.x},${h.y}`)).toEqual(['-13,-13', '13,-13', '13,13', '-13,13']);
@@ -108,10 +97,10 @@ describe('resolveScrewHoles', () => {
     // On a piece offering a single candidate, every anchor would otherwise snap
     // to the same point and cut coincident holes there.
     const holes = resolveScrewHoles(
-      plan([
+      [
         { anchor: 'bl', site: 'floor', target: [-42, -42] },
         { anchor: 'br', site: 'floor', target: [42, -42] },
-      ]),
+      ],
       [[0, 0]]
     );
     expect(holes).toHaveLength(1);
@@ -120,17 +109,17 @@ describe('resolveScrewHoles', () => {
 
   it('drops floor slots once candidates run out, keeping margin slots', () => {
     const holes = resolveScrewHoles(
-      plan([
+      [
         { anchor: 'bl', site: 'floor', target: [-42, -42] },
         { anchor: 'br', site: 'margin', target: [40, -40] },
-      ]),
+      ],
       []
     );
     expect(holes).toEqual([{ x: 40, y: -40, site: 'margin' }]);
   });
 
   it('returns nothing for an empty plan', () => {
-    expect(resolveScrewHoles(plan([]), candidates)).toEqual([]);
+    expect(resolveScrewHoles([], candidates)).toEqual([]);
   });
 });
 

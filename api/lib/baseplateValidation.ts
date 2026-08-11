@@ -9,7 +9,14 @@
  * safety posture of `designerValidation.ts` without the deep schema.
  */
 
-import { isNumber, inRange, isBoolean, isObject, validationError } from './validationUtils.js';
+import {
+  isNumber,
+  inRange,
+  isBoolean,
+  isObject,
+  isString,
+  validationError,
+} from './validationUtils.js';
 
 /** 100 KB — generous for a flat params object; a guard against smuggled bloat. */
 const MAX_PAYLOAD_BYTES = 100_000;
@@ -26,6 +33,41 @@ const MAX_CORNER_RADIUS_MM = 200;
  * exists so a crafted payload can't ask the worker for thousands of pieces.
  */
 const MAX_SPLIT_CHUNKS = 100;
+
+/** Mount-down screw hole bounds (#3425), mirroring `SCREW_*` in `src/core/constants.ts`. */
+const MIN_SCREW_DIAMETER_MM = 2;
+const MAX_SCREW_DIAMETER_MM = 8;
+const MIN_SCREW_HEAD_DIAMETER_MM = 3;
+const MAX_SCREW_HEAD_DIAMETER_MM = 16;
+const MIN_SCREWS_PER_PIECE = 1;
+const MAX_SCREWS_PER_PIECE = 8;
+/**
+ * The counterbore pocket IS the head recess, and a floor-sited screw grows the
+ * plate's slab by that recess plus its retaining floor, so an unbounded depth is
+ * an unbounded printed plate.
+ *
+ * Mirrors SCREW_COUNTERBORE_MAX_DEPTH_MM in src/core/constants.ts by value, not
+ * by import: api/ has no `@/` alias. Keep the two in step. The client clamps at
+ * this bound and the CQRS schema rejects past it, so an equal cap here can never
+ * reject a payload the app could honestly author.
+ */
+const MAX_COUNTERBORE_DEPTH_MM = 6;
+
+const VALID_SCREW_HEAD_STYLES = ['countersink', 'counterbore'] as const;
+
+/**
+ * Keys allowed inside `screwHoles`. The nested object is closed rather than
+ * merely allowlisted at the top level, so its entry count is bounded by this set
+ * and a crafted payload can't park arbitrary fields on it.
+ */
+const ALLOWED_SCREW_HOLE_KEYS = new Set<string>([
+  'enabled',
+  'diameter',
+  'headStyle',
+  'headDiameter',
+  'counterboreDepth',
+  'screwsPerPiece',
+]);
 
 /**
  * Top-level keys allowed inside `params` after validation. Mirrors
@@ -67,6 +109,7 @@ const ALLOWED_PARAM_KEYS = new Set<string>([
   'detachMarginConnector',
   'stackPrint',
   'splitOverride',
+  'screwHoles',
 ]);
 
 function pickAllowedParams(params: Record<string, unknown>): Record<string, unknown> {
@@ -204,6 +247,75 @@ export function validateBaseplateShare(
       if (chunks.some((size) => !isNumber(size) || !inRange(size, 0.5, 50))) {
         return validationError('INVALID_PARAMS', `splitOverride.${axis} sizes must be 0.5-50`);
       }
+    }
+  }
+
+  // Mount-down screw holes (#3425). Every field is checked rather than trusted:
+  // the head recess drives how tall the plate prints, and `screwsPerPiece` drives
+  // how many boolean cuts the BREP worker performs on every split piece.
+  if (params.screwHoles !== undefined) {
+    const screwHoles = params.screwHoles;
+    if (!isObject(screwHoles)) {
+      return validationError('INVALID_PARAMS', 'screwHoles must be an object');
+    }
+    for (const key of Object.keys(screwHoles)) {
+      if (!ALLOWED_SCREW_HOLE_KEYS.has(key)) {
+        return validationError('INVALID_PARAMS', `screwHoles has unknown key: ${key}`);
+      }
+    }
+    if (!isBoolean(screwHoles.enabled)) {
+      return validationError('INVALID_PARAMS', 'screwHoles.enabled must be a boolean');
+    }
+    if (
+      !isNumber(screwHoles.diameter) ||
+      !inRange(screwHoles.diameter, MIN_SCREW_DIAMETER_MM, MAX_SCREW_DIAMETER_MM)
+    ) {
+      return validationError(
+        'INVALID_PARAMS',
+        `screwHoles.diameter must be ${MIN_SCREW_DIAMETER_MM}-${MAX_SCREW_DIAMETER_MM}`
+      );
+    }
+    if (
+      !isString(screwHoles.headStyle) ||
+      !VALID_SCREW_HEAD_STYLES.includes(
+        screwHoles.headStyle as (typeof VALID_SCREW_HEAD_STYLES)[number]
+      )
+    ) {
+      return validationError(
+        'INVALID_PARAMS',
+        `screwHoles.headStyle must be one of: ${VALID_SCREW_HEAD_STYLES.join(', ')}`
+      );
+    }
+    if (
+      screwHoles.headDiameter !== undefined &&
+      (!isNumber(screwHoles.headDiameter) ||
+        !inRange(screwHoles.headDiameter, MIN_SCREW_HEAD_DIAMETER_MM, MAX_SCREW_HEAD_DIAMETER_MM))
+    ) {
+      return validationError(
+        'INVALID_PARAMS',
+        `screwHoles.headDiameter must be ${MIN_SCREW_HEAD_DIAMETER_MM}-${MAX_SCREW_HEAD_DIAMETER_MM}`
+      );
+    }
+    if (
+      screwHoles.counterboreDepth !== undefined &&
+      (!isNumber(screwHoles.counterboreDepth) ||
+        !inRange(screwHoles.counterboreDepth, 0, MAX_COUNTERBORE_DEPTH_MM))
+    ) {
+      return validationError(
+        'INVALID_PARAMS',
+        `screwHoles.counterboreDepth must be 0-${MAX_COUNTERBORE_DEPTH_MM}`
+      );
+    }
+    if (
+      screwHoles.screwsPerPiece !== undefined &&
+      (!isNumber(screwHoles.screwsPerPiece) ||
+        !Number.isInteger(screwHoles.screwsPerPiece) ||
+        !inRange(screwHoles.screwsPerPiece, MIN_SCREWS_PER_PIECE, MAX_SCREWS_PER_PIECE))
+    ) {
+      return validationError(
+        'INVALID_PARAMS',
+        `screwHoles.screwsPerPiece must be a whole number ${MIN_SCREWS_PER_PIECE}-${MAX_SCREWS_PER_PIECE}`
+      );
     }
   }
 

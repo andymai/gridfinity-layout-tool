@@ -19,10 +19,13 @@
  *   holes are blind cylindrical pockets cut downward from the pocket floor
  *   into the solid floor, leaving a thin retaining floor (MAGNET_FLOOR)
  *   at the bottom. Magnets are dropped in from the pocket side
+ * - Mount-down screws: a hole enters at the top face when it rides the solid
+ *   drawer-fit margin and at the pocket floor when it falls back there, and
+ *   runs clear through the underside either way
  * - Grid centered at XY origin; slab offset by padding
  *
  * The orchestrator wires together pure-geometry helpers from sibling modules:
- * shapes, builder, walls, faces, magnets, connectors.
+ * shapes, builder, walls, faces, magnets, screws, connectors.
  */
 
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
@@ -51,7 +54,9 @@ import { roundedRectPointsSelective } from './directMeshShapes';
 import { addPocketWalls, addOuterWalls } from './directMeshWalls';
 import { addPlateFace, addSolidBottomFace } from './directMeshFaces';
 import { addMagnetHoleAt } from './directMeshMagnets';
+import { addScrewHoleAt } from './directMeshScrews';
 import { magnetPositionsForCell } from './baseplateMagnets';
+import { planBaseplateScrewHoles } from './baseplateScrews';
 import { addConnectorNub, addConnectorHole } from './directMeshConnectors';
 
 /**
@@ -294,6 +299,26 @@ export function generateBaseplateDirect(
           addMagnetHoleAt(mb, x, y, magnetRadius, floorDepth, magnetDepth);
         }
       }
+    }
+  }
+
+  // Mount-down screw holes (#3425). Through the shared planner, so the draft and
+  // the exported plate put every hole in the same place. No cell filter: the
+  // direct mesh is never used for a shaped plate.
+  const screwParams = params.screwHoles?.enabled === true ? params.screwHoles : undefined;
+  if (screwParams !== undefined) {
+    const screwHoles = planBaseplateScrewHoles(screwParams, params, {
+      totalWidthMm: totalW,
+      totalDepthMm: totalD,
+      gridW: width,
+      gridD: depth,
+      pitch,
+      cellOpts,
+      magnetRadius: magnetDiameter / 2,
+      magnetAnchor,
+    });
+    for (const hole of screwHoles) {
+      addScrewHoleAt(mb, hole.x, hole.y, hole.site, screwParams, totalHeight);
     }
   }
 
