@@ -1,0 +1,120 @@
+src/i18n/locales/zh-CN.json
+  s_43de54381c6a74::t_d85244455dcc6b 1634
+src/i18n/locales/it.json
+  s_43de54381c6a74::t_d85244455dcc6b 1647
+src/features/community/components/CommunityGalleryTab/CommunityGalleryTab.test.tsx
+  s_43de54381c6a74::t_d821d214632d4e 755-840
+  s_43de54381c6a74::t_0989707b52c3b6 19
+  s_43de54381c6a74::t_0b700a390e0e11 754
+src/i18n/locales/fr.json
+  s_43de54381c6a74::t_d85244455dcc6b 1634
+src/i18n/locales/ja.json
+  s_43de54381c6a74::t_d85244455dcc6b 1600
+src/i18n/locales/de.json
+  s_43de54381c6a74::t_d85244455dcc6b 1494
+src/features/community/components/CommunityGalleryTab/ShelfLanding.test.tsx
+  s_43de54381c6a74::t_b04b404dce15b7 7
+  s_43de54381c6a74::t_b3a1b341731425 145-172
+src/features/community/components/CommunityCard/CommunityCard.test.tsx
+  s_43de54381c6a74::t_e9e4c6e81665ef 233-263
+src/features/community/README.md
+  s_43de54381c6a74::t_5eaf3f21d9df3f 61-62
+  s_43de54381c6a74::t_bd3ae2adb5ae61 49-53
+  s_43de54381c6a74::t_32c6a5d1f6495f 75-77
+  s_43de54381c6a74::t_23f3718805bc23 214-215
+src/features/community/components/CommunityGalleryTab/ShelfLanding.tsx
+  s_43de54381c6a74::t_62da67ef71941e 67-89,91-96
+  s_43de54381c6a74::t_4a73f2c05af3a8 11
+src/features/community/components/CommunityGalleryTab/shelfData.ts
+  s_43de54381c6a74::t_4f2a7baf9a3e46 22-32
+src/features/community/components/CommunityGalleryTab/ResultsHeader.tsx
+  s_43de54381c6a74::t_bee09a5df40746 1-44,50-54,63-76
+  s_43de54381c6a74::t_739718ac5ea16f 45-49,55-62
+src/features/community/components/CommunityGalleryTab/GalleryToolbar.tsx
+  s_43de54381c6a74::t_499c1c6daf36da 4,10
+  s_43de54381c6a74::t_3cf753427cd8ce 181-183
+  s_43de54381c6a74::t_a62be5d0bc1ad1 225
+src/features/community/components/CommunityGalleryTab/FilterPanel.tsx
+  s_43de54381c6a74::t_647a7681205f56 370-377,379,381-392,400
+  s_43de54381c6a74::t_a9ee8ee26c0455 1,5,12,19,21-22
+  s_43de54381c6a74::t_f432b97afe9327 31-32,35-36,42-112,115
+  s_43de54381c6a74::t_4d21edf6033a02 168-170,173,177-178
+  s_43de54381c6a74::t_a5267cba0c6d69 143-167,171-172,174-176,179-186
+  s_43de54381c6a74::t_d85b6726ce87ec 316
+  s_43de54381c6a74::t_90aabf007ff9d4 113-114
+  s_43de54381c6a74::t_56055a44581c30 116
+src/i18n/locales/es.json
+  s_43de54381c6a74::t_d85244455dcc6b 1641
+src/i18n/locales/cs.json
+  s_43de54381c6a74::t_d85244455dcc6b 1626
+src/i18n/locales/nl.json
+  s_43de54381c6a74::t_d85244455dcc6b 1494
+src/features/community/components/CommunityGalleryTab/filterSectionPrefs.test.ts
+  s_43de54381c6a74::t_0e89e0a8c1614a 1-42
+src/features/community/components/CommunityGalleryTab/CommunityGalleryTab.tsx
+  s_43de54381c6a74::t_6d347c8cf5cfea 435-440,443
+  s_43de54381c6a74::t_79a53fd1280fe8 375-384
+  s_43de54381c6a74::t_ea42de77cc59bc 37
+  s_43de54381c6a74::t_ce34cc7f353031 446-459,461-465,501,503-523
+  s_43de54381c6a74::t_e13cbbdcafcfcf 712-721
+src/features/community/components/CommunityGalleryTab/ResultsHeader.test.tsx
+  s_43de54381c6a74::t_3535ac8c0630dd 1-94
+src/i18n/locales/nb.json
+  s_43de54381c6a74::t_d85244455dcc6b 1647
+src/features/community/components/CommunityGalleryTab/FilterPanel.test.tsx
+  s_43de54381c6a74::t_251f82a2c57407 227-228
+  s_43de54381c6a74::t_dcc803887e45eb 256-257
+  s_43de54381c6a74::t_8833bb5b8115bc 60-62
+  s_43de54381c6a74::t_d2c6dc236ebbc4 234-255,258-300
+  s_43de54381c6a74::t_b7279271493e84 3
+src/i18n/locales/sv.json
+  s_43de54381c6a74::t_d85244455dcc6b 1634
+src/i18n/locales/pl.json
+  s_43de54381c6a74::t_d85244455dcc6b 1634
+src/i18n/locales/en.ts
+  s_43de54381c6a74::t_26d6ba7f83b6e9 6
+  s_43de54381c6a74::t_dc37793d886c0c 3583
+src/i18n/locales/pt-BR.json
+  s_43de54381c6a74::t_d85244455dcc6b 1634
+src/features/community/components/CommunityCard/CommunityCard.tsx
+  s_43de54381c6a74::t_cf9a81ed140c3d 292-307
+  s_43de54381c6a74::t_8e9b6831bf15f8 265-268,272
+  s_43de54381c6a74::t_b799bf38cb89e7 222-225,228
+src/design-system/Dialog/Dialog.test.tsx
+  s_43de54381c6a74::t_88b25c03e33019 465-493
+src/shell/Modals/DesignGalleryModal/DesignGalleryModal.tsx
+  s_43de54381c6a74::t_4871464212f79f 81-83,89,91-92,98-99
+src/features/community/components/CommunityGalleryTab/GalleryToolbar.test.tsx
+  s_43de54381c6a74::t_f318d47a8b8987 80
+  s_43de54381c6a74::t_e932126936f022 83-88,91
+  s_43de54381c6a74::t_a17e6446b10aee 48,56-58
+src/i18n/locales/ko.json
+  s_43de54381c6a74::t_d85244455dcc6b 1630
+src/i18n/locales/uk.json
+  s_43de54381c6a74::t_d85244455dcc6b 1600
+src/design-system/Dialog/DialogParts.tsx
+  s_43de54381c6a74::t_18bb8527e9909e 141
+  s_43de54381c6a74::t_6163e5a00f8e2e 112-118
+  s_43de54381c6a74::t_8621065ddfb453 157,161-167
+  s_43de54381c6a74::t_32b399583e927e 9,12-18,20-21,24-30
+  s_43de54381c6a74::t_78ab0a56350259 31
+  s_43de54381c6a74::t_44bb23eca69592 111
+src/features/community/components/CommunityGalleryTab/filterSectionPrefs.ts
+  s_43de54381c6a74::t_8bf755924ecb4c 1-41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "4f305eb1440cc3e284cbe6bd490bbb780f6d02f0",
+  "prompts": {},
+  "sessions": {
+    "s_43de54381c6a74": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7f79ba8b-679d-4023-9205-9ed707886872",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
