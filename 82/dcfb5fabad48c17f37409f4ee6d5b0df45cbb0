@@ -1,0 +1,24 @@
+scripts/design-system-allowlist.txt
+  s_143ab944de1d05::t_6ade88a5af0b18 7,10-14,17-19
+src/shell/Mobile/MobileHelpModal/MobileHelpModal.tsx
+  s_143ab944de1d05::t_6ade88a5af0b18 2
+  s_143ab944de1d05::t_8bc203e27e3d77 150,155-158
+src/shared/components/ItemListShell/ItemSearch/ItemSearch.tsx
+  s_143ab944de1d05::t_2c8d54d4e0e191 40-42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "82dcfb5fabad48c17f37409f4ee6d5b0df45cbb0",
+  "prompts": {},
+  "sessions": {
+    "s_143ab944de1d05": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d893cac8-ca27-46d0-9bd4-15f949f575f6",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
