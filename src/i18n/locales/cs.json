@@ -3687,6 +3687,7 @@
   "designLinking.bento.blocked.gridOverflow": "Tyto bins potřebují mřížku přihrádek {cols} x {rows}, ale limit je {max}. Sluč menší skupinu nebo bins zarovnej na hrubší mřížku.",
   "designLinking.bento.blocked.tooLarge": "Sloučený bin může mít nejvýše {max} grid units na stranu. Sluč menší skupinu.",
   "designLinking.bento.toast.created": "Bento vytvořeno s {count} přihrádkami.",
+  "designLinking.bento.toast.replaceFailed": "Bento vytvořeno, ale nevešlo by se tam, kde byly ty přihrádky, takže zůstaly na místě.",
   "designLinking.bento.toast.saveFailed": "Bento se nepodařilo uložit.",
   "designLinking.bento.scope.selection": "Slučuje se {count} vybraných bins.",
   "designLinking.bento.scope.layer": "Slučují se všechny {count} bins na tomto layer.",

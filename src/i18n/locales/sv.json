@@ -3687,6 +3687,7 @@
   "designLinking.bento.blocked.gridOverflow": "De här bins kräver ett fackrutnät på {cols} x {rows}, och gränsen är {max}. Slå ihop en mindre grupp eller lägg dina bins på ett grövre rutnät.",
   "designLinking.bento.blocked.tooLarge": "En hopslagen bin får vara högst {max} grid units per sida. Slå ihop en mindre grupp.",
   "designLinking.bento.toast.created": "Bento skapad med {count} fack.",
+  "designLinking.bento.toast.replaceFailed": "Bento skapad, men den får inte plats där facken stod, så de lämnades kvar.",
   "designLinking.bento.toast.saveFailed": "Det gick inte att spara bentot.",
   "designLinking.bento.scope.selection": "Slår ihop de {count} bins du markerat.",
   "designLinking.bento.scope.layer": "Slår ihop alla {count} bins på detta layer.",

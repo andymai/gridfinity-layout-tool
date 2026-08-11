@@ -22,7 +22,7 @@ import { BentoWorkspaceHeader } from './BentoWorkspaceHeader';
 import { useBentoCanvasBox } from './useBentoCanvasBox';
 import { BentoQuickstartOverlay } from './BentoQuickstartOverlay';
 import { BentoLabelBar } from './BentoLabelBar';
-import { useBentoQuickstart } from '../../hooks/useBentoQuickstart';
+import { useBentoQuickstart } from '@/features/bin-designer/hooks/useBentoQuickstart';
 
 export function BentoWorkspace() {
   const t = useTranslation();

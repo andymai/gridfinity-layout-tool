@@ -4117,6 +4117,8 @@ const en: Record<string, string> = {
   'designLinking.bento.blocked.tooLarge':
     'A merged bin can be at most {max} grid units on a side. Merge a smaller group.',
   'designLinking.bento.toast.created': 'Bento created with {count} compartments.',
+  'designLinking.bento.toast.replaceFailed':
+    'Bento created, but it would not fit where those bins were, so they were left in place.',
   'designLinking.bento.toast.saveFailed': 'Could not save the bento.',
 
   // Designer-updated dialog (shown when bin resize pushes to open designer)

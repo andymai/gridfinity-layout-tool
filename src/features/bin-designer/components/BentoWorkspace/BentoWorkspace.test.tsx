@@ -59,7 +59,7 @@ vi.mock('../CompartmentEditor/useDividerTiltSubsection', () => ({
   }),
 }));
 
-vi.mock('../../hooks/useBentoQuickstart', () => ({
+vi.mock('@/features/bin-designer/hooks/useBentoQuickstart', () => ({
   useBentoQuickstart: () => ({
     quickstartSeen: mocks.quickstartSeen,
     markQuickstartSeen: mocks.markQuickstartSeen,

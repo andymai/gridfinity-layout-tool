@@ -3687,6 +3687,7 @@
   "designLinking.bento.blocked.gridOverflow": "Estos bins necesitan una cuadrícula de compartimentos de {cols} x {rows} y el límite es {max}. Combina un grupo más pequeño o alinea los bins en una cuadrícula más gruesa.",
   "designLinking.bento.blocked.tooLarge": "Un bin combinado puede tener como máximo {max} grid units por lado. Combina un grupo más pequeño.",
   "designLinking.bento.toast.created": "Bento creado con {count} compartimentos.",
+  "designLinking.bento.toast.replaceFailed": "Bento creado, pero no cabría donde estaban esos contenedores, así que se dejaron en su sitio.",
   "designLinking.bento.toast.saveFailed": "No se pudo guardar el bento.",
   "designLinking.bento.scope.selection": "Combinando los {count} bins que seleccionaste.",
   "designLinking.bento.scope.layer": "Combinando los {count} bins de este layer.",

@@ -3687,6 +3687,7 @@
   "designLinking.bento.blocked.gridOverflow": "Deze bins hebben een vakkenraster van {cols} x {rows} nodig, en de limiet is {max}. Voeg een kleinere groep samen of lijn de bins uit op een grover raster.",
   "designLinking.bento.blocked.tooLarge": "Een samengevoegde bin mag maximaal {max} grid units per zijde zijn. Voeg een kleinere groep samen.",
   "designLinking.bento.toast.created": "Bento gemaakt met {count} vakken.",
+  "designLinking.bento.toast.replaceFailed": "Bento gemaakt, maar hij past niet waar die bakjes stonden, dus die zijn blijven staan.",
   "designLinking.bento.toast.saveFailed": "Kon de bento niet opslaan.",
   "designLinking.bento.scope.selection": "De {count} geselecteerde bins worden samengevoegd.",
   "designLinking.bento.scope.layer": "Alle {count} bins op deze layer worden samengevoegd.",

@@ -3687,6 +3687,7 @@
   "designLinking.bento.blocked.gridOverflow": "Ці bins потребують сітку відділень {cols} x {rows}, а максимум — {max}. Обʼєднайте меншу групу або вирівняйте bins по грубішій сітці.",
   "designLinking.bento.blocked.tooLarge": "Обʼєднаний bin може мати щонайбільше {max} grid units на сторону. Обʼєднайте меншу групу.",
   "designLinking.bento.toast.created": "Бенто створено з {count} відділеннями.",
+  "designLinking.bento.toast.replaceFailed": "Бенто створено, але воно не вміщується там, де були ті контейнери, тож їх залишено на місці.",
   "designLinking.bento.toast.saveFailed": "Не вдалося зберегти бенто.",
   "designLinking.bento.scope.selection": "Обʼєднання {count} вибраних bins.",
   "designLinking.bento.scope.layer": "Обʼєднання всіх {count} bins на цьому layer.",

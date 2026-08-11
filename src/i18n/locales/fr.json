@@ -3687,6 +3687,7 @@
   "designLinking.bento.blocked.gridOverflow": "Ces bins nécessitent une grille de compartiments de {cols} x {rows}, or la limite est {max}. Fusionnez un groupe plus petit ou alignez les bins sur une grille plus grossière.",
   "designLinking.bento.blocked.tooLarge": "Un bin fusionné ne peut pas dépasser {max} grid units par côté. Fusionnez un groupe plus petit.",
   "designLinking.bento.toast.created": "Bento créé avec {count} compartiments.",
+  "designLinking.bento.toast.replaceFailed": "Bento créé, mais il ne tiendrait pas là où étaient ces bacs : ils ont été laissés en place.",
   "designLinking.bento.toast.saveFailed": "Impossible d'enregistrer le bento.",
   "designLinking.bento.scope.selection": "Fusion des {count} bins que vous avez sélectionnés.",
   "designLinking.bento.scope.layer": "Fusion des {count} bins de ce layer.",

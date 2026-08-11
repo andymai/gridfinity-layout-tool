@@ -3687,6 +3687,7 @@
   "designLinking.bento.blocked.gridOverflow": "Esses bins precisam de uma grade de compartimentos de {cols} x {rows}, e o limite é {max}. Mescle um grupo menor ou alinhe os bins em uma grade mais grossa.",
   "designLinking.bento.blocked.tooLarge": "Um bin mesclado pode ter no máximo {max} grid units por lado. Mescle um grupo menor.",
   "designLinking.bento.toast.created": "Bento criado com {count} compartimentos.",
+  "designLinking.bento.toast.replaceFailed": "Bento criado, mas não caberia onde esses compartimentos estavam, então eles foram mantidos.",
   "designLinking.bento.toast.saveFailed": "Não foi possível salvar o bento.",
   "designLinking.bento.scope.selection": "Mesclando os {count} bins que você selecionou.",
   "designLinking.bento.scope.layer": "Mesclando todos os {count} bins deste layer.",

@@ -3687,6 +3687,7 @@
   "designLinking.bento.blocked.gridOverflow": "Disse bins trenger et romrutenett på {cols} x {rows}, og grensen er {max}. Slå sammen en mindre gruppe, eller still opp bins på et grovere rutenett.",
   "designLinking.bento.blocked.tooLarge": "En sammenslått bin kan være maks {max} grid units per side. Slå sammen en mindre gruppe.",
   "designLinking.bento.toast.created": "Bento laget med {count} rom.",
+  "designLinking.bento.toast.replaceFailed": "Bento laget, men den passer ikke der binsene sto, så de ble stående.",
   "designLinking.bento.toast.saveFailed": "Kunne ikke lagre bentoen.",
   "designLinking.bento.scope.selection": "Slår sammen de {count} bins du har valgt.",
   "designLinking.bento.scope.layer": "Slår sammen alle {count} bins på dette layer.",

@@ -62,6 +62,7 @@ describe('useBento', () => {
     resetAllStores();
     vi.clearAllMocks();
     saveDesign.mockResolvedValue(ok({ id: 'design_bento' }));
+    addBin.mockReturnValue(ok(binId('new')));
     window.history.pushState(null, '', '/');
   });
 
@@ -204,6 +205,39 @@ describe('useBento', () => {
       await commit({ replaceBins: true });
 
       expect(addBin).toHaveBeenCalledWith(expect.objectContaining({ x: 3, width: 2 }));
+    });
+
+    it('puts the source bins back when the replacement will not fit', async () => {
+      seed([bin('a', 0), bin('b', 1)]);
+      // The bento's footprint always overlaps the bins it replaces, so they
+      // must be deleted before it can be placed. batch() groups the undo entry
+      // but does not roll back, so a rejected addBin would otherwise leave the
+      // drawer holding neither the originals nor the bento.
+      addBin.mockReturnValueOnce(err({ kind: 'validation', message: 'no room' }));
+
+      await commit({ replaceBins: true });
+
+      expect(deleteBins).toHaveBeenCalledWith([binId('a'), binId('b')]);
+      const restored = addBin.mock.calls.slice(1).map(([b]) => b);
+      expect(restored).toHaveLength(2);
+      expect(restored.map((b) => b.x)).toEqual([0, 1]);
+      // And every restored bin goes back without an id, so the store mints new
+      // ones rather than resurrecting deleted identities.
+      expect(restored.every((b) => !('id' in b))).toBe(true);
+    });
+
+    it('reports the failed swap instead of a clean success', async () => {
+      seed([bin('a', 0), bin('b', 1)]);
+      addBin.mockReturnValueOnce(err({ kind: 'validation', message: 'no room' }));
+
+      const { outcome } = await commit({ replaceBins: true });
+
+      // The design is saved and worth opening, so this still succeeds — but the
+      // user is told the bins were left where they were.
+      expect(outcome).toBe(true);
+      expect(addToast).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'designLinking.bento.toast.replaceFailed' })
+      );
     });
 
     it('does not replace when the save failed, so the bins are never stranded', async () => {

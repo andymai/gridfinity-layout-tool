@@ -3687,6 +3687,7 @@
   "designLinking.bento.blocked.gridOverflow": "Questi bins richiedono una griglia di scomparti {cols} x {rows}, ma il limite è {max}. Unisci un gruppo più piccolo o allinea i bins su una griglia più ampia.",
   "designLinking.bento.blocked.tooLarge": "Un bin unito può essere al massimo {max} grid units per lato. Unisci un gruppo più piccolo.",
   "designLinking.bento.toast.created": "Bento creato con {count} scomparti.",
+  "designLinking.bento.toast.replaceFailed": "Bento creato, ma non entrerebbe dove erano quei contenitori, quindi sono rimasti al loro posto.",
   "designLinking.bento.toast.saveFailed": "Impossibile salvare il bento.",
   "designLinking.bento.scope.selection": "Unione dei {count} bins selezionati.",
   "designLinking.bento.scope.layer": "Unione di tutti i {count} bins su questo layer.",

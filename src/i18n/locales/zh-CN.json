@@ -3687,6 +3687,7 @@
   "designLinking.bento.blocked.gridOverflow": "这些 bin 需要 {cols} x {rows} 的隔间网格，而上限是 {max}。请合并更小的一组，或把 bin 对齐到更粗的网格。",
   "designLinking.bento.blocked.tooLarge": "合并后的 bin 每边最多 {max} grid units。请合并更小的一组。",
   "designLinking.bento.toast.created": "已创建含 {count} 个隔层的便当。",
+  "designLinking.bento.toast.replaceFailed": "已创建便当，但它放不进那些收纳盒原来的位置，因此收纳盒保持原样。",
   "designLinking.bento.toast.saveFailed": "无法保存便当。",
   "designLinking.bento.scope.selection": "正在合并你选中的 {count} 个 bin。",
   "designLinking.bento.scope.layer": "正在合并该图层上全部 {count} 个 bin。",

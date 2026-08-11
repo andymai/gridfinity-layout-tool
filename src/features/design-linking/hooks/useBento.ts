@@ -94,6 +94,7 @@ export function useBento(scope: BentoScope): UseBento {
         return false;
       }
 
+      let replaceFailed = false;
       if (replaceBins) {
         const sources = mergeableBins;
         const minX = Math.min(...sources.map((b) => b.x));
@@ -114,22 +115,40 @@ export function useBento(scope: BentoScope): UseBento {
           notes: '',
           linkedDesignId: saved.value.id,
         };
-        // One history entry for the whole swap: a half-applied replace would
-        // leave the drawer holding neither the original bins nor the bento.
-        batch(() => {
+        // One history entry for the whole swap. `batch` groups the undo entry;
+        // it does NOT roll back on failure, so the placement result has to be
+        // checked here. The bento's footprint always overlaps the bins it
+        // replaces, so they must be deleted before it can be placed — which
+        // means the only guard against `addBin` being rejected (a cross-layer
+        // blocked zone, drawer height) is putting the originals back.
+        const placed = batch(() => {
           deleteBins(sources.map((b) => b.id));
-          addBin(replacement);
+          if (isOk(addBin(replacement))) return true;
+          for (const source of sources) {
+            const { id: _id, ...withoutId } = source;
+            addBin(withoutId);
+          }
+          return false;
         });
+
+        replaceFailed = !placed;
       }
 
       window.history.pushState(null, '', `/designer?id=${encodeURIComponent(saved.value.id)}`);
       dispatchSyntheticPopstate();
 
-      addToast({
-        message: t('designLinking.bento.toast.created', { count: plan.compartmentCount }),
-        type: 'success',
-        duration: 4000,
-      });
+      // One message, not two: the bento is saved either way, so a success
+      // toast alongside a failure toast would leave the user guessing which
+      // half happened.
+      addToast(
+        replaceFailed
+          ? { message: t('designLinking.bento.toast.replaceFailed'), type: 'error', duration: 6000 }
+          : {
+              message: t('designLinking.bento.toast.created', { count: plan.compartmentCount }),
+              type: 'success',
+              duration: 4000,
+            }
+      );
       return true;
     },
     [layout.name, addToast, t, mergeableBins, addBin, deleteBins]

@@ -3687,6 +3687,7 @@
   "designLinking.bento.blocked.gridOverflow": "Diese Bins brauchen ein Fachraster von {cols} x {rows}, das Maximum ist {max}. Führe eine kleinere Gruppe zusammen oder richte die Bins an einem gröberen Raster aus.",
   "designLinking.bento.blocked.tooLarge": "Ein zusammengeführtes Bin darf höchstens {max} grid units pro Seite haben. Führe eine kleinere Gruppe zusammen.",
   "designLinking.bento.toast.created": "Bento mit {count} Fächern erstellt.",
+  "designLinking.bento.toast.replaceFailed": "Bento erstellt, aber es passt nicht dorthin, wo die Bins waren, also blieben sie stehen.",
   "designLinking.bento.toast.saveFailed": "Bento konnte nicht gespeichert werden.",
   "designLinking.bento.scope.selection": "{count} ausgewählte Bins werden zusammengeführt.",
   "designLinking.bento.scope.layer": "Alle {count} Bins auf diesem Layer werden zusammengeführt.",

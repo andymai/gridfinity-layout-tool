@@ -3687,6 +3687,7 @@
   "designLinking.bento.blocked.gridOverflow": "これらのビンには{cols} x {rows}の仕切りグリッドが必要ですが、上限は{max}です。より小さなグループを統合するか、ビンを粗いグリッドに揃えてください。",
   "designLinking.bento.blocked.tooLarge": "統合後のビンは1辺あたり最大{max} grid unitsです。より小さなグループを統合してください。",
   "designLinking.bento.toast.created": "{count} 個の仕切りで弁当箱を作成しました。",
+  "designLinking.bento.toast.replaceFailed": "弁当箱を作成しましたが、元のビンの場所には収まらないため、ビンはそのまま残しました。",
   "designLinking.bento.toast.saveFailed": "弁当箱を保存できませんでした。",
   "designLinking.bento.scope.selection": "選択した{count}個のビンを統合します。",
   "designLinking.bento.scope.layer": "このレイヤー上の{count}個すべてのビンを統合します。",

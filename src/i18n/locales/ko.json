@@ -3687,6 +3687,7 @@
   "designLinking.bento.blocked.gridOverflow": "이 빈들에는 {cols} x {rows} 칸 그리드가 필요하지만 최대는 {max}입니다. 더 작은 그룹을 병합하거나 빈을 더 성긴 그리드에 맞추세요.",
   "designLinking.bento.blocked.tooLarge": "병합된 빈은 한 변당 최대 {max} grid units입니다. 더 작은 그룹을 병합하세요.",
   "designLinking.bento.toast.created": "칸 {count}개로 도시락을 만들었습니다.",
+  "designLinking.bento.toast.replaceFailed": "도시락을 만들었지만 기존 빈 자리에 들어가지 않아 빈은 그대로 두었습니다.",
   "designLinking.bento.toast.saveFailed": "도시락을 저장하지 못했습니다.",
   "designLinking.bento.scope.selection": "선택한 {count}개의 빈을 병합합니다.",
   "designLinking.bento.scope.layer": "이 레이어의 빈 {count}개를 모두 병합합니다.",

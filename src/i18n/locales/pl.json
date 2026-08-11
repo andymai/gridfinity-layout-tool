@@ -3687,6 +3687,7 @@
   "designLinking.bento.blocked.gridOverflow": "Te bins wymagają siatki przegród {cols} x {rows}, a limit to {max}. Scal mniejszą grupę albo wyrównaj bins do rzadszej siatki.",
   "designLinking.bento.blocked.tooLarge": "Scalony bin może mieć najwyżej {max} grid units na bok. Scal mniejszą grupę.",
   "designLinking.bento.toast.created": "Utworzono bento z {count} przegrodami.",
+  "designLinking.bento.toast.replaceFailed": "Utworzono bento, ale nie zmieściłoby się tam, gdzie były te pojemniki, więc zostały na miejscu.",
   "designLinking.bento.toast.saveFailed": "Nie udało się zapisać bento.",
   "designLinking.bento.scope.selection": "Scalanie {count} zaznaczonych bins.",
   "designLinking.bento.scope.layer": "Scalanie wszystkich {count} bins na tym layer.",
