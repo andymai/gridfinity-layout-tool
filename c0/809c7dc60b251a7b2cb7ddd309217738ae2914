@@ -1,0 +1,203 @@
+src/features/bin-designer/constants/gridfinity.ts
+  s_c94e8f8a5726cc::t_5cba7dfdb94efd 53-58
+src/features/bin-designer/constants/paramMigration.ts
+  s_c94e8f8a5726cc::t_9c3df73499b231 842-845
+  s_c94e8f8a5726cc::t_7bc06a331da2f3 750-758,776-800
+  s_c94e8f8a5726cc::t_32c055865b9de1 12-13
+  s_c94e8f8a5726cc::t_f1bbd5b58cc086 759-775
+  s_c94e8f8a5726cc::t_d106cf77a0a513 749
+src/features/bin-designer/types/uiState.ts
+  s_c94e8f8a5726cc::t_edfabbcc0cff67 146-152
+src/features/bin-designer/constants/defaults.ts
+  s_c94e8f8a5726cc::t_2f39521eb0d736 286
+src/features/bin-designer/components/BentoWorkspace/BentoQuickstartOverlay.tsx
+  s_c94e8f8a5726cc::t_b85bc717f41631 4-7
+  s_c94e8f8a5726cc::t_bfe68279b7adc2 52-54
+src/features/bin-designer/components/BentoWorkspace/useBentoInteraction.ts
+  s_c94e8f8a5726cc::t_aa6abb779b6307 131-134,136-140
+  s_c94e8f8a5726cc::t_53efc099eeee38 70-76
+  s_c94e8f8a5726cc::t_1f84af78709727 148-153,155-156,159-170
+  s_c94e8f8a5726cc::t_fe56431b298eb4 321-323,325,327-330,333-339,342-345,348-351,356-357,360-362,365-367,371-378,382-384,387,397
+  s_c94e8f8a5726cc::t_1be14b33e3fc66 1-32,34-38,40-48,50-54,56-69,77-130,135,141-147,154,157-158,171-180,194-200,202-206,210-212,215-218,220,223-266,268-278,281,285-286,290-294,300-301,304-307,311-320,324,326,346,358,364,370,379-381,385-386,388-396,398-409,411-414,416-422,424,426-444,446,448-449,460,463,466,468-472,474-482
+  s_c94e8f8a5726cc::t_a44906b7f0a30b 181-193
+  s_c94e8f8a5726cc::t_44069447b41a04 423
+  s_c94e8f8a5726cc::t_2a21d39920bf3f 447
+  s_c94e8f8a5726cc::t_53ee57c8a41587 410,425
+  s_c94e8f8a5726cc::t_b6abf2bc057095 33,39,49,55,201,207-209,213-214,219,221-222,267,279-280,282-283,288,295-298,302-303,308-310,331-332,340-341,347,352-355,359,363,368-369,415,445,456
+  s_c94e8f8a5726cc::t_6791eb0a1ec931 473
+  s_c94e8f8a5726cc::t_fb8c64b8b05300 450-455,457-459,461-462,464-465,467
+  s_c94e8f8a5726cc::t_479608c638a0b1 284
+  s_c94e8f8a5726cc::t_e6899fbd179fff 287
+  s_c94e8f8a5726cc::t_be40025faa42b1 289
+  s_c94e8f8a5726cc::t_05ace1ee030557 299
+api/lib/designerCompartmentValidation.ts
+  s_c94e8f8a5726cc::t_8939a6a47fc1cc 247-319
+src/features/bin-designer/store/slices/paramSlice/index.ts
+  s_c94e8f8a5726cc::t_6eba1ca35ac80a 20
+  s_c94e8f8a5726cc::t_4d3934143c5ad1 9
+src/features/bin-designer/components/BentoWorkspace/BentoWorkspace.test.tsx
+  s_c94e8f8a5726cc::t_e7c7a1037ab9bc 53
+  s_c94e8f8a5726cc::t_ef700194c40480 4,10,30-35,38,40-42,45,48,51-52,56-66,69-70,73,76-78,81-83,87-88,90-91,94-96,99,101-103,106-109,111,113-118,121-123,125-128,131,135,137-138,141-143,146-156
+src/features/bin-designer/store/slices/uiSlice.ts
+  s_c94e8f8a5726cc::t_8a164add694afe 65-73
+src/features/labs/README.md
+  s_c94e8f8a5726cc::t_27d711af937ffb 41
+  s_c94e8f8a5726cc::t_8ee9c378aadd0a 38-40
+  s_c94e8f8a5726cc::t_2d686626ba9e73 42-44
+  s_c94e8f8a5726cc::t_b4ff72862d2432 34-37,45-56
+src/i18n/locales/de.json
+  s_c94e8f8a5726cc::t_e217682edc70ae 875,877-878,882-930
+src/features/bin-designer/types/compartments.ts
+  s_c94e8f8a5726cc::t_53d91852282f6a 77-94
+  s_c94e8f8a5726cc::t_72b9c434621583 112-123
+  s_c94e8f8a5726cc::t_be5cc6c4620445 124-137
+src/features/bin-designer/components/BentoWorkspace/BentoStashShelf.test.tsx
+  s_c94e8f8a5726cc::t_aae9253aa65ecb 1-76
+src/i18n/locales/it.json
+  s_c94e8f8a5726cc::t_e217682edc70ae 875,877-878,882-930
+src/i18n/locales/sv.json
+  s_c94e8f8a5726cc::t_e217682edc70ae 875,877-878,882-930
+src/features/bin-designer/components/BentoWorkspace/BentoWorkspace.tsx
+  s_c94e8f8a5726cc::t_650fac2cbdec86 336
+  s_c94e8f8a5726cc::t_80bfb26d04d94e 214,216-224
+  s_c94e8f8a5726cc::t_b39b12b2a2ba3d 215
+  s_c94e8f8a5726cc::t_df4dfa79197c78 273-274,276-284
+  s_c94e8f8a5726cc::t_60a016d77fb85c 2-7,9-12,15-16,18,20-29,31-35,37-39,41-44,48-110,112-123,138-156,159-165,167,170-192,198-213,225-272,285-317,320-335,337-348,352-363,366-393,397-407,412-417,419-421,423,425-430,432,434-435,437,439-449,451-458,460-466,469-516,521-531
+  s_c94e8f8a5726cc::t_75ee188ade8d4a 124-137,193-197,364-365,408-411,418,422,424,431,433,436,438,450
+  s_c94e8f8a5726cc::t_a843bcf315ab47 275
+src/features/bin-designer/components/BentoWorkspace/useBentoInteraction.test.ts
+  s_c94e8f8a5726cc::t_b5a24fcd665aef 249,252
+  s_c94e8f8a5726cc::t_4c79e92b2a4253 1-9,14-15,22-43,48-54,57-118,120-152,154-168,171-177,181-187,189-248,250-251,253-277,279-297,299-305
+  s_c94e8f8a5726cc::t_feabe40e598090 119,153,169-170,178-180,188,278,298
+  s_c94e8f8a5726cc::t_b64918d54fe7a9 44-47,55-56
+  s_c94e8f8a5726cc::t_5fd6cd8e83553a 10-13,16-21
+src/features/bin-designer/components/BentoWorkspace/BentoWorkspaceHeader.tsx
+  s_c94e8f8a5726cc::t_9f23250543b301 2-5,8,14-27,31-59,63,71-97,103-104,116-117,131,136,138,140,144-195
+src/features/bin-designer/components/BentoWorkspace/BentoStashShelf.tsx
+  s_c94e8f8a5726cc::t_24301c5385c43e 1-8,10,21-122,124-126,130-138
+  s_c94e8f8a5726cc::t_e25c4172b1fffa 123,127-129
+  s_c94e8f8a5726cc::t_461405f628bd22 9,11-20
+src/features/bin-designer/components/BentoWorkspace/bentoDockStorage.test.ts
+  s_c94e8f8a5726cc::t_82d85eb8d01285 1-46
+scripts/i18n-values-allowlist.json
+  s_c94e8f8a5726cc::t_aa665c855a4c28 32-36
+src/features/bin-designer/components/BentoWorkspace/BentoDock.tsx
+  s_c94e8f8a5726cc::t_eaa119f67ce5f6 323-326
+  s_c94e8f8a5726cc::t_8fd15827f48e04 268,270-273,277
+  s_c94e8f8a5726cc::t_77295e20bdbcd2 389-394
+  s_c94e8f8a5726cc::t_64a9378240e030 1-267,269,274-276,278-290,295,297-322,327-388,395-411,418-441
+  s_c94e8f8a5726cc::t_799aaf55a79c7f 291-294
+  s_c94e8f8a5726cc::t_781a37ae6a73ba 412-417
+  s_c94e8f8a5726cc::t_91afbf377b39d2 296
+src/i18n/locales/es.json
+  s_c94e8f8a5726cc::t_e217682edc70ae 875,877-878,882-930
+src/features/bin-designer/types/designerState.ts
+  s_c94e8f8a5726cc::t_4681ed79c44ee2 158-160,162,165-166,168-175
+  s_c94e8f8a5726cc::t_75f75f012704bc 293-294
+  s_c94e8f8a5726cc::t_2b0190b04802c9 23
+  s_c94e8f8a5726cc::t_250426c2805004 161,163-164,167
+src/features/bin-designer/utils/compartments.ts
+  s_c94e8f8a5726cc::t_196871885f9324 1122-1151
+  s_c94e8f8a5726cc::t_066a5ad5032248 872-874,917-919
+  s_c94e8f8a5726cc::t_11bcccd90a0fbc 1121
+src/features/bin-designer/components/BentoWorkspace/BentoWorkspaceHeader.test.tsx
+  s_c94e8f8a5726cc::t_44bbca85bbaca7 3,7,9-23,25,29-32,34-36,39-44,46-47,49-50,53-55,57-60,63-66,69,73-75,77-79,82-85,87-97
+  s_d4202156d0c5f7::t_333c1e2c8434f9 98
+src/i18n/locales/nl.json
+  s_c94e8f8a5726cc::t_e217682edc70ae 875,877-878,882-930
+src/core/labs/features.ts
+  s_c94e8f8a5726cc::t_869e8a36b3f3b6 243,245
+src/i18n/locales/fr.json
+  s_c94e8f8a5726cc::t_e217682edc70ae 875,877-878,882-930
+api/lib/contentFilter.test.ts
+  s_c94e8f8a5726cc::t_c21d6ba7b59477 439,441-458
+  s_d4202156d0c5f7::t_4a0614f84c4d9f 440
+src/features/bin-designer/components/BentoWorkspace/BentoQuickstartOverlay.test.tsx
+  s_c94e8f8a5726cc::t_d1fa633f80586d 8,11-13
+api/lib/designerValidationConstants.ts
+  s_c94e8f8a5726cc::t_093b4d9da48813 31-33
+src/features/bin-designer/utils/bentoDraw.test.ts
+  s_c94e8f8a5726cc::t_8709d66b64b572 7
+  s_c94e8f8a5726cc::t_bec50a1ee74a6b 1-6,8-330,332-341,355-399
+  s_c94e8f8a5726cc::t_6eb531659b695e 342-354
+  s_c94e8f8a5726cc::t_a755015f16341f 331
+src/features/bin-designer/components/CompartmentEditor/CompartmentGridView.tsx
+  s_c94e8f8a5726cc::t_8125d443a59107 143,155
+src/features/bin-designer/hooks/useBentoQuickstart.test.ts
+  s_c94e8f8a5726cc::t_24efd175531997 13,19-20
+src/features/bin-designer/components/panel/InteriorSection/BentoMiniPreview.test.tsx
+  s_c94e8f8a5726cc::t_709d7f58562c30 1-33
+src/features/bin-designer/utils/bentoDraw.ts
+  s_c94e8f8a5726cc::t_754e3291c9fa61 20-22
+  s_c94e8f8a5726cc::t_a60019f8264ee1 395-409
+  s_c94e8f8a5726cc::t_0896c26ff1a2de 1-19,23-74,76-77,79-394,410-483
+  s_c94e8f8a5726cc::t_52222a56e1d830 75,78
+src/features/bin-designer/components/BentoWorkspace/BentoCanvas.test.tsx
+  s_c94e8f8a5726cc::t_2c26cab3ac927a 1-94,96-179
+  s_c94e8f8a5726cc::t_5a1b1b139e2941 95
+src/features/bin-designer/components/BentoWorkspace/bentoDockStorage.ts
+  s_c94e8f8a5726cc::t_a0b34d47cb7526 1-55
+src/features/bin-designer/components/BentoWorkspace/BentoDock.test.tsx
+  s_c94e8f8a5726cc::t_91c1f76b6c5d74 1-113
+api/lib/designerCompartmentValidation.test.ts
+  s_c94e8f8a5726cc::t_9768958fb06e4f 571-702
+  s_d4202156d0c5f7::t_9c0615af4eefd5 703-705
+src/features/bin-designer/store/slices/paramSlice/bentoActions.ts
+  s_c94e8f8a5726cc::t_c256bd70e6c76e 1-25,27-173
+  s_c94e8f8a5726cc::t_dc2c6c85921c23 26
+src/i18n/locales/pt-BR.json
+  s_c94e8f8a5726cc::t_e217682edc70ae 875,877-878,882-930
+src/i18n/locales/en.ts
+  s_c94e8f8a5726cc::t_a541c025114d22 2705,2707-2708,2712-2763
+  s_d4202156d0c5f7::t_dc6fc5b5042ac3 2764
+src/i18n/locales/zh-CN.json
+  s_c94e8f8a5726cc::t_e217682edc70ae 878,882-930
+src/i18n/locales/pl.json
+  s_c94e8f8a5726cc::t_e217682edc70ae 875,877-878,882-930
+src/features/bin-designer/hooks/useBentoQuickstart.ts
+  s_c94e8f8a5726cc::t_bb9d51ef45dcc4 5-8,13
+src/features/bin-designer/store/designer.scenario.bento.test.ts
+  s_c94e8f8a5726cc::t_fa503dd307b3db 167-168
+  s_c94e8f8a5726cc::t_ceb5a903d40c39 1-166,169-210
+src/features/bin-designer/components/BentoWorkspace/BentoCanvas.tsx
+  s_c94e8f8a5726cc::t_5f8c0d1bebe63e 1-355
+src/i18n/locales/cs.json
+  s_c94e8f8a5726cc::t_e217682edc70ae 875,877-878,882-930
+src/i18n/locales/nb.json
+  s_c94e8f8a5726cc::t_e217682edc70ae 875,877-878,882-930
+src/features/bin-designer/components/panel/InteriorSection/InteriorModeCard.tsx
+  s_c94e8f8a5726cc::t_c59da32b6ee3ff 67-68,80
+  s_c94e8f8a5726cc::t_e36b188bb8e683 19
+src/i18n/locales/ko.json
+  s_c94e8f8a5726cc::t_e217682edc70ae 878,882-930
+src/i18n/locales/ja.json
+  s_c94e8f8a5726cc::t_e217682edc70ae 878,882-930
+src/i18n/locales/uk.json
+  s_c94e8f8a5726cc::t_e217682edc70ae 878,882-930
+src/features/bin-designer/components/panel/InteriorSection/BentoMiniPreview.tsx
+  s_c94e8f8a5726cc::t_fa0cdba71ffff6 1-83
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "c0809c7dc60b251a7b2cb7ddd309217738ae2914",
+  "prompts": {},
+  "sessions": {
+    "s_c94e8f8a5726cc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c1c066eb-d337-4a40-83e0-a202f5e610da",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_d4202156d0c5f7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f40d6a9e-475a-430b-83f4-660a5b900fde",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
