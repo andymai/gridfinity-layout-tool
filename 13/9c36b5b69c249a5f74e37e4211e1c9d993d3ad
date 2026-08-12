@@ -1,0 +1,19 @@
+src/features/baseplate/components/BaseplatePanel/BaseSection.test.tsx
+  s_0ce5edf31acce7::t_c7399fd2339717 156
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "139c36b5b69c249a5f74e37e4211e1c9d993d3ad",
+  "prompts": {},
+  "sessions": {
+    "s_0ce5edf31acce7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "97116bf8-708e-4676-92f2-0991d2fa2e71",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
