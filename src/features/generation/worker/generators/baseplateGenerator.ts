@@ -129,8 +129,8 @@ export type BaseplateProbe = (label: string, shape: Shape3D) => void;
  * Generate baseplate mesh for the live preview.
  *
  * `draft` builds a faster draft-quality solid (skips the underside lightweight
- * floor cutters). The standalone-page preview passes `true`; the printed export
- * goes through `exportBaseplate`, which always builds full geometry.
+ * floor cutters). Every production caller passes `false`, so the preview
+ * underside matches the printed export; the flag is an opt-in fast path.
  */
 export function generateBaseplate(
   rawParams: ResolvedBaseplateParams,
@@ -621,7 +621,10 @@ export function buildBaseplateSolid(
       params.lightweight,
       floorCellFilter,
       params.nozzleSizeMm,
-      magnetAnchor
+      magnetAnchor,
+      // The full floor, not the magnet floor: a screw pad makes the floor
+      // deeper, and a magnet-floor cut would seal every void with a membrane.
+      floorDepth
     );
     const floorFrame =
       floorCellFilter === undefined ? overTileFrame : overTileFrame.filter(floorCellFilter);
@@ -634,12 +637,47 @@ export function buildBaseplateSolid(
           pitch,
           params.lightweight,
           params.nozzleSizeMm,
-          magnetAnchor
+          magnetAnchor,
+          floorDepth
         )
       );
     }
     baseplate = cutInBatches(baseplate, floorCutters);
     probe?.('lightweightFloorCut', baseplate);
+  }
+
+  // Mount-down screw pads: with magnets off, only the cells holding a
+  // floor-sited screw keep a floor, which would otherwise stay a full solid
+  // slab. Hollow it exactly like a magnet plate — the cross cut keeps corner
+  // pads sized for the head, and the screw sits in one of them since it
+  // snapped to a magnet position. Magnet plates are covered by the pass above;
+  // solidFloor explicitly wants the continuous floor; the draft fast-path
+  // skips underside detail as ever. Cut depth is the screw pad (floorDepth),
+  // not the magnet floor.
+  if (
+    !draft &&
+    !magnetHoles &&
+    params.lightweight !== false &&
+    !params.solidFloor &&
+    screwParams !== undefined &&
+    screwHoles.some((h) => h.site === 'floor')
+  ) {
+    const screwCellFilter = (cell: CellInfo): boolean =>
+      cellHoldsScrew(cell) && (outline === undefined || classifyCell(cell) === 'inside');
+    const padCutters = buildLightweightFloorCutters(
+      width,
+      depth,
+      screwAwareHoleRadius(magnetDiameter / 2, screwParams),
+      magnetDepth,
+      cellOpts,
+      params.lightweight,
+      screwCellFilter,
+      params.nozzleSizeMm,
+      magnetAnchor,
+      floorDepth
+    );
+    baseplate = cutInBatches(baseplate, padCutters);
+    probe?.('screwPadFloorCut', baseplate);
   }
 
   // Screw holes last among the underside features: the lightweight pass has
