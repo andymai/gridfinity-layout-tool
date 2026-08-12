@@ -72,6 +72,7 @@ export {
   LID_MAGNET_SEAT_GAP,
   lidAnchorZ,
   lidWallBottomZ,
+  lidRetentionInterfaceZ,
   LID_CORNER_RADIUS,
   LID_TOP_THICKNESS_BASE,
   LID_TOP_THICKNESS_MIN_MM,

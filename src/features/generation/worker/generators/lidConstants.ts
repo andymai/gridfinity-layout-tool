@@ -26,6 +26,7 @@ import {
   LID_MAGNET_LIP_CLEARANCE,
   lidAnchorZ,
   lidWallBottomZ,
+  lidRetentionInterfaceZ,
 } from '@/shared/types/bin';
 
 /* ──────────────────────────────────────────────────────────────────────
@@ -47,6 +48,7 @@ export {
   LID_MAGNET_LIP_CLEARANCE,
   lidAnchorZ,
   lidWallBottomZ,
+  lidRetentionInterfaceZ,
 };
 
 /** Side-wall thickness in the lip-mating zone. Derived: the outer chamfer

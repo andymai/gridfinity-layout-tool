@@ -51,6 +51,19 @@ describe('tray bin mating skirt', () => {
     expect(box.minZ).toBeCloseTo(0, 3);
   });
 
+  it('sits on Z=0 with a magnetic joint, whose bosses reach down to the skirt', () => {
+    const mesh = generateBin(trayParams('magnetic'));
+    assertStructurallyValid(mesh);
+    const box = boundingBox(mesh.vertices);
+    // A magnetic joint's retention bosses run down to the skirt line so the
+    // pads they mate with pass under it (#3450). `lidRetentionInterfaceZ` stops
+    // them exactly there rather than past it, which is what lets
+    // `trayBottomSkirtDepth` keep describing the whole part in terms of the
+    // wall; a boss allowed any deeper is buried under the bed by that lift,
+    // and every structural assertion still passes while it is.
+    expect(box.minZ).toBeCloseTo(0, 3);
+  });
+
   it('is taller than the bin body by the skirt depth', () => {
     const mesh = generateBin(trayParams('clickRails'));
     const box = boundingBox(mesh.vertices);

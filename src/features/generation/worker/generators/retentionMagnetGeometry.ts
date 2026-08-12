@@ -2,11 +2,13 @@
  * Shared geometry for lid-retention magnets (issue #2694).
  *
  * A magnetic lid holds onto the bin via four press-fit magnets: one in a
- * corner post rising from the bin's interior floor to its stacking-lip top,
- * and a mating one in a corner boss hanging from the lid's floor down to the
- * same plane. The two magnets meet across the seated interface — the bin's
- * lip-top plane, which the export assembly pins to the lid's local `anchorZ`
- * (`exportHandler` lifts the lid by `totalHeight - anchorZ`).
+ * corner post rising from the bin's interior floor, and a mating one in a
+ * corner boss hanging from the lid's floor down to meet it. They mate INSIDE
+ * the bin mouth, below the lid's own mating skirt — not at the lip-top plane
+ * (see {@link retentionInterfaceZ}, and #3450 for what happens when they try).
+ * The seating transform is pinned to the lid's local `anchorZ`, which the
+ * export assembly lands on the bin's lip top (`exportHandler` lifts the lid by
+ * `lipTopZ - anchorZ`).
  *
  * The bin and the lid MUST place their magnets at the SAME XY or they won't
  * mate, so both callers derive positions from this single helper (the same
@@ -25,9 +27,10 @@ import {
   LID_MAGNET_BOSS_WALL,
   LID_MAGNET_LIP_CLEARANCE,
   LID_MAGNET_SEAT_GAP,
-  LID_TOP_THICKNESS_BASE,
+  lidRetentionInterfaceZ,
 } from './lidConstants';
 import { resolveLidInputs } from './lidInputs';
+import type { LidInputs } from './lidInputs';
 
 /** Radial material kept around the magnet in its post/boss (mm). */
 export function retentionBossRadius(magnetDiameter: number): number {
@@ -176,32 +179,47 @@ export function usesMagneticLid(params: BinParams): boolean {
 }
 
 /**
+ * {@link lidRetentionInterfaceZ} in the worker's `LidInputs` terms — the magnet
+ * mating plane in lid-local Z, one {@link LID_MAGNET_SEAT_GAP} above the bin
+ * pad's face.
+ *
+ * The formula itself lives in the shared lid module: `trayBottomSkirtDepth`
+ * needs it on the main thread to know how far a magnetic tray's bosses hang,
+ * and a second copy here is precisely how the two sides of this joint have gone
+ * wrong before (#3431, #3450). This adapter exists only so the two worker
+ * callers can pass the resolved inputs they already hold.
+ */
+export function retentionInterfaceZ(
+  inputs: Pick<LidInputs, 'retentionMagnetDepth' | 'cavityExtraMm' | 'heightUnitMm'>
+): number {
+  return lidRetentionInterfaceZ(
+    inputs.heightUnitMm,
+    inputs.cavityExtraMm,
+    inputs.retentionMagnetDepth
+  );
+}
+
+/**
  * The two magnet faces that mate when the lid is seated, in BIN-WORLD Z.
  *
  * Same discipline as {@link retentionMagnetPositions} for XY: the bin's pad and
  * the lid's boss are built by different passes, so both must derive their
- * mating plane here or the pair drifts apart in Z and the magnets never touch.
+ * mating plane from {@link retentionInterfaceZ} or the pair drifts apart in Z
+ * and the magnets never touch.
  *
- * - `lidFaceZ` — the lid boss's downward magnet face. The boss is anchored to
- *   the cavity BOTTOM, so this stays a fixed distance below the lip line no
- *   matter how deep the cavity gets (a deep lid grows a longer pillar). Lifted
- *   by the seating transform (`totalHeight - anchorZ`) that `exportHandler`
- *   applies to the lid solid.
+ * - `lidFaceZ` — the lid boss's downward magnet face, lifted by the seating
+ *   transform (`lipTopZ - anchorZ`) that `exportHandler` applies to the lid.
  * - `binFaceZ` — the bin pad's upward magnet face, one {@link LID_MAGNET_SEAT_GAP}
- *   below, so the corner posts can't bottom out and hold the lid off its lip.
+ *   below, so the pads can't bottom out and hold the lid off its lip.
  *
  * Their separation is `LID_MAGNET_SEAT_GAP` by construction; the scenario suite
  * asserts it so a change to either side's derivation can't silently close it.
  */
 export function retentionSeatPlanes(
   params: BinParams,
-  totalHeight: number
+  lipTopZ: number
 ): { readonly lidFaceZ: number; readonly binFaceZ: number } {
   const lidInputs = resolveLidInputs(params);
-  const magnetDepth = params.lid.retentionMagnet.depth;
-  // Mirrors `lidRetentionMagnets`: the boss is anchored to the cavity bottom,
-  // so a deeper cavity lengthens the pillar rather than lifting the magnet.
-  const interfaceZ = -(LID_TOP_THICKNESS_BASE + magnetDepth) - lidInputs.cavityExtraMm;
-  const lidFaceZ = interfaceZ + (totalHeight - lidInputs.anchorZ);
+  const lidFaceZ = retentionInterfaceZ(lidInputs) + (lipTopZ - lidInputs.anchorZ);
   return { lidFaceZ, binFaceZ: lidFaceZ - LID_MAGNET_SEAT_GAP };
 }

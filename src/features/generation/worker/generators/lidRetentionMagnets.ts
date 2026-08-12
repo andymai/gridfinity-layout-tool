@@ -6,24 +6,25 @@
  * so the magnet's pole face meets the bin gusset's magnet across a thin gap.
  *
  * Coordinate frame is lid-local (see `lidConstants.ts`, Z=0 is the top surface):
- *   Z = 0               top of the lid floor (the visible closed face)
- *   Z = -topThickness   floor underside = magnet TOP (the solid floor is the
- *                       magnet's ceiling, so the top face stays smooth)
- *   Z = -(topThickness + depth)   boss bottom / magnet mating face
+ *   Z = 0                    top of the lid floor (the visible closed face)
+ *   Z = -topThickness        floor underside; the boss welds up into it
+ *   Z = retentionInterfaceZ  boss bottom / magnet mating face, below the skirt
+ *   Z = interfaceZ + depth   magnet TOP (the pocket's ceiling)
  * The whole boss + magnet stay below Z=0, so the top face is flush — no bumps or
  * crease circles. The boss sits INBOARD of the lip (see `retentionMagnetInset`)
- * so it drops into the bin mouth without fouling the lip, welding UP into the
- * floor plate above it. Placement XY is shared with the bin via
- * `retentionMagnetPositions`, keeping the magnets coaxial.
+ * so it drops into the bin mouth without fouling the lip. Placement XY is shared
+ * with the bin via `retentionMagnetPositions` and Z via `retentionInterfaceZ`,
+ * keeping the magnets coaxial and one seat gap apart.
  */
 
 import { cylinder, unwrap, fuse, cutAll } from 'brepjs';
 import type { Shape3D, DisposalScope, ValidSolid } from 'brepjs';
 import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
-import { LID_COPLANAR_MARGIN, LID_TOP_THICKNESS_BASE } from './lidConstants';
+import { LID_COPLANAR_MARGIN } from './lidConstants';
 import {
   retentionBossRadius,
+  retentionInterfaceZ,
   retentionMagnetInset,
   retentionMagnetPositions,
 } from './retentionMagnetGeometry';
@@ -44,7 +45,6 @@ export function addLidRetentionMagnets(
     retentionMagnetDepth,
     retentionMagnetEdgeMagnets,
     topThickness,
-    cavityExtraMm,
     outerOffsetX,
     outerOffsetY,
     overhangAddW,
@@ -68,17 +68,15 @@ export function addLidRetentionMagnets(
     { addW: overhangAddW, addD: overhangAddD, offsetX: outerOffsetX, offsetY: outerOffsetY }
   );
 
-  // The boss is anchored to the BOTTOM of the cavity, not to the floor plate.
-  // `interfaceZ` (the magnet's mating face, what the bin gusset meets) sits a
-  // fixed distance below the lip line whatever the cavity depth, so a deep lid
-  // grows a longer pillar instead of carrying its magnets up out of the bin's
-  // reach. On a standard lid `cavityExtraMm` is 0 and this is the historical
-  // "tucked under the floor plate" position, unchanged.
+  // The boss is anchored to the BOTTOM of the cavity, not to the floor plate,
+  // and reaches past the mating skirt so the bin's pad can pass under it —
+  // `retentionInterfaceZ` owns both bounds, and the bin's pad reads the same
+  // helper, so the pair cannot drift.
   //
   // The pocket is still only `retentionMagnetDepth` deep at the tip, so the
   // rest of the pillar is solid. It prints as a vertical column (the lid
   // exports floor-down, bosses up), needing no supports.
-  const interfaceZ = -(LID_TOP_THICKNESS_BASE + retentionMagnetDepth) - cavityExtraMm;
+  const interfaceZ = retentionInterfaceZ(inputs);
   // Weld up into the floor plate by a coplanar margin so the fuse is solid.
   const bossTopZ = -topThickness + LID_COPLANAR_MARGIN;
   const bossHeight = bossTopZ - interfaceZ;
