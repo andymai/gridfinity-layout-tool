@@ -1,7 +1,7 @@
-diff --git a/dist/blueprintSketcher-4e0yYtCY.cjs b/dist/blueprintSketcher-4e0yYtCY.cjs
-index 6cd976e4109615d4d3b5072656653cf51b8eb4fc..ca29949dfe2b1d95b622fb870f5cf27eadd96a99 100644
---- a/dist/blueprintSketcher-4e0yYtCY.cjs
-+++ b/dist/blueprintSketcher-4e0yYtCY.cjs
+diff --git a/dist/blueprintSketcher-B5UqD0FO.cjs b/dist/blueprintSketcher-B5UqD0FO.cjs
+index 28c4f444f92fe568b3353ec9825c18423bc19847..83364d512298abc16532cab0e20e0a073fd9ce8a 100644
+--- a/dist/blueprintSketcher-B5UqD0FO.cjs
++++ b/dist/blueprintSketcher-B5UqD0FO.cjs
 @@ -542,7 +542,14 @@ function hilbert(x, y) {
  * ```
  */
@@ -18,10 +18,10 @@ index 6cd976e4109615d4d3b5072656653cf51b8eb4fc..ca29949dfe2b1d95b622fb870f5cf27e
  		intersections: [],
  		commonSegments: [],
  		commonSegmentsPoints: []
-diff --git a/dist/blueprintSketcher-BjBjj2cK.js b/dist/blueprintSketcher-BjBjj2cK.js
-index fd3422fe25f688d89f05d315614591f34c1e71c4..734eee024d475097d8a48776edaf2f876c55cf2d 100644
---- a/dist/blueprintSketcher-BjBjj2cK.js
-+++ b/dist/blueprintSketcher-BjBjj2cK.js
+diff --git a/dist/blueprintSketcher-yZiAeqft.js b/dist/blueprintSketcher-yZiAeqft.js
+index 2abf2680ad502453634f430b0d9da30ef8c9468c..ff9eebc82895564bb66b0a013ab170a078e80b23 100644
+--- a/dist/blueprintSketcher-yZiAeqft.js
++++ b/dist/blueprintSketcher-yZiAeqft.js
 @@ -542,7 +542,14 @@ function hilbert(x, y) {
  * ```
  */
