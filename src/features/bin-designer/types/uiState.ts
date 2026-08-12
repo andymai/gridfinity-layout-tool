@@ -143,6 +143,13 @@ export interface DesignerUIState {
    * back to the first compartment in reading order.
    */
   readonly labelFocusCompartmentId: number | null;
+  /**
+   * Drawn compartment selected in the Bento workspace, by compartment id.
+   * IDs renumber on every mutation (gotcha #6): actions return the
+   * post-normalization id and the workspace re-selects from that return
+   * value; consumers must treat an id that is no longer drawn as null.
+   */
+  readonly selectedBentoCompartmentId: number | null;
 }
 
 /** In-flight divider tilt used only for live preview (see `dividerTiltPreview`). */

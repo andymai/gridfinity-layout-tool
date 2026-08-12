@@ -244,6 +244,79 @@ export function validateCompartments(compartments: unknown): string | null {
       seenPairs.add(key);
     }
   }
+  // Optional drawn-unit-cell markers (Bento workspace). Each entry must be a
+  // compartment ID that exists in cells AND occupies exactly one cell — a
+  // marker on a multi-cell compartment is redundant client-side and a marker
+  // on an unknown ID would resurface on a later split. Bounded by the cell
+  // count and deduplicated so a crafted payload can't inflate the array.
+  if (compartments.drawnUnitCells !== undefined) {
+    if (!Array.isArray(compartments.drawnUnitCells)) {
+      return 'compartments.drawnUnitCells must be an array';
+    }
+    if (compartments.drawnUnitCells.length > expectedLength) {
+      return `compartments.drawnUnitCells length must not exceed cols × rows (${expectedLength})`;
+    }
+    const cellCounts = new Map<number, number>();
+    for (const cell of compartments.cells as unknown[]) {
+      if (typeof cell === 'number') cellCounts.set(cell, (cellCounts.get(cell) ?? 0) + 1);
+    }
+    const seenMarks = new Set<number>();
+    for (let i = 0; i < compartments.drawnUnitCells.length; i++) {
+      const id = compartments.drawnUnitCells[i] as unknown;
+      if (typeof id !== 'number' || !Number.isInteger(id) || id < 0) {
+        return `compartments.drawnUnitCells[${i}] must be a non-negative integer`;
+      }
+      if (cellCounts.get(id) !== 1) {
+        return `compartments.drawnUnitCells[${i}] must reference a 1×1 compartment`;
+      }
+      if (seenMarks.has(id)) {
+        return `compartments.drawnUnitCells has duplicate ID ${id}`;
+      }
+      seenMarks.add(id);
+    }
+  }
+  // Optional off-grid stash (Bento workspace). Entries are free-floating
+  // footprints with an optional label. MAX_STASH_ENTRIES is the server half
+  // of the cap contract — the client refuses to stash past it, so an honest
+  // payload is never rejected here (gotcha 13b). The label field name must
+  // stay `label`: `collectDesignText` moderates object properties by their
+  // own key and 'label' is already in TEXT_BEARING_KEYS (gotcha 13c).
+  if (compartments.stash !== undefined) {
+    if (!Array.isArray(compartments.stash)) {
+      return 'compartments.stash must be an array';
+    }
+    if (compartments.stash.length > CONSTRAINTS.MAX_STASH_ENTRIES) {
+      return `compartments.stash must not exceed ${CONSTRAINTS.MAX_STASH_ENTRIES} entries`;
+    }
+    for (let i = 0; i < compartments.stash.length; i++) {
+      const entry = compartments.stash[i] as Record<string, unknown>;
+      if (!isObject(entry)) {
+        return `compartments.stash[${i}] must be an object`;
+      }
+      if (
+        !isNumber(entry.w) ||
+        !Number.isInteger(entry.w) ||
+        !inRange(entry.w, 1, CONSTRAINTS.MAX_COMPARTMENT_GRID)
+      ) {
+        return `compartments.stash[${i}].w must be integer 1-${CONSTRAINTS.MAX_COMPARTMENT_GRID}`;
+      }
+      if (
+        !isNumber(entry.h) ||
+        !Number.isInteger(entry.h) ||
+        !inRange(entry.h, 1, CONSTRAINTS.MAX_COMPARTMENT_GRID)
+      ) {
+        return `compartments.stash[${i}].h must be integer 1-${CONSTRAINTS.MAX_COMPARTMENT_GRID}`;
+      }
+      if (entry.label !== undefined) {
+        if (typeof entry.label !== 'string') {
+          return `compartments.stash[${i}].label must be a string`;
+        }
+        if (entry.label.length > 50) {
+          return `compartments.stash[${i}].label must not exceed 50 characters`;
+        }
+      }
+    }
+  }
   return null;
 }
 

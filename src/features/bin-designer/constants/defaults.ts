@@ -283,6 +283,7 @@ export const DEFAULT_UI_STATE: DesignerUIState = {
   hoveredCompartmentId: null,
   compartmentLabelMode: false,
   labelFocusCompartmentId: null,
+  selectedBentoCompartmentId: null,
 };
 
 /** Default empty history */

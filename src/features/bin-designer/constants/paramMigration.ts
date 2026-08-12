@@ -9,6 +9,8 @@
 
 import type {
   BinParams,
+  CompartmentConfig,
+  StashedCompartment,
   CutoutConfig,
   DividerPieceConfig,
   HandleConfig,
@@ -745,6 +747,58 @@ function migrateSurfaceText(raw: unknown): SurfaceTextConfig | undefined {
 }
 
 /**
+ * Sanitize the Bento workspace fields on load, mirroring the server bounds:
+ * stash entries need integer cell footprints within the grid ceiling and a
+ * clamped label; `drawnUnitCells` may only mark IDs that are 1×1 in `cells`.
+ * Both collapse to absent when empty — an always-present default would shift
+ * `communityParamsFingerprint` for every existing design (see `base.tile`).
+ */
+function migrateBentoCompartmentFields(config: CompartmentConfig): CompartmentConfig {
+  const { stash, drawnUnitCells, ...rest } = config;
+
+  // Persisted payloads are untrusted — validate as unknown despite the type.
+  const rawStash: readonly unknown[] = Array.isArray(stash) ? stash : [];
+  const cleanStash = rawStash
+    .filter((entry): entry is StashedCompartment => {
+      if (typeof entry !== 'object' || entry === null) return false;
+      const e = entry as Record<string, unknown>;
+      return (
+        typeof e.w === 'number' &&
+        Number.isInteger(e.w) &&
+        typeof e.h === 'number' &&
+        Number.isInteger(e.h) &&
+        e.w >= 1 &&
+        e.h >= 1 &&
+        e.w <= DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID &&
+        e.h <= DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID
+      );
+    })
+    .slice(0, DESIGNER_CONSTRAINTS.MAX_STASH_ENTRIES)
+    .map(({ w, h, label }) => {
+      const clamped = typeof label === 'string' ? label.slice(0, TEXT_MAX_LENGTH) : '';
+      return { w, h, ...(clamped.length > 0 ? { label: clamped } : {}) };
+    });
+
+  const counts = new Map<number, number>();
+  for (const id of config.cells) {
+    counts.set(id, (counts.get(id) ?? 0) + 1);
+  }
+  const cleanDrawn = [
+    ...new Set(
+      (Array.isArray(drawnUnitCells) ? drawnUnitCells : []).filter(
+        (id): id is number => Number.isInteger(id) && counts.get(id) === 1
+      )
+    ),
+  ].sort((a, b) => a - b);
+
+  return {
+    ...rest,
+    ...(cleanStash.length > 0 ? { stash: cleanStash } : {}),
+    ...(cleanDrawn.length > 0 ? { drawnUnitCells: cleanDrawn } : {}),
+  };
+}
+
+/**
  * Merged a level deeper than the rest of `base` because `clickRails` and
  * `retentionMagnet` are objects: a top-level spread alone would let a payload
  * carrying only `{ clickRails: { front: true } }` drop the other three sides.
@@ -785,7 +839,10 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
   // Migrate old DividerConfig to CompartmentConfig
   let compartmentsConfig = DEFAULT_BIN_PARAMS.compartments;
   if (params.compartments !== undefined) {
-    compartmentsConfig = { ...DEFAULT_BIN_PARAMS.compartments, ...params.compartments };
+    compartmentsConfig = migrateBentoCompartmentFields({
+      ...DEFAULT_BIN_PARAMS.compartments,
+      ...params.compartments,
+    });
   } else if (params.dividers !== undefined) {
     // Legacy format: DividerConfig → CompartmentConfig
     const { x, y, thickness } = params.dividers;

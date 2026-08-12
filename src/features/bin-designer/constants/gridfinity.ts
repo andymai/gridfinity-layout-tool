@@ -50,6 +50,12 @@ export const DESIGNER_CONSTRAINTS = {
   // timeout. 16×16 hits ~39s and risks timeout failures, so 12 is the safe
   // ceiling without also raising `BASE_TIMEOUT_MS`.
   MAX_COMPARTMENT_GRID: 12,
+  // Bento stash cap. Server mirror rejects over this (CONSTRAINTS.MAX_STASH_ENTRIES
+  // in api/lib/designerValidationConstants.ts); client actions refuse past it so
+  // honest payloads are never silently dropped. Each entry can carry a label,
+  // so the cap also keeps stash text well under the moderation traversal's
+  // MAX_TEXT_FIELDS budget.
+  MAX_STASH_ENTRIES: 36,
   MIN_COMPARTMENT_THICKNESS: 0.4, // mm divider wall thickness
   MAX_COMPARTMENT_THICKNESS: 2.4, // mm divider wall thickness
   COMPARTMENT_THICKNESS_STEP: 0.1, // mm (legacy — use WALL_THICKNESS_OPTIONS)

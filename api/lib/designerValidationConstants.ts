@@ -28,6 +28,9 @@ export const CONSTRAINTS = {
   MAX_COMPARTMENT_GRID: 12,
   MIN_COMPARTMENT_THICKNESS: 0.4,
   MAX_COMPARTMENT_THICKNESS: 2.4,
+  // Bento stash cap; mirrors DESIGNER_CONSTRAINTS.MAX_STASH_ENTRIES in
+  // src/features/bin-designer/constants/gridfinity.ts (client refuses past it).
+  MAX_STASH_ENTRIES: 36,
   MIN_LABEL_TAB_DEPTH: 8,
   // Raised from 20 → 50 in #1898 to enable tuck-under ledges for wire bins.
   MAX_LABEL_TAB_DEPTH: 50,

@@ -869,6 +869,9 @@ export function mergeCells(
     ...(config.dividerOverrides && {
       dividerOverrides: remapDividerOverrides(config.dividerOverrides, remap),
     }),
+    ...(config.drawnUnitCells && {
+      drawnUnitCells: remapDrawnUnitCells(config.drawnUnitCells, remap, normalized),
+    }),
   };
 }
 
@@ -910,6 +913,9 @@ export function splitCompartment(
     }),
     ...(config.dividerOverrides && {
       dividerOverrides: remapDividerOverrides(config.dividerOverrides, remap),
+    }),
+    ...(config.drawnUnitCells && {
+      drawnUnitCells: remapDrawnUnitCells(config.drawnUnitCells, remap, normalized),
     }),
   };
 }
@@ -1110,6 +1116,37 @@ export function carryCompartmentTextsByPosition(
     }
   }
   return { texts, droppedCount };
+}
+
+/**
+ * Reindex the drawn-unit-cell markers through an `oldId → newId` remap,
+ * mirroring `remapCompartmentTexts`. An ID that disappeared drops its marker;
+ * an ID whose compartment is no longer 1×1 in `newCells` drops it too (a
+ * multi-cell compartment is intrinsically drawn, so keeping the marker would
+ * only leave a stale entry to resurface on a later split). Returns
+ * `undefined` when nothing survives — the compact-storage convention every
+ * optional compartment field follows.
+ */
+export function remapDrawnUnitCells(
+  oldIds: readonly number[] | undefined,
+  remap: ReadonlyMap<number, number>,
+  newCells: readonly number[]
+): number[] | undefined {
+  if (!oldIds || oldIds.length === 0) return undefined;
+  const counts = new Map<number, number>();
+  for (const id of newCells) {
+    counts.set(id, (counts.get(id) ?? 0) + 1);
+  }
+  const out: number[] = [];
+  const seen = new Set<number>();
+  for (const oldId of oldIds) {
+    const newId = remap.get(oldId);
+    if (newId === undefined || seen.has(newId)) continue;
+    if (counts.get(newId) !== 1) continue;
+    seen.add(newId);
+    out.push(newId);
+  }
+  return out.length > 0 ? out.sort((a, b) => a - b) : undefined;
 }
 
 /**

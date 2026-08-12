@@ -149,21 +149,6 @@ describe('CompartmentGridView', () => {
     expect(screen.queryByTestId('divider-hit-targets')).not.toBeInTheDocument();
   });
 
-  it('shows divider handles when dragging is offered, even with the opt-in off', () => {
-    const dividers = [{ compartmentA: 0, compartmentB: 1 }] as never;
-
-    // The sidebar hides these behind angledDividersEnabled (#2044), but in the
-    // Bento workspace moving walls is the mode, so hiding them hides the feature.
-    render(
-      <CompartmentGridView
-        grid={makeGrid({ angledDividersEnabled: false, eligibleDividers: dividers })}
-        dividerDrag={{ onDragStart: vi.fn(), draggingKey: null }}
-      />
-    );
-
-    expect(screen.getByTestId('divider-hit-targets')).toBeInTheDocument();
-  });
-
   it('keeps divider handles hidden without dragging when the opt-in is off', () => {
     const dividers = [{ compartmentA: 0, compartmentB: 1 }] as never;
 

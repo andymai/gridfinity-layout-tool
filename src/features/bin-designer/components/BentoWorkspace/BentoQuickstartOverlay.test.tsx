@@ -5,12 +5,12 @@ import { BentoQuickstartOverlay } from './BentoQuickstartOverlay';
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 describe('BentoQuickstartOverlay', () => {
-  it('names the three things the grid cannot show on its own', () => {
+  it('names the three things the empty grid cannot show on its own', () => {
     render(<BentoQuickstartOverlay onDismiss={vi.fn()} />);
 
-    expect(screen.getByText('binDesigner.bento.quickstart.merge')).toBeInTheDocument();
-    expect(screen.getByText('binDesigner.bento.quickstart.dragWalls')).toBeInTheDocument();
-    expect(screen.getByText('binDesigner.bento.quickstart.freeDrag')).toBeInTheDocument();
+    expect(screen.getByText('binDesigner.bento.quickstart.draw')).toBeInTheDocument();
+    expect(screen.getByText('binDesigner.bento.quickstart.moveResize')).toBeInTheDocument();
+    expect(screen.getByText('binDesigner.bento.quickstart.stash')).toBeInTheDocument();
   });
 
   it('dismisses on the button', () => {

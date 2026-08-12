@@ -1,0 +1,76 @@
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { createRef } from 'react';
+import { BentoStashShelf, type BentoStashShelfProps } from './BentoStashShelf';
+
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
+
+function makeProps(overrides: Partial<BentoStashShelfProps> = {}): BentoStashShelfProps {
+  return {
+    stash: [],
+    shelfRef: createRef<HTMLDivElement>(),
+    dropActive: false,
+    draggingIndex: null,
+    onEntryPointerDown: vi.fn(),
+    onRemoveEntry: vi.fn(),
+    ...overrides,
+  };
+}
+
+describe('BentoStashShelf', () => {
+  it('shows the empty hint when nothing is stashed', () => {
+    render(<BentoStashShelf {...makeProps()} />);
+
+    expect(screen.getByText('binDesigner.bento.stashEmptyHint')).toBeInTheDocument();
+  });
+
+  it('swaps to the drop hint while a compartment hovers the shelf', () => {
+    render(<BentoStashShelf {...makeProps({ dropActive: true })} />);
+
+    expect(screen.getByText('binDesigner.bento.stashDropHint')).toBeInTheDocument();
+  });
+
+  it('renders one tile per entry with its label', () => {
+    render(
+      <BentoStashShelf
+        {...makeProps({
+          stash: [
+            { w: 2, h: 1, label: 'screws' },
+            { w: 1, h: 1 },
+          ],
+        })}
+      />
+    );
+
+    expect(screen.getByTestId('bento-stash-entry-0')).toBeInTheDocument();
+    expect(screen.getByText('screws')).toBeInTheDocument();
+    // Unlabeled entries fall back to their footprint.
+    expect(screen.getByText('1×1')).toBeInTheDocument();
+  });
+
+  it('starts a drag from a tile', () => {
+    const onEntryPointerDown = vi.fn();
+    render(<BentoStashShelf {...makeProps({ stash: [{ w: 2, h: 2 }], onEntryPointerDown })} />);
+
+    fireEvent.pointerDown(screen.getByRole('button', { name: /stashEntryLabel/ }));
+
+    expect(onEntryPointerDown).toHaveBeenCalledWith(0, expect.anything());
+  });
+
+  it('removes an entry from its delete button', () => {
+    const onRemoveEntry = vi.fn();
+    render(<BentoStashShelf {...makeProps({ stash: [{ w: 1, h: 2 }], onRemoveEntry })} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'binDesigner.bento.stashRemove' }));
+
+    expect(onRemoveEntry).toHaveBeenCalledWith(0);
+  });
+
+  it('renders the dragged-out tile as a placeholder without a delete button', () => {
+    render(<BentoStashShelf {...makeProps({ stash: [{ w: 1, h: 1 }], draggingIndex: 0 })} />);
+
+    expect(
+      screen.queryByRole('button', { name: 'binDesigner.bento.stashRemove' })
+    ).not.toBeInTheDocument();
+  });
+});

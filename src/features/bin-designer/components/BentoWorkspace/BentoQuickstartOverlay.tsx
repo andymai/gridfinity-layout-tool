@@ -1,9 +1,10 @@
 /**
  * Quick-start card for the Bento workspace, shown on first open.
  *
- * The three things that are not guessable from looking at the grid: that
- * dragging across cells merges them, that the walls themselves are draggable,
- * and that Alt frees a wall from the half-millimetre snap.
+ * The three things that are not guessable from looking at the empty grid:
+ * that dragging draws a compartment, that compartments then move and resize
+ * like layout bins (Alt-drag duplicates), and that the shelf at the bottom
+ * is a stash compartments can be dropped on and pulled back from.
  */
 
 import { useEffect, useRef } from 'react';
@@ -48,9 +49,9 @@ export function BentoQuickstartOverlay({ onDismiss }: BentoQuickstartOverlayProp
         {/* role="list" restores list semantics that Safari/iOS VoiceOver strips when list-style:none is applied. */}
         {/* eslint-disable-next-line jsx-a11y/no-redundant-roles */}
         <ul className="list-none space-y-2" role="list">
-          <QuickstartRow text={t('binDesigner.bento.quickstart.merge')} />
-          <QuickstartRow text={t('binDesigner.bento.quickstart.dragWalls')} />
-          <QuickstartRow text={t('binDesigner.bento.quickstart.freeDrag')} />
+          <QuickstartRow text={t('binDesigner.bento.quickstart.draw')} />
+          <QuickstartRow text={t('binDesigner.bento.quickstart.moveResize')} />
+          <QuickstartRow text={t('binDesigner.bento.quickstart.stash')} />
         </ul>
 
         <Button ref={dismissRef} variant="primary" size="sm" className="w-full" onClick={onDismiss}>

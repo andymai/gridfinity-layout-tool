@@ -75,6 +75,24 @@ export interface CompartmentConfig {
    */
   readonly dividerOverrides?: DividerOverride[];
   /**
+   * IDs of 1×1 compartments the user explicitly drew in the Bento workspace.
+   * A multi-cell compartment is intrinsically "drawn"; a unit cell is
+   * indistinguishable from background grid without this marker. Indexed by
+   * compartment ID after `normalizeIds`, so it must be reindexed via
+   * `remapDrawnUnitCells` in lockstep with `cells` — same rule as
+   * `compartmentTexts`. Absent when empty: an always-present default would
+   * shift every existing design's `communityParamsFingerprint`.
+   */
+  readonly drawnUnitCells?: number[];
+  /**
+   * Off-grid stash of compartments, mirroring the layout planner's
+   * `__staging__` shelf. Entries are free-floating (not ID-keyed, so they
+   * escape the `normalizeIds` remap) and carry only their footprint and
+   * label. Bounded by `MAX_STASH_ENTRIES` client- and server-side. Absent
+   * when empty (fingerprint rule above).
+   */
+  readonly stash?: StashedCompartment[];
+  /**
    * Optional global height (mm) for the interior divider walls. `'auto'` or
    * omitted means full interior height (below the lip taper) — the historical
    * behavior. A numeric value produces partial-height dividers that rise from
@@ -89,6 +107,32 @@ export interface CompartmentConfig {
    * treated as full and keeps the cut-path.
    */
   readonly dividerHeight?: number | 'auto';
+}
+
+/**
+ * Axis-aligned footprint in grid cells for the Bento draw model.
+ * Row 0 = front of the bin (bottom of the UI).
+ */
+export interface CellRect {
+  readonly col: number;
+  readonly row: number;
+  readonly w: number;
+  readonly h: number;
+}
+
+/**
+ * One stashed compartment: a footprint waiting off-grid to be placed.
+ * `label` must keep this exact field name — `collectDesignText` moderates
+ * object properties by their own key, and `'label'` is already in
+ * `TEXT_BEARING_KEYS`; renaming it would ship an unmoderated public surface.
+ */
+export interface StashedCompartment {
+  /** Width in grid cells (1..MAX_COMPARTMENT_GRID). */
+  readonly w: number;
+  /** Depth in grid cells (1..MAX_COMPARTMENT_GRID). */
+  readonly h: number;
+  /** Engraved label carried with the compartment; empty/missing = none. */
+  readonly label?: string;
 }
 
 /**

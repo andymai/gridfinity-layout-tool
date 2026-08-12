@@ -438,6 +438,26 @@ describe('filterSharedDesignsContent', () => {
       expect(result.passed).toBe(false);
     });
 
+    // The stash entry's text field is deliberately named `label` so the
+    // object-property branch of collectDesignText picks it up via the
+    // existing TEXT_BEARING_KEYS entry. Renaming the field would ship an
+    // unmoderated public surface — this test is the tripwire.
+    it('blocks an offensive bento stash label', () => {
+      const result = filterSharedDesignsContent([
+        design({ params: { compartments: { stash: [{ w: 2, h: 1, label: 'kys' }] } } }),
+      ]);
+
+      expect(result.passed).toBe(false);
+    });
+
+    it('passes a clean bento stash label', () => {
+      const result = filterSharedDesignsContent([
+        design({ params: { compartments: { stash: [{ w: 2, h: 1, label: 'M3 screws' }] } } }),
+      ]);
+
+      expect(result.passed).toBe(true);
+    });
+
     it('still passes the same fields with clean text', () => {
       const result = filterSharedDesignsContent([
         design({
