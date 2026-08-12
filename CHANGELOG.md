@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.404.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.404.0...gridfinity-layout-tool-v4.404.1) (2026-08-12)
+
+
+### Bug Fixes
+
+* **baseplate:** take the half unit that fits when typing plate dimensions ([#3464](https://github.com/andymai/gridfinity-layout-tool/issues/3464)) ([a3a15b4](https://github.com/andymai/gridfinity-layout-tool/commit/a3a15b4ea5e39701d6398123bb692af99a679740))
+
 ## [4.404.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.403.0...gridfinity-layout-tool-v4.404.0) (2026-08-12)
 
 
