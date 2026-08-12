@@ -57,6 +57,7 @@ export interface BentoCanvasProps {
 }
 
 const HANDLE_PX = 9;
+const HANDLE_HIT_PX = 20;
 const HANDLE_CURSORS: Record<ResizeHandleId, string> = {
   n: 'ns-resize',
   s: 'ns-resize',
@@ -102,12 +103,18 @@ export function BentoCanvas({
     h: rect.h * cellPxH,
   });
 
+  // Ordinals count DRAWN compartments only. Numbering every background
+  // pocket produced labels like "Compartment 6" for the third thing the user
+  // drew, and the numbers reshuffled whenever a pocket's reading-order slot
+  // moved.
   const displayNumberOf = useMemo(() => {
-    const order = getCompartmentReadingOrder(config);
     const map = new Map<number, number>();
-    order.forEach((id, i) => map.set(id, i + 1));
+    let ordinal = 0;
+    for (const id of getCompartmentReadingOrder(config)) {
+      if (drawnIds.has(id)) map.set(id, ++ordinal);
+    }
     return map;
-  }, [config]);
+  }, [config, drawnIds]);
 
   const drawnRects = useMemo(
     () =>
@@ -203,41 +210,28 @@ export function BentoCanvas({
         strokeWidth={1.5}
       />
 
-      {/* Background lattice: the undrawn 1×1 pockets */}
-      {Array.from({ length: cols - 1 }, (_, i) => (
-        <line
-          key={`v${i}`}
-          x1={originX + (i + 1) * cellPxW}
-          y1={originY}
-          x2={originX + (i + 1) * cellPxW}
-          y2={originY + screenH}
-          className="stroke-stroke-subtle"
-          strokeWidth={1}
-          strokeDasharray="2 4"
-        />
-      ))}
-      {Array.from({ length: rows - 1 }, (_, i) => (
-        <line
-          key={`h${i}`}
-          x1={originX}
-          y1={originY + (i + 1) * cellPxH}
-          x2={originX + screenW}
-          y2={originY + (i + 1) * cellPxH}
-          className="stroke-stroke-subtle"
-          strokeWidth={1}
-          strokeDasharray="2 4"
-        />
-      ))}
-      {Array.from({ length: rows - 1 }, (_, r) =>
-        Array.from({ length: cols - 1 }, (_, c) => (
-          <circle
-            key={`d${r}-${c}`}
-            cx={originX + (c + 1) * cellPxW}
-            cy={originY + (r + 1) * cellPxH}
-            r={1.75}
-            className="fill-content-tertiary/40"
-          />
-        ))
+      {/* Background cells drawn as what they ARE — 1×1 pockets. A dashed
+          lattice read as "empty space", which contradicted the 3D preview
+          showing a fully walled bin (the footer note alone wasn't enough). */}
+      {Array.from({ length: rows }, (_, r) =>
+        Array.from({ length: cols }, (_, c) => {
+          const id = config.cells[r * cols + c];
+          if (drawnIds.has(id)) return null;
+          const inset = Math.min(2, cellPxW / 8, cellPxH / 8);
+          return (
+            <rect
+              key={`p${r}-${c}`}
+              x={originX + c * cellPxW + inset}
+              y={originY + screenH - (r + 1) * cellPxH + inset}
+              width={Math.max(0, cellPxW - 2 * inset)}
+              height={Math.max(0, cellPxH - 2 * inset)}
+              rx={3}
+              className="fill-surface stroke-stroke-subtle"
+              strokeWidth={0.75}
+              data-testid="bento-pocket"
+            />
+          );
+        })
       )}
 
       {/* Drawn compartments */}
@@ -332,24 +326,33 @@ export function BentoCanvas({
         />
       )}
 
-      {/* Resize handles on the selection, idle only */}
+      {/* Resize handles on the selection, idle only. Each visible square gets
+          an invisible twin at HANDLE_HIT_PX so the grab target isn't 9px. */}
       {selectedRect && selectedId !== null && !ghost && (
         <g data-testid="bento-resize-handles">
           {handlesFor(selectedRect).map(({ handle, hx, hy }) => (
-            <rect
-              key={handle}
-              x={hx - HANDLE_PX / 2}
-              y={hy - HANDLE_PX / 2}
-              width={HANDLE_PX}
-              height={HANDLE_PX}
-              rx={2}
-              className="fill-accent stroke-surface"
-              strokeWidth={1.5}
-              style={{ cursor: HANDLE_CURSORS[handle] }}
-              role="button"
-              aria-label={t('binDesigner.bento.resizeHandle', { handle })}
-              onPointerDown={(e) => onResizeHandlePointerDown(selectedId, handle, e)}
-            />
+            <g key={handle}>
+              <rect
+                x={hx - HANDLE_PX / 2}
+                y={hy - HANDLE_PX / 2}
+                width={HANDLE_PX}
+                height={HANDLE_PX}
+                rx={2}
+                className="pointer-events-none fill-accent stroke-surface"
+                strokeWidth={1.5}
+              />
+              <rect
+                x={hx - HANDLE_HIT_PX / 2}
+                y={hy - HANDLE_HIT_PX / 2}
+                width={HANDLE_HIT_PX}
+                height={HANDLE_HIT_PX}
+                fill="transparent"
+                style={{ cursor: HANDLE_CURSORS[handle] }}
+                role="button"
+                aria-label={t('binDesigner.bento.resizeHandle', { handle })}
+                onPointerDown={(e) => onResizeHandlePointerDown(selectedId, handle, e)}
+              />
+            </g>
           ))}
         </g>
       )}

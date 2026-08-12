@@ -12,7 +12,7 @@ import { useTranslation } from '@/i18n';
 import { Button } from '@/design-system';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { getCompartmentCount } from '@/features/bin-designer/utils/compartments';
+import { getDrawnCompartmentIds } from '@/features/bin-designer/utils/bentoDraw';
 import { CompartmentEditor } from '../../CompartmentEditor';
 import { SlotConfigurator } from '../../SlotConfigurator/SlotConfigurator';
 import { WorkspaceLaunchButton } from './WorkspaceLaunchButton';
@@ -68,6 +68,9 @@ function BentoModeContent() {
   const depth = useDesignerStore((s) => s.params.depth);
   const { isDesktop } = useResponsive();
   const t = useTranslation();
+  // Drawn compartments only — counting background pockets said "36
+  // compartments" about an untouched bin.
+  const drawnCount = getDrawnCompartmentIds(compartments).size;
 
   // The workspace needs room the panel does not have, so off desktop the card
   // expands to the same compartment editor Grid Dividers uses. A launcher that
@@ -85,11 +88,16 @@ function BentoModeContent() {
         onClick={() => setBentoWorkspaceOpen(true)}
       />
       <p className="px-1 text-[10px] text-content-tertiary">
-        {t('binDesigner.bento.summary', {
-          cols: compartments.cols,
-          rows: compartments.rows,
-          count: getCompartmentCount(compartments),
-        })}
+        {drawnCount === 1
+          ? t('binDesigner.bento.summary.one', {
+              cols: compartments.cols,
+              rows: compartments.rows,
+            })
+          : t('binDesigner.bento.summary.other', {
+              cols: compartments.cols,
+              rows: compartments.rows,
+              count: drawnCount,
+            })}
       </p>
     </div>
   );

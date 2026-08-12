@@ -39,8 +39,14 @@ export interface BentoDockProps {
   readonly interiorD: number;
   readonly selectedId: number | null;
   readonly onSelect: (id: number | null) => void;
-  /** Bumped when the canvas requests a label edit (double-click). */
-  readonly labelFocusToken: number;
+  /**
+   * Set (and bumped) only when the canvas explicitly requests a label edit
+   * for the CURRENT selection (double-click / context menu). Must stay
+   * undefined otherwise: CompartmentTextInput focuses whenever the token is
+   * defined at mount, and an always-defined token steals keyboard focus on
+   * every selection — killing arrow-nudge and Delete on the canvas.
+   */
+  readonly labelFocusToken?: number;
   readonly onCommitLabel: (id: number, value: string) => void;
   readonly onDuplicate: (id: number) => void;
   readonly onStash: (id: number) => void;
@@ -85,13 +91,14 @@ export function BentoDock({
   const cellWmm = interiorW / config.cols;
   const cellHmm = interiorD / config.rows;
 
+  // Ordinals count drawn compartments only — background pockets are not part
+  // of this surface's vocabulary (mirrors BentoCanvas.displayNumberOf).
   const rows = useMemo(() => {
-    const order = getCompartmentReadingOrder(config);
-    return order
+    return getCompartmentReadingOrder(config)
       .filter((id) => drawnIds.has(id))
-      .map((id, _i) => ({
+      .map((id, index) => ({
         id,
-        number: order.indexOf(id) + 1,
+        number: index + 1,
         label: config.compartmentTexts?.[id] ?? '',
         rect: getCompartmentRect(config, id),
       }))
@@ -100,14 +107,21 @@ export function BentoDock({
 
   const selectedRow = selectedId !== null ? rows.find((r) => r.id === selectedId) : undefined;
 
+  // Only walls between two DRAWN compartments: a wall against background
+  // pockets is one visual edge split across several pocket-pair segments, and
+  // tilting one segment makes a jagged wall nobody asked for. (The sidebar
+  // Angled Dividers panel still lists every pair for power users.)
   const selectedWalls = useMemo(
     () =>
       selectedId === null
         ? []
         : tilt.rows.filter(
-            (row) => row.compartmentA === selectedId || row.compartmentB === selectedId
+            (row) =>
+              (row.compartmentA === selectedId || row.compartmentB === selectedId) &&
+              drawnIds.has(row.compartmentA) &&
+              drawnIds.has(row.compartmentB)
           ),
-    [tilt.rows, selectedId]
+    [tilt.rows, selectedId, drawnIds]
   );
 
   const toggleCollapsed = useCallback(() => {
@@ -342,15 +356,24 @@ export function BentoDock({
             </Button>
 
             {/* Wall shift/angle — the canvas shows the result, this edits it */}
-            {selectedWalls.length > 0 && (
-              <div className="flex flex-col gap-3">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-content-tertiary">
-                  {t('binDesigner.bento.wallsTitle')}
-                </span>
-                {selectedWalls.map((wall) => {
+            <div className="flex flex-col gap-3">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-content-tertiary">
+                {t('binDesigner.bento.wallsTitle')}
+              </span>
+              {selectedWalls.length === 0 ? (
+                <p className="text-[10px] leading-relaxed text-content-tertiary">
+                  {t('binDesigner.bento.wallsEmptyHint')}
+                </p>
+              ) : (
+                selectedWalls.map((wall) => {
                   const other =
                     wall.compartmentA === selectedRow.id ? wall.compartmentB : wall.compartmentA;
-                  const otherNumber = getCompartmentReadingOrder(config).indexOf(other) + 1;
+                  const otherRow = rows.find((r) => r.id === other);
+                  const otherName =
+                    otherRow?.label ||
+                    t('binDesigner.bento.compartmentFallbackName', {
+                      number: otherRow?.number ?? 0,
+                    });
                   return (
                     <div key={wall.key} className="flex flex-col gap-1.5">
                       <div className="flex items-center justify-between">
@@ -359,7 +382,7 @@ export function BentoDock({
                             wall.axis === 'vertical'
                               ? 'binDesigner.bento.wallWithVertical'
                               : 'binDesigner.bento.wallWithHorizontal',
-                            { number: otherNumber }
+                            { name: otherName }
                           )}
                         </span>
                         {wall.hasTilt && (
@@ -430,9 +453,9 @@ export function BentoDock({
                       )}
                     </div>
                   );
-                })}
-              </div>
-            )}
+                })
+              )}
+            </div>
           </div>
         )}
       </div>

@@ -27,12 +27,14 @@ export function BentoMiniPreview({ compartments, aspectRatio }: BentoMiniPreview
   const cellW = VIEW_W / cols;
   const cellH = viewH / rows;
 
-  const drawnRects = useMemo(() => {
-    const drawn = getDrawnCompartmentIds(compartments);
-    return [...drawn]
-      .map((id) => getCompartmentRect(compartments, id))
-      .filter((rect): rect is CellRect => rect !== null);
-  }, [compartments]);
+  const drawn = useMemo(() => getDrawnCompartmentIds(compartments), [compartments]);
+  const drawnRects = useMemo(
+    () =>
+      [...drawn]
+        .map((id) => getCompartmentRect(compartments, id))
+        .filter((rect): rect is CellRect => rect !== null),
+    [compartments, drawn]
+  );
 
   return (
     <svg
@@ -41,30 +43,25 @@ export function BentoMiniPreview({ compartments, aspectRatio }: BentoMiniPreview
       aria-hidden
       data-testid="bento-mini-preview"
     >
-      {Array.from({ length: cols - 1 }, (_, i) => (
-        <line
-          key={`v${i}`}
-          x1={(i + 1) * cellW}
-          y1={0}
-          x2={(i + 1) * cellW}
-          y2={viewH}
-          className="stroke-stroke-subtle"
-          strokeWidth={0.75}
-          strokeDasharray="1.5 3"
-        />
-      ))}
-      {Array.from({ length: rows - 1 }, (_, i) => (
-        <line
-          key={`h${i}`}
-          x1={0}
-          y1={(i + 1) * cellH}
-          x2={VIEW_W}
-          y2={(i + 1) * cellH}
-          className="stroke-stroke-subtle"
-          strokeWidth={0.75}
-          strokeDasharray="1.5 3"
-        />
-      ))}
+      {/* Background pockets, same visual language as the workspace canvas */}
+      {Array.from({ length: rows }, (_, r) =>
+        Array.from({ length: cols }, (_, c) => {
+          const id = compartments.cells[r * cols + c];
+          if (drawn.has(id)) return null;
+          return (
+            <rect
+              key={`p${r}-${c}`}
+              x={c * cellW + 0.75}
+              y={viewH - (r + 1) * cellH + 0.75}
+              width={Math.max(0, cellW - 1.5)}
+              height={Math.max(0, cellH - 1.5)}
+              rx={1}
+              className="fill-surface stroke-stroke-subtle"
+              strokeWidth={0.5}
+            />
+          );
+        })
+      )}
       {drawnRects.map((rect, i) => (
         <rect
           key={i}

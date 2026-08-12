@@ -108,7 +108,9 @@ describe('InteriorModeCard', () => {
     const onSelect = vi.fn();
     render(<InteriorModeCard card="bento" isExpanded={true} onSelect={onSelect} />);
 
-    expect(screen.getByText('binDesigner.bento.summary')).toBeInTheDocument();
+    // The mocked grid has exactly one merged (drawn) compartment — the
+    // summary counts drawn compartments, not background pockets.
+    expect(screen.getByText('binDesigner.bento.summary.one')).toBeInTheDocument();
   });
 
   it('applies expanded styles to card wrapper when isExpanded is true', () => {
