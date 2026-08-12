@@ -240,6 +240,10 @@ function hasEffectivePerimeterMemoized(
  */
 export function selectGenerationTriggers(state: LayoutStoreState) {
   const bp = state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+  // Stacking strips screws in buildFullParams (a flipped tile would put the
+  // head recess on the underside), so their fields cannot change the mesh
+  // while it is on.
+  const screwsOn = bp.stackPrint?.enabled !== true && bp.screwHoles?.enabled === true;
   return {
     drawerWidth: state.layout.drawer.width,
     drawerDepth: state.layout.drawer.depth,
@@ -304,6 +308,25 @@ export function selectGenerationTriggers(state: LayoutStoreState) {
     // regeneration while dragging the (hidden) slider.
     solidFloor: bp.solidFloor ?? false,
     solidFloorThickness: bp.solidFloor === true ? bp.solidFloorThickness : undefined,
+    // Mount-down screws (#3425) decide which cells keep a floor, grow the slab
+    // by the pad, and cut the hole/recess geometry — every field must
+    // re-trigger BREP. The geometry fields fold out while screws are off (or
+    // stripped by stacking) so edits that cannot change the mesh don't
+    // regenerate it; the counterbore depth additionally folds out under a
+    // countersink head, whose depth is derived from the cone angle instead.
+    screwHolesEnabled: screwsOn,
+    screwDiameter: screwsOn ? bp.screwHoles.diameter : undefined,
+    screwHeadStyle: screwsOn ? bp.screwHoles.headStyle : undefined,
+    screwHeadDiameter: screwsOn ? bp.screwHoles.headDiameter : undefined,
+    screwCounterboreDepth:
+      screwsOn && bp.screwHoles.headStyle === 'counterbore'
+        ? bp.screwHoles.counterboreDepth
+        : undefined,
+    screwsPerPiece: screwsOn ? bp.screwHoles.screwsPerPiece : undefined,
+    // Nothing in the UI writes `lightweight` today, but synced/imported params
+    // can carry it, and the lightweight floor cutter changes the whole
+    // underside. It only runs on magnet plates, so fold it out otherwise.
+    lightweight: bp.magnetHoles ? bp.lightweight !== false : true,
     paddingLeft: bp.paddingLeft,
     paddingRight: bp.paddingRight,
     paddingFront: bp.paddingFront,
@@ -318,6 +341,13 @@ export function selectGenerationTriggers(state: LayoutStoreState) {
       bp.connectorNubs === true &&
       isSeatedConnectorStyle(bp.connectorStyle) &&
       bp.connectorSlotsAllEdges === true,
+    // Fit offset biases every connector clearance (tongues/grooves, snap-clip
+    // levels, margin-rail seams), so it must re-trigger BREP — folded out when
+    // neither split connectors nor the margin seam can consume it.
+    connectorFitOffset:
+      bp.connectorNubs === true || (bp.detachMargins === true && bp.detachMarginConnector === true)
+        ? bp.connectorFitOffset
+        : undefined,
     syncWithLayout: bp.syncWithLayout,
     baseplateWidth: bp.baseplateWidth,
     baseplateDepth: bp.baseplateDepth,
