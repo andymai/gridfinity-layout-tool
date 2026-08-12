@@ -1,0 +1,28 @@
+src/features/bin-designer/components/BentoWorkspace/BentoWorkspaceHeader.tsx
+  s_c94e8f8a5726cc::t_e3a7a39a11c3b5 11
+src/features/bin-designer/components/BentoWorkspace/BentoCanvas.tsx
+  s_c94e8f8a5726cc::t_e3a7a39a11c3b5 25-26
+  s_c94e8f8a5726cc::t_d8233f32d664c6 27-29
+src/features/bin-designer/components/BentoWorkspace/BentoDock.tsx
+  s_c94e8f8a5726cc::t_e3a7a39a11c3b5 24-25
+src/features/bin-designer/components/BentoWorkspace/BentoWorkspace.tsx
+  s_c94e8f8a5726cc::t_e3a7a39a11c3b5 29-34,38-39
+src/features/bin-designer/components/BentoWorkspace/BentoStashShelf.tsx
+  s_c94e8f8a5726cc::t_153e8617f9508d 11-13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "9cf54f32c840d18c691f8406a915199511d3cd4e",
+  "prompts": {},
+  "sessions": {
+    "s_c94e8f8a5726cc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c1c066eb-d337-4a40-83e0-a202f5e610da",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
