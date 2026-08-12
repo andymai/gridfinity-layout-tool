@@ -38,6 +38,7 @@ Internal status enum values → UI badge labels: `experimental` → "Early acces
 | `item_kinds`            | `experimental`  | Non-bin items (tool racks) that sit on a baseplate                        |
 | `community_fits_gap`    | `experimental`  | Select a layout gap and browse community designs that fit it              |
 | `sliding_tray`          | `experimental`  | Rail-and-tray sliding insert in the bin designer's Walls section          |
+| `merge_bins_to_design`  | `experimental`  | Bento: merge selected layout bins into one divided tray                   |
 | `community_showcase`    | `preview`       | Publish and remix bin designs in the community showcase                   |
 | `drawer_shapes`         | `graduated`     | Non-rectangular drawer shapes (L-shapes, notches, cut corners)            |
 | `bin_designer`          | `graduated`     | Custom bin designer                                                       |
@@ -52,6 +53,7 @@ Internal status enum values → UI badge labels: `experimental` → "Early acces
 | `stl_bin_import`        | `graduated`     | Import a Gridfinity bin STL as a view-only design                         |
 | `bin_recommender`       | `graduated`     | Suggested bin size from the label, in the bin inspector                   |
 | `layout_overhang`       | `graduated`     | Edge bins extend into the drawer-fit margin                               |
+| `baseplate_screw_holes` | `graduated`     | Mount-down screw holes through every printed baseplate piece              |
 
 Kernel selection priority in `BridgeManager`/`WorkerPoolManager` is `brepkit > default (occt-wasm)`; `EngineSelector` drives the flag in the UI.
 
