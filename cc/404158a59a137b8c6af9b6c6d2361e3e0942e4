@@ -1,0 +1,19 @@
+src/features/baseplate/components/BaseplatePanel/DimensionsSection.tsx
+  s_da9c6fcd5a3c6f::t_0c9f36ac225371 223-225
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "cc404158a59a137b8c6af9b6c6d2361e3e0942e4",
+  "prompts": {},
+  "sessions": {
+    "s_da9c6fcd5a3c6f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6b8899a0-77ec-498c-bcaa-f95226036b51",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
