@@ -27,6 +27,7 @@ import { loadDesign } from '@/features/bin-designer/storage/DesignerStorage';
 import { designId } from '@/core/types';
 import { isOk } from '@/core/result';
 import { getSTLFileSize, estimate3MFFileSize } from '@/shared/generation/export';
+import { hasMeshImprints } from '@/shared/generation/meshAsset';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
 import {
@@ -105,34 +106,52 @@ export function ExportDialog() {
     return !isSingleColor(params.featureColors, computeActiveZones(params));
   }, [params]);
 
-  // Auto-switch to 3MF the first time the dialog opens on a multi-color
-  // design with a colorless format selected. Tracked by a ref so we only
-  // do it on the open transition, not while the user is inside the dialog
-  // (they may deliberately pick STL/STEP after seeing the disabled state).
+  // A mesh imprint is carved out of the tessellated mesh, after the BREP solid
+  // exists, so there is no solid that describes the design and `binExporter`
+  // refuses STEP outright. Left selectable it reads as an ordinary option and
+  // fails at download with an error toast and a filed issue (#3449).
+  const hasImprints = useMemo(() => hasMeshImprints(params), [params]);
+
+  // Auto-switch away from a format this design cannot produce, on the open
+  // transition only — tracked by a ref so we don't fight the user while they
+  // are inside the dialog (they may deliberately land on a disabled format to
+  // read why). Multi-color prefers 3MF, which is the format that carries the
+  // colors; an imprint only rules out STEP, so STL is the smaller move.
   const prevOpenRef = useRef(exportDialogOpen);
   useEffect(() => {
     const justOpened = exportDialogOpen && !prevOpenRef.current;
     prevOpenRef.current = exportDialogOpen;
     // Re-opening the dialog always returns to the form, never a stale success view.
-    if (justOpened) setJustExported(false);
-    if (
-      justOpened &&
-      isMultiColor &&
-      (exportFileNameConfig.format === 'stl' || exportFileNameConfig.format === 'step')
-    ) {
+    if (!justOpened) return;
+    setJustExported(false);
+    const format = exportFileNameConfig.format;
+    if (isMultiColor && (format === 'stl' || format === 'step')) {
       setExportFileNameConfig({ ...exportFileNameConfig, format: '3mf' });
+    } else if (hasImprints && format === 'step') {
+      setExportFileNameConfig({ ...exportFileNameConfig, format: 'stl' });
     }
-  }, [exportDialogOpen, isMultiColor, exportFileNameConfig, setExportFileNameConfig]);
+  }, [exportDialogOpen, isMultiColor, hasImprints, exportFileNameConfig, setExportFileNameConfig]);
 
   const formatStates = useMemo(() => {
-    if (!isMultiColor) return undefined;
-    const stlReason = t('binDesigner.export.multiColor.formatDisabled', { format: 'STL' });
-    const stepReason = t('binDesigner.export.multiColor.formatDisabled', { format: 'STEP' });
-    return {
-      stl: { disabled: true, reason: stlReason },
-      step: { disabled: true, reason: stepReason },
-    } as const;
-  }, [isMultiColor, t]);
+    if (!isMultiColor && !hasImprints) return undefined;
+    // Both conditions disable STEP; multi-color's reason wins because it also
+    // disables STL, so the two chips read as one consistent explanation.
+    const states: Partial<Record<ExportFileFormat, { disabled: boolean; reason: string }>> = {};
+    if (hasImprints) {
+      states.step = { disabled: true, reason: t('binDesigner.export.meshImprint.stepDisabled') };
+    }
+    if (isMultiColor) {
+      states.stl = {
+        disabled: true,
+        reason: t('binDesigner.export.multiColor.formatDisabled', { format: 'STL' }),
+      };
+      states.step = {
+        disabled: true,
+        reason: t('binDesigner.export.multiColor.formatDisabled', { format: 'STEP' }),
+      };
+    }
+    return states;
+  }, [isMultiColor, hasImprints, t]);
 
   const fileName = useMemo(
     () => generateFileName(params, activeFormat, exportFileNameConfig, designName),

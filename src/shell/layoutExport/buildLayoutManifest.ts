@@ -57,6 +57,13 @@ export interface ManifestSkipped {
   readonly missingDesigns: number;
   /** Imported-mesh designs skipped under STEP (a mesh has no BREP solid). */
   readonly meshDesignsStepSkipped?: number;
+  /**
+   * Bin designs skipped under STEP for carrying a mesh imprint cutout — the
+   * pocket is subtracted after tessellation, so the solid STEP would carry is
+   * the one WITHOUT it. Skipping keeps the rest of the ZIP: the export used to
+   * throw on the first such bin and take the whole layout with it (#3449).
+   */
+  readonly imprintDesignsStepSkipped?: number;
 }
 
 /** One swappable-label sheet family in the labels/ folder (#2666). */
@@ -289,6 +296,11 @@ export function buildLayoutManifest(input: LayoutManifestInput): string {
   if (skipped.meshDesignsStepSkipped !== undefined && skipped.meshDesignsStepSkipped > 0) {
     skippedLines.push(
       `  ${skipped.meshDesignsStepSkipped} imported ${plural(skipped.meshDesignsStepSkipped, 'design')} skipped (STEP is not available for imported meshes — export STL or 3MF).`
+    );
+  }
+  if (skipped.imprintDesignsStepSkipped !== undefined && skipped.imprintDesignsStepSkipped > 0) {
+    skippedLines.push(
+      `  ${skipped.imprintDesignsStepSkipped} ${plural(skipped.imprintDesignsStepSkipped, 'design')} skipped (STEP is not available for mesh imprint cutouts — export STL or 3MF).`
     );
   }
   if (skippedLines.length > 0) {

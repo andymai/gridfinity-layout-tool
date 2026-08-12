@@ -764,6 +764,7 @@
   "binDesigner.export.error.retry": "Réessayer",
   "binDesigner.export.error.timeout": "Délai d'exportation dépassé — ce modèle est peut-être trop complexe. Essayez de réduire la hauteur ou de désactiver le motif de paroi, puis exportez à nouveau.",
   "binDesigner.export.multiColor.formatDisabled": "{format} ne conserve pas les données de couleur. Utilisez 3MF pour préserver vos zones multicolores.",
+  "binDesigner.export.meshImprint.stepDisabled": "STEP ne peut pas transporter l'empreinte d'un maillage importé. Utilisez STL ou 3MF.",
   "binDesigner.exportBinAsStl": "Exporter le bin en STL",
   "binDesigner.exportSTL": "Exporter le bin en STL",
   "binDesigner.exporting": "Export en cours…",

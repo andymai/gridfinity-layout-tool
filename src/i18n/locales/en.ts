@@ -2251,6 +2251,8 @@ const en: Record<string, string> = {
   'binDesigner.colors.zone.topAccent': 'Top accent',
   'binDesigner.export.multiColor.formatDisabled':
     "{format} doesn't preserve color data. Use 3MF to keep your multi-color zones.",
+  'binDesigner.export.meshImprint.stepDisabled':
+    'STEP has no way to carry an imported-mesh imprint. Use STL or 3MF.',
 
   'binDesigner.shape.customShape': 'Custom shape',
   'binDesigner.shape.gridHelp': 'Click to toggle grid cells',

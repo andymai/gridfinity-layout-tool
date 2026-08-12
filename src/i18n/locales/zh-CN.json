@@ -764,6 +764,7 @@
   "binDesigner.export.error.retry": "重试",
   "binDesigner.export.error.timeout": "导出超时 — 此设计可能过于复杂。请尝试降低高度或关闭壁图案，然后再次导出。",
   "binDesigner.export.multiColor.formatDisabled": "{format} 不保留颜色数据。使用 3MF 以保留你的多色区域。",
+  "binDesigner.export.meshImprint.stepDisabled": "STEP 无法保留导入网格的压印。请使用 STL 或 3MF。",
   "binDesigner.exportBinAsStl": "将收纳盒导出为 STL",
   "binDesigner.exportSTL": "将收纳盒导出为 STL",
   "binDesigner.exporting": "导出中…",

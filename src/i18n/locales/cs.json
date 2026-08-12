@@ -764,6 +764,7 @@
   "binDesigner.export.error.retry": "Zkusit znovu",
   "binDesigner.export.error.timeout": "Export vypršel — tento návrh může být příliš složitý. Zkus snížit výšku nebo vypnout vzor stěny a exportuj znovu.",
   "binDesigner.export.multiColor.formatDisabled": "{format} nezachovává data o barvách. Použij 3MF, abys zachoval své vícebarevné zóny.",
+  "binDesigner.export.meshImprint.stepDisabled": "STEP neumí přenést otisk importované sítě. Použijte STL nebo 3MF.",
   "binDesigner.exportBinAsStl": "Exportovat bin jako STL",
   "binDesigner.exportSTL": "Exportovat bin jako STL",
   "binDesigner.exporting": "Exportuji…",

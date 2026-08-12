@@ -764,6 +764,7 @@
   "binDesigner.export.error.retry": "Försök igen",
   "binDesigner.export.error.timeout": "Exporten avbröts — den här designen kan vara för komplex. Försök att minska höjden eller stänga av väggmönstret och exportera igen.",
   "binDesigner.export.multiColor.formatDisabled": "{format} bevarar inte färgdata. Använd 3MF för att behålla dina flerfärgade zoner.",
+  "binDesigner.export.meshImprint.stepDisabled": "STEP kan inte bära avtrycket från ett importerat mesh. Använd STL eller 3MF.",
   "binDesigner.exportBinAsStl": "Exportera fack som STL",
   "binDesigner.exportSTL": "Exportera fack som STL",
   "binDesigner.exporting": "Exporterar...",

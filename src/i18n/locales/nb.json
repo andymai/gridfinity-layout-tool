@@ -764,6 +764,7 @@
   "binDesigner.export.error.retry": "Prøv igjen",
   "binDesigner.export.error.timeout": "Eksport tidsavbrudd — denne utformingen kan være for kompleks. Prøv å redusere høyden eller slå av veggmønsteret, og eksporter på nytt.",
   "binDesigner.export.multiColor.formatDisabled": "{format} bevarer ikke fargedata. Bruk 3MF for å beholde de flerfargede sonene.",
+  "binDesigner.export.meshImprint.stepDisabled": "STEP kan ikke bære avtrykket av en importert mesh. Bruk STL eller 3MF.",
   "binDesigner.exportBinAsStl": "Eksporter bin som STL",
   "binDesigner.exportSTL": "Eksporter bin som STL",
   "binDesigner.exporting": "Eksporterer…",

@@ -764,6 +764,7 @@
   "binDesigner.export.error.retry": "Reintentar",
   "binDesigner.export.error.timeout": "Tiempo de exportación agotado — este diseño puede ser demasiado complejo. Prueba a reducir la altura o desactivar el patrón de pared y exporta de nuevo.",
   "binDesigner.export.multiColor.formatDisabled": "{format} no conserva datos de color. Usa 3MF para mantener tus zonas multicolor.",
+  "binDesigner.export.meshImprint.stepDisabled": "STEP no puede transportar la huella de una malla importada. Usa STL o 3MF.",
   "binDesigner.exportBinAsStl": "Exportar bin como STL",
   "binDesigner.exportSTL": "Exportar bin como STL",
   "binDesigner.exporting": "Exportando…",

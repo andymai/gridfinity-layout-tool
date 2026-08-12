@@ -764,6 +764,7 @@
   "binDesigner.export.error.retry": "Ponów",
   "binDesigner.export.error.timeout": "Eksport przekroczył limit czasu — ten projekt może być zbyt złożony. Spróbuj obniżyć wysokość lub wyłączyć wzór ścianki, a potem wyeksportuj ponownie.",
   "binDesigner.export.multiColor.formatDisabled": "{format} nie zachowuje danych o kolorze. Użyj 3MF, aby zachować swoje strefy wielokolorowe.",
+  "binDesigner.export.meshImprint.stepDisabled": "STEP nie przenosi odcisku zaimportowanej siatki. Użyj STL lub 3MF.",
   "binDesigner.exportBinAsStl": "Eksportuj bin jako STL",
   "binDesigner.exportSTL": "Eksportuj bin jako STL",
   "binDesigner.exporting": "Eksportowanie...",
