@@ -41,3 +41,4 @@ export type {
   LabelPlateExportSpec,
 } from '@/features/generation/bridge/types';
 export type { MeshImportOutcome } from '@/features/generation/bridge/bridgeTypes';
+export type { KernelName } from '@/features/generation/bridge/types';

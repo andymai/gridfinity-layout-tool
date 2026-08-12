@@ -109,7 +109,7 @@ Composable stages in `pipeline/stages/`, orchestrated by `pipeline/runner.ts`:
 
 ## Cross-session mesh cache
 
-All the caches above are **in-memory only** — they vanish on reload. `src/shared/generation/meshPersistence.ts` (main thread) additionally persists the final bin-designer preview `MeshData` to IndexedDB, keyed by a hash of `BinParams` + `MESH_CACHE_VERSION`, so reopening a saved custom bin paints last session's exact mesh instantly (as a pre-draft in `useGeneration`) while the worker warms up and regenerates. Preview-only — exports always regenerate the watertight fused shell. **Bump `MESH_CACHE_VERSION` on any brepjs/occt-wasm or tessellation change** (see the geometry-generation skill).
+All the caches above are **in-memory only** — they vanish on reload. `src/shared/generation/meshPersistence.ts` (main thread) additionally persists the final bin-designer preview `MeshData` to IndexedDB, keyed by a hash of `BinParams` + `MESH_CACHE_VERSION` + the active kernel and its `KERNEL_MESH_REVISION`, so reopening a saved custom bin paints last session's exact mesh instantly (as a pre-draft in `useGeneration`) while the worker warms up and regenerates. Preview-only — exports always regenerate the watertight fused shell. **Bump `KERNEL_MESH_REVISION[kernel]` on a kernel upgrade (brepjs/occt-wasm, brepkit-wasm) and `MESH_CACHE_VERSION` on a tessellation or kernel-independent geometry change** (see the geometry-generation skill).
 
 ## Worker Protocol
 

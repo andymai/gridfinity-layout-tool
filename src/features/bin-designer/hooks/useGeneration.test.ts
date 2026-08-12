@@ -3,7 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useGeneration } from './useGeneration';
 import { useDesignerStore } from '../store';
 import { DEFAULT_GENERATION_STATE } from '../constants';
-import type { GenerationBridge } from '@/shared/generation/bridge';
+import type { GenerationBridge, KernelName } from '@/shared/generation/bridge';
 import type { MeshData } from '@/shared/types/generation';
 
 // Mock bridgeManager to isolate tests from the singleton
@@ -23,6 +23,7 @@ const mockRelease = vi.fn();
 const mockGet = vi.fn<() => GenerationBridge | null>();
 const mockAcquirePreview = vi.fn<() => Promise<GenerationBridge | null>>();
 const mockReleasePreview = vi.fn();
+let mockActiveKernel: KernelName = 'occt-wasm';
 
 vi.mock('@/shared/generation/bridge', () => ({
   bridgeManager: {
@@ -34,6 +35,7 @@ vi.mock('@/shared/generation/bridge', () => ({
   },
   GenerationBridge: vi.fn(),
   getActiveBridge: vi.fn(),
+  getActiveKernel: () => mockActiveKernel,
   FAST_EXACT_SKIP_MS: 1000,
   // Stable threshold — burst behavior is covered by draftPolicy's own tests.
   createDraftSkipGate: () => () => 1000,
@@ -45,8 +47,9 @@ const mockLoadPersisted = vi.fn<() => Promise<MeshData | null>>();
 const mockSavePersisted = vi.fn<(key: string, mesh: MeshData) => void>();
 
 vi.mock('@/shared/generation/meshPersistence', () => ({
-  // Param-sensitive so the stale-params guard in the mount pre-draft is testable.
-  binMeshCacheKey: (p: { width: number }) => `test-key-${p.width}`,
+  // Param- and kernel-sensitive, so both the stale-params guard in the mount
+  // pre-draft and the per-kernel namespacing (#3444) are testable.
+  binMeshCacheKey: (p: { width: number }, kernel: KernelName) => `test-key-${kernel}-${p.width}`,
   loadPersistedBinMesh: () => mockLoadPersisted(),
   savePersistedBinMesh: (key: string, mesh: MeshData) => mockSavePersisted(key, mesh),
 }));
@@ -88,6 +91,7 @@ describe('useGeneration', () => {
     mockLoadPersisted.mockReset();
     mockLoadPersisted.mockResolvedValue(null); // no persisted mesh by default
     mockSavePersisted.mockReset();
+    mockActiveKernel = 'occt-wasm';
     // Unknown estimate = slow → the draft path stays active unless a test
     // explicitly predicts a fast exact.
     (mockBridge.estimateGenerate as ReturnType<typeof vi.fn>).mockReset();
@@ -467,6 +471,21 @@ describe('useGeneration', () => {
     expect(key).toMatch(/^test-key-/);
     // The raw bridge mesh (not the store payload) is what gets persisted.
     expect(mesh.vertices).toEqual(new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]));
+  });
+
+  // #3444: the persisted entry must be namespaced by the kernel that built it,
+  // or a Labs engine switch serves the other engine's mesh for unchanged params.
+  it('persists under a key namespaced by the active kernel', async () => {
+    mockActiveKernel = 'brepkit';
+    renderHook(() => useGeneration());
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+      await vi.advanceTimersByTimeAsync(201);
+    });
+
+    const [key] = mockSavePersisted.mock.calls[0];
+    expect(key).toContain('brepkit');
   });
 
   it('paints a persisted mesh as a pre-draft while the exact worker loads', async () => {

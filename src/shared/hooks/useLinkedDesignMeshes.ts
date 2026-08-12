@@ -8,8 +8,8 @@
  *   main thread and re-framed to the preview convention (XY-centered, Z=0
  *   bottom), exactly like the worker's `importedMeshItem.generate`.
  * - `bin` (params): the cross-session IndexedDB mesh cache is tried first
- *   (`meshPersistence`, keyed by params hash — instant for any design the
- *   user has opened); on a miss the mesh is generated in the background via
+ *   (`meshPersistence`, keyed by params hash + active kernel — instant for any
+ *   design the user has opened); on a miss the mesh is generated via
  *   the shared generation bridge and persisted back for next time.
  *
  * Designs resolve sequentially through a module-level queue (the worker is
@@ -28,7 +28,7 @@ import {
   loadPersistedBinMesh,
   savePersistedBinMesh,
 } from '@/shared/generation/meshPersistence';
-import { bridgeManager } from '@/shared/generation/bridge';
+import { bridgeManager, getActiveKernel } from '@/shared/generation/bridge';
 import { withSocketNozzle } from '@/shared/generation/socketNozzle';
 import { useSettingsStore } from '@/core/store';
 import type { MeshData } from '@/shared/types/generation';
@@ -143,7 +143,9 @@ async function resolveDesignMesh(
   // Nozzle-merged (transient) so a socket bin's pocket matches the live print
   // setting and shares the same cache key the designer preview persists under.
   const genParams = withSocketNozzle(params, nozzleSizeMm);
-  const persistKey = binMeshCacheKey(genParams);
+  // Kernel-namespaced: this reader returns a hit and stops, with no regeneration
+  // behind it, so a cross-engine hit would survive until LRU eviction (#3444).
+  const persistKey = binMeshCacheKey(genParams, getActiveKernel());
   const persisted = await loadPersistedBinMesh(persistKey);
   if (persisted) {
     return { sig, mesh: persisted, width: params.width, depth: params.depth };
