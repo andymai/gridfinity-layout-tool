@@ -1,0 +1,35 @@
+src/features/baseplate/components/BaseplatePanel/DimensionsSection.tsx
+  s_da9c6fcd5a3c6f::t_cb342ab0502db1 167-176
+  s_da9c6fcd5a3c6f::t_834b0f6dab6c60 61
+  s_da9c6fcd5a3c6f::t_150e521510647f 246
+  s_da9c6fcd5a3c6f::t_72cce8ce0d683c 211-221,223-226
+  s_da9c6fcd5a3c6f::t_099591044a19dd 26
+src/shared/utils/drawerFit.ts
+  s_da9c6fcd5a3c6f::t_9ec997bd172067 31-36,44-46
+src/features/baseplate/components/BaseplatePanel/DimensionsSection.test.tsx
+  s_da9c6fcd5a3c6f::t_7e9321c268de79 42-87
+  s_da9c6fcd5a3c6f::t_892504271b30cb 5
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.test.tsx
+  s_da9c6fcd5a3c6f::t_29fa73d3f32281 62-66,68-69
+  s_da9c6fcd5a3c6f::t_a1a3130bd85776 167
+  s_da9c6fcd5a3c6f::t_384305aa8f4ac0 742-744,759
+  s_da9c6fcd5a3c6f::t_5b11807b18b1d3 639-642,650,652-653,658
+src/shared/utils/drawerFit.test.ts
+  s_da9c6fcd5a3c6f::t_b11d3c9eeb46e0 60-70
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "bce223bf76b6a30ce0fb9061ea05093104d482eb",
+  "prompts": {},
+  "sessions": {
+    "s_da9c6fcd5a3c6f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6b8899a0-77ec-498c-bcaa-f95226036b51",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
