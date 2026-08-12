@@ -1,0 +1,53 @@
+src/shared/generation/meshPersistence.ts
+  s_1cfbb2e6807647::t_992f2adc9d7c90 23
+  s_1cfbb2e6807647::t_f4fb4c2fbc1911 176-186
+  s_1cfbb2e6807647::t_1f0df713ecd741 37-42,44-46,57-77
+  s_1cfbb2e6807647::t_108f9246014172 10-12
+  s_1cfbb2e6807647::t_d43af129d2f4cc 187-188
+  s_1cfbb2e6807647::t_484af2737db984 49
+src/shared/hooks/useLinkedDesignMeshes.test.ts
+  s_1cfbb2e6807647::t_1a40f83cf93249 36-37,44
+  s_1cfbb2e6807647::t_d448573b411553 21,24
+  s_1cfbb2e6807647::t_337082e346aeeb 132
+  s_1cfbb2e6807647::t_0bca32d61de86d 181,185-204
+  s_1cfbb2e6807647::t_97937ff52e9b80 25
+  s_1cfbb2e6807647::t_a833b87bb0c8cf 205-206
+src/features/bin-designer/hooks/useGeneration.ts
+  s_1cfbb2e6807647::t_2b0fd3eedb69dd 391
+  s_1cfbb2e6807647::t_5aab85c839dbef 6
+  s_1cfbb2e6807647::t_1fba843701b15e 378-381
+  s_1cfbb2e6807647::t_329e7c4ee2b82d 291-294
+src/features/bin-designer/hooks/useGeneration.test.ts
+  s_1cfbb2e6807647::t_2d56f898618c0f 94
+  s_1cfbb2e6807647::t_2ef15e935ed7cf 26
+  s_1cfbb2e6807647::t_dc61c6db219efc 38
+  s_1cfbb2e6807647::t_c64d29b3d93558 476-490
+  s_1cfbb2e6807647::t_7389d1db6bd5e4 6
+  s_1cfbb2e6807647::t_3b8bfef973acf9 50-52
+src/shared/generation/meshPersistence.test.ts
+  s_1cfbb2e6807647::t_d36406e53a549b 49,53,58-62,67-84
+src/shared/hooks/useLinkedDesignMeshes.ts
+  s_1cfbb2e6807647::t_6cb3cf678f5537 11-12
+  s_1cfbb2e6807647::t_8958d5c0ba5d37 146-148
+  s_1cfbb2e6807647::t_cccba1b58175c4 31
+src/features/generation/README.md
+  s_1cfbb2e6807647::t_48aa5554ac2113 112
+src/shared/generation/bridge.ts
+  s_1cfbb2e6807647::t_84ab95867d4023 44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "cb7b7be961cc29b958efcce4f67b30c13c5416f0",
+  "prompts": {},
+  "sessions": {
+    "s_1cfbb2e6807647": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ad3f6fb1-3d36-43d1-8a06-6b4f5ffb1190",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
