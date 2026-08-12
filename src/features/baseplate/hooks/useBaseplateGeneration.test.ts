@@ -109,6 +109,120 @@ describe('selectGenerationTriggers', () => {
     const b = makeState(undefined, { solidFloor: false, solidFloorThickness: mm(2) });
     expect(shallowEqual(selectGenerationTriggers(a), selectGenerationTriggers(b))).toBe(true);
   });
+
+  /**
+   * Regression: toggling mount-down screws (or editing any screw field)
+   * changed only `screwHoles`, which was absent from the trigger set — the
+   * preview kept the stale plate until an unrelated param changed.
+   */
+  describe('mount-down screw params', () => {
+    const screws = (over: Partial<StoredBaseplateParams['screwHoles'] & object> = {}) =>
+      ({
+        enabled: true,
+        diameter: mm(3.4),
+        headStyle: 'countersink',
+        ...over,
+      }) as StoredBaseplateParams['screwHoles'];
+
+    it('produces a different trigger selection when screws toggle', () => {
+      const off = makeState(undefined);
+      const on = makeState(undefined, { screwHoles: screws() });
+      expect(shallowEqual(selectGenerationTriggers(off), selectGenerationTriggers(on))).toBe(false);
+    });
+
+    it('produces a different trigger selection when the shaft diameter changes', () => {
+      const a = makeState(undefined, { screwHoles: screws({ diameter: mm(3.4) }) });
+      const b = makeState(undefined, { screwHoles: screws({ diameter: mm(4.5) }) });
+      expect(shallowEqual(selectGenerationTriggers(a), selectGenerationTriggers(b))).toBe(false);
+    });
+
+    it('produces a different trigger selection when the head style changes', () => {
+      const a = makeState(undefined, { screwHoles: screws({ headStyle: 'countersink' }) });
+      const b = makeState(undefined, { screwHoles: screws({ headStyle: 'counterbore' }) });
+      expect(shallowEqual(selectGenerationTriggers(a), selectGenerationTriggers(b))).toBe(false);
+    });
+
+    it('produces a different trigger selection when screws per piece changes', () => {
+      const a = makeState(undefined, { screwHoles: screws({ screwsPerPiece: 4 }) });
+      const b = makeState(undefined, { screwHoles: screws({ screwsPerPiece: 6 }) });
+      expect(shallowEqual(selectGenerationTriggers(a), selectGenerationTriggers(b))).toBe(false);
+    });
+
+    it('produces a different trigger selection when the counterbore depth changes (counterbore head)', () => {
+      const a = makeState(undefined, {
+        screwHoles: screws({ headStyle: 'counterbore', counterboreDepth: mm(2) }),
+      });
+      const b = makeState(undefined, {
+        screwHoles: screws({ headStyle: 'counterbore', counterboreDepth: mm(3) }),
+      });
+      expect(shallowEqual(selectGenerationTriggers(a), selectGenerationTriggers(b))).toBe(false);
+    });
+
+    it('ignores screw geometry fields while screws are disabled (no needless regen)', () => {
+      const a = makeState(undefined, { screwHoles: screws({ enabled: false, diameter: mm(3.4) }) });
+      const b = makeState(undefined, { screwHoles: screws({ enabled: false, diameter: mm(4.5) }) });
+      expect(shallowEqual(selectGenerationTriggers(a), selectGenerationTriggers(b))).toBe(true);
+    });
+
+    it('ignores screw fields while stacking strips them (no needless regen)', () => {
+      const stack = { enabled: true, gapMm: mm(0.2) } as const;
+      const a = makeState(undefined, { stackPrint: stack, screwHoles: screws() });
+      const b = makeState(undefined, {
+        stackPrint: stack,
+        screwHoles: screws({ diameter: mm(4.5) }),
+      });
+      expect(shallowEqual(selectGenerationTriggers(a), selectGenerationTriggers(b))).toBe(true);
+    });
+  });
+
+  /**
+   * Regression: the connector fit offset shifts every connector clearance, but
+   * was absent from the trigger set — stepping it left the exploded preview's
+   * tongues and grooves at the old clearance until an unrelated param changed.
+   */
+  describe('connectorFitOffset', () => {
+    it('produces a different trigger selection when the offset changes (connectors on)', () => {
+      const a = makeState('dovetail', { connectorFitOffset: 0 });
+      const b = makeState('dovetail', { connectorFitOffset: 0.2 });
+      expect(shallowEqual(selectGenerationTriggers(a), selectGenerationTriggers(b))).toBe(false);
+    });
+
+    it('produces a different trigger selection when the offset changes (margin seam on, connectors off)', () => {
+      const seam = {
+        connectorNubs: false,
+        detachMargins: true,
+        detachMarginConnector: true,
+      } as const;
+      const a = makeState(undefined, { ...seam, connectorFitOffset: 0 });
+      const b = makeState(undefined, { ...seam, connectorFitOffset: 0.2 });
+      expect(shallowEqual(selectGenerationTriggers(a), selectGenerationTriggers(b))).toBe(false);
+    });
+
+    it('ignores the offset when nothing can consume it (no needless regen)', () => {
+      const a = makeState(undefined, { connectorNubs: false, connectorFitOffset: 0 });
+      const b = makeState(undefined, { connectorNubs: false, connectorFitOffset: 0.2 });
+      expect(shallowEqual(selectGenerationTriggers(a), selectGenerationTriggers(b))).toBe(true);
+    });
+  });
+
+  /**
+   * Regression: `lightweight` reaches the generator (the underside cross
+   * cutter) but was absent from the trigger set. No UI writes it today, but
+   * synced/imported params can carry it.
+   */
+  describe('lightweight', () => {
+    it('produces a different trigger selection when lightweight changes (magnets on)', () => {
+      const a = makeState(undefined, { magnetHoles: true, lightweight: true });
+      const b = makeState(undefined, { magnetHoles: true, lightweight: false });
+      expect(shallowEqual(selectGenerationTriggers(a), selectGenerationTriggers(b))).toBe(false);
+    });
+
+    it('ignores lightweight while magnets are off (no needless regen)', () => {
+      const a = makeState(undefined, { magnetHoles: false, lightweight: true });
+      const b = makeState(undefined, { magnetHoles: false, lightweight: false });
+      expect(shallowEqual(selectGenerationTriggers(a), selectGenerationTriggers(b))).toBe(true);
+    });
+  });
 });
 
 describe('hasMeshOnScreen', () => {
