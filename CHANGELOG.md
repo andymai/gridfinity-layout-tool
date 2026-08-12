@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.404.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.403.0...gridfinity-layout-tool-v4.404.0) (2026-08-12)
+
+
+### Features
+
+* **bin-designer:** Bentobox workspace usability and polish pass ([#3461](https://github.com/andymai/gridfinity-layout-tool/issues/3461)) ([ea3d038](https://github.com/andymai/gridfinity-layout-tool/commit/ea3d0387989c942dc9a6d77638ec87535c0fce08))
+
 ## [4.403.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.402.5...gridfinity-layout-tool-v4.403.0) (2026-08-12)
 
 
