@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.402.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.402.2...gridfinity-layout-tool-v4.402.3) (2026-08-12)
+
+
+### Bug Fixes
+
+* **lid:** seat the magnet pads under the mating skirt ([#3450](https://github.com/andymai/gridfinity-layout-tool/issues/3450)) ([#3451](https://github.com/andymai/gridfinity-layout-tool/issues/3451)) ([48c740b](https://github.com/andymai/gridfinity-layout-tool/commit/48c740be4a3a5020fb995c90731222f71398621c))
+
 ## [4.402.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.402.1...gridfinity-layout-tool-v4.402.2) (2026-08-12)
 
 
