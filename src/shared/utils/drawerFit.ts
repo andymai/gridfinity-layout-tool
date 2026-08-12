@@ -28,6 +28,12 @@ export function fitAxisUnits(measuredMm: number, gridUnitMm: number, allowHalf: 
 /**
  * The tighter half-unit fit for an axis, or null when the whole-unit fit is
  * already as tight as a half-unit grid can get (remainder < pitch / 2).
+ *
+ * Two ways a half-unit grid wins. Usually it reaches further into the drawer
+ * (`units` is larger). But below one full pitch the whole-unit fit is clamped
+ * UP to 1 and overflows the drawer, and there `units` moves the other way — a
+ * half unit that FITS is the upgrade over a whole unit that doesn't, so the
+ * comparison has to be on slack, not size alone.
  */
 export function halfUnitUpgrade(
   measuredMm: number,
@@ -35,5 +41,7 @@ export function halfUnitUpgrade(
   wholeUnits: number
 ): AxisFit | null {
   const half = fitAxisUnits(measuredMm, gridUnitMm, true);
-  return half.units > wholeUnits ? half : null;
+  if (half.units > wholeUnits) return half;
+  const wholeOverflows = measuredMm - wholeUnits * gridUnitMm < -FLOAT_EPSILON;
+  return wholeOverflows && half.slackMm >= -FLOAT_EPSILON ? half : null;
 }

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { DimensionsSection } from './DimensionsSection';
 import { useLayoutStore } from '@/core/store/layout';
+import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { mm } from '@/core/types';
 import { resetAllStores } from '@/test/testUtils';
@@ -36,6 +37,52 @@ describe('DimensionsSection', () => {
     fireEvent.click(toggle);
     fireEvent.click(toggle);
     expect(useLayoutStore.getState().layout.baseplateParams?.syncWithLayout).toBe(true);
+  });
+
+  // #3463. Typing a physical drawer size must land the tightest grid that fits,
+  // the same fit the layout's measured-drawer card offers. Snapping to whole
+  // units while a half unit fits hands the user a plate 21mm short of the drawer
+  // and buries the difference in padding.
+  describe('mm entry', () => {
+    function commitMm(widthMm: string, depthMm: string): void {
+      fireEvent.click(screen.getByLabelText('baseplate.editDimensions'));
+      fireEvent.change(screen.getByLabelText('baseplate.editDimensionsWidth'), {
+        target: { value: widthMm },
+      });
+      const depth = screen.getByLabelText('baseplate.editDimensionsDepth');
+      fireEvent.change(depth, { target: { value: depthMm } });
+      fireEvent.keyDown(depth, { key: 'Enter' });
+    }
+
+    it('takes the half unit that fits instead of burying it in padding', () => {
+      render(<DimensionsSection />);
+      commitMm('423', '502');
+
+      const params = useLayoutStore.getState().layout.baseplateParams;
+      // 502 / 42 = 11.95 units: 11.5 fits, leaving 19mm rather than 40mm.
+      expect(params?.baseplateDepth).toBe(11.5);
+      expect(params?.paddingFront).toBeCloseTo(9.5, 2);
+      expect(params?.paddingBack).toBeCloseTo(9.5, 2);
+      // 423 / 42 = 10.07: no half unit fits, so width stays whole.
+      expect(params?.baseplateWidth).toBe(10);
+      expect(params?.paddingLeft).toBeCloseTo(1.5, 2);
+    });
+
+    it('turns half-grid mode on when the fit needs it', () => {
+      expect(useHalfGridModeStore.getState().halfGridMode).toBe(false);
+      render(<DimensionsSection />);
+      commitMm('423', '502');
+      expect(useHalfGridModeStore.getState().halfGridMode).toBe(true);
+    });
+
+    it('leaves half-grid mode alone when whole units already fit tightest', () => {
+      render(<DimensionsSection />);
+      commitMm('423', '465');
+
+      const params = useLayoutStore.getState().layout.baseplateParams;
+      expect(params?.baseplateDepth).toBe(11);
+      expect(useHalfGridModeStore.getState().halfGridMode).toBe(false);
+    });
   });
 
   describe('margin seam connector style gate', () => {
