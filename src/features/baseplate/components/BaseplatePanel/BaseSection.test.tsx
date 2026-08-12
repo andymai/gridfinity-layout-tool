@@ -153,7 +153,7 @@ describe('BaseSection', () => {
     // The flag graduated, so a stored opt-out is dead state that
     // `isFeatureEnabled` short-circuits past. Reverting the status to
     // 'experimental' would hide the control again from anyone carrying this.
-    it('offers the toggle even to a user whose stored opt-in says false', () => {
+    it('offers the toggle even to a user carrying a stored opt-out', () => {
       useLabsStore.setState((s) => ({
         preferences: {
           ...s.preferences,
