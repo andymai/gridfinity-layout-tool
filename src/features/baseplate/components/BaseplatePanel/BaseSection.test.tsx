@@ -138,15 +138,6 @@ describe('BaseSection', () => {
   });
 
   describe('mount-down screw holes (issue #3425)', () => {
-    function setScrewFlag(enabled: boolean): void {
-      useLabsStore.setState((s) => ({
-        preferences: {
-          ...s.preferences,
-          enabledFeatures: { ...s.preferences.enabledFeatures, baseplate_screw_holes: enabled },
-        },
-      }));
-    }
-
     function enableScrews(headStyle: ScrewHeadStyle): void {
       useLayoutStore.getState().setBaseplateParams({
         ...DEFAULT_BASEPLATE_PARAMS,
@@ -154,20 +145,26 @@ describe('BaseSection', () => {
       });
     }
 
-    it('offers the toggle while the labs flag is on', () => {
-      setScrewFlag(true);
+    it('offers the toggle', () => {
       render(<BaseSection />);
       expect(screen.getByText('baseplate.screwHoles.label')).toBeInTheDocument();
     });
 
-    it('hides the toggle while the labs flag is off', () => {
-      setScrewFlag(false);
+    // The flag graduated, so a stored opt-out is dead state that
+    // `isFeatureEnabled` short-circuits past. Reverting the status to
+    // 'experimental' would hide the control again from anyone carrying this.
+    it('offers the toggle even to a user carrying a stored opt-out', () => {
+      useLabsStore.setState((s) => ({
+        preferences: {
+          ...s.preferences,
+          enabledFeatures: { ...s.preferences.enabledFeatures, baseplate_screw_holes: false },
+        },
+      }));
       render(<BaseSection />);
-      expect(screen.queryByText('baseplate.screwHoles.label')).not.toBeInTheDocument();
+      expect(screen.getByText('baseplate.screwHoles.label')).toBeInTheDocument();
     });
 
     it('hides the toggle while stacking, which strips the screws', () => {
-      setScrewFlag(true);
       useLayoutStore.getState().setBaseplateParams({
         ...DEFAULT_BASEPLATE_PARAMS,
         stackPrint: { enabled: true, copies: 2, gapMm: mm(0.2) },
@@ -177,7 +174,6 @@ describe('BaseSection', () => {
     });
 
     it('writes the defaults through to the layout store on toggle', () => {
-      setScrewFlag(true);
       render(<BaseSection />);
       fireEvent.click(screen.getByRole('switch', { name: 'baseplate.screwHoles.label' }));
       expect(useLayoutStore.getState().layout.baseplateParams?.screwHoles).toEqual({
@@ -188,7 +184,6 @@ describe('BaseSection', () => {
     });
 
     it('adds the screw summary to the section header beside the magnet one', () => {
-      setScrewFlag(true);
       useLayoutStore.getState().setBaseplateParams({
         ...DEFAULT_BASEPLATE_PARAMS,
         magnetHoles: true,
@@ -201,14 +196,12 @@ describe('BaseSection', () => {
     });
 
     it('shows the counterbore depth only for a counterbore head', () => {
-      setScrewFlag(true);
       enableScrews('counterbore');
       render(<BaseSection />);
       expect(screen.getByText('baseplate.screwHoles.counterboreDepth.label')).toBeInTheDocument();
     });
 
     it('hides the counterbore depth for a countersink head, whose depth is derived', () => {
-      setScrewFlag(true);
       enableScrews('countersink');
       render(<BaseSection />);
       expect(screen.getByText('baseplate.screwHoles.headDiameter.label')).toBeInTheDocument();
