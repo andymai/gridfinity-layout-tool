@@ -1,0 +1,25 @@
+package.json
+  s_9066a1e8cd8ad4::t_8eb21bc2bc33e8 132-133
+patches/brepjs@18.124.8.patch
+  s_9066a1e8cd8ad4::t_d705c91a3e1005 1-4,21-24
+pnpm-lock.yaml
+  s_9066a1e8cd8ad4::t_70138f1f325be7 46,84-85,87-88,3187-3188,3205-3206,8720,8725,8728
+pnpm-workspace.yaml
+  s_9066a1e8cd8ad4::t_040647e8dfb67b 159
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "f670cf3d69cb043a660882aefe756eddc0ebbc46",
+  "prompts": {},
+  "sessions": {
+    "s_9066a1e8cd8ad4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d0bfeb58-04ff-4765-b511-d498ad00696c",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
