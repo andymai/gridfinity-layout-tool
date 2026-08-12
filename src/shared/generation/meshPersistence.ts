@@ -35,10 +35,14 @@ const META_STORE = 'binMeshMeta';
  * Bumped whenever the generated mesh bytes can change for the same params —
  * a brepjs/occt-wasm upgrade, a tessellation-tolerance change, or a geometry
  * fix. A bump changes every key, so old entries never match again and are
- * evicted by the LRU budget. Preview always uses the occt-wasm exact kernel at
- * `forExport=false`, so the kernel and quality are folded into this constant
- * rather than the per-entry key.
+ * evicted by the LRU budget. The kernel id is NOT part of the per-entry key,
+ * so the occt-wasm default and the brepkit Labs kernel (`brepkit_kernel`)
+ * share one namespace — a fix on either side has to bump this constant.
  *
+ * `v9`: brepkit-wasm 3.2.24 reattaches splitter holes, so a slotted no-lip bin
+ * gets back the cavity it was rendering solid. Only the Labs kernel's output
+ * moved (the occt-wasm scenario snapshots are unchanged across brepjs
+ * 18.124.8), but one namespace covers both.
  * `v8`: label-tab keep-outs on patterned dividers follow `inset` and the
  * anchor edge, so a bin with either cuts a different divider pattern.
  * `v7`: label tabs stopped being forced full-width in socket mode (#3402), so
@@ -46,7 +50,7 @@ const META_STORE = 'binMeshMeta';
  * without regenerating, so without this bump a linked design in the layout
  * planner would render its pre-fix bin until the entry was evicted.
  */
-const MESH_CACHE_VERSION = 'v8-brepjs18.123.0';
+const MESH_CACHE_VERSION = 'v9-brepjs18.124.8';
 
 /** Evict oldest entries once the total stored mesh bytes exceed this budget. */
 let maxCacheBytes = 64 * 1024 * 1024;
