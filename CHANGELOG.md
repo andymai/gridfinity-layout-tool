@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.402.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.402.1...gridfinity-layout-tool-v4.402.2) (2026-08-12)
+
+
+### Bug Fixes
+
+* **export:** disable STEP for designs with mesh imprint cutouts ([#3449](https://github.com/andymai/gridfinity-layout-tool/issues/3449)) ([#3452](https://github.com/andymai/gridfinity-layout-tool/issues/3452)) ([5b36496](https://github.com/andymai/gridfinity-layout-tool/commit/5b36496c384173e835481663420610e4f652454e))
+
 ## [4.402.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.402.0...gridfinity-layout-tool-v4.402.1) (2026-08-12)
 
 
