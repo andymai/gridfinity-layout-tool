@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.402.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.402.3...gridfinity-layout-tool-v4.402.4) (2026-08-12)
+
+
+### Bug Fixes
+
+* **baseplate:** regenerate the preview when screw, fit-offset or lightweight params change ([#3455](https://github.com/andymai/gridfinity-layout-tool/issues/3455)) ([8fda713](https://github.com/andymai/gridfinity-layout-tool/commit/8fda713cb2fe39f1b7b5733b2c0b1643bfd09974))
+
 ## [4.402.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.402.2...gridfinity-layout-tool-v4.402.3) (2026-08-12)
 
 
