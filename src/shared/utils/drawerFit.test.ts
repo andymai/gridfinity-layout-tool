@@ -57,4 +57,15 @@ describe('halfUnitUpgrade', () => {
   it('offers the upgrade exactly at the half-cell threshold', () => {
     expect(halfUnitUpgrade(441, 42, 10)).toEqual({ units: 10.5, slackMm: 0 });
   });
+
+  // Under one pitch the whole-unit fit is clamped UP to 1 and overflows, so the
+  // half-unit fit is smaller yet strictly better — the size comparison alone
+  // rejected it and handed back a grid wider than the drawer.
+  it('offers a SMALLER half-unit fit when the whole unit overflows the drawer', () => {
+    expect(halfUnitUpgrade(21, 42, 1)).toEqual({ units: 0.5, slackMm: 0 });
+  });
+
+  it('stays null when neither fit fits', () => {
+    expect(halfUnitUpgrade(10, 42, 1)).toBeNull();
+  });
 });

@@ -59,9 +59,14 @@ vi.mock('@/shared/hooks/useFeatureFlag', () => ({
 
 // Mock half-bin mode store
 let mockHalfGridMode = false;
+const mockSetHalfGridMode = vi.fn();
+interface MockHalfGridState {
+  halfGridMode: boolean;
+  setHalfGridMode: (enabled: boolean) => void;
+}
 vi.mock('@/core/store/halfGridMode', () => ({
-  useHalfGridModeStore: (selector: (state: { halfGridMode: boolean }) => unknown) =>
-    selector({ halfGridMode: mockHalfGridMode }),
+  useHalfGridModeStore: (selector: (state: MockHalfGridState) => unknown) =>
+    selector({ halfGridMode: mockHalfGridMode, setHalfGridMode: mockSetHalfGridMode }),
   INITIAL_HALF_GRID_MODE_STATE: {},
 }));
 
@@ -159,6 +164,7 @@ describe('BaseplatePanel', () => {
       setMagnetAnchor: mockSetMagnetAnchor,
     };
     mockHalfGridMode = false;
+    mockSetHalfGridMode.mockClear();
     mockTiling = null;
     mockSplitViewMode = 'assembled';
     mockHoveredPieceLabel = null;
@@ -630,9 +636,10 @@ describe('BaseplatePanel', () => {
       const widthInput = screen.getByLabelText('baseplate.editDimensionsWidth');
       const depthInput = screen.getByLabelText('baseplate.editDimensionsDepth');
 
-      // Enter 500mm wide × 300mm deep (halfGridMode=false, step=1)
-      // 500 / 42 = 11.90 → floor to 11 units = 462mm, remainder = 38mm → 19 each
-      // 300 / 42 = 7.14 → floor to 7 = 294mm, remainder = 6mm → 3 each
+      // Enter 500mm wide × 300mm deep, half-grid mode off.
+      // 500 / 42 = 11.90 → 11.5 fits (483mm), remainder = 17mm → 8.5 each. The
+      // half unit is taken even with the mode off, which turns it on (#3463).
+      // 300 / 42 = 7.14 → 7 (294mm); 7.5 overflows, remainder = 6mm → 3 each.
       fireEvent.change(widthInput, { target: { value: '500' } });
       fireEvent.change(depthInput, { target: { value: '300' } });
       fireEvent.keyDown(depthInput, { key: 'Enter' });
@@ -640,14 +647,15 @@ describe('BaseplatePanel', () => {
       expect(mockSetBaseplateParams).toHaveBeenCalledWith(
         expect.objectContaining({
           syncWithLayout: false,
-          baseplateWidth: 11,
+          baseplateWidth: 11.5,
           baseplateDepth: 7,
-          paddingLeft: 19,
-          paddingRight: 19,
+          paddingLeft: 8.5,
+          paddingRight: 8.5,
           paddingFront: 3,
           paddingBack: 3,
         })
       );
+      expect(mockSetHalfGridMode).toHaveBeenCalledWith(true);
     });
 
     it('renders editable dimension button in with-padding mode', () => {
@@ -731,7 +739,9 @@ describe('BaseplatePanel', () => {
     });
 
     it('clamps grid to GRID_MIN when mm value is very small', () => {
-      // 10mm / 42 = 0.24 → floor to 0 but clamped to GRID_MIN (0.5)
+      // 21mm is half a pitch: a whole unit would OVERFLOW the requested plate,
+      // so the half-unit fit wins on slack rather than on size, and takes
+      // half-grid mode with it.
       render(<BaseplatePanel />);
       fireEvent.click(screen.getByRole('button', { name: 'baseplate.editDimensions' }));
       const widthInput = screen.getByLabelText('baseplate.editDimensionsWidth');
@@ -746,6 +756,7 @@ describe('BaseplatePanel', () => {
           baseplateDepth: 0.5,
         })
       );
+      expect(mockSetHalfGridMode).toHaveBeenCalledWith(true);
     });
 
     it('clamps grid to GRID_MAX when mm value is very large', () => {

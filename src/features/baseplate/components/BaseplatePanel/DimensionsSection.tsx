@@ -23,6 +23,7 @@ import { PADDING_MAX } from '../PaddingStepper';
 import { gridUnits, mm, effectiveGridUnitMmY } from '@/core/types';
 import { isMarginSeamStyle } from '@/shared/types/bin';
 import { cornerCutsMatchVertices } from '@/shared/utils/cornerCutOutline';
+import { fitAxisUnits, halfUnitUpgrade } from '@/shared/utils/drawerFit';
 import { padOutline } from '@/shared/utils/padOutline';
 import {
   updateBaseplateParam as updateParam,
@@ -57,6 +58,7 @@ export function DimensionsSection() {
     freeformShaped,
   } = useBaseplatePanelDerived();
   const halfGridMode = useHalfGridModeStore((s) => s.halfGridMode);
+  const setHalfGridMode = useHalfGridModeStore((s) => s.setHalfGridMode);
 
   const handleSyncToggle = useCallback((checked: boolean) => {
     const layoutState = useLayoutStore.getState().layout;
@@ -162,6 +164,16 @@ export function DimensionsSection() {
    * 2. Distribute remaining mm evenly as padding (left=right, front=back)
    * 3. Auto-uncheck "Sync with layout"
    *
+   * Step 1 goes through the same `fitAxisUnits`/`halfUnitUpgrade` pair the
+   * layout's measured-drawer card uses, so both entry points agree on what the
+   * tightest fit is. Stepping by whole units whenever half-grid mode happened to
+   * be off silently discarded a half unit that fits — a 502mm drawer became 11
+   * units and 40mm of dead padding instead of 11.5 and 19mm (#3463) — and
+   * pushed users into over-tile to recover a row the grid should have had.
+   * Taking a half fit turns half-grid mode on, matching the card's Use button:
+   * a fractional dimension with the mode off is a state the steppers and the
+   * half-unit edge toggle can't express.
+   *
    * Exception: a synced corner-cut shaped plate keeps sync AND its shape —
    * the grid is fixed by the layout, so the whole remainder becomes padding
    * (the basket workflow: measure, type dims, rounded shape persists).
@@ -196,23 +208,23 @@ export function DimensionsSection() {
         return;
       }
 
-      const step = halfGridMode ? 0.5 : 1;
+      const widthFit = fitAxisUnits(targetWidthMm, gridUnitMm, halfGridMode);
+      const depthFit = fitAxisUnits(targetDepthMm, gridUnitMmY, halfGridMode);
+      const widthUpgrade = halfGridMode
+        ? null
+        : halfUnitUpgrade(targetWidthMm, gridUnitMm, widthFit.units);
+      const depthUpgrade = halfGridMode
+        ? null
+        : halfUnitUpgrade(targetDepthMm, gridUnitMmY, depthFit.units);
+      const snappedWidth = (widthUpgrade ?? widthFit).units;
+      const snappedDepth = (depthUpgrade ?? depthFit).units;
+      if (widthUpgrade !== null || depthUpgrade !== null) setHalfGridMode(true);
 
-      const rawWidthUnits = targetWidthMm / gridUnitMm;
-      const rawDepthUnits = targetDepthMm / gridUnitMmY;
-
-      // Floor so the grid never exceeds the target — remainder becomes positive padding
-      const snappedWidth = Math.max(
-        CONSTRAINTS.GRID_MIN,
-        Math.min(CONSTRAINTS.GRID_MAX, Math.floor(rawWidthUnits / step) * step)
-      );
-      const snappedDepth = Math.max(
-        CONSTRAINTS.GRID_MIN,
-        Math.min(CONSTRAINTS.GRID_MAX, Math.floor(rawDepthUnits / step) * step)
-      );
-
-      const remainderWidth = Math.max(0, targetWidthMm - snappedWidth * gridUnitMm);
-      const remainderDepth = Math.max(0, targetDepthMm - snappedDepth * gridUnitMmY);
+      // Clamp at 0: `slackMm` goes negative when the fit's minimum (1 unit in
+      // whole-unit mode, GRID_MIN in half) forced a grid larger than the
+      // target, and padding can't absorb a deficit.
+      const remainderWidth = Math.max(0, (widthUpgrade ?? widthFit).slackMm);
+      const remainderDepth = Math.max(0, (depthUpgrade ?? depthFit).slackMm);
 
       const halfPadWidth = Math.floor((remainderWidth / 2) * 100) / 100;
       const halfPadDepth = Math.floor((remainderDepth / 2) * 100) / 100;
@@ -232,7 +244,7 @@ export function DimensionsSection() {
         paddingBack: mm(halfPadDepth),
       });
     },
-    [gridUnitMm, gridUnitMmY, halfGridMode]
+    [gridUnitMm, gridUnitMmY, halfGridMode, setHalfGridMode]
   );
 
   return (
