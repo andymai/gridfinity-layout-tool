@@ -10,13 +10,14 @@ describe('useBentoQuickstart', () => {
     localStorage.clear();
   });
 
-  it('persists dismissal under its own key', () => {
+  it('persists dismissal under its own key (v2: gestures changed, card re-arms)', () => {
     const { result } = renderHook(() => useBentoQuickstart());
 
     act(() => result.current.markQuickstartSeen());
 
     expect(result.current.quickstartSeen).toBe(true);
-    expect(localStorage.getItem('gridfinity-bento-quickstart-seen')).toBe('true');
+    expect(localStorage.getItem('gridfinity-bento-quickstart-seen-v2')).toBe('true');
+    expect(localStorage.getItem('gridfinity-bento-quickstart-seen')).toBeNull();
   });
 
   it('leaves the cutout workspace flag alone', () => {

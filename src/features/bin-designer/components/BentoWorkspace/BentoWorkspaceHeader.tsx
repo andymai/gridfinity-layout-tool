@@ -1,31 +1,66 @@
 /**
- * Workspace chrome for the Bento editor: what the piece is, the grid it sits
- * on, and the way out.
- *
- * Deliberately thinner than the cutout workspace's header — a bento has no
- * shape palette, no z-order and no per-item selection, so the only global
- * controls are the grid dimensions and the wall thickness that every divider
- * shares.
+ * Workspace chrome for the Bento editor: identity on the left, undo/redo,
+ * the grid dimensions (preserve-and-stash semantics — a dimension change
+ * never destroys drawn compartments), zoom pill on the right, and the way
+ * out. Composition mirrors the cutout workspace header.
  */
 
-import { Button, Stepper } from '@/design-system';
+import { Button, IconButton, Stepper } from '@/design-system';
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { useTranslation } from '@/i18n';
 import { BentoIcon } from '../panel/InteriorSection/icons';
-import type { CompartmentGridApi } from '../CompartmentEditor/useCompartmentGrid';
 
 export interface BentoWorkspaceHeaderProps {
-  readonly grid: CompartmentGridApi;
+  readonly cols: number;
+  readonly rows: number;
+  readonly compartmentCount: number;
+  readonly hasDrawnCompartments: boolean;
+  readonly onGridChange: (cols: number, rows: number) => void;
+  readonly onClearAll: () => void;
+  readonly onUndo: () => void;
+  readonly onRedo: () => void;
+  readonly canUndo: boolean;
+  readonly canRedo: boolean;
+  readonly zoomPercent: number;
+  readonly onZoomIn: () => void;
+  readonly onZoomOut: () => void;
+  readonly onFitToView: () => void;
   readonly onClose: () => void;
 }
 
-export function BentoWorkspaceHeader({ grid, onClose }: BentoWorkspaceHeaderProps) {
+function ArrowIcon({ direction }: { readonly direction: 'undo' | 'redo' }) {
+  const d =
+    direction === 'undo'
+      ? 'M9 14L4 9m0 0l5-5M4 9h10a6 6 0 010 12h-3'
+      : 'M15 14l5-5m0 0l-5-5m5 5H10a6 6 0 000 12h3';
+  return (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+    </svg>
+  );
+}
+
+export function BentoWorkspaceHeader({
+  cols,
+  rows,
+  compartmentCount,
+  hasDrawnCompartments,
+  onGridChange,
+  onClearAll,
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo,
+  zoomPercent,
+  onZoomIn,
+  onZoomOut,
+  onFitToView,
+  onClose,
+}: BentoWorkspaceHeaderProps) {
   const t = useTranslation();
-  const { cols, rows, compartmentCount, hasMergedCompartments, applyGrid, stepGrid, handleReset } =
-    grid;
 
   return (
-    <header className="flex flex-shrink-0 items-center gap-4 border-b border-stroke-subtle bg-surface-secondary px-4 py-2">
+    <header className="flex h-10 flex-shrink-0 items-center gap-3 border-b border-stroke-subtle bg-surface-secondary px-4">
       <div className="flex items-center gap-2">
         <BentoIcon size={18} className="text-accent" />
         <h2 className="text-sm font-semibold text-content-primary">
@@ -33,13 +68,40 @@ export function BentoWorkspaceHeader({ grid, onClose }: BentoWorkspaceHeaderProp
         </h2>
       </div>
 
+      <div className="flex items-center gap-0.5">
+        <IconButton
+          type="button"
+          variant="ghost"
+          size="sm"
+          touchTarget={false}
+          onClick={onUndo}
+          disabled={!canUndo}
+          aria-label={t('common.undo')}
+          title={t('common.undo')}
+        >
+          <ArrowIcon direction="undo" />
+        </IconButton>
+        <IconButton
+          type="button"
+          variant="ghost"
+          size="sm"
+          touchTarget={false}
+          onClick={onRedo}
+          disabled={!canRedo}
+          aria-label={t('common.redo')}
+          title={t('common.redo')}
+        >
+          <ArrowIcon direction="redo" />
+        </IconButton>
+      </div>
+
       <div className="flex items-center gap-3">
         <label className="flex items-center gap-1.5 text-xs text-content-tertiary">
           {t('binDesigner.columns')}
           <Stepper
             value={cols}
-            onChange={(next: number) => applyGrid(next, rows)}
-            onStep={(delta: number) => stepGrid('cols', delta)}
+            onChange={(next: number) => onGridChange(next, rows)}
+            onStep={(delta: number) => onGridChange(cols + delta, rows)}
             min={DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID}
             max={DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID}
             step={1}
@@ -51,8 +113,8 @@ export function BentoWorkspaceHeader({ grid, onClose }: BentoWorkspaceHeaderProp
           {t('binDesigner.rows')}
           <Stepper
             value={rows}
-            onChange={(next: number) => applyGrid(cols, next)}
-            onStep={(delta: number) => stepGrid('rows', delta)}
+            onChange={(next: number) => onGridChange(cols, next)}
+            onStep={(delta: number) => onGridChange(cols, rows + delta)}
             min={DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID}
             max={DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID}
             step={1}
@@ -66,20 +128,71 @@ export function BentoWorkspaceHeader({ grid, onClose }: BentoWorkspaceHeaderProp
         {compartmentCount} {t('binDesigner.compartments')}
       </p>
 
-      {hasMergedCompartments && (
+      {hasDrawnCompartments && (
         <Button
           type="button"
           variant="ghost"
           size="sm"
-          onClick={handleReset}
+          onClick={onClearAll}
           className="text-[11px] font-medium text-accent hover:bg-transparent hover:text-accent/80"
-          aria-label={t('binDesigner.resetCompartmentLayoutToUniformGrid')}
+          aria-label={t('binDesigner.bento.clearAllLabel')}
         >
-          {t('common.reset')}
+          {t('binDesigner.bento.clearAll')}
         </Button>
       )}
 
-      <div className="ml-auto">
+      <div className="ml-auto flex items-center gap-2">
+        <div className="flex items-center gap-0.5 rounded border border-stroke-subtle bg-surface-elevated">
+          <IconButton
+            type="button"
+            variant="ghost"
+            size="sm"
+            touchTarget={false}
+            onClick={onZoomOut}
+            aria-label={t('binDesigner.cutoutEditor.zoomOut')}
+            title={t('binDesigner.cutoutEditor.zoomOut')}
+          >
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden
+            >
+              <path strokeLinecap="round" strokeWidth={2} d="M5 12h14" />
+            </svg>
+          </IconButton>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onFitToView}
+            className="min-w-[3.5rem] px-1 text-xs tabular-nums"
+            title={t('binDesigner.cutoutEditor.fitToView')}
+            aria-label={t('binDesigner.cutoutEditor.fitToView')}
+          >
+            {zoomPercent}%
+          </Button>
+          <IconButton
+            type="button"
+            variant="ghost"
+            size="sm"
+            touchTarget={false}
+            onClick={onZoomIn}
+            aria-label={t('binDesigner.cutoutEditor.zoomIn')}
+            title={t('binDesigner.cutoutEditor.zoomIn')}
+          >
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden
+            >
+              <path strokeLinecap="round" strokeWidth={2} d="M12 5v14M5 12h14" />
+            </svg>
+          </IconButton>
+        </div>
         <Button type="button" variant="primary" size="sm" onClick={onClose}>
           {t('common.done')}
         </Button>

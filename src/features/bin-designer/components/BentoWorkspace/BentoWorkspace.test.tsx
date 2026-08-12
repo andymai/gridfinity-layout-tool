@@ -1,62 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { BentoWorkspace } from './BentoWorkspace';
+import { useDesignerStore } from '@/features/bin-designer/store/designer';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 const mocks = vi.hoisted(() => ({
-  setBentoWorkspaceOpen: vi.fn(),
-  markQuickstartSeen: vi.fn(),
   quickstartSeen: true,
-  grid: {
-    cols: 3,
-    rows: 2,
-    compartmentCount: 6,
-    hasMergedCompartments: false,
-    aspectRatio: 2,
-    interiorW: 100,
-    interiorD: 50,
-    isDragging: false,
-    selectionAction: 'none' as const,
-    hoveredIsSplittable: false,
-    instructionText: 'drag or click',
-    applyGrid: vi.fn(),
-    stepGrid: vi.fn(),
-    handleReset: vi.fn(),
-  },
-  box: {
-    width: 300,
-    height: 150,
-    scaleX: 3,
-    scaleY: 3,
-  },
-}));
-
-vi.mock('@/features/bin-designer/store', () => ({
-  useDesignerStore: vi.fn((selector: (s: unknown) => unknown) =>
-    selector({ setBentoWorkspaceOpen: mocks.setBentoWorkspaceOpen })
-  ),
-}));
-
-vi.mock('../CompartmentEditor/useCompartmentGrid', () => ({
-  useCompartmentGrid: () => mocks.grid,
-}));
-
-vi.mock('../CompartmentEditor/CompartmentGridView', () => ({
-  CompartmentGridView: ({ style }: { style?: Record<string, string> }) => (
-    <div data-testid="grid-view" data-width={style?.width} data-height={style?.height} />
-  ),
-}));
-
-vi.mock('./useBentoCanvasBox', () => ({
-  useBentoCanvasBox: () => mocks.box,
-}));
-
-vi.mock('../CompartmentEditor/useDividerTiltSubsection', () => ({
-  useDividerTiltSubsection: () => ({
-    rows: [{ key: '0-1', axis: 'vertical', angleDeg: 0, shiftMm: 0, geometry: {} }],
-    handlers: { previewTilt: vi.fn(), commitTilt: vi.fn(), cancelTilt: vi.fn() },
-  }),
+  markQuickstartSeen: vi.fn(),
 }));
 
 vi.mock('@/features/bin-designer/hooks/useBentoQuickstart', () => ({
@@ -64,18 +15,6 @@ vi.mock('@/features/bin-designer/hooks/useBentoQuickstart', () => ({
     quickstartSeen: mocks.quickstartSeen,
     markQuickstartSeen: mocks.markQuickstartSeen,
   }),
-}));
-
-vi.mock('./BentoLabelBar', () => ({
-  BentoLabelBar: () => <div data-testid="label-bar" />,
-}));
-
-vi.mock('./BentoQuickstartOverlay', () => ({
-  BentoQuickstartOverlay: () => <div data-testid="quickstart" />,
-}));
-
-vi.mock('./useDividerDrag', () => ({
-  useDividerDrag: () => ({ draggingKey: null, onDragStart: vi.fn() }),
 }));
 
 vi.mock('../CutoutWorkspace/Rulers', () => ({
@@ -88,90 +27,132 @@ vi.mock('../CutoutWorkspace/Rulers', () => ({
   RulerCorner: () => <div data-testid="ruler-corner" />,
 }));
 
+const drawViaStore = (): number => {
+  const id = useDesignerStore.getState().drawBentoCompartment({ col: 0, row: 0, w: 2, h: 2 });
+  if (id === null) throw new Error('unreachable');
+  return id;
+};
+
 describe('BentoWorkspace', () => {
   beforeEach(() => {
-    mocks.setBentoWorkspaceOpen.mockClear();
+    localStorage.clear();
     mocks.quickstartSeen = true;
-    mocks.box.width = 300;
-    mocks.box.height = 150;
+    useDesignerStore.setState(useDesignerStore.getInitialState());
+    useDesignerStore.getState().setBentoWorkspaceOpen(true);
+    useDesignerStore.getState().setCompartmentGrid(4, 3);
   });
 
-  it('draws the grid alongside both rulers', () => {
+  it('composes header, canvas, rulers, stash shelf, dock and footer', () => {
     render(<BentoWorkspace />);
 
-    expect(screen.getByTestId('grid-view')).toBeInTheDocument();
+    expect(screen.getByTestId('bento-canvas')).toBeInTheDocument();
     expect(screen.getByTestId('top-ruler')).toBeInTheDocument();
     expect(screen.getByTestId('left-ruler')).toBeInTheDocument();
+    expect(screen.getByTestId('bento-stash-shelf')).toBeInTheDocument();
+    expect(screen.getByTestId('bento-dock')).toBeInTheDocument();
+    expect(screen.getByText(/binDesigner\.bento\.backgroundNote/)).toBeInTheDocument();
   });
 
-  it('sizes the rulers to the same box as the grid', () => {
+  it('shows the empty-state hint until something is drawn or stashed', () => {
+    const { rerender } = render(<BentoWorkspace />);
+    expect(screen.getByText('binDesigner.bento.emptyStateHint')).toBeInTheDocument();
+
+    drawViaStore();
+    rerender(<BentoWorkspace />);
+    expect(screen.queryByText('binDesigner.bento.emptyStateHint')).not.toBeInTheDocument();
+  });
+
+  it('renders drawn compartments from the store', () => {
+    const id = drawViaStore();
     render(<BentoWorkspace />);
 
-    // A ruler measured against a different box would label the wrong wall.
-    expect(screen.getByTestId('top-ruler')).toHaveAttribute('data-length', '300');
-    expect(screen.getByTestId('left-ruler')).toHaveAttribute('data-length', '150');
-    expect(screen.getByTestId('grid-view')).toHaveAttribute('data-width', '300px');
-    expect(screen.getByTestId('grid-view')).toHaveAttribute('data-height', '150px');
+    expect(screen.getByTestId(`bento-compartment-${id}`)).toBeInTheDocument();
+    expect(screen.getByTestId(`bento-dock-row-${id}`)).toBeInTheDocument();
   });
 
-  it('draws nothing until the container has been measured', () => {
-    mocks.box.width = 0;
-    mocks.box.height = 0;
-    render(<BentoWorkspace />);
-
-    expect(screen.queryByTestId('grid-view')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('top-ruler')).not.toBeInTheDocument();
-  });
-
-  it('closes on Escape', () => {
-    render(<BentoWorkspace />);
-
-    fireEvent.keyDown(window, { key: 'Escape' });
-
-    expect(mocks.setBentoWorkspaceOpen).toHaveBeenCalledWith(false);
-  });
-
-  it('closes from the header Done button', () => {
+  it('closes from Done', () => {
     render(<BentoWorkspace />);
 
     fireEvent.click(screen.getByText('common.done'));
 
-    expect(mocks.setBentoWorkspaceOpen).toHaveBeenCalledWith(false);
+    expect(useDesignerStore.getState().ui.bentoWorkspaceOpen).toBe(false);
   });
 
-  it('stops listening for Escape once unmounted', () => {
-    const { unmount } = render(<BentoWorkspace />);
-    unmount();
-
-    fireEvent.keyDown(window, { key: 'Escape' });
-
-    expect(mocks.setBentoWorkspaceOpen).not.toHaveBeenCalled();
-  });
-
-  it('shows the quickstart card only until it is dismissed', () => {
-    const { unmount } = render(<BentoWorkspace />);
-    expect(screen.queryByTestId('quickstart')).not.toBeInTheDocument();
-    unmount();
-
-    mocks.quickstartSeen = false;
-    render(<BentoWorkspace />);
-    expect(screen.getByTestId('quickstart')).toBeInTheDocument();
-  });
-
-  it('lets the quickstart card have the first Escape', () => {
-    mocks.quickstartSeen = false;
+  it('Escape clears the selection before closing the workspace', () => {
+    const id = drawViaStore();
+    useDesignerStore.getState().setSelectedBentoCompartmentId(id);
     render(<BentoWorkspace />);
 
     fireEvent.keyDown(window, { key: 'Escape' });
+    expect(useDesignerStore.getState().ui.selectedBentoCompartmentId).toBeNull();
+    expect(useDesignerStore.getState().ui.bentoWorkspaceOpen).toBe(true);
 
-    // Otherwise the card and the workspace both close on one keypress and the
-    // card is never actually read.
-    expect(mocks.setBentoWorkspaceOpen).not.toHaveBeenCalled();
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(useDesignerStore.getState().ui.bentoWorkspaceOpen).toBe(false);
   });
 
-  it('shows the shared instruction text', () => {
+  it('Delete removes the selected compartment', () => {
+    const id = drawViaStore();
+    useDesignerStore.getState().setSelectedBentoCompartmentId(id);
     render(<BentoWorkspace />);
 
-    expect(screen.getByText('drag or click')).toBeInTheDocument();
+    fireEvent.keyDown(window, { key: 'Delete' });
+
+    const { compartments } = useDesignerStore.getState().params;
+    expect(new Set(compartments.cells).size).toBe(12);
+    expect(compartments.drawnUnitCells).toBeUndefined();
+  });
+
+  it('arrow keys nudge the selected compartment and keep it selected', () => {
+    const id = drawViaStore();
+    useDesignerStore.getState().setSelectedBentoCompartmentId(id);
+    render(<BentoWorkspace />);
+
+    fireEvent.keyDown(window, { key: 'ArrowRight' });
+
+    const state = useDesignerStore.getState();
+    const selected = state.ui.selectedBentoCompartmentId;
+    expect(selected).not.toBeNull();
+    if (selected === null) throw new Error('unreachable');
+    // The 2×2 block moved off column 0: its cells no longer include index 0.
+    expect(state.params.compartments.cells[0]).not.toBe(selected);
+  });
+
+  it('deleting a stash entry goes through the store', () => {
+    const id = drawViaStore();
+    useDesignerStore.getState().stashBentoCompartment(id);
+    render(<BentoWorkspace />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'binDesigner.bento.stashRemove' }));
+
+    expect(useDesignerStore.getState().params.compartments.stash).toBeUndefined();
+  });
+
+  it('shows the quickstart card only until dismissed, and lets it eat the first Escape', () => {
+    mocks.quickstartSeen = false;
+    render(<BentoWorkspace />);
+
+    expect(screen.getByText('binDesigner.bento.quickstart.draw')).toBeInTheDocument();
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(useDesignerStore.getState().ui.bentoWorkspaceOpen).toBe(true);
+  });
+
+  it('grid steppers preserve drawn compartments and stash the displaced', () => {
+    const id = drawViaStore();
+    useDesignerStore.getState().drawBentoCompartment({ col: 3, row: 0, w: 1, h: 2 });
+    render(<BentoWorkspace />);
+
+    const [colsDecrease] = screen.getAllByRole('button', { name: /decrease/i });
+    fireEvent.click(colsDecrease);
+    fireEvent.click(colsDecrease);
+
+    const { compartments } = useDesignerStore.getState().params;
+    expect(compartments.cols).toBe(2);
+    expect(compartments.stash).toHaveLength(1);
+    expect(useDesignerStore.getState().params.compartments.cells[0]).toBe(
+      useDesignerStore.getState().params.compartments.cells[1]
+    );
+    expect(id).toBeGreaterThanOrEqual(0);
   });
 });

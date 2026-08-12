@@ -62,6 +62,15 @@ export function createUISlice(set: Set) {
         // would leave whichever DesignerMainContent checks first silently
         // winning, and the other's exit button pointing at nothing.
         if (open) state.ui.cutoutEditorOpen = false;
+        // Selection is workspace-scoped; a stale id would silently point at a
+        // renumbered compartment on reopen.
+        if (!open) state.ui.selectedBentoCompartmentId = null;
+      });
+    },
+
+    setSelectedBentoCompartmentId: (id: number | null) => {
+      set((state) => {
+        state.ui.selectedBentoCompartmentId = id;
       });
     },
 

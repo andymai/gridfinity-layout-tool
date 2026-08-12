@@ -6,6 +6,7 @@
 
 import { createCoreParamActions } from './coreParamActions';
 import { createScopedUpdaters } from './scopedUpdaters';
+import { createBentoActions } from './bentoActions';
 import { createCompartmentActions } from './compartmentActions';
 import { createSurfaceTextActions } from './surfaceTextActions';
 import { createInsertActions } from './insertActions';
@@ -16,6 +17,7 @@ export function createParamSlice(set: Set, get: Get) {
     ...createCoreParamActions(set, get),
     ...createScopedUpdaters(set),
     ...createCompartmentActions(set, get),
+    ...createBentoActions(set, get),
     ...createSurfaceTextActions(set, get),
     ...createInsertActions(set),
   };

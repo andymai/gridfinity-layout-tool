@@ -16,6 +16,7 @@ import { getCompartmentCount } from '@/features/bin-designer/utils/compartments'
 import { CompartmentEditor } from '../../CompartmentEditor';
 import { SlotConfigurator } from '../../SlotConfigurator/SlotConfigurator';
 import { WorkspaceLaunchButton } from './WorkspaceLaunchButton';
+import { BentoMiniPreview } from './BentoMiniPreview';
 import { Grid3x3Icon, BentoIcon, DividerIcon, ScissorsIcon } from './icons';
 import type { InteriorCard } from '../../../types';
 import type { ReactNode } from 'react';
@@ -63,6 +64,8 @@ const MODE_CONFIG: Record<InteriorCard, ModeConfig> = {
 function BentoModeContent() {
   const setBentoWorkspaceOpen = useDesignerStore((s) => s.setBentoWorkspaceOpen);
   const compartments = useDesignerStore((s) => s.params.compartments);
+  const width = useDesignerStore((s) => s.params.width);
+  const depth = useDesignerStore((s) => s.params.depth);
   const { isDesktop } = useResponsive();
   const t = useTranslation();
 
@@ -74,6 +77,7 @@ function BentoModeContent() {
 
   return (
     <div className="space-y-2">
+      <BentoMiniPreview compartments={compartments} aspectRatio={depth > 0 ? width / depth : 1} />
       <WorkspaceLaunchButton
         illustration={<BentoIcon size={24} className="text-accent/70" />}
         title={t('binDesigner.openBentoWorkspace')}

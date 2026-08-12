@@ -568,4 +568,139 @@ describe('validateCompartments', () => {
       );
     });
   });
+
+  describe('drawnUnitCells', () => {
+    function fourCells() {
+      return { cols: 2, rows: 2, thickness: 1.2, cells: [0, 1, 2, 3] };
+    }
+
+    it('accepts markers on 1×1 compartments', () => {
+      expect(validateCompartments({ ...fourCells(), drawnUnitCells: [0, 3] })).toBeNull();
+    });
+
+    it('rejects a non-array', () => {
+      expect(validateCompartments({ ...fourCells(), drawnUnitCells: 'all' })).toBe(
+        'compartments.drawnUnitCells must be an array'
+      );
+    });
+
+    it('rejects an array longer than the cell count', () => {
+      expect(validateCompartments({ ...fourCells(), drawnUnitCells: [0, 1, 2, 3, 0] })).toBe(
+        'compartments.drawnUnitCells length must not exceed cols × rows (4)'
+      );
+    });
+
+    it('rejects fractional, negative, and non-number entries', () => {
+      expect(validateCompartments({ ...fourCells(), drawnUnitCells: [0.5] })).toBe(
+        'compartments.drawnUnitCells[0] must be a non-negative integer'
+      );
+      expect(validateCompartments({ ...fourCells(), drawnUnitCells: [-1] })).toBe(
+        'compartments.drawnUnitCells[0] must be a non-negative integer'
+      );
+      expect(validateCompartments({ ...fourCells(), drawnUnitCells: ['0'] })).toBe(
+        'compartments.drawnUnitCells[0] must be a non-negative integer'
+      );
+    });
+
+    it('rejects a marker on an unknown compartment ID', () => {
+      expect(validateCompartments({ ...fourCells(), drawnUnitCells: [9] })).toBe(
+        'compartments.drawnUnitCells[0] must reference a 1×1 compartment'
+      );
+    });
+
+    it('rejects a marker on a multi-cell compartment', () => {
+      expect(
+        validateCompartments({
+          cols: 2,
+          rows: 2,
+          thickness: 1.2,
+          cells: [0, 0, 1, 2],
+          drawnUnitCells: [0],
+        })
+      ).toBe('compartments.drawnUnitCells[0] must reference a 1×1 compartment');
+    });
+
+    it('rejects duplicate markers', () => {
+      expect(validateCompartments({ ...fourCells(), drawnUnitCells: [1, 1] })).toBe(
+        'compartments.drawnUnitCells has duplicate ID 1'
+      );
+    });
+  });
+
+  describe('stash', () => {
+    it('accepts a valid stash with and without labels', () => {
+      expect(
+        validateCompartments({
+          ...validCompartments(),
+          stash: [
+            { w: 2, h: 1, label: 'screws' },
+            { w: 1, h: 1 },
+          ],
+        })
+      ).toBeNull();
+    });
+
+    it('accepts exactly MAX_STASH_ENTRIES entries (boundary)', () => {
+      const stash = Array.from({ length: CONSTRAINTS.MAX_STASH_ENTRIES }, () => ({ w: 1, h: 1 }));
+      expect(validateCompartments({ ...validCompartments(), stash })).toBeNull();
+    });
+
+    it('rejects a non-array', () => {
+      expect(validateCompartments({ ...validCompartments(), stash: {} })).toBe(
+        'compartments.stash must be an array'
+      );
+    });
+
+    it('rejects more than MAX_STASH_ENTRIES entries', () => {
+      const stash = Array.from({ length: CONSTRAINTS.MAX_STASH_ENTRIES + 1 }, () => ({
+        w: 1,
+        h: 1,
+      }));
+      expect(validateCompartments({ ...validCompartments(), stash })).toBe(
+        `compartments.stash must not exceed ${CONSTRAINTS.MAX_STASH_ENTRIES} entries`
+      );
+    });
+
+    it('rejects a non-object entry', () => {
+      expect(validateCompartments({ ...validCompartments(), stash: [null] })).toBe(
+        'compartments.stash[0] must be an object'
+      );
+    });
+
+    it('rejects w/h outside 1..MAX_COMPARTMENT_GRID or fractional', () => {
+      expect(validateCompartments({ ...validCompartments(), stash: [{ w: 0, h: 1 }] })).toBe(
+        `compartments.stash[0].w must be integer 1-${CONSTRAINTS.MAX_COMPARTMENT_GRID}`
+      );
+      expect(
+        validateCompartments({
+          ...validCompartments(),
+          stash: [{ w: 1, h: CONSTRAINTS.MAX_COMPARTMENT_GRID + 1 }],
+        })
+      ).toBe(`compartments.stash[0].h must be integer 1-${CONSTRAINTS.MAX_COMPARTMENT_GRID}`);
+      expect(validateCompartments({ ...validCompartments(), stash: [{ w: 1.5, h: 1 }] })).toBe(
+        `compartments.stash[0].w must be integer 1-${CONSTRAINTS.MAX_COMPARTMENT_GRID}`
+      );
+    });
+
+    it('rejects a non-string label', () => {
+      expect(
+        validateCompartments({ ...validCompartments(), stash: [{ w: 1, h: 1, label: 7 }] })
+      ).toBe('compartments.stash[0].label must be a string');
+    });
+
+    it('accepts a label of exactly 50 chars and rejects 51 (boundary)', () => {
+      expect(
+        validateCompartments({
+          ...validCompartments(),
+          stash: [{ w: 1, h: 1, label: 'a'.repeat(50) }],
+        })
+      ).toBeNull();
+      expect(
+        validateCompartments({
+          ...validCompartments(),
+          stash: [{ w: 1, h: 1, label: 'a'.repeat(51) }],
+        })
+      ).toBe('compartments.stash[0].label must not exceed 50 characters');
+    });
+  });
 });

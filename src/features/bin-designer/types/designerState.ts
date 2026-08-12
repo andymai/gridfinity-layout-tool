@@ -20,7 +20,7 @@ import type {
   ReorderDirection,
 } from './cutout';
 import type { BaseConfig } from './base';
-import type { CompartmentConfig, ScoopConfig } from './compartments';
+import type { CellRect, CompartmentConfig, ScoopConfig } from './compartments';
 import type { InteriorCard } from './interior';
 import type { LabelTabConfig } from './labelTabs';
 import type { HandleConfig, HandleSide, HandleWallSide } from './handles';
@@ -155,6 +155,24 @@ export interface DesignerState {
   /** Set the global interior divider height in mm, or 'auto' for full height. */
   setCompartmentDividerHeight: (height: number | 'auto') => void;
 
+  // Bento workspace actions (additive draw model over the compartment grid).
+  // Mutating actions return the affected compartment's POST-normalization id
+  // (ids renumber on every mutation) or null when the op was invalid.
+  drawBentoCompartment: (rect: CellRect) => number | null;
+  moveBentoCompartment: (id: number, dCol: number, dRow: number) => number | null;
+  resizeBentoCompartment: (id: number, target: CellRect) => number | null;
+  duplicateBentoCompartment: (id: number, target: CellRect) => number | null;
+  removeBentoCompartment: (id: number) => boolean;
+  stashBentoCompartment: (id: number) => boolean;
+  placeBentoStashEntry: (index: number, rect: CellRect) => number | null;
+  removeBentoStashEntry: (index: number) => boolean;
+  /** Preserve-and-stash grid resize; null when the size pre-flight rejects. */
+  setBentoGridPreserving: (
+    cols: number,
+    rows: number
+  ) => { stashedCount: number; droppedCount: number } | null;
+  clearBentoCompartments: () => void;
+
   // Angled-divider override actions
   setDividerOverride: (
     compartmentA: number,
@@ -272,6 +290,8 @@ export interface DesignerState {
   setCompartmentLabelMode: (on: boolean) => void;
   /** Point both the grid and the label-text list at the same compartment. */
   setLabelFocusCompartmentId: (id: number | null) => void;
+  /** Select a drawn compartment in the Bento workspace (null clears). */
+  setSelectedBentoCompartmentId: (id: number | null) => void;
   /** Enter a color tool overlay, or pass null to exit any active tool. */
   setColorTool: (tool: ColorTool) => void;
   /**

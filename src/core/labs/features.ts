@@ -240,9 +240,9 @@ export const FEATURE_FLAGS = [
     // stored under, so renaming it would switch the feature back off for
     // everyone who had already turned it on.
     id: 'merge_bins_to_design',
-    name: 'Make Bento',
+    name: 'Bentobox Designer',
     description:
-      'Select a group of bins and print them as one divided tray, like a bento box, with walls where the bin edges were and your labels carried across. Select two or more bins, then use Bento in the toolbar or the selection panel.',
+      'Design divided trays like a bento box. Draw compartments right onto the bin interior in the Bentobox workspace — drag to draw, move and resize like layout bins, set extras aside in the stash — or select two or more layout bins and merge them into one tray with walls where the bin edges were and your labels carried across.',
     status: 'experimental',
     risk: 'low',
     warning:
