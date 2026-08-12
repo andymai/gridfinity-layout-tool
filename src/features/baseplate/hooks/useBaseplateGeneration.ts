@@ -245,6 +245,8 @@ export function selectGenerationTriggers(state: LayoutStoreState) {
   // neither family's fields can change the mesh while it is on.
   const stackingOn = bp.stackPrint?.enabled === true;
   const screwsOn = !stackingOn && bp.screwHoles?.enabled === true;
+  // The underside cross cutters run on magnet plates and screw-pad cells.
+  const lightweightRelevant = (!stackingOn && bp.magnetHoles) || screwsOn;
   return {
     drawerWidth: state.layout.drawer.width,
     drawerDepth: state.layout.drawer.depth,
@@ -328,7 +330,7 @@ export function selectGenerationTriggers(state: LayoutStoreState) {
     // can carry it, and the underside cross cutters consume it on magnet
     // plates and screw-pad cells alike — fold it out when neither can
     // (stacking strips both, so it folds out there too).
-    lightweight: (!stackingOn && bp.magnetHoles) || screwsOn ? bp.lightweight !== false : true,
+    lightweight: lightweightRelevant ? bp.lightweight !== false : true,
     paddingLeft: bp.paddingLeft,
     paddingRight: bp.paddingRight,
     paddingFront: bp.paddingFront,

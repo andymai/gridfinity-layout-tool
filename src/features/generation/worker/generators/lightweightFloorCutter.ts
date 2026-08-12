@@ -429,6 +429,9 @@ export function planPartialCellFloorCuts(
  * nominal-grid {@link buildLightweightFloorCutters} only hollows full cells, so
  * clipped padding tiles (a 25×42 side strip, a 42×13 top strip) would otherwise
  * keep a solid underside. Called alongside it so the preview and export match.
+ * `floorDepthMm` has the same contract as on the full-cell builder: the full
+ * floor the cut must clear, absent ⇒ the magnet floor — a screw pad makes the
+ * floor deeper, and a magnet-floor cut would seal each void with a membrane.
  */
 export function buildPartialCellFloorCutters(
   cells: readonly CellInfo[],
