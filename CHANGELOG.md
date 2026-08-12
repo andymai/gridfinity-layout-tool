@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.402.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.402.0...gridfinity-layout-tool-v4.402.1) (2026-08-12)
+
+
+### Bug Fixes
+
+* **generation:** namespace the persisted mesh cache by kernel ([#3447](https://github.com/andymai/gridfinity-layout-tool/issues/3447)) ([6969be3](https://github.com/andymai/gridfinity-layout-tool/commit/6969be351b58bcb7462db3da2442cdb59992d201))
+
 ## [4.402.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.401.0...gridfinity-layout-tool-v4.402.0) (2026-08-12)
 
 
