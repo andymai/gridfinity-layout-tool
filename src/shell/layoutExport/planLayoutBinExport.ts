@@ -27,6 +27,7 @@ import { resolveBinOverhang } from '@/shared/utils/drawerMargin';
 import { overhangKey as resolvedOverhangKey, resolveOverhang } from '@/shared/utils/overhang';
 import type { ExportFileFormat, ExportFileNameConfig } from '@/shared/types/bin';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
+import { hasMeshImprints } from '@/shared/generation/meshAsset';
 import { importedMeshDescriptor } from '@/shared/items/importedMesh/descriptor';
 import type { ImportedMeshStructure, ItemEnvelope } from '@/shared/types/item';
 import type { PrintSettings } from '@/shared/printSettings';
@@ -244,10 +245,19 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
   // REPLACES the design's own overhang for that instance.
   const groups = new Map<string, BinExportGroup>();
   const usable: BinExportGroup[] = [];
+  // Designs a STEP export cannot represent because their pocket is carved out
+  // of the tessellated mesh, not the solid. Skipped like imported meshes rather
+  // than exported wrong — and, before #3449, rather than thrown on, which took
+  // the entire ZIP down over one bin.
+  const imprintStepSkipped = new Set<DesignId>();
   for (const b of bins) {
     if (b.linkedDesignId === undefined) continue;
     const design = designById.get(b.linkedDesignId);
     if (!design?.params) continue; // missing/non-bin already tallied above
+    if (format === 'step' && hasMeshImprints(design.params)) {
+      imprintStepSkipped.add(b.linkedDesignId);
+      continue;
+    }
     const overhang = resolveBinOverhang(b, drawer, baseplate);
     // Inject the layout's magnet anchor (source of truth), overriding any value
     // saved on the design, so exported bins mate with the baseplate's magnets.
@@ -407,7 +417,13 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
     exportable,
     meshExportable,
     manifestBins,
-    skipped: { unlinkedBins, nonBinDesigns, missingDesigns, meshDesignsStepSkipped },
+    skipped: {
+      unlinkedBins,
+      nonBinDesigns,
+      missingDesigns,
+      meshDesignsStepSkipped,
+      imprintDesignsStepSkipped: imprintStepSkipped.size,
+    },
     totals: { filamentGrams: totalGrams, printTimeMinutes: totalMinutes },
   };
 }

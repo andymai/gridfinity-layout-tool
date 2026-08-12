@@ -18,6 +18,7 @@
 
 import { err, ok, validationImportFailed } from '@/core/result';
 import type { Result, ValidationError } from '@/core/result';
+import type { BinParams, Cutout } from '@/shared/types/bin';
 
 /** A 2D silhouette ring point in mm, in the mesh's lay-flat XY frame. */
 export interface MeshOutlinePoint {
@@ -83,6 +84,35 @@ export const MAX_MESH_ASSET_DATA_LENGTH = 900_000;
  * without decompressing, which is the work we are trying not to do on hostile
  * input. `decodeMeshData` enforces the decompressed ceiling separately.
  */
+/**
+ * A design's mesh-imprint cutouts that will actually be cut — visible, and
+ * pointing at an asset that resolves.
+ *
+ * Their presence decides real behaviour on both sides of the worker boundary:
+ * the pocket is subtracted from the TESSELLATED mesh, after the BREP solid
+ * exists, so a design carrying one has no solid that describes what the user
+ * sees and `binExporter` refuses STEP for it. That refusal is a thrown error at
+ * download time, so the export UI has to disable STEP on exactly the same
+ * condition — hence one predicate here rather than a worker-side copy the UI
+ * approximates (#3449).
+ */
+export function visibleMeshImprintCutouts(
+  params: Pick<BinParams, 'cutouts' | 'meshAssets'>
+): readonly Cutout[] {
+  return params.cutouts.filter(
+    (c) =>
+      c.shape === 'mesh' &&
+      c.hidden !== true &&
+      c.meshId !== undefined &&
+      params.meshAssets?.[c.meshId] !== undefined
+  );
+}
+
+/** True when the design has at least one visible, resolvable mesh imprint. */
+export function hasMeshImprints(params: Pick<BinParams, 'cutouts' | 'meshAssets'>): boolean {
+  return visibleMeshImprintCutouts(params).length > 0;
+}
+
 export function hasOversizedMeshAsset(params: unknown): boolean {
   if (typeof params !== 'object' || params === null) return false;
   const assets = (params as { meshAssets?: unknown }).meshAssets;

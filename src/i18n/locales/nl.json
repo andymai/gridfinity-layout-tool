@@ -764,6 +764,7 @@
   "binDesigner.export.error.retry": "Opnieuw proberen",
   "binDesigner.export.error.timeout": "Export verlopen — dit ontwerp is mogelijk te complex. Probeer de hoogte te verlagen of het wandpatroon uit te schakelen en exporteer opnieuw.",
   "binDesigner.export.multiColor.formatDisabled": "{format} behoudt geen kleurgegevens. Gebruik 3MF om uw multi-kleurzones te behouden.",
+  "binDesigner.export.meshImprint.stepDisabled": "STEP kan de afdruk van een geïmporteerde mesh niet meenemen. Gebruik STL of 3MF.",
   "binDesigner.exportBinAsStl": "Bin als STL exporteren",
   "binDesigner.exportSTL": "Bin als STL exporteren",
   "binDesigner.exporting": "Exporteren…",

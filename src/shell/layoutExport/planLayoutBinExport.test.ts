@@ -35,6 +35,37 @@ function design(id: string, name: string, params: Partial<BinParams> = {}): Save
   };
 }
 
+/** A design carrying one visible, resolvable mesh imprint cutout (#3449). */
+function imprintParams(): Partial<BinParams> {
+  return {
+    cutouts: [
+      {
+        id: 'c1',
+        shape: 'mesh',
+        meshId: 'a1',
+        x: 10,
+        y: 10,
+        width: 10,
+        depth: 10,
+        cutDepth: 5,
+        rotation: 0,
+        cornerRadius: 0,
+        label: '',
+        groupId: null,
+      },
+    ],
+    meshAssets: {
+      a1: {
+        name: 'spanner',
+        data: 'x',
+        triangleCount: 12,
+        sizeMm: { x: 10, y: 10, z: 5 },
+        outlines: [],
+      },
+    },
+  };
+}
+
 function linkedBin(idStr: string, overrides: Partial<Bin> = {}): Bin {
   return createTestBin({ linkedDesignId: designId(idStr), ...overrides });
 }
@@ -435,6 +466,44 @@ describe('planLayoutBinExport', () => {
       expect(plan.meshExportable).toHaveLength(0);
       expect(plan.skipped.meshDesignsStepSkipped).toBe(1);
       expect(plan.manifestBins).toHaveLength(0);
+    });
+
+    it('skips a bin design carrying a mesh imprint under STEP, keeping the rest', () => {
+      const imprint = design('i1', 'Shadow board', imprintParams());
+      const plan = planLayoutBinExport({
+        bins: [linkedBin('i1'), { ...linkedBin('d1'), x: gridUnits(2) }],
+        loaded: [
+          { id: designId('i1'), design: imprint },
+          { id: designId('d1'), design: design('d1', 'Box') },
+        ],
+        format: 'step',
+        fileNameConfig: { ...CONFIG, format: 'step' },
+        printSettings: DEFAULT_PRINT_SETTINGS,
+        drawer: DRAWER,
+        baseplate: undefined,
+        printBed: PRINT_BED,
+      });
+      // The imprint pocket is cut after tessellation, so `binExporter` throws
+      // on STEP — and one throw used to abort the whole ZIP (#3449). The plain
+      // bin beside it must still come out.
+      expect(plan.skipped.imprintDesignsStepSkipped).toBe(1);
+      expect(plan.manifestBins.map((b) => b.designName)).toEqual(['Box']);
+    });
+
+    it('exports that same imprint design under STL', () => {
+      const imprint = design('i1', 'Shadow board', imprintParams());
+      const plan = planLayoutBinExport({
+        bins: [linkedBin('i1')],
+        loaded: [{ id: designId('i1'), design: imprint }],
+        format: 'stl',
+        fileNameConfig: CONFIG,
+        printSettings: DEFAULT_PRINT_SETTINGS,
+        drawer: DRAWER,
+        baseplate: undefined,
+        printBed: PRINT_BED,
+      });
+      expect(plan.skipped.imprintDesignsStepSkipped).toBe(0);
+      expect(plan.exportable).toHaveLength(1);
     });
 
     it('still tallies tool racks (non-mesh paramsless designs) as nonBinDesigns', () => {

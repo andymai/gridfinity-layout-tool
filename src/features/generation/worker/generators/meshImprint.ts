@@ -19,7 +19,11 @@
 import type { CrossSection, Manifold, ManifoldToplevel, Vec2 } from 'manifold-3d';
 import type { BinParams, Cutout } from '@/shared/types/bin';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
-import { decodeMeshData } from '@/shared/generation/meshAsset';
+import {
+  decodeMeshData,
+  hasMeshImprints,
+  visibleMeshImprintCutouts as visibleMeshCutouts,
+} from '@/shared/generation/meshAsset';
 import { isOk } from '@/core/result';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
 import {
@@ -65,20 +69,12 @@ interface PreparedTool {
 const preparedTools = new Map<string, PreparedTool>();
 let activeModule: ManifoldToplevel | null = null;
 
-function visibleMeshCutouts(params: BinParams): Cutout[] {
-  return params.cutouts.filter(
-    (c) =>
-      c.shape === 'mesh' &&
-      c.hidden !== true &&
-      c.meshId !== undefined &&
-      params.meshAssets?.[c.meshId] !== undefined
-  );
-}
-
-/** True when the design has at least one visible, resolvable mesh imprint. */
-export function hasMeshImprints(params: BinParams): boolean {
-  return visibleMeshCutouts(params).length > 0;
-}
+/**
+ * Re-exported rather than defined here: the export UI has to disable STEP on
+ * exactly the condition `binExporter` throws on, and it cannot import this
+ * module (manifold-3d, WASM). See `meshAsset.visibleMeshImprintCutouts`.
+ */
+export { hasMeshImprints };
 
 /** Drop all prepared tool manifolds (worker CLEANUP path). */
 export function clearMeshImprintCache(): void {

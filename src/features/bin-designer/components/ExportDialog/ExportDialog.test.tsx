@@ -446,6 +446,86 @@ describe('ExportDialog', () => {
     });
   });
 
+  // A mesh imprint is subtracted from the tessellated mesh, so there is no BREP
+  // solid for STEP to carry and `binExporter` throws outright. Offering STEP
+  // anyway turned a known limitation into a failed download and an auto-filed
+  // issue (#3449).
+  describe('mesh imprint cutouts', () => {
+    function setupImprintOpen(open: boolean, format: 'stl' | 'step' | '3mf'): void {
+      setupStore({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          cutouts: [
+            {
+              id: 'c1',
+              shape: 'mesh',
+              meshId: 'a1',
+              x: 10,
+              y: 10,
+              width: 10,
+              depth: 10,
+              cutDepth: 5,
+              rotation: 0,
+              cornerRadius: 0,
+              label: '',
+              groupId: null,
+            },
+          ],
+          meshAssets: {
+            a1: {
+              name: 'spanner',
+              data: 'x',
+              triangleCount: 12,
+              sizeMm: { x: 10, y: 10, z: 5 },
+              outlines: [],
+            },
+          },
+        },
+        exportFileNameConfig: { ...DEFAULT_EXPORT_FILE_NAME_CONFIG, format },
+        ui: {
+          ...DEFAULT_UI_STATE,
+          activeTab: 'dimensions',
+          exportDialogOpen: open,
+          wireframeMode: false,
+          designListOpen: false,
+          halfGridMode: false,
+        },
+      });
+    }
+
+    it('disables the STEP radio and leaves STL and 3MF alone', () => {
+      setupImprintOpen(true, 'stl');
+      render(<ExportDialog />);
+      expect(screen.getByRole('radio', { name: 'STEP' })).toHaveAttribute('aria-disabled', 'true');
+      expect(screen.getByRole('radio', { name: 'STL' })).not.toHaveAttribute('aria-disabled');
+      expect(screen.getByRole('radio', { name: '3MF' })).not.toHaveAttribute('aria-disabled');
+    });
+
+    it('switches a design saved as STEP over to STL on open', () => {
+      setupImprintOpen(false, 'step');
+      const { rerender } = render(<ExportDialog />);
+      act(() => setupImprintOpen(true, 'step'));
+      rerender(<ExportDialog />);
+      expect(useDesignerStore.getState().exportFileNameConfig.format).toBe('stl');
+    });
+
+    it('leaves STEP selectable when the only mesh cutout is hidden', () => {
+      // `hidden` cutouts are not cut, so the solid is complete and STEP is
+      // genuinely available — the gate has to track what gets subtracted, not
+      // what is merely listed.
+      setupImprintOpen(true, 'step');
+      const params = useDesignerStore.getState().params;
+      expect(params.cutouts).toHaveLength(1);
+      act(() => {
+        useDesignerStore.setState({
+          params: { ...params, cutouts: [{ ...params.cutouts[0], hidden: true }] },
+        });
+      });
+      render(<ExportDialog />);
+      expect(screen.getByRole('radio', { name: 'STEP' })).not.toHaveAttribute('aria-disabled');
+    });
+  });
+
   describe('publish nudge', () => {
     beforeEach(() => {
       localStorage.clear();

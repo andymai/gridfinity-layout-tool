@@ -764,6 +764,7 @@
   "binDesigner.export.error.retry": "다시 시도",
   "binDesigner.export.error.timeout": "내보내기 시간이 초과되었습니다 — 이 디자인이 너무 복잡할 수 있습니다. 높이를 낮추거나 벽 패턴을 끈 다음 다시 내보내세요.",
   "binDesigner.export.multiColor.formatDisabled": "{format}은(는) 색상 데이터를 보존하지 않습니다. 멀티 컬러 영역을 유지하려면 3MF를 사용하세요.",
+  "binDesigner.export.meshImprint.stepDisabled": "STEP는 가져온 메시 임프린트를 담을 수 없습니다. STL 또는 3MF를 사용하세요.",
   "binDesigner.exportBinAsStl": "수납통을 STL로 내보내기",
   "binDesigner.exportSTL": "수납통을 STL로 내보내기",
   "binDesigner.exporting": "내보내는 중...",

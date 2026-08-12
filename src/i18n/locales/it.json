@@ -764,6 +764,7 @@
   "binDesigner.export.error.retry": "Riprova",
   "binDesigner.export.error.timeout": "Esportazione scaduta; questo design potrebbe essere troppo complesso. Prova ad abbassare l'altezza o a disattivare il motivo delle pareti, poi esporta di nuovo.",
   "binDesigner.export.multiColor.formatDisabled": "{format} non conserva i dati di colore. Usa 3MF per mantenere le tue zone multicolore.",
+  "binDesigner.export.meshImprint.stepDisabled": "STEP non può trasportare l'impronta di una mesh importata. Usa STL o 3MF.",
   "binDesigner.exportBinAsStl": "Esporta bin come STL",
   "binDesigner.exportSTL": "Esporta bin come STL",
   "binDesigner.exporting": "Esportazione...",
