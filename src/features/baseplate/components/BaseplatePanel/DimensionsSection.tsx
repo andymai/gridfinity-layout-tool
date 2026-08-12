@@ -220,8 +220,9 @@ export function DimensionsSection() {
       const snappedDepth = (depthUpgrade ?? depthFit).units;
       if (widthUpgrade !== null || depthUpgrade !== null) setHalfGridMode(true);
 
-      // Clamp at 0: `slackMm` goes negative when GRID_MIN forced a grid larger
-      // than the target, and padding can't absorb a deficit.
+      // Clamp at 0: `slackMm` goes negative when the fit's minimum (1 unit in
+      // whole-unit mode, GRID_MIN in half) forced a grid larger than the
+      // target, and padding can't absorb a deficit.
       const remainderWidth = Math.max(0, (widthUpgrade ?? widthFit).slackMm);
       const remainderDepth = Math.max(0, (depthUpgrade ?? depthFit).slackMm);
 
