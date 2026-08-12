@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.403.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.402.5...gridfinity-layout-tool-v4.403.0) (2026-08-12)
+
+
+### Features
+
+* **bin-designer:** draw-to-create Bentobox workspace with stash ([#3459](https://github.com/andymai/gridfinity-layout-tool/issues/3459)) ([b191c24](https://github.com/andymai/gridfinity-layout-tool/commit/b191c2416b0fcf7c1de69f3e390e68e78578f7a4))
+
 ## [4.402.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.402.4...gridfinity-layout-tool-v4.402.5) (2026-08-12)
 
 
