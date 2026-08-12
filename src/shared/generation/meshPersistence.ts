@@ -7,8 +7,9 @@
  * generation pipeline. The tessellated preview mesh is deterministic for a given
  * set of params (tolerance is a pure function of dimensions at `forExport=false`)
  * and `MeshData` is structured-clone-serializable, so we persist it in IndexedDB
- * keyed by a hash of the params. On the next open the exact mesh paints in tens
- * of ms as a pre-draft while the worker warms up and regenerates to confirm it.
+ * keyed by a hash of the params plus the kernel that produced them. On the next
+ * open the exact mesh paints in tens of ms as a pre-draft while the worker warms
+ * up and regenerates to confirm it.
  *
  * This is a fast pre-paint only — never a source of truth. Exports always
  * regenerate (they need the watertight fused shell), so a stale entry can never
@@ -19,6 +20,7 @@
 import { openDB } from 'idb';
 import type { IDBPDatabase } from 'idb';
 import type { BinParams } from '@/shared/types/bin';
+import type { KernelName } from '@/shared/generation/bridge';
 import type { MeshData } from '@/shared/types/generation';
 import { createLogger } from '@/core/logger';
 
@@ -32,17 +34,19 @@ const BIN_MESHES_STORE = 'binMeshes';
 const META_STORE = 'binMeshMeta';
 
 /**
- * Bumped whenever the generated mesh bytes can change for the same params —
- * a brepjs/occt-wasm upgrade, a tessellation-tolerance change, or a geometry
- * fix. A bump changes every key, so old entries never match again and are
- * evicted by the LRU budget. The kernel id is NOT part of the per-entry key,
- * so the occt-wasm default and the brepkit Labs kernel (`brepkit_kernel`)
- * share one namespace — a fix on either side has to bump this constant.
+ * Bumped whenever the generated mesh bytes can change for the same params on
+ * EVERY kernel — a tessellation-tolerance change, or a geometry fix in the
+ * kernel-independent pipeline. A bump changes every key, so old entries never
+ * match again and are evicted by the LRU budget. For a change that only moves
+ * one kernel's output, bump that kernel's {@link KERNEL_MESH_REVISION} entry
+ * instead, so the other kernel's users keep their warm cache.
  *
+ * `v10`: the kernel id joined the key (#3444). Before this, occt-wasm and the
+ * brepkit Labs kernel shared one namespace, so switching engines in Labs served
+ * the previous engine's mesh for unchanged params.
  * `v9`: brepkit-wasm 3.2.24 reattaches splitter holes, so a slotted no-lip bin
  * gets back the cavity it was rendering solid. Only the Labs kernel's output
- * moved (the occt-wasm scenario snapshots are unchanged across brepjs
- * 18.124.8), but one namespace covers both.
+ * moved, but one namespace covered both — the last bump that had to.
  * `v8`: label-tab keep-outs on patterned dividers follow `inset` and the
  * anchor edge, so a bin with either cuts a different divider pattern.
  * `v7`: label tabs stopped being forced full-width in socket mode (#3402), so
@@ -50,7 +54,27 @@ const META_STORE = 'binMeshMeta';
  * without regenerating, so without this bump a linked design in the layout
  * planner would render its pre-fix bin until the entry was evicted.
  */
-const MESH_CACHE_VERSION = 'v9-brepjs18.124.8';
+const MESH_CACHE_VERSION = 'v10';
+
+/**
+ * Per-kernel revision, bumped when only THAT kernel's output moves for
+ * unchanged params — a brepkit-wasm or occt-wasm upgrade, or a fix in a
+ * kernel-specific code path. Bumping one leaves the other kernel's namespace
+ * (and its warm entries) untouched.
+ *
+ * occt-wasm `r1`: brepjs 18.124.8.
+ * brepkit `r1`: brepkit-wasm 3.2.28 — the interface-family winding and
+ * cap-synthesis fixes move insert/cutout output that reaches a coplanar
+ * interface, and the deep-cutout chain is now exact.
+ *
+ * `manifold` is the draft-preview kernel; its meshes are never persisted, but
+ * the map is total so a future caller cannot fall through to `undefined`.
+ */
+const KERNEL_MESH_REVISION: Record<KernelName, string> = {
+  'occt-wasm': 'r1',
+  brepkit: 'r1',
+  manifold: 'r1',
+};
 
 /** Evict oldest entries once the total stored mesh bytes exceed this budget. */
 let maxCacheBytes = 64 * 1024 * 1024;
@@ -149,9 +173,19 @@ function djb2(str: string): string {
   return (hash >>> 0).toString(16);
 }
 
-/** Content-addressed cache key for a bin's preview mesh. */
-export function binMeshCacheKey(params: BinParams): string {
-  return `${MESH_CACHE_VERSION}:${djb2(stableStringify(params))}`;
+/**
+ * Content-addressed cache key for a bin's preview mesh, namespaced by the
+ * kernel that generated it.
+ *
+ * `kernel` is required rather than resolved here: the same params produce
+ * different bytes on each kernel, and a caller that reads a key it did not
+ * generate under gets the other engine's mesh (#3444). Pass `getActiveKernel()`
+ * from `@/shared/generation/bridge` — the bridge is constructed from the same
+ * resolution, and the Labs engine toggle forces a reload before it can change.
+ */
+export function binMeshCacheKey(params: BinParams, kernel: KernelName): string {
+  const revision = KERNEL_MESH_REVISION[kernel];
+  return `${MESH_CACHE_VERSION}:${kernel}-${revision}:${djb2(stableStringify(params))}`;
 }
 
 /** Sum the byte length of every typed array reachable from a mesh (incl. lid + connector). */

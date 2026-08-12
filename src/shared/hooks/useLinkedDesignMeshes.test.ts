@@ -18,7 +18,10 @@ import {
 import { decodeMeshData } from '@/shared/generation/meshAsset';
 import { loadPersistedBinMesh, savePersistedBinMesh } from '@/shared/generation/meshPersistence';
 import { bridgeManager } from '@/shared/generation/bridge';
+import type { KernelName } from '@/shared/generation/bridge';
 import type { MeshData } from '@/shared/types/generation';
+
+let mockActiveKernel: KernelName = 'occt-wasm';
 
 vi.mock('@/features/bin-designer', () => ({
   loadDesign: vi.fn(),
@@ -30,13 +33,15 @@ vi.mock('@/shared/generation/meshAsset', () => ({
 }));
 
 vi.mock('@/shared/generation/meshPersistence', () => ({
-  binMeshCacheKey: vi.fn(() => 'persist-key'),
+  // Kernel-sensitive so the per-kernel namespacing (#3444) is observable.
+  binMeshCacheKey: vi.fn((_p: unknown, kernel: string) => `persist-key-${kernel}`),
   loadPersistedBinMesh: vi.fn(async () => null),
   savePersistedBinMesh: vi.fn(),
 }));
 
 vi.mock('@/shared/generation/bridge', () => ({
   bridgeManager: { acquire: vi.fn(), release: vi.fn() },
+  getActiveKernel: () => mockActiveKernel,
 }));
 
 const mockLoadDesign = vi.mocked(loadDesign);
@@ -124,6 +129,7 @@ describe('useLinkedDesignMeshes', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     clearLinkedDesignMeshCache();
+    mockActiveKernel = 'occt-wasm';
     mockUseCustomBins.mockReturnValue([]);
     mockLoadPersistedBinMesh.mockResolvedValue(null);
   });
@@ -172,8 +178,30 @@ describe('useLinkedDesignMeshes', () => {
       // being re-wrapped by the strip.
       expect(result.current.get(D1)?.mesh).toBe(mesh);
     });
-    expect(mockSavePersistedBinMesh).toHaveBeenCalledWith('persist-key', mesh);
+    expect(mockSavePersistedBinMesh).toHaveBeenCalledWith('persist-key-occt-wasm', mesh);
     expect(mockRelease).toHaveBeenCalledTimes(1);
+  });
+
+  // #3444: this reader returns a persisted hit and stops, with no regeneration
+  // behind it, so a key shared across engines would strand the other engine's
+  // mesh in the layout preview until LRU eviction.
+  it('reads and writes under a key namespaced by the active kernel', async () => {
+    const mesh = makeMesh();
+    mockActiveKernel = 'brepkit';
+    mockUseCustomBins.mockReturnValue([makeRegistryRef()]);
+    mockLoadDesign.mockResolvedValue(ok(makeBinDesign()));
+    mockAcquire.mockResolvedValue({
+      generateImmediate: vi.fn(async () => ({ mesh })),
+    } as unknown as Awaited<ReturnType<typeof bridgeManager.acquire>>);
+
+    const bins = [createTestBin({ linkedDesignId: D1 })];
+    const { result } = renderHook(() => useLinkedDesignMeshes(bins));
+
+    await waitFor(() => {
+      expect(result.current.get(D1)?.mesh).toBe(mesh);
+    });
+    expect(mockLoadPersistedBinMesh).toHaveBeenCalledWith('persist-key-brepkit');
+    expect(mockSavePersistedBinMesh).toHaveBeenCalledWith('persist-key-brepkit', mesh);
   });
 
   // Label plates are a bin-designer affordance and aren't requested here, but

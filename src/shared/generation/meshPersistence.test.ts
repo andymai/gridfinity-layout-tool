@@ -46,22 +46,42 @@ afterEach(() => {
 
 describe('binMeshCacheKey', () => {
   it('is stable regardless of param key order', () => {
-    const a = binMeshCacheKey({ ...DEFAULT_BIN_PARAMS });
+    const a = binMeshCacheKey({ ...DEFAULT_BIN_PARAMS }, 'occt-wasm');
     const reordered = Object.fromEntries(
       Object.entries(DEFAULT_BIN_PARAMS).reverse()
     ) as typeof DEFAULT_BIN_PARAMS;
-    const b = binMeshCacheKey(reordered);
+    const b = binMeshCacheKey(reordered, 'occt-wasm');
     expect(a).toBe(b);
   });
 
   it('changes when any param changes', () => {
-    const base = binMeshCacheKey(DEFAULT_BIN_PARAMS);
-    const wider = binMeshCacheKey({ ...DEFAULT_BIN_PARAMS, width: DEFAULT_BIN_PARAMS.width + 1 });
+    const base = binMeshCacheKey(DEFAULT_BIN_PARAMS, 'occt-wasm');
+    const wider = binMeshCacheKey(
+      { ...DEFAULT_BIN_PARAMS, width: DEFAULT_BIN_PARAMS.width + 1 },
+      'occt-wasm'
+    );
     expect(wider).not.toBe(base);
   });
 
   it('is prefixed with the cache version so a bump orphans old keys', () => {
-    expect(binMeshCacheKey(DEFAULT_BIN_PARAMS)).toMatch(/^v\d/);
+    expect(binMeshCacheKey(DEFAULT_BIN_PARAMS, 'occt-wasm')).toMatch(/^v\d/);
+  });
+
+  // #3444: the two engines wrote unchanged params into one namespace, so
+  // switching kernels in Labs served the previous engine's mesh.
+  it('gives each kernel its own namespace for identical params', () => {
+    const occt = binMeshCacheKey(DEFAULT_BIN_PARAMS, 'occt-wasm');
+    const brepkit = binMeshCacheKey(DEFAULT_BIN_PARAMS, 'brepkit');
+    expect(brepkit).not.toBe(occt);
+  });
+
+  it('does not cross-hit between kernels through the store', async () => {
+    const occtKey = binMeshCacheKey(DEFAULT_BIN_PARAMS, 'occt-wasm');
+    const brepkitKey = binMeshCacheKey(DEFAULT_BIN_PARAMS, 'brepkit');
+    await saveMesh(occtKey, makeMesh());
+
+    expect(await loadPersistedBinMesh(occtKey)).not.toBeNull();
+    expect(await loadPersistedBinMesh(brepkitKey)).toBeNull();
   });
 });
 

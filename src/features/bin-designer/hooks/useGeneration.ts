@@ -3,7 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { isErr } from '@/core/result';
 import { useDesignerStore } from '../store';
 import { useSettingsStore } from '@/core/store';
-import { bridgeManager, createDraftSkipGate } from '@/shared/generation/bridge';
+import { bridgeManager, createDraftSkipGate, getActiveKernel } from '@/shared/generation/bridge';
 import type { GenerationBridge } from '@/shared/generation/bridge';
 import { generateBinDirect, canBinUseDirectMesh } from '@/shared/generation/directMesh';
 import { handleWasmLoadFailure } from '@/shared/generation/captureWasmLoadFailure';
@@ -288,7 +288,10 @@ export function useGeneration(): void {
         // entry the layout later reads back — the designer rebuilds them cheaply
         // on the next generation.
         const { labelPlates, ...withoutPlates } = result.mesh;
-        savePersistedBinMesh(binMeshCacheKey(genParams), labelPlates ? withoutPlates : result.mesh);
+        savePersistedBinMesh(
+          binMeshCacheKey(genParams, getActiveKernel()),
+          labelPlates ? withoutPlates : result.mesh
+        );
 
         // Once the user pauses, speculatively warm the export-quality shell so
         // the first export skips the deferred socket↔body fuse. (Any prior timer
@@ -372,7 +375,10 @@ export function useGeneration(): void {
       // Match the nozzle-merged key the exact mesh was persisted under, so a
       // socket bin on a wide nozzle still finds its saved pre-draft.
       const nozzle = useSettingsStore.getState().settings.printSettings.nozzleSizeMm;
-      const initialKey = binMeshCacheKey(withSocketNozzle(initialState.params, nozzle));
+      // Same kernel the bridge below is about to be constructed with, so the
+      // pre-draft only matches a mesh THIS engine persisted (#3444).
+      const kernel = getActiveKernel();
+      const initialKey = binMeshCacheKey(withSocketNozzle(initialState.params, nozzle), kernel);
       void loadPersistedBinMesh(initialKey).then((cached) => {
         if (cancelled || !cached) return;
         if (genTokenRef.current !== 0 || finalizedTokenRef.current > 0) return;
@@ -382,7 +388,7 @@ export function useGeneration(): void {
         const now = useDesignerStore.getState();
         if (
           now.itemKind !== 'bin' ||
-          binMeshCacheKey(withSocketNozzle(now.params, nozzle)) !== initialKey
+          binMeshCacheKey(withSocketNozzle(now.params, nozzle), kernel) !== initialKey
         )
           return;
         // Claim the generation token before painting. The Manifold pre-draft
