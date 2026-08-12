@@ -49,7 +49,7 @@ const mockSavePersisted = vi.fn<(key: string, mesh: MeshData) => void>();
 vi.mock('@/shared/generation/meshPersistence', () => ({
   // Param- and kernel-sensitive, so both the stale-params guard in the mount
   // pre-draft and the per-kernel namespacing (#3444) are testable.
-  binMeshCacheKey: (p: { width: number }, kernel: string) => `test-key-${kernel}-${p.width}`,
+  binMeshCacheKey: (p: { width: number }, kernel: KernelName) => `test-key-${kernel}-${p.width}`,
   loadPersistedBinMesh: () => mockLoadPersisted(),
   savePersistedBinMesh: (key: string, mesh: MeshData) => mockSavePersisted(key, mesh),
 }));

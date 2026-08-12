@@ -34,7 +34,7 @@ vi.mock('@/shared/generation/meshAsset', () => ({
 
 vi.mock('@/shared/generation/meshPersistence', () => ({
   // Kernel-sensitive so the per-kernel namespacing (#3444) is observable.
-  binMeshCacheKey: vi.fn((_p: unknown, kernel: string) => `persist-key-${kernel}`),
+  binMeshCacheKey: vi.fn((_p: unknown, kernel: KernelName) => `persist-key-${kernel}`),
   loadPersistedBinMesh: vi.fn(async () => null),
   savePersistedBinMesh: vi.fn(),
 }));
