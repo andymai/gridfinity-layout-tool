@@ -13,7 +13,9 @@ import { BentoIcon } from '@/features/bin-designer/components/panel/InteriorSect
 export interface BentoWorkspaceHeaderProps {
   readonly cols: number;
   readonly rows: number;
-  readonly compartmentCount: number;
+  /** Count of DRAWN compartments — background pockets are not compartments
+   *  in this surface's vocabulary, and counting them contradicted the dock. */
+  readonly drawnCount: number;
   readonly hasDrawnCompartments: boolean;
   readonly onGridChange: (cols: number, rows: number) => void;
   readonly onClearAll: () => void;
@@ -43,7 +45,7 @@ function ArrowIcon({ direction }: { readonly direction: 'undo' | 'redo' }) {
 export function BentoWorkspaceHeader({
   cols,
   rows,
-  compartmentCount,
+  drawnCount,
   hasDrawnCompartments,
   onGridChange,
   onClearAll,
@@ -60,7 +62,10 @@ export function BentoWorkspaceHeader({
   const t = useTranslation();
 
   return (
-    <header className="flex h-10 flex-shrink-0 items-center gap-3 border-b border-stroke-subtle bg-surface-secondary px-4">
+    // flex-wrap, not a fixed height: at narrow pane splits the controls flow
+    // onto a second row instead of pushing Done out of the pane (the audit
+    // found it fully clipped at the default 50% split).
+    <header className="flex min-h-10 flex-shrink-0 flex-wrap items-center gap-x-3 gap-y-1 border-b border-stroke-subtle bg-surface-secondary px-4 py-1">
       <div className="flex items-center gap-2">
         <BentoIcon size={18} className="text-accent" />
         <h2 className="text-sm font-semibold text-content-primary">
@@ -124,9 +129,13 @@ export function BentoWorkspaceHeader({
         </label>
       </div>
 
-      <p className="text-xs tabular-nums text-content-secondary">
-        {compartmentCount} {t('binDesigner.compartments')}
-      </p>
+      {drawnCount > 0 && (
+        <p className="text-xs tabular-nums text-content-secondary">
+          {drawnCount === 1
+            ? t('binDesigner.bento.countDrawn.one')
+            : t('binDesigner.bento.countDrawn.other', { count: drawnCount })}
+        </p>
+      )}
 
       {hasDrawnCompartments && (
         <Button

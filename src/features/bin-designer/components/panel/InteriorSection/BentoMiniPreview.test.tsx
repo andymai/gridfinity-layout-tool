@@ -5,15 +5,15 @@ import { createUniformGrid } from '@/features/bin-designer/utils/compartments';
 import { drawCompartment } from '@/features/bin-designer/utils/bentoDraw';
 
 describe('BentoMiniPreview', () => {
-  it('renders only the lattice for an undrawn grid', () => {
+  it('renders every cell of an undrawn grid as a pocket', () => {
     render(<BentoMiniPreview compartments={createUniformGrid(4, 3, 1.2)} aspectRatio={1} />);
 
     const svg = screen.getByTestId('bento-mini-preview');
-    expect(svg.querySelectorAll('line')).toHaveLength(3 + 2);
-    expect(svg.querySelectorAll('rect')).toHaveLength(0);
+    expect(svg.querySelectorAll('rect')).toHaveLength(12);
+    expect(svg.querySelectorAll('rect[class*="fill-accent"]')).toHaveLength(0);
   });
 
-  it('renders a block per drawn compartment', () => {
+  it('renders drawn compartments as accent blocks over the remaining pockets', () => {
     const first = drawCompartment(createUniformGrid(4, 3, 1.2), { col: 0, row: 0, w: 2, h: 2 });
     if (!first) throw new Error('unreachable');
     const second = drawCompartment(first.config, { col: 2, row: 2, w: 2, h: 1 });
@@ -21,7 +21,10 @@ describe('BentoMiniPreview', () => {
 
     render(<BentoMiniPreview compartments={second.config} aspectRatio={1} />);
 
-    expect(screen.getByTestId('bento-mini-preview').querySelectorAll('rect')).toHaveLength(2);
+    const svg = screen.getByTestId('bento-mini-preview');
+    expect(svg.querySelectorAll('rect[class*="fill-accent"]')).toHaveLength(2);
+    // 12 cells minus 6 covered by the two drawn blocks = 6 pockets.
+    expect(svg.querySelectorAll('rect')).toHaveLength(8);
   });
 
   it('clamps extreme aspect ratios to a usable thumbnail', () => {

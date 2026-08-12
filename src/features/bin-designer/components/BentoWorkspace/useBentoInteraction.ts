@@ -79,6 +79,13 @@ export interface BentoInteractionContext {
   readonly selectedId: number | null;
   readonly onSelect: (id: number | null) => void;
   readonly onRequestLabelEdit: (id: number) => void;
+  /**
+   * A release landed somewhere invalid (overlap / out of bounds) and the
+   * gesture was discarded. The layout planner toasts the reason on invalid
+   * drops; without this the ghost just vanishes silently. Draw is exempt —
+   * its red ghost was continuous feedback and a toast per experiment spams.
+   */
+  readonly onInvalidDrop?: (kind: 'move' | 'resize' | 'duplicate' | 'place') => void;
   readonly actions: {
     readonly draw: (rect: CellRect) => number | null;
     readonly move: (id: number, dCol: number, dRow: number) => number | null;
@@ -261,7 +268,7 @@ export function useBentoInteraction(ctx: BentoInteractionContext) {
 
   const commit = useCallback(
     (g: BentoGesture, e: PointerEvent): void => {
-      const { config, actions, onSelect } = ctxRef.current;
+      const { config, actions, onSelect, onInvalidDrop } = ctxRef.current;
       switch (g.type) {
         case 'draw': {
           const rect = rectFromCells(g.anchor, g.cursor);
@@ -279,13 +286,19 @@ export function useBentoInteraction(ctx: BentoInteractionContext) {
           const dCol = g.currentRect.col - g.startRect.col;
           const dRow = g.currentRect.row - g.startRect.row;
           if (g.duplicate) {
-            if (!canPlaceRect(config, g.currentRect)) return;
+            if (!canPlaceRect(config, g.currentRect)) {
+              onInvalidDrop?.('duplicate');
+              return;
+            }
             const id = actions.duplicate(g.id, g.currentRect);
             if (id !== null) onSelect(id);
             return;
           }
           if (dCol === 0 && dRow === 0) return;
-          if (!canPlaceRect(config, g.currentRect, { ignoreId: g.id })) return;
+          if (!canPlaceRect(config, g.currentRect, { ignoreId: g.id })) {
+            onInvalidDrop?.('move');
+            return;
+          }
           const id = actions.move(g.id, dCol, dRow);
           if (id !== null) onSelect(id);
           return;
@@ -299,14 +312,22 @@ export function useBentoInteraction(ctx: BentoInteractionContext) {
           ) {
             return;
           }
-          if (!canPlaceRect(config, g.currentRect, { ignoreId: g.id })) return;
+          if (!canPlaceRect(config, g.currentRect, { ignoreId: g.id })) {
+            onInvalidDrop?.('resize');
+            return;
+          }
           const id = actions.resize(g.id, g.currentRect);
           if (id !== null) onSelect(id);
           return;
         }
         case 'stashDrag': {
+          // Released outside the canvas = deliberate cancel, stays silent
+          // (matching the layout's off-grid drops).
           if (!g.currentRect || !isInsideCanvas(e.clientX, e.clientY)) return;
-          if (!canPlaceRect(config, g.currentRect)) return;
+          if (!canPlaceRect(config, g.currentRect)) {
+            onInvalidDrop?.('place');
+            return;
+          }
           const id = actions.placeFromStash(g.index, g.currentRect);
           if (id !== null) onSelect(id);
           return;

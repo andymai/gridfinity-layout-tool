@@ -62,7 +62,10 @@ describe('BentoCanvas', () => {
     render(<BentoCanvas {...makeProps(config, { selectedId: id })} />);
 
     expect(screen.getByTestId(`bento-compartment-${id}`)).toHaveAttribute('data-selected');
-    expect(screen.getByTestId('bento-resize-handles').querySelectorAll('rect')).toHaveLength(8);
+    // 8 grabbable targets; each pairs a visible square with a larger hit rect.
+    expect(
+      screen.getByTestId('bento-resize-handles').querySelectorAll('rect[role="button"]')
+    ).toHaveLength(8);
   });
 
   it('hides resize handles while a gesture is in flight', () => {
@@ -89,7 +92,9 @@ describe('BentoCanvas', () => {
     const onResizeHandlePointerDown = vi.fn();
     render(<BentoCanvas {...makeProps(config, { selectedId: id, onResizeHandlePointerDown })} />);
 
-    const handles = screen.getByTestId('bento-resize-handles').querySelectorAll('rect');
+    const handles = screen
+      .getByTestId('bento-resize-handles')
+      .querySelectorAll('rect[role="button"]');
     fireEvent.pointerDown(handles[0]);
 
     expect(onResizeHandlePointerDown).toHaveBeenCalledWith(id, 'nw', expect.anything());

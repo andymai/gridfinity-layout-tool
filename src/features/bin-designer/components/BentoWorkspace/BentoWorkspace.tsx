@@ -23,7 +23,6 @@ import {
   getCompartmentRect,
   getDrawnCompartmentIds,
 } from '@/features/bin-designer/utils/bentoDraw';
-import { getCompartmentCount } from '@/features/bin-designer/utils/compartments';
 import { usePreviewColor } from '@/features/bin-designer/hooks/usePreviewColor';
 import { useBentoQuickstart } from '@/features/bin-designer/hooks/useBentoQuickstart';
 import { useCutoutWorkspaceCamera } from '@/features/bin-designer/components/CutoutWorkspace/useCutoutWorkspaceCamera';
@@ -39,6 +38,8 @@ import {
 import { useCutoutContextMenu } from '@/features/bin-designer/components/panel/CutoutsSection/useCutoutContextMenu';
 import { BentoWorkspaceHeader } from './BentoWorkspaceHeader';
 import { BentoCanvas } from './BentoCanvas';
+import { BentoGridSetup } from './BentoGridSetup';
+import { useBentoPan } from './useBentoPan';
 import { BentoDock } from './BentoDock';
 import { BentoStashShelf } from './BentoStashShelf';
 import { BentoQuickstartOverlay } from './BentoQuickstartOverlay';
@@ -133,15 +134,24 @@ export function BentoWorkspace() {
     cameraCenter,
     canvasWidth,
     canvasHeight,
+    setCameraCenter,
     zoomPercent,
     zoomIn,
     zoomOut,
     fitToView,
     handleWheel,
   } = useCutoutWorkspaceCamera(interiorW, interiorD);
+  const pan = useBentoPan(setCameraCenter, zoom);
   const stashShelfRef = useRef<HTMLDivElement>(null);
   const [hoveredId, setHoveredIdLocal] = useState<number | null>(null);
-  const [labelFocusToken, setLabelFocusToken] = useState(0);
+  // Explicit label-edit request (double-click / context menu), keyed to the
+  // compartment it targets. The dock derives its focus token from this, so
+  // merely selecting a compartment never steals keyboard focus into the
+  // label input — that would kill arrow-nudge and Delete right after a draw.
+  const [labelEditRequest, setLabelEditRequest] = useState<{
+    id: number;
+    token: number;
+  } | null>(null);
 
   const drawnIds = useMemo(() => getDrawnCompartmentIds(compartments), [compartments]);
 
@@ -155,7 +165,7 @@ export function BentoWorkspace() {
   const requestLabelEdit = useCallback(
     (id: number) => {
       setSelectedBentoCompartmentId(id);
-      setLabelFocusToken((token) => token + 1);
+      setLabelEditRequest((prev) => ({ id, token: (prev?.token ?? 0) + 1 }));
     },
     [setSelectedBentoCompartmentId]
   );
@@ -204,6 +214,9 @@ export function BentoWorkspace() {
     onSelect: setSelectedBentoCompartmentId,
     onRequestLabelEdit: requestLabelEdit,
     actions: interactionActions,
+    onInvalidDrop: () => {
+      addToast({ message: t('binDesigner.bento.toastBlocked'), type: 'info', duration: 3000 });
+    },
     setPreviewCompartments,
     setPreviewSelection,
   });
@@ -322,6 +335,11 @@ export function BentoWorkspace() {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (isEditableTarget(e.target)) return;
+      if ((e.ctrlKey || e.metaKey) && e.key === '0') {
+        e.preventDefault();
+        fitToView();
+        return;
+      }
       if (e.key === 'Escape') {
         if (interaction.cancel()) return;
         if (selectedId !== null) {
@@ -361,6 +379,7 @@ export function BentoWorkspace() {
     setSelectedBentoCompartmentId,
     removeBentoCompartment,
     moveBentoCompartment,
+    fitToView,
   ]);
 
   // Ruler adapter (same formula as the cutout workspace): world units are mm,
@@ -389,6 +408,9 @@ export function BentoWorkspace() {
 
   const stash = compartments.stash ?? [];
   const hasDrawn = drawnIds.size > 0;
+  // A 1×1 grid has nothing to draw on — the canvas shows the grid picker
+  // instead of a drag hint that cannot be followed.
+  const isPristineGrid = cols === 1 && rows === 1;
   const movingId =
     interaction.gesture?.type === 'move' &&
     interaction.gesture.moved &&
@@ -397,11 +419,13 @@ export function BentoWorkspace() {
       : null;
 
   return (
-    <div className="flex h-full flex-col bg-surface">
+    // relative: the quickstart card positions against this root — without it
+    // the card escaped to the app shell and floated over the 3D preview.
+    <div className="relative flex h-full flex-col bg-surface">
       <BentoWorkspaceHeader
         cols={cols}
         rows={rows}
-        compartmentCount={getCompartmentCount(compartments)}
+        drawnCount={drawnIds.size}
         hasDrawnCompartments={hasDrawn}
         onGridChange={handleGridChange}
         onClearAll={clearBentoCompartments}
@@ -438,9 +462,18 @@ export function BentoWorkspace() {
             />
             <div
               ref={canvasContainerRef}
-              className="relative flex-1 cursor-crosshair overflow-hidden"
+              className={`relative flex-1 overflow-hidden ${
+                pan.isPanning
+                  ? 'cursor-grabbing'
+                  : pan.spaceHeld
+                    ? 'cursor-grab'
+                    : 'cursor-crosshair'
+              }`}
               onWheel={handleWheel}
-              onPointerDown={interaction.onCanvasPointerDown}
+              onPointerDown={(e) => {
+                if (pan.onPointerDown(e)) return;
+                interaction.onCanvasPointerDown(e);
+              }}
               onPointerMove={handleCanvasPointerMove}
               onPointerLeave={() => setHoveredIdLocal(null)}
               onDoubleClick={interaction.onCanvasDoubleClick}
@@ -461,12 +494,30 @@ export function BentoWorkspace() {
                 dividerTiltPreview={dividerTiltPreview}
                 onResizeHandlePointerDown={interaction.onResizeHandlePointerDown}
               />
-              {!hasDrawn && stash.length === 0 && !interaction.gesture && (
-                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                  <p className="rounded-md bg-surface/70 px-3 py-1.5 text-sm text-content-tertiary">
-                    {t('binDesigner.bento.emptyStateHint')}
-                  </p>
-                </div>
+              {isPristineGrid ? (
+                <BentoGridSetup
+                  width={width}
+                  depth={depth}
+                  wallThickness={wallThickness}
+                  compartmentThickness={compartments.thickness}
+                  gridUnitMm={gridUnitMm}
+                  gridUnitMmY={gridUnitMmY}
+                  interiorW={interiorW}
+                  interiorD={interiorD}
+                  onPick={handleGridChange}
+                />
+              ) : (
+                !hasDrawn &&
+                stash.length === 0 &&
+                !interaction.gesture && (
+                  /* Anchored at the bottom, not centered — a centered pill
+                     lies across the grid and visually cuts it in half. */
+                  <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center">
+                    <p className="rounded-md bg-surface/80 px-3 py-1.5 text-sm text-content-tertiary">
+                      {t('binDesigner.bento.emptyStateHint')}
+                    </p>
+                  </div>
+                )
               )}
             </div>
           </div>
@@ -510,7 +561,11 @@ export function BentoWorkspace() {
           interiorD={interiorD}
           selectedId={selectedId}
           onSelect={setSelectedBentoCompartmentId}
-          labelFocusToken={labelFocusToken}
+          labelFocusToken={
+            labelEditRequest !== null && labelEditRequest.id === selectedId
+              ? labelEditRequest.token
+              : undefined
+          }
           onCommitLabel={setCompartmentText}
           onDuplicate={duplicateToFreeSpot}
           onStash={(id) => {

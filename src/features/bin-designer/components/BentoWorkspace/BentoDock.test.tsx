@@ -92,13 +92,28 @@ describe('BentoDock', () => {
     expect(onDelete).toHaveBeenCalledWith(id);
   });
 
-  it('lists wall rows with shift/angle steppers for a compartment with neighbors', () => {
+  it('lists wall steppers only between two drawn compartments', () => {
+    const { id } = setupStoreWithDrawn();
+    const neighborId = useDesignerStore
+      .getState()
+      .drawBentoCompartment({ col: 2, row: 0, w: 1, h: 2 });
+    expect(neighborId).not.toBeNull();
+    render(<BentoDock {...makeProps({ selectedId: neighborId })} />);
+
+    expect(screen.getByText('binDesigner.bento.wallsTitle')).toBeInTheDocument();
+    // Exactly one wall row — the drawn-to-drawn wall to the 2×2 block; the
+    // walls against background pockets don't get rows.
+    expect(screen.getAllByText(/binDesigner\.bento\.wallWith/)).toHaveLength(1);
+    expect(screen.queryByText('binDesigner.bento.wallsEmptyHint')).not.toBeInTheDocument();
+    expect(id).toBeGreaterThanOrEqual(0);
+  });
+
+  it('shows the walls hint when the selection only borders background pockets', () => {
     const { id } = setupStoreWithDrawn();
     render(<BentoDock {...makeProps({ selectedId: id })} />);
 
-    expect(screen.getByText('binDesigner.bento.wallsTitle')).toBeInTheDocument();
-    expect(screen.getAllByLabelText('binDesigner.bento.wallShift').length).toBeGreaterThan(0);
-    expect(screen.getAllByLabelText('binDesigner.bento.wallAngle').length).toBeGreaterThan(0);
+    expect(screen.getByText('binDesigner.bento.wallsEmptyHint')).toBeInTheDocument();
+    expect(screen.queryByLabelText('binDesigner.bento.wallShift')).not.toBeInTheDocument();
   });
 
   it('collapses to a rail and persists the choice', () => {

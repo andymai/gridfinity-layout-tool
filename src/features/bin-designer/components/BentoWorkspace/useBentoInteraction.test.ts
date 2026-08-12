@@ -31,6 +31,8 @@ function makeActions() {
   };
 }
 
+const onInvalidDrop = vi.fn();
+
 function mount(config: CompartmentConfig, overrides: Record<string, unknown> = {}) {
   const actions = makeActions();
   const onSelect = vi.fn();
@@ -58,6 +60,7 @@ function mount(config: CompartmentConfig, overrides: Record<string, unknown> = {
       selectedId: null,
       onSelect,
       onRequestLabelEdit,
+      onInvalidDrop,
       actions,
       setPreviewCompartments,
       setPreviewSelection,
@@ -111,6 +114,7 @@ function gridWithDrawn() {
 describe('useBentoInteraction', () => {
   beforeEach(() => {
     cleanup();
+    onInvalidDrop.mockClear();
   });
 
   describe('draw', () => {
@@ -180,6 +184,20 @@ describe('useBentoInteraction', () => {
       h.up(25, 25);
       expect(h.actions.duplicate).toHaveBeenCalledWith(id, { col: 2, row: 0, w: 2, h: 2 });
       expect(h.actions.move).not.toHaveBeenCalled();
+    });
+
+    it('reports a blocked move drop instead of failing silently', () => {
+      const first = gridWithDrawn();
+      const second = drawCompartment(first.config, { col: 2, row: 0, w: 2, h: 2 });
+      if (!second) throw new Error('unreachable');
+      const h = mount(second.config);
+      // Grab the original 2×2 at (0,0) and drop it onto its neighbor.
+      h.down(5, 25);
+      h.move(25, 25);
+      h.up(25, 25);
+
+      expect(h.actions.move).not.toHaveBeenCalled();
+      expect(onInvalidDrop).toHaveBeenCalledWith('move');
     });
 
     it('releasing over the stash shelf stashes and clears the selection', () => {

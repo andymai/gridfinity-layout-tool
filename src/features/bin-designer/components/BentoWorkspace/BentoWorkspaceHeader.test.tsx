@@ -8,7 +8,7 @@ function makeProps(overrides: Partial<BentoWorkspaceHeaderProps> = {}): BentoWor
   return {
     cols: 4,
     rows: 3,
-    compartmentCount: 12,
+    drawnCount: 3,
     hasDrawnCompartments: false,
     onGridChange: vi.fn(),
     onClearAll: vi.fn(),

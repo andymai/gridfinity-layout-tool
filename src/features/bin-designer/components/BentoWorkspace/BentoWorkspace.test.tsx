@@ -53,6 +53,34 @@ describe('BentoWorkspace', () => {
     expect(screen.getByText(/binDesigner\.bento\.backgroundNote/)).toBeInTheDocument();
   });
 
+  it('shows the grid picker instead of a drag hint on a pristine 1×1 grid', () => {
+    useDesignerStore.getState().setCompartmentGrid(1, 1);
+    render(<BentoWorkspace />);
+
+    expect(screen.getByTestId('bento-grid-setup')).toBeInTheDocument();
+    expect(screen.queryByText('binDesigner.bento.emptyStateHint')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('4×4'));
+    expect(useDesignerStore.getState().params.compartments.cols).toBe(4);
+  });
+
+  it('does not steal focus into the label input when a compartment is selected', () => {
+    const id = drawViaStore();
+    useDesignerStore.getState().setSelectedBentoCompartmentId(id);
+    render(<BentoWorkspace />);
+
+    const input = screen.getByRole('textbox', { name: 'binDesigner.bento.labelField' });
+    expect(document.activeElement).not.toBe(input);
+  });
+
+  it('renders background cells as pockets', () => {
+    drawViaStore();
+    render(<BentoWorkspace />);
+
+    // 4×3 grid minus the 2×2 drawn block = 8 background pockets.
+    expect(screen.getAllByTestId('bento-pocket')).toHaveLength(8);
+  });
+
   it('shows the empty-state hint until something is drawn or stashed', () => {
     const { rerender } = render(<BentoWorkspace />);
     expect(screen.getByText('binDesigner.bento.emptyStateHint')).toBeInTheDocument();
