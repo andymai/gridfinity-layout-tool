@@ -73,10 +73,16 @@ function extrudeCutter(
  *
  * @param gridW Grid width in units
  * @param gridD Grid depth in units
- * @param magnetRadius Magnet hole radius in mm
+ * @param magnetRadius Hole radius (mm) the kept pads are sized around — the
+ * bare magnet radius, or the screw-aware radius when a wider head shares the
+ * position
  * @param magnetDepth Magnet hole depth in mm
  * @param cellOpts Cell iteration options including gridUnitMm
  * @param lightweight Whether lightweight floor is enabled (default true)
+ * @param floorDepthMm Full floor depth (mm) the cut must clear. Absent ⇒ the
+ * magnet floor (MAGNET_FLOOR + magnetDepth). A mount-down screw pad makes the
+ * floor deeper than the magnet floor, and a cut sized to the magnet floor
+ * alone would leave a sealed membrane under every void.
  * @returns Array of cutter solids to subtract from the baseplate
  */
 export function buildLightweightFloorCutters(
@@ -88,13 +94,14 @@ export function buildLightweightFloorCutters(
   lightweight?: boolean,
   cellFilter?: (cell: CellInfo) => boolean,
   nozzleSizeMm?: number,
-  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
+  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR,
+  floorDepthMm?: number
 ): Shape3D[] {
   if (lightweight === false) return [];
 
   const { x: unitX, y: unitY } = resolvePitch(cellOpts.gridUnitMm);
   const cutterZ = -SOCKET_HEIGHT + COPLANAR_MARGIN;
-  const cutterDepth = MAGNET_FLOOR + magnetDepth + 2 * COPLANAR_MARGIN;
+  const cutterDepth = (floorDepthMm ?? MAGNET_FLOOR + magnetDepth) + 2 * COPLANAR_MARGIN;
   const padMargin = magnetPadMarginForNozzle(nozzleSizeMm);
   const outerWallMargin = magnetOuterWallMarginForNozzle(nozzleSizeMm);
 
@@ -422,6 +429,9 @@ export function planPartialCellFloorCuts(
  * nominal-grid {@link buildLightweightFloorCutters} only hollows full cells, so
  * clipped padding tiles (a 25×42 side strip, a 42×13 top strip) would otherwise
  * keep a solid underside. Called alongside it so the preview and export match.
+ * `floorDepthMm` has the same contract as on the full-cell builder: the full
+ * floor the cut must clear, absent ⇒ the magnet floor — a screw pad makes the
+ * floor deeper, and a magnet-floor cut would seal each void with a membrane.
  */
 export function buildPartialCellFloorCutters(
   cells: readonly CellInfo[],
@@ -430,12 +440,13 @@ export function buildPartialCellFloorCutters(
   gridUnitMm: GridUnitInput,
   lightweight?: boolean,
   nozzleSizeMm?: number,
-  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR
+  anchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR,
+  floorDepthMm?: number
 ): Shape3D[] {
   if (lightweight === false) return [];
 
   const cutterZ = -SOCKET_HEIGHT + COPLANAR_MARGIN;
-  const cutterDepth = MAGNET_FLOOR + magnetDepth + 2 * COPLANAR_MARGIN;
+  const cutterDepth = (floorDepthMm ?? MAGNET_FLOOR + magnetDepth) + 2 * COPLANAR_MARGIN;
 
   const cutters: Shape3D[] = [];
   try {

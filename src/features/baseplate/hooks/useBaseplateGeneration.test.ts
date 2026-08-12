@@ -217,9 +217,27 @@ describe('selectGenerationTriggers', () => {
       expect(shallowEqual(selectGenerationTriggers(a), selectGenerationTriggers(b))).toBe(false);
     });
 
-    it('ignores lightweight while magnets are off (no needless regen)', () => {
+    it('produces a different trigger selection when lightweight changes (screws on, magnets off)', () => {
+      const screws = { enabled: true, diameter: mm(3.4), headStyle: 'countersink' } as const;
+      const a = makeState(undefined, { magnetHoles: false, screwHoles: screws, lightweight: true });
+      const b = makeState(undefined, {
+        magnetHoles: false,
+        screwHoles: screws,
+        lightweight: false,
+      });
+      expect(shallowEqual(selectGenerationTriggers(a), selectGenerationTriggers(b))).toBe(false);
+    });
+
+    it('ignores lightweight while magnets and screws are off (no needless regen)', () => {
       const a = makeState(undefined, { magnetHoles: false, lightweight: true });
       const b = makeState(undefined, { magnetHoles: false, lightweight: false });
+      expect(shallowEqual(selectGenerationTriggers(a), selectGenerationTriggers(b))).toBe(true);
+    });
+
+    it('ignores lightweight while stacking strips magnets (no needless regen)', () => {
+      const stack = { enabled: true, gapMm: mm(0.2) } as const;
+      const a = makeState(undefined, { magnetHoles: true, stackPrint: stack, lightweight: true });
+      const b = makeState(undefined, { magnetHoles: true, stackPrint: stack, lightweight: false });
       expect(shallowEqual(selectGenerationTriggers(a), selectGenerationTriggers(b))).toBe(true);
     });
   });

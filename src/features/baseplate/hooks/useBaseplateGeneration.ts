@@ -240,10 +240,13 @@ function hasEffectivePerimeterMemoized(
  */
 export function selectGenerationTriggers(state: LayoutStoreState) {
   const bp = state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
-  // Stacking strips screws in buildFullParams (a flipped tile would put the
-  // head recess on the underside), so their fields cannot change the mesh
-  // while it is on.
-  const screwsOn = bp.stackPrint?.enabled !== true && bp.screwHoles?.enabled === true;
+  // Stacking strips screws AND magnets in buildFullParams (a flipped tile
+  // would put the head recess and the magnet bridges on the underside), so
+  // neither family's fields can change the mesh while it is on.
+  const stackingOn = bp.stackPrint?.enabled === true;
+  const screwsOn = !stackingOn && bp.screwHoles?.enabled === true;
+  // The underside cross cutters run on magnet plates and screw-pad cells.
+  const lightweightRelevant = (!stackingOn && bp.magnetHoles) || screwsOn;
   return {
     drawerWidth: state.layout.drawer.width,
     drawerDepth: state.layout.drawer.depth,
@@ -324,9 +327,10 @@ export function selectGenerationTriggers(state: LayoutStoreState) {
         : undefined,
     screwsPerPiece: screwsOn ? bp.screwHoles.screwsPerPiece : undefined,
     // Nothing in the UI writes `lightweight` today, but synced/imported params
-    // can carry it, and the lightweight floor cutter changes the whole
-    // underside. It only runs on magnet plates, so fold it out otherwise.
-    lightweight: bp.magnetHoles ? bp.lightweight !== false : true,
+    // can carry it, and the underside cross cutters consume it on magnet
+    // plates and screw-pad cells alike — fold it out when neither can
+    // (stacking strips both, so it folds out there too).
+    lightweight: lightweightRelevant ? bp.lightweight !== false : true,
     paddingLeft: bp.paddingLeft,
     paddingRight: bp.paddingRight,
     paddingFront: bp.paddingFront,
