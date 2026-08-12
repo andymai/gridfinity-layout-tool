@@ -70,7 +70,6 @@ export {
   resolveLidCavityExtraMm,
   LID_EXTRA_HEIGHT,
   LID_MAGNET_SEAT_GAP,
-  LID_MAGNET_SKIRT_CLEARANCE,
   lidAnchorZ,
   lidWallBottomZ,
   lidRetentionInterfaceZ,

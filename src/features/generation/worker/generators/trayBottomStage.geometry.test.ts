@@ -51,14 +51,16 @@ describe('tray bin mating skirt', () => {
     expect(box.minZ).toBeCloseTo(0, 3);
   });
 
-  it('sits on Z=0 with a magnetic joint, whose bosses reach past the skirt', () => {
+  it('sits on Z=0 with a magnetic joint, whose bosses reach down to the skirt', () => {
     const mesh = generateBin(trayParams('magnetic'));
     assertStructurallyValid(mesh);
     const box = boundingBox(mesh.vertices);
-    // Retention bosses hang below `wallBottomZ` so the pads they mate with can
-    // pass under the skirt (#3450), exactly as click rails do. A lift computed
-    // from the wall alone buries them 0.2mm under the bed — small enough that
-    // every structural assertion still passes.
+    // A magnetic joint's retention bosses run down to the skirt line so the
+    // pads they mate with pass under it (#3450). `lidRetentionInterfaceZ` stops
+    // them exactly there rather than past it, which is what lets
+    // `trayBottomSkirtDepth` keep describing the whole part in terms of the
+    // wall; a boss allowed any deeper is buried under the bed by that lift,
+    // and every structural assertion still passes while it is.
     expect(box.minZ).toBeCloseTo(0, 3);
   });
 

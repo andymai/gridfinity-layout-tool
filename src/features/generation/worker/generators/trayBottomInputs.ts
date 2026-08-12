@@ -66,8 +66,9 @@ function trayBottomParams(params: BinParams): BinParams {
  *
  * `wallBottomZ` alone is not enough: click rails hang below the mating wall,
  * and leaving them out sinks the model 3.75mm under the print bed. Retention
- * bosses do the same on a magnetic joint — they reach past the skirt to clear
- * the pads they mate with (#3450).
+ * bosses land ON that line rather than past it, so a magnetic joint's lowest
+ * point is still the skirt (#3450) — see `trayBottomSkirtDepth` in the shared
+ * lid module for the deep-magnet exception it does not cover.
  */
 export function trayBottomSkirtDepth(inputs: LidInputs): number {
   // LID_FIT_CLEARANCE, not `inputs.fitClearance`: the magnetic relief is
@@ -78,8 +79,7 @@ export function trayBottomSkirtDepth(inputs: LidInputs): number {
     inputs.heightUnitMm,
     LID_FIT_CLEARANCE,
     inputs.cavityExtraMm,
-    hasAnyClickRail(inputs.clickRails),
-    inputs.retentionMagnets ? inputs.retentionMagnetDepth : null
+    hasAnyClickRail(inputs.clickRails)
   );
 }
 

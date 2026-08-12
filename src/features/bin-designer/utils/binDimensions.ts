@@ -75,20 +75,10 @@ export type BaseFloorSource = Pick<BaseConfig, 'style' | 'trayBottom'>;
  * Exported because the preview overlays each build their own Z frame from
  * store scalars rather than calling {@link binDimensions}; sharing this keeps
  * the ghosts on the same plane as the mesh.
- *
- * `cellMask` only changes the answer for a magnetic TRAY bottom, whose skirt
- * depth counts retention bosses a polygon footprint never grows — 0.2mm, and
- * only there. Overlay callers that have no mask to hand omit it and get the
- * rectangular answer, which is the one their own geometry assumes anyway.
  */
-export function baseFloorZ(
-  base: BaseFloorSource,
-  heightUnitMm: number,
-  lid: LidConfig,
-  cellMask?: CellMask
-): number {
+export function baseFloorZ(base: BaseFloorSource, heightUnitMm: number, lid: LidConfig): number {
   if (base.style === 'flat') return 0;
-  const skirt = trayFloorZ(base, heightUnitMm, lid, cellMask);
+  const skirt = trayFloorZ(base, heightUnitMm, lid);
   return skirt ?? GRIDFINITY.SOCKET_HEIGHT;
 }
 
@@ -110,12 +100,7 @@ export function baseWallHeight(base: Pick<BaseConfig, 'style' | 'tile'>, totalH:
  * shared formula the worker's `deriveDimensions` does, so the preview and the
  * mesh cannot disagree about where a tray's floor is.
  */
-function trayFloorZ(
-  base: BaseFloorSource,
-  heightUnitMm: number,
-  lid: LidConfig,
-  cellMask: CellMask | undefined
-): number | null {
+function trayFloorZ(base: BaseFloorSource, heightUnitMm: number, lid: LidConfig): number | null {
   if (base.style !== 'lid') return null;
   const trayBottom = base.trayBottom ?? DEFAULT_TRAY_BOTTOM;
   const rails = trayBottom.clickRails;
@@ -129,13 +114,7 @@ function trayFloorZ(
       base: { stackingLip: true, magnetDepth: 0 },
     }),
     trayBottom.attachment === 'clickRails' &&
-      (rails.front || rails.back || rails.left || rails.right),
-    // Mirrors `resolveLidInputs`' retention gate as the tray synthesises it:
-    // a tray's mating config forces `stackingLip: true`, and a polygon tray
-    // never gets bosses at all.
-    trayBottom.attachment === 'magnetic' && !isPartialMask(cellMask)
-      ? trayBottom.retentionMagnet.depth
-      : null
+      (rails.front || rails.back || rails.left || rails.right)
   );
 }
 
@@ -155,7 +134,7 @@ export function binDimensions(params: BinParams): BinDimensions {
   // overlays, the cutout and divider editors, the scoop bounds — reads these
   // two numbers, so getting them wrong here misplaces all of them at once.
   const wallHeight = baseWallHeight(params.base, totalH);
-  const floorZ = baseFloorZ(params.base, params.heightUnitMm, params.lid, params.cellMask);
+  const floorZ = baseFloorZ(params.base, params.heightUnitMm, params.lid);
   return { outerW, outerD, innerW, innerD, totalH, wallHeight, floorZ, isFlat };
 }
 

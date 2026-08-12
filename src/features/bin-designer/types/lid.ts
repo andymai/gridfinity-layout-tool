@@ -806,22 +806,6 @@ export const LID_CLICK_RAIL_BAND_BELOW_WALL_TOP =
   (GRIDFINITY_SPEC.LIP_HEIGHT - GRIDFINITY_SPEC.LIP_OVERLAP);
 
 /**
- * Vertical clearance (mm) between the bin's magnet pad and the bottom of the
- * mating skirt that drops over it.
- *
- * The pad is not a free-standing post: it welds into the interior walls, so its
- * footprint reaches back OUT under the skirt ({@link LID_MAGNET_LIP_CLEARANCE}
- * keeps the BOSS clear of the lip, which is a different part in a different
- * place). Any pad topping out above `lidWallBottomZ` therefore meets the skirt
- * across that whole outboard band, however well the magnets themselves line up
- * — the lid props open on its own corners and no amount of magnet closes it
- * (#3450). 0.4mm is two layers at 0.2, enough for the elephant's foot on the
- * skirt's bottom ring, which is a first-layer edge when the lid prints
- * floor-down.
- */
-export const LID_MAGNET_SKIRT_CLEARANCE = 0.4;
-
-/**
  * The magnet mating plane in LID-LOCAL Z — the boss's downward face, and one
  * {@link LID_MAGNET_SEAT_GAP} above the bin pad's upward face.
  *
@@ -831,12 +815,22 @@ export const LID_MAGNET_SKIRT_CLEARANCE = 0.4;
  *    of ceiling plus the magnet's own depth. The boss hangs from the cavity
  *    BOTTOM, so `extraCavityMm` lengthens the pillar rather than lifting the
  *    magnet, and a deeper lid still meets the same bin.
- * 2. The bin's pad must pass UNDER the mating skirt, by
- *    {@link LID_MAGNET_SKIRT_CLEARANCE}.
+ * 2. `lidWallBottomZ` — the bottom of the part's own mating skirt. The bin's pad
+ *    is not a free-standing post: it welds into the interior walls, so its
+ *    footprint reaches back OUT under that skirt ({@link LID_MAGNET_LIP_CLEARANCE}
+ *    keeps the BOSS clear of the LIP, a different pair of parts further out). A
+ *    pad topping out above the skirt bottom meets it across that whole outboard
+ *    band however well the magnets line up, and the lid props open on its own
+ *    corners (#3450).
  *
  * On the stock 7mm lid (2) binds by ~3.2mm, so the boss is a pillar reaching
- * past its own skirt rather than a stub under the floor plate — which is why
- * `trayBottomSkirtDepth` has to count it as part of the skirt's depth.
+ * down to its own skirt line rather than a stub under the floor plate. Landing
+ * the boss exactly ON that line rather than past it is deliberate: the part's
+ * lowest point stays the skirt, so `trayBottomSkirtDepth` still describes a
+ * magnetic tray and no caller has to learn about bosses. The pad then clears the
+ * skirt by one seat gap — the same clearance these two parts already hold across
+ * the magnets themselves, and the skirt's bottom ring is the LAST layer printed
+ * (the lid rotates 180° for print), so nothing squishes into it.
  *
  * The bare {@link LID_FIT_CLEARANCE}, never `resolveLidFootprintClearance`: the
  * magnetic relief is XY-only, and feeding it here would lift the plane
@@ -848,11 +842,8 @@ export function lidRetentionInterfaceZ(
   magnetDepth: number
 ): number {
   const pocketFitZ = -(LID_TOP_THICKNESS_BASE + magnetDepth) - extraCavityMm;
-  const skirtClearZ =
-    lidWallBottomZ(heightUnitMm, LID_FIT_CLEARANCE, extraCavityMm) -
-    LID_MAGNET_SKIRT_CLEARANCE +
-    LID_MAGNET_SEAT_GAP;
-  return Math.min(pocketFitZ, skirtClearZ);
+  const skirtBottomZ = lidWallBottomZ(heightUnitMm, LID_FIT_CLEARANCE, extraCavityMm);
+  return Math.min(pocketFitZ, skirtBottomZ);
 }
 
 /**
@@ -860,29 +851,30 @@ export function lidRetentionInterfaceZ(
  * below its floor, and so how far the whole bin is lifted for Z=0 to stay the
  * absolute bottom.
  *
- * `wallBottomZ` alone is not enough, and both of the things it misses sink the
- * model under the print bed: click rails hang below the mating wall, and a
- * magnetic joint's retention bosses reach past it to clear the pads they mate
- * with ({@link lidRetentionInterfaceZ}). `retentionMagnetDepth` is null when the
- * joint has no retention magnets. Shared by the worker's `deriveDimensions` and
- * the preview's `binDimensions` so the two cannot disagree about where a tray's
- * floor is.
+ * `wallBottomZ` alone is not enough: click rails hang below the mating wall, and
+ * omitting them sinks the model under the print bed. Retention bosses normally
+ * need no term — {@link lidRetentionInterfaceZ} lands them ON the wall line for
+ * exactly this reason.
+ *
+ * The exception is a magnet deep enough that the pocket-fit bound wins, i.e.
+ * `LID_TOP_THICKNESS_BASE + depth > -wallBottomZ` (~5mm on a stock 7mm joint).
+ * Such a tray's bosses hang below the bed by the difference, unchanged from
+ * before #3450 and tracked separately — it is a property of the depth knob, not
+ * of the seating plane, and the lid (which is not lifted) never shows it.
+ *
+ * Shared by the worker's `deriveDimensions` and the preview's `binDimensions`
+ * so the two cannot disagree about where a tray's floor is.
  */
 export function trayBottomSkirtDepth(
   heightUnitMm: number,
   fitClearance: number,
   extraCavityMm: number,
-  hasClickRails: boolean,
-  retentionMagnetDepth: number | null
+  hasClickRails: boolean
 ): number {
-  const wall =
+  return (
     -lidWallBottomZ(heightUnitMm, fitClearance, extraCavityMm) +
-    (hasClickRails ? LID_CLICK_RAIL_DROP_BELOW_WALL : 0);
-  const boss =
-    retentionMagnetDepth === null
-      ? 0
-      : -lidRetentionInterfaceZ(heightUnitMm, extraCavityMm, retentionMagnetDepth);
-  return Math.max(wall, boss);
+    (hasClickRails ? LID_CLICK_RAIL_DROP_BELOW_WALL : 0)
+  );
 }
 
 /**
