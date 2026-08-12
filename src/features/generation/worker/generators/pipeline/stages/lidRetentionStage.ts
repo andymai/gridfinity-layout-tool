@@ -18,11 +18,13 @@
  * wall's own corner arc so it can't punch through the outer shell (#2929), and
  * the two between them stay square because they sit buried inside the walls.
  *
- * The magnet mating plane is recessed just below the rim so the lid magnet fits
- * entirely under the lid's top surface (no bump); this stage derives that plane
- * from the lid's `anchorZ`, which the export assembly pins to the bin lip top.
- * The physical bin needs the pads whether or not the lid is exported in the same
- * action, so this keys off `usesMagneticLid` (not on the lid being emitted).
+ * The mating plane sits BELOW the lid's mating skirt, not at the rim. The pad
+ * welds into the walls, so it spans the same band the skirt drops through — a
+ * pad top anywhere above the skirt's bottom props the lid open on its own
+ * corners no matter how well the magnets line up (#3450). `retentionSeatPlanes`
+ * owns that bound; this stage only reads it. The physical bin needs the pads
+ * whether or not the lid is exported in the same action, so this keys off
+ * `usesMagneticLid` (not on the lid being emitted).
  *
  * Runs AFTER translate so the solid is in final world Z (`dimensions.lipTopZ`);
  * XY comes from the shared `retentionMagnetPositions` so the pads line up with
@@ -93,11 +95,10 @@ export const lidRetentionStage: PipelineStage = {
     // and the lid boss can't drift apart in Z (the XY equivalent of
     // `retentionMagnetPositions`).
     //
-    // The seat plane is the LIP TOP — that is the plane a seated lid's
-    // `anchorZ` lands on, and the boss hangs a fixed distance below it into the
-    // bin mouth. `dimensions` derives it once; every restatement of that chain
-    // has been wrong (#3431), and by less than a millimetre, which is enough to
-    // turn the designed 0.2mm seat gap into 0.5mm of solid overlap.
+    // `dim.lipTopZ` is the plane a seated lid's `anchorZ` lands on — the helper
+    // measures down from it. Read it, never restate the chain: every
+    // restatement has been wrong (#3431), by less than a millimetre, which is
+    // enough to turn the designed 0.2mm seat gap into 0.5mm of solid overlap.
     const { binFaceZ: magnetTopZ } = retentionSeatPlanes(params, dim.lipTopZ);
 
     // Cap the pocket at what the recessed pad can hold while keeping POST_FLOOR

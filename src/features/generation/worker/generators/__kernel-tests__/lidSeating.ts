@@ -101,6 +101,40 @@ export function worstRailInterference(bin: MeshData, lid: MeshData, dz: number):
 }
 
 /**
+ * Worst interference (mm) anywhere under the seated lid.
+ *
+ * Deliberately unaimed, unlike {@link worstRailInterference} and
+ * {@link magnetSeatGap}: both of those probe a place someone already suspected,
+ * and #3450 was 2.8mm of solid-on-solid overlap in a place nobody had — the
+ * magnet pad's outboard half, where it welds into the wall under the skirt.
+ * Aimed probes measured the magnet faces meeting perfectly while the lid could
+ * not physically close.
+ *
+ * Sweeps the lid's own bounds (overhang shifts them) on a `step` grid. 1mm
+ * cannot slip past a real clash: the narrowest feature either part has down
+ * here is the 1.85mm mating wall, and anything it fouls spans a pad's whole
+ * ~10mm reach. Span intersection, not outermost crossings — on a column
+ * through the lip ring the bin's top face is legitimately above the lid's
+ * lowest, since the cavity swallows the lip.
+ */
+export function worstSeatInterference(
+  bin: MeshData,
+  lid: MeshData,
+  dz: number,
+  step = 1
+): { readonly mm: number; readonly x: number; readonly y: number } {
+  const bb = boundingBox(lid.vertices);
+  let worst = { mm: 0, x: 0, y: 0 };
+  for (let x = bb.minX; x <= bb.maxX; x += step) {
+    for (let y = bb.minY; y <= bb.maxY; y += step) {
+      const mm = interferenceAt(bin, lid, x, y, dz);
+      if (mm > worst.mm) worst = { mm, x, y };
+    }
+  }
+  return worst;
+}
+
+/**
  * Narrowest gap (mm) between a bin magnet pad's top face and the seated lid
  * boss's magnet face, across every magnet. Negative means they interpenetrate,
  * so the pads prop the lid off its lip.

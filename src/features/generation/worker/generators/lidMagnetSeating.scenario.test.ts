@@ -13,7 +13,7 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
-import { lidZOffset, magnetSeatGap } from './__kernel-tests__/lidSeating';
+import { lidZOffset, magnetSeatGap, worstSeatInterference } from './__kernel-tests__/lidSeating';
 import { LID_MAGNET_SEAT_GAP } from '@/shared/types/bin';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams, LidConfig } from '@/features/bin-designer/types';
@@ -63,14 +63,24 @@ describe('a magnetic lid seats on its bin with the magnets a seat gap apart', ()
       if (!bin) throw new Error('expected the bin to build');
       if (!lid) throw new Error('expected the lid to build');
 
+      const dz = lidZOffset(params);
+
       // A pad even a tenth of a millimetre proud of this holds the lid off its
       // lip; the reported defect (#3431) left the pads 0.5mm inside the bosses.
       // A gap much wider costs holding force — 4.5mm was the shipped value
       // before #3232 moved it the other way.
-      expect(magnetSeatGap(bin, lid, params, lidZOffset(params))).toBeCloseTo(
-        LID_MAGNET_SEAT_GAP,
-        1
-      );
+      expect(magnetSeatGap(bin, lid, params, dz)).toBeCloseTo(LID_MAGNET_SEAT_GAP, 1);
+
+      // ...and the magnets meeting is not the lid closing. #3431's fix put the
+      // magnet faces exactly right and still shipped a lid that could not shut:
+      // raising the pads to the corrected plane drove their outboard half —
+      // the part that welds into the wall — 2.8mm into the mating skirt, which
+      // every aimed probe above sails straight past (#3450).
+      const clash = worstSeatInterference(bin, lid, dz);
+      expect(
+        clash.mm,
+        `${clash.mm.toFixed(2)}mm of bin and lid share a column at (${clash.x.toFixed(1)}, ${clash.y.toFixed(1)})`
+      ).toBeLessThan(0.01);
     },
     300000
   );

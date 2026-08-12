@@ -442,15 +442,14 @@ describe('magnet seat gap survives every knob that moves the lid in Z', () => {
     const dim = deriveDimensions(params, true);
 
     // Reproduce exportHandler's lift, then place the lid's magnet face through
-    // it independently of retentionSeatPlanes.
+    // it independently of retentionSeatPlanes. The interface plane itself comes
+    // from the shared helper — a second copy of THAT is the defect this whole
+    // file exists to catch (#3431, #3450); the lift is what's under test.
     const exportLift =
       dim.lipTopZ -
       lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE, resolveLidCavityExtraMm(params));
-    const { LID_TOP_THICKNESS_BASE } = await import('./lidConstants');
-    const inputs = resolveLidInputs(params);
-    const interfaceZ =
-      -(LID_TOP_THICKNESS_BASE + params.lid.retentionMagnet.depth) - inputs.cavityExtraMm;
-    const lidFaceViaExport = interfaceZ + exportLift;
+    const { retentionInterfaceZ } = await import('./retentionMagnetGeometry');
+    const lidFaceViaExport = retentionInterfaceZ(resolveLidInputs(params)) + exportLift;
 
     expect(retentionSeatPlanes(params, dim.lipTopZ).lidFaceZ).toBeCloseTo(lidFaceViaExport, 9);
   });

@@ -51,6 +51,17 @@ describe('tray bin mating skirt', () => {
     expect(box.minZ).toBeCloseTo(0, 3);
   });
 
+  it('sits on Z=0 with a magnetic joint, whose bosses reach past the skirt', () => {
+    const mesh = generateBin(trayParams('magnetic'));
+    assertStructurallyValid(mesh);
+    const box = boundingBox(mesh.vertices);
+    // Retention bosses hang below `wallBottomZ` so the pads they mate with can
+    // pass under the skirt (#3450), exactly as click rails do. A lift computed
+    // from the wall alone buries them 0.2mm under the bed — small enough that
+    // every structural assertion still passes.
+    expect(box.minZ).toBeCloseTo(0, 3);
+  });
+
   it('is taller than the bin body by the skirt depth', () => {
     const mesh = generateBin(trayParams('clickRails'));
     const box = boundingBox(mesh.vertices);
