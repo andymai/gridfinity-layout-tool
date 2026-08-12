@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.402.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.401.0...gridfinity-layout-tool-v4.402.0) (2026-08-12)
+
+
+### Features
+
+* **labs:** graduate the baseplate screw holes flag ([#3442](https://github.com/andymai/gridfinity-layout-tool/issues/3442)) ([e8383b8](https://github.com/andymai/gridfinity-layout-tool/commit/e8383b805083a4cc939feea3b242d8f7ba08143e))
+
 ## [4.401.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.400.3...gridfinity-layout-tool-v4.401.0) (2026-08-11)
 
 
