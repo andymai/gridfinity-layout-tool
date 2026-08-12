@@ -1,0 +1,37 @@
+src/features/generation/worker/generators/baseplateGenerator.scenario.screws.test.ts
+  s_d4202156d0c5f7::t_ef0e13fd1fb2d0 139-141,154-155,159,180,195,200,203-205,214-216,220,224
+  s_d4202156d0c5f7::t_9cd8c3a488421d 226,231-233,237-239
+  s_d4202156d0c5f7::t_41f40f8416f035 13-18
+  s_d4202156d0c5f7::t_f058755d6fbcee 134-138,142-153,156-158,160-179,181-194,196-199,201-202,206-212,217-219,223,225,227-230,234-236,240-262
+  s_d4202156d0c5f7::t_32dde9e768f5fe 213,221-222
+src/features/baseplate/hooks/useBaseplateGeneration.ts
+  s_d4202156d0c5f7::t_d7a50bcf020b0c 328
+  s_d4202156d0c5f7::t_ea7c5b2c70ffcb 243-247
+  s_d4202156d0c5f7::t_f34f7112d3638b 329-331
+src/features/generation/worker/generators/lightweightFloorCutter.ts
+  s_d4202156d0c5f7::t_ba6fe3491f410a 440-441,446
+  s_d4202156d0c5f7::t_16badd2e805a72 76-78,82-85,97-98,104
+src/features/baseplate/hooks/useBaseplateGeneration.test.ts
+  s_d4202156d0c5f7::t_4a69baeb516668 220-231
+  s_d4202156d0c5f7::t_2a203829a374d2 236-242
+src/features/generation/worker/generators/baseplateGenerator.ts
+  s_d4202156d0c5f7::t_6b39c4d43f7736 624-627,640-641,649-680
+  s_d4202156d0c5f7::t_87e1bfb1dfb4b7 132-133
+  s_d4202156d0c5f7::t_9a62f7db3848ed 681-682
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "e73760e71b986c03b723fa86e2643ba45a2f5e6d",
+  "prompts": {},
+  "sessions": {
+    "s_d4202156d0c5f7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f40d6a9e-475a-430b-83f4-660a5b900fde",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
