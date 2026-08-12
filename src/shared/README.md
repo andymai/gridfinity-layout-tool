@@ -50,9 +50,13 @@ graph TB
 | `useGridTemplate()`   | CSS Grid template computation with half-bin fractional support        |
 | `useCrossTabSync()`   | Sync layout/library across browser tabs via StorageEvent              |
 | `usePWAUpdate()`      | Detect and prompt for service worker updates                          |
-| `useInlineEdit()`     | Inline editing state management (active, commit, cancel)              |
 | `usePrefetchChunks()` | Idle-time code chunk preloading                                       |
 | `useSharedWithMe()`   | Fetch and track layouts shared via Liveblocks                         |
+
+Inline rename lives in the design system: `useInlineEdit` for the headless
+behaviour and `InlineEditText` for the styled preset over it, both from
+`@/design-system`. It sits there because the design system may not import from
+`shared/`, and the preset needs it.
 
 ## Key Utilities (`utils/`)
 

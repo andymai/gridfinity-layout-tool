@@ -160,9 +160,10 @@ export type { CopyButtonProps, CopyFieldProps } from './CopyButton';
 export { NavRow } from './NavRow';
 export type { NavRowProps } from './NavRow';
 
-// InlineEditText
+// InlineEditText (styled preset) + useInlineEdit (the rename behaviour it presets)
 export { InlineEditText } from './InlineEditText';
 export type { InlineEditTextProps } from './InlineEditText';
+export { useInlineEdit } from './InlineEditText/useInlineEdit';
 
 // CheckboxRow
 export { CheckboxRow } from './CheckboxRow';

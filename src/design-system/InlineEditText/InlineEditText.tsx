@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { cn } from '../cn';
+import { useInlineEdit } from './useInlineEdit';
 import { activePress, focusRing, interactiveTransition } from '../variants';
 
 export interface InlineEditTextProps {
@@ -76,6 +77,12 @@ export interface InlineEditTextProps {
  * Displays a button until clicked, then swaps to a focused, selected input.
  * Enter or blur commits, Escape reverts; focus returns to the button afterwards.
  *
+ * The styled preset over {@link useInlineEdit}, which owns every one of those
+ * rules. Use this when clicking the name is what starts the rename and the
+ * display is only the name; use the hook directly when a menu triggers the
+ * rename or the display carries more than the value, since this renders its own
+ * button and nesting one inside a clickable row is wrong.
+ *
  * @example
  * <InlineEditText
  *   value={layout.name}
@@ -109,19 +116,23 @@ export function InlineEditText({
   displayClassName,
   inputClassName,
 }: InlineEditTextProps): React.JSX.Element {
-  const [isEditing, setIsEditing] = useState(false);
-  const [draft, setDraft] = useState(value);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const {
+    isEditing,
+    editingValue: draft,
+    inputRef,
+    startEditing: enterEdit,
+    handleChange,
+    handleFinish: commit,
+    handleKeyDown: editKeyDown,
+  } = useInlineEdit({ initialValue: value, onSave: onCommit, fallback });
+
   const buttonRef = useRef<HTMLButtonElement>(null);
   const restoreFocusRef = useRef(false);
-  // Browsers (not jsdom) fire a native blur when the focused input is removed
-  // from the DOM, so Escape-revert would otherwise commit the stale draft.
-  const revertedRef = useRef(false);
 
+  // Focus and selection on entering edit belong to the hook; returning focus to
+  // the display button is this preset's own, since only it renders one.
   useEffect(() => {
     if (isEditing) {
-      inputRef.current?.focus();
-      inputRef.current?.select();
       restoreFocusRef.current = true;
     } else if (restoreFocusRef.current) {
       restoreFocusRef.current = false;
@@ -129,34 +140,9 @@ export function InlineEditText({
     }
   }, [isEditing]);
 
-  const enterEdit = (): void => {
-    revertedRef.current = false;
-    setDraft(value);
-    setIsEditing(true);
-  };
-
-  const commit = (): void => {
-    if (revertedRef.current) return;
-    const next = draft.trim() || fallback || value;
-    if (next !== value) {
-      onCommit(next);
-    }
-    setIsEditing(false);
-  };
-
-  const revert = (): void => {
-    revertedRef.current = true;
-    setDraft(value);
-    setIsEditing(false);
-  };
-
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
     if (stopPropagation) e.stopPropagation();
-    if (e.key === 'Enter') {
-      commit();
-    } else if (e.key === 'Escape') {
-      revert();
-    }
+    editKeyDown(e);
   };
 
   if (isEditing) {
@@ -165,7 +151,7 @@ export function InlineEditText({
         ref={inputRef}
         type="text"
         value={draft}
-        onChange={(e) => setDraft(e.target.value)}
+        onChange={(e) => handleChange(e.target.value)}
         onBlur={commit}
         onKeyDown={handleKeyDown}
         onClick={stopPropagation ? (e) => e.stopPropagation() : undefined}

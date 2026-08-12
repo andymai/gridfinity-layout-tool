@@ -2,9 +2,8 @@ import { useCallback } from 'react';
 import type { LayoutEntry } from '@/core/types';
 import { LayoutThumbnail } from '@/shell/LayoutThumbnail';
 import { LayoutActions } from '../LayoutActions';
-import { useInlineEdit } from '../useInlineEdit';
 import { useTranslation, useFormatting } from '@/i18n';
-import { Input } from '@/design-system';
+import { Input, useInlineEdit } from '@/design-system';
 
 interface LayoutListItemProps {
   entry: LayoutEntry;

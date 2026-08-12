@@ -145,4 +145,68 @@ describe('useInlineEdit', () => {
 
     expect(result.current.editingValue).toBe('updated');
   });
+
+  it('saves the fallback when the trimmed input is empty', () => {
+    const onSave = vi.fn();
+    const { result } = renderHook(() =>
+      useInlineEdit({ initialValue: 'test', onSave, fallback: 'Untitled' })
+    );
+
+    act(() => {
+      result.current.startEditing();
+    });
+    act(() => {
+      result.current.handleChange('   ');
+    });
+    act(() => {
+      result.current.handleFinish();
+    });
+
+    expect(onSave).toHaveBeenCalledWith('Untitled');
+  });
+
+  it('ignores the blur that follows an Escape, so the discarded draft is not saved', () => {
+    const onSave = vi.fn();
+    const { result } = renderHook(() => useInlineEdit({ initialValue: 'test', onSave }));
+
+    act(() => {
+      result.current.startEditing();
+    });
+    act(() => {
+      result.current.handleChange('abandoned');
+    });
+    act(() => {
+      result.current.handleKeyDown({ key: 'Escape' } as React.KeyboardEvent);
+    });
+    // Browsers (not jsdom) fire this when the focused input leaves the DOM, and
+    // the handler still closes over the pre-Escape draft.
+    act(() => {
+      result.current.handleFinish();
+    });
+
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
+  it('commits again after a revert once editing is re-entered', () => {
+    const onSave = vi.fn();
+    const { result } = renderHook(() => useInlineEdit({ initialValue: 'test', onSave }));
+
+    act(() => {
+      result.current.startEditing();
+    });
+    act(() => {
+      result.current.handleKeyDown({ key: 'Escape' } as React.KeyboardEvent);
+    });
+    act(() => {
+      result.current.startEditing();
+    });
+    act(() => {
+      result.current.handleChange('kept');
+    });
+    act(() => {
+      result.current.handleFinish();
+    });
+
+    expect(onSave).toHaveBeenCalledWith('kept');
+  });
 });

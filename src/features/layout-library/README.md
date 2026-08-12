@@ -28,7 +28,10 @@ graph TB
 - `components/LayoutManagerModal/ViewModeToggle.tsx` — grid/list toggle
 - `components/LayoutManagerModal/SharedWithMeList.tsx` — shared layouts (not yet integrated)
 - `components/LayoutManagerModal/SharedWithMeItem.tsx` — shared layout item
-- `components/LayoutManagerModal/useInlineEdit.ts` — inline rename hook
+
+Inline rename in the grid and list items uses `useInlineEdit` from `@/design-system`.
+Rename is triggered from the row's action menu and the display carries an "Active"
+badge, so these render both modes themselves rather than using `InlineEditText`.
 
 ### Hooks
 
