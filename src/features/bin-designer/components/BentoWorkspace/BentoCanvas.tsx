@@ -22,8 +22,11 @@ import {
 } from '@/features/bin-designer/utils/compartments';
 import { getCompartmentRect, type CellRect } from '@/features/bin-designer/utils/bentoDraw';
 import type { DividerTiltPreview } from '@/features/bin-designer/types';
-import { rowKeyOf } from '../CompartmentEditor/useDividerTiltSubsection';
-import { computeSegmentSpan, overlayLineGeom } from '../CompartmentEditor/dividerOverlayGeom';
+import { rowKeyOf } from '@/features/bin-designer/components/CompartmentEditor/useDividerTiltSubsection';
+import {
+  computeSegmentSpan,
+  overlayLineGeom,
+} from '@/features/bin-designer/components/CompartmentEditor/dividerOverlayGeom';
 import type { BentoGhost, ResizeHandleId } from './useBentoInteraction';
 
 export interface BentoCanvasCamera {

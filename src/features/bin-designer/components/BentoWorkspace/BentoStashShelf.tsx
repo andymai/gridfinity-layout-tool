@@ -8,6 +8,9 @@
 
 import { IconButton } from '@/design-system';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
+import { useTranslation } from '@/i18n';
+import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
+import type { StashedCompartment } from '@/features/bin-designer/types';
 
 function Icon({ paths }: { readonly paths: readonly string[] }) {
   return (
@@ -18,9 +21,6 @@ function Icon({ paths }: { readonly paths: readonly string[] }) {
     </svg>
   );
 }
-import { useTranslation } from '@/i18n';
-import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
-import type { StashedCompartment } from '@/features/bin-designer/types';
 
 export interface BentoStashShelfProps {
   readonly stash: readonly StashedCompartment[];

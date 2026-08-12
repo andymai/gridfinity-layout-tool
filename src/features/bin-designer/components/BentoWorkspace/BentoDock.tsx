@@ -21,8 +21,8 @@ import {
   ANGLE_UI_STEP_DEG,
   SHIFT_UI_STEP_MM,
 } from '@/features/bin-designer/utils/dividerAngle';
-import { CompartmentTextInput } from '../panel/LabelTabsSection/CompartmentTextInput';
-import { useDividerTiltSubsection } from '../CompartmentEditor/useDividerTiltSubsection';
+import { CompartmentTextInput } from '@/features/bin-designer/components/panel/LabelTabsSection/CompartmentTextInput';
+import { useDividerTiltSubsection } from '@/features/bin-designer/components/CompartmentEditor/useDividerTiltSubsection';
 import {
   BENTO_DOCK_MAX_WIDTH,
   BENTO_DOCK_MIN_WIDTH,

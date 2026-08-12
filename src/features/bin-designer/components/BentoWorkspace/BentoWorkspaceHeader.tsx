@@ -8,7 +8,7 @@
 import { Button, IconButton, Stepper } from '@/design-system';
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { useTranslation } from '@/i18n';
-import { BentoIcon } from '../panel/InteriorSection/icons';
+import { BentoIcon } from '@/features/bin-designer/components/panel/InteriorSection/icons';
 
 export interface BentoWorkspaceHeaderProps {
   readonly cols: number;

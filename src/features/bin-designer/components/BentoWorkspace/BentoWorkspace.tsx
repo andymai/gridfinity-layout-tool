@@ -26,13 +26,17 @@ import {
 import { getCompartmentCount } from '@/features/bin-designer/utils/compartments';
 import { usePreviewColor } from '@/features/bin-designer/hooks/usePreviewColor';
 import { useBentoQuickstart } from '@/features/bin-designer/hooks/useBentoQuickstart';
-import { useCutoutWorkspaceCamera } from '../CutoutWorkspace/useCutoutWorkspaceCamera';
-import { TopRuler, LeftRuler, RulerCorner } from '../CutoutWorkspace/Rulers';
+import { useCutoutWorkspaceCamera } from '@/features/bin-designer/components/CutoutWorkspace/useCutoutWorkspaceCamera';
+import {
+  TopRuler,
+  LeftRuler,
+  RulerCorner,
+} from '@/features/bin-designer/components/CutoutWorkspace/Rulers';
 import {
   CutoutContextMenu,
   type ContextMenuAction,
-} from '../panel/CutoutsSection/CutoutContextMenu';
-import { useCutoutContextMenu } from '../panel/CutoutsSection/useCutoutContextMenu';
+} from '@/features/bin-designer/components/panel/CutoutsSection/CutoutContextMenu';
+import { useCutoutContextMenu } from '@/features/bin-designer/components/panel/CutoutsSection/useCutoutContextMenu';
 import { BentoWorkspaceHeader } from './BentoWorkspaceHeader';
 import { BentoCanvas } from './BentoCanvas';
 import { BentoDock } from './BentoDock';
