@@ -1,0 +1,22 @@
+src/features/baseplate/hooks/useBaseplateGeneration.ts
+  s_d4202156d0c5f7::t_8592a144fcbd85 248-249
+  s_d4202156d0c5f7::t_1fae70a09865bb 333
+src/features/generation/worker/generators/lightweightFloorCutter.ts
+  s_d4202156d0c5f7::t_2591c6dd7566ba 432-434
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "b66e4dc7f90aa0262e838006cfd1693ca3a433b9",
+  "prompts": {},
+  "sessions": {
+    "s_d4202156d0c5f7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f40d6a9e-475a-430b-83f4-660a5b900fde",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
