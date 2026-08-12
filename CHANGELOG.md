@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.402.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.402.4...gridfinity-layout-tool-v4.402.5) (2026-08-12)
+
+
+### Bug Fixes
+
+* **baseplate:** cross-cut screw cells into boss pads instead of full floors ([#3457](https://github.com/andymai/gridfinity-layout-tool/issues/3457)) ([bfa924a](https://github.com/andymai/gridfinity-layout-tool/commit/bfa924adfb5a7f128ea1d4aec30fe125e33a34c1))
+
 ## [4.402.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.402.3...gridfinity-layout-tool-v4.402.4) (2026-08-12)
 
 
