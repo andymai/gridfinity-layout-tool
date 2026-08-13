@@ -1,0 +1,23 @@
+src/shared/generation/meshPersistence.ts
+  s_5511e9ebcd4d22::t_871515590d498c 72-74,81
+package.json
+  s_5511e9ebcd4d22::t_068ed5d03dd204 133
+pnpm-lock.yaml
+  s_5511e9ebcd4d22::t_d2213548828dfc 85,87-88,3205-3206,8720,8725,8728
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "9113321e85498b199b5f2b4914c6f57f481410fa",
+  "prompts": {},
+  "sessions": {
+    "s_5511e9ebcd4d22": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "71b94051-2c50-4fd2-8261-b5d80b549276",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
