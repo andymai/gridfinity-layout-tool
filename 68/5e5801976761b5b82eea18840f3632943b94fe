@@ -1,0 +1,166 @@
+src/features/generation/worker/generators/toolRackGenerator.ts
+  s_de373f6759b31a::t_2e5c6b6472bd12 151
+  s_de373f6759b31a::t_173d4ec1ebca69 35
+CLAUDE.md
+  s_de373f6759b31a::t_bd0a81913e1248 45-46
+src/i18n/locales/sv.json
+  s_de373f6759b31a::t_bf5e96523cabc0 821-822
+  s_de373f6759b31a::t_a4085d63324df7 820,823-827
+  s_de373f6759b31a::t_a6e256a72637b5 805
+src/i18n/locales/uk.json
+  s_de373f6759b31a::t_a6e256a72637b5 805
+  s_de373f6759b31a::t_a4085d63324df7 820,823-827
+  s_de373f6759b31a::t_bf5e96523cabc0 821-822
+src/features/generation/worker/generators/binSeating.kernel.test.ts
+  s_de373f6759b31a::t_1a5e4d043f85d1 1-128
+api/lib/designerValidation.ts
+  s_de373f6759b31a::t_ad24b719a65e4e 250
+  s_de373f6759b31a::t_80a3d910f9f93a 74-75,239-249
+src/i18n/locales/ja.json
+  s_de373f6759b31a::t_a4085d63324df7 820,823-827
+  s_de373f6759b31a::t_bf5e96523cabc0 821-822
+  s_de373f6759b31a::t_a6e256a72637b5 805
+src/features/generation/worker/generators/scenarios/halfSockets.ts
+  s_de373f6759b31a::t_396bbbbdf183a9 104,109-112,114-117,119-120,131-132,134-136,138-141,144-148,150-153,156-160,162-163,167-168
+  s_de373f6759b31a::t_ca12ca92071e71 105-108,113,118,121-130,133,137,142-143,149,154-155,161,164-166
+src/i18n/locales/nl.json
+  s_de373f6759b31a::t_bf5e96523cabc0 821-822
+  s_de373f6759b31a::t_a6e256a72637b5 805
+  s_de373f6759b31a::t_a4085d63324df7 820,823-827
+src/features/generation/worker/generators/binDirectMesh.ts
+  s_de373f6759b31a::t_173d4ec1ebca69 38,302-307
+  s_de373f6759b31a::t_2e8efb9d6591a9 293-295,297,300-301,317
+src/features/generation/worker/generators/socketBuilder.ts
+  s_de373f6759b31a::t_82dc6226478c04 79-81,83-90,92-97,99-104,107,109-116,118,120-121,123-132,139-142,144,154,160,183-184
+  s_de373f6759b31a::t_7a8dbb2322a547 82,91,98,105-106,108,117,119,122,133-138,143,145-148,161-163,168-170
+  s_de373f6759b31a::t_2e5c6b6472bd12 249,263,423,439-440,458,480,519
+src/features/generation/worker/generators/pipeline/context.ts
+  s_de373f6759b31a::t_173d4ec1ebca69 36,70-72,74-75,268-271,332
+  s_de373f6759b31a::t_1d360064ff6c47 73,76-77
+src/features/generation/worker/generators/pipeline/types.ts
+  s_de373f6759b31a::t_173d4ec1ebca69 13,81-83,85
+  s_de373f6759b31a::t_1d360064ff6c47 84
+src/features/generation/worker/generators/pipeline/stages/shellStage.ts
+  s_de373f6759b31a::t_173d4ec1ebca69 102,347,402
+src/features/generation/worker/generators/__kernel-tests__/binSeating.ts
+  s_de373f6759b31a::t_9cfd387d5a27a8 13,21-29,31,34,41-42,44-45,48,54,57,59,61,63-69,72,76-77,80-81,83-85,92,94-103,106
+  s_de373f6759b31a::t_45dcac2adc4322 1-12,14-20,30,32-33,35-40,43,46-47,49-53,55-56,58,60,62,70-71,73-75,78-79,82,86-91,93,104-105,107
+src/shared/utils/fractionalEdge.ts
+  s_de373f6759b31a::t_28c582e795aa49 23,42-49,66-71,199-237,245-255,266-269,272-303
+  s_de373f6759b31a::t_b771533505a823 238-244,256-265,270-271
+src/features/bin-designer/components/DesignerPage/FractionalEdgeMismatchBanner.tsx
+  s_de373f6759b31a::t_55dac9538d8412 2-8,17-18,21-24,32-36
+src/features/bin-designer/components/DesignerPage/DesignerPage.tsx
+  s_de373f6759b31a::t_a6e256a72637b5 117-120
+src/features/generation/worker/generators/lightweightBaseBuilder.ts
+  s_de373f6759b31a::t_2e5c6b6472bd12 57-58,140,217,284
+src/features/generation/worker/generators/shapeCache.test.ts
+  s_de373f6759b31a::t_b2c6c8126efe87 22,27-28,33-34,39-40,45-46,51-52,57-58,64
+  s_de373f6759b31a::t_37ac6c15805b0f 75,85,96,112,124,147,181
+src/i18n/locales/ko.json
+  s_de373f6759b31a::t_a4085d63324df7 820,823-827
+  s_de373f6759b31a::t_a6e256a72637b5 805
+  s_de373f6759b31a::t_bf5e96523cabc0 821-822
+src/i18n/locales/it.json
+  s_de373f6759b31a::t_a6e256a72637b5 805
+  s_de373f6759b31a::t_a4085d63324df7 820,823-827
+  s_de373f6759b31a::t_bf5e96523cabc0 821-822
+src/features/generation/worker/generators/shapeCache.ts
+  s_de373f6759b31a::t_2e5c6b6472bd12 138,179-181,183
+src/i18n/locales/de.json
+  s_de373f6759b31a::t_bf5e96523cabc0 821-822
+  s_de373f6759b31a::t_a6e256a72637b5 805
+  s_de373f6759b31a::t_a4085d63324df7 820,823-827
+src/i18n/locales/en.ts
+  s_de373f6759b31a::t_a4085d63324df7 2810,2813-2817
+  s_de373f6759b31a::t_bf5e96523cabc0 2811-2812
+  s_de373f6759b31a::t_3438dc8bf02322 2818-2820,2844-2845
+src/features/bin-designer/README.md
+  s_de373f6759b31a::t_dc57342fd50621 138-152
+src/features/generation/worker/generators/cellDecomposition.ts
+  s_de373f6759b31a::t_908b5199bf4dc7 154-158,160,169,172
+  s_de373f6759b31a::t_c395b886ec0b36 182-185,188-189,250-254,257,261-262
+  s_de373f6759b31a::t_4dd1c0b7626c05 186-187,255-256,258-260
+  s_de373f6759b31a::t_cd8f04ee37173b 144-153,159,161-168,170-171,173-174
+  s_de373f6759b31a::t_a29b3b80a92b08 143,181
+src/shared/utils/fractionalEdge.test.ts
+  s_de373f6759b31a::t_ccb873864fb2c9 2-10,253-347
+  s_de373f6759b31a::t_b771533505a823 348-367
+src/features/generation/worker/generators/socketBuilder.test.ts
+  s_de373f6759b31a::t_d54c64099b881d 5-11,167,169-171,173-175,177-180,214,217-218,225-226,232-233,240-241,246-247,252-253,262-263,266-267,276-277
+  s_de373f6759b31a::t_4b79c38abcda2d 14-28,39,66,168,172,176,181-213,215-216,219-224,227-231,234-239,242-245,248-251,254-261,264-265,268-275,278-283
+  s_de373f6759b31a::t_ca12ca92071e71 121,128,134,140,146,160
+src/features/generation/worker/generators/__kernel-tests__/shellStageBreakdown.test.ts
+  s_de373f6759b31a::t_b4f6ff1d6d2188 29,73
+  s_de373f6759b31a::t_d0bea6a7e3b322 74-84
+src/i18n/locales/fr.json
+  s_de373f6759b31a::t_bf5e96523cabc0 821-822
+  s_de373f6759b31a::t_a6e256a72637b5 805
+  s_de373f6759b31a::t_a4085d63324df7 820,823-827
+src/i18n/locales/cs.json
+  s_de373f6759b31a::t_a6e256a72637b5 805
+  s_de373f6759b31a::t_bf5e96523cabc0 821-822
+  s_de373f6759b31a::t_a4085d63324df7 820,823-827
+src/features/generation/worker/generators/cellDecomposition.test.ts
+  s_de373f6759b31a::t_efce5e1dcdd5ed 3,430-484
+  s_de373f6759b31a::t_9fe726f1fb3f3d 485
+src/features/bin-designer/types/base.ts
+  s_de373f6759b31a::t_c395b886ec0b36 103,105-119,121,123-124,126-127,147-149,151-152
+  s_de373f6759b31a::t_4dd1c0b7626c05 102,104,120,122,125,128,144,150
+  s_de373f6759b31a::t_de65751ad30898 153
+src/i18n/locales/zh-CN.json
+  s_de373f6759b31a::t_a6e256a72637b5 805
+  s_de373f6759b31a::t_bf5e96523cabc0 821-822
+  s_de373f6759b31a::t_a4085d63324df7 820,823-827
+src/i18n/locales/es.json
+  s_de373f6759b31a::t_a6e256a72637b5 805
+  s_de373f6759b31a::t_bf5e96523cabc0 821-822
+  s_de373f6759b31a::t_a4085d63324df7 820,823-827
+src/features/generation/worker/generators/binGenerator.scenario.fractional-feet.test.ts
+  s_de373f6759b31a::t_b4f6ff1d6d2188 17,26
+  s_de373f6759b31a::t_3df8f77520ce4f 27-37
+src/features/bin-designer/components/panel/BaseSection/BaseSection.tsx
+  s_de373f6759b31a::t_4c37a435cca776 17
+  s_de373f6759b31a::t_98f4d1789657b4 26-28,33-36,171
+  s_de373f6759b31a::t_9b2913b95e15de 164-170,172-194
+  s_de373f6759b31a::t_ec1418115715eb 37,195
+src/features/bin-designer/components/panel/BaseSection/useBaseSection.ts
+  s_de373f6759b31a::t_b3d0a4446efe61 15,196-199
+  s_de373f6759b31a::t_096a9da8a11809 9,26,57-74,193-195,200-206,332-334,349-351
+src/i18n/locales/nb.json
+  s_de373f6759b31a::t_a6e256a72637b5 805
+  s_de373f6759b31a::t_a4085d63324df7 820,823-827
+  s_de373f6759b31a::t_bf5e96523cabc0 821-822
+src/features/generation/worker/generators/floorPatterns.ts
+  s_de373f6759b31a::t_173d4ec1ebca69 241
+src/i18n/locales/pl.json
+  s_de373f6759b31a::t_bf5e96523cabc0 821-822
+  s_de373f6759b31a::t_a6e256a72637b5 805
+  s_de373f6759b31a::t_a4085d63324df7 820,823-827
+src/i18n/locales/pt-BR.json
+  s_de373f6759b31a::t_a6e256a72637b5 805
+  s_de373f6759b31a::t_a4085d63324df7 820,823-827
+  s_de373f6759b31a::t_bf5e96523cabc0 821-822
+src/features/bin-designer/components/DesignerPage/useFractionalEdgeMismatch.ts
+  s_de373f6759b31a::t_248e2dd9a06313 2-8,11-13,20-26,29,31-33,48-50,63-65,82-84,94-96,112-113,117-119,124-125,129,132
+  s_de373f6759b31a::t_c2cea152633918 46,61,123,126-128,130
+  s_de373f6759b31a::t_b87fde73f36016 120-121
+src/shared/types/bin.ts
+  s_de373f6759b31a::t_28c582e795aa49 24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "685e5801976761b5b82eea18840f3632943b94fe",
+  "prompts": {},
+  "sessions": {
+    "s_de373f6759b31a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3dcad030-201b-4448-9f8b-7b12204c8a27",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
