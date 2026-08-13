@@ -1,0 +1,19 @@
+src/shared/generation/meshPersistence.ts
+  s_f2f2b253d25507::t_a14423f2068276 69-71,78
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "bd3216914bf58e25de134c3ae4711641637fb27a",
+  "prompts": {},
+  "sessions": {
+    "s_f2f2b253d25507": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "267c9a5e-bbb3-4be4-ad8e-d7f8fc9dcd58",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
