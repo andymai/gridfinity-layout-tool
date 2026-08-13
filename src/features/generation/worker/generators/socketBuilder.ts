@@ -58,16 +58,6 @@ import {
 } from '@/shared/utils/cellMask';
 
 /**
- * Walk the grid the same way `forEachCell` does, but for 1u cells in a
- * mask with mixed half-bin detail, split into four 0.5u quarter-sub-cells.
- * Uniform 1u cells stay as a single full socket; the trailing fractional
- * fringe (natural 0.5u cells from `decomposeCells`) is untouched.
- *
- * When `globalHalfSockets` is true (user opt-in) every cell is halved
- * regardless of mask detail — preserves the existing `base.halfSockets`
- * toggle behaviour.
- */
-/**
  * Smallest printable edge foot, in mm. A fractional bin whose trailing strip is
  * narrower than this drops the foot entirely (flat bottom there) rather than
  * emit a degenerate sliver. Shares the project-wide printable-tile floor so it
@@ -86,24 +76,97 @@ export interface FractionalEdge {
 
 export const DEFAULT_FRACTIONAL_EDGE: FractionalEdge = { x: 'end', y: 'end' };
 
+/** Where one axis's feet fall relative to the plate's cell boundaries (#3467). */
+export type FootLattice = 'grid' | 'half';
+
+/**
+ * The foot layout the socket walk builds, resolved from the user's base
+ * settings and the bin's mask.
+ *
+ * A foot has to land inside one pocket — adjacent pockets are separated by a
+ * ridge — so which layout seats depends on where the bin sits, PER AXIS. Half-bin
+ * mode can place a bin half a unit off-grid on one axis and on-grid on the
+ * other, and a layout applied to both axes at once straddles ridges on whichever
+ * one it got wrong.
+ */
+export interface SocketCellPlan {
+  /** Uniform 0.5u feet everywhere: seats at either offset, at the most feet. */
+  readonly halfSockets: boolean;
+  readonly latticeX: FootLattice;
+  readonly latticeY: FootLattice;
+}
+
+/** Plain full-cell feet on both axes — the pre-#3467 layout. */
+export const DEFAULT_SOCKET_CELL_PLAN: SocketCellPlan = {
+  halfSockets: false,
+  latticeX: 'grid',
+  latticeY: 'grid',
+};
+
+/**
+ * Fold the base settings and the mask into the plan the socket walk consumes.
+ *
+ * `halfSockets` overrides both lattices: uniform 0.5u feet already seat at
+ * either offset, so a lattice choice on top would only cost feet.
+ *
+ * A partial `cellMask` also forces `grid`. The mask is authored against the
+ * standard grid, and the `half` lattice moves every interior boundary half a
+ * unit off it — the mask's fill test would then straddle two authored cells and
+ * silently drop feet along an inner corner. The UI says so rather than offering
+ * a lattice that would not be honoured.
+ */
+export function resolveSocketCellPlan(
+  halfSockets: boolean,
+  latticeX: FootLattice | undefined,
+  latticeY: FootLattice | undefined,
+  mask: CellMask | undefined
+): SocketCellPlan {
+  if (halfSockets) return { halfSockets: true, latticeX: 'grid', latticeY: 'grid' };
+  if (isPartialMask(mask)) return DEFAULT_SOCKET_CELL_PLAN;
+  return { halfSockets: false, latticeX: latticeX ?? 'grid', latticeY: latticeY ?? 'grid' };
+}
+
+/** Stable key fragment for a plan; empty for the pre-#3467 default. */
+export function socketCellPlanKey(plan: SocketCellPlan): string {
+  if (plan.halfSockets || (plan.latticeX === 'grid' && plan.latticeY === 'grid')) return '';
+  return `lat:${plan.latticeX}:${plan.latticeY}`;
+}
+
+/**
+ * Walk the grid the same way `forEachCell` does, emitting the cells the base
+ * grows a foot on.
+ *
+ * `halfSockets` halves every cell. Otherwise each axis takes its own lattice:
+ * `grid` is full cells (plus the fractional edge cell), `half` is a 0.5u cell at
+ * both rims with full cells between, which is what seats when the bin sits half
+ * a unit off-grid on that axis (#3467).
+ *
+ * Independently of the plan, a 1u cell in a mask with mixed half-bin detail is
+ * split into four 0.5u quarter-sub-cells so the foot follows the authored
+ * shape. Uniform 1u cells stay one full socket; the trailing fractional fringe
+ * (natural 0.5u cells from `decomposeCells`) is untouched.
+ */
 export function forEachSocketCell(
   gridW: number,
   gridD: number,
   mask: CellMask | undefined,
   gridUnitMm: GridUnitInput,
-  globalHalfSockets: boolean,
+  plan: SocketCellPlan,
   callback: (cell: CellInfo) => void,
   fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE
 ): void {
   const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
 
-  if (globalHalfSockets) {
-    // Half-sockets decomposes every cell into uniform 0.5u feet, so the grid is
-    // symmetric and `fractionalEdge` has no foot to reposition — intentionally
-    // omitted (the UI hides the edge controls in this mode).
+  if (plan.halfSockets) {
+    // Uniform 0.5u feet on every axis, so the grid is symmetric and
+    // `fractionalEdge` has no foot to reposition — intentionally omitted (the
+    // UI hides the edge controls in this mode).
     forEachCell(gridW, gridD, callback, { halfSockets: true, gridUnitMm });
     return;
   }
+
+  const totalW_mm = gridW * unitX;
+  const totalD_mm = gridD * unitY;
 
   const needsPerCellSplit = mask !== undefined && isPartialMask(mask) && hasHalfBinDetail(mask);
 
@@ -117,6 +180,8 @@ export function forEachSocketCell(
     forEachCell(gridW, gridD, callback, {
       gridUnitMm,
       fractional: true,
+      edgeBandX: plan.latticeX === 'half',
+      edgeBandY: plan.latticeY === 'half',
       minFractionUnitsX: MIN_FOOT_TILE_MM / unitX,
       minFractionUnitsY: MIN_FOOT_TILE_MM / unitY,
       fractionalEdgeX: fractionalEdge.x,
@@ -124,9 +189,6 @@ export function forEachSocketCell(
     });
     return;
   }
-
-  const totalW_mm = gridW * unitX;
-  const totalD_mm = gridD * unitY;
 
   forEachCell(
     gridW,
@@ -184,7 +246,7 @@ export function filledSocketCells(
   gridD: number,
   mask: CellMask | undefined,
   gridUnitMm: GridUnitInput,
-  globalHalfSockets: boolean,
+  plan: SocketCellPlan,
   fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE
 ): CellInfo[] {
   const usingMask = isPartialMask(mask);
@@ -198,7 +260,7 @@ export function filledSocketCells(
     gridD,
     mask,
     gridUnitMm,
-    globalHalfSockets,
+    plan,
     (cell) => {
       if (usingMask) {
         const leftUnit = (cell.centerX + totalW_mm / 2 - (cell.widthUnits * unitX) / 2) / unitX;
@@ -358,7 +420,7 @@ export function baseSocketShapeKey(
   magnetDepth: number,
   screwRadius: number,
   forExport: boolean,
-  halfSockets: boolean,
+  plan: SocketCellPlan,
   gridUnitMm: GridUnitInput,
   cellMask?: CellMask,
   fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE,
@@ -374,7 +436,8 @@ export function baseSocketShapeKey(
     magnetDepth,
     screwRadius,
     forExport,
-    halfSockets,
+    plan.halfSockets,
+    socketCellPlanKey(plan),
     gridUnitMm,
     usingMask ? hashMask(cellMask) : undefined,
     fractionalEdge.x,
@@ -392,7 +455,7 @@ export function buildBaseSocket(
   magnetDepth: number,
   screwRadius: number,
   forExport = false,
-  halfSockets = false,
+  plan: SocketCellPlan = DEFAULT_SOCKET_CELL_PLAN,
   gridUnitMm: GridUnitInput = SIZE,
   cellMask?: CellMask,
   fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE,
@@ -414,7 +477,7 @@ export function buildBaseSocket(
     magnetDepth,
     screwRadius,
     forExport,
-    halfSockets,
+    plan,
     gridUnitMm,
     cellMask,
     fractionalEdge,
@@ -453,7 +516,7 @@ export function buildBaseSocket(
       gridD,
       cellMask,
       gridUnitMm,
-      halfSockets,
+      plan,
       fractionalEdge
     )) {
       const cellW_mm = cell.widthUnits * unitX - CLEARANCE;

@@ -238,7 +238,7 @@ export function planFloorPattern(params: BinParams, dim: BinDimensions): FloorPa
       params.depth,
       params.cellMask,
       { x: dim.gridUnitMmX, y: dim.gridUnitMmY },
-      dim.halfSockets,
+      dim.socketCellPlan,
       { x: params.fractionalEdgeX, y: params.fractionalEdgeY }
     )) {
       const cellW = cell.widthUnits * dim.gridUnitMmX - CLEARANCE;

@@ -33,6 +33,7 @@ import { planSpanningDividerClips, spanningDividerClipsKey } from '../labelTabBu
 // fallback now lives in `pitchFromParams` (gridPitch.ts).
 import type { ProgressFn } from '../meshUtils';
 import { buildCacheKey, quantize, compactKey } from '../cacheKeyUtils';
+import { resolveSocketCellPlan, socketCellPlanKey } from '../socketBuilder';
 import type { BinDimensions, PipelineContext } from './types';
 import type { PerfCollector } from './perfCollector';
 import { resolveOverhang, overhangKey, hasOverhang, overhangExpansion } from '../overhang';
@@ -66,6 +67,14 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // sockets, leaving uniform 1u cells as one full socket. This avoids
   // decomposing every cell unnecessarily.
   const halfSockets = params.base.halfSockets && !socketless;
+  // The foot layout, resolved once here so the shell, the floor pattern and the
+  // cache key cannot disagree about the feet (#3467).
+  const socketCellPlan = resolveSocketCellPlan(
+    halfSockets,
+    params.base.footLatticeX,
+    params.base.footLatticeY,
+    params.cellMask
+  );
   // Base-only bin: the spacer's complement. Needs feet to stand on, so like
   // the spacer it is inert on a socketless base and the constraint engine keeps
   // the two from being on together.
@@ -256,6 +265,10 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
       ...pitchKeySegments({ x: gridUnitX, y: gridUnitY }, quantize),
       isFlat,
       halfSockets,
+      // A non-default foot lattice builds different feet from otherwise
+      // identical params. Appended rather than folded into `halfSockets` so a
+      // pre-#3467 key stays byte-identical.
+      ...(socketCellPlanKey(socketCellPlan) ? [socketCellPlanKey(socketCellPlan)] : []),
       withMagnet,
       withScrew,
       quantize(params.base.magnetDiameter),
@@ -316,6 +329,7 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
     socketless,
     baseOffsetZ,
     halfSockets,
+    socketCellPlan,
     lightweight,
     isSpacer,
     isTile,

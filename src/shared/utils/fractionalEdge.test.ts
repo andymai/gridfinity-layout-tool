@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { hasFractionalEdgeMismatch, computeMatchedEdges, edgeForPosition } from './fractionalEdge';
+import {
+  hasFractionalEdgeMismatch,
+  computeMatchedEdges,
+  edgeForPosition,
+  latticeForPosition,
+  computeMatchedFootLattice,
+  hasFootLatticeMismatch,
+} from './fractionalEdge';
+import type { FractionalEdgeDesign, FractionalEdgeDrawer } from './fractionalEdge';
 
 /** A 5.5-wide drawer with its half column on the right (the default). */
 const FRAC_END = { width: 5.5, depth: 4, fractionalEdgeX: 'end' as const };
@@ -240,5 +248,120 @@ describe('computeMatchedEdges', () => {
       fractionalEdgeX: 'end',
       fractionalEdgeManualX: false,
     });
+  });
+});
+
+describe('foot lattice placement (#3467)', () => {
+  const design = (over: Partial<FractionalEdgeDesign> = {}): FractionalEdgeDesign => ({
+    width: 3,
+    depth: 3,
+    ...over,
+  });
+  const drawer: FractionalEdgeDrawer = { width: 6, depth: 6 };
+
+  describe('latticeForPosition', () => {
+    it('wants the grid lattice when the bin opens on a cell boundary', () => {
+      expect(latticeForPosition(0, 6, 'end')).toBe('grid');
+      expect(latticeForPosition(2, 6, 'end')).toBe('grid');
+    });
+
+    it('wants the half lattice when the bin sits half a unit off', () => {
+      expect(latticeForPosition(0.5, 6, 'end')).toBe('half');
+      expect(latticeForPosition(2.5, 6, 'end')).toBe('half');
+    });
+
+    it('follows the drawer’s own fractional offset', () => {
+      // A 5.5u drawer with its slot at the start puts every boundary on n+0.5.
+      expect(latticeForPosition(0.5, 5.5, 'start')).toBe('grid');
+      expect(latticeForPosition(1, 5.5, 'start')).toBe('half');
+    });
+  });
+
+  describe('computeMatchedFootLattice', () => {
+    it('resolves each axis independently', () => {
+      expect(computeMatchedFootLattice(design(), drawer, [{ x: 1.5, y: 2 }])).toEqual({
+        footLatticeX: 'half',
+        footLatticeY: 'grid',
+      });
+    });
+
+    it('stays silent on an axis whose placements disagree', () => {
+      const patch = computeMatchedFootLattice(design(), drawer, [
+        { x: 0, y: 0 },
+        { x: 0.5, y: 0 },
+      ]);
+      expect(patch.footLatticeX).toBeUndefined();
+      expect(patch.footLatticeY).toBe('grid');
+    });
+
+    it('is empty with no placements', () => {
+      expect(computeMatchedFootLattice(design(), drawer, [])).toEqual({});
+    });
+
+    it('is empty for a half-socket base — it seats at either offset', () => {
+      expect(
+        computeMatchedFootLattice(design({ halfSockets: true }), drawer, [{ x: 0.5, y: 0.5 }])
+      ).toEqual({});
+    });
+
+    it('is empty for a custom shape — the generator pins it to the grid', () => {
+      expect(
+        computeMatchedFootLattice(design({ hasCellMask: true }), drawer, [{ x: 0.5, y: 0.5 }])
+      ).toEqual({});
+    });
+  });
+
+  describe('hasFootLatticeMismatch', () => {
+    it('flags an unset lattice on a half-offset placement', () => {
+      // Unset means 'grid', so a design predating the setting still warns.
+      expect(hasFootLatticeMismatch(design(), drawer, [{ x: 0.5, y: 0 }])).toBe(true);
+    });
+
+    it('is quiet when the lattice already matches', () => {
+      expect(
+        hasFootLatticeMismatch(design({ footLatticeX: 'half' }), drawer, [{ x: 0.5, y: 0 }])
+      ).toBe(false);
+    });
+
+    it('flags a half lattice on an on-grid placement too', () => {
+      // Wrong in both directions: this one perches the bin as surely as the other.
+      expect(
+        hasFootLatticeMismatch(design({ footLatticeX: 'half' }), drawer, [{ x: 0, y: 0 }])
+      ).toBe(true);
+    });
+
+    it('has no manual override — a part that does not fit is not a preference', () => {
+      expect(
+        hasFootLatticeMismatch(
+          design({ fractionalEdgeManualX: true, fractionalEdgeManualY: true }),
+          drawer,
+          [{ x: 0.5, y: 0 }]
+        )
+      ).toBe(true);
+    });
+
+    it('is quiet for a half-socket base', () => {
+      expect(
+        hasFootLatticeMismatch(design({ halfSockets: true }), drawer, [{ x: 0.5, y: 0 }])
+      ).toBe(false);
+    });
+  });
+});
+
+describe('foot lattice and fractional edge are complementary (#3467)', () => {
+  const drawer: FractionalEdgeDrawer = { width: 6, depth: 6 };
+
+  it('leaves a fractional axis to the edge mechanism', () => {
+    // A 2.5u axis with its half cell on the leading edge already decomposes to
+    // [0.5, 1, 1], which is the seating-correct layout for a half offset.
+    const patch = computeMatchedFootLattice({ width: 2.5, depth: 3 }, drawer, [{ x: 0.5, y: 0.5 }]);
+    expect(patch.footLatticeX).toBeUndefined();
+    expect(patch.footLatticeY).toBe('half');
+  });
+
+  it('does not warn about a fractional axis the edge mechanism owns', () => {
+    expect(hasFootLatticeMismatch({ width: 2.5, depth: 2.5 }, drawer, [{ x: 0.5, y: 0.5 }])).toBe(
+      false
+    );
   });
 });

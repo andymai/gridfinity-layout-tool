@@ -114,7 +114,10 @@ export function DesignerPage() {
 
       {/* Drawer edge-orientation mismatch warning */}
       {fractionalEdge.show && (
-        <FractionalEdgeMismatchBanner onMatchDrawer={fractionalEdge.matchDrawer} />
+        <FractionalEdgeMismatchBanner
+          onMatchDrawer={fractionalEdge.matchDrawer}
+          blocksSeating={fractionalEdge.blocksSeating}
+        />
       )}
 
       {/* Post-remix continuation banner (renders null unless the design has lineage) */}

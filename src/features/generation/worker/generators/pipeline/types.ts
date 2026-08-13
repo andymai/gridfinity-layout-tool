@@ -10,6 +10,7 @@
  */
 
 import type { Shape3D } from 'brepjs';
+import type { SocketCellPlan } from '../socketBuilder';
 import type { BinParams } from '@/shared/types/bin';
 import type { MeshData } from '../../../bridge/types';
 import type { ProgressFn } from '../meshUtils';
@@ -77,6 +78,11 @@ export interface BinDimensions {
    */
   readonly baseOffsetZ: number;
   readonly halfSockets: boolean;
+  /**
+   * The foot layout the base builds, after the user's half-socket toggle and
+   * per-axis lattice have been reconciled with the cell mask (#3467).
+   */
+  readonly socketCellPlan: SocketCellPlan;
   /**
    * True when the base is shelled to a uniform `wallThickness` (Gridfinity
    * Lite): the cavity floor follows the socket taper and the grid shape is

@@ -54,6 +54,8 @@ import {
   forEachSocketCell,
   DEFAULT_FRACTIONAL_EDGE,
   type FractionalEdge,
+  DEFAULT_SOCKET_CELL_PLAN,
+  type SocketCellPlan,
 } from './socketBuilder';
 import { isPartialMask, isRegionFilled, type CellMask } from '@/shared/utils/cellMask';
 
@@ -135,7 +137,7 @@ export function buildLightweightBase(
   screwRadius: number,
   openDir: LightweightOpenDirection,
   forExport = false,
-  halfSockets = false,
+  plan: SocketCellPlan = DEFAULT_SOCKET_CELL_PLAN,
   gridUnitMm: GridUnitInput = SIZE,
   cellMask?: CellMask,
   openFloorDrawings?: readonly Drawing[],
@@ -212,7 +214,7 @@ export function buildLightweightBase(
       gridD,
       cellMask,
       gridUnitMm,
-      halfSockets,
+      plan,
       (cell) => {
         if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;
         const cellW_mm = cell.widthUnits * unitX - CLEARANCE;
@@ -279,7 +281,7 @@ export function buildLightweightBase(
         gridD,
         cellMask,
         gridUnitMm,
-        false,
+        DEFAULT_SOCKET_CELL_PLAN,
         (cell) => {
           if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
           if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;

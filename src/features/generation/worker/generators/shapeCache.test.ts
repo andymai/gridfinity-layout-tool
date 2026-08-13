@@ -19,49 +19,49 @@ function mockShape(): Shape3D & { delete: ReturnType<typeof vi.fn> } {
 
 describe('socketCacheKey', () => {
   it('produces deterministic versioned key from parameters', () => {
-    const key = socketCacheKey(2, 2, true, false, 3.1, 2.0, 1.5, false, false);
+    const key = socketCacheKey(2, 2, true, false, 3.1, 2.0, 1.5, false, false, '');
     expect(key).toBe('v2|2|2|42|true|false|3.1|2|1.5|false|false|rect');
   });
 
   it('differs when magnet flag changes', () => {
-    const a = socketCacheKey(1, 1, true, false, 3.1, 2.0, 1.5, false, false);
-    const b = socketCacheKey(1, 1, false, false, 3.1, 2.0, 1.5, false, false);
+    const a = socketCacheKey(1, 1, true, false, 3.1, 2.0, 1.5, false, false, '');
+    const b = socketCacheKey(1, 1, false, false, 3.1, 2.0, 1.5, false, false, '');
     expect(a).not.toBe(b);
   });
 
   it('differs when halfSockets changes', () => {
-    const a = socketCacheKey(2, 2, false, false, 3.1, 2.0, 1.5, false, false);
-    const b = socketCacheKey(2, 2, false, false, 3.1, 2.0, 1.5, false, true);
+    const a = socketCacheKey(2, 2, false, false, 3.1, 2.0, 1.5, false, false, '');
+    const b = socketCacheKey(2, 2, false, false, 3.1, 2.0, 1.5, false, true, '');
     expect(a).not.toBe(b);
   });
 
   it('differs when forExport changes', () => {
-    const a = socketCacheKey(2, 2, false, false, 3.1, 2.0, 1.5, false, false);
-    const b = socketCacheKey(2, 2, false, false, 3.1, 2.0, 1.5, true, false);
+    const a = socketCacheKey(2, 2, false, false, 3.1, 2.0, 1.5, false, false, '');
+    const b = socketCacheKey(2, 2, false, false, 3.1, 2.0, 1.5, true, false, '');
     expect(a).not.toBe(b);
   });
 
   it('differs when grid dimensions change', () => {
-    const a = socketCacheKey(1, 2, false, false, 3.1, 2.0, 1.5, false, false);
-    const b = socketCacheKey(2, 2, false, false, 3.1, 2.0, 1.5, false, false);
+    const a = socketCacheKey(1, 2, false, false, 3.1, 2.0, 1.5, false, false, '');
+    const b = socketCacheKey(2, 2, false, false, 3.1, 2.0, 1.5, false, false, '');
     expect(a).not.toBe(b);
   });
 
   it('differs when magnet radius changes', () => {
-    const a = socketCacheKey(1, 1, true, false, 3.0, 2.0, 1.5, false, false);
-    const b = socketCacheKey(1, 1, true, false, 3.2, 2.0, 1.5, false, false);
+    const a = socketCacheKey(1, 1, true, false, 3.0, 2.0, 1.5, false, false, '');
+    const b = socketCacheKey(1, 1, true, false, 3.2, 2.0, 1.5, false, false, '');
     expect(a).not.toBe(b);
   });
 
   it('differs when gridUnitMm changes', () => {
-    const a = socketCacheKey(2, 2, false, false, 3.1, 2.0, 1.5, false, false, 42);
-    const b = socketCacheKey(2, 2, false, false, 3.1, 2.0, 1.5, false, false, 50);
+    const a = socketCacheKey(2, 2, false, false, 3.1, 2.0, 1.5, false, false, '', 42);
+    const b = socketCacheKey(2, 2, false, false, 3.1, 2.0, 1.5, false, false, '', 50);
     expect(a).not.toBe(b);
   });
 
   it('default fractional edge ("end") leaves the key unchanged', () => {
     // Positional args: ..., gridUnitMm, maskHash, fractionalEdgeX, fractionalEdgeY
-    const withDefault = socketCacheKey(2.5, 2, false, false, 3.1, 2.0, 1.5, false, false);
+    const withDefault = socketCacheKey(2.5, 2, false, false, 3.1, 2.0, 1.5, false, false, '');
     const explicitEnd = socketCacheKey(
       2.5,
       2,
@@ -72,6 +72,7 @@ describe('socketCacheKey', () => {
       1.5,
       false,
       false,
+      '',
       undefined,
       undefined,
       'end',
@@ -81,7 +82,7 @@ describe('socketCacheKey', () => {
   });
 
   it('differs when the fractional edge changes', () => {
-    const end = socketCacheKey(2.5, 2, false, false, 3.1, 2.0, 1.5, false, false);
+    const end = socketCacheKey(2.5, 2, false, false, 3.1, 2.0, 1.5, false, false, '');
     const startX = socketCacheKey(
       2.5,
       2,
@@ -92,6 +93,7 @@ describe('socketCacheKey', () => {
       1.5,
       false,
       false,
+      '',
       undefined,
       undefined,
       'start',
@@ -107,6 +109,7 @@ describe('socketCacheKey', () => {
       1.5,
       false,
       false,
+      '',
       undefined,
       undefined,
       'end',
@@ -118,7 +121,7 @@ describe('socketCacheKey', () => {
   });
 
   it('includes all parameters in key', () => {
-    const key = socketCacheKey(1.5, 2.5, true, true, 3.1, 2.4, 1.75, true, true);
+    const key = socketCacheKey(1.5, 2.5, true, true, 3.1, 2.4, 1.75, true, true, '');
     expect(key).toMatch(/^v2\|/);
     expect(key).toContain('1.5');
     expect(key).toContain('2.5');
@@ -141,6 +144,7 @@ describe('socketCacheKey', () => {
         1.5,
         false,
         false,
+        '',
         gridUnit,
         undefined,
         'end',
@@ -174,6 +178,7 @@ describe('socketCacheKey', () => {
           1.5,
           false,
           false,
+          '',
           50,
           undefined,
           'end',

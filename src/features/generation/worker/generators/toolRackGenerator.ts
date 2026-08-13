@@ -32,7 +32,7 @@ import type { MeshData, ExportFormat } from '../../bridge/types';
 import { SOCKET_HEIGHT, toIndexedMeshData, checkCancelled } from './generatorTypes';
 import type { ProgressFn } from './generatorTypes';
 import { COPLANAR_OVERLAP } from './generatorConstants';
-import { buildBaseSocket } from './socketBuilder';
+import { buildBaseSocket, DEFAULT_SOCKET_CELL_PLAN } from './socketBuilder';
 import { sketch } from './meshUtils';
 import { creaseEdges } from './utils';
 import { EDGE_ANGULAR_TOLERANCE_RAD } from '@/shared/constants/tessellation';
@@ -148,7 +148,7 @@ export function buildToolRackSolid(
       envelope.attachment.magnetDepth,
       envelope.attachment.screwDiameter / 2,
       forExport,
-      false,
+      DEFAULT_SOCKET_CELL_PLAN,
       envelope.gridUnitMm
     );
     const socketClone = scope.register(unwrap(clone(socket)));

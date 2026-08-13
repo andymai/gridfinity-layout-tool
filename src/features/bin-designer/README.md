@@ -135,6 +135,21 @@ graph TB
   Overhang gap-fill feet keep the default decomposition since they don't mate
   with baseplate sockets. `migrateParams` backfills `'end'` for legacy designs;
   `handleSwapDimensions` swaps the two edges along with width/depth.
+- **Foot lattice** (`base.footLatticeX` / `footLatticeY`, #3467): where an
+  INTEGER axis's feet fall relative to the plate's cell boundaries. `'grid'`
+  (default) is full cells; `'half'` is a 0.5u foot at each rim with full cells
+  between, which is what seats a bin sitting half a unit off-grid on that axis —
+  16 feet on a 3x3 against 36 for `base.halfSockets`. Exactly complementary to
+  `fractionalEdgeX/Y` above: that owns fractional axes, this owns integer ones,
+  and `computeMatchedFootLattice` skips an axis the other already answers. Inert
+  under `base.halfSockets` (uniform 0.5u feet seat at either offset) and under a
+  partial `cellMask` (authored against the standard grid). The socket cache key
+  appends `lat:x:y` only when non-default, so existing designs stay
+  byte-identical. `useFractionalEdgeMismatch` warns and offers "Match layout"
+  when it disagrees with where the linked bin sits — a wrong lattice is a bin
+  that will not drop into its plate, so unlike the edge there is no manual
+  override. Verified by mating real solids in
+  `generation/worker/generators/__kernel-tests__/binSeating.ts`.
 - **Click-lock lid**: optional companion piece generated alongside the bin
   when `params.lid.enabled && params.base.stackingLip`. Source of truth lives
   in the worker (`generation/worker/generators/lidBuilder.ts` +

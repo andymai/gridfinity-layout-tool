@@ -99,6 +99,33 @@ export const DEFAULT_TRAY_BOTTOM: TrayBottomConfig = {
   },
 } as const;
 
+/**
+ * Where one axis's feet fall relative to the baseplate's cell boundaries (#3467).
+ *
+ * A foot has to land inside a single pocket: adjacent pockets are separated by
+ * a ridge, so a full 1u foot centred on a cell boundary bottoms out 0.25mm into
+ * a 5mm pocket and leaves the bin resting 4.75mm proud. Which layout seats
+ * therefore depends on WHERE THE BIN SITS, per axis:
+ *
+ *  - `grid` — full cells (plus the fractional edge cell). Seats when the bin's
+ *    edge lands on a cell boundary. The default, and every pre-#3467 design.
+ *  - `half` — a 0.5u foot at each rim with full cells between (`0.5 + (N-1) + 0.5`
+ *    is exactly `N`). Seats when the bin sits half a unit off-grid on this axis,
+ *    which is what half-bin mode places. Costs far fewer feet than halving every
+ *    cell: 16 against 36 on a 3x3, 36 against 100 on a 5x5.
+ *
+ * `halfSockets` is the placement-agnostic alternative — uniform 0.5u feet seat
+ * at either offset, at the price of every foot being subdivided — so it
+ * overrides both axes.
+ */
+export const FOOT_LATTICES = ['grid', 'half'] as const;
+
+/** Where one axis's feet fall. See {@link FOOT_LATTICES}. */
+export type FootLattice = (typeof FOOT_LATTICES)[number];
+
+/** Applied when a BaseConfig's `footLatticeX`/`footLatticeY` is missing. */
+export const DEFAULT_FOOT_LATTICE: FootLattice = 'grid';
+
 /** Bin wall/style variants — single source of truth for the `BinStyle` union. */
 export const BIN_STYLES = ['standard', 'slotted', 'solid'] as const;
 
@@ -114,8 +141,15 @@ export interface BaseConfig {
   readonly stackingLip: boolean;
   /** When true, the bin body is a solid block (no cavity). Used by cutouts feature. */
   readonly solid: boolean;
-  /** When true, subdivides each cell into 0.5×0.5 half sockets instead of full 1×1 sockets. */
+  /** When true, subdivides the base into 0.5u half sockets per {@link halfSocketMode}. */
   readonly halfSockets: boolean;
+  /**
+   * Foot lattice per axis (#3467). Missing/undefined = `'grid'`, so designs
+   * saved before the setting existed build byte-identical feet. Inert while
+   * {@link halfSockets} is on — uniform 0.5u feet seat at either offset.
+   */
+  readonly footLatticeX?: FootLattice;
+  readonly footLatticeY?: FootLattice;
   /**
    * When true, the base is shelled to a uniform `wallThickness` instead of a
    * solid floor + feet: the cavity floor follows the inside of the socket

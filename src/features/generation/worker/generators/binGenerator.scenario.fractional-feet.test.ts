@@ -14,7 +14,7 @@ import { mesh } from 'brepjs';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import { buildParams } from './__kernel-tests__/scenarioTypes';
 import { assertStructurallyValid, boundingBox } from './__kernel-tests__/meshAssertions';
-import { MIN_FOOT_TILE_MM } from './socketBuilder';
+import { MIN_FOOT_TILE_MM, DEFAULT_SOCKET_CELL_PLAN } from './socketBuilder';
 
 beforeAll(async () => {
   await initBrepjs();
@@ -23,7 +23,18 @@ beforeAll(async () => {
 /** Mesh a socket grid and return its AABB width (X span). */
 async function socketWidth(gridW: number): Promise<number> {
   const { buildBaseSocket } = await import('./socketBuilder');
-  const socket = buildBaseSocket(gridW, 1, false, false, 0, 0, 0, true, false, 42);
+  const socket = buildBaseSocket(
+    gridW,
+    1,
+    false,
+    false,
+    0,
+    0,
+    0,
+    true,
+    DEFAULT_SOCKET_CELL_PLAN,
+    42
+  );
   try {
     const m = mesh(socket, { tolerance: 0.1, angularTolerance: 10 });
     const verts = m.vertices instanceof Float32Array ? m.vertices : new Float32Array(m.vertices);

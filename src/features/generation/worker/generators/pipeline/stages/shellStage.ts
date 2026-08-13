@@ -99,7 +99,7 @@ export const shellStage: PipelineStage = {
         params.base.screwDiameter / 2,
         cupOpenDirection(dim),
         true, // full 5-section foot profile, matching buildBaseSocket here
-        dim.halfSockets,
+        dim.socketCellPlan,
         pitch,
         params.cellMask,
         openFloorDrawings,
@@ -344,7 +344,7 @@ export const shellStage: PipelineStage = {
           params.base.magnetDepth,
           params.base.screwDiameter / 2,
           true, // Always use full 5-section socket profile (OCCT v8 is fast enough)
-          dim.halfSockets,
+          dim.socketCellPlan,
           pitch,
           params.cellMask,
           { x: params.fractionalEdgeX, y: params.fractionalEdgeY },
@@ -399,7 +399,7 @@ export const shellStage: PipelineStage = {
             params.base.magnetDepth,
             params.base.screwDiameter / 2,
             true,
-            dim.halfSockets,
+            dim.socketCellPlan,
             pitch,
             params.cellMask,
             { x: params.fractionalEdgeX, y: params.fractionalEdgeY },

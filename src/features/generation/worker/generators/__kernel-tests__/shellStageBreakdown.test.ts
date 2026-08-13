@@ -26,7 +26,7 @@ import { describe, it, beforeAll } from 'vitest';
 import { unwrap, fuse, translate } from 'brepjs';
 import { initBrepjs } from './wasmInit';
 import { buildBinBox, buildTopShape } from '../boxBuilder';
-import { buildBaseSocket } from '../socketBuilder';
+import { buildBaseSocket, DEFAULT_SOCKET_CELL_PLAN } from '../socketBuilder';
 import { clearAllCaches } from '../shapeCache';
 
 const OUT = process.env['PERF_OUT'] ?? '/tmp/perfbench/shell.txt';
@@ -70,7 +70,18 @@ function buildShellOnce(gridW: number, gridD: number, wallHeight: number): Split
   const body = unwrap(fuse(box, top));
   const t3 = performance.now();
 
-  const socket = buildBaseSocket(gridW, gridD, true, false, 3.25, 2.4, 1.5, true, false, pitch);
+  const socket = buildBaseSocket(
+    gridW,
+    gridD,
+    true,
+    false,
+    3.25,
+    2.4,
+    1.5,
+    true,
+    DEFAULT_SOCKET_CELL_PLAN,
+    pitch
+  );
   const t4 = performance.now();
 
   // Every one of these is caller-owned: `buildBinBox`/`buildTopShape`/

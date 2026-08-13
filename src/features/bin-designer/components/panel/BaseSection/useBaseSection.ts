@@ -6,11 +6,13 @@ import { resolveConstraints, getFeatureStatus } from '@/shared/constraints';
 import type {
   BinParams,
   FloorPatternType,
+  FootLattice,
   LidAttachment,
   LidRailSide,
   TrayBottomConfig,
   WallPatternType,
 } from '@/features/bin-designer/types';
+import { isPartialMask } from '@/shared/utils/cellMask';
 import {
   DEFAULT_FLOOR_PATTERN_CONFIG,
   DEFAULT_PATTERN_SCALE,
@@ -21,7 +23,7 @@ import {
 } from '@/features/bin-designer/types';
 import { assessFloorPatternFit } from '@/features/bin-designer/utils/floorPatternFit';
 import { minHeightUnits } from '@/features/bin-designer/constants';
-import { isEffectiveTile } from '@/features/bin-designer/types/base';
+import { DEFAULT_FOOT_LATTICE, isEffectiveTile } from '@/features/bin-designer/types/base';
 
 /** Drop the `tile` key entirely — absent is the off state, never `false`. */
 function omitTile(base: BinParams['base']): BinParams['base'] {
@@ -52,6 +54,24 @@ export function useBaseSection() {
   const isLidBottom = base.style === 'lid';
   const trayBottom = base.trayBottom ?? DEFAULT_TRAY_BOTTOM;
   const hasHalfSockets = base.halfSockets;
+  // The foot lattice is inert in two cases, and the picker shows what the part
+  // will actually be built with rather than the stored choice. The stored value
+  // is left alone so it comes back when the blocker does.
+  //  - half sockets on: uniform 0.5u feet already seat at either offset.
+  //  - custom shape: the mask is authored against the standard grid, and the
+  //    `half` lattice moves every interior boundary off it.
+  const footLatticeLockReason = hasHalfSockets
+    ? 'binDesigner.footLattice.halfSocketsHint'
+    : isPartialMask(params.cellMask)
+      ? 'binDesigner.footLattice.customShapeHint'
+      : null;
+  const footLatticeLocked = footLatticeLockReason !== null;
+  const footLatticeX = footLatticeLocked
+    ? DEFAULT_FOOT_LATTICE
+    : (base.footLatticeX ?? DEFAULT_FOOT_LATTICE);
+  const footLatticeY = footLatticeLocked
+    ? DEFAULT_FOOT_LATTICE
+    : (base.footLatticeY ?? DEFAULT_FOOT_LATTICE);
 
   // Feature statuses and disabled reasons from constraint engine
   const magnetStatus = getFeatureStatus(params, 'base.magnet');
@@ -169,6 +189,20 @@ export function useBaseSection() {
     });
     commit(resolved);
   }, [params, hasHalfSockets, halfSocketsStatus.available, commit]);
+
+  const setFootLatticeX = useCallback(
+    (lattice: FootLattice) => {
+      updateBase({ footLatticeX: lattice });
+    },
+    [updateBase]
+  );
+
+  const setFootLatticeY = useCallback(
+    (lattice: FootLattice) => {
+      updateBase({ footLatticeY: lattice });
+    },
+    [updateBase]
+  );
 
   const toggleLidBottom = useCallback(() => {
     const { params: resolved } = resolveConstraints(params, {
@@ -295,6 +329,9 @@ export function useBaseSection() {
       isLidBottom,
       trayBottom,
       hasHalfSockets,
+      footLatticeX,
+      footLatticeY,
+      footLatticeLocked,
       hasLightweight: base.lightweight,
       isSpacer: base.spacer,
       isTile: base.tile === true,
@@ -309,6 +346,9 @@ export function useBaseSection() {
       toggleStackingLip,
       toggleLightweight,
       toggleHalfSockets,
+      setFootLatticeX,
+      setFootLatticeY,
+      footLatticeLockReason: footLatticeLockReason ? t(footLatticeLockReason) : null,
       toggleFlat,
       toggleLidBottom,
       setTrayAttachment,
