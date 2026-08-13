@@ -56,6 +56,7 @@ import {
   isRegionFilled,
   type CellMask,
 } from '@/shared/utils/cellMask';
+import type { FootLattice } from '@/shared/types/bin';
 
 /**
  * Smallest printable edge foot, in mm. A fractional bin whose trailing strip is
@@ -76,8 +77,12 @@ export interface FractionalEdge {
 
 export const DEFAULT_FRACTIONAL_EDGE: FractionalEdge = { x: 'end', y: 'end' };
 
-/** Where one axis's feet fall relative to the plate's cell boundaries (#3467). */
-export type FootLattice = 'grid' | 'half';
+/**
+ * Where one axis's feet fall relative to the plate's cell boundaries (#3467).
+ * Re-exported from the canonical `BaseConfig` definition so the generator and
+ * the stored param can never describe different sets of values.
+ */
+export type { FootLattice };
 
 /**
  * The foot layout the socket walk builds, resolved from the user's base

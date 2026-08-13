@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import type { Shape3D } from 'brepjs';
 import type * as SocketBuilder from './socketBuilder';
+import { initTestKernel } from '@/test/initTestKernel';
 
 interface CellInfoLike {
   widthUnits: number;
@@ -9,7 +10,6 @@ interface CellInfoLike {
   centerX: number;
   centerY: number;
 }
-import { initTestKernel } from '@/test/initTestKernel';
 
 const GRID_PLAN: SocketBuilder.SocketCellPlan = {
   halfSockets: false,

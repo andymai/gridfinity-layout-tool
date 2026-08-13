@@ -11,7 +11,7 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import type { BinParams, ResolvedBaseplateParams } from '@/shared/types/bin';
-import type { MeshData } from '../../bridge/types';
+import type { MeshData } from '@/features/generation/bridge/types';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { initTestKernel } from '@/test/initTestKernel';
 import { seatDepth, type Placement } from './__kernel-tests__/binSeating';
