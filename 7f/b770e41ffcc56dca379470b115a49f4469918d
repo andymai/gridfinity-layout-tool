@@ -1,0 +1,21 @@
+src/features/community/components/CommunityDetail/CommunityDetailContent.tsx
+  s_0198f0fc19806e::t_6493891418506e 139,148,174-176,306-310,314,330-334,339
+src/features/community/components/CommunityDetail/CommunityDetailContent.test.tsx
+  s_0198f0fc19806e::t_746a9d61e7cd8c 132-138
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "7fb770e41ffcc56dca379470b115a49f4469918d",
+  "prompts": {},
+  "sessions": {
+    "s_0198f0fc19806e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be9ba31a-14f2-41df-af29-4a06cb52253e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
