@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.404.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.404.2...gridfinity-layout-tool-v4.404.3) (2026-08-13)
+
+
+### Bug Fixes
+
+* **bin-designer:** arrange cutout groups as one body ([#3470](https://github.com/andymai/gridfinity-layout-tool/issues/3470)) ([0eb57e7](https://github.com/andymai/gridfinity-layout-tool/commit/0eb57e7c7d48cdd79042b3f41e15f1dd707045f8)), closes [#3468](https://github.com/andymai/gridfinity-layout-tool/issues/3468)
+
 ## [4.404.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.404.1...gridfinity-layout-tool-v4.404.2) (2026-08-13)
 
 
