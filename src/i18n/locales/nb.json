@@ -825,6 +825,7 @@
   "binDesigner.footLattice.hint": "Hvor føttene havner. Bruk halvt forskjøvet på en akse der boksen står en halv enhet forskjøvet: en fot må havne i én lomme, og en hel fot sentrert over en lommekant kommer ikke ned.",
   "binDesigner.footLattice.halfSocketsHint": "Halvsokler sitter allerede i begge posisjoner, så rasteret har ingen effekt.",
   "binDesigner.footLattice.customShapeHint": "Bokser med egen form beholder rutenettrasteret: en halv forskyvning ville ikke passet formen du tegnet.",
+  "binDesigner.footLattice.fractionalHint": "En brøkakse beholder rutenettrasteret: halvcellen dekker allerede begge posisjoner, og kantinnstillingen avgjør hvilken ende den havner i.",
   "binDesigner.halfSocketsDisablesFlatFloor": "Kan ikke kombinere halvsokler med flat bunn",
   "binDesigner.handles": "Håndtak",
   "binDesigner.handles.back": "Bak",

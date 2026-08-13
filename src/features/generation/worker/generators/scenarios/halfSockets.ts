@@ -125,7 +125,10 @@ export const halfSockets: ScenarioCase[] = [
     timeout: 60_000,
   }),
 
-  defineScenario('half-sockets', '2.5×2 fractional + half lattice', {
+  // Asks for `half` on both axes of a 2.5x2 bin: the fractional X falls back to
+  // `grid` (its half cell plus `fractionalEdge` already covers both placements),
+  // while Y takes the band. Exercises the mixed solid the resolver produces.
+  defineScenario('half-sockets', '2.5×2 fractional, half lattice on the integer axis only', {
     assert: 'structural',
     params: {
       width: 2.5,

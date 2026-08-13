@@ -31,8 +31,18 @@ export function BaseSection() {
   const t = useTranslation();
 
   const footLatticeAxes = [
-    { axis: FOOT_LATTICE_AXES[0], value: state.footLatticeX, onChange: handlers.setFootLatticeX },
-    { axis: FOOT_LATTICE_AXES[1], value: state.footLatticeY, onChange: handlers.setFootLatticeY },
+    {
+      axis: FOOT_LATTICE_AXES[0],
+      value: state.footLatticeX,
+      onChange: handlers.setFootLatticeX,
+      locked: state.footLatticeLockedX,
+    },
+    {
+      axis: FOOT_LATTICE_AXES[1],
+      value: state.footLatticeY,
+      onChange: handlers.setFootLatticeY,
+      locked: state.footLatticeLockedY,
+    },
   ];
 
   return (
@@ -168,7 +178,7 @@ export function BaseSection() {
         <span className="block text-xs font-medium text-content-secondary">
           {t('binDesigner.footLattice')}
         </span>
-        {footLatticeAxes.map(({ axis, value, onChange }) => (
+        {footLatticeAxes.map(({ axis, value, onChange, locked }) => (
           <div key={axis} className="flex items-center gap-2">
             <span className="w-10 shrink-0 text-[11px] text-content-tertiary">
               {t(`binDesigner.footLattice.axis.${axis}`)}
@@ -183,7 +193,7 @@ export function BaseSection() {
               options={FOOT_LATTICES.map((lattice) => ({
                 value: lattice,
                 label: t(`binDesigner.footLattice.${lattice}`),
-                disabled: state.footLatticeLocked && lattice !== 'grid',
+                disabled: locked && lattice !== 'grid',
               }))}
             />
           </div>

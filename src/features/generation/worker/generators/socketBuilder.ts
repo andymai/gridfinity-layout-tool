@@ -57,6 +57,7 @@ import {
   type CellMask,
 } from '@/shared/utils/cellMask';
 import type { FootLattice } from '@/shared/types/bin';
+import { isFractional } from '@/core/constants';
 
 /**
  * Smallest printable edge foot, in mm. A fractional bin whose trailing strip is
@@ -109,7 +110,21 @@ export const DEFAULT_SOCKET_CELL_PLAN: SocketCellPlan = {
 };
 
 /**
- * Fold the base settings and the mask into the plan the socket walk consumes.
+ * A fractional axis ignores the `half` lattice.
+ *
+ * Such an axis already carries a half cell, and `fractionalEdge` decides which
+ * end it sits on — which covers BOTH placements on its own ('end' seats on-grid,
+ * 'start' seats half-offset). The lattice can only add a layout that seats at
+ * one of them and perches at the other, and `computeMatchedFootLattice`
+ * deliberately skips fractional axes, so nothing would warn about it.
+ */
+function axisLattice(lattice: FootLattice | undefined, units: number): FootLattice {
+  return lattice === 'half' && !isFractional(units) ? 'half' : 'grid';
+}
+
+/**
+ * Fold the base settings, the bin's size and its mask into the plan the socket
+ * walk consumes.
  *
  * `halfSockets` overrides both lattices: uniform 0.5u feet already seat at
  * either offset, so a lattice choice on top would only cost feet.
@@ -124,11 +139,17 @@ export function resolveSocketCellPlan(
   halfSockets: boolean,
   latticeX: FootLattice | undefined,
   latticeY: FootLattice | undefined,
-  mask: CellMask | undefined
+  mask: CellMask | undefined,
+  gridW: number,
+  gridD: number
 ): SocketCellPlan {
   if (halfSockets) return { halfSockets: true, latticeX: 'grid', latticeY: 'grid' };
   if (isPartialMask(mask)) return DEFAULT_SOCKET_CELL_PLAN;
-  return { halfSockets: false, latticeX: latticeX ?? 'grid', latticeY: latticeY ?? 'grid' };
+  return {
+    halfSockets: false,
+    latticeX: axisLattice(latticeX, gridW),
+    latticeY: axisLattice(latticeY, gridD),
+  };
 }
 
 /** Stable key fragment for a plan; empty for the pre-#3467 default. */

@@ -73,7 +73,9 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
     halfSockets,
     params.base.footLatticeX,
     params.base.footLatticeY,
-    params.cellMask
+    params.cellMask,
+    params.width,
+    params.depth
   );
   // Base-only bin: the spacer's complement. Needs feet to stand on, so like
   // the spacer it is inert on a socketless base and the constraint engine keeps

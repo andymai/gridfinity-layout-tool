@@ -825,6 +825,7 @@
   "binDesigner.footLattice.hint": "脚が落ちる位置です。ビンがハーフ位置に置かれる軸ではハーフオフセットを使います。脚は1つのポケットに収まる必要があり、ポケットの境界にまたがる全幅の脚は入りません。",
   "binDesigner.footLattice.halfSocketsHint": "ハーフソケットはどちらの位置でも設置できるため、割り付けは影響しません。",
   "binDesigner.footLattice.customShapeHint": "カスタム形状のビンはグリッド割り付けのままです。ハーフオフセットでは描いた形状と合いません。",
+  "binDesigner.footLattice.fractionalHint": "端数のある軸はグリッド割り付けのままです。半セルがすでに両方の位置に対応しており、どちら端に置くかは半ユニット端の設定が決めます。",
   "binDesigner.halfSocketsDisablesFlatFloor": "ハーフソケットと平らな床は併用できません",
   "binDesigner.handles": "ハンドル",
   "binDesigner.handles.back": "奥",

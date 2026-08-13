@@ -43,6 +43,7 @@ let buildBaseSocket: BuildBaseSocketFn;
 let buildSingleCellSocket: BuildCellSocketFn;
 let buildSimplifiedCellSocket: BuildCellSocketFn;
 let forEachSocketCell: typeof SocketBuilder.forEachSocketCell;
+let resolveSocketCellPlan: typeof SocketBuilder.resolveSocketCellPlan;
 
 let meshShape: (shape: unknown) => { vertices: ArrayLike<number>; triangles: ArrayLike<number> };
 
@@ -55,6 +56,7 @@ beforeAll(async () => {
   buildSingleCellSocket = mod.buildSingleCellSocket;
   buildSimplifiedCellSocket = mod.buildSimplifiedCellSocket;
   forEachSocketCell = mod.forEachSocketCell;
+  resolveSocketCellPlan = mod.resolveSocketCellPlan;
 
   meshShape = (shape) => meshFn(shape as never, { tolerance: 1, angularTolerance: 30 });
 }, 30000);
@@ -211,6 +213,24 @@ describe('forEachSocketCell foot lattice (#3467)', () => {
       );
     });
   };
+
+  it('ignores the half lattice on a fractional axis', () => {
+    // Such an axis already carries a half cell, and `fractionalEdge` decides
+    // which end it sits on — which covers both placements on its own. Honouring
+    // `half` here would build a layout that perches on-grid, and the mismatch
+    // check deliberately skips fractional axes so nothing would warn (#3473 review).
+    const asked = resolveSocketCellPlan(false, 'half', 'half', undefined, 2.5, 3);
+    expect(asked.latticeX).toBe('grid');
+    expect(asked.latticeY).toBe('half');
+  });
+
+  it('half sockets and a custom shape both override the lattice', () => {
+    expect(resolveSocketCellPlan(true, 'half', 'half', undefined, 3, 3)).toEqual({
+      halfSockets: true,
+      latticeX: 'grid',
+      latticeY: 'grid',
+    });
+  });
 
   it('grid lattice is unchanged: one full foot per cell', () => {
     expect(collect(3, 3, GRID_PLAN)).toHaveLength(9);

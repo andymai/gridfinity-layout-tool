@@ -303,7 +303,9 @@ export function generateBinDirect(
       params.base.halfSockets,
       params.base.footLatticeX,
       params.base.footLatticeY,
-      undefined
+      undefined,
+      width,
+      depth
     ),
     (cell) => {
       addBaseFoot(

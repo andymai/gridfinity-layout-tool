@@ -825,6 +825,7 @@
   "binDesigner.footLattice.hint": "Kam padnou patky. Posun o půl použij na ose, kde zásobník stojí posunutý o půl jednotky: patka musí dosednout do jedné kapsy desky a celá patka vystředěná na hraně kapsy do ní nezapadne.",
   "binDesigner.footLattice.halfSocketsHint": "Poloviční patky dosednou v obou polohách, rastr proto nemá vliv.",
   "binDesigner.footLattice.customShapeHint": "Zásobníky s vlastním tvarem si ponechají rastr: posun by neodpovídal nakreslenému tvaru.",
+  "binDesigner.footLattice.fractionalHint": "Neceločíselná osa si ponechá rastr: její poloviční buňka už pokrývá obě polohy a nastavení hrany určuje, na kterém konci sedí.",
   "binDesigner.halfSocketsDisablesFlatFloor": "Nelze kombinovat poloviční patice s plochou základnou",
   "binDesigner.handles": "Držadla",
   "binDesigner.handles.back": "Zadní",

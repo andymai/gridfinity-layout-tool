@@ -825,6 +825,7 @@
   "binDesigner.footLattice.hint": "발이 놓이는 위치입니다. 빈이 반 칸 어긋나 놓이는 축에는 반 칸 오프셋을 사용하세요. 발은 하나의 포켓 안에 들어가야 하며, 포켓 경계에 걸친 전체 크기의 발은 들어가지 않습니다.",
   "binDesigner.footLattice.halfSocketsHint": "하프 소켓은 이미 두 위치 모두에 안착하므로 배치는 영향을 주지 않습니다.",
   "binDesigner.footLattice.customShapeHint": "사용자 지정 형상 빈은 그리드 배치를 유지합니다. 반 칸 오프셋은 그린 형상과 맞지 않습니다.",
+  "binDesigner.footLattice.fractionalHint": "소수 축은 그리드 배치를 유지합니다. 반 셀이 이미 두 위치를 모두 처리하며, 어느 쪽 끝에 둘지는 반 칸 가장자리 설정이 결정합니다.",
   "binDesigner.halfSocketsDisablesFlatFloor": "하프 소켓과 평평한 베이스를 함께 쓸 수 없습니다",
   "binDesigner.handles": "손잡이",
   "binDesigner.handles.back": "뒤",

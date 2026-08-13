@@ -825,6 +825,7 @@
   "binDesigner.footLattice.hint": "Waar de voetjes vallen. Gebruik half verschoven op een as waar de bak een halve eenheid verschoven staat: een voetje moet in één vak van de bodemplaat vallen, en een heel voetje midden op een vakrand past er niet in.",
   "binDesigner.footLattice.halfSocketsHint": "Halve voetjes passen al in beide posities, het raster heeft hier geen effect.",
   "binDesigner.footLattice.customShapeHint": "Bakken met een eigen vorm houden het rasterlayout: half verschoven zou niet aansluiten op de getekende vorm.",
+  "binDesigner.footLattice.fractionalHint": "Een gebroken as houdt het rasterlayout: de halve cel dekt beide posities al, en de instelling voor de halve-eenheidsrand bepaalt aan welk uiteinde die zit.",
   "binDesigner.halfSocketsDisablesFlatFloor": "Kan halve sokken niet combineren met platte bodem",
   "binDesigner.handles": "Handvatten",
   "binDesigner.handles.back": "Achter",

@@ -825,6 +825,7 @@
   "binDesigner.footLattice.hint": "Où tombent les pieds. Utilisez le demi-décalage sur un axe où le bac est décalé d'une demi-unité : un pied doit se loger dans une seule alvéole, et un pied entier centré sur un bord d'alvéole n'y entre pas.",
   "binDesigner.footLattice.halfSocketsHint": "Les demi-socles se posent déjà dans les deux positions, la trame n'a donc aucun effet.",
   "binDesigner.footLattice.customShapeHint": "Les bacs de forme personnalisée gardent la trame alignée : un demi-décalage ne correspondrait pas à la forme dessinée.",
+  "binDesigner.footLattice.fractionalHint": "Un axe fractionnaire garde la trame alignée : sa demi-cellule couvre déjà les deux positions, et le réglage de bord décide à quelle extrémité elle se place.",
   "binDesigner.halfSocketsDisablesFlatFloor": "Impossible de combiner les demi-socles avec un fond plat",
   "binDesigner.handles": "Poignées",
   "binDesigner.handles.back": "Arrière",

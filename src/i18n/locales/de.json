@@ -825,6 +825,7 @@
   "binDesigner.footLattice.hint": "Wo die Füße sitzen. Nutze den halben Versatz auf einer Achse, auf der die Box eine halbe Einheit versetzt steht: Ein Fuß muss in genau eine Grundplatten-Tasche fallen, und ein ganzer Fuß mittig über einer Taschenkante passt nicht hinein.",
   "binDesigner.footLattice.halfSocketsHint": "Halbsockel sitzen ohnehin in beiden Positionen, das Raster hat hier keine Wirkung.",
   "binDesigner.footLattice.customShapeHint": "Boxen mit eigener Form behalten das Rasterlayout: Ein halber Versatz würde nicht zur gezeichneten Form passen.",
+  "binDesigner.footLattice.fractionalHint": "Eine gebrochene Achse behält das Rasterlayout: Ihre halbe Zelle deckt bereits beide Positionen ab, und die Halbeinheiten-Kante bestimmt, an welchem Ende sie sitzt.",
   "binDesigner.halfSocketsDisablesFlatFloor": "Halbsockel können nicht mit flachem Boden kombiniert werden",
   "binDesigner.handles": "Griffe",
   "binDesigner.handles.back": "Hinten",

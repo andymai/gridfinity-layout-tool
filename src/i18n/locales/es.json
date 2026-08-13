@@ -825,6 +825,7 @@
   "binDesigner.footLattice.hint": "Dónde caen los pies. Usa el medio desfase en el eje donde la caja se sitúa medio módulo desplazada: un pie debe entrar en un solo alvéolo, y un pie completo centrado sobre el borde de un alvéolo no encaja.",
   "binDesigner.footLattice.halfSocketsHint": "Los medios zócalos ya asientan en ambas posiciones, así que la retícula no tiene efecto.",
   "binDesigner.footLattice.customShapeHint": "Las cajas con forma personalizada mantienen la retícula alineada: un medio desfase no encajaría con la forma dibujada.",
+  "binDesigner.footLattice.fractionalHint": "Un eje fraccionario mantiene la retícula alineada: su media celda ya cubre ambas posiciones, y el ajuste de borde decide en qué extremo queda.",
   "binDesigner.halfSocketsDisablesFlatFloor": "No se pueden combinar medios encajes con fondo plano",
   "binDesigner.handles": "Asas",
   "binDesigner.handles.back": "Trasero",

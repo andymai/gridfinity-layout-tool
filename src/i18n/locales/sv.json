@@ -825,6 +825,7 @@
   "binDesigner.footLattice.hint": "Var fötterna hamnar. Använd halvt förskjutet på en axel där lådan står en halv enhet förskjuten: en fot måste hamna i en enda ficka, och en hel fot centrerad över en fickkant går inte ner.",
   "binDesigner.footLattice.halfSocketsHint": "Halvsocklar sitter redan i båda lägena, så rastret har ingen effekt.",
   "binDesigner.footLattice.customShapeHint": "Lådor med egen form behåller rutnätsrastret: en halv förskjutning skulle inte passa formen du ritat.",
+  "binDesigner.footLattice.fractionalHint": "En bruten axel behåller rutnätsrastret: dess halvcell täcker redan båda lägena, och kantinställningen avgör i vilken ände den hamnar.",
   "binDesigner.halfSocketsDisablesFlatFloor": "Kan inte kombinera halvsocklar med plant golv",
   "binDesigner.handles": "Handtag",
   "binDesigner.handles.back": "Bak",

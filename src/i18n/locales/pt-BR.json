@@ -825,6 +825,7 @@
   "binDesigner.footLattice.hint": "Onde os pés caem. Use meio deslocamento no eixo em que a caixa fica meia unidade deslocada: um pé precisa entrar em um único alvéolo, e um pé inteiro centrado na borda de um alvéolo não desce.",
   "binDesigner.footLattice.halfSocketsHint": "Meios encaixes já assentam nas duas posições, então a malha não tem efeito.",
   "binDesigner.footLattice.customShapeHint": "Caixas com forma personalizada mantêm a malha alinhada: um meio deslocamento não se alinharia com a forma desenhada.",
+  "binDesigner.footLattice.fractionalHint": "Um eixo fracionário mantém a malha alinhada: sua meia célula já cobre as duas posições, e a configuração de borda decide em que extremidade ela fica.",
   "binDesigner.halfSocketsDisablesFlatFloor": "Não é possível combinar meios encaixes com fundo plano",
   "binDesigner.handles": "Alças",
   "binDesigner.handles.back": "Traseiro",

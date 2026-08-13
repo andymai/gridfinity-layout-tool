@@ -2818,6 +2818,8 @@ const en: Record<string, string> = {
     'Half sockets already seat at either offset, so the lattice has no effect.',
   'binDesigner.footLattice.customShapeHint':
     'Custom-shape bins keep the on-grid lattice: a half offset would not line up with the shape you drew.',
+  'binDesigner.footLattice.fractionalHint':
+    'A fractional axis keeps the on-grid lattice: its half cell already handles both placements, and the half-unit edge setting decides which end it sits on.',
   'binDesigner.lightweight': 'Lightweight floor',
   'binDesigner.spacer': 'Spacer (no floor)',
   'binDesigner.spacerHint':

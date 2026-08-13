@@ -825,6 +825,7 @@
   "binDesigner.footLattice.hint": "Gdzie wypadają stopki. Użyj przesunięcia o pół na osi, na której pojemnik stoi przesunięty o pół jednostki: stopka musi trafić w jedno gniazdo płyty, a cała stopka wyśrodkowana na krawędzi gniazda do niego nie wejdzie.",
   "binDesigner.footLattice.halfSocketsHint": "Półgniazda osadzają się już w obu położeniach, więc siatka nie ma znaczenia.",
   "binDesigner.footLattice.customShapeHint": "Pojemniki o własnym kształcie zachowują układ na siatce: przesunięcie nie pasowałoby do narysowanego kształtu.",
+  "binDesigner.footLattice.fractionalHint": "Oś ułamkowa zachowuje układ na siatce: jej połówkowa komórka obsługuje już oba położenia, a ustawienie krawędzi decyduje, po której stronie się znajdzie.",
   "binDesigner.halfSocketsDisablesFlatFloor": "Nie można łączyć połówkowych gniazd z płaską podstawą",
   "binDesigner.handles": "Uchwyty",
   "binDesigner.handles.back": "Tył",

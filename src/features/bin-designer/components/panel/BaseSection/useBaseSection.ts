@@ -13,6 +13,7 @@ import type {
   WallPatternType,
 } from '@/features/bin-designer/types';
 import { isPartialMask } from '@/shared/utils/cellMask';
+import { isFractional } from '@/core/constants';
 import {
   DEFAULT_FLOOR_PATTERN_CONFIG,
   DEFAULT_PATTERN_SCALE,
@@ -60,16 +61,23 @@ export function useBaseSection() {
   //  - half sockets on: uniform 0.5u feet already seat at either offset.
   //  - custom shape: the mask is authored against the standard grid, and the
   //    `half` lattice moves every interior boundary off it.
-  const footLatticeLockReason = hasHalfSockets
+  //  - fractional axis: it already carries a half cell, and `fractionalEdge`
+  //    decides which end that sits on, which covers both placements on its own.
+  const bothAxesLockReason = hasHalfSockets
     ? 'binDesigner.footLattice.halfSocketsHint'
     : isPartialMask(params.cellMask)
       ? 'binDesigner.footLattice.customShapeHint'
       : null;
-  const footLatticeLocked = footLatticeLockReason !== null;
-  const footLatticeX = footLatticeLocked
+  const axisLocked = (units: number): boolean => bothAxesLockReason !== null || isFractional(units);
+  const footLatticeLockedX = axisLocked(params.width);
+  const footLatticeLockedY = axisLocked(params.depth);
+  const footLatticeLockReason =
+    bothAxesLockReason ??
+    (footLatticeLockedX || footLatticeLockedY ? 'binDesigner.footLattice.fractionalHint' : null);
+  const footLatticeX = footLatticeLockedX
     ? DEFAULT_FOOT_LATTICE
     : (base.footLatticeX ?? DEFAULT_FOOT_LATTICE);
-  const footLatticeY = footLatticeLocked
+  const footLatticeY = footLatticeLockedY
     ? DEFAULT_FOOT_LATTICE
     : (base.footLatticeY ?? DEFAULT_FOOT_LATTICE);
 
@@ -331,7 +339,8 @@ export function useBaseSection() {
       hasHalfSockets,
       footLatticeX,
       footLatticeY,
-      footLatticeLocked,
+      footLatticeLockedX,
+      footLatticeLockedY,
       hasLightweight: base.lightweight,
       isSpacer: base.spacer,
       isTile: base.tile === true,

@@ -825,6 +825,7 @@
   "binDesigner.footLattice.hint": "Dove cadono i piedini. Usa lo sfalsamento di mezza unità sull'asse in cui il contenitore è spostato di mezza unità: un piedino deve entrare in una sola cella, e un piedino intero centrato sul bordo di una cella non ci entra.",
   "binDesigner.footLattice.halfSocketsHint": "I mezzi zoccoli si appoggiano già in entrambe le posizioni, quindi il reticolo non ha effetto.",
   "binDesigner.footLattice.customShapeHint": "I contenitori con forma personalizzata mantengono il reticolo allineato: uno sfalsamento non combacerebbe con la forma disegnata.",
+  "binDesigner.footLattice.fractionalHint": "Un asse frazionario mantiene il reticolo allineato: la sua mezza cella copre già entrambe le posizioni e l'impostazione del bordo decide a quale estremità si trova.",
   "binDesigner.halfSocketsDisablesFlatFloor": "Impossibile combinare i mezzi alloggiamenti con la base piatta",
   "binDesigner.handles": "Maniglie",
   "binDesigner.handles.back": "Retro",
