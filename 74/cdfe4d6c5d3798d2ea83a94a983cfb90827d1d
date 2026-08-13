@@ -1,0 +1,21 @@
+api/community/prints.test.ts
+  s_0198f0fc19806e::t_d7cf75d72bb531 232
+api/lib/communityPrintValidation.ts
+  s_0198f0fc19806e::t_d7cf75d72bb531 299-303
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "74cdfe4d6c5d3798d2ea83a94a983cfb90827d1d",
+  "prompts": {},
+  "sessions": {
+    "s_0198f0fc19806e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be9ba31a-14f2-41df-af29-4a06cb52253e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
