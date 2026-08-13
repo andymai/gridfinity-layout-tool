@@ -13,6 +13,7 @@ import { CHAMFER_SHAPES, MAX_CUTOUT_CHAMFER, maxEntryChamfer } from '@/features/
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import type { GrowTarget } from '../panel/CutoutsSection/growBinToFit';
 import { alignSelection, distributeSelection } from '../panel/CutoutsSection/geometryAlign';
+import { expandSelectionToGroups } from '../panel/CutoutsSection/cutoutGroups';
 import type { AlignMode, DistributeAxis } from '../panel/CutoutsSection/geometryAlign';
 import { SingleCutoutInspector } from './SingleCutoutInspector';
 import { CutoutColorControls } from './CutoutColorControls';
@@ -121,6 +122,13 @@ export function InspectorContent({
   const selectedCutouts = useMemo(
     () => cutouts.filter((c) => selection.has(c.id)),
     [cutouts, selection]
+  );
+
+  // Align/distribute treat a group as one rigid body, so a partially-selected
+  // group is pulled in whole before the math runs (#3468).
+  const arrangeTargets = useMemo(
+    () => expandSelectionToGroups(cutouts, selectedCutouts),
+    [cutouts, selectedCutouts]
   );
 
   // Bin-level controls stay visible across every selection state so the user can
@@ -232,10 +240,10 @@ export function InspectorContent({
   };
 
   const handleAlign = (mode: AlignMode) =>
-    applySelectionUpdates(alignSelection(selectedCutouts, mode));
+    applySelectionUpdates(alignSelection(arrangeTargets, mode));
 
   const handleDistribute = (axis: DistributeAxis) =>
-    applySelectionUpdates(distributeSelection(selectedCutouts, axis));
+    applySelectionUpdates(distributeSelection(arrangeTargets, axis));
 
   // Non-rectangle cutouts collapse W/D to a single value via max() in the
   // generator, so writing only one axis would silently no-op when the other is

@@ -387,7 +387,6 @@ export function CutoutWorkspace() {
         selection={selection}
         binWidth={binWidth}
         binDepth={binDepth}
-        onUpdate={updateCutout}
         onUpdateBatch={updateCutoutsBatch}
         onRemove={removeCutout}
         onDuplicate={duplicateCutouts}

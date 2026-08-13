@@ -26,7 +26,6 @@ const createCutout = (id: string, overrides: Partial<Cutout> = {}): Cutout => ({
 });
 
 describe('AlignmentToolbar', () => {
-  const onUpdate = vi.fn();
   const onUpdateBatch = vi.fn();
   const onGroup = vi.fn();
   const onUngroup = vi.fn();
@@ -43,7 +42,6 @@ describe('AlignmentToolbar', () => {
     cutouts,
     binWidth: 100,
     binDepth: 100,
-    onUpdate,
     onUpdateBatch,
     onGroup,
     onUngroup,
@@ -69,14 +67,49 @@ describe('AlignmentToolbar', () => {
     expect(screen.getByLabelText('binDesigner.cutouts.alignBottom')).toBeInTheDocument();
   });
 
-  it('calls onUpdate for each cutout when aligning left', () => {
+  it('batches one update per cutout when aligning left', () => {
     render(<AlignmentToolbar {...defaultProps} />);
     fireEvent.click(screen.getByLabelText('binDesigner.cutouts.alignLeft'));
 
-    // Both cutouts should align to minX = 5 (cutoutA's x)
-    expect(onUpdate).toHaveBeenCalledTimes(2);
-    expect(onUpdate).toHaveBeenCalledWith('a', expect.objectContaining({ x: 5 }));
-    expect(onUpdate).toHaveBeenCalledWith('b', expect.objectContaining({ x: 5 }));
+    // Both cutouts align to minX = 5 (cutoutA's x). 'a' is already there, so
+    // only 'b' is written.
+    expect(onUpdateBatch).toHaveBeenCalledTimes(1);
+    const updates = onUpdateBatch.mock.calls[0][0] as ReadonlyMap<string, Partial<Cutout>>;
+    expect(updates.has('a')).toBe(false);
+    expect(updates.get('b')).toEqual(expect.objectContaining({ x: 5 }));
+  });
+
+  it('keeps a group rigid when auto-arranging (#3468)', () => {
+    // Two shapes 30mm apart, grouped, plus a loose shape. Auto-arrange must
+    // reposition the group as one body rather than shelving its members apart.
+    const grouped = [
+      createCutout('g1a', { groupId: 'g1', x: 60, y: 60 }),
+      createCutout('g1b', { groupId: 'g1', x: 90, y: 60 }),
+      createCutout('solo', { x: 5, y: 5 }),
+    ];
+    render(
+      <AlignmentToolbar {...defaultProps} cutouts={grouped} selectedIds={['g1a', 'g1b', 'solo']} />
+    );
+    fireEvent.click(screen.getByText('binDesigner.cutouts.autoArrange'));
+
+    const updates = onUpdateBatch.mock.calls[0][0] as ReadonlyMap<string, Partial<Cutout>>;
+    const a = updates.get('g1a');
+    const b = updates.get('g1b');
+    expect((b?.x ?? 0) - (a?.x ?? 0)).toBe(30);
+    expect(b?.y).toBe(a?.y);
+  });
+
+  it('pulls in the unselected members of a partially selected group', () => {
+    const grouped = [
+      createCutout('g1a', { groupId: 'g1', x: 60, y: 60 }),
+      createCutout('g1b', { groupId: 'g1', x: 90, y: 60 }),
+      createCutout('solo', { x: 5, y: 5 }),
+    ];
+    render(<AlignmentToolbar {...defaultProps} cutouts={grouped} selectedIds={['g1a', 'solo']} />);
+    fireEvent.click(screen.getByText('binDesigner.cutouts.centerInBin'));
+
+    const updates = onUpdateBatch.mock.calls[0][0] as ReadonlyMap<string, Partial<Cutout>>;
+    expect(updates.has('g1b')).toBe(true);
   });
 
   it('calls onDuplicate with selectedIds', () => {
@@ -182,7 +215,7 @@ describe('AlignmentToolbar', () => {
     expect(distributeVBtn).not.toBeDisabled();
   });
 
-  it('calls onUpdate for each cutout when distributing horizontally', () => {
+  it('batches one update per cutout when distributing horizontally', () => {
     const threeCutouts = [
       createCutout('a', { x: 10, width: 10 }),
       createCutout('b', { x: 50, width: 10 }),
@@ -193,13 +226,14 @@ describe('AlignmentToolbar', () => {
     );
     fireEvent.click(screen.getByText('binDesigner.cutouts.distributeH'));
 
-    expect(onUpdate).toHaveBeenCalledTimes(3);
-    expect(onUpdate).toHaveBeenCalledWith('a', expect.objectContaining({ x: expect.any(Number) }));
-    expect(onUpdate).toHaveBeenCalledWith('b', expect.objectContaining({ x: expect.any(Number) }));
-    expect(onUpdate).toHaveBeenCalledWith('c', expect.objectContaining({ x: expect.any(Number) }));
+    expect(onUpdateBatch).toHaveBeenCalledTimes(1);
+    const updates = onUpdateBatch.mock.calls[0][0] as ReadonlyMap<string, Partial<Cutout>>;
+    for (const id of ['a', 'b', 'c']) {
+      expect(updates.get(id)).toEqual(expect.objectContaining({ x: expect.any(Number) }));
+    }
   });
 
-  it('calls onUpdate for each cutout when distributing vertically', () => {
+  it('batches one update per cutout when distributing vertically', () => {
     const threeCutouts = [
       createCutout('a', { y: 10, depth: 10 }),
       createCutout('b', { y: 60, depth: 10 }),
@@ -210,10 +244,11 @@ describe('AlignmentToolbar', () => {
     );
     fireEvent.click(screen.getByText('binDesigner.cutouts.distributeV'));
 
-    expect(onUpdate).toHaveBeenCalledTimes(3);
-    expect(onUpdate).toHaveBeenCalledWith('a', expect.objectContaining({ y: expect.any(Number) }));
-    expect(onUpdate).toHaveBeenCalledWith('b', expect.objectContaining({ y: expect.any(Number) }));
-    expect(onUpdate).toHaveBeenCalledWith('c', expect.objectContaining({ y: expect.any(Number) }));
+    expect(onUpdateBatch).toHaveBeenCalledTimes(1);
+    const updates = onUpdateBatch.mock.calls[0][0] as ReadonlyMap<string, Partial<Cutout>>;
+    for (const id of ['a', 'b', 'c']) {
+      expect(updates.get(id)).toEqual(expect.objectContaining({ y: expect.any(Number) }));
+    }
   });
 
   it('renders center-in-bin button', () => {
@@ -221,18 +256,16 @@ describe('AlignmentToolbar', () => {
     expect(screen.getByText('binDesigner.cutouts.centerInBin')).toBeInTheDocument();
   });
 
-  it('calls onUpdate for each cutout when centering in bin', () => {
+  it('batches one update per cutout when centering in bin', () => {
     render(<AlignmentToolbar {...defaultProps} />);
     fireEvent.click(screen.getByText('binDesigner.cutouts.centerInBin'));
 
-    expect(onUpdate).toHaveBeenCalledTimes(2);
-    expect(onUpdate).toHaveBeenCalledWith(
-      'a',
-      expect.objectContaining({ x: expect.any(Number), y: expect.any(Number) })
-    );
-    expect(onUpdate).toHaveBeenCalledWith(
-      'b',
-      expect.objectContaining({ x: expect.any(Number), y: expect.any(Number) })
-    );
+    expect(onUpdateBatch).toHaveBeenCalledTimes(1);
+    const updates = onUpdateBatch.mock.calls[0][0] as ReadonlyMap<string, Partial<Cutout>>;
+    for (const id of ['a', 'b']) {
+      expect(updates.get(id)).toEqual(
+        expect.objectContaining({ x: expect.any(Number), y: expect.any(Number) })
+      );
+    }
   });
 });

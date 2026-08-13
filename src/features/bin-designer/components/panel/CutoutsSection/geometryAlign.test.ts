@@ -300,3 +300,73 @@ describe('distributeSelection', () => {
     expect(patch?.path?.[0].x).toBe(50);
   });
 });
+
+describe('groups are rigid (#3468)', () => {
+  it('aligns a group by its combined box, preserving member offsets', () => {
+    const cutouts = [
+      cutout({ id: 'g1a', groupId: 'g1', x: 40 }),
+      cutout({ id: 'g1b', groupId: 'g1', x: 70 }),
+      cutout({ id: 'solo', x: 5 }),
+    ];
+
+    const updates = alignSelection(cutouts, 'left');
+
+    // The group moves as one: both members shift by the same 35mm.
+    expect(updates.get('g1a')?.x).toBe(5);
+    expect(updates.get('g1b')?.x).toBe(35);
+    expect(updates.has('solo')).toBe(false);
+  });
+
+  it('is a no-op when the whole selection is one group', () => {
+    const cutouts = [
+      cutout({ id: 'a', groupId: 'g1', x: 0 }),
+      cutout({ id: 'b', groupId: 'g1', x: 40 }),
+    ];
+
+    // One unit has nothing to align against — the members must not collapse
+    // onto each other.
+    expect(alignSelection(cutouts, 'left').size).toBe(0);
+  });
+
+  it('never moves a group holding a locked member', () => {
+    const cutouts = [
+      cutout({ id: 'a', groupId: 'g1', x: 40 }),
+      cutout({ id: 'b', groupId: 'g1', x: 70, locked: true }),
+      cutout({ id: 'solo', x: 5 }),
+    ];
+
+    const updates = alignSelection(cutouts, 'left');
+
+    expect(updates.size).toBe(0);
+  });
+
+  it('distributes by unit centre, counting a group once', () => {
+    // Three units: solo(0), group spanning 40..90, solo(200).
+    const cutouts = [
+      cutout({ id: 'left', x: 0 }),
+      cutout({ id: 'ga', groupId: 'g1', x: 40 }),
+      cutout({ id: 'gb', groupId: 'g1', x: 80 }),
+      cutout({ id: 'right', x: 200 }),
+    ];
+
+    const updates = distributeSelection(cutouts, 'horizontal');
+
+    // Extremes anchor; the group's centre lands midway between them.
+    expect(updates.has('left')).toBe(false);
+    expect(updates.has('right')).toBe(false);
+    const da = (updates.get('ga')?.x ?? 0) - 40;
+    const db = (updates.get('gb')?.x ?? 0) - 80;
+    expect(da).toBeCloseTo(db);
+  });
+
+  it('needs three units, not three cutouts, to distribute', () => {
+    const cutouts = [
+      cutout({ id: 'a', groupId: 'g1', x: 0 }),
+      cutout({ id: 'b', groupId: 'g1', x: 20 }),
+      cutout({ id: 'c', x: 100 }),
+    ];
+
+    // Two units — nothing to place between the extremes.
+    expect(distributeSelection(cutouts, 'horizontal').size).toBe(0);
+  });
+});

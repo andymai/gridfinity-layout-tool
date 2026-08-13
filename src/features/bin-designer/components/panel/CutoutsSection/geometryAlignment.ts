@@ -8,7 +8,11 @@
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
-import { type Bounds, computeBounds, getEffectiveBounds, getEffectiveDepth } from './geometryCore';
+import { type Bounds, getEffectiveBounds } from './geometryCore';
+import { toArrangeUnits, unitsBounds, unitWidth, unitDepth } from './cutoutGroups';
+
+/** Distribute needs a fixed unit at each end plus something to place between them. */
+const MIN_DISTRIBUTE_UNITS = 3;
 
 /** A guide line indicating alignment between cutouts */
 export interface AlignmentGuide {
@@ -75,62 +79,75 @@ export function findAlignmentGuides(
 }
 
 /**
- * Distribute cutouts evenly along the horizontal axis.
- * Spaces cutouts so there's equal gap between each.
+ * Distribute units evenly along the horizontal axis.
+ * Spaces them so there's equal gap between each.
+ *
+ * A locked unit keeps its position — it still contributes to the span, so the
+ * gap it sits in simply comes out uneven rather than the lock being ignored.
  */
 export function distributeHorizontally(
   cutouts: readonly Cutout[],
   _binWidth: number
 ): Record<string, { x: number }> {
-  if (cutouts.length < 3) return {};
+  const units = toArrangeUnits(cutouts);
+  if (units.length < MIN_DISTRIBUTE_UNITS) return {};
 
-  // Sort by current X position
-  const sorted = [...cutouts].sort((a, b) => a.x - b.x);
+  const sorted = [...units].sort((a, b) => a.bounds.minX - b.bounds.minX);
   const first = sorted[0];
   const last = sorted[sorted.length - 1];
 
   // Total space between leftmost left edge and rightmost right edge
-  const totalSpan = last.x + last.width - first.x;
-  const totalWidths = sorted.reduce((sum, c) => sum + c.width, 0);
+  const totalSpan = last.bounds.maxX - first.bounds.minX;
+  const totalWidths = sorted.reduce((sum, u) => sum + unitWidth(u), 0);
   const gap = (totalSpan - totalWidths) / (sorted.length - 1);
 
   const result: Record<string, { x: number }> = {};
-  let currentX = first.x;
-  for (const cutout of sorted) {
-    result[cutout.id] = { x: currentX };
-    currentX += cutout.width + gap;
+  let currentX = first.bounds.minX;
+  for (const unit of sorted) {
+    if (!unit.locked) {
+      const dx = currentX - unit.bounds.minX;
+      for (const member of unit.members) result[member.id] = { x: member.x + dx };
+    }
+    currentX += unitWidth(unit) + gap;
   }
   return result;
 }
 
 /**
- * Distribute cutouts evenly along the vertical axis.
+ * Distribute units evenly along the vertical axis.
  */
 export function distributeVertically(
   cutouts: readonly Cutout[],
   _binDepth: number
 ): Record<string, { y: number }> {
-  if (cutouts.length < 3) return {};
+  const units = toArrangeUnits(cutouts);
+  if (units.length < MIN_DISTRIBUTE_UNITS) return {};
 
-  const sorted = [...cutouts].sort((a, b) => a.y - b.y);
+  const sorted = [...units].sort((a, b) => a.bounds.minY - b.bounds.minY);
   const first = sorted[0];
   const last = sorted[sorted.length - 1];
 
-  const totalSpan = last.y + getEffectiveDepth(last) - first.y;
-  const totalDepths = sorted.reduce((sum, c) => sum + getEffectiveDepth(c), 0);
+  const totalSpan = last.bounds.maxY - first.bounds.minY;
+  const totalDepths = sorted.reduce((sum, u) => sum + unitDepth(u), 0);
   const gap = (totalSpan - totalDepths) / (sorted.length - 1);
 
   const result: Record<string, { y: number }> = {};
-  let currentY = first.y;
-  for (const cutout of sorted) {
-    result[cutout.id] = { y: currentY };
-    currentY += getEffectiveDepth(cutout) + gap;
+  let currentY = first.bounds.minY;
+  for (const unit of sorted) {
+    if (!unit.locked) {
+      const dy = currentY - unit.bounds.minY;
+      for (const member of unit.members) result[member.id] = { y: member.y + dy };
+    }
+    currentY += unitDepth(unit) + gap;
   }
   return result;
 }
 
 /**
- * Center a group of cutouts within the bin.
+ * Center a selection within the bin.
+ *
+ * One delta for the whole selection, so relative offsets are preserved; a
+ * locked unit stays behind rather than riding along.
  */
 export function centerInBin(
   cutouts: readonly Cutout[],
@@ -139,15 +156,19 @@ export function centerInBin(
 ): Record<string, { x: number; y: number }> {
   if (cutouts.length === 0) return {};
 
-  const bounds = computeBounds(cutouts);
+  const units = toArrangeUnits(cutouts);
+  const bounds = unitsBounds(units);
   const groupW = bounds.maxX - bounds.minX;
   const groupH = bounds.maxY - bounds.minY;
   const dx = (binWidth - groupW) / 2 - bounds.minX;
   const dy = (binDepth - groupH) / 2 - bounds.minY;
 
   const result: Record<string, { x: number; y: number }> = {};
-  for (const cutout of cutouts) {
-    result[cutout.id] = { x: cutout.x + dx, y: cutout.y + dy };
+  for (const unit of units) {
+    if (unit.locked) continue;
+    for (const member of unit.members) {
+      result[member.id] = { x: member.x + dx, y: member.y + dy };
+    }
   }
   return result;
 }
