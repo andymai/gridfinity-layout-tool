@@ -1,0 +1,129 @@
+src/features/community/README.md
+  s_0198f0fc19806e::t_51e8bd9cf25a68 121-123
+src/features/community/components/PrintsSection/PrintsSection.test.tsx
+  s_0198f0fc19806e::t_149add312da5ec 195-201
+src/features/community/components/PrintDialog/PrintForm.tsx
+  s_0198f0fc19806e::t_02a339fc98f7c1 94-97
+  s_0198f0fc19806e::t_f63a6dfe4ed8b5 72-76,80
+  s_0198f0fc19806e::t_47ee2a2e1db038 59
+  s_0198f0fc19806e::t_682bf187433da5 189-191
+src/features/community/store/printDialogStore.test.ts
+  s_0198f0fc19806e::t_52ebb5ac8b6495 71-110
+  s_0198f0fc19806e::t_7bb2e0a61e7988 226-236,297-303
+src/i18n/locales/nb.json
+  s_0198f0fc19806e::t_e72e230d79ec85 3580,3633-3634
+src/features/community/components/PrintsSection/PrintsSection.tsx
+  s_0198f0fc19806e::t_7a2842c5ff48d4 153-155
+  s_0198f0fc19806e::t_0014957bc5fe15 39
+  s_0198f0fc19806e::t_fff0b2c0cd6309 41-42,57
+  s_0198f0fc19806e::t_cad395d605c49f 163-167
+  s_0198f0fc19806e::t_38ad5ca914560f 188-192,199,201,210,212-238,240-251
+src/features/community/store/printDialogStore.ts
+  s_0198f0fc19806e::t_072afcfdbea9df 197
+  s_0198f0fc19806e::t_13700deadd6270 39-40
+  s_0198f0fc19806e::t_e7eec042ddf0d5 98
+  s_0198f0fc19806e::t_dad99a02b36943 139
+  s_0198f0fc19806e::t_1dd4870b5861e0 97,99-103,106-108
+  s_0198f0fc19806e::t_447ff8a3b8c6aa 219-226,231-232,240-242
+  s_0198f0fc19806e::t_84d3e3ca146b3e 63-69,128,167-168
+src/i18n/locales/cs.json
+  s_0198f0fc19806e::t_e72e230d79ec85 3580,3633-3634
+src/features/bin-designer/README.md
+  s_0198f0fc19806e::t_8a15654ad0a15f 498
+src/i18n/locales/ko.json
+  s_0198f0fc19806e::t_e72e230d79ec85 3580,3633-3634
+src/i18n/locales/ja.json
+  s_0198f0fc19806e::t_e72e230d79ec85 3580,3633-3634
+api/lib/communityPrintValidation.ts
+  s_0198f0fc19806e::t_2a59afccabe8b6 265-269,271-278
+  s_0198f0fc19806e::t_e7eec042ddf0d5 270
+src/features/bin-designer/utils/thumbnail.ts
+  s_0198f0fc19806e::t_8a15654ad0a15f 195
+src/shared/types/communityPrint.ts
+  s_0198f0fc19806e::t_9a895384dd59e1 90-93
+src/i18n/locales/pl.json
+  s_0198f0fc19806e::t_e72e230d79ec85 3580,3633-3634
+src/features/community/components/PrintsSection/PrintCard.tsx
+  s_0198f0fc19806e::t_7b0672dda236a9 193-194
+  s_0198f0fc19806e::t_d7de4105392faf 4-5,9
+  s_0198f0fc19806e::t_acb0337272db07 101-102,107-109,114-115,137,139-169
+  s_0198f0fc19806e::t_4a0f9c7ae3a21b 103-106,110-112,116-136,138
+  s_0198f0fc19806e::t_eeaffff4655f29 113
+  s_0198f0fc19806e::t_8bffc0cded510a 10
+src/i18n/locales/de.json
+  s_0198f0fc19806e::t_e72e230d79ec85 3580,3633-3634
+src/i18n/locales/es.json
+  s_0198f0fc19806e::t_e72e230d79ec85 3580,3633-3634
+src/i18n/locales/it.json
+  s_0198f0fc19806e::t_e72e230d79ec85 3580,3633-3634
+CLAUDE.md
+  s_0198f0fc19806e::t_8a15654ad0a15f 45
+src/i18n/locales/nl.json
+  s_0198f0fc19806e::t_e72e230d79ec85 3580,3633-3634
+src/i18n/locales/en.ts
+  s_0198f0fc19806e::t_e72e230d79ec85 3883,3957-3958
+src/features/community/components/PrintDialog/PrintDialog.test.tsx
+  s_0198f0fc19806e::t_3ac04d9f5cd377 154,159-184
+src/features/community/components/PrintDialog/PrintDialog.tsx
+  s_0198f0fc19806e::t_670dcfc3419698 77
+  s_0198f0fc19806e::t_84d3e3ca146b3e 121,151
+  s_0198f0fc19806e::t_50dd9e9d2c4b66 56-58,62-64
+api/community/prints.test.ts
+  s_0198f0fc19806e::t_330b892094fb0c 434
+  s_0198f0fc19806e::t_6d615431f62269 427-433,435-461
+src/i18n/locales/pt-BR.json
+  s_0198f0fc19806e::t_e72e230d79ec85 3580,3633-3634
+api/lib/communityPrintValidation.test.ts
+  s_0198f0fc19806e::t_cdfdac7474814c 70
+  s_0198f0fc19806e::t_3c910f3df8bb9c 8,186-189,456-472
+  s_0198f0fc19806e::t_b3f8bfbb183f19 473
+src/features/community/components/PrintsSection/PrintCard.test.tsx
+  s_0198f0fc19806e::t_149add312da5ec 199-205,208,211-212
+  s_0198f0fc19806e::t_679b95d4fca330 206-207,209-210
+src/i18n/locales/sv.json
+  s_0198f0fc19806e::t_e72e230d79ec85 3580,3633-3634
+src/features/community/components/CommunityDetail/CommunityDetail.tsx
+  s_0198f0fc19806e::t_fff0b2c0cd6309 669
+api/lib/communityPrintStore.ts
+  s_0198f0fc19806e::t_3f03831c638f04 191-194
+  s_0198f0fc19806e::t_a318eb47652993 115-127
+  s_0198f0fc19806e::t_5eb15120deca44 355-357
+  s_0198f0fc19806e::t_cf6e31b3684516 165-168
+api/community/prints.ts
+  s_0198f0fc19806e::t_8241a6b42799f5 341-355
+  s_0198f0fc19806e::t_3877bb01836e84 47-51
+src/features/community/components/CommunityDetail/CommunityDetailContent.tsx
+  s_0198f0fc19806e::t_e77d682b1538bd 307
+  s_0198f0fc19806e::t_99b894ebfb85d6 414
+  s_0198f0fc19806e::t_8497408b8c33de 134,137,140-159,162,164-166,171-181
+  s_0198f0fc19806e::t_c470f3de4cac5f 291-292
+src/i18n/locales/zh-CN.json
+  s_0198f0fc19806e::t_e72e230d79ec85 3580,3633-3634
+src/i18n/locales/uk.json
+  s_0198f0fc19806e::t_e72e230d79ec85 3580,3633-3634
+api/lib/communityPrintStore.test.ts
+  s_0198f0fc19806e::t_e09e72bedd4616 241
+  s_0198f0fc19806e::t_f120cca419e3d6 198
+  s_0198f0fc19806e::t_8a15654ad0a15f 486
+  s_0198f0fc19806e::t_3645891a478ba7 457
+src/features/bin-designer/hooks/useCommunityPublish.ts
+  s_0198f0fc19806e::t_8a15654ad0a15f 122
+src/i18n/locales/fr.json
+  s_0198f0fc19806e::t_e72e230d79ec85 3580,3633-3634
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "0ec9ee15a04a50e4031d4c079392b8729b0af34f",
+  "prompts": {},
+  "sessions": {
+    "s_0198f0fc19806e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be9ba31a-14f2-41df-af29-4a06cb52253e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
