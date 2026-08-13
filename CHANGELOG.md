@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.405.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.404.3...gridfinity-layout-tool-v4.405.0) (2026-08-13)
+
+
+### Features
+
+* **bin-designer:** per-axis foot lattice for half-offset bins ([#3473](https://github.com/andymai/gridfinity-layout-tool/issues/3473)) ([ac3310a](https://github.com/andymai/gridfinity-layout-tool/commit/ac3310a92396d98adbfed3447dacc442dde0e650))
+
 ## [4.404.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.404.2...gridfinity-layout-tool-v4.404.3) (2026-08-13)
 
 
