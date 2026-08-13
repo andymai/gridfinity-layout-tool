@@ -646,7 +646,6 @@ function CommunityDetailDialog({
             onFilterByAuthor={handleFilterByAuthor}
             ownerModeration={ownerModeration}
             onOpenDesign={handleOpenAncestor}
-            onAddPrint={printsAvailable ? handleAddPrint : undefined}
             costSlot={
               <PrintCostPanel
                 params={design.params}
@@ -666,10 +665,10 @@ function CommunityDetailDialog({
                   coverPhotoUrl={design.coverPhotoUrl ?? ''}
                   onOpenPhoto={handleOpenPhoto}
                   onItemsChange={handlePrintItemsChange}
+                  onAddPrint={handleAddPrint}
                 />
               ) : undefined
             }
-            hasOwnPrint={myPrint !== null}
           />
         )}
       </Dialog.Body>

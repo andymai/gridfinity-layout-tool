@@ -44,13 +44,13 @@ export interface CommunityPrintRecord {
    * other and a reader can pick per photo without a lookup.
    */
   photoThumbs: string[];
-  material: CommunityPrintMaterial;
-  nozzleMm: number;
-  layerHeightMm: number;
-  printMinutes: number;
-  /** null when the printer did not report it; excluded from the median. */
+  /** null throughout when the reporter did not say; excluded from the modes and medians. */
+  material: CommunityPrintMaterial | null;
+  nozzleMm: number | null;
+  layerHeightMm: number | null;
+  printMinutes: number | null;
   filamentGrams: number | null;
-  printer: string;
+  printer: string | null;
   /** '' unless `printer` is 'other'. */
   printerOther: string;
   fitVerdict: CommunityPrintFitVerdict;
@@ -116,12 +116,15 @@ function parsePrint(fields: Record<string, string | undefined>): CommunityPrintR
   if (fields.designId === undefined || fields.authorPublicId === undefined) return null;
   const status = fields.status;
   if (status !== 'live' && status !== 'hidden' && status !== 'removed') return null;
-  const material = fields.material ?? '';
+  const rawMaterial = fields.material ?? '';
   const fitVerdict = fields.fitVerdict ?? '';
   // A record whose enum fields no longer parse is malformed rather than
   // defaultable: silently coercing it to 'pla'/'as-designed' would feed a
-  // fabricated value into the aggregate summary.
-  if (!isMaterial(material) || !isFitVerdict(fitVerdict)) return null;
+  // fabricated value into the aggregate summary. '' is the distinct case of a
+  // reporter who did not say, and stays out of the aggregate instead.
+  if (rawMaterial !== '' && !isMaterial(rawMaterial)) return null;
+  if (!isFitVerdict(fitVerdict)) return null;
+  const material = rawMaterial === '' ? null : rawMaterial;
   const parseUrlArray = (raw: string | undefined): string[] => {
     try {
       const parsed: unknown = JSON.parse(raw ?? '[]');
@@ -138,7 +141,11 @@ function parsePrint(fields: Record<string, string | undefined>): CommunityPrintR
   // invariant and a reader can index one from the other without checking.
   const storedThumbs = parseUrlArray(fields.photoThumbs);
   const photoThumbs = photos.map((_, index) => storedThumbs[index] ?? '');
-  const filamentGrams = fields.filamentGrams;
+  // '' is how an unreported measurement is stored, and `Number('')` is 0 — a
+  // zero nozzle would join the modes and medians as if someone had measured it.
+  const optionalNumber = (raw: string | undefined): number | null =>
+    raw === undefined || raw === '' ? null : Number(raw);
+  const printer = fields.printer ?? '';
   return {
     designId: fields.designId,
     authorPublicId: fields.authorPublicId,
@@ -146,12 +153,11 @@ function parsePrint(fields: Record<string, string | undefined>): CommunityPrintR
     photos,
     photoThumbs,
     material,
-    nozzleMm: Number(fields.nozzleMm ?? 0),
-    layerHeightMm: Number(fields.layerHeightMm ?? 0),
-    printMinutes: Number(fields.printMinutes ?? 0),
-    filamentGrams:
-      filamentGrams === undefined || filamentGrams === '' ? null : Number(filamentGrams),
-    printer: fields.printer ?? '',
+    nozzleMm: optionalNumber(fields.nozzleMm),
+    layerHeightMm: optionalNumber(fields.layerHeightMm),
+    printMinutes: optionalNumber(fields.printMinutes),
+    filamentGrams: optionalNumber(fields.filamentGrams),
+    printer: printer === '' ? null : printer,
     printerOther: fields.printerOther ?? '',
     fitVerdict,
     note: fields.note ?? '',
@@ -160,6 +166,11 @@ function parsePrint(fields: Record<string, string | undefined>): CommunityPrintR
     updatedAt: Number(fields.updatedAt ?? 0),
     status,
   };
+}
+
+/** Unreported measurements round-trip as '', which `parsePrint` reads back as null. */
+function numberField(value: number | null): string {
+  return value === null ? '' : String(value);
 }
 
 export async function writeCommunityPrint(
@@ -172,12 +183,12 @@ export async function writeCommunityPrint(
     authorName: record.authorName,
     photos: JSON.stringify(record.photos),
     photoThumbs: JSON.stringify(record.photoThumbs),
-    material: record.material,
-    nozzleMm: String(record.nozzleMm),
-    layerHeightMm: String(record.layerHeightMm),
-    printMinutes: String(record.printMinutes),
-    filamentGrams: record.filamentGrams === null ? '' : String(record.filamentGrams),
-    printer: record.printer,
+    material: record.material ?? '',
+    nozzleMm: numberField(record.nozzleMm),
+    layerHeightMm: numberField(record.layerHeightMm),
+    printMinutes: numberField(record.printMinutes),
+    filamentGrams: numberField(record.filamentGrams),
+    printer: record.printer ?? '',
     printerOther: record.printerOther,
     fitVerdict: record.fitVerdict,
     note: record.note,
@@ -337,18 +348,25 @@ export function summarizeCommunityPrints(
   prints: readonly CommunityPrintRecord[]
 ): CommunityPrintSummary {
   const live = prints.filter((print) => print.status === 'live');
+  /**
+   * Unreported values have to be dropped BEFORE the aggregate, not after.
+   * `modeOf` is generic over `T | null`, so a field most reporters skipped
+   * would elect `null` as its own mode and typecheck while doing it — an
+   * absence winning a vote it should not have been entered in.
+   */
+  const reported = <T>(pick: (print: CommunityPrintRecord) => T | null): T[] =>
+    live.map(pick).filter((value): value is T => value !== null);
+
   return {
     count: live.length,
     asDesigned: live.filter((print) => print.fitVerdict === 'as-designed').length,
     adjusted: live.filter((print) => print.fitVerdict === 'adjusted').length,
     didNotFit: live.filter((print) => print.fitVerdict === 'did-not-fit').length,
-    commonMaterial: modeOf(live.map((print) => print.material)),
-    commonLayerHeightMm: modeOf(live.map((print) => print.layerHeightMm)),
-    medianPrintMinutes: medianOf(live.map((print) => print.printMinutes)),
+    commonMaterial: modeOf(reported((print) => print.material)),
+    commonLayerHeightMm: modeOf(reported((print) => print.layerHeightMm)),
+    medianPrintMinutes: medianOf(reported((print) => print.printMinutes)),
     medianFilamentGrams: medianOf(
-      live
-        .map((print) => print.filamentGrams)
-        .filter((grams): grams is number => grams !== null && Number.isFinite(grams))
+      reported((print) => print.filamentGrams).filter((grams) => Number.isFinite(grams))
     ),
   };
 }

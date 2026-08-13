@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { Badge, Button, IconButton, cn } from '@/design-system';
+import { Badge, Button, cn } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import type {
   CommunityDesign,
@@ -64,11 +64,7 @@ interface CommunityDetailContentProps {
   onFilterByAuthor?: () => void;
   /** Present only for the owner of a hidden design; renders the hidden-state notice. */
   ownerModeration?: OwnerModeration | null;
-  /** Opens the print-report dialog; absent hides the CTA entirely. */
-  onAddPrint?: () => void;
-  /** Switches the CTA between posting a first print and editing an existing one. */
-  hasOwnPrint?: boolean;
-  /** Rendered below the CTA; absent while prints are unavailable. */
+  /** The prints section, which carries its own post/edit CTA; absent while prints are unavailable. */
   printsSlot?: ReactNode;
   /** Print cost and bed fit; sits with the dimensions, which is the same question. */
   costSlot?: ReactNode;
@@ -128,6 +124,62 @@ function hiddenNoticeCopy(
   }
 }
 
+interface StatTileDisclosure {
+  readonly expanded: boolean;
+  readonly label: string;
+  readonly onToggle: () => void;
+  readonly testId: string;
+}
+
+/**
+ * One count in the stats row, number over label.
+ *
+ * A zero is rendered, not hidden — the row's width would otherwise change as a
+ * design gains its first like — but it drops to the tertiary colour so a new
+ * design does not read as a wall of bold noughts.
+ */
+function StatTile({
+  label,
+  value,
+  disclosure,
+  testId,
+}: {
+  label: string;
+  value: number;
+  disclosure?: StatTileDisclosure;
+  testId?: string;
+}) {
+  const valueClass = cn(
+    'block text-lg font-semibold leading-tight',
+    value > 0 ? 'text-content' : 'text-content-tertiary'
+  );
+  const labelClass = 'block text-xs text-content-secondary';
+
+  if (disclosure !== undefined) {
+    return (
+      <Button
+        variant="ghost"
+        touchTarget={false}
+        aria-expanded={disclosure.expanded}
+        aria-label={disclosure.label}
+        onClick={disclosure.onToggle}
+        className="h-auto flex-col gap-0 p-1 font-normal underline-offset-2 hover:underline"
+        data-testid={disclosure.testId}
+      >
+        <span className={valueClass}>{value}</span>
+        <span className={labelClass}>{label}</span>
+      </Button>
+    );
+  }
+
+  return (
+    <div className="p-1" data-testid={testId}>
+      <span className={valueClass}>{value}</span>
+      <span className={labelClass}>{label}</span>
+    </div>
+  );
+}
+
 function HiddenNotice({ moderation }: { moderation: OwnerModeration }) {
   const t = useTranslation();
   const copy = hiddenNoticeCopy(moderation, t);
@@ -173,8 +225,6 @@ export function CommunityDetailContent({
   like = null,
   onFilterByAuthor,
   ownerModeration = null,
-  onAddPrint,
-  hasOwnPrint = false,
   printsSlot,
   costSlot,
   onOpenDesign,
@@ -236,60 +286,68 @@ export function CommunityDetailContent({
 
         {counts !== null && (
           <>
-            <div className="flex items-center gap-4 text-sm text-content-secondary">
-              <span className="inline-flex items-center gap-1">
-                {like !== null && (
-                  <IconButton
-                    aria-label={t(like.likedByMe ? 'community.like.unlike' : 'community.like.like')}
-                    pressed={like.likedByMe}
-                    size="sm"
-                    touchTarget={isMobile}
-                    onClick={like.onToggle}
-                    className={cn(like.likedByMe && 'text-accent')}
-                    data-testid="community-detail-like"
-                  >
-                    <HeartGlyph filled={like.likedByMe} />
-                  </IconButton>
-                )}
-                {t('community.detail.stats.likes')}{' '}
-                <span className="font-semibold text-content">{counts.likes}</span>
-              </span>
-              {counts.remixes > 0 ? (
-                <Button
-                  variant="ghost"
-                  touchTarget={isMobile}
-                  aria-expanded={remixListOpen}
-                  aria-label={t('community.detail.buildsOnThis', { count: counts.remixes })}
-                  onClick={() => setRemixListOpen((open) => !open)}
-                  className="h-auto p-0 text-sm font-normal text-content-secondary underline-offset-2 hover:underline"
-                  data-testid="community-detail-remixes"
-                >
-                  {t('community.detail.stats.remixes')}{' '}
-                  <span className="font-semibold text-content">{counts.remixes}</span>
-                </Button>
-              ) : (
-                <span>
-                  {t('community.detail.stats.remixes')}{' '}
-                  <span className="font-semibold text-content">{counts.remixes}</span>
-                </span>
+            {/* A fixed row of tiles rather than a sentence of label-value pairs:
+                the heart used to sit inside the "Likes 0" run, which read as a
+                fourth stat that happened to have an icon glued to its left. The
+                tiles now only report, and the one thing a visitor can do about
+                them is a button of its own underneath. */}
+            <div
+              className={cn(
+                'grid gap-2 text-center',
+                // Absent (not zero) means the card snapshot predates the field,
+                // and an unknown count must not read as a measured zero. The
+                // print list below is the full account either way.
+                counts.prints === undefined ? 'grid-cols-3' : 'grid-cols-4'
               )}
+              data-testid="community-detail-stats"
+            >
+              <StatTile label={t('community.detail.stats.likes')} value={counts.likes} />
+              <StatTile
+                label={t('community.detail.stats.remixes')}
+                value={counts.remixes}
+                // The tile is the only route to the remix list, so it keeps the
+                // disclosure it had as a sentence fragment.
+                disclosure={
+                  counts.remixes > 0
+                    ? {
+                        expanded: remixListOpen,
+                        label: t('community.detail.buildsOnThis', { count: counts.remixes }),
+                        onToggle: () => setRemixListOpen((open) => !open),
+                        testId: 'community-detail-remixes',
+                      }
+                    : undefined
+                }
+              />
               {/* Downloads, not prints. counts.exports is file downloads, and
                   labelling it "Prints" put a hard 0 beside a design whose own
                   print list was rendering below it. */}
-              <span>
-                {t('community.detail.stats.downloads')}{' '}
-                <span className="font-semibold text-content">{counts.exports}</span>
-              </span>
-              {/* Only when someone reported one: absent means the card snapshot
-                  predates the field, and an unknown count must not read as a
-                  measured zero. The print list below is the full account. */}
-              {counts.prints !== undefined && counts.prints > 0 && (
-                <span data-testid="community-detail-prints-stat">
-                  {t('community.detail.stats.prints')}{' '}
-                  <span className="font-semibold text-content">{counts.prints}</span>
-                </span>
+              <StatTile label={t('community.detail.stats.downloads')} value={counts.exports} />
+              {counts.prints !== undefined && (
+                <StatTile
+                  label={t('community.detail.stats.prints')}
+                  value={counts.prints}
+                  testId="community-detail-prints-stat"
+                />
               )}
             </div>
+
+            {like !== null && (
+              <Button
+                variant={like.likedByMe ? 'secondary' : 'ghost'}
+                touchTarget={isMobile}
+                aria-pressed={like.likedByMe}
+                onClick={like.onToggle}
+                className={cn(
+                  'w-full justify-center gap-2',
+                  like.likedByMe ? 'text-accent' : undefined
+                )}
+                data-testid="community-detail-like"
+              >
+                <HeartGlyph filled={like.likedByMe} />
+                {t(like.likedByMe ? 'community.like.unlike' : 'community.like.like')}
+              </Button>
+            )}
+
             {remixListOpen && counts.remixes > 0 && (
               <DirectRemixList designId={design.id} remixCount={counts.remixes} />
             )}
@@ -355,19 +413,8 @@ export function CommunityDetailContent({
         )}
 
         {/* Sits above the similar rail: whether this printed for other people
-            is a decision input, and the rail is where attention goes next. */}
-        {onAddPrint !== undefined && (
-          <Button
-            variant={hasOwnPrint ? 'ghost' : 'secondary'}
-            touchTarget={isMobile}
-            onClick={onAddPrint}
-            className="w-full justify-center"
-            data-testid="community-detail-add-print"
-          >
-            {t(hasOwnPrint ? 'community.print.editCta' : 'community.print.cta')}
-          </Button>
-        )}
-
+            is a decision input, and the rail is where attention goes next. The
+            "post yours" CTA lives in this section's own header. */}
         {printsSlot}
 
         <SimilarRail design={design} />

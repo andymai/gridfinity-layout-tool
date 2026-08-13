@@ -234,14 +234,23 @@ function checkRange(
   return { ok: true, value };
 }
 
+/** Absent (undefined/null) passes as null; a value present but out of range still fails. */
+function checkOptionalRange(
+  value: unknown,
+  field: keyof typeof COMMUNITY_PRINT_RANGES
+): { ok: true; value: number | null } | { ok: false; message: string } {
+  if (value === undefined || value === null) return { ok: true, value: null };
+  return checkRange(value, field);
+}
+
 export interface CommunityPrintPayload {
   authorName: string;
-  material: CommunityPrintMaterial;
-  nozzleMm: number;
-  layerHeightMm: number;
-  printMinutes: number;
+  material: CommunityPrintMaterial | null;
+  nozzleMm: number | null;
+  layerHeightMm: number | null;
+  printMinutes: number | null;
   filamentGrams: number | null;
-  printer: string;
+  printer: string | null;
   printerOther: string;
   fitVerdict: CommunityPrintFitVerdict;
   note: string;
@@ -273,37 +282,44 @@ export function validateCommunityPrint(body: unknown): CommunityPrintValidationR
     return validationError('CONTENT_BLOCKED', 'authorName contains prohibited content');
   }
 
-  if (
-    !isString(body.material) ||
-    !(COMMUNITY_PRINT_MATERIALS as readonly string[]).includes(body.material)
-  ) {
-    return validationError(
-      'INVALID_MATERIAL',
-      `material must be one of: ${COMMUNITY_PRINT_MATERIALS.join(', ')}`
-    );
+  // Every settings field is optional. Only the fit verdict, plus a photo or a
+  // note, is demanded below: the record has to say something the next printer
+  // can use, and a slicer's numbers are not the only way to say it. An omitted
+  // field is stored absent, never as a zero that would skew the aggregates.
+  let material: CommunityPrintMaterial | null = null;
+  if (body.material !== undefined && body.material !== null) {
+    if (
+      !isString(body.material) ||
+      !(COMMUNITY_PRINT_MATERIALS as readonly string[]).includes(body.material)
+    ) {
+      return validationError(
+        'INVALID_MATERIAL',
+        `material must be one of: ${COMMUNITY_PRINT_MATERIALS.join(', ')}`
+      );
+    }
+    material = body.material as CommunityPrintMaterial;
   }
-  const material = body.material as CommunityPrintMaterial;
 
-  const nozzle = checkRange(body.nozzleMm, 'nozzleMm');
+  const nozzle = checkOptionalRange(body.nozzleMm, 'nozzleMm');
   if (!nozzle.ok) return validationError('INVALID_SETTINGS', nozzle.message);
 
-  const layerHeight = checkRange(body.layerHeightMm, 'layerHeightMm');
+  const layerHeight = checkOptionalRange(body.layerHeightMm, 'layerHeightMm');
   if (!layerHeight.ok) return validationError('INVALID_SETTINGS', layerHeight.message);
 
-  const printMinutes = checkRange(body.printMinutes, 'printMinutes');
+  const printMinutes = checkOptionalRange(body.printMinutes, 'printMinutes');
   if (!printMinutes.ok) return validationError('INVALID_SETTINGS', printMinutes.message);
 
-  let filamentGrams: number | null = null;
-  if (body.filamentGrams !== undefined && body.filamentGrams !== null) {
-    const grams = checkRange(body.filamentGrams, 'filamentGrams');
-    if (!grams.ok) return validationError('INVALID_SETTINGS', grams.message);
-    filamentGrams = grams.value;
-  }
+  const filament = checkOptionalRange(body.filamentGrams, 'filamentGrams');
+  if (!filament.ok) return validationError('INVALID_SETTINGS', filament.message);
+  const filamentGrams = filament.value;
 
-  if (!isString(body.printer) || !isCommunityPrinterId(body.printer)) {
-    return validationError('INVALID_PRINTER', 'printer must be a known printer id');
+  let printer: string | null = null;
+  if (body.printer !== undefined && body.printer !== null && body.printer !== '') {
+    if (!isString(body.printer) || !isCommunityPrinterId(body.printer)) {
+      return validationError('INVALID_PRINTER', 'printer must be a known printer id');
+    }
+    printer = body.printer;
   }
-  const printer = body.printer;
 
   // The free-text escape hatch is only readable alongside the 'other'
   // sentinel; carrying it on a known-printer report would let a caller attach
@@ -354,9 +370,6 @@ export function validateCommunityPrint(body: unknown): CommunityPrintValidationR
     }
   }
 
-  // A print with no photos is still worth having: the settings and the fit
-  // verdict are the decision-grade part, and demanding a photo would silently
-  // filter out everyone who printed it but did not photograph it.
   const photos: CommunityPrintPhotoEntry[] = [];
   if (body.photos !== undefined && body.photos !== null) {
     if (!Array.isArray(body.photos)) {
@@ -373,6 +386,13 @@ export function validateCommunityPrint(body: unknown): CommunityPrintValidationR
       if (!check.ok) return validationError('INVALID_PHOTOS', check.message);
       photos.push(check.entry);
     }
+  }
+
+  // The one substance floor, now that the settings are all optional: a verdict
+  // on its own is a bare vote, so a record has to carry evidence (a photo) or
+  // context (a note). Checked after both are parsed so a kept photo counts.
+  if (photos.length === 0 && note === '') {
+    return validationError('INVALID_PAYLOAD', 'a print needs at least one photo or a note');
   }
 
   return {

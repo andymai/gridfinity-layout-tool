@@ -9,7 +9,10 @@ import {
   LineSegments,
   EdgesGeometry,
   LineBasicMaterial,
+  InstancedBufferGeometry,
+  BufferAttribute,
 } from 'three';
+import { LineMaterial, LineSegments2, LineSegmentsGeometry } from 'three-stdlib';
 import type { WebGLRenderer } from 'three';
 import {
   captureThumbnail,
@@ -384,6 +387,89 @@ describe('exportCommunityGlb', () => {
     setPreviewContext(renderer, new Scene(), new PerspectiveCamera(45));
 
     await expect(exportCommunityGlb()).resolves.toBeNull();
+  });
+
+  describe('annotation overlays', () => {
+    /**
+     * The real class behind drei's fat `<Line>`, which the dimension drawings
+     * use. `LineSegments2` extends `Mesh`, so the plain `isMesh` sweep took it,
+     * and its shape lives in `instanceStart`/`instanceEnd` rather than in the
+     * base quad that `position` holds.
+     */
+    function fatLine(): Mesh {
+      const geometry = new LineSegmentsGeometry();
+      geometry.setPositions([0, 0, 0, 10, 10, 10]);
+      return new LineSegments2(geometry, new LineMaterial({ color: 0xffffff }));
+    }
+
+    /**
+     * Stands in for troika's `<Text>`, whose `GlyphsGeometry` is likewise an
+     * `InstancedBufferGeometry` on a `Mesh`. Troika is drei's dependency rather
+     * than ours, so it is modelled here instead of imported.
+     */
+    function textLabel(): Mesh {
+      const geometry = new InstancedBufferGeometry();
+      geometry.setAttribute(
+        'position',
+        new BufferAttribute(
+          new Float32Array([0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0]),
+          3
+        )
+      );
+      geometry.instanceCount = 13;
+      return new Mesh(geometry, new MeshStandardMaterial({ color: 0xffffff }));
+    }
+
+    /** Vertex counts per exported primitive, read out of the GLB's JSON chunk. */
+    function positionCounts(base64: string): number[] {
+      const bytes = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
+      const view = new DataView(bytes.buffer);
+      const jsonLength = view.getUint32(12, true);
+      const json: unknown = JSON.parse(
+        new TextDecoder().decode(bytes.subarray(20, 20 + jsonLength))
+      );
+      const { meshes, accessors } = json as {
+        meshes: { primitives: { attributes: { POSITION: number } }[] }[];
+        accessors: { count: number }[];
+      };
+      return meshes.flatMap((mesh) =>
+        mesh.primitives.map((prim) => accessors[prim.attributes.POSITION].count)
+      );
+    }
+
+    it.each([
+      ['a fat dimension line', fatLine],
+      ['a text label', textLabel],
+    ])('exports nothing for a scene that is only %s', async (_label, build) => {
+      const scene = new Scene();
+      scene.add(build());
+      const renderer = { render: vi.fn() } as unknown as WebGLRenderer;
+      setPreviewContext(renderer, scene, new PerspectiveCamera(45));
+
+      await expect(exportCommunityGlb()).resolves.toBeNull();
+    });
+
+    it('leaves the model untouched when annotations sit alongside it', async () => {
+      const renderer = { render: vi.fn() } as unknown as WebGLRenderer;
+
+      const bare = new Scene();
+      bare.add(new Mesh(new BoxGeometry(1, 1, 1), new MeshStandardMaterial({ color: 0x808080 })));
+      setPreviewContext(renderer, bare, new PerspectiveCamera(45));
+      const withoutAnnotations = positionCounts((await exportCommunityGlb()) ?? '');
+
+      const annotated = new Scene();
+      annotated.add(
+        new Mesh(new BoxGeometry(1, 1, 1), new MeshStandardMaterial({ color: 0x808080 })),
+        fatLine(),
+        textLabel()
+      );
+      setPreviewContext(renderer, annotated, new PerspectiveCamera(45));
+      const withAnnotations = positionCounts((await exportCommunityGlb()) ?? '');
+
+      // A baked annotation would have merged its base quad in, adding vertices
+      // and drawing a stray white square wherever its label sat.
+      expect(withAnnotations).toEqual(withoutAnnotations);
+    });
   });
 
   describe('__setEdgeVisibility', () => {

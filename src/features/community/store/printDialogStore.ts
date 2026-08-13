@@ -117,17 +117,21 @@ export const INITIAL_PRINT_DIALOG_STATE: PrintDialogState = {
   photoError: null,
 };
 
+/** An unreported setting reopens as an empty field, never as a fabricated 0. */
+function numberField(value: number | undefined): string {
+  return value === undefined ? '' : String(value);
+}
+
 function draftFromPrint(print: CommunityPrint): PrintDraft {
   const total = print.settings.printMinutes;
   return {
-    material: print.settings.material,
-    nozzleMm: String(print.settings.nozzleMm),
-    layerHeightMm: String(print.settings.layerHeightMm),
-    printHours: String(Math.floor(total / 60)),
-    printMinutes: String(total % 60),
-    filamentGrams:
-      print.settings.filamentGrams === undefined ? '' : String(print.settings.filamentGrams),
-    printer: print.settings.printer,
+    material: print.settings.material ?? DEFAULT_PRINT_DRAFT.material,
+    nozzleMm: numberField(print.settings.nozzleMm),
+    layerHeightMm: numberField(print.settings.layerHeightMm),
+    printHours: total === undefined ? '' : String(Math.floor(total / 60)),
+    printMinutes: total === undefined ? '' : String(total % 60),
+    filamentGrams: numberField(print.settings.filamentGrams),
+    printer: print.settings.printer ?? '',
     printerOther: print.settings.printerOther ?? '',
     fitVerdict: print.fitVerdict,
     note: print.note,
@@ -177,18 +181,12 @@ export const usePrintDialogStore = create<PrintDialogStore>((set, get) => ({
 }));
 
 export interface PrintDraftIssues {
-  printer?: 'required' | 'otherRequired';
-  printTime?: 'required';
+  /** Only the free-text half: a blank printer select is an acceptable answer now. */
+  printer?: 'otherRequired';
   fitVerdict?: 'required';
-  nozzleMm?: 'required';
-  layerHeightMm?: 'required';
   displayName?: 'required';
-}
-
-function positiveNumber(value: string): number | null {
-  if (value.trim() === '') return null;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  /** Neither a photo nor a note, so the record would carry only a bare vote. */
+  content?: 'required';
 }
 
 /** Minutes from the split hours/minutes inputs, or null when neither is usable. */
@@ -204,18 +202,25 @@ export function draftPrintMinutes(draft: PrintDraft): number | null {
  * Client-side mirror of the server's required fields. It exists to give an
  * inline message instead of a round trip, not to be authoritative: the server
  * revalidates everything and is the only thing that decides.
+ *
+ * Every print setting is optional. What is left is the fit verdict — the one
+ * thing that cannot be produced without having printed the design — plus a
+ * photo or a note, so the record says something beyond a bare vote.
  */
-export function validatePrintDraft(draft: PrintDraft, displayName: string): PrintDraftIssues {
+export function validatePrintDraft(
+  draft: PrintDraft,
+  displayName: string,
+  photoCount: number
+): PrintDraftIssues {
   const issues: PrintDraftIssues = {};
   if (displayName.trim() === '') issues.displayName = 'required';
-  if (draft.printer === '') issues.printer = 'required';
-  else if (draft.printer === COMMUNITY_PRINTER_OTHER && draft.printerOther.trim() === '') {
+  // The free-text model is only readable next to the 'other' sentinel, so it
+  // is demanded by that choice rather than on its own.
+  if (draft.printer === COMMUNITY_PRINTER_OTHER && draft.printerOther.trim() === '') {
     issues.printer = 'otherRequired';
   }
-  if (draftPrintMinutes(draft) === null) issues.printTime = 'required';
   if (draft.fitVerdict === null) issues.fitVerdict = 'required';
-  if (positiveNumber(draft.nozzleMm) === null) issues.nozzleMm = 'required';
-  if (positiveNumber(draft.layerHeightMm) === null) issues.layerHeightMm = 'required';
+  if (photoCount === 0 && draft.note.trim() === '') issues.content = 'required';
   return issues;
 }
 

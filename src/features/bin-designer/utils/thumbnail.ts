@@ -190,6 +190,19 @@ function isLineSegments(obj: Object3D): obj is LineSegments {
   return 'isLineSegments' in obj && obj.isLineSegments === true;
 }
 
+/**
+ * True for a mesh whose rendered shape lives in per-instance attributes rather
+ * than in `position` — troika's `<Text>` (GlyphsGeometry) and drei's fat
+ * `<Line>` (LineSegmentsGeometry) both extend `InstancedBufferGeometry`, and
+ * both are `Mesh` subclasses, so the plain `isMesh` sweep collected them.
+ * Merging one drops the instancing and the custom shader, leaving its single
+ * base quad baked in the model's own color: the stray white squares and
+ * slivers that dimension lines and name labels left in published GLBs.
+ */
+function isInstancedGeometry(geo: BufferGeometry): boolean {
+  return 'isInstancedBufferGeometry' in geo && geo.isInstancedBufferGeometry === true;
+}
+
 /** Black edge lines, matching BinMesh's `EDGE_COLOR` in the 2D preview. */
 const EXPORT_EDGE_COLOR = 0x000000;
 
@@ -334,8 +347,9 @@ function bakeVertexColors(
  * `MeshStandardMaterial({ vertexColors: true })`. Baking the true colors avoids
  * the GLTFExporter default-material substitution that previously dropped some
  * feature colors (e.g. divider teal), and collapsing to one primitive keeps
- * Draco's per-primitive overhead negligible. Lights and line/edge overlays are
- * excluded (only `Mesh` objects are collected).
+ * Draco's per-primitive overhead negligible. Lights are excluded (only `Mesh`
+ * and `LineSegments` objects are collected), as are the annotation overlays
+ * that only look like meshes (see {@link isInstancedGeometry}).
  *
  * @returns A GLB ArrayBuffer, or `null` if no preview scene is registered or
  *   the scene contains no visible meshes.
@@ -362,6 +376,7 @@ export async function exportPreviewGlb(): Promise<ArrayBuffer | null> {
     }
 
     if (!isMesh(obj)) return;
+    if (isInstancedGeometry(obj.geometry)) return;
     let geo = obj.geometry.clone();
     geo.applyMatrix4(obj.matrixWorld);
     // Non-indexed so vertices are unshared across faces: a per-vertex color can

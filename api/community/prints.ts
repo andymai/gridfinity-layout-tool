@@ -146,13 +146,15 @@ interface PrintResponse {
   authorName: string;
   photos: string[];
   photoThumbs: string[];
+  /** Every field omitted rather than nulled when unreported, so a client that
+      reads `settings.nozzleMm` gets `undefined` and cannot format a 0. */
   settings: {
-    material: string;
-    nozzleMm: number;
-    layerHeightMm: number;
-    printMinutes: number;
+    material?: string;
+    nozzleMm?: number;
+    layerHeightMm?: number;
+    printMinutes?: number;
     filamentGrams?: number;
-    printer: string;
+    printer?: string;
     printerOther?: string;
   };
   fitVerdict: string;
@@ -171,12 +173,12 @@ function toPrintResponse(record: CommunityPrintRecord): PrintResponse {
     photos: record.photos,
     photoThumbs: record.photoThumbs,
     settings: {
-      material: record.material,
-      nozzleMm: record.nozzleMm,
-      layerHeightMm: record.layerHeightMm,
-      printMinutes: record.printMinutes,
+      ...(record.material !== null && { material: record.material }),
+      ...(record.nozzleMm !== null && { nozzleMm: record.nozzleMm }),
+      ...(record.layerHeightMm !== null && { layerHeightMm: record.layerHeightMm }),
+      ...(record.printMinutes !== null && { printMinutes: record.printMinutes }),
       ...(record.filamentGrams !== null && { filamentGrams: record.filamentGrams }),
-      printer: record.printer,
+      ...(record.printer !== null && { printer: record.printer }),
       ...(record.printerOther !== '' && { printerOther: record.printerOther }),
     },
     fitVerdict: record.fitVerdict,

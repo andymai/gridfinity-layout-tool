@@ -180,22 +180,25 @@ describe('validatePrintDraft', () => {
     printer: 'bambu-p1s',
     printHours: '2',
     fitVerdict: 'as-designed' as const,
+    note: 'Printed fine.',
   };
 
   it('passes a complete draft', () => {
-    expect(hasPrintDraftIssues(validatePrintDraft(complete, 'Casey'))).toBe(false);
+    expect(hasPrintDraftIssues(validatePrintDraft(complete, 'Casey', 0))).toBe(false);
   });
 
   it('requires a display name', () => {
-    expect(validatePrintDraft(complete, '   ').displayName).toBe('required');
+    expect(validatePrintDraft(complete, '   ', 0).displayName).toBe('required');
   });
 
-  it('requires a printer', () => {
-    expect(validatePrintDraft({ ...complete, printer: '' }, 'Casey').printer).toBe('required');
+  it('requires a fit verdict', () => {
+    expect(validatePrintDraft({ ...complete, fitVerdict: null }, 'Casey', 0).fitVerdict).toBe(
+      'required'
+    );
   });
 
   it('requires the free-text model when the printer is "other"', () => {
-    expect(validatePrintDraft({ ...complete, printer: 'other' }, 'Casey').printer).toBe(
+    expect(validatePrintDraft({ ...complete, printer: 'other' }, 'Casey', 0).printer).toBe(
       'otherRequired'
     );
   });
@@ -203,29 +206,45 @@ describe('validatePrintDraft', () => {
   it('accepts "other" once the model is filled in', () => {
     const issues = validatePrintDraft(
       { ...complete, printer: 'other', printerOther: 'Toolchanger' },
-      'Casey'
+      'Casey',
+      0
     );
     expect(issues.printer).toBeUndefined();
   });
 
-  it('requires a print time', () => {
-    expect(validatePrintDraft({ ...complete, printHours: '' }, 'Casey').printTime).toBe('required');
+  // Sharing a photo of the thing you printed is the point; a slicer's numbers
+  // are not the price of admission.
+  it.each(['printer', 'printHours', 'printMinutes', 'nozzleMm', 'layerHeightMm', 'filamentGrams'])(
+    'accepts a draft with no %s',
+    (field) => {
+      const issues = validatePrintDraft({ ...complete, [field]: '' }, 'Casey', 0);
+      expect(hasPrintDraftIssues(issues)).toBe(false);
+    }
+  );
+
+  it('accepts a draft carrying nothing but a verdict and a photo', () => {
+    const bare = { ...DEFAULT_PRINT_DRAFT, fitVerdict: 'as-designed' as const };
+    expect(hasPrintDraftIssues(validatePrintDraft(bare, 'Casey', 1))).toBe(false);
   });
 
-  it('requires a fit verdict', () => {
-    expect(validatePrintDraft({ ...complete, fitVerdict: null }, 'Casey').fitVerdict).toBe(
-      'required'
-    );
-  });
+  describe('substance floor', () => {
+    const noNote = { ...complete, note: '' };
 
-  it.each([
-    ['nozzleMm', ''],
-    ['nozzleMm', '0'],
-    ['layerHeightMm', ''],
-    ['layerHeightMm', '-1'],
-  ])('requires a positive %s (%s)', (field, value) => {
-    const issues = validatePrintDraft({ ...complete, [field]: value }, 'Casey');
-    expect(issues[field as 'nozzleMm' | 'layerHeightMm']).toBe('required');
+    it('rejects a verdict with neither a photo nor a note', () => {
+      expect(validatePrintDraft(noNote, 'Casey', 0).content).toBe('required');
+    });
+
+    it('treats whitespace as no note', () => {
+      expect(validatePrintDraft({ ...noNote, note: '   ' }, 'Casey', 0).content).toBe('required');
+    });
+
+    it('accepts a photo alone', () => {
+      expect(validatePrintDraft(noNote, 'Casey', 1).content).toBeUndefined();
+    });
+
+    it('accepts a note alone', () => {
+      expect(validatePrintDraft(complete, 'Casey', 0).content).toBeUndefined();
+    });
   });
 });
 

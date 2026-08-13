@@ -229,6 +229,8 @@ function validPrintBody(overrides: Record<string, unknown> = {}): Record<string,
     printMinutes: 124,
     printer: 'bambu-p1s',
     fitVerdict: 'as-designed',
+    // A verdict alone is a bare vote: the validator wants a photo or a note.
+    note: 'Printed fine.',
     ...overrides,
   };
 }

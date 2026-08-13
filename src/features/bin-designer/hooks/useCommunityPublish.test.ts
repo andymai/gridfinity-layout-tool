@@ -273,9 +273,9 @@ describe('useCommunityPublish', () => {
       expect(result.current.canPublish).toBe(false);
     });
 
-    it('still opens for a bin with no tool cutout, so the dialog can explain the policy', () => {
-      // Gating the button left touch users with a dead control and no reason:
-      // a `title` tooltip does not exist on a phone.
+    it('publishes a bin that uses no particular feature', () => {
+      // The showcase takes any bin the designer can make; nothing about which
+      // features it uses is a gate.
       useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS, cutouts: [] } });
       const { result } = renderHook(() => useCommunityPublishEntry());
       expect(result.current.canPublish).toBe(true);

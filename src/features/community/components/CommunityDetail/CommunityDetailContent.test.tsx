@@ -113,13 +113,20 @@ describe('CommunityDetailContent', () => {
     expect(screen.getByText('Prints')).toBeInTheDocument();
   });
 
-  it('omits the print stat when the count is absent or zero', () => {
+  it('omits the print stat when the count is absent', () => {
     // Absent means the card snapshot predates the field; an unknown count must
     // not read as a measured zero.
     renderContent({}, { counts: { likes: 12, remixes: 4, exports: 9 } });
     expect(screen.queryByTestId('community-detail-prints-stat')).not.toBeInTheDocument();
-    renderContent({}, { counts: { likes: 12, remixes: 4, exports: 9, prints: 0 } });
-    expect(screen.queryByTestId('community-detail-prints-stat')).not.toBeInTheDocument();
+  });
+
+  it('keeps a measured zero, which is a fact rather than an absence', () => {
+    renderContent({}, { counts: { likes: 0, remixes: 0, exports: 0, prints: 0 } });
+    expect(screen.getByTestId('community-detail-prints-stat')).toHaveTextContent('0');
+    // Every tile stays put, so the row does not reflow when a design gets its
+    // first like.
+    expect(screen.getByTestId('community-detail-stats')).toHaveTextContent('Likes');
+    expect(screen.getByTestId('community-detail-stats')).toHaveTextContent('Downloads');
   });
 
   it('hides the stats row without card counts', () => {
@@ -387,27 +394,5 @@ describe('CommunityDetailContent owner hidden-state notice', () => {
     ).toBeInTheDocument();
     expect(screen.queryByTestId('community-hidden-badge')).not.toBeInTheDocument();
     expect(screen.queryByText('A moderator will review it.')).not.toBeInTheDocument();
-  });
-
-  describe('print CTA', () => {
-    it('is absent when no handler is supplied', () => {
-      renderContent();
-      expect(screen.queryByTestId('community-detail-add-print')).not.toBeInTheDocument();
-    });
-
-    it('invites a first print when the viewer has none', () => {
-      const onAddPrint = vi.fn();
-      renderContent({}, { onAddPrint });
-
-      const cta = screen.getByTestId('community-detail-add-print');
-      expect(cta).toHaveTextContent('I printed this');
-      fireEvent.click(cta);
-      expect(onAddPrint).toHaveBeenCalled();
-    });
-
-    it('switches to editing once the viewer has a print', () => {
-      renderContent({}, { onAddPrint: vi.fn(), hasOwnPrint: true });
-      expect(screen.getByTestId('community-detail-add-print')).toHaveTextContent('Edit your print');
-    });
   });
 });

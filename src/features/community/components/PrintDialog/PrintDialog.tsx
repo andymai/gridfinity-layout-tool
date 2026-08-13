@@ -63,24 +63,28 @@ function toPositiveNumber(value: string): number | null {
   return parsed !== null && parsed > 0 ? parsed : null;
 }
 
+/**
+ * Every setting is optional, so each is sent only when the reporter filled it
+ * in. Omitted rather than nulled: an absent measurement must not reach the
+ * modes and medians as a value, and the server stores absence as absence.
+ */
 function toInput(
   draft: PrintDraft,
   displayName: string,
   photos: readonly { url: string; thumbUrl?: string | null }[]
 ): CommunityPrintInput | null {
-  const printMinutes = draftPrintMinutes(draft);
-  const nozzleMm = toNumber(draft.nozzleMm);
-  const layerHeightMm = toNumber(draft.layerHeightMm);
-  if (printMinutes === null || nozzleMm === null || layerHeightMm === null) return null;
   if (draft.fitVerdict === null) return null;
+  const printMinutes = draftPrintMinutes(draft);
+  const nozzleMm = toPositiveNumber(draft.nozzleMm);
+  const layerHeightMm = toPositiveNumber(draft.layerHeightMm);
   return {
     authorName: displayName.trim(),
     material: draft.material,
-    nozzleMm,
-    layerHeightMm,
-    printMinutes,
+    ...(nozzleMm !== null && { nozzleMm }),
+    ...(layerHeightMm !== null && { layerHeightMm }),
+    ...(printMinutes !== null && { printMinutes }),
     filamentGrams: toPositiveNumber(draft.filamentGrams),
-    printer: draft.printer,
+    ...(draft.printer !== '' && { printer: draft.printer }),
     ...(draft.printer === COMMUNITY_PRINTER_OTHER && {
       printerOther: draft.printerOther.trim(),
     }),
@@ -148,7 +152,7 @@ function PrintDialogOpen({ onSaved, onDeleted }: PrintDialogProps) {
   };
 
   const handleSubmit = () => {
-    const found = validatePrintDraft(draft, displayName);
+    const found = validatePrintDraft(draft, displayName, photos.length);
     setIssues(found);
     if (hasPrintDraftIssues(found)) return;
 

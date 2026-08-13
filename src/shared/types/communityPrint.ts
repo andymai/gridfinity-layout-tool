@@ -86,16 +86,22 @@ export const COMMUNITY_PRINT_RANGES = {
  * Print settings as reported by the printer. Every field is enum or numeric so
  * a design's prints aggregate into "usually 0.2mm PLA, ~2h" without parsing
  * free text.
+ *
+ * Every field is optional. Sharing a photo of the thing you printed is the
+ * point, and demanding a slicer's print time before accepting one turned a
+ * 15-second contribution into a data-entry chore. What a reporter DOES fill in
+ * still aggregates; what they leave out is simply absent, never zero. Records
+ * written before this all carry the full set, so nothing existing is degraded.
  */
 export interface CommunityPrintSettings {
-  readonly material: CommunityPrintMaterial;
-  readonly nozzleMm: number;
-  readonly layerHeightMm: number;
-  readonly printMinutes: number;
-  /** Optional: ground truth that calibrates the model-derived filament estimate. */
+  readonly material?: CommunityPrintMaterial;
+  readonly nozzleMm?: number;
+  readonly layerHeightMm?: number;
+  readonly printMinutes?: number;
+  /** Ground truth that calibrates the model-derived filament estimate. */
   readonly filamentGrams?: number;
   /** A `COMMUNITY_PRINTERS` id, or 'other' paired with `printerOther`. */
-  readonly printer: string;
+  readonly printer?: string;
   /** Free-text model, present only when `printer` is 'other'. */
   readonly printerOther?: string;
 }

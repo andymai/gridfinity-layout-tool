@@ -36,6 +36,12 @@ export interface PrintsSectionProps {
    * without it a photo revealed by Load more would have no index to open on.
    */
   onItemsChange?: (items: readonly CommunityPrint[]) => void;
+  /**
+   * Opens the print dialog. It belongs to this section's header rather than to
+   * the rail above it: floating between the cost panel and this heading, the
+   * button read as a stray line of centred text with no owner.
+   */
+  onAddPrint?: () => void;
 }
 
 type LoadStatus = 'loading' | 'ready' | 'error';
@@ -49,6 +55,7 @@ export function PrintsSection({
   coverPhotoUrl = '',
   onOpenPhoto,
   onItemsChange,
+  onAddPrint,
 }: PrintsSectionProps) {
   const t = useTranslation();
 
@@ -144,43 +151,68 @@ export function PrintsSection({
       .finally(() => setMoreBusy(false));
   }, [cursor, designId, moreBusy]);
 
+  // The header renders in every state, so the CTA does not disappear while the
+  // list is loading or after it fails: posting a print does not depend on being
+  // able to read the existing ones.
+  const header = (
+    <>
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-sm font-medium text-content">{t('community.prints.title')}</h3>
+        {onAddPrint !== undefined && (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={onAddPrint}
+            data-testid="community-detail-add-print"
+          >
+            {t(ownPrint === null ? 'community.print.cta' : 'community.print.editCta')}
+          </Button>
+        )}
+      </div>
+      {isOwner && cover !== '' && (
+        <Button
+          variant="ghost"
+          onClick={() => applyCover(null)}
+          className="h-auto p-0 text-xs font-normal text-content-tertiary underline-offset-2 hover:underline"
+          data-testid="prints-clear-cover"
+        >
+          {t('community.prints.clearCover')}
+        </Button>
+      )}
+    </>
+  );
+
   if (status === 'loading') {
     return (
-      <div className="flex justify-center py-4" data-testid="prints-section-loading">
-        <Spinner size="sm" />
-        <span className="sr-only" role="status">
-          {t('common.loading')}
-        </span>
-      </div>
+      <section className="space-y-3" data-testid="prints-section">
+        {header}
+        <div className="flex justify-center py-4" data-testid="prints-section-loading">
+          <Spinner size="sm" />
+          <span className="sr-only" role="status">
+            {t('common.loading')}
+          </span>
+        </div>
+      </section>
     );
   }
 
   if (status === 'error') {
     return (
-      <div className="space-y-2" data-testid="prints-section-error">
-        <p className="text-sm text-content-secondary">{t('community.prints.error')}</p>
-        <Button variant="secondary" onClick={() => setAttempt((n) => n + 1)}>
-          {t('community.prints.retry')}
-        </Button>
-      </div>
+      <section className="space-y-3" data-testid="prints-section">
+        {header}
+        <div className="space-y-2" data-testid="prints-section-error">
+          <p className="text-sm text-content-secondary">{t('community.prints.error')}</p>
+          <Button variant="secondary" onClick={() => setAttempt((n) => n + 1)}>
+            {t('community.prints.retry')}
+          </Button>
+        </div>
+      </section>
     );
   }
 
   return (
     <section className="space-y-3" data-testid="prints-section">
-      <div className="flex items-baseline justify-between gap-2">
-        <h3 className="text-sm font-medium text-content">{t('community.prints.title')}</h3>
-        {isOwner && cover !== '' && (
-          <Button
-            variant="ghost"
-            onClick={() => applyCover(null)}
-            className="h-auto p-0 text-xs font-normal text-content-tertiary underline-offset-2 hover:underline"
-            data-testid="prints-clear-cover"
-          >
-            {t('community.prints.clearCover')}
-          </Button>
-        )}
-      </div>
+      {header}
 
       {summary !== null && summary.count > 0 && (
         <>

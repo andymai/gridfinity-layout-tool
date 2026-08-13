@@ -106,7 +106,6 @@ export function PrintCard({
 }: PrintCardProps) {
   const t = useTranslation();
   const { settings } = print;
-  const { hours, minutes } = formatPrintDuration(settings.printMinutes);
 
   // Promotion puts a photo on the gallery grid, the most public surface in the
   // app, and the server only checks that the URL belongs to a live print of
@@ -120,19 +119,49 @@ export function PrintCard({
     setDeadPhotos((current) => new Set(current).add(url));
   }, []);
 
-  const duration =
-    hours === 0
-      ? t('community.prints.durationMinutes', { minutes })
-      : minutes === 0
-        ? t('community.prints.durationHoursExact', { hours })
-        : t('community.prints.durationHours', { hours, minutes });
+  // Each fragment appears only if it was reported, so a photo-and-verdict
+  // record simply has no settings line rather than a row of dashes. Both halves
+  // of the material/nozzle/layer sentence must be present for it to read, since
+  // it is one interpolated string.
+  const facts: string[] = [];
+  if (settings.material !== undefined) {
+    facts.push(
+      settings.nozzleMm !== undefined && settings.layerHeightMm !== undefined
+        ? t('community.prints.settingsLine', {
+            material:
+              settings.material === 'other'
+                ? t('community.print.otherOption')
+                : settings.material.toUpperCase(),
+            nozzle: formatMillimetres(settings.nozzleMm),
+            layer: formatMillimetres(settings.layerHeightMm),
+          })
+        : settings.material === 'other'
+          ? t('community.print.otherOption')
+          : settings.material.toUpperCase()
+    );
+  }
+  if (settings.printMinutes !== undefined) {
+    const { hours, minutes } = formatPrintDuration(settings.printMinutes);
+    facts.push(
+      hours === 0
+        ? t('community.prints.durationMinutes', { minutes })
+        : minutes === 0
+          ? t('community.prints.durationHoursExact', { hours })
+          : t('community.prints.durationHours', { hours, minutes })
+    );
+  }
+  if (settings.filamentGrams !== undefined) {
+    facts.push(t('community.prints.filament', { grams: formatGrams(settings.filamentGrams) }));
+  }
 
   // A retired printer id still renders as itself, so an old record stays
   // readable rather than losing its machine.
   const printer =
-    settings.printer === 'other' && settings.printerOther !== undefined
-      ? settings.printerOther
-      : printerLabel(settings.printer);
+    settings.printer === undefined
+      ? null
+      : settings.printer === 'other' && settings.printerOther !== undefined
+        ? settings.printerOther
+        : printerLabel(settings.printer);
 
   return (
     <li
@@ -151,7 +180,9 @@ export function PrintCard({
               </Badge>
             )}
           </p>
-          <p className="mt-0.5 truncate text-xs text-content-secondary">{printer}</p>
+          {printer !== null && (
+            <p className="mt-0.5 truncate text-xs text-content-secondary">{printer}</p>
+          )}
         </div>
 
         <Badge
@@ -212,24 +243,11 @@ export function PrintCard({
         </ul>
       )}
 
-      <p className="mt-2 text-xs text-content-secondary">
-        {t('community.prints.settingsLine', {
-          material:
-            settings.material === 'other'
-              ? t('community.print.otherOption')
-              : settings.material.toUpperCase(),
-          nozzle: formatMillimetres(settings.nozzleMm),
-          layer: formatMillimetres(settings.layerHeightMm),
-        })}
-        {' · '}
-        {duration}
-        {settings.filamentGrams !== undefined && (
-          <>
-            {' · '}
-            {t('community.prints.filament', { grams: formatGrams(settings.filamentGrams) })}
-          </>
-        )}
-      </p>
+      {facts.length > 0 && (
+        <p className="mt-2 text-xs text-content-secondary" data-testid="print-card-settings">
+          {facts.join(' · ')}
+        </p>
+      )}
 
       {print.note !== '' && (
         <p className={cn('mt-2 whitespace-pre-line break-words text-sm text-content-secondary')}>

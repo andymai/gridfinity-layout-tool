@@ -65,6 +65,9 @@ function validBody(overrides: Record<string, unknown> = {}): Record<string, unkn
     printMinutes: 124,
     printer: 'bambu-p1s',
     fitVerdict: 'as-designed',
+    // The substance floor: a verdict alone is a bare vote, so every valid body
+    // carries a photo or a note. Settings are all optional around it.
+    note: 'Printed fine.',
     ...overrides,
   };
 }
@@ -130,8 +133,83 @@ describe('validateCommunityPrint', () => {
       printer: 'bambu-p1s',
       fitVerdict: 'as-designed',
       filamentGrams: null,
-      note: '',
+      note: 'Printed fine.',
       photos: [],
+    });
+  });
+
+  describe('optional settings', () => {
+    // Demanding a slicer's print time before accepting a photo turned a
+    // 15-second contribution into a data-entry chore.
+    it.each(['material', 'nozzleMm', 'layerHeightMm', 'printMinutes', 'printer'])(
+      'accepts a report with no %s',
+      (field) => {
+        const body = Object.fromEntries(
+          Object.entries(validBody()).filter(([key]) => key !== field)
+        );
+        expect(validateCommunityPrint(body).valid).toBe(true);
+      }
+    );
+
+    it('records every omitted setting as absent, never as a zero', () => {
+      const result = validateCommunityPrint({
+        authorName: 'Casey',
+        fitVerdict: 'as-designed',
+        note: 'Printed fine.',
+      });
+      expect(result.valid).toBe(true);
+      if (!result.valid) return;
+      expect(result.payload).toMatchObject({
+        material: null,
+        nozzleMm: null,
+        layerHeightMm: null,
+        printMinutes: null,
+        filamentGrams: null,
+        printer: null,
+      });
+    });
+
+    it('still rejects a setting that is present but out of range', () => {
+      const result = validateCommunityPrint(validBody({ nozzleMm: 99 }));
+      expect(result.valid).toBe(false);
+      if (result.valid) return;
+      expect(result.error.code).toBe('INVALID_SETTINGS');
+    });
+
+    it('still rejects an unknown printer id', () => {
+      const result = validateCommunityPrint(validBody({ printer: 'not-a-printer' }));
+      expect(result.valid).toBe(false);
+      if (result.valid) return;
+      expect(result.error.code).toBe('INVALID_PRINTER');
+    });
+  });
+
+  describe('substance floor', () => {
+    it('rejects a report with neither a photo nor a note', () => {
+      const result = validateCommunityPrint(validBody({ note: '' }));
+      expect(result.valid).toBe(false);
+      if (result.valid) return;
+      expect(result.error.code).toBe('INVALID_PAYLOAD');
+    });
+
+    it('treats a whitespace-only note as no note', () => {
+      expect(validateCommunityPrint(validBody({ note: '   ' })).valid).toBe(false);
+    });
+
+    it('accepts a photo with no note', () => {
+      const result = validateCommunityPrint(
+        validBody({ note: '', photos: [photo(lossyWebp(600, 600))] })
+      );
+      expect(result.valid).toBe(true);
+    });
+
+    // A kept URL is a photo the record already has, so an edit that only
+    // reorders its photos does not suddenly fail the floor.
+    it('counts a kept photo url', () => {
+      const result = validateCommunityPrint(
+        validBody({ note: '', photos: ['https://blob.example/community/prints/a.webp'] })
+      );
+      expect(result.valid).toBe(true);
     });
   });
 

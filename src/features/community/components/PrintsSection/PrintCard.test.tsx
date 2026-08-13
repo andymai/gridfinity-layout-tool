@@ -173,6 +173,36 @@ describe('PrintCard', () => {
     expect(screen.getByText('scaled 2 percent')).toBeInTheDocument();
   });
 
+  // Every setting is optional, so a card has to read from whatever subset the
+  // reporter actually filled in rather than assuming the full set.
+  describe('unreported settings', () => {
+    it('drops the settings line entirely when nothing was reported', () => {
+      render(<PrintCard print={print({ settings: {} })} isMine={false} />);
+      expect(screen.queryByTestId('print-card-settings')).toBeNull();
+    });
+
+    it('omits the printer line when no printer was named', () => {
+      render(<PrintCard print={print({ settings: {} })} isMine={false} />);
+      expect(screen.queryByText('Bambu Lab P1S')).toBeNull();
+    });
+
+    it('keeps the verdict, which is the part that always exists', () => {
+      render(<PrintCard print={print({ settings: {} })} isMine={false} />);
+      expect(screen.getByTestId('print-verdict-as-designed')).toBeInTheDocument();
+    });
+
+    it('shows the material alone when the nozzle and layer are missing', () => {
+      render(<PrintCard print={print({ settings: { material: 'petg' } })} isMine={false} />);
+      expect(screen.getByTestId('print-card-settings')).toHaveTextContent('PETG');
+    });
+
+    it('shows a time with no material', () => {
+      render(<PrintCard print={print({ settings: { printMinutes: 145 } })} isMine={false} />);
+      // Never a leading separator from the dropped material fragment.
+      expect(screen.getByTestId('print-card-settings').textContent?.startsWith('·')).toBe(false);
+    });
+  });
+
   describe('cover promotion', () => {
     const withPhoto = () => print({ photos: ['https://blob.example/a.webp'] });
 
