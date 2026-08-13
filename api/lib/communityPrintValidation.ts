@@ -270,7 +270,7 @@ export type CommunityPrintValidationResult =
  * the one rule that depends on what is already stored. Records written before
  * the floor existed could legitimately have neither (the old validator said so
  * explicitly), and their owners must still be able to fix a typo rather than
- * being left with delete as the only way out. See `handleWrite`.
+ * being left with delete as the only way out. Applied in `handleUpsert`.
  */
 export function hasPrintSubstance(photoCount: number, note: string): boolean {
   return photoCount > 0 || note.trim() !== '';

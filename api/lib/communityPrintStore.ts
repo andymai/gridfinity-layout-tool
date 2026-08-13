@@ -116,9 +116,16 @@ function isFitVerdict(value: string): value is CommunityPrintFitVerdict {
  * An unreported measurement round-trips as ''. The hash holds only strings and
  * `Number('')` is 0, so reading one back as a number would put a nozzle nobody
  * measured into the modes and medians as if it had been.
+ *
+ * A corrupt field reads as unreported for the same reason, since `Number('x')`
+ * is NaN and NaN is not null: it would survive the absence filter, group with
+ * itself in `modeOf` (Map keys use SameValueZero) and win, and reach the client
+ * as JSON `null`, which `formatMillimetres` renders as "0mm".
  */
 function readOptionalNumber(raw: string | undefined): number | null {
-  return raw === undefined || raw === '' ? null : Number(raw);
+  if (raw === undefined || raw === '') return null;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function writeOptionalNumber(value: number | null): string {
@@ -357,6 +364,12 @@ export function summarizeCommunityPrints(
   // `null` as its own mode and typecheck while doing it.
   const reported = <T>(pick: (print: CommunityPrintRecord) => T | null): T[] =>
     live.map(pick).filter((value): value is T => value !== null);
+  // NaN needs the same treatment for the same reason, and is not covered by the
+  // null filter: `Map` keys compare with SameValueZero, so NaNs group together
+  // and can carry a mode outright. Guarded at this one chokepoint rather than
+  // per field, which is how filament ended up the only one that was safe.
+  const measured = (pick: (print: CommunityPrintRecord) => number | null): number[] =>
+    reported(pick).filter((value) => Number.isFinite(value));
 
   return {
     count: live.length,
@@ -364,11 +377,9 @@ export function summarizeCommunityPrints(
     adjusted: live.filter((print) => print.fitVerdict === 'adjusted').length,
     didNotFit: live.filter((print) => print.fitVerdict === 'did-not-fit').length,
     commonMaterial: modeOf(reported((print) => print.material)),
-    commonLayerHeightMm: modeOf(reported((print) => print.layerHeightMm)),
-    medianPrintMinutes: medianOf(reported((print) => print.printMinutes)),
-    medianFilamentGrams: medianOf(
-      reported((print) => print.filamentGrams).filter((grams) => Number.isFinite(grams))
-    ),
+    commonLayerHeightMm: modeOf(measured((print) => print.layerHeightMm)),
+    medianPrintMinutes: medianOf(measured((print) => print.printMinutes)),
+    medianFilamentGrams: medianOf(measured((print) => print.filamentGrams)),
   };
 }
 

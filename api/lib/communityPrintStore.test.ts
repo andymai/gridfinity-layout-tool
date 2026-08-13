@@ -228,6 +228,27 @@ describe('readCommunityPrint', () => {
     });
   });
 
+  // NaN is not null, so it would survive the absence filter, group with itself
+  // in modeOf (Map keys use SameValueZero) and win, and reach the client as
+  // JSON null, which formatMillimetres renders as "0mm".
+  it('reads a corrupt measurement as absent rather than NaN', async () => {
+    const { redis, hgetall } = createRedis(createPipeline());
+    hgetall.mockResolvedValue({
+      designId: DESIGN_ID,
+      authorPublicId: AUTHOR,
+      photos: '[]',
+      nozzleMm: 'not-a-number',
+      layerHeightMm: 'Infinity',
+      fitVerdict: 'as-designed',
+      status: 'live',
+    });
+
+    expect(await readCommunityPrint(redis, DESIGN_ID, AUTHOR)).toMatchObject({
+      nozzleMm: null,
+      layerHeightMm: null,
+    });
+  });
+
   it('still rejects a material that is present but unrecognised', async () => {
     const { redis, hgetall } = createRedis(createPipeline());
     hgetall.mockResolvedValue({
@@ -500,6 +521,18 @@ describe('summarizeCommunityPrints', () => {
         medianPrintMinutes: null,
       });
     });
+  });
+
+  it('keeps a corrupt measurement out of every aggregate', () => {
+    const summary = summarizeCommunityPrints([
+      print({ layerHeightMm: NaN, printMinutes: NaN, filamentGrams: NaN }),
+      print({ layerHeightMm: 0.28, printMinutes: 100, filamentGrams: 20 }),
+    ]);
+
+    // A NaN reaching modeOf groups with itself and can win the vote outright.
+    expect(summary.commonLayerHeightMm).toBe(0.28);
+    expect(summary.medianPrintMinutes).toBe(100);
+    expect(summary.medianFilamentGrams).toBe(20);
   });
 
   it('ignores prints that reported no filament weight', () => {
