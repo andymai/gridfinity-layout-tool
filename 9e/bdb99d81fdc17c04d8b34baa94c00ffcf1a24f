@@ -1,0 +1,53 @@
+src/features/bin-designer/components/panel/CutoutsSection/autoArrange.ts
+  s_de373f6759b31a::t_b68f9c0b67a784 4-10,14,27-29,36-37,43,52-54,56,65-70
+src/features/bin-designer/components/panel/CutoutsSection/geometry.test.ts
+  s_de373f6759b31a::t_493e73ac956b52 1245-1321
+src/features/bin-designer/components/panel/CutoutsSection/cutoutGroups.ts
+  s_de373f6759b31a::t_954c4be48fced7 1-128
+src/features/bin-designer/components/panel/CutoutsSection/geometryAlign.ts
+  s_de373f6759b31a::t_592016edb1298f 117-118,121-124,126,128,146-147,149
+  s_de373f6759b31a::t_b89ca0af4a12b4 44-45
+  s_de373f6759b31a::t_1f3b1bd8c3ba90 62-73,75,77-79,86-87,89-92,94
+  s_de373f6759b31a::t_e73b8d2bd52721 14-17,21-22
+src/features/bin-designer/components/panel/CutoutsSection/AlignmentToolbar.test.tsx
+  s_de373f6759b31a::t_9d29a3a275e535 70,76-77,79-80,233,236,247-251,259,263-269
+  s_de373f6759b31a::t_fbc67989a24b93 74-75,78
+  s_de373f6759b31a::t_3219b68bc8ce76 82-112,229-230,232
+  s_de373f6759b31a::t_693eaca564233d 81
+  s_de373f6759b31a::t_e07b3c667b587b 231
+src/features/bin-designer/components/CutoutWorkspace/InspectorContent.tsx
+  s_de373f6759b31a::t_693f0fad66aa5f 16,243,246
+  s_de373f6759b31a::t_303d7244617d96 127-133
+src/features/bin-designer/components/panel/CutoutsSection/geometryAlignment.ts
+  s_de373f6759b31a::t_e9a1722609c4a2 11-15
+  s_de373f6759b31a::t_1b1035fb3a4e95 82-86,92-93,95,100-101,105-111,117,123-124,126,130-131,135-141,147-150,159-160,167-171
+src/features/bin-designer/components/CutoutWorkspace/WorkspaceHeader.tsx
+  s_de373f6759b31a::t_c8d6b5331eb2ec 20-24
+  s_de373f6759b31a::t_e79ebbc83e9346 271-286,289-297,301,304,307,310,312-313,315-316,324-329,331,333,337-338,341-342,345-346,350,352
+  s_de373f6759b31a::t_e8a5bbabe147a1 320-323
+src/features/bin-designer/components/panel/CutoutsSection/AlignmentToolbar.tsx
+  s_de373f6759b31a::t_3f28f48a32fb15 13-14
+  s_de373f6759b31a::t_6ab14b0a90af52 144-152,154-156,158-162,166,169,172,175,177-178,180-181,185-194,196,200,204,208,212
+src/features/bin-designer/components/panel/CutoutsSection/cutoutGroups.test.ts
+  s_de373f6759b31a::t_c0dc3f9defa5c9 1-124
+src/features/bin-designer/components/panel/CutoutsSection/autoArrange.test.ts
+  s_de373f6759b31a::t_6db7360fcee895 73-153
+src/features/bin-designer/components/panel/CutoutsSection/geometryAlign.test.ts
+  s_de373f6759b31a::t_ba381ac63440a9 303-372
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "9ebdb99d81fdc17c04d8b34baa94c00ffcf1a24f",
+  "prompts": {},
+  "sessions": {
+    "s_de373f6759b31a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3dcad030-201b-4448-9f8b-7b12204c8a27",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
