@@ -229,7 +229,7 @@ function validPrintBody(overrides: Record<string, unknown> = {}): Record<string,
     printMinutes: 124,
     printer: 'bambu-p1s',
     fitVerdict: 'as-designed',
-    // A verdict alone is a bare vote: the validator wants a photo or a note.
+    // A verdict alone is a bare vote, and `handleUpsert` rejects one.
     note: 'Printed fine.',
     ...overrides,
   };

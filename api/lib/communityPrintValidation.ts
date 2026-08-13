@@ -296,10 +296,11 @@ export function validateCommunityPrint(body: unknown): CommunityPrintValidationR
     return validationError('CONTENT_BLOCKED', 'authorName contains prohibited content');
   }
 
-  // Every settings field is optional. Only the fit verdict, plus a photo or a
-  // note, is demanded below: the record has to say something the next printer
-  // can use, and a slicer's numbers are not the only way to say it. An omitted
-  // field is stored absent, never as a zero that would skew the aggregates.
+  // Every settings field is optional; the fit verdict below is the only one
+  // this validator demands. An omitted field is stored absent, never as a zero
+  // that would skew the aggregates. The substance floor (a photo or a note) is
+  // enforced in `handleUpsert`, which is the only place that knows what is
+  // already stored; see `hasPrintSubstance`.
   let material: CommunityPrintMaterial | null = null;
   if (body.material !== undefined && body.material !== null) {
     if (
