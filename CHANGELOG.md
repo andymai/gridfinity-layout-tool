@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.404.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.404.1...gridfinity-layout-tool-v4.404.2) (2026-08-13)
+
+
+### Bug Fixes
+
+* **community:** detail modal and print reporting polish ([#3469](https://github.com/andymai/gridfinity-layout-tool/issues/3469)) ([aed3517](https://github.com/andymai/gridfinity-layout-tool/commit/aed3517b152773301bc67b63f600e9ec616c641e))
+
 ## [4.404.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.404.0...gridfinity-layout-tool-v4.404.1) (2026-08-12)
 
 
