@@ -35,7 +35,7 @@ import { MeshBuilder, CORNER_SEGMENTS } from './directMeshBuilder';
 import { roundedRectPoints } from './directMeshShapes';
 import { addOuterWalls } from './directMeshWalls';
 import { creaseEdges } from './utils/creaseEdges';
-import { forEachCell } from './cellDecomposition';
+import { forEachSocketCell, resolveSocketCellPlan } from './socketBuilder';
 import {
   SIZE,
   HEIGHT_UNIT,
@@ -47,7 +47,6 @@ import {
   LIP_HEIGHT,
   LIP_TAPER_WIDTH,
   LIP_OVERLAP,
-  MIN_PRINTABLE_TILE_MM,
 } from './generatorConstants';
 
 type Pt = readonly [number, number];
@@ -291,24 +290,23 @@ export function generateBinDirect(
   onProgress?.('base', 0.5);
   abortIfCancelled(signal);
 
-  // Per-cell feet — replicates `socketBuilder`'s non-mask cell walk (half
-  // sockets, or fractional feet dropping sub-printable slivers) so foot count
-  // and placement match the exact path bit-for-bit. Masked bins fall back.
+  // Per-cell feet — the exact path's own cell walk, so foot count and placement
+  // match it bit-for-bit rather than being re-derived here. Masked bins fall
+  // back before reaching this point, so the mask argument is always absent.
   const pitch = { x: gridUnit, y: gridUnitY };
-  const footOpts = params.base.halfSockets
-    ? ({ halfSockets: true, gridUnitMm: pitch } as const)
-    : ({
-        gridUnitMm: pitch,
-        fractional: true,
-        minFractionUnitsX: MIN_PRINTABLE_TILE_MM / gridUnit,
-        minFractionUnitsY: MIN_PRINTABLE_TILE_MM / gridUnitY,
-        fractionalEdgeX: params.fractionalEdgeX,
-        fractionalEdgeY: params.fractionalEdgeY,
-      } as const);
-
-  forEachCell(
+  forEachSocketCell(
     width,
     depth,
+    undefined,
+    pitch,
+    resolveSocketCellPlan(
+      params.base.halfSockets,
+      params.base.footLatticeX,
+      params.base.footLatticeY,
+      undefined,
+      width,
+      depth
+    ),
     (cell) => {
       addBaseFoot(
         mb,
@@ -318,7 +316,7 @@ export function generateBinDirect(
         cell.depthUnits * gridUnitY - CLEARANCE
       );
     },
-    footOpts
+    { x: params.fractionalEdgeX ?? 'end', y: params.fractionalEdgeY ?? 'end' }
   );
 
   onProgress?.('base', 0.9);

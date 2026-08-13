@@ -71,6 +71,8 @@ const VALID_BASE_STYLES = [
   // Underside is lid mating geometry instead of a socket (#3036).
   'lid',
 ] as const;
+// Mirrors `FOOT_LATTICES` in `src/features/bin-designer/types/base.ts` (#3467).
+const VALID_FOOT_LATTICES = ['grid', 'half'] as const;
 const VALID_LABEL_TAB_SUPPORTS = ['bracket', 'solid', 'fillet'] as const;
 // Mirrors `LabelTabMode` in `src/features/bin-designer/types/index.ts` (#2666).
 const VALID_LABEL_TAB_MODES = ['text', 'socket'] as const;
@@ -233,6 +235,18 @@ function validateBase(base: unknown): string | null {
   // is a different solid entirely, so it must be declared as a real boolean.
   if (base.tile !== undefined && !isBoolean(base.tile)) {
     return 'base.tile must be boolean';
+  }
+  // Foot lattice per axis (#3467): a closed set, so an unknown value is
+  // rejected rather than silently falling back to a different set of feet than
+  // the publisher previewed — one that may not seat in a baseplate.
+  for (const axis of ['footLatticeX', 'footLatticeY'] as const) {
+    const value = base[axis];
+    if (
+      value !== undefined &&
+      !VALID_FOOT_LATTICES.includes(value as (typeof VALID_FOOT_LATTICES)[number])
+    ) {
+      return `base.${axis} must be one of: ${VALID_FOOT_LATTICES.join(', ')}`;
+    }
   }
   if (base.trayBottom !== undefined) {
     const trayErr = validateTrayBottom(base.trayBottom);

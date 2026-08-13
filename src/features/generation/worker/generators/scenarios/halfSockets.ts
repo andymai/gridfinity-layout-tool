@@ -101,4 +101,72 @@ export const halfSockets: ScenarioCase[] = [
       },
     },
   }),
+
+  // Per-axis foot lattice (#3467). The `half` lattice seats a bin that sits half
+  // a unit off-grid on that axis, and builds a different set of feet from the
+  // same params, so each combination needs its own solid through the kernel.
+  defineScenario('half-sockets', '3×3 half foot lattice, both axes', {
+    assert: 'structural',
+    params: {
+      width: 3,
+      depth: 3,
+      base: { ...DEFAULT_BIN_PARAMS.base, footLatticeX: 'half', footLatticeY: 'half' },
+    },
+    timeout: 60_000,
+  }),
+
+  defineScenario('half-sockets', '3×3 half foot lattice on X only', {
+    assert: 'structural',
+    params: {
+      width: 3,
+      depth: 3,
+      base: { ...DEFAULT_BIN_PARAMS.base, footLatticeX: 'half' },
+    },
+    timeout: 60_000,
+  }),
+
+  // Asks for `half` on both axes of a 2.5x2 bin: the fractional X falls back to
+  // `grid` (its half cell plus `fractionalEdge` already covers both placements),
+  // while Y takes the band. Exercises the mixed solid the resolver produces.
+  defineScenario('half-sockets', '2.5×2 fractional, half lattice on the integer axis only', {
+    assert: 'structural',
+    params: {
+      width: 2.5,
+      depth: 2,
+      base: { ...DEFAULT_BIN_PARAMS.base, footLatticeX: 'half', footLatticeY: 'half' },
+    },
+  }),
+
+  defineScenario('half-sockets', '2×2 half lattice + magnet base', {
+    assert: 'structural',
+    params: {
+      base: {
+        ...DEFAULT_BIN_PARAMS.base,
+        footLatticeX: 'half',
+        footLatticeY: 'half',
+        style: 'magnet',
+      },
+    },
+  }),
+
+  defineScenario('half-sockets', '2×2 half lattice + lightweight', {
+    assert: 'structural',
+    params: {
+      base: {
+        ...DEFAULT_BIN_PARAMS.base,
+        footLatticeX: 'half',
+        footLatticeY: 'half',
+        lightweight: true,
+      },
+    },
+  }),
+
+  defineScenario('half-sockets', '1×1 half lattice (two feet per axis)', {
+    assert: 'structural',
+    params: {
+      width: 1,
+      depth: 1,
+      base: { ...DEFAULT_BIN_PARAMS.base, footLatticeX: 'half', footLatticeY: 'half' },
+    },
+  }),
 ];

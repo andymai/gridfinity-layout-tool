@@ -20,6 +20,7 @@
  */
 
 import type { FractionalEdge } from '@/core/types';
+import type { FootLattice } from '@/shared/types/bin';
 import { isFractional } from '@/core/constants';
 
 /** The design-side fields needed to evaluate an edge mismatch. */
@@ -38,6 +39,14 @@ export interface FractionalEdgeDesign {
    * on a uniform array). Warning about it would be noise.
    */
   readonly halfSockets?: boolean;
+  /** Foot lattice per axis (#3467). Missing = `'grid'`, the documented default. */
+  readonly footLatticeX?: FootLattice;
+  readonly footLatticeY?: FootLattice;
+  /**
+   * True when the design carries a partial cell mask. Such a bin is pinned to
+   * the standard grid by the generator, so its lattice can never mismatch.
+   */
+  readonly hasCellMask?: boolean;
 }
 
 /** The drawer the bin sits in. Sizes are needed, not just the edge settings. */
@@ -52,6 +61,12 @@ export interface FractionalEdgeDrawer {
 export interface FractionalEdgePlacement {
   readonly x: number;
   readonly y: number;
+}
+
+/** Per-axis patch produced by {@link computeMatchedFootLattice}. */
+export interface FootLatticePatch {
+  footLatticeX?: FootLattice;
+  footLatticeY?: FootLattice;
 }
 
 /** Per-axis patch produced by {@link computeMatchedEdges}. */
@@ -180,4 +195,109 @@ export function computeMatchedEdges(
     ...(x !== null ? { fractionalEdgeX: x, fractionalEdgeManualX: false } : {}),
     ...(y !== null ? { fractionalEdgeY: y, fractionalEdgeManualY: false } : {}),
   };
+}
+
+/**
+ * Which foot lattice one axis needs, given where the bin's leading edge sits.
+ *
+ * The same offset-from-boundary question {@link edgeForPosition} asks, read for
+ * a different purpose: a bin opening on a cell boundary wants full feet, and
+ * one offset half a unit wants the half-unit rim (#3467). A foot has to land
+ * inside a single pocket, so getting this wrong leaves the bin perched on the
+ * ridges between them rather than seated.
+ *
+ * Unlike the fractional edge this applies to every axis, not just fractional
+ * ones — a 3x3 bin sitting half a unit off the grid needs it as much as a 2.5u
+ * one does.
+ */
+export function latticeForPosition(
+  position: number,
+  drawerSize: number,
+  edge: FractionalEdge | undefined
+): FootLattice {
+  return isFractional(position - cellBoundaryOffset(drawerSize, edge)) ? 'half' : 'grid';
+}
+
+/**
+ * The lattice every placement agrees on for one axis, or null when there is
+ * nothing to act on — no placements, or two that want opposite lattices.
+ */
+function consensusLattice(
+  positions: readonly number[],
+  drawerSize: number,
+  edge: FractionalEdge | undefined
+): FootLattice | null {
+  if (positions.length === 0) return null;
+  const first = latticeForPosition(positions[0], drawerSize, edge);
+  return positions.every((p) => latticeForPosition(p, drawerSize, edge) === first) ? first : null;
+}
+
+/**
+ * The patch that realigns a design's foot lattice to its placements.
+ *
+ * Exactly complementary to {@link computeMatchedEdges}, which handles only
+ * FRACTIONAL axes: a fractional axis already carries a half cell, and putting it
+ * on the leading edge is itself the seating-correct layout for a half-offset
+ * placement (a 2.5u axis becomes `[0.5, 1, 1]`). An integer axis has no half
+ * cell to reposition, which is the gap this fills — so each axis is answered by
+ * one mechanism or the other, never both.
+ *
+ * Empty for a half-socket base (uniform 0.5u feet already seat at either
+ * offset) and for a custom-shape one (the mask is authored against the standard
+ * grid, so the generator forces `grid` whatever this says).
+ */
+export function computeMatchedFootLattice(
+  design: FractionalEdgeDesign,
+  drawer: FractionalEdgeDrawer,
+  placements: readonly FractionalEdgePlacement[]
+): FootLatticePatch {
+  if (design.halfSockets || design.hasCellMask) return {};
+
+  const axis = (
+    size: number,
+    positions: readonly number[],
+    drawerSize: number,
+    drawerAxisEdge: FractionalEdge | undefined
+  ): FootLattice | null =>
+    isFractional(size) ? null : consensusLattice(positions, drawerSize, drawerAxisEdge);
+
+  const x = axis(
+    design.width,
+    placements.map((p) => p.x),
+    drawer.width,
+    drawer.fractionalEdgeX
+  );
+  const y = axis(
+    design.depth,
+    placements.map((p) => p.y),
+    drawer.depth,
+    drawer.fractionalEdgeY
+  );
+
+  return {
+    ...(x !== null ? { footLatticeX: x } : {}),
+    ...(y !== null ? { footLatticeY: y } : {}),
+  };
+}
+
+/**
+ * True when the design's foot lattice disagrees with where every placement puts
+ * it — the case where the bin will not drop into its pockets.
+ *
+ * An unset lattice counts as `grid`, its documented default, so a design that
+ * predates the setting still warns when it is placed half a unit off. There is
+ * no manual override: unlike the fractional edge, a mismatch here is not a
+ * matter of preference, it is a part that does not fit.
+ */
+export function hasFootLatticeMismatch(
+  design: FractionalEdgeDesign,
+  drawer: FractionalEdgeDrawer,
+  placements: readonly FractionalEdgePlacement[]
+): boolean {
+  const patch = computeMatchedFootLattice(design, drawer, placements);
+  const wrong = (known: FootLattice | undefined, wanted: FootLattice | undefined): boolean =>
+    wanted !== undefined && (known ?? 'grid') !== wanted;
+  return (
+    wrong(design.footLatticeX, patch.footLatticeX) || wrong(design.footLatticeY, patch.footLatticeY)
+  );
 }

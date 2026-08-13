@@ -14,6 +14,7 @@ import { FeatureToggle } from '../FeatureToggle';
 import { PatternSelector } from '../WallsSection/PatternSelector';
 import {
   FLOOR_PATTERN_TYPES,
+  FOOT_LATTICES,
   LID_ATTACHMENTS,
   LID_EXTRA_HEIGHT_MAX_MM,
   LID_EXTRA_HEIGHT_MIN_MM,
@@ -22,9 +23,27 @@ import {
 import { useTranslation } from '@/i18n';
 import { useBaseSection } from './useBaseSection';
 
+/** Axis key suffixes for the foot-lattice translation keys. */
+const FOOT_LATTICE_AXES = ['x', 'y'] as const;
+
 export function BaseSection() {
   const { state, handlers } = useBaseSection();
   const t = useTranslation();
+
+  const footLatticeAxes = [
+    {
+      axis: FOOT_LATTICE_AXES[0],
+      value: state.footLatticeX,
+      onChange: handlers.setFootLatticeX,
+      locked: state.footLatticeLockedX,
+    },
+    {
+      axis: FOOT_LATTICE_AXES[1],
+      value: state.footLatticeY,
+      onChange: handlers.setFootLatticeY,
+      locked: state.footLatticeLockedY,
+    },
+  ];
 
   return (
     <div className="space-y-3">
@@ -151,6 +170,38 @@ export function BaseSection() {
         onChange={handlers.toggleHalfSockets}
         disabledReason={handlers.halfSocketsDisabledReason}
       />
+
+      {/* Foot lattice (#3467). A foot has to land inside one baseplate pocket,
+          so which layout seats depends on where the bin sits — per axis, since
+          half-bin mode can offset one axis and not the other. */}
+      <div className="space-y-2 rounded border border-stroke-subtle p-2">
+        <span className="block text-xs font-medium text-content-secondary">
+          {t('binDesigner.footLattice')}
+        </span>
+        {footLatticeAxes.map(({ axis, value, onChange, locked }) => (
+          <div key={axis} className="flex items-center gap-2">
+            <span className="w-10 shrink-0 text-[11px] text-content-tertiary">
+              {t(`binDesigner.footLattice.axis.${axis}`)}
+            </span>
+            <SegmentedControl
+              aria-label={t(`binDesigner.footLattice.axis.${axis}`)}
+              activeStyle="accent"
+              fullWidth
+              size="sm"
+              value={value}
+              onChange={onChange}
+              options={FOOT_LATTICES.map((lattice) => ({
+                value: lattice,
+                label: t(`binDesigner.footLattice.${lattice}`),
+                disabled: locked && lattice !== 'grid',
+              }))}
+            />
+          </div>
+        ))}
+        <p className="text-[11px] leading-relaxed text-content-tertiary">
+          {handlers.footLatticeLockReason ?? t('binDesigner.footLattice.hint')}
+        </p>
+      </div>
 
       <FeatureToggle
         label={t('binDesigner.lightweight')}

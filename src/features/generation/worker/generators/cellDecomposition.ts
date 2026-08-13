@@ -141,11 +141,52 @@ export function decomposeHalfCells(gridUnits: number): number[] {
 }
 
 /**
+ * Decompose a grid dimension into a half cell at each end with full cells
+ * between them — the "outer edge" half-socket layout (#3467).
+ *
+ * The arithmetic is exact for any integer axis, because `0.5 + (N-1)·1 + 0.5`
+ * is `N`. That is the point of the layout: the feet fall on half-unit
+ * boundaries at the rim, so shifting the bin half a unit still lands every
+ * foot inside one baseplate pocket, from any rotation — the property a
+ * uniform full-cell base does not have. It costs far fewer feet than halving
+ * every cell.
+ *
+ * A non-integer axis has no palindromic split, so its leftover rides inside the
+ * middle run while both outer cells stay 0.5. Which side the leftover sits on
+ * is {@link forEachCell}'s existing `fractionalEdge` reversal — an integer axis
+ * comes out palindromic, so that reversal is a no-op there. An axis under one
+ * unit is already a single edge cell and is left to {@link decomposeCells}.
+ *
+ * Examples (fractional mode):
+ *   3.0 -> [0.5, 1, 1, 0.5]
+ *   2.0 -> [0.5, 1, 0.5]
+ *   1.0 -> [0.5, 0.5]
+ *   2.5 -> [0.5, 1, 0.5, 0.5]
+ *   1.7 -> [0.5, 0.7, 0.5]
+ */
+export function decomposeEdgeBandCells(
+  gridUnits: number,
+  options: DecomposeOptions = {}
+): number[] {
+  if (gridUnits < 1 - FRACTION_EPS) return decomposeCells(gridUnits, options);
+  return [0.5, ...decomposeCells(gridUnits - 1, options), 0.5];
+}
+
+/**
  * Options for {@link forEachCell}.
  */
 export interface ForEachCellOptions {
   /** Decompose every cell into 0.5-unit sub-cells (bin half-sockets mode). */
   readonly halfSockets?: boolean;
+  /**
+   * Decompose this axis into a 0.5-unit cell at both rims with full cells
+   * between them ({@link decomposeEdgeBandCells}) — the layout that seats when
+   * the bin sits half a unit off-grid on that axis. Per axis, because a bin can
+   * be half-offset on one and on-grid on the other. Ignored when
+   * {@link halfSockets} is set, which already halves everything.
+   */
+  readonly edgeBandX?: boolean;
+  readonly edgeBandY?: boolean;
   /**
    * Which side the fractional (half-unit) column sits on.
    * `'end'` (default) = right/positive-X. `'start'` = left/negative-X.
@@ -206,12 +247,19 @@ export function forEachCell(
       ? { halfSockets: optionsOrHalfSockets }
       : optionsOrHalfSockets;
 
-  const decompose = (units: number, minFractionUnits: number | undefined): number[] =>
-    opts.halfSockets
-      ? decomposeHalfCells(units)
-      : decomposeCells(units, { fractional: opts.fractional, minFractionUnits });
-  const cellsW = decompose(gridW, opts.minFractionUnitsX ?? opts.minFractionUnits);
-  const cellsD = decompose(gridD, opts.minFractionUnitsY ?? opts.minFractionUnits);
+  const decompose = (
+    units: number,
+    minFractionUnits: number | undefined,
+    edgeBand: boolean | undefined
+  ): number[] => {
+    if (opts.halfSockets) return decomposeHalfCells(units);
+    const decomposeOpts = { fractional: opts.fractional, minFractionUnits };
+    return edgeBand
+      ? decomposeEdgeBandCells(units, decomposeOpts)
+      : decomposeCells(units, decomposeOpts);
+  };
+  const cellsW = decompose(gridW, opts.minFractionUnitsX ?? opts.minFractionUnits, opts.edgeBandX);
+  const cellsD = decompose(gridD, opts.minFractionUnitsY ?? opts.minFractionUnits, opts.edgeBandY);
 
   // When fractionalEdge is 'start', reverse so the half cell is first (negative side)
   if (opts.fractionalEdgeX === 'start') cellsW.reverse();

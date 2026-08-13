@@ -135,6 +135,7 @@ export function socketCacheKey(
   screwRadius: number,
   forExport: boolean,
   halfSockets: boolean,
+  latticeKey: string,
   gridUnitMm: GridUnitInput = GRIDFINITY.GRID_SIZE,
   maskHash?: string,
   fractionalEdgeX: 'start' | 'end' = 'end',
@@ -175,7 +176,11 @@ export function socketCacheKey(
       quantize(magnetDepth),
       quantize(screwRadius),
       forExport,
+      // Legacy slot: the half-socket boolean. Feet only ever varied with that
+      // flag until #3467, so a non-default foot lattice appends a segment
+      // instead of rewriting this one — a pre-#3467 key stays byte-identical.
       halfSockets,
+      ...(latticeKey ? [latticeKey] : []),
       maskHash ?? 'rect',
       ...fracSegments,
       ...anchorSegments

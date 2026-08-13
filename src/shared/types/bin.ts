@@ -21,6 +21,7 @@ export type {
   BinParams,
   BaseConfig,
   BaseStyle,
+  FootLattice,
   BinStyle,
   CompartmentConfig,
   ScoopConfig,

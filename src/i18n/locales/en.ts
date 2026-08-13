@@ -2807,6 +2807,19 @@ const en: Record<string, string> = {
   'binDesigner.halfBinMode': 'Half-grid mode',
   'binDesigner.halfBinModeEnable05Grid': 'Half-grid mode: enable 0.5 grid unit precision',
   'binDesigner.halfSockets': 'Half sockets',
+  'binDesigner.footLattice': 'Foot lattice',
+  'binDesigner.footLattice.axis.x': 'Width axis',
+  'binDesigner.footLattice.axis.y': 'Depth axis',
+  'binDesigner.footLattice.grid': 'On grid',
+  'binDesigner.footLattice.half': 'Half offset',
+  'binDesigner.footLattice.hint':
+    'Where the feet fall. Use half offset on an axis where the bin sits half a unit off the grid — a foot must land inside one baseplate pocket, and a full foot centred on a pocket edge will not drop in.',
+  'binDesigner.footLattice.halfSocketsHint':
+    'Half sockets already seat at either offset, so the lattice has no effect.',
+  'binDesigner.footLattice.customShapeHint':
+    'Custom-shape bins keep the on-grid lattice: a half offset would not line up with the shape you drew.',
+  'binDesigner.footLattice.fractionalHint':
+    'A fractional axis keeps the on-grid lattice: its half cell already handles both placements, and the half-unit edge setting decides which end it sits on.',
   'binDesigner.lightweight': 'Lightweight floor',
   'binDesigner.spacer': 'Spacer (no floor)',
   'binDesigner.spacerHint':
@@ -2830,6 +2843,8 @@ const en: Record<string, string> = {
   'binDesigner.fractionalEdgeMismatch':
     "This design's half-unit foot is on a different edge than where the linked bin sits in the drawer.",
   'binDesigner.fractionalEdgeMatchDrawer': 'Match layout',
+  'binDesigner.footLatticeMismatch':
+    "This bin sits half a unit off the grid, but its feet are laid out for the grid — it won't drop into a baseplate.",
   'binDesigner.loadingMessage.0': 'Reticulating splines...',
   'binDesigner.loadingMessage.1': 'Tessellating surfaces...',
   'binDesigner.loadingMessage.2': 'Calibrating geometry...',

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+  decomposeEdgeBandCells,
   decomposeCells,
   decomposeHalfCells,
   forEachCell,
@@ -424,5 +425,61 @@ describe('marginPocketDepthMm', () => {
       const pocketedMm = cells.reduce((sum, c) => sum + c.widthUnits * 42, 0);
       expect(depth).toBeCloseTo(pocketedMm, 6);
     }
+  });
+});
+
+describe('decomposeEdgeBandCells', () => {
+  const frac = { fractional: true } as const;
+
+  it('puts a half cell at each end of an integer axis', () => {
+    expect(decomposeEdgeBandCells(3, frac)).toEqual([0.5, 1, 1, 0.5]);
+    expect(decomposeEdgeBandCells(2, frac)).toEqual([0.5, 1, 0.5]);
+    expect(decomposeEdgeBandCells(1, frac)).toEqual([0.5, 0.5]);
+  });
+
+  it('sums to the axis it decomposes', () => {
+    for (const units of [1, 1.5, 2, 2.5, 3, 4, 5.5, 8]) {
+      const total = decomposeEdgeBandCells(units, frac).reduce((a, b) => a + b, 0);
+      expect(total).toBeCloseTo(units);
+    }
+  });
+
+  it('is palindromic on an integer axis, so the edge reversal is a no-op', () => {
+    for (const units of [1, 2, 3, 4]) {
+      const cells = decomposeEdgeBandCells(units, frac);
+      expect([...cells].reverse()).toEqual(cells);
+    }
+  });
+
+  it('keeps both rims half when the axis is fractional', () => {
+    const cells = decomposeEdgeBandCells(2.5, frac);
+    expect(cells[0]).toBe(0.5);
+    expect(cells[cells.length - 1]).toBe(0.5);
+    expect(cells).toEqual([0.5, 1, 0.5, 0.5]);
+  });
+
+  it('carries a non-half remainder into the middle run', () => {
+    expect(decomposeEdgeBandCells(1.7, frac)).toEqual([0.5, 0.7, 0.5]);
+  });
+
+  it('leaves a sub-unit axis to the standard decomposition', () => {
+    expect(decomposeEdgeBandCells(0.5, frac)).toEqual([0.5]);
+  });
+
+  it('uses fewer feet than halving every cell', () => {
+    const band = decomposeEdgeBandCells(4, frac).length;
+    const all = decomposeHalfCells(4).length;
+    expect(band).toBeLessThan(all);
+  });
+
+  it('lands every rim foot on a half-unit boundary', () => {
+    // Cumulative offsets are what a shifted bin has to line up with.
+    let pos = 0;
+    const edges = [0];
+    for (const cell of decomposeEdgeBandCells(3, frac)) {
+      pos += cell;
+      edges.push(pos);
+    }
+    expect(edges).toEqual([0, 0.5, 1.5, 2.5, 3]);
   });
 });
