@@ -1242,3 +1242,80 @@ describe('geometry', () => {
     });
   });
 });
+
+describe('legacy arrange helpers are group-aware (#3468)', () => {
+  it('distributeHorizontally counts a group as one unit', () => {
+    const cutouts = [
+      createCutout({ id: 'left', x: 0, width: 10 }),
+      createCutout({ id: 'ga', groupId: 'g1', x: 40, width: 10 }),
+      createCutout({ id: 'gb', groupId: 'g1', x: 60, width: 10 }),
+      createCutout({ id: 'right', x: 200, width: 10 }),
+    ];
+
+    const result = distributeHorizontally(cutouts, 300);
+
+    // Members keep their 20mm offset, so the group stays intact.
+    expect(result.gb.x - result.ga.x).toBe(20);
+    // Extremes hold their positions.
+    expect(result.left.x).toBe(0);
+    expect(result.right.x).toBe(200);
+  });
+
+  it('distributeHorizontally is a no-op below three units', () => {
+    const cutouts = [
+      createCutout({ id: 'a', groupId: 'g1', x: 0 }),
+      createCutout({ id: 'b', groupId: 'g1', x: 20 }),
+      createCutout({ id: 'c', x: 100 }),
+    ];
+
+    expect(distributeHorizontally(cutouts, 300)).toEqual({});
+  });
+
+  it('distributeVertically keeps group members rigid', () => {
+    const cutouts = [
+      createCutout({ id: 'low', y: 0, depth: 10 }),
+      createCutout({ id: 'ga', groupId: 'g1', y: 40, depth: 10 }),
+      createCutout({ id: 'gb', groupId: 'g1', y: 60, depth: 10 }),
+      createCutout({ id: 'high', y: 200, depth: 10 }),
+    ];
+
+    const result = distributeVertically(cutouts, 300);
+
+    expect(result.gb.y - result.ga.y).toBe(20);
+  });
+
+  it('distribute leaves a locked unit where it is', () => {
+    const cutouts = [
+      createCutout({ id: 'left', x: 0, width: 10 }),
+      createCutout({ id: 'mid', x: 40, width: 10, locked: true }),
+      createCutout({ id: 'right', x: 200, width: 10 }),
+    ];
+
+    expect(distributeHorizontally(cutouts, 300).mid).toBeUndefined();
+  });
+
+  it('centerInBin translates the whole selection by one delta', () => {
+    const cutouts = [
+      createCutout({ id: 'ga', groupId: 'g1', x: 0, y: 0, width: 20, depth: 20 }),
+      createCutout({ id: 'gb', groupId: 'g1', x: 30, y: 0, width: 20, depth: 20 }),
+    ];
+
+    const result = centerInBin(cutouts, 100, 100);
+
+    // Selection spans 0..50 wide, so both shift by (100 - 50) / 2 = 25.
+    expect(result.ga).toEqual({ x: 25, y: 40 });
+    expect(result.gb).toEqual({ x: 55, y: 40 });
+  });
+
+  it('centerInBin leaves a locked unit behind', () => {
+    const cutouts = [
+      createCutout({ id: 'a', x: 0, y: 0, width: 20, depth: 20 }),
+      createCutout({ id: 'b', x: 30, y: 0, width: 20, depth: 20, locked: true }),
+    ];
+
+    const result = centerInBin(cutouts, 100, 100);
+
+    expect(result.a).toBeDefined();
+    expect(result.b).toBeUndefined();
+  });
+});

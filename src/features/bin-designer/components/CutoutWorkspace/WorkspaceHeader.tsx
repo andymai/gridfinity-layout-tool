@@ -13,13 +13,15 @@ import { Button, Checkbox, IconButton, Input } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog/ConfirmDialog';
 import {
-  computeBounds,
-  getEffectiveBounds,
-  getEffectiveDepth,
   distributeHorizontally,
   distributeVertically,
   centerInBin,
 } from '../panel/CutoutsSection/geometry';
+import {
+  expandSelectionToGroups,
+  toArrangeUnits,
+  unitsBounds,
+} from '../panel/CutoutsSection/cutoutGroups';
 import { autoArrangeCutouts } from '../panel/CutoutsSection/autoArrange';
 import { PathfinderControls } from '../panel/CutoutsSection/PathfinderControls';
 import { canGroupSelection } from '../panel/CutoutsSection/pathfinderHelpers';
@@ -216,7 +218,6 @@ interface WorkspaceHeaderProps {
   readonly selection: ReadonlySet<string>;
   readonly binWidth: number;
   readonly binDepth: number;
-  readonly onUpdate: (id: string, updates: Partial<Cutout>) => void;
   readonly onUpdateBatch: (updates: ReadonlyMap<string, Partial<Cutout>>) => void;
   readonly onRemove: (id: string) => void;
   readonly onDuplicate: (ids: readonly string[]) => void;
@@ -243,7 +244,6 @@ export function WorkspaceHeader({
   selection,
   binWidth,
   binDepth,
-  onUpdate,
   onUpdateBatch,
   onRemove,
   onDuplicate,
@@ -268,77 +268,88 @@ export function WorkspaceHeader({
   const hasGroup = selected.some((c) => c.groupId !== null);
   const canGroup = canGroupSelection(selectedIds, cutouts);
   const singleCutout = selection.size === 1 ? (selected[0] ?? null) : null;
+
+  // Arrange operates on whole groups, so a partially-selected group still moves
+  // as one body (#3468).
+  const arrangeTargets = useMemo(
+    () => expandSelectionToGroups(cutouts, selected),
+    [cutouts, selected]
+  );
+
+  const applyPositions = useCallback(
+    (positions: Record<string, { x?: number; y?: number }>) => {
+      const updates = new Map<string, Partial<Cutout>>(Object.entries(positions));
+      if (updates.size > 0) onUpdateBatch(updates);
+    },
+    [onUpdateBatch]
+  );
+
   const handleAlign = useCallback(
     (type: AlignType) => {
-      const bounds = computeBounds(selected);
-      for (const cutout of selected) {
-        const eb = getEffectiveBounds(cutout);
-        let newX: number | undefined;
-        let newY: number | undefined;
+      const units = toArrangeUnits(arrangeTargets);
+      const bounds = unitsBounds(units);
+      const positions: Record<string, { x?: number; y?: number }> = {};
+
+      for (const unit of units) {
+        if (unit.locked) continue;
+        const eb = unit.bounds;
+        let dx = 0;
+        let dy = 0;
 
         switch (type) {
           case 'left':
-            newX = bounds.minX;
+            dx = bounds.minX - eb.minX;
             break;
           case 'right':
-            newX = bounds.maxX - (eb.maxX - eb.minX);
+            dx = bounds.maxX - eb.maxX;
             break;
           case 'top':
-            newY = bounds.maxY - getEffectiveDepth(cutout);
+            dy = bounds.maxY - eb.maxY;
             break;
           case 'bottom':
-            newY = bounds.minY;
+            dy = bounds.minY - eb.minY;
             break;
-          case 'center-h': {
-            const centerX = (bounds.minX + bounds.maxX) / 2;
-            newX = centerX - (eb.maxX - eb.minX) / 2;
+          case 'center-h':
+            dx = (bounds.minX + bounds.maxX) / 2 - (eb.minX + eb.maxX) / 2;
             break;
-          }
-          case 'center-v': {
-            const centerY = (bounds.minY + bounds.maxY) / 2;
-            newY = centerY - getEffectiveDepth(cutout) / 2;
+          case 'center-v':
+            dy = (bounds.minY + bounds.maxY) / 2 - (eb.minY + eb.maxY) / 2;
             break;
-          }
         }
 
-        onUpdate(cutout.id, {
-          ...(newX !== undefined ? { x: newX } : {}),
-          ...(newY !== undefined ? { y: newY } : {}),
-        });
+        // A unit already on the line needs no write — emitting one would dirty
+        // the design and cost an undo step for nothing.
+        if (dx === 0 && dy === 0) continue;
+
+        for (const member of unit.members) {
+          positions[member.id] = {
+            ...(dx !== 0 ? { x: member.x + dx } : {}),
+            ...(dy !== 0 ? { y: member.y + dy } : {}),
+          };
+        }
       }
+      applyPositions(positions);
     },
-    [selected, onUpdate]
+    [arrangeTargets, applyPositions]
   );
 
   const handleDistributeH = useCallback(() => {
-    const positions = distributeHorizontally(selected, binWidth);
-    for (const [id, pos] of Object.entries(positions)) {
-      onUpdate(id, pos);
-    }
-  }, [selected, binWidth, onUpdate]);
+    applyPositions(distributeHorizontally(arrangeTargets, binWidth));
+  }, [arrangeTargets, binWidth, applyPositions]);
 
   const handleDistributeV = useCallback(() => {
-    const positions = distributeVertically(selected, binDepth);
-    for (const [id, pos] of Object.entries(positions)) {
-      onUpdate(id, pos);
-    }
-  }, [selected, binDepth, onUpdate]);
+    applyPositions(distributeVertically(arrangeTargets, binDepth));
+  }, [arrangeTargets, binDepth, applyPositions]);
 
   const handleCenterInBin = useCallback(() => {
-    const positions = centerInBin(selected, binWidth, binDepth);
-    for (const [id, pos] of Object.entries(positions)) {
-      onUpdate(id, pos);
-    }
-  }, [selected, binWidth, binDepth, onUpdate]);
+    applyPositions(centerInBin(arrangeTargets, binWidth, binDepth));
+  }, [arrangeTargets, binWidth, binDepth, applyPositions]);
 
   const handleAutoArrange = useCallback(
     (gap: number, staggered: boolean) => {
-      const positions = autoArrangeCutouts(selected, { binWidth, binDepth, gap, staggered });
-      for (const [id, pos] of Object.entries(positions)) {
-        onUpdate(id, pos);
-      }
+      applyPositions(autoArrangeCutouts(arrangeTargets, { binWidth, binDepth, gap, staggered }));
     },
-    [selected, binWidth, binDepth, onUpdate]
+    [arrangeTargets, binWidth, binDepth, applyPositions]
   );
   const iconBtn = (
     onClick: () => void,

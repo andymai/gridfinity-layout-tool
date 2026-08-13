@@ -550,7 +550,6 @@ export function CutoutEditor() {
           cutouts={cutouts}
           binWidth={binWidth}
           binDepth={binDepth}
-          onUpdate={updateCutout}
           onUpdateBatch={updateCutoutsBatch}
           onGroup={groupCutouts}
           onUngroup={ungroupCutouts}

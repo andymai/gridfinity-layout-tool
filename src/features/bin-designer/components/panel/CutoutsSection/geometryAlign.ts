@@ -11,10 +11,15 @@
  * against the rotated silhouette. Translating by a delta keeps the two in step
  * for rotated shapes, and lets path cutouts (whose points are absolute) carry
  * their geometry along.
+ *
+ * Both operate on arrange units, not raw cutouts: a group aligns and
+ * distributes as one rigid body (#3468). Callers pass a selection already
+ * expanded to whole groups (`expandSelectionToGroups`).
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
-import { getRotatedBounds } from './geometryCore';
+import type { Bounds } from './geometryCore';
+import { type ArrangeUnit, toArrangeUnits, unitsBounds } from './cutoutGroups';
 
 export type AlignMode = 'left' | 'centerX' | 'right' | 'top' | 'middleY' | 'bottom';
 export type DistributeAxis = 'horizontal' | 'vertical';
@@ -36,29 +41,8 @@ function translate(cutout: Cutout, dx: number, dy: number): Partial<Cutout> {
   return moved;
 }
 
-/** Bounds across every selected cutout, locked ones included (they anchor). */
-function selectionBounds(cutouts: readonly Cutout[]) {
-  let minX = Infinity;
-  let minY = Infinity;
-  let maxX = -Infinity;
-  let maxY = -Infinity;
-  for (const cutout of cutouts) {
-    const b = getRotatedBounds(cutout);
-    minX = Math.min(minX, b.minX);
-    minY = Math.min(minY, b.minY);
-    maxX = Math.max(maxX, b.maxX);
-    maxY = Math.max(maxY, b.maxY);
-  }
-  return { minX, minY, maxX, maxY };
-}
-
-/** Signed distance to move `cutout` so its rotated box satisfies `mode`. */
-function alignDelta(
-  cutout: Cutout,
-  mode: AlignMode,
-  bounds: ReturnType<typeof selectionBounds>
-): { dx: number; dy: number } {
-  const b = getRotatedBounds(cutout);
+/** Signed distance to move a unit so its rotated box satisfies `mode`. */
+function alignDelta(b: Bounds, mode: AlignMode, bounds: Bounds): { dx: number; dy: number } {
   switch (mode) {
     case 'left':
       return { dx: bounds.minX - b.minX, dy: 0 };
@@ -75,25 +59,39 @@ function alignDelta(
   }
 }
 
+/** Translate every member of a unit by the same delta. */
+function translateUnit(
+  unit: ArrangeUnit,
+  dx: number,
+  dy: number,
+  updates: Map<string, Partial<Cutout>>
+): void {
+  for (const member of unit.members) {
+    updates.set(member.id, translate(member, dx, dy));
+  }
+}
+
 /**
- * Align every unlocked cutout in the selection to the selection's bounding box.
+ * Align every unlocked unit in the selection to the selection's bounding box.
  *
- * A single cutout has nothing to align against (its own bounds are the
- * selection's), so this is a no-op below two.
+ * A single unit has nothing to align against (its own bounds are the
+ * selection's), so this is a no-op below two — which is why aligning the two
+ * members of one group does nothing rather than collapsing them onto each other.
  */
 export function alignSelection(
   cutouts: readonly Cutout[],
   mode: AlignMode
 ): ReadonlyMap<string, Partial<Cutout>> {
   const updates = new Map<string, Partial<Cutout>>();
-  if (cutouts.length < 2) return updates;
+  const units = toArrangeUnits(cutouts);
+  if (units.length < 2) return updates;
 
-  const bounds = selectionBounds(cutouts);
-  for (const cutout of cutouts) {
-    if (cutout.locked) continue;
-    const { dx, dy } = alignDelta(cutout, mode, bounds);
+  const bounds = unitsBounds(units);
+  for (const unit of units) {
+    if (unit.locked) continue;
+    const { dx, dy } = alignDelta(unit.bounds, mode, bounds);
     if (Math.abs(dx) < EPSILON && Math.abs(dy) < EPSILON) continue;
-    updates.set(cutout.id, translate(cutout, dx, dy));
+    translateUnit(unit, dx, dy, updates);
   }
   return updates;
 }
@@ -116,17 +114,18 @@ export function distributeSelection(
   axis: DistributeAxis
 ): ReadonlyMap<string, Partial<Cutout>> {
   const updates = new Map<string, Partial<Cutout>>();
-  if (cutouts.length < MIN_DISTRIBUTE_COUNT) return updates;
+  const units = toArrangeUnits(cutouts);
+  if (units.length < MIN_DISTRIBUTE_COUNT) return updates;
 
   const horizontal = axis === 'horizontal';
-  const centerOf = (cutout: Cutout): number => {
-    const b = getRotatedBounds(cutout);
-    return horizontal ? (b.minX + b.maxX) / 2 : (b.minY + b.maxY) / 2;
-  };
+  const centerOf = (unit: ArrangeUnit): number =>
+    horizontal
+      ? (unit.bounds.minX + unit.bounds.maxX) / 2
+      : (unit.bounds.minY + unit.bounds.maxY) / 2;
 
-  const ordered = [...cutouts].sort((a, b) => centerOf(a) - centerOf(b));
+  const ordered = [...units].sort((a, b) => centerOf(a) - centerOf(b));
 
-  // The extremes plus any locked cutout between them. Everything strictly
+  // The extremes plus any locked unit between them. Everything strictly
   // between two consecutive anchors is unlocked by construction.
   const anchors = [0];
   for (let i = 1; i < ordered.length - 1; i++) {
@@ -144,10 +143,10 @@ export function distributeSelection(
     const step = (centerOf(ordered[endIdx]) - startCenter) / gap;
 
     for (let k = 1; k < gap; k++) {
-      const cutout = ordered[startIdx + k];
-      const delta = startCenter + step * k - centerOf(cutout);
+      const unit = ordered[startIdx + k];
+      const delta = startCenter + step * k - centerOf(unit);
       if (Math.abs(delta) < EPSILON) continue;
-      updates.set(cutout.id, translate(cutout, horizontal ? delta : 0, horizontal ? 0 : delta));
+      translateUnit(unit, horizontal ? delta : 0, horizontal ? 0 : delta, updates);
     }
   }
   return updates;

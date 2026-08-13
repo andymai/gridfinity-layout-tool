@@ -36,7 +36,6 @@ const defaultProps = {
   selection: new Set<string>(),
   binWidth: 40,
   binDepth: 40,
-  onUpdate: vi.fn(),
   onUpdateBatch: vi.fn(),
   onRemove: vi.fn(),
   onDuplicate: vi.fn(),

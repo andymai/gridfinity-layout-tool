@@ -10,14 +10,8 @@ import { useState } from 'react';
 import type { Cutout, GroupOp, ReorderDirection } from '@/features/bin-designer/types';
 import { Button, IconButton, Input } from '@/design-system';
 import { useTranslation } from '@/i18n';
-import {
-  computeBounds,
-  getEffectiveBounds,
-  getEffectiveDepth,
-  distributeHorizontally,
-  distributeVertically,
-  centerInBin,
-} from './geometry';
+import { distributeHorizontally, distributeVertically, centerInBin } from './geometry';
+import { expandSelectionToGroups, toArrangeUnits, unitsBounds } from './cutoutGroups';
 import { autoArrangeCutouts } from './autoArrange';
 import { PathfinderControls } from './PathfinderControls';
 import { canGroupSelection } from './pathfinderHelpers';
@@ -29,7 +23,6 @@ interface AlignmentToolbarProps {
   readonly cutouts: readonly Cutout[];
   readonly binWidth: number;
   readonly binDepth: number;
-  readonly onUpdate: (id: string, updates: Partial<Cutout>) => void;
   readonly onUpdateBatch: (updates: ReadonlyMap<string, Partial<Cutout>>) => void;
   readonly onGroup: (ids: readonly string[], op?: GroupOp) => void;
   readonly onUngroup: (ids: readonly string[]) => void;
@@ -134,7 +127,6 @@ export function AlignmentToolbar({
   cutouts,
   binWidth,
   binDepth,
-  onUpdate,
   onUpdateBatch,
   onGroup,
   onUngroup,
@@ -149,72 +141,75 @@ export function AlignmentToolbar({
   const hasGroup = selected.some((c) => c.groupId !== null);
   const canGroup = canGroupSelection(selectedIds, cutouts);
 
-  const handleAlign = (type: AlignType) => {
-    const bounds = computeBounds(selected);
+  // Arrange operates on whole groups, so a partially-selected group still moves
+  // as one body (#3468).
+  const arrangeTargets = expandSelectionToGroups(cutouts, selected);
 
-    for (const cutout of selected) {
-      const eb = getEffectiveBounds(cutout);
-      let newX: number | undefined;
-      let newY: number | undefined;
+  const applyPositions = (positions: Record<string, { x?: number; y?: number }>) => {
+    const updates = new Map<string, Partial<Cutout>>(Object.entries(positions));
+    if (updates.size > 0) onUpdateBatch(updates);
+  };
+
+  const handleAlign = (type: AlignType) => {
+    const units = toArrangeUnits(arrangeTargets);
+    const bounds = unitsBounds(units);
+    const positions: Record<string, { x?: number; y?: number }> = {};
+
+    for (const unit of units) {
+      if (unit.locked) continue;
+      const eb = unit.bounds;
+      let dx = 0;
+      let dy = 0;
 
       switch (type) {
         case 'left':
-          newX = bounds.minX;
+          dx = bounds.minX - eb.minX;
           break;
         case 'right':
-          newX = bounds.maxX - (eb.maxX - eb.minX);
+          dx = bounds.maxX - eb.maxX;
           break;
         case 'top':
-          newY = bounds.maxY - getEffectiveDepth(cutout);
+          dy = bounds.maxY - eb.maxY;
           break;
         case 'bottom':
-          newY = bounds.minY;
+          dy = bounds.minY - eb.minY;
           break;
-        case 'center-h': {
-          const centerX = (bounds.minX + bounds.maxX) / 2;
-          newX = centerX - (eb.maxX - eb.minX) / 2;
+        case 'center-h':
+          dx = (bounds.minX + bounds.maxX) / 2 - (eb.minX + eb.maxX) / 2;
           break;
-        }
-        case 'center-v': {
-          const centerY = (bounds.minY + bounds.maxY) / 2;
-          newY = centerY - getEffectiveDepth(cutout) / 2;
+        case 'center-v':
+          dy = (bounds.minY + bounds.maxY) / 2 - (eb.minY + eb.maxY) / 2;
           break;
-        }
       }
 
-      onUpdate(cutout.id, {
-        ...(newX !== undefined ? { x: newX } : {}),
-        ...(newY !== undefined ? { y: newY } : {}),
-      });
+      // A unit already on the line needs no write — emitting one would dirty
+      // the design and cost an undo step for nothing.
+      if (dx === 0 && dy === 0) continue;
+
+      for (const member of unit.members) {
+        positions[member.id] = {
+          ...(dx !== 0 ? { x: member.x + dx } : {}),
+          ...(dy !== 0 ? { y: member.y + dy } : {}),
+        };
+      }
     }
+    applyPositions(positions);
   };
 
   const handleAutoArrange = () => {
-    const positions = autoArrangeCutouts(selected, { binWidth, binDepth, gap });
-    for (const [id, pos] of Object.entries(positions)) {
-      onUpdate(id, pos);
-    }
+    applyPositions(autoArrangeCutouts(arrangeTargets, { binWidth, binDepth, gap }));
   };
 
   const handleDistributeH = () => {
-    const positions = distributeHorizontally(selected, binWidth);
-    for (const [id, pos] of Object.entries(positions)) {
-      onUpdate(id, pos);
-    }
+    applyPositions(distributeHorizontally(arrangeTargets, binWidth));
   };
 
   const handleDistributeV = () => {
-    const positions = distributeVertically(selected, binDepth);
-    for (const [id, pos] of Object.entries(positions)) {
-      onUpdate(id, pos);
-    }
+    applyPositions(distributeVertically(arrangeTargets, binDepth));
   };
 
   const handleCenterInBin = () => {
-    const positions = centerInBin(selected, binWidth, binDepth);
-    for (const [id, pos] of Object.entries(positions)) {
-      onUpdate(id, pos);
-    }
+    applyPositions(centerInBin(arrangeTargets, binWidth, binDepth));
   };
 
   const alignButton = (type: AlignType, label: string) => (
