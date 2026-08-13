@@ -44,13 +44,13 @@ export interface CommunityPrintRecord {
    * other and a reader can pick per photo without a lookup.
    */
   photoThumbs: string[];
-  material: CommunityPrintMaterial;
-  nozzleMm: number;
-  layerHeightMm: number;
-  printMinutes: number;
-  /** null when the printer did not report it; excluded from the median. */
+  /** null throughout when the reporter did not say; excluded from the modes and medians. */
+  material: CommunityPrintMaterial | null;
+  nozzleMm: number | null;
+  layerHeightMm: number | null;
+  printMinutes: number | null;
   filamentGrams: number | null;
-  printer: string;
+  printer: string | null;
   /** '' unless `printer` is 'other'. */
   printerOther: string;
   fitVerdict: CommunityPrintFitVerdict;
@@ -112,16 +112,39 @@ function isFitVerdict(value: string): value is CommunityPrintFitVerdict {
   return (COMMUNITY_PRINT_FIT_VERDICTS as readonly string[]).includes(value);
 }
 
+/**
+ * An unreported measurement round-trips as ''. The hash holds only strings and
+ * `Number('')` is 0, so reading one back as a number would put a nozzle nobody
+ * measured into the modes and medians as if it had been.
+ *
+ * A corrupt field reads as unreported for the same reason, since `Number('x')`
+ * is NaN and NaN is not null: it would survive the absence filter, group with
+ * itself in `modeOf` (Map keys use SameValueZero) and win, and reach the client
+ * as JSON `null`, which `formatMillimetres` renders as "0mm".
+ */
+function readOptionalNumber(raw: string | undefined): number | null {
+  if (raw === undefined || raw === '') return null;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function writeOptionalNumber(value: number | null): string {
+  return value === null ? '' : String(value);
+}
+
 function parsePrint(fields: Record<string, string | undefined>): CommunityPrintRecord | null {
   if (fields.designId === undefined || fields.authorPublicId === undefined) return null;
   const status = fields.status;
   if (status !== 'live' && status !== 'hidden' && status !== 'removed') return null;
-  const material = fields.material ?? '';
+  const rawMaterial = fields.material ?? '';
   const fitVerdict = fields.fitVerdict ?? '';
   // A record whose enum fields no longer parse is malformed rather than
   // defaultable: silently coercing it to 'pla'/'as-designed' would feed a
-  // fabricated value into the aggregate summary.
-  if (!isMaterial(material) || !isFitVerdict(fitVerdict)) return null;
+  // fabricated value into the aggregate summary. '' is the distinct case of a
+  // reporter who did not say, and stays out of the aggregate instead.
+  if (rawMaterial !== '' && !isMaterial(rawMaterial)) return null;
+  if (!isFitVerdict(fitVerdict)) return null;
+  const material = rawMaterial === '' ? null : rawMaterial;
   const parseUrlArray = (raw: string | undefined): string[] => {
     try {
       const parsed: unknown = JSON.parse(raw ?? '[]');
@@ -138,7 +161,7 @@ function parsePrint(fields: Record<string, string | undefined>): CommunityPrintR
   // invariant and a reader can index one from the other without checking.
   const storedThumbs = parseUrlArray(fields.photoThumbs);
   const photoThumbs = photos.map((_, index) => storedThumbs[index] ?? '');
-  const filamentGrams = fields.filamentGrams;
+  const printer = fields.printer ?? '';
   return {
     designId: fields.designId,
     authorPublicId: fields.authorPublicId,
@@ -146,12 +169,11 @@ function parsePrint(fields: Record<string, string | undefined>): CommunityPrintR
     photos,
     photoThumbs,
     material,
-    nozzleMm: Number(fields.nozzleMm ?? 0),
-    layerHeightMm: Number(fields.layerHeightMm ?? 0),
-    printMinutes: Number(fields.printMinutes ?? 0),
-    filamentGrams:
-      filamentGrams === undefined || filamentGrams === '' ? null : Number(filamentGrams),
-    printer: fields.printer ?? '',
+    nozzleMm: readOptionalNumber(fields.nozzleMm),
+    layerHeightMm: readOptionalNumber(fields.layerHeightMm),
+    printMinutes: readOptionalNumber(fields.printMinutes),
+    filamentGrams: readOptionalNumber(fields.filamentGrams),
+    printer: printer === '' ? null : printer,
     printerOther: fields.printerOther ?? '',
     fitVerdict,
     note: fields.note ?? '',
@@ -172,12 +194,12 @@ export async function writeCommunityPrint(
     authorName: record.authorName,
     photos: JSON.stringify(record.photos),
     photoThumbs: JSON.stringify(record.photoThumbs),
-    material: record.material,
-    nozzleMm: String(record.nozzleMm),
-    layerHeightMm: String(record.layerHeightMm),
-    printMinutes: String(record.printMinutes),
-    filamentGrams: record.filamentGrams === null ? '' : String(record.filamentGrams),
-    printer: record.printer,
+    material: record.material ?? '',
+    nozzleMm: writeOptionalNumber(record.nozzleMm),
+    layerHeightMm: writeOptionalNumber(record.layerHeightMm),
+    printMinutes: writeOptionalNumber(record.printMinutes),
+    filamentGrams: writeOptionalNumber(record.filamentGrams),
+    printer: record.printer ?? '',
     printerOther: record.printerOther,
     fitVerdict: record.fitVerdict,
     note: record.note,
@@ -337,19 +359,27 @@ export function summarizeCommunityPrints(
   prints: readonly CommunityPrintRecord[]
 ): CommunityPrintSummary {
   const live = prints.filter((print) => print.status === 'live');
+  // Unreported values have to leave the sample BEFORE the aggregate. `modeOf`
+  // is generic over `T | null`, so a field most reporters skipped would elect
+  // `null` as its own mode and typecheck while doing it.
+  const reported = <T>(pick: (print: CommunityPrintRecord) => T | null): T[] =>
+    live.map(pick).filter((value): value is T => value !== null);
+  // NaN needs the same treatment for the same reason, and is not covered by the
+  // null filter: `Map` keys compare with SameValueZero, so NaNs group together
+  // and can carry a mode outright. Guarded at this one chokepoint rather than
+  // per field, which is how filament ended up the only one that was safe.
+  const measured = (pick: (print: CommunityPrintRecord) => number | null): number[] =>
+    reported(pick).filter((value) => Number.isFinite(value));
+
   return {
     count: live.length,
     asDesigned: live.filter((print) => print.fitVerdict === 'as-designed').length,
     adjusted: live.filter((print) => print.fitVerdict === 'adjusted').length,
     didNotFit: live.filter((print) => print.fitVerdict === 'did-not-fit').length,
-    commonMaterial: modeOf(live.map((print) => print.material)),
-    commonLayerHeightMm: modeOf(live.map((print) => print.layerHeightMm)),
-    medianPrintMinutes: medianOf(live.map((print) => print.printMinutes)),
-    medianFilamentGrams: medianOf(
-      live
-        .map((print) => print.filamentGrams)
-        .filter((grams): grams is number => grams !== null && Number.isFinite(grams))
-    ),
+    commonMaterial: modeOf(reported((print) => print.material)),
+    commonLayerHeightMm: modeOf(measured((print) => print.layerHeightMm)),
+    medianPrintMinutes: medianOf(measured((print) => print.printMinutes)),
+    medianFilamentGrams: medianOf(measured((print) => print.filamentGrams)),
   };
 }
 

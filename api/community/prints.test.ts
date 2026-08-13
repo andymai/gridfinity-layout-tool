@@ -229,6 +229,8 @@ function validPrintBody(overrides: Record<string, unknown> = {}): Record<string,
     printMinutes: 124,
     printer: 'bambu-p1s',
     fitVerdict: 'as-designed',
+    // A verdict alone is a bare vote, and `handleUpsert` rejects one.
+    note: 'Printed fine.',
     ...overrides,
   };
 }
@@ -420,6 +422,41 @@ describe('PUT (edit)', () => {
     expect(hash?.get('fitVerdict')).toBe('adjusted');
     // A typo fix must not reshuffle the newest-first list.
     expect(hash?.get('createdAt')).toBe(createdAt);
+  });
+
+  // The floor guards what a record ENDS UP with, and exempts records written
+  // before it existed. Both halves matter: without the guard a print can be
+  // stripped to a bare vote; without the exemption its owner is locked out.
+  describe('substance floor', () => {
+    it('rejects a new print carrying neither a photo nor a note', async () => {
+      const res = await handle({ method: 'PUT', body: validPrintBody({ note: '' }) });
+      expect(res._status).toBe(400);
+      expect((res._body as { code: string }).code).toBe('INVALID_PAYLOAD');
+    });
+
+    it('refuses to let an edit strip a record below the floor', async () => {
+      await seedOwnPrint();
+      const res = await handle({ method: 'PUT', body: validPrintBody({ note: '' }) });
+      expect(res._status).toBe(400);
+    });
+
+    it('lets the owner of a pre-floor record edit it without inventing content', async () => {
+      // Written the way the old validator explicitly permitted: settings and a
+      // verdict, no photo, no note.
+      const author = authorIdFor(USER_ID);
+      await handle({ method: 'PUT', body: validPrintBody() });
+      redis.hashes.get(communityPrintKey(DESIGN_ID, author))?.set('note', '');
+
+      const res = await handle({
+        method: 'PUT',
+        body: validPrintBody({ note: '', fitVerdict: 'adjusted' }),
+      });
+
+      expect(res._status).toBe(200);
+      expect(redis.hashes.get(communityPrintKey(DESIGN_ID, author))?.get('fitVerdict')).toBe(
+        'adjusted'
+      );
+    });
   });
 
   it('never double-counts the same printer', async () => {

@@ -5,6 +5,7 @@ import {
   COMMUNITY_PRINT_PHOTO_MAX_BYTES,
   COMMUNITY_PRINT_THUMB_MAX_BYTES,
   communityPrintsEnabled,
+  hasPrintSubstance,
   readWebpDimensions,
   validateCommunityPrint,
 } from './communityPrintValidation.js';
@@ -65,6 +66,9 @@ function validBody(overrides: Record<string, unknown> = {}): Record<string, unkn
     printMinutes: 124,
     printer: 'bambu-p1s',
     fitVerdict: 'as-designed',
+    // The substance floor: a verdict alone is a bare vote, so every valid body
+    // carries a photo or a note.
+    note: 'Printed fine.',
     ...overrides,
   };
 }
@@ -130,9 +134,59 @@ describe('validateCommunityPrint', () => {
       printer: 'bambu-p1s',
       fitVerdict: 'as-designed',
       filamentGrams: null,
-      note: '',
+      note: 'Printed fine.',
       photos: [],
     });
+  });
+
+  describe('optional settings', () => {
+    it.each(['material', 'nozzleMm', 'layerHeightMm', 'printMinutes', 'printer'])(
+      'accepts a report with no %s',
+      (field) => {
+        const body = Object.fromEntries(
+          Object.entries(validBody()).filter(([key]) => key !== field)
+        );
+        expect(validateCommunityPrint(body).valid).toBe(true);
+      }
+    );
+
+    it('records every omitted setting as absent, never as a zero', () => {
+      const result = validateCommunityPrint({
+        authorName: 'Casey',
+        fitVerdict: 'as-designed',
+        note: 'Printed fine.',
+      });
+      expect(result.valid).toBe(true);
+      if (!result.valid) return;
+      expect(result.payload).toMatchObject({
+        material: null,
+        nozzleMm: null,
+        layerHeightMm: null,
+        printMinutes: null,
+        filamentGrams: null,
+        printer: null,
+      });
+    });
+
+    it('still rejects a setting that is present but out of range', () => {
+      const result = validateCommunityPrint(validBody({ nozzleMm: 99 }));
+      expect(result.valid).toBe(false);
+      if (result.valid) return;
+      expect(result.error.code).toBe('INVALID_SETTINGS');
+    });
+
+    it('still rejects an unknown printer id', () => {
+      const result = validateCommunityPrint(validBody({ printer: 'not-a-printer' }));
+      expect(result.valid).toBe(false);
+      if (result.valid) return;
+      expect(result.error.code).toBe('INVALID_PRINTER');
+    });
+  });
+
+  // The floor itself lives in the handler, which is the only place that knows
+  // what is already stored. The validator accepts a bare payload.
+  it('accepts a payload with neither a photo nor a note', () => {
+    expect(validateCommunityPrint(validBody({ note: '' })).valid).toBe(true);
   });
 
   it('rejects a non-object body', () => {
@@ -397,5 +451,23 @@ describe('validateCommunityPrint', () => {
     expect(result.valid).toBe(false);
     if (result.valid) return;
     expect(result.error.code).toBe('INVALID_PHOTOS');
+  });
+});
+
+describe('hasPrintSubstance', () => {
+  it('is false for a verdict with no photo and no note', () => {
+    expect(hasPrintSubstance(0, '')).toBe(false);
+  });
+
+  it('treats a whitespace-only note as no note', () => {
+    expect(hasPrintSubstance(0, '   ')).toBe(false);
+  });
+
+  it('is true for a photo alone', () => {
+    expect(hasPrintSubstance(1, '')).toBe(true);
+  });
+
+  it('is true for a note alone', () => {
+    expect(hasPrintSubstance(0, 'Printed fine.')).toBe(true);
   });
 });

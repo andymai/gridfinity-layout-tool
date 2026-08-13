@@ -118,11 +118,10 @@ export interface CommunityPublishEntry {
 }
 
 /**
- * The cutout-only launch policy deliberately does NOT gate the button. It used
- * to, explained only by a `title` tooltip, which does not exist on touch: a
- * phone user got a dead button and no reason. The dialog states the policy
- * against a preview of their design instead, so the requirement is readable
- * and its remedy is obvious.
+ * Any bin the designer can produce is publishable. The gate is only that there
+ * IS a bin with a ready mesh, never a judgement about which features it uses,
+ * and never a disabled button explained by a `title` tooltip that does not
+ * exist on touch.
  */
 export function useCommunityPublishEntry(): CommunityPublishEntry {
   const publishVisible = useFeatureFlag('community_showcase');

@@ -195,6 +195,74 @@ describe('readCommunityPrint', () => {
     );
   });
 
+  // The hash stores everything as a string and `Number('')` is 0.
+  it('reads every unreported setting back as absent, not zero', async () => {
+    const { redis, hgetall } = createRedis(createPipeline());
+    hgetall.mockResolvedValue({
+      designId: DESIGN_ID,
+      authorPublicId: AUTHOR,
+      authorName: 'Casey',
+      photos: '["https://blob.example/p0.webp"]',
+      material: '',
+      nozzleMm: '',
+      layerHeightMm: '',
+      printMinutes: '',
+      filamentGrams: '',
+      printer: '',
+      printerOther: '',
+      fitVerdict: 'as-designed',
+      note: 'snug',
+      rev: '1',
+      createdAt: '1000',
+      updatedAt: '1000',
+      status: 'live',
+    });
+
+    expect(await readCommunityPrint(redis, DESIGN_ID, AUTHOR)).toMatchObject({
+      material: null,
+      nozzleMm: null,
+      layerHeightMm: null,
+      printMinutes: null,
+      filamentGrams: null,
+      printer: null,
+    });
+  });
+
+  // NaN is not null, so it would survive the absence filter, group with itself
+  // in modeOf (Map keys use SameValueZero) and win, and reach the client as
+  // JSON null, which formatMillimetres renders as "0mm".
+  it('reads a corrupt measurement as absent rather than NaN', async () => {
+    const { redis, hgetall } = createRedis(createPipeline());
+    hgetall.mockResolvedValue({
+      designId: DESIGN_ID,
+      authorPublicId: AUTHOR,
+      photos: '[]',
+      nozzleMm: 'not-a-number',
+      layerHeightMm: 'Infinity',
+      fitVerdict: 'as-designed',
+      status: 'live',
+    });
+
+    expect(await readCommunityPrint(redis, DESIGN_ID, AUTHOR)).toMatchObject({
+      nozzleMm: null,
+      layerHeightMm: null,
+    });
+  });
+
+  it('still rejects a material that is present but unrecognised', async () => {
+    const { redis, hgetall } = createRedis(createPipeline());
+    hgetall.mockResolvedValue({
+      designId: DESIGN_ID,
+      authorPublicId: AUTHOR,
+      material: 'unobtanium',
+      fitVerdict: 'as-designed',
+      status: 'live',
+    });
+
+    // Malformed rather than defaultable; '' is the separate "did not say" case.
+    expect(await readCommunityPrint(redis, DESIGN_ID, AUTHOR)).toBeNull();
+  });
+
   it('returns null for a missing hash', async () => {
     const { redis } = createRedis(createPipeline());
     expect(await readCommunityPrint(redis, DESIGN_ID, AUTHOR)).toBeNull();
@@ -404,6 +472,67 @@ describe('summarizeCommunityPrints', () => {
     ]);
 
     expect(summary.medianPrintMinutes).toBe(120);
+  });
+
+  // `modeOf` is generic over `T | null`, so an unreported value left in the
+  // sample can win its own vote and typecheck while doing it.
+  describe('unreported settings', () => {
+    it('never elects "unreported" as the common material', () => {
+      const summary = summarizeCommunityPrints([
+        print({ material: null }),
+        print({ material: null }),
+        print({ material: 'petg' }),
+      ]);
+
+      expect(summary.commonMaterial).toBe('petg');
+    });
+
+    it('never elects "unreported" as the common layer height', () => {
+      const summary = summarizeCommunityPrints([
+        print({ layerHeightMm: null }),
+        print({ layerHeightMm: null }),
+        print({ layerHeightMm: 0.28 }),
+      ]);
+
+      expect(summary.commonLayerHeightMm).toBe(0.28);
+    });
+
+    it('medians only the print times that were reported', () => {
+      const summary = summarizeCommunityPrints([
+        print({ printMinutes: null }),
+        print({ printMinutes: 100 }),
+        print({ printMinutes: 140 }),
+      ]);
+
+      // 120, not 100. A null coerced to 0 would have taken the middle slot.
+      expect(summary.medianPrintMinutes).toBe(120);
+    });
+
+    it('still counts a print that reported no settings at all', () => {
+      const summary = summarizeCommunityPrints([
+        print({ material: null, layerHeightMm: null, printMinutes: null, printer: null }),
+      ]);
+
+      expect(summary).toMatchObject({
+        count: 1,
+        asDesigned: 1,
+        commonMaterial: null,
+        commonLayerHeightMm: null,
+        medianPrintMinutes: null,
+      });
+    });
+  });
+
+  it('keeps a corrupt measurement out of every aggregate', () => {
+    const summary = summarizeCommunityPrints([
+      print({ layerHeightMm: NaN, printMinutes: NaN, filamentGrams: NaN }),
+      print({ layerHeightMm: 0.28, printMinutes: 100, filamentGrams: 20 }),
+    ]);
+
+    // A NaN reaching modeOf groups with itself and can win the vote outright.
+    expect(summary.commonLayerHeightMm).toBe(0.28);
+    expect(summary.medianPrintMinutes).toBe(100);
+    expect(summary.medianFilamentGrams).toBe(20);
   });
 
   it('ignores prints that reported no filament weight', () => {

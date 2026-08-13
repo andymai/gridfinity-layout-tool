@@ -166,6 +166,55 @@ describe('PrintsSection', () => {
     await waitFor(() => expect(api.fetchPrints).toHaveBeenCalledTimes(2));
   });
 
+  describe('post/edit CTA', () => {
+    it('is absent when no handler is supplied', async () => {
+      setup();
+      await waitFor(() => expect(screen.getByTestId('prints-section')).toBeInTheDocument());
+      expect(screen.queryByTestId('community-detail-add-print')).toBeNull();
+    });
+
+    it('invites a first print when the viewer has none', async () => {
+      const onAddPrint = vi.fn();
+      setup({ onAddPrint });
+      await waitFor(() => expect(screen.getByTestId('prints-section')).toBeInTheDocument());
+
+      const cta = screen.getByTestId('community-detail-add-print');
+      expect(cta).toHaveTextContent('community.print.cta');
+      fireEvent.click(cta);
+      expect(onAddPrint).toHaveBeenCalled();
+    });
+
+    it('switches to editing once the viewer has a print', async () => {
+      setup({ onAddPrint: vi.fn(), ownPrint: print('a') });
+      await waitFor(() => expect(screen.getByTestId('prints-section')).toBeInTheDocument());
+      expect(screen.getByTestId('community-detail-add-print')).toHaveTextContent(
+        'community.print.editCta'
+      );
+    });
+
+    // The feature's primary conversion button, and `size="sm"` is 24px.
+    it('carries a full touch target on mobile', async () => {
+      setup({ onAddPrint: vi.fn(), isMobile: true });
+      await waitFor(() => expect(screen.getByTestId('prints-section')).toBeInTheDocument());
+      expect(screen.getByTestId('community-detail-add-print').className).toContain('min-h-[44px]');
+    });
+
+    // Posting a print does not depend on being able to read the existing ones,
+    // so the CTA outlives both the spinner and a failed fetch.
+    it('is reachable while the list is still loading', () => {
+      setup({ onAddPrint: vi.fn() });
+      expect(screen.getByTestId('prints-section-loading')).toBeInTheDocument();
+      expect(screen.getByTestId('community-detail-add-print')).toBeInTheDocument();
+    });
+
+    it('is reachable after the list fails to load', async () => {
+      api.fetchPrints.mockResolvedValue(err({ kind: 'network', code: 'X', message: 'no' }));
+      setup({ onAddPrint: vi.fn() });
+      await waitFor(() => expect(screen.getByTestId('prints-section-error')).toBeInTheDocument());
+      expect(screen.getByTestId('community-detail-add-print')).toBeInTheDocument();
+    });
+  });
+
   describe('cover promotion', () => {
     beforeEach(() => {
       api.setCoverPhoto.mockResolvedValue(ok({ coverPhotoUrl: 'https://blob.example/a.webp' }));

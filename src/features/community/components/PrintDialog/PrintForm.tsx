@@ -56,7 +56,7 @@ export function PrintForm({
 
   const printerOptions = useMemo<SelectOption[]>(
     () => [
-      { id: '', name: t('community.print.printerPlaceholder') },
+      { id: '', name: t('community.print.notSaying') },
       ...COMMUNITY_PRINTERS.map((printer) => ({
         id: printer.id,
         // The curated labels are hardware model names and stay as authored;
@@ -69,11 +69,15 @@ export function PrintForm({
   );
 
   const materialOptions = useMemo<SelectOption[]>(
-    () =>
-      COMMUNITY_PRINT_MATERIALS.map((material) => ({
+    () => [
+      // Same blank sentinel as the printer select. Without it the one field in
+      // the group with no empty state would report a filament nobody chose.
+      { id: '', name: t('community.print.notSaying') },
+      ...COMMUNITY_PRINT_MATERIALS.map((material) => ({
         id: material,
         name: materialLabel(material, t('community.print.otherOption')),
       })),
+    ],
     [t]
   );
 
@@ -87,57 +91,94 @@ export function PrintForm({
   );
 
   return (
+    // Ordered by what the feature is for: a photo of the printed thing and a
+    // verdict on how it fitted are the contribution, so they come first. The
+    // slicer numbers are supporting detail and sit below in a group that says
+    // it can be skipped.
     <div className="space-y-4" data-testid="print-form">
       <Field
-        label={t('community.print.nameLabel')}
-        htmlFor="print-name"
-        error={issues.displayName === undefined ? undefined : t('community.print.nameRequired')}
+        label={t('community.print.photosLabel')}
+        hint={t('community.print.photosHint', { count: COMMUNITY_PRINT_MAX_PHOTOS })}
       >
-        <Input
-          id="print-name"
-          value={displayName}
+        <PrintPhotoPicker
+          photos={photos}
+          onAdd={onAddPhoto}
+          onRemove={onRemovePhoto}
+          error={photoError}
+          onError={onPhotoError}
           disabled={disabled}
-          maxLength={32}
-          placeholder={t('community.print.namePlaceholder')}
-          onChange={(event) => onDisplayNameChange(event.target.value)}
         />
       </Field>
 
+      {/* The whole point of the feature: no default is pre-selected, because a
+          verdict nobody consciously chose is worse than no verdict at all. */}
       <Field
-        label={t('community.print.printerLabel')}
-        htmlFor="print-printer"
-        error={
-          issues.printer === 'required'
-            ? t('community.print.printerRequired')
-            : issues.printer === 'otherRequired'
-              ? t('community.print.printerOtherRequired')
-              : undefined
-        }
+        label={t('community.print.fitTitle')}
+        hint={t('community.print.fitHint')}
+        error={issues.fitVerdict === undefined ? undefined : t('community.print.fitRequired')}
       >
-        <Select
-          id="print-printer"
-          options={printerOptions}
-          value={draft.printer}
-          disabled={disabled}
-          onValueChange={(value) => onDraftChange({ printer: value })}
+        <SegmentedControl
+          options={fitOptions}
+          value={draft.fitVerdict ?? ('' as CommunityPrintFitVerdict)}
+          onChange={(value) => onDraftChange({ fitVerdict: value })}
+          aria-label={t('community.print.fitTitle')}
         />
       </Field>
 
-      {draft.printer === COMMUNITY_PRINTER_OTHER && (
-        <Field label={t('community.print.printerOtherLabel')} htmlFor="print-printer-other">
-          <Input
-            id="print-printer-other"
-            value={draft.printerOther}
-            disabled={disabled}
-            maxLength={40}
-            placeholder={t('community.print.printerOtherPlaceholder')}
-            onChange={(event) => onDraftChange({ printerOther: event.target.value })}
-          />
-        </Field>
+      <Field label={t('community.print.noteLabel')} htmlFor="print-note">
+        <Textarea
+          id="print-note"
+          rows={3}
+          value={draft.note}
+          disabled={disabled}
+          maxLength={COMMUNITY_PRINT_NOTE_MAX_LENGTH}
+          placeholder={t('community.print.notePlaceholder')}
+          onChange={(event) => onDraftChange({ note: event.target.value })}
+        />
+      </Field>
+
+      {/* One message for the pair, under the second of them: the rule is "a
+          photo or a note", and repeating it on both reads as two failures. */}
+      {issues.content !== undefined && (
+        <p className="text-sm text-error" role="alert" data-testid="print-content-required">
+          {t('community.print.contentRequired')}
+        </p>
       )}
 
       <div className="space-y-3 rounded-lg border border-stroke-subtle p-3">
-        <h3 className="text-sm font-medium text-content">{t('community.print.settingsTitle')}</h3>
+        <div>
+          <h3 className="text-sm font-medium text-content">{t('community.print.settingsTitle')}</h3>
+          <p className="text-xs text-content-tertiary">{t('community.print.settingsOptional')}</p>
+        </div>
+
+        <Field
+          label={t('community.print.printerLabel')}
+          htmlFor="print-printer"
+          error={
+            issues.printer === undefined ? undefined : t('community.print.printerOtherRequired')
+          }
+        >
+          <Select
+            id="print-printer"
+            options={printerOptions}
+            value={draft.printer}
+            disabled={disabled}
+            onValueChange={(value) => onDraftChange({ printer: value })}
+          />
+        </Field>
+
+        {draft.printer === COMMUNITY_PRINTER_OTHER && (
+          <Field label={t('community.print.printerOtherLabel')} htmlFor="print-printer-other">
+            <Input
+              id="print-printer-other"
+              value={draft.printerOther}
+              disabled={disabled}
+              maxLength={40}
+              placeholder={t('community.print.printerOtherPlaceholder')}
+              onChange={(event) => onDraftChange({ printerOther: event.target.value })}
+            />
+          </Field>
+        )}
 
         <Field label={t('community.print.materialLabel')} htmlFor="print-material">
           <Select
@@ -145,17 +186,14 @@ export function PrintForm({
             options={materialOptions}
             value={draft.material}
             disabled={disabled}
-            onValueChange={(value) => onDraftChange({ material: value as CommunityPrintMaterial })}
+            onValueChange={(value) =>
+              onDraftChange({ material: value as CommunityPrintMaterial | '' })
+            }
           />
         </Field>
 
         <div className="grid grid-cols-2 gap-3">
-          <Field
-            label={t('community.print.nozzleLabel')}
-            htmlFor="print-nozzle"
-            trailing="mm"
-            error={issues.nozzleMm === undefined ? undefined : t('community.print.nozzleRequired')}
-          >
+          <Field label={t('community.print.nozzleLabel')} htmlFor="print-nozzle" trailing="mm">
             <Input
               id="print-nozzle"
               inputMode="decimal"
@@ -169,11 +207,6 @@ export function PrintForm({
             label={t('community.print.layerHeightLabel')}
             htmlFor="print-layer-height"
             trailing="mm"
-            error={
-              issues.layerHeightMm === undefined
-                ? undefined
-                : t('community.print.layerHeightRequired')
-            }
           >
             <Input
               id="print-layer-height"
@@ -185,12 +218,7 @@ export function PrintForm({
           </Field>
         </div>
 
-        <Field
-          label={t('community.print.printTimeLabel')}
-          error={
-            issues.printTime === undefined ? undefined : t('community.print.printTimeRequired')
-          }
-        >
+        <Field label={t('community.print.printTimeLabel')}>
           <div className="flex gap-2">
             <Input
               inputMode="numeric"
@@ -229,44 +257,18 @@ export function PrintForm({
         </Field>
       </div>
 
-      {/* The whole point of the feature: no default is pre-selected, because a
-          verdict nobody consciously chose is worse than no verdict at all. */}
       <Field
-        label={t('community.print.fitTitle')}
-        hint={t('community.print.fitHint')}
-        error={issues.fitVerdict === undefined ? undefined : t('community.print.fitRequired')}
+        label={t('community.print.nameLabel')}
+        htmlFor="print-name"
+        error={issues.displayName === undefined ? undefined : t('community.print.nameRequired')}
       >
-        <SegmentedControl
-          options={fitOptions}
-          value={draft.fitVerdict ?? ('' as CommunityPrintFitVerdict)}
-          onChange={(value) => onDraftChange({ fitVerdict: value })}
-          aria-label={t('community.print.fitTitle')}
-        />
-      </Field>
-
-      <Field label={t('community.print.noteLabel')} htmlFor="print-note">
-        <Textarea
-          id="print-note"
-          rows={3}
-          value={draft.note}
+        <Input
+          id="print-name"
+          value={displayName}
           disabled={disabled}
-          maxLength={COMMUNITY_PRINT_NOTE_MAX_LENGTH}
-          placeholder={t('community.print.notePlaceholder')}
-          onChange={(event) => onDraftChange({ note: event.target.value })}
-        />
-      </Field>
-
-      <Field
-        label={t('community.print.photosLabel')}
-        hint={t('community.print.photosHint', { count: COMMUNITY_PRINT_MAX_PHOTOS })}
-      >
-        <PrintPhotoPicker
-          photos={photos}
-          onAdd={onAddPhoto}
-          onRemove={onRemovePhoto}
-          error={photoError}
-          onError={onPhotoError}
-          disabled={disabled}
+          maxLength={32}
+          placeholder={t('community.print.namePlaceholder')}
+          onChange={(event) => onDisplayNameChange(event.target.value)}
         />
       </Field>
     </div>

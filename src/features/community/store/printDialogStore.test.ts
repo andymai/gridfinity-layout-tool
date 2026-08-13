@@ -68,6 +68,46 @@ describe('open', () => {
     expect(usePrintDialogStore.getState().phase).toBe('signin');
   });
 
+  it('reopens an unreported setting as an empty field, never as a default', () => {
+    usePrintDialogStore.getState().open({
+      designId: 'abc123def456',
+      designName: 'Socket Organizer',
+      signedIn: true,
+      existing: { ...EXISTING, settings: {} },
+    });
+
+    // Stamping 'pla' here would write back a material the reporter never chose
+    // the next time they touched anything else on the record.
+    expect(usePrintDialogStore.getState().draft).toMatchObject({
+      material: '',
+      nozzleMm: '',
+      layerHeightMm: '',
+      printHours: '',
+      printMinutes: '',
+      printer: '',
+    });
+  });
+
+  it('remembers whether the record it opened already met the substance floor', () => {
+    const open = (existing: CommunityPrint | null) =>
+      usePrintDialogStore.getState().open({
+        designId: 'abc123def456',
+        designName: 'Socket Organizer',
+        signedIn: true,
+        existing,
+      });
+
+    open({ ...EXISTING, photos: [], note: '' });
+    expect(usePrintDialogStore.getState().existingHadSubstance).toBe(false);
+
+    open({ ...EXISTING, photos: [], note: 'snug' });
+    expect(usePrintDialogStore.getState().existingHadSubstance).toBe(true);
+
+    // Posting fresh always faces the floor.
+    open(null);
+    expect(usePrintDialogStore.getState().existingHadSubstance).toBe(true);
+  });
+
   it('hydrates an edit from the existing record', () => {
     usePrintDialogStore.getState().open({
       designId: 'abc123def456',
@@ -180,22 +220,36 @@ describe('validatePrintDraft', () => {
     printer: 'bambu-p1s',
     printHours: '2',
     fitVerdict: 'as-designed' as const,
+    note: 'Printed fine.',
   };
 
+  it('starts every setting empty, so nothing is reported by default', () => {
+    expect(DEFAULT_PRINT_DRAFT).toMatchObject({
+      material: '',
+      nozzleMm: '',
+      layerHeightMm: '',
+      printHours: '',
+      printMinutes: '',
+      printer: '',
+    });
+  });
+
   it('passes a complete draft', () => {
-    expect(hasPrintDraftIssues(validatePrintDraft(complete, 'Casey'))).toBe(false);
+    expect(hasPrintDraftIssues(validatePrintDraft(complete, 'Casey', 0))).toBe(false);
   });
 
   it('requires a display name', () => {
-    expect(validatePrintDraft(complete, '   ').displayName).toBe('required');
+    expect(validatePrintDraft(complete, '   ', 0).displayName).toBe('required');
   });
 
-  it('requires a printer', () => {
-    expect(validatePrintDraft({ ...complete, printer: '' }, 'Casey').printer).toBe('required');
+  it('requires a fit verdict', () => {
+    expect(validatePrintDraft({ ...complete, fitVerdict: null }, 'Casey', 0).fitVerdict).toBe(
+      'required'
+    );
   });
 
   it('requires the free-text model when the printer is "other"', () => {
-    expect(validatePrintDraft({ ...complete, printer: 'other' }, 'Casey').printer).toBe(
+    expect(validatePrintDraft({ ...complete, printer: 'other' }, 'Casey', 0).printer).toBe(
       'otherRequired'
     );
   });
@@ -203,29 +257,50 @@ describe('validatePrintDraft', () => {
   it('accepts "other" once the model is filled in', () => {
     const issues = validatePrintDraft(
       { ...complete, printer: 'other', printerOther: 'Toolchanger' },
-      'Casey'
+      'Casey',
+      0
     );
     expect(issues.printer).toBeUndefined();
   });
 
-  it('requires a print time', () => {
-    expect(validatePrintDraft({ ...complete, printHours: '' }, 'Casey').printTime).toBe('required');
+  it.each(['printer', 'printHours', 'printMinutes', 'nozzleMm', 'layerHeightMm', 'filamentGrams'])(
+    'accepts a draft with no %s',
+    (field) => {
+      const issues = validatePrintDraft({ ...complete, [field]: '' }, 'Casey', 0);
+      expect(hasPrintDraftIssues(issues)).toBe(false);
+    }
+  );
+
+  it('accepts a draft carrying nothing but a verdict and a photo', () => {
+    const bare = { ...DEFAULT_PRINT_DRAFT, fitVerdict: 'as-designed' as const };
+    expect(hasPrintDraftIssues(validatePrintDraft(bare, 'Casey', 1))).toBe(false);
   });
 
-  it('requires a fit verdict', () => {
-    expect(validatePrintDraft({ ...complete, fitVerdict: null }, 'Casey').fitVerdict).toBe(
-      'required'
-    );
-  });
+  describe('substance floor', () => {
+    const noNote = { ...complete, note: '' };
 
-  it.each([
-    ['nozzleMm', ''],
-    ['nozzleMm', '0'],
-    ['layerHeightMm', ''],
-    ['layerHeightMm', '-1'],
-  ])('requires a positive %s (%s)', (field, value) => {
-    const issues = validatePrintDraft({ ...complete, [field]: value }, 'Casey');
-    expect(issues[field as 'nozzleMm' | 'layerHeightMm']).toBe('required');
+    it('rejects a verdict with neither a photo nor a note', () => {
+      expect(validatePrintDraft(noNote, 'Casey', 0).content).toBe('required');
+    });
+
+    it('treats whitespace as no note', () => {
+      expect(validatePrintDraft({ ...noNote, note: '   ' }, 'Casey', 0).content).toBe('required');
+    });
+
+    it('accepts a photo alone', () => {
+      expect(validatePrintDraft(noNote, 'Casey', 1).content).toBeUndefined();
+    });
+
+    it('accepts a note alone', () => {
+      expect(validatePrintDraft(complete, 'Casey', 0).content).toBeUndefined();
+    });
+
+    // Records written before the floor existed could legitimately carry
+    // neither. Their owners must still be able to fix a typo rather than
+    // finding delete is the only way out.
+    it('exempts a record that already had neither', () => {
+      expect(validatePrintDraft(noNote, 'Casey', 0, false).content).toBeUndefined();
+    });
   });
 });
 

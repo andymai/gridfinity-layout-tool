@@ -44,7 +44,11 @@ import {
   COMMUNITY_REPORT_REASONS,
 } from '../lib/communityValidation.js';
 import type { CommunityReportReason } from '../lib/communityValidation.js';
-import { communityPrintsEnabled, validateCommunityPrint } from '../lib/communityPrintValidation.js';
+import {
+  communityPrintsEnabled,
+  hasPrintSubstance,
+  validateCommunityPrint,
+} from '../lib/communityPrintValidation.js';
 import {
   clearCommunityCoverIfFromPhotos,
   communityPrintPhotoBlobPath,
@@ -146,13 +150,15 @@ interface PrintResponse {
   authorName: string;
   photos: string[];
   photoThumbs: string[];
+  /** Every field omitted rather than nulled when unreported, so a client that
+      reads `settings.nozzleMm` gets `undefined` and cannot format a 0. */
   settings: {
-    material: string;
-    nozzleMm: number;
-    layerHeightMm: number;
-    printMinutes: number;
+    material?: string;
+    nozzleMm?: number;
+    layerHeightMm?: number;
+    printMinutes?: number;
     filamentGrams?: number;
-    printer: string;
+    printer?: string;
     printerOther?: string;
   };
   fitVerdict: string;
@@ -171,12 +177,12 @@ function toPrintResponse(record: CommunityPrintRecord): PrintResponse {
     photos: record.photos,
     photoThumbs: record.photoThumbs,
     settings: {
-      material: record.material,
-      nozzleMm: record.nozzleMm,
-      layerHeightMm: record.layerHeightMm,
-      printMinutes: record.printMinutes,
+      ...(record.material !== null && { material: record.material }),
+      ...(record.nozzleMm !== null && { nozzleMm: record.nozzleMm }),
+      ...(record.layerHeightMm !== null && { layerHeightMm: record.layerHeightMm }),
+      ...(record.printMinutes !== null && { printMinutes: record.printMinutes }),
       ...(record.filamentGrams !== null && { filamentGrams: record.filamentGrams }),
-      printer: record.printer,
+      ...(record.printer !== null && { printer: record.printer }),
       ...(record.printerOther !== '' && { printerOther: record.printerOther }),
     },
     fitVerdict: record.fitVerdict,
@@ -329,6 +335,21 @@ async function handleUpsert(
   // would let a hidden report re-enter the list by rewriting itself.
   if (existing !== null && existing.status !== 'live') {
     sendError(res, 403, ErrorCode.UNAUTHORIZED, 'This print report is no longer editable.');
+    return;
+  }
+
+  // Enforced against what is already stored, not unconditionally: a record
+  // written before the floor existed can legitimately carry neither a photo nor
+  // a note, and its owner must still be able to correct it. What the floor does
+  // guarantee is that a record never drops BELOW it.
+  if (
+    !hasPrintSubstance(payload.photos.length, payload.note) &&
+    (existing === null || hasPrintSubstance(existing.photos.length, existing.note))
+  ) {
+    res.status(400).json({
+      error: 'a print needs at least one photo or a note',
+      code: 'INVALID_PAYLOAD',
+    });
     return;
   }
 

@@ -234,14 +234,23 @@ function checkRange(
   return { ok: true, value };
 }
 
+/** Absent (undefined/null) passes as null; a value present but out of range still fails. */
+function checkOptionalRange(
+  value: unknown,
+  field: keyof typeof COMMUNITY_PRINT_RANGES
+): { ok: true; value: number | null } | { ok: false; message: string } {
+  if (value === undefined || value === null) return { ok: true, value: null };
+  return checkRange(value, field);
+}
+
 export interface CommunityPrintPayload {
   authorName: string;
-  material: CommunityPrintMaterial;
-  nozzleMm: number;
-  layerHeightMm: number;
-  printMinutes: number;
+  material: CommunityPrintMaterial | null;
+  nozzleMm: number | null;
+  layerHeightMm: number | null;
+  printMinutes: number | null;
   filamentGrams: number | null;
-  printer: string;
+  printer: string | null;
   printerOther: string;
   fitVerdict: CommunityPrintFitVerdict;
   note: string;
@@ -252,6 +261,20 @@ export interface CommunityPrintPayload {
 export type CommunityPrintValidationResult =
   | { valid: true; payload: CommunityPrintPayload }
   | { valid: false; error: { code: string; message: string } };
+
+/**
+ * Does a print carry evidence (a photo) or context (a note)?
+ *
+ * The substance floor, now that every setting is optional: a fit verdict on its
+ * own is a bare vote. It lives outside `validateCommunityPrint` because it is
+ * the one rule that depends on what is already stored. Records written before
+ * the floor existed could legitimately have neither (the old validator said so
+ * explicitly), and their owners must still be able to fix a typo rather than
+ * being left with delete as the only way out. Applied in `handleUpsert`.
+ */
+export function hasPrintSubstance(photoCount: number, note: string): boolean {
+  return photoCount > 0 || note.trim() !== '';
+}
 
 export function validateCommunityPrint(body: unknown): CommunityPrintValidationResult {
   if (!isObject(body)) {
@@ -273,37 +296,45 @@ export function validateCommunityPrint(body: unknown): CommunityPrintValidationR
     return validationError('CONTENT_BLOCKED', 'authorName contains prohibited content');
   }
 
-  if (
-    !isString(body.material) ||
-    !(COMMUNITY_PRINT_MATERIALS as readonly string[]).includes(body.material)
-  ) {
-    return validationError(
-      'INVALID_MATERIAL',
-      `material must be one of: ${COMMUNITY_PRINT_MATERIALS.join(', ')}`
-    );
+  // Every settings field is optional; the fit verdict below is the only one
+  // this validator demands. An omitted field is stored absent, never as a zero
+  // that would skew the aggregates. The substance floor (a photo or a note) is
+  // enforced in `handleUpsert`, which is the only place that knows what is
+  // already stored; see `hasPrintSubstance`.
+  let material: CommunityPrintMaterial | null = null;
+  if (body.material !== undefined && body.material !== null) {
+    if (
+      !isString(body.material) ||
+      !(COMMUNITY_PRINT_MATERIALS as readonly string[]).includes(body.material)
+    ) {
+      return validationError(
+        'INVALID_MATERIAL',
+        `material must be one of: ${COMMUNITY_PRINT_MATERIALS.join(', ')}`
+      );
+    }
+    material = body.material as CommunityPrintMaterial;
   }
-  const material = body.material as CommunityPrintMaterial;
 
-  const nozzle = checkRange(body.nozzleMm, 'nozzleMm');
+  const nozzle = checkOptionalRange(body.nozzleMm, 'nozzleMm');
   if (!nozzle.ok) return validationError('INVALID_SETTINGS', nozzle.message);
 
-  const layerHeight = checkRange(body.layerHeightMm, 'layerHeightMm');
+  const layerHeight = checkOptionalRange(body.layerHeightMm, 'layerHeightMm');
   if (!layerHeight.ok) return validationError('INVALID_SETTINGS', layerHeight.message);
 
-  const printMinutes = checkRange(body.printMinutes, 'printMinutes');
+  const printMinutes = checkOptionalRange(body.printMinutes, 'printMinutes');
   if (!printMinutes.ok) return validationError('INVALID_SETTINGS', printMinutes.message);
 
-  let filamentGrams: number | null = null;
-  if (body.filamentGrams !== undefined && body.filamentGrams !== null) {
-    const grams = checkRange(body.filamentGrams, 'filamentGrams');
-    if (!grams.ok) return validationError('INVALID_SETTINGS', grams.message);
-    filamentGrams = grams.value;
-  }
+  const filament = checkOptionalRange(body.filamentGrams, 'filamentGrams');
+  if (!filament.ok) return validationError('INVALID_SETTINGS', filament.message);
+  const filamentGrams = filament.value;
 
-  if (!isString(body.printer) || !isCommunityPrinterId(body.printer)) {
-    return validationError('INVALID_PRINTER', 'printer must be a known printer id');
+  let printer: string | null = null;
+  if (body.printer !== undefined && body.printer !== null && body.printer !== '') {
+    if (!isString(body.printer) || !isCommunityPrinterId(body.printer)) {
+      return validationError('INVALID_PRINTER', 'printer must be a known printer id');
+    }
+    printer = body.printer;
   }
-  const printer = body.printer;
 
   // The free-text escape hatch is only readable alongside the 'other'
   // sentinel; carrying it on a known-printer report would let a caller attach
@@ -354,9 +385,6 @@ export function validateCommunityPrint(body: unknown): CommunityPrintValidationR
     }
   }
 
-  // A print with no photos is still worth having: the settings and the fit
-  // verdict are the decision-grade part, and demanding a photo would silently
-  // filter out everyone who printed it but did not photograph it.
   const photos: CommunityPrintPhotoEntry[] = [];
   if (body.photos !== undefined && body.photos !== null) {
     if (!Array.isArray(body.photos)) {

@@ -22,12 +22,13 @@ const PRINTS_ENDPOINT = '/api/community/prints';
 
 export interface CommunityPrintInput {
   authorName: string;
-  material: CommunityPrintMaterial;
-  nozzleMm: number;
-  layerHeightMm: number;
-  printMinutes: number;
+  /** Every setting is optional; omit rather than null what the reporter left blank. */
+  material?: CommunityPrintMaterial;
+  nozzleMm?: number;
+  layerHeightMm?: number;
+  printMinutes?: number;
   filamentGrams: number | null;
-  printer: string;
+  printer?: string;
   printerOther?: string;
   fitVerdict: CommunityPrintFitVerdict;
   note: string;

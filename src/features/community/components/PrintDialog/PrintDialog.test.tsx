@@ -76,6 +76,10 @@ function completeForm(): void {
   });
   fireEvent.change(screen.getByTestId('print-hours'), { target: { value: '2' } });
   fireEvent.click(screen.getByRole('radio', { name: 'community.print.fit.asDesigned' }));
+  // A verdict alone is a bare vote; the form wants a photo or a note with it.
+  fireEvent.change(screen.getByLabelText('community.print.noteLabel'), {
+    target: { value: 'Printed fine.' },
+  });
 }
 
 beforeEach(() => {
@@ -135,6 +139,62 @@ describe('PrintDialog', () => {
         fitVerdict: 'as-designed',
       })
     );
+  });
+
+  it('submits with nothing but a verdict and a note', async () => {
+    renderOpen();
+
+    fireEvent.change(screen.getByLabelText('community.print.nameLabel'), {
+      target: { value: 'Casey' },
+    });
+    fireEvent.click(screen.getByRole('radio', { name: 'community.print.fit.asDesigned' }));
+    fireEvent.change(screen.getByLabelText('community.print.noteLabel'), {
+      target: { value: 'Printed fine.' },
+    });
+    // Every settings field left as it opened.
+    fireEvent.click(screen.getByTestId('print-dialog-submit'));
+
+    await waitFor(() => expect(api.savePrint).toHaveBeenCalled());
+    const [, input] = api.savePrint.mock.calls[0] as [string, Record<string, unknown>];
+    // Omitted, not zeroed and not defaulted: a value nobody chose must not
+    // reach the modes and medians. A pre-filled 0.4/0.2/PLA would have.
+    for (const field of ['material', 'nozzleMm', 'layerHeightMm', 'printMinutes', 'printer']) {
+      expect(input).not.toHaveProperty(field);
+    }
+  });
+
+  it('can report a nozzle without naming a material', async () => {
+    renderOpen();
+
+    fireEvent.change(screen.getByLabelText('community.print.nameLabel'), {
+      target: { value: 'Casey' },
+    });
+    fireEvent.click(screen.getByRole('radio', { name: 'community.print.fit.asDesigned' }));
+    fireEvent.change(screen.getByLabelText('community.print.noteLabel'), {
+      target: { value: 'Printed fine.' },
+    });
+    fireEvent.change(screen.getByLabelText('community.print.nozzleLabel'), {
+      target: { value: '0.6' },
+    });
+    fireEvent.click(screen.getByTestId('print-dialog-submit'));
+
+    await waitFor(() => expect(api.savePrint).toHaveBeenCalled());
+    const [, input] = api.savePrint.mock.calls[0] as [string, Record<string, unknown>];
+    expect(input.nozzleMm).toBe(0.6);
+    expect(input).not.toHaveProperty('material');
+  });
+
+  it('asks for a photo or a note before accepting a bare verdict', () => {
+    renderOpen();
+
+    fireEvent.change(screen.getByLabelText('community.print.nameLabel'), {
+      target: { value: 'Casey' },
+    });
+    fireEvent.click(screen.getByRole('radio', { name: 'community.print.fit.asDesigned' }));
+    fireEvent.click(screen.getByTestId('print-dialog-submit'));
+
+    expect(screen.getByTestId('print-content-required')).toBeInTheDocument();
+    expect(api.savePrint).not.toHaveBeenCalled();
   });
 
   it('omits the free-text model unless the printer is "other"', async () => {
