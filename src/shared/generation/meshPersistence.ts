@@ -69,13 +69,16 @@ const MESH_CACHE_VERSION = 'v10';
  * brepkit `r2`: brepkit-wasm 3.2.36 — the base-fuse island fix moves output
  * for every multi-foot bin (the feet-to-base interface), restoring exact
  * fuses across the scenario catalog.
+ * brepkit `r3`: brepkit-wasm 3.2.37 — the hole-weave collinear-overlap fix
+ * makes the label-bracket fuse exact (58 analytic faces replace the
+ * 121-face fallback mesh), moving output for every bracket-labeled bin.
  *
  * `manifold` is the draft-preview kernel; its meshes are never persisted, but
  * the map is total so a future caller cannot fall through to `undefined`.
  */
 const KERNEL_MESH_REVISION: Record<KernelName, string> = {
   'occt-wasm': 'r1',
-  brepkit: 'r2',
+  brepkit: 'r3',
   manifold: 'r1',
 };
 
