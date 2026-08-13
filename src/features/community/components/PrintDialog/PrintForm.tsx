@@ -56,7 +56,7 @@ export function PrintForm({
 
   const printerOptions = useMemo<SelectOption[]>(
     () => [
-      { id: '', name: t('community.print.printerPlaceholder') },
+      { id: '', name: t('community.print.notSaying') },
       ...COMMUNITY_PRINTERS.map((printer) => ({
         id: printer.id,
         // The curated labels are hardware model names and stay as authored;
@@ -69,11 +69,15 @@ export function PrintForm({
   );
 
   const materialOptions = useMemo<SelectOption[]>(
-    () =>
-      COMMUNITY_PRINT_MATERIALS.map((material) => ({
+    () => [
+      // Same blank sentinel as the printer select. Without it the one field in
+      // the group with no empty state would report a filament nobody chose.
+      { id: '', name: t('community.print.notSaying') },
+      ...COMMUNITY_PRINT_MATERIALS.map((material) => ({
         id: material,
         name: materialLabel(material, t('community.print.otherOption')),
       })),
+    ],
     [t]
   );
 
@@ -87,10 +91,10 @@ export function PrintForm({
   );
 
   return (
-    // Ordered by what the feature is for. A photo of the printed thing and a
-    // verdict on how it fitted are the contribution; the slicer numbers are
-    // supporting detail, so they sit below in a group that says it can be
-    // skipped. It used to open on a name field and three required settings.
+    // Ordered by what the feature is for: a photo of the printed thing and a
+    // verdict on how it fitted are the contribution, so they come first. The
+    // slicer numbers are supporting detail and sit below in a group that says
+    // it can be skipped.
     <div className="space-y-4" data-testid="print-form">
       <Field
         label={t('community.print.photosLabel')}
@@ -182,7 +186,9 @@ export function PrintForm({
             options={materialOptions}
             value={draft.material}
             disabled={disabled}
-            onValueChange={(value) => onDraftChange({ material: value as CommunityPrintMaterial })}
+            onValueChange={(value) =>
+              onDraftChange({ material: value as CommunityPrintMaterial | '' })
+            }
           />
         </Field>
 

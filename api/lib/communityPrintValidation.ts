@@ -262,6 +262,20 @@ export type CommunityPrintValidationResult =
   | { valid: true; payload: CommunityPrintPayload }
   | { valid: false; error: { code: string; message: string } };
 
+/**
+ * Does a print carry evidence (a photo) or context (a note)?
+ *
+ * The substance floor, now that every setting is optional: a fit verdict on its
+ * own is a bare vote. It lives outside `validateCommunityPrint` because it is
+ * the one rule that depends on what is already stored. Records written before
+ * the floor existed could legitimately have neither (the old validator said so
+ * explicitly), and their owners must still be able to fix a typo rather than
+ * being left with delete as the only way out. See `handleWrite`.
+ */
+export function hasPrintSubstance(photoCount: number, note: string): boolean {
+  return photoCount > 0 || note.trim() !== '';
+}
+
 export function validateCommunityPrint(body: unknown): CommunityPrintValidationResult {
   if (!isObject(body)) {
     return validationError('INVALID_PAYLOAD', 'Request body must be an object');
@@ -386,13 +400,6 @@ export function validateCommunityPrint(body: unknown): CommunityPrintValidationR
       if (!check.ok) return validationError('INVALID_PHOTOS', check.message);
       photos.push(check.entry);
     }
-  }
-
-  // The one substance floor, now that the settings are all optional: a verdict
-  // on its own is a bare vote, so a record has to carry evidence (a photo) or
-  // context (a note). Checked after both are parsed so a kept photo counts.
-  if (photos.length === 0 && note === '') {
-    return validationError('INVALID_PAYLOAD', 'a print needs at least one photo or a note');
   }
 
   return {

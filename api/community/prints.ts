@@ -44,7 +44,11 @@ import {
   COMMUNITY_REPORT_REASONS,
 } from '../lib/communityValidation.js';
 import type { CommunityReportReason } from '../lib/communityValidation.js';
-import { communityPrintsEnabled, validateCommunityPrint } from '../lib/communityPrintValidation.js';
+import {
+  communityPrintsEnabled,
+  hasPrintSubstance,
+  validateCommunityPrint,
+} from '../lib/communityPrintValidation.js';
 import {
   clearCommunityCoverIfFromPhotos,
   communityPrintPhotoBlobPath,
@@ -331,6 +335,21 @@ async function handleUpsert(
   // would let a hidden report re-enter the list by rewriting itself.
   if (existing !== null && existing.status !== 'live') {
     sendError(res, 403, ErrorCode.UNAUTHORIZED, 'This print report is no longer editable.');
+    return;
+  }
+
+  // Enforced against what is already stored, not unconditionally: a record
+  // written before the floor existed can legitimately carry neither a photo nor
+  // a note, and its owner must still be able to correct it. What the floor does
+  // guarantee is that a record never drops BELOW it.
+  if (
+    !hasPrintSubstance(payload.photos.length, payload.note) &&
+    (existing === null || hasPrintSubstance(existing.photos.length, existing.note))
+  ) {
+    res.status(400).json({
+      error: 'a print needs at least one photo or a note',
+      code: 'INVALID_PAYLOAD',
+    });
     return;
   }
 

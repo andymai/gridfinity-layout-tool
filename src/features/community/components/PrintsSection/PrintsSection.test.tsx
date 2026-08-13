@@ -192,6 +192,13 @@ describe('PrintsSection', () => {
       );
     });
 
+    // The feature's primary conversion button, and `size="sm"` is 24px.
+    it('carries a full touch target on mobile', async () => {
+      setup({ onAddPrint: vi.fn(), isMobile: true });
+      await waitFor(() => expect(screen.getByTestId('prints-section')).toBeInTheDocument());
+      expect(screen.getByTestId('community-detail-add-print').className).toContain('min-h-[44px]');
+    });
+
     // Posting a print does not depend on being able to read the existing ones,
     // so the CTA outlives both the spinner and a failed fetch.
     it('is reachable while the list is still loading', () => {

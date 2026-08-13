@@ -131,52 +131,54 @@ interface StatTileDisclosure {
   readonly testId: string;
 }
 
-/**
- * One count in the stats row, number over label.
- *
- * A zero is rendered, not hidden — the row's width would otherwise change as a
- * design gains its first like — but it drops to the tertiary colour so a new
- * design does not read as a wall of bold noughts.
- */
-function StatTile({
-  label,
-  value,
-  disclosure,
-  testId,
-}: {
+interface StatTileProps {
   label: string;
   value: number;
+  /** Makes the tile a button; the count reads the same either way. */
   disclosure?: StatTileDisclosure;
   testId?: string;
-}) {
-  const valueClass = cn(
-    'block text-lg font-semibold leading-tight',
-    value > 0 ? 'text-content' : 'text-content-tertiary'
-  );
-  const labelClass = 'block text-xs text-content-secondary';
+}
 
-  if (disclosure !== undefined) {
-    return (
-      <Button
-        variant="ghost"
-        touchTarget={false}
-        aria-expanded={disclosure.expanded}
-        aria-label={disclosure.label}
-        onClick={disclosure.onToggle}
-        className="h-auto flex-col gap-0 p-1 font-normal underline-offset-2 hover:underline"
-        data-testid={disclosure.testId}
+/**
+ * A zero is rendered, not hidden: the row's width would otherwise change as a
+ * design gains its first like. It drops to the tertiary colour instead, so a
+ * new design does not read as a wall of bold noughts.
+ */
+function StatTile({ label, value, disclosure, testId }: StatTileProps) {
+  const body = (
+    <>
+      <span
+        className={cn(
+          'block text-lg font-semibold leading-tight',
+          value > 0 ? 'text-content' : 'text-content-tertiary'
+        )}
       >
-        <span className={valueClass}>{value}</span>
-        <span className={labelClass}>{label}</span>
-      </Button>
+        {value}
+      </span>
+      <span className="block text-xs text-content-secondary">{label}</span>
+    </>
+  );
+
+  if (disclosure === undefined) {
+    return (
+      <div className="p-1" data-testid={testId}>
+        {body}
+      </div>
     );
   }
 
   return (
-    <div className="p-1" data-testid={testId}>
-      <span className={valueClass}>{value}</span>
-      <span className={labelClass}>{label}</span>
-    </div>
+    <Button
+      variant="ghost"
+      touchTarget={false}
+      aria-expanded={disclosure.expanded}
+      aria-label={disclosure.label}
+      onClick={disclosure.onToggle}
+      className="h-auto flex-col gap-0 p-1 font-normal underline-offset-2 hover:underline"
+      data-testid={disclosure.testId}
+    >
+      {body}
+    </Button>
   );
 }
 
@@ -286,11 +288,8 @@ export function CommunityDetailContent({
 
         {counts !== null && (
           <>
-            {/* A fixed row of tiles rather than a sentence of label-value pairs:
-                the heart used to sit inside the "Likes 0" run, which read as a
-                fourth stat that happened to have an icon glued to its left. The
-                tiles now only report, and the one thing a visitor can do about
-                them is a button of its own underneath. */}
+            {/* The tiles only report; the one thing a visitor can do about them
+                is the like button of its own underneath. */}
             <div
               className={cn(
                 'grid gap-2 text-center',
@@ -305,8 +304,7 @@ export function CommunityDetailContent({
               <StatTile
                 label={t('community.detail.stats.remixes')}
                 value={counts.remixes}
-                // The tile is the only route to the remix list, so it keeps the
-                // disclosure it had as a sentence fragment.
+                // The tile is the only route to the remix list.
                 disclosure={
                   counts.remixes > 0
                     ? {
@@ -413,8 +411,7 @@ export function CommunityDetailContent({
         )}
 
         {/* Sits above the similar rail: whether this printed for other people
-            is a decision input, and the rail is where attention goes next. The
-            "post yours" CTA lives in this section's own header. */}
+            is a decision input, and the rail is where attention goes next. */}
         {printsSlot}
 
         <SimilarRail design={design} />

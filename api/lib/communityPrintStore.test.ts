@@ -195,9 +195,7 @@ describe('readCommunityPrint', () => {
     );
   });
 
-  // The hash stores everything as a string and `Number('')` is 0, so an
-  // unreported measurement would come back as a measured zero and join the
-  // modes and medians.
+  // The hash stores everything as a string and `Number('')` is 0.
   it('reads every unreported setting back as absent, not zero', async () => {
     const { redis, hgetall } = createRedis(createPipeline());
     hgetall.mockResolvedValue({
@@ -240,8 +238,7 @@ describe('readCommunityPrint', () => {
       status: 'live',
     });
 
-    // Malformed rather than defaultable: coercing it would feed a fabricated
-    // value into the aggregate. '' is the separate case of "did not say".
+    // Malformed rather than defaultable; '' is the separate "did not say" case.
     expect(await readCommunityPrint(redis, DESIGN_ID, AUTHOR)).toBeNull();
   });
 
@@ -457,8 +454,7 @@ describe('summarizeCommunityPrints', () => {
   });
 
   // `modeOf` is generic over `T | null`, so an unreported value left in the
-  // sample can win its own vote and typecheck while doing it. These guard the
-  // filtering that keeps absences out of the ballot.
+  // sample can win its own vote and typecheck while doing it.
   describe('unreported settings', () => {
     it('never elects "unreported" as the common material', () => {
       const summary = summarizeCommunityPrints([
@@ -487,7 +483,7 @@ describe('summarizeCommunityPrints', () => {
         print({ printMinutes: 140 }),
       ]);
 
-      // 120, not 100 — a null coerced to 0 would have taken the middle slot.
+      // 120, not 100. A null coerced to 0 would have taken the middle slot.
       expect(summary.medianPrintMinutes).toBe(120);
     });
 

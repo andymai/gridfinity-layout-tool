@@ -47,26 +47,21 @@ function errorMessageKey(error: CommunityClientError): string {
   return ERROR_KEYS[error.kind] ?? 'community.print.error.generic';
 }
 
-function toNumber(value: string): number | null {
-  if (value.trim() === '') return null;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
 /**
  * Optional measurements only mean something above zero, and the server's floor
  * is 0.1, so a typed 0 or -5 is an unset field rather than a value worth a
  * round trip to have rejected.
  */
 function toPositiveNumber(value: string): number | null {
-  const parsed = toNumber(value);
-  return parsed !== null && parsed > 0 ? parsed : null;
+  const parsed = Number(value);
+  if (value.trim() === '' || !Number.isFinite(parsed)) return null;
+  return parsed > 0 ? parsed : null;
 }
 
 /**
- * Every setting is optional, so each is sent only when the reporter filled it
- * in. Omitted rather than nulled: an absent measurement must not reach the
- * modes and medians as a value, and the server stores absence as absence.
+ * Each setting is sent only when the reporter filled it in, omitted rather than
+ * nulled: an absent measurement must not reach the modes and medians as a
+ * value, and the server stores absence as absence.
  */
 function toInput(
   draft: PrintDraft,
@@ -79,7 +74,7 @@ function toInput(
   const layerHeightMm = toPositiveNumber(draft.layerHeightMm);
   return {
     authorName: displayName.trim(),
-    material: draft.material,
+    ...(draft.material !== '' && { material: draft.material }),
     ...(nozzleMm !== null && { nozzleMm }),
     ...(layerHeightMm !== null && { layerHeightMm }),
     ...(printMinutes !== null && { printMinutes }),
@@ -123,6 +118,7 @@ function PrintDialogOpen({ onSaved, onDeleted }: PrintDialogProps) {
 
   const phase = usePrintDialogStore((s) => s.phase);
   const mode = usePrintDialogStore((s) => s.mode);
+  const existingHadSubstance = usePrintDialogStore((s) => s.existingHadSubstance);
   const designId = usePrintDialogStore((s) => s.designId);
   const designName = usePrintDialogStore((s) => s.designName);
   const draft = usePrintDialogStore((s) => s.draft);
@@ -152,7 +148,7 @@ function PrintDialogOpen({ onSaved, onDeleted }: PrintDialogProps) {
   };
 
   const handleSubmit = () => {
-    const found = validatePrintDraft(draft, displayName, photos.length);
+    const found = validatePrintDraft(draft, displayName, photos.length, existingHadSubstance);
     setIssues(found);
     if (hasPrintDraftIssues(found)) return;
 

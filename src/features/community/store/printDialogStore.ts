@@ -36,7 +36,8 @@ export interface PrintPhotoSlot {
  * half-typed "0." does not round-trip through Number() and erase the cursor.
  */
 export interface PrintDraft {
-  material: CommunityPrintMaterial;
+  /** '' is "did not say", the same sentinel the printer select uses. */
+  material: CommunityPrintMaterial | '';
   nozzleMm: string;
   layerHeightMm: string;
   printHours: string;
@@ -59,6 +60,13 @@ interface PrintDialogState {
   error: CommunityClientError | null;
   /** Non-null while a photo is being downscaled and re-encoded. */
   photoError: string | null;
+  /**
+   * Did the record being edited already carry a photo or a note? Captured at
+   * open time because the substance floor exempts records written before it
+   * existed, and the draft alone cannot tell "never had one" from "just removed
+   * it". True when posting fresh, so a new print always faces the floor.
+   */
+  existingHadSubstance: boolean;
 }
 
 export interface OpenPrintDialogPayload {
@@ -86,16 +94,18 @@ interface PrintDialogActions {
 export type PrintDialogStore = PrintDialogState & PrintDialogActions;
 
 /**
- * Defaults chosen as the most common real answer rather than as empty fields:
- * 0.4mm nozzle at 0.2mm layers is what the overwhelming majority of these
- * machines ship with, so most reporters change nothing here. `fitVerdict` is
- * deliberately null: it is the one field nobody should be able to submit
- * without having actually decided.
+ * Every settings field starts empty. Pre-filling the common answer (0.4mm
+ * nozzle, 0.2mm layers, PLA) made sense while these were required: it saved
+ * typing on a field you had to fill anyway. Now that they are optional it
+ * manufactures data instead: a reporter who never opens the settings group
+ * would submit three values they never chose, and the rollup would report
+ * "usually PLA at 0.2mm" computed from them. `fitVerdict` is null for the
+ * older, stronger version of the same rule.
  */
 export const DEFAULT_PRINT_DRAFT: PrintDraft = {
-  material: 'pla',
-  nozzleMm: '0.4',
-  layerHeightMm: '0.2',
+  material: '',
+  nozzleMm: '',
+  layerHeightMm: '',
   printHours: '',
   printMinutes: '',
   filamentGrams: '',
@@ -115,6 +125,7 @@ export const INITIAL_PRINT_DIALOG_STATE: PrintDialogState = {
   photos: [],
   error: null,
   photoError: null,
+  existingHadSubstance: true,
 };
 
 /** An unreported setting reopens as an empty field, never as a fabricated 0. */
@@ -125,7 +136,7 @@ function numberField(value: number | undefined): string {
 function draftFromPrint(print: CommunityPrint): PrintDraft {
   const total = print.settings.printMinutes;
   return {
-    material: print.settings.material ?? DEFAULT_PRINT_DRAFT.material,
+    material: print.settings.material ?? '',
     nozzleMm: numberField(print.settings.nozzleMm),
     layerHeightMm: numberField(print.settings.layerHeightMm),
     printHours: total === undefined ? '' : String(Math.floor(total / 60)),
@@ -153,6 +164,8 @@ export const usePrintDialogStore = create<PrintDialogStore>((set, get) => ({
       displayName: existing === null ? loadDisplayName() : existing.authorName,
       draft: existing === null ? DEFAULT_PRINT_DRAFT : draftFromPrint(existing),
       photos: existing === null ? [] : existing.photos.map((url) => ({ kind: 'kept', url })),
+      existingHadSubstance:
+        existing === null || existing.photos.length > 0 || existing.note.trim() !== '',
     }),
 
   completeSignIn: () => set({ phase: 'form', displayName: loadDisplayName() }),
@@ -181,7 +194,7 @@ export const usePrintDialogStore = create<PrintDialogStore>((set, get) => ({
 }));
 
 export interface PrintDraftIssues {
-  /** Only the free-text half: a blank printer select is an acceptable answer now. */
+  /** Only the free-text half: a blank printer select is an acceptable answer. */
   printer?: 'otherRequired';
   fitVerdict?: 'required';
   displayName?: 'required';
@@ -203,24 +216,30 @@ export function draftPrintMinutes(draft: PrintDraft): number | null {
  * inline message instead of a round trip, not to be authoritative: the server
  * revalidates everything and is the only thing that decides.
  *
- * Every print setting is optional. What is left is the fit verdict — the one
- * thing that cannot be produced without having printed the design — plus a
- * photo or a note, so the record says something beyond a bare vote.
+ * Every print setting is optional. What is left is the fit verdict (the one
+ * thing that cannot be produced without having printed the design) plus a photo
+ * or a note, so the record says something beyond a bare vote.
+ *
+ * `existingHadSubstance` mirrors the server's exemption: a record written
+ * before the floor existed can carry neither, and its owner must still be able
+ * to correct it rather than being left with delete as the only way out. Pass
+ * false only when editing such a record.
  */
 export function validatePrintDraft(
   draft: PrintDraft,
   displayName: string,
-  photoCount: number
+  photoCount: number,
+  existingHadSubstance = true
 ): PrintDraftIssues {
   const issues: PrintDraftIssues = {};
   if (displayName.trim() === '') issues.displayName = 'required';
-  // The free-text model is only readable next to the 'other' sentinel, so it
-  // is demanded by that choice rather than on its own.
   if (draft.printer === COMMUNITY_PRINTER_OTHER && draft.printerOther.trim() === '') {
     issues.printer = 'otherRequired';
   }
   if (draft.fitVerdict === null) issues.fitVerdict = 'required';
-  if (photoCount === 0 && draft.note.trim() === '') issues.content = 'required';
+  if (photoCount === 0 && draft.note.trim() === '' && existingHadSubstance) {
+    issues.content = 'required';
+  }
   return issues;
 }
 

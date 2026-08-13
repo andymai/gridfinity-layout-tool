@@ -666,6 +666,7 @@ function CommunityDetailDialog({
                   onOpenPhoto={handleOpenPhoto}
                   onItemsChange={handlePrintItemsChange}
                   onAddPrint={handleAddPrint}
+                  isMobile={isMobile}
                 />
               ) : undefined
             }

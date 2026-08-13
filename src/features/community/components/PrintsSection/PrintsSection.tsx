@@ -36,12 +36,10 @@ export interface PrintsSectionProps {
    * without it a photo revealed by Load more would have no index to open on.
    */
   onItemsChange?: (items: readonly CommunityPrint[]) => void;
-  /**
-   * Opens the print dialog. It belongs to this section's header rather than to
-   * the rail above it: floating between the cost panel and this heading, the
-   * button read as a stray line of centred text with no owner.
-   */
+  /** Opens the print dialog from this section's own header; absent hides the CTA. */
   onAddPrint?: () => void;
+  /** Drives the CTA's touch target; the overlay owns the breakpoint. */
+  isMobile?: boolean;
 }
 
 type LoadStatus = 'loading' | 'ready' | 'error';
@@ -56,6 +54,7 @@ export function PrintsSection({
   onOpenPhoto,
   onItemsChange,
   onAddPrint,
+  isMobile = false,
 }: PrintsSectionProps) {
   const t = useTranslation();
 
@@ -151,9 +150,9 @@ export function PrintsSection({
       .finally(() => setMoreBusy(false));
   }, [cursor, designId, moreBusy]);
 
-  // The header renders in every state, so the CTA does not disappear while the
-  // list is loading or after it fails: posting a print does not depend on being
-  // able to read the existing ones.
+  // Rendered in every load state, so the CTA survives the spinner and a failed
+  // fetch: posting a print does not depend on being able to read the existing
+  // ones.
   const header = (
     <>
       <div className="flex items-center justify-between gap-2">
@@ -161,7 +160,11 @@ export function PrintsSection({
         {onAddPrint !== undefined && (
           <Button
             variant="secondary"
-            size="sm"
+            // The feature's primary conversion button. `size="sm"` is 24px, so
+            // without this it would be the one control in the overlay a thumb
+            // cannot reliably hit.
+            touchTarget={isMobile}
+            size={isMobile ? undefined : 'sm'}
             onClick={onAddPrint}
             data-testid="community-detail-add-print"
           >
@@ -182,76 +185,70 @@ export function PrintsSection({
     </>
   );
 
-  if (status === 'loading') {
-    return (
-      <section className="space-y-3" data-testid="prints-section">
-        {header}
+  return (
+    <section className="space-y-3" data-testid="prints-section">
+      {header}
+
+      {status === 'loading' && (
         <div className="flex justify-center py-4" data-testid="prints-section-loading">
           <Spinner size="sm" />
           <span className="sr-only" role="status">
             {t('common.loading')}
           </span>
         </div>
-      </section>
-    );
-  }
+      )}
 
-  if (status === 'error') {
-    return (
-      <section className="space-y-3" data-testid="prints-section">
-        {header}
+      {status === 'error' && (
         <div className="space-y-2" data-testid="prints-section-error">
           <p className="text-sm text-content-secondary">{t('community.prints.error')}</p>
           <Button variant="secondary" onClick={() => setAttempt((n) => n + 1)}>
             {t('community.prints.retry')}
           </Button>
         </div>
-      </section>
-    );
-  }
-
-  return (
-    <section className="space-y-3" data-testid="prints-section">
-      {header}
-
-      {summary !== null && summary.count > 0 && (
-        <>
-          <PrintSummary summary={summary} />
-          <p className="text-xs text-content-tertiary">{t('community.prints.verdictHint')}</p>
-        </>
       )}
 
-      {items.length === 0 ? (
-        <p className="text-sm text-content-tertiary" data-testid="prints-section-empty">
-          {ownPrint === null ? t('community.prints.emptyOwn') : t('community.prints.empty')}
-        </p>
-      ) : (
+      {status === 'ready' && (
         <>
-          {/* eslint-disable-next-line jsx-a11y/no-redundant-roles */}
-          <ul role="list" className="space-y-2">
-            {items.map((print) => (
-              <PrintCard
-                key={print.id}
-                print={print}
-                isMine={ownPrint !== null && print.id === ownPrint.id}
-                onReport={onReport}
-                onPromoteCover={isOwner ? applyCover : undefined}
-                coverPhotoUrl={cover}
-                onOpenPhoto={onOpenPhoto}
-              />
-            ))}
-          </ul>
+          {summary !== null && summary.count > 0 && (
+            <>
+              <PrintSummary summary={summary} />
+              <p className="text-xs text-content-tertiary">{t('community.prints.verdictHint')}</p>
+            </>
+          )}
 
-          {cursor !== null && (
-            <Button
-              variant="secondary"
-              onClick={handleLoadMore}
-              disabled={moreBusy}
-              className="w-full justify-center"
-              data-testid="prints-load-more"
-            >
-              {t('community.prints.loadMore')}
-            </Button>
+          {items.length === 0 ? (
+            <p className="text-sm text-content-tertiary" data-testid="prints-section-empty">
+              {ownPrint === null ? t('community.prints.emptyOwn') : t('community.prints.empty')}
+            </p>
+          ) : (
+            <>
+              {/* eslint-disable-next-line jsx-a11y/no-redundant-roles */}
+              <ul role="list" className="space-y-2">
+                {items.map((print) => (
+                  <PrintCard
+                    key={print.id}
+                    print={print}
+                    isMine={ownPrint !== null && print.id === ownPrint.id}
+                    onReport={onReport}
+                    onPromoteCover={isOwner ? applyCover : undefined}
+                    coverPhotoUrl={cover}
+                    onOpenPhoto={onOpenPhoto}
+                  />
+                ))}
+              </ul>
+
+              {cursor !== null && (
+                <Button
+                  variant="secondary"
+                  onClick={handleLoadMore}
+                  disabled={moreBusy}
+                  className="w-full justify-center"
+                  data-testid="prints-load-more"
+                >
+                  {t('community.prints.loadMore')}
+                </Button>
+              )}
+            </>
           )}
         </>
       )}

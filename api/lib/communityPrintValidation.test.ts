@@ -5,6 +5,7 @@ import {
   COMMUNITY_PRINT_PHOTO_MAX_BYTES,
   COMMUNITY_PRINT_THUMB_MAX_BYTES,
   communityPrintsEnabled,
+  hasPrintSubstance,
   readWebpDimensions,
   validateCommunityPrint,
 } from './communityPrintValidation.js';
@@ -66,7 +67,7 @@ function validBody(overrides: Record<string, unknown> = {}): Record<string, unkn
     printer: 'bambu-p1s',
     fitVerdict: 'as-designed',
     // The substance floor: a verdict alone is a bare vote, so every valid body
-    // carries a photo or a note. Settings are all optional around it.
+    // carries a photo or a note.
     note: 'Printed fine.',
     ...overrides,
   };
@@ -139,8 +140,6 @@ describe('validateCommunityPrint', () => {
   });
 
   describe('optional settings', () => {
-    // Demanding a slicer's print time before accepting a photo turned a
-    // 15-second contribution into a data-entry chore.
     it.each(['material', 'nozzleMm', 'layerHeightMm', 'printMinutes', 'printer'])(
       'accepts a report with no %s',
       (field) => {
@@ -184,33 +183,10 @@ describe('validateCommunityPrint', () => {
     });
   });
 
-  describe('substance floor', () => {
-    it('rejects a report with neither a photo nor a note', () => {
-      const result = validateCommunityPrint(validBody({ note: '' }));
-      expect(result.valid).toBe(false);
-      if (result.valid) return;
-      expect(result.error.code).toBe('INVALID_PAYLOAD');
-    });
-
-    it('treats a whitespace-only note as no note', () => {
-      expect(validateCommunityPrint(validBody({ note: '   ' })).valid).toBe(false);
-    });
-
-    it('accepts a photo with no note', () => {
-      const result = validateCommunityPrint(
-        validBody({ note: '', photos: [photo(lossyWebp(600, 600))] })
-      );
-      expect(result.valid).toBe(true);
-    });
-
-    // A kept URL is a photo the record already has, so an edit that only
-    // reorders its photos does not suddenly fail the floor.
-    it('counts a kept photo url', () => {
-      const result = validateCommunityPrint(
-        validBody({ note: '', photos: ['https://blob.example/community/prints/a.webp'] })
-      );
-      expect(result.valid).toBe(true);
-    });
+  // The floor itself lives in the handler, which is the only place that knows
+  // what is already stored. The validator accepts a bare payload.
+  it('accepts a payload with neither a photo nor a note', () => {
+    expect(validateCommunityPrint(validBody({ note: '' })).valid).toBe(true);
   });
 
   it('rejects a non-object body', () => {
@@ -475,5 +451,23 @@ describe('validateCommunityPrint', () => {
     expect(result.valid).toBe(false);
     if (result.valid) return;
     expect(result.error.code).toBe('INVALID_PHOTOS');
+  });
+});
+
+describe('hasPrintSubstance', () => {
+  it('is false for a verdict with no photo and no note', () => {
+    expect(hasPrintSubstance(0, '')).toBe(false);
+  });
+
+  it('treats a whitespace-only note as no note', () => {
+    expect(hasPrintSubstance(0, '   ')).toBe(false);
+  });
+
+  it('is true for a photo alone', () => {
+    expect(hasPrintSubstance(1, '')).toBe(true);
+  });
+
+  it('is true for a note alone', () => {
+    expect(hasPrintSubstance(0, 'Printed fine.')).toBe(true);
   });
 });

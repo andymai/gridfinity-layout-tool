@@ -196,6 +196,20 @@ describe('PrintCard', () => {
       expect(screen.getByTestId('print-card-settings')).toHaveTextContent('PETG');
     });
 
+    it('keeps a reported nozzle and layer when no material was named', () => {
+      render(
+        <PrintCard
+          print={print({ settings: { nozzleMm: 0.6, layerHeightMm: 0.3 } })}
+          isMine={false}
+        />
+      );
+      // Nested under the material branch, naming no filament threw away two
+      // measurements the reporter did give.
+      const line = screen.getByTestId('print-card-settings');
+      expect(line).toHaveTextContent('community.prints.nozzleOnly');
+      expect(line).toHaveTextContent('community.prints.layerOnly');
+    });
+
     it('shows a time with no material', () => {
       render(<PrintCard print={print({ settings: { printMinutes: 145 } })} isMine={false} />);
       // Never a leading separator from the dropped material fragment.

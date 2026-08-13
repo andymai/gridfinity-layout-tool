@@ -192,7 +192,7 @@ function isLineSegments(obj: Object3D): obj is LineSegments {
 
 /**
  * True for a mesh whose rendered shape lives in per-instance attributes rather
- * than in `position` — troika's `<Text>` (GlyphsGeometry) and drei's fat
+ * than in `position`. Troika's `<Text>` (GlyphsGeometry) and drei's fat
  * `<Line>` (LineSegmentsGeometry) both extend `InstancedBufferGeometry`, and
  * both are `Mesh` subclasses, so the plain `isMesh` sweep collected them.
  * Merging one drops the instancing and the custom shader, leaving its single

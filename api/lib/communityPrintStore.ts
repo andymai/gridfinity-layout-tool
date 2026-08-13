@@ -112,6 +112,19 @@ function isFitVerdict(value: string): value is CommunityPrintFitVerdict {
   return (COMMUNITY_PRINT_FIT_VERDICTS as readonly string[]).includes(value);
 }
 
+/**
+ * An unreported measurement round-trips as ''. The hash holds only strings and
+ * `Number('')` is 0, so reading one back as a number would put a nozzle nobody
+ * measured into the modes and medians as if it had been.
+ */
+function readOptionalNumber(raw: string | undefined): number | null {
+  return raw === undefined || raw === '' ? null : Number(raw);
+}
+
+function writeOptionalNumber(value: number | null): string {
+  return value === null ? '' : String(value);
+}
+
 function parsePrint(fields: Record<string, string | undefined>): CommunityPrintRecord | null {
   if (fields.designId === undefined || fields.authorPublicId === undefined) return null;
   const status = fields.status;
@@ -141,10 +154,6 @@ function parsePrint(fields: Record<string, string | undefined>): CommunityPrintR
   // invariant and a reader can index one from the other without checking.
   const storedThumbs = parseUrlArray(fields.photoThumbs);
   const photoThumbs = photos.map((_, index) => storedThumbs[index] ?? '');
-  // '' is how an unreported measurement is stored, and `Number('')` is 0 — a
-  // zero nozzle would join the modes and medians as if someone had measured it.
-  const optionalNumber = (raw: string | undefined): number | null =>
-    raw === undefined || raw === '' ? null : Number(raw);
   const printer = fields.printer ?? '';
   return {
     designId: fields.designId,
@@ -153,10 +162,10 @@ function parsePrint(fields: Record<string, string | undefined>): CommunityPrintR
     photos,
     photoThumbs,
     material,
-    nozzleMm: optionalNumber(fields.nozzleMm),
-    layerHeightMm: optionalNumber(fields.layerHeightMm),
-    printMinutes: optionalNumber(fields.printMinutes),
-    filamentGrams: optionalNumber(fields.filamentGrams),
+    nozzleMm: readOptionalNumber(fields.nozzleMm),
+    layerHeightMm: readOptionalNumber(fields.layerHeightMm),
+    printMinutes: readOptionalNumber(fields.printMinutes),
+    filamentGrams: readOptionalNumber(fields.filamentGrams),
     printer: printer === '' ? null : printer,
     printerOther: fields.printerOther ?? '',
     fitVerdict,
@@ -166,11 +175,6 @@ function parsePrint(fields: Record<string, string | undefined>): CommunityPrintR
     updatedAt: Number(fields.updatedAt ?? 0),
     status,
   };
-}
-
-/** Unreported measurements round-trip as '', which `parsePrint` reads back as null. */
-function numberField(value: number | null): string {
-  return value === null ? '' : String(value);
 }
 
 export async function writeCommunityPrint(
@@ -184,10 +188,10 @@ export async function writeCommunityPrint(
     photos: JSON.stringify(record.photos),
     photoThumbs: JSON.stringify(record.photoThumbs),
     material: record.material ?? '',
-    nozzleMm: numberField(record.nozzleMm),
-    layerHeightMm: numberField(record.layerHeightMm),
-    printMinutes: numberField(record.printMinutes),
-    filamentGrams: numberField(record.filamentGrams),
+    nozzleMm: writeOptionalNumber(record.nozzleMm),
+    layerHeightMm: writeOptionalNumber(record.layerHeightMm),
+    printMinutes: writeOptionalNumber(record.printMinutes),
+    filamentGrams: writeOptionalNumber(record.filamentGrams),
     printer: record.printer ?? '',
     printerOther: record.printerOther,
     fitVerdict: record.fitVerdict,
@@ -348,12 +352,9 @@ export function summarizeCommunityPrints(
   prints: readonly CommunityPrintRecord[]
 ): CommunityPrintSummary {
   const live = prints.filter((print) => print.status === 'live');
-  /**
-   * Unreported values have to be dropped BEFORE the aggregate, not after.
-   * `modeOf` is generic over `T | null`, so a field most reporters skipped
-   * would elect `null` as its own mode and typecheck while doing it — an
-   * absence winning a vote it should not have been entered in.
-   */
+  // Unreported values have to leave the sample BEFORE the aggregate. `modeOf`
+  // is generic over `T | null`, so a field most reporters skipped would elect
+  // `null` as its own mode and typecheck while doing it.
   const reported = <T>(pick: (print: CommunityPrintRecord) => T | null): T[] =>
     live.map(pick).filter((value): value is T => value !== null);
 

@@ -68,6 +68,46 @@ describe('open', () => {
     expect(usePrintDialogStore.getState().phase).toBe('signin');
   });
 
+  it('reopens an unreported setting as an empty field, never as a default', () => {
+    usePrintDialogStore.getState().open({
+      designId: 'abc123def456',
+      designName: 'Socket Organizer',
+      signedIn: true,
+      existing: { ...EXISTING, settings: {} },
+    });
+
+    // Stamping 'pla' here would write back a material the reporter never chose
+    // the next time they touched anything else on the record.
+    expect(usePrintDialogStore.getState().draft).toMatchObject({
+      material: '',
+      nozzleMm: '',
+      layerHeightMm: '',
+      printHours: '',
+      printMinutes: '',
+      printer: '',
+    });
+  });
+
+  it('remembers whether the record it opened already met the substance floor', () => {
+    const open = (existing: CommunityPrint | null) =>
+      usePrintDialogStore.getState().open({
+        designId: 'abc123def456',
+        designName: 'Socket Organizer',
+        signedIn: true,
+        existing,
+      });
+
+    open({ ...EXISTING, photos: [], note: '' });
+    expect(usePrintDialogStore.getState().existingHadSubstance).toBe(false);
+
+    open({ ...EXISTING, photos: [], note: 'snug' });
+    expect(usePrintDialogStore.getState().existingHadSubstance).toBe(true);
+
+    // Posting fresh always faces the floor.
+    open(null);
+    expect(usePrintDialogStore.getState().existingHadSubstance).toBe(true);
+  });
+
   it('hydrates an edit from the existing record', () => {
     usePrintDialogStore.getState().open({
       designId: 'abc123def456',
@@ -183,6 +223,17 @@ describe('validatePrintDraft', () => {
     note: 'Printed fine.',
   };
 
+  it('starts every setting empty, so nothing is reported by default', () => {
+    expect(DEFAULT_PRINT_DRAFT).toMatchObject({
+      material: '',
+      nozzleMm: '',
+      layerHeightMm: '',
+      printHours: '',
+      printMinutes: '',
+      printer: '',
+    });
+  });
+
   it('passes a complete draft', () => {
     expect(hasPrintDraftIssues(validatePrintDraft(complete, 'Casey', 0))).toBe(false);
   });
@@ -212,8 +263,6 @@ describe('validatePrintDraft', () => {
     expect(issues.printer).toBeUndefined();
   });
 
-  // Sharing a photo of the thing you printed is the point; a slicer's numbers
-  // are not the price of admission.
   it.each(['printer', 'printHours', 'printMinutes', 'nozzleMm', 'layerHeightMm', 'filamentGrams'])(
     'accepts a draft with no %s',
     (field) => {
@@ -244,6 +293,13 @@ describe('validatePrintDraft', () => {
 
     it('accepts a note alone', () => {
       expect(validatePrintDraft(complete, 'Casey', 0).content).toBeUndefined();
+    });
+
+    // Records written before the floor existed could legitimately carry
+    // neither. Their owners must still be able to fix a typo rather than
+    // finding delete is the only way out.
+    it('exempts a record that already had neither', () => {
+      expect(validatePrintDraft(noNote, 'Casey', 0, false).content).toBeUndefined();
     });
   });
 });

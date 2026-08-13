@@ -119,7 +119,7 @@ export interface CommunityPublishEntry {
 
 /**
  * Any bin the designer can produce is publishable. The gate is only that there
- * IS a bin with a ready mesh — never a judgement about which features it uses,
+ * IS a bin with a ready mesh, never a judgement about which features it uses,
  * and never a disabled button explained by a `title` tooltip that does not
  * exist on touch.
  */

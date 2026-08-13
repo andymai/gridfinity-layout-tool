@@ -1,10 +1,12 @@
 import { useCallback, useState } from 'react';
 import { Badge, Button, cn } from '@/design-system';
 import { useTranslation } from '@/i18n';
-import type { CommunityPrint } from '@/shared/types/communityPrint';
-import { printerLabel } from '@/shared/types/communityPrinters';
+import type { CommunityPrint, CommunityPrintSettings } from '@/shared/types/communityPrint';
+import { COMMUNITY_PRINTER_OTHER, printerLabel } from '@/shared/types/communityPrinters';
 import { formatGrams, formatMillimetres, formatPrintDuration } from '../../utils/printFormat';
 import { PRINT_VERDICT_LABEL_KEYS, PRINT_VERDICT_TONES } from '../../utils/printVerdict';
+
+type Translate = ReturnType<typeof useTranslation>;
 
 export interface PrintCardProps {
   print: CommunityPrint;
@@ -96,6 +98,75 @@ function PrintPhotoTile({ url, alt, isCover, onOpen, onFailed }: PrintPhotoTileP
   );
 }
 
+/**
+ * Only the settings that were reported, so a photo-and-verdict record has no
+ * settings line at all rather than a row of dashes. Every field stands on its
+ * own: the material/nozzle/layer sentence is one interpolated string and needs
+ * all three, but its parts still show individually rather than a reported
+ * nozzle vanishing because nobody named the filament.
+ */
+function settingsFacts(settings: CommunityPrintSettings, t: Translate): string[] {
+  const facts: string[] = [];
+  const material =
+    settings.material === undefined
+      ? null
+      : settings.material === 'other'
+        ? t('community.print.otherOption')
+        : settings.material.toUpperCase();
+
+  if (
+    material !== null &&
+    settings.nozzleMm !== undefined &&
+    settings.layerHeightMm !== undefined
+  ) {
+    facts.push(
+      t('community.prints.settingsLine', {
+        material,
+        nozzle: formatMillimetres(settings.nozzleMm),
+        layer: formatMillimetres(settings.layerHeightMm),
+      })
+    );
+  } else {
+    if (material !== null) facts.push(material);
+    if (settings.nozzleMm !== undefined) {
+      facts.push(
+        t('community.prints.nozzleOnly', { nozzle: formatMillimetres(settings.nozzleMm) })
+      );
+    }
+    if (settings.layerHeightMm !== undefined) {
+      facts.push(
+        t('community.prints.layerOnly', { layer: formatMillimetres(settings.layerHeightMm) })
+      );
+    }
+  }
+
+  if (settings.printMinutes !== undefined) {
+    const { hours, minutes } = formatPrintDuration(settings.printMinutes);
+    if (hours === 0) {
+      facts.push(t('community.prints.durationMinutes', { minutes }));
+    } else if (minutes === 0) {
+      facts.push(t('community.prints.durationHoursExact', { hours }));
+    } else {
+      facts.push(t('community.prints.durationHours', { hours, minutes }));
+    }
+  }
+
+  if (settings.filamentGrams !== undefined) {
+    facts.push(t('community.prints.filament', { grams: formatGrams(settings.filamentGrams) }));
+  }
+
+  return facts;
+}
+
+/** A retired printer id still renders as itself, so an old record keeps its machine. */
+function printerText(settings: CommunityPrintSettings): string | null {
+  if (settings.printer === undefined) return null;
+  if (settings.printer === COMMUNITY_PRINTER_OTHER && settings.printerOther !== undefined) {
+    return settings.printerOther;
+  }
+  return printerLabel(settings.printer);
+}
+
 export function PrintCard({
   print,
   isMine,
@@ -119,49 +190,8 @@ export function PrintCard({
     setDeadPhotos((current) => new Set(current).add(url));
   }, []);
 
-  // Each fragment appears only if it was reported, so a photo-and-verdict
-  // record simply has no settings line rather than a row of dashes. Both halves
-  // of the material/nozzle/layer sentence must be present for it to read, since
-  // it is one interpolated string.
-  const facts: string[] = [];
-  if (settings.material !== undefined) {
-    facts.push(
-      settings.nozzleMm !== undefined && settings.layerHeightMm !== undefined
-        ? t('community.prints.settingsLine', {
-            material:
-              settings.material === 'other'
-                ? t('community.print.otherOption')
-                : settings.material.toUpperCase(),
-            nozzle: formatMillimetres(settings.nozzleMm),
-            layer: formatMillimetres(settings.layerHeightMm),
-          })
-        : settings.material === 'other'
-          ? t('community.print.otherOption')
-          : settings.material.toUpperCase()
-    );
-  }
-  if (settings.printMinutes !== undefined) {
-    const { hours, minutes } = formatPrintDuration(settings.printMinutes);
-    facts.push(
-      hours === 0
-        ? t('community.prints.durationMinutes', { minutes })
-        : minutes === 0
-          ? t('community.prints.durationHoursExact', { hours })
-          : t('community.prints.durationHours', { hours, minutes })
-    );
-  }
-  if (settings.filamentGrams !== undefined) {
-    facts.push(t('community.prints.filament', { grams: formatGrams(settings.filamentGrams) }));
-  }
-
-  // A retired printer id still renders as itself, so an old record stays
-  // readable rather than losing its machine.
-  const printer =
-    settings.printer === undefined
-      ? null
-      : settings.printer === 'other' && settings.printerOther !== undefined
-        ? settings.printerOther
-        : printerLabel(settings.printer);
+  const facts = settingsFacts(settings, t);
+  const printer = printerText(settings);
 
   return (
     <li

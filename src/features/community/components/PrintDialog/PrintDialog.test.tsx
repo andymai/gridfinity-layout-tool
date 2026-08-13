@@ -151,14 +151,37 @@ describe('PrintDialog', () => {
     fireEvent.change(screen.getByLabelText('community.print.noteLabel'), {
       target: { value: 'Printed fine.' },
     });
-    // Every settings field left as it opened: no printer, no print time.
+    // Every settings field left as it opened.
     fireEvent.click(screen.getByTestId('print-dialog-submit'));
 
     await waitFor(() => expect(api.savePrint).toHaveBeenCalled());
     const [, input] = api.savePrint.mock.calls[0] as [string, Record<string, unknown>];
-    // Omitted, not zeroed: an unreported time must not join the median.
-    expect(input).not.toHaveProperty('printMinutes');
-    expect(input).not.toHaveProperty('printer');
+    // Omitted, not zeroed and not defaulted: a value nobody chose must not
+    // reach the modes and medians. A pre-filled 0.4/0.2/PLA would have.
+    for (const field of ['material', 'nozzleMm', 'layerHeightMm', 'printMinutes', 'printer']) {
+      expect(input).not.toHaveProperty(field);
+    }
+  });
+
+  it('can report a nozzle without naming a material', async () => {
+    renderOpen();
+
+    fireEvent.change(screen.getByLabelText('community.print.nameLabel'), {
+      target: { value: 'Casey' },
+    });
+    fireEvent.click(screen.getByRole('radio', { name: 'community.print.fit.asDesigned' }));
+    fireEvent.change(screen.getByLabelText('community.print.noteLabel'), {
+      target: { value: 'Printed fine.' },
+    });
+    fireEvent.change(screen.getByLabelText('community.print.nozzleLabel'), {
+      target: { value: '0.6' },
+    });
+    fireEvent.click(screen.getByTestId('print-dialog-submit'));
+
+    await waitFor(() => expect(api.savePrint).toHaveBeenCalled());
+    const [, input] = api.savePrint.mock.calls[0] as [string, Record<string, unknown>];
+    expect(input.nozzleMm).toBe(0.6);
+    expect(input).not.toHaveProperty('material');
   });
 
   it('asks for a photo or a note before accepting a bare verdict', () => {
