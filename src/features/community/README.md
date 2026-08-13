@@ -118,6 +118,10 @@ Proof that a published design was actually printed: photos, the settings that wo
 - **One record per user per design, editable.** Posting again replaces the existing record, so "printed by N" is a distinct-printer count by construction. `(designId, authorPublicId)` is the identity, so nothing needs a reverse index to address a print.
 - **Vocabulary** lives in `@/shared/types/communityPrint` and `@/shared/types/communityPrinters`, mirrored server-side in `api/lib/communityPrintValidation.ts` and `api/lib/communityPrinters.ts`. The cross-boundary test in `communityPrint.test.ts` guards every tuple, limit and range.
 - **`fitVerdict`** (`as-designed` / `adjusted` / `did-not-fit`) is the field worth the most: it tells the next printer what to expect, and no amount of posting can fake it.
+- **Every print setting is optional.** Material, printer, nozzle, layer height, print time and filament are all `undefined` when the reporter did not say. Demanding a slicer's numbers before accepting a photo turned a 15-second contribution into a data-entry chore. What is demanded instead is the verdict plus a photo or a note, so a record carries more than a bare vote — enforced server-side in `validateCommunityPrint` and mirrored in `validatePrintDraft`.
+
+  An unreported value is stored and read back as **absent, never zero**. The Redis hash holds strings and `Number('')` is `0`, so a nozzle nobody measured would otherwise join the modes and medians as a measured value. `summarizeCommunityPrints` filters absences before aggregating for the same reason: `modeOf` is generic over `T | null`, so a field most reporters skipped would elect `null` as its own mode and typecheck while doing it.
+
 - **Printers** are a closed curated list plus an `other` free-text escape hatch. Free text alone would turn "X1C", "x1 carbon" and "Bambu X1C" into three unrelated values and make aggregation impossible. Labels are hardware model names and are deliberately not translated.
 - **Photos** are re-encoded to WebP at 1200px client-side before upload, which is also what strips EXIF/GPS. **A 400px browsing copy is encoded in the same pass**, from the bitmap already decoded for the EXIF strip, because every surface that _lists_ photos renders them small — a 78px filmstrip tile, a 117px print-grid cell, a ~200px gallery card — and sending the 1200px original to those was ~295KB on a single detail view and 54KB per gallery card.
 
@@ -137,7 +141,7 @@ Client side:
 - `store/printDialogStore.ts`: `closed → signin → form → saving | error` state machine plus the draft, its client-side validation mirror, and the photo slots. Numeric fields stay strings in the draft so a half-typed `0.` does not round-trip through `Number()`.
 - `components/PrintDialog/`: the dialog, form, and photo picker. Mounted by the detail overlay rather than at app level, because unlike publishing there is no cross-feature handoff.
 
-`fitVerdict` has no default: a verdict nobody consciously chose is worse than no verdict at all, so it is the one field the form refuses to submit without.
+`fitVerdict` has no default: a verdict nobody consciously chose is worse than no verdict at all. It and the photo-or-note floor are the only two things the form refuses to submit without; the settings group below them says so on its face. Both errors surface on a submit attempt rather than disabling the button, which is the same reason the publish button is never disabled: an inert control with no stated reason is a dead end on touch.
 
 A photo slot is either `kept` (a URL already on the record) or `new` (a fresh data URL). Both travel to the server in one ordered array; the distinction lets an edit change a note without re-uploading images.
 
