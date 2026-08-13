@@ -1,0 +1,25 @@
+api/lib/communityPrintStore.ts
+  s_0198f0fc19806e::t_1dd9a355c72a5c 119-123,126-128
+  s_0198f0fc19806e::t_c6d0c4a75c80f6 367-372,380-382
+api/lib/communityPrintValidation.ts
+  s_0198f0fc19806e::t_670a9b12eb229a 273
+api/lib/communityPrintStore.test.ts
+  s_0198f0fc19806e::t_17a985175d6882 231-251,526-536
+  s_0198f0fc19806e::t_7a4ca5d42b398a 537
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "ff02b0ae05d8998e05c99efbe23fca20e4ad710f",
+  "prompts": {},
+  "sessions": {
+    "s_0198f0fc19806e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "be9ba31a-14f2-41df-af29-4a06cb52253e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
