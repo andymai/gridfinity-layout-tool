@@ -66,13 +66,16 @@ const MESH_CACHE_VERSION = 'v10';
  * brepkit `r1`: brepkit-wasm 3.2.28 — the interface-family winding and
  * cap-synthesis fixes move insert/cutout output that reaches a coplanar
  * interface, and the deep-cutout chain is now exact.
+ * brepkit `r2`: brepkit-wasm 3.2.36 — the base-fuse island fix moves output
+ * for every multi-foot bin (the feet-to-base interface), restoring exact
+ * fuses across the scenario catalog.
  *
  * `manifold` is the draft-preview kernel; its meshes are never persisted, but
  * the map is total so a future caller cannot fall through to `undefined`.
  */
 const KERNEL_MESH_REVISION: Record<KernelName, string> = {
   'occt-wasm': 'r1',
-  brepkit: 'r1',
+  brepkit: 'r2',
   manifold: 'r1',
 };
 
