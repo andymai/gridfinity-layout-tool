@@ -129,6 +129,13 @@ describe('CommunityDetailContent', () => {
     expect(screen.getByTestId('community-detail-stats')).toHaveTextContent('Downloads');
   });
 
+  // The tile is small by design, so the hit area has to be asked for. The
+  // sentence-fragment button it replaced had it.
+  it('gives the remixes tile a full touch target on mobile', () => {
+    renderContent({}, { isMobile: true, counts: { likes: 0, remixes: 4, exports: 0, prints: 0 } });
+    expect(screen.getByTestId('community-detail-remixes').className).toContain('min-h-[44px]');
+  });
+
   it('hides the stats row without card counts', () => {
     renderContent({}, { counts: null });
     expect(screen.queryByText('Likes')).not.toBeInTheDocument();

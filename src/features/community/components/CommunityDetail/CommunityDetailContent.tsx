@@ -136,6 +136,7 @@ interface StatTileProps {
   value: number;
   /** Makes the tile a button; the count reads the same either way. */
   disclosure?: StatTileDisclosure;
+  isMobile: boolean;
   testId?: string;
 }
 
@@ -144,7 +145,7 @@ interface StatTileProps {
  * design gains its first like. It drops to the tertiary colour instead, so a
  * new design does not read as a wall of bold noughts.
  */
-function StatTile({ label, value, disclosure, testId }: StatTileProps) {
+function StatTile({ label, value, disclosure, isMobile, testId }: StatTileProps) {
   const body = (
     <>
       <span
@@ -170,7 +171,9 @@ function StatTile({ label, value, disclosure, testId }: StatTileProps) {
   return (
     <Button
       variant="ghost"
-      touchTarget={false}
+      // A tile is small by design, so the hit area has to be asked for
+      // explicitly. The sentence-fragment button this replaced had it.
+      touchTarget={isMobile}
       aria-expanded={disclosure.expanded}
       aria-label={disclosure.label}
       onClick={disclosure.onToggle}
@@ -300,10 +303,15 @@ export function CommunityDetailContent({
               )}
               data-testid="community-detail-stats"
             >
-              <StatTile label={t('community.detail.stats.likes')} value={counts.likes} />
+              <StatTile
+                label={t('community.detail.stats.likes')}
+                value={counts.likes}
+                isMobile={isMobile}
+              />
               <StatTile
                 label={t('community.detail.stats.remixes')}
                 value={counts.remixes}
+                isMobile={isMobile}
                 // The tile is the only route to the remix list.
                 disclosure={
                   counts.remixes > 0
@@ -319,11 +327,16 @@ export function CommunityDetailContent({
               {/* Downloads, not prints. counts.exports is file downloads, and
                   labelling it "Prints" put a hard 0 beside a design whose own
                   print list was rendering below it. */}
-              <StatTile label={t('community.detail.stats.downloads')} value={counts.exports} />
+              <StatTile
+                label={t('community.detail.stats.downloads')}
+                value={counts.exports}
+                isMobile={isMobile}
+              />
               {counts.prints !== undefined && (
                 <StatTile
                   label={t('community.detail.stats.prints')}
                   value={counts.prints}
+                  isMobile={isMobile}
                   testId="community-detail-prints-stat"
                 />
               )}
