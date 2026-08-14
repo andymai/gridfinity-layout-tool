@@ -9,7 +9,7 @@
  */
 
 import { useTranslation } from '@/i18n';
-import { Button } from '@/design-system';
+import { Badge, Button } from '@/design-system';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { getDrawnCompartmentIds } from '@/features/bin-designer/utils/bentoDraw';
@@ -75,8 +75,18 @@ function BentoModeContent() {
   // The workspace needs room the panel does not have, so off desktop the card
   // expands to the same compartment editor Grid Dividers uses. A launcher that
   // opened nothing would be worse than no launcher: DesignerMainContent only
-  // renders the workspace on desktop.
-  if (!isDesktop) return <CompartmentEditor />;
+  // renders the workspace on desktop. Say so — swapping in a different editor
+  // without a word reads as "Bento is just a worse grid".
+  if (!isDesktop) {
+    return (
+      <div className="space-y-3">
+        <p className="rounded-md bg-surface/60 px-2 py-1.5 text-[11px] leading-relaxed text-content-tertiary">
+          {t('binDesigner.bento.smallScreenNote')}
+        </p>
+        <CompartmentEditor />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-2">
@@ -172,7 +182,17 @@ export function InteriorModeCard({ card, isExpanded, onSelect }: InteriorModeCar
       >
         <div className="mt-0.5">{config.icon}</div>
         <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-medium text-content-primary">{t(config.titleKey)}</h4>
+          {/* flex-wrap, not a nowrap row: the badge sits beside the title at
+              normal panel widths and drops to its own line on a narrow one,
+              rather than squeezing the heading into an ellipsis. */}
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+            <h4 className="text-sm font-medium text-content-primary">{t(config.titleKey)}</h4>
+            {card === 'bento' && (
+              <Badge tone="warning" title={t('binDesigner.bento.experimentalHint')}>
+                {t('common.experimental')}
+              </Badge>
+            )}
+          </div>
           <p className="text-xs text-content-secondary mt-0.5">{t(config.descriptionKey)}</p>
         </div>
       </Button>

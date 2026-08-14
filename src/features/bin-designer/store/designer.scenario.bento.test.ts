@@ -5,6 +5,8 @@ import {
   getCompartmentRect,
   getDrawnCompartmentIds,
 } from '@/features/bin-designer/utils/bentoDraw';
+import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
+import { labelTabFootprints } from '@/shared/utils/labelTabPlan';
 
 describe('DesignerStore - bento draw actions', () => {
   beforeEach(() => {
@@ -205,6 +207,68 @@ describe('DesignerStore - bento draw actions', () => {
       useDesignerStore.getState().drawBentoCompartment({ col: 0, row: 0, w: 2, h: 2 });
       useDesignerStore.getState().undo();
       expect(useDesignerStore.getState().params.compartments.cells).toEqual(before);
+    });
+  });
+
+  /**
+   * A caption only ever prints via a label tab, and label tabs default to off —
+   * so typing one used to store text that could never become geometry, which is
+   * exactly what "nothing happens in the 3D preview" looked like. These assert
+   * through the real plan rather than the `label.enabled` flag: the flag is the
+   * mechanism, a tab footprint carrying the text is the outcome.
+   */
+  describe('engraved captions reach the model', () => {
+    const footprints = () => {
+      const p = params();
+      const dims = binDimensions(p);
+      return labelTabFootprints(p, dims.innerW, dims.innerD, dims.wallHeight, p.wallThickness);
+    };
+
+    const drawOne = (): number => {
+      const id = useDesignerStore.getState().drawBentoCompartment({ col: 0, row: 0, w: 2, h: 2 });
+      if (id === null) throw new Error('unreachable');
+      return id;
+    };
+
+    it('a first caption turns label tabs on and plans a tab', () => {
+      const id = drawOne();
+      expect(params().label.enabled).toBe(false);
+      expect(footprints()).toEqual([]);
+
+      useDesignerStore.getState().setCompartmentText(id, 'screws');
+
+      expect(params().label.enabled).toBe(true);
+      expect(footprints().length).toBeGreaterThan(0);
+    });
+
+    it('enabling costs one undo, not two', () => {
+      const id = drawOne();
+      const before = useDesignerStore.getState().history.past.length;
+
+      useDesignerStore.getState().setCompartmentText(id, 'screws');
+      expect(useDesignerStore.getState().history.past).toHaveLength(before + 1);
+
+      useDesignerStore.getState().undo();
+      expect(params().label.enabled).toBe(false);
+      expect(params().compartments.compartmentTexts?.[id] ?? '').toBe('');
+    });
+
+    it('clearing a caption never turns tabs on', () => {
+      const id = drawOne();
+      useDesignerStore.getState().setCompartmentText(id, '');
+      expect(params().label.enabled).toBe(false);
+    });
+
+    it('leaves tabs alone where the constraint engine rules them out', () => {
+      const id = drawOne();
+      // A spacer is floorless, so it has nothing to hang a label tab from and
+      // the panel refuses to show the control at all.
+      useDesignerStore.getState().setParam('base', { ...params().base, spacer: true });
+
+      useDesignerStore.getState().setCompartmentText(id, 'screws');
+
+      expect(params().label.enabled).toBe(false);
+      expect(params().compartments.compartmentTexts?.[id]).toBe('screws');
     });
   });
 });

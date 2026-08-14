@@ -17,6 +17,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
+import { useResponsive } from '@/shared/hooks/useResponsive';
 import { getInteriorDims } from '@/features/bin-designer/utils/dividerAngle';
 import {
   findFreeRect,
@@ -112,6 +113,7 @@ export function BentoWorkspace() {
     }))
   );
   const addToast = useToastStore((s) => s.addToast);
+  const { isTouchDevice } = useResponsive();
   const previewColor = usePreviewColor();
   const { quickstartSeen, markQuickstartSeen } = useBentoQuickstart();
 
@@ -144,6 +146,14 @@ export function BentoWorkspace() {
   const pan = useBentoPan(setCameraCenter, zoom);
   const stashShelfRef = useRef<HTMLDivElement>(null);
   const [hoveredId, setHoveredIdLocal] = useState<number | null>(null);
+  // The compartment a gesture just landed, so the canvas can settle it into
+  // place. The token is what makes the animation replay when the SAME id lands
+  // twice running — the canvas keys the element on it, and without a remount
+  // CSS simply does not run the keyframes a second time.
+  const [drop, setDrop] = useState<{ id: number; token: number } | null>(null);
+  const markDropped = useCallback((id: number) => {
+    setDrop((prev) => ({ id, token: (prev?.token ?? 0) + 1 }));
+  }, []);
   // Explicit label-edit request (double-click / context menu), keyed to the
   // compartment it targets. The dock derives its focus token from this, so
   // merely selecting a compartment never steals keyboard focus into the
@@ -217,6 +227,7 @@ export function BentoWorkspace() {
     onInvalidDrop: () => {
       addToast({ message: t('binDesigner.bento.toastBlocked'), type: 'info', duration: 3000 });
     },
+    onCommitted: markDropped,
     setPreviewCompartments,
     setPreviewSelection,
   });
@@ -400,7 +411,12 @@ export function BentoWorkspace() {
     if (g?.type === 'move') {
       return g.overStash ? t('binDesigner.bento.hintDropStash') : t('binDesigner.bento.hintMove');
     }
-    if (g?.type === 'resize') return t('binDesigner.bento.hintResize');
+    if (g?.type === 'resize') {
+      const rect = interaction.ghost?.rect;
+      return rect
+        ? t('binDesigner.bento.hintResizeTo', { w: rect.w, h: rect.h })
+        : t('binDesigner.bento.hintResize');
+    }
     if (g?.type === 'stashDrag') return t('binDesigner.bento.hintPlace');
     if (selectedId !== null) return t('binDesigner.bento.hintSelected');
     return t('binDesigner.bento.hintIdle');
@@ -491,6 +507,8 @@ export function BentoWorkspace() {
                 previewColor={previewColor}
                 ghost={interaction.ghost}
                 movingId={movingId}
+                drop={drop}
+                showHoverHandles={!isTouchDevice}
                 dividerTiltPreview={dividerTiltPreview}
                 onResizeHandlePointerDown={interaction.onResizeHandlePointerDown}
               />
@@ -527,7 +545,9 @@ export function BentoWorkspace() {
             shelfRef={stashShelfRef}
             dropActive={interaction.gesture?.type === 'move' && interaction.gesture.overStash}
             draggingIndex={
-              interaction.gesture?.type === 'stashDrag' ? interaction.gesture.index : null
+              interaction.gesture?.type === 'stashDrag' && interaction.gesture.armed
+                ? interaction.gesture.index
+                : null
             }
             onEntryPointerDown={interaction.onStashEntryPointerDown}
             onRemoveEntry={removeBentoStashEntry}

@@ -97,4 +97,14 @@ describe('BentoWorkspaceHeader', () => {
 
     expect(onClose).toHaveBeenCalledTimes(1);
   });
+
+  it('marks the workspace experimental without displacing the controls', () => {
+    render(<BentoWorkspaceHeader {...makeProps({ canUndo: true })} />);
+
+    expect(screen.getByText('common.experimental')).toBeInTheDocument();
+    // The badge sits beside the title; everything else still renders.
+    expect(screen.getByText('binDesigner.interior.bento.title')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'common.undo' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'common.done' })).toBeInTheDocument();
+  });
 });

@@ -7,6 +7,7 @@ import type { LabelPlateIconId } from '@/shared/constants/labelPlates';
 import { TEXT_MAX_LENGTH } from '@/features/bin-designer/types/text';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { isErr } from '@/core/result';
+import { getFeatureStatus } from '@/shared/constraints';
 import {
   carryCompartmentTextsByPosition,
   isRectangularSelection,
@@ -117,6 +118,16 @@ export function createCompartmentActions(set: Set, get: Get) {
       // not push a second, identical history entry / regeneration.
       if ((prev[compartmentId] ?? '') === clamped) return;
 
+      // A caption is only ever printed by a label tab (`labelTabPlan` returns
+      // nothing while `label.enabled` is false), so writing one with tabs off
+      // stored text that could never become geometry — the Bento dock's label
+      // field looked broken for exactly this reason. Enabling comes in the SAME
+      // history entry: two writes would cost two undos to get back. Never turn
+      // it on where the constraint engine has ruled label tabs out (slotted,
+      // spacer) — that would be a state the panel refuses to show.
+      const turnTabsOn =
+        clamped !== '' && !params.label.enabled && getFeatureStatus(params, 'label').available;
+
       set((state) => {
         pushHistoryEntry(state);
         const next = prev.slice();
@@ -127,6 +138,7 @@ export function createCompartmentActions(set: Set, get: Get) {
           ...state.params.compartments,
           ...(next.length > 0 ? { compartmentTexts: next } : { compartmentTexts: undefined }),
         };
+        if (turnTabsOn) state.params.label = { ...state.params.label, enabled: true };
       });
     },
 

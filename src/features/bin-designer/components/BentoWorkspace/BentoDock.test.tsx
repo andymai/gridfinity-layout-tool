@@ -127,4 +127,41 @@ describe('BentoDock', () => {
     ).toBeInTheDocument();
     expect(localStorage.getItem('gridfinity-bento-dock-collapsed')).toBe('1');
   });
+
+  describe('label field', () => {
+    it('warns that a caption switches label tabs on while they are off', () => {
+      const { id } = setupStoreWithDrawn();
+      render(<BentoDock {...makeProps({ selectedId: id })} />);
+
+      expect(screen.getByText('binDesigner.bento.labelTabsAuto')).toBeInTheDocument();
+    });
+
+    it('drops the note once label tabs are on', () => {
+      const { id } = setupStoreWithDrawn();
+      useDesignerStore.getState().updateLabel({ enabled: true });
+      render(<BentoDock {...makeProps({ selectedId: id })} />);
+
+      expect(screen.queryByText('binDesigner.bento.labelTabsAuto')).not.toBeInTheDocument();
+      expect(screen.getByLabelText('binDesigner.bento.labelField')).toBeInTheDocument();
+    });
+
+    it('replaces the input with a reason in full-width tab mode', () => {
+      const { id } = setupStoreWithDrawn();
+      useDesignerStore.getState().updateLabel({ enabled: true, span: true });
+      render(<BentoDock {...makeProps({ selectedId: id })} />);
+
+      // Span mode prints `label.rowTexts`, so a per-compartment caption typed
+      // here would render nothing (#2897).
+      expect(screen.getByText('binDesigner.bento.labelSpanDisabled')).toBeInTheDocument();
+      expect(screen.queryByLabelText('binDesigner.bento.labelField')).not.toBeInTheDocument();
+    });
+  });
+
+  it('offers the bin-wide divider settings', () => {
+    setupStoreWithDrawn();
+    render(<BentoDock {...makeProps()} />);
+
+    expect(screen.getByText('binDesigner.bento.binWideTitle')).toBeInTheDocument();
+    expect(screen.getByText('binDesigner.wallThickness')).toBeInTheDocument();
+  });
 });

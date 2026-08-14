@@ -516,7 +516,7 @@ const en: Record<string, string> = {
   'layers.cannotAddLayerTallBins':
     'Cannot add layer: bins on {layerName} are {binHeight}u tall but layer is only {layerHeight}u. Adjusting would exceed drawer height. Try reducing bin heights or increasing drawer height.',
   'layers.clearLayerLabel': 'Clear layer',
-  'layers.makeBento': 'Make this layer a bento',
+  'layers.makeBento': 'Merge this layer into a bento',
   'layers.noBinsToClear': 'No bins to clear',
   'layers.noGaps': 'No gaps',
   'layers.noGapsToFill': 'No gaps to fill',
@@ -1202,7 +1202,7 @@ const en: Record<string, string> = {
   'mobile.binMenu.editProperties': 'Edit Properties',
   'mobile.binMenu.rotate': 'Rotate',
   'mobile.binMenu.expandToFit': 'Expand to Fit',
-  'mobile.binMenu.mergeIntoOne': 'Make Bento',
+  'mobile.binMenu.mergeIntoOne': 'Merge into a bento',
   'mobile.binMenu.lockSize': 'Lock Size',
   'mobile.binMenu.unlockSize': 'Unlock Size',
   'mobile.binMenu.toStash': 'To Stash',
@@ -2707,10 +2707,10 @@ const en: Record<string, string> = {
   'binDesigner.tabSupport.fillet': 'Curved',
   'binDesigner.interior.standard.title': 'Grid Dividers',
   'binDesigner.interior.standard.description': 'Compartments with walls',
-  'binDesigner.interior.bento.title': 'Bentobox',
+  'binDesigner.interior.bento.title': 'Bento',
   'binDesigner.interior.bento.description': 'Compartments any size, walls where you want them',
-  'binDesigner.openBentoWorkspace': 'Bentobox Workspace',
-  'binDesigner.openBentoWorkspaceSubtitle': 'Drag to draw compartments, like bins in the layout',
+  'binDesigner.openBentoWorkspace': 'Bento workspace',
+  'binDesigner.openBentoWorkspaceSubtitle': 'Drag to draw compartments any size you want',
   'binDesigner.bento.summary.one': '{cols}×{rows} grid · 1 compartment',
   'binDesigner.bento.summary.other': '{cols}×{rows} grid · {count} compartments',
   'binDesigner.bento.countDrawn.one': '1 compartment',
@@ -2750,10 +2750,15 @@ const en: Record<string, string> = {
   'binDesigner.bento.compartmentFallbackName': 'Compartment {number}',
   'binDesigner.bento.labelField': 'Label',
   'binDesigner.bento.labelPlaceholder': 'Engraved label…',
+  'binDesigner.bento.labelTabsAuto':
+    'Labels print on a tab at the compartment’s back wall — adding one turns label tabs on.',
+  'binDesigner.bento.labelSpanDisabled':
+    'Full-width tabs print one label per row. Edit those in the Label tabs panel.',
   'binDesigner.bento.sizeReadout': 'Size',
   'binDesigner.bento.cellsReadout': 'Cells',
   'binDesigner.bento.stashAction': 'Move to stash',
   'binDesigner.bento.wallsTitle': 'Walls',
+  'binDesigner.bento.binWideTitle': 'Bin-wide',
   'binDesigner.bento.wallWithVertical': 'Wall to {name} (vertical)',
   'binDesigner.bento.wallWithHorizontal': 'Wall to {name} (horizontal)',
   'binDesigner.bento.wallShift': 'Shift (mm)',
@@ -2773,11 +2778,15 @@ const en: Record<string, string> = {
   'binDesigner.bento.hintMove':
     'Drop to move · Alt-drag duplicates · drop on the stash to set aside',
   'binDesigner.bento.hintResize': 'Release to apply the new size',
+  'binDesigner.bento.hintResizeTo': 'Release to resize to {w}×{h}',
   'binDesigner.bento.hintPlace': 'Drop on the grid to place this compartment',
   'binDesigner.bento.hintSelected': 'Drag to move · pull the handles to resize · Delete removes',
   'binDesigner.bento.hintIdle': 'Drag on the grid to draw a compartment',
   'binDesigner.bento.emptyStateHint': 'Drag anywhere to draw your first compartment',
   'binDesigner.bento.backgroundNote': 'Empty cells print as 1×1 pockets',
+  'binDesigner.bento.experimentalHint': 'Newly out of Labs — expect rough edges.',
+  'binDesigner.bento.smallScreenNote':
+    'The drawing workspace needs a wider screen. Set a uniform grid here instead, then merge cells into larger compartments.',
   'binDesigner.interior.slotted.title': 'Removable Dividers',
   'binDesigner.interior.slotted.description': 'Slots for insertable dividers',
   'binDesigner.interior.solid.title': 'Custom Cutouts',
@@ -4166,7 +4175,7 @@ const en: Record<string, string> = {
   'designLinking.blockedResize.reasons.compartments': 'Has custom compartment layout',
 
   // Merge bins into one divided insert
-  'designLinking.bento.title': 'Make Bento',
+  'designLinking.bento.title': 'Merge into a bento',
   'designLinking.bento.description':
     'The result is one insert of {compartments} compartments, {width} x {depth} grid units. Your layout is not changed.',
   'designLinking.bento.scope.selection': 'Merging the {count} bins you selected.',
@@ -4185,7 +4194,7 @@ const en: Record<string, string> = {
   'designLinking.bento.trappedStash': 'Move them to the stash',
   'designLinking.bento.trappedBlocks': 'Resolve the trapped bins first',
   'designLinking.bento.flatBase': 'Flat bottom (drawer insert, no Gridfinity feet)',
-  'designLinking.bento.confirm': 'Create Bento',
+  'designLinking.bento.confirm': 'Create bento',
   'designLinking.bento.designName': '{layout} bento',
   'designLinking.bento.warning.gaps':
     'That total includes {count} compartment(s) made from empty space between the bins.',

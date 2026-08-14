@@ -9,9 +9,15 @@
  * (Alt = duplicate), resize-handle drag reshapes, drag from the stash shelf
  * places. A move that ends over the shelf stashes. All coordinates quantize
  * to whole cells — the layout's smart-snap machinery has nothing to do here.
+ *
+ * Move / resize / stash-drag are RAF-throttled and draw deliberately is not,
+ * matching `useInteraction`: the first three run overlap validation against
+ * every compartment on each update, while draw is cheap and wants the ghost to
+ * track the cursor with no frame of lag.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { throttleRAF, cancelThrottledRAF } from '@/shared/utils';
 import type { CompartmentConfig, StashedCompartment } from '@/features/bin-designer/types';
 import {
   canPlaceRect,
@@ -52,6 +58,21 @@ export type BentoGesture =
       readonly type: 'stashDrag';
       readonly index: number;
       readonly entry: StashedCompartment;
+      /**
+       * Which cell of the entry's own footprint the pointer grabbed, read off
+       * the shelf tile's proportions. Re-centring the rect on the cursor
+       * instead made a wide entry jump sideways the instant it was picked up.
+       */
+      readonly grab: Cell;
+      /** Client px at pointerdown — the threshold below is measured from it. */
+      readonly origin: { readonly x: number; readonly y: number };
+      /**
+       * False until the pointer has travelled `DRAG_THRESHOLD_PX`. A stash tile
+       * carries its own controls (remove) and a bare click should reach them,
+       * so the gesture stays inert — and the shelf keeps rendering the tile —
+       * until the pointer says a drag was meant.
+       */
+      readonly armed: boolean;
       readonly currentRect: CellRect | null;
     };
 
@@ -86,6 +107,12 @@ export interface BentoInteractionContext {
    * its red ghost was continuous feedback and a toast per experiment spams.
    */
   readonly onInvalidDrop?: (kind: 'move' | 'resize' | 'duplicate' | 'place') => void;
+  /**
+   * A gesture committed and produced this compartment id. Drives the drop
+   * settle on the canvas — the layout planner animates a dropped bin, and
+   * without it a placed compartment simply blinks into existence.
+   */
+  readonly onCommitted?: (id: number) => void;
   readonly actions: {
     readonly draw: (rect: CellRect) => number | null;
     readonly move: (id: number, dCol: number, dRow: number) => number | null;
@@ -106,6 +133,16 @@ export interface BentoInteractionContext {
   ) => void;
 }
 
+/** Just the pointer position a gesture update needs — the throttled path
+ *  crosses a frame boundary, and holding the live event across it is a trap. */
+interface PointerSample {
+  readonly clientX: number;
+  readonly clientY: number;
+}
+
+/** Pointer travel before a stash-tile press becomes a drag. */
+const DRAG_THRESHOLD_PX = 4;
+
 const clamp = (v: number, min: number, max: number): number => Math.min(max, Math.max(min, v));
 
 function rectFromCells(a: Cell, b: Cell): CellRect {
@@ -116,6 +153,26 @@ function rectFromCells(a: Cell, b: Cell): CellRect {
     row,
     w: Math.abs(a.col - b.col) + 1,
     h: Math.abs(a.row - b.row) + 1,
+  };
+}
+
+/**
+ * Which cell of a stashed entry the pointer grabbed, read off the shelf tile —
+ * it draws the entry to scale, so the fraction of the tile under the cursor is
+ * the fraction of the footprint. Screen Y runs down while row 0 is the FRONT of
+ * the bin (bottom of the canvas), hence the flip. A tile with no measurable
+ * size names no cell, so fall back to the middle one.
+ */
+function grabCellOnTile(e: React.PointerEvent, entry: StashedCompartment): Cell {
+  const tile = e.currentTarget.getBoundingClientRect();
+  if (tile.width <= 0 || tile.height <= 0) {
+    return { col: Math.floor((entry.w - 1) / 2), row: Math.floor((entry.h - 1) / 2) };
+  }
+  const fracX = (e.clientX - tile.left) / tile.width;
+  const fracY = (e.clientY - tile.top) / tile.height;
+  return {
+    col: clamp(Math.floor(fracX * entry.w), 0, entry.w - 1),
+    row: clamp(Math.floor((1 - fracY) * entry.h), 0, entry.h - 1),
   };
 }
 
@@ -268,13 +325,17 @@ export function useBentoInteraction(ctx: BentoInteractionContext) {
 
   const commit = useCallback(
     (g: BentoGesture, e: PointerEvent): void => {
-      const { config, actions, onSelect, onInvalidDrop } = ctxRef.current;
+      const { config, actions, onSelect, onInvalidDrop, onCommitted } = ctxRef.current;
+      const landed = (id: number | null): void => {
+        if (id === null) return;
+        onSelect(id);
+        onCommitted?.(id);
+      };
       switch (g.type) {
         case 'draw': {
           const rect = rectFromCells(g.anchor, g.cursor);
           if (!canPlaceRect(config, rect)) return;
-          const id = actions.draw(rect);
-          if (id !== null) onSelect(id);
+          landed(actions.draw(rect));
           return;
         }
         case 'move': {
@@ -290,8 +351,7 @@ export function useBentoInteraction(ctx: BentoInteractionContext) {
               onInvalidDrop?.('duplicate');
               return;
             }
-            const id = actions.duplicate(g.id, g.currentRect);
-            if (id !== null) onSelect(id);
+            landed(actions.duplicate(g.id, g.currentRect));
             return;
           }
           if (dCol === 0 && dRow === 0) return;
@@ -299,8 +359,7 @@ export function useBentoInteraction(ctx: BentoInteractionContext) {
             onInvalidDrop?.('move');
             return;
           }
-          const id = actions.move(g.id, dCol, dRow);
-          if (id !== null) onSelect(id);
+          landed(actions.move(g.id, dCol, dRow));
           return;
         }
         case 'resize': {
@@ -316,20 +375,19 @@ export function useBentoInteraction(ctx: BentoInteractionContext) {
             onInvalidDrop?.('resize');
             return;
           }
-          const id = actions.resize(g.id, g.currentRect);
-          if (id !== null) onSelect(id);
+          landed(actions.resize(g.id, g.currentRect));
           return;
         }
         case 'stashDrag': {
           // Released outside the canvas = deliberate cancel, stays silent
-          // (matching the layout's off-grid drops).
-          if (!g.currentRect || !isInsideCanvas(e.clientX, e.clientY)) return;
+          // (matching the layout's off-grid drops). An unarmed press never
+          // moved anything, so it is a click on the tile, not a failed drop.
+          if (!g.armed || !g.currentRect || !isInsideCanvas(e.clientX, e.clientY)) return;
           if (!canPlaceRect(config, g.currentRect)) {
             onInvalidDrop?.('place');
             return;
           }
-          const id = actions.placeFromStash(g.index, g.currentRect);
-          if (id !== null) onSelect(id);
+          landed(actions.placeFromStash(g.index, g.currentRect));
           return;
         }
       }
@@ -345,7 +403,7 @@ export function useBentoInteraction(ctx: BentoInteractionContext) {
   useEffect(() => {
     if (!hasGesture) return;
 
-    const nextGestureFor = (g: BentoGesture, e: PointerEvent): BentoGesture => {
+    const nextGestureFor = (g: BentoGesture, e: PointerSample): BentoGesture => {
       const cell = cellAt(e.clientX, e.clientY);
       switch (g.type) {
         case 'draw':
@@ -380,37 +438,61 @@ export function useBentoInteraction(ctx: BentoInteractionContext) {
           return { ...g, currentRect: next };
         }
         case 'stashDrag': {
+          const armed =
+            g.armed ||
+            Math.hypot(e.clientX - g.origin.x, e.clientY - g.origin.y) >= DRAG_THRESHOLD_PX;
+          if (!armed) return g;
           if (!isInsideCanvas(e.clientX, e.clientY)) {
-            return g.currentRect === null ? g : { ...g, currentRect: null };
+            return g.currentRect === null && g.armed ? g : { ...g, armed, currentRect: null };
           }
           const { config } = ctxRef.current;
-          const col = clamp(cell.col - Math.floor((g.entry.w - 1) / 2), 0, config.cols - g.entry.w);
-          const row = clamp(cell.row - Math.floor((g.entry.h - 1) / 2), 0, config.rows - g.entry.h);
-          if (g.currentRect && col === g.currentRect.col && row === g.currentRect.row) return g;
-          return { ...g, currentRect: { col, row, w: g.entry.w, h: g.entry.h } };
+          const col = clamp(cell.col - g.grab.col, 0, config.cols - g.entry.w);
+          const row = clamp(cell.row - g.grab.row, 0, config.rows - g.entry.h);
+          if (g.armed && g.currentRect && col === g.currentRect.col && row === g.currentRect.row) {
+            return g;
+          }
+          return { ...g, armed, currentRect: { col, row, w: g.entry.w, h: g.entry.h } };
         }
       }
     };
 
-    const onMove = (e: PointerEvent): void => {
+    const applyMove = (clientX: number, clientY: number): void => {
       const g = gestureRef.current;
       if (!g) return;
-      const next = nextGestureFor(g, e);
+      const next = nextGestureFor(g, { clientX, clientY });
       if (next !== g) updateGesture(next);
     };
 
+    // Only the heavy gestures are deferred to a frame: each recomputes overlap
+    // against every compartment. Draw calls applyMove straight through.
+    const throttledMove = throttleRAF(applyMove);
+
+    const onMove = (e: PointerEvent): void => {
+      const g = gestureRef.current;
+      if (!g) return;
+      if (g.type === 'draw') applyMove(e.clientX, e.clientY);
+      else throttledMove(e.clientX, e.clientY);
+    };
+
     const onUp = (e: PointerEvent): void => {
+      // A frame queued behind the release would write a gesture back onto a
+      // state machine that has already committed and cleared.
+      cancelThrottledRAF(throttledMove);
       const g = gestureRef.current;
       updateGesture(null);
       if (g) commit(g, e);
     };
 
-    const onCancel = (): void => updateGesture(null);
+    const onCancel = (): void => {
+      cancelThrottledRAF(throttledMove);
+      updateGesture(null);
+    };
 
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
     window.addEventListener('pointercancel', onCancel);
     return () => {
+      cancelThrottledRAF(throttledMove);
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointercancel', onCancel);
@@ -474,7 +556,15 @@ export function useBentoInteraction(ctx: BentoInteractionContext) {
       const entry = ctxRef.current.config.stash?.[index];
       if (!entry) return;
       e.preventDefault();
-      updateGesture({ type: 'stashDrag', index, entry, currentRect: null });
+      updateGesture({
+        type: 'stashDrag',
+        index,
+        entry,
+        grab: grabCellOnTile(e, entry),
+        origin: { x: e.clientX, y: e.clientY },
+        armed: false,
+        currentRect: null,
+      });
     },
     [updateGesture]
   );

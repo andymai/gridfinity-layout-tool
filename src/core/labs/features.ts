@@ -240,14 +240,13 @@ export const FEATURE_FLAGS = [
     // stored under, so renaming it would switch the feature back off for
     // everyone who had already turned it on.
     id: 'merge_bins_to_design',
-    name: 'Bentobox Designer',
+    name: 'Bento Designer',
     description:
-      'Design divided trays like a bento box. Draw compartments right onto the bin interior in the Bentobox workspace — drag to draw, move and resize like layout bins, set extras aside in the stash — or select two or more layout bins and merge them into one tray with walls where the bin edges were and your labels carried across.',
-    status: 'experimental',
+      'Design divided trays. Drag on the bin interior in the Bento workspace to draw a compartment any size you want, move and resize it, and set spares aside in the stash — or select two or more layout bins and merge them into one tray with walls where the bin edges were and your labels carried across.',
+    status: 'graduated',
     risk: 'low',
-    warning:
-      'Only works when the bins line up on a common grid. Selections needing more than 12 rows or columns are refused, and one bento has a single height throughout. A bin you leave out but which sits inside the bento has to be added or stashed first.',
     addedAt: '2026-08',
+    graduatedAt: '2026-08',
     requiresRefresh: false,
   },
 ] as const satisfies readonly FeatureFlag[];

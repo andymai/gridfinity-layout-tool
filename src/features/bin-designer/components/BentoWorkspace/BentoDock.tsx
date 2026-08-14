@@ -10,7 +10,9 @@
  */
 
 import { useCallback, useMemo, useRef, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { Button, IconButton, Stepper } from '@/design-system';
+import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import type { CompartmentConfig } from '@/features/bin-designer/types';
@@ -23,6 +25,7 @@ import {
 } from '@/features/bin-designer/utils/dividerAngle';
 import { CompartmentTextInput } from '@/features/bin-designer/components/panel/LabelTabsSection/CompartmentTextInput';
 import { useDividerTiltSubsection } from '@/features/bin-designer/components/CompartmentEditor/useDividerTiltSubsection';
+import { BentoBinWideSection } from './BentoBinWideSection';
 import {
   BENTO_DOCK_MAX_WIDTH,
   BENTO_DOCK_MIN_WIDTH,
@@ -80,6 +83,12 @@ export function BentoDock({
   onDelete,
 }: BentoDockProps) {
   const t = useTranslation();
+  const { labelSpan, labelEnabled } = useDesignerStore(
+    useShallow((s) => ({
+      labelSpan: s.params.label.span === true,
+      labelEnabled: s.params.label.enabled,
+    }))
+  );
   const [width, setWidth] = useState(loadBentoDockWidth);
   const [collapsed, setCollapsed] = useState(loadBentoDockCollapsed);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -321,14 +330,31 @@ export function BentoDock({
               <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-content-tertiary">
                 {t('binDesigner.bento.labelField')}
               </label>
-              <CompartmentTextInput
-                committedValue={selectedRow.label}
-                compartmentId={selectedRow.id}
-                placeholder={t('binDesigner.bento.labelPlaceholder')}
-                ariaLabel={t('binDesigner.bento.labelField')}
-                onCommit={onCommitLabel}
-                focusToken={labelFocusToken}
-              />
+              {/* Full-width tabs print `label.rowTexts`, one caption per ROW,
+                  so a per-compartment caption typed here would render nothing
+                  (#2897). Disabled rather than hidden — the stored text is kept
+                  and comes back when span is switched off. */}
+              {labelSpan ? (
+                <p className="text-[10px] leading-relaxed text-content-tertiary">
+                  {t('binDesigner.bento.labelSpanDisabled')}
+                </p>
+              ) : (
+                <>
+                  <CompartmentTextInput
+                    committedValue={selectedRow.label}
+                    compartmentId={selectedRow.id}
+                    placeholder={t('binDesigner.bento.labelPlaceholder')}
+                    ariaLabel={t('binDesigner.bento.labelField')}
+                    onCommit={onCommitLabel}
+                    focusToken={labelFocusToken}
+                  />
+                  {!labelEnabled && (
+                    <p className="mt-1 text-[10px] leading-relaxed text-content-tertiary">
+                      {t('binDesigner.bento.labelTabsAuto')}
+                    </p>
+                  )}
+                </>
+              )}
             </div>
 
             <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
@@ -458,6 +484,8 @@ export function BentoDock({
             </div>
           </div>
         )}
+
+        <BentoBinWideSection />
       </div>
     </aside>
   );

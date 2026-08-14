@@ -887,6 +887,28 @@ input[type='range']:hover::-moz-range-thumb {
   animation: settleIn var(--transition-spring) forwards;
 }
 
+/* Bento: a compartment that just landed settles into place, matching the drop
+   feedback layout bins get. transform-box/transform-origin are required — an
+   SVG transform is otherwise measured from the viewport origin, so the rect
+   would fly across the canvas instead of easing about its own centre. */
+@keyframes bentoDrop {
+  0% {
+    transform: scale(0.94);
+  }
+  70% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-bento-drop {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: bentoDrop var(--transition-spring) forwards;
+}
+
 /* Name suggestion pulse animation */
 @keyframes suggestion-pulse {
   0% {
