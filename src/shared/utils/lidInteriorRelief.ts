@@ -8,8 +8,8 @@
  *
  * Lives here rather than beside `shouldGenerateLid` because `lidCompatibility`
  * reaches this predicate through BOTH the divider planner and the label shelf
- * datum; defining it there makes those imports circular. Depending only on
- * params alone keeps every arrow pointing one way.
+ * datum; defining it there makes those imports circular. Depending on params
+ * alone keeps every arrow pointing one way.
  */
 
 import type { BinParams } from '@/shared/types/bin';
