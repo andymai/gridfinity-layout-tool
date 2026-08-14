@@ -1,0 +1,131 @@
+src/i18n/locales/ja.json
+  s_ae321ba093788d::t_62752799083a7c 979-981
+src/i18n/locales/zh-CN.json
+  s_ae321ba093788d::t_62752799083a7c 979-981
+src/shared/utils/lidInteriorRelief.ts
+  s_ae321ba093788d::t_b76d23c0aedeea 1-21
+src/features/generation/worker/generators/lidLabelTabClearance.scenario.test.ts
+  s_ae321ba093788d::t_b3aad6a57f2b41 176-179
+src/features/bin-designer/types/lid.ts
+  s_ae321ba093788d::t_7cd2e41bb6e64d 658-673,721-723
+src/features/generation/worker/generators/lidGripLabelInteraction.test.ts
+  s_ae321ba093788d::t_c4a74c61cae0ca 40-43
+src/features/generation/worker/generators/lidScoopClearance.scenario.test.ts
+  s_ae321ba093788d::t_c4a74c61cae0ca 48-51
+src/features/bin-designer/store/designer.scenario.lid.test.ts
+  s_ae321ba093788d::t_afe615f8dc49fa 354-357
+src/features/generation/README.md
+  s_ae321ba093788d::t_11aebbeb00041c 231-232
+src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
+  s_ae321ba093788d::t_4ebb10bbbdadf4 595-597,599
+src/shared/types/bin.ts
+  s_ae321ba093788d::t_649816c1830929 188
+src/i18n/locales/de.json
+  s_ae321ba093788d::t_62752799083a7c 979-981
+src/features/generation/worker/generators/lidGripDip.scenario.test.ts
+  s_ae321ba093788d::t_0458ad1f4ad3a3 49-53
+src/i18n/locales/pt-BR.json
+  s_ae321ba093788d::t_62752799083a7c 979-981
+src/features/bin-designer/constants/paramMigration.ts
+  s_ae321ba093788d::t_7cd2e41bb6e64d 1096,1127-1132
+src/features/generation/worker/generators/pipeline/stages/lidInteriorReliefStage.ts
+  s_ae321ba093788d::t_b81c96c33bd5a7 91-99,107
+  s_ae321ba093788d::t_ca7fb661dbdad5 1-29,31-32,34-67,72-90,100,108-119,121-136
+  s_ae321ba093788d::t_649816c1830929 33,68-71
+  s_ae321ba093788d::t_7bab0dfaab5f64 30,120
+  s_ae321ba093788d::t_e2d783402c65a3 101-106
+api/lib/designerValidation.ts
+  s_ae321ba093788d::t_7cd2e41bb6e64d 406-408
+src/features/generation/worker/generators/binOrchestrator.ts
+  s_ae321ba093788d::t_4f91e04a6d7e8e 20
+  s_ae321ba093788d::t_0a37e6a6c23d60 48,54
+src/i18n/locales/cs.json
+  s_ae321ba093788d::t_62752799083a7c 979-981
+src/i18n/locales/it.json
+  s_ae321ba093788d::t_62752799083a7c 979-981
+src/i18n/locales/nb.json
+  s_ae321ba093788d::t_62752799083a7c 979-981
+src/i18n/locales/pl.json
+  s_ae321ba093788d::t_62752799083a7c 979-981
+src/i18n/locales/nl.json
+  s_ae321ba093788d::t_62752799083a7c 979-981
+src/features/generation/worker/generators/lidInteriorRelief.scenario.test.ts
+  s_ae321ba093788d::t_c6e8a0faaa43ad 22,116-144,151-153
+  s_ae321ba093788d::t_540049dfeb0795 1-21,23-115,145-150,154-155
+src/features/generation/worker/generators/lidSeatInterference.matrix.test.ts
+  s_ae321ba093788d::t_484105ec02cd44 86-89,169
+  s_ae321ba093788d::t_9614cc853c5b35 228-229
+CLAUDE.md
+  s_ae321ba093788d::t_11aebbeb00041c 49
+src/features/generation/worker/generators/lidGenerator.scenario.test.ts
+  s_ae321ba093788d::t_0458ad1f4ad3a3 75-78
+src/i18n/locales/en.ts
+  s_ae321ba093788d::t_4107e3a293a9fe 1976-1980
+src/i18n/locales/fr.json
+  s_ae321ba093788d::t_62752799083a7c 979-981
+src/i18n/locales/sv.json
+  s_ae321ba093788d::t_62752799083a7c 979-981
+src/shared/utils/labelTabPlan.ts
+  s_ae321ba093788d::t_b76d23c0aedeea 30,142-147
+src/features/bin-designer/components/panel/LabelTabsSection/useLabelTabsSection.ts
+  s_ae321ba093788d::t_e9ff663cb77c86 20,285,287-288,315-321
+src/features/generation/worker/generators/lidClickRailPartial.test.ts
+  s_ae321ba093788d::t_c4a74c61cae0ca 28-31
+src/i18n/locales/ko.json
+  s_ae321ba093788d::t_62752799083a7c 979-981
+src/shared/constants/labelPlates.ts
+  s_ae321ba093788d::t_5ffca14fe9e07f 315-322,327,342-343,345
+src/shared/utils/dividerRailPlan.ts
+  s_ae321ba093788d::t_649816c1830929 34-35,82-85,109-113
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_ae321ba093788d::t_82f85f4a8f1e5c 704
+  s_ae321ba093788d::t_e4c9aa51eb8237 331-334,773
+src/features/bin-designer/components/preview/GhostLabelTabs/GhostLabelTabs.tsx
+  s_ae321ba093788d::t_e9ff663cb77c86 23,93-98
+  s_ae321ba093788d::t_5b77c9a03a52ae 50
+  s_ae321ba093788d::t_edc463e0b86eef 67-70
+src/i18n/locales/uk.json
+  s_ae321ba093788d::t_62752799083a7c 979-981
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_ae321ba093788d::t_68dbe4a169e68d 413-416,420
+  s_ae321ba093788d::t_5ffca14fe9e07f 484-489,501-503,508-510,512-513
+  s_ae321ba093788d::t_14717f063e1fb9 490-500,504-507,511
+  s_ae321ba093788d::t_ac050f07ded46b 483
+src/features/generation/worker/generators/featureTags.ts
+  s_ae321ba093788d::t_0a37e6a6c23d60 39-43
+src/features/generation/worker/generators/lidDividerClearance.scenario.test.ts
+  s_ae321ba093788d::t_b3aad6a57f2b41 249-252
+src/features/generation/worker/generators/dividerPatterns.ts
+  s_ae321ba093788d::t_b76d23c0aedeea 30,226-231
+src/shared/constants/lidKeepout.ts
+  s_ae321ba093788d::t_a3bcdb9b460eee 1-48,65-138
+  s_ae321ba093788d::t_5ffca14fe9e07f 49-64
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_ae321ba093788d::t_82f85f4a8f1e5c 524-536
+src/i18n/locales/es.json
+  s_ae321ba093788d::t_62752799083a7c 979-981
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_ae321ba093788d::t_77c60561d90e87 949-952
+  s_ae321ba093788d::t_cae96b573367fc 1025
+  s_ae321ba093788d::t_8a80ce2fac3a73 1012-1013,1019-1022,1027
+  s_ae321ba093788d::t_a32862c14ab2a5 9,1023-1024,1026
+  s_ae321ba093788d::t_2f6e3842c57517 1028-1029
+api/lib/communityExampleParamHashes.ts
+  s_ae321ba093788d::t_3b602da3747fb3 15-25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "cea5d089d5f7ceb744da1bb6d91f5b2a4946c549",
+  "prompts": {},
+  "sessions": {
+    "s_ae321ba093788d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "22153634-520d-478b-ba48-d7736ea3c48e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
