@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.408.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.407.0...gridfinity-layout-tool-v4.408.0) (2026-08-14)
+
+
+### Features
+
+* **bento:** per-compartment shadow-box colours ([#3491](https://github.com/andymai/gridfinity-layout-tool/issues/3491)) ([511aa65](https://github.com/andymai/gridfinity-layout-tool/commit/511aa654d1e511ed2c637e51f4f7d7aed5a9ac75))
+
 ## [4.407.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.406.1...gridfinity-layout-tool-v4.407.0) (2026-08-14)
 
 
