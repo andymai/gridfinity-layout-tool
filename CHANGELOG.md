@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.406.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.405.1...gridfinity-layout-tool-v4.406.0) (2026-08-14)
+
+
+### Features
+
+* **lid:** carve the seating envelope out of the interior ([#3477](https://github.com/andymai/gridfinity-layout-tool/issues/3477)) ([#3484](https://github.com/andymai/gridfinity-layout-tool/issues/3484)) ([404910d](https://github.com/andymai/gridfinity-layout-tool/commit/404910d4c1f9c696f3cfe9cbd989d478532e0e3c))
+
 ## [4.405.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.405.0...gridfinity-layout-tool-v4.405.1) (2026-08-14)
 
 
