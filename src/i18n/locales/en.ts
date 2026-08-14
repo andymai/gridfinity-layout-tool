@@ -1960,7 +1960,7 @@ const en: Record<string, string> = {
   'binDesigner.lid.trayWallAria': 'Tray rim wall thickness in millimeters',
   'binDesigner.lid.compat.heading': 'Compatibility notes',
   'binDesigner.lid.compat.wallCutouts':
-    'Wall cutouts remove the lip they cut through. The click rail on {sides} stops short of each window and fills the wall either side.',
+    'Wall cutouts remove the lip they cut through. The click rail on {sides} stops short of each window and takes whatever wall is left.',
   'binDesigner.lid.compat.wallCutoutsAllSides':
     'The wall cutouts leave no lip on any wall — the lid has nothing to mate with. Narrow them, or turn some off.',
   'binDesigner.lid.compat.wallPattern':
@@ -1983,7 +1983,7 @@ const en: Record<string, string> = {
   'binDesigner.lid.compat.labelTabs':
     'Label tabs take the wall they hang from. The click rail on {sides} fills only the gaps they leave, and rails on the other walls stop short of them.',
   'binDesigner.lid.compat.handles':
-    'Handles on {sides} reach up into the lip. The click rail on those walls stops short of each hole and fills the wall either side.',
+    'Handles on {sides} reach up into the lip. The click rail on those walls stops short of each hole and takes whatever wall is left.',
   'binDesigner.lid.compat.handlesAllSides':
     'The handle holes leave no usable lip on any wall — nothing is left for the lid to grip. Narrow them, or turn some off.',
   'binDesigner.lid.compat.topDownCutoutsAtLip':
