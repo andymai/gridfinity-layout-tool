@@ -1,0 +1,45 @@
+src/shared/components/preview/FittedFloorLabel.test.tsx
+  s_5d63852ac9c694::t_8b854e71f238a3 2-4,6-8,11-18,21-54,56-70,73-78,81-86,89-94,97-101,104-108,111-180,183-186,189-196
+src/shared/components/preview/BinNameLabel.test.tsx
+  s_5d63852ac9c694::t_9aacd83b7d5696 1-3,6-33,35-72,74,76-97
+  s_5d63852ac9c694::t_cb4c0b7f84574b 73,75
+src/shared/components/preview/index.ts
+  s_5d63852ac9c694::t_f71f2e3ba8c117 4
+src/features/grid-editor/components/Grid/IsometricPreview/FrontLabel/FrontLabel.test.tsx
+  s_5d63852ac9c694::t_5f7b6aa24de0f4 2-4,7-9,12-19,22-37,40-41,45-50,52,55-57,60-63,66-70,73-79,82-98,101-104
+src/shared/components/preview/fitFloorLabel.ts
+  s_5d63852ac9c694::t_5be07951876c05 2,4-13,16-20,23-32,35,37-45,47-50,52-60,62-64,67-70,78
+  s_5d63852ac9c694::t_1d57c6176af0e0 71-77,79-82
+src/shared/components/preview/BinNameLabel.tsx
+  s_5d63852ac9c694::t_a5514644aa2a64 10,27,29,31-36,52-57,61
+src/shared/components/preview/FittedFloorLabel.tsx
+  s_5d63852ac9c694::t_ebaee6163b8f94 87
+  s_5d63852ac9c694::t_57ba973399d5b5 1-86,88-172
+e2e/bin-designer/bin-name-label-visual.spec.ts
+  s_5d63852ac9c694::t_70b8c3b86e3bb3 34-36,41
+  s_5d63852ac9c694::t_21f5f9b1f0351a 1-33,37-40,42-64,68-91
+  s_5d63852ac9c694::t_910e009b9554d4 65-67
+src/features/grid-editor/components/Grid/IsometricPreview/FrontLabel/FrontLabel.tsx
+  s_5d63852ac9c694::t_db871bdad2e5f6 1,11-21,31-42
+src/shared/components/preview/fitFloorLabel.test.ts
+  s_5d63852ac9c694::t_9b178487702f9a 1-71,74-77,79-87,96-103,106-107,109-112,121-133
+  s_5d63852ac9c694::t_153ad3fabbb910 104-105,108,113-120
+  s_5d63852ac9c694::t_3aca08a038dc00 88-95
+  s_5d63852ac9c694::t_1516bb31b06379 72-73,78
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "622fe53fd5191942b2bae887cf16f72b31644c97",
+  "prompts": {},
+  "sessions": {
+    "s_5d63852ac9c694": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f62f3081-d3b4-4a14-ae02-8ef9905e9d06",
+        "model": "claude-opus-5"
+      },
+      "human_author": null
+    }
+  }
+}
