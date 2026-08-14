@@ -1960,9 +1960,9 @@ const en: Record<string, string> = {
   'binDesigner.lid.trayWallAria': 'Tray rim wall thickness in millimeters',
   'binDesigner.lid.compat.heading': 'Compatibility notes',
   'binDesigner.lid.compat.wallCutouts':
-    'Wall cutouts ({sides}) remove the lip on those walls — the lid loses grip there.',
+    'Wall cutouts remove the lip they cut through. The click rail on {sides} stops short of each window and takes whatever wall is left.',
   'binDesigner.lid.compat.wallCutoutsAllSides':
-    'Wall cutouts on all four sides remove the entire lip — the lid has nothing to mate with.',
+    'The wall cutouts leave no lip on any wall — the lid has nothing to mate with. Narrow them, or turn some off.',
   'binDesigner.lid.compat.wallPattern':
     'Wall pattern can perforate the lip — the lid may sit loosely.',
   'binDesigner.lid.compat.shortBin':
@@ -1983,9 +1983,9 @@ const en: Record<string, string> = {
   'binDesigner.lid.compat.labelTabs':
     'Label tabs take the wall they hang from. The click rail on {sides} fills only the gaps they leave, and rails on the other walls stop short of them.',
   'binDesigner.lid.compat.handles':
-    'Handles on {sides} reach into the lip — the click rail on those walls is auto-skipped.',
+    'Handles on {sides} reach up into the lip. The click rail on those walls stops short of each hole and takes whatever wall is left.',
   'binDesigner.lid.compat.handlesAllSides':
-    'Handles on all four sides reach into the lip — no wall is left for the lid to grip.',
+    'The handle holes leave no usable lip on any wall — nothing is left for the lid to grip. Narrow them, or turn some off.',
   'binDesigner.lid.compat.topDownCutoutsAtLip':
     'A solid-bin cutout reaches up into the lip — the lid may sit loosely above it.',
   'binDesigner.lid.compat.scoopFillsLip':

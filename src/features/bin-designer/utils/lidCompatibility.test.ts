@@ -13,6 +13,44 @@ function withOverrides(overrides: Partial<BinParams>): BinParams {
   return { ...DEFAULT_BIN_PARAMS, ...overrides };
 }
 
+/** Handle holes of `width` percent on every side, reaching the lip. */
+function allFourHandles(width: number): BinParams['handles'] {
+  const side = { enabled: true, width: null, height: null, cornerRadius: null };
+  return {
+    ...DEFAULT_BIN_PARAMS.handles,
+    enabled: true,
+    width,
+    front: { ...side },
+    back: { ...side },
+    left: { ...side },
+    right: { ...side },
+  };
+}
+
+/**
+ * Wall cutouts of `width` percent on every side. The width is load-bearing
+ * since #3483: the blocker asks whether any lip survives, not how many sides
+ * carry a cutout, so 70 and 100 give different verdicts.
+ */
+function allFourCutouts(width: number): BinParams['walls'] {
+  const side = {
+    enabled: true,
+    width,
+    depth: 50,
+    alignment: 'center' as const,
+    offset: 0,
+    widthMm: null,
+  };
+  return {
+    ...DEFAULT_BIN_PARAMS.walls,
+    enabled: true,
+    front: { ...side },
+    back: { ...side },
+    left: { ...side },
+    right: { ...side },
+  };
+}
+
 describe('checkLidCompatibility', () => {
   it('returns no issues for a vanilla 2x2x3 bin', () => {
     expect(checkLidCompatibility(DEFAULT_BIN_PARAMS)).toHaveLength(0);
@@ -37,23 +75,33 @@ describe('checkLidCompatibility', () => {
       expect(wallIssue?.sides).toEqual(['left', 'right']);
     });
 
-    it('upgrades to a blocker when ALL four sides have cutouts (no lip remaining)', () => {
-      const params = withOverrides({
-        walls: {
-          ...DEFAULT_BIN_PARAMS.walls,
-          enabled: true,
-          front: { ...DEFAULT_BIN_PARAMS.walls.front, enabled: true },
-          back: { ...DEFAULT_BIN_PARAMS.walls.back, enabled: true },
-          left: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: true },
-          right: { ...DEFAULT_BIN_PARAMS.walls.right, enabled: true },
-        },
-      });
-      const issues = checkLidCompatibility(params);
+    it('stays a warning on all four sides while each window leaves lip (#3483)', () => {
+      // The default 70% cutout leaves 30% of every wall, and the rail keeps
+      // those stretches. Blocking here refused a lid to a bin that generated
+      // one happily with the same cutouts on three walls.
+      const issues = checkLidCompatibility(withOverrides({ walls: allFourCutouts(70) }));
+      expect(issues.find((i) => i.id === 'wallCutoutsAllSides')).toBeUndefined();
+      const warning = issues.find((i) => i.id === 'wallCutouts');
+      expect(warning?.severity).toBe('warning');
+      expect(warning?.sides).toEqual(['front', 'back', 'left', 'right']);
+    });
+
+    it('upgrades to a blocker when the cutouts leave no lip at all', () => {
+      const issues = checkLidCompatibility(withOverrides({ walls: allFourCutouts(100) }));
       const allSidesIssue = issues.find((i) => i.id === 'wallCutoutsAllSides');
       expect(allSidesIssue?.severity).toBe('blocker');
       expect(allSidesIssue?.sides).toEqual(['front', 'back', 'left', 'right']);
       // The "some sides" warning shouldn't ALSO fire on the same params.
       expect(issues.find((i) => i.id === 'wallCutouts')).toBeUndefined();
+    });
+
+    it('keeps three full-width walls out of the blocker', () => {
+      const walls = allFourCutouts(100);
+      const issues = checkLidCompatibility(
+        withOverrides({ walls: { ...walls, back: { ...walls.back, enabled: false } } })
+      );
+      expect(issues.find((i) => i.id === 'wallCutoutsAllSides')).toBeUndefined();
+      expect(issues.find((i) => i.id === 'wallCutouts')?.sides).toEqual(['front', 'left', 'right']);
     });
 
     it('skips when wall cutouts are disabled at the top level', () => {
@@ -404,18 +452,12 @@ describe('checkLidCompatibility', () => {
       expect(isLidBlockedBySection(params, 'walls')).toBe(false);
     });
 
-    it('returns true when wall cutouts on all 4 sides block an enabled lid', () => {
-      const params = lidEnabled({
-        walls: {
-          ...DEFAULT_BIN_PARAMS.walls,
-          enabled: true,
-          front: { ...DEFAULT_BIN_PARAMS.walls.front, enabled: true },
-          back: { ...DEFAULT_BIN_PARAMS.walls.back, enabled: true },
-          left: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: true },
-          right: { ...DEFAULT_BIN_PARAMS.walls.right, enabled: true },
-        },
-      });
-      expect(isLidBlockedBySection(params, 'walls')).toBe(true);
+    it('returns true when full-width cutouts on all 4 sides block an enabled lid', () => {
+      expect(isLidBlockedBySection(lidEnabled({ walls: allFourCutouts(100) }), 'walls')).toBe(true);
+    });
+
+    it('returns false when the same four walls keep some lip', () => {
+      expect(isLidBlockedBySection(lidEnabled({ walls: allFourCutouts(70) }), 'walls')).toBe(false);
     });
 
     it('returns false for warning-only (non-blocker) wall cutouts', () => {
@@ -496,18 +538,24 @@ describe('checkLidCompatibility', () => {
       expect(checkLidCompatibility(params).find((i) => i.id === 'handles')).toBeUndefined();
     });
 
-    it('upgrades to blocker (handlesAllSides) when all four sides intrude', () => {
-      const params = withOverrides({
-        handles: {
-          ...DEFAULT_BIN_PARAMS.handles,
-          enabled: true,
-          front: { ...DEFAULT_BIN_PARAMS.handles.front, enabled: true },
-          back: { ...DEFAULT_BIN_PARAMS.handles.back, enabled: true },
-          left: { ...DEFAULT_BIN_PARAMS.handles.left, enabled: true },
-          right: { ...DEFAULT_BIN_PARAMS.handles.right, enabled: true },
-        },
-      });
-      const issues = checkLidCompatibility(params);
+    it('stays a warning on all four sides while each wall keeps usable lip (#3483)', () => {
+      const issues = checkLidCompatibility(withOverrides({ handles: allFourHandles(50) }));
+      expect(issues.find((i) => i.id === 'handlesAllSides')).toBeUndefined();
+      expect(issues.find((i) => i.id === 'handles')?.sides).toEqual([
+        'front',
+        'back',
+        'left',
+        'right',
+      ]);
+    });
+
+    it('upgrades to blocker (handlesAllSides) when the holes leave no usable lip', () => {
+      // `computeMultiHandleOffsets` always reserves 3mm at each end, so no
+      // handle ever clears a whole wall — the blocker's bar is a stretch long
+      // enough to carry a rail, and 92% of an 81.1mm wall leaves 3.24mm.
+      // (93% does not fit those end gaps at all and cuts no hole; see
+      // `lipGapPlan.test.ts`.)
+      const issues = checkLidCompatibility(withOverrides({ handles: allFourHandles(92) }));
       const blocker = issues.find((i) => i.id === 'handlesAllSides');
       expect(blocker?.severity).toBe('blocker');
       expect(blocker?.sides).toEqual(['front', 'back', 'left', 'right']);
@@ -517,14 +565,7 @@ describe('checkLidCompatibility', () => {
     it('isLidBlockedBySection returns true for the handles section on the all-sides blocker', () => {
       const params = withOverrides({
         lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
-        handles: {
-          ...DEFAULT_BIN_PARAMS.handles,
-          enabled: true,
-          front: { ...DEFAULT_BIN_PARAMS.handles.front, enabled: true },
-          back: { ...DEFAULT_BIN_PARAMS.handles.back, enabled: true },
-          left: { ...DEFAULT_BIN_PARAMS.handles.left, enabled: true },
-          right: { ...DEFAULT_BIN_PARAMS.handles.right, enabled: true },
-        },
+        handles: allFourHandles(92),
       });
       expect(isLidBlockedBySection(params, 'handles')).toBe(true);
     });
@@ -791,9 +832,10 @@ describe('checkLidCompatibility', () => {
       expect(issue?.sides).toEqual(['back']);
     });
 
-    it('aggregates only the issues that really take a whole wall', () => {
-      // Explicitly disable right (default is enabled) so we only assert
-      // the left-only wall cutout case.
+    it('leaves a wall cutout to the segment pass rather than disabling its wall', () => {
+      // #3483: a cutout takes its own span, so the rail keeps the stretches
+      // either side. Disabling the wall here would throw them away before
+      // anything measured them, exactly as it did for label tabs before #3401.
       const params = withOverrides({
         label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
         walls: {
@@ -803,14 +845,22 @@ describe('checkLidCompatibility', () => {
           right: { ...DEFAULT_BIN_PARAMS.walls.right, enabled: false },
         },
       });
-      const set = computeDisabledRails(checkLidCompatibility(params));
-      // Only the cutout disables a wall. A cutout removes the lip material the
-      // rail grips along the WHOLE wall, so there is nothing to segment around;
-      // a label tab takes only the span it occupies.
-      expect(set.has('left')).toBe(true);
-      expect(set.has('back')).toBe(false);
-      expect(set.has('front')).toBe(false);
-      expect(set.has('right')).toBe(false);
+      expect(computeDisabledRails(checkLidCompatibility(params)).size).toBe(0);
+    });
+
+    it('still disables the wall a finger scoop fills, which has no gaps to keep', () => {
+      // The one side-bearing warning that really does take its whole wall: the
+      // ramp fills the rail's pocket along the entire run it is built against.
+      const params = withOverrides({
+        height: 6,
+        scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, radius: 40 },
+        lid: { ...DEFAULT_BIN_PARAMS.lid, relieveInterior: false },
+      });
+      const issue = checkLidCompatibility(params).find((i) => i.id === 'scoopFillsLip');
+      expect(issue).toBeDefined();
+      expect(computeDisabledRails(checkLidCompatibility(params))).toEqual(
+        new Set(issue?.sides ?? [])
+      );
     });
 
     it('ignores issues without a sides array', () => {

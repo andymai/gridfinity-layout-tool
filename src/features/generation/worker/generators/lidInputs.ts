@@ -31,7 +31,8 @@ import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
 import { railFoulingLabelFootprints } from '@/shared/utils/labelTabPlan';
 import type { LabelTabFootprint } from '@/shared/utils/labelTabPlan';
 import { dividerRailBlocks } from '@/shared/utils/dividerRailPlan';
-import type { DividerRailBlock } from '@/shared/utils/dividerRailPlan';
+import { lipGapRailBlocks, lipGaps } from '@/shared/utils/lipGapPlan';
+import type { WallSpanBlock } from '@/shared/utils/labelTabPlan';
 import { LID_FIT_CLEARANCE, LID_CORNER_RADIUS, lidAnchorZ, lidWallBottomZ } from './lidConstants';
 import { resolveOverhang, overhangExpansion, hasOverhang } from './overhang';
 
@@ -175,15 +176,20 @@ export interface LidInputs {
    */
   readonly labelFootprints: readonly LabelTabFootprint[];
   /**
-   * Stretches of wall the bin's compartment dividers deny to a rail (#3477).
-   * A divider is built to the interior ceiling and a seated rail hangs 3.15mm
-   * below the wall top, so a rail run straight through one is 3.1mm of
-   * solid-on-solid overlap and the lid cannot close.
+   * Stretches of wall a rail cannot occupy, from every cause but label tabs
+   * (which arrive as footprints above, because their cross-axis span decides
+   * which walls they take).
    *
-   * Empty on a bin with one compartment, a polygon mask, or a non-standard
-   * style — anything that builds no divider walls.
+   * Two unrelated reasons, applied identically. A compartment divider (#3477)
+   * is built to the interior ceiling and a seated rail hangs 3.15mm below the
+   * wall top, so a run straight through one is 3.1mm of solid-on-solid overlap
+   * and the lid cannot close. A wall cutout or a high handle hole (#3483) is
+   * the opposite — it has taken the lip away, so a rail there grips nothing.
+   *
+   * Empty on a plain bin: no compartment grid, no cutouts, no handles reaching
+   * the lip, or a polygon mask, which none of the three plans describe.
    */
-  readonly dividerBlocks: readonly DividerRailBlock[];
+  readonly wallBlocks: readonly WallSpanBlock[];
   /**
    * Grip relief (#3272), already gated: `mode` is forced to `'none'` when the
    * feature is off or its depth clamp left nothing useful, so builders can
@@ -382,14 +388,15 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     gridUnitMm,
     gridUnitMmY,
     heightUnitMm,
-    // Per-side rail skips derived from feature conflicts: wall cutouts and
-    // handles that intrude into the lip Z range. Label tabs are deliberately
-    // NOT here (see `SIDES_ARE_ADVISORY`) — they get segmented around instead,
-    // via `labelFootprints` below. Centralised in `lidCompatibility.computeDisabledRails`
-    // so the UI rail-summary and the worker placement code stay in sync.
+    // Whole walls a conflict denies outright — only a finger scoop filling the
+    // lip pocket, plus the two blockers that stop generation anyway. Label
+    // tabs, dividers, cutouts and handles are all deliberately absent (see
+    // `SIDES_ARE_ADVISORY`): each costs a rail its own span, not its wall, and
+    // arrives below. Centralised in `lidCompatibility.computeDisabledRails` so
+    // the UI rail-summary and the worker placement code stay in sync.
     disabledRails: computeDisabledRails(checkLidCompatibility(params)),
     labelFootprints: railFoulingLabelFootprints(params),
-    dividerBlocks: dividerRailBlocks(params),
+    wallBlocks: [...dividerRailBlocks(params), ...lipGapRailBlocks(lipGaps(params))],
     // Rails only engage in clickRails mode; friction/magnetic force them off so
     // the builder's rail pass is a no-op while the user's per-side choice is
     // preserved on the persisted config.

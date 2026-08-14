@@ -53,6 +53,7 @@ import {
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { railFoulingLabelFootprints } from '@/shared/utils/labelTabPlan';
 import { dividerRailBlocks } from '@/shared/utils/dividerRailPlan';
+import { lipGapRailBlocks, lipGaps } from '@/shared/utils/lipGapPlan';
 import { resolveOverhang, overhangExpansion, hasOverhang } from '@/shared/utils/overhang';
 import { matchingTrayParams } from '@/features/bin-designer/utils/matchingTray';
 import { lidWallBottomZ } from '@/features/bin-designer/components/preview/LidMesh/lidAnchorZ';
@@ -144,8 +145,12 @@ export function useLidSection() {
   // the same footprints the worker segments against or it reports rails on a
   // wall the tabs have taken.
   const labelFootprints = useMemo(() => railFoulingLabelFootprints(params), [params]);
-  // Same reason, for the dividers the rails now notch around (#3477).
-  const dividerBlocks = useMemo(() => dividerRailBlocks(params), [params]);
+  // Same reason, for the dividers the rails now notch around (#3477) and for
+  // the cutouts and handle holes they stop short of (#3483).
+  const wallBlocks = useMemo(
+    () => [...dividerRailBlocks(params), ...lipGapRailBlocks(lipGaps(params))],
+    [params]
+  );
   // The lid wraps the bin's overhang-expanded body, so the readout has to use
   // the same walls the worker places rails on.
   const outerExpansion = useMemo(() => {
@@ -548,7 +553,7 @@ export function useLidSection() {
             params.gridUnitMmY ?? params.gridUnitMm,
             labelFootprints,
             outerExpansion,
-            dividerBlocks
+            wallBlocks
           )
         : { count: 0, lengths: [] as readonly number[] },
     [
@@ -561,7 +566,7 @@ export function useLidSection() {
       disabledRails,
       labelFootprints,
       outerExpansion,
-      dividerBlocks,
+      wallBlocks,
       lid.clickRails,
       lid.clickRailCoverage,
     ]

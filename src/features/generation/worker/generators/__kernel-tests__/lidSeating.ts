@@ -40,9 +40,13 @@ import type { MeshData } from '@/features/generation/bridge/types';
  * bottom's skirt (#3036) raises the rim further and is not modelled here.
  */
 export function lidZOffset(p: BinParams): number {
+  return binLipTopZ(p) - lidAnchorZ(p.heightUnitMm, LID_FIT_CLEARANCE, resolveLidCavityExtraMm(p));
+}
+
+/** Z of the bin's lip top in world coords. The plane a seated lid registers on. */
+export function binLipTopZ(p: BinParams): number {
   const wallTop = p.height * p.heightUnitMm + Math.max(0, p.extraWallHeightMm ?? 0);
-  const lipTop = wallTop + LIP_HEIGHT - LIP_OVERLAP;
-  return lipTop - lidAnchorZ(p.heightUnitMm, LID_FIT_CLEARANCE, resolveLidCavityExtraMm(p));
+  return wallTop + LIP_HEIGHT - LIP_OVERLAP;
 }
 
 /** Total mm of bin and lid material sharing the same Z at this column. */
@@ -205,6 +209,102 @@ export function worstSeatInterference(
     }
   }
   return worst;
+}
+
+/**
+ * Millimetres of seated click rail with no bin lip above it to hook (#3483).
+ *
+ * The counterpart to {@link worstSeatInterference}, and the reason that probe
+ * is not enough on its own: a wall cutout or a handle hole is an ABSENCE, so a
+ * rail hanging over one collides with nothing, and every interference sweep
+ * reports clean while the lid holds by that stretch not at all. This asks the
+ * opposite question — wherever the lid has rail, does the bin still have lip?
+ *
+ * Both terms are read off the two meshes. The only number derived from params
+ * is {@link binLipTopZ}, the seat plane every other probe in this file already
+ * depends on, so a slip there fails those too rather than hiding here.
+ *
+ * Reads outermost crossings, never {@link verticalSolidSpans}, for the reason
+ * {@link magnetSeatGap} does: the bin's coincident socket seam leaves an odd
+ * crossing count, and pairing it into spans reports the cavity as solid. Both
+ * questions here are about a single surface, so the parity-free read is also
+ * the direct one.
+ *
+ * Two columns per sample, each chosen by measuring the real section:
+ *
+ *  - RAIL, {@link RAIL_PROBE_INBOARD} inside the lid's rail spine. The lid's
+ *    lowest surface there is the rail's underside, ~7.5mm below the seat plane;
+ *    with no rail on that wall the same column sees only the floor plate, ~1mm
+ *    ABOVE it. {@link RAIL_PRESENT_BELOW} splits the two with 2mm to spare.
+ *  - LIP, {@link LIP_PROBE_INBOARD} inside the bin's outer face. The lip's
+ *    outer chamfer descends 1:1, so an intact rim's top surface lands exactly
+ *    that far below the lip top, while a cutout — whose overshoot clears the
+ *    lip entirely — drops the column to the cut floor or the cavity.
+ */
+const RAIL_PROBE_INBOARD = 0.35;
+const RAIL_PRESENT_BELOW = 5.5;
+const LIP_PROBE_INBOARD = 1;
+
+/**
+ * How far in from each end of a wall the sweep starts, measured from the lid's
+ * outer face.
+ *
+ * Not tidiness: a PERPENDICULAR wall's rail occupies the band 1.9mm to 4.55mm
+ * from the lid's outer face along this axis (`lidCornerR`, less
+ * `LID_CLICK_RAIL_OUT` outward and plus `LID_CLICK_RAIL_INNER` inboard), and a
+ * column landing in it reads that rail while checking THIS wall's lip. Sweeping
+ * from 5.5mm clears it by ~1mm. The cost is the first 1.75mm of each rail's own
+ * run, where `computeCutoutCenter` holds a cutout a `wallThickness` clear of
+ * the corner anyway.
+ */
+const CORNER_SKIP = LID_CORNER_RADIUS + 1.5;
+
+export function ungrippedRailMm(
+  bin: MeshData,
+  lid: MeshData,
+  p: BinParams,
+  dz: number,
+  step = 1
+): number {
+  const lipTop = binLipTopZ(p);
+  const lidBB = boundingBox(lid.vertices);
+  const binBB = boundingBox(bin.vertices);
+  const railInset = LID_CORNER_RADIUS - LID_FIT_CLEARANCE + RAIL_PROBE_INBOARD;
+
+  const hasRail = (x: number, y: number): boolean => {
+    const lowest = columnCrossings(lid, x, y).at(0);
+    return lowest !== undefined && lowest + dz < lipTop - RAIL_PRESENT_BELOW;
+  };
+  const hasLip = (x: number, y: number): boolean => {
+    const top = columnCrossings(bin, x, y).at(-1);
+    // 0.2mm absorbs tessellation on the chamfer; the defect is whole
+    // millimetres, since a cutout takes the rim down to its own floor.
+    return top !== undefined && top >= lipTop - LIP_PROBE_INBOARD - 0.2;
+  };
+
+  let ungripped = 0;
+  // Both parts move together under overhang, so a world along-axis coordinate
+  // addresses the same place on each. The cross-axis lines come from each
+  // part's OWN bounds, which is what keeps the two probes on their own feature.
+  const sweep = (alongX: boolean, far: boolean): void => {
+    const lo = alongX ? lidBB.minX : lidBB.minY;
+    const hi = alongX ? lidBB.maxX : lidBB.maxY;
+    const railCross = far
+      ? (alongX ? lidBB.maxY : lidBB.maxX) - railInset
+      : (alongX ? lidBB.minY : lidBB.minX) + railInset;
+    const binCross = far
+      ? (alongX ? binBB.maxY : binBB.maxX) - LIP_PROBE_INBOARD
+      : (alongX ? binBB.minY : binBB.minX) + LIP_PROBE_INBOARD;
+    for (let s = lo + CORNER_SKIP; s <= hi - CORNER_SKIP; s += step) {
+      if (!hasRail(alongX ? s : railCross, alongX ? railCross : s)) continue;
+      if (!hasLip(alongX ? s : binCross, alongX ? binCross : s)) ungripped += step;
+    }
+  };
+  sweep(true, true);
+  sweep(true, false);
+  sweep(false, true);
+  sweep(false, false);
+  return ungripped;
 }
 
 /**

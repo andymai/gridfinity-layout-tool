@@ -9,7 +9,13 @@
  * gotcha #9 warns about, so they all read this plan instead.
  */
 
-import type { BinParams, LabelTabAlignment, LabelTabFit, TabAnchorSide } from '@/shared/types/bin';
+import type {
+  BinParams,
+  LabelTabAlignment,
+  LabelTabFit,
+  LidCompatibilitySide,
+  TabAnchorSide,
+} from '@/shared/types/bin';
 import {
   compartmentHasTiltedBackWall,
   compartmentHasTiltedFrontWall,
@@ -599,6 +605,13 @@ export function footprintFoulsRailBand(
 export function labelTabInteriorDims(params: BinParams): {
   readonly innerW: number;
   readonly innerD: number;
+  /**
+   * Full wall height, BEFORE the stacking relief the interior gives up. The
+   * wall-cutout builder measures its own cut depth against `wallHeight -
+   * wallThickness`, so a consumer mirroring that gate needs the raw number
+   * rather than re-adding the taper to `interiorHeight`.
+   */
+  readonly wallHeight: number;
   readonly interiorHeight: number;
   readonly collarHeight: number;
 } | null {
@@ -630,7 +643,7 @@ export function labelTabInteriorDims(params: BinParams): {
   const collarHeight = Number.isFinite(rawCollar) ? Math.max(0, rawCollar) : 0;
 
   if (innerW <= 0 || innerD <= 0 || interiorHeight <= 0) return null;
-  return { innerW, innerD, interiorHeight, collarHeight };
+  return { innerW, innerD, wallHeight, interiorHeight, collarHeight };
 }
 
 /**
@@ -692,6 +705,47 @@ const RAIL_HALF_WIDTH = (LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INNER) / 2;
 export interface RailSegment {
   readonly lo: number;
   readonly hi: number;
+}
+
+/**
+ * One stretch of one wall denied to a click rail, whatever denies it.
+ *
+ * Two unrelated reasons produce the same shape, and the rail pass cannot tell
+ * them apart because it does not need to: a compartment divider or a label tab
+ * is IN THE WAY, while a wall cutout or an intruding handle has taken away the
+ * lip there is nothing left to grip. Both come out as "no rail along here".
+ *
+ * The distinction survives in how each is VERIFIED, not in how it is applied:
+ * mating the pair and sweeping for overlap finds an obstruction, and is blind to
+ * an absence — a rail hanging over a window collides with nothing at all.
+ *
+ * Along-axis extent, in the bin's centred interior frame.
+ */
+export interface WallSpanBlock {
+  readonly side: LidCompatibilitySide;
+  readonly lo: number;
+  readonly hi: number;
+}
+
+/**
+ * Cut a wall's surviving rail stretches down further, around its blocks.
+ *
+ * Takes segments rather than a bare `lo`/`hi` so passes compose — a wall can
+ * carry dividers, cutouts and handles at once, and the label-tab pass has
+ * already split the run by the time this one sees it.
+ */
+export function railSegmentsClearOfBlocks(
+  segments: readonly RailSegment[],
+  side: LidCompatibilitySide,
+  blocks: readonly WallSpanBlock[]
+): RailSegment[] {
+  let out = [...segments];
+  for (const b of blocks) {
+    if (b.side !== side) continue;
+    out = subtractSpan(out, b.lo, b.hi);
+    if (out.length === 0) break;
+  }
+  return out;
 }
 
 /**

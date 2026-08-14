@@ -25,12 +25,8 @@ import {
 } from '@/features/bin-designer/utils/compartments';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
-import {
-  clickRailZBandAboveFloor,
-  labelTabInteriorDims,
-  subtractSpan,
-  type RailSegment,
-} from '@/shared/utils/labelTabPlan';
+import { clickRailZBandAboveFloor, labelTabInteriorDims } from '@/shared/utils/labelTabPlan';
+import type { WallSpanBlock } from '@/shared/utils/labelTabPlan';
 import { railInboardReachMm } from '@/shared/constants/lidKeepout';
 import { interiorReliefActive } from '@/shared/utils/lidInteriorRelief';
 
@@ -45,13 +41,14 @@ import { interiorReliefActive } from '@/shared/utils/lidInteriorRelief';
  */
 export const DIVIDER_RAIL_MARGIN = 1;
 
-/** One stretch of one wall a divider takes out of the rail run. */
-export interface DividerRailBlock {
-  readonly side: LidCompatibilitySide;
-  /** Along-axis extent, in the bin's centred interior frame. */
-  readonly lo: number;
-  readonly hi: number;
-}
+/**
+ * One stretch of one wall a divider takes out of the rail run.
+ *
+ * Structurally a {@link WallSpanBlock} — a divider is one of the four things
+ * that can deny a rail a stretch of wall, and `railSegmentsClearOfBlocks`
+ * applies them all with one pass.
+ */
+export type DividerRailBlock = WallSpanBlock;
 
 /**
  * Half the footprint a divider of `thickness` leaves on the wall it crosses.
@@ -189,25 +186,4 @@ export function dividerRailSides(
 ): readonly LidCompatibilitySide[] {
   const sides = new Set(blocks.map((b) => b.side));
   return (['front', 'back', 'left', 'right'] as const).filter((s) => sides.has(s));
-}
-
-/**
- * Cut a wall's surviving rail stretches down further, around its dividers.
- *
- * Takes segments rather than a bare `lo`/`hi` so it composes onto
- * `railSegmentsClearOfLabelTabs` — a wall can carry both, and the tab pass has
- * already split the run by the time this one sees it.
- */
-export function railSegmentsClearOfDividers(
-  segments: readonly RailSegment[],
-  side: LidCompatibilitySide,
-  blocks: readonly DividerRailBlock[]
-): RailSegment[] {
-  let out = [...segments];
-  for (const b of blocks) {
-    if (b.side !== side) continue;
-    out = subtractSpan(out, b.lo, b.hi);
-    if (out.length === 0) break;
-  }
-  return out;
 }

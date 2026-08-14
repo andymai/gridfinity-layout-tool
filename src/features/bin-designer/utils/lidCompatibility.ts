@@ -24,10 +24,10 @@
 
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { isPartialMask, maskToPolygon } from '@/shared/utils/cellMask';
-import { computeHandleHoleGeometry } from '@/shared/utils/handleCutoutClip';
 import { hasAnyPatternedWall } from '@/shared/utils/wallPatternSides';
 import { railFoulingLabelFootprints } from '@/shared/utils/labelTabPlan';
 import { dividerRailBlocks, dividerRailSides } from '@/shared/utils/dividerRailPlan';
+import { unlippedSides, lipGaps, lipGapSides } from '@/shared/utils/lipGapPlan';
 // Re-exported for callers that already reach for this module's lid policy;
 // defined in `lidInteriorRelief` because the divider planner and the label
 // shelf datum both need it and both are reached from here.
@@ -39,7 +39,7 @@ import {
   resolveScoopProfile,
   resolveScoopSide,
 } from '@/shared/utils/scoopCalculations';
-import type { BinParams, HandleConfig, HandleSide, ScoopSide } from '../types';
+import type { BinParams, ScoopSide } from '../types';
 import {
   LID_CLICK_RAIL_BAND_BELOW_WALL_TOP,
   LID_MAGNET_LIP_CLEARANCE,
@@ -133,33 +133,6 @@ function lipBottomZ(interiorHeight: number): number {
   return interiorHeight - GRIDFINITY.LIP_HEIGHT;
 }
 
-/**
- * Does the per-side handle hole extend up into the lip Z range?
- *
- * Mirrors the geometry in `handleBuilder.ts` so the lip check agrees
- * with what actually gets cut: the hole is centered at `centerZ`, so
- * its top sits at `centerZ + effectiveHeight/2`, compared against the
- * lip's bottom Z.
- */
-function handleSideIntrudesLip(
-  handles: HandleConfig,
-  side: LidCompatibilitySide,
-  interiorHeight: number
-): boolean {
-  if (!handles.enabled) return false;
-  const sideCfg: HandleSide = handles[side];
-  if (!sideCfg.enabled) return false;
-
-  const requestedHeight = sideCfg.height ?? handles.height;
-  const { centerZ, effectiveHeight } = computeHandleHoleGeometry(
-    interiorHeight,
-    requestedHeight,
-    handles.verticalPosition
-  );
-  const topZ = centerZ + effectiveHeight / 2;
-  return topZ > lipBottomZ(interiorHeight);
-}
-
 /** Horizontal distance the lip's inner face reaches in from the outer wall. */
 const LIP_TAPER_WIDTH = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
 
@@ -243,20 +216,21 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   // own checks instead.
   const isMagnetic = params.lid.attachment === 'magnetic';
 
-  // 1. Wall cutouts. Each enabled side removes lip material on that wall.
-  //    All four sides cut → no lip anywhere → blocker (lid has nothing to
-  //    grip). Some-sides cut → warning (lid still mates on remaining walls).
-  if (params.walls.enabled && !isPolygon && !isMagnetic) {
-    const cutSides: LidCompatibilitySide[] = [];
-    for (const side of WALL_SIDES) {
-      if (params.walls[side].enabled) cutSides.push(side);
-    }
-    if (cutSides.length === WALL_SIDES.length) {
-      issues.push({
-        id: 'wallCutoutsAllSides',
-        severity: 'blocker',
-        sides: cutSides,
-      });
+  // The stretches of each wall where a cutout or a high handle has taken the
+  // lip away. Resolved once and shared by checks 1 and 7 below, and by the rail
+  // pass, which segments its runs around them instead of dropping the wall.
+  const gaps = isMagnetic ? [] : lipGaps(params);
+
+  // 1. Wall cutouts. Each one removes lip material along its OWN span, and
+  //    since #3483 the rail keeps whatever the window leaves either side — so
+  //    this is a warning wherever any lip survives, no matter how many walls
+  //    are cut. The blocker is the case its copy has always described: cutouts
+  //    that leave no lip anywhere, which now means full-width on all four
+  //    sides rather than merely enabled on all four.
+  if (!isPolygon && !isMagnetic) {
+    const cutSides = lipGapSides(gaps, 'cutout');
+    if (unlippedSides(gaps, 'cutout').length === WALL_SIDES.length) {
+      issues.push({ id: 'wallCutoutsAllSides', severity: 'blocker', sides: cutSides });
     } else if (cutSides.length > 0) {
       issues.push({ id: 'wallCutouts', severity: 'warning', sides: cutSides });
     }
@@ -333,22 +307,15 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
     }
   }
 
-  // 7. Handles. Handles cut through the wall body; when the hole's top
-  //    Z exceeds the lip's bottom Z, the cutout removes lip material on
-  //    that wall — same impact as a wall cutout. Sides where the handle
-  //    sits clear of the lip don't conflict and don't warn. All four
-  //    sides intruding → blocker (lid has no wall to grip). Interior
-  //    handles (compartment dividers) don't touch the outer lip, so
-  //    they're excluded.
-  if (params.handles.enabled && !isPolygon && !isMagnetic) {
-    const interiorHeight = computeInteriorHeight(params);
-    const intrudingSides: LidCompatibilitySide[] = [];
-    for (const side of WALL_SIDES) {
-      if (handleSideIntrudesLip(params.handles, side, interiorHeight)) {
-        intrudingSides.push(side);
-      }
-    }
-    if (intrudingSides.length === WALL_SIDES.length) {
+  // 7. Handles. A handle hole cut high enough removes lip material along its
+  //    own span — same impact as a wall cutout, and segmented the same way
+  //    since #3483. Sides where the hole sits clear of the lip don't conflict
+  //    and don't warn; nor do the sides `handleBuilder` skips (a slotted bin,
+  //    or the back wall of a bin with label tabs), which the plan mirrors.
+  //    Interior handles pierce compartment dividers, not the outer lip.
+  if (!isPolygon && !isMagnetic) {
+    const intrudingSides = lipGapSides(gaps, 'handle');
+    if (unlippedSides(gaps, 'handle').length === WALL_SIDES.length) {
       issues.push({ id: 'handlesAllSides', severity: 'blocker', sides: intrudingSides });
     } else if (intrudingSides.length > 0) {
       issues.push({ id: 'handles', severity: 'warning', sides: intrudingSides });
@@ -545,12 +512,22 @@ export function isLidBlockedBySection(params: BinParams, section: LidConflictSec
  * A compartment divider is the same shape of thing, one wall crossing at a time
  * (#3477): it costs the rail its own width plus a margin, never the wall.
  *
- * Cutouts and intruding handles are different: they remove the lip material a
- * rail grips along the whole wall, so there is nothing to segment around.
+ * Wall cutouts and intruding handles joined them in #3483. They are the other
+ * kind of obstruction — the lip is missing rather than blocked — but the
+ * decision is identical either way: the window costs the rail its own span, and
+ * `lipGaps` is what says how wide that is. A wall is only ever denied outright
+ * by falling out of the segment pass with nothing left.
+ *
+ * What is left outside the set is what a per-SIDE verdict still describes
+ * honestly: `scoopFillsLip`, where a ramp fills the pocket along the whole wall
+ * it is built against, and the two `*AllSides` blockers, which short-circuit
+ * generation anyway.
  */
 const SIDES_ARE_ADVISORY: ReadonlySet<LidCompatibilityId> = new Set([
   'labelTabs',
   'compartmentDividers',
+  'wallCutouts',
+  'handles',
 ]);
 
 /**
@@ -570,7 +547,8 @@ export function computeDisabledRails(
   const disabled = new Set<LidCompatibilitySide>();
   for (const issue of issues) {
     if (!issue.sides || SIDES_ARE_ADVISORY.has(issue.id)) continue;
-    // Only side-bearing issues affect per-side rail placement.
+    // Only side-bearing issues affect per-side rail placement, and only
+    // `scoopFillsLip` still describes a whole wall.
     // wallCutoutsAllSides/handlesAllSides are blockers — they short-circuit
     // generation entirely via `shouldGenerateLid`, so we don't need to
     // populate `disabled` in that case. But callers that inspect the set

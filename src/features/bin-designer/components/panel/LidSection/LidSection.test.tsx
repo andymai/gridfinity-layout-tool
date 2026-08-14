@@ -620,9 +620,25 @@ describe('LidSection', () => {
       expect(screen.getAllByRole('button', { name: /^Fix:/ }).length).toBeGreaterThan(0);
     });
 
-    it('disables the per-side rail toggle when a feature conflict skips that side', () => {
-      // A wall cutout removes the lip material the rail grips along the whole
-      // wall, so that side really is off.
+    it('disables the per-side rail toggle when a feature conflict takes the whole wall', () => {
+      // A finger scoop rising into the rail band fills the pocket the bump
+      // hooks along the entire wall it is built against, so that side really
+      // is off — the one side-bearing warning left that means it.
+      resetStore({
+        height: 6,
+        scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, radius: 40 },
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, relieveInterior: false },
+      });
+      render(<LidSection />);
+      const frontChip = screen.getByRole('switch', { name: 'Front' });
+      expect(frontChip).toBeDisabled();
+      expect(frontChip.getAttribute('title')).toMatch(/auto-disabled/i);
+    });
+
+    it('leaves the rail toggle live for a wall cutout, which only takes its own span', () => {
+      // Pre-#3483 this chip was auto-disabled, so a 70%-wide window cost the
+      // whole wall's retention. The builder now segments the run around the
+      // opening, and the user's choice has to survive to be honoured.
       resetStore({
         lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
         walls: {
@@ -632,9 +648,7 @@ describe('LidSection', () => {
         },
       });
       render(<LidSection />);
-      const backChip = screen.getByRole('switch', { name: 'Back' });
-      expect(backChip).toBeDisabled();
-      expect(backChip.getAttribute('title')).toMatch(/auto-disabled/i);
+      expect(screen.getByRole('switch', { name: 'Back' })).not.toBeDisabled();
     });
 
     it('leaves the rail toggle live for label tabs, which only take part of the wall', () => {

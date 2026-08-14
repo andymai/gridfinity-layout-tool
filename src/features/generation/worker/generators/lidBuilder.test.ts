@@ -200,7 +200,7 @@ describe('resolveLidInputs', () => {
     expect(noLabel.disabledRails.size).toBe(0);
   });
 
-  it('disables rails on sides that have a wall cutout', () => {
+  it('blocks a wall cutout span instead of disabling its wall (#3483)', () => {
     const withCutouts = resolveLidInputs(
       makeParams(
         {},
@@ -214,10 +214,14 @@ describe('resolveLidInputs', () => {
         }
       )
     );
-    expect(withCutouts.disabledRails.has('left')).toBe(true);
-    expect(withCutouts.disabledRails.has('right')).toBe(true);
-    expect(withCutouts.disabledRails.has('front')).toBe(false);
-    expect(withCutouts.disabledRails.has('back')).toBe(false);
+    // Nothing is denied its whole wall — the window costs the rail its own
+    // span, and the stretches either side survive the segment pass.
+    expect(withCutouts.disabledRails.size).toBe(0);
+    expect(withCutouts.wallBlocks.map((b) => b.side).sort()).toEqual(['left', 'right']);
+    for (const block of withCutouts.wallBlocks) {
+      expect(block.hi - block.lo).toBeGreaterThan(0);
+      expect(block.hi - block.lo).toBeLessThan(withCutouts.lidOuterD);
+    }
   });
 
   it('anchorZ sits within the lid (above wall bottom, below floor top)', () => {
