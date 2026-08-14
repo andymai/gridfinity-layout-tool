@@ -2759,6 +2759,10 @@ const en: Record<string, string> = {
   'binDesigner.bento.stashAction': 'Move to stash',
   'binDesigner.bento.wallsTitle': 'Walls',
   'binDesigner.bento.binWideTitle': 'Bin-wide',
+  'binDesigner.bento.color.enable': 'Color this compartment',
+  'binDesigner.bento.color.surface': 'Painted surface',
+  'binDesigner.bento.color.note':
+    'Prints in a second filament on a multi-material printer. Single-color printers ignore it.',
   'binDesigner.bento.wallWithVertical': 'Wall to {name} (vertical)',
   'binDesigner.bento.wallWithHorizontal': 'Wall to {name} (horizontal)',
   'binDesigner.bento.wallShift': 'Shift (mm)',

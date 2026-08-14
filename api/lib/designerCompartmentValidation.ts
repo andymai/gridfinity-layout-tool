@@ -8,11 +8,18 @@
  */
 
 import { isNumber, inRange, isObject } from './validationUtils.js';
+
 import {
   CONSTRAINTS,
   VALID_LABEL_PLATE_ICONS,
   VALID_LABEL_PLATE_WIDTHS,
 } from './designerValidationConstants.js';
+
+/** Mirrors `HEX_COLOR_REGEX` in `designerValidation.ts`. */
+const COMPARTMENT_HEX_COLOR_REGEX = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+
+/** Mirrors the client `CompartmentColorScope` union. */
+const VALID_COMPARTMENT_COLOR_SCOPES: readonly string[] = ['floor', 'floorAndWalls'];
 
 /**
  * Validates a dividers object (legacy format) ensuring x and y counts and thickness fall within allowed ranges.
@@ -179,6 +186,39 @@ export function validateCompartments(compartments: unknown): string | null {
       const icon = compartments.labelIcons[i] as unknown;
       if (icon !== null && !VALID_LABEL_PLATE_ICONS.includes(icon as string)) {
         return `compartments.labelIcons[${i}] must be null or one of: ${VALID_LABEL_PLATE_ICONS.join(', ')}`;
+      }
+    }
+  }
+  // Optional per-compartment shadow-box colours. Entries are null (uncoloured)
+  // or a hex string; the pattern mirrors `HEX_COLOR_REGEX` in
+  // `designerValidation.ts` and the length is bounded like the arrays above so a
+  // direct HTTP POST can't smuggle an unbounded array past the store action.
+  if (compartments.compartmentColors !== undefined) {
+    if (!Array.isArray(compartments.compartmentColors)) {
+      return 'compartments.compartmentColors must be an array';
+    }
+    if (compartments.compartmentColors.length > expectedLength) {
+      return `compartments.compartmentColors length must not exceed cols × rows (${expectedLength})`;
+    }
+    for (let i = 0; i < compartments.compartmentColors.length; i++) {
+      const c = compartments.compartmentColors[i] as unknown;
+      if (c !== null && !(typeof c === 'string' && COMPARTMENT_HEX_COLOR_REGEX.test(c))) {
+        return `compartments.compartmentColors[${i}] must be null or a hex color`;
+      }
+    }
+  }
+  // Optional per-compartment paint scope, parallel to the colours above.
+  if (compartments.compartmentColorScopes !== undefined) {
+    if (!Array.isArray(compartments.compartmentColorScopes)) {
+      return 'compartments.compartmentColorScopes must be an array';
+    }
+    if (compartments.compartmentColorScopes.length > expectedLength) {
+      return `compartments.compartmentColorScopes length must not exceed cols × rows (${expectedLength})`;
+    }
+    for (let i = 0; i < compartments.compartmentColorScopes.length; i++) {
+      const s = compartments.compartmentColorScopes[i] as unknown;
+      if (s !== null && !VALID_COMPARTMENT_COLOR_SCOPES.includes(s as string)) {
+        return `compartments.compartmentColorScopes[${i}] must be null or one of: ${VALID_COMPARTMENT_COLOR_SCOPES.join(', ')}`;
       }
     }
   }

@@ -1,3 +1,12 @@
+/**
+ * Which surfaces a compartment's shadow-box colour paints. Mirrors
+ * `CutoutColorScope` so the two shadow-box features read as one idea: the floor
+ * alone by default, the whole cavity on request.
+ */
+export type CompartmentColorScope = 'floor' | 'floorAndWalls';
+
+export const DEFAULT_COMPARTMENT_COLOR_SCOPE: CompartmentColorScope = 'floor';
+
 /** Divider configuration for compartment splitting (legacy — use CompartmentConfig) */
 export interface DividerConfig {
   readonly x: number;
@@ -62,6 +71,23 @@ export interface CompartmentConfig {
    * `normalizeIdsWithRemap`, like `compartmentTexts`.
    */
   readonly labelIcons?: (string | null)[];
+  /**
+   * Optional per-compartment shadow-box colour (hex), indexed by compartment ID
+   * after `normalizeIds`. Missing / empty entries are uncoloured and inherit the
+   * zone they would otherwise take. Kept in lockstep with `cells` via
+   * `normalizeIdsWithRemap`, like `compartmentTexts`. Absent when empty: an
+   * always-present default would shift every existing design's
+   * `communityParamsFingerprint`.
+   *
+   * Mutable element type mirrors sibling arrays (Immer `Draft` requirement).
+   */
+  readonly compartmentColors?: (string | null)[];
+  /**
+   * Which surfaces each compartment's colour paints. Missing entries mean
+   * {@link DEFAULT_COMPARTMENT_COLOR_SCOPE}. Parallel to
+   * {@link compartmentColors} and remapped with it.
+   */
+  readonly compartmentColorScopes?: (CompartmentColorScope | null)[];
   /**
    * Optional per-divider tilt overrides. Each entry shifts the endpoints of
    * one interior divider away from its axis-aligned grid position, producing

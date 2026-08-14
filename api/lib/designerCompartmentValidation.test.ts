@@ -704,3 +704,44 @@ describe('validateCompartments', () => {
     });
   });
 });
+
+describe('validateCompartments — shadow-box colours', () => {
+  const base = () => ({ cols: 2, rows: 1, thickness: 1.2, cells: [0, 1] });
+
+  it('accepts hex colours and known scopes', () => {
+    expect(
+      validateCompartments({
+        ...base(),
+        compartmentColors: ['#f00', null],
+        compartmentColorScopes: ['floorAndWalls', null],
+      })
+    ).toBeNull();
+  });
+
+  it('rejects a non-hex colour', () => {
+    expect(
+      validateCompartments({ ...base(), compartmentColors: ['javascript:alert(1)', null] })
+    ).toBe('compartments.compartmentColors[0] must be null or a hex color');
+  });
+
+  it('rejects an over-long colour array', () => {
+    expect(
+      validateCompartments({ ...base(), compartmentColors: ['#f00', '#0f0', '#00f'] })
+    ).toContain('must not exceed cols × rows');
+  });
+
+  it('rejects an unknown paint scope', () => {
+    expect(validateCompartments({ ...base(), compartmentColorScopes: ['everything'] })).toContain(
+      'must be null or one of'
+    );
+  });
+
+  it('rejects non-array values', () => {
+    expect(validateCompartments({ ...base(), compartmentColors: '#f00' })).toBe(
+      'compartments.compartmentColors must be an array'
+    );
+    expect(validateCompartments({ ...base(), compartmentColorScopes: 'floor' })).toBe(
+      'compartments.compartmentColorScopes must be an array'
+    );
+  });
+});

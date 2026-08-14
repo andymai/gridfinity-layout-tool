@@ -24,6 +24,8 @@ import { computeLipGeom } from './lipCornerClassifier';
 import { computeLipColoredMesh } from './lipSeamSplitter';
 import { resolveCutoutTriColor, cutoutOrdinalFromTag } from '@/shared/generation/cutoutColorUnits';
 import type { CutoutColorUnit } from '@/shared/generation/cutoutColorUnits';
+import { COMPARTMENT_PAINTABLE_ZONES, resolveCompartmentTriColor } from './compartmentColorUnits';
+import type { CompartmentColorPlan } from './compartmentColorUnits';
 
 /** |normal.z| of the first vertex of flat triangle `i` (9 floats/tri). */
 function absNormalZ(flat: Float32Array | ArrayLike<number>, i: number): number {
@@ -60,7 +62,8 @@ export function buildTriangleMaterialIndices(
   triangleCount: number,
   vertices: Float32Array,
   activeZones: ReadonlySet<ColorZone>,
-  cutoutUnits: readonly CutoutColorUnit[] = []
+  cutoutUnits: readonly CutoutColorUnit[] = [],
+  compartmentPlan: CompartmentColorPlan | null = null
 ): BinColorMapping | null {
   const coloredUnits = cutoutUnits.filter((u) => u.color !== undefined);
   // Derive the top-accent cut from featureColors directly (see the matching note
@@ -74,7 +77,9 @@ export function buildTriangleMaterialIndices(
     cutZ !== null && !activeZones.has('topAccent')
       ? new Set(activeZones).add('topAccent')
       : activeZones;
-  if (isSingleColor(featureColors, zones) && coloredUnits.length === 0) return null;
+  if (isSingleColor(featureColors, zones) && coloredUnits.length === 0 && !compartmentPlan) {
+    return null;
+  }
 
   const base = resolveColorMapping(featureColors);
   const defaultIndex = base.defaultIndex;
@@ -87,6 +92,15 @@ export function buildTriangleMaterialIndices(
     if (!colorToIndex.has(hex)) {
       colorToIndex.set(hex, colors.length);
       colors.push(hex);
+    }
+  }
+  if (compartmentPlan) {
+    for (const unit of compartmentPlan.byId.values()) {
+      const hex = normalizeHex(unit.color as string);
+      if (!colorToIndex.has(hex)) {
+        colorToIndex.set(hex, colors.length);
+        colors.push(hex);
+      }
     }
   }
   const materials = colors.map((color) => ({ color }));
@@ -133,11 +147,38 @@ export function buildTriangleMaterialIndices(
   // triangles, so derive the normal from `vertices`.
   const nzAt = (i: number): number =>
     normals ? Math.abs(normals[i * 9 + 2]) : absNormalZ(vertices, i);
+  /** Centroid + unit normal of the RENDERED triangle `i` — reads the split
+   *  buffers when the lip was re-tessellated, so preview and export agree. */
+  const sampleTriangle = (i: number) => {
+    const src = positions ?? vertices;
+    const b = i * 9;
+    const cx = (src[b] + src[b + 3] + src[b + 6]) / 3;
+    const cy = (src[b + 1] + src[b + 4] + src[b + 7]) / 3;
+    const cz = (src[b + 2] + src[b + 5] + src[b + 8]) / 3;
+    if (normals) {
+      return { cx, cy, cz, nx: normals[b], ny: normals[b + 1], nz: normals[b + 2] };
+    }
+    const ux = src[b + 3] - src[b],
+      uy = src[b + 4] - src[b + 1],
+      uz = src[b + 5] - src[b + 2];
+    const vx = src[b + 6] - src[b],
+      vy = src[b + 7] - src[b + 1],
+      vz = src[b + 8] - src[b + 2];
+    const nx = uy * vz - uz * vy;
+    const ny = uz * vx - ux * vz;
+    const nz = ux * vy - uy * vx;
+    const len = Math.hypot(nx, ny, nz) || 1;
+    return { cx, cy, cz, nx: nx / len, ny: ny / len, nz: nz / len };
+  };
   const triangleMaterialIndices = triZones.map((zone, i) => {
     // Only cutout-tagged triangles need floor/wall math — skip nz for the rest.
     if (coloredUnits.length > 0 && cutoutOrdinalFromTag(triTags[i]) !== null) {
       const cutoutHex = resolveCutoutTriColor(triTags[i], nzAt(i), cutoutUnits);
       if (cutoutHex !== null) return colorToIndex.get(normalizeHex(cutoutHex)) ?? defaultIndex;
+    }
+    if (compartmentPlan && COMPARTMENT_PAINTABLE_ZONES.has(zone)) {
+      const hex = resolveCompartmentTriColor(compartmentPlan, sampleTriangle(i));
+      if (hex !== null) return colorToIndex.get(normalizeHex(hex)) ?? defaultIndex;
     }
     return materialIndexForZone(zone);
   });

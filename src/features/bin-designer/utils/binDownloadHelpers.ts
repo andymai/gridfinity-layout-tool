@@ -25,6 +25,10 @@ import { parseSTLBinary } from '@/features/bin-designer/utils/stlParser';
 import { buildTriangleMaterialIndices } from '@/features/bin-designer/utils/materialMapping';
 import { enumerateCutoutColorUnits, anyCutoutColored } from '@/shared/generation/cutoutColorUnits';
 import {
+  anyCompartmentColored,
+  planCompartmentColors,
+} from '@/features/bin-designer/utils/compartmentColorUnits';
+import {
   collapseLidLipCell,
   computeActiveZones,
   getZoneColor,
@@ -215,7 +219,9 @@ export function buildSinglePiece3MFObject(
   /* eslint-disable @typescript-eslint/no-unnecessary-condition -- faceGroups is typed non-null, but runtime guard is intentional belt-and-suspenders against shape drift in the generation pipeline */
   if (
     applyMultiColor &&
-    (params.featureColors?.enabled || anyCutoutColored(params.cutouts)) &&
+    (params.featureColors?.enabled ||
+      anyCutoutColored(params.cutouts) ||
+      anyCompartmentColored(params)) &&
     faceGroups
   ) {
     /* eslint-enable @typescript-eslint/no-unnecessary-condition */
@@ -226,7 +232,8 @@ export function buildSinglePiece3MFObject(
       triangleCount,
       vertices,
       computeActiveZones(params),
-      enumerateCutoutColorUnits(params.cutouts)
+      enumerateCutoutColorUnits(params.cutouts),
+      planCompartmentColors(params)
     );
     if (mapping) {
       colorConfig = mapping.config;
@@ -434,7 +441,8 @@ export function buildMultiObject3MFObjects(
   // A colored cutout makes the design multi-color even with every featureColors
   // zone at body — mirror the single-piece path so bin+lid/divider exports paint
   // cutouts too.
-  const multiColorEnabled: boolean = featureColorsEnabled || anyCutoutColored(params.cutouts);
+  const multiColorEnabled: boolean =
+    featureColorsEnabled || anyCutoutColored(params.cutouts) || anyCompartmentColored(params);
   let binBBox: FlatBBox | null = null;
   // Running right edge for side-laid-out pieces (lid, baseplate), so multiple
   // ancillary pieces form a row instead of stacking on the bin.
@@ -471,7 +479,15 @@ export function buildMultiObject3MFObjects(
         triangleCount,
         vertices,
         computeActiveZones(params),
-        enumerateCutoutColorUnits(params.cutouts)
+        enumerateCutoutColorUnits(params.cutouts),
+        // Compartment colours are classified by POSITION, so they are only
+        // meaningful while the mesh is still in the bin's own frame. The
+        // combined export always hands the whole bin over as `'bin'`; a split
+        // piece is re-centred on itself (`splitBinBuilder` translates by
+        // `-pieceCenter`), which would land every probe in the wrong cell. A
+        // cutout tag rides the triangle and survives that, which is exactly why
+        // it needs no such guard.
+        piece.label === 'bin' ? planCompartmentColors(params) : null
       );
       if (mapping) {
         colorConfig = mapping.config;

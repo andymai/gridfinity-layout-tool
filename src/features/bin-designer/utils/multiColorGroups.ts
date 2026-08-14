@@ -36,6 +36,8 @@ import { computeLipGeom } from './lipCornerClassifier';
 import { computeLipColoredMesh } from './lipSeamSplitter';
 import { resolveCutoutTriColor, cutoutOrdinalFromTag } from '@/shared/generation/cutoutColorUnits';
 import type { CutoutColorUnit } from '@/shared/generation/cutoutColorUnits';
+import { COMPARTMENT_PAINTABLE_ZONES, resolveCompartmentTriColor } from './compartmentColorUnits';
+import type { CompartmentColorPlan } from './compartmentColorUnits';
 
 export interface MultiColorGroupsResult {
   readonly groups: MeshFaceGroup[];
@@ -163,7 +165,8 @@ export function buildMultiColorGroups(
   indices: Uint32Array,
   featureColors: FeatureColorConfig,
   activeZones: ReadonlySet<ColorZone>,
-  cutoutUnits: readonly CutoutColorUnit[] = []
+  cutoutUnits: readonly CutoutColorUnit[] = [],
+  compartmentPlan: CompartmentColorPlan | null = null
 ): MultiColorGroupsResult | null {
   const coloredOrdinals = cutoutUnits
     .map((u, i) => (u.color !== undefined ? i : -1))
@@ -182,7 +185,9 @@ export function buildMultiColorGroups(
     cutZ !== null && !activeZones.has('topAccent')
       ? new Set(activeZones).add('topAccent')
       : activeZones;
-  if (isSingleColor(featureColors, zones) && coloredOrdinals.length === 0) return null;
+  if (isSingleColor(featureColors, zones) && coloredOrdinals.length === 0 && !compartmentPlan) {
+    return null;
+  }
 
   const counts = { corners: featureColors.lip.corners, bands: featureColors.lip.bands };
   const { triangleCount, geom, getTriangle } = meshAccessors(faceGroups, vertices, indices);
@@ -203,10 +208,42 @@ export function buildMultiColorGroups(
   // fixed-zone indices stay stable (no hover-glow churn). One slot per colored
   // unit — no hex dedup, matching the zone slots.
   const slotForOrdinal = new Map(coloredOrdinals.map((ord, s) => [ord, ZONE_ORDER.length + s]));
+  // Compartment colours take the slots after the cutout ones, for the same
+  // reason: appending keeps every fixed ZONE_ORDER index stable, so enabling one
+  // never renumbers a material mid-session and churns the hover glow.
+  const compartmentHexes = compartmentPlan
+    ? [...new Set([...compartmentPlan.byId.values()].map((u) => u.color as string))]
+    : [];
+  const slotForCompartmentHex = new Map(
+    compartmentHexes.map((hex, s) => [hex, ZONE_ORDER.length + coloredOrdinals.length + s])
+  );
   const zoneColors = [
     ...ZONE_ORDER.map((z) => getZoneColor(featureColors, z)),
     ...coloredOrdinals.map((ord) => cutoutUnits[ord].color as string),
+    ...compartmentHexes,
   ];
+  /** Centroid + unit normal of rendered triangle `i`, in mesh mm. */
+  const sampleTriangle = (i: number) => {
+    const t = getTriangle(i);
+    const cx = (t[0] + t[3] + t[6]) / 3;
+    const cy = (t[1] + t[4] + t[7]) / 3;
+    const cz = (t[2] + t[5] + t[8]) / 3;
+    if (normals) {
+      return { cx, cy, cz, nx: normals[i * 9], ny: normals[i * 9 + 1], nz: normals[i * 9 + 2] };
+    }
+    const ux = t[3] - t[0],
+      uy = t[4] - t[1],
+      uz = t[5] - t[2];
+    const vx = t[6] - t[0],
+      vy = t[7] - t[1],
+      vz = t[8] - t[2];
+    const nx = uy * vz - uz * vy;
+    const ny = uz * vx - ux * vz;
+    const nz = ux * vy - uy * vx;
+    const len = Math.hypot(nx, ny, nz) || 1;
+    return { cx, cy, cz, nx: nx / len, ny: ny / len, nz: nz / len };
+  };
+
   // Split path returns re-tessellated normals; else read from the source triangle.
   const absNz = (i: number): number => {
     if (normals) return Math.abs(normals[i * 9 + 2]);
@@ -230,6 +267,10 @@ export function buildMultiColorGroups(
       if (ord !== null && resolveCutoutTriColor(triTags[i], absNz(i), cutoutUnits) !== null) {
         return slotForOrdinal.get(ord) ?? zoneIndex(zone);
       }
+    }
+    if (compartmentPlan && COMPARTMENT_PAINTABLE_ZONES.has(zone)) {
+      const hex = resolveCompartmentTriColor(compartmentPlan, sampleTriangle(i));
+      if (hex !== null) return slotForCompartmentHex.get(hex) ?? zoneIndex(zone);
     }
     return zoneIndex(zone);
   });

@@ -20,7 +20,12 @@ import type {
   ReorderDirection,
 } from './cutout';
 import type { BaseConfig } from './base';
-import type { CellRect, CompartmentConfig, ScoopConfig } from './compartments';
+import type {
+  CellRect,
+  CompartmentColorScope,
+  CompartmentConfig,
+  ScoopConfig,
+} from './compartments';
 import type { InteriorCard } from './interior';
 import type { LabelTabConfig } from './labelTabs';
 import type { HandleConfig, HandleSide, HandleWallSide } from './handles';
@@ -152,6 +157,10 @@ export interface DesignerState {
   setCompartmentPlateWidth: (compartmentId: number, widthU: number | null) => void;
   /** Set a compartment's swappable-plate hardware icon (null = none). */
   setCompartmentPlateIcon: (compartmentId: number, icon: LabelPlateIconId | null) => void;
+  /** Shadow-box colour for one compartment; null clears it. */
+  setCompartmentColor: (compartmentId: number, color: string | null) => void;
+  /** Which surfaces that compartment's colour paints. */
+  setCompartmentColorScope: (compartmentId: number, scope: CompartmentColorScope) => void;
   /** Set the global interior divider height in mm, or 'auto' for full height. */
   setCompartmentDividerHeight: (height: number | 'auto') => void;
 

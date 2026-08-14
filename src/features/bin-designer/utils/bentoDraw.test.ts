@@ -369,6 +369,58 @@ describe('bentoDraw', () => {
     });
   });
 
+  describe('compartment colours stay with their compartment', () => {
+    it('follows a moved compartment to its new id', () => {
+      const drawn = drawCompartment(grid(), { col: 0, row: 0, w: 2, h: 2 });
+      if (!drawn) throw new Error('unreachable');
+      const colored: CompartmentConfig = {
+        ...drawn.config,
+        compartmentColors: withValueAt(drawn.id, '#ff0000'),
+        compartmentColorScopes: withValueAt(drawn.id, 'floorAndWalls'),
+      };
+
+      const moved = moveCompartment(colored, drawn.id, 2, 1);
+      if (!moved) throw new Error('unreachable');
+
+      expect(moved.config.compartmentColors?.[moved.id]).toBe('#ff0000');
+      expect(moved.config.compartmentColorScopes?.[moved.id]).toBe('floorAndWalls');
+    });
+
+    it('does not leak a colour onto an unrelated compartment when ids renumber', () => {
+      // Two drawn compartments; colour only the second. After removing the
+      // FIRST, ids shift down — a colour left at its old index would land on
+      // whatever compartment inherited that number (CLAUDE.md gotcha #6).
+      const first = drawCompartment(grid(), { col: 0, row: 0, w: 1, h: 1 });
+      if (!first) throw new Error('unreachable');
+      const second = drawCompartment(first.config, { col: 3, row: 2, w: 1, h: 1 });
+      if (!second) throw new Error('unreachable');
+      const colored: CompartmentConfig = {
+        ...second.config,
+        compartmentColors: withValueAt(second.id, '#0000ff'),
+      };
+
+      const after = removeCompartment(colored, first.id);
+      if (!after) throw new Error('unreachable');
+
+      const stillColored = (after.compartmentColors ?? []).filter((c) => c !== null);
+      expect(stillColored).toEqual(['#0000ff']);
+    });
+
+    it('drops the colour when its compartment is removed', () => {
+      const drawn = drawCompartment(grid(), { col: 0, row: 0, w: 2, h: 2 });
+      if (!drawn) throw new Error('unreachable');
+      const colored: CompartmentConfig = {
+        ...drawn.config,
+        compartmentColors: withValueAt(drawn.id, '#ff0000'),
+      };
+
+      const after = removeCompartment(colored, drawn.id);
+      if (!after) throw new Error('unreachable');
+
+      expect(after.compartmentColors).toBeUndefined();
+    });
+  });
+
   describe('remapDrawnUnitCells (lockstep with normalizeIdsWithRemap)', () => {
     it('drops markers for vanished IDs and non-unit compartments', () => {
       const remap = new Map([
