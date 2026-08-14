@@ -1,0 +1,25 @@
+src/shared/utils/dividerRailPlan.ts
+  s_ae321ba093788d::t_16fabe098344cb 35
+src/features/bin-designer/components/preview/GhostLabelTabs/GhostLabelTabs.tsx
+  s_ae321ba093788d::t_16fabe098344cb 68-69
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_ae321ba093788d::t_16fabe098344cb 31-35
+src/shared/utils/lidInteriorRelief.ts
+  s_ae321ba093788d::t_16fabe098344cb 2,4-7,9-12,16,19-43
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "47c368ffe7bba97ac2c234a7f5bc3c40bb62eeff",
+  "prompts": {},
+  "sessions": {
+    "s_ae321ba093788d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "22153634-520d-478b-ba48-d7736ea3c48e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
