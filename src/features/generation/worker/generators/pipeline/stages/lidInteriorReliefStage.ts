@@ -27,11 +27,12 @@
  * overshot upward into it would silently disable the snap.
  */
 
-import { draw, cut, translate, unwrap } from 'brepjs';
+import { draw, cut, fuseAll, translate, unwrap } from 'brepjs';
 import type { Shape3D, ValidSolid, Drawing } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import { interiorReliefActive } from '@/shared/types/bin';
-import { lidKeepoutRing } from '@/shared/constants/lidKeepout';
+import { lidKeepoutRing, lidKeepoutSlabs } from '@/shared/constants/lidKeepout';
+import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
 import { checkCancelled } from '../../utils/abort';
 import { FeatureTag } from '../../featureTags';
 import { collectOrigins } from '../collectOrigins';
@@ -60,6 +61,70 @@ function roundedRect(halfX: number, halfY: number, radius: number): Drawing {
     .close();
 }
 
+/**
+ * A built cutter plus every intermediate handle the caller must dispose.
+ *
+ * Returned rather than scoped because the cutter outlives the builder — it is
+ * tagged and then cut against the bin — and each brepjs transform allocates a
+ * WASM handle whose predecessor becomes garbage. Leaking them across
+ * regenerations exhausts the heap.
+ */
+interface BuiltRing {
+  readonly solid: Shape3D;
+  readonly scratch: readonly Shape3D[];
+}
+
+/** The rectangular ring: an outer rounded rect less its inset copy. */
+function buildRectRing(
+  ring: ReturnType<typeof lidKeepoutRing>,
+  innerHalfX: number,
+  innerHalfY: number,
+  bottomZ: number,
+  height: number
+): BuiltRing {
+  const outer = roundedRect(ring.outerHalfX, ring.outerHalfY, ring.cornerRadius);
+  const inner = roundedRect(innerHalfX, innerHalfY, Math.max(ring.cornerRadius - ring.width, 0));
+  const outerSolid = outer.sketchOnPlane('XY', bottomZ).extrude(height);
+  const innerSolid = inner.sketchOnPlane('XY', bottomZ).extrude(height);
+  return {
+    solid: unwrap(cut(outerSolid as ValidSolid, innerSolid as ValidSolid)),
+    scratch: [outerSolid, innerSolid],
+  };
+}
+
+/**
+ * The custom-shape ring: one band per outline edge, fused.
+ *
+ * Null when the outline yields no band at all — a footprint whose every edge is
+ * shorter than the band's own trim, which leaves nothing to relieve.
+ */
+function buildPolygonRing(
+  mask: CellMask,
+  gridUnitMm: number,
+  gridUnitMmY: number,
+  wallThickness: number,
+  bottomZ: number,
+  height: number
+): BuiltRing | null {
+  const slabs = lidKeepoutSlabs(mask, gridUnitMm, gridUnitMmY, wallThickness);
+  if (slabs.length === 0) return null;
+
+  const parts: Shape3D[] = slabs.map((s) =>
+    draw([s.minX, s.minY])
+      .lineTo([s.maxX, s.minY])
+      .lineTo([s.maxX, s.maxY])
+      .lineTo([s.minX, s.maxY])
+      .close()
+      .sketchOnPlane('XY', bottomZ)
+      .extrude(height)
+  );
+  if (parts.length === 1) return { solid: parts[0], scratch: [] };
+  // The bands overlap by construction at every corner, so the fuse is what
+  // makes them one cutter rather than a row of touching boxes whose shared
+  // faces would leave coincident geometry in the result.
+  return { solid: unwrap(fuseAll(parts as ValidSolid[])), scratch: parts };
+}
+
 export const lidInteriorReliefStage: PipelineStage = {
   name: 'merge',
   progressValue: 0.82,
@@ -83,7 +148,9 @@ export const lidInteriorReliefStage: PipelineStage = {
     const innerHalfY = ring.outerHalfY - ring.width;
     // A cavity narrower than two ring widths has no interior left to keep, so
     // the ring would degenerate into a plain slab. Leave such a bin alone
-    // rather than hollowing its whole mouth.
+    // rather than hollowing its whole mouth. Checked on the bounding cavity,
+    // which is the polygon case's guard too — a footprint whose BOUNDS are that
+    // tight has no usable interior on any outline.
     if (innerHalfX <= 0.1 || innerHalfY <= 0.1) return ctx;
 
     // Bottom at the rail's deepest reach plus clearance, measured from the wall
@@ -106,11 +173,23 @@ export const lidInteriorReliefStage: PipelineStage = {
     const topZ = dim.wallTopZ;
     const height = topZ - bottomZ;
 
-    const outer = roundedRect(ring.outerHalfX, ring.outerHalfY, ring.cornerRadius);
-    const inner = roundedRect(innerHalfX, innerHalfY, Math.max(ring.cornerRadius - ring.width, 0));
-    const outerSolid = outer.sketchOnPlane('XY', bottomZ).extrude(height);
-    const innerSolid = inner.sketchOnPlane('XY', bottomZ).extrude(height);
-    const ringSolid = unwrap(cut(outerSolid as ValidSolid, innerSolid as ValidSolid));
+    const mask = params.cellMask;
+    // A custom shape's ring follows its own outline, so it is built as the union
+    // of one band per edge rather than as a rounded rectangle less its inset
+    // copy (#3482). `lidKeepoutSlabs` explains why that is a construction and
+    // not an approximation.
+    const built = isPartialMask(mask)
+      ? buildPolygonRing(
+          mask,
+          params.gridUnitMm,
+          params.gridUnitMmY ?? params.gridUnitMm,
+          params.wallThickness,
+          bottomZ,
+          height
+        )
+      : buildRectRing(ring, innerHalfX, innerHalfY, bottomZ, height);
+    if (!built) return ctx;
+    const { solid: ringSolid, scratch } = built;
 
     // The interior is translated by the overhang offset, so the envelope has to
     // follow it or an asymmetric bin gets relieved off-centre.
@@ -125,8 +204,7 @@ export const lidInteriorReliefStage: PipelineStage = {
     collectOrigins(positioned, FeatureTag.LID_RELIEF, ctx.originToTag);
 
     const result = unwrap(cut(ctx.solid as ValidSolid, positioned as ValidSolid));
-    outerSolid.delete();
-    innerSolid.delete();
+    for (const s of scratch) s.delete();
     if (positioned !== ringSolid) positioned.delete();
     ringSolid.delete();
     if (result !== ctx.solid) ctx.solid.delete();
