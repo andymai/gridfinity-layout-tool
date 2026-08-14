@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/lidSeatInterference.matrix.test.ts
+  s_ae321ba093788d::t_b9069fe796baea 141-144,248,266,271-280
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "c7f256a28006893a107e59f623375ab679622232",
+  "prompts": {},
+  "sessions": {
+    "s_ae321ba093788d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "22153634-520d-478b-ba48-d7736ea3c48e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
