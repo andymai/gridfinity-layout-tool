@@ -6,7 +6,6 @@ import {
   DIVIDER_RAIL_MARGIN,
   dividerRailBlocks,
   dividerRailSides,
-  railSegmentsClearOfDividers,
   type DividerRailBlock,
 } from './dividerRailPlan';
 
@@ -158,46 +157,6 @@ describe('dividerRailBlocks', () => {
     // The pitch applies to both axes, so a 2-deep bin at 18.1mm has innerD 33.3.
     expectWholeRun(blocks, 'left', 16.65);
     expectWholeRun(blocks, 'right', 16.65);
-  });
-});
-
-describe('railSegmentsClearOfDividers', () => {
-  const blocks = [
-    { side: 'back', lo: -2, hi: 2 },
-    { side: 'front', lo: 10, hi: 14 },
-  ] as const;
-
-  it('splits a run around a block on its own wall', () => {
-    expect(railSegmentsClearOfDividers([{ lo: -20, hi: 20 }], 'back', blocks)).toEqual([
-      { lo: -20, hi: -2 },
-      { lo: 2, hi: 20 },
-    ]);
-  });
-
-  it('ignores blocks belonging to another wall', () => {
-    expect(railSegmentsClearOfDividers([{ lo: -20, hi: 20 }], 'left', blocks)).toEqual([
-      { lo: -20, hi: 20 },
-    ]);
-  });
-
-  it('composes onto stretches the label pass already cut', () => {
-    expect(
-      railSegmentsClearOfDividers(
-        [
-          { lo: -20, hi: -5 },
-          { lo: -1, hi: 20 },
-        ],
-        'back',
-        blocks
-      )
-    ).toEqual([
-      { lo: -20, hi: -5 },
-      { lo: 2, hi: 20 },
-    ]);
-  });
-
-  it('leaves nothing when a block swallows the run', () => {
-    expect(railSegmentsClearOfDividers([{ lo: -1, hi: 1 }], 'back', blocks)).toEqual([]);
   });
 });
 

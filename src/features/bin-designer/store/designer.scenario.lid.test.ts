@@ -335,18 +335,33 @@ describe('DesignerStore - lid actions', () => {
       expect(shouldGenerateLid(useDesignerStore.getState().params)).toBe(false);
     });
 
-    it('checkLidCompatibility flags wall cutouts on all four sides as a blocker', () => {
+    it('checkLidCompatibility flags full-width wall cutouts on all four sides as a blocker', () => {
+      // Full-width is what makes it a blocker since #3483: at the default 70%
+      // every wall keeps 30% of its lip, the rails segment around the windows,
+      // and the design gets a lid — see the warning case below.
       const { updateLid, updateWalls, updateWallSide } = useDesignerStore.getState();
       updateLid({ enabled: true });
       updateWalls({ enabled: true });
-      updateWallSide('front', { enabled: true });
-      updateWallSide('back', { enabled: true });
-      updateWallSide('left', { enabled: true });
-      updateWallSide('right', { enabled: true });
+      for (const side of ['front', 'back', 'left', 'right'] as const) {
+        updateWallSide(side, { enabled: true, width: 100, depth: 50 });
+      }
 
       const issues = checkLidCompatibility(useDesignerStore.getState().params);
       expect(issues.length).toBeGreaterThan(0);
       expect(hasLidBlocker(issues)).toBe(true);
+    });
+
+    it('checkLidCompatibility leaves partial cutouts on all four sides a warning', () => {
+      const { updateLid, updateWalls, updateWallSide } = useDesignerStore.getState();
+      updateLid({ enabled: true });
+      updateWalls({ enabled: true });
+      for (const side of ['front', 'back', 'left', 'right'] as const) {
+        updateWallSide(side, { enabled: true, width: 70, depth: 50 });
+      }
+
+      const params = useDesignerStore.getState().params;
+      expect(hasLidBlocker(checkLidCompatibility(params))).toBe(false);
+      expect(shouldGenerateLid(params)).toBe(true);
     });
 
     it('checkLidCompatibility flags label tabs as a warning (back rail conflict)', () => {

@@ -7,10 +7,11 @@ import {
   type LidRailSide,
 } from '@/features/bin-designer/types';
 import type { useTranslation } from '@/i18n';
-import { railSegmentsClearOfLabelTabs } from '@/shared/utils/labelTabPlan';
-import { railSegmentsClearOfDividers } from '@/shared/utils/dividerRailPlan';
-import type { DividerRailBlock } from '@/shared/utils/dividerRailPlan';
-import type { LabelTabFootprint } from '@/shared/utils/labelTabPlan';
+import {
+  railSegmentsClearOfBlocks,
+  railSegmentsClearOfLabelTabs,
+} from '@/shared/utils/labelTabPlan';
+import type { LabelTabFootprint, WallSpanBlock } from '@/shared/utils/labelTabPlan';
 import {
   isPartialMask,
   maskToPolygon,
@@ -117,11 +118,12 @@ export function computeRailSummary(
    */
   outerExpansion: { readonly addW: number; readonly addD: number } = { addW: 0, addD: 0 },
   /**
-   * Stretches the bin's compartment dividers deny to a rail (#3477). Empty for
-   * a bin that builds no divider walls. Without them the readout counts rails
-   * the worker will not build.
+   * Stretches denied to a rail by a compartment divider (#3477) or by a wall
+   * cutout or handle hole that has taken the lip away (#3483). Empty for a bin
+   * with none of the three. Without them the readout counts rails the worker
+   * will not build.
    */
-  dividerBlocks: readonly DividerRailBlock[] = []
+  wallBlocks: readonly WallSpanBlock[] = []
 ): RailSummary {
   const fitClearance = LID_FIT_CLEARANCE;
   const lidCornerR = LID_CORNER_RADIUS - fitClearance;
@@ -168,10 +170,10 @@ export function computeRailSummary(
     };
   }
 
-  // Rectangular path. Label tabs cut the run into stretches, so this walks the
-  // same `railSegmentsClearOfLabelTabs` the worker places rails from rather
-  // than assuming one full-length rail per enabled wall: a wall the tabs cover
-  // yields nothing, and a partly-covered one yields several short rails.
+  // Rectangular path. Label tabs, dividers and lip gaps each cut the run into
+  // stretches, so this walks the same passes the worker places rails from
+  // rather than assuming one full-length rail per enabled wall: a wall they
+  // cover yields nothing, and a partly-covered one yields several short rails.
   const lidOuterW = width * gridUnitMm - 2 * fitClearance + outerExpansion.addW;
   const lidOuterD = depth * gridUnitMmY - 2 * fitClearance + outerExpansion.addD;
   const corneredOuterX = lidOuterW / 2 - lidCornerR;
@@ -181,10 +183,10 @@ export function computeRailSummary(
   const collect = (side: LidRailSide, alongX: boolean, railCross: number): void => {
     if (!clickRails[side] || disabledRails.has(side)) return;
     const half = alongX ? corneredOuterX : corneredOuterY;
-    for (const seg of railSegmentsClearOfDividers(
+    for (const seg of railSegmentsClearOfBlocks(
       railSegmentsClearOfLabelTabs(-half, half, alongX, railCross, footprints),
       side,
-      dividerBlocks
+      wallBlocks
     )) {
       const len = (seg.hi - seg.lo) * coverage;
       if (len >= LID_MIN_RAIL_LENGTH) lengths.push(len);

@@ -6,6 +6,7 @@ import {
   labelTabFootprints,
   labelTabInteriorDims,
   railFoulingLabelFootprints,
+  railSegmentsClearOfBlocks,
 } from './labelTabPlan';
 
 function withLabel(label: Partial<LabelTabConfig>, over: Partial<BinParams> = {}): BinParams {
@@ -272,5 +273,47 @@ describe('socket-mode tab width (#3402)', () => {
     for (const fp of fps) {
       expect((fp.xMin + fp.xMax) / 2).toBeCloseTo(0, 3);
     }
+  });
+});
+
+describe('railSegmentsClearOfBlocks', () => {
+  // Deliberately mixed provenance: a divider notch and a lip gap are the same
+  // value here, and the pass must not care which is which.
+  const blocks = [
+    { side: 'back', lo: -2, hi: 2 },
+    { side: 'front', lo: 10, hi: 14 },
+  ] as const;
+
+  it('splits a run around a block on its own wall', () => {
+    expect(railSegmentsClearOfBlocks([{ lo: -20, hi: 20 }], 'back', blocks)).toEqual([
+      { lo: -20, hi: -2 },
+      { lo: 2, hi: 20 },
+    ]);
+  });
+
+  it('ignores blocks belonging to another wall', () => {
+    expect(railSegmentsClearOfBlocks([{ lo: -20, hi: 20 }], 'left', blocks)).toEqual([
+      { lo: -20, hi: 20 },
+    ]);
+  });
+
+  it('composes onto stretches the label pass already cut', () => {
+    expect(
+      railSegmentsClearOfBlocks(
+        [
+          { lo: -20, hi: -5 },
+          { lo: -1, hi: 20 },
+        ],
+        'back',
+        blocks
+      )
+    ).toEqual([
+      { lo: -20, hi: -5 },
+      { lo: 2, hi: 20 },
+    ]);
+  });
+
+  it('leaves nothing when a block swallows the run', () => {
+    expect(railSegmentsClearOfBlocks([{ lo: -1, hi: 1 }], 'back', blocks)).toEqual([]);
   });
 });

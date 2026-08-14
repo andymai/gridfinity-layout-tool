@@ -33,11 +33,11 @@ import { LID_MIN_RAIL_LENGTH as MIN_RAIL_LENGTH } from '@/shared/types/bin';
 import { gripPlacements, sideForOutward } from './lidGripRelief';
 import type { LidInputs } from './lidInputs';
 import {
+  railSegmentsClearOfBlocks,
   railSegmentsClearOfLabelTabs,
   subtractSpan,
   type RailSegment,
 } from '@/shared/utils/labelTabPlan';
-import { railSegmentsClearOfDividers } from '@/shared/utils/dividerRailPlan';
 import type { LidCompatibilitySide } from '@/shared/types/bin';
 
 /** True when at least one side carries a rail, i.e. the lid is not friction-fit. */
@@ -221,7 +221,7 @@ function railPlacementsForPolygon(inputs: LidInputs): RailPlacement[] {
 /** Compute rail placements for a rectangular bin (4 walls). */
 function railPlacementsForRectangle(inputs: LidInputs): RailPlacement[] {
   const { lidOuterW, lidOuterD, lidCornerR, disabledRails, clickRails, clickRailCoverage } = inputs;
-  const { outerOffsetX: offX, outerOffsetY: offY, labelFootprints, dividerBlocks } = inputs;
+  const { outerOffsetX: offX, outerOffsetY: offY, labelFootprints, wallBlocks } = inputs;
   // Wall midlines, shifted by the overhang offset so rails ride the lid's
   // (possibly off-center) perimeter rather than the nominal socket grid.
   const corneredOuterX = lidOuterW / 2 - lidCornerR;
@@ -234,10 +234,11 @@ function railPlacementsForRectangle(inputs: LidInputs): RailPlacement[] {
    * partly cover yields several short rails rather than one sized for a run it
    * cannot use. A wall they fully cover yields none and goes friction-fit.
    *
-   * Dividers cut the same run, after the tabs and in the same frame: both are
-   * measured in the bin's centred interior, and `offX`/`offY` are applied below
-   * only when the placement is written out, because an overhang translates the
-   * cavity and the lid's perimeter by the same amount.
+   * Dividers, wall cutouts and handle holes cut the same run, after the tabs
+   * and in the same frame: all are measured in the bin's centred interior, and
+   * `offX`/`offY` are applied below only when the placement is written out,
+   * because an overhang translates the cavity and the lid's perimeter by the
+   * same amount.
    */
   const pushWallRails = (
     side: LidCompatibilitySide,
@@ -247,10 +248,10 @@ function railPlacementsForRectangle(inputs: LidInputs): RailPlacement[] {
     if (!clickRails[side] || disabledRails.has(side)) return;
     const alongX = rotationDeg === 0 || rotationDeg === 180;
     const half = alongX ? corneredOuterX : corneredOuterY;
-    for (const seg of railSegmentsClearOfDividers(
+    for (const seg of railSegmentsClearOfBlocks(
       railSegmentsClearOfLabelTabs(-half, half, alongX, railCross, labelFootprints),
       side,
-      dividerBlocks
+      wallBlocks
     )) {
       const length = (seg.hi - seg.lo) * clickRailCoverage;
       if (length < MIN_RAIL_LENGTH) continue;
