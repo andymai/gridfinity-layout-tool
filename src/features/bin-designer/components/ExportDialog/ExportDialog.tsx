@@ -95,8 +95,7 @@ export function ExportDialog() {
   }, [setExportDialogOpen]);
 
   const activeFormat: ExportFileFormat = exportFileNameConfig.format ?? 'stl';
-  const showSplitBanner = needsSplit && activeFormat !== 'step';
-  const useSplitExport = showSplitBanner && splitEnabled;
+  const useSplitExport = needsSplit && splitEnabled;
 
   // A design is multi-color when the per-design toggle is on AND its currently
   // active zones do not all share the body color. STL and STEP silently drop
@@ -286,7 +285,7 @@ export function ExportDialog() {
       onDownload={() => void handleDownload()}
       downloadLabel={downloadLabel}
       splitBanner={
-        showSplitBanner
+        needsSplit
           ? {
               message: t('binDesigner.splitExport.exceedsPrintBed', {
                 size: defaultPrintBedSize,

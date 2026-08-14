@@ -46,7 +46,7 @@ import type { FaceGroupData } from '@/shared/types/generation';
 import { packagePiecesAsZip } from '@/shared/generation/zipExport';
 import { FORMAT_MIME_TYPES } from '@/shared/generation/exportUtils';
 import type { BinParams, ExportFileFormat } from '@/features/bin-designer/types';
-import type { CombinedExportResult } from '@/shared/generation/bridge';
+import type { CombinedExportResult, ExportFormat } from '@/shared/generation/bridge';
 
 /**
  * Materialize the {@link ThreeMFPrintSettings} block from the live print
@@ -601,14 +601,22 @@ export async function runSplitBinExport(
   connectorConfig: SplitConnectorConfig,
   format: ExportFileFormat
 ): Promise<SplitExportResult> {
+  // The worker writes STL or STEP; 3MF is packaged on the main thread from
+  // STL pieces, so it rides the STL path.
+  const workerFormat: ExportFormat = format === 'step' ? 'step' : 'stl';
+  const options = { splitConnectorConfig: connectorConfig, format: workerFormat };
   let poolAcquired = false;
   try {
     const pool = await workerPoolManager.acquire();
     poolAcquired = true;
     if (pool.size > 1) {
-      const result = await pool.exportSplitBin(params, cutPlanesX, cutPlanesY, totalPieceCount, {
-        splitConnectorConfig: connectorConfig,
-      });
+      const result = await pool.exportSplitBin(
+        params,
+        cutPlanesX,
+        cutPlanesY,
+        totalPieceCount,
+        options
+      );
       workerPoolManager.release();
       poolAcquired = false;
       return result;
@@ -617,9 +625,7 @@ export async function runSplitBinExport(
     poolAcquired = false;
     const bridge = getActiveBridge();
     if (!bridge) throw new Error('Bridge not available');
-    return await bridge.exportSplitBin(params, cutPlanesX, cutPlanesY, {
-      splitConnectorConfig: connectorConfig,
-    });
+    return await bridge.exportSplitBin(params, cutPlanesX, cutPlanesY, options);
   } catch (poolErr) {
     captureException(poolErr instanceof Error ? poolErr : new Error(String(poolErr)), {
       source: 'bin_export_pool_fallback',
@@ -631,9 +637,7 @@ export async function runSplitBinExport(
     }
     const bridge = getActiveBridge();
     if (!bridge) throw new Error('Bridge not available', { cause: poolErr });
-    return await bridge.exportSplitBin(params, cutPlanesX, cutPlanesY, {
-      splitConnectorConfig: connectorConfig,
-    });
+    return await bridge.exportSplitBin(params, cutPlanesX, cutPlanesY, options);
   } finally {
     if (poolAcquired) workerPoolManager.release();
   }

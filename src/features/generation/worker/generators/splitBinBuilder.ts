@@ -15,10 +15,12 @@ import {
   getBounds,
   mesh,
   meshEdges,
+  exportSTEP,
   getKernelCapabilities,
 } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BinParams, SplitConnectorConfig } from '@/shared/types/bin';
+import type { ExportFormat } from '../../bridge/types';
 
 import { CLEARANCE } from './generatorTypes';
 import { buildSTLBufferFromIndexed } from '@/features/generation/export/stlExporter';
@@ -37,7 +39,8 @@ import { buildWallCutoutCuts } from './wallCutoutBuilder';
 import { isAbortError } from './utils/abort';
 import { resolveOverhang } from './overhang';
 import { isPartialMask } from '@/shared/utils/cellMask';
-import { imprintPieceArrays } from './meshImprint';
+import { hasMeshImprints, imprintPieceArrays } from './meshImprint';
+import { unwrapExportBlob } from './utils/exportUnwrap';
 import { deriveDimensions } from './pipeline/context';
 import { splitConnectorsSuppressedByBase } from '@/shared/generation/splitUtils';
 
@@ -568,6 +571,60 @@ function tessellateAndExportPiece(
   }
 }
 
+/**
+ * Write one split piece as STEP.
+ *
+ * STEP carries the exact BREP solid, so there is no tessellation and no mesh
+ * imprint pass — the pocket subtraction only exists post-tessellation, which
+ * is why {@link exportSplitBin} refuses STEP for an imprinted design instead
+ * of silently shipping pieces without pockets.
+ *
+ * The piece keeps the bin's own coordinate frame, matching the STL path, so an
+ * importer that opens every piece at once sees them already aligned.
+ */
+async function exportPieceAsStep(piece: SplitPieceInfo): Promise<ArrayBuffer> {
+  const { solid: pieceSolid } = piece;
+  try {
+    const blob = unwrapExportBlob(exportSTEP(pieceSolid), 'STEP');
+    return await blob.arrayBuffer();
+  } finally {
+    pieceSolid.delete();
+  }
+}
+
+/**
+ * Write one split piece in the requested format. Both branches dispose the
+ * piece solid — callers only clean up pieces they never handed over.
+ */
+function exportPiece(
+  piece: SplitPieceInfo,
+  params: BinParams,
+  outerW: number,
+  outerD: number,
+  tolerance: number,
+  angularTolerance: number,
+  format: ExportFormat
+): Promise<ArrayBuffer> {
+  if (format === 'step') return exportPieceAsStep(piece);
+  return Promise.resolve(
+    tessellateAndExportPiece(piece, params, outerW, outerD, tolerance, angularTolerance)
+  );
+}
+
+/**
+ * STEP describes a solid, and a mesh imprint is carved out of the tessellated
+ * mesh after the solid exists — so an imprinted design has no solid that
+ * describes it. Mirrors `exportBin`'s guard: refuse rather than ship pieces
+ * missing their pockets.
+ */
+function assertStepExportable(params: BinParams, format: ExportFormat): void {
+  if (format === 'step' && hasMeshImprints(params)) {
+    throw new Error(
+      'STEP export is not available for designs with mesh imprint cutouts — use STL or 3MF'
+    );
+  }
+}
+
 /** Tessellate a split piece into preview mesh data */
 function tessellatePiece(
   piece: SplitPieceInfo,
@@ -662,23 +719,20 @@ function tessellatePiece(
 /**
  * Export the cached (or regenerated) bin solid, split into pieces via boolean cuts.
  *
- * Each piece is independently tessellated to STL. If tessellation throws
- * partway through, the remaining piece solids are still disposed so we don't
- * leak WASM memory.
- *
- * `async` is intentional even though the body has no `await` — it keeps the
- * error-delivery contract (throws arrive as rejected promises) consistent
- * with the declared return type, matching what every caller expects.
+ * Each piece is independently written as STL (tessellated) or STEP (the exact
+ * BREP solid). If a piece throws partway through, the remaining piece solids
+ * are still disposed so we don't leak WASM memory.
  */
-// eslint-disable-next-line @typescript-eslint/require-await -- see fn doc
 export async function exportSplitBin(
   params: BinParams,
   cutPlanesX: readonly number[],
   cutPlanesY: readonly number[],
   tolerance = 0.01,
   angularTolerance = 5,
-  splitConnectorConfig?: SplitConnectorConfig
+  splitConnectorConfig?: SplitConnectorConfig,
+  format: ExportFormat = 'stl'
 ): Promise<SplitExportResult> {
+  assertStepExportable(params, format);
   const splitPieces = splitSolidIntoPieces(params, cutPlanesX, cutPlanesY, splitConnectorConfig);
   const pitch = pitchFromParams(params);
   const outerW = params.width * pitch.x - CLEARANCE;
@@ -689,20 +743,21 @@ export async function exportSplitBin(
   try {
     for (; nextIdx < splitPieces.length; nextIdx++) {
       const piece = splitPieces[nextIdx];
-      const data = tessellateAndExportPiece(
+      const data = await exportPiece(
         piece,
         params,
         outerW,
         outerD,
         tolerance,
-        angularTolerance
+        angularTolerance,
+        format
       );
       pieces.push({ data, label: piece.label, col: piece.col, row: piece.row });
     }
   } finally {
-    // tessellateAndExportPiece disposes the solid it processed (including on
-    // throw, via its own try/finally). Clean up any pieces past that point
-    // that were never handed off.
+    // exportPiece disposes the solid it processed (including on throw, via its
+    // own try/finally). Clean up any pieces past that point that were never
+    // handed off.
     for (let i = nextIdx + 1; i < splitPieces.length; i++) {
       splitPieces[i].solid.delete();
     }
@@ -774,10 +829,7 @@ export function generateSplitPreviewRange(
  * parallel export across multiple workers. Pieces outside `pieceIndices` are
  * always disposed (even if export throws midway through) to keep WASM
  * memory bounded.
- *
- * `async` is intentional — same rationale as exportSplitBin's doc.
  */
-// eslint-disable-next-line @typescript-eslint/require-await -- see fn doc
 export async function exportSplitBinRange(
   params: BinParams,
   cutPlanesX: readonly number[],
@@ -785,8 +837,10 @@ export async function exportSplitBinRange(
   pieceIndices: readonly number[],
   tolerance = 0.01,
   angularTolerance = 5,
-  splitConnectorConfig?: SplitConnectorConfig
+  splitConnectorConfig?: SplitConnectorConfig,
+  format: ExportFormat = 'stl'
 ): Promise<SplitExportResult> {
+  assertStepExportable(params, format);
   const splitPieces = splitSolidIntoPieces(
     params,
     cutPlanesX,
@@ -804,19 +858,20 @@ export async function exportSplitBinRange(
   try {
     for (; nextIdx < splitPieces.length; nextIdx++) {
       const piece = splitPieces[nextIdx];
-      const data = tessellateAndExportPiece(
+      const data = await exportPiece(
         piece,
         params,
         outerW,
         outerD,
         tolerance,
-        angularTolerance
+        angularTolerance,
+        format
       );
       pieces.push({ data, label: piece.label, col: piece.col, row: piece.row });
     }
   } finally {
-    // tessellateAndExportPiece disposes the solid it processed (including on
-    // throw). Dispose any pieces past that point that were never handed off.
+    // exportPiece disposes the solid it processed (including on throw).
+    // Dispose any pieces past that point that were never handed off.
     for (let i = nextIdx + 1; i < splitPieces.length; i++) {
       splitPieces[i].solid.delete();
     }

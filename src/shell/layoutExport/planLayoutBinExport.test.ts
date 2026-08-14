@@ -608,7 +608,7 @@ describe('planLayoutBinExport', () => {
       expect(plan.manifestBins[0].splitPieces).toBeUndefined();
     });
 
-    it('never splits under STEP — that format ships exact BREP for downstream CAD', () => {
+    it('splits under STEP too — each piece ships as its own exact BREP solid (#3501)', () => {
       const plan = planLayoutBinExport({
         bins: [linkedBin('big')],
         loaded: [bigBin(11, 2)],
@@ -620,7 +620,8 @@ describe('planLayoutBinExport', () => {
         printBed: PRINT_BED,
       });
 
-      expect(plan.exportable[0].split).toBeNull();
+      expect(plan.exportable[0].split).not.toBeNull();
+      expect(plan.manifestBins[0].splitPieces).toBeGreaterThan(1);
     });
 
     it('splits on the depth axis against a non-square bed', () => {

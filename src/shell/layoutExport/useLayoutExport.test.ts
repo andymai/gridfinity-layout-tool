@@ -8,7 +8,7 @@ import { createTestLayout, createTestBin, resetAllStores } from '@/test/testUtil
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 
 const h = vi.hoisted(() => ({
-  bridge: { exportBin: vi.fn(), exportCombined: vi.fn() },
+  bridge: { exportBin: vi.fn(), exportCombined: vi.fn(), exportSplitBin: vi.fn() },
   triggerDownload: vi.fn(),
   trackEvent: vi.fn(),
   buildBaseplateExportPieces: vi.fn(),
@@ -75,6 +75,12 @@ beforeEach(() => {
   h.bridge.exportCombined.mockResolvedValue({
     pieces: [{ data: new ArrayBuffer(8), label: 'bin' }],
     format: 'stl',
+  });
+  h.bridge.exportSplitBin.mockResolvedValue({
+    pieces: [
+      { data: new ArrayBuffer(8), label: 'A1', col: 0, row: 0 },
+      { data: new ArrayBuffer(8), label: 'B1', col: 1, row: 0 },
+    ],
   });
   h.bridgeAcquire.mockResolvedValue(h.bridge);
   h.poolAcquire.mockResolvedValue({ isDestroyed: false, size: 1 });
@@ -196,6 +202,37 @@ describe('useLayoutExport', () => {
     // Asserting the interpolated text, not the key: this suite resolves real
     // en.ts strings, so it also pins that the labels reach the user.
     expect(toasts).toEqual([expect.stringContaining("A1, B2 won't fit the print bed")]);
+  });
+
+  it('splits an oversized bin under STEP and asks the worker for STEP pieces (#3501)', async () => {
+    // 11 units × 42mm overruns the 256mm bed, so this design takes the split
+    // route. Before #3501 the planner refused to cut under STEP and shipped one
+    // un-printable file instead.
+    h.loadDesign.mockImplementation((id: string) =>
+      Promise.resolve(design(id, 'Wide', { width: 11 }))
+    );
+    useLayoutStore.setState({
+      layout: createTestLayout({
+        name: 'L',
+        bins: [createTestBin({ linkedDesignId: designId('d1') })],
+      }),
+    });
+    const { result } = renderHook(() => useLayoutExport());
+
+    const success = await result.current.exportLayout('step', 'z', {
+      ...CONFIG,
+      format: 'step',
+    });
+
+    expect(success).toBe(true);
+    expect(h.bridge.exportSplitBin).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.any(Array),
+      expect.any(Array),
+      expect.objectContaining({ format: 'step' })
+    );
+    // The whole-bin route must not also run — that is the un-cut file.
+    expect(h.bridge.exportBin).not.toHaveBeenCalled();
   });
 
   it('reports engine-not-ready and does not release when the bridge fails to acquire', async () => {

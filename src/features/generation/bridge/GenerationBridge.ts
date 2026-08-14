@@ -427,6 +427,7 @@ export class GenerationBridge {
     options?: {
       tolerance?: number;
       angularTolerance?: number;
+      separatePieces?: boolean;
       onProgress?: (progress: number) => void;
     }
   ): Promise<CombinedExportResult> {
@@ -441,6 +442,7 @@ export class GenerationBridge {
       tolerance?: number;
       angularTolerance?: number;
       splitConnectorConfig?: SplitConnectorConfig;
+      format?: ExportFormat;
     }
   ): Promise<SplitExportResult> {
     return exportSplitBinImpl(this, params, cutPlanesX, cutPlanesY, options);
@@ -481,6 +483,7 @@ export class GenerationBridge {
       tolerance?: number;
       angularTolerance?: number;
       splitConnectorConfig?: SplitConnectorConfig;
+      format?: ExportFormat;
     }
   ): Promise<SplitExportResult> {
     return exportSplitBinRangeImpl(this, params, cutPlanesX, cutPlanesY, pieceIndices, options);

@@ -15,10 +15,13 @@ import type * as DesignerStorage from '@/features/bin-designer/storage/DesignerS
 import type * as SharedExportDialog from '@/shared/components/ExportDialog';
 
 const mockDownloadBin = vi.fn().mockResolvedValue(undefined);
+const mockDownloadSplit = vi.fn().mockResolvedValue(undefined);
 const mockAddToast = vi.fn();
 const mockOpenPublish = vi.fn();
 const mockLoadDesign = vi.fn();
 let mockShouldPromptSupport = false;
+/** Split state the mocked hook reports; reset to "fits the bed" per test. */
+let mockSplitState = { needsSplit: false, splitPieceCount: 1 };
 
 vi.mock('@/core/store/toast', async (importOriginal) => {
   const actual = await importOriginal<typeof ToastStore>();
@@ -68,10 +71,10 @@ vi.mock('@/features/bin-designer/hooks/useExport', () => ({
       costUSD: 0.47,
     },
     downloadBin: mockDownloadBin,
-    downloadSplit: vi.fn().mockResolvedValue(undefined),
+    downloadSplit: mockDownloadSplit,
     hasDividers: false,
-    needsSplit: false,
-    splitPieceCount: 1,
+    needsSplit: mockSplitState.needsSplit,
+    splitPieceCount: mockSplitState.splitPieceCount,
     maxGridUnits: 6,
   }),
 }));
@@ -110,6 +113,7 @@ function setupStore(overrides: Record<string, unknown> = {}) {
 describe('ExportDialog', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSplitState = { needsSplit: false, splitPieceCount: 1 };
     setupStore();
   });
 
@@ -523,6 +527,40 @@ describe('ExportDialog', () => {
       });
       render(<ExportDialog />);
       expect(screen.getByRole('radio', { name: 'STEP' })).not.toHaveAttribute('aria-disabled');
+    });
+  });
+
+  describe('oversized bin under STEP (#3501)', () => {
+    beforeEach(() => {
+      mockSplitState = { needsSplit: true, splitPieceCount: 4 };
+      mockDownloadSplit.mockResolvedValue(true);
+      setupStore({
+        exportFileNameConfig: { ...DEFAULT_EXPORT_FILE_NAME_CONFIG, format: 'step' },
+      });
+    });
+
+    it('offers the split checkbox, same as STL', () => {
+      render(<ExportDialog />);
+      expect(screen.getByLabelText(/split into pieces/i)).toBeInTheDocument();
+      expect(screen.getByText(/exceeds your print bed/i)).toBeInTheDocument();
+    });
+
+    it('routes the download through downloadSplit, not downloadBin', async () => {
+      render(<ExportDialog />);
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /download split step/i }));
+      });
+      expect(mockDownloadSplit).toHaveBeenCalledWith(
+        'step',
+        expect.objectContaining({ format: 'step' }),
+        expect.anything()
+      );
+      expect(mockDownloadBin).not.toHaveBeenCalled();
+    });
+
+    it('names the download a ZIP — a split STEP is many files', () => {
+      render(<ExportDialog />);
+      expect(screen.getByText(/\.zip$/)).toBeInTheDocument();
     });
   });
 

@@ -113,14 +113,14 @@ All the caches above are **in-memory only** — they vanish on reload. `src/shar
 
 ## Worker Protocol
 
-| Message         | Purpose                                           |
-| --------------- | ------------------------------------------------- |
-| INIT            | Load WASM (~11MB, 2-4s)                           |
-| GENERATE        | Tessellation + progress → MESH_RESULT             |
-| EXPORT          | STL/STEP export (uses cached solid or regenerate) |
-| EXPORT_DIVIDERS | Export unique divider pieces as STL               |
-| EXPORT_SPLIT    | Cut bin into pieces for multi-material printing   |
-| CANCEL          | Abort current request                             |
+| Message         | Purpose                                             |
+| --------------- | --------------------------------------------------- |
+| INIT            | Load WASM (~11MB, 2-4s)                             |
+| GENERATE        | Tessellation + progress → MESH_RESULT               |
+| EXPORT          | STL/STEP export (uses cached solid or regenerate)   |
+| EXPORT_DIVIDERS | Export unique divider pieces as STL                 |
+| EXPORT_SPLIT    | Cut an oversized bin into bed-sized STL/STEP pieces |
+| CANCEL          | Abort current request                               |
 
 Requests tagged with `requestId`; cancelled requests ignored.
 
