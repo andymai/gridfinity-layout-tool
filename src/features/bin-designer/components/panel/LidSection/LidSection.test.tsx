@@ -592,8 +592,11 @@ describe('LidSection', () => {
       // a tab cost the whole wall's rail; since #3401 the rail is only
       // segmented around the tabs, so it offered to destroy user content to
       // recover part of one wall. The warning itself still shows.
+      // `relieveInterior: false` because the warning belongs to the notching
+      // path: with #3477's relief on, the shelf sits below the rail band and
+      // there is nothing to warn about.
       resetStore({
-        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, relieveInterior: false },
         label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
       });
       render(<LidSection />);

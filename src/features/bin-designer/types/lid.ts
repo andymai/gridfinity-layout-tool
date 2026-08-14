@@ -655,6 +655,22 @@ export interface LidConfig {
    * {@link LidGripConfig}.
    */
   readonly grip: LidGripConfig;
+  /**
+   * Carve the lid's seating envelope out of the bin's interior (#3477).
+   *
+   * The top of the cavity's perimeter belongs to the lid: a seated rail hangs
+   * 3.15mm below the wall top and reaches inboard of the inner wall face. With
+   * this on, that ring is cut from the interior as the last operation on the
+   * bin, so dividers, label shelves and scoop arcs step aside by construction
+   * and the rails run unbroken. With it off, the rails notch around each
+   * feature instead — correct, but it costs snap on a dense grid.
+   *
+   * `true` for new designs, and `migrateParams` backfills `false` when the
+   * field is absent so every design published before it regenerates
+   * byte-identically. Deliberately unlike the default-off treatment #3272 and
+   * #2761 got: those were features, and this is the resolution of a defect.
+   */
+  readonly relieveInterior: boolean;
 }
 
 /**
@@ -702,6 +718,9 @@ export const DEFAULT_LID_CONFIG: LidConfig = {
     heightMm: null,
     binDip: false,
   },
+  // On, so a new design gets a lid that seats. `migrateParams` turns it off for
+  // designs that predate it — see the field's own note.
+  relieveInterior: true,
 } as const;
 
 /**

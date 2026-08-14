@@ -12,15 +12,15 @@
  * the values it reports.
  */
 export const COMMUNITY_EXAMPLE_PARAM_HASHES: ReadonlySet<string> = new Set<string>([
-  '04308a0c6e05bf847cfd4d2e64d5e005',
-  '0a40ce08205f857f392b089d90220824',
-  '1aaaa78536762bc12ce70a5ad9e8f940',
-  '2b4812ce4f7bac49fd85327063a721e4',
-  '375da2d076519af4fce2fdd9ff05d457',
-  '63620b6ac10eb331db4f6538404e5a17',
-  '7e3fb1cf74b52b80e507565affbcedfb',
-  'b9104ed037b8b0edb2e8b3dc6a7c919c',
-  'de0eceaa3d1f21ed8728c43d61bd2d7f',
-  'f57c1b5decb6128ccea2f3e65d611ced',
-  'f8668e5e0d7593a6d78fb6675f5871a3',
+  '0a0fa497c469dc0e7f63f25fc80a343e',
+  '23c6f60c459567e863d53c729762897c',
+  '48c710e85f3cfa1a918c77746b3096cf',
+  '5131201b62649b29e599f7dcdc670f55',
+  '907f2ec62157e1cd8171eedbcd116d63',
+  '92ec0ea12a2ccc3db234680a04fe55b4',
+  '9ac091d931667319afd5677f8ffe25b6',
+  'acc2d4a9b4e34c018656b3203563c996',
+  'b19a42e27bf1a39fc8bc8231c94316a8',
+  'e058903aa86262e981f5c6902d1e7ba9',
+  'e150a587fc1249fb72c8fb7a43a4b8dd',
 ]);

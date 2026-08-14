@@ -410,9 +410,14 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   //     Unlike the checks above this one is rail-specific, not lip-specific:
   //     the ramp takes nothing away from the lip, so a friction shell still
   //     seats on it. Only a rail needs the pocket, so only `clickRails` cares.
+  //
+  //     Silent once the interior is relieved (#3477): the envelope cut takes
+  //     the ramp's top back to the keep-out plane, so the pocket the rail hooks
+  //     is open by construction and there is nothing for the user to act on.
   const socketless = params.base.style === 'flat' || params.base.style === 'lid';
   const liteFloor = (params.base.lightweight || params.base.spacer) && !socketless;
   if (
+    !interiorReliefActive(params) &&
     params.scoop.enabled &&
     params.style === 'standard' &&
     params.base.stackingLip &&
@@ -473,6 +478,37 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
 /** Convenience: any blocker = the lid effectively can't be used. */
 export function hasLidBlocker(issues: readonly LidCompatibilityIssue[]): boolean {
   return issues.some((i) => i.severity === 'blocker');
+}
+
+/**
+ * Is the bin's interior carved back to clear the lid's seating envelope (#3477)?
+ *
+ * The single gate, read by the pipeline stage that cuts the ring, by
+ * `dividerRailBlocks` (which has nothing to notch once it is on), by the label
+ * shelf's datum, and by the scoop warning. A second copy anywhere would let the
+ * bin be relieved while the rails still notched, or the reverse.
+ *
+ * `shouldGenerateLid` minus its blocker term, and NOT a call to it. Two
+ * reasons, and the first is fatal: `checkLidCompatibility` reaches this
+ * predicate through the divider planner and the label shelf's datum, so
+ * consulting the blocker set from here is unbounded recursion. The second is
+ * that it is the better rule anyway — a blocker is a transient state the panel
+ * asks the user to fix, and letting it move the cavity's geometry would make a
+ * bin regenerate whenever an unrelated feature was toggled into conflict.
+ *
+ * The cost is a design parked in a blocking state (cutouts on all four walls,
+ * say) keeping a ring cut for a lid that is not currently generated.
+ */
+export function interiorReliefActive(params: BinParams): boolean {
+  if (!params.lid.relieveInterior) return false;
+  if (!params.lid.enabled) return false;
+  // A lid needs a lip to grip, and a base-only tile has no cavity to relieve.
+  if (!params.base.stackingLip) return false;
+  if (params.base.tile === true) return false;
+  // Polygon footprints keep the notching path until the outline offset lands
+  // (#3482); nothing reaches the band on one today.
+  if (isPartialMask(params.cellMask)) return false;
+  return true;
 }
 
 /**

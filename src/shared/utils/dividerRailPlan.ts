@@ -31,12 +31,8 @@ import {
   subtractSpan,
   type RailSegment,
 } from '@/shared/utils/labelTabPlan';
-import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
-import {
-  LID_CLICK_RAIL_INNER,
-  LID_CORNER_RADIUS,
-  resolveLidFootprintClearance,
-} from '@/features/bin-designer/types/lid';
+import { railInboardReachMm } from '@/shared/constants/lidKeepout';
+import { interiorReliefActive } from '@/features/bin-designer/utils/lidCompatibility';
 
 /**
  * Air (mm) kept between a rail's cut end and a divider's face.
@@ -83,6 +79,10 @@ function crossingHalfSpan(thickness: number, segLen: number, drift: number): num
  */
 export function dividerRailBlocks(params: BinParams): readonly DividerRailBlock[] {
   const { cols, rows, cells, thickness } = params.compartments;
+  // Nothing to notch: the interior relief has already taken this ring out of
+  // the cavity, so the dividers stop short of the rails by construction and
+  // the rails run unbroken (#3477).
+  if (interiorReliefActive(params)) return [];
   if (isPartialMask(params.cellMask)) return [];
   if (params.style !== 'standard') return [];
   if (cols < 1 || rows < 1 || cells.length !== cols * rows) return [];
@@ -106,19 +106,11 @@ export function dividerRailBlocks(params: BinParams): readonly DividerRailBlock[
   );
   if (dividerTopZ <= clickRailZBandAboveFloor(interiorHeight, collarHeight).lo) return [];
 
-  // Inboard-most reach of a rail on each axis, in the interior frame. The lid's
-  // outer half is `innerW/2 + wallThickness + TOLERANCE/2 - fitClearance`; the
-  // spine sits `lidCornerR` inside that, and the profile another
-  // `LID_CLICK_RAIL_INNER` (negative — inboard) past the spine.
-  const fitClearance = resolveLidFootprintClearance(params);
-  const inboard =
-    params.wallThickness +
-    GRIDFINITY_SPEC.TOLERANCE / 2 -
-    fitClearance -
-    (LID_CORNER_RADIUS - fitClearance) +
-    LID_CLICK_RAIL_INNER;
-  const railInnerX = innerW / 2 + inboard;
-  const railInnerY = innerD / 2 + inboard;
+  // Inboard-most reach of a rail on each axis, in the interior frame. Shared
+  // with the keep-out ring so the two cannot disagree about where a rail ends.
+  const reach = railInboardReachMm(params.wallThickness);
+  const railInnerX = innerW / 2 - reach;
+  const railInnerY = innerD / 2 - reach;
 
   const cellW = innerW / cols;
   const cellD = innerD / rows;

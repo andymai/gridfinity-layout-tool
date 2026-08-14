@@ -1973,6 +1973,11 @@ const en: Record<string, string> = {
     'Divider pieces are taller than the bin interior — the lid will not seat with them inserted.',
   'binDesigner.lid.compat.cellMaskHoles':
     'Custom shape has interior holes — those inner edges have lip but no rails (asymmetric grip).',
+  'binDesigner.lid.relieveInterior': 'Relieve interior at the lid seam',
+  'binDesigner.lid.relieveInteriorHint':
+    'The top of the cavity’s perimeter is trimmed so the click rails run unbroken. Dividers stop a few mm short of the rim and label shelves sit lower.',
+  'binDesigner.lid.relieveInteriorOffHint':
+    'The rails notch around each divider and label tab instead. Kept for designs made before this option, so they reprint identically.',
   'binDesigner.lid.compat.compartmentDividers':
     'Compartment dividers reach the top of the cavity, where the click rail drops in. The rail on {sides} is notched around each one so the lid can still seat.',
   'binDesigner.lid.compat.labelTabs':

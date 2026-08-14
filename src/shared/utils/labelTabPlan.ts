@@ -27,6 +27,7 @@ import {
 } from '@/shared/constants/labelPlates';
 import type { LabelPlateWidthU, LabelSocketStyle } from '@/shared/constants/labelPlates';
 import { planLabelSockets } from '@/shared/utils/labelSocketPlan';
+import { labelShelfKeepoutMm } from '@/shared/utils/lidInteriorRelief';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { resolveOverhang, overhangExpansion, hasOverhang } from '@/shared/utils/overhang';
 import { isPartialMask } from '@/shared/utils/cellMask';
@@ -138,7 +139,12 @@ export function planLabelTabLayout(
   // The geometry is built in a local frame (shelf top at Z=tabHeight) and
   // then translated up by `shelfTopZ - tabHeight`, so the entire
   // shelf+gusset assembly slides down as a unit.
-  const shelfTopZ = resolveLabelShelfTopMm(wallHeight, params.base.stackingLip, params.label);
+  const shelfTopZ = resolveLabelShelfTopMm(
+    wallHeight,
+    params.base.stackingLip,
+    params.label,
+    labelShelfKeepoutMm(params)
+  );
 
   // Safety: tab must fit within wall height AND between floor and shelfTopZ.
   // `shelfTopZ - tabHeight` is the Z of the gusset bottom; if it's <= 0 the

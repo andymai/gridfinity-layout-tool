@@ -1093,6 +1093,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         retentionMagnet: rawRetentionMagnet,
         tray: rawTray,
         grip: rawGrip,
+        relieveInterior: rawRelieveInterior,
         ...stored
       } = raw;
       // Rails migrate first — `attachment` derives from them for legacy
@@ -1123,6 +1124,12 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         retentionMagnet: migrateRetentionMagnet(rawRetentionMagnet),
         tray: migrateTray(rawTray),
         grip: migrateGrip(rawGrip),
+        // Absent means the design predates the interior relief (#3477), and it
+        // must keep the geometry it was published with. Only an explicit
+        // `true` opts in, which is what a design created after the flag stores.
+        // NOT left to the `DEFAULT_LID_CONFIG` spread above: that defaults it
+        // on, which is right for a new design and wrong for every old one.
+        relieveInterior: rawRelieveInterior === true,
       };
     })(),
     ...(params.splitConnectors !== undefined

@@ -403,6 +403,9 @@ function validateLid(lid: unknown): string | null {
   ) {
     return 'lid.topThicknessMm must be 0.8-5';
   }
+  if (lid.relieveInterior !== undefined && typeof lid.relieveInterior !== 'boolean') {
+    return 'lid.relieveInterior must be a boolean';
+  }
   if (lid.retentionMagnet !== undefined) {
     const magnetErr = validateRetentionMagnet(lid.retentionMagnet, 'lid.retentionMagnet');
     if (magnetErr) return magnetErr;

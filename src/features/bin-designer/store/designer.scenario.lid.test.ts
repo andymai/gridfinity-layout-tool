@@ -351,7 +351,10 @@ describe('DesignerStore - lid actions', () => {
 
     it('checkLidCompatibility flags label tabs as a warning (back rail conflict)', () => {
       const { updateLid, updateLabel } = useDesignerStore.getState();
-      updateLid({ enabled: true });
+      // The warning describes the NOTCHING path. With #3477's interior relief
+      // on — the default for a new design — the shelf sits below the rail band
+      // and there is no conflict to report.
+      updateLid({ enabled: true, relieveInterior: false });
       updateLabel({ enabled: true });
 
       const issues = checkLidCompatibility(useDesignerStore.getState().params);

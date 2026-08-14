@@ -46,6 +46,11 @@ function makeParams(grip: Partial<LidGripConfig>): BinParams {
     lid: {
       ...DEFAULT_BIN_PARAMS.lid,
       enabled: true,
+      // Off, because this file probes a coarse box — the flare's thickness by
+      // the lip's height on one wall — and #3477's relief ring puts its top
+      // edge inside that box while touching nothing the dip cares about. The
+      // subject here is the lip, so the interior is held still.
+      relieveInterior: false,
       grip: {
         ...DEFAULT_BIN_PARAMS.lid.grip,
         sides: { front: true, back: true, left: false, right: false },
