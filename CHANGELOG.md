@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.405.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.405.0...gridfinity-layout-tool-v4.405.1) (2026-08-14)
+
+
+### Bug Fixes
+
+* **lid:** notch click rails around compartment dividers ([#3477](https://github.com/andymai/gridfinity-layout-tool/issues/3477)) ([#3479](https://github.com/andymai/gridfinity-layout-tool/issues/3479)) ([e259230](https://github.com/andymai/gridfinity-layout-tool/commit/e259230c4191307da73100e8199a2de976cc219e))
+
 ## [4.405.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.404.3...gridfinity-layout-tool-v4.405.0) (2026-08-13)
 
 
