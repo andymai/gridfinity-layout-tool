@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.409.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.409.1...gridfinity-layout-tool-v4.409.2) (2026-08-14)
+
+
+### Bug Fixes
+
+* **preview:** fit the floor name label to its band ([#3502](https://github.com/andymai/gridfinity-layout-tool/issues/3502)) ([43c98b6](https://github.com/andymai/gridfinity-layout-tool/commit/43c98b63a5199b81c792ecec9625cb4a0d3480d9))
+
 ## [4.409.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.409.0...gridfinity-layout-tool-v4.409.1) (2026-08-14)
 
 
