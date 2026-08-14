@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.410.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.409.2...gridfinity-layout-tool-v4.410.0) (2026-08-14)
+
+
+### Features
+
+* **export:** split oversized bins into pieces for STEP ([#3501](https://github.com/andymai/gridfinity-layout-tool/issues/3501)) ([#3504](https://github.com/andymai/gridfinity-layout-tool/issues/3504)) ([c55bdc5](https://github.com/andymai/gridfinity-layout-tool/commit/c55bdc5a4f21ca44c1cc7818d780a55052128f19))
+
 ## [4.409.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.409.1...gridfinity-layout-tool-v4.409.2) (2026-08-14)
 
 
