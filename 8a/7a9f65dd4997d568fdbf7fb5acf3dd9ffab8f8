@@ -1,0 +1,106 @@
+src/features/bin-designer/types/compartments.ts
+  s_c4158cbd2efeeb::t_3e56f16d244149 1-9
+  s_c4158cbd2efeeb::t_84e562c4934425 74-90
+src/features/bin-designer/utils/bentoDraw.ts
+  s_c4158cbd2efeeb::t_1e934f53a0395e 31-32,161-166
+src/i18n/locales/de.json
+  s_c4158cbd2efeeb::t_0ea71739b32d39 930-932
+src/i18n/locales/nb.json
+  s_c4158cbd2efeeb::t_0ea71739b32d39 930-932
+src/i18n/locales/uk.json
+  s_c4158cbd2efeeb::t_0ea71739b32d39 930-932
+src/i18n/locales/zh-CN.json
+  s_c4158cbd2efeeb::t_0ea71739b32d39 930-932
+src/features/bin-designer/store/slices/paramSlice/compartmentActions.ts
+  s_c4158cbd2efeeb::t_9c51de951055ed 219-259
+  s_c4158cbd2efeeb::t_25263bb1c24a0e 9-10
+  s_c4158cbd2efeeb::t_72790cdb1a8db6 57-58
+src/i18n/locales/cs.json
+  s_c4158cbd2efeeb::t_0ea71739b32d39 930-932
+src/features/bin-designer/components/BentoWorkspace/BentoCompartmentColorControls.tsx
+  s_c4158cbd2efeeb::t_1225520c7b91b5 52
+  s_c4158cbd2efeeb::t_08cdbea1b5d51b 1-51,53-102
+api/lib/designerCompartmentValidation.ts
+  s_c4158cbd2efeeb::t_56d438e69f15f0 18-22
+  s_c4158cbd2efeeb::t_a8fa9ca1aeeddb 192-224
+  s_c4158cbd2efeeb::t_1af0634aeda6dd 11
+  s_c4158cbd2efeeb::t_cad424d1fee15d 23
+src/i18n/locales/fr.json
+  s_c4158cbd2efeeb::t_0ea71739b32d39 930-932
+src/i18n/locales/ja.json
+  s_c4158cbd2efeeb::t_0ea71739b32d39 930-932
+src/features/bin-designer/utils/compartmentColorUnits.test.ts
+  s_c4158cbd2efeeb::t_bb09e80e35ede2 1-147
+src/i18n/locales/pt-BR.json
+  s_c4158cbd2efeeb::t_0ea71739b32d39 930-932
+src/i18n/locales/it.json
+  s_c4158cbd2efeeb::t_0ea71739b32d39 930-932
+src/features/bin-designer/utils/multiColorGroups.ts
+  s_c4158cbd2efeeb::t_aabd74d9fa798c 39
+  s_c4158cbd2efeeb::t_26ed0ff32961e4 40,168-169,188-190,211-219,223,225-246,271-274
+src/features/bin-designer/utils/compartments.test.ts
+  s_c4158cbd2efeeb::t_1b335d280c8155 29-30,868-920
+  s_c4158cbd2efeeb::t_55101a0ecd4fb6 921-922
+src/features/bin-designer/utils/bentoDraw.test.ts
+  s_c4158cbd2efeeb::t_16a1f4bf893f45 372-423
+src/features/bin-designer/utils/compartmentColorUnits.ts
+  s_c4158cbd2efeeb::t_2798d57329546e 202-203
+  s_c4158cbd2efeeb::t_f61227ff587507 1-13,18-24,27-35,45-155,173-201,204-213
+  s_c4158cbd2efeeb::t_b0f7d02597984a 14-17,36-44
+  s_c4158cbd2efeeb::t_a2c592c668864e 25-26
+  s_c4158cbd2efeeb::t_ed111f39d86975 156-172
+src/features/generation/worker/generators/binGenerator.scenario.compartmentColor.test.ts
+  s_c4158cbd2efeeb::t_a857a50e42b6d7 1-177
+src/features/bin-designer/utils/binDownloadHelpers.ts
+  s_c4158cbd2efeeb::t_2542083feb0cb9 444-445,482-490
+  s_c4158cbd2efeeb::t_7662621ba3b7f2 28-30,222-224,235-236
+  s_c4158cbd2efeeb::t_9d6c8b1cd679b4 27
+src/features/bin-designer/components/preview/BinMesh/BinMesh.tsx
+  s_c4158cbd2efeeb::t_f5e74ec491079a 20,114-123,150-151,153-162
+src/i18n/locales/en.ts
+  s_c4158cbd2efeeb::t_0ea71739b32d39 2762,2765
+  s_c4158cbd2efeeb::t_00adbb489f312f 2763-2764
+src/i18n/locales/es.json
+  s_c4158cbd2efeeb::t_0ea71739b32d39 930-932
+src/i18n/locales/sv.json
+  s_c4158cbd2efeeb::t_0ea71739b32d39 930-932
+src/i18n/locales/ko.json
+  s_c4158cbd2efeeb::t_0ea71739b32d39 930-932
+api/lib/designerCompartmentValidation.test.ts
+  s_c4158cbd2efeeb::t_02ce48d591a9d8 707-747
+src/features/bin-designer/components/BentoWorkspace/BentoDock.tsx
+  s_c4158cbd2efeeb::t_8fceedeed427e3 29,375
+  s_c4158cbd2efeeb::t_1ce4bc687c6c01 376
+src/i18n/locales/pl.json
+  s_c4158cbd2efeeb::t_0ea71739b32d39 930-932
+src/features/bin-designer/utils/materialMapping.ts
+  s_c4158cbd2efeeb::t_34ad2babc291ea 27-28,65-66,80-82,97-105,150-172,179-182
+src/i18n/locales/nl.json
+  s_c4158cbd2efeeb::t_0ea71739b32d39 930-932
+src/features/bin-designer/types/designerState.ts
+  s_c4158cbd2efeeb::t_25263bb1c24a0e 160-163
+  s_c4158cbd2efeeb::t_7e7d88ad975499 23-28
+src/features/bin-designer/components/BentoWorkspace/BentoCompartmentColorControls.test.tsx
+  s_c4158cbd2efeeb::t_6cf007a706cb7b 27,37,64
+  s_c4158cbd2efeeb::t_ca945c518e1c4d 1-26,28-36,38-63,65-69
+src/features/bin-designer/utils/compartments.ts
+  s_c4158cbd2efeeb::t_1e934f53a0395e 928-933,979-984
+  s_c4158cbd2efeeb::t_fb8b14becb895e 1150-1206
+  s_c4158cbd2efeeb::t_ac706f0614da5b 17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "8a7a9f65dd4997d568fdbf7fb5acf3dd9ffab8f8",
+  "prompts": {},
+  "sessions": {
+    "s_c4158cbd2efeeb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e3102d69-4a09-4b98-9aef-078146199ae4",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
