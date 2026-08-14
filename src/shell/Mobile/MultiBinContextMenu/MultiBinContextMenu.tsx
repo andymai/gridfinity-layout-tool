@@ -16,7 +16,6 @@ import { findBinsByIds } from '@/shared/utils/entity';
 import type { BinId, CategoryId, GridUnits, LayerId } from '@/core/types';
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { MakeBentoDialog } from '@/features/design-linking';
 
 interface MultiBinContextMenuProps {
@@ -58,7 +57,6 @@ export function MultiBinContextMenu({
   const [showLayerPicker, setShowLayerPicker] = useState(false);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [showMergeDialog, setShowMergeDialog] = useState(false);
-  const mergeEnabled = useFeatureFlag('merge_bins_to_design');
 
   // Get bins and categorize them
   const bins = findBinsByIds(layout, binIds);
@@ -78,7 +76,7 @@ export function MultiBinContextMenu({
   // Merging reads the live selection rather than `binIds`, so the menu closes
   // only once the dialog is dismissed — closing here would clear the selection
   // the dialog is about to merge.
-  const canMerge = mergeEnabled && gridBins.length > 1;
+  const canMerge = gridBins.length > 1;
 
   const handleDeleteAll = () => {
     // Track deletion BEFORE executing (need bin data)

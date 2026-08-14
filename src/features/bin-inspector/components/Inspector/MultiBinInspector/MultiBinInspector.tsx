@@ -8,7 +8,6 @@ import { BulkIncrementControl } from '@/shared/components/BulkIncrementControl';
 import { Button, IconButton, Input, Select, XIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { formatHeightUnits } from '@/shared/utils/heightUnits';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 
 // Lazy, matching SingleBinInspector's linked-design section: the dialog pulls
@@ -51,7 +50,6 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
   } = inspector;
 
   const [showBento, setShowBento] = useState(false);
-  const bentoEnabled = useFeatureFlag('merge_bins_to_design');
   const [showPropertyForm, setShowPropertyForm] = useState(false);
   const [propertyKey, setPropertyKey] = useState('');
   const [propertyValue, setPropertyValue] = useState('');
@@ -342,7 +340,7 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
         </div>
 
         {/* Actions */}
-        {bentoEnabled && selectedBins.length > 1 && (
+        {selectedBins.length > 1 && (
           <Button
             variant="secondary"
             type="button"

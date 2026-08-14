@@ -5,7 +5,7 @@
  * out. Composition mirrors the cutout workspace header.
  */
 
-import { Button, IconButton, Stepper } from '@/design-system';
+import { Badge, Button, IconButton, Stepper } from '@/design-system';
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { useTranslation } from '@/i18n';
 import { BentoIcon } from '@/features/bin-designer/components/panel/InteriorSection/icons';
@@ -71,6 +71,9 @@ export function BentoWorkspaceHeader({
         <h2 className="text-sm font-semibold text-content-primary">
           {t('binDesigner.interior.bento.title')}
         </h2>
+        <Badge tone="warning" title={t('binDesigner.bento.experimentalHint')}>
+          {t('common.experimental')}
+        </Badge>
       </div>
 
       <div className="flex items-center gap-0.5">

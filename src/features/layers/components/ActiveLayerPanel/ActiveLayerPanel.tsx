@@ -13,7 +13,6 @@ import { useTranslation } from '@/i18n';
 import { SizeSelectorPopover } from './SizeSelectorPopover';
 import { useLayerFillActions } from '../../hooks/useLayerFillActions';
 import { batch } from '@/core/cqrs';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 
 // Lazy for the same reason the inspector's copy is: the dialog pulls in the
@@ -52,7 +51,6 @@ export function ActiveLayerPanel() {
     fillWithSize,
   } = useLayerFillActions();
   const hasBins = layerBins.length > 0;
-  const bentoEnabled = useFeatureFlag('merge_bins_to_design');
   const [showBento, setShowBento] = useState(false);
 
   const handleFill = () => {
@@ -220,7 +218,7 @@ export function ActiveLayerPanel() {
         </Button>
       </div>
 
-      {bentoEnabled && layerBins.length > 1 && (
+      {layerBins.length > 1 && (
         <Button
           variant="secondary"
           size="sm"

@@ -22,6 +22,8 @@ function makeProps(config: CompartmentConfig, overrides: Partial<BentoCanvasProp
     previewColor: '#3b82f6',
     ghost: null,
     movingId: null,
+    drop: null,
+    showHoverHandles: true,
     dividerTiltPreview: null,
     onResizeHandlePointerDown: vi.fn(),
     ...overrides,
@@ -180,5 +182,108 @@ describe('BentoCanvas', () => {
 
     // Preview zeroes the offsets — the wall is straight, so no indicator.
     expect(screen.queryByTestId('bento-tilt-0-1')).not.toBeInTheDocument();
+  });
+
+  describe('hover resize handles', () => {
+    it('offers ghost handles on the hovered compartment when nothing is selected', () => {
+      const { config, id } = withDrawn();
+      render(<BentoCanvas {...makeProps(config, { hoveredId: id })} />);
+
+      const group = screen.getByTestId('bento-resize-handles');
+      expect(group).toHaveAttribute('data-variant', 'ghost');
+      expect(group.querySelectorAll('rect[role="button"]')).toHaveLength(8);
+    });
+
+    it('resizing the hovered compartment targets that compartment', () => {
+      const { config, id } = withDrawn();
+      const onResizeHandlePointerDown = vi.fn();
+      render(<BentoCanvas {...makeProps(config, { hoveredId: id, onResizeHandlePointerDown })} />);
+
+      fireEvent.pointerDown(
+        screen.getByTestId('bento-resize-handles').querySelectorAll('rect[role="button"]')[0]
+      );
+
+      expect(onResizeHandlePointerDown).toHaveBeenCalledWith(
+        id,
+        expect.any(String),
+        expect.anything()
+      );
+    });
+
+    it('keeps the handles on the selection when a different compartment is hovered', () => {
+      const first = withDrawn();
+      const second = drawCompartment(first.config, { col: 2, row: 2, w: 2, h: 1 });
+      if (!second) throw new Error('unreachable');
+      render(
+        <BentoCanvas
+          {...makeProps(second.config, { selectedId: first.id, hoveredId: second.id })}
+        />
+      );
+
+      const group = screen.getByTestId('bento-resize-handles');
+      expect(group).toHaveAttribute('data-variant', 'primary');
+    });
+
+    it('stays off for touch, which has no hover to leave', () => {
+      const { config, id } = withDrawn();
+      render(<BentoCanvas {...makeProps(config, { hoveredId: id, showHoverHandles: false })} />);
+
+      expect(screen.queryByTestId('bento-resize-handles')).not.toBeInTheDocument();
+    });
+  });
+
+  it('reads out the size of the gesture ghost, and only while one is live', () => {
+    const { config } = withDrawn();
+    const { rerender } = render(<BentoCanvas {...makeProps(config)} />);
+    expect(screen.queryByTestId('bento-ghost-size')).not.toBeInTheDocument();
+
+    rerender(
+      <BentoCanvas
+        {...makeProps(config, {
+          ghost: {
+            rect: { col: 0, row: 0, w: 2, h: 2 },
+            valid: true,
+            kind: 'resize',
+            overStash: false,
+          },
+        })}
+      />
+    );
+
+    // The echo mock only substitutes placeholders that appear in the KEY, and
+    // `binDesigner.bento.sizeMm` has none — so the millimetres themselves are
+    // not assertable here, only that the readout is present during a gesture.
+    expect(screen.getByTestId('bento-ghost-size')).toBeInTheDocument();
+  });
+
+  it('drops the size readout when a move hovers the stash shelf', () => {
+    const { config } = withDrawn();
+    render(
+      <BentoCanvas
+        {...makeProps(config, {
+          ghost: {
+            rect: { col: 0, row: 0, w: 2, h: 2 },
+            valid: true,
+            kind: 'move',
+            overStash: true,
+          },
+        })}
+      />
+    );
+
+    expect(screen.queryByTestId('bento-ghost-size')).not.toBeInTheDocument();
+  });
+
+  it('replays the drop settle when the same compartment lands twice', () => {
+    const { config, id } = withDrawn();
+    const { rerender } = render(<BentoCanvas {...makeProps(config, { drop: { id, token: 1 } })} />);
+    const first = screen.getByTestId(`bento-compartment-${id}`);
+    expect(first).toHaveClass('animate-bento-drop');
+
+    rerender(<BentoCanvas {...makeProps(config, { drop: { id, token: 2 } })} />);
+
+    // A new element, not the same one re-rendered: CSS will not run keyframes
+    // a second time on a node that never unmounted.
+    expect(screen.getByTestId(`bento-compartment-${id}`)).not.toBe(first);
   });
 });

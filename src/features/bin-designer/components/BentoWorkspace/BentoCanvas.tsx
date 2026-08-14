@@ -48,6 +48,19 @@ export interface BentoCanvasProps {
   readonly ghost: BentoGhost | null;
   /** ID being moved right now — rendered dimmed like a dragged layout bin. */
   readonly movingId: number | null;
+  /**
+   * The compartment a gesture just landed, with a token that changes on every
+   * landing. Keyed into the element so the settle animation replays when the
+   * same compartment is dropped twice running.
+   */
+  readonly drop: { readonly id: number; readonly token: number } | null;
+  /**
+   * Draw faint resize handles on the HOVERED compartment as well as the
+   * selected one (`Bin.tsx` does the same for layout bins). Off for touch,
+   * which has no hover and would leave them permanently stuck on the last
+   * thing tapped.
+   */
+  readonly showHoverHandles: boolean;
   readonly dividerTiltPreview: DividerTiltPreview | null;
   readonly onResizeHandlePointerDown: (
     id: number,
@@ -58,6 +71,9 @@ export interface BentoCanvasProps {
 
 const HANDLE_PX = 9;
 const HANDLE_HIT_PX = 20;
+/** Live-size chip above the gesture ghost. */
+const SIZE_BADGE_H_PX = 20;
+const SIZE_BADGE_MIN_W_PX = 72;
 const HANDLE_CURSORS: Record<ResizeHandleId, string> = {
   n: 'ns-resize',
   s: 'ns-resize',
@@ -80,6 +96,8 @@ export function BentoCanvas({
   previewColor,
   ghost,
   movingId,
+  drop,
+  showHoverHandles,
   dividerTiltPreview,
   onResizeHandlePointerDown,
 }: BentoCanvasProps) {
@@ -173,6 +191,26 @@ export function BentoCanvas({
   const selectedRect =
     selectedId !== null ? drawnRects.find((d) => d.id === selectedId)?.rect : undefined;
 
+  // The selection owns the handles; the hovered compartment only borrows them
+  // when nothing is selected, so hovering a neighbour never moves the grab
+  // targets off the thing the user is working on.
+  const hoverRect =
+    showHoverHandles && hoveredId !== null && hoveredId !== selectedId
+      ? drawnRects.find((d) => d.id === hoveredId)?.rect
+      : undefined;
+  const handleTarget =
+    selectedRect && selectedId !== null
+      ? { id: selectedId, rect: selectedRect, ghost: false }
+      : hoverRect && hoveredId !== null
+        ? { id: hoveredId, rect: hoverRect, ghost: true }
+        : null;
+
+  const ghostPx = (() => {
+    if (!ghost) return { x: 0, y: 0, width: 0, height: 0 };
+    const { x, y, w, h } = rectPx(ghost.rect);
+    return { x: x + 1, y: y + 1, width: Math.max(0, w - 2), height: Math.max(0, h - 2) };
+  })();
+
   const handlesFor = (rect: CellRect) => {
     const { x, y, w, h } = rectPx(rect);
     const cx = x + w / 2;
@@ -243,14 +281,16 @@ export function BentoCanvas({
         const isMoving = id === movingId;
         const widthMm = Math.round(rect.w * (interiorW / cols));
         const depthMm = Math.round(rect.h * (interiorD / rows));
+        const justDropped = drop?.id === id;
         return (
-          <Fragment key={id}>
+          <Fragment key={justDropped ? `${id}-drop${drop.token}` : id}>
             <rect
               x={x + 1.5}
               y={y + 1.5}
               width={Math.max(0, w - 3)}
               height={Math.max(0, h - 3)}
               rx={5}
+              className={justDropped ? 'animate-bento-drop' : undefined}
               style={{
                 stroke: previewColor,
                 fill: previewColor,
@@ -312,25 +352,52 @@ export function BentoCanvas({
 
       {/* Gesture ghost (hidden while a move hovers the stash shelf) */}
       {ghost && !ghost.overStash && (
-        <rect
-          {...(() => {
-            const { x, y, w, h } = rectPx(ghost.rect);
-            return { x: x + 1, y: y + 1, width: Math.max(0, w - 2), height: Math.max(0, h - 2) };
-          })()}
-          rx={5}
-          strokeWidth={2}
-          style={ghostStyle(ghost)}
-          data-interaction-preview={ghost.kind}
-          data-snap-state={ghost.valid ? 'valid' : 'invalid'}
-          pointerEvents="none"
-        />
+        <>
+          <rect
+            {...ghostPx}
+            rx={5}
+            strokeWidth={2}
+            style={ghostStyle(ghost)}
+            data-interaction-preview={ghost.kind}
+            data-snap-state={ghost.valid ? 'valid' : 'invalid'}
+            pointerEvents="none"
+          />
+          {/* Live size, so a drag says what it is about to produce instead of
+              only whether it fits. The draw gesture's footer hint carries the
+              cell count; this is the millimetres, on the shape itself. */}
+          <foreignObject
+            x={ghostPx.x}
+            y={Math.max(originY - SIZE_BADGE_H_PX, ghostPx.y - SIZE_BADGE_H_PX)}
+            width={Math.max(SIZE_BADGE_MIN_W_PX, ghostPx.width)}
+            height={SIZE_BADGE_H_PX}
+            pointerEvents="none"
+          >
+            <div className="flex h-full items-center">
+              <span
+                className="rounded bg-surface/90 px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-content-secondary shadow-sm"
+                data-testid="bento-ghost-size"
+              >
+                {t('binDesigner.bento.sizeMm', {
+                  w: Math.round(ghost.rect.w * (interiorW / cols)),
+                  d: Math.round(ghost.rect.h * (interiorD / rows)),
+                })}
+              </span>
+            </div>
+          </foreignObject>
+        </>
       )}
 
-      {/* Resize handles on the selection, idle only. Each visible square gets
-          an invisible twin at HANDLE_HIT_PX so the grab target isn't 9px. */}
-      {selectedRect && selectedId !== null && !ghost && (
-        <g data-testid="bento-resize-handles">
-          {handlesFor(selectedRect).map(({ handle, hx, hy }) => (
+      {/* Resize handles, idle only. Each visible square gets an invisible twin
+          at HANDLE_HIT_PX so the grab target isn't 9px. The hovered
+          compartment gets a faint set too (layout-planner parity): otherwise
+          every resize costs a click to select first. */}
+      {!ghost && handleTarget && (
+        <g
+          data-testid="bento-resize-handles"
+          data-variant={handleTarget.ghost ? 'ghost' : 'primary'}
+          style={handleTarget.ghost ? { opacity: 0.45 } : undefined}
+        >
+          {handlesFor(handleTarget.rect).map(({ handle, hx, hy }) => (
             <g key={handle}>
               <rect
                 x={hx - HANDLE_PX / 2}
@@ -350,7 +417,7 @@ export function BentoCanvas({
                 style={{ cursor: HANDLE_CURSORS[handle] }}
                 role="button"
                 aria-label={t('binDesigner.bento.resizeHandle', { handle })}
-                onPointerDown={(e) => onResizeHandlePointerDown(selectedId, handle, e)}
+                onPointerDown={(e) => onResizeHandlePointerDown(handleTarget.id, handle, e)}
               />
             </g>
           ))}

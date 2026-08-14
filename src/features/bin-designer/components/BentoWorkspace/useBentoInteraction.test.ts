@@ -248,18 +248,40 @@ describe('useBentoInteraction', () => {
   });
 
   describe('stash drag', () => {
+    /**
+     * A shelf tile pointerdown. The 40x20 tile is the entry drawn to scale, so
+     * `grabFracX/Y` choose which of its cells the pointer grabbed; the tile is
+     * then positioned so that grab point lands at client (`atX`, `atY`), which
+     * is what the drag threshold measures from.
+     */
+    function pressTile(
+      h: ReturnType<typeof mount>,
+      index: number,
+      { grabFracX = 0, grabFracY = 1, atX = 0, atY = 0 } = {}
+    ): void {
+      const left = atX - grabFracX * 40;
+      const top = atY - grabFracY * 20;
+      const tile = document.createElement('div');
+      tile.getBoundingClientRect = () =>
+        ({ left, top, right: left + 40, bottom: top + 20, width: 40, height: 20 }) as DOMRect;
+      act(() => {
+        h.api.onStashEntryPointerDown(index, {
+          button: 0,
+          preventDefault: () => undefined,
+          currentTarget: tile,
+          clientX: atX,
+          clientY: atY,
+        } as unknown as React.PointerEvent);
+      });
+    }
+
     it('places a stash entry on the grid where it is dropped', () => {
       const config: CompartmentConfig = {
         ...createUniformGrid(4, 3, 1.2),
         stash: [{ w: 2, h: 1 }],
       };
       const h = mount(config);
-      act(() => {
-        h.api.onStashEntryPointerDown(0, {
-          button: 0,
-          preventDefault: () => undefined,
-        } as unknown as React.PointerEvent);
-      });
+      pressTile(h, 0);
       h.move(25, 15);
       expect(h.api.ghost).toMatchObject({
         kind: 'stashDrag',
@@ -271,18 +293,40 @@ describe('useBentoInteraction', () => {
       expect(h.onSelect).toHaveBeenLastCalledWith(11);
     });
 
+    it('keeps the grabbed cell under the cursor instead of re-centering', () => {
+      const config: CompartmentConfig = {
+        ...createUniformGrid(4, 3, 1.2),
+        stash: [{ w: 2, h: 1 }],
+      };
+      const h = mount(config);
+      // Grabbed on the RIGHT half of a 2-wide tile: that cell, not the left
+      // one, must land on the hovered cell — so the rect starts a column back.
+      pressTile(h, 0, { grabFracX: 0.9 });
+      h.move(25, 15);
+      expect(h.api.ghost).toMatchObject({ rect: { col: 1, row: 1, w: 2, h: 1 } });
+    });
+
+    it('stays inert until the pointer passes the drag threshold', () => {
+      const config: CompartmentConfig = {
+        ...createUniformGrid(4, 3, 1.2),
+        stash: [{ w: 1, h: 1 }],
+      };
+      const h = mount(config);
+      pressTile(h, 0, { atX: 2, atY: 2 });
+      // Two pixels of jitter is a click on the tile, not a drag off the shelf.
+      h.move(3, 3);
+      expect(h.api.ghost).toBeNull();
+      h.up(3, 3);
+      expect(h.actions.placeFromStash).not.toHaveBeenCalled();
+    });
+
     it('dropping outside the canvas cancels the placement', () => {
       const config: CompartmentConfig = {
         ...createUniformGrid(4, 3, 1.2),
         stash: [{ w: 1, h: 1 }],
       };
       const h = mount(config);
-      act(() => {
-        h.api.onStashEntryPointerDown(0, {
-          button: 0,
-          preventDefault: () => undefined,
-        } as unknown as React.PointerEvent);
-      });
+      pressTile(h, 0);
       h.move(200, 200);
       expect(h.api.ghost).toBeNull();
       h.up(200, 200);
