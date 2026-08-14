@@ -96,7 +96,8 @@ export async function handleSplitExport(message: ExportSplitMessage): Promise<vo
         payload.cutPlanesY,
         payload.tolerance,
         payload.angularTolerance,
-        payload.splitConnectorConfig
+        payload.splitConnectorConfig,
+        payload.format
       );
       reportProgress(payload.requestId, 'splitting', 1);
       return { pieces: result.pieces };
@@ -117,6 +118,7 @@ export async function handleSplitExportRange(message: ExportSplitRangeMessage): 
     tolerance,
     angularTolerance,
     splitConnectorConfig,
+    format,
   } = message.payload;
   await prepareImprintsSafe(params);
   await runExport(
@@ -131,7 +133,8 @@ export async function handleSplitExportRange(message: ExportSplitRangeMessage): 
         pieceIndices,
         tolerance,
         angularTolerance,
-        splitConnectorConfig
+        splitConnectorConfig,
+        format
       );
       reportProgress(requestId, 'splitting', 1);
       return { pieces: result.pieces };

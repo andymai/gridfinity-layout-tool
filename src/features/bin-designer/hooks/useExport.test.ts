@@ -493,6 +493,136 @@ describe('useExport', () => {
     removeChildSpy.mockRestore();
   });
 
+  // ─── Split export under STEP (#3501) ─────────────────────────────────────
+
+  describe('downloadSplit under STEP', () => {
+    /** Stub the download DOM plumbing; returns the anchor plus a restore fn. */
+    function mockDownloadDom(): {
+      anchor: { href: string; download: string; click: ReturnType<typeof vi.fn> };
+      restore: () => void;
+    } {
+      const anchor = { href: '', download: '', click: vi.fn(), parentNode: document.body };
+      const originalCreateElement = document.createElement.bind(document);
+      const createElementSpy = vi
+        .spyOn(document, 'createElement')
+        .mockImplementation((tag: string) => {
+          if (tag === 'a') return anchor as unknown as HTMLAnchorElement;
+          return originalCreateElement(tag);
+        });
+      const appendChildSpy = vi
+        .spyOn(document.body, 'appendChild')
+        .mockImplementation((node) => node);
+      const removeChildSpy = vi
+        .spyOn(document.body, 'removeChild')
+        .mockImplementation((node) => node);
+      return {
+        anchor,
+        restore: () => {
+          createElementSpy.mockRestore();
+          appendChildSpy.mockRestore();
+          removeChildSpy.mockRestore();
+        },
+      };
+    }
+
+    function setOversizedBin(overrides: Partial<typeof DEFAULT_BIN_PARAMS> = {}): void {
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, width: 8, depth: 3, ...overrides },
+        generation: {
+          ...DEFAULT_GENERATION_STATE,
+          status: 'complete',
+          mesh: {
+            vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
+            normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+            indices: new Uint32Array([0, 1, 2]),
+            edgeVertices: new Float32Array(0),
+            error: null,
+            timingMs: 10,
+          },
+          progress: 1,
+        },
+      });
+    }
+
+    it('asks the worker for STEP pieces and names them .step in the ZIP', async () => {
+      setOversizedBin();
+      mockExportSplitBin.mockResolvedValue({
+        pieces: [
+          { data: new ArrayBuffer(50), label: 'piece-1x1', col: 1, row: 1 },
+          { data: new ArrayBuffer(50), label: 'piece-2x1', col: 2, row: 1 },
+        ],
+      });
+      const dom = mockDownloadDom();
+
+      const { result } = renderHook(() => useExport());
+      let succeeded = false;
+      await act(async () => {
+        succeeded = await result.current.downloadSplit('step', {
+          style: 'descriptive',
+          customName: '',
+          format: 'step',
+        });
+      });
+
+      expect(succeeded).toBe(true);
+      expect(mockExportSplitBin).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.any(Array),
+        expect.any(Array),
+        expect.objectContaining({ format: 'step' })
+      );
+
+      // Read the real ZIP the hook built. Entry names live uncompressed in the
+      // local file headers, so a `.stl` extension here would be a wrong-format
+      // archive that still downloaded happily.
+      const blob = mockCreateObjectURL.mock.calls[0][0] as Blob;
+      const entryNames = await blob.text();
+      expect(entryNames).toContain('.step');
+      expect(entryNames).not.toContain('.stl');
+      expect(dom.anchor.download).toContain('_split.zip');
+
+      dom.restore();
+    });
+
+    it('takes lid companions as separate STEP pieces, not the bin-bearing compound', async () => {
+      // A lid makes the split export run a second combined pass for companions.
+      // Under STEP that pass defaults to one compound assembly WITH the bin in
+      // it — the body is already covered by the split pieces, so asking for the
+      // compound would ship the whole bin a second time.
+      setOversizedBin({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
+      });
+      mockExportSplitBin.mockResolvedValue({
+        pieces: [{ data: new ArrayBuffer(50), label: 'piece-1x1', col: 1, row: 1 }],
+      });
+      mockExportCombined.mockResolvedValue({
+        pieces: [
+          { data: new ArrayBuffer(30), label: 'bin' },
+          { data: new ArrayBuffer(20), label: 'lid' },
+        ],
+        faceGroups: [],
+      });
+      const dom = mockDownloadDom();
+
+      const { result } = renderHook(() => useExport());
+      await act(async () => {
+        await result.current.downloadSplit('step', {
+          style: 'descriptive',
+          customName: '',
+          format: 'step',
+        });
+      });
+
+      expect(mockExportCombined).toHaveBeenCalledWith(
+        expect.any(Object),
+        'step',
+        expect.objectContaining({ separatePieces: true })
+      );
+
+      dom.restore();
+    });
+  });
+
   // ─── Export attribution tests ────────────────────────────────────────────
 
   describe('export attribution', () => {

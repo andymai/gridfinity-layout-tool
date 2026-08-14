@@ -220,11 +220,13 @@ export async function handleExportDividers(message: ExportDividersMessage): Prom
  *
  * Returns labeled pieces for the main thread to package per format:
  * - STL: multiple pieces (bin + divider per axis) → main thread ZIPs them
- * - STEP: single compound assembly piece
+ * - STEP: single compound assembly piece, unless `separatePieces` asks for one
+ *   file per part (a split export takes its companions this way)
  * - No dividers: single bin piece (same as regular export)
  */
 export async function handleExportCombined(message: ExportCombinedMessage): Promise<void> {
-  const { params, requestId, format, tolerance, angularTolerance } = message.payload;
+  const { params, requestId, format, tolerance, angularTolerance, separatePieces } =
+    message.payload;
 
   await runExport(
     requestId,
@@ -254,7 +256,7 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         };
       }
 
-      if (format === 'step') {
+      if (format === 'step' && separatePieces !== true) {
         // STEP: create compound assembly of bin + divider solids + lid
         const binSolid = getLastSolid();
         if (!binSolid) throw new Error('Failed to get bin solid for compound assembly');
@@ -321,7 +323,9 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         }
       }
 
-      // STL/3MF: export bin + dividers + lid as separate labeled pieces
+      // STL/3MF (and STEP under `separatePieces`): export bin + dividers + lid
+      // as separate labeled pieces. Every companion exporter below already
+      // takes the format, so STEP falls through with no special casing.
       const pieces: CombinedExportPiece[] = [{ data: binResult.data, label: 'bin' }];
       if (hasDividers) {
         const dividerPieces = await exportDividerPiecesSeparately(

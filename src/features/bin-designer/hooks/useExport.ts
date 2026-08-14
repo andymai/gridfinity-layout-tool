@@ -451,7 +451,8 @@ export function useExport(): UseExportReturn {
    * then packages results into a ZIP archive.
    * When dividers are present, includes divider pieces in the ZIP.
    * Uses worker pool for parallel export when available.
-   * Supports STL and 3MF formats (STEP is not supported for split export).
+   * Supports STL, 3MF, and STEP — a STEP piece carries the exact BREP solid
+   * rather than a tessellation, so the ZIP holds one .step per piece.
    * NOTE: Multi-color data is NOT propagated to split pieces — each piece
    * exports as single-color. Split + multi-color is a known gap.
    */
@@ -461,8 +462,6 @@ export function useExport(): UseExportReturn {
       config: ExportFileNameConfig,
       designName?: string
     ): Promise<boolean> => {
-      if (format === 'step') return false; // STEP does not support split export
-
       if (!engineReady || !getActiveBridge()) {
         pendingExportRef.current = { kind: 'split', format, config, designName };
         return false;
@@ -516,13 +515,17 @@ export function useExport(): UseExportReturn {
 
         // Collect non-bin companion pieces (dividers, lid) — split export
         // produces only bin pieces, so any extras come from a parallel
-        // combined export.
+        // combined export. `separatePieces` matters under STEP: the default
+        // compound assembly bundles the bin in with its companions, and the
+        // body is already covered by the split pieces.
         const companionPieces: { data: ArrayBuffer; label: string }[] = [];
         if (hasDividers || hasLid) {
           const combined = await exportWithResilience(() => {
             const bridge = getActiveBridge();
             if (!bridge) throw new Error('Bridge not available');
-            return bridge.exportCombined(splitParams, 'stl');
+            return format === 'step'
+              ? bridge.exportCombined(splitParams, 'step', { separatePieces: true })
+              : bridge.exportCombined(splitParams, 'stl');
           });
           // Companion retries roll into the totals.
           retryCount += combined.retryCount;
@@ -555,7 +558,11 @@ export function useExport(): UseExportReturn {
             ...result.pieces.map((p) => ({ data: p.data, label: p.label })),
             ...companionPieces,
           ];
-          const blob = packagePiecesAsZip(allPieces, baseName, '.stl');
+          const blob = packagePiecesAsZip(
+            allPieces,
+            baseName,
+            format === 'step' ? '.step' : '.stl'
+          );
           triggerDownload(blob, `${baseName}_split.zip`);
         }
 

@@ -172,6 +172,7 @@ export class WorkerPool {
       tolerance?: number;
       angularTolerance?: number;
       splitConnectorConfig?: SplitConnectorConfig;
+      format?: ExportFormat;
       onProgress?: (completed: number, total: number) => void;
       signal?: AbortSignal;
     }
@@ -197,6 +198,7 @@ export class WorkerPool {
               tolerance: options?.tolerance,
               angularTolerance: options?.angularTolerance,
               splitConnectorConfig: options?.splitConnectorConfig,
+              format: options?.format,
             }
           );
           completed += pieceIndices.length;

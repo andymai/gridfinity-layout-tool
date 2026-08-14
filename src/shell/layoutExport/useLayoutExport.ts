@@ -140,6 +140,7 @@ async function splitFiles(
   };
   const result = await bridge.exportSplitBin(params, split.cutPlanesX, split.cutPlanesY, {
     splitConnectorConfig: connectorConfig,
+    format: workerFormat,
   });
 
   const baseNoExt = exportable.path.replace(/\.[^.]+$/, '');
@@ -151,7 +152,10 @@ async function splitFiles(
   }));
 
   if (exportable.companions.length > 0) {
-    const combined = await bridge.exportCombined(params, workerFormat);
+    // `separatePieces` matters under STEP: the default compound assembly
+    // bundles the bin in with its companions, and the body is already covered
+    // by the split pieces above.
+    const combined = await bridge.exportCombined(params, workerFormat, { separatePieces: true });
     // The body is already covered by the split pieces — take only the extras.
     for (const p of combined.pieces) {
       if (p.label !== 'bin') pieces.push({ data: p.data, label: p.label });

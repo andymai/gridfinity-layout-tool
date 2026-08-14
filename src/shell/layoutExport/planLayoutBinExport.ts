@@ -104,12 +104,7 @@ export interface LayoutBinExportPlan {
  * the designer, layout bins routinely carry one (`resolveBinOverhang` grows
  * them into the drawer margin).
  */
-function binSplitPlan(
-  params: BinParams,
-  printBed: PrintBedSize,
-  format: ExportFileFormat
-): LayoutSplitPlan | null {
-  if (format === 'step') return null;
+function binSplitPlan(params: BinParams, printBed: PrintBedSize): LayoutSplitPlan | null {
   const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
   const over = resolveOverhang(params.overhang ?? undefined);
   const maxGrid = calcMaxGridUnits(
@@ -337,7 +332,7 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
     params: u.params,
     path: paths[i],
     companions: companions[i],
-    split: binSplitPlan(u.params, printBed, format),
+    split: binSplitPlan(u.params, printBed),
   }));
 
   let totalGrams = 0;

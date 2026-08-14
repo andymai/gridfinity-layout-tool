@@ -332,6 +332,14 @@ export interface ExportCombinedPayload {
   readonly tolerance?: number;
   /** STL angular tolerance in degrees (default 5) */
   readonly angularTolerance?: number;
+  /**
+   * Emit one labeled piece per part instead of STEP's single compound
+   * assembly. A split export needs this: it already has the body as cut
+   * pieces and only wants the companions, which the compound cannot supply
+   * without dragging the whole bin along. No effect on STL/3MF, which are
+   * always per-piece.
+   */
+  readonly separatePieces?: boolean;
 }
 
 export interface GenerateSplitPreviewMessage {
@@ -368,6 +376,8 @@ export interface ExportSplitPayload {
   readonly angularTolerance?: number;
   /** Alignment connector config for split pieces. Omit to skip connectors. */
   readonly splitConnectorConfig?: SplitConnectorConfig;
+  /** Per-piece output format. Defaults to `'stl'`; `'step'` writes each piece's BREP solid. */
+  readonly format?: ExportFormat;
 }
 
 export interface GenerateSplitPreviewRangeMessage {
@@ -400,6 +410,8 @@ export interface ExportSplitRangePayload {
   readonly splitConnectorConfig?: SplitConnectorConfig;
   /** Indices into the flat piece array (col-major) to process on this worker */
   readonly pieceIndices: readonly number[];
+  /** Per-piece output format. Defaults to `'stl'`; `'step'` writes each piece's BREP solid. */
+  readonly format?: ExportFormat;
 }
 
 /** Export file formats supported by the BREP worker */

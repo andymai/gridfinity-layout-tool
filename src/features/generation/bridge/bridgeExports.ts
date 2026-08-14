@@ -121,6 +121,7 @@ export function exportCombined(
   options?: {
     tolerance?: number;
     angularTolerance?: number;
+    separatePieces?: boolean;
     onProgress?: (progress: number) => void;
   }
 ): Promise<CombinedExportResult> {
@@ -136,6 +137,7 @@ export function exportCombined(
         format,
         tolerance: options?.tolerance,
         angularTolerance: options?.angularTolerance,
+        separatePieces: options?.separatePieces,
       },
     }),
     options?.onProgress
@@ -151,6 +153,7 @@ export function exportSplitBin(
     tolerance?: number;
     angularTolerance?: number;
     splitConnectorConfig?: SplitConnectorConfig;
+    format?: ExportFormat;
   }
 ): Promise<SplitExportResult> {
   return runExport<SplitExportResult>(
@@ -167,6 +170,7 @@ export function exportSplitBin(
         tolerance: options?.tolerance,
         angularTolerance: options?.angularTolerance,
         splitConnectorConfig: options?.splitConnectorConfig,
+        format: options?.format,
       },
     })
   );
@@ -236,6 +240,7 @@ export function exportSplitBinRange(
     tolerance?: number;
     angularTolerance?: number;
     splitConnectorConfig?: SplitConnectorConfig;
+    format?: ExportFormat;
   }
 ): Promise<SplitExportResult> {
   return runExport<SplitExportResult>(
@@ -253,6 +258,7 @@ export function exportSplitBinRange(
         tolerance: options?.tolerance,
         angularTolerance: options?.angularTolerance,
         splitConnectorConfig: options?.splitConnectorConfig,
+        format: options?.format,
       },
     })
   );

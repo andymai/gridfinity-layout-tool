@@ -108,7 +108,8 @@ export type ExportSplitBinFn = (
   cutPlanesY: readonly number[],
   tolerance?: number,
   angularTolerance?: number,
-  splitConnectorConfig?: SplitConnectorConfig
+  splitConnectorConfig?: SplitConnectorConfig,
+  format?: 'stl' | 'step'
 ) => Promise<SplitExportResult>;
 
 // ─── Cached instances ────────────────────────────────────────────────────────
