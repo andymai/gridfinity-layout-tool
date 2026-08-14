@@ -36,6 +36,11 @@ export const FeatureTag = {
    * without also lighting up the shell it was cut from.
    */
   LID_GRIP: 17,
+  /**
+   * Faces left by the lid's interior relief (#3477) — the ring carved out of
+   * the top of the cavity's perimeter so a seated lid's rails run unbroken.
+   */
+  LID_RELIEF: 18,
   UNKNOWN: 255,
 } as const;
 

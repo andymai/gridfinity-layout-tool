@@ -72,7 +72,10 @@ function makeParams(lid: Partial<LidConfig>, extra: Partial<BinParams> = {}): Bi
   return {
     ...DEFAULT_BIN_PARAMS,
     ...extra,
-    lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, ...lid },
+    // Notching path by default (#3477): several cases here count rails per
+    // wall, which the interior relief deliberately changes. A case that wants
+    // the relief passes it through `lid`.
+    lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, relieveInterior: false, ...lid },
   };
 }
 

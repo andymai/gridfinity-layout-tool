@@ -20,6 +20,7 @@ import {
   labelShelfCeilingMm,
   resolveLabelShelfTopMm,
 } from '@/shared/constants/labelPlates';
+import { labelShelfKeepoutMm } from '@/shared/utils/lidInteriorRelief';
 import {
   compartmentTabEligible,
   compartmentTabXSpan,
@@ -46,6 +47,7 @@ export function GhostLabelTabs() {
     stackingLip,
     compartments,
     label,
+    params,
     generationStatus,
   } = useDesignerStore(
     useShallow((s) => ({
@@ -62,6 +64,10 @@ export function GhostLabelTabs() {
       stackingLip: s.params.base.stackingLip,
       compartments: s.params.compartments,
       label: s.params.label,
+      // Whole params, for `labelShelfKeepoutMm` alone: the interior-relief gate
+      // reads the lid config, the base's lip and tile flags and the cell mask,
+      // and a hand-picked subset would go stale the next time it grows a term.
+      params: s.params,
       generationStatus: s.generation.status,
     }))
   );
@@ -84,7 +90,12 @@ export function GhostLabelTabs() {
   // where the regenerated mesh will (#1898).
   const shelfTopWorldZ =
     floorZ +
-    resolveLabelShelfTopMm(labelShelfCeilingMm(wallHeightMm, stackingLip), stackingLip, label);
+    resolveLabelShelfTopMm(
+      labelShelfCeilingMm(wallHeightMm, stackingLip),
+      stackingLip,
+      label,
+      labelShelfKeepoutMm(params)
+    );
 
   const shouldShow =
     label.enabled &&

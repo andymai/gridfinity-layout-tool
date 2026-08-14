@@ -17,6 +17,7 @@ import {
   labelShelfCeilingMm,
   resolveLabelShelfTopMm,
 } from '@/shared/constants/labelPlates';
+import { labelShelfKeepoutMm } from '@/shared/utils/lidInteriorRelief';
 import { planLabelSockets } from '@/shared/utils/labelSocketPlan';
 import { getCompartmentBounds, getCompartmentReadingOrder } from '../../../utils/compartments';
 import type { LabelSocketStyle } from '@/shared/constants/labelPlates';
@@ -281,9 +282,10 @@ export function useLabelTabsSection() {
   }, [params, compartments.cols, compartments.thickness, label.width]);
 
   // The plane the builder actually anchors to, cap included.
+  const shelfKeepoutMm = labelShelfKeepoutMm(params);
   const tabHeightMm = useMemo(
-    () => resolveLabelShelfTopMm(shelfCeilingMm, stackingLip, label),
-    [shelfCeilingMm, stackingLip, label]
+    () => resolveLabelShelfTopMm(shelfCeilingMm, stackingLip, label, shelfKeepoutMm),
+    [shelfCeilingMm, stackingLip, label, shelfKeepoutMm]
   );
   // Did the user explicitly set height? Controls whether the W×D×H summary
   // shows the third dimension. Keeps unaltered designs visually unchanged.
@@ -310,12 +312,13 @@ export function useLabelTabsSection() {
   // reason a tab is about to silently drop (and sizes the auto-fix).
   const shelfTopNoLip = useMemo(
     () =>
-      resolveLabelShelfTopMm(shelfCeilingMm, stackingLip, {
-        ...label,
-        lip: false,
-        lipHeight: undefined,
-      }),
-    [shelfCeilingMm, stackingLip, label]
+      resolveLabelShelfTopMm(
+        shelfCeilingMm,
+        stackingLip,
+        { ...label, lip: false, lipHeight: undefined },
+        shelfKeepoutMm
+      ),
+    [shelfCeilingMm, stackingLip, label, shelfKeepoutMm]
   );
   // Lip is enabled and its shelf drop is what pushes the tab past the height
   // guard (`depth >= tabHeightMm`), even though it fit without the lip.

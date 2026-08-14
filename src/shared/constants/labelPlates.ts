@@ -312,12 +312,19 @@ export function labelShelfCeilingMm(wallHeightMm: number, stackingLip: boolean):
 export function defaultLabelShelfTopMm(
   ceilingMm: number,
   stackingLip: boolean,
-  label: LabelShelfConfig
+  label: LabelShelfConfig,
+  /**
+   * Lid keep-out depth below the ceiling (#3477). A shelf left in the envelope
+   * would have the wall-side band that welds it cut away, so it sinks by this
+   * instead and keeps its full width. Zero on a design that predates the
+   * relief, or one without a lid.
+   */
+  keepoutMm = 0
 ): number {
   const clickInSocket =
     (label.mode ?? 'text') === 'socket' && (label.socketStyle ?? 'clickIn') === 'clickIn';
   const socketRelief = clickInSocket && stackingLip ? LABEL_SOCKET_STACK_RELIEF_MM : 0;
-  return ceilingMm - Math.max(socketRelief, labelLipReservationMm(label));
+  return ceilingMm - Math.max(socketRelief, labelLipReservationMm(label), keepoutMm);
 }
 
 /**
@@ -332,9 +339,10 @@ export function defaultLabelShelfTopMm(
 export function resolveLabelShelfTopMm(
   ceilingMm: number,
   stackingLip: boolean,
-  label: LabelShelfConfig
+  label: LabelShelfConfig,
+  keepoutMm = 0
 ): number {
-  const defaultTop = defaultLabelShelfTopMm(ceilingMm, stackingLip, label);
+  const defaultTop = defaultLabelShelfTopMm(ceilingMm, stackingLip, label, keepoutMm);
   if (label.height === undefined) return defaultTop;
   const reliefApplies = defaultTop < ceilingMm;
   return reliefApplies ? Math.min(label.height, defaultTop) : label.height;

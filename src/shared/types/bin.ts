@@ -185,6 +185,7 @@ export {
  */
 export {
   shouldGenerateLid,
+  interiorReliefActive,
   checkLidCompatibility,
   hasLidBlocker,
   computeDisabledRails,

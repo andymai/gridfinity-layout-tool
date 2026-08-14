@@ -28,6 +28,11 @@ import { computeHandleHoleGeometry } from '@/shared/utils/handleCutoutClip';
 import { hasAnyPatternedWall } from '@/shared/utils/wallPatternSides';
 import { railFoulingLabelFootprints } from '@/shared/utils/labelTabPlan';
 import { dividerRailBlocks, dividerRailSides } from '@/shared/utils/dividerRailPlan';
+// Re-exported for callers that already reach for this module's lid policy;
+// defined in `lidInteriorRelief` because the divider planner and the label
+// shelf datum both need it and both are reached from here.
+export { interiorReliefActive } from '@/shared/utils/lidInteriorRelief';
+import { interiorReliefActive } from '@/shared/utils/lidInteriorRelief';
 import {
   computeLipOffset,
   resolveScoopPlacement,
@@ -410,9 +415,14 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   //     Unlike the checks above this one is rail-specific, not lip-specific:
   //     the ramp takes nothing away from the lip, so a friction shell still
   //     seats on it. Only a rail needs the pocket, so only `clickRails` cares.
+  //
+  //     Silent once the interior is relieved (#3477): the envelope cut takes
+  //     the ramp's top back to the keep-out plane, so the pocket the rail hooks
+  //     is open by construction and there is nothing for the user to act on.
   const socketless = params.base.style === 'flat' || params.base.style === 'lid';
   const liteFloor = (params.base.lightweight || params.base.spacer) && !socketless;
   if (
+    !interiorReliefActive(params) &&
     params.scoop.enabled &&
     params.style === 'standard' &&
     params.base.stackingLip &&

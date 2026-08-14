@@ -27,6 +27,7 @@ import {
   resolveScoopProfile,
 } from '@/shared/utils/scoopCalculations';
 import { labelLipReservationMm, resolveLabelShelfTopMm } from '@/shared/constants/labelPlates';
+import { labelShelfKeepoutMm } from '@/shared/utils/lidInteriorRelief';
 import { findCompartmentBounds, interiorDividerSegments } from './compartmentBuilder';
 import type { InteriorDividerSegment } from './compartmentBuilder';
 import { BOTTOM_SOLID_SKIRT, CUTOUT_BORDER_WIDTH, TOP_KEEP_OUT } from './wallPatterns';
@@ -222,7 +223,12 @@ function labelTabKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut[]
   const { innerW, innerD, interiorHeight } = dim;
   const tabDepth = params.label.depth;
   if (tabDepth <= 0 || tabDepth >= innerD) return [];
-  const shelfTopZ = resolveLabelShelfTopMm(interiorHeight, params.base.stackingLip, params.label);
+  const shelfTopZ = resolveLabelShelfTopMm(
+    interiorHeight,
+    params.base.stackingLip,
+    params.label,
+    labelShelfKeepoutMm(params)
+  );
   const zMin = shelfTopZ - tabDepth;
   if (zMin <= 0 || shelfTopZ > interiorHeight) return [];
   // The lip (#2971) rises above the shelf, so the keep-out must reach the rim

@@ -83,6 +83,10 @@ const AXES = [
   { name: 'coverage', values: ['50', '100'] },
   { name: 'cutouts', values: ['off', 'front'] },
   { name: 'handles', values: ['off', 'front'] },
+  // #3477's envelope subtract. Both states matter: `on` is what new designs
+  // get, `off` is every design published before it and still the only path a
+  // polygon bin has.
+  { name: 'relieve', values: ['on', 'off'] },
 ] as const satisfies readonly Axis<string>[];
 
 type Case = Record<(typeof AXES)[number]['name'], string>;
@@ -162,6 +166,7 @@ function paramsFor(c: Case): BinParams {
       attachment: c.attachment as BinParams['lid']['attachment'],
       clickRails: { front: true, back: true, left: true, right: true },
       clickRailCoverage: Number(c.coverage),
+      relieveInterior: c.relieve === 'on',
       grip:
         c.grip === 'none'
           ? DEFAULT_BIN_PARAMS.lid.grip
@@ -220,6 +225,8 @@ describe('nothing intrudes into the lid seating volume', () => {
       coverage: '100',
       cutouts: 'off',
       handles: 'off',
+      // The pre-#3477 pairing, which is what the control reconstructs.
+      relieve: 'off',
     });
     const bin = getGenerateBin()(params, undefined, false);
     const blindLid = generateLid({ ...params, compartments: ONE });

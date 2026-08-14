@@ -328,6 +328,10 @@ export function useLidSection() {
     });
   }, [lid.stackableTop, lid.separateStackPlate, lid.grip, updateLid]);
 
+  const toggleRelieveInterior = useCallback(() => {
+    updateLid({ relieveInterior: !lid.relieveInterior });
+  }, [lid.relieveInterior, updateLid]);
+
   const setClickRailCoverage = useCallback(
     (clickRailCoverage: number) => {
       updateLid({ clickRailCoverage });
@@ -697,6 +701,7 @@ export function useLidSection() {
       clickRails: lid.clickRails,
       anyRail,
       clickRailCoverage: lid.clickRailCoverage,
+      relieveInterior: lid.relieveInterior,
       // Grip relief (#3272). `gripDepth` carries the clamp's own account of
       // itself so the panel can say WHY a relief is shallower than its mode
       // asks for, rather than leaving the user to read it as a defect.
@@ -765,6 +770,7 @@ export function useLidSection() {
       toggleSeparateStackPlate,
       toggleClickRailSide,
       setClickRailCoverage,
+      toggleRelieveInterior,
       setGripMode,
       toggleGripSide,
       setGripCoverage,

@@ -6,6 +6,7 @@ import {
   STYLE_DEFAULT_OMIT_KEYS,
 } from './paramMigration';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from './defaults';
+import type { LidConfig } from '../types';
 import { FLOOR_PATTERN_TYPES, WALL_PATTERN_TYPES } from '../types';
 import { DESIGNER_CONSTRAINTS } from './gridfinity';
 import { validateBinParams } from '../utils/validation';
@@ -945,7 +946,10 @@ describe('migrateParams', () => {
 
   it('backfills lid with defaults for designs saved before lid feature existed', () => {
     const result = migrateParams({ width: 2, depth: 2, height: 3 });
-    expect(result.lid).toEqual(DEFAULT_BIN_PARAMS.lid);
+    // Every field takes its default EXCEPT the interior relief (#3477), which
+    // is off for anything that predates it. Moot here — the design has no lid
+    // — but the rule has to hold uniformly or it would depend on load order.
+    expect(result.lid).toEqual({ ...DEFAULT_BIN_PARAMS.lid, relieveInterior: false });
     expect(result.lid.enabled).toBe(false);
   });
 
@@ -1005,9 +1009,22 @@ describe('migrateParams', () => {
         heightMm: 2.4,
         binDip: true,
       },
+      // Explicitly stored, which is what a design created after #3477 holds.
+      relieveInterior: true,
     };
     const result = migrateParams({ lid });
     expect(result.lid).toEqual(lid);
+  });
+
+  it('leaves the interior relief off for a design that predates it', () => {
+    // The whole point of the flag: a published bin must regenerate with the
+    // geometry it was published with, so an absent field means off even though
+    // DEFAULT_LID_CONFIG has it on for new designs.
+    // Cast because the field is required on the CURRENT type and this models a
+    // design persisted before it existed, which is exactly what migration is for.
+    const { relieveInterior: _absent, ...withoutFlag } = DEFAULT_BIN_PARAMS.lid;
+    expect(migrateParams({ lid: withoutFlag as LidConfig }).lid.relieveInterior).toBe(false);
+    expect(DEFAULT_BIN_PARAMS.lid.relieveInterior).toBe(true);
   });
 
   it('derives attachment from legacy rails and backfills magnet/tray defaults', () => {

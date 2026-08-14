@@ -521,6 +521,19 @@ export function LidSection() {
                 </div>
               )}
 
+              <div className="space-y-1">
+                <Switch
+                  label={t('binDesigner.lid.relieveInterior')}
+                  checked={state.relieveInterior}
+                  onChange={handlers.toggleRelieveInterior}
+                />
+                <Hint>
+                  {state.relieveInterior
+                    ? t('binDesigner.lid.relieveInteriorHint')
+                    : t('binDesigner.lid.relieveInteriorOffHint')}
+                </Hint>
+              </div>
+
               {showTrayAdvanced && (
                 <div className="space-y-2">
                   <StepperField

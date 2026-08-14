@@ -25,6 +25,10 @@ function makeParams(over: Partial<BinParams['label']>): BinParams {
       attachment: 'clickRails',
       clickRails: { front: true, back: true, left: true, right: true },
       clickRailCoverage: 100,
+      // Pins the NOTCHING path (#3477): `relieveInterior` defaults on for new
+      // designs, which steps the interior aside and makes the rails whole, so
+      // leaving it on would exercise a different mechanism than this file.
+      relieveInterior: false,
     },
   };
 }
