@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.407.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.406.1...gridfinity-layout-tool-v4.407.0) (2026-08-14)
+
+
+### Features
+
+* **bento:** graduate the Bento designer out of Labs ([#3489](https://github.com/andymai/gridfinity-layout-tool/issues/3489)) ([441f8e8](https://github.com/andymai/gridfinity-layout-tool/commit/441f8e807f02cfa730f0cb7afeec0c24f7e175cf))
+
 ## [4.406.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.406.0...gridfinity-layout-tool-v4.406.1) (2026-08-14)
 
 
