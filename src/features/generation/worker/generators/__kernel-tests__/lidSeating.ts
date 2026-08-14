@@ -64,6 +64,76 @@ export function interferenceAt(
   return total;
 }
 
+/** One mated pair: a bin, its lid, and the offset that seats them. */
+export interface SeatedPair {
+  readonly bin: MeshData;
+  readonly lid: MeshData;
+  readonly dz: number;
+}
+
+/**
+ * Every probe position {@link worstRailInterference} visits, for a given lid.
+ *
+ * A fixed discrete set derived from the lid's own bounds, which is what lets
+ * two lids of the same footprint be compared position by position.
+ */
+function railProbePositions(lid: MeshData): Array<readonly [number, number]> {
+  const bb = boundingBox(lid.vertices);
+  const cx = (bb.minX + bb.maxX) / 2;
+  const cy = (bb.minY + bb.maxY) / 2;
+  const spineX = (bb.maxX - bb.minX) / 2 - LID_CORNER_RADIUS;
+  const spineY = (bb.maxY - bb.minY) / 2 - LID_CORNER_RADIUS;
+  const out: Array<readonly [number, number]> = [];
+  for (const off of RAIL_PROBE_OFFSETS) {
+    for (let y = cy - spineY; y <= cy + spineY; y += 1) {
+      out.push([cx + spineX + off, y], [cx - spineX - off, y]);
+    }
+    for (let x = cx - spineX; x <= cx + spineX; x += 1) {
+      out.push([x, cy + spineY + off], [x, cy - spineY - off]);
+    }
+  }
+  return out;
+}
+
+/**
+ * Worst EXTRA rail interference `probe` has over `reference`, position by
+ * position.
+ *
+ * {@link worstRailInterference} is not zero on a good bin at every footprint:
+ * its outer offsets sample the rail bump inside the lip's undercut, and that
+ * overlap is the snap fit engaging, not a defect. Measured at 0.7mm on a plain
+ * 1x2 with no interior features whatever, and 0 on a 2x2 — a property of the
+ * footprint, which is why an absolute threshold cannot serve a matrix that
+ * varies the footprint.
+ *
+ * Comparing the two maxima would hide a small real clash behind a larger floor,
+ * so this walks matching positions instead. Sound here in a way the same trick
+ * is NOT for the whole-footprint sweep: these positions are a fixed discrete
+ * set from the lid bounds, identical for both lids, rather than a grid laid
+ * over a continuous field.
+ *
+ * A feature that REMOVES a rail scores negative and passes, correctly — no
+ * rail, nothing to collide with.
+ */
+export function worstRailInterferenceDelta(probe: SeatedPair, reference: SeatedPair): number {
+  const a = railProbePositions(probe.lid);
+  const b = railProbePositions(reference.lid);
+  if (a.length !== b.length) {
+    throw new Error(`rail delta needs a shared footprint: ${a.length} vs ${b.length} positions`);
+  }
+  let worst = -Infinity;
+  for (let i = 0; i < a.length; i++) {
+    const [px, py] = a[i];
+    const [rx, ry] = b[i];
+    worst = Math.max(
+      worst,
+      interferenceAt(probe.bin, probe.lid, px, py, probe.dz) -
+        interferenceAt(reference.bin, reference.lid, rx, ry, reference.dz)
+    );
+  }
+  return worst;
+}
+
 /**
  * Worst interference anywhere along the four rail lines.
  *
@@ -72,6 +142,9 @@ export function interferenceAt(
  * (a label shelf, a scoop's lip fill) are thin, so a single-column probe can
  * slip between them and report clean.
  */
+/** Offsets from a rail's spine the sweep visits; shared with the paired form. */
+const RAIL_PROBE_OFFSETS = [-0.6, -0.2, 0, 0.6, 1.4] as const;
+
 export function worstRailInterference(bin: MeshData, lid: MeshData, dz: number): number {
   // Probe positions come from the LID's own bounds rather than a re-derivation
   // of its width: overhang both widens and shifts the lid, and an arithmetic
@@ -83,7 +156,7 @@ export function worstRailInterference(bin: MeshData, lid: MeshData, dz: number):
   const spineY = (bb.maxY - bb.minY) / 2 - LID_CORNER_RADIUS;
 
   let worst = 0;
-  for (const off of [-0.6, -0.2, 0, 0.6, 1.4]) {
+  for (const off of RAIL_PROBE_OFFSETS) {
     // Left and right rails: sweep along Y at the rail's X.
     for (let y = cy - spineY; y <= cy + spineY; y += 1) {
       for (const sx of [cx + spineX + off, cx - spineX - off]) {
