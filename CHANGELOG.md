@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.408.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.408.0...gridfinity-layout-tool-v4.408.1) (2026-08-14)
+
+
+### Bug Fixes
+
+* **bento:** unify the Experimental badge on the info tone ([#3493](https://github.com/andymai/gridfinity-layout-tool/issues/3493)) ([9da910f](https://github.com/andymai/gridfinity-layout-tool/commit/9da910f2a8bee5609857bfbcdb32e5217186d080))
+
 ## [4.408.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.407.0...gridfinity-layout-tool-v4.408.0) (2026-08-14)
 
 
