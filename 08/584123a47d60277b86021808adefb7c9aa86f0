@@ -1,0 +1,19 @@
+src/shared/constants/lidKeepout.ts
+  s_ae321ba093788d::t_2b64f39554c2cc 128-133
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "08584123a47d60277b86021808adefb7c9aa86f0",
+  "prompts": {},
+  "sessions": {
+    "s_ae321ba093788d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "22153634-520d-478b-ba48-d7736ea3c48e",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
