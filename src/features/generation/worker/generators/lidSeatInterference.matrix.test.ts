@@ -138,8 +138,10 @@ function paramsFor(c: Case): BinParams {
         : {
             ...DEFAULT_BIN_PARAMS.walls,
             enabled: true,
-            front: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: true, width: 40 },
-            back: { ...DEFAULT_BIN_PARAMS.walls.front, enabled: false },
+            // Stated outright rather than spread from another side's
+            // defaults, so a change to those cannot quietly redefine this case.
+            front: { ...DEFAULT_BIN_PARAMS.walls.front, enabled: true, width: 40, depth: 50 },
+            back: { ...DEFAULT_BIN_PARAMS.walls.back, enabled: false },
             left: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: false },
             right: { ...DEFAULT_BIN_PARAMS.walls.right, enabled: false },
           },
@@ -243,6 +245,7 @@ describe('nothing intrudes into the lid seating volume', () => {
 
     const baselines = new Map<string, SeatedPair>();
     const skipped: string[] = [];
+    const measured: Case[] = [];
     const intruding: Array<{ case: string; mm: number }> = [];
 
     for (const c of CASES) {
@@ -260,13 +263,21 @@ describe('nothing intrudes into the lid seating volume', () => {
         if (!baseline) throw new Error(`baseline failed to build: ${baseKey}`);
         baselines.set(baseKey, baseline);
       }
+      measured.push(c);
       const mm = worstRailInterferenceDelta(built, baseline);
       if (mm >= TOLERANCE_MM) intruding.push({ case: key(c), mm: Number(mm.toFixed(3)) });
     }
 
-    // A case list that mostly fails to build would satisfy the assertion below
-    // by measuring almost nothing.
-    expect(skipped.length).toBeLessThan(CASES.length / 4);
+    // Completeness is asserted above over the GENERATED cases; a build that
+    // fails silently removes its case from the measured set, and enough of
+    // those could drop every instance of a value pair while the total skip
+    // count still looked small. So the property is re-checked over what was
+    // actually measured — and `skipped` is listed, not counted, because a
+    // configuration this cannot build is a coverage hole either way.
+    expect({ skipped, uncovered: uncoveredPairs<string>([...AXES], measured) }).toEqual({
+      skipped: [],
+      uncovered: [],
+    });
     expect(intruding).toEqual([]);
   }, 900000);
 });
