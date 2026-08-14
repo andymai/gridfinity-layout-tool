@@ -14,7 +14,7 @@
    (CLAUDE.md gotcha #6). Splitting these print-critical paths for a soft line-count limit risks
    regressions; kept together deliberately. */
 
-import type { CompartmentConfig, DividerOverride } from '../types';
+import type { CompartmentColorScope, CompartmentConfig, DividerOverride } from '../types';
 
 // Grid Creation
 
@@ -925,6 +925,12 @@ export function mergeCells(
     ...(config.labelIcons && {
       labelIcons: remapLabelIcons(config.labelIcons, remap),
     }),
+    ...(config.compartmentColors && {
+      compartmentColors: remapCompartmentColors(config.compartmentColors, remap),
+    }),
+    ...(config.compartmentColorScopes && {
+      compartmentColorScopes: remapCompartmentColorScopes(config.compartmentColorScopes, remap),
+    }),
     ...(config.dividerOverrides && {
       dividerOverrides: remapDividerOverrides(config.dividerOverrides, remap),
     }),
@@ -969,6 +975,12 @@ export function splitCompartment(
     }),
     ...(config.labelIcons && {
       labelIcons: remapLabelIcons(config.labelIcons, remap),
+    }),
+    ...(config.compartmentColors && {
+      compartmentColors: remapCompartmentColors(config.compartmentColors, remap),
+    }),
+    ...(config.compartmentColorScopes && {
+      compartmentColorScopes: remapCompartmentColorScopes(config.compartmentColorScopes, remap),
     }),
     ...(config.dividerOverrides && {
       dividerOverrides: remapDividerOverrides(config.dividerOverrides, remap),
@@ -1129,6 +1141,63 @@ export function remapLabelIcons(
     const icon = oldIcons[oldId];
     if (typeof icon === 'string') {
       out[newId] = icon;
+      anySet = true;
+    }
+  }
+  return anySet ? out : undefined;
+}
+
+/**
+ * Remap per-compartment shadow-box colours across a `normalizeIdsWithRemap`
+ * renumbering, exactly like `remapLabelIcons` — a colour whose compartment
+ * vanished drops, and a new ID (a split) starts uncoloured. Without this the
+ * colours stay indexed by ids that no longer mean the same compartment, and a
+ * merge silently repaints unrelated cells (CLAUDE.md gotcha #6).
+ */
+export function remapCompartmentColors(
+  oldColors: readonly (string | null)[] | undefined,
+  remap: ReadonlyMap<number, number>
+): (string | null)[] | undefined {
+  if (!oldColors || oldColors.length === 0) return undefined;
+  let maxNewId = -1;
+  for (const newId of remap.values()) {
+    if (newId > maxNewId) maxNewId = newId;
+  }
+  const out: (string | null)[] = new Array<string | null>(maxNewId + 1).fill(null);
+  let anySet = false;
+  for (const [oldId, newId] of remap) {
+    const color = oldColors[oldId];
+    if (typeof color === 'string' && color !== '') {
+      out[newId] = color;
+      anySet = true;
+    }
+  }
+  return anySet ? out : undefined;
+}
+
+/**
+ * Remap the per-compartment paint scopes in lockstep with
+ * {@link remapCompartmentColors}. Kept separate rather than folded into one
+ * object array so an existing design's `communityParamsFingerprint` only shifts
+ * for the field it actually gained.
+ */
+export function remapCompartmentColorScopes(
+  oldScopes: readonly (CompartmentColorScope | null)[] | undefined,
+  remap: ReadonlyMap<number, number>
+): (CompartmentColorScope | null)[] | undefined {
+  if (!oldScopes || oldScopes.length === 0) return undefined;
+  let maxNewId = -1;
+  for (const newId of remap.values()) {
+    if (newId > maxNewId) maxNewId = newId;
+  }
+  const out: (CompartmentColorScope | null)[] = new Array<CompartmentColorScope | null>(
+    maxNewId + 1
+  ).fill(null);
+  let anySet = false;
+  for (const [oldId, newId] of remap) {
+    const scope = oldScopes[oldId];
+    if (scope === 'floor' || scope === 'floorAndWalls') {
+      out[newId] = scope;
       anySet = true;
     }
   }

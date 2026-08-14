@@ -17,6 +17,7 @@ import { useThree, useFrame } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
 import { Detailed } from '@react-three/drei';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { planCompartmentColors } from '@/features/bin-designer/utils/compartmentColorUnits';
 import { useShallow } from 'zustand/react/shallow';
 import { useMeshGeometry, useCoarseGeometry } from '@/shared/components/preview/useMeshGeometry';
 import { computeActiveZones } from '@/features/bin-designer/types/featureColors';
@@ -110,9 +111,16 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it; preserve runtime fallback
   const multiColorEnabled = featureColors?.enabled ?? false;
   const cutoutUnits = useMemo(() => enumerateCutoutColorUnits(cutouts), [cutouts]);
-  // A colored cutout makes the design multi-color even if the user never opened
-  // the Multi-Color panel (setCutoutColor auto-enables, but stay robust).
-  const multiColorActive = multiColorEnabled || anyCutoutColored(cutouts);
+  // Compartment colours are classified by position, so the plan needs the whole
+  // param tree (interior size, overhang offset, floor plane) rather than the
+  // handful of fields selected above. `planCompartmentColors` returns null the
+  // moment no compartment is coloured, which is the common case.
+  const params = useDesignerStore((s) => s.params);
+  const compartmentPlan = useMemo(() => planCompartmentColors(params), [params]);
+  // A colored cutout or compartment makes the design multi-color even if the
+  // user never opened the Multi-Color panel (the setters auto-enable, but stay
+  // robust).
+  const multiColorActive = multiColorEnabled || anyCutoutColored(cutouts) || !!compartmentPlan;
 
   const activeZones = useMemo(
     () =>
@@ -139,9 +147,19 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
       indices,
       featureColors,
       activeZones,
-      cutoutUnits
+      cutoutUnits,
+      compartmentPlan
     );
-  }, [multiColorActive, faceGroups, featureColors, vertices, indices, activeZones, cutoutUnits]);
+  }, [
+    multiColorActive,
+    faceGroups,
+    featureColors,
+    vertices,
+    indices,
+    activeZones,
+    cutoutUnits,
+    compartmentPlan,
+  ]);
 
   // A split lip grid re-tessellates the lip into a flat (non-indexed) buffer;
   // render that instead of the worker's indexed mesh so the seam-aligned color

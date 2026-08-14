@@ -28,6 +28,8 @@ import {
   getCompartmentBounds,
   getCompartmentReadingOrder,
   normalizeIdsWithRemap,
+  remapCompartmentColors,
+  remapCompartmentColorScopes,
   remapCompartmentTexts,
   remapDividerOverrides,
   remapDrawnUnitCells,
@@ -155,6 +157,12 @@ function rebuild(
     }),
     ...(config.labelIcons && {
       labelIcons: remapLabelIcons(config.labelIcons, remap),
+    }),
+    ...(config.compartmentColors && {
+      compartmentColors: remapCompartmentColors(config.compartmentColors, remap),
+    }),
+    ...(config.compartmentColorScopes && {
+      compartmentColorScopes: remapCompartmentColorScopes(config.compartmentColorScopes, remap),
     }),
     ...(config.dividerOverrides && {
       dividerOverrides: remapDividerOverrides(config.dividerOverrides, remap),

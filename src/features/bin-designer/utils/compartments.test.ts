@@ -26,6 +26,8 @@ import {
   remapCompartmentTexts,
   remapLabelPlateWidths,
   remapLabelIcons,
+  remapCompartmentColors,
+  remapCompartmentColorScopes,
   remapDividerOverrides,
   rectStraddlesTiltedDivider,
   validateDividerOverride,
@@ -860,6 +862,61 @@ describe('compartments', () => {
       // new compartment 1 gets ''.
       expect(split.cells).toEqual([0, 1, 2, 3]);
       expect(split.compartmentTexts).toEqual(['MERGED', '', 'SOLO', 'OTHER']);
+    });
+  });
+
+  describe('remapCompartmentColors (lockstep with normalizeIdsWithRemap)', () => {
+    it('returns undefined for undefined or empty input', () => {
+      expect(remapCompartmentColors(undefined, new Map())).toBeUndefined();
+      expect(remapCompartmentColors([], new Map([[0, 0]]))).toBeUndefined();
+    });
+
+    it('migrates colours into the new ID slots, leaving split IDs uncoloured', () => {
+      const remap = new Map([
+        [0, 0],
+        [1, 1],
+        [4, 2],
+        [2, 3],
+      ]);
+      expect(remapCompartmentColors(['#f00', null, '#0f0', '#00f'], remap)).toEqual([
+        '#f00',
+        null,
+        null,
+        '#0f0',
+      ]);
+    });
+
+    it('drops colours for compartments that vanished from the remap', () => {
+      const remap = new Map([
+        [0, 0],
+        [3, 1],
+      ]);
+      expect(remapCompartmentColors(['#f00', '#0f0', '#00f', '#ff0'], remap)).toEqual([
+        '#f00',
+        '#ff0',
+      ]);
+    });
+
+    it('collapses to undefined when no colour survives, and ignores empty strings', () => {
+      const remap = new Map([[0, 0]]);
+      expect(remapCompartmentColors([null, '#f00'], remap)).toBeUndefined();
+      expect(remapCompartmentColors([''], remap)).toBeUndefined();
+    });
+  });
+
+  describe('remapCompartmentColorScopes', () => {
+    it('migrates scopes and drops anything that is not a known literal', () => {
+      const remap = new Map([
+        [0, 0],
+        [2, 1],
+      ]);
+      expect(remapCompartmentColorScopes(['floorAndWalls', 'floor', 'floor'], remap)).toEqual([
+        'floorAndWalls',
+        'floor',
+      ]);
+      expect(
+        remapCompartmentColorScopes(['nonsense' as 'floor'], new Map([[0, 0]]))
+      ).toBeUndefined();
     });
   });
 
