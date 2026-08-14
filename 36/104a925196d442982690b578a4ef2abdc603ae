@@ -1,0 +1,19 @@
+src/shared/utils/lidInteriorRelief.ts
+  s_fef67e5e56db54::t_17093b51b91d2f 11-12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "36104a925196d442982690b578a4ef2abdc603ae",
+  "prompts": {},
+  "sessions": {
+    "s_fef67e5e56db54": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b9e290eb-d66d-4dd0-ab46-d597abf13b19",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
