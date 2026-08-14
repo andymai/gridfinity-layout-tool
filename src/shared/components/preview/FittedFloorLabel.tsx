@@ -51,7 +51,6 @@ export interface FloorLabelUnderline {
   /** Distance below the last line, in scene units. */
   gap: number;
   opacity: number;
-  lineWidth?: number;
 }
 
 export interface FittedFloorLabelProps {
@@ -153,7 +152,7 @@ export function FittedFloorLabel({
             [ink.maxX, topY + ink.bottom - underline.gap, 0],
           ]}
           color={color}
-          lineWidth={underline.lineWidth ?? 1}
+          lineWidth={1}
           transparent
           opacity={underline.opacity}
         />
