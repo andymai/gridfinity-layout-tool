@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.408.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.408.1...gridfinity-layout-tool-v4.408.2) (2026-08-14)
+
+
+### Bug Fixes
+
+* **lid:** segment click rails around cutouts and handles ([#3495](https://github.com/andymai/gridfinity-layout-tool/issues/3495)) ([17da70b](https://github.com/andymai/gridfinity-layout-tool/commit/17da70b47e981806f6a8293aa813f8cb5741e14f))
+
 ## [4.408.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.408.0...gridfinity-layout-tool-v4.408.1) (2026-08-14)
 
 
