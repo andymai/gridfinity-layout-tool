@@ -125,9 +125,12 @@ export function lidKeepoutRing(
   const lipInset = wallThickness - GRIDFINITY_SPEC.LIP_BIG_TAPER;
   const outerHalfX = innerW / 2 + lipInset;
   const outerHalfY = innerD / 2 + lipInset;
-  // Inward to the rail's deepest reach, plus clearance. Measured from the
-  // inner wall face, so the lip's jut is added back on.
-  const width = railInboardReachMm(wallThickness) + LID_KEEPOUT_CLEARANCE - lipInset;
+  // Inward to the rail's deepest reach, plus clearance. Both are measured from
+  // the INNER WALL FACE while the ring starts at the lip line, so the jut is
+  // already spent: `lipInset` is negative and adding it shortens the width by
+  // the head start. Subtracting it instead makes the ring 2x0.7mm too wide,
+  // which cuts more divider than the lid needs and passes every geometry check.
+  const width = railInboardReachMm(wallThickness) + LID_KEEPOUT_CLEARANCE + lipInset;
   return {
     outerHalfX,
     outerHalfY,
