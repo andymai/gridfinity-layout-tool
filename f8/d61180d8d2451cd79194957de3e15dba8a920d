@@ -1,0 +1,47 @@
+src/features/generation/worker/generators/lidPolygonRelief.scenario.test.ts
+  s_fef67e5e56db54::t_36a8ad1509e0b3 172-180
+  s_fef67e5e56db54::t_8b04fa10ebe517 151,153-160,164-171,181-184
+  s_fef67e5e56db54::t_44f42d89b0bade 1-9,11,19,35-39,41-43,45,47,49-53,61-62,65,67-86,108-113,122,133,144,147-150,185-186
+  s_fef67e5e56db54::t_9099d993764249 10,12-18,20-34,40,44,46,48,54-60,63-64,66,87-107,114-121,123-132,134-143,145-146,152,161-163
+src/shared/constants/lidKeepoutSlabs.test.ts
+  s_fef67e5e56db54::t_587d899b987bb2 149-162
+  s_fef67e5e56db54::t_c5554d435ccc4b 1-148,163-188
+src/shared/constants/lidKeepout.ts
+  s_fef67e5e56db54::t_78a66af333f423 209-219
+  s_fef67e5e56db54::t_a87489aae7c431 101,269-278,282-314
+  s_fef67e5e56db54::t_3d0fbcf782a87f 160-163
+  s_fef67e5e56db54::t_b350bfd70652d3 102-130
+  s_fef67e5e56db54::t_6359252e64073c 19-20,172-208,220-268,279-281
+src/features/generation/worker/generators/pipeline/stages/lidInteriorReliefStage.ts
+  s_fef67e5e56db54::t_090e419c3154a0 176-192
+  s_fef67e5e56db54::t_0c67a45884fe23 35
+  s_fef67e5e56db54::t_d478be61a92205 30,34
+  s_fef67e5e56db54::t_b17933da2e35c1 207
+  s_fef67e5e56db54::t_1fcef8f12691c9 64-127
+  s_fef67e5e56db54::t_03a35718dd2e19 151-153
+src/shared/utils/maskEdgeGeometry.ts
+  s_fef67e5e56db54::t_f467b6cd8529c1 118,120-125,129
+  s_fef67e5e56db54::t_6c1bf7b97a9c60 1-117,119,126-128,130-132
+src/shared/utils/lidInteriorRelief.ts
+  s_fef67e5e56db54::t_fe7cc9f4ed4df1 12
+  s_fef67e5e56db54::t_2d1ef01bc587d3 24-26
+src/shared/utils/maskEdgeGeometry.test.ts
+  s_fef67e5e56db54::t_a4312066bdd4ed 86-89,91-95
+  s_fef67e5e56db54::t_32465d2e54ed6c 1-85,90,96-97
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "f8d61180d8d2451cd79194957de3e15dba8a920d",
+  "prompts": {},
+  "sessions": {
+    "s_fef67e5e56db54": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b9e290eb-d66d-4dd0-ab46-d597abf13b19",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
