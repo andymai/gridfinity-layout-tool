@@ -1,80 +1,106 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render } from '@testing-library/react';
-import { resetAllStores } from '@/test/testUtils';
 import type { ReactNode } from 'react';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { render, act } from '@testing-library/react';
+import { resetAllStores } from '@/test/testUtils';
 import { FrontLabel } from './FrontLabel';
 
-// Mock React Three Fiber
-vi.mock('@react-three/fiber', () => ({
-  Canvas: ({ children }: { children: ReactNode }) => <div data-testid="r3f-canvas">{children}</div>,
-  useThree: () => ({
-    camera: {
-      position: { set: vi.fn(), x: 0, y: 5, z: 5 },
-      lookAt: vi.fn(),
-      updateProjectionMatrix: vi.fn(),
-    },
-    invalidate: vi.fn(),
-    gl: { domElement: document.createElement('canvas') },
-    size: { width: 800, height: 600 },
-    scene: {},
-  }),
-  useFrame: vi.fn(),
-  extend: vi.fn(),
+type Props = Record<string, unknown>;
+
+const mocks = vi.hoisted(() => ({ text: null as Props | null, line: null as Props | null }));
+
+vi.mock('@react-three/drei', () => ({
+  Text: (props: Props) => {
+    mocks.text = props;
+    return <div data-testid="r3f-text">{props.children as ReactNode}</div>;
+  },
+  Line: (props: Props) => {
+    mocks.line = props;
+    return <div data-testid="line" />;
+  },
 }));
 
-// Mock Drei
-vi.mock('@react-three/drei', () => ({
-  Line: ({ points }: { points: unknown[] }) => (
-    <div data-testid="line" data-points={points?.length} />
-  ),
-  Text: ({ children }: { children: ReactNode }) => <div data-testid="r3f-text">{children}</div>,
-}));
+function mesh(naturalWidth: number, blockHeight = 0.6) {
+  const half = naturalWidth / 2;
+  return {
+    textRenderInfo: {
+      blockBounds: [-half, -blockHeight, half, 0],
+      visibleBounds: [-half + 0.02, -blockHeight + 0.1, half - 0.02, -0.05],
+    },
+  };
+}
+
+function sync(payload: unknown): void {
+  const onSync = mocks.text?.onSync as ((m: unknown) => void) | undefined;
+  if (!onSync) throw new Error('Text was rendered without an onSync handler');
+  act(() => onSync(payload));
+}
 
 describe('FrontLabel', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    mocks.text = null;
+    mocks.line = null;
     resetAllStores();
   });
 
-  it('renders without crashing', () => {
+  it('renders the layout name in uppercase', () => {
+    render(<FrontLabel drawerWidth={10} label="My Layout" />);
+    expect(mocks.text?.children).toBe('MY LAYOUT');
+  });
+
+  it('centres along the front edge below the dimension line', () => {
     const { container } = render(<FrontLabel drawerWidth={10} label="My Layout" />);
-    expect(container).toBeTruthy();
+    expect(container.querySelector('group')?.getAttribute('position')).toBe('5,-2.2,0.01');
   });
 
-  it('renders text label in uppercase', () => {
-    const { getByTestId } = render(<FrontLabel drawerWidth={10} label="My Layout" />);
-    const textElement = getByTestId('r3f-text');
-    expect(textElement.textContent).toBe('MY LAYOUT');
+  it('centres wrapped lines instead of ragging them left', () => {
+    render(<FrontLabel drawerWidth={10} label="My Layout" />);
+    expect(mocks.text?.textAlign).toBe('center');
   });
 
-  it('renders underline', () => {
-    const { getByTestId } = render(<FrontLabel drawerWidth={10} label="My Layout" />);
-    const line = getByTestId('line');
-    expect(line).toBeTruthy();
+  it('scales the band with the drawer', () => {
+    render(<FrontLabel drawerWidth={10} label="A very long drawer layout name indeed" />);
+    sync(mesh(40));
+    expect(mocks.text?.maxWidth).toBe(15);
   });
 
-  it('renders with short label', () => {
-    const { getByTestId } = render(<FrontLabel drawerWidth={10} label="A" />);
-    const textElement = getByTestId('r3f-text');
-    expect(textElement.textContent).toBe('A');
+  it('holds a minimum band on a narrow drawer', () => {
+    // Proportionally a 2u drawer would get 3 units; the floor raises it to 8.5.
+    render(<FrontLabel drawerWidth={2} label="A very long drawer layout name indeed" />);
+    sync(mesh(30));
+    expect(mocks.text?.maxWidth).toBe(8.5);
   });
 
-  it('renders with long label', () => {
-    const { getByTestId } = render(
-      <FrontLabel drawerWidth={10} label="This is a very long layout name" />
-    );
-    const textElement = getByTestId('r3f-text');
-    expect(textElement.textContent).toBe('THIS IS A VERY LONG LAYOUT NAME');
+  it('shrinks a long name before wrapping it', () => {
+    render(<FrontLabel drawerWidth={10} label="Workshop drawer three" />);
+    sync(mesh(18));
+    const fontSize = mocks.text?.fontSize as number;
+    expect(fontSize).toBeGreaterThanOrEqual(0.36);
+    expect(fontSize).toBeLessThan(0.5);
+    expect(mocks.text?.maxWidth).toBeUndefined();
   });
 
-  it('renders with different drawer widths', () => {
-    const { container } = render(<FrontLabel drawerWidth={5} label="Small" />);
-    expect(container).toBeTruthy();
+  it('draws the underline across the ink, not across the band', () => {
+    render(<FrontLabel drawerWidth={10} label="My Layout" />);
+    sync(mesh(6));
+
+    const points = mocks.line?.points as [number, number, number][];
+    expect(points[0][0]).toBeCloseTo(-2.98, 6);
+    expect(points[1][0]).toBeCloseTo(2.98, 6);
   });
 
-  it('renders with empty label', () => {
-    const { getByTestId } = render(<FrontLabel drawerWidth={10} label="" />);
-    const textElement = getByTestId('r3f-text');
-    expect(textElement.textContent).toBe('');
+  it('drops the underline below the last line of a wrapped label', () => {
+    render(<FrontLabel drawerWidth={10} label="A very long drawer layout name indeed" />);
+    sync(mesh(40)); // wraps → props change → troika re-lays-out
+    sync(mesh(15, 1.2)); // two lines tall
+
+    const points = mocks.line?.points as [number, number, number][];
+    // Text top sits at 0.5 * 1.2 / 2 = 0.3; the block runs 1.2 below that.
+    expect(points[0][1]).toBeCloseTo(0.3 - 1.2 - 0.45, 6);
+  });
+
+  it('renders an empty label without a rule under it', () => {
+    const { queryByTestId } = render(<FrontLabel drawerWidth={10} label="" />);
+    expect(mocks.text?.children).toBe('');
+    expect(queryByTestId('line')).toBeNull();
   });
 });

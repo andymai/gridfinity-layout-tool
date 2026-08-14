@@ -5,9 +5,9 @@
  * Positioned below the width dimension line for a technical drawing aesthetic.
  */
 
-import { Text } from '@react-three/drei';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
+import { FittedFloorLabel } from './FittedFloorLabel';
 
 interface BinNameLabelProps {
   /** Bin width in grid units (for centering) */
@@ -24,9 +24,16 @@ interface BinNameLabelProps {
 
 const TEXT_OPACITY = 0.6;
 const FONT_SIZE = 7; // mm (planner: 0.5 units)
+const MIN_FONT_SIZE = 5; // mm — below this, wrap rather than shrink further
 const LETTER_SPACING = 0.08;
-/** Distance from bin front edge to label center (mm) */
+/** Distance from bin front edge to the first line's centre (mm) */
 const FRONT_OFFSET = 32;
+/**
+ * A 1x1 bin's proportional band is only 63mm, far narrower than the floor
+ * plane and camera framing allow. Small bins overhang their own footprint
+ * rather than shrinking a short name to nothing.
+ */
+const MIN_BAND_MM = 120;
 
 /**
  * Bin name label displayed on the floor in front of the bin.
@@ -41,20 +48,16 @@ export function BinNameLabel({ width, depth, gridUnitMm, gridUnitMmY, name }: Bi
   const outerW = width * GS;
   const halfD = (depth * GSY) / 2;
 
-  const textY = -halfD - FRONT_OFFSET;
-
   return (
-    <Text
-      position={[0, textY, 0.01]}
-      fontSize={FONT_SIZE}
+    <FittedFloorLabel
+      text={name.toUpperCase()}
+      band={Math.max(outerW * 1.5, MIN_BAND_MM)}
+      baseFontSize={FONT_SIZE}
+      minFontSize={MIN_FONT_SIZE}
+      position={[0, -halfD - FRONT_OFFSET, 0.01]}
       color={colors.labelColor}
       fillOpacity={TEXT_OPACITY}
-      anchorX="center"
-      anchorY="middle"
       letterSpacing={LETTER_SPACING}
-      maxWidth={outerW * 1.5}
-    >
-      {name.toUpperCase()}
-    </Text>
+    />
   );
 }
