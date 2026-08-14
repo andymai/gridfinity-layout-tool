@@ -1,0 +1,91 @@
+src/shell/layoutExport/planLayoutBinExport.test.ts
+  s_5fe106618a1c67::t_706977b3767dde 611,623-624
+src/features/bin-designer/hooks/useExport.ts
+  s_5fe106618a1c67::t_1dccd4c0f29ec6 518-520,526,528
+  s_5fe106618a1c67::t_daaa5445594a90 454-455
+  s_5fe106618a1c67::t_6231211d2fa313 527
+  s_5fe106618a1c67::t_f8fc1e2a77d03f 561-565
+src/features/generation/worker/generators/binGenerator.scenario.split-step.test.ts
+  s_5fe106618a1c67::t_c20ed12d170a66 1-17,20-34,65-228,235-241
+  s_5fe106618a1c67::t_fd6e571b4f9d43 229-234
+  s_5fe106618a1c67::t_f3b4f8e520a05a 35-64
+  s_5fe106618a1c67::t_0e34bdc8283ca4 18-19
+src/shell/layoutExport/useLayoutExport.ts
+  s_5fe106618a1c67::t_86b7953103f2c1 143
+  s_5fe106618a1c67::t_f768e4d91ff49c 155-158
+src/features/generation/README.md
+  s_5fe106618a1c67::t_b3d2d61bc1bb91 122
+  s_5fe106618a1c67::t_684661d7010a56 119-121
+  s_5fe106618a1c67::t_f00c41583fdb46 123
+  s_5fe106618a1c67::t_5d51d850ee96e9 116-118
+src/features/generation/bridge/WorkerPool.ts
+  s_5fe106618a1c67::t_c149db6f80da69 175
+  s_5fe106618a1c67::t_97832dba4d8951 201
+src/features/generation/bridge/bridgeExports.ts
+  s_5fe106618a1c67::t_cc41467f1646d5 124,140
+  s_5fe106618a1c67::t_03dda5dbca42ff 243,261
+  s_5fe106618a1c67::t_fc901641406935 156,173
+src/features/bin-designer/utils/binDownloadHelpers.ts
+  s_5fe106618a1c67::t_97750157146998 604-607,613-619,628,640
+  s_5fe106618a1c67::t_aa8d4db3048822 49
+src/features/bin-designer/components/ExportDialog/ExportDialog.tsx
+  s_5fe106618a1c67::t_c2f893341d90e3 98,288
+src/shell/layoutExport/planLayoutBinExport.ts
+  s_5fe106618a1c67::t_da1f940e571f35 335
+  s_5fe106618a1c67::t_e1da494ec0f8be 107
+src/features/generation/worker/handlers/splitHandler.ts
+  s_5fe106618a1c67::t_3b14cf64b28c1b 121
+  s_5fe106618a1c67::t_abac2bf731064b 136-137
+  s_5fe106618a1c67::t_11a788aa8b58a1 99-100
+CLAUDE.md
+  s_5fe106618a1c67::t_30b1c0059a398c 53-54
+src/features/generation/bridge/GenerationBridge.ts
+  s_5fe106618a1c67::t_efe8758a75cb29 430,445
+  s_5fe106618a1c67::t_ca3f58019770e5 486
+src/features/generation/worker/generators/__kernel-tests__/wasmInit.ts
+  s_5fe106618a1c67::t_cd3bf99893e090 111-112
+src/features/generation/bridge/messages.ts
+  s_5fe106618a1c67::t_eca8df3b9d788f 413-414
+  s_5fe106618a1c67::t_0f4085f6cc0eda 335-342
+  s_5fe106618a1c67::t_72f3a272bfb179 379-380
+src/features/generation/worker/generators/splitBinBuilder.ts
+  s_5fe106618a1c67::t_8cadd1d68565e4 608
+  s_5fe106618a1c67::t_54a990783ea5a6 722-724,732-733,735,746,752-753,758-760
+  s_5fe106618a1c67::t_b5dc4abe1f7c14 840-841,843
+  s_5fe106618a1c67::t_795d55a1f669e4 42-43
+  s_5fe106618a1c67::t_78e5734e316993 574-607,609-627
+  s_5fe106618a1c67::t_ed0891f48f1166 861,867-868,873-874
+  s_5fe106618a1c67::t_4d88d2f8aac32e 18,23
+src/features/bin-designer/hooks/useExport.test.ts
+  s_5fe106618a1c67::t_f8efa04a0f8abd 496-625
+src/features/bin-designer/components/ExportDialog/ExportDialog.test.tsx
+  s_5fe106618a1c67::t_de78a12d2c711b 18,23-24
+  s_5fe106618a1c67::t_2fb7723e2bb54b 74,76-77
+  s_5fe106618a1c67::t_af2e986e3d1891 116
+  s_5fe106618a1c67::t_91cb33eb3def06 533-566
+src/shell/layoutExport/useLayoutExport.test.ts
+  s_5fe106618a1c67::t_c786adf4bc4881 207-210,214-237
+  s_5fe106618a1c67::t_971a7671a05882 11
+  s_5fe106618a1c67::t_10c41e3eb42739 79-84
+  s_5fe106618a1c67::t_f8fc1e2a77d03f 211-213
+src/features/generation/worker/handlers/exportHandler.ts
+  s_5fe106618a1c67::t_813285cf85312a 223-224,228-229
+  s_5fe106618a1c67::t_38bb49e7d00f9c 259
+  s_5fe106618a1c67::t_33d0a84bcdfd9a 326-328
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "208b03871a7aeb389abb972150b6d411466cb408",
+  "prompts": {},
+  "sessions": {
+    "s_5fe106618a1c67": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e661c31b-9231-4d88-a107-2d4ce5c9d648",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
