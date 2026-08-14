@@ -83,9 +83,10 @@ export function FittedFloorLabel({
 }: FittedFloorLabelProps) {
   const [measurement, setMeasurement] = useState<Measurement | null>(null);
 
-  const key = [text, band, baseFontSize, minFontSize, maxLines].join('\u0000');
+  // letterSpacing belongs in the key too: it changes glyph layout, so a
+  // measurement taken at one value does not describe the text at another.
+  const key = [text, band, baseFontSize, minFontSize, maxLines, letterSpacing].join('\u0000');
   const current = measurement?.key === key ? measurement : null;
-  const wantsInk = underline !== undefined;
 
   const handleSync = useCallback(
     (mesh: TroikaTextMesh) => {
@@ -94,7 +95,7 @@ export function FittedFloorLabel({
 
       setMeasurement((prev) => {
         if (prev?.key === key) {
-          if (prev.ink || !wantsInk) return prev;
+          if (prev.ink) return prev;
           const ink = readInk(info);
           return ink ? { ...prev, ink } : prev;
         }
@@ -117,10 +118,10 @@ export function FittedFloorLabel({
         const settled =
           fit.fontSize === baseFontSize && fit.maxWidth === undefined && fit.text === text;
 
-        return { key, fit, ink: settled && wantsInk ? readInk(info) : null };
+        return { key, fit, ink: settled ? readInk(info) : null };
       });
     },
-    [key, text, band, baseFontSize, minFontSize, maxLines, wantsInk]
+    [key, text, band, baseFontSize, minFontSize, maxLines]
   );
 
   const topY = (baseFontSize * LINE_HEIGHT) / 2;

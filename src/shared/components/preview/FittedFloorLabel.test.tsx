@@ -125,6 +125,18 @@ describe('FittedFloorLabel', () => {
     expect(mocks.text?.fillOpacity).toBe(0);
   });
 
+  it('re-measures when letterSpacing changes', () => {
+    // Letter spacing changes glyph layout, so the old measurement no longer
+    // describes the text and must not be reused.
+    const { rerender } = render(<FittedFloorLabel {...baseProps()} letterSpacing={0.08} />);
+    sync(mesh(145));
+    expect(mocks.text?.fillOpacity).toBe(0.6);
+
+    rerender(<FittedFloorLabel {...baseProps()} letterSpacing={0.4} />);
+    expect(mocks.text?.fillOpacity).toBe(0);
+    expect(mocks.text?.fontSize).toBe(7);
+  });
+
   it('re-measures when the band changes', () => {
     const { rerender } = render(<FittedFloorLabel {...baseProps()} />);
     sync(mesh(145));
@@ -138,6 +150,16 @@ describe('FittedFloorLabel', () => {
     const { queryByTestId } = render(<FittedFloorLabel {...baseProps()} />);
     sync(mesh(90));
     expect(queryByTestId('r3f-line')).toBeNull();
+  });
+
+  it('has ink ready if the underline is switched on after measuring', () => {
+    // troika will not re-sync for a caller-side prop it does not consume, so
+    // ink captured only when an underline was already wanted would stay null.
+    const { rerender, getByTestId } = render(<FittedFloorLabel {...baseProps()} />);
+    sync(mesh(90));
+
+    rerender(<FittedFloorLabel {...baseProps()} underline={{ gap: 0.45, opacity: 0.25 }} />);
+    expect(getByTestId('r3f-line')).toBeTruthy();
   });
 
   it('spans the underline across the ink and drops it below the last line', () => {

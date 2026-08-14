@@ -68,16 +68,29 @@ export function fitFloorLabel({
   return { fontSize: minFontSize, maxWidth: band, text: truncate(text, keepRatio) };
 }
 
-let graphemes: Intl.Segmenter | undefined;
+type ClusterSplitter = (text: string) => string[];
+
+let splitter: ClusterSplitter | undefined;
 
 /**
- * Cutting on grapheme clusters, not UTF-16 units or code points, so a name
- * ending in an emoji loses the whole emoji rather than half a surrogate pair
- * or the tail of a joined sequence.
+ * Cutting on grapheme clusters, not UTF-16 units, so a name ending in an emoji
+ * loses the whole emoji rather than half a surrogate pair or the tail of a
+ * joined sequence.
  */
 function truncate(text: string, keepRatio: number): string {
-  graphemes ??= new Intl.Segmenter(undefined, { granularity: 'grapheme' });
-  const clusters = Array.from(graphemes.segment(text), (segment) => segment.segment);
+  splitter ??= makeSplitter();
+  const clusters = splitter(text);
   const keep = Math.max(1, Math.floor(clusters.length * keepRatio) - ELLIPSIS.length);
   return `${clusters.slice(0, keep).join('').trimEnd()}${ELLIPSIS}`;
+}
+
+/**
+ * Falls back to code points where `Intl.Segmenter` is missing (Firefox below
+ * 125, Node without full ICU) — still surrogate-pair safe, only blind to
+ * joined sequences. Truncating a name must never throw.
+ */
+function makeSplitter(): ClusterSplitter {
+  if (typeof Intl.Segmenter !== 'function') return (text) => Array.from(text);
+  const segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
+  return (text) => Array.from(segmenter.segment(text), (segment) => segment.segment);
 }
