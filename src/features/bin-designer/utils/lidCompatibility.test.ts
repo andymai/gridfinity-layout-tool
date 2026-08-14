@@ -127,7 +127,12 @@ describe('checkLidCompatibility', () => {
       expect(checkLidCompatibility(params).find((i) => i.id === 'wallCutouts')).toBeUndefined();
     });
 
-    it('skips on polygon (cellMask) bins — wall cutouts are gated off by FeatureGate even when the flag is true', () => {
+    it('warns on a polygon bin too, whose cutouts really are cut (#3482)', () => {
+      // This used to assert the opposite, on the premise that `FeatureGate`
+      // disables wall cutouts for a custom shape. It does not: the gate only
+      // makes the CONTROLS inert, `wallCutoutsFeature` declares
+      // `supportsCellMask`, and `setCellMask` does not clear `walls.enabled` —
+      // so the cut is made and the rail over it gripped nothing.
       const cells = Array<0 | 1>(64).fill(1);
       cells[0] = 0; // any partial mask qualifies
       const params = withOverrides({
@@ -138,9 +143,28 @@ describe('checkLidCompatibility', () => {
           ...DEFAULT_BIN_PARAMS.walls,
           enabled: true,
           left: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: true },
+          // Off explicitly — the default has it on, and the point here is which
+          // walls the polygon plan reports, not how many the defaults enable.
+          right: { ...DEFAULT_BIN_PARAMS.walls.right, enabled: false },
         },
       });
-      expect(checkLidCompatibility(params).find((i) => i.id === 'wallCutouts')).toBeUndefined();
+      const issue = checkLidCompatibility(params).find((i) => i.id === 'wallCutouts');
+      expect(issue?.severity).toBe('warning');
+      expect(issue?.sides).toEqual(['left']);
+    });
+
+    it('never blocks a polygon bin, whose walls are not four sides', () => {
+      // "All four sides" does not describe a shape with six walls, and a custom
+      // shape's rails are clipped per edge, so it warns and keeps what is left.
+      const cells = Array<0 | 1>(64).fill(1);
+      cells[0] = 0;
+      const params = withOverrides({
+        width: 4,
+        depth: 4,
+        cellMask: { cols: 8, rows: 8, cells },
+        walls: allFourCutouts(100),
+      });
+      expect(hasLidBlocker(checkLidCompatibility(params))).toBe(false);
     });
   });
 

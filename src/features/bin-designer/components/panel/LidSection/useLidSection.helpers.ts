@@ -12,6 +12,8 @@ import {
   railSegmentsClearOfLabelTabs,
 } from '@/shared/utils/labelTabPlan';
 import type { LabelTabFootprint, WallSpanBlock } from '@/shared/utils/labelTabPlan';
+import { railSegmentsClearOfPolygonGaps } from '@/shared/utils/lipGapPlan';
+import type { PolygonLipGap } from '@/shared/utils/lipGapPlan';
 import {
   isPartialMask,
   maskToPolygon,
@@ -123,7 +125,12 @@ export function computeRailSummary(
    * with none of the three. Without them the readout counts rails the worker
    * will not build.
    */
-  wallBlocks: readonly WallSpanBlock[] = []
+  wallBlocks: readonly WallSpanBlock[] = [],
+  /**
+   * Lip gaps on a custom-shape footprint (#3482), matched per EDGE rather than
+   * per side. Empty for a rectangle, which uses `wallBlocks` instead.
+   */
+  polygonGaps: readonly PolygonLipGap[] = []
 ): RailSummary {
   const fitClearance = LID_FIT_CLEARANCE;
   const lidCornerR = LID_CORNER_RADIUS - fitClearance;
@@ -158,8 +165,21 @@ export function computeRailSummary(
       else continue;
       if (!clickRails[side]) continue;
       if (disabledRails.has(side)) continue;
-      const railLen = (Math.abs(dx) + Math.abs(dy) - 2 * lidCornerR) * coverage;
-      if (railLen >= LID_MIN_RAIL_LENGTH) lengths.push(railLen);
+      // Segmented around this edge's lip gaps, exactly as the worker does — a
+      // polygon wall with a cutout yields two short rails, not one long one.
+      const alongX = dy === 0;
+      const alongLo = Math.min(alongX ? ax : ay, alongX ? bx : by) + lidCornerR;
+      const alongHi = Math.max(alongX ? ax : ay, alongX ? bx : by) - lidCornerR;
+      if (alongHi <= alongLo) continue;
+      for (const seg of railSegmentsClearOfPolygonGaps(
+        [{ lo: alongLo, hi: alongHi }],
+        side,
+        alongX ? ay : ax,
+        polygonGaps
+      )) {
+        const railLen = (seg.hi - seg.lo) * coverage;
+        if (railLen >= LID_MIN_RAIL_LENGTH) lengths.push(railLen);
+      }
     }
     if (lengths.length === 0) return { count: 0, lengths: [] };
     const sorted = [...lengths].sort((a, b) => b - a);

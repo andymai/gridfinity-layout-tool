@@ -38,6 +38,7 @@ import {
   subtractSpan,
   type RailSegment,
 } from '@/shared/utils/labelTabPlan';
+import { railSegmentsClearOfPolygonGaps } from '@/shared/utils/lipGapPlan';
 import type { LidCompatibilitySide } from '@/shared/types/bin';
 
 /** True when at least one side carries a rail, i.e. the lid is not friction-fit. */
@@ -139,9 +140,15 @@ export interface RailPlacement {
  *  - Outward = -inward
  *  - Insets the edge by `lidCornerR` from each end so the rail stays clear
  *    of corners (which are filled mating-shell pillars)
- *  - Skips edges shorter than MIN_RAIL_LENGTH after inset
- *  - Honors `disabledRails` (per-side conflict overrides driven by
- *    labels, wall cutouts, and intruding handles)
+ *  - Segments the surviving run around this EDGE's lip gaps (#3482), then
+ *    drops any stretch under MIN_RAIL_LENGTH
+ *  - Honors `disabledRails`, which on this path means only a finger scoop
+ *
+ * The gaps are matched per EDGE rather than per side, and that is the whole
+ * reason `polygonGaps` exists alongside `wallBlocks`: a U faces front with two
+ * walls, a cutout sits on one of them, and blocking by side name would take the
+ * rail off both. A bin with no gaps places exactly what it did before — one
+ * rail per edge, centred, at `(edgeLen - 2 * lidCornerR) * coverage`.
  */
 function railPlacementsForPolygon(inputs: LidInputs): RailPlacement[] {
   const {
@@ -153,6 +160,7 @@ function railPlacementsForPolygon(inputs: LidInputs): RailPlacement[] {
     disabledRails,
     clickRails,
     clickRailCoverage,
+    polygonGaps,
   } = inputs;
   if (!cellMask) return [];
 
@@ -178,11 +186,7 @@ function railPlacementsForPolygon(inputs: LidInputs): RailPlacement[] {
     const dy = b.y - a.y;
     const edgeLen = Math.abs(dx) + Math.abs(dy); // axis-aligned
 
-    // Rail spans the edge minus 2× corner radius (clear of corners), then
-    // shrunk to `clickRailCoverage` (centered on the wall). Skip if the
-    // resulting rail is too short to be useful.
-    const railLen = (edgeLen - 2 * lidCornerR) * clickRailCoverage;
-    if (railLen < MIN_RAIL_LENGTH) continue;
+    if (edgeLen - 2 * lidCornerR <= 0) continue;
 
     const edgeDirX = Math.sign(dx);
     const edgeDirY = Math.sign(dy);
@@ -204,15 +208,36 @@ function railPlacementsForPolygon(inputs: LidInputs): RailPlacement[] {
     if (!clickRails[side]) continue;
     if (disabledRails.has(side)) continue;
 
-    const midX = (a.x + b.x) / 2 + inX * railInset;
-    const midY = (a.y + b.y) / 2 + inY * railInset;
+    // The run this edge offers, inset from its corners, in world along-axis
+    // coordinates. Segmented around any lip gap on THIS edge (#3482) — matched
+    // by the edge's own cross coordinate, so a U's two front walls are told
+    // apart rather than both losing their rail to one cutout.
+    const alongX = dy === 0;
+    const alongLo = Math.min(alongX ? a.x : a.y, alongX ? b.x : b.y) + lidCornerR;
+    const alongHi = Math.max(alongX ? a.x : a.y, alongX ? b.x : b.y) - lidCornerR;
+    const edgeCross = alongX ? a.y : a.x;
+    const crossPos =
+      (alongX ? (a.y + b.y) / 2 : (a.x + b.x) / 2) + (alongX ? inY : inX) * railInset;
 
-    placements.push({
-      centerX: midX,
-      centerY: midY,
-      length: railLen,
-      rotationDeg,
-    });
+    for (const seg of railSegmentsClearOfPolygonGaps(
+      [{ lo: alongLo, hi: alongHi }],
+      side,
+      edgeCross,
+      polygonGaps
+    )) {
+      // Coverage applies per surviving stretch, as on the rectangle path, so a
+      // wall with a window yields two short rails rather than one sized for a
+      // run it cannot use.
+      const railLen = (seg.hi - seg.lo) * clickRailCoverage;
+      if (railLen < MIN_RAIL_LENGTH) continue;
+      const centre = (seg.lo + seg.hi) / 2;
+      placements.push({
+        centerX: alongX ? centre : crossPos,
+        centerY: alongX ? crossPos : centre,
+        length: railLen,
+        rotationDeg,
+      });
+    }
   }
 
   return placements;
