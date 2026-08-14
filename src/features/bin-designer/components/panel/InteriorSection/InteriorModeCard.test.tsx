@@ -157,7 +157,8 @@ describe('InteriorModeCard', () => {
       const { rerender } = render(
         <InteriorModeCard card="bento" isExpanded={false} onSelect={vi.fn()} />
       );
-      expect(screen.getByText('common.experimental')).toBeInTheDocument();
+      // `info` tone, matching the app's other Experimental badges.
+      expect(screen.getByText('common.experimental')).toHaveClass('bg-info-muted');
       expect(screen.getByText('binDesigner.interior.bento.title')).toBeInTheDocument();
 
       rerender(<InteriorModeCard card="standard" isExpanded={false} onSelect={vi.fn()} />);

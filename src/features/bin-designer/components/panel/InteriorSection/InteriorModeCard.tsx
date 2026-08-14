@@ -188,7 +188,7 @@ export function InteriorModeCard({ card, isExpanded, onSelect }: InteriorModeCar
           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
             <h4 className="text-sm font-medium text-content-primary">{t(config.titleKey)}</h4>
             {card === 'bento' && (
-              <Badge tone="warning" title={t('binDesigner.bento.experimentalHint')}>
+              <Badge tone="info" title={t('binDesigner.bento.experimentalHint')}>
                 {t('common.experimental')}
               </Badge>
             )}

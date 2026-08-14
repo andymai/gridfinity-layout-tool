@@ -71,7 +71,7 @@ export function BentoWorkspaceHeader({
         <h2 className="text-sm font-semibold text-content-primary">
           {t('binDesigner.interior.bento.title')}
         </h2>
-        <Badge tone="warning" title={t('binDesigner.bento.experimentalHint')}>
+        <Badge tone="info" title={t('binDesigner.bento.experimentalHint')}>
           {t('common.experimental')}
         </Badge>
       </div>

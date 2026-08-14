@@ -101,7 +101,10 @@ describe('BentoWorkspaceHeader', () => {
   it('marks the workspace experimental without displacing the controls', () => {
     render(<BentoWorkspaceHeader {...makeProps({ canUndo: true })} />);
 
-    expect(screen.getByText('common.experimental')).toBeInTheDocument();
+    // `info`, matching every other Experimental badge in the app (the publish
+    // button, the community gallery, the publish dialog) — the same word in two
+    // tones reads as two different states.
+    expect(screen.getByText('common.experimental')).toHaveClass('bg-info-muted');
     // The badge sits beside the title; everything else still renders.
     expect(screen.getByText('binDesigner.interior.bento.title')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'common.undo' })).toBeEnabled();
