@@ -9,11 +9,10 @@
  * Lives here rather than beside `shouldGenerateLid` because `lidCompatibility`
  * reaches this predicate through BOTH the divider planner and the label shelf
  * datum; defining it there makes those imports circular. Depending only on
- * params and one mask helper keeps every arrow pointing one way.
+ * params alone keeps every arrow pointing one way.
  */
 
 import type { BinParams } from '@/shared/types/bin';
-import { isPartialMask } from '@/shared/utils/cellMask';
 import { LID_KEEPOUT_BELOW_CEILING_MM } from '@/shared/constants/lidKeepout';
 
 export function interiorReliefActive(params: BinParams): boolean {
@@ -22,9 +21,9 @@ export function interiorReliefActive(params: BinParams): boolean {
   // A lid needs a lip to grip, and a base-only tile has no cavity to relieve.
   if (!params.base.stackingLip) return false;
   if (params.base.tile === true) return false;
-  // Polygon footprints keep the notching path until the outline offset lands
-  // (#3482); nothing reaches the band on one today.
-  if (isPartialMask(params.cellMask)) return false;
+  // Custom shapes are relieved too since #3482. Their ring follows the mask
+  // outline as one band per edge (`lidKeepoutSlabs`) rather than as a rounded
+  // rectangle, but the gate is the same: whether the bin has a lid to clear.
   return true;
 }
 
