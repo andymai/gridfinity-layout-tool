@@ -130,3 +130,80 @@ export function edgeRotationDeg(edge: MaskEdgeMm): number | null {
   if (edge.dirX === 0) return edge.dirY > 0 ? -90 : 90;
   return null;
 }
+
+/** Cardinal wall a polygon edge can stand in for. */
+export type MaskSideKey = 'front' | 'back' | 'left' | 'right';
+
+/**
+ * Edge DIRECTION that faces each side, plus which way "outermost" runs.
+ *
+ * Material is on the left of every edge, so an edge running +X has its
+ * material above it and is therefore the FRONT wall. Mirrors the worker's
+ * `SIDE_CONFIG`, which this replaces as the single copy of the rule.
+ */
+const SIDE_MATCH: Record<
+  MaskSideKey,
+  {
+    readonly dirX: -1 | 0 | 1;
+    readonly dirY: -1 | 0 | 1;
+    readonly perp: 'x' | 'y';
+    readonly sign: -1 | 1;
+  }
+> = {
+  front: { dirX: 1, dirY: 0, perp: 'y', sign: -1 },
+  back: { dirX: -1, dirY: 0, perp: 'y', sign: 1 },
+  left: { dirX: 0, dirY: -1, perp: 'x', sign: -1 },
+  right: { dirX: 0, dirY: 1, perp: 'x', sign: 1 },
+};
+
+/**
+ * The single edge of the OUTER boundary that stands in for `side`.
+ *
+ * A custom shape can face one direction with several edges — a U has two front
+ * walls — so a feature placed "on the front" has to pick one, and every layer
+ * that reasons about that feature has to pick the SAME one. Hence one
+ * implementation, here, rather than one per consumer: the builder that cuts a
+ * wall cutout, the rail pass that must not run over it, and the panel readout
+ * that counts what survives all ask this question.
+ *
+ * Ranked by (1) most extreme perpendicular coordinate, (2) longest, then
+ * (3) lowest midpoint along the edge axis. The third is not arbitrary — it
+ * makes a symmetric shape (a U's two equal arms) resolve the same way every
+ * time instead of by traversal order.
+ *
+ * Ranking in mm is equivalent to ranking in grid units: every candidate for a
+ * given side runs along the same axis, so all three comparisons see one
+ * positive scale factor and a constant offset, neither of which reorders them.
+ */
+export function outermostEdgeForSide(
+  edges: readonly MaskEdgeMm[],
+  side: MaskSideKey
+): MaskEdgeMm | null {
+  const cfg = SIDE_MATCH[side];
+  let best: MaskEdgeMm | null = null;
+  for (const e of edges) {
+    // Outer boundary only. A hole's edge faces a direction too, but it is not a
+    // wall anything places a cutout against.
+    if (e.loop !== 0) continue;
+    if (Math.sign(e.dirX) !== cfg.dirX || Math.sign(e.dirY) !== cfg.dirY) continue;
+    if (!best) {
+      best = e;
+      continue;
+    }
+    const perp = cfg.perp === 'y' ? e.midY : e.midX;
+    const bestPerp = cfg.perp === 'y' ? best.midY : best.midX;
+    const extremeDelta = (perp - bestPerp) * cfg.sign;
+    if (extremeDelta > 1e-9) {
+      best = e;
+    } else if (extremeDelta > -1e-9) {
+      if (e.length > best.length + 1e-9) {
+        best = e;
+      } else if (e.length > best.length - 1e-9) {
+        const axis = cfg.perp === 'y' ? e.midX : e.midY;
+        const bestAxis = cfg.perp === 'y' ? best.midX : best.midY;
+        if (axis < bestAxis) best = e;
+      }
+    }
+  }
+  return best;
+}

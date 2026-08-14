@@ -2,12 +2,15 @@ import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams, HandleConfig, WallCutout } from '@/features/bin-designer/types';
 import type { CellMask } from '@/shared/utils/cellMask';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import {
   LIP_GAP_RAIL_MARGIN,
   unlippedSides,
   lipGapRailBlocks,
   lipGapSides,
   lipGaps,
+  polygonLipGaps,
+  railSegmentsClearOfPolygonGaps,
 } from './lipGapPlan';
 
 /**
@@ -277,5 +280,120 @@ describe('lipGaps: interior height', () => {
     const centreZ = INTERIOR_H * 0.7;
     const expected = 2 * (Math.min(centreZ, INTERIOR_H - centreZ) - INTERIOR_H * 0.1);
     expect(expected).toBeCloseTo(6.12, 2);
+  });
+});
+
+describe('polygonLipGaps', () => {
+  /** An L: bottom half full, top half only the left two columns. */
+  const L_MASK: CellMask = {
+    cols: 4,
+    rows: 4,
+    cells: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0],
+  };
+  const FULL: CellMask = { cols: 4, rows: 4, cells: Array<1>(16).fill(1) };
+
+  const withMask = (mask: CellMask, over: Partial<BinParams> = {}): BinParams =>
+    bin({ width: 2, depth: 2, cellMask: mask, ...over });
+
+  it('reports nothing for a bin with no openings', () => {
+    expect(polygonLipGaps(withMask(L_MASK))).toEqual([]);
+  });
+
+  it('reports nothing for a rectangle, which uses the side-keyed plan', () => {
+    // A fully-filled mask is treated as rectangular, so it must fall to
+    // `lipGaps` rather than being described twice.
+    const params = withMask(FULL, {
+      walls: walls({ front: { ...walls().front, enabled: true, width: 40, depth: 50 } }),
+    });
+    expect(polygonLipGaps(params)).toEqual([]);
+    expect(lipGaps(params).length).toBeGreaterThan(0);
+  });
+
+  it('places a cutout on the edge that faces its side', () => {
+    const gaps = polygonLipGaps(
+      withMask(L_MASK, {
+        walls: walls({ back: { ...walls().back, enabled: true, width: 40, depth: 50 } }),
+      })
+    );
+    expect(gaps).toHaveLength(1);
+    const [g] = gaps;
+    expect(g.side).toBe('back');
+    expect(g.source).toBe('cutout');
+    // The L's back wall is the SHORT top edge over the left columns, not the
+    // bin's full width — so the gap is measured against that edge's own span
+    // and sits over the left half. Reading the bounding box instead would put
+    // it in the middle of a wall that is not there.
+    expect(g.hi).toBeLessThan(0);
+  });
+
+  it('measures the span against the edge, not the bounding box', () => {
+    // The L's back edge spans 2 mask cells (42mm) against the front's 4 (84mm),
+    // and each loses the same `TOLERANCE + 2 * wallThickness` for clearance and
+    // walls — so the spans are 39.1 and 81.1, not one exactly half the other.
+    // Measuring against the bin's bounding box would make both 81.1 and put a
+    // full-width back cutout through a wall that is not there.
+    const spanOn = (side: 'front' | 'back'): number => {
+      const g = polygonLipGaps(
+        withMask(L_MASK, {
+          walls: walls({ [side]: { ...walls()[side], enabled: true, width: 100, depth: 50 } }),
+        })
+      )[0];
+      return g.hi - g.lo;
+    };
+    const lost = GRIDFINITY_SPEC.TOLERANCE + 2 * DEFAULT_BIN_PARAMS.wallThickness;
+    expect(spanOn('front')).toBeCloseTo(4 * 0.5 * DEFAULT_BIN_PARAMS.gridUnitMm - lost, 5);
+    expect(spanOn('back')).toBeCloseTo(2 * 0.5 * DEFAULT_BIN_PARAMS.gridUnitMm - lost, 5);
+  });
+
+  it('carries the edge’s own cross coordinate so a rail can match it', () => {
+    const gaps = polygonLipGaps(
+      withMask(L_MASK, {
+        walls: walls({ front: { ...walls().front, enabled: true, width: 40, depth: 50 } }),
+      })
+    );
+    // The front edge is the bottom of the mask, at -halfDepth.
+    expect(gaps[0].edgeCross).toBeCloseTo(-(4 * 0.5 * DEFAULT_BIN_PARAMS.gridUnitMm) / 2, 5);
+  });
+
+  it('applies the same builder gates the rectangle path does', () => {
+    // Slotted bins build no handles at all; the shared `wallGaps` is what makes
+    // that true for a custom shape without restating it.
+    const handled = withMask(L_MASK, {
+      handles: handles({ front: { ...HANDLE_SIDE, enabled: true } }),
+    });
+    expect(polygonLipGaps(handled).length).toBeGreaterThan(0);
+    expect(polygonLipGaps({ ...handled, style: 'slotted' })).toEqual([]);
+  });
+});
+
+describe('railSegmentsClearOfPolygonGaps', () => {
+  const gap = {
+    side: 'front' as const,
+    source: 'cutout' as const,
+    edgeCross: -40,
+    lo: -5,
+    hi: 5,
+  };
+
+  it('cuts a run around a gap on the matching edge', () => {
+    const segs = railSegmentsClearOfPolygonGaps([{ lo: -30, hi: 30 }], 'front', -40, [gap]);
+    expect(segs).toEqual([
+      { lo: -30, hi: -5 - LIP_GAP_RAIL_MARGIN },
+      { lo: 5 + LIP_GAP_RAIL_MARGIN, hi: 30 },
+    ]);
+  });
+
+  it('leaves a PARALLEL edge on the same side untouched', () => {
+    // The reason gaps carry an edge coordinate at all: a U faces front with two
+    // walls, and a cutout on one of them must not cost the other its rail.
+    expect(railSegmentsClearOfPolygonGaps([{ lo: -30, hi: 30 }], 'front', 12, [gap])).toEqual([
+      { lo: -30, hi: 30 },
+    ]);
+  });
+
+  it('ignores a gap belonging to another side', () => {
+    expect(railSegmentsClearOfPolygonGaps([{ lo: -30, hi: 30 }], 'back', -40, [gap])).toEqual([
+      { lo: -30, hi: 30 },
+    ]);
   });
 });

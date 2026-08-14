@@ -31,7 +31,8 @@ import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
 import { railFoulingLabelFootprints } from '@/shared/utils/labelTabPlan';
 import type { LabelTabFootprint } from '@/shared/utils/labelTabPlan';
 import { dividerRailBlocks } from '@/shared/utils/dividerRailPlan';
-import { lipGapRailBlocks, lipGaps } from '@/shared/utils/lipGapPlan';
+import { lipGapRailBlocks, lipGaps, polygonLipGaps } from '@/shared/utils/lipGapPlan';
+import type { PolygonLipGap } from '@/shared/utils/lipGapPlan';
 import type { WallSpanBlock } from '@/shared/utils/labelTabPlan';
 import { LID_FIT_CLEARANCE, LID_CORNER_RADIUS, lidAnchorZ, lidWallBottomZ } from './lidConstants';
 import { resolveOverhang, overhangExpansion, hasOverhang } from './overhang';
@@ -190,6 +191,14 @@ export interface LidInputs {
    * the lip, or a polygon mask, which none of the three plans describe.
    */
   readonly wallBlocks: readonly WallSpanBlock[];
+  /**
+   * Lip gaps on a CUSTOM-SHAPE footprint (#3482), carried separately from
+   * `wallBlocks` because a polygon block is matched to one EDGE, not to a side:
+   * a U faces front with two walls, and a cutout sits on exactly one of them.
+   * Empty for a rectangular bin, which has one edge per side and uses
+   * `wallBlocks` instead.
+   */
+  readonly polygonGaps: readonly PolygonLipGap[];
   /**
    * Grip relief (#3272), already gated: `mode` is forced to `'none'` when the
    * feature is off or its depth clamp left nothing useful, so builders can
@@ -397,6 +406,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     disabledRails: computeDisabledRails(checkLidCompatibility(params)),
     labelFootprints: railFoulingLabelFootprints(params),
     wallBlocks: [...dividerRailBlocks(params), ...lipGapRailBlocks(lipGaps(params))],
+    polygonGaps: polygonLipGaps(params),
     // Rails only engage in clickRails mode; friction/magnetic force them off so
     // the builder's rail pass is a no-op while the user's per-side choice is
     // preserved on the persisted config.

@@ -13,7 +13,8 @@
  * cutout builder's "bin centered at origin" frame).
  */
 
-import { MASK_CELL_SIZE, maskToPolygon, type CellMask } from '@/shared/utils/cellMask';
+import { MASK_CELL_SIZE, type CellMask } from '@/shared/utils/cellMask';
+import { maskEdgesMm, outermostEdgeForSide } from '@/shared/utils/maskEdgeGeometry';
 import { CLEARANCE } from './generatorConstants';
 import { resolvePitch, type GridUnitInput } from './gridPitch';
 
@@ -38,25 +39,20 @@ export interface PolygonSideGeometry {
 }
 
 interface SideConfig {
-  readonly dxMatch: -1 | 0 | 1;
-  readonly dyMatch: -1 | 0 | 1;
   readonly perpAxis: 'x' | 'y';
-  /** +1 means prefer higher perpendicular coord, -1 means lower. */
-  readonly extremeSign: -1 | 1;
   readonly rotateZ: number;
 }
 
 /**
- * CCW polygon edge directions that face each side (outward normal points "out"
- * the named side). For a CCW outer loop, interior is on the LEFT of each edge
- * direction, so an edge going +X has its interior above (normal -Y = front face),
- * meaning the edge itself IS the front wall.
+ * Which axis is perpendicular to each side's wall, and how a feature authored
+ * along +X is rotated onto it. Which EDGE faces each side now lives in
+ * `outermostEdgeForSide`, so the direction table is not duplicated here.
  */
 const SIDE_CONFIG: Record<WallSideKey, SideConfig> = {
-  front: { dxMatch: 1, dyMatch: 0, perpAxis: 'y', extremeSign: -1, rotateZ: 0 },
-  back: { dxMatch: -1, dyMatch: 0, perpAxis: 'y', extremeSign: 1, rotateZ: 0 },
-  left: { dxMatch: 0, dyMatch: -1, perpAxis: 'x', extremeSign: -1, rotateZ: 90 },
-  right: { dxMatch: 0, dyMatch: 1, perpAxis: 'x', extremeSign: 1, rotateZ: 90 },
+  front: { perpAxis: 'y', rotateZ: 0 },
+  back: { perpAxis: 'y', rotateZ: 0 },
+  left: { perpAxis: 'x', rotateZ: 90 },
+  right: { perpAxis: 'x', rotateZ: 90 },
 };
 
 interface PolygonEdgeRaw {
@@ -94,50 +90,25 @@ export function findPolygonEdgeForSide(mask: CellMask, side: WallSideKey): Polyg
     return cached[side] ?? null;
   }
 
-  const loops = maskToPolygon(mask);
-  const outer = loops[0];
-  if (outer.length < 3) {
-    const entry = cached ?? {};
-    entry[side] = null;
-    maskSideEdgeCache.set(mask, entry);
-    return null;
-  }
+  // Selected at UNIT pitch, which reproduces the historical grid-unit ranking
+  // exactly and is what this function's grid-unit contract is stated in. The
+  // choice is pitch-independent anyway — every candidate for one side runs
+  // along the same axis, so a per-axis scale cannot reorder them — but reading
+  // it at unit pitch keeps the conversion below a plain recentring.
+  const edges = maskEdgesMm(mask, 1, 1);
+  const chosen = outermostEdgeForSide(edges, side);
 
-  const config = SIDE_CONFIG[side];
   let best: PolygonEdgeRaw | null = null;
-
-  for (let i = 0; i < outer.length; i++) {
-    const a = outer[i];
-    const b = outer[(i + 1) % outer.length];
-    const dx = Math.sign(b.x - a.x);
-    const dy = Math.sign(b.y - a.y);
-    if (dx !== config.dxMatch || dy !== config.dyMatch) continue;
-
-    const spanU = Math.abs(b.x - a.x) + Math.abs(b.y - a.y);
-    const perpU = config.perpAxis === 'y' ? a.y : a.x;
-    const midU = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
-    const candidate: PolygonEdgeRaw = { midU, spanU, perpU };
-
-    if (!best) {
-      best = candidate;
-      continue;
-    }
-    // Ranking: (1) more extreme perpendicular coord, (2) longer span, (3) lower
-    // midpoint along the edge direction. (3) makes the result deterministic for
-    // symmetric shapes (e.g. U-shape back = left arm, not traversal-dependent).
-    const extremeDelta = (perpU - best.perpU) * config.extremeSign;
-    if (extremeDelta > 1e-9) {
-      best = candidate;
-    } else if (extremeDelta > -1e-9) {
-      if (spanU > best.spanU + 1e-9) {
-        best = candidate;
-      } else if (spanU > best.spanU - 1e-9) {
-        // Deterministic tiebreak on midpoint coordinate along the edge axis.
-        const edgeAxisCoord = config.perpAxis === 'y' ? midU.x : midU.y;
-        const bestAxisCoord = config.perpAxis === 'y' ? best.midU.x : best.midU.y;
-        if (edgeAxisCoord < bestAxisCoord) best = candidate;
-      }
-    }
+  if (chosen) {
+    const halfW = (mask.cols * MASK_CELL_SIZE) / 2;
+    const halfD = (mask.rows * MASK_CELL_SIZE) / 2;
+    const midU = { x: chosen.midX + halfW, y: chosen.midY + halfD };
+    best = {
+      midU,
+      spanU: chosen.length,
+      // Constant along an axis-aligned edge, so the midpoint carries it.
+      perpU: SIDE_CONFIG[side].perpAxis === 'y' ? midU.y : midU.x,
+    };
   }
 
   const entry = cached ?? {};

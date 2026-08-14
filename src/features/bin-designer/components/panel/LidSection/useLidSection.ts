@@ -53,7 +53,7 @@ import {
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { railFoulingLabelFootprints } from '@/shared/utils/labelTabPlan';
 import { dividerRailBlocks } from '@/shared/utils/dividerRailPlan';
-import { lipGapRailBlocks, lipGaps } from '@/shared/utils/lipGapPlan';
+import { lipGapRailBlocks, lipGaps, polygonLipGaps } from '@/shared/utils/lipGapPlan';
 import { resolveOverhang, overhangExpansion, hasOverhang } from '@/shared/utils/overhang';
 import { matchingTrayParams } from '@/features/bin-designer/utils/matchingTray';
 import { lidWallBottomZ } from '@/features/bin-designer/components/preview/LidMesh/lidAnchorZ';
@@ -151,6 +151,9 @@ export function useLidSection() {
     () => [...dividerRailBlocks(params), ...lipGapRailBlocks(lipGaps(params))],
     [params]
   );
+  // Custom shapes clip per EDGE rather than per side, so their gaps travel
+  // separately — see `polygonLipGaps`.
+  const polygonGaps = useMemo(() => polygonLipGaps(params), [params]);
   // The lid wraps the bin's overhang-expanded body, so the readout has to use
   // the same walls the worker places rails on.
   const outerExpansion = useMemo(() => {
@@ -553,7 +556,8 @@ export function useLidSection() {
             params.gridUnitMmY ?? params.gridUnitMm,
             labelFootprints,
             outerExpansion,
-            wallBlocks
+            wallBlocks,
+            polygonGaps
           )
         : { count: 0, lengths: [] as readonly number[] },
     [
@@ -567,6 +571,7 @@ export function useLidSection() {
       labelFootprints,
       outerExpansion,
       wallBlocks,
+      polygonGaps,
       lid.clickRails,
       lid.clickRailCoverage,
     ]

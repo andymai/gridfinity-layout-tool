@@ -37,7 +37,13 @@ import {
   computeWallHandleSegments,
 } from '@/shared/utils/handleCutoutClip';
 import { computeMultiHandleOffsets } from '@/shared/utils/handleLayout';
-import { labelTabInteriorDims, type WallSpanBlock } from '@/shared/utils/labelTabPlan';
+import {
+  labelTabInteriorDims,
+  subtractSpan,
+  type RailSegment,
+  type WallSpanBlock,
+} from '@/shared/utils/labelTabPlan';
+import { maskEdgesMm, outermostEdgeForSide } from '@/shared/utils/maskEdgeGeometry';
 
 const WALL_SIDES = ['front', 'back', 'left', 'right'] as const;
 
@@ -99,48 +105,72 @@ export function lipGaps(params: BinParams): readonly LipGap[] {
   if (isPartialMask(params.cellMask)) return [];
   const dims = labelTabInteriorDims(params);
   if (!dims) return [];
-  const { innerW, innerD, wallHeight, interiorHeight } = dims;
-  const wallThickness = params.wallThickness;
   const spanOf = (side: LidCompatibilitySide): number =>
-    side === 'front' || side === 'back' ? innerW : innerD;
+    side === 'front' || side === 'back' ? dims.innerW : dims.innerD;
 
   const out: LipGap[] = [];
-  const push = (
-    side: LidCompatibilitySide,
-    source: LipGapSource,
-    centre: number,
-    width: number
-  ): void => {
-    out.push({
-      side,
-      source,
-      lo: centre - width / 2,
-      hi: centre + width / 2,
-      wallSpan: spanOf(side),
-    });
-  };
+  for (const side of WALL_SIDES) {
+    const wallSpan = spanOf(side);
+    for (const g of wallGaps(params, dims, side, wallSpan)) {
+      // A rectangle's wall is centred on the interior origin, so its local
+      // coordinates are already the bin's.
+      out.push({
+        side,
+        source: g.source,
+        lo: g.centre - g.width / 2,
+        hi: g.centre + g.width / 2,
+        wallSpan,
+      });
+    }
+  }
+  return out;
+}
+
+/** One opening, in coordinates local to the wall it sits on. */
+interface WallGap {
+  readonly source: LipGapSource;
+  /** Offset from the wall's own midpoint, along the wall. */
+  readonly centre: number;
+  readonly width: number;
+}
+
+/**
+ * Every opening one wall carries, measured from that wall's midpoint.
+ *
+ * Wall-local rather than bin-centred so the rectangle and polygon paths share
+ * it: they disagree only about where a wall IS and how long it is, never about
+ * what a cutout or a handle does to it. Splitting on that boundary is what
+ * keeps the builders' gates — the slotted skip, the back-wall-with-labels skip,
+ * the sub-1mm clamp, the end gaps a full-width handle cannot fit inside —
+ * written once for both.
+ */
+function wallGaps(
+  params: BinParams,
+  dims: NonNullable<ReturnType<typeof labelTabInteriorDims>>,
+  side: LidCompatibilitySide,
+  wallSpan: number
+): readonly WallGap[] {
+  const { wallHeight, interiorHeight } = dims;
+  const wallThickness = params.wallThickness;
+  const out: WallGap[] = [];
+  if (wallSpan <= 0) return out;
 
   // Wall cutouts. No Z test: the profile is positioned with its top at
   // `wallHeight + overshoot` where the overshoot alone exceeds the lip, so any
   // cutout the builder emits removes the lip across its whole span.
-  if (params.walls.enabled) {
-    for (const side of WALL_SIDES) {
-      const cfg = params.walls[side];
-      if (!cfg.enabled) continue;
-      const wallSpan = spanOf(side);
-      const cutWidth =
-        cfg.widthMm !== null ? Math.min(cfg.widthMm, wallSpan) : wallSpan * (cfg.width / 100);
-      if (cutWidth <= 0 || cfg.depth <= 0) continue;
-      // The builder measures depth against the wall MINUS one thickness, not
-      // against the cavity ceiling. Only decides whether the cut is built.
-      const userCutHeight = (wallHeight - wallThickness) * (cfg.depth / 100);
-      if (cutWidth < 0.1 || userCutHeight < 0.1) continue;
-      push(
-        side,
-        'cutout',
-        computeCutoutCenter(wallSpan, cutWidth, wallThickness, cfg.alignment, cfg.offset),
-        cutWidth
-      );
+  const cfg = params.walls[side];
+  if (params.walls.enabled && cfg.enabled) {
+    const cutWidth =
+      cfg.widthMm !== null ? Math.min(cfg.widthMm, wallSpan) : wallSpan * (cfg.width / 100);
+    // The builder measures depth against the wall MINUS one thickness, not
+    // against the cavity ceiling. Only decides whether the cut is built.
+    const userCutHeight = (wallHeight - wallThickness) * (cfg.depth / 100);
+    if (cutWidth > 0 && cfg.depth > 0 && cutWidth >= 0.1 && userCutHeight >= 0.1) {
+      out.push({
+        source: 'cutout',
+        centre: computeCutoutCenter(wallSpan, cutWidth, wallThickness, cfg.alignment, cfg.offset),
+        width: cutWidth,
+      });
     }
   }
 
@@ -148,44 +178,40 @@ export function lipGaps(params: BinParams): readonly LipGap[] {
   // so a hole low enough leaves the lip whole and takes nothing.
   const handles: HandleConfig = params.handles;
   if (!handles.enabled || params.style === 'slotted' || handles.height <= 0) return out;
-  for (const side of WALL_SIDES) {
-    const sideCfg = handles[side];
-    if (!sideCfg.enabled) continue;
-    // A label tab owns the back wall's interior face, so the builder skips the
-    // hole outright rather than cutting through the shelf.
-    if (side === 'back' && params.label.enabled) continue;
+  const sideCfg = handles[side];
+  if (!sideCfg.enabled) return out;
+  // A label tab owns the back wall's interior face, so the builder skips the
+  // hole outright rather than cutting through the shelf.
+  if (side === 'back' && params.label.enabled) return out;
 
-    const { centerZ, effectiveHeight } = computeHandleHoleGeometry(
-      interiorHeight,
-      sideCfg.height ?? handles.height,
-      handles.verticalPosition
-    );
-    if (effectiveHeight < 1) continue;
-    if (centerZ + effectiveHeight / 2 <= lipBottomZ(interiorHeight)) continue;
+  const { centerZ, effectiveHeight } = computeHandleHoleGeometry(
+    interiorHeight,
+    sideCfg.height ?? handles.height,
+    handles.verticalPosition
+  );
+  if (effectiveHeight < 1) return out;
+  if (centerZ + effectiveHeight / 2 <= lipBottomZ(interiorHeight)) return out;
 
-    const wallSpan = spanOf(side);
-    const sideWidth = sideCfg.width ?? handles.width;
-    const segments = computeWallHandleSegments(
-      wallSpan,
-      sideWidth,
-      wallThickness,
-      params.walls.enabled ? params.walls[side] : undefined
-    );
-    if (!segments) continue;
-    // Multi-handle offsets translate the whole segment set, which is how the
-    // builder composes the two: a wall with a cutout and three handles cuts
-    // each surviving segment once per handle position.
-    for (const handleOffset of computeMultiHandleOffsets(
-      handles.count,
-      wallSpan,
-      wallSpan * (sideWidth / 100)
-    )) {
-      for (const seg of segments) {
-        push(side, 'handle', seg.offset + handleOffset, seg.width);
-      }
+  const sideWidth = sideCfg.width ?? handles.width;
+  const segments = computeWallHandleSegments(
+    wallSpan,
+    sideWidth,
+    wallThickness,
+    params.walls.enabled ? params.walls[side] : undefined
+  );
+  if (!segments) return out;
+  // Multi-handle offsets translate the whole segment set, which is how the
+  // builder composes the two: a wall with a cutout and three handles cuts each
+  // surviving segment once per handle position.
+  for (const handleOffset of computeMultiHandleOffsets(
+    handles.count,
+    wallSpan,
+    wallSpan * (sideWidth / 100)
+  )) {
+    for (const seg of segments) {
+      out.push({ source: 'handle', centre: seg.offset + handleOffset, width: seg.width });
     }
   }
-
   return out;
 }
 
@@ -205,7 +231,9 @@ export function lipGapRailBlocks(gaps: readonly LipGap[]): readonly WallSpanBloc
 
 /** Walls that lose some lip to `source`. Drives the panel's warning rows. */
 export function lipGapSides(
-  gaps: readonly LipGap[],
+  // Structural, so the rectangle and polygon plans both feed it — the question
+  // is only which walls carry a gap, which neither frame changes.
+  gaps: readonly { readonly side: LidCompatibilitySide; readonly source: LipGapSource }[],
   source: LipGapSource
 ): readonly LidCompatibilitySide[] {
   const sides = new Set(gaps.filter((g) => g.source === source).map((g) => g.side));
@@ -251,4 +279,96 @@ export function unlippedSides(
     longest = Math.max(longest, half - reached);
     return longest < LID_MIN_RAIL_LENGTH;
   });
+}
+
+/**
+ * One stretch of one POLYGON edge where the lip has been cut away.
+ *
+ * Carries the edge's own cross-axis coordinate rather than just a side name,
+ * because a custom shape can face one direction with several edges — a U has
+ * two front walls — and a cutout is placed on exactly one of them. Blocking by
+ * side alone would take the rail off both.
+ */
+export interface PolygonLipGap {
+  readonly side: LidCompatibilitySide;
+  readonly source: LipGapSource;
+  /** Constant coordinate of the edge this gap sits on, in centred mm. */
+  readonly edgeCross: number;
+  /** Along-axis extent in centred mm, on that edge's axis. */
+  readonly lo: number;
+  readonly hi: number;
+}
+
+/**
+ * Lip gaps on a custom-shape footprint (#3482).
+ *
+ * The live half of that issue: `wallCutoutsFeature` and `handlesFeature` both
+ * declare `supportsCellMask`, and `FeatureGate` only greys the controls out, so
+ * a polygon bin really does get its cutouts and handles cut — against resolved
+ * polygon edges — while `railPlacementsForPolygon` clipped nothing at all. The
+ * result was a rail running the full length of a wall with a window in it.
+ *
+ * Placement mirrors `resolvePolygonSideGeometry` exactly, and has to: the wall
+ * span a percentage width is taken of is the EDGE's span less the clearance and
+ * two walls, not the bin's bounding box. Reading the bounding box instead makes
+ * every gap on a stepped shape the wrong width and the wrong place.
+ */
+export function polygonLipGaps(params: BinParams): readonly PolygonLipGap[] {
+  const mask = params.cellMask;
+  if (!isPartialMask(mask)) return [];
+  const dims = labelTabInteriorDims(params);
+  if (!dims) return [];
+
+  const unitX = params.gridUnitMm;
+  const unitY = params.gridUnitMmY ?? params.gridUnitMm;
+  const edges = maskEdgesMm(mask, unitX, unitY);
+  const wallThickness = params.wallThickness;
+
+  const out: PolygonLipGap[] = [];
+  for (const side of WALL_SIDES) {
+    const edge = outermostEdgeForSide(edges, side);
+    if (!edge) continue;
+    const alongX = side === 'front' || side === 'back';
+    // Same derivation `resolvePolygonSideGeometry` uses for its `wallSpan`.
+    const wallSpan = edge.length - GRIDFINITY_SPEC.TOLERANCE - 2 * wallThickness;
+    if (wallSpan <= 0) continue;
+
+    const alongMid = alongX ? edge.midX : edge.midY;
+    const edgeCross = alongX ? edge.midY : edge.midX;
+    for (const g of wallGaps(params, dims, side, wallSpan)) {
+      out.push({
+        side,
+        source: g.source,
+        edgeCross,
+        lo: alongMid + g.centre - g.width / 2,
+        hi: alongMid + g.centre + g.width / 2,
+      });
+    }
+  }
+  return out;
+}
+
+/** Tolerance (mm) on matching a gap to the edge it was measured against. */
+const EDGE_MATCH_TOL = 0.01;
+
+/**
+ * Cut a polygon edge's rail run down around the gaps on THAT edge.
+ *
+ * Matched on the edge's own cross coordinate, not its side name, so a U's two
+ * front walls keep their own rails when only one carries a cutout.
+ */
+export function railSegmentsClearOfPolygonGaps(
+  segments: readonly RailSegment[],
+  side: LidCompatibilitySide,
+  edgeCross: number,
+  gaps: readonly PolygonLipGap[]
+): RailSegment[] {
+  let out = [...segments];
+  for (const g of gaps) {
+    if (g.side !== side) continue;
+    if (Math.abs(g.edgeCross - edgeCross) > EDGE_MATCH_TOL) continue;
+    out = subtractSpan(out, g.lo - LIP_GAP_RAIL_MARGIN, g.hi + LIP_GAP_RAIL_MARGIN);
+    if (out.length === 0) break;
+  }
+  return out;
 }

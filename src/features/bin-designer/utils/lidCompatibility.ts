@@ -27,7 +27,7 @@ import { isPartialMask, maskToPolygon } from '@/shared/utils/cellMask';
 import { hasAnyPatternedWall } from '@/shared/utils/wallPatternSides';
 import { railFoulingLabelFootprints } from '@/shared/utils/labelTabPlan';
 import { dividerRailBlocks, dividerRailSides } from '@/shared/utils/dividerRailPlan';
-import { unlippedSides, lipGaps, lipGapSides } from '@/shared/utils/lipGapPlan';
+import { unlippedSides, lipGaps, lipGapSides, polygonLipGaps } from '@/shared/utils/lipGapPlan';
 // Re-exported for callers that already reach for this module's lid policy;
 // defined in `lidInteriorRelief` because the divider planner and the label
 // shelf datum both need it and both are reached from here.
@@ -205,10 +205,9 @@ const SEVERITY_RANK: Record<LidCompatibilitySeverity, number> = {
 
 export function checkLidCompatibility(params: BinParams): readonly LidCompatibilityIssue[] {
   const issues: LidCompatibilityIssue[] = [];
-  // Polygon (custom-shape) bins auto-disable wall cutouts + wall pattern
-  // via `FeatureGate` even if the stored flags are still `true`. Don't
-  // warn about features the bin generator silently skips — false
-  // positives erode trust in the rest of the warnings.
+  // Custom-shape bins still auto-disable the WALL PATTERN via `FeatureGate`,
+  // so warning about it would be a false positive. Cutouts and handles are a
+  // different story — see the note on `polyGaps` below.
   const isPolygon = isPartialMask(params.cellMask);
   // Magnetic retention (#2694) holds via corner magnets independent of the
   // lip, so the rail/lip-grip warnings below don't apply — a magnetic lid
@@ -219,7 +218,13 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   // The stretches of each wall where a cutout or a high handle has taken the
   // lip away. Resolved once and shared by checks 1 and 7 below, and by the rail
   // pass, which segments its runs around them instead of dropping the wall.
+  //
+  // A custom shape gets these too (#3482), which the older comment above got
+  // wrong: `FeatureGate` only makes the CONTROLS inert, and both builders
+  // declare `supportsCellMask`, so a polygon bin really is cut. Its gaps are
+  // measured against resolved polygon edges and so come from a separate plan.
   const gaps = isMagnetic ? [] : lipGaps(params);
+  const polyGaps = isMagnetic ? [] : polygonLipGaps(params);
 
   // 1. Wall cutouts. Each one removes lip material along its OWN span, and
   //    since #3483 the rail keeps whatever the window leaves either side — so
@@ -227,9 +232,13 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   //    are cut. The blocker is the case its copy has always described: cutouts
   //    that leave no lip anywhere, which now means full-width on all four
   //    sides rather than merely enabled on all four.
-  if (!isPolygon && !isMagnetic) {
-    const cutSides = lipGapSides(gaps, 'cutout');
-    if (unlippedSides(gaps, 'cutout').length === WALL_SIDES.length) {
+  //
+  //    Only a rectangle can reach that blocker. "All four sides" does not
+  //    describe a shape with six walls, and a custom shape's rails are clipped
+  //    per EDGE, so it warns and keeps whatever each edge leaves.
+  if (!isMagnetic) {
+    const cutSides = isPolygon ? lipGapSides(polyGaps, 'cutout') : lipGapSides(gaps, 'cutout');
+    if (!isPolygon && unlippedSides(gaps, 'cutout').length === WALL_SIDES.length) {
       issues.push({ id: 'wallCutoutsAllSides', severity: 'blocker', sides: cutSides });
     } else if (cutSides.length > 0) {
       issues.push({ id: 'wallCutouts', severity: 'warning', sides: cutSides });
@@ -313,9 +322,11 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   //    and don't warn; nor do the sides `handleBuilder` skips (a slotted bin,
   //    or the back wall of a bin with label tabs), which the plan mirrors.
   //    Interior handles pierce compartment dividers, not the outer lip.
-  if (!isPolygon && !isMagnetic) {
-    const intrudingSides = lipGapSides(gaps, 'handle');
-    if (unlippedSides(gaps, 'handle').length === WALL_SIDES.length) {
+  if (!isMagnetic) {
+    const intrudingSides = isPolygon
+      ? lipGapSides(polyGaps, 'handle')
+      : lipGapSides(gaps, 'handle');
+    if (!isPolygon && unlippedSides(gaps, 'handle').length === WALL_SIDES.length) {
       issues.push({ id: 'handlesAllSides', severity: 'blocker', sides: intrudingSides });
     } else if (intrudingSides.length > 0) {
       issues.push({ id: 'handles', severity: 'warning', sides: intrudingSides });
