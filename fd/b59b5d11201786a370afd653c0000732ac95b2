@@ -1,0 +1,110 @@
+src/features/generation/worker/generators/lidCutoutGrip.scenario.test.ts
+  s_fef67e5e56db54::t_dac757f68df0a1 1-268
+  s_fef67e5e56db54::t_2a370fe4ec5a8c 269-271
+  s_fef67e5e56db54::t_c774235fab15d2 272-275
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_fef67e5e56db54::t_4896a16be1543e 42
+  s_fef67e5e56db54::t_ace7e8782f5a97 219-231,233
+  s_fef67e5e56db54::t_2b9f398ab3d68a 521-524
+  s_fef67e5e56db54::t_4ecaeb54e2bfe9 515-520,529-530
+  s_fef67e5e56db54::t_94da983162d662 550-551
+  s_fef67e5e56db54::t_c2a37035793584 310-317
+  s_fef67e5e56db54::t_b3ca6d086bee56 30,232,318
+src/i18n/locales/en.ts
+  s_fef67e5e56db54::t_2541ea0774291c 1963,1965
+  s_fef67e5e56db54::t_ae7e3a0c301a21 1986,1988
+src/shared/utils/lipGapPlan.test.ts
+  s_fef67e5e56db54::t_b3ca6d086bee56 7,212,224,228,243,251,261-262
+  s_fef67e5e56db54::t_52510020ff03f0 3
+  s_fef67e5e56db54::t_f57ba81cdd8a0e 44,62
+  s_fef67e5e56db54::t_35297cd90e9676 144,154-160
+  s_fef67e5e56db54::t_9843f7da1a07fe 25-27
+  s_fef67e5e56db54::t_e314a467553476 1-2,4-6,8-24,28-33,35-43,45-61,63-143,145-153,161-180,182-211,213-223,225-227,229-242,244-250,252-260,263-281
+  s_fef67e5e56db54::t_762f17f692a91d 34,181
+src/features/bin-designer/components/panel/LidSection/useLidSection.helpers.ts
+  s_fef67e5e56db54::t_175917f6ec0c60 186,189
+  s_fef67e5e56db54::t_8fbda4f0f873ea 121-124,126
+  s_fef67e5e56db54::t_b79dc6fcc7f60f 10-11,13-14
+  s_fef67e5e56db54::t_b21bdfd0aae7e2 173-176
+  s_c4158cbd2efeeb::t_e2a14c7c8d4b32 12
+src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
+  s_fef67e5e56db54::t_1e769505c7cd3d 623-641,651
+src/features/bin-designer/store/designer.scenario.lid.test.ts
+  s_fef67e5e56db54::t_6fffdc251b0c86 338-341,345-347,354-364
+  s_fef67e5e56db54::t_ae70d68010ff68 365-366
+src/features/generation/worker/generators/lidInputs.ts
+  s_fef67e5e56db54::t_0275feeb4ef7d1 34-35
+  s_fef67e5e56db54::t_61266132d4efd4 179-181,183-190,192
+  s_fef67e5e56db54::t_902d133fc6e496 391-396,399
+src/shared/utils/labelTabPlan.ts
+  s_fef67e5e56db54::t_be9b37dca9f410 608-614
+  s_fef67e5e56db54::t_0dfa5af2b4f3d1 12-18
+  s_fef67e5e56db54::t_f63b8d468daebb 710-750
+  s_fef67e5e56db54::t_9bf4467ccccc2c 646
+src/features/generation/README.md
+  s_fef67e5e56db54::t_5da5880ad5931b 229
+src/features/generation/worker/generators/lidClickRail.ts
+  s_fef67e5e56db54::t_78521616dd4c3b 36
+  s_fef67e5e56db54::t_9ffeae9e225c5d 237-241,251,254
+  s_fef67e5e56db54::t_b6a38c8893ef36 224
+src/shared/utils/lipGapPlan.ts
+  s_c4158cbd2efeeb::t_1234fd808cf48e 35-38,114-120
+  s_fef67e5e56db54::t_32443840af9a4c 216,220,223-231,235,243-244,246,248,251-252
+  s_fef67e5e56db54::t_9ed3a4a3e5a70f 31
+  s_fef67e5e56db54::t_ac16be97e4fadd 1-30,32-34,39-113,121-215,217-219,221-222,232-234,236-242,245,247,249-250,253-254
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_fef67e5e56db54::t_ac7774d18d405d 148-153
+  s_fef67e5e56db54::t_1d2841cb20acf2 556,569
+  s_fef67e5e56db54::t_77237afa4bb95a 56
+src/features/generation/worker/generators/lidBuilder.test.ts
+  s_fef67e5e56db54::t_1d622db3b4c35b 203,217-224
+src/features/bin-designer/utils/lidCompatibility.test.ts
+  s_fef67e5e56db54::t_49727f4c381ae1 541-554
+  s_fef67e5e56db54::t_239a1c5b73c267 78-90,98-104
+  s_fef67e5e56db54::t_7f99a50c40b6de 555-558,568
+  s_fef67e5e56db54::t_26b7e633ae3256 455-460
+  s_fef67e5e56db54::t_28ccc1ace021b2 30-41,43-53
+  s_fef67e5e56db54::t_0b61d21028ecb0 16-29
+  s_fef67e5e56db54::t_a1184d1d9e4c4b 105,835-838,848-863
+  s_fef67e5e56db54::t_e27bcf75a394b9 42,106
+src/features/generation/worker/generators/__kernel-tests__/lidSeating.ts
+  s_fef67e5e56db54::t_ca232686f38fb0 215-226,243,262-271,273,284-285,301-302,307-309
+  s_fef67e5e56db54::t_a261e3b4a3766e 227-242,244-247,272,274-283,286-297,299-300,303-306
+  s_fef67e5e56db54::t_46b59a41d9410b 214,248-261
+  s_fef67e5e56db54::t_f3d83bd106807a 43-47,49
+  s_fef67e5e56db54::t_c4e6611f9c6038 298
+CLAUDE.md
+  s_fef67e5e56db54::t_5da5880ad5931b 49
+  s_fef67e5e56db54::t_6cf42f535b9df7 51
+  s_fef67e5e56db54::t_ac6301192ef66e 50
+src/shared/utils/dividerRailPlan.ts
+  s_fef67e5e56db54::t_9f1f5a1028c50f 44-51
+  s_fef67e5e56db54::t_b2673f0fbfdfb5 28-29
+src/shared/utils/labelTabPlan.test.ts
+  s_fef67e5e56db54::t_1fccbb84532941 278-319
+  s_fef67e5e56db54::t_83f23b67f48b31 9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "fdb59b5d11201786a370afd653c0000732ac95b2",
+  "prompts": {},
+  "sessions": {
+    "s_c4158cbd2efeeb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e3102d69-4a09-4b98-9aef-078146199ae4",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_fef67e5e56db54": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b9e290eb-d66d-4dd0-ab46-d597abf13b19",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
