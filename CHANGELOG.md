@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.406.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.406.0...gridfinity-layout-tool-v4.406.1) (2026-08-14)
+
+
+### Bug Fixes
+
+* resolve code-scanning alert [#81](https://github.com/andymai/gridfinity-layout-tool/issues/81) by flooring nanoid to 3.3.18 ([#3485](https://github.com/andymai/gridfinity-layout-tool/issues/3485)) ([9fd6e50](https://github.com/andymai/gridfinity-layout-tool/commit/9fd6e50fa7991581e1a880298a03a9767f035c40))
+
 ## [4.406.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.405.1...gridfinity-layout-tool-v4.406.0) (2026-08-14)
 
 
