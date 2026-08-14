@@ -1,0 +1,108 @@
+src/i18n/locales/de.json
+  s_ae321ba093788d::t_f9d963c2768f0c 979
+src/features/bin-designer/utils/lidCompatibility.test.ts
+  s_ae321ba093788d::t_5a038382f5f50a 230-251,253-254,256-274
+src/i18n/locales/en.ts
+  s_ae321ba093788d::t_de7684e981add8 1977
+src/i18n/locales/cs.json
+  s_ae321ba093788d::t_741f183c6abc53 992
+  s_ae321ba093788d::t_d1dfa5e6858a3b 979
+src/shared/utils/labelTabPlan.ts
+  s_ae321ba093788d::t_4278f938c0ddee 633-634,637-645
+  s_ae321ba093788d::t_2ac0459fe1398c 659
+CLAUDE.md
+  s_ae321ba093788d::t_4b2bcfb18ce384 49-50
+src/i18n/locales/zh-CN.json
+  s_ae321ba093788d::t_f9d963c2768f0c 979
+src/features/generation/README.md
+  s_ae321ba093788d::t_55ce5b6fabe159 229-230
+src/i18n/locales/pl.json
+  s_ae321ba093788d::t_f9d963c2768f0c 979
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_ae321ba093788d::t_dccf7e68631500 55
+  s_ae321ba093788d::t_40fb1cd0aa4a23 147-148
+  s_ae321ba093788d::t_4384e69aaa3a9e 546-547,560
+src/i18n/locales/nl.json
+  s_ae321ba093788d::t_f9d963c2768f0c 979
+src/i18n/locales/es.json
+  s_ae321ba093788d::t_f9d963c2768f0c 979
+src/i18n/locales/pt-BR.json
+  s_ae321ba093788d::t_f9d963c2768f0c 979
+src/shared/utils/dividerRailPlan.test.ts
+  s_ae321ba093788d::t_5e4d3690cac775 1-9,11-39,44-46,49-50,55-57,60-127,146-148,161-214
+  s_ae321ba093788d::t_1c8a33f5bb60ae 40-43,47-48,51-54,58-59
+  s_ae321ba093788d::t_fd5b0f32b74250 131-144,149-151,158-160
+  s_ae321ba093788d::t_9b698bc6db3519 128-130,145,152-157
+  s_ae321ba093788d::t_46056e846c6eaf 10
+src/i18n/locales/ko.json
+  s_ae321ba093788d::t_f9d963c2768f0c 979
+src/features/generation/worker/generators/compartmentBuilder.ts
+  s_ae321ba093788d::t_f230270bb81f99 11-16
+src/features/bin-designer/components/panel/LidSection/useLidSection.helpers.ts
+  s_ae321ba093788d::t_0b8be323ce073f 184-188
+  s_ae321ba093788d::t_f9b0836880f480 11-12
+  s_ae321ba093788d::t_a47ac40af88058 118-124
+src/i18n/locales/nb.json
+  s_ae321ba093788d::t_f9d963c2768f0c 979
+src/features/bin-designer/utils/compartments.ts
+  s_ae321ba093788d::t_a042e7b41ad6a1 329-387
+src/i18n/locales/sv.json
+  s_ae321ba093788d::t_f9d963c2768f0c 979
+src/features/generation/worker/generators/lidDividerClearance.scenario.test.ts
+  s_ae321ba093788d::t_01859cd570894c 63
+  s_ae321ba093788d::t_28a8a542c2f82b 186-191,197,199-220
+  s_ae321ba093788d::t_f817883cadbdee 272,274-279
+  s_ae321ba093788d::t_2b11d04adb6722 1-45,53-62,64,75-185,192-196,198,221-271,273,280-312,317-318
+  s_ae321ba093788d::t_8da8dc3c56b64d 313-316
+  s_ae321ba093788d::t_6ce96772d0031a 46-52
+  s_ae321ba093788d::t_decb55c0dab603 65-74
+src/shared/types/bin.ts
+  s_ae321ba093788d::t_6c2f77918c7f15 199,205,207
+src/features/generation/worker/generators/lidInputs.ts
+  s_ae321ba093788d::t_da9805dc595709 178-186
+  s_ae321ba093788d::t_a96641530535cf 392
+  s_ae321ba093788d::t_fc8ad4eda4a84b 33-34
+  s_ae321ba093788d::t_f4fd4c45e24a78 177
+src/i18n/locales/uk.json
+  s_ae321ba093788d::t_f9d963c2768f0c 979
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_ae321ba093788d::t_34cd0fdc837be5 371-377,379-389
+  s_ae321ba093788d::t_372e2639214735 30
+  s_ae321ba093788d::t_eecf35528f16f0 535-537,541-544
+src/shared/utils/labelTabPlan.test.ts
+  s_ae321ba093788d::t_d19dc55561abbd 210-216,220,226,228
+  s_ae321ba093788d::t_846e3b1b14300a 217-219,221-225,227,229-231
+  s_ae321ba093788d::t_db579b3696cb01 75-80,82,92,103
+src/features/generation/worker/generators/lidClickRail.ts
+  s_ae321ba093788d::t_e3576cda91f214 236-240,250-253
+  s_ae321ba093788d::t_d9c8c8c9afcc9d 224
+  s_ae321ba093788d::t_f0fd486b43814a 40
+src/i18n/locales/it.json
+  s_ae321ba093788d::t_f9d963c2768f0c 979
+src/i18n/locales/fr.json
+  s_ae321ba093788d::t_f9d963c2768f0c 979
+src/shared/utils/dividerRailPlan.ts
+  s_ae321ba093788d::t_b775339eee7a7b 18-20,25
+  s_ae321ba093788d::t_05ef8c5ddfc906 35-39
+  s_ae321ba093788d::t_632aa02bf34312 129,132-133,154-155,163-164,182-183,186-187
+  s_ae321ba093788d::t_5f478f2be83dd7 158-160
+  s_ae321ba093788d::t_7feb31049b2c5e 1-17,21-24,26-34,40-128,130-131,134-153,156-157,161-162,165-181,184-185,188-221
+src/i18n/locales/ja.json
+  s_ae321ba093788d::t_f9d963c2768f0c 979
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "76895fc749317ba3ef89700deeabd6441bcfc84c",
+  "prompts": {},
+  "sessions": {
+    "s_ae321ba093788d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "22153634-520d-478b-ba48-d7736ea3c48e",
+        "model": "claude-opus-5"
+      },
+      "human_author": null
+    }
+  }
+}
