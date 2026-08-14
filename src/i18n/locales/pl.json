@@ -976,7 +976,7 @@
   "binDesigner.lid.clickRailDisabledBySide": "Szyna {side} automatycznie wyłączona przez konflikt funkcji — zobacz uwagi o zgodności",
   "binDesigner.lid.clickRails": "Boki zatrzaskowe",
   "binDesigner.lid.compat.cellMaskHoles": "Własny kształt ma wewnętrzne otwory — te wewnętrzne krawędzie mają kołnierz, ale nie mają szyn (asymetryczny chwyt).",
-  "binDesigner.lid.compat.compartmentDividers": "Przegródki przegród sięgają do kołnierza — mogą naciskać na łączącą się skorupę pokrywy tam, gdzie stykają się ze ściankami bina.",
+  "binDesigner.lid.compat.compartmentDividers": "Przegrody sięgają górnej krawędzi wnętrza, w które wchodzi szyna zatrzaskowa. Szyna na {sides} jest wycięta przy każdej przegrodzie, dzięki czemu pokrywa nadal się zamyka.",
   "binDesigner.lid.compat.disabledMany": "Rozwiąż {count} konfliktów, aby włączyć pokrywę",
   "binDesigner.lid.compat.disabledOne": "Rozwiąż konflikt, aby włączyć pokrywę: {detail}",
   "binDesigner.lid.compat.fix.handlesAllSides": "wyłącz niektóre uchwyty",

@@ -976,7 +976,7 @@
   "binDesigner.lid.clickRailDisabledBySide": "Glissière {side} désactivée par un conflit — voir les notes de compatibilité",
   "binDesigner.lid.clickRails": "Côtés à clic",
   "binDesigner.lid.compat.cellMaskHoles": "La forme personnalisée comporte des trous intérieurs — ces bords internes ont une lèvre mais pas de rails (maintien asymétrique).",
-  "binDesigner.lid.compat.compartmentDividers": "Les séparateurs de compartiments montent jusqu’à la lèvre — ils peuvent appuyer contre la coque d’emboîtement du couvercle là où ils rencontrent les parois.",
+  "binDesigner.lid.compat.compartmentDividers": "Les séparateurs de compartiments montent jusqu’au sommet de la cavité, là où la glissière de verrouillage descend. La glissière sur {sides} est entaillée autour de chacun pour que le couvercle se ferme toujours.",
   "binDesigner.lid.compat.disabledMany": "Résolvez {count} conflits pour activer le couvercle",
   "binDesigner.lid.compat.disabledOne": "Résolvez le conflit pour activer le couvercle : {detail}",
   "binDesigner.lid.compat.fix.handlesAllSides": "désactiver certaines poignées",

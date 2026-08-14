@@ -976,7 +976,7 @@
   "binDesigner.lid.clickRailDisabledBySide": "Klemmleiste {side} durch Konflikt deaktiviert — siehe Kompatibilitätshinweise",
   "binDesigner.lid.clickRails": "Schnappverschluss-Seiten",
   "binDesigner.lid.compat.cellMaskHoles": "Benutzerdefinierte Form hat innere Aussparungen — diese inneren Kanten haben einen Stapelrand, aber keine Schienen (asymmetrischer Halt).",
-  "binDesigner.lid.compat.compartmentDividers": "Trennwände der Fächer reichen bis zum Stapelrand — sie können gegen die Deckel-Anschlussschale drücken, wo sie auf die Behälterwände treffen.",
+  "binDesigner.lid.compat.compartmentDividers": "Fachtrennwände reichen bis zur Oberkante des Innenraums, wo die Klemmleiste einrastet. Die Leiste an {sides} wird um jede Trennwand ausgespart, damit der Deckel weiterhin schließt.",
   "binDesigner.lid.compat.disabledMany": "Behebe {count} Konflikte, um Deckel zu aktivieren",
   "binDesigner.lid.compat.disabledOne": "Konflikt beheben, um Deckel zu aktivieren: {detail}",
   "binDesigner.lid.compat.fix.handlesAllSides": "einige Griffe deaktivieren",

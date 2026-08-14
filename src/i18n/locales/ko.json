@@ -976,7 +976,7 @@
   "binDesigner.lid.clickRailDisabledBySide": "{side} 레일이 기능 충돌로 자동 비활성화됨 — 호환성 참고 확인",
   "binDesigner.lid.clickRails": "스냅 끼움 면",
   "binDesigner.lid.compat.cellMaskHoles": "맞춤 모양에 내부 구멍이 있습니다 — 그 안쪽 가장자리에는 립은 있지만 레일이 없습니다(비대칭 그립).",
-  "binDesigner.lid.compat.compartmentDividers": "칸막이가 립까지 올라옵니다 — 수납통 벽과 만나는 지점에서 뚜껑의 맞물림 셸을 누를 수 있습니다.",
+  "binDesigner.lid.compat.compartmentDividers": "칸막이가 딸깍 레일이 들어가는 공간 상단까지 올라옵니다. {sides}의 레일은 각 칸막이 위치에서 잘려 있어 뚜껑이 정상적으로 닫힙니다.",
   "binDesigner.lid.compat.disabledMany": "뚜껑을 사용하려면 충돌 {count}개를 해결하세요",
   "binDesigner.lid.compat.disabledOne": "뚜껑을 사용하려면 충돌을 해결하세요: {detail}",
   "binDesigner.lid.compat.fix.handlesAllSides": "일부 손잡이 비활성화하기",

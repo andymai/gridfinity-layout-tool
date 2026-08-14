@@ -1974,7 +1974,7 @@ const en: Record<string, string> = {
   'binDesigner.lid.compat.cellMaskHoles':
     'Custom shape has interior holes — those inner edges have lip but no rails (asymmetric grip).',
   'binDesigner.lid.compat.compartmentDividers':
-    'Compartment dividers extend up to the lip — they may press against the lid’s mating shell where they meet the bin walls.',
+    'Compartment dividers reach the top of the cavity, where the click rail drops in. The rail on {sides} is notched around each one so the lid can still seat.',
   'binDesigner.lid.compat.labelTabs':
     'Label tabs take the wall they hang from. The click rail on {sides} fills only the gaps they leave, and rails on the other walls stop short of them.',
   'binDesigner.lid.compat.handles':

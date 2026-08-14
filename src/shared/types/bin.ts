@@ -196,12 +196,15 @@ export {
  * boundary?" without crossing the feature boundary.
  */
 export {
+  buildOverrideLookup,
   compartmentHasTiltedEdge,
   compartmentHasTiltedBackWall,
   compartmentHasTiltedFrontWall,
   compartmentTabEligible,
   compartmentTabXSpan,
+  findPairAwareRuns,
   getCompartmentBounds,
+  overrideKey,
   rectStraddlesTiltedDivider,
   rowHasFullWidthWall,
   spanRegionDepth,

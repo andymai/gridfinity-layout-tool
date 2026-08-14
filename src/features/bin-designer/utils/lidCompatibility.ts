@@ -27,6 +27,7 @@ import { isPartialMask, maskToPolygon } from '@/shared/utils/cellMask';
 import { computeHandleHoleGeometry } from '@/shared/utils/handleCutoutClip';
 import { hasAnyPatternedWall } from '@/shared/utils/wallPatternSides';
 import { railFoulingLabelFootprints } from '@/shared/utils/labelTabPlan';
+import { dividerRailBlocks, dividerRailSides } from '@/shared/utils/dividerRailPlan';
 import {
   computeLipOffset,
   resolveScoopPlacement,
@@ -367,27 +368,25 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
     }
   }
 
-  // 9. Compartment dividers. `compartmentBuilder` builds divider walls
-  //    from `Z=0` (floor) up to `Z=wallHeight` — the full wall height,
-  //    INCLUDING the lip Z range. Where the divider meets the bin's
-  //    inner wall, the divider material at lip-area Z occupies the
-  //    same radial space as the lid's mating shell. The lid still
-  //    seats around the perimeter, but the divider's top corners can
-  //    interfere with the cavity wall at the contact points.
+  // 9. Compartment dividers (#3477). A divider is built from the cavity floor
+  //    to the interior ceiling, whose top is only `LIP_SMALL_TAPER` below the
+  //    bin's wall top, and a seated click rail hangs 3.15mm under that same
+  //    plane while reaching inboard of the inner wall face. A rail run straight
+  //    through a divider's end is therefore 3.1mm of solid-on-solid overlap and
+  //    the lid cannot close at all. `dividerRailBlocks` notches the run around
+  //    them; this reports which walls paid for it.
   //
-  //    Skipped when divider walls aren't actually generated:
-  //    - polygon (cellMask) bins: compartments are gated off entirely
-  //    - 'solid' style: no interior cavity, no compartments
-  //    - 'slotted' style: uses slot rails instead of compartment walls
-  //    Otherwise a stale `compartments.cells` array (left over from a
-  //    previous style) would fire a false-positive warning.
-  if (
-    !isPolygon &&
-    params.style !== 'solid' &&
-    params.style !== 'slotted' &&
-    new Set(params.compartments.cells).size > 1
-  ) {
-    issues.push({ id: 'compartmentDividers', severity: 'warning' });
+  //    Rail-specific, like `scoopFillsLip` and unlike every lip check above: a
+  //    friction or magnetic lid's mating skirt stops ABOVE the divider tops, so
+  //    those modes have nothing to warn about. Everything else the planner
+  //    answers — a shortened `dividerHeight`, a tall `extraWallHeightMm` collar,
+  //    a polygon or non-standard style, or a grid too fine to build walls at
+  //    all each yield no blocks, and so no warning.
+  if (params.lid.attachment === 'clickRails') {
+    const sides = dividerRailSides(dividerRailBlocks(params));
+    if (sides.length > 0) {
+      issues.push({ id: 'compartmentDividers', severity: 'warning', sides });
+    }
   }
 
   // 10. Finger scoop reaching the click rail's band (#3426, #3434). A ramp
@@ -533,10 +532,16 @@ export function isLidBlockedBySection(params: BinParams, section: LidConflictSec
  * wall with gaps keeps rails in them. Deciding that here, up front, would
  * throw the gaps away before anything measured them.
  *
+ * A compartment divider is the same shape of thing, one wall crossing at a time
+ * (#3477): it costs the rail its own width plus a margin, never the wall.
+ *
  * Cutouts and intruding handles are different: they remove the lip material a
  * rail grips along the whole wall, so there is nothing to segment around.
  */
-const SIDES_ARE_ADVISORY: ReadonlySet<LidCompatibilityId> = new Set(['labelTabs']);
+const SIDES_ARE_ADVISORY: ReadonlySet<LidCompatibilityId> = new Set([
+  'labelTabs',
+  'compartmentDividers',
+]);
 
 /**
  * Per-side rail engagement: which sides should NOT receive a click rail

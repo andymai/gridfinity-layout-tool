@@ -976,7 +976,7 @@
   "binDesigner.lid.clickRailDisabledBySide": "Guida {side} disabilitata automaticamente per un conflitto di funzioni; vedi le note di compatibilità",
   "binDesigner.lid.clickRails": "Lati a incastro",
   "binDesigner.lid.compat.cellMaskHoles": "La forma personalizzata ha fori interni; quei bordi interni hanno il labbro ma non le guide (presa asimmetrica).",
-  "binDesigner.lid.compat.compartmentDividers": "I divisori degli scomparti arrivano fino al labbro; potrebbero premere contro il guscio di accoppiamento del coperchio dove incontrano le pareti del bin.",
+  "binDesigner.lid.compat.compartmentDividers": "I divisori degli scomparti arrivano alla sommità della cavità, dove entra la guida a incastro. La guida su {sides} viene intagliata attorno a ciascuno così il coperchio si chiude ancora.",
   "binDesigner.lid.compat.disabledMany": "Risolvi {count} conflitti per abilitare il coperchio",
   "binDesigner.lid.compat.disabledOne": "Risolvi il conflitto per abilitare il coperchio: {detail}",
   "binDesigner.lid.compat.fix.handlesAllSides": "disabilita alcune maniglie",
