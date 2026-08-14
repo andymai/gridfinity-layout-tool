@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.409.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.409.0...gridfinity-layout-tool-v4.409.1) (2026-08-14)
+
+
+### Bug Fixes
+
+* **lid:** clip custom-shape click rails around cutouts and handles ([#3482](https://github.com/andymai/gridfinity-layout-tool/issues/3482)) ([#3499](https://github.com/andymai/gridfinity-layout-tool/issues/3499)) ([de6158c](https://github.com/andymai/gridfinity-layout-tool/commit/de6158cd1505f3ad94aa6a0a89d94aabd671f8b8))
+
 ## [4.409.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.408.2...gridfinity-layout-tool-v4.409.0) (2026-08-14)
 
 
