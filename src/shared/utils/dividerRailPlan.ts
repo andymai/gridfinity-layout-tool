@@ -32,7 +32,7 @@ import {
   type RailSegment,
 } from '@/shared/utils/labelTabPlan';
 import { railInboardReachMm } from '@/shared/constants/lidKeepout';
-import { interiorReliefActive } from '@/features/bin-designer/utils/lidCompatibility';
+import { interiorReliefActive } from '@/shared/utils/lidInteriorRelief';
 
 /**
  * Air (mm) kept between a rail's cut end and a divider's face.

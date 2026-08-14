@@ -65,8 +65,8 @@ export function GhostLabelTabs() {
       compartments: s.params.compartments,
       label: s.params.label,
       // Whole params, for `labelShelfKeepoutMm` alone: the interior-relief gate
-      // folds in every lid compatibility blocker, so a subset would go stale
-      // the next time one is added.
+      // reads the lid config, the base's lip and tile flags and the cell mask,
+      // and a hand-picked subset would go stale the next time it grows a term.
       params: s.params,
       generationStatus: s.generation.status,
     }))
