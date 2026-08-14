@@ -8,6 +8,8 @@ import {
 } from '@/features/bin-designer/types';
 import type { useTranslation } from '@/i18n';
 import { railSegmentsClearOfLabelTabs } from '@/shared/utils/labelTabPlan';
+import { railSegmentsClearOfDividers } from '@/shared/utils/dividerRailPlan';
+import type { DividerRailBlock } from '@/shared/utils/dividerRailPlan';
 import type { LabelTabFootprint } from '@/shared/utils/labelTabPlan';
 import {
   isPartialMask,
@@ -113,7 +115,13 @@ export function computeRailSummary(
    * compared against, an overhang bin could disagree on the rail COUNT near a
    * tab edge, not merely on the length.
    */
-  outerExpansion: { readonly addW: number; readonly addD: number } = { addW: 0, addD: 0 }
+  outerExpansion: { readonly addW: number; readonly addD: number } = { addW: 0, addD: 0 },
+  /**
+   * Stretches the bin's compartment dividers deny to a rail (#3477). Empty for
+   * a bin that builds no divider walls. Without them the readout counts rails
+   * the worker will not build.
+   */
+  dividerBlocks: readonly DividerRailBlock[] = []
 ): RailSummary {
   const fitClearance = LID_FIT_CLEARANCE;
   const lidCornerR = LID_CORNER_RADIUS - fitClearance;
@@ -173,7 +181,11 @@ export function computeRailSummary(
   const collect = (side: LidRailSide, alongX: boolean, railCross: number): void => {
     if (!clickRails[side] || disabledRails.has(side)) return;
     const half = alongX ? corneredOuterX : corneredOuterY;
-    for (const seg of railSegmentsClearOfLabelTabs(-half, half, alongX, railCross, footprints)) {
+    for (const seg of railSegmentsClearOfDividers(
+      railSegmentsClearOfLabelTabs(-half, half, alongX, railCross, footprints),
+      side,
+      dividerBlocks
+    )) {
       const len = (seg.hi - seg.lo) * coverage;
       if (len >= LID_MIN_RAIL_LENGTH) lengths.push(len);
     }

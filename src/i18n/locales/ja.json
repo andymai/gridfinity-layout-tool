@@ -976,7 +976,7 @@
   "binDesigner.lid.clickRailDisabledBySide": "{side}レールは機能の競合により自動無効化されました — 互換性に関する注意点を参照",
   "binDesigner.lid.clickRails": "スナップフィット側面",
   "binDesigner.lid.compat.cellMaskHoles": "カスタム形状に内部の穴があります — 内側エッジにはリップがあるがレールがありません(非対称のグリップ)。",
-  "binDesigner.lid.compat.compartmentDividers": "区画の仕切り板がリップまで伸びています — ビンの壁と合流する部分で蓋の合わせ部に押し付けられる場合があります。",
+  "binDesigner.lid.compat.compartmentDividers": "区画の仕切り板は、クリックレールが入る空洞の上端まで届きます。{sides}のレールは各仕切り板の位置で切り欠かれるため、蓋は問題なく閉まります。",
   "binDesigner.lid.compat.disabledMany": "蓋を有効にするには{count}件の競合を解決してください",
   "binDesigner.lid.compat.disabledOne": "蓋を有効にするには競合を解決してください：{detail}",
   "binDesigner.lid.compat.fix.handlesAllSides": "一部のハンドルを無効化",

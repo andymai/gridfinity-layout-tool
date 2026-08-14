@@ -976,7 +976,7 @@
   "binDesigner.lid.clickRailDisabledBySide": "Klickskena {side} inaktiverad av en konflikt — se kompatibilitetsnoteringar",
   "binDesigner.lid.clickRails": "Snäpplåssidor",
   "binDesigner.lid.compat.cellMaskHoles": "Anpassad form har interiörhål — de inre kanterna har läpp men inga skenor (asymmetriskt grepp).",
-  "binDesigner.lid.compat.compartmentDividers": "Fackavdelare sträcker sig upp till läppen — de kan trycka mot lockets passningsskal där de möter fackväggarna.",
+  "binDesigner.lid.compat.compartmentDividers": "Fackavdelare når upp till hålrummets överkant, där klickskenan går ner. Skenan på {sides} får en urtagning vid varje avdelare så att locket fortfarande stänger.",
   "binDesigner.lid.compat.disabledMany": "Lös {count} konflikter för att aktivera lock",
   "binDesigner.lid.compat.disabledOne": "Lös konflikten för att aktivera lock: {detail}",
   "binDesigner.lid.compat.fix.handlesAllSides": "inaktivera vissa handtag",

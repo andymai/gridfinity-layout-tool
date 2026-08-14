@@ -21,7 +21,6 @@ function backTab(xMin: number, xMax: number, wallY: number, depth: number): Labe
     yMax: wallY,
     zMin: 20,
     zMax: 36,
-    onOuterWall: true,
   };
 }
 

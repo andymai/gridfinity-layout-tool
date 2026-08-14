@@ -227,17 +227,51 @@ describe('checkLidCompatibility', () => {
   });
 
   describe('compartment dividers', () => {
-    it('flags when the bin has multiple compartments (dividers are built)', () => {
-      const params = withOverrides({
-        compartments: {
-          cols: 2,
-          rows: 1,
-          thickness: 1.2,
-          cells: [0, 1], // two distinct compartments → divider between them
-        },
-      });
-      const issue = checkLidCompatibility(params).find((i) => i.id === 'compartmentDividers');
+    const twoCompartments = {
+      cols: 2,
+      rows: 1,
+      thickness: 1.2,
+      cells: [0, 1], // two distinct compartments → divider between them
+    };
+
+    it('flags the walls whose rail is notched around a divider', () => {
+      const issue = checkLidCompatibility(withOverrides({ compartments: twoCompartments })).find(
+        (i) => i.id === 'compartmentDividers'
+      );
       expect(issue?.severity).toBe('warning');
+      // A column boundary runs wall to wall, so both ends take a notch.
+      expect(issue?.sides).toEqual(['front', 'back']);
+    });
+
+    it('never disables a wall outright — the rail keeps the stretches between', () => {
+      const issues = checkLidCompatibility(withOverrides({ compartments: twoCompartments }));
+      expect(computeDisabledRails(issues).size).toBe(0);
+    });
+
+    it('does not flag a magnetic lid, whose skirt stops above the dividers', () => {
+      const params = withOverrides({
+        compartments: twoCompartments,
+        lid: { ...DEFAULT_BIN_PARAMS.lid, attachment: 'magnetic' },
+      });
+      expect(
+        checkLidCompatibility(params).find((i) => i.id === 'compartmentDividers')
+      ).toBeUndefined();
+    });
+
+    it('does not flag dividers shortened clear of the rail band', () => {
+      const params = withOverrides({
+        compartments: { ...twoCompartments, dividerHeight: 12 },
+      });
+      expect(
+        checkLidCompatibility(params).find((i) => i.id === 'compartmentDividers')
+      ).toBeUndefined();
+    });
+
+    it('does not flag when a collar lifts the rail band clear', () => {
+      const params = withOverrides({ compartments: twoCompartments, extraWallHeightMm: 4 });
+      expect(
+        checkLidCompatibility(params).find((i) => i.id === 'compartmentDividers')
+      ).toBeUndefined();
     });
 
     it('does not flag when all cells share one compartment (no dividers)', () => {

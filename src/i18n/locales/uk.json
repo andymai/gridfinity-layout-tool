@@ -976,7 +976,7 @@
   "binDesigner.lid.clickRailDisabledBySide": "Фіксатор {side} вимкнено через конфлікт — див. примітки сумісності",
   "binDesigner.lid.clickRails": "Защіпки",
   "binDesigner.lid.compat.cellMaskHoles": "Користувацька форма має внутрішні отвори — ці внутрішні краї мають край, але без рейок (асиметричне зчеплення).",
-  "binDesigner.lid.compat.compartmentDividers": "Розділювачі відсіків доходять до краю — вони можуть притискатися до посадкової оболонки кришки в місцях контакту зі стінами біна.",
+  "binDesigner.lid.compat.compartmentDividers": "Розділювачі відсіків доходять до верху порожнини, куди опускається фіксатор. Фіксатор на {sides} має виріз біля кожного розділювача, тож кришка й далі закривається.",
   "binDesigner.lid.compat.disabledMany": "Розв’яжіть {count} конфліктів, щоб увімкнути кришку",
   "binDesigner.lid.compat.disabledOne": "Розв’яжіть конфлікт, щоб увімкнути кришку: {detail}",
   "binDesigner.lid.compat.fix.handlesAllSides": "вимкнути частину ручок",

@@ -28,7 +28,6 @@ describe('computeRailSummary', () => {
     yMax: 61.5,
     zMin: 20,
     zMax: 36,
-    onOuterWall: true,
   });
 
   it('drops the back rail when a full-width tab takes that wall', () => {

@@ -72,8 +72,14 @@ describe('labelTabFootprints', () => {
     ).toEqual([]);
   });
 
+  // Anchored ON the outer wall, as opposed to hanging from an interior row
+  // divider. Both are built and both are returned; these cases are about the
+  // outer ones, so they select by position rather than by anchor name.
+  const atBackWall = (f: { yMax: number }): boolean => f.yMax > dims.innerD / 2 - 1e-6;
+  const atFrontWall = (f: { yMin: number }): boolean => f.yMin < -dims.innerD / 2 + 1e-6;
+
   it('anchors a back tab to the back wall and extends it forward', () => {
-    const outer = build(withLabel({ edges: 'back' })).filter((f) => f.onOuterWall);
+    const outer = build(withLabel({ edges: 'back' })).filter(atBackWall);
     expect(outer.length).toBeGreaterThan(0);
     for (const fp of outer) {
       expect(fp.anchor).toBe('back');
@@ -83,7 +89,7 @@ describe('labelTabFootprints', () => {
   });
 
   it('anchors a front tab to the front wall instead', () => {
-    const outer = build(withLabel({ edges: 'front' })).filter((f) => f.onOuterWall);
+    const outer = build(withLabel({ edges: 'front' })).filter(atFrontWall);
     expect(outer.length).toBeGreaterThan(0);
     for (const fp of outer) {
       expect(fp.anchor).toBe('front');
@@ -94,7 +100,7 @@ describe('labelTabFootprints', () => {
   it('reports both outer walls when tabs sit on both edges', () => {
     const anchors = new Set(
       build(withLabel({ edges: 'both' }))
-        .filter((f) => f.onOuterWall)
+        .filter((f) => atBackWall(f) || atFrontWall(f))
         .map((f) => f.anchor)
     );
     expect(anchors).toEqual(new Set(['back', 'front']));
@@ -200,6 +206,28 @@ describe('railFoulingLabelFootprints', () => {
         label: { ...DEFAULT_BIN_PARAMS.label, enabled: false },
       })
     ).toEqual([]);
+  });
+
+  it('keeps the tab hanging from an interior row divider (#3477)', () => {
+    // It cannot reach the rail on the wall it FACES, a row away, which is why
+    // it was filtered out. But it spans its compartment wall to wall in X, so
+    // it runs straight into the left and right rails — 1.25mm deep on a 2x2.
+    // The cross-axis test in `railSegmentsClearOfLabelTabs` is what decides
+    // which walls a footprint really takes, so it has to see this one.
+    const params = withLabel(
+      { edges: 'back' },
+      { compartments: { cols: 2, rows: 2, thickness: 1.2, cells: [0, 1, 2, 3] } }
+    );
+    const dims = labelTabInteriorDims(params);
+    if (!dims) throw new Error('expected interior dims');
+    const interior = railFoulingLabelFootprints(params).filter(
+      (f) => f.yMax < dims.innerD / 2 - 1e-6
+    );
+    expect(interior.length).toBeGreaterThan(0);
+    // And each one reaches a side wall, which is where the rail it fouls runs.
+    expect(
+      interior.every((f) => f.xMin <= -dims.innerW / 2 + 1e-6 || f.xMax >= dims.innerW / 2 - 1e-6)
+    ).toBe(true);
   });
 });
 

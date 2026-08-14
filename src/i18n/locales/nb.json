@@ -976,7 +976,7 @@
   "binDesigner.lid.clickRailDisabledBySide": "Klikkrenne {side} deaktivert av en konflikt — se kompatibilitetsmerknader",
   "binDesigner.lid.clickRails": "Klikklås per side",
   "binDesigner.lid.compat.cellMaskHoles": "Tilpasset form har innvendige hull — de indre kantene har stablekant, men ingen skinner (asymmetrisk grep).",
-  "binDesigner.lid.compat.compartmentDividers": "Skilleveggene strekker seg opp til stablekanten — de kan presse mot lokkets festekappe der de møter boksveggene.",
+  "binDesigner.lid.compat.compartmentDividers": "Skilleveggene når toppen av hulrommet, der klikkrennen går ned. Rennen på {sides} får et hakk ved hver skillevegg, slik at lokket fortsatt lukkes.",
   "binDesigner.lid.compat.disabledMany": "Løs {count} konflikter for å aktivere lokket",
   "binDesigner.lid.compat.disabledOne": "Løs konflikten for å aktivere lokket: {detail}",
   "binDesigner.lid.compat.fix.handlesAllSides": "deaktiver noen håndtak",

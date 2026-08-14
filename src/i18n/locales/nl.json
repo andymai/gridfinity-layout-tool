@@ -976,7 +976,7 @@
   "binDesigner.lid.clickRailDisabledBySide": "Kliklat {side} uitgeschakeld door een conflict — zie compatibiliteitsopmerkingen",
   "binDesigner.lid.clickRails": "Kliksluiting per zijde",
   "binDesigner.lid.compat.cellMaskHoles": "Aangepaste vorm heeft binnenliggende gaten — die binnenranden hebben stapelrand maar geen rails (asymmetrische grip).",
-  "binDesigner.lid.compat.compartmentDividers": "Vakindelers lopen door tot aan de stapelrand — ze kunnen tegen de bevestigingsschaal van het deksel drukken waar ze de bakwanden raken.",
+  "binDesigner.lid.compat.compartmentDividers": "Vakindelers reiken tot bovenaan de holte, waar de kliklat invalt. De lat op {sides} krijgt bij elke indeler een uitsparing, zodat het deksel nog sluit.",
   "binDesigner.lid.compat.disabledMany": "Los {count} conflicten op om het deksel in te schakelen",
   "binDesigner.lid.compat.disabledOne": "Los het conflict op om het deksel in te schakelen: {detail}",
   "binDesigner.lid.compat.fix.handlesAllSides": "schakel sommige handgrepen uit",

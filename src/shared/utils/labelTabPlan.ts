@@ -488,12 +488,6 @@ export interface LabelTabFootprint {
   readonly yMax: number;
   readonly zMin: number;
   readonly zMax: number;
-  /**
-   * True when the tab hangs from the bin's own outer wall rather than an
-   * interior row divider. Only these can foul a lid, which never reaches
-   * deeper than the perimeter.
-   */
-  readonly onOuterWall: boolean;
 }
 
 /**
@@ -524,11 +518,6 @@ export function labelTabFootprints(
   const out: LabelTabFootprint[] = [];
   for (const row of layout.plannedRows) {
     const depthSign = row.anchor === 'back' ? -1 : 1;
-    // A tab sits on the outer wall when its anchor face IS that wall. `inset`
-    // slides the body inward but leaves the anchor where it was, so it is the
-    // un-inset anchor that decides this.
-    const outerY = row.anchor === 'back' ? innerD / 2 : -innerD / 2;
-    const inset = params.label.inset ?? 0;
     for (const slot of row.slots) {
       const anchorY = slot.positionY;
       const far = anchorY + depthSign * dims.tabDepth;
@@ -540,7 +529,6 @@ export function labelTabFootprints(
         yMax: Math.max(anchorY, far),
         zMin,
         zMax,
-        onOuterWall: Math.abs(anchorY - (outerY + depthSign * inset)) < 1e-6,
       });
     }
   }
@@ -642,11 +630,19 @@ export function labelTabInteriorDims(params: BinParams): {
 /**
  * Label tabs a lid's click rails could actually run into.
  *
- * Filtered to tabs on the bin's own outer wall that reach into the rails' Z
- * band: an interior-row tab sits too far inboard for a rail to reach, and a
- * shelf tucked under the rim (#1898) passes beneath one. Everything the
+ * Filtered on Z alone: a shelf tucked under the rim (#1898), or dropped by an
+ * inset, passes beneath the band and fouls nothing. Everything the
  * rail-clipping and the panel warnings need comes from here, so the two can
  * never disagree about which wall is fouled.
+ *
+ * NOT filtered on `onOuterWall`, which it was until #3477. A tab hanging from
+ * an interior row divider is indeed out of reach of the rail on the wall it
+ * FACES — but it spans its compartment wall to wall in X, so on a multi-row
+ * grid it runs straight into the left and right rails, at 1.25mm of overlap on
+ * a 2x2. Which walls a footprint really takes is the cross-axis test's
+ * question, and `railSegmentsClearOfLabelTabs` already asks it per wall: the
+ * back and front rails skip an interior tab on their own, because its span
+ * misses their line by a row.
  */
 export function railFoulingLabelFootprints(params: BinParams): readonly LabelTabFootprint[] {
   // A polygon bin's tabs are gated off by the builder, so it has none to foul
@@ -660,9 +656,7 @@ export function railFoulingLabelFootprints(params: BinParams): readonly LabelTab
     dims.innerD,
     dims.interiorHeight,
     params.wallThickness
-  ).filter(
-    (fp) => fp.onOuterWall && footprintFoulsRailBand(fp, dims.interiorHeight, dims.collarHeight)
-  );
+  ).filter((fp) => footprintFoulsRailBand(fp, dims.interiorHeight, dims.collarHeight));
 }
 
 /**

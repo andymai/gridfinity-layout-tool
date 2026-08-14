@@ -30,6 +30,8 @@ import {
 import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
 import { railFoulingLabelFootprints } from '@/shared/utils/labelTabPlan';
 import type { LabelTabFootprint } from '@/shared/utils/labelTabPlan';
+import { dividerRailBlocks } from '@/shared/utils/dividerRailPlan';
+import type { DividerRailBlock } from '@/shared/utils/dividerRailPlan';
 import { LID_FIT_CLEARANCE, LID_CORNER_RADIUS, lidAnchorZ, lidWallBottomZ } from './lidConstants';
 import { resolveOverhang, overhangExpansion, hasOverhang } from './overhang';
 
@@ -172,6 +174,16 @@ export interface LidInputs {
    * gates off anyway.
    */
   readonly labelFootprints: readonly LabelTabFootprint[];
+  /**
+   * Stretches of wall the bin's compartment dividers deny to a rail (#3477).
+   * A divider is built to the interior ceiling and a seated rail hangs 3.15mm
+   * below the wall top, so a rail run straight through one is 3.1mm of
+   * solid-on-solid overlap and the lid cannot close.
+   *
+   * Empty on a bin with one compartment, a polygon mask, or a non-standard
+   * style — anything that builds no divider walls.
+   */
+  readonly dividerBlocks: readonly DividerRailBlock[];
   /**
    * Grip relief (#3272), already gated: `mode` is forced to `'none'` when the
    * feature is off or its depth clamp left nothing useful, so builders can
@@ -377,6 +389,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     // so the UI rail-summary and the worker placement code stay in sync.
     disabledRails: computeDisabledRails(checkLidCompatibility(params)),
     labelFootprints: railFoulingLabelFootprints(params),
+    dividerBlocks: dividerRailBlocks(params),
     // Rails only engage in clickRails mode; friction/magnetic force them off so
     // the builder's rail pass is a no-op while the user's per-side choice is
     // preserved on the persisted config.

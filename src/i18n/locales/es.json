@@ -976,7 +976,7 @@
   "binDesigner.lid.clickRailDisabledBySide": "Guía {side} desactivada por un conflicto — ve las notas de compatibilidad",
   "binDesigner.lid.clickRails": "Cierre a presión por lado",
   "binDesigner.lid.compat.cellMaskHoles": "La forma personalizada tiene agujeros interiores — esos bordes internos tienen labio pero no rieles (sujeción asimétrica).",
-  "binDesigner.lid.compat.compartmentDividers": "Las divisorias de los compartimentos llegan hasta el labio — pueden presionar contra la cubierta de acoplamiento de la tapa donde tocan las paredes.",
+  "binDesigner.lid.compat.compartmentDividers": "Las divisorias de los compartimentos llegan hasta la parte superior de la cavidad, donde entra la guía de clic. La guía en {sides} se rebaja alrededor de cada una para que la tapa siga encajando.",
   "binDesigner.lid.compat.disabledMany": "Resuelve {count} conflictos para activar la tapa",
   "binDesigner.lid.compat.disabledOne": "Resuelve el conflicto para activar la tapa: {detail}",
   "binDesigner.lid.compat.fix.handlesAllSides": "desactivar algunas asas",

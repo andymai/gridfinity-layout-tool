@@ -326,6 +326,65 @@ export function getEligibleDividers(config: CompartmentConfig): EligibleDivider[
   return out;
 }
 
+/** Canonical-pair key for an override lookup map. */
+export function overrideKey(a: number, b: number): string {
+  return a < b ? `${a}|${b}` : `${b}|${a}`;
+}
+
+export function buildOverrideLookup(
+  overrides: readonly DividerOverride[] | undefined
+): Map<string, DividerOverride> {
+  const lookup = new Map<string, DividerOverride>();
+  if (!overrides) return lookup;
+  for (const o of overrides) {
+    lookup.set(overrideKey(o.compartmentA, o.compartmentB), o);
+  }
+  return lookup;
+}
+
+/**
+ * Walk a boundary line in single-cell steps and group contiguous cells where
+ * `key(i)` returns the SAME non-null string into runs. Each emitted run has
+ * a uniform `pairKey`. Used so the override lookup applies to runs that
+ * actually correspond to one (compartmentA, compartmentB) pair — a longer
+ * fused run that crosses pair changes would silently apply the first pair's
+ * override to the entire wall.
+ *
+ * Lives here rather than beside the wall builder because the lid's click rails
+ * have to notch around the same runs (#3477) and the main thread cannot import
+ * a module that pulls in brepjs.
+ */
+export function findPairAwareRuns(
+  count: number,
+  key: (i: number) => string | null
+): Array<{ start: number; end: number; pairKey: string }> {
+  const runs: Array<{ start: number; end: number; pairKey: string }> = [];
+  // Carry start + key as a single nullable object so segStart and segKey can
+  // never disagree (one set, the other still null). Prior shape stored them
+  // separately and TypeScript couldn't prove the invariant; reviewers
+  // flagged the `segKey ?? ''` fallback as either dead code or a silent
+  // misroute waiting to happen.
+  let open: { start: number; key: string } | null = null;
+  for (let i = 0; i < count; i++) {
+    const k = key(i);
+    if (k === null) {
+      if (open !== null) {
+        runs.push({ start: open.start, end: i, pairKey: open.key });
+        open = null;
+      }
+    } else if (open === null) {
+      open = { start: i, key: k };
+    } else if (k !== open.key) {
+      runs.push({ start: open.start, end: i, pairKey: open.key });
+      open = { start: i, key: k };
+    }
+  }
+  if (open !== null) {
+    runs.push({ start: open.start, end: count, pairKey: open.key });
+  }
+  return runs;
+}
+
 /**
  * True when an axis-aligned rectangle (e.g. a floor insert's footprint)
  * straddles ANY tilted divider segment. Used by `buildInsertCuts` to skip

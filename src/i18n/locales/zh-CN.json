@@ -976,7 +976,7 @@
   "binDesigner.lid.clickRailDisabledBySide": "{side} 导轨因功能冲突被自动停用 — 参见兼容性说明",
   "binDesigner.lid.clickRails": "卡扣侧边",
   "binDesigner.lid.compat.cellMaskHoles": "自定义形状有内部孔洞 — 那些内边有唇边但无导轨（抓握不对称）。",
-  "binDesigner.lid.compat.compartmentDividers": "隔间隔板向上延伸至唇边 — 在它们与收纳盒壁交汇处，可能会顶住盖子的配合外壳。",
+  "binDesigner.lid.compat.compartmentDividers": "隔间隔板延伸到内腔顶部，也就是卡扣导轨落入的位置。{sides} 上的导轨会在每块隔板处开槽，因此盖子仍能扣合。",
   "binDesigner.lid.compat.disabledMany": "解决 {count} 处冲突以启用盖子",
   "binDesigner.lid.compat.disabledOne": "解决冲突以启用盖子：{detail}",
   "binDesigner.lid.compat.fix.handlesAllSides": "停用部分把手",

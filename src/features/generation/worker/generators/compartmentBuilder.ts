@@ -8,6 +8,12 @@
 import { box, withScope, clone, unwrap, fuseAll, draw, intersect, cut } from 'brepjs';
 import type { Shape3D, ValidSolid, DisposalScope, Drawing } from 'brepjs';
 import type { BinParams, DividerOverride } from '@/shared/types/bin';
+// Pure grid helpers, kept in the compartment-grid util so the main thread can
+// reach them too — the lid's click rails notch around the same runs (#3477)
+// and cannot import this module, which pulls in brepjs.
+import { buildOverrideLookup, findPairAwareRuns, overrideKey } from '@/shared/types/bin';
+
+export { buildOverrideLookup, findPairAwareRuns, overrideKey };
 import { buildCacheKey, compactKey, quantize, stableSerialize } from './cacheKeyUtils';
 import { sketch } from './meshUtils';
 import { BOX_CORNER_RADIUS } from './generatorConstants';
@@ -442,61 +448,6 @@ function buildTiltedWallSegment(
   } catch {
     return null;
   }
-}
-
-/**
- * Walk a boundary line in single-cell steps and group contiguous cells where
- * `key(i)` returns the SAME non-null string into runs. Each emitted run has
- * a uniform `pairKey`. Used so the override lookup applies to runs that
- * actually correspond to one (compartmentA, compartmentB) pair — a longer
- * fused run that crosses pair changes would silently apply the first pair's
- * override to the entire wall.
- */
-export function findPairAwareRuns(
-  count: number,
-  key: (i: number) => string | null
-): Array<{ start: number; end: number; pairKey: string }> {
-  const runs: Array<{ start: number; end: number; pairKey: string }> = [];
-  // Carry start + key as a single nullable object so segStart and segKey can
-  // never disagree (one set, the other still null). Prior shape stored them
-  // separately and TypeScript couldn't prove the invariant; reviewers
-  // flagged the `segKey ?? ''` fallback as either dead code or a silent
-  // misroute waiting to happen.
-  let open: { start: number; key: string } | null = null;
-  for (let i = 0; i < count; i++) {
-    const k = key(i);
-    if (k === null) {
-      if (open !== null) {
-        runs.push({ start: open.start, end: i, pairKey: open.key });
-        open = null;
-      }
-    } else if (open === null) {
-      open = { start: i, key: k };
-    } else if (k !== open.key) {
-      runs.push({ start: open.start, end: i, pairKey: open.key });
-      open = { start: i, key: k };
-    }
-  }
-  if (open !== null) {
-    runs.push({ start: open.start, end: count, pairKey: open.key });
-  }
-  return runs;
-}
-
-/** Canonical-pair key for an override lookup map. */
-export function overrideKey(a: number, b: number): string {
-  return a < b ? `${a}|${b}` : `${b}|${a}`;
-}
-
-export function buildOverrideLookup(
-  overrides: readonly DividerOverride[] | undefined
-): Map<string, DividerOverride> {
-  const lookup = new Map<string, DividerOverride>();
-  if (!overrides) return lookup;
-  for (const o of overrides) {
-    lookup.set(overrideKey(o.compartmentA, o.compartmentB), o);
-  }
-  return lookup;
 }
 
 /** One interior divider wall segment, resolved to mm in bin-centered coords. */
