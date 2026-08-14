@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.409.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.408.2...gridfinity-layout-tool-v4.409.0) (2026-08-14)
+
+
+### Features
+
+* **lid:** relieve the interior of custom-shape bins ([#3497](https://github.com/andymai/gridfinity-layout-tool/issues/3497)) ([77b2ba6](https://github.com/andymai/gridfinity-layout-tool/commit/77b2ba61258b99aa10576ac545c29efcd1c23c5b))
+
 ## [4.408.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.408.1...gridfinity-layout-tool-v4.408.2) (2026-08-14)
 
 
