@@ -50,14 +50,14 @@ import {
   type SplitPreviewResult,
   type BaseplateExportResult,
   type ThreadingInfo,
-  type DedupCache,
   type ExportSlot,
   type PendingExport,
   type PendingExportMap,
   type MeshImportOutcome,
 } from './bridgeTypes';
 import type { MeshImportRotation } from '@/shared/generation/meshAsset';
-import { extractThreadingInfo, createDedupCache } from './bridgeHelpers';
+import { extractThreadingInfo } from './bridgeHelpers';
+import { GenerationResultCache } from './resultCache';
 import { installMessageHandler } from './bridgeMessageHandler';
 import {
   exportBin as exportBinImpl,
@@ -118,10 +118,15 @@ export class GenerationBridge {
   readonly adaptiveDebounce = new AdaptiveDebounce();
   threadingInfo: ThreadingInfo | null = null;
 
-  /** Size-1 dedup caches for bin and baseplate generation. */
-  binCache: DedupCache = createDedupCache();
-  baseplateCache: DedupCache = createDedupCache();
-  itemCache: DedupCache = createDedupCache();
+  /**
+   * Recent results keyed by params fingerprint, so an edit that lands back on
+   * a shape this bridge already built repaints instead of re-running the
+   * kernel. One per request kind; the three share a request channel but must
+   * not share a key space (a bin and an item can fingerprint alike).
+   */
+  readonly binCache = new GenerationResultCache();
+  readonly baseplateCache = new GenerationResultCache();
+  readonly itemCache = new GenerationResultCache();
 
   /** Pending export requests keyed by slot. Only one per slot at a time. */
   readonly pendingExports: PendingExportMap = new Map();
@@ -398,9 +403,9 @@ export class GenerationBridge {
     this.initPromise = null;
     this.onProgress = null;
     this.adaptiveDebounce.reset();
-    this.binCache = createDedupCache();
-    this.baseplateCache = createDedupCache();
-    this.itemCache = createDedupCache();
+    this.binCache.clear();
+    this.baseplateCache.clear();
+    this.itemCache.clear();
   }
 
   // ── Export methods (delegate to bridgeExports) ────────────────────
@@ -686,24 +691,15 @@ export class GenerationBridge {
     }
   }
 
-  /** If this cache has a pending fingerprint, promote it to the cached result and clear pending. */
-  commitDedupCache(cache: DedupCache, result: GenerationResult): void {
-    if (cache.pendingFingerprint) {
-      cache.fingerprint = cache.pendingFingerprint;
-      cache.result = result;
-      cache.pendingFingerprint = null;
-    }
-  }
-
   clearPending(): void {
     this.clearGenerationTimer();
     this.pendingResolve = null;
     this.pendingReject = null;
     this.currentRequestId = null;
     this.onProgress = null;
-    this.binCache.pendingFingerprint = null;
-    this.baseplateCache.pendingFingerprint = null;
-    this.itemCache.pendingFingerprint = null;
+    this.binCache.clearPending();
+    this.baseplateCache.clearPending();
+    this.itemCache.clearPending();
   }
 
   private clearGenerationTimer(): void {

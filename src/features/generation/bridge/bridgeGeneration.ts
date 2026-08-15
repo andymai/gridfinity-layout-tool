@@ -19,13 +19,14 @@ import type { WorkerMessage } from './types';
 import type { AdaptiveDebounce } from './adaptiveDebounce';
 import { computeBaseplateTimeoutMs, computeGenerationTimeoutMs } from './generationTimeout';
 import { paramsFingerprint } from './bridgeHelpers';
-import type { ProgressCallback, GenerationResult, DedupCache } from './bridgeTypes';
+import type { GenerationResultCache } from './resultCache';
+import type { ProgressCallback, GenerationResult } from './bridgeTypes';
 
 export interface BridgeGenerationContext {
   readonly isDestroyed: boolean;
-  readonly binCache: DedupCache;
-  readonly baseplateCache: DedupCache;
-  readonly itemCache: DedupCache;
+  readonly binCache: GenerationResultCache;
+  readonly baseplateCache: GenerationResultCache;
+  readonly itemCache: GenerationResultCache;
   readonly adaptiveDebounce: AdaptiveDebounce;
   debounceTimer: ReturnType<typeof setTimeout> | null;
   generationTimer: ReturnType<typeof setTimeout> | null;
@@ -99,9 +100,8 @@ export function generateBin(
   const fingerprint = withLabelPlates
     ? `${paramsFingerprint(params)}|plates`
     : paramsFingerprint(params);
-  if (ctx.binCache.fingerprint === fingerprint && ctx.binCache.result) {
-    return Promise.resolve(ctx.binCache.result);
-  }
+  const cached = ctx.binCache.get(fingerprint);
+  if (cached) return Promise.resolve(cached);
 
   if (ctx.debounceTimer !== null) {
     clearTimeout(ctx.debounceTimer);
@@ -118,7 +118,7 @@ export function generateBin(
     const send = (): void => {
       const requestId = ctx.nextRequestId();
       ctx.currentRequestId = requestId;
-      ctx.binCache.pendingFingerprint = fingerprint;
+      ctx.binCache.setPending(fingerprint);
       sendWhenReady(ctx, requestId, computeGenerationTimeoutMs(params), {
         type: 'GENERATE',
         payload: { params, requestId, withLabelPlates },
@@ -147,9 +147,8 @@ export function generateBaseplate(
   }
 
   const fingerprint = paramsFingerprint(params);
-  if (ctx.baseplateCache.fingerprint === fingerprint && ctx.baseplateCache.result) {
-    return Promise.resolve(ctx.baseplateCache.result);
-  }
+  const cached = ctx.baseplateCache.get(fingerprint);
+  if (cached) return Promise.resolve(cached);
 
   if (ctx.debounceTimer !== null) {
     clearTimeout(ctx.debounceTimer);
@@ -166,7 +165,7 @@ export function generateBaseplate(
     const send = (): void => {
       const requestId = ctx.nextRequestId();
       ctx.currentRequestId = requestId;
-      ctx.baseplateCache.pendingFingerprint = fingerprint;
+      ctx.baseplateCache.setPending(fingerprint);
       sendWhenReady(ctx, requestId, computeBaseplateTimeoutMs(params), {
         type: 'GENERATE_BASEPLATE',
         payload: { params, requestId },
@@ -240,9 +239,8 @@ export function generateItem(
   }
 
   const fingerprint = paramsFingerprint(item);
-  if (ctx.itemCache.fingerprint === fingerprint && ctx.itemCache.result) {
-    return Promise.resolve(ctx.itemCache.result);
-  }
+  const cached = ctx.itemCache.get(fingerprint);
+  if (cached) return Promise.resolve(cached);
 
   if (ctx.debounceTimer !== null) {
     clearTimeout(ctx.debounceTimer);
@@ -259,7 +257,7 @@ export function generateItem(
     const send = (): void => {
       const requestId = ctx.nextRequestId();
       ctx.currentRequestId = requestId;
-      ctx.itemCache.pendingFingerprint = fingerprint;
+      ctx.itemCache.setPending(fingerprint);
       sendWhenReady(ctx, requestId, computeItemTimeoutMs(item), {
         type: 'GENERATE_ITEM',
         payload: { item, requestId },

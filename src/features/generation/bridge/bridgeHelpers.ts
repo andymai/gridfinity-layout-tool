@@ -1,10 +1,10 @@
 /**
- * Pure helpers for the generation bridge: deterministic params fingerprint,
- * INIT_READY threading-info validation, and dedup-cache initialization.
+ * Pure helpers for the generation bridge: deterministic params fingerprint and
+ * INIT_READY threading-info validation.
  */
 
 import type { KernelName } from './types';
-import type { DedupCache, ThreadingInfo } from './bridgeTypes';
+import type { ThreadingInfo } from './bridgeTypes';
 
 // Re-exported rather than defined here: the worker needs the same encoding for
 // its `lastSolid` identity, and worker → bridge value imports are not allowed.
@@ -23,8 +23,4 @@ export function extractThreadingInfo(data: {
       : 4;
   const kernel: KernelName = data.kernel === 'brepkit' ? 'brepkit' : 'occt-wasm';
   return { isThreaded, hardwareConcurrency, kernel };
-}
-
-export function createDedupCache(): DedupCache {
-  return { fingerprint: null, result: null, pendingFingerprint: null };
 }

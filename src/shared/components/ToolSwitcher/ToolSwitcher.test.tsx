@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ToolSwitcher } from './ToolSwitcher';
+import { resetIntentPrefetchForTests } from '@/shared/hooks/useIntentPrefetch';
 
 const mockNavigateToDesigner = vi.fn();
 const mockNavigateToPlanner = vi.fn();
@@ -31,12 +32,21 @@ vi.mock('@/shared/hooks/useCommunityRouting', () => ({
   useCommunityRouting: () => ({ isCommunityRoute: mockIsCommunityRoute }),
 }));
 
+const mockWarmDesigner = vi.fn();
+const mockWarmBaseplate = vi.fn();
+
+vi.mock('@/shared/hooks/usePrefetchChunks', () => ({
+  warmDesigner: () => mockWarmDesigner(),
+  warmBaseplate: () => mockWarmBaseplate(),
+}));
+
 describe('ToolSwitcher', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsDesignerRoute = false;
     mockIsBaseplateRoute = false;
     mockIsCommunityRoute = false;
+    resetIntentPrefetchForTests();
   });
 
   it('shows tablist', () => {
@@ -193,6 +203,52 @@ describe('ToolSwitcher', () => {
       await user.click(screen.getAllByRole('tab')[0]);
 
       expect(mockNavigateToPlanner).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  // Both editors are lazy chunks plus a geometry kernel, so the fetch has to
+  // start on the reach rather than on the click — otherwise the panel is blank
+  // for as long as the chunk takes, every time.
+  describe('prefetch on intent', () => {
+    it('warms the designer when the pointer reaches its segment', async () => {
+      const user = userEvent.setup();
+      render(<ToolSwitcher />);
+
+      await user.hover(screen.getAllByRole('tab')[1]);
+
+      expect(mockWarmDesigner).toHaveBeenCalledTimes(1);
+      expect(mockWarmBaseplate).not.toHaveBeenCalled();
+      expect(mockNavigateToDesigner).not.toHaveBeenCalled();
+    });
+
+    it('warms the baseplate when its segment takes focus', () => {
+      render(<ToolSwitcher />);
+
+      screen.getAllByRole('tab')[2].focus();
+
+      expect(mockWarmBaseplate).toHaveBeenCalledTimes(1);
+      expect(mockWarmDesigner).not.toHaveBeenCalled();
+    });
+
+    // Touch never hovers, and the idle tier-prefetch stands down on those
+    // devices, so pointerdown is the only warning they give.
+    it('warms on pointer-down, which is all a touch device offers', async () => {
+      const user = userEvent.setup();
+      render(<ToolSwitcher />);
+
+      await user.pointer({ keys: '[TouchA>]', target: screen.getAllByRole('tab')[1] });
+
+      expect(mockWarmDesigner).toHaveBeenCalledTimes(1);
+    });
+
+    it('leaves the planner alone — it is the eager route', async () => {
+      const user = userEvent.setup();
+      render(<ToolSwitcher />);
+
+      await user.hover(screen.getAllByRole('tab')[0]);
+
+      expect(mockWarmDesigner).not.toHaveBeenCalled();
+      expect(mockWarmBaseplate).not.toHaveBeenCalled();
     });
   });
 });

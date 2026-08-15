@@ -746,6 +746,37 @@ describe('GenerationBridge', () => {
       expect(result.mesh.triangleCount).toBe(2);
     });
 
+    // Returning to a shape this bridge already built is the commonest edit in
+    // a parametric designer — toggle a feature on and back off, drag a slider
+    // home, step a value up then down. A single-slot cache had already
+    // evicted it, so every round trip re-ran the kernel for geometry the tab
+    // computed seconds earlier.
+    it('serves the earlier params again after an intervening edit', async () => {
+      await initAndGenerate();
+
+      const away = bridge.generate({ ...DEFAULT_BIN_PARAMS, width: 3 });
+      await vi.advanceTimersByTimeAsync(200);
+      const sent = getWorker().messages.filter((m) => (m as { type: string }).type === 'GENERATE');
+      const msg = sent[1] as { payload: { requestId: string } };
+      getWorker().simulateResponse({
+        type: 'MESH_RESULT',
+        requestId: msg.payload.requestId,
+        vertices: new Float32Array([4, 5, 6]),
+        normals: new Float32Array([0, 1, 0]),
+        indices: new Uint32Array([0]),
+        edgeVertices: new Float32Array([]),
+        triangleCount: 2,
+        timingMs: 50,
+      });
+      await away;
+
+      const back = await bridge.generate(DEFAULT_BIN_PARAMS);
+      expect(back.mesh.triangleCount).toBe(1);
+      expect(
+        getWorker().messages.filter((m) => (m as { type: string }).type === 'GENERATE').length
+      ).toBe(2);
+    });
+
     it('generateImmediate also uses cache', async () => {
       await initAndGenerate();
 

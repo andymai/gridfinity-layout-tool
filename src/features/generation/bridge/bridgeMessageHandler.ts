@@ -12,10 +12,10 @@
 
 import type { WorkerResponse } from './types';
 import type { AdaptiveDebounce } from './adaptiveDebounce';
+import type { GenerationResultCache } from './resultCache';
 import type {
   ProgressCallback,
   GenerationResult,
-  DedupCache,
   ExportSlot,
   PendingExport,
   PendingExportMap,
@@ -33,9 +33,9 @@ export interface MessageHandlerContext {
   pendingReject: ((error: Error) => void) | null;
   onProgress: ProgressCallback | null;
   readonly adaptiveDebounce: AdaptiveDebounce;
-  readonly binCache: DedupCache;
-  readonly baseplateCache: DedupCache;
-  readonly itemCache: DedupCache;
+  readonly binCache: GenerationResultCache;
+  readonly baseplateCache: GenerationResultCache;
+  readonly itemCache: GenerationResultCache;
   readonly pendingExports: PendingExportMap;
   readonly pendingEstimates: Map<string, (predictedMs: number | null) => void>;
   readonly pendingImports: Map<
@@ -49,7 +49,6 @@ export interface MessageHandlerContext {
   clearExportTimer: (pending: PendingExport<unknown>) => void;
   resolveExport: (slot: ExportSlot, requestId: string, result: unknown) => boolean;
   rejectExportByRequestId: (requestId: string, error: Error) => boolean;
-  commitDedupCache: (cache: DedupCache, result: GenerationResult) => void;
 }
 
 /**
@@ -237,10 +236,11 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
             perfSnapshot: response.perfSnapshot,
           };
 
-          // Cache for deduplication (bin, baseplate, or item — only one is in-flight)
-          ctx.commitDedupCache(ctx.binCache, result);
-          ctx.commitDedupCache(ctx.baseplateCache, result);
-          ctx.commitDedupCache(ctx.itemCache, result);
+          // Only one of the three has a request in flight; the other two
+          // hold no pending fingerprint and ignore the offer.
+          ctx.binCache.commit(result);
+          ctx.baseplateCache.commit(result);
+          ctx.itemCache.commit(result);
 
           ctx.clearPending();
           resolve(result);

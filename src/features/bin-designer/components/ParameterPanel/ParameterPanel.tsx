@@ -25,6 +25,8 @@ import { LidSection } from '../panel/LidSection';
 import { PhysicalUnitsSection } from '../panel/PhysicalUnitsSection';
 import { SplitOptionsSection } from '../panel/SplitOptionsSection';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
+import { useIntentPrefetch } from '@/shared/hooks/useIntentPrefetch';
+import { warmDesignGallery } from '@/shared/hooks/usePrefetchChunks';
 import { StickyGroupHeader } from '../panel/StickyGroupHeader';
 import { PanelSection } from '../panel/PanelSection';
 import { ColorsSection } from '../panel/ColorsSection';
@@ -98,6 +100,8 @@ function BinParameterPanel() {
     };
   }, []);
 
+  const galleryIntent = useIntentPrefetch('modal:designGallery', warmDesignGallery);
+
   return (
     <div className="flex h-full flex-col">
       {/* `relative` makes this the containing block for `sr-only` (position:absolute)
@@ -114,6 +118,7 @@ function BinParameterPanel() {
           <Button
             variant="ghost"
             onClick={() => openExampleGallery('community')}
+            {...galleryIntent}
             className="w-full flex items-center gap-3 text-left p-3 rounded-lg bg-gradient-to-r from-accent/10 to-info/10 hover:from-accent/20 hover:to-info/20 border border-accent/20 transition-all group"
           >
             <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center group-hover:scale-105 transition-transform">

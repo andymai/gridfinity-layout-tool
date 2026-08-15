@@ -51,7 +51,8 @@ graph TB
 | `useGridTemplate()`   | CSS Grid template computation with half-bin fractional support        |
 | `useCrossTabSync()`   | Sync layout/library across browser tabs via StorageEvent              |
 | `usePWAUpdate()`      | Detect and prompt for service worker updates                          |
-| `usePrefetchChunks()` | Idle-time code chunk preloading                                       |
+| `usePrefetchChunks()` | Idle-time code chunk preloading (desktop only)                        |
+| `useIntentPrefetch()` | Warm a lazy destination on pointer-enter / pointer-down / focus       |
 | `useSharedWithMe()`   | Fetch and track layouts shared via Liveblocks                         |
 
 Inline rename lives in the design system: `useInlineEdit` for the headless

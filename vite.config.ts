@@ -306,15 +306,44 @@ export default defineConfig({
             },
           },
           {
+            // The Draco decoder, which only a GLB preview pulls. Its own cache
+            // so it is not competing for a slot with the geometry kernels
+            // below — it is three orders of magnitude smaller than occt-wasm
+            // and nothing about the two is related.
+            urlPattern: /\/draco\/.*\.wasm$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'draco-decoder',
+              expiration: {
+                maxEntries: 4,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+              },
+              cacheableResponse: {
+                statuses: [200],
+              },
+            },
+          },
+          {
             // Cache WASM binaries (content-hashed, immutable) after first use.
             // CacheFirst is safe because new deploys produce new hashes.
+            //
+            // Three kernels ship (occt-wasm ~22MB, brepkit ~5MB, manifold
+            // ~0.5MB), so a budget of three is a budget with no headroom: a
+            // deploy that rehashes any one of them adds a fourth entry and the
+            // LRU has to drop something. Six leaves room for a deploy's
+            // superseded copies to coexist with the current ones, and the
+            // shorter max-age lets the superseded ones fall out rather than
+            // sitting for a year. Getting this wrong is expensive in exactly
+            // one direction — evicting a live occt-wasm costs a 22MB refetch
+            // on the next designer open.
             urlPattern: /\.wasm$/,
             handler: 'CacheFirst',
             options: {
               cacheName: 'wasm-binaries',
               expiration: {
-                maxEntries: 4,
-                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+                maxEntries: 6,
+                maxAgeSeconds: 60 * 60 * 24 * 60, // 60 days
+                purgeOnQuotaError: true,
               },
               cacheableResponse: {
                 statuses: [200],
