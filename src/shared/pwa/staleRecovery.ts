@@ -1,5 +1,5 @@
 /**
- * One-shot self-heal for a client stuck on a stale cached bundle.
+ * One-shot self-heal for a client whose cached bundle has actually failed.
  *
  * The PWA's normal updater (`usePWAUpdate`) fixes the *next* load: a returning
  * user is served the old precached shell + old runtime-cached wasm, so the
@@ -10,6 +10,20 @@
  *
  * Guarded by a per-session flag so a genuinely broken new bundle can't loop:
  * we recover at most once per tab session.
+ *
+ * MUST stay wired to observed breakage, never to a version comparison. It was
+ * additionally triggered by a boot-time `gitSha !== __GIT_SHA__` test (#2049),
+ * which at ~6 deploys/day fires for nearly every returning visitor: purging the
+ * caches mid-session 404s the lazy chunks the running page has yet to request,
+ * so the "self-heal" became the single largest source of the kernel load
+ * failures it was written to repair (worker-init failures 0.1% -> 7.0% of
+ * visitors across the two months after it shipped; 727 users in the last clean
+ * 30-day window). `handleWasmLoadFailure` is the correct shape: it recovers only
+ * when a load has already failed with a stale-asset error.
+ *
+ * The wasm cache is dropped along with the precache deliberately — the one
+ * surviving caller reaches here *because* a wasm artifact failed to load, so it
+ * is the suspect rather than a bystander.
  */
 
 import { getPosthogInstance } from '@/shared/analytics/posthog/init';
