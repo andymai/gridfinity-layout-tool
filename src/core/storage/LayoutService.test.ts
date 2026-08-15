@@ -10,7 +10,6 @@ import type { Layout } from '@/core/types';
 import { binId, gridUnits, heightUnits } from '@/core/types';
 import { createDefaultLayout, STAGING_ID } from '@/core/constants';
 
-// Mock localStorage
 const localStorageMock = (() => {
   let store: Record<string, string> = {};
   return {

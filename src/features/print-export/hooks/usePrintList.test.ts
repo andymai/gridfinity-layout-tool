@@ -40,7 +40,6 @@ function createTestBin(overrides: Partial<Bin> = {}): Bin {
   };
 }
 
-// Helper to create a test layout
 function createTestLayout(bins: Bin[] = []): Layout {
   const layout = createDefaultLayout();
   return {

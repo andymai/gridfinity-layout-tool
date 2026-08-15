@@ -135,7 +135,6 @@ describe('useContextMenu', () => {
 
       expect(result.current.isOpen).toBe(false);
 
-      // Cleanup
       document.body.removeChild(menuElement);
       document.body.removeChild(outsideElement);
     });
@@ -165,7 +164,6 @@ describe('useContextMenu', () => {
     it('does NOT close menu when clicking inside menuRef', () => {
       const { result } = renderHook(() => useContextMenu());
 
-      // Create a mock menu element
       const menuElement = document.createElement('div');
       document.body.appendChild(menuElement);
 
@@ -192,7 +190,6 @@ describe('useContextMenu', () => {
       // Menu should still be open
       expect(result.current.isOpen).toBe(true);
 
-      // Cleanup
       document.body.removeChild(menuElement);
     });
 

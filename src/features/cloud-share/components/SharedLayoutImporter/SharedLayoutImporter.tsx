@@ -109,7 +109,6 @@ export function SharedLayoutImporter() {
     [isOwnShare, getSharedWithMeByShareId, markShareAccessed, updateSharedWithMe, addSharedWithMe]
   );
 
-  // Helper function to load a layout into preview
   const loadLayoutPreview = useCallback(
     (layout: Layout, authorName?: string, cloudShareId?: string, permission?: 'view' | 'edit') => {
       activateLayout(layout, SHARED_PREVIEW_ID, `Viewing shared layout: ${layout.name}`);

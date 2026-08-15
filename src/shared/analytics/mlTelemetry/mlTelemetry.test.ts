@@ -61,7 +61,6 @@ vi.mock('@/core/store/layout', () => ({
   },
 }));
 
-// Helper to create a test layout with bins
 function createTestLayoutWithBins(binCount: number): Layout {
   const layout = createDefaultLayout();
   layout.bins = [];

@@ -73,7 +73,6 @@ describe('useStagingDragInteraction', () => {
     });
   });
 
-  // Helper to add a bin in staging
   function addStagingBin(): BinId {
     const { addBin, layout } = useLayoutStore.getState();
     const categoryId = layout.categories[0].id;
@@ -93,7 +92,6 @@ describe('useStagingDragInteraction', () => {
     );
   }
 
-  // Helper to add a bin on the grid
   function addGridBin(x: number, y: number): BinId {
     const { addBin, layout } = useLayoutStore.getState();
     const layerId = layout.layers[0].id;

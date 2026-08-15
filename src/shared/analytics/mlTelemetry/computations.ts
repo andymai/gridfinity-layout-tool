@@ -238,7 +238,6 @@ export function computeSessionConfidence(
   // No bins placed = no confidence
   if (binsPlaced === 0) return 0;
 
-  // Undo score
   const undoScore = undoCount === 0 ? 1.0 : undoCount <= 2 ? 0.8 : undoCount <= 5 ? 0.6 : 0.4;
 
   // Correction score

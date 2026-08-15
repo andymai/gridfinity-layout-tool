@@ -424,7 +424,6 @@ describe('GridCanvas', () => {
 
       const { container } = renderGridCanvas();
 
-      // Click on the bin element
       const binElement = container.querySelector('[data-bin-id="test-bin-click"]');
       fireEvent.pointerDown(binElement!, {
         button: 0,

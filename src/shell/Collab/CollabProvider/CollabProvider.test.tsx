@@ -45,7 +45,6 @@ describe('CollabProvider', () => {
     resetAllStores();
     vi.clearAllMocks();
 
-    // Mock localStorage
     const localStorageMock = {
       getItem: vi.fn(() => 'test-user-id'),
       setItem: vi.fn(),

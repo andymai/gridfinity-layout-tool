@@ -9,12 +9,10 @@ import { useRecentCommandsStore } from './recentStore';
 const STORAGE_KEY_V2 = 'gridfinity-command-palette-frecency-v2';
 const STORAGE_KEY_V1 = 'gridfinity-command-palette-recents-v1';
 
-// Helper to set up localStorage
 function setLocalStorage(key: string, value: string) {
   localStorage.setItem(key, value);
 }
 
-// Helper to clear localStorage
 function clearLocalStorage() {
   localStorage.clear();
 }

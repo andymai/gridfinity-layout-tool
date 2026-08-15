@@ -8,8 +8,6 @@
 import type { Layout, Bin, Drawer } from '@/core/types';
 import { getGridBins } from '@/shared/utils/bins';
 
-// TYPES
-
 /**
  * High-level layout archetype classification.
  */
@@ -147,7 +145,6 @@ export function detectArchetype(layout: Layout): LayoutArchetype {
 function isCompartmentalized(bins: Bin[], layout: Layout): boolean {
   if (layout.categories.length < 2) return false;
 
-  // Group bins by category
   const categoryBins = new Map<string, Bin[]>();
   for (const bin of bins) {
     const cat = bin.category || 'default';
@@ -355,7 +352,6 @@ export function computeUniformityScore(bins: Bin[]): number {
   if (bins.length === 0) return 1;
   if (bins.length === 1) return 1;
 
-  // Count size distribution
   const sizeDistribution = new Map<string, number>();
   for (const bin of bins) {
     const key = getBinSizeKey(bin);

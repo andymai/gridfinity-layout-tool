@@ -11,7 +11,6 @@ import { createDefaultLayout } from '@/core/constants';
 import type { Layout } from '@/core/types';
 import { binId, layerId, gridUnits, heightUnits } from '@/core/types';
 
-// Mock ResizeObserver
 class MockResizeObserver {
   observe = vi.fn();
   unobserve = vi.fn();
@@ -49,7 +48,6 @@ vi.mock('@/features/print-export/components/PrintLayout', () => ({
   ),
 }));
 
-// Helper to create test layout
 function createTestLayout(): Layout {
   const base = createDefaultLayout();
   return {

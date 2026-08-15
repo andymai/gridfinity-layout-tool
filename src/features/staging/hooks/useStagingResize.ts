@@ -40,7 +40,6 @@ export function useStagingResize({
       handle.setPointerCapture(e.pointerId);
       capturedPointerIdRef.current = e.pointerId;
       setIsResizing(true);
-      // Get current scroll container height
       const currentHeight = scrollContainerRef.current?.offsetHeight ?? 200;
       resizeStartRef.current = { y: e.clientY, height: currentHeight };
     },

@@ -30,7 +30,6 @@ vi.mock('@/core/storage/librarySync', () => ({
   notifyLibraryChanged: vi.fn(),
 }));
 
-// Mock localStorage
 const localStorageMock = (() => {
   let store: Record<string, string> = {};
   return {

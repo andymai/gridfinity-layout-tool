@@ -86,7 +86,6 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     isTablet,
   });
 
-  // Handle backdrop click
   const handleBackdropClick = useCallback(
     (e: React.MouseEvent) => {
       if (e.target === e.currentTarget) {

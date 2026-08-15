@@ -850,7 +850,6 @@ describe('Staging', () => {
         .getElementById('staging-stash-panel')
         ?.querySelector('.overflow-y-auto');
 
-      // Get initial style
       const initialStyle = scrollContainer?.getAttribute('style') || '';
 
       // Move pointer without starting resize

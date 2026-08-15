@@ -44,7 +44,6 @@ export function CollabCursors({ className }: CollabCursorsProps) {
   const drawer = useLayoutStore((state) => state.layout.drawer);
   const { viewportWidth } = useResponsive();
 
-  // Calculate cell size with zoom
   const cellSize = Math.round(getBaseCellSize(viewportWidth) * zoom);
   const gap = 1; // 1px gap between cells
 

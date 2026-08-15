@@ -4,7 +4,6 @@ import { createDefaultLayout, STAGING_ID } from '@/core/constants';
 import { binId, gridUnits, heightUnits } from '@/core/types';
 import type { Layout, Bin } from '@/core/types';
 
-// Helper to create a test layout with bins
 function createTestLayoutWithBins(binCount: number): Layout {
   const layout = createDefaultLayout();
   layout.bins = [];

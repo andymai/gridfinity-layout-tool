@@ -322,7 +322,6 @@ export function CutoutWorkspace() {
     mode.type === 'group-rotating' ||
     mode.type === 'group-scaling';
 
-  // Build context menu actions
   const contextMenuActions = useMemo(
     () =>
       buildCutoutContextActions({

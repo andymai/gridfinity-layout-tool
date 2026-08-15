@@ -87,7 +87,6 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   const itemRefs = useRef<Map<string, HTMLDivElement | HTMLLIElement>>(new Map());
   const gridRef = useRef<HTMLDivElement>(null);
 
-  // View mode from settings
   const viewMode = useSettingsStore((s) => s.settings.designListViewMode);
   const updateSetting = useSettingsStore((s) => s.updateSetting);
   const setViewMode = useCallback(
@@ -197,7 +196,6 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
     [designs, activeTags, searchQuery, sortBy, currentDesignId]
   );
 
-  // Get localized sort options
   const localizedSortOptions = useMemo(
     () =>
       SORT_OPTIONS.map((value) => ({

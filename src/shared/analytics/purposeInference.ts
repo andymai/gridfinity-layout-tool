@@ -13,8 +13,6 @@ import { getGridBins, getLabeledBins } from '@/shared/utils/bins';
 import { processLabel, type LabelDomain } from './labelVocabulary';
 import { saveMlData, loadMlData } from '@/core/storage/backends/indexedDB';
 
-// TYPES
-
 /**
  * A signal that contributes to purpose inference.
  */

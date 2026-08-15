@@ -29,7 +29,6 @@ function createTestRow(overrides: Partial<EnhancedPrintRow> = {}): EnhancedPrint
   };
 }
 
-// Test categories
 const testCategories: Category[] = [
   { id: categoryId('cat1'), name: 'Tools', color: '#ff0000' },
   { id: categoryId('cat2'), name: 'Parts', color: '#00ff00' },

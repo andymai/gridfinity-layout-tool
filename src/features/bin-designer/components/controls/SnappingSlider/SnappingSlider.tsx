@@ -178,7 +178,6 @@ export function SnappingSlider({
     [disabled, values, value, onChange]
   );
 
-  // Handle tick click
   const handleTickClick = useCallback(
     (tickValue: number) => {
       if (!disabled) {

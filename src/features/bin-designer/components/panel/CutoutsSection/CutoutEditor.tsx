@@ -318,7 +318,6 @@ export function CutoutEditor() {
     selection.size === 1 ? (cutouts.find((c) => selection.has(c.id)) ?? null) : null;
   const selectedIds = [...selection];
 
-  // Build context menu actions
   const contextMenuActions = useMemo((): ContextMenuAction[] => {
     const hasSelection = selection.size > 0;
     const hasClipboard = clipboard.length > 0;

@@ -9,7 +9,6 @@ import {
 } from '@/shared/utils/url';
 
 describe('url utilities', () => {
-  // Store original location
   const originalLocation = window.location;
 
   beforeEach(() => {

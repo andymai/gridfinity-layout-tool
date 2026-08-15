@@ -211,7 +211,6 @@ describe('DesignImportView', () => {
     // Create a mock text file
     const file = new File(['some text'], 'test.txt', { type: 'text/plain' });
 
-    // Get the drop zone
     const dropZone = screen.getByText('Drag & drop a design JSON file here').closest('div');
     expect(dropZone).toBeTruthy();
 

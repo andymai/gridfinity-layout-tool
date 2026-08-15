@@ -8,7 +8,6 @@ import {
   type EphemeralState,
 } from '@/shared/utils/ephemeralState';
 
-// Mock sessionStorage
 const sessionStorageMock = (() => {
   let store: Record<string, string> = {};
   return {

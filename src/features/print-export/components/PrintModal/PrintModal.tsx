@@ -154,7 +154,6 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
     [settings.printViewSettings, updateSetting]
   );
 
-  // Update sort order
   const updateSortOrder = useCallback(
     (newOrder: BinListSortOrder) => {
       updatePrintSetting('binListSortOrder', newOrder);
