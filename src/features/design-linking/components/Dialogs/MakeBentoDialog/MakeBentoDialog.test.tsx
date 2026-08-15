@@ -71,7 +71,7 @@ describe('MakeBentoDialog', () => {
 
   it('shows the plan and lets it be created', async () => {
     const onClose = vi.fn();
-    render(<MakeBentoDialog open onClose={onClose} scope="selection" />);
+    render(<MakeBentoDialog open onClose={onClose} />);
 
     expect(screen.getByTestId('compartment-preview')).toBeInTheDocument();
 
@@ -86,7 +86,7 @@ describe('MakeBentoDialog', () => {
   it('keeps the dialog open when the save failed', async () => {
     mocks.commitBento.mockResolvedValueOnce(false);
     const onClose = vi.fn();
-    render(<MakeBentoDialog open onClose={onClose} scope="selection" />);
+    render(<MakeBentoDialog open onClose={onClose} />);
 
     fireEvent.click(screen.getByText('designLinking.bento.confirm'));
     await vi.waitFor(() => expect(mocks.commitBento).toHaveBeenCalled());
@@ -96,7 +96,7 @@ describe('MakeBentoDialog', () => {
   });
 
   it('passes an edited name through to the commit', async () => {
-    render(<MakeBentoDialog open onClose={vi.fn()} scope="selection" />);
+    render(<MakeBentoDialog open onClose={vi.fn()} />);
 
     fireEvent.change(screen.getByLabelText('designLinking.bento.nameLabel'), {
       target: { value: 'Screwdrivers' },
@@ -110,7 +110,7 @@ describe('MakeBentoDialog', () => {
   });
 
   it('asks the planner for a flat base when chosen', () => {
-    render(<MakeBentoDialog open onClose={vi.fn()} scope="selection" />);
+    render(<MakeBentoDialog open onClose={vi.fn()} />);
 
     fireEvent.click(screen.getByText('designLinking.bento.flatBase'));
 
@@ -120,7 +120,7 @@ describe('MakeBentoDialog', () => {
   });
 
   it('carries the replace-bins choice into the commit', async () => {
-    render(<MakeBentoDialog open onClose={vi.fn()} scope="selection" />);
+    render(<MakeBentoDialog open onClose={vi.fn()} />);
 
     fireEvent.click(screen.getByText(/designLinking.bento.replaceBins/));
     fireEvent.click(screen.getByText('designLinking.bento.confirm'));
@@ -135,13 +135,13 @@ describe('MakeBentoDialog', () => {
     });
 
     it('blocks creation, because two parts cannot share one space', () => {
-      render(<MakeBentoDialog open onClose={vi.fn()} scope="selection" />);
+      render(<MakeBentoDialog open onClose={vi.fn()} />);
 
       expect(screen.getByText('designLinking.bento.confirm').closest('button')).toBeDisabled();
     });
 
     it('offers to pull the trapped bins into the selection', () => {
-      render(<MakeBentoDialog open onClose={vi.fn()} scope="selection" />);
+      render(<MakeBentoDialog open onClose={vi.fn()} />);
 
       fireEvent.click(screen.getByText('designLinking.bento.trappedInclude'));
 
@@ -149,7 +149,7 @@ describe('MakeBentoDialog', () => {
     });
 
     it('offers to move the trapped bins to the stash', () => {
-      render(<MakeBentoDialog open onClose={vi.fn()} scope="selection" />);
+      render(<MakeBentoDialog open onClose={vi.fn()} />);
 
       fireEvent.click(screen.getByText('designLinking.bento.trappedStash'));
 
@@ -159,7 +159,7 @@ describe('MakeBentoDialog', () => {
 
   it('explains a blocked plan instead of showing options', () => {
     mocks.previewBento.mockReturnValue(err({ kind: 'too-few-bins', count: 1 }));
-    render(<MakeBentoDialog open onClose={vi.fn()} scope="selection" />);
+    render(<MakeBentoDialog open onClose={vi.fn()} />);
 
     expect(screen.getByText('designLinking.bento.blocked.tooFewBins')).toBeInTheDocument();
     expect(screen.queryByTestId('compartment-preview')).not.toBeInTheDocument();
