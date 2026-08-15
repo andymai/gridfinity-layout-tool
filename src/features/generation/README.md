@@ -107,6 +107,23 @@ Composable stages in `pipeline/stages/`, orchestrated by `pipeline/runner.ts`:
 5. **Tessellate** (`tessellateStage`) — dynamic quality mesh + edge extraction; meshes `deferredSolid` separately and concatenates via `mergeShapeMeshes` (visually identical to the fused shell — socket meets the body only at a hidden interface). The socket mesh is cached by geometry identity (`socketMeshCache`, keyed via `deferredSolidKey`) so non-dimension edits skip re-tessellating the base.
 6. **Mesh imprint** (`meshImprintStage`) — subtracts imported STL tools (mesh cutouts, `shape: 'mesh'`) from the tessellated mesh via raw manifold-3d. Requires the async `prepareMeshImprints()` pre-pass (worker handlers await it — the pipeline itself is synchronous); `faceGroups` tags ride through the boolean as Manifold runs, tool-carved faces get the cutout's color tag, and normals/edges are rebuilt (crease-aware) afterwards. The pocket keeps the tool's relief BELOW its lowest top-shoulder (`minTopShoulder`) and fills the silhouette flat above it — a removable top-insertion pocket can only mirror the tool's underside + silhouette, so a top-face recess is necessarily flattened (orient the distinctive face down to imprint it). Filling above the shoulder is what keeps every pocket a single connected solid; a `decompose()` keep-largest guard backstops any residual island. GOTCHA: exports for mesh-bearing designs must serialize the imprinted `MeshData` (`buildSTLBufferFromIndexed`), never `exportSolidToStl` — the BREP solid has no pockets. STEP is unavailable for these designs.
 
+## Bridge result cache
+
+`bridge/resultCache.ts` sits in front of the worker on the main thread: a
+byte-budgeted LRU of completed `GenerationResult`s keyed by
+`paramsFingerprint`, one per request kind (bin / baseplate / item). It answers
+the round trip a parametric editor makes constantly — toggle a feature on and
+back off, drag a slider home, step a value up then down — without the worker
+seeing a message. Keep it keyed on the fingerprint, not on recency: a
+single-entry version of this was a debounce guard rather than a cache, because
+the return leg had already evicted the result it was about to ask for.
+
+Serving an entry twice is safe because the worker clones every buffer before
+transfer and nothing on the main thread transfers them onward. A hit does mean
+`lastSolid` no longer describes what was just returned, which was already true
+of any hit — `exportBin` re-checks the identity fingerprint (see gotcha 16)
+rather than trusting recency.
+
 ## Cross-session mesh cache
 
 All the caches above are **in-memory only** — they vanish on reload. `src/shared/generation/meshPersistence.ts` (main thread) additionally persists the final bin-designer preview `MeshData` to IndexedDB, keyed by a hash of `BinParams` + `MESH_CACHE_VERSION` + the active kernel and its `KERNEL_MESH_REVISION`, so reopening a saved custom bin paints last session's exact mesh instantly (as a pre-draft in `useGeneration`) while the worker warms up and regenerates. Preview-only — exports always regenerate the watertight fused shell. **Bump `KERNEL_MESH_REVISION[kernel]` on a kernel upgrade (brepjs/occt-wasm, brepkit-wasm) and `MESH_CACHE_VERSION` on a tessellation or kernel-independent geometry change** (see the geometry-generation skill).
