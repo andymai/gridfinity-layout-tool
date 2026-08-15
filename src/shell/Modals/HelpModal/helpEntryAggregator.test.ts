@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { getAllHelpEntries } from './helpEntryAggregator';
+import { searchHelpEntries } from './helpSearch';
+import en from '@/i18n/locales/en';
 
 describe('getAllHelpEntries', () => {
   it('aggregates shortcut, feature, and shell entries into one flat list', () => {
@@ -80,5 +82,33 @@ describe('getAllHelpEntries', () => {
     const designerShortcuts = getAllHelpEntries('designer').filter((e) => e.kind === 'shortcut');
     expect(layoutShortcuts.length).toBeGreaterThan(0);
     expect(designerShortcuts.length).toBe(layoutShortcuts.length);
+  });
+});
+
+// The Help modal's zero-result telemetry named the terms users typed and got
+// nothing back. `export` was the most-searched of them (plus its misspellings
+// and translations: expo, esport, esporta, download), then `save`. These assert
+// the catalog answers them against the real English strings, so a future
+// reorganisation that drops the tips fails here rather than silently in
+// production.
+describe('coverage for terms that returned no results', () => {
+  const t = ((key: string) => en[key] ?? key) as Parameters<typeof searchHelpEntries>[2];
+
+  const search = (query: string) => searchHelpEntries(getAllHelpEntries(), query, t);
+
+  it.each(['export', 'download', 'stl', '3mf', 'step'])('answers %j', (query) => {
+    expect(search(query).length).toBeGreaterThan(0);
+  });
+
+  it.each(['save', 'saving', 'autosave', 'library'])('answers %j', (query) => {
+    expect(search(query).length).toBeGreaterThan(0);
+  });
+
+  it('ranks the export tip first for "export"', () => {
+    expect(search('export')[0].entry.id).toBe('tip/shell/export-files');
+  });
+
+  it('ranks the saving tip first for "saving designs"', () => {
+    expect(search('saving designs')[0].entry.id).toBe('tip/shell/saving-work');
   });
 });

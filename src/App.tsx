@@ -45,7 +45,7 @@ import { LocalMutationsProvider } from '@/shared/contexts';
 import { DesignStoreRegistration } from '@/shared/storage/DesignStoreRegistration';
 import { useTranslation } from '@/i18n';
 import { useCommandPalette } from '@/features/command-palette';
-import { useEngagementNudges, useLayoutPromotion } from '@/features/engagement';
+import { useEngagementNudges } from '@/features/engagement';
 import { useOnboarding } from '@/features/onboarding';
 import { useThemeEffect } from '@/shared/hooks/useThemeEffect';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
@@ -320,7 +320,6 @@ export default function App() {
   usePWAUpdate();
   useAnalytics();
   useEngagementNudges();
-  useLayoutPromotion();
   useStorageMigration();
   useSnapshotAutoSave();
   useLocalStorageCleanup();

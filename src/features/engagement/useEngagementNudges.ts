@@ -10,6 +10,7 @@ import { GITHUB_ISSUES_URL } from '@/shared/constants/links';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
 import { trackEvent } from '@/shared/analytics/posthog';
+import { hasConvertedThisSession } from '@/shared/analytics/posthog/conversionEvents';
 import {
   shouldShowNudge,
   recordNudgeDismissal,
@@ -35,9 +36,15 @@ export function useEngagementNudges(): void {
   // Feedback nudge only. Ko-fi was deliberately removed from this timer-based
   // poll (it barely converted here) — the Ko-fi ask now lives in the header and
   // the export dialog's post-export success view.
+  //
+  // The timer additionally waits for a printable file this session: at 1,376
+  // impressions to 11 clicks, the ask was arriving mid-task, before the user had
+  // got anything out of the tool. Asking after they have is the same prompt at a
+  // moment it can be answered honestly.
   useEffect(() => {
     function checkAndShowNudge(): void {
       const nudgeOrder: NudgeType[] = ['feedback_rating'];
+      if (!hasConvertedThisSession()) return;
 
       for (const nudgeType of nudgeOrder) {
         if (shownThisSession.current.has(nudgeType)) continue;

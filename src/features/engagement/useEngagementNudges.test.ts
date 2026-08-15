@@ -19,9 +19,14 @@ vi.mock('@/shared/analytics/posthog', () => ({
   trackEvent: vi.fn(),
 }));
 
+vi.mock('@/shared/analytics/posthog/conversionEvents', () => ({
+  hasConvertedThisSession: vi.fn(),
+}));
+
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 import { useToastStore } from '@/core/store/toast';
+import { hasConvertedThisSession } from '@/shared/analytics/posthog/conversionEvents';
 import { shouldShowNudge } from './engagementTracker';
 
 const mockAddToast = vi.fn();
@@ -32,6 +37,9 @@ describe('useEngagementNudges', () => {
     vi.useFakeTimers();
     (useToastStore.getState as Mock).mockReturnValue({ addToast: mockAddToast });
     (shouldShowNudge as Mock).mockReturnValue(false);
+    // Default to "the user has received a file" so the existing gate cases stay
+    // about the engagement gate rather than about conversion.
+    (hasConvertedThisSession as Mock).mockReturnValue(true);
   });
 
   afterEach(() => {
@@ -59,5 +67,27 @@ describe('useEngagementNudges', () => {
     expect(mockAddToast).toHaveBeenCalledWith(
       expect.objectContaining({ message: 'engagement.feedbackNudge' })
     );
+  });
+
+  // 1,376 impressions to 11 clicks came from asking mid-task. The prompt is
+  // unchanged; only the moment is — after the user has actually got a file out.
+  it('withholds the nudge until a printable file has been produced', () => {
+    (shouldShowNudge as Mock).mockReturnValue(true);
+    (hasConvertedThisSession as Mock).mockReturnValue(false);
+    renderHook(() => useEngagementNudges());
+
+    vi.advanceTimersByTime(60_000);
+    vi.advanceTimersByTime(60_000);
+
+    expect(mockAddToast).not.toHaveBeenCalled();
+  });
+
+  it('does not consult the engagement gate before a conversion', () => {
+    (hasConvertedThisSession as Mock).mockReturnValue(false);
+    renderHook(() => useEngagementNudges());
+
+    vi.advanceTimersByTime(60_000);
+
+    expect(shouldShowNudge as Mock).not.toHaveBeenCalled();
   });
 });

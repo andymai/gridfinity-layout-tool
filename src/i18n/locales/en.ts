@@ -359,6 +359,14 @@ const en: Record<string, string> = {
     'Your printer nozzle diameter. Drives the print-time estimate and scales split connectors, wall locks, and baseplate connectors so they stay printable on wider nozzles.',
   'rightPanel.collapseRightPanel': 'Collapse right panel',
   'rightPanel.copyBinListAsTsv': 'Copy bin list as TSV',
+  'help.tip.exportFiles.title': 'Export printable files',
+  'help.tip.exportFiles.description':
+    'Export in the header downloads the whole layout as a ZIP: every bin linked to a saved design, plus the baseplate. In the bin designer and baseplate tools, Export downloads that one part. Choose STL, 3MF or STEP.',
+  'help.tip.exportFiles.keywords': 'export|download|stl|3mf|step|files|zip|print|slicer',
+  'help.tip.savingWork.title': 'Saving your work',
+  'help.tip.savingWork.description':
+    'Layouts save automatically in this browser and appear in the switcher next to the layout name. Bin designs are saved in the designer, then linked to bins on the grid. Sign in to sync across devices.',
+  'help.tip.savingWork.keywords': 'save|saving|autosave|store|library|my layouts|sync|backup',
   'layoutExport.button': 'Export layout (3D)',
   'layoutExport.title': 'Export layout',
   'layoutExport.description':
@@ -366,7 +374,9 @@ const en: Record<string, string> = {
   'layoutExport.download': 'Download ZIP',
   'layoutExport.skippedNotice':
     'Bins not linked to a saved design are skipped ({skipped} of {total}).',
-  'layoutExport.noLinkedBins': 'Link bins to saved designs to export them.',
+  'layoutExport.noLinkedBins':
+    "No bins here are linked to a saved design yet, so there's no geometry to export. Open a bin and choose a design to link it.",
+  'layoutExport.noBins': 'This layout has no bins yet. Draw one on the grid to get started.',
   'layoutExport.engineNotReady': 'The 3D engine is still loading. Try again in a moment.',
   'layoutExport.nothingToExport': 'Nothing could be exported.',
   'layoutExport.baseplateOnly': 'Exported the baseplate only — no bin designs could be loaded.',
@@ -4393,9 +4403,6 @@ const en: Record<string, string> = {
   'engagement.support': 'Support on Ko-fi',
   'engagement.feedbackThankYou':
     'Thanks for the feedback! If the tool saves you time, a tip on Ko-fi keeps it free and ad-free.',
-  'engagement.layoutPromotion.message':
-    'Planning another drawer? Save this layout and start a new one.',
-  'engagement.layoutPromotion.action': 'Open Layout Library',
 
   // WebGL unavailable fallback
   'webgl.fallback.title': "Your browser couldn't load 3D rendering",

@@ -35,7 +35,27 @@ export interface ToolConvertedProperties {
   piece_count?: number;
 }
 
+/**
+ * Session flag: the user has received a printable file. Written here rather
+ * than in the engagement feature so this module stays leaf-tier (see the
+ * chunk-cycle note above) — hence raw sessionStorage over an import.
+ */
+export const CONVERTED_THIS_SESSION_KEY = 'gridfinity-converted-this-session';
+
+export function hasConvertedThisSession(): boolean {
+  try {
+    return sessionStorage.getItem(CONVERTED_THIS_SESSION_KEY) !== null;
+  } catch {
+    return false;
+  }
+}
+
 export function trackToolConverted(surface: ToolSurface, props: ToolConvertedProperties): void {
+  try {
+    sessionStorage.setItem(CONVERTED_THIS_SESSION_KEY, '1');
+  } catch {
+    // Storage may be unavailable; the nudge simply stays gated.
+  }
   try {
     trackEvent('tool_converted', {
       surface,
