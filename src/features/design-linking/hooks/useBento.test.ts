@@ -49,7 +49,9 @@ function bin(id: string, x: number, layer = 'layer1'): Bin {
   });
 }
 
-function seed(bins: Bin[], selected: string[] = []): void {
+// The selection is the only thing the bento reads, so an omitted list means
+// "all of them"; the scoping tests below pass one explicitly.
+function seed(bins: Bin[], selected: string[] = bins.map((b) => b.id)): void {
   useLayoutStore.setState({ layout: createTestLayout({ bins }) });
   useSelectionStore.setState({
     activeLayerId: layerId('layer1'),
@@ -66,31 +68,11 @@ describe('useBento', () => {
     window.history.pushState(null, '', '/');
   });
 
-  describe('scope', () => {
-    it('uses the whole active layer under layer scope', () => {
-      seed([bin('a', 0), bin('b', 1)]);
-
-      const { result } = renderHook(() => useBento('layer'));
-
-      expect(result.current.mergeableBins.map((b) => b.id)).toEqual([binId('a'), binId('b')]);
-    });
-
-    it("ignores the selection under 'layer' scope, so a stray selection cannot hijack it", () => {
-      seed([bin('a', 0), bin('b', 1), bin('c', 2)], ['a']);
-
-      const { result } = renderHook(() => useBento('layer'));
-
-      expect(result.current.mergeableBins.map((b) => b.id)).toEqual([
-        binId('a'),
-        binId('b'),
-        binId('c'),
-      ]);
-    });
-
-    it('uses the selection under selection scope', () => {
+  describe('mergeable bins', () => {
+    it('takes the bins you selected, and only those', () => {
       seed([bin('a', 0), bin('b', 1), bin('c', 2)], ['a', 'c']);
 
-      const { result } = renderHook(() => useBento('selection'));
+      const { result } = renderHook(() => useBento());
 
       expect(result.current.mergeableBins.map((b) => b.id)).toEqual([binId('a'), binId('c')]);
     });
@@ -98,7 +80,7 @@ describe('useBento', () => {
     it('drops bins on other layers, since height is measured per layer', () => {
       seed([bin('a', 0), bin('b', 1), bin('other', 2, 'layer2')]);
 
-      const { result } = renderHook(() => useBento('layer'));
+      const { result } = renderHook(() => useBento());
 
       expect(result.current.mergeableBins.map((b) => b.id)).toEqual([binId('a'), binId('b')]);
     });
@@ -106,7 +88,7 @@ describe('useBento', () => {
     it('drops staged bins, which have no place on the grid', () => {
       seed([bin('a', 0), bin('b', 1), bin('stashed', 2, STAGING_ID)]);
 
-      const { result } = renderHook(() => useBento('layer'));
+      const { result } = renderHook(() => useBento());
 
       expect(result.current.mergeableBins.map((b) => b.id)).toEqual([binId('a'), binId('b')]);
     });
@@ -114,7 +96,7 @@ describe('useBento', () => {
     it('cannot make a bento from a single bin', () => {
       seed([bin('a', 0)]);
 
-      const { result } = renderHook(() => useBento('layer'));
+      const { result } = renderHook(() => useBento());
 
       expect(result.current.canMerge).toBe(false);
     });
@@ -122,7 +104,7 @@ describe('useBento', () => {
 
   describe('commit', () => {
     async function commit(overrides: { name?: string; replaceBins?: boolean } = {}) {
-      const { result } = renderHook(() => useBento('layer'));
+      const { result } = renderHook(() => useBento());
       const preview = result.current.previewBento();
       if (!preview.ok) throw new Error('expected a plan');
 

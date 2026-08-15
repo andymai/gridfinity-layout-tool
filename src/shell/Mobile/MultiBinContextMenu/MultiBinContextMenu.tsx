@@ -12,6 +12,7 @@ import { useContextMenu } from '@/shared/hooks/useContextMenu';
 import { useExpandToFit } from '@/shared/hooks/useExpandToFit';
 import { splitBinsByLocation } from '@/shared/utils';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
+import { trackEvent } from '@/shared/analytics/posthog';
 import { findBinsByIds } from '@/shared/utils/entity';
 import type { BinId, CategoryId, GridUnits, LayerId } from '@/core/types';
 import { Button } from '@/design-system';
@@ -303,7 +304,10 @@ export function MultiBinContextMenu({
               </svg>
             }
             label={t('mobile.binMenu.mergeIntoOne')}
-            onClick={() => setShowMergeDialog(true)}
+            onClick={() => {
+              trackEvent('ui.modalOpen', { modal: 'mergeBins', source: 'mobileMenu' });
+              setShowMergeDialog(true);
+            }}
           />
         )}
 
@@ -329,7 +333,6 @@ export function MultiBinContextMenu({
       {showMergeDialog && (
         <MakeBentoDialog
           open
-          scope="selection"
           onClose={() => {
             setShowMergeDialog(false);
             onClose();

@@ -24,7 +24,7 @@ graph TB
 - `domain/linkageQueries.ts` — query bins/designs by link status
 - `domain/mergeBins.ts` — converts a set of layout bins into one divided `BinParams`
 - `hooks/useBinLinking.ts` — link/unlink/create actions
-- `hooks/useBento.ts` — bento scope, save + navigate, optional bin replacement
+- `hooks/useBento.ts` — the mergeable selection, save + navigate, optional bin replacement
 - `components/Dialogs/MakeBentoDialog/` — confirm step, options, trapped-bin block
 - `components/Dialogs/MakeBentoDialog/CompartmentPreview/` — plan view of the result
 - `hooks/useLinkedDesign.ts` — resolve linked design for a bin
@@ -54,8 +54,8 @@ graph TB
 
 ## Make Bento
 
-`planMergedBin` maps a layer's bins onto a `CompartmentConfig`: both are
-rectangles tiling a uniform grid. Behind the `merge_bins_to_design` labs flag.
+`planMergedBin` maps the selected bins onto a `CompartmentConfig`: both are
+rectangles tiling a uniform grid.
 
 - **Non-destructive by default.** The merge writes a new saved design and
   leaves the layout alone. Opting into "replace bins" swaps the sources for one
@@ -76,16 +76,16 @@ rectangles tiling a uniform grid. Behind the `merge_bins_to_design` labs flag.
   layouts under `MAX_COMPARTMENT_GRID` (12).
 - **Single layer only.** `bin.height` is measured from the layer's own base
   plane, so `max(height)` across layers would be meaningless.
-- **Scope is an argument, never inferred.** `useBento('layer' | 'selection')`.
-  A global "selection, else layer" rule let one stray selected bin hijack the
-  whole-layer entry point, which then reported "Combine 1 bins".
+- **The selection is the only source.** `useBento` reads the selected bins and
+  narrows them to the active layer. Entry points are the multi-bin inspector on
+  desktop and the multi-bin context menu on mobile.
 - **The preview's vertical axis is flipped.** `cells` is row-major with row 0
   at the BOTTOM; SVG's y grows downward. `compartmentRects` is split out from
   the component so that flip has its own test, since a mirrored preview is
   invisible on a symmetric layout.
 - **Two bins minimum, enforced in `planMergedBin`.** One bin would emit a
-  single-compartment copy of itself. Guarding only in the UI left the header
-  and the dialog able to skip it.
+  single-compartment copy of itself, and a UI-only guard leaves every entry
+  point free to skip it.
 
 ## Gotchas
 

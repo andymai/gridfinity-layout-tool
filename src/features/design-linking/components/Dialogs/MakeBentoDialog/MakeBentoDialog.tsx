@@ -29,13 +29,10 @@ import { useMutations } from '@/shared/contexts';
 import type { MergeBlockedReason, MergePlan } from '../../../domain/mergeBins';
 import { CompartmentPreview } from './CompartmentPreview';
 import { useBento } from '../../../hooks/useBento';
-import type { BentoScope } from '../../../hooks/useBento';
 
 export interface MakeBentoDialogProps {
   readonly open: boolean;
   readonly onClose: () => void;
-  /** Which bins the invoking entry point means. */
-  readonly scope: BentoScope;
 }
 
 /** Divider thickness choices, mirroring the designer's wall thickness options. */
@@ -58,9 +55,9 @@ function blockedMessage(reason: MergeBlockedReason, t: ReturnType<typeof useTran
   }
 }
 
-export function MakeBentoDialog({ open, onClose, scope }: MakeBentoDialogProps) {
+export function MakeBentoDialog({ open, onClose }: MakeBentoDialogProps) {
   const t = useTranslation();
-  const { mergeableBins, previewBento, defaultName, commitBento } = useBento(scope);
+  const { mergeableBins, previewBento, defaultName, commitBento } = useBento();
   const { moveBinToStaging } = useMutations();
   const setSelectedBins = useSelectionStore((s) => s.setSelectedBins);
 
@@ -155,9 +152,7 @@ export function MakeBentoDialog({ open, onClose, scope }: MakeBentoDialogProps) 
       <Dialog.Header title={t('designLinking.bento.title')} showCloseButton={false} />
       <Dialog.Body>
         <p className="mb-1 text-sm text-content">
-          {scope === 'selection'
-            ? t('designLinking.bento.scope.selection', { count: mergeableBins.length })
-            : t('designLinking.bento.scope.layer', { count: mergeableBins.length })}
+          {t('designLinking.bento.scope.selection', { count: mergeableBins.length })}
         </p>
         <p className="mb-3 text-sm text-content-secondary">
           {t('designLinking.bento.description', {

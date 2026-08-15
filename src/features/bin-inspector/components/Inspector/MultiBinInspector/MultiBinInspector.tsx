@@ -8,6 +8,7 @@ import { BulkIncrementControl } from '@/shared/components/BulkIncrementControl';
 import { Button, IconButton, Input, Select, XIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { formatHeightUnits } from '@/shared/utils/heightUnits';
+import { trackEvent } from '@/shared/analytics/posthog';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 
 // Lazy, matching SingleBinInspector's linked-design section: the dialog pulls
@@ -344,7 +345,10 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
           <Button
             variant="secondary"
             type="button"
-            onClick={() => setShowBento(true)}
+            onClick={() => {
+              trackEvent('ui.modalOpen', { modal: 'mergeBins', source: 'inspector' });
+              setShowBento(true);
+            }}
             className={`w-full ${isMobile ? 'h-12' : ''}`}
           >
             {t('mobile.binMenu.mergeIntoOne')}
@@ -374,7 +378,7 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
 
         {showBento && (
           <Suspense fallback={null}>
-            <MakeBentoDialog open scope="selection" onClose={() => setShowBento(false)} />
+            <MakeBentoDialog open onClose={() => setShowBento(false)} />
           </Suspense>
         )}
       </div>
