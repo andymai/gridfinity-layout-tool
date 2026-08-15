@@ -69,8 +69,9 @@ describe('useEngagementNudges', () => {
     );
   });
 
-  // 1,376 impressions to 11 clicks came from asking mid-task. The prompt is
-  // unchanged; only the moment is — after the user has actually got a file out.
+  // On the plain timer the ask arrived mid-task and was almost never acted on.
+  // The prompt is unchanged; only the moment is — after the user has actually
+  // got a file out.
   it('withholds the nudge until a printable file has been produced', () => {
     (shouldShowNudge as Mock).mockReturnValue(true);
     (hasConvertedThisSession as Mock).mockReturnValue(false);

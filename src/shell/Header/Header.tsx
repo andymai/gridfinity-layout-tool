@@ -90,8 +90,8 @@ export function Header({ saveStatus }: HeaderProps) {
   // Only bins linked to a saved design have printable geometry, but the button
   // stays live when none are: LayoutExportDialog explains the gap and names the
   // action that closes it. Gating the control instead put the sole explanation
-  // in a tooltip that touch devices never render, so the dialog was opened zero
-  // times before this changed.
+  // in a tooltip that touch devices never render, leaving the dialog
+  // effectively unreachable.
 
   // Platform detection for keyboard shortcut hints
   const isMac = typeof navigator !== 'undefined' && /mac/i.test(navigator.userAgent);

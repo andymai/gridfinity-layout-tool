@@ -14,7 +14,7 @@ Engagement-gated nudge system for feedback and Ko-fi support.
 
    The conversion condition is checked first and short-circuits the rest. An ask
    that arrives mid-task is asking someone to stop doing the thing they came for,
-   which is what 1,376 impressions to 11 clicks looked like.
+   and on the plain timer it was almost never acted on.
 
 3. **Nudge types** — `feedback_rating` (prioritized) and `kofi_support`, each with an independent 30-day cooldown.
 
