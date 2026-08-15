@@ -38,7 +38,7 @@ export interface ToolConvertedProperties {
 /**
  * Session flag: the user has received a printable file. Written here rather
  * than in the engagement feature so this module stays leaf-tier (see the
- * #1466 chunk-cycle note above) — hence raw sessionStorage over an import.
+ * chunk-cycle note above) — hence raw sessionStorage over an import.
  */
 export const CONVERTED_THIS_SESSION_KEY = 'gridfinity-converted-this-session';
 

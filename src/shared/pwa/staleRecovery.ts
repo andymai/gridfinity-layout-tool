@@ -11,14 +11,14 @@
  * Guarded by a per-session flag so a genuinely broken new bundle can't loop:
  * we recover at most once per tab session.
  *
- * MUST stay wired to observed breakage, never to a version comparison. It was
- * additionally triggered by a boot-time `gitSha !== __GIT_SHA__` test (#2049),
- * which at ~6 deploys/day fired for nearly every returning visitor — 29.7% of
- * them in a 30-day window — throwing away warm caches and forcing a full reload
- * mid-session on deploys where nothing was wrong. That cost is what removing it
- * (#3512) recovers, and it is all that was established: a two-build deploy-skew
- * reproduction found no asset 404s either with the check or without it, so the
- * check was not shown to cause the load failures it was written to repair.
+ * MUST stay wired to observed breakage, never to a version comparison. A
+ * boot-time `gitSha !== __GIT_SHA__` test used to trigger this as well, which at
+ * ~6 deploys/day fired for nearly every returning visitor — 29.7% of them in a
+ * 30-day window — throwing away warm caches and forcing a full reload
+ * mid-session on deploys where nothing was wrong. Removing that interruption is
+ * all the removal was shown to buy: a two-build deploy-skew reproduction found
+ * no asset 404s either with the check or without it, so it was never
+ * established as a cause of the load failures it was written to repair.
  * `handleWasmLoadFailure` is the correct shape: it recovers only when a load has
  * already failed with a stale-asset error.
  *
