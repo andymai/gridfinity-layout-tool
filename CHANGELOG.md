@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.412.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.412.0...gridfinity-layout-tool-v4.412.1) (2026-08-15)
+
+
+### Bug Fixes
+
+* **ux:** stop losing the geometry engine and the export button ([#3512](https://github.com/andymai/gridfinity-layout-tool/issues/3512)) ([5738f77](https://github.com/andymai/gridfinity-layout-tool/commit/5738f77ec34a14bc6b62d397d23e8ee91d3554c4))
+
 ## [4.412.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.411.1...gridfinity-layout-tool-v4.412.0) (2026-08-15)
 
 
