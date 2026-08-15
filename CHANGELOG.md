@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.411.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.411.0...gridfinity-layout-tool-v4.411.1) (2026-08-15)
+
+
+### Performance
+
+* stop re-paying for work already done ([#3508](https://github.com/andymai/gridfinity-layout-tool/issues/3508)) ([0ac2582](https://github.com/andymai/gridfinity-layout-tool/commit/0ac25823ef2a3515e56179e38c664c4d60566d85))
+
 ## [4.411.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.410.0...gridfinity-layout-tool-v4.411.0) (2026-08-15)
 
 
