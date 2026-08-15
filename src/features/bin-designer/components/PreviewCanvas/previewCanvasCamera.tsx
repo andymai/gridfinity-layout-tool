@@ -307,7 +307,6 @@ export function usePresetTransition(
       const direction = new Vector3(...CAMERA_PRESETS[preset]).normalize();
       const targetPosition = direction.multiplyScalar(idealDistance).add(binCenter);
 
-      // Current camera state
       const startPosition = camera.position.clone();
       const target = binCenter.clone();
 

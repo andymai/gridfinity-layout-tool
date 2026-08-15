@@ -99,7 +99,6 @@ describe('useAutoSave', () => {
   it('should update existing design when currentDesignId is set', async () => {
     mockUpdateDesignParams();
 
-    // Set up as existing design
     useDesignerStore.setState({ currentDesignId: 'existing-id' });
 
     renderHook(() => useAutoSave());

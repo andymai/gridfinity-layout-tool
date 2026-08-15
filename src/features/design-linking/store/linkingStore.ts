@@ -101,7 +101,6 @@ export const useLinkingStore = create<LinkingStoreState>()((set) => ({
   pendingDesignerUpdated: null,
   declinedSyncs: {},
 
-  // Sync dialog
   showSyncDialog: (
     binIds,
     designId,
@@ -134,7 +133,6 @@ export const useLinkingStore = create<LinkingStoreState>()((set) => ({
         : { pendingSync: null }
     ),
 
-  // Delete warning
   showDeleteWarning: (designId, designName, linkedBinIds, onConfirm, onCancel) =>
     set({
       pendingDeleteWarning: {
@@ -147,7 +145,6 @@ export const useLinkingStore = create<LinkingStoreState>()((set) => ({
     }),
   hideDeleteWarning: () => set({ pendingDeleteWarning: null }),
 
-  // Create design dialog
   showCreateDesignDialog: (binId, defaultName, dimensions, binLabel) =>
     set({
       pendingCreateDesign: {
@@ -170,7 +167,6 @@ export const useLinkingStore = create<LinkingStoreState>()((set) => ({
     }),
   hideLinkDesignDialog: () => set({ pendingLinkDesign: null }),
 
-  // Blocked resize dialog
   showBlockedResizeDialog: (binId, designId, designName, reasons) =>
     set({
       pendingBlockedResize: {
@@ -182,7 +178,6 @@ export const useLinkingStore = create<LinkingStoreState>()((set) => ({
     }),
   hideBlockedResizeDialog: () => set({ pendingBlockedResize: null }),
 
-  // Designer-updated dialog
   showDesignerUpdatedDialog: (designId, designName) =>
     set({
       pendingDesignerUpdated: { designId, designName },

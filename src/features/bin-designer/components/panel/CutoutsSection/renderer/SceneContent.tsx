@@ -558,7 +558,6 @@ export function SceneContent({
         />
       )}
 
-      {/* Ruler measurement */}
       {rulerMeasurement && <RulerMeasurement3D measurement={rulerMeasurement} zoom={camera.zoom} />}
     </>
   );

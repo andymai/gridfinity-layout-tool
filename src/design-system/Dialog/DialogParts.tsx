@@ -87,8 +87,6 @@ const sidebarVariants = cva(['flex-shrink-0', 'border-r border-stroke-subtle', '
 
 const paneVariants = cva(['flex-1', 'overflow-y-auto', 'p-[var(--space-2xl)]']);
 
-// Dialog Header
-
 export interface DialogHeaderProps {
   /**
    * Dialog title. When omitted, provide `aria-label` on Dialog.Root.
@@ -186,8 +184,6 @@ export function DialogHeader({
   );
 }
 
-// Dialog SubHeader
-
 export interface DialogSubHeaderProps {
   /**
    * Row content, e.g. a tab bar or search input under the title.
@@ -199,8 +195,6 @@ export interface DialogSubHeaderProps {
 export function DialogSubHeader({ children, className }: DialogSubHeaderProps) {
   return <div className={cn(subHeaderVariants(), className)}>{children}</div>;
 }
-
-// Dialog Body
 
 export interface DialogBodyProps {
   children: ReactNode;
@@ -287,8 +281,6 @@ export interface DialogPaneProps {
 export function DialogPane({ children, className }: DialogPaneProps) {
   return <div className={cn(paneVariants(), className)}>{children}</div>;
 }
-
-// Dialog Footer
 
 export interface DialogFooterProps {
   children: ReactNode;

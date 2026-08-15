@@ -15,8 +15,6 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../cn';
 import { focusRing, interactiveTransition } from '../variants';
 
-// Menu Context
-
 interface MenuContextValue {
   onClose: () => void;
   registerItem: (element: HTMLElement) => () => void;
@@ -72,8 +70,6 @@ const itemVariants = cva(
 );
 
 const dividerVariants = cva(['h-px', 'bg-stroke-subtle', 'my-1', 'mx-2']);
-
-// Menu Root
 
 export interface MenuRootProps {
   /**
@@ -432,8 +428,6 @@ function MenuItem({
     </button>
   );
 }
-
-// Menu Divider
 
 function MenuDivider() {
   return <div role="separator" className={dividerVariants()} aria-hidden="true" />;

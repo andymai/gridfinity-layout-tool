@@ -5,7 +5,6 @@ import type { ReactNode } from 'react';
 import { MergedBinMeshes } from './MergedBinMeshes';
 import { clearGeometryCache } from './geometryCache';
 
-// Mock React Three Fiber
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children: ReactNode }) => <div data-testid="r3f-canvas">{children}</div>,
   useThree: () => ({
@@ -99,7 +98,6 @@ vi.mock('three', () => {
   };
 });
 
-// Mock BufferGeometryUtils
 vi.mock('three/examples/jsm/utils/BufferGeometryUtils.js', () => ({
   mergeGeometries: vi.fn((_geometries: unknown[]) => ({
     setAttribute: vi.fn(),
@@ -107,7 +105,6 @@ vi.mock('three/examples/jsm/utils/BufferGeometryUtils.js', () => ({
   })),
 }));
 
-// Mock useBinGeometry hook
 vi.mock('@/shared/hooks/useBinGeometry', () => ({
   createBinGeometry: vi.fn(() => {
     const mockGeometry = {

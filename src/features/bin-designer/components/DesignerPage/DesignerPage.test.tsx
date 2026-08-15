@@ -26,7 +26,6 @@ vi.mock('../DesignListDialog', () => ({
   DesignListDialog: () => <div data-testid="design-list-dialog">Design List Dialog</div>,
 }));
 
-// Mock hooks
 vi.mock('../../hooks/useGeneration', () => ({
   useGeneration: vi.fn(),
 }));

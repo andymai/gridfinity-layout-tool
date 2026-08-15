@@ -205,7 +205,6 @@ export function ExportDialog({
           successContent
         ) : (
           <div className="pb-[var(--space-2xl)]">
-            {/* Section Title */}
             {sectionTitle && (
               <>
                 <h3 className="mb-1 text-sm font-semibold text-content">{sectionTitle}</h3>
@@ -215,7 +214,6 @@ export function ExportDialog({
               </>
             )}
 
-            {/* Format Selector */}
             <FormatSelector
               activeFormat={activeFormat}
               onChange={handleFormatChange}
@@ -377,7 +375,6 @@ export function ExportDialog({
               </Button>
             )}
 
-            {/* No mesh warning */}
             {noMeshWarning && !canExport && (
               <p className="mt-2 text-center text-xs text-warning">{noMeshWarning}</p>
             )}

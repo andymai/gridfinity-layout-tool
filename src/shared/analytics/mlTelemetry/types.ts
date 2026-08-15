@@ -69,11 +69,9 @@ export interface LabelUpdateEvent {
   /** Bin size as "WxDxH" string */
   bin_size: string;
 
-  // Old label data
   old_label_hash: string | null;
   old_label_normalized: string | null;
 
-  // New label data
   new_label_hash: string | null;
   new_label_normalized: string | null;
   new_label_domain: string | null;
@@ -686,11 +684,4 @@ export type LayoutQualityTier = 'high' | 'medium' | 'low' | 'skip';
 // DRAWER PURPOSE CONSTANTS
 
 export type DrawerPurpose =
-  | 'workshop'
-  | 'electronics'
-  | 'office'
-  | 'craft'
-  | 'kitchen'
-  | 'bathroom'
-  | 'garage'
-  | 'other';
+  'workshop' | 'electronics' | 'office' | 'craft' | 'kitchen' | 'bathroom' | 'garage' | 'other';

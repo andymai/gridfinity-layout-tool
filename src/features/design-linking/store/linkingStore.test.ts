@@ -218,7 +218,6 @@ describe('linkingStore', () => {
         differences: { width: true, depth: true, height: true },
       };
 
-      // Show create design dialog
       useLinkingStore.getState().showCreateDesignDialog(binId('bin-1'), '2×3×4 Bin', dimensions);
 
       // Show delete warning dialog

@@ -136,7 +136,6 @@ describe('useInlineEdit', () => {
       result.current.handleKeyDown({ key: 'Escape' } as React.KeyboardEvent);
     });
 
-    // Rerender with new initial value
     rerender({ initialValue: 'updated' });
 
     act(() => {

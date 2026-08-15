@@ -54,8 +54,6 @@ const containerVariants = cva(['fixed', 'z-50', 'flex flex-col', 'gap-2', 'point
   },
 });
 
-// Toast Item Component
-
 interface ToastItemProps {
   toast: ToastData;
   onDismiss: (id: string) => void;

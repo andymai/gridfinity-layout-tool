@@ -392,9 +392,6 @@ export function hashCategoryName(name: string): string {
 
 const USER_HASH_STORAGE_KEY = 'gridfinity-ml-user-hash-v1';
 
-/**
- * Check if localStorage is available.
- */
 function isLocalStorageAvailable(): boolean {
   try {
     const testKey = '__storage_test__';

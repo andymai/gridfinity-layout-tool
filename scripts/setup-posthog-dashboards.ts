@@ -559,7 +559,6 @@ async function main() {
 
   console.log(`✅ Connected to project: ${projectResult.data?.name || 'Unknown'}`);
 
-  // Create dashboards
   console.log('\n📊 Creating dashboards and insights...');
 
   for (const dashboard of dashboards) {

@@ -36,7 +36,6 @@ describe('useGridNavigation', () => {
     it('does nothing when no bin is focused', () => {
       const setFocusedBinSpy = vi.spyOn(useSelectionStore.getState(), 'setFocusedBin');
 
-      // No focused bin
       useSelectionStore.setState({ focusedBinId: null });
 
       const { result } = renderHook(() => useGridNavigation());
@@ -310,7 +309,6 @@ describe('useGridNavigation', () => {
     it('does nothing when no focusedBinId', () => {
       useSelectionStore.setState({ focusedBinId: null });
 
-      // Should not throw
       expect(() => renderHook(() => useGridNavigation())).not.toThrow();
     });
 

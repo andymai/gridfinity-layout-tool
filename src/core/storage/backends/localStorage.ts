@@ -53,9 +53,6 @@ export function existsInLocalStorage(key: string): boolean {
   return localStorage.getItem(key) !== null;
 }
 
-/**
- * Get all keys that start with a given prefix.
- */
 export function getAllKeysWithPrefix(prefix: string): string[] {
   const keys: string[] = [];
   for (let i = 0; i < localStorage.length; i++) {

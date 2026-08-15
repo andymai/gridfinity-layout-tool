@@ -329,7 +329,6 @@ describe('lazyWithRetry', () => {
         expect(screen.getByTestId('error')).toBeInTheDocument();
       });
 
-      // Reload should not have been called
       expect(mockReload).not.toHaveBeenCalled();
     });
   });

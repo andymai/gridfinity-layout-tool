@@ -51,7 +51,6 @@ export function ThemeFilterPills({
               }
             `}
           >
-            {/* Theme icon */}
             {theme !== 'all' && <ThemeIcon theme={theme} className="w-4 h-4" />}
             {theme === 'all' && (
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -301,7 +301,6 @@ export function LayoutList({
         </div>
       )}
 
-      {/* Grid View */}
       {viewMode === 'grid' && sortedEntries.length > 0 && (
         <div
           ref={gridRef}
@@ -334,7 +333,6 @@ export function LayoutList({
         </div>
       )}
 
-      {/* List View */}
       {viewMode === 'list' && sortedEntries.length > 0 && (
         <div
           ref={listRef}

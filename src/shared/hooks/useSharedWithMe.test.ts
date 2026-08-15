@@ -235,7 +235,6 @@ describe('useSharedWithMe', () => {
         result.current.openSharedLayout(entry);
       });
 
-      // Should be in loading state
       expect(result.current.status).toBe('loading');
 
       // Resolve the promise
@@ -249,7 +248,6 @@ describe('useSharedWithMe', () => {
         });
       });
 
-      // Should return to idle
       expect(result.current.status).toBe('idle');
     });
   });

@@ -68,7 +68,6 @@ export function RightPanel() {
     clearSelection,
   } = inspector;
 
-  // Use the print list hook
   const printList = usePrintList();
 
   // Only bins linked to a saved design have printable geometry, so the layout
@@ -636,7 +635,6 @@ export function RightPanel() {
         )}
       </div>
 
-      {/* Confirm Dialog */}
       <ConfirmDialog
         isOpen={deleteConfirmState !== null}
         title={deleteConfirmState?.title || ''}

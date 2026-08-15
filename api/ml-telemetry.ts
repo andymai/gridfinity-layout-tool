@@ -177,7 +177,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     return;
   }
 
-  // Get Redis client
   const client = getRedis();
   if (!client) {
     if (process.env.VERCEL_ENV === 'production') {

@@ -34,7 +34,6 @@ export interface KeyboardContext {
   setActiveCategory: (id: CategoryId) => void;
   showQuickLabel: (binId: BinId) => void;
 
-  // Interaction
   setInteraction: (interaction: null) => void;
   setPaintSize: (size: null) => void;
   setGapSelectArmed: (armed: false) => void;
@@ -53,7 +52,6 @@ export interface KeyboardContext {
   // Mode toggles
   toggleHalfGridMode: () => Result<undefined, LayoutError>;
 
-  // Navigation
   handleNavigationKey: (key: string) => void;
   navigateToDesigner: () => void;
 

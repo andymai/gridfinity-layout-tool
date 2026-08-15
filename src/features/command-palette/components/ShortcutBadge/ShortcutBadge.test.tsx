@@ -6,7 +6,6 @@ describe('ShortcutBadge', () => {
   const originalNavigator = global.navigator;
 
   beforeEach(() => {
-    // Reset navigator for each test
     Object.defineProperty(global, 'navigator', {
       value: { platform: 'Win32' },
       writable: true,

@@ -389,7 +389,6 @@ export function exportPrintListTSV(
   // Build category lookup map
   const categoryMap = new Map(meta?.categories.map((c) => [c.id, c.name]) ?? []);
 
-  // Build data rows
   const lines = rows.map((r) => {
     const sizeMm = meta ? calculateSizeMm(r.size, meta.gridUnitMm) : '';
     const categoryName = r.categoryIds?.[0]

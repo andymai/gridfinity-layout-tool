@@ -41,7 +41,6 @@ describe('useAnalytics', () => {
     resetAllStores();
     vi.clearAllMocks();
 
-    // Store original visibilityState descriptor
     originalVisibilityState = Object.getOwnPropertyDescriptor(document, 'visibilityState');
   });
 

@@ -11,7 +11,6 @@ vi.mock('@/shared/hooks', () => ({
   useResponsive: () => ({ isMobile: false }),
 }));
 
-// Mock LayoutThumbnailWithLabels
 vi.mock('../LayoutThumbnailWithLabels', () => ({
   LayoutThumbnailWithLabels: () => <div data-testid="layout-thumbnail" />,
 }));

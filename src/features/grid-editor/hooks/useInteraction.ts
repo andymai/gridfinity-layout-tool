@@ -95,7 +95,6 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
   const ctrlKeyRef = useRef(false);
   const { getGridCoords, clampCoords, isInBounds } = useGridCoords(gridRef);
   const { updateInteraction } = useCollabPresence();
-  // Interaction state
   const interaction = useInteractionStore((state) => state.interaction);
   const setInteraction = useInteractionStore((state) => state.setInteraction);
   const setDropTarget = useInteractionStore((state) => state.setDropTarget);
@@ -105,7 +104,6 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
   const setSelectedBins = useSelectionStore((state) => state.setSelectedBins);
   const activeLayerId = useSelectionStore((state) => state.activeLayerId);
   const activeCategoryId = useSelectionStore((state) => state.activeCategoryId);
-  // Layout state
   const layout = useLayoutStore((state) => state.layout);
   const { addBin, updateBin, deleteBin } = useMutations();
 

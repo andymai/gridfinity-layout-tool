@@ -64,7 +64,6 @@ export function addMagnetHoleAt(
   for (let i = 0; i < CIRCLE_SEGMENTS; i++) {
     const j = (i + 1) % CIRCLE_SEGMENTS;
     // Inward-facing winding (from inside the cylinder looking outward):
-    // top_{j}, top_{i}, bot_{i}, bot_{j}.
     mb.pushQuad(wallTop[j], wallTop[i], wallBot[i], wallBot[j]);
   }
 

@@ -8,7 +8,6 @@ import { resetAllStores } from '@/test/testUtils';
 import { binId, categoryId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
 import type { Bin as BinType, Category, Layer, Drawer } from '@/core/types';
 
-// Mock useResponsive
 vi.mock('@/shared/hooks/useResponsive', () => ({
   useResponsive: () => ({
     isMobile: false,

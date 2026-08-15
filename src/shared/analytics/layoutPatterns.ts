@@ -47,9 +47,6 @@ function getActiveBins(layout: Layout): Bin[] {
   return getGridBins(layout.bins);
 }
 
-/**
- * Compute the size key for a bin.
- */
 function getBinSizeKey(bin: Bin): string {
   return `${bin.width}x${bin.depth}x${bin.height}`;
 }

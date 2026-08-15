@@ -46,7 +46,6 @@ interface SelectionActions {
   // Keyboard focus
   setFocusedBin: (binId: BinId | null) => void;
 
-  // Quick label
   showQuickLabel: (binId: BinId) => void;
   hideQuickLabel: () => void;
 

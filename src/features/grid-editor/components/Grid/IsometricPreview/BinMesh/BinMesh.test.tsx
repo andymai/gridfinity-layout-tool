@@ -6,7 +6,6 @@ import { binId, categoryId, gridUnits, heightUnits, layerId } from '@/core/types
 import type { Bin } from '@/core/types';
 import { BinMesh } from './BinMesh';
 
-// Mock React Three Fiber
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children: ReactNode }) => <div data-testid="r3f-canvas">{children}</div>,
   useThree: () => ({
@@ -104,7 +103,6 @@ vi.mock('three', () => {
   };
 });
 
-// Mock useBinGeometry hook
 vi.mock('@/shared/hooks/useBinGeometry', () => ({
   useBinGeometry: () => ({ setAttribute: vi.fn(), dispose: vi.fn() }),
 }));

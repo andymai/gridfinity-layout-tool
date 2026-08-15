@@ -107,7 +107,6 @@ vi.mock('@/core/store/library', async (importOriginal) => {
   };
 });
 
-// Mock uuid
 vi.mock('@/shared/utils/uuid', () => ({
   generateUUID: vi.fn(() => 'new-uuid-123'),
   generateLayoutId: vi.fn(() => 'newid123test'),
@@ -152,16 +151,13 @@ describe('SharedLayoutBanner', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Reset shared preview store
     useSharedPreviewStore.getState().clearSharedLayoutPreview();
 
-    // Reset layout store
     useLayoutStore.setState({
       layout: mockLayout,
       activeLayoutId: SHARED_PREVIEW_ID,
     });
 
-    // Reset library store
     useLibraryStore.setState({
       library: {
         version: '1.0',
@@ -186,7 +182,6 @@ describe('SharedLayoutBanner', () => {
       isLoaded: true,
     });
 
-    // Reset toast store
     useToastStore.setState({
       toasts: [],
     });

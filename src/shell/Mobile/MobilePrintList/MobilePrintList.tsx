@@ -48,7 +48,6 @@ export function MobilePrintList() {
           })}
         </span>
         <div className="flex items-center gap-2">
-          {/* Copy button */}
           <Button variant="ghost" size="sm" onClick={handleCopy} className="gap-1.5">
             {copyFeedback ? (
               <>

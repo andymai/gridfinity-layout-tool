@@ -47,7 +47,6 @@ export const STYLES = {
     fontSize: 'var(--text-sm)',
     color: 'var(--text-secondary)',
   } as CSSProperties,
-  // Button
   buttonCompact: { minWidth: 'auto', minHeight: 'auto' } as CSSProperties,
 } as const;
 

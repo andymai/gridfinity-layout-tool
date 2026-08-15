@@ -4,7 +4,6 @@ import type { Result } from '@/core/result/types';
 import { ResultAsync } from '@/core/result/resultAsync';
 
 // =============================================================================
-// fromPromise
 // =============================================================================
 
 describe('ResultAsync.fromPromise()', () => {
@@ -33,7 +32,6 @@ describe('ResultAsync.fromPromise()', () => {
 });
 
 // =============================================================================
-// fromSafePromise
 // =============================================================================
 
 describe('ResultAsync.fromSafePromise()', () => {
@@ -44,7 +42,6 @@ describe('ResultAsync.fromSafePromise()', () => {
 });
 
 // =============================================================================
-// fromResult
 // =============================================================================
 
 describe('ResultAsync.fromResult()', () => {
@@ -60,7 +57,6 @@ describe('ResultAsync.fromResult()', () => {
 });
 
 // =============================================================================
-// map
 // =============================================================================
 
 describe('ResultAsync.map()', () => {
@@ -83,7 +79,6 @@ describe('ResultAsync.map()', () => {
 });
 
 // =============================================================================
-// mapErr
 // =============================================================================
 
 describe('ResultAsync.mapErr()', () => {
@@ -146,7 +141,6 @@ describe('ResultAsync.andThen()', () => {
 });
 
 // =============================================================================
-// match
 // =============================================================================
 
 describe('ResultAsync.match()', () => {
@@ -168,7 +162,6 @@ describe('ResultAsync.match()', () => {
 });
 
 // =============================================================================
-// unwrapOr
 // =============================================================================
 
 describe('ResultAsync.unwrapOr()', () => {
@@ -253,8 +246,8 @@ describe('ResultAsync — callback throw contract', () => {
 
   it('andThen: a callback returning a rejecting Promise<Result> propagates', async () => {
     await expect(
-      ResultAsync.fromResult(ok(1)).andThen(
-        (): Promise<Result<number, string>> => Promise.reject(new Error('andThen-throw'))
+      ResultAsync.fromResult(ok(1)).andThen((): Promise<Result<number, string>> =>
+        Promise.reject(new Error('andThen-throw'))
       )
     ).rejects.toThrow('andThen-throw');
   });

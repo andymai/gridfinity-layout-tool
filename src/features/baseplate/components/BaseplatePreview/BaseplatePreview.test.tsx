@@ -43,13 +43,11 @@ vi.mock('@react-three/fiber', () => ({
   useFrame: vi.fn(),
 }));
 
-// Mock drei
 vi.mock('@react-three/drei', () => ({
   OrbitControls: vi.fn(() => null),
   Text: vi.fn(() => null),
 }));
 
-// Mock shared components
 vi.mock('@/shared/components/preview/FootprintGrid', () => ({
   FootprintGrid: vi.fn(() => null),
 }));
@@ -63,7 +61,6 @@ vi.mock('@/shared/components/preview/Spinner', () => ({
   Spinner: vi.fn(() => null),
 }));
 
-// Mock hooks
 vi.mock('@/shared/hooks/useThemeEffect', () => ({
   useThreeColors: () => ({
     groundBounce: '#1a1a2e',

@@ -3,7 +3,6 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { ViewModeToggle } from './ViewModeToggle';
 import type { ViewMode } from '@/shared/components';
 
-// Mock shared component
 vi.mock('@/shared/components', () => ({
   ViewModeToggle: ({
     value,

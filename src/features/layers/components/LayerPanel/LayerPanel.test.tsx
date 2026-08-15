@@ -39,7 +39,6 @@ vi.mock('./HeightCrossSectionDiagram', () => ({
   },
 }));
 
-// Mock ConfirmDialog
 vi.mock('@/shared/components/ConfirmDialog', () => ({
   ConfirmDialog: ({
     isOpen,

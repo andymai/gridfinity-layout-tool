@@ -159,7 +159,6 @@ describe('useStagingDragInteraction', () => {
     it('updates position during drag', () => {
       const binId = addStagingBin();
 
-      // Set up interaction state
       useInteractionStore.setState({
         ...useInteractionStore.getState(),
         interaction: {
@@ -189,7 +188,6 @@ describe('useStagingDragInteraction', () => {
       const binId = addStagingBin();
       const layout = useLayoutStore.getState().layout;
 
-      // Set up interaction state
       useInteractionStore.setState({
         ...useInteractionStore.getState(),
         interaction: {
@@ -222,7 +220,6 @@ describe('useStagingDragInteraction', () => {
     it('validates placement', () => {
       const binId = addStagingBin();
 
-      // Set up interaction state
       useInteractionStore.setState({
         ...useInteractionStore.getState(),
         interaction: {

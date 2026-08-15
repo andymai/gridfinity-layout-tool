@@ -208,7 +208,6 @@ describe('labelVocabulary', () => {
       const result1 = processLabel('screwdriver');
       expect(result1.normalized).toBe('screwdriver');
 
-      // Clear the cache
       clearLabelCache();
 
       // Should still work after cache clear (cache is rebuilt)

@@ -365,7 +365,6 @@ describe('recentStore', () => {
         throw new Error('Storage error');
       });
 
-      // Should not throw
       expect(() => store.clearRecents()).not.toThrow();
 
       localStorage.removeItem = originalRemoveItem;
@@ -431,7 +430,6 @@ describe('recentStore', () => {
         store.recordUsage('old-frequent');
       }
 
-      // Advance time
       vi.advanceTimersByTime(24 * 60 * 60 * 1000); // 24 hours (1 half-life)
 
       // New command with low frequency
@@ -477,7 +475,6 @@ describe('recentStore', () => {
 
       store.recordUsage('persist-test-command');
 
-      // Check that it was saved to localStorage
       const saved = localStorage.getItem(STORAGE_KEY_V2);
       expect(saved).toBeTruthy();
 
@@ -497,7 +494,6 @@ describe('recentStore', () => {
         throw new DOMException('QuotaExceededError');
       });
 
-      // Should not throw
       expect(() => store.recordUsage('command-1')).not.toThrow();
 
       localStorage.setItem = originalSetItem;

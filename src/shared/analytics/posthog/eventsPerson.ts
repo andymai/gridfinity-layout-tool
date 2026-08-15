@@ -103,7 +103,6 @@ export function updatePersonProperties(): void {
       uses_fill_operations: flag('fill'),
       uses_paint_mode: flag('paint_mode'),
 
-      // Engagement tier
       engagement_tier: computeEngagementTier(layoutCount, totalBinsEstimate),
 
       // Device preference

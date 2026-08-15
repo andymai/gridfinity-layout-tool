@@ -212,7 +212,6 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
               </div>
             )}
 
-            {/* Preview */}
             {preview && (
               <div aria-live="polite" className="bg-success/10 border border-success rounded p-3">
                 <div className="text-sm font-semibold text-success mb-2">

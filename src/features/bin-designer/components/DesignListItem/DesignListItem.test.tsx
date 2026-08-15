@@ -6,12 +6,10 @@ import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { SavedDesign } from '../../types';
 import { designId } from '@/core/types';
 
-// Mock DesignActions component
 vi.mock('../DesignActions', () => ({
   DesignActions: () => <div data-testid="design-actions">Actions</div>,
 }));
 
-// Mock BinDesignThumbnail component
 vi.mock('../BinDesignThumbnail', () => ({
   BinDesignThumbnail: () => <div data-testid="bin-thumbnail">Thumbnail</div>,
 }));

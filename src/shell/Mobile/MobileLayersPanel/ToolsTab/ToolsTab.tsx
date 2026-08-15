@@ -82,7 +82,6 @@ export function ToolsTab() {
 
   return (
     <div className="pb-4">
-      {/* Instructions */}
       <p className="text-xs text-content-tertiary mb-4">{t('mobile.tools.instructions')}</p>
 
       {/* Squares section */}

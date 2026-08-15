@@ -145,7 +145,6 @@ export const edgeCases: ScenarioCase[] = [
     },
   }),
 
-  // Flat floor
   defineScenario('edge cases', '2x2x3 flat floor', {
     assert: 'structural',
     params: { base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' } },
@@ -308,7 +307,6 @@ export const edgeCases: ScenarioCase[] = [
     },
   }),
 
-  // Half sockets
   defineScenario('edge cases', '2x2 with half sockets', {
     assert: 'structural',
     params: { base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true } },

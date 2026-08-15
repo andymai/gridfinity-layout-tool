@@ -42,7 +42,6 @@ export function PresenceAvatarBar({
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      {/* Connection status indicator */}
       <ConnectionIndicator status={status} size="md" />
 
       {/* Avatar stack */}
@@ -79,7 +78,6 @@ export function PresenceAvatarBar({
         </Button>
       </div>
 
-      {/* Dropdown */}
       {isDropdownOpen && (
         <PresenceDropdown
           participants={participants}

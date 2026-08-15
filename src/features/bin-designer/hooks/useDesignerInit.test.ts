@@ -73,7 +73,6 @@ describe('useDesignerInit', () => {
   });
 
   it('should create a new design after newDesign() is called', async () => {
-    // Start with an existing design
     useDesignerStore.setState({ currentDesignId: 'existing-design' });
 
     vi.mocked(DesignerStorage.createNewDesign).mockResolvedValue(ok(mockDesign));

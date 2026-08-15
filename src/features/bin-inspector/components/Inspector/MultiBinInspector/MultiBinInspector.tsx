@@ -96,7 +96,6 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
     ? `${formatHeightUnits(minHeight)}u (${mmAt(minHeight)}mm)`
     : `${formatHeightUnits(minHeight)}–${formatHeightUnits(maxHeight)}u (${mmAt(minHeight)}–${mmAt(maxHeight)}mm)`;
 
-  // Check clearance values
   const clearances = selectedBins.map((b) => b.clearanceHeight || 0);
   const minClearance = Math.min(...clearances);
   const maxClearance = Math.max(...clearances);

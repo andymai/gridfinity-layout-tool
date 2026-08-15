@@ -226,7 +226,6 @@ export function generatePrintList(
     }
   }
 
-  // Generate print rows
   const rows: PrintRow[] = [];
 
   for (const [, group] of groups) {

@@ -8,7 +8,6 @@ import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-// Mock uuid
 vi.mock('@/shared/utils/uuid', () => ({
   generateLayoutId: () => 'test-uuid-1234',
 }));

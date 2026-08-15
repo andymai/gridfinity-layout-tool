@@ -471,7 +471,6 @@ export default function App() {
             </Suspense>
           )}
 
-          {/* Header */}
           <Header saveStatus={saveStatus} />
 
           <div className="flex-1 flex overflow-hidden">
@@ -488,7 +487,6 @@ export default function App() {
             </PanelErrorBoundary>
           </TabletPanelOverlay>
 
-          {/* Right panel as overlay */}
           <TabletPanelOverlay isOpen={tabletRightPanelOpen} onClose={closeRightPanel} side="right">
             <PanelErrorBoundary panelName="Inspector">
               <RightPanel />
@@ -545,7 +543,6 @@ export default function App() {
           </Suspense>
         )}
 
-        {/* Header */}
         <Header saveStatus={saveStatus} />
 
         {/* Main content area */}

@@ -241,8 +241,6 @@ function useDeferredNumberInput(
   };
 }
 
-// Stepper Component
-
 export interface StepperProps extends StepperVariantProps {
   /**
    * Current numeric value.

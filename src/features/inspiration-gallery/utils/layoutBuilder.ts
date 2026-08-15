@@ -42,9 +42,6 @@ export function createBin(
   };
 }
 
-/**
- * Helper to create a layer.
- */
 export function createLayer(name: string, height: number): Layer {
   return {
     id: layerId(genId()),
@@ -53,9 +50,6 @@ export function createLayer(name: string, height: number): Layer {
   };
 }
 
-/**
- * Helper to create a category.
- */
 export function createCategory(name: string, color: string): Category {
   return {
     id: categoryId(genId()),

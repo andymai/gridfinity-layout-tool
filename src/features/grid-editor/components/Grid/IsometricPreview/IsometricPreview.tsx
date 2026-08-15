@@ -285,7 +285,6 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     });
   }, [explodedLayerGroups, selectedBinIds]);
 
-  // Banana scale update callback
   const handleBananaScaleUpdate = useCallback(
     (show: boolean) => updateSetting('showBananaScale', show),
     [updateSetting]

@@ -18,7 +18,6 @@ describe('throttleRAF', () => {
       rafCallbacks.delete(id);
     });
 
-    // Helper to flush RAF
     vi.stubGlobal('__flushRAF__', () => {
       const callbacks = Array.from(rafCallbacks.entries());
       rafCallbacks.clear();

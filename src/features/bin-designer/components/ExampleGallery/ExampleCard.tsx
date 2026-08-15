@@ -59,7 +59,6 @@ export function ExampleCard({ example, onSelect, index, tabIndex = 0, onFocus }:
         {t(example.nameKey)}
       </h3>
 
-      {/* Technique label */}
       <p className="text-xs text-content-secondary line-clamp-1 mt-0.5">{techniqueLabel}</p>
 
       {/* Dimensions */}

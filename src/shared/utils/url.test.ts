@@ -12,7 +12,6 @@ describe('url utilities', () => {
   const originalLocation = window.location;
 
   beforeEach(() => {
-    // Mock window.location
     Object.defineProperty(window, 'location', {
       value: Object.assign({}, originalLocation, {
         hash: '',

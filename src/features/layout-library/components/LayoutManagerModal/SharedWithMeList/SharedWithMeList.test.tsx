@@ -6,7 +6,6 @@ import type { SharedWithMeEntry } from '@/core/types';
 import { gridUnits, heightUnits } from '@/core/types';
 import { useSharedWithMe } from '@/shared/hooks';
 
-// Mock hooks
 vi.mock('@/shared/hooks');
 
 // Mock child component

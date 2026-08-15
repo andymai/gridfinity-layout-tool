@@ -32,7 +32,6 @@ import type { Layout } from '@/core/types';
 import { binId, layerId, categoryId, gridUnits, heightUnits } from '@/core/types';
 import { createDefaultLayout } from '@/core/constants';
 
-// Mock the settings store
 vi.mock('@/core/store/settings', () => ({
   useSettingsStore: {
     getState: vi.fn(() => ({

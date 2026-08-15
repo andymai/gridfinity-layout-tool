@@ -7,7 +7,6 @@ import { resetAllStores } from '@/test/testUtils';
 import type { LayoutEntry } from '@/core/types';
 import { gridUnits, heightUnits, layoutId, layerId, mm } from '@/core/types';
 
-// Mock storage
 vi.mock('@/core/storage', () => ({
   loadLayoutAsync: vi.fn(() =>
     Promise.resolve({
@@ -25,7 +24,6 @@ vi.mock('@/core/storage', () => ({
   downloadLayoutAsFile: vi.fn(() => Promise.resolve()),
 }));
 
-// Mock LayoutThumbnail
 vi.mock('@/shell/LayoutThumbnail', () => ({
   LayoutThumbnail: ({ size }: { size: number }) => (
     <div data-testid="layout-thumbnail" style={{ width: size, height: size }}>
@@ -394,7 +392,6 @@ describe('LayoutList', () => {
       const announceToScreenReader = vi.fn();
       useInteractionStore.setState({ announceToScreenReader });
 
-      // Setup current layout in store
       useLayoutStore.setState({
         layout: {
           version: '1.0',

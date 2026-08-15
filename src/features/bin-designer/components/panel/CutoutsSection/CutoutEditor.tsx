@@ -574,7 +574,6 @@ export function CutoutEditor() {
         />
       )}
 
-      {/* Context menu */}
       {contextMenu && (
         <CutoutContextMenu
           x={contextMenu.x}

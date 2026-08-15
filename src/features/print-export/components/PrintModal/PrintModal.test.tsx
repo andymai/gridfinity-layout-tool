@@ -104,7 +104,6 @@ describe('PrintModal', () => {
   });
 
   afterEach(() => {
-    // Reset body overflow
     document.body.style.overflow = '';
   });
 
@@ -207,7 +206,6 @@ describe('PrintModal', () => {
       const layer1 = screen.getByText('Layer 1').closest('[role="checkbox"]');
       fireEvent.click(layer1!);
 
-      // Then click All
       fireEvent.click(screen.getByText('All'));
 
       // Both should be selected

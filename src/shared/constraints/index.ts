@@ -17,10 +17,8 @@ export type {
   GraphEdge,
 } from './types';
 
-// Feature manifests
 export { FEATURE_MANIFESTS } from './features';
 
-// Constraint rules
 export { CONSTRAINT_RULES, IMPLICATION_RULES } from './rules';
 
 // Engine (resolution + queries)

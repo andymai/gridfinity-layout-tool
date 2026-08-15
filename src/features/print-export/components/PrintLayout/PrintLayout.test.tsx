@@ -31,7 +31,6 @@ vi.mock('@/features/print-export/utils/printLayout', () => ({
   sortBinsForPrint: (bins: unknown[]) => bins,
 }));
 
-// Mock shared hooks
 vi.mock('@/shared/hooks', () => ({
   useGridTemplate: () => ({
     gridTemplateColumns: 'repeat(10, 1fr)',

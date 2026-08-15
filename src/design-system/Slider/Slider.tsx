@@ -210,7 +210,6 @@ export const Slider = forwardRef<HTMLDivElement, SliderProps>(
             </div>
           )}
 
-          {/* Thumb */}
           <SliderThumb
             active={thumbActive}
             dragging={isDragging}

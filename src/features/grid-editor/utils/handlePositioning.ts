@@ -25,12 +25,6 @@ const CORNER_VISUAL_SIZE = 14;
 /** Corner handle types */
 const CORNER_HANDLES: ResizeHandle[] = ['nw', 'ne', 'sw', 'se'];
 
-/**
- * Check if a handle is a corner handle.
- *
- * @param handle - Handle direction
- * @returns true if handle is a corner handle (nw/ne/sw/se)
- */
 export function isCornerHandle(handle: ResizeHandle): boolean {
   return CORNER_HANDLES.includes(handle);
 }

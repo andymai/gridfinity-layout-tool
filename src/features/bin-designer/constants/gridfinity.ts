@@ -41,7 +41,6 @@ export const DESIGNER_CONSTRAINTS = {
   MIN_BODY_WALL_MM: 1,
   MAX_HEIGHT: 20, // height units (expanded: tall bins for tools/bottles)
   HEIGHT_STEP: 1, // height units
-  // Compartment grid
   MIN_COMPARTMENT_GRID: 1, // min rows/cols
   // Max rows/cols. Bumped from 8 to 12 per #1871 after measuring generation
   // time across grid sizes (see
@@ -92,7 +91,6 @@ export const DESIGNER_CONSTRAINTS = {
   MAX_LABEL_TAB_LIP_HEIGHT: 5, // mm
   LABEL_TAB_LIP_HEIGHT_STEP: 0.2, // mm
   MAX_HISTORY: 100, // undo/redo states
-  // Wall thickness
   MIN_WALL_THICKNESS: 0.4, // mm (1-wall for 0.4mm nozzle)
   MAX_WALL_THICKNESS: 2.4, // mm (3-wall for 0.8mm nozzle)
   WALL_THICKNESS_STEP: 0.1, // mm (legacy — use WALL_THICKNESS_OPTIONS)
@@ -167,7 +165,6 @@ export const DESIGNER_CONSTRAINTS = {
   MIN_HANDLE_CORNER_RADIUS: 0, // mm (sharp rectangle)
   MAX_HANDLE_CORNER_RADIUS: 10, // mm
   HANDLE_CORNER_RADIUS_STEP: 1, // mm
-  // Handle vertical position
   MIN_HANDLE_VERTICAL_POSITION: 0.2, // fraction from floor
   MAX_HANDLE_VERTICAL_POSITION: 0.9, // fraction from floor
   HANDLE_VERTICAL_POSITION_STEP: 0.05,

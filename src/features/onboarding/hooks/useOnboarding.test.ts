@@ -6,7 +6,6 @@ import { createDefaultLibrary } from '@/core/store/library';
 import { createDefaultLayout } from '@/core/constants';
 import { gridUnits, layoutId } from '@/core/types';
 
-// Mock analytics
 vi.mock('@/shared/analytics/posthog', () => ({
   trackEvent: vi.fn(),
 }));

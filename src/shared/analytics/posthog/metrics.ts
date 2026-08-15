@@ -9,8 +9,6 @@ import { useLabsStore } from '@/core/store/labs';
 import { getFeature } from '@/core/labs';
 import { splitBinsByLocation } from '@/shared/utils';
 
-// LABS METRICS
-
 export interface LabsMetrics {
   labs_enabled_features: string[];
   labs_enabled_count: number;
@@ -84,7 +82,6 @@ export interface LayoutMetrics {
   feature_custom_print_bed: boolean;
   feature_asymmetric_bed: boolean;
 
-  // Drawer shape
   drawer_shape_kind: OutlineAuthoringKind | 'rectangle' | 'custom';
 
   // Print readiness
@@ -140,7 +137,6 @@ export function computeLayoutMetrics(layout: Layout): LayoutMetrics {
     // Height tracking
     heightCount.set(bin.height, (heightCount.get(bin.height) || 0) + 1);
 
-    // Area
     totalArea += bin.width * bin.depth;
 
     // Feature detection
@@ -184,7 +180,6 @@ export function computeLayoutMetrics(layout: Layout): LayoutMetrics {
     (c) => !defaultCategoryNames.has(c.name.toLowerCase())
   ).length;
 
-  // Print bed check
   const printBedDepth = layout.printBedDepth ?? layout.printBedSize;
   const maxGrid = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm, printBedDepth);
   const hasOversizedBins = maxWidth > maxGrid.width || maxDepth > maxGrid.depth;
@@ -202,7 +197,6 @@ export function computeLayoutMetrics(layout: Layout): LayoutMetrics {
     outline === undefined ? 'rectangle' : (outline.authoring?.kind ?? 'custom');
 
   return {
-    // Drawer
     drawer_width: layout.drawer.width,
     drawer_depth: layout.drawer.depth,
     drawer_height: layout.drawer.height,
@@ -212,7 +206,6 @@ export function computeLayoutMetrics(layout: Layout): LayoutMetrics {
     print_bed_depth: printBedDepth,
     drawer_is_default: isDefaultDrawer,
 
-    // Bins
     bin_count: layout.bins.length,
     bins_on_grid: gridBins.length,
     bins_in_staging: stagingBins.length,
@@ -224,12 +217,10 @@ export function computeLayoutMetrics(layout: Layout): LayoutMetrics {
     bin_top_sizes: topSizes,
     bin_heights: heights,
 
-    // Layers
     layer_count: layout.layers.length,
     layer_heights: layout.layers.map((l) => l.height),
     layer_total_height: layout.layers.reduce((sum, l) => sum + l.height, 0),
 
-    // Categories
     category_count: layout.categories.length,
     custom_category_count: customCategoryCount,
     top_categories: topCategories,
@@ -247,7 +238,6 @@ export function computeLayoutMetrics(layout: Layout): LayoutMetrics {
     feature_custom_print_bed: layout.printBedSize !== DEFAULT_PRINT_BED,
     feature_asymmetric_bed: printBedDepth !== layout.printBedSize,
 
-    // Drawer shape
     drawer_shape_kind: drawerShapeKind,
 
     // Print

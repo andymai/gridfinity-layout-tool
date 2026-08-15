@@ -60,7 +60,6 @@ describe('Popover', () => {
 
     // Content should NOT be inside the render container (it's in a portal)
     expect(container.querySelector('[role="dialog"]')).toBeNull();
-    // But it should be in the document
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 

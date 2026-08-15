@@ -29,7 +29,6 @@ vi.mock('@react-three/fiber', () => ({
   useFrame: vi.fn(),
 }));
 
-// Mock three
 vi.mock('three', () => ({
   Group: vi.fn().mockImplementation(() => ({
     add: vi.fn(),

@@ -3,7 +3,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { cleanupLocalStorageBackups, clearCleanupFlag } from './localStorageCleanup';
 import { createDefaultLayout } from '@/core/constants';
 
-// Mock backends
 vi.mock('./backends/localStorage', () => ({
   getAllLayoutIds: vi.fn(),
   deleteFromLocalStorage: vi.fn(),

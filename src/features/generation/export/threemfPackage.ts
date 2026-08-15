@@ -44,7 +44,6 @@ function buildContentTypes(hasThumbnail: boolean): string {
     '  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml" />',
     // Override (specific path) rather than Default (extension) for the model
     // file — PrusaSlicer and friends generate Override; some parsers only
-    // handle Override.
     `  <Override PartName="/3D/3dmodel.model" ContentType="${THREEMF_MIME}" />`,
   ];
   if (hasThumbnail) {

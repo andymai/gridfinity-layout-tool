@@ -27,7 +27,6 @@ export interface EphemeralState {
   zoom: number;
   showOtherLayers: boolean;
 
-  // Panel state
   leftPanelCollapsed: boolean;
   rightPanelCollapsed: boolean;
 

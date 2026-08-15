@@ -2,7 +2,6 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { InteriorModeCard } from './InteriorModeCard';
 
-// Mock the icons
 vi.mock('./icons', () => ({
   Grid3x3Icon: () => <div data-testid="grid-icon" />,
   BentoIcon: () => <div data-testid="bento-icon" />,

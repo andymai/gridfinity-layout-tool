@@ -6,7 +6,6 @@ import { useMobileStore } from '@/core/store/mobile';
 import { useToastStore } from '@/core/store/toast';
 import type { InspirationLayout } from '../../types';
 
-// Mock hooks
 vi.mock('@/shared/hooks', async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
   useResponsive: () => ({ isMobile: false, viewportWidth: 1280 }),
@@ -243,7 +242,6 @@ describe('InspirationGallery', () => {
     vi.clearAllMocks();
     mockImportLayoutFromJSON.mockResolvedValue({ ok: true, value: 'new-layout-id' });
     mockSwitchLayout.mockResolvedValue({ ok: true, value: undefined });
-    // Reset body overflow
     document.body.style.overflow = '';
 
     // Spy on store methods

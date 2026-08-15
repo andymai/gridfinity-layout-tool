@@ -156,9 +156,6 @@ export async function queryEvents(options: {
   return result.data;
 }
 
-/**
- * Query persons
- */
 export async function queryPersons(options: {
   search?: string;
   limit?: number;
@@ -181,9 +178,6 @@ export async function queryPersons(options: {
   return result.data;
 }
 
-/**
- * List all dashboards
- */
 export async function listDashboards(): Promise<unknown> {
   const result = await apiRequest<{ results: unknown[] }>('GET', '/dashboards/');
 
@@ -194,9 +188,6 @@ export async function listDashboards(): Promise<unknown> {
   return result.data;
 }
 
-/**
- * List all insights
- */
 export async function listInsights(options?: {
   limit?: number;
   saved?: boolean;
@@ -242,7 +233,6 @@ export async function getDashboard(dashboardId: number | string): Promise<unknow
 }
 
 // ============================================
-// PRESET QUERIES
 // ============================================
 
 const PRESET_QUERIES: Record<string, string> = {

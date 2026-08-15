@@ -9,7 +9,6 @@ import { getCanonicalTerms, getTermDomain, processLabel } from './normalize';
  * variants are listed separately since the query is lowercased but not folded.
  */
 const DOMAIN_CONCEPTS: Record<string, LabelDomain> = {
-  // Tools
   tool: 'tools',
   tools: 'tools',
   werkzeug: 'tools',
@@ -24,7 +23,6 @@ const DOMAIN_CONCEPTS: Record<string, LabelDomain> = {
   ferramenta: 'tools',
   ferramentas: 'tools',
 
-  // Fasteners
   fastener: 'fasteners',
   fasteners: 'fasteners',
   hardware: 'fasteners',
@@ -36,7 +34,6 @@ const DOMAIN_CONCEPTS: Record<string, LabelDomain> = {
   bevestiging: 'fasteners',
   viteria: 'fasteners',
 
-  // Electronics
   electronics: 'electronics',
   electronic: 'electronics',
   components: 'electronics',
@@ -50,7 +47,6 @@ const DOMAIN_CONCEPTS: Record<string, LabelDomain> = {
   elettronica: 'electronics',
   componenti: 'electronics',
 
-  // Office
   office: 'office',
   stationery: 'office',
   büro: 'office',
@@ -63,7 +59,6 @@ const DOMAIN_CONCEPTS: Record<string, LabelDomain> = {
   ufficio: 'office',
   cancelleria: 'office',
 
-  // Craft
   craft: 'craft',
   crafts: 'craft',
   crafting: 'craft',
@@ -90,7 +85,6 @@ const DOMAIN_CONCEPTS: Record<string, LabelDomain> = {
   impresión: 'printing_3d',
   stampa: 'printing_3d',
 
-  // Cosmetics
   cosmetics: 'cosmetics',
   cosmetic: 'cosmetics',
   makeup: 'cosmetics',

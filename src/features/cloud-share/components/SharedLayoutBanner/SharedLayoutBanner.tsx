@@ -101,7 +101,6 @@ export function SharedLayoutBanner() {
     // Sync library store with updated library from atomic operation
     setLibrary(updatedLibrary);
 
-    // Clear the shared preview state
     clearSharedLayoutPreview();
 
     // Show feedback
@@ -127,10 +126,8 @@ export function SharedLayoutBanner() {
         setActiveCategory(activeLayout.categories[0].id);
       }
 
-      // Clear history
       clearHistory();
 
-      // Clear the shared preview state
       clearSharedLayoutPreview();
 
       // Show feedback

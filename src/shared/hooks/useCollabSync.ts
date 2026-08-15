@@ -56,7 +56,6 @@ export function useCollabSync(): void {
   // Get layout from Liveblocks storage
   const remoteLayout = useStorage((root) => root.layout);
 
-  // Get local store state
   const localLayout = useLayoutStore((state) => state.layout);
   const lastEditSource = useLayoutStore((state) => state.lastEditSource);
   const importLayout = useLayoutStore((state) => state.importLayout);

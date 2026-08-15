@@ -335,7 +335,6 @@ describe('DesignListDialog', () => {
         expect(screen.getByText('Tool Holder')).toBeInTheDocument();
       });
 
-      // Click the Import button
       fireEvent.click(screen.getByRole('button', { name: 'Import' }));
 
       // Import view should appear with paste prompt text

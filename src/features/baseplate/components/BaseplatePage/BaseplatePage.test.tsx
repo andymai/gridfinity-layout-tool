@@ -14,7 +14,6 @@ vi.mock('@/shared/hooks/useResponsive', () => ({
   useResponsive: () => mocks.responsive,
 }));
 
-// Mock layout store
 vi.mock('@/core/store/layout', () => ({
   useLayoutStore: (selector: (state: unknown) => unknown) => {
     const state = {
@@ -62,7 +61,6 @@ vi.mock('../BaseplatePreview/BaseplatePreview', () => ({
   BaseplatePreview: () => <div data-testid="preview">Preview</div>,
 }));
 
-// Mock routing hook
 vi.mock('@/shared/hooks/useBaseplateRouting', () => ({
   useBaseplateRouting: () => ({
     isStandalone: false,
@@ -72,7 +70,6 @@ vi.mock('@/shared/hooks/useBaseplateRouting', () => ({
   }),
 }));
 
-// Mock ToolSwitcher
 vi.mock('@/shared/components/ToolSwitcher', () => ({
   ToolSwitcher: (props: Record<string, unknown>) => (
     <div data-testid="tool-switcher" data-compact={props.compact} data-icon-only={props.iconOnly} />

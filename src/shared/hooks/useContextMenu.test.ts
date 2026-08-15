@@ -331,7 +331,6 @@ describe('useContextMenu', () => {
         vi.advanceTimersByTime(AFTER_DELAY_MS);
       });
 
-      // Unmount
       unmount();
 
       // Should have removed keydown listener

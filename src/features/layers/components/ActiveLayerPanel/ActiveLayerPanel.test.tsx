@@ -9,7 +9,6 @@ import { categoryId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import { resetAllStores } from '@/test/testUtils';
 
-// Mock ConfirmDialog
 vi.mock('@/shared/components/ConfirmDialog', () => ({
   ConfirmDialog: ({
     isOpen,

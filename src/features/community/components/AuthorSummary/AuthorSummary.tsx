@@ -34,7 +34,6 @@ export function AuthorSummary({
 }: AuthorSummaryProps) {
   const t = useTranslation();
   // The app's locale, not the OS one: an in-app language switch must move
-  // this date with it.
   const { formatDate } = useFormatting();
   const summary = useMemo(() => buildAuthorSummary(items, authorPublicId), [items, authorPublicId]);
 

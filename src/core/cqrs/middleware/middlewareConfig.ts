@@ -68,10 +68,8 @@ const COMMAND_PROFILES: Readonly<Record<CommandType, MiddlewareProfile>> = {
   'library.renameEntry': 'library',
   'library.importLayout': 'library',
 
-  // Designer
   'designer.save': 'designer',
 
-  // Restore
   'layout.restore': 'restore',
 };
 

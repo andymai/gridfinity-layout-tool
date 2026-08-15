@@ -549,10 +549,8 @@ export function CutoutWorkspace() {
         />
       </div>
 
-      {/* Quickstart overlay */}
       {showQuickstart && <CutoutQuickstartOverlay onDismiss={handleDismissQuickstart} />}
 
-      {/* Context menu */}
       {contextMenu && (
         <CutoutContextMenu
           x={contextMenu.x}

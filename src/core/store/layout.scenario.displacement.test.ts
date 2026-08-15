@@ -352,7 +352,6 @@ describe('bin displacement logic', () => {
         notes: '',
       });
 
-      // Add bin to staging
       const stagingResult = addBin({
         layerId: STAGING_ID,
         x: gridUnits(0),

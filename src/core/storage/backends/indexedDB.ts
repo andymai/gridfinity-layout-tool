@@ -219,9 +219,6 @@ export async function deleteSnapshot(id: string): Promise<void> {
   await db.delete(SNAPSHOTS_STORE, id);
 }
 
-/**
- * Delete all snapshots for a given layout.
- */
 export async function deleteSnapshotsByLayoutId(layoutId: string): Promise<void> {
   const db = await openLayoutDatabase();
   const tx = db.transaction(SNAPSHOTS_STORE, 'readwrite');

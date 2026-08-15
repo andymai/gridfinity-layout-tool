@@ -17,7 +17,6 @@ vi.mock('@/shared/contexts', () => ({
   }),
 }));
 
-// Mock analytics
 vi.mock('@/shared/analytics/useMLTracking', () => ({
   mlTracking: {
     trackLabel: vi.fn(),

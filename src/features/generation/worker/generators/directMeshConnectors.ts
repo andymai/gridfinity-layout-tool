@@ -144,7 +144,6 @@ export function addConnectorHole(
   for (let i = 0; i < NUB_CIRCLE_SEGMENTS; i++) {
     const j = (i + 1) % NUB_CIRCLE_SEGMENTS;
     // Inward-facing winding from inside the cylinder looking outward:
-    // surf_{j}, surf_{i}, floor_{i}, floor_{j}.
     mb.pushQuad(surfRing[j], surfRing[i], floorRing[i], floorRing[j]);
   }
 

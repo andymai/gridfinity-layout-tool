@@ -14,8 +14,6 @@
 import { useLibraryStore } from '@/core/store/library';
 import { ANALYTICS_STORAGE_KEY } from '@/shared/analytics/posthog/identity';
 
-// Storage
-
 const NUDGE_STORAGE_KEY = 'gridfinity-nudges-v1';
 
 export type NudgeType = 'feedback_rating' | 'kofi_support';

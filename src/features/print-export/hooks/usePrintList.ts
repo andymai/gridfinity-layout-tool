@@ -66,7 +66,6 @@ export interface UsePrintListReturn {
   toggleGroupByCategory: () => void;
   resetFilters: () => void;
 
-  // Config
   config: PrintListConfig;
   nozzleSizeMm: number;
   setFilamentCostPerKg: (cost: number) => void;

@@ -85,13 +85,11 @@ describe('useLayoutRouting', () => {
       },
     });
 
-    // Set up layout store
     useLayoutStore.setState({
       layout: mockLayout,
       activeLayoutId: layoutId('layout123test'),
     });
 
-    // Set up selection store
     useSelectionStore.setState({
       activeLayerId: layerId('layer1'),
       activeCategoryId: categoryId('coral'),

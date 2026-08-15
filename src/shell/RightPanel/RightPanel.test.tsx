@@ -25,7 +25,6 @@ vi.mock('@/features/bin-inspector', () => ({
   EmptyState: () => <div data-testid="empty-state">No selection</div>,
 }));
 
-// Mock SplitPreview
 vi.mock('@/shell/Print/SplitPreview', () => ({
   SplitPreview: ({
     width,
@@ -96,7 +95,6 @@ vi.mock('@/design-system', async () => {
   return { ...actual, Collapsible: MockCollapsible };
 });
 
-// Mock ConfirmDialog
 vi.mock('@/shared/components/ConfirmDialog', () => ({
   ConfirmDialog: ({
     isOpen,
@@ -127,7 +125,6 @@ vi.mock('@/core/storage', () => ({
   exportPrintListTSV: () => mockExportPrintListTSV(),
 }));
 
-// Mock analytics
 vi.mock('@/shared/analytics/posthog', () => ({
   trackEvent: vi.fn(),
   trackLayoutSnapshot: vi.fn(),
@@ -148,7 +145,6 @@ vi.mock('@/features/print-export/hooks/usePrintList', () => ({
   usePrintList: () => mockPrintListReturn,
 }));
 
-// Get useBinInspector mock
 import { useBinInspector } from '@/features/bin-inspector';
 const mockUseBinInspector = useBinInspector as ReturnType<typeof vi.fn>;
 
