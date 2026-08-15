@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.411.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.410.0...gridfinity-layout-tool-v4.411.0) (2026-08-15)
+
+
+### Features
+
+* **supporters:** recognize Ko-fi supporters in the app ([#3506](https://github.com/andymai/gridfinity-layout-tool/issues/3506)) ([beeafdf](https://github.com/andymai/gridfinity-layout-tool/commit/beeafdfded3c115a97bf171f340e3a84d146c9e5))
+
 ## [4.410.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.409.2...gridfinity-layout-tool-v4.410.0) (2026-08-14)
 
 
