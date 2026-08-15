@@ -6,6 +6,7 @@ import { communityDesignPath } from '@/shared/hooks/useCommunityRouting';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import type { CommunityCard as CommunityCardData } from '@/shared/types/community';
 import { savePendingLikeAction } from '@/shared/utils/communityPendingLikeAction';
+import { SupporterBadge } from '@/shared/components/SupporterBadge';
 import { useLikeToggle } from '../../hooks/useLikeToggle';
 import { CommunitySignInPrompt } from '../SignInPrompt';
 import { FEATURE_REASON_KEYS } from '../../utils/featureReasonLabels';
@@ -228,39 +229,44 @@ export function CommunityCard({ card, onSelect, onSelectAuthor, index }: Communi
           <span className="line-clamp-2 block">{card.name}</span>
         </a>
 
-        {onSelectAuthor !== undefined ? (
-          <span className="relative z-10 mt-0.5 flex min-w-0">
-            <Button
-              variant="ghost"
-              // 44px hit area on touch layouts, where a mis-tap falls through
-              // to the card and opens the detail view instead. The clamp
-              // lives on the inner span: line-clamp's -webkit-box would crop
-              // the grown touch target.
-              touchTarget={isMobile}
-              aria-label={t('community.authorFilterAria', { author: card.authorName })}
-              onClick={(event) => {
-                // Same nested-target rule as the heart: an author tap must
-                // not also open the detail view.
-                event.stopPropagation();
-                onSelectAuthor(card);
-              }}
-              className="h-auto min-w-0 justify-start p-0 text-xs font-normal text-content-secondary underline-offset-2 hover:underline"
-              data-testid="community-card-author"
-            >
-              {/* truncate, not line-clamp-1: the clamp breaks by line, so a
-                  handle with no break opportunity wraps to a line that is then
-                  clamped away and the label renders as "by…", naming nobody.
-                  Truncation cuts mid-handle instead. */}
-              <span className="truncate">
-                {t('community.card.byAuthor', { author: card.authorName })}
-              </span>
-            </Button>
-          </span>
-        ) : (
-          <span className="mt-0.5 truncate text-xs text-content-secondary">
-            {t('community.card.byAuthor', { author: card.authorName })}
-          </span>
-        )}
+        {/* The badge sits beside the byline and never shrinks: the author name
+            is the part that truncates. */}
+        <span className="mt-0.5 flex min-w-0 items-center gap-1.5">
+          {onSelectAuthor !== undefined ? (
+            <span className="relative z-10 flex min-w-0">
+              <Button
+                variant="ghost"
+                // 44px hit area on touch layouts, where a mis-tap falls through
+                // to the card and opens the detail view instead. The clamp
+                // lives on the inner span: line-clamp's -webkit-box would crop
+                // the grown touch target.
+                touchTarget={isMobile}
+                aria-label={t('community.authorFilterAria', { author: card.authorName })}
+                onClick={(event) => {
+                  // Same nested-target rule as the heart: an author tap must
+                  // not also open the detail view.
+                  event.stopPropagation();
+                  onSelectAuthor(card);
+                }}
+                className="h-auto min-w-0 justify-start p-0 text-xs font-normal text-content-secondary underline-offset-2 hover:underline"
+                data-testid="community-card-author"
+              >
+                {/* truncate, not line-clamp-1: the clamp breaks by line, so a
+                    handle with no break opportunity wraps to a line that is then
+                    clamped away and the label renders as "by…", naming nobody.
+                    Truncation cuts mid-handle instead. */}
+                <span className="truncate">
+                  {t('community.card.byAuthor', { author: card.authorName })}
+                </span>
+              </Button>
+            </span>
+          ) : (
+            <span className="truncate text-xs text-content-secondary">
+              {t('community.card.byAuthor', { author: card.authorName })}
+            </span>
+          )}
+          {card.authorIsSupporter === true && <SupporterBadge source="community_card" />}
+        </span>
 
         {/* mt-auto pins this to the bottom of the card: titles now run to two
             lines, and without it every card in a row would put its stats at a

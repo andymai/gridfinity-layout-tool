@@ -9,6 +9,7 @@ import type {
   CommunityReportReason,
 } from '@/shared/types/community';
 import { TECHNIQUE_CONFIG } from '@/shared/types/exampleTechniques';
+import { SupporterBadge } from '@/shared/components/SupporterBadge';
 import { HeartGlyph } from '../CommunityCard/CommunityCard';
 import { CATEGORY_LABEL_KEYS } from '../../utils/categoryLabels';
 import type { DesignImage } from '../../utils/designMedia';
@@ -62,6 +63,8 @@ interface CommunityDetailContentProps {
   like?: DetailLikeState | null;
   /** Filters the gallery to this design's author (the author-view entry point). */
   onFilterByAuthor?: () => void;
+  /** Whether this design's author is a badged Ko-fi supporter. */
+  authorIsSupporter?: boolean;
   /** Present only for the owner of a hidden design; renders the hidden-state notice. */
   ownerModeration?: OwnerModeration | null;
   /** The prints section, which carries its own post/edit CTA; absent while prints are unavailable. */
@@ -229,6 +232,7 @@ export function CommunityDetailContent({
   primaryActions,
   like = null,
   onFilterByAuthor,
+  authorIsSupporter,
   ownerModeration = null,
   printsSlot,
   costSlot,
@@ -256,25 +260,28 @@ export function CommunityDetailContent({
         {ownerModeration !== null && <HiddenNotice moderation={ownerModeration} />}
 
         <div>
-          {onFilterByAuthor !== undefined ? (
-            <Button
-              variant="ghost"
-              // 44px hit area on touch layouts, mirroring the card's author
-              // button: a mis-tap in the fullscreen sheet falls through to
-              // surrounding content.
-              touchTarget={isMobile}
-              aria-label={t('community.authorFilterAria', { author: design.authorName })}
-              onClick={onFilterByAuthor}
-              className="h-auto justify-start p-0 text-sm font-normal text-content-secondary underline-offset-2 hover:underline"
-              data-testid="community-detail-author"
-            >
-              {t('community.detail.byAuthor', { author: design.authorName })}
-            </Button>
-          ) : (
-            <p className="text-sm text-content-secondary">
-              {t('community.detail.byAuthor', { author: design.authorName })}
-            </p>
-          )}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {onFilterByAuthor !== undefined ? (
+              <Button
+                variant="ghost"
+                // 44px hit area on touch layouts, mirroring the card's author
+                // button: a mis-tap in the fullscreen sheet falls through to
+                // surrounding content.
+                touchTarget={isMobile}
+                aria-label={t('community.authorFilterAria', { author: design.authorName })}
+                onClick={onFilterByAuthor}
+                className="h-auto justify-start p-0 text-sm font-normal text-content-secondary underline-offset-2 hover:underline"
+                data-testid="community-detail-author"
+              >
+                {t('community.detail.byAuthor', { author: design.authorName })}
+              </Button>
+            ) : (
+              <p className="text-sm text-content-secondary">
+                {t('community.detail.byAuthor', { author: design.authorName })}
+              </p>
+            )}
+            {authorIsSupporter === true && <SupporterBadge source="community_detail" />}
+          </div>
           <p className="mt-1 text-xs text-content-tertiary">
             {t('community.detail.publishedOn', { date: formatDate(design.createdAt) })}
             {design.updatedAt > design.createdAt && (

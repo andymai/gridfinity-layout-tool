@@ -262,10 +262,20 @@ describe('login/[provider]', () => {
 
 describe('callback/[provider]', () => {
   function googleProfile(): ProviderProfile {
-    return { subject: 'google-123', email: 'a@example.com', displayName: 'Alice' };
+    return {
+      subject: 'google-123',
+      email: 'a@example.com',
+      verifiedEmails: ['a@example.com'],
+      displayName: 'Alice',
+    };
   }
   function githubProfile(): ProviderProfile {
-    return { subject: '42', email: 'al@example.com', displayName: 'Alice' };
+    return {
+      subject: '42',
+      email: 'al@example.com',
+      verifiedEmails: ['al@example.com', 'alice@personal.example'],
+      displayName: 'Alice',
+    };
   }
 
   it('rejects when state cookie is missing', async () => {

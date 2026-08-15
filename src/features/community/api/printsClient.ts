@@ -51,6 +51,12 @@ export interface CommunityPrintPage {
   summary: CommunityPrintSummary | null;
   /** The caller's own print, travelling even when it is not on this page. */
   mine: CommunityPrint | null;
+  /**
+   * Author public ids on this page whose supporter badge is public. Keyed by
+   * author, so a printer with several reports costs one entry. Absent on an
+   * older deployment, which reads as nobody badged.
+   */
+  supporterAuthorIds?: readonly string[];
 }
 
 export interface CommunityPrintWriteResult {
@@ -82,7 +88,10 @@ function isPrintPage(value: unknown): value is CommunityPrintPage {
     value.items.every(isPrint) &&
     (value.nextCursor === null || typeof value.nextCursor === 'string') &&
     (value.summary === null || isRecord(value.summary)) &&
-    (value.mine === null || isPrint(value.mine))
+    (value.mine === null || isPrint(value.mine)) &&
+    (value.supporterAuthorIds === undefined ||
+      (Array.isArray(value.supporterAuthorIds) &&
+        value.supporterAuthorIds.every((id) => typeof id === 'string')))
   );
 }
 

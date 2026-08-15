@@ -174,6 +174,13 @@ export interface CommunityCard {
    * as not-liked.
    */
   readonly likedByMe?: boolean;
+  /**
+   * Whether this design's author is a badged Ko-fi supporter, seeded
+   * client-side from the list response's per-page `supporterAuthorIds`.
+   * Resolved live on the server, so it reflects support given long after the
+   * design was published. Optional; absent reads as not badged.
+   */
+  readonly authorIsSupporter?: boolean;
   readonly createdAt: number;
   readonly updatedAt: number;
   readonly status: CommunityDesignStatus;

@@ -8,10 +8,7 @@ import { useToastStore } from '@/core/store/toast';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { loadPendingLikeAction } from '@/shared/utils/communityPendingLikeAction';
 import type { PendingLikeAction } from '@/shared/utils/communityPendingLikeAction';
-import {
-  loadCommunityReopenDesign,
-  loadCommunityReturnPath,
-} from '@/shared/utils/communityReturnPath';
+import { loadCommunityReopenDesign, loadAuthReturnPath } from '@/shared/utils/communityReturnPath';
 import { useFeatureFlag } from './useFeatureFlag';
 import { dispatchSyntheticPopstate } from './useDesignerRouting';
 
@@ -54,10 +51,17 @@ async function applyPendingLike(pending: PendingLikeAction, t: Translate): Promi
 /**
  * Resumes a signed-out community action after the OAuth round trip. The
  * callback always lands on `/`, so this mounts at app level (like
- * useCommunityPublishReturn), restores the stashed /community origin (a like
- * or report started on the route surface must not strand the visitor in the
- * layout planner), and consumes the one-shot pending like once the session
- * resolves.
+ * useCommunityPublishReturn), restores the stashed origin (a like or report
+ * started on the route surface, or a sign-in from /supporters, must not strand
+ * the visitor in the layout planner), and consumes the one-shot pending like
+ * once the session resolves.
+ *
+ * The route restore deliberately sits ABOVE the community flag gate. It is a
+ * generic same-origin return, and /supporters has nothing to do with the
+ * showcase — leaving it inside the gate would silently strand a supporter
+ * whenever the flag is off. It stays in this hook rather than becoming its own
+ * so there is exactly one consumer of the one-shot record; two would race and
+ * whichever ran first would eat it.
  */
 export function useCommunityLikeReturn(): void {
   const t = useTranslation();
@@ -65,15 +69,15 @@ export function useCommunityLikeReturn(): void {
   const sessionStatus = useSessionStore((s) => s.status);
 
   useEffect(() => {
-    if (!enabled) return;
     if (sessionStatus === 'unknown') return;
     // Navigate back regardless of the sign-in outcome: an abandoned redirect
     // still returns a visitor who was browsing the community.
-    const returnPath = loadCommunityReturnPath();
+    const returnPath = loadAuthReturnPath();
     if (returnPath !== null && window.location.pathname + window.location.search !== returnPath) {
       window.history.pushState(null, '', returnPath);
       dispatchSyntheticPopstate();
     }
+    if (!enabled) return;
     // Gallery-tab surface: no URL carries the context, so reopen the gallery
     // and the detail the action started from. This happens regardless of the
     // sign-in outcome, mirroring the route restore above, so an abandoned

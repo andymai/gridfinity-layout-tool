@@ -30,6 +30,7 @@ import {
 } from '../lib/shared.js';
 import { isObject, isString } from '../lib/validationUtils.js';
 import { deriveAuthorPublicId } from '../lib/communityIds.js';
+import { resolveSupporterAuthors } from '../lib/supporterLink.js';
 import {
   communityDenylistKey,
   communityDesignKey,
@@ -262,12 +263,22 @@ async function handleList(
   }
 
   const nextOffset = cursor + pageIds.length;
+  const items = page.map(toPrintResponse);
+  // Same sidecar shape the design list uses: badged authors, not badged prints,
+  // so a printer with several reports costs one entry.
+  const supporterAuthorIds = [
+    ...(await resolveSupporterAuthors(
+      redis,
+      items.map((item) => item.authorPublicId)
+    )),
+  ];
   res.status(200).json({
-    items: page.map(toPrintResponse),
+    items,
     nextCursor:
       pageIds.length === PRINT_PAGE_SIZE && nextOffset < total ? String(nextOffset) : null,
     summary,
     mine,
+    supporterAuthorIds,
   });
 }
 

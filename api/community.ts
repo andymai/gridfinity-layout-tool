@@ -25,6 +25,7 @@ import {
 } from './lib/communityValidation.js';
 import type { CommunityCategory, CommunityTechnique } from './lib/communityValidation.js';
 import { deriveAuthorPublicId, generateCommunityDesignId } from './lib/communityIds.js';
+import { resolveSupporterAuthors } from './lib/supporterLink.js';
 import { checkCommunityPublishQuota } from './lib/communityQuota.js';
 import {
   adjustRemixCredit,
@@ -694,6 +695,29 @@ async function resolveLikedIds(
   return ids.filter((_, index) => flags[index] === 1);
 }
 
+/**
+ * Author public ids on this page whose supporter badge is public.
+ *
+ * A sidecar array like `likedIds` rather than a field on each item: the answer
+ * is per AUTHOR, not per design, so one publisher with six designs on a page
+ * costs one entry instead of six, and `toListItem` stays a pure mapping.
+ *
+ * Resolved live rather than stamped on the card at publish time, so supporting
+ * today badges designs published a year ago — and withdrawing the badge takes
+ * effect everywhere at once.
+ */
+async function resolveSupporterAuthorIds(
+  redis: RedisClient,
+  items: CommunityListItem[]
+): Promise<string[]> {
+  if (items.length === 0) return [];
+  const badged = await resolveSupporterAuthors(
+    redis,
+    items.map((item) => item.authorPublicId)
+  );
+  return [...badged];
+}
+
 async function listMine(
   redis: RedisClient,
   userId: string,
@@ -866,7 +890,8 @@ async function handleList(req: VercelRequest, res: VercelResponse): Promise<void
       if (!session) return;
       const page = await listMine(redis, session.userId, filters, cursor);
       const likedIds = await resolveLikedIds(redis, session.userId, page.items);
-      res.status(200).json({ ...page, likedIds });
+      const supporterAuthorIds = await resolveSupporterAuthorIds(redis, page.items);
+      res.status(200).json({ ...page, likedIds, supporterAuthorIds });
       return;
     }
 
@@ -877,11 +902,12 @@ async function handleList(req: VercelRequest, res: VercelResponse): Promise<void
     const session = await readOptionalSession(req);
     const likedIds =
       session === null ? [] : await resolveLikedIds(redis, session.userId, page.items);
+    const supporterAuthorIds = await resolveSupporterAuthorIds(redis, page.items);
     // Slots in the index, not designs that survive filtering: it tells a
     // concurrent caller how many windows to request, and cannot promise a
     // filtered count without scanning the whole set to produce it.
     const indexSlots = await redis.zcard(communityIndexKey(filters.sort));
-    res.status(200).json({ ...page, likedIds, indexSlots });
+    res.status(200).json({ ...page, likedIds, supporterAuthorIds, indexSlots });
   } catch (error) {
     logger.error('Community list error', {
       error: error instanceof Error ? error.message : String(error),

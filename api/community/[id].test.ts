@@ -143,6 +143,7 @@ interface FakePipeline {
 
 interface FakeRedis {
   sismember: ReturnType<typeof vi.fn>;
+  smismember: ReturnType<typeof vi.fn>;
   smembers: ReturnType<typeof vi.fn>;
   sadd: ReturnType<typeof vi.fn>;
   scard: ReturnType<typeof vi.fn>;
@@ -178,6 +179,9 @@ function createRedis(): { redis: FakeRedis; pipeline: FakePipeline } {
   };
   const redis: FakeRedis = {
     sismember: vi.fn(async (key: string) => (key === communityDenylistKey() ? 0 : 1)),
+    // Supporter-badge lookup: nobody badged by default, so the detail response
+    // stays the same shape every existing assertion was written against.
+    smismember: vi.fn(async (_key: string, ...members: string[]) => members.map(() => 0)),
     smembers: vi.fn(async () => [] as string[]),
     sadd: vi.fn(async () => 1),
     scard: vi.fn(async () => 0),

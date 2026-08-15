@@ -14,6 +14,29 @@ short **message**. Those drive the recency touches (a "joined this month" line,
 the newest-bin glow, a muted support-over-time sparkline) and a rotating quote
 near the CTA. A **find-your-bin** search flies the camera to your bin.
 
+## Supporter benefits
+
+Supporting is recognized in the app, and the recognition is deliberately
+**cosmetic only** — nothing functional is ever gated, so "free, ad-free" stays
+literally true. Two things:
+
+- **A supporter badge** beside the author name on community cards, design
+  detail, and print reports (`@/shared/components/SupporterBadge`). Public by
+  default with an off switch, and clickable — the gallery is the most-viewed
+  surface in the app and /supporters is a destination almost nobody navigates
+  to, so every badge is also a door to the ask.
+- **Self-service control of your own bin**: rename it, rewrite or clear your
+  message, or go anonymous, from the panel on this page. This replaces the
+  manual "email me to change your name" queue the opt-out line used to be.
+
+Recognition is independent of anonymity: an opted-out supporter is still keyed
+by `deriveDonorId`, so they get their badge without ever appearing on the wall.
+
+**How an account is matched** — salted hashes of provider-verified emails only,
+never a typed address. The security reasoning (no enumeration oracle, no
+takeover of someone else's bin) and the Redis shapes live in `api/README.md`
+under "Supporter recognition"; do not re-derive them here.
+
 ## Data flow
 
 Redis is the source of truth. `api/kofi-webhook.ts` receives each Ko-fi payment,
@@ -81,6 +104,16 @@ ingest rules. `data/supporters.json` is only the offline fallback (see below).
   "joined this month", find-your-bin search, corner sparkline, rotating public
   message + purpose line by the CTA, celebration burst, reduced-motion + mobile
   gating, and the accessible fallback list.
+- `components/SupporterPanel/` — the benefits/self-service sheet. A panel over
+  the canvas rather than a section below it: the page is a fixed
+  `h-screen overflow-hidden` scene with absolutely-positioned overlays, so
+  there is no scroll region to put copy in without restructuring the wall.
+  Renders as a bottom sheet on mobile.
+- `api/supporterClient.ts` + `hooks/useSupporterStatus.ts` — the caller's own
+  record. Never throws: an anonymous visitor, an expired session, and a failed
+  request all mean the same thing to the page (show the ask).
+- `constants.ts` — client mirrors of the server's name/message caps. **Keep in
+  lockstep with `api/lib/supporters.ts`**; the server is the authority.
 
 ## Gotchas
 
@@ -112,11 +145,23 @@ ingest rules. `data/supporters.json` is only the offline fallback (see below).
 - **Messages are public-only and auto-published:** a message is stored only
   alongside a public name (`is_public`), passed through `filterMessage` (length
   cap + the shared content filter), and shown with no manual review. An opted-out
-  supporter surfaces neither name nor message.
+  supporter surfaces neither name nor message. The self-service edit is a
+  **second door onto the same text** and re-runs the identical server-side
+  gauntlet — a validator that only lives on the client is not a validator.
 - **Find-your-bin can't find the anonymous:** opted-out supporters have no stored
   name, so the search reports "can't be searched" for them — keep that empty state.
-- The only Ko-fi door is the DOM CTA (`kofi_clicked`,
-  `source: 'supporters_page'`).
+  The same limit applies to the panel's "show me my bin": a bin is located by
+  NAME (the only handle the public list carries), so the affordance is absent for
+  an anonymous supporter rather than pointing at someone else's bin.
+- **The panel shows neither branch until the status read settles.** Guessing one
+  means a supporter on a slow connection reads "here is what supporters get" —
+  an ask aimed at someone who already paid — and watches it swap.
+- **Sign-in from here stashes a return path** (`saveAuthReturnPath('/supporters')`).
+  The OAuth callback always lands on `/`, and the boot-time restore lives in
+  `useCommunityLikeReturn` ABOVE its community feature-flag gate for exactly
+  this reason — /supporters has nothing to do with the showcase.
+- Ko-fi doors: the DOM CTA (`kofi_clicked`, `source: 'supporters_page'`) and the
+  panel's button (`source: 'supporters_panel'`).
 - After any generator change that should be reflected here, re-bake:
   `pnpm run gen:supporters-meshes`.
 
@@ -124,6 +169,12 @@ ingest rules. `data/supporters.json` is only the offline fallback (see below).
 
 - Route detection + navigation: `src/shared/hooks/useSupportersRouting.ts`.
 - Render gate, SEO meta, command-palette disable: `src/App.tsx` (mirrors `/baseplate`).
-- Entry points: `AttributionFooter` link, command palette (`view-supporters`).
+- Entry points: `AttributionFooter` link, command palette (`view-supporters`), and
+  every supporter badge in the community gallery (`supporters_page_opened`).
+- Badge component: `src/shared/components/SupporterBadge/` (shared, because both
+  this slice and `features/community` render it).
+- Match + badge storage: `api/lib/supporterLink.ts`, wired into the OAuth
+  callback, `api/supporters/me.ts`, the community list/detail/prints responses,
+  and the account-deletion cascade.
 - Mesh bake script: `scripts/gen-supporters-meshes.ts` (headless OCCT, same
   init path as the generator scenario tests).

@@ -20,6 +20,9 @@
  *   supporters:donors               → HASH of donorId → JSON {n,t,m} record (legacy: bare name)
  *   supporters:totals               → HASH of currency → received minor units (collect-only)
  *   supporters:msg:{messageId}      → Ko-fi webhook dedupe marker
+ *   supporters:link:{donorId}       → userId that claimed a donor record (bind-once)
+ *   supporters:user:{uid}           → donorId a user is linked to (reverse of the above)
+ *   supporters:authors              → SET of authorPublicIds whose badge is public
  *   community:design:{id}           → HASH of card metadata + status + counters for a published design
  *   community:index:{sort}          → ZSET of design ids scored for one sort (newest|remixes|likes)
  *   community:likes:{id}            → SET of userIds who liked a design
@@ -144,6 +147,38 @@ export function supportersTotalsKey(): string {
 /** Dedupe marker for a Ko-fi webhook delivery (their retries reuse `message_id`). */
 export function supportersMessageKey(messageId: string): string {
   return `supporters:msg:${messageId}`;
+}
+
+/**
+ * The user id that claimed a donor record, written SET NX so a donor record
+ * binds exactly once.
+ *
+ * The bind-once guarantee is what makes wall self-service safe: a linked
+ * supporter can rewrite the name and message on their own bin, so a second
+ * account claiming the same donor record would be able to rewrite someone
+ * else's. Candidates only ever come from provider-VERIFIED addresses, so a
+ * winning claim is by definition the person who owns that mailbox.
+ */
+export function supportersLinkKey(donorId: string): string {
+  return `supporters:link:${donorId}`;
+}
+
+/** Reverse of `supportersLinkKey`: the donor record a user is linked to. */
+export function supportersUserKey(userId: string): string {
+  return `supporters:user:${userId}`;
+}
+
+/**
+ * SET of `authorPublicId`s whose supporter badge is public.
+ *
+ * Keyed by the community author id rather than the user id so a gallery page
+ * resolves its whole grid with one SMISMEMBER against ids that are already
+ * public on every card — nothing private is read, and nothing new is exposed.
+ * Membership IS the privacy switch: opting out is an SREM, so no reader has to
+ * know about a flag.
+ */
+export function supportersAuthorsKey(): string {
+  return 'supporters:authors';
 }
 
 /** Card metadata + status + counters for a published community design. */

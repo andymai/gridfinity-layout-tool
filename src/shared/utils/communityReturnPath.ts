@@ -1,10 +1,13 @@
 /**
- * The OAuth callback always lands on `/`, so a like or report started from
- * /community or /community/d/<id> would drop the visitor into the layout
- * planner on return. CommunitySignInPrompt stashes the originating URL here
- * before the redirect and the boot-time return hook navigates back to it.
- * Restricted to same-origin community paths: never a full URL, so the record
- * cannot become an open redirect.
+ * The OAuth callback always lands on `/`, so signing in from any standalone
+ * route would drop the visitor into the layout planner on return — a like or
+ * report started from /community, or a supporter signing in from /supporters
+ * to reach their own bin. The caller stashes the originating URL here before
+ * the redirect and the boot-time return hook navigates back to it.
+ *
+ * Restricted to an allowlist of same-origin PATHS: never a full URL, so the
+ * record cannot become an open redirect. Widening it means adding a route to
+ * `isReturnablePath` and nothing else.
  */
 
 const RETURN_PATH_KEY = 'gridfinity-community-return-path-v1';
@@ -18,7 +21,8 @@ interface StoredReturnPath {
   savedAt: number;
 }
 
-function isCommunityPath(path: string): boolean {
+function isReturnablePath(path: string): boolean {
+  if (path === '/supporters' || path === '/supporters/') return true;
   return path === '/community' || path.startsWith('/community/') || path.startsWith('/community?');
 }
 
@@ -27,7 +31,7 @@ function isStoredReturnPath(value: unknown): value is StoredReturnPath {
   const record = value as Record<string, unknown>;
   return (
     typeof record.path === 'string' &&
-    isCommunityPath(record.path) &&
+    isReturnablePath(record.path) &&
     typeof record.savedAt === 'number' &&
     Number.isFinite(record.savedAt)
   );
@@ -91,9 +95,9 @@ export function loadCommunityReopenDesign(): string | null {
   }
 }
 
-/** No-op for anything but a community path (e.g. the in-app gallery tab on `/`). */
-export function saveCommunityReturnPath(path: string): void {
-  if (!isCommunityPath(path)) return;
+/** No-op for anything off the allowlist (e.g. the in-app gallery tab on `/`). */
+export function saveAuthReturnPath(path: string): void {
+  if (!isReturnablePath(path)) return;
   try {
     const record: StoredReturnPath = { path, savedAt: Date.now() };
     sessionStorage.setItem(RETURN_PATH_KEY, JSON.stringify(record));
@@ -106,7 +110,7 @@ export function saveCommunityReturnPath(path: string): void {
  * One-shot: the key is removed before validation so a malformed or stale
  * record can never replay on a later boot.
  */
-export function loadCommunityReturnPath(): string | null {
+export function loadAuthReturnPath(): string | null {
   try {
     const stored = sessionStorage.getItem(RETURN_PATH_KEY);
     if (stored === null) return null;

@@ -23,6 +23,7 @@ import {
 } from '../../lib/session.js';
 import { resolveUserId, type AuthProvider } from '../../lib/userId.js';
 import { userProfileKey } from '../../lib/redisKeys.js';
+import { deriveDonorCandidates, linkSupporterAccount } from '../../lib/supporterLink.js';
 import { getProvider, isSupportedProvider, type ProviderProfile } from '../providers/index.js';
 
 interface UserProfileRecord {
@@ -33,6 +34,17 @@ interface UserProfileRecord {
   displayName?: string;
   handle?: string;
   createdAt: number;
+  /**
+   * Salted hashes of this account's provider-verified addresses, in the same
+   * derivation Ko-fi donor records are keyed by.
+   *
+   * Stored rather than recomputed so someone who supports AFTER signing in can
+   * still be matched — the common ordering, and one that would otherwise wait
+   * up to a 30-day session for the next sign-in. Hashes only: the addresses
+   * themselves are never persisted beyond the primary the profile already
+   * held.
+   */
+  donorCandidates?: string[];
 }
 
 const PROFILE_TTL_SECONDS = 365 * 24 * 60 * 60; // 1 year, refreshed on each sign-in
@@ -110,6 +122,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   }
   const now = Date.now();
 
+  const donorCandidates = deriveDonorCandidates(profile.verifiedEmails);
   const profileKey = userProfileKey(userId);
   const existing = safeParse(await redis.get(profileKey));
   const profileRecord: UserProfileRecord = existing
@@ -118,6 +131,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         email: profile.email,
         displayName: profile.displayName,
         handle: profile.handle,
+        donorCandidates,
       }
     : {
         userId,
@@ -127,11 +141,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         displayName: profile.displayName,
         handle: profile.handle,
         createdAt: now,
+        donorCandidates,
       };
   // Profile TTL is bumped on every successful sign-in. Active users keep
   // their profile alive; abandoned accounts age out automatically a year
   // after their last login (matches the project pattern of TTL'd KV keys).
   await redis.set(profileKey, JSON.stringify(profileRecord), 'EX', PROFILE_TTL_SECONDS);
+
+  // Recognize a Ko-fi supporter silently, so the common case needs no claim UI
+  // at all. Never load-bearing for sign-in: a failure here costs a badge, and
+  // failing the sign-in over it would be absurd.
+  try {
+    await linkSupporterAccount(redis, userId, donorCandidates);
+  } catch (error) {
+    logger.warn('Supporter link failed during sign-in', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
 
   const token = generateSessionToken();
   const sessionRecord: SessionRecord = {
@@ -158,6 +184,9 @@ function safeParse(raw: string | null): UserProfileRecord | null {
     if (typeof record.email !== 'string') return null;
     if (typeof record.createdAt !== 'number') return null;
     if (record.provider !== 'google' && record.provider !== 'github') return null;
+    // Always re-derived from this sign-in's verified addresses, so a malformed
+    // stored value is dropped rather than carried forward.
+    if (!Array.isArray(record.donorCandidates)) delete record.donorCandidates;
     return record as UserProfileRecord;
   } catch {
     return null;

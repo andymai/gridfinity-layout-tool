@@ -11,6 +11,13 @@ export interface ProviderProfile {
   /** Stable id at the provider (Google `sub` / GitHub numeric id). */
   subject: string;
   email: string;
+  /**
+   * Every address the provider has VERIFIED for this account, including
+   * `email`. Only ever used to match a Ko-fi donor record by salted hash — see
+   * `api/lib/supporterLink.ts`, where provider verification is what stands in
+   * for proof of ownership.
+   */
+  verifiedEmails: string[];
   displayName?: string;
   /**
    * Provider login handle (GitHub `login`); absent for providers without

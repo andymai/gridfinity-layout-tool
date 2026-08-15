@@ -3,6 +3,7 @@ import { Badge, Button, cn } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import type { CommunityPrint, CommunityPrintSettings } from '@/shared/types/communityPrint';
 import { COMMUNITY_PRINTER_OTHER, printerLabel } from '@/shared/types/communityPrinters';
+import { SupporterBadge } from '@/shared/components/SupporterBadge';
 import { formatGrams, formatMillimetres, formatPrintDuration } from '../../utils/printFormat';
 import { PRINT_VERDICT_LABEL_KEYS, PRINT_VERDICT_TONES } from '../../utils/printVerdict';
 
@@ -12,6 +13,8 @@ export interface PrintCardProps {
   print: CommunityPrint;
   /** True when this is the viewer's own record; suppresses the report action. */
   isMine: boolean;
+  /** Whether this printer is a badged Ko-fi supporter. */
+  authorIsSupporter?: boolean;
   onReport?: (print: CommunityPrint) => void;
   /**
    * Present only for the design's owner. Promotion is owner opt-in because the
@@ -170,6 +173,7 @@ function printerText(settings: CommunityPrintSettings): string | null {
 export function PrintCard({
   print,
   isMine,
+  authorIsSupporter,
   onReport,
   onPromoteCover,
   coverPhotoUrl,
@@ -204,6 +208,7 @@ export function PrintCard({
             <span className="truncate">
               {t('community.prints.byAuthor', { author: print.authorName })}
             </span>
+            {authorIsSupporter === true && <SupporterBadge source="community_print" />}
             {isMine && (
               <Badge size="sm" tone="neutral">
                 {t('community.prints.yours')}
