@@ -366,7 +366,9 @@ const en: Record<string, string> = {
   'layoutExport.download': 'Download ZIP',
   'layoutExport.skippedNotice':
     'Bins not linked to a saved design are skipped ({skipped} of {total}).',
-  'layoutExport.noLinkedBins': 'Link bins to saved designs to export them.',
+  'layoutExport.noLinkedBins':
+    "No bins here are linked to a saved design yet, so there's no geometry to export. Open a bin and choose a design to link it.",
+  'layoutExport.noBins': 'This layout has no bins yet. Draw one on the grid to get started.',
   'layoutExport.engineNotReady': 'The 3D engine is still loading. Try again in a moment.',
   'layoutExport.nothingToExport': 'Nothing could be exported.',
   'layoutExport.baseplateOnly': 'Exported the baseplate only — no bin designs could be loaded.',

@@ -82,7 +82,13 @@ export function LayoutExportDialog({ open, onClose }: LayoutExportDialogProps) {
           ? { message: t('layoutExport.skippedNotice', { total: totalCount, skipped }) }
           : null
       }
-      noMeshWarning={linkedCount === 0 ? t('layoutExport.noLinkedBins') : null}
+      noMeshWarning={
+        linkedCount > 0
+          ? null
+          : totalCount === 0
+            ? t('layoutExport.noBins')
+            : t('layoutExport.noLinkedBins')
+      }
     />
   );
 }

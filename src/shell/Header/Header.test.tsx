@@ -250,13 +250,17 @@ describe('Header', () => {
       expect(screen.getByLabelText('Export layout (3D)')).toBeEnabled();
     });
 
-    it('is rendered but disabled when no bins are linked', () => {
+    // Gating the control put its only explanation in a tooltip, which touch
+    // devices never render — the dialog was opened zero times in 180 days.
+    // LayoutExportDialog carries the empty-state copy, so the button must stay
+    // clickable for a user to ever reach it.
+    it('stays enabled when no bins are linked', () => {
       useLayoutStore.setState({
         layout: createTestLayout({ bins: [createTestBin({ id: binId('unlinked') })] }),
       });
       render(<Header {...defaultProps} />);
 
-      expect(screen.getByLabelText('Export layout (3D)')).toBeDisabled();
+      expect(screen.getByLabelText('Export layout (3D)')).toBeEnabled();
     });
 
     it('opens the export dialog via the view store', () => {
@@ -268,7 +272,7 @@ describe('Header', () => {
       expect(useViewStore.getState().layoutExportOpen).toBe(true);
     });
 
-    it('does not open the dialog when disabled', () => {
+    it('opens the dialog with no linked bins, so it can explain the gap', () => {
       useLayoutStore.setState({
         layout: createTestLayout({ bins: [createTestBin({ id: binId('unlinked') })] }),
       });
@@ -276,7 +280,7 @@ describe('Header', () => {
 
       fireEvent.click(screen.getByLabelText('Export layout (3D)'));
 
-      expect(useViewStore.getState().layoutExportOpen).toBe(false);
+      expect(useViewStore.getState().layoutExportOpen).toBe(true);
     });
   });
 

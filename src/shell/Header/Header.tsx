@@ -1,4 +1,4 @@
-import { useMemo, Suspense } from 'react';
+import { Suspense } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore, useViewStore } from '@/core/store';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
@@ -12,7 +12,6 @@ import { ShareButton } from '@/features/cloud-share/components/ShareButton';
 import { ShareModal } from '@/features/cloud-share/components/ShareModal';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { LayoutQuickSwitch } from '@/features/layout-library';
-import { getLinkedBins } from '@/features/design-linking';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
 import { useTranslation } from '@/i18n';
@@ -88,9 +87,11 @@ export function Header({ saveStatus }: HeaderProps) {
     }))
   );
 
-  // Only bins linked to a saved design have printable geometry, so the 3D
-  // export stays disabled (rather than hidden) until at least one exists.
-  const canExportLayout = useMemo(() => getLinkedBins(layout.bins).length > 0, [layout.bins]);
+  // Only bins linked to a saved design have printable geometry, but the button
+  // stays live when none are: LayoutExportDialog explains the gap and names the
+  // action that closes it. Gating the control instead put the sole explanation
+  // in a tooltip that touch devices never render, so the dialog was opened zero
+  // times in the 180 days before this changed (#3510 audit).
 
   // Platform detection for keyboard shortcut hints
   const isMac = typeof navigator !== 'undefined' && /mac/i.test(navigator.userAgent);
@@ -140,13 +141,10 @@ export function Header({ saveStatus }: HeaderProps) {
 
         {/* Export Button — label stays visible at every width because the
             tooltip that would otherwise explain it is suppressed on touch. */}
-        <Tooltip
-          content={canExportLayout ? t('layoutExport.button') : t('layoutExport.noLinkedBins')}
-        >
+        <Tooltip content={t('layoutExport.button')}>
           <Button
             variant="ghost"
             size="sm"
-            disabled={!canExportLayout}
             onClick={() => {
               trackEvent('ui.modalOpen', { modal: 'layoutExport', source: 'header' });
               setLayoutExportOpen(true);
