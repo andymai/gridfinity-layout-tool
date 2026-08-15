@@ -1,0 +1,48 @@
+src/shell/Mobile/MultiBinContextMenu/MultiBinContextMenu.tsx
+  s_e14c94c08fdc26::t_467150546ae022 307-310
+  s_e14c94c08fdc26::t_b1aba25d1eccd3 15
+src/features/design-linking/components/Dialogs/MakeBentoDialog/MakeBentoDialog.test.tsx
+  s_e14c94c08fdc26::t_bc7acd333385f3 74,89,99,113,123,138,144,152,162
+src/features/design-linking/README.md
+  s_e14c94c08fdc26::t_3f48252f4583a2 27
+  s_e14c94c08fdc26::t_e8f68f5f420ee6 79-81
+  s_e14c94c08fdc26::t_99938c24498843 87-88
+  s_e14c94c08fdc26::t_8c425db3bae51a 57-58
+src/features/bin-inspector/components/Inspector/MultiBinInspector/MultiBinInspector.tsx
+  s_e14c94c08fdc26::t_01ff10d7301505 348-351
+  s_e14c94c08fdc26::t_83534ff582c00c 381
+  s_e14c94c08fdc26::t_35307c81d755f2 11
+src/shell/Header/Header.tsx
+  s_e14c94c08fdc26::t_58410daafb6ff8 1
+  s_e14c94c08fdc26::t_56166662cbcd40 15
+src/features/design-linking/components/Dialogs/MakeBentoDialog/MakeBentoDialog.tsx
+  s_e14c94c08fdc26::t_b901ecbc6c7ed7 58,60
+  s_e14c94c08fdc26::t_8d24ef86956cc2 155
+src/features/design-linking/hooks/useBento.test.ts
+  s_e14c94c08fdc26::t_b5a93d3dc47056 52-54
+  s_e14c94c08fdc26::t_86461af7763058 71-72,75,83,91,99
+  s_e14c94c08fdc26::t_21e578245603e3 107
+src/features/layers/components/ActiveLayerPanel/ActiveLayerPanel.tsx
+  s_e14c94c08fdc26::t_539b746bb9a2ea 1
+src/features/design-linking/hooks/useBento.ts
+  s_e14c94c08fdc26::t_b17f382632d67f 57
+  s_e14c94c08fdc26::t_1e21ec72ebf667 65-68
+  s_e14c94c08fdc26::t_fa39d4a82b6c04 41
+  s_e14c94c08fdc26::t_5c84be08880f40 2,9-11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "23170b0d518f11cbe80d05cd03e2c8d57a05034d",
+  "prompts": {},
+  "sessions": {
+    "s_e14c94c08fdc26": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2ade8d50-542d-4cc1-8938-9408532aaa54",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
