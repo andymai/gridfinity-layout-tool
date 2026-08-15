@@ -13,13 +13,14 @@
  *
  * MUST stay wired to observed breakage, never to a version comparison. It was
  * additionally triggered by a boot-time `gitSha !== __GIT_SHA__` test (#2049),
- * which at ~6 deploys/day fires for nearly every returning visitor: purging the
- * caches mid-session 404s the lazy chunks the running page has yet to request,
- * so the "self-heal" became the single largest source of the kernel load
- * failures it was written to repair (worker-init failures 0.1% -> 7.0% of
- * visitors across the two months after it shipped; 727 users in the last clean
- * 30-day window). `handleWasmLoadFailure` is the correct shape: it recovers only
- * when a load has already failed with a stale-asset error.
+ * which at ~6 deploys/day fired for nearly every returning visitor — 29.7% of
+ * them in a 30-day window — throwing away warm caches and forcing a full reload
+ * mid-session on deploys where nothing was wrong. That cost is what removing it
+ * (#3512) recovers, and it is all that was established: a two-build deploy-skew
+ * reproduction found no asset 404s either with the check or without it, so the
+ * check was not shown to cause the load failures it was written to repair.
+ * `handleWasmLoadFailure` is the correct shape: it recovers only when a load has
+ * already failed with a stale-asset error.
  *
  * The wasm cache is dropped along with the precache deliberately — the one
  * surviving caller reaches here *because* a wasm artifact failed to load, so it

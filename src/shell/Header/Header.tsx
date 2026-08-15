@@ -91,7 +91,7 @@ export function Header({ saveStatus }: HeaderProps) {
   // stays live when none are: LayoutExportDialog explains the gap and names the
   // action that closes it. Gating the control instead put the sole explanation
   // in a tooltip that touch devices never render, so the dialog was opened zero
-  // times in the 180 days before this changed (#3510 audit).
+  // times in the 180 days before this changed (#3512).
 
   // Platform detection for keyboard shortcut hints
   const isMac = typeof navigator !== 'undefined' && /mac/i.test(navigator.userAgent);
