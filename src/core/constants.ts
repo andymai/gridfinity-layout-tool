@@ -157,7 +157,6 @@ export function snapToGrid(value: number, halfGridMode: boolean): number {
 
 /**
  * Check if a value has a fractional component (is at 0.5 position).
- * @param value - The value to check
  * @returns True if value is at a 0.5 position (e.g., 1.5, 2.5)
  */
 export function isFractional(value: number): boolean {

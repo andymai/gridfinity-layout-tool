@@ -365,9 +365,6 @@ export function recordLabelSize(labelHash: string, size: string): void {
 
 /**
  * Extract and record all label->size associations from a layout.
- * Batches reads and writes for better performance.
- *
- * @param layout - Layout to process
  */
 export function recordLayoutLabelSizes(layout: Layout): void {
   if (!cacheLoaded) return; // Skip until cache is initialized from IDB

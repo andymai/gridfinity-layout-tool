@@ -245,7 +245,6 @@ export function SharedLayoutImporter() {
       }
 
       // Auto-track this share in "Shared with me" (unless it's the owner's own)
-      // Wrap in try-catch to ensure robust error handling
       try {
         const preview = computePreview(layout);
         trackSharedLayout(initialCloudShareId, layout, metadata.authorName, permission, preview);

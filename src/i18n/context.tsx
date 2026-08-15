@@ -363,7 +363,6 @@ export function useFormatting() {
 
   /**
    * Format a date as a relative time string.
-   * @param date - The date to format
    * @param options - Formatting options
    * @param options.shortFormat - Use short format (Xd) vs long format (X days ago)
    * @param options.includeTime - Include minutes/hours for recent times (default: false)
