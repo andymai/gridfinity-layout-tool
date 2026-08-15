@@ -1,0 +1,19 @@
+src/shared/pwa/staleRecovery.ts
+  s_28b8cc4bcb9e7c::t_e74d0b49c9d2c1 2,13-26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "5e330f31aaf74821eaca4cce2ddf6336a113a165",
+  "prompts": {},
+  "sessions": {
+    "s_28b8cc4bcb9e7c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "402e75bd-6d5d-4eb0-8275-10a014fb8abd",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
