@@ -2199,8 +2199,6 @@
   "engagement.feedbackNudge": "Har du ideer til verktøyet? Tilbakemeldingene dine former hva som bygges videre.",
   "engagement.feedbackThankYou": "Takk for tilbakemeldingen! Hvis verktøyet sparer deg for tid, holder et bidrag på Ko-fi det gratis og reklamefritt.",
   "engagement.giveFeedback": "Gi tilbakemelding",
-  "engagement.layoutPromotion.action": "Åpne layout-biblioteket",
-  "engagement.layoutPromotion.message": "Planlegger du en skuff til? Lagre dette layoutet og start et nytt.",
   "engagement.support": "Støtt på Ko-fi",
   "error.tryAgain": "Prøv igjen",
   "errorBoundary.backupDone": "Sikkerhetskopi lastet ned.",

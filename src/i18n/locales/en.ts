@@ -4403,9 +4403,6 @@ const en: Record<string, string> = {
   'engagement.support': 'Support on Ko-fi',
   'engagement.feedbackThankYou':
     'Thanks for the feedback! If the tool saves you time, a tip on Ko-fi keeps it free and ad-free.',
-  'engagement.layoutPromotion.message':
-    'Planning another drawer? Save this layout and start a new one.',
-  'engagement.layoutPromotion.action': 'Open Layout Library',
 
   // WebGL unavailable fallback
   'webgl.fallback.title': "Your browser couldn't load 3D rendering",

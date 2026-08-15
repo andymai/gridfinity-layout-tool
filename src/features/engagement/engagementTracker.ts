@@ -18,7 +18,7 @@ import { ANALYTICS_STORAGE_KEY } from '@/shared/analytics/posthog/identity';
 
 const NUDGE_STORAGE_KEY = 'gridfinity-nudges-v1';
 
-export type NudgeType = 'feedback_rating' | 'kofi_support' | 'layout_promotion';
+export type NudgeType = 'feedback_rating' | 'kofi_support';
 
 interface NudgeState {
   /** ISO timestamps of when each nudge was last dismissed or acted on */

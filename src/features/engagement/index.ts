@@ -1,5 +1,4 @@
 export { useEngagementNudges } from './useEngagementNudges';
-export { useLayoutPromotion } from './useLayoutPromotion';
 export {
   checkEngagementGate,
   shouldShowNudge,
