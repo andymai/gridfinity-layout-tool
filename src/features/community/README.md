@@ -8,11 +8,13 @@ Community design showcase (issue #3050): publishing bin designs, browsing them, 
 - Composition with the designer goes through `@/core/store/communityPublish`: the designer opens the publish dialog by calling that core store with a design context and capture payload. The dialog component is mounted at the shell level.
 - Shared vocabulary (`CommunityCategory`, `CommunityDesign`, `CommunityDesignLineage`, techniques) lives in `@/shared/types/community` and `@/shared/types/exampleTechniques`, mirrored on the server in `api/lib/communityValidation.ts` (api/ cannot import from src/). Cross-boundary equality tests guard the mirrors.
 - Capture (thumbnails, GLB export) stays inside bin-designer; this slice only receives the finished captures via the core store.
+- The supporter badge is `@/shared/components/SupporterBadge`, not a local component: `features/supporters` renders it too, and a cross-feature import would be a boundary violation.
 
 ## Layout
 
 - `api/client.ts`: Result-typed client for `POST/PUT/DELETE /api/community(/:id)` and owner `GET`. Errors are a typed union (`needsAuth`, `disabled`, `rateLimited`, `quotaExceeded`, `contentBlocked`, `validation`, ...) so the dialog can branch without string matching. All calls suppress the app-wide forced sign-out so a community 401 re-prompts locally instead of flipping the whole app anonymous. Also carries `fetchCommunityCapabilities` (see below).
 - `store/publishStore.ts`: zustand state machine for the publish dialog: `closed → loading → form → publishing → success`, with `unavailable` as the terminal branch off `loading`.
+- **Supporter badges ride a sidecar, like `likedIds`.** A list response carries `supporterAuthorIds` — badged AUTHORS, not badged designs — because the answer is per author, so one publisher with six cards on a page costs one entry and `toListItem` stays a pure mapping. The client folds it onto each card as `authorIsSupporter`. Absent on an older deployment, which reads as nobody badged. Detail and print responses carry the same information in the shape that fits them (a boolean, and a sidecar respectively).
 
   **`error` is not a phase.** A failed publish returns to `form` with the failure attached. It used to unmount the form, so a server complaint about the name ("too short", "low effort", "duplicate") became a full-screen dead end that discarded the user's view of what they had typed.
 

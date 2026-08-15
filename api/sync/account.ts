@@ -42,6 +42,7 @@ import {
   syncCommunityPrintCount,
 } from '../lib/communityPrintStore.js';
 import { deriveAuthorPublicId } from '../lib/communityIds.js';
+import { unlinkSupporterAccount } from '../lib/supporterLink.js';
 
 /**
  * DELETE /api/sync/account
@@ -234,6 +235,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         userId
       );
     }
+
+    // 3b. Release the Ko-fi supporter link and pull the badge.
+    //
+    // The DONOR RECORD deliberately survives: it is the wall, and it carries no
+    // user identifier, so deleting an account is still a real erasure without
+    // silently reducing the supporter count. What must go is the binding — a
+    // deleted account would otherwise keep a public badge, and its claim would
+    // hold the donor record forever, so the same person could never re-link by
+    // signing in again.
+    await unlinkSupporterAccount(redis, userId);
 
     // 4. Drop all per-user KV state in one DEL.
     await redis.del(

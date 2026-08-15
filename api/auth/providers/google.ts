@@ -59,6 +59,14 @@ export const googleProvider: OAuthProvider = {
     if (!payload.email || payload.email_verified === false) {
       throw new Error('Google account has no verified email');
     }
-    return { subject: payload.sub, email: payload.email, displayName: payload.name };
+    // Google's id_token carries exactly one address; there is no equivalent of
+    // GitHub's verified-email list, so supporter matching here only ever sees
+    // the account's primary.
+    return {
+      subject: payload.sub,
+      email: payload.email,
+      verifiedEmails: [payload.email],
+      displayName: payload.name,
+    };
   },
 };

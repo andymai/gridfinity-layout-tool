@@ -21,6 +21,8 @@ export type RateLimitAction =
   | 'scan.poll'
   | 'kofi.webhook'
   | 'supporters.read'
+  | 'supporters.me'
+  | 'supporters.edit'
   | 'community.read'
   | 'community.publish'
   | 'community.manage'
@@ -79,6 +81,15 @@ const RATE_LIMITS: Record<RateLimitAction, RateLimitConfig> = {
   'kofi.webhook': { limit: 60, windowSeconds: 60 }, // 60/minute per IP
   // Public supporters read — cached at the edge, so this only sees cache misses.
   'supporters.read': { limit: 120, windowSeconds: 60 }, // 120/minute per IP
+  // Own supporter status — keyed by userId. Uncacheable (personalized) and
+  // fetched on the /supporters page, so it needs poll headroom rather than
+  // scarcity; the endpoint reveals nothing but the caller's own record.
+  'supporters.me': { limit: 120, windowSeconds: 60 }, // 120/minute per user
+  // Editing one's own name/message on the wall — keyed by userId. This is the
+  // one path that writes user-authored text to a public page, so it is
+  // deliberately scarce: a supporter adjusts their bin a handful of times ever,
+  // and the content filter is a gate, not a substitute for a budget.
+  'supporters.edit': { limit: 20, windowSeconds: 3600 }, // 20/hour per user
   // Community showcase: browsing is anonymous so reads are keyed by IP with
   // sync.read-level headroom (index pages + detail fetches). Publishing is
   // keyed by userId and deliberately scarce: nobody legitimately publishes

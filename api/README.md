@@ -58,6 +58,8 @@ graph TB
 | `/api/sync/account`             | DELETE         | 60/min     | Cascade-delete account + KV + blobs                              |
 | `/api/kofi-webhook`             | POST           | 60/min     | Ko-fi payment ingest → supporters                                |
 | `/api/supporters`               | GET            | 120/min    | Public supporter list for /supporters                            |
+| `/api/supporters/me`            | GET            | 120/min    | The caller's own supporter status (200 for anonymous)            |
+| `/api/supporters/me`            | PATCH          | 20/hour    | Rewrite the caller's own name/message/anonymity + badge          |
 | `/api/community`                | POST           | 10/day     | Publish a design to the community showcase                       |
 | `/api/community`                | GET            | 240/min    | Browse/paginate the community showcase index                     |
 | `/api/community?capabilities=1` | GET            | none       | Report the publish/prints/description server switches            |
@@ -114,6 +116,52 @@ use an unbounded quantifier followed by a required literal.
 
 Seed the pre-webhook backfill once with `pnpm seed-supporters` (`--dry-run` to
 preview); see `src/features/supporters/README.md`.
+
+## Supporter recognition (`lib/supporterLink.ts`)
+
+A signed-in account is matched to its Ko-fi donor record so supporting can be
+recognized in the app. The match runs on salted hashes of **provider-verified**
+email addresses — never on a raw address, and never on one the user typed. That
+restriction is doing two jobs:
+
+- **No oracle.** A free-text "which email did you use?" field would let anyone
+  probe `supporters:donors` for arbitrary addresses and enumerate who supports
+  this project.
+- **No takeover.** A linked supporter can rewrite the name and message on their
+  own bin via `PATCH /api/supporters/me`, so claiming a stranger's donor record
+  would mean editing their public presence on the wall. Restricting candidates
+  to addresses the OAuth provider verified for _this_ account means a successful
+  claim is, by construction, the person who owns that mailbox. `SET NX` on
+  `supporters:link:{donorId}` makes the claim bind exactly once.
+
+The cost is coverage: someone who paid from an address on neither their Google
+nor their GitHub account cannot be matched automatically and has to ask. That
+trade is deliberate. GitHub's `/user/emails` is therefore fetched on every
+sign-in rather than only as a fallback, and its failure is soft — sign-in still
+succeeds, it just matches fewer supporters.
+
+Candidates are stored on the profile (`donorCandidates`, hashes only) so someone
+who supports **after** signing in is matched on their next status read rather
+than waiting up to a 30-day session for the next sign-in.
+
+**The badge** lives in `supporters:authors`, a SET of `authorPublicId` — the
+same id already public on every community card, so a gallery page resolves its
+whole grid with one `SMISMEMBER` and nothing private is read. Membership _is_
+the privacy switch: opting out is an `SREM`. The lookup fails **soft** (a Redis
+hiccup costs a badge, not the gallery), unlike the link itself, which reports
+its failures — silently answering "not a supporter" to someone who just paid is
+the outcome worth surfacing.
+
+**Editing is a second door onto public text**, so `PATCH /api/supporters/me`
+re-runs the same `normalizeDisplayName` / `filterMessage` gauntlet the webhook
+does, on the server, with its own scarce rate limit. Clearing the name clears
+the message with it — that invariant lives in `serializeDonorRecord`, so it
+holds whether or not the caller thought to send both.
+
+**Account deletion** releases the link and the badge but keeps the donor record:
+it is the wall, it carries no user identifier, and dropping it would quietly
+reduce the supporter count. Keeping the claim would also lock the record forever
+against the same person signing in again.
 
 ## Validation Library (`lib/`)
 

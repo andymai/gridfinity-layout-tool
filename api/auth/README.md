@@ -126,6 +126,8 @@ Sign-in now **fails closed without `TOKEN_SALT`** (503) rather than writing an u
 
 - The user's email is stored in `users:{uid}:profile` in cleartext. Acceptable for hobby-tool scope. If the privacy bar rises, hash the email at the same boundary as the user id; the trade-off is losing the ability to show "you're signed in as a@example.com" in the UI.
 - We never log raw OAuth tokens or `sub` values. The pseudonymous `userId` may appear in error logs.
+- `ProviderProfile.verifiedEmails` carries every address the provider has verified, but only ever reaches `deriveDonorCandidates`, which reduces it to salted hashes. Those hashes are stored on the profile as `donorCandidates`; the addresses themselves are not persisted beyond the primary the profile already held. See "Supporter recognition" in [`../README.md`](../README.md) for why the match is restricted to provider-verified addresses.
+- GitHub's `/user/emails` is fetched on **every** sign-in, not only when `/user` hides the address, because the full verified list is what makes the supporter match work for someone who paid from a different address. Its failure is soft: sign-in still succeeds on `/user`'s address alone.
 - Account deletion (PR 3+) is a hard delete: profile, sessions, blobs, indexes — all gone in one cascade.
 
 ## Testing

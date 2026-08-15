@@ -40,6 +40,7 @@ graph TB
 | `CollapsibleSection`       | Expandable container with arrow indicator                                              |
 | `ToolSwitcher`             | Segmented nav across Layout / Bins / Baseplate / Community                             |
 | `HeaderSupportLinks`       | Shared top-right cluster; outbound links in its overflow, `compact` folds all of it in |
+| `SupporterBadge`           | Accent pill marking a Ko-fi supporter beside an author name; links to `/supporters`    |
 
 ## Key Hooks (`hooks/`)
 
@@ -73,6 +74,7 @@ behaviour and `InlineEditText` for the styled preset over it, both from
 | `wallPatternSides.ts`     | `resolveWallPatternSides()` — which outer walls a pattern covers; absent side means ON        |
 | `throttle.ts` / `idle.ts` | RAF throttle, idle scheduling utilities                                                       |
 | `svg/`                    | SVG units, transforms and viewBox framing — shared by every importer so they agree on scale   |
+| `communityReturnPath.ts`  | One-shot OAuth return record (`saveAuthReturnPath`); allowlisted PATHS only, never a URL      |
 
 ## Contexts (`contexts/`)
 

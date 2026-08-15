@@ -5,10 +5,7 @@ import {
   INITIAL_COMMUNITY_DETAIL_STATE,
   useCommunityDetailStore,
 } from '@/core/store/communityDetail';
-import {
-  loadCommunityReopenDesign,
-  loadCommunityReturnPath,
-} from '@/shared/utils/communityReturnPath';
+import { loadCommunityReopenDesign, loadAuthReturnPath } from '@/shared/utils/communityReturnPath';
 import { CommunitySignInPrompt } from './CommunitySignInPrompt';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
@@ -64,13 +61,13 @@ describe('CommunitySignInPrompt', () => {
     window.history.replaceState(null, '', '/community/d/AbCdEf123456');
     render(<CommunitySignInPrompt open message="community.signin.likeMessage" onClose={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: 'auth.signInWithGoogle' }));
-    expect(loadCommunityReturnPath()).toBe('/community/d/AbCdEf123456');
+    expect(loadAuthReturnPath()).toBe('/community/d/AbCdEf123456');
   });
 
   it('stashes no return path from a non-community surface (the in-app gallery tab)', () => {
     render(<CommunitySignInPrompt open message="community.signin.likeMessage" onClose={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: 'auth.signInWithGoogle' }));
-    expect(loadCommunityReturnPath()).toBeNull();
+    expect(loadAuthReturnPath()).toBeNull();
   });
 
   it('stashes the open detail as a reopen intent on the gallery-tab surface', () => {
@@ -79,7 +76,7 @@ describe('CommunitySignInPrompt', () => {
       <CommunitySignInPrompt open message="community.signin.reportMessage" onClose={vi.fn()} />
     );
     fireEvent.click(screen.getByRole('button', { name: 'auth.signInWithGoogle' }));
-    expect(loadCommunityReturnPath()).toBeNull();
+    expect(loadAuthReturnPath()).toBeNull();
     expect(loadCommunityReopenDesign()).toBe('AbCdEf123456');
   });
 
@@ -90,7 +87,7 @@ describe('CommunitySignInPrompt', () => {
       <CommunitySignInPrompt open message="community.signin.reportMessage" onClose={vi.fn()} />
     );
     fireEvent.click(screen.getByRole('button', { name: 'auth.signInWithGoogle' }));
-    expect(loadCommunityReturnPath()).toBe('/community/d/AbCdEf123456');
+    expect(loadAuthReturnPath()).toBe('/community/d/AbCdEf123456');
     expect(loadCommunityReopenDesign()).toBeNull();
   });
 

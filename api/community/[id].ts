@@ -66,6 +66,7 @@ import { communityPrintsEnabled } from '../lib/communityPrintValidation.js';
 import { COMMUNITY_EXAMPLE_PARAM_HASHES } from '../lib/communityExampleParamHashes.js';
 import type { CommunityReportReason } from '../lib/communityValidation.js';
 import { isObject, isString } from '../lib/validationUtils.js';
+import { resolveSupporterAuthors } from '../lib/supporterLink.js';
 
 const COMMUNITY_DESIGN_ID_REGEX = /^[a-zA-Z0-9]{12}$/;
 
@@ -233,9 +234,11 @@ async function handleGet(req: VercelRequest, res: VercelResponse, id: string) {
       views?: number;
     } | null = null;
     let likedByMe = false;
+    let authorIsSupporter = false;
     let hiddenReason: CommunityHiddenReason | null = null;
     let hiddenReasonCategory: CommunityReportReason | null = null;
     if (redis) {
+      authorIsSupporter = (await resolveSupporterAuthors(redis, [record.authorPublicId])).size > 0;
       const [likes, remixes, exports, opens, views, storedHiddenReason] = await redis.hmget(
         communityDesignKey(id),
         'likes',
@@ -279,6 +282,7 @@ async function handleGet(req: VercelRequest, res: VercelResponse, id: string) {
       isOwner: owns,
       counts,
       likedByMe,
+      authorIsSupporter,
       ...(owns && status === 'hidden' && { hiddenReason, hiddenReasonCategory }),
     });
   } catch (error) {

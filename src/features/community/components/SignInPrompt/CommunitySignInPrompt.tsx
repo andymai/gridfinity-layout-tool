@@ -3,10 +3,7 @@ import { useTranslation } from '@/i18n';
 import { signInUrl } from '@/core/sync/session/sessionApi';
 import type { AuthProvider } from '@/core/sync/session/sessionApi';
 import { useCommunityDetailStore } from '@/core/store/communityDetail';
-import {
-  saveCommunityReopenDesign,
-  saveCommunityReturnPath,
-} from '@/shared/utils/communityReturnPath';
+import { saveCommunityReopenDesign, saveAuthReturnPath } from '@/shared/utils/communityReturnPath';
 
 interface CommunitySignInPromptProps {
   open: boolean;
@@ -47,7 +44,7 @@ export function CommunitySignInPrompt({
     // return hook needs the origin stashed to restore the browsing context.
     if (typeof window !== 'undefined') {
       const path = window.location.pathname + window.location.search;
-      saveCommunityReturnPath(path);
+      saveAuthReturnPath(path);
       // The gallery-tab surface has no community URL to restore, so stash the
       // open detail instead: a report started there would otherwise dead-end
       // in the layout planner after the OAuth round trip.

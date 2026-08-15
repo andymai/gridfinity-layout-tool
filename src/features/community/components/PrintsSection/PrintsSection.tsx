@@ -59,6 +59,9 @@ export function PrintsSection({
   const t = useTranslation();
 
   const [items, setItems] = useState<readonly CommunityPrint[]>([]);
+  // Accumulates across pages like `items` does: a printer badged on page one
+  // must stay badged when page two loads.
+  const [supporterAuthors, setSupporterAuthors] = useState<ReadonlySet<string>>(new Set());
   const [summary, setSummary] = useState<CommunityPrintSummary | null>(null);
   const [cursor, setCursor] = useState<string | null>(null);
   const [moreBusy, setMoreBusy] = useState(false);
@@ -90,6 +93,7 @@ export function PrintsSection({
         // "we could not load this" is wrong when the feature is simply off.
         if (result.error.kind === 'disabled') {
           setItems([]);
+          setSupporterAuthors(new Set());
           setSummary(null);
           setCursor(null);
           setAnswered(requestKey);
@@ -99,6 +103,7 @@ export function PrintsSection({
         return;
       }
       setItems(result.value.items);
+      setSupporterAuthors(new Set(result.value.supporterAuthorIds ?? []));
       setSummary(result.value.summary);
       setCursor(result.value.nextCursor);
       setAnswered(requestKey);
@@ -145,6 +150,9 @@ export function PrintsSection({
           const seen = new Set(current.map((print) => print.id));
           return [...current, ...result.value.items.filter((print) => !seen.has(print.id))];
         });
+        setSupporterAuthors(
+          (current) => new Set([...current, ...(result.value.supporterAuthorIds ?? [])])
+        );
         setCursor(result.value.nextCursor);
       })
       .finally(() => setMoreBusy(false));
@@ -229,6 +237,7 @@ export function PrintsSection({
                     key={print.id}
                     print={print}
                     isMine={ownPrint !== null && print.id === ownPrint.id}
+                    authorIsSupporter={supporterAuthors.has(print.authorPublicId)}
                     onReport={onReport}
                     onPromoteCover={isOwner ? applyCover : undefined}
                     coverPhotoUrl={cover}

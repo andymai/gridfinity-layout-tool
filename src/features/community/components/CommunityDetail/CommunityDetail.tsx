@@ -121,6 +121,7 @@ function CommunityDetailDialog({
   const [design, setDesign] = useState<CommunityDesign | null>(null);
   const [detailStats, setDetailStats] = useState<DetailStats | null>(null);
   const [isOwner, setIsOwner] = useState(false);
+  const [authorIsSupporter, setAuthorIsSupporter] = useState(false);
   // Stamped with the design it belongs to rather than cleared on switch: the
   // overlay can go ready for design B while this still holds A's answer, and a
   // stamped value is stale-proof without a synchronous reset in an effect.
@@ -259,6 +260,7 @@ function CommunityDetailDialog({
             : null
         );
         setIsOwner(result.value.isOwner);
+        setAuthorIsSupporter(result.value.authorIsSupporter);
         setOwnerModeration(
           result.value.isOwner && result.value.design.status === 'hidden'
             ? {
@@ -644,6 +646,7 @@ function CommunityDetailDialog({
                 : null
             }
             onFilterByAuthor={handleFilterByAuthor}
+            authorIsSupporter={authorIsSupporter}
             ownerModeration={ownerModeration}
             onOpenDesign={handleOpenAncestor}
             costSlot={

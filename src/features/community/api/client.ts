@@ -138,6 +138,8 @@ export interface CommunityDesignDetail {
    */
   counts: CommunityDesignCounts | null;
   likedByMe: boolean;
+  /** Whether the design's author is a badged Ko-fi supporter. */
+  authorIsSupporter: boolean;
   /**
    * Owner-only, non-null only when the caller owns the design and it is
    * hidden; null reads as a report auto-hide (the pre-field default).
@@ -178,6 +180,7 @@ function isDetailResponse(value: unknown): value is {
   isOwner?: boolean;
   counts?: unknown;
   likedByMe?: unknown;
+  authorIsSupporter?: unknown;
   hiddenReason?: unknown;
   hiddenReasonCategory?: unknown;
 } {
@@ -243,11 +246,23 @@ interface CommunityListPage {
   /** Ids on this page the session user has liked; empty for anonymous callers. */
   likedIds?: string[];
   /**
+   * Author public ids on this page whose supporter badge is public. Keyed by
+   * author rather than by design, so one publisher with several cards on a
+   * page costs one entry. Optional: an older deployment omits it and nothing
+   * is badged.
+   */
+  supporterAuthorIds?: string[];
+  /**
    * Slots in the server's index, so the whole thing can be requested as
    * concurrent windows. Optional: an older deployment omits it and the fetch
    * falls back to paging sequentially.
    */
   indexSlots?: unknown;
+}
+
+/** Seed the per-card supporter flag from a page's author-keyed sidecar. */
+function supporterAuthorSet(page: CommunityListPage): Set<string> {
+  return new Set(page.supporterAuthorIds ?? []);
 }
 
 function isListPage(value: unknown): value is CommunityListPage {
@@ -258,6 +273,9 @@ function isListPage(value: unknown): value is CommunityListPage {
     (value.nextCursor === null || typeof value.nextCursor === 'string') &&
     (value.likedIds === undefined ||
       (Array.isArray(value.likedIds) && value.likedIds.every((id) => typeof id === 'string'))) &&
+    (value.supporterAuthorIds === undefined ||
+      (Array.isArray(value.supporterAuthorIds) &&
+        value.supporterAuthorIds.every((id) => typeof id === 'string'))) &&
     // indexSlots is deliberately not validated here. It is an optimisation
     // hint, and a corrupt hint must not reject a page of real designs; it is
     // read through readIndexSlots, which treats anything unusable as absent.
@@ -476,10 +494,15 @@ async function fetchIndexWindows(
   const seenIds = new Set<string>();
   for (const page of pages) {
     const likedIds = new Set(page.likedIds ?? []);
+    const supporters = supporterAuthorSet(page);
     for (const card of page.items) {
       if (seenIds.has(card.id)) continue;
       seenIds.add(card.id);
-      items.push({ ...card, likedByMe: likedIds.has(card.id) });
+      items.push({
+        ...card,
+        likedByMe: likedIds.has(card.id),
+        authorIsSupporter: supporters.has(card.authorPublicId),
+      });
     }
   }
   return ok({
@@ -507,10 +530,15 @@ export async function fetchCommunityIndex(
     }
 
     const likedIds = new Set(page.value.likedIds ?? []);
+    const supporters = supporterAuthorSet(page.value);
     for (const card of page.value.items) {
       if (seenIds.has(card.id)) continue;
       seenIds.add(card.id);
-      items.push({ ...card, likedByMe: likedIds.has(card.id) });
+      items.push({
+        ...card,
+        likedByMe: likedIds.has(card.id),
+        authorIsSupporter: supporters.has(card.authorPublicId),
+      });
     }
     cursor = page.value.nextCursor;
     if (items.length >= COMMUNITY_INDEX_CAP) {
@@ -547,10 +575,15 @@ export async function fetchMineIndex(
     const page = await fetchCommunityPage(cursor, signal, true);
     if (isErr(page)) return page;
     const likedIds = new Set(page.value.likedIds ?? []);
+    const supporters = supporterAuthorSet(page.value);
     for (const card of page.value.items) {
       if (seenIds.has(card.id)) continue;
       seenIds.add(card.id);
-      items.push({ ...card, likedByMe: likedIds.has(card.id) });
+      items.push({
+        ...card,
+        likedByMe: likedIds.has(card.id),
+        authorIsSupporter: supporters.has(card.authorPublicId),
+      });
     }
     cursor = page.value.nextCursor;
     if (cursor === null || items.length >= COMMUNITY_INDEX_CAP) break;
@@ -573,6 +606,7 @@ export async function fetchCommunityDesign(
         isOwner: data.isOwner === true,
         counts: isCountsShape(data.counts) ? data.counts : null,
         likedByMe: data.likedByMe === true,
+        authorIsSupporter: data.authorIsSupporter === true,
         hiddenReason: parseHiddenReason(data.hiddenReason),
         hiddenReasonCategory: parseReportReason(data.hiddenReasonCategory),
       });

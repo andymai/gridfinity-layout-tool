@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, afterAll, vi } from 'vitest';
 import {
   loadCommunityReopenDesign,
-  loadCommunityReturnPath,
+  loadAuthReturnPath,
   saveCommunityReopenDesign,
-  saveCommunityReturnPath,
+  saveAuthReturnPath,
 } from './communityReturnPath';
 
 const KEY = 'gridfinity-community-return-path-v1';
@@ -50,48 +50,48 @@ describe('communityReturnPath', () => {
   });
 
   it('round-trips a gallery path', () => {
-    saveCommunityReturnPath('/community');
-    expect(loadCommunityReturnPath()).toBe('/community');
+    saveAuthReturnPath('/community');
+    expect(loadAuthReturnPath()).toBe('/community');
   });
 
   it('round-trips a detail deep link and an author-filtered gallery URL', () => {
-    saveCommunityReturnPath('/community/d/AbCdEf123456');
-    expect(loadCommunityReturnPath()).toBe('/community/d/AbCdEf123456');
-    saveCommunityReturnPath('/community?author=0123456789abcdef0123456789abcdef');
-    expect(loadCommunityReturnPath()).toBe('/community?author=0123456789abcdef0123456789abcdef');
+    saveAuthReturnPath('/community/d/AbCdEf123456');
+    expect(loadAuthReturnPath()).toBe('/community/d/AbCdEf123456');
+    saveAuthReturnPath('/community?author=0123456789abcdef0123456789abcdef');
+    expect(loadAuthReturnPath()).toBe('/community?author=0123456789abcdef0123456789abcdef');
   });
 
   it('is one-shot', () => {
-    saveCommunityReturnPath('/community');
-    expect(loadCommunityReturnPath()).toBe('/community');
-    expect(loadCommunityReturnPath()).toBeNull();
+    saveAuthReturnPath('/community');
+    expect(loadAuthReturnPath()).toBe('/community');
+    expect(loadAuthReturnPath()).toBeNull();
   });
 
   it('refuses non-community paths (the in-app tab on /, arbitrary routes)', () => {
-    saveCommunityReturnPath('/');
-    expect(loadCommunityReturnPath()).toBeNull();
-    saveCommunityReturnPath('/designer?id=abc');
-    expect(loadCommunityReturnPath()).toBeNull();
-    saveCommunityReturnPath('/communityfake');
-    expect(loadCommunityReturnPath()).toBeNull();
+    saveAuthReturnPath('/');
+    expect(loadAuthReturnPath()).toBeNull();
+    saveAuthReturnPath('/designer?id=abc');
+    expect(loadAuthReturnPath()).toBeNull();
+    saveAuthReturnPath('/communityfake');
+    expect(loadAuthReturnPath()).toBeNull();
   });
 
   it('refuses a tampered stored record with a non-community path', () => {
     sessionStorage.setItem(KEY, JSON.stringify({ path: '//evil.example', savedAt: Date.now() }));
-    expect(loadCommunityReturnPath()).toBeNull();
+    expect(loadAuthReturnPath()).toBeNull();
   });
 
   it('expires after the OAuth window', () => {
     vi.useFakeTimers();
     vi.setSystemTime(1_000_000);
-    saveCommunityReturnPath('/community');
+    saveAuthReturnPath('/community');
     vi.setSystemTime(1_000_000 + 10 * 60 * 1000 + 1);
-    expect(loadCommunityReturnPath()).toBeNull();
+    expect(loadAuthReturnPath()).toBeNull();
   });
 
   it('removes a malformed record instead of replaying it', () => {
     sessionStorage.setItem(KEY, 'not-json');
-    expect(loadCommunityReturnPath()).toBeNull();
+    expect(loadAuthReturnPath()).toBeNull();
     expect(sessionStorage.getItem(KEY)).toBeNull();
   });
 
@@ -103,9 +103,9 @@ describe('communityReturnPath', () => {
     });
 
     it('is independent of the return-path slot', () => {
-      saveCommunityReturnPath('/community');
+      saveAuthReturnPath('/community');
       saveCommunityReopenDesign('AbCdEf123456');
-      expect(loadCommunityReturnPath()).toBe('/community');
+      expect(loadAuthReturnPath()).toBe('/community');
       expect(loadCommunityReopenDesign()).toBe('AbCdEf123456');
     });
 

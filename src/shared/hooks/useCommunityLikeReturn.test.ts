@@ -18,9 +18,9 @@ import {
 } from '@/shared/utils/communityPendingLikeAction';
 import {
   loadCommunityReopenDesign,
-  loadCommunityReturnPath,
+  loadAuthReturnPath,
   saveCommunityReopenDesign,
-  saveCommunityReturnPath,
+  saveAuthReturnPath,
 } from '@/shared/utils/communityReturnPath';
 import type { CommunityCard } from '@/shared/types/community';
 import { useCommunityLikeReturn } from './useCommunityLikeReturn';
@@ -153,21 +153,30 @@ describe('useCommunityLikeReturn', () => {
     expect(useBrowseStore.getState().items[0].likedByMe).toBe(false);
   });
 
-  it('does nothing while the flag is off', () => {
+  it('resumes no like while the flag is off', () => {
     savePendingLikeAction({ designId: 'abc123def456', liked: true });
-    saveCommunityReturnPath('/community');
     authenticate();
     enableFlag(false);
     renderHook(() => useCommunityLikeReturn());
     expect(likeMock).not.toHaveBeenCalled();
     expect(loadPendingLikeAction()).not.toBeNull();
-    expect(window.location.pathname).toBe('/');
+  });
+
+  it('still restores the stashed route while the flag is off', () => {
+    // The route restore is a generic same-origin return, not a showcase
+    // feature: /supporters stashes through the same record and must not be
+    // stranded on `/` because the community flag happens to be off.
+    saveAuthReturnPath('/supporters');
+    authenticate();
+    enableFlag(false);
+    renderHook(() => useCommunityLikeReturn());
+    expect(window.location.pathname).toBe('/supporters');
   });
 
   it('restores the stashed community origin alongside the resumed like', async () => {
     likeMock.mockResolvedValue(ok({ likes: 3, likedByMe: true }));
     savePendingLikeAction({ designId: 'abc123def456', liked: true });
-    saveCommunityReturnPath('/community/d/abc123def456');
+    saveAuthReturnPath('/community/d/abc123def456');
     authenticate();
     renderHook(() => useCommunityLikeReturn());
 
@@ -176,11 +185,11 @@ describe('useCommunityLikeReturn', () => {
       expect(likeMock).toHaveBeenCalledWith('abc123def456', true);
     });
     // One-shot: the record was consumed.
-    expect(loadCommunityReturnPath()).toBeNull();
+    expect(loadAuthReturnPath()).toBeNull();
   });
 
   it('restores the community origin even when sign-in was abandoned', async () => {
-    saveCommunityReturnPath('/community?author=' + 'a'.repeat(32));
+    saveAuthReturnPath('/community?author=' + 'a'.repeat(32));
     useSessionStore.setState({ status: 'anonymous', user: null });
     renderHook(() => useCommunityLikeReturn());
     expect(window.location.pathname + window.location.search).toBe(

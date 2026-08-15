@@ -18,8 +18,10 @@ import {
   type SupporterBin,
 } from '../../utils/supportersData';
 import { useSupportersData } from '../../hooks/useSupportersData';
+import { useSupporterStatus } from '../../hooks/useSupporterStatus';
 import { getSupportersPalette } from '../../scene/palette';
 import { SupportersScene, type FlyToRequest } from '../SupportersScene';
+import { SupporterPanel } from '../SupporterPanel';
 
 /** Months of history the sparkline plots. */
 const SPARKLINE_MONTHS = 6;
@@ -233,6 +235,8 @@ export function SupportersPage() {
   const [findStatus, setFindStatus] = useState<string | null>(null);
   const flyNonce = useRef(0);
   const [burst, setBurst] = useState<{ x: number; y: number; seed: number } | null>(null);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const supporter = useSupporterStatus();
 
   // Bins set document.body.cursor on hover; reset it if we unmount mid-hover.
   useEffect(() => () => void (document.body.style.cursor = ''), []);
@@ -260,6 +264,12 @@ export function SupportersPage() {
     window.open(KOFI_URL, '_blank', 'noopener,noreferrer');
   };
 
+  const focusBin = (id: string) => {
+    setFocusedId(id);
+    flyNonce.current += 1;
+    setFlyTo({ id, nonce: flyNonce.current });
+  };
+
   const handleFind = () => {
     const query = findQuery.trim();
     if (!query) {
@@ -285,9 +295,7 @@ export function SupportersPage() {
       return;
     }
     const target = pool[0];
-    setFocusedId(target.id);
-    flyNonce.current += 1;
-    setFlyTo({ id: target.id, nonce: flyNonce.current });
+    focusBin(target.id);
     // "1 of N named X" only makes sense for genuine duplicate names (exact matches).
     setFindStatus(
       exact.length > 1
@@ -295,6 +303,15 @@ export function SupportersPage() {
         : null
     );
   };
+
+  // A linked supporter's own bin is located by NAME, which is the only handle
+  // the public list carries — so an anonymous supporter has no findable bin and
+  // the affordance is correctly absent for them rather than pointing at someone
+  // else's. The name is exact: it is the same string the wall renders.
+  const myBin =
+    supporter.status.supporter && supporter.status.name !== null
+      ? (bins.find((b) => b.name === supporter.status.name) ?? null)
+      : null;
 
   return (
     <main
@@ -461,7 +478,13 @@ export function SupportersPage() {
         </div>
       )}
 
-      {/* CTA + opt-out */}
+      {/*
+        CTA stack. Deliberately three rows: a rotating supporter message, one
+        purpose line, and the actions. The benefits copy and the "change my
+        name / go anonymous" flow both live in the panel instead of stacking
+        more paragraphs here — on a short viewport this column is what runs
+        into the wall.
+      */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col items-center gap-3 px-6 pb-8 text-center">
         {/* Hidden while a bin is focused so it doesn't collide with the thank-you card. */}
         {messages.length > 0 && !focused && (
@@ -471,35 +494,35 @@ export function SupportersPage() {
             attribution={(name) => t('supporters.messageBy', { name })}
           />
         )}
-        <p className="text-sm opacity-70">{t('supporters.cta.text')}</p>
-        <Button
-          variant="primary"
-          onClick={handleKofiClick}
-          className="pointer-events-auto flex items-center gap-2 px-5 py-2.5 text-sm"
-          style={{ color: '#fff', textShadow: '0 1px 1px rgba(34,34,34,0.15)' }}
-        >
-          <img
-            src="/kofi-cup.png"
-            alt=""
-            aria-hidden="true"
-            className="kofi-cup-wiggle h-4 w-auto"
-          />
-          {t('supporters.cta.button')}
-        </Button>
-        <p className="max-w-md text-xs opacity-55" style={{ textWrap: 'balance' }}>
+        <p className="max-w-md text-sm opacity-70" style={{ textWrap: 'balance' }}>
           {t('supporters.purpose')}
         </p>
-        <p className="max-w-md text-xs opacity-50">
-          {t('supporters.optOut')}{' '}
-          <a
-            href={KOFI_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="pointer-events-auto underline-offset-2 hover:underline"
+        <div className="flex flex-col items-center gap-2 sm:flex-row">
+          <Button
+            variant="primary"
+            onClick={handleKofiClick}
+            className="pointer-events-auto flex items-center gap-2 px-5 py-2.5 text-sm"
+            style={{ color: '#fff', textShadow: '0 1px 1px rgba(34,34,34,0.15)' }}
           >
-            {t('supporters.optOutLink')}
-          </a>
-        </p>
+            <img
+              src="/kofi-cup.png"
+              alt=""
+              aria-hidden="true"
+              className="kofi-cup-wiggle h-4 w-auto"
+            />
+            {t('supporters.cta.button')}
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={() => setPanelOpen(true)}
+            className="pointer-events-auto px-3 py-2 text-sm underline-offset-2 hover:underline"
+            style={{ color: 'inherit' }}
+          >
+            {supporter.status.supporter
+              ? t('supporters.panel.yoursTitle')
+              : t('supporters.panel.title')}
+          </Button>
+        </div>
       </div>
 
       {/* Accessible, screen-reader-only supporter list (the canvas is inert to AT) */}
@@ -511,6 +534,22 @@ export function SupportersPage() {
           ))}
         </ul>
       </div>
+
+      <SupporterPanel
+        open={panelOpen}
+        onClose={() => setPanelOpen(false)}
+        status={supporter.status}
+        settled={supporter.settled}
+        save={supporter.save}
+        onFindMyBin={
+          myBin
+            ? () => {
+                focusBin(myBin.id);
+                setPanelOpen(false);
+              }
+            : undefined
+        }
+      />
 
       {burst && (
         <CtaBurst

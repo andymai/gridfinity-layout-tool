@@ -84,6 +84,11 @@ class FakeRedis {
     return this.sets.get(key)?.has(member) ? 1 : 0;
   }
 
+  async smismember(key: string, ...members: string[]): Promise<number[]> {
+    const set = this.sets.get(key);
+    return members.map((member) => (set?.has(member) ? 1 : 0));
+  }
+
   async scard(key: string): Promise<number> {
     return this.sets.get(key)?.size ?? 0;
   }
