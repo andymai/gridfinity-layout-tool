@@ -35,14 +35,27 @@ export interface IntentPrefetchHandlers {
 /**
  * Warm `key`'s destination now, at most once per session. Exported for call
  * sites that already own their handlers and only need the one-shot guard.
+ *
+ * The one-shot mark covers a warm that STARTED, not one that was attempted:
+ * a warm that throws (or returns a promise that rejects) releases the key so a
+ * later reach can try again. Marking it regardless would spend the session's
+ * only attempt on a failure and leave the destination cold for good. `warm` is
+ * allowed to be async for the same reason the sync path is guarded — a
+ * rejection here is speculative work not paying off, never something to
+ * surface. Hence `unknown` rather than `void`: the signature has to admit a
+ * promise for the guard above it to mean anything.
  */
-export function prefetchOnIntent(key: string, warm: () => void): void {
+export function prefetchOnIntent(key: string, warm: () => unknown): void {
   if (started.has(key) || shouldSkipPrefetch()) return;
   started.add(key);
+  const release = (): void => {
+    started.delete(key);
+  };
   try {
-    warm();
+    void Promise.resolve(warm()).catch(release);
   } catch {
     // Speculative by definition — the destination still loads on demand.
+    release();
   }
 }
 
@@ -53,7 +66,7 @@ export function prefetchOnIntent(key: string, warm: () => void): void {
  * rebuilding the handler identities on every render — the destination is
  * identified by `key`, not by the closure that loads it.
  */
-export function useIntentPrefetch(key: string, warm: () => void): IntentPrefetchHandlers {
+export function useIntentPrefetch(key: string, warm: () => unknown): IntentPrefetchHandlers {
   const warmRef = useRef(warm);
   useEffect(() => {
     warmRef.current = warm;

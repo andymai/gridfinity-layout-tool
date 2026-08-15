@@ -97,4 +97,39 @@ describe('useIntentPrefetch', () => {
       })
     ).not.toThrow();
   });
+
+  it('swallows a rejected async warm rather than leaving it unhandled', async () => {
+    const unhandled = vi.fn();
+    process.on('unhandledRejection', unhandled);
+    prefetchOnIntent('a', () => Promise.reject(new Error('chunk 404')));
+    await new Promise((r) => setTimeout(r, 0));
+    process.off('unhandledRejection', unhandled);
+    expect(unhandled).not.toHaveBeenCalled();
+  });
+
+  // The one-shot mark means a session gets one attempt per destination, so
+  // spending it on a failure would leave that route cold for good.
+  it.each([
+    [
+      'throws',
+      () => {
+        throw new Error('chunk server down');
+      },
+    ],
+    ['rejects', () => Promise.reject(new Error('chunk 404'))],
+  ])('releases the destination when the warm %s', async (_label, failing) => {
+    prefetchOnIntent('a', failing);
+    await new Promise((r) => setTimeout(r, 0));
+    const retry = vi.fn();
+    prefetchOnIntent('a', retry);
+    expect(retry).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the mark when the warm starts cleanly', async () => {
+    prefetchOnIntent('a', () => Promise.resolve());
+    await new Promise((r) => setTimeout(r, 0));
+    const retry = vi.fn();
+    prefetchOnIntent('a', retry);
+    expect(retry).not.toHaveBeenCalled();
+  });
 });
