@@ -359,6 +359,14 @@ const en: Record<string, string> = {
     'Your printer nozzle diameter. Drives the print-time estimate and scales split connectors, wall locks, and baseplate connectors so they stay printable on wider nozzles.',
   'rightPanel.collapseRightPanel': 'Collapse right panel',
   'rightPanel.copyBinListAsTsv': 'Copy bin list as TSV',
+  'help.tip.exportFiles.title': 'Export printable files',
+  'help.tip.exportFiles.description':
+    'Export in the header downloads the whole layout as a ZIP: every bin linked to a saved design, plus the baseplate. In the bin designer and baseplate tools, Export downloads that one part. Choose STL, 3MF or STEP.',
+  'help.tip.exportFiles.keywords': 'export|download|stl|3mf|step|files|zip|print|slicer',
+  'help.tip.savingWork.title': 'Saving your work',
+  'help.tip.savingWork.description':
+    'Layouts save automatically in this browser and appear in the switcher next to the layout name. Bin designs are saved in the designer, then linked to bins on the grid. Sign in to sync across devices.',
+  'help.tip.savingWork.keywords': 'save|saving|autosave|store|library|my layouts|sync|backup',
   'layoutExport.button': 'Export layout (3D)',
   'layoutExport.title': 'Export layout',
   'layoutExport.description':
