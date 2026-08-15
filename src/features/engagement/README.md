@@ -6,10 +6,15 @@ Engagement-gated nudge system for feedback and Ko-fi support.
 
 1. **Engagement tracking** — Reads from existing PostHog analytics data (`gridfinity-analytics-v1`) for feature breadth, plus its own session counter (`gridfinity-nudges-v1`).
 
-2. **Engagement gate** — All three criteria must be met before nudge toasts show:
+2. **Engagement gate** — All four criteria must be met before nudge toasts show:
+   - the user has downloaded a printable file this session (`hasConvertedThisSession`)
    - 3+ return sessions
    - 3+ distinct features used
    - 10+ minutes in the current session
+
+   The conversion condition is checked first and short-circuits the rest. An ask
+   that arrives mid-task is asking someone to stop doing the thing they came for,
+   which is what 1,376 impressions to 11 clicks looked like.
 
 3. **Nudge types** — `feedback_rating` (prioritized) and `kofi_support`, each with an independent 30-day cooldown.
 
@@ -19,9 +24,8 @@ Engagement-gated nudge system for feedback and Ko-fi support.
 
 ## Files
 
-| File                     | Purpose                                                                      |
-| ------------------------ | ---------------------------------------------------------------------------- |
-| `engagementTracker.ts`   | Engagement scoring, cooldown management, localStorage I/O                    |
-| `useEngagementNudges.ts` | React hook mounted in App.tsx — checks gate every 60s                        |
-| `useLayoutPromotion.ts`  | One-time toast nudging engaged single-layout users to create a second layout |
-| `index.ts`               | Public API                                                                   |
+| File                     | Purpose                                                                   |
+| ------------------------ | ------------------------------------------------------------------------- |
+| `engagementTracker.ts`   | Engagement scoring, cooldown management, localStorage I/O                 |
+| `useEngagementNudges.ts` | React hook mounted in App.tsx — checks gate every 60s, after a conversion |
+| `index.ts`               | Public API                                                                |
