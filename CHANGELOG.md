@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.412.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.411.1...gridfinity-layout-tool-v4.412.0) (2026-08-15)
+
+
+### Features
+
+* **bento:** merge only the bins you select ([#3510](https://github.com/andymai/gridfinity-layout-tool/issues/3510)) ([b222bec](https://github.com/andymai/gridfinity-layout-tool/commit/b222bec0eb7274a5185f38b74bb93ae3a035e230))
+
 ## [4.411.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.411.0...gridfinity-layout-tool-v4.411.1) (2026-08-15)
 
 
