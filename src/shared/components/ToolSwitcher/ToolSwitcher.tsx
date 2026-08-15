@@ -12,6 +12,9 @@ import { Button } from '@/design-system';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
 import { useCommunityRouting } from '@/shared/hooks/useCommunityRouting';
+import { useIntentPrefetch } from '@/shared/hooks/useIntentPrefetch';
+import type { IntentPrefetchHandlers } from '@/shared/hooks/useIntentPrefetch';
+import { warmBaseplate, warmDesigner } from '@/shared/hooks/usePrefetchChunks';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 
@@ -96,6 +99,15 @@ export function ToolSwitcher({ compact = false, iconOnly = false }: ToolSwitcher
     }
   };
 
+  // The planner is the eager route and has nothing to fetch. The other two are
+  // lazy chunks whose fetch otherwise starts on the click, leaving the panel
+  // blank for as long as it takes; a hover is the earliest honest signal that
+  // one of them is about to be needed.
+  const designerIntent = useIntentPrefetch('tool:designer', warmDesigner);
+  const baseplateIntent = useIntentPrefetch('tool:baseplate', warmBaseplate);
+  const intentFor = (tool: Tool): Partial<IntentPrefetchHandlers> =>
+    tool === 'designer' ? designerIntent : tool === 'baseplate' ? baseplateIntent : {};
+
   const segmentPadding = getSegmentPadding(iconOnly, compact);
   const fontSize = compact ? 'text-xs' : 'text-sm';
   const iconSize = getIconSize(iconOnly, compact);
@@ -122,6 +134,7 @@ export function ToolSwitcher({ compact = false, iconOnly = false }: ToolSwitcher
             aria-selected={activeTool === id}
             aria-label={t(labelKey)}
             onClick={() => handleSwitch(id)}
+            {...intentFor(id)}
             title={activeTool !== id ? t(switchKey) : undefined}
             className={segmentClass(id)}
           >

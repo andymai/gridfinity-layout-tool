@@ -22,6 +22,7 @@ import type { IDBPDatabase } from 'idb';
 import type { BinParams } from '@/shared/types/bin';
 import type { KernelName } from '@/shared/generation/bridge';
 import type { MeshData } from '@/shared/types/generation';
+import { meshDataByteSize } from './meshBytes';
 import { createLogger } from '@/core/logger';
 
 const logger = createLogger('MeshPersistence');
@@ -194,39 +195,6 @@ export function binMeshCacheKey(params: BinParams, kernel: KernelName): string {
   return `${MESH_CACHE_VERSION}:${kernel}-${revision}:${djb2(stableStringify(params))}`;
 }
 
-/** Sum the byte length of every typed array reachable from a mesh (incl. lid + connector). */
-function meshByteSize(mesh: MeshData): number {
-  let bytes =
-    mesh.vertices.byteLength +
-    mesh.normals.byteLength +
-    mesh.indices.byteLength +
-    mesh.edgeVertices.byteLength;
-  if (mesh.coarseLOD) {
-    bytes += mesh.coarseLOD.vertices.byteLength + mesh.coarseLOD.indices.byteLength;
-  }
-  if (mesh.lidMesh) {
-    bytes +=
-      mesh.lidMesh.vertices.byteLength +
-      mesh.lidMesh.normals.byteLength +
-      mesh.lidMesh.indices.byteLength +
-      mesh.lidMesh.edgeVertices.byteLength;
-  }
-  if (mesh.stackPlateMesh) {
-    bytes +=
-      mesh.stackPlateMesh.vertices.byteLength +
-      mesh.stackPlateMesh.normals.byteLength +
-      mesh.stackPlateMesh.indices.byteLength +
-      mesh.stackPlateMesh.edgeVertices.byteLength;
-  }
-  if (mesh.connectorKeyMesh) {
-    bytes +=
-      mesh.connectorKeyMesh.vertices.byteLength +
-      mesh.connectorKeyMesh.normals.byteLength +
-      mesh.connectorKeyMesh.indices.byteLength;
-  }
-  return bytes;
-}
-
 /**
  * Load a persisted preview mesh, or `null` on miss / unavailable store / error.
  * Never throws — a failed read simply means "no pre-draft", and the worker still
@@ -268,7 +236,7 @@ export function savePersistedBinMesh(key: string, mesh: MeshData): void {
 async function persistMesh(key: string, mesh: MeshData): Promise<void> {
   try {
     const db = await getDb();
-    const meta: MeshMeta = { key, byteSize: meshByteSize(mesh), ts: nextStamp() };
+    const meta: MeshMeta = { key, byteSize: meshDataByteSize(mesh), ts: nextStamp() };
 
     const writeTx = db.transaction([BIN_MESHES_STORE, META_STORE], 'readwrite');
     void writeTx.objectStore(BIN_MESHES_STORE).put({ key, mesh } satisfies StoredMesh);

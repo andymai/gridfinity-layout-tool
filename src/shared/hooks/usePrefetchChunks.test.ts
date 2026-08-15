@@ -1,6 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { usePrefetchChunks } from './usePrefetchChunks';
+import {
+  usePrefetchChunks,
+  warmBaseplate,
+  warmDesigner,
+  warmGeometryKernel,
+} from './usePrefetchChunks';
 
 // Mock WASM preload — we only care that it's called, not its internals
 vi.mock('@/shared/generation/wasmPreload', () => ({
@@ -35,6 +40,8 @@ vi.mock('@/shared/utils/idle', () => ({
 
 // Grab mocked modules for per-test control
 import { useResponsive } from './useResponsive';
+import { preloadBrepkitWasm, preloadOcctWasm } from '@/shared/generation/wasmPreload';
+import { useLabsStore } from '@/core/store/labs';
 import { scheduleIdleCallback, cancelIdleCallback } from '@/shared/utils/idle';
 const mockUseResponsive = vi.mocked(useResponsive);
 const mockScheduleIdle = vi.mocked(scheduleIdleCallback);
@@ -191,5 +198,44 @@ describe('usePrefetchChunks', () => {
     handles.forEach((handle) => {
       expect(mockCancelIdle).toHaveBeenCalledWith(handle);
     });
+  });
+});
+
+describe('destination warmers', () => {
+  beforeEach(() => {
+    vi.mocked(preloadOcctWasm).mockClear();
+    vi.mocked(preloadBrepkitWasm).mockClear();
+  });
+
+  it('primes occt-wasm, the default kernel', () => {
+    warmGeometryKernel();
+    expect(preloadOcctWasm).toHaveBeenCalledTimes(1);
+    expect(preloadBrepkitWasm).not.toHaveBeenCalled();
+  });
+
+  it('primes brepkit instead when the Labs engine is on', () => {
+    const spy = vi
+      .spyOn(useLabsStore.getState(), 'isFeatureEnabled')
+      .mockImplementation((id) => id === 'brepkit_kernel');
+    try {
+      warmGeometryKernel();
+    } finally {
+      spy.mockRestore();
+    }
+    expect(preloadBrepkitWasm).toHaveBeenCalledTimes(1);
+    expect(preloadOcctWasm).not.toHaveBeenCalled();
+  });
+
+  // Measured regression guard: warming the 22MB kernel on a hover puts it in
+  // front of the ~500KB the panel is waiting for, and on a 4Mbps link that
+  // made the click slower than doing nothing. The kernel belongs to the idle
+  // tier, which runs when no navigation is in flight.
+  it.each([
+    ['designer', warmDesigner],
+    ['baseplate', warmBaseplate],
+  ])('the %s warmer fetches its chunk without touching the kernel', (_name, warm) => {
+    warm();
+    expect(preloadOcctWasm).not.toHaveBeenCalled();
+    expect(preloadBrepkitWasm).not.toHaveBeenCalled();
   });
 });

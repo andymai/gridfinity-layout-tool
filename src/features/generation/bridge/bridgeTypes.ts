@@ -108,14 +108,6 @@ export interface ThreadingInfo {
   readonly kernel: KernelName;
 }
 
-/** Size-1 dedup cache: stores the fingerprint and result of the last successful generation. */
-export interface DedupCache {
-  fingerprint: string | null;
-  result: GenerationResult | null;
-  /** Fingerprint of the currently in-flight request (stored so we can cache on success). */
-  pendingFingerprint: string | null;
-}
-
 /** Keys for the pending export request slots */
 export type ExportSlot = 'export' | 'dividers' | 'combined' | 'split' | 'splitPreview';
 
