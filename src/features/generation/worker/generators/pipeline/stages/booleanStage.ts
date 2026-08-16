@@ -32,7 +32,7 @@ function applyCutPass(
 
 /**
  * Carve the deferred base socket with the tools that must pass through it (the
- * floor pattern's drainage holes — #2816).
+ * floor pattern's drainage holes —).
  *
  * Runs before the body pass so the tools are still alive; the body pass owns
  * them and disposes them at the end. A failure here degrades to an uncarved
@@ -140,7 +140,7 @@ export const booleanStage: PipelineStage = {
     // threads cancellation through. Fuse used to drop both, accumulating
     // duplicate / coincident faces from additive features (label tabs,
     // scoop ramps) that share a face with the shell; slicers (BambuStudio)
-    // flag the resulting duplicate triangles as non-manifold (#1822 —
+    // flag the resulting duplicate triangles as non-manifold (—
     // partial fix; see labelTab gusset-back-face follow-up).
     const boolOpts = { simplify: forExport, signal } as BooleanOpts;
 

@@ -115,7 +115,7 @@ export function useBaseplatePanelDerived(): BaseplatePanelDerived {
   // padding (the cuts are re-inscribed on the padded rectangle), so padding
   // stays live and only corner rounding + detached margins hide. Painted/pen/
   // trace shapes have no parametric resize: they subsume padding too, so all
-  // those controls hide behind the notice. Stacking keeps the shape now (#3113):
+  // those controls hide behind the notice. Stacking keeps the shape now:
   // the shaped tiles dedupe and stack, so a stacked shaped drawer IS shaped and
   // the panel must say so — for every export format, not just STEP.
   const outlineActive = drawerOutline !== undefined && synced;
@@ -138,7 +138,7 @@ export function useBaseplatePanelDerived(): BaseplatePanelDerived {
   // outline in buildFullParams, so the plate really does get a curved perimeter
   // slicing sockets. Asking the resolver's own predicate rather than repeating
   // its threshold keeps the panel, the trigger and the resolver from drifting.
-  // Stacking-independent since #3113: a large radius shapes the plate whether or
+  // Stacking-independent: a large radius shapes the plate whether or
   // not stacking is on (the rounded tiles stack), so the whole-cell control this
   // gates surfaces for a stacked large-radius plate too — no format override.
   /** The plate has a curved or angled perimeter that can slice sockets. */

@@ -1,5 +1,5 @@
 /**
- * Magnetic lid + asymmetric overhang (issue #3048).
+ * Magnetic lid + asymmetric overhang.
  *
  * Overhang grows and shifts the bin's outer body, its stacking lip, and the
  * lid that wraps them. The retention magnets hug that lip, so they have to

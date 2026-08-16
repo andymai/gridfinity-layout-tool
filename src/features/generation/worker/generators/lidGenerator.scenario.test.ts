@@ -72,7 +72,7 @@ function makeParams(lid: Partial<LidConfig>, extra: Partial<BinParams> = {}): Bi
   return {
     ...DEFAULT_BIN_PARAMS,
     ...extra,
-    // Notching path by default (#3477): several cases here count rails per
+    // Notching path by default: several cases here count rails per
     // wall, which the interior relief deliberately changes. A case that wants
     // the relief passes it through `lid`.
     lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, relieveInterior: false, ...lid },
@@ -172,12 +172,12 @@ describe('lid generation and export scenarios', () => {
   // bin's lip enters the cavity from below and tops out at `anchorZ`. If the
   // plate ever reaches past the anchor it fills the lip's space and the lid
   // cannot seat — a solid block that `assertStructurallyValid` happily accepts,
-  // which is how the magnet-pocket and tray paths shipped broken (#2761).
+  // which is how the magnet-pocket and tray paths shipped broken.
   describe('floor plate never intrudes into the lip cavity (#2761)', () => {
     // The last element is the expected plate thickness. Required, not optional:
     // the cavity-gap assertion below is algebraically independent of the plate
     // (`topThickness` cancels), so without it a case added to cover a thickness
-    // rule would assert nothing about that rule (#3072).
+    // rule would assert nothing about that rule.
     const CASES: ReadonlyArray<readonly [string, Partial<LidConfig>, Partial<BinParams>, number]> =
       [
         ['baseline', {}, {}, 0.8],
@@ -194,7 +194,7 @@ describe('lid generation and export scenarios', () => {
         // 4mm recess + the 1.6mm minimum floor.
         ['tray recess', { tray: { enabled: true, depthMm: 4, wallMm: 2 } }, {}, 5.6],
         // 4mm recess + a 5mm floor: the knob moves the plate, and the anchor
-        // has to keep tracking it well past any pre-#3072 value.
+        // has to keep tracking it well past any older value.
         [
           'tray recess + thick floor',
           { tray: { enabled: true, depthMm: 4, wallMm: 2 }, topThicknessMm: 5 },
@@ -231,7 +231,7 @@ describe('lid generation and export scenarios', () => {
         expect(-inputs.topThickness - inputs.anchorZ).toBeCloseTo(1.293 + extraHeightMm, 3);
         // The gap above holds for ANY plate the anchor tracks — `topThickness`
         // cancels out of it — so pin the plate itself as well, or a case added to
-        // cover a thickness rule would assert nothing about that rule (#3072).
+        // cover a thickness rule would assert nothing about that rule.
         expect(inputs.topThickness).toBeCloseTo(expectedPlate, 3);
       }
     );
@@ -639,7 +639,7 @@ describe('lid generation and export scenarios', () => {
     // cells — and their magnets — on −X; 'start' mirrors that. Counting mesh
     // vertices either side of X=0 gives an integer bias that flips with the
     // edge, proving cutMagnetHoles honours fractionalEdge end-to-end (and thus
-    // the lid magnets stay mated with the bin's base sockets, GH #2271).
+    // the lid magnets stay mated with the bin's base sockets, GH).
     const vertexBiasX = (vertices: ArrayLike<number>): number => {
       let left = 0;
       let right = 0;

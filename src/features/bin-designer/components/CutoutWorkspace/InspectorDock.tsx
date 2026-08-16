@@ -53,7 +53,7 @@ interface InspectorDockProps {
   readonly onDuplicate?: () => void;
   /** Delete the current selection. */
   readonly onDelete?: () => void;
-  /** Shape-list tab (#3053). Omitted in contexts without one. */
+  /** Shape-list tab. Omitted in contexts without one. */
   readonly shapeList?: ReactNode;
 }
 

@@ -155,7 +155,7 @@ describe('half-bin mode', () => {
   );
 });
 
-// ─── Wall pattern + cutout cache behaviour (#1422) ───────────────────────────
+// ─── Wall pattern + cutout cache behaviour ───────────────────────────
 //
 // The cutout-param-change path previously blew past the 30s worker timeout on
 // tall bins because the per-wall hex compound was invalidated on every tweak.

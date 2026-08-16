@@ -15,7 +15,7 @@ interface GridAlignmentControlsProps {
 const BUTTON_STEP_MM = 0.5;
 
 /** Stored precision. The steppers and the hint both display at this many
- * decimals, so neither can show a value the frame doesn't apply (#3170). */
+ * decimals, so neither can show a value the frame doesn't apply. */
 const SHIFT_DECIMALS = 2;
 
 const roundMm = (v: number): number => Math.round(v * 100) / 100;
@@ -23,14 +23,14 @@ const roundMm = (v: number): number => Math.round(v * 100) / 100;
 /** Sign-explicit mm value for the alignment hint, e.g. "+2.1" / "−0.75".
  * Rounds the magnitude, not the signed value: `Math.round` breaks ties toward
  * +∞, which rendered a stored −0.75 as "−0.7" while the stepper's own
- * formatter rounded the same magnitude up to "0.8" (#3170). */
+ * formatter rounded the same magnitude up to "0.8". */
 const fmtShift = (v: number): string => {
   const magnitude = Number(Math.abs(roundMm(v)).toFixed(SHIFT_DECIMALS));
   return v < 0 && magnitude !== 0 ? `−${magnitude}` : `+${magnitude}`;
 };
 
 /**
- * Grid↔perimeter alignment controls for a custom drawer shape (#3157/#3108).
+ * Grid↔perimeter alignment controls for a custom drawer shape.
  *
  * The hint reports the effective frame translation the layout and plate both
  * apply (automatic lattice registration minus the manual shift) — visible

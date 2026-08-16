@@ -273,7 +273,7 @@ function migrateExtraHeightMm(raw: unknown): number {
 
 /**
  * Resolve the lid retention mode. New designs store an explicit
- * `attachment`; pre-#2694 designs predate the field, so derive it from the
+ * `attachment`; older designs predate the field, so derive it from the
  * migrated per-side rails — any wall carrying a rail means the design relied
  * on click retention (`'clickRails'`), otherwise it was friction-fit
  * (`'friction'`). Never auto-derives `'magnetic'`: magnets require the new
@@ -314,7 +314,7 @@ function migrateRetentionMagnet(raw: unknown): LidMagnetConfig {
       LID_MAGNET_DEPTH_MAX_MM,
       DEFAULT_LID_CONFIG.retentionMagnet.depth
     ),
-    // Whole number of edge magnets per long edge (#2844). Legacy-absent →
+    // Whole number of edge magnets per long edge. Legacy-absent →
     // default (0, the four-corner lid); out-of-range hand edits get clamped and
     // rounded so the worker never receives a fractional or oversized count.
     edgeMagnets: Math.round(
@@ -350,7 +350,7 @@ function migrateTray(raw: unknown): LidTrayConfig {
 
 /**
  * Clamp the grip-relief config; legacy-absent → factory default (mode `none`),
- * so a design saved before #3272 regenerates byte-identically.
+ * so a design saved regenerates byte-identically.
  */
 function migrateGrip(raw: unknown): LidGripConfig {
   if (!raw || typeof raw !== 'object') return DEFAULT_LID_CONFIG.grip;
@@ -510,7 +510,7 @@ function migrateLip(raw: LegacyFeatureColorInput['lip'], body: string): FeatureC
     // Era 2: legacy 4-corner object. The per-corner editor was rolled back to a
     // single mirrored picker, so mismatched corners were unreachable from the
     // UI; canonicalize to frontLeft → a uniform 1×1 grid (the visible look the
-    // rolled-back single picker already produced; discussion #1654).
+    // rolled-back single picker already produced; discussion).
     const fl = raw.frontLeft ?? body;
     return { corners: 1, bands: 1, cells: makeUniformLipCells(fl) };
   }
@@ -942,7 +942,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         ? Math.min(1, Math.max(0, rawScale))
         : DEFAULT_PATTERN_SCALE,
     dividers: wallPatternRaw.dividers === true,
-    // Absent on every design saved before #2966, which patterned all four
+    // Absent on every design saved, which patterned all four
     // walls — so a missing side reads as ON, not off.
     sides: {
       left: rawSides?.left !== false,
@@ -952,7 +952,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     },
   };
 
-  // Floor pattern (#2816) — absent on every design saved before the feature.
+  // Floor pattern — absent on every design saved before the feature.
   // Same coercion contract as the wall pattern: unknown members fall back to
   // the default and a crafted scale is clamped into [0, 1].
   const floorPatternConfig: FloorPatternConfig = (() => {
@@ -1107,11 +1107,11 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         // regardless of how it was persisted.
         clickRails,
         clickRailCoverage: migrateClickRailCoverage(rawCoverage),
-        // Retention mode (#2694). Legacy designs infer it from their rails.
+        // Retention mode. Legacy designs infer it from their rails.
         attachment: migrateAttachment(rawAttachment, clickRails),
         // Clamp the mm cavity boost so a corrupt design can't blow up the lid.
         extraHeightMm: migrateExtraHeightMm(rawExtraHeight),
-        // Pre-#2761 designs have no floor-plate knob — they fall back to the
+        // Older designs have no floor-plate knob — they fall back to the
         // 0.8mm baseline and so regenerate byte-identically.
         topThicknessMm: clampNumber(
           rawTopThickness,
@@ -1124,7 +1124,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         retentionMagnet: migrateRetentionMagnet(rawRetentionMagnet),
         tray: migrateTray(rawTray),
         grip: migrateGrip(rawGrip),
-        // Absent means the design predates the interior relief (#3477), and it
+        // Absent means the design predates the interior relief, and it
         // must keep the geometry it was published with. Only an explicit
         // `true` opts in, which is what a design created after the flag stores.
         // NOT left to the `DEFAULT_LID_CONFIG` spread above: that defaults it

@@ -202,7 +202,7 @@ function turnsOntoItself(padA: number, padB: number, extentUnits: number): boole
  * Both axes describe the same physical flip — they differ by a 180° turn in the
  * plate's own plane — so the choice is free, and we spend it on landing the
  * flipped copy's sockets on the upright plate's. A plate padded on one side only
- * (every outer piece of a split drawer, #3235) is congruent about exactly one
+ * (every outer piece of a split drawer,) is congruent about exactly one
  * axis; turning about the other shifts its lattice by the full padding, leaving
  * the bottom plate visibly out of step with the rest of the tower even though
  * the outer footprints still line up.

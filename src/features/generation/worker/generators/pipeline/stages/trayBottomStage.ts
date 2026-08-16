@@ -1,5 +1,5 @@
 /**
- * Tray-bottom stage — fuses a lid's mating skirt under the bin (#3036).
+ * Tray-bottom stage — fuses a lid's mating skirt under the bin.
  *
  * The bin body and the lid share an outer profile exactly, which is what lets
  * this compose the lid builders instead of duplicating them: the body is

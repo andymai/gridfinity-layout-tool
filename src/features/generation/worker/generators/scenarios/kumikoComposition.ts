@@ -5,7 +5,7 @@
  * Split out of the kumiko wrapping cases so the catalogue's slowest domain is
  * three test files rather than one. Vitest never parallelizes within a file, so
  * a single 200s file floored the whole generators shard regardless of sharding
- * (same reasoning as #2882). Per-pattern coverage lives in `kumikoPatterns.ts`
+ * (same reasoning as). Per-pattern coverage lives in `kumikoPatterns.ts`
  * and corner-wrap proofs in `kumikoWrapping.ts`.
  */
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';

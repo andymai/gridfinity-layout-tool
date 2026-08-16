@@ -301,7 +301,7 @@ export function useLabelTabsSection() {
   const tabHeightMax = defaultShelfTopMm;
   const tabHeightMin = Math.min(label.depth + 1, tabHeightMax);
 
-  // --- Label lip (#2971) ---
+  // --- Label lip ---
   // Only offered on text-mode tabs (socket tabs retain their plates; the
   // slide-channel mouth is on the free edge the lip would wall off).
   const lipAvailable = (label.mode ?? 'text') === 'text';
@@ -359,7 +359,7 @@ export function useLabelTabsSection() {
   // Using cellD (= innerD / rows) is conservative for merged compartments
   // (which could accept larger insets) but matches what the per-compartment
   // collision guard actually enforces — stops the stepper from offering
-  // values it would instantly warn about. (Greptile review on #1904.)
+  // values it would instantly warn about. (Greptile review on.)
   const cellDForUI = innerD / compartments.rows;
   const edgesValue = label.edges ?? 'back';
   const insetRoom =
@@ -538,7 +538,7 @@ export function useLabelTabsSection() {
     updateLabel,
   ]);
 
-  // Swappable-label socket mode (#2666). The plan is the same math the
+  // Swappable-label socket mode. The plan is the same math the
   // worker runs, so pickers/warnings can never disagree with the geometry.
   const isSocketMode = (label.mode ?? 'text') === 'socket';
 

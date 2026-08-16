@@ -29,7 +29,7 @@ const TOL = GRIDFINITY.TOLERANCE;
 const CAT = 'regressions';
 
 export const regressions: ScenarioCase[] = [
-  // #1753 / PR #1756 — compartmented bins were generating non-manifold geometry
+  // / — compartmented bins were generating non-manifold geometry
   // because each compartment wall was fused individually; fix restructured to a
   // single multi-cavity cut. Invariant: no degenerate triangles, no NaN.
   defineScenario(CAT, '#1753 compartmented bin is manifold (multi-cavity cut)', {
@@ -44,7 +44,7 @@ export const regressions: ScenarioCase[] = [
     },
   }),
 
-  // #1760 / PR #1765 — split STL export failed for scoop + tall walls (h>=9)
+  // / — split STL export failed for scoop + tall walls (h>=9)
   // with lip enabled. Fix bypassed OCCT STL writer for split pieces.
   // Invariant: mesh validity at height 10 + scoop + lip in export mode.
   defineScenario(CAT, '#1760 scoop + tall (h=10) + lip + export mode', {
@@ -62,7 +62,7 @@ export const regressions: ScenarioCase[] = [
     },
   }),
 
-  // #1681 — split cut planes intersected socket-cell boundaries causing
+  // Split cut planes intersected socket-cell boundaries causing
   // non-manifold split pieces on fractional bins. Fix nudged planes off.
   defineScenario(CAT, '#1681 fractional + scoop near socket boundary', {
     assert: 'structural',
@@ -77,7 +77,7 @@ export const regressions: ScenarioCase[] = [
     },
   }),
 
-  // #1657 — lid magnet holes had to be cut before fusing stack grid; otherwise
+  // Lid magnet holes had to be cut before fusing stack grid; otherwise
   // boolean ops left non-manifold edges. Invariant on a lidless-bin proxy:
   // half-sockets + magnet base + lip should still produce manifold mesh.
   defineScenario(CAT, '#1657 magnet base + half sockets + lip (pre-fuse cut order)', {
@@ -95,7 +95,7 @@ export const regressions: ScenarioCase[] = [
     },
   }),
 
-  // #1653 — divider notches needed to cut through the lip in split slotted
+  // Divider notches needed to cut through the lip in split slotted
   // bins; otherwise the lip blocked the divider slot. Invariant: enabling
   // the stacking lip must NOT erase the slot notches — so the lip-on
   // mesh should have MORE triangles than the lip-off baseline (lip adds
@@ -136,7 +136,7 @@ export const regressions: ScenarioCase[] = [
     },
   }),
 
-  // #1487 / PR #1491 — stacking lip lost angled support beneath the overhang;
+  // / — stacking lip lost angled support beneath the overhang;
   // fix restored the support geometry. Invariant: lip-band vertex count on
   // outer walls is non-trivial (support spans corner-to-corner).
   defineScenario(CAT, '#1487 stacking lip has angled support beneath', {
@@ -165,7 +165,7 @@ export const regressions: ScenarioCase[] = [
     },
   }),
 
-  // #1448 / #1445 — exporting with custom heightUnitMm produced incorrect Z
+  // Exporting with custom heightUnitMm produced incorrect Z
   // dimension. Invariant: bounding-box Z matches height * heightUnitMm.
   defineScenario(CAT, '#1448 custom heightUnitMm respected in export', {
     assert: 'structural',
@@ -179,7 +179,7 @@ export const regressions: ScenarioCase[] = [
     },
   }),
 
-  // #1437 — wall pattern + dividers had overlapping geometry near junctions.
+  // Wall pattern + dividers had overlapping geometry near junctions.
   // Invariant: honeycomb + compartments → no degenerate triangles, valid manifold.
   defineScenario(CAT, '#1437 honeycomb + dividers — no junction overlap', {
     assert: 'structural',
@@ -196,7 +196,7 @@ export const regressions: ScenarioCase[] = [
     },
   }),
 
-  // #1404 — oversized bins (>print bed) had to split into MINIMUM equal pieces
+  // Oversized bins (>print bed) had to split into MINIMUM equal pieces
   // not maximum. Proxy: large bin generates without crashing or degenerates.
   defineScenario(CAT, '#1404 oversized 8×4 bin (would need split)', {
     assert: 'structural',
@@ -207,7 +207,7 @@ export const regressions: ScenarioCase[] = [
     },
   }),
 
-  // #1379 — 4×3 (and similar elongated) bins had stacking lip overhanging the
+  // 4×3 (and similar elongated) bins had stacking lip overhanging the
   // outer X/Y bound. lipWall.ts locks 4×3 + 6×2; we lock 3×5 here as an
   // independent witness of the same class.
   defineScenario(CAT, '#1379 3×5 lip does not overhang outer bound', {
@@ -228,7 +228,7 @@ export const regressions: ScenarioCase[] = [
     },
   }),
 
-  // #1354 / PR #1355 — honeycomb pattern left holes at thick walls (>0.8mm)
+  // / — honeycomb pattern left holes at thick walls (>0.8mm)
   // in divider regions because hex prism extrusion exceeded the clip depth.
   // Invariant: thick walls + honeycomb + compartments still produces valid mesh.
   defineScenario(CAT, '#1354 honeycomb + thick walls (1.6mm) + compartments', {
@@ -245,7 +245,7 @@ export const regressions: ScenarioCase[] = [
     },
   }),
 
-  // #1351 / #1348 — honeycomb pattern bled into divider-wall junctions.
+  // Honeycomb pattern bled into divider-wall junctions.
   // Invariant: divider junctions remain clean (no degenerate triangles where
   // hex prisms would have overlapped).
   defineScenario(CAT, '#1351 honeycomb cleanly blocked at divider junctions', {
@@ -263,7 +263,7 @@ export const regressions: ScenarioCase[] = [
     },
   }),
 
-  // #1314 — visible seam where outer wall met stacking lip. Invariant:
+  // Visible seam where outer wall met stacking lip. Invariant:
   // continuous vertex zone at lip junction (left/right/front/back all have
   // contributing vertices).
   defineScenario(CAT, '#1314 no wall-to-lip seam (continuous junction)', {
@@ -291,8 +291,8 @@ export const regressions: ScenarioCase[] = [
     },
   }),
 
-  // #1306 — stacking lip overhang on rectangular bins didn't match outer
-  // bound. Same class as #1379. Lock 5×2 elongated bin here.
+  // Stacking lip overhang on rectangular bins didn't match outer
+  // bound. Same class as. Lock 5×2 elongated bin here.
   defineScenario(CAT, '#1306 5×2 rectangular lip overhang in bounds', {
     assert: 'structural',
     params: {
@@ -311,7 +311,7 @@ export const regressions: ScenarioCase[] = [
     },
   }),
 
-  // #1305 — at 2u height, label tabs had to be disabled because there was
+  // At 2u height, label tabs had to be disabled because there was
   // no room. Repro: 2u + label.enabled=true should still produce valid mesh
   // (gracefully suppressed or geometrically bounded).
   defineScenario(CAT, '#1305 2u bin with label tab enabled (graceful)', {
@@ -325,7 +325,7 @@ export const regressions: ScenarioCase[] = [
     },
   }),
 
-  // #1206 — label tab support didn't reach the shelf front edge; gusset
+  // Label tab support didn't reach the shelf front edge; gusset
   // calculation was off. Invariant: label tab solid + reasonable height
   // produces valid mesh with no degenerates.
   defineScenario(CAT, '#1206 label tab solid reaches front edge', {
@@ -339,7 +339,7 @@ export const regressions: ScenarioCase[] = [
     },
   }),
 
-  // #921 / PR #923 — non-manifold slot geometry on STL export. Invariant:
+  // / — non-manifold slot geometry on STL export. Invariant:
   // slotted + export mode produces manifold (no degenerate triangles).
   defineScenario(CAT, '#921 slotted bin export is manifold', {
     assert: 'structural',
@@ -351,7 +351,7 @@ export const regressions: ScenarioCase[] = [
     },
   }),
 
-  // #377 — finger scoop geometry orientation was wrong (scoop faced the
+  // Finger scoop geometry orientation was wrong (scoop faced the
   // wrong wall). Invariant: scoop + bin produces valid mesh and the bin's
   // back-wall vertex count is reduced (scoop carves from one side).
   defineScenario(CAT, '#377 finger scoop geometry orientation', {
@@ -362,7 +362,7 @@ export const regressions: ScenarioCase[] = [
     },
   }),
 
-  // #371 — wall cutout geometry was positioned incorrectly. Invariant:
+  // Wall cutout geometry was positioned incorrectly. Invariant:
   // wall cutouts produce valid mesh, bounding box matches outer dimensions.
   defineScenario(CAT, '#371 wall cutout geometry positioned correctly', {
     assert: 'structural',
@@ -380,7 +380,7 @@ export const regressions: ScenarioCase[] = [
     },
   }),
 
-  // #351 — invalid compartment mesh at minimum thickness produced
+  // Invalid compartment mesh at minimum thickness produced
   // non-manifold output. Invariant: very thin compartment thickness still
   // generates structurally valid mesh.
   defineScenario(CAT, '#351 minimum compartment thickness guard', {
@@ -393,7 +393,7 @@ export const regressions: ScenarioCase[] = [
     },
   }),
 
-  // #449 — incorrect stacking lip height. Invariant: lip top vertex ≥
+  // Incorrect stacking lip height. Invariant: lip top vertex ≥
   // wallHeight (peaks above) but bounding box Z reasonably close to expected.
   defineScenario(CAT, '#449 stacking lip height correct', {
     assert: 'structural',
@@ -410,7 +410,7 @@ export const regressions: ScenarioCase[] = [
     },
   }),
 
-  // #1344 — magnet hole diameter was being interpreted as radius. Proxy:
+  // Magnet hole diameter was being interpreted as radius. Proxy:
   // magnet base + reasonable diameter generates valid mesh with bounding
   // box matching outer dimensions.
   defineScenario(CAT, '#1344 magnet base diameter (not radius) interpreted', {

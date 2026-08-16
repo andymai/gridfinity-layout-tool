@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * A center-anchored cutout label must survive into the final mesh (#2726).
+ * A center-anchored cutout label must survive into the final mesh.
  *
  * The label used to engrave at the un-recessed fill top, so its shallow cut sat
  * entirely inside the volume the cavity removes — the boolean stage subtracted

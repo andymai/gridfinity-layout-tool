@@ -230,7 +230,7 @@ export class GenerationBridge {
         // A worker that loads but then stalls inside WASM init emits neither a
         // message nor an error event, so without this the promise never settles:
         // wasmStatus stays 'loading' and the preview sits on a bare spinner with
-        // no error text and no retry affordance (#3035).
+        // no error text and no retry affordance.
         timer = setTimeout(() => {
           teardown();
           reject(
@@ -509,7 +509,7 @@ export class GenerationBridge {
     return generateBaseplateImpl(this, params, onProgress, false);
   }
 
-  /** Generate one detached margin rail (issue #2392). */
+  /** Generate one detached margin rail. */
   generateMargin(params: ResolvedBaseplateParams, margin: MarginPiece): Promise<GenerationResult> {
     return generateMarginImpl(this, params, margin);
   }
@@ -551,7 +551,7 @@ export class GenerationBridge {
     return exportConnectorKeyImpl(this, params, format, options);
   }
 
-  /** Export one detached margin rail (issue #2392). */
+  /** Export one detached margin rail. */
   exportMargin(
     params: ResolvedBaseplateParams,
     margin: MarginPiece,

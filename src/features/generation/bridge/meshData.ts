@@ -28,7 +28,7 @@ export interface MeshData {
    */
   readonly connectorKeyMesh?: ConnectorKeyMeshData;
   /**
-   * Optional swappable label plates (#2666) with their seated poses, so the
+   * Optional swappable label plates with their seated poses, so the
    * preview shows the real engraved parts. Preview only — export packs its own
    * bed-sized sheet. Present only in socket mode with at least one plate.
    */

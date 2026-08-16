@@ -137,7 +137,7 @@ export function generateBaseplateDirect(
   // (same frameCells layout as the BREP build). The solid padding ring then
   // fills only the band beyond each side's pockets, so tiled pockets — including
   // 21mm half-grid cells — are never capped; a fully tiled side contributes no
-  // ring, while a sub-threshold sliver keeps its solid fill (#2380).
+  // ring, while a sub-threshold sliver keeps its solid fill.
   const cells: CellInfo[] = [];
   forEachCell(width, depth, (cell) => cells.push(cell), cellOpts);
   // Plain solid padding fills the whole margin ring (no pockets); over-tile
@@ -302,7 +302,7 @@ export function generateBaseplateDirect(
     }
   }
 
-  // Mount-down screw holes (#3425). Through the shared planner, so the draft and
+  // Mount-down screw holes. Through the shared planner, so the draft and
   // the exported plate put every hole in the same place. No cell filter: the
   // direct mesh is never used for a shaped plate.
   const screwParams = params.screwHoles?.enabled === true ? params.screwHoles : undefined;

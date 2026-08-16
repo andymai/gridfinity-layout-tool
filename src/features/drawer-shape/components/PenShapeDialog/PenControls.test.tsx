@@ -49,7 +49,7 @@ describe('PenControls', () => {
   });
 
   // Outline coords carry 0.01mm precision; the radius field must not re-round a
-  // typed decimal down to 1dp on display (#3090). At 1dp this reads 2.6.
+  // typed decimal down to 1dp on display. At 1dp this reads 2.6.
   it('displays a radius to two decimals so typed decimals survive', () => {
     renderControls({ filletValue: 2.55 });
     expect(screen.getByLabelText('drawerShape.penFillet')).toHaveValue(2.55);
@@ -65,7 +65,7 @@ describe('PenControls', () => {
   });
 
   // A point may be typed past the current grid extent so the drawer can grow to
-  // hold it (#3092); the coordinate ceiling is the product maximum, not the grid.
+  // hold it; the coordinate ceiling is the product maximum, not the grid.
   it('accepts a coordinate typed past the current grid extent, up to the ceiling', () => {
     const { props } = renderControls({ lone: { index: 0, x: 100, y: 50 }, maxWmm: 2100 });
 

@@ -877,7 +877,7 @@ describe('drawer outline validation (issue #2528)', () => {
 });
 
 // A shared layout whose bins lose their design reference arrives as plain
-// boxes the recipient can neither preview nor print (#2894).
+// boxes the recipient can neither preview nor print.
 describe('linked designs', () => {
   it('preserves linkedDesignId through bin sanitization', () => {
     const layout = createValidLayout();

@@ -93,7 +93,7 @@ export interface BaseplateExportResult {
   readonly format: ExportFormat;
   /**
    * Face provenance for STL→3MF paint_color mapping. Only label plate
-   * exports populate this today (#2666 two-color plates).
+   * exports populate this today (two-color plates).
    */
   readonly faceGroups?: readonly FaceGroupData[];
 }

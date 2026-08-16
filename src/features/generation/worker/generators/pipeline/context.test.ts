@@ -153,7 +153,7 @@ describe('createInitialContext', () => {
     expect(dim.maxDimension).toBeCloseTo(100);
   });
 
-  // GH #1445 — bin generator was using the Gridfinity 7mm default for height
+  // GH — bin generator was using the Gridfinity 7mm default for height
   // even when the user set a custom heightUnitMm, so exports had the wrong
   // Z dimension. The dimensions flowing through the pipeline (and into the
   // shellKey cache) must reflect the user-configured unit.

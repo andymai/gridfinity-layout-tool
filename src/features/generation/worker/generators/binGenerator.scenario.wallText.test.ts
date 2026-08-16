@@ -1,5 +1,5 @@
 /**
- * Wall surface-text scenarios (issue #2695).
+ * Wall surface-text scenarios.
  *
  * Hand-written (not the snapshot runner) because text generation needs fonts
  * in the brepjs registry, and because the interesting claims are positional —

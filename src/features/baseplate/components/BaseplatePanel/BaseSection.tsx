@@ -3,7 +3,7 @@
  * solid floor, mount-down screw holes, and corner radius. While stacking,
  * magnets, the solid floor and the screws are stripped so they hide, but
  * connectors stay reachable (dovetail styles stack fine) and corner rounding
- * stays too, since a radius now shapes the stacked tiles (#3113). The group only
+ * stays too, since a radius now shapes the stacked tiles. The group only
  * renders when it still has content, so it never shows as an empty collapsible
  * group.
  */
@@ -80,7 +80,7 @@ export function BaseSection() {
 
   // Render when the section has any content: connectors (split), magnets/floor
   // (not stacking), or the corner-radius control (no drawn shape) — which now
-  // shows under stacking too, since a radius shapes the stacked tiles (#3113).
+  // shows under stacking too, since a radius shapes the stacked tiles.
   if (!(tiling?.isSplit || !stackEnabled || !outlineActive)) return null;
 
   const screwHoles = baseplateParams.screwHoles;

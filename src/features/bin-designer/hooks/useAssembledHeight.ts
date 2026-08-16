@@ -1,5 +1,5 @@
 /**
- * Assembled-height readout for the designer (issue #3037).
+ * Assembled-height readout for the designer.
  *
  * Joins three stores: the design being edited, the active layout's baseplate
  * (which decides how much the plate actually lifts the bin), and the user's

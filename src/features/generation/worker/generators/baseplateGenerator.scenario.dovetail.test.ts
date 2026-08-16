@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Regression tests for issue #1407 — baseplates with dovetail connectors
+ * Regression tests for — baseplates with dovetail connectors
  * exported as solid infill in slicers (Orca/Cura).
  *
  * Root cause: the male dovetail (tongue) shared only a degenerate coplanar
@@ -221,12 +221,12 @@ describe('baseplateGenerator — dovetail export (issue #1407)', () => {
 
 /**
  * Watertight regression for the fractional + padded configurations from
- * issue #1472. The actual root cause of #1472 (directed-edge winding
+ *. The actual root cause of (directed-edge winding
  * collisions from a faulty STL writer heuristic) is covered by
  * `baseplateGenerator.scenario.winding.test.ts`; this block only asserts
  * the undirected/2-manifold property — boundary and non-manifold edge
  * counts — for the half-cell + asymmetric-padding pieces from the user's
- * 19.5×9.5 split-into-8 reproducer, which the existing #1407 dovetail
+ * 19.5×9.5 split-into-8 reproducer, which the existing dovetail
  * tests didn't cover.
  */
 describe('baseplateGenerator — fractional + dovetail export (issue #1472)', () => {
@@ -297,7 +297,7 @@ describe('baseplateGenerator — fractional + dovetail export (issue #1472)', ()
     TEST_TIMEOUT_MS
   );
 
-  // ─── preferIdenticalPieces — doubled dovetails (#1640) ────────────────────
+  // ─── preferIdenticalPieces — doubled dovetails ────────────────────
 
   it(
     'preferIdenticalPieces produces a watertight STL and adds connector triangles',

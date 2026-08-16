@@ -60,7 +60,7 @@ export interface PieceMeshEntry {
 }
 
 /**
- * A generated detached margin rail (issue #2392). The mesh is centered at the
+ * A generated detached margin rail. The mesh is centered at the
  * origin; the preview positions it by `worldOffsetMm` (mm, plate-centered frame)
  * — unlike `PieceMeshEntry`, which positions by grid-unit offsets.
  */

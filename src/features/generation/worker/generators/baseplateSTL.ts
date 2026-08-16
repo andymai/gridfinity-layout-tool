@@ -5,18 +5,18 @@
  * weren't consistent across the whole solid: for some baseplate piece configs
  * (corner-3, corner-4, edge-x-1) the bottom face and parts of the
  * dovetail/pocket walls were wound backwards, causing slicers to flag
- * thousands of "non-manifold edges" (#1490). The downstream `repairMeshWinding`
+ * thousands of "non-manifold edges". The downstream `repairMeshWinding`
  * BFS pass corrects this before emitting the STL.
  *
- * Investigation status (#1494): with brepjs 15.6.1 + OCCT kernel, the repair
+ * Investigation status: with brepjs 15.6.1 + OCCT kernel, the repair
  * is currently a no-op for every known piece config — see
  * `__kernel-tests__/diagnoseBaseplateWinding.test.ts`. The pass is kept as a
  * defensive net for any future regression in brepjs/OCCT tessellation.
  *
  * (An even earlier version applied a per-triangle (cross · sum-of-vertex-
  * normals) heuristic which mis-fired on ~7% of triangles at curved/shared
- * edges; that was the issue tracked in #1472 and the heuristic was removed
- * in #1473.)
+ * edges; that was the issue tracked and the heuristic was removed
+ *.)
  *
  * The STL face normal is the cross-product of the (corrected) winding edges,
  * the same convention slicers reconstruct anyway.

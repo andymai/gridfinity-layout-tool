@@ -2,7 +2,7 @@
  * Translate stage — offsets bin so Z=0 = absolute bottom.
  *
  * Bins are built with Z=0 at the floor bottom, so anything that sits UNDER the
- * floor — a Gridfinity socket, or a tray bin's lid skirt (#3036) — would hang
+ * floor — a Gridfinity socket, or a tray bin's lid skirt — would hang
  * below the bed. This stage lifts by `dimensions.baseOffsetZ`, the depth of
  * whatever that is. Flat bins have nothing underneath and skip the stage.
  */

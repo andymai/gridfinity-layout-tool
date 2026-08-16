@@ -4,7 +4,7 @@
  * (`gridUnitMmY === undefined`). With a custom drawer outline active the
  * floor rises so the mm extent keeps containing the shape, and a clear is
  * refused when the square pitch would not — the outline is absolute mm and
- * nothing may mutate it implicitly (#3149). Captures `previousMmY` for undo.
+ * nothing may mutate it implicitly. Captures `previousMmY` for undo.
  */
 
 import { z } from 'zod';

@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Split export in STEP format (#3501).
+ * Split export in STEP format.
  *
  * STEP writes each piece's exact BREP solid instead of a tessellation, so the
  * failure modes are different from the STL path's. The one that matters is

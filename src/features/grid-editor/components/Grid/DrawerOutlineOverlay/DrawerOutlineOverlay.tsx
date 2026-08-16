@@ -15,12 +15,12 @@ interface DrawerOutlineOverlayProps {
 }
 
 /**
- * Visual overlay for a non-rectangular drawer (issue #2528): hatches the
+ * Visual overlay for a non-rectangular drawer: hatches the
  * region outside the outline, strokes the boundary, and — when the baseplate
  * carries per-side padding — draws the drawer-fit rim the plate gains around
- * the shape (#2705), the shaped counterpart of the rectangular {@link
+ * the shape, the shaped counterpart of the rectangular {@link
  * DrawerMargin} band. One SVG, sized to the union of the padded extent and the
- * outline's own bbox so a rim overhang OR an oversize/off-grid perimeter (#3107)
+ * outline's own bbox so a rim overhang OR an oversize/off-grid perimeter
  * stays un-clipped; even-odd paths keep a 50×50 grid as cheap as a 2×2.
  *
  * Purely visual and `pointer-events: none`: placement truth lives in
@@ -69,7 +69,7 @@ export function DrawerOutlineOverlay({ cellSize, gap }: DrawerOutlineOverlayProp
   const gridD = depth * unitPxY - gap;
 
   const geometry = useMemo(() => {
-    // The shape is drawn in the shared grid↔perimeter frame (#3157) — the
+    // The shape is drawn in the shared grid↔perimeter frame — the
     // same position placement gates on and the plate prints — not at its raw
     // authored anchor (the pen editor keeps showing that one).
     const outline = drawerFrameOutline(drawer, baseplateParams, gridUnitMm, gridUnitMmY);
@@ -110,7 +110,7 @@ export function DrawerOutlineOverlay({ cellSize, gap }: DrawerOutlineOverlayProp
 
     // Frame the SVG to the union of the padded plate and everything drawn (arcs
     // expanded), so an oversize/off-edge perimeter — or a rim overhang beyond it
-    // — is not clipped by the SVG's overflow (#3107). The rim (`plateLoop`) is
+    // — is not clipped by the SVG's overflow. The rim (`plateLoop`) is
     // drawn from `paddedOutline`, which reaches past the raw outline's bbox by
     // the padding, so it must be part of the frame too. With an in-bounds shape
     // and no rim the union is just the plate.

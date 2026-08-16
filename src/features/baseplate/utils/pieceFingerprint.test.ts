@@ -332,7 +332,7 @@ describe('groupPiecesByFingerprint', () => {
     }
   });
 
-  // ─── preferIdenticalPieces canonicalization (#1640) ──────────────────────
+  // ─── preferIdenticalPieces canonicalization ──────────────────────
 
   it('collapses opposite-corner pieces into a single group under the flag', () => {
     // 10×10 → 2×2 grid (its 2×3 alternative saves no bed load, so the
@@ -530,7 +530,7 @@ describe('groupPiecesByFingerprint', () => {
   });
 });
 
-// ─── outline 180° dedup (point-symmetric plates, #3113) ──────────────────────
+// ─── outline 180° dedup (point-symmetric plates,) ──────────────────────
 // Mirrors the cornerRadii precedent above: a 180°-symmetric shape collapses its
 // opposite corner tiles into shared groups, an asymmetric one keeps them apart.
 describe('outline 180° dedup', () => {

@@ -84,7 +84,7 @@ export function useCompartmentGrid() {
 
   // Angled dividers are an advanced opt-in (see DividerTiltSubsection). Keep the
   // on-grid hit-target overlay hidden until the user enables editing so dense
-  // grids stay legible (issue #2044).
+  // grids stay legible.
   const angledDividersEnabled = useSettingsStore((s) => s.settings.angledDividersEnabled);
   const addToast = useToastStore((s) => s.addToast);
 
@@ -289,7 +289,7 @@ export function useCompartmentGrid() {
   }, [isDragging, selection, cols, cells, mergeCells, splitCompartment, compartmentCellCounts]);
 
   // All grid-dimension changes funnel through here so the "N labels cleared"
-  // warning (#2337) is shown consistently and the selection is reset once.
+  // warning is shown consistently and the selection is reset once.
   const applyGrid = useCallback(
     (newCols: number, newRows: number) => {
       const droppedLabels = setCompartmentGrid(newCols, newRows);

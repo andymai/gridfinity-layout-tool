@@ -192,13 +192,39 @@ export function trackDrawerMeasurementCleared(): void {
 }
 
 export const MILESTONE_THRESHOLDS: Array<{
-  key: 'first_bin' | 'engaged' | 'substantial' | 'power_user';
+  key: 'first_bin' | 'engaged';
   min: number;
 }> = [
   { key: 'first_bin', min: 1 },
   { key: 'engaged', min: 5 },
-  { key: 'substantial', min: 15 },
-  { key: 'power_user', min: 30 },
+];
+
+/**
+ * Designer-depth ladder, counted in distinct designs created.
+ *
+ * Bins on the grid stop discriminating past five: download rate runs 33% at 1-4
+ * bins, 52% at 5-14, 53% at 15-29 and 49% at 30+, so the former `substantial`
+ * (15) and `power_user` (30) rungs separated nobody — they measured how big a
+ * drawer is, which is a property of the drawer. Designer activity is where the
+ * variation actually lives, rising with engagement across every measure of it.
+ *
+ * Thresholds are seeded from the per-user bin-export distribution — roughly its
+ * median and upper quartile — because designs created has never been counted
+ * before. Exports are an upper bound on designs (one design can be exported
+ * repeatedly), so expect these to sit high and re-cut them against
+ * `designs_created` once a month of real data exists.
+ *
+ * Keys are deliberately new rather than reusing `substantial`/`power_user`: the
+ * old names would keep resolving while silently meaning something else, and a
+ * redefined metric that still answers is worse than one that stops.
+ */
+const DESIGNER_MILESTONE_THRESHOLDS: ReadonlyArray<{
+  key: 'first_design' | 'designs_4' | 'designs_8';
+  min: number;
+}> = [
+  { key: 'first_design', min: 1 },
+  { key: 'designs_4', min: 4 },
+  { key: 'designs_8', min: 8 },
 ];
 
 /**
@@ -224,6 +250,39 @@ function checkEngagementMilestones(): void {
     if (changed) {
       saveAnalyticsData(data);
     }
+  } catch {
+    // Silently ignore - analytics should never break the app
+  }
+}
+
+/**
+ * Record that a distinct bin design was created and fire any designer milestone
+ * it crosses. Call from the create branch of the design save path only — an
+ * update is the same design, and autosave would otherwise inflate the count
+ * into a measure of editing rather than of designs made.
+ */
+export function trackDesignCreated(): void {
+  try {
+    const data = loadAnalyticsData();
+    data.designsCreated = (data.designsCreated ?? 0) + 1;
+
+    for (const { key, min } of DESIGNER_MILESTONE_THRESHOLDS) {
+      if (data.designsCreated >= min && !data.milestones[key]) {
+        data.milestones[key] = new Date().toISOString();
+        trackEvent('engagement_milestone', {
+          milestone: key,
+          designs_created: data.designsCreated,
+        });
+      }
+    }
+
+    saveAnalyticsData(data);
+    // After the save, and on every design rather than only on a milestone
+    // crossing: `designs_created` is a person property, so gating its refresh
+    // on the rungs would leave it stale at 2, 3 and 5, and answer the wrong
+    // number for any cohort built on it. updatePersonProperties diffs its own
+    // payload, so the calls that change nothing cost nothing.
+    updatePersonProperties();
   } catch {
     // Silently ignore - analytics should never break the app
   }

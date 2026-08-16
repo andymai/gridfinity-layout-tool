@@ -48,7 +48,7 @@ export const setActiveBaseplate = defineCommand({
     const params = payload.params as StoredBaseplateParams;
 
     // The swapped design's padding participates in the grid↔perimeter frame
-    // (#3157) — same displacement rule as setBaseplateParams.
+    // — same displacement rule as setBaseplateParams.
     const layout = ctx.aggregate;
     const displacedBinIds =
       layout.drawer.outline !== undefined

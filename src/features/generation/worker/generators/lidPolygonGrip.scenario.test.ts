@@ -1,5 +1,5 @@
 /**
- * Click rails vs. cutouts and handles on a CUSTOM SHAPE (#3482).
+ * Click rails vs. cutouts and handles on a CUSTOM SHAPE.
  *
  * The live half of that issue, and it was live for a reason worth stating: the
  * premise that a polygon bin has no cutouts is false. `wallCutoutsFeature` and
@@ -9,7 +9,7 @@
  * really made, while `railPlacementsForPolygon` clipped nothing at all and ran
  * a rail the full length of a wall with a window in it.
  *
- * Verified the same way #3483 verified the rectangle case, because it is the
+ * Verified the same way verified the rectangle case, because it is the
  * same kind of defect: an ABSENCE. A rail over a window collides with nothing,
  * so `worstRailInterference` reports clean on a lid that grips nothing there.
  * `ungrippedRailMm` asks the opposite question — wherever the lid has rail,
@@ -136,7 +136,7 @@ describe('polygon click rails keep lip to grip', () => {
 
   it('a cutout on the long front wall leaves a rail either side', async () => {
     const params = makeParams({ walls: walls('front', 40) });
-    // Pre-#3482 this was one full-length rail straight over the window.
+    // Two rails, not one full-length rail straight over the window.
     expect(await railsOn(params, 180)).toBe(2);
 
     const bin = getGenerateBin()(params, undefined, false);

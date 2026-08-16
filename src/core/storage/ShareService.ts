@@ -30,7 +30,7 @@ export interface LinkedDesignExport {
  *
  * Shared by file export and cloud share so both carry the same payload — a
  * layout that travels without its designs arrives as bins with dangling
- * references (#2894). Designs that fail to load (deleted) or have no `params`
+ * references. Designs that fail to load (deleted) or have no `params`
  * (tool racks, imported meshes) are omitted rather than failing the whole set.
  */
 export async function collectLinkedDesigns(layout: Layout): Promise<LinkedDesignExport[]> {
@@ -273,7 +273,7 @@ function sharedDesignLocalId(shareId: string, sourceDesignId: string): DesignId 
  * layout's bins at the local copies.
  *
  * Without this the recipient gets bins whose `linkedDesignId` names a design
- * that only ever existed in the sharer's browser (#2894) — no 3D geometry, no
+ * that only ever existed in the sharer's browser — no 3D geometry, no
  * per-bin export, nothing to print.
  */
 export async function restoreSharedDesigns(

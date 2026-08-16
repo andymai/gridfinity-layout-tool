@@ -2,7 +2,7 @@
 /**
  * Scenario tests for splitting a bin that has an overhang.
  *
- * Regression test for #1949: when a bin with an overhang is also large enough
+ * Regression test: when a bin with an overhang is also large enough
  * to need splitting for the print bed, the boolean cut clipped the overhang off
  * (the cutting bounds were derived from the nominal grid footprint, ignoring the
  * outward overhang expansion). The overhang must survive the split.

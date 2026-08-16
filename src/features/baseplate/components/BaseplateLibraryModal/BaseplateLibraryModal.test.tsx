@@ -125,7 +125,7 @@ describe('BaseplateLibraryModal', () => {
   });
 
   // Wiring guard: the menu role advertises arrow traversal, so the shared
-  // keyboard hook must stay attached (#3277).
+  // keyboard hook must stay attached.
   it('focuses the first item on open and traverses with the arrow keys', async () => {
     render(<BaseplateLibraryModal isOpen onClose={vi.fn()} />);
     await screen.findByText('One');
@@ -175,7 +175,7 @@ describe('BaseplateLibraryModal', () => {
     });
 
     // The failure used to be silent: the button re-enabled and the modal sat
-    // there with no explanation — the same class of bug as #2591.
+    // there with no explanation — the same class of bug as.
     it('reports a failed create instead of silently doing nothing', async () => {
       mocks.saveCurrentAsNew.mockResolvedValue(err({ type: 'STORAGE_ERROR' }));
       const onClose = vi.fn();

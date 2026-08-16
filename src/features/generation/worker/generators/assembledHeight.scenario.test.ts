@@ -1,6 +1,6 @@
 /**
  * Parity between the designer's analytic assembled-height readout and the
- * geometry the kernel actually builds (issue #3037).
+ * geometry the kernel actually builds.
  *
  * `assembledHeight()` derives the stack from constants so the sidebar and the
  * dimension lines can update before a mesh exists. That only stays honest if

@@ -1,5 +1,5 @@
 /**
- * Editor-side mask model for drawer shapes (issue #2528).
+ * Editor-side mask model for drawer shapes.
  *
  * The editor paints whole drawer cells (including the narrow fractional-edge
  * cell of an x.5 drawer), but the underlying mask reuses the half-resolution
@@ -140,7 +140,7 @@ export function drawerMaskToOutline(
  * False means the cell editor cannot express this shape (arcs, diagonals,
  * off-cell edges from the pen editor or an import), so applying a cell paint
  * would replace the drawn perimeter — the dialog warns before that happens
- * (#3149). Hash-compares canonical geometry, so vertex order and the
+ *. Hash-compares canonical geometry, so vertex order and the
  * authoring echo don't produce false negatives.
  */
 export function isOutlineCellRepresentable(

@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Regression for GH #1654: the label-tab shelf-top surface must carry the
+ * Regression for GH: the label-tab shelf-top surface must carry the
  * LABEL_TAB face tag so multi-color bins paint it the label color rather than
  * the body color. The shelf top used to be coplanar with the bin wall top; the
  * fuse merged the two faces and the merged face lost the LABEL_TAB origin. The

@@ -32,7 +32,7 @@ interface CreateFromBinParams {
   width: number;
   depth: number;
   height: number;
-  /** Drawer half-unit edge orientation, inferred from the layout (issue #2518). */
+  /** Drawer half-unit edge orientation, inferred from the layout. */
   fractionalEdgeX?: 'start' | 'end';
   fractionalEdgeY?: 'start' | 'end';
 }
@@ -147,7 +147,7 @@ export function useCreateFromBin(): void {
     // whichever design was open a moment ago, so the new design silently
     // inherited that one's overhang, cutouts, lid and everything else — an
     // overhang in particular makes the bin no longer fit the footprint it was
-    // created from (issue #3071). `defaultsForNewDesign` is what `newDesign`
+    // created from. `defaultsForNewDesign` is what `newDesign`
     // uses, so a saved "default for new bins" style still applies.
     //
     // Overhang is right to leave off: a layout bin's overhang is resolved at
@@ -155,7 +155,7 @@ export function useCreateFromBin(): void {
     // stored on the design.
     //
     // The half-unit edge arrives on the URL, already resolved from where the
-    // source bin's half cell lands in the drawer (#2518, #3070). Left as a
+    // source bin's half cell lands in the drawer. Left as a
     // non-manual choice so moving the bin later surfaces a mismatch warning.
     const binParams = {
       ...defaultsForNewDesign(),

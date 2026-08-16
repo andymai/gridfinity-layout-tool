@@ -245,7 +245,7 @@ export function useAutoSave(): void {
   // Leaving the designer (route change) unmounts this hook, which aborts both
   // the debounce and any save still waiting on generation — a window of up to
   // ~6s in which the user's last edits were silently dropped while the
-  // in-memory store kept showing them (#2895). Flush straight to storage
+  // in-memory store kept showing them. Flush straight to storage
   // instead. No thumbnail: the canvas is already gone, and passing `undefined`
   // keeps the stored one until useBackgroundThumbnailRegen refreshes it.
   useEffect(() => {

@@ -91,7 +91,7 @@ export type {
 
 export {
   MIN_PATH_POINTS,
-  // Tray-bin mating defaults (#3036): the worker synthesises a lid config from
+  // Tray-bin mating defaults: the worker synthesises a lid config from
   // `base.trayBottom`, so it needs both baselines on this side of the boundary.
   DEFAULT_TRAY_BOTTOM,
   DEFAULT_LID_CONFIG,
@@ -225,7 +225,7 @@ export type {
 
 /**
  * Whether an edge is exterior (outside baseplate), a join between split pieces,
- * or a seam to a detached margin rail carrying an opt-in connector (#2414).
+ * or a seam to a detached margin rail carrying an opt-in connector.
  * `marginSeam` is exterior-like for corner/rounding purposes but carries a
  * body↔rail tongue; it must NOT be treated as `join` (no split-piece keys).
  * Canonical edge-kind union; the baseplate feature's `EdgeKind` aliases this, so
@@ -248,7 +248,7 @@ export function isExteriorEdge(kind: BaseplateEdgeKind): boolean {
 /**
  * Baseplate split-connector styles — the single source of truth for the union,
  * as a runtime tuple so zod schemas can derive their enum from it instead of
- * restating the strings (three copies had already drifted; see #2982). The
+ * restating the strings (three copies had already drifted). The
  * `ResolvedBaseplateParams.connectorStyle` field and this type both point here.
  */
 export const BASEPLATE_CONNECTOR_STYLES = [
@@ -261,7 +261,7 @@ export const BASEPLATE_CONNECTOR_STYLES = [
 export type BaseplateConnectorStyle = (typeof BASEPLATE_CONNECTOR_STYLES)[number];
 
 /**
- * Whether the margin-seam connector (#2414) engages for a given connector
+ * Whether the margin-seam connector engages for a given connector
  * style. Scoped to the integral tongue/groove families — dovetail and puzzle —
  * because snapClip/dovetailKey would need a separate printed part the seam must
  * not emit. `undefined` is the stored default for dovetail (the ConnectorPicker
@@ -272,8 +272,8 @@ export function isSeamConnectorStyle(style: BaseplateConnectorStyle | undefined)
 }
 
 /**
- * Whether the margin-seam connector (#2414) can be built for a given style at
- * all: the integral tongue/groove families, plus `dovetailKey` (#2866), which
+ * Whether the margin-seam connector can be built for a given style at
+ * all: the integral tongue/groove families, plus `dovetailKey`, which
  * makes both sides of the body↔rail seam female and seats the same separate key
  * the split seams use. `snapClip` stays friction-fit — its top-insert clip has no
  * seated form at a body↔rail seam.
@@ -287,7 +287,7 @@ export function isMarginSeamStyle(style: BaseplateConnectorStyle | undefined): b
 
 /**
  * Whether the detached-margin seam is keyed rather than tongued: both the body
- * wall and the rail get a female groove and a separate key spans them (#2866).
+ * wall and the rail get a female groove and a separate key spans them.
  * Shared so the body geometry, the rail geometry, and the key
  * count/placement can't disagree about where those grooves go.
  */
@@ -390,7 +390,7 @@ export type ConnectorBoundaryFilter = Partial<
 export type MarginCorner = 'tl' | 'tr' | 'bl' | 'br';
 
 /**
- * A detached drawer-fit padding "rail" — its own printable piece (issue #2392).
+ * A detached drawer-fit padding "rail" — its own printable piece.
  *
  * Rails butt-join: one axis pair is `long` (spans the full outer extent and owns
  * the plate corners), the perpendicular pair is `short` (fits between the long
@@ -428,7 +428,7 @@ export interface MarginPiece {
    * cell-center set from `cellUnits`/`fractionalEdge` so they can't drift, and
    * `centerOffsetMm` re-anchors them onto the body wall on a corner-owning end
    * segment (which extends over the perpendicular padding and so is no longer
-   * centered on the wall it joins — #2427/#2428).
+   * centered on the wall it joins —/#2428).
    */
   readonly seamConnector?: {
     /** Grid units of the mating body wall along the rail's running axis. */
@@ -489,7 +489,7 @@ export interface ResolvedBaseplateParams {
   readonly overTileHalfGrid?: boolean;
   /**
    * When half-grid is on, leave the sub-21mm leftover after the packed
-   * half-sockets as solid plastic instead of a clipped grid pocket (#2397).
+   * half-sockets as solid plastic instead of a clipped grid pocket.
    * Only meaningful when {@link overTileHalfGrid} is true. Default false.
    */
   readonly overTileHalfGridSolidLeftover?: boolean;
@@ -497,7 +497,7 @@ export interface ResolvedBaseplateParams {
    * Fit the grid to a custom perimeter by whole cells only: a cell the outline
    * crosses is dropped and the solid plate fills the margin, instead of keeping
    * a socket sliced to the outline. Sliced sockets hold nothing and leave the
-   * boundary unfinished (#3054). Only meaningful with an `outline`.
+   * boundary unfinished. Only meaningful with an `outline`.
    * Default false (sliced sockets kept).
    */
   readonly wholeCellsOnly?: boolean;
@@ -508,7 +508,7 @@ export interface ResolvedBaseplateParams {
    * mm on the seam's boundary axis (the same coordinate `buildConnectors`
    * places dovetails at). Present only when a shaped plate keeps a seam but
    * gates its connectors to the sub-span whose one-cell bands sit fully inside
-   * the perimeter (#3163). Absent side (or absent map) = every interior cell
+   * the perimeter. Absent side (or absent map) = every interior cell
    * boundary carries a connector, byte-identical to unshaped plates.
    */
   readonly connectorFilter?: ConnectorBoundaryFilter;
@@ -523,7 +523,7 @@ export interface ResolvedBaseplateParams {
   readonly outline?: DrawerOutline;
   /**
    * Extra plate-local material the `outline` reaches beyond `[0, totalW] ×
-   * [0, totalD]`, per side in mm (#3169).
+   * [0, totalD]`, per side in mm.
    *
    * The grid frame renders the grid fixed and translates the perimeter, so a
    * grid shift toward an edge the shape already touches — or an imported
@@ -565,7 +565,7 @@ export interface ResolvedBaseplateParams {
   readonly connectorStyle?: BaseplateConnectorStyle;
   /**
    * Cut the seam slot on the plate's EXTERIOR edges too, not just on the join
-   * seams between split pieces (issue #2866). Every piece then reads as a
+   * seams between split pieces. Every piece then reads as a
    * standard 42mm-grid tile that can key into any other plate later, and
    * same-size pieces dedupe instead of splitting into edge/corner/interior
    * variants. See {@link hasAllEdgeSlots} / {@link edgeCarriesSlot} for when it
@@ -574,7 +574,7 @@ export interface ResolvedBaseplateParams {
   readonly connectorSlotsAllEdges?: boolean;
   /**
    * User fit offset (mm) added to the per-side groove clearance to compensate
-   * for printer/filament variation (issue #2024). Positive = looser, negative =
+   * for printer/filament variation. Positive = looser, negative =
    * tighter; clamped so effective clearance never goes negative. Default 0
    * leaves the nominal clearance unchanged. See `effectiveClearance` in
    * `@/shared/constants/connectors`.
@@ -599,7 +599,7 @@ export interface ResolvedBaseplateParams {
   /** Thickness (mm) of the {@link solidFloor}; defaults to 0.8mm when omitted. */
   readonly solidFloorThickness?: number;
   /**
-   * Mount-down screw holes (#3425). Omitted ⇒ none, keeping plates saved before
+   * Mount-down screw holes. Omitted ⇒ none, keeping plates saved before
    * this field byte-identical.
    */
   readonly screwHoles?: ScrewHoleParams;
@@ -626,12 +626,12 @@ export interface ResolvedBaseplateParams {
    * Detach the drawer-fit padding into separate printable rail pieces. When set,
    * the body slab is generated padding-free on detached sides and the margin
    * rails are emitted as `BaseplateTiling.margins`. Composes with `stackPrint`
-   * (#2641): rails export as flat pieces alongside the stacked towers.
+   *: rails export as flat pieces alongside the stacked towers.
    * Omit/false = padding stays integral.
    */
   readonly detachMargins?: boolean;
   /**
-   * Opt-in body↔long-rail connector for detached margins (#2414). When true and
+   * Opt-in body↔long-rail connector for detached margins. When true and
    * `detachMargins` is set, the detached exterior seam becomes a `marginSeam`
    * edge carrying a tongue (body side) that mates a groove in the rail, using
    * the body's `connectorStyle`. Scoped to long rails; short rails/corners stay
@@ -646,7 +646,7 @@ export interface ResolvedBaseplateParams {
    */
   readonly stackPrint?: StackPrintParams;
   /**
-   * User-drawn split plan (#3115) that `computeBaseplateTiling` uses in place of
+   * User-drawn split plan that `computeBaseplateTiling` uses in place of
    * its search. Already normalized by `buildFullParams` — present here only when
    * it still matches `width`/`depth`. It never reaches the generator: it selects
    * which pieces exist, and each piece's own params carry everything the mesh

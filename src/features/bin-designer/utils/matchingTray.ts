@@ -1,5 +1,5 @@
 /**
- * Derive a tray bin that caps a given bin (#3036).
+ * Derive a tray bin that caps a given bin.
  *
  * A tray is a separate design from the bin it covers, which is what lets it
  * carry the whole editor — and the cost is that nothing structural guarantees

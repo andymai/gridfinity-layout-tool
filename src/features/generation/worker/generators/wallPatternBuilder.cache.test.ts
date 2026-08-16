@@ -1,5 +1,5 @@
 /**
- * Cache-split regression test for wallPatternBuilder (#1422 follow-up).
+ * Cache-split regression test for wallPatternBuilder.
  *
  * Wall patterns generate hundreds of hex prisms per wall; before the split,
  * the cache key bundled cutout/handle/ramp clip parameters together with the

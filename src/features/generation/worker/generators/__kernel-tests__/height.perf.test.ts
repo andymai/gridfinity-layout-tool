@@ -2,8 +2,8 @@
  * Bin height scaling benchmark.
  *
  * Quantifies generation time as a function of `height` so `MAX_HEIGHT` can be
- * picked from measurement rather than guessed, the same way #1871 picked
- * `MAX_COMPARTMENT_GRID`. The cap has to land under the budget
+ * picked from measurement rather than guessed, the same way
+ * `MAX_COMPARTMENT_GRID` was. The cap has to land under the budget
  * `computeGenerationTimeoutMs` grants at that height, so each row reports the
  * measured time next to the budget it has to fit inside.
  *

@@ -123,7 +123,7 @@ describe('useBaseSection', () => {
     expect(useDesignerStore.getState().params.scoop.enabled).toBe(false);
   });
 
-  // #2915: only a spacer may stand 1u tall, so leaving the mode has to lift the
+  // Only a spacer may stand 1u tall, so leaving the mode has to lift the
   // height back to the normal floor instead of stranding the bin under it.
   it('leaving spacer mode lifts a 1u height back to the bin minimum', () => {
     useDesignerStore.setState({
@@ -539,7 +539,7 @@ describe('useBaseSection', () => {
   });
 });
 
-// Regression (PR #3234 review): `resolveConstraints` writes `tile: false`
+// Regression ( review): `resolveConstraints` writes `tile: false`
 // whenever a rule auto-disables base-only mode, and EVERY base toggle commits through
 // `commit` — so stripping only inside `toggleTile` left the key behind on the
 // flat/lid/spacer paths and fingerprinted an ordinary bin differently from an

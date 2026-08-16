@@ -18,7 +18,7 @@
  * order keeps material on the left, and the inward normal is the
  * left-perpendicular of the edge direction — `(-dy, dx)` — uniformly. An
  * offset that instead assumed "CCW means inward is left" would push a hole's
- * band the wrong way, into the void, which is the inner-loop trap #3482
+ * band the wrong way, into the void, which is the inner-loop trap
  * describes. Reading the direction off the winding avoids having to know
  * which loop is which at all.
  */

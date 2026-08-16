@@ -105,7 +105,7 @@ export function createScopedUpdaters(set: Set) {
           feet: false,
         };
         const next = { ...current, ...partial };
-        // Carry the optional wall taper (#2933) through, clamped outward-only.
+        // Carry the optional wall taper through, clamped outward-only.
         // Per-side inset is clamped against overhang at generation time.
         const taper = next.taper
           ? {

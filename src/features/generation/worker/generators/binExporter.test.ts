@@ -2,7 +2,7 @@
 /**
  * Regression tests for bin export quality guards.
  *
- * See GH #1339: `exportBin()` used to reuse whatever solid was cached as
+ * See GH: `exportBin` used to reuse whatever solid was cached as
  * `lastSolid` — including solids left behind by interactive preview passes.
  * A preview pass runs `mesh()` at coarse tolerance, which attaches
  * triangulation to the solid's faces. A subsequent `exportSTL()` call can
@@ -64,7 +64,7 @@ describe('exportBin: full-fidelity regeneration guard', () => {
 
     const result = await exportBin(DEFAULT_BIN_PARAMS, 'stl');
 
-    // Regression for GH #1339: flag must flip from false→true, proving
+    // Regression for GH: flag must flip from false→true, proving
     // setLastSolid was called again during an export-quality pipeline pass
     // (the only place that mutates the flag).
     expect(isLastSolidExportQuality()).toBe(true);
@@ -123,7 +123,7 @@ describe('exportBin: full-fidelity regeneration guard', () => {
   }, 60000);
 
   it('regenerates when the cached export-quality solid is a different design', async () => {
-    // GH #3074: a whole-layout export runs many designs through one worker
+    // GH: a whole-layout export runs many designs through one worker
     // back to back with no preview pass in between, so every design after the
     // first met an export-quality cached solid — and shipped its predecessor's
     // geometry under its own filename.

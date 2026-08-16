@@ -63,7 +63,7 @@ export function isEffectiveTile(base: {
 }
 
 /**
- * Mating geometry for a {@link BaseStyle} of `'lid'` (#3036): a fully editable
+ * Mating geometry for a {@link BaseStyle} of `'lid'`: a fully editable
  * bin whose underside is a lid instead of a Gridfinity base, so it caps the bin
  * below it.
  *
@@ -100,7 +100,7 @@ export const DEFAULT_TRAY_BOTTOM: TrayBottomConfig = {
 } as const;
 
 /**
- * Where one axis's feet fall relative to the baseplate's cell boundaries (#3467).
+ * Where one axis's feet fall relative to the baseplate's cell boundaries.
  *
  * A foot has to land inside a single pocket: adjacent pockets are separated by
  * a ridge, so a full 1u foot centred on a cell boundary bottoms out 0.25mm into
@@ -108,7 +108,7 @@ export const DEFAULT_TRAY_BOTTOM: TrayBottomConfig = {
  * therefore depends on WHERE THE BIN SITS, per axis:
  *
  *  - `grid` — full cells (plus the fractional edge cell). Seats when the bin's
- *    edge lands on a cell boundary. The default, and every pre-#3467 design.
+ * edge lands on a cell boundary. The default, and every older design.
  *  - `half` — a 0.5u foot at each rim with full cells between (`0.5 + (N-1) + 0.5`
  *    is exactly `N`). Seats when the bin sits half a unit off-grid on this axis,
  *    which is what half-bin mode places. Costs far fewer feet than halving every
@@ -144,7 +144,7 @@ export interface BaseConfig {
   /** When true, subdivides the base into 0.5u half sockets per {@link halfSocketMode}. */
   readonly halfSockets: boolean;
   /**
-   * Foot lattice per axis (#3467). Missing/undefined = `'grid'`, so designs
+   * Foot lattice per axis. Missing/undefined = `'grid'`, so designs
    * saved before the setting existed build byte-identical feet. Inert while
    * {@link halfSockets} is on — uniform 0.5u feet seat at either offset.
    */
@@ -158,7 +158,7 @@ export interface BaseConfig {
    */
   readonly lightweight: boolean;
   /**
-   * Spacer / riser mode (#2869): a floorless frame that lifts a bin so bins of
+   * Spacer / riser mode: a floorless frame that lifts a bin so bins of
    * different heights line up flush. Feet and stacking lip are unchanged, so its
    * height counts in the stack exactly like a bin of the same height — a 2u
    * spacer under a 2u bin reaches the top of a 4u one.

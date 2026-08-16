@@ -151,7 +151,7 @@ describe('BentoDock', () => {
       render(<BentoDock {...makeProps({ selectedId: id })} />);
 
       // Span mode prints `label.rowTexts`, so a per-compartment caption typed
-      // here would render nothing (#2897).
+      // here would render nothing.
       expect(screen.getByText('binDesigner.bento.labelSpanDisabled')).toBeInTheDocument();
       expect(screen.queryByLabelText('binDesigner.bento.labelField')).not.toBeInTheDocument();
     });

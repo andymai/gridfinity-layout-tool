@@ -197,7 +197,7 @@ describe('InspectorContent', () => {
     );
     expect(screen.getByTestId('compact-input-binDesigner.cutouts.rotation')).toBeInTheDocument();
     expect(screen.getByTestId('compact-input-binDesigner.cutouts.cutDepth')).toBeInTheDocument();
-    // X/Y/W/H are batch-editable too as of #2898 — see the multi-select suite
+    // X/Y/W/H are batch-editable too as of — see the multi-select suite
     // below for the per-cutout clamping they apply.
     expect(screen.getByTestId('compact-input-X')).toBeInTheDocument();
   });
@@ -270,7 +270,7 @@ describe('InspectorContent', () => {
 });
 
 // The multi-select surface gained align/distribute plus the position, size and
-// chamfer fields the reporter asked for in #2898.
+// chamfer fields the reporter asked for in.
 describe('InspectorContent multi-select editing', () => {
   const two = [
     createCutout({ id: 'a', x: 0, y: 0, width: 20, depth: 20 }),

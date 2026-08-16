@@ -1585,7 +1585,7 @@ describe('compartments', () => {
     });
 
     it('rectStraddlesTiltedDivider uses partial-span endpoints for non-linear grids', () => {
-      // Regression for the bug Copilot caught on PR #1840:
+      // Regression for the bug Copilot caught on:
       // `tiltedDividerEndpoints` was using full-bin endpoints (y: ±innerD/2)
       // for ALL dividers, including partial-span ones. For a 2×2 grid
       // with cells [0,1,2,3], the override on (0,1) applies ONLY to row
@@ -1593,7 +1593,7 @@ describe('compartments', () => {
       //
       // CRITICAL: this test must FAIL with the pre-fix code AND PASS
       // with the post-fix code. The first version of this test (PR
-      // #1842) chose insert positions that produced the same outcome
+      //) chose insert positions that produced the same outcome
       // under both code paths — passing trivially. The positions below
       // were derived from the actual line geometry:
       //   - Old full-span line: from (15, -40) to (-15, 40), slope
@@ -1693,7 +1693,7 @@ describe('compartments', () => {
   });
 });
 
-// Full-width label tabs (#2897) hang off a wall that must run the whole inner
+// Full-width label tabs hang off a wall that must run the whole inner
 // width; these two predicates decide which rows get a tab and how deep the
 // region in front of it is. Shared by the worker, ghost overlay and plate export.
 describe('full-width label tab geometry', () => {
@@ -1937,7 +1937,7 @@ describe('compartmentTabXSpan', () => {
   });
 
   // The bug: the span came from the nominal grid line, so a shifted divider
-  // left the shelf floating off its wall and overhanging its neighbour (#3225).
+  // left the shelf floating off its wall and overhanging its neighbour.
   it('follows a shifted divider on both sides of it', () => {
     const g = grid(
       2,

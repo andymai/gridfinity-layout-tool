@@ -70,7 +70,7 @@ export interface DrawerOutline {
  * How far a framed {@link DrawerOutline} reaches past the padded grid extent,
  * per side in mm (each ≥ 0). Zero on every side when the perimeter fits its
  * extent. See `@/shared/utils/outlineFrame` for how it is derived and
- * `ResolvedBaseplateParams.outlineOverhang` for what consumes it (#3169).
+ * `ResolvedBaseplateParams.outlineOverhang` for what consumes it.
  */
 export interface OutlineOverhang {
   readonly left: number;

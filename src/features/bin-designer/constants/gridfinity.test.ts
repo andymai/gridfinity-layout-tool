@@ -8,7 +8,7 @@ describe('minHeightUnits', () => {
     );
   });
 
-  // #2915: a spacer is floorless, so the cavity rationale behind MIN_HEIGHT
+  // A spacer is floorless, so the cavity rationale behind MIN_HEIGHT
   // doesn't bind — 1u is what shims a stack from an odd to an even height.
   it('lets a spacer go a unit lower', () => {
     expect(minHeightUnits({ spacer: true, style: 'standard' })).toBe(
@@ -91,7 +91,7 @@ describe('minHeightUnits', () => {
 
 // These are hand-computed literals rather than expressions, because reading
 // `GRIDFINITY_SPEC` at module-init would capture an imported binding in a
-// constants module under a chunk cycle (#1466). The arithmetic is asserted
+// constants module under a chunk cycle. The arithmetic is asserted
 // here instead, so raising MAX_HEIGHT without raising them fails CI rather
 // than shipping a bin whose walls outrun the features it can carry.
 describe('mm ceilings derived from MAX_HEIGHT', () => {

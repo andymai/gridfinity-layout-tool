@@ -22,7 +22,7 @@ const DEFAULT_HEIGHT = 50;
 
 /**
  * Compartment count at or above which wall cutouts read as a stack of slats.
- * Drives the expectation hint (issue #1882) rather than any geometry change.
+ * Drives the expectation hint rather than any geometry change.
  */
 const DENSITY_HINT_THRESHOLD = 5;
 
@@ -65,7 +65,7 @@ export function useWallCutoutsSection() {
     }
     // Enabling on a multi-compartment bin: also cut the interior dividers so
     // the opening carries through the bin instead of leaving full-height
-    // dividers behind notched outer walls (issue #1882). Skipped once the user
+    // dividers behind notched outer walls. Skipped once the user
     // has made an explicit interior choice, so turning it off stays off.
     const hasDividers = params.compartments.cols > 1 || params.compartments.rows > 1;
     if (hasDividers && !walls.interior.enabled && !interiorUserSet.current) {
@@ -188,7 +188,7 @@ export function useWallCutoutsSection() {
   }, [walls, activeSides, t]);
 
   // Dense bins render wall cutouts as a stack of slats no matter what — surface
-  // a quiet expectation hint rather than changing geometry (issue #1882).
+  // a quiet expectation hint rather than changing geometry.
   const showDensityHint = useMemo(() => {
     if (!walls.enabled || activeSides.length === 0) return false;
     return (

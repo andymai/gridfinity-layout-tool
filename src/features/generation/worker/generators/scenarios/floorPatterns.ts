@@ -1,5 +1,5 @@
 /**
- * Floor pattern scenarios (#2816).
+ * Floor pattern scenarios.
  *
  * These pin the promise the feature makes: the holes go all the way THROUGH —
  * floor slab and base socket both — while the socket's baseplate-mating taper

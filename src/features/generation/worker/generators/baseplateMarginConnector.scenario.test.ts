@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Margin-seam connector geometry (#2414): the body carries a single tongue on a
+ * Margin-seam connector geometry: the body carries a single tongue on a
  * `marginSeam` wall, the long rail carries the matching groove, and the two mate
  * in world space. Verified on the real BREP solids.
  */
@@ -141,7 +141,7 @@ describe('margin-seam connector geometry (#2414)', () => {
       0,
       true
     );
-    // A WIDTH-wide seam gets one tongue per cell (#2428).
+    // A WIDTH-wide seam gets one tongue per cell.
     expect(nubs.length, 'one tongue per cell').toBe(WIDTH);
     expect(holes.length, 'no grooves on the body').toBe(0);
     for (const n of nubs) expect(vol(n), 'tongue has volume').toBeGreaterThan(0);

@@ -1,5 +1,5 @@
 /**
- * Tree model behind the cutout shape list (issue #3053).
+ * Tree model behind the cutout shape list.
  *
  * Turns the flat `cutouts` array into the rows the list renders: groups become
  * expandable parents holding their members, ungrouped shapes sit at the top

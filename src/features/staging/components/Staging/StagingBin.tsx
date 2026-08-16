@@ -145,7 +145,7 @@ export const StagingBin = memo(function StagingBin({
   // Staging renders bottom-origin (higher bin.y draws higher, i.e. a smaller
   // gridRowStart), so the visually top row is gridRowStart === 1 — not bin.y === 0
   // (which is the bottom row). Derived from gridRowStart here, rather than passed
-  // in, so the two can't disagree about which row is on top (#2979).
+  // in, so the two can't disagree about which row is on top.
   const isTopRow = gridRowStart === 1;
 
   const dimensionsText = `${formatDim(bin.width)}×${formatDim(bin.depth)}`;

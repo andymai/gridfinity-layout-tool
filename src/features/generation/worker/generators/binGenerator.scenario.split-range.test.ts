@@ -36,7 +36,7 @@ const PARAMS: BinParams = {
  * Nudged a fraction of a cell off socket-cell boundaries — real print-bed
  * planes rarely land exactly on a wall, and the production path shifts them via
  * shiftCutPlanesOffCellBoundaries; nudging here keeps the test off OCCT's
- * coplanar-wall-drop edge case (#1676) rather than relying on the 0.1mm shift.
+ * coplanar-wall-drop edge case rather than relying on the 0.1mm shift.
  */
 function cutPlanes(spanMm: number, n: number, gridUnitMm = GRID): number[] {
   const planes: number[] = [];

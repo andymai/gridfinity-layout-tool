@@ -5,7 +5,7 @@
  * import `trackEvent` without dragging in `./events` or `./metrics`. Those
  * modules import `useLabsStore`, which closes a static-import cycle that
  * the production bundler can project to a chunk-level cycle and crash on
- * boot. See issue #1466.
+ * boot. See.
  *
  * Constraint when extending this file: do not introduce any import edge
  * that transitively reaches `./metrics` or any module that imports

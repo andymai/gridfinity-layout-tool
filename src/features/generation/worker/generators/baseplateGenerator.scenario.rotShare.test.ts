@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Load-bearing equivariance gate for the opposite-corner tower sharing (#3113).
+ * Load-bearing equivariance gate for the opposite-corner tower sharing.
  *
  * A SPLIT baseplate with a point-symmetric custom perimeter lets opposite corner
  * tiles (TL↔BR, TR↔BL) print from ONE canonical mesh placed rotated 180°. That

@@ -389,7 +389,7 @@ export function canBinUseDirectMesh(params: BinParams): boolean {
   if (params.inserts.length > 0) return false;
   if (params.cutouts.length > 0) return false;
   if (params.wallPattern.enabled) return false;
-  // Floor pattern (#2816) perforates the cavity floor — visible straight down
+  // Floor pattern perforates the cavity floor — visible straight down
   // the open top — and the feet the draft draws solid.
   if (params.floorPattern?.enabled === true) return false;
   if (params.lid.enabled) return false;
@@ -397,14 +397,14 @@ export function canBinUseDirectMesh(params: BinParams): boolean {
   // the procedural emitters draw plain walls, so a draft would show a bare
   // bin and then visibly grow a track when exact generation lands.
   if (params.slide.enabled) return false;
-  // Wall surface text (#2695) engraves/embosses the camera-visible outer
+  // Wall surface text engraves/embosses the camera-visible outer
   // walls; the procedural emitters don't render glyphs.
   const wallTexts = params.surfaceText?.walls;
   if (wallTexts && Object.values(wallTexts).some((t) => typeof t === 'string' && t.trim() !== '')) {
     return false;
   }
 
-  // Exterior-wall collar (issue #2500) raises the walls + lip above the
+  // Exterior-wall collar raises the walls + lip above the
   // nominal height; the direct-mesh builder models a fixed wall/lip Z, so a
   // collared bin falls back to the exact BREP path that handles it.
   if ((params.extraWallHeightMm ?? 0) > 0) return false;

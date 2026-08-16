@@ -102,7 +102,7 @@ export const halfSockets: ScenarioCase[] = [
     },
   }),
 
-  // Per-axis foot lattice (#3467). The `half` lattice seats a bin that sits half
+  // Per-axis foot lattice. The `half` lattice seats a bin that sits half
   // a unit off-grid on that axis, and builds a different set of feet from the
   // same params, so each combination needs its own solid through the kernel.
   defineScenario('half-sockets', '3×3 half foot lattice, both axes', {

@@ -270,7 +270,7 @@ export function WorkspaceHeader({
   const singleCutout = selection.size === 1 ? (selected[0] ?? null) : null;
 
   // Arrange operates on whole groups, so a partially-selected group still moves
-  // as one body (#3468).
+  // as one body.
   const arrangeTargets = useMemo(
     () => expandSelectionToGroups(cutouts, selected),
     [cutouts, selected]

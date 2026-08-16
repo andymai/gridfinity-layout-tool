@@ -143,7 +143,7 @@ function cutoutProfileDrawing(p: {
       // Sharp corners when no radius is requested. A 0.01mm "rounded" corner is
       // a near-degenerate arc; lofting it leaves a pinched corner seam that a
       // later scoop fillet corrupts into open sliver faces at the flared rim
-      // (GH #2085). A true four-line rectangle gives the loft clean corner edges
+      // (GH). A true four-line rectangle gives the loft clean corner edges
       // the fillet blends cleanly, exactly like the non-chamfered box path.
       if (p.cornerRadius <= 0) {
         const hw = p.w / 2;
@@ -515,7 +515,7 @@ function polylineSelfIntersects(poly: readonly { x: number; y: number }[]): bool
  * zTarget" test picked them up, so the scoop fillet rounded the corners all the
  * way to the top rim. That left a degenerate sliver face where the rounded
  * vertical surface met the sharp top edges — an open (single-face) edge that
- * survives as a non-manifold edge in the exported STL (GH #2085). Requiring the
+ * survives as a non-manifold edge in the exported STL (GH). Requiring the
  * whole edge to sit in the bottom plane keeps verticals sharp and scoops only
  * the floor ring, as intended.
  */
@@ -963,7 +963,7 @@ export interface CutoutTools {
 }
 
 /**
- * Everything the interior clip needs to follow a tapered outer wall (#3033).
+ * Everything the interior clip needs to follow a tapered outer wall.
  *
  * Passed only when a taper actually applies; absent, the clip stays the plain
  * rim-sized prism it has always been.
@@ -994,7 +994,7 @@ const CUTOUT_BOOLEAN_EPSILON = 0.1;
  * @param innerD - Interior depth in mm (outer - 2*wall)
  * @param wallHeight - Wall height in mm (Z extent from floor to wall top)
  * @param interiorTaper - Present when the outer wall tapers, so the interior
- *   clip follows the narrowing wall instead of a rim-sized prism (#3033)
+ *   clip follows the narrowing wall instead of a rim-sized prism
  */
 export function buildCutoutCuts(
   params: BinParams,
@@ -1290,7 +1290,7 @@ function labelCenterInFootprint(cutout: Cutout, lx: number, ly: number): boolean
  * offset drag ending over the cavity), the un-recessed fill top otherwise.
  * Labels used to engrave at the fill top unconditionally, so a center-anchored
  * label's shallow cut sat entirely inside the volume the cavity removes and
- * vanished from the model (#2726).
+ * vanished from the model.
  */
 function labelSurfaceZ(
   cutout: Cutout,

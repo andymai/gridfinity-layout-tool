@@ -1,5 +1,5 @@
 /**
- * Compartment divider wall pattern geometry (#2811).
+ * Compartment divider wall pattern geometry.
  *
  * Carries the outer walls' pattern through the interior divider walls so a
  * patterned bin doesn't read as hollow walls around solid dividers.
@@ -336,7 +336,7 @@ export interface PanelPatternSource {
  * lattice metrics so divider triangles match the outer walls.
  *
  * `source` selects the pattern; it defaults to the bin's wall pattern, and the
- * floor pattern (#2816) passes its own. Panel cache keys already carry the
+ * floor pattern passes its own. Panel cache keys already carry the
  * pattern type and scale, so two sources can't collide.
  */
 export function resolvePanelFactory(

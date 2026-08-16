@@ -573,7 +573,7 @@ describe('useDrawerSettings', () => {
     });
   });
 
-  // #2705: committing a measured drawer size records the measurement and offers
+  // Committing a measured drawer size records the measurement and offers
   // an opt-in fit, but never silently resizes the grid.
   describe('measured-mm fit', () => {
     // Default drawer is 10 × 8 at a 42mm pitch (420 × 336mm).

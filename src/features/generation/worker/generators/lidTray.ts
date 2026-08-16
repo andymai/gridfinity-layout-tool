@@ -1,5 +1,5 @@
 /**
- * Tray-top recess for the lid (issue #2694).
+ * Tray-top recess for the lid.
  *
  * Shells a shallow, rim-bounded tray into the lid's top face so small items
  * rest on the closed lid without sliding off. Only used when the lid is not

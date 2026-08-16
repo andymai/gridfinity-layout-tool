@@ -37,7 +37,7 @@ export const LID_FIT_CLEARANCE = 0.25;
 
 /**
  * Additional per-side footprint clearance (mm) given to a magnetic lid
- * (issue #2761). Magnets supply all the retention, so the mating shell only
+ *. Magnets supply all the retention, so the mating shell only
  * needs to locate the lid — any residual friction fights the magnets and makes
  * the lid feel like it has to be pressed and prised rather than snapped.
  *
@@ -79,7 +79,7 @@ export const LID_TOP_THICKNESS_BASE = 0.8;
 /**
  * Bounds for {@link LidConfig.topThicknessMm}. The floor at 0.8mm is four
  * layers at 0.2mm — enough to bridge, but thin enough to read as flimsy and
- * translucent on a large lid (issue #2761). The ceiling keeps a 6×4 lid from
+ * translucent on a large lid. The ceiling keeps a 6×4 lid from
  * turning into an hour of solid infill; the step lands on common layer
  * heights so the plate comes out at a whole number of layers.
  */
@@ -110,7 +110,7 @@ export const LID_MAGNET_LIP_CLEARANCE = 3.5;
  *
  * 1.6mm is eight layers at 0.2 — a tray holds things, so its floor is a load
  * path, not a bridge to close over. The original 0.8mm matched the plain-lid
- * plate and printed as a floor people described as extremely thin (#3072).
+ * plate and printed as a floor people described as extremely thin.
  */
 export const LID_TRAY_FLOOR = 1.6;
 
@@ -120,7 +120,7 @@ export const LID_MIN_RAIL_LENGTH = 4;
 /**
  * Bounds for {@link LidConfig.extraHeightMm} — the user-set extra internal
  * cavity depth added ABOVE the default one-grid-unit lid, so tall contents
- * poking out of a short bin are enclosed when the lid is on (issue #2482).
+ * poking out of a short bin are enclosed when the lid is on.
  * `0` = the standard lid (identical geometry to before this field existed).
  * Capped so the separately-printed lid stays within a typical printer's Z.
  *
@@ -139,7 +139,7 @@ export const LID_EXTRA_HEIGHT_STEP_MM = 1;
 export const LID_CLICK_RAIL_COVERAGE_MIN = 50;
 export const LID_CLICK_RAIL_COVERAGE_MAX = 100;
 /**
- * 5% rather than the requested 10% (#3401) for one reason: `migrateClickRailCoverage`
+ * 5% rather than the requested 10% for one reason: `migrateClickRailCoverage`
  * snaps every persisted value to the nearest listed option, so dropping 75 would
  * silently re-render every design saved at three-quarter coverage as 70 — a real
  * change to a printed part, with no notice. A 5% step is finer than asked for,
@@ -163,7 +163,7 @@ export const LID_CLICK_RAIL_COVERAGE_OPTIONS: readonly number[] = Array.from(
  * - `clickRails`: tapered snap rails on each enabled wall (the historical
  *   behavior; sub-controlled by {@link LidConfig.clickRails}/`clickRailCoverage`).
  * - `magnetic`: press-fit magnets in corner bosses on both the lid and the
- *   bin's stacking lip bond the lid down (issue #2694). Independent of the
+ *   bin's stacking lip bond the lid down. Independent of the
  *   lip's grip, so it survives wall cutouts a rail lid couldn't.
  */
 export type LidAttachment = 'friction' | 'clickRails' | 'magnetic';
@@ -174,7 +174,7 @@ export const LID_ATTACHMENTS: readonly LidAttachment[] = [
 ] as const;
 
 /**
- * Bounds for the dedicated lid-retention magnet (issue #2694). Separate from
+ * Bounds for the dedicated lid-retention magnet. Separate from
  * the bin's `base` magnet so a design can hold its lid with a different magnet
  * than it uses in its feet. Defaults to the common 6mm × 2mm disc.
  */
@@ -187,13 +187,13 @@ export const LID_MAGNET_DEPTH_DEFAULT_MM = 2;
 export const LID_MAGNET_DIMENSION_STEP_MM = 0.5;
 
 /**
- * Bounds for the optional edge-retention magnets (issue #2844). Four corner
+ * Bounds for the optional edge-retention magnets. Four corner
  * magnets pin only the corners of a lid, so on a large lid the middle of a long
  * unsupported span bows up. `edgeMagnets` adds this many extra magnets along
  * each sufficiently long edge — evenly spaced between the corners — pulling the
  * centre of the span down too.
  *
- * `0` = the classic four-corner lid, and the default, so every pre-#2844 design
+ * `0` = the classic four-corner lid, and the default, so every older design
  * regenerates byte-identically. The magnets only materialise on edges long
  * enough to keep each one clear of its neighbours and the corners (see
  * `retentionMagnetPositions`), so a small lid with a non-zero count simply gets
@@ -224,7 +224,7 @@ export interface LidMagnetConfig {
   readonly depth: number;
   /**
    * Extra magnets placed along each long edge, between the corners (issue
-   * #2844). Anti-sag reinforcement for large lids — `0` keeps the four-corner
+   *). Anti-sag reinforcement for large lids — `0` keeps the four-corner
    * lid. Bounded by {@link LID_MAGNET_EDGE_COUNT_MIN}/{@link LID_MAGNET_EDGE_COUNT_MAX};
    * only actually placed on edges long enough to space them clear of the
    * corners, so the value is a ceiling per edge rather than a guarantee.
@@ -233,7 +233,7 @@ export interface LidMagnetConfig {
 }
 
 /**
- * Shelled "tray" recess on the lid's top face (issue #2694). Only meaningful
+ * Shelled "tray" recess on the lid's top face. Only meaningful
  * when the lid is NOT stackable — a stack grid and a recess can't share the
  * top surface, so `resolveLidInputs` forces `enabled` off when `stackableTop`
  * is on.
@@ -258,7 +258,7 @@ export interface LidTrayConfig {
  * since that is the tray's own floor. Treating it as the whole plate made the
  * knob inert: `max(plate, recess + floor)` pinned a default 4mm tray at 4.8mm,
  * so every value below that changed nothing visible and the floor was always
- * the bare minimum (#3072).
+ * the bare minimum.
  */
 export function resolveLidPlateThickness(params: LidGeometrySource): number {
   const { lid, base } = params;
@@ -332,7 +332,7 @@ export interface LidClickRails {
 
 /**
  * Grip-relief mode — how material is removed at the lid/bin seam so the lid
- * can be got off again (discussion #3272: a well-fitting click-lock lid has
+ * can be got off again (discussion: a well-fitting click-lock lid has
  * no purchase for a fingernail and came off with a screwdriver).
  *
  * All three remove material from the lid only; `chamfer` and `reveal` treat
@@ -414,7 +414,7 @@ export const LID_GRIP_HEIGHT_STEP_MM = 0.2;
  * notching the top face, turning a grip pocket into a bite out of the outline.
  * And it is the load path: the lid exports rotated 180°, so this skin's layer
  * lines run across the pocket and a thin one peels there rather than breaks.
- * That is the failure the reporter of #3272 predicted at the original 0.4mm,
+ * That is the failure the reporter of predicted at the original 0.4mm,
  * which is two layers. Four layers hold. Raising it shortens an already skirt-bound relief
  * on existing designs, which is the intended trade.
  */
@@ -541,7 +541,7 @@ export interface LidGripConfig {
    *
    * The knob exists because the auto height is generous by design and the lid
    * prints upside down: on a tall lid a 4mm scallop leaves the material above
-   * it thin enough to peel along a layer line (#3272).
+   * it thin enough to peel along a layer line.
    */
   readonly heightMm: number | null;
   /**
@@ -561,7 +561,7 @@ export interface LidConfig {
   /** Master toggle. When false, no lid is generated regardless of other fields. */
   readonly enabled: boolean;
   /**
-   * Retention mechanism (issue #2694). Exactly one of friction/clickRails/
+   * Retention mechanism. Exactly one of friction/clickRails/
    * magnetic. `clickRails` reads the per-side {@link clickRails} object and
    * `clickRailCoverage`; `magnetic` reads {@link retentionMagnet}; `friction`
    * uses neither. The worker forces the click rails off unless this is
@@ -576,7 +576,7 @@ export interface LidConfig {
   readonly stackableTop: boolean;
   /**
    * Cut ONE pocket spanning the whole footprint instead of one per grid cell
-   * (#2930) — a perimeter stacking lip, no interior grid ridges. Requires
+   * — a perimeter stacking lip, no interior grid ridges. Requires
    * `stackableTop`. Same baseplate-spec taper outside, so an upper bin still
    * seats; it just locates on the outer lip rather than cell-by-cell.
    *
@@ -623,7 +623,7 @@ export interface LidConfig {
   /**
    * Extra internal cavity depth (mm) added ABOVE the default one-grid-unit
    * lid, so contents that stick up out of a short bin are enclosed when the
-   * lid is on (issue #2482 — e.g. a toothpick holder). `0` reproduces the
+   * lid is on ( — e.g. a toothpick holder). `0` reproduces the
    * standard lid exactly. Clamped to
    * [{@link LID_EXTRA_HEIGHT_MIN_MM}, {@link LID_EXTRA_HEIGHT_MAX_MM}].
    * The lip-mating shell and click rails stay at the bottom of the cavity;
@@ -632,7 +632,7 @@ export interface LidConfig {
   readonly extraHeightMm: number;
   /**
    * Floor plate thickness (mm) — the solid slab between the lid's top face
-   * and its mating cavity (issue #2761). A FLOOR, not a cap: magnet pockets
+   * and its mating cavity. A FLOOR, not a cap: magnet pockets
    * and a tray recess still raise the plate above this when they need more
    * material (see {@link resolveLidPlateThickness}). Nothing mates with this
    * surface, so
@@ -651,12 +651,12 @@ export interface LidConfig {
    */
   readonly tray: LidTrayConfig;
   /**
-   * Grip relief at the lid/bin seam (discussion #3272). Opt-in; see
+   * Grip relief at the lid/bin seam (discussion). Opt-in; see
    * {@link LidGripConfig}.
    */
   readonly grip: LidGripConfig;
   /**
-   * Carve the lid's seating envelope out of the bin's interior (#3477).
+   * Carve the lid's seating envelope out of the bin's interior.
    *
    * The top of the cavity's perimeter belongs to the lid: a seated rail hangs
    * 3.15mm below the wall top and reaches inboard of the inner wall face. With
@@ -667,8 +667,8 @@ export interface LidConfig {
    *
    * `true` for new designs, and `migrateParams` backfills `false` when the
    * field is absent so every design published before it regenerates
-   * byte-identically. Deliberately unlike the default-off treatment #3272 and
-   * #2761 got: those were features, and this is the resolution of a defect.
+   * byte-identically. Deliberately unlike the default-off treatment and
+   * Got: those were features, and this is the resolution of a defect.
    */
   readonly relieveInterior: boolean;
 }
@@ -688,14 +688,14 @@ export const DEFAULT_LID_CONFIG: LidConfig = {
   // so enabling a lid without touching the mode still clicks shut.
   attachment: 'clickRails',
   stackableTop: false,
-  // Off: pre-#2930 designs keep the full per-cell grid.
+  // Off: older designs keep the full per-cell grid.
   stackLipOnly: false,
   magnetHoles: false,
   separateStackPlate: false,
   clickRails: { front: true, back: true, left: true, right: true },
   clickRailCoverage: 50,
   extraHeightMm: 0,
-  // Baseline, so every pre-#2761 design regenerates byte-identically.
+  // Baseline, so every older design regenerates byte-identically.
   topThicknessMm: LID_TOP_THICKNESS_BASE,
   retentionMagnet: {
     diameter: LID_MAGNET_DIAMETER_DEFAULT_MM,
@@ -707,7 +707,7 @@ export const DEFAULT_LID_CONFIG: LidConfig = {
     depthMm: LID_TRAY_DEPTH_DEFAULT_MM,
     wallMm: LID_TRAY_WALL_DEFAULT_MM,
   },
-  // Off, so every pre-#3272 design regenerates byte-identically. The values
+  // Off, so every older design regenerates byte-identically. The values
   // below are what a user gets on first enable: a scallop on the two long
   // walls is the arrangement the reporter asked for, and the one that most
   // obviously solves "I had to use a screwdriver".
@@ -741,7 +741,7 @@ export const LID_EXTRA_HEIGHT = 0.2;
  * @param heightUnitMm Gridfinity height unit (default 7mm — base lid height)
  * @param fitClearance Per-side clearance for the chosen fit
  * @param extraCavityMm Added cavity depth — `resolveLidCavityExtraMm`, which
- *   folds in both the `extraHeightMm` knob and floor-plate growth (#2761)
+ *   folds in both the `extraHeightMm` knob and floor-plate growth
  */
 export function lidAnchorZ(
   heightUnitMm: number,
@@ -840,7 +840,7 @@ export const LID_CLICK_RAIL_BAND_BELOW_WALL_TOP =
  *    keeps the BOSS clear of the LIP, a different pair of parts further out). A
  *    pad topping out above the skirt bottom meets it across that whole outboard
  *    band however well the magnets line up, and the lid props open on its own
- *    corners (#3450).
+ *    corners.
  *
  * On the stock 7mm lid (2) binds by ~3.2mm, so the boss is a pillar reaching
  * down to its own skirt line rather than a stub under the floor plate. Landing
@@ -866,7 +866,7 @@ export function lidRetentionInterfaceZ(
 }
 
 /**
- * Depth of a tray bin's skirt (#3036) — how far the mating geometry hangs
+ * Depth of a tray bin's skirt — how far the mating geometry hangs
  * below its floor, and so how far the whole bin is lifted for Z=0 to stay the
  * absolute bottom.
  *
@@ -878,7 +878,7 @@ export function lidRetentionInterfaceZ(
  * The exception is a magnet deep enough that the pocket-fit bound wins, i.e.
  * `LID_TOP_THICKNESS_BASE + depth > -wallBottomZ` (~5mm on a stock 7mm joint).
  * Such a tray's bosses hang below the bed by the difference, unchanged from
- * before #3450 and tracked separately — it is a property of the depth knob, not
+ * and tracked separately — it is a property of the depth knob, not
  * of the seating plane, and the lid (which is not lifted) never shows it.
  *
  * Shared by the worker's `deriveDimensions` and the preview's `binDimensions`

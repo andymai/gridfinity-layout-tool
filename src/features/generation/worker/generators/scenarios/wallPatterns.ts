@@ -81,7 +81,7 @@ function patternCase(pattern: WallPatternType, scale = 0.5): ScenarioCase {
 }
 
 /**
- * Per-side selection (#2966): the pattern must land on the picked wall and
+ * Per-side selection: the pattern must land on the picked wall and
  * leave the others solid. Asserted on vertex density in the pattern band rather
  * than volume — volume alone can't tell one carved wall from four sparse ones.
  * With all four selected the front count drops to ~1/4 of this, so the ratio

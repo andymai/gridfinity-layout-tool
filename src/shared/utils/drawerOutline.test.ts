@@ -364,7 +364,7 @@ describe('minDrawerUnitsForOutline', () => {
         { x: 0, y: 295.5 },
       ],
     };
-    // The #3149 repro: 48 × 42 pitch needs an 8.5 × 7.5 drawer.
+    // The repro: 48 × 42 pitch needs an 8.5 × 7.5 drawer.
     expect(minDrawerUnitsForOutline(rect, 48, 42)).toEqual({ width: 8.5, depth: 7.5 });
   });
 

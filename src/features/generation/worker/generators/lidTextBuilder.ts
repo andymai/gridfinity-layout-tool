@@ -1,10 +1,10 @@
 /**
- * Lid-top text (issue #2695).
+ * Lid-top text.
  *
  * Engraves, embosses, or through-cuts the design's surface text into the lid's
  * top face — or the tray floor when a tray recess is active (the recess owns
  * the visible surface then), or the recessed floor inside the lip on a lip-only
- * stack top (#2930). Skipped entirely for FULL stack grids (no flat face left)
+ * stack top. Skipped entirely for FULL stack grids (no flat face left)
  * and polygon (cellMask) lids — both are gated upstream in `resolveLidInputs`,
  * so `inputs.text` is non-null only when text applies.
  *
@@ -48,7 +48,7 @@ interface TextHostFace {
 }
 
 function resolveTextHostFace(inputs: LidInputs): TextHostFace {
-  // Lip-only stack top (#2930): the text sits on the recessed floor inside the
+  // Lip-only stack top: the text sits on the recessed floor inside the
   // lip. That floor is GRID-anchored — the pocket is cut from the nominal
   // socket grid, not the overhang-shifted perimeter — so its fit box and centre
   // come from the grid frame. Deriving them from `lidOuterW`/`outerOffset`

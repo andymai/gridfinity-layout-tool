@@ -39,7 +39,7 @@ describe('DimensionsSection', () => {
     expect(useLayoutStore.getState().layout.baseplateParams?.syncWithLayout).toBe(true);
   });
 
-  // #3463. Typing a physical drawer size must land the tightest grid that fits,
+  //. Typing a physical drawer size must land the tightest grid that fits,
   // the same fit the layout's measured-drawer card offers. Snapping to whole
   // units while a half unit fits hands the user a plate 21mm short of the drawer
   // and buries the difference in padding.
@@ -130,7 +130,7 @@ describe('DimensionsSection', () => {
     });
   });
 
-  // #3054. The control only makes sense against a perimeter, so it stays hidden
+  //. The control only makes sense against a perimeter, so it stays hidden
   // on a plain rectangle where no cell can be crossed.
   describe('whole-cell fitting', () => {
     /** An L-shaped drawer, which is what puts crossed cells on the plate. */
@@ -182,7 +182,7 @@ describe('DimensionsSection', () => {
       expect(row()).not.toBeInTheDocument();
     });
 
-    // A large radius shapes the plate under stacking too (#3113): the rounded
+    // A large radius shapes the plate under stacking too: the rounded
     // perimeter survives and its tiles stack, so the whole-cell control must reach
     // them (the removed stacking override used to hide it).
     it('appears for a large radius even while stacking (#3113)', () => {

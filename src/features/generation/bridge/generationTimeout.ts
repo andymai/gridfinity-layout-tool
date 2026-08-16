@@ -3,7 +3,7 @@
  *
  * The worker's CSG pipeline scales super-linearly with wall-pattern count and
  * bin height. A flat 30s timeout killed legitimate generations on tall bins
- * that combine hex patterns with wall cutouts (#1422). Baseplates hit the same
+ * that combine hex patterns with wall cutouts. Baseplates hit the same
  * class of failure on large magnet grids — `cutInBatches` subtracts four holes
  * per cell and OCCT boolean time scales with cell count. This module computes
  * per-request timeouts from the params before the worker dispatches, each
@@ -63,7 +63,7 @@ export const KUMIKO_PATTERN_BONUS_MS = 60_000;
 export const KUMIKO_PERIMETER_BONUS_MS_PER_CELL = 7_000;
 
 /**
- * Extra time per patterned compartment divider (#2811).
+ * Extra time per patterned compartment divider.
  *
  * Each divider adds its own pattern panel — a stamp compound or, for kumiko, a
  * full lattice subtraction — and every panel becomes another tool in the final
@@ -78,7 +78,7 @@ export const DIVIDER_PATTERN_MS_PER_SEGMENT = 6_000;
 export const KUMIKO_DIVIDER_MS_PER_SEGMENT = 20_000;
 
 /**
- * Extra time when the floor pattern is enabled (#2816).
+ * Extra time when the floor pattern is enabled.
  *
  * The floor cut is one pattern panel per socket cell, and each panel becomes a
  * tool in BOTH the body's pattern cut and a second cut against the base socket
@@ -93,7 +93,7 @@ export const FLOOR_PATTERN_BONUS_MS = 15_000;
 export const FLOOR_PATTERN_MS_PER_CELL = 2_000;
 
 /**
- * Bonus for a wall taper on a multi-compartment bin (#3017).
+ * Bonus for a wall taper on a multi-compartment bin.
  *
  * The multi-cavity path cuts compartments out of a *lofted* outer rather than a
  * prism, and the perimeter ones are clipped to the tapered inner envelope
@@ -160,7 +160,7 @@ export const MAX_TIMEOUT_MS = 180_000;
  *
  * Raised from 4× to 6× (#bin-export-timeout): a small cohort of users still hit
  * `ExportTimeoutError` on heavy honeycomb / big-magnet-grid / scoop+tall designs.
- * The export budget only began modelling the hardware gap at all in #2181 (after
+ * The export budget only began modelling the hardware gap at all (after
  * those reports), and 4× under-served the genuinely slowest devices — old phones
  * and throttled mobile browsers routinely run 5–6× the reference machine. 6×
  * lifts mid-weight designs that were clamping just short of finishing, and lets

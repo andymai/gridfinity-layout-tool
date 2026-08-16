@@ -1,5 +1,5 @@
 /**
- * Wall-text placement solver (issue #2695).
+ * Wall-text placement solver.
  *
  * Computes where each wall's surface text lands on the bin's outer wall
  * faces: auto-fit into the largest clear region that avoids wall cutouts and

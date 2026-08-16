@@ -87,7 +87,7 @@ export function useSvgImport(): UseSvgImportReturn {
         startTransaction();
         try {
           // Largest first so big outlines land underneath the detail they
-          // enclose — `addCutout` stacks each new shape on top (#3073).
+          // enclose — `addCutout` stacks each new shape on top.
           for (const spec of byDescendingArea(specs)) {
             addCutout(specToCutout(spec, hydrationOptions));
           }

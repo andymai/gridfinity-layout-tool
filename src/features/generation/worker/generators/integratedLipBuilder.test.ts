@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Manifold-KERNEL (draft preview) manifoldness of LIPPED bins (issue #2074).
+ * Manifold-KERNEL (draft preview) manifoldness of LIPPED bins.
  *
  * The exact occt path builds the stacking lip as a separate solid and fuses it
  * onto the body; occt's General Fuse dissolves the coincident outer-wall faces.

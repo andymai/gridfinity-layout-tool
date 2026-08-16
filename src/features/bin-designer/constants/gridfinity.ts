@@ -27,7 +27,7 @@ export const DESIGNER_CONSTRAINTS = {
   MIN_HEIGHT: 2, // height units (1U = base only, 2U minimum for usable cavity)
   // A spacer is floorless, so the "usable cavity" rationale behind MIN_HEIGHT
   // doesn't apply — 1u is what lets a stack be shimmed from odd to even total
-  // height and back (#2915).
+  // height and back.
   MIN_SPACER_HEIGHT: 1, // height units
   /**
    * Shortest wall (mm) a socketed body may be built with. `wallHeight` is
@@ -55,7 +55,7 @@ export const DESIGNER_CONSTRAINTS = {
   MAX_HEIGHT: 50,
   HEIGHT_STEP: 1, // height units
   MIN_COMPARTMENT_GRID: 1, // min rows/cols
-  // Max rows/cols. Bumped from 8 to 12 per #1871 after measuring generation
+  // Max rows/cols. Bumped from 8 to 12 after measuring generation
   // time across grid sizes (see
   // `src/features/generation/worker/generators/__kernel-tests__/compartments.perf.test.ts`):
   // worst case (no label tabs) 12×12 finishes in ~14s, under the 30s base
@@ -74,7 +74,7 @@ export const DESIGNER_CONSTRAINTS = {
   MIN_COMPARTMENT_SIZE: 5, // mm (minimum viable compartment dimension)
   // Label tabs
   MIN_LABEL_TAB_DEPTH: 8, // mm
-  // Raised from 20 → 50 in #1898 so tuck-under ledges for wire bins have
+  // Raised from 20 → 50 so tuck-under ledges for wire bins have
   // enough material to actually retain springy contents. Runtime clamp in
   // the UI tightens the stepper to `min(50, innerD - 1)` so the tab can't
   // span past the opposite wall on small bins.
@@ -97,7 +97,7 @@ export const DESIGNER_CONSTRAINTS = {
   MIN_LABEL_TAB_HEIGHT: 9, // mm — derived from MIN_LABEL_TAB_DEPTH + 1
   MAX_LABEL_TAB_HEIGHT: 350, // mm — derived from MAX_HEIGHT (50) * heightUnitMm (7)
   LABEL_TAB_HEIGHT_STEP: 1, // mm
-  // Label lip (#2971): a raised rim on the tab's free edge to retain loose
+  // Label lip: a raised rim on the tab's free edge to retain loose
   // labels. Height reserves that much shelf headroom so the rim tops at the
   // interior ceiling. Bounds mirror LABEL_TAB_LIP_HEIGHT_{MIN,MAX}_MM.
   MIN_LABEL_TAB_LIP_HEIGHT: 0.4, // mm
@@ -151,7 +151,7 @@ export const DESIGNER_CONSTRAINTS = {
   MIN_OVERHANG: 0, // mm
   MAX_OVERHANG: 21, // mm (half a 42mm grid unit — beyond this, add a grid cell)
   OVERHANG_STEP: 0.5, // mm
-  // Outer-wall flare (drawer-fit "curved" bins, #2933). Per-side value is the
+  // Outer-wall flare (drawer-fit "curved" bins,). Per-side value is the
   // width added at the rim above the base overhang — chamfer inset or fillet
   // radius. Independent of that side's overhang.
   MIN_TAPER: 0, // mm

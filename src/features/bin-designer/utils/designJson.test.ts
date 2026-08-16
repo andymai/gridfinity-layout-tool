@@ -302,7 +302,7 @@ describe('validateImportedBinParams', () => {
 
     expect(result.valid).toBe(false);
     // The error lists every valid style, including 'solid', so it can't drift
-    // from the accepted set (GH #2444).
+    // from the accepted set (GH).
     expect(result.errors.some((e) => e.includes('style') && e.includes('solid'))).toBe(true);
   });
 

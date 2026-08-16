@@ -108,7 +108,7 @@ export function ExportDialog() {
   // A mesh imprint is carved out of the tessellated mesh, after the BREP solid
   // exists, so there is no solid that describes the design and `binExporter`
   // refuses STEP outright. Left selectable it reads as an ordinary option and
-  // fails at download with an error toast and a filed issue (#3449).
+  // fails at download with an error toast and a filed issue.
   const hasImprints = useMemo(() => hasMeshImprints(params), [params]);
 
   // Auto-switch away from a format this design cannot produce, on the open

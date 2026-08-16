@@ -181,7 +181,7 @@ describe('magnetPositionsForCell', () => {
       for (const [x, y] of positions) {
         expect(Math.abs(x)).toBeCloseTo(HOLE_OFFSET, 6);
         expect(Math.abs(y)).toBeCloseTo(HOLE_OFFSET, 6);
-        // 13mm from center on a 50mm cell = 12mm from the edge (the pre-#2525
+        // 13mm from center on a 50mm cell = 12mm from the edge (the pre-
         // inward drift the legacy mode deliberately reproduces).
         expect(half - Math.abs(x)).toBeCloseTo(12, 6);
       }

@@ -12,7 +12,7 @@
  * seam key (`connectorStyle: 'dovetailKey'`) is two PUZZLE lobes mirrored across
  * the waist into one dogbone part hammered into the seam — it was originally two
  * mirrored dovetails, but that profile's 0.3 mm/side undercut printed away to
- * nothing (#2637), so the key adopted the puzzle profile that already survives
+ * nothing, so the key adopted the puzzle profile that already survives
  * FDM on the integral 'puzzle' style. The style id keeps its historical name.
  */
 
@@ -34,7 +34,7 @@ export const TONGUE_TIP_HALF = 1.3;
 /**
  * "Puzzle" connector (`connectorStyle: 'puzzle'`) — a stronger integral connector
  * than the legacy slip-fit `dovetail`, added as its OWN style so it doesn't change
- * the geometry of plates already printed with `dovetail` (issue #2241).
+ * the geometry of plates already printed with `dovetail`.
  *
  * The legacy dovetail is a near-flat trapezoid (tapers only 1.0 → 1.3 mm =
  * 0.3 mm undercut/side, which FDM clearance + elephant-foot squish swallow, so it
@@ -88,7 +88,7 @@ export const DOVETAIL_KEY_CLEARANCE = 0.075;
 
 /**
  * User-tunable fit offset (mm) added to the per-side groove clearance so people
- * can compensate for printer/filament variation (issue #2024). Signed: a
+ * can compensate for printer/filament variation. Signed: a
  * positive value loosens the groove, a negative value tightens it. The same
  * offset rides on top of both style defaults (slip-fit and dovetail key).
  */
@@ -142,7 +142,7 @@ export function effectiveClearance(
  * outer footprint (so the clip still clears the bin feet in the cells flanking
  * the seam).
  *
- * INSERTION KINEMATICS (issue #2638 — why the wall must be thinner than the
+ * INSERTION KINEMATICS ( — why the wall must be thinner than the
  * slot): to pass the throat, each barb must deflect inward by
  * `BARB_DEPTH − clearance`. The leg pivots at the bridge root, so with the wall
  * nested between the legs the rotation is capped by `slot gap / contact depth`,
@@ -175,7 +175,7 @@ export const SNAP_CLIP = {
   /** Retaining-wall thickness from the seam (mm). Must leave real pinch room in
    *  the flex slot (`GAP_HALF − BEAR_WALL`, see insertion kinematics above) —
    *  the wall originally ran out to `GAP_HALF − clearance`, which blocked
-   *  insertion outright (#2638). 0.6 is the thickest wall that clears the
+   *  insertion outright. 0.6 is the thickest wall that clears the
    *  deflection budget on the thinnest viable slab (where the short leg gives
    *  the barb the least travel). The cost is engagement slop: plates can
    *  separate by up to the slot gap before the staple bears. 1.5 beads at the
@@ -183,7 +183,7 @@ export const SNAP_CLIP = {
   BEAR_WALL: 0.6,
   /** Outward barb protrusion past the leg face = engagement depth (mm). Reduced
    *  from 0.45: the needed pinch (`BARB_DEPTH − clearance`) must fit the
-   *  worst-case deflection budget (#2638), and 0.2mm of ledge engagement is
+   *  worst-case deflection budget, and 0.2mm of ledge engagement is
    *  still a firm, removable snap. */
   BARB_DEPTH: 0.3,
   /** Top bridge thickness; also the flush-recess depth in the slab top (mm). */
@@ -240,7 +240,7 @@ export interface SnapClipLevels {
   /** Seam-side wall depth into the piece in the bearing band
    *  (= min(BEAR_WALL, GAP_HALF − cl)); the leg's inner face bears against this
    *  for pull-apart resistance. Thinner than the slot on purpose — the slack
-   *  (GAP_HALF − this) is the pinch room insertion needs (#2638). */
+   *  (GAP_HALF − this) is the pinch room insertion needs. */
   readonly bearWallX: number;
   /** Bottom Z of the seam-side bearing band (negative), clamped above the catch
    *  ledge so it never eats the snap. Above this the pocket leaves the wall solid. */

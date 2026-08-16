@@ -436,7 +436,7 @@ describe('BaseplatePanel', () => {
           screen.getByRole('radio', { name: 'baseplate.connectorStyle.dovetail' })
         ).toBeChecked();
         expect(screen.queryByText('baseplate.magnetHoles')).toBeNull();
-        // A radius now shapes the stacked tiles (#3113), so the control stays.
+        // A radius now shapes the stacked tiles, so the control stays.
         expect(screen.getByText('baseplate.cornerRadius')).toBeInTheDocument();
       });
 
@@ -638,7 +638,7 @@ describe('BaseplatePanel', () => {
 
       // Enter 500mm wide × 300mm deep, half-grid mode off.
       // 500 / 42 = 11.90 → 11.5 fits (483mm), remainder = 17mm → 8.5 each. The
-      // half unit is taken even with the mode off, which turns it on (#3463).
+      // half unit is taken even with the mode off, which turns it on.
       // 300 / 42 = 7.14 → 7 (294mm); 7.5 overflows, remainder = 6mm → 3 each.
       fireEvent.change(widthInput, { target: { value: '500' } });
       fireEvent.change(depthInput, { target: { value: '300' } });
@@ -1070,7 +1070,7 @@ describe('shaped drawer (outline present)', () => {
   });
 
   const U = 42;
-  // Rectilinear L (a top-right notch): padding composes edge-by-edge (#2705).
+  // Rectilinear L (a top-right notch): padding composes edge-by-edge.
   const L_OUTLINE = {
     vertices: [
       { x: 0, y: 0 },
@@ -1094,7 +1094,7 @@ describe('shaped drawer (outline present)', () => {
       { x: 0, y: 6 * U },
     ],
   };
-  // Non-rectilinear (an arc): padding still composes, edge-by-edge (#2705).
+  // Non-rectilinear (an arc): padding still composes, edge-by-edge.
   const ARC_OUTLINE = {
     vertices: [
       { x: 0, y: 0, bulge: 0.4 },

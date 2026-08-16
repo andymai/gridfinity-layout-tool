@@ -324,7 +324,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
 
         // Oversized bins — cut into bed-sized pieces the same way the bin
         // designer's split export does, so the ZIP ships something printable
-        // instead of one part that doesn't fit the machine (#3074).
+        // instead of one part that doesn't fit the machine.
         for (const e of splits) {
           if (!e.split) continue;
           const pieces = await splitFiles(
@@ -364,7 +364,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
           setExportProgress({ current: done, total: binTotal, label: binLabel(done) });
         }
 
-        // Phase 1.7 — swappable label plates for socket-mode designs (#2666):
+        // Phase 1.7 — swappable label plates for socket-mode designs:
         // per-design bed-sized sheets in labels/. A plate failure must not
         // lose a good bin export, so it degrades to an archive without labels.
         const platePlan = planLabelPlateExport(

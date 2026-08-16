@@ -1,9 +1,9 @@
 /**
- * Click rails vs. wall cutouts and handle holes (#3483).
+ * Click rails vs. wall cutouts and handle holes.
  *
  * A cutout or a high handle hole removes the stacking lip along its own span.
- * Until #3483 that cost the wall its whole rail, so a 40%-wide window threw
- * away the 60% of retention it never touched — the same defect #3401 fixed for
+ * Until that cost the wall its whole rail, so a 40%-wide window threw
+ * away the 60% of retention it never touched — the same defect fixed for
  * label tabs, still live for these two.
  *
  * The probe here is the mirror image of every other file in this family. A rail
@@ -100,7 +100,7 @@ const CASES: readonly Case[] = [
     expectFrontRails: 1,
   },
   {
-    // The headline case. Pre-#3483 this was 0 rails on the front wall.
+    // The headline case: a cut wall still carries rails either side of it.
     name: 'a 40% front cutout leaves a rail either side of the window',
     overrides: { walls: cutouts(['front'], 40) },
     expectFrontRails: 2,
@@ -138,8 +138,8 @@ const CASES: readonly Case[] = [
     expectFrontRails: 0,
   },
   {
-    // Pre-#3483 this was a BLOCKER: no lid generated at all, though 60% of
-    // every wall still carried lip.
+    // Cuts on all four walls must not block the lid: 60% of every wall
+    // still carries lip, which is enough to hold rails.
     name: 'partial cutouts on all four walls still generate a lid with rails',
     overrides: { walls: cutouts(['front', 'back', 'left', 'right'], 40) },
     expectFrontRails: 2,
@@ -253,7 +253,7 @@ describe('lid click rails keep lip to grip', () => {
   it('the probe can see a rail with no lip under it', async () => {
     // Control for every assertion above, and the only way to know the probe is
     // wired to anything: a bin WITH a full-width front cutout, and a lid built
-    // as though it had none — which is exactly what the pre-#3483 code would
+    // as though it had none — which is exactly what the older code would
     // have produced had it segmented rather than disabling the wall.
     const { generateLid } = await import('./lidOrchestrator');
     const params = makeParams({

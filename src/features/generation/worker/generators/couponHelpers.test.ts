@@ -7,7 +7,7 @@ const stemAt = (nozzle: number | undefined): number =>
   minPrintableLabelFontMm(nozzle) * JBM_DIGIT_STEM_PER_FONT;
 
 describe('minPrintableLabelFontMm', () => {
-  // The bug (#3019): a raised stroke thinner than one nozzle bead is culled by
+  // The bug: a raised stroke thinner than one nozzle bead is culled by
   // the slicer, so the fit-sample labels sliced away to nothing. Every supported
   // nozzle must produce a label whose thinnest stem is at least one bead wide.
   it.each([0.4, 0.6, 0.8, 1.0])('keeps the digit stem ≥ one bead at nozzle %smm', (nozzle) => {

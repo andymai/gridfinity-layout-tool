@@ -38,7 +38,7 @@ export function createCompartmentActions(set: Set, get: Get) {
       if (isErr(result)) return 0;
 
       // Best-effort carry of labels by position; the rest are counted so the
-      // UI can warn instead of dropping them silently (#2337).
+      // UI can warn instead of dropping them silently.
       const carried = carryCompartmentTextsByPosition(params.compartments, cols, rows);
       const hasCarried = carried.texts.some((text) => text.length > 0);
 

@@ -63,11 +63,11 @@ function MarginRailMesh({
 }
 
 /**
- * Renders detached margin rails (issue #2392). Each rail mesh is centered at the
+ * Renders detached margin rails. Each rail mesh is centered at the
  * origin and placed by its `worldOffsetMm`; rails render in every mode (split,
  * unsplit, or stacked) whenever `detachMargins` produced them. In stack-print
  * mode pass `stackField` so rails ring the tower field instead of the absent
- * assembled body (#2641).
+ * assembled body.
  */
 export function MarginMeshes({
   color,

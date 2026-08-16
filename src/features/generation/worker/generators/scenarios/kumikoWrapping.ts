@@ -72,7 +72,7 @@ function assertCornersWrapped(widthU: number, depthU: number) {
 }
 
 /**
- * Per-side selection (#2966): with only the front wall picked, no corner has
+ * Per-side selection: with only the front wall picked, no corner has
  * BOTH its walls selected, so every corner slab is skipped and the corners must
  * come out as solid as the un-patterned twin — while the front wall still opens.
  */

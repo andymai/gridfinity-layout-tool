@@ -470,7 +470,7 @@ export function ceilHalfUnits(mm: number, pitch: number): number {
 
 /**
  * Smallest half-unit drawer dims that contain the outline — the floor a
- * drawer resize may shrink to while a custom shape is active (#3149: a resize
+ * drawer resize may shrink to while a custom shape is active (a resize
  * must never crop or extend the user's shape, so the dims clamp instead).
  * Measured on the flattened path (an arc bows past its own endpoints) and on
  * {@link ceilHalfUnits}, shared with the pen editor's auto-grow.
@@ -492,7 +492,7 @@ export function minDrawerUnitsForOutline(
  * Drawer dims (grid units) a resize may clamp down to: the outline's bounding
  * half-unit grid while a custom shape is active, the plain grid minimum
  * without one. Shared by the CQRS command, the store mirror and the size
- * steppers so all three refuse the same shrinks (#3149).
+ * steppers so all three refuse the same shrinks.
  */
 export function drawerSizeFloors(
   outline: DrawerOutline | undefined,
@@ -516,7 +516,7 @@ export const GRID_PITCH_MM_MAX = 200;
 /**
  * Grid pitch (mm) a pitch change may clamp down to, per axis. Lowering the
  * pitch shrinks the mm extent without touching the stored outline, and the
- * read-side normalizer would then clip the shape on the next load (#3149:
+ * read-side normalizer would then clip the shape on the next load (
  * nothing may mutate the shape implicitly, so the pitch clamps instead).
  * Floors round up to 0.01mm so `units × pitch ≥ bounds` survives float noise.
  * On a square grid the X pitch drives both axes, so its floor honours the Y

@@ -1,5 +1,5 @@
 /**
- * Outer-wall surface text (issue #2695).
+ * Outer-wall surface text.
  *
  * Builds engraved/embossed/through-cut glyph solids on the bin's outer wall
  * faces at the positions computed by `wallTextLayout.ts` (which also drives

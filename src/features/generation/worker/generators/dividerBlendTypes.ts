@@ -55,7 +55,7 @@ export const MIN_DIM = 0.5;
  * divider sitting RIGHT at the opening edge — i.e. with strictly less than one
  * wall thickness of clear wall ("sliver") between the divider face and the cutout.
  * A divider with more clear wall than that is its own structure and must stay
- * full height (GH #2276).
+ * full height (GH).
  *
  * The previous test used `cutout.userCutHeight` — a VERTICAL dimension — as this
  * horizontal gap, so a tall cutout ramped dividers a whole compartment away,

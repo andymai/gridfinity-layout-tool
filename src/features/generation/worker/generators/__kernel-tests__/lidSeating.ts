@@ -37,7 +37,7 @@ import type { MeshData } from '@/features/generation/bridge/types';
  * Stated from the params rather than read off `deriveDimensions`, so it stays
  * an independent opinion about where the rim is: the seat plane is exactly what
  * these probes exist to check. Covers a socketed, flat or collared bin — a tray
- * bottom's skirt (#3036) raises the rim further and is not modelled here.
+ * bottom's skirt raises the rim further and is not modelled here.
  */
 export function lidZOffset(p: BinParams): number {
   return binLipTopZ(p) - lidAnchorZ(p.heightUnitMm, LID_FIT_CLEARANCE, resolveLidCavityExtraMm(p));
@@ -182,7 +182,7 @@ export function worstRailInterference(bin: MeshData, lid: MeshData, dz: number):
  *
  * Deliberately unaimed, unlike {@link worstRailInterference} and
  * {@link magnetSeatGap}: both of those probe a place someone already suspected,
- * and #3450 was 2.8mm of solid-on-solid overlap in a place nobody had — the
+ * and was 2.8mm of solid-on-solid overlap in a place nobody had — the
  * magnet pad's outboard half, where it welds into the wall under the skirt.
  * Aimed probes measured the magnet faces meeting perfectly while the lid could
  * not physically close.
@@ -212,7 +212,7 @@ export function worstSeatInterference(
 }
 
 /**
- * Millimetres of seated click rail with no bin lip above it to hook (#3483).
+ * Millimetres of seated click rail with no bin lip above it to hook.
  *
  * The counterpart to {@link worstSeatInterference}, and the reason that probe
  * is not enough on its own: a wall cutout or a handle hole is an ABSENCE, so a

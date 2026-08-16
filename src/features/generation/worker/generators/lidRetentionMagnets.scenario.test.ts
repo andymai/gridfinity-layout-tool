@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Scenario tests for magnetic-retention lids and tray tops (#2694).
+ * Scenario tests for magnetic-retention lids and tray tops.
  *
  * Runs the real brepjs build and asserts:
  *  - a magnetic lid + its mating bin both produce structurally-valid meshes;
@@ -136,7 +136,7 @@ describe('magnetic-retention lid geometry', () => {
    * when it is closer to horizontal than the 45 degree FDM limit: nz below
    * -cos(45) ~ -0.707. The threshold sits at -0.72 so the taper's exact 45
    * degree plane (nz = -0.7071) stays on the printable side while ANY steeper
-   * overhang — the pre-#2712 flat underside (nz ~ -1) or a partial transition
+   * overhang — the older flat underside (nz ~ -1) or a partial transition
    * anywhere in between — counts as a violation, with no unclassified gap.
    */
   const cornerUndersideAreas = (mesh: MeshData): { unsupported: number; taper: number } => {
@@ -194,7 +194,7 @@ describe('magnetic-retention lid geometry', () => {
     const generateBin = getGenerateBin();
     // `interiorHeight` is measured from the NOMINAL wall top, so a floor plane
     // taken from the collared `wallTopZ` sits a whole collar too high and
-    // truncates the pad's taper into a flat step — the overhang #2712 removed.
+    // truncates the pad's taper into a flat step — the overhang removed.
     // It only shows where the taper runs near the floor (`wallHeight < 13.03`)
     // with a collar tall enough to lift the wrong floor above it
     // (`wallHeight + collar > 13.03`); a 4u bin ends clear of both and reads
@@ -302,7 +302,7 @@ describe('magnetic-retention lid geometry', () => {
 
   // The bounding-box check above cannot see this: the wall corner is an arc of
   // BOX_CORNER_RADIUS, so a pad corner can punch through it diagonally while
-  // staying well inside the axis-aligned box (#2929).
+  // staying well inside the axis-aligned box.
   it.each([0.4, 0.8, 1.2, 1.6, 2.4])(
     'corner pads stay inside the rounded wall at wallThickness %smm (#2929)',
     async (wallThickness) => {
@@ -444,7 +444,7 @@ describe('magnet seat gap survives every knob that moves the lid in Z', () => {
     // Reproduce exportHandler's lift, then place the lid's magnet face through
     // it independently of retentionSeatPlanes. The interface plane itself comes
     // from the shared helper — a second copy of THAT is the defect this whole
-    // file exists to catch (#3431, #3450); the lift is what's under test.
+    // file exists to catch; the lift is what's under test.
     const exportLift =
       dim.lipTopZ -
       lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE, resolveLidCavityExtraMm(params));

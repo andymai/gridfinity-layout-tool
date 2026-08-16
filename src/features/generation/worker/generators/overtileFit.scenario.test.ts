@@ -1,7 +1,7 @@
 // @vitest-environment node
 /**
  * Verifies the compatibility rule between a bin's overhang feet and a
- * baseplate's over-tile margin pockets (issue #1641 follow-up).
+ * baseplate's over-tile margin pockets ( follow-up).
  *
  * The rule: a bin overhang foot on a side with overhang `O` mates a baseplate
  * over-tile pocket on a side with padding `P` **iff `O == P`** (and the bin is
@@ -73,7 +73,7 @@ describe('overhang feet ↔ over-tile pocket compatibility', () => {
 describe('half-grid margin fill produces functional half-sockets', () => {
   it('places a true 21mm (0.5u) cell at half-pitch beyond the grid edge', () => {
     // 30mm left margin in half-grid mode → a 21mm half-cell hugging the grid
-    // edge plus a 9mm leftover further out (issue #2378 step 2 + 3).
+    // edge plus a 9mm leftover further out ( step 2 + 3).
     const cells = frameCells(2, 2, { left: 30, right: 0, front: 0, back: 0 }, SIZE, 8, true);
     const halves = cells.filter((c) => Math.abs(c.widthUnits - 0.5) < 1e-9);
     expect(halves).toHaveLength(2); // one per nominal row

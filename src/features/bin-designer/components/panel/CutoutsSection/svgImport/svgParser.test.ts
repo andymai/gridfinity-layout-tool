@@ -357,7 +357,7 @@ describe('parseSvgString', () => {
     });
   });
 
-  // Issue #1643 — "wrong scale" failure mode.
+  // Issue — "wrong scale" failure mode.
   // SVGs from drawing tools (Inkscape, Illustrator) commonly carry physical
   // dimensions (mm/in) with a much larger viewBox; importing them at 1:1
   // produced cutouts orders of magnitude too large.
@@ -468,7 +468,7 @@ describe('parseSvgString', () => {
     });
   });
 
-  // Issue #1643 — fixtures resembling real-world editor output.
+  // Issue — fixtures resembling real-world editor output.
   describe('real-world fixtures (issue #1643)', () => {
     it('parses an Inkscape-style heart icon at the declared physical size', () => {
       // Heart silhouette in a 25mm × 25mm icon authored in Inkscape
@@ -531,7 +531,7 @@ describe('parseSvgString', () => {
     });
   });
 
-  // Issue #1643 — anchor-only bounds clipped curves whose handles extend
+  // Issue — anchor-only bounds clipped curves whose handles extend
   // beyond the anchor extents. `pathPointsToSpec` now uses flattened bezier
   // bounds so the spec bbox tracks the visible curve.
   describe('bezier bounds (issue #1643)', () => {

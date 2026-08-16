@@ -492,7 +492,7 @@ describe('useExport', () => {
     removeChildSpy.mockRestore();
   });
 
-  // ─── Split export under STEP (#3501) ─────────────────────────────────────
+  // ─── Split export under STEP ─────────────────────────────────────
 
   describe('downloadSplit under STEP', () => {
     /** Stub the download DOM plumbing; returns the anchor plus a restore fn. */

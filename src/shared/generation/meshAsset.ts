@@ -94,7 +94,7 @@ export const MAX_MESH_ASSET_DATA_LENGTH = 900_000;
  * sees and `binExporter` refuses STEP for it. That refusal is a thrown error at
  * download time, so the export UI has to disable STEP on exactly the same
  * condition — hence one predicate here rather than a worker-side copy the UI
- * approximates (#3449).
+ * approximates.
  */
 export function visibleMeshImprintCutouts(
   params: Pick<BinParams, 'cutouts' | 'meshAssets'>

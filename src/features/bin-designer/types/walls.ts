@@ -121,9 +121,9 @@ export interface WallPatternConfig {
    */
   readonly dividers?: boolean;
   /**
-   * Which outer walls carry the pattern (#2966). Optional for back-compat with
+   * Which outer walls carry the pattern. Optional for back-compat with
    * saved designs; migration backfills it and the geometry layer treats a
-   * missing side as ON, so a pre-#2966 design keeps patterning all four walls.
+   * missing side as ON, so a older design keeps patterning all four walls.
    */
   readonly sides?: WallPatternSides;
 }

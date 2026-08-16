@@ -1,5 +1,5 @@
 /**
- * Dual-kernel parity for the lid's grip relief (#3272).
+ * Dual-kernel parity for the lid's grip relief.
  *
  * The relief is built from primitives whose behaviour differs between kernels
  * — a rotated extrude and a batched `cutAll` — so "it works" on OCCT says

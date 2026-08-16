@@ -222,7 +222,7 @@ describe('unlippedSides', () => {
     });
 
   it('reports nothing while any lip survives, however many walls are cut', () => {
-    // The case #3483 is about: four 40% windows leave 60% of every wall, and
+    // The case is about: four 40% windows leave 60% of every wall, and
     // calling that "no lip anywhere" cost the design its lid entirely.
     expect(unlippedSides(lipGaps(bin({ walls: allFour(40) })), 'cutout')).toEqual([]);
   });

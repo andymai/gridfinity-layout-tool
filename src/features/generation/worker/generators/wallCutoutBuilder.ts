@@ -23,7 +23,7 @@ export { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
  * Auto-compute corner radius: 15% of the cutout's span, clamped to [0.5, 5] mm.
  * Deliberately independent of the cut height — at 100% height the cut tracks
  * the wall, so a height term makes the bin's HEIGHT change the corner look of
- * an otherwise untouched cutout (#3162). Degenerately short or narrow cutouts
+ * an otherwise untouched cutout. Degenerately short or narrow cutouts
  * are still bounded by the callers' width/2 and height/2 guards.
  */
 export function autoCornerRadius(cutWidth: number): number {
@@ -103,7 +103,7 @@ export function buildCutoutProfile(
       // square: the profile clears the wall by `overshoot`, but `safeR` can
       // reach 5mm while the overshoot is only ~2mm above the true rim, so a
       // four-corner rounding leaves arc on the visible rim instead of having
-      // it trimmed away by the boolean (#3173).
+      // it trimmed away by the boolean.
       const cornerR = autoCornerRadius(cutWidth);
       const safeR = Math.min(cornerR, cutWidth / 2 - 0.01, userCutHeight / 2 - 0.01);
       // A bottom fillet only reads as a blend when there is wall beyond the cut

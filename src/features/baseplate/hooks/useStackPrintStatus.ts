@@ -29,7 +29,7 @@ export interface StackPrintStatusInfo {
   readonly maxPrintHeightMm: number;
   /** Physical towers the current config produces — one entry per output file. */
   readonly plan: readonly PhysicalStack[];
-  /** Detached margin rails that ship as flat files alongside the towers (#2641). */
+  /** Detached margin rails that ship as flat files alongside the towers. */
   readonly railCount: number;
 }
 
@@ -49,7 +49,7 @@ export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
     useShallow((s) => ({
       drawerWidth: s.layout.drawer.width,
       drawerDepth: s.layout.drawer.depth,
-      // A custom perimeter now stacks (#3113); pass it so the shaped tiles
+      // A custom perimeter now stacks; pass it so the shaped tiles
       // fingerprint the same way generation grouped them, keeping the status
       // (ok vs nothing-to-stack) honest.
       drawerOutline: s.layout.drawer.outline,

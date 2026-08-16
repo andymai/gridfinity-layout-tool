@@ -1,5 +1,5 @@
 /**
- * Where a lid's click rails have to step around compartment dividers (#3477).
+ * Where a lid's click rails have to step around compartment dividers.
  *
  * A divider wall is built from the cavity floor to the interior ceiling, whose
  * top sits `LIP_SMALL_TAPER` below the bin's wall top. A seated rail hangs
@@ -78,7 +78,7 @@ export function dividerRailBlocks(params: BinParams): readonly DividerRailBlock[
   const { cols, rows, cells, thickness } = params.compartments;
   // Nothing to notch: the interior relief has already taken this ring out of
   // the cavity, so the dividers stop short of the rails by construction and
-  // the rails run unbroken (#3477).
+  // the rails run unbroken.
   if (interiorReliefActive(params)) return [];
   if (isPartialMask(params.cellMask)) return [];
   if (params.style !== 'standard') return [];

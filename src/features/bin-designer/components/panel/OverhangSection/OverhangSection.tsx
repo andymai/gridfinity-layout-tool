@@ -4,7 +4,7 @@
  * Overhang grows the bin walls + stacking lip outward to fill the centering gap
  * a non-integral grid leaves in a drawer. Feet stay at the nominal footprint
  * (flat bottom under the overhang) unless the feet toggle is enabled. The taper
- * (#2933) adds a flare *on top of* that overhang: the base keeps the overhang
+ * adds a flare *on top of* that overhang: the base keeps the overhang
  * width and the wall angles outward to the rim, so a bin can reach into the
  * curved upper part of a drawer wall its base can't sit in. Flare is
  * independent of overhang — a side with no overhang can still flare, since the

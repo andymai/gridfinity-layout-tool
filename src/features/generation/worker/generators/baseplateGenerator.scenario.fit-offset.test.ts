@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Scenario tests for issue #2024 — user-tunable connector fit offset.
+ * Scenario tests for — user-tunable connector fit offset.
  *
  * The fit offset (mm) shifts the per-side groove clearance so people can
  * compensate for printer/filament variation. It only enlarges/shrinks the

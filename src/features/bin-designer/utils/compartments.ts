@@ -67,7 +67,7 @@ export function getCompartmentIds(config: CompartmentConfig): number[] {
  *
  * IDs are assigned in data-row order, but the 2D grid renders `flex-col-reverse`
  * so data row 0 is the visual BOTTOM. Numeric `getCompartmentIds` therefore
- * counts up from the bottom-left, which reads backwards (#2338). Here we anchor
+ * counts up from the bottom-left, which reads backwards. Here we anchor
  * each compartment at its visual top-left cell (highest data row = `maxRow`,
  * then leftmost `minCol`) and sort by that.
  *
@@ -351,7 +351,7 @@ export function buildOverrideLookup(
  * override to the entire wall.
  *
  * Lives here rather than beside the wall builder because the lid's click rails
- * have to notch around the same runs (#3477) and the main thread cannot import
+ * have to notch around the same runs and the main thread cannot import
  * a module that pulls in brepjs.
  */
 export function findPairAwareRuns(
@@ -457,7 +457,7 @@ function tiltedDividerEndpoints(
   // from that run, NOT from the bin walls — so partial-span dividers
   // (e.g. a 2×2 where override applies to only the top half of a column
   // boundary) need the segment's true row-range, not the full bin depth.
-  // Greptile flagged the bug on PR #1840: full-span endpoints can make
+  // Greptile flagged the bug on: full-span endpoints can make
   // `rectStraddlesTiltedDivider` miss inserts that actually cross a
   // partial-span tilted segment.
   for (let col = 0; col < cols - 1; col++) {
@@ -621,7 +621,7 @@ function dividerXShift(
  * the shelf, the ghost overlay that previews it and the socket planner that
  * sizes its plate. Deriving it from the nominal grid line instead left the
  * shelf floating off its wall and overhanging into the neighbour whenever a
- * divider was shifted (#3225).
+ * divider was shifted.
  *
  * Returns null for an id that isn't in the grid.
  */
@@ -654,7 +654,7 @@ export function compartmentTabXSpan(
  * True when a divider wall runs the FULL inner width at `row`'s anchor edge
  * (or that edge is the bin's own outer wall).
  *
- * Full-width label tabs (#2897) hang off that wall, so a boundary where any
+ * Full-width label tabs hang off that wall, so a boundary where any
  * column's compartment continues straight through has nothing to carry the
  * shelf across its whole length. Shared by the worker, the ghost overlay and
  * the label-plate export so the three can't disagree about which rows get a
@@ -722,7 +722,7 @@ export interface LabelTabFit {
  *
  * The single source of truth for that question, shared by the worker that cuts
  * the socket, the ghost overlay that previews it and the plate planner that
- * ships a plate for it. Issue #2910 was the plate planner answering it
+ * ships a plate for it. Issue was the plate planner answering it
  * independently — and never asking about `edges` at all, so a design with a tab
  * on both edges shipped half the plates it needed.
  */
@@ -753,7 +753,7 @@ export function compartmentTabEligible(
 }
 
 /**
- * Whether a full-width label tab (#2897) can actually exist at `row`'s anchor
+ * Whether a full-width label tab can actually exist at `row`'s anchor
  * wall.
  *
  * The single source of truth for that question. The worker builds the shelf,
@@ -830,7 +830,7 @@ export function compartmentHasTiltedBackWall(
 
 /**
  * True when the compartment's FRONT wall is a tilted divider. Mirror of
- * `compartmentHasTiltedBackWall` for front-anchored label tabs (#1898).
+ * `compartmentHasTiltedBackWall` for front-anchored label tabs.
  *
  * "Front" = the -Y direction in interior coords (the lower-row neighbor in
  * the cell grid). A front wall is tilted when the compartment has a front
@@ -1214,11 +1214,11 @@ export function remapCompartmentColorScopes(
  * unambiguous. Row 0 is the visual BOTTOM (the grid renders `flex-col-reverse`),
  * so `minRow` is the compartment's visual bottom; for the common single-cell
  * case `minRow === maxRow` so it doesn't matter. (Display numbering instead
- * anchors at the visual TOP — see `getCompartmentReadingOrder`, #2338.)
+ * anchors at the visual TOP — see `getCompartmentReadingOrder`,.)
  *
  * Labels whose anchor falls outside the new (smaller) grid have nowhere to land
  * and are dropped; `droppedCount` reports how many non-empty labels were lost so
- * the caller can warn instead of discarding them silently (#2337).
+ * the caller can warn instead of discarding them silently.
  *
  * Returns `texts` indexed by new compartment ID (`row * newCols + col`).
  */

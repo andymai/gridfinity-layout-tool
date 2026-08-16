@@ -43,7 +43,7 @@ export function deduplicateVertices(vertices: Float32Array): IndexedMesh {
  * file opens centered on the bed. Chosen for the 256×256 mm beds that
  * BambuStudio A1/X1/P1, Prusa MK4S, and similar most commonly target.
  * A1 mini (180×180) will see the bin offset 38mm past center — still on
- * the bed. Pre-#1893 we shipped no Application metadata so OrcaSlicer
+ * the bed. Older we shipped no Application metadata so OrcaSlicer
  * classified our file as `From_Other` and auto-arranged on import;
  * claiming BambuStudio identity flips `need_arrange = false` in the BBS
  * loader, so we now have to provide the plate position ourselves.

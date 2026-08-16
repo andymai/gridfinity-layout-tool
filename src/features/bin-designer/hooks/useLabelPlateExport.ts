@@ -1,5 +1,5 @@
 /**
- * Export + preview for swappable label plates (#2666, PR 2).
+ * Export + preview for swappable label plates.
  *
  * Derives the plate set from the design's socket plan (same math that cut
  * the sockets), snaps the text depth to a whole layer-height multiple so a

@@ -49,7 +49,7 @@ describe('useBaseplateExport', () => {
     expect(result.current.canExport).toBe(true);
   });
 
-  // #3115: a user-drawn seam can leave a piece larger than the bed. The preview
+  // A user-drawn seam can leave a piece larger than the bed. The preview
   // keeps rendering it (mid-edit feedback is the point) but exporting would ship
   // an STL the slicer refuses, so the button goes dead until the plan is fixed.
   it('blocks export while any piece exceeds the bed', () => {

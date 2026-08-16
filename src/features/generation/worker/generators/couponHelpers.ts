@@ -25,7 +25,7 @@ export const JBM_ADVANCE_PER_GLYPH = 0.6;
 /**
  * A raised label stroke narrower than one nozzle bead is dropped by the slicer,
  * which is why the fit-sample coupons sliced blank on a 0.4mm nozzle — their
- * digit stems were ~0.21mm, about half a bead (issue #3019). Target the thinnest
+ * digit stems were ~0.21mm, about half a bead. Target the thinnest
  * stem at ~1.1 beads: a hair above one line so the slicer keeps it after XY
  * (contour) compensation.
  */
@@ -36,7 +36,7 @@ const LABEL_LEGIBLE_MIN_FONT = 3.5;
 /**
  * Smallest JetBrains Mono font size (mm) whose digit stems still lay down as a
  * full nozzle bead, so an embossed fit-offset label survives slicing (issue
- * #3019). Grows with the nozzle (a wider bead needs a bigger stem), floored at
+ *). Grows with the nozzle (a wider bead needs a bigger stem), floored at
  * {@link LABEL_LEGIBLE_MIN_FONT} so a sub-baseline nozzle still gets readable
  * text. Unlike the connector-feature scalers, it isn't clamped to the 0.4mm
  * baseline — a finer nozzle can carry a smaller (but still legible) label. A

@@ -656,7 +656,7 @@ describe('computeBaseplateTiling', () => {
     }
   });
 
-  // ─── Dovetail tongue protrusion (#1498) ────────────────────────────────
+  // ─── Dovetail tongue protrusion ────────────────────────────────
 
   /**
    * Real STL bbox of a piece, given the male/female convention of `buildConnectors`:
@@ -1090,7 +1090,7 @@ describe('pieceToBaseplateParams', () => {
   });
 });
 
-// ─── preferIdenticalPieces (#1640) ───────────────────────────────────────────
+// ─── preferIdenticalPieces ───────────────────────────────────────────
 
 describe('preferIdenticalPieces', () => {
   it('palindromizes a 3-piece column split so outer pieces match', () => {
@@ -1972,13 +1972,13 @@ describe('shaped plates (outline-aware splitting)', () => {
     expect(computePieceFingerprint(b2)).toBe(computePieceFingerprint(b2));
   });
 
-  // #3109: an outline sitting in an offset sub-region of the plate extent (the
-  // pen editor auto-grows to the max only and never re-bases the min, #3092) is
+  // An outline sitting in an offset sub-region of the plate extent (the
+  // pen editor auto-grows to the max only and never re-bases the min,) is
   // classified against extent-anchored seam bands, so seams near the boundary
   // misclassify and lose their connectors — and pieces over the empty grown
   // region drop entirely. Re-basing the outline onto the socket lattice (what
   // buildFullParams does via `outlineLatticeShift`) restores them — by whole
-  // cells only, so registration is preserved (#3149).
+  // cells only, so registration is preserved.
   it('re-basing an offset outline restores dropped pieces and seam connectors', () => {
     // A 6-unit-wide full-height rectangle drawn in the right two thirds of a
     // 9-unit plate: the drawer grew to hold maxX = 9U but the min stayed at 3U.
@@ -2120,7 +2120,7 @@ describe('padded shaped plates (corner-cut shapes compose with padding)', () => 
 
 /**
  * The outermost pieces print wider than their grid units by the outline
- * overhang (#3169), so the bed budget must reserve for it exactly as it does
+ * overhang, so the bed budget must reserve for it exactly as it does
  * for exterior padding. Without that the search sizes an outer chunk right up
  * to the bed and the generator then widens it past the bed — a split the
  * planner calls valid but the printer cannot take, invisible until the slicer
@@ -2198,7 +2198,7 @@ describe('print-bed budget reserves the outline overhang (#3169)', () => {
   });
 });
 
-// ─── Custom split plans (#3115) ─────────────────────────────────────────────
+// ─── Custom split plans ─────────────────────────────────────────────
 
 describe('computeBaseplateTiling — splitOverride', () => {
   const plan = (cols: number[], rows: number[]) => ({

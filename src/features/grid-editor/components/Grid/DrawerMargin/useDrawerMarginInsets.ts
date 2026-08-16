@@ -22,7 +22,7 @@ export interface DrawerMarginInsets {
  *
  * Shared so the band and the axis-label offsets that clear it stay in lockstep:
  * the row/column labels are opaque and sit above the band, so on padded sides
- * they'd cover the overhang unless pushed out by exactly these amounts (#2549).
+ * they'd cover the overhang unless pushed out by exactly these amounts.
  */
 export function useDrawerMarginInsets(cellSize: number, gap: number): DrawerMarginInsets {
   const { gridUnitMm, gridUnitMmY, paddingLeft, paddingRight, paddingFront, paddingBack, shaped } =

@@ -1,5 +1,5 @@
 /**
- * Tray bin scenarios (#3036) — a bin whose underside is lid mating geometry.
+ * Tray bin scenarios — a bin whose underside is lid mating geometry.
  *
  * `assert: 'structural'` throughout rather than the bounding-box assertion the
  * other base styles use: a tray's skirt hangs below the bin body, so its total

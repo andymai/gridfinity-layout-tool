@@ -519,7 +519,7 @@ describe('printEstimates', () => {
       expect(noSlots.volumeMm3).toBeLessThan(oneAxis.volumeMm3);
     });
 
-    // ─── Label tab counting (issue #1905) ────────────────────────────────
+    // ─── Label tab counting ────────────────────────────────
 
     describe('label tab counting', () => {
       const enabledLabel = { ...DEFAULT_BIN_PARAMS.label, enabled: true };

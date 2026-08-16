@@ -278,7 +278,7 @@ export interface Cutout {
    */
   readonly scoopEdges?: CutoutScoopEdges;
   /**
-   * Editor-only display name shown in the shape list (issue #3053). Optional —
+   * Editor-only display name shown in the shape list. Optional —
    * unset rows fall back to a label derived from the shape and its size, so
    * most designs never carry one.
    *

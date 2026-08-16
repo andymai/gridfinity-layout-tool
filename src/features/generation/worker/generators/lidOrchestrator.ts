@@ -51,8 +51,8 @@ function orientForPrint(lidSolid: Shape3D): Shape3D {
  * Whether the lid should keep its natural (unflipped) orientation on export.
  *
  * A tray recess lives on the top face and the mating cavity on the underside;
- * they want opposite print orientations and one side needs supports (#2694,
- * decision D1 "auto by attachment"). Click-rail lids always flip so the rails
+ * they want opposite print orientations and one side needs supports
+ * (decision D1, "auto by attachment"). Click-rail lids always flip so the rails
  * print clean (the tray then needs supports); friction/magnetic tray lids skip
  * the flip so the tray prints clean (the gentler cavity/magnet overhang takes
  * the supports). Non-tray lids always flip, as before.

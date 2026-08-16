@@ -1,5 +1,5 @@
 /**
- * Socket placement planning for swappable-label tabs (issue #2666).
+ * Socket placement planning for swappable-label tabs.
  *
  * Pure fit math shared by the generation worker (which cuts the sockets) and
  * the bin-designer UI (width pickers, warnings, mode disabledReason) so the
@@ -93,7 +93,7 @@ export interface LabelPlatePlanInput {
  * That is one plate per *surviving tab*, not per compartment — with
  * `label.edges = 'both'` a compartment hosts a tab on each wall and therefore
  * needs two plates, minus the front tabs dropped where the pair would collide
- * (issue #2910). Eligibility runs through the same `compartmentTabEligible` /
+ *. Eligibility runs through the same `compartmentTabEligible` /
  * `spanningTabEligible` predicates the worker gates on, and widths through the
  * same `planLabelSockets` fit math, so a planned plate always has a socket to
  * click into and every cut socket gets a plate.
@@ -133,7 +133,7 @@ export function planLabelPlates(input: LabelPlatePlanInput): LabelPlatePlanEntry
 
   const cellD = innerDmm / compartments.rows;
 
-  // Full-width mode (#2897): one bin-wide plate per row that hosts a spanning
+  // Full-width mode: one bin-wide plate per row that hosts a spanning
   // tab, captioned from `label.rowTexts`. All rows share the bin-wide pocket,
   // so the per-compartment widths above don't describe this layout.
   if (label.span === true) {
@@ -191,7 +191,7 @@ export function planLabelPlates(input: LabelPlatePlanInput): LabelPlatePlanEntry
  * Plate choice follows the TAB, not the compartment: narrowing the shelf to fit
  * a 1u plate must not leave a 2u plate planned for a pocket that no longer has
  * the room. `widthPercent` is the tab width as a percentage of the compartment
- * span (#3402); 100 is the whole span.
+ * span; 100 is the whole span.
  */
 export function planLabelSockets(
   compartments: CompartmentConfig,

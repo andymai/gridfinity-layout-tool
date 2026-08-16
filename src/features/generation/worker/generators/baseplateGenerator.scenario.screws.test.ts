@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Geometry validation for mount-down screw holes (#3425).
+ * Geometry validation for mount-down screw holes.
  *
  * Locks the two things a bounding box alone would not catch: that the plate
  * actually grows by the resolved pad when a screw falls back to the pocket
@@ -200,7 +200,7 @@ describe('baseplate mount-down screw holes (#3425)', () => {
     // The top SOCKET_HEIGHT of the plate is where a bin's foot sits. Sweep the
     // whole footprint and require the screwed plate to carry no more solid in
     // that band than an unscrewed one anywhere — an aimed probe at a suspected
-    // spot is exactly the check #3450 taught us not to trust. Each mesh's band
+    // spot is exactly the check taught us not to trust. Each mesh's band
     // is measured from its own top: the screwed plate is `pad` taller, but the
     // socket is always its top SOCKET_HEIGHT.
     const pad = screwPadThicknessMm(SCREWS, 0);

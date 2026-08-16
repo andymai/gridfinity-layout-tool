@@ -4,7 +4,7 @@
  * Dropdown select with visual preview icons for each pattern type.
  * Patterns are mutually exclusive — only one can be active at a time.
  *
- * `patterns` narrows the offered set: the floor picker (#2816) passes the stamp
+ * `patterns` narrows the offered set: the floor picker passes the stamp
  * types, since the kumiko lattices only exist as a band wrapped around the
  * walls and have no meaning on a floor.
  */

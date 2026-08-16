@@ -1,5 +1,5 @@
 /**
- * Lid-vs-compartment-divider clearance (#3477).
+ * Lid-vs-compartment-divider clearance.
  *
  * A divider is built from the cavity floor to the interior ceiling, whose top
  * sits 0.7mm below the bin's wall top, and a seated click rail hangs 3.15mm
@@ -245,7 +245,7 @@ function makeParams(c: Case): BinParams {
       attachment: 'clickRails',
       clickRails: { front: true, back: true, left: true, right: true },
       clickRailCoverage: c.coverage,
-      // Pins the NOTCHING path (#3477): `relieveInterior` defaults on for new
+      // Pins the NOTCHING path: `relieveInterior` defaults on for new
       // designs, which steps the interior aside and makes the rails whole, so
       // leaving it would test a different mechanism than this file is about.
       relieveInterior: false,

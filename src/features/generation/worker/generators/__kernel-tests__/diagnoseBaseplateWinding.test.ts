@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Step-by-step winding diagnosis for `buildBaseplateSolid` (issue #1494).
+ * Step-by-step winding diagnosis for `buildBaseplateSolid`.
  *
  * Walks construction one BREP op at a time using the `BaseplateProbe` hook,
  * meshes each intermediate solid with the same tessellation parameters as
@@ -19,7 +19,7 @@
  * actually flips. With brepjs 15.6.1 and the OCCT kernel, the repair flips
  * zero triangles for every known piece config including the user-reported
  * 13×9 magnet+lightweight+connector reproducer — i.e. the bug described in
- * #1490 is no longer observable downstream of `mesh()`. The repair remains
+ * Is no longer observable downstream of `mesh`. The repair remains
  * as a defensive net for any future regression in brepjs/OCCT tessellation.
  *
  * Run:
@@ -137,7 +137,7 @@ interface NamedConfig {
 }
 
 // Mirror the configs covered by the existing scenario winding test plus the
-// user-reported 13×9 reproducer from #1490.
+// user-reported 13×9 reproducer from.
 const CONFIGS: readonly NamedConfig[] = [
   {
     name: 'corner-1',
@@ -182,7 +182,7 @@ const CONFIGS: readonly NamedConfig[] = [
       edges: { left: 'join', right: 'exterior', front: 'join', back: 'join' },
     }),
   },
-  // User-reported reproducer (#1490): 13×9 padded baseplate with magnets +
+  // User-reported reproducer: 13×9 padded baseplate with magnets +
   // lightweight cuts + connectors. The user's exported STLs from this config
   // were the original failure case that motivated the downstream repair.
   {

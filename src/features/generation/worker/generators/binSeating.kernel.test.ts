@@ -1,7 +1,7 @@
 // @vitest-environment node
 /**
  * The foot lattice is only meaningful if the bin actually drops into a plate,
- * so this mates the two real solids and measures it (#3467).
+ * so this mates the two real solids and measures it.
  *
  * A 2x2 bin on a 4x4 plate, at three placements. On-grid the bin's edges land
  * on cell boundaries; a 21mm shift puts them mid-cell, which is what half-bin

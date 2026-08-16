@@ -1,12 +1,12 @@
 // @vitest-environment node
 /**
- * Gridfinity stacking divisibility guard (#2416).
+ * Gridfinity stacking divisibility guard.
  *
  * The reporter believed stacks overshoot because each bin carries a 4.3mm lip.
  * They don't: the lip nests into the socket of the bin above, so the stacking
  * pitch equals the bin's BODY height (`height × heightUnitMm`), and only the
  * topmost lip is exposed. Two H-unit bins therefore stack to exactly the height
- * of one 2H-unit bin. The #2416 fix relies on this invariant (see
+ * of one 2H-unit bin. The fix relies on this invariant (see
  * `stackPitchMm`/`stackedTotalMm` in `heightUnits.ts`) rather than changing the
  * geometry — so this asserts the geometry actually keeps its side of the
  * bargain, measured on the real generated solid.

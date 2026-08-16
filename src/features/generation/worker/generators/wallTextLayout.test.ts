@@ -1,5 +1,5 @@
 /**
- * Wall-text placement solver tests (issue #2695).
+ * Wall-text placement solver tests.
  *
  * Runs against real brepjs WASM because auto-fit measures glyphs through the
  * kernel's font engine — fonts must be loaded or every layout is skipped

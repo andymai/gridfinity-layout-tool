@@ -16,7 +16,7 @@ import { defineCommand } from '../../defineCommand';
 import { computeDisplacedBins } from '../drawer/displacement';
 
 /**
- * Chunk sizes for one axis of a custom split plan (#3115). A plate caps at
+ * Chunk sizes for one axis of a custom split plan. A plate caps at
  * GRID_MAX units and a chunk is at least a half unit, so twice GRID_MAX covers
  * every legal plan while bounding what a crafted payload can ask for.
  */
@@ -111,7 +111,7 @@ export const setBaseplateParams = defineCommand({
     } as StoredBaseplateParams;
 
     // Padding (and sync mode) participates in the grid↔perimeter frame
-    // (#3157): recompute displacement against the NEW params so bins whose
+    //: recompute displacement against the NEW params so bins whose
     // sockets the re-based plate loses move to staging, undoably, exactly
     // like a resize. A rectangle drawer has no frame, so this is a no-op.
     const layout = ctx.aggregate;

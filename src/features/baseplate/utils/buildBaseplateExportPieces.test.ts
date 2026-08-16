@@ -193,7 +193,7 @@ describe('buildBaseplateExportPieces', () => {
     // 8×8 plate with the top-right 2×2 corner notched out, on a 4u bed → a 2×2
     // grid of 4u tiles. Three tiles stay full squares (one dedup group, stacked
     // into a tower); the notched tile is unique (its own single-plate tower).
-    // Before #3113 the outline was dropped under stacking, collapsing this into
+    // Before the outline was dropped under stacking, collapsing this into
     // one rectangular tower (uniqueCount 1) — the confusing "nothing to stack".
     const notched = {
       vertices: [
@@ -247,7 +247,7 @@ describe('buildBaseplateExportPieces', () => {
   });
 });
 
-// #3115: `useBaseplateExport.canExport` only greys out the baseplate page's own
+// `useBaseplateExport.canExport` only greys out the baseplate page's own
 // button. The whole-layout ZIP calls this builder directly, so the bed-fit gate
 // has to live here or that path ships pieces the slicer will refuse.
 describe('buildBaseplateExportPieces — bed-fit gate', () => {

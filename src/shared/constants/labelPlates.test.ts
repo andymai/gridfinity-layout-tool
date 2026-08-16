@@ -157,7 +157,7 @@ describe('labelPlates', () => {
       expect(defaultLabelShelfTopMm(15.3, true, { mode: 'text' })).toBe(15.3);
     });
 
-    // #2971: the label lip reserves shelf headroom so the rim tops at the ceiling.
+    // The label lip reserves shelf headroom so the rim tops at the ceiling.
     it('reserves the lip height only on enabled text-mode tabs', () => {
       expect(labelLipReservationMm({ lip: true, lipHeight: 1 })).toBe(1);
       expect(labelLipReservationMm({ lip: true, lipHeight: 1, mode: 'text' })).toBe(1);

@@ -1,5 +1,5 @@
 /**
- * The floor pattern's window rule (#2816) — the geometry that makes the feature
+ * The floor pattern's window rule — the geometry that makes the feature
  * safe, isolated from the planner so the designer can share it.
  *
  * A drainage hole must leave the bin through a foot's FLAT UNDERSIDE, never

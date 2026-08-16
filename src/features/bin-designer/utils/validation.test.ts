@@ -91,7 +91,7 @@ describe('validateBinParams', () => {
       expectOk(validateBinParams(makeParams({ height: 20 })));
     });
 
-    // #2915: a spacer is floorless, so the usable-cavity floor doesn't bind —
+    // A spacer is floorless, so the usable-cavity floor doesn't bind —
     // 1u is what shims a stack from an odd to an even total height.
     it('should accept a 1u spacer but not a 1u bin', () => {
       const spacer = { ...DEFAULT_BIN_PARAMS.base, spacer: true };

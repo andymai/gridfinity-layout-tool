@@ -1,5 +1,5 @@
 /**
- * paint_color mapping for swappable label plate 3MF exports (#2666).
+ * paint_color mapping for swappable label plate 3MF exports.
  *
  * Plates carry exactly two zones: the plate body and the glyph faces the
  * worker tagged `FeatureTag.TEXT`. When the design's multi-color zones are

@@ -22,7 +22,7 @@ export interface ManifestBinEntry {
   /** Companion parts included alongside the body (e.g. `lid`, `dividers`). */
   readonly companions?: readonly string[];
   /**
-   * Number of pieces this bin ships as when it exceeds the print bed (#3074).
+   * Number of pieces this bin ships as when it exceeds the print bed.
    * Absent for a bin that prints whole.
    */
   readonly splitPieces?: number;
@@ -61,12 +61,12 @@ export interface ManifestSkipped {
    * Bin designs skipped under STEP for carrying a mesh imprint cutout — the
    * pocket is subtracted after tessellation, so the solid STEP would carry is
    * the one WITHOUT it. Skipping keeps the rest of the ZIP: the export used to
-   * throw on the first such bin and take the whole layout with it (#3449).
+   * throw on the first such bin and take the whole layout with it.
    */
   readonly imprintDesignsStepSkipped?: number;
 }
 
-/** One swappable-label sheet family in the labels/ folder (#2666). */
+/** One swappable-label sheet family in the labels/ folder. */
 export interface ManifestLabelGroup {
   readonly designName: string;
   readonly sheetPaths: readonly string[];

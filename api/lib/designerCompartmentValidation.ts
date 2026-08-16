@@ -156,7 +156,7 @@ export function validateCompartments(compartments: unknown): string | null {
       }
     }
   }
-  // Optional per-compartment swappable-label plate width overrides (#2666).
+  // Optional per-compartment swappable-label plate width overrides.
   // Entries are null (auto) or a standard plate width; length bounded like
   // compartmentTexts so a direct HTTP POST can't smuggle an unbounded array.
   if (compartments.labelPlateWidths !== undefined) {
@@ -173,7 +173,7 @@ export function validateCompartments(compartments: unknown): string | null {
       }
     }
   }
-  // Optional per-compartment plate hardware icons (#2666 follow-up). Entries
+  // Optional per-compartment plate hardware icons. Entries
   // are null (no icon) or an allowlisted icon id; bounded like the widths.
   if (compartments.labelIcons !== undefined) {
     if (!Array.isArray(compartments.labelIcons)) {

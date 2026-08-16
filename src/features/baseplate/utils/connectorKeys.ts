@@ -4,7 +4,7 @@
  * The dovetail-key and snap-clip styles both make every join edge female and
  * ship a separate part seated at each seam junction (a hammered-in key, or a
  * top-inserted snap clip). Under `dovetailKey` a detached margin's body↔rail seam
- * is female on both sides too, so it seats the same key (#2866) — which is why this
+ * is female on both sides too, so it seats the same key — which is why this
  * is not split-only: a rail exists whether or not the plate was split, so an
  * UNSPLIT plate can need keys. This module is the single source of truth for WHERE
  * those parts go (and therefore HOW MANY), so the export count, the print guide,
@@ -79,7 +79,7 @@ function hasSeatedConnector(params: ResolvedBaseplateParams): boolean {
  * their grooves align.
  *
  * Margin seams: the body↔rail seams of detached margins add their own junctions
- * under `dovetailKey` ({@link marginSeamJunctions}, #2866).
+ * under `dovetailKey` ({@link marginSeamJunctions},).
  *
  * Coordinates match `SplitBaseplateMeshes` piece centering exactly:
  *   center = gridOffset * gridUnitMm + pieceSize / 2 - total / 2
@@ -107,7 +107,7 @@ export function computeSeamJunctions(
       const centerX = piece.gridOffsetX * gx + pieceWmm / 2 - totalWmm / 2;
       const centerY = piece.gridOffsetY * gy + pieceDmm / 2 - totalDmm / 2;
 
-      // A shaped plate can gate a seam's connectors to a sub-span (#3163) —
+      // A shaped plate can gate a seam's connectors to a sub-span —
       // a key only exists where the pieces actually cut grooves.
       const allowed = (side: 'right' | 'back', off: number): boolean => {
         const filter = piece.connectorFilter?.[side];
@@ -135,7 +135,7 @@ export function computeSeamJunctions(
 }
 
 /**
- * Seated key locations on the body↔rail seams of detached margins (#2866).
+ * Seated key locations on the body↔rail seams of detached margins.
  *
  * A long rail is emitted per outer body piece and records the mating wall's grid
  * span in `seamConnector`, so the key positions are that span's interior cell

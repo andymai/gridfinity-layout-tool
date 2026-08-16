@@ -1,5 +1,5 @@
 /**
- * SVG silhouettes for the label-plate hardware icons (discussion #2877).
+ * SVG silhouettes for the label-plate hardware icons (discussion).
  *
  * Path data rather than brepjs draw() chains so contributors can author icons
  * in any vector tool, and so the picker preview and the printed geometry read

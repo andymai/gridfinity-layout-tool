@@ -49,7 +49,7 @@ export const STACK_PRINT_MIN_GAP_MM = 0.1;
 export const STACK_PRINT_MAX_GAP_MM = 1.0;
 
 /**
- * A user-drawn split plan (issue #3115) replacing the planner's automatic
+ * A user-drawn split plan replacing the planner's automatic
  * tiling. `cols` / `rows` are the chunk sizes in grid units, front-to-back and
  * left-to-right in the order they are printed — the same shape the planner's
  * search produces, so every downstream consumer (margins, outline shaping,
@@ -77,7 +77,7 @@ export interface SplitOverride {
 export type ScrewHeadStyle = 'countersink' | 'counterbore';
 
 /**
- * Mount-down screw holes (#3425): vertical through-holes that fasten a plate to
+ * Mount-down screw holes: vertical through-holes that fasten a plate to
  * a drawer bottom, bench or wall. Distinct from the bin's `base.style: 'screw'`
  * (which anchors a BIN to a plate) and from the split-piece connectors (which
  * join plates to each other).
@@ -153,7 +153,7 @@ export interface StoredBaseplateParams {
    * Fit the grid to a custom perimeter by whole cells only: a cell the outline
    * crosses is dropped and the solid plate fills the margin, instead of keeping
    * a socket sliced to the outline. Sliced sockets hold nothing and leave the
-   * boundary unfinished (#3054). Only meaningful with an `outline`.
+   * boundary unfinished. Only meaningful with an `outline`.
    * Default false (sliced sockets kept).
    */
   readonly wholeCellsOnly?: boolean;
@@ -208,7 +208,7 @@ export interface StoredBaseplateParams {
   /**
    * Cut the seam slot on the plate's exterior edges as well as on the join seams
    * between split pieces, so each piece is a standard 42mm-grid tile that can
-   * key into any other plate printed later (issue #2866). Only meaningful for
+   * key into any other plate printed later. Only meaningful for
    * the both-female styles (`dovetailKey`, `snapClip`) with `connectorNubs` on —
    * an integral tongue would protrude past the drawer-facing wall. Exterior
    * edges carrying drawer-fit padding are skipped (their wall is offset from the
@@ -217,7 +217,7 @@ export interface StoredBaseplateParams {
   readonly connectorSlotsAllEdges?: boolean;
   /**
    * User fit offset (mm) added to the per-side connector groove clearance to
-   * compensate for printer/filament variation (issue #2024). Positive = looser,
+   * compensate for printer/filament variation. Positive = looser,
    * negative = tighter; clamped so effective clearance never goes negative.
    * Default 0 / undefined leaves the nominal clearance unchanged. Only meaningful
    * when `connectorNubs` is true.
@@ -238,15 +238,15 @@ export interface StoredBaseplateParams {
   readonly fractionalEdgeY?: FractionalEdge;
   /**
    * Detach the drawer-fit padding into separate printable rail pieces so a bad
-   * margin doesn't scrap the whole plate (issue #2392). Each side with padding ≥
+   * margin doesn't scrap the whole plate. Each side with padding ≥
    * {@link MARGIN_MIN_DETACH_MM} becomes its own rail; the body prints
-   * padding-free on detached sides. Composes with {@link stackPrint} (#2641):
+   * padding-free on detached sides. Composes with {@link stackPrint}:
    * rails export as flat pieces alongside the stacked towers. Default false.
    */
   readonly detachMargins?: boolean;
   /**
    * Opt-in connector between the body and each detached long-rail margin
-   * (issue #2414). Adds a tongue/groove at the body↔long-rail seam using the
+   *. Adds a tongue/groove at the body↔long-rail seam using the
    * body's {@link connectorStyle} so the rail attaches securely instead of
    * relying on friction. Short rails and corners stay friction-fit. Only
    * meaningful when {@link detachMargins} is true. Default false.
@@ -261,12 +261,12 @@ export interface StoredBaseplateParams {
    */
   readonly stackPrint?: StackPrintParams;
   /**
-   * User-drawn split plan overriding the automatic tiling (issue #3115).
+   * User-drawn split plan overriding the automatic tiling.
    * Omitted/undefined = the planner chooses. See {@link SplitOverride}.
    */
   readonly splitOverride?: SplitOverride;
   /**
-   * Mount-down screw holes (#3425). Omitted/undefined = no screw holes, keeping
+   * Mount-down screw holes. Omitted/undefined = no screw holes, keeping
    * plates saved before this field existed byte-identical. See
    * {@link ScrewHoleParams}.
    */

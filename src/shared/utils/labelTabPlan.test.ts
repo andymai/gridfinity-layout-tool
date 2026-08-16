@@ -122,7 +122,7 @@ describe('alignment and spanning tabs', () => {
     labelTabFootprints(p, dims.innerW, dims.innerD, dims.interiorHeight, p.wallThickness);
 
   it('pushes a narrowed tab to each edge it is aligned to', () => {
-    // Alignment moves the whole tab in both modes since #3402, so the three
+    // Alignment moves the whole tab in both modes, so the three
     // settings have to land it in three different places.
     const at = (alignment: 'left' | 'center' | 'right') =>
       build(withLabel({ width: 40, alignment })).map((f) => (f.xMin + f.xMax) / 2);
@@ -163,7 +163,7 @@ describe('railFoulingLabelFootprints', () => {
   });
 
   it('reports the FRONT wall for front-anchored tabs', () => {
-    // The pre-#3401 code hardcoded 'back' here, so a front tab disabled a rail
+    // The older code hardcoded 'back' here, so a front tab disabled a rail
     // that was never in its way and kept the one that was.
     const anchors = railFoulingLabelFootprints(withLabel({ edges: 'front' })).map((f) => f.anchor);
     expect(anchors.length).toBeGreaterThan(0);
@@ -171,7 +171,7 @@ describe('railFoulingLabelFootprints', () => {
   });
 
   it('reports nothing once the shelf is dropped clear of the rail band', () => {
-    // #1898's tuck-under pocket: the shelf sits low enough that a rail passes
+    //'s tuck-under pocket: the shelf sits low enough that a rail passes
     // above it, so that wall keeps its rail.
     const band = clickRailZBandAboveFloor(36.3);
     const tucked = railFoulingLabelFootprints(withLabel({ height: band.lo - 1, depth: 8 }));
@@ -179,7 +179,7 @@ describe('railFoulingLabelFootprints', () => {
   });
 
   it('reports nothing once a wall collar lifts the rail clear of the shelf', () => {
-    // `extraWallHeightMm` (#2500) raises the outer box and the lip with it,
+    // `extraWallHeightMm` raises the outer box and the lip with it,
     // leaving the interior plane (and so the shelf) where it was. The lid then
     // seats that much higher, so a tab it used to foul it now clears. Reading
     // the band off `interiorHeight` alone blocks the wall for a conflict that
@@ -246,7 +246,7 @@ describe('socket-mode tab width (#3402)', () => {
     );
 
   it('narrows the shelf instead of forcing the full compartment', () => {
-    // The pre-#3402 builder ignored the percentage here outright, so a user
+    // The older builder ignored the percentage here outright, so a user
     // fitting a centred 1u plate still got a shelf across the whole bin.
     const full = spans(socketParams(100));
     const half = spans(socketParams(50));

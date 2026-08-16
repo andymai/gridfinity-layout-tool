@@ -38,7 +38,7 @@ import { LID_FIT_CLEARANCE, LID_CORNER_RADIUS, lidAnchorZ, lidWallBottomZ } from
 import { resolveOverhang, overhangExpansion, hasOverhang } from './overhang';
 
 /**
- * Resolved lid-top text (issue #2695): the trimmed string plus the effective
+ * Resolved lid-top text: the trimmed string plus the effective
  * style — the design's `textDefaults` merged with the shared surface-text
  * override. Null when there's no text or a gate rejects it (full stack
  * grid, polygon footprint).
@@ -62,7 +62,7 @@ export interface LidInputs {
   /**
    * Per-side FOOTPRINT clearance. `LID_FIT_CLEARANCE`, plus
    * `LID_MAGNETIC_EXTRA_CLEARANCE` on a lid that actually gets retention
-   * magnets, so they aren't fighting a friction fit (#2761). NOT every
+   * magnets, so they aren't fighting a friction fit. NOT every
    * `attachment: 'magnetic'` config: a lip-less or polygon bin generates no
    * corner bosses and keeps the base value — see
    * `resolveLidFootprintClearance`. Not the anchor clearance either;
@@ -102,14 +102,14 @@ export interface LidInputs {
   /** Retention mode. Drives which retention geometry the builder emits. */
   readonly attachment: LidAttachment;
   /**
-   * Whether to emit lid-to-bin retention magnets (issue #2694). True only when
+   * Whether to emit lid-to-bin retention magnets. True only when
    * `attachment === 'magnetic'` and the footprint is rectangular (polygon bins
    * are excluded). Dedicated dims — independent of the stack `magnet*` fields.
    */
   readonly retentionMagnets: boolean;
   readonly retentionMagnetDiameter: number;
   readonly retentionMagnetDepth: number;
-  /** Extra magnets per long edge (#2844); 0 = the classic four-corner lid. */
+  /** Extra magnets per long edge; 0 = the classic four-corner lid. */
   readonly retentionMagnetEdgeMagnets: number;
   /**
    * Resolved tray recess. `enabled` is already gated on `!stackableTop` here,
@@ -168,7 +168,7 @@ export interface LidInputs {
   /**
    * Label tabs on the bin's outer walls that reach into the click rails' Z
    * band, in the bin-interior frame. Rails clip their usable span against
-   * these so a shelf and a rail can't occupy the same millimetre (#3401) —
+   * these so a shelf and a rail can't occupy the same millimetre —
    * they are separate solids, so nothing about either mesh reveals the clash.
    *
    * Empty when the bin has no tabs, when they sit clear of the rail band (a
@@ -181,10 +181,10 @@ export interface LidInputs {
    * (which arrive as footprints above, because their cross-axis span decides
    * which walls they take).
    *
-   * Two unrelated reasons, applied identically. A compartment divider (#3477)
+   * Two unrelated reasons, applied identically. A compartment divider
    * is built to the interior ceiling and a seated rail hangs 3.15mm below the
    * wall top, so a run straight through one is 3.1mm of solid-on-solid overlap
-   * and the lid cannot close. A wall cutout or a high handle hole (#3483) is
+   * and the lid cannot close. A wall cutout or a high handle hole is
    * the opposite — it has taken the lip away, so a rail there grips nothing.
    *
    * Empty on a plain bin: no compartment grid, no cutouts, no handles reaching
@@ -192,7 +192,7 @@ export interface LidInputs {
    */
   readonly wallBlocks: readonly WallSpanBlock[];
   /**
-   * Lip gaps on a CUSTOM-SHAPE footprint (#3482), carried separately from
+   * Lip gaps on a CUSTOM-SHAPE footprint, carried separately from
    * `wallBlocks` because a polygon block is matched to one EDGE, not to a side:
    * a U faces front with two walls, and a cutout sits on exactly one of them.
    * Empty for a rectangular bin, which has one edge per side and uses
@@ -200,7 +200,7 @@ export interface LidInputs {
    */
   readonly polygonGaps: readonly PolygonLipGap[];
   /**
-   * Grip relief (#3272), already gated: `mode` is forced to `'none'` when the
+   * Grip relief, already gated: `mode` is forced to `'none'` when the
    * feature is off or its depth clamp left nothing useful, so builders can
    * test `mode` alone. `coverage` stays a 0-100 percentage here (unlike
    * `clickRailCoverage`) because `resolveLidGripSpanMm` owns the conversion
@@ -252,7 +252,7 @@ export interface LidInputs {
    * mirroring the box builder).
    *
    * The split is about what each feature mates with: retention magnets hug this
-   * lid's own lip, so they follow it (#3048); stack sockets mate with a
+   * lid's own lip, so they follow it; stack sockets mate with a
    * different bin's base, so they must not.
    */
   readonly outerOffsetX: number;
@@ -260,7 +260,7 @@ export interface LidInputs {
   /**
    * Overhang footprint growth (mm), already folded into `lidOuterW`/`lidOuterD`.
    * Exposed separately because the retention magnets inset from the EXPANDED
-   * footprint corner rather than the nominal one (#3048) — they hug the
+   * footprint corner rather than the nominal one — they hug the
    * stacking lip, and overhang moves it.
    */
   readonly overhangAddW: number;
@@ -272,7 +272,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   // Y axis uses gridUnitMmY when set (non-square grid); equals X for square.
   const gridUnitMmY = params.gridUnitMmY ?? gridUnitMm;
   // Footprint clearance: the locked-down base, plus the magnetic relief when
-  // the design gets retention magnets (#2761). XY only — `anchorZ`/
+  // the design gets retention magnets. XY only — `anchorZ`/
   // `wallBottomZ` below stay on the base value so the magnet seat gap holds.
   const fitClearance = resolveLidFootprintClearance(params);
 
@@ -280,7 +280,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   // mask is treated as rectangular (matches the bin generator's convention).
   const cellMask = isPartialMask(params.cellMask) ? params.cellMask : undefined;
 
-  // Retention mode (#2694). Magnetic retention needs the rectangular corner
+  // Retention mode. Magnetic retention needs the rectangular corner
   // geometry, so polygon bins fall back to friction (the mating shell still
   // wraps the lip). Click rails are only engaged in clickRails mode — other
   // modes force the persisted per-side flags off so switching modes keeps the
@@ -295,12 +295,12 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   // the top surface otherwise).
   const trayEnabled = params.lid.tray.enabled && !params.lid.stackableTop;
 
-  // Lid-top text (issue #2695). Shared surface style = design textDefaults
+  // Lid-top text. Shared surface style = design textDefaults
   // merged with the surface-text override; polygon lids are excluded
   // (rectangular auto-fit), mirroring the UI.
   //
   // A full stack grid leaves no flat surface to write on; the lip-only variant
-  // (#2930) does — its recessed floor is one clear face.
+  // does — its recessed floor is one clear face.
   const stackGridOwnsTop = params.lid.stackableTop && !params.lid.stackLipOnly;
   const lidTextValue = params.surfaceText?.lidText?.trim() ?? '';
   let text: LidTextInputs | null = null;
@@ -429,7 +429,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
       ? resolveLidGripHeightPlan(params.lid.grip, anchorZ, gripDepthMm).heightMm
       : 0,
     gripSoftensSnap: hasBinLipDip(params),
-    // `extraHeightMm` (issue #2482) deepens the cavity above the lip so tall
+    // `extraHeightMm` deepens the cavity above the lip so tall
     // contents poking out of a short bin are enclosed; 0 = standard lid.
     // Base clearance, NOT `fitClearance` — the magnetic relief is XY-only, and
     // feeding it here would lift the seated plane ~0.42mm into the corner

@@ -225,10 +225,10 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
 
   // Per-side overhang band (baseplate padding) in px. The row/column labels are
   // opaque and sit above the band, so on the padded left/front sides they'd hide
-  // the overhang — push them out by the band's extent so both stay visible (#2549).
+  // the overhang — push them out by the band's extent so both stay visible.
   const marginInsets = useDrawerMarginInsets(cellSize, gap);
   // A grid-shifted custom perimeter is drawn outside the grid box; the scroll
-  // container can't reach negative offsets, so reserve the gutter (#3169).
+  // container can't reach negative offsets, so reserve the gutter.
   const outlineInsets = useOutlineOverhangInsets(cellSize, gap);
 
   // In half-bin mode, visual cells are smaller to fit 2x cells in the same space
@@ -368,7 +368,7 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
                   ? 4 + marginInsets.left + outlineInsets.left
                   : 0,
                 // Reserve the two directions the scroll container would clip
-                // (#3169). The left gutter only exists with labels, so pad the
+                //. The left gutter only exists with labels, so pad the
                 // wrapper itself when they're hidden; the top has no gutter at
                 // all. Both are 0 unless the shape actually reaches out there.
                 paddingLeft: labelsState.axisLabelsVisible ? undefined : outlineInsets.left,
@@ -531,7 +531,7 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
                     fractionalColSize={fractionalColSize}
                     gap={gap}
                     // Drop the column labels below the front overhang band so it
-                    // isn't hidden behind them (#2549).
+                    // isn't hidden behind them.
                     gridTop={gridHeight + marginInsets.front}
                     onColumnClick={handleColumnClick}
                   />

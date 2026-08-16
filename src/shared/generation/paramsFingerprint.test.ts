@@ -46,7 +46,7 @@ describe('paramsFingerprint', () => {
 
   it('separates dimensions that would collide under naive concatenation', () => {
     // The whole point of the worker-side identity check: `1x11` and `11x1` are
-    // different bins and must never share a cached solid (GH #3074).
+    // different bins and must never share a cached solid (GH).
     expect(paramsFingerprint({ width: 1, depth: 11 })).not.toBe(
       paramsFingerprint({ width: 11, depth: 1 })
     );

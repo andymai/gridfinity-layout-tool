@@ -2,7 +2,7 @@
  * Resilience wrapper for bin designer export operations.
  *
  * The bin export pipeline runs through a Web Worker that occasionally wedges
- * itself (#1339) — symptoms range from a one-shot brepjs boolean failure on a
+ * itself — symptoms range from a one-shot brepjs boolean failure on a
  * borderline geometry to a long-lived stuck WASM heap that only `refresh()`
  * can recover. This wrapper layers a small retry policy on top of any export
  * call so users don't have to refresh the page to recover.

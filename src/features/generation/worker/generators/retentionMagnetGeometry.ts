@@ -1,11 +1,11 @@
 /**
- * Shared geometry for lid-retention magnets (issue #2694).
+ * Shared geometry for lid-retention magnets.
  *
  * A magnetic lid holds onto the bin via four press-fit magnets: one in a
  * corner post rising from the bin's interior floor, and a mating one in a
  * corner boss hanging from the lid's floor down to meet it. They mate INSIDE
  * the bin mouth, below the lid's own mating skirt — not at the lip-top plane
- * (see {@link retentionInterfaceZ}, and #3450 for what happens when they try).
+ * (see {@link retentionInterfaceZ}, and for what happens when they try).
  * The seating transform is pinned to the lid's local `anchorZ`, which the
  * export assembly lands on the bin's lip top (`exportHandler` lifts the lid by
  * `lipTopZ - anchorZ`).
@@ -15,7 +15,7 @@
  * discipline `baseplateMagnets.magnetPositionsForCell` uses for stack magnets).
  * Positions ignore the per-part clearance so the bin's slightly-larger body and
  * the lid's slightly-smaller cavity still line up, but they DO follow the
- * overhang-expanded footprint (#3048) — the magnets hug the stacking lip, and
+ * overhang-expanded footprint — the magnets hug the stacking lip, and
  * overhang moves it. Unlike the stack sockets, which stay on the nominal grid
  * because they mate with a neighbouring bin's base rather than with this lip.
  */
@@ -99,14 +99,14 @@ function edgeMagnetOffsets(span: number, requested: number, minSpacing: number):
  * coaxial.
  *
  * `expansion` is the bin's overhang footprint growth/shift. The magnets hug the
- * stacking lip, and overhang moves the lip, so they have to move with it (#3048)
+ * stacking lip, and overhang moves the lip, so they have to move with it
  * — otherwise a one-sided overhang leaves the magnets `overhang`mm inboard of
  * the corner on the overhung side, stranding the bin's corner gusset away from
  * the interior wall it welds into. Omit it for the un-overhung footprint.
  *
  * Always the four corners; plus, when `edgeMagnets >= 1`, that many magnets
  * spread along each edge long enough to space them clear of the corners (issue
- * #2844 — anti-sag reinforcement for large lids). `bossRadius` sizes the
+ * Anti-sag reinforcement for large lids). `bossRadius` sizes the
  * min-spacing floor; it's unused when `edgeMagnets` is 0.
  */
 export function retentionMagnetPositions(
@@ -186,7 +186,7 @@ export function usesMagneticLid(params: BinParams): boolean {
  * The formula itself lives in the shared lid module: `trayBottomSkirtDepth`
  * needs it on the main thread to know how far a magnetic tray's bosses hang,
  * and a second copy here is precisely how the two sides of this joint have gone
- * wrong before (#3431, #3450). This adapter exists only so the two worker
+ * wrong before. This adapter exists only so the two worker
  * callers can pass the resolved inputs they already hold.
  */
 export function retentionInterfaceZ(

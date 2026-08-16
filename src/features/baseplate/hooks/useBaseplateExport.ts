@@ -80,7 +80,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
 
   const hasSingleMesh = mesh !== null && mesh.vertices !== null && mesh.error === null;
   const hasSplitMeshes = pieceMeshes.length > 0;
-  // A user-drawn split (#3115) can place a seam that leaves a piece larger than
+  // A user-drawn split can place a seam that leaves a piece larger than
   // the bed. The preview still renders it — mid-edit feedback is the point — but
   // exporting would ship an STL the slicer refuses, so the button goes dead
   // until the plan is fixed or reset. Automatic plans never populate this except

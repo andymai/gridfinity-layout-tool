@@ -2,7 +2,7 @@
  * Compartment grid scaling benchmark.
  *
  * Quantifies bin generation time as a function of compartment row/col count,
- * so we can pick a sensible `MAX_COMPARTMENT_GRID` cap (issue #1871). Each
+ * so we can pick a sensible `MAX_COMPARTMENT_GRID` cap. Each
  * grid is generated on the same fixed-size bin (8×8 grid units = 336×336mm)
  * so cell size stays >5mm even at 32×32. Tested both with and without label
  * tabs enabled, since labels add per-cell engraving geometry.

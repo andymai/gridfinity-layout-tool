@@ -1,5 +1,5 @@
 /**
- * Label color controls surfaced directly in the Label section (#2461).
+ * Label color controls surfaced directly in the Label section.
  *
  * Labels are colorable through the multi-color `featureColors` model — the
  * raised tab (`labelTab`) and the engraved text (`text`) are distinct zones.

@@ -145,7 +145,7 @@ export function resolveScoopPlacement(
 
 /**
  * Ceiling (mm) an AUTO scoop's rise is held to, so it stays out of the band a
- * seated lid's click rail drops into (#3434).
+ * seated lid's click rail drops into.
  *
  * A scoop against an outer wall does not need the wall top: `lipOffset` is what
  * makes its exit flush with the lip's inner face, and below `wallHeight` the

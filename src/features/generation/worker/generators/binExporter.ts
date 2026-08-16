@@ -116,20 +116,20 @@ async function runExportAttempt(
  * (brepjs caches `mesh()` by shape+tolerance — diverging here would silently
  * misalign per-triangle material indices in the 3MF).
  *
- * Strategy for robustness against intermittent kernel failures (GH #1339):
+ * Strategy for robustness against intermittent kernel failures (GH):
  *
  * 1. **Regenerate when stale**: if the cached solid is missing, was produced
  *    by a preview pass, or belongs to a different design, rebuild with
  *    `forExport=true` first. Preview passes run `mesh()` at coarse tolerance,
  *    which attaches stale triangulation to the solid that `StlAPI.Write` may
  *    then reject; a different design's solid is simply the wrong shape, which
- *    is what shipped mismatched bins in whole-layout ZIPs (GH #3074).
+ * is what shipped mismatched bins in whole-layout ZIPs (GH).
  *
  * 2. **Retry once on failure**: if the first export attempt throws (e.g.
  *    `StlAPI.Write` returns false, WASM handle corruption, any other
  *    transient kernel state), discard the cached solid and regenerate
  *    from scratch, then retry. This handles failure modes beyond the
- *    preview-quality case, which my root-cause analysis for #1339 may
+ * preview-quality case, which my root-cause analysis may
  *    not fully cover.
  *
  * STL: binary mesh at the fixed export tolerance.

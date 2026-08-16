@@ -49,7 +49,7 @@ function validPayload() {
   };
 }
 
-// Full-width label captions (#2897) ride in `label`, not `compartments`, so they
+// Full-width label captions ride in `label`, not `compartments`, so they
 // need their own bounds — the sub-key validator is not an allowlist.
 describe('validateDesignerShare — label.span / rowTexts', () => {
   const withLabel = (over: Record<string, unknown>) => {
@@ -286,7 +286,7 @@ describe('validateDesignerShare', () => {
       expect(result.valid).toBe(false);
     });
 
-    // #2915: the floorless riser has no cavity, so the usable-cavity minimum
+    // The floorless riser has no cavity, so the usable-cavity minimum
     // doesn't apply to it. Mirrors `minHeightUnits` on the client.
     it('accepts a 1u height for a spacer', () => {
       const payload = validPayload();

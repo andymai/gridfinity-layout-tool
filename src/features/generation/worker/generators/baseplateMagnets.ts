@@ -140,7 +140,7 @@ export function magnetPositionsForCell(
   // — including wide over-tile margin tiles — is byte-identical to before; above
   // 42mm the offset (and margin tiles with it) grows.
   //
-  // 'center' (legacy, #2525): the pre-fix behavior — a fixed ±HOLE_OFFSET (13mm)
+  // 'center' (legacy,): the pre-fix behavior — a fixed ±HOLE_OFFSET (13mm)
   // from cell center regardless of pitch. Identical to 'edge' at ≤42mm; on
   // larger grids the magnets drift inward. Kept so parts printed against the old
   // placement still mate. Layout-scoped, so a layout's bins/lids/baseplate all

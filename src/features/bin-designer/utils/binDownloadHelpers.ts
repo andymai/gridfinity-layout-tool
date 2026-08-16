@@ -303,7 +303,7 @@ const PRINT_LAYOUT_GAP_MM = 5;
  * layout: align floors, center the piece's Y on the bin's, and slide it
  * `PRINT_LAYOUT_GAP_MM` right of `cursorX` so the unified centering in
  * `build3MFMultiObjectBuffer` doesn't land pieces stacked at the same XY
- * (discussion #1654 bug #4). Returns the piece's new right edge so the next
+ * (discussion bug #4). Returns the piece's new right edge so the next
  * ancillary piece slots beside it instead of overlapping.
  */
 function layoutPieceRightOf(
@@ -587,7 +587,7 @@ export function buildBinDownloadPayload(
 /**
  * Run a split-bin export through the worker pool when available, falling
  * back to the single bridge if the pool can't be acquired or fails. The
- * fallback path used to be a bare swallowed catch (#1339); errors now feed
+ * fallback path used to be a bare swallowed catch; errors now feed
  * `captureException` so pool regressions are visible in telemetry.
  *
  * The function is `async` and treated as one operation by `exportWithResilience`

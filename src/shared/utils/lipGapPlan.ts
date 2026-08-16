@@ -1,10 +1,10 @@
 /**
  * Where a bin's stacking lip has been cut away, and what that costs a click
- * rail (#3483).
+ * rail.
  *
  * A wall cutout always descends from the wall top and overshoots above it, and
  * a handle hole placed high enough reaches the same material — so both leave a
- * stretch of wall with no lip for a rail's bump to hook under. Until #3483 a
+ * stretch of wall with no lip for a rail's bump to hook under. Until a
  * single window cost the whole wall its rail, which on a 40%-wide cutout threw
  * away 60% of the retention it did not have to.
  *
@@ -12,7 +12,7 @@
  * in the way, the grip is simply absent. Two consequences, both easy to get
  * wrong:
  *
- *  - The interior relief (`lid.relieveInterior`, #3477) does nothing for it.
+ * - The interior relief (`lid.relieveInterior`,) does nothing for it.
  *    That ring carves back material that intrudes; it cannot put back material
  *    that was removed, so these blocks apply whether it is on or off.
  *  - Mating the bin and lid and sweeping for interference cannot see it. A rail
@@ -92,14 +92,14 @@ function lipBottomZ(interiorHeight: number): number {
  *
  * Mirrors `wallCutoutBuilder` and `handleBuilder` gate for gate, because a gap
  * reported where no hole is cut costs a rail for nothing — the exact defect
- * #3483 is about, in miniature. The gates that bite in practice: handles are
+ * Is about, in miniature. The gates that bite in practice: handles are
  * skipped entirely on a slotted bin and on the BACK wall of a bin with label
  * tabs, and a hole clamped under 1mm tall is not built at all.
  *
  * Rectangular footprints only. A polygon bin's cutouts and handles are cut
  * against resolved polygon edges rather than the interior AABB, and its rails
  * are placed by `railPlacementsForPolygon`, which does no clipping at all —
- * see #3482.
+ *.
  */
 export function lipGaps(params: BinParams): readonly LipGap[] {
   if (isPartialMask(params.cellMask)) return [];
@@ -300,7 +300,7 @@ export interface PolygonLipGap {
 }
 
 /**
- * Lip gaps on a custom-shape footprint (#3482).
+ * Lip gaps on a custom-shape footprint.
  *
  * The live half of that issue: `wallCutoutsFeature` and `handlesFeature` both
  * declare `supportsCellMask`, and `FeatureGate` only greys the controls out, so

@@ -35,7 +35,7 @@ export function DividerTiltSubsection() {
   if (rows.length === 0) return null;
 
   // Advanced opt-in: angled dividers are off by default so dense grids don't
-  // drown the panel in per-divider rows (see issue #2044). Toggling off also
+  // drown the panel in per-divider rows (see). Toggling off also
   // drops any in-flight selection/hover so the canvas overlay clears cleanly.
   const toggleEnabled = (): void => {
     const next = !enabled;

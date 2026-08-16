@@ -13,12 +13,12 @@ export interface OutlineOverhangInsets {
 
 /**
  * Gutter the layout must reserve around the grid for a custom perimeter that
- * the grid frame draws outside it (#3169).
+ * the grid frame draws outside it.
  *
  * The grid is rendered fixed and the shape carries the frame translation, so a
  * grid shift toward an edge the shape already touches puts part of the
  * perimeter left of / below the grid box. `DrawerOutlineOverlay` already grows
- * its own SVG to cover that (#3107) and positions it at a negative offset —
+ * its own SVG to cover that and positions it at a negative offset —
  * but the grid lives in an `overflow-auto` scroll container, and a browser
  * will not scroll into negative overflow, so without reserved space the
  * protruding side is simply clipped (and overlaps the row labels on the way).

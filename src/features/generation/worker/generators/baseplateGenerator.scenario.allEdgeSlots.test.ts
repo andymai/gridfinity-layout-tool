@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Scenario tests for all-edge seam slots (`connectorSlotsAllEdges`, issue #2866).
+ * Scenario tests for all-edge seam slots (`connectorSlotsAllEdges`,).
  *
  * The option cuts the same female slot the join seams carry into the piece's
  * EXTERIOR edges too, so a split piece is a standard grid tile that can key onto

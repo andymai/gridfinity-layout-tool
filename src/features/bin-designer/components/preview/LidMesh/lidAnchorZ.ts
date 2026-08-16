@@ -36,9 +36,9 @@ export const PREVIEW_Z_OFFSET = 0.1;
  * The wall top is `floorZ + wallHeight`, and it is worth spelling out why that
  * is NOT `floorZ + height * heightUnitMm`: `wallHeight` already has the
  * Gridfinity socket subtracted, so adding the floor back on top of the nominal
- * height double-counts it (#3431). The two agree only for a socketless base,
+ * height double-counts it. The two agree only for a socketless base,
  * where `floorZ` is the skirt or zero. An exterior-wall collar
- * (`extraWallHeightMm`, #2500) raises the walls and the lip with them. With the
+ * (`extraWallHeightMm`,) raises the walls and the lip with them. With the
  * stacking lip the top face lands `LIP_HEIGHT − LIP_OVERLAP` above the wall;
  * without it the lid mates with the bare wall. `PREVIEW_Z_OFFSET` accounts for
  * BinMesh's group offset.

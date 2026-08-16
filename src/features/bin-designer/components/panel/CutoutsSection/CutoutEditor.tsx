@@ -82,7 +82,7 @@ export function CutoutEditor() {
   );
 
   const { cutouts } = params;
-  // Overhang-expanded interior lets cutouts use the extra floor (#2462).
+  // Overhang-expanded interior lets cutouts use the extra floor.
   const { wallHeight } = binDimensions(params);
   const { innerW: binWidth, innerD: binDepth } = cutoutInterior(params);
   const taperBand = cutoutTaperBand(params);

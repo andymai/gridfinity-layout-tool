@@ -120,7 +120,7 @@ function axisBand(zone: Zone, lo: number, hi: number, iLo: number, iHi: number) 
       // never crosses an interior edge. Capping to `hi - lo` starved narrow
       // cutouts: the auto-fit font fell below the legibility floor and the
       // label was silently dropped from both the editor and the engraving
-      // (#2583). The label overflowing a neighboring cutout is accepted.
+      //. The label overflowing a neighboring cutout is accepted.
       const center = (lo + hi) / 2;
       return { avail: 2 * Math.min(center - iLo, iHi - center), center };
     }
@@ -135,7 +135,7 @@ function axisBand(zone: Zone, lo: number, hi: number, iLo: number, iHi: number) 
  * label spans (X for top/bottom, Y for left/right, both for center) the band is
  * not clamped to the cutout's own span — it grows symmetrically into the
  * interior so a narrow cutout can't shrink the label below the legibility floor
- * and drop it (#2583). A `textOffset` then nudges the center freely (and may
+ * and drop it. A `textOffset` then nudges the center freely (and may
  * push it past the band — by design, for fine-tuning and drag).
  *
  * The anchor is interpreted in WORLD coordinates (top = +Y, right = +X, …); the

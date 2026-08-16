@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Scenario tests for detached margin rail geometry (issue #2392).
+ * Scenario tests for detached margin rail geometry.
  *
  * Verifies each fill mode (solid / over-tile / half-grid) and rail role meshes
  * to a non-degenerate solid: positive triangle count, all-finite vertices, and

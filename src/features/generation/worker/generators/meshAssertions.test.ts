@@ -1,6 +1,6 @@
 /**
  * The empty-mesh diagnosis is the whole point of `assertKernelReturnedGeometry`
- * (#3184): a zero-triangle result is a kernel failure, and reporting it as a
+ *: a zero-triangle result is a kernel failure, and reporting it as a
  * bare numeric assertion is what sent a memory-pressure flake to a bisect for a
  * regression that did not exist. Pinned here so the wording cannot decay back
  * into an anonymous `expected +0 to be greater than +0`.

@@ -1,5 +1,5 @@
 /**
- * Partial back rails in the gaps label tabs leave (#3401).
+ * Partial back rails in the gaps label tabs leave.
  *
  * Asserted on real `railPlacements` rather than a re-derivation of the same
  * arithmetic, so a change to how the builder resolves footprints or coverage
@@ -25,7 +25,7 @@ function makeParams(over: Partial<BinParams['label']>): BinParams {
       attachment: 'clickRails',
       clickRails: { front: true, back: true, left: true, right: true },
       clickRailCoverage: 100,
-      // Pins the NOTCHING path (#3477): `relieveInterior` defaults on for new
+      // Pins the NOTCHING path: `relieveInterior` defaults on for new
       // designs, which steps the interior aside and makes the rails whole, so
       // leaving it on would exercise a different mechanism than this file.
       relieveInterior: false,

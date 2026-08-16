@@ -1,7 +1,7 @@
 /**
  * Standing assembly check: nothing may intrude into the lid's seating volume.
  *
- * Four defects in this family shipped (#3401, #3434, #3450, #3477), each caught
+ * Four defects in this family shipped, each caught
  * only after a user reported a lid that would not close, and each guarded
  * afterwards by a test aimed at the feature someone already suspected. A bin
  * and its lid are separate solids, so every ordinary assertion — watertight,
@@ -31,7 +31,7 @@
  *    neither problem: the set is discrete and identical for one footprint.
  *
  * The scope this buys is the rail band, where three of the four defects lived
- * (#3401, #3434, #3477). A pad on the skirt line away from any rail (#3450)
+ *. A pad on the skirt line away from any rail
  * needs the footprint sweep, and keeps its own dedicated test. Widening this
  * gate to cover that too means first making `verticalSolidSpans` robust to the
  * odd crossing counts that interior features leave at coincident faces — its
@@ -52,8 +52,8 @@ import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams, CompartmentConfig } from '@/features/bin-designer/types';
 /**
  * Tolerance (mm). Absorbs tessellation noise on the curved corner blends; the
- * defects this guards against measured 1.25mm (#3401), 2.8mm (#3450) and
- * 3.10mm (#3477).
+ * defects this guards against measured 1.25mm, 2.8mm and
+ * 3.10mm.
  */
 const TOLERANCE_MM = 0.05;
 
@@ -83,7 +83,7 @@ const AXES = [
   { name: 'coverage', values: ['50', '100'] },
   { name: 'cutouts', values: ['off', 'front'] },
   { name: 'handles', values: ['off', 'front'] },
-  // #3477's envelope subtract. Both states matter: `on` is what new designs
+  //'s envelope subtract. Both states matter: `on` is what new designs
   // get, `off` is every design published before it and still the only path a
   // polygon bin has.
   { name: 'relieve', values: ['on', 'off'] },
@@ -134,7 +134,7 @@ function paramsFor(c: Case): BinParams {
       c.scoop === 'off'
         ? DEFAULT_BIN_PARAMS.scoop
         : // A typed radius is the one the `autoScoopCeiling` clamp does not
-          // hold clear of the rail band (#3434), so it is its own value here.
+          // hold clear of the rail band, so it is its own value here.
           { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, radius: c.scoop === 'auto' ? 'auto' : 20 },
     walls:
       c.cutouts === 'off'
@@ -210,7 +210,7 @@ describe('nothing intrudes into the lid seating volume', () => {
     // Control for the whole matrix, and not optional: two earlier versions of
     // this measurement reported confidently on things that were not defects,
     // and a lip filter that excluded too much would make every case below pass
-    // by measuring nothing. Rebuilds the pre-#3477 pairing by hand — a bin with
+    // by measuring nothing. Rebuilds the older pairing by hand — a bin with
     // dividers, and a lid generated as though it had none.
     const { generateLid } = await import('./lidOrchestrator');
     const params = paramsFor({
@@ -225,7 +225,7 @@ describe('nothing intrudes into the lid seating volume', () => {
       coverage: '100',
       cutouts: 'off',
       handles: 'off',
-      // The pre-#3477 pairing, which is what the control reconstructs.
+      // The older pairing, which is what the control reconstructs.
       relieve: 'off',
     });
     const bin = getGenerateBin()(params, undefined, false);

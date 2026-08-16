@@ -99,7 +99,7 @@ describe('GridAlignmentControls', () => {
     );
   });
 
-  // #3170: the stored value is exact (roundMm keeps 2 decimals) — it was only
+  // The stored value is exact (roundMm keeps 2 decimals) — it was only
   // the two readouts that disagreed, the stepper rounding 0.75 up to "0.8" and
   // the hint rounding the negated frame shift down to "−0.7".
   it('commits a typed two-decimal shift at full precision', () => {

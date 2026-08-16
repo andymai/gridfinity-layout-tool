@@ -495,7 +495,7 @@ describe('getPatternDescriptors — corner keep-out (#2865)', () => {
     const innerCornerRadius = Math.max(BOX_CORNER_RADIUS - params.wallThickness, 0);
     const withLip = frontCornerGap(params, innerW, innerD, true);
     expect(withLip.gap).toBeGreaterThanOrEqual(innerCornerRadius);
-    // No lip additionally keeps the #2865 printability margin.
+    // No lip additionally keeps the printability margin.
     const noLip = frontCornerGap(params, innerW, innerD, false);
     expect(noLip.gap).toBeGreaterThanOrEqual(Math.max(innerCornerRadius, WALL_CORNER_KEEP_OUT));
   });

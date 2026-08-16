@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Scenario tests for the `puzzle` connector (issue #2241).
+ * Scenario tests for the `puzzle` connector.
  *
  * The puzzle is an integral jigsaw-tab tongue/groove — a stronger replacement for
  * the legacy slip-fit `dovetail`, added as its own style so existing dovetail

@@ -1,5 +1,5 @@
 /**
- * Assembled-height readout under the Dimensions section (issue #3037).
+ * Assembled-height readout under the Dimensions section.
  *
  * The W×D×H line above it is the bin's PRINTED body — what you check against a
  * print bed. This is what the design stands at once it is seated on a baseplate

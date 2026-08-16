@@ -1,5 +1,5 @@
 /**
- * One row of the cutout shape list (issue #3053).
+ * One row of the cutout shape list.
  *
  * Renders either a shape or a group parent. Groups act on every member, which
  * matches how grouped cutouts already behave elsewhere (color and groupOp are
