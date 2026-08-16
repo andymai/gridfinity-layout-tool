@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.414.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.414.0...gridfinity-layout-tool-v4.414.1) (2026-08-16)
+
+
+### Bug Fixes
+
+* **print-export:** recalibrate the bin base volume against measured solids ([#3528](https://github.com/andymai/gridfinity-layout-tool/issues/3528)) ([091c53b](https://github.com/andymai/gridfinity-layout-tool/commit/091c53b04506efaf66b2f3641089fe8d87893b65))
+
 ## [4.414.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.413.0...gridfinity-layout-tool-v4.414.0) (2026-08-16)
 
 
