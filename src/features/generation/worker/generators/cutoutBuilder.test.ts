@@ -2,7 +2,7 @@
 /**
  * Real-kernel tests for `findBottomEdges` — the scoop-fillet edge selector.
  *
- * Regression for GH #2085: the selector must return only edges that lie flat in
+ * Regression for GH: the selector must return only edges that lie flat in
  * the bottom plane, never a box's vertical corner edges. Filleting a vertical
  * edge rounds the cutout corner all the way to the top rim and leaves a
  * degenerate single-face sliver there, which exports as a non-manifold STL edge.

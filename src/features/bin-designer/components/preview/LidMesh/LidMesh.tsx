@@ -69,8 +69,8 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false, xray = false }:
     useShallow((s) => {
       const { heightUnitMm } = s.params;
       const lipTopZ = binLipTopWorldZ(s.params);
-      // The cavity deepens for the extraHeightMm knob (#2482) AND for any
-      // floor plate thicker than the baseline (#2761); both raise the lid
+      // The cavity deepens for the extraHeightMm knob AND for any
+      // floor plate thicker than the baseline; both raise the lid
       // floor above the lip. Resolved centrally so this matches the worker.
       const anchorZ = lidAnchorZ(
         heightUnitMm,
@@ -93,7 +93,7 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false, xray = false }:
 
   // The lid's own top lip can differ from the rest of the lid. Classified by
   // exactly the rule the 3MF assembler uses, so the preview keeps predicting
-  // the print (the invariant GH #1654 established).
+  // the print (the invariant GH established).
   const lidColorData = useMemo(
     () =>
       featureColors?.enabled
@@ -117,7 +117,7 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false, xray = false }:
 
   // In multi-color mode the lid is a single zone (`featureColors.lid`); the
   // exporter already paints the whole lid object that color, so the preview
-  // must match instead of falling back to the body material (GH #1654).
+  // must match instead of falling back to the body material (GH).
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is null-coalesced upstream (legacy persisted configs); runtime guard kept as belt-and-suspenders.
   const lidColor = featureColors?.enabled ? getZoneColor(featureColors, 'lid') : color;
 

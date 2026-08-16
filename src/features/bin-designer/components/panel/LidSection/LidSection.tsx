@@ -13,7 +13,7 @@
  * Wall thickness and fit clearance are intentionally NOT exposed: the
  * click-lock geometry only works with one validated numeric set (see
  * `lidConstants.ts`). The floor plate is the exception — it mates with
- * nothing, so `topThicknessMm` is a user knob (#2761).
+ * nothing, so `topThicknessMm` is a user knob.
  */
 
 import { useState } from 'react';

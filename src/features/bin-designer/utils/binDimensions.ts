@@ -70,7 +70,7 @@ export type BaseFloorSource = Pick<BaseConfig, 'style' | 'trayBottom'>;
 /**
  * World Z of the interior floor for a given base — the depth of whatever sits
  * under it. `SOCKET_HEIGHT` for a Gridfinity base, 0 for a flat one, the skirt
- * depth for a tray (#3036).
+ * depth for a tray.
  *
  * Exported because the preview overlays each build their own Z frame from
  * store scalars rather than calling {@link binDimensions}; sharing this keeps
@@ -128,7 +128,7 @@ export function binDimensions(params: BinParams): BinDimensions {
   const innerD = outerD - 2 * params.wallThickness;
   const totalH = params.height * params.heightUnitMm;
   const isFlat = params.base.style === 'flat';
-  // Mirrors the worker's `deriveDimensions`. A tray bin (#3036) is socketless
+  // Mirrors the worker's `deriveDimensions`. A tray bin is socketless
   // like a flat one, but its floor sits on a lid skirt rather than on the bed,
   // so `floorZ` is that skirt's depth. Everything downstream — the ghost
   // overlays, the cutout and divider editors, the scoop bounds — reads these

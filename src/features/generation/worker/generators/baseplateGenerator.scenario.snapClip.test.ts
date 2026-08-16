@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Scenario tests for snap-clip connectors (issue #1610).
+ * Scenario tests for snap-clip connectors.
  *
  * Snap-clip mode cuts a blind, ledged pocket on BOTH sides of every seam and
  * ships a separate top-insert "staple" whose barbs catch the ledges. Verified
@@ -177,7 +177,7 @@ describe('baseplateGenerator — snap-clip connectors (issue #1610)', () => {
       // (slot-root fillets, top chamfer, slot-mouth fillets) plus relieving the
       // top-bridge corners against the four neighbouring full-cell bin feet leave
       // ~46.1mm³ (barb trimmed to 0.3 and the lead-in stretched to 0.7 by the
-      // #2638 insertability retune), and a seated clip clears bins in the edge
+      // Insertability retune), and a seated clip clears bins in the edge
       // sockets flanking each seam (see snapClipSocketInterference.test.ts).
       const totalHeight = 5;
       const clip = buildSnapClip(totalHeight, 42);

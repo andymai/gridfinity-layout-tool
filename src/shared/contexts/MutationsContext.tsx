@@ -102,7 +102,7 @@ export interface Mutations {
 const MutationsContext = createContext<Mutations | null>(null);
 
 // Resolve the live `commandBus` binding at call time. `commandBus` is typed
-// non-nullable, but under a chunk-level static-import cycle (#1466/#1563) or a
+// non-nullable, but under a chunk-level static-import cycle or a
 // stale chunk it can transiently resolve to `undefined`; surfacing that as an
 // actionable error beats the cryptic native `TypeError`.
 function requireCommandBus(): CommandBus {
@@ -120,7 +120,7 @@ function requireCommandBus(): CommandBus {
 // `undefined` at build time can no longer poison the singleton: every method
 // re-reads the current binding via `requireCommandBus()`. Reading inside the
 // method bodies (not at init) is also why this passes
-// `local/no-init-time-imported-call` (#1566).
+// `local/no-init-time-imported-call`.
 const liveCommandBus: CommandBus = {
   dispatch(command) {
     return requireCommandBus().dispatch(command);
@@ -134,7 +134,7 @@ const liveCommandBus: CommandBus = {
 };
 
 // Lazy: building at module init would capture `commandBus` before its
-// chunk has evaluated under chunk-level static-import cycles (#1466),
+// chunk has evaluated under chunk-level static-import cycles,
 // so every mutation would close over `undefined` and throw on dispatch.
 let cqrsMutationsSingleton: Mutations | null = null;
 function getCqrsMutations(): Mutations {

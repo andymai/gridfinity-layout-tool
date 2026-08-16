@@ -1,5 +1,5 @@
 /**
- * Is the bin's interior carved back to clear the lid's seating envelope (#3477)?
+ * Is the bin's interior carved back to clear the lid's seating envelope?
  *
  * The single gate, read by the pipeline stage that cuts the ring, by
  * `dividerRailBlocks` (which has nothing to notch once it is on), by the label
@@ -21,7 +21,7 @@ export function interiorReliefActive(params: BinParams): boolean {
   // A lid needs a lip to grip, and a base-only tile has no cavity to relieve.
   if (!params.base.stackingLip) return false;
   if (params.base.tile === true) return false;
-  // Custom shapes are relieved too since #3482. Their ring follows the mask
+  // Custom shapes are relieved too. Their ring follows the mask
   // outline as one band per edge (`lidKeepoutSlabs`) rather than as a rounded
   // rectangle, but the gate is the same: whether the bin has a lid to clear.
   return true;

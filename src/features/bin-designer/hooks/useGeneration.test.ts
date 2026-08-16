@@ -48,7 +48,7 @@ const mockSavePersisted = vi.fn<(key: string, mesh: MeshData) => void>();
 
 vi.mock('@/shared/generation/meshPersistence', () => ({
   // Param- and kernel-sensitive, so both the stale-params guard in the mount
-  // pre-draft and the per-kernel namespacing (#3444) are testable.
+  // pre-draft and the per-kernel namespacing are testable.
   binMeshCacheKey: (p: { width: number }, kernel: KernelName) => `test-key-${kernel}-${p.width}`,
   loadPersistedBinMesh: () => mockLoadPersisted(),
   savePersistedBinMesh: (key: string, mesh: MeshData) => mockSavePersisted(key, mesh),
@@ -472,7 +472,7 @@ describe('useGeneration', () => {
     expect(mesh.vertices).toEqual(new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]));
   });
 
-  // #3444: the persisted entry must be namespaced by the kernel that built it,
+  // The persisted entry must be namespaced by the kernel that built it,
   // or a Labs engine switch serves the other engine's mesh for unchanged params.
   it('persists under a key namespaced by the active kernel', async () => {
     mockActiveKernel = 'brepkit';

@@ -120,14 +120,14 @@ export function computeRailSummary(
    */
   outerExpansion: { readonly addW: number; readonly addD: number } = { addW: 0, addD: 0 },
   /**
-   * Stretches denied to a rail by a compartment divider (#3477) or by a wall
-   * cutout or handle hole that has taken the lip away (#3483). Empty for a bin
+   * Stretches denied to a rail by a compartment divider or by a wall
+   * cutout or handle hole that has taken the lip away. Empty for a bin
    * with none of the three. Without them the readout counts rails the worker
    * will not build.
    */
   wallBlocks: readonly WallSpanBlock[] = [],
   /**
-   * Lip gaps on a custom-shape footprint (#3482), matched per EDGE rather than
+   * Lip gaps on a custom-shape footprint, matched per EDGE rather than
    * per side. Empty for a rectangle, which uses `wallBlocks` instead.
    */
   polygonGaps: readonly PolygonLipGap[] = []
@@ -230,7 +230,7 @@ export function computeRailSummary(
  */
 // `labelTabs` is deliberately absent. Its one-click fix deleted every label on
 // the bin, which was proportionate while a tab cost the whole wall's rail; since
-// #3401 the rail is only segmented around the tabs, so the button offered to
+// The rail is only segmented around the tabs, so the button offered to
 // destroy user content to recover part of one wall. The warning still explains
 // the trade and the user can turn labels off themselves.
 export const FIXABLE_IDS: ReadonlySet<LidCompatibilityId> = new Set<LidCompatibilityId>([

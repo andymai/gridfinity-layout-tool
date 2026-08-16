@@ -27,7 +27,7 @@ export function SyncDimensionsDialog() {
   const dialogRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
-  // Declining is remembered for this design at these dimensions (#3040), so the
+  // Declining is remembered for this design at these dimensions, so the
   // mount reconciliation stops re-opening the prompt on every return to the
   // layout editor.
   const handleCancel = useCallback(() => {

@@ -98,7 +98,7 @@ export interface LayoutMetrics {
 
 export const DEFAULT_DRAWER = { width: 10, depth: 8, height: 12 };
 // Intentionally a literal, not CONSTRAINTS.PRINT_BED_MM_DEFAULT: this is read at
-// module-init, and (per the #1466 note above) reading an imported @/core/constants
+// module-init, and (per the note above) reading an imported @/core/constants
 // binding at init time can resolve to undefined under the chunk static-import cycle.
 export const DEFAULT_PRINT_BED = 256;
 
@@ -106,7 +106,7 @@ export const DEFAULT_PRINT_BED = 256;
 // binding. In production, this module and src/core/constants land in chunks
 // that participate in a static-import cycle; reading the binding at module-init
 // time can resolve to undefined and crash app boot with a TypeError on .map.
-// See issue #1466.
+// See.
 let defaultCategoryNamesCache: ReadonlySet<string> | null = null;
 export function getDefaultCategoryNames(): ReadonlySet<string> {
   if (defaultCategoryNamesCache === null) {

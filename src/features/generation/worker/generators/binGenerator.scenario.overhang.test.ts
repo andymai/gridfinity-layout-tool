@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Geometry validation for per-side bin overhang (issue #1641).
+ * Geometry validation for per-side bin overhang.
  *
  * Overhang grows the outer body + stacking lip outward by a per-side mm amount
  * while the base sockets stay at the nominal footprint (flat bottom under the

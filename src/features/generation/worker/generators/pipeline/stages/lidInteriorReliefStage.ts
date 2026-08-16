@@ -1,15 +1,15 @@
 /**
- * Lid interior relief — carve the seating envelope out of the cavity (#3477).
+ * Lid interior relief — carve the seating envelope out of the cavity.
  *
  * The last operation on the bin's interior, and that placement is the feature,
  * not an implementation detail: every interior builder runs above it in the
  * pipeline, so anything added later is trimmed without its author knowing the
  * lid exists. Four defects in this family shipped because each new feature had
- * to be told about the rail band separately (#3401, #3434, #3450, #3477).
+ * to be told about the rail band separately.
  *
  * ORDER. After `translateStage`, so Z is final world Z. BEFORE
  * `lidRetentionStage`: a magnetic lid's corner pads weld into the interior
- * walls and rise to the mating plane by design (#3450), so they are part of
+ * walls and rise to the mating plane by design, so they are part of
  * the interface rather than contents, and cutting them would break the very
  * fit they exist for.
  *
@@ -176,7 +176,7 @@ export const lidInteriorReliefStage: PipelineStage = {
     const mask = params.cellMask;
     // A custom shape's ring follows its own outline, so it is built as the union
     // of one band per edge rather than as a rounded rectangle less its inset
-    // copy (#3482). `lidKeepoutSlabs` explains why that is a construction and
+    // copy. `lidKeepoutSlabs` explains why that is a construction and
     // not an approximation.
     const built = isPartialMask(mask)
       ? buildPolygonRing(

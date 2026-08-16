@@ -30,7 +30,7 @@ export function dimensionsMatch(
 }
 
 /**
- * Check if a design fits a bin's footprint, allowing a 90° placement (#3040).
+ * Check if a design fits a bin's footprint, allowing a 90° placement.
  *
  * The isometric preview has always rendered a linked design rotated when the
  * bin's footprint is the design's transpose (`isRotatedPlacement`), so an
@@ -62,7 +62,7 @@ export function syncDeclineKey(d: SyncableDimensions): string {
  * Compare dimensions and identify which ones differ.
  *
  * `matched` is the "does this design fit the bin" verdict and so allows a 90°
- * placement (#3040); `differences` stays a literal per-axis report, because it
+ * placement; `differences` stays a literal per-axis report, because it
  * drives the dialog's read-out of what actually changed.
  */
 export function compareDimensions(

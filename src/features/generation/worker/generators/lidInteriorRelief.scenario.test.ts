@@ -1,5 +1,5 @@
 /**
- * Lid interior relief (#3477) — the envelope subtract, proven on real geometry.
+ * Lid interior relief — the envelope subtract, proven on real geometry.
  *
  * Three things have to hold together, and any two without the third is a worse
  * bin than before the change:

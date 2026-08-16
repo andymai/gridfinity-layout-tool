@@ -1,5 +1,5 @@
 /**
- * Cutout shape list (issue #3053).
+ * Cutout shape list.
  *
  * A layers panel for the cut editor: every shape as a row, groups as
  * expandable parents, ordered topmost-first so the list reads the way the

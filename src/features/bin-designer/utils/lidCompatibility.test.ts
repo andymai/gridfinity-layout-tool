@@ -29,7 +29,7 @@ function allFourHandles(width: number): BinParams['handles'] {
 
 /**
  * Wall cutouts of `width` percent on every side. The width is load-bearing
- * since #3483: the blocker asks whether any lip survives, not how many sides
+ *: the blocker asks whether any lip survives, not how many sides
  * carry a cutout, so 70 and 100 give different verdicts.
  */
 function allFourCutouts(width: number): BinParams['walls'] {
@@ -250,7 +250,7 @@ describe('checkLidCompatibility', () => {
     });
 
     // A thick floor plate deepens the cavity just like extraHeightMm does
-    // (#2761), so it lengthens the same lever arm and counts toward the
+    //, so it lengthens the same lever arm and counts toward the
     // threshold — 6mm of extra height alone would not trip it.
     it('counts a thick floor plate toward the leverage threshold', () => {
       const params = withOverrides({
@@ -678,7 +678,7 @@ describe('checkLidCompatibility', () => {
 
   describe('finger scoop at the lip', () => {
     // A radius that lands in the click rail's band. `autoScoopCeiling` holds an
-    // AUTO scoop clear of it (#3434), so only a height the user typed can get
+    // AUTO scoop clear of it, so only a height the user typed can get
     // there — which is exactly what this warning is now about.
     const TALL_SCOOP = { ...DEFAULT_BIN_PARAMS.scoop, enabled: true, radius: 40 } as const;
 
@@ -696,7 +696,7 @@ describe('checkLidCompatibility', () => {
     });
 
     it('leaves an auto scoop alone — it is held clear of the band (#3434)', () => {
-      // The regression #3432 shipped: every scooped wall lost its rail, because
+      // The regression shipped: every scooped wall lost its rail, because
       // the gate asked whether the ramp took a lip offset rather than whether
       // it reached the band the rail drops into.
       const params = scooped({
@@ -763,7 +763,7 @@ describe('checkLidCompatibility', () => {
 
     it('still warns when the wall is as thick as the lip inset', () => {
       // At 2.6mm `computeLipOffset` is 0, so there is no inward offset and no
-      // chute. #3432 gated on that and kept the rail; the ramp's own arc still
+      // chute. gated on that and kept the rail; the ramp's own arc still
       // fills the band, which is what actually buries the rail.
       expect(
         checkLidCompatibility(scooped({ wallThickness: 2.6 })).find((i) => i.id === 'scoopFillsLip')
@@ -834,7 +834,7 @@ describe('checkLidCompatibility', () => {
     });
 
     it('disables no rail for label tabs, which the builder segments around', () => {
-      // Label tabs used to disable their anchor wall outright. Since #3401 the
+      // Label tabs used to disable their anchor wall outright. Since the
       // rail builder splits the run around the tab footprints and keeps any
       // stretch left over, so deciding here would throw those gaps away before
       // anything measured them. A wall the tabs fully cover still ends up with
@@ -857,9 +857,9 @@ describe('checkLidCompatibility', () => {
     });
 
     it('leaves a wall cutout to the segment pass rather than disabling its wall', () => {
-      // #3483: a cutout takes its own span, so the rail keeps the stretches
+      // A cutout takes its own span, so the rail keeps the stretches
       // either side. Disabling the wall here would throw them away before
-      // anything measured them, exactly as it did for label tabs before #3401.
+      // anything measured them, exactly as it did for label tabs before.
       const params = withOverrides({
         label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
         walls: {

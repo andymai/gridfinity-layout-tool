@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Geometry validation for non-square baseplates (issue #2704).
+ * Geometry validation for non-square baseplates.
  *
  * A non-square grid gives the depth (Y) axis a different cell pitch than the
  * width (X) axis (`gridUnitMmY !== gridUnitMm`), so a drawer that isn't an exact

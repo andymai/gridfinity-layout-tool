@@ -167,7 +167,7 @@ function buildStackedFileBlob(
 
 /**
  * Thrown when a piece would print larger than the configured bed — reachable
- * only under a user-drawn split plan (#3115), since the planner's own search
+ * only under a user-drawn split plan, since the planner's own search
  * never emits one. Carries the offending labels so a caller can name them; the
  * baseplate page instead prevents the export from starting at all.
  */
@@ -230,7 +230,7 @@ export async function buildBaseplateExportPieces(
   // The bed-fit gate lives HERE, not in the callers: this builder is the single
   // choke point every export path runs through, and the baseplate page's
   // `canExport` only disables its own button — the whole-layout ZIP calls
-  // straight through and would otherwise ship the same oversized pieces (#3115).
+  // straight through and would otherwise ship the same oversized pieces.
   if (tiling.bedOverages.length > 0) {
     throw new BaseplateBedOverageError(tiling.bedOverages.map((o) => o.label));
   }
@@ -267,8 +267,8 @@ export async function buildBaseplateExportPieces(
   const baseNameNoExt = baseName.replace(/\.[^.]+$/, '');
   const extension = FORMAT_EXTENSIONS[format];
 
-  // Detached margin rails (issue #2392). They also ship alongside stacked
-  // towers (#2641) — rails never stack, they print flat as separate pieces.
+  // Detached margin rails. They also ship alongside stacked
+  // towers — rails never stack, they print flat as separate pieces.
   const railMargins = fullParams.detachMargins ? tiling.margins : [];
   const exportRailPieces = async (): Promise<ExportPiece[]> => {
     const out: ExportPiece[] = [];
@@ -298,7 +298,7 @@ export async function buildBaseplateExportPieces(
   }));
 
   // Seated connector parts (dovetail key / snap clip). A keyed margin seam adds
-  // junctions of its own (#2866), so an UNSPLIT plate can need keys too — the
+  // junctions of its own, so an UNSPLIT plate can need keys too — the
   // single-body paths below have to ship them or the seam grooves are unusable.
   const keyCount = countConnectorKeys(tiling, fullParams);
   const exportConnectorKeyPiece = async (): Promise<ExportPiece[]> => {
@@ -475,7 +475,7 @@ export async function buildBaseplateExportPieces(
 
   if (stack && stackEnabled) {
     // The towers stack the BODY mesh — padding-free on detached sides, with the
-    // rails shipping as separate flat pieces alongside (#2641). The flip must be
+    // rails shipping as separate flat pieces alongside. The flip must be
     // planned from the same params the mesh was generated with, or the flipped
     // copies re-seat off-axis by the removed padding.
     const stlData = await getOrExport(buildExportCacheKey(bodyExportParams, 'stl', nozzleMm), () =>

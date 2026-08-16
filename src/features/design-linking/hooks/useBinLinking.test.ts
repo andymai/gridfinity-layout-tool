@@ -805,7 +805,7 @@ describe('useBinLinking', () => {
      * A 10.5-wide drawer with its half column on the left (cells start at 0.5)
      * and `design-1` placed at x=0, so the bin's half cell lands at 'start'.
      * The design has to be PLACED — the edge follows the bin's position, not
-     * the drawer's own fractional slot (#3070).
+     * the drawer's own fractional slot.
      */
     function withDrawerEdge() {
       const stores = setupStores([

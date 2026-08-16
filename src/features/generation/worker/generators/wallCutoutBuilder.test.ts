@@ -147,7 +147,7 @@ describe('computeInteriorDividerCutouts', () => {
     expect(cut.rotateZ).not.toBe(0); // the regression: it used to stay axis-aligned
   });
 
-  // ─── Alignment / offset / mm parity with outer walls (discussion #2323) ──
+  // ─── Alignment / offset / mm parity with outer walls (discussion) ──
   // A linked outer config (e.g. left-aligned + offset) is copied onto the
   // interior cutout, so the divider window must track it instead of staying
   // centred on the divider midpoint.
@@ -280,7 +280,7 @@ describe('buildSingleCutout corner placement', () => {
   }, 120_000);
 
   // 40mm span → autoCornerRadius saturates at its 5mm cap, the worst case for
-  // #3173. OVERSHOOT is the production no-lip value ((hasLip ? LIP_HEIGHT : 0) + 2),
+  //. OVERSHOOT is the production no-lip value ((hasLip ? LIP_HEIGHT: 0) + 2),
   // so the cut runs from z = WALL_HEIGHT - CUT_HEIGHT up to z = WALL_HEIGHT + 2
   // and the wall's visible rim sits at z = WALL_HEIGHT.
   const CUT_WIDTH = 40;
@@ -299,7 +299,7 @@ describe('buildSingleCutout corner placement', () => {
    * counterClockwise blueprint and calls its own centre outside), and 2D
    * drawing booleans throw on these profiles. A 3D bounding box is immune to
    * both, and this exercises the real overshoot/`cutZ` placement — the half of
-   * #3173 that decides whether an arc reaches the rim at all.
+   * That decides whether an arc reaches the rim at all.
    */
   const spanAtZ = (
     shape: WallCutoutShape,
@@ -332,7 +332,7 @@ describe('buildSingleCutout corner placement', () => {
 
   it('straddles the wall and overshoots the rim', () => {
     // The u-shape profile switched from drawRoundedRectangle to a pen for
-    // #3173, which flips the blueprint winding (counterClockwise → clockwise).
+    //, which flips the blueprint winding (counterClockwise → clockwise).
     // Winding can flip an extrusion's direction, so pin the placement: the cut
     // must stay centred on the wall face in Y and still clear the rim in Z.
     const b = withScope((scope: DisposalScope) =>

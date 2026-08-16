@@ -17,7 +17,7 @@ const ALL_RAILS: LidClickRails = { front: true, back: true, left: true, right: t
 const NO_DISABLED: ReadonlySet<LidCompatibilitySide> = new Set();
 
 describe('computeRailSummary', () => {
-  // Since #3401 the worker cuts a wall's run around the label tabs, so the
+  // Since the worker cuts a wall's run around the label tabs, so the
   // summary has to do the same or it advertises rails that are not built.
   const backTab = (xMin: number, xMax: number): LabelTabFootprint => ({
     anchor: 'back',

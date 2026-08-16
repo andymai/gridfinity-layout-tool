@@ -125,7 +125,7 @@ export interface GenerateBaseplatePayload {
   readonly requestId: string;
 }
 
-/** Generate one detached margin rail (issue #2392). Params carry the full
+/** Generate one detached margin rail. Params carry the full
  * plate context so the rail's over-tile pockets align with the body grid. */
 export interface GenerateBaseplateMarginMessage {
   readonly type: 'GENERATE_BASEPLATE_MARGIN';
@@ -190,7 +190,7 @@ export interface ExportConnectorKeyMessage {
 }
 
 /**
- * Export one detached margin rail (issue #2392). Reuses the
+ * Export one detached margin rail. Reuses the
  * BASEPLATE_EXPORT_RESULT response shape; the payload adds the rail to build.
  */
 export interface ExportBaseplateMarginMessage {
@@ -217,7 +217,7 @@ export interface ExportConnectorSampleMessage {
   readonly payload: ExportBaseplatePayload;
 }
 
-/** One swappable label plate to build (#2666): standard width + its text. */
+/** One swappable label plate to build: standard width + its text. */
 export interface LabelPlateExportSpec {
   readonly widthU: 1 | 2 | 3;
   readonly text: string;
@@ -243,7 +243,7 @@ export interface LabelPlateExportOptions {
 }
 
 /**
- * Export swappable label plates for a socket-mode design (#2666). Reuses the
+ * Export swappable label plates for a socket-mode design. Reuses the
  * BASEPLATE_EXPORT_RESULT response shape (data + format + fileName).
  */
 export interface ExportLabelPlatesMessage {
@@ -259,7 +259,7 @@ export interface ExportLabelPlatesPayload {
 }
 
 /**
- * Export the label-socket fit-calibration card (#2666): 1U-socket coupons
+ * Export the label-socket fit-calibration card: 1U-socket coupons
  * across a fit-offset ladder plus one nominal reference plate. The card is
  * fully standard-defined, so the payload carries nothing beyond the format.
  * Reuses the BASEPLATE_EXPORT_RESULT response shape.

@@ -55,7 +55,7 @@ export function StackPlateMesh({
       const { heightUnitMm } = s.params;
       const lipTopZ = binLipTopWorldZ(s.params);
       // Match the lid's mated frame including every source of cavity depth
-      // (extra height #2482, thicker floor plate #2761) so the glue-on plate
+      // (extra height, thicker floor plate) so the glue-on plate
       // rides on the taller lid's floor — mirrors LidMesh and the export lift.
       const anchorZ = lidAnchorZ(
         heightUnitMm,

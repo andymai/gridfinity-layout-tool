@@ -197,7 +197,7 @@ export function applyEvent(layout: Layout, event: DomainEvent): Layout {
     case 'layout.baseplateParamsSet': {
       next.baseplateParams = event.payload.params;
       // Mirror setBaseplateParams.apply(): padding moves the perimeter frame
-      // (#3157), so the event may carry a displacement cascade. Absent on
+      //, so the event may carry a displacement cascade. Absent on
       // events that predate the field — bins stay untouched then.
       const displaced = new Set(event.payload.displacedBinIds ?? []);
       if (displaced.size > 0) {

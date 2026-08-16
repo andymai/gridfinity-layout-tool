@@ -3,7 +3,7 @@
  * The mesh-based STL fallback must produce a valid, parseable binary STL from
  * a real generated solid — this is the path the single-piece exporter falls
  * back to when OCCT's `StlAPI.Write` rejects an otherwise-meshable topology
- * (production `STL_EXPORT_FAILED` failures, #1760 / #1850 family).
+ * (production `STL_EXPORT_FAILED` failures, / family).
  */
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import { mesh } from 'brepjs';

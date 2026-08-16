@@ -34,7 +34,7 @@ const MAX_CORNER_RADIUS_MM = 200;
  */
 const MAX_SPLIT_CHUNKS = 100;
 
-/** Mount-down screw hole bounds (#3425), mirroring `SCREW_*` in `src/core/constants.ts`. */
+/** Mount-down screw hole bounds, mirroring `SCREW_*` in `src/core/constants.ts`. */
 const MIN_SCREW_DIAMETER_MM = 2;
 const MAX_SCREW_DIAMETER_MM = 8;
 const MIN_SCREW_HEAD_DIAMETER_MM = 3;
@@ -250,7 +250,7 @@ export function validateBaseplateShare(
     }
   }
 
-  // Mount-down screw holes (#3425). Every field is checked rather than trusted:
+  // Mount-down screw holes. Every field is checked rather than trusted:
   // the head recess drives how tall the plate prints, and `screwsPerPiece` drives
   // how many boolean cuts the BREP worker performs on every split piece.
   if (params.screwHoles !== undefined) {

@@ -1,5 +1,5 @@
 /**
- * Bin floor pattern geometry (#2816) — drainage / ventilation holes.
+ * Bin floor pattern geometry — drainage / ventilation holes.
  *
  * Reuses the divider pattern's panel factory (caching, keep-out handling, stamp
  * dispatch) unchanged. The only difference is the frame: the factory emits a

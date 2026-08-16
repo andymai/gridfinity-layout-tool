@@ -1,6 +1,6 @@
 /**
  * Pure planning step for the swappable-label-plate half of a whole-layout
- * export (#2666, PR 3).
+ * export.
  *
  * Enumerates socket-mode linked designs, derives their plate sets via the
  * same plan math that cut the sockets, multiplies by placed-bin quantities

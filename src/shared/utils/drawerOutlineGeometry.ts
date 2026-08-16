@@ -167,20 +167,20 @@ export interface OutlineLatticeFrame {
  * lattice cells inside the perimeter bbox, the one that centres the cell
  * block in the bbox (then the bbox on the extent, then moves least).
  *
- * Since the pen editor's auto-grow (#3092) grows only the max extent (ceiled
+ * Since the pen editor's auto-grow grows only the max extent (ceiled
  * to a half unit) and never re-bases the min to 0, a custom perimeter commonly
  * occupies a corner-offset SUB-rectangle of its declared extent, which
- * misclassifies split-seam bands near the boundary (#3109) and leaves the
- * socket grid straddling the perimeter asymmetrically (#3108). Pure bbox
+ * misclassifies split-seam bands near the boundary and leaves the
+ * socket grid straddling the perimeter asymmetrically. Pure bbox
  * centring (the first fix) moved the perimeter by sub-cell amounts, breaking
  * lattice registration: "fit whole cells" then dropped an entire row and column
- * of sockets the corner-anchored frame kept (#3149). Registration is therefore
+ * of sockets the corner-anchored frame kept. Registration is therefore
  * the primary objective and centring only breaks ties — a whole-cell
  * translation is a pure relabelling (sockets sit at the same places relative to
  * the perimeter), so it fixes the extent interaction without costing a socket.
  *
  * An OVERSIZE perimeter — bbox wider than the extent, what a shape drawn
- * larger than its grid produces — centres too (#3212). Containment there runs
+ * larger than its grid produces — centres too. Containment there runs
  * the other way round (the lattice stays inside the material rather than the
  * material inside the extent), which is the only sense the constraint can
  * have when the shape is the larger of the two.
@@ -228,7 +228,7 @@ function clamp(value: number, lo: number, hi: number): number {
 
 function axisLatticeShift(bboxMin: number, bboxMax: number, axis: OutlineLatticeAxis): number {
   const { extentMm, originMm, pitchMm, wholeCells } = axis;
-  // Containment runs whichever way round the two spans sit (#3212). Normally
+  // Containment runs whichever way round the two spans sit. Normally
   // the bbox must stay inside the extent. An OVERSIZE bbox — one wider than the
   // extent, which is what a shape drawn larger than its grid produces — can
   // never satisfy that, so the requirement inverts: the extent (the socket

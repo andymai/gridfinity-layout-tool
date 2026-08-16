@@ -1,5 +1,5 @@
 /**
- * Rail-run segmentation around label tabs (#3401) — the arithmetic on its own.
+ * Rail-run segmentation around label tabs — the arithmetic on its own.
  *
  * The assembled-geometry proof lives in `lidLabelTabClearance.scenario`; this
  * covers the branches that are awkward to reach through a whole bin (a tab that
@@ -80,7 +80,7 @@ describe('railSegmentsClearOfLabelTabs', () => {
   });
 
   it('leaves a stretch either side of a centred tab', () => {
-    // The #3401 ask: a tab narrower than its wall leaves usable run at both
+    // The ask: a tab narrower than its wall leaves usable run at both
     // ends, which the lid previously threw away by disabling the wall outright.
     const segs = railSegmentsClearOfLabelTabs(-40, 40, true, 50, [backTab(-10, 10, 50, 12)]);
     expect(segs).toHaveLength(2);

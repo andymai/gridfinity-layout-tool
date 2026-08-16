@@ -2,7 +2,7 @@
 /**
  * Scenario test for wall connectors on an OVERHUNG perimeter wall of a split bin.
  *
- * Regression: a bin extended with an overhang (#1949) and split with wall
+ * Regression: a bin extended with an overhang and split with wall
  * connectors ('key') did not get connectors on the overhung wall. The connector
  * placement (`perimeterWalls`) tested each piece's span against the *nominal*
  * grid footprint (±outerW/2), but the pieces were actually cut to the overhung

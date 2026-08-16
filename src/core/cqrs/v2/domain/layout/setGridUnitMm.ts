@@ -2,7 +2,7 @@
  * Set the grid unit in mm. Clamps to the pitch range; with a custom drawer
  * outline active the floor rises so the mm extent keeps containing the shape —
  * the outline is stored in absolute mm, and a smaller pitch would leave it
- * overhanging for the read-side normalizer to clip on the next load (#3149).
+ * overhanging for the read-side normalizer to clip on the next load.
  * Captures `previousMm` for undo.
  */
 

@@ -340,7 +340,7 @@ export function validateShareLayout(data: unknown, jsonSize: number): Validation
       notes: bin.notes ? sanitizeString(bin.notes, SHARE_CONSTRAINTS.NOTES_MAX_LENGTH) : '',
       customProperties: validatedCustomProperties,
       // Dropping this stripped the recipient's only handle on the bin's design
-      // (#2894); the payload it points at travels alongside as `linkedDesigns`.
+      //; the payload it points at travels alongside as `linkedDesigns`.
       linkedDesignId: bin.linkedDesignId
         ? sanitizeString(bin.linkedDesignId, DESIGN_ID_MAX_LENGTH)
         : undefined,
@@ -409,7 +409,7 @@ export type SharedDesignsResult =
  * designer share uses, so a layout share can't become a side door around the
  * stricter checks (mesh-asset cross-referencing in particular).
  *
- * Absent/empty is valid — layouts with no linked designs and pre-#2894 clients
+ * Absent/empty is valid — layouts with no linked designs and older clients
  * both land here.
  */
 export function validateSharedDesigns(data: unknown): SharedDesignsResult {
@@ -532,7 +532,7 @@ const OUTLINE_COORD_MAX = 2600;
 const OUTLINE_AUTHORING_KINDS = ['cells', 'corners', 'trace', 'pen'];
 
 /**
- * Structural gate for a drawer outline (issue #2528): vertex/coordinate/bulge
+ * Structural gate for a drawer outline: vertex/coordinate/bulge
  * bounds and no self-intersection of the straight-chord approximation. The
  * geometric invariants that need the drawer's mm extent (CCW, min area,
  * in-bounds) are enforced client-side and re-checked at read time by

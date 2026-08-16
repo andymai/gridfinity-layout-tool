@@ -114,7 +114,7 @@ describe('CameraController', () => {
     mocks.liveCamera.updateProjectionMatrix.mockClear();
   });
 
-  // Regression (#1870 camera-rig handoff): drei's makeDefault swaps the real
+  // Regression (camera-rig handoff): drei's makeDefault swaps the real
   // camera in via a layout effect, so the closure still points at R3F's
   // throwaway initial camera when the passive effects run. Both the framing
   // and the far-plane effects must target the live default camera instead.

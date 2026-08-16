@@ -1,7 +1,7 @@
 // @vitest-environment node
 /**
  * Geometry validation for baseplate magnet placement on an oversized grid
- * (gridUnitMm > 42, GitHub discussion #2525).
+ * (gridUnitMm > 42, GitHub discussion).
  *
  * Magnets are edge-anchored a constant 8mm from each cell edge rather than pinned
  * ±13mm from center, so on a 50mm grid they sit at ±17mm and stay corner-aligned

@@ -1,5 +1,5 @@
 /**
- * Lid-vs-finger-scoop clearance (#3426, #3434).
+ * Lid-vs-finger-scoop clearance.
  *
  * A scoop against an outer wall of a lipped bin rises toward the lip. Where its
  * arc reaches the top ~3.15mm of the wall it fills the pocket the lid's click
@@ -10,7 +10,7 @@
  *
  * The ramp's inward offset and the chute above it are NOT what does the damage:
  * they cost 0.07mm against a 0.64mm snap baseline, while a ramp taken to the
- * wall top costs 0.39mm. #3432 gated on the offset and dropped the rail on
+ * wall top costs 0.39mm. gated on the offset and dropped the rail on
  * every scooped wall for it.
  *
  * Both meshes stay watertight and plausibly sized either way, so only mating
@@ -45,7 +45,7 @@ function makeParams(over: Partial<BinParams> = {}): BinParams {
       attachment: 'clickRails',
       clickRails: { front: true, back: true, left: true, right: true },
       clickRailCoverage: 100,
-      // Pins the NOTCHING path (#3477): `relieveInterior` defaults on for new
+      // Pins the NOTCHING path: `relieveInterior` defaults on for new
       // designs, which steps the interior aside and makes the rails whole, so
       // leaving it on would exercise a different mechanism than this file.
       relieveInterior: false,
@@ -73,7 +73,7 @@ describe('lid click rails clear the scoop', () => {
       if (!bin) throw new Error('expected the bin to build');
       if (!lid) throw new Error('expected the lid to build');
 
-      // The rail the scoop used to cost (#3434) is back.
+      // The rail the scoop used to cost is back.
       expect(new Set(railPlacements(resolveLidInputs(params)).map((p) => p.rotationDeg))).toContain(
         ROTATION[side]
       );
@@ -116,7 +116,7 @@ describe('lid click rails clear the scoop', () => {
   it('the probe can see a real clash', async () => {
     // Control for the seating assertions above: a bin scooped to the wall top
     // paired with a lid built as though the scoop were not there, which is what
-    // shipped before #3432. Without it, every case above passes if the probe
+    // shipped. Without it, every case above passes if the probe
     // stops finding a solid or `lidZOffset` drifts.
     const { generateLid } = await import('./lidOrchestrator');
     const params = makeParams({

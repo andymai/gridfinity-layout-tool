@@ -3,14 +3,14 @@
  *
  * A fractional-dimension bin's half foot has to sit on the side where its half
  * cell actually lands in the drawer, so a linked design whose `fractionalEdgeX/Y`
- * disagrees is oriented wrong (issue #2518). These pure helpers detect that
+ * disagrees is oriented wrong. These pure helpers detect that
  * mismatch and compute the corrective patch.
  *
  * The correct edge is a function of WHERE THE BIN SITS, not of the drawer's own
  * fractional slot. Comparing against `Drawer.fractionalEdgeX/Y` alone warned on
  * every fractional bin in an integer-sized drawer — no fractional column exists
  * there, an unset drawer edge normalizes to `'end'`, and "Match layout" then
- * flipped a perfectly correct foot to the wrong side (issue #3070).
+ * flipped a perfectly correct foot to the wrong side.
  *
  * Everything is evaluated PER AXIS and ACROSS every placement of the design,
  * because one design can sit in several bins at once. An axis only warns when
@@ -39,7 +39,7 @@ export interface FractionalEdgeDesign {
    * on a uniform array). Warning about it would be noise.
    */
   readonly halfSockets?: boolean;
-  /** Foot lattice per axis (#3467). Missing = `'grid'`, the documented default. */
+  /** Foot lattice per axis. Missing = `'grid'`, the documented default. */
   readonly footLatticeX?: FootLattice;
   readonly footLatticeY?: FootLattice;
   /**
@@ -202,7 +202,7 @@ export function computeMatchedEdges(
  *
  * The same offset-from-boundary question {@link edgeForPosition} asks, read for
  * a different purpose: a bin opening on a cell boundary wants full feet, and
- * one offset half a unit wants the half-unit rim (#3467). A foot has to land
+ * one offset half a unit wants the half-unit rim. A foot has to land
  * inside a single pocket, so getting this wrong leaves the bin perched on the
  * ridges between them rather than seated.
  *

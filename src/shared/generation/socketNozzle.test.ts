@@ -20,7 +20,7 @@ describe('withSocketNozzle', () => {
   });
 
   it('leaves a socket bin untouched at or below the 0.4mm baseline', () => {
-    // Same reference so the mesh cache key stays byte-identical to pre-#2690.
+    // Same reference so the mesh cache key stays byte-identical to pre-.
     expect(withSocketNozzle(socketBin, 0.4)).toBe(socketBin);
     expect(withSocketNozzle(socketBin, 0.3)).toBe(socketBin);
   });

@@ -454,7 +454,7 @@ export interface ActiveZonesParams {
   readonly label: {
     readonly enabled: boolean;
     readonly mode?: 'text' | 'socket';
-    /** Full-width tabs read `rowTexts` instead of `compartmentTexts` (#2897). */
+    /** Full-width tabs read `rowTexts` instead of `compartmentTexts`. */
     readonly span?: boolean;
     readonly rowTexts?: readonly string[];
   };
@@ -465,7 +465,7 @@ export interface ActiveZonesParams {
     readonly compartmentTexts?: readonly string[];
   };
   readonly cutouts?: readonly { readonly engraveLabel?: boolean; readonly label: string }[];
-  /** Wall surface text (#2695) renders on the bin body, so it activates the
+  /** Wall surface text renders on the bin body, so it activates the
    *  `text` zone. Mirrors the worker gates: polygon and solid-mode bins skip
    *  wall text entirely (see `wallTextLayout.ts`). Lid text deliberately does
    *  NOT activate the zone — the lid ships as a single color object. */
@@ -540,7 +540,7 @@ export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone>
   // Socket-mode tabs carry a plate pocket, not engraved text — texts may
   // persist in the config (they label grid cells and feed future plates)
   // but produce no text geometry, so the zone must not reach the exporter.
-  // Span mode reads `label.rowTexts`, not `compartmentTexts` (#2897) — missing
+  // Span mode reads `label.rowTexts`, not `compartmentTexts` — missing
   // it here would drop the text colour zone from a spanning design's export.
   const tabTexts = p.label.span === true ? p.label.rowTexts : p.compartments.compartmentTexts;
   const hasTabText =
@@ -550,7 +550,7 @@ export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone>
   const hasCutoutText = (p.cutouts ?? []).some(
     (c) => c.engraveLabel === true && c.label.trim().length > 0
   );
-  // Wall surface text (#2695) — worker gates mirrored: no polygon, no solid.
+  // Wall surface text — worker gates mirrored: no polygon, no solid.
   const hasWallText =
     p.base.solid !== true &&
     !isPartialMask(p.cellMask) &&

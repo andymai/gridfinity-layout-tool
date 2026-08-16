@@ -97,7 +97,7 @@ describe('buildTopShape', () => {
     expect(withLip.triangles.length).toBeGreaterThan(withoutLip.triangles.length);
   }, 60000);
 
-  // Regression: #1379 — lip must not overhang the box boundary on non-square bins
+  // Regression: — lip must not overhang the box boundary on non-square bins
   it.each([
     [4, 3, '4x3'],
     [3, 4, '3x4'],
@@ -137,9 +137,9 @@ describe('buildTopShape', () => {
     expect(lipBounds.yMax - lipBounds.yMin).toBeGreaterThan(outerD - TOL);
   }, 30000);
 
-  // Regression: #1487 — the lip extension must include an angled support
+  // Regression: — the lip extension must include an angled support
   // face below the overhang so it can be FDM-printed without strings. The
-  // sweep version produced this naturally; the original loft (#1380) only
+  // sweep version produced this naturally; the original loft only
   // built sections at Z_EXT (-1.2) and above, leaving the underside of the
   // overhang as a flat horizontal shelf with nothing below it. Verify that
   // when stacking is enabled the lip reaches down to Z = -LIP_TAPER_WIDTH

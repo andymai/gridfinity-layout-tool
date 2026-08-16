@@ -1,5 +1,5 @@
 /**
- * Swappable label plate generation (#2666, PR 2).
+ * Swappable label plate generation.
  *
  * Builds printable label plates matching the interchange spec pinned in
  * `@/shared/constants/labelPlates` — the mating half of the socket that
@@ -58,7 +58,7 @@ import { buildBaseplateSTL } from './baseplateSTL';
 export interface LabelPlateSpec {
   readonly widthU: LabelPlateWidthU;
   readonly text: string;
-  /** Hardware icon rendered beside the text (#2666 follow-up). */
+  /** Hardware icon rendered beside the text. */
   readonly icon?: LabelPlateIconId;
   /** Plate center on the bed (mm); absent = single centered column layout. */
   readonly position?: readonly [number, number];
@@ -321,7 +321,7 @@ export function buildLabelPlate(
       solid = scope.register(unwrap(cutAll(solid as ValidSolid, cutters as ValidSolid[])));
     }
 
-    // Hardware icon beside the text (#2666 follow-up): band-height, its width
+    // Hardware icon beside the text: band-height, its width
     // set by its own aspect, at the left margin — centered when the plate
     // carries no text. Best-effort like the text: a failed icon boolean ships
     // the plate without it, and the text only shifts right by the width the

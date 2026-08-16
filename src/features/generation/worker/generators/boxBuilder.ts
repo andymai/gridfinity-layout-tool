@@ -182,7 +182,7 @@ export function buildBinBox(
    * the box is built as `outer − each cavity` instead of `outer ⊖ inner` +
    * fused dividers, so the divider walls are residue from the cut and meet
    * the cavity floor cleanly (no fuse T-junction). See `compartmentBuilder`
-   * `buildCompartmentCavityDrawings` and issue #1753.
+   * `buildCompartmentCavityDrawings` and.
    */
   compartmentCavityDrawings?: readonly Drawing[],
   compartmentCavityKey?: string,
@@ -280,10 +280,10 @@ export function buildBinBox(
 
     // Solid mode: return the raw extrusion, optionally with lowered interior fill
     if (solid) {
-      // A tapered solid bin (#3033) is the outer loft with nothing removed —
+      // A tapered solid bin is the outer loft with nothing removed —
       // there is no cavity, so the prism `box` is simply the wrong body. A
       // lowered fill surface becomes a recess CUT from that loft rather than
-      // shell+fill+fuse: one solid, no coincident-face seam (#1753), and the
+      // shell+fill+fuse: one solid, no coincident-face seam, and the
       // recess never has to be reconciled with a wall that narrows below it.
       if (ov?.taper) {
         try {
@@ -425,7 +425,7 @@ export function buildBinBox(
       // Each compartment cavity is extruded from Z=wallThickness up past the
       // top (COPLANAR_MARGIN clears the rim) and cut from the outer
       // extrusion. The resulting wall faces meet the cavity floor as part
-      // of a single solid — no fuse seam, no non-manifold T-junction (#1753).
+      // of a single solid — no fuse seam, no non-manifold T-junction.
       try {
         // A tapered bin starts from the lofted outer instead of the prism, and
         // every compartment is clipped to the inner envelope first. Cutting a
@@ -529,7 +529,7 @@ export function buildBinBox(
       }
     }
 
-    // Tapered bins (#2933) build the hollow body directly (outer − cavity loft,
+    // Tapered bins build the hollow body directly (outer − cavity loft,
     // no shell) — shell() is unreliable on a non-prismatic solid.
     if (ov?.taper) {
       try {
@@ -581,7 +581,7 @@ export function buildBinBox(
  * portion of the ring that overlaps the wall thickness is absorbed; what
  * remains is the visible lip overhang plus an angled support that goes
  * from zero overhang at Z_ANGLE_BOTTOM up to (LIP_TAPER_WIDTH −
- * wallThickness) overhang at Z_EXT — printable without supports. (#1487)
+ * wallThickness) overhang at Z_EXT — printable without supports.
  */
 function buildTopShapeLoft(
   outerW: number,
@@ -820,7 +820,7 @@ function buildTopShapeSweep(
  *
  * Uses loft-cut for all kernels: constructs explicit rounded-rectangle
  * cross-sections at each profile breakpoint, avoiding an OCCT sweep bug
- * that flips the profile on non-square spines (#1379). Sweep retained as
+ * that flips the profile on non-square spines. Sweep retained as
  * fallback if loft throws.
  *
  * Profile per Gridfinity spec v5: 0.7mm + 1.8mm + 1.9mm = 4.4mm total height.
@@ -863,13 +863,13 @@ export function buildTopShape(
 
   // Loft-cut for all kernels: produces analytic surfaces and avoids an OCCT
   // BRepOffsetAPI_MakePipeShell bug where the profile direction flips on
-  // certain non-square aspect ratios, causing the lip to overhang (#1379).
+  // certain non-square aspect ratios, causing the lip to overhang.
   let result: Shape3D;
   try {
     result = buildTopShapeLoft(outerW, outerD, includeLip, cellMask, gridUnitMm, offX, offY);
   } catch {
     // Loft failed — fall back to sweep path (kernel regression).
-    // NOTE: sweep has the OCCT profile-flip bug on non-square spines (#1379)
+    // NOTE: sweep has the OCCT profile-flip bug on non-square spines
     result = buildTopShapeSweep(outerW, outerD, includeLip, cellMask, gridUnitMm, offX, offY);
   }
 

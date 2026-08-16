@@ -1,5 +1,5 @@
 /**
- * Re-exports the floor pattern's window geometry for cross-feature use (#2816).
+ * Re-exports the floor pattern's window geometry for cross-feature use.
  *
  * The window inset is what makes the feature safe — it is the rule that keeps a
  * drainage hole inside a foot's flat underside instead of notching the

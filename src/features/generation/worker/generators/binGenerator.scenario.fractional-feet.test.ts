@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Geometry validation for fractional socket feet (issue #1641).
+ * Geometry validation for fractional socket feet.
  *
  * A non-0.5 trailing dimension gives the bin a clipped edge foot matching its
  * true footprint instead of snapping to a half cell. A sub-threshold strip

@@ -92,7 +92,7 @@ export function useBaseSection() {
   const lidBottomStatus = getFeatureStatus(params, 'base.lid');
 
   // Every base toggle commits through here. Only an effective spacer may stand
-  // 1u tall (#2915), and several toggles can END one: leaving spacer mode, or
+  // 1u tall, and several toggles can END one: leaving spacer mode, or
   // enabling the flat base, which auto-disables the spacer via CONSTRAINT_RULES.
   // Any of those would otherwise strand the bin under the ordinary floor, below
   // what the height stepper will even let the user climb back out of.
@@ -265,7 +265,7 @@ export function useBaseSection() {
     commit(resolved);
   }, [params, isFlat, commit]);
 
-  // ── Floor pattern (#2816) ────────────────────────────────────────────────
+  // ── Floor pattern ────────────────────────────────────────────────
   // Drainage / ventilation holes through the floor slab and the feet below it.
   const floorPattern = params.floorPattern ?? DEFAULT_FLOOR_PATTERN_CONFIG;
   const floorPatternStatus = getFeatureStatus(params, 'floorPattern');

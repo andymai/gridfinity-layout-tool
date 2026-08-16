@@ -1,6 +1,6 @@
 /**
  * Frame the drawer-outline overlay's SVG to the UNION of the padded plate and
- * the shape's flattened bbox (#3107). A custom perimeter may now reach past the
+ * the shape's flattened bbox. A custom perimeter may now reach past the
  * grid extent (or sit offset within it); framing to the plate alone clips
  * whatever the shape draws beyond it, since the SVG's own `overflow: hidden`
  * hard-crops the canvas. Mirrors the pen editor's grid∪sketch frame.

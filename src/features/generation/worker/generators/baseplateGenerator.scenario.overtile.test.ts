@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Geometry validation for baseplate over-tile mode (issue #1641).
+ * Geometry validation for baseplate over-tile mode.
  *
  * Over-tile is additive: it keeps the standard grid + slab and cuts grid-aligned
  * clipped pockets into the drawer-fit padding margins (per-side; a margin below

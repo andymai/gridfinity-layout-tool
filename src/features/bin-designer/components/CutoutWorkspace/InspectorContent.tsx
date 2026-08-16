@@ -125,7 +125,7 @@ export function InspectorContent({
   );
 
   // Align/distribute treat a group as one rigid body, so a partially-selected
-  // group is pulled in whole before the math runs (#3468).
+  // group is pulled in whole before the math runs.
   const arrangeTargets = useMemo(
     () => expandSelectionToGroups(cutouts, selectedCutouts),
     [cutouts, selectedCutouts]
@@ -203,7 +203,7 @@ export function InspectorContent({
   // Position is per-cutout clamped: an X that fits a 10mm hole runs a 40mm one
   // past the wall, so each shape gets its own ceiling rather than the control
   // refusing the whole edit. Size is not — a typed W/H is a measurement, and it
-  // is kept past the board for the grow-to-fit action to resolve (#3061).
+  // is kept past the board for the grow-to-fit action to resolve.
   const handleGeometryBatch = (key: 'x' | 'y' | 'width' | 'depth', value: number) => {
     if (!onUpdateBatch || selectedCutouts.length <= 1) return;
     const updates = new Map<string, Partial<Cutout>>();

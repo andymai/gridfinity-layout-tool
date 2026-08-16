@@ -47,7 +47,7 @@ tester.run('no-init-time-imported-call', rule, {
     },
   ],
   invalid: [
-    // The exact pattern that broke #1558.
+    // The exact pattern that broke.
     {
       code: `
         import { createCqrsMutations, commandBus } from '@/core/cqrs';

@@ -8,7 +8,7 @@ import { shiftCutPlanesOffCellBoundaries } from './splitBinBuilder';
 
 describe('shiftCutPlanesOffCellBoundaries', () => {
   it('nudges a cut plane that lands exactly on an interior cell boundary', () => {
-    // 10 cells, cut at y=0 → cell-5 boundary (issue #1676).
+    // 10 cells, cut at y=0 → cell-5 boundary.
     const out = shiftCutPlanesOffCellBoundaries([0], 10, 42);
     expect(out).toHaveLength(1);
     expect(out[0]).toBeCloseTo(0.1, 5);

@@ -123,7 +123,7 @@ describe('LidGripControls', () => {
 
     // A standard lid is a thin cap: the 4mm request cannot survive its skirt,
     // and a pocket half the height asked for reads as a defect unless the
-    // panel says what ran out (#3272).
+    // panel says what ran out.
     it('explains a height the skirt cut short', () => {
       renderControls({ mode: 'scallop', heightMm: 10 });
       expect(screen.getByText(/Shortened to fit/)).toBeInTheDocument();

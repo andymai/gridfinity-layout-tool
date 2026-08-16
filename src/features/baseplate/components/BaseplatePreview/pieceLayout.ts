@@ -4,7 +4,7 @@
  * The piece meshes are generated grid-centered with a Y-extent of
  * `depthUnits * gridUnitMmY` (see baseplateDirectMesh `totalD`), so the depth
  * (Y) slot MUST be sized with the Y pitch. Sizing it with the X pitch leaves a
- * residual per-row gap on non-square grids that accumulates across rows (#3089).
+ * residual per-row gap on non-square grids that accumulates across rows.
  */
 
 import { EXPLODE_GAP_MM } from '../../constants';
@@ -26,10 +26,7 @@ export interface PiecePlacementOptions {
 }
 
 export function computePiecePlacement(
-  entry: Pick<
-    PieceMeshEntry,
-    'offsetX' | 'offsetY' | 'widthUnits' | 'depthUnits' | 'col' | 'row'
-  >,
+  entry: Pick<PieceMeshEntry, 'offsetX' | 'offsetY' | 'widthUnits' | 'depthUnits' | 'col' | 'row'>,
   opts: PiecePlacementOptions
 ): PiecePlacement {
   const { totalWidthMm, totalDepthMm, gridUnitMm, gridUnitMmY, splitViewMode } = opts;

@@ -449,7 +449,7 @@ describe('ExportDialog', () => {
   // A mesh imprint is subtracted from the tessellated mesh, so there is no BREP
   // solid for STEP to carry and `binExporter` throws outright. Offering STEP
   // anyway turned a known limitation into a failed download and an auto-filed
-  // issue (#3449).
+  // issue.
   describe('mesh imprint cutouts', () => {
     function setupImprintOpen(open: boolean, format: 'stl' | 'step' | '3mf'): void {
       setupStore({

@@ -122,7 +122,7 @@ describe('planLabelSockets', () => {
   });
 
   // Sizing against the nominal grid line handed the narrowed compartment a
-  // plate too wide for the space its shifted divider actually leaves (#3225).
+  // plate too wide for the space its shifted divider actually leaves.
   it('sizes plates against the shifted divider, not the grid line', () => {
     const shifted = grid(2, 1, [0, 1], {
       dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: -30, offsetEnd: -30 }],
@@ -206,7 +206,7 @@ describe('planLabelPlates', () => {
     ).toEqual([{ scope: 'compartment', compartmentId: 0, anchor: 'front', widthU: 1, text: 'A' }]);
   });
 
-  // #2910: each compartment hosts a socket per edge, so it needs a plate per
+  // Each compartment hosts a socket per edge, so it needs a plate per
   // edge. Shipping one plate for two sockets left users a sheet half short.
   it('emits a plate per edge for edges=both', () => {
     expect(

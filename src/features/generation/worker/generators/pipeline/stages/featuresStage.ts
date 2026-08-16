@@ -46,7 +46,7 @@ export const featuresStage: PipelineStage = {
       if (!ctx.solid) return ctx;
       // A tapered outer wall narrows toward the floor, so the interior clip has
       // to narrow with it or a pocket near a flared side cuts straight through
-      // (#3033). Dimensions must match the box builder's: it extrudes to
+      //. Dimensions must match the box builder's: it extrudes to
       // `wallHeight + collarHeight`, and the band is clamped against that.
       const { taper } = dim.overhang;
       const interiorTaper = taper
@@ -94,7 +94,7 @@ export const featuresStage: PipelineStage = {
 
     const targets = runFeatureBuilders(builders, ctx);
 
-    // Floor pattern (#2816): drainage/ventilation holes through the floor slab
+    // Floor pattern: drainage/ventilation holes through the floor slab
     // AND the base socket, so they're handed to the boolean stage twice — once
     // for the body, once for the deferred socket.
     const floorPatternShapes = buildFloorPattern(ctx);
@@ -121,7 +121,7 @@ export const featuresStage: PipelineStage = {
       wallPatternKeys = patterns.keys;
       const kumikoShapes = buildKumikoWallPatterns(ctx);
       targets.patternCutTargets.push(...kumikoShapes);
-      // Divider walls (#2811) carry the same pattern when opted in. Both
+      // Divider walls carry the same pattern when opted in. Both
       // pipelines are handled inside, so this is one call for either type.
       const dividerShapes = buildDividerPatterns(ctx);
       targets.patternCutTargets.push(...dividerShapes);

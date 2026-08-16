@@ -1,6 +1,6 @@
 /**
  * Detects when the open design's feet disagree with where a bin it's linked to
- * actually sits in the active layout, and exposes a one-click fix (#2518, #3467).
+ * actually sits in the active layout, and exposes a one-click fix.
  *
  * Two ways they can disagree, both resolved from the same placements:
  *  - the half-unit foot of a fractional bin is on the wrong edge

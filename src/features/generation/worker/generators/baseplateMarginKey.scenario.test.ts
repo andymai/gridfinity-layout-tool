@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Keyed margin-seam geometry (`connectorStyle: 'dovetailKey'`, issue #2866).
+ * Keyed margin-seam geometry (`connectorStyle: 'dovetailKey'`,).
  *
  * Under the key style the body↔rail seam is female on BOTH sides and the same
  * seated key that locks the split seams spans it. Verified on the real BREP

@@ -1,5 +1,5 @@
 /**
- * Grip relief vs label-tab segmentation (#3401).
+ * Grip relief vs label-tab segmentation.
  *
  * `splitRailsAroundGrip` matched a rail to its grip on exact centre equality.
  * That held only while every rail was centred on its wall. Once a rail is
@@ -37,7 +37,7 @@ function makeParams(label: Partial<BinParams['label']> | null): BinParams {
       attachment: 'clickRails',
       clickRails: { front: true, back: true, left: true, right: true },
       clickRailCoverage: 100,
-      // Pins the NOTCHING path (#3477): `relieveInterior` defaults on for new
+      // Pins the NOTCHING path: `relieveInterior` defaults on for new
       // designs, which steps the interior aside and makes the rails whole, so
       // leaving it on would exercise a different mechanism than this file.
       relieveInterior: false,
@@ -88,7 +88,7 @@ describe('grip relief interrupts rails that label tabs have moved', () => {
   });
 
   it('still splits the side rails when a back tab has clipped them', () => {
-    // The clip from #3404 alone moves a rail's centre, so this path is
+    // The clip alone moves a rail's centre, so this path is
     // reachable without partial rails at all.
     const params: BinParams = {
       ...makeParams({ edges: 'back', width: 100 }),

@@ -47,7 +47,7 @@ describe('SingleCutoutInspector', () => {
     expect(screen.getByText('binDesigner.cutouts.section.label')).toBeInTheDocument();
   });
 
-  // An oversize cutout (#3061) puts every transform field past its ceiling: W/H
+  // An oversize cutout puts every transform field past its ceiling: W/H
   // hold a measurement the board can't contain, and X/Y have no valid offset
   // left at all, so their max collapses to 0 while the stored offset stands.
   // Every slider must still announce a range that contains its own value.

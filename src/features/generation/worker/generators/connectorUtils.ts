@@ -3,7 +3,7 @@
  *
  * Computes nub/hole positions along the seam edges of split baseplate pieces:
  * the join edges, plus every padding-free exterior edge once all-edge slots are
- * enabled (#2866). Only used by baseplateDirectMesh.ts — the BREP generator uses
+ * enabled. Only used by baseplateDirectMesh.ts — the BREP generator uses
  * dovetail connectors from splitConnectorBuilder.ts instead.
  *
  * The markers are a style-agnostic cylindrical stand-in for whichever connector
@@ -46,7 +46,7 @@ export function computeConnectorPositions(
   fractionalEdgeY: 'start' | 'end' = 'end',
   // Depth-axis pitch for a non-square grid; defaults to the square pitch.
   gridUnitMmY: number = gridUnitMm,
-  // All-edge slots (#2866): padding-free exterior edges carry a female slot too.
+  // All-edge slots: padding-free exterior edges carry a female slot too.
   // `padding` gates that per side, exactly as in `buildConnectors`.
   allEdgeSlots: boolean = false,
   padding: SidePaddingMm = { left: 0, right: 0, front: 0, back: 0 },

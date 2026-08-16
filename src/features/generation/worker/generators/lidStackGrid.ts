@@ -8,7 +8,7 @@
  * socket engages the lid the same way it engages a baseplate. The
  * remaining slab material between pockets forms the ring + dividers.
  *
- * `stackLipOnly` (#2930) swaps the per-cell pockets for one footprint-wide
+ * `stackLipOnly` swaps the per-cell pockets for one footprint-wide
  * pocket, so only the perimeter ring survives — the same lip an upper bin
  * registers on, without the interior dividers.
  *
@@ -84,7 +84,7 @@ function buildLidStackPocketCutter(cellW_mm: number, cellD_mm: number): Shape3D 
 }
 
 /**
- * ONE pocket spanning the whole footprint (#2930) — only the perimeter lip
+ * ONE pocket spanning the whole footprint — only the perimeter lip
  * survives.
  *
  * Sized from the NOMINAL socket grid, not `buildOutlineDrawing`'s lid
@@ -143,7 +143,7 @@ export function buildStackGrid(scope: DisposalScope, inputs: LidInputs): Shape3D
   const slabSketch = buildOutlineDrawing(inputs, 0).sketchOnPlane('XY', 0) as Sketch;
   let slab: Shape3D = scope.register(slabSketch.extrude(SOCKET_HEIGHT));
 
-  // 2. Pocket cutters. Lip-only (#2930) cuts a single footprint-wide pocket,
+  // 2. Pocket cutters. Lip-only cuts a single footprint-wide pocket,
   //    leaving just the perimeter lip. Otherwise one per filled cell:
   //    `forEachCell` decomposes half-bin grids into 1u + 0.5u sub-cells and we
   //    cut a pocket sized to whichever sub-cell appears at each position.

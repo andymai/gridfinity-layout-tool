@@ -105,7 +105,7 @@ export function DimensionsSection() {
   }, []);
   const leftoverMode: LeftoverMode =
     halfGridOn && baseplateParams.overTileHalfGridSolidLeftover === true ? 'solid' : 'grid';
-  // Whole-cell fitting (#3054). Stored undefined (not false) for the default so
+  // Whole-cell fitting. Stored undefined (not false) for the default so
   // identical geometry keeps one serialized/cache identity, matching the flags
   // above. Gated on an outline: a rectangle has no crossed cell to drop.
   const wholeCellsOn = baseplateParams.wholeCellsOnly === true;
@@ -141,7 +141,7 @@ export function DimensionsSection() {
   const detachStored = baseplateParams.detachMargins === true;
   const marginConnectorStored = baseplateParams.detachMarginConnector === true;
   // The seam connector reuses the body's tongue/groove, or — under the puzzle key
-  // — a groove on both sides that the same seated key spans (#2866). Snap clip
+  // — a groove on both sides that the same seated key spans. Snap clip
   // stays friction-fit: its top-insert clip has no seated form at a body↔rail
   // seam. `undefined` is the stored default for dovetail, so it counts.
   const marginConnectorStyleOk = isMarginSeamStyle(baseplateParams.connectorStyle);
@@ -168,7 +168,7 @@ export function DimensionsSection() {
    * layout's measured-drawer card uses, so both entry points agree on what the
    * tightest fit is. Stepping by whole units whenever half-grid mode happened to
    * be off silently discarded a half unit that fits — a 502mm drawer became 11
-   * units and 40mm of dead padding instead of 11.5 and 19mm (#3463) — and
+   * units and 40mm of dead padding instead of 11.5 and 19mm — and
    * pushed users into over-tile to recover a row the grid should have had.
    * Taking a half fit turns half-grid mode on, matching the card's Use button:
    * a fractional dimension with the mode off is a state the steppers and the

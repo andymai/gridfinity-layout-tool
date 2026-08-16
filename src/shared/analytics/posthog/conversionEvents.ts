@@ -8,7 +8,7 @@
  * activation, never as designer conversion.
  *
  * Leaf-tier module: only `./identity` and `./trackEvent` imports so Zustand
- * store code can deep-import it without re-opening the #1466 chunk cycle.
+ * store code can deep-import it without re-opening the chunk cycle.
  */
 
 import { loadAnalyticsData, saveAnalyticsData } from './identity';

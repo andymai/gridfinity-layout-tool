@@ -33,7 +33,7 @@ vi.mock('@/shared/generation/meshAsset', () => ({
 }));
 
 vi.mock('@/shared/generation/meshPersistence', () => ({
-  // Kernel-sensitive so the per-kernel namespacing (#3444) is observable.
+  // Kernel-sensitive so the per-kernel namespacing is observable.
   binMeshCacheKey: vi.fn((_p: unknown, kernel: KernelName) => `persist-key-${kernel}`),
   loadPersistedBinMesh: vi.fn(async () => null),
   savePersistedBinMesh: vi.fn(),
@@ -182,7 +182,7 @@ describe('useLinkedDesignMeshes', () => {
     expect(mockRelease).toHaveBeenCalledTimes(1);
   });
 
-  // #3444: this reader returns a persisted hit and stops, with no regeneration
+  // This reader returns a persisted hit and stops, with no regeneration
   // behind it, so a key shared across engines would strand the other engine's
   // mesh in the layout preview until LRU eviction.
   it('reads and writes under a key namespaced by the active kernel', async () => {

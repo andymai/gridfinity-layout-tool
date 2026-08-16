@@ -234,7 +234,7 @@ export function computeRampZones(
  * this returns a zone for every perpendicular divider touching the wall,
  * regardless of whether a cutout exists. This ensures the hex pattern is
  * cleared where divider walls connect to the outer wall for structural
- * integrity (see issue #1345).
+ * integrity (see).
  *
  * Pre-computed `inputs.dividers` avoids redundant traversal when called
  * for all 4 walls in the same generation.

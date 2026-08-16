@@ -79,7 +79,7 @@ interface LibraryState {
  * Pure literal — calls no imported functions. This matters because Zustand
  * runs the store creator eagerly at module-init, and any cross-module
  * function call there can hit undefined imported bindings under chunk-level
- * static-import cycles (see issue #1466). The real library is loaded via
+ * static-import cycles (see). The real library is loaded via
  * `initLibrary` during app bootstrap (main.tsx).
  */
 const PLACEHOLDER_LIBRARY: LayoutLibrary = {

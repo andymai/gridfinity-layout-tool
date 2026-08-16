@@ -32,7 +32,7 @@ describe('edgeForPosition', () => {
 
   it('reads the position, not the drawer, when the drawer axis is a whole number', () => {
     // A 1.5-wide bin in a 5-wide drawer is free to sit either way; the layout
-    // grid draws whichever its position implies (#3070).
+    // grid draws whichever its position implies.
     expect(edgeForPosition(0, 5, undefined)).toBe('end');
     expect(edgeForPosition(0.5, 5, undefined)).toBe('start');
     expect(edgeForPosition(2, 5, undefined)).toBe('end');

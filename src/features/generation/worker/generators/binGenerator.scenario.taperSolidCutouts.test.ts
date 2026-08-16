@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Outer-wall taper on solid (cutout) bins — #3033.
+ * Outer-wall taper on solid (cutout) bins —.
  *
  * The taper used to be stripped for solid bins, so a tool holder could never
  * be drawer-fit. Enabling it exposes a geometry problem the hollow path never

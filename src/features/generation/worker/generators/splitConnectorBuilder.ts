@@ -214,7 +214,7 @@ export interface CutFace {
    * These are the *actual* body edges, which an overhang pushes outward and can
    * make asymmetric (left ≠ right) — not the nominal ±footprint/2. Connector
    * placement keys off these so overhung walls are detected and the connector
-   * lands on the true outer face (#1949).
+   * lands on the true outer face.
    */
   readonly binEdgeMin: number;
   readonly binEdgeMax: number;

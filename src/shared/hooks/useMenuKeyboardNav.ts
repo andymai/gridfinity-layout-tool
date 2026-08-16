@@ -35,7 +35,7 @@ const STEPS: Record<string, ((current: number, count: number) => number) | undef
  *
  * Declaring the role without this is worse than declaring nothing — assistive
  * tech announces navigation the menu does not implement, so the user follows
- * the announcement into a dead end (#3277).
+ * the announcement into a dead end.
  *
  * Items are discovered by DOM query rather than by registration, so a menu can
  * hold arbitrary content (inputs, swatches, headers) and still traverse only

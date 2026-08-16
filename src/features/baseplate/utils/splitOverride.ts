@@ -1,5 +1,5 @@
 /**
- * User-drawn split plans (issue #3115) — pure conversions between the stored
+ * User-drawn split plans — pure conversions between the stored
  * chunk-size form ({@link SplitOverride}) and the seam offsets the mini-map
  * editor draws, plus the validity check that decides whether a stored plan
  * still describes the current plate.

@@ -279,7 +279,7 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         // mating cavity (Y = anchorZ, negative) sits on the bin's stacking-lip
         // top, matching the preview's lidGroupZ. `lipTopZ` rather than a local
         // restatement of it: the bin's own magnet posts derive from the same
-        // plane, so a second opinion here parts them (#3431).
+        // plane, so a second opinion here parts them.
         // try/finally releases divider + lid solids even if compound or
         // exportSTEP throws (binSolid is owned by shapeCache; don't free it).
         const lidZ =

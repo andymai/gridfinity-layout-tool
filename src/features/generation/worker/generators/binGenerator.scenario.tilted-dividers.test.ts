@@ -1,10 +1,10 @@
 /**
  * Scenario test: dividerOverrides actually affect generated geometry.
  *
- * Regression guard for #1822. The angled-divider feature ships a complete
+ * Regression guard. The angled-divider feature ships a complete
  * UI + store + validator + override-aware feature builders, but the
  * default code path for rectangular standard bins is the multi-cavity
- * cut path (#1753), which used to draw axis-aligned cavities ignoring
+ * cut path, which used to draw axis-aligned cavities ignoring
  * dividerOverrides — so toggling the panel had no effect on the mesh.
  *
  * These tests exercise getGenerateBin (the full pipeline) and assert
@@ -21,7 +21,7 @@ beforeAll(async () => {
 }, 30_000);
 
 describe('tilted dividers through full pipeline', () => {
-  // 1×2 standard rect bin (the silverware-drawer use case from #1822):
+  // 1×2 standard rect bin (the silverware-drawer use case):
   // the cut path is taken because compartments are rectangular and the
   // mask is full. This is the exact configuration the user reported.
   const baseParams: BinParams = {

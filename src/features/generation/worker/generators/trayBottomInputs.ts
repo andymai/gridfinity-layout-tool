@@ -1,6 +1,6 @@
 /**
  * Resolve the mating geometry for a tray bin — a bin whose underside is a lid
- * instead of a Gridfinity base (`base.style === 'lid'`, #3036).
+ * instead of a Gridfinity base (`base.style === 'lid'`,).
  *
  * Reuses `resolveLidInputs` by synthesising a `lid` config from
  * `base.trayBottom` rather than re-deriving the footprint: outer size, corner
@@ -67,7 +67,7 @@ function trayBottomParams(params: BinParams): BinParams {
  * `wallBottomZ` alone is not enough: click rails hang below the mating wall,
  * and leaving them out sinks the model 3.75mm under the print bed. Retention
  * bosses land ON that line rather than past it, so a magnetic joint's lowest
- * point is still the skirt (#3450) — see `trayBottomSkirtDepth` in the shared
+ * point is still the skirt — see `trayBottomSkirtDepth` in the shared
  * lid module for the deep-magnet exception it does not cover.
  */
 export function trayBottomSkirtDepth(inputs: LidInputs): number {

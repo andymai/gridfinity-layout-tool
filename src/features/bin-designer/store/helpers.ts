@@ -28,7 +28,7 @@ import { trackToolActivated } from '@/shared/analytics/posthog/conversionEvents'
  *    active. Skipped for flat-floor bins — the `halfSockets ⇔ flat-floor`
  *    mutual-exclusion constraint takes precedence, and a user who switched
  *    to a flat floor made an explicit choice that shouldn't be overridden
- *    by a mode toggle elsewhere (issue #1752). The check reads the
+ *    by a mode toggle elsewhere. The check reads the
  *    *resolved* base style so a custom flat-floor default is also honored.
  *
  * Called from `newDesign` and `resetToDefaults` so both fresh-start paths

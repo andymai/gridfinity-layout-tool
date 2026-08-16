@@ -1,5 +1,5 @@
 /**
- * Divider wall pattern scenarios (#2811).
+ * Divider wall pattern scenarios.
  *
  * These pin the behaviour of carrying the outer wall pattern through the
  * compartment dividers: that it removes material, that it composes with every

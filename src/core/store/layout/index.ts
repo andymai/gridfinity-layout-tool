@@ -17,7 +17,7 @@ export type { EditSource } from './types';
  * Pure literal — calls no imported functions. This matters because Zustand
  * runs the store creator eagerly at module-init, and any cross-module
  * function call there can hit undefined imported bindings under chunk-level
- * static-import cycles (see issue #1466). The real layout is loaded via
+ * static-import cycles (see). The real layout is loaded via
  * `importLayout` during app bootstrap (main.tsx).
  *
  * Branded-type casts (Mm, GridUnits, HeightUnits) are used directly because
@@ -30,7 +30,7 @@ const PLACEHOLDER_LAYOUT: Layout = {
   drawer: { width: 0 as GridUnits, depth: 0 as GridUnits, height: 0 as HeightUnits },
   // Literal, not CONSTRAINTS.PRINT_BED_MM_DEFAULT: PLACEHOLDER_LAYOUT is built at
   // module-init, and reading an imported @/core/constants binding at init risks
-  // the #1466 chunk static-import-cycle undefined read.
+  // the chunk static-import-cycle undefined read.
   printBedSize: 256 as Mm,
   gridUnitMm: 42 as Mm,
   heightUnitMm: 7 as Mm,

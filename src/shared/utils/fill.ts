@@ -20,7 +20,7 @@ export function createOccupiedCellSet(
 
   // Cells outside a non-rectangular drawer are unplaceable — mark them
   // occupied so fill tools skip them (same predicate as canPlaceBin, frame
-  // included: #3157).
+  // included:).
   const frameOutline = drawerFrameOutline(
     layout.drawer,
     layout.baseplateParams,

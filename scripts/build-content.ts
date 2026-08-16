@@ -31,7 +31,7 @@ const CONTENT_DIR = path.join(process.cwd(), 'content');
 const OUTPUT_DIR = path.join(process.cwd(), 'public');
 const SITE_URL = 'https://gridfinitylayouttool.com';
 
-// SERP truncation guards (see PR #2292). The " | {siteName}" brand suffix is
+// SERP truncation guards (see). The " | {siteName}" brand suffix is
 // appended only when the composed title still fits Google's title column, so a
 // title that fits keeps its brand and one that doesn't keeps its own tail
 // instead of spending it on a suffix that never renders. What this guard

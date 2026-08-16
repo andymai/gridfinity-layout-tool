@@ -130,7 +130,7 @@ describe('useLabelTabsSection', () => {
 
   it('reports the narrowed width in socket mode, not the whole compartment', () => {
     // The readout used to hardcode 100% for socket mode because the builder
-    // forced full-width tabs. Since #3402 the width applies there, so a
+    // forced full-width tabs. Since the width applies there, so a
     // readout stuck at the compartment span would describe a shelf the
     // generator does not build.
     useDesignerStore.setState({
@@ -336,7 +336,7 @@ describe('useLabelTabsSection', () => {
     });
 
     it('tabInsetMax uses cellD (not innerD) so multi-row bins get a conservative ceiling', () => {
-      // Greptile review on #1904: with 4 rows on a 2u-deep bin (innerD ≈ 81mm),
+      // Greptile review on: with 4 rows on a 2u-deep bin (innerD ≈ 81mm),
       // cellD ≈ 20mm. Back-only mode with depth=8 → cellD - depth = 12mm.
       // The pre-fix formula `innerD - depth` would have offered up to 73mm —
       // most of which the per-compartment collision check rejects.

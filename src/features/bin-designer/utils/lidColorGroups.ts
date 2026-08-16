@@ -9,7 +9,7 @@
  * `binDownloadHelpers.lidColorConfig`: LID_LIP triangles fold into the `lidLip`
  * corner × band grid, everything else takes the flat `lid` colour. If the two
  * ever diverge the preview stops predicting the print, which is the exact class
- * of bug GH #1654 was filed for.
+ * of bug GH was filed for.
  */
 
 import { FeatureTag } from '@/shared/types/generation';

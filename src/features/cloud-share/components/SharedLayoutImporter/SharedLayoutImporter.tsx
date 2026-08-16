@@ -228,7 +228,7 @@ export function SharedLayoutImporter() {
 
       // Materialize the sharer's bin designs locally and repoint the bins at
       // them, so the recipient sees real geometry and can export each bin
-      // (#2894). A storage failure degrades to the plain layout rather than
+      //. A storage failure degrades to the plain layout rather than
       // dropping the share.
       let layout = result.value.layout;
       if (linkedDesigns && linkedDesigns.length > 0) {

@@ -201,7 +201,7 @@ export function GhostCutouts() {
   const outerD = depth * (gridUnitMmY ?? gridUnitMm) - GRIDFINITY.TOLERANCE;
   // Overhang grows the interior floor outward and, when asymmetric, shifts it
   // within the body — match the generator so the ghost sits where the final
-  // cut lands (#2462).
+  // cut lands.
   const { innerW, innerD, offsetX, offsetY } = expandInteriorForOverhang(
     outerW - 2 * wallThickness,
     outerD - 2 * wallThickness,

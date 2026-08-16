@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Per-cutout shadow-board color face tagging (#2439, stage 2).
+ * Per-cutout shadow-board color face tagging (stage 2).
  *
  * Verifies the tag contract the paint layer depends on: every cutout cavity is
  * stamped `CUTOUT_COLOR_TAG_BASE + <unit ordinal>` (from the shared

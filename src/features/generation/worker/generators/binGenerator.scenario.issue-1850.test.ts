@@ -3,7 +3,7 @@
  * STL export must succeed for auto-radius scoops across single-compartment
  * and merged-compartment bins. These configs previously hit STL_EXPORT_FAILED
  * because the scoop's cusp rim edges produced degenerate topology after
- * filleting (issue #1850).
+ * filleting.
  */
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';

@@ -337,7 +337,7 @@ export function exportConnectorKey(
 }
 
 /**
- * Export one detached margin rail (issue #2392). Reuses the `'export'` slot and
+ * Export one detached margin rail. Reuses the `'export'` slot and
  * the BASEPLATE_EXPORT_RESULT response (same data/format/fileName shape).
  */
 export function exportMargin(
@@ -399,7 +399,7 @@ export function exportConnectorSample(
 }
 
 /**
- * Export swappable label plates (#2666). Like the fit-sample tray, the work
+ * Export swappable label plates. Like the fit-sample tray, the work
  * is small and footprint-independent (a handful of flat plates + text
  * booleans), so it shares the fixed generous export ceiling.
  */
@@ -441,7 +441,7 @@ export function exportSlideFitSample(
 }
 
 /**
- * Export the label-socket fit-calibration card (#2666). Fixed small
+ * Export the label-socket fit-calibration card. Fixed small
  * workload (five socket coupons + one plate), so it shares the fixed
  * generous export ceiling.
  */

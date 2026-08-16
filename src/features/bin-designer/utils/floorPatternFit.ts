@@ -1,5 +1,5 @@
 /**
- * Predicts whether the floor pattern (#2816) can actually place an element, so
+ * Predicts whether the floor pattern can actually place an element, so
  * the panel can say so instead of leaving the user with a toggle that appears
  * to do nothing.
  *

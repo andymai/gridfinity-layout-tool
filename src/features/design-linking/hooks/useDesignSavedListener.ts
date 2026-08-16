@@ -103,7 +103,7 @@ export function useDesignSavedListener(): void {
       }
 
       // Some bins can't fit -- show the sync dialog, unless the user already
-      // declined this exact design + dimensions (#3040). Without the guard the
+      // declined this exact design + dimensions. Without the guard the
       // mount reconciliation below re-opens it on every return to the layout.
       if (declinedSyncsRef.current[event.designId] === syncDeclineKey(event.dimensions)) return;
 
@@ -114,7 +114,7 @@ export function useDesignSavedListener(): void {
       // Scope the prompt to the bins that actually need it. A bin that already
       // fits rotated must not be offered up: syncing rewrites it to the design's
       // axis order, which is a real resize that can fail eligibility and unlink
-      // a bin that was fine (#3040).
+      // a bin that was fine.
       const binIds = binsNeedingSync.map((b) => b.id);
 
       const binsHaveVaryingDimensions =

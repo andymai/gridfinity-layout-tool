@@ -173,10 +173,10 @@ function computeBinVolume(params: BinParams): number {
     volume -= computeWallPatternReduction(params, outerW, outerD, totalH, wallThickness, bottomH);
   }
 
-  // Floor pattern (#2816): drainage holes remove floor slab AND foot material.
+  // Floor pattern: drainage holes remove floor slab AND foot material.
   volume -= computeFloorPatternReduction(params, wallThickness, shell.base);
 
-  // Exterior-wall collar (issue #2500): a walled ring raised above the nominal
+  // Exterior-wall collar: a walled ring raised above the nominal
   // body — perimeter wall material only, no floor/interior. Ring cross-section
   // (outer area − inner area) × collar height.
   const collarMm = Math.max(0, params.extraWallHeightMm ?? 0);
@@ -566,7 +566,7 @@ function computeWallPatternReduction(
 
   const wallHeight = totalH - bottomH;
   // wallThickness clears the floor slab; the skirt is the solid band above it
-  // that anchors the lowest element row (#2317). Mirrors wallPatterns.ts.
+  // that anchors the lowest element row. Mirrors wallPatterns.ts.
   const bottomKeepOut = wallThickness + BOTTOM_SOLID_SKIRT;
   const patternHeight = wallHeight - TOP_KEEP_OUT - bottomKeepOut;
   const minPatternH = Math.sqrt(3) * HEX_RADIUS + WEB_THICKNESS;
@@ -576,7 +576,7 @@ function computeWallPatternReduction(
   const innerD = outerD - 2 * wallThickness;
 
   // Patterned wall length: slot-free walls (front/back seat y-axis dividers,
-  // left/right seat x-axis) intersected with the per-side selection (#2966).
+  // left/right seat x-axis) intersected with the per-side selection.
   const sides = resolveWallPatternSides(params.wallPattern);
   const yFree = params.style !== 'slotted' || !params.slotConfig.y.enabled;
   const xFree = params.style !== 'slotted' || !params.slotConfig.x.enabled;
@@ -606,7 +606,7 @@ function computeWallPatternReduction(
 
 /**
  * Extra material removed when the pattern is carried through the compartment
- * dividers (#2811).
+ * dividers.
  *
  * Same open-area model as the outer walls, applied to the divider face area
  * and cut through the divider's own thickness. The band is re-fitted to the
@@ -642,7 +642,7 @@ function dividerPatternReduction(
   return length * bandHeight * coverageFraction * params.compartments.thickness;
 }
 /**
- * Volume removed by the floor pattern (#2816).
+ * Volume removed by the floor pattern.
  *
  * Expressed as a SHARE of the shell's base component rather than as a raw
  * `area x depth` prism, because the two numbers are not in the same units:

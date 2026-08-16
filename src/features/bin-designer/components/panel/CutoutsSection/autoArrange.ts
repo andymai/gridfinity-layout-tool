@@ -5,7 +5,7 @@
  * starting a new row when the current one overflows.
  *
  * A unit is a whole cutout group or a single ungrouped cutout — packing raw
- * cutouts scattered the members of a group across the bin (#3468). Placement
+ * cutouts scattered the members of a group across the bin. Placement
  * is a translation of the unit's rotated silhouette, so a rotated shape claims
  * the space it actually occupies rather than its unrotated width and depth.
  */

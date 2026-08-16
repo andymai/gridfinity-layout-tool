@@ -17,7 +17,7 @@ interface DrawerShapeSectionProps {
 }
 
 /**
- * Sidebar entry for non-rectangular drawers (issue #2528). The toggle reflects
+ * Sidebar entry for non-rectangular drawers. The toggle reflects
  * whether an outline exists; enabling opens the cell-paint editor, disabling
  * clears the shape (with a confirm — clearing displaces nothing but discards
  * drawn geometry).

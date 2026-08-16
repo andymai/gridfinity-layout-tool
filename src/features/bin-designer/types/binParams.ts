@@ -29,7 +29,7 @@ export interface BinParams {
    * in the designer. When a design is created from a layout bin the edge is
    * inferred from the drawer with these left `false`, so a later drawer-edge
    * change surfaces a mismatch warning; a manual toggle sets the toggled axis's
-   * flag `true` and silences the warning for that axis only (issue #2518).
+   * flag `true` and silences the warning for that axis only.
    * Per-axis so overriding X never hides a real Y mismatch. Undefined = `false`.
    */
   readonly fractionalEdgeManualX?: boolean;
@@ -46,7 +46,7 @@ export interface BinParams {
    */
   readonly magnetAnchor?: MagnetAnchor;
   /**
-   * Print nozzle (mm) a label socket's pocket clearance scales to (#2690).
+   * Print nozzle (mm) a label socket's pocket clearance scales to.
    * Like {@link magnetAnchor}, this is INJECTED transiently at generation time
    * (`withSocketNozzle`, from the live print setting) and never persisted — the
    * store's params stay nozzle-free so a printer's nozzle never syncs to other
@@ -80,7 +80,7 @@ export interface BinParams {
   readonly meshAssets?: Record<string, MeshAsset>;
   readonly wallPattern: WallPatternConfig;
   /**
-   * Drainage / ventilation perforation of the bin floor (#2816). The cut passes
+   * Drainage / ventilation perforation of the bin floor. The cut passes
    * through the floor slab AND the base socket under it, so holes drain instead
    * of ending in a blind pocket. Omitted on designs saved before the feature
    * existed; `migrateParams` backfills a disabled config.
@@ -130,7 +130,7 @@ export interface BinParams {
    * anchored at the original top plane — a "collar" of dead headroom that fully
    * encloses a tall item (e.g. one half-sunk in a cutout) and lets a stacked
    * bin rest on the raised rim without crushing the contents below (issue
-   * #2500). The bin-body mirror of {@link LidConfig.extraHeightMm}.
+   *). The bin-body mirror of {@link LidConfig.extraHeightMm}.
    *
    * Omitted or `0` reproduces the standard bin exactly (byte-identical
    * geometry). Clamped to

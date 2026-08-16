@@ -1,5 +1,5 @@
 /**
- * Per-corner cuts → drawer outline (issue #2528, corners authoring surface).
+ * Per-corner cuts → drawer outline (, corners authoring surface).
  *
  * Cuts apply to the drawer RECTANGLE (composing cuts onto arbitrary shapes is
  * a later nicety — the section confirms before replacing a non-corner

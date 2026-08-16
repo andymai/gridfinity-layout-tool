@@ -8,7 +8,7 @@ describe('minHeightUnits', () => {
     );
   });
 
-  // #2915: a spacer is floorless, so the cavity rationale behind MIN_HEIGHT
+  // A spacer is floorless, so the cavity rationale behind MIN_HEIGHT
   // doesn't bind — 1u is what shims a stack from an odd to an even height.
   it('lets a spacer go a unit lower', () => {
     expect(minHeightUnits({ spacer: true, style: 'standard' })).toBe(

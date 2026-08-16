@@ -54,7 +54,7 @@ describe('selectGenerationTriggers', () => {
     }) as unknown as Parameters<typeof selectGenerationTriggers>[0];
 
   /**
-   * Regression (#1610 follow-up): switching Dovetail -> Dovetail key changes only
+   * Regression: switching Dovetail -> Dovetail key changes only
    * `connectorStyle`. If that field is absent from the regeneration trigger set,
    * `useShallow` reports the selection unchanged and the piece meshes never
    * regenerate — the exploded preview keeps showing male dovetails while the
@@ -73,7 +73,7 @@ describe('selectGenerationTriggers', () => {
   });
 
   /**
-   * Regression (#2378): toggling half-grid margin fill changes only
+   * Regression: toggling half-grid margin fill changes only
    * `overTileHalfGrid`. If that field is absent from the trigger set, the
    * preview never regenerates and keeps the plain over-tile mesh.
    */

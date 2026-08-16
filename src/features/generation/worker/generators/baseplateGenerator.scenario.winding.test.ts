@@ -2,14 +2,14 @@
 /**
  * Regression tests for two related winding-consistency bugs.
  *
- * #1472 — Bambu Studio reported ~2138 "non-manifold edges" on every
+ * Bambu Studio reported ~2138 "non-manifold edges" on every
  * baseplate export. Root cause: a `buildBaseplateSTL` heuristic flipped
  * a triangle's winding whenever (cross · sum-of-vertex-normals) < 0.
  * brepjs returns averaged vertex normals at curved/shared edges, so the
- * heuristic mis-fired on ~7% of triangles. Removed in #1473.
+ * heuristic mis-fired on ~7% of triangles. Removed in.
  *
- * #1490 — Bambu Studio reported "non-manifold edges" on corner-3 and
- * corner-4 piece configs even after #1473. Root cause: brepjs/OCCT can
+ * Bambu Studio reported "non-manifold edges" on corner-3 and
+ * corner-4 piece configs even. Root cause: brepjs/OCCT can
  * emit tessellated meshes whose face orientations aren't consistent
  * across the whole solid (entire bottom face wound backwards, ~32% of
  * triangles flagged). Fixed by a downstream BFS winding-repair pass in
@@ -17,7 +17,7 @@
  * corner-4, and edge-x-1 cases below cover the piece roles that the
  * existing corner-1 / edge-y-1 / magnet cases didn't reach.
  *
- * Each test asserts directed-edge uniqueness; #1490-class tests also
+ * Each test asserts directed-edge uniqueness;-class tests also
  * assert positive signed volume to catch global mesh inversions that
  * directed-edge uniqueness alone wouldn't see.
  */
@@ -172,7 +172,7 @@ describe('baseplateGenerator — directed-edge winding (issues #1472, #1490)', (
     TEST_TIMEOUT_MS
   );
 
-  // #1490: piece roles where brepjs/OCCT emits some faces with reversed
+  // Piece roles where brepjs/OCCT emits some faces with reversed
   // orientation. Mirror corner-1's fractional layout but for the other
   // three corner positions plus an edge-x slice.
 

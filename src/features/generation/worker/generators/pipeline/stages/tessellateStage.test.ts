@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Real-kernel regression for the deferred-socket export fuse (GH #2085).
+ * Real-kernel regression for the deferred-socket export fuse (GH).
  *
  * The base socket is fused into the body at the tessellate stage, AFTER feature
  * fuses, so additive features (the label bracket especially) fuse onto the

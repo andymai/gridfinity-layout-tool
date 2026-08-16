@@ -145,7 +145,7 @@ describe('binDownloadHelpers — multi-color export gate', () => {
       expect(objects[1].colorConfig).toBeDefined();
     });
 
-    // discussion #1654: a distinct lid color must resolve to a non-body slot,
+    // discussion: a distinct lid color must resolve to a non-body slot,
     // otherwise the lid silently exports body-colored. The earlier test only
     // checked the lid had *a* config, not that it referenced the lid filament.
     it('lid resolves to a distinct (non-body) material slot when its color diverges', () => {

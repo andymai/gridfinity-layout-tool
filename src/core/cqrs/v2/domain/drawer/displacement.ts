@@ -5,7 +5,7 @@
  * (resize) and `drawer.setOutline` so the two commands can never disagree,
  * and mirrored by the legacy store action.
  *
- * The outline is read through the shared grid↔perimeter frame (#3157), so
+ * The outline is read through the shared grid↔perimeter frame, so
  * any frame-affecting edit — outline, fractional edge, manual grid shift,
  * baseplate padding — displaces exactly the bins whose sockets the printed
  * plate loses.

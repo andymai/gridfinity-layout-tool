@@ -8,7 +8,7 @@ interface DrawerMarginProps {
 
 /**
  * Read-only representation of the drawer-fit margin (baseplate padding) around
- * the grid (#2462). A physical drawer is rarely an exact multiple of the grid
+ * the grid. A physical drawer is rarely an exact multiple of the grid
  * unit, so the baseplate carries per-side padding (mm) to fill the leftover;
  * that padding lives on the layout (`baseplateParams`) but the grid — expressed
  * in whole/half units — never showed it. This band draws that margin to scale

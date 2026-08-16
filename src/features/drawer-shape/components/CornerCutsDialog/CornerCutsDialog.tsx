@@ -36,7 +36,7 @@ function clampMm(value: number, maxMm: number): number {
 /**
  * The corner params this dialog may seed from, or undefined when the authoring
  * echo cannot be trusted. The echo goes stale when the drawer resizes under it
- * (#3149 keeps the outline byte-identical), so it counts only while it still
+ * (keeps the outline byte-identical), so it counts only while it still
  * reproduces the stored vertices at the CURRENT size — re-inscribing a stale
  * echo on the new rectangle would silently replace the actual shape.
  */
@@ -69,7 +69,7 @@ function defaultCut(kind: CutKind, maxMm: number): CornerCut {
 }
 
 /**
- * Per-corner cuts editor (issue #2528, 'corners' authoring surface): chamfer,
+ * Per-corner cuts editor (, 'corners' authoring surface): chamfer,
  * radius (real arcs), or rectangular notch per corner, applied to the drawer
  * rectangle. Round-trips via the outline's authoring annotation; applying
  * over a shape drawn with a different editor asks first.

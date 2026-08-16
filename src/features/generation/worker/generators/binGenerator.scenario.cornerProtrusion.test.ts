@@ -6,7 +6,7 @@
  *     but the bin cavity has ROUNDED corners (radius BOX_CORNER_RADIUS − wt).
  *     On thin walls (wt < BOX_CORNER_RADIUS·(1 − 1/√2) ≈ 1.1mm) the scoop's
  *     square front-outer corner pokes through the rounded outer wall and sticks
- *     out of the bin. (Mirror of the cavity-cut fix in #1968.)
+ * out of the bin. (Mirror of the cavity-cut fix.)
  *
  *  2. A centered, partial-width label tab rounds BOTH free-end front corners of
  *     the shelf plate, but the gusset/solid/fillet support beneath still runs to

@@ -84,7 +84,7 @@ describe('DEFAULT_LID_CONFIG', () => {
 
   // wallThickness, fit, and the LEGACY `topThickness` are intentionally NOT on
   // LidConfig — they're locked-down constants in `lidConstants.ts`. The
-  // millimetre floor-plate knob is `topThicknessMm` (#2761); the legacy name
+  // millimetre floor-plate knob is `topThicknessMm`; the legacy name
   // must stay absent so `migrateParams` keeps stripping it.
   it('does not expose wall/fit knobs or the legacy topThickness field', () => {
     const cfg: LidConfig = DEFAULT_LID_CONFIG;
@@ -207,7 +207,7 @@ describe('resolveLidPlateThickness', () => {
     expect(plate).toBeCloseTo(2.5 + LID_MAGNET_CEILING, 6);
   });
 
-  // #3072: the knob used to be `max(plate, recess + floor)`, which pinned a
+  // The knob used to be `max(plate, recess + floor)`, which pinned a
   // default 4mm tray at 4.8mm — every value under that changed nothing the
   // user could see, and the tray floor was always the bare minimum.
   it('adds the tray recess on top of the requested floor', () => {
@@ -490,7 +490,7 @@ describe('resolveLidGripHeightPlan', () => {
   });
 
   it('reports the material left above a relief that fits', () => {
-    // The point of the height knob (#3272): the reporter needed to see, and
+    // The point of the height knob: the reporter needed to see, and
     // then raise, the lid left over a pocket that prints upside down.
     const plan = resolveLidGripHeightPlan(grip({ mode: 'scallop', heightMm: 4 }), -8, 5);
     expect(plan.skirtMm).toBeCloseTo(8, 9);

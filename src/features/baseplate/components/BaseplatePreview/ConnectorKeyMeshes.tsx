@@ -2,7 +2,7 @@
  * Renders the seated seam keys in the split-baseplate preview.
  *
  * A key is a straight extrusion of the same puzzle-lobe dogbone profile the
- * worker builds (`buildDovetailKey` — two mirrored puzzle lobes, #2637), so this
+ * worker builds (`buildDovetailKey` — two mirrored puzzle lobes,), so this
  * procedural mesh matches the exported part (minus the worker's socket relief,
  * a cosmetic-only difference like the snap clip's). One key is placed at every
  * seam junction (see `computeSeamJunctions`), rotated 90° on horizontal seams.

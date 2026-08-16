@@ -1,5 +1,5 @@
 /**
- * Detached margin rail geometry (issue #2392).
+ * Detached margin rail geometry.
  *
  * A rail is the drawer-fit padding band of one side printed as its own piece.
  * It reuses the body's slab/pocket/corner helpers but cannot go through
@@ -146,9 +146,9 @@ function buildMarginSolid(
     if (pockets.length > 0) rail = cutInBatches(rail, pockets);
   }
 
-  // Opt-in connector (#2414): carve seam grooves into a LONG rail's inner face to
+  // Opt-in connector: carve seam grooves into a LONG rail's inner face to
   // receive the body's tongues — or, under `dovetailKey`, one lobe of the seated
-  // key that also engages the body's own groove (#2866). Long rails are exactly
+  // key that also engages the body's own groove. Long rails are exactly
   // the seam sides (splitPlanner marks the matching body edge `marginSeam`); short
   // rails stay friction-fit. Positions are recomputed from the same
   // `cellUnits`/`fractionalEdge` the body used, then shifted by `centerOffsetMm`
@@ -161,7 +161,7 @@ function buildMarginSolid(
     const seam = margin.seamConnector;
     // Keyed seams sit on cell BOUNDARIES (a two-cell junction, which is the foot
     // layout the seated key is relieved for); tongued seams sit on cell CENTERS
-    // (#2428). Mirrors the body side in `buildConnectors`, including the empty
+    //. Mirrors the body side in `buildConnectors`, including the empty
     // case: a 1-cell body piece has no boundary, so a keyed rail stays flat rather
     // than growing a lone groove at its center with nothing to mate.
     const keyed = params.connectorStyle === 'dovetailKey';

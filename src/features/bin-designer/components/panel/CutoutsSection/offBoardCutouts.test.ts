@@ -114,7 +114,7 @@ describe('isCutoutOffBoard', () => {
     expect(isCutoutOffBoard(overNotch, 100, 100, mask, cellSize)).toBe(true);
   });
 
-  // Issue #2922: "1 cutout(s) outside the board" on a concave cutout that is
+  // Issue: "1 cutout(s) outside the board" on a concave cutout that is
   // entirely on the board — its bounding box, not the cutout, spanned the notch.
   it('does not flag a concave path nested inside the notch of an L-shaped board', () => {
     const mask: CellMask = { cols: 2, rows: 2, cells: [1, 1, 1, 0] };

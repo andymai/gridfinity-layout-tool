@@ -39,7 +39,7 @@ export const scoopSides: ScenarioCase[] = [
   defineScenario('scoop side', 'scoop on the right wall', {
     params: { scoop: { enabled: true, radius: 'auto' as const, side: 'right' as const } },
   }),
-  // The long-skinny case from #3039: the scoop belongs on the long wall, which
+  // The long-skinny case: the scoop belongs on the long wall, which
   // is only reachable once the side is selectable.
   defineScenario('scoop side', '6×1 bin scooped on the long wall', {
     params: {

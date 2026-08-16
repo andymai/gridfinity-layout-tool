@@ -69,7 +69,7 @@ interface UseBinLinkingReturn {
     height: number
   ) => void;
 
-  /** Realign a linked design's fractional edge to where `binId` sits (#2518, #3070). */
+  /** Realign a linked design's fractional edge to where `binId` sits. */
   matchDesignEdgesToDrawer: (designId: DesignId, binId: BinId) => Promise<void>;
 }
 
@@ -309,7 +309,7 @@ export function useBinLinking(): UseBinLinkingReturn {
       });
 
       // Carry the edge the bin's half cell actually lands on, so the new design
-      // opens oriented the way the layout draws it (#2518, #3070). Derived from
+      // opens oriented the way the layout draws it. Derived from
       // the bin's position rather than the drawer's own fractional slot — those
       // differ whenever the drawer's size on that axis is a whole number.
       const bin = layout.bins.find((b) => b.id === binId);

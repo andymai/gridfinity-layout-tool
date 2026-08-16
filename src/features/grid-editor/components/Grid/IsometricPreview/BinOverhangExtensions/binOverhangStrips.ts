@@ -1,7 +1,7 @@
 /**
  * Pure geometry for the 3D overhang extension of a bin.
  *
- * A bin grows outward either into the drawer margin on edges it abuts (#2462) or
+ * A bin grows outward either into the drawer margin on edges it abuts or
  * by an explicit per-placement overhang from "Expand to Fit"; both arrive here
  * already reconciled by `binOverhangSides`. Rather than rebuild the merged bin
  * geometry, the extension is drawn as up to four solid strips filling the space

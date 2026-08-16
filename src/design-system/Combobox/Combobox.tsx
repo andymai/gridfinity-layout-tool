@@ -57,7 +57,7 @@ export interface ComboboxProps {
 }
 
 // Kept as a plain string (composed with `cn` at render, not module init) so an
-// imported class token can't resolve `undefined` under a chunk cycle (#1466).
+// imported class token can't resolve `undefined` under a chunk cycle.
 const WRAPPER_STATIC =
   'relative inline-flex w-full items-center bg-surface border border-stroke rounded-md ' +
   'hover:border-stroke-strong focus-within:border-accent focus-within:ring-1 focus-within:ring-accent';

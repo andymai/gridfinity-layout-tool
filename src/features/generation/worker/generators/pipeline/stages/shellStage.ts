@@ -9,7 +9,7 @@
  * socket↔body fuse), while EXPORT fuses the socket into the featured body for a
  * single watertight solid. Deferring past features — not just past the body —
  * also keeps additive feature fuses off the socket-laden body, which otherwise
- * went non-manifold (GH #2085); see the socket-deferral note below.
+ * went non-manifold (GH); see the socket-deferral note below.
  */
 
 import { unwrap, fuse, cut, translate, withScope, getKernelCapabilities } from 'brepjs';
@@ -39,7 +39,7 @@ import { collectOrigins } from '../collectOrigins';
 /**
  * Which way the lite cups open.
  *
- * A spacer (#2869) opens BOTH ends, so each foot becomes a tube and the cell is a
+ * A spacer opens BOTH ends, so each foot becomes a tube and the cell is a
  * clean through-hole; it never carries magnets or screws (`deriveDimensions`
  * suppresses them — a pad inside a through-hole would be free-standing). Solid
  * bins open downward, since their body keeps its floor; everything else opens up
@@ -119,7 +119,7 @@ export const shellStage: PipelineStage = {
       checkCancelled(signal);
       onProgress?.('shell', 0.3);
 
-      // Collar (issue #2500): the outer box + lip extrude to `boxWallHeight`
+      // Collar: the outer box + lip extrude to `boxWallHeight`
       // (nominal wall height + collar) while every interior feature stays
       // anchored to nominal `dim.wallHeight`. For solid/cutout bins the collar
       // is folded into `cutoutTopOffset` too, so the solid fill (the plane
@@ -143,7 +143,7 @@ export const shellStage: PipelineStage = {
         : undefined;
 
       // Mesh kernels (the Manifold draft) leave the body↔lip fuse's coincident
-      // outer-wall faces undissolved → z-fighting at the rounded corners (#2074).
+      // outer-wall faces undissolved → z-fighting at the rounded corners.
       // Build the body+lip as a single fuse-free solid instead, but only for the
       // common case the integrated builder covers; everything else keeps the
       // exact-faithful fuse below. Draft-only: the export path is an exact kernel.
@@ -153,7 +153,7 @@ export const shellStage: PipelineStage = {
         !dim.compartmentsBakedIntoShell &&
         getKernelCapabilities().tessellationModel === 'build-time' &&
         !(params.cellMask && maskHasHoles(params.cellMask)) &&
-        // Tapered bins (#2933) take the fuse path on both kernels so the draft
+        // Tapered bins take the fuse path on both kernels so the draft
         // preview matches the exact export — the integrated builder has no taper.
         !dim.overhang.taper;
 
@@ -275,7 +275,7 @@ export const shellStage: PipelineStage = {
 
       // Dividers baked into the shell by the multi-cavity cut still run to the
       // rim, so a wall-to-wall label shelf would be sliced by the ones it
-      // passes over (#2897). The cavity drawings are 2D and can't express a
+      // passes over. The cavity drawings are 2D and can't express a
       // partial height, so drop those divider tops here — before featuresStage
       // fuses the shelf, which a later cut pass would otherwise eat into.
       if (dim.compartmentsBakedIntoShell) {
@@ -380,7 +380,7 @@ export const shellStage: PipelineStage = {
       // Fusing the socket here (before features) made additive feature fuses —
       // the label-bracket especially — go non-manifold: OCCT's fuse of the
       // bracket onto a socket-laden body left T-junction (faces=3) edges far
-      // from the interface, so the exported STL was not watertight (GH #2085).
+      // from the interface, so the exported STL was not watertight (GH).
       // The same bracket fuses cleanly onto the socket-less body, so deferring
       // the socket to last keeps every feature fuse on a simpler solid and the
       // final socket fuse (onto the featured body) stays manifold. The socket is

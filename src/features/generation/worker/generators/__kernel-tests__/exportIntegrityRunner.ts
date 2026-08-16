@@ -199,7 +199,7 @@ export function runExportIntegrity(scenarios: readonly ScenarioCase[]): void {
 
   describe('export integrity: scenario matrix → binary STL', () => {
     // Reset the last-solid pointer between scenarios. `exportBin` now keys
-    // reuse on a params fingerprint (GH #3074), so this is belt-and-braces
+    // reuse on a params fingerprint (GH), so this is belt-and-braces
     // rather than load-bearing: it keeps a scenario from depending on the
     // previous one's cache state at all. The param-keyed intermediate LRU
     // caches (socket/lip/box) stay warm for speed.

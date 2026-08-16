@@ -1,5 +1,5 @@
 /**
- * Mount-down screw hole emitter for the direct baseplate mesh (#3425).
+ * Mount-down screw hole emitter for the direct baseplate mesh.
  *
  * The BREP cutter in `baseplateScrews` and this emitter describe the same hole
  * from opposite ends: that build puts the plate's top face at Z=0 and grows

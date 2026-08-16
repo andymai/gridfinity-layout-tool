@@ -85,7 +85,7 @@ export interface FittedLoop {
 
 /**
  * Round up to the next half grid unit, the finest drawer dimension allowed.
- * Shares `ceilHalfUnits` with the resize clamp (#3149) so a shape flush with
+ * Shares `ceilHalfUnits` with the resize clamp so a shape flush with
  * the drawer edge never grows the drawer by float noise alone.
  */
 export function unitsFor(mm: number, pitch: number): number {

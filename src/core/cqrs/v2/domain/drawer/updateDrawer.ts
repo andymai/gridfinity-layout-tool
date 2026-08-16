@@ -3,7 +3,7 @@
  *
  * Clamping (width/depth in [GRID_MIN, GRID_MAX] and, with a custom outline
  * active, no smaller than the outline's bounding half-unit grid — a resize
- * must never mutate the user's shape, #3149; height >= sum of layer heights)
+ * must never mutate the user's shape,; height >= sum of layer heights)
  * happens in handle() so the event's `changes` always reflects the value
  * that lands. The displaced bin set is also precomputed in handle() and
  * goes into the event as `displacedBinIds`, so apply() applies the drawer
@@ -115,7 +115,7 @@ export const updateDrawer = defineCommand({
     // Resolve clamped/derived values up-front so the event records
     // exactly what apply() will install. With a custom outline active the
     // shrink floor rises to the outline's bounding half-unit grid: the shape
-    // is user-authored and a resize must never crop or extend it (#3149) —
+    // is user-authored and a resize must never crop or extend it —
     // to go smaller, the user edits the shape first.
     const floors = drawerSizeFloors(drawer.outline, layout.gridUnitMm, gridUnitMmY);
     const changes: Partial<Drawer> = {};

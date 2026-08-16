@@ -96,7 +96,7 @@ export function useOutlineImport(deps: OutlineImportDeps): UseOutlineImportRetur
       const m = measured.value;
 
       // Growing never shrinks the other axis: `updateDrawer` clamps a shrink
-      // while a custom outline is active (#3149), so promising the file's
+      // while a custom outline is active, so promising the file's
       // absolute dims would land a different drawer than the loop was fitted
       // and centred for. Max against the current drawer so the prompt, the
       // fit extent, and the landed size all agree.

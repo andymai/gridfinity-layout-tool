@@ -20,7 +20,7 @@
  *   opening through the body floor (see `floorOpenings`).
  * - `'down'` (solid bins): the cup opens toward the underside, closed at the
  *   top by a `wt` membrane under the solid body. No floor opening.
- * - `'through'` (spacers, #2869): NO shift, so the uniform-`wt` offset leaves the
+ * - `'through'` (spacers,): NO shift, so the uniform-`wt` offset leaves the
  *   cup open at both ends — a foot-shaped tube. Still emits the floor opening, so
  *   the body floor is punched too and the cell becomes a clean through-hole. The
  *   inter-cell webbing (each cup keeps its own `wt` wall) is what ties the feet

@@ -163,7 +163,7 @@ describe('LidSection', () => {
     });
   });
 
-  // #3072: with a tray the field sets the floor under the recess, so the
+  // With a tray the field sets the floor under the recess, so the
   // overall plate is a derived number the user never typed. Spelling out the
   // arithmetic is what makes the knob legible.
   describe('tray thickness breakdown (#3072)', () => {
@@ -589,11 +589,11 @@ describe('LidSection', () => {
   describe('compatibility issues', () => {
     it('offers no one-click Fix on the label-tabs warning', () => {
       // The button deleted every label on the bin. That was proportionate while
-      // a tab cost the whole wall's rail; since #3401 the rail is only
+      // a tab cost the whole wall's rail; the rail is only
       // segmented around the tabs, so it offered to destroy user content to
       // recover part of one wall. The warning itself still shows.
       // `relieveInterior: false` because the warning belongs to the notching
-      // path: with #3477's relief on, the shelf sits below the rail band and
+      // path:'s relief on, the shelf sits below the rail band and
       // there is nothing to warn about.
       resetStore({
         lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, relieveInterior: false },
@@ -636,9 +636,9 @@ describe('LidSection', () => {
     });
 
     it('leaves the rail toggle live for a wall cutout, which only takes its own span', () => {
-      // Pre-#3483 this chip was auto-disabled, so a 70%-wide window cost the
-      // whole wall's retention. The builder now segments the run around the
-      // opening, and the user's choice has to survive to be honoured.
+      // The builder segments the rail run around the opening, so a 70%-wide
+      // window costs only its own span rather than the whole wall's retention.
+      // The user's choice has to survive to be honoured.
       resetStore({
         lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
         walls: {
@@ -652,9 +652,9 @@ describe('LidSection', () => {
     });
 
     it('leaves the rail toggle live for label tabs, which only take part of the wall', () => {
-      // Pre-#3401 this chip was auto-disabled. The builder now segments the run
-      // around the tabs, so the wall can still carry rails in the gaps and the
-      // user's choice has to survive to be honoured.
+      // The builder segments the rail run around the tabs, so the wall still
+      // carries rails in the gaps and the user's choice has to survive to be
+      // honoured.
       resetStore({
         lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
         label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },

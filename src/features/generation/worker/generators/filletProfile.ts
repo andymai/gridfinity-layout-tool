@@ -37,7 +37,7 @@ const HEIGHT_CLEARANCE = 0.1;
  * @param depth - Horizontal depth of the profile in mm (defaults to clamped radius)
  * @param depthSign - `-1` (default) extends the depth leg in `-X`, matching
  *   the original back-tab / handle-ledge convention. `+1` mirrors the profile
- *   into `+X`, used by front-anchored label tabs (#1898).
+ *   into `+X`, used by front-anchored label tabs.
  * @returns Closed 2D Drawing suitable for extrusion
  */
 export function buildFilletProfile(

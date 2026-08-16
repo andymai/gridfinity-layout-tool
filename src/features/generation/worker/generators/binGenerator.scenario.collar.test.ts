@@ -1,5 +1,5 @@
 /**
- * Scenario test: the exterior-wall collar (`extraWallHeightMm`, issue #2500)
+ * Scenario test: the exterior-wall collar (`extraWallHeightMm`,)
  * raises the outer walls + stacking lip while leaving the interior anchored to
  * the original plane.
  *

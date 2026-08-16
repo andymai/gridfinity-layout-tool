@@ -13,7 +13,7 @@
  * their geometry along.
  *
  * Both operate on arrange units, not raw cutouts: a group aligns and
- * distributes as one rigid body (#3468). Callers pass a selection already
+ * distributes as one rigid body. Callers pass a selection already
  * expanded to whole groups (`expandSelectionToGroups`).
  */
 

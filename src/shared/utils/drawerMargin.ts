@@ -5,7 +5,7 @@
  * the physical drawer with per-side padding (mm), stored on the layout as
  * `baseplateParams`; a bin that opts in (`bin.extendToMargin`) extends its walls
  * into that padding on every drawer edge it abuts, derived live so it tracks
- * later padding edits (#2462). Separately, a bin may carry an explicit
+ * later padding edits. Separately, a bin may carry an explicit
  * `bin.overhang` authored by "Expand to Fit", which lets several bins tile a
  * span that isn't a whole number of grid units while sharing one linked design.
  *
@@ -108,7 +108,7 @@ export function resolveBinMarginOverhang(
   const sides = binMarginSides(bin, drawer, baseplate);
   if (sidesTotal(sides) <= EPS) return null;
   const feet = baseplate?.overTile ?? false;
-  // Flare (#2933) widens the wall *above* the padding so the bin can reach into
+  // Flare widens the wall *above* the padding so the bin can reach into
   // a drawer's curved sides, which the flat baseplate padding can't describe.
   // The stored overhang is the width at the rim, so each abutting edge carries
   // padding + flare there and the taper insets by the flare to leave the base at

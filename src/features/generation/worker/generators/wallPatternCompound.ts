@@ -7,7 +7,7 @@
  * grouping rather than O(n²) `fuseAll`.
  *
  * `getCachedBaseCompound` keys the result on wall geometry only so
- * cutout/handle/ramp parameter nudges don't force a rebuild (#1422).
+ * cutout/handle/ramp parameter nudges don't force a rebuild.
  *
  * `buildClippedWallPattern` chains the cached base through
  * `applyWallPatternClips`.

@@ -28,7 +28,7 @@
  * component renders. Pass `disabled` on routes that own their own shortcuts
  * (Bin Designer, Baseplate) — otherwise a `Delete` aimed at a cutout shape
  * also deletes the selected layout bin, and `r`/`w`/`s` rotate bins and swap
- * layers behind the user's back (issue #2896).
+ * layers behind the user's back.
  *
  * @example
  * ```tsx

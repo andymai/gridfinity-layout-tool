@@ -99,7 +99,7 @@ describe('useLabelPlateCounts', () => {
     );
   });
 
-  // #2910: the print list quoted one plate per compartment while the worker
+  // The print list quoted one plate per compartment while the worker
   // cut a socket on each of the compartment's two walls.
   it('counts a plate per edge when tabs sit on both edges', async () => {
     mockUseCustomBins.mockReturnValue([makeRegistryRef()]);

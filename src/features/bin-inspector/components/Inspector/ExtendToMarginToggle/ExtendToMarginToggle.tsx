@@ -1,6 +1,6 @@
 /**
- * "Extend into drawer margin" toggle for a placed bin (#2462) + optional wall
- * taper (#2933).
+ * "Extend into drawer margin" toggle for a placed bin + optional wall
+ * taper.
  *
  * When a baseplate adds drawer-fit padding, a bin against a padded edge can
  * extend its walls into that margin. The per-bin flag is stored on the Bin; the

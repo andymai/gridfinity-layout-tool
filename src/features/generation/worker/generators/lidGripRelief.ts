@@ -1,6 +1,6 @@
 /**
  * Grip relief — material removed at the lid/bin seam so the lid can be got
- * off again (discussion #3272).
+ * off again (discussion).
  *
  * Three shapes, all cut from the lid's outer face upward from the seam plane
  * (`anchorZ`), all confined to the enabled walls over a centered span:

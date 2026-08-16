@@ -33,7 +33,7 @@ interface LinkingStoreState {
 
   /**
    * Sync prompts the user has already declined, as designId -> dimension key
-   * (#3040). `useDesignSavedListener` re-reconciles on every mount, so without
+   *. `useDesignSavedListener` re-reconciles on every mount, so without
    * this a design whose linked bins can't be resized re-opens the modal every
    * time the layout editor is returned to, with no way to say "I know".
    * Cleared implicitly: the key includes the dimensions, so changing the design

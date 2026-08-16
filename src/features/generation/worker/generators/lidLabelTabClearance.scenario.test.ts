@@ -1,5 +1,5 @@
 /**
- * Lid-vs-label-tab clearance (#3401).
+ * Lid-vs-label-tab clearance.
  *
  * The bin and its lid are separate solids, so nothing about either mesh says
  * they interpenetrate: both are watertight, both have plausible triangle
@@ -34,7 +34,7 @@ interface Case {
   /**
    * Rails expected on the tab's own wall. Set only where the point of the case
    * is that segments SURVIVE beside a narrow tab: absence-of-collision is
-   * satisfied by building no rail at all, which is exactly what the pre-#3401
+   * satisfied by building no rail at all, which is exactly what the pre-
    * code did.
    */
   readonly expectAnchorRails?: number;
@@ -173,7 +173,7 @@ function makeParams(c: Case): BinParams {
       attachment: 'clickRails',
       clickRails: { front: true, back: true, left: true, right: true },
       clickRailCoverage: c.coverage,
-      // Pins the NOTCHING path (#3477): `relieveInterior` defaults on for new
+      // Pins the NOTCHING path: `relieveInterior` defaults on for new
       // designs, which steps the interior aside and makes the rails whole, so
       // leaving it would test a different mechanism than this file is about.
       relieveInterior: false,

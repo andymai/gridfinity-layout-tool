@@ -148,7 +148,7 @@ describe('useOutlineImport', () => {
     expect(Math.min(...xs)).toBeCloseTo((21.5 * U - 900) / 2, 6);
   });
 
-  // Growing must never shrink the other axis: the drawer-resize clamp (#3149)
+  // Growing must never shrink the other axis: the drawer-resize clamp
   // would refuse the shrink and land a different size than the loop was
   // centred for, so the target maxes each axis against the current drawer.
   it('grows only the overflowing axis, keeping the current size on the other', async () => {

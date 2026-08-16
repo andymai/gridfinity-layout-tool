@@ -1,5 +1,5 @@
 /**
- * Import a drawer perimeter from an SVG or DXF measured in CAD (issue #3054).
+ * Import a drawer perimeter from an SVG or DXF measured in CAD.
  *
  * The pipeline is format-agnostic after parsing: pick the largest closed loop,
  * wind it CCW, place it in the drawer at true scale, and thin it only if it

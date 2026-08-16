@@ -122,7 +122,7 @@ describe('PenShapeDialog', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  // A point placed past the grid grows the drawer to fit on Apply (#3092). The
+  // A point placed past the grid grows the drawer to fit on Apply. The
   // grow and the outline commit share one batch so undo reverts both, and the
   // grow runs first so setDrawerOutline validates against the enlarged drawer.
   describe('auto-grow', () => {
@@ -232,7 +232,7 @@ describe('PenShapeDialog', () => {
   });
 
   // A drawer moulding is rarely uniform, so the radius control follows the
-  // selection rather than always rounding the whole shape (#3054).
+  // selection rather than always rounding the whole shape.
   describe('per-corner rounding', () => {
     const rect = () => ({ left: 0, top: 0, width: 448, height: 364 }) as DOMRect;
     /** Screen point for a drawer-local mm coordinate, in the default view. */

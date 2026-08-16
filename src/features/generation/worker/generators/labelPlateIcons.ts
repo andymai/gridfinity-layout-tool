@@ -1,5 +1,5 @@
 /**
- * Hardware icon silhouettes for swappable label plates (#2666 follow-up,
+ * Hardware icon silhouettes for swappable label plates (follow-up,
  * gflabel-style). Each icon is a filled 2D drawing imported from the SVG path
  * data in `@/shared/constants/labelIconPaths`, fitted to the plate's readable
  * band by its own silhouette bounds and embossed/debossed exactly like plate
@@ -19,7 +19,7 @@ import { TEXT_BOOLEAN_EPSILON } from './textBuilder';
 // Map, not a keyed object: the icon id crosses the worker message boundary,
 // and a Map lookup can neither reach the prototype chain nor dispatch to an
 // unexpected member on a crafted key (CodeQL js/unvalidated-dynamic-method-call).
-// Built on first use, not at module init — #1466 traced a boot crash to reading
+// Built on first use, not at module init — traced a boot crash to reading
 // an imported constant binding while a chunk cycle still had it undefined.
 let iconDefs: ReadonlyMap<LabelPlateIconId, LabelIconDef> | null = null;
 

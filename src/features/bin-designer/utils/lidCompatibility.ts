@@ -72,7 +72,7 @@ export type LidCompatibilityId =
   | 'handlesAllSides'
   | 'topDownCutoutsAtLip'
   | 'scoopFillsLip'
-  // Magnetic-retention (#2694) specific:
+  // Magnetic-retention specific:
   | 'magnetsPolygonUnsupported'
   | 'magnetTooDeepForBin'
   | 'magnetBinTooSmall';
@@ -143,7 +143,7 @@ const LIP_TAPER_WIDTH = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
  * cost the rail 0.07mm against a 0.64mm snap baseline, which is nothing. What
  * buries a rail is the ramp's own ARC reaching the band — its surface runs
  * inboard fast, 12.8mm at the rail's lowest point on a 2x2x4 scooped to the
- * wall top (#3434). Auto scoops are held clear by `autoScoopCeiling`; a radius
+ * wall top. Auto scoops are held clear by `autoScoopCeiling`; a radius
  * the user typed is honoured, and this is what warns about it.
  *
  * Only compartments touching the outer wall take the lip offset (`isOuter` in
@@ -209,7 +209,7 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   // so warning about it would be a false positive. Cutouts and handles are a
   // different story — see the note on `polyGaps` below.
   const isPolygon = isPartialMask(params.cellMask);
-  // Magnetic retention (#2694) holds via corner magnets independent of the
+  // Magnetic retention holds via corner magnets independent of the
   // lip, so the rail/lip-grip warnings below don't apply — a magnetic lid
   // seats fine even with cutouts on every wall. The magnetic branch adds its
   // own checks instead.
@@ -219,7 +219,7 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   // lip away. Resolved once and shared by checks 1 and 7 below, and by the rail
   // pass, which segments its runs around them instead of dropping the wall.
   //
-  // A custom shape gets these too (#3482), which the older comment above got
+  // A custom shape gets these too, which the older comment above got
   // wrong: `FeatureGate` only makes the CONTROLS inert, and both builders
   // declare `supportsCellMask`, so a polygon bin really is cut. Its gaps are
   // measured against resolved polygon edges and so come from a separate plan.
@@ -227,7 +227,7 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   const polyGaps = isMagnetic ? [] : polygonLipGaps(params);
 
   // 1. Wall cutouts. Each one removes lip material along its OWN span, and
-  //    since #3483 the rail keeps whatever the window leaves either side — so
+  // the rail keeps whatever the window leaves either side — so
   //    this is a warning wherever any lip survives, no matter how many walls
   //    are cut. The blocker is the case its copy has always described: cutouts
   //    that leave no lip anywhere, which now means full-width on all four
@@ -248,7 +248,7 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   // 2. Wall pattern. Patterns extend up to (LIP_HEIGHT + 2)mm into the
   //    lip Z range (see `wallPatternBuilder.clipOvershoot`), perforating
   //    the lip's inner face that the lid's rails grip. A divider-only
-  //    pattern (#2966: every outer wall deselected) never touches the lip.
+  // pattern (every outer wall deselected) never touches the lip.
   if (
     params.wallPattern.enabled &&
     hasAnyPatternedWall(params.wallPattern) &&
@@ -263,12 +263,12 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   //    bin (totalH=7mm). The lid still seats but the click is marginal.
   if (params.height <= 1 && !isMagnetic) {
     issues.push({ id: 'shortBin', severity: 'warning' });
-    // A tall lid (issue #2482) on that already-marginal 1U grip adds a long
+    // A tall lid on that already-marginal 1U grip adds a long
     // lever arm — the taller the cavity, the more a knock can pop the lid off
     // its shallow click. Flag once the added height is a meaningful multiple of
     // the grip. Independent of the geometry, which stays valid either way.
     // Measures TOTAL added depth, not just `extraHeightMm`: a thick floor plate
-    // (#2761) deepens the cavity too and lengthens the same lever arm.
+    // deepens the cavity too and lengthens the same lever arm.
     if (resolveLidCavityExtraMm(params) >= TALL_LID_LEVERAGE_WARN_MM) {
       issues.push({ id: 'tallLidShortBin', severity: 'warning' });
     }
@@ -299,13 +299,13 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   //    sweeps, so a rail on the tab's own anchor wall has nowhere to go and
   //    is skipped during placement. Which wall that is comes from the tab
   //    geometry, not a constant: `label.edges` may anchor tabs to the FRONT
-  //    (or both), and a shelf dropped clear of the rail band (#1898's
+  //    (or both), and a shelf dropped clear of the rail band (a
   //    tuck-under pocket, or an inset that pulls the body off the wall)
   //    fouls nothing at all and must keep its rail.
   //
   //    No side is disabled outright: `railSegmentsClearOfLabelTabs` cuts each
   //    wall's run around the tabs and keeps whatever is left, which is what
-  //    makes 75%/100% coverage usable with tabs at all (#3401).
+  //    makes 75%/100% coverage usable with tabs at all.
   if (params.label.enabled && !isPolygon && !isMagnetic) {
     const anchored: ReadonlySet<string> = new Set(
       railFoulingLabelFootprints(params).map((fp) => fp.anchor)
@@ -318,7 +318,7 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
 
   // 7. Handles. A handle hole cut high enough removes lip material along its
   //    own span — same impact as a wall cutout, and segmented the same way
-  //    since #3483. Sides where the hole sits clear of the lip don't conflict
+  //. Sides where the hole sits clear of the lip don't conflict
   //    and don't warn; nor do the sides `handleBuilder` skips (a slotted bin,
   //    or the back wall of a bin with label tabs), which the plan mirrors.
   //    Interior handles pierce compartment dividers, not the outer lip.
@@ -351,7 +351,7 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
     }
   }
 
-  // 9. Compartment dividers (#3477). A divider is built from the cavity floor
+  // 9. Compartment dividers. A divider is built from the cavity floor
   //    to the interior ceiling, whose top is only `LIP_SMALL_TAPER` below the
   //    bin's wall top, and a seated click rail hangs 3.15mm under that same
   //    plane while reaching inboard of the inner wall face. A rail run straight
@@ -372,14 +372,14 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
     }
   }
 
-  // 10. Finger scoop reaching the click rail's band (#3426, #3434). A ramp
+  // 10. Finger scoop reaching the click rail's band. A ramp
   //     against an outer wall of a lipped bin rises toward the lip, and where
   //     it reaches the top ~3.15mm of the wall its arc fills the pocket the
   //     rail's bump drops into to hook the lip's underside — so that edge of
   //     the lid is propped off the rim.
   //
   //     The gate is how HIGH the ramp resolves, not whether it takes a lip
-  //     offset. #3432 gated on the offset and dropped the rail for every
+  // offset. gated on the offset and dropped the rail for every
   //     scooped wall; the offset and its chute cost 0.07mm against a 0.64mm
   //     snap baseline, and the ramp reaching the top costs 0.39mm. Auto scoops
   //     are now held clear by `autoScoopCeiling`, so this fires only for a
@@ -394,7 +394,7 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   //     the ramp takes nothing away from the lip, so a friction shell still
   //     seats on it. Only a rail needs the pocket, so only `clickRails` cares.
   //
-  //     Silent once the interior is relieved (#3477): the envelope cut takes
+  //     Silent once the interior is relieved: the envelope cut takes
   //     the ramp's top back to the keep-out plane, so the pocket the rail hooks
   //     is open by construction and there is nothing for the user to act on.
   const socketless = params.base.style === 'flat' || params.base.style === 'lid';
@@ -413,7 +413,7 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
     }
   }
 
-  // 11. Magnetic retention (#2694).
+  // 11. Magnetic retention.
   if (isMagnetic) {
     // Corner magnet placement isn't defined on an arbitrary polygon outline,
     // so a magnetic custom-shape lid falls back to a plain friction lid with
@@ -516,14 +516,14 @@ export function isLidBlockedBySection(params: BinParams, section: LidConflictSec
  *
  * A label tab does not necessarily take its whole wall. The rail builder
  * segments the run around the tabs and keeps whatever stretches are left
- * (#3401), so a wall the tabs fully cover still ends up friction-fit while a
+ *, so a wall the tabs fully cover still ends up friction-fit while a
  * wall with gaps keeps rails in them. Deciding that here, up front, would
  * throw the gaps away before anything measured them.
  *
  * A compartment divider is the same shape of thing, one wall crossing at a time
- * (#3477): it costs the rail its own width plus a margin, never the wall.
+ *: it costs the rail its own width plus a margin, never the wall.
  *
- * Wall cutouts and intruding handles joined them in #3483. They are the other
+ * Wall cutouts and intruding handles joined them. They are the other
  * kind of obstruction — the lip is missing rather than blocked — but the
  * decision is identical either way: the window costs the rail its own span, and
  * `lipGaps` is what says how wide that is. A wall is only ever denied outright

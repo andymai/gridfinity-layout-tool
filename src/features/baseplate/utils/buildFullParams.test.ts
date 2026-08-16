@@ -133,7 +133,7 @@ describe('buildFullParams', () => {
       expect(perimeter({ ...storedBase, cornerRadius: mm(10) })).toBe(false);
     });
 
-    // A custom perimeter now stacks (#3113): both a drawer shape and a
+    // A custom perimeter now stacks: both a drawer shape and a
     // large-radius conversion keep their perimeter under stacking (the shaped
     // tiles dedupe by fingerprint like any others), so the answer is
     // stacking-independent — matching what generation actually produces.
@@ -536,7 +536,7 @@ describe('drawer outline handling', () => {
     ],
   };
 
-  // #3054: the flag only has meaning against a perimeter, so an orphaned one
+  // The flag only has meaning against a perimeter, so an orphaned one
   // must not fragment caches or trigger a regeneration on a plain rectangle.
   it('forwards wholeCellsOnly only when there is an outline', () => {
     const shaped = buildFullParams(
@@ -563,7 +563,7 @@ describe('drawer outline handling', () => {
     expect(rectangular.wholeCellsOnly).toBeUndefined();
   });
 
-  // #3115: a plan the plate has outgrown must never reach the planner, or the
+  // A plan the plate has outgrown must never reach the planner, or the
   // rendered pieces disagree with the geometry they were drawn against.
   it('forwards a split plan that still matches the plate', () => {
     const params = buildFullParams(
@@ -684,12 +684,12 @@ describe('drawer outline handling', () => {
     expect(result.paddingLeft).toBe(1.0);
   });
 
-  // #3108/#3109: the pen editor auto-grows the drawer to the MAX extent only
-  // (#3092), so a custom perimeter usually lands in a corner-offset sub-rect of
+  // The pen editor auto-grows the drawer to the MAX extent only
+  //, so a custom perimeter usually lands in a corner-offset sub-rect of
   // the declared extent. The resolver re-bases the one derived outline so the
   // generator's socket grid and the split planner's seam bands share one frame —
   // but only by lattice-registered shifts: a sub-cell move breaks whole-cell
-  // registration and drops sockets (#3149).
+  // registration and drops sockets.
   describe('outline re-basing onto the socket lattice', () => {
     const zeroPad = {
       ...storedBase,
@@ -785,7 +785,7 @@ describe('drawer outline handling', () => {
   });
 });
 
-// #3113: a shaped, larger-than-bed plate under stacking used to have its outline
+// A shaped, larger-than-bed plate under stacking used to have its outline
 // dropped, so it tiled as a rectangle and reported the confusing "single plate /
 // nothing to stack" warning. With the outline kept, the shape tiles and its
 // identical tiles stack while the unique perimeter tiles print singly.
@@ -1165,7 +1165,7 @@ describe('grid↔perimeter frame parity (#3157)', () => {
 });
 
 describe('outline overhang (#3169)', () => {
-  // The #3149 reporter's setup: a 396 x 295.5mm perimeter on an 8.5 x 7.5
+  // The reporter's setup: a 396 x 295.5mm perimeter on an 8.5 x 7.5
   // drawer at 48 x 42 pitch, so the extent is 408 x 315 and the shape is
   // anchored at the origin — touching the left and front edges.
   const REPORTED: DrawerOutline = {
@@ -1261,7 +1261,7 @@ describe('outline overhang (#3169)', () => {
 });
 
 /**
- * #3212: the overhang widens a piece's slab OUTWARD from its padded extent, so
+ * The overhang widens a piece's slab OUTWARD from its padded extent, so
  * the piece must frame its outline exactly as the whole plate does — extent at
  * 0, overhang negative. Deriving the piece-local outline from the widened
  * window origin instead slid the perimeter inward by the overhang: the outer
@@ -1271,7 +1271,7 @@ describe('outline overhang (#3169)', () => {
 describe('split-piece outline frame vs. its overhang-widened slab (#3212)', () => {
   // The reporter's plate: a 393 × 295.5mm perimeter on an 8 × 7 drawer at
   // 48 × 42 pitch (extent 384 × 294). The oversize shape auto-centres now
-  // (#3212), so no manual grid shift is needed to reach the case where BOTH
+  //, so no manual grid shift is needed to reach the case where BOTH
   // sides of BOTH axes overhang. A 256mm bed tiles it 2 × 2.
   const REPORTED: DrawerOutline = {
     vertices: [

@@ -41,7 +41,7 @@ export function reorderForDisplay(
   if (sizes.length <= 1) return sizes;
 
   // `caps` come from the same axisCapacity used by partitionAxis, so dovetail
-  // tongues are accounted for when reshuffling chunks across positions (#1498).
+  // tongues are accounted for when reshuffling chunks across positions.
   const { maxFirst, maxLast, maxMiddle } = caps;
   const fracIdx = sizes.findIndex(isFractional);
 

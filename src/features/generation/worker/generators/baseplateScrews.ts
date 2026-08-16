@@ -1,5 +1,5 @@
 /**
- * Mount-down screw hole geometry for the baseplate (#3425).
+ * Mount-down screw hole geometry for the baseplate.
  *
  * Splits into two halves so the draft mesh and the BREP build can share the
  * decisions without sharing a kernel:

@@ -1,5 +1,5 @@
 /**
- * Wall-pattern cuts for REMOVABLE divider pieces (#2811 follow-up).
+ * Wall-pattern cuts for REMOVABLE divider pieces.
  *
  * Reuses the integrated-divider panel factory and only changes the frame: a
  * removable piece is built lying flat for printing (length along X, installed

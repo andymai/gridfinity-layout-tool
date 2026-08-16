@@ -138,7 +138,7 @@ export function computeWallClipContext(
   const lipOverhang = hasLip ? LIP_TAPER_WIDTH : 0;
   const maxThickness = Math.max(params.wallThickness, params.compartments.thickness);
   // Clip boxes must be at least as deep as the hex prism extrusion (cutDepth)
-  // so they fully envelop hex prisms at junction/cutout boundaries (#1354).
+  // so they fully envelop hex prisms at junction/cutout boundaries.
   const clipExtrudeDepth = Math.max((maxThickness + lipOverhang) * 2 + 1, cutDepth + 1);
   const clipOvershoot = (hasLip ? LIP_HEIGHT : 0) + 2;
 
@@ -180,7 +180,7 @@ export function computeWallClipContext(
       : buildHandleWallDefs(innerW, innerD);
   const handleWallDefForSide = new Map(handleWallDefs.map((d) => [d.side, d]));
 
-  // Wall text (#2695): the pattern is cleared behind each wall's fitted text
+  // Wall text: the pattern is cleared behind each wall's fitted text
   // bbox. The solver returns [] for polygon bins, so this composes with the
   // polygon path below without extra guards. Positioning reuses the handle
   // wall-def convention, so rect bins need the defs even with handles off.
@@ -208,7 +208,7 @@ export function computeWallClipContext(
  * Assemble the cutout/handle/text/ramp clip set for one wall, plus the
  * combined cache-key fragment. `shapeRadius` is the pattern element's
  * bounding radius — junction clip borders expand to at least it so elements
- * can't bleed into divider walls (#1350).
+ * can't bleed into divider walls.
  */
 export function computeWallClips(
   params: BinParams,
@@ -314,7 +314,7 @@ export function computeWallClips(
     }
   }
 
-  // Text border clipping (#2695) — clear the pattern behind the fitted
+  // Text border clipping — clear the pattern behind the fitted
   // text bbox (buildHandleClipBoxes adds CUTOUT_BORDER_WIDTH around it).
   let textClip: HandleClipParams | null = null;
   const textLayout = wall.allowClip ? clipCtx.wallTextBySide.get(wall.side) : undefined;
@@ -381,7 +381,7 @@ export function computeWallClips(
       )
     : 'nohdl';
 
-  // Ramp zone clipping for divider-cutout blends + divider junction blocking (#1345).
+  // Ramp zone clipping for divider-cutout blends + divider junction blocking.
   // Polygon bins skip both: dividers are filtered out of the feature pipeline
   // on custom shapes so there's nothing to blend against or block.
   const rampZones = isPolygon
@@ -410,7 +410,7 @@ export function computeWallClips(
     (z) => !junctionOffsets.has(quantize(z.offsetAlongWall))
   );
   const combinedZones = [...uniqueRampZones, ...junctionZones];
-  // Ensure border is at least shapeRadius so hex prisms can't bleed into divider walls (#1350).
+  // Ensure border is at least shapeRadius so hex prisms can't bleed into divider walls.
   const zoneBorder = Math.max(CUTOUT_BORDER_WIDTH, shapeRadius);
   const rampClip: RampZoneClipParams | null =
     combinedZones.length > 0
@@ -532,7 +532,7 @@ export function buildWallPatterns(ctx: PipelineContext): WallPatternTargets {
 
     // Base-compound key: wall geometry + pattern template only. Cutout/handle/
     // ramp nudges MUST NOT affect this key so the expensive hex compound is
-    // reused across parameter tweaks (#1422).
+    // reused across parameter tweaks.
     const baseKey = compactKey(
       buildCacheKey(
         'v2',

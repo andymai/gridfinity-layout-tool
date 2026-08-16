@@ -37,7 +37,7 @@ export function useScanImport(): UseScanImportReturn {
 
       startTransaction();
       try {
-        // Same stacking rule as the SVG path (#3073): a scan can trace an
+        // Same stacking rule as the SVG path: a scan can trace an
         // outer silhouette around smaller detail.
         for (const spec of byDescendingArea(specs)) {
           const cutout = specToCutout(spec, hydrationOptions);

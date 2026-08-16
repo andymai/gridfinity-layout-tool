@@ -36,7 +36,7 @@ export const tessellateStage: PipelineStage = {
     // watertight solid. The socket is deferred past the feature stage (see
     // shellStage) so feature fuses run on the socket-less body — fusing it
     // earlier made additive features like the label bracket non-manifold
-    // (GH #2085). On failure, leave the socket deferred so the separate-mesh
+    // (GH). On failure, leave the socket deferred so the separate-mesh
     // path below still produces a complete (if seam-split) export rather than
     // throwing. PREVIEW keeps the socket deferred and meshes it separately.
     if (forExport && ctx.deferredSolid) {
@@ -60,7 +60,7 @@ export const tessellateStage: PipelineStage = {
     if (solid !== rawSolid) rawSolid.delete();
 
     // Stamping the params lets `exportBin` tell this solid apart from one left
-    // behind by a different design on the same worker (GH #3074). Only meaningful
+    // behind by a different design on the same worker (GH). Only meaningful
     // for export passes — a preview solid is regenerated regardless.
     //
     // A still-deferred socket on an export pass means the fuse above failed:

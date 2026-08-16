@@ -97,7 +97,7 @@ export function useWallsSection() {
     return undefined;
   }, [someWallsSlotted, patternStatus.available, t]);
 
-  // ── Per-side selection (#2966) ────────────────────────────────────────────
+  // ── Per-side selection ────────────────────────────────────────────
   // Mirrors the worker gate in `wallPatterns.getWallPatternDescriptors`: a wall
   // is patterned only when the user picked it AND it carries no divider slots.
   // Memoized on the store slice: the resolver returns a fresh object, which
@@ -134,7 +134,7 @@ export function useWallsSection() {
     return anySlotted ? t('binDesigner.walls.pattern.kumiko.notSlotted') : undefined;
   }, [wallPattern.pattern, params.cellMask, params.style, slotBlocked, t]);
 
-  // ── Divider walls (#2811) ─────────────────────────────────────────────────
+  // ── Divider walls ─────────────────────────────────────────────────
   // The same pattern and scale carried through the compartment dividers, so a
   // patterned bin doesn't read as hollow walls around solid dividers.
   const dividersEnabled = wallPattern.dividers === true;
@@ -203,7 +203,7 @@ export function useWallsSection() {
     return undefined;
   }, [dividersAvailableReason, dividersFit, params.style, t]);
 
-  // ── Wall surface text (#2695) ─────────────────────────────────────────
+  // ── Wall surface text ─────────────────────────────────────────
   // Mirrors the worker gates in `wallTextLayout.ts`: polygon and solid-mode
   // bins skip wall text entirely.
   const wallTexts = params.surfaceText?.walls ?? {};

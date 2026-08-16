@@ -2,15 +2,15 @@
  * Mesh-based STL serialization — a fallback for OCCT's `StlAPI.Write`.
  *
  * OCCT's STL writer silently rejects some valid-but-tricky topologies that
- * `mesh()` triangulates cleanly (scoop ramp + tall walls #1760, scoop cusp
- * rims #1850, and assorted user feature combinations that surface in
+ * `mesh` triangulates cleanly (scoop ramp + tall walls, scoop cusp
+ * rims, and assorted user feature combinations that surface in
  * production as `STL_EXPORT_FAILED`). Writing STL ourselves from the meshed
  * triangle buffer removes the dependency on OCCT's writer: it runs on the
  * exact same triangles the preview already renders cleanly, so it succeeds
  * whenever the preview does.
  *
  * The split-bin export path (`splitBinBuilder`) has bypassed OCCT this way
- * since #1760; this shares that proven path with the single-piece exporter.
+ *; this shares that proven path with the single-piece exporter.
  */
 
 import { mesh, exportSTL } from 'brepjs';

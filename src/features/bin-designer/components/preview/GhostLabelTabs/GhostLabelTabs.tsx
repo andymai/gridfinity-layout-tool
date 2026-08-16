@@ -87,7 +87,7 @@ export function GhostLabelTabs() {
   // (interior ceiling under the lip taper, stacking relief for click-in
   // sockets, an explicit `label.height` capped at that plane), so the ghost
   // lands exactly
-  // where the regenerated mesh will (#1898).
+  // where the regenerated mesh will.
   const shelfTopWorldZ =
     floorZ +
     resolveLabelShelfTopMm(
@@ -125,7 +125,7 @@ export function GhostLabelTabs() {
 
     const matrices: THREE.Matrix4[] = [];
 
-    // Lip strip (#2971): a thin vertical rim ghosted along each tab's free edge
+    // Lip strip: a thin vertical rim ghosted along each tab's free edge
     // for instant feedback before the mesh regenerates. 0 unless the lip is
     // enabled on a text-mode tab. Rotating the base XY quad to vertical (XZ)
     // lets the merge loop below consume it like any tab quad; local Z ∈
@@ -150,7 +150,7 @@ export function GhostLabelTabs() {
     // Build per-row tab quads for one anchor (back or front). Mirrors the
     // worker-side grouping in `labelTabBuilder.ts` — both must stay in sync
     // so the ghost overlay matches the eventual BREP output.
-    // Full-width mode (#2897): one shelf per row, outer wall to outer wall.
+    // Full-width mode: one shelf per row, outer wall to outer wall.
     const buildSpanningRow = (row: number, anchor: 'back' | 'front') => {
       const depthSign = anchor === 'back' ? -1 : 1;
       if (!spanningTabEligible(compartments, row, anchor, fit)) return;
@@ -199,7 +199,7 @@ export function GhostLabelTabs() {
         }
 
         // Same predicate the worker gates on, so the ghost can't show a tab
-        // that will be silently dropped from the mesh (#1904 review).
+        // that will be silently dropped from the mesh.
         if (!compartmentTabEligible(compartments, cellId, anchor, fit)) {
           col++;
           continue;
@@ -217,7 +217,7 @@ export function GhostLabelTabs() {
         }
 
         // Same span the worker builds against, so a shifted divider moves the
-        // ghost and the mesh together (#3225).
+        // ghost and the mesh together.
         const span = compartmentTabXSpan(compartments, cellId, innerW);
         if (!span) {
           col = groupEnd;

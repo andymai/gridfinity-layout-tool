@@ -281,7 +281,7 @@ const layoutSetHeightUnitMmSchema = z.object({ mm: positiveMm });
 // Max = gridUnitMm/2 (capped at 200mm) + max padding (100mm). UI derives a tighter bound per-layout.
 const cornerRadiusMm = z.number().min(0).max(200);
 /**
- * Chunk sizes for one axis of a custom split plan (#3115). Bounds only — that
+ * Chunk sizes for one axis of a custom split plan. Bounds only — that
  * the sizes actually sum to the plate is checked by `normalizeSplitOverride`,
  * which has the resolved dimensions this layer does not.
  */

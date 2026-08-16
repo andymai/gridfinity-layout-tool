@@ -1,5 +1,5 @@
 /**
- * Swappable-label socket mode scenarios (#2666).
+ * Swappable-label socket mode scenarios.
  *
  * The custom asserts verify the cut pocket against the pinned interchange
  * spec (`@/shared/constants/labelPlates`) from the actual mesh — plate
@@ -57,7 +57,7 @@ interface PocketExpectation {
 function assertSocketPocket(result: MeshData, params: BinParams, exp: PocketExpectation): void {
   const { vertices } = result;
   // Derive the expected clearance the SAME way the worker does, so a wide-nozzle
-  // scenario proves the generator actually read `params.nozzleSizeMm` (#2690).
+  // scenario proves the generator actually read `params.nozzleSizeMm`.
   const clearanceMm = effectiveLabelSocketClearance(
     params.nozzleSizeMm,
     params.label.plateFitOffset
@@ -194,7 +194,7 @@ export const labelSockets: ScenarioCase[] = [
       assertSocketPocket(result, params, { plateWidthU: 3, label: '3x1-auto' }),
   }),
 
-  // Wide nozzle (#2690): the pocket clearance scales up, so the measured pocket
+  // Wide nozzle: the pocket clearance scales up, so the measured pocket
   // is wider than the 0.4mm baseline. The assert derives the expected width from
   // `params.nozzleSizeMm`, so this fails if the generator ignores the nozzle.
   defineScenario('label sockets', '3×1 socket on a 0.6mm nozzle widens the pocket', {

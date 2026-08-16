@@ -42,7 +42,7 @@ const META_STORE = 'binMeshMeta';
  * one kernel's output, bump that kernel's {@link KERNEL_MESH_REVISION} entry
  * instead, so the other kernel's users keep their warm cache.
  *
- * `v10`: the kernel id joined the key (#3444). Before this, occt-wasm and the
+ * `v10`: the kernel id joined the key. Before this, occt-wasm and the
  * brepkit Labs kernel shared one namespace, so switching engines in Labs served
  * the previous engine's mesh for unchanged params.
  * `v9`: brepkit-wasm 3.2.24 reattaches splitter holes, so a slotted no-lip bin
@@ -50,7 +50,7 @@ const META_STORE = 'binMeshMeta';
  * moved, but one namespace covered both — the last bump that had to.
  * `v8`: label-tab keep-outs on patterned dividers follow `inset` and the
  * anchor edge, so a bin with either cuts a different divider pattern.
- * `v7`: label tabs stopped being forced full-width in socket mode (#3402), so
+ * `v7`: label tabs stopped being forced full-width in socket mode, so
  * the same params cut a different shelf. `useLinkedDesignMeshes` serves a hit
  * without regenerating, so without this bump a linked design in the layout
  * planner would render its pre-fix bin until the entry was evicted.
@@ -186,7 +186,7 @@ function djb2(str: string): string {
  *
  * `kernel` is required rather than resolved here: the same params produce
  * different bytes on each kernel, and a caller that reads a key it did not
- * generate under gets the other engine's mesh (#3444). Pass `getActiveKernel()`
+ * generate under gets the other engine's mesh. Pass `getActiveKernel`
  * from `@/shared/generation/bridge` — the bridge is constructed from the same
  * resolution, and the Labs engine toggle forces a reload before it can change.
  */

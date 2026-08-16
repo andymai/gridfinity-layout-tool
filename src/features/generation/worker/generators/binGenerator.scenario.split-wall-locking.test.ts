@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Scenario tests for wall locking connectors on split bin pieces (issue #1869).
+ * Scenario tests for wall locking connectors on split bin pieces.
  *
  * Wall locking adds straight alignment keys to the exterior perimeter walls at
  * each cut so tall pieces resist splaying. The keys assemble by pressing the

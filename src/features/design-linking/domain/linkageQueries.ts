@@ -86,7 +86,7 @@ export function getLinkedBins(bins: Bin[]): Bin[] {
 
 /**
  * Check if a bin's dimensions match its linked design, allowing a 90° placement
- * (#3040) — the preview renders a transposed design rotated, so it fits.
+ * — the preview renders a transposed design rotated, so it fits.
  */
 export function binMatchesDesign(bin: Bin, designDimensions: SyncableDimensions): boolean {
   return dimensionsFitAllowingRotation(

@@ -17,7 +17,7 @@ export function createDrawerActions(setLocal: SetLocal) {
 
         // With a custom outline active the shrink floor rises to the
         // outline's bounding half-unit grid — a resize must never mutate the
-        // user's shape (#3149); same rule as the CQRS updateDrawer command.
+        // user's shape; same rule as the CQRS updateDrawer command.
         const floors = drawerSizeFloors(drawer.outline, state.layout.gridUnitMm, gridUnitMmY);
 
         if (updates.width !== undefined) {

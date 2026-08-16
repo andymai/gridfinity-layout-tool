@@ -1,5 +1,5 @@
 /**
- * Real-kernel checks for wall patterns on REMOVABLE divider pieces (#2811).
+ * Real-kernel checks for wall patterns on REMOVABLE divider pieces.
  *
  * The pieces never appear in the bin mesh — they are separate parts exported
  * on their own — so the bin scenario suite can't cover them. These build the

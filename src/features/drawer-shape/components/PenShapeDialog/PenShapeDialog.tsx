@@ -1,5 +1,5 @@
 /**
- * Freeform perimeter editor for the drawer shape (issue #3054).
+ * Freeform perimeter editor for the drawer shape.
  *
  * The cell-paint editor can only follow grid lines, so a drawer with a
  * moulding, a diagonal, or a curved front has no way in. This one edits the
