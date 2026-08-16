@@ -18,7 +18,14 @@ import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeome
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useLineMaterialResolution } from '../useLineMaterialResolution';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
-import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
+import {
+  computeCutoutCenter,
+  cornerSlackFor,
+  resolveCutoutCornerRadii,
+  safeCutoutCornerRadii,
+  type SafeCornerRadii,
+} from '@/shared/utils/wallCutoutPosition';
 
 const GHOST_COLOR = '#fbbf24';
 const GHOST_OPACITY = 0.75;
@@ -88,6 +95,70 @@ export function GhostWallCutouts() {
       }
     };
 
+    /**
+     * A quarter-arc corner, tessellated from `from` to `to` around `centre`.
+     *
+     * Both radii the panel exposes are quarter arcs against the same pair of
+     * axes: the top round-over blends the rim into the cut's side, the bottom
+     * fillet blends the side into the floor. Only the quadrant differs.
+     */
+    const addQuarter = (
+      axis: 'front-back' | 'left-right',
+      cx: number,
+      cy: number,
+      centreX: number,
+      centreZ: number,
+      startAngle: number,
+      radius: number
+    ) => {
+      if (radius <= 0) return;
+      for (let i = 0; i < ARC_SEGMENTS; i++) {
+        const a0 = startAngle + (Math.PI / 2) * (i / ARC_SEGMENTS);
+        const a1 = startAngle + (Math.PI / 2) * ((i + 1) / ARC_SEGMENTS);
+        pushLine(
+          axis,
+          cx,
+          cy,
+          centreX + Math.cos(a0) * radius,
+          centreZ + Math.sin(a0) * radius,
+          centreX + Math.cos(a1) * radius,
+          centreZ + Math.sin(a1) * radius
+        );
+      }
+    };
+
+    /**
+     * The two shoulder blends, drawn on every shape.
+     *
+     * The cut flares outward as it rises and reaches its full radius exactly
+     * at the rim, so the outline has to open there too — otherwise dragging
+     * the radius moves nothing on screen until the worker returns.
+     */
+    const addTopFlares = (
+      axis: 'front-back' | 'left-right',
+      cx: number,
+      cy: number,
+      hw: number,
+      rimZ: number,
+      corner: SafeCornerRadii
+    ) => {
+      // Each blend is centred a radius outboard of the cut and a radius below
+      // the rim, so it lands tangent to the rim above and to the cut's own
+      // side below. `addQuarter` sweeps anticlockwise, which puts the right
+      // blend in the quadrant from +z round to -x and the left one from +x
+      // round to +z — the two are NOT the same start angle mirrored.
+      addQuarter(
+        axis,
+        cx,
+        cy,
+        hw + corner.topRight,
+        rimZ - corner.topRight,
+        Math.PI / 2,
+        corner.topRight
+      );
+      addQuarter(axis, cx, cy, -hw - corner.topLeft, rimZ - corner.topLeft, 0, corner.topLeft);
+    };
+
     // U-notch outline: bottom + two sides, open at top
     const addUNotch = (
       cx: number,
@@ -95,13 +166,34 @@ export function GhostWallCutouts() {
       cz: number,
       hw: number,
       hh: number,
-      axis: 'front-back' | 'left-right'
+      axis: 'front-back' | 'left-right',
+      corner: SafeCornerRadii
     ) => {
       const z0 = cz - hh;
       const z1 = cz + hh;
-      pushLine(axis, cx, cy, -hw, z0, hw, z0); // Bottom
-      pushLine(axis, cx, cy, hw, z0, hw, z1); // Right side
-      pushLine(axis, cx, cy, -hw, z0, -hw, z1); // Left side
+      pushLine(axis, cx, cy, -hw + corner.bottomLeft, z0, hw - corner.bottomRight, z0); // Bottom
+      pushLine(axis, cx, cy, hw, z0 + corner.bottomRight, hw, z1 - corner.topRight); // Right side
+      pushLine(axis, cx, cy, -hw, z0 + corner.bottomLeft, -hw, z1 - corner.topLeft); // Left side
+      // Bottom fillets sweep from the floor (pointing -z) round to the side.
+      addQuarter(
+        axis,
+        cx,
+        cy,
+        hw - corner.bottomRight,
+        z0 + corner.bottomRight,
+        -Math.PI / 2,
+        corner.bottomRight
+      );
+      addQuarter(
+        axis,
+        cx,
+        cy,
+        -hw + corner.bottomLeft,
+        z0 + corner.bottomLeft,
+        Math.PI,
+        corner.bottomLeft
+      );
+      addTopFlares(axis, cx, cy, hw, z1, corner);
     };
 
     // Scoop outline: semicircle arc + two sides to top
@@ -111,9 +203,13 @@ export function GhostWallCutouts() {
       cz: number,
       hw: number,
       hh: number,
-      axis: 'front-back' | 'left-right'
+      axis: 'front-back' | 'left-right',
+      corner: SafeCornerRadii
     ) => {
-      const topZ = cz + hh;
+      addTopFlares(axis, cx, cy, hw, cz + hh, corner);
+      // The blend drops the arc's chord by the deeper of the two radii, the
+      // same way the profile does, so the outline tracks the solid.
+      const topZ = cz + hh - Math.max(corner.topLeft, corner.topRight);
       const sagitta = Math.min(hw, hh); // Clamp arc depth to floor boundary
       // Circular segment: compute radius from chord (2*hw) and sagitta
       const chord = 2 * hw;
@@ -142,14 +238,20 @@ export function GhostWallCutouts() {
       cz: number,
       hw: number,
       hh: number,
-      axis: 'front-back' | 'left-right'
+      axis: 'front-back' | 'left-right',
+      corner: SafeCornerRadii
     ) => {
       const z0 = cz - hh;
       const z1 = cz + hh;
       const bottomHW = hw * FUNNEL_TAPER;
       pushLine(axis, cx, cy, -bottomHW, z0, bottomHW, z0); // Bottom
-      pushLine(axis, cx, cy, hw, z1, bottomHW, z0); // Right taper
-      pushLine(axis, cx, cy, -hw, z1, -bottomHW, z0); // Left taper
+      pushLine(axis, cx, cy, hw, z1 - corner.topRight, bottomHW, z0); // Right taper
+      pushLine(axis, cx, cy, -hw, z1 - corner.topLeft, -bottomHW, z0); // Left taper
+      // No bottom fillet here: the taper meets the floor at an oblique angle,
+      // so its blend is not the quarter arc `addQuarter` draws, and an outline
+      // that is wrong by a visible amount is worse than one that is plainly
+      // approximate. The solid still fillets it.
+      addTopFlares(axis, cx, cy, hw, z1, corner);
     };
 
     const addOutline = (
@@ -158,15 +260,16 @@ export function GhostWallCutouts() {
       cz: number,
       hw: number,
       hh: number,
-      axis: 'front-back' | 'left-right'
+      axis: 'front-back' | 'left-right',
+      corner: SafeCornerRadii
     ) => {
       switch (walls.shape) {
         case 'scoop':
-          return addScoop(cx, cy, cz, hw, hh, axis);
+          return addScoop(cx, cy, cz, hw, hh, axis, corner);
         case 'funnel':
-          return addFunnel(cx, cy, cz, hw, hh, axis);
+          return addFunnel(cx, cy, cz, hw, hh, axis, corner);
         default:
-          return addUNotch(cx, cy, cz, hw, hh, axis);
+          return addUNotch(cx, cy, cz, hw, hh, axis, corner);
       }
     };
 
@@ -213,7 +316,25 @@ export function GhostWallCutouts() {
       const topZ = totalH;
       const cutCenterZ = topZ - userCutH / 2;
 
-      addOutline(side.cx + centerOffset, side.cy, cutCenterZ, cutW / 2, userCutH / 2, side.axis);
+      // Same clamps the profile applies, so the outline cannot promise a blend
+      // the solid will decline to build.
+      const corner = safeCutoutCornerRadii(
+        resolveCutoutCornerRadii(walls, sideConfig, cutW),
+        cutW,
+        userCutH,
+        base.stackingLip ? GRIDFINITY_SPEC.LIP_HEIGHT : 0,
+        cornerSlackFor(side.wallSpan, cutW, centerOffset)
+      );
+
+      addOutline(
+        side.cx + centerOffset,
+        side.cy,
+        cutCenterZ,
+        cutW / 2,
+        userCutH / 2,
+        side.axis,
+        corner
+      );
     }
 
     if (positions.length === 0) return null;
@@ -221,7 +342,11 @@ export function GhostWallCutouts() {
     const geo = new LineSegmentsGeometry();
     geo.setPositions(positions);
     return geo;
-  }, [shouldShow, walls, innerW, innerD, wallHeight, wallThickness, totalH]);
+    // `base.stackingLip` and not `base`: the lip is the only field the outline
+    // reads directly, and `wallHeight` already covers the rest. Toggling it
+    // changes no other dependency, so leaving it out strands the outline on
+    // the previous clamp.
+  }, [shouldShow, walls, innerW, innerD, wallHeight, wallThickness, totalH, base.stackingLip]);
 
   const material = useMemo(() => {
     if (!shouldShow) return null;

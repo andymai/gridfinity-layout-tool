@@ -8,6 +8,12 @@
  * single window cost the whole wall its rail, which on a 40%-wide cutout threw
  * away 60% of the retention it did not have to.
  *
+ * A cutout's opening is not always the span the user set. A rounded shoulder
+ * flares the cut outward as it rises and reaches its full radius exactly at the
+ * rim, so the stretch with no lip is the span plus a radius at each end — which
+ * is why the gap is measured through `safeCutoutCornerRadii` rather than off
+ * `cutWidth`.
+ *
  * This is the OTHER kind of obstruction (see {@link WallSpanBlock}): nothing is
  * in the way, the grip is simply absent. Two consequences, both easy to get
  * wrong:
@@ -31,7 +37,12 @@ import type { BinParams, HandleConfig, LidCompatibilitySide } from '@/shared/typ
 import { LID_MIN_RAIL_LENGTH } from '@/shared/types/bin';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { isPartialMask } from '@/shared/utils/cellMask';
-import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
+import {
+  computeCutoutCenter,
+  cornerSlackFor,
+  resolveCutoutCornerRadii,
+  safeCutoutCornerRadii,
+} from '@/shared/utils/wallCutoutPosition';
 import {
   computeHandleHoleGeometry,
   computeWallHandleSegments,
@@ -166,10 +177,29 @@ function wallGaps(
     // against the cavity ceiling. Only decides whether the cut is built.
     const userCutHeight = (wallHeight - wallThickness) * (cfg.depth / 100);
     if (cutWidth > 0 && cfg.depth > 0 && cutWidth >= 0.1 && userCutHeight >= 0.1) {
+      const centre = computeCutoutCenter(
+        wallSpan,
+        cutWidth,
+        wallThickness,
+        cfg.alignment,
+        cfg.offset
+      );
+      // The opening AT THE LIP, not the nominal span. A rounded shoulder is a
+      // flare that reaches its full radius exactly at the rim, so the stretch
+      // with no lip is wider than the cut the user set — per end, since one
+      // end can sit flush against the wall and take no round at all.
+      const round = safeCutoutCornerRadii(
+        resolveCutoutCornerRadii(params.walls, cfg, cutWidth),
+        cutWidth,
+        userCutHeight,
+        params.base.stackingLip ? GRIDFINITY_SPEC.LIP_HEIGHT : 0,
+        cornerSlackFor(wallSpan, cutWidth, centre)
+      );
+      const width = cutWidth + round.topLeft + round.topRight;
       out.push({
         source: 'cutout',
-        centre: computeCutoutCenter(wallSpan, cutWidth, wallThickness, cfg.alignment, cfg.offset),
-        width: cutWidth,
+        centre: centre + (round.topRight - round.topLeft) / 2,
+        width,
       });
     }
   }

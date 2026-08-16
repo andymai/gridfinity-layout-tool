@@ -82,6 +82,7 @@ import {
   WALL_TEXT_SIDES,
 } from '../types/text';
 import type { TextStyleDefaults } from '../types/text';
+import { MAX_CUTOUT_CORNER_RADIUS } from '@/shared/utils/wallCutoutPosition';
 import { DESIGNER_CONSTRAINTS } from './gridfinity';
 import {
   DEFAULT_BIN_PARAMS,
@@ -104,11 +105,25 @@ export interface LegacyWallConfig {
   shape?: WallCutoutShape;
   width?: number;
   depth?: number;
+  cornerRadiusTop?: unknown;
+  cornerRadiusBottom?: unknown;
   front?: number | Partial<WallCutout>;
   back?: number | Partial<WallCutout>;
   left?: number | Partial<WallCutout>;
   right?: number | Partial<WallCutout>;
   interior?: Partial<WallCutout>;
+}
+
+/**
+ * Coerce a stored corner radius to `number | null`.
+ *
+ * Null is not "missing" here, it is the value that means defer — so anything
+ * uninterpretable has to land on null rather than on a number, or a crafted
+ * save silently pins a radius the design never asked for.
+ */
+function cornerRadius(value: unknown): number | null {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return null;
+  return Math.max(0, Math.min(MAX_CUTOUT_CORNER_RADIUS, value));
 }
 
 /**
@@ -132,6 +147,25 @@ export function migrateWalls(
     enabled: cutout.enabled || cutout.width > 0 || cutout.depth > 0,
   });
 
+  // Bound whatever radii are present without introducing the keys: an absent
+  // field already means "defer", so backfilling it would rewrite every saved
+  // design (and every example's dedupe fingerprint) to say what it already said.
+  const cornerFields = (source: {
+    readonly cornerRadiusTop?: unknown;
+    readonly cornerRadiusBottom?: unknown;
+  }): Partial<WallCutout> => {
+    const out: { cornerRadiusTop?: number | null; cornerRadiusBottom?: number | null } = {};
+    if ('cornerRadiusTop' in source) out.cornerRadiusTop = cornerRadius(source.cornerRadiusTop);
+    if ('cornerRadiusBottom' in source) {
+      out.cornerRadiusBottom = cornerRadius(source.cornerRadiusBottom);
+    }
+    return out;
+  };
+
+  const withCorners = (cutout: WallCutout): WallCutout => ({ ...cutout, ...cornerFields(cutout) });
+
+  const globalCorners = cornerFields(raw);
+
   // Detect legacy format: values are numbers instead of WallCutout objects
   if (
     typeof raw.front === 'number' ||
@@ -149,10 +183,12 @@ export function migrateWalls(
         };
       }
       if (val && typeof val === 'object' && 'width' in val) {
-        return inferEnabled({
-          ...defaults.front,
-          ...val,
-        });
+        return withCorners(
+          inferEnabled({
+            ...defaults.front,
+            ...val,
+          })
+        );
       }
       return defaults.front;
     };
@@ -161,10 +197,12 @@ export function migrateWalls(
     const left = toWallCutout(raw.left);
     const right = toWallCutout(raw.right);
     const interior = raw.interior
-      ? inferEnabled({
-          ...defaults.interior,
-          ...raw.interior,
-        })
+      ? withCorners(
+          inferEnabled({
+            ...defaults.interior,
+            ...raw.interior,
+          })
+        )
       : defaults.interior;
     const anySideEnabled =
       front.enabled || back.enabled || left.enabled || right.enabled || interior.enabled;
@@ -173,6 +211,7 @@ export function migrateWalls(
       shape: defaults.shape,
       width: defaults.width,
       depth: defaults.depth,
+      ...globalCorners,
       front,
       back,
       left,
@@ -189,9 +228,9 @@ export function migrateWalls(
     const merged = { ...defaultSide, ...rawSide };
     // Backfill enabled for old saves that lack the field
     if (rawSide && !('enabled' in rawSide)) {
-      return inferEnabled(merged);
+      return withCorners(inferEnabled(merged));
     }
-    return merged;
+    return withCorners(merged);
   };
   const asCutout = (
     v: number | Partial<WallCutout> | undefined
@@ -212,6 +251,7 @@ export function migrateWalls(
     shape: raw.shape && VALID_SHAPES.includes(raw.shape) ? raw.shape : defaults.shape,
     width: typeof raw.width === 'number' ? raw.width : defaults.width,
     depth: typeof raw.depth === 'number' ? raw.depth : defaults.depth,
+    ...globalCorners,
     front,
     back,
     left,

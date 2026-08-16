@@ -36,6 +36,20 @@ export const LIP_HEIGHT = LIP_SMALL_TAPER + LIP_VERTICAL_PART + LIP_BIG_TAPER; /
 export const LIP_TAPER_WIDTH = LIP_SMALL_TAPER + LIP_BIG_TAPER; // 2.6mm horizontal inset
 export const LIP_OVERLAP = GRIDFINITY.LIP_OVERLAP;
 
+/**
+ * Air left between a wall cutout's profile top and the highest material it
+ * passes through.
+ *
+ * A cutout's `overshoot` is this plus whatever stands above the wall body, so
+ * the rim ends up exactly this far below the profile's top edge whether or not
+ * the bin has a stacking lip. The cutout's top round-over is built tangent to
+ * that plane, which is why it is a shared constant rather than a `+ 2` restated
+ * at each call site: get it wrong and the blend lands inside the lip or in
+ * mid-air above it, and neither is visible to a bounding-box or watertight
+ * assertion.
+ */
+export const CUT_RIM_CLEARANCE = 2;
+
 /** Corner radius for baseplate outer perimeter (same as socket corner radius) */
 export const PLATE_CORNER_RADIUS = CORNER_RADIUS;
 

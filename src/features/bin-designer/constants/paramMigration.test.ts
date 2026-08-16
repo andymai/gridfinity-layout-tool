@@ -9,6 +9,7 @@ import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from './defaults';
 import type { LidConfig } from '../types';
 import { FLOOR_PATTERN_TYPES, WALL_PATTERN_TYPES } from '../types';
 import { DESIGNER_CONSTRAINTS } from './gridfinity';
+import { MAX_CUTOUT_CORNER_RADIUS } from '@/shared/utils/wallCutoutPosition';
 import { validateBinParams } from '../utils/validation';
 import { makeUniformLipCells } from '../types/featureColors';
 import { DEFAULT_SLIDE_CONFIG } from '../types/slide';
@@ -397,6 +398,58 @@ describe('migrateParams', () => {
     };
     const result = migrateParams({ walls });
     expect(result.walls).toEqual(walls);
+  });
+
+  it('should not introduce corner radii a design never carried', () => {
+    // An absent radius already means "defer to the built-in rule", so
+    // backfilling it would rewrite every saved design to say what it already
+    // said — and change the community dedupe fingerprint of every built-in
+    // example along with it.
+    const walls = {
+      enabled: true,
+      shape: 'u-shape' as const,
+      width: 70,
+      depth: 50,
+      front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 80, depth: 60 },
+      back: DISABLED_WALL_CUTOUT,
+      left: DISABLED_WALL_CUTOUT,
+      right: DISABLED_WALL_CUTOUT,
+      interior: DISABLED_WALL_CUTOUT,
+    };
+    const result = migrateParams({ walls });
+    expect('cornerRadiusTop' in result.walls).toBe(false);
+    expect('cornerRadiusTop' in result.walls.front).toBe(false);
+    expect('cornerRadiusBottom' in result.walls.front).toBe(false);
+  });
+
+  it('should bound a crafted corner radius instead of trusting it', () => {
+    // Every distinct radius drives a blend the generator has to build, so a
+    // value out of range is a payload turning into an unbounded boolean.
+    // Null is a real value here and has to survive as one.
+    const result = migrateParams({
+      walls: {
+        enabled: true,
+        shape: 'u-shape' as const,
+        width: 70,
+        depth: 50,
+        cornerRadiusTop: 9999,
+        front: {
+          ...DISABLED_WALL_CUTOUT,
+          enabled: true,
+          width: 80,
+          depth: 60,
+          cornerRadiusTop: -4,
+          cornerRadiusBottom: null,
+        },
+        back: DISABLED_WALL_CUTOUT,
+        left: DISABLED_WALL_CUTOUT,
+        right: DISABLED_WALL_CUTOUT,
+        interior: DISABLED_WALL_CUTOUT,
+      },
+    });
+    expect(result.walls.cornerRadiusTop).toBe(MAX_CUTOUT_CORNER_RADIUS);
+    expect(result.walls.front.cornerRadiusTop).toBe(0);
+    expect(result.walls.front.cornerRadiusBottom).toBeNull();
   });
 
   it('should fill missing WallCutout fields with defaults', () => {

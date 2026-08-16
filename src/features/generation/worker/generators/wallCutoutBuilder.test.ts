@@ -9,7 +9,9 @@ import {
   cornerSlackFor,
 } from './wallCutoutBuilder';
 import type { CornerSlack } from './wallCutoutBuilder';
+import type { CutoutCornerRadii } from '@/shared/utils/wallCutoutPosition';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
+import { CUT_RIM_CLEARANCE, LIP_HEIGHT } from './generatorConstants';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams, DividerOverride, WallCutoutShape } from '@/features/bin-designer/types';
 
@@ -280,12 +282,12 @@ describe('buildSingleCutout corner placement', () => {
   }, 120_000);
 
   // 40mm span → autoCornerRadius saturates at its 5mm cap, the worst case for
-  //. OVERSHOOT is the production no-lip value ((hasLip ? LIP_HEIGHT: 0) + 2),
-  // so the cut runs from z = WALL_HEIGHT - CUT_HEIGHT up to z = WALL_HEIGHT + 2
-  // and the wall's visible rim sits at z = WALL_HEIGHT.
+  //. OVERSHOOT is the production no-lip value, so the cut runs from
+  // z = WALL_HEIGHT - CUT_HEIGHT up to z = WALL_HEIGHT + CUT_RIM_CLEARANCE and
+  // the wall's visible rim sits at z = WALL_HEIGHT.
   const CUT_WIDTH = 40;
   const CUT_HEIGHT = 30;
-  const OVERSHOOT = 2;
+  const OVERSHOOT = CUT_RIM_CLEARANCE;
   const EXTRUDE_DEPTH = 8;
   const WALL_HEIGHT = 40;
   const CENTERED = { x: 0, y: 0, rotateZ: 0 };
@@ -305,7 +307,8 @@ describe('buildSingleCutout corner placement', () => {
     shape: WallCutoutShape,
     z: number,
     cutHeight: number = CUT_HEIGHT,
-    cornerSlack?: CornerSlack
+    cornerSlack?: CornerSlack,
+    radii?: CutoutCornerRadii
   ): number =>
     withScope((scope: DisposalScope) => {
       const cut = scope.register(
@@ -317,11 +320,12 @@ describe('buildSingleCutout corner placement', () => {
           EXTRUDE_DEPTH,
           WALL_HEIGHT,
           CENTERED,
-          cornerSlack
+          cornerSlack,
+          radii
         )
       );
       const slab = scope.register(
-        box(-CUT_WIDTH, CUT_WIDTH, -EXTRUDE_DEPTH, EXTRUDE_DEPTH, z, z + 0.001)
+        box(-2 * CUT_WIDTH, 2 * CUT_WIDTH, -EXTRUDE_DEPTH, EXTRUDE_DEPTH, z, z + 0.001)
       );
       const clipped = intersect(cut, slab);
       expect(isOk(clipped), `slab intersection at z=${z}`).toBe(true);
@@ -424,5 +428,141 @@ describe('buildSingleCutout corner placement', () => {
     // `r` per side — assert only that the floor is clearly pulled in from the
     // nominal 60% bottom width.
     expect(spanAtZ('funnel', FLOOR_Z)).toBeLessThan(CUT_WIDTH * 0.6 - 1);
+  });
+
+  // ─── Top round-over ────────────────────────────────────────────────────
+  // The shoulder where the cut meets the rim. The cut FLARES outward as it
+  // rises, so the material corner beside it comes out rounded — assert the
+  // opening's width at three heights, since a square shoulder and a rounded
+  // one have identical bounding boxes, triangle counts and watertightness.
+  describe('top round-over', () => {
+    const TOP_R = 5;
+    const withTop = (top: number, bottom = 0): CutoutCornerRadii => ({ top, bottom });
+
+    it('opens the cut by the radius on each side at the rim', () => {
+      expect(spanAtZ('u-shape', WALL_HEIGHT, CUT_HEIGHT, undefined, withTop(TOP_R))).toBeCloseTo(
+        CUT_WIDTH + 2 * TOP_R,
+        1
+      );
+    });
+
+    it('is back to the nominal span a radius below the rim', () => {
+      // The arc is tangent to the cut's own side at exactly this depth, so
+      // everything below it is the plain opening the user asked for.
+      const z = WALL_HEIGHT - TOP_R - 0.5;
+      expect(spanAtZ('u-shape', z, CUT_HEIGHT, undefined, withTop(TOP_R))).toBeCloseTo(
+        CUT_WIDTH,
+        2
+      );
+    });
+
+    it('is a true arc between the two, not a chamfer', () => {
+      // The blend's circle is centred at (span/2 + r, rim - r), so at depth d
+      // below the rim the opening is still r - sqrt(r² - (r - d)²) wider per
+      // side. A chamfer would close linearly instead, which is the only other
+      // way to soften this corner.
+      const openingAt = (depth: number): number =>
+        CUT_WIDTH + 2 * (TOP_R - Math.sqrt(TOP_R * TOP_R - (TOP_R - depth) ** 2));
+      for (const depth of [0.5, TOP_R / 2, TOP_R - 0.5]) {
+        expect(
+          spanAtZ('u-shape', WALL_HEIGHT - depth, CUT_HEIGHT, undefined, withTop(TOP_R)),
+          `${depth}mm below the rim`
+        ).toBeCloseTo(openingAt(depth), 1);
+      }
+      // The arc is tangent to the cut's own side where it lands, so it runs
+      // out to nothing rather than meeting the wall at an angle: half a
+      // millimetre above the landing it is 0.05mm wide, where a chamfer of the
+      // same radius would still be a full 0.5mm per side.
+      expect(openingAt(TOP_R - 0.5)).toBeLessThan(CUT_WIDTH + 0.2);
+    });
+
+    it('flares the funnel and the scoop the same way', () => {
+      for (const shape of ['funnel', 'scoop'] as const) {
+        expect(
+          spanAtZ(shape, WALL_HEIGHT, CUT_HEIGHT, undefined, withTop(TOP_R)),
+          shape
+        ).toBeCloseTo(CUT_WIDTH + 2 * TOP_R, 1);
+      }
+    });
+
+    it('squares the shoulder where no wall is left beside the cut', () => {
+      // Same rule the bottom fillet follows: with zero slack the round-over
+      // would carve the neighbouring wall rather than its own shoulder.
+      expect(
+        spanAtZ('u-shape', WALL_HEIGHT, CUT_HEIGHT, { left: 0, right: 0 }, withTop(TOP_R))
+      ).toBeCloseTo(CUT_WIDTH, 2);
+    });
+
+    it('caps each shoulder by the wall left on its own side', () => {
+      const slack = 2;
+      expect(
+        spanAtZ('u-shape', WALL_HEIGHT, CUT_HEIGHT, { left: 0, right: Infinity }, withTop(TOP_R))
+      ).toBeCloseTo(CUT_WIDTH + TOP_R, 1);
+      expect(
+        spanAtZ('u-shape', WALL_HEIGHT, CUT_HEIGHT, { left: slack, right: slack }, withTop(TOP_R))
+      ).toBeCloseTo(CUT_WIDTH + 2 * slack, 1);
+    });
+
+    it('never rounds deeper than the cut itself', () => {
+      // A 5mm round on a 3mm-deep cut would reach past the floor and eat the
+      // wall under the opening. The clamp keeps the blend inside the cut.
+      const shallow = 3;
+      const atRim = spanAtZ('u-shape', WALL_HEIGHT, shallow, undefined, withTop(TOP_R));
+      expect(atRim).toBeLessThanOrEqual(CUT_WIDTH + 2 * shallow + 0.01);
+    });
+
+    it('lands the blend on the LIP top, not the wall top, when the bin has one', () => {
+      // A lipped bin overshoots by LIP_HEIGHT + CUT_RIM_CLEARANCE, so the
+      // highest material is 4.4mm above `wallHeight`. Round to the wall top
+      // instead and the lip is left perched square on a rounded wall — and the
+      // blend is 4.4mm lower than anything a screenshot would show.
+      const lipped = LIP_HEIGHT + CUT_RIM_CLEARANCE;
+      const lipTop = WALL_HEIGHT + LIP_HEIGHT;
+      const spanAtLipped = (z: number): number =>
+        withScope((scope: DisposalScope) => {
+          const cut = scope.register(
+            buildSingleCutout(
+              'u-shape',
+              CUT_WIDTH,
+              CUT_HEIGHT,
+              lipped,
+              EXTRUDE_DEPTH,
+              WALL_HEIGHT,
+              CENTERED,
+              undefined,
+              { top: TOP_R, bottom: 0 }
+            )
+          );
+          const slab = scope.register(
+            box(-2 * CUT_WIDTH, 2 * CUT_WIDTH, -EXTRUDE_DEPTH, EXTRUDE_DEPTH, z, z + 0.001)
+          );
+          const clipped = intersect(cut, slab);
+          expect(isOk(clipped), `slab intersection at z=${z}`).toBe(true);
+          if (!isOk(clipped)) return NaN;
+          const b = getBounds(scope.register(clipped.value));
+          return b.xMax - b.xMin;
+        });
+      expect(spanAtLipped(lipTop)).toBeCloseTo(CUT_WIDTH + 2 * TOP_R, 1);
+      expect(spanAtLipped(lipTop - TOP_R - 0.5)).toBeCloseTo(CUT_WIDTH, 2);
+    });
+
+    it('leaves the shoulder square by default', () => {
+      // The resolved default is 0, which is what keeps every design saved
+      // before this control generating the geometry it always did.
+      expect(spanAtZ('u-shape', WALL_HEIGHT)).toBeCloseTo(CUT_WIDTH, 2);
+      expect(spanAtZ('scoop', WALL_HEIGHT)).toBeCloseTo(CUT_WIDTH, 2);
+    });
+
+    it('rounds both ends independently of the bottom fillet', () => {
+      const both: CutoutCornerRadii = { top: TOP_R, bottom: 4 };
+      expect(spanAtZ('u-shape', WALL_HEIGHT, CUT_HEIGHT, undefined, both)).toBeCloseTo(
+        CUT_WIDTH + 2 * TOP_R,
+        1
+      );
+      expect(spanAtZ('u-shape', FLOOR_Z, CUT_HEIGHT, undefined, both)).toBeCloseTo(
+        CUT_WIDTH - 2 * 4,
+        0
+      );
+    });
   });
 });

@@ -8,6 +8,7 @@
 
 import type { HandleSegment, HandleWallDef } from '@/shared/utils/handleCutoutClip';
 import type { WallCutoutShape } from '@/shared/types/bin';
+import type { CutoutCornerRadii } from '@/shared/utils/wallCutoutPosition';
 import type { RampZone } from './dividerBlendBuilder';
 
 /** Cache name for the uncut per-wall hex compound (shared across cutout/handle/ramp nudges). */
@@ -40,6 +41,11 @@ export interface CutoutClipParams {
   readonly wallSpan: number;
   readonly wallShape: WallCutoutShape;
   readonly wallThickness: number;
+  /**
+   * The cut's resolved corner radii. The clip has to carry them or a rounded
+   * shoulder leaves hex prisms standing in the flare it just widened.
+   */
+  readonly radii: CutoutCornerRadii;
 }
 
 /** Pre-computed handle clipping parameters for a single wall. */

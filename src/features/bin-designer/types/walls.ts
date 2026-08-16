@@ -14,6 +14,16 @@ export interface WallCutout {
   readonly offset: number;
   /** Absolute cutout width in mm. When null, the percentage `width` field is used instead. */
   readonly widthMm: number | null;
+  /**
+   * Round-over (mm) on the shoulder where this cut meets the top of the
+   * material. Null defers to {@link WallConfig.cornerRadiusTop}.
+   */
+  readonly cornerRadiusTop?: number | null;
+  /**
+   * Fillet (mm) at the bottom of this cut. Null defers to
+   * {@link WallConfig.cornerRadiusBottom}.
+   */
+  readonly cornerRadiusBottom?: number | null;
 }
 
 /** Wall side identifier for per-side operations */
@@ -32,6 +42,17 @@ export interface WallConfig {
   readonly width: number;
   /** Global default depth % (0-100) applied to sides without individual overrides */
   readonly depth: number;
+  /**
+   * Default shoulder round-over (mm) for sides that set no radius of their own.
+   * Null (or absent, on a design saved before the control existed) means
+   * square, which is the shape every such design already has.
+   */
+  readonly cornerRadiusTop?: number | null;
+  /**
+   * Default bottom fillet (mm) for sides that set none. Null means the
+   * automatic 15%-of-span rule the builder has always applied.
+   */
+  readonly cornerRadiusBottom?: number | null;
   readonly front: WallCutout;
   readonly back: WallCutout;
   readonly left: WallCutout;
