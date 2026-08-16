@@ -50,10 +50,10 @@ export const DESIGNER_CONSTRAINTS = {
   // from 4u to 50u (`__kernel-tests__/height.perf`). Only a wall pattern pays,
   // and it grows roughly linearly past 20u (17s at 20u, 40s at 30u, 85s at
   // 50u), against the full 180s budget `computeGenerationTimeoutMs` grants from
-  // 30u up. Past that budget a honeycomb cut exhausts the WASM heap rather than
-  // merely running long, but a 16x16x20 reaches the same place and was legal
-  // before this moved, so it is a footprint ceiling height can also reach, not
-  // one height opened up.
+  // 30u up. Far past that budget a honeycomb cut stops finishing at all and
+  // traps the kernel with `RuntimeError: memory access out of bounds`, but a
+  // 16x16x20 does the same and was legal at a MAX_HEIGHT of 20, so that is a
+  // footprint ceiling height can also reach, not one height opened up.
   MAX_HEIGHT: 50,
   HEIGHT_STEP: 1, // height units
   MIN_COMPARTMENT_GRID: 1, // min rows/cols
