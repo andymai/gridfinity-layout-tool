@@ -19,6 +19,7 @@ import {
   LID_EXTRA_HEIGHT_MAX_MM,
   LID_EXTRA_HEIGHT_MIN_MM,
   LID_RAIL_SIDES,
+  LIGHTWEIGHT_MODES,
 } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { useBaseSection } from './useBaseSection';
@@ -209,6 +210,31 @@ export function BaseSection() {
         onChange={handlers.toggleLightweight}
         disabledReason={handlers.lightweightDisabledReason}
       />
+
+      {/* Relief side (#3524). Deliberately OUTSIDE the toggle, unlike every
+          other sub-control in this panel: `FeatureToggle` renders its children
+          only while it is on, and the mode is precisely what decides whether it
+          CAN be turned on. A bin with a finger scoop is blocked from an interior
+          lite floor and allowed an underside one, so nesting the control would
+          leave that bin — the case the feature exists for — with no way to reach
+          it. Same standalone shape as the foot lattice above. */}
+      <div className="space-y-2 pl-1">
+        <SegmentedControl
+          aria-label={t('binDesigner.lightweightMode')}
+          activeStyle="accent"
+          fullWidth
+          size="sm"
+          value={state.lightweightMode}
+          onChange={handlers.setLightweightMode}
+          options={LIGHTWEIGHT_MODES.map((mode) => ({
+            value: mode,
+            label: t(`binDesigner.lightweightMode.${mode}`),
+          }))}
+        />
+        <p className="text-[11px] leading-relaxed text-content-tertiary">
+          {t(`binDesigner.lightweightMode.${state.lightweightMode}.hint`)}
+        </p>
+      </div>
 
       {/* ── Spacer / riser (#2869) — a floorless frame that lifts a bin so bins
           of different heights finish flush. Height counts in the stack exactly

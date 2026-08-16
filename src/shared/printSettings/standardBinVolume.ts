@@ -65,6 +65,55 @@ const BASE_VOL_PER_CELL_AREA = 5.3785;
 const LIP_AREA = 0.223;
 
 /**
+ * Material a lightweight base removes, per unit of cell footprint area
+ * (mm³/mm²), keyed by relief direction and whether the feet are subdivided.
+ *
+ * Measured, not derived: generating each variant and differencing against the
+ * same bin with a solid base gives a per-cell figure that is constant to the
+ * millimetre across 1x1, 2x2 and 3x3 — 6398 / 5174 / 4332 / 2458 mm³ per 42mm
+ * cell — which is what makes a per-cell-area term the right shape for it. A
+ * base-only bin measures 5173, i.e. the same relief, confirming the saving is a
+ * property of the foot alone and transfers to any body sitting on it.
+ *
+ * The underside relief saves less than the interior mode because it holds a
+ * wider border back around each foot (UNDERSIDE_RELIEF_BORDER_MM against
+ * `wallThickness`), and half sockets save least of all: subdividing a cell into
+ * four feet quadruples the wall the shell has to leave standing.
+ *
+ * Approximate for the layouts the model has never described — a partial cell
+ * mask, a fractional edge foot, or the `half` foot lattice — in exactly the way
+ * the base term above already is.
+ */
+const LIGHTWEIGHT_SAVING_PER_CELL_AREA = {
+  interior: { full: 3.627, half: 2.4558 },
+  underside: { full: 2.9331, half: 1.3934 },
+} as const;
+
+/**
+ * Material (mm³) a lightweight base removes from {@link StandardBinComponents.base}.
+ *
+ * Takes plain booleans rather than the designer's `BaseConfig` so this module
+ * stays a leaf of `@/shared/printSettings` — the caller has already resolved
+ * whether the relief is active.
+ */
+export function lightweightBaseSaving(
+  widthUnits: number,
+  depthUnits: number,
+  underside: boolean,
+  halfSockets: boolean,
+  gridUnitMm: number = GRIDFINITY_SPEC.GRID_SIZE,
+  gridUnitMmY: number = gridUnitMm
+): number {
+  const cells = widthUnits * depthUnits;
+  if (cells <= 0) return 0;
+  const perArea =
+    LIGHTWEIGHT_SAVING_PER_CELL_AREA[underside ? 'underside' : 'interior'][
+      halfSockets ? 'half' : 'full'
+    ];
+  return perArea * gridUnitMm * gridUnitMmY * cells;
+}
+
+/**
  * The three structural components of a standard bin's solid volume (mm³).
  * Exposed so the bin-designer estimator can reuse the OCCT-calibrated base
  * geometry and add the lip conditionally (and layer its own feature deltas on

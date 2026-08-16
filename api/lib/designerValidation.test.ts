@@ -412,6 +412,24 @@ describe('validateDesignerShare', () => {
       const result = validateDesignerShare(payload, JSON.stringify(payload).length);
       expect(result.valid).toBe(false);
     });
+
+    it('accepts both lightweight relief modes, and absent', () => {
+      for (const mode of ['interior', 'underside', undefined]) {
+        const payload = validPayload();
+        (payload.params.base as Record<string, unknown>).lightweightMode = mode;
+        const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+        expect(result.valid).toBe(true);
+      }
+    });
+
+    // The two modes are different solids — one opens the cavity floor, the other
+    // leaves it — so an unknown value must not fall back to either.
+    it('rejects an unknown lightweight relief mode', () => {
+      const payload = validPayload();
+      (payload.params.base as Record<string, unknown>).lightweightMode = 'sideways';
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(false);
+    });
   });
 
   describe('compartments validation', () => {

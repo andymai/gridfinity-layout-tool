@@ -481,6 +481,69 @@ describe('printEstimates', () => {
       }
     });
 
+    // The underside relief keeps the slab, so unlike the interior mode above it
+    // is NOT in the inert list — it patterns the floor like a standard bin.
+    it('drainage holes still count on an underside-relieved base', () => {
+      const base: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        height: 4,
+        base: {
+          ...DEFAULT_BIN_PARAMS.base,
+          lightweight: true,
+          lightweightMode: 'underside' as const,
+        },
+      };
+      const floorPattern = { enabled: true, pattern: 'round' as const, scale: 0.5 };
+      expect(estimatePrint({ ...base, floorPattern }).volumeMm3).toBeLessThan(
+        estimatePrint(base).volumeMm3
+      );
+    });
+
+    // Measured per-cell savings, not a re-derivation: generating each variant
+    // and differencing against a solid base gives 6398 / 5174 / 4332 / 2458 mm³
+    // per 42mm cell, constant to the millimetre from 1x1 to 3x3.
+    it('books the measured per-cell saving for each lightweight variant', () => {
+      const at = (over: Partial<BinParams['base']>): number =>
+        estimatePrint({
+          ...DEFAULT_BIN_PARAMS,
+          base: { ...DEFAULT_BIN_PARAMS.base, ...over },
+        }).volumeMm3;
+      const solid = at({});
+      const cells = DEFAULT_BIN_PARAMS.width * DEFAULT_BIN_PARAMS.depth;
+      const perCell = (over: Partial<BinParams['base']>): number => (solid - at(over)) / cells;
+
+      expect(perCell({ lightweight: true })).toBeCloseTo(6398, -1);
+      expect(perCell({ lightweight: true, lightweightMode: 'underside' })).toBeCloseTo(5174, -1);
+    });
+
+    // A half-socket base subdivides every foot, so the shell has four times the
+    // wall to leave standing and saves markedly less. Same direction, own number.
+    it('saves less on half sockets than on full ones', () => {
+      const at = (over: Partial<BinParams['base']>): number =>
+        estimatePrint({
+          ...DEFAULT_BIN_PARAMS,
+          base: { ...DEFAULT_BIN_PARAMS.base, ...over },
+        }).volumeMm3;
+      const full = at({ halfSockets: false }) - at({ halfSockets: false, lightweight: true });
+      const half = at({ halfSockets: true }) - at({ halfSockets: true, lightweight: true });
+      expect(half).toBeGreaterThan(0);
+      expect(half).toBeLessThan(full);
+    });
+
+    // The flag is inert without a socket to shell, so a crafted payload must not
+    // buy the saving on a flat or lid base.
+    it('books no saving on a socketless base', () => {
+      for (const style of ['flat', 'lid'] as const) {
+        const base: BinParams = {
+          ...DEFAULT_BIN_PARAMS,
+          base: { ...DEFAULT_BIN_PARAMS.base, style },
+        };
+        expect(
+          estimatePrint({ ...base, base: { ...base.base, lightweight: true } }).volumeMm3
+        ).toBe(estimatePrint(base).volumeMm3);
+      }
+    });
+
     it('honeycomb walls skip slotted walls correctly', () => {
       const baseParams: BinParams = {
         ...DEFAULT_BIN_PARAMS,

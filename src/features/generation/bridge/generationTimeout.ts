@@ -11,7 +11,7 @@
  */
 
 import type { ResolvedBaseplateParams, BinParams } from '@/shared/types/bin';
-import { isKumikoPattern } from '@/shared/types/bin';
+import { isKumikoPattern, isUndersideRelief } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { resolveOverhang } from '@/shared/utils/overhang';
 
@@ -287,13 +287,14 @@ function binRawBudgetMs(params: BinParams): number {
     }
   }
 
-  // Mirrors the worker's `floorPatternApplies` gate — a solid or lightweight
-  // base never builds a floor panel, so it shouldn't be granted time for one.
+  // Mirrors the worker's `floorPatternApplies` gate — a solid base, or one
+  // whose lite floor is open, never builds a floor panel, so it shouldn't be
+  // granted time for one. The underside relief does build it.
   if (
     params.floorPattern?.enabled === true &&
     !params.base.solid &&
     params.style !== 'solid' &&
-    !params.base.lightweight &&
+    !(params.base.lightweight && !isUndersideRelief(params.base)) &&
     !params.base.spacer
   ) {
     timeout += FLOOR_PATTERN_BONUS_MS;

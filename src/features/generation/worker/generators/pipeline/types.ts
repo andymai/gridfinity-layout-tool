@@ -95,6 +95,29 @@ export interface BinDimensions {
    */
   readonly lightweight: boolean;
   /**
+   * True when {@link lightweight} shells the base from UNDERNEATH: the feet
+   * become rings opening downward and the bin's own floor caps them, so the
+   * interior stays flat. Never true for a spacer, whose floor is gone by
+   * definition.
+   *
+   * This is the only flag that picks the open direction. Anything asking
+   * "has the interior floor been opened?" wants {@link liteFloorOpen}.
+   */
+  readonly undersideRelief: boolean;
+  /**
+   * True when there is no solid interior floor left — the question every
+   * feature that stands ON the floor is actually asking, and the reason it is
+   * separate from {@link lightweight}.
+   *
+   * They come apart three ways: the underside relief shells the base and keeps
+   * the floor; a solid bin's body has no distinct floor to open in the first
+   * place (its cups already open downward); and a spacer opens the floor
+   * whether or not the user asked for lite. A scoop ramp, a drainage hole and a
+   * click rail's lip pocket all care about this one, not about whether the base
+   * happens to be shelled.
+   */
+  readonly liteFloorOpen: boolean;
+  /**
    * True for a spacer/riser: a floorless frame that lifts a bin so
    * mismatched bin heights line up. Feet and stacking lip are untouched — only
    * the floor is gone — so every height and stacking rule a normal bin follows

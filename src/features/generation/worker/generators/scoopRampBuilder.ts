@@ -232,10 +232,12 @@ export const scoopRampsFeature: FeatureBuilder = {
   name: 'scoopRamps',
   tag: FeatureTag.SCOOP,
   target: 'fuse',
-  // Lightweight floors have no solid material for a ramp to rest on (it would
-  // bridge the cup recesses), so the scoop is mutually exclusive with lightweight
-  // in the UI; suppress it here too for any legacy design carrying both.
-  shouldBuild: (ctx) => !ctx.dimensions.isSlotted && !ctx.dimensions.lightweight,
+  // A ramp needs solid material to rest on. `liteFloorOpen`, not `lightweight`:
+  // the interior mode and a spacer leave nothing under the ramp but cup
+  // recesses, while the underside relief keeps the floor a standard bin has, so
+  // the ramp lands on solid material exactly as it always did. Mirrors the
+  // constraint rule; suppressed here too for any legacy design carrying both.
+  shouldBuild: (ctx) => !ctx.dimensions.isSlotted && !ctx.dimensions.liteFloorOpen,
   cacheKey: (ctx) => {
     const { dimensions: dim, params } = ctx;
     return compactKey(

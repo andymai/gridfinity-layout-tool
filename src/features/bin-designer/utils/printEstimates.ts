@@ -11,7 +11,7 @@
  */
 
 import type { BinParams, LabelTabSupport, WallPatternType } from '@/features/bin-designer/types';
-import { isSocketlessBase } from '@/features/bin-designer/types/base';
+import { isSocketlessBase, isUndersideRelief } from '@/features/bin-designer/types/base';
 import { baseWallHeight } from './binDimensions';
 import { DEFAULT_PATTERN_SCALE } from '@/features/bin-designer/types';
 import { GRIDFINITY, STYLE_WALL_THICKNESS } from '@/features/bin-designer/constants/gridfinity';
@@ -29,6 +29,7 @@ import {
   DEFAULT_PRINT_SETTINGS,
   scalePrintTime,
   standardBinSolidComponents,
+  lightweightBaseSaving,
   type PrintSettings,
 } from '@/shared/printSettings';
 import {
@@ -142,6 +143,23 @@ function computeBinVolume(params: BinParams): number {
     gridUnitMmY
   );
   let volume = shell.walls + shell.base + (params.base.stackingLip ? shell.lip : 0);
+
+  // A lightweight base shells the feet, which is a per-cell saving on the
+  // `base` component and nothing else. Applied before the base-only return
+  // below, because that mode is almost entirely base — it is where the relief
+  // pays off most. A spacer is deliberately not modelled here: it removes the
+  // floor as well as shelling the feet, so it is a different figure that no
+  // measurement in this file covers.
+  if (params.base.lightweight && !params.base.spacer && !isSocketlessBase(params.base.style)) {
+    volume -= lightweightBaseSaving(
+      params.width,
+      params.depth,
+      isUndersideRelief(params.base),
+      params.base.halfSockets,
+      params.gridUnitMm,
+      gridUnitMmY
+    );
+  }
 
   // A base-only bin IS feet + floor slab + an optional lip, which is exactly
   // what the `base` component is calibrated to. Every other term is fabricated
@@ -671,7 +689,10 @@ function computeFloorPatternReduction(
   // `style === 'solid'` alongside `base.solid`: the two are kept in lockstep by
   // a runtime IMPLICATION_RULE, not by `migrateParams`, so a crafted design can
   // carry one without the other.
-  if (params.base.solid || params.style === 'solid' || params.base.lightweight) return 0;
+  if (params.base.solid || params.style === 'solid') return 0;
+  // Mirrors `floorPatternApplies`: an interior lite floor has no slab left to
+  // perforate, but the underside relief keeps one and still cuts the holes.
+  if (params.base.lightweight && !isUndersideRelief(params.base)) return 0;
   if (params.base.spacer) return 0;
   // The generator forces a base-only bin down the solid path, so no floor
   // pattern is ever cut. `base.solid` above does not catch it: IMPLICATION_RULES
