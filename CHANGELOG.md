@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.414.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.413.0...gridfinity-layout-tool-v4.414.0) (2026-08-16)
+
+
+### Features
+
+* **bin-designer:** raise the bin height cap to 50 units ([#3518](https://github.com/andymai/gridfinity-layout-tool/issues/3518)) ([7acd50e](https://github.com/andymai/gridfinity-layout-tool/commit/7acd50e1414ed119bbf53d964a3ea0d83a1cbd46))
+
 ## [4.413.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.412.1...gridfinity-layout-tool-v4.413.0) (2026-08-16)
 
 
