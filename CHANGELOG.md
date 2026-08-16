@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.413.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.412.1...gridfinity-layout-tool-v4.413.0) (2026-08-16)
+
+
+### Features
+
+* **analytics:** key the upper milestones on designer depth ([#3517](https://github.com/andymai/gridfinity-layout-tool/issues/3517)) ([a3702cc](https://github.com/andymai/gridfinity-layout-tool/commit/a3702cc7bb97d1d9fe828d3bd7c4c91a020227d0))
+
 ## [4.412.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.412.0...gridfinity-layout-tool-v4.412.1) (2026-08-15)
 
 
