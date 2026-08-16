@@ -223,8 +223,73 @@ describe('useBaseSection', () => {
     act(() => {
       result.current.handlers.toggleLightweight();
     });
-    // Blocked: scoop must be cleared first.
+    // Blocked: scoop must be cleared first — in the INTERIOR mode. See the
+    // underside case below, where selecting the mode is what unblocks it.
     expect(useDesignerStore.getState().params.base.lightweight).toBe(false);
+  });
+
+  // The relief mode is the one control in this panel that has to work while its
+  // feature is OFF: it decides whether the toggle can be turned on at all.
+  it('selecting the underside mode unblocks lightweight for a scooped bin', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, scoop: { enabled: true, radius: 'auto' } },
+    });
+    const { result } = renderHook(() => useBaseSection());
+
+    act(() => {
+      result.current.handlers.setLightweightMode('underside');
+    });
+    expect(result.current.handlers.lightweightDisabledReason).toBeUndefined();
+
+    act(() => {
+      result.current.handlers.toggleLightweight();
+    });
+    const params = useDesignerStore.getState().params;
+    expect(params.base.lightweight).toBe(true);
+    // ...and the scoop it was blocked over survives, which is the point.
+    expect(params.scoop.enabled).toBe(true);
+  });
+
+  // Switching BACK has to clear what the interior mode cannot carry, exactly as
+  // enabling the feature would — which is why the handler re-resolves through
+  // the constraint engine instead of writing the field directly.
+  it('switching back to the interior mode clears the scoop', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        scoop: { enabled: true, radius: 'auto' },
+        base: { ...DEFAULT_BIN_PARAMS.base, lightweight: true, lightweightMode: 'underside' },
+      },
+    });
+    const { result } = renderHook(() => useBaseSection());
+
+    act(() => {
+      result.current.handlers.setLightweightMode('interior');
+    });
+    const params = useDesignerStore.getState().params;
+    expect(params.scoop.enabled).toBe(false);
+    // The feature itself stays on — the engine protects the feature being
+    // re-asserted, so the mode switch is not a back-door way to turn it off.
+    expect(params.base.lightweight).toBe(true);
+  });
+
+  // 'interior' is what an absent field already means, so writing it would
+  // fingerprint a bin differently from an identical one whose owner never
+  // opened the control (the `base.tile` precedent).
+  it('leaves no lightweightMode residue when the default is selected', () => {
+    const { result } = renderHook(() => useBaseSection());
+
+    act(() => {
+      result.current.handlers.setLightweightMode('underside');
+    });
+    expect(useDesignerStore.getState().params.base.lightweightMode).toBe('underside');
+
+    act(() => {
+      result.current.handlers.setLightweightMode('interior');
+    });
+    expect(useDesignerStore.getState().params.base.lightweightMode).toBeUndefined();
+    // State still reports the effective mode, so the control stays selected.
+    expect(result.current.state.lightweightMode).toBe('interior');
   });
 
   it('lightweight stays selectable with leftover cutouts after leaving solid mode', () => {
