@@ -1,0 +1,1082 @@
+src/features/baseplate/components/BaseplatePanel/DimensionsSection.test.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 42,133,185
+src/core/storage/ShareService.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 936
+src/features/generation/worker/generators/__kernel-tests__/scenarioRunner.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 22,42
+src/features/baseplate/utils/connectorKeys.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 217
+src/features/bin-designer/components/panel/ColorsSection/ColorsActionsMenu.test.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 42
+src/features/generation/worker/generators/binGenerator.scenario.split-scoop-tall.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/generation/worker/generators/wallTextLayout.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/shared/utils/maskEdgeGeometry.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 54
+src/features/bin-designer/utils/printEstimates.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 522
+src/features/design-linking/store/linkingStore.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 36
+src/core/cqrs/v2/domain/drawer/updateDrawer.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 186
+src/features/generation/worker/generators/binGenerator.scenario.collar.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/shared/constraints/rules.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 53,192,327
+src/features/generation/worker/generators/lidBuilder.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 83,90,103,124,130
+src/features/generation/worker/generators/baseplateConnectors.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 28,181,184,203,228,382,396,412,428,431-432,443,467,513,521,540,658
+src/features/generation/worker/generators/wallCutoutBuilder.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 26,106
+src/core/constants.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 521
+src/core/cqrs/events/drawerEvents.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 75
+src/features/bin-designer/types/binParams.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 32,49,83,133
+src/shared/generation/floorPatternMetrics.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/bin-designer/hooks/useLabelFitSampleExport.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,8
+src/features/baseplate/components/BaseplatePreview/pieceLayout.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 7,29
+src/features/bin-designer/hooks/useExport.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 495
+src/features/generation/worker/generators/pipeline/featureRunner.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 17
+src/features/drawer-shape/components/ShapeEditorDialog/ShapeEditorDialog.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 27,61
+src/features/generation/worker/generators/wallCutoutBuilder.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 150,283,302,335
+src/features/generation/worker/generators/lidTray.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+scripts/no-init-time-imported-call.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 50
+src/features/baseplate/utils/buildFullParams.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 136,539,566,687-688,692,788,1168,1264,1274
+src/features/bin-designer/components/panel/CutoutsSection/renderer/zLayer.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/bin-designer/constants/paramMigration.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 276,317,353,513,945,955,1110,1114,1127
+src/features/generation/worker/generators/baseplateCacheKeys.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 56
+src/features/generation/worker/generators/dividerPiecePatternBuilder.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/generation/worker/generators/lidStackGrid.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 11,87,146
+.claude/skills/analytics-and-labs/SKILL.md
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 21
+src/features/bin-designer/components/panel/LabelTabsSection/LabelPlatesControls.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/bin-designer/components/panel/LabelTabsSection/useLabelTabsSection.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 133,339
+src/design-system/Combobox/Combobox.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 60
+src/features/drawer-shape/components/DrawerShapeSection/DrawerShapeSection.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 20
+src/features/bin-designer/components/panel/WallsSection/PatternSelector.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 7
+src/features/generation/worker/generators/overtileFit.scenario.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 4,76
+src/shared/printSettings/gridfinityGeometry.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 102
+src/features/baseplate/utils/printGuide.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 34,102
+src/features/bin-designer/types/labelTabs.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 13,19,60,69,92,117
+src/features/bin-designer/components/panel/BaseSection/useBaseSection.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 126,542
+src/features/generation/worker/generators/pipeline/stages/shellStage.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 12,42,122,146,156,278,383
+src/shared/utils/labelSocketPlan.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 125,209
+src/features/bin-designer/utils/validation.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 94
+src/core/storage/LayoutService.scenario.library.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 371
+src/features/baseplate/components/BaseplatePreview/CameraController.test.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 117
+src/features/design-linking/domain/linkageQueries.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 89
+src/features/generation/worker/generators/scenarios/spacer.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+api/lib/mlTelemetry/aggregatorRetention.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 4
+src/features/generation/bridge/generationTimeout.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 6,66,81,96,163
+src/features/grid-editor/components/Grid/IsometricPreview/BinOverhangExtensions/binOverhangStrips.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 4
+src/features/generation/worker/generators/couponHelpers.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 10
+src/features/generation/worker/generators/scoopSidePlacement.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/grid-editor/components/Grid/DrawerMargin/useDrawerMarginInsets.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 25
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 148-149,187,445,459,513,604,698,715,736,763
+src/shell/layoutExport/planLayoutBinExport.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 38,487
+src/features/generation/worker/generators/featureTags.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 33,40
+src/features/drawer-shape/components/GridAlignmentControls/GridAlignmentControls.test.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 102
+src/features/generation/worker/generators/labelPlateIcons.plate.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/shared/printSettings/baseplateHeight.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 23
+src/features/generation/worker/generators/dividerBuilder.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 232
+src/features/generation/worker/generators/binGenerator.bench.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 158
+src/features/generation/worker/generators/labelFitSample.scenario.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/bin-designer/utils/compartments.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 70,354,460,624,657,725,756,833,1217,1221
+src/features/generation/worker/generators/utils/stlMeshFallback.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 6
+src/features/bin-designer/types/lid.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 40,82,113,123,142,166,177,190,196,227,236,261,335,417,544,564,579,626,635,654,659,670-671,691,698,710,744,843,869,881
+src/features/generation/worker/generators/couponHelpers.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 28,39
+src/shared/generation/meshPersistence.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 70
+src/features/baseplate/utils/splitReorder.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 44
+src/features/generation/worker/generators/splitConnectorBuilder.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 217
+src/core/cqrs/v2/domain/drawer/setDrawerOutline.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/generation/worker/generators/retentionMagnetPadMerge.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 4,13
+src/shared/hooks/useDrawerSettings.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 576
+src/features/baseplate/hooks/useStackPrintStatus.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 32,52
+src/shared/analytics/posthog/eventsPerson.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 88-95
+src/shared/utils/validation.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 1149
+src/features/drawer-shape/utils/cornersToOutline.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/generation/worker/generators/lidOrchestrator.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 54-55
+src/features/baseplate/utils/splitPlanner.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 659,1093,1975-1976,1981,2123,2201
+src/features/grid-editor/components/Grid/DrawerOutlineOverlay/overlayViewport.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 16
+src/features/grid-editor/components/Grid/Grid.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 228,231,371,534
+src/shell/layoutExport/useLayoutExport.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 327,367
+src/features/baseplate/hooks/useBaseplateGeneration.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 57,76
+src/features/generation/worker/generators/wallTextLayout.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/generation/worker/generators/filletProfile.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 40
+src/features/generation/worker/generators/integratedLipBuilder.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,51
+src/features/generation/worker/generators/compartmentBuilder.scenario.manifold.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3,133,253-254
+src/features/generation/worker/generators/lidGripLabelInteraction.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,40,91
+src/features/generation/worker/generators/__kernel-tests__/diagnoseBaseplateWinding.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3,22,140,185
+src/features/design-linking/hooks/useBinLinking.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 808
+src/core/cqrs/v2/domain/layout/setGridUnitMm.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 5
+src/features/generation/bridge/GenerationBridge.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 233,512,554
+src/features/generation/worker/generators/binGenerator.scenario.split-slotted-lip.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3,41
+src/features/bin-designer/hooks/useGeneration.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 51,475
+.release-please-manifest.json
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/drawer-shape/components/CornerCutsDialog/CornerCutsDialog.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 39,72
+src/features/generation/worker/generators/kumikoWrapBuilder.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 167,939
+src/features/design-linking/domain/linkingRules.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 33,65
+src/features/generation/worker/generators/lidPolygonGrip.scenario.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,12,139
+src/features/drawer-shape/utils/outlineImport/fitLoop.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 88
+src/shared/generation/socketNozzle.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,17
+src/features/generation/worker/generators/dividerPiecePatterns.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/bin-designer/components/CutoutWorkspace/ShapeList/ShapeList.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/generation/worker/generators/lidGripRelief.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/drawer-shape/utils/traceBinFootprint.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/generation/worker/generators/baseplatePockets.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 78
+src/shared/constants/snapClipInsertion.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 5,11
+src/features/generation/worker/generators/baseplateGenerator.scenario.screws.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3,203
+src/features/generation/worker/generators/connectorUtils.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 6,49
+src/shared/types/bin.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 94,228,251,264,275-276,290,393,431,492,500,511,526,568,577,602,629,634,649
+src/features/generation/worker/generators/lidClickRail.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 143,212
+src/features/drawer-shape/components/PenShapeDialog/useOutlineImport.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 151
+src/features/bin-designer/components/panel/OverhangSection/OverhangSection.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 7
+src/features/bin-designer/components/CutoutWorkspace/InspectorContent.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 128,206
+src/shared/constants/connectors.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 15,37,91,145,178,186,243
+src/features/baseplate/utils/buildBaseplateExportPieces.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 196,250
+src/shared/utils/drawerOutline.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 367
+src/shared/utils/drawerOutlineGeometry.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 170,173-174,177,183,231
+src/shared/hooks/useLinkedDesignMeshes.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 36,185
+src/features/generation/worker/generators/splitBinBuilder.cellBoundary.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 11
+src/features/grid-editor/components/Grid/Bin/BinOverhangExtension.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 5
+src/features/generation/worker/generators/scenarios/dividerPatterns.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/shared/generation/repairMeshWinding.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 9,32
+src/features/bin-designer/utils/printEstimates.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 176,179,569,579,609,645
+CHANGELOG.md
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3-9
+src/features/bin-designer/components/preview/LidMesh/lidAnchorZ.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 39,41
+src/features/generation/worker/generators/baseplateSTL.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 8,11,18-19
+src/features/bin-designer/utils/floorPatternFit.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/generation/worker/generators/baseplateGenerator.scenario.overtile.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/generation/worker/generators/binGenerator.scenario.scoopColorTag.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3,51,121
+package.json
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 4
+src/features/generation/worker/generators/pipeline/stages/featuresStage.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 49,97,124
+src/features/bin-designer/components/CutoutWorkspace/CutoutWorkspace.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 107,189
+src/features/bin-designer/store/slices/cutoutSlice.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 206,463
+src/features/generation/worker/generators/assembledHeight.scenario.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/baseplate/components/BaseplatePreview/MarginMeshes.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 66,70
+src/features/generation/worker/generators/__kernel-tests__/binSeating.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 13,84
+src/features/generation/worker/generators/floorPatternWindow.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/core/storage/ShareService.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 33,276
+src/features/design-linking/hooks/useBinLinking.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 72,312
+src/features/generation/worker/generators/lidClickRailLabelClip.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,83
+src/shared/contexts/MutationsContext.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 105,123,137
+src/features/baseplate/components/BaseplatePreview/StackedBaseplateMeshes.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 85
+api/lib/designerCompartmentValidation.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 159,176
+src/features/bin-designer/hooks/useLabelPlateExport.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/generation/worker/generators/baseplateScrews.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/shared/constants/labelIconPaths.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/bin-designer/types/cutout.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 281
+src/features/generation/worker/generators/dividerPatternBuilder.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,339
+src/features/bin-designer/utils/designJson.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 305
+src/features/generation/worker/generators/taperedOuter.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,193,224
+src/features/layout-library/components/LayoutQuickSwitch/LayoutQuickSwitch.test.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 61
+src/features/generation/worker/generators/binGenerator.scenario.split-overhang.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 5
+src/features/generation/worker/generators/dividerPatterns.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 261
+src/features/bin-designer/utils/assembledHeight.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3,139
+src/features/drawer-shape/components/PenShapeDialog/PenShapeDialog.test.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 125,235
+src/features/bin-designer/components/CutoutWorkspace/InspectorContent.test.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 200,273
+src/features/baseplate/components/BaseplateLibraryModal/BaseplateLibraryModal.test.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 128,178
+src/features/generation/bridge/meshData.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 31
+src/features/generation/worker/generators/wallPatternClips.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 12,193
+src/features/bin-designer/utils/cutoutInterior.contract.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 4
+src/shared/generation/socketNozzle.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 23
+src/features/bin-designer/components/panel/CutoutsSection/autoArrange.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 8
+src/shared/components/CompactNumberInput/CompactNumberInput.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 32
+src/core/types/layout.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 20,78,116,121,140
+src/shared/utils/drawerOutlineGeometry.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 242,268,303
+src/features/baseplate/utils/stackPrint.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 205
+src/features/bin-designer/hooks/useCreateFromBin.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 35,150,158
+src/shared/generation/paramsFingerprint.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 49
+src/features/bin-designer/components/panel/CutoutsSection/importStackOrder.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,14
+src/features/bin-designer/constants/gridfinity.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 30,58,77,100,154
+src/features/drawer-shape/components/PenShapeDialog/PenShapeDialog.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/generation/worker/generators/pipeline/stages/tessellateStage.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 39,63
+src/features/generation/worker/generators/scenarios/halfSockets.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 105
+src/features/baseplate/utils/splitPlanner.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 28,53,87,273,669,815,819,821,846,900,902,1045,1091,1106,1135,1318,1347,1420,1426
+src/shared/utils/validationPlacement.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 63
+src/core/types/overhang.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3,9,78
+src/features/bin-designer/components/panel/CutoutsSection/importStackOrder.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 9
+src/features/generation/worker/generators/scenarios/kumikoWrapping.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 75
+src/features/generation/worker/generators/lidPolygonRelief.scenario.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,13,18
+src/features/generation/worker/generators/binGenerator.scenario.overlappingCutoutColor.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/generation/worker/generators/binGenerator.scenario.issue-1850.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 6
+src/features/grid-editor/components/Grid/DrawerOutlineOverlay/useOutlineOverhangInsets.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 16,21
+src/features/generation/worker/generators/lidGripRelief.scenario.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,203
+src/features/generation/worker/generators/wallTextBuilder.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/core/store/layout/index.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 20,33
+src/features/generation/worker/generators/lightweightBaseBuilder.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 23
+src/features/bin-designer/components/panel/LidGripControls/LidGripControls.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/generation/worker/generators/baseplateGenerator.scenario.dovetailKey.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 4
+src/features/baseplate/components/BaseplatePreview/SplitBaseplateMeshes.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 116
+src/features/bin-designer/components/CutoutWorkspace/ShapeList/ShapeListRow.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/generation/worker/generators/binGenerator.scenario.split-large-bin.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 7
+src/features/generation/worker/generators/trayBottomStage.geometry.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3,59
+src/features/grid-editor/components/Grid/DrawerMargin/DrawerMargin.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 11
+src/features/baseplate/components/BaseplatePanel/panelState.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 118,141
+src/features/bin-designer/components/panel/LabelTabsSection/LabelColorControls.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/generation/worker/generators/floorPatterns.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/generation/worker/generators/scenarios/honeycombJunction.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,185,311
+src/features/generation/worker/generators/lidSeatInterference.matrix.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 4,34,55-56,86,137,213,228
+src/features/bin-designer/components/panel/LabelTabsSection/useLabelTabsSection.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 304,362,541
+src/features/bin-designer/utils/binDownloadHelpers.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 148
+src/features/generation/bridge/GenerationBridge.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 40,77
+src/features/generation/worker/generators/labelPlateIcons.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,22
+src/features/generation/worker/generators/dividerBlendBuilder.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 237
+src/features/generation/worker/generators/integratedLipBuilder.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/shared/analytics/posthog/conversionEvents.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 11
+src/features/generation/export/threemfColor.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 108,145
+src/features/design-linking/domain/linkingRules.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 340
+src/features/generation/worker/generators/pipeline/stages/lidGripDipStage.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/generation/worker/generators/baseplateGenerator.scenario.fit-offset.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/generation/worker/generators/lidGenerator.scenario.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 75,175,180,197,234,642
+src/features/bin-designer/store/slices/paramSlice/coreParamActions.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 106
+src/features/generation/worker/generators/baseplateGenerator.scenario.nonSquare.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/generation/worker/generators/scenarios/lipWall.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 48
+src/features/generation/worker/generators/scenarios/trayBottom.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/generation/worker/generators/splitWallKeyFit.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 4,10,117
+src/features/generation/worker/generators/splitBinBuilder.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 119,222,238,329,337,470,528
+src/shared/analytics/posthog/eventsCore.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 14,22-30,34-36,124-179
+  s_28b8cc4bcb9e7c::t_a987a5d5e4510d 180
+src/features/staging/components/Staging/StagingBin.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 148
+src/features/bin-designer/types/base.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 66,103,111,147,161
+src/features/generation/worker/generators/meshAssertions.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/generation/worker/generators/scenarios/labelTabs.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 37,50,63,78,93,110,124,138
+src/features/generation/worker/generators/binSeating.kernel.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 4
+src/features/baseplate/utils/buildFullParams.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 51,88,122,187,232,253,271,306,312,345
+src/shared/utils/filletOutline.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 76
+src/shared/utils/wallPatternSides.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/bin-designer/utils/lidCompatibility.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 75,146,212,222,230,251,266,271,302,308,321,354,375,382,397,416,519,524,526
+src/features/bin-designer/utils/binDimensions.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 73,131
+src/shared/constants/labelPlates.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 160
+src/shared/utils/outlineFrame.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,5,13,16,22,95,185,292
+src/features/generation/worker/generators/__kernel-tests__/lidSeating.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 40,185,215
+src/features/generation/worker/generators/baseplateMagnets.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 184
+src/features/generation/worker/generators/scenarios/labelSockets.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,60,197
+src/features/bin-designer/hooks/useGeneration.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 269,379
+src/core/store/layout/coreActions.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 86
+src/features/generation/worker/generators/binGenerator.scenario.taperSolidCutouts.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/baseplate/hooks/useBaseplateExport.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 83
+src/features/bin-designer/store/designer.scenario.cutouts.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 35
+src/features/bin-designer/hooks/useAutoSave.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 248
+src/shared/components/HeightUnitSolver/HeightUnitSolver.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 26
+src/features/baseplate/types/tiling.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 59,74,138
+src/features/bin-designer/utils/lidColorGroups.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 12
+src/features/generation/worker/generators/connectorKeyFit.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 4
+src/shared/hooks/useKeyboard.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 31
+src/features/design-linking/components/LinkedDesignSection/LinkedDesignSection.test.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 212
+src/features/bin-designer/constants/gridfinity.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 11
+  s_28b8cc4bcb9e7c::t_b320a06cfa0d34 94
+src/features/generation/worker/generators/utils/stlMeshFallback.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 5-6,13
+src/shared/hooks/useMenuKeyboardNav.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 38
+src/features/bin-designer/types/walls.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 124,126
+src/features/bin-designer/utils/exportWithResilience.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 5
+src/shared/utils/lidInteriorRelief.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,24
+src/features/bin-designer/components/panel/CutoutsSection/svgImport/svgParser.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 360,471,534
+src/features/bin-designer/components/DesignActions/DesignActions.test.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 51
+src/features/bin-designer/components/panel/BaseSection/useBaseSection.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 95,268
+src/core/cqrs/validation/schemas.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 284
+src/features/baseplate/hooks/useBaseplateExport.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 52
+src/features/bin-designer/components/DesignerPage/useFractionalEdgeMismatch.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 17
+src/features/bin-designer/hooks/useAutoSave.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 294
+src/shared/utils/overhang.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 19
+src/features/generation/worker/generators/binGenerator.scenario.labelTabColorTag.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/bin-designer/components/panel/WallsSection/useWallsSection.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 100,137,206
+src/core/store/library.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 82
+src/features/generation/worker/generators/lidInteriorRelief.scenario.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/generation/worker/generators/binGenerator.scenario.split-wall-locking.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/generation/worker/generators/binGenerator.scenario.fractional-feet.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/bin-designer/components/panel/LabelTabsSection/LabelFitSampleButton.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/bin-designer/components/panel/CutoutsSection/geometryAlign.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 16
+src/features/generation/worker/generators/__kernel-tests__/compartments.perf.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 5
+src/features/generation/worker/generators/binGenerator.scenario.cutoutColorTag.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+api/lib/shared.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 154
+src/features/bin-designer/components/panel/CutoutsSection/svgImport/useSvgImport.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 90
+src/features/generation/worker/generators/labelPlateBuilder.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,61,324
+src/features/bin-designer/components/BentoWorkspace/BentoDock.test.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 154
+src/shared/utils/fill.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 23
+src/features/baseplate/components/BaseplatePanel/BaseSection.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 6,83
+src/features/bin-designer/components/CutoutWorkspace/WorkspaceHeader.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 273
+src/core/cqrs/v2/domain/layout/setBaseplateParams.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 19,114
+src/features/generation/worker/generators/binGenerator.scenario.tilted-dividers.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 4,7,24
+src/features/bin-designer/components/CompartmentEditor/useCompartmentGrid.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 87,292
+src/core/cqrs/v2/domain/layout/setGridUnitMmY.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 7
+src/features/baseplate/store/baseplatePageStore.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 63
+src/features/bin-designer/utils/matchingTray.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/generation/worker/generators/lidDividerClearance.scenario.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,248
+src/features/generation/worker/generators/scenarios/kumikoComposition.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 8
+src/features/grid-editor/components/Grid/DrawerOutlineOverlay/DrawerOutlineOverlay.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 18,21,23,72,113
+src/features/generation/worker/generators/boxBuilder.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 100,140,142
+src/features/generation/worker/generators/lidClickRailRetention.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 4,47
+src/features/grid-editor/components/Grid/IsometricPreview/BinOverhangExtensions/BinOverhangExtensions.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/layout-library/components/LayoutManagerModal/LayoutActions/LayoutActions.test.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 79
+src/features/generation/worker/generators/baseplateGenerator.scenario.magnetOversized.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 4
+src/shared/utils/maskEdgeGeometry.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 21
+src/features/drawer-shape/components/PenShapeDialog/useOutlineImport.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 99
+src/features/bin-designer/storage/DesignerStorage.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2-9,826-903
+  s_28b8cc4bcb9e7c::t_e650e0ab77c20d 904
+src/features/generation/worker/generators/baseplateGenerator.scenario.split-stress.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 5-7
+src/core/cqrs/v2/domain/drawer/displacement.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 8
+src/features/generation/worker/generators/binGenerator.scenario.taper.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3,162
+src/features/generation/worker/generators/boxBuilder.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 185,283,286,428,532,584,823,866,872
+src/shared/analytics/posthog/metrics.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 101,109
+src/shell/layoutExport/useLayoutExport.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 183,209
+src/features/generation/worker/generators/wallPatternBuilder.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 141,183,211,317,384,413,535
+src/features/baseplate/utils/connectorKeys.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 7,82,110,138
+src/features/generation/worker/generators/binGenerator.scenario.paramDifferential.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 10-11
+src/features/bin-designer/utils/labelPlateColors.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/bin-designer/components/preview/StackPlateMesh/StackPlateMesh.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 58
+src/features/bin-designer/components/panel/AssembledHeightBreakdown/AssembledHeightBreakdown.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/bin-designer/types/featureColors.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 457,468,543,553
+src/features/generation/bridge/bridgeTypes.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 96
+src/features/generation/worker/generators/trayBottomInputs.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3,70
+src/shared/hooks/useLabelPlateCounts.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/bin-designer/components/panel/LidGripControls/LidGripControls.test.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 126
+src/features/bin-designer/store/slices/paramSlice/compartmentActions.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 41
+src/shared/utils/uuid.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 45
+src/features/generation/worker/generators/directMeshScrews.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/shared/utils/lipGapPlan.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3,7,15,95,102,303
+src/features/generation/worker/generators/scenarios/scoops.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 42
+src/features/generation/worker/generators/dividerPatterns.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,164,234,244,318,339
+src/features/generation/worker/generators/baseplateGenerator.scenario.allEdgeSlots.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/generation/worker/generators/lidConstants.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 109
+src/features/generation/worker/generators/scenarios/wallPatterns.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 84
+src/features/generation/worker/generators/binGenerator.scenario.split-step.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/generation/worker/generators/wallPatterns.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 498
+src/features/generation/worker/generators/__kernel-tests__/exportIntegrityRunner.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 202
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.test.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 50
+src/features/bin-designer/components/panel/CutoutsSection/cutoutGroups.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 6
+src/features/generation/worker/generators/baseplateGenerator.scenario.snapClip.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3,180
+src/features/bin-designer/components/preview/GhostCutouts/GhostCutouts.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 204
+src/features/bin-inspector/components/Inspector/ExtendToMarginToggle/ExtendToMarginToggle.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2-3
+src/i18n/locales/en.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 971,2424
+src/shared/analytics/posthog/trackEvent.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 8
+src/shared/constants/labelPlates.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,192,263,284,309,317
+src/shared/generation/meshPersistence.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 45,53,189
+src/shared/utils/dividerRailPlan.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,81
+src/shared/utils/drawerMargin.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 8,111
+src/features/bin-designer/utils/cameraFraming.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 213
+src/shared/hooks/useDrawerSettings.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 77,313,415,521
+scripts/build-content.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 34
+src/shared/utils/labelTabPlan.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 72,144,166,252,325,352,384,453,563,652,657
+src/core/cqrs/projection/replay.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 200
+src/features/generation/worker/generators/scoopRampBuilder.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 203
+src/features/generation/worker/generators/wallPatterns.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 78,99,132,147,167,383
+src/shared/analytics/posthog/index.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 61
+src/features/bin-designer/components/panel/CutoutsSection/AlignmentToolbar.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 145
+src/features/generation/worker/generators/binGenerator.scenario.overhang.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/generation/worker/generators/baseplateGenerator.scenario.puzzle.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/generation/worker/generators/floorPatternBuilder.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/baseplate/components/BaseplatePreview/ConnectorKeyMeshes.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 5
+src/features/generation/worker/generators/baseplateGenerator.scenario.rotShare.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/shared/analytics/posthog/identity.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 17-19,25
+src/shared/types/community.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/bin-designer/utils/compartments.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 1588,1596,1696,1940
+src/features/bin-designer/components/panel/CutoutsSection/growBinToFit.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 5
+src/features/generation/worker/generators/lidBuilder.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 84,185
+src/features/generation/worker/generators/pipeline/types.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 55,65,83,98,198
+src/features/generation/worker/generators/scenarios/floorPatterns.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/generation/worker/generators/pipeline/stages/trayBottomStage.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/bin-designer/hooks/useAssembledHeight.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/generation/worker/generators/lidCutoutGrip.scenario.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,5-6,103,141-142,256
+src/features/generation/worker/generators/pipeline/stages/lidRetentionStage.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,11,18,24,82,100,124,140,147,260
+src/features/design-linking/components/Dialogs/SyncDimensionsDialog/SyncDimensionsDialog.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 30
+src/features/drawer-shape/utils/outlineImport/index.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/generation/worker/generators/labelTabPlanDims.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 8
+src/features/bin-designer/components/preview/BinDimensions/BinDimensions.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 11
+src/shared/utils/labelSocketPlan.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,96,136,194
+src/features/baseplate/components/BaseplatePanel/SplitViewStrip.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/generation/worker/generators/baseplateMargin.scenario.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/bin-designer/components/panel/CutoutsSection/shapeListModel.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/generation/worker/generators/lipNesting.scenario.divisibility.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3,9
+src/features/generation/worker/generators/snapClipPullApart.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 49
+src/features/cloud-share/components/SharedLayoutImporter/SharedLayoutImporter.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 231
+src/features/bin-designer/components/CompartmentEditor/useCompartmentLabeling.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 49,76
+src/features/generation/worker/generators/baseplateGenerator.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 289,351,377,429,447,716,780
+src/features/generation/worker/generators/pipeline/context.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 156
+src/features/generation/worker/generators/baseplateDirectMesh.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 140,305
+src/features/bin-designer/types/floor.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 23
+src/features/generation/worker/generators/wallPatternBuilder.cache.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/generation/worker/handlers/exportHandler.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 282
+src/shared/analytics/posthog/events.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 37
+api/share.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 309
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/useScanImport.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 40
+src/features/bin-designer/store/helpers.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 31
+api/lib/designerValidation.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 52,289
+src/features/generation/worker/generators/cellDecomposition.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 145,321,442
+src/features/generation/worker/generators/socketBuilder.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 82,105,155,168,266
+src/features/drawer-shape/components/PenShapeDialog/PenControls.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 120
+src/features/generation/worker/generators/baseplateMarginConnector.scenario.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3,144
+src/features/baseplate/utils/pieceFingerprint.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 46,70,103,134,140
+src/features/bin-designer/components/CompartmentEditor/DividerTiltSubsection.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 38
+src/features/generation/worker/generators/baseplateMargin.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,149,151,164
+src/shared/utils/labelTabPlan.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 125,166,174,182,249
+api/lib/designerValidationConstants.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 14,35,45,48,57,84
+src/features/bin-designer/types/lid.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 87,210,493
+src/shared/utils/cutoutLabel.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 123,138
+src/features/generation/worker/generators/__kernel-tests__/tmpBigPattern.test.ts
+  s_5088a37997271f::t_c192295067652c 15-29,34-35,38-39,43-45
+  s_5088a37997271f::t_cd081ea67c0266 1-6,8,11-14,30-31,37,46
+  s_5088a37997271f::t_fd7b66908ccc6d 7,10,32-33,36,40-42
+  s_5088a37997271f::t_49d6e552f2dd35 9
+src/features/bin-designer/components/DesignerPage/useFractionalEdgeMismatch.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/design-linking/hooks/useDesignSavedListener.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 106,117
+src/shared/hooks/useLinkedDesignMeshes.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 147
+src/features/generation/worker/generators/labelTabBuilder.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 203,569,764,874,932
+src/features/bin-designer/components/panel/CutoutsSection/geometryCore.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 111
+src/features/bin-designer/components/panel/CutoutsSection/offBoardCutouts.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 117
+src/features/generation/worker/generators/__kernel-tests__/lidGripParity.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/baseplate/utils/printGuide.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 252
+src/features/bin-designer/components/panel/LidSection/useLidSection.helpers.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 123-124,130,233
+src/features/generation/worker/generators/baseplateGenerator.scenario.outline.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 4,172,435-436,509,564
+src/features/baseplate/utils/splitOverride.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/generation/export/threemfExporter.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 276-278,638,740,1154,1157,1159
+src/shared/hooks/useLabelPlateCounts.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 102
+src/shell/layoutExport/buildLayoutManifest.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 25,64,69
+src/shell/layoutExport/planLabelPlateExport.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/generation/worker/generators/pipeline/stages/tessellateStage.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/generation/worker/generators/lidRetentionMagnets.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,59
+src/features/baseplate/hooks/useBaseplateGeneration.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 314
+src/features/bin-designer/components/preview/GhostLabelTabs/GhostLabelTabs.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 90,128,153,202,220
+src/features/generation/worker/generators/baseplateMarginKey.scenario.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/shared/constants/lidKeepout.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 8,190
+src/features/design-linking/components/LinkedDesignSection/LinkedDesignSection.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 130
+src/features/generation/worker/generators/baseplateGenerator.scenario.winding.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 5,9,11-12,20,175
+src/features/generation/worker/generators/connectorSample.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 28,95,301,311
+src/features/generation/worker/generators/socketBuilder.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 153,221
+src/core/cqrs/v2/domain/drawer/updateDrawer.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 6,118
+src/features/bin-designer/utils/dividerPatternFit.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/drawer-shape/utils/drawerMask.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,143
+src/features/generation/worker/generators/baseplateMagnets.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 143
+src/features/generation/worker/generators/binGenerator.scenario.wallText.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/core/store/labs.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 16
+src/features/generation/worker/generators/retentionMagnetGeometry.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,8,18,102,109,189
+src/shared/analytics/posthog/eventsCore.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 195,200-227,257-285
+  s_28b8cc4bcb9e7c::t_887cd0acb9d697 286-289
+src/features/generation/worker/generators/lidLabelTabClearance.scenario.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,37,176
+src/features/generation/worker/generators/lidRetentionMagnets.scenario.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3,139,197,305,447
+src/features/baseplate/hooks/useBaseplateAutoSave.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 279
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 146,518,966,997,1293
+src/features/generation/worker/generators/lidGripRailSplit.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/generation/worker/generators/pipeline/stages/booleanStage.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 35,143
+src/features/generation/worker/generators/dividerPiecePattern.kernel.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/generation/bridge/responses.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 199
+src/features/bin-designer/components/ExportDialog/ExportDialog.test.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 452
+src/features/bin-designer/components/panel/CutoutsSection/CutoutEditor.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 85
+src/features/generation/export/threemfGeometry.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 46
+src/features/bin-designer/components/ExportDialog/ExportDialog.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 111
+src/features/generation/worker/generators/baseplateGenerator.scenario.dovetail.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3,224,229,300
+src/features/generation/worker/generators/pipeline/context.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 45,59,71,90,119,186,195,272,311
+src/features/bin-designer/constants/defaults.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 58
+src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 166,592,596,639-641,655-657
+src/core/cqrs/v2/domain/layout/setActiveBaseplate.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 51
+src/features/generation/worker/generators/binGenerator.scenario.cutout-floor-label.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/generation/worker/generators/lidGenerator.scenario.overhangMagnets.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/shared/utils/lipGapPlan.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 225
+src/shell/layoutExport/planLabelPlateExport.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 117
+src/core/store/settings.types.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 325
+src/features/generation/bridge/bridgeExports.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 340,402,444
+src/features/generation/bridge/messages.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 128,193,220,246,262
+src/shared/generation/meshAsset.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 97
+src/features/bin-designer/components/preview/LidMesh/LidMesh.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 72-73,96,120
+src/shared/utils/scoopCalculations.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 148
+src/shell/layoutExport/planLayoutBinExport.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 65,245
+src/features/generation/worker/generators/lidClickRailPartial.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,28
+src/features/generation/worker/generators/shapeCache.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 180-181,262,275
+src/features/generation/worker/generators/binGenerator.scenario.issue-1968.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3,10
+src/features/baseplate/components/BaseplatePage/BaseplatePage.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 201
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.test.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 439,641,1073,1097
+src/features/bin-designer/utils/lidCompatibility.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 32,253,681,699,766,837,860,862
+src/features/bin-designer/components/panel/WallCutoutsSection/useWallCutoutsSection.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 25,68,191
+src/features/bin-designer/types/text.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 118
+api/lib/designerValidation.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 71,74,77,82,85,175,179,238,258,368,428,569,665,669,692,705,712,731
+src/features/generation/worker/generators/binDirectMesh.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 392,400,407
+api/lib/validation.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 880
+src/features/generation/worker/generators/scenarios/kumikoPatterns.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 8
+src/features/generation/worker/generators/compartmentBuilder.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 12,58,369,642,814,821
+src/core/types/baseplate.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 52,80,156,211,220,241,243,249,264,269
+src/features/generation/worker/generators/lidInputs.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 41,65,105,112,171,184,187,195,203,255,263,275,283,298,303,432
+api/lib/baseplateValidation.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 37,253
+src/features/generation/worker/generators/wallPatternCompound.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 10
+src/features/bin-designer/components/DesignerPage/FractionalEdgeMismatchBanner.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 3
+src/features/grid-editor/components/Grid/GridToolbar/GridToolbar.test.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 369
+src/features/generation/export/threemfTypes.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 41
+src/features/generation/worker/generators/binGenerator.scenario.split-overhang-connectors.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 5
+src/features/generation/worker/generators/lidMagnetSeating.scenario.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,69,71,74,78
+src/features/drawer-shape/components/PenShapeDialog/PenControls.test.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 52,68
+src/features/generation/worker/generators/binGenerator.scenario.cornerProtrusion.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 9
+src/features/bin-designer/components/panel/DimensionsSection/useDimensionsSection.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 55,129
+src/shared/utils/fractionalEdge.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 6,13,42,205
+api/lib/validation.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 343,412,535
+src/features/bin-designer/types/designerState.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 147,153
+src/features/generation/worker/generators/cutoutBuilder.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 5
+src/features/generation/worker/generators/__kernel-tests__/meshAssertions.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 20,184,441
+src/shared/analytics/posthog/eventsPerson.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 22-32,36,38-39,110-115
+src/features/bin-designer/components/CutoutWorkspace/InspectorDock.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 56
+src/features/generation/worker/generators/scenarios/regressions.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 32,47,65,80,98,139,168,182,199,210,231,248,266,294-295,314,328,342,354,365,383,396,413
+src/features/generation/worker/generators/lidScoopClearance.scenario.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,13,48,76,119
+src/features/generation/worker/generators/binExporter.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 119,126,132
+src/shared/utils/fractionalEdge.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 35
+src/features/generation/worker/generators/binGenerator.scenario.split-range.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 39
+src/shared/generation/screwHolePlan.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/generation/worker/generators/lidGripDip.scenario.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,50
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 949,1012,1199,1222
+src/features/generation/worker/generators/lidGripRelief.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2
+src/features/generation/worker/generators/lidTextBuilder.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,7,51
+src/features/bin-designer/store/slices/paramSlice/scopedUpdaters.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 108
+src/features/generation/worker/generators/pipeline/stages/lidInteriorReliefStage.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,8,12,179
+src/features/baseplate/utils/buildBaseplateExportPieces.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 170,233,270-271,301,478
+src/features/generation/worker/generators/labelFitSample.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 2,14,22,116
+src/features/baseplate/utils/pieceFingerprint.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 335,533
+src/features/bin-designer/utils/binDownloadHelpers.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 306,590
+src/features/bin-designer/store/designer.scenario.lid.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 339,369
+src/features/generation/worker/generators/binExporter.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 5,67,126
+src/features/baseplate/components/BaseplatePanel/DimensionsSection.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 108,144,171
+src/shared/utils/drawerOutline.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 473,495,519
+src/core/store/layout/drawerActions.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 20
+src/features/generation/worker/generators/dividerBlendTypes.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 58
+src/features/bin-designer/components/panel/LidSection/useLidSection.helpers.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 20
+src/shared/constants/connectors.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 99
+src/core/types/drawerOutline.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 73
+src/features/bin-designer/store/customBinRegistry.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 45-46,55
+src/features/drawer-shape/components/GridAlignmentControls/GridAlignmentControls.tsx
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 18,26,33
+src/features/generation/worker/generators/pipeline/stages/translateStage.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 5
+src/features/generation/worker/generators/labelTabBuilder.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 66,129,235,538,624,657,705,777,1004,1006,1027-1028,1030
+src/core/api/share.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 37
+src/features/bin-designer/storage/DesignerStorage.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 28,137-147
+src/features/bin-designer/components/panel/CutoutsSection/geometry.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 671,1135
+src/features/bin-designer/hooks/useLabelPlateExport.test.ts
+  s_28b8cc4bcb9e7c::t_3de5ead9fe7c51 62
+src/features/generation/worker/generators/__kernel-tests__/height.perf.test.ts
+  s_28b8cc4bcb9e7c::t_e314becd25b86d 5-6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "685864303206c3ffdc79c26b9cd5491e5352e8ac",
+  "prompts": {},
+  "sessions": {
+    "s_28b8cc4bcb9e7c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "402e75bd-6d5d-4eb0-8275-10a014fb8abd",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_5088a37997271f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7e2503d2-09f5-47fd-80cd-5e2d1952a923",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
