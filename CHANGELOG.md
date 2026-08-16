@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.414.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.414.1...gridfinity-layout-tool-v4.414.2) (2026-08-16)
+
+
+### Bug Fixes
+
+* **bin-inspector:** measure the stacking junction instead of assuming the lip ([#3529](https://github.com/andymai/gridfinity-layout-tool/issues/3529)) ([b3ceaff](https://github.com/andymai/gridfinity-layout-tool/commit/b3ceaff64cf1d7a49ecff0cd6fd2cfcf51363e32))
+
 ## [4.414.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.414.0...gridfinity-layout-tool-v4.414.1) (2026-08-16)
 
 
