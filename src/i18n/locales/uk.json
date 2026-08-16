@@ -3327,7 +3327,7 @@
   "snapshots.saveCheckpoint": "Зберегти контрольну точку",
   "stackSolver.apply": "Використати {unit}mm/одиницю",
   "stackSolver.binsLabel": "Контейнерів у стосі",
-  "stackSolver.description": "Складені контейнери вкладаються, тож стос — це (контейнери × одиниці × розмір одиниці) + одна губа {lip}mm.",
+  "stackSolver.description": "Складені контейнери вкладаються один в одного на {junction}mm, тож кожен додає на {shortfall}mm менше за висоту свого корпусу.",
   "stackSolver.outOfRange": "Одиниця вийде за межі {min}–{max}mm",
   "stackSolver.overlayPitch": "стос +{pitch}mm",
   "stackSolver.result": "Складається до {total}mm",

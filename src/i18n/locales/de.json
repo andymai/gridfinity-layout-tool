@@ -3327,7 +3327,7 @@
   "snapshots.saveCheckpoint": "Checkpoint speichern",
   "stackSolver.apply": "{unit}mm/Einheit verwenden",
   "stackSolver.binsLabel": "Bins im Stapel",
-  "stackSolver.description": "Gestapelte Bins verschachteln sich, ein Stapel ist also (Bins × Einheiten × Einheitsgröße) + eine {lip}mm-Lippe.",
+  "stackSolver.description": "Gestapelte Bins verschachteln sich {junction}mm ineinander, jeder fügt also {shortfall}mm weniger als seine Korpushöhe hinzu.",
   "stackSolver.outOfRange": "Einheit läge außerhalb von {min}–{max}mm",
   "stackSolver.overlayPitch": "stapelt +{pitch}mm",
   "stackSolver.result": "Stapelt auf {total}mm",

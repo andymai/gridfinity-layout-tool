@@ -6,7 +6,12 @@ import { ArrowLeftRightIcon, LockIcon, LockOpenIcon, RulerIcon } from '@/design-
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { getBinLocationContext, isBinLocked } from '@/shared/utils/binLocation';
-import { formatHeightUnits, isStandardStackHeight, STACK_LIP_MM } from '@/shared/utils/heightUnits';
+import {
+  formatHeightUnits,
+  isStandardStackHeight,
+  LIP_PROTRUSION_MM,
+  stackPitchMm,
+} from '@/shared/utils/heightUnits';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBinInspector';
 import { SplitWarning } from '../SplitWarning';
 import { BinLabelField } from '../BinLabelField';
@@ -291,8 +296,8 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
             <div>{`${minHeightHint} · ${maxHeightHint}`}</div>
             <div>
               {t('inspector.printedAndStackHint', {
-                printed: heightMmAt(bin.height, STACK_LIP_MM),
-                pitch: heightMmAt(bin.height),
+                printed: heightMmAt(bin.height, LIP_PROTRUSION_MM),
+                pitch: formatMmValue(stackPitchMm(bin.height, layout.heightUnitMm)),
               })}
             </div>
             {!isStandardStackHeight(bin.height, layout.heightUnitMm) && (

@@ -1,26 +1,29 @@
 // @vitest-environment node
 /**
- * Gridfinity stacking divisibility guard.
+ * Where a stacked bin actually seats, and what that costs divisibility.
  *
- * The reporter believed stacks overshoot because each bin carries a 4.3mm lip.
- * They don't: the lip nests into the socket of the bin above, so the stacking
- * pitch equals the bin's BODY height (`height × heightUnitMm`), and only the
- * topmost lip is exposed. Two H-unit bins therefore stack to exactly the height
- * of one 2H-unit bin. The fix relies on this invariant (see
- * `stackPitchMm`/`stackedTotalMm` in `heightUnits.ts`) rather than changing the
- * geometry — so this asserts the geometry actually keeps its side of the
- * bargain, measured on the real generated solid.
+ * This guard was written (#2416) for the claim that the pitch equals the bin's
+ * BODY height, so two H-unit bins stack to exactly one 2H-unit bin. Mating the
+ * solids disproved it (#3525): the bin above settles `STACK_JUNCTION_MM` below
+ * the lip top, which is one base profile rather than one lip, so the pitch runs
+ * 0.45mm under the body and a 2-bin stack lands that much short of the single
+ * tall bin. Divisibility is off by 0.45mm per junction, not exact.
  *
- * Method: generate a bin, drop an identical copy onto it via CSG, and check the
- * collision-free seat is at body height (lip fully nested), then confirm a
- * body-height stack equals the single 2H bin's mesh height.
+ * The original method could not have caught it: it asked whether the pair
+ * INTERSECTS at body height, and a bin resting 0.45mm lower does not intersect
+ * there — it floats clear. Non-interference brackets the seat between two
+ * pitches; it never locates it. So the seat is now pinned from both sides, a
+ * tenth of a millimetre apart, which is a measurement rather than a bound.
+ *
+ * CSG volume here, ray descent in `binStackSeating.kernel.test.ts` — two
+ * independent methods on the same joint, deliberately.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { measureVolume, translate, intersect } from 'brepjs';
 import { isOk } from '@/core/result';
 import type { BinParams } from '@/shared/types/bin';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
-import { STACK_LIP_MM } from '@/shared/utils/heightUnits';
+import { LIP_PROTRUSION_MM, STACK_JUNCTION_MM, stackPitchMm } from '@/shared/utils/heightUnits';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import { getLastSolid, clearAllCaches } from './shapeCache';
 
@@ -66,13 +69,17 @@ beforeAll(async () => {
   await initBrepjs();
 }, 60000);
 
+/** How far below the seat the pair is probed for the interference side. */
+const PROBE_MM = 0.1;
+
 /**
  * @param label human-readable config name
  * @param height single-bin height in units; the stack of two is checked against
  *   a bin of `2 × height` units at the same unit size.
  */
-function assertDivisibility(label: string, base: BinParams, height: number): void {
+function assertSeating(label: string, base: BinParams, height: number): void {
   const bodyH = height * base.heightUnitMm;
+  const pitch = stackPitchMm(height, base.heightUnitMm);
   const generateBin = getGenerateBin();
 
   clearAllCaches();
@@ -82,37 +89,43 @@ function assertDivisibility(label: string, base: BinParams, height: number): voi
   if (!solid) throw new Error(`${label}: no solid`);
 
   // One bin prints to body + exactly one lip.
-  expect(singleH, `${label}: single-bin height`).toBeCloseTo(bodyH + STACK_LIP_MM, 1);
+  expect(singleH, `${label}: single-bin height`).toBeCloseTo(bodyH + LIP_PROTRUSION_MM, 1);
 
-  // Seats cleanly at body height (lip nests into the socket above)…
-  expect(overlapAtPitch(solid, bodyH), `${label}: overlap at body-height pitch`).toBeLessThan(0.05);
-  // …and the seat is real geometry, not two hollow shells passing through each
-  // other — dropping 1mm lower drives the lip hard into the socket.
-  expect(overlapAtPitch(solid, bodyH - 1), `${label}: overlap below the seat`).toBeGreaterThan(5);
+  // The seat, pinned from both sides. Clear at the pitch the readout quotes…
+  expect(overlapAtPitch(solid, pitch), `${label}: overlap at the quoted pitch`).toBeLessThan(0.05);
+  // …and biting a tenth of a millimetre lower, so the pair really does come to
+  // rest here rather than somewhere in a gap this test never looked at.
+  expect(
+    overlapAtPitch(solid, pitch - PROBE_MM),
+    `${label}: overlap just below the seat`
+  ).toBeGreaterThan(0);
+
+  // Body height is NOT the seat: the bin above still floats there.
+  expect(pitch, `${label}: pitch sits under body height`).toBeLessThan(bodyH);
 
   clearAllCaches();
   const doubleBin = generateBin({ ...base, height: height * 2 }, undefined, true);
   const doubleH = meshHeight(doubleBin.vertices);
 
-  // Divisibility: two H-unit bins stacked at body-height pitch reach exactly the
-  // height of one 2H-unit bin.
-  expect(bodyH + singleH, `${label}: 2×${height}u stack vs 1×${height * 2}u bin`).toBeCloseTo(
-    doubleH,
+  // Divisibility, and how far it misses: two H-unit bins stack to one junction
+  // less than the single 2H-unit bin standing beside them.
+  expect(pitch + singleH, `${label}: 2×${height}u stack vs 1×${height * 2}u bin`).toBeCloseTo(
+    doubleH - (STACK_JUNCTION_MM - LIP_PROTRUSION_MM),
     1
   );
 }
 
-describe('stacking divisibility — nested lip keeps 2×Hu == 1×2Hu (#2416)', () => {
+describe('stacking seat — where a bin rests on the lip below (#2416, #3525)', () => {
   it(
     'holds at the standard 7mm unit',
-    () => assertDivisibility('7mm 3u', { ...DEFAULT_BIN_PARAMS, width: 2, depth: 2 }, 3),
+    () => assertSeating('7mm 3u', { ...DEFAULT_BIN_PARAMS, width: 2, depth: 2 }, 3),
     180_000
   );
 
   it(
     'holds at a custom non-standard unit',
     () =>
-      assertDivisibility(
+      assertSeating(
         'custom 9.362mm 2u',
         { ...DEFAULT_BIN_PARAMS, width: 2, depth: 2, heightUnitMm: 9.362 },
         2

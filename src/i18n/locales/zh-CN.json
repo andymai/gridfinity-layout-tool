@@ -3135,7 +3135,7 @@
   "snapshots.saveCheckpoint": "保存检查点",
   "stackSolver.apply": "使用 {unit}mm/单位",
   "stackSolver.binsLabel": "一叠中的收纳盒数",
-  "stackSolver.description": "堆叠的收纳盒会嵌套，所以一叠的高度是（盒数 × 单位数 × 单位尺寸）+ 一个 {lip}mm 唇边。",
+  "stackSolver.description": "堆叠的收纳盒会互相嵌套 {junction}mm，因此每个盒子增加的高度比其本体高度少 {shortfall}mm。",
   "stackSolver.outOfRange": "单位将超出 {min}–{max}mm",
   "stackSolver.overlayPitch": "堆叠 +{pitch}mm",
   "stackSolver.result": "堆叠为 {total}mm",

@@ -3135,7 +3135,7 @@
   "snapshots.saveCheckpoint": "Sauvegarder un point",
   "stackSolver.apply": "Utiliser {unit}mm/unité",
   "stackSolver.binsLabel": "Bacs dans la pile",
-  "stackSolver.description": "Les bacs empilés s’emboîtent : une pile vaut (bacs × unités × taille d’unité) + une lèvre de {lip}mm.",
+  "stackSolver.description": "Les bacs empilés s’emboîtent de {junction}mm, donc chacun ajoute {shortfall}mm de moins que la hauteur de son corps.",
   "stackSolver.outOfRange": "L’unité serait hors de {min}–{max}mm",
   "stackSolver.overlayPitch": "empile +{pitch}mm",
   "stackSolver.result": "S’empile jusqu’à {total}mm",

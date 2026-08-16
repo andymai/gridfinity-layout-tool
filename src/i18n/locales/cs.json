@@ -3135,7 +3135,7 @@
   "snapshots.saveCheckpoint": "Uložit kontrolní bod",
   "stackSolver.apply": "Použít {unit} mm/jednotku",
   "stackSolver.binsLabel": "Binů ve stohu",
-  "stackSolver.description": "Stohované biny se do sebe zasunou, takže stoh je (biny × jednotky × velikost jednotky) + jeden lem {lip} mm.",
+  "stackSolver.description": "Stohované biny se do sebe zasunou o {junction} mm, takže každý přidá o {shortfall} mm méně, než je výška jeho těla.",
   "stackSolver.outOfRange": "Jednotka by spadla mimo {min}–{max} mm",
   "stackSolver.overlayPitch": "stohuje +{pitch} mm",
   "stackSolver.result": "Stohuje se do {total} mm",

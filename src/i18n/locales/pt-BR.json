@@ -3135,7 +3135,7 @@
   "snapshots.saveCheckpoint": "Salvar ponto de verificação",
   "stackSolver.apply": "Usar {unit}mm/unidade",
   "stackSolver.binsLabel": "Bins na pilha",
-  "stackSolver.description": "Bins empilhados se encaixam, então uma pilha é (bins × unidades × tamanho da unidade) + uma borda de {lip}mm.",
+  "stackSolver.description": "Bins empilhados se encaixam {junction}mm entre si, então cada um soma {shortfall}mm a menos que a altura do corpo.",
   "stackSolver.outOfRange": "A unidade ficaria fora de {min}–{max}mm",
   "stackSolver.overlayPitch": "empilha +{pitch}mm",
   "stackSolver.result": "Empilha até {total}mm",

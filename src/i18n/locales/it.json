@@ -3327,7 +3327,7 @@
   "snapshots.saveCheckpoint": "Salva checkpoint",
   "stackSolver.apply": "Usa {unit}mm/unità",
   "stackSolver.binsLabel": "Bin nella pila",
-  "stackSolver.description": "I bin impilati si annidano, quindi una pila è (bin × unità × dimensione unità) + un labbro da {lip}mm.",
+  "stackSolver.description": "I bin impilati si annidano di {junction}mm l’uno nell’altro, quindi ognuno aggiunge {shortfall}mm in meno della propria altezza del corpo.",
   "stackSolver.outOfRange": "L'unità cadrebbe fuori da {min}–{max}mm",
   "stackSolver.overlayPitch": "impila +{pitch}mm",
   "stackSolver.result": "Si impila a {total}mm",
