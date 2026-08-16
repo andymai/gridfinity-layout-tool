@@ -14,12 +14,15 @@ export interface AnalyticsData {
   firstSeen: string;
   featureFlags: Record<string, boolean>;
   milestones: Record<string, string>;
+  /** Distinct bin designs created in this browser. Never decremented — deleting
+   *  a design does not undo having made it. */
+  designsCreated: number;
 }
 
 let analyticsCache: AnalyticsData | null = null;
 
 export function createEmptyAnalyticsData(): AnalyticsData {
-  return { userId: '', firstSeen: '', featureFlags: {}, milestones: {} };
+  return { userId: '', firstSeen: '', featureFlags: {}, milestones: {}, designsCreated: 0 };
 }
 
 export function loadAnalyticsData(): AnalyticsData {

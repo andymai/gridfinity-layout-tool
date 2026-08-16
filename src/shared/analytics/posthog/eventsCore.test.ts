@@ -11,6 +11,7 @@ vi.mock('./trackEvent', () => ({
 }));
 
 import {
+  trackDesignCreated,
   trackDrawerHalfFitSuggestion,
   trackDrawerMeasuredCommitted,
   trackDrawerMeasurementCleared,
@@ -18,9 +19,21 @@ import {
   trackDrawerShapeEditorOpened,
   trackDrawerShapeReset,
 } from './eventsCore';
+import { ANALYTICS_STORAGE_KEY, pruneAnalyticsData } from './identity';
+
+const updatePersonPropertiesMock = vi.fn();
+vi.mock('./eventsPerson', () => ({
+  updatePersonProperties: () => {
+    updatePersonPropertiesMock();
+  },
+  markFeatureUsed: vi.fn(),
+}));
 
 beforeEach(() => {
   trackEventMock.mockReset();
+  updatePersonPropertiesMock.mockReset();
+  // Clears both localStorage and the module-level analytics cache
+  pruneAnalyticsData();
 });
 
 describe('trackDrawerShapeEditorOpened', () => {
@@ -106,5 +119,62 @@ describe('trackDrawerMeasurementCleared', () => {
     trackDrawerMeasurementCleared();
 
     expect(trackEventMock).toHaveBeenCalledWith('drawer_measurement_cleared', {});
+  });
+});
+
+describe('trackDesignCreated', () => {
+  const milestonesFired = (): string[] =>
+    trackEventMock.mock.calls
+      .filter(([name]) => name === 'engagement_milestone')
+      .map(([, props]) => (props as { milestone: string }).milestone);
+
+  it('fires the designer ladder at 1, 4 and 8 designs and nowhere between', () => {
+    for (let i = 0; i < 8; i++) trackDesignCreated();
+
+    expect(milestonesFired()).toEqual(['first_design', 'designs_4', 'designs_8']);
+  });
+
+  it('reports the count alongside the milestone', () => {
+    for (let i = 0; i < 4; i++) trackDesignCreated();
+
+    expect(trackEventMock).toHaveBeenLastCalledWith('engagement_milestone', {
+      milestone: 'designs_4',
+      designs_created: 4,
+    });
+  });
+
+  it('fires each milestone once, across separate calls', () => {
+    for (let i = 0; i < 12; i++) trackDesignCreated();
+
+    expect(milestonesFired()).toEqual(['first_design', 'designs_4', 'designs_8']);
+  });
+
+  // Bins on the grid stopped discriminating past five, so the old 15- and
+  // 30-bin rungs are gone. Nothing should resurrect them.
+  it('no longer emits the retired bin-count milestones', () => {
+    for (let i = 0; i < 40; i++) trackDesignCreated();
+
+    expect(milestonesFired()).not.toContain('substantial');
+    expect(milestonesFired()).not.toContain('power_user');
+  });
+
+  // Gating the refresh on the rungs would leave designs_created stale at 2, 3
+  // and 5, and answer the wrong number for any cohort built on it.
+  it('refreshes person properties on every design, not only at a milestone', () => {
+    for (let i = 0; i < 6; i++) trackDesignCreated();
+
+    expect(updatePersonPropertiesMock).toHaveBeenCalledTimes(6);
+  });
+
+  it('counts up from analytics data written before the field existed', () => {
+    pruneAnalyticsData();
+    localStorage.setItem(
+      ANALYTICS_STORAGE_KEY,
+      JSON.stringify({ userId: 'u', firstSeen: 'x', featureFlags: {}, milestones: {} })
+    );
+
+    trackDesignCreated();
+
+    expect(milestonesFired()).toEqual(['first_design']);
   });
 });

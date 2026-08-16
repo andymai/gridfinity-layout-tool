@@ -1,5 +1,12 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+
+const trackDesignCreatedMock = vi.fn();
+vi.mock('@/shared/analytics/posthog', () => ({
+  trackDesignCreated: () => {
+    trackDesignCreatedMock();
+  },
+}));
 import {
   saveDesign,
   loadDesign,
@@ -814,5 +821,84 @@ describe('DesignerStorage', () => {
       expect(result.publishedId).toBeUndefined();
       expect(result.updatedAt).toBe(before);
     });
+  });
+});
+
+describe('design-created counting', () => {
+  // Same reset the main suite runs: without it a leftover record from an
+  // earlier test makes a supplied id look like an update, and these
+  // assertions turn on exactly that distinction.
+  beforeEach(async () => {
+    trackDesignCreatedMock.mockReset();
+    closeDesignerDb();
+    await new Promise<void>((resolve, reject) => {
+      const req = indexedDB.deleteDatabase('gridfinity-designer-v1');
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(new Error(req.error?.message ?? 'Failed to delete database'));
+    });
+  });
+
+  it('counts a design with no id', async () => {
+    expectOk(
+      await saveDesign({
+        name: 'a',
+        params: DEFAULT_BIN_PARAMS,
+        thumbnail: null,
+        exportFileNameConfig: null,
+      })
+    );
+
+    expect(trackDesignCreatedMock).toHaveBeenCalledTimes(1);
+  });
+
+  // Autosave re-enters saveDesign on every parameter change. Counting those
+  // would turn "designs made" into "edits made", which is the measure the
+  // milestone ladder was moved off in the first place.
+  it('does not count re-saves of the same design', async () => {
+    const created = expectOk(
+      await saveDesign({
+        name: 'a',
+        params: DEFAULT_BIN_PARAMS,
+        thumbnail: null,
+        exportFileNameConfig: null,
+      })
+    );
+    trackDesignCreatedMock.mockReset();
+
+    for (let i = 0; i < 5; i++) {
+      expectOk(
+        await saveDesign({
+          id: created.id,
+          name: `a${i}`,
+          params: DEFAULT_BIN_PARAMS,
+          thumbnail: null,
+          exportFileNameConfig: null,
+        })
+      );
+    }
+
+    expect(trackDesignCreatedMock).not.toHaveBeenCalled();
+  });
+
+  // An id can be supplied for a design that was never stored (import, restore),
+  // so "has an id" is a different question from "already exists".
+  it('counts a supplied id that has no stored record', async () => {
+    expectOk(
+      await saveDesign({
+        id: designId('design_imported_1'),
+        name: 'imported',
+        params: DEFAULT_BIN_PARAMS,
+        thumbnail: null,
+        exportFileNameConfig: null,
+      })
+    );
+
+    expect(trackDesignCreatedMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not count a rejected write', async () => {
+    expectErr(await saveDesign({ name: 'bad', thumbnail: null } as never));
+
+    expect(trackDesignCreatedMock).not.toHaveBeenCalled();
   });
 });

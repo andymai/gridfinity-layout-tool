@@ -34,6 +34,7 @@ export {
   trackDrawerHalfFitSuggestion,
   trackDrawerMeasurementCleared,
   MILESTONE_THRESHOLDS,
+  trackDesignCreated,
   type AnalyticsTrigger,
   type BinCreatedProperties,
   type DrawerMeasuredCommittedProperties,
