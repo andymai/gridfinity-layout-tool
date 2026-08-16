@@ -273,11 +273,16 @@ export function trackDesignCreated(): void {
           milestone: key,
           designs_created: data.designsCreated,
         });
-        updatePersonProperties();
       }
     }
 
     saveAnalyticsData(data);
+    // After the save, and on every design rather than only on a milestone
+    // crossing: `designs_created` is a person property, so gating its refresh
+    // on the rungs would leave it stale at 2, 3 and 5, and answer the wrong
+    // number for any cohort built on it. updatePersonProperties diffs its own
+    // payload, so the calls that change nothing cost nothing.
+    updatePersonProperties();
   } catch {
     // Silently ignore - analytics should never break the app
   }

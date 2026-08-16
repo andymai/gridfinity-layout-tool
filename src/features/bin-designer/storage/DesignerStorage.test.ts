@@ -825,8 +825,17 @@ describe('DesignerStorage', () => {
 });
 
 describe('design-created counting', () => {
-  beforeEach(() => {
+  // Same reset the main suite runs: without it a leftover record from an
+  // earlier test makes a supplied id look like an update, and these
+  // assertions turn on exactly that distinction.
+  beforeEach(async () => {
     trackDesignCreatedMock.mockReset();
+    closeDesignerDb();
+    await new Promise<void>((resolve, reject) => {
+      const req = indexedDB.deleteDatabase('gridfinity-designer-v1');
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(new Error(req.error?.message ?? 'Failed to delete database'));
+    });
   });
 
   it('counts a design with no id', async () => {

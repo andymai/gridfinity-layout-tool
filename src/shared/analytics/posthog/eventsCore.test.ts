@@ -21,13 +21,17 @@ import {
 } from './eventsCore';
 import { ANALYTICS_STORAGE_KEY, pruneAnalyticsData } from './identity';
 
+const updatePersonPropertiesMock = vi.fn();
 vi.mock('./eventsPerson', () => ({
-  updatePersonProperties: vi.fn(),
+  updatePersonProperties: () => {
+    updatePersonPropertiesMock();
+  },
   markFeatureUsed: vi.fn(),
 }));
 
 beforeEach(() => {
   trackEventMock.mockReset();
+  updatePersonPropertiesMock.mockReset();
   // Clears both localStorage and the module-level analytics cache
   pruneAnalyticsData();
 });
@@ -152,6 +156,14 @@ describe('trackDesignCreated', () => {
 
     expect(milestonesFired()).not.toContain('substantial');
     expect(milestonesFired()).not.toContain('power_user');
+  });
+
+  // Gating the refresh on the rungs would leave designs_created stale at 2, 3
+  // and 5, and answer the wrong number for any cohort built on it.
+  it('refreshes person properties on every design, not only at a milestone', () => {
+    for (let i = 0; i < 6; i++) trackDesignCreated();
+
+    expect(updatePersonPropertiesMock).toHaveBeenCalledTimes(6);
   });
 
   it('counts up from analytics data written before the field existed', () => {
