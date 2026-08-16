@@ -186,28 +186,31 @@ jobs:
   # PRs only. Pushes to main keep the full cloud suite with coverage, so releases
   # never depend on the mini being up.
   #
-  # Four shards, not six. The 6-way split above is sized for six independent
+  # Two shards, not six. The 6-way split above is sized for six independent
   # 4-core cloud runners; on one machine that split would pay checkout + install
-  # + WASM init six times over for no extra concurrency, since a fifth shard has
-  # no runner to start on and only queues.
+  # + WASM init six times over and leave each shard ~1.7 cores. Two shards at
+  # five workers each keeps the performance cores saturated while leaving the
+  # efficiency cores for interactive use and for halcyon's three runners, which
+  # share this host.
   #
-  # `--maxWorkers` is sized against the RUNNER POOL, not against one run's
-  # matrix. All four `gflt-ci` runners are processes on this single mini, so the
-  # host's worst case is `runners x maxWorkers`: every shard scheduled anywhere
-  # lands here. The previous 2x5 read the arithmetic off one PR's matrix and was
-  # right only in isolation, ten workers on ten performance cores. Two PRs in
-  # flight made it twenty, and #3537 is the shape that takes, a per-test timeout
-  # firing on a different test each attempt. Sharding cannot fix that on its
-  # own, because `--shard` splits the file set: it makes a job shorter without
-  # making any single test faster, and raising the count while holding
-  # maxWorkers would have put thirty workers on the host and made it worse.
+  # THE INVARIANT: `gflt-ci runners x maxWorkers <= 10 performance cores`. Every
+  # runner in the pool is a process on this one mini, so a shard scheduled
+  # anywhere lands here and the host's worst case is that product, NOT one run's
+  # matrix. The pool is deliberately two for this reason. It was briefly four,
+  # which left 2x5 correct only for a lone PR: a second one in flight made it
+  # twenty workers on ten cores, and #3537 is the shape that takes, a per-test
+  # timeout firing on a different test each attempt.
   #
-  # 4x3 caps the host at twelve however many PRs queue, and because the shard
-  # count now equals the runner count, one PR's load and the worst case are the
-  # same number rather than a 2x cliff between them. The two spare workers come
-  # off the efficiency cores, which is the margin the split leaves for
-  # interactive use and for halcyon's three runners, which share this host.
-  # Adding a runner or a shard means re-checking that product, not this comment.
+  # Registering a third runner silently breaks that product and reopens #3537.
+  # Re-derive it before changing either side, and note that the fix is NOT more
+  # shards: `--shard` splits the file set, so it shortens a job without making
+  # any single test faster, and raising the count to match a bigger pool only
+  # multiplies the workers on the host. That was measured, not assumed, on
+  # 4x3 (run 31960552340): the slowest shard went 250s -> 355s, because four
+  # concurrent `pnpm install`s contend on one disk (16-49s -> a uniform ~68s)
+  # and hash sharding balances worse at 4-way than 2-way (1.05x -> 1.45x
+  # spread). A smaller pool is both faster per PR and bounded; two queued PRs
+  # finish in ~500s against ~710s for the same work split four ways.
   #
   # `vars.SELF_HOSTED_CI` is the kill switch: unset it in repo settings and every
   # shard here stops scheduling immediately, no code change needed. The head_repo
@@ -223,20 +226,16 @@ jobs:
       && github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: [self-hosted, gflt-ci]
     # A wedged WASM kernel would otherwise hold a runner indefinitely, and the
-    # pool is small enough that every PR behind it waits.
+    # pool is two, so every PR behind it waits on the one that is left.
     timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
         include:
-          - name: generators 1/4
-            shard: 1/4
-          - name: generators 2/4
-            shard: 2/4
-          - name: generators 3/4
-            shard: 3/4
-          - name: generators 4/4
-            shard: 4/4
+          - name: generators 1/2
+            shard: 1/2
+          - name: generators 2/2
+            shard: 2/2
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -251,7 +250,7 @@ jobs:
       - name: Run generators tests
         env:
           SHARD: ${{ matrix.shard }}
-        run: pnpm vitest run --project=generators --shard="$SHARD" --maxWorkers=3
+        run: pnpm vitest run --project=generators --shard="$SHARD" --maxWorkers=5
 
   # Tests that need a real Redis. The rate limiter runs as a Lua script, and a
   # mocked ioredis can only assert the command was issued — it cannot execute
