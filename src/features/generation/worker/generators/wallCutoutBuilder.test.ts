@@ -11,7 +11,7 @@ import {
 import type { CornerSlack } from './wallCutoutBuilder';
 import type { CutoutCornerRadii } from '@/shared/utils/wallCutoutPosition';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
-import { LIP_HEIGHT } from './generatorConstants';
+import { CUT_RIM_CLEARANCE, LIP_HEIGHT } from './generatorConstants';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams, DividerOverride, WallCutoutShape } from '@/features/bin-designer/types';
 
@@ -282,12 +282,12 @@ describe('buildSingleCutout corner placement', () => {
   }, 120_000);
 
   // 40mm span → autoCornerRadius saturates at its 5mm cap, the worst case for
-  //. OVERSHOOT is the production no-lip value ((hasLip ? LIP_HEIGHT: 0) + 2),
-  // so the cut runs from z = WALL_HEIGHT - CUT_HEIGHT up to z = WALL_HEIGHT + 2
-  // and the wall's visible rim sits at z = WALL_HEIGHT.
+  //. OVERSHOOT is the production no-lip value, so the cut runs from
+  // z = WALL_HEIGHT - CUT_HEIGHT up to z = WALL_HEIGHT + CUT_RIM_CLEARANCE and
+  // the wall's visible rim sits at z = WALL_HEIGHT.
   const CUT_WIDTH = 40;
   const CUT_HEIGHT = 30;
-  const OVERSHOOT = 2;
+  const OVERSHOOT = CUT_RIM_CLEARANCE;
   const EXTRUDE_DEPTH = 8;
   const WALL_HEIGHT = 40;
   const CENTERED = { x: 0, y: 0, rotateZ: 0 };
@@ -516,7 +516,7 @@ describe('buildSingleCutout corner placement', () => {
       // highest material is 4.4mm above `wallHeight`. Round to the wall top
       // instead and the lip is left perched square on a rounded wall — and the
       // blend is 4.4mm lower than anything a screenshot would show.
-      const lipped = LIP_HEIGHT + 2;
+      const lipped = LIP_HEIGHT + CUT_RIM_CLEARANCE;
       const lipTop = WALL_HEIGHT + LIP_HEIGHT;
       const spanAtLipped = (z: number): number =>
         withScope((scope: DisposalScope) => {
