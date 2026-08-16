@@ -61,6 +61,54 @@ describe('BaseSection', () => {
     });
   });
 
+  // The foot lattice is a power-user setting at its default on nearly every
+  // bin, so it is folded away — but a wrong lattice leaves the bin perched on
+  // the ridges between pockets, so a non-default value must never be the thing
+  // that got hidden.
+  describe('foot lattice disclosure', () => {
+    it('is collapsed at the default, showing only the summary', () => {
+      render(<BaseSection />);
+      expect(screen.getByText('On grid / On grid')).toBeInTheDocument();
+      expect(screen.queryByLabelText('Width axis')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('Depth axis')).not.toBeInTheDocument();
+    });
+
+    it('opens on click', async () => {
+      const user = userEvent.setup();
+      render(<BaseSection />);
+      await user.click(screen.getByRole('button', { name: /Foot lattice/ }));
+      expect(screen.getByLabelText('Width axis')).toBeInTheDocument();
+      expect(screen.getByLabelText('Depth axis')).toBeInTheDocument();
+    });
+
+    it('force-opens a non-default lattice rather than hiding it', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          base: { ...DEFAULT_BIN_PARAMS.base, footLatticeX: 'half' },
+        },
+      });
+      render(<BaseSection />);
+      expect(screen.getByLabelText('Width axis')).toBeInTheDocument();
+      expect(screen.getByText('Half offset / On grid')).toBeInTheDocument();
+    });
+
+    // A stored value the lock overrides is not a customization — the summary
+    // and the force-open both read the EFFECTIVE lattice, which is what the
+    // part actually gets built with.
+    it('stays collapsed when a stored lattice is overridden by half sockets', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true, footLatticeX: 'half' },
+        },
+      });
+      render(<BaseSection />);
+      expect(screen.getByText('On grid / On grid')).toBeInTheDocument();
+      expect(screen.queryByLabelText('Width axis')).not.toBeInTheDocument();
+    });
+  });
+
   it('reveals the hole picker only once drainage is on', () => {
     const { unmount } = render(<BaseSection />);
     expect(screen.queryByLabelText('Hole shape')).not.toBeInTheDocument();
