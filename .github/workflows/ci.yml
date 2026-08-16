@@ -193,6 +193,25 @@ jobs:
   # efficiency cores for interactive use and for halcyon's three runners, which
   # share this host.
   #
+  # THE INVARIANT: `gflt-ci runners x maxWorkers <= 10 performance cores`. Every
+  # runner in the pool is a process on this one mini, so a shard scheduled
+  # anywhere lands here and the host's worst case is that product, NOT one run's
+  # matrix. The pool is deliberately two for this reason. It was briefly four,
+  # which left 2x5 correct only for a lone PR: a second one in flight made it
+  # twenty workers on ten cores, and #3537 is the shape that takes, a per-test
+  # timeout firing on a different test each attempt.
+  #
+  # Registering a third runner silently breaks that product and reopens #3537.
+  # Re-derive it before changing either side, and note that the fix is NOT more
+  # shards: `--shard` splits the file set, so it shortens a job without making
+  # any single test faster, and raising the count to match a bigger pool only
+  # multiplies the workers on the host. That was measured, not assumed, on
+  # 4x3 (run 31960552340): the slowest shard went 250s -> 355s, because four
+  # concurrent `pnpm install`s contend on one disk (16-49s -> a uniform ~68s)
+  # and hash sharding balances worse at 4-way than 2-way (1.05x -> 1.45x
+  # spread). A smaller pool is both faster per PR and bounded; two queued PRs
+  # finish in ~500s against ~710s for the same work split four ways.
+  #
   # `vars.SELF_HOSTED_CI` is the kill switch: unset it in repo settings and every
   # shard here stops scheduling immediately, no code change needed. The head_repo
   # comparison is the security boundary — a fork PR must never execute on
@@ -206,8 +225,8 @@ jobs:
       && github.event_name == 'pull_request'
       && github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: [self-hosted, gflt-ci]
-    # A wedged WASM kernel would otherwise hold a runner indefinitely, and there
-    # are only two of them.
+    # A wedged WASM kernel would otherwise hold a runner indefinitely, and the
+    # pool is two, so every PR behind it waits on the one that is left.
     timeout-minutes: 45
     strategy:
       fail-fast: false

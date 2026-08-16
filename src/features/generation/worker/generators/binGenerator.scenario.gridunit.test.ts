@@ -49,7 +49,7 @@ describe('custom gridUnitMm', () => {
     const expected = 1 * 50 - CLEARANCE; // 49.5mm
     expect(width).toBeCloseTo(expected, 0);
     expect(depth).toBeCloseTo(expected, 0);
-  }, 30_000);
+  });
 
   it('should generate non-square geometry when gridUnitMmY differs from gridUnitMm', () => {
     const generateBin = getGenerateBin();
@@ -82,7 +82,7 @@ describe('custom gridUnitMm', () => {
     // X uses gridUnitMm (42), Y uses gridUnitMmY (22). The two axes must differ.
     expect(width).toBeCloseTo(2 * 42 - CLEARANCE, 0); // 83.5mm
     expect(depth).toBeCloseTo(3 * 22 - CLEARANCE, 0); // 65.5mm
-  }, 30_000);
+  });
 
   it('places a magnet that fits a narrow non-square foot (no side breach)', () => {
     const generateBin = getGenerateBin();
@@ -125,7 +125,7 @@ describe('custom gridUnitMm', () => {
     }
     expect(maxX - minX).toBeCloseTo(1 * 25 - CLEARANCE, 0); // 24.5mm
     expect(maxY - minY).toBeCloseTo(1 * 42 - CLEARANCE, 0); // 41.5mm
-  }, 30_000);
+  });
 
   it('should place anisotropic feet at the correct per-axis pitch (socketed bin)', () => {
     const generateBin = getGenerateBin();
@@ -164,7 +164,7 @@ describe('custom gridUnitMm', () => {
     expect(extent(aniso, 0)).toBeCloseTo(extent(square, 0), 0);
     expect(extent(aniso, 1)).toBeCloseTo(2 * 22 - CLEARANCE, 0); // 41.5mm
     expect(extent(aniso, 1)).toBeLessThan(extent(square, 1) - 10);
-  }, 30_000);
+  });
 
   it('split preview pieces should use custom gridUnitMm', () => {
     const generateSplitPreview = getGenerateSplitPreview();
@@ -185,7 +185,7 @@ describe('custom gridUnitMm', () => {
     for (const piece of result.pieces) {
       expect(piece.widthUnits).toBeCloseTo(4, 0);
     }
-  }, 30_000);
+  });
 
   it('split preview reports grid units per-axis for a non-square grid', () => {
     const generateSplitPreview = getGenerateSplitPreview();
@@ -208,5 +208,5 @@ describe('custom gridUnitMm', () => {
       expect(piece.widthUnits).toBeCloseTo(2, 0); // X via 42mm pitch
       expect(piece.depthUnits).toBeCloseTo(4, 0); // Y via 22mm pitch
     }
-  }, 30_000);
+  });
 });

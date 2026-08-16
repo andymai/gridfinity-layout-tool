@@ -103,7 +103,7 @@ describe('magnet hole alignment verification', () => {
     expect(hasClusterNear(clusters, -HOLE_OFFSET, HOLE_OFFSET)).toBe(true);
     expect(hasClusterNear(clusters, HOLE_OFFSET, -HOLE_OFFSET)).toBe(true);
     expect(hasClusterNear(clusters, HOLE_OFFSET, HOLE_OFFSET)).toBe(true);
-  }, 30000);
+  });
 
   it('1×1 with halfSockets has magnet vertices at ±13mm (not ±10.5mm)', () => {
     const params: BinParams = {
@@ -128,7 +128,7 @@ describe('magnet hole alignment verification', () => {
     // Use tight tolerance (1.5mm) — 10.5 and 13 are 2.5mm apart
     expect(hasClusterNear(clusters, -WRONG_OFFSET, -WRONG_OFFSET, 1.5)).toBe(false);
     expect(hasClusterNear(clusters, WRONG_OFFSET, WRONG_OFFSET, 1.5)).toBe(false);
-  }, 30000);
+  });
 
   it('halfSockets does not change magnet hole positions', () => {
     const base: BinParams = {
