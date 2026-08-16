@@ -19,14 +19,24 @@ import { computeLayoutMetrics } from './metrics';
 import { getDeviceType } from './trackEvent';
 
 /**
- * Compute the engagement tier based on usage patterns.
+ * Coarse person tier for cohorting.
+ *
+ * Both inputs are real counts. The second used to be `totalBins`, which the
+ * caller synthesised as `currentBins + layoutCount * 10` — a commented guess,
+ * so `power` was partly assigned by a multiplier rather than by anything the
+ * user did. Bin counts also stop separating outcomes past five (see the
+ * milestone ladder in eventsCore), which made the 20/100 cutoffs doubly empty.
+ *
+ * Thresholds mirror that ladder deliberately — 1 design is `first_design`, 8 is
+ * `designs_8` — so the tier and the milestones cannot tell different stories
+ * about the same person.
  */
 export function computeEngagementTier(
   layoutCount: number,
-  totalBins: number
+  designsCreated: number
 ): 'new' | 'active' | 'power' {
-  if (layoutCount >= 5 || totalBins >= 100) return 'power';
-  if (layoutCount >= 2 || totalBins >= 20) return 'active';
+  if (layoutCount >= 5 || designsCreated >= 8) return 'power';
+  if (layoutCount >= 2 || designsCreated >= 1) return 'active';
   return 'new';
 }
 
@@ -68,11 +78,6 @@ export function updatePersonProperties(): void {
     const layout = useLayoutStore.getState().layout;
     const metrics = computeLayoutMetrics(layout);
 
-    // Compute cumulative bins (rough estimate from current + saved layouts)
-    const currentBins = layout.bins.length;
-    const savedBinsEstimate = layoutCount * 10; // Rough average
-    const totalBinsEstimate = currentBins + savedBinsEstimate;
-
     const data = loadAnalyticsData();
     const flags = data.featureFlags;
 
@@ -91,7 +96,6 @@ export function updatePersonProperties(): void {
     const setProps = {
       // Usage metrics
       layout_count: layoutCount,
-      total_bins_estimate: totalBinsEstimate,
 
       // Feature adoption (has ever used)
       uses_multi_layer: metrics.feature_multi_layer || flag('multi_layer'),
@@ -103,7 +107,7 @@ export function updatePersonProperties(): void {
       uses_fill_operations: flag('fill'),
       uses_paint_mode: flag('paint_mode'),
 
-      engagement_tier: computeEngagementTier(layoutCount, totalBinsEstimate),
+      engagement_tier: computeEngagementTier(layoutCount, data.designsCreated ?? 0),
 
       // Distinct designs made. The designer milestone ladder keys on this, so
       // it has to be segmentable here too — a milestone that fires into an

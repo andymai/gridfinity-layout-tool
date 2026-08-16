@@ -84,8 +84,14 @@ describe('computeEngagementTier', () => {
   it('classifies by whichever of layout count or bin count is reached first', () => {
     expect(computeEngagementTier(0, 0)).toBe('new');
     expect(computeEngagementTier(2, 0)).toBe('active');
-    expect(computeEngagementTier(0, 20)).toBe('active');
     expect(computeEngagementTier(5, 0)).toBe('power');
-    expect(computeEngagementTier(0, 100)).toBe('power');
+    // Second argument is distinct designs created, matching the designer
+    // milestone rungs: one design is `first_design`, eight is `designs_8`.
+    expect(computeEngagementTier(0, 1)).toBe('active');
+    expect(computeEngagementTier(0, 7)).toBe('active');
+    expect(computeEngagementTier(0, 8)).toBe('power');
+    // A single layout and no designs is not engagement, however many bins are
+    // in it — the bin count that used to reach 'active' here was synthesised.
+    expect(computeEngagementTier(1, 0)).toBe('new');
   });
 });
