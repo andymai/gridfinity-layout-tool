@@ -626,16 +626,21 @@ export function createCutoutSlice(set: Set) {
     ) => {
       set((state) => {
         const master = state.params.cutouts.find((c) => c.id === masterId);
-        if (!master || !canArray(master)) return;
-        // The absorbed ids come from a detection that ran against an older
-        // snapshot, so re-check rather than trusting them: a cutout deleted or
-        // grouped in between would otherwise be removed on stale evidence.
+        if (!master || !canArray(master) || master.locked === true) return;
+
+        // The ids come from a detection that ran against an older snapshot, so
+        // re-check ELIGIBILITY rather than mere existence. Anything grouped,
+        // locked, or given its own repeat since then is no longer something the
+        // user asked to absorb, and deleting it would destroy work: this action
+        // removes cutouts, so a stale id is a data-loss bug, not a no-op.
+        const eligible = (c: Cutout): boolean =>
+          c.id !== masterId && canArray(c) && c.locked !== true && c.array === undefined;
         const absorbed = new Set(
-          absorbedIds.filter(
-            (id) => id !== masterId && state.params.cutouts.some((c) => c.id === id)
-          )
+          absorbedIds.filter((id) => state.params.cutouts.some((c) => c.id === id && eligible(c)))
         );
-        if (absorbed.size === 0) return;
+        // All-or-nothing: absorbing a subset would leave strays sitting on top
+        // of instances the config now generates, which is worse than declining.
+        if (absorbed.size === 0 || absorbed.size !== absorbedIds.length) return;
 
         pushHistoryEntry(state, { affectsGeometry: true });
         state.params.cutouts = state.params.cutouts

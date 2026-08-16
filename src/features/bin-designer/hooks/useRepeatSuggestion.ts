@@ -97,13 +97,15 @@ export function useRepeatSuggestion(
   const selected = useMemo(() => cutouts.filter((c) => selection.has(c.id)), [cutouts, selection]);
   const key = selectionKey(selected.map((c) => c.id));
 
-  const detection = useMemo(
-    () =>
-      !enabled || dismissedSelections.has(key)
-        ? null
-        : detectRepeatPattern(selected, binWidth, binDepth),
-    [selected, binWidth, binDepth, key, enabled]
+  // The dismissal check stays OUTSIDE the memo. `dismissedSelections` is a
+  // module-level Set, so mutating it changes none of these deps: memoizing the
+  // dismissal would hand back the cached detection and the offer would not go
+  // away when the user dismisses it.
+  const found = useMemo(
+    () => (enabled ? detectRepeatPattern(selected, binWidth, binDepth) : null),
+    [selected, binWidth, binDepth, enabled]
   );
+  const detection = found && !dismissedSelections.has(key) ? found : null;
 
   // One impression per distinct selection, so dragging through a selection
   // does not emit an event per pointer move.

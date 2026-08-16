@@ -104,6 +104,24 @@ describe('useRepeatSuggestion', () => {
     expect(render(cutouts, 'canvas').result.current).toBeNull();
   });
 
+  it('stops offering when the selection identity is stable across renders', () => {
+    // The real editor holds `selection` in state, so it is the SAME Set object
+    // on the render that follows a dismissal. A harness that rebuilds the Set
+    // each render silently invalidates the detection memo and hides a
+    // dismissal that never actually took effect.
+    const cutouts = row('stable');
+    const selection = new Set(cutouts.map((c) => c.id));
+    const { result, rerender } = renderHook(() =>
+      useRepeatSuggestion(cutouts, selection, BIN, BIN, 'inspector')
+    );
+    expect(result.current).not.toBeNull();
+
+    act(() => result.current?.dismiss());
+    rerender();
+
+    expect(result.current).toBeNull();
+  });
+
   it('still offers for a different selection after a dismissal', () => {
     act(() => render(row('x')).result.current?.dismiss());
 

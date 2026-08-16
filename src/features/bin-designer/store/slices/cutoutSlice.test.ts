@@ -1300,14 +1300,55 @@ describe('cutoutSlice - consolidated actions', () => {
       expect(cutouts.every((c) => c.array === undefined)).toBe(true);
     });
 
-    it('ignores absorbed ids that no longer exist, rather than acting on stale detection', () => {
+    // The ids come from a detection taken against an older snapshot, and this
+    // action DELETES cutouts, so anything no longer eligible makes the whole
+    // merge decline. A partial merge would leave strays sitting on top of the
+    // instances the config now generates.
+    it('declines when an absorbed cutout has since been deleted', () => {
       seedThree();
       useDesignerStore.getState().removeCutout('c');
 
       useDesignerStore.getState().mergeCutoutsIntoArray('a', repeatConfig, ['b', 'c']);
 
       const { cutouts } = useDesignerStore.getState().params;
-      expect(cutouts.map((c) => c.id)).toEqual(['a']);
+      expect(cutouts.map((c) => c.id).sort()).toEqual(['a', 'b']);
+      expect(cutouts.find((c) => c.id === 'a')?.array).toBeUndefined();
+    });
+
+    it('declines when an absorbed cutout has since been locked', () => {
+      seedThree();
+      useDesignerStore.getState().lockCutouts(['c']);
+
+      useDesignerStore.getState().mergeCutoutsIntoArray('a', repeatConfig, ['b', 'c']);
+
+      expect(useDesignerStore.getState().params.cutouts).toHaveLength(3);
+    });
+
+    it('declines when an absorbed cutout has since been grouped', () => {
+      seedThree();
+      useDesignerStore.getState().updateCutout('c', { groupId: 'g1' });
+
+      useDesignerStore.getState().mergeCutoutsIntoArray('a', repeatConfig, ['b', 'c']);
+
+      expect(useDesignerStore.getState().params.cutouts).toHaveLength(3);
+    });
+
+    it('declines when an absorbed cutout has since gained its own repeat', () => {
+      seedThree();
+      useDesignerStore.getState().updateCutout('c', { array: repeatConfig });
+
+      useDesignerStore.getState().mergeCutoutsIntoArray('a', repeatConfig, ['b', 'c']);
+
+      expect(useDesignerStore.getState().params.cutouts).toHaveLength(3);
+    });
+
+    it('declines when the master has since been locked', () => {
+      seedThree();
+      useDesignerStore.getState().lockCutouts(['a']);
+
+      useDesignerStore.getState().mergeCutoutsIntoArray('a', repeatConfig, ['b', 'c']);
+
+      expect(useDesignerStore.getState().params.cutouts).toHaveLength(3);
     });
 
     it('does nothing when the master has gone', () => {
