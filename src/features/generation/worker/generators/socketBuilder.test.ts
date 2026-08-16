@@ -218,7 +218,7 @@ describe('forEachSocketCell foot lattice (#3467)', () => {
     // Such an axis already carries a half cell, and `fractionalEdge` decides
     // which end it sits on — which covers both placements on its own. Honouring
     // `half` here would build a layout that perches on-grid, and the mismatch
-    // check deliberately skips fractional axes so nothing would warn (review).
+    // check deliberately skips fractional axes so nothing would warn.
     const asked = resolveSocketCellPlan(false, 'half', 'half', undefined, 2.5, 3);
     expect(asked.latticeX).toBe('grid');
     expect(asked.latticeY).toBe('half');

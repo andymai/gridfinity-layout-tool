@@ -709,7 +709,7 @@ function validateLabel(label: unknown): string | null {
     ) {
       return `label.mode must be one of: ${VALID_LABEL_TAB_MODES.join(', ')}`;
     }
-    // Optional socket profile (follow-up); absent = 'clickIn'.
+    // Optional socket profile; absent = 'clickIn'.
     if (
       label.socketStyle !== undefined &&
       !VALID_LABEL_SOCKET_STYLES.includes(

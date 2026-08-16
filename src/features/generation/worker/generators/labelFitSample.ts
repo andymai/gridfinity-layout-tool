@@ -1,5 +1,5 @@
 /**
- * Swappable-label socket fit-calibration coupon (follow-up).
+ * Swappable-label socket fit-calibration coupon.
  *
  * One small printable card that sweeps the label-socket clearance across a
  * fit-offset ladder so makers can dial in `plateFitOffset` for their printer

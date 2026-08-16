@@ -1,5 +1,5 @@
 /**
- * "Print fit test" control for socket-mode label tabs (follow-up).
+ * "Print fit test" control for socket-mode label tabs.
  *
  * Opens the shared ExportDialog to download a one-file calibration card:
  * five 1U sockets across a fit-offset ladder plus a nominal reference plate.

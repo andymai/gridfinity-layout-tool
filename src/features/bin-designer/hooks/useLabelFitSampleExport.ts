@@ -1,5 +1,5 @@
 /**
- * Export the label-socket fit-calibration card (follow-up): a one-file
+ * Export the label-socket fit-calibration card: a one-file
  * calibration print sweeping the socket clearance across a fit-offset ladder,
  * plus a nominal reference plate to click into each socket.
  *

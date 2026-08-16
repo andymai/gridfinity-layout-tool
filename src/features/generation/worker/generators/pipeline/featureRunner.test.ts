@@ -14,7 +14,7 @@ describe('composeFeaturesKey', () => {
     // These two distinct feature sets flatten to the same `name:target:key`
     // pipe-join ("labelTab:fuse:a|labelTab:fuse:b" vs "labelTab:fuse:a|b" +
     // "labelTab:fuse:" ...). JSON keeps them distinct — a regression guard for
-    // the false-resume-hit bug (review).
+    // the false-resume-hit bug.
     const a = composeFeaturesKey([
       ['labelTab', 'fuse', 'a'],
       ['labelTab', 'fuse', 'b'],

@@ -54,7 +54,7 @@ describe('selectGenerationTriggers', () => {
     }) as unknown as Parameters<typeof selectGenerationTriggers>[0];
 
   /**
-   * Regression (follow-up): switching Dovetail -> Dovetail key changes only
+   * Regression: switching Dovetail -> Dovetail key changes only
    * `connectorStyle`. If that field is absent from the regeneration trigger set,
    * `useShallow` reports the selection unchanged and the piece meshes never
    * regenerate — the exploded preview keeps showing male dovetails while the

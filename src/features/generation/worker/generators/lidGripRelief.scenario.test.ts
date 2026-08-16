@@ -200,7 +200,7 @@ describe('grip relief geometry', () => {
 });
 
 /**
- * The user-set relief height (follow-up).
+ * The user-set relief height.
  *
  * The reporter's complaint was not the pocket but what was left above it: the
  * lid exports upside down, so that skin's layer lines run across the pocket and

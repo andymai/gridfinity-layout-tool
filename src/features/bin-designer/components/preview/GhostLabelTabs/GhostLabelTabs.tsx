@@ -199,7 +199,7 @@ export function GhostLabelTabs() {
         }
 
         // Same predicate the worker gates on, so the ghost can't show a tab
-        // that will be silently dropped from the mesh (review).
+        // that will be silently dropped from the mesh.
         if (!compartmentTabEligible(compartments, cellId, anchor, fit)) {
           col++;
           continue;

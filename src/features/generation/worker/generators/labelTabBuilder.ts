@@ -774,7 +774,7 @@ function applySocket(
  * coupon so the printed socket can never drift between the two. Throws on
  * boolean failure — callers needing best-effort semantics wrap it.
  *
- * Styles (follow-up):
+ * Styles:
  * - `clickIn` (default): pocket + retention ribs, floor at topZ − pocket
  *   depth. The Cullenect-compatible profile.
  * - `slideChannel`: pocket sunk one lip band + z-clearance deeper, with

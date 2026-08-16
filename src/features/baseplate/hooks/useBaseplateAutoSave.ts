@@ -276,7 +276,7 @@ export function useBaseplateAutoSave(): SaveStatus {
   // save above is otherwise cancelled by its own cleanup, so a quick edit-then-
   // leave would never reach the library — and `useBaseplateLibraryInit` would
   // then re-materialize the stale design over the layout's newer inline params,
-  // silently dropping the edit (follow-up). Params-only (no thumbnail),
+  // silently dropping the edit. Params-only (no thumbnail),
   // fired before the next route's re-materialize reads the design.
   const latestRef = useRef({ params, activeBaseplateId });
   useEffect(() => {

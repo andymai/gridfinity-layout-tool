@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Per-icon emboss/deboss sweep against a real plate (follow-up): every
+ * Per-icon emboss/deboss sweep against a real plate: every
  * icon in the catalog must build into a valid plate solid in both text modes,
  * stay inside the plate footprint, and carry TEXT-tagged faces for paint_color.
  *

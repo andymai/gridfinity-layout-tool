@@ -189,7 +189,7 @@ export const LABEL_SOCKET_RIB_HEIGHT_MM = 0.4;
 export const LABEL_SOCKET_RIB_START_MM = 0.2;
 
 /**
- * Slide-channel socket style (follow-up): instead of click-past ribs,
+ * Slide-channel socket style: instead of click-past ribs,
  * retaining lips overhang the pocket's side and anchor walls, the mouth
  * opens through the tab's compartment-facing edge, and a floor detent at
  * the mouth parks the plate. Retention grips the plate's plain edges, so
