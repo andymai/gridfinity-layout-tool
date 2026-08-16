@@ -88,3 +88,24 @@ describe('minHeightUnits', () => {
     );
   });
 });
+
+// These are hand-computed literals rather than expressions, because reading
+// `GRIDFINITY_SPEC` at module-init would capture an imported binding in a
+// constants module under a chunk cycle. The arithmetic is asserted
+// here instead, so raising MAX_HEIGHT without raising them fails CI rather
+// than shipping a bin whose walls outrun the features it can carry.
+describe('mm ceilings derived from MAX_HEIGHT', () => {
+  const tallestInteriorMm = DESIGNER_CONSTRAINTS.MAX_HEIGHT * GRIDFINITY.HEIGHT_UNIT;
+
+  it('lets a label tab reach the top of the tallest bin', () => {
+    expect(DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_HEIGHT).toBe(tallestInteriorMm);
+  });
+
+  it('lets a scoop rise to the top of the tallest bin', () => {
+    expect(DESIGNER_CONSTRAINTS.MAX_SCOOP_HEIGHT).toBe(tallestInteriorMm);
+  });
+
+  it('lets a taper band span the tallest bin', () => {
+    expect(DESIGNER_CONSTRAINTS.MAX_TAPER_BAND).toBe(tallestInteriorMm);
+  });
+});

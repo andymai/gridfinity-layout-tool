@@ -81,7 +81,7 @@ faqs:
   - q: Kann der Gridfinity-Generator Grundplatten mit Magnetlöchern erstellen?
     a: Ja. Der Grundplatten-Generator kann 6 mm × 2 mm Magnetlöcher an jeder Rasterkreuzung hinzufügen. Sie sind standardmäßig deaktiviert — schalte sie ein, wenn du Magnete willst, oder lass sie eingeschaltet und lass die Magnete beim Druck einfach weg.
   - q: Gibt es Größenbeschränkungen im Gridfinity-Generator?
-    a: Bins können bis zu 16 × 16 Rastereinheiten (672 mm × 672 mm) und 20 Höheneinheiten (140 mm) hoch sein. Grundplatten dürfen größer sein und werden bei Bedarf automatisch in druckbettgerechte Teile aufgeteilt.
+    a: Bins können bis zu 16 × 16 Rastereinheiten (672 mm × 672 mm) und 50 Höheneinheiten (350 mm) hoch sein. Grundplatten dürfen größer sein und werden bei Bedarf automatisch in druckbettgerechte Teile aufgeteilt.
   - q: Unterstützt der Gridfinity-Generator halbe Bin-Größen?
     a: Ja. Aktiviere den Halb-Bin-Modus für 0,5-Einheit-Präzision — du kannst Bins wie 1,5 × 2,5 erstellen, um schwierige Lückenmaße abzudecken. Halb-Bin-Unterstützung läuft bis in den Layout-Planer, damit halbgroße Bins sauber neben vollen liegen.
   - q: Kann ich Bin-Boden und -Wände anpassen?
@@ -140,7 +140,7 @@ Du kannst auch den [Layout-Planer](/) nutzen, um Bins auf einer Grundplatte zu a
 
 ### Maße
 
-Breite, Tiefe und Höhe. Breite und Tiefe gehen von 0,5 bis 16 Rastereinheiten (21 mm bis 672 mm). Höhe von 2 bis 20 Höheneinheiten (14 mm bis 140 mm). Eine Höheneinheit entspricht 7 mm — der Standard-Gridfinity-Einheit aus Zack Freedmans Ursprungsspezifikation.
+Breite, Tiefe und Höhe. Breite und Tiefe gehen von 0,5 bis 16 Rastereinheiten (21 mm bis 672 mm). Höhe von 2 bis 50 Höheneinheiten (14 mm bis 350 mm). Eine Höheneinheit entspricht 7 mm — der Standard-Gridfinity-Einheit aus Zack Freedmans Ursprungsspezifikation.
 
 ### Bodenstile
 

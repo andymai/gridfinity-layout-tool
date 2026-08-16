@@ -50,7 +50,7 @@ describe('validateBinParams', () => {
     });
 
     it('should reject height above maximum', () => {
-      const result = validateBinParams(makeParams({ height: 25 }));
+      const result = validateBinParams(makeParams({ height: DESIGNER_CONSTRAINTS.MAX_HEIGHT + 5 }));
       expectErr(result);
     });
 
@@ -550,12 +550,12 @@ describe('validateBinParams', () => {
       expectOk(validateBinParams(makeParams({ height: 15 })));
     });
 
-    it('should accept height 20 (new maximum)', () => {
-      expectOk(validateBinParams(makeParams({ height: 20 })));
+    it('should accept the maximum height', () => {
+      expectOk(validateBinParams(makeParams({ height: DESIGNER_CONSTRAINTS.MAX_HEIGHT })));
     });
 
-    it('should reject height 21', () => {
-      expectErr(validateBinParams(makeParams({ height: 21 })));
+    it('should reject one unit above the maximum height', () => {
+      expectErr(validateBinParams(makeParams({ height: DESIGNER_CONSTRAINTS.MAX_HEIGHT + 1 })));
     });
 
     it('should reject width 16.5', () => {

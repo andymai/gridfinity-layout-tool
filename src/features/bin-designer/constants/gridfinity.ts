@@ -39,7 +39,20 @@ export const DESIGNER_CONSTRAINTS = {
    * any permitted height unit.
    */
   MIN_BODY_WALL_MM: 1,
-  MAX_HEIGHT: 20, // height units (expanded: tall bins for tools/bottles)
+  // Height units. Matches `CONSTRAINTS.GRID_MAX`, which already bounds a layout
+  // bin's height on both the client and the wire. While this was lower, a legal
+  // layout bin taller than it could not be linked to a design at all, because
+  // `validateDesignerShare` rejected the height `emitLinkedBinResize` had just
+  // written.
+  //
+  // Height is close to free to generate: the wall is the same topology extruded
+  // further, so a plain 3x3 measures ~260ms and 5,176 triangles at every height
+  // from 4u to 50u (`__kernel-tests__/height.perf`). Only a wall pattern pays,
+  // and it grows roughly linearly past 20u (17s at 20u, 40s at 30u, 85s at
+  // 50u), against the full 180s budget `computeGenerationTimeoutMs` grants from
+  // 30u up. That is the same pattern-cut ceiling a wide short bin already hits,
+  // not a new failure mode.
+  MAX_HEIGHT: 50,
   HEIGHT_STEP: 1, // height units
   MIN_COMPARTMENT_GRID: 1, // min rows/cols
   // Max rows/cols. Bumped from 8 to 12 after measuring generation
@@ -82,7 +95,7 @@ export const DESIGNER_CONSTRAINTS = {
   // height (computed at render time); the dynamic min is `tabDepth + 1` so
   // the gusset retains 1mm of clearance above the floor.
   MIN_LABEL_TAB_HEIGHT: 9, // mm — derived from MIN_LABEL_TAB_DEPTH + 1
-  MAX_LABEL_TAB_HEIGHT: 140, // mm — derived from MAX_HEIGHT (20) * heightUnitMm (7)
+  MAX_LABEL_TAB_HEIGHT: 350, // mm — derived from MAX_HEIGHT (50) * heightUnitMm (7)
   LABEL_TAB_HEIGHT_STEP: 1, // mm
   // Label lip: a raised rim on the tab's free edge to retain loose
   // labels. Height reserves that much shelf headroom so the rim tops at the
@@ -129,7 +142,7 @@ export const DESIGNER_CONSTRAINTS = {
   // Two-variable custom scoop: height (rise) and run (length along the floor)
   // are steppable up to these generous ceilings; the geometry then clamps each
   // to the real interior height / compartment depth, so these only bound the UI.
-  MAX_SCOOP_HEIGHT: 140, // mm — MAX_HEIGHT (20) × heightUnitMm (7)
+  MAX_SCOOP_HEIGHT: 350, // mm — MAX_HEIGHT (50) × heightUnitMm (7)
   MAX_SCOOP_RUN: 140, // mm
   // A scoop steeper than this height:run ratio prints with rough overhangs and
   // is awkward to reach into — surface a non-blocking warning past it.
@@ -147,7 +160,7 @@ export const DESIGNER_CONSTRAINTS = {
   MAX_TAPER: 42, // mm (one full grid unit)
   TAPER_STEP: 0.5, // mm
   MIN_TAPER_BAND: 0, // mm — band height (how far up the wall the taper rises)
-  MAX_TAPER_BAND: 140, // mm — capped at MAX_SCOOP_HEIGHT; clamped to wall height at build
+  MAX_TAPER_BAND: 350, // mm — capped at MAX_SCOOP_HEIGHT; clamped to wall height at build
   TAPER_BAND_STEP: 0.5, // mm
   // Extra exterior wall height — raises the perimeter walls + stacking lip
   // above the nominal bin height (collar). Bounds mirror the lid's

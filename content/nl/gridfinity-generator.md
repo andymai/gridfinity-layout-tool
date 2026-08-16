@@ -81,7 +81,7 @@ faqs:
   - q: Kan de Gridfinity-generator bodemplaten met magneetgaten maken?
     a: Ja. De bodemplaat-generator kan 6 mm × 2 mm magneetgaten op elk rasterkruispunt toevoegen. Ze staan standaard uit — schakel ze in als je magneten wilt, of laat ze aan staan en laat de magneten gewoon weg bij het printen.
   - q: Zijn er groottelimieten in de Gridfinity-generator?
-    a: Bins kunnen tot 16 × 16 rastereenheden (672 mm × 672 mm) en 20 hoogte-eenheden (140 mm) hoog zijn. Bodemplaten kunnen groter zijn en worden automatisch opgedeeld in stukken die op je printbed passen wanneer nodig.
+    a: Bins kunnen tot 16 × 16 rastereenheden (672 mm × 672 mm) en 50 hoogte-eenheden (350 mm) hoog zijn. Bodemplaten kunnen groter zijn en worden automatisch opgedeeld in stukken die op je printbed passen wanneer nodig.
   - q: Ondersteunt de Gridfinity-generator half-bin-formaten?
     a: Ja. Activeer half-bin-modus voor 0,5 eenheid precisie — daarmee maak je bins als 1,5 × 2,5 voor lastige lade-gaten. Half-bin-ondersteuning loopt door tot in de layout-planner zodat half-formaat bins netjes naast hele liggen.
   - q: Kan ik de bin-bodem en -wanden aanpassen?
@@ -140,7 +140,7 @@ Je kunt ook de [layout-planner](/) gebruiken om bins op een bodemplaat te leggen
 
 ### Afmetingen
 
-Breedte, diepte en hoogte. Breedte en diepte van 0,5 tot 16 rastereenheden (21 mm tot 672 mm). Hoogte van 2 tot 20 hoogte-eenheden (14 mm tot 140 mm). Een hoogte-eenheid is 7 mm — de standaard Gridfinity-eenheid uit Zack Freedmans originele spec.
+Breedte, diepte en hoogte. Breedte en diepte van 0,5 tot 16 rastereenheden (21 mm tot 672 mm). Hoogte van 2 tot 50 hoogte-eenheden (14 mm tot 350 mm). Een hoogte-eenheid is 7 mm — de standaard Gridfinity-eenheid uit Zack Freedmans originele spec.
 
 ### Basisstijlen
 

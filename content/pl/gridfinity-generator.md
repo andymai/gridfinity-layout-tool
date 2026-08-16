@@ -81,7 +81,7 @@ faqs:
   - q: Czy generator Gridfinity potrafi tworzyć płyty bazowe z otworami na magnesy?
     a: Tak. Generator płyt bazowych może dodać otwory na magnesy 6 mm × 2 mm na każdym skrzyżowaniu siatki. Są domyślnie wyłączone — włącz je, jeśli chcesz magnesów, albo zostaw i po prostu pomiń magnesy podczas druku.
   - q: Czy w generatorze Gridfinity są ograniczenia rozmiaru?
-    a: Biny mogą mieć do 16 na 16 jednostek siatki (672 mm na 672 mm) i 20 jednostek wysokości (140 mm). Płyty bazowe mogą być większe i w razie potrzeby są automatycznie dzielone na części pasujące do stołu twojej drukarki.
+    a: Biny mogą mieć do 16 na 16 jednostek siatki (672 mm na 672 mm) i 50 jednostek wysokości (350 mm). Płyty bazowe mogą być większe i w razie potrzeby są automatycznie dzielone na części pasujące do stołu twojej drukarki.
   - q: Czy generator Gridfinity obsługuje połówkowe rozmiary Binów?
     a: Tak. Włącz tryb pół-Bina dla precyzji 0,5 jednostki — pozwala tworzyć Biny takie jak 1,5 na 2,5, by wypełnić niewygodne luki w szufladzie. Obsługa pół-Bina sięga aż do planera układu, więc połówkowe Biny układają się czysto obok pełnych.
   - q: Czy mogę dostosować dno i ścianki Bina?
@@ -140,7 +140,7 @@ Możesz też użyć [planera układu](/) generatora, by rozłożyć Biny na pły
 
 ### Wymiary
 
-Szerokość, głębokość i wysokość. Szerokość i głębokość mieszczą się od 0,5 do 16 jednostek siatki (21 mm do 672 mm). Wysokość od 2 do 20 jednostek wysokości (14 mm do 140 mm). Jedna jednostka wysokości to 7 mm — standardowa jednostka Gridfinity z pierwotnej specyfikacji Zacka Freedmana.
+Szerokość, głębokość i wysokość. Szerokość i głębokość mieszczą się od 0,5 do 16 jednostek siatki (21 mm do 672 mm). Wysokość od 2 do 50 jednostek wysokości (14 mm do 350 mm). Jedna jednostka wysokości to 7 mm — standardowa jednostka Gridfinity z pierwotnej specyfikacji Zacka Freedmana.
 
 ### Style mocowania podstawy
 

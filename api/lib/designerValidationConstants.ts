@@ -20,7 +20,7 @@ export const CONSTRAINTS = {
   MIN_BODY_WALL_MM: 1,
   SOCKET_HEIGHT: 5,
   DEFAULT_HEIGHT_UNIT_MM: 7,
-  MAX_HEIGHT: 20,
+  MAX_HEIGHT: 50,
   MAX_DIVIDERS: 10,
   MIN_DIVIDER_THICKNESS: 0.8,
   MAX_DIVIDER_THICKNESS: 2.4,
@@ -39,9 +39,9 @@ export const CONSTRAINTS = {
   // Label tab height is the Z of the shelf top above the cavity floor (mm).
   // Static bounds for API payloads — the client's UI uses a dynamic max
   // tied to the current bin's interior height. Floor (9) = MIN_LABEL_TAB_DEPTH + 1;
-  // ceiling (140) = MAX_HEIGHT * 7mm (heightUnitMm).
+  // ceiling (350) = MAX_HEIGHT * 7mm (heightUnitMm).
   MIN_LABEL_TAB_HEIGHT: 9,
-  MAX_LABEL_TAB_HEIGHT: 140,
+  MAX_LABEL_TAB_HEIGHT: 350,
   // Inset moves the tab inward from its anchor wall.
   MIN_LABEL_TAB_INSET: 0,
   MAX_LABEL_TAB_INSET: 100,

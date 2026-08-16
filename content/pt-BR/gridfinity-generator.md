@@ -81,7 +81,7 @@ faqs:
   - q: O Gerador Gridfinity pode criar placas-base com furos de ímã?
     a: Sim. O gerador de placas-base pode adicionar furos de 6 mm × 2 mm em cada interseção da grade. Eles ficam desativados por padrão — ative-os se quiser ímãs, ou deixe e simplesmente não use ímãs ao imprimir.
   - q: Existem limites de tamanho no Gerador Gridfinity?
-    a: Bins podem ter até 16 × 16 unidades de grade (672 mm × 672 mm) e 20 unidades de altura (140 mm). Placas-base podem ser maiores e são divididas automaticamente em peças que cabem na sua mesa quando necessário.
+    a: Bins podem ter até 16 × 16 unidades de grade (672 mm × 672 mm) e 50 unidades de altura (350 mm). Placas-base podem ser maiores e são divididas automaticamente em peças que cabem na sua mesa quando necessário.
   - q: O Gerador Gridfinity suporta tamanhos meio-bin?
     a: Sim. Ative o modo meio-bin para precisão de 0,5 unidade — você cria bins como 1,5 × 2,5 para encaixar em espaços atípicos. O suporte a meio-bin chega até o planejador de layout para que bins meio se alinhem aos inteiros.
   - q: Posso personalizar o piso e as paredes do bin?
@@ -140,7 +140,7 @@ Você também pode usar o [planejador de layout](/) para arrumar bins em uma pla
 
 ### Dimensões
 
-Largura, profundidade e altura. Largura e profundidade de 0,5 a 16 unidades de grade (21 mm a 672 mm). Altura de 2 a 20 unidades de altura (14 mm a 140 mm). Uma unidade de altura equivale a 7 mm — a unidade Gridfinity padrão da especificação original de Zack Freedman.
+Largura, profundidade e altura. Largura e profundidade de 0,5 a 16 unidades de grade (21 mm a 672 mm). Altura de 2 a 50 unidades de altura (14 mm a 350 mm). Uma unidade de altura equivale a 7 mm — a unidade Gridfinity padrão da especificação original de Zack Freedman.
 
 ### Estilos de base
 

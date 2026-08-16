@@ -81,7 +81,7 @@ faqs:
   - q: Kan Gridfinity-generatoren lage grunnplater med magnethull?
     a: Ja. Grunnplate-generatoren kan legge til 6 mm × 2 mm magnethull ved hver rutenettskryss. De er av som standard — slå dem på hvis du vil ha magneter, eller behold dem og bare la være å sette i magneter ved utskrift.
   - q: Finnes det størrelsesgrenser i Gridfinity-generatoren?
-    a: Bins kan være opp til 16 × 16 rutenettsenheter (672 mm × 672 mm) og 20 høydeenheter (140 mm) høye. Grunnplater kan være større og deles automatisk i biter som passer på skriverbordet når det trengs.
+    a: Bins kan være opp til 16 × 16 rutenettsenheter (672 mm × 672 mm) og 50 høydeenheter (350 mm) høye. Grunnplater kan være større og deles automatisk i biter som passer på skriverbordet når det trengs.
   - q: Støtter Gridfinity-generatoren halv-bin-størrelser?
     a: Ja. Aktiver halv-bin-modus for 0,5-enhetspresisjon — det lar deg lage bins som 1,5 × 2,5 for vanskelige skuffemellomrom. Halv-bin-støtten strekker seg gjennom layout-planleggeren slik at halve bins legges rent ved siden av hele.
   - q: Kan jeg tilpasse bin-bunnen og veggene?
@@ -140,7 +140,7 @@ Du kan også bruke [layout-planleggeren](/) til å legge ut bins på en grunnpla
 
 ### Mål
 
-Bredde, dybde og høyde. Bredde og dybde går fra 0,5 til 16 rutenettsenheter (21 mm til 672 mm). Høyde fra 2 til 20 høydeenheter (14 mm til 140 mm). Én høydeenhet tilsvarer 7 mm — Gridfinitys standardenhet fra Zack Freedmans opprinnelige spesifikasjon.
+Bredde, dybde og høyde. Bredde og dybde går fra 0,5 til 16 rutenettsenheter (21 mm til 672 mm). Høyde fra 2 til 50 høydeenheter (14 mm til 350 mm). Én høydeenhet tilsvarer 7 mm — Gridfinitys standardenhet fra Zack Freedmans opprinnelige spesifikasjon.
 
 ### Bunnstiler
 
