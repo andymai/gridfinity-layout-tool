@@ -1,0 +1,21 @@
+src/features/bin-designer/constants/gridfinity.ts
+  s_5088a37997271f::t_31496db1b1d8d3 53-56
+src/features/generation/worker/generators/__kernel-tests__/height.perf.test.ts
+  s_5088a37997271f::t_48ec6238d19a66 29-40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "f5b3e0a09c11965b52ca4826e6aecc49bb6c1523",
+  "prompts": {},
+  "sessions": {
+    "s_5088a37997271f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7e2503d2-09f5-47fd-80cd-5e2d1952a923",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
