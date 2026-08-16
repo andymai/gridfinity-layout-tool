@@ -642,3 +642,85 @@ describe('resolveConstraints — base-only bin', () => {
     expect(getFeatureStatus(flat, 'base.tile').available).toBe(false);
   });
 });
+
+/**
+ * The relief mode splits three rule pairs. Each pair fires for the interior
+ * mode and not for the underside one, and the two DIRECTIONS read different
+ * predicates: the forward rule asks whether the relief is built, the reverse
+ * one whether it is selected — because the reverse rule fires while lightweight
+ * is still off, which is the only way a bin that already has a scoop can reach
+ * the mode at all.
+ */
+describe('underside lightweight relief (#3524)', () => {
+  const underside = { ...DEFAULT_BIN_PARAMS.base, lightweightMode: 'underside' as const };
+
+  it('lets a bin that already has a scoop turn the feature on', () => {
+    const scooped = makeParams({ scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true } });
+    // Interior is the default, so the toggle is blocked exactly as before...
+    expect(getFeatureStatus(scooped, 'base.lightweight').available).toBe(false);
+    // ...and selecting the relief is what unblocks it. If this ever fails the
+    // feature is unreachable for the case it exists for.
+    const withMode = makeParams({
+      scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true },
+      base: underside,
+    });
+    expect(getFeatureStatus(withMode, 'base.lightweight').available).toBe(true);
+  });
+
+  it('keeps the scoop, drainage holes and cutouts when the relief is on', () => {
+    const params = makeParams({
+      scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true },
+      floorPattern: { enabled: true, pattern: 'round', scale: 0.5 },
+      base: { ...underside, lightweight: true },
+    });
+    expect(getFeatureStatus(params, 'scoop').available).toBe(true);
+    expect(getFeatureStatus(params, 'floorPattern').available).toBe(true);
+    expect(getFeatureStatus(params, 'cutouts').available).toBe(true);
+  });
+
+  it('still clears them for the interior mode', () => {
+    const params = makeParams({
+      scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true },
+      floorPattern: { enabled: true, pattern: 'round', scale: 0.5 },
+      base: { ...DEFAULT_BIN_PARAMS.base, lightweight: true },
+    });
+    expect(getFeatureStatus(params, 'scoop').available).toBe(false);
+    expect(getFeatureStatus(params, 'floorPattern').available).toBe(false);
+  });
+
+  // Floor inserts are the pair that does NOT split: the relief leaves the floor
+  // a bare `wallThickness` with open air under it, so a recess holes it.
+  it('rules out floor inserts in both modes', () => {
+    for (const base of [
+      { ...DEFAULT_BIN_PARAMS.base, lightweight: true },
+      { ...underside, lightweight: true },
+    ]) {
+      expect(getFeatureStatus(makeParams({ base }), 'inserts').available).toBe(false);
+    }
+  });
+
+  it('unlocks a base-only bin, in this mode only', () => {
+    const tile = makeParams({ base: { ...DEFAULT_BIN_PARAMS.base, tile: true } });
+    expect(getFeatureStatus(tile, 'base.lightweight').available).toBe(false);
+    const tileRelieved = makeParams({ base: { ...underside, tile: true } });
+    expect(getFeatureStatus(tileRelieved, 'base.lightweight').available).toBe(true);
+    // The spacer half of the old bundled rule is untouched.
+    expect(getFeatureStatus(tileRelieved, 'base.spacer').available).toBe(false);
+  });
+
+  // The flag is inert without a socket, so the mode must not buy anything on a
+  // base that has no feet to shell.
+  it('does not unblock lightweight on a socketless base', () => {
+    for (const style of ['flat', 'lid'] as const) {
+      const params = makeParams({ base: { ...underside, style } });
+      expect(getFeatureStatus(params, 'base.lightweight').available).toBe(false);
+    }
+  });
+
+  // A spacer's floor is punched through by definition; honouring the mode there
+  // would close the hole that makes it a spacer.
+  it('does not apply to a spacer', () => {
+    const params = makeParams({ base: { ...underside, spacer: true } });
+    expect(getFeatureStatus(params, 'base.lightweight').available).toBe(false);
+  });
+});

@@ -39,7 +39,12 @@ const PROUD_MM = 2;
 
 const HALF_UNIT = 21;
 
-function bin(latticeX: FootLattice, latticeY: FootLattice, halfSockets = false): MeshData {
+function bin(
+  latticeX: FootLattice,
+  latticeY: FootLattice,
+  halfSockets = false,
+  extraBase: Partial<BinParams['base']> = {}
+): MeshData {
   return generateBin({
     ...DEFAULT_BIN_PARAMS,
     width: 2,
@@ -50,6 +55,7 @@ function bin(latticeX: FootLattice, latticeY: FootLattice, halfSockets = false):
       halfSockets,
       footLatticeX: latticeX,
       footLatticeY: latticeY,
+      ...extraBase,
     },
   });
 }
@@ -124,5 +130,30 @@ describe('bin seating on a baseplate (#3467)', () => {
     expect(seatDepth(bin('grid', 'grid', true), plateMesh(), HALF_BOTH).mm).toBeGreaterThanOrEqual(
       SEATED_MM
     );
+  }, 240000);
+
+  // The underside relief (#3524) hollows each foot from below, so the surface
+  // that lands in the pocket is a ring rather than a solid block. The outer
+  // profile is untouched by construction — the cut is a scaled copy of the
+  // socket profile, and `undersideRelief.kernel.test.ts` pins that down face by
+  // face — but "the profile is identical" and "it still drops in" are different
+  // claims, and only the second one is what a user has in their hand.
+  it('an underside-relieved bin still drops into its pockets', () => {
+    const relieved = { lightweight: true, lightweightMode: 'underside' as const };
+    const { mm } = seatDepth(bin('grid', 'grid', false, relieved), plateMesh(), ON_GRID);
+    expect(mm).toBeGreaterThanOrEqual(SEATED_MM);
+    expect(mm).toBeLessThanOrEqual(POCKET_DEPTH + 0.5);
+  }, 120000);
+
+  // ...and it is still placement-dependent in the same way, so the relief has
+  // not quietly changed which lattice a given placement needs.
+  it('an underside-relieved bin perches half a unit off, exactly as a solid one does', () => {
+    const relieved = { lightweight: true, lightweightMode: 'underside' as const };
+    expect(
+      seatDepth(bin('grid', 'grid', false, relieved), plateMesh(), HALF_BOTH).mm
+    ).toBeLessThanOrEqual(PROUD_MM);
+    expect(
+      seatDepth(bin('half', 'half', false, relieved), plateMesh(), HALF_BOTH).mm
+    ).toBeGreaterThanOrEqual(SEATED_MM);
   }, 240000);
 });

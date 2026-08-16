@@ -25,6 +25,12 @@
  *   the body floor is punched too and the cell becomes a clean through-hole. The
  *   inter-cell webbing (each cup keeps its own `wt` wall) is what ties the feet
  *   together once the floor is gone, so a multi-cell spacer stays one solid.
+ * - `'underside'` (the inverted relief): the same unshifted cut, but NO floor
+ *   opening — the bin's own floor is what caps the ring, so the interior stays
+ *   flat and the redundant membrane `'down'` leaves under it is never built.
+ *   Offset by {@link UNDERSIDE_RELIEF_BORDER_MM} rather than `wt`: this ring
+ *   stands on the bed and carries a bridged floor, so it wants more material
+ *   than a wall supported on both sides.
  *
  * Coordinate system matches the socket: Z=0 top (mates with body), Z=-SOCKET_HEIGHT bottom.
  */
@@ -58,12 +64,13 @@ import {
   type SocketCellPlan,
 } from './socketBuilder';
 import { isPartialMask, isRegionFilled, type CellMask } from '@/shared/utils/cellMask';
+import { UNDERSIDE_RELIEF_BORDER_MM } from '@/shared/types/bin';
 
 /** Solid margin of plastic around each magnet/screw hole in a retained pad. */
 const PAD_MARGIN = 1.2;
 
 /** Which side of the base the lite shell opens toward — or both, for a spacer. */
-export type LightweightOpenDirection = 'up' | 'down' | 'through';
+export type LightweightOpenDirection = 'up' | 'down' | 'through' | 'underside';
 
 /** Result of {@link buildLightweightBase}. */
 export interface LightweightBase {
@@ -95,9 +102,11 @@ export interface LightweightBase {
  * boss up to the solid body above (otherwise it'd float). Either way the drill
  * intersects the pad and the pocket is cut.
  *
- * `'through'` never reaches here: a spacer with magnets keeps its cup floors
- * (`'up'`) precisely because a boss standing in a through-hole would have nothing
- * to attach to — see the openDir choice in `shellStage`.
+ * `'underside'` behaves as `'down'` does and for the same reason: its ring is
+ * open at the bottom, so the pad has to reach the solid body above or it would
+ * float. `'through'` never reaches here — a spacer with magnets keeps its cup
+ * floors (`'up'`) precisely because a boss standing in a through-hole would have
+ * nothing to attach to; see the openDir choice in `shellStage`.
  */
 function buildCellPads(
   scope: DisposalScope,
@@ -118,7 +127,8 @@ function buildCellPads(
  *
  * @param withMagnet Retain magnet pads (pocket = magnetDepth + MAGNET_FLOOR).
  * @param withScrew  Retain screw pads (through pocket).
- * @param openDir    `'up'` for hollow bins (cavity side), `'down'` for solid bins.
+ * @param openDir    `'up'` for hollow bins (cavity side), `'down'` for solid
+ *   bins, `'underside'` for the inverted relief, `'through'` for a spacer.
  * @param forExport  Full 5-section foot profile when true; simplified for preview.
  * @param openFloorDrawings Optional open-cavity floor polygons (centered on the
  *   bin origin). When given, cup hollowing + floor openings are clipped to this
@@ -161,10 +171,29 @@ export function buildLightweightBase(
     return isRegionFilled(cellMask, leftUnit, bottomUnit, wUnits, dUnits);
   };
 
+  // How far the cut holds back from each foot's outer face. The socket
+  // profile's insets are absolute, so an inner foot built at `cell - 2*offset`
+  // is a uniform `offset` wall at EVERY depth — which is what lets the underside
+  // relief take a wider border than the wall without any risk of breaching the
+  // baseplate-mating taper. A straight prism would have to clear
+  // SOCKET_TAPER_WIDTH before it left any wall at all.
+  const shellOffset = openDir === 'underside' ? UNDERSIDE_RELIEF_BORDER_MM : wallThickness;
   // Vertical shift applied to the inner-foot cut tool. Positive opens the top
   // (cavity side); negative opens the bottom (underside); zero opens both, since
-  // the inner foot is a uniform-wt lateral offset at every depth.
-  const zShift = openDir === 'through' ? 0 : openDir === 'up' ? wallThickness : -wallThickness;
+  // the inner foot is a uniform lateral offset at every depth.
+  //
+  // `'underside'` shares the zero shift with `'through'` and differs only in
+  // what caps the result: the spacer punches the floor open over the mouth, the
+  // relief leaves it solid. Cutting to exactly Z=0 rather than stopping a wall
+  // short of it is the whole saving — a membrane there would sit under a floor
+  // that is already solid, costing `wallThickness` of slab across the footprint
+  // for nothing (it does not even shorten the bridge above it).
+  const zShift =
+    openDir === 'through' || openDir === 'underside'
+      ? 0
+      : openDir === 'up'
+        ? wallThickness
+        : -wallThickness;
   // Both open-top directions punch the body floor over the cup mouth.
   const opensUpward = openDir === 'up' || openDir === 'through';
 
@@ -223,15 +252,18 @@ export function buildLightweightBase(
           translate(scope.register(buildFoot(cellW_mm, cellD_mm)), [cell.centerX, cell.centerY, 0])
         );
 
-        const innerW = cellW_mm - 2 * wallThickness;
-        const innerD = cellD_mm - 2 * wallThickness;
-        // Wall thickness too large for this cell — keep the solid foot (no cavity,
-        // best-effort) so the base never collapses to nothing.
+        const innerW = cellW_mm - 2 * shellOffset;
+        const innerD = cellD_mm - 2 * shellOffset;
+        // Offset too large for this cell — keep the solid foot (no cavity,
+        // best-effort) so the base never collapses to nothing. Reachable for the
+        // relief's wider border on a small custom grid pitch, not just for a
+        // thick wall.
         if (innerW <= 0.2 || innerD <= 0.2) return;
 
-        // Inner foot shifted by ±wt: a uniform-wt offset of the foot (socket insets
-        // are absolute). The shift leaves a wt floor at the closed end; for 'up' it
-        // also pokes a slug above the foot top, reused as the floor-opening tool.
+        // Inner foot shifted by ±offset: a uniform offset of the foot (socket
+        // insets are absolute). The shift leaves a floor at the closed end; for
+        // 'up' it also pokes a slug above the foot top, reused as the
+        // floor-opening tool.
         const innerFoot = scope.register(buildFoot(innerW, innerD));
         voids.push(
           translate(scope.register(unwrap(clone(innerFoot))), [cell.centerX, cell.centerY, zShift])

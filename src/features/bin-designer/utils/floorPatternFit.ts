@@ -16,7 +16,7 @@
  */
 
 import type { BinParams } from '@/features/bin-designer/types';
-import { isSocketlessBase } from '@/features/bin-designer/types/base';
+import { isSocketlessBase, isUndersideRelief } from '@/features/bin-designer/types/base';
 import { DEFAULT_PATTERN_SCALE } from '@/features/bin-designer/types';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { floorWindowSpan, FLOOR_PATTERN_BORDER } from '@/shared/generation/floorPatternMetrics';
@@ -35,7 +35,11 @@ export function assessFloorPatternFit(params: BinParams): FloorPatternFit {
   const floorPattern = params.floorPattern;
   if (floorPattern?.enabled !== true) return 'unavailable';
   if (params.base.solid || params.style === 'solid') return 'unavailable';
-  if (params.base.lightweight || params.base.spacer) return 'unavailable';
+  // Mirrors `floorPatternApplies`: the underside relief keeps the slab the
+  // pattern perforates, so it is the one lite mode that still carries one.
+  if ((params.base.lightweight && !isUndersideRelief(params.base)) || params.base.spacer) {
+    return 'unavailable';
+  }
 
   const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
   const { shapeRadius } = wallPatternElementMetrics(

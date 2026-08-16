@@ -73,6 +73,8 @@ const VALID_BASE_STYLES = [
 ] as const;
 // Mirrors `FOOT_LATTICES` in `src/features/bin-designer/types/base.ts`.
 const VALID_FOOT_LATTICES = ['grid', 'half'] as const;
+// Mirrors `LIGHTWEIGHT_MODES` in the same file.
+const VALID_LIGHTWEIGHT_MODES = ['interior', 'underside'] as const;
 const VALID_LABEL_TAB_SUPPORTS = ['bracket', 'solid', 'fillet'] as const;
 // Mirrors `LabelTabMode` in `src/features/bin-designer/types/index.ts`.
 const VALID_LABEL_TAB_MODES = ['text', 'socket'] as const;
@@ -246,6 +248,18 @@ function validateBase(base: unknown): string | null {
     ) {
       return `base.${axis} must be one of: ${VALID_FOOT_LATTICES.join(', ')}`;
     }
+  }
+  // Relief direction: a closed set for the same reason the lattice is. The two
+  // modes are different solids — one opens the cavity floor, the other leaves it
+  // — so an unknown value must be rejected rather than fall back to whichever
+  // the publisher did not preview.
+  if (
+    base.lightweightMode !== undefined &&
+    !VALID_LIGHTWEIGHT_MODES.includes(
+      base.lightweightMode as (typeof VALID_LIGHTWEIGHT_MODES)[number]
+    )
+  ) {
+    return `base.lightweightMode must be one of: ${VALID_LIGHTWEIGHT_MODES.join(', ')}`;
   }
   if (base.trayBottom !== undefined) {
     const trayErr = validateTrayBottom(base.trayBottom);

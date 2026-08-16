@@ -27,6 +27,7 @@
  */
 
 import type { BinParams } from '@/shared/types/bin';
+import { isUndersideRelief } from '@/shared/types/bin';
 import { CONSTRAINTS } from '@/core/constants';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import type { MeshData } from '../../bridge/types';
@@ -373,7 +374,22 @@ export function canBinUseDirectMesh(params: BinParams): boolean {
   // the range validators), so it would draw a walled 7mm bin over a plate whose
   // body is a `wallThickness` slab — walls that flash up and then vanish when
   // the exact mesh lands.
-  if (base.solid || base.lightweight || base.spacer || base.tile === true) return false;
+  //
+  // The UNDERSIDE relief is the one lite mode that rides the direct path, on the
+  // same grounds as the magnet and screw styles above: it takes material only
+  // from the foot underside, which the preview camera never sees, and the exact
+  // mesh fills it in on the swap. Its interior floor is a standard bin's, so
+  // there is nothing camera-visible left to get wrong. The interior mode is
+  // exactly the case that IS visible — the cavity floor becomes the grid shape —
+  // and stays on the fallback path.
+  if (
+    base.solid ||
+    (base.lightweight && !isUndersideRelief(base)) ||
+    base.spacer ||
+    base.tile === true
+  ) {
+    return false;
+  }
 
   // Body style: slotted/solid change the walls and floor.
   if (params.style !== 'standard') return false;

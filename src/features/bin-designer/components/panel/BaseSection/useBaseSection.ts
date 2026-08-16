@@ -7,6 +7,7 @@ import type {
   BinParams,
   FloorPatternType,
   FootLattice,
+  LightweightMode,
   LidAttachment,
   LidRailSide,
   TrayBottomConfig,
@@ -24,11 +25,21 @@ import {
 } from '@/features/bin-designer/types';
 import { assessFloorPatternFit } from '@/features/bin-designer/utils/floorPatternFit';
 import { minHeightUnits } from '@/features/bin-designer/constants';
-import { DEFAULT_FOOT_LATTICE, isEffectiveTile } from '@/features/bin-designer/types/base';
+import {
+  DEFAULT_FOOT_LATTICE,
+  DEFAULT_LIGHTWEIGHT_MODE,
+  isEffectiveTile,
+} from '@/features/bin-designer/types/base';
 
 /** Drop the `tile` key entirely — absent is the off state, never `false`. */
 function omitTile(base: BinParams['base']): BinParams['base'] {
   const { tile: _tile, ...rest } = base;
+  return rest;
+}
+
+/** Strip a `lightweightMode` that just restates the default. */
+function omitDefaultLightweightMode(base: BinParams['base']): BinParams['base'] {
+  const { lightweightMode: _mode, ...rest } = base;
   return rest;
 }
 
@@ -124,8 +135,17 @@ export function useBaseSection() {
       // through here — so stripping only inside `toggleTile` would still leave
       // the key behind on those paths and fingerprint an ordinary bin
       // differently from an identical one that never tried the mode.
-      const next =
+      const withoutTile =
         'tile' in resolved.base ? { ...resolved, base: omitTile(resolved.base) } : resolved;
+      // The relief mode gets the same treatment, for the same reason: 'interior'
+      // is what an absent field already means, so writing it would fingerprint a
+      // bin differently from an identical one whose owner never opened the
+      // control. Stripped here rather than in `setLightweightMode` so no future
+      // path can reintroduce it.
+      const next =
+        withoutTile.base.lightweightMode === 'interior'
+          ? { ...withoutTile, base: omitDefaultLightweightMode(withoutTile.base) }
+          : withoutTile;
       const minHeight = minHeightUnits(next.base, next.heightUnitMm);
       setParams(next.height < minHeight ? { ...next, height: minHeight } : next);
     },
@@ -176,6 +196,29 @@ export function useBaseSection() {
     });
     commit(resolved);
   }, [params, base.lightweight, lightweightStatus.available, commit]);
+
+  /**
+   * Switch which side the lite floor opens from.
+   *
+   * Routed through the constraint engine rather than `updateBase` because the
+   * mode decides three rule pairs: coming back to Interior with a finger scoop,
+   * drainage holes or cutouts on has to clear them, exactly as enabling the
+   * feature would. The change is applied first and then re-resolved as a no-op
+   * toggle of `base.lightweight` — re-asserting its current value — so the
+   * engine's protection for "the feature the user just enabled" keeps
+   * lightweight itself on while the incompatible set is cleared around it.
+   */
+  const setLightweightMode = useCallback(
+    (mode: LightweightMode) => {
+      const withMode: BinParams = { ...params, base: { ...params.base, lightweightMode: mode } };
+      const { params: resolved } = resolveConstraints(withMode, {
+        feature: 'base.lightweight',
+        enabled: withMode.base.lightweight,
+      });
+      commit(resolved);
+    },
+    [params, commit]
+  );
 
   const toggleSpacer = useCallback(() => {
     if (!base.spacer && !spacerStatus.available) return;
@@ -342,6 +385,7 @@ export function useBaseSection() {
       footLatticeLockedX,
       footLatticeLockedY,
       hasLightweight: base.lightweight,
+      lightweightMode: base.lightweightMode ?? DEFAULT_LIGHTWEIGHT_MODE,
       isSpacer: base.spacer,
       isTile: base.tile === true,
       floorPatternEnabled: floorPattern.enabled,
@@ -354,6 +398,7 @@ export function useBaseSection() {
       toggleScrew,
       toggleStackingLip,
       toggleLightweight,
+      setLightweightMode,
       toggleHalfSockets,
       setFootLatticeX,
       setFootLatticeY,

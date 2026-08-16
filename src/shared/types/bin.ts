@@ -22,6 +22,7 @@ export type {
   BaseConfig,
   BaseStyle,
   FootLattice,
+  LightweightMode,
   BinStyle,
   CompartmentConfig,
   ScoopConfig,
@@ -177,6 +178,10 @@ export {
   // A base-only bin's body IS this slab, so the worker and the height readout
   // have to resolve its thickness through the same function.
   resolveTileFloorThickness,
+  // The underside relief: one predicate and one offset, so the worker, the
+  // constraint engine and the print estimate cannot describe different feet.
+  isUndersideRelief,
+  UNDERSIDE_RELIEF_BORDER_MM,
 } from '@/features/bin-designer/types';
 
 /**
