@@ -1,0 +1,55 @@
+src/features/generation/worker/generators/dividerPiecePatternBuilder.ts
+  s_28b8cc4bcb9e7c::t_dbf66748a5f9ba 2
+src/features/bin-designer/hooks/useLabelFitSampleExport.ts
+  s_28b8cc4bcb9e7c::t_dbf66748a5f9ba 2
+src/shared/hooks/useLabelPlateCounts.ts
+  s_28b8cc4bcb9e7c::t_dbf66748a5f9ba 3
+src/features/generation/worker/generators/labelPlateBuilder.ts
+  s_28b8cc4bcb9e7c::t_dbf66748a5f9ba 61,324
+src/features/generation/worker/generators/labelTabBuilder.ts
+  s_28b8cc4bcb9e7c::t_dbf66748a5f9ba 777
+api/lib/designerValidation.ts
+  s_28b8cc4bcb9e7c::t_dbf66748a5f9ba 712
+src/features/baseplate/hooks/useBaseplateAutoSave.ts
+  s_28b8cc4bcb9e7c::t_dbf66748a5f9ba 279
+src/features/generation/worker/generators/lidGripRelief.scenario.test.ts
+  s_28b8cc4bcb9e7c::t_dbf66748a5f9ba 203
+src/features/generation/worker/generators/pipeline/featureRunner.test.ts
+  s_28b8cc4bcb9e7c::t_dbf66748a5f9ba 17
+src/features/generation/worker/generators/socketBuilder.test.ts
+  s_28b8cc4bcb9e7c::t_dbf66748a5f9ba 221
+src/features/generation/worker/generators/wallPatternBuilder.cache.test.ts
+  s_28b8cc4bcb9e7c::t_dbf66748a5f9ba 2
+src/shared/constants/labelPlates.ts
+  s_28b8cc4bcb9e7c::t_dbf66748a5f9ba 192
+src/features/generation/worker/generators/labelPlateIcons.plate.test.ts
+  s_28b8cc4bcb9e7c::t_dbf66748a5f9ba 3
+api/lib/designerCompartmentValidation.ts
+  s_28b8cc4bcb9e7c::t_dbf66748a5f9ba 176
+src/features/generation/worker/generators/labelFitSample.scenario.test.ts
+  s_28b8cc4bcb9e7c::t_dbf66748a5f9ba 3
+src/features/bin-designer/components/preview/GhostLabelTabs/GhostLabelTabs.tsx
+  s_28b8cc4bcb9e7c::t_dbf66748a5f9ba 202
+src/features/baseplate/hooks/useBaseplateGeneration.test.ts
+  s_28b8cc4bcb9e7c::t_dbf66748a5f9ba 57
+src/features/bin-designer/components/panel/LabelTabsSection/LabelFitSampleButton.tsx
+  s_28b8cc4bcb9e7c::t_dbf66748a5f9ba 2
+src/features/generation/worker/generators/labelFitSample.ts
+  s_28b8cc4bcb9e7c::t_dbf66748a5f9ba 2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "a228f8c087911a1327014e019b145d624ab5dd78",
+  "prompts": {},
+  "sessions": {
+    "s_28b8cc4bcb9e7c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "402e75bd-6d5d-4eb0-8275-10a014fb8abd",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
