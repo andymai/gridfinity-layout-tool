@@ -3135,7 +3135,7 @@
   "snapshots.saveCheckpoint": "Zapisz punkt kontrolny",
   "stackSolver.apply": "Użyj {unit} mm/jednostkę",
   "stackSolver.binsLabel": "Biny w stosie",
-  "stackSolver.description": "Sztaplowane biny wchodzą w siebie, więc stos to (biny × jednostki × rozmiar jednostki) + jeden kołnierz {lip} mm.",
+  "stackSolver.description": "Sztaplowane biny wchodzą w siebie na {junction} mm, więc każdy dodaje o {shortfall} mm mniej niż wysokość jego korpusu.",
   "stackSolver.outOfRange": "Jednostka wypadłaby poza zakres {min}–{max} mm",
   "stackSolver.overlayPitch": "sztaplowanie +{pitch} mm",
   "stackSolver.result": "Sztapluje do {total} mm",

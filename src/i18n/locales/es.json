@@ -3327,7 +3327,7 @@
   "snapshots.saveCheckpoint": "Guardar punto de control",
   "stackSolver.apply": "Usar {unit}mm/unidad",
   "stackSolver.binsLabel": "Bins en la pila",
-  "stackSolver.description": "Los bins apilados se encajan, así que una pila es (bins × unidades × tamaño de unidad) + un labio de {lip}mm.",
+  "stackSolver.description": "Los bins apilados se encajan {junction}mm entre sí, así que cada uno suma {shortfall}mm menos que la altura de su cuerpo.",
   "stackSolver.outOfRange": "La unidad quedaría fuera de {min}–{max}mm",
   "stackSolver.overlayPitch": "apila +{pitch}mm",
   "stackSolver.result": "Se apila hasta {total}mm",

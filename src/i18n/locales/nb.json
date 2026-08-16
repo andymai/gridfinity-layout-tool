@@ -3327,7 +3327,7 @@
   "snapshots.saveCheckpoint": "Lagre kontrollpunkt",
   "stackSolver.apply": "Bruk {unit}mm/enhet",
   "stackSolver.binsLabel": "Binger i stabelen",
-  "stackSolver.description": "Stablede binger settes i hverandre, så en stabel er (binger × enheter × enhetsstørrelse) + én {lip}mm leppe.",
+  "stackSolver.description": "Stablede binger settes {junction}mm inn i hverandre, så hver enkelt legger til {shortfall}mm mindre enn kroppshøyden sin.",
   "stackSolver.outOfRange": "Enheten ville havne utenfor {min}–{max}mm",
   "stackSolver.overlayPitch": "stables +{pitch}mm",
   "stackSolver.result": "Stables til {total}mm",

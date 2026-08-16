@@ -3327,7 +3327,7 @@
   "snapshots.saveCheckpoint": "Checkpoint opslaan",
   "stackSolver.apply": "{unit}mm/eenheid gebruiken",
   "stackSolver.binsLabel": "Bakjes in stapel",
-  "stackSolver.description": "Gestapelde bakjes nestelen, dus een stapel is (bakjes × eenheden × eenheidsgrootte) + één rand van {lip}mm.",
+  "stackSolver.description": "Gestapelde bakjes nestelen {junction}mm in elkaar, dus elk bakje voegt {shortfall}mm minder toe dan zijn romphoogte.",
   "stackSolver.outOfRange": "Eenheid valt buiten {min}–{max}mm",
   "stackSolver.overlayPitch": "stapelt +{pitch}mm",
   "stackSolver.result": "Stapelt tot {total}mm",

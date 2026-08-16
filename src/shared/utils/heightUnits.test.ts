@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import {
   formatHeightUnits,
   isStandardStackHeight,
-  STACK_LIP_MM,
+  LIP_PROTRUSION_MM,
+  STACK_JUNCTION_MM,
   stackPitchMm,
   stackedTotalMm,
   solveHeightUnitMm,
@@ -40,20 +41,30 @@ describe('isStandardStackHeight', () => {
   });
 });
 
+/** What each junction costs against the body height: 4.75 − 4.3. */
+const SHORTFALL_MM = STACK_JUNCTION_MM - LIP_PROTRUSION_MM;
+
 describe('stackPitchMm', () => {
-  it('is the body height (units × unitMm), independent of the lip', () => {
-    expect(stackPitchMm(3, 7)).toBe(21);
-    expect(stackPitchMm(2, 9.362)).toBeCloseTo(18.724, 5);
+  it('runs one shortfall under the body height, because the bin settles past the lip', () => {
+    expect(stackPitchMm(3, 7)).toBeCloseTo(21 - SHORTFALL_MM, 5);
+    expect(stackPitchMm(2, 9.362)).toBeCloseTo(18.724 - SHORTFALL_MM, 5);
+  });
+
+  it('the shortfall is the base profile standing proud of the lip', () => {
+    expect(SHORTFALL_MM).toBeCloseTo(0.45, 5);
   });
 });
 
 describe('stackedTotalMm', () => {
   it('a single bin equals body + one lip (its printed height)', () => {
-    expect(stackedTotalMm(3, 7, 1)).toBeCloseTo(21 + STACK_LIP_MM, 5);
+    expect(stackedTotalMm(3, 7, 1)).toBeCloseTo(21 + LIP_PROTRUSION_MM, 5);
   });
 
-  it('nests: two H bins equal one 2H bin (divisibility law)', () => {
-    expect(stackedTotalMm(5, 7, 2)).toBeCloseTo(stackedTotalMm(10, 7, 1), 5);
+  it('two H bins fall one shortfall short of one 2H bin', () => {
+    // Divisibility is near, not exact — #3525. The gap is per junction, so it
+    // grows with the stack rather than cancelling.
+    expect(stackedTotalMm(5, 7, 2)).toBeCloseTo(stackedTotalMm(10, 7, 1) - SHORTFALL_MM, 5);
+    expect(stackedTotalMm(5, 7, 4)).toBeCloseTo(stackedTotalMm(20, 7, 1) - 3 * SHORTFALL_MM, 5);
   });
 
   it('each added bin advances by the pitch, not the printed height', () => {
@@ -73,13 +84,17 @@ describe('solveHeightUnitMm', () => {
     expect(u).toBeCloseTo(8.5, 5);
   });
 
-  it('accounts for the single top lip, not one lip per bin', () => {
-    // 4 bins × 2u into a 75.6mm space → (75.6 − 4.3) / 8 = 8.9125mm/unit
-    expect(solveHeightUnitMm(75.6, 2, 4)).toBeCloseTo((75.6 - STACK_LIP_MM) / 8, 5);
+  it('charges one junction for the stack and one shortfall per bin', () => {
+    // 4 bins × 2u into 75.6mm: the top junction comes off the target once, then
+    // each bin gets its shortfall back because its body outruns its pitch.
+    expect(solveHeightUnitMm(75.6, 2, 4)).toBeCloseTo(
+      (75.6 - STACK_JUNCTION_MM + 4 * SHORTFALL_MM) / 8,
+      5
+    );
   });
 
-  it('returns null when the target is below the lip or inputs are degenerate', () => {
-    expect(solveHeightUnitMm(STACK_LIP_MM, 2, 4)).toBeNull();
+  it('returns null when the target is below the junction or inputs are degenerate', () => {
+    expect(solveHeightUnitMm(STACK_JUNCTION_MM - 4 * SHORTFALL_MM, 2, 4)).toBeNull();
     expect(solveHeightUnitMm(75.6, 0, 4)).toBeNull();
     expect(solveHeightUnitMm(75.6, 2, 0)).toBeNull();
   });

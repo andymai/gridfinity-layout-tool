@@ -3026,7 +3026,7 @@
   "snapshots.saveCheckpoint": "체크포인트 저장",
   "stackSolver.apply": "{unit}mm/단위 사용",
   "stackSolver.binsLabel": "적층 수납통 수",
-  "stackSolver.description": "적층된 수납통은 서로 포개지므로, 한 적층의 높이는 (수납통 수 × 단위 수 × 단위 크기) + {lip}mm 립 하나입니다.",
+  "stackSolver.description": "적층된 수납통은 서로 {junction}mm 포개지므로, 하나당 몸체 높이보다 {shortfall}mm 적게 쌓입니다.",
   "stackSolver.outOfRange": "단위가 {min}–{max}mm 범위를 벗어납니다",
   "stackSolver.overlayPitch": "적층 시 +{pitch}mm",
   "stackSolver.result": "{total}mm로 적층됨",

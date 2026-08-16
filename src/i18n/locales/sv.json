@@ -3135,7 +3135,7 @@
   "snapshots.saveCheckpoint": "Spara kontrollpunkt",
   "stackSolver.apply": "Använd {unit}mm/enhet",
   "stackSolver.binsLabel": "Lådor i stapeln",
-  "stackSolver.description": "Staplade lådor nästlas, så en stapel är (lådor × enheter × enhetsstorlek) + en {lip}mm-läpp.",
+  "stackSolver.description": "Staplade lådor nästlas {junction}mm i varandra, så varje låda lägger till {shortfall}mm mindre än sin kroppshöjd.",
   "stackSolver.outOfRange": "Enheten skulle hamna utanför {min}–{max}mm",
   "stackSolver.overlayPitch": "staplar +{pitch}mm",
   "stackSolver.result": "Staplas till {total}mm",

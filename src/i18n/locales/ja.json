@@ -3327,7 +3327,7 @@
   "snapshots.saveCheckpoint": "チェックポイントを保存",
   "stackSolver.apply": "{unit}mm/ユニットを使用",
   "stackSolver.binsLabel": "スタック内のビン数",
-  "stackSolver.description": "積み重ねたビンは入れ子になるため、スタックは（ビン数 × ユニット数 × ユニット寸法）+ {lip}mm のリップです。",
+  "stackSolver.description": "積み重ねたビンは互いに {junction}mm 入れ子になるため、1 個あたり本体高さより {shortfall}mm 少なく積み上がります。",
   "stackSolver.outOfRange": "ユニットが {min}〜{max}mm の範囲外になります",
   "stackSolver.overlayPitch": "積み重ね +{pitch}mm",
   "stackSolver.result": "{total}mm まで積み重なります",

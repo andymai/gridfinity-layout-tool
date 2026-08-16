@@ -14,17 +14,17 @@ describe('HeightUnitSolver', () => {
     const onApply = vi.fn();
     render(<HeightUnitSolver heightUnitMm={7} onApply={onApply} />);
 
-    // Default: 2 bins × 2 units/bin. Target 75.6mm → (75.6 − 4.3) / 4 = 17.825,
-    // which is out of the 3–20mm range only if >20; here it's in range.
+    // Default: 2 bins × 2 units/bin. Target 75.6mm, in the 3–20mm range.
     fireEvent.change(screen.getByLabelText('stackSolver.targetLabel'), {
       target: { value: '75.6' },
     });
 
     const applyBtn = screen.getByRole('button');
-    // (75.6 − 4.3) / (2 × 2) = 17.825 → rounded 17.83
-    expect(applyBtn.textContent).toContain('17.83');
+    // One 4.75mm junction off the target, then each bin's 0.45mm shortfall back:
+    // ((75.6 − 4.75) / 2 + 0.45) / 2 = 17.9375 → rounded 17.94.
+    expect(applyBtn.textContent).toContain('17.94');
     fireEvent.click(applyBtn);
-    expect(onApply).toHaveBeenCalledWith(17.83);
+    expect(onApply).toHaveBeenCalledWith(17.94);
   });
 
   it('flags a suggestion outside the allowed unit range', () => {
@@ -47,8 +47,8 @@ describe('HeightUnitSolver', () => {
   });
 
   it('disables Apply when the suggestion already equals the current unit', () => {
-    // 2 bins × 2 units, target 75.6 → 17.83. Current unit already 17.83.
-    render(<HeightUnitSolver heightUnitMm={17.83} onApply={vi.fn()} />);
+    // 2 bins × 2 units, target 75.6 → 17.94. Current unit already 17.94.
+    render(<HeightUnitSolver heightUnitMm={17.94} onApply={vi.fn()} />);
     fireEvent.change(screen.getByLabelText('stackSolver.targetLabel'), {
       target: { value: '75.6' },
     });
@@ -56,8 +56,8 @@ describe('HeightUnitSolver', () => {
   });
 
   it('keeps Apply enabled when the stored value differs beyond 2 decimals', () => {
-    // Suggestion rounds to 17.83; stored 17.831 → applying is a real change.
-    render(<HeightUnitSolver heightUnitMm={17.831} onApply={vi.fn()} />);
+    // Suggestion rounds to 17.94; stored 17.941 → applying is a real change.
+    render(<HeightUnitSolver heightUnitMm={17.941} onApply={vi.fn()} />);
     fireEvent.change(screen.getByLabelText('stackSolver.targetLabel'), {
       target: { value: '75.6' },
     });

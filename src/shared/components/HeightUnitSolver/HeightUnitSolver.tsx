@@ -2,7 +2,12 @@ import { useId, useState } from 'react';
 import { CONSTRAINTS } from '@/core/constants';
 import { Button, Input } from '@/design-system';
 import { useTranslation } from '@/i18n';
-import { solveHeightUnitMm, stackedTotalMm, STACK_LIP_MM } from '@/shared/utils/heightUnits';
+import {
+  solveHeightUnitMm,
+  stackedTotalMm,
+  LIP_PROTRUSION_MM,
+  STACK_JUNCTION_MM,
+} from '@/shared/utils/heightUnits';
 // Relative, not via the '@/shared/components' barrel — this file is inside it.
 import { SettingsRow } from '../SettingsRow';
 
@@ -63,7 +68,10 @@ export function HeightUnitSolver({
   return (
     <div className="space-y-2 text-xs">
       <p className="text-content-tertiary">
-        {t('stackSolver.description', { lip: round2(STACK_LIP_MM) })}
+        {t('stackSolver.description', {
+          junction: round2(STACK_JUNCTION_MM),
+          shortfall: round2(STACK_JUNCTION_MM - LIP_PROTRUSION_MM),
+        })}
       </p>
       <SettingsRow label={t('stackSolver.targetLabel')} htmlFor={`${uid}-target`} variant={variant}>
         <Input

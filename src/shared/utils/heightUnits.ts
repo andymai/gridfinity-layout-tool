@@ -2,39 +2,60 @@ import { CONSTRAINTS } from '@/core/constants';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings';
 
 /**
- * Height a single exposed stacking lip adds on top of a stack, in mm. The lip
- * nests into the socket of the bin above (verified: stack pitch = body height),
- * so only the topmost bin's lip protrudes. Equals the mesh's real lip
- * contribution (`LIP_HEIGHT − LIP_OVERLAP`), matching `BinDimensions`.
+ * Exposed stacking lip on a printed bin, in mm — the part standing above the
+ * wall top, and so what a single bin's printed height carries on top of its
+ * body. Matches `BinDimensions`.
+ *
+ * This is NOT how deep the bin above sinks onto it: that is
+ * {@link STACK_JUNCTION_MM}, and conflating the two is what made every stack
+ * readout 0.45mm per junction too tall (#3525).
  */
-export const STACK_LIP_MM = GRIDFINITY_SPEC.LIP_HEIGHT - GRIDFINITY_SPEC.LIP_OVERLAP;
+export const LIP_PROTRUSION_MM = GRIDFINITY_SPEC.LIP_HEIGHT - GRIDFINITY_SPEC.LIP_OVERLAP;
 
 /**
- * Vertical pitch a stacked bin adds, in mm. Bins nest — the lip sinks into the
- * socket above — so each added bin advances the stack by its body height
- * (`heightUnits × heightUnitMm`), NOT its printed height (which includes the
- * lip). This is why two 5u bins stack to the same height as one 10u bin.
+ * How far a stacked bin settles below the lip top of the bin under it, in mm.
+ *
+ * The joint is the base's big chamfer resting flush on the lip's, both at 45
+ * degrees, so the pair comes to rest when their full-width points meet — which
+ * puts the upper bin's underside one base profile below the lip top. The base
+ * reaches full width `TOLERANCE/2` under the top of its socket, so that profile
+ * is `SOCKET_HEIGHT - TOLERANCE/2`.
+ *
+ * It is the base profile that sets this, never the lip: at 4.4mm of profile
+ * against the base's 4.75mm the lip is the shorter of the two, so the bin above
+ * settles 0.35mm past the lip's base plane (0.45mm here, `LIP_OVERLAP` sinking
+ * the lip a further 0.1mm into the wall). Both figures come from the reference
+ * profiles, so a canonical Gridfinity stack does not add body height either.
+ *
+ * Measured on the mated solids rather than trusted from this arithmetic —
+ * `binStackSeating.kernel.test.ts`.
+ */
+export const STACK_JUNCTION_MM = GRIDFINITY_SPEC.SOCKET_HEIGHT - GRIDFINITY_SPEC.TOLERANCE / 2;
+
+/**
+ * Vertical pitch a stacked bin adds, in mm: its printed height less the depth
+ * it sinks into the bin below. Slightly under the body height, because the bin
+ * settles past the lip's base rather than onto it.
  */
 export function stackPitchMm(heightUnits: number, heightUnitMm: number): number {
-  return heightUnits * heightUnitMm;
+  return heightUnits * heightUnitMm + LIP_PROTRUSION_MM - STACK_JUNCTION_MM;
 }
 
 /**
  * Total printed height of a stack of `count` identical bins, in mm:
- * `count × pitch + one exposed top lip`. A single bin (count 1) returns its
- * full printed height (`h·u + STACK_LIP_MM`).
+ * `count × pitch + the junction the topmost bin does not sink into`. A single
+ * bin (count 1) returns its full printed height (`h·u + LIP_PROTRUSION_MM`).
  */
 export function stackedTotalMm(heightUnits: number, heightUnitMm: number, count: number): number {
   if (count <= 0) return 0;
-  return count * stackPitchMm(heightUnits, heightUnitMm) + STACK_LIP_MM;
+  return count * stackPitchMm(heightUnits, heightUnitMm) + STACK_JUNCTION_MM;
 }
 
 /**
  * Inverse of {@link stackedTotalMm}: the `heightUnitMm` that makes `count` bins
- * of `unitsPerBin` height units stack to exactly `targetTotalMm`. Solves
- * `count × unitsPerBin × u + STACK_LIP_MM = targetTotalMm`. Returns null when
- * the inputs can't yield a positive unit value (e.g. target below the lip, or
- * non-positive count/units).
+ * of `unitsPerBin` height units stack to exactly `targetTotalMm`. Returns null
+ * when the inputs can't yield a positive unit value (e.g. target below the
+ * junction, or non-positive count/units).
  */
 export function solveHeightUnitMm(
   targetTotalMm: number,
@@ -42,7 +63,9 @@ export function solveHeightUnitMm(
   count: number
 ): number | null {
   if (count <= 0 || unitsPerBin <= 0) return null;
-  const perUnit = (targetTotalMm - STACK_LIP_MM) / (count * unitsPerBin);
+  const bodyMm =
+    (targetTotalMm - STACK_JUNCTION_MM) / count - LIP_PROTRUSION_MM + STACK_JUNCTION_MM;
+  const perUnit = bodyMm / unitsPerBin;
   return perUnit > 0 ? perUnit : null;
 }
 

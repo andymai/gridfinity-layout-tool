@@ -959,7 +959,7 @@ const en: Record<string, string> = {
   'settings.resetGridfinityStandard': 'Reset to Gridfinity Standard',
   'stackSolver.title': 'Fit unit to stack',
   'stackSolver.description':
-    'Stacked bins nest, so a stack is (bins × units × unit size) + one {lip}mm lip.',
+    'Stacked bins nest {junction}mm into each other, so each one adds {shortfall}mm less than its body height.',
   'stackSolver.targetLabel': 'Target height (mm)',
   'stackSolver.binsLabel': 'Bins in stack',
   'stackSolver.unitsPerBinLabel': 'Units per bin',
