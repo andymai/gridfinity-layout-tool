@@ -25,6 +25,7 @@ import { migrateParams } from '@/features/bin-designer/constants/paramMigration'
 import { DEFAULT_EXPORT_FILE_NAME_CONFIG } from '@/features/bin-designer/utils/fileNaming';
 import { emit as emitDesignerEvent } from '@/features/bin-designer/sync/designerEvents';
 import { normalizeTags } from '@/features/bin-designer/utils/tags';
+import { trackDesignCreated } from '@/shared/analytics/posthog';
 
 const DB_NAME = 'gridfinity-designer-v1';
 const DB_VERSION = 1;
@@ -133,6 +134,17 @@ export async function saveDesign(
     };
 
     await db.put(DESIGNS_STORE, savedDesign);
+    // Count the design only when no record existed — `design.id` can be supplied
+    // for a design that was never stored (import, restore), so presence of an id
+    // is not the same question. Autosave re-enters here on every keystroke and
+    // must not register as a new design.
+    //
+    // Imported and example-derived designs are counted: the user has a design
+    // they did not have before. Worth knowing when the designer milestone
+    // thresholds get re-cut against real data.
+    if (!existing) {
+      trackDesignCreated();
+    }
     emitDesignerEvent({ type: 'put', id: savedDesign.id, updatedAt: savedDesign.updatedAt });
     return ok(savedDesign);
   } catch (e) {

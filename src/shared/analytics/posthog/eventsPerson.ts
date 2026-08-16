@@ -105,6 +105,11 @@ export function updatePersonProperties(): void {
 
       engagement_tier: computeEngagementTier(layoutCount, totalBinsEstimate),
 
+      // Distinct designs made. The designer milestone ladder keys on this, so
+      // it has to be segmentable here too — a milestone that fires into an
+      // event stream nobody can cohort on answers nothing.
+      designs_created: data.designsCreated ?? 0,
+
       // Device preference
       primary_device: getDeviceType(),
     };
