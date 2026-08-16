@@ -10,12 +10,10 @@ import { STAGING_ID } from '@/core/constants';
 import { binId, categoryId, gridUnits, heightUnits } from '@/core/types';
 import type { Bin } from '@/core/types';
 
-// Mock useResponsive
 vi.mock('@/shared/hooks/useResponsive', () => ({
   useResponsive: () => ({ isTouchDevice: false, isTablet: false, isMobile: false }),
 }));
 
-// Mock ConfirmDialog
 vi.mock('@/shared/components/ConfirmDialog', () => ({
   ConfirmDialog: ({
     isOpen,
@@ -720,7 +718,6 @@ describe('Staging', () => {
       render(<Staging />);
 
       const handle = screen.getByTestId('stash-resize-handle');
-      // Mock setPointerCapture
       handle.setPointerCapture = vi.fn();
 
       fireEvent.pointerDown(handle, { pointerId: 1, clientY: 500 });
@@ -738,7 +735,6 @@ describe('Staging', () => {
         .getElementById('staging-stash-panel')
         ?.querySelector('.overflow-y-auto');
 
-      // Mock setPointerCapture
       handle.setPointerCapture = vi.fn();
 
       // Start resize
@@ -850,7 +846,6 @@ describe('Staging', () => {
         .getElementById('staging-stash-panel')
         ?.querySelector('.overflow-y-auto');
 
-      // Get initial style
       const initialStyle = scrollContainer?.getAttribute('style') || '';
 
       // Move pointer without starting resize

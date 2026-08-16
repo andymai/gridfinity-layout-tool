@@ -105,7 +105,6 @@ export function usePresence(): PresenceState {
     }
   }, [isCollaborative, liveblocksStatus]);
 
-  // Build participant list
   const participants: Participant[] = useMemo(() => {
     if (!isCollaborative) return [];
 

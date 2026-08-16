@@ -169,7 +169,6 @@ export function analyzeGaps(
   const gapD = largest.d / scale;
   const largestGap = gapW > 0 && gapD > 0 ? `${gapW}x${gapD}` : '0x0';
 
-  // Determine gap fit
   let gapFit: 'exact' | 'partial' | 'none' = 'none';
   if (placedBinSize && gapW > 0 && gapD > 0) {
     const binW = placedBinSize.width;

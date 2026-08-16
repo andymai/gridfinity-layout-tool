@@ -48,7 +48,6 @@ beforeEach(() => {
   dispatchEventSpy = vi.spyOn(window, 'dispatchEvent').mockImplementation(() => true);
 });
 
-// Helper to create test bin
 function makeBin(overrides: Partial<Bin> = {}): Bin {
   return {
     id: binId('bin-1'),
@@ -65,7 +64,6 @@ function makeBin(overrides: Partial<Bin> = {}): Bin {
   };
 }
 
-// Helper to create test layout
 function makeLayout(bins: Bin[]): Layout {
   return {
     version: '1.0',
@@ -89,7 +87,6 @@ function makeDesignParams(overrides: Partial<BinParams> = {}): BinParams {
   };
 }
 
-// Helper to set up stores
 function setupStores(bins: Bin[]) {
   const mockUpdateBin = vi.fn();
   const mockExecute = vi.fn((fn) => fn());

@@ -20,7 +20,6 @@ interface BinSpec {
   category?: string;
 }
 
-// Helper to create a test bin
 function createBin(overrides: BinSpec = {}): Bin {
   return {
     id: binId(overrides.id ?? `bin-${Math.random().toString(36).substring(2, 11)}`),
@@ -36,7 +35,6 @@ function createBin(overrides: BinSpec = {}): Bin {
   };
 }
 
-// Helper to create a test layout with bins
 function createTestLayout(bins: BinSpec[]): Layout {
   const layout = createDefaultLayout();
   layout.bins = bins.map((b, i) => createBin({ ...b, id: b.id || `bin-${i}` }));

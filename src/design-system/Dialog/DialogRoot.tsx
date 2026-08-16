@@ -16,8 +16,6 @@ import { useDialogStack, isTopmostDialog } from './dialogStack';
 import { useFocusTrap, type DialogInitialFocus } from './useFocusTrap';
 import { useBodyScrollLock } from './useBodyScrollLock';
 
-// Dialog Context
-
 interface DialogContextValue {
   titleId: string;
   descriptionId: string;

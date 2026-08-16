@@ -4,7 +4,6 @@ import { resetAllStores } from '@/test/testUtils';
 import { ResizeHandle } from './ResizeHandle';
 import type { ResizeHandle as ResizeHandleType } from '@/core/types';
 
-// Mock handle positioning utils
 vi.mock('@/features/grid-editor/utils/handlePositioning', () => ({
   getHandlePosition: vi.fn((handle: ResizeHandleType) => ({
     left: handle === 'w' ? 0 : handle === 'e' ? '100%' : '50%',

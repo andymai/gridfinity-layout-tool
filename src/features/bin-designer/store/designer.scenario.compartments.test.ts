@@ -254,7 +254,6 @@ describe('DesignerStore - compartment actions', () => {
       // All cells should have same ID after merge
       expect(mergedCells.every((id) => id === mergedId)).toBe(true);
 
-      // Split the merged compartment
       splitCompartment(mergedId);
 
       const splitCells = useDesignerStore.getState().params.compartments.cells;

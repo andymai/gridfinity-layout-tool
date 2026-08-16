@@ -262,7 +262,6 @@ export function BaseplatePage() {
       {shouldShowQuickstart && !isMobile && (
         <BaseplateQuickstartCard onDismiss={markQuickstartSeen} />
       )}
-      {/* Header */}
       <header className="h-12 flex items-center justify-between px-4 bg-surface-secondary border-b border-stroke-subtle">
         <div className="flex items-center gap-3 min-w-0">
           <ToolSwitcher compact={isMobile} iconOnly={isMobile || isTablet} />
@@ -358,7 +357,6 @@ export function BaseplatePage() {
         </div>
       )}
 
-      {/* Export Dialog */}
       <ExportDialog
         open={exportDialogOpen}
         onClose={closeExportDialog}

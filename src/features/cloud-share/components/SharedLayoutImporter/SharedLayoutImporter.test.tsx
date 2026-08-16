@@ -14,7 +14,6 @@ vi.mock('@/core/storage', () => ({
   clearCloudShareFromURL: vi.fn(),
 }));
 
-// Mock API
 vi.mock('@/core/api/share', () => ({
   fetchShare: vi.fn(),
 }));

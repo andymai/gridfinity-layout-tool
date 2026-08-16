@@ -81,7 +81,6 @@ export const GridToolbar = memo(function GridToolbar({
     }))
   );
 
-  // Overflow menu state
   const overflowMenuRef = useRef<HTMLDivElement>(null);
   const [overflowMenuOpen, setOverflowMenuOpen] = useState(false);
   const overflowMenuListRef = useRef<HTMLDivElement>(null);

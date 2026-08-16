@@ -36,7 +36,6 @@ export function CollabGhosts({ className }: CollabGhostsProps) {
   const bins = useLayoutStore((state) => state.layout.bins);
   const { viewportWidth } = useResponsive();
 
-  // Calculate cell size with zoom
   const cellSize = Math.round(getBaseCellSize(viewportWidth) * zoom);
   const gap = 1; // 1px gap between cells
 

@@ -8,7 +8,6 @@ import { resetAllStores } from '@/test/testUtils';
 import { gridUnits, heightUnits, mm } from '@/core/types';
 import type { RefObject } from 'react';
 
-// Mock useResponsive
 vi.mock('@/shared/hooks/useResponsive', () => ({
   useResponsive: () => ({
     viewportWidth: 1200,

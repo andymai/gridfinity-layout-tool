@@ -42,7 +42,6 @@ function makeBins(count: number, overrides: Partial<ReturnType<typeof createTest
 }
 
 // ============================================
-// assessLayoutQuality
 // ============================================
 
 describe('assessLayoutQuality', () => {
@@ -274,7 +273,6 @@ describe('assessLayoutQuality', () => {
 });
 
 // ============================================
-// isSubstantialLayout
 // ============================================
 
 describe('isSubstantialLayout', () => {
@@ -312,7 +310,6 @@ describe('isSubstantialLayout', () => {
 });
 
 // ============================================
-// computeLayoutHash
 // ============================================
 
 describe('computeLayoutHash', () => {
@@ -432,7 +429,6 @@ describe('computeLayoutHash', () => {
 });
 
 // ============================================
-// computeSizeDistribution
 // ============================================
 
 describe('computeSizeDistribution', () => {
@@ -563,7 +559,6 @@ describe('computeSizeDistribution', () => {
 });
 
 // ============================================
-// computeCategoryDistribution
 // ============================================
 
 describe('computeCategoryDistribution', () => {
@@ -611,7 +606,6 @@ describe('computeCategoryDistribution', () => {
 });
 
 // ============================================
-// computeDomainDistribution
 // ============================================
 
 describe('computeDomainDistribution', () => {
@@ -679,7 +673,6 @@ describe('computeDomainDistribution', () => {
 });
 
 // ============================================
-// computeTopLabelHashes
 // ============================================
 
 describe('computeTopLabelHashes', () => {
@@ -823,7 +816,6 @@ describe('computeLabelSizePairs', () => {
 });
 
 // ============================================
-// computeFillPercentage
 // ============================================
 
 describe('computeFillPercentage', () => {
@@ -956,7 +948,6 @@ describe('computeFillPercentage', () => {
 });
 
 // ============================================
-// computeLabeledPercentage
 // ============================================
 
 describe('computeLabeledPercentage', () => {
@@ -1009,7 +1000,6 @@ describe('computeLabeledPercentage', () => {
 });
 
 // ============================================
-// computeSessionConfidence
 // ============================================
 
 describe('computeSessionConfidence', () => {
@@ -1149,7 +1139,6 @@ describe('computeSessionConfidence', () => {
 });
 
 // ============================================
-// isDefaultCategoryName
 // ============================================
 
 describe('isDefaultCategoryName', () => {
@@ -1191,7 +1180,6 @@ describe('isDefaultCategoryName', () => {
 });
 
 // ============================================
-// hashCategoryName
 // ============================================
 
 describe('hashCategoryName', () => {

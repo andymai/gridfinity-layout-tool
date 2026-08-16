@@ -49,7 +49,6 @@ export type {
   DrawerPurpose,
 } from './types';
 
-// Event buffer
 export { getBufferSize } from './eventBuffer';
 export { flush as forceFlush } from './eventBuffer';
 
@@ -66,7 +65,6 @@ export {
   markEditActivity,
 } from './sessionState';
 
-// Computations
 export { computeConfidenceBreakdown, detectAbandonmentType } from './computations';
 
 // Trackers

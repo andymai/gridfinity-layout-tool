@@ -4,7 +4,6 @@ import { resetAllStores } from '@/test/testUtils';
 import type { ReactNode } from 'react';
 import { BananaScale } from './BananaScale';
 
-// Mock React Three Fiber
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children: ReactNode }) => <div data-testid="r3f-canvas">{children}</div>,
   useThree: () => ({
@@ -22,7 +21,6 @@ vi.mock('@react-three/fiber', () => ({
   extend: vi.fn(),
 }));
 
-// Mock Drei
 vi.mock('@react-three/drei', () => ({
   OrbitControls: () => <div data-testid="orbit-controls" />,
   ContactShadows: () => <div data-testid="contact-shadows" />,

@@ -208,7 +208,6 @@ export function ActiveLayerPanel() {
         </Button>
       </div>
 
-      {/* Size selector popover */}
       <SizeSelectorPopover
         anchorRef={sizeButtonRef}
         isOpen={popoverOpen}

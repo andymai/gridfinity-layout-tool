@@ -272,7 +272,6 @@ function gatherEphemeralState(): Omit<EphemeralState, 'savedAt'> {
     zoom: view.zoom,
     showOtherLayers: view.showOtherLayers,
 
-    // Panel state
     leftPanelCollapsed: view.leftPanelCollapsed,
     rightPanelCollapsed: view.rightPanelCollapsed,
 

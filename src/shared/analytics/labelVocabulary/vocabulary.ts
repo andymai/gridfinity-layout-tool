@@ -1356,20 +1356,12 @@ export const VOCABULARY: Record<string, string[]> = {
  * Allows broader aggregation when normalized term not available.
  */
 export type LabelDomain =
-  | 'tools'
-  | 'fasteners'
-  | 'electronics'
-  | 'office'
-  | 'craft'
-  | 'printing_3d'
-  | 'cosmetics'
-  | 'misc';
+  'tools' | 'fasteners' | 'electronics' | 'office' | 'craft' | 'printing_3d' | 'cosmetics' | 'misc';
 
 /**
  * Map canonical terms to their domain.
  */
 export const TERM_DOMAINS: Record<string, LabelDomain> = {
-  // Tools
   screwdriver: 'tools',
   wrench: 'tools',
   pliers: 'tools',
@@ -1378,13 +1370,11 @@ export const TERM_DOMAINS: Record<string, LabelDomain> = {
   knife: 'tools',
   hammer: 'tools',
   tape_measure: 'tools',
-  // Fasteners
   screw: 'fasteners',
   bolt: 'fasteners',
   nut: 'fasteners',
   washer: 'fasteners',
   nail: 'fasteners',
-  // Electronics
   battery_aa: 'electronics',
   battery_aaa: 'electronics',
   usb_cable: 'electronics',
@@ -1394,12 +1384,10 @@ export const TERM_DOMAINS: Record<string, LabelDomain> = {
   led: 'electronics',
   wire: 'electronics',
   arduino: 'electronics',
-  // Office
   pen: 'office',
   scissors: 'office',
   tape: 'office',
   clip: 'office',
-  // Craft
   paint: 'craft',
   brush: 'craft',
   glue: 'craft',
@@ -1409,7 +1397,6 @@ export const TERM_DOMAINS: Record<string, LabelDomain> = {
   bearing: 'printing_3d',
   magnet: 'printing_3d',
   heat_insert: 'printing_3d',
-  // Misc
   key: 'misc',
   coin: 'misc',
   medication: 'misc',

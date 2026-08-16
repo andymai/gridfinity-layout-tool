@@ -431,7 +431,6 @@ describe('useGridResize', () => {
     it('does nothing when no pending resize', () => {
       const { result } = renderHook(() => useGridResize({ cellSize: 32, gap: 2 }));
 
-      // No pending resize
       expect(result.current.pendingResize).toBeNull();
 
       // Confirm should not throw
@@ -447,7 +446,6 @@ describe('useGridResize', () => {
     it('does nothing when no pending resize', () => {
       const { result } = renderHook(() => useGridResize({ cellSize: 32, gap: 2 }));
 
-      // No pending resize
       expect(result.current.pendingResize).toBeNull();
 
       // Cancel should not throw
@@ -474,7 +472,6 @@ describe('useGridResize', () => {
         } as unknown as React.PointerEvent);
       });
 
-      // Unmount should not throw
       expect(() => unmount()).not.toThrow();
     });
 

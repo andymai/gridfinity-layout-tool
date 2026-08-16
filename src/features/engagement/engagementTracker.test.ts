@@ -10,7 +10,6 @@ import {
   resetNudgeCache,
 } from './engagementTracker';
 
-// Mock the library store
 vi.mock('@/core/store/library', () => ({
   useLibraryStore: {
     getState: () => ({

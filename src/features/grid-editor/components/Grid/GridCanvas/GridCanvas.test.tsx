@@ -424,7 +424,6 @@ describe('GridCanvas', () => {
 
       const { container } = renderGridCanvas();
 
-      // Click on the bin element
       const binElement = container.querySelector('[data-bin-id="test-bin-click"]');
       fireEvent.pointerDown(binElement!, {
         button: 0,
@@ -846,7 +845,6 @@ describe('GridCanvas', () => {
       // Verify paint mode is active
       expect(useInteractionStore.getState().paintSize).toEqual({ width: 2, depth: 2 });
 
-      // Click on the bin
       const binElement = container.querySelector('[data-bin-id="test-bin-click"]');
       expect(binElement).not.toBeNull();
 
@@ -893,7 +891,6 @@ describe('GridCanvas', () => {
       const binElement = container.querySelector('[data-bin-id="test-bin-select"]');
       fireEvent.pointerDown(binElement!, { button: 0, isPrimary: true });
 
-      // Bin should be selected
       expect(useSelectionStore.getState().selectedBinIds).toContain('test-bin-select');
     });
   });

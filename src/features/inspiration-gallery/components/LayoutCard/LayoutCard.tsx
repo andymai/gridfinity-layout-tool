@@ -62,12 +62,10 @@ export function LayoutCard({
         </span>
       </div>
 
-      {/* Title */}
       <h3 className="font-medium text-content text-base leading-tight line-clamp-1" title={name}>
         {name}
       </h3>
 
-      {/* Short description */}
       <p className="text-sm text-content-secondary line-clamp-1 mt-0.5" title={shortDescription}>
         {shortDescription}
       </p>

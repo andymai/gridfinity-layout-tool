@@ -92,7 +92,6 @@ describe('layerActions', () => {
         notes: '',
       });
 
-      // Delete the new layer
       const result = useLayoutStore.getState().deleteLayer(newLayerId);
       expectOk(result);
       expect(useLayoutStore.getState().layout.layers).toHaveLength(1);

@@ -128,7 +128,6 @@ export function CommandPalette({ open, onOpenChange, initialQuery = '' }: Comman
 
   return (
     <div className="fixed inset-0 z-[100]" role="presentation" onClick={() => onOpenChange(false)}>
-      {/* Backdrop with blur */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] animate-fade-in" />
 
       {/* Palette container - top aligned like Spotlight */}
@@ -189,7 +188,6 @@ export function CommandPalette({ open, onOpenChange, initialQuery = '' }: Comman
               </div>
             </Command.Empty>
 
-            {/* Recent commands */}
             {recentCommands.length > 0 && (
               <Command.Group
                 heading={

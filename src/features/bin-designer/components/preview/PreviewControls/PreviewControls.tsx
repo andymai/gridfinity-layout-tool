@@ -242,7 +242,6 @@ export function PreviewControls({
           {/* Divider */}
           <div className="w-px h-5 bg-stroke-subtle/50" />
 
-          {/* Reset button */}
           <Button
             type="button"
             variant="ghost"
@@ -506,7 +505,6 @@ export function PreviewControls({
       {/* Mobile color picker — bottom sheet style overlay */}
       {!hideColorPicker && colorPickerOpen && !isDesktop && (
         <div className="fixed inset-0 z-50 md:hidden">
-          {/* Backdrop */}
           {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- decorative backdrop, keyboard users dismiss via Escape */}
           <div className="absolute inset-0 bg-black/40" onClick={() => setColorPickerOpen(false)} />
           {/* Sheet */}

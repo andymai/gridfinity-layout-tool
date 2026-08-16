@@ -48,7 +48,6 @@ function calculateFitZoom(
   viewportWidth: number,
   viewportHeight: number
 ): number {
-  // Convert drawer height from height units to grid units
   const heightInGridUnits = drawerHeight * heightToGridScale;
 
   // For isometric view, estimate the projected bounding box

@@ -181,7 +181,6 @@ export function PrintBin({ bin, category, drawer, cellSize, gap, settings }: Pri
             </div>
           )}
 
-          {/* Height */}
           {showHeight && (
             <div
               className="print-bin-height"
@@ -195,7 +194,6 @@ export function PrintBin({ bin, category, drawer, cellSize, gap, settings }: Pri
             </div>
           )}
 
-          {/* Notes */}
           {showNotes && (
             <div
               className="print-bin-notes"

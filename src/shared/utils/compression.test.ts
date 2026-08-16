@@ -19,7 +19,6 @@ import { createTestLayout as baseCreateTestLayout } from '@/test/testUtils';
 const LAYER = layerId('layer1');
 const CATEGORY = categoryId('cat1');
 
-// Helper to create a test layout
 function createTestLayout(overrides?: Partial<Layout>): Layout {
   return baseCreateTestLayout({
     categories: [{ id: CATEGORY, name: 'Default', color: '#3b82f6' }],

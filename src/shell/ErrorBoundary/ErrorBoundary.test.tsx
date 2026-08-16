@@ -7,7 +7,6 @@ const { undoMock, historyState } = vi.hoisted(() => ({
   historyState: { canUndo: true },
 }));
 
-// Mock analytics
 vi.mock('@/shared/analytics/posthog', () => ({
   trackEvent: vi.fn(),
   captureException: vi.fn(),

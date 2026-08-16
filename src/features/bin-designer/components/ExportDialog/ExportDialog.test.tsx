@@ -56,7 +56,6 @@ vi.mock('@/shared/components/ExportDialog', async (importOriginal) => {
   };
 });
 
-// Mock useExport hook
 vi.mock('@/features/bin-designer/hooks/useExport', () => ({
   useExport: () => ({
     canExport: true,
@@ -208,7 +207,6 @@ describe('ExportDialog', () => {
     // Initially descriptive
     expect(screen.getByText(/gridfinity/)).toBeInTheDocument();
 
-    // Click compact
     fireEvent.click(screen.getByText('Compact'));
 
     // Store should be updated
@@ -221,7 +219,6 @@ describe('ExportDialog', () => {
   it('switches to custom mode and shows editable input', () => {
     render(<ExportDialog />);
 
-    // Click custom
     fireEvent.click(screen.getByText('Custom'));
 
     // Store should be updated to custom with pre-filled name
@@ -295,7 +292,6 @@ describe('ExportDialog', () => {
     const nameDisplay = screen.getByRole('button', { name: 'Custom file name' });
     expect(nameDisplay.tagName).toBe('SPAN');
 
-    // Click the display name
     fireEvent.click(nameDisplay);
 
     // Should switch to custom mode with pre-filled name

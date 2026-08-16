@@ -61,7 +61,6 @@ export function MobileLayout({
       {/* Shared layout banner (shown when viewing unsaved shared layout) */}
       <SharedLayoutBanner />
 
-      {/* Mobile Header */}
       <MobileHeader onMenuClick={() => setActiveMobilePanel('settings')} saveStatus={saveStatus} />
 
       {/* Main content area - Grid takes full width */}

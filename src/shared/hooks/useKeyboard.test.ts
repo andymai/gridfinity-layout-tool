@@ -11,7 +11,6 @@ import { createDefaultLayout, STAGING_ID } from '@/core/constants';
 import { resetAllStores, getBinId } from '@/test/testUtils';
 import { gridUnits, heightUnits } from '@/core/types';
 
-// Helper to create keyboard event
 function createKeyboardEvent(key: string, options: Partial<KeyboardEventInit> = {}): KeyboardEvent {
   return new KeyboardEvent('keydown', {
     key,
@@ -479,7 +478,6 @@ describe('useKeyboard', () => {
       const bins = useLayoutStore.getState().layout.bins;
       expect(bins).toHaveLength(2);
 
-      // Selection should be the new bin
       const selectedIds = useSelectionStore.getState().selectedBinIds;
       expect(selectedIds).toHaveLength(1);
       expect(selectedIds[0]).not.toBe(binId);
@@ -1101,7 +1099,6 @@ describe('useKeyboard', () => {
 
   describe('category cycling shortcuts', () => {
     it('cycles active category on [ key when no bin selected', () => {
-      // Add a second category
       useLayoutStore.getState().addCategory({ name: 'Second', color: '#00FF00' });
 
       const updatedCategories = useLayoutStore.getState().layout.categories;

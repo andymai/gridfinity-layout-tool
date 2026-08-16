@@ -29,7 +29,6 @@ export function initAnalytics(): void {
   if (typeof window === 'undefined') return;
   if (import.meta.env.DEV) return; // Skip in development
 
-  // Check if analytics is enabled in settings
   const { analyticsEnabled } = useSettingsStore.getState().settings;
   if (!analyticsEnabled) return;
 

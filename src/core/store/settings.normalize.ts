@@ -117,9 +117,7 @@ export function loadSettings(): UserSettings {
       ...parsed.printViewSettings,
       binListSortOrder: normalizeSortOrder(parsed.printViewSettings?.binListSortOrder),
     };
-    // Normalize STL search sites
     const stlSearchSites = normalizeSTLSearchSites(parsed.stlSearchSites);
-    // Normalize default categories
     const defaultCategories = normalizeCategories(parsed.defaultCategories);
     // Normalize view mode settings
     const layoutManagerViewMode = normalizeViewMode(

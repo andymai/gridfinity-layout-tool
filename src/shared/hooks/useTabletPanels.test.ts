@@ -119,7 +119,6 @@ describe('useTabletPanels', () => {
 
   describe('openLeftPanel', () => {
     it('toggles left panel when collapsed', () => {
-      // Start with left panel collapsed
       mockLeftPanelCollapsed = true;
       mockRightPanelCollapsed = false;
 

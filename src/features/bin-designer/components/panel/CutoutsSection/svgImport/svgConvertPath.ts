@@ -24,7 +24,6 @@ export function convertPath(
   const d = el.getAttribute('d');
   if (!d) return null;
 
-  // Parse and normalize path data
   const pathData = new SVGPathData(d).transform(SVGPathDataTransformer.NORMALIZE_HVZ()).toAbs();
 
   // Split into sub-paths (each M starts a new contour)

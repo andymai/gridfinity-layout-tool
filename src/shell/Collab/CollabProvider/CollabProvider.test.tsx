@@ -3,7 +3,6 @@ import { render, screen } from '@testing-library/react';
 import { CollabProvider } from './CollabProvider';
 import { resetAllStores } from '@/test/testUtils';
 
-// Mock Liveblocks config
 vi.mock('@/liveblocks.config', () => ({
   RoomProvider: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="room-provider">{children}</div>
@@ -12,7 +11,6 @@ vi.mock('@/liveblocks.config', () => ({
   isLiveblocksConfigured: true,
 }));
 
-// Mock contexts
 vi.mock('@/shared/contexts', () => ({
   PresenceContext: {
     Provider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -20,7 +18,6 @@ vi.mock('@/shared/contexts', () => ({
   LocalMutationsProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-// Mock hooks
 vi.mock('@/shared/hooks/useCollabSync', () => ({
   useCollabSync: vi.fn(),
 }));
@@ -29,7 +26,6 @@ vi.mock('@/features/cloud-share/hooks/useCloudShareAutoSync', () => ({
   useCloudShareAutoSync: vi.fn(),
 }));
 
-// Mock analytics
 vi.mock('@/shared/analytics/posthog', () => ({
   trackEvent: vi.fn(),
 }));
@@ -45,7 +41,6 @@ describe('CollabProvider', () => {
     resetAllStores();
     vi.clearAllMocks();
 
-    // Mock localStorage
     const localStorageMock = {
       getItem: vi.fn(() => 'test-user-id'),
       setItem: vi.fn(),

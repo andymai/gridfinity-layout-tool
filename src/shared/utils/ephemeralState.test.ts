@@ -8,7 +8,6 @@ import {
   type EphemeralState,
 } from '@/shared/utils/ephemeralState';
 
-// Mock sessionStorage
 const sessionStorageMock = (() => {
   let store: Record<string, string> = {};
   return {
@@ -82,7 +81,6 @@ describe('ephemeralState', () => {
         throw new Error('QuotaExceeded');
       });
 
-      // Should not throw
       expect(() => saveEphemeralState(validState)).not.toThrow();
       expect(consoleWarn).toHaveBeenCalledWith(
         'Failed to save ephemeral state:',
@@ -226,7 +224,6 @@ describe('ephemeralState', () => {
         throw new Error('Storage error');
       });
 
-      // Should not throw
       expect(() => clearEphemeralState()).not.toThrow();
     });
   });

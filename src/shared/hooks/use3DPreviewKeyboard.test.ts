@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { use3DPreviewKeyboard } from '@/shared/hooks/use3DPreviewKeyboard';
 
-// Helper to create keyboard event
 function createKeyboardEvent(key: string, options: Partial<KeyboardEventInit> = {}): KeyboardEvent {
   return new KeyboardEvent('keydown', {
     key,

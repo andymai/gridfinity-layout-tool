@@ -225,7 +225,6 @@ export function useCreateFromBin(): void {
           updatedAt: design.updatedAt,
         });
 
-        // Link the bin to the new design
         const linkResult = updateBin(binId(urlParams.linkBin), { linkedDesignId: design.id });
         if (isOk(linkResult)) {
           addToast({

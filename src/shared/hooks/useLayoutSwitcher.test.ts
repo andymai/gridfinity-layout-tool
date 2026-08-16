@@ -177,7 +177,6 @@ vi.mock('@/core/storage', () => {
   };
 });
 
-// Mock validation
 vi.mock('@/shared/utils/validation', async () => {
   const actual = await vi.importActual('@/shared/utils/validation');
   return {

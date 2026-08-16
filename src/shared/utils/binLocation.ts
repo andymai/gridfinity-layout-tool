@@ -116,32 +116,15 @@ export function validateBinRotation(bin: Bin, layout: Layout): RotationResult {
  * A locked bin can still be moved, restyled and relabelled — only its
  * dimensions are frozen. `bin.update` is the enforcing choke point; this
  * predicate is what UI and cascade code use to stay out of its way.
- *
- * @param bin - The bin to check
- * @returns true if the bin's dimensions are frozen
  */
 export function isBinLocked(bin: Pick<Bin, 'locked'>): boolean {
   return bin.locked === true;
 }
 
-/**
- * Check if a bin is in the stash.
- * Convenience function for common checks.
- *
- * @param bin - The bin to check
- * @returns true if the bin is in the stash
- */
 export function isBinInStash(bin: Bin): boolean {
   return bin.layerId === STAGING_ID;
 }
 
-/**
- * Check if a bin is on the grid.
- * Convenience function for common checks.
- *
- * @param bin - The bin to check
- * @returns true if the bin is on the grid
- */
 export function isBinOnGrid(bin: Bin): boolean {
   return bin.layerId !== STAGING_ID;
 }

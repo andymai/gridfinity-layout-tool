@@ -1,7 +1,5 @@
 import { useLayoutEffect, useSyncExternalStore } from 'react';
 
-// Dialog Stack
-
 const dialogStack: string[] = [];
 const dialogStackListeners = new Set<() => void>();
 

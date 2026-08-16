@@ -36,7 +36,6 @@ describe('useGridNavigation', () => {
     it('does nothing when no bin is focused', () => {
       const setFocusedBinSpy = vi.spyOn(useSelectionStore.getState(), 'setFocusedBin');
 
-      // No focused bin
       useSelectionStore.setState({ focusedBinId: null });
 
       const { result } = renderHook(() => useGridNavigation());
@@ -276,7 +275,6 @@ describe('useGridNavigation', () => {
 
   describe('DOM focus synchronization', () => {
     it('focuses DOM element when focusedBinId changes', () => {
-      // Create a mock element
       const mockElement = document.createElement('div');
       mockElement.setAttribute('data-bin-id', 'bin1');
       mockElement.focus = vi.fn();
@@ -305,14 +303,12 @@ describe('useGridNavigation', () => {
       // Element should be focused
       expect(mockElement.focus).toHaveBeenCalled();
 
-      // Cleanup
       document.body.removeChild(mockElement);
     });
 
     it('does nothing when no focusedBinId', () => {
       useSelectionStore.setState({ focusedBinId: null });
 
-      // Should not throw
       expect(() => renderHook(() => useGridNavigation())).not.toThrow();
     });
 

@@ -4,7 +4,6 @@ import { resetAllStores } from '@/test/testUtils';
 import type { ReactNode } from 'react';
 import { BatchedCornerMarkers } from './BatchedCornerMarkers';
 
-// Mock React Three Fiber
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children: ReactNode }) => <div data-testid="r3f-canvas">{children}</div>,
   useThree: () => ({

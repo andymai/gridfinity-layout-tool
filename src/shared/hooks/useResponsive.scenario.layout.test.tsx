@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useResponsive, type ResponsiveState } from '@/shared/hooks';
 import { renderHook } from '@testing-library/react';
 
-// Mock matchMedia
 const createMatchMedia = (matches: Record<string, boolean>) => {
   return vi.fn().mockImplementation((query: string) => ({
     matches: matches[query] ?? false,

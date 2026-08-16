@@ -528,7 +528,6 @@ describe('GenerationBridge', () => {
       expect(splitMsg.payload.cutPlanesX).toEqual([21]);
       expect(splitMsg.payload.cutPlanesY).toEqual([]);
 
-      // Simulate worker response
       getWorker().simulateResponse({
         type: 'SPLIT_EXPORT_RESULT',
         requestId: splitMsg.payload.requestId,
@@ -783,7 +782,6 @@ describe('GenerationBridge', () => {
       const result = await bridge.generateImmediate(DEFAULT_BIN_PARAMS);
       expect(result.mesh.triangleCount).toBe(1);
 
-      // No new GENERATE messages
       const generateMessages = getWorker().messages.filter(
         (m) => (m as { type: string }).type === 'GENERATE'
       );

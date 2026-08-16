@@ -109,7 +109,6 @@ export function SharedLayoutImporter() {
     [isOwnShare, getSharedWithMeByShareId, markShareAccessed, updateSharedWithMe, addSharedWithMe]
   );
 
-  // Helper function to load a layout into preview
   const loadLayoutPreview = useCallback(
     (layout: Layout, authorName?: string, cloudShareId?: string, permission?: 'view' | 'edit') => {
       activateLayout(layout, SHARED_PREVIEW_ID, `Viewing shared layout: ${layout.name}`);
@@ -246,7 +245,6 @@ export function SharedLayoutImporter() {
       }
 
       // Auto-track this share in "Shared with me" (unless it's the owner's own)
-      // Wrap in try-catch to ensure robust error handling
       try {
         const preview = computePreview(layout);
         trackSharedLayout(initialCloudShareId, layout, metadata.authorName, permission, preview);

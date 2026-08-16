@@ -115,7 +115,6 @@ export function useLayoutRouting(options: { skip?: boolean } = {}) {
         return false;
       }
 
-      // Validate layout integrity
       const validation = validateLayoutIntegrity(loadedLayout);
       if (!validation.valid) {
         return false;

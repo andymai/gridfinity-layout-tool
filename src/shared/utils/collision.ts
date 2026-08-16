@@ -162,7 +162,6 @@ export function getBlockedZones(
     }
   }
 
-  // Update cache
   blockedZonesCache = { targetLayerId, bins, layers, result: blocked };
 
   return blocked;

@@ -27,7 +27,6 @@ export interface ContextMenuState {
 export type LayerViewMode = 'focus' | 'stack' | 'all';
 
 interface ViewState {
-  // Zoom
   zoom: number;
 
   // Visibility toggles
@@ -37,7 +36,6 @@ interface ViewState {
   leftPanelCollapsed: boolean;
   rightPanelCollapsed: boolean;
 
-  // Context menu
   contextMenu: ContextMenuState | null;
 
   // Highlighting (for hover preview)
@@ -60,7 +58,6 @@ interface ViewState {
 }
 
 interface ViewActions {
-  // Zoom
   setZoom: (zoom: number) => void;
   zoomIn: () => void;
   zoomOut: () => void;

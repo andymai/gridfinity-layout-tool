@@ -16,7 +16,6 @@ function makeBin(overrides: Partial<Bin> = {}): Bin {
   });
 }
 
-// Helper to set up the layout store with bins
 function setupLayoutStore(bins: Bin[]) {
   useLayoutStore.setState({
     layout: createTestLayout({ bins }),

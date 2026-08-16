@@ -354,7 +354,6 @@ console.log('\n🔍 Checking i18n interpolation placeholders...\n');
 const translations = getTranslationStrings();
 console.log(`📋 Found ${translations.size} translation strings in en.ts`);
 
-// Count strings with placeholders
 const stringsWithPlaceholders = [...translations.values()].filter((t) => t.placeholders.length > 0);
 console.log(`   └─ ${stringsWithPlaceholders.length} strings have interpolation placeholders`);
 
@@ -380,7 +379,6 @@ if (mismatches.length === 0) {
 } else {
   console.log(`❌ Found ${mismatches.length} interpolation mismatch(es):\n`);
 
-  // Group by type
   const unusedParams = mismatches.filter((m) => m.type === 'unused-params');
   const missingPlaceholders = mismatches.filter((m) => m.type === 'missing-placeholders');
   const noParams = mismatches.filter((m) => m.type === 'no-params');

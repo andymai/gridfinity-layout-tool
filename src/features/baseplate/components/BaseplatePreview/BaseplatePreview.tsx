@@ -125,7 +125,6 @@ export function BaseplatePreview({
     setSelectedPieceLabel(null);
   }, [setSelectedPieceLabel]);
 
-  // Camera preset state
   const [activePreset, setActivePreset] = useState<CameraPreset | null>(null);
   // Projection + xray state (ephemeral, per-viewport)
   const [projection, setProjection] = useState<Projection>('perspective');

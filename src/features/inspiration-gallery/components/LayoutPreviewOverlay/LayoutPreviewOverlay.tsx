@@ -136,7 +136,6 @@ export function LayoutPreviewOverlay({
               <p className="text-sm text-content-secondary">{description}</p>
             </div>
 
-            {/* Drawer Size Info */}
             <DrawerSizeInfo
               templateSize={metrics.drawerSize}
               currentSize={currentDrawer}
@@ -181,7 +180,6 @@ export function LayoutPreviewOverlay({
               </div>
             )}
 
-            {/* Related layouts */}
             {relatedLayouts.length > 0 && onSelectRelated && (
               <div>
                 <h3 className="text-sm font-medium text-content mb-2">

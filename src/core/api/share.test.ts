@@ -10,7 +10,6 @@ import { getUserMessage } from '@/core/result';
 import type { Layout } from '@/core/types';
 import { gridUnits, heightUnits, mm, categoryId, layerId } from '@/core/types';
 
-// Mock layout for testing
 const mockLayout: Layout = {
   version: '1.0',
   name: 'Test Layout',

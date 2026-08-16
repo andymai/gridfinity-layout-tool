@@ -76,9 +76,6 @@ export interface SortFieldConfig {
  */
 export type BinListSortOrder = SortFieldConfig[];
 
-/**
- * Default bin list sort order.
- */
 export const DEFAULT_BIN_LIST_SORT_ORDER: BinListSortOrder = [
   { field: 'category', enabled: true },
   { field: 'position', enabled: true },
@@ -123,9 +120,6 @@ export interface PrintViewSettings {
   binListSortOrder: BinListSortOrder;
 }
 
-/**
- * Default print view settings.
- */
 export const DEFAULT_PRINT_VIEW_SETTINGS: PrintViewSettings = {
   // Bin display - all details on by default for Cmd+P convenience
   showLabel: true,
@@ -320,9 +314,6 @@ export const COLOR_PALETTE_CONSTRAINTS = {
   NAME_MAX_LENGTH: 40,
 } as const;
 
-/**
- * Default settings values.
- */
 export const DEFAULT_SETTINGS: UserSettings = {
   // Default layout values (match createDefaultLayout)
   defaultDrawerWidth: 10,
@@ -352,7 +343,6 @@ export const DEFAULT_SETTINGS: UserSettings = {
   // Print view preferences
   printViewSettings: { ...DEFAULT_PRINT_VIEW_SETTINGS },
 
-  // STL search sites
   stlSearchSites: [...DEFAULT_STL_SEARCH_SITES],
 
   // Privacy - opt-out by default (enabled)
@@ -384,9 +374,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   // Baseplate 3D preview
   baseplateFilamentColor: '#d4d8dc',
 
-  // Dismissed hints
   dismissedHints: [],
 
-  // Saved color palettes
   savedColorPalettes: [],
 };

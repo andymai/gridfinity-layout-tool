@@ -40,7 +40,6 @@ describe('DesignImportView', () => {
     // Check for browse files button
     expect(screen.getByText('Browse files')).toBeInTheDocument();
 
-    // Check for textarea
     const textarea = screen.getByRole('textbox');
     expect(textarea).toBeInTheDocument();
     expect(textarea).toHaveAttribute('placeholder', 'or paste design JSON');
@@ -180,7 +179,6 @@ describe('DesignImportView', () => {
 
     render(<DesignImportView {...defaultProps} />);
 
-    // Create a mock JSON file
     const file = new File([validJSON], 'test-design.json', { type: 'application/json' });
 
     // Get the drop zone (the div with border-dashed)
@@ -208,10 +206,8 @@ describe('DesignImportView', () => {
   it('rejects non-JSON file on drop', () => {
     render(<DesignImportView {...defaultProps} />);
 
-    // Create a mock text file
     const file = new File(['some text'], 'test.txt', { type: 'text/plain' });
 
-    // Get the drop zone
     const dropZone = screen.getByText('Drag & drop a design JSON file here').closest('div');
     expect(dropZone).toBeTruthy();
 
@@ -234,13 +230,11 @@ describe('DesignImportView', () => {
     const dropZone = screen.getByText('Drag & drop a design JSON file here').closest('div');
     expect(dropZone).toBeTruthy();
 
-    // Simulate drag over
     fireEvent.dragOver(dropZone!);
 
     // Check for drag styling (text changes)
     expect(screen.getByText('Drop file here')).toBeInTheDocument();
 
-    // Simulate drag leave
     fireEvent.dragLeave(dropZone!);
 
     // Text should revert
@@ -278,7 +272,6 @@ describe('DesignImportView', () => {
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     expect(fileInput).toBeTruthy();
 
-    // Create a mock JSON file
     const file = new File([validJSON], 'test-design.json', { type: 'application/json' });
 
     // Simulate file selection

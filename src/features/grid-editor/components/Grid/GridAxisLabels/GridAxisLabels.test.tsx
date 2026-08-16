@@ -4,7 +4,6 @@ import { resetAllStores } from '@/test/testUtils';
 import { RowLabels, ColumnLabels } from './GridAxisLabels';
 import type { GridAxisLabelsState } from '@/features/grid-editor/hooks/useGridAxisLabels';
 
-// Mock view store
 vi.mock('@/core/store/view', () => {
   const mockStoreState = {
     setHighlightedRowLabel: vi.fn(),

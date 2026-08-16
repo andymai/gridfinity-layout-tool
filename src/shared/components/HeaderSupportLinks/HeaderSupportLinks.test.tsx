@@ -5,17 +5,14 @@ import { HeaderSupportLinks } from './HeaderSupportLinks';
 // Mock i18n
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
-// Mock LanguageSelector
 vi.mock('@/shared/components/LanguageSelector', () => ({
   LanguageSelector: () => <div data-testid="language-selector" />,
 }));
 
-// Mock analytics
 vi.mock('@/shared/analytics/posthog', () => ({
   trackEvent: vi.fn(),
 }));
 
-// Mock toast store
 const mockAddToast = vi.fn();
 vi.mock('@/core/store/toast', () => ({
   useToastStore: {

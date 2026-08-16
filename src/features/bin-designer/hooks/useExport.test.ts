@@ -295,7 +295,6 @@ describe('useExport', () => {
       },
     });
 
-    // Mock combined export
     mockExportCombined.mockResolvedValue({
       pieces: [{ data: new ArrayBuffer(100), label: 'bin' }],
       format: 'stl',

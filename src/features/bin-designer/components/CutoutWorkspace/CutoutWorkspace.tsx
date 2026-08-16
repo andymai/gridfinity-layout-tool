@@ -322,7 +322,6 @@ export function CutoutWorkspace() {
     mode.type === 'group-rotating' ||
     mode.type === 'group-scaling';
 
-  // Build context menu actions
   const contextMenuActions = useMemo(
     () =>
       buildCutoutContextActions({
@@ -550,10 +549,8 @@ export function CutoutWorkspace() {
         />
       </div>
 
-      {/* Quickstart overlay */}
       {showQuickstart && <CutoutQuickstartOverlay onDismiss={handleDismissQuickstart} />}
 
-      {/* Context menu */}
       {contextMenu && (
         <CutoutContextMenu
           x={contextMenu.x}

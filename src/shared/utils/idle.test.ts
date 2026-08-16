@@ -23,7 +23,6 @@ describe('scheduleIdleCallback', () => {
 
   describe('with native requestIdleCallback', () => {
     beforeEach(() => {
-      // Mock requestIdleCallback
       const mockRIC = vi.fn((callback: IdleRequestCallback, options?: IdleRequestOptions) => {
         const id = setTimeout(() => {
           callback({

@@ -235,7 +235,6 @@ export function useBinLinking(): UseBinLinkingReturn {
       const bins = layout.bins.filter((b) => binIds.includes(b.id));
       const totalLinked = bins.length;
 
-      // Load design
       const designResult = await loadDesign(designId);
       if (isErr(designResult)) {
         return { synced: [], unlinked: [], totalLinked };

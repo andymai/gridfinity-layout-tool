@@ -118,7 +118,6 @@ export function HandleSection() {
       valueSummary={meta.summary}
       primaryControls={
         <div className="space-y-3">
-          {/* Shape picker */}
           <ShapePicker
             options={SHAPE_OPTIONS.map(({ value, labelKey }) => ({ value, label: t(labelKey) }))}
             value={handles.shape}

@@ -62,7 +62,6 @@ function assertAdditive(call: (inc: Increments) => void, key: string, field: str
 }
 
 // ─────────────────────────────────────────────
-// aggregateBinPlacement
 // ─────────────────────────────────────────────
 describe('aggregateBinPlacement', () => {
   const baseEvent: BinPlacementEvent = {
@@ -227,7 +226,6 @@ describe('aggregateBinPlacement', () => {
 });
 
 // ─────────────────────────────────────────────
-// aggregateLabelUpdate
 // ─────────────────────────────────────────────
 describe('aggregateLabelUpdate', () => {
   const baseEvent: LabelUpdateEvent = {
@@ -294,7 +292,6 @@ describe('aggregateLabelUpdate', () => {
 });
 
 // ─────────────────────────────────────────────
-// aggregateLayoutSnapshot
 // ─────────────────────────────────────────────
 describe('aggregateLayoutSnapshot', () => {
   const baseEvent: LayoutSnapshotEvent = {
@@ -495,7 +492,6 @@ describe('aggregateLayoutSnapshot', () => {
 });
 
 // ─────────────────────────────────────────────
-// aggregateQualitySignal
 // ─────────────────────────────────────────────
 describe('aggregateQualitySignal', () => {
   const baseEvent: LayoutQualityEvent = {
@@ -594,7 +590,6 @@ describe('aggregateQualitySignal', () => {
 });
 
 // ─────────────────────────────────────────────
-// aggregateDrawerPurpose
 // ─────────────────────────────────────────────
 describe('aggregateDrawerPurpose', () => {
   const baseEvent: DrawerPurposeEvent = {
@@ -631,7 +626,6 @@ describe('aggregateDrawerPurpose', () => {
 });
 
 // ─────────────────────────────────────────────
-// aggregateCategoryChange
 // ─────────────────────────────────────────────
 describe('aggregateCategoryChange', () => {
   const baseEvent: CategoryChangeEvent = {
@@ -680,7 +674,6 @@ describe('aggregateCategoryChange', () => {
 });
 
 // ─────────────────────────────────────────────
-// aggregateBinResize
 // ─────────────────────────────────────────────
 describe('aggregateBinResize', () => {
   const baseEvent: BinResizeEvent = {
@@ -758,7 +751,6 @@ describe('aggregateBinResize', () => {
 });
 
 // ─────────────────────────────────────────────
-// aggregateBinDeletion
 // ─────────────────────────────────────────────
 describe('aggregateBinDeletion', () => {
   const baseEvent: BinDeletedEvent = {
@@ -823,7 +815,6 @@ describe('aggregateBinDeletion', () => {
 });
 
 // ─────────────────────────────────────────────
-// aggregateBinMove
 // ─────────────────────────────────────────────
 describe('aggregateBinMove', () => {
   const baseEvent: BinMovedEvent = {
@@ -885,7 +876,6 @@ describe('aggregateBinMove', () => {
 });
 
 // ─────────────────────────────────────────────
-// aggregateDrawerResize
 // ─────────────────────────────────────────────
 describe('aggregateDrawerResize', () => {
   const baseEvent: DrawerResizedEvent = {
@@ -940,7 +930,6 @@ describe('aggregateDrawerResize', () => {
 });
 
 // ─────────────────────────────────────────────
-// aggregateFillOperation
 // ─────────────────────────────────────────────
 describe('aggregateFillOperation', () => {
   const baseEvent: FillOperationEvent = {
@@ -1008,7 +997,6 @@ describe('aggregateFillOperation', () => {
 });
 
 // ─────────────────────────────────────────────
-// aggregateLayerMove
 // ─────────────────────────────────────────────
 describe('aggregateLayerMove', () => {
   const baseEvent: LayerMoveEvent = {
@@ -1070,7 +1058,6 @@ describe('aggregateLayerMove', () => {
 });
 
 // ─────────────────────────────────────────────
-// aggregateBinRotation
 // ─────────────────────────────────────────────
 describe('aggregateBinRotation', () => {
   const baseEvent: BinRotatedEvent = {
@@ -1107,7 +1094,6 @@ describe('aggregateBinRotation', () => {
 });
 
 // ─────────────────────────────────────────────
-// aggregatePlacementRejection
 // ─────────────────────────────────────────────
 describe('aggregatePlacementRejection', () => {
   const baseEvent: PlacementRejectedEvent = {
@@ -1158,7 +1144,6 @@ describe('aggregatePlacementRejection', () => {
 });
 
 // ─────────────────────────────────────────────
-// aggregateUndo
 // ─────────────────────────────────────────────
 describe('aggregateUndo', () => {
   const baseEvent: UndoEvent = {
@@ -1224,7 +1209,6 @@ describe('aggregateUndo', () => {
 });
 
 // ─────────────────────────────────────────────
-// aggregateQuickCorrection
 // ─────────────────────────────────────────────
 describe('aggregateQuickCorrection', () => {
   const baseEvent: QuickCorrectionEvent = {
@@ -1301,7 +1285,6 @@ describe('aggregateQuickCorrection', () => {
 });
 
 // ─────────────────────────────────────────────
-// aggregateBinAbandonment
 // ─────────────────────────────────────────────
 describe('aggregateBinAbandonment', () => {
   const baseEvent: AbandonedBinEvent = {
@@ -1373,7 +1356,6 @@ describe('aggregateBinAbandonment', () => {
 });
 
 // ─────────────────────────────────────────────
-// aggregateCrossLayoutPattern
 // ─────────────────────────────────────────────
 describe('aggregateCrossLayoutPattern', () => {
   const baseEvent: CrossLayoutPatternEvent = {
@@ -1475,7 +1457,6 @@ describe('aggregateCrossLayoutPattern', () => {
 });
 
 // ─────────────────────────────────────────────
-// aggregateSessionSummary
 // ─────────────────────────────────────────────
 describe('aggregateSessionSummary', () => {
   const baseEvent: SessionSummaryEvent = {

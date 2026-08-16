@@ -91,17 +91,14 @@ describe('usePWAUpdate', () => {
     mockOnRegisteredSW = undefined;
     mockOnRegisterError = undefined;
 
-    // Create mock registration
     mockRegistration = createMockRegistration();
 
-    // Mock navigator.onLine
     Object.defineProperty(navigator, 'onLine', {
       value: true,
       writable: true,
       configurable: true,
     });
 
-    // Clear sessionStorage
     sessionStorage.clear();
   });
 
@@ -197,7 +194,6 @@ describe('usePWAUpdate', () => {
     it('blocks reload during expanded 3D preview', async () => {
       mockNeedRefresh = true;
 
-      // Set expanded preview state
       useViewStore.setState({ isPreviewExpanded: true });
 
       renderHook(() => usePWAUpdate());
@@ -397,7 +393,6 @@ describe('usePWAUpdate', () => {
         window.dispatchEvent(new Event('online'));
       });
 
-      // Should have called update
       expect(mockRegistration.update).toHaveBeenCalled();
     });
   });

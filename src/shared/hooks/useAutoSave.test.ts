@@ -121,7 +121,6 @@ describe('useAutoSave', () => {
     useLayoutStore.setState({ activeLayoutId: TEST_LAYOUT_ID });
     useLibraryStore.setState({ isLoaded: true });
 
-    // Clear localStorage
     localStorage.clear();
   });
 
@@ -243,7 +242,6 @@ describe('useAutoSave', () => {
         await Promise.resolve();
       });
 
-      // Save should not have been called
       expect(storage.saveLayoutWithMetadata).not.toHaveBeenCalled();
     });
 
@@ -258,7 +256,6 @@ describe('useAutoSave', () => {
 
       expect(storage.saveLayoutWithMetadata).toHaveBeenCalledTimes(1);
 
-      // Unmount should not throw
       expect(() => unmount()).not.toThrow();
     });
   });
@@ -308,7 +305,6 @@ describe('useAutoSave', () => {
     });
 
     it('does not save when activeLayoutId is null', async () => {
-      // Set activeLayoutId to null
       useLayoutStore.setState({ activeLayoutId: null });
 
       renderHook(() => useAutoSave());
@@ -318,7 +314,6 @@ describe('useAutoSave', () => {
         await Promise.resolve();
       });
 
-      // Should not have called save
       expect(storage.saveLayoutWithMetadata).not.toHaveBeenCalled();
     });
 

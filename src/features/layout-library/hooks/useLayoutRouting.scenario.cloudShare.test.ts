@@ -29,7 +29,6 @@ vi.mock('@/shared/utils/url', async () => {
   };
 });
 
-// Mock storage
 vi.mock('@/core/storage', () => ({
   loadLayoutAsync: vi.fn(),
 }));
@@ -113,7 +112,6 @@ describe('useLayoutRouting with cloud share URLs', () => {
 
       renderHook(() => useLayoutRouting());
 
-      // Should set URL to local layout
       expect(url.setLayoutURL).toHaveBeenCalledWith(mockLocalLayoutId, mockLocalLayoutName, false);
     });
   });
@@ -318,7 +316,6 @@ describe('useLayoutRouting with cloud share URLs', () => {
       expect(url.setLayoutURL).not.toHaveBeenCalled();
       unmount();
 
-      // Reset mocks
       vi.clearAllMocks();
 
       // Second: local layout (in library)

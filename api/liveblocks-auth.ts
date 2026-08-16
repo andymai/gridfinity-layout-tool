@@ -100,7 +100,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return rateLimited(res, rateLimit.retryAfterSeconds);
     }
 
-    // Parse request body
     const { room, userId, userName } = req.body as AuthRequest;
 
     // Validate room ID format (must be gridfinity-{shareId})
@@ -139,7 +138,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const shareData = (await blobResponse.json()) as ShareData;
     const permission = shareData.metadata.permission;
 
-    // Prepare Liveblocks session
     const session = getLiveblocks().prepareSession(userId, {
       userInfo: {
         name: userName || 'Guest',

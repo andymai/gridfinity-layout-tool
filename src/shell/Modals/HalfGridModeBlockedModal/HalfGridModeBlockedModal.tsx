@@ -152,12 +152,10 @@ export function HalfGridModeBlockedModal({
             </div>
 
             <div className="flex-1 min-w-0">
-              {/* Title */}
               <h2 id="half-bin-blocked-title" className="text-lg font-semibold text-content mb-2">
                 {t('halfBinBlocked.title')}
               </h2>
 
-              {/* Message */}
               <div id="half-bin-blocked-message" className="space-y-3">
                 <p className="text-sm text-content-secondary leading-relaxed">
                   {t('halfBinBlocked.message')}

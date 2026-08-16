@@ -60,7 +60,6 @@ export function filterLayoutContent(layout: {
   bins: Array<{ label?: string; notes?: string; customProperties?: Record<string, string> }>;
   categories: Array<{ name: string }>;
 }): ContentFilterResult {
-  // Check layout name
   const nameResult = checkText(layout.name);
   if (!nameResult.passed) {
     return { passed: false, reason: `Layout name: ${nameResult.reason}` };

@@ -214,7 +214,6 @@ export function MultiBinContextMenu({
           )}
         </div>
 
-        {/* Move All to Layer */}
         {canMoveToLayer && (
           <div>
             <Button

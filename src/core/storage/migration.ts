@@ -55,9 +55,6 @@ export interface MigrationStats {
   skippedCount: number;
 }
 
-/**
- * Get all layout IDs from localStorage.
- */
 function getLocalStorageLayoutIds(): string[] {
   return localStorage.getAllLayoutIds(LAYOUT_KEY_PREFIX);
 }
@@ -95,7 +92,6 @@ export async function isMigrationNeeded(): Promise<boolean> {
  */
 export async function migrateLayoutToIndexedDB(layoutId: string): Promise<MigrationResult> {
   try {
-    // Load from localStorage
     const layout = loadLayoutFromLocalStorage(layoutId);
 
     if (!layout) {
@@ -105,7 +101,6 @@ export async function migrateLayoutToIndexedDB(layoutId: string): Promise<Migrat
       };
     }
 
-    // Save to IndexedDB
     await indexedDB.saveLayout(layoutId, layout);
 
     return { success: true };
@@ -138,7 +133,6 @@ export async function migrateAllLayoutsToIndexedDB(): Promise<BulkMigrationResul
     };
   }
 
-  // Get all layout IDs from localStorage
   const localStorageIds = getLocalStorageLayoutIds();
 
   if (localStorageIds.length === 0) {
@@ -180,9 +174,6 @@ export async function migrateAllLayoutsToIndexedDB(): Promise<BulkMigrationResul
   return result;
 }
 
-/**
- * Get the current migration status.
- */
 export async function getMigrationStatus(): Promise<MigrationStatus> {
   const localStorageIds = getLocalStorageLayoutIds();
 
@@ -226,14 +217,12 @@ export async function migrateLayoutToIndexedDBResult(
   layoutId: string
 ): Promise<Result<Unit, StorageError>> {
   try {
-    // Load from localStorage
     const layout = loadLayoutFromLocalStorage(layoutId);
 
     if (!layout) {
       return err(storageNotFound(getLayoutStorageKey(layoutId)));
     }
 
-    // Save to IndexedDB
     await indexedDB.saveLayout(layoutId, layout);
 
     return OK;
@@ -273,7 +262,6 @@ export async function migrateAllLayoutsToIndexedDBResult(): Promise<
     return err(storageUnavailable('indexedDB'));
   }
 
-  // Get all layout IDs from localStorage
   const localStorageIds = getLocalStorageLayoutIds();
 
   if (localStorageIds.length === 0) {

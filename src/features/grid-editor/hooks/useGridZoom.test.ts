@@ -5,7 +5,6 @@ import { useViewStore } from '@/core/store/view';
 import { CONSTRAINTS } from '@/core/constants';
 import type { RefObject } from 'react';
 
-// Mock scroll container ref
 function createMockScrollContainerRef(width = 800, height = 600): RefObject<HTMLDivElement> {
   const mockElement = {
     clientWidth: width,
@@ -17,7 +16,6 @@ function createMockScrollContainerRef(width = 800, height = 600): RefObject<HTML
 
 describe('useGridZoom', () => {
   beforeEach(() => {
-    // Reset view store
     useViewStore.setState({
       zoom: 1,
       showOtherLayers: true,

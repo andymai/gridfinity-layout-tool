@@ -16,7 +16,6 @@ vi.mock('../CollabCursor', () => ({
   ),
 }));
 
-// Mock hooks
 vi.mock('@/shared/hooks/useInterpolatedPresence', () => ({
   useInterpolatedPresence: vi.fn(() => new Map()),
 }));

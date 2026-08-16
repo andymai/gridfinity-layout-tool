@@ -148,14 +148,6 @@ export function removeLibraryEntry(
   });
 }
 
-/**
- * Add a new entry to the library.
- *
- * @param library - The current library state
- * @param entry - The new entry to add
- * @param position - Where to insert: 'start' (default) or 'end'
- * @returns New library with the added entry
- */
 export function addLibraryEntry(
   library: LayoutLibrary,
   entry: LayoutEntry,

@@ -136,7 +136,6 @@ export function SharedWithMeList({ onOpenLayout }: SharedWithMeListProps) {
     );
   }
 
-  // Error state for status
   const showError = status === 'error';
 
   return (

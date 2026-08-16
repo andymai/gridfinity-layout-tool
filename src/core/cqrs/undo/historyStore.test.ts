@@ -74,7 +74,6 @@ describe('history store', () => {
       useLayoutStore.getState().setName('Modified Name');
       expect(useLayoutStore.getState().layout.name).toBe('Modified Name');
 
-      // Undo
       undo();
       expect(useLayoutStore.getState().layout.name).toBe('Untitled layout');
     });
@@ -295,7 +294,6 @@ describe('history store', () => {
       layout.bins = bins;
       expect(layout.bins).toHaveLength(2500);
 
-      // Set the layout
       useLayoutStore.setState({ layout });
 
       // Measure time for 10 push operations (simulating 10 undoable actions)
@@ -331,7 +329,6 @@ describe('history store', () => {
     it('handles complex undo/redo sequence', () => {
       const { push, undo, redo } = useHistoryStore.getState();
 
-      // Initial state
       const initial = useLayoutStore.getState().layout;
       push(JSON.parse(JSON.stringify(initial)), 'bin.add');
 
@@ -393,7 +390,6 @@ describe('history store', () => {
       // Save state before adding bin
       push(JSON.parse(JSON.stringify(layout)), 'bin.add');
 
-      // Add a bin
       const addResult = useLayoutStore.getState().addBin({
         layerId,
         x: gridUnits(0),
@@ -542,7 +538,6 @@ describe('history store', () => {
       if (!isOk(addLayerResult)) throw new Error('addLayer failed');
       const newLayerId = addLayerResult.value;
 
-      // Set the new layer as active
       useSelectionStore.setState({ activeLayerId: newLayerId });
       expect(useSelectionStore.getState().activeLayerId).toBe(newLayerId);
 
@@ -588,7 +583,6 @@ describe('history store', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      // Add a bin
       const addResult = useLayoutStore.getState().addBin({
         layerId,
         x: gridUnits(0),
@@ -606,7 +600,6 @@ describe('history store', () => {
       // Save state with 1 bin
       push(JSON.parse(JSON.stringify(useLayoutStore.getState().layout)), 'bin.add');
 
-      // Delete the bin
       useLayoutStore.getState().deleteBin(addedBinId);
 
       // Select a fake bin ID that doesn't exist

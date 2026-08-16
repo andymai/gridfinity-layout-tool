@@ -35,7 +35,6 @@ vi.mock('@/core/storage/backends/indexedDB', () => ({
   loadLibraryIndex: vi.fn().mockResolvedValue(null),
 }));
 
-// Mock librarySync
 vi.mock('@/core/storage/librarySync', () => ({
   notifyLibraryChanged: vi.fn(),
 }));

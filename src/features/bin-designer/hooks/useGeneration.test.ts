@@ -63,7 +63,6 @@ describe('useGeneration', () => {
   beforeEach(() => {
     vi.useFakeTimers();
 
-    // Reset mock bridge state
     (mockBridge as { isDestroyed: boolean }).isDestroyed = false;
     (mockBridge.generate as ReturnType<typeof vi.fn>).mockResolvedValue({
       mesh: {

@@ -89,7 +89,6 @@ export const SETTINGS_REGISTRY: SettingsRegistryEntry[] = [
     labelKey: 'settings.privacy',
     keywordsKey: 'settings.search.keywords.privacy',
   },
-  // Storage
   { id: 'storage-status', tabId: 'storage', labelKey: 'settings.storage.status' },
   {
     id: 'storage-danger',

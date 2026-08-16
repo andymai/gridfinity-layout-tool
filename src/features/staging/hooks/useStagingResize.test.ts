@@ -35,10 +35,8 @@ describe('useStagingResize', () => {
     scrollContainerRef = { current: mockScrollContainer };
     resizeHandleRef = { current: mockResizeHandle };
 
-    // Mock updateSetting
     updateSetting = vi.fn<UpdateSetting>();
 
-    // Mock window.innerHeight
     originalInnerHeight = window.innerHeight;
     Object.defineProperty(window, 'innerHeight', {
       writable: true,

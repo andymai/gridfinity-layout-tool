@@ -133,7 +133,6 @@ export function LayoutListItem({
             </span>
           </div>
 
-          {/* Forked From */}
           {entry.forkedFrom && (
             <div className="mt-0.5 text-xs text-content-tertiary">
               {t('layouts.forkedFromName', { name: entry.forkedFrom.name })}

@@ -207,9 +207,6 @@ export function useLayoutSwitcher() {
     ]
   );
 
-  /**
-   * Delete a layout.
-   */
   const deleteLayout = useCallback(
     async (id: LayoutId): Promise<Result<Unit, LayoutError | StorageError | UnknownError>> => {
       // Get fresh library state to avoid stale closure issues
@@ -250,9 +247,6 @@ export function useLayoutSwitcher() {
     [setLibrary, switchLayout, addToast, t]
   );
 
-  /**
-   * Duplicate a layout.
-   */
   const duplicateLayout = useCallback(
     async (id: LayoutId): Promise<Result<string, LayoutError | StorageError | UnknownError>> => {
       const sourceEntry = getEntry(id);
@@ -287,9 +281,6 @@ export function useLayoutSwitcher() {
     [getEntry, setLibrary, addToast, t]
   );
 
-  /**
-   * Rename a layout.
-   */
   const renameLayout = useCallback(
     (id: LayoutId, newName: string): void => {
       // Get fresh library state to avoid stale closure

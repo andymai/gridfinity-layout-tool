@@ -71,7 +71,6 @@ describe('useCloudShare', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Mock navigator.onLine
     Object.defineProperty(navigator, 'onLine', {
       value: true,
       writable: true,

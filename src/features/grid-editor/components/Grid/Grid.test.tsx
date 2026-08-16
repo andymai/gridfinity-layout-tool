@@ -100,7 +100,6 @@ vi.mock('@/shell/Collab', () => ({
   CollabSelectionRings: () => <div data-testid="collab-selection-rings">Selection Rings</div>,
 }));
 
-// Mock hooks
 vi.mock('@/features/grid-editor/hooks', () => ({
   useInteraction: () => ({
     startDraw: vi.fn(),

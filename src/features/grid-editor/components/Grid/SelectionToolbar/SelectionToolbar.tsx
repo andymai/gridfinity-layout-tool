@@ -134,7 +134,6 @@ export function SelectionToolbar({
 
         <Divider />
 
-        {/* Rotate all */}
         <ToolbarButton label={t('selectionToolbar.rotateAll')} onClick={onRotateAll}>
           <svg
             className="h-3.5 w-3.5"
@@ -148,7 +147,6 @@ export function SelectionToolbar({
           </svg>
         </ToolbarButton>
 
-        {/* Match height */}
         <ToolbarButton label={t('selectionToolbar.matchHeight')} onClick={onMatchHeight}>
           <svg
             className="h-3.5 w-3.5"
@@ -166,7 +164,6 @@ export function SelectionToolbar({
           </svg>
         </ToolbarButton>
 
-        {/* Expand to fit */}
         <ToolbarButton label={t('selectionToolbar.expandToFit')} onClick={onExpandToFit}>
           <svg
             className="h-3.5 w-3.5"
@@ -202,7 +199,6 @@ export function SelectionToolbar({
           />
         )}
 
-        {/* Move to stash */}
         <ToolbarButton label={t('selectionToolbar.moveToStash')} onClick={onMoveToStash}>
           <svg
             className="h-3.5 w-3.5"

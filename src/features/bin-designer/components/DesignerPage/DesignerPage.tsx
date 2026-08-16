@@ -103,13 +103,11 @@ export function DesignerPage() {
 
   return (
     <div className="relative flex h-screen flex-col overflow-hidden bg-surface">
-      {/* Mobile title bar */}
       {!isDesktop && <MobileTitleBar />}
 
       {/* Header / Action bar */}
       <DesignerHeader isDesktop={isDesktop} nameEditor={nameEditor} />
 
-      {/* Share loading banner */}
       {shareLoading && <ShareLoadingBanner />}
 
       {/* Drawer edge-orientation mismatch warning */}

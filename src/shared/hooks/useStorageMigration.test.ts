@@ -29,14 +29,12 @@ describe('useStorageMigration', () => {
   beforeEach(async () => {
     await resetModule();
 
-    // Clear all mocks
     vi.clearAllMocks();
 
     // Spy on console methods
     consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    // Store original requestIdleCallback
     originalRequestIdleCallback = window.requestIdleCallback;
 
     // Use fake timers for controlling async flow
@@ -282,7 +280,6 @@ describe('useStorageMigration', () => {
 
       const { useStorageMigration } = await import('@/shared/hooks/useStorageMigration');
 
-      // Should not throw
       expect(() => renderHook(() => useStorageMigration())).not.toThrow();
 
       await vi.runAllTimersAsync();

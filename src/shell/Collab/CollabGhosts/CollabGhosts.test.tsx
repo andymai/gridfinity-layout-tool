@@ -10,7 +10,6 @@ vi.mock('@/liveblocks.config', () => ({
   useOthers: vi.fn(() => []),
 }));
 
-// Mock hooks
 vi.mock('@/shared/hooks', () => ({
   useResponsive: vi.fn(() => ({
     isMobile: false,

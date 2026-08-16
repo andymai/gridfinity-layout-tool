@@ -9,11 +9,9 @@ import {
 } from '@/shared/utils/url';
 
 describe('url utilities', () => {
-  // Store original location
   const originalLocation = window.location;
 
   beforeEach(() => {
-    // Mock window.location
     Object.defineProperty(window, 'location', {
       value: Object.assign({}, originalLocation, {
         hash: '',

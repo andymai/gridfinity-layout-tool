@@ -201,7 +201,6 @@ const CASES: readonly Case[] = [
   {
     // The same interior tab without any divider to blame it on: a merged
     // back row leaves one row boundary the tabs hang from and no column
-    // divider at all.
     name: 'an interior-row label tab with no column divider',
     width: 2,
     depth: 2,

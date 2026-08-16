@@ -154,7 +154,6 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
     [settings.printViewSettings, updateSetting]
   );
 
-  // Update sort order
   const updateSortOrder = useCallback(
     (newOrder: BinListSortOrder) => {
       updatePrintSetting('binListSortOrder', newOrder);
@@ -226,7 +225,6 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
           data-testid="print-modal-dialog"
           tabIndex={-1}
         >
-          {/* Header */}
           <div className="flex justify-between items-center p-6 pb-4 border-b border-stroke-subtle print-modal-header">
             <h2 id="print-modal-title" style={STYLES.title}>
               {t('print.title')}
@@ -454,7 +452,6 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
             </div>
           </div>
 
-          {/* Footer */}
           <div className="flex items-center justify-end gap-3 p-4 pb-[var(--space-2xl)] border-t border-stroke-subtle print-modal-footer">
             {noLayersSelected && (
               <span className="text-xs text-warning mr-auto">

@@ -60,7 +60,6 @@ function expectImportError(result: Result<unknown, ValidationError>): Validation
 }
 
 describe('storage-share', () => {
-  // Create a test layout
   const createTestLayout = (): Layout =>
     baseCreateTestLayout({
       categories: [{ id: categoryId('cat-1'), name: 'Red', color: '#ff0000' }],

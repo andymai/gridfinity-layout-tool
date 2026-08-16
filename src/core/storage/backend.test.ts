@@ -18,7 +18,6 @@ vi.mock('@/core/storage/backends/indexedDB', () => ({
   isIndexedDBAvailable: vi.fn(() => Promise.resolve(true)),
 }));
 
-// Create localStorage mock
 const createLocalStorageMock = () => {
   let store: Record<string, string> = {};
   return {

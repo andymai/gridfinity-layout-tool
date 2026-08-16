@@ -261,7 +261,6 @@ export function DesignImportView({ onImport, onCancel, onStlFile }: DesignImport
         </div>
       )}
 
-      {/* Preview */}
       {preview && (
         <div className="bg-success-muted border border-success rounded-lg p-4 mb-4">
           <div className="flex items-center gap-2 text-sm font-medium text-success mb-2">

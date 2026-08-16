@@ -11,7 +11,6 @@ import { createDefaultLayout } from '@/core/constants';
 import type { Layout } from '@/core/types';
 import { binId, layerId, gridUnits, heightUnits } from '@/core/types';
 
-// Mock ResizeObserver
 class MockResizeObserver {
   observe = vi.fn();
   unobserve = vi.fn();
@@ -49,7 +48,6 @@ vi.mock('@/features/print-export/components/PrintLayout', () => ({
   ),
 }));
 
-// Helper to create test layout
 function createTestLayout(): Layout {
   const base = createDefaultLayout();
   return {
@@ -106,7 +104,6 @@ describe('PrintModal', () => {
   });
 
   afterEach(() => {
-    // Reset body overflow
     document.body.style.overflow = '';
   });
 
@@ -209,7 +206,6 @@ describe('PrintModal', () => {
       const layer1 = screen.getByText('Layer 1').closest('[role="checkbox"]');
       fireEvent.click(layer1!);
 
-      // Then click All
       fireEvent.click(screen.getByText('All'));
 
       // Both should be selected

@@ -395,7 +395,6 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
               />
               <PreviewContextSync />
 
-              {/* Gradient background */}
               <GradientBackground />
 
               {/* 3-point lighting (theme-aware ground bounce) */}

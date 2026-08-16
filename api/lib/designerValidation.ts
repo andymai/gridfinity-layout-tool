@@ -118,7 +118,6 @@ const ALLOWED_PARAM_KEYS = new Set<string>([
   'heightUnitMm',
   'wallThickness',
   'extraWallHeightMm',
-  // Style
   'style',
   // Sub-objects (deep-validated below)
   'base',

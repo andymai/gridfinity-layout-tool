@@ -157,7 +157,6 @@ describe('ShareModal', () => {
     it('shows copied feedback', async () => {
       fireEvent.click(screen.getByText('Copy'));
 
-      // Wait for state update
       await waitFor(() => {
         expect(screen.getByText('Copied!')).toBeInTheDocument();
       });

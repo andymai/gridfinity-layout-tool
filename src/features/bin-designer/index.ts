@@ -9,7 +9,6 @@
  * from @/shared/types/bin or @/shared/constants/bin instead.
  */
 
-// --- Types ---
 export type { BinParams, SavedDesign } from './types';
 export type { CustomBinRef } from './store';
 
@@ -66,7 +65,6 @@ export { validateBinParams } from './utils/validation';
 // feed the same innerW into planLabelPlates that the worker uses.
 export { binDimensions } from './utils/binDimensions';
 
-// --- Sync ---
 // Exposed for `shared/sync/` to wire into the sync engine without reaching
 // into the feature's internal path.
 export { designAdapter } from './sync/designAdapter';

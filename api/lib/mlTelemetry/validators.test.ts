@@ -17,7 +17,6 @@ const NORMALIZED_LABEL = 'screws'; // matches VALID_NORMALIZED_LABEL_REGEX
 const EMBEDDING_BUCKET = 'a1b2'; // 4-char hex
 
 // ─────────────────────────────────────────────
-// Structural guard
 // ─────────────────────────────────────────────
 describe('validateEvent — structural guard', () => {
   it('rejects null', () => {
@@ -46,7 +45,6 @@ describe('validateEvent — structural guard', () => {
 });
 
 // ─────────────────────────────────────────────
-// TypeScript narrowing
 // ─────────────────────────────────────────────
 describe('validateEvent — TypeScript narrowing', () => {
   it('narrows unknown to MLTelemetryEvent inside the guard', () => {
@@ -67,7 +65,6 @@ describe('validateEvent — TypeScript narrowing', () => {
 });
 
 // ─────────────────────────────────────────────
-// bin_placed
 // ─────────────────────────────────────────────
 describe('validateEvent — bin_placed', () => {
   const valid = {
@@ -272,7 +269,6 @@ describe('validateEvent — bin_placed (documented validator leniency)', () => {
 });
 
 // ─────────────────────────────────────────────
-// label_updated
 // ─────────────────────────────────────────────
 describe('validateEvent — label_updated', () => {
   const valid = {
@@ -317,7 +313,6 @@ describe('validateEvent — label_updated', () => {
 });
 
 // ─────────────────────────────────────────────
-// layout_snapshot
 // ─────────────────────────────────────────────
 describe('validateEvent — layout_snapshot', () => {
   const valid = {
@@ -471,7 +466,6 @@ describe('validateEvent — layout_snapshot', () => {
 });
 
 // ─────────────────────────────────────────────
-// layout_quality
 // ─────────────────────────────────────────────
 describe('validateEvent — layout_quality', () => {
   const valid = {
@@ -550,7 +544,6 @@ describe('validateEvent — layout_quality', () => {
 });
 
 // ─────────────────────────────────────────────
-// drawer_purpose
 // ─────────────────────────────────────────────
 describe('validateEvent — drawer_purpose', () => {
   const valid = {
@@ -582,7 +575,6 @@ describe('validateEvent — drawer_purpose', () => {
 });
 
 // ─────────────────────────────────────────────
-// category_changed
 // ─────────────────────────────────────────────
 describe('validateEvent — category_changed', () => {
   const valid = {
@@ -623,7 +615,6 @@ describe('validateEvent — category_changed', () => {
 });
 
 // ─────────────────────────────────────────────
-// bin_resized
 // ─────────────────────────────────────────────
 describe('validateEvent — bin_resized', () => {
   const valid = {
@@ -667,7 +658,6 @@ describe('validateEvent — bin_resized', () => {
 });
 
 // ─────────────────────────────────────────────
-// bin_deleted
 // ─────────────────────────────────────────────
 describe('validateEvent — bin_deleted', () => {
   const valid = {
@@ -709,7 +699,6 @@ describe('validateEvent — bin_deleted', () => {
 });
 
 // ─────────────────────────────────────────────
-// bin_moved
 // ─────────────────────────────────────────────
 describe('validateEvent — bin_moved', () => {
   const valid = {
@@ -745,7 +734,6 @@ describe('validateEvent — bin_moved', () => {
 });
 
 // ─────────────────────────────────────────────
-// drawer_resized
 // ─────────────────────────────────────────────
 describe('validateEvent — drawer_resized', () => {
   const valid = {
@@ -779,7 +767,6 @@ describe('validateEvent — drawer_resized', () => {
 });
 
 // ─────────────────────────────────────────────
-// fill_operation
 // ─────────────────────────────────────────────
 describe('validateEvent — fill_operation', () => {
   const valid = {
@@ -814,7 +801,6 @@ describe('validateEvent — fill_operation', () => {
 });
 
 // ─────────────────────────────────────────────
-// layer_move
 // ─────────────────────────────────────────────
 describe('validateEvent — layer_move', () => {
   const valid = {
@@ -858,7 +844,6 @@ describe('validateEvent — layer_move', () => {
 });
 
 // ─────────────────────────────────────────────
-// bin_rotated
 // ─────────────────────────────────────────────
 describe('validateEvent — bin_rotated', () => {
   const valid = {
@@ -886,7 +871,6 @@ describe('validateEvent — bin_rotated', () => {
 });
 
 // ─────────────────────────────────────────────
-// placement_rejected
 // ─────────────────────────────────────────────
 describe('validateEvent — placement_rejected', () => {
   const valid = {
@@ -935,7 +919,6 @@ describe('validateEvent — placement_rejected', () => {
 });
 
 // ─────────────────────────────────────────────
-// undo
 // ─────────────────────────────────────────────
 describe('validateEvent — undo', () => {
   const valid = {
@@ -980,7 +963,6 @@ describe('validateEvent — undo', () => {
 });
 
 // ─────────────────────────────────────────────
-// quick_correction
 // ─────────────────────────────────────────────
 describe('validateEvent — quick_correction', () => {
   const valid = {
@@ -1027,7 +1009,6 @@ describe('validateEvent — quick_correction', () => {
 });
 
 // ─────────────────────────────────────────────
-// bin_abandoned
 // ─────────────────────────────────────────────
 describe('validateEvent — bin_abandoned', () => {
   const valid = {
@@ -1065,7 +1046,6 @@ describe('validateEvent — bin_abandoned', () => {
 });
 
 // ─────────────────────────────────────────────
-// session_summary
 // ─────────────────────────────────────────────
 describe('validateEvent — session_summary', () => {
   const valid = {
@@ -1122,7 +1102,6 @@ describe('validateEvent — session_summary', () => {
 });
 
 // ─────────────────────────────────────────────
-// cross_layout_pattern
 // ─────────────────────────────────────────────
 describe('validateEvent — cross_layout_pattern', () => {
   const valid = {

@@ -31,5 +31,4 @@ export {
   type LabelDomain,
 } from './labelVocabulary';
 
-// Gap analysis
 export { analyzeGaps, calculateFillPercentage, type GapAnalysis } from './gapAnalysis';

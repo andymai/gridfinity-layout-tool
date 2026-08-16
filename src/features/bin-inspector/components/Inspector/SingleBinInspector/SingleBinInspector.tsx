@@ -416,7 +416,6 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
           </div>
         </div>
 
-        {/* Custom Properties */}
         <CustomPropertiesEditor
           customProperties={bin.customProperties}
           onChange={updateCustomProperties}

@@ -6,7 +6,6 @@ describe('useSettingsNav', () => {
   it('returns a no-op fallback outside a provider', () => {
     const { result } = renderHook(() => useSettingsNav());
     expect(result.current.highlightedSectionId).toBeNull();
-    // Should not throw.
     expect(() => result.current.navigateToSection('general', 'language')).not.toThrow();
   });
 

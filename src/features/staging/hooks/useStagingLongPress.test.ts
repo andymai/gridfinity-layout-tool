@@ -322,7 +322,6 @@ describe('useStagingLongPress', () => {
         result.current.startLongPress(testBinId, 110, 210);
       });
 
-      // Should reset to false
       expect(result.current.longPressTriggeredRef.current).toBe(false);
     });
   });

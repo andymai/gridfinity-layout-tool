@@ -148,7 +148,6 @@ export function CompartmentDimensions() {
 
   return (
     <group>
-      {/* Width */}
       <Line points={geometry.width.line} {...lineProps} />
       <Line points={geometry.width.capLeft} {...lineProps} />
       <Line points={geometry.width.capRight} {...lineProps} />
@@ -156,7 +155,6 @@ export function CompartmentDimensions() {
         {geometry.width.label}
       </Text>
 
-      {/* Depth */}
       <Line points={geometry.depth.line} {...lineProps} />
       <Line points={geometry.depth.capFront} {...lineProps} />
       <Line points={geometry.depth.capBack} {...lineProps} />
@@ -170,7 +168,6 @@ export function CompartmentDimensions() {
         {geometry.depth.label}
       </Text>
 
-      {/* Height */}
       <Line points={geometry.height.line} {...lineProps} />
       <Line points={geometry.height.capBottom} {...lineProps} />
       <Line points={geometry.height.capTop} {...lineProps} />

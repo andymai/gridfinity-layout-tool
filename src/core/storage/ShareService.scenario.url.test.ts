@@ -11,7 +11,6 @@ describe('getCloudShareIdFromURL', () => {
   const originalLocation = window.location;
 
   beforeEach(() => {
-    // Mock window.location
     delete (window as { location?: Location }).location;
   });
 

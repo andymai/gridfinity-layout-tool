@@ -54,7 +54,6 @@ describe('useCollabSync', () => {
     vi.clearAllMocks();
     vi.useFakeTimers();
 
-    // Reset store to default state
     const defaultLayout = createDefaultLayout();
     useLayoutStore.setState({
       layout: defaultLayout,
@@ -73,7 +72,6 @@ describe('useCollabSync', () => {
 
   describe('initial sync', () => {
     it('pushes local layout to remote when local has content', () => {
-      // Local has a bin on the grid
       const localLayout = createTestLayout([createBinOnGrid('bin1')]);
       useLayoutStore.setState({ layout: localLayout, lastEditSource: 'init' });
 
@@ -94,7 +92,6 @@ describe('useCollabSync', () => {
       const localLayout = createTestLayout();
       useLayoutStore.setState({ layout: localLayout, lastEditSource: 'init' });
 
-      // Remote has a bin
       const remoteLayout = createTestLayout([createBinOnGrid('bin1')]);
       mockUseStorage.mockImplementation((selector) => {
         return selector({ layout: remoteLayout });

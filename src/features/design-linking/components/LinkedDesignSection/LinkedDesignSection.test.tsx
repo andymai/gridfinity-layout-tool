@@ -7,7 +7,6 @@ import { binId, designId } from '@/core/types';
 import { useLinkedDesign, useBinLinking, useQuickExport } from '../../hooks';
 import { useDesignThumbnail } from '@/features/bin-designer/hooks/useDesignThumbnail';
 
-// Mock hooks
 vi.mock('../../hooks');
 vi.mock('@/features/bin-designer/hooks/useDesignThumbnail', () => ({
   useDesignThumbnail: vi.fn(() => ({ thumbnail: null, isLoading: false })),

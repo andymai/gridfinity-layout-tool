@@ -181,7 +181,6 @@ describe('ImportModal', () => {
         fireEvent.change(textarea, { target: { value: '' } });
       });
 
-      // Wait for state to update
       await waitFor(() => {
         expect(container.textContent).not.toContain('Invalid JSON format');
       });

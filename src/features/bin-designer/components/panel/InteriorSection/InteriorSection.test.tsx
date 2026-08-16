@@ -3,7 +3,6 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { InteriorSection } from './InteriorSection';
 import type { InteriorCard } from '../../../types';
 
-// Mock the card component
 vi.mock('./InteriorModeCard', () => ({
   InteriorModeCard: ({
     card,

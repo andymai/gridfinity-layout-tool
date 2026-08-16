@@ -1,7 +1,5 @@
 import type { PlacementMethod } from './types';
 
-// SESSION STATE
-
 export interface SessionState {
   /** Last bin size placed this session */
   prevBinSize: string | null;

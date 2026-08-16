@@ -80,7 +80,6 @@ describe('CompactNumberInput', () => {
     fireEvent.click(screen.getByRole('button'));
     const input = screen.getByRole('textbox');
 
-    // Change the value
     fireEvent.change(input, { target: { value: '25' } });
     fireEvent.keyDown(input, { key: 'Escape' });
 
@@ -95,7 +94,6 @@ describe('CompactNumberInput', () => {
     fireEvent.click(screen.getByRole('button'));
     const input = screen.getByRole('textbox');
 
-    // Change the value
     fireEvent.change(input, { target: { value: '30' } });
     fireEvent.blur(input);
 
@@ -157,7 +155,6 @@ describe('CompactNumberInput', () => {
     fireEvent.click(screen.getByRole('button'));
     const input = screen.getByRole('textbox');
 
-    // Change the value
     fireEvent.change(input, { target: { value: '2' } });
     fireEvent.keyDown(input, { key: 'Enter' });
 
@@ -171,7 +168,6 @@ describe('CompactNumberInput', () => {
     fireEvent.click(screen.getByRole('button'));
     const input = screen.getByRole('textbox');
 
-    // Change the value
     fireEvent.change(input, { target: { value: '20' } });
     fireEvent.keyDown(input, { key: 'Enter' });
 

@@ -20,7 +20,6 @@ describe('halfGridMode store', () => {
   let localStorageMock: ReturnType<typeof createIsolatedLocalStorageMock>;
 
   beforeEach(() => {
-    // Setup isolated localStorage mock
     localStorageMock = createIsolatedLocalStorageMock();
     Object.defineProperty(global, 'localStorage', {
       value: localStorageMock.mock,
@@ -314,7 +313,6 @@ describe('halfGridMode store', () => {
 
       const { setHalfGridMode } = useHalfGridModeStore.getState();
 
-      // Should not throw
       expect(() => setHalfGridMode(true)).not.toThrow();
 
       // State should still update

@@ -578,7 +578,6 @@ describe('DesignerStorage', () => {
       });
       expectOk(createResult);
 
-      // Set it as active
       setActiveDesignId(designId('existing-design'));
 
       // Initialize should load it

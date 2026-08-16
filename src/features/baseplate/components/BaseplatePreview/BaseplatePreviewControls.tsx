@@ -208,7 +208,6 @@ export function BaseplatePreviewControls({
           {/* Divider */}
           <div className="w-px h-5 bg-stroke-subtle/50" />
 
-          {/* Reset button */}
           <Button
             type="button"
             variant="ghost"

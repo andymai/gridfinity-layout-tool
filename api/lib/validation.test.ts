@@ -45,7 +45,6 @@ interface TestDrawer {
   measuredMm?: { width: number; depth: number; height?: number };
 }
 
-// Helper to create a valid layout for testing
 function createValidLayout() {
   // Annotated, not asserted: `as TestDrawer` would suppress excess-property
   // checking on the literal, which is the opposite of the point.

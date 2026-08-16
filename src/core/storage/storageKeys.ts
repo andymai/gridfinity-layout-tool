@@ -6,7 +6,6 @@
  * shared constants helps prevent typo-induced bugs from duplicated string literals.
  */
 
-// Layout data
 export const LAYOUT_KEY_PREFIX = 'gridfinity-layout-';
 export const LEGACY_STORAGE_KEY = 'gridfinity-layout-v1';
 

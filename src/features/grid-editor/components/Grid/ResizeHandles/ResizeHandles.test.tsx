@@ -4,14 +4,12 @@ import { resetAllStores } from '@/test/testUtils';
 import { ResizeHandles } from './ResizeHandles';
 import type { ResizeHandle as ResizeHandleType } from '@/core/types';
 
-// Mock ResizeHandle component
 vi.mock('../ResizeHandle', () => ({
   ResizeHandle: ({ handle }: { handle: ResizeHandleType }) => (
     <div data-testid={`resize-handle-${handle}`} />
   ),
 }));
 
-// Mock handle positioning utils
 vi.mock('@/features/grid-editor/utils/handlePositioning', () => ({
   getAllHandles: vi.fn(() => ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'] as ResizeHandleType[]),
   shouldUseExternalHandles: vi.fn((width: number, depth: number) => width < 2 || depth < 2),

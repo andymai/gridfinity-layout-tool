@@ -3,7 +3,6 @@ import { render } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { BinTransitionTicker } from './BinTransitionTicker';
 
-// Mock React Three Fiber
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   useFrame: vi.fn(),

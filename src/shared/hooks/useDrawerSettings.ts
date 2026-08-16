@@ -633,7 +633,6 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     [setGridUnitMm, setGridUnitMmY]
   );
 
-  // Save current categories as defaults
   const handleSaveCategoriesAsDefaults = useCallback(() => {
     saveCategoriesAsDefaults(currentCategories);
     setShowSaveCategoriesConfirm(false);

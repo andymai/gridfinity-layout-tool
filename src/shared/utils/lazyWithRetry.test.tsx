@@ -3,7 +3,6 @@ import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { render, screen, waitFor } from '@testing-library/react';
 import { Suspense, Component, type ReactNode, type ComponentType } from 'react';
 
-// Mock component for testing
 const MockComponent: ComponentType = () => <div data-testid="mock-component">Loaded</div>;
 MockComponent.displayName = 'MockComponent';
 
@@ -330,7 +329,6 @@ describe('lazyWithRetry', () => {
         expect(screen.getByTestId('error')).toBeInTheDocument();
       });
 
-      // Reload should not have been called
       expect(mockReload).not.toHaveBeenCalled();
     });
   });

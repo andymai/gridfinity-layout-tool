@@ -79,7 +79,6 @@ const setEnabledFeatures = (enabledFeatures: Record<string, boolean>): void => {
   });
 };
 
-// Helper to create a test layout
 const createTestLayout = (overrides?: Partial<Layout>): Layout =>
   baseCreateTestLayout({
     categories: [

@@ -8,7 +8,6 @@ import { useLayoutStore } from '@/core/store/layout';
 import { createDefaultLayout } from '@/core/constants';
 import { heightUnits, layerId } from '@/core/types';
 
-// Mock React Three Fiber
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children: ReactNode }) => <div data-testid="r3f-canvas">{children}</div>,
   useThree: () => ({
@@ -27,7 +26,6 @@ vi.mock('@react-three/fiber', () => ({
   extend: vi.fn(),
 }));
 
-// Mock Drei
 vi.mock('@react-three/drei', () => ({
   OrbitControls: () => <div data-testid="orbit-controls" />,
   ContactShadows: () => <div data-testid="contact-shadows" />,
@@ -193,7 +191,6 @@ vi.mock('three', () => {
   };
 });
 
-// Mock hooks
 vi.mock('@/shared/hooks', () => ({
   useResponsive: () => ({ isMobile: false, isTablet: false }),
 }));

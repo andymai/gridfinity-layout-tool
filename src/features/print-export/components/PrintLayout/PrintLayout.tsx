@@ -408,7 +408,6 @@ export function PrintLayout({
 
   return (
     <div className="print-layout-content">
-      {/* Header */}
       {settings.showHeader && (
         <div className="print-header">
           <div className="print-header-top">
@@ -488,7 +487,6 @@ export function PrintLayout({
           const hasAnyCustomProps = sortedBins.some(
             (bin) => bin.customProperties && Object.keys(bin.customProperties).length > 0
           );
-          // Check if any bins have notes
           const hasAnyNotes = sortedBins.some((bin) => bin.notes);
 
           return (

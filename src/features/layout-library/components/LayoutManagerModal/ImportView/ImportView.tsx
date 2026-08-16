@@ -353,7 +353,6 @@ export function ImportView({ onImport, onImportArchive, onCancel }: ImportViewPr
         </div>
       )}
 
-      {/* Preview (archive) */}
       {archivePreview && (
         <div className="bg-success-muted border border-success rounded-lg p-4 mb-4">
           <div className="flex items-center gap-2 text-sm font-medium text-success mb-2">

@@ -251,7 +251,6 @@ describe('CategoriesPanel', () => {
       const editButton = screen.getByRole('button', { name: /Edit Third/i });
       fireEvent.click(editButton);
 
-      // Click delete
       fireEvent.click(screen.getByText('Delete'));
 
       // Confirm dialog should appear
@@ -259,7 +258,6 @@ describe('CategoriesPanel', () => {
     });
 
     it('deletes category on confirm', () => {
-      // Add third category
       useLayoutStore.getState().addCategory({ name: 'Third', color: '#00FF00' });
 
       render(<CategoriesPanel />);

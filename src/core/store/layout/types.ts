@@ -67,10 +67,8 @@ export interface LayoutState {
   // Layout library integration
   setActiveLayoutId: (id: LayoutId | null) => void;
 
-  // Name
   setName: (name: string) => void;
 
-  // Baseplate
   setBaseplateParams: (params: StoredBaseplateParams) => void;
   /**
    * Non-undoable direct set of the active baseplate pointer + materialized

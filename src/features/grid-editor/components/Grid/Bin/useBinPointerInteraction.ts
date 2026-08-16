@@ -96,7 +96,6 @@ export function useBinPointerInteraction(
     // Store pointer ID for passing to useInteraction when drag starts
     activePointerIdRef.current = e.pointerId;
 
-    // Reset long-press state
     longPressTriggeredRef.current = false;
     pointerStartRef.current = { x: e.clientX, y: e.clientY };
 
@@ -109,7 +108,6 @@ export function useBinPointerInteraction(
         if (typeof navigator.vibrate === 'function') {
           navigator.vibrate(50);
         }
-        // Show context menu
         showContextMenu([binId], { x: e.clientX, y: e.clientY }, 'grid');
       }, LONG_PRESS_DURATION);
     }

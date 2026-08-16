@@ -34,7 +34,6 @@ vi.mock('@/core/constants', () => ({
   DEFAULT_CATEGORY_COLOR: '#808080',
 }));
 
-// Helper to create test bin
 function makeBin(overrides: Partial<Bin> = {}): Bin {
   return {
     id: binId('bin-1'),
@@ -51,7 +50,6 @@ function makeBin(overrides: Partial<Bin> = {}): Bin {
   };
 }
 
-// Helper to create test category
 function makeCategory(overrides: Partial<Category> = {}): Category {
   return {
     id: categoryId('cat-1'),

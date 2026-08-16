@@ -12,7 +12,6 @@ vi.mock('../PresenceMobileButton', () => ({
   PresenceMobileButton: () => <div data-testid="presence-mobile-button">Mobile Button</div>,
 }));
 
-// Mock hooks
 vi.mock('@/shared/hooks/usePresence', () => ({
   usePresence: vi.fn(() => ({
     participants: [],

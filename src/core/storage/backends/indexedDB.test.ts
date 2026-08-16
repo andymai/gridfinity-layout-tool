@@ -271,7 +271,6 @@ describe('indexedDB backend', () => {
     });
 
     it('does not throw when deleting non-existent layout', async () => {
-      // Should not throw
       await expect(deleteLayout('non-existent')).resolves.not.toThrow();
     });
 

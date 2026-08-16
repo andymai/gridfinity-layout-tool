@@ -44,7 +44,6 @@ interface InteractionState {
 }
 
 interface InteractionActions {
-  // Interaction
   setInteraction: (interaction: Interaction | null) => void;
   setDropTarget: (target: DropTarget) => void;
 

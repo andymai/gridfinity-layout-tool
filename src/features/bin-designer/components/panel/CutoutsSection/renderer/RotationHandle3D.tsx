@@ -49,7 +49,6 @@ export function RotationHandle3D({ cutout, onRotateStart }: RotationHandle3DProp
     return geo;
   }, [cx, cy, handleX, handleY]);
 
-  // Circle geometry for handle
   const circleGeometry = useMemo(
     () => new THREE.CircleGeometry(radiusWorld, CIRCLE_SEGMENTS),
     [radiusWorld]

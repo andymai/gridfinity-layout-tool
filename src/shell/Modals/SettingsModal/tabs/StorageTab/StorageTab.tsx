@@ -57,7 +57,6 @@ export function StorageTab() {
 
   return (
     <div className="space-y-8">
-      {/* Storage Status */}
       <SettingSection id="storage-status" title={t('settings.storage.status')}>
         <div className="flex items-center gap-2 text-sm">
           <span className={`inline-block h-2 w-2 rounded-full ${statusDotColor}`} />
@@ -144,7 +143,6 @@ export function StorageTab() {
         </p>
       </section>
 
-      {/* Danger Zone */}
       <SettingSection id="storage-danger" title={t('settings.storage.dangerZone')} tone="danger">
         <div className="flex items-center justify-between">
           <div className="text-sm">

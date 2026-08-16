@@ -297,7 +297,6 @@ export function validateShareLayout(data: unknown, jsonSize: number): Validation
         // Skip non-string values
         if (typeof value !== 'string') continue;
 
-        // Sanitize key and value
         const cleanKey = sanitizeString(key, SHARE_CONSTRAINTS.CUSTOM_PROPERTY_KEY_MAX_LENGTH);
         const cleanValue = sanitizeString(
           value,

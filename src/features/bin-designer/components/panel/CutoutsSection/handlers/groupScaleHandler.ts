@@ -39,7 +39,6 @@ export function handleGroupScaleMove(
 
   const nextPreview = new Map<string, Partial<Cutout>>();
   for (const [id, initial] of mode.initialStates) {
-    // Scale size
     const newW = Math.max(MIN_CUTOUT_SIZE, initial.width * scaleFactor);
     const newD = Math.max(MIN_CUTOUT_SIZE, initial.depth * scaleFactor);
     // Scale position offset from center
