@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.415.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.414.2...gridfinity-layout-tool-v4.415.0) (2026-08-16)
+
+
+### Features
+
+* **bin-designer:** add an underside lightweight floor mode ([#3531](https://github.com/andymai/gridfinity-layout-tool/issues/3531)) ([47cd4db](https://github.com/andymai/gridfinity-layout-tool/commit/47cd4db4408f23bd09cbfc953789116f1de164a6))
+
 ## [4.414.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.414.1...gridfinity-layout-tool-v4.414.2) (2026-08-16)
 
 
