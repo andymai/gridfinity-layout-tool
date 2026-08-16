@@ -12,6 +12,7 @@ import type {
   LabelTabAlignment,
 } from '@/features/bin-designer/types';
 import { DISABLED_WALL_CUTOUT } from '@/features/bin-designer/constants/defaults';
+import { MAX_CUTOUT_CORNER_RADIUS } from '@/shared/utils/wallCutoutPosition';
 import type { SectionMeta } from '../types';
 
 const ALL_SIDES: readonly WallSide[] = ['front', 'back', 'left', 'right', 'interior'];
@@ -19,6 +20,17 @@ const OUTER_SIDES: readonly WallSide[] = ['front', 'back', 'left', 'right'];
 const STEP = 5;
 const DEFAULT_SPAN = 70;
 const DEFAULT_HEIGHT = 50;
+/** Stepper granularity for the two corner radii, in mm. */
+const CORNER_STEP = 0.5;
+/**
+ * Where the bottom fillet starts when the user steps out of Auto.
+ *
+ * A fixed seed rather than the automatic value, which is 15% of the cut's span
+ * in mm and so is not knowable from the panel — the interior dividers have no
+ * span the panel can measure at all. Landing somewhere predictable and visibly
+ * rounded beats landing on a number derived from the wrong wall.
+ */
+const CORNER_SEED = 2;
 
 /**
  * Compartment count at or above which wall cutouts read as a stack of slats.
@@ -175,6 +187,26 @@ export function useWallCutoutsSection() {
     [applySideUpdate]
   );
 
+  const setSideCornerTop = useCallback(
+    (side: WallSide, radius: number) => {
+      applySideUpdate(side, {
+        cornerRadiusTop: Math.max(0, Math.min(MAX_CUTOUT_CORNER_RADIUS, radius)),
+      });
+    },
+    [applySideUpdate]
+  );
+
+  /** Null puts the bottom fillet back on the automatic 15%-of-span rule. */
+  const setSideCornerBottom = useCallback(
+    (side: WallSide, radius: number | null) => {
+      applySideUpdate(side, {
+        cornerRadiusBottom:
+          radius === null ? null : Math.max(0, Math.min(MAX_CUTOUT_CORNER_RADIUS, radius)),
+      });
+    },
+    [applySideUpdate]
+  );
+
   const summary = useMemo(() => {
     if (!walls.enabled) return undefined;
     if (activeSides.length === 0) return undefined;
@@ -223,11 +255,15 @@ export function useWallCutoutsSection() {
       setSideAlignment,
       setSideOffset,
       setSideWidthMm,
+      setSideCornerTop,
+      setSideCornerBottom,
       toggleLinked,
       setShape,
     },
     meta,
     t,
     STEP,
+    CORNER_STEP,
+    CORNER_SEED,
   };
 }

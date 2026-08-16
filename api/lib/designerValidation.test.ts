@@ -49,6 +49,44 @@ function validPayload() {
   };
 }
 
+// Corner radii drive a blend the generator has to build, so an unbounded one is
+// a crafted payload that turns into an unbounded boolean. Null is a real value
+// here — it means "defer to the level above" — so it has to stay accepted.
+describe('validateDesignerShare — walls corner radii', () => {
+  const withWalls = (over: Record<string, unknown>) => {
+    const p = validPayload();
+    return { ...p, params: { ...p.params, walls: { enabled: true, ...over } } };
+  };
+
+  it('accepts a radius in range at the wall level and on a side', () => {
+    expect(validateDesignerShare(withWalls({ cornerRadiusTop: 5 })).valid).toBe(true);
+    expect(
+      validateDesignerShare(withWalls({ front: { width: 50, depth: 50, cornerRadiusBottom: 3 } }))
+        .valid
+    ).toBe(true);
+  });
+
+  it('accepts null and an absent field', () => {
+    expect(
+      validateDesignerShare(withWalls({ cornerRadiusTop: null, cornerRadiusBottom: null })).valid
+    ).toBe(true);
+    expect(validateDesignerShare(withWalls({})).valid).toBe(true);
+  });
+
+  it('rejects an out-of-range radius at either level', () => {
+    expect(validateDesignerShare(withWalls({ cornerRadiusTop: 500 })).valid).toBe(false);
+    expect(validateDesignerShare(withWalls({ cornerRadiusBottom: -1 })).valid).toBe(false);
+    expect(
+      validateDesignerShare(withWalls({ left: { width: 50, depth: 50, cornerRadiusTop: 9999 } }))
+        .valid
+    ).toBe(false);
+  });
+
+  it('rejects a non-numeric radius', () => {
+    expect(validateDesignerShare(withWalls({ cornerRadiusTop: '5' })).valid).toBe(false);
+  });
+});
+
 // Full-width label captions ride in `label`, not `compartments`, so they
 // need their own bounds — the sub-key validator is not an allowlist.
 describe('validateDesignerShare — label.span / rowTexts', () => {

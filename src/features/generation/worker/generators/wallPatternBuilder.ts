@@ -23,7 +23,7 @@ import type { Shape3D } from 'brepjs';
 import type { PipelineContext } from './pipeline/types';
 import { shapeDescriptorKey } from './patterns';
 import type { ShapeDescriptor } from './patterns';
-import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
+import { LIP_HEIGHT, LIP_TAPER_WIDTH, CUT_RIM_CLEARANCE } from './generatorConstants';
 import { sketch } from './meshUtils';
 import { buildCacheKey, quantize, compactKey } from './cacheKeyUtils';
 import { checkCancelled } from './utils/abort';
@@ -54,6 +54,7 @@ import {
 import type { HandleSegment, HandleWallDef } from '@/shared/utils/handleCutoutClip';
 import { computeMultiHandleOffsets } from '@/shared/utils/handleLayout';
 import { isPartialMask } from '@/shared/utils/cellMask';
+import { resolveCutoutCornerRadii } from '@/shared/utils/wallCutoutPosition';
 import { resolvePolygonSideGeometry } from './maskPolygonEdges';
 import { pitchFromParams } from './gridPitch';
 import {
@@ -140,7 +141,7 @@ export function computeWallClipContext(
   // Clip boxes must be at least as deep as the hex prism extrusion (cutDepth)
   // so they fully envelop hex prisms at junction/cutout boundaries.
   const clipExtrudeDepth = Math.max((maxThickness + lipOverhang) * 2 + 1, cutDepth + 1);
-  const clipOvershoot = (hasLip ? LIP_HEIGHT : 0) + 2;
+  const clipOvershoot = (hasLip ? LIP_HEIGHT : 0) + CUT_RIM_CLEARANCE;
 
   // Build handle wall defs for clip positioning. Polygon bins use the
   // outermost edge per cardinal (matches handleBuilder), so clip boxes land
@@ -258,6 +259,7 @@ export function computeWallClips(
         wallSpan,
         wallShape: params.walls.shape,
         wallThickness: params.wallThickness,
+        radii: resolveCutoutCornerRadii(params.walls, cutoutCfg, cutWidth),
       }
     : null;
 

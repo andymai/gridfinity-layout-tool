@@ -57,6 +57,90 @@ describe('WallCutoutsSection', () => {
     expect(spanElements.length).toBeGreaterThanOrEqual(1);
   });
 
+  describe('corner radii', () => {
+    const enabled = () =>
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: true },
+        },
+      });
+
+    it('summarises the built-in rule as square shoulders with an auto fillet', () => {
+      enabled();
+      render(<WallCutoutsSection />);
+      expect(screen.getAllByText('Square / Auto').length).toBeGreaterThanOrEqual(1);
+    });
+
+    /** The disclosure is collapsed until a radius is set, so open it first. */
+    const openCorners = (): void => {
+      fireEvent.click(screen.getAllByRole('button', { name: /Corners/ })[0]);
+    };
+
+    it('writes a top radius to every active side while linked', () => {
+      enabled();
+      render(<WallCutoutsSection />);
+      openCorners();
+
+      const input = screen.getAllByLabelText('Top corner radius (mm)')[0];
+      fireEvent.change(input, { target: { value: '4' } });
+      fireEvent.blur(input);
+
+      const { walls } = useDesignerStore.getState().params;
+      expect(walls.left.cornerRadiusTop).toBe(4);
+      expect(walls.right.cornerRadiusTop).toBe(4);
+    });
+
+    it('steps the bottom fillet off Auto onto an explicit value', () => {
+      enabled();
+      render(<WallCutoutsSection />);
+      openCorners();
+      // Auto is a real state, not a zero, so it has no number to read until
+      // the user leaves it — and an untouched design carries no field at all.
+      expect(useDesignerStore.getState().params.walls.left.cornerRadiusBottom).toBeUndefined();
+
+      fireEvent.click(screen.getAllByRole('button', { name: 'Auto' })[0]);
+
+      expect(useDesignerStore.getState().params.walls.left.cornerRadiusBottom).toBe(2);
+    });
+
+    it('puts the bottom fillet back on Auto', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          walls: {
+            ...DEFAULT_BIN_PARAMS.walls,
+            enabled: true,
+            left: { ...DEFAULT_BIN_PARAMS.walls.left, cornerRadiusBottom: 3 },
+            right: { ...DEFAULT_BIN_PARAMS.walls.right, cornerRadiusBottom: 3 },
+          },
+        },
+      });
+      render(<WallCutoutsSection />);
+
+      fireEvent.click(screen.getAllByRole('button', { name: 'Auto' })[0]);
+
+      expect(useDesignerStore.getState().params.walls.left.cornerRadiusBottom).toBeNull();
+    });
+
+    it('opens itself when a radius is already set, so the value is never hidden', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          walls: {
+            ...DEFAULT_BIN_PARAMS.walls,
+            enabled: true,
+            left: { ...DEFAULT_BIN_PARAMS.walls.left, cornerRadiusTop: 4 },
+            right: { ...DEFAULT_BIN_PARAMS.walls.right, cornerRadiusTop: 4 },
+          },
+        },
+      });
+      render(<WallCutoutsSection />);
+      expect(screen.getAllByLabelText('Top corner radius (mm)').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText('4mm / Auto').length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
   it('shows disabled reason for solid bins', () => {
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS, style: 'solid' },

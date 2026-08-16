@@ -19,7 +19,9 @@ import {
   type SideState,
 } from '../shared';
 import { useWallCutoutsSection } from './useWallCutoutsSection';
+import { MAX_CUTOUT_CORNER_RADIUS } from '@/shared/utils/wallCutoutPosition';
 import type {
+  BinParams,
   WallSide,
   WallCutout,
   WallCutoutShape,
@@ -39,6 +41,103 @@ const SHAPE_OPTIONS: readonly { value: WallCutoutShape; labelKey: string }[] = [
 /** Whether a cutout has non-default positioning (worth auto-expanding to show). */
 function hasCustomPosition(cfg: WallCutout): boolean {
   return cfg.alignment !== 'center' || cfg.offset !== 0;
+}
+
+/**
+ * A cutout's corner radii for display: null at both levels means the built-in
+ * rule, which is a square shoulder and the automatic bottom fillet.
+ */
+function displayCorners(
+  walls: BinParams['walls'],
+  cfg: WallCutout
+): { top: number; bottom: number | null } {
+  return {
+    top: cfg.cornerRadiusTop ?? walls.cornerRadiusTop ?? 0,
+    bottom: cfg.cornerRadiusBottom ?? walls.cornerRadiusBottom ?? null,
+  };
+}
+
+/** Top round-over + bottom fillet, behind a disclosure. Auto-expands when set. */
+function CornersDisclosure({
+  side,
+  walls,
+  cfg,
+  handlers,
+  t,
+  step,
+  seed,
+}: {
+  side: WallSide;
+  walls: BinParams['walls'];
+  cfg: WallCutout;
+  handlers: ReturnType<typeof useWallCutoutsSection>['handlers'];
+  t: (key: string) => string;
+  step: number;
+  seed: number;
+}) {
+  const { top, bottom } = displayCorners(walls, cfg);
+  const isAuto = bottom === null;
+  const autoLabel = t('binDesigner.wallCutouts.cornerAuto');
+  const topText = top > 0 ? `${top}mm` : t('binDesigner.wallCutouts.cornerSquare');
+  const summary = `${topText} / ${isAuto ? autoLabel : `${bottom}mm`}`;
+
+  return (
+    <AdvancedDisclosure
+      label={`${t('binDesigner.wallCutouts.corners')}:`}
+      summary={summary}
+      forceOpen={top > 0 || !isAuto}
+    >
+      <div className="flex items-end gap-2">
+        <StepperField
+          label={t('binDesigner.wallCutouts.cornerTop')}
+          unit="mm"
+          value={top}
+          onChange={(v) => handlers.setSideCornerTop(side, v)}
+          onStep={(delta) => handlers.setSideCornerTop(side, top + delta * step)}
+          min={0}
+          max={MAX_CUTOUT_CORNER_RADIUS}
+          step={step}
+          size="md"
+          aria-label={t('binDesigner.wallCutouts.cornerTopAria')}
+          commitMode="deferred"
+        />
+
+        <StepperField
+          label={t('binDesigner.wallCutouts.cornerBottom')}
+          unit="mm"
+          value={bottom ?? seed}
+          // Auto is a real state, not a zero: the fillet is still there, sized
+          // from the cut's span. Stepping off it seeds a predictable value
+          // rather than a number the panel cannot measure.
+          displayValue={isAuto ? autoLabel : undefined}
+          onChange={isAuto ? undefined : (v) => handlers.setSideCornerBottom(side, v)}
+          onStep={(delta) =>
+            handlers.setSideCornerBottom(side, isAuto ? seed : bottom + delta * step)
+          }
+          min={0}
+          max={MAX_CUTOUT_CORNER_RADIUS}
+          step={step}
+          size="md"
+          aria-label={t('binDesigner.wallCutouts.cornerBottomAria')}
+          commitMode="deferred"
+        />
+
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => handlers.setSideCornerBottom(side, isAuto ? seed : null)}
+          aria-pressed={isAuto}
+          className={`shrink-0 rounded-md border border-stroke-subtle px-1.5 py-1 text-xs font-medium transition-colors ${
+            isAuto
+              ? 'bg-accent/10 text-accent hover:bg-accent/10'
+              : 'bg-surface-elevated text-content-secondary hover:bg-surface-hover'
+          }`}
+        >
+          {autoLabel}
+        </Button>
+      </div>
+    </AdvancedDisclosure>
+  );
 }
 
 /** Span + height steppers on one row, with a %/mm unit toggle on the span. */
@@ -184,7 +283,7 @@ function PositionDisclosure({
 }
 
 export function WallCutoutsSection() {
-  const { state, handlers, meta, t, STEP } = useWallCutoutsSection();
+  const { state, handlers, meta, t, STEP, CORNER_STEP, CORNER_SEED } = useWallCutoutsSection();
   const { walls, activeSides, linked, blocksLid, showDensityHint } = state;
 
   const sharedSide = activeSides.length > 0 ? activeSides[0] : undefined;
@@ -271,6 +370,15 @@ export function WallCutoutsSection() {
                     handlers={handlers}
                     t={t}
                   />
+                  <CornersDisclosure
+                    side={sharedSide}
+                    walls={walls}
+                    cfg={walls[sharedSide]}
+                    handlers={handlers}
+                    t={t}
+                    step={CORNER_STEP}
+                    seed={CORNER_SEED}
+                  />
                 </>
               )}
 
@@ -291,6 +399,15 @@ export function WallCutoutsSection() {
                       step={STEP}
                     />
                     <PositionDisclosure side={side} cfg={walls[side]} handlers={handlers} t={t} />
+                    <CornersDisclosure
+                      side={side}
+                      walls={walls}
+                      cfg={walls[side]}
+                      handlers={handlers}
+                      t={t}
+                      step={CORNER_STEP}
+                      seed={CORNER_SEED}
+                    />
                   </div>
                 ))}
             </>
@@ -321,6 +438,15 @@ export function WallCutoutsSection() {
                   spanLabel={t('binDesigner.wallCutouts.span')}
                   heightLabel={t('binDesigner.wallCutouts.height')}
                   step={STEP}
+                />
+                <CornersDisclosure
+                  side="interior"
+                  walls={walls}
+                  cfg={walls.interior}
+                  handlers={handlers}
+                  t={t}
+                  step={CORNER_STEP}
+                  seed={CORNER_SEED}
                 />
               </div>
             )}

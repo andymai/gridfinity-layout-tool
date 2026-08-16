@@ -81,6 +81,14 @@ const VALID_LABEL_TAB_MODES = ['text', 'socket'] as const;
 const VALID_LABEL_SOCKET_STYLES = ['clickIn', 'slideChannel'] as const;
 const VALID_INSERT_SHAPES = ['rectangle', 'circle', 'hexagon', 'rounded-rect', 'slot'] as const;
 const VALID_WALL_CUTOUT_SHAPES = ['u-shape', 'scoop', 'funnel'] as const;
+
+/**
+ * Cross-boundary contract: MUST match `MAX_CUTOUT_CORNER_RADIUS` in
+ * `src/shared/utils/wallCutoutPosition.ts`. A cutout's corner radius drives a
+ * blend the generator has to build, so an unbounded one is a crafted payload
+ * that turns into an unbounded boolean.
+ */
+const MAX_CUTOUT_CORNER_RADIUS = 25;
 // Mirrors `LidAttachment` in `src/features/bin-designer/types/lid.ts`.
 const VALID_LID_ATTACHMENTS = ['friction', 'clickRails', 'magnetic'] as const;
 // Mirrors `LidGripMode` / `LidGripConfig` / `LidGripSides` in the same
@@ -314,6 +322,11 @@ function validateWalls(walls: unknown): string | null {
   ) {
     return `walls.shape must be one of: ${VALID_WALL_CUTOUT_SHAPES.join(', ')}`;
   }
+  // Corner radii: null is the value that means "defer to the level above", so
+  // it is accepted alongside a missing field. Anything else has to be a number
+  // in range at BOTH levels — the side's override is what the generator reads.
+  const cornerErr = validateCornerRadii(walls, 'walls');
+  if (cornerErr) return cornerErr;
   // Validate per-side width/depth are in range (0-100%)
   for (const side of ['front', 'back', 'left', 'right', 'interior']) {
     const sideConfig = walls[side];
@@ -324,6 +337,20 @@ function validateWalls(walls: unknown): string | null {
       if (isNumber(sideConfig.depth) && !inRange(sideConfig.depth, 0, 100)) {
         return `walls.${side}.depth must be 0-100`;
       }
+      const sideCornerErr = validateCornerRadii(sideConfig, `walls.${side}`);
+      if (sideCornerErr) return sideCornerErr;
+    }
+  }
+  return null;
+}
+
+/** Bound `cornerRadiusTop` / `cornerRadiusBottom` on a walls or per-side object. */
+function validateCornerRadii(cfg: Record<string, unknown>, path: string): string | null {
+  for (const key of ['cornerRadiusTop', 'cornerRadiusBottom']) {
+    const value = cfg[key];
+    if (value === undefined || value === null) continue;
+    if (!isNumber(value) || !inRange(value, 0, MAX_CUTOUT_CORNER_RADIUS)) {
+      return `${path}.${key} must be 0-${MAX_CUTOUT_CORNER_RADIUS} or null`;
     }
   }
   return null;

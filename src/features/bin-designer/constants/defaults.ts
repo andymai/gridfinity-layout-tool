@@ -77,7 +77,15 @@ export const VALID_FLOOR_PATTERNS = new Set<FloorPatternType>(FLOOR_PATTERN_TYPE
 
 export { DEFAULT_FLOOR_PATTERN_CONFIG } from '../types';
 
-/** Default position fields shared by all wall cutouts */
+/**
+ * Default position fields shared by all wall cutouts.
+ *
+ * Deliberately carries no corner radii. An absent field means "defer", which
+ * resolves to the square shoulder and automatic bottom fillet every design
+ * already had — so leaving them out keeps saved designs, the example gallery
+ * and the community dedupe fingerprints byte-identical, and a design only
+ * grows the keys once someone sets one.
+ */
 const DEFAULT_CUTOUT_POSITION = {
   alignment: 'center' as const,
   offset: 0,

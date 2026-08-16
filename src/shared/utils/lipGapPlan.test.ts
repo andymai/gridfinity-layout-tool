@@ -76,6 +76,38 @@ describe('lipGaps: wall cutouts', () => {
     ]);
   });
 
+  it('widens by the shoulder round, which reaches its full radius at the rim', () => {
+    // The round-over flares the cut outward as it rises, so the stretch of wall
+    // with no lip is wider than the span the user set. A rail placed against
+    // the nominal span would hang over the flare and grip nothing — while
+    // colliding with nothing, which is why no interference probe sees it.
+    const r = 4;
+    const cut = { ...walls().front, enabled: true, width: 40, depth: 50 };
+    const square = lipGaps(bin({ walls: walls({ front: cut }) }));
+    const rounded = lipGaps(bin({ walls: walls({ front: { ...cut, cornerRadiusTop: r } }) }));
+    expect(rounded[0].hi - rounded[0].lo).toBeCloseTo(square[0].hi - square[0].lo + 2 * r, 6);
+    expect(rounded[0].lo).toBeCloseTo(square[0].lo - r, 6);
+    expect(rounded[0].hi).toBeCloseTo(square[0].hi + r, 6);
+  });
+
+  it('takes no extra width where the cut leaves no wall to round', () => {
+    // A full-width cut has no shoulder, so the builder squares it and the gap
+    // must not grow — mirroring the profile's own slack clamp gate for gate.
+    const full = { ...walls().front, enabled: true, width: 100, depth: 50, cornerRadiusTop: 5 };
+    const gaps = lipGaps(bin({ walls: walls({ front: full }) }));
+    expect(gaps[0].hi - gaps[0].lo).toBeCloseTo(INNER, 6);
+  });
+
+  it('can be what tips a wall from partly lipped to unusable', () => {
+    // 90% of an 81.1mm wall leaves 4.05mm of lip in each corner, which is a
+    // usable rail. A 4mm round at each end eats it to 0.05mm and the wall has
+    // nothing left to grip — the whole point of routing the flare through here.
+    const wide = { ...walls().front, enabled: true, width: 90, depth: 50 };
+    expect(unlippedSides(lipGaps(bin({ walls: walls({ front: wide }) })), 'cutout')).toEqual([]);
+    const rounded = lipGaps(bin({ walls: walls({ front: { ...wide, cornerRadiusTop: 4 } }) }));
+    expect(unlippedSides(rounded, 'cutout')).toEqual(['front']);
+  });
+
   it('follows alignment off the wall centre', () => {
     const left = lipGaps(
       bin({

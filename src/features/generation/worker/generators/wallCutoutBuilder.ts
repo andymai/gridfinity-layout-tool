@@ -9,54 +9,38 @@ import { draw, translate, rotate, clone, unwrap, withScope, fuseAll } from 'brep
 import type { Shape3D, Drawing, DisposalScope, ValidSolid } from 'brepjs';
 import type { BinParams, WallCutoutShape } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
-import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
+import { LIP_HEIGHT, LIP_TAPER_WIDTH, CUT_RIM_CLEARANCE } from './generatorConstants';
 import { interiorDividerSegments } from './compartmentBuilder';
 import { resolvePolygonSideGeometry, type PolygonSideGeometry } from './maskPolygonEdges';
 import { pitchFromParams } from './gridPitch';
 import { isPartialMask } from '@/shared/utils/cellMask';
-import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
+import {
+  MIN_CUTOUT_CORNER_RADIUS,
+  UNBOUNDED_SLACK,
+  computeCutoutCenter,
+  cornerSlackFor,
+  resolveCutoutCornerRadii,
+  safeCutoutCornerRadii,
+  type CornerSlack,
+  type CutoutCornerRadii,
+} from '@/shared/utils/wallCutoutPosition';
 
-// Re-export for consumers that were importing from this module
-export { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
-
-/**
- * Auto-compute corner radius: 15% of the cutout's span, clamped to [0.5, 5] mm.
- * Deliberately independent of the cut height — at 100% height the cut tracks
- * the wall, so a height term makes the bin's HEIGHT change the corner look of
- * an otherwise untouched cutout. Degenerately short or narrow cutouts
- * are still bounded by the callers' width/2 and height/2 guards.
- */
-export function autoCornerRadius(cutWidth: number): number {
-  return Math.max(0.5, Math.min(5, cutWidth * 0.15));
-}
+// Re-exported for consumers that were importing them from this module
+export {
+  computeCutoutCenter,
+  autoCornerRadius,
+  cornerSlackFor,
+} from '@/shared/utils/wallCutoutPosition';
+export type { CornerSlack } from '@/shared/utils/wallCutoutPosition';
 
 /** Funnel taper ratio: bottom width is 60% of top width. */
 const FUNNEL_TAPER_RATIO = 0.6;
 
-/** Wall material left standing on each side of a cutout, in mm along the span. */
-export interface CornerSlack {
-  readonly left: number;
-  readonly right: number;
-}
-
-/** No neighbouring wall constraint: used by callers that don't sit in a span. */
-const UNBOUNDED_SLACK: CornerSlack = { left: Infinity, right: Infinity };
-
 /**
- * Wall left standing on each side of a cutout that spans `cutWidth` and is
- * centred `centerOffset` from the wall's midpoint.
+ * Distance from a quarter-arc's chord midpoint out to the arc, as a fraction of
+ * the radius: `1 − cos(45°)`. The mid-arc point `threePointsArcTo` needs.
  */
-export function cornerSlackFor(
-  wallSpan: number,
-  cutWidth: number,
-  centerOffset: number
-): CornerSlack {
-  const halfSpan = wallSpan / 2;
-  return {
-    left: Math.max(0, centerOffset - cutWidth / 2 + halfSpan),
-    right: Math.max(0, halfSpan - (centerOffset + cutWidth / 2)),
-  };
-}
+const QUARTER_ARC_BULGE = 1 - Math.SQRT1_2;
 
 /**
  * Build a 2D cutout profile (Drawing) for the given shape.
@@ -68,66 +52,107 @@ export function cornerSlackFor(
  * @param cutWidth - Horizontal span of the cutout in mm
  * @param userCutHeight - User-visible height (depth from wall top) in mm
  * @param overshoot - Extra height above wall top for clean boolean cuts
+ * @param cornerSlack - Wall left standing at each end of the span
+ * @param radii - Resolved corner radii; omit for square shoulders + auto fillet
  */
 export function buildCutoutProfile(
   cutoutShape: WallCutoutShape,
   cutWidth: number,
   userCutHeight: number,
   overshoot: number,
-  cornerSlack: CornerSlack = UNBOUNDED_SLACK
+  cornerSlack: CornerSlack = UNBOUNDED_SLACK,
+  radii: CutoutCornerRadii = resolveCutoutCornerRadii(undefined, undefined, cutWidth)
 ): Drawing {
   const totalHeight = userCutHeight + overshoot;
+  const topY = totalHeight / 2;
+  const bottomY = -totalHeight / 2;
+  // Highest material the cut passes through: the lip's top face when there is
+  // one, the wall's otherwise. The round-over is tangent to this plane, which
+  // is what makes the shoulder read as one continuous curve rather than a
+  // rounded wall with a square lip perched on it.
+  const rimY = topY - CUT_RIM_CLEARANCE;
+  const safe = safeCutoutCornerRadii(
+    radii,
+    cutWidth,
+    userCutHeight,
+    overshoot - CUT_RIM_CLEARANCE,
+    cornerSlack
+  );
 
   switch (cutoutShape) {
     case 'scoop': {
       // Semicircle arc clamped by available height (floor boundary).
-      // When cutWidth/2 > userCutHeight, the arc becomes a shallow circular
+      // When cutWidth/2 > chord depth, the arc becomes a shallow circular
       // segment instead of a full semicircle.
       const hw = cutWidth / 2;
-      const sagitta = Math.min(hw, userCutHeight);
-      const topY = totalHeight / 2;
-      const arcCenterY = topY - overshoot; // Y where the flat top meets the arc
-      return draw([-hw, topY])
-        .lineTo([hw, topY])
-        .lineTo([hw, arcCenterY])
-        .sagittaArc(-cutWidth, 0, sagitta)
-        .close();
+      const topR = Math.max(safe.topLeft, safe.topRight);
+      // The chord is one horizontal line, so it drops by the DEEPER of the two
+      // round-overs and the shallower end keeps a short straight run down to
+      // it. With no round-over this is `topY - overshoot`, the arc's original
+      // seat at the wall body's top face.
+      const chordY = Math.min(topY - overshoot, rimY - topR);
+      const sagitta = Math.min(hw, chordY - bottomY);
+      // Where the cut's own side starts on each end: under the round-over when
+      // there is one, at the profile's top edge when there is not.
+      const sideTop = (r: number): number => (r > MIN_CUTOUT_CORNER_RADIUS ? rimY - r : topY);
+
+      let pen = draw([-(hw + safe.topLeft), topY]).lineTo([hw + safe.topRight, topY]);
+      pen = penTopFlare(pen, hw, rimY, safe.topRight, 1);
+      if (chordY < sideTop(safe.topRight) - 1e-6) pen = pen.lineTo([hw, chordY]);
+      pen = pen.sagittaArc(-cutWidth, 0, sagitta);
+      if (chordY < sideTop(safe.topLeft) - 1e-6) pen = pen.lineTo([-hw, sideTop(safe.topLeft)]);
+      return penTopFlare(pen, hw, rimY, safe.topLeft, -1).close();
     }
 
     case 'u-shape':
     case 'funnel': {
       // U-shape and funnel are the same pen — a straight-sided u-shape is the
       // degenerate funnel with no taper.
-      //
-      // Only the two BOTTOM corners are rounded. The top corners must stay
-      // square: the profile clears the wall by `overshoot`, but `safeR` can
-      // reach 5mm while the overshoot is only ~2mm above the true rim, so a
-      // four-corner rounding leaves arc on the visible rim instead of having
-      // it trimmed away by the boolean.
-      const cornerR = autoCornerRadius(cutWidth);
-      const safeR = Math.min(cornerR, cutWidth / 2 - 0.01, userCutHeight / 2 - 0.01);
-      // A bottom fillet only reads as a blend when there is wall beyond the cut
-      // edge for it to run into. Cap each corner by the material actually left
-      // on that side: a full-width cut has none, so the arc would stand up as a
-      // free tapering fin against the side wall instead of rounding anything.
-      // Per-corner because alignment/offset can leave one end flush and the
-      // other deep in material.
-      const safeRight = Math.min(safeR, cornerSlack.right);
-      const safeLeft = Math.min(safeR, cornerSlack.left);
-
       const topHW = cutWidth / 2;
       const bottomHW = cutoutShape === 'funnel' ? (cutWidth * FUNNEL_TAPER_RATIO) / 2 : topHW;
-      const topY = totalHeight / 2;
-      const bottomY = -totalHeight / 2;
 
-      // top-left -> top-right -> bottom-right -> bottom-left -> close
-      let pen = draw([-topHW, topY]).lineTo([topHW, topY]).lineTo([bottomHW, bottomY]);
-      if (safeRight > 0.1) pen = pen.customCorner(safeRight);
+      let pen = draw([-(topHW + safe.topLeft), topY]).lineTo([topHW + safe.topRight, topY]);
+      pen = penTopFlare(pen, topHW, rimY, safe.topRight, 1);
+      pen = pen.lineTo([bottomHW, bottomY]);
+      if (safe.bottomRight > MIN_CUTOUT_CORNER_RADIUS) pen = pen.customCorner(safe.bottomRight);
       pen = pen.lineTo([-bottomHW, bottomY]);
-      if (safeLeft > 0.1) pen = pen.customCorner(safeLeft);
-      return pen.close();
+      if (safe.bottomLeft > MIN_CUTOUT_CORNER_RADIUS) pen = pen.customCorner(safe.bottomLeft);
+      if (safe.topLeft > MIN_CUTOUT_CORNER_RADIUS) pen = pen.lineTo([-topHW, rimY - safe.topLeft]);
+      return penTopFlare(pen, topHW, rimY, safe.topLeft, -1).close();
     }
   }
+}
+
+/**
+ * Draw one end of the top round-over: from the rim plane, outboard of the cut,
+ * down to where the cut's own side resumes.
+ *
+ * Written as an explicit quarter arc rather than `customCorner`, which fillets
+ * two drawn curves and would need the rim run to be LONGER than the radius to
+ * have something left to trim. Sized exactly it silently declines to fillet
+ * (`removeCorner` returns the curves untouched); sized longer it leaves a
+ * horizontal face lying in the material's own top plane, which is a coincident
+ * face for the boolean to trip over. Neither failure is loud.
+ *
+ * `dir` is +1 for the right end of the span and -1 for the left; on the left
+ * the pen is travelling the other way round the profile, so the arc runs from
+ * the cut side back out to the rim.
+ */
+function penTopFlare(
+  pen: ReturnType<typeof draw>,
+  halfWidth: number,
+  rimY: number,
+  radius: number,
+  dir: 1 | -1
+): ReturnType<typeof draw> {
+  if (radius <= MIN_CUTOUT_CORNER_RADIUS) return pen;
+  const bulge = radius * QUARTER_ARC_BULGE;
+  const outer = dir * (halfWidth + radius);
+  const inner = dir * halfWidth;
+  const via: [number, number] = [dir * (halfWidth + bulge), rimY - bulge];
+  return dir === 1
+    ? pen.lineTo([outer, rimY]).threePointsArcTo([inner, rimY - radius], via)
+    : pen.threePointsArcTo([outer, rimY], via);
 }
 
 /**
@@ -148,9 +173,17 @@ function buildSingleCutoutInScope(
   extrudeDepth: number,
   wallHeight: number,
   position: { x: number; y: number; rotateZ: number },
-  cornerSlack: CornerSlack
+  cornerSlack: CornerSlack,
+  radii?: CutoutCornerRadii
 ): Shape3D {
-  const profile = buildCutoutProfile(cutoutShape, cutWidth, userCutHeight, overshoot, cornerSlack);
+  const profile = buildCutoutProfile(
+    cutoutShape,
+    cutWidth,
+    userCutHeight,
+    overshoot,
+    cornerSlack,
+    radii
+  );
 
   // Sketch on XZ plane: X = horizontal span, Z = vertical height.
   // Extrusion goes along -Y (through the wall).
@@ -186,7 +219,8 @@ export function buildSingleCutout(
   extrudeDepth: number,
   wallHeight: number,
   position: { x: number; y: number; rotateZ: number },
-  cornerSlack: CornerSlack = UNBOUNDED_SLACK
+  cornerSlack: CornerSlack = UNBOUNDED_SLACK,
+  radii?: CutoutCornerRadii
 ): Shape3D {
   return withScope((scope: DisposalScope) => {
     const tracked = buildSingleCutoutInScope(
@@ -198,7 +232,8 @@ export function buildSingleCutout(
       extrudeDepth,
       wallHeight,
       position,
-      cornerSlack
+      cornerSlack,
+      radii
     );
     // Clone so the scope-owned original can be safely disposed while the
     // caller receives a fresh, independently-owned handle.
@@ -243,6 +278,8 @@ export interface InteriorDividerCutout {
   readonly rotateZ: number;
   /** Divider material left standing at each end of the window. */
   readonly cornerSlack: CornerSlack;
+  /** Corner radii resolved from `walls.interior` and the wall-level defaults. */
+  readonly radii: CutoutCornerRadii;
 }
 
 /**
@@ -293,6 +330,7 @@ export function computeInteriorDividerCutouts(
       y: seg.y + centerOffset * Math.sin(rad),
       rotateZ: seg.rotateZ,
       cornerSlack: cornerSlackFor(seg.wallLen, cutW, centerOffset),
+      radii: resolveCutoutCornerRadii(params.walls, cfg, cutW),
     });
   }
   return out;
@@ -320,7 +358,7 @@ function buildWallCutoutCutsInScope(
   const maxThickness = Math.max(wallThickness, params.compartments.thickness);
   const lipOverhang = hasLip ? LIP_TAPER_WIDTH : 0;
   const extrudeDepth = (maxThickness + lipOverhang) * 2 + 1;
-  const overshoot = (hasLip ? LIP_HEIGHT : 0) + 2;
+  const overshoot = (hasLip ? LIP_HEIGHT : 0) + CUT_RIM_CLEARANCE;
 
   // For non-rectangular bins, map each side to the outermost polygon edge
   // facing that direction (silently skipping sides with no matching edge).
@@ -377,7 +415,8 @@ function buildWallCutoutCutsInScope(
           y: side.rotateZ !== 0 ? side.y + centerOffset : side.y,
           rotateZ: side.rotateZ,
         },
-        cornerSlackFor(side.wallSpan, cutWidth, centerOffset)
+        cornerSlackFor(side.wallSpan, cutWidth, centerOffset),
+        resolveCutoutCornerRadii(params.walls, cfg, cutWidth)
       )
     );
   }
@@ -399,7 +438,8 @@ function buildWallCutoutCutsInScope(
         extrudeDepth,
         wallHeight,
         c,
-        c.cornerSlack
+        c.cornerSlack,
+        c.radii
       )
     );
   }

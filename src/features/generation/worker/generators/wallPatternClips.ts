@@ -53,7 +53,9 @@ function buildCutoutClipSolid(wall: WallPatternDescriptor, clip: CutoutClipParam
       x: rotateZ === 0 ? wall.translateX + centerOffset : wall.translateX,
       y: rotateZ !== 0 ? wall.translateY + centerOffset : wall.translateY,
       rotateZ,
-    }
+    },
+    undefined,
+    clip.radii
   );
 }
 
