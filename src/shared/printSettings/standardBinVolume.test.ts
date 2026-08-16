@@ -12,25 +12,28 @@ import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
  * `measureVolume(getLastSolid())` for standard bins (socket base + stacking
  * lip, single compartment, default 42mm grid / 7mm height units).
  *
- * These replace the previous fabricated "PrusaSlicer calibration" numbers,
- * which did not match the actual generated geometry (a 1×1×3u bin is 6241mm³
- * solid ≈ 2.59m, not the 2.3m the old data claimed). The analytical model is
- * expected to reproduce these within ±10%.
+ * The analytical model is expected to reproduce these within ±10%.
  *
- * Reproduce: generate each bin with `generateBin(buildParams({width,depth,height}))`,
- * read `getLastSolid()`, then `unwrap(measureVolume(solid))`.
+ * These numbers replace an earlier set that omitted the base socket entirely —
+ * it recorded a 1×1×3u bin at 6241mm³ when a solid 1u foot alone is ~7300mm³,
+ * so no bin standing on one could measure that little. The gap grew with cell
+ * count (1.7× on a tall 1×1, 3.0× on a 3×3), which is the signature of a
+ * missing per-cell term, and it is what `BASE_VOL_PER_CELL_AREA` was fitted to.
+ *
+ * Reproduce: `generateBin({ ...DEFAULT_BIN_PARAMS, forExport: true, width, depth, height })`
+ * and take `meshVolume` of the returned mesh (see `__kernel-tests__/meshAssertions`).
  */
 const OCCT_GROUND_TRUTH: ReadonlyArray<readonly [number, number, number, number]> = [
-  [1, 1, 3, 6241],
-  [1, 2, 3, 10609],
-  [2, 2, 3, 17094],
-  [3, 3, 3, 32180],
-  [1, 1, 6, 10167],
-  [2, 2, 6, 25253],
-  [2, 2, 9, 33413],
-  [1, 1, 2, 4932],
-  [3, 2, 5, 30429],
-  [4, 4, 6, 68127],
+  [1, 1, 3, 13525],
+  [1, 2, 3, 25180],
+  [2, 2, 3, 46238],
+  [3, 3, 3, 97757],
+  [1, 1, 6, 17449],
+  [2, 2, 6, 54395],
+  [2, 2, 9, 62553],
+  [1, 1, 2, 12217],
+  [3, 2, 5, 74146],
+  [4, 4, 6, 184709],
 ];
 
 describe('standardBinVolume', () => {
@@ -143,11 +146,11 @@ describe('standardBinVolume', () => {
       expect(est.costUSD).toBeGreaterThan(0);
     });
 
-    it('filament length matches the OCCT solid volume conversion (1×1×3u ≈ 2.59m)', () => {
+    it('filament length matches the OCCT solid volume conversion (1×1×3u ≈ 5.62m)', () => {
       const est = estimateStandardBinFilament(1, 1, 3);
-      // 6241mm³ / 2.405mm² / 1000 ≈ 2.59m
-      expect(est.metersFilament).toBeGreaterThan(2.59 * 0.9);
-      expect(est.metersFilament).toBeLessThan(2.59 * 1.1);
+      // 13525mm³ / 2.405mm² / 1000 ≈ 5.62m
+      expect(est.metersFilament).toBeGreaterThan(5.62 * 0.9);
+      expect(est.metersFilament).toBeLessThan(5.62 * 1.1);
     });
 
     it('is monotonic: larger bins cost more and take longer', () => {

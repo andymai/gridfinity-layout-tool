@@ -102,13 +102,13 @@ describe('printEstimates', () => {
     });
 
     it('matches the OCCT-measured solid volume for a 2×2×3 standard bin (±15%)', () => {
-      // Ground truth from the real generator: 2×2×3u solid = 17094 mm³.
-      // The old hollow-box model treated the bottom 7mm as a solid slab and
-      // reported ~67000 mm³ (≈4× too high). The consolidated model reuses the
-      // OCCT-calibrated shared base geometry.
+      // Ground truth from the real generator: 2×2×3u solid = 46238 mm³. The
+      // earlier 17094 came from a measurement that left the base socket out —
+      // one 1u foot is ~7300 mm³ on its own, so four of them plus a body could
+      // never total that.
       const est = estimatePrint(DEFAULT_BIN_PARAMS);
-      expect(est.volumeMm3).toBeGreaterThan(17094 * 0.85);
-      expect(est.volumeMm3).toBeLessThan(17094 * 1.15);
+      expect(est.volumeMm3).toBeGreaterThan(46238 * 0.85);
+      expect(est.volumeMm3).toBeLessThan(46238 * 1.15);
     });
 
     it('a plain standard bin matches the shared print-export estimator', () => {
@@ -299,7 +299,10 @@ describe('printEstimates', () => {
       expect(frontOnly).toBeLessThan(solid);
       expect(frontOnly).toBeGreaterThan(allWalls);
       // A square bin: one of four equal walls should save about a quarter.
-      expect(solid - frontOnly).toBeCloseTo((solid - allWalls) / 4, 5);
+      // Within a whole mm³, because `volumeMm3` is rounded to an integer before
+      // it is returned — a quarter of a four-way split lands on a .25 whenever
+      // the total is not a multiple of four.
+      expect(solid - frontOnly).toBeCloseTo((solid - allWalls) / 4, 0);
     });
 
     it('still counts the divider saving when every outer wall is deselected', () => {
@@ -665,9 +668,18 @@ describe('printEstimates', () => {
         base: { ...DEFAULT_BIN_PARAMS.base, tile: true, ...overrides },
       });
 
-      it('costs far less than the ordinary bin at the same footprint', () => {
-        const plain = estimatePrint({ ...DEFAULT_BIN_PARAMS, height: 3 });
-        expect(estimatePrint(tray()).volumeMm3).toBeLessThan(plain.volumeMm3 * 0.75);
+      // Asserted as "the wall it does not build" rather than as a fraction of
+      // the whole bin. A base-only bin is feet + slab, and the feet dominate: at
+      // the corrected base calibration a 2x2 plate is ~82% of a 2x2x3 bin, not
+      // the ~60% an earlier fixed ratio assumed when the base term was 4.3x too
+      // small. The invariant that survives is the one the code implements.
+      it('drops exactly the wall term against an ordinary bin at the same footprint', () => {
+        const tileVolume = estimatePrint(tray()).volumeMm3;
+        const plain3 = estimatePrint({ ...DEFAULT_BIN_PARAMS, height: 3 }).volumeMm3;
+        const plain6 = estimatePrint({ ...DEFAULT_BIN_PARAMS, height: 6 }).volumeMm3;
+        expect(tileVolume).toBeLessThan(plain3);
+        // The gap IS the wall, so a taller bin widens it by its extra wall.
+        expect(plain6 - tileVolume).toBeGreaterThan(plain3 - tileVolume);
       });
 
       it('ignores the inert stored height', () => {
