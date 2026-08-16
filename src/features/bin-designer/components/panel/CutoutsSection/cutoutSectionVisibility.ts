@@ -15,9 +15,25 @@ export function hasShapeControls(shape: Cutout['shape']): boolean {
   return shape === 'polygon' || shape === 'circle';
 }
 
-/** Arrays apply to ungrouped, non-path cutouts (parametric shapes only). */
-export function canArray(cutout: Pick<Cutout, 'shape' | 'groupId'>): boolean {
-  return cutout.shape !== 'path' && cutout.groupId === null;
+// Re-exported so the section predicates read from one import, while the
+// definition lives beside the placement math the detector also uses.
+export { canArray } from '@/shared/utils/cutoutArray';
+
+/** Why a cutout cannot carry a repeat, so the section can say so. */
+export type RepeatBlockedReason = 'grouped' | 'path';
+
+/**
+ * The reason `canArray` refuses this cutout, or null when it does not. The
+ * Repeat section renders this instead of disappearing: a control that vanishes
+ * without explanation reads as a bug, and grouping two shapes in order to
+ * repeat the pair is a reasonable thing to have tried.
+ */
+export function repeatBlockedReason(
+  cutout: Pick<Cutout, 'shape' | 'groupId'>
+): RepeatBlockedReason | null {
+  if (cutout.shape === 'path') return 'path';
+  if (cutout.groupId !== null) return 'grouped';
+  return null;
 }
 
 /** True when a shape exposes any insertion-fit control (clearance / chamfer). */

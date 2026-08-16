@@ -82,9 +82,20 @@ export function clampedOffset(
   binWidth: number,
   binDepth: number
 ): { x: number; y: number } {
+  return clampedDelta(original, offset, offset, binWidth, binDepth);
+}
+
+/** Per-axis form, for the step-and-repeat chain's arbitrary offset. */
+export function clampedDelta(
+  original: Cutout,
+  dx: number,
+  dy: number,
+  binWidth: number,
+  binDepth: number
+): { x: number; y: number } {
   return {
-    x: Math.max(0, Math.min(original.x + offset, binWidth - original.width)),
-    y: Math.max(0, Math.min(original.y + offset, binDepth - original.depth)),
+    x: Math.max(0, Math.min(original.x + dx, binWidth - original.width)),
+    y: Math.max(0, Math.min(original.y + dy, binDepth - original.depth)),
   };
 }
 

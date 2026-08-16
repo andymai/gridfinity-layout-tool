@@ -14,6 +14,11 @@ import type { Cutout, CutoutArrayConfig } from '@/features/bin-designer/types';
 import { MAX_ARRAY_INSTANCES, MAX_ARRAY_COUNT } from '@/features/bin-designer/types';
 import { clamp } from './math';
 
+/** Arrays apply to ungrouped, non-path cutouts (parametric shapes only). */
+export function canArray(cutout: Pick<Cutout, 'shape' | 'groupId'>): boolean {
+  return cutout.shape !== 'path' && cutout.groupId === null;
+}
+
 /** Absolute editor caps for array spacing (mm), independent of bin size. */
 export const ARRAY_MIN_PITCH = 1;
 export const ARRAY_MAX_PITCH = 200;

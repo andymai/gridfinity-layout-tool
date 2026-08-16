@@ -13,7 +13,7 @@
  *   - `cutoutWorkspaceContextActions`    — right-click menu builder
  */
 
-import { useCallback, useState, useMemo } from 'react';
+import { useCallback, useState, useMemo, useRef, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import {
@@ -41,6 +41,14 @@ import { applyFlattenArray } from '../panel/CutoutsSection/cutoutHelpers';
 import { CutoutContextMenu } from '../panel/CutoutsSection/CutoutContextMenu';
 import { TopRuler, LeftRuler, RulerCorner } from './Rulers';
 import { CutoutQuickstartOverlay } from './CutoutQuickstartOverlay';
+import { RepeatSuggestionChip } from './RepeatSuggestion';
+import { useRepeatSuggestion, applyRepeatMerge } from '../../hooks/useRepeatSuggestion';
+import { loadInspectorCollapsed } from './inspectorDockStorage';
+import { detectRepeatPattern, type RepeatDetection } from '@/shared/utils/cutoutRepeatDetect';
+import { arrayInstanceCount, canArray } from '@/shared/utils/cutoutArray';
+import { clampedDefaultConfig } from '../panel/CutoutsSection/repeatPresets';
+import { trackEvent } from '@/shared/analytics/posthog';
+import { useToastStore } from '@/core/store/toast';
 import { CutoutEmptyState } from '../panel/CutoutsSection/CutoutEmptyState';
 import { useCutoutQuickstart } from '../../hooks/useCutoutQuickstart';
 import { useTranslation } from '@/i18n';
@@ -142,6 +150,10 @@ export function CutoutWorkspace() {
   const scanEnabled = useFeatureFlag('scan_with_phone');
   const [scanDialogOpen, setScanDialogOpen] = useState(false);
 
+  // Mirrors the dock's own collapsed state (which it persists) so the canvas
+  // knows whether the inspector is there to hold the repeat suggestion.
+  const [dockCollapsed, setDockCollapsed] = useState(loadInspectorCollapsed);
+
   // Quickstart overlay state
   const { quickstartSeen, markQuickstartSeen } = useCutoutQuickstart();
   const [overlayForcedVisible, setOverlayForcedVisible] = useState(false);
@@ -179,10 +191,28 @@ export function CutoutWorkspace() {
 
   const [gridSize, setGridSize] = useState(0.5);
   const [fitCue, setFitCue] = useState<FitCue>(null);
+  const mergeCutoutsIntoArray = useDesignerStore((s) => s.mergeCutoutsIntoArray);
+  const addToast = useToastStore((s) => s.addToast);
+  const makeRepeatRef = useRef<() => void>(() => {});
 
   const handleFlattenArray = useCallback(
-    (id: string) => applyFlattenArray(id, cutouts, updateCutout, addCutout),
+    (id: string) => {
+      const master = cutouts.find((c) => c.id === id);
+      if (master?.array) {
+        trackEvent('cutout_repeat_flattened', {
+          mode: master.array.mode,
+          instances: arrayInstanceCount(master.array),
+        });
+      }
+      applyFlattenArray(id, cutouts, updateCutout, addCutout);
+    },
     [cutouts, updateCutout, addCutout]
+  );
+
+  const handleMergeIntoRepeat = useCallback(
+    (detection: RepeatDetection) =>
+      applyRepeatMerge(detection, { mergeCutoutsIntoArray, addToast, t }, 'context_menu'),
+    [mergeCutoutsIntoArray, addToast, t]
   );
 
   // Grow-to-fit companion to the clamp: a typed W/H past the board is kept
@@ -269,6 +299,8 @@ export function CutoutWorkspace() {
     onAdd: addCutout,
     onGroup: groupCutouts,
     onUngroup: ungroupCutouts,
+    // Via a ref because the handler needs `selection`, which this hook returns.
+    onMakeRepeat: () => makeRepeatRef.current(),
     onUpdateBatch: updateCutoutsBatch,
     onRemoveBatch: removeCutoutsBatch,
     onUndo: undo,
@@ -315,6 +347,45 @@ export function CutoutWorkspace() {
     [openContextMenu]
   );
 
+  // Ctrl+Shift+D. One cutout means "repeat this"; a detected pattern means
+  // "these are already a repeat, make it one". Both readings of the same
+  // intent, so the binding does not change meaning with the selection.
+  const handleMakeRepeat = useCallback(() => {
+    const selected = cutouts.filter((c) => selection.has(c.id));
+    if (selected.length === 1) {
+      const cutout = selected[0];
+      if (!canArray(cutout) || cutout.array) return;
+      const config = clampedDefaultConfig(cutout, binWidth, binDepth);
+      if (!config) return;
+      updateCutout(cutout.id, { array: config });
+      trackEvent('cutout_repeat_created', {
+        source: 'shortcut',
+        mode: config.mode,
+        instances: arrayInstanceCount(config),
+      });
+      return;
+    }
+    const detection = detectRepeatPattern(selected, binWidth, binDepth);
+    if (detection) {
+      applyRepeatMerge(detection, { mergeCutoutsIntoArray, addToast, t }, 'shortcut');
+    }
+  }, [cutouts, selection, binWidth, binDepth, updateCutout, mergeCutoutsIntoArray, addToast, t]);
+
+  useEffect(() => {
+    makeRepeatRef.current = handleMakeRepeat;
+  }, [handleMakeRepeat]);
+
+  // Only enabled while the dock is closed: the inspector carries the row
+  // otherwise, and a hidden instance would still record an impression.
+  const repeatSuggestion = useRepeatSuggestion(
+    cutouts,
+    selection,
+    binWidth,
+    binDepth,
+    'canvas',
+    dockCollapsed
+  );
+
   const isInteracting =
     mode.type === 'dragging' ||
     mode.type === 'resizing' ||
@@ -344,12 +415,14 @@ export function CutoutWorkspace() {
         setGroupOp,
         reorderCutouts,
         flattenArray: handleFlattenArray,
+        mergeIntoRepeat: handleMergeIntoRepeat,
         t,
       }),
     [
       selection,
       clipboard,
       cutouts,
+      handleMergeIntoRepeat,
       copySelected,
       duplicateSelected,
       deleteSelected,
@@ -540,6 +613,7 @@ export function CutoutWorkspace() {
           onGrowToFit={handleGrowToFit}
           onDuplicate={duplicateSelected}
           onDelete={deleteSelected}
+          onCollapsedChange={setDockCollapsed}
           board={{
             gridSize,
             onGridSizeChange: setGridSize,
@@ -548,6 +622,12 @@ export function CutoutWorkspace() {
           }}
         />
       </div>
+
+      {/* Only while the dock is closed: the inspector already carries the row,
+          and two copies of one offer reads as two offers. */}
+      {dockCollapsed && repeatSuggestion && (
+        <RepeatSuggestionChip suggestion={repeatSuggestion} disabled={isInteracting} />
+      )}
 
       {showQuickstart && <CutoutQuickstartOverlay onDismiss={handleDismissQuickstart} />}
 

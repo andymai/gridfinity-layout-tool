@@ -70,6 +70,11 @@ export function CutoutQuickstartOverlay({ onDismiss }: CutoutQuickstartOverlayPr
             icon={<GridIcon />}
             text={t('binDesigner.cutoutEditor.quickstart.precision')}
           />
+          <FeatureRow
+            index={5}
+            icon={<RepeatIcon />}
+            text={t('binDesigner.cutoutEditor.quickstart.repeat')}
+          />
         </ul>
 
         <Button
@@ -152,6 +157,18 @@ function MenuIcon() {
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
       <rect x="3" y="2" width="14" height="16" rx="2" />
       <path d="M6 6h8M6 10h8M6 14h5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+/** One filled cell driving a lattice of derived ones — the master and its instances. */
+function RepeatIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <rect x="1.5" y="1.5" width="6" height="6" rx="1" fill="currentColor" stroke="none" />
+      <rect x="11" y="1.5" width="6" height="6" rx="1" />
+      <rect x="1.5" y="11" width="6" height="6" rx="1" />
+      <rect x="11" y="11" width="6" height="6" rx="1" />
     </svg>
   );
 }

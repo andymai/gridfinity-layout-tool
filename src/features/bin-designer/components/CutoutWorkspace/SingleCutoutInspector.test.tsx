@@ -89,11 +89,24 @@ describe('SingleCutoutInspector', () => {
     expect(onUpdate).toHaveBeenCalledWith('c1', { width: 156 });
   });
 
-  it('shows the Array section for an arrayable shape but not for a path', () => {
+  it('shows the Repeat section with its presets for a repeatable shape', () => {
     renderit(makeCutout({ shape: 'circle' }));
-    expect(screen.getByText('binDesigner.cutouts.section.array')).toBeInTheDocument();
+    expect(screen.getByText('binDesigner.cutouts.section.repeat')).toBeInTheDocument();
+    expect(screen.getByTestId('repeat-preset-grid3x2')).toBeInTheDocument();
+  });
+
+  it('keeps the section for a path but states why it is unavailable', () => {
     renderit(makeCutout({ shape: 'path' }));
-    // path: still only one array header in the document (from the circle render)
-    expect(screen.getAllByText('binDesigner.cutouts.section.array')).toHaveLength(1);
+    // Present, not vanished: a control that disappears without explanation
+    // reads as a bug rather than as a rule.
+    expect(screen.getByText('binDesigner.cutouts.section.repeat')).toBeInTheDocument();
+    expect(screen.getByText('binDesigner.cutouts.repeat.blockedPath')).toBeInTheDocument();
+    expect(screen.queryByTestId('repeat-preset-grid3x2')).not.toBeInTheDocument();
+  });
+
+  it('offers a way out when the shape is only blocked by grouping', () => {
+    renderit(makeCutout({ shape: 'circle', groupId: 'g1' }));
+    expect(screen.getByText('binDesigner.cutouts.repeat.blockedGrouped')).toBeInTheDocument();
+    expect(screen.getByText('binDesigner.cutouts.ungroup')).toBeInTheDocument();
   });
 });

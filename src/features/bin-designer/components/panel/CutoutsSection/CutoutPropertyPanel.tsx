@@ -13,7 +13,7 @@ import { CutoutScoopControls } from '../../CutoutWorkspace/CutoutScoopControls';
 import { CutoutShapeControls } from './CutoutShapeControls';
 import { CutoutFitControls } from './CutoutFitControls';
 import { CutoutShapeBadge } from './CutoutShapeBadge';
-import { hasFitControls, formatFitSummary, canArray } from './cutoutSectionVisibility';
+import { hasFitControls, formatFitSummary, repeatBlockedReason } from './cutoutSectionVisibility';
 import { CutoutArrayControls } from './CutoutArrayControls';
 import { arrayInstanceCount } from '@/shared/utils/cutoutArray';
 import type { FitCue } from './cutoutSectionVisibility';
@@ -31,6 +31,8 @@ interface CutoutPropertyPanelProps {
   readonly onFitCue?: (cue: FitCue) => void;
   /** Flatten the cutout's array into independent cutouts. */
   readonly onFlattenArray?: (id: string) => void;
+  /** Offered when the Repeat section is blocked by grouping. */
+  readonly onUngroup?: (ids: readonly string[]) => void;
 }
 
 export function CutoutPropertyPanel({
@@ -44,6 +46,7 @@ export function CutoutPropertyPanel({
   disabled = false,
   onFitCue,
   onFlattenArray,
+  onUngroup,
 }: CutoutPropertyPanelProps) {
   const t = useTranslation();
 
@@ -154,6 +157,32 @@ export function CutoutPropertyPanel({
         </div>
       </Collapsible>
 
+      {/* Above Fit: repeating a shape is a placement decision, so it belongs
+          next to the sections used while placing one. Expanded by default —
+          collapsed behind an "Off" summary is how it went unnoticed. */}
+      <Collapsible
+        title={t('binDesigner.cutouts.section.repeat')}
+        size="sm"
+        summary={
+          cutout.array
+            ? t('binDesigner.cutouts.repeat.instances', {
+                count: arrayInstanceCount(cutout.array),
+              })
+            : t('binDesigner.cutouts.repeat.empty')
+        }
+      >
+        <CutoutArrayControls
+          cutout={cutout}
+          binWidth={maxWidth}
+          binDepth={maxDepth}
+          onUpdate={(patch) => onUpdate(cutout.id, patch)}
+          onFlatten={() => onFlattenArray?.(cutout.id)}
+          disabled={disabled}
+          blockedReason={repeatBlockedReason(cutout)}
+          onUngroup={() => onUngroup?.([cutout.id])}
+        />
+      </Collapsible>
+
       {hasFitControls(cutout) && (
         <Collapsible
           title={t('binDesigner.cutouts.section.fit')}
@@ -169,30 +198,6 @@ export function CutoutPropertyPanel({
             cutout={cutout}
             onUpdate={(patch) => onUpdate(cutout.id, patch)}
             onCueChange={onFitCue}
-            disabled={disabled}
-          />
-        </Collapsible>
-      )}
-
-      {canArray(cutout) && (
-        <Collapsible
-          title={t('binDesigner.cutouts.section.array')}
-          size="sm"
-          defaultExpanded={false}
-          summary={
-            cutout.array
-              ? t('binDesigner.cutouts.array.instances', {
-                  count: arrayInstanceCount(cutout.array),
-                })
-              : t('binDesigner.cutouts.array.off')
-          }
-        >
-          <CutoutArrayControls
-            cutout={cutout}
-            binWidth={maxWidth}
-            binDepth={maxDepth}
-            onUpdate={(patch) => onUpdate(cutout.id, patch)}
-            onFlatten={() => onFlattenArray?.(cutout.id)}
             disabled={disabled}
           />
         </Collapsible>

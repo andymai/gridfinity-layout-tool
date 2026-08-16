@@ -14,6 +14,11 @@ import {
 } from '../panel/CutoutsSection/geometry';
 import { canArray } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import { defaultArrayConfig } from '@/shared/utils/cutoutArray';
+import {
+  detectRepeatPattern,
+  MIN_REPEAT_SELECTION,
+  type RepeatDetection,
+} from '@/shared/utils/cutoutRepeatDetect';
 import type { Cutout, GroupOp, ReorderDirection } from '@/features/bin-designer/types';
 import type { TFunction } from '@/i18n/context';
 
@@ -37,6 +42,7 @@ interface BuildContextActionsArgs {
   setGroupOp: (groupId: string, op: GroupOp) => void;
   reorderCutouts: (ids: readonly string[], direction: ReorderDirection) => void;
   flattenArray: (id: string) => void;
+  mergeIntoRepeat: (detection: RepeatDetection) => void;
   t: TFunction;
 }
 
@@ -61,6 +67,7 @@ export function buildCutoutContextActions(args: BuildContextActionsArgs): Contex
     setGroupOp,
     reorderCutouts,
     flattenArray,
+    mergeIntoRepeat,
     t,
   } = args;
 
@@ -117,16 +124,16 @@ export function buildCutoutContextActions(args: BuildContextActionsArgs): Contex
       if (canArray(cutout)) {
         if (cutout.array) {
           actions.push({
-            label: t('binDesigner.cutouts.array.flatten'),
+            label: t('binDesigner.cutouts.repeat.flatten'),
             onClick: () => flattenArray(cutout.id),
           });
           actions.push({
-            label: t('binDesigner.cutouts.array.remove'),
+            label: t('binDesigner.cutouts.repeat.remove'),
             onClick: () => updateCutout(cutout.id, { array: undefined }),
           });
         } else {
           actions.push({
-            label: t('binDesigner.cutouts.array.create'),
+            label: t('binDesigner.cutouts.repeat.create'),
             onClick: () =>
               updateCutout(cutout.id, {
                 array: defaultArrayConfig(cutout.width, cutout.depth),
@@ -172,6 +179,22 @@ export function buildCutoutContextActions(args: BuildContextActionsArgs): Contex
       disabled: anyLocked,
       shortcut: { keys: 'V', shift: true },
     });
+  }
+
+  if (hasSelection && selection.size >= MIN_REPEAT_SELECTION) {
+    // Only offered when the selection really is a pattern, so the entry is
+    // never a dead item the user has to click to find out about.
+    const detection = detectRepeatPattern(
+      cutouts.filter((c) => selection.has(c.id)),
+      binWidth,
+      binDepth
+    );
+    if (detection) {
+      actions.push({
+        label: t('binDesigner.cutouts.repeat.merge'),
+        onClick: () => mergeIntoRepeat(detection),
+      });
+    }
   }
 
   if (hasSelection && selection.size >= 2) {

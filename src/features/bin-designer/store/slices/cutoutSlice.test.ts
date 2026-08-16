@@ -1254,4 +1254,91 @@ describe('cutoutSlice - consolidated actions', () => {
       expect(params.meshAssets?.['asset-1']?.name).toBe('wrench');
     });
   });
+
+  describe('mergeCutoutsIntoArray', () => {
+    const repeatConfig = {
+      mode: 'grid' as const,
+      cols: 3,
+      rows: 1,
+      pitchX: 24,
+      pitchY: 20,
+      count: 3,
+      radius: 30,
+      startAngle: 0,
+      rotateToCenter: false,
+    };
+
+    const seedThree = () => {
+      const { addCutout } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a', x: 0 }));
+      addCutout(createTestCutout({ id: 'b', x: 24 }));
+      addCutout(createTestCutout({ id: 'c', x: 48 }));
+    };
+
+    it('writes the config onto the master and drops the absorbed cutouts', () => {
+      seedThree();
+
+      useDesignerStore.getState().mergeCutoutsIntoArray('a', repeatConfig, ['b', 'c']);
+
+      const { cutouts } = useDesignerStore.getState().params;
+      expect(cutouts).toHaveLength(1);
+      expect(cutouts[0].id).toBe('a');
+      expect(cutouts[0].array).toEqual(repeatConfig);
+    });
+
+    it('is one history entry, so a single undo restores every cutout', () => {
+      seedThree();
+      const before = useDesignerStore.getState().history.past.length;
+
+      useDesignerStore.getState().mergeCutoutsIntoArray('a', repeatConfig, ['b', 'c']);
+      expect(useDesignerStore.getState().history.past.length).toBe(before + 1);
+
+      useDesignerStore.getState().undo();
+
+      const { cutouts } = useDesignerStore.getState().params;
+      expect(cutouts.map((c) => c.id).sort()).toEqual(['a', 'b', 'c']);
+      expect(cutouts.every((c) => c.array === undefined)).toBe(true);
+    });
+
+    it('ignores absorbed ids that no longer exist, rather than acting on stale detection', () => {
+      seedThree();
+      useDesignerStore.getState().removeCutout('c');
+
+      useDesignerStore.getState().mergeCutoutsIntoArray('a', repeatConfig, ['b', 'c']);
+
+      const { cutouts } = useDesignerStore.getState().params;
+      expect(cutouts.map((c) => c.id)).toEqual(['a']);
+    });
+
+    it('does nothing when the master has gone', () => {
+      seedThree();
+      const before = useDesignerStore.getState().history.past.length;
+
+      useDesignerStore.getState().mergeCutoutsIntoArray('missing', repeatConfig, ['b', 'c']);
+
+      expect(useDesignerStore.getState().params.cutouts).toHaveLength(3);
+      expect(useDesignerStore.getState().history.past.length).toBe(before);
+    });
+
+    it('does nothing when nothing would be absorbed', () => {
+      seedThree();
+      const before = useDesignerStore.getState().history.past.length;
+
+      useDesignerStore.getState().mergeCutoutsIntoArray('a', repeatConfig, ['a']);
+
+      expect(useDesignerStore.getState().params.cutouts).toHaveLength(3);
+      expect(useDesignerStore.getState().history.past.length).toBe(before);
+    });
+
+    it('refuses a master that cannot carry a repeat', () => {
+      const { addCutout } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a', x: 0, groupId: 'g1' }));
+      addCutout(createTestCutout({ id: 'b', x: 24, groupId: 'g1' }));
+      addCutout(createTestCutout({ id: 'c', x: 48, groupId: 'g1' }));
+
+      useDesignerStore.getState().mergeCutoutsIntoArray('a', repeatConfig, ['b', 'c']);
+
+      expect(useDesignerStore.getState().params.cutouts).toHaveLength(3);
+    });
+  });
 });

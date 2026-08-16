@@ -113,6 +113,8 @@ export interface UseCutoutInteractionOptions {
   readonly onAdd: (cutout: Cutout) => void;
   readonly onGroup?: (cutoutIds: readonly string[]) => void;
   readonly onUngroup?: (cutoutIds: readonly string[]) => void;
+  /** Ctrl+Shift+D: create a repeat from the selection, or merge a pattern. */
+  readonly onMakeRepeat?: () => void;
   readonly onUpdateBatch?: (updates: ReadonlyMap<string, Partial<Cutout>>) => void;
   readonly onRemoveBatch?: (ids: readonly string[]) => void;
   readonly onUndo?: () => void;

@@ -10,6 +10,7 @@ import type { Draft } from 'immer';
 import type {
   DesignerState,
   Cutout,
+  CutoutArrayConfig,
   CutoutColorScope,
   CutoutToggleProperties,
   ReorderDirection,
@@ -17,6 +18,7 @@ import type {
   GroupOp,
 } from '../../types';
 import { DEFAULT_GROUP_OP, DEFAULT_CUTOUT_COLOR_SCOPE } from '../../types';
+import { canArray } from '@/shared/utils/cutoutArray';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
 import { MAX_MESH_ASSETS_PER_DESIGN } from '@/shared/generation/meshAsset';
 import { pushHistoryEntry, dissolveSingletonGroups } from '../helpers';
@@ -612,6 +614,33 @@ export function createCutoutSlice(set: Set) {
         pushHistoryEntry(state);
         const idSet = new Set(ids);
         state.params.cutouts = state.params.cutouts.filter((c) => !idSet.has(c.id));
+        state.params.cutouts = dissolveSingletonGroups(state.params.cutouts);
+        gcMeshAssets(state);
+      });
+    },
+
+    mergeCutoutsIntoArray: (
+      masterId: string,
+      config: CutoutArrayConfig,
+      absorbedIds: readonly string[]
+    ) => {
+      set((state) => {
+        const master = state.params.cutouts.find((c) => c.id === masterId);
+        if (!master || !canArray(master)) return;
+        // The absorbed ids come from a detection that ran against an older
+        // snapshot, so re-check rather than trusting them: a cutout deleted or
+        // grouped in between would otherwise be removed on stale evidence.
+        const absorbed = new Set(
+          absorbedIds.filter(
+            (id) => id !== masterId && state.params.cutouts.some((c) => c.id === id)
+          )
+        );
+        if (absorbed.size === 0) return;
+
+        pushHistoryEntry(state, { affectsGeometry: true });
+        state.params.cutouts = state.params.cutouts
+          .filter((c) => !absorbed.has(c.id))
+          .map((c) => (c.id === masterId ? { ...c, array: config } : c));
         state.params.cutouts = dissolveSingletonGroups(state.params.cutouts);
         gcMeshAssets(state);
       });

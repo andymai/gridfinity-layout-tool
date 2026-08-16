@@ -24,7 +24,7 @@ import { CutoutShapeBadge } from '../panel/CutoutsSection/CutoutShapeBadge';
 import {
   hasFitControls,
   formatFitSummary,
-  canArray,
+  repeatBlockedReason,
 } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import { CutoutArrayControls } from '../panel/CutoutsSection/CutoutArrayControls';
@@ -97,6 +97,7 @@ export function SingleCutoutInspector({
   disabled,
 }: SingleCutoutInspectorProps) {
   const t = useTranslation();
+  const ungroupCutouts = useDesignerStore((s) => s.ungroupCutouts);
   return (
     <>
       <div className="-mx-4 border-b border-stroke-subtle px-4 py-3">
@@ -215,6 +216,29 @@ export function SingleCutoutInspector({
         </Collapsible>
       </div>
 
+      {/* Above Color and Fit: repeating a shape is a placement decision, so it
+          belongs next to the two sections used while placing one. */}
+      <div className="-mx-4 border-b border-stroke-subtle px-4 pt-2 pb-3">
+        <Collapsible
+          title={t('binDesigner.cutouts.section.repeat')}
+          size="sm"
+          summary={
+            cutout.array ? formatArraySummary(cutout.array) : t('binDesigner.cutouts.repeat.empty')
+          }
+        >
+          <CutoutArrayControls
+            cutout={cutout}
+            binWidth={binWidth}
+            binDepth={binDepth}
+            onUpdate={(patch) => onUpdate(cutout.id, patch)}
+            onFlatten={() => onFlattenArray?.(cutout.id)}
+            disabled={disabled}
+            blockedReason={repeatBlockedReason(cutout)}
+            onUngroup={() => ungroupCutouts([cutout.id])}
+          />
+        </Collapsible>
+      </div>
+
       <div className="-mx-4 border-b border-stroke-subtle px-4 pt-2 pb-3">
         <Collapsible title={t('binDesigner.cutouts.section.color')} size="sm">
           <CutoutColorControls
@@ -242,27 +266,6 @@ export function SingleCutoutInspector({
               cutout={cutout}
               onUpdate={(patch) => onUpdate(cutout.id, patch)}
               onCueChange={onFitCue}
-              disabled={disabled}
-            />
-          </Collapsible>
-        </div>
-      )}
-
-      {canArray(cutout) && (
-        <div className="-mx-4 border-b border-stroke-subtle px-4 pt-2 pb-3">
-          <Collapsible
-            title={t('binDesigner.cutouts.section.array')}
-            size="sm"
-            summary={
-              cutout.array ? formatArraySummary(cutout.array) : t('binDesigner.cutouts.array.off')
-            }
-          >
-            <CutoutArrayControls
-              cutout={cutout}
-              binWidth={binWidth}
-              binDepth={binDepth}
-              onUpdate={(patch) => onUpdate(cutout.id, patch)}
-              onFlatten={() => onFlattenArray?.(cutout.id)}
               disabled={disabled}
             />
           </Collapsible>
