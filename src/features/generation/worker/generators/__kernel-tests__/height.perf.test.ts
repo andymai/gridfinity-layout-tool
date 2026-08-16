@@ -11,6 +11,14 @@
  * scales with wall AREA. The timeout module's own note that "a tall 6×6×20 is
  * ~3min" is the case a higher cap would push past the 3-minute preview ceiling.
  *
+ * That ~3min does not agree with the 44.3s measured for the same bin below, and
+ * both were taken on the default occt-wasm pipeline, so they are not two kernels
+ * disagreeing. The older figure predates the generation caching work, and every
+ * number here is hardware-dependent besides. Treat the timeout module's figure
+ * as superseded for this workload rather than as a second data point, and re-run
+ * this file rather than comparing against either when the question comes up
+ * again.
+ *
  * Measured on a 3×3 (height unit / budget in seconds):
  *
  *   height   plain     honeycomb   preview budget
@@ -25,6 +33,18 @@
  * topology extruded further. And honeycomb, the only case that pays, grows
  * roughly linearly past 20u (~21s per 10u) rather than exploding, so the worst
  * case at 50u still sits at half the budget it is granted.
+ *
+ * Beyond that budget the pattern cut does not merely run long, it exhausts the
+ * WASM heap (`RuntimeError: memory access out of bounds`). That region is
+ * reached by FOOTPRINT at the old 20u cap, so it is not something height
+ * opened up. Measured separately, all honeycomb:
+ *
+ *   6x6x20    44.3s   fits          10x10x20   116.2s   fits
+ *   16x16x20  OOM at 294.7s         6x6x50     OOM at 242.6s
+ *
+ * 16x16x20 was fully legal before the cap moved. Both OOMs land well past the
+ * 180s preview budget, so the timeout fires first and the worker is reset,
+ * which is the path such bins already take.
  *
  * Run in isolation via the profile config (excluded from CI):
  *   pnpm exec vitest run --config vitest.profile.config.ts height.perf
