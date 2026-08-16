@@ -94,14 +94,14 @@ describe('buildSingleCellSocket', () => {
     const result = meshShape(shape);
     expect(result.vertices.length).toBeGreaterThan(0);
     expect(result.triangles.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 
   it('builds a valid solid for a half-size cell', () => {
     const shape = buildSingleCellSocket(20.5, 20.5);
     const result = meshShape(shape);
     expect(result.vertices.length).toBeGreaterThan(0);
     expect(result.triangles.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 });
 
 describe('buildSimplifiedCellSocket', () => {
@@ -109,13 +109,13 @@ describe('buildSimplifiedCellSocket', () => {
     const shape = buildSimplifiedCellSocket(41.5, 41.5);
     const result = meshShape(shape);
     expect(result.vertices.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 
   it('produces fewer triangles than full socket', () => {
     const full = meshShape(buildSingleCellSocket(41.5, 41.5));
     const simplified = meshShape(buildSimplifiedCellSocket(41.5, 41.5));
     expect(simplified.triangles.length).toBeLessThanOrEqual(full.triangles.length);
-  }, 30000);
+  });
 });
 
 describe('buildBaseSocket', () => {
@@ -124,7 +124,7 @@ describe('buildBaseSocket', () => {
     const result = meshShape(shape);
     expect(result.vertices.length).toBeGreaterThan(0);
     expect(result.triangles.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 
   it('builds a 2x2 socket grid with magnets', () => {
     const shape = buildBaseSocket(2, 2, true, false, 3.1, 2, 1.25, false, GRID_PLAN);
@@ -136,7 +136,7 @@ describe('buildBaseSocket', () => {
     const shape = buildBaseSocket(1.5, 1, false, false, 3.1, 2, 1.25, false, GRID_PLAN);
     const result = meshShape(shape);
     expect(result.vertices.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 
   it('builds a 2x2 socket grid in half-sockets mode', () => {
     const shape = buildBaseSocket(2, 2, false, false, 3.1, 2, 1.25, false, ALL_PLAN);

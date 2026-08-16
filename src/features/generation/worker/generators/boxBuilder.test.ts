@@ -44,13 +44,13 @@ describe('buildBinBox', () => {
     const result = meshShape(shape);
     expect(result.vertices.length).toBeGreaterThan(0);
     expect(result.triangles.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 
   it('builds a solid 2x2 box', () => {
     const shape = buildBinBox(2, 2, 16, 1.2, true);
     const result = meshShape(shape);
     expect(result.vertices.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 
   it('solid box has fewer triangles than hollow box', () => {
     const hollow = meshShape(buildBinBox(2, 2, 16, 1.2, false));
@@ -62,13 +62,13 @@ describe('buildBinBox', () => {
     const shape = buildBinBox(2, 2, 16, 1.2, true, 5);
     const result = meshShape(shape);
     expect(result.vertices.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 
   it('builds a 0.5x0.5 box (minimum size)', () => {
     const shape = buildBinBox(0.5, 0.5, 9, 1.2, false);
     const result = meshShape(shape);
     expect(result.vertices.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 });
 
 describe('buildTopShape', () => {
@@ -77,19 +77,19 @@ describe('buildTopShape', () => {
     const result = meshShape(shape);
     expect(result.vertices.length).toBeGreaterThan(0);
     expect(result.triangles.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 
   it('builds lip without stacking interface', () => {
     const shape = buildTopShape(2, 2, false);
     const result = meshShape(shape);
     expect(result.vertices.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 
   it('builds lip for a 1x1 bin', () => {
     const shape = buildTopShape(1, 1, true);
     const result = meshShape(shape);
     expect(result.vertices.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 
   it('lip with stacking has more triangles than without', () => {
     const withLip = meshShape(buildTopShape(2, 2, true));
@@ -135,7 +135,7 @@ describe('buildTopShape', () => {
     const TOL = 0.5;
     expect(lipBounds.xMax - lipBounds.xMin).toBeGreaterThan(outerW - TOL);
     expect(lipBounds.yMax - lipBounds.yMin).toBeGreaterThan(outerD - TOL);
-  }, 30000);
+  });
 
   // Regression: — the lip extension must include an angled support
   // face below the overhang so it can be FDM-printed without strings. The

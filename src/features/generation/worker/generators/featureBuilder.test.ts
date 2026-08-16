@@ -103,7 +103,7 @@ describe('buildCompartmentWalls', () => {
     expect(result).not.toBeNull();
     const meshed = meshShape(result);
     expect(meshed.vertices.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 
   it('returns null when all cells are merged', () => {
     const params: BinParams = {
@@ -123,7 +123,7 @@ describe('buildCompartmentWalls', () => {
     expect(result).not.toBeNull();
     const meshed = meshShape(result);
     expect(meshed.vertices.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 
   it('builds walls when a divider has a tilt override (1×2)', () => {
     const params: BinParams = {
@@ -140,7 +140,7 @@ describe('buildCompartmentWalls', () => {
     expect(result).not.toBeNull();
     const meshed = meshShape(result);
     expect(meshed.vertices.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 
   it('tilted divider produces a different mesh than the equivalent straight one', () => {
     const base: BinParams = {
@@ -163,7 +163,7 @@ describe('buildCompartmentWalls', () => {
     const straightMesh = meshShape(straight);
     const skewMesh = meshShape(skew);
     expect(skewMesh.vertices.length).not.toBe(straightMesh.vertices.length);
-  }, 30000);
+  });
 
   it('does not crash on a tilted override that pushes the divider outside the bin interior', () => {
     // Defensive guard against malformed JSON or invariant breakage where
@@ -180,7 +180,7 @@ describe('buildCompartmentWalls', () => {
       },
     };
     expect(() => buildCompartmentWalls(params, 80, 80, 16)).not.toThrow();
-  }, 30000);
+  });
 
   it('applies overrides only to the matching pair when a boundary spans multiple pairs', () => {
     // 2×2 grid with no merging — the vertical boundary between col 0 and col
@@ -257,7 +257,7 @@ describe('buildCompartmentWalls', () => {
     // would be a no-op. Post-fix: they differ because only the (2,3)
     // half changes — proving the override is now scoped to its pair.
     expect(Math.abs(topOnlySum - bothSum)).toBeGreaterThan(0.01);
-  }, 30000);
+  });
 });
 
 describe('buildInsertCuts', () => {
@@ -286,7 +286,7 @@ describe('buildInsertCuts', () => {
     expect(result).not.toBeNull();
     const meshed = meshShape(result);
     expect(meshed.vertices.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 
   it('builds a rounded-rect insert cut', () => {
     const params: BinParams = {
@@ -307,7 +307,7 @@ describe('buildInsertCuts', () => {
     expect(result).not.toBeNull();
     const meshed = meshShape(result);
     expect(meshed.vertices.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 });
 
 describe('buildCutoutCuts', () => {
@@ -341,7 +341,7 @@ describe('buildCutoutCuts', () => {
     expect(fuseTools).toHaveLength(0);
     const meshed = meshShape(cutTools[0]);
     expect(meshed.vertices.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 
   it('returns an embossed label as a fuse tool, not a cut', () => {
     const params: BinParams = {
@@ -372,7 +372,7 @@ describe('buildCutoutCuts', () => {
     expect(fuseTools).toHaveLength(1);
     const meshed = meshShape(fuseTools[0]);
     expect(meshed.vertices.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 
   const recessedLabelCutout: BinParams['cutouts'][number] = {
     id: 'c1',
@@ -404,7 +404,7 @@ describe('buildCutoutCuts', () => {
     const zMaxes = cutTools.map((t) => shapeBounds(t).zMax).sort((a, b) => a - b);
     expect(zMaxes[0]).toBeLessThan(11.5);
     expect(zMaxes[1]).toBeGreaterThan(15.5);
-  }, 30000);
+  });
 
   it('carves a floor-embossed center label out of the cavity instead of fusing it (#2726)', () => {
     const emboss: BinParams = {
@@ -427,7 +427,7 @@ describe('buildCutoutCuts', () => {
       16
     );
     expect(shapeVolume(labeled.cutTools[0])).toBeLessThan(shapeVolume(plain.cutTools[0]) - 1);
-  }, 30000);
+  });
 
   it('drops an engraved center label when the recess consumes the full fill depth', () => {
     const params: BinParams = {
@@ -439,7 +439,7 @@ describe('buildCutoutCuts', () => {
     // Cavity only — no floor is left to engrave into.
     expect(cutTools).toHaveLength(1);
     expect(fuseTools).toHaveLength(0);
-  }, 30000);
+  });
 
   it('keeps a label at the bin top when its center is outside a circle cutout footprint', () => {
     // Offset drags the center to (13.5, 13.5) from the cutout center — inside
@@ -463,7 +463,7 @@ describe('buildCutoutCuts', () => {
     for (const tool of cutTools) {
       expect(shapeBounds(tool).zMax).toBeGreaterThan(15.5);
     }
-  }, 30000);
+  });
 
   it('keeps a label at the bin top for members of non-union groups', () => {
     // A subtract group's final cavity may not contain the member's footprint,
@@ -492,7 +492,7 @@ describe('buildCutoutCuts', () => {
     for (const tool of cutTools) {
       expect(shapeBounds(tool).zMax).toBeGreaterThan(15.5);
     }
-  }, 30000);
+  });
 });
 
 describe('buildLabelTabs', () => {
@@ -514,7 +514,7 @@ describe('buildLabelTabs', () => {
     expect(result).not.toBeNull();
     const meshed = meshShape(result);
     expect(meshed.vertices.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 
   it('builds solid-style label tabs', () => {
     const params: BinParams = {
@@ -525,7 +525,7 @@ describe('buildLabelTabs', () => {
     expect(result).not.toBeNull();
     const meshed = meshShape(result);
     expect(meshed.vertices.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 });
 
 describe('buildScoopRamps', () => {
@@ -557,7 +557,7 @@ describe('buildScoopRamps', () => {
     expect(result).not.toBeNull();
     const meshed = meshShape(result);
     expect(meshed.vertices.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 
   it('builds scoop ramps with fixed radius', () => {
     const params: BinParams = {
@@ -568,7 +568,7 @@ describe('buildScoopRamps', () => {
     expect(result).not.toBeNull();
     const meshed = meshShape(result);
     expect(meshed.vertices.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 });
 
 describe('buildWallCutoutCuts', () => {
@@ -600,7 +600,7 @@ describe('buildWallCutoutCuts', () => {
     expect(result).not.toBeNull();
     const meshed = meshShape(result);
     expect(meshed.vertices.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 
   it('returns null when all sides are disabled', () => {
     const params: BinParams = {
@@ -640,7 +640,7 @@ describe('buildWallCutoutCuts', () => {
     expect(result).not.toBeNull();
     const meshed = meshShape(result);
     expect(meshed.vertices.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 
   it('returns null when width and depth are both 0', () => {
     const params: BinParams = {
@@ -681,7 +681,7 @@ describe('buildWallCutoutCuts', () => {
     expect(result).not.toBeNull();
     const meshed = meshShape(result);
     expect(meshed.vertices.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 
   it('handles 100% depth (full interior height cutout)', () => {
     const params: BinParams = {
@@ -702,7 +702,7 @@ describe('buildWallCutoutCuts', () => {
     expect(result).not.toBeNull();
     const meshed = meshShape(result);
     expect(meshed.vertices.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 
   it('builds scoop shape cutouts for enabled sides', () => {
     const params: BinParams = {
@@ -723,7 +723,7 @@ describe('buildWallCutoutCuts', () => {
     expect(result).not.toBeNull();
     const meshed = meshShape(result);
     expect(meshed.vertices.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 
   it('builds funnel shape cutouts for enabled sides', () => {
     const params: BinParams = {
@@ -744,7 +744,7 @@ describe('buildWallCutoutCuts', () => {
     expect(result).not.toBeNull();
     const meshed = meshShape(result);
     expect(meshed.vertices.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 
   it('builds scoop with very wide cutout (width > 2*height) as floor-bounded arc', () => {
     const params: BinParams = {
@@ -765,5 +765,5 @@ describe('buildWallCutoutCuts', () => {
     expect(result).not.toBeNull();
     const meshed = meshShape(result);
     expect(meshed.vertices.length).toBeGreaterThan(0);
-  }, 30000);
+  });
 });

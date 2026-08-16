@@ -143,6 +143,29 @@ export default defineConfig({
           setupFiles: ['./src/test/setup.ts'],
           include: generatorIncludes,
           exclude: sharedExclude,
+          // The root 30s is calibrated for pure-JS tests that finish in
+          // milliseconds. Everything here drives real OCCT booleans, and 1423
+          // of the project's 1748 `it`s inherit that figure rather than
+          // declaring their own, so the cap the heavy tests actually run under
+          // was set by a different workload's needs. The slowest of them cost
+          // ~12s, 40% of the budget, and a shared runner spends that margin
+          // (#3537): the test that timed out differed every attempt because it
+          // was only ever whichever inherited test was slowest that run. 120s
+          // is the tier the deliberately-annotated heavy files already use.
+          //
+          // This is a liveness bound, not a performance budget. The perf tests
+          // assert their own ceilings against `performance.now()`
+          // (tessellation.perf, height.perf, compartments.perf), so a slow
+          // regression is still caught by the assertion that exists for it, and
+          // a wedged kernel is still bounded by the job's `timeout-minutes`.
+          testTimeout: 120_000,
+          // Separate knob with its own, tighter default (10s), and every file
+          // here boots the WASM kernel via `initTestKernel()` in `beforeAll`.
+          // 175 of 199 hooks were given an explicit raise by hand, which is why
+          // `}, 30000)` on a hook is load-bearing rather than a restatement of
+          // the default the way the `it`-level ones are. This covers the 24 that
+          // were never given one.
+          hookTimeout: 120_000,
         },
       },
       {
