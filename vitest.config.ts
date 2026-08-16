@@ -153,11 +153,14 @@ export default defineConfig({
           // was only ever whichever inherited test was slowest that run. 120s
           // is the tier the deliberately-annotated heavy files already use.
           //
-          // This is a liveness bound, not a performance budget. The perf tests
-          // assert their own ceilings against `performance.now()`
-          // (tessellation.perf, height.perf, compartments.perf), so a slow
-          // regression is still caught by the assertion that exists for it, and
-          // a wedged kernel is still bounded by the job's `timeout-minutes`.
+          // This is a liveness bound, not a performance budget, and it was never
+          // serving as one: a timeout only fires on the slowest test of whatever
+          // run trips it. `tessellation.perf` is the one file here that enforces
+          // timing, via `toBeLessThan(MAX_MS_*)` against `performance.now()`, and
+          // the cap above does not touch it. The `.perf` files under
+          // `__kernel-tests__` only record measurements, and `sharedExclude` keeps
+          // that directory out of this project regardless. A wedged kernel stays
+          // bounded by the job's `timeout-minutes`.
           testTimeout: 120_000,
           // Separate knob with its own, tighter default (10s), and every file
           // here boots the WASM kernel via `initTestKernel()` in `beforeAll`.
