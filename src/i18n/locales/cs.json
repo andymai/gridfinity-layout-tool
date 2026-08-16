@@ -581,7 +581,7 @@
   "binDesigner.cutouts.repeat.suggestLine": "Těchto {count} tvarů lze spojit do jednoho opakování s roztečí {pitch} mm.",
   "binDesigner.cutouts.repeat.suggestRadial": "Těchto {count} tvarů lze spojit do jednoho opakování: kruh o poloměru {radius} mm.",
   "binDesigner.cutouts.repeat.suggestDrift": "Pozice se srovnají až o {drift} mm.",
-  "binDesigner.cutouts.repeat.suggestColor": "Všechny instance mají jednu barvu.",
+  "binDesigner.cutouts.repeat.suggestColor": "Všechny instance převezmou barvu prvního tvaru.",
   "binDesigner.cutouts.repeat.hint": "Opakujete stejný výřez? Opakování vytvoří celou mřížku nebo kruh z jednoho tvaru.",
   "binDesigner.cutouts.repeat.rotateToCenter": "Otočit ke středu",
   "binDesigner.cutouts.repeat.rows": "Řady",

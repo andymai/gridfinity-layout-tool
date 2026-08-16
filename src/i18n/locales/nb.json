@@ -581,7 +581,7 @@
   "binDesigner.cutouts.repeat.suggestLine": "Disse {count} formene kan bli én matrise med {pitch} mm mellomrom.",
   "binDesigner.cutouts.repeat.suggestRadial": "Disse {count} formene kan bli én matrise: en ring på {radius} mm.",
   "binDesigner.cutouts.repeat.suggestDrift": "Posisjonene jevnes ut med inntil {drift} mm.",
-  "binDesigner.cutouts.repeat.suggestColor": "Alle forekomster bruker én farge.",
+  "binDesigner.cutouts.repeat.suggestColor": "Alle forekomster får fargen til den første formen.",
   "binDesigner.cutouts.repeat.hint": "Gjentar du samme utskjæring? Matrise bygger et helt rutenett eller en ring fra én form.",
   "binDesigner.cutouts.repeat.rotateToCenter": "Roter mot sentrum",
   "binDesigner.cutouts.repeat.rows": "Rader",

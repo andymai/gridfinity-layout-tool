@@ -581,7 +581,7 @@
   "binDesigner.cutouts.repeat.suggestLine": "Deze {count} vormen kunnen één reeks worden met {pitch} mm ertussen.",
   "binDesigner.cutouts.repeat.suggestRadial": "Deze {count} vormen kunnen één reeks worden: een ring van {radius} mm.",
   "binDesigner.cutouts.repeat.suggestDrift": "Posities schuiven maximaal {drift} mm.",
-  "binDesigner.cutouts.repeat.suggestColor": "Alle exemplaren gebruiken één kleur.",
+  "binDesigner.cutouts.repeat.suggestColor": "Alle exemplaren krijgen de kleur van de eerste vorm.",
   "binDesigner.cutouts.repeat.hint": "Herhaal je dezelfde uitsparing? Een reeks maakt een heel raster of ring van één vorm.",
   "binDesigner.cutouts.repeat.rotateToCenter": "Naar midden draaien",
   "binDesigner.cutouts.repeat.rows": "Rijen",

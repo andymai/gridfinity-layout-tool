@@ -581,7 +581,7 @@
   "binDesigner.cutouts.repeat.suggestLine": "Ces {count} formes peuvent devenir un réseau espacé de {pitch} mm.",
   "binDesigner.cutouts.repeat.suggestRadial": "Ces {count} formes peuvent devenir un réseau : un anneau de {radius} mm.",
   "binDesigner.cutouts.repeat.suggestDrift": "Les positions se réalignent de {drift} mm au maximum.",
-  "binDesigner.cutouts.repeat.suggestColor": "Toutes les occurrences utilisent une seule couleur.",
+  "binDesigner.cutouts.repeat.suggestColor": "Toutes les occurrences prendront la couleur de la première forme.",
   "binDesigner.cutouts.repeat.hint": "Vous répétez la même découpe ? Le réseau crée toute une grille ou un anneau à partir d'une forme.",
   "binDesigner.cutouts.repeat.rotateToCenter": "Orienter vers le centre",
   "binDesigner.cutouts.repeat.rows": "Lignes",

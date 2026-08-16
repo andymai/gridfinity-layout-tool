@@ -581,7 +581,7 @@
   "binDesigner.cutouts.repeat.suggestLine": "この {count} 個は間隔 {pitch} mm の 1 つの配列にできます。",
   "binDesigner.cutouts.repeat.suggestRadial": "この {count} 個は 1 つの配列にできます: 半径 {radius} mm のリング。",
   "binDesigner.cutouts.repeat.suggestDrift": "位置は最大 {drift} mm 調整されます。",
-  "binDesigner.cutouts.repeat.suggestColor": "すべてのインスタンスが同じ色になります。",
+  "binDesigner.cutouts.repeat.suggestColor": "すべてのインスタンスが最初の形状の色になります。",
   "binDesigner.cutouts.repeat.hint": "同じ切り欠きを繰り返していますか? 配列なら 1 つの形状からグリッドやリングを作れます。",
   "binDesigner.cutouts.repeat.rotateToCenter": "中心に向ける",
   "binDesigner.cutouts.repeat.rows": "行",

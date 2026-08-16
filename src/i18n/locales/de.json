@@ -581,7 +581,7 @@
   "binDesigner.cutouts.repeat.suggestLine": "Diese {count} Formen ergeben eine Anordnung im Abstand von {pitch} mm.",
   "binDesigner.cutouts.repeat.suggestRadial": "Diese {count} Formen ergeben eine Anordnung: ein Ring mit {radius} mm.",
   "binDesigner.cutouts.repeat.suggestDrift": "Positionen verschieben sich um bis zu {drift} mm.",
-  "binDesigner.cutouts.repeat.suggestColor": "Alle Instanzen verwenden eine Farbe.",
+  "binDesigner.cutouts.repeat.suggestColor": "Alle Instanzen übernehmen die Farbe der ersten Form.",
   "binDesigner.cutouts.repeat.hint": "Denselben Ausschnitt wiederholen? Eine Anordnung erzeugt Raster oder Ring aus einer Form.",
   "binDesigner.cutouts.repeat.rotateToCenter": "Zur Mitte drehen",
   "binDesigner.cutouts.repeat.rows": "Reihen",

@@ -2390,7 +2390,7 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.repeat.suggestRadial':
     'These {count} shapes can become one repeat: a ring at {radius} mm.',
   'binDesigner.cutouts.repeat.suggestDrift': 'Positions even out by up to {drift} mm.',
-  'binDesigner.cutouts.repeat.suggestColor': 'All instances use one color.',
+  'binDesigner.cutouts.repeat.suggestColor': "Every instance will take the first shape's color.",
   'binDesigner.cutouts.repeat.hint':
     'Repeating the same cutout? Repeat builds a whole grid or ring from one shape.',
   'binDesigner.cutouts.dragToDraw': 'Drag to draw shape',

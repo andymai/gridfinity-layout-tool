@@ -581,7 +581,7 @@
   "binDesigner.cutouts.repeat.suggestLine": "这 {count} 个形状可合并为一个间距 {pitch} mm 的阵列。",
   "binDesigner.cutouts.repeat.suggestRadial": "这 {count} 个形状可合并为一个阵列：半径 {radius} mm 的环形。",
   "binDesigner.cutouts.repeat.suggestDrift": "位置最多调整 {drift} mm。",
-  "binDesigner.cutouts.repeat.suggestColor": "所有实例使用同一种颜色。",
+  "binDesigner.cutouts.repeat.suggestColor": "所有实例将采用第一个形状的颜色。",
   "binDesigner.cutouts.repeat.hint": "在重复同一个挖槽吗？阵列可从一个形状生成整个网格或环形。",
   "binDesigner.cutouts.repeat.rotateToCenter": "旋转朝向中心",
   "binDesigner.cutouts.repeat.rows": "行",

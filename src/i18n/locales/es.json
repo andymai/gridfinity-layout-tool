@@ -581,7 +581,7 @@
   "binDesigner.cutouts.repeat.suggestLine": "Estas {count} formas pueden ser una matriz separada {pitch} mm.",
   "binDesigner.cutouts.repeat.suggestRadial": "Estas {count} formas pueden ser una matriz: un anillo de {radius} mm.",
   "binDesigner.cutouts.repeat.suggestDrift": "Las posiciones se ajustan hasta {drift} mm.",
-  "binDesigner.cutouts.repeat.suggestColor": "Todas las instancias usan un color.",
+  "binDesigner.cutouts.repeat.suggestColor": "Todas las instancias tomarán el color de la primera forma.",
   "binDesigner.cutouts.repeat.hint": "¿Repites el mismo recorte? La matriz crea toda una cuadrícula o anillo desde una forma.",
   "binDesigner.cutouts.repeat.rotateToCenter": "Girar al centro",
   "binDesigner.cutouts.repeat.rows": "Filas",

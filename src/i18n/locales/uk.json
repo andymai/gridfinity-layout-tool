@@ -581,7 +581,7 @@
   "binDesigner.cutouts.repeat.suggestLine": "Ці {count} фігур можна об'єднати в масив з кроком {pitch} мм.",
   "binDesigner.cutouts.repeat.suggestRadial": "Ці {count} фігур можна об'єднати в масив: кільце радіусом {radius} мм.",
   "binDesigner.cutouts.repeat.suggestDrift": "Позиції вирівняються до {drift} мм.",
-  "binDesigner.cutouts.repeat.suggestColor": "Усі екземпляри мають один колір.",
+  "binDesigner.cutouts.repeat.suggestColor": "Усі екземпляри отримають колір першої фігури.",
   "binDesigner.cutouts.repeat.hint": "Повторюєте той самий виріз? Масив створює цілу сітку або кільце з однієї фігури.",
   "binDesigner.cutouts.repeat.rotateToCenter": "Повертати до центру",
   "binDesigner.cutouts.repeat.rows": "Рядки",

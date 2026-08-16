@@ -32,6 +32,14 @@ export const MIN_REPEAT_SELECTION = 3;
 /** Angular slack (deg) when fitting a ring's even spacing. */
 const ANGLE_TOLERANCE_DEG = 2;
 
+/**
+ * How far any one center may actually move onto the fitted lattice (mm).
+ * `REPEAT_POSITION_TOLERANCE` bounds each AXIS independently, so a grid fit at
+ * the limit on both axes is `√2` times that away as a straight-line distance.
+ * This is the diagonal, and it is checked once for every mode.
+ */
+const MAX_FIT_DRIFT_MM = REPEAT_POSITION_TOLERANCE * Math.SQRT2;
+
 export interface RepeatDetection {
   readonly mode: CutoutArrayMode;
   readonly config: CutoutArrayConfig;
@@ -164,6 +172,11 @@ function finalise(
 ): RepeatDetection | null {
   if (arrayInstanceCount(config) !== cutouts.length) return null;
   if (cutouts.length > MAX_ARRAY_INSTANCES) return null;
+  // The single place the position contract is enforced, so no mode can promise
+  // a tolerance its own fit does not deliver. It matters most for rings: an
+  // angular slack of 2° is an arc of 0.035·r mm, so at r = 30 it would move an
+  // instance over a millimetre while every per-angle check still passed.
+  if (drift > MAX_FIT_DRIFT_MM) return null;
 
   const bounds = arrayFieldBounds(master, binWidth, binDepth, config);
   if (config.mode === 'radial') {

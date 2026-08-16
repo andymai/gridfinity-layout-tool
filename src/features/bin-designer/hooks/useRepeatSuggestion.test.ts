@@ -93,6 +93,25 @@ describe('useRepeatSuggestion', () => {
     expect(state.history.past.length).toBe(before + 1);
   });
 
+  it('stays silent when the store declines the merge', () => {
+    // The detection is a snapshot; the store re-checks and can refuse. A toast
+    // and a `merged` event for a refusal is a phantom in both the UI and the
+    // analytics.
+    const cutouts = row('refused');
+    for (const c of cutouts) useDesignerStore.getState().addCutout(c);
+    // Lock one absorbed cutout so the store's eligibility guard declines.
+    useDesignerStore.getState().lockCutouts([cutouts[2].id]);
+
+    const { result } = render(cutouts);
+    act(() => result.current?.apply());
+
+    expect(useDesignerStore.getState().params.cutouts).toHaveLength(3);
+    const merged = vi
+      .mocked(trackEvent)
+      .mock.calls.filter(([name]) => name === 'cutout_repeat_merged');
+    expect(merged).toHaveLength(0);
+  });
+
   it('stops offering after a dismissal, and shares that across surfaces', () => {
     const cutouts = row('dismiss');
     const first = render(cutouts, 'inspector');

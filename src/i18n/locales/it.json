@@ -581,7 +581,7 @@
   "binDesigner.cutouts.repeat.suggestLine": "Queste {count} forme possono diventare una serie distanziata di {pitch} mm.",
   "binDesigner.cutouts.repeat.suggestRadial": "Queste {count} forme possono diventare una serie: un anello di {radius} mm.",
   "binDesigner.cutouts.repeat.suggestDrift": "Le posizioni si allineano fino a {drift} mm.",
-  "binDesigner.cutouts.repeat.suggestColor": "Tutte le istanze usano un solo colore.",
+  "binDesigner.cutouts.repeat.suggestColor": "Tutte le istanze assumeranno il colore della prima forma.",
   "binDesigner.cutouts.repeat.hint": "Stai ripetendo lo stesso intaglio? La serie crea una griglia o un anello da una sola forma.",
   "binDesigner.cutouts.repeat.rotateToCenter": "Ruota verso il centro",
   "binDesigner.cutouts.repeat.rows": "Righe",

@@ -581,7 +581,7 @@
   "binDesigner.cutouts.repeat.suggestLine": "Estas {count} formas podem virar uma matriz espaçada em {pitch} mm.",
   "binDesigner.cutouts.repeat.suggestRadial": "Estas {count} formas podem virar uma matriz: um anel de {radius} mm.",
   "binDesigner.cutouts.repeat.suggestDrift": "As posições se ajustam em até {drift} mm.",
-  "binDesigner.cutouts.repeat.suggestColor": "Todas as instâncias usam uma cor.",
+  "binDesigner.cutouts.repeat.suggestColor": "Todas as instâncias assumirão a cor da primeira forma.",
   "binDesigner.cutouts.repeat.hint": "Repetindo o mesmo recorte? A matriz cria uma grade ou anel inteiro a partir de uma forma.",
   "binDesigner.cutouts.repeat.rotateToCenter": "Girar para o centro",
   "binDesigner.cutouts.repeat.rows": "Linhas",

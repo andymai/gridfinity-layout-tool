@@ -1342,6 +1342,32 @@ describe('cutoutSlice - consolidated actions', () => {
       expect(useDesignerStore.getState().params.cutouts).toHaveLength(3);
     });
 
+    it('reports whether it merged, so callers do not announce a refusal', () => {
+      seedThree();
+      expect(useDesignerStore.getState().mergeCutoutsIntoArray('a', repeatConfig, ['b', 'c'])).toBe(
+        true
+      );
+
+      seedThree();
+      useDesignerStore.getState().lockCutouts(['c']);
+      expect(useDesignerStore.getState().mergeCutoutsIntoArray('a', repeatConfig, ['b', 'c'])).toBe(
+        false
+      );
+    });
+
+    it('declines when the master already carries a repeat, rather than replacing it', () => {
+      seedThree();
+      const existing = { ...repeatConfig, cols: 2 };
+      useDesignerStore.getState().updateCutout('a', { array: existing });
+
+      const ok = useDesignerStore.getState().mergeCutoutsIntoArray('a', repeatConfig, ['b', 'c']);
+
+      expect(ok).toBe(false);
+      expect(useDesignerStore.getState().params.cutouts.find((c) => c.id === 'a')?.array).toEqual(
+        existing
+      );
+    });
+
     it('declines when the master has since been locked', () => {
       seedThree();
       useDesignerStore.getState().lockCutouts(['a']);

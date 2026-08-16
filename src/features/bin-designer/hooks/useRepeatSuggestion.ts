@@ -49,7 +49,7 @@ export interface RepeatMergeDeps {
     masterId: string,
     config: RepeatDetection['config'],
     absorbedIds: readonly string[]
-  ) => void;
+  ) => boolean;
   readonly addToast: (options: { message: string; type: 'success' }) => void;
   readonly t: (key: string, params?: Record<string, string | number>) => string;
 }
@@ -65,7 +65,12 @@ export function applyRepeatMerge(
   source: 'suggestion' | 'context_menu' | 'shortcut'
 ): void {
   const count = detection.absorbedIds.length + 1;
-  deps.mergeCutoutsIntoArray(detection.masterId, detection.config, detection.absorbedIds);
+  // The detection is a snapshot; the store re-checks eligibility and can
+  // decline. Reporting a merge it refused would put a phantom in the analytics
+  // and tell the user something happened when nothing did.
+  if (!deps.mergeCutoutsIntoArray(detection.masterId, detection.config, detection.absorbedIds)) {
+    return;
+  }
   trackEvent('cutout_repeat_merged', {
     source,
     mode: detection.mode,

@@ -624,9 +624,14 @@ export function createCutoutSlice(set: Set) {
       config: CutoutArrayConfig,
       absorbedIds: readonly string[]
     ) => {
+      let merged = false;
       set((state) => {
         const master = state.params.cutouts.find((c) => c.id === masterId);
-        if (!master || !canArray(master) || master.locked === true) return;
+        // `array !== undefined` guards replacing a repeat the master gained
+        // since detection ran, which would silently discard its config.
+        if (!master || !canArray(master) || master.locked === true || master.array !== undefined) {
+          return;
+        }
 
         // The ids come from a detection that ran against an older snapshot, so
         // re-check ELIGIBILITY rather than mere existence. Anything grouped,
@@ -648,7 +653,11 @@ export function createCutoutSlice(set: Set) {
           .map((c) => (c.id === masterId ? { ...c, array: config } : c));
         state.params.cutouts = dissolveSingletonGroups(state.params.cutouts);
         gcMeshAssets(state);
+        merged = true;
       });
+      // Reported back so callers do not toast "merged" or count a merge that
+      // the guards above declined.
+      return merged;
     },
   };
 }

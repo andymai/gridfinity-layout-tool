@@ -250,11 +250,12 @@ export interface DesignerState {
    * `updateCutout` + `removeCutoutsBatch` would cost one entry per step and
    * leave a half-merged design reachable by undo.
    */
+  /** Returns false when the guards declined, so callers can skip the toast. */
   mergeCutoutsIntoArray: (
     masterId: string,
     config: CutoutArrayConfig,
     absorbedIds: readonly string[]
-  ) => void;
+  ) => boolean;
 
   // Consolidated cutout property + z-order actions
   setCutoutProperty: (ids: readonly string[], partial: CutoutToggleProperties) => void;

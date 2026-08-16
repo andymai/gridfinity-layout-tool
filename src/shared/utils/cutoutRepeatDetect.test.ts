@@ -315,6 +315,57 @@ describe('colour', () => {
   });
 });
 
+describe('the fit never moves a cutout further than it promises', () => {
+  const RING = cfg({ mode: 'radial', count: 8, radius: 150, startAngle: 0 });
+  const ringCutouts = () => asPlacedCutouts(cutout({ x: 400, y: 400 }), RING);
+
+  /** Rotate one instance about the ring's own centre by `deg`. */
+  function skewOne(cutouts: Cutout[], index: number, deg: number): Cutout[] {
+    const centers = cutouts.map((c) => ({ x: c.x + c.width / 2, y: c.y + c.depth / 2 }));
+    const hubX = centers.reduce((s, p) => s + p.x, 0) / centers.length;
+    const hubY = centers.reduce((s, p) => s + p.y, 0) / centers.length;
+    return cutouts.map((c, i) => {
+      if (i !== index) return c;
+      const { x, y } = centers[i];
+      const r = Math.hypot(x - hubX, y - hubY);
+      const a = Math.atan2(y - hubY, x - hubX) + (deg * Math.PI) / 180;
+      return {
+        ...c,
+        x: hubX + r * Math.cos(a) - c.width / 2,
+        y: hubY + r * Math.sin(a) - c.depth / 2,
+      };
+    });
+  }
+
+  it('accepts an exact ring at a large radius', () => {
+    expect(detectRepeatPattern(ringCutouts(), 800, 800)).not.toBeNull();
+  });
+
+  it('declines a ring whose angular slack would drag an instance past the bound', () => {
+    // An angular error is an ARC, so its cost in mm scales with the radius: at
+    // r = 150 a 1 degree offset is ~2.6mm of travel. That sits inside the
+    // angular tolerance, so only the distance bound can catch it.
+    const skewed = skewOne(ringCutouts(), 3, 1);
+
+    expect(detectRepeatPattern(skewed, 800, 800)).toBeNull();
+  });
+
+  it('never reports a drift above the diagonal of the per-axis tolerance', () => {
+    const placed = nudge(
+      nudge(asPlacedCutouts(cutout(), cfg({ cols: 3, rows: 2 })), 2, 0.5, 0.5),
+      4,
+      -0.5,
+      0.5
+    );
+
+    const found = detectRepeatPattern(placed, BIN_W, BIN_D);
+
+    if (found) {
+      expect(found.maxDriftMm).toBeLessThanOrEqual(REPEAT_POSITION_TOLERANCE * Math.SQRT2 + 0.01);
+    }
+  });
+});
+
 describe('bin bounds', () => {
   it('declines a pattern that runs off the bin', () => {
     const placed = asPlacedCutouts(cutout({ x: 10, y: 10 }), cfg({ cols: 4, rows: 1, pitchX: 30 }));

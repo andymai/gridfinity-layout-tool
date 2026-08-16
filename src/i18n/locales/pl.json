@@ -581,7 +581,7 @@
   "binDesigner.cutouts.repeat.suggestLine": "Te {count} kształty mogą stać się jednym szykiem w odstępie {pitch} mm.",
   "binDesigner.cutouts.repeat.suggestRadial": "Te {count} kształty mogą stać się jednym szykiem: pierścień o promieniu {radius} mm.",
   "binDesigner.cutouts.repeat.suggestDrift": "Pozycje wyrównają się o maksymalnie {drift} mm.",
-  "binDesigner.cutouts.repeat.suggestColor": "Wszystkie wystąpienia mają jeden kolor.",
+  "binDesigner.cutouts.repeat.suggestColor": "Wszystkie wystąpienia przyjmą kolor pierwszego kształtu.",
   "binDesigner.cutouts.repeat.hint": "Powtarzasz to samo wycięcie? Szyk tworzy całą siatkę lub pierścień z jednego kształtu.",
   "binDesigner.cutouts.repeat.rotateToCenter": "Obróć do środka",
   "binDesigner.cutouts.repeat.rows": "Rzędy",
