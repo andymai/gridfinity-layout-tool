@@ -1,0 +1,19 @@
+src/shared/printSettings/standardBinVolume.ts
+  s_3e7498a185949b::t_549fca4c9abef9 60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "76dafbe6791c8c2c5f12e828ef5729c9d6253e1b",
+  "prompts": {},
+  "sessions": {
+    "s_3e7498a185949b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4a89295d-d6e0-4e9e-b9f0-5a4785221515",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
