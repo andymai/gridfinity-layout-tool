@@ -11,6 +11,14 @@
  * scales with wall AREA. The timeout module's own note that "a tall 6×6×20 is
  * ~3min" is the case a higher cap would push past the 3-minute preview ceiling.
  *
+ * That ~3min does not agree with the 44.3s measured for the same bin below, and
+ * both were taken on the default occt-wasm pipeline, so they are not two kernels
+ * disagreeing. The older figure predates the generation caching work, and every
+ * number here is hardware-dependent besides. Treat the timeout module's figure
+ * as superseded for this workload rather than as a second data point, and re-run
+ * this file rather than comparing against either when the question comes up
+ * again.
+ *
  * Measured on a 3×3 (height unit / budget in seconds):
  *
  *   height   plain     honeycomb   preview budget
