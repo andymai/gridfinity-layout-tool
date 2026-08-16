@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { OFF_GRID_WARNING_MM, detectGridFromSize } from './meshGridDetection';
+import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants/gridfinity';
 
 describe('detectGridFromSize', () => {
   it('reads an exact lipless 2×1×3U bin (outer = W·42 − 0.5)', () => {
@@ -50,10 +51,10 @@ describe('detectGridFromSize', () => {
     expect(tiny.depth).toBe(0.5);
     expect(tiny.heightUnits).toBe(1);
 
-    const huge = detectGridFromSize({ x: 900, y: 900, z: 400 });
-    expect(huge.width).toBe(16);
-    expect(huge.depth).toBe(16);
-    expect(huge.heightUnits).toBe(20);
+    const huge = detectGridFromSize({ x: 900, y: 900, z: 4000 });
+    expect(huge.width).toBe(DESIGNER_CONSTRAINTS.MAX_DIMENSION);
+    expect(huge.depth).toBe(DESIGNER_CONSTRAINTS.MAX_DIMENSION);
+    expect(huge.heightUnits).toBe(DESIGNER_CONSTRAINTS.MAX_HEIGHT);
     expect(huge.offGrid).toBe(true);
   });
 
