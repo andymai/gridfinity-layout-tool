@@ -10,6 +10,7 @@
  * and any constraint rules here.
  */
 
+import { isUndersideRelief, undersideReliefSelected } from '@/features/bin-designer/types/base';
 import type { ConstraintRule, ImplicationRule } from './types';
 
 export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
@@ -97,24 +98,37 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
     disables: ['base.lid'],
     reason: 'binDesigner.spacerDisablesLidBase',
   },
+  // ── Lightweight: the three features an INTERIOR lite floor rules out ──────
+  // Every pair below is mode-split. The interior mode opens the cavity floor
+  // into the cups, which is what these features cannot survive; the underside
+  // relief leaves the floor exactly as a standard bin has it, so it rules out
+  // none of them (#3524). Inserts are the exception and stay mutual for both
+  // modes — see below.
+  //
+  // The two directions read different predicates on purpose. The forward rules
+  // ask whether the relief is BUILT (`isUndersideRelief`, which needs the
+  // feature on). The reverse rules ask whether it is SELECTED, because they fire
+  // while lightweight is still off: a bin with a finger scoop reaches the relief
+  // only if choosing the mode is what makes the toggle available, and at that
+  // moment the feature is off and `isUndersideRelief` is false.
   {
-    description: 'Lightweight floor disables finger scoop (would bridge the recesses)',
+    description: 'Interior lightweight floor disables finger scoop (would bridge the recesses)',
     source: 'base.lightweight',
-    when: (p) => p.base.lightweight,
+    when: (p) => p.base.lightweight && !isUndersideRelief(p.base),
     disables: ['scoop'],
     reason: 'binDesigner.lightweightDisablesScoop',
   },
   {
-    description: 'Finger scoop incompatible with lightweight floor',
+    description: 'Finger scoop incompatible with an interior lightweight floor',
     source: 'scoop',
-    when: (p) => p.scoop.enabled,
+    when: (p) => p.scoop.enabled && !undersideReliefSelected(p.base),
     disables: ['base.lightweight'],
     reason: 'binDesigner.scoopDisablesLightweight',
   },
   {
-    description: 'Lightweight floor disables top cutouts',
+    description: 'Interior lightweight floor disables top cutouts',
     source: 'base.lightweight',
-    when: (p) => p.base.lightweight,
+    when: (p) => p.base.lightweight && !isUndersideRelief(p.base),
     disables: ['cutouts'],
     reason: 'binDesigner.lightweightDisablesCutouts',
   },
@@ -124,14 +138,26 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
     // otherwise dormant cutouts would block re-selecting lightweight (and you
     // can't enable lightweight to clear them, a deadlock). Enabling lightweight
     // clears any leftover cutouts via the reverse rule above.
-    description: 'Cutouts incompatible with lightweight floor (solid mode)',
+    //
+    // A cutout can never reach the underside relief: `buildCutoutCuts` clamps
+    // every pocket to `effectiveDepth = min(cutDepth, solidSurfaceZ)` and seats
+    // it at `solidSurfaceZ - effectiveDepth`, so a pocket floor is >= Z=0 — the
+    // socket top — whatever depth the user types, while the relief is entirely
+    // below it. That clamp is what already stops a cutout breaching a standard
+    // bin's feet.
+    description: 'Cutouts incompatible with an interior lightweight floor (solid mode)',
     source: 'cutouts',
-    when: (p) => p.style === 'solid' && p.cutouts.length > 0,
+    when: (p) => p.style === 'solid' && p.cutouts.length > 0 && !undersideReliefSelected(p.base),
     disables: ['base.lightweight'],
     reason: 'binDesigner.cutoutsDisableLightweight',
   },
+  // Inserts are the one pair that stays mutual across BOTH modes. They cut
+  // recesses down into the interior floor, and the underside relief leaves that
+  // floor a bare `wallThickness` with open air beneath it — so a recess there
+  // does not thin the floor, it holes it. The interior mode has no floor to cut
+  // at all. Neither mode can host them.
   {
-    description: 'Lightweight floor disables floor inserts (would cut through the shell)',
+    description: 'Lightweight floor disables floor inserts (would cut through the floor)',
     source: 'base.lightweight',
     when: (p) => p.base.lightweight,
     disables: ['inserts'],
@@ -281,8 +307,24 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
     description: 'Base-only bin incompatible with a spacer (nothing would remain)',
     source: 'base.tile',
     when: (p) => p.base.tile === true,
-    disables: ['base.spacer', 'base.lightweight'],
+    disables: ['base.spacer'],
     reason: 'binDesigner.tileDisablesSpacer',
+  },
+  {
+    // Split out of the spacer rule above, which bundled the two: an INTERIOR
+    // lite floor opens the cavity floor into the cups, and a base-only bin's
+    // body IS that floor — a `wallThickness` slab with nothing above it — so the
+    // pair really does cancel to nothing.
+    //
+    // The underside relief does not: it takes material from beneath the slab and
+    // leaves the slab whole. A tile is feet plus one thin plate, so it is the
+    // shape that gains most from the relief, and refusing it here was an
+    // accident of the bundling rather than a geometric limit (#3524).
+    description: 'Base-only bin incompatible with an interior lightweight floor',
+    source: 'base.tile',
+    when: (p) => p.base.tile === true && !undersideReliefSelected(p.base),
+    disables: ['base.lightweight'],
+    reason: 'binDesigner.tileDisablesLightweight',
   },
   {
     // Mutual for the same reason the spacer's flat-base rule is: a socketless
@@ -325,20 +367,24 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
   },
 
   // ── Floor pattern ────────────────────────────────────────────────
-  // The lightweight base replaces the solid floor + feet with shelled cups and
+  // The interior mode replaces the solid floor + feet with shelled cups and
   // already opens the body floor into them, so there is no slab left to
   // perforate and no foot underside for the holes to exit through.
+  //
+  // The underside relief keeps the slab, and the cavity it opens vents straight
+  // to the outside, so perforating it still drains. Mode-split like the pair
+  // above, and for the same reason in each direction.
   {
-    description: 'Lightweight floor disables the floor pattern (no slab to perforate)',
+    description: 'Interior lightweight floor disables the floor pattern (no slab to perforate)',
     source: 'base.lightweight',
-    when: (p) => p.base.lightweight,
+    when: (p) => p.base.lightweight && !isUndersideRelief(p.base),
     disables: ['floorPattern'],
     reason: 'binDesigner.lightweightDisablesFloorPattern',
   },
   {
-    description: 'Floor pattern incompatible with lightweight floor',
+    description: 'Floor pattern incompatible with an interior lightweight floor',
     source: 'floorPattern',
-    when: (p) => p.floorPattern?.enabled === true,
+    when: (p) => p.floorPattern?.enabled === true && !undersideReliefSelected(p.base),
     disables: ['base.lightweight'],
     reason: 'binDesigner.floorPatternDisablesLightweight',
   },

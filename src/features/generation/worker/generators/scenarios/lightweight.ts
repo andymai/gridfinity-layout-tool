@@ -1,9 +1,16 @@
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { assertBoundingBoxMatchesParams } from '../__kernel-tests__/meshAssertions';
-import { defineScenario } from '../__kernel-tests__/scenarioTypes';
+import { defineScenario, makeCutout } from '../__kernel-tests__/scenarioTypes';
 import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
 const lite = { ...DEFAULT_BIN_PARAMS.base, lightweight: true };
+/**
+ * The inverted relief: shelled from underneath, interior floor left intact.
+ * Geometry is verified by column probes in `undersideRelief.kernel.test.ts`;
+ * these cases cover the combinations, including the ones only this mode can
+ * reach because it keeps the floor the feature needs.
+ */
+const underside = { ...lite, lightweightMode: 'underside' as const };
 
 export const lightweight: ScenarioCase[] = [
   defineScenario('lightweight', '1×1 lite, no lip', {
@@ -112,6 +119,119 @@ export const lightweight: ScenarioCase[] = [
         if (liteResult.triangleCount === standard.triangleCount) {
           throw new Error(
             `lite mesh (${liteResult.triangleCount} tris) identical to standard — floor was not shelled`
+          );
+        }
+      },
+    },
+  }),
+
+  // ── Underside relief (#3524) ─────────────────────────────────────────────
+  defineScenario('lightweight', '1×1 underside, no lip', {
+    assert: 'structural',
+    params: { width: 1, depth: 1, base: { ...underside, stackingLip: false } },
+  }),
+  defineScenario('lightweight', '2×2 underside', {
+    assert: 'structural',
+    params: { width: 2, depth: 2, base: underside },
+    customAssert: (result, params) =>
+      assertBoundingBoxMatchesParams(result, params, '2x2-underside'),
+  }),
+
+  // Pads anchor at the foot bottom and reach the solid body above, since the
+  // ring is open at the bottom and would otherwise leave them free-standing.
+  defineScenario('lightweight', '2×2 underside + magnet & screw', {
+    assert: 'structural',
+    forExport: true,
+    params: { width: 2, depth: 2, base: { ...underside, style: 'magnet_and_screw' } },
+  }),
+
+  // Half sockets subdivide each foot; the relief's wider border has to still
+  // leave a bore in a 0.5u cell.
+  defineScenario('lightweight', '2×2 underside + half sockets', {
+    assert: 'structural',
+    params: { width: 2, depth: 2, base: { ...underside, halfSockets: true } },
+  }),
+
+  // A fractional edge foot is clipped before it is shelled.
+  defineScenario('lightweight', '1.5×1 underside (fractional)', {
+    assert: 'structural',
+    params: { width: 1.5, depth: 1, base: underside },
+  }),
+
+  // Export path: the ring meets the body on a PARTIAL coplanar face at the
+  // socket top (the bore is open, the border is not), unlike the full face a
+  // solid foot presents. That fuse is the one that has to stay watertight.
+  defineScenario('lightweight', '2×2 underside export', {
+    assert: 'structural',
+    forExport: true,
+    params: { width: 2, depth: 2, base: underside },
+    customAssert: (result, params) =>
+      assertBoundingBoxMatchesParams(result, params, '2x2-underside-export'),
+  }),
+
+  // Dividers rest on the intact floor, so no cavity clip is applied — the
+  // combination the interior mode needs `openFloorDrawings` for.
+  defineScenario('lightweight', '2×1 underside + mid-cell dividers (cols=3)', {
+    assert: 'structural',
+    forExport: true,
+    params: {
+      width: 2,
+      depth: 1,
+      base: underside,
+      compartments: { cols: 3, rows: 1, thickness: 1.2, cells: [0, 1, 2] },
+    },
+  }),
+
+  // ── The three features only this mode can carry ──────────────────────────
+  // Each is ruled out for the interior mode by a constraint rule, and each is
+  // reachable here because the interior floor is a standard bin's.
+  defineScenario('lightweight', '2×2 underside + finger scoop', {
+    assert: 'structural',
+    forExport: true,
+    params: { width: 2, depth: 2, base: underside, scoop: { enabled: true, radius: 'auto' } },
+  }),
+  defineScenario('lightweight', '2×2 underside + drainage holes', {
+    assert: 'structural',
+    forExport: true,
+    params: {
+      width: 2,
+      depth: 2,
+      base: underside,
+      floorPattern: { enabled: true, pattern: 'round', scale: 0.5 },
+    },
+  }),
+  defineScenario('lightweight', '2×2 underside, solid style + cutout', {
+    assert: 'structural',
+    forExport: true,
+    params: {
+      width: 2,
+      depth: 2,
+      style: 'solid',
+      base: { ...underside, solid: true },
+      cutouts: [makeCutout({ shape: 'circle', width: 20, depth: 20 })],
+    },
+  }),
+
+  // A base-only bin is feet plus one thin plate, so it is where the relief pays
+  // off most — and it was blocked from lite entirely before this mode existed.
+  defineScenario('lightweight', '2×2 base-only + underside', {
+    assert: 'structural',
+    forExport: true,
+    params: { width: 2, depth: 2, height: 1, base: { ...underside, tile: true } },
+  }),
+
+  // It did something, and something DIFFERENT from the interior mode: the two
+  // shells differ only in offset and open direction, so a mode that silently
+  // fell back would land on an identical mesh.
+  defineScenario('lightweight', '2×2 underside differs from the interior mode', {
+    assert: 'structural',
+    params: { width: 2, depth: 2, base: underside },
+    compareWith: {
+      params: { width: 2, depth: 2, base: lite },
+      assert: (undersideResult, interior) => {
+        if (undersideResult.triangleCount === interior.triangleCount) {
+          throw new Error(
+            `underside mesh (${undersideResult.triangleCount} tris) identical to the interior mode — the relief direction was not applied`
           );
         }
       },

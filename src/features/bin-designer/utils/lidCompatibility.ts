@@ -40,6 +40,7 @@ import {
   resolveScoopSide,
 } from '@/shared/utils/scoopCalculations';
 import type { BinParams, ScoopSide } from '../types';
+import { isUndersideRelief } from '../types/base';
 import {
   LID_CLICK_RAIL_BAND_BELOW_WALL_TOP,
   LID_MAGNET_LIP_CLEARANCE,
@@ -385,10 +386,13 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   //     are now held clear by `autoScoopCeiling`, so this fires only for a
   //     radius the user typed that lands in the band.
   //
-  //     The lite floor is `dimensions.lightweight`, not `base.lightweight`:
+  //     The lite floor is `dimensions.liteFloorOpen`, not `base.lightweight`:
   //     `deriveDimensions` folds the spacer in (it always shells) and drops
   //     both on a socketless base, where the flag has no socket to act on and
-  //     the ramp is built after all.
+  //     the ramp is built after all. The underside relief is excluded for the
+  //     same reason — its floor is a standard bin's, so the ramp IS built and
+  //     the conflict it can create with a click rail is real again. (Unrelated
+  //     to `interiorReliefActive` above, which is the LID's keep-out ring.)
   //
   //     Unlike the checks above this one is rail-specific, not lip-specific:
   //     the ramp takes nothing away from the lip, so a friction shell still
@@ -398,7 +402,10 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   //     the ramp's top back to the keep-out plane, so the pocket the rail hooks
   //     is open by construction and there is nothing for the user to act on.
   const socketless = params.base.style === 'flat' || params.base.style === 'lid';
-  const liteFloor = (params.base.lightweight || params.base.spacer) && !socketless;
+  const liteFloor =
+    (params.base.lightweight || params.base.spacer) &&
+    !socketless &&
+    !isUndersideRelief(params.base);
   if (
     !interiorReliefActive(params) &&
     params.scoop.enabled &&

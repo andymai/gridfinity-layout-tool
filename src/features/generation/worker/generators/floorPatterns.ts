@@ -56,8 +56,14 @@ export interface FloorPatternPlan {
 /**
  * Whether the floor-pattern feature applies at all.
  *
- * Solid bins have no floor distinct from the body, and the lightweight base
- * already replaces the slab + feet with shelled cups whose floor is open.
+ * Solid bins have no floor distinct from the body, and an interior lightweight
+ * base already replaces the slab + feet with shelled cups whose floor is open.
+ *
+ * The underside relief keeps the slab, so it keeps the pattern: the holes still
+ * enter the cavity floor, and the relief cavity they now exit into is itself
+ * open to the outside, so they still drain. `dim.liteFloorOpen` is what draws
+ * that line — reading `dim.lightweight` would refuse a bin that has exactly the
+ * floor a standard bin has.
  *
  * `style === 'solid'` is checked alongside `dim.solid` (which only reflects
  * `base.solid`) because the two are kept in lockstep by an IMPLICATION_RULE at
@@ -67,7 +73,7 @@ export interface FloorPatternPlan {
  */
 export function floorPatternApplies(params: BinParams, dim: BinDimensions): boolean {
   if (params.floorPattern?.enabled !== true) return false;
-  if (dim.solid || params.style === 'solid' || dim.lightweight) return false;
+  if (dim.solid || params.style === 'solid' || dim.liteFloorOpen) return false;
   return dim.innerW > 0 && dim.innerD > 0;
 }
 
@@ -252,9 +258,19 @@ export function planFloorPattern(params: BinParams, dim: BinDimensions): FloorPa
   // The cut spans the floor slab and, on socket bins, the foot below it.
   // COPLANAR_MARGIN on both ends keeps the tool's end faces off the solid's
   // own faces, which OCCT resolves into non-manifold topology.
+  //
+  // An underside-relieved foot stops the cut at the floor. There is nothing
+  // below to thread the hole through — the relief cavity is already open to the
+  // outside, so the hole drains the moment it clears the slab — and reaching
+  // further would only eat the ring. The window is inset 1.5mm + INSET_BOT from
+  // the foot's TOP edge, while the ring's bore narrows with the taper going
+  // down, so the two cross about a third of the way up: a full-depth cut would
+  // take up to 1.5mm off the inside of the ring's bottom face, exactly where the
+  // part meets the bed. Above Z=0 the bore is wider than the window on every
+  // cell, so the shortened tool clears the ring entirely.
   return {
     windows,
-    cutZ0: -dim.baseOffsetZ - COPLANAR_MARGIN,
+    cutZ0: dim.undersideRelief ? -COPLANAR_MARGIN : -dim.baseOffsetZ - COPLANAR_MARGIN,
     cutZ1: params.wallThickness + COPLANAR_MARGIN,
   };
 }

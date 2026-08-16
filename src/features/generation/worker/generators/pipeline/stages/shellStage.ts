@@ -41,12 +41,18 @@ import { collectOrigins } from '../collectOrigins';
  *
  * A spacer opens BOTH ends, so each foot becomes a tube and the cell is a
  * clean through-hole; it never carries magnets or screws (`deriveDimensions`
- * suppresses them — a pad inside a through-hole would be free-standing). Solid
- * bins open downward, since their body keeps its floor; everything else opens up
- * into the cavity.
+ * suppresses them — a pad inside a through-hole would be free-standing).
+ *
+ * The inverted relief opens downward with nothing under the body floor, so the
+ * floor itself caps the ring. It is checked before `dim.solid` because it
+ * applies to solid bins too: `'down'` leaves a `wallThickness` membrane there
+ * under a body that is already solid, which the relief drops. `'down'` survives
+ * only as the interior mode's answer for a solid bin, so a design saved before
+ * the mode existed still builds the geometry it was published with.
  */
 function cupOpenDirection(dim: PipelineContext['dimensions']): LightweightOpenDirection {
   if (dim.isSpacer) return 'through';
+  if (dim.undersideRelief) return 'underside';
   return dim.solid ? 'down' : 'up';
 }
 
@@ -67,18 +73,25 @@ export const shellStage: PipelineStage = {
     // ── LIGHTWEIGHT BASE — shelled cups replace the solid socket. ────────────
     // Built up-front because its `floorOpenings` must be cut into the body
     // *before* the body is cached, while its `base` (cups) is the deferred
-    // socket used in the socket section below. Solid bins open the cups
-    // downward (no floor opening — the solid body keeps its floor).
+    // socket used in the socket section below. Solid bins and the underside
+    // relief open the cups downward (no floor opening — the body keeps its
+    // floor, which is the whole point of the relief).
     let liteBase: LightweightBase | null = null;
     let floorOpenings: Shape3D | null = null;
     if (dim.lightweight && !dim.socketless) {
       // Open-cavity floor for clipping cup recesses away from divider walls, so a
       // divider crossing a cup keeps a solid foot core beneath it (no bridge over
       // the recess). Only for hollow bins with rectangular compartments; tilted/
-      // polygon layouts fall back to no clip (best-effort). (Scoops are mutually
-      // exclusive with lightweight, so no scoop band to preserve here.)
+      // polygon layouts fall back to no clip (best-effort).
+      //
+      // Gated on `liteFloorOpen`, not on `lightweight`: the underside relief
+      // leaves the floor solid, so a divider crossing a relieved foot already
+      // rests on continuous material and there is no recess to keep it out of.
+      // Clipping there would only put solid cores back under every divider for
+      // nothing. (A scoop is mutually exclusive with the floor-open mode, so
+      // there is no scoop band to preserve on this path either.)
       const openFloorDrawings =
-        !dim.solid &&
+        dim.liteFloorOpen &&
         hasMultipleCompartments(params) &&
         compartmentsAreRectangular(params) &&
         !isPartialMask(params.cellMask)

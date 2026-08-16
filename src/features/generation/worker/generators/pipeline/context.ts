@@ -6,7 +6,7 @@
  */
 
 import type { BinParams } from '@/shared/types/bin';
-import { resolveTileFloorThickness } from '@/shared/types/bin';
+import { isUndersideRelief, resolveTileFloorThickness } from '@/shared/types/bin';
 import { hashMask, isPartialMask } from '@/shared/utils/cellMask';
 import {
   HEIGHT_UNIT,
@@ -98,6 +98,16 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // A spacer always shells (its feet ARE the structure once the floor is gone),
   // so it takes the same build path whether or not the user asked for lite.
   const lightweight = (params.base.lightweight || isSpacer) && !socketless;
+  // Which side the shells open from. `isUndersideRelief` already refuses a
+  // spacer and a socketless base, so a crafted `{ spacer: true, lightweightMode:
+  // 'underside' }` cannot close the hole that makes a spacer a spacer.
+  const undersideRelief = isUndersideRelief(params.base);
+  // Whether the interior floor is actually gone — NOT the same question as
+  // "is the base shelled". The underside relief keeps the floor, and a solid
+  // bin never had a distinct floor to open (its cups already open downward,
+  // under a body that is solid all the way through). A spacer is the one case
+  // that opens the floor without the user asking for lite.
+  const liteFloorOpen = lightweight && !undersideRelief && !solid;
   // Base-only collapses the wall to ZERO rather than shortening it: the body is the
   // floor slab and nothing above it. `params.height` is inert here — it is
   // pinned to 1 only to satisfy the range validators (see `BaseConfig.tile`), so
@@ -240,11 +250,13 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // compartments segment is "none" unless the bin uses the multi-cavity
   // cut path, so single-compartment bins keep their existing cache bucket.
   const maskKeySegment = isPartialMask(cellMask) ? hashMask(cellMask) : 'rect';
-  // Lightweight bins also depend on the compartment layout: the body floor
-  // openings are clipped away from divider walls, so two lite bins differing
-  // only in dividers must not share a cached body.
+  // A floor-open lite bin also depends on the compartment layout: the body
+  // floor openings are clipped away from divider walls, so two of them
+  // differing only in dividers must not share a cached body. The underside
+  // relief cuts no floor openings and needs no clip, so it stays out — keying
+  // it on the compartment grid would only fragment its cache.
   const compartmentsKey =
-    compartmentsBakedIntoShell || lightweight ? buildCompartmentsCacheKey(params) : 'none';
+    compartmentsBakedIntoShell || liteFloorOpen ? buildCompartmentsCacheKey(params) : 'none';
 
   // Only the shell-baked path carries dividers in the shell; elsewhere the
   // clip lands on the additive walls and is keyed by that feature instead.
@@ -291,6 +303,13 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
       // Spacer punches the floor through, so it must never share a cached body
       // with the lite bin it otherwise looks like. Appended for the same reason.
       ...(isSpacer ? ['spacer'] : []),
+      // The relief direction is part of the BODY, not just the base: the
+      // interior mode cuts each cup's mouth through the floor before the body is
+      // cached, and the underside mode leaves that floor intact. Without this
+      // segment an underside bin reuses an interior bin's body and ships with
+      // the floor already punched. Appended only when set, so every interior and
+      // non-lite bin keeps a byte-identical key.
+      ...(undersideRelief ? ['underside'] : []),
       // A tray bin's shell is socketless, so it must not reuse a socketed bin's
       // cached body. `isFlat` above does not separate them: a custom
       // `heightUnitMm` makes a socketed 13mm x 2u and a tray-bottom 7mm x 3u agree on
@@ -333,6 +352,8 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
     halfSockets,
     socketCellPlan,
     lightweight,
+    undersideRelief,
+    liteFloorOpen,
     isSpacer,
     isTile,
     tileFloorHeight,

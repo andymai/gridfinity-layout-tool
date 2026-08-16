@@ -63,6 +63,46 @@ export function isEffectiveTile(base: {
 }
 
 /**
+ * True when the underside relief is the mode this base would shell in — whether
+ * or not {@link BaseConfig.lightweight} is currently on.
+ *
+ * A spacer is excluded: its floor is punched through every cell by definition,
+ * so honouring the mode there would close the hole that makes it a spacer. A
+ * socketless base is excluded for the same reason `lightweight` itself is inert
+ * there — no socket to shell. Both guards live here rather than at each call
+ * site so a crafted payload like `{ spacer: true, lightweightMode: 'underside' }`
+ * cannot buy a floor through one path that another path would refuse.
+ *
+ * Deliberately independent of `lightweight`, because the constraint rules ask
+ * this question while the feature is still OFF: a bin with a finger scoop can
+ * only reach the relief if selecting the mode is what makes the toggle
+ * available, and {@link isUndersideRelief} would be false at that moment.
+ */
+export function undersideReliefSelected(base: {
+  readonly lightweightMode?: LightweightMode;
+  readonly spacer: boolean;
+  readonly style: BaseStyle;
+}): boolean {
+  return base.lightweightMode === 'underside' && !base.spacer && !isSocketlessBase(base.style);
+}
+
+/**
+ * True when the base is actually shelled from UNDERNEATH, leaving the interior
+ * floor intact — {@link undersideReliefSelected} plus the feature being on.
+ *
+ * This is the one the geometry and the material estimate read; the rules read
+ * the other.
+ */
+export function isUndersideRelief(base: {
+  readonly lightweight: boolean;
+  readonly lightweightMode?: LightweightMode;
+  readonly spacer: boolean;
+  readonly style: BaseStyle;
+}): boolean {
+  return base.lightweight && undersideReliefSelected(base);
+}
+
+/**
  * Mating geometry for a {@link BaseStyle} of `'lid'`: a fully editable
  * bin whose underside is a lid instead of a Gridfinity base, so it caps the bin
  * below it.
@@ -126,6 +166,44 @@ export type FootLattice = (typeof FOOT_LATTICES)[number];
 /** Applied when a BaseConfig's `footLatticeX`/`footLatticeY` is missing. */
 export const DEFAULT_FOOT_LATTICE: FootLattice = 'grid';
 
+/**
+ * Which side of the base a {@link BaseConfig.lightweight} floor is opened from.
+ *
+ *  - `interior` — the cavity floor follows the inside of the socket taper, so
+ *    the grid shape is exposed on the interior ("Gridfinity Lite"). Saves the
+ *    most filament and is what the flag has always meant.
+ *  - `underside` — the same shells, opened DOWNWARD instead: each foot becomes a
+ *    ring and the bin's own floor caps it, so the interior stays flat. Small or
+ *    flat contents can't fall into the recesses, and the features that need a
+ *    floor to stand on (finger scoop, drainage holes) keep working.
+ *
+ * The two are otherwise the same construction — see `lightweightBaseBuilder`.
+ */
+export const LIGHTWEIGHT_MODES = ['interior', 'underside'] as const;
+
+/** Where a lightweight floor opens from. See {@link LIGHTWEIGHT_MODES}. */
+export type LightweightMode = (typeof LIGHTWEIGHT_MODES)[number];
+
+/** Applied when a BaseConfig's `lightweightMode` is missing. */
+export const DEFAULT_LIGHTWEIGHT_MODE: LightweightMode = 'interior';
+
+/**
+ * How far the underside relief holds back from each foot's outer face, in mm.
+ *
+ * The cut is a scaled copy of the socket profile rather than a straight prism,
+ * so this offset is a uniform wall at every depth and CANNOT breach the
+ * baseplate-mating taper however large it grows. A prism would have to clear
+ * `SOCKET_TAPER_WIDTH` (3.2mm) before it left any wall at all — the foot's
+ * bottom face is that much narrower than its cell — which is why the relief is
+ * built the way it is.
+ *
+ * Deliberately not `wallThickness`: this ring stands on the bed as an open foot
+ * and carries the bridged floor above it, so it wants more material than a wall
+ * that is supported on both sides, and it must not thin out when someone prints
+ * 0.4mm walls.
+ */
+export const UNDERSIDE_RELIEF_BORDER_MM = 3;
+
 /** Bin wall/style variants — single source of truth for the `BinStyle` union. */
 export const BIN_STYLES = ['standard', 'slotted', 'solid'] as const;
 
@@ -157,6 +235,17 @@ export interface BaseConfig {
    * ("Gridfinity Lite"). Magnet/screw pads are retained as solid islands.
    */
   readonly lightweight: boolean;
+  /**
+   * Which side {@link lightweight} opens from. Missing/undefined = `'interior'`,
+   * so every design saved before the setting existed builds byte-identical
+   * geometry — and, because `communityParamsFingerprint` hashes `params`
+   * wholesale, an always-present field would shift the fingerprint of every
+   * already-published design (the same reason {@link tile} is optional).
+   *
+   * Inert while {@link lightweight} is off, and on a spacer, whose floor is
+   * punched through by definition.
+   */
+  readonly lightweightMode?: LightweightMode;
   /**
    * Spacer / riser mode: a floorless frame that lifts a bin so bins of
    * different heights line up flush. Feet and stacking lip are unchanged, so its

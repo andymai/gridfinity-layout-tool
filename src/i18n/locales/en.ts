@@ -2174,17 +2174,23 @@ const en: Record<string, string> = {
   'binDesigner.flatFloorDisablesHalfSockets': 'Flat base disables half sockets',
   'binDesigner.flatFloorDisablesLightweight': 'Flat base has no socket to lighten',
   'binDesigner.lightweightDisablesFlatFloor': 'Cannot combine lightweight floor with flat base',
-  'binDesigner.lightweightDisablesScoop': 'Lightweight floor has no solid floor for a scoop ramp',
-  'binDesigner.scoopDisablesLightweight': 'Cannot combine a finger scoop with a lightweight floor',
-  'binDesigner.lightweightDisablesCutouts': 'Cutouts are not available with a lightweight floor',
-  'binDesigner.cutoutsDisableLightweight': 'Cannot combine top cutouts with a lightweight floor',
+  'binDesigner.lightweightDisablesScoop':
+    'An interior lightweight floor has no solid floor for a scoop ramp',
+  'binDesigner.scoopDisablesLightweight':
+    'A finger scoop needs a solid floor — switch the mode to Underside to keep both',
+  'binDesigner.lightweightDisablesCutouts':
+    'Cutouts are not available with an interior lightweight floor',
+  'binDesigner.cutoutsDisableLightweight':
+    'Top cutouts need a solid floor — switch the mode to Underside to keep both',
   'binDesigner.lightweightDisablesInserts': 'Floor inserts would cut through a lightweight floor',
   'binDesigner.insertsDisableLightweight': 'Cannot combine floor inserts with a lightweight floor',
   'binDesigner.attachmentDisablesFlatFloor': 'Attachment holes require sockets',
   'binDesigner.lightweightDisablesFloorPattern':
-    'A lightweight floor is already open — there is no slab to perforate',
+    'An interior lightweight floor is already open — there is no slab to perforate',
   'binDesigner.floorPatternDisablesLightweight':
-    'Cannot combine drainage holes with a lightweight floor',
+    'Drainage holes need a slab to perforate — switch the mode to Underside to keep both',
+  'binDesigner.tileDisablesLightweight':
+    'A base-only bin is just the floor — switch the mode to Underside to lighten it',
   'binDesigner.spacerDisablesInterior': 'A spacer has no floor to hold interior features',
   'binDesigner.spacerDisablesStyle': 'A spacer is an open frame — there is no interior to shape',
   'binDesigner.spacerDisablesAttachment': 'A spacer has no floor to hold a magnet or screw',
@@ -2874,6 +2880,15 @@ const en: Record<string, string> = {
   'binDesigner.footLattice.fractionalHint':
     'A fractional axis keeps the on-grid lattice: its half cell already handles both placements, and the half-unit edge setting decides which end it sits on.',
   'binDesigner.lightweight': 'Lightweight floor',
+  'binDesigner.lightweightMode': 'Lightweight mode',
+  // 'Inside', not 'Interior': the panel already has an Interior GROUP tab, and
+  // two controls with the same word in one panel read as the same thing.
+  'binDesigner.lightweightMode.interior': 'Inside',
+  'binDesigner.lightweightMode.underside': 'Underside',
+  'binDesigner.lightweightMode.interior.hint':
+    'Hollows each foot from the inside, so the grid shape shows through the bin floor. Saves the most filament, but small or flat items can settle into the recesses.',
+  'binDesigner.lightweightMode.underside.hint':
+    'Hollows each foot from below and leaves the bin floor flat, so nothing can fall into it. Finger scoops and drainage holes still work.',
   'binDesigner.spacer': 'Spacer (no floor)',
   'binDesigner.spacerHint':
     'Turns the bin into an open riser you stack under another bin, so bins of different heights finish flush. Its height counts like a bin of the same size — a 2u spacer under a 2u bin reaches the top of a 4u one.',
