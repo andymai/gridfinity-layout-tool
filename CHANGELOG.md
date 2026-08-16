@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.416.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.415.0...gridfinity-layout-tool-v4.416.0) (2026-08-16)
+
+
+### Features
+
+* **bin-designer:** round the shoulders where a wall cutout meets the rim ([#3535](https://github.com/andymai/gridfinity-layout-tool/issues/3535)) ([4031882](https://github.com/andymai/gridfinity-layout-tool/commit/4031882102d0373d23885da48f732a5bea75a6d8))
+
 ## [4.415.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.414.2...gridfinity-layout-tool-v4.415.0) (2026-08-16)
 
 
