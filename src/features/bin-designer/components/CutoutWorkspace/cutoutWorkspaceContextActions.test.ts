@@ -40,9 +40,15 @@ function build(cutout: Cutout, overrides: Record<string, unknown> = {}) {
     setGroupOp: vi.fn(),
     reorderCutouts: vi.fn(),
     flattenArray: vi.fn(),
+    mergeIntoRepeat: vi.fn(),
     t: (k: string) => k,
     ...overrides,
   });
+}
+
+/** Three identical cutouts spaced on a regular pitch — a detectable pattern. */
+function makeRow(): Cutout[] {
+  return [0, 20, 40].map((x) => makeCutout({ id: `c${x}`, x, shape: 'rectangle' }));
 }
 
 const labels = (actions: ReturnType<typeof buildCutoutContextActions>) =>
@@ -51,14 +57,14 @@ const labels = (actions: ReturnType<typeof buildCutoutContextActions>) =>
 describe('array context actions', () => {
   it('offers "Create array" for an arrayable single selection', () => {
     const actions = build(makeCutout());
-    expect(labels(actions)).toContain('binDesigner.cutouts.array.create');
-    expect(labels(actions)).not.toContain('binDesigner.cutouts.array.flatten');
+    expect(labels(actions)).toContain('binDesigner.cutouts.repeat.create');
+    expect(labels(actions)).not.toContain('binDesigner.cutouts.repeat.flatten');
   });
 
   it('create-array action sets a default array config', () => {
     const updateCutout = vi.fn();
     const actions = build(makeCutout(), { updateCutout });
-    actions.find((a) => a.label === 'binDesigner.cutouts.array.create')?.onClick();
+    actions.find((a) => a.label === 'binDesigner.cutouts.repeat.create')?.onClick();
     expect(updateCutout).toHaveBeenCalledWith(
       'c1',
       expect.objectContaining({ array: expect.objectContaining({ mode: 'grid' }) })
@@ -79,16 +85,16 @@ describe('array context actions', () => {
     };
     const flattenArray = vi.fn();
     const actions = build(makeCutout({ array: cfg }), { flattenArray });
-    expect(labels(actions)).toContain('binDesigner.cutouts.array.flatten');
-    expect(labels(actions)).toContain('binDesigner.cutouts.array.remove');
-    expect(labels(actions)).not.toContain('binDesigner.cutouts.array.create');
-    actions.find((a) => a.label === 'binDesigner.cutouts.array.flatten')?.onClick();
+    expect(labels(actions)).toContain('binDesigner.cutouts.repeat.flatten');
+    expect(labels(actions)).toContain('binDesigner.cutouts.repeat.remove');
+    expect(labels(actions)).not.toContain('binDesigner.cutouts.repeat.create');
+    actions.find((a) => a.label === 'binDesigner.cutouts.repeat.flatten')?.onClick();
     expect(flattenArray).toHaveBeenCalledWith('c1');
   });
 
   it('does not offer array actions for a path cutout', () => {
     const actions = build(makeCutout({ shape: 'path' }));
-    expect(labels(actions)).not.toContain('binDesigner.cutouts.array.create');
+    expect(labels(actions)).not.toContain('binDesigner.cutouts.repeat.create');
   });
 });
 
@@ -137,5 +143,42 @@ describe('group context actions', () => {
     const actions = build(makeCutout({ groupId: 'g1' }));
     expect(labels(actions)).not.toContain('binDesigner.cutouts.group');
     expect(labels(actions)).not.toContain('binDesigner.cutouts.ungroup');
+  });
+});
+
+describe('merge into repeat', () => {
+  const buildFor = (cutouts: Cutout[], overrides: Record<string, unknown> = {}) =>
+    build(cutouts[0], {
+      cutouts,
+      selection: new Set(cutouts.map((c) => c.id)),
+      ...overrides,
+    });
+
+  it('offers the merge when the selection is a pattern', () => {
+    expect(labels(buildFor(makeRow()))).toContain('binDesigner.cutouts.repeat.merge');
+  });
+
+  it('passes the detected pattern through, not just the ids', () => {
+    const mergeIntoRepeat = vi.fn();
+    const actions = buildFor(makeRow(), { mergeIntoRepeat });
+
+    actions.find((a) => a.label === 'binDesigner.cutouts.repeat.merge')?.onClick();
+
+    expect(mergeIntoRepeat).toHaveBeenCalledTimes(1);
+    expect(mergeIntoRepeat.mock.calls[0][0]).toMatchObject({ mode: 'grid' });
+  });
+
+  it('stays hidden for a selection that is not a pattern', () => {
+    const scattered = [
+      makeCutout({ id: 'a', x: 0, y: 0, shape: 'rectangle' }),
+      makeCutout({ id: 'b', x: 20, y: 0, shape: 'rectangle' }),
+      makeCutout({ id: 'c', x: 37, y: 13, shape: 'rectangle' }),
+    ];
+    expect(labels(buildFor(scattered))).not.toContain('binDesigner.cutouts.repeat.merge');
+  });
+
+  it('stays hidden below the minimum selection', () => {
+    const pair = makeRow().slice(0, 2);
+    expect(labels(buildFor(pair))).not.toContain('binDesigner.cutouts.repeat.merge');
   });
 });

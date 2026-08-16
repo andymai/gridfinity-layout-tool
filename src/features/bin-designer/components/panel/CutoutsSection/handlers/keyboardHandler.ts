@@ -32,6 +32,12 @@ export interface KeyboardHandlerContext {
   readonly copySelected: () => void;
   readonly pasteFromClipboard: () => void;
   readonly duplicateSelected: () => void;
+  /**
+   * Ctrl+Shift+D. Creates a repeat from a single selected cutout, or collapses
+   * a detected pattern into one. Both readings of "make this repeat", so the
+   * binding does not change meaning with the selection.
+   */
+  readonly makeRepeat?: () => void;
   readonly onUndo?: () => void;
   readonly onRedo?: () => void;
   readonly onGroup?: (cutoutIds: readonly string[]) => void;
@@ -206,10 +212,19 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
         ctx.setMode({ type: 'idle' });
       }
       break;
+    // Ctrl+D duplicates; Ctrl+Shift+D makes a repeat out of the selection.
+    // One modifier apart from the habit it redirects.
     case 'd':
       if (mod) {
         e.preventDefault();
-        ctx.duplicateSelected();
+        if (e.shiftKey) ctx.makeRepeat?.();
+        else ctx.duplicateSelected();
+      }
+      break;
+    case 'D':
+      if (mod && e.shiftKey) {
+        e.preventDefault();
+        ctx.makeRepeat?.();
       }
       break;
 

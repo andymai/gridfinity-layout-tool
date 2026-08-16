@@ -13,6 +13,7 @@ import type {
 } from './text';
 import type {
   Cutout,
+  CutoutArrayConfig,
   CutoutConfig,
   CutoutColorScope,
   GroupOp,
@@ -242,6 +243,19 @@ export interface DesignerState {
   commitTransaction: () => void;
   updateCutoutsBatch: (updates: ReadonlyMap<string, Partial<Cutout>>) => void;
   removeCutoutsBatch: (ids: readonly string[]) => void;
+  /**
+   * Collapse hand-placed duplicates into one parametric repeat: the master
+   * takes `config` and the absorbed cutouts are removed, as ONE history entry
+   * so a single undo puts every cutout back. Doing this through
+   * `updateCutout` + `removeCutoutsBatch` would cost one entry per step and
+   * leave a half-merged design reachable by undo.
+   */
+  /** Returns false when the guards declined, so callers can skip the toast. */
+  mergeCutoutsIntoArray: (
+    masterId: string,
+    config: CutoutArrayConfig,
+    absorbedIds: readonly string[]
+  ) => boolean;
 
   // Consolidated cutout property + z-order actions
   setCutoutProperty: (ids: readonly string[], partial: CutoutToggleProperties) => void;

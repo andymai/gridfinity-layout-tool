@@ -21,6 +21,8 @@ import { CutoutBoardSettings } from './CutoutBoardSettings';
 import { BinSizeSection } from './BinSizeSection';
 import { BinFeaturesSection } from './BinFeaturesSection';
 import { AlignControls } from './AlignControls';
+import { RepeatSuggestion } from './RepeatSuggestion';
+import { useRepeatSuggestion } from '@/features/bin-designer/hooks/useRepeatSuggestion';
 
 /** Matches the per-cutout minimum the single-cutout inspector enforces. */
 const MIN_CUTOUT_SIZE_MM = 2;
@@ -130,6 +132,10 @@ export function InspectorContent({
     () => expandSelectionToGroups(cutouts, selectedCutouts),
     [cutouts, selectedCutouts]
   );
+
+  // Called above the empty-selection early return so hook order stays stable;
+  // it returns null for selections that are not a pattern anyway.
+  const repeatSuggestion = useRepeatSuggestion(cutouts, selection, binWidth, binDepth, 'inspector');
 
   // Bin-level controls stay visible across every selection state so the user can
   // resize the board and clear the stacking lip without leaving the editor.
@@ -283,6 +289,11 @@ export function InspectorContent({
           <div className="text-[10px] font-medium uppercase tracking-wide text-content-tertiary">
             {t('binDesigner.cutoutEditor.selectedCount', { count: selectedCutouts.length })}
           </div>
+          {/* Above the align controls: if the selection is already a pattern,
+              the offer to make it parametric beats aligning it by hand. */}
+          {repeatSuggestion && (
+            <RepeatSuggestion suggestion={repeatSuggestion} disabled={disabled} />
+          )}
           <AlignControls
             selectedCount={selectedCutouts.length}
             onAlign={handleAlign}

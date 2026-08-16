@@ -106,6 +106,14 @@ Worth being clear about a common mix-up: this makes an imported model into a **h
 
 A wall cutout is a notch in the side of a bin, not a recess in its floor — a U-shaped gap so a long screwdriver or a wooden spoon can overhang the end, or a scoop so you can sweep small parts out with a thumb. They are configured per side and can be combined with floor cutouts in the same bin.
 
+## Repeating One Cutout
+
+Sets are the common case: twelve socket wells, a row of drill bits, a ring of screwdriver slots. Draw one, open **Repeat**, and pick a grid, a staggered grid, or a ring. Spacing and counts are clamped to the bin, so an arrangement cannot run off the edge or leave walls too thin to print.
+
+The copies are derived rather than pasted, which is the part that matters. Resize the original and all of them resize with it, so tuning a socket well to fit is one edit instead of twelve. Flatten it back to independent cutouts at any point if you need to move one on its own.
+
+If you have already duplicated a shape by hand into a regular arrangement, select the copies and the editor offers to fold them into a single repeat, telling you first how far anything will move.
+
 ## Shadow Boards
 
 Give a cavity its own color, on the floor or on the floor and interior walls, and you get the dark backing that makes a missing tool obvious from across the room. It needs a multi-material printer or a mid-print filament change to appear in the print, but the file carries the assignment either way.

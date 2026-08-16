@@ -24,6 +24,7 @@ interface UseCutoutKeyboardShortcutsOptions {
   readonly copySelected: () => void;
   readonly pasteFromClipboard: () => void;
   readonly duplicateSelected: () => void;
+  readonly makeRepeat?: () => void;
   readonly undoWithToast: () => void;
   readonly redoWithToast: () => void;
   readonly onGroup?: (cutoutIds: readonly string[]) => void;
@@ -53,6 +54,7 @@ export function useCutoutKeyboardShortcuts(deps: UseCutoutKeyboardShortcutsOptio
     copySelected,
     pasteFromClipboard,
     duplicateSelected,
+    makeRepeat,
     undoWithToast,
     redoWithToast,
     onGroup,
@@ -83,6 +85,7 @@ export function useCutoutKeyboardShortcuts(deps: UseCutoutKeyboardShortcutsOptio
         copySelected,
         pasteFromClipboard,
         duplicateSelected,
+        makeRepeat,
         onUndo: undoWithToast,
         onRedo: redoWithToast,
         onGroup,
@@ -115,6 +118,7 @@ export function useCutoutKeyboardShortcuts(deps: UseCutoutKeyboardShortcutsOptio
     copySelected,
     pasteFromClipboard,
     duplicateSelected,
+    makeRepeat,
     undoWithToast,
     redoWithToast,
     onGroup,

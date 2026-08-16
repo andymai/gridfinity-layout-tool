@@ -29,6 +29,7 @@ type Ctx = KeyboardHandlerContext & {
   copySelected: ReturnType<typeof vi.fn>;
   pasteFromClipboard: ReturnType<typeof vi.fn>;
   duplicateSelected: ReturnType<typeof vi.fn>;
+  makeRepeat: ReturnType<typeof vi.fn>;
   onUndo: ReturnType<typeof vi.fn>;
   onRedo: ReturnType<typeof vi.fn>;
   onGroup: ReturnType<typeof vi.fn>;
@@ -59,6 +60,7 @@ function makeCtx(overrides: Partial<KeyboardHandlerContext> = {}): Ctx {
     copySelected: vi.fn(),
     pasteFromClipboard: vi.fn(),
     duplicateSelected: vi.fn(),
+    makeRepeat: vi.fn(),
     onUndo: vi.fn(),
     onRedo: vi.fn(),
     onGroup: vi.fn(),
@@ -213,6 +215,25 @@ describe('handleCutoutKeyDown — clipboard', () => {
     expect(ctx.copySelected).toHaveBeenCalledTimes(1);
     expect(ctx.pasteFromClipboard).toHaveBeenCalledTimes(1);
     expect(ctx.duplicateSelected).toHaveBeenCalledTimes(1);
+  });
+
+  it('maps mod+shift+d to make repeat, leaving plain duplicate alone', () => {
+    const ctx = makeCtx();
+    handleCutoutKeyDown(press('d', { metaKey: true, shiftKey: true }), ctx);
+    expect(ctx.makeRepeat).toHaveBeenCalledTimes(1);
+    expect(ctx.duplicateSelected).not.toHaveBeenCalled();
+  });
+
+  it('accepts the uppercase D the shift key actually produces', () => {
+    const ctx = makeCtx();
+    handleCutoutKeyDown(press('D', { metaKey: true, shiftKey: true }), ctx);
+    expect(ctx.makeRepeat).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not make a repeat on shift+d without the modifier', () => {
+    const ctx = makeCtx();
+    handleCutoutKeyDown(press('D', { shiftKey: true }), ctx);
+    expect(ctx.makeRepeat).not.toHaveBeenCalled();
   });
 });
 

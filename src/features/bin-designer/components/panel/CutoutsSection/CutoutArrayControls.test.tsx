@@ -57,7 +57,7 @@ describe('CutoutArrayControls', () => {
   it('offers a create button when there is no array', () => {
     const onUpdate = vi.fn();
     renderControls(makeCutout(), { onUpdate });
-    fireEvent.click(screen.getByText('binDesigner.cutouts.array.create'));
+    fireEvent.click(screen.getByText('binDesigner.cutouts.repeat.create'));
     expect(onUpdate).toHaveBeenCalledWith(
       expect.objectContaining({ array: expect.objectContaining({ mode: 'grid' }) })
     );
@@ -65,38 +65,38 @@ describe('CutoutArrayControls', () => {
 
   it('shows grid fields (cols/rows/pitch) for a grid array', () => {
     renderControls(makeCutout({ array: arrayCfg }));
-    expect(screen.getByText('binDesigner.cutouts.array.cols')).toBeInTheDocument();
-    expect(screen.getByText('binDesigner.cutouts.array.rows')).toBeInTheDocument();
-    expect(screen.getByText('binDesigner.cutouts.array.pitchX')).toBeInTheDocument();
-    expect(screen.queryByText('binDesigner.cutouts.array.radius')).not.toBeInTheDocument();
+    expect(screen.getByText('binDesigner.cutouts.repeat.cols')).toBeInTheDocument();
+    expect(screen.getByText('binDesigner.cutouts.repeat.rows')).toBeInTheDocument();
+    expect(screen.getByText('binDesigner.cutouts.repeat.pitchX')).toBeInTheDocument();
+    expect(screen.queryByText('binDesigner.cutouts.repeat.radius')).not.toBeInTheDocument();
   });
 
   it('shows radial fields (count/radius/angle) for a radial array', () => {
     renderControls(makeCutout({ array: { ...arrayCfg, mode: 'radial' } }));
-    expect(screen.getByText('binDesigner.cutouts.array.count')).toBeInTheDocument();
-    expect(screen.getByText('binDesigner.cutouts.array.radius')).toBeInTheDocument();
-    expect(screen.getByText('binDesigner.cutouts.array.startAngle')).toBeInTheDocument();
-    expect(screen.queryByText('binDesigner.cutouts.array.cols')).not.toBeInTheDocument();
+    expect(screen.getByText('binDesigner.cutouts.repeat.count')).toBeInTheDocument();
+    expect(screen.getByText('binDesigner.cutouts.repeat.radius')).toBeInTheDocument();
+    expect(screen.getByText('binDesigner.cutouts.repeat.startAngle')).toBeInTheDocument();
+    expect(screen.queryByText('binDesigner.cutouts.repeat.cols')).not.toBeInTheDocument();
   });
 
   it('switching mode preserves other params (flat config)', () => {
     const onUpdate = vi.fn();
     renderControls(makeCutout({ array: arrayCfg }), { onUpdate });
-    fireEvent.click(screen.getByText('binDesigner.cutouts.array.mode.radial'));
+    fireEvent.click(screen.getByText('binDesigner.cutouts.repeat.mode.radial'));
     expect(onUpdate).toHaveBeenCalledWith({ array: { ...arrayCfg, mode: 'radial' } });
   });
 
   it('flatten button invokes onFlatten', () => {
     const onFlatten = vi.fn();
     renderControls(makeCutout({ array: arrayCfg }), { onFlatten });
-    fireEvent.click(screen.getByText('binDesigner.cutouts.array.flatten'));
+    fireEvent.click(screen.getByText('binDesigner.cutouts.repeat.flatten'));
     expect(onFlatten).toHaveBeenCalledOnce();
   });
 
   it('remove button clears the array', () => {
     const onUpdate = vi.fn();
     renderControls(makeCutout({ array: arrayCfg }), { onUpdate });
-    fireEvent.click(screen.getByText('binDesigner.cutouts.array.remove'));
+    fireEvent.click(screen.getByText('binDesigner.cutouts.repeat.remove'));
     expect(onUpdate).toHaveBeenCalledWith({ array: undefined });
   });
 });

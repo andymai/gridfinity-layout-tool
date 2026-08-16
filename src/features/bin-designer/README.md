@@ -297,8 +297,36 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
   radius to feasible bounds (`arrayFieldBounds`) so an array can't be grown past
   the bin footprint. Arrays are restricted to **ungrouped, non-path** cutouts;
   `flattenCutoutArray` / `applyFlattenArray` bake instances into independent
-  cutouts. Array controls (now `+/-` steppers) appear in both the full-screen
+  cutouts. Array controls (`+/-` steppers) appear in both the full-screen
   workspace and the sidebar editor (`CutoutArrayControls`).
+
+  **The UI calls this "Repeat"** (`binDesigner.cutouts.repeat.*`). The data field
+  is `array`: renaming it would change every stored design and
+  `communityParamsFingerprint`. The section sits above Color/Fit in both editors
+  and opens on preset chips (`repeatPresets.ts`), each checked against
+  `arrayFieldBounds` so a chip that would be clamped is disabled instead. When
+  `canArray` refuses, the section stays and states the reason with an Ungroup
+  action (`repeatBlockedReason`).
+
+  **`@/shared/utils/cutoutRepeatDetect` runs the inverse direction**: it recovers
+  the master + config from hand-placed instances, fitting centers to a lattice
+  within `REPEAT_POSITION_TOLERANCE` (0.5mm, the editor's position step) and
+  reporting `maxDriftMm` so the offer states what moves before it moves. Geometry
+  fields must match exactly; `rotation` is checked per-mode, because a
+  `rotateToCenter` ring gives every instance a different one. **Differing engraved
+  labels block the offer entirely** — `expandCutoutArray` spreads the master's
+  fields over every instance, so merging would silently delete cut text. Colour
+  may differ (it is applied at paint time) and is called out in the message.
+  `mergeCutoutsIntoArray` writes the config and removes the absorbed cutouts in
+  **one** `pushHistoryEntry`, so a single undo restores them all.
+
+  Consumed by `useRepeatSuggestion` (inspector row, plus a canvas chip when the
+  dock is collapsed — the hook takes an `enabled` flag, because the hidden
+  presentation would otherwise record an impression for a view nobody saw), the
+  context menu, and `Ctrl+Shift+D`. `Ctrl+D` is step-and-repeat: after a copy is
+  moved deliberately, the next duplicate reuses that placement delta, measured
+  from the clone's own source so moving the newest copy re-aims the chain
+  (`useCutoutClipboard`).
 
 ### Mesh imprint cutouts (STL import)
 

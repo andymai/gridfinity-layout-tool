@@ -10,6 +10,7 @@ import type { Draft } from 'immer';
 import type {
   DesignerState,
   Cutout,
+  CutoutArrayConfig,
   CutoutColorScope,
   CutoutToggleProperties,
   ReorderDirection,
@@ -17,6 +18,7 @@ import type {
   GroupOp,
 } from '../../types';
 import { DEFAULT_GROUP_OP, DEFAULT_CUTOUT_COLOR_SCOPE } from '../../types';
+import { canArray } from '@/shared/utils/cutoutArray';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
 import { MAX_MESH_ASSETS_PER_DESIGN } from '@/shared/generation/meshAsset';
 import { pushHistoryEntry, dissolveSingletonGroups } from '../helpers';
@@ -615,6 +617,47 @@ export function createCutoutSlice(set: Set) {
         state.params.cutouts = dissolveSingletonGroups(state.params.cutouts);
         gcMeshAssets(state);
       });
+    },
+
+    mergeCutoutsIntoArray: (
+      masterId: string,
+      config: CutoutArrayConfig,
+      absorbedIds: readonly string[]
+    ) => {
+      let merged = false;
+      set((state) => {
+        const master = state.params.cutouts.find((c) => c.id === masterId);
+        // `array !== undefined` guards replacing a repeat the master gained
+        // since detection ran, which would silently discard its config.
+        if (!master || !canArray(master) || master.locked === true || master.array !== undefined) {
+          return;
+        }
+
+        // The ids come from a detection that ran against an older snapshot, so
+        // re-check ELIGIBILITY rather than mere existence. Anything grouped,
+        // locked, or given its own repeat since then is no longer something the
+        // user asked to absorb, and deleting it would destroy work: this action
+        // removes cutouts, so a stale id is a data-loss bug, not a no-op.
+        const eligible = (c: Cutout): boolean =>
+          c.id !== masterId && canArray(c) && c.locked !== true && c.array === undefined;
+        const absorbed = new Set(
+          absorbedIds.filter((id) => state.params.cutouts.some((c) => c.id === id && eligible(c)))
+        );
+        // All-or-nothing: absorbing a subset would leave strays sitting on top
+        // of instances the config now generates, which is worse than declining.
+        if (absorbed.size === 0 || absorbed.size !== absorbedIds.length) return;
+
+        pushHistoryEntry(state, { affectsGeometry: true });
+        state.params.cutouts = state.params.cutouts
+          .filter((c) => !absorbed.has(c.id))
+          .map((c) => (c.id === masterId ? { ...c, array: config } : c));
+        state.params.cutouts = dissolveSingletonGroups(state.params.cutouts);
+        gcMeshAssets(state);
+        merged = true;
+      });
+      // Reported back so callers do not toast "merged" or count a merge that
+      // the guards above declined.
+      return merged;
     },
   };
 }

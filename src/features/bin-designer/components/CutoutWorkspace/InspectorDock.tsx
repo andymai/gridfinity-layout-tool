@@ -47,6 +47,12 @@ interface InspectorDockProps {
   readonly growTarget?: GrowTarget | null;
   /** Resize the bin to {@link growTarget}. */
   readonly onGrowToFit?: () => void;
+  /**
+   * Fires when the dock is collapsed or expanded. The canvas uses it to move
+   * the repeat suggestion onto a floating chip, so collapsing the dock never
+   * silently hides the offer.
+   */
+  readonly onCollapsedChange?: (collapsed: boolean) => void;
   /** Editor-level settings shown when nothing is selected. */
   readonly board?: BoardSettings;
   /** Duplicate the current selection. */
@@ -83,6 +89,7 @@ export function InspectorDock({
   onDuplicate,
   onDelete,
   shapeList,
+  onCollapsedChange,
   ...content
 }: InspectorDockProps) {
   const t = useTranslation();
@@ -98,9 +105,10 @@ export function InspectorDock({
     setCollapsed((prev) => {
       const next = !prev;
       saveInspectorCollapsed(next);
+      onCollapsedChange?.(next);
       return next;
     });
-  }, []);
+  }, [onCollapsedChange]);
 
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     setIsScrolled(e.currentTarget.scrollTop > 0);
