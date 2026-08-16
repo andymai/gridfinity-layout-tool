@@ -1,14 +1,14 @@
 /**
  * Stack one generated bin on another and measure what the joint actually does.
  *
- * The tool prints two numbers per bin — "Prints Xmm · stacks +Ymm each" — and
- * both come from `stackedTotalMm`, which asserts the bin nests until its socket
- * bottoms out on the lip below: every added bin advances the stack by its body
- * height, and only the topmost lip is left showing. That is a claim about two
- * solids meeting, and neither mesh can confirm it. Each bin is watertight and
- * correctly sized on its own whatever happens at the joint (CLAUDE.md gotchas
- * #14, #15, #18), and a test that recomputes `LIP_HEIGHT - LIP_OVERLAP` only
- * proves the constant equals itself.
+ * The inspector prints two numbers per bin, "Prints Xmm · stacks +Ymm each":
+ * the first from `LIP_PROTRUSION_MM`, the second from `stackPitchMm`, with
+ * `stackedTotalMm` behind the stack solver's total. All three rest on one
+ * claim — how deep the bin above settles onto the lip below — and neither mesh
+ * can confirm it. Each bin is watertight and correctly sized on its own
+ * whatever happens at the joint (CLAUDE.md gotchas #14, #15, #18), and a test
+ * that recomputes the constant from the profiles it came from only proves it
+ * equals itself.
  *
  * So this mates the pair, lets the upper bin fall, and reports the pitch it
  * came to rest at. It reuses `seatDepth` rather than reimplementing the
