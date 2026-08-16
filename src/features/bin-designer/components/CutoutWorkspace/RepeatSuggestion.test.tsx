@@ -1,13 +1,13 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { RepeatSuggestionRow, RepeatSuggestionChip } from './RepeatSuggestion';
-import type { RepeatSuggestion } from '@/features/bin-designer/hooks/useRepeatSuggestion';
+import { RepeatSuggestion } from './RepeatSuggestion';
+import type { RepeatSuggestion as Suggestion } from '@/features/bin-designer/hooks/useRepeatSuggestion';
 
 vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string) => key,
 }));
 
-function suggestion(overrides: Partial<RepeatSuggestion> = {}): RepeatSuggestion {
+function suggestion(overrides: Partial<Suggestion> = {}): Suggestion {
   return {
     detection: {
       mode: 'grid',
@@ -35,9 +35,12 @@ function suggestion(overrides: Partial<RepeatSuggestion> = {}): RepeatSuggestion
 }
 
 describe.each([
-  ['row', RepeatSuggestionRow, 'repeat-suggestion'],
-  ['chip', RepeatSuggestionChip, 'repeat-suggestion-chip'],
-])('%s', (_name, Component, testId) => {
+  ['panel', 'panel' as const, 'repeat-suggestion'],
+  ['chip', 'chip' as const, 'repeat-suggestion-chip'],
+])('%s placement', (_name, placement, testId) => {
+  const Component = (props: { suggestion: Suggestion; disabled?: boolean }) => (
+    <RepeatSuggestion {...props} placement={placement} />
+  );
   it('states what the merge will do', () => {
     render(<Component suggestion={suggestion()} />);
 

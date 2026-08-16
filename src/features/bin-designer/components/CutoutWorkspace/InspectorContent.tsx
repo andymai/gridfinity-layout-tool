@@ -21,7 +21,7 @@ import { CutoutBoardSettings } from './CutoutBoardSettings';
 import { BinSizeSection } from './BinSizeSection';
 import { BinFeaturesSection } from './BinFeaturesSection';
 import { AlignControls } from './AlignControls';
-import { RepeatSuggestionRow } from './RepeatSuggestion';
+import { RepeatSuggestion } from './RepeatSuggestion';
 import { useRepeatSuggestion } from '@/features/bin-designer/hooks/useRepeatSuggestion';
 
 /** Matches the per-cutout minimum the single-cutout inspector enforces. */
@@ -292,7 +292,7 @@ export function InspectorContent({
           {/* Above the align controls: if the selection is already a pattern,
               the offer to make it parametric beats aligning it by hand. */}
           {repeatSuggestion && (
-            <RepeatSuggestionRow suggestion={repeatSuggestion} disabled={disabled} />
+            <RepeatSuggestion suggestion={repeatSuggestion} disabled={disabled} />
           )}
           <AlignControls
             selectedCount={selectedCutouts.length}

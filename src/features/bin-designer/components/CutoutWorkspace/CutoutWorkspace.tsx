@@ -41,7 +41,7 @@ import { applyFlattenArray } from '../panel/CutoutsSection/cutoutHelpers';
 import { CutoutContextMenu } from '../panel/CutoutsSection/CutoutContextMenu';
 import { TopRuler, LeftRuler, RulerCorner } from './Rulers';
 import { CutoutQuickstartOverlay } from './CutoutQuickstartOverlay';
-import { RepeatSuggestionChip } from './RepeatSuggestion';
+import { RepeatSuggestion } from './RepeatSuggestion';
 import { useRepeatSuggestion, applyRepeatMerge } from '../../hooks/useRepeatSuggestion';
 import { loadInspectorCollapsed } from './inspectorDockStorage';
 import { detectRepeatPattern, type RepeatDetection } from '@/shared/utils/cutoutRepeatDetect';
@@ -626,7 +626,7 @@ export function CutoutWorkspace() {
       {/* Only while the dock is closed: the inspector already carries the row,
           and two copies of one offer reads as two offers. */}
       {dockCollapsed && repeatSuggestion && (
-        <RepeatSuggestionChip suggestion={repeatSuggestion} disabled={isInteracting} />
+        <RepeatSuggestion suggestion={repeatSuggestion} placement="chip" disabled={isInteracting} />
       )}
 
       {showQuickstart && <CutoutQuickstartOverlay onDismiss={handleDismissQuickstart} />}
