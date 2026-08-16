@@ -15,6 +15,7 @@ import { AdvancedDisclosure } from '../shared';
 import { PatternSelector } from '../WallsSection/PatternSelector';
 import {
   FLOOR_PATTERN_TYPES,
+  DEFAULT_FOOT_LATTICE,
   FOOT_LATTICES,
   LID_ATTACHMENTS,
   LID_EXTRA_HEIGHT_MAX_MM,
@@ -176,11 +177,23 @@ export function BaseSection() {
 
       {/* Foot lattice (#3467). A foot has to land inside one baseplate pocket,
           so which layout seats depends on where the bin sits — per axis, since
-          half-bin mode can offset one axis and not the other. */}
-      <div className="space-y-2 rounded border border-stroke-subtle p-2">
-        <span className="block text-xs font-medium text-content-secondary">
-          {t('binDesigner.footLattice')}
-        </span>
+          half-bin mode can offset one axis and not the other.
+
+          Folded away because it is a power-user setting that is at its default
+          on nearly every bin, and it was the heaviest block in this section.
+          `forceOpen` on a non-default value is what makes that safe: a wrong
+          lattice leaves the bin perched on the ridges between pockets, so the
+          one state that must never be hidden is the one that differs. The
+          summary reports the EFFECTIVE lattice, which is what gets built — a
+          stored value the lock overrides reads as the default it is being
+          honoured as, not as the customization it is not. */}
+      <AdvancedDisclosure
+        label={`${t('binDesigner.footLattice')}:`}
+        summary={footLatticeAxes
+          .map(({ value }) => t(`binDesigner.footLattice.${value}`))
+          .join(' / ')}
+        forceOpen={footLatticeAxes.some(({ value }) => value !== DEFAULT_FOOT_LATTICE)}
+      >
         {footLatticeAxes.map(({ axis, value, onChange, locked }) => (
           <div key={axis} className="flex items-center gap-2">
             <span className="w-10 shrink-0 text-[11px] text-content-tertiary">
@@ -204,7 +217,7 @@ export function BaseSection() {
         <p className="text-[11px] leading-relaxed text-content-tertiary">
           {handlers.footLatticeLockReason ?? t('binDesigner.footLattice.hint')}
         </p>
-      </div>
+      </AdvancedDisclosure>
 
       <FeatureToggle
         label={t('binDesigner.lightweight')}
