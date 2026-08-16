@@ -1,0 +1,51 @@
+src/features/bin-designer/storage/DesignerStorage.test.ts
+  s_28b8cc4bcb9e7c::t_e899f5c71ce7a3 833,843,854,871
+  s_28b8cc4bcb9e7c::t_e056ce9833ec4f 2-9,826-832,834-842,844-853,855-870,872-882
+  s_28b8cc4bcb9e7c::t_80b7e3f1ce97ca 883-885
+  s_bf6a11448699d6::t_e96cbd472ddc7e 886-895
+src/shared/analytics/posthog/eventsCore.ts
+  s_28b8cc4bcb9e7c::t_91a737dc3d9e75 257-281
+  s_28b8cc4bcb9e7c::t_7a997a27419345 195,200-227
+  s_28b8cc4bcb9e7c::t_37cca632df9b51 282-284
+src/features/bin-designer/storage/DesignerStorage.ts
+  s_28b8cc4bcb9e7c::t_ba5f8672c9802b 137-147
+  s_28b8cc4bcb9e7c::t_c037a65c9c31ca 28
+src/shared/analytics/posthog/eventsCore.test.ts
+  s_28b8cc4bcb9e7c::t_5926690d1299d1 14,24-27,120-157,159,161-167
+  s_28b8cc4bcb9e7c::t_89ab54b85ecb86 22,31-32,158,160
+  s_28b8cc4bcb9e7c::t_94eee8df7d89d5 23,168
+src/shared/analytics/posthog/events.ts
+  s_28b8cc4bcb9e7c::t_308857f008bf8a 37
+src/shared/analytics/posthog/eventsPerson.ts
+  s_28b8cc4bcb9e7c::t_059448e932083c 108-112
+.claude/skills/analytics-and-labs/SKILL.md
+  s_28b8cc4bcb9e7c::t_9d44289aa4fb6d 21
+src/shared/analytics/posthog/identity.ts
+  s_28b8cc4bcb9e7c::t_801b29864eab2d 17-19,25
+src/shared/analytics/posthog/index.ts
+  s_28b8cc4bcb9e7c::t_308857f008bf8a 61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "7bb04dbfbe215100218d9e9daec03d9d89356b0c",
+  "prompts": {},
+  "sessions": {
+    "s_28b8cc4bcb9e7c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "402e75bd-6d5d-4eb0-8275-10a014fb8abd",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_bf6a11448699d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a7f923dd77bb23e21",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
