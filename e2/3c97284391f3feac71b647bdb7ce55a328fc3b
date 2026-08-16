@@ -1,0 +1,80 @@
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.test.tsx
+  s_5088a37997271f::t_63bd2dc773877e 171
+  s_5088a37997271f::t_d864e462cce0eb 5
+content/ko/gridfinity-generator.md
+  s_5088a37997271f::t_44336f69103975 84,143
+content/de/gridfinity-generator.md
+  s_5088a37997271f::t_44336f69103975 84,143
+src/features/bin-designer/constants/gridfinity.test.ts
+  s_5088a37997271f::t_8a557e28cce299 96
+  s_5088a37997271f::t_715d13ccc7d4d5 91-95,97-111
+content/es/gridfinity-generator.md
+  s_5088a37997271f::t_44336f69103975 84,143
+content/uk/gridfinity-generator.md
+  s_5088a37997271f::t_44336f69103975 84,143
+src/features/generation/worker/generators/__kernel-tests__/tallBin.test.ts
+  s_5088a37997271f::t_c871c59df68b55 1,3-5,9-46,49-51,53-58
+  s_5088a37997271f::t_6fdb2d6600e27d 2,6-8
+  s_5088a37997271f::t_6298a7c71d7d7a 47-48
+  s_5088a37997271f::t_61930f24927111 52
+src/features/bin-designer/utils/validation.test.ts
+  s_5088a37997271f::t_da00f7b06d19c2 53
+  s_5088a37997271f::t_15a54c0c33b8c1 553-554,557-558
+api/lib/designerCompartmentValidation.ts
+  s_5088a37997271f::t_72c7777857657a 228,230,233-234
+  s_5088a37997271f::t_7ecfd626422ec9 229
+api/lib/designerValidationConstants.ts
+  s_5088a37997271f::t_b7a7d12099af80 42,44
+  s_5088a37997271f::t_477367035a4d19 23
+content/sv/gridfinity-generator.md
+  s_5088a37997271f::t_44336f69103975 84,143
+api/lib/designerValidation.test.ts
+  s_5088a37997271f::t_ad9e8f39e9d695 319
+content/pt-BR/gridfinity-generator.md
+  s_5088a37997271f::t_44336f69103975 84,143
+content/nl/gridfinity-generator.md
+  s_5088a37997271f::t_44336f69103975 84,143
+content/nb/gridfinity-generator.md
+  s_5088a37997271f::t_44336f69103975 84,143
+src/features/bin-designer/constants/gridfinity.ts
+  s_5088a37997271f::t_ada7d864a1433e 43-46,51-54
+  s_5088a37997271f::t_0317924fe7da8c 145
+  s_5088a37997271f::t_246452a851314d 42,47-50,55
+  s_5088a37997271f::t_14c58515ddf19c 163
+  s_5088a37997271f::t_3d1247860965b8 98
+content/cs/gridfinity-generator.md
+  s_5088a37997271f::t_44336f69103975 84,143
+src/features/generation/worker/generators/__kernel-tests__/height.perf.test.ts
+  s_5088a37997271f::t_379a22e5e933ff 14-22,24-25,28
+  s_5088a37997271f::t_802b1671ac673c 23,26-27
+  s_5088a37997271f::t_a5ab48a016e756 1-4,7-10,12-13,30-48,50-131
+  s_5088a37997271f::t_48f9b6544022c3 5-6,11
+  s_5088a37997271f::t_61930f24927111 29,49
+content/fr/gridfinity-generator.md
+  s_5088a37997271f::t_44336f69103975 84,143
+content/gridfinity-generator.md
+  s_5088a37997271f::t_44336f69103975 84,145
+content/zh-CN/gridfinity-generator.md
+  s_5088a37997271f::t_44336f69103975 84,143
+content/pl/gridfinity-generator.md
+  s_5088a37997271f::t_44336f69103975 84,143
+api/lib/designerCompartmentValidation.test.ts
+  s_5088a37997271f::t_23fdeca984abc7 9-10
+  s_5088a37997271f::t_f6e34d5124acd7 429-435,440,444-450,455
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "e23c97284391f3feac71b647bdb7ce55a328fc3b",
+  "prompts": {},
+  "sessions": {
+    "s_5088a37997271f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7e2503d2-09f5-47fd-80cd-5e2d1952a923",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
