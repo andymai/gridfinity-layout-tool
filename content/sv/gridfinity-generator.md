@@ -81,7 +81,7 @@ faqs:
   - q: Kan Gridfinity-generatorn skapa bottenplattor med magnethål?
     a: Ja. Bottenplatta-generatorn kan lägga till 6 mm × 2 mm magnethål vid varje rutnätskorsning. De är avstängda som standard — slå på dem om du vill ha magneter, eller behåll dem och hoppa över magneterna vid utskrift.
   - q: Finns storleksgränser i Gridfinity-generatorn?
-    a: Bins kan vara upp till 16 × 16 rutnätsenheter (672 mm × 672 mm) och 20 höjdenheter (140 mm) höga. Bottenplattor kan vara större och delas automatiskt i bitar som passar din skrivarbädd när det behövs.
+    a: Bins kan vara upp till 16 × 16 rutnätsenheter (672 mm × 672 mm) och 50 höjdenheter (350 mm) höga. Bottenplattor kan vara större och delas automatiskt i bitar som passar din skrivarbädd när det behövs.
   - q: Stöder Gridfinity-generatorn halv-bin-storlekar?
     a: Ja. Aktivera halv-bin-läge för 0,5-enhetsprecision — det låter dig göra bins som 1,5 × 2,5 för knepiga lådluckor. Halv-bin-stödet sträcker sig genom layout-planeraren så att halv-stora bins placeras snyggt bredvid hela.
   - q: Kan jag anpassa bin-botten och väggarna?
@@ -140,7 +140,7 @@ Du kan också använda [layout-planeraren](/) för att lägga ut bins på en bot
 
 ### Mått
 
-Bredd, djup och höjd. Bredd och djup går från 0,5 till 16 rutnätsenheter (21 mm till 672 mm). Höjd från 2 till 20 höjdenheter (14 mm till 140 mm). En höjdenhet motsvarar 7 mm — Gridfinitys standardenhet från Zack Freedmans ursprungliga spec.
+Bredd, djup och höjd. Bredd och djup går från 0,5 till 16 rutnätsenheter (21 mm till 672 mm). Höjd från 2 till 50 höjdenheter (14 mm till 350 mm). En höjdenhet motsvarar 7 mm — Gridfinitys standardenhet från Zack Freedmans ursprungliga spec.
 
 ### Basstilar
 

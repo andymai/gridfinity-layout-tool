@@ -6,6 +6,8 @@ import {
 } from './designerCompartmentValidation.js';
 import { CONSTRAINTS } from './designerValidationConstants.js';
 
+const DIVIDER_HEIGHT_ERROR = `compartments.dividerHeight must be 'auto' or a number 0-${CONSTRAINTS.MAX_LABEL_TAB_HEIGHT}`;
+
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 
@@ -424,25 +426,33 @@ describe('validateCompartments', () => {
       expect(validateCompartments({ ...validCompartments(), dividerHeight: 0 })).toBeNull();
     });
 
-    it('accepts 140 (maximum numeric)', () => {
-      expect(validateCompartments({ ...validCompartments(), dividerHeight: 140 })).toBeNull();
+    it('accepts the maximum numeric height', () => {
+      expect(
+        validateCompartments({
+          ...validCompartments(),
+          dividerHeight: CONSTRAINTS.MAX_LABEL_TAB_HEIGHT,
+        })
+      ).toBeNull();
     });
 
     it('rejects a negative dividerHeight', () => {
       expect(validateCompartments({ ...validCompartments(), dividerHeight: -1 })).toBe(
-        "compartments.dividerHeight must be 'auto' or a number 0-140"
+        DIVIDER_HEIGHT_ERROR
       );
     });
 
-    it('rejects dividerHeight above 140', () => {
-      expect(validateCompartments({ ...validCompartments(), dividerHeight: 141 })).toBe(
-        "compartments.dividerHeight must be 'auto' or a number 0-140"
-      );
+    it('rejects dividerHeight above the maximum', () => {
+      expect(
+        validateCompartments({
+          ...validCompartments(),
+          dividerHeight: CONSTRAINTS.MAX_LABEL_TAB_HEIGHT + 1,
+        })
+      ).toBe(DIVIDER_HEIGHT_ERROR);
     });
 
     it('rejects an arbitrary non-"auto" string', () => {
       expect(validateCompartments({ ...validCompartments(), dividerHeight: 'manual' })).toBe(
-        "compartments.dividerHeight must be 'auto' or a number 0-140"
+        DIVIDER_HEIGHT_ERROR
       );
     });
   });

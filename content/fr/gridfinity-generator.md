@@ -81,7 +81,7 @@ faqs:
   - q: Le générateur Gridfinity peut-il créer des plaques avec trous d’aimants ?
     a: Oui. Le générateur de plaques peut ajouter des trous de 6 mm × 2 mm à chaque intersection. Ils sont désactivés par défaut — activez-les si vous voulez des aimants, ou gardez-les et ne mettez simplement pas d’aimants lors de l’impression.
   - q: Y a-t-il des limites de taille dans le générateur Gridfinity ?
-    a: Les bins vont jusqu’à 16 × 16 unités de grille (672 mm × 672 mm) et 20 unités de hauteur (140 mm). Les plaques peuvent être plus grandes et sont divisées automatiquement en pièces qui rentrent sur votre plateau au besoin.
+    a: Les bins vont jusqu’à 16 × 16 unités de grille (672 mm × 672 mm) et 50 unités de hauteur (350 mm). Les plaques peuvent être plus grandes et sont divisées automatiquement en pièces qui rentrent sur votre plateau au besoin.
   - q: Le générateur Gridfinity gère-t-il les demi-bins ?
     a: Oui. Activez le mode demi-bin pour une précision 0,5 unité — vous pouvez créer des bins de 1,5 × 2,5 pour des écarts atypiques. Le support demi-bin va jusqu’au planificateur de layout pour que les demi-bins s’alignent proprement aux bins entiers.
   - q: Puis-je personnaliser le fond et les parois des bins ?
@@ -140,7 +140,7 @@ Vous pouvez aussi utiliser le [planificateur de layout](/) pour disposer les bin
 
 ### Dimensions
 
-Largeur, profondeur, hauteur. Largeur et profondeur de 0,5 à 16 unités de grille (21 mm à 672 mm). Hauteur de 2 à 20 unités (14 mm à 140 mm). Une unité de hauteur fait 7 mm — l’unité Gridfinity standard de la spec originale de Zack Freedman.
+Largeur, profondeur, hauteur. Largeur et profondeur de 0,5 à 16 unités de grille (21 mm à 672 mm). Hauteur de 2 à 50 unités (14 mm à 350 mm). Une unité de hauteur fait 7 mm — l’unité Gridfinity standard de la spec originale de Zack Freedman.
 
 ### Styles de base
 

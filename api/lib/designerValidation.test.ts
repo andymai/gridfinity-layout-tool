@@ -316,7 +316,7 @@ describe('validateDesignerShare', () => {
 
     it('rejects height above maximum', () => {
       const payload = validPayload();
-      payload.params.height = 25;
+      payload.params.height = CONSTRAINTS.MAX_HEIGHT + 5;
       const result = validateDesignerShare(payload, JSON.stringify(payload).length);
       expect(result.valid).toBe(false);
     });

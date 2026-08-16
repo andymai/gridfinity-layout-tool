@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ParameterPanel } from './ParameterPanel';
 import { useDesignerStore } from '../../store';
-import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '../../constants';
+import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE, DESIGNER_CONSTRAINTS } from '../../constants';
 
 describe('ParameterPanel', () => {
   beforeEach(() => {
@@ -168,7 +168,7 @@ describe('ParameterPanel', () => {
 
     const heightInput = screen.getByLabelText('Height');
     expect(heightInput).toHaveAttribute('min', '2');
-    expect(heightInput).toHaveAttribute('max', '20');
+    expect(heightInput).toHaveAttribute('max', String(DESIGNER_CONSTRAINTS.MAX_HEIGHT));
     expect(heightInput).toHaveAttribute('step', '1');
   });
 

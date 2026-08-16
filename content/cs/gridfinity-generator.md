@@ -81,7 +81,7 @@ faqs:
   - q: Umí generátor Gridfinity vytvořit základní desky s otvory na magnety?
     a: Ano. Generátor základních desek může přidat otvory na magnety 6 mm × 2 mm na každý průsečík mřížky. Ve výchozím nastavení jsou vypnuté — zapni je, pokud chceš magnety, nebo je nechej a magnety při tisku prostě vynech.
   - q: Má generátor Gridfinity limity velikosti?
-    a: Biny mohou mít až 16 na 16 jednotek mřížky (672 mm na 672 mm) a 20 jednotek výšky (140 mm). Základní desky mohou být větší a v případě potřeby se automaticky dělí na části, které se vejdou na podložku tvé tiskárny.
+    a: Biny mohou mít až 16 na 16 jednotek mřížky (672 mm na 672 mm) a 50 jednotek výšky (350 mm). Základní desky mohou být větší a v případě potřeby se automaticky dělí na části, které se vejdou na podložku tvé tiskárny.
   - q: Podporuje generátor Gridfinity poloviční velikosti Binů?
     a: Ano. Zapni režim půl-Binu pro přesnost 0,5 jednotky — umožní vytvořit Biny jako 1,5 na 2,5, aby vyplnily nepohodlné mezery v zásuvce. Podpora půl-Binu sahá až do plánovače rozvržení, takže poloviční Biny se čistě skládají vedle celých.
   - q: Můžu si přizpůsobit dno a stěny Binu?
@@ -140,7 +140,7 @@ Můžeš také použít [plánovač rozvržení](/) generátoru, rozložit Biny 
 
 ### Rozměry
 
-Šířka, hloubka a výška. Šířka a hloubka jsou od 0,5 do 16 jednotek mřížky (21 mm až 672 mm). Výška od 2 do 20 jednotek výšky (14 mm až 140 mm). Jedna jednotka výšky je 7 mm — standardní jednotka Gridfinity z původní specifikace Zacka Freedmana.
+Šířka, hloubka a výška. Šířka a hloubka jsou od 0,5 do 16 jednotek mřížky (21 mm až 672 mm). Výška od 2 do 50 jednotek výšky (14 mm až 350 mm). Jedna jednotka výšky je 7 mm — standardní jednotka Gridfinity z původní specifikace Zacka Freedmana.
 
 ### Styly uchycení podstavy
 
