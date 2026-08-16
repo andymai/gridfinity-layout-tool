@@ -11,6 +11,7 @@
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { Button, SegmentedControl, SliderInput } from '@/design-system';
 import { FeatureToggle } from '../FeatureToggle';
+import { AdvancedDisclosure } from '../shared';
 import { PatternSelector } from '../WallsSection/PatternSelector';
 import {
   FLOOR_PATTERN_TYPES,
@@ -21,6 +22,7 @@ import {
   LID_RAIL_SIDES,
   LIGHTWEIGHT_MODES,
 } from '@/features/bin-designer/types';
+import { DEFAULT_LIGHTWEIGHT_MODE } from '@/features/bin-designer/types/base';
 import { useTranslation } from '@/i18n';
 import { useBaseSection } from './useBaseSection';
 
@@ -217,8 +219,18 @@ export function BaseSection() {
           CAN be turned on. A bin with a finger scoop is blocked from an interior
           lite floor and allowed an underside one, so nesting the control would
           leave that bin — the case the feature exists for — with no way to reach
-          it. Same standalone shape as the foot lattice above. */}
-      <div className="space-y-2 pl-1">
+          it. The toggle's own disabled reason names the mode, so a blocked user
+          is pointed straight at the row below it.
+
+          Folded away for the same reason the foot lattice is: it is a sub-option
+          of a feature most bins never turn on, and a full-width control plus its
+          hint made it the loudest thing in the section. `forceOpen` keeps the
+          non-default choice visible. */}
+      <AdvancedDisclosure
+        label={`${t('binDesigner.lightweightMode')}:`}
+        summary={t(`binDesigner.lightweightMode.${state.lightweightMode}`)}
+        forceOpen={state.lightweightMode !== DEFAULT_LIGHTWEIGHT_MODE}
+      >
         <SegmentedControl
           aria-label={t('binDesigner.lightweightMode')}
           activeStyle="accent"
@@ -234,7 +246,7 @@ export function BaseSection() {
         <p className="text-[11px] leading-relaxed text-content-tertiary">
           {t(`binDesigner.lightweightMode.${state.lightweightMode}.hint`)}
         </p>
-      </div>
+      </AdvancedDisclosure>
 
       {/* ── Spacer / riser (#2869) — a floorless frame that lifts a bin so bins
           of different heights finish flush. Height counts in the stack exactly
