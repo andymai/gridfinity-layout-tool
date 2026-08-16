@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.417.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.416.0...gridfinity-layout-tool-v4.417.0) (2026-08-16)
+
+
+### Features
+
+* **bin-designer:** surface the cutout tile feature as Repeat, and detect hand-built patterns ([#3539](https://github.com/andymai/gridfinity-layout-tool/issues/3539)) ([3bbfa62](https://github.com/andymai/gridfinity-layout-tool/commit/3bbfa627fade53c4990f65aaf52fd28341cdd062))
+
 ## [4.416.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.415.0...gridfinity-layout-tool-v4.416.0) (2026-08-16)
 
 
