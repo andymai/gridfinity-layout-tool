@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/__kernel-tests__/height.perf.test.ts
+  s_28b8cc4bcb9e7c::t_37d3ce1cd8fc24 14-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "41971c44a51f8e7dc6f30418bf9c0550fecf7d4b",
+  "prompts": {},
+  "sessions": {
+    "s_28b8cc4bcb9e7c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "402e75bd-6d5d-4eb0-8275-10a014fb8abd",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
