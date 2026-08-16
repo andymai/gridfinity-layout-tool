@@ -2,7 +2,7 @@
  * "Grow the bin to fit" — the companion to `clampCutoutToBoard`.
  *
  * Cutout W/H are typed as real measurements, so a value past the current
- * footprint is kept rather than truncated (#3061) and the board grows to meet
+ * footprint is kept rather than truncated and the board grows to meet
  * it instead. Growing extends the interior toward +X/+Y, which leaves every
  * cutout's stored `x`/`y` (relative to the interior's bottom-left) untouched —
  * the same thing the width/depth steppers already do.

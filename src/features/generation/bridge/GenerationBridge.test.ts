@@ -37,7 +37,7 @@ class MockWorker {
     // Auto-respond to INIT
     if (msgType === 'INIT') {
       // Simulates a worker that loads but hangs inside WASM init: no INIT_READY,
-      // no error event, nothing (#3035).
+      // no error event, nothing.
       if (stallInit) return;
       const kernel = (data as { kernel?: string }).kernel ?? 'occt-wasm';
       setTimeout(() => {
@@ -74,7 +74,7 @@ class MockWorker {
 }
 
 let mockWorkerInstance: MockWorker | null = null;
-/** When true, MockWorker swallows INIT instead of replying — see #3035. */
+/** When true, MockWorker swallows INIT instead of replying. */
 let stallInit = false;
 
 // Mock the Worker constructor globally

@@ -25,7 +25,7 @@
  * into the seam. Two opposing PUZZLE grooves across a seam form one dogbone
  * cavity — narrow at the seam, flaring to a rounded lobe inside each piece —
  * that the key locks into (the legacy trapezoid grooves' 0.3 mm/side undercut
- * printed away to nothing, #2637; see {@link buildDovetailKey}). The groove uses
+ * printed away to nothing,; see {@link buildDovetailKey}). The groove uses
  * the tighter `DOVETAIL_KEY_CLEARANCE` for a press fit. `invertDovetails` and
  * `preferIdenticalPieces` are ignored in this mode (seams are symmetric).
  *
@@ -178,10 +178,10 @@ export function buildConnectors(
   const grooves: Shape3D[] = [];
 
   if (!edges) return { nubs: tongues, holes: grooves };
-  // The opt-in margin-seam connector (#2414) is gated independently of
+  // The opt-in margin-seam connector is gated independently of
   // `connectorNubs` (split-piece connectors) — a user can want a rail connector
   // without split-piece dovetails. The integral styles put a tongue on the seam;
-  // `dovetailKey` puts a groove there and lets the seated key span it (#2866).
+  // `dovetailKey` puts a groove there and lets the seated key span it.
   // snapClip stays friction-fit (splitPlanner enforces this, and this guard keeps
   // the function self-consistent if called directly).
   const hasMarginSeam =
@@ -200,7 +200,7 @@ export function buildConnectors(
   const isSnapClip = params.connectorStyle === 'snapClip';
   const bothFemale = isDovetailKey || isSnapClip;
   // Puzzle: an integral jigsaw-tab tongue/groove (stronger than the legacy
-  // slip-fit `dovetail`, issue #2241). Integral, so invert/paired apply normally.
+  // slip-fit `dovetail`,). Integral, so invert/paired apply normally.
   const isPuzzle = params.connectorStyle === 'puzzle';
 
   // Snap-clip blind pockets need a minimum leg-flex depth; on a slab too thin
@@ -225,7 +225,7 @@ export function buildConnectors(
   const P = TONGUE_PROTRUSION;
   const bW = TONGUE_BASE_HALF; // half-width at wall (narrow)
   const tW = TONGUE_TIP_HALF; // half-width at tip (wide)
-  // Per-side groove clearance, shifted by the user's fit offset (issue #2024)
+  // Per-side groove clearance, shifted by the user's fit offset
   // and clamped so it can never go negative. The tongue/key stay at nominal
   // size — only the groove the user prints around them grows or shrinks.
   const baseClearance = isDovetailKey ? DOVETAIL_KEY_CLEARANCE : TONGUE_CLEARANCE;
@@ -379,7 +379,7 @@ export function buildConnectors(
       ? (wallCoord: number, bpCoord: number): [number, number] => [wallCoord, bpCoord]
       : (wallCoord: number, bpCoord: number): [number, number] => [bpCoord, wallCoord];
 
-  // All-edge slots (#2866): the exterior edges of a padding-free piece get the
+  // All-edge slots: the exterior edges of a padding-free piece get the
   // same female slot the join seams do, so every piece is a standard 42mm tile
   // that keys into any plate printed later. Restricted to the both-female styles
   // (`hasAllEdgeSlots`), so the male branches below are unreachable for an
@@ -393,7 +393,7 @@ export function buildConnectors(
       if (def.boundaries.length === 0) continue;
       const pt = ptFor(def);
       // A shaped plate can gate this seam's connectors to the sub-span whose
-      // bands sit inside the perimeter (#3163) — positions come from the
+      // bands sit inside the perimeter — positions come from the
       // planner in the same piece-centered mm as `def.boundaries`.
       const allowed = params.connectorFilter?.[def.side];
 
@@ -409,7 +409,7 @@ export function buildConnectors(
         } else if (isDovetailKey) {
           // Both sides of every seam are female; the key supplies the male half.
           // Puzzle-lobe grooves: the dogbone key's 1.0 mm/side undercut survives
-          // FDM where the legacy trapezoid's 0.3 mm/side did not (#2637).
+          // FDM where the legacy trapezoid's 0.3 mm/side did not.
           grooves.push(makePuzzleGroove(pt, w, bp, d, cl, ext, totalHeight));
         } else if (paired) {
           const mBp = bp + def.maleOffsetSign * PAIR_HALF_OFFSET;
@@ -425,11 +425,11 @@ export function buildConnectors(
     }
   }
 
-  // Opt-in body↔long-rail connector (#2414), in one of two forms:
+  // Opt-in body↔long-rail connector, in one of two forms:
   //   - integral (dovetail/puzzle): one male tongue per mating grid cell along the
   //     detached exterior wall, protruding into the rail, so a long rail is
-  //     anchored evenly along its length rather than at a single point (#2428);
-  //   - keyed (dovetailKey, #2866): a female groove per interior cell BOUNDARY,
+  //     anchored evenly along its length rather than at a single point;
+  // - keyed (dovetailKey,): a female groove per interior cell BOUNDARY,
   //     with the seated key spanning into the rail's matching groove.
   // Either way the rail carries the mating half at the same anchors
   // (`buildMarginSeamGroove`). Rails are solid (no sockets), so no tongue relief
@@ -440,7 +440,7 @@ export function buildConnectors(
       if (edges[def.side] !== 'marginSeam') continue;
       const pt = ptFor(def);
       if (isDovetailKey) {
-        // Keyed seam (#2866): female on the body too, with the rail carrying the
+        // Keyed seam: female on the body too, with the rail carrying the
         // matching groove. Placed on cell BOUNDARIES rather than the tongue's cell
         // centers — a boundary puts the key at a junction of two body cells, which
         // is the four-foot layout `buildDovetailKey`'s socket relief is cut for. A
@@ -464,7 +464,7 @@ export function buildConnectors(
 /**
  * Dovetail tongue: trapezoidal plan view, wider at tip. The base edge is
  * extended COPLANAR_OVERLAP into the slab so the fuse has shared volume rather
- * than a degenerate coplanar interface at the wall face (issue #1407).
+ * than a degenerate coplanar interface at the wall face.
  */
 export function makeTongue(
   pt: (wall: number, bp: number) => [number, number],
@@ -510,7 +510,7 @@ export function makeGroove(
 
 /**
  * Groove carved into a detached long rail's seam face to receive one of the
- * body's margin-seam tongues (#2414). Uses the same profile/clearance the tongue
+ * body's margin-seam tongues. Uses the same profile/clearance the tongue
  * does so they mate, positioned along the seam by `tongueOffsetMm` (the caller
  * cuts one per cell). Built in the rail's own origin-centered frame (see
  * `baseplateMargin.buildMarginSolid`): the seam face is the rail's inner long
@@ -518,7 +518,7 @@ export function makeGroove(
  * groove cuts inward from it — `d` equals that face's sign.
  *
  * Under `dovetailKey` the body wall is female too, so this groove receives one
- * lobe of the seated key rather than a body tongue (#2866): same puzzle profile,
+ * lobe of the seated key rather than a body tongue: same puzzle profile,
  * but the tighter `DOVETAIL_KEY_CLEARANCE` the key's press fit is sized against.
  */
 export function buildMarginSeamGroove(
@@ -537,7 +537,7 @@ export function buildMarginSeamGroove(
   // Rail seam runs along X for front/back rails (wall coord on Y) and along Y
   // for left/right rails (wall coord on X). `tongueOffsetMm` slides the groove
   // along that axis onto the mating body tongue — nonzero on a corner-owning end
-  // segment whose rail center no longer sits on the body wall it joins (#2427).
+  // segment whose rail center no longer sits on the body wall it joins.
   const pt: (wall: number, bp: number) => [number, number] = horizontal
     ? (wall, bp) => [bp, wall]
     : (wall, bp) => [wall, bp];
@@ -655,7 +655,7 @@ export function makePuzzleGroove(
  *
  * This replaced the original double-dovetail bowtie: its 0.3 mm/side undercut
  * was swallowed whole by FDM corner rounding + first-layer squish, so printed
- * keys came out near-rectangular and wouldn't hold (#2637). The puzzle lobe's
+ * keys came out near-rectangular and wouldn't hold. The puzzle lobe's
  * 1.0 mm/side undercut (`PUZZLE_HEAD_HALF − PUZZLE_NECK_HALF`) is the profile
  * the integral 'puzzle' style already prints reliably. The style id stays
  * `dovetailKey` so saved designs keep working; plates printed with the old

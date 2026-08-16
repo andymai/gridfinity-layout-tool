@@ -96,7 +96,7 @@ describe('seam key printable undercut (issue #2637)', () => {
     const firstLayerSquish = 0.2;
     const swallowBudget = cornerRounding + firstLayerSquish + DOVETAIL_KEY_CLEARANCE;
     expect(undercutPerSide).toBeGreaterThanOrEqual(2 * swallowBudget);
-    // The legacy taper demonstrably failed this bar (#2637).
+    // The legacy taper demonstrably failed this bar.
     const legacyUndercut = TONGUE_TIP_HALF - TONGUE_BASE_HALF;
     expect(legacyUndercut).toBeLessThan(2 * swallowBudget);
   });

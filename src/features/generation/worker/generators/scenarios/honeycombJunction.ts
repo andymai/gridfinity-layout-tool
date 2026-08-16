@@ -1,5 +1,5 @@
 /**
- * Honeycomb wall pattern + divider junction regression scenarios (#1350).
+ * Honeycomb wall pattern + divider junction regression scenarios.
  *
  * These pin triangle counts for configurations where the honeycomb pattern
  * interacts with divider walls at the outer-wall junction. Regressions in
@@ -182,7 +182,7 @@ export const honeycombJunction: ScenarioCase[] = [
     timeout: 60_000,
   }),
 
-  // ── Bug 3: clip depth must cover hex prism extrusion at thick walls (#1354) ─
+  // ── Bug 3: clip depth must cover hex prism extrusion at thick walls ─
   // When wallThickness > 0.85mm (especially without lip), cutDepth = wallThickness*4
   // can exceed clipExtrudeDepth, letting hex prisms escape junction clip boxes.
 
@@ -308,7 +308,7 @@ export const honeycombJunction: ScenarioCase[] = [
     }
   ),
 
-  // ── #2865: a BOLD wall pattern on thin, lip-less walls with pattern dividers.
+  // ──: a BOLD wall pattern on thin, lip-less walls with pattern dividers.
   //    At 0.8mm walls the round holes (70% scale) reach to within ~0.4mm of each
   //    corner, leaving a razor-thin corner post — it renders as a seam and prints
   //    as a break ("empty space between wall faces"). Without a lip there is no

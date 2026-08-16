@@ -180,7 +180,7 @@ describe('useLayoutExport', () => {
     expect(h.poolRelease).toHaveBeenCalledTimes(1);
   });
 
-  // #3115: this path calls the builder directly, so an over-bed custom split
+  // This path calls the builder directly, so an over-bed custom split
   // must drop the baseplate here rather than ship pieces the slicer refuses —
   // and say which pieces, since the generic notice gives the user nothing to act on.
   it('drops the baseplate and names the pieces when a custom split exceeds the bed', async () => {
@@ -206,7 +206,7 @@ describe('useLayoutExport', () => {
 
   it('splits an oversized bin under STEP and asks the worker for STEP pieces (#3501)', async () => {
     // 11 units × 42mm overruns the 256mm bed, so this design takes the split
-    // route. Before #3501 the planner refused to cut under STEP and shipped one
+    // route. Before the planner refused to cut under STEP and shipped one
     // un-printable file instead.
     h.loadDesign.mockImplementation((id: string) =>
       Promise.resolve(design(id, 'Wide', { width: 11 }))

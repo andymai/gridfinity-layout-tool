@@ -42,8 +42,8 @@ export interface CustomBinRef {
   readonly height: number;
   /**
    * Fractional-edge orientation carried so the layout planner / bin inspector
-   * can flag a drawer mismatch without loading the full design (issue #2518).
-   * Optional: pre-#2518 registry entries omit them until the design is re-saved.
+   * can flag a drawer mismatch without loading the full design.
+   * Optional: older registry entries omit them until the design is re-saved.
    */
   readonly fractionalEdgeX?: 'start' | 'end';
   readonly fractionalEdgeY?: 'start' | 'end';
@@ -52,7 +52,7 @@ export interface CustomBinRef {
   /**
    * Half-socket base, carried for the same reason as the edges: such a bin is
    * built from uniform 0.5-unit cells, so its fractional edge has no geometric
-   * effect and must not be flagged as mismatched (issue #3073... see #3070).
+   * effect and must not be flagged as mismatched (...).
    * Optional — entries saved before this omit it until the design is re-saved.
    */
   readonly halfSockets?: boolean;

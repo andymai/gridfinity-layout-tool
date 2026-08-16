@@ -72,7 +72,7 @@ export type HeightUnitMmSetEvent = BaseDomainEvent<
   { readonly mm: number; readonly previousMm: number }
 >;
 
-// Padding participates in the grid↔perimeter frame (#3157), so a params
+// Padding participates in the grid↔perimeter frame, so a params
 // change can move the registered frame and displace bins exactly like a
 // resize. `displacedBinIds` is optional for back-compat with persisted
 // events that predate the field; replay leaves bins untouched then.

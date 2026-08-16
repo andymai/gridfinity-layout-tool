@@ -63,7 +63,7 @@ const TAB_TEXT_VERTICAL_FIT: VerticalFit = 'inkBox';
  *
  * `depthSign = -1` (default) places the depth leg in -X, matching the
  * original back-tab convention. `+1` mirrors the profile into +X for
- * front-anchored label tabs (#1898).
+ * front-anchored label tabs.
  */
 function buildGussetProfile(depth: number, height: number, depthSign: 1 | -1 = -1): Drawing {
   return draw([0, height])
@@ -126,7 +126,7 @@ export interface SpanningDividerClip {
 }
 
 /**
- * Where a full-width shelf crosses the column dividers (#2897).
+ * Where a full-width shelf crosses the column dividers.
  *
  * `planSpanningTabAtRow` already assumes those dividers "pass beneath" the
  * span — but nothing ever shortened them, so they ran to the interior ceiling
@@ -232,7 +232,7 @@ export interface LabelPlateSeat {
 
 /**
  * Resolve where every swappable label plate seats, so the preview can render
- * the real parts clicked into their sockets (#2666 plates, preview per user
+ * the real parts clicked into their sockets (plates, preview per user
  * request).
  *
  * Planned rather than observed: label tabs are a cached pipeline feature, so a
@@ -535,7 +535,7 @@ function buildTabsAtRow(
     // `shelfTopZ === wallHeight` (the default) the shelf top would otherwise be
     // coplanar with the bin wall top; OCCT's fuse merges coplanar faces into one
     // and the merged face loses the LABEL_TAB origin, so the shelf rendered in
-    // body color in multi-color mode (GH #1654). The 0.01mm proud lip is below
+    // body color in multi-color mode (GH). The 0.01mm proud lip is below
     // slicer resolution but keeps the shelf-top face distinct so its tag survives.
     const shelf = scope.register(
       sketch(buildOutline(), 'XY', tabHeight - wt).extrude(wt + COPLANAR_OVERLAP)
@@ -621,7 +621,7 @@ function buildTabsAtRow(
     }
 
     if (socket) {
-      // Swappable-label socket on the shelf top (#2666). Compartments whose
+      // Swappable-label socket on the shelf top. Compartments whose
       // tab can't host a standard plate keep a plain shelf — the UI surfaces
       // the same condition as a warning so missing sockets aren't a mystery.
       const plateWidthU = socket.plateByCompartment.get(cellId);
@@ -654,7 +654,7 @@ function buildTabsAtRow(
       });
     }
 
-    // -- Lip: raised rim along the free edge to retain loose labels (#2971).
+    // -- Lip: raised rim along the free edge to retain loose labels.
     // Text-mode only — labelLipReservationMm returns 0 for socket tabs and when
     // disabled. shelfTopZ was already dropped by this amount, so the rim tops
     // out at the interior ceiling. The rim spans the shelf's full thickness
@@ -702,7 +702,7 @@ function buildTabsAtRow(
 
 /**
  * Cut a swappable-label socket into the shelf top and fuse the retention
- * ribs (#2666). Local tab frame: shelf spans X:[0,tabWidth],
+ * ribs. Local tab frame: shelf spans X:[0,tabWidth],
  * Y:[depthSign·tabDepth, 0] with the shelf top at Z=tabHeight.
  *
  * Pocket = plate footprint + total clearance, one pocket-wall margin in
@@ -774,7 +774,7 @@ function applySocket(
  * coupon so the printed socket can never drift between the two. Throws on
  * boolean failure — callers needing best-effort semantics wrap it.
  *
- * Styles (#2666 follow-up):
+ * Styles (follow-up):
  * - `clickIn` (default): pocket + retention ribs, floor at topZ − pocket
  *   depth. The Cullenect-compatible profile.
  * - `slideChannel`: pocket sunk one lip band + z-clearance deeper, with
@@ -1001,9 +1001,9 @@ export const labelTabsFeature: FeatureBuilder = {
   shouldBuild: (ctx) => !ctx.dimensions.isSlotted,
   cacheKey: (ctx) => {
     const { dimensions: dim, params } = ctx;
-    // Socket mode (#2666): geometry additionally depends on the
+    // Socket mode: geometry additionally depends on the
     // per-compartment width overrides (mode + plateFitOffset already ride in
-    // `stableSerialize(params.label)` below) AND the print nozzle (#2690 — the
+    // `stableSerialize(params.label)` below) AND the print nozzle (— the
     // pocket clearance scales to it, so two nozzles with identical overrides
     // must not share a cache entry). Keyed only in socket mode so text-mode
     // tabs don't churn when overrides/nozzle linger in the config.
@@ -1024,10 +1024,10 @@ export const labelTabsFeature: FeatureBuilder = {
         // `v7`: click-in sockets on lipped bins sink the default shelf by
         // LABEL_SOCKET_STACK_RELIEF_MM — same params now cut lower geometry,
         // so older IndexedDB entries must be invalidated.
-        // `v6`: #2666 added swappable-label socket mode.
-        // `v5`: #1654 extrudes the shelf COPLANAR_OVERLAP proud (geometry +
+        // `v6`: added swappable-label socket mode.
+        // `v5`: extrudes the shelf COPLANAR_OVERLAP proud (geometry +
         // face tags changed), so older IndexedDB entries must be invalidated.
-        // `v4`: #1898 added `edges` + `inset` to LabelTabConfig.
+        // `v4`: added `edges` + `inset` to LabelTabConfig.
         'v11',
         socketKeyPart,
         dim.shellKey,

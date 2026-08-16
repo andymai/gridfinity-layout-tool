@@ -198,7 +198,7 @@ export function BaseplatePage() {
 
   // Split-into-pieces banner only when NOT stacking (stacking has its own).
   // Format-agnostic: buildBaseplateExportPieces splits STEP the same as STL/3MF
-  // (one solid per unique tile), so STEP gets the option too (#3088).
+  // (one solid per unique tile), so STEP gets the option too.
   const showSplitBanner = !stackEnabled && tiling?.isSplit === true;
   // When stacking, a split drawer always takes the per-tower export path; the
   // user can't opt out, so there's no split checkbox to gate it.

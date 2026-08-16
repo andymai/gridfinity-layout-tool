@@ -1,5 +1,5 @@
 /**
- * Lid-side retention magnets (issue #2694).
+ * Lid-side retention magnets.
  *
  * Fuses a corner boss into each of the lid's four corners, hanging DOWN from
  * the floor into the mating cavity, and cuts a blind pocket that opens downward
@@ -56,7 +56,7 @@ export function addLidRetentionMagnets(
   const inset = retentionMagnetInset(retentionMagnetDiameter);
   // Same placement as the bin pads (edge magnets included), so every lid boss
   // lands coaxial with its mating bin post — overhang expansion included, since
-  // both sides inset from the same overhang-shifted footprint (#3048).
+  // both sides inset from the same overhang-shifted footprint.
   const positions = retentionMagnetPositions(
     cellsX,
     cellsY,

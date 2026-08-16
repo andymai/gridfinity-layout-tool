@@ -105,7 +105,7 @@ export function buildProjectSettingsConfig(palette: readonly string[]): string {
       // hides every per-feature acceleration override in the loaded profile.
       // On import (Bambu included) that drops the user's tuned accelerations
       // to machine defaults and inflates multi-color print time several-fold
-      // (#2615, #2622). The warning it silenced is non-blocking.
+      //. The warning it silenced is non-blocking.
     },
     null,
     2
@@ -142,7 +142,7 @@ function dominantSlot(triangleMaterialIndices: readonly number[]): number {
  * OrcaSlicer color a whole object by this extruder; without it every object
  * defaults to extruder 1 (body), so a uniform secondary object like the lid
  * renders body-colored even though its triangles carry the correct
- * `paint_color` (discussion #1654). Purely additive — slicers that ignore the
+ * `paint_color` (discussion). Purely additive — slicers that ignore the
  * sidecar fall back to today's paint_color-only behavior, so it can't regress
  * the already-working multi-zone bin.
  *

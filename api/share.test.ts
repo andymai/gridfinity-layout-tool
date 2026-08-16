@@ -306,7 +306,7 @@ describe('share (create)', () => {
   });
 
   // A layout share whose designs stay behind arrives as bins pointing at
-  // designs that only exist in the sharer's browser (#2894).
+  // designs that only exist in the sharer's browser.
   it('stores the validated linked designs alongside the layout', async () => {
     const designs = [{ id: 'design_1', name: 'Socket Tray', params: { width: 3 } }];
     mocks.validateSharedDesigns.mockReturnValue({ valid: true, designs });

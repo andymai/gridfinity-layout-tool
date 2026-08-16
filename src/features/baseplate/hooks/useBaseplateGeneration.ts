@@ -311,7 +311,7 @@ export function selectGenerationTriggers(state: LayoutStoreState) {
     // regeneration while dragging the (hidden) slider.
     solidFloor: bp.solidFloor ?? false,
     solidFloorThickness: bp.solidFloor === true ? bp.solidFloorThickness : undefined,
-    // Mount-down screws (#3425) decide which cells keep a floor, grow the slab
+    // Mount-down screws decide which cells keep a floor, grow the slab
     // by the pad, and cut the hole/recess geometry — every field must
     // re-trigger BREP. The geometry fields fold out while screws are off (or
     // stripped by stacking) so edits that cannot change the mesh don't

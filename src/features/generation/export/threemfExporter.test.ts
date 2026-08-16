@@ -273,9 +273,9 @@ describe('threemfExporter', () => {
 
       // Build item always carries a transform now — the bbox centroid is
       // translated to PLATE_CENTER_MM so the bin opens centered on the bed
-      // rather than at the world origin (= bed corner). Pre-#1893 this was
-      // unnecessary because OrcaSlicer's From_Other classifier auto-arranged
-      // on import; claiming BambuStudio identity flips need_arrange = false.
+      // rather than at the world origin (= bed corner). Claiming BambuStudio
+      // identity flips need_arrange = false, so OrcaSlicer's From_Other
+      // classifier no longer auto-arranges on import.
       expect(xml).toContain('<build>');
       expect(xml).toMatch(/<item objectid="1" transform="1 0 0 0 1 0 0 0 1 [^"]+" \/>/);
     });
@@ -635,7 +635,7 @@ describe('threemfExporter', () => {
       expect(config.layer_change_gcode).toMatch(/^\s*G92\s*E0\b/);
     });
 
-    // Regression for #2622: pinning acceleration hid the user's tuned profile
+    // Regression: pinning acceleration hid the user's tuned profile
     // and inflated multi-color print time (see buildProjectSettingsConfig).
     it('does not pin acceleration (would strip the user profile and slow the print)', () => {
       const { vertices, normals } = createTwoTriangles();
@@ -737,7 +737,7 @@ describe('threemfExporter', () => {
       expect(unzipSync(buffer)['Metadata/project_settings.config']).toBeUndefined();
     });
 
-    // discussion #1654: a uniform-color secondary object (the lid) ships every
+    // discussion: a uniform-color secondary object (the lid) ships every
     // triangle with one paint_color code, but BambuStudio colors a whole
     // object by its assigned extruder — with none assigned it defaults to
     // extruder 1 (body), so the lid renders body-colored despite correct
@@ -1151,12 +1151,12 @@ describe('threemfExporter', () => {
     });
   });
 
-  // Issue #1642 — auto-stack copies in 3MF. The exporter uses 3MF instancing
+  // Issue — auto-stack copies in 3MF. The exporter uses 3MF instancing
   // (single object, multiple <item> entries with Z translation) so file size
   // stays constant regardless of copy count.
-  // Pre-#1893 we shipped no Application metadata so OrcaSlicer classified
+  // Older we shipped no Application metadata so OrcaSlicer classified
   // our file as `From_Other` and auto-arranged on import. Claiming
-  // BambuStudio identity in #1893 flipped need_arrange=false, so the bin
+  // BambuStudio identity flipped need_arrange=false, so the bin
   // appeared at world origin (bed corner) instead of centered. Centering
   // via a build-item transform restores the prior visual behavior while
   // keeping the AMS-palette-loading benefit of the Bambu identity claim.

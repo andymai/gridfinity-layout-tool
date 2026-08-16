@@ -183,7 +183,7 @@ describe('v2 drawer.update with an outline', () => {
   });
 
   it('replay of a legacy outline-reset event still deletes the key', () => {
-    // Events persisted before #3149 carried an adapted (or reset) outline in
+    // Events persisted carried an adapted (or reset) outline in
     // `changes`; apply()/replay must keep honouring them.
     const event = {
       type: 'drawer.updated',

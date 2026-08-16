@@ -9,7 +9,7 @@ import { box, withScope, clone, unwrap, fuseAll, draw, intersect, cut } from 'br
 import type { Shape3D, ValidSolid, DisposalScope, Drawing } from 'brepjs';
 import type { BinParams, DividerOverride } from '@/shared/types/bin';
 // Pure grid helpers, kept in the compartment-grid util so the main thread can
-// reach them too — the lid's click rails notch around the same runs (#3477)
+// reach them too — the lid's click rails notch around the same runs
 // and cannot import this module, which pulls in brepjs.
 import { buildOverrideLookup, findPairAwareRuns, overrideKey } from '@/shared/types/bin';
 
@@ -55,7 +55,7 @@ export function hasMultipleCompartments(params: BinParams): boolean {
  * so the cavity follows the rounded inner wall contour. Without this, a sharp
  * cavity corner pokes past the outer rounded arc on thin-walled bins
  * (`wallThickness < BOX_CORNER_RADIUS·(1 − 1/√2) ≈ 1.1mm`) and the cut eats
- * through the outer skin, leaving a gap in the bin's corners (#1968).
+ * through the outer skin, leaving a gap in the bin's corners.
  *
  * Non-rectangular compartments (cells with the same ID forming an L-shape,
  * etc.) are approximated by their bounding box; multi-cavity cut is therefore
@@ -366,7 +366,7 @@ export function compartmentCavitiesAreViable(
  * inner-shell radius (`BOX_CORNER_RADIUS − wallThickness`). On thin walls a
  * corner compartment narrower than twice that radius can only be partially
  * rounded, so its sharp residue still pokes past the outer arc and reopens
- * the #1968 corner gap — such bins must fall back to the additive-fuse path
+ * the corner gap — such bins must fall back to the additive-fuse path
  * (whose rounded hollow shell has no corner gap). Thick-walled bins are
  * always safe: a sharp cavity corner never reaches past the arc, so cell
  * size is irrelevant.
@@ -639,7 +639,7 @@ export function buildCompartmentWalls(
 }
 
 /**
- * Drop the divider tops that a wall-to-wall label shelf passes over (#2897),
+ * Drop the divider tops that a wall-to-wall label shelf passes over,
  * so the span reads as one unbroken surface instead of being sliced by
  * dividers standing proud of it.
  *
@@ -811,14 +811,14 @@ export const compartmentWallsFeature: FeatureBuilder = {
   name: 'compartmentWalls',
   tag: FeatureTag.DIVIDER,
   target: 'fuse',
-  // Skip when walls are already in the shell (multi-cavity cut path, #1753).
+  // Skip when walls are already in the shell (multi-cavity cut path,).
   shouldBuild: (ctx) => !ctx.dimensions.isSlotted && !ctx.dimensions.compartmentsBakedIntoShell,
   cacheKey: (ctx) => {
     const { dimensions: dim, params } = ctx;
     return compactKey(
       buildCacheKey(
         // `v3`: dividers crossed by a spanning label shelf are clipped to its
-        // underside (#2897), so the same grid now yields shorter dividers.
+        // underside, so the same grid now yields shorter dividers.
         'v3',
         dim.shellKey,
         quantize(dim.innerW),

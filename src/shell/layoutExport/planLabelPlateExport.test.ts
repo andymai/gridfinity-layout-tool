@@ -114,7 +114,7 @@ describe('planLabelPlateExport', () => {
     );
   });
 
-  // #2910: `edges: 'both'` cuts a socket on each compartment wall, so the
+  // `edges: 'both'` cuts a socket on each compartment wall, so the
   // sheet has to carry a plate for each. It used to ship one per compartment,
   // leaving the user half the plates they needed.
   it('ships a plate per socket when tabs sit on both edges', () => {

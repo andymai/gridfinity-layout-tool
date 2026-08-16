@@ -75,7 +75,7 @@ export const CUTOUT_BORDER_WIDTH = 1.5;
 
 /**
  * Solid keep-out at each wall END (the shared corner), applied only when the bin
- * has NO stacking lip (#2865).
+ * has NO stacking lip.
  *
  * With a lip, the continuous top rim re-joins all four walls, so the corner is
  * not the sole join and no keep-out is needed — lipped bins regenerate
@@ -96,7 +96,7 @@ export const WALL_CORNER_KEEP_OUT = CUTOUT_BORDER_WIDTH;
  * The bottom keep-out is `wallThickness + this`: one `wallThickness` clears the
  * floor slab, and the skirt is the actual solid band the lowest hex row anchors
  * to. Without it the lowest webs rise straight off the wall-floor seam as
- * unanchored fins and snap during FDM printing (#2317). Sized to match
+ * unanchored fins and snap during FDM printing. Sized to match
  * `TOP_KEEP_OUT`/`CUTOUT_BORDER_WIDTH` (~7 layers at 0.2mm) — the minimum band
  * that prints reliably while preserving the most hex rows.
  */
@@ -129,7 +129,7 @@ function getWallPatternDescriptors(
   }
 
   // Clear the floor slab (one wallThickness) AND leave a solid skirt above it
-  // so the lowest hex row anchors to solid wall, not the floor seam (#2317).
+  // so the lowest hex row anchors to solid wall, not the floor seam.
   const bottomKeepOut = params.wallThickness + BOTTOM_SOLID_SKIRT;
 
   const patternHeight = wallHeight - TOP_KEEP_OUT - bottomKeepOut;
@@ -144,7 +144,7 @@ function getWallPatternDescriptors(
     return null;
   }
 
-  // Per-side selection (#2966). Intersected with the slot-free gate: a wall is
+  // Per-side selection. Intersected with the slot-free gate: a wall is
   // patterned only when the user picked it AND it has no divider slots.
   const chosen = resolveWallPatternSides(params.wallPattern);
 
@@ -164,7 +164,7 @@ function getWallPatternDescriptors(
     // curves into the corner arc over the last innerCornerRadius of the span,
     // and a stamp reaching into that zone cuts an oblique scallop through the
     // curved corner (visible as a mangled hole at every wall end). Lip-less
-    // bins additionally keep the #2865 printability margin so a bold pattern
+    // bins additionally keep the printability margin so a bold pattern
     // can't leave a razor-thin corner post. `wallSpan` stays the full inner
     // span so cutout/handle clip anchoring is unaffected; only the stamped
     // centers shrink.
@@ -380,7 +380,7 @@ export function getPatternDescriptors(
   innerW: number,
   innerD: number,
   wallHeight: number,
-  // Defaults to true so omitting it reproduces the pre-#2865 behavior (no corner
+  // Defaults to true so omitting it reproduces the older behavior (no corner
   // keep-out); the sole production caller passes the real `dim.hasLip`.
   hasLip = true
 ): {

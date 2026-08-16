@@ -1,5 +1,5 @@
 /**
- * Rail splitting around a grip relief (#3272).
+ * Rail splitting around a grip relief.
  *
  * Placement-level, so it runs without the WASM kernel: `resolveLidInputs` and
  * `railPlacements` are pure, and what matters here is arithmetic — how many

@@ -53,7 +53,7 @@ export function slabPocketsCacheKey(
     quantize(params.paddingRight),
     quantize(params.paddingFront),
     quantize(params.paddingBack),
-    // Widens the cached slab the pockets are cut into (#3169) — without it a
+    // Widens the cached slab the pockets are cut into — without it a
     // grid-shifted plate reuses the unshifted slab and prints truncated.
     quantize(params.outlineOverhang?.left ?? 0),
     quantize(params.outlineOverhang?.right ?? 0),

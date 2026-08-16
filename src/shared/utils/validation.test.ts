@@ -1146,7 +1146,7 @@ describe('isValidBin type guard', () => {
 
 // Both import paths rebuild bins field-by-field, so a new Bin field has to be
 // added here explicitly or it is silently dropped. Losing linkedDesignId left
-// restoreEmbeddedDesigns remapping an id that was already gone (#2894).
+// restoreEmbeddedDesigns remapping an id that was already gone.
 describe('linkedDesignId round-trip', () => {
   const DESIGN_ID = 'design_1730000000000_ab12cd';
   const layoutWithLinkedBin = () => {

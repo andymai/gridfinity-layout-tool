@@ -29,7 +29,7 @@ interface CompactNumberInputProps {
   readonly indeterminate?: boolean;
   /**
    * Treat `max` as a soft ceiling for typed entries only, so a field holding a
-   * real-world measurement can't silently truncate it (#3061). The caller owns
+   * real-world measurement can't silently truncate it. The caller owns
    * what happens next.
    *
    * Overflow stays typed-only: scrubbing and arrow keys still stop at `max`,

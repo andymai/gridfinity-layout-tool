@@ -80,14 +80,14 @@ export function buildLid(params: BinParams, originToTag?: Map<number, number>): 
       body = addClickRails(scope, body, inputs, originToTag);
     }
 
-    // 2b. Retention magnets (#2694) — corner bosses hanging to the seated
+    // 2b. Retention magnets — corner bosses hanging to the seated
     //     interface, pockets opening down toward the bin's mating posts.
     //     Mutually exclusive with rails via the attachment mode.
     if (inputs.retentionMagnets) {
       body = addLidRetentionMagnets(scope, body, inputs, originToTag);
     }
 
-    // 2c. Grip relief (#3272) — the seam treatment that gives a fingernail or
+    // 2c. Grip relief — the seam treatment that gives a fingernail or
     //     fingertip somewhere to pull from. Cut AFTER the rails so a rail that
     //     was split around the relief keeps its flanking segments intact, and
     //     before the stack grid, which sits above the relief's reach.
@@ -100,7 +100,7 @@ export function buildLid(params: BinParams, originToTag?: Map<number, number>): 
     //    coplanar overshoot above Z=0 would otherwise hang inside the
     //    pocket cavity (a void INSIDE the body), and some OCCT/WASM
     //    builds produce malformed output when trimming a cutter whose
-    //    top sits in an internal void (issue #1655). Cut-first makes
+    //    top sits in an internal void. Cut-first makes
     //    the overshoot land in empty space ABOVE the body — a clean
     //    through-cut. Order swap is safe because magnet positions sit
     //    inside the pocket footprint, so cylinders never touch the slab.
@@ -121,13 +121,13 @@ export function buildLid(params: BinParams, originToTag?: Map<number, number>): 
       body = unwrap(fuse(body, stackGrid));
     }
 
-    // 5. Optional tray recess (#2694). Only resolves when the lid isn't
+    // 5. Optional tray recess. Only resolves when the lid isn't
     //    stackable, so it never competes with the stack grid above.
     if (inputs.tray.enabled) {
       body = cutTrayRecess(scope, body, inputs);
     }
 
-    // 6. Optional lid-top text (#2695). Runs AFTER the tray so tray-floor
+    // 6. Optional lid-top text. Runs AFTER the tray so tray-floor
     //    text cuts into the recessed surface, not the pre-recess plate.
     //    `inputs.text` is null for stackable/polygon lids.
     if (inputs.text) {

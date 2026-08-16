@@ -83,7 +83,7 @@ export function createCoreActions(setLocal: SetLocal, set: ImmerSet, _get: GetSt
     },
 
     // With a custom outline active the pitch floors rise so the mm extent
-    // keeps containing the shape — same rule as the CQRS commands (#3149).
+    // keeps containing the shape — same rule as the CQRS commands.
     setGridUnitMm: (mm: number): void => {
       setLocal((state) => {
         const floorX = gridPitchFloors(state.layout).x;

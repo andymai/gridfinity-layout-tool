@@ -25,7 +25,7 @@ import { isExteriorEdge, isMarginSeamStyle } from '@/shared/types/bin';
 import { interiorBoundaryOffsetsMm } from './connectorKeys';
 // The fit checker subtracts the tongue protrusion from the bed budget on male
 // join edges — otherwise pieces that compute to exactly the bed width on paper
-// exceed it as STLs (#1498).
+// exceed it as STLs.
 import { TONGUE_PROTRUSION } from '@/shared/constants/connectors';
 import { MARGIN_MIN_DETACH_MM } from '@/core/constants';
 import { GRIDFINITY } from '@/shared/constants/bin';
@@ -50,7 +50,7 @@ import { FRACTIONAL_THRESHOLD, isFractional, reorderForDisplay } from './splitRe
  * split that removes a load wins only if it adds fewer than this many pieces,
  * so the planner pursues fewer bed swaps without fragmenting into tiny tiles.
  *
- * Set to 2 (#2988): one saved load is worth at most one extra piece. Each extra
+ * Set to 2: one saved load is worth at most one extra piece. Each extra
  * piece is another dovetailed seam to print, align, and glue, and the finer
  * split's load saving is only realized if the user re-derives the non-obvious
  * cross-row bed packing (the print guide groups pieces by grid position, not by
@@ -84,7 +84,7 @@ interface AxisConfig {
   readonly startMaleMm: number;
   readonly endMaleMm: number;
   /**
-   * Outline overhang on each outer end (#3169), kept separate from padding: it
+   * Outline overhang on each outer end, kept separate from padding: it
    * is not user-settable, so the padding-reduction hint must not offer to give
    * it back. Positionally identical to padding otherwise — only the first/last
    * chunk carries it, matching how `pieceToBaseplateParams` hands the overhang
@@ -270,7 +270,7 @@ function allPiecesFit(
  * protrusion when the convention assigns male to that side, while female sides
  * cut into the slab and add nothing.
  *
- * The overhang belongs here for the same reason the tongue does (#3169/#3212):
+ * The overhang belongs here for the same reason the tongue does:
  * the generator widens the outermost pieces' slabs by it, so it is real printed
  * material on the outer faces. Omitting it let the planner emit an outer piece
  * that overshoots the bed — invisible until the slicer refused the STL.
@@ -666,7 +666,7 @@ function emitMargins(params: ResolvedBaseplateParams, layout: MarginLayout): Mar
       const cx = colCenter(c) - extL / 2 + extR / 2;
       // The connectors track the body wall's grid cells, centered on the piece's
       // grid center — which the corner-extended rail center no longer coincides
-      // with, so record that shift for the rail to re-anchor its grooves (#2427).
+      // with, so record that shift for the rail to re-anchor its grooves.
       const seam = seamFor(colSizes[c], colCenter(c) - cx, fractionalEdgeX);
       if (det.front) {
         const owned: MarginCorner[] = [];
@@ -812,13 +812,13 @@ export function computeBaseplateTiling(
   const palindromic = !!preferIdenticalPieces && !!connectorNubs;
 
   // Pieces with dovetail connectors include male tongue protrusions in their bbox
-  // (#1498). The planner reserves bed budget for those tongues so the resulting
+  //. The planner reserves bed budget for those tongues so the resulting
   // STLs actually fit the bed.
   const gridUnitMmY = params.gridUnitMmY ?? gridUnitMm;
   // The outermost pieces print wider than their grid units by the outline
-  // overhang (#3169), so the bed budget must reserve for it exactly as it does
+  // overhang, so the bed budget must reserve for it exactly as it does
   // for exterior padding — otherwise the search happily sizes an outer chunk to
-  // the bed and the generator then widens it past the bed (#3212).
+  // the bed and the generator then widens it past the bed.
   const oh = params.outlineOverhang;
   const xAxis = makeAxisConfig(
     printBedWidthMm,
@@ -843,7 +843,7 @@ export function computeBaseplateTiling(
     oh?.back ?? 0
   );
 
-  // A user-drawn plan (#3115) replaces the search outright. It is NOT reordered:
+  // A user-drawn plan replaces the search outright. It is NOT reordered:
   // `reorderForDisplay` exists to prettify search output, and applying it here
   // would slide hand-placed seams to different offsets than the ones drawn.
   // `buildFullParams` has already dropped a plan that no longer matches
@@ -897,9 +897,9 @@ export function computeBaseplateTiling(
   // that margin. Sub-threshold sides stay integral.
   const det = detachedSides(params);
 
-  // The opt-in connector (#2414) marks the body↔long-rail seam so the connector
+  // The opt-in connector marks the body↔long-rail seam so the connector
   // builder adds a tongue there — or, under `dovetailKey`, a female groove that
-  // the seated key spans (#2866). Scoped to the LONG rails only (short rails stay
+  // the seated key spans. Scoped to the LONG rails only (short rails stay
   // friction-fit); snapClip stays out, as its top-insert clip has no seated form
   // at a body↔rail seam. `longAxisX` mirrors `emitMargins`: front/back are the
   // long rails, else left/right.
@@ -1042,7 +1042,7 @@ function computeBedOverages(
 }
 
 /**
- * Shape a rectangular tiling with the plate outline (issue #2528):
+ * Shape a rectangular tiling with the plate outline:
  *
  * - pieces whose window is fully OUTSIDE are dropped (their grid labels stay
  *   positional, so gaps like "A1, A3" read as the shape in the print guide);
@@ -1088,7 +1088,7 @@ function applyOutlineToTiling(
   // padded extent — a corner piece whose grid cells are all outside can still
   // survive as the padding material the arc leaves behind.
   //
-  // The outermost pieces additionally absorb the outline's overhang (#3169):
+  // The outermost pieces additionally absorb the outline's overhang:
   // a grid-shifted perimeter reaches past `[0, totalW]`, and windows that
   // stopped at the nominal extent left that strip in no piece at all — it
   // vanished from the split export exactly as it did from the whole plate.
@@ -1103,7 +1103,7 @@ function applyOutlineToTiling(
     back: piece.gridOffsetY + piece.depthUnits === tiling.totalDepthUnits ? (oh?.back ?? 0) : 0,
   });
   // Origin of the piece's NOMINAL padded extent — the overhang is deliberately
-  // excluded (#3212). A piece frames its outline exactly as the whole plate
+  // excluded. A piece frames its outline exactly as the whole plate
   // does: the padded extent starts at 0 and the slab grows outward into
   // negative coordinates. Subtracting the overhang here instead would land the
   // perimeter that far inside its own slab, truncating the outer strip and
@@ -1132,7 +1132,7 @@ function applyOutlineToTiling(
   const classAt = (col: number, row: number): RegionClass =>
     classByKey.get(`${col},${row}`) ?? 'outside';
 
-  // Per-junction connector gating (#3163). A junction keeps its connector when
+  // Per-junction connector gating. A junction keeps its connector when
   // the one-cell band on BOTH sides of its along-seam cell pair is fully
   // inside the outline — the same insideness rule the old whole-span check
   // used, but applied per cell boundary instead of all-or-nothing: a seam that
@@ -1315,7 +1315,7 @@ export function pieceToBaseplateParams(
   }
   // Partial pieces get the plate outline translated into their local frame —
   // origin at the piece's padded extent, so an overhang stays negative exactly
-  // as it does on the whole plate (#3212). The generator's 3D intersect
+  // as it does on the whole plate. The generator's 3D intersect
   // performs the window clip (the piece slab IS the window, and it is what the
   // overhang widens), so no 2D clipping is needed here. Fully-inside pieces carry
   // no outline and stay byte-identical to unshaped rectangles. Under `rot` the
@@ -1344,7 +1344,7 @@ export function pieceToBaseplateParams(
   })();
 
   // The outermost pieces inherit the parent's outline overhang on their outer
-  // sides only (#3169), matching the widened windows `applyOutlineToTiling`
+  // sides only, matching the widened windows `applyOutlineToTiling`
   // classified them against — without it the piece's slab stops at the nominal
   // extent and clips the very strip the window was widened to keep. Interior
   // sides stay 0 so seams and interior pieces are byte-identical. Positional
@@ -1417,13 +1417,13 @@ export function pieceToBaseplateParams(
     // Dovetail key seams are symmetric, so connectorStyle is rotation-invariant —
     // copy it straight through (unlike padding/edges, which rotate with `rot`).
     connectorStyle: parentParams.connectorStyle,
-    // All-edge slots (#2866) are symmetric across all four sides, so — like the
+    // All-edge slots are symmetric across all four sides, so — like the
     // style — the flag is rotation-invariant. Which sides actually get a slot is
     // derived per-piece from the (already rotated) edges and padding.
     connectorSlotsAllEdges: parentParams.connectorSlotsAllEdges,
     // The fit offset and nozzle both size the female groove clearance
     // (effectiveClearance), so they must reach every split piece — otherwise the
-    // groove is cut at nominal regardless of the user's tolerance (issue #2554).
+    // groove is cut at nominal regardless of the user's tolerance.
     // Per-side clearance is symmetric, so both are rotation-invariant.
     connectorFitOffset: parentParams.connectorFitOffset,
     nozzleSizeMm: parentParams.nozzleSizeMm,

@@ -79,7 +79,7 @@ export interface FractionalEdge {
 export const DEFAULT_FRACTIONAL_EDGE: FractionalEdge = { x: 'end', y: 'end' };
 
 /**
- * Where one axis's feet fall relative to the plate's cell boundaries (#3467).
+ * Where one axis's feet fall relative to the plate's cell boundaries.
  * Re-exported from the canonical `BaseConfig` definition so the generator and
  * the stored param can never describe different sets of values.
  */
@@ -102,7 +102,7 @@ export interface SocketCellPlan {
   readonly latticeY: FootLattice;
 }
 
-/** Plain full-cell feet on both axes — the pre-#3467 layout. */
+/** Plain full-cell feet on both axes — the older layout. */
 export const DEFAULT_SOCKET_CELL_PLAN: SocketCellPlan = {
   halfSockets: false,
   latticeX: 'grid',
@@ -152,7 +152,7 @@ export function resolveSocketCellPlan(
   };
 }
 
-/** Stable key fragment for a plan; empty for the pre-#3467 default. */
+/** Stable key fragment for a plan; empty for the older default. */
 export function socketCellPlanKey(plan: SocketCellPlan): string {
   if (plan.halfSockets || (plan.latticeX === 'grid' && plan.latticeY === 'grid')) return '';
   return `lat:${plan.latticeX}:${plan.latticeY}`;
@@ -165,7 +165,7 @@ export function socketCellPlanKey(plan: SocketCellPlan): string {
  * `halfSockets` halves every cell. Otherwise each axis takes its own lattice:
  * `grid` is full cells (plus the fractional edge cell), `half` is a 0.5u cell at
  * both rims with full cells between, which is what seats when the bin sits half
- * a unit off-grid on that axis (#3467).
+ * a unit off-grid on that axis.
  *
  * Independently of the plan, a 1u cell in a mask with mixed half-bin detail is
  * split into four 0.5u quarter-sub-cells so the foot follows the authored
@@ -263,7 +263,7 @@ export function forEachSocketCell(
  * The socket cells this bin actually grows a foot on — {@link forEachSocketCell}
  * with the cell-mask filter applied.
  *
- * Shared with the floor pattern (#2816), whose holes must exit through a foot's
+ * Shared with the floor pattern, whose holes must exit through a foot's
  * flat underside rather than its baseplate-mating taper; it therefore needs the
  * same cell list the socket is built from, not a re-derivation of it.
  */

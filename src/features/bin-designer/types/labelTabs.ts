@@ -10,13 +10,13 @@ export type LabelTabSupport = 'bracket' | 'solid' | 'fillet';
 /**
  * Which compartment edges receive label tabs. 'back' (default) is the legacy
  * behavior. 'front' anchors tabs to the front wall instead, 'both' renders a
- * tab at each edge — the tuck-under-ledge use case from #1898.
+ * tab at each edge — the tuck-under-ledge use case from.
  */
 export type LabelTabEdges = 'back' | 'front' | 'both';
 
 /**
  * What the label tab face carries: engraved/embossed text (legacy default)
- * or a click-in socket for swappable label plates (#2666). Socket geometry
+ * or a click-in socket for swappable label plates. Socket geometry
  * follows the de-facto interchange standard pinned in
  * `@/shared/constants/labelPlates`, so separately printed plates transfer
  * between bins and ecosystem plates click in.
@@ -57,7 +57,7 @@ export interface LabelTabConfig {
    * (default), the shelf anchors to the wall top — identical to the original
    * label-tab behavior. Lowering this value drops the shelf down, creating a
    * tuck-under pocket between the stacking rim and the shelf (useful for
-   * keeping springy contents from popping out — see issue #1898).
+   * keeping springy contents from popping out — see).
    *
    * Bounds enforced by the UI: `[tabDepth + 1, interiorHeight]`. The geometry
    * layer also guards against degenerate configs (returns null when the
@@ -66,7 +66,7 @@ export interface LabelTabConfig {
   readonly height?: number;
   /**
    * Raised rim along each tab's free edge (the edge opposite its anchor wall)
-   * that stops a loose paper/vinyl label sliding off (#2971). Absent/false =
+   * that stops a loose paper/vinyl label sliding off. Absent/false =
    * flat shelf, the legacy behavior. Enabling it drops the shelf by
    * {@link lipHeight} so the rim tops out at the interior ceiling instead of
    * standing proud and breaking stackability (see `defaultLabelShelfTopMm`).
@@ -89,7 +89,7 @@ export interface LabelTabConfig {
    * Which edges of each compartment receive tabs. When absent (default),
    * tabs anchor to the back wall — identical to the original behavior.
    * 'front' anchors to the front wall; 'both' renders a tab at each edge,
-   * which is what the tuck-under-ledge use case from #1898 needs.
+   * which is what the tuck-under-ledge use case needs.
    *
    * For 'both' on a multi-row layout: each compartment with both a back
    * AND a front edge gets two tabs (mirroring how the existing back-tab
@@ -114,7 +114,7 @@ export interface LabelTabConfig {
   readonly textStyle?: TextStyleOverride;
   /**
    * Treat the label as one full-width shelf per row rather than one per
-   * compartment (#2897) — the narrow-compartment case (charging cables) where
+   * compartment — the narrow-compartment case (charging cables) where
    * per-compartment tabs are too small to read.
    *
    * Absent = false, the historical per-compartment behavior.

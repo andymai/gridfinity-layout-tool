@@ -239,7 +239,7 @@ describe('outlineBounds', () => {
 
 describe('outlineLatticeShift', () => {
   /**
-   * #3212: a shape drawn larger than its grid used to get no registration at
+   * A shape drawn larger than its grid used to get no registration at
    * all — "keep the bbox inside the extent" is unsatisfiable for an oversize
    * bbox, so it stayed corner-anchored at the author's origin and the user
    * hand-entered the centring grid shift. The containment simply runs the
@@ -265,7 +265,7 @@ describe('outlineLatticeShift', () => {
     it('keeps the whole lattice inside the material while centring', () => {
       // The invariant that replaces "bbox inside extent" when the shape is the
       // larger of the two: every socket the plate has still sits on material,
-      // so centring costs no cell (what pure bbox centring cost in #3149).
+      // so centring costs no cell (what pure bbox centring cost).
       const shift = outlineLatticeShift(rect(393, 295.5), frame(8, 7, 48, 42));
       expect(0 + shift.x).toBeLessThanOrEqual(0);
       expect(393 + shift.x).toBeGreaterThanOrEqual(8 * 48);
@@ -300,7 +300,7 @@ describe('outlineLatticeShift', () => {
   });
 
   it('keeps a half-unit-slack corner outline in place — registration beats centring (#3149)', () => {
-    // The #3149 auto-grow shape: 8.25×7.04 units on a 48×42 pitch, grown to an
+    // The auto-grow shape: 8.25×7.04 units on a 48×42 pitch, grown to an
     // 8.5×7.5 drawer. The only position holding 8×7 whole cells is the corner
     // anchor; a bbox-centring shift (+6, +9.75) would lose a column and a row.
     const grown: DrawerOutline = {

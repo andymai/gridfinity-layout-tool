@@ -43,7 +43,7 @@ export function computePieceFingerprint(params: ResolvedBaseplateParams): string
     `pr:${params.paddingRight}`,
     `pf:${params.paddingFront}`,
     `pb:${params.paddingBack}`,
-    // Widens the piece's slab past its nominal extent (#3169), so two
+    // Widens the piece's slab past its nominal extent, so two
     // otherwise-identical edge pieces with different overhangs cut different
     // geometry. Omitted entirely when absent, keeping unshifted plates' and
     // interior pieces' fingerprints byte-identical to before.
@@ -67,7 +67,7 @@ export function computePieceFingerprint(params: ResolvedBaseplateParams): string
     // underside continuous — so floored and hollow pieces must never dedupe. The
     // thickness only bites when solidFloor is on, so gate it to avoid false misses.
     `sf:${params.solidFloor ? 1 : 0}`,
-    // Mount-down screws (#3425). Emitted only when enabled so plates without
+    // Mount-down screws. Emitted only when enabled so plates without
     // them keep their existing fingerprints. Without this two pieces differing
     // only in hole placement dedupe into one and part of the drawer prints
     // unfastened; the resolved pad is included because it sets the slab height.
@@ -100,7 +100,7 @@ export function computePieceFingerprint(params: ResolvedBaseplateParams): string
     parts.push(`ol:${hashOutline(canonicalStartOutline(params.outline))}`);
   }
 
-  // Per-seam connector gating (#3163): pieces whose seams carry different
+  // Per-seam connector gating: pieces whose seams carry different
   // allowed-connector subsets cut different grooves and must never dedupe.
   // Already expressed in the piece's canonical (post-rotation) frame.
   if (params.connectorFilter !== undefined) {
@@ -131,13 +131,13 @@ export function computePieceFingerprint(params: ResolvedBaseplateParams): string
   // tiles). Padding is captured separately, so padded edge pieces still differ.
   if (params.edges) {
     const canon = params.preferIdenticalPieces ? canonicalizeEdges(params.edges) : params.edges;
-    // A margin-seam tongue (#2414) is body geometry the piece carries
+    // A margin-seam tongue is body geometry the piece carries
     // independently of split connectors (`connectorNubs`), so it must ALWAYS
     // distinguish the fingerprint — otherwise a tongued piece dedupes with a
     // plain exterior one and the export reuses a tongue-less mesh.
     const ms = `${+(canon.left === 'marginSeam')}${+(canon.right === 'marginSeam')}${+(canon.front === 'marginSeam')}${+(canon.back === 'marginSeam')}`;
     if (ms !== '0000') parts.push(`ms:${ms}`);
-    // With all-edge slots (#2866) an exterior edge carries the same female slot
+    // With all-edge slots an exterior edge carries the same female slot
     // a join edge does, so the edge LABEL no longer distinguishes the connector
     // geometry — what does is whether the side is padding-free, and padding is
     // keyed above. Fall through to the rounding key so edge/corner/interior

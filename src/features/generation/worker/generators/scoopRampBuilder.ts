@@ -200,7 +200,7 @@ function buildScoopRampsInScope(
   // corners poke through the rounded outer wall and stick out of the bin. Below
   // the geometric threshold wallThickness < BOX_CORNER_RADIUS·(1 − 1/√2) the
   // square corner overshoots the outer arc (same condition the cavity cut
-  // guards in compartmentBuilder, #1968). Clip the scoop to the rounded inner
+  // guards in compartmentBuilder,). Clip the scoop to the rounded inner
   // footprint so its corners follow the wall; skip the boolean above the
   // threshold where there is nothing to trim.
   if (wallThickness < BOX_CORNER_RADIUS * (1 - Math.SQRT1_2)) {

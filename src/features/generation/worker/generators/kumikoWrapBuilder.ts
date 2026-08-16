@@ -164,7 +164,7 @@ function computePerimeterLayout(
  * Perimeter the wrapped lattice is quantized against for this bin, or null
  * when the footprint is too small to carry a corner arc.
  *
- * Divider panels (#2811) resolve their lattice against this SAME perimeter so
+ * Divider panels resolve their lattice against this SAME perimeter so
  * their triangles come out the exact size the outer walls resolved to —
  * `quantizeColumns` depends only on perimeter and target cell size, so only
  * the band height differs between a wall and a divider.
@@ -936,7 +936,7 @@ export function buildKumikoWallPatterns(ctx: PipelineContext): Shape3D[] {
 
   const wallSides: readonly WallSide[] = ['front', 'right', 'back', 'left'];
 
-  // Per-side selection (#2966). The lattice itself still spans the whole
+  // Per-side selection. The lattice itself still spans the whole
   // perimeter — only which slabs get cut changes — so an unselected wall does
   // not shift the columns on the walls that stay patterned.
   const chosen = resolveWallPatternSides(params.wallPattern);

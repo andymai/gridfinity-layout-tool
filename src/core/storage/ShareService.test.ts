@@ -933,7 +933,7 @@ describe('storage-share', () => {
   });
 
   // A cloud share used to carry bins whose linkedDesignId named a design that
-  // only existed in the sharer's browser (#2894).
+  // only existed in the sharer's browser.
   describe('restoreSharedDesigns', () => {
     const SHARE_ID = 'abc123DEF456';
 

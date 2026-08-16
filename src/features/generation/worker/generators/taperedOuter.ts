@@ -1,5 +1,5 @@
 /**
- * Bottom-band outer-wall taper for drawer-fit "curved" bins (#2933).
+ * Bottom-band outer-wall taper for drawer-fit "curved" bins.
  *
  * Builds the bin's hollow body when a taper applies: the wall is full-width at
  * the rim and, over `taper.bandHeight` (clamped to the wall height), angles
@@ -190,7 +190,7 @@ export function buildTaperedLofts(
 /**
  * The tapered outer body alone, floor→rim, with nothing removed.
  *
- * This is the whole body for a solid bin (#3033): there is no cavity to cut, so
+ * This is the whole body for a solid bin: there is no cavity to cut, so
  * the loft that {@link buildTaperedLofts} would discard is never built.
  */
 export function buildTaperedOuter(
@@ -221,7 +221,7 @@ export function buildTaperedOuter(
  *
  * Unlike {@link buildTaperedLofts}'s `cavity` this reaches the floor plane, so
  * it can serve as a clip boundary for tools that start at z=0 — a solid bin's
- * cutout pockets (#3033). Clipping against it is what keeps `wallThickness` of
+ * cutout pockets. Clipping against it is what keeps `wallThickness` of
  * material outside every pocket: the stored overhang is rim-anchored, so a
  * pocket flush with the interior edge has only `wallThickness - flare` left at
  * the floor, which goes negative for any flare wider than the wall.

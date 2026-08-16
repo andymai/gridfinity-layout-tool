@@ -116,7 +116,7 @@ const CELL_BOUNDARY_TOLERANCE = 0.001;
  * 0.1mm is below the visible-seam threshold for FDM prints and is well
  * above OCCT's coplanar-face tolerance, so the boolean cut sees two
  * cleanly distinct faces rather than a near-coincident pair that
- * triggers wall-dropping (issue #1676).
+ * triggers wall-dropping.
  */
 const CELL_BOUNDARY_NUDGE = 0.1;
 
@@ -219,7 +219,7 @@ function splitSolidIntoPieces(
   // `deriveDimensions` rather than recomputed: the body being split comes from
   // `generateBin`, so any second opinion about where its floor and rim sit puts
   // the separately-built lip, the wall-cutout cutters and the connector frame
-  // somewhere the body is not. A tray bin (#3036) is what exposed this — its
+  // somewhere the body is not. A tray bin is what exposed this — its
   // floor sits on a skirt, not on the bed.
   const splitDims = deriveDimensions(params, true);
   const totalHeight = splitDims.totalHeight;
@@ -235,7 +235,7 @@ function splitSolidIntoPieces(
   // exact threshold it had.
   const expectedBodyZ = Math.min(totalHeight, wallTopZ);
 
-  // An overhang grows the outer body past the nominal grid footprint (#1949);
+  // An overhang grows the outer body past the nominal grid footprint;
   // both the lip and the outermost cutting boxes must track it. Suppressed for
   // partial masks, matching the geometry pipeline.
   const overhang = resolveOverhang(isPartialMask(params.cellMask) ? undefined : params.overhang);
@@ -326,7 +326,7 @@ function splitSolidIntoPieces(
   // split into 5+5 puts the cut at y=0, which is the shared wall between
   // adjacent socket cells), the per-piece 0.01mm cutting-box overlap isn't
   // enough — OCCT still treats some interior faces as coplanar and drops
-  // walls (issue #1676 reported A2 lost ~22mm of body Z). Shifting the cut
+  // walls ( reported A2 lost ~22mm of body Z). Shifting the cut
   // plane itself by 0.1mm fully resolves the coplanarity at both faces and
   // keeps the pieces flush (no overlap region, just a 0.1mm offset that's
   // invisible to FDM print and barely felt at the join).
@@ -334,7 +334,7 @@ function splitSolidIntoPieces(
   const adjustedCutPlanesY = shiftCutPlanesOffCellBoundaries(cutPlanesY, params.depth, gridUnitMmY);
 
   // The outermost cutting boxes must reach the overhung body edges (resolved
-  // above) or the boolean intersect clips the overhang off (#1949). The body
+  // above) or the boolean intersect clips the overhang off. The body
   // spans [-outerW/2 - left, outerW/2 + right] and [-outerD/2 - front,
   // outerD/2 + back].
   // Boundary arrays: [left edge, ...cut planes, right edge]
@@ -467,7 +467,7 @@ function splitSolidIntoPieces(
             adjustedCutPlanesX,
             adjustedCutPlanesY,
             // True body edges (overhang-inclusive) are the outermost cut bounds,
-            // so connectors land on overhung walls too (#1949).
+            // so connectors land on overhung walls too.
             xBounds[0],
             xBounds[xBounds.length - 1],
             yBounds[0],
@@ -525,7 +525,7 @@ function splitSolidIntoPieces(
  * the scoop radius is sizeable (e.g. height=9 → radius=29mm), the boolean
  * cut leaves a BREP topology that triangulates correctly via `mesh()` but
  * trips a silent failure in `StlAPI.Write` — exportSTL returns
- * `STL_EXPORT_FAILED` regardless of tolerance (issue #1760).
+ * `STL_EXPORT_FAILED` regardless of tolerance.
  *
  * Writing STL from the meshed triangle buffer ourselves removes the
  * dependency on OCCT's STL writer; `buildSTLBufferFromIndexed` runs on

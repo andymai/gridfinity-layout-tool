@@ -1,7 +1,7 @@
 // @vitest-environment node
 /**
  * Fit + capture for the dogbone seam key (`connectorStyle: 'dovetailKey'`,
- * issue #2637).
+ *).
  *
  * The original key was two mirrored dovetail tongues — a 0.3 mm/side undercut
  * that FDM corner rounding + first-layer squish swallowed entirely, so printed

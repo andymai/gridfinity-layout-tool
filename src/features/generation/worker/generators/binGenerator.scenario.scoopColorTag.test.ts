@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Regression for GH #1654 (multi-color scoop): the concave scoop ramp must keep
+ * Regression for GH (multi-color scoop): the concave scoop ramp must keep
  * the SCOOP face tag through the body fuse so multi-color bins paint the scoop
  * surface its own color rather than the body color.
  *
@@ -48,7 +48,7 @@ function triNormal(
 interface ArcCensus {
   /** Arc faces correctly tagged SCOOP. */
   scoop: number;
-  /** Arc faces leaked to the untagged wall (UNKNOWN/BASE) — the #1654 bug, whole arc. */
+  /** Arc faces leaked to the untagged wall (UNKNOWN/BASE) — the bug, whole arc. */
   bodyFullArc: number;
   /**
    * Faces in the sub-lip slice (cz <= 14) tagged anything OTHER than SCOOP.
@@ -118,7 +118,7 @@ describe('scoop arc keeps the SCOOP tag through the body fuse (#1654)', () => {
       // brepkit's faithful evolution keeps the whole arc on the scoop origin:
       // no face leaks to the wall (body), and the pure-scoop sub-lip slice holds
       // no foreign tag at all. occt-wasm still leaks the regenerated arc faces
-      // (#1654 gap), so these strict checks are brepkit-only.
+      // (gap), so these strict checks are brepkit-only.
       if (getKernelName() === 'brepkit') {
         expect(bodyFullArc).toBe(0);
         expect(nonScoopSubLip).toBe(0);

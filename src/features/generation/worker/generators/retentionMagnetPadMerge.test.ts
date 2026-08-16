@@ -1,7 +1,7 @@
 // @vitest-environment node
 /**
  * Cross-layer guard: the `lidCompatibility` `magnetBinTooSmall` blocker must fire
- * exactly when the real retention-magnet pad geometry would merge (#2698).
+ * exactly when the real retention-magnet pad geometry would merge.
  *
  * The four corner gusset pads each reach inward by a full boss radius, so on a
  * narrow band of small bins the opposite pads collide into a blob at the centre
@@ -10,7 +10,7 @@
  * as local literals ("keep in sync by hand") to avoid a cross-feature import. If
  * either mirror drifts from the worker constant, the guard's threshold and the
  * actual pad placement diverge: the guard would reject valid bins, or worse pass
- * bins whose pads merge (the #2698 defect). The geometry's own placement tests
+ * bins whose pads merge (the defect). The geometry's own placement tests
  * only check that a pad stays inside the footprint, never that adjacent pads
  * clear each other, so nothing catches that drift today.
  *

@@ -73,7 +73,7 @@ function cornerAt(
  *
  * `radii` is either one radius for every corner or a per-vertex array indexed
  * by the corner it rounds — a drawer moulding is rarely uniform, so a single
- * radius cannot express the shape people actually measure (issue #3054).
+ * radius cannot express the shape people actually measure.
  *
  * A corner is skipped, staying sharp, when either adjacent segment is already
  * an arc (the tangent construction assumes straight edges), when the corner is

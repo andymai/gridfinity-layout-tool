@@ -1,5 +1,5 @@
 /**
- * Swappable-label socket fit-calibration coupon (#2666 follow-up).
+ * Swappable-label socket fit-calibration coupon (follow-up).
  *
  * One small printable card that sweeps the label-socket clearance across a
  * fit-offset ladder so makers can dial in `plateFitOffset` for their printer
@@ -11,7 +11,7 @@
  * The offset label is sized so its thinnest glyph stem stays at least one nozzle
  * bead wide (`minPrintableLabelFontMm`), and the front strip holding it grows to
  * match — otherwise the label slices away to nothing on a 0.4mm nozzle and the
- * card can't be read (issue #3019).
+ * card can't be read.
  *
  * Coupons are cut with `cutLabelSocket` — the exact geometry the label-tab
  * shelf gets — at the real shelf thickness, so the printed fit transfers
@@ -19,7 +19,7 @@
  * design's current fit offset), matching how the field is entered.
  *
  * The nominal clearance the ladder sweeps around scales with the caller's
- * live nozzle (`nozzleSizeMm`), exactly as real sockets do (#2690), so the
+ * live nozzle (`nozzleSizeMm`), exactly as real sockets do, so the
  * winning offset a maker records on a wide-nozzle print transfers to their
  * bins printed on that same nozzle. Undefined = the 0.4mm baseline.
  *
@@ -113,7 +113,7 @@ function buildCoupon(cy: number, offset: number, nozzleSizeMm: number | undefine
       clearanceMm,
     });
 
-    // Size the label so its stems clear the nozzle bead (issue #3019), pinned to
+    // Size the label so its stems clear the nozzle bead, pinned to
     // that size (min == max) and measured against glyph ink (`inkBox`) — the
     // digits have no descenders, so the full line box would waste the band and
     // shrink the font. The front strip grows with the font to hold it.

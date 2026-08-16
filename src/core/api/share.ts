@@ -34,7 +34,7 @@ export interface SharedLinkedDesign {
 
 export interface FetchShareResponse {
   layout: Layout;
-  /** Bin designs the layout's bins reference. Absent on pre-#2894 shares. */
+  /** Bin designs the layout's bins reference. Absent on older shares. */
   linkedDesigns?: SharedLinkedDesign[];
   metadata: ShareMetadata;
 }

@@ -9,7 +9,7 @@
  * allocations that the chained-cut path used to leak.
  *
  * Each clip box is at least as deep as the hex prism extrusion so it
- * fully envelops hex prisms at junction/cutout boundaries (#1354).
+ * fully envelops hex prisms at junction/cutout boundaries.
  */
 
 import { drawRectangle, unwrap, cut, translate, rotate } from 'brepjs';
@@ -190,7 +190,7 @@ export function applyWallPatternClips(
     if (handleClip && handleClip.segments.length > 0) {
       tools.push(...buildHandleClipBoxes(handleClip));
     }
-    // Wall text (#2695) clears the pattern behind its fitted bbox. Same box
+    // Wall text clears the pattern behind its fitted bbox. Same box
     // shape as a handle clip (single segment), so the builder is reused.
     if (textClip && textClip.segments.length > 0) {
       tools.push(...buildHandleClipBoxes(textClip));

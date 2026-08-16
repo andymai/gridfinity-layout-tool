@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * GH #2443 — overlapping shadow-board cutouts must keep their floor color.
+ * GH — overlapping shadow-board cutouts must keep their floor color.
  *
  * The reporter's "6GT Sizing Die": three ungrouped, same-color cutouts of
  * different depths, two overlapping. A deep cutout overlapping a wide one used

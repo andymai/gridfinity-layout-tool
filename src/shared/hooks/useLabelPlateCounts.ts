@@ -1,6 +1,6 @@
 /**
  * Count the swappable label plates each socket-mode linked design needs, for
- * surfacing plate counts in the print list (#2666 follow-up).
+ * surfacing plate counts in the print list (follow-up).
  *
  * Loads linked designs from storage (results cached module-wide by design
  * id + updatedAt, so a design re-save invalidates naturally) and derives the

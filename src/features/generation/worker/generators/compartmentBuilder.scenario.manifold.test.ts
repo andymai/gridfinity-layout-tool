@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Regression test for issue #1753 — partitioned bins exported with
+ * Regression test for — partitioned bins exported with
  * non-manifold geometry per BambuStudio.
  *
  * Old shell construction: hollow rectangular shell + each compartment wall
@@ -130,7 +130,7 @@ describe('compartmentBuilder — partition export manifold-ness (issue #1753)', 
     expect(stats.boundaryEdges, `${label}: boundary edges`).toBe(0);
   }
 
-  // #2897: a wall-to-wall label shelf clips the dividers it passes over. That
+  // A wall-to-wall label shelf clips the dividers it passes over. That
   // clip lands on the shell itself (compartments baked in) or on the additive
   // walls, so it must not reintroduce the seam this suite exists to guard.
   it(
@@ -250,8 +250,8 @@ describe('compartmentBuilder — partition export manifold-ness (issue #1753)', 
 });
 
 /**
- * Regression coverage around issue #1822 — tilted dividers on half-grid
- * bins. Locks in that the multi-cavity-cut path (#1844) produces a clean,
+ * Regression coverage around — tilted dividers on half-grid
+ * bins. Locks in that the multi-cavity-cut path produces a clean,
  * manifold mesh across the tilt × halfSockets × bin-shape × compartment
  * matrix.
  *

@@ -14,7 +14,7 @@ const DESIGN_ID = designId('design-1');
  * A 10.5-wide drawer with its half column on the left, so cell boundaries land
  * on `n + 0.5` and a bin at x=0 opens with its half cell ('start'). The drawer
  * width has to be fractional for its edge setting to mean anything — an
- * integer-width drawer has no half column at all (#3070).
+ * integer-width drawer has no half column at all.
  */
 function makeLayout(
   bins: Bin[],

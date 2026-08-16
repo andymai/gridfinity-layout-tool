@@ -52,7 +52,7 @@ export function useDimensionsSection() {
   // At least one dimension must be ≥ 1 — if the other is 0.5, this one can't go below 1
   const minWidth = halfGridMode && depth >= 1 ? 0.5 : 1;
   const minDepth = halfGridMode && width >= 1 ? 0.5 : 1;
-  // A spacer is floorless, so it may go down to 1u (#2915) — but only an
+  // A spacer is floorless, so it may go down to 1u — but only an
   // EFFECTIVE one, hence the style: the flag is inert on a flat base.
   const minHeight = minHeightUnits(
     { spacer: baseSpacer, tile: baseTile, style: baseStyle },
@@ -126,7 +126,7 @@ export function useDimensionsSection() {
   const handleFractionalEdgeChange = useCallback(
     (axis: 'x' | 'y', position: 'start' | 'end') => {
       // Deliberately choosing the edge marks it manual, so the drawer-mismatch
-      // warning stops nagging about an intentional override (issue #2518).
+      // warning stops nagging about an intentional override.
       const patch: Partial<BinParams> =
         axis === 'x'
           ? { fractionalEdgeX: position, fractionalEdgeManualX: true }

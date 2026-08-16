@@ -142,7 +142,7 @@ export function decomposeHalfCells(gridUnits: number): number[] {
 
 /**
  * Decompose a grid dimension into a half cell at each end with full cells
- * between them — the "outer edge" half-socket layout (#3467).
+ * between them — the "outer edge" half-socket layout.
  *
  * The arithmetic is exact for any integer axis, because `0.5 + (N-1)·1 + 0.5`
  * is `N`. That is the point of the layout: the feet fall on half-unit
@@ -318,7 +318,7 @@ interface MarginAxisEntry {
  * `minMm`). A strip narrower than `minMm` is dropped entirely (stays solid).
  * `solidLeftover` (half-grid only) drops that remainder cell so the leftover
  * stays solid plastic — keeping true 21mm cells visually distinct from the
- * sub-cell margin (#2397).
+ * sub-cell margin.
  */
 function marginStripEntries(
   innerEdge: number,
@@ -439,7 +439,7 @@ export function frameCells(
  * Mirrors the drop rule in {@link frameCells}: over-tile fills the whole margin
  * with one clip once it clears `minStripMm` (otherwise nothing); half-grid packs
  * 0.5-unit cells from the grid edge first and keeps only a printable remainder
- * (dropped when `solidLeftover` so the leftover stays solid — #2397).
+ * (dropped when `solidLeftover` so the leftover stays solid —).
  * Used by the direct-mesh draft to fill solid bands without capping pockets.
  */
 export function marginPocketDepthMm(

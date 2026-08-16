@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Scenario tests for the label-socket fit-calibration card (#2666 follow-up).
+ * Scenario tests for the label-socket fit-calibration card (follow-up).
  *
  * The card sweeps the socket clearance across a fit-offset ladder (five 1U
  * coupons) and ships one nominal blank plate. Verified against the real OCCT

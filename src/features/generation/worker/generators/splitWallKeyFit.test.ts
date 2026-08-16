@@ -1,13 +1,13 @@
 // @vitest-environment node
 /**
  * Fit + engagement for the split-bin wall-locking key (`wallConnector: 'key'`,
- * issue #2321 — "beef up split-bin wall connectors so they actually lock").
+ * — "beef up split-bin wall connectors so they actually lock").
  *
  * The scenario suite (`binGenerator.scenario.split-wall-locking`) only proves the
  * key ADDS geometry and preserves the lip; `splitConnectorBuilder.test.ts` pins
  * the key's own footprint math (outer skin, protrusion floor, self-supporting
  * ramp). Neither asserts the male tongue actually engages the female groove
- * across the seam — the exact contract #2321 was about. A regression that shrinks
+ * across the seam — the exact contract was about. A regression that shrinks
  * the tongue below engagement leaves every one of those tests green.
  *
  * The key is a STRAIGHT (non-undercut) press-together tongue/groove — an undercut
@@ -114,7 +114,7 @@ describe('split-bin wall key fit + engagement (issue #2321)', () => {
     try {
       // The tongue must protrude past the seam into the mating piece — that
       // protruding volume IS the alignment/glue engagement. A key that stopped
-      // reaching across the cut (the #2321 failure) craters this to ~0.
+      // reaching across the cut (the failure) craters this to ~0.
       const bearing = overlap(tongue, half);
       expect(bearing, 'tongue volume past the seam (bearing across the joint)').toBeGreaterThan(10);
       // Engagement depth and tongue cross-section stay printable (≥2 perimeters).

@@ -24,7 +24,7 @@ interface ShapeEditorDialogProps {
 }
 
 /**
- * Cell-paint editor for the drawer shape (issue #2528). Whole drawer cells
+ * Cell-paint editor for the drawer shape. Whole drawer cells
  * (plus the fractional-edge cell of an x.5 drawer) toggle in/out; drag paints
  * with the state of the first cell touched. One pointer handler on the
  * container — no per-cell listeners, so a 50×50 drawer stays cheap.
@@ -58,7 +58,7 @@ export function ShapeEditorDialog({ open, onClose }: ShapeEditorDialogProps) {
 
   // A pen-drawn or imported perimeter (arcs, diagonals, off-cell edges) does
   // not survive rasterization — applying a cell paint would replace it, so
-  // the dialog says so up front (#3149).
+  // the dialog says so up front.
   const replacesDrawnShape = useMemo(() => {
     if (!open || layout.drawer.outline === undefined) return false;
     return !isOutlineCellRepresentable(

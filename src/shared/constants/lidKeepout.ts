@@ -5,7 +5,7 @@
  * The top of a bin's cavity belongs to the lid. A seated click rail hangs
  * `LID_CLICK_RAIL_BAND_BELOW_WALL_TOP` under the wall top and reaches inboard
  * of the inner wall face, so any interior feature that rises into that ring
- * collides with it — and until #3477 each such feature was discovered, and
+ * collides with it — and until each such feature was discovered, and
  * worked around, one at a time.
  *
  * `lid.relieveInterior` cuts this envelope out of the interior as the LAST
@@ -187,7 +187,7 @@ export interface LidKeepoutSlab {
 /**
  * The keep-out ring for a custom-shape footprint, as a union of per-edge bands.
  *
- * Deliberately NOT an inward offset of the outline (#3482 assumed one). For a
+ * Deliberately NOT an inward offset of the outline (assumed one). For a
  * RECTILINEAR polygon the union of per-edge bands is exactly `outline` minus
  * `erode(outline, width)` under a square structuring element, and it turns each
  * of the offset's hard cases into something that needs no handling at all:

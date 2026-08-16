@@ -2,9 +2,9 @@
 /**
  * Stress-test scenarios that stack the recently-changed code paths in the
  * baseplate generator:
- *   - fractional grid widths (#1284 — fractional padding/dim display)
- *   - split edges with dovetail connectors (#1411 — tongue protrusion fix)
- *   - per-piece dovetail inversion (#1376)
+ * - fractional grid widths (— fractional padding/dim display)
+ * - split edges with dovetail connectors (— tongue protrusion fix)
+ *   - per-piece dovetail inversion
  *   - magnet holes (drives `cutInBatches` → the bulk of BREP `unwrap` calls)
  *
  * Each scenario exercises a combination that reported users have hit in

@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Scenario tests for slotted bins with stacking lip when split (#1652).
+ * Scenario tests for slotted bins with stacking lip when split.
  *
  * Verifies that the separately-built lip in split bins gets cut at slot
  * positions, so removable dividers can slide in from the top without being
@@ -38,7 +38,7 @@ describe('slotted bin split with stacking lip (#1652)', () => {
    * carry noticeably more lip-zone vertices than the equivalent unslotted
    * (standard style) piece, where the lip remains intact.
    *
-   * Without the fix from #1652, the lip in split bins was built fresh and
+   * Without the fix, the lip in split bins was built fresh and
    * never cut, so slotted and standard pieces would have identical lip
    * geometry and this assertion would fail.
    */

@@ -38,7 +38,7 @@ export interface ThreeMFOptions {
   /**
    * Vertical stacking — the mesh is emitted once and referenced by `count`
    * build items, each translated by `i * (zHeightMm + spacingMm)` along Z so
-   * slicers see each instance as a separate placement (issue #1642).
+   * slicers see each instance as a separate placement.
    * Honored by single-object export only; `export3MFMultiObject` ignores it
    * since stacking a heterogeneous bin + lid pair has no slicer interpretation.
    */

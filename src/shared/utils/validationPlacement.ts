@@ -60,7 +60,7 @@ export function canPlaceBin(
   // Non-rectangular drawers: the footprint must sit fully inside the outline
   // (boundary-flush placements count as inside). One check here covers every
   // interaction — draw, drag, resize, staging drop, paint, fill, import.
-  // The outline is read through the shared grid↔perimeter frame (#3157) so a
+  // The outline is read through the shared grid↔perimeter frame so a
   // placeable cell here is exactly a socket the printed plate keeps.
   const frameOutline = drawerFrameOutline(
     drawer,

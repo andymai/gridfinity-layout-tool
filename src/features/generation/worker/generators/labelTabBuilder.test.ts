@@ -200,7 +200,7 @@ describe('buildLabelTabs', () => {
       const wt = 1.2;
       const params = {
         ...DEFAULT_BIN_PARAMS,
-        // Note: no `height` field → must produce the pre-#1898 geometry.
+        // Note: no `height` field → must produce the older geometry.
         label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, support: 'bracket' as const },
       };
       const result = buildLabelTabs(params, 80, 80, wallHeight, wt);
@@ -566,7 +566,7 @@ describe('resolveUniformTabTextSize', () => {
   });
 });
 
-// Full-width labels (#2897): one shelf per row rather than one per compartment.
+// Full-width labels: one shelf per row rather than one per compartment.
 describe('buildLabelTabs — span full width', () => {
   const spanParams = (over: Record<string, unknown> = {}) => ({
     ...DEFAULT_BIN_PARAMS,
@@ -761,7 +761,7 @@ describe('planLabelPlateSeats', () => {
     expect(seats.map((s) => s.text).sort()).toEqual(['M3', 'M4', 'M5']);
   });
 
-  // Span mode labels rows, so captions come from `label.rowTexts` (#2897).
+  // Span mode labels rows, so captions come from `label.rowTexts`.
   it('reads row captions in span mode', async () => {
     const { planLabelPlateSeats } = await import('./labelTabBuilder');
     const params = socketParams({
@@ -871,7 +871,7 @@ describe('planSpanningDividerClips', () => {
     expect(clips[0].yMax - clips[0].yMin).toBeCloseTo(DEFAULT_BIN_PARAMS.label.depth, 5);
   });
 
-  // The reporter's case (#2897): a click-in socket on a lipped bin sinks the
+  // The reporter's case: a click-in socket on a lipped bin sinks the
   // shelf below the ceiling, so full-height dividers stood proud of it.
   it('clips below the interior ceiling for a click-in socket on a lipped bin', async () => {
     const { planSpanningDividerClips } = await import('./labelTabBuilder');
@@ -929,7 +929,7 @@ describe('planSpanningDividerClips', () => {
 
 // A divider shifted off its grid line moves the compartment walls the shelves
 // hang between. Planning them against the nominal line left each shelf floating
-// off its own wall and overhanging into the neighbour (#3225).
+// off its own wall and overhanging into the neighbour.
 describe('shifted dividers', () => {
   const INNER_W = 160;
   const INNER_D = 38;

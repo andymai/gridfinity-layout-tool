@@ -74,7 +74,7 @@ export interface UseDrawerSettingsReturn {
   // Computed values
   widthStep: number;
   depthStep: number;
-  /** Size floor set by the custom drawer shape, 0.5 without one (#3149). */
+  /** Size floor set by the custom drawer shape, 0.5 without one. */
   drawerMinWidth: number;
   drawerMinDepth: number;
   hasFractionalWidth: boolean;
@@ -310,7 +310,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   const depthStep = halfGridMode || hasFractionalDepth ? 0.5 : 1;
   const maxGridUnits = calcMaxGridUnits(printBedSize, gridUnitMm, printBedDepth, gridUnitMmY);
 
-  // A custom drawer shape floors the size (#3149: the command clamps rather
+  // A custom drawer shape floors the size (the command clamps rather
   // than crop the shape); exposing the floor lets the steppers bound their
   // range so the "−" button disables instead of silently doing nothing.
   const drawerOutline = layout.drawer.outline;
@@ -412,7 +412,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   );
 
   // Measured-mm commit: record the measurement (and height) but LEAVE the grid
-  // alone — resizing it silently surprised users (#2705). Instead, the tightest
+  // alone — resizing it silently surprised users. Instead, the tightest
   // physical fit (whole-unit, upgraded to half-units when that fits tighter and
   // half-grid is off) is offered as an opt-in suggestion the user applies from
   // the card. Height is a drawer property, not a grid-unit count, so it still
@@ -518,7 +518,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     batch(() =>
       updateDrawer({ width: drawerFitSuggestion.width, depth: drawerFitSuggestion.depth })
     );
-    // A custom shape floors the size (#3149), so the fit may land clamped —
+    // A custom shape floors the size, so the fit may land clamped —
     // say so instead of dismissing the card as if the fit applied.
     const landed = useLayoutStore.getState().layout.drawer;
     if (landed.width !== drawerFitSuggestion.width || landed.depth !== drawerFitSuggestion.depth) {

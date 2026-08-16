@@ -17,7 +17,7 @@ import type { SplitPreviewResult } from './wasmInit';
  * yielded nothing — a WASM init or allocation failure, characteristically under
  * memory pressure from concurrent builds. Bare `toBeGreaterThan(0)` reports
  * that as "expected +0 to be greater than +0", which reads as a geometry defect
- * and sent #3184 to a bisect for a regression that was never there. The message
+ * and sent to a bisect for a regression that was never there. The message
  * names the failure class instead, so the next zero is diagnosed rather than
  * investigated.
  */
@@ -181,7 +181,7 @@ export function meshTopologyStats({ vertices, indices }: MeshData): MeshTopology
  * Assert a mesh is hole-free (watertight): every edge is shared by ≥2 triangles.
  *
  * The definitive "the shell didn't split apart" check. A severed wall/corner
- * pillar opens the shell, producing boundary edges (#2865).
+ * pillar opens the shell, producing boundary edges.
  */
 export function assertWatertight(result: MeshData, label?: string): void {
   const prefix = label ? `${label}: ` : '';
@@ -438,7 +438,7 @@ interface WallVertexCounts {
 
 /**
  * Count vertices near each outer wall face within a Z-band.
- * Used by lip-wall regression tests (#781).
+ * Used by lip-wall regression tests.
  */
 export function countWallVerticesInZone(
   mesh: MeshData,

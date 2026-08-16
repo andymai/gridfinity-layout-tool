@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Dimensional guard for the tray bin's mating skirt (#3036).
+ * Dimensional guard for the tray bin's mating skirt.
  *
  * The scenario suite proves the solid is non-degenerate; this proves it is the
  * RIGHT solid. Three things could each pass a structural check while being
@@ -56,7 +56,7 @@ describe('tray bin mating skirt', () => {
     assertStructurallyValid(mesh);
     const box = boundingBox(mesh.vertices);
     // A magnetic joint's retention bosses run down to the skirt line so the
-    // pads they mate with pass under it (#3450). `lidRetentionInterfaceZ` stops
+    // pads they mate with pass under it. `lidRetentionInterfaceZ` stops
     // them exactly there rather than past it, which is what lets
     // `trayBottomSkirtDepth` keep describing the whole part in terms of the
     // wall; a boss allowed any deeper is buried under the bed by that lift,

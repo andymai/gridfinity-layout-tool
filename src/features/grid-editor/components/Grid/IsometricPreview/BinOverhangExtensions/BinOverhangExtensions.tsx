@@ -1,5 +1,5 @@
 /**
- * 3D overhang extension for bins in the isometric preview (#2462).
+ * 3D overhang extension for bins in the isometric preview.
  *
  * Renders decorative solid strips filling the space around each extended bin
  * (see `binOverhangStrips`). Kept separate from the merged bin geometry / cache /

@@ -140,7 +140,7 @@ export interface RailPlacement {
  *  - Outward = -inward
  *  - Insets the edge by `lidCornerR` from each end so the rail stays clear
  *    of corners (which are filled mating-shell pillars)
- *  - Segments the surviving run around this EDGE's lip gaps (#3482), then
+ *  - Segments the surviving run around this EDGE's lip gaps, then
  *    drops any stretch under MIN_RAIL_LENGTH
  *  - Honors `disabledRails`, which on this path means only a finger scoop
  *
@@ -209,7 +209,7 @@ function railPlacementsForPolygon(inputs: LidInputs): RailPlacement[] {
     if (disabledRails.has(side)) continue;
 
     // The run this edge offers, inset from its corners, in world along-axis
-    // coordinates. Segmented around any lip gap on THIS edge (#3482) — matched
+    // coordinates. Segmented around any lip gap on THIS edge — matched
     // by the edge's own cross coordinate, so a U's two front walls are told
     // apart rather than both losing their rail to one cutout.
     const alongX = dy === 0;

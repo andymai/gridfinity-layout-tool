@@ -144,7 +144,7 @@ async function resolveDesignMesh(
   // setting and shares the same cache key the designer preview persists under.
   const genParams = withSocketNozzle(params, nozzleSizeMm);
   // Kernel-namespaced: this reader returns a hit and stops, with no regeneration
-  // behind it, so a cross-engine hit would survive until LRU eviction (#3444).
+  // behind it, so a cross-engine hit would survive until LRU eviction.
   const persistKey = binMeshCacheKey(genParams, getActiveKernel());
   const persisted = await loadPersistedBinMesh(persistKey);
   if (persisted) {

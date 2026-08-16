@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Placement tests for the selectable scoop wall (issue #3039).
+ * Placement tests for the selectable scoop wall.
  *
  * The scenario snapshots only pin `triangleCount`, which cannot tell these
  * apart: on a square bin the four sides are congruent, so a scoop welded to the

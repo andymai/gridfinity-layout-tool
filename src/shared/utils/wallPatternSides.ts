@@ -1,5 +1,5 @@
 /**
- * Which outer walls a wall pattern applies to (#2966).
+ * Which outer walls a wall pattern applies to.
  *
  * Pure data helpers shared by the geometry pipeline, the print estimator and
  * the designer panel — the worker can't import designer utils and vice versa,

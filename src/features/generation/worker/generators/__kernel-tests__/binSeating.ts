@@ -10,7 +10,7 @@
  * The measurement is deliberately free of any seat-plane arithmetic. The foot
  * profile, the pocket profile and the clearance between them are the very
  * things under test, so a probe written in terms of them could only prove
- * self-consistency (#3431, #3450). Instead the bin is lowered until it lands on
+ * self-consistency. Instead the bin is lowered until it lands on
  * something, exactly as it would be in a drawer, and the answer is the depth it
  * reached.
  */
@@ -81,7 +81,7 @@ export function descentLimitAt(
  * sits visibly proud.
  *
  * Unaimed on purpose: a probe pointed at the feet someone already suspected is
- * how #3450 shipped. Sweeps the bin's whole footprint on a `step` grid and
+ * how shipped. Sweeps the bin's whole footprint on a `step` grid and
  * takes the tightest column.
  */
 export function seatDepth(

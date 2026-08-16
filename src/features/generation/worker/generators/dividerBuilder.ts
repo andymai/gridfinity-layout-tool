@@ -229,7 +229,7 @@ export function buildUniqueDividerPieces(
   const fullLength = (axis: 'x' | 'y'): number =>
     calculateDividerLength(axis === 'x' ? innerW : innerD, slotDepth, clearance);
 
-  // Wall pattern on removable pieces (#2811). Null when the option is off, so
+  // Wall pattern on removable pieces. Null when the option is off, so
   // every `pattern(...)` below is a pass-through in the default case.
   const patternCtx = resolvePiecePatternContext(params, innerW, innerD, dividerHeight, thickness);
   const tabDepth = tabEngagement(slotDepth, clearance);

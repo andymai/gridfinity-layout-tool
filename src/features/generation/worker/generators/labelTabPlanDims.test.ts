@@ -5,7 +5,7 @@
  * `BinDimensions` to read and `labelTabInteriorDims` re-derives the interior
  * from params. That re-derivation is only safe while it agrees with the real
  * one. A silent divergence would put the label footprints at the wrong Z and
- * quietly stop clipping the click rails (#3401), with no failing geometry
+ * quietly stop clipping the click rails, with no failing geometry
  * assertion anywhere, since both solids stay perfectly valid.
  *
  * If this fails, `deriveDimensions` moved and `labelTabInteriorDims` must

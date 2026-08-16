@@ -1,5 +1,5 @@
 /**
- * Spacer / riser scenarios (issue #2869).
+ * Spacer / riser scenarios.
  *
  * A spacer is a bin with its floor punched through every cell: the shelled feet
  * plus the webbing between them carry the structure, the stacking lip still

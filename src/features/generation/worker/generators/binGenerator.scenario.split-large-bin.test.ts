@@ -4,7 +4,7 @@
  * planes coincide with socket cell boundaries produce full-height geometry
  * (walls + lip), not just the socket base.
  *
- * Regression test for #1091: 10×5×3u bin with 250mm print bed exports only
+ * Regression test: 10×5×3u bin with 250mm print bed exports only
  * bottom grids when alignment connectors are enabled.
  */
 import { describe, it, expect, beforeAll } from 'vitest';

@@ -145,8 +145,8 @@ export function useLidSection() {
   // the same footprints the worker segments against or it reports rails on a
   // wall the tabs have taken.
   const labelFootprints = useMemo(() => railFoulingLabelFootprints(params), [params]);
-  // Same reason, for the dividers the rails now notch around (#3477) and for
-  // the cutouts and handle holes they stop short of (#3483).
+  // Same reason, for the dividers the rails now notch around and for
+  // the cutouts and handle holes they stop short of.
   const wallBlocks = useMemo(
     () => [...dividerRailBlocks(params), ...lipGapRailBlocks(lipGaps(params))],
     [params]
@@ -184,7 +184,7 @@ export function useLidSection() {
   // hint when the user toggles magnets without a stack grid above).
   const binHasMagnets = isMagnetStyle(base.style);
 
-  // Only the three original stops carry copy. The intermediate steps (#3401)
+  // Only the three original stops carry copy. The intermediate steps
   // are self-explanatory percentages between them, and inventing a caption for
   // each would put eight more strings into fourteen locales to say nothing.
   const railCoverageOptions: SnappingSliderOption[] = useMemo(
@@ -442,7 +442,7 @@ export function useLidSection() {
   const anyRail =
     lid.clickRails.front || lid.clickRails.back || lid.clickRails.left || lid.clickRails.right;
 
-  // ── Stack top (#2930) ─────────────────────────────────────────────────
+  // ── Stack top ─────────────────────────────────────────────────
   // Both gated on `stackableTop`, matching the worker's split in
   // `resolveLidInputs`: the persisted lip-only flag can outlive a stack top.
   const lipOnlyTop = lid.stackableTop && lid.stackLipOnly;
@@ -456,7 +456,7 @@ export function useLidSection() {
   // baseplate is the existing way out.
   const stackLipOnlyNeedsPlateHint = lipOnlyTop && !stackLipOnlyIsNoOp && !lid.separateStackPlate;
 
-  // ── Lid-top text (#2695) ──────────────────────────────────────────────
+  // ── Lid-top text ──────────────────────────────────────────────
   // Polygon lids are excluded (rectangular auto-fit), mirroring the worker.
   const lidText = params.surfaceText?.lidText ?? '';
   const textDisabledReason = stackGridOwnsTop
@@ -510,7 +510,7 @@ export function useLidSection() {
   // resolvers rather than a local copy of the same arithmetic.
   const lidDimensions = useMemo(() => {
     // Footprint uses the mode-aware clearance so the readout shrinks by
-    // 0.3mm when the user switches to magnetic retention (#2761); the
+    // 0.3mm when the user switches to magnetic retention; the
     // anchor math below stays on the base value, as in `resolveLidInputs`.
     const fitClearance = resolveLidFootprintClearance(params);
     // Y axis uses gridUnitMmY when set (non-square grid); equals X for square.
@@ -601,7 +601,7 @@ export function useLidSection() {
         count: railSummary.count,
       });
     }
-    // Segmenting around label tabs (#3401) can leave more than the two lengths
+    // Segmenting around label tabs can leave more than the two lengths
     // a rectangle used to have (one per axis), and the two-axis form would drop
     // the third and mislabel its rails with the second's length.
     if (distinct.length > 2) {
@@ -695,7 +695,7 @@ export function useLidSection() {
       retentionMagnetDepthMin: LID_MAGNET_DEPTH_MIN_MM,
       retentionMagnetDepthMax: LID_MAGNET_DEPTH_MAX_MM,
       retentionMagnetStep: LID_MAGNET_DIMENSION_STEP_MM,
-      // Edge magnets per long edge (#2844) — anti-sag reinforcement for big lids.
+      // Edge magnets per long edge — anti-sag reinforcement for big lids.
       retentionMagnetEdgeMagnets: lid.retentionMagnet.edgeMagnets,
       retentionMagnetEdgeMin: LID_MAGNET_EDGE_COUNT_MIN,
       retentionMagnetEdgeMax: LID_MAGNET_EDGE_COUNT_MAX,
@@ -712,7 +712,7 @@ export function useLidSection() {
       anyRail,
       clickRailCoverage: lid.clickRailCoverage,
       relieveInterior: lid.relieveInterior,
-      // Grip relief (#3272). `gripDepth` carries the clamp's own account of
+      // Grip relief. `gripDepth` carries the clamp's own account of
       // itself so the panel can say WHY a relief is shallower than its mode
       // asks for, rather than leaving the user to read it as a defect.
       grip: lid.grip,
@@ -733,7 +733,7 @@ export function useLidSection() {
       extraHeightMin: LID_EXTRA_HEIGHT_MIN_MM,
       extraHeightMax: LID_EXTRA_HEIGHT_MAX_MM,
       extraHeightStep: LID_EXTRA_HEIGHT_STEP_MM,
-      // Floor-plate thickness knob (#2761). `topThicknessEffective` reflects
+      // Floor-plate thickness knob. `topThicknessEffective` reflects
       // what the worker will actually build: magnet pockets raise the plate
       // above the user's value, and on a tray lid the value IS the floor under
       // the recess, so the plate is deeper by the recess depth (`trayBreakdown`).
@@ -760,7 +760,7 @@ export function useLidSection() {
       railsReadout,
       compatibilityIssues,
       fixableIds: FIXABLE_IDS,
-      // Lid-top text (#2695)
+      // Lid-top text
       lidText,
       textMode,
       textDisabledReason,

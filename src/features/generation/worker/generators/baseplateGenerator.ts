@@ -286,7 +286,7 @@ export function buildBaseplateSolid(
   const slabOffsetX = (paddingRight - paddingLeft) / 2;
   const slabOffsetY = (paddingBack - paddingFront) / 2;
   // Material bound for the outline intersect: the nominal extent widened per
-  // side by however far the framed perimeter reaches past it (#3169). The
+  // side by however far the framed perimeter reaches past it. The
   // socket lattice below is deliberately NOT widened — it stays anchored to
   // the nominal extent, which is what makes a grid shift a grid shift.
   const overhang = params.outlineOverhang;
@@ -348,7 +348,7 @@ export function buildBaseplateSolid(
     const cls = classifyCell(cell);
     if (cls === 'inside') return 'full';
     if (cls === 'outside') return 'none';
-    // Whole-cell fitting (#3054): only cells entirely inside the perimeter get
+    // Whole-cell fitting: only cells entirely inside the perimeter get
     // a socket. A crossed cell is dropped so the solid plate fills the margin,
     // which is what gives the boundary a finished edge instead of a socket
     // sliced open along the outline.
@@ -374,7 +374,7 @@ export function buildBaseplateSolid(
     shapedPocketCells = [...nominalCells, ...overTileFrame];
     pocketDecisions = shapedPocketCells.map(pocketDecision);
   }
-  // Mount-down screw holes (#3425). Planned here, before the slab is cached,
+  // Mount-down screw holes. Planned here, before the slab is cached,
   // because which cells keep a floor is part of the pocket geometry.
   const screwParams = params.screwHoles?.enabled === true ? params.screwHoles : undefined;
   const screwPadMm = params.screwPadThicknessMm ?? 0;
@@ -426,7 +426,7 @@ export function buildBaseplateSolid(
     // re-cuts when only corner radius changes.
     //
     // The slab is also the material bound for the outline intersect below, so
-    // it spans the nominal extent WIDENED by the outline's overhang (#3169):
+    // it spans the nominal extent WIDENED by the outline's overhang:
     // a grid shift translates the perimeter against a fixed lattice, and a
     // perimeter pushed past `[0, totalW]` would otherwise be intersected away
     // — the plate printed with a flat-cut edge. Zero overhang (every plate
@@ -444,7 +444,7 @@ export function buildBaseplateSolid(
     // Cut pockets. A cell keeps its floor when something needs to sit in it:
     // magnets, the standalone solidFloor option, or a mount-down screw pad.
     //
-    // The screw pad is per-cell (#3425) rather than plate-wide. Magnets and
+    // The screw pad is per-cell rather than plate-wide. Magnets and
     // solidFloor floor EVERY cell, but only the handful of cells that actually
     // carry a screw need the pad, so the rest stay through-cut and the plate
     // costs a few pads of plastic instead of a full floor. Cells that stay
@@ -713,7 +713,7 @@ export function buildBaseplateSolid(
       baseplate = pipelineResult.value;
     } else {
       // Fallback: sequential fuseAll then cutAll. Tag the probe so the
-      // diagnostic can tell which path produced the final solid (#1494).
+      // diagnostic can tell which path produced the final solid.
       pipelineLabel = 'connectorPipelineFallback';
       if (nubs.length > 0) {
         baseplate = tagOp('connectorFuse', () =>
@@ -777,7 +777,7 @@ export async function exportBaseplate(
     // STL: tessellate via brepjs `mesh()` and pack triangles into a binary
     // STL ourselves — OCCT's StlAPI.Write fails on baseplate geometries.
     // brepjs already produces face-consistent winding so no per-triangle
-    // correction is applied (see #1472).
+    // correction is applied.
     //
     // Default linear tolerance is 0.02mm — an order of magnitude below any FDM
     // nozzle/layer resolution (~0.1-0.4mm), so it's visually and functionally

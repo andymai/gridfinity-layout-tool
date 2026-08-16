@@ -62,7 +62,7 @@ export interface LayoutExportable {
   readonly companions: readonly string[];
   /**
    * Set when the bin exceeds the print bed and has to ship as several pieces
-   * (#3074). Null for a bin that fits, and always null under STEP — that format
+   *. Null for a bin that fits, and always null under STEP — that format
    * carries exact BREP for downstream CAD, which the split path can't produce
    * (the bin designer refuses split STEP for the same reason).
    */
@@ -242,7 +242,7 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
   const usable: BinExportGroup[] = [];
   // Designs a STEP export cannot represent because their pocket is carved out
   // of the tessellated mesh, not the solid. Skipped like imported meshes rather
-  // than exported wrong — and, before #3449, rather than thrown on, which took
+  // than exported wrong — and,, rather than thrown on, which took
   // the entire ZIP down over one bin.
   const imprintStepSkipped = new Set<DesignId>();
   for (const b of bins) {

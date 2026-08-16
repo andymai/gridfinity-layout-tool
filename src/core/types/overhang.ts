@@ -1,12 +1,12 @@
 /**
  * Cross-section shape of an outer-wall taper for drawer-fit "curved" bins
- * (#2933). Lives in core alongside {@link OverhangConfig} so both the placed-bin
+ *. Lives in core alongside {@link OverhangConfig} so both the placed-bin
  * `Bin.marginTaper` and the bin-designer `WallTaperConfig` share one source.
  */
 export type WallTaperProfile = 'chamfer' | 'fillet';
 
 /**
- * Bottom-band taper on the outer wall for drawer-fit "curved" bins (#2933).
+ * Bottom-band taper on the outer wall for drawer-fit "curved" bins.
  *
  * The wall is full-width at the rim; over `bandHeight` it angles inward,
  * insetting each side by up to that side's overhang so the base returns toward
@@ -75,7 +75,7 @@ export interface OverhangConfig {
    */
   readonly feet?: boolean;
   /**
-   * Optional bottom-band taper on the outer wall (#2933). Insets within the
+   * Optional bottom-band taper on the outer wall. Insets within the
    * overhang region only — the base never goes below nominal, so feet never
    * protrude. Composes with {@link feet}: the frame is laid out from the
    * overhang at the base (`overhangBaseSides`), not the rim, so feet stop where

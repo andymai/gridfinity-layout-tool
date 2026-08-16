@@ -1,5 +1,5 @@
 /**
- * Swappable label plate controls for socket-mode label tabs (#2666, PR 2):
+ * Swappable label plate controls for socket-mode label tabs:
  * the derived plate list, a pre-export 3D preview, and the export dialog.
  * The plate set comes from the same socket plan the worker cuts, so what's
  * listed here is exactly what prints.

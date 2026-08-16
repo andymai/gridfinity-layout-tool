@@ -1,5 +1,5 @@
 /**
- * Lid-grip dip stage — bin-side relief in the stacking lip (#3272).
+ * Lid-grip dip stage — bin-side relief in the stacking lip.
  *
  * The lid's grip relief gives a fingernail somewhere to go. The dip is the
  * other half: it takes the bin's stacking lip down over the same span so a

@@ -8,7 +8,7 @@
  * The bin mesh is centered at origin (0,0) in XY with base at Z≈0.
  * All coordinates are in millimeters (scene unit = mm).
  *
- * The height dimension is driven by the assembled-height bands (issue #3037)
+ * The height dimension is driven by the assembled-height bands
  * rather than re-deriving from height units here, so this drawing, the sidebar
  * readout, and the generated mesh cannot disagree.
  */

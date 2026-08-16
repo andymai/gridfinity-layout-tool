@@ -668,7 +668,7 @@ describe('geometry', () => {
       expect(result).toBeCloseTo(0, 0);
     });
 
-    // A typed W/H past the board is kept rather than truncated (#3061), so the
+    // A typed W/H past the board is kept rather than truncated, so the
     // cutout can already be out of bounds. Freezing its angle would make the
     // rotation field a silent no-op — the exact failure this issue is about.
     it('lets rotation through for a cutout already outside the board', () => {
@@ -1132,7 +1132,7 @@ describe('geometry', () => {
       expect(cutoutFitsInMask(cutout, lMask, CELL)).toBe(false);
     });
 
-    // Issue #2922: the bounding box of a concave cutout spans the board's notch
+    // Issue: the bounding box of a concave cutout spans the board's notch
     // even when every point of the outline sits on filled cells.
     describe('concave outlines on a concave board', () => {
       const pathPoint = (x: number, y: number): PathPoint => ({

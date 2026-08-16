@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Regression test for issue #1760: split STL export fails for scoop + tall
+ * Regression test for: split STL export fails for scoop + tall
  * walls when the bin is long enough to require splitting.
  *
  * The deterministic repro from the bisection matrix in the issue:

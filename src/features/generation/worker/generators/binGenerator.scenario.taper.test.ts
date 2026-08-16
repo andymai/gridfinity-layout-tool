@@ -1,6 +1,6 @@
 // @vitest-environment node
 /**
- * Geometry validation for the bottom-band outer-wall taper (#2933).
+ * Geometry validation for the bottom-band outer-wall taper.
  *
  * The taper insets the outer wall *within the overhang region* — from the
  * overhang-expanded rim down to (at most) the nominal footprint at the base — so
@@ -159,7 +159,7 @@ describe('bin wall taper geometry (#2933)', () => {
   });
 
   // The multi-cavity path cuts compartments out of a lofted outer instead of a
-  // prism (#3017). Each compartment is clipped to the inner envelope first —
+  // prism. Each compartment is clipped to the inner envelope first —
   // below the band a rim-sized prism spans the whole wall thickness, so an
   // unclipped cut would open a slot straight through the wall.
   it('applies to a multi-compartment bin without breaching the wall', () => {

@@ -56,7 +56,7 @@ export interface BaseplatePiece {
    * Per-side allowed connector positions (piece-centered mm on the seam's
    * boundary axis), in the piece's actual (world) orientation — present only
    * when a shaped plate keeps a join edge but gates its connectors to the
-   * sub-span inside the perimeter (#3163). `pieceToBaseplateParams` rotates it
+   * sub-span inside the perimeter. `pieceToBaseplateParams` rotates it
    * into the canonical frame alongside the other positional fields.
    */
   readonly connectorFilter?: ConnectorBoundaryFilter;
@@ -71,7 +71,7 @@ export interface BaseplatePiece {
    * Present exactly when the plate outline crosses this piece's window: the
    * plate-local mm origin of the piece's padded extent (bottom-left), from
    * which `pieceToBaseplateParams` derives the piece-local outline. This is
-   * the NOMINAL extent, not the overhang-widened clip window (#3212) — the
+   * the NOMINAL extent, not the overhang-widened clip window — the
    * piece frames its outline the way the whole plate does, with the padded
    * extent at 0 and the slab growing outward past it. Absent =
    * fully-inside piece, a pure rectangle whose fingerprints, dedup, and
@@ -135,7 +135,7 @@ export interface BaseplateTiling {
    * and always null under a custom split — it is advice about the automatic plan.
    */
   readonly paddingReductionHint: PaddingReductionHint | null;
-  /** True when these pieces came from a user-drawn plan rather than the search (#3115). */
+  /** True when these pieces came from a user-drawn plan rather than the search. */
   readonly isCustomSplit: boolean;
   /**
    * Pieces that exceed the print bed. Always empty for an automatic plan except

@@ -1,6 +1,6 @@
 /**
  * drawer.setOutline — set or clear the drawer's non-rectangular boundary
- * (issue #2528). The single write path for every shape-authoring surface
+ *. The single write path for every shape-authoring surface
  * (cell paint, bin-footprint trace, corner cuts, pen editor).
  *
  * `handle()` validates the outline against the current drawer extent,

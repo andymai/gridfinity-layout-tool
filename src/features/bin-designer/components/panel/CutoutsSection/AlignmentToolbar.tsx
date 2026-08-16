@@ -142,7 +142,7 @@ export function AlignmentToolbar({
   const canGroup = canGroupSelection(selectedIds, cutouts);
 
   // Arrange operates on whole groups, so a partially-selected group still moves
-  // as one body (#3468).
+  // as one body.
   const arrangeTargets = expandSelectionToGroups(cutouts, selected);
 
   const applyPositions = (positions: Record<string, { x?: number; y?: number }>) => {

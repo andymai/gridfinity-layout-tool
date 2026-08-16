@@ -1,5 +1,5 @@
 /**
- * Grip relief controls (#3272) — the answer to "the lid fits so well I needed
+ * Grip relief controls — the answer to "the lid fits so well I needed
  * a screwdriver".
  *
  * Lives beside `LidSection` rather than inside it: the mode/sides/coverage

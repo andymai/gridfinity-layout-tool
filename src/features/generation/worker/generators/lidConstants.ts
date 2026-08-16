@@ -106,7 +106,7 @@ export const LID_CLICK_RAIL_INSET = 0.8;
 export const LID_COPLANAR_MARGIN = 0.1;
 
 /* ──────────────────────────────────────────────────────────────────────
- * Lid-retention magnets (issue #2694). Four corner magnets bond the lid
+ * Lid-retention magnets. Four corner magnets bond the lid
  * down onto the bin — a bin-side post rising to the lip top and a lid-side
  * boss hanging to meet it. Shared placement lives in
  * `retentionMagnetGeometry.ts`.

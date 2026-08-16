@@ -1,5 +1,5 @@
 /**
- * Lid interior relief on a custom shape (#3482).
+ * Lid interior relief on a custom shape.
  *
  * The rectangle path cuts a rounded rectangle less its inset copy. A custom
  * shape cannot: an inward offset of the outline self-intersects on a thin neck,
@@ -10,12 +10,12 @@
  * ## What this file can and cannot prove
  *
  * The ring CUTS AIR on a polygon bin today, and that is not a defect — it is
- * the reason #3482 was deferred in the first place. Everything that could rise
+ * the reason was deferred in the first place. Everything that could rise
  * into the band is gated off for a partial mask: neither `compartmentWallsFeature`
  * nor `labelTabsFeature` declares `supportsCellMask`, so `featuresStage` drops
  * both, and the cavity under the rim is empty. The ring exists so that tree
  * order already protects the lid on the day either one gains polygon support,
- * which is the whole point of #3477's design.
+ * which is the whole point of's design.
  *
  * So WHERE the band lies is proven by `lidKeepoutSlabs.test.ts`, which compares
  * it against an independently sampled erosion. What is left for real geometry

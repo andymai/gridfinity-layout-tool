@@ -1,5 +1,5 @@
 /**
- * Community design showcase data model (issue #3050 §5.2).
+ * Community design showcase data model ( §5.2).
  *
  * MIRROR: `COMMUNITY_CATEGORIES`/`CommunityCategory` here must match the
  * identically-named runtime tuple/type in `api/lib/communityValidation.ts`

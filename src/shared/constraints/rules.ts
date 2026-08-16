@@ -50,7 +50,7 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
     reason: 'binDesigner.lightweightDisablesFlatFloor',
   },
 
-  // ── Base: lid-compatible bottom (#3036) ──────────────────────────────────
+  // ── Base: lid-compatible bottom ──────────────────────────────────
   // Lid mating geometry underneath means no socket and no feet, so this rules
   // out the same set the flat base does. `base.flat` itself needs no rule: both
   // are values of `base.style`, so one replacing the other is not a conflict
@@ -189,7 +189,7 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
     reason: 'binDesigner.handles.unavailableSlotted',
   },
 
-  // ── Base: spacer (#2869) ─────────────────────────────────────────────────
+  // ── Base: spacer ─────────────────────────────────────────────────
   // A spacer is a floorless riser: the floor is punched through every cell so
   // only the shelled feet and the webbing between them remain. Nothing that
   // needs a floor to sit on, cut into, or perforate can come along.
@@ -324,7 +324,7 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
     reason: 'binDesigner.solidDisablesCavity',
   },
 
-  // ── Floor pattern (#2816) ────────────────────────────────────────────────
+  // ── Floor pattern ────────────────────────────────────────────────
   // The lightweight base replaces the solid floor + feet with shelled cups and
   // already opens the body floor into them, so there is no slab left to
   // perforate and no foot underside for the holes to exit through.

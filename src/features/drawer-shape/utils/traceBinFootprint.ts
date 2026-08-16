@@ -1,6 +1,6 @@
 /**
  * "Trace bin layout": derive the drawer shape from the bins the user drew —
- * the reporter's original ask in issue #2528. The footprint is the union of
+ * the reporter's original ask in. The footprint is the union of
  * every non-staged bin across all layers; gaps between bins that end up
  * enclosed are filled by the outline conversion (single-loop model).
  */

@@ -1,7 +1,7 @@
 // @vitest-environment node
 /**
  * Geometry validation for non-rectangular (outline-shaped) baseplates
- * (issue #2528).
+ *.
  *
  * The outline is a closed CCW loop (plate-local mm, vertex+bulge arcs). The
  * generator keeps the cached rectangular slab-with-pockets, skips pockets in
@@ -169,7 +169,7 @@ describe('baseplate outline geometry', () => {
     expect(countVerticesIn(result.vertices, -84, -84, 0, 0)).toBeGreaterThan(0);
   });
 
-  // #3054: a cell the outline crosses keeps a socket sliced open along the cut,
+  // A cell the outline crosses keeps a socket sliced open along the cut,
   // which holds nothing and leaves the boundary unfinished. Whole-cell fitting
   // drops those cells so the solid plate carries the edge instead.
   it('drops sockets the outline crosses when fitting whole cells', { timeout: 240_000 }, () => {
@@ -432,8 +432,8 @@ describe('baseplate outline geometry', () => {
     expect(tiledRing.triangleCount).toBeGreaterThan(solidRing.triangleCount);
   });
 
-  // #3108/#3149: a custom perimeter in a corner-offset sub-rectangle of the
-  // grown extent (pen auto-grow, #3092) must generate its grid centred on the
+  // A custom perimeter in a corner-offset sub-rectangle of the
+  // grown extent (pen auto-grow,) must generate its grid centred on the
   // perimeter — but only by whole-cell shifts, so no socket is lost to
   // misregistration. buildFullParams re-bases the outline via
   // `outlineLatticeShift`; here we feed the generator the same re-based outline
@@ -506,7 +506,7 @@ describe('baseplate outline geometry', () => {
   });
 
   /**
-   * #3169: a grid shift translates the perimeter against a fixed lattice, so
+   * A grid shift translates the perimeter against a fixed lattice, so
    * a perimeter that already touched an edge is pushed past `[0, totalW]`.
    * The slab it is intersected against is the plate's material bound, so
    * without `outlineOverhang` widening it the protruding strip is cut away —
@@ -561,7 +561,7 @@ describe('baseplate outline geometry', () => {
   });
 
   /**
-   * #3212: the whole plate above keeps its perimeter, but a SPLIT one used to
+   * The whole plate above keeps its perimeter, but a SPLIT one used to
    * lose it again. The overhang widens a piece's slab outward from its padded
    * extent, so the piece must frame its outline the way the whole plate does.
    * Deriving it from the widened window origin slid the perimeter inward by the

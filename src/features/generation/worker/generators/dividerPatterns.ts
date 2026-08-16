@@ -1,5 +1,5 @@
 /**
- * Compartment divider wall pattern placement (#2811).
+ * Compartment divider wall pattern placement.
  *
  * Pure data module — resolves which interior dividers carry a wall pattern,
  * the band each one offers, and the keep-out zones where it must stay solid.
@@ -161,7 +161,7 @@ function projectFootprint(
  *
  * Coordinates are in the INTERIOR frame (centred on the cavity), so a caller
  * working in bin coordinates must add `innerOffsetX/Y`. Shared with the floor
- * pattern (#2816), whose holes must not undercut a ramp's foot either.
+ * pattern, whose holes must not undercut a ramp's foot either.
  */
 export function scoopKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut[] {
   if (!params.scoop.enabled) return [];
@@ -231,7 +231,7 @@ function labelTabKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut[]
   );
   const zMin = shelfTopZ - tabDepth;
   if (zMin <= 0 || shelfTopZ > interiorHeight) return [];
-  // The lip (#2971) rises above the shelf, so the keep-out must reach the rim
+  // The lip rises above the shelf, so the keep-out must reach the rim
   // top or a perforated divider could punch a hole into the lip's Z band.
   const zMax = shelfTopZ + labelLipReservationMm(params.label);
 
@@ -241,7 +241,7 @@ function labelTabKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut[]
   const edges = params.label.edges ?? 'back';
   const wantBack = edges === 'back' || edges === 'both';
   const wantFront = edges === 'front' || edges === 'both';
-  // Slides the body inward from its anchor wall (#1898). Without it the box
+  // Slides the body inward from its anchor wall. Without it the box
   // stays pinned to the wall while the tab has moved off it.
   const inset = params.label.inset ?? 0;
 
@@ -315,7 +315,7 @@ function footprintOf(seg: InteriorDividerSegment, thickness: number): WorldKeepO
  * `border` is the solid margin held around every junction and intruding
  * feature. Callers pass `max(CUTOUT_BORDER_WIDTH, patternShapeRadius)` so a
  * bold element can't bleed past its keep-out — the same rule the outer walls
- * use for divider junction zones (#1350).
+ * use for divider junction zones.
  */
 export function planDividerPatterns(
   params: BinParams,
@@ -336,7 +336,7 @@ export function planDividerPatterns(
   // Same band rule as the outer walls: one wallThickness clears the floor slab
   // and BOTTOM_SOLID_SKIRT is the band the lowest element row anchors to.
   // Re-fitted to the divider's own height, so a shortened divider keeps whole
-  // elements instead of a sliced top row (#2317's failure mode).
+  // elements instead of a sliced top row.
   const bandZ0 = params.wallThickness + BOTTOM_SOLID_SKIRT;
   const bandHeight = dividerHeight - TOP_KEEP_OUT - bandZ0;
   if (bandHeight <= 0) return null;

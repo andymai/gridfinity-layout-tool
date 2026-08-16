@@ -946,7 +946,7 @@ describe('migrateParams', () => {
 
   it('backfills lid with defaults for designs saved before lid feature existed', () => {
     const result = migrateParams({ width: 2, depth: 2, height: 3 });
-    // Every field takes its default EXCEPT the interior relief (#3477), which
+    // Every field takes its default EXCEPT the interior relief, which
     // is off for anything that predates it. Moot here — the design has no lid
     // — but the rule has to hold uniformly or it would depend on load order.
     expect(result.lid).toEqual({ ...DEFAULT_BIN_PARAMS.lid, relieveInterior: false });
@@ -1009,7 +1009,7 @@ describe('migrateParams', () => {
         heightMm: 2.4,
         binDip: true,
       },
-      // Explicitly stored, which is what a design created after #3477 holds.
+      // Explicitly stored, which is what a design created holds.
       relieveInterior: true,
     };
     const result = migrateParams({ lid });
@@ -1196,7 +1196,7 @@ describe('migrateParams', () => {
   });
 
   it('keeps every previously-shippable coverage as an exact stop', () => {
-    // The stop list went from 50/75/100 to 5% steps (#3401). Because
+    // The stop list went from 50/75/100 to 5% steps. Because
     // `migrateClickRailCoverage` snaps to the NEAREST option, dropping a value
     // that designs were saved with would silently re-render them at a
     // different coverage: a changed printed part with no notice. 75 is the
@@ -1219,7 +1219,7 @@ describe('migrateParams', () => {
   it('leaves a socket-mode tab width exactly as stored', () => {
     // `migrateParams` runs on EVERY load, so it cannot "normalise once". It
     // also cannot tell a width the user deliberately set in socket mode
-    // (#3402) from one left over in storage from a stint in text mode, so it
+    // from one left over in storage from a stint in text mode, so it
     // must not touch either; resetting would wipe the new control's value
     // every time the design reopened.
     // Both non-default (the default is 100), so neither iteration can pass by

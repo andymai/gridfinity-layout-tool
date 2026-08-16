@@ -7,8 +7,8 @@
  * manifold, right size) but never that changing a control changes the output. A
  * param wired to the UI but dropped before the generator — or omitted from a
  * cache key so two values collide — produces a bin that is valid and frozen. It
- * shipped as #2554 (connector tolerance had zero effect: −0.3 and +0.3 exported
- * byte-identical STLs) and #2384 (half-grid produced the same output as grid).
+ * shipped as (connector tolerance had zero effect: −0.3 and +0.3 exported
+ * byte-identical STLs) and (half-grid produced the same output as grid).
  * `baseplateGenerator.scenario.fit-offset` pins one such param; this is the bin
  * side.
  *

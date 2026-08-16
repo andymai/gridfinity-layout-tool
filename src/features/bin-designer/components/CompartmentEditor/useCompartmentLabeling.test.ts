@@ -46,7 +46,7 @@ describe('useCompartmentLabeling', () => {
   describe('mode + selection', () => {
     it('entering label mode selects the first compartment (visual top-left)', () => {
       // 3x2 grid: data rows [0,1,2] (bottom) and [3,4,5] (top). Reading order is
-      // top-left first, so the first compartment is id 3 (#2338).
+      // top-left first, so the first compartment is id 3.
       const { result } = render(createUniformGrid(3, 2, 1.2));
       expect(result.current.editingId).toBeNull();
       act(() => result.current.setLabelMode(true));
@@ -73,7 +73,7 @@ describe('useCompartmentLabeling', () => {
   describe('display numbering', () => {
     it('maps compartment ids to 1-based display order (visual top-left first)', () => {
       const { result } = render(createUniformGrid(3, 2, 1.2));
-      // Top row [3,4,5] reads before the bottom row [0,1,2] (#2338).
+      // Top row [3,4,5] reads before the bottom row [0,1,2].
       expect(result.current.orderedIds).toEqual([3, 4, 5, 0, 1, 2]);
       expect(result.current.displayNumberOf(3)).toBe(1);
       expect(result.current.displayNumberOf(2)).toBe(6);

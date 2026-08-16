@@ -2,7 +2,7 @@
  * Visual extension of a bin past its grid footprint.
  *
  * Covers both sources of overhang (see `@/shared/utils/drawerMargin`): the
- * drawer-fit margin a bin claims on padded drawer edges (#2462), and an explicit
+ * drawer-fit margin a bin claims on padded drawer edges, and an explicit
  * per-placement overhang authored by "Expand to Fit". Rendered as a
  * `pointer-events: none` child behind the bin's own background (negative insets
  * + `zIndex: -1`): the portion over the bin is hidden by its background (same

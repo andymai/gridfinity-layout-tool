@@ -108,7 +108,7 @@ export function clampRotationToBounds(
     return normalize(proposedAngle);
   }
 
-  // Already off the board (a typed oversize W/H, #3061) — no angle fits, so the
+  // Already off the board (a typed oversize W/H,) — no angle fits, so the
   // search below would converge back onto the current rotation and the control
   // would silently do nothing. The guard exists to stop a rotation pushing a
   // fitting cutout out, not to freeze one that is already out.

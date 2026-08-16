@@ -68,21 +68,21 @@ const VALID_BASE_STYLES = [
   'magnet_and_screw',
   'weighted',
   'flat',
-  // Underside is lid mating geometry instead of a socket (#3036).
+  // Underside is lid mating geometry instead of a socket.
   'lid',
 ] as const;
-// Mirrors `FOOT_LATTICES` in `src/features/bin-designer/types/base.ts` (#3467).
+// Mirrors `FOOT_LATTICES` in `src/features/bin-designer/types/base.ts`.
 const VALID_FOOT_LATTICES = ['grid', 'half'] as const;
 const VALID_LABEL_TAB_SUPPORTS = ['bracket', 'solid', 'fillet'] as const;
-// Mirrors `LabelTabMode` in `src/features/bin-designer/types/index.ts` (#2666).
+// Mirrors `LabelTabMode` in `src/features/bin-designer/types/index.ts`.
 const VALID_LABEL_TAB_MODES = ['text', 'socket'] as const;
 const VALID_LABEL_SOCKET_STYLES = ['clickIn', 'slideChannel'] as const;
 const VALID_INSERT_SHAPES = ['rectangle', 'circle', 'hexagon', 'rounded-rect', 'slot'] as const;
 const VALID_WALL_CUTOUT_SHAPES = ['u-shape', 'scoop', 'funnel'] as const;
-// Mirrors `LidAttachment` in `src/features/bin-designer/types/lid.ts` (#2694).
+// Mirrors `LidAttachment` in `src/features/bin-designer/types/lid.ts`.
 const VALID_LID_ATTACHMENTS = ['friction', 'clickRails', 'magnetic'] as const;
 // Mirrors `LidGripMode` / `LidGripConfig` / `LidGripSides` in the same
-// module (#3272).
+// module.
 const VALID_LID_GRIP_MODES = ['none', 'chamfer', 'reveal', 'scallop'] as const;
 const ALLOWED_LID_GRIP_KEYS = new Set(['mode', 'sides', 'coverage', 'heightMm', 'binDip']);
 const ALLOWED_LID_GRIP_SIDE_KEYS = new Set(['front', 'back', 'left', 'right']);
@@ -172,11 +172,11 @@ export type DesignerValidationResult =
 
 /**
  * Retention-magnet dimensions, shared by `lid.retentionMagnet` and
- * `base.trayBottom.retentionMagnet` (#3036). Both feed the SAME worker
+ * `base.trayBottom.retentionMagnet`. Both feed the SAME worker
  * placement code, so they must be bounded identically — validating them
  * separately is how the tray path ended up accepting values the lid rejects.
  *
- * `edgeMagnets` (#2844) must be a whole number, not merely in range: the
+ * `edgeMagnets` must be a whole number, not merely in range: the
  * placement loop divides the span by `count + 1`, so a fractional 2.5 emits
  * two magnets spaced for 3.5 and lands them off-centre. The cap also stops a
  * crafted share spawning thousands of boss/pocket booleans. Mirrors
@@ -235,7 +235,7 @@ function validateBase(base: unknown): string | null {
   if (base.tile !== undefined && !isBoolean(base.tile)) {
     return 'base.tile must be boolean';
   }
-  // Foot lattice per axis (#3467): a closed set, so an unknown value is
+  // Foot lattice per axis: a closed set, so an unknown value is
   // rejected rather than silently falling back to a different set of feet than
   // the publisher previewed — one that may not seat in a baseplate.
   for (const axis of ['footLatticeX', 'footLatticeY'] as const) {
@@ -255,7 +255,7 @@ function validateBase(base: unknown): string | null {
 }
 
 /**
- * Validate `base.trayBottom` (#3036). Mirrors `TrayBottomConfig` in
+ * Validate `base.trayBottom`. Mirrors `TrayBottomConfig` in
  * `src/features/bin-designer/types/base.ts`. Every field is required: unlike
  * `lid`, this object has no legacy payloads to tolerate — `migrateParams` only
  * ever writes it whole.
@@ -365,7 +365,7 @@ function validateSlide(slide: unknown): string | null {
 }
 
 /**
- * Validate the lid sub-object's geometry-driving fields (#2694). The worker
+ * Validate the lid sub-object's geometry-driving fields. The worker
  * feeds `retentionMagnet.*` and `tray.*` straight into BREP, so a crafted
  * share could otherwise smuggle a runaway pocket/recess depth. Bounds mirror
  * `src/features/bin-designer/types/lid.ts`. All fields optional/legacy-tolerant
@@ -425,7 +425,7 @@ function validateLid(lid: unknown): string | null {
 }
 
 /**
- * Grip relief (#3272). Mirrors `LidGripConfig` in
+ * Grip relief. Mirrors `LidGripConfig` in
  * `src/features/bin-designer/types/lid.ts`.
  *
  * The depth and span clamps deliberately live only on the client: they resolve
@@ -566,7 +566,7 @@ const VALID_WALL_TEXT_SIDES = ['front', 'back', 'left', 'right'] as const;
 const VALID_WALL_TEXT_ALIGNS = ['top', 'center', 'bottom'] as const;
 
 /**
- * Exterior-surface text (issue #2695): a lid-top string plus per-wall strings
+ * Exterior-surface text: a lid-top string plus per-wall strings
  * and a shared vertical alignment. Strings share the client's
  * `TEXT_MAX_LENGTH = 50` cap (mirrored numerically, like `compartmentTexts`);
  * the style override reuses the `textDefaults` field caps so a crafted share
@@ -662,11 +662,11 @@ function validateLabel(label: unknown): string | null {
         return 'label.height must be greater than label.depth';
       }
     }
-    // Optional field (#1898); absent = back-edge anchor (legacy).
+    // Optional field; absent = back-edge anchor (legacy).
     if (label.edges !== undefined && !['back', 'front', 'both'].includes(label.edges as string)) {
       return 'label.edges must be "back", "front", or "both"';
     }
-    // Optional field (#2897); absent = per-compartment tabs (legacy).
+    // Optional field; absent = per-compartment tabs (legacy).
     if (label.span !== undefined && !isBoolean(label.span)) {
       return 'label.span must be boolean';
     }
@@ -689,7 +689,7 @@ function validateLabel(label: unknown): string | null {
         }
       }
     }
-    // Optional field (#1898); absent = 0 (tab abuts anchor wall).
+    // Optional field; absent = 0 (tab abuts anchor wall).
     if (label.inset !== undefined) {
       if (
         !isNumber(label.inset) ||
@@ -702,14 +702,14 @@ function validateLabel(label: unknown): string | null {
       const styleErr = validateTextStyleOverride(label.textStyle, 'label.textStyle');
       if (styleErr) return styleErr;
     }
-    // Optional swappable-label mode (#2666); absent = 'text' (legacy).
+    // Optional swappable-label mode; absent = 'text' (legacy).
     if (
       label.mode !== undefined &&
       !VALID_LABEL_TAB_MODES.includes(label.mode as (typeof VALID_LABEL_TAB_MODES)[number])
     ) {
       return `label.mode must be one of: ${VALID_LABEL_TAB_MODES.join(', ')}`;
     }
-    // Optional socket profile (#2666 follow-up); absent = 'clickIn'.
+    // Optional socket profile (follow-up); absent = 'clickIn'.
     if (
       label.socketStyle !== undefined &&
       !VALID_LABEL_SOCKET_STYLES.includes(
@@ -728,7 +728,7 @@ function validateLabel(label: unknown): string | null {
     ) {
       return `label.depth must be at least ${CONSTRAINTS.MIN_LABEL_SOCKET_TAB_DEPTH} when label.mode is "socket"`;
     }
-    // Optional signed fit offset for socket clearance calibration (#2666).
+    // Optional signed fit offset for socket clearance calibration.
     if (label.plateFitOffset !== undefined) {
       if (
         !isNumber(label.plateFitOffset) ||

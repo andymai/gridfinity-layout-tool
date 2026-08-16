@@ -336,7 +336,7 @@ describe('DesignerStore - lid actions', () => {
     });
 
     it('checkLidCompatibility flags full-width wall cutouts on all four sides as a blocker', () => {
-      // Full-width is what makes it a blocker since #3483: at the default 70%
+      // Full-width is what makes it a blocker: at the default 70%
       // every wall keeps 30% of its lip, the rails segment around the windows,
       // and the design gets a lid — see the warning case below.
       const { updateLid, updateWalls, updateWallSide } = useDesignerStore.getState();
@@ -366,7 +366,7 @@ describe('DesignerStore - lid actions', () => {
 
     it('checkLidCompatibility flags label tabs as a warning (back rail conflict)', () => {
       const { updateLid, updateLabel } = useDesignerStore.getState();
-      // The warning describes the NOTCHING path. With #3477's interior relief
+      // The warning describes the NOTCHING path. With's interior relief
       // on — the default for a new design — the shelf sits below the rail band
       // and there is no conflict to report.
       updateLid({ enabled: true, relieveInterior: false });

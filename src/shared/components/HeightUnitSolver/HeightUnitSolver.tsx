@@ -23,7 +23,7 @@ const TARGET_PLACEHOLDER_MM = '75.6';
  * Back-solves `heightUnitMm` from a target stack height. Bins nest when stacked
  * (pitch = body height), so a stack of `bins`, each `unitsPerBin` tall, prints
  * to `bins × unitsPerBin × unit + one lip`. This inverts that to answer the
- * reporter's ask (#2416): "what unit size fills my drawer with N bins?".
+ * reporter's ask: "what unit size fills my drawer with N bins?".
  */
 export function HeightUnitSolver({
   heightUnitMm,

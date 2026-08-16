@@ -150,7 +150,7 @@ describe('buildBaseSocket', () => {
     );
   });
 
-  // #2332: a uniform grid is one repeated cell loft. The template cache should
+  // A uniform grid is one repeated cell loft. The template cache should
   // loft it once and clone the rest, rather than re-lofting every cell.
   it('lofts one cell-socket template and clones the rest for a uniform grid', async () => {
     const { clearAllCaches, resetAllShapeCacheStats, getAllShapeCacheStats } =
@@ -218,7 +218,7 @@ describe('forEachSocketCell foot lattice (#3467)', () => {
     // Such an axis already carries a half cell, and `fractionalEdge` decides
     // which end it sits on — which covers both placements on its own. Honouring
     // `half` here would build a layout that perches on-grid, and the mismatch
-    // check deliberately skips fractional axes so nothing would warn (#3473 review).
+    // check deliberately skips fractional axes so nothing would warn (review).
     const asked = resolveSocketCellPlan(false, 'half', 'half', undefined, 2.5, 3);
     expect(asked.latticeX).toBe('grid');
     expect(asked.latticeY).toBe('half');

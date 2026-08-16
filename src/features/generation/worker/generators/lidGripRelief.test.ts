@@ -1,5 +1,5 @@
 /**
- * Grip-relief placement math (#3272).
+ * Grip-relief placement math.
  *
  * `gripPlacements` is the single derivation of where a relief sits — the lid
  * cutter, the click-rail split and the bin's lip dip all read it — so it is

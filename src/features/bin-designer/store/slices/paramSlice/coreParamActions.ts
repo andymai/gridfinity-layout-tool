@@ -103,7 +103,7 @@ export function createCoreParamActions(set: Set, get: Get) {
         // Keep UI toggles in sync with the resolved params: a custom default
         // may carry fractional dimensions (→ half-grid mode), and defaults
         // always strip `cellMask` (→ shape editor closed). Without this the
-        // toggles would leak the previous design's state (issue #1752).
+        // toggles would leak the previous design's state.
         state.ui.halfGridMode = paramsNeedHalfGridMode(state.params);
         state.ui.shapeEditorOpen = false;
       });

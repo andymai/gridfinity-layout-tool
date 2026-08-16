@@ -42,7 +42,7 @@ export function generateUUID(): string {
  * a chunk-level static-import cycle can leave imported `var` bindings
  * as `undefined` until the producing module finishes its top-level
  * statements, which crashes (or silently miscomputes) anything that
- * reads them at call time. Self-contained = cycle-immune. See #1466.
+ * reads them at call time. Self-contained = cycle-immune. See.
  */
 export function generateLayoutId(): LayoutId {
   const ID_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';

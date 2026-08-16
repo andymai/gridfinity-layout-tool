@@ -210,7 +210,7 @@ describe('cameraFraming', () => {
       expect(distance).toBeLessThan(100); // Should be relatively small
     });
 
-    // GH #1445 — a non-default heightUnitMm must change the framing distance,
+    // GH — a non-default heightUnitMm must change the framing distance,
     // otherwise thumbnails would re-regress to the 7mm-per-unit assumption.
     it('reflects custom heightUnitMm in framing distance', () => {
       const atDefault = calculateIdealDistance(1, 1, 3, 50);

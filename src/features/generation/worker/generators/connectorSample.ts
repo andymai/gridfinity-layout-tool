@@ -25,7 +25,7 @@
  * The embossed offset label is sized so its thinnest glyph stem stays at least
  * one nozzle bead wide (`minPrintableLabelFontMm`); the coupon is then sized to
  * hold that label. Older, smaller labels sliced away to nothing on a 0.4mm
- * nozzle, leaving the card useless (issue #3019).
+ * nozzle, leaving the card useless.
  *
  * Pieces are separate, non-fused solids resting on the bed (Z≥0); the export
  * compounds them into one ready-to-slice file.
@@ -92,7 +92,7 @@ interface SampleStyle {
 const SAMPLE_STYLES: readonly SampleStyle[] = [
   { key: 'dovetail', loose: null },
   // Puzzle is an integral tongue/groove like the dovetail (no loose part); it just
-  // carries the stronger jigsaw-lobe profile (issue #2241).
+  // carries the stronger jigsaw-lobe profile.
   { key: 'puzzle', loose: null },
   { key: 'dovetailKey', loose: 'key' },
   { key: 'snapClip', loose: 'clip' },
@@ -298,7 +298,7 @@ export function buildConnectorSampleTray(rawParams: ResolvedBaseplateParams): Sh
     SAMPLE_OFFSETS.forEach((offset, c) => {
       const cx = originX + c * colPitch;
       // Offset only — the style is implicit (one style per tray), and keeping the
-      // label short is what lets the font grow to a printable stem width (#3019).
+      // label short is what lets the font grow to a printable stem width.
       const label = formatOffset(offset);
 
       let frontFeature: CouponFeature;
@@ -308,7 +308,7 @@ export function buildConnectorSampleTray(rawParams: ResolvedBaseplateParams): Sh
         frontFeature = { kind: 'pocket', levels };
         backFeature = { kind: 'pocket', levels };
       } else if (style.key === 'dovetailKey') {
-        // Key mode cuts puzzle-lobe grooves (the dogbone key's cavity, #2637).
+        // Key mode cuts puzzle-lobe grooves (the dogbone key's cavity,).
         const clearance = effectiveClearance(DOVETAIL_KEY_CLEARANCE, offset, params.nozzleSizeMm);
         frontFeature = { kind: 'groove', clearance, puzzle: true };
         backFeature = { kind: 'groove', clearance, puzzle: true };

@@ -1,5 +1,5 @@
 /**
- * Lid-retention stage — bin-side magnet gusset pads (issue #2694).
+ * Lid-retention stage — bin-side magnet gusset pads.
  *
  * When the design's lid uses magnetic retention, each corner of the bin grows a
  * gusset pad: a solid that anchors to the two interior corner walls near the top
@@ -8,20 +8,20 @@
  * `LID_MAGNET_SEAT_GAP` below the lid boss's bottom face when the lid is seated,
  * so the two magnets mate across a thin gap.
  *
- * The pad prints support-free (issue #2712): its underside is a single 45°
+ * The pad prints support-free: its underside is a single 45°
  * plane rising along the corner diagonal, from the wall corner up to the pad
  * bottom at the tip. Each layer overhangs the one below by at most the layer
  * height, so the slicer never asks for supports inside the bin. On bins too
  * short for the full taper it clamps to the interior floor and welds in. The
  * pad's inward-pointing corner is rounded at the boss radius (a tongue wrapping
  * the pocket) so contents can't snag on it; the outward one follows the cavity
- * wall's own corner arc so it can't punch through the outer shell (#2929), and
+ * wall's own corner arc so it can't punch through the outer shell, and
  * the two between them stay square because they sit buried inside the walls.
  *
  * The mating plane sits BELOW the lid's mating skirt, not at the rim. The pad
  * welds into the walls, so it spans the same band the skirt drops through — a
  * pad top anywhere above the skirt's bottom props the lid open on its own
- * corners no matter how well the magnets line up (#3450). `retentionSeatPlanes`
+ * corners no matter how well the magnets line up. `retentionSeatPlanes`
  * owns that bound; this stage only reads it. The physical bin needs the pads
  * whether or not the lid is exported in the same action, so this keys off
  * `usesMagneticLid` (not on the lid being emitted).
@@ -79,7 +79,7 @@ export const lidRetentionStage: PipelineStage = {
     const inset = retentionMagnetInset(diameter);
     // Overhang moves the stacking lip the pads hug, so the pads move with it —
     // otherwise a one-sided overhang strands the gusset away from the interior
-    // wall it welds into (#3048). The lid boss applies the same shift.
+    // wall it welds into. The lid boss applies the same shift.
     const positions = retentionMagnetPositions(
       params.width,
       params.depth,
@@ -97,7 +97,7 @@ export const lidRetentionStage: PipelineStage = {
     //
     // `dim.lipTopZ` is the plane a seated lid's `anchorZ` lands on — the helper
     // measures down from it. Read it, never restate the chain: every
-    // restatement has been wrong (#3431), by less than a millimetre, which is
+    // restatement has been wrong, by less than a millimetre, which is
     // enough to turn the designed 0.2mm seat gap into 0.5mm of solid overlap.
     const { binFaceZ: magnetTopZ } = retentionSeatPlanes(params, dim.lipTopZ);
 
@@ -121,7 +121,7 @@ export const lidRetentionStage: PipelineStage = {
     const innerHalfW = dim.innerW / 2;
     const innerHalfD = dim.innerD / 2;
     // The cavity is centred on the overhang-shifted centre, not the origin, so
-    // every wall/arc coordinate below is measured from it (#3048). Zero without
+    // every wall/arc coordinate below is measured from it. Zero without
     // overhang, leaving the un-overhung geometry byte-identical.
     const innerCx = dim.innerOffsetX;
     const innerCy = dim.innerOffsetY;
@@ -137,14 +137,14 @@ export const lidRetentionStage: PipelineStage = {
     // 1. Fuse a gusset pad into each corner. The pad's footprint spans from the
     //    interior wall corner (with a small overlap for a solid weld) inward
     //    past the magnet; its inward corner is rounded at the boss radius so
-    //    the pad ends in a smooth tongue wrapping the pocket (#2712). Below
+    //    the pad ends in a smooth tongue wrapping the pocket. Below
     //    `padBottomZ` the pad continues down as a 45° taper: a single plane
     //    rising along the corner diagonal from the wall corner to the tongue
     //    tip, so the underside prints support-free.
     for (const placement of positions) {
       const { x: px, y: py, anchor } = placement;
 
-      // ── Mid-edge magnets (#2844): a single-wall cantilever pad. ──────────
+      // ── Mid-edge magnets: a single-wall cantilever pad. ──────────
       // Anchors to ONE interior wall and reaches inward to house the magnet,
       // with a support-free 45° underside sloping down toward that wall (the
       // mid-edge analogue of the corner gusset below). `anchor === 'y'` welds
@@ -257,7 +257,7 @@ export const lidRetentionStage: PipelineStage = {
       // (wallX, wallY) would sit √2·(cavityCornerR + GUSSET_WALL_OVERLAP) from
       // the concentric corner centre — more than BOX_CORNER_RADIUS, so it
       // protrudes through the outer wall, for every wall thinner than ~1.5mm
-      // (#2929). The arc is tangent to both wall lines, so the two remaining
+      //. The arc is tangent to both wall lines, so the two remaining
       // square corners stay buried where the flats meet the tongue.
       const padCornerR = cavityCornerR + GUSSET_WALL_OVERLAP;
       const arcCx = innerCx + sx * (innerHalfW - cavityCornerR);

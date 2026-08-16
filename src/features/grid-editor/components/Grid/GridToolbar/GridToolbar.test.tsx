@@ -366,7 +366,7 @@ describe('GridToolbar', () => {
     });
 
     // Wiring guard: the menu role advertises arrow traversal, so the shared
-    // keyboard hook must stay attached (#3277).
+    // keyboard hook must stay attached.
     // This menu holds a single toggle, so there is nothing to traverse — the
     // guard is that focus enters the menu rather than stranding on the trigger.
     // Its item carries menuitemcheckbox, which the hook must match alongside

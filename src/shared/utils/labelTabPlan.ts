@@ -69,7 +69,7 @@ export interface TabBuildDimensions {
    * the pocket + solid floor in socket mode.
    */
   readonly shelfT: number;
-  /** Non-null in swappable-label socket mode (#2666). */
+  /** Non-null in swappable-label socket mode. */
   readonly socket: SocketBuildInfo | null;
 }
 
@@ -141,7 +141,7 @@ export function planLabelTabLayout(
   // stacking relief for click-in sockets on lipped bins, so a seated plate
   // (plus emboss/print proudness) can't lift a stacked bin's foot. When
   // explicitly set, place the shelf at that Z so the user can drop it down
-  // to leave a tuck-under pocket above (#1898).
+  // to leave a tuck-under pocket above.
   // The geometry is built in a local frame (shelf top at Z=tabHeight) and
   // then translated up by `shelfTopZ - tabHeight`, so the entire
   // shelf+gusset assembly slides down as a unit.
@@ -163,7 +163,7 @@ export function planLabelTabLayout(
   // opposite wall and fuse into it as a bridge. Silent null-fallback here.
   if (tabDepth >= innerD) return null;
 
-  // Swappable-label socket mode (#2666): resolve which standard plate each
+  // Swappable-label socket mode: resolve which standard plate each
   // compartment's tab hosts from the shared plan (same math the UI uses for
   // warnings/pickers). When no compartment fits, the plan degrades to one
   // socket on a single bin-spanning tab at the outer wall(s).
@@ -249,7 +249,7 @@ export function planLabelTabLayout(
   const rowDims: TabBuildDimensions = isSpanning ? { ...dims, cellW: innerW, cellD: innerD } : dims;
   const rowCount = isSpanning ? 1 : rows;
 
-  // Full-width mode (#2897) plans one shelf per row against the real config —
+  // Full-width mode plans one shelf per row against the real config —
   // never the socket fallback's synthetic grid, whose missing divider overrides
   // would defeat the tilt guard. The two are mutually exclusive: a bin-spanning
   // socket fallback is already one full-width tab.
@@ -322,7 +322,7 @@ function planTabsAtRow(
     // Tilted anchor wall, a body deeper than the compartment, or a front tab
     // colliding with its back partner under `edges='both'` — the shared
     // predicate answers all three, and the plate planner and ghost overlay
-    // gate on the same one so none of the three can drift (#2910). Compartment
+    // gate on the same one so none of the three can drift. Compartment
     // text still persists in storage; only the geometry is suppressed.
     if (!compartmentTabEligible(params.compartments, cellId, anchor, fit)) {
       col++;
@@ -349,7 +349,7 @@ function planTabsAtRow(
 
     // Deducts half a divider at each boundary that has one (merged columns
     // share no divider) and follows any `dividerOverrides` shifting those
-    // dividers off their grid lines (#3225).
+    // dividers off their grid lines.
     const span = compartmentTabXSpan(params.compartments, cellId, innerW);
     if (!span) {
       col = groupEnd;
@@ -381,7 +381,7 @@ function planTabsAtRow(
 }
 
 /**
- * Plan the single full-width tab at one row's anchor wall (#2897).
+ * Plan the single full-width tab at one row's anchor wall.
  *
  * Deliberately runs against the REAL compartment config rather than a synthetic
  * one-column grid: the tilt and depth guards below read `dividerOverrides` and
@@ -450,7 +450,7 @@ function fitTabInSpan(args: {
   const availableWidth = availableRight - availableLeft;
 
   // The socket plan is fed this same percentage, so a narrower shelf picks a
-  // narrower plate rather than keeping one that no longer fits (#3402).
+  // narrower plate rather than keeping one that no longer fits.
   const tabWidth = (availableWidth * args.widthPercent) / 100;
   if (tabWidth <= 0) return null;
 
@@ -560,7 +560,7 @@ export function labelTabFootprints(
 export function clickRailZBandAboveFloor(
   interiorHeight: number,
   /**
-   * Exterior-wall collar (#2500). It raises the outer box and the lip with it
+   * Exterior-wall collar. It raises the outer box and the lip with it
    * while deliberately leaving the interior plane alone, so the lid seats that
    * much higher above an unmoved shelf. Omitting it puts the band below where
    * the rail really is and reports a foul on a tab the rail clears.
@@ -649,12 +649,12 @@ export function labelTabInteriorDims(params: BinParams): {
 /**
  * Label tabs a lid's click rails could actually run into.
  *
- * Filtered on Z alone: a shelf tucked under the rim (#1898), or dropped by an
+ * Filtered on Z alone: a shelf tucked under the rim, or dropped by an
  * inset, passes beneath the band and fouls nothing. Everything the
  * rail-clipping and the panel warnings need comes from here, so the two can
  * never disagree about which wall is fouled.
  *
- * NOT filtered on `onOuterWall`, which it was until #3477. A tab hanging from
+ * NOT filtered on `onOuterWall`, which it was until. A tab hanging from
  * an interior row divider is indeed out of reach of the rail on the wall it
  * FACES — but it spans its compartment wall to wall in X, so on a multi-row
  * grid it runs straight into the left and right rails, at 1.25mm of overlap on

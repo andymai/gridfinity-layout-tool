@@ -1,7 +1,7 @@
 // @vitest-environment node
 /**
  * Retention + insertion budget for the lid click rail (`attachment: 'clickRails'`,
- * issues #2694 / #2712).
+ * issues /).
  *
  * `lidProfile.ts` is explicit that the click rails ARE the lid's retention: the
  * corner pillars sit clear of the lip, so "engagement happens on the straights
@@ -44,7 +44,7 @@ const rampRatio = (entryChamfer: number, inset: number): number => entryChamfer 
 
 /**
  * Minimum net catch that FDM reliably resolves and that gives a firm, removable
- * snap. Matches the snap clip's proven ledge floor (issue #2638) — below this the
+ * snap. Matches the snap clip's proven ledge floor — below this the
  * lip pops out under its own weight.
  */
 const MIN_CATCH = 0.15;

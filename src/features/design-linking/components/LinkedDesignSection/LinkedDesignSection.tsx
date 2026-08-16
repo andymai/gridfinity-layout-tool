@@ -127,7 +127,7 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
 
   // A fractional bin whose design's half foot points away from where its half
   // cell lands is oriented wrong; the registry ref carries the design's edge so
-  // we can flag it here (#2518, #3070).
+  // we can flag it here.
   //
   // Every placement of the design, not just this bin: the helper resolves each
   // axis across all of them and stays quiet when they disagree, so a design

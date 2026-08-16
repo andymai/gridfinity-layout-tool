@@ -368,7 +368,7 @@ describe('storage-library', () => {
     });
 
     it('rolls back the blob and keeps legacy key intact when library save fails', async () => {
-      // Regression for #1434 review: previously the library was written
+      // Regression review: previously the library was written
       // first, leaving a persisted library whose activeLayoutId pointed at
       // a non-existent blob if the library save succeeded but the blob
       // failed — or, in the reverse ordering, orphan blobs accumulating on

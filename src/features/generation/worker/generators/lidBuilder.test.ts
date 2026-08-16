@@ -81,7 +81,7 @@ describe('resolveLidInputs', () => {
   });
 
   // With a tray the knob measures the floor UNDER the recess, so the plate is
-  // recess + floor rather than the larger of the two (#3072).
+  // recess + floor rather than the larger of the two.
   it('stacks the tray recess on top of the minimum floor', () => {
     const inputs = resolveLidInputs(
       makeParams({
@@ -182,7 +182,7 @@ describe('resolveLidInputs', () => {
   });
 
   it('disables no rail for label tabs, and carries their footprints instead', () => {
-    // Label tabs used to disable their anchor wall here. Since #3401 the rail
+    // Label tabs used to disable their anchor wall here. Since the rail
     // builder segments the run around the footprints and keeps any stretch
     // left over, so the decision moved from this set to the geometry. A
     // full-width tab still ends up with no back rail; a narrow one keeps the

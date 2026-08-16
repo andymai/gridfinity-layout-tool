@@ -258,7 +258,7 @@ describe('label tab keep-outs', () => {
       .join('|');
 
   it('follows the tab inward when `inset` moves it off its wall', () => {
-    // `inset` (#1898) slides the tab body away from its anchor wall. A keep-out
+    // `inset` slides the tab body away from its anchor wall. A keep-out
     // pinned to the wall leaves the deepest `inset` mm of the tab sitting on
     // perforated divider, which is the one thing it exists to prevent.
     const plain = tabKeepOuts(makeParams({ label: label({ inset: 0 }) }));

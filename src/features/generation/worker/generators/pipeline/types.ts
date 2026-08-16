@@ -52,7 +52,7 @@ export interface BinDimensions {
    * base styles. Adding `baseOffsetZ` to it double-counts a Gridfinity socket
    * (5mm) while still missing the collar, and is right only for a tray bottom
    * — whose skirt is the one underside `wallHeight` does not already subtract.
-   * Anything anchored to the rim reads this instead (#3431).
+   * Anything anchored to the rim reads this instead.
    */
   readonly wallTopZ: number;
   /**
@@ -62,7 +62,7 @@ export interface BinDimensions {
   readonly lipTopZ: number;
   readonly isFlat: boolean;
   /**
-   * Underside is lid mating geometry rather than a Gridfinity socket (#3036).
+   * Underside is lid mating geometry rather than a Gridfinity socket.
    * Socket-dependent derivations treat it like `isFlat`; the difference is the
    * skirt `trayBottomStage` fuses below the body.
    */
@@ -80,7 +80,7 @@ export interface BinDimensions {
   readonly halfSockets: boolean;
   /**
    * The foot layout the base builds, after the user's half-socket toggle and
-   * per-axis lattice have been reconciled with the cell mask (#3467).
+   * per-axis lattice have been reconciled with the cell mask.
    */
   readonly socketCellPlan: SocketCellPlan;
   /**
@@ -95,7 +95,7 @@ export interface BinDimensions {
    */
   readonly lightweight: boolean;
   /**
-   * True for a spacer/riser (#2869): a floorless frame that lifts a bin so
+   * True for a spacer/riser: a floorless frame that lifts a bin so
    * mismatched bin heights line up. Feet and stacking lip are untouched — only
    * the floor is gone — so every height and stacking rule a normal bin follows
    * carries over unchanged. The feet become foot-shaped tubes (`'through'` in
@@ -195,7 +195,7 @@ export interface PipelineContext {
   /** Pattern cut targets — applied in a separate boolean pass after cutTargets */
   readonly patternCutTargets: readonly Shape3D[];
   /**
-   * Cut targets that must ALSO be applied to {@link deferredSolid} (#2816).
+   * Cut targets that must ALSO be applied to {@link deferredSolid}.
    *
    * Every other feature cuts the body only, which is safe because the socket
    * meets it at a hidden interface. The floor pattern is the exception: its

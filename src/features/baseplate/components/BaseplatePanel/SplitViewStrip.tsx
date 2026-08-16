@@ -1,6 +1,6 @@
 /**
  * Non-collapsible inline strip showing the split-baseplate piece mini-map, and
- * the editor for user-drawn split lines (issue #3115).
+ * the editor for user-drawn split lines.
  *
  * The map is proportional: each piece region's grid track is sized by its real
  * unit span, so the mini-map reads as the plate rather than as a uniform table.

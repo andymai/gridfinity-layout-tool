@@ -1,6 +1,6 @@
 /**
  * Assembled-height derivation: how tall the design actually stands once it is
- * seated on a baseplate with its lid on (issue #3037).
+ * seated on a baseplate with its lid on.
  *
  * The number users need for drawer clearance is not any single printed height.
  * A socketed bin's base sinks into the baseplate's pockets, so the plate
@@ -136,7 +136,7 @@ export function assembledHeight(
   // sits directly in the drawer. Counting a plate under it would overstate
   // clearance by the plate's full height, the same class of error this readout
   // exists to prevent.
-  // A flat base and a tray bottom (#3036) both lack a socket, so neither seats
+  // A flat base and a tray bottom both lack a socket, so neither seats
   // on a baseplate — a tray sits on the BIN below it, via its lid skirt.
   const seatedOnPlate =
     plate !== undefined && params.base.style !== 'flat' && params.base.style !== 'lid';

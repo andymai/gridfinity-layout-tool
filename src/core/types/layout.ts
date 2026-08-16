@@ -17,7 +17,7 @@ import type { OverhangConfig, WallTaperProfile } from './overhang';
  *   corners at any `gridUnitMm` — the true Gridfinity corner position.
  * - `center`: the legacy fixed 13mm from the cell center. Identical to `edge`
  *   at the standard 42mm grid; on larger grids the holes drift inward. Kept as
- *   a compatibility escape hatch for parts already printed against it (#2525).
+ *   a compatibility escape hatch for parts already printed against it.
  *
  * Layout-scoped so a layout's bins, lids, and baseplate share one anchor and
  * their magnets stay mutually mated. Only observable when `gridUnitMm > 42`.
@@ -75,7 +75,7 @@ export interface Drawer {
   outline?: DrawerOutline;
   /**
    * Manual grid shift within a custom perimeter (mm per axis), composed on
-   * top of the automatic lattice registration (#3157/#3108). Absent = 0.
+   * top of the automatic lattice registration. Absent = 0.
    * Any shift beyond ±half pitch is equivalent to a different whole-cell
    * registration, so consumers clamp to that range. Only meaningful while
    * `outline` is present.
@@ -113,12 +113,12 @@ export interface Bin {
   customProperties?: Record<string, string>; // custom key-value properties for user-defined metadata
   linkedDesignId?: DesignId; // reference to saved design in bin-designer (for one-to-many linking)
   // Opt-in for this instance to extend its walls into the baseplate's drawer-fit
-  // margin on every drawer edge it abuts (#2462). A flag, not mm: the actual
+  // margin on every drawer edge it abuts. A flag, not mm: the actual
   // per-side overhang is derived live from `baseplateParams.padding*` at
   // render/export, so it tracks later padding changes. Applies only while the
   // bin abuts a padded edge; dormant otherwise.
   extendToMargin?: boolean;
-  // Opt-in outer-wall taper for a drawer-margin bin (#2933): over `bandHeight`
+  // Opt-in outer-wall taper for a drawer-margin bin: over `bandHeight`
   // mm the wall angles outward from the padding-wide base up to the rim, so the
   // bin reaches into a drawer's curved sides while its base still sits flat.
   // Per-side reach is derived live from the padding (like `extendToMargin`,
@@ -137,7 +137,7 @@ export interface Bin {
   // moves or is resized, since the values only hold for the position they were
   // computed for.
   overhang?: OverhangConfig;
-  // Freezes the bin's size (#3229): while set, `width`, `depth` and `height`
+  // Freezes the bin's size: while set, `width`, `depth` and `height`
   // are rejected by `bin.update`, and the bin is skipped by every flow that
   // resizes on the user's behalf (rotation, linked-design dimension sync,
   // Expand to Fit). Position, layer and every descriptive field stay editable —

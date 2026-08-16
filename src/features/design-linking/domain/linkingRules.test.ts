@@ -337,7 +337,7 @@ describe('dimensionsFitAllowingRotation (#3040)', () => {
   });
 
   it('accepts a transposed footprint — the preview renders it rotated', () => {
-    // The reporter's case: an 11.5x1.5 design against a 1.5x11.5 bin (#3040).
+    // The reporter's case: an 11.5x1.5 design against a 1.5x11.5 bin.
     expect(
       dimensionsFitAllowingRotation(
         { width: 11.5, depth: 1.5, height: 7 },

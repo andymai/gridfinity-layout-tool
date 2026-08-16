@@ -177,8 +177,8 @@ export function socketCacheKey(
       quantize(screwRadius),
       forExport,
       // Legacy slot: the half-socket boolean. Feet only ever varied with that
-      // flag until #3467, so a non-default foot lattice appends a segment
-      // instead of rewriting this one — a pre-#3467 key stays byte-identical.
+      // flag until, so a non-default foot lattice appends a segment
+      // instead of rewriting this one — a older key stays byte-identical.
       halfSockets,
       ...(latticeKey ? [latticeKey] : []),
       maskHash ?? 'rect',
@@ -259,7 +259,7 @@ export function getLastSolid(): Shape3D | null {
  * call can reuse that stale coarse triangulation instead of re-meshing at
  * export tolerance, causing intermittent STL write failures. Export paths
  * should check this predicate and regenerate when the cached solid is not
- * marked export-quality. See GH #1339.
+ * marked export-quality. See GH.
  */
 export function isLastSolidExportQuality(): boolean {
   return lastSolid !== null && lastSolidIsExportQuality;
@@ -272,7 +272,7 @@ export function isLastSolidExportQuality(): boolean {
  * in sequence during a whole-layout export, so a solid left behind by the
  * previous design is export-quality but is the wrong shape — that is how bins
  * shipped carrying their neighbour's geometry under the right filename
- * (GH #3074). An unidentified solid (`null`) never qualifies, so any producer
+ * (GH). An unidentified solid (`null`) never qualifies, so any producer
  * that doesn't record what it built forces a regeneration rather than a guess.
  */
 export function isLastSolidReusableFor(identity: string): boolean {

@@ -59,7 +59,7 @@ describe('useLabelPlateExport', () => {
     ]);
   });
 
-  // #2910: the designer's own plate download under-counted the same way the
+  // The designer's own plate download under-counted the same way the
   // whole-layout sheet did — one plate per compartment, two sockets per
   // compartment.
   it('derives a plate per edge when tabs sit on both edges', () => {

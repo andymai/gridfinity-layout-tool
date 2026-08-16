@@ -151,7 +151,7 @@ export interface ShareData {
   /**
    * Bin designs referenced by the layout's `bin.linkedDesignId`s. Stored
    * alongside rather than inside the layout so the client-side `Layout` type
-   * stays free of share-only fields. Absent on pre-#2894 shares.
+   * stays free of share-only fields. Absent on older shares.
    */
   linkedDesigns?: unknown;
   metadata: ShareMetadata;

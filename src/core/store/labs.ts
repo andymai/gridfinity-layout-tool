@@ -13,7 +13,7 @@ import { createDefaultLabsPreferences, getActiveFeatures, getFeature } from '@/c
 // `metrics.ts` import path. metrics.ts imports `useLabsStore` from this file;
 // going through the barrel would close the cycle, which under some chunking
 // strategies projects to a chunk-level static-import cycle that crashes app
-// boot. See issue #1466.
+// boot. See.
 import { trackEvent } from '@/shared/analytics/posthog/trackEvent';
 import type { Result, StorageError } from '@/core/result';
 import { isOk, OK } from '@/core/result';

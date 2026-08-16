@@ -1,7 +1,7 @@
 /**
  * Retention coverage for the aggregators.
  *
- * #3008 fixed a leak where the ingest path expired 4 of ~32 key shapes and the
+ * Fixed a leak where the ingest path expired 4 of ~32 key shapes and the
  * other 28 accumulated forever. The `EXPIRE` is now unconditional, so that
  * exact bug cannot recur — but a new aggregator writing a key the retention
  * policy does not recognise (a missing `ml:` prefix, or a collision with a

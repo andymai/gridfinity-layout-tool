@@ -266,7 +266,7 @@ export function useGeneration(): void {
       }
 
       try {
-        // Only the designer preview renders label plates (#2666 preview).
+        // Only the designer preview renders label plates (preview).
         const result = await bridge.generate(genParams, undefined, true);
 
         // A newer edit superseded this one; let its results win instead.
@@ -376,7 +376,7 @@ export function useGeneration(): void {
       // socket bin on a wide nozzle still finds its saved pre-draft.
       const nozzle = useSettingsStore.getState().settings.printSettings.nozzleSizeMm;
       // Same kernel the bridge below is about to be constructed with, so the
-      // pre-draft only matches a mesh THIS engine persisted (#3444).
+      // pre-draft only matches a mesh THIS engine persisted.
       const kernel = getActiveKernel();
       const initialKey = binMeshCacheKey(withSocketNozzle(initialState.params, nozzle), kernel);
       void loadPersistedBinMesh(initialKey).then((cached) => {

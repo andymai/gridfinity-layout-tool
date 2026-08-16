@@ -291,7 +291,7 @@ describe('useAutoSave', () => {
 
   // Leaving the designer unmounts the hook. Both the debounce and the
   // generation wait used to be aborted, so the last edits never reached
-  // IndexedDB while the in-memory store kept showing them (#2895).
+  // IndexedDB while the in-memory store kept showing them.
   describe('flush on unmount', () => {
     it('persists a pending edit when unmounted inside the debounce window', async () => {
       mockUpdateDesignParams();

@@ -1,5 +1,5 @@
 /**
- * Stacking order for a batch of imported cutout shapes (issue #3073).
+ * Stacking order for a batch of imported cutout shapes.
  *
  * `addCutout` puts each new shape on its own layer at the top of the stack, so
  * importing a set hands out `zIndex` in the order the shapes are added — which
@@ -11,7 +11,7 @@
  *
  * Adding largest first puts the big shapes at the bottom, which is both what a
  * user expects of nested outlines and what the tiebreaker did before z-order
- * became explicit in #3057.
+ * became explicit in.
  */
 
 /** The bounding-box area the renderer's stacking key uses (`width * depth`). */

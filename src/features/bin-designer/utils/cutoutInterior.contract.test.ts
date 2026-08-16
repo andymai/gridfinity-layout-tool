@@ -1,7 +1,7 @@
 /**
  * Contract test: the cutout editor's interior frame ({@link cutoutInterior})
  * must equal the generator pipeline's interior derivation, so cutouts land
- * where the editor shows them (#2462). This imports the real generator context
+ * where the editor shows them. This imports the real generator context
  * builder rather than re-deriving, so any future change to the pipeline's
  * overhang math fails here instead of silently drifting the editor.
  */

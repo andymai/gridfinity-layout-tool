@@ -3,7 +3,7 @@
  *
  * Every arrange action — align, distribute, centre-in-bin, auto-arrange —
  * treats a cutout group as one rigid body: members keep their relative offsets
- * and the whole unit translates together (#3468). Pointer drag, resize, rotate
+ * and the whole unit translates together. Pointer drag, resize, rotate
  * and keyboard nudge already worked this way; only the arrange math iterated
  * raw cutouts, so it scattered the members of a group across the bin.
  *

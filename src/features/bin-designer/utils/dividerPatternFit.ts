@@ -1,6 +1,6 @@
 /**
  * Predicts whether the wall pattern will actually reach the compartment
- * dividers (#2811), so the panel can say so instead of leaving the user with
+ * dividers, so the panel can say so instead of leaving the user with
  * a checkbox that appears to do nothing.
  *
  * Deliberately a conservative mirror of the worker's `planDividerPatterns`,

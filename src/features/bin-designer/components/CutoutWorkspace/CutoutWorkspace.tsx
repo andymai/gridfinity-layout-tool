@@ -104,7 +104,7 @@ export function CutoutWorkspace() {
   const { cutouts } = params;
   // Cutouts live on the interior floor, which grows outward with overhang — use
   // the overhang-expanded interior so cutouts can be placed/centered over that
-  // extra floor and land where the generator puts them (#2462). wallHeight is
+  // extra floor and land where the generator puts them. wallHeight is
   // unaffected (overhang is outward-only).
   const { wallHeight } = binDimensions(params);
   const { innerW: binWidth, innerD: binDepth } = cutoutInterior(params);
@@ -186,7 +186,7 @@ export function CutoutWorkspace() {
   );
 
   // Grow-to-fit companion to the clamp: a typed W/H past the board is kept
-  // rather than truncated (#3061), so the warning offers to move the board to
+  // rather than truncated, so the warning offers to move the board to
   // the cutouts as well as the cutouts to the board. `null` = growing can't
   // clear the warning, and the action is hidden rather than half-applied.
   const growTarget = useMemo(

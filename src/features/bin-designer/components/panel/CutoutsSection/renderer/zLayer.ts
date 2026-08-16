@@ -1,5 +1,5 @@
 /**
- * Stacking maths for cutout shapes in the 2D editor (issue #3053).
+ * Stacking maths for cutout shapes in the 2D editor.
  *
  * The editor draws with `depthTest: false`, which splits stacking into two
  * independent channels:

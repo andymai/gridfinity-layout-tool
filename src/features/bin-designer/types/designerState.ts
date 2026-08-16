@@ -144,13 +144,13 @@ export interface DesignerState {
 
   // Compartment actions
   /** Regenerate a uniform grid. Carries labels by position where they fit and
-   *  returns the count of labels that couldn't be preserved (#2337). */
+   *  returns the count of labels that couldn't be preserved. */
   setCompartmentGrid: (cols: number, rows: number) => number;
   mergeCells: (cellIndices: readonly number[]) => void;
   splitCompartment: (compartmentId: number) => void;
   resetCompartments: () => void;
   setCompartmentText: (compartmentId: number, text: string) => void;
-  /** Caption for a full-width label tab, keyed by the row hosting it (#2897). */
+  /** Caption for a full-width label tab, keyed by the row hosting it. */
   setLabelRowText: (row: number, text: string) => void;
   /** Drop every caption in one history entry, so one undo restores them all. */
   clearLabelText: (scope: 'compartment' | 'row') => void;

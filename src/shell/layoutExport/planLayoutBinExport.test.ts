@@ -35,7 +35,7 @@ function design(id: string, name: string, params: Partial<BinParams> = {}): Save
   };
 }
 
-/** A design carrying one visible, resolvable mesh imprint cutout (#3449). */
+/** A design carrying one visible, resolvable mesh imprint cutout. */
 function imprintParams(): Partial<BinParams> {
   return {
     cutouts: [
@@ -484,7 +484,7 @@ describe('planLayoutBinExport', () => {
         printBed: PRINT_BED,
       });
       // The imprint pocket is cut after tessellation, so `binExporter` throws
-      // on STEP — and one throw used to abort the whole ZIP (#3449). The plain
+      // on STEP — and one throw used to abort the whole ZIP. The plain
       // bin beside it must still come out.
       expect(plan.skipped.imprintDesignsStepSkipped).toBe(1);
       expect(plan.manifestBins.map((b) => b.designName)).toEqual(['Box']);

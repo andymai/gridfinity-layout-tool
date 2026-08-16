@@ -968,7 +968,7 @@ const en: Record<string, string> = {
   'stackSolver.outOfRange': 'Unit would fall outside {min}–{max}mm',
   'stackSolver.overlayPitch': 'stacks +{pitch}mm',
 
-  // Assembled height breakdown (#3037)
+  // Assembled height breakdown
   'assembledHeight.title': 'Assembled height',
   'assembledHeight.segmentLabel': '{label} {mm}mm',
   'assembledHeight.baseplate': 'Baseplate',
@@ -2421,7 +2421,7 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.transform.rotateField': 'Rotation',
   'binDesigner.cutouts.arrange.title': 'Arrange',
 
-  // Shape list (#3053)
+  // Shape list
   'binDesigner.shapeList.tabShapes': 'Shapes',
   'binDesigner.shapeList.tabProperties': 'Properties',
   'binDesigner.shapeList.empty': 'No shapes yet. Draw one to get started.',

@@ -209,7 +209,7 @@ describe('LinkedDesignSection', () => {
   });
 
   // Wiring guard: the menu role advertises arrow traversal, so the shared
-  // keyboard hook must stay attached (#3277).
+  // keyboard hook must stay attached.
   it('focuses the first item on open and traverses with the arrow keys', async () => {
     vi.mocked(useLinkedDesign).mockReturnValue({
       linkedDesign: {

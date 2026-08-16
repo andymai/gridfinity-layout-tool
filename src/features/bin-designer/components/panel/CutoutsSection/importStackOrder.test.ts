@@ -6,7 +6,7 @@ const spec = (id: string, width: number, depth: number) => ({ id, width, depth }
 describe('byDescendingArea', () => {
   it('puts the largest shape first so it lands at the bottom of the stack', () => {
     // An SVG that draws its enclosing outline last: document order would give
-    // that outline the top layer and bury everything it encloses (#3073).
+    // that outline the top layer and bury everything it encloses.
     const order = byDescendingArea([
       spec('small', 5, 5),
       spec('medium', 20, 10),

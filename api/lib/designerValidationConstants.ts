@@ -11,7 +11,7 @@ export const CONSTRAINTS = {
   MAX_DIMENSION: 16,
   MIN_HEIGHT: 2,
   // A spacer is floorless, so the usable-cavity rationale behind MIN_HEIGHT
-  // doesn't apply to it (#2915).
+  // doesn't apply to it.
   MIN_SPACER_HEIGHT: 1,
   // A spacer keeps its walls, so its body must still clear the socket it
   // subtracts. 1u only does that at the 7mm default height unit; below 6mm a 1u
@@ -32,7 +32,7 @@ export const CONSTRAINTS = {
   // src/features/bin-designer/constants/gridfinity.ts (client refuses past it).
   MAX_STASH_ENTRIES: 36,
   MIN_LABEL_TAB_DEPTH: 8,
-  // Raised from 20 → 50 in #1898 to enable tuck-under ledges for wire bins.
+  // Raised from 20 → 50 to enable tuck-under ledges for wire bins.
   MAX_LABEL_TAB_DEPTH: 50,
   MIN_LABEL_TAB_WIDTH: 10, // %
   MAX_LABEL_TAB_WIDTH: 100, // %
@@ -42,10 +42,10 @@ export const CONSTRAINTS = {
   // ceiling (140) = MAX_HEIGHT * 7mm (heightUnitMm).
   MIN_LABEL_TAB_HEIGHT: 9,
   MAX_LABEL_TAB_HEIGHT: 140,
-  // Inset moves the tab inward from its anchor wall (#1898).
+  // Inset moves the tab inward from its anchor wall.
   MIN_LABEL_TAB_INSET: 0,
   MAX_LABEL_TAB_INSET: 100,
-  // Swappable-label socket mode (#2666). Mirrors
+  // Swappable-label socket mode. Mirrors
   // `src/shared/constants/labelPlates.ts` — socket-mode tabs need extra
   // depth to host the 11.3mm pocket, and the fit offset rides on the total
   // pocket clearance so its bounds keep the clearance in [0.1, 0.8].
@@ -54,7 +54,7 @@ export const CONSTRAINTS = {
   LABEL_PLATE_FIT_OFFSET_MAX: 0.5,
   MAGNET_MIN_DEPTH: 2.0,
   MAGNET_MAX_DEPTH: 4.0,
-  // Exterior-wall collar (issue #2500) — mirrors client
+  // Exterior-wall collar — mirrors client
   // MIN/MAX_EXTRA_WALL_HEIGHT so a crafted share can't smuggle a runaway
   // wall height into the BREP worker.
   MIN_EXTRA_WALL_HEIGHT: 0,
@@ -81,7 +81,7 @@ export const CONSTRAINTS = {
 } as const;
 
 /**
- * Standard swappable-label plate widths in pitch units (#2666). Mirrors
+ * Standard swappable-label plate widths in pitch units. Mirrors
  * `LABEL_PLATE_WIDTHS_U` in `src/shared/constants/labelPlates.ts`. Shared
  * here so `designerCompartmentValidation.ts` can validate the
  * per-compartment `labelPlateWidths` overrides without a circular import.

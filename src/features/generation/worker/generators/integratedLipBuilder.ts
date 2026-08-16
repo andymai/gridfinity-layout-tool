@@ -1,5 +1,5 @@
 /**
- * Draft-only body + stacking lip as a SINGLE fuse-free solid (issue #2074).
+ * Draft-only body + stacking lip as a SINGLE fuse-free solid.
  *
  * The exact (occt) path builds a separate lip solid and `fuse`s it onto the
  * body; occt's General Fuse dissolves the coincident outer-wall faces cleanly.
@@ -48,7 +48,7 @@ function translateDrawing(d: Drawing, offX: number, offY: number): Drawing {
  * wall top the raw profile tapers to the knife edge.
  *
  * Draft-path only — the exported geometry stays on the fused occt path, so this
- * cannot reintroduce the flush wall↔lip seam (#1314). The caller restricts it
+ * cannot reintroduce the flush wall↔lip seam. The caller restricts it
  * to the common case (non-solid, rectangular or solid-polygon footprint, no
  * O-holes, no baked compartments) and falls back to the fuse otherwise.
  */

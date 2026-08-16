@@ -1,7 +1,7 @@
 // @vitest-environment node
 /**
  * Scenario tests for key connectors (`connectorStyle: 'dovetailKey'`, issue
- * #1610; dogbone profile since #2637).
+ *; dogbone profile).
  *
  * Key mode cuts a female puzzle groove on BOTH sides of every seam and ships a
  * separate hammered-in dogbone key (two mirrored puzzle lobes — the original

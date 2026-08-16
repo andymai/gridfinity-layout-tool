@@ -1,13 +1,13 @@
 // @vitest-environment node
 /**
- * Regression test for issue #1968 — gap in corners when column dividers are
+ * Regression test for — gap in corners when column dividers are
  * added to thin-walled boxes.
  *
  * Repro: a bin with a column divider and a wall thickness below
  * ~1.1mm shows a gap in all four outer corners once the divider is
  * generated. The corners are intact at the default 1.2mm wall.
  *
- * Root cause: the multi-cavity-cut shell path (#1753) subtracts
+ * Root cause: the multi-cavity-cut shell path subtracts
  * **sharp-cornered** rectangular cavities from a **rounded** outer box
  * (BOX_CORNER_RADIUS = 3.75mm). For a corner compartment, the cavity's
  * sharp corner sits at the bin's inner wall corner. When

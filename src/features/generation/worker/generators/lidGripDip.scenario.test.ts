@@ -1,5 +1,5 @@
 /**
- * Bin lip dip scenario tests (#3272).
+ * Bin lip dip scenario tests.
  *
  * The dip removes part of a load-bearing interface, so what matters is where
  * it stops: at the wall top, at the enabled walls, and nowhere near a design
@@ -47,7 +47,7 @@ function makeParams(grip: Partial<LidGripConfig>): BinParams {
       ...DEFAULT_BIN_PARAMS.lid,
       enabled: true,
       // Off, because this file probes a coarse box — the flare's thickness by
-      // the lip's height on one wall — and #3477's relief ring puts its top
+      // the lip's height on one wall — and's relief ring puts its top
       // edge inside that box while touching nothing the dip cares about. The
       // subject here is the lip, so the interior is held still.
       relieveInterior: false,

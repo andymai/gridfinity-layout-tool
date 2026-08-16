@@ -16,7 +16,7 @@ import type { OverhangConfig, WallTaperConfig } from '@/shared/types/bin';
 import type { WallTaperProfile } from '@/core/types';
 
 /**
- * Resolved outer-wall taper (#2933): per-side base inset already clamped to that
+ * Resolved outer-wall taper: per-side base inset already clamped to that
  * side's overhang; `bandHeight` still needs clamping to the wall height by the
  * box builder (the only caller that knows it).
  */

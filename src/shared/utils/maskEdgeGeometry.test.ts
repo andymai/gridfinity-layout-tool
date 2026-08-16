@@ -51,7 +51,7 @@ describe('maskEdgesMm', () => {
   });
 
   it('points a hole’s normals OUTWARD from the hole, into the material', () => {
-    // The inner-loop trap (#3482): a hole winds CW, so a rule keyed on "CCW
+    // The inner-loop trap: a hole winds CW, so a rule keyed on "CCW
     // means inward is left" pushes its band into the void. Every edge here
     // belongs to a loop whose material is still on its left.
     const mask = maskFrom(['####', '#..#', '#..#', '####']);

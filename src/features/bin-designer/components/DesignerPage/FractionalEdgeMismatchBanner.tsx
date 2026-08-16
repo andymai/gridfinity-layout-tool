@@ -1,6 +1,6 @@
 /**
  * Warns that the design's feet disagree with where its linked bin sits, offering
- * a one-click realign (#2518, #3467).
+ * a one-click realign.
  *
  * `blocksSeating` distinguishes the two: a wrong fractional edge puts the half
  * foot on the wrong side, while a wrong foot lattice leaves the bin perched on

@@ -203,7 +203,7 @@ export function createCutoutSlice(set: Set) {
    * "send to back" mean anything: the old code wrote absolute values against a
    * field that defaults to 0 for every cutout, so `back` set 0 on something
    * already at 0 and `backward` clamped to `max(-1, 0)`. Both silently did
-   * nothing until some other shape had been sent forward first (#3053).
+   * nothing until some other shape had been sent forward first.
    */
   const reorderCutouts = (ids: readonly string[], direction: ReorderDirection): void => {
     if (ids.length === 0) return;
@@ -460,7 +460,7 @@ export function createCutoutSlice(set: Set) {
     },
 
     /**
-     * Reparent for drag-and-drop (#3053).
+     * Reparent for drag-and-drop.
      *
      * `groupCutouts` cannot express this: it reuses whichever member happens to
      * be grouped FIRST IN ARRAY ORDER, so dragging a grouped shape onto another

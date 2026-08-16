@@ -113,7 +113,7 @@ function PieceMesh({
   }, [entry.label, selectedPieceLabel, setSelectedPieceLabel]);
 
   // Single source of truth for placement + footprint. Depth uses the Y pitch so
-  // pieces collapse without a residual per-row gap on non-square grids (#3089).
+  // pieces collapse without a residual per-row gap on non-square grids.
   const placement = computePiecePlacement(entry, {
     totalWidthMm,
     totalDepthMm,

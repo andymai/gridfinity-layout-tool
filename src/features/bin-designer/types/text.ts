@@ -115,7 +115,7 @@ export const WALL_TEXT_ALIGNS: readonly WallTextVerticalAlign[] = [
 ] as const;
 
 /**
- * Text on the design's exterior surfaces (issue #2695). One shared style for
+ * Text on the design's exterior surfaces. One shared style for
  * all surface text (merged over `BinParams.textDefaults`), with a string per
  * surface.
  *

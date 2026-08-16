@@ -20,7 +20,7 @@ export type FloorPatternType = (typeof FLOOR_PATTERN_TYPES)[number];
 
 /**
  * Floor pattern configuration — perforates the bin floor AND the base socket
- * beneath it, so the holes drain rather than leaving a blind pocket (#2816).
+ * beneath it, so the holes drain rather than leaving a blind pocket.
  *
  * Deliberately independent of {@link WallPatternConfig}: a drainer bin wants an
  * open floor behind solid walls, and the element size that reads well on a

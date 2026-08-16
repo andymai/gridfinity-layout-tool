@@ -1,8 +1,8 @@
 /**
- * The one grid↔perimeter frame for a custom drawer shape (#3157).
+ * The one grid↔perimeter frame for a custom drawer shape.
  *
  * The baseplate re-bases the resolved (padded) outline onto its socket
- * lattice (#3108/#3109/#3149). That re-base used to live only inside
+ * lattice. That re-base used to live only inside
  * `buildFullParams`, so the layout side gated placement against the raw
  * stored outline — for a shape whose bbox sits off the lattice the two
  * frames disagreed by up to half a cell, and the layout could allow a bin
@@ -10,16 +10,16 @@
  * same translation from this module, so a placeable layout cell and a kept
  * plate socket agree by construction.
  *
- * The stored outline is never mutated (#3149): the frame is a derived,
+ * The stored outline is never mutated: the frame is a derived,
  * consuming-side view. On top of the automatic lattice registration the
  * user may shift the grid within the perimeter (`drawer.gridShiftX/Y`,
- * #3108); the grid is rendered fixed on both sides, so a grid shift is
+ *); the grid is rendered fixed on both sides, so a grid shift is
  * applied as the equal-and-opposite outline translation.
  *
  * Because the grid is what stays put, that translation can carry the
  * perimeter OUTSIDE the grid extent — and the perimeter is the plate's
  * material, not a decoration inside it. So the frame also reports the
- * `overhang` every extent-bounded consumer must widen by (#3169).
+ * `overhang` every extent-bounded consumer must widen by.
  */
 
 import type {
@@ -92,7 +92,7 @@ export interface ResolvedOutlineFrame {
   readonly shiftY: number;
   /**
    * How far the translated outline reaches past the padded grid extent, per
-   * side (#3169).
+   * side.
    *
    * The grid is rendered fixed and the perimeter carries the frame
    * translation, so a shift toward an edge the shape already touches pushes
@@ -182,7 +182,7 @@ function resolvePaddedOutline(
  * Resolve the padded outline and the frame translation both sides consume.
  *
  * The registration is lattice-registered, never raw bbox centring: a
- * sub-cell shift breaks whole-cell registration and cost the #3149 reporter
+ * sub-cell shift breaks whole-cell registration and cost the reporter
  * an entire row and column of sockets. Zero-shift outlines (corner-cut /
  * radius / registered freeform, no manual shift) keep their exact vertices,
  * so square and full-extent plates stay cache-stable.
@@ -289,7 +289,7 @@ export function drawerFrameShift(
 
 /**
  * How far the framed shape reaches past the padded grid extent, per side in mm
- * (#3169) — the layout counterpart of the plate's slab widening.
+ * — the layout counterpart of the plate's slab widening.
  *
  * The grid renders fixed and the shape carries the frame translation, so a
  * shift toward an edge the shape already touches draws it outside the grid

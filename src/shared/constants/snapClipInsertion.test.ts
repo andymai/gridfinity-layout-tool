@@ -2,13 +2,13 @@ import { describe, it, expect } from 'vitest';
 import { SNAP_CLIP, SNAP_CLIP_CLEARANCE, effectiveClearance, snapClipLevels } from './connectors';
 
 /**
- * Insertion-feasibility budget for the snap clip (issue #2638).
+ * Insertion-feasibility budget for the snap clip.
  *
  * To pass the pocket throat, each barb must deflect inward by
  * `BARB_DEPTH − clearance`. The leg pivots at the bridge root; with the
  * seam-side retaining wall nested in the flex slot, rigid rotation is capped by
  * `slot gap / wall-contact depth`, and the cap is tightest when the wall top
- * first enters the slot near the leg tips. #2162 shipped a wall that filled the
+ * first enters the slot near the leg tips. shipped a wall that filled the
  * slot to `GAP_HALF − clearance` — 0.1mm of pinch room against 0.35mm needed —
  * so the clip physically could not be inserted (field report: "It simply
  * doesn't go in"). The seated-fit and pull-apart kernel tests never exercised

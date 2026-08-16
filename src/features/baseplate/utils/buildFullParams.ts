@@ -48,7 +48,7 @@ export function maxCornerRadiusMm(totalW: number, totalD: number): number {
  * regeneration trigger disagree about radius-cut plates once already.
  *
  * A custom drawer shape (and a large corner radius, which the resolver converts
- * to a radius-cut outline) applies under stacking too (#3113): the shaped tiles
+ * to a radius-cut outline) applies under stacking too: the shaped tiles
  * split and dedupe by fingerprint like any others. An unsplit rounded/shaped
  * plate stacks whole; a split one stacks its identical (square interior) tiles
  * while unique perimeter tiles print singly.
@@ -85,7 +85,7 @@ function outlineInputs(
  * made outlines from large radii, which showed the whole-cell control on plates
  * the trigger considered rectangular.
  *
- * Stacking-independent since #3113: both a drawer shape and a large-radius
+ * Stacking-independent: both a drawer shape and a large-radius
  * conversion now yield a perimeter whether or not stacking is on, so the panel,
  * trigger and STEP export all read the same answer without an override.
  */
@@ -119,7 +119,7 @@ export function hasEffectivePerimeter(
  * paddings it permits (see `resolveOutlineFrame` for the padding rules).
  *
  * A drawer shape is re-based onto the socket lattice — plus the user's manual
- * grid shift — via the shared frame (`outlineFrame.ts`, #3157): the shift
+ * grid shift — via the shared frame (`outlineFrame.ts`,): the shift
  * happens here, once, on the one derived outline the generator, the split
  * planner, and every piece all consume, and the layout side derives the same
  * translation from the same module, so the two frames are identical by
@@ -184,7 +184,7 @@ function resolveRadiusOutline(
   // No active drawer shape: corner radii beyond the plain rounding limit become
   // a radius-cut outline, so the generator's cell classification handles the
   // sockets the arc consumes (the plain path must never orphan a pocket, which is
-  // why it clamps at the limit). This runs under stacking too (#3113): the rounded
+  // why it clamps at the limit). This runs under stacking too: the rounded
   // perimeter survives instead of being flattened, so an unsplit rounded plate
   // stacks whole and a split one stacks its square interior tiles (the four rounded
   // corner tiles are each unique and print singly, like any perimeter tile).
@@ -229,7 +229,7 @@ function resolveRadiusOutline(
  * @param drawerOutline - The drawer's non-rectangular boundary, if any.
  * Applied only when the baseplate syncs with the layout (a custom-size plate
  * has no defined relationship to the drawer shape). Under stacking the shape is
- * kept too (#3113): the shaped tiles split, dedupe by fingerprint, and stack —
+ * kept too: the shaped tiles split, dedupe by fingerprint, and stack —
  * identical tiles into towers, unique perimeter tiles printed singly. Padding
  * composes with every shape — corner-cut shapes re-inscribe their cuts on the
  * padded rectangle, all others offset their edges outward (`padOutline`) — so
@@ -250,7 +250,7 @@ export function buildFullParams(
   magnetAnchor: MagnetAnchor = DEFAULT_MAGNET_ANCHOR,
   // Depth-axis pitch for a non-square grid; defaults to the X pitch (square).
   gridUnitMmY: number = gridUnitMm,
-  // Manual grid shift within the perimeter (drawer.gridShiftX/Y, #3108) —
+  // Manual grid shift within the perimeter (drawer.gridShiftX/Y,) —
   // folded into the frame re-base; only meaningful with a synced drawer shape.
   gridShiftX: number = 0,
   gridShiftY: number = 0
@@ -268,7 +268,7 @@ export function buildFullParams(
   // Stack printing flips every plate above the bottom upside down. Magnet
   // pockets become downward bridges when flipped (audited ~10% bridge area, vs
   // 0% for a magnet-free plate), so magnets are stripped. A custom perimeter is
-  // NOT stripped (#3113) — nor is a large corner radius, which the resolver turns
+  // NOT stripped — nor is a large corner radius, which the resolver turns
   // into a radius-cut outline: the shaped tiles split and dedupe by fingerprint,
   // so identical ones stack into towers (an unsplit rounded plate stacks whole)
   // while the unique perimeter tiles print singly. Only plain rounding within the
@@ -303,13 +303,13 @@ export function buildFullParams(
   const roundingOn = !stackingOn && outline === undefined;
   // Detach is mutually exclusive with any active outline (rails have no outline
   // awareness — margins would need arc-clipped rail geometry). It COMPOSES with
-  // stacking (#2641): rails never enter the flipped towers — they export as
+  // stacking: rails never enter the flipped towers — they export as
   // separate flat pieces — and zeroing edge-piece padding makes more tiles share
   // a fingerprint, so plates dedupe into taller identical stacks. Padding stays
   // at its stored values here — `emitMargins` and the camera/dimension overlay
   // need the true outer extent; the body mesh zeroes detached sides downstream.
   const detachMargins = stored.detachMargins === true && outline === undefined;
-  // Mount-down screws (#3425). Stacking flips alternate tiles, which would put a
+  // Mount-down screws. Stacking flips alternate tiles, which would put a
   // head recess on the underside, and per-tile hole differences break the
   // uniform-tile assumption stacking relies on: the same two reasons magnets and
   // the solid floor are stripped. The stored value returns on toggle-off.
@@ -342,7 +342,7 @@ export function buildFullParams(
   // plate never had — so the strip turns the seam off too.
   const detachMarginConnector =
     detachMargins && stored.detachMarginConnector === true && !stripConnectors;
-  // All-edge slots (#2866) only exist for the both-female styles with split
+  // All-edge slots only exist for the both-female styles with split
   // connectors on. Normalize an orphaned flag away (rather than letting it ride
   // along) so it can't fragment the mesh cache or the piece fingerprints; the
   // stored value returns as soon as a key/clip style is selected again.

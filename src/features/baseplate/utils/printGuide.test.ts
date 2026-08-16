@@ -249,7 +249,7 @@ describe('generatePrintGuide', () => {
     expect(guide).toContain('0.20mm total clearance');
   });
 
-  // issue #2024 — the connector fit offset must surface in the guide.
+  // — the connector fit offset must surface in the guide.
   it('omits a connector-fit line when the offset is zero', () => {
     const guide = buildGuide(makeParams({ width: 8, depth: 4, connectorNubs: true }));
     expect(guide).not.toContain('Connector fit:');

@@ -1,5 +1,5 @@
 /**
- * Wall-pattern placement for REMOVABLE divider pieces (#2811, follow-up to the
+ * Wall-pattern placement for REMOVABLE divider pieces (follow-up to the
  * integrated-divider work in `dividerPatterns.ts`).
  *
  * A slotted bin's dividers are separate printed parts, not part of the bin

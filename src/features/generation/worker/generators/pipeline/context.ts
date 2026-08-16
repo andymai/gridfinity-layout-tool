@@ -42,7 +42,7 @@ import { resolveTrayBottomInputs, trayBottomSkirtDepth } from '../trayBottomInpu
 
 /**
  * Depth of whatever sits under the body: a Gridfinity socket, a tray bin's lid
- * skirt (#3036), or nothing at all under a flat base.
+ * skirt, or nothing at all under a flat base.
  */
 function resolveBaseOffsetZ(params: BinParams): number {
   if (params.base.style === 'lid') return trayBottomSkirtDepth(resolveTrayBottomInputs(params));
@@ -56,7 +56,7 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   const heightUnit = params.heightUnitMm ?? HEIGHT_UNIT;
   const totalHeight = params.height * heightUnit;
   const isFlat = params.base.style === 'flat';
-  // Tray bin (#3036): lid mating geometry underneath, so like a flat base there
+  // Tray bin: lid mating geometry underneath, so like a flat base there
   // is no socket to shell, drill or halve. Still distinct from `isFlat`, which
   // ends in a plain face where this grows a skirt in `trayBottomStage`.
   const isTrayBottom = params.base.style === 'lid';
@@ -68,7 +68,7 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // decomposing every cell unnecessarily.
   const halfSockets = params.base.halfSockets && !socketless;
   // The foot layout, resolved once here so the shell, the floor pattern and the
-  // cache key cannot disagree about the feet (#3467).
+  // cache key cannot disagree about the feet.
   const socketCellPlan = resolveSocketCellPlan(
     halfSockets,
     params.base.footLatticeX,
@@ -87,7 +87,7 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // force that flag false for any style other than 'solid', and base-only keeps
   // style 'standard' so the user can switch back out of the mode.
   const solid = params.base.solid || isTile;
-  // Spacer (#2869): a floorless riser that lifts a bin so mismatched heights line
+  // Spacer: a floorless riser that lifts a bin so mismatched heights line
   // up. Feet and stacking lip are unchanged — only the floor is gone, so every
   // height/stacking rule the bin already follows carries over. Needs a socket to
   // shell through, so it's inert on a flat base; the constraint engine also keeps
@@ -116,7 +116,7 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // The base-only body. Shared with `assembledHeight` so the readout and the mesh
   // cannot disagree about how tall the plate is.
   const tileFloorHeight = isTile ? resolveTileFloorThickness(params.wallThickness) : 0;
-  // Exterior-wall collar (issue #2500): raises the outer box + lip above the
+  // Exterior-wall collar: raises the outer box + lip above the
   // nominal wall height without touching the interior. Kept separate from
   // `wallHeight` so every feature stage anchors to the original top plane.
   // Floored at >= 0 and guarded against non-finite values here so a stray NaN
@@ -183,7 +183,7 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // the lip `LIP_OVERLAP` below its top; `translateStage` then lifts the whole
   // body by `baseOffsetZ`. Every consumer that anchors to the rim reads these
   // rather than restating that chain — the restatements landed a lid's magnet
-  // posts 0.7mm proud on a socketed bin and 4.3mm short on a flat one (#3431).
+  // posts 0.7mm proud on a socketed bin and 4.3mm short on a flat one.
   const wallTopZ = baseOffsetZ + wallHeight + tileFloorHeight + collarHeight;
   const lipTopZ = wallTopZ + (hasLip ? LIP_HEIGHT - LIP_OVERLAP : 0);
 
@@ -192,7 +192,7 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // mask), not solid mode, not slotted, the compartments are rectangles
   // (their cells fill their bounding box), and every per-compartment cavity
   // has viable post-inset dimensions. This avoids the fuse T-junction at
-  // the cavity floor that BambuStudio flagged as non-manifold (#1753).
+  // the cavity floor that BambuStudio flagged as non-manifold.
   //
   // Polygon-mask bins (L/T/U footprints) do not take the additive-fuse path
   // either — they get NO dividers at all. `featuresStage` runs only builders
@@ -269,7 +269,7 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
       halfSockets,
       // A non-default foot lattice builds different feet from otherwise
       // identical params. Appended rather than folded into `halfSockets` so a
-      // pre-#3467 key stays byte-identical.
+      // older key stays byte-identical.
       ...(socketCellPlanKey(socketCellPlan) ? [socketCellPlanKey(socketCellPlan)] : []),
       withMagnet,
       withScrew,
@@ -308,7 +308,7 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
         ? [`ctop${quantize(params.cutoutConfig.topOffset)}`]
         : []),
       // Shell-baked dividers get clipped where a spanning label shelf crosses
-      // them (#2897), so that clip is part of the shell. Appended only when it
+      // them, so that clip is part of the shell. Appended only when it
       // applies, keeping every other bin's v7 key byte-identical.
       ...(spanningClipKey ? [`spanclip${spanningClipKey}`] : [])
     )

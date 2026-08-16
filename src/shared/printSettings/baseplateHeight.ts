@@ -20,7 +20,7 @@ export interface BaseplateHeightParams {
   readonly solidFloor?: boolean;
   readonly solidFloorThickness?: number;
   /**
-   * Pad a floor-sited mount-down screw needs to recess its head (#3425), already
+   * Pad a floor-sited mount-down screw needs to recess its head, already
    * resolved at plate level. A plain number here on purpose: deriving it would
    * need the piece's bands and the plan, and every piece of a plate must agree
    * on one slab height or the assembly is stepped.

@@ -518,7 +518,7 @@ describe('migrateBaseplateParams', () => {
     expect(result.connectorNubs).toBeUndefined();
   });
 
-  // issue #2024 — the user's connector fit offset must survive save/load.
+  // — the user's connector fit offset must survive save/load.
   it('preserves connectorFitOffset across a save/load round-trip', () => {
     const base = {
       magnetHoles: false,

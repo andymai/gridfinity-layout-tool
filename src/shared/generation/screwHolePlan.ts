@@ -1,5 +1,5 @@
 /**
- * Mount-down screw hole planning (#3425): pure geometry, no BREP kernel.
+ * Mount-down screw hole planning: pure geometry, no BREP kernel.
  *
  * Owns the ONE decision every layer has to agree on: for each screw, does it sit
  * in the solid drawer-fit margin, or does it fall back to the pocket floor?

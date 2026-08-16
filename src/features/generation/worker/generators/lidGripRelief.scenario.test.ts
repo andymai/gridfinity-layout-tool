@@ -1,5 +1,5 @@
 /**
- * Grip-relief geometry scenario tests (#3272).
+ * Grip-relief geometry scenario tests.
  *
  * Runs the real brepjs/OpenCascade build and probes INSIDE the volume. A
  * relief that landed on the wrong wall, cut nothing, or broke through into
@@ -200,7 +200,7 @@ describe('grip relief geometry', () => {
 });
 
 /**
- * The user-set relief height (#3272 follow-up).
+ * The user-set relief height (follow-up).
  *
  * The reporter's complaint was not the pocket but what was left above it: the
  * lid exports upside down, so that skin's layer lines run across the pocket and

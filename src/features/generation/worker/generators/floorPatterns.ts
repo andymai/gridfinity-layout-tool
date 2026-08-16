@@ -1,5 +1,5 @@
 /**
- * Bin floor pattern placement (#2816) — drainage / ventilation perforation.
+ * Bin floor pattern placement — drainage / ventilation perforation.
  *
  * Pure data module; `floorPatternBuilder` turns this into geometry.
  *

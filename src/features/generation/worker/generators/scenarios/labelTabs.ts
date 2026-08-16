@@ -34,7 +34,7 @@ export const labelTabs: ScenarioCase[] = [
     },
   }),
   // Tall bin (6u \u2192 wallHeight \u2248 37mm) so the explicit `height: 20mm` lands
-  // well below the wall top, exercising the dropped-shelf path from #1898.
+  // well below the wall top, exercising the dropped-shelf path from.
   defineScenario('label tabs', '2\u00d72\u00d76 label dropped (height = 20mm)', {
     params: {
       height: 6,
@@ -47,7 +47,7 @@ export const labelTabs: ScenarioCase[] = [
       },
     },
   }),
-  // #1898: front-anchored tab on a 2\u00d72 bin. Exercises the mirrored
+  // Front-anchored tab on a 2\u00d72 bin. Exercises the mirrored
   // grouping, shelf, gusset, and text-center logic for the front edge.
   defineScenario('label tabs', '2\u00d72 label front edge', {
     params: {
@@ -60,7 +60,7 @@ export const labelTabs: ScenarioCase[] = [
       },
     },
   }),
-  // #1898: both edges on a 2\u00d72 bin. Each compartment gets a back tab AND
+  // Both edges on a 2\u00d72 bin. Each compartment gets a back tab AND
   // a front tab. Compartment depth here is comfortably > 2\u00b7tabDepth, so no
   // collision drop fires.
   defineScenario('label tabs', '2\u00d72\u00d74 label both edges', {
@@ -75,7 +75,7 @@ export const labelTabs: ScenarioCase[] = [
       },
     },
   }),
-  // #1898: 'both' + non-zero inset. Verifies that both tabs slide inward
+  // 'both' + non-zero inset. Verifies that both tabs slide inward
   // symmetrically by `inset` mm from their respective anchor walls.
   defineScenario('label tabs', '2\u00d72\u00d74 label both + inset 5mm', {
     params: {
@@ -90,7 +90,7 @@ export const labelTabs: ScenarioCase[] = [
       },
     },
   }),
-  // #1898: collision drop. With innerD \u2248 39mm and tabDepth = 20mm,
+  // Collision drop. With innerD \u2248 39mm and tabDepth = 20mm,
   // 2\u00b720 + 2\u00b70 = 40 > 39 so the front tab is silently dropped per the
   // collision guard. Only the back tab should appear in the snapshot.
   defineScenario('label tabs', '1\u00d71 label both collision drops front', {
@@ -107,7 +107,7 @@ export const labelTabs: ScenarioCase[] = [
       },
     },
   }),
-  // #2971: raised lip on the free edge. The shelf auto-drops by the lip height
+  // Raised lip on the free edge. The shelf auto-drops by the lip height
   // so the rim tops out at the interior ceiling.
   defineScenario('label tabs', '2\u00d72 label lip bracket', {
     params: {
@@ -121,7 +121,7 @@ export const labelTabs: ScenarioCase[] = [
       },
     },
   }),
-  // #2971: lip on a solid support, taller rim \u2014 exercises the shelf-drop + fuse
+  // Lip on a solid support, taller rim \u2014 exercises the shelf-drop + fuse
   // against a continuous prism rather than discrete gussets.
   defineScenario('label tabs', '2\u00d72 label lip solid 2mm', {
     params: {
@@ -135,7 +135,7 @@ export const labelTabs: ScenarioCase[] = [
       },
     },
   }),
-  // #2971: lip on both edges \u2014 each tab's own free edge gets a rim.
+  // Lip on both edges \u2014 each tab's own free edge gets a rim.
   defineScenario('label tabs', '2\u00d72\u00d74 label lip both edges', {
     params: {
       height: 4,

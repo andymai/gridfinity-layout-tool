@@ -75,7 +75,7 @@ function pocketSection(
  *
  * `belowSocketMm` is the solid depth under the socket the cut must still clear.
  * It was implicitly zero while through-cutting only ever happened on a floorless
- * plate, but a mount-down screw pad (#3425) makes the slab taller while other
+ * plate, but a mount-down screw pad makes the slab taller while other
  * cells stay through-cut, and a fixed 1mm extension would leave those cells a
  * floor they were never meant to have.
  */

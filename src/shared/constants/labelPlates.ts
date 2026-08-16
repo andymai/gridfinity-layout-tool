@@ -1,5 +1,5 @@
 /**
- * Swappable label plate + socket geometry (issue #2666).
+ * Swappable label plate + socket geometry.
  *
  * Dimensions are pinned against the Cullenect v2.0.0 parametric source
  * (CullenJWebb/Cullenect-Labels `OpenSCAD/Cullenect.scad`), the de-facto
@@ -189,7 +189,7 @@ export const LABEL_SOCKET_RIB_HEIGHT_MM = 0.4;
 export const LABEL_SOCKET_RIB_START_MM = 0.2;
 
 /**
- * Slide-channel socket style (#2666 follow-up): instead of click-past ribs,
+ * Slide-channel socket style (follow-up): instead of click-past ribs,
  * retaining lips overhang the pocket's side and anchor walls, the mouth
  * opens through the tab's compartment-facing edge, and a floor detent at
  * the mouth parks the plate. Retention grips the plate's plain edges, so
@@ -260,7 +260,7 @@ export const LABEL_SOCKET_STACK_RELIEF_MM =
 
 /**
  * Optional raised rim on a label tab's free edge that stops a loose paper /
- * vinyl label sliding off (#2971). Height (mm) is user-tunable; the rim's
+ * vinyl label sliding off. Height (mm) is user-tunable; the rim's
  * thickness follows the shelf wall. Only offered on text-mode tabs — socket
  * tabs already retain their plates, and the slide-channel socket's insertion
  * mouth is on the same free edge the lip would wall off.
@@ -281,7 +281,7 @@ export interface LabelShelfConfig {
 }
 
 /**
- * How far the label lip (#2971) reserves the shelf top below the ceiling, so
+ * How far the label lip reserves the shelf top below the ceiling, so
  * the rim tops out at the interior ceiling rather than standing proud and
  * breaking stackability. Zero unless the lip is enabled on a text-mode tab.
  * Clamped to the supported range so a stale/out-of-bounds stored value can't
@@ -306,7 +306,7 @@ export function labelShelfCeilingMm(wallHeightMm: number, stackingLip: boolean):
 
 /** Default shelf-top Z when `label.height` is unset: the ceiling, sunk by the
  * larger of the click-in-socket stacking relief (lipped bins) and the label
- * lip reservation (#2971). The two are mutually exclusive in practice — socket
+ * lip reservation. The two are mutually exclusive in practice — socket
  * relief is socket-only, the lip is text-only — so `max` just picks whichever
  * applies. */
 export function defaultLabelShelfTopMm(
@@ -314,7 +314,7 @@ export function defaultLabelShelfTopMm(
   stackingLip: boolean,
   label: LabelShelfConfig,
   /**
-   * Lid keep-out depth below the ceiling (#3477). A shelf left in the envelope
+   * Lid keep-out depth below the ceiling. A shelf left in the envelope
    * would have the wall-side band that welds it cut away, so it sinks by this
    * instead and keeps its full width. Zero on a design that predates the
    * relief, or one without a lid.

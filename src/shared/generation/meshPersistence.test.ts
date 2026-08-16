@@ -67,7 +67,7 @@ describe('binMeshCacheKey', () => {
     expect(binMeshCacheKey(DEFAULT_BIN_PARAMS, 'occt-wasm')).toMatch(/^v\d/);
   });
 
-  // #3444: the two engines wrote unchanged params into one namespace, so
+  // The two engines wrote unchanged params into one namespace, so
   // switching kernels in Labs served the previous engine's mesh.
   it('gives each kernel its own namespace for identical params', () => {
     const occt = binMeshCacheKey(DEFAULT_BIN_PARAMS, 'occt-wasm');

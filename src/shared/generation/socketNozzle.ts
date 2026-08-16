@@ -1,5 +1,5 @@
 /**
- * The bin GENERATE path's settings seam for nozzle-aware label sockets (#2690).
+ * The bin GENERATE path's settings seam for nozzle-aware label sockets.
  *
  * A label socket's pocket clearance grows with a wider nozzle
  * (`effectiveLabelSocketClearance`) so plates still click in when printed on a
@@ -14,7 +14,7 @@
  * mesh cache key (a nozzle change is a cache miss → correct regen) without ever
  * entering persistence. Returns the input UNCHANGED — same reference — for
  * non-socket designs and at/below the 0.4mm baseline, so those hashes stay
- * byte-identical to the pre-#2690 keys and no cached mesh is needlessly evicted.
+ * byte-identical to the older keys and no cached mesh is needlessly evicted.
  */
 
 import type { BinParams } from '@/shared/types/bin';

@@ -6,7 +6,7 @@
  * an edge can both emit it as the same directed edge (u→v), instead of one
  * emitting u→v and the other v→u. Slicers (Bambu Studio, Cura) interpret this
  * as "non-manifold edges" and either reject the file or repair it as solid
- * infill. See issue #1490 for the user-visible symptom.
+ * infill. See for the user-visible symptom.
  *
  * The standard topological cleanup is a BFS:
  *   1. Pick a seed triangle whose orientation is known correct (here: the
@@ -29,7 +29,7 @@
  * Currently only wired into baseplate STL export; bins/dividers use the same
  * brepjs meshing path and can adopt this if the same symptom surfaces there.
  *
- * **Status (issue #1494):** as of brepjs 15.6.1 + OCCT kernel, this repair is
+ * **Status:** as of brepjs 15.6.1 + OCCT kernel, this repair is
  * a no-op for every known piece config — the corner-3/corner-4/edge-x-1
  * scenario tests pass with the repair disabled, and the
  * `__kernel-tests__/diagnoseBaseplateWinding` step-walker shows

@@ -19,7 +19,7 @@
  *      `--update=true <path>` is the other safe form.
  *   2. Routing through `pnpm run <script> -- ...` puts a literal `--` in the
  *      vitest argv; everything after it is read as a positional filter and the
- *      `-u` is ignored outright (b2ee64e5, #1329, same trap with --shard).
+ * `-u` is ignored outright (b2ee64e5,, same trap with --shard).
  */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './wasmInit';
@@ -39,7 +39,7 @@ function runScenario(scenario: ScenarioCase, timings: TimingEntry[]): void {
     if (scenario.assert === 'snapshot') {
       // Before the snapshot, never after: a kernel that returned nothing must
       // report itself as a kernel failure, not as a triangle-count diff against
-      // the baseline (#3184). This also keeps a zero out of the baseline under
+      // the baseline. This also keeps a zero out of the baseline under
       // `-u`, which would bake the failure in.
       assertKernelReturnedGeometry(result, scenario.name);
       // Triangle counts are kernel-specific (each kernel tessellates to its
