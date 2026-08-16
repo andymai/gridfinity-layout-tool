@@ -1,0 +1,20 @@
+src/features/generation/worker/generators/wallCutoutBuilder.test.ts
+  s_1c95a8a5d722c9::t_54fa473af6c8e7 14,290,519
+  s_1c95a8a5d722c9::t_fd15cb49afbbd6 285-287
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "63a0fdaad014925aac7e961558b561eb4cd6c339",
+  "prompts": {},
+  "sessions": {
+    "s_1c95a8a5d722c9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e7c161f0-f1ce-4f0c-bf40-339628af84a3",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
