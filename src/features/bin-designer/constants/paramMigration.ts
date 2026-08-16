@@ -150,7 +150,10 @@ export function migrateWalls(
   // Bound whatever radii are present without introducing the keys: an absent
   // field already means "defer", so backfilling it would rewrite every saved
   // design (and every example's dedupe fingerprint) to say what it already said.
-  const cornerFields = (source: Record<string, unknown>): Partial<WallCutout> => {
+  const cornerFields = (source: {
+    readonly cornerRadiusTop?: unknown;
+    readonly cornerRadiusBottom?: unknown;
+  }): Partial<WallCutout> => {
     const out: { cornerRadiusTop?: number | null; cornerRadiusBottom?: number | null } = {};
     if ('cornerRadiusTop' in source) out.cornerRadiusTop = cornerRadius(source.cornerRadiusTop);
     if ('cornerRadiusBottom' in source) {
@@ -161,7 +164,7 @@ export function migrateWalls(
 
   const withCorners = (cutout: WallCutout): WallCutout => ({ ...cutout, ...cornerFields(cutout) });
 
-  const globalCorners = cornerFields(raw as Record<string, unknown>);
+  const globalCorners = cornerFields(raw);
 
   // Detect legacy format: values are numbers instead of WallCutout objects
   if (
