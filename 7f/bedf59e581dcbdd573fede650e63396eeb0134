@@ -1,0 +1,23 @@
+src/features/bin-designer/utils/printEstimates.test.ts
+  s_3e7498a185949b::t_e29f4a9957b81c 105-108,110-111,302-305,671-682
+src/shared/printSettings/standardBinVolume.test.ts
+  s_3e7498a185949b::t_e750beb19c760c 15,17-24,27-36,149,151-153
+src/shared/printSettings/standardBinVolume.ts
+  s_3e7498a185949b::t_29aa853b79cd54 49,52-60,62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "7fbedf59e581dcbdd573fede650e63396eeb0134",
+  "prompts": {},
+  "sessions": {
+    "s_3e7498a185949b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4a89295d-d6e0-4e9e-b9f0-5a4785221515",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
