@@ -37,10 +37,10 @@ export function useEngagementNudges(): void {
   // poll (it barely converted here) — the Ko-fi ask now lives in the header and
   // the export dialog's post-export success view.
   //
-  // The timer additionally waits for a printable file this session: at 1,376
-  // impressions to 11 clicks, the ask was arriving mid-task, before the user had
-  // got anything out of the tool. Asking after they have is the same prompt at a
-  // moment it can be answered honestly.
+  // The timer additionally waits for a printable file this session. On the plain
+  // timer the ask arrived mid-task, before the user had got anything out of the
+  // tool, and was almost never acted on. Asking after they have is the same
+  // prompt at a moment it can be answered honestly.
   useEffect(() => {
     function checkAndShowNudge(): void {
       const nudgeOrder: NudgeType[] = ['feedback_rating'];

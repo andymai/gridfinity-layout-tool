@@ -251,7 +251,7 @@ describe('Header', () => {
     });
 
     // Gating the control put its only explanation in a tooltip, which touch
-    // devices never render — the dialog was opened zero times in 180 days.
+    // devices never render, leaving the export dialog effectively unreachable.
     // LayoutExportDialog carries the empty-state copy, so the button must stay
     // clickable for a user to ever reach it.
     it('stays enabled when no bins are linked', () => {
