@@ -110,6 +110,14 @@ src/features/bin-designer/utils/lidCompatibility.ts
   "base_commit_sha": "dea60e8542be64b6b79c27d218d32f80e4d6751c",
   "prompts": {},
   "sessions": {
+    "s_59b071634fd176": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2ddbe0fa-ee8c-4d8a-a177-e64cd2fb43a5",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
     "s_9c74ac936d7a46": {
       "agent_id": {
         "tool": "claude",
