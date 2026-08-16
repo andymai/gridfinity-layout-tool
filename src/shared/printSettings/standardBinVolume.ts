@@ -46,12 +46,20 @@ const WALL_EFF = 1.165;
 
 /**
  * Floor + base socket feet material per unit of cell footprint area (mm³/mm²),
- * calibrated to OCCT geometry. At the standard 42mm pitch this is ≈2202mm³ per
+ * calibrated to OCCT geometry. At the standard 42mm pitch this is ≈9488mm³ per
  * 42×42 cell; expressing it per unit area lets it scale to other grid pitches
  * (e.g. half-pitch sockets) without hardcoding the reference pitch.
- *   2202 mm³ / (42mm)² ≈ 1.2483 mm³/mm²
+ *   9488 mm³ / (42mm)² ≈ 5.3785 mm³/mm²
+ *
+ * The previous 1.2483 was fitted to a ground-truth set that did not contain the
+ * base socket — a solid 1u foot is ~7300mm³ on its own, more than the entire
+ * measured volume it was fitted against. That left every socketed bin under-
+ * reported by 1.7x (a tall 1x1) to 3.0x (a 3x3), the error growing with cell
+ * count exactly as a missing per-cell term does. Refitted by least squares over
+ * the ten bins in `OCCT_GROUND_TRUTH`, holding `WALL_EFF` and `LIP_AREA`: worst
+ * residual 1.1%, and 9 of 10 within 0.5%.
  */
-const BASE_VOL_PER_CELL_AREA = 1.2483;
+const BASE_VOL_PER_CELL_AREA = 5.3785;
 
 /** Stacking-lip cross-sectional area (mm²) per unit of outer perimeter. */
 const LIP_AREA = 0.223;
