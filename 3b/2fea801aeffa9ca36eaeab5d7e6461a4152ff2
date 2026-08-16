@@ -1,0 +1,23 @@
+src/features/bin-designer/components/panel/BaseSection/BaseSection.tsx
+  s_3e7498a185949b::t_f74145ba2c206b 14,25
+  s_3e7498a185949b::t_015343011c0737 222-233,249
+src/features/bin-designer/components/panel/BaseSection/BaseSection.test.tsx
+  s_3e7498a185949b::t_f8c631a4ff2c0c 26-63
+  s_3e7498a185949b::t_42887ce81b4544 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "3b2fea801aeffa9ca36eaeab5d7e6461a4152ff2",
+  "prompts": {},
+  "sessions": {
+    "s_3e7498a185949b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4a89295d-d6e0-4e9e-b9f0-5a4785221515",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
