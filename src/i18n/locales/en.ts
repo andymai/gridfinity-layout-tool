@@ -2379,11 +2379,14 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.repeat.remove': 'Remove repeat',
   'binDesigner.cutouts.repeat.presetLabel': 'Start with',
   'binDesigner.cutouts.repeat.presetRing': 'Ring of {count}',
+  'binDesigner.cutouts.repeat.presetNoFit': 'Not enough room from this position',
   'binDesigner.cutouts.repeat.blockedGrouped': 'Repeat works on ungrouped shapes.',
   'binDesigner.cutouts.repeat.blockedPath': 'Repeat is not available for pen paths.',
   'binDesigner.cutouts.repeat.merge': 'Make repeat',
   'binDesigner.cutouts.repeat.suggestGrid':
     'These {count} shapes can become one repeat: {cols} × {rows} at {pitchX} × {pitchY} mm.',
+  'binDesigner.cutouts.repeat.suggestLine':
+    'These {count} shapes can become one repeat, spaced {pitch} mm apart.',
   'binDesigner.cutouts.repeat.suggestRadial':
     'These {count} shapes can become one repeat: a ring at {radius} mm.',
   'binDesigner.cutouts.repeat.suggestDrift': 'Positions even out by up to {drift} mm.',

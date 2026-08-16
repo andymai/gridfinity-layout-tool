@@ -111,7 +111,9 @@ export function CutoutArrayControls({
                     })
                   : `${preset.cols} × ${preset.rows}`
               }
-              disabled={disabled || !presetFits(preset, cutout, binWidth, binDepth)}
+              fits={presetFits(preset, cutout, binWidth, binDepth)}
+              noFitReason={t('binDesigner.cutouts.repeat.presetNoFit')}
+              disabled={disabled}
               onPick={() => create(buildPresetConfig(preset, cutout), 'preset')}
             />
           ))}
@@ -285,22 +287,32 @@ export function CutoutArrayControls({
 interface PresetChipProps {
   readonly preset: RepeatPreset;
   readonly label: string;
+  /** False when the bin has no room for this layout from the cutout's position. */
+  readonly fits: boolean;
+  readonly noFitReason: string;
   readonly disabled: boolean;
   readonly onPick: () => void;
 }
 
-/** One starting layout. Disabled when the bin has no room for it. */
-function PresetChip({ preset, label, disabled, onPick }: PresetChipProps) {
+/**
+ * One starting layout. A layout the bin cannot hold is disabled and says why:
+ * the array grows in +X/+Y from the cutout, so a shape near the far edge has
+ * little room even when the rest of the board is empty, and a silently greyed
+ * chip reads as a broken control rather than a rule.
+ */
+function PresetChip({ preset, label, fits, noFitReason, disabled, onPick }: PresetChipProps) {
+  const off = disabled || !fits;
   return (
     <Button
       type="button"
       variant="ghost"
       data-testid={`repeat-preset-${preset.id}`}
-      disabled={disabled}
+      disabled={off}
       onClick={onPick}
+      title={!fits ? noFitReason : undefined}
       className={cn(
         'rounded border px-1.5 py-0.5 text-[11px] tabular-nums transition-colors',
-        disabled
+        off
           ? 'cursor-not-allowed border-stroke-subtle bg-surface-elevated text-content-tertiary opacity-50'
           : 'border-stroke-subtle bg-surface-elevated text-content-secondary hover:border-accent/50 hover:text-content'
       )}

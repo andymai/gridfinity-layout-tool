@@ -139,19 +139,27 @@ export function useRepeatSuggestion(
   if (!detection) return null;
 
   const { config } = detection;
+  const singleAxis = config.mode !== 'radial' && (config.rows === 1 || config.cols === 1);
   const layout =
     config.mode === 'radial'
       ? t('binDesigner.cutouts.repeat.suggestRadial', {
           count: selected.length,
           radius: config.radius,
         })
-      : t('binDesigner.cutouts.repeat.suggestGrid', {
-          count: selected.length,
-          cols: config.cols,
-          rows: config.rows,
-          pitchX: config.pitchX,
-          pitchY: config.pitchY,
-        });
+      : singleAxis
+        ? // A single row or column is spaced on one axis; naming the other
+          // pitch would state a number that does not affect the result.
+          t('binDesigner.cutouts.repeat.suggestLine', {
+            count: selected.length,
+            pitch: config.rows === 1 ? config.pitchX : config.pitchY,
+          })
+        : t('binDesigner.cutouts.repeat.suggestGrid', {
+            count: selected.length,
+            cols: config.cols,
+            rows: config.rows,
+            pitchX: config.pitchX,
+            pitchY: config.pitchY,
+          });
 
   // The drift and colour notes are appended only when they are true, so the
   // sentence never claims a change the merge will not make.

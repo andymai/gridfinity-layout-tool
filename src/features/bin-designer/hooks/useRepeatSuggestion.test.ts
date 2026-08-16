@@ -110,6 +110,26 @@ describe('useRepeatSuggestion', () => {
     expect(render(row('y')).result.current).not.toBeNull();
   });
 
+  it('names one spacing for a single row, not a pitch that does nothing', () => {
+    // rows === 1, so pitchY has no effect on the result and stating it would
+    // put a number in front of the user that the merge never uses.
+    const message = render(row('line')).result.current?.message;
+
+    expect(message).toContain('suggestLine');
+    expect(message).not.toContain('suggestGrid');
+  });
+
+  it('names both pitches for a real grid', () => {
+    const grid = [
+      cutout({ id: 'g1', x: 10, y: 10 }),
+      cutout({ id: 'g2', x: 30, y: 10 }),
+      cutout({ id: 'g3', x: 10, y: 30 }),
+      cutout({ id: 'g4', x: 30, y: 30 }),
+    ];
+
+    expect(render(grid).result.current?.message).toContain('suggestGrid');
+  });
+
   it('mentions the drift only when something actually moves', () => {
     const exact = render(row('drift0')).result.current;
     expect(exact?.message).not.toContain('suggestDrift');
