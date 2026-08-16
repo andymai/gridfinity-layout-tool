@@ -34,16 +34,17 @@
  * roughly linearly past 20u (~21s per 10u) rather than exploding, so the worst
  * case at 50u still sits at half the budget it is granted.
  *
- * Beyond that budget the pattern cut does not merely run long, it exhausts the
- * WASM heap (`RuntimeError: memory access out of bounds`). That region is
- * reached by FOOTPRINT at the old 20u cap, so it is not something height
- * opened up. Measured separately, all honeycomb:
+ * Far beyond that budget the pattern cut stops finishing at all: the kernel
+ * traps with `RuntimeError: memory access out of bounds`. What provokes the
+ * trap was not investigated, only when it happens. That region is reached by
+ * FOOTPRINT at a MAX_HEIGHT of 20, so it is not something height opened up.
+ * Measured separately, all honeycomb:
  *
- *   6x6x20    44.3s   fits          10x10x20   116.2s   fits
- *   16x16x20  OOM at 294.7s         6x6x50     OOM at 242.6s
+ *   6x6x20    44.3s   fits            10x10x20   116.2s   fits
+ *   16x16x20  traps at 294.7s         6x6x50     traps at 242.6s
  *
- * 16x16x20 was fully legal before the cap moved. Both OOMs land well past the
- * 180s preview budget, so the timeout fires first and the worker is reset,
+ * 16x16x20 was fully legal at a MAX_HEIGHT of 20. Both traps land well past
+ * the 180s preview budget, so the timeout fires first and the worker is reset,
  * which is the path such bins already take.
  *
  * Run in isolation via the profile config (excluded from CI):
