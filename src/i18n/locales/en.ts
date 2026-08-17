@@ -2452,6 +2452,33 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.gap': 'Gap',
   'binDesigner.cutouts.staggered': 'Stagger rows',
   'binDesigner.cutouts.clearAll': 'Clear all',
+  'binDesigner.cutouts.fitTest.button': 'Print fit test',
+  'binDesigner.cutouts.fitTest.dialogTitle': 'Cutout fit test',
+  'binDesigner.cutouts.fitTest.dialogDescription':
+    'A thin slice of this bin’s top, with every cutout at its real size, position and spacing. Print it, try your parts, and adjust Clearance until they drop in.',
+  'binDesigner.cutouts.fitTest.thickness': 'Card thickness',
+  'binDesigner.cutouts.fitTest.thicknessInfo':
+    'How deep the slice is taken from the top of the bin.',
+  'binDesigner.cutouts.fitTest.thicknessHint':
+    'Cutouts shallower than the card keep their floor; deeper ones go all the way through, so the part pushes back out.',
+  'binDesigner.cutouts.fitTest.estimatesTitle': 'What it costs',
+  'binDesigner.cutouts.fitTest.estimateCard': 'Fit test',
+  'binDesigner.cutouts.fitTest.estimateBin': 'Whole bin',
+  'binDesigner.cutouts.fitTest.tipsTitle': 'How to use',
+  'binDesigner.cutouts.fitTest.tip1':
+    'Print it flat, the way it comes out. The openings then print exactly as they do on the bin.',
+  'binDesigner.cutouts.fitTest.tip2':
+    'Too tight? Raise Clearance on that cutout. Rattles? Lower it. Then export a new card.',
+  'binDesigner.cutouts.fitTest.tip3':
+    'The design name, clearance and thickness are engraved underneath, so a stack of cards stays readable.',
+  'binDesigner.cutouts.fitTest.exportComplete': 'Fit test exported',
+  'binDesigner.cutouts.fitTest.exportFailed': 'Fit test export failed',
+  'binDesigner.cutouts.fitTest.stepUnavailable':
+    'STEP cannot carry imported mesh cutouts. Use STL or 3MF.',
+  'binDesigner.cutouts.fitTest.warnSplit':
+    'Bigger than your print bed, so the card exports as {{count}} pieces in a ZIP.',
+  'binDesigner.cutouts.fitTest.warnSeamThroughCutout':
+    'The card is too big for your print bed and there is no clear gap to cut through, so a seam crosses a cutout. That cutout cannot be measured on this card.',
   'binDesigner.cutouts.group': 'Group',
   'binDesigner.cutouts.ungroup': 'Ungroup',
   'binDesigner.cutouts.pathfinder.title': 'Pathfinder',
@@ -2693,7 +2720,7 @@ const en: Record<string, string> = {
   'binDesigner.walls.text.disabledSolid': 'Not available for solid bins.',
   'binDesigner.walls.text.hint':
     'Text auto-fits into the clear area of each wall, avoiding cutouts and handles. Wall patterns are cleared behind it.',
-  'binDesigner.slideTray.fitSample.button': 'Print a fit test',
+  'binDesigner.slideTray.fitSample.button': 'Print fit test',
   'binDesigner.slideTray.fitSample.dialogTitle': 'Sliding tray fit test',
   'binDesigner.slideTray.fitSample.dialogDescription':
     'Five rail stubs at different clearances, plus one tray stub that runs in all of them.',
@@ -3257,7 +3284,7 @@ const en: Record<string, string> = {
   'baseplate.stackPrint.separationSlider': 'Separate the print stack to inspect it',
   'baseplate.stackPrint.hint':
     'Prints all drawer plates as a vertical stack with gaps between them. Plates snap apart after printing.',
-  'baseplate.stackPrint.sampleButton': 'Print fit sample',
+  'baseplate.stackPrint.sampleButton': 'Print fit test',
   'baseplate.stackPrint.sampleExportComplete': 'Stack fit sample exported',
   'baseplate.stackPrint.sampleTitle': 'Stack fit sample',
   'baseplate.stackPrint.sampleDescription':
@@ -3307,7 +3334,7 @@ const en: Record<string, string> = {
   'baseplate.connectorSlotsAllEdgesHint':
     'Also cuts the slots into the outer edges, so every piece is a standard tile that keys onto plates you print later. Edges with a drawer-fit margin are skipped.',
   'baseplate.preferIdenticalPieces': 'Fewer unique parts',
-  'baseplate.connectorSample.button': 'Print fit sample',
+  'baseplate.connectorSample.button': 'Print fit test',
   'baseplate.connectorSample.dialogTitle': 'Connector fit sample',
   'baseplate.connectorSample.dialogDescription':
     'A small calibration print of all three connector styles across a range of fit offsets. Print it, find the fit that clicks, then set Connector fit to that value before printing the full baseplate.',

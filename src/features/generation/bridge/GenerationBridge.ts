@@ -47,6 +47,7 @@ import {
   type DividersExportResult,
   type CombinedExportResult,
   type SplitExportResult,
+  type FitTestExportResult,
   type SplitPreviewResult,
   type BaseplateExportResult,
   type ThreadingInfo,
@@ -75,6 +76,7 @@ import {
   exportLabelPlates as exportLabelPlatesImpl,
   exportLabelFitSample as exportLabelFitSampleImpl,
   exportSlideFitSample as exportSlideFitSampleImpl,
+  exportFitTest as exportFitTestImpl,
 } from './bridgeExports';
 import type { KernelName } from './types';
 
@@ -85,6 +87,7 @@ export type {
   DividersExportResult,
   CombinedExportResult,
   SplitExportResult,
+  FitTestExportResult,
   SplitPreviewResult,
   BaseplateExportResult,
   ThreadingInfo,
@@ -586,6 +589,18 @@ export class GenerationBridge {
 
   exportSlideFitSample(format: ExportFormat, slide: SlideConfig): Promise<BaseplateExportResult> {
     return exportSlideFitSampleImpl(this, format, slide);
+  }
+
+  exportFitTest(
+    params: BinParams,
+    format: ExportFormat,
+    options?: {
+      thicknessMm?: number;
+      stamp?: { designName?: string; pieceLabel?: string };
+      bed?: { width: number; depth: number };
+    }
+  ): Promise<FitTestExportResult> {
+    return exportFitTestImpl(this, params, format, options);
   }
 
   /** Whether the bridge has been destroyed */

@@ -311,6 +311,14 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
         });
         break;
 
+      case 'FIT_TEST_EXPORT_RESULT':
+        ctx.resolveExport('fitTest', response.requestId, {
+          pieces: response.pieces,
+          fileName: response.fileName,
+          blockedSeams: response.blockedSeams,
+        });
+        break;
+
       case 'SPLIT_PREVIEW_RESULT':
         ctx.resolveExport('splitPreview', response.requestId, {
           pieces: response.pieces,

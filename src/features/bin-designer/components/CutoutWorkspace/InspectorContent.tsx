@@ -20,6 +20,7 @@ import { CutoutColorControls } from './CutoutColorControls';
 import { CutoutBoardSettings } from './CutoutBoardSettings';
 import { BinSizeSection } from './BinSizeSection';
 import { BinFeaturesSection } from './BinFeaturesSection';
+import { FitTestButton } from './FitTestButton';
 import { AlignControls } from './AlignControls';
 import { RepeatSuggestion } from './RepeatSuggestion';
 import { useRepeatSuggestion } from '@/features/bin-designer/hooks/useRepeatSuggestion';
@@ -156,6 +157,7 @@ export function InspectorContent({
         onGrowToFit={onGrowToFit}
       />
       <BinFeaturesSection />
+      <FitTestButton />
     </>
   );
 

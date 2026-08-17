@@ -12,6 +12,7 @@ import type {
   ExportLabelPlatesMessage,
   ExportLabelFitSampleMessage,
   ExportSlideFitSampleMessage,
+  ExportFitTestMessage,
   ExportDividersMessage,
   ExportCombinedMessage,
   CombinedExportPiece,
@@ -35,13 +36,19 @@ import {
 } from '../generators/detachableFeetOrchestrator';
 import { exportSlideTray } from '../generators/slideOrchestrator';
 import { exportSlideFitSample } from '../generators/slideFitSample';
+import { exportFitTestSlice } from '../generators/fitTestSlice';
 import type { FaceGroupData } from '@/shared/types/generation';
 import { buildLid, buildStackPlate } from '../generators/lidBuilder';
 import { lidAnchorZ } from '../generators/lidConstants';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { LID_FIT_CLEARANCE, resolveLidCavityExtraMm } from '@/shared/types/bin';
 import { hasDetachableFeet, shouldGenerateLid } from '@/shared/types/bin';
-import { runExport, reportProgress, classifyExportError } from './workerContext';
+import {
+  runExport,
+  reportProgress,
+  classifyExportError,
+  extractExportTransferBuffers,
+} from './workerContext';
 
 export async function handleExport(message: ExportMessage): Promise<void> {
   const payload = message.payload;
@@ -200,6 +207,36 @@ export async function handleExportSlideFitSample(
     },
     'Slide fit sample export failed',
     (p) => [p.data],
+    classifyExportError
+  );
+}
+
+/**
+ * Export the cutout fit-test card. Runs a full export-quality generation (the
+ * card is a slice of the real solid), so it takes the bin's own timeout rather
+ * than the fixed coupon ceiling.
+ */
+export async function handleExportFitTest(message: ExportFitTestMessage): Promise<void> {
+  const payload = message.payload;
+  await runExport(
+    payload.requestId,
+    'FIT_TEST_EXPORT_RESULT',
+    async () => {
+      reportProgress(payload.requestId, 'merge', 0);
+      const result = await exportFitTestSlice(payload.params, payload.format, {
+        thicknessMm: payload.thicknessMm,
+        stamp: payload.stamp,
+        bed: payload.bed,
+      });
+      reportProgress(payload.requestId, 'merge', 1);
+      return {
+        pieces: result.pieces,
+        fileName: result.fileName,
+        blockedSeams: result.blockedSeams,
+      };
+    },
+    'Fit test export failed',
+    extractExportTransferBuffers,
     classifyExportError
   );
 }

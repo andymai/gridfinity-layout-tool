@@ -36,6 +36,7 @@ export type WorkerResponse =
   | DividersExportResultResponse
   | CombinedExportResultResponse
   | SplitExportResultResponse
+  | FitTestExportResultResponse
   | ImportMeshResultResponse
   | ImportMeshErrorResponse
   | CleanupDoneResponse
@@ -242,6 +243,25 @@ export interface SplitExportResultResponse {
   readonly type: 'SPLIT_EXPORT_RESULT';
   readonly requestId: string;
   readonly pieces: readonly SplitExportPiece[];
+}
+
+/** A single piece of a fit-test card. A whole card is one piece, label ''. */
+export interface FitTestExportPiece {
+  readonly data: ArrayBuffer;
+  readonly label: string;
+}
+
+export interface FitTestExportResultResponse {
+  readonly type: 'FIT_TEST_EXPORT_RESULT';
+  readonly requestId: string;
+  readonly pieces: readonly FitTestExportPiece[];
+  readonly fileName: string;
+  /**
+   * Seams the nudge could not move clear of an opening. Non-zero means a cut
+   * runs through a cutout, which makes that hole unmeasurable — the caller has
+   * to say so rather than hand over a card that looks fine.
+   */
+  readonly blockedSeams: number;
 }
 
 export interface ImportMeshResultResponse {
