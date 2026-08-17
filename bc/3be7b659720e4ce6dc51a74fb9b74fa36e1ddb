@@ -1,0 +1,19 @@
+src/features/bin-designer/components/panel/CutoutsSection/scanImport/useScanImport.test.ts
+  s_1a4ec6f9f798f5::t_93416c0622d956 4,8-12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "bc3be7b659720e4ce6dc51a74fb9b74fa36e1ddb",
+  "prompts": {},
+  "sessions": {
+    "s_1a4ec6f9f798f5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d56bf9fe-577a-423a-9743-415ea1c0d870",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
