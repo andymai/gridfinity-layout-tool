@@ -122,7 +122,7 @@ describe('detachable foot geometry', () => {
       }
     } finally {
       feet.forEach((f) => f.delete());
-      pinHoles.delete();
+      pinHoles?.delete();
       full.delete();
     }
   });
@@ -135,7 +135,7 @@ describe('detachable foot geometry', () => {
       expect(stats.nonManifoldEdges).toBe(0);
     } finally {
       feet.forEach((f) => f.delete());
-      pinHoles.delete();
+      pinHoles?.delete();
     }
   });
 
@@ -151,7 +151,7 @@ describe('detachable foot geometry', () => {
       expect(box.minZ).toBeCloseTo(-5, 4);
     } finally {
       feet.forEach((f) => f.delete());
-      pinHoles.delete();
+      pinHoles?.delete();
     }
   });
 
@@ -161,7 +161,7 @@ describe('detachable foot geometry', () => {
       expect(boundingBox(meshOf(thick.feet[0]).vertices).maxZ).toBeCloseTo(2.4 - MEMBRANE, 4);
     } finally {
       thick.feet.forEach((f) => f.delete());
-      thick.pinHoles.delete();
+      thick.pinHoles?.delete();
     }
   });
 
@@ -178,7 +178,7 @@ describe('detachable foot geometry', () => {
       expect(isSolidThrough(m, 13, 13, minZ + MAGNET_DEPTH + 0.1, minZ + 4)).toBe(true);
     } finally {
       withMagnet.feet.forEach((f) => f.delete());
-      withMagnet.pinHoles.delete();
+      withMagnet.pinHoles?.delete();
     }
   });
 
@@ -190,13 +190,14 @@ describe('detachable foot geometry', () => {
       expect(isSolidThrough(m, 13, 13, minZ + 0.05, minZ + MAGNET_DEPTH)).toBe(true);
     } finally {
       feet.forEach((f) => f.delete());
-      pinHoles.delete();
+      pinHoles?.delete();
     }
   });
 
   it('punches its floor holes at the pin positions and nowhere else', () => {
     const { feet, pinHoles } = feetOf();
     try {
+      if (!pinHoles) throw new Error('expected a hole tool');
       const tool = meshOf(pinHoles);
       const box = boundingBox(tool.vertices);
       // Opens below the floor and stops short of its top face: the holes are
@@ -212,7 +213,7 @@ describe('detachable foot geometry', () => {
       expect(isSolidThrough(tool, CORNER_L.x, CORNER_L.y, 0.1, FLOOR - 0.1)).toBe(false);
     } finally {
       feet.forEach((f) => f.delete());
-      pinHoles.delete();
+      pinHoles?.delete();
     }
   });
 
@@ -234,7 +235,7 @@ describe('detachable foot geometry', () => {
       for (const f of feet) expect(meshTopologyStats(meshOf(f)).boundaryEdges).toBe(0);
     } finally {
       feet.forEach((f) => f.delete());
-      pinHoles.delete();
+      pinHoles?.delete();
     }
   });
 });
@@ -395,7 +396,9 @@ describe('a floor too thin to hold a pin', () => {
     generateBin = (await import('./binOrchestrator')).generateBin;
   }, 60000);
 
-  it('builds an ordinary socketed bin instead of throwing', () => {
+  it('clamps the pin and builds, rather than failing the generation', () => {
+    // A throw here would have to be mirrored by every caller that asks whether
+    // a bin has feet. The geometry always builds; the panel is what refuses.
     for (const wallThickness of [0.4, 0.6, 0.8]) {
       const params: BinParams = {
         ...DEFAULT_BIN_PARAMS,
@@ -407,10 +410,34 @@ describe('a floor too thin to hold a pin', () => {
       };
       const mesh = generateBin(params, undefined, true);
       expect(mesh.triangleCount).toBeGreaterThan(0);
-      // The socket is back, so the bin is a whole part rather than a body with
-      // holes and no feet to fill them.
+      // Still the detachable body: one socket shorter than its nominal height.
       const { minZ, maxZ } = boundingBox(mesh.vertices);
-      expect(maxZ - minZ).toBeGreaterThan(20);
+      expect(maxZ - minZ).toBeLessThan(21);
+    }
+  });
+
+  it('leaves a membrane at every thickness, so the interior never opens', () => {
+    for (const wallThickness of [0.4, 0.8, 1.2, 2.4]) {
+      const params: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 2,
+        depth: 2,
+        height: 3,
+        wallThickness,
+        base: { ...DEFAULT_BIN_PARAMS.base, feet: 'detachable' },
+      };
+      const m = generateBin(params, undefined, true);
+      const { minZ } = boundingBox(m.vertices);
+      const resolved = resolveDetachableFeet(params);
+      for (const foot of resolved.placements) {
+        for (const pin of footPinPositions(foot, resolved.armMm, resolved.pinDiameterMm)) {
+          // The WHOLE membrane, not a sliver at the very top: a probe that thin
+          // passes while a hole eats almost all of the band it is meant to
+          // protect, which is the invariant the blind holes exist for.
+          const top = minZ + wallThickness;
+          expect(isSolidThrough(m, pin.x, pin.y, top - MEMBRANE, top)).toBe(true);
+        }
+      }
     }
   });
 });

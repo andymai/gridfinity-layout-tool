@@ -253,11 +253,15 @@ export function hasDetachableFeet(base: {
 /**
  * True when the floor is thick enough for a pin that holds.
  *
- * The holes are blind, so a pin gets `wallThickness` minus the membrane. Three
- * of the selectable wall thicknesses (0.4, 0.6, 0.8) leave less than
- * {@link DETACHABLE_PIN_MIN_ENGAGEMENT_MM}, and the builder refuses them — so
- * without this gate the feature is a hard generation failure on a third of the
- * wall options rather than an unavailable toggle.
+ * The holes are blind, so a pin gets `wallThickness` minus the membrane, and
+ * three of the selectable wall thicknesses (0.4, 0.6, 0.8) leave less than
+ * {@link DETACHABLE_PIN_MIN_ENGAGEMENT_MM}.
+ *
+ * ADVISORY ONLY: it greys the toggle, and no geometry path consults it. The
+ * builder clamps the pin instead, so "does this bin have feet" has exactly one
+ * answer ({@link hasDetachableFeet}) for the panel, the estimate, both export
+ * planners and the preview. Gating the geometry too meant five predicates that
+ * had to agree, and three of them did not.
  */
 export function detachableFeetFitFloor(wallThicknessMm: number): boolean {
   return detachablePinEngagementMm(wallThicknessMm) >= DETACHABLE_PIN_MIN_ENGAGEMENT_MM;
