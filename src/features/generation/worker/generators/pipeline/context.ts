@@ -7,7 +7,6 @@
 
 import type { BinParams } from '@/shared/types/bin';
 import {
-  detachableFeetFitFloor,
   hasDetachableFeet,
   isUndersideRelief,
   resolveTileFloorThickness,
@@ -72,14 +71,7 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // and the body is otherwise bit-identical to an integral bin's, so only
   // `baseOffsetZ` and the socket build change. `hasDetachableFeet` already
   // refuses a spacer and a socketless base.
-  // Also gated on the floor: a blind pin gets `wallThickness` minus the
-  // membrane, and the thinnest wall options leave too little to hold one. The
-  // builder throws there and `shellStage` does not catch, so without this a
-  // crafted payload fails the whole generation instead of ignoring the flag —
-  // the same defence-in-depth as the spacer and socketless guards inside
-  // `hasDetachableFeet` itself.
-  const detachableFeet =
-    hasDetachableFeet(params.base) && detachableFeetFitFloor(params.wallThickness);
+  const detachableFeet = hasDetachableFeet(params.base);
   // User flag only. When the mask has mixed half-bin detail, the socket
   // builder does a per-cell dispatch using the mask — it splits only
   // those 1u cells that straddle a half-bin boundary into quarter

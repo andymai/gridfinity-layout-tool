@@ -17,11 +17,7 @@
 import { unwrap, fuseAll, mesh, translate, exportSTEP } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
-import {
-  detachableFeetFitFloor,
-  hasDetachableFeet,
-  DETACHABLE_PIN_HOLE_DIAMETER_MM,
-} from '@/shared/types/bin';
+import { hasDetachableFeet, DETACHABLE_PIN_HOLE_DIAMETER_MM } from '@/shared/types/bin';
 import type { MeshData } from '../../bridge/types';
 import { footCellCentre, resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import { buildDetachableFeet } from './detachableFeetBuilder';
@@ -40,9 +36,7 @@ const PLATE_GAP_MM = 4;
  * `laidOut` re-arranges them onto a plate instead of leaving them assembled.
  */
 function buildFeetSolids(params: BinParams, laidOut: boolean): Shape3D[] | null {
-  if (!hasDetachableFeet(params.base) || !detachableFeetFitFloor(params.wallThickness)) {
-    return null;
-  }
+  if (!hasDetachableFeet(params.base)) return null;
   const resolved = resolveDetachableFeet(params);
   if (resolved.placements.length === 0) return null;
 

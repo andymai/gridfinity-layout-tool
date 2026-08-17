@@ -41,6 +41,7 @@ import {
   type FootPlacement,
 } from '@/shared/utils/detachableFeetPlan';
 import {
+  DETACHABLE_PIN_MEMBRANE_MM,
   DETACHABLE_PIN_MIN_ENGAGEMENT_MM,
   DETACHABLE_PIN_RIDGE_STEP_MM,
   detachablePinEngagementMm,
@@ -221,10 +222,17 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
   }
 
   return withScope((scope: DisposalScope): DetachableFeetGeometry => {
-    const engagementMm = detachablePinEngagementMm(floorThicknessMm);
-    if (engagementMm < DETACHABLE_PIN_MIN_ENGAGEMENT_MM) {
-      throw new Error('Detachable feet: floor too thin for a pin that would hold');
-    }
+    // Clamped, never refused. A throw here would have to be mirrored by every
+    // caller that asks "does this bin have feet" — the panel, the estimate, two
+    // export planners and the preview — and five predicates that must agree is
+    // four chances to drift. The floor thickness is a UI concern
+    // (`detachableFeetFitFloor` greys the toggle); the geometry always builds
+    // something valid, so a crafted payload gets a weak joint rather than a
+    // failed generation. Held below the floor so the membrane always survives.
+    const engagementMm = Math.min(
+      Math.max(detachablePinEngagementMm(floorThicknessMm), DETACHABLE_PIN_MIN_ENGAGEMENT_MM),
+      floorThicknessMm - DETACHABLE_PIN_MEMBRANE_MM / 2
+    );
     const pinTemplate = buildPin(scope, pinDiameterMm, engagementMm);
     const feet: Shape3D[] = [];
     const holes: Shape3D[] = [];

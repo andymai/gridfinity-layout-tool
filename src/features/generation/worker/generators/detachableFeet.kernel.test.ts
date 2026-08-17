@@ -395,7 +395,9 @@ describe('a floor too thin to hold a pin', () => {
     generateBin = (await import('./binOrchestrator')).generateBin;
   }, 60000);
 
-  it('builds an ordinary socketed bin instead of throwing', () => {
+  it('clamps the pin and builds, rather than failing the generation', () => {
+    // A throw here would have to be mirrored by every caller that asks whether
+    // a bin has feet. The geometry always builds; the panel is what refuses.
     for (const wallThickness of [0.4, 0.6, 0.8]) {
       const params: BinParams = {
         ...DEFAULT_BIN_PARAMS,
@@ -407,10 +409,31 @@ describe('a floor too thin to hold a pin', () => {
       };
       const mesh = generateBin(params, undefined, true);
       expect(mesh.triangleCount).toBeGreaterThan(0);
-      // The socket is back, so the bin is a whole part rather than a body with
-      // holes and no feet to fill them.
+      // Still the detachable body: one socket shorter than its nominal height.
       const { minZ, maxZ } = boundingBox(mesh.vertices);
-      expect(maxZ - minZ).toBeGreaterThan(20);
+      expect(maxZ - minZ).toBeLessThan(21);
+    }
+  });
+
+  it('leaves a membrane at every thickness, so the interior never opens', () => {
+    for (const wallThickness of [0.4, 0.8, 1.2, 2.4]) {
+      const params: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 2,
+        depth: 2,
+        height: 3,
+        wallThickness,
+        base: { ...DEFAULT_BIN_PARAMS.base, feet: 'detachable' },
+      };
+      const m = generateBin(params, undefined, true);
+      const { minZ } = boundingBox(m.vertices);
+      const resolved = resolveDetachableFeet(params);
+      for (const foot of resolved.placements) {
+        for (const pin of footPinPositions(foot, resolved.armMm, resolved.pinDiameterMm)) {
+          const top = minZ + wallThickness;
+          expect(isSolidThrough(m, pin.x, pin.y, top - 0.05, top)).toBe(true);
+        }
+      }
     }
   });
 });
