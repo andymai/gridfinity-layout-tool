@@ -142,6 +142,15 @@ export function CutoutWorkspace() {
   // editor because `lidCutoutsAllowed` refuses one.
   const taperBand = isLid ? null : cutoutTaperBand(params);
   const boardMask = isLid ? undefined : params.cellMask;
+  // On the lid, put the bin's interior on screen as a dashed underlay. The two
+  // frames are deliberately separate (a shared origin would be one more
+  // relationship to keep true), so this is what makes "put the slot over the
+  // contents" something the user can see rather than compute. Both rectangles are
+  // centred on their own part, so no rebasing is needed.
+  const binInteriorReference = useMemo(
+    () => (isLid ? { width: interior.innerW, depth: interior.innerD } : null),
+    [isLid, interior.innerW, interior.innerD]
+  );
   // See CutoutEditor for rationale — separate X/Y cell sizes keep validator and
   // polygon rendering aligned for non-square bins. Memoized so the off-board
   // hooks below keep a stable dependency across renders.
@@ -552,6 +561,7 @@ export function CutoutWorkspace() {
                 binDepth={binDepth}
                 cellMask={boardMask}
                 taperBand={taperBand}
+                referenceOutline={binInteriorReference}
                 canvasWidth={canvasWidth}
                 canvasHeight={canvasHeight}
                 selection={selection}

@@ -20,6 +20,7 @@ import type { SegmentHoverInfo } from '../handlers';
 import type { AlignmentGuide } from '../geometry';
 import { EditorBackground3D } from './EditorBackground3D';
 import { TaperBand3D } from './TaperBand3D';
+import { ReferenceOutline3D } from './ReferenceOutline3D';
 import { CutoutShapeMesh } from './CutoutShapeMesh';
 import { OffBoardFrames3D } from './OffBoardFrames3D';
 import { CutoutLabel3D } from './CutoutLabel3D';
@@ -86,6 +87,12 @@ export interface SceneContentProps {
   readonly cellMask?: CellMask;
   /** Per-side strip a full-depth cutout is trimmed out of; null when untapered. */
   readonly taperBand?: TaperBandSides | null;
+  /**
+   * Another part's footprint, drawn faintly under the board purely so the user can
+   * line shapes up with it. Set when the editor is on the LID, whose window is a
+   * different frame from the bin's interior. Absent on the bin's own board.
+   */
+  readonly referenceOutline?: { readonly width: number; readonly depth: number } | null;
   readonly binColor: string;
   readonly selection: ReadonlySet<string>;
   /** Cutouts stranded past the board edge — framed with a red warning outline. */
@@ -148,6 +155,7 @@ export function SceneContent({
   binDepth,
   cellMask,
   taperBand,
+  referenceOutline,
   binColor,
   selection,
   offBoardIds = EMPTY_IDS,
@@ -232,6 +240,9 @@ export function SceneContent({
       />
 
       {/* Where a full-depth cutout gets trimmed by the tapered wall */}
+      {referenceOutline && (
+        <ReferenceOutline3D width={referenceOutline.width} depth={referenceOutline.depth} />
+      )}
       {taperBand && <TaperBand3D binWidth={binWidth} binDepth={binDepth} band={taperBand} />}
 
       {/* Interaction plane for background clicks and pointer tracking */}

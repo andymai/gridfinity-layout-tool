@@ -32,6 +32,19 @@ graph TB
   post-export toast pointing at the layout editor.
 - `components/ParameterPanel.tsx` — parameter editing sidebar with collapsible sections
 - `components/PreviewCanvas.tsx` — 3D preview with Three.js (renders bin + optional lid + explode slider)
+- **Cutout editor targets** (#3542) — one editor serves the bin's interior floor AND the lid's
+  plate. `ui.cutoutTarget` (`'bin' | 'lid'`) is set when the editor opens and reset when it
+  closes; every action in `cutoutSlice` resolves its array through `cutoutOwner`, which returns
+  the OWNER (`params` or `params.lid`) rather than the array, so the same path serves reads and
+  immer assignments and an action added later is retargetable by construction. What differs is
+  the BOARD: on the lid it is the mating-cavity window from `@/shared/utils/lidCutoutPlan` (not
+  the bin's overhang-expanded interior, and not the lid's outer plate), the bin's interior is
+  drawn under it as a dashed `ReferenceOutline3D` for alignment, and cut depth plus both scoop
+  fillets are hidden — a through-cutting host has no floor for a pocket to stop at. `lid.cutouts`
+  is ABSENT rather than empty when there are none, because `communityParamsFingerprint` hashes the
+  whole params object and keys the moderation tombstone, so an always-present field would re-hash
+  every design already published (same reason `migrateSurfaceText` collapses empty text). Entry
+  point is the Lid section, gated on `lidCutoutsAllowed`.
 - `components/CutoutWorkspace` — dedicated 3D editor for floor/wall cutouts. Properties live in
   a docked, resizable/collapsible `InspectorDock` (width + collapsed state persisted via
   `inspectorDockStorage`), not a floating overlay. `InspectorContent` switches between
