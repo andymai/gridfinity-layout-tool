@@ -8,6 +8,7 @@ import { estimatePrint } from '@/features/bin-designer/utils/printEstimates';
 import {
   DEFAULT_DETACHABLE_PIN_DIAMETER_MM,
   detachableFeetFitFloor,
+  hasDetachableFeet as hasDetachableFeetFor,
 } from '@/features/bin-designer/types/base';
 import type {
   BinParams,
@@ -118,7 +119,10 @@ export function useBaseSection() {
   // a reason rather than through the constraint engine, whose mode switches
   // deliberately CLEAR what they disable — turning the toggle on would discard
   // a lightweight setting that turning it off again would not bring back.
-  const hasDetachableFeet = base.feet === 'detachable';
+  // The shared predicate, not `base.feet === 'detachable'`: it also refuses a
+  // socketless base and a spacer, which is what the geometry does. The local
+  // copy left a flat-base bin reading "4 feet" over a bin that builds none.
+  const hasDetachableFeet = hasDetachableFeetFor(base);
   const detachablePlan = hasDetachableFeet ? resolveDetachableFeet(params) : null;
   // No pocket-aligned whole cell to stand a foot on. Reachable for a 1-wide bin
   // under the `half` lattice, and the panel has to say so: the alternative is a
@@ -490,9 +494,11 @@ export function useBaseSection() {
       toggleHalfSockets,
       setFootLatticeX,
       setFootLatticeY,
-      footLatticeLockReason: t(
-        feetSupersedeReason ?? footLatticeLockReason ?? 'binDesigner.footLattice.hint'
-      ),
+      // Deliberately NOT locked by the feet: the lattice is the only thing that
+      // seats a half-offset bin, detachable or not, so labelling it inert would
+      // hide the one control that fixes a bin perching on the pocket ridges.
+      // Half sockets and lightweight really are ignored and stay locked.
+      footLatticeLockReason: t(footLatticeLockReason ?? 'binDesigner.footLattice.hint'),
       toggleFlat,
       toggleLidBottom,
       setTrayAttachment,
