@@ -17,9 +17,11 @@
  *    does at the top of a 40mm bin. Flipping the card to save time would put
  *    that face in the first layers, where squish reads tight.
  *
- * The band's top is `dimensions.wallTopZ` less the cutout top offset, read
- * rather than restated (gotcha #14); taking it from there also drops the
- * stacking lip for free, since the lip lives above `wallTopZ`.
+ * The band's top is the SOLID FILL SURFACE, not the rim: `wallTopZ` also
+ * carries the exterior-wall collar, which stands proud of the material the
+ * cutouts are cut into. It is reached by subtracting named dimensions from
+ * `wallTopZ` rather than restating the height chain (gotcha #14), and taking it
+ * from there drops the stacking lip for free, since the lip lives above the rim.
  *
  * Mesh imprints follow the split-export route exactly: they never exist on the
  * BREP solid, so the card is cut in BREP and each piece is imprinted after
@@ -148,7 +150,19 @@ function buildCard(
   stamp: FitTestStampContext
 ): Shape3D {
   const dims = deriveDimensions(params, true);
-  const topZ = dims.wallTopZ - params.cutoutConfig.topOffset;
+  // The rim is NOT the fill surface. `wallTopZ` is
+  // `baseOffsetZ + wallHeight + tileFloorHeight + collarHeight`, while
+  // `buildCutoutCuts` places every tool against `wallHeight - topOffset` — so an
+  // exterior-wall collar (`extraWallHeightMm`) raises the rim above the material
+  // the cutouts are cut into. Anchoring the band to the rim put the card mostly
+  // above its own openings: a 3mm collar left a 4mm card with 1mm-deep holes,
+  // and a collar at or past the thickness left a card with no openings at all —
+  // still a valid, plausibly-sized export.
+  //
+  // Subtracted from `wallTopZ` by named dimensions rather than restating the
+  // `baseOffsetZ + wallHeight` chain (gotcha #14).
+  const topZ =
+    dims.wallTopZ - dims.collarHeight - dims.tileFloorHeight - params.cutoutConfig.topOffset;
   const bottomZ = topZ - thicknessMm;
 
   const bounds = getBounds(solid);
@@ -169,7 +183,12 @@ function buildCard(
   let card: Shape3D = scope.register(unwrap(intersect(solid, bandBox)));
 
   const lines = fitTestStampLines(params, thicknessMm, stamp);
-  const area = planFitTestStampArea(params, thicknessMm, lines.length * STAMP_LINE_MM);
+  const area = planFitTestStampArea(
+    params,
+    thicknessMm,
+    lines.length * STAMP_LINE_MM,
+    STAMP_DEPTH_MM
+  );
   if (!area) return card;
 
   lines.forEach((line, i) => {

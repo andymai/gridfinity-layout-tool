@@ -10,6 +10,8 @@ import {
   defaultFitTestThicknessMm,
   fitTestCutoutSpans,
   fitTestCutouts,
+  fitTestFootprintMm,
+  estimateFitTestVolumeMm3,
   fitTestStampLines,
   fitTestThicknessRangeMm,
   nudgeSeamsClearOfCutouts,
@@ -118,9 +120,11 @@ describe('fitTestCutoutSpans', () => {
   });
 
   it('grows the footprint by clearance and chamfer, which widen the opening', () => {
-    const plain = fitTestCutoutSpans(board({}, [cutout({ shape: 'rectangle', width: 10 })])).x[0];
+    // A circle takes both; a rectangle takes only the chamfer (see the
+    // stale-clearance regression below).
+    const plain = fitTestCutoutSpans(board({}, [cutout({ shape: 'circle', width: 10 })])).x[0];
     const grown = fitTestCutoutSpans(
-      board({}, [cutout({ shape: 'rectangle', width: 10, clearance: 0.5, chamferWidth: 1 })])
+      board({}, [cutout({ shape: 'circle', width: 10, clearance: 0.5, chamferWidth: 1 })])
     ).x[0];
     expect(grown.max - grown.min).toBeCloseTo(plain.max - plain.min + 3, 5);
   });
@@ -163,10 +167,12 @@ describe('nudgeSeamsClearOfCutouts', () => {
   });
 });
 
+/** Stand-in for `getSplitPlanePositionsMm`: one central cut when oversize. */
+const splitPlanesStub = (size: number, max: number, _pitch: number): number[] =>
+  size <= max ? [] : [0];
+
 describe('planFitTestSplit', () => {
-  // Stand-in for `getSplitPlanePositionsMm`: one central cut when oversize.
-  const splitPlanes = (size: number, max: number, _pitch: number): number[] =>
-    size <= max ? [] : [0];
+  const splitPlanes = splitPlanesStub;
 
   it('leaves a card that fits the bed whole', () => {
     const plan = planFitTestSplit(board(), { width: 256, depth: 256 }, splitPlanes);
@@ -233,6 +239,27 @@ describe('fitTestStampLines', () => {
   });
 });
 
+describe('overhang', () => {
+  const overhung = (mm: number): Partial<BinParams> => ({
+    overhang: { enabled: true, left: mm, right: mm, front: 0, back: 0 },
+  });
+
+  it('widens the footprint by the overhang, which grows the body past the grid', () => {
+    const nominal = fitTestFootprintMm(board());
+    const grown = fitTestFootprintMm(board(overhung(20)));
+    expect(grown.width - nominal.width).toBeCloseTo(40, 5);
+    expect(grown.depth).toBeCloseTo(nominal.depth, 5);
+  });
+
+  it('splits an overhung card the nominal extent would call bed-sized', () => {
+    // 6x2 nominal is 251.5mm and fits a 256 bed; +20mm each side does not.
+    const wide = board({ width: 6, ...overhung(20) });
+    expect(fitTestFootprintMm(wide).width).toBeGreaterThan(256);
+    const plan = planFitTestSplit(wide, { width: 256, depth: 256 }, splitPlanesStub);
+    expect(plan.pieceCount).toBeGreaterThan(1);
+  });
+});
+
 describe('cutoutDisplacementMm3', () => {
   it('prices a rectangle by its full prism', () => {
     const params = board({}, [
@@ -251,5 +278,107 @@ describe('cutoutDisplacementMm3', () => {
       cutout({ shape: 'rectangle', width: 10, depth: 10, cutDepth: 20, cornerRadius: 0 }),
     ]);
     expect(cutoutDisplacementMm3(params, 5)).toBeCloseTo(10 * 10 * 5, 5);
+  });
+});
+
+describe('regressions found in review', () => {
+  it('does not grow a rectangle by a stale clearance the builder ignores', () => {
+    // CLEARANCE_SHAPES excludes 'rectangle', so a cutout switched from circle
+    // keeps a clearance the generator never applies. Counting it would reserve
+    // seam margin and subtract volume for material that is never removed.
+    const plain = board({}, [cutout({ shape: 'rectangle', width: 10, cornerRadius: 0 })]);
+    const stale = board({}, [
+      cutout({ shape: 'rectangle', width: 10, cornerRadius: 0, clearance: 2 }),
+    ]);
+    expect(cutoutDisplacementMm3(stale)).toBeCloseTo(cutoutDisplacementMm3(plain), 5);
+
+    const plainSpan = fitTestCutoutSpans(plain).x[0];
+    const staleSpan = fitTestCutoutSpans(stale).x[0];
+    expect(staleSpan.max - staleSpan.min).toBeCloseTo(plainSpan.max - plainSpan.min, 5);
+  });
+
+  it('counts a non-union group by its largest member, not the sum', () => {
+    // subtract/intersect/exclude all put material back, so summing the members
+    // removes more than the group ever cuts.
+    const members = (op: 'union' | 'subtract'): Cutout[] => [
+      cutout({
+        id: 'a',
+        shape: 'rectangle',
+        width: 10,
+        depth: 10,
+        cutDepth: 5,
+        cornerRadius: 0,
+        groupId: 'g',
+        groupOp: op,
+      }),
+      cutout({
+        id: 'b',
+        shape: 'rectangle',
+        width: 6,
+        depth: 6,
+        cutDepth: 5,
+        cornerRadius: 0,
+        groupId: 'g',
+        groupOp: op,
+      }),
+    ];
+    expect(cutoutDisplacementMm3(board({}, members('union')))).toBeCloseTo(
+      10 * 10 * 5 + 6 * 6 * 5,
+      5
+    );
+    expect(cutoutDisplacementMm3(board({}, members('subtract')))).toBeCloseTo(10 * 10 * 5, 5);
+  });
+
+  it('scales the card estimate by a partial mask, as the bin estimate does', () => {
+    const full = board({ width: 3, depth: 3 });
+    const masked = board({
+      width: 3,
+      depth: 3,
+      cellMask: { cols: 3, rows: 3, cells: [1, 1, 1, 1, 1, 0, 0, 0, 0] },
+    });
+    const ratio = estimateFitTestVolumeMm3(masked, 4) / estimateFitTestVolumeMm3(full, 4);
+    expect(ratio).toBeGreaterThan(0.4);
+    expect(ratio).toBeLessThan(0.7);
+  });
+
+  it('clamps the fallback default into the design range', () => {
+    // A 0.5mm pocket allows at most 1.7mm of card, but the default band starts
+    // at 3mm — the worker reaches this path whenever a caller omits a thickness.
+    const shallow = board({}, [cutout({ cutDepth: 0.5 })]);
+    const { max } = fitTestThicknessRangeMm(shallow);
+    expect(clampFitTestThicknessMm(shallow, NaN)).toBeLessThanOrEqual(max);
+  });
+
+  it('keeps a nudged seam inside the card', () => {
+    // A cutout flush against the edge puts the block's far side past the card,
+    // and a plane out there gives the splitter a negative-width piece.
+    const plan = nudgeSeamsClearOfCutouts([38], [{ min: 30, max: 41 }], 50, {
+      min: -41.75,
+      max: 41.75,
+    });
+    for (const p of plan.planes) {
+      expect(p).toBeGreaterThan(-41.75);
+      expect(p).toBeLessThan(41.75);
+    }
+  });
+
+  it('counts a dropped duplicate seam as blocked, not as a clean split', () => {
+    // Both planes sit left of centre in one block, so both move to the same
+    // edge and one is dropped — the surviving piece is oversize, and silence
+    // there would ship a card that does not fit the bed.
+    const plan = nudgeSeamsClearOfCutouts([60, 70], [{ min: 0, max: 100 }], 200);
+    expect(plan.planes).toHaveLength(1);
+    expect(plan.blocked).toBeGreaterThan(0);
+  });
+
+  it('keeps the stamp out of a pocket whose floor is thinner than the engraving', () => {
+    // A 3.8mm pocket in a 4mm card leaves 0.2mm of floor; a 0.4mm stamp would
+    // punch straight through the pocket the user is measuring.
+    const board38 = board({}, [
+      cutout({ shape: 'rectangle', x: 0, y: 0, width: 81, depth: 81, cutDepth: 3.8 }),
+    ]);
+    expect(planFitTestStampArea(board38, 4, 8, 0.4)).toBeNull();
+    // With no stamp depth declared the old behaviour stands: the floor counts.
+    expect(planFitTestStampArea(board38, 4, 8, 0)).not.toBeNull();
   });
 });

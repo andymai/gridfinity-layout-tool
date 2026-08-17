@@ -466,3 +466,61 @@ describe('fit-test card — a lipped bin at every wall thickness', () => {
     expect(meshVolume(asMeshData(theCard)), `empty card at wt=${wt}`).toBeGreaterThan(1000);
   });
 });
+
+describe('fit-test card — an exterior wall collar', () => {
+  // `extraWallHeightMm` raises the RIM without raising the material the cutouts
+  // are cut into, so a band anchored to `wallTopZ` sits above its own openings:
+  // a 3mm collar left a 4mm card with 1mm-deep holes, and a collar at or past
+  // the thickness left a card with no openings at all — which still exports as
+  // a valid, plausibly-sized part. Stated against the collar-free card, so the
+  // arithmetic is not restated here.
+  const COLLAR = 3;
+
+  it('takes the band from the fill surface, not the raised rim', () => {
+    const plain = boardParams();
+    const collared = boardParams({ extraWallHeightMm: COLLAR });
+
+    const plainCard = card(plain, { thicknessMm: 4 }).pieces[0];
+    const collaredCard = card(collared, { thicknessMm: 4 }).pieces[0];
+
+    // The collar raises the bin, so the card's absolute Z moves with it — but
+    // it must sit the same distance below that bin's own fill surface, which is
+    // what "the same card" means.
+    const plainBox = boundingBox(plainCard.vertices);
+    const collaredBox = boundingBox(collaredCard.vertices);
+    expect(collaredBox.maxZ - collaredBox.minZ).toBeCloseTo(4, 2);
+    expect(meshVolume(asMeshData(collaredCard))).toBeCloseTo(meshVolume(asMeshData(plainCard)), -2);
+    expect(collaredBox.maxZ).toBeCloseTo(plainBox.maxZ, 2);
+  });
+
+  it('still cuts a real board with a collar taller than the card', () => {
+    // The case that produced a card with NO openings at all. Asserting the
+    // openings are open is not enough on its own: an empty card has no material
+    // at a cutout centre either, and passes. The web between the cutouts has to
+    // be solid in the same breath, which is what an empty card cannot fake.
+    const params = boardParams({ extraWallHeightMm: 6 });
+    const theCard = card(params, { thicknessMm: 4 }).pieces[0];
+    const box = boundingBox(theCard.vertices);
+
+    const a = cutoutCentre(params, 'shallow');
+    const b = cutoutCentre(params, 'deep');
+    expect(
+      isSolidThrough(
+        asMeshData(theCard),
+        (a.x + b.x) / 2,
+        (a.y + b.y) / 2,
+        box.minZ + 0.2,
+        box.maxZ - 0.2
+      ),
+      'the board between the cutouts must be solid, not an empty rim'
+    ).toBe(true);
+
+    for (const id of ['shallow', 'deep']) {
+      const { x, y } = cutoutCentre(params, id);
+      expect(
+        isSolidThrough(asMeshData(theCard), x, y, box.maxZ - 0.6, box.maxZ - 0.2),
+        `${id} must still be open under a tall collar`
+      ).toBe(false);
+    }
+  });
+});

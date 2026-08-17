@@ -8,15 +8,18 @@
  * Re-deriving the band in each is the drift `labelTabPlan` exists to prevent,
  * so they all read this instead.
  *
- * The band's absolute Z is deliberately NOT here: the worker reads
- * `dimensions.wallTopZ` rather than restating the height chain (gotcha #14).
- * This plan answers how THICK the card is and what is in it, never where the
- * bin's rim sits.
+ * The band's absolute Z is deliberately NOT here: the worker derives it from
+ * `deriveDimensions` rather than restating the height chain (gotcha #14). This
+ * plan answers how THICK the card is and what is in it, never where the bin's
+ * fill surface sits.
  */
 
 import type { BinParams, Cutout } from '@/shared/types/bin';
+import { CHAMFER_SHAPES, CLEARANCE_SHAPES } from '@/shared/types/bin';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
+import { overhangExpansion, resolveOverhang } from '@/shared/utils/overhang';
+import { countFilled, isPartialMask } from '@/shared/utils/cellMask';
 import { binDimensions, cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 
 /** Thinnest card the field accepts (mm). Below this a chamfered rim has no
@@ -90,8 +93,12 @@ export function fitTestThicknessRangeMm(params: BinParams): { min: number; max: 
 /** Clamp an arbitrary thickness into the range this design allows. */
 export function clampFitTestThicknessMm(params: BinParams, thicknessMm: number): number {
   const { min, max } = fitTestThicknessRangeMm(params);
-  if (!Number.isFinite(thicknessMm)) return defaultFitTestThicknessMm(params);
-  return Math.min(max, Math.max(min, thicknessMm));
+  // The default is a 3-5mm band and can itself exceed the range on a design
+  // whose deepest cut is under 3mm, so it goes through the same clamp rather
+  // than being returned raw — the worker reaches this path whenever a caller
+  // omits the thickness.
+  const requested = Number.isFinite(thicknessMm) ? thicknessMm : defaultFitTestThicknessMm(params);
+  return Math.min(max, Math.max(min, requested));
 }
 
 /**
@@ -100,8 +107,18 @@ export function clampFitTestThicknessMm(params: BinParams, thicknessMm: number):
  * Clearance and the entry chamfer both widen the OPENING, which is the face the
  * card is measured at, so both count toward the footprint a seam has to miss.
  */
+function openingGrowthMm(cutout: Cutout): number {
+  // Gated exactly as `buildCutoutCuts` gates them. A cutout switched from
+  // circle to rectangle keeps its stale `clearance`, and the builder ignores it
+  // — counting it here would reserve seam margin, and subtract volume, for
+  // material that is never removed.
+  const clearance = CLEARANCE_SHAPES.includes(cutout.shape) ? (cutout.clearance ?? 0) : 0;
+  const chamfer = CHAMFER_SHAPES.includes(cutout.shape) ? (cutout.chamferWidth ?? 0) : 0;
+  return clearance + chamfer;
+}
+
 function openingHalfExtents(cutout: Cutout): { hx: number; hy: number } {
-  const grow = (cutout.clearance ?? 0) + (cutout.chamferWidth ?? 0);
+  const grow = openingGrowthMm(cutout);
   const hw = cutout.width / 2 + grow;
   const hd = cutout.depth / 2 + grow;
   const rad = (cutout.rotation * Math.PI) / 180;
@@ -173,23 +190,29 @@ const STAMP_SCAN_STEP_MM = 1;
  * floor, so the underside below it is solid and a stamp there is unharmed. That
  * is why this takes the thickness rather than working off the footprints alone.
  *
+ * "Shallower" has to leave room for the stamp itself, though — the glyphs are
+ * cut `stampDepthMm` up from the underside, so a pocket that leaves a floor
+ * thinner than that gets perforated by its own label.
+ *
  * Searched from the front edge back, so the stamp lands where a maker looks
  * first and stays put as cutouts are added behind it.
  */
 export function planFitTestStampArea(
   params: BinParams,
   thicknessMm: number,
-  neededDepthMm: number
+  neededDepthMm: number,
+  stampDepthMm = 0
 ): StampArea | null {
-  const { outerW, outerD } = binDimensions(params);
-  const availW = outerW - 2 * (params.wallThickness + STAMP_MARGIN_MM);
+  const { width, depth } = fitTestFootprintMm(params);
+  const availW = width - 2 * (params.wallThickness + STAMP_MARGIN_MM);
   if (availW <= 0 || neededDepthMm <= 0) return null;
 
   const cutouts = fitTestCutouts(params);
   const boxes = fitTestCutoutBoxes(params);
-  const throughBoxes = boxes.filter((_, i) => cutouts[i].cutDepth >= thicknessMm);
+  const floorLimit = thicknessMm - stampDepthMm;
+  const throughBoxes = boxes.filter((_, i) => cutouts[i].cutDepth >= floorLimit);
 
-  const half = outerD / 2 - params.wallThickness - STAMP_MARGIN_MM;
+  const half = depth / 2 - params.wallThickness - STAMP_MARGIN_MM;
   for (let y = -half; y + neededDepthMm <= half; y += STAMP_SCAN_STEP_MM) {
     const lo = y - STAMP_MARGIN_MM;
     const hi = y + neededDepthMm + STAMP_MARGIN_MM;
@@ -243,7 +266,8 @@ export interface SeamPlan {
 export function nudgeSeamsClearOfCutouts(
   planes: readonly number[],
   spans: readonly AxisSpan[],
-  limitMm: number
+  limitMm: number,
+  bounds?: { readonly min: number; readonly max: number }
 ): SeamPlan {
   if (planes.length === 0 || spans.length === 0) return { planes: [...planes], blocked: 0 };
 
@@ -256,7 +280,16 @@ export function nudgeSeamsClearOfCutouts(
 
     // Only the two edges of the blocking run are candidates: any clear position
     // further out is strictly further away, so the nearer edge always wins.
-    const candidates = [hit.min, hit.max].filter((c) => Math.abs(c - plane) <= limitMm);
+    //
+    // A candidate also has to stay inside the card. A cutout flush against the
+    // interior edge puts `hit.max` past the outer face once the seam margin is
+    // added, and a plane beyond the card's own bounds hands the splitter a
+    // negative-width piece.
+    const inBounds = (c: number): boolean =>
+      !bounds || (c > bounds.min + 1e-6 && c < bounds.max - 1e-6);
+    const candidates = [hit.min, hit.max].filter(
+      (c) => Math.abs(c - plane) <= limitMm && inBounds(c)
+    );
     if (candidates.length === 0) {
       blocked += 1;
       return plane;
@@ -266,12 +299,14 @@ export function nudgeSeamsClearOfCutouts(
     );
   });
 
-  // Two planes nudged toward the same gap can cross or coincide, which would
-  // hand the splitter a zero-width piece. Dropping the duplicate is safe: the
-  // pieces either side of it are still bounded by their surviving neighbours.
+  // Two planes nudged toward the same gap land on the same edge, and keeping
+  // one of them merges their two pieces into a single oversize one. Dropping
+  // the duplicate is the only option — a seam cannot sit inside a cutout — but
+  // the result no longer fits the bed, so it counts as blocked rather than
+  // passing silently.
   const ordered = [...moved].sort((a, b) => a - b);
   const distinct = ordered.filter((p, i) => i === 0 || p - ordered[i - 1] > 1e-6);
-  return { planes: distinct, blocked };
+  return { planes: distinct, blocked: blocked + (ordered.length - distinct.length) };
 }
 
 /** Print bed, in mm. */
@@ -292,11 +327,23 @@ export interface FitTestSplitPlan {
   readonly blockedSeams: number;
 }
 
-/** The card's XY footprint, which is the bin's — the slice bounds material in
- *  Z only, so an overhang or custom shape carries through. */
+/**
+ * The card's XY footprint. The slice bounds material in Z only, so whatever the
+ * body spans, the card spans.
+ *
+ * Overhang grows the body past the nominal grid extent, and a plan built on the
+ * nominal figure calls an oversize card whole: the worker then measures the real
+ * bounds, decides it does not fit, and re-runs this same plan — which hands back
+ * one piece anyway. The dialog stays silent too, because it reads this plan.
+ * Gotcha #8: anything bounding material by the extent has to widen by the
+ * overhang.
+ */
 export function fitTestFootprintMm(params: BinParams): { width: number; depth: number } {
   const { outerW, outerD } = binDimensions(params);
-  return { width: outerW, depth: outerD };
+  const { addW, addD } = overhangExpansion(
+    resolveOverhang(isPartialMask(params.cellMask) ? undefined : params.overhang)
+  );
+  return { width: outerW + addW, depth: outerD + addD };
 }
 
 /**
@@ -322,22 +369,31 @@ export function planFitTestSplit(
 
   const pitchX = params.gridUnitMm;
   const pitchY = params.gridUnitMmY ?? params.gridUnitMm;
-  const rawX = splitPlanes(params.width, Math.max(1, Math.floor(bed.width / pitchX)), pitchX);
-  const rawY = splitPlanes(params.depth, Math.max(1, Math.floor(bed.depth / pitchY)), pitchY);
+  // The overhang eats bed width before the first cell does, so it comes off the
+  // bed rather than being ignored — otherwise the footprint check above calls
+  // the card oversize and the plane count still says it fits in one piece.
+  const usableW = bed.width - (footprint.width - binDimensions(params).outerW);
+  const usableD = bed.depth - (footprint.depth - binDimensions(params).outerD);
+  const rawX = splitPlanes(params.width, Math.max(1, Math.floor(usableW / pitchX)), pitchX);
+  const rawY = splitPlanes(params.depth, Math.max(1, Math.floor(usableD / pitchY)), pitchY);
   if (rawX.length === 0 && rawY.length === 0) return whole;
 
   // A seam may travel only as far as the bed slack allows: moving a plane into
   // a clear gap still has to leave both neighbouring pieces printable.
   const spans = fitTestCutoutSpans(params);
+  const halfW = footprint.width / 2;
+  const halfD = footprint.depth / 2;
   const planX = nudgeSeamsClearOfCutouts(
     rawX,
     spans.x,
-    Math.max(0, bed.width - (params.width * pitchX) / (rawX.length + 1))
+    Math.max(0, bed.width - (params.width * pitchX) / (rawX.length + 1)),
+    { min: -halfW, max: halfW }
   );
   const planY = nudgeSeamsClearOfCutouts(
     rawY,
     spans.y,
-    Math.max(0, bed.depth - (params.depth * pitchY) / (rawY.length + 1))
+    Math.max(0, bed.depth - (params.depth * pitchY) / (rawY.length + 1)),
+    { min: -halfD, max: halfD }
   );
 
   return {
@@ -350,7 +406,7 @@ export function planFitTestSplit(
 
 /** Area (mm²) a cutout's opening removes from the card's top face. */
 function openingAreaMm2(cutout: Cutout): number {
-  const grow = (cutout.clearance ?? 0) + (cutout.chamferWidth ?? 0);
+  const grow = openingGrowthMm(cutout);
   const w = cutout.width + 2 * grow;
   const d = cutout.depth + 2 * grow;
   switch (cutout.shape) {
@@ -388,10 +444,25 @@ function openingAreaMm2(cutout: Cutout): number {
  * disagree about how much a pocket takes out.
  */
 export function cutoutDisplacementMm3(params: BinParams, maxDepthMm = Infinity): number {
-  return fitTestCutouts(params).reduce(
-    (sum, cutout) => sum + openingAreaMm2(cutout) * Math.min(cutout.cutDepth, maxDepthMm),
-    0
-  );
+  const volumeOf = (cutout: Cutout): number =>
+    openingAreaMm2(cutout) * Math.min(cutout.cutDepth, maxDepthMm);
+
+  // Members of a pathfinder group are NOT additive: `subtract`, `intersect` and
+  // `exclude` all put material back, so summing them removes more than the
+  // group ever cuts and can drive a dense board's estimate to zero. The group's
+  // largest member is the honest bound for those; only `union` accumulates.
+  let total = 0;
+  const groups = new Map<string, number>();
+  for (const cutout of fitTestCutouts(params)) {
+    const volume = volumeOf(cutout);
+    if (cutout.groupId === null || (cutout.groupOp ?? 'union') === 'union') {
+      total += volume;
+      continue;
+    }
+    groups.set(cutout.groupId, Math.max(groups.get(cutout.groupId) ?? 0, volume));
+  }
+  for (const largest of groups.values()) total += largest;
+  return total;
 }
 
 /**
@@ -404,9 +475,17 @@ export function cutoutDisplacementMm3(params: BinParams, maxDepthMm = Infinity):
  * against `meshVolume` of real generated cards (gotcha #21).
  */
 export function estimateFitTestVolumeMm3(params: BinParams, thicknessMm: number): number {
-  const { outerW, outerD } = binDimensions(params);
+  const { width, depth } = fitTestFootprintMm(params);
   const r = GRIDFINITY_SPEC.BOX_CORNER_RADIUS;
-  const slabArea = outerW * outerD - (4 - Math.PI) * r * r;
+  let slabArea = width * depth - (4 - Math.PI) * r * r;
+
+  // A partial mask carves whole cells out of the footprint, exactly as
+  // `solidFillVolume` accounts for on the bin it is compared against — without
+  // this an L-shaped board's card reads close to twice its real cost.
+  if (isPartialMask(params.cellMask)) {
+    const cells = params.width * params.depth;
+    if (cells > 0) slabArea *= countFilled(params.cellMask) / cells;
+  }
 
   return Math.max(0, slabArea * thicknessMm - cutoutDisplacementMm3(params, thicknessMm));
 }
