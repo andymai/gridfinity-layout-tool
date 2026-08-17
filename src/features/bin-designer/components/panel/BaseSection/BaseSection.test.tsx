@@ -69,29 +69,36 @@ describe('BaseSection', () => {
   });
 
   describe('subsections that do not apply', () => {
-    it('drops Mounting and Feet on a flat base', () => {
-      // A flat base has no socket to drill or stand a foot on. The rows are
-      // absent rather than present-and-greyed, and nothing is concealed: the
-      // constraint engine clears what it disables.
+    it('drops the Mounting and Feet controls on a flat base but keeps them named', () => {
+      // A flat base has no socket to drill or stand a foot on. The controls go,
+      // and nothing is concealed by that (the engine clears what it disables),
+      // but the heading and a reason stay: a control that simply vanishes
+      // between one body type and the next is the confusing version of hiding.
       useDesignerStore.setState({
         params: { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' } },
       });
       render(<BaseSection />);
 
-      expect(screen.queryByText('Mounting')).not.toBeInTheDocument();
-      expect(screen.queryByText('Feet')).not.toBeInTheDocument();
       expect(screen.queryByRole('switch', { name: 'Magnet holes' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('switch', { name: 'Half sockets' })).not.toBeInTheDocument();
+
+      expect(screen.getByText('Mounting')).toBeInTheDocument();
+      expect(screen.getByText('Feet')).toBeInTheDocument();
+      expect(screen.getAllByText(/flat base/i).length).toBeGreaterThan(0);
     });
 
-    it('drops Mounting on a spacer, which has no floor to hold hardware', () => {
+    it('drops the Mounting controls on a spacer, which has no floor to hold hardware', () => {
       useDesignerStore.setState({
         params: { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, spacer: true } },
       });
       render(<BaseSection />);
 
-      expect(screen.queryByText('Mounting')).not.toBeInTheDocument();
-      // A spacer still stands on feet, so that family stays.
-      expect(screen.getByText('Feet')).toBeInTheDocument();
+      expect(screen.queryByRole('switch', { name: 'Magnet holes' })).not.toBeInTheDocument();
+      expect(screen.getByText('Mounting')).toBeInTheDocument();
+      expect(screen.getByText(/spacer has no floor to hold a magnet/i)).toBeInTheDocument();
+
+      // A spacer still stands on feet, so that family keeps its controls.
+      expect(screen.getByRole('switch', { name: 'Half sockets' })).toBeInTheDocument();
     });
 
     it('keeps every family on an ordinary bin', () => {

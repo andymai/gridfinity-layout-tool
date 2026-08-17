@@ -9,10 +9,12 @@
  *   4. Feet:      how the feet are laid out under the bin
  *   5. Floor:     what is removed from the floor
  *
- * Subsections 3-5 render only where the chosen body has them: a spacer has no
- * floor to perforate, a flat base has no socket to drill or lighten. Nothing is
- * hidden that is still in force. The constraint engine CLEARS what it disables,
- * so a hidden row is always a row that is off.
+ * Subsections 3-5 drop their controls where the chosen body has no use for
+ * them: a spacer has no floor to perforate, a flat base has no socket to drill
+ * or lighten. Each keeps its heading and one line saying why, so a control is
+ * never simply absent between one body type and the next. Nothing that is still
+ * in force is hidden either. The constraint engine CLEARS what it disables, so
+ * a dropped row is always a row that is off.
  *
  * Disabled reasons are computed by the constraint engine via useBaseSection.
  */
@@ -39,6 +41,24 @@ import { useBaseSection } from './useBaseSection';
 
 /** Axis key suffixes for the foot-lattice translation keys. */
 const FOOT_LATTICE_AXES = ['x', 'y'] as const;
+
+/**
+ * A family the chosen body cannot have, named rather than removed.
+ *
+ * Dropping the heading with the controls made a control vanish between one body
+ * type and the next with nothing said, which is worse than the greyed row it
+ * replaced: the setting was cleared either way, but the user lost the sentence
+ * explaining it. Keeping one dimmed line costs a row per inapplicable family
+ * and leaves nothing unaccounted for.
+ */
+function UnavailableFamily({ title, reason }: { title: string; reason: string }) {
+  return (
+    <section className="space-y-1 opacity-60">
+      <SubHeader>{title}</SubHeader>
+      <Hint>{reason}</Hint>
+    </section>
+  );
+}
 
 export function BaseSection() {
   const { state, handlers } = useBaseSection();
@@ -144,6 +164,12 @@ export function BaseSection() {
       </section>
 
       {/* ── Mounting ──────────────────────────────────────────────────── */}
+      {!state.showMounting && state.mountingUnavailable && (
+        <UnavailableFamily
+          title={t('binDesigner.base.section.mounting')}
+          reason={state.mountingUnavailable}
+        />
+      )}
       {state.showMounting && (
         <section className="space-y-3">
           <SubHeader>{t('binDesigner.base.section.mounting')}</SubHeader>
@@ -199,6 +225,12 @@ export function BaseSection() {
       )}
 
       {/* ── Feet ──────────────────────────────────────────────────────── */}
+      {!state.showFeet && state.feetUnavailable && (
+        <UnavailableFamily
+          title={t('binDesigner.base.section.feet')}
+          reason={state.feetUnavailable}
+        />
+      )}
       {state.showFeet && (
         <section className="space-y-3">
           <SubHeader>{t('binDesigner.base.section.feet')}</SubHeader>
@@ -303,6 +335,12 @@ export function BaseSection() {
       )}
 
       {/* ── Floor ─────────────────────────────────────────────────────── */}
+      {!state.showFloor && state.floorUnavailable && (
+        <UnavailableFamily
+          title={t('binDesigner.base.section.floor')}
+          reason={state.floorUnavailable}
+        />
+      )}
       {state.showFloor && (
         <section className="space-y-3">
           <SubHeader>{t('binDesigner.base.section.floor')}</SubHeader>

@@ -763,6 +763,23 @@ describe('useBaseSection — base-only bin residue', () => {
       }
     });
 
+    // Dropping a family's controls without saying why is the confusing version
+    // of hiding: the setting was cleared either way, so the sentence is all the
+    // user has. A silently missing family is the failure this guards.
+    it.each(BODY_TYPES)('names every family it drops on %s', (type) => {
+      useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS } });
+      const { result } = renderHook(() => useBaseSection());
+
+      act(() => {
+        result.current.handlers.setBodyType(type);
+      });
+
+      const { state } = result.current;
+      if (!state.showMounting) expect(state.mountingUnavailable).toBeTruthy();
+      if (!state.showFeet) expect(state.feetUnavailable).toBeTruthy();
+      if (!state.showFloor) expect(state.floorUnavailable).toBeTruthy();
+    });
+
     it('never hides a foot lattice that is actually in force', () => {
       useDesignerStore.setState({
         params: {

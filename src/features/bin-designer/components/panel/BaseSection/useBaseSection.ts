@@ -107,12 +107,11 @@ export function useBaseSection() {
   const footLatticeLockReason =
     bothAxesLockReason ??
     (footLatticeLockedX || footLatticeLockedY ? 'binDesigner.footLattice.fractionalHint' : null);
-  // With both axes locked the control cannot act on anything, so it is hidden
-  // rather than shown greyed. Its explanation moves to whatever caused the
-  // lock (see `halfSocketsInertHint`), which is where a user who wants the
-  // lattice back can actually do something about it. Nothing is concealed by
-  // hiding it: a locked axis reports the DEFAULT lattice below, so there is
-  // never a stored customisation behind this that is in force.
+  // With both axes locked the control cannot act on anything, so it is dropped
+  // rather than shown greyed, and `footLatticeInertReason` takes its slot to say
+  // why. Nothing is concealed by dropping it: a locked axis reports the DEFAULT
+  // lattice below, so there is never a stored customisation behind this that is
+  // in force.
   const footLatticeInert = footLatticeLockedX && footLatticeLockedY;
   const footLatticeX = footLatticeLockedX
     ? DEFAULT_FOOT_LATTICE
@@ -174,10 +173,35 @@ export function useBaseSection() {
   // there is nothing for a lattice or a half socket to describe.
   const hasFeet = !isSocketlessBase(base.style);
 
+  const floorPatternStatusForApplies = getFeatureStatus(params, 'floorPattern');
+
   const showMounting = applies(magnetStatus) || applies(screwStatus);
   const showFeet =
     hasFeet && (applies(detachableFeetStatus) || applies(halfSocketsStatus) || !footLatticeInert);
-  const showFloor = applies(lightweightStatus) || applies(getFeatureStatus(params, 'floorPattern'));
+  const showFloor = applies(lightweightStatus) || applies(floorPatternStatusForApplies);
+
+  /**
+   * Why a family is not on offer, kept next to the heading rather than removing
+   * the heading with it.
+   *
+   * The engine's own reason, never a restatement: the first feature in the
+   * family that has one speaks for all of them, because on every body that
+   * hides a family the same archetype is what disabled each of its features.
+   * Restating it here would be a second source of truth for pairings `rules.ts`
+   * already owns.
+   */
+  const familyReason = (...statuses: readonly { reason?: string }[]): string | undefined => {
+    const found = statuses.find((status) => status.reason !== undefined);
+    return found?.reason ? t(found.reason) : undefined;
+  };
+
+  const mountingUnavailable = showMounting ? undefined : familyReason(magnetStatus, screwStatus);
+  const feetUnavailable = showFeet
+    ? undefined
+    : familyReason(halfSocketsStatus, detachableFeetStatus);
+  const floorUnavailable = showFloor
+    ? undefined
+    : familyReason(lightweightStatus, floorPatternStatusForApplies);
 
   // Every base toggle commits through here. Only an effective spacer may stand
   // 1u tall, and several toggles can END one: leaving spacer mode, or
@@ -504,6 +528,11 @@ export function useBaseSection() {
       showMounting,
       showFeet,
       showFloor,
+      // A family this body cannot have keeps its heading and says why, so a
+      // control never simply vanishes between one body type and the next.
+      mountingUnavailable,
+      feetUnavailable,
+      floorUnavailable,
       showFootLattice: hasFeet && !footLatticeInert,
       // Why the lattice is not on offer, rendered in the slot it would have
       // occupied. Half sockets is the only cause with a control in this section
