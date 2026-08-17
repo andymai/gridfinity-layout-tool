@@ -46,6 +46,7 @@ import {
   GhostAuthoredDividers,
   GhostDividerPieces,
   GhostCutouts,
+  GhostLidCutouts,
   GhostWallCutouts,
   GhostHandles,
   OverhangHighlight,
@@ -479,6 +480,11 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
               {params.lid.enabled && params.base.stackingLip && (
                 <LidGuideLine lidOffsetMm={lidOffsetMm} />
               )}
+
+              {/* Through-cuts in the lid's plate. Outside the bin-overlay block
+                below because it rides the lid, not the bin, and needs the same
+                explode offset the lid mesh does. */}
+              <GhostLidCutouts lidOffsetMm={lidOffsetMm} />
 
               {/* Ghost outlines during generation (bin-only feature overlays) */}
               {isBinKind && (
