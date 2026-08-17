@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.418.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.417.0...gridfinity-layout-tool-v4.418.0) (2026-08-17)
+
+
+### Features
+
+* **bin-designer:** detachable feet ([#3543](https://github.com/andymai/gridfinity-layout-tool/issues/3543)) ([9752e2d](https://github.com/andymai/gridfinity-layout-tool/commit/9752e2de496ad0ec51277c1e5c507af9f23ea296))
+
 ## [4.417.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.416.0...gridfinity-layout-tool-v4.417.0) (2026-08-16)
 
 
