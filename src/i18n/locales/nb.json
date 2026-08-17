@@ -3903,5 +3903,10 @@
   "binDesigner.preview.feetDetached": "Løsnet",
   "binDesigner.preview.feetAttached": "Festet",
   "binDesigner.preview.feetDetachSlider": "Løsne føttene",
-  "binDesigner.detachableFeetNeedsThickerWall": "Så tynne vegger gir for lite gulv til å holde en pinne"
+  "binDesigner.detachableFeetNeedsThickerWall": "Så tynne vegger gir for lite gulv til å holde en pinne",
+  "binDesigner.lid.editCutouts": "Skjær hull i lokket",
+  "binDesigner.lid.editCutoutsCount": "Skjær hull i lokket ({count})",
+  "binDesigner.lid.editCutoutsHint": "Tegn former som går helt gjennom lokkplaten: en dispenserspalte, en lufteåpning, en kabelgjennomføring. De holder avstand til koblingsveggen og magnetsoklene.",
+  "binDesigner.lid.editCutoutsBlocked": "Tilgjengelig på et lokk med flat topp og rektangulært omriss. Et fullt stablingsrutenett dekker toppflaten; et rutenett med bare kant lar den være brukbar.",
+  "binDesigner.cutouts.throughDepthHint": "Skjærer gjennom alle {depth} mm av platen."
 }

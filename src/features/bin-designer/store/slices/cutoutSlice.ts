@@ -25,6 +25,34 @@ import { pushHistoryEntry, dissolveSingletonGroups } from '../helpers';
 import { generateLayoutId } from '@/shared/utils/uuid';
 import { scalePathPoints, translatePathPoints } from '../../utils/pathTransforms';
 
+/**
+ * The cutout array every action in this slice reads and writes, chosen by
+ * `ui.cutoutTarget`.
+ *
+ * Returns the OWNER of the array (`params` or `params.lid`) rather than the array
+ * itself, so a caller can both read `owner.cutouts` and assign to it — an immer
+ * draft property assignment either way. That is what lets one editor serve the
+ * bin's interior and the lid's plate without a target argument threaded through
+ * twenty action signatures, and it means an action added later is retargetable by
+ * construction instead of by remembering to be.
+ *
+ * The two arrays are deliberately separate rather than one tagged list: a bin
+ * cutout is a pocket of user-chosen depth in the interior floor and a lid cutout
+ * goes clean through the plate, and they are measured in different frames.
+ */
+function cutoutOwner(state: Draft<DesignerState>): { cutouts: Cutout[] } {
+  if (state.ui.cutoutTarget !== 'lid') return state.params;
+  const lid = state.params.lid;
+  // `lid.cutouts` is absent rather than empty on a design that has none, so the
+  // fingerprint of every design published before the feature is unchanged (see the
+  // field's note). Materializing it here — inside a producer, so it is a real draft
+  // mutation — is what lets the actions below read and write it unconditionally.
+  // It only ever runs when a cutout action fires against the lid, which means the
+  // user opened its editor.
+  lid.cutouts ??= [];
+  return lid as { cutouts: Cutout[] };
+}
+
 // Points are absolute, handles are relative — scale around the old origin
 // first so the bounds end up flush with the new x/y, then translate.
 function applyPathTransform(c: Cutout, updates: Partial<Cutout>): PathPoint[] | undefined {
@@ -72,7 +100,9 @@ function gcMeshAssets(state: Draft<DesignerState>): void {
   const assets = state.params.meshAssets;
   if (!assets) return;
   const referenced = new Set(
-    state.params.cutouts.map((c) => c.meshId).filter((id): id is string => id !== undefined)
+    cutoutOwner(state)
+      .cutouts.map((c) => c.meshId)
+      .filter((id): id is string => id !== undefined)
   );
   const kept = Object.entries(assets).filter(([id]) => referenced.has(id));
   if (kept.length === Object.keys(assets).length) return;
@@ -100,7 +130,7 @@ function togglePropertyAffectsGeometry(partial: CutoutToggleProperties): boolean
  * visually and skip the worker.
  */
 function zOrderAffectsGeometry(state: Draft<DesignerState>): boolean {
-  return state.params.cutouts.some((c) => c.groupId !== null);
+  return cutoutOwner(state).cutouts.some((c) => c.groupId !== null);
 }
 
 /**
@@ -122,7 +152,7 @@ function withTopZIndex(state: Draft<DesignerState>, cutout: Cutout): Cutout {
 
 /** One past the highest occupied layer. */
 function nextTopZIndex(state: Draft<DesignerState>): number {
-  return state.params.cutouts.reduce((m, c) => Math.max(m, c.zIndex ?? 0), -1) + 1;
+  return cutoutOwner(state).cutouts.reduce((m, c) => Math.max(m, c.zIndex ?? 0), -1) + 1;
 }
 
 export function createCutoutSlice(set: Set) {
@@ -148,13 +178,13 @@ export function createCutoutSlice(set: Set) {
       // value. Now that `hidden` bumps the generation epoch, re-hiding an
       // already-hidden cutout would otherwise cost a full worker rebuild on top
       // of a redundant undo entry.
-      const changed = state.params.cutouts.some(
+      const changed = cutoutOwner(state).cutouts.some(
         (c) => idSet.has(c.id) && keys.some((k) => c[k] !== partial[k])
       );
       if (!changed) return;
 
       pushHistoryEntry(state, { affectsGeometry: togglePropertyAffectsGeometry(partial) });
-      state.params.cutouts = state.params.cutouts.map((c) =>
+      cutoutOwner(state).cutouts = cutoutOwner(state).cutouts.map((c) =>
         idSet.has(c.id) ? { ...c, ...partial } : c
       );
     });
@@ -211,7 +241,7 @@ export function createCutoutSlice(set: Set) {
     if (ids.length === 0) return;
     set((state) => {
       const idSet = new Set(ids);
-      const cutouts = state.params.cutouts;
+      const cutouts = cutoutOwner(state).cutouts;
       if (!cutouts.some((c) => idSet.has(c.id))) return;
 
       const isSelected = (c: Cutout): boolean => idSet.has(c.id);
@@ -246,7 +276,7 @@ export function createCutoutSlice(set: Set) {
    * commit, skipping history entirely when nothing actually moved.
    */
   const commitStack = (state: Draft<DesignerState>, bottomToTop: readonly Cutout[]): void => {
-    const cutouts = state.params.cutouts;
+    const cutouts = cutoutOwner(state).cutouts;
     // Compare ORDER, not the stored values: a legacy design has every zIndex at
     // the default 0, so renumbering would rewrite each one and push an undo
     // entry for a drag that moved nothing.
@@ -260,7 +290,7 @@ export function createCutoutSlice(set: Set) {
     if (restacked.every((c, i) => c === cutouts[i])) return;
 
     pushHistoryEntry(state, { affectsGeometry: zOrderAffectsGeometry(state) });
-    state.params.cutouts = restacked;
+    cutoutOwner(state).cutouts = restacked;
   };
 
   /**
@@ -277,7 +307,7 @@ export function createCutoutSlice(set: Set) {
       const idSet = new Set(ids);
       if (targetId !== null && idSet.has(targetId)) return;
 
-      const order = stackBottomToTop(state.params.cutouts);
+      const order = stackBottomToTop(cutoutOwner(state).cutouts);
       const moved = order.filter((c) => idSet.has(c.id));
       if (moved.length === 0) return;
       const rest = order.filter((c) => !idSet.has(c.id));
@@ -293,11 +323,11 @@ export function createCutoutSlice(set: Set) {
 
   const showAllCutouts = (): void => {
     set((state) => {
-      const hasHidden = state.params.cutouts.some((c) => c.hidden);
+      const hasHidden = cutoutOwner(state).cutouts.some((c) => c.hidden);
       if (!hasHidden) return;
       // Unhiding restores cuts the worker had dropped, so this regenerates.
       pushHistoryEntry(state, { affectsGeometry: true });
-      state.params.cutouts = state.params.cutouts.map((c) =>
+      cutoutOwner(state).cutouts = cutoutOwner(state).cutouts.map((c) =>
         c.hidden ? { ...c, hidden: false } : c
       );
     });
@@ -313,7 +343,7 @@ export function createCutoutSlice(set: Set) {
   ): void => {
     if (ids.length === 0) return;
     set((state) => {
-      const affected = expandIdsToGroups(state.params.cutouts, ids);
+      const affected = expandIdsToGroups(cutoutOwner(state).cutouts, ids);
       const clearing = patch.color === null;
 
       const applyColor = (c: Cutout): Cutout => {
@@ -330,8 +360,10 @@ export function createCutoutSlice(set: Set) {
         return { ...c, color: nextColor, colorScope: nextScope };
       };
 
-      const nextCutouts = state.params.cutouts.map((c) => (affected.has(c.id) ? applyColor(c) : c));
-      const changed = nextCutouts.some((c, i) => c !== state.params.cutouts[i]);
+      const nextCutouts = cutoutOwner(state).cutouts.map((c) =>
+        affected.has(c.id) ? applyColor(c) : c
+      );
+      const changed = nextCutouts.some((c, i) => c !== cutoutOwner(state).cutouts[i]);
 
       // Applying a color implies the user wants multi-color output; auto-enable
       // so the swatch shows instead of silently no-op'ing until they find the
@@ -340,7 +372,7 @@ export function createCutoutSlice(set: Set) {
       if (!changed && !shouldEnable) return;
 
       pushHistoryEntry(state, { affectsGeometry: false });
-      state.params.cutouts = nextCutouts;
+      cutoutOwner(state).cutouts = nextCutouts;
       if (shouldEnable) {
         state.params.featureColors = { ...state.params.featureColors, enabled: true };
       }
@@ -371,7 +403,7 @@ export function createCutoutSlice(set: Set) {
     addCutout: (cutout: Cutout) => {
       set((state) => {
         pushHistoryEntry(state);
-        state.params.cutouts = [...state.params.cutouts, withTopZIndex(state, cutout)];
+        cutoutOwner(state).cutouts = [...cutoutOwner(state).cutouts, withTopZIndex(state, cutout)];
       });
     },
 
@@ -390,15 +422,15 @@ export function createCutoutSlice(set: Set) {
         }
         pushHistoryEntry(state);
         state.params.meshAssets = { ...existing, [meshId]: asset };
-        state.params.cutouts = [...state.params.cutouts, withTopZIndex(state, cutout)];
+        cutoutOwner(state).cutouts = [...cutoutOwner(state).cutouts, withTopZIndex(state, cutout)];
       });
     },
 
     removeCutout: (id: string) => {
       set((state) => {
         pushHistoryEntry(state);
-        state.params.cutouts = state.params.cutouts.filter((c) => c.id !== id);
-        state.params.cutouts = dissolveSingletonGroups(state.params.cutouts);
+        cutoutOwner(state).cutouts = cutoutOwner(state).cutouts.filter((c) => c.id !== id);
+        cutoutOwner(state).cutouts = dissolveSingletonGroups(cutoutOwner(state).cutouts);
         gcMeshAssets(state);
       });
     },
@@ -406,7 +438,7 @@ export function createCutoutSlice(set: Set) {
     updateCutout: (id: string, updates: Partial<Cutout>) => {
       set((state) => {
         pushHistoryEntry(state);
-        state.params.cutouts = state.params.cutouts.map((c) => {
+        cutoutOwner(state).cutouts = cutoutOwner(state).cutouts.map((c) => {
           if (c.id !== id) return c;
           const transformedPath = applyPathTransform(c, updates);
           return transformedPath
@@ -419,7 +451,7 @@ export function createCutoutSlice(set: Set) {
     clearCutouts: () => {
       set((state) => {
         pushHistoryEntry(state);
-        state.params.cutouts = [];
+        cutoutOwner(state).cutouts = [];
         gcMeshAssets(state);
       });
     },
@@ -428,7 +460,7 @@ export function createCutoutSlice(set: Set) {
       if (cutoutIds.length === 0) return;
       set((state) => {
         pushHistoryEntry(state);
-        const toDuplicate = state.params.cutouts.filter((c) => cutoutIds.includes(c.id));
+        const toDuplicate = cutoutOwner(state).cutouts.filter((c) => cutoutIds.includes(c.id));
         // Map old groupId -> new groupId so groups are preserved
         const groupMap = new Map<string, string>();
         const topZ = nextTopZIndex(state);
@@ -457,7 +489,7 @@ export function createCutoutSlice(set: Set) {
             ...(translatedPath ? { path: translatedPath } : {}),
           };
         });
-        state.params.cutouts = [...state.params.cutouts, ...duplicated];
+        cutoutOwner(state).cutouts = [...cutoutOwner(state).cutouts, ...duplicated];
       });
     },
 
@@ -480,25 +512,27 @@ export function createCutoutSlice(set: Set) {
         const moving = new Set(ids);
         if (targetId !== null && moving.has(targetId)) return;
         const target =
-          targetId === null ? null : (state.params.cutouts.find((c) => c.id === targetId) ?? null);
+          targetId === null
+            ? null
+            : (cutoutOwner(state).cutouts.find((c) => c.id === targetId) ?? null);
         if (targetId !== null && !target) return;
 
         const destGroupId = target?.groupId ?? (target ? generateLayoutId() : null);
         // Forming a fresh pair means the target joins too.
         if (target && target.groupId === null) moving.add(target.id);
 
-        const noChange = state.params.cutouts.every(
+        const noChange = cutoutOwner(state).cutouts.every(
           (c) => !moving.has(c.id) || c.groupId === destGroupId
         );
         if (noChange) return;
 
         const destOp: GroupOp =
           (target?.groupId
-            ? state.params.cutouts.find((c) => c.groupId === target.groupId)?.groupOp
+            ? cutoutOwner(state).cutouts.find((c) => c.groupId === target.groupId)?.groupOp
             : undefined) ?? DEFAULT_GROUP_OP;
 
         pushHistoryEntry(state);
-        state.params.cutouts = state.params.cutouts.map((c) =>
+        cutoutOwner(state).cutouts = cutoutOwner(state).cutouts.map((c) =>
           moving.has(c.id)
             ? {
                 ...c,
@@ -508,7 +542,7 @@ export function createCutoutSlice(set: Set) {
             : c
         );
         // Pulling members out can strand a one-member group behind.
-        state.params.cutouts = dissolveSingletonGroups(state.params.cutouts);
+        cutoutOwner(state).cutouts = dissolveSingletonGroups(cutoutOwner(state).cutouts);
       });
     },
 
@@ -516,7 +550,7 @@ export function createCutoutSlice(set: Set) {
       if (cutoutIds.length < 2) return;
       set((state) => {
         // Reuse an existing groupId if any selected cutout already belongs to a group
-        const existingMember = state.params.cutouts.find(
+        const existingMember = cutoutOwner(state).cutouts.find(
           (c) => cutoutIds.includes(c.id) && c.groupId !== null
         );
         const existingGroupId = existingMember?.groupId ?? null;
@@ -526,7 +560,7 @@ export function createCutoutSlice(set: Set) {
         const groupOp: GroupOp = op ?? existingMember?.groupOp ?? DEFAULT_GROUP_OP;
         const idsToGroup = new Set(cutoutIds);
         if (existingGroupId) {
-          for (const c of state.params.cutouts) {
+          for (const c of cutoutOwner(state).cutouts) {
             if (c.groupId === existingGroupId) idsToGroup.add(c.id);
           }
         }
@@ -534,11 +568,11 @@ export function createCutoutSlice(set: Set) {
         // colored member, so a freshly grouped set can't hold mixed backings.
         const colorSource =
           (existingGroupId
-            ? state.params.cutouts.find(
+            ? cutoutOwner(state).cutouts.find(
                 (c) => c.groupId === existingGroupId && c.color !== undefined
               )
             : undefined) ??
-          state.params.cutouts.find((c) => idsToGroup.has(c.id) && c.color !== undefined);
+          cutoutOwner(state).cutouts.find((c) => idsToGroup.has(c.id) && c.color !== undefined);
         const colorPatch: Pick<Cutout, 'color' | 'colorScope'> | undefined = colorSource
           ? {
               color: colorSource.color,
@@ -548,7 +582,7 @@ export function createCutoutSlice(set: Set) {
         // Re-grouping a set that already forms this exact group changes nothing,
         // and an unconditional history push would spend an undo slot on it —
         // reachable from Ctrl+G on a partial selection of one group.
-        const noChange = state.params.cutouts.every(
+        const noChange = cutoutOwner(state).cutouts.every(
           (c) =>
             !idsToGroup.has(c.id) ||
             (c.groupId === groupId &&
@@ -560,7 +594,7 @@ export function createCutoutSlice(set: Set) {
         if (noChange) return;
 
         pushHistoryEntry(state);
-        state.params.cutouts = state.params.cutouts.map((c) =>
+        cutoutOwner(state).cutouts = cutoutOwner(state).cutouts.map((c) =>
           idsToGroup.has(c.id) ? { ...c, groupId, groupOp, ...colorPatch } : c
         );
       });
@@ -569,7 +603,7 @@ export function createCutoutSlice(set: Set) {
     ungroupCutouts: (cutoutIds: readonly string[]) => {
       set((state) => {
         pushHistoryEntry(state);
-        state.params.cutouts = state.params.cutouts.map((c) => {
+        cutoutOwner(state).cutouts = cutoutOwner(state).cutouts.map((c) => {
           if (!cutoutIds.includes(c.id)) return c;
           const { groupOp: _omit, ...rest } = c;
           return { ...rest, groupId: null };
@@ -577,18 +611,18 @@ export function createCutoutSlice(set: Set) {
         // A group can be left with a single member after a partial ungroup;
         // dissolve that singleton so the Pathfinder UI doesn't pretend a lone
         // cutout still belongs to an active group.
-        state.params.cutouts = dissolveSingletonGroups(state.params.cutouts);
+        cutoutOwner(state).cutouts = dissolveSingletonGroups(cutoutOwner(state).cutouts);
       });
     },
 
     setGroupOp: (groupId: string, op: GroupOp) => {
       set((state) => {
-        const hasMatchingGroup = state.params.cutouts.some(
+        const hasMatchingGroup = cutoutOwner(state).cutouts.some(
           (c) => c.groupId === groupId && (c.groupOp ?? DEFAULT_GROUP_OP) !== op
         );
         if (!hasMatchingGroup) return;
         pushHistoryEntry(state);
-        state.params.cutouts = state.params.cutouts.map((c) =>
+        cutoutOwner(state).cutouts = cutoutOwner(state).cutouts.map((c) =>
           c.groupId === groupId ? { ...c, groupOp: op } : c
         );
       });
@@ -599,7 +633,7 @@ export function createCutoutSlice(set: Set) {
       if (updates.size === 0) return;
       set((state) => {
         pushHistoryEntry(state);
-        state.params.cutouts = state.params.cutouts.map((c) => {
+        cutoutOwner(state).cutouts = cutoutOwner(state).cutouts.map((c) => {
           const u = updates.get(c.id);
           if (!u) return c;
           const transformedPath = applyPathTransform(c, u);
@@ -613,8 +647,8 @@ export function createCutoutSlice(set: Set) {
       set((state) => {
         pushHistoryEntry(state);
         const idSet = new Set(ids);
-        state.params.cutouts = state.params.cutouts.filter((c) => !idSet.has(c.id));
-        state.params.cutouts = dissolveSingletonGroups(state.params.cutouts);
+        cutoutOwner(state).cutouts = cutoutOwner(state).cutouts.filter((c) => !idSet.has(c.id));
+        cutoutOwner(state).cutouts = dissolveSingletonGroups(cutoutOwner(state).cutouts);
         gcMeshAssets(state);
       });
     },

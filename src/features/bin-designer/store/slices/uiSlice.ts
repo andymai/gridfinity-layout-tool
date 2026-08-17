@@ -7,6 +7,7 @@ import type {
   DesignerState,
   BinParams,
   ColorTool,
+  CutoutTarget,
   DesignerTab,
   PickerOverlayState,
   SplitViewMode,
@@ -48,10 +49,16 @@ export function createUISlice(set: Set) {
       });
     },
 
-    setCutoutEditorOpen: (open: boolean) => {
+    setCutoutEditorOpen: (open: boolean, target: CutoutTarget = 'bin') => {
       set((state) => {
         state.ui.cutoutEditorOpen = open;
         if (open) state.ui.bentoWorkspaceOpen = false;
+        // Set on the way IN, and reset on the way out. Every cutout action reads
+        // this to choose an array, so a target left pointing at the lid after the
+        // editor closed would send the sidebar's own cutout controls to the wrong
+        // part — the same class of leak `selectedBentoCompartmentId` is cleared
+        // for below.
+        state.ui.cutoutTarget = open ? target : 'bin';
       });
     },
 

@@ -3903,5 +3903,10 @@
   "binDesigner.preview.feetDetached": "Los",
   "binDesigner.preview.feetAttached": "Vast",
   "binDesigner.preview.feetDetachSlider": "Voetjes losmaken",
-  "binDesigner.detachableFeetNeedsThickerWall": "Zulke dunne wanden laten te weinig bodem over om een pen vast te houden"
+  "binDesigner.detachableFeetNeedsThickerWall": "Zulke dunne wanden laten te weinig bodem over om een pen vast te houden",
+  "binDesigner.lid.editCutouts": "Gaten in het deksel snijden",
+  "binDesigner.lid.editCutoutsCount": "Gaten in het deksel snijden ({count})",
+  "binDesigner.lid.editCutoutsHint": "Teken vormen die helemaal door de dekselplaat gaan: een uitgifteslot, een ventilatieopening, een kabeldoorvoer. Ze blijven weg van de koppelwand en de magneetsokkels.",
+  "binDesigner.lid.editCutoutsBlocked": "Beschikbaar op een deksel met een platte bovenkant en een rechthoekige voetafdruk. Een volledig stapelraster bedekt het bovenvlak; een raster met alleen een rand laat het bruikbaar.",
+  "binDesigner.cutouts.throughDepthHint": "Snijdt door alle {depth} mm van de plaat."
 }

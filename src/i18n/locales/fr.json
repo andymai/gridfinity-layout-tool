@@ -3903,5 +3903,10 @@
   "binDesigner.preview.feetDetached": "Détachés",
   "binDesigner.preview.feetAttached": "Fixés",
   "binDesigner.preview.feetDetachSlider": "Détacher les pieds",
-  "binDesigner.detachableFeetNeedsThickerWall": "Des parois aussi fines laissent trop peu de fond pour tenir un ergot"
+  "binDesigner.detachableFeetNeedsThickerWall": "Des parois aussi fines laissent trop peu de fond pour tenir un ergot",
+  "binDesigner.lid.editCutouts": "Découper des trous dans le couvercle",
+  "binDesigner.lid.editCutoutsCount": "Découper des trous dans le couvercle ({count})",
+  "binDesigner.lid.editCutoutsHint": "Dessinez des formes qui traversent entièrement la plaque du couvercle : une fente distributrice, une aération, un passage de câble. Elles restent à l’écart de la paroi d’emboîtement et des embases d’aimant.",
+  "binDesigner.lid.editCutoutsBlocked": "Disponible sur un couvercle à dessus plat et à empreinte rectangulaire. Une grille d’empilage complète couvre la face supérieure ; une grille à rebord seul la laisse utilisable.",
+  "binDesigner.cutouts.throughDepthHint": "Traverse les {depth} mm de la plaque."
 }

@@ -54,6 +54,7 @@ import type {
   DesignerUIState,
   DesignerTab,
   SplitViewMode,
+  CutoutTarget,
   ColorTool,
   PickerOverlayState,
   DividerTiltPreview,
@@ -297,7 +298,12 @@ export interface DesignerState {
   setExportDialogOpen: (open: boolean) => void;
   setDesignListOpen: (open: boolean) => void;
   setWireframeMode: (enabled: boolean) => void;
-  setCutoutEditorOpen: (open: boolean) => void;
+  /**
+   * Open or close the full-workspace cutout editor, and say which part it draws
+   * on. Closing resets the target to the bin, so the sidebar's own cutout
+   * controls can never be left pointed at the lid.
+   */
+  setCutoutEditorOpen: (open: boolean, target?: CutoutTarget) => void;
   setBentoWorkspaceOpen: (open: boolean) => void;
   setInteriorCard: (card: InteriorCard) => void;
   setShapeEditorOpen: (open: boolean) => void;

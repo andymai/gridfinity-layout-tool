@@ -707,13 +707,20 @@ function migrateCutout(cutout: Cutout & LegacyCutoutFields): Cutout {
  * - The array is capped at {@link MAX_LID_CUTOUTS}, so a crafted share cannot
  *   hand the boolean engine an unbounded shape list. Truncation matches the
  *   client action's refusal rather than silently keeping the tail.
+ *
+ * Returns `undefined` rather than `[]` for the absent/empty case, so a design with
+ * no lid cutouts serializes exactly as it did before the field existed.
  */
-function migrateLidCutouts(raw: unknown): Cutout[] {
-  if (!Array.isArray(raw)) return [];
-  return raw
+function migrateLidCutouts(raw: unknown): Cutout[] | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  const out = raw
     .map((c) => migrateCutout(c as Cutout & LegacyCutoutFields))
     .filter((c) => c.shape !== 'mesh')
     .slice(0, MAX_LID_CUTOUTS);
+  // Absent, not empty: see the field's own note. An array that migrated down to
+  // nothing (all-mesh, say) must collapse too, or it would shift the fingerprint
+  // of a design that ends up carrying no lid cutouts at all.
+  return out.length > 0 ? out : undefined;
 }
 
 /**
@@ -1196,6 +1203,8 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         // NOT left to the `DEFAULT_LID_CONFIG` spread above: that defaults it
         // on, which is right for a new design and wrong for every old one.
         relieveInterior: rawRelieveInterior === true,
+        // Spread `undefined` deliberately: the key is present-but-undefined here,
+        // which `stableStringify` and `JSON.stringify` both drop.
         cutouts: migrateLidCutouts(rawLidCutouts),
       };
     })(),

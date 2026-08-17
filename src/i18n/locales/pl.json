@@ -3903,5 +3903,10 @@
   "binDesigner.preview.feetDetached": "Odłączone",
   "binDesigner.preview.feetAttached": "Przyłączone",
   "binDesigner.preview.feetDetachSlider": "Odłącz nóżki",
-  "binDesigner.detachableFeetNeedsThickerWall": "Tak cienkie ścianki zostawiają za mało dna, by utrzymać kołek"
+  "binDesigner.detachableFeetNeedsThickerWall": "Tak cienkie ścianki zostawiają za mało dna, by utrzymać kołek",
+  "binDesigner.lid.editCutouts": "Wytnij otwory w pokrywie",
+  "binDesigner.lid.editCutoutsCount": "Wytnij otwory w pokrywie ({count})",
+  "binDesigner.lid.editCutoutsHint": "Rysuj kształty przechodzące na wylot przez płytę pokrywy: szczelinę podajnika, wentylację, przepust na kabel. Zachowują odstęp od ścianki łączącej i gniazd magnesów.",
+  "binDesigner.lid.editCutoutsBlocked": "Dostępne dla pokrywy z płaskim wierzchem i prostokątnym obrysem. Pełna siatka do sztaplowania zakrywa górną powierzchnię; siatka z samym rantem pozostawia ją użyteczną.",
+  "binDesigner.cutouts.throughDepthHint": "Przecina całe {depth} mm płyty."
 }

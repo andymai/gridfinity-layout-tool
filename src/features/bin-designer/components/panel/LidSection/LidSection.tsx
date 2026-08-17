@@ -361,6 +361,26 @@ export function LidSection() {
             />
           </section>
 
+          {/* ── Holes through the plate ───────────────────────────────── */}
+          <div className="space-y-1">
+            <Button
+              variant="secondary"
+              size="sm"
+              className="w-full"
+              disabled={!state.cutouts.allowed}
+              onClick={handlers.openLidCutoutEditor}
+            >
+              {state.cutouts.count > 0
+                ? t('binDesigner.lid.editCutoutsCount', { count: state.cutouts.count })
+                : t('binDesigner.lid.editCutouts')}
+            </Button>
+            <Hint>
+              {state.cutouts.allowed
+                ? t('binDesigner.lid.editCutoutsHint')
+                : t('binDesigner.lid.editCutoutsBlocked')}
+            </Hint>
+          </div>
+
           {/* ── Extra height (folded in) ─────────────────────────────── */}
           <div className="space-y-1">
             <StepperField

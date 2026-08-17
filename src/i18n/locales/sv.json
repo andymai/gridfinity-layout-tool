@@ -3903,5 +3903,10 @@
   "binDesigner.preview.feetDetached": "Lossade",
   "binDesigner.preview.feetAttached": "Fastsatta",
   "binDesigner.preview.feetDetachSlider": "Lossa fötterna",
-  "binDesigner.detachableFeetNeedsThickerWall": "Så tunna väggar lämnar för lite golv för att hålla ett stift"
+  "binDesigner.detachableFeetNeedsThickerWall": "Så tunna väggar lämnar för lite golv för att hålla ett stift",
+  "binDesigner.lid.editCutouts": "Skär hål i locket",
+  "binDesigner.lid.editCutoutsCount": "Skär hål i locket ({count})",
+  "binDesigner.lid.editCutoutsHint": "Rita former som går rakt genom lockplattan: en dispenserspringa, en ventil, en kabelgenomföring. De håller avstånd till kopplingsväggen och magnetsocklarna.",
+  "binDesigner.lid.editCutoutsBlocked": "Tillgängligt på ett lock med plan översida och rektangulär form. Ett fullt staplingsraster täcker översidan; ett raster med bara kant lämnar den användbar.",
+  "binDesigner.cutouts.throughDepthHint": "Skär genom alla {depth} mm av plattan."
 }

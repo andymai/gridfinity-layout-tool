@@ -273,6 +273,7 @@ export const DEFAULT_UI_STATE: DesignerUIState = {
   wireframeMode: false,
   halfGridMode: false,
   cutoutEditorOpen: false,
+  cutoutTarget: 'bin',
   bentoWorkspaceOpen: false,
   interiorCard: 'standard',
   previewCompartments: null,

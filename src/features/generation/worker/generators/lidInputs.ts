@@ -354,7 +354,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   // the lid has a usable top face. Mesh-shaped entries are refused here as well
   // as dropped in migration: an imprint is subtracted after tessellation, in the
   // BIN's mesh frame, so no lid solid can describe one.
-  const lidCutoutSource = params.lid.cutouts.filter((c) => c.shape !== 'mesh');
+  const lidCutoutSource = (params.lid.cutouts ?? []).filter((c) => c.shape !== 'mesh');
   const cutoutWindow = lidCutoutSource.length > 0 ? lidCutoutWindow(params) : null;
   let cutouts: LidCutoutInputs | null = null;
   if (cutoutWindow) {

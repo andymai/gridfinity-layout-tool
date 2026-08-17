@@ -3903,5 +3903,10 @@
   "binDesigner.preview.feetDetached": "已拆下",
   "binDesigner.preview.feetAttached": "已装上",
   "binDesigner.preview.feetDetachSlider": "拆下底脚",
-  "binDesigner.detachableFeetNeedsThickerWall": "这么薄的壁面剩下的底板不足以固定销钉"
+  "binDesigner.detachableFeetNeedsThickerWall": "这么薄的壁面剩下的底板不足以固定销钉",
+  "binDesigner.lid.editCutouts": "在盖子上开孔",
+  "binDesigner.lid.editCutoutsCount": "在盖子上开孔（{count}）",
+  "binDesigner.lid.editCutoutsHint": "绘制贯穿盖板的形状：取物开口、通风孔、走线孔。它们会避开配合壁和磁铁座。",
+  "binDesigner.lid.editCutoutsBlocked": "适用于顶面平整且外形为矩形的盖子。完整的堆叠网格会覆盖顶面；仅边缘的网格仍可使用。",
+  "binDesigner.cutouts.throughDepthHint": "贯穿盖板全部 {depth} mm。"
 }

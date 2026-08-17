@@ -79,6 +79,13 @@ interface SingleCutoutInspectorProps {
   readonly binWidth: number;
   readonly binDepth: number;
   readonly maxCutDepth: number;
+  /**
+   * The host cuts clean through, so `cutDepth` and the scoop fillets are inert:
+   * a lid's plate has no floor for a pocket to stop at or a fillet to curve
+   * against. Their controls are hidden rather than disabled, because a disabled
+   * stepper still shows a number the geometry does not use.
+   */
+  readonly throughOnly?: boolean;
   readonly onUpdate: (id: string, updates: Partial<Cutout>) => void;
   readonly onFitCue?: (cue: FitCue) => void;
   readonly onFlattenArray?: (id: string) => void;
@@ -91,6 +98,7 @@ export function SingleCutoutInspector({
   binWidth,
   binDepth,
   maxCutDepth,
+  throughOnly = false,
   onUpdate,
   onFitCue,
   onFlattenArray,
@@ -167,16 +175,27 @@ export function SingleCutoutInspector({
               unit="°"
               disabled={disabled}
             />
-            <CompactNumberInput
-              label={t('binDesigner.cutouts.cutDepth')}
-              value={cutout.cutDepth}
-              onChange={(cutDepth) => onUpdate(cutout.id, { cutDepth })}
-              min={0.5}
-              max={maxCutDepth}
-              step={0.5}
-              unit="mm"
-              disabled={disabled}
-            />
+            {/* A through-cutting host has no floor for the pocket to stop at, so
+                the stored depth is overridden at build time and the control would
+                report a number the part does not have. */}
+            {throughOnly ? (
+              <p className="text-xs text-content-tertiary">
+                {t('binDesigner.cutouts.throughDepthHint', {
+                  depth: maxCutDepth.toFixed(1),
+                })}
+              </p>
+            ) : (
+              <CompactNumberInput
+                label={t('binDesigner.cutouts.cutDepth')}
+                value={cutout.cutDepth}
+                onChange={(cutDepth) => onUpdate(cutout.id, { cutDepth })}
+                min={0.5}
+                max={maxCutDepth}
+                step={0.5}
+                unit="mm"
+                disabled={disabled}
+              />
+            )}
           </div>
         </Collapsible>
       </div>

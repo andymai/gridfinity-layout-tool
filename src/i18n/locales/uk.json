@@ -3903,5 +3903,10 @@
   "binDesigner.preview.feetDetached": "Від’єднано",
   "binDesigner.preview.feetAttached": "Приєднано",
   "binDesigner.preview.feetDetachSlider": "Від’єднати ніжки",
-  "binDesigner.detachableFeetNeedsThickerWall": "Такі тонкі стінки залишають замало дна, щоб утримати штифт"
+  "binDesigner.detachableFeetNeedsThickerWall": "Такі тонкі стінки залишають замало дна, щоб утримати штифт",
+  "binDesigner.lid.editCutouts": "Вирізати отвори у кришці",
+  "binDesigner.lid.editCutoutsCount": "Вирізати отвори у кришці ({count})",
+  "binDesigner.lid.editCutoutsHint": "Малюйте форми, що проходять наскрізь через пластину кришки: щілину для видачі, вентиляцію, прохід для кабелю. Вони тримаються осторонь від стінки з’єднання та основ магнітів.",
+  "binDesigner.lid.editCutoutsBlocked": "Доступно для кришки з рівним верхом і прямокутним контуром. Повна сітка для стосування закриває верхню поверхню; сітка лише з бортиком залишає її придатною.",
+  "binDesigner.cutouts.throughDepthHint": "Прорізає всі {depth} мм пластини."
 }

@@ -33,6 +33,17 @@ export type DesignerTab = 'dimensions' | 'base' | 'compartments' | 'walls' | 'st
 /** View mode for split bin preview: assembled (no gaps) or exploded (gaps between pieces). */
 export type SplitViewMode = 'assembled' | 'exploded';
 
+/**
+ * Which part the cutout editor is drawing on.
+ *
+ * The two hosts differ in what a shape means, not just where it lands: a bin
+ * cutout is a pocket of user-chosen depth in the interior floor, a lid cutout
+ * always goes clean through the plate. They also live in different coordinate
+ * frames — the bin's overhang-expanded interior versus the lid's mating-cavity
+ * window — which is why they are separate arrays rather than one tagged list.
+ */
+export type CutoutTarget = 'bin' | 'lid';
+
 /** UI state for the designer page */
 export interface DesignerUIState {
   readonly activeTab: DesignerTab;
@@ -43,6 +54,17 @@ export interface DesignerUIState {
   readonly halfGridMode: boolean;
   /** Whether the full-workspace cutout editor is open (desktop only) */
   readonly cutoutEditorOpen: boolean;
+  /**
+   * Which part the open cutout editor is drawing on: the bin's interior floor or
+   * the lid's plate.
+   *
+   * Session state, never persisted — no `BinParams` field means no shift in
+   * `communityParamsFingerprint`. It exists because every cutout action reads it
+   * to pick which array to write (`cutoutOwner` in `cutoutSlice`), which is what
+   * lets one editor serve both parts without a target argument threaded through
+   * twenty action signatures.
+   */
+  readonly cutoutTarget: CutoutTarget;
   /** Whether the full-workspace bento editor is open (desktop only) */
   readonly bentoWorkspaceOpen: boolean;
   /**

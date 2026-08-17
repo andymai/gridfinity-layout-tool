@@ -731,10 +731,14 @@ export interface LidConfig {
    *   cavity's footprint, which is neither the bin's interior nor the lid's
    *   outer plate.
    *
-   * Absent on every design published before the feature; `migrateParams`
-   * backfills `[]` so those regenerate byte-identically.
+   * ABSENT rather than `[]` when there are none, and `migrateParams` collapses an
+   * empty array back to absent. `communityParamsFingerprint` hashes the whole
+   * params object and keys both the duplicate guard and the moderation tombstone
+   * (CLAUDE.md gotcha #13a), so a field that is always present would re-hash every
+   * design already published and stop old takedowns matching a re-publish. Same
+   * reason `migrateSurfaceText` collapses empty text to `undefined`.
    */
-  readonly cutouts: Cutout[];
+  readonly cutouts?: Cutout[];
 }
 
 /**
@@ -785,7 +789,6 @@ export const DEFAULT_LID_CONFIG: LidConfig = {
   // On, so a new design gets a lid that seats. `migrateParams` turns it off for
   // designs that predate it — see the field's own note.
   relieveInterior: true,
-  cutouts: [],
 } as const;
 
 /**

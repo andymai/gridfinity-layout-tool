@@ -3903,5 +3903,10 @@
   "binDesigner.preview.feetDetached": "Staccati",
   "binDesigner.preview.feetAttached": "Attaccati",
   "binDesigner.preview.feetDetachSlider": "Stacca i piedini",
-  "binDesigner.detachableFeetNeedsThickerWall": "Pareti così sottili lasciano troppo poco fondo per trattenere un perno"
+  "binDesigner.detachableFeetNeedsThickerWall": "Pareti così sottili lasciano troppo poco fondo per trattenere un perno",
+  "binDesigner.lid.editCutouts": "Ritaglia fori nel coperchio",
+  "binDesigner.lid.editCutoutsCount": "Ritaglia fori nel coperchio ({count})",
+  "binDesigner.lid.editCutoutsHint": "Disegna forme che attraversano completamente la piastra del coperchio: una fessura erogatrice, una presa d’aria, un passaggio per cavi. Restano lontane dalla parete di accoppiamento e dalle sedi dei magneti.",
+  "binDesigner.lid.editCutoutsBlocked": "Disponibile su un coperchio con superficie piana e pianta rettangolare. Una griglia di impilamento completa copre la faccia superiore; una griglia solo a bordo la lascia utilizzabile.",
+  "binDesigner.cutouts.throughDepthHint": "Taglia tutti i {depth} mm della piastra."
 }
