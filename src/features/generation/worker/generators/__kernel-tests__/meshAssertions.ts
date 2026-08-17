@@ -114,6 +114,33 @@ export function meshVolume({ vertices, indices }: MeshData): number {
   return Math.abs(volume) / 6;
 }
 
+/**
+ * Enclosed volume (mm³) of a triangle SOUP — no index buffer, every 9 floats
+ * one triangle.
+ *
+ * The layout `parseSTLBinary` hands back, which is the honest volume signal for
+ * a differential: the preview mesh is not watertight (the base socket rides
+ * unfused), so only the export can be measured. Separate from {@link meshVolume}
+ * rather than fed an identity index buffer so a caller cannot accidentally pass
+ * a soup where an indexed mesh is meant and get a silently wrong answer.
+ */
+export function stlSolidVolume(vertices: Float32Array): number {
+  let sixVol = 0;
+  for (let i = 0; i + 8 < vertices.length; i += 9) {
+    const ax = vertices[i];
+    const ay = vertices[i + 1];
+    const az = vertices[i + 2];
+    const bx = vertices[i + 3];
+    const by = vertices[i + 4];
+    const bz = vertices[i + 5];
+    const cx = vertices[i + 6];
+    const cy = vertices[i + 7];
+    const cz = vertices[i + 8];
+    sixVol += ax * (by * cz - bz * cy) - ay * (bx * cz - bz * cx) + az * (bx * cy - by * cx);
+  }
+  return Math.abs(sixVol) / 6;
+}
+
 // ─── Watertightness (hole-free) ──────────────────────────────────────────────
 
 export interface MeshTopologyStats {

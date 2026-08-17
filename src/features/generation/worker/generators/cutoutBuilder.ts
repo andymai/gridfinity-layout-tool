@@ -1016,12 +1016,17 @@ export function buildCutoutCuts(
   // shift every subsequent unit's tag and recolor the wrong cavities.
   const colorOrdinal = new Map(enumerateCutoutColorUnits(params.cutouts).map((u, i) => [u.key, i]));
 
-  // Mesh imprints are not profile-extrudable: they subtract post-tessellation
-  // in the mesh domain (meshImprint stage), never through the BREP cut path.
-  if (params.cutouts.some((c) => c.shape === 'mesh')) {
-    params = { ...params, cutouts: params.cutouts.filter((c) => c.shape !== 'mesh') };
-  }
-  if (params.cutouts.length === 0) return { cutTools: [], fuseTools: [] };
+  // Two reasons a cutout never becomes a tool, both narrowing the list AFTER the
+  // ordinals above. Mesh imprints are not profile-extrudable: they subtract
+  // post-tessellation in the mesh domain (meshImprint stage), never through the
+  // BREP cut path. `hidden` means absent — the same reading the imprint path
+  // (`meshAsset.ts`), the lid cutout builder and `checkLidCompatibility` already
+  // apply, and the one the store's epoch bump has always assumed. Group MEMBERS
+  // are dropped too, so a hidden subtract-member stops subtracting and a group
+  // whose members are all hidden builds nothing.
+  const buildable = params.cutouts.filter((c) => c.shape !== 'mesh' && c.hidden !== true);
+  if (buildable.length === 0) return { cutTools: [], fuseTools: [] };
+  params = { ...params, cutouts: buildable };
 
   // Cutout x,y are relative to interior bottom-left corner (0,0).
   // The bin body is centered at model origin, so interior left/front is at -innerW/2, -innerD/2.
@@ -1109,7 +1114,6 @@ export function buildCutoutCuts(
 
   const rawFuseShapes: Shape3D[] = [];
   for (const cutout of params.cutouts) {
-    if (cutout.hidden === true) continue;
     if (cutout.engraveLabel !== true) continue;
     const label = cutout.label.trim();
     if (label === '') continue;
