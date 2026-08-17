@@ -138,7 +138,7 @@
     "fit-curve": "^0.2.0",
     "idb": "^8.0.3",
     "immer": "^11.1.15",
-    "ioredis": "^5.11.1",
+    "ioredis": "^6.0.0",
     "lz-string": "^1.5.0",
     "manifold-3d": "3.5.1",
     "occt-wasm": "4.2.0",
