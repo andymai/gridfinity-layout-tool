@@ -40,12 +40,7 @@ import {
   footPinPositions,
   type FootPlacement,
 } from '@/shared/utils/detachableFeetPlan';
-import {
-  DETACHABLE_PIN_MEMBRANE_MM,
-  DETACHABLE_PIN_MIN_ENGAGEMENT_MM,
-  DETACHABLE_PIN_RIDGE_STEP_MM,
-  detachablePinEngagementMm,
-} from '@/shared/types/bin';
+import { DETACHABLE_PIN_RIDGE_STEP_MM, detachablePinEngagementMm } from '@/shared/types/bin';
 
 /** How far a clip box overshoots the cell it trims, so no face is coplanar. */
 const CLIP_MARGIN = 2;
@@ -90,8 +85,11 @@ export interface DetachableFeetGeometry {
    * cuts it from the body and deletes it; it is deliberately not pre-applied,
    * because the body is cached and the holes are not part of what the cache key
    * describes.
+   *
+   * `null` when there is nothing to cut: a floor with no room under the
+   * membrane gets pinless feet, and a plain base has no screw bores either.
    */
-  readonly pinHoles: Shape3D;
+  readonly pinHoles: Shape3D | null;
 }
 
 /**
@@ -222,17 +220,18 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
   }
 
   return withScope((scope: DisposalScope): DetachableFeetGeometry => {
-    // Clamped, never refused. A throw here would have to be mirrored by every
-    // caller that asks "does this bin have feet" — the panel, the estimate, two
-    // export planners and the preview — and five predicates that must agree is
-    // four chances to drift. The floor thickness is a UI concern
-    // (`detachableFeetFitFloor` greys the toggle); the geometry always builds
-    // something valid, so a crafted payload gets a weak joint rather than a
-    // failed generation. Held below the floor so the membrane always survives.
-    const engagementMm = Math.min(
-      Math.max(detachablePinEngagementMm(floorThicknessMm), DETACHABLE_PIN_MIN_ENGAGEMENT_MM),
-      floorThicknessMm - DETACHABLE_PIN_MEMBRANE_MM / 2
-    );
+    // Never refused, and the MEMBRANE is what holds: engagement is whatever the
+    // floor has left over after it, floored at zero. A clamp that reached for a
+    // minimum engagement instead would eat into the membrane on a thin floor —
+    // opening the interior the blind holes exist to protect — and go negative
+    // on a crafted `wallThickness` below the membrane itself.
+    //
+    // Refusing is not an option either: a throw would have to be mirrored by
+    // every caller that asks "does this bin have feet" (the panel, the
+    // estimate, two export planners, the preview), and five predicates that
+    // must agree is four chances to drift. `detachableFeetFitFloor` greys the
+    // toggle; the geometry always builds something valid.
+    const engagementMm = Math.max(0, detachablePinEngagementMm(floorThicknessMm));
     const pinTemplate = buildPin(scope, pinDiameterMm, engagementMm);
     const feet: Shape3D[] = [];
     const holes: Shape3D[] = [];
@@ -258,7 +257,10 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
       // with `optimisation: 'commonFace'` making no difference. The shell stays
       // closed either way, so only an edge-manifold check catches it, and a
       // slicer would silently reinterpret the result.
-      const pins = footPinPositions(p, armMm, pinDiameterMm);
+      // A floor with nothing left under the membrane gets no pins at all: the
+      // feet locate on their own footprint and are glued. Degenerate pin
+      // geometry would be the alternative, and a hole would breach the floor.
+      const pins = engagementMm > 0 ? footPinPositions(p, armMm, pinDiameterMm) : [];
       for (const pin of pins) {
         const solid = scope.register(
           translate(scope.register(unwrap(clone(pinTemplate))), [
@@ -352,7 +354,10 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
       }
     }
 
-    const pinHoles = unwrap(fuseAll(holes as ValidSolid[], { optimisation: 'commonFace' }));
+    const pinHoles =
+      holes.length > 0
+        ? unwrap(fuseAll(holes as ValidSolid[], { optimisation: 'commonFace' }))
+        : null;
     for (const h of holes) if (h !== pinHoles) h.delete();
 
     // feet + pinHoles are NOT scope-registered: they outlive the scope.
@@ -361,7 +366,8 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
 }
 
 /** Cut the pin holes from a bin body, disposing the tool. */
-export function applyPinHoles(body: Shape3D, pinHoles: Shape3D): Shape3D {
+export function applyPinHoles(body: Shape3D, pinHoles: Shape3D | null): Shape3D {
+  if (!pinHoles) return body;
   try {
     const holed = unwrap(cut(body, pinHoles));
     if (holed !== body) body.delete();

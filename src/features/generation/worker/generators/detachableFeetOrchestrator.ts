@@ -40,7 +40,7 @@ function buildFeetSolids(params: BinParams, laidOut: boolean): Shape3D[] | null 
   const resolved = resolveDetachableFeet(params);
   if (resolved.placements.length === 0) return null;
 
-  const { feet } = buildDetachableFeet({
+  const { feet, pinHoles } = buildDetachableFeet({
     placements: resolved.placements,
     armMm: resolved.armMm,
     pinDiameterMm: resolved.pinDiameterMm,
@@ -56,6 +56,8 @@ function buildFeetSolids(params: BinParams, laidOut: boolean): Shape3D[] | null 
       : undefined,
     forExport: true,
   });
+  // The holes belong to the body, which this path does not build.
+  pinHoles?.delete();
 
   if (!laidOut) return feet;
 
