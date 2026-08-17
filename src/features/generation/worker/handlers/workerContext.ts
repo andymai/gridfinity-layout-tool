@@ -202,6 +202,7 @@ export function runGeneration(
           vertices: maybeCopy(meshData.detachableFeetMesh.vertices),
           normals: maybeCopy(meshData.detachableFeetMesh.normals),
           indices: maybeCopy(meshData.detachableFeetMesh.indices),
+          edgeVertices: maybeCopy(meshData.detachableFeetMesh.edgeVertices),
           triangleCount: meshData.detachableFeetMesh.triangleCount,
         }
       : undefined;
@@ -279,6 +280,7 @@ export function runGeneration(
             detachableFeetVertices: feet.vertices,
             detachableFeetNormals: feet.normals,
             detachableFeetIndices: feet.indices,
+            detachableFeetEdgeVertices: feet.edgeVertices,
             detachableFeetTriangleCount: feet.triangleCount,
           }
         : {}),
@@ -315,7 +317,12 @@ export function runGeneration(
       );
     }
     if (feet) {
-      transfer.push(feet.vertices.buffer, feet.normals.buffer, feet.indices.buffer);
+      transfer.push(
+        feet.vertices.buffer,
+        feet.normals.buffer,
+        feet.indices.buffer,
+        feet.edgeVertices.buffer
+      );
     }
     if (connectorKey) {
       transfer.push(

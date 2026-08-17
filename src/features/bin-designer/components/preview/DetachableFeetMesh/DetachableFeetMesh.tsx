@@ -11,7 +11,9 @@
 import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
+import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { getZoneColor } from '@/features/bin-designer/types/featureColors';
 import { useMeshGeometry } from '@/shared/components/preview/useMeshGeometry';
 
 /** Solid enough to read as its own printed part, matching the other companions. */
@@ -36,7 +38,18 @@ export function DetachableFeetMesh({
 }: DetachableFeetMeshProps) {
   const { invalidate } = useThree();
 
-  const feetMesh = useDesignerStore((s) => s.generation.mesh?.detachableFeetMesh ?? null);
+  const { feetMesh, featureColors } = useDesignerStore(
+    useShallow((s) => ({
+      feetMesh: s.generation.mesh?.detachableFeetMesh ?? null,
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- typed required, but legacy persisted configs may omit it
+      featureColors: s.params.featureColors ?? null,
+    }))
+  );
+
+  // The feet ARE the bin's base, so in multi-colour mode they take the Base
+  // zone rather than the body colour — otherwise the one control that should
+  // paint them does nothing, in the preview and in the printed 3MF alike.
+  const feetColor = featureColors?.enabled ? getZoneColor(featureColors, 'base') : color;
 
   const { geometry, edgesGeometry, hasPrecomputedNormals } = useMeshGeometry({
     vertices: feetMesh?.vertices ?? null,
@@ -47,7 +60,7 @@ export function DetachableFeetMesh({
 
   const matProps = useMemo(
     () => ({
-      color,
+      color: feetColor,
       roughness: 0.45,
       metalness: 0,
       wireframe,
@@ -57,7 +70,7 @@ export function DetachableFeetMesh({
       depthWrite: !xray,
       flatShading: !hasPrecomputedNormals,
     }),
-    [color, wireframe, hasPrecomputedNormals, xray]
+    [feetColor, wireframe, hasPrecomputedNormals, xray]
   );
 
   useEffect(() => {

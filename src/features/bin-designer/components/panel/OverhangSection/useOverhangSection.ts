@@ -4,6 +4,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { isPartialMask } from '@/shared/utils/cellMask';
+import { hasDetachableFeet } from '@/features/bin-designer/types/base';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import type { OverhangConfig, WallTaperConfig } from '@/features/bin-designer/types';
@@ -194,6 +195,10 @@ export function useOverhangSection() {
       base,
       isCustomShape,
       feet,
+      // Overhang feet continue the INTEGRAL foot pattern into the extended
+      // region. A detachable-feet bin has none to continue: its underside is
+      // flat everywhere and it stands on its own pinned feet.
+      feetSuperseded: hasDetachableFeet(params.base),
       hasOverhang,
       // Feet sit under the base footprint, so a bin that is all flare has no
       // ground for them even though its rim overhangs.

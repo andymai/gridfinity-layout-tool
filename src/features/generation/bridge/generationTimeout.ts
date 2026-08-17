@@ -13,6 +13,8 @@
 import type { ResolvedBaseplateParams, BinParams } from '@/shared/types/bin';
 import { isKumikoPattern, isUndersideRelief } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
+import { hasDetachableFeet } from '@/shared/types/bin';
+import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import { resolveOverhang } from '@/shared/utils/overhang';
 
 /** Minimum timeout for trivial bins (no heavy features). */
@@ -121,6 +123,19 @@ export const TAPER_MS_PER_COMPARTMENT = 100;
  * than a 4u one. Hex-pattern bonuses stack on top when both apply.
  */
 export const HEIGHT_BONUS_MS = 15_000;
+
+/**
+ * Fixed cost of building the detachable feet at all, in ms — the plan, the
+ * shared pin template and the body's hole cut.
+ */
+export const DETACHABLE_FEET_BONUS_MS = 5_000;
+
+/**
+ * Per-foot cost, in ms. Each foot is a loft plus a clip intersect, then one
+ * fuse per pin applied in sequence, and on a magnet or screw base a cut per
+ * corner it covers.
+ */
+export const DETACHABLE_FEET_MS_PER_FOOT = 2_000;
 
 /** Height (grid units) at which height bonuses start accruing. */
 export const HEIGHT_BONUS_FLOOR_UNITS = 4;
@@ -312,6 +327,16 @@ function binRawBudgetMs(params: BinParams): number {
   if (taperOn && !params.base.solid && compartmentCount > 1) {
     timeout += TAPER_MULTI_COMPARTMENT_BONUS_MS;
     timeout += compartmentCount * TAPER_MS_PER_COMPARTMENT;
+  }
+
+  // Detachable feet are extra solids on top of the bin, not a cheaper base: a
+  // lofted foot and a clip intersect per placement, then a SEQUENTIAL fuse per
+  // pin (folded one at a time on purpose — fuseAll returns a compound here),
+  // plus the body cut. Paid on preview and export both, and it scales with the
+  // foot count rather than the footprint, which is why it is per foot.
+  if (hasDetachableFeet(params.base)) {
+    timeout += DETACHABLE_FEET_BONUS_MS;
+    timeout += resolveDetachableFeet(params).placements.length * DETACHABLE_FEET_MS_PER_FOOT;
   }
 
   const heightOverFloor = Math.max(0, safeHeight - HEIGHT_BONUS_FLOOR_UNITS);

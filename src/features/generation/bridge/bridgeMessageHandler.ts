@@ -226,7 +226,7 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
                   vertices: response.detachableFeetVertices,
                   normals: response.detachableFeetNormals,
                   indices: response.detachableFeetIndices,
-                  edgeVertices: new Float32Array(0),
+                  edgeVertices: response.detachableFeetEdgeVertices ?? new Float32Array(0),
                   triangleCount: response.detachableFeetTriangleCount,
                 }
               : undefined;

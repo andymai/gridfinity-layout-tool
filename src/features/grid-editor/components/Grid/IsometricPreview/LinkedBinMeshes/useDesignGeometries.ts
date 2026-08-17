@@ -31,6 +31,27 @@ export function clearDesignGeometryCache(): void {
   designGeometryCache.clear();
 }
 
+/** Concatenate a companion part's buffers onto the body's, shifting its indices. */
+function mergeParts(
+  body: MeshData,
+  part: MeshData | undefined
+): { vertices: Float32Array; indices: Uint32Array } {
+  if (!part || part.vertices.length === 0) {
+    return { vertices: body.vertices, indices: body.indices };
+  }
+  const vertices = new Float32Array(body.vertices.length + part.vertices.length);
+  vertices.set(body.vertices, 0);
+  vertices.set(part.vertices, body.vertices.length);
+
+  const offset = body.vertices.length / 3;
+  const indices = new Uint32Array(body.indices.length + part.indices.length);
+  indices.set(body.indices, 0);
+  for (let i = 0; i < part.indices.length; i++) {
+    indices[body.indices.length + i] = part.indices[i] + offset;
+  }
+  return { vertices, indices };
+}
+
 /**
  * Build a renderable geometry from worker/imported mesh data. Mirrors
  * `useMeshGeometry`'s shading rules: worker meshes (with precomputed normals)
@@ -38,10 +59,16 @@ export function clearDesignGeometryCache(): void {
  * (no normals) get plain smooth vertex normals.
  */
 export function buildDesignGeometry(mesh: MeshData): THREE.BufferGeometry {
+  // Detachable feet are part of the object, not a companion the layout can
+  // leave out: without them a linked bin draws as a flat-bottomed box sitting a
+  // socket lower than an identical neighbour. They arrive positioned in the
+  // bin's own frame, so concatenating is the whole transform.
+  const { vertices, indices } = mergeParts(mesh, mesh.detachableFeetMesh);
+
   let geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.Float32BufferAttribute(mesh.vertices, 3));
-  if (mesh.indices.length > 0) {
-    geo.setIndex(new THREE.BufferAttribute(mesh.indices, 1));
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+  if (indices.length > 0) {
+    geo.setIndex(new THREE.BufferAttribute(indices, 1));
   }
   geo.computeVertexNormals();
   if (mesh.normals.length > 0) {

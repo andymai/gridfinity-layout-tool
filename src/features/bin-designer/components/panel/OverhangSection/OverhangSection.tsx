@@ -39,7 +39,8 @@ export function OverhangSection() {
   const { taper } = state;
   // Feet need base overhang to stand on, but stay togglable while already on —
   // otherwise dragging the base to 0 strands them checked and un-uncheckable.
-  const feetEnabled = state.hasBaseOverhang || state.feet;
+  // Inert with detachable feet, and says so rather than looking live.
+  const feetEnabled = (state.hasBaseOverhang || state.feet) && !state.feetSuperseded;
   const stacked = meta.stackedSliders;
 
   return (
@@ -103,7 +104,9 @@ export function OverhangSection() {
             <Checkbox checked={state.feet} disabled={!feetEnabled} />
           </div>
           <p className="text-[11px] leading-relaxed text-content-tertiary">
-            {t('binDesigner.overhang.feetHint')}
+            {state.feetSuperseded
+              ? t('binDesigner.detachableFeet.supersedes')
+              : t('binDesigner.overhang.feetHint')}
           </p>
 
           <div className="mt-3 flex flex-col gap-2 border-t border-border pt-3">
