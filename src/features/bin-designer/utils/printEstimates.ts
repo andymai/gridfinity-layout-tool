@@ -71,7 +71,23 @@ export function estimatePrint(
   params: BinParams,
   printSettings: PrintSettings = DEFAULT_PRINT_SETTINGS
 ): PrintEstimate {
-  const volumeMm3 = computeBinVolume(params);
+  return estimateFromVolume(computeBinVolume(params), printSettings);
+}
+
+/**
+ * Filament, time and cost for a known material volume.
+ *
+ * Split out of {@link estimatePrint} for callers that measure a volume some
+ * other way — the fit-test card is a slice of a bin, which `computeBinVolume`
+ * has no way to describe. Scaling a bin's finished estimate by a mass ratio is
+ * NOT equivalent: {@link OVERHEAD_MINUTES} is a flat 16 minutes of bed heat and
+ * homing that does not shrink with the part, so a card at a fifth of a bin's
+ * mass came out about 20% under its real time.
+ */
+export function estimateFromVolume(
+  volumeMm3: number,
+  printSettings: PrintSettings = DEFAULT_PRINT_SETTINGS
+): PrintEstimate {
   const volumeCm3 = volumeMm3 / 1000; // mm³ → cm³
   const gramsFilament = volumeCm3 * PLA_DENSITY;
   const metersFilament = volumeMm3 / FILAMENT_AREA_MM2 / 1000; // mm³ → mm length → m

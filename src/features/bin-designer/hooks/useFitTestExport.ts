@@ -99,6 +99,16 @@ export function useFitTestExport(): UseFitTestExportReturn {
         } else {
           triggerDownload(packagePiecesAsZip(pieces, baseName, extension), `${baseName}_split.zip`);
         }
+
+        // The dialog warns about this from its own copy of the plan, but the
+        // worker is what actually cut the card. Reporting its count too means a
+        // caller that skipped the dialog's warning still cannot ship a card with
+        // a seam through the hole being measured without saying so.
+        if (result.blockedSeams > 0) {
+          useToastStore
+            .getState()
+            .addToast(t('binDesigner.cutouts.fitTest.warnSeamThroughCutout'), 'info', 8000);
+        }
         return true;
       } catch (error: unknown) {
         useToastStore

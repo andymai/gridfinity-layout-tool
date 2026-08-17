@@ -21,7 +21,7 @@ import { useSettingsStore } from '@/core/store/settings';
 import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useFitTestExport, FIT_TEST_BASE_NAME } from '../../hooks/useFitTestExport';
-import { estimatePrint, formatPrintTime } from '../../utils/printEstimates';
+import { estimateFromVolume, estimatePrint, formatPrintTime } from '../../utils/printEstimates';
 import {
   canBuildFitTest,
   clampFitTestThicknessMm,
@@ -35,8 +35,6 @@ import { hasMeshImprints } from '@/shared/generation/meshAsset';
 import { FORMAT_EXTENSIONS } from '@/shared/generation/exportUtils';
 import type { ExportFileFormat, ExportFileNameConfig } from '@/shared/types/bin';
 
-/** PLA at 1.24 g/cm³, matching `printEstimates`. */
-const PLA_DENSITY_G_PER_CM3 = 1.24;
 /** Stepper increment for the thickness field. Matches the cutout fit fields. */
 const THICKNESS_STEP = 0.5;
 
@@ -97,16 +95,17 @@ export function FitTestButton() {
   const estimates = useMemo(() => {
     if (!available) return null;
     const bin = estimatePrint(params, printSettings);
-    const cardGrams =
-      (estimateFitTestVolumeMm3(params, activeThickness) / 1000) * PLA_DENSITY_G_PER_CM3;
-    // The card is the same shape of extrusion as the bin, so its time scales
-    // with its material; taking the ratio keeps one calibration rather than two.
-    const cardMinutes =
-      bin.gramsFilament > 0 ? (bin.printTimeMinutes * cardGrams) / bin.gramsFilament : 0;
+    // Through the same conversion the bin uses, not scaled from the bin's
+    // finished figure: the print time carries a flat overhead that does not
+    // shrink with the part, so a ratio would under-report the card.
+    const card = estimateFromVolume(
+      estimateFitTestVolumeMm3(params, activeThickness),
+      printSettings
+    );
     return [
       {
         label: t('binDesigner.cutouts.fitTest.estimateCard'),
-        value: `${cardGrams.toFixed(1)} g · ${formatPrintTime(Math.round(cardMinutes))}`,
+        value: `${card.gramsFilament.toFixed(1)} g · ${formatPrintTime(card.printTimeMinutes)}`,
       },
       {
         label: t('binDesigner.cutouts.fitTest.estimateBin'),

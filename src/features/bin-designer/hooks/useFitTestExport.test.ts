@@ -3,6 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useFitTestExport } from './useFitTestExport';
 import { triggerDownload } from '@/shared/generation/exportUtils';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useToastStore } from '@/core/store/toast';
 import { resetAllStores } from '@/test/testUtils';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
@@ -141,6 +142,30 @@ describe('useFitTestExport', () => {
       await result.current.downloadCard({ format: 'step', thicknessMm: 4 });
     });
     expect(zipCalls[0].extension).toBe('.step');
+  });
+
+  it('reports a seam the worker could not move clear of a cutout', async () => {
+    activeBridge = {
+      exportFitTest: vi.fn().mockResolvedValue({
+        pieces: [piece('A1'), piece('A2')],
+        fileName: 'fit-test.stl',
+        blockedSeams: 1,
+      }),
+    };
+    const { result } = renderHook(() => useFitTestExport());
+    await act(async () => {
+      await result.current.downloadCard({ format: 'stl', thicknessMm: 4 });
+    });
+    const messages = useToastStore.getState().toasts.map((toast) => toast.message);
+    expect(messages).toContain('binDesigner.cutouts.fitTest.warnSeamThroughCutout');
+  });
+
+  it('says nothing when every seam found clear material', async () => {
+    const { result } = renderHook(() => useFitTestExport());
+    await act(async () => {
+      await result.current.downloadCard({ format: 'stl', thicknessMm: 4 });
+    });
+    expect(useToastStore.getState().toasts).toHaveLength(0);
   });
 
   it('surfaces a worker refusal instead of downloading nothing', async () => {
