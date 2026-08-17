@@ -79,6 +79,15 @@ export const GRIDFINITY_SPEC = {
 export const MAGNET_FLOOR = 0.5;
 
 /**
+ * Distance from a cell's centre to a magnet position (Gridfinity spec, mm).
+ *
+ * Canonical here rather than in the worker because anything sizing a part
+ * AROUND a magnet needs it too, and a second copy is a second thing to keep in
+ * step: `generatorConstants` re-exports this as `HOLE_OFFSET`.
+ */
+export const MAGNET_HOLE_OFFSET_MM = 13;
+
+/**
  * Number of perimeter walls per nozzle size, matching common slicer defaults.
  *
  * Most slicers default to 2 perimeters. For very small nozzles (0.2mm),
