@@ -1,0 +1,74 @@
+src/features/generation/worker/handlers/exportHandler.ts
+  s_03b5e7e0a9d55f::t_08f3664cd16ab0 253-255
+  s_03b5e7e0a9d55f::t_3456a6d33af6b4 301-302
+src/shared/utils/detachableFeetPlan.ts
+  s_03b5e7e0a9d55f::t_b5ee5c4f746403 106-108
+  s_03b5e7e0a9d55f::t_2d649a53487537 5
+  s_03b5e7e0a9d55f::t_240342e2d6060c 160-162
+  s_03b5e7e0a9d55f::t_b7e49b7267ddfa 54
+  s_03b5e7e0a9d55f::t_bb8266159b3fb1 44-47,140-152,154,180
+  s_03b5e7e0a9d55f::t_1312669b4e0980 82-85
+  s_03b5e7e0a9d55f::t_4d7a5fe5e59db1 153,381-384,394-399,402-404,408-409,412-413
+  s_03b5e7e0a9d55f::t_9a6f6da8140371 139
+src/features/generation/worker/generators/detachableFeet.kernel.test.ts
+  s_03b5e7e0a9d55f::t_9c3ca5a126e21f 15-16
+  s_03b5e7e0a9d55f::t_5be16acc7f10ca 290,299-301
+  s_03b5e7e0a9d55f::t_648abfb3898032 255-266,268
+src/shared/printSettings/standardBinVolume.ts
+  s_03b5e7e0a9d55f::t_a5d2051d8b9f9f 69-70
+  s_03b5e7e0a9d55f::t_037f5b119344d1 78,84-86
+src/features/bin-designer/components/preview/FeetDetachSlider/FeetDetachSlider.tsx
+  s_03b5e7e0a9d55f::t_6fc2afa55ea25e 6
+src/features/generation/worker/generators/pipeline/types.ts
+  s_03b5e7e0a9d55f::t_720ca5e81d780f 108-110
+src/shared/utils/detachableFeetPlan.test.ts
+  s_03b5e7e0a9d55f::t_4d7a5fe5e59db1 192,195-197,199-204
+  s_03b5e7e0a9d55f::t_f8051f11bbe0d8 62-67,71
+  s_03b5e7e0a9d55f::t_2851a8c9770ee5 12,18,76,85,183,194,212
+src/features/generation/worker/generators/detachableFeetBuilder.ts
+  s_03b5e7e0a9d55f::t_f0a6e83d14107f 272-273
+  s_03b5e7e0a9d55f::t_29b8c130361557 80-83
+  s_03b5e7e0a9d55f::t_fcbfae08deaefd 60-62
+src/features/bin-designer/components/preview/DetachableFeetMesh/DetachableFeetMesh.tsx
+  s_03b5e7e0a9d55f::t_bdb20ff97e45b1 2-4,8
+  s_03b5e7e0a9d55f::t_f9664006a5f52f 39
+  s_03b5e7e0a9d55f::t_2182c622475508 67
+src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.tsx
+  s_03b5e7e0a9d55f::t_69666f7ea8aeb3 131-132,134
+src/features/generation/worker/handlers/generateHandler.ts
+  s_03b5e7e0a9d55f::t_f98a7e3ef1b291 88-90
+src/features/generation/worker/generators/detachableFeetOrchestrator.ts
+  s_03b5e7e0a9d55f::t_6939614e43425b 79-80,91,97
+src/features/bin-designer/components/preview/LidExplodeSlider/LidExplodeSlider.tsx
+  s_03b5e7e0a9d55f::t_1a324aeed26b22 42-43
+src/features/bin-designer/types/base.ts
+  s_03b5e7e0a9d55f::t_dd9b008d932ce7 277-280,283-284,291
+  s_03b5e7e0a9d55f::t_80d43896444f62 256-257,262-263
+  s_03b5e7e0a9d55f::t_130064a1e9407e 212-214
+src/shell/layoutExport/planLayoutBinExport.ts
+  s_03b5e7e0a9d55f::t_0318a0c58fd24c 129-130
+src/features/generation/worker/generators/pipeline/stages/shellStage.ts
+  s_03b5e7e0a9d55f::t_01bde4b624250a 339
+src/features/bin-designer/components/panel/BaseSection/useBaseSection.ts
+  s_03b5e7e0a9d55f::t_6b8d0aabd73c4e 113-117
+  s_03b5e7e0a9d55f::t_15016cacffe078 134
+  s_03b5e7e0a9d55f::t_b140e1bfe92020 127-130
+src/features/bin-designer/utils/printEstimates.test.ts
+  s_03b5e7e0a9d55f::t_c7c35c1a755d64 840-844
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "9112b021ae0298aa90aec6b90cb66a958e87573a",
+  "prompts": {},
+  "sessions": {
+    "s_03b5e7e0a9d55f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4687ee82-5ba8-4c81-b904-aed25616f64f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
