@@ -273,6 +273,21 @@ describe('cutoutDisplacementMm3', () => {
     expect(cutoutDisplacementMm3(params)).toBeCloseTo(Math.PI * 25 * 4, 5);
   });
 
+  it('prices a polygon off the outline the generator cuts, not a circumradius', () => {
+    // `regularPolygonPoints` scales the unit polygon anisotropically to fill the
+    // w×d box, so a flat-top hexagon at width===depth is NOT the inscribed
+    // polygon an r = min(w,d)/2 formula assumes.
+    const hex = board({}, [
+      cutout({ shape: 'polygon', sides: 6, width: 10, depth: 10, cutDepth: 1 }),
+    ]);
+    const area = cutoutDisplacementMm3(hex);
+    const inscribed = 0.5 * 6 * 5 * 5 * Math.sin((2 * Math.PI) / 6);
+    // Filling the box makes it materially larger than the inscribed figure, and
+    // strictly under the box itself.
+    expect(area).toBeGreaterThan(inscribed * 1.05);
+    expect(area).toBeLessThan(10 * 10);
+  });
+
   it('counts no deeper than the limit it is given', () => {
     const params = board({}, [
       cutout({ shape: 'rectangle', width: 10, depth: 10, cutDepth: 20, cornerRadius: 0 }),

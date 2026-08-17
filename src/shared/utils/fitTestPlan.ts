@@ -15,7 +15,8 @@
  */
 
 import type { BinParams, Cutout } from '@/shared/types/bin';
-import { CHAMFER_SHAPES, CLEARANCE_SHAPES } from '@/shared/types/bin';
+import { CHAMFER_SHAPES, CLEARANCE_SHAPES, DEFAULT_POLYGON_SIDES } from '@/shared/types/bin';
+import { regularPolygonPoints } from '@/shared/utils/cutoutPolygon';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { overhangExpansion, resolveOverhang } from '@/shared/utils/overhang';
@@ -404,6 +405,18 @@ export function planFitTestSplit(
   };
 }
 
+/** Shoelace area of a closed polygon, sign-independent. */
+function polygonArea(points: readonly { readonly x: number; readonly y: number }[]): number {
+  if (points.length < 3) return 0;
+  let twice = 0;
+  for (let i = 0; i < points.length; i++) {
+    const a = points[i];
+    const b = points[(i + 1) % points.length];
+    twice += a.x * b.y - b.x * a.y;
+  }
+  return Math.abs(twice) / 2;
+}
+
 /** Area (mm²) a cutout's opening removes from the card's top face. */
 function openingAreaMm2(cutout: Cutout): number {
   const grow = openingGrowthMm(cutout);
@@ -412,12 +425,13 @@ function openingAreaMm2(cutout: Cutout): number {
   switch (cutout.shape) {
     case 'circle':
       return Math.PI * (w / 2) ** 2;
-    case 'polygon': {
-      // Regular n-gon filling the w×d box, area via its circumradius.
-      const n = Math.max(3, cutout.sides ?? 6);
-      const r = Math.min(w, d) / 2;
-      return 0.5 * n * r * r * Math.sin((2 * Math.PI) / n);
-    }
+    case 'polygon':
+      // Measured off the outline the generator actually cuts rather than from a
+      // circumradius: `regularPolygonPoints` scales the unit polygon
+      // ANISOTROPICALLY to fill the w×d box, and a flat-top polygon's own
+      // aspect is not 1 (a hexagon is ~1.1547 wide per unit tall), so an
+      // inscribed-circle formula is wrong even when width equals depth.
+      return polygonArea(regularPolygonPoints(cutout.sides ?? DEFAULT_POLYGON_SIDES, w, d));
     case 'slot': {
       // Stadium: a rectangle with a semicircle on each short end.
       const r = Math.min(w, d) / 2;
