@@ -11,7 +11,7 @@
  * integral foot's.
  *
  * Where the feet go is not decided here: `detachableFeetPlan` owns that, and
- * the pin holes this module cuts through the bin floor come from the same
+ * the pin holes this module cuts into the bin floor come from the same
  * placement call, so a foot and its holes cannot disagree.
  *
  * Coordinate system matches the socket: Z=0 is the foot's top (the face the bin
@@ -40,7 +40,11 @@ import {
   footPinPositions,
   type FootPlacement,
 } from '@/shared/utils/detachableFeetPlan';
-import { DETACHABLE_PIN_RIDGE_STEP_MM } from '@/shared/types/bin';
+import {
+  DETACHABLE_PIN_MIN_ENGAGEMENT_MM,
+  DETACHABLE_PIN_RIDGE_STEP_MM,
+  detachablePinEngagementMm,
+} from '@/shared/types/bin';
 
 /** How far a clip box overshoots the cell it trims, so no face is coplanar. */
 const CLIP_MARGIN = 2;
@@ -53,11 +57,19 @@ export interface DetachableFeetOptions {
   readonly pinDiameterMm: number;
   readonly pinHoleDiameterMm: number;
   /**
-   * Bin floor thickness. The pin is exactly this tall, so it plugs the hole it
-   * passes through and stops flush: nothing protrudes into the bin whatever the
-   * wall thickness, and nothing can fall through the hole either.
+   * Bin floor thickness. The pin reaches {@link detachablePinEngagementMm} into
+   * it and no further, so the hole is blind and the interior surface is never
+   * broken.
    */
   readonly floorThicknessMm: number;
+  /**
+   * Screw through-holes, or `undefined` for plain feet. Drilled through the
+   * foot AND the bin floor above it, so the screw clamps the two together.
+   */
+  readonly screw?: {
+    readonly diameterMm: number;
+    readonly positions: ReadonlyArray<readonly [number, number]>;
+  };
   /** Magnet pocket, or `undefined` for plain feet. */
   readonly magnet?: {
     readonly diameterMm: number;
@@ -73,11 +85,32 @@ export interface DetachableFeetGeometry {
   /** One solid per foot, positioned as assembled under the bin. */
   readonly feet: Shape3D[];
   /**
-   * Tool punching every pin hole through the bin floor. The caller cuts it from
-   * the body and deletes it; it is deliberately not pre-applied, because the
-   * body is cached and the holes are not part of what the cache key describes.
+   * Tool opening every pin hole in the UNDERSIDE of the bin floor. The caller
+   * cuts it from the body and deletes it; it is deliberately not pre-applied,
+   * because the body is cached and the holes are not part of what the cache key
+   * describes.
    */
   readonly pinHoles: Shape3D;
+}
+
+/**
+ * The standard corner positions a given foot's footprint actually contains.
+ *
+ * One under an `L`, two under a `bar`. Shared by the magnet pocket and the
+ * screw bore so the two can never disagree about which corners a foot owns.
+ */
+function coveredCorners(
+  positions: ReadonlyArray<readonly [number, number]>,
+  p: FootPlacement,
+  centre: { x: number; y: number }
+): Array<readonly [number, number]> {
+  return positions.filter(([mx, my]) => {
+    const inX = p.dirX === 0 || Math.sign(mx - centre.x) === p.dirX;
+    const inY = p.dirY === 0 || Math.sign(my - centre.y) === p.dirY;
+    return (
+      inX && inY && Math.abs(mx - centre.x) <= p.cellW / 2 && Math.abs(my - centre.y) <= p.cellD / 2
+    );
+  });
 }
 
 /**
@@ -113,11 +146,9 @@ function buildPin(scope: DisposalScope, diameterMm: number, heightMm: number): S
 
   // Too short to carry a ridge: a plain cylinder rather than a degenerate loft.
   if (sections.length < 4) {
-    return translate(scope.register(cylinder(r, heightMm + COPLANAR_OVERLAP)), [
-      0,
-      0,
-      -COPLANAR_OVERLAP,
-    ]);
+    return scope.register(
+      translate(scope.register(cylinder(r, heightMm + COPLANAR_OVERLAP)), [0, 0, -COPLANAR_OVERLAP])
+    );
   }
 
   const start = section(sections[0][1], sections[0][0]);
@@ -157,11 +188,10 @@ function buildClip(scope: DisposalScope, p: FootPlacement, armMm: number): Shape
   const zHeight = SOCKET_HEIGHT + 2 * COPLANAR_MARGIN;
   const slab = (w: number, d: number, cx: number, cy: number): Shape3D =>
     scope.register(
-      translate((drawRectangle(w, d).sketchOnPlane('XY', zFrom) as Sketch).extrude(zHeight), [
-        cx,
-        cy,
-        0,
-      ])
+      translate(
+        scope.register((drawRectangle(w, d).sketchOnPlane('XY', zFrom) as Sketch).extrude(zHeight)),
+        [cx, cy, 0]
+      )
     );
 
   const hw = p.cellW / 2;
@@ -169,7 +199,7 @@ function buildClip(scope: DisposalScope, p: FootPlacement, armMm: number): Shape
   const edgeX = (): Shape3D => slab(armMm, p.cellD + CLIP_MARGIN, p.dirX * (hw - armMm / 2), 0);
   const edgeY = (): Shape3D => slab(p.cellW + CLIP_MARGIN, armMm, 0, p.dirY * (hd - armMm / 2));
 
-  if (p.dirX !== 0 && p.dirY !== 0) return unwrap(fuse(edgeX(), edgeY()));
+  if (p.dirX !== 0 && p.dirY !== 0) return scope.register(unwrap(fuse(edgeX(), edgeY())));
   if (p.dirX !== 0) return edgeX();
   if (p.dirY !== 0) return edgeY();
   if (p.interiorX) return slab(armMm, p.cellD + CLIP_MARGIN, 0, 0);
@@ -191,7 +221,11 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
   }
 
   return withScope((scope: DisposalScope): DetachableFeetGeometry => {
-    const pinTemplate = buildPin(scope, pinDiameterMm, floorThicknessMm);
+    const engagementMm = detachablePinEngagementMm(floorThicknessMm);
+    if (engagementMm < DETACHABLE_PIN_MIN_ENGAGEMENT_MM) {
+      throw new Error('Detachable feet: floor too thin for a pin that would hold');
+    }
+    const pinTemplate = buildPin(scope, pinDiameterMm, engagementMm);
     const feet: Shape3D[] = [];
     const holes: Shape3D[] = [];
 
@@ -218,11 +252,13 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
       // slicer would silently reinterpret the result.
       const pins = footPinPositions(p, armMm, pinDiameterMm);
       for (const pin of pins) {
-        const solid = translate(scope.register(unwrap(clone(pinTemplate))), [
-          pin.x - centre.x,
-          pin.y - centre.y,
-          0,
-        ]);
+        const solid = scope.register(
+          translate(scope.register(unwrap(clone(pinTemplate))), [
+            pin.x - centre.x,
+            pin.y - centre.y,
+            0,
+          ])
+        );
         const pinned = unwrap(fuse(foot, solid));
         if (pinned !== foot) foot.delete();
         foot = pinned;
@@ -233,22 +269,18 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
       // construction — four on a rectangular bin against four per cell today.
       const magnet = opts.magnet;
       if (magnet) {
-        const covered = magnet.positions.filter(([mx, my]) => {
-          const dx = Math.abs(mx - centre.x);
-          const dy = Math.abs(my - centre.y);
-          const inX = p.dirX === 0 || Math.sign(mx - centre.x) === p.dirX;
-          const inY = p.dirY === 0 || Math.sign(my - centre.y) === p.dirY;
-          return inX && inY && dx <= p.cellW / 2 && dy <= p.cellD / 2;
-        });
+        const covered = coveredCorners(magnet.positions, p, centre);
         // Open at the underside, exactly as an integral foot drills it: the
         // magnet is inserted from below, so a retaining floor under it would
         // seal it out rather than in.
         const drills = covered.map(([mx, my]) =>
-          translate(scope.register(cylinder(magnet.diameterMm / 2, magnet.depthMm)), [
-            mx - centre.x,
-            my - centre.y,
-            -SOCKET_HEIGHT,
-          ])
+          scope.register(
+            translate(scope.register(cylinder(magnet.diameterMm / 2, magnet.depthMm)), [
+              mx - centre.x,
+              my - centre.y,
+              -SOCKET_HEIGHT,
+            ])
+          )
         );
         if (drills.length > 0) {
           const drilled = unwrap(cutAll(foot, drills));
@@ -257,12 +289,55 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
         }
       }
 
-      feet.push(translate(foot, [centre.x, centre.y, 0]));
+      // Screws go clean through: foot, then floor. Drilled after the magnet
+      // pocket so a magnet_and_screw base gets the screw bore inside the
+      // pocket, exactly as an integral foot does.
+      const screw = opts.screw;
+      if (screw) {
+        const bores = coveredCorners(screw.positions, p, centre).map(([mx, my]) =>
+          scope.register(
+            translate(
+              scope.register(
+                cylinder(
+                  screw.diameterMm / 2,
+                  SOCKET_HEIGHT + floorThicknessMm + 2 * COPLANAR_MARGIN
+                )
+              ),
+              [mx - centre.x, my - centre.y, -SOCKET_HEIGHT - COPLANAR_MARGIN]
+            )
+          )
+        );
+        if (bores.length > 0) {
+          const bored = unwrap(cutAll(foot, bores));
+          if (bored !== foot) foot.delete();
+          foot = bored;
+        }
+        for (const [mx, my] of coveredCorners(screw.positions, p, centre)) {
+          holes.push(
+            translate(
+              scope.register(
+                cylinder(screw.diameterMm / 2, floorThicknessMm + 2 * COPLANAR_MARGIN)
+              ),
+              [mx, my, -COPLANAR_MARGIN]
+            )
+          );
+        }
+      }
 
+      // `translate` returns a NEW shape, so the un-positioned intermediate is
+      // ours to free — it is not scope-registered (the chain of booleans above
+      // hands ownership along by hand) and would otherwise leak per foot.
+      const placed = translate(foot, [centre.x, centre.y, 0]);
+      if (placed !== foot) foot.delete();
+      feet.push(placed);
+
+      // Blind from the underside: the cutter starts below the floor and stops at
+      // the engagement depth, leaving the membrane that keeps the interior floor
+      // — where the scoop ramp, dividers and floor pattern live — unbroken.
       for (const pin of pins) {
         holes.push(
           translate(
-            scope.register(cylinder(pinHoleDiameterMm / 2, floorThicknessMm + 2 * COPLANAR_MARGIN)),
+            scope.register(cylinder(pinHoleDiameterMm / 2, engagementMm + COPLANAR_MARGIN)),
             [pin.x, pin.y, -COPLANAR_MARGIN]
           )
         );

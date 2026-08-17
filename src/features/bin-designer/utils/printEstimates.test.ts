@@ -837,11 +837,11 @@ describe('printEstimates', () => {
    */
   describe('detachable feet — measured ground truth (±5%)', () => {
     const ASSEMBLY_MM3: ReadonlyArray<readonly [number, number, number]> = [
-      [1, 1, 8331],
-      [3, 2, 31348],
-      [2, 4, 39931],
-      [6, 3, 67852],
-      [1, 4, 22850],
+      [1, 1, 8256],
+      [3, 2, 31088],
+      [2, 4, 39589],
+      [6, 3, 67510],
+      [1, 4, 22736],
     ];
 
     for (const [w, d, truth] of ASSEMBLY_MM3) {
@@ -879,5 +879,22 @@ describe('printEstimates', () => {
         estimatePrint(flat).volumeMm3
       );
     });
+  });
+
+  it('does not stack the lightweight saving on top of the feet saving', () => {
+    // Both flags can be stored at once: the panel LOCKS lightweight rather than
+    // clearing it, and the generator makes it inert. Subtracting both drove the
+    // base term negative and reported a saving of 91% on a bin that saves 46%.
+    const base = { ...DEFAULT_BIN_PARAMS, width: 3, depth: 2, height: 6 };
+    const feetOnly = estimatePrint({
+      ...base,
+      base: { ...DEFAULT_BIN_PARAMS.base, feet: 'detachable' },
+    }).volumeMm3;
+    const both = estimatePrint({
+      ...base,
+      base: { ...DEFAULT_BIN_PARAMS.base, feet: 'detachable', lightweight: true },
+    }).volumeMm3;
+    expect(both).toBe(feetOnly);
+    expect(both).toBeGreaterThan(0);
   });
 });

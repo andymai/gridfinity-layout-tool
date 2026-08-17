@@ -2,7 +2,7 @@
  * Where a detachable-feet bin's feet go, as one pure plan.
  *
  * Four layers consume this and none of them may re-derive it: the worker that
- * builds the feet, the worker that cuts their pin holes through the bin floor,
+ * builds the feet, the worker that cuts their pin holes into the bin floor,
  * the print estimate that counts them, and the panel that reports the saving.
  * A second copy of the placement rule is a second chance for the holes and the
  * pins to disagree, which is not visible in any mesh assertion — both solids
@@ -41,14 +41,18 @@ import {
   type FootLattice,
 } from '@/features/bin-designer/types';
 import { isFractional } from '@/core/constants';
-import { magnetInsetFromCellEdgeMm } from '@/shared/printSettings/gridfinityGeometry';
+import { isPartialMask, isRegionFilled, type CellMask } from '@/shared/utils/cellMask';
+import {
+  GRIDFINITY_SPEC,
+  magnetInsetFromCellEdgeMm,
+} from '@/shared/printSettings/gridfinityGeometry';
 
 /**
  * Solid margin around anything embedded in a foot (mm) — a magnet pocket or a
  * pin. Matches the margin the lightweight base already leaves around a retained
  * magnet pad, so a detachable foot is no thinner-walled than an integral one.
  */
-export const FOOT_EMBED_MARGIN_MM = 1.2;
+const FOOT_EMBED_MARGIN_MM = 1.2;
 
 /**
  * `L` hugs a cell corner; `bar` spans one axis of a cell at one edge.
@@ -76,11 +80,10 @@ export interface FootPlacement {
   /**
    * Why an axis's direction is `0`, which the direction alone cannot say.
    *
-   * `false` means the foot SPANS that axis end to end — the single-cell case,
-   * where it reaches both edges at once. `true` means it sits mid-run, reaching
-   * neither, and is a bar of arm width centred on its cell. Both read `dir: 0`,
-   * and they are different solids: conflating them asks the builder to clip a
-   * foot against no edge at all.
+   * `false` means the foot SPANS that axis end to end (the single-cell case,
+   * reaching both edges at once); `true` means it sits mid-run, reaching
+   * neither. They are different solids, and conflating them asks the builder to
+   * clip a foot against no edge at all.
    */
   readonly interiorX: boolean;
   readonly interiorY: boolean;
@@ -101,9 +104,9 @@ interface Station {
   /**
    * True only for a span filler — a station added to shorten a run, reaching
    * neither end of the axis. A single-cell span station also carries `dir: 0`
-   * but is NOT interior: it reaches both ends at once. Conflating the two drops
-   * every span filler on a 1-wide bin, because both of its axes read as `dir 0`
-   * and the cross-product filter throws the pair away.
+   * but is NOT interior, and conflating the two drops every span filler on a
+   * 1-wide bin: both of its axes would read interior and the cross-product
+   * filter throws that pair away.
    */
   readonly interior: boolean;
 }
@@ -135,12 +138,29 @@ export interface DetachableFeetInput {
 }
 
 /**
+ * Width of the strip a foot actually stands on, at its narrowest (mm).
+ *
+ * An arm's inner edge is a vertical cut but its outer face is the socket taper,
+ * which draws in by SOCKET_TAPER_WIDTH on the way down — so an arm loses that
+ * much between its top face and the face that meets the pocket floor. Sized off
+ * what the arm CONTAINS alone, a foot for a bin with no magnets came out 5.4mm
+ * wide on top and 2.2mm underneath: a knife edge to stand a bin on. The same
+ * class of mistake as sizing an underside relief off the cell instead of off
+ * the foot.
+ */
+const FOOT_MIN_BOTTOM_FACE_MM = 4;
+
+/** How much narrower a foot's bottom face is than its top, per side (mm). */
+const SOCKET_TAPER_WIDTH_MM = GRIDFINITY_SPEC.SOCKET_SMALL_TAPER + GRIDFINITY_SPEC.SOCKET_BIG_TAPER;
+
+/**
  * How deep a foot has to be, inward from its outer faces (mm).
  *
  * Derived from what the foot must contain rather than chosen, so a smaller
  * magnet or a different pin size moves it correctly and no constant can be set
- * to a value that clips the magnet it exists to hold. The magnet term dominates
- * at spec pitch (8 + 3.25 + 1.2 = 12.45mm against 7.4mm for a 5mm pin).
+ * to a value that clips the magnet it exists to hold — over a floor that keeps
+ * the strip it stands on printable. The magnet term dominates at spec pitch
+ * (8 + 3.25 + 1.2 = 12.45mm, against that 7.2mm floor).
  *
  * `magnetInsetFromEdgeMm` is supplied rather than computed because the magnet
  * placement rule is not this module's to restate: the inset is only the
@@ -158,7 +178,7 @@ export function footArmMm(opts: {
     opts.magnetDiameterMm === undefined || opts.magnetInsetFromEdgeMm === undefined
       ? 0
       : opts.magnetInsetFromEdgeMm + opts.magnetDiameterMm / 2 + FOOT_EMBED_MARGIN_MM;
-  return Math.max(pinReach, magnetReach);
+  return Math.max(pinReach, magnetReach, SOCKET_TAPER_WIDTH_MM + FOOT_MIN_BOTTOM_FACE_MM);
 }
 
 /**
@@ -347,23 +367,21 @@ export function footCellCentre(p: FootPlacement): { x: number; y: number } {
 /**
  * Pin positions for one foot, in bin-centred mm.
  *
- * Three pins on an `L` (one in the elbow, one out along each arm) and four on a
- * `bar` (one at each end, on both sides of its width): three is the
- * fewest that constrains a corner against rotation, and a bar needs two at each
- * end for the same reason. The bin's hole cutter and the foot builder both read
- * this, so the two cannot drift.
+ * Three on an `L` — one in the elbow and one out along each arm, the fewest
+ * that constrains a corner against rotation — and two along a `bar`'s run. The
+ * bin's hole cutter and the foot builder both read this, so the two cannot
+ * drift.
  */
 export function footPinPositions(
   foot: FootPlacement,
   armMm: number,
   pinDiameterMm: number
 ): Array<{ x: number; y: number }> {
-  // Pins centred across the arm, and the outer pin held a full margin in from
-  // the arm's end so it is never cut by the foot's own outer profile.
-  const across = armMm / 2;
-  const along = armMm + pinDiameterMm / 2 + FOOT_EMBED_MARGIN_MM;
-
   if (foot.shape === 'L') {
+    // Centred across each arm's WIDTH, and stepped out along its LENGTH, which
+    // is the full cell — so `along` is safe here in a way it is not on a bar.
+    const across = armMm / 2;
+    const along = armMm + pinDiameterMm / 2 + FOOT_EMBED_MARGIN_MM;
     const ix = foot.x - foot.dirX * across;
     const iy = foot.y - foot.dirY * across;
     return [
@@ -373,42 +391,26 @@ export function footPinPositions(
     ];
   }
 
-  // A bar spans whichever axis has dir 0, running the full cell.
+  // A bar spans whichever axis has dir 0, running the full cell. Two pins along
+  // that run, and only two: a second row would have to sit `armMm` further in,
+  // which is past the foot's own inner face — pins hanging in mid air, drilling
+  // holes into floor with nothing under them. Two along the length is what a
+  // bar needs anyway, since the bin's floor clamps it flat and only in-plane
+  // rotation has to be constrained.
   const spansX = foot.dirX === 0;
   const halfSpan = (spansX ? foot.cellW : foot.cellD) / 2 - armMm / 2;
-
-  // Mid-run on the OTHER axis too: the bar is centred rather than hugging an
-  // edge, so there is no inboard direction to offset a second row of pins
-  // toward. Two pins along its length, which is what a bar needs — the bin's
-  // own floor clamps it flat, so only in-plane rotation has to be constrained.
-  const midRun = spansX ? foot.interiorY : foot.interiorX;
-  if (midRun) {
-    return spansX
-      ? [
-          { x: foot.x - halfSpan, y: foot.y },
-          { x: foot.x + halfSpan, y: foot.y },
-        ]
-      : [
-          { x: foot.x, y: foot.y - halfSpan },
-          { x: foot.x, y: foot.y + halfSpan },
-        ];
-  }
-
-  const inset = spansX ? foot.y - foot.dirY * across : foot.x - foot.dirX * across;
-  const outer = spansX ? foot.y - foot.dirY * along : foot.x - foot.dirX * along;
+  const across = armMm / 2;
+  const midX = foot.dirX === 0 ? foot.x : foot.x - foot.dirX * across;
+  const midY = foot.dirY === 0 ? foot.y : foot.y - foot.dirY * across;
 
   return spansX
     ? [
-        { x: foot.x - halfSpan, y: inset },
-        { x: foot.x + halfSpan, y: inset },
-        { x: foot.x - halfSpan, y: outer },
-        { x: foot.x + halfSpan, y: outer },
+        { x: foot.x - halfSpan, y: midY },
+        { x: foot.x + halfSpan, y: midY },
       ]
     : [
-        { x: inset, y: foot.y - halfSpan },
-        { x: inset, y: foot.y + halfSpan },
-        { x: outer, y: foot.y - halfSpan },
-        { x: outer, y: foot.y + halfSpan },
+        { x: midX, y: foot.y - halfSpan },
+        { x: midX, y: foot.y + halfSpan },
       ];
 }
 
@@ -425,6 +427,18 @@ export interface ResolvedDetachableFeet {
   readonly placements: readonly FootPlacement[];
   readonly armMm: number;
   readonly pinDiameterMm: number;
+  /**
+   * Screw through-holes, or `undefined` when the base carries none.
+   *
+   * A screw passes through the foot AND the bin floor, so it fastens the two
+   * together as well as fastening the bin down — which is why a screwed bin
+   * does not depend on the press fit at all. Unlike the magnet pocket this is
+   * NOT blind: a screw that stopped in the floor would fasten nothing.
+   */
+  readonly screw?: {
+    readonly diameterMm: number;
+    readonly positions: ReadonlyArray<readonly [number, number]>;
+  };
   /** Magnet pocket dimensions and positions, or `undefined` for plain feet. */
   readonly magnet?: {
     readonly diameterMm: number;
@@ -442,6 +456,21 @@ export interface ResolvedDetachableFeet {
   };
 }
 
+/** True when the cell a foot sits in survives the mask. */
+function cellIsFilled(
+  foot: FootPlacement,
+  mask: CellMask | undefined,
+  pitchX: number,
+  pitchY: number,
+  size: { readonly width: number; readonly depth: number }
+): boolean {
+  if (mask === undefined) return true;
+  const centre = footCellCentre(foot);
+  const leftUnit = (centre.x + (size.width * pitchX) / 2 - pitchX / 2) / pitchX;
+  const bottomUnit = (centre.y + (size.depth * pitchY) / 2 - pitchY / 2) / pitchY;
+  return isRegionFilled(mask, leftUnit, bottomUnit, 1, 1);
+}
+
 /** The subset of `BinParams` the feet depend on. */
 export interface DetachableFeetParams {
   readonly width: number;
@@ -451,10 +480,13 @@ export interface DetachableFeetParams {
   readonly fractionalEdgeX: 'start' | 'end';
   readonly fractionalEdgeY: 'start' | 'end';
   readonly magnetAnchor?: 'edge' | 'center';
+  /** Custom-shape mask, when the bin is not a plain rectangle. */
+  readonly cellMask?: CellMask;
   readonly base: {
     readonly style: string;
     readonly magnetDiameter: number;
     readonly magnetDepth: number;
+    readonly screwDiameter: number;
     readonly feetPinDiameter?: number;
     readonly footLatticeX?: FootLattice;
     readonly footLatticeY?: FootLattice;
@@ -466,6 +498,7 @@ export function resolveDetachableFeet(params: DetachableFeetParams): ResolvedDet
   const pitchY = params.gridUnitMmY ?? params.gridUnitMm;
   const pinDiameterMm = params.base.feetPinDiameter ?? DEFAULT_DETACHABLE_PIN_DIAMETER_MM;
   const carriesMagnet = params.base.style === 'magnet' || params.base.style === 'magnet_and_screw';
+  const carriesScrew = params.base.style === 'screw' || params.base.style === 'magnet_and_screw';
 
   // The arm is sized against the SHORTER pitch: a foot deep enough for the
   // magnet on one axis is not automatically deep enough on the other, and a
@@ -483,7 +516,7 @@ export function resolveDetachableFeet(params: DetachableFeetParams): ResolvedDet
     magnetInsetFromEdgeMm,
   });
 
-  const placements = detachableFeetPlacements({
+  const placed = detachableFeetPlacements({
     widthUnits: params.width,
     depthUnits: params.depth,
     pitchX,
@@ -495,10 +528,24 @@ export function resolveDetachableFeet(params: DetachableFeetParams): ResolvedDet
     armMm,
   });
 
+  // A custom shape removes cells, and a foot on one of them hangs under nothing:
+  // its pin holes cut empty space, so it ships as a part that cannot attach
+  // while the shape's real corner has no support. The plan is expressed in
+  // whole cells, so dropping the ones the mask does not fill is exact.
+  const placements = isPartialMask(params.cellMask)
+    ? placed.filter((foot) => cellIsFilled(foot, params.cellMask, pitchX, pitchY, params))
+    : placed;
+
   return {
     placements,
     armMm,
     pinDiameterMm,
+    screw: carriesScrew
+      ? {
+          diameterMm: params.base.screwDiameter,
+          positions: standardMagnetCorners(placements, pitchX, pitchY, params.magnetAnchor),
+        }
+      : undefined,
     magnet: carriesMagnet
       ? {
           diameterMm: params.base.magnetDiameter,

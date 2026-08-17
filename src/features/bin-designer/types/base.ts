@@ -209,8 +209,9 @@ export const UNDERSIDE_RELIEF_BORDER_MM = 3;
  *
  *  - `integral` — the feet are part of the bin solid and print with it. Every
  *    design that predates the setting.
- *  - `detachable` — the bin prints flat-bottomed with pin holes through its
- *    floor, and the feet print as separate parts pressed on afterwards.
+ *  - `detachable` — the bin prints flat-bottomed with pin holes in the
+ *    underside of its floor, and the feet print as separate parts pressed on
+ *    afterwards.
  *
  * The saving is the whole point: a foot is ~7285mm³ of the ~9488mm³ each cell
  * contributes, and detaching them removes all of it rather than the 88% an
@@ -241,10 +242,25 @@ export const DEFAULT_FEET_MODE: FeetMode = 'integral';
  */
 export function hasDetachableFeet(base: {
   readonly feet?: FeetMode;
-  readonly spacer: boolean;
+  /** Optional only so narrow callers (a Z-frame source) need not carry it; a
+   *  real `BaseConfig` always has it, which is where the guard matters. */
+  readonly spacer?: boolean;
   readonly style: BaseStyle;
 }): boolean {
-  return base.feet === 'detachable' && !base.spacer && !isSocketlessBase(base.style);
+  return base.feet === 'detachable' && base.spacer !== true && !isSocketlessBase(base.style);
+}
+
+/**
+ * True when the floor is thick enough for a pin that holds.
+ *
+ * The holes are blind, so a pin gets `wallThickness` minus the membrane. Three
+ * of the selectable wall thicknesses (0.4, 0.6, 0.8) leave less than
+ * {@link DETACHABLE_PIN_MIN_ENGAGEMENT_MM}, and the builder refuses them — so
+ * without this gate the feature is a hard generation failure on a third of the
+ * wall options rather than an unavailable toggle.
+ */
+export function detachableFeetFitFloor(wallThicknessMm: number): boolean {
+  return detachablePinEngagementMm(wallThicknessMm) >= DETACHABLE_PIN_MIN_ENGAGEMENT_MM;
 }
 
 /**
@@ -252,17 +268,49 @@ export function hasDetachableFeet(base: {
  *
  * The hole is always {@link DETACHABLE_PIN_HOLE_DIAMETER_MM}, so this is an
  * interference choice rather than a dimension: which one holds depends on the
- * printer and the filament. Two tested values rather than a free number,
- * because everything outside roughly 4.8-5.1mm either falls out or will not go
- * on, and a field that accepts those is a field that ships them.
+ * printer and the filament, and either side of the pair the pin falls out or
+ * will not go on.
+ *
+ * Sized against the joint rather than convention. A pin is a LOCATING feature
+ * here: the holes are blind, so engagement is `wallThickness` minus the
+ * membrane — 0.8mm on a stock floor — and no diameter makes a joint that
+ * shallow hold by depth. All a wider pin buys is a hole that eats the arm it
+ * sits in; 3mm leaves 4.7mm of wall each side of a 12.45mm arm.
  */
-export const DETACHABLE_PIN_DIAMETERS_MM = [4.9, 5] as const;
+export const DETACHABLE_PIN_DIAMETERS_MM = [2.9, 3] as const;
 
 /** Applied when a BaseConfig's `feetPinDiameter` is missing. */
-export const DEFAULT_DETACHABLE_PIN_DIAMETER_MM = 5;
+export const DEFAULT_DETACHABLE_PIN_DIAMETER_MM = 3;
 
-/** Diameter of the pin holes cut through the bin floor, in mm. */
-export const DETACHABLE_PIN_HOLE_DIAMETER_MM = 5;
+/** Diameter of the pin holes cut into the underside of the bin floor, in mm. */
+export const DETACHABLE_PIN_HOLE_DIAMETER_MM = 3;
+
+/**
+ * Floor left intact above a pin hole, in mm.
+ *
+ * The holes are BLIND, opened from the underside only. A hole that broke
+ * through would open the interior floor at every pin, landing exactly where the
+ * interior features live: a scoop's ramp reaches the front corners, dividers
+ * stand on the floor, and a floor pattern is cut from the same surface. None of
+ * that has to be reasoned about if the interior surface is never broken.
+ *
+ * Two layers at {@link DETACHABLE_PIN_ASSUMED_LAYER_MM}, which is what bridges
+ * cleanly over the hole below it. It costs engagement depth — a pin reaches
+ * `wallThickness - this` — and that is the right way round: a shallow joint is
+ * recoverable with glue, a hole through the scoop is not.
+ */
+export const DETACHABLE_PIN_MEMBRANE_MM = 0.4;
+
+/**
+ * Shortest pin worth building, in mm. Below this the joint is decorative, so
+ * the builder refuses rather than shipping feet that fall off.
+ */
+export const DETACHABLE_PIN_MIN_ENGAGEMENT_MM = 0.6;
+
+/** How deep a pin reaches into a floor of `floorThicknessMm`, in mm. */
+export function detachablePinEngagementMm(floorThicknessMm: number): number {
+  return floorThicknessMm - DETACHABLE_PIN_MEMBRANE_MM;
+}
 
 /**
  * How much the pin's diameter grows and shrinks again, per layer, in mm.

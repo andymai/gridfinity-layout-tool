@@ -14,6 +14,7 @@
  */
 
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { hasDetachableFeet } from '@/features/bin-designer/types/base';
 import type {
   BaseConfig,
   BinParams,
@@ -65,7 +66,7 @@ export interface BinDimensions {
  * still call this rather than recomputing, so the math stays canonical.
  */
 /** The slice of a base these Z helpers read — narrow so partial callers fit. */
-export type BaseFloorSource = Pick<BaseConfig, 'style' | 'trayBottom'>;
+export type BaseFloorSource = Pick<BaseConfig, 'style' | 'trayBottom' | 'feet'>;
 
 /**
  * World Z of the interior floor for a given base — the depth of whatever sits
@@ -78,6 +79,11 @@ export type BaseFloorSource = Pick<BaseConfig, 'style' | 'trayBottom'>;
  */
 export function baseFloorZ(base: BaseFloorSource, heightUnitMm: number, lid: LidConfig): number {
   if (base.style === 'flat') return 0;
+  // Detachable feet take the socket out of the BODY, so the mesh puts its floor
+  // on Z=0 exactly as a flat base does. Reading SOCKET_HEIGHT here would put
+  // every overlay that builds its own frame from this - the lid, the tray, and
+  // all six ghosts - 5mm above the geometry they annotate.
+  if (hasDetachableFeet(base)) return 0;
   const skirt = trayFloorZ(base, heightUnitMm, lid);
   return skirt ?? GRIDFINITY.SOCKET_HEIGHT;
 }

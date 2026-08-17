@@ -46,6 +46,7 @@ function toMeshPayload(result: BridgeResult): GenerationResult {
     // directly (Immer treats typed arrays as opaque leaves).
     stackPlateMesh: result.mesh.stackPlateMesh,
     slideTrayMesh: result.mesh.slideTrayMesh,
+    detachableFeetMesh: result.mesh.detachableFeetMesh,
     labelPlates: result.mesh.labelPlates,
     labelTextOverflow: result.mesh.labelTextOverflow,
     error: null,
@@ -74,6 +75,7 @@ function meshDataToPayload(mesh: MeshData): GenerationResult {
       : undefined,
     stackPlateMesh: mesh.stackPlateMesh,
     slideTrayMesh: mesh.slideTrayMesh,
+    detachableFeetMesh: mesh.detachableFeetMesh,
     labelPlates: mesh.labelPlates,
     labelTextOverflow: mesh.labelTextOverflow,
     error: null,

@@ -20,6 +20,7 @@ import { generateFileName } from '@/features/bin-designer';
 // Deep import (not the barrel): the bin-designer barrel is eagerly loaded by App,
 // and this code only runs inside the lazy layout-export chunk.
 import { shouldGenerateLid } from '@/features/bin-designer/utils/lidCompatibility';
+import { hasDetachableFeet } from '@/shared/types/bin';
 import { calcMaxGridUnits } from '@/core/constants';
 import { getSplitPieceCount, getSplitPlanePositionsMm } from '@/shared/utils/splitPositions';
 import { splitHasConnectors } from '@/shared/generation/splitUtils';
@@ -121,10 +122,13 @@ function binSplitPlan(params: BinParams, printBed: PrintBedSize): LayoutSplitPla
   };
 }
 
-/** Printable companion parts (lid, removable dividers) a bin design ships beyond its body. */
+/** Printable companion parts (lid, dividers, feet) a bin design ships beyond its body. */
 function binCompanions(params: BinParams): string[] {
   const companions: string[] = [];
   if (shouldGenerateLid(params)) companions.push('lid');
+  // The simple path exports one body through `exportBin`, so a bin listing no
+  // companion here ships without its feet.
+  if (hasDetachableFeet(params.base)) companions.push('feet');
   if (params.style === 'slotted' && (params.slotConfig.x.enabled || params.slotConfig.y.enabled)) {
     companions.push('dividers');
   }

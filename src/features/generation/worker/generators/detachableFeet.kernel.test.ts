@@ -12,8 +12,8 @@
  * as anything a mesh check would flag.
  *
  * The rest pins down what the plan and the builder have to agree about: pins
- * that stop flush with the floor they pass through, holes where the plan put
- * them, and a magnet pocket that opens downward so the magnet can be inserted.
+ * that stop short of breaking through the floor, holes where the plan put them,
+ * and a magnet pocket that opens downward so the magnet can be inserted.
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
@@ -60,7 +60,8 @@ beforeAll(async () => {
 const PITCH = 42;
 const CLEARANCE = 0.5;
 const FLOOR = 1.2;
-const PIN = 5;
+const MEMBRANE = 0.4;
+const PIN = 3;
 const MAGNET_D = 6.5;
 const MAGNET_DEPTH = 2;
 const ARM = footArmMm({ magnetDiameterMm: MAGNET_D, magnetInsetFromEdgeMm: 8, pinDiameterMm: PIN });
@@ -138,12 +139,15 @@ describe('detachable foot geometry', () => {
     }
   });
 
-  it('stops its pins flush with the floor they pass through', () => {
+  it('stops its pins short of breaking through the floor', () => {
     const { feet, pinHoles } = feetOf();
     try {
       const box = boundingBox(meshOf(feet[0]).vertices);
-      // Top of the pins, not of the foot: the foot's own top face is Z=0.
-      expect(box.maxZ).toBeCloseTo(FLOOR, 4);
+      // Top of the pins, not of the foot: the foot's own top face is Z=0. The
+      // pin reaches the engagement depth and stops, leaving the membrane that
+      // keeps the interior floor unbroken.
+      expect(box.maxZ).toBeCloseTo(FLOOR - MEMBRANE, 4);
+      expect(box.maxZ).toBeLessThan(FLOOR);
       expect(box.minZ).toBeCloseTo(-5, 4);
     } finally {
       feet.forEach((f) => f.delete());
@@ -154,7 +158,7 @@ describe('detachable foot geometry', () => {
   it('takes a thicker floor as a longer pin, so the fit never depends on wall thickness', () => {
     const thick = feetOf({ floorThicknessMm: 2.4 });
     try {
-      expect(boundingBox(meshOf(thick.feet[0]).vertices).maxZ).toBeCloseTo(2.4, 4);
+      expect(boundingBox(meshOf(thick.feet[0]).vertices).maxZ).toBeCloseTo(2.4 - MEMBRANE, 4);
     } finally {
       thick.feet.forEach((f) => f.delete());
       thick.pinHoles.delete();
@@ -195,13 +199,14 @@ describe('detachable foot geometry', () => {
     try {
       const tool = meshOf(pinHoles);
       const box = boundingBox(tool.vertices);
-      // The tool spans the floor with margin at both ends, so the holes go
-      // clean through rather than leaving a skin.
+      // Opens below the floor and stops short of its top face: the holes are
+      // blind, so the interior surface is never broken.
       expect(box.minZ).toBeLessThan(0);
-      expect(box.maxZ).toBeGreaterThan(FLOOR);
+      expect(box.maxZ).toBeCloseTo(FLOOR - MEMBRANE, 4);
+      expect(box.maxZ).toBeLessThan(FLOOR);
 
       for (const pin of footPinPositions(CORNER_L, ARM, PIN)) {
-        expect(isSolidThrough(tool, pin.x, pin.y, 0.1, FLOOR - 0.1)).toBe(true);
+        expect(isSolidThrough(tool, pin.x, pin.y, 0.1, FLOOR - MEMBRANE - 0.1)).toBe(true);
       }
       // A point a full pin diameter off any of them is not drilled.
       expect(isSolidThrough(tool, CORNER_L.x, CORNER_L.y, 0.1, FLOOR - 0.1)).toBe(false);
@@ -247,19 +252,20 @@ describe('a bin built with detachable feet', () => {
     generateBin = (await import('./binOrchestrator')).generateBin;
   }, 60000);
 
+  const binParams = (
+    feet: 'integral' | 'detachable',
+    over: Partial<BinParams> = {}
+  ): BinParams => ({
+    ...DEFAULT_BIN_PARAMS,
+    width: 3,
+    depth: 2,
+    height: 3,
+    ...over,
+    base: { ...DEFAULT_BIN_PARAMS.base, feet, ...(over.base ?? {}) },
+  });
+
   const bin = (feet: 'integral' | 'detachable', over: Partial<BinParams> = {}): MeshData =>
-    generateBin(
-      {
-        ...DEFAULT_BIN_PARAMS,
-        width: 3,
-        depth: 2,
-        height: 3,
-        ...over,
-        base: { ...DEFAULT_BIN_PARAMS.base, feet, ...(over.base ?? {}) },
-      },
-      undefined,
-      true
-    );
+    generateBin(binParams(feet, over), undefined, true);
 
   it('prints exactly one socket shorter than the same bin with integral feet', () => {
     const integral = boundingBox(bin('integral').vertices);
@@ -278,23 +284,21 @@ describe('a bin built with detachable feet', () => {
     expect(isSolidThrough(m, 0, 0, minZ - 1, minZ - 0.1)).toBe(false);
   });
 
-  it('carries a hole through its floor at every pin the plan places', () => {
-    const params: BinParams = {
-      ...DEFAULT_BIN_PARAMS,
-      width: 3,
-      depth: 2,
-      height: 3,
-      base: { ...DEFAULT_BIN_PARAMS.base, feet: 'detachable' },
-    };
+  it('leaves the interior floor unbroken above every pin', () => {
     const m = bin('detachable');
     const { minZ } = boundingBox(m.vertices);
-    const resolved = resolveDetachableFeet(params);
+    const resolved = resolveDetachableFeet(binParams('detachable'));
     expect(resolved.placements.length).toBe(4);
 
     for (const foot of resolved.placements) {
       for (const pin of footPinPositions(foot, resolved.armMm, resolved.pinDiameterMm)) {
-        // Nothing solid through the floor at a pin: the hole goes right through.
-        expect(isSolidThrough(m, pin.x, pin.y, minZ + 0.1, minZ + 1.1)).toBe(false);
+        // The recess is open at the underside...
+        expect(isSolidThrough(m, pin.x, pin.y, minZ + 0.05, minZ + 0.3)).toBe(false);
+        // ...and the membrane above it is solid, so nothing reaches the
+        // interior — where the scoop ramp, dividers and floor pattern live.
+        expect(isSolidThrough(m, pin.x, pin.y, minZ + FLOOR - MEMBRANE + 0.05, minZ + FLOOR)).toBe(
+          true
+        );
       }
     }
   });
@@ -375,5 +379,85 @@ describe('detachable feet seating in a baseplate', () => {
     expect(seatDepth(feetFor('half'), plate, { dx: HALF_UNIT, dy: HALF_UNIT }).mm).toBeGreaterThan(
       POCKET_DEPTH - 1
     );
+  });
+});
+
+/**
+ * A wall too thin for a pin used to fail the WHOLE generation: the builder
+ * throws, and the shell stage does not catch. Three of the selectable wall
+ * thicknesses are in that range, so this is the difference between an
+ * unavailable toggle and a dead preview.
+ */
+describe('a floor too thin to hold a pin', () => {
+  let generateBin: (p: BinParams, cb: undefined, forExport: boolean) => MeshData;
+
+  beforeAll(async () => {
+    generateBin = (await import('./binOrchestrator')).generateBin;
+  }, 60000);
+
+  it('builds an ordinary socketed bin instead of throwing', () => {
+    for (const wallThickness of [0.4, 0.6, 0.8]) {
+      const params: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 2,
+        depth: 2,
+        height: 3,
+        wallThickness,
+        base: { ...DEFAULT_BIN_PARAMS.base, feet: 'detachable' },
+      };
+      const mesh = generateBin(params, undefined, true);
+      expect(mesh.triangleCount).toBeGreaterThan(0);
+      // The socket is back, so the bin is a whole part rather than a body with
+      // holes and no feet to fill them.
+      const { minZ, maxZ } = boundingBox(mesh.vertices);
+      expect(maxZ - minZ).toBeGreaterThan(20);
+    }
+  });
+});
+
+/**
+ * A screw fastens the bin down THROUGH its foot, so unlike the magnet pocket
+ * its bore cannot be blind: it has to leave the foot and carry on through the
+ * floor, or it fastens nothing. The integral path cuts these in
+ * `buildBaseSocket`, which the detachable branch skips entirely — so without
+ * this the screw controls stay live and produce a bin with no screw holes.
+ */
+describe('screw bases with detachable feet', () => {
+  let generateBin: (p: BinParams, cb: undefined, forExport: boolean) => MeshData;
+
+  beforeAll(async () => {
+    generateBin = (await import('./binOrchestrator')).generateBin;
+  }, 60000);
+
+  const screwed: BinParams = {
+    ...DEFAULT_BIN_PARAMS,
+    width: 2,
+    depth: 2,
+    height: 3,
+    base: { ...DEFAULT_BIN_PARAMS.base, style: 'screw', feet: 'detachable' },
+  };
+
+  /** Corners with a hole clean through the floor. */
+  const boredCount = (params: BinParams): number => {
+    const m = generateBin(params, undefined, true);
+    const { minZ } = boundingBox(m.vertices);
+    const resolved = resolveDetachableFeet(screwed);
+    if (!resolved.screw) throw new Error('expected screw positions');
+    return resolved.screw.positions.filter(
+      ([x, y]) => !isSolidThrough(m, x, y, minZ + 0.05, minZ + 1.15)
+    ).length;
+  };
+
+  it('bores through the floor once per foot, and only where a foot sits', () => {
+    // A candidate corner with no foot under it must NOT be bored: the screw
+    // would pass through the bin and out into open air.
+    const resolved = resolveDetachableFeet(screwed);
+    expect(boredCount(screwed)).toBe(resolved.placements.length);
+    expect(resolved.screw?.positions.length).toBeGreaterThan(resolved.placements.length);
+  });
+
+  it('leaves every corner solid without screws', () => {
+    const plain = { ...screwed, base: { ...screwed.base, style: 'standard' as const } };
+    expect(boredCount(plain)).toBe(0);
   });
 });

@@ -3,19 +3,21 @@ import {
   detachableFeetPlacements,
   footArmMm,
   footPinPositions,
+  resolveDetachableFeet,
   type DetachableFeetInput,
   type FootPlacement,
 } from './detachableFeetPlan';
 import { MAX_FOOT_SPAN_MM } from '@/features/bin-designer/types';
+import { buildFullMask, type CellMask } from '@/shared/utils/cellMask';
 
 const STOCK_MAGNET_MM = 6.5;
-const STOCK_PIN_MM = 5;
+const PIN_MM = 5;
 /** What the magnet placement resolves to at 42mm pitch: 21 - 13. */
 const SPEC_MAGNET_INSET_MM = 8;
 const ARM = footArmMm({
   magnetDiameterMm: STOCK_MAGNET_MM,
   magnetInsetFromEdgeMm: SPEC_MAGNET_INSET_MM,
-  pinDiameterMm: STOCK_PIN_MM,
+  pinDiameterMm: PIN_MM,
 });
 
 function plan(over: Partial<DetachableFeetInput>): FootPlacement[] {
@@ -59,16 +61,21 @@ describe('footArmMm', () => {
     expect(ARM).toBeCloseTo(12.45, 5);
   });
 
-  it('falls back to the pin run when there is no magnet', () => {
-    expect(footArmMm({ pinDiameterMm: STOCK_PIN_MM })).toBeCloseTo(7.4, 5);
+  it('never gets so narrow that the foot stands on a knife edge', () => {
+    // With no magnet the pin run alone would give 5.4mm at 3mm pins, and the
+    // socket taper takes 3.2mm of that off the bottom face — leaving 2.2mm of
+    // strip actually touching the pocket floor.
+    expect(footArmMm({ pinDiameterMm: 3 })).toBeCloseTo(7.2, 5);
+    expect(footArmMm({ pinDiameterMm: 3 }) - 3.2).toBeGreaterThanOrEqual(4);
   });
 
   it('shrinks with the inset, so a small cell does not oversize its foot', () => {
+    // Down to the standing floor, which no input may cross.
     expect(
       footArmMm({
         magnetDiameterMm: STOCK_MAGNET_MM,
         magnetInsetFromEdgeMm: 2,
-        pinDiameterMm: STOCK_PIN_MM,
+        pinDiameterMm: PIN_MM,
       })
     ).toBeCloseTo(7.4, 5);
   });
@@ -77,7 +84,7 @@ describe('footArmMm', () => {
     const big = footArmMm({
       magnetDiameterMm: 10,
       magnetInsetFromEdgeMm: SPEC_MAGNET_INSET_MM,
-      pinDiameterMm: STOCK_PIN_MM,
+      pinDiameterMm: PIN_MM,
     });
     expect(big).toBeGreaterThan(ARM);
     expect(big).toBeCloseTo(8 + 5 + 1.2, 5);
@@ -175,7 +182,7 @@ describe('footPinPositions', () => {
   it('puts three pins on an L, all inboard of its corner', () => {
     const foot = plan({ widthUnits: 3, depthUnits: 2 }).find((f) => f.shape === 'L');
     if (!foot) throw new Error('expected an L foot');
-    const pins = footPinPositions(foot, ARM, STOCK_PIN_MM);
+    const pins = footPinPositions(foot, ARM, PIN_MM);
     expect(pins).toHaveLength(3);
     for (const p of pins) {
       expect(Math.abs(p.x)).toBeLessThan(Math.abs(foot.x));
@@ -184,14 +191,19 @@ describe('footPinPositions', () => {
     }
   });
 
-  it('puts four pins on a bar, paired across the axis it spans', () => {
+  it('puts two pins along a bar, both inside the arm it sits in', () => {
     const foot = plan({ widthUnits: 1, depthUnits: 1 })[0];
-    const pins = footPinPositions(foot, ARM, STOCK_PIN_MM);
-    expect(pins).toHaveLength(4);
-    // Spans X, so the pins are two mirrored X positions at two Y depths.
+    const pins = footPinPositions(foot, ARM, PIN_MM);
+    expect(pins).toHaveLength(2);
+    // Spread along the span, and at ONE depth: a second row would land past the
+    // foot's inner face, leaving pins in mid air.
     expect(new Set(pins.map((p) => p.x.toFixed(4))).size).toBe(2);
-    expect(new Set(pins.map((p) => p.y.toFixed(4))).size).toBe(2);
-    for (const p of pins) expect(inCell(p, foot)).toBe(true);
+    expect(new Set(pins.map((p) => p.y.toFixed(4))).size).toBe(1);
+    for (const p of pins) {
+      expect(inCell(p, foot)).toBe(true);
+      // Inside the arm's depth, measured from the edge it hugs.
+      expect(Math.abs(p.y - foot.y)).toBeLessThanOrEqual(ARM);
+    }
   });
 
   it('keeps every pin inside the bin footprint on a fractional bin', () => {
@@ -199,7 +211,7 @@ describe('footPinPositions', () => {
     const halfW = (2.5 * 42) / 2;
     const halfD = (2 * 42) / 2;
     for (const foot of feet) {
-      for (const p of footPinPositions(foot, ARM, STOCK_PIN_MM)) {
+      for (const p of footPinPositions(foot, ARM, PIN_MM)) {
         expect(Math.abs(p.x)).toBeLessThan(halfW);
         expect(Math.abs(p.y)).toBeLessThan(halfD);
       }
@@ -238,5 +250,44 @@ describe('half-offset placement', () => {
     const asGrid = plan({ widthUnits: 2.5, depthUnits: 2, latticeX: 'grid' });
     const asHalf = plan({ widthUnits: 2.5, depthUnits: 2, latticeX: 'half' });
     expect(asHalf).toEqual(asGrid);
+  });
+
+  describe('custom shapes', () => {
+    /** Mask over a `w x d` bin; `keep` is asked per GRID UNIT, not per mask cell. */
+    const makeMask = (w: number, d: number, keep: (x: number, y: number) => boolean): CellMask => {
+      const mask = buildFullMask(w, d);
+      const per = mask.cols / w;
+      const cells = mask.cells.map((_, i) => {
+        const col = i % mask.cols;
+        const row = Math.floor(i / mask.cols);
+        return keep(Math.floor(col / per), Math.floor(row / per)) ? (1 as const) : (0 as const);
+      });
+      return { ...mask, cells };
+    };
+
+    const resolveFor = (mask: CellMask) =>
+      resolveDetachableFeet({
+        width: 3,
+        depth: 3,
+        gridUnitMm: 42,
+        fractionalEdgeX: 'end',
+        fractionalEdgeY: 'end',
+        cellMask: mask,
+        base: { style: 'standard', magnetDiameter: 6.5, magnetDepth: 2, screwDiameter: 3 },
+      });
+
+    it('drops a foot whose cell the mask removed', () => {
+      // A foot under a removed cell hangs under nothing: its pin holes cut
+      // empty space, so it ships as a part that cannot attach.
+      const full = resolveFor(makeMask(3, 3, () => true));
+      const notched = resolveFor(makeMask(3, 3, (x, y) => !(x === 0 && y === 0)));
+      expect(full.placements).toHaveLength(4);
+      expect(notched.placements).toHaveLength(3);
+      expect(notched.placements.some((f) => f.x < 0 && f.y < 0)).toBe(false);
+    });
+
+    it('leaves a fully-filled mask alone', () => {
+      expect(resolveFor(makeMask(3, 3, () => true)).placements).toHaveLength(4);
+    });
   });
 });

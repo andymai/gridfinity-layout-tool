@@ -41,6 +41,7 @@ import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constant
 import type { ExportFileNameConfig, ExportFileFormat } from '@/features/bin-designer/types';
 import type { PrintEstimate } from '@/features/bin-designer/utils/printEstimates';
 import { shouldGenerateLid } from '@/features/bin-designer/utils/lidCompatibility';
+import { hasDetachableFeet } from '@/features/bin-designer/types/base';
 import { exportWithResilience } from '@/features/bin-designer/utils/exportWithResilience';
 import {
   buildBinDownloadPayload,
@@ -157,6 +158,7 @@ export function useExport(): UseExportReturn {
   const hasDividers =
     params.style === 'slotted' && (params.slotConfig.x.enabled || params.slotConfig.y.enabled);
   const hasLid = shouldGenerateLid(params);
+  const hasFeet = hasDetachableFeet(params.base);
 
   const estimates = useMemo(() => estimatePrint(params, printSettings), [params, printSettings]);
 
@@ -519,7 +521,11 @@ export function useExport(): UseExportReturn {
         // compound assembly bundles the bin in with its companions, and the
         // body is already covered by the split pieces.
         const companionPieces: { data: ArrayBuffer; label: string }[] = [];
-        if (hasDividers || hasLid) {
+        // Feet belong in this gate for the same reason dividers and the lid do.
+        // Third copy of it in the codebase; the other two are the worker's
+        // combined export and the layout planner, and all three dropped the
+        // feet the same way — an archive of bins that cannot stand.
+        if (hasDividers || hasLid || hasFeet) {
           const combined = await exportWithResilience(() => {
             const bridge = getActiveBridge();
             if (!bridge) throw new Error('Bridge not available');
@@ -600,6 +606,7 @@ export function useExport(): UseExportReturn {
       maxGrid,
       hasDividers,
       hasLid,
+      hasFeet,
       engineReady,
       buildExportTelemetry,
       handleExportError,

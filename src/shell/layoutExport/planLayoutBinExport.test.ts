@@ -641,4 +641,30 @@ describe('planLayoutBinExport', () => {
       expect(split?.cutPlanesY.length).toBeGreaterThan(0);
     });
   });
+
+  describe('detachable feet', () => {
+    const planFor = (params: Partial<BinParams>) =>
+      planLayoutBinExport({
+        bins: [linkedBin('d1')],
+        loaded: [{ id: designId('d1'), design: design('d1', 'Box', params) }],
+        format: 'stl',
+        fileNameConfig: CONFIG,
+        printSettings: DEFAULT_PRINT_SETTINGS,
+        drawer: DRAWER,
+        baseplate: undefined,
+        printBed: PRINT_BED,
+      });
+
+    it('counts the feet as a companion part', () => {
+      // The simple path exports ONE body through `exportBin`. A feet bin routed
+      // there ships without its feet, and nothing downstream notices: the ZIP
+      // is well-formed and the bin is simply unusable.
+      const plan = planFor({ base: { ...DEFAULT_BIN_PARAMS.base, feet: 'detachable' } });
+      expect(plan.exportable[0]?.companions).toContain('feet');
+    });
+
+    it('leaves an ordinary bin simple', () => {
+      expect(planFor({}).exportable[0]?.companions).not.toContain('feet');
+    });
+  });
 });

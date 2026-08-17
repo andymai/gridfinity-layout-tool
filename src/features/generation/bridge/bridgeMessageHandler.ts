@@ -216,6 +216,20 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
                   triangleCount: response.connectorKeyTriangleCount,
                 }
               : undefined;
+          // Detachable feet are optional; all four fields arrive together.
+          const detachableFeetMesh =
+            response.detachableFeetVertices &&
+            response.detachableFeetNormals &&
+            response.detachableFeetIndices &&
+            response.detachableFeetTriangleCount !== undefined
+              ? {
+                  vertices: response.detachableFeetVertices,
+                  normals: response.detachableFeetNormals,
+                  indices: response.detachableFeetIndices,
+                  edgeVertices: new Float32Array(0),
+                  triangleCount: response.detachableFeetTriangleCount,
+                }
+              : undefined;
           const result: GenerationResult = {
             mesh: {
               vertices: response.vertices,
@@ -229,6 +243,7 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
               stackPlateMesh,
               slideTrayMesh,
               connectorKeyMesh,
+              detachableFeetMesh,
               labelPlates: response.labelPlates,
               labelTextOverflow: response.labelTextOverflow,
             },

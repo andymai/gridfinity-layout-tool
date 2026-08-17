@@ -336,7 +336,7 @@ export const shellStage: PipelineStage = {
       floorOpenings.delete();
     }
 
-    // ── DETACHABLE FEET — flat-bottomed body, pin holes through its floor. ───
+    // ── DETACHABLE FEET — flat-bottomed body, blind pin holes in its floor. ──
     // The feet are a separate PART, not deferred geometry: `deferredSolid` is
     // fused into the body on the export path, which is exactly what must not
     // happen to something the user presses on afterwards. They are generated
@@ -354,6 +354,9 @@ export const shellStage: PipelineStage = {
           pinDiameterMm: resolved.pinDiameterMm,
           pinHoleDiameterMm: DETACHABLE_PIN_HOLE_DIAMETER_MM,
           floorThicknessMm: params.wallThickness,
+          // Screws only: their bore also passes through the FLOOR, so the tool
+          // this returns has to carry it. Magnets stay in the feet.
+          screw: resolved.screw,
           forExport: true,
         });
         // The feet themselves are rebuilt by the parts generator; here only

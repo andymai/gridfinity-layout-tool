@@ -154,7 +154,17 @@ function computeBinVolume(params: BinParams): number {
   // pays off most. A spacer is deliberately not modelled here: it removes the
   // floor as well as shelling the feet, so it is a different figure that no
   // measurement in this file covers.
-  if (params.base.lightweight && !params.base.spacer && !isSocketlessBase(params.base.style)) {
+  // NOT `|| hasDetachableFeet`: the two are mutually exclusive in the geometry
+  // (`deriveDimensions` makes lightweight inert when the feet detach) but both
+  // flags can be STORED at once, because the panel locks lightweight rather
+  // than clearing it. Subtracting both took the base term negative and reported
+  // a 91% saving on a bin that saves 46%.
+  if (
+    params.base.lightweight &&
+    !params.base.spacer &&
+    !isSocketlessBase(params.base.style) &&
+    !hasDetachableFeet(params.base)
+  ) {
     volume -= lightweightBaseSaving(
       params.width,
       params.depth,

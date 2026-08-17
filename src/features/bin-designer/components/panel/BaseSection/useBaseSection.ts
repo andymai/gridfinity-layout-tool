@@ -5,7 +5,11 @@ import { useTranslation } from '@/i18n';
 import { resolveConstraints, getFeatureStatus } from '@/shared/constraints';
 import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import { estimatePrint } from '@/features/bin-designer/utils/printEstimates';
-import { DEFAULT_DETACHABLE_PIN_DIAMETER_MM } from '@/features/bin-designer/types/base';
+import {
+  DEFAULT_DETACHABLE_PIN_DIAMETER_MM,
+  detachableFeetFitFloor,
+  hasDetachableFeet as hasDetachableFeetFor,
+} from '@/features/bin-designer/types/base';
 import type {
   BinParams,
   FloorPatternType,
@@ -110,13 +114,15 @@ export function useBaseSection() {
     : (base.footLatticeY ?? DEFAULT_FOOT_LATTICE);
 
   // ── Detachable feet ──────────────────────────────────────────────────────
-  // The three foot-shaping controls below are SUPERSEDED, not contradicted:
-  // they describe where integral feet fall, which this mode answers its own
-  // way. Locked with a reason rather than routed through the constraint engine,
-  // whose mode switches deliberately CLEAR what they disable — turning the
-  // toggle on would silently discard a lightweight setting that turning it off
-  // again would not bring back.
-  const hasDetachableFeet = base.feet === 'detachable';
+  // The foot-shaping controls are SUPERSEDED, not contradicted: they describe
+  // where integral feet fall, which this mode answers its own way. Locked with
+  // a reason rather than through the constraint engine, whose mode switches
+  // deliberately CLEAR what they disable — turning the toggle on would discard
+  // a lightweight setting that turning it off again would not bring back.
+  // The shared predicate, not `base.feet === 'detachable'`: it also refuses a
+  // socketless base and a spacer, which is what the geometry does. The local
+  // copy left a flat-base bin reading "4 feet" over a bin that builds none.
+  const hasDetachableFeet = hasDetachableFeetFor(base);
   const detachablePlan = hasDetachableFeet ? resolveDetachableFeet(params) : null;
   // No pocket-aligned whole cell to stand a foot on. Reachable for a 1-wide bin
   // under the `half` lattice, and the panel has to say so: the alternative is a
@@ -125,17 +131,14 @@ export function useBaseSection() {
   const feetSupersedeReason = hasDetachableFeet ? 'binDesigner.detachableFeet.supersedes' : null;
 
   /**
-   * What the feature is saving, as a ratio.
-   *
-   * A ratio and not a mass: the estimate reports SOLID volume converted at PLA
-   * density, i.e. as if the part were printed at 100% infill, and the feet are
-   * the one chunky region of a bin. An absolute figure would overstate the
-   * saving against what a slicer reports; dividing cancels the error out.
+   * What the feature is saving, as a ratio rather than a mass: the estimate is
+   * SOLID volume, i.e. 100% infill, and the feet are the one chunky region of a
+   * bin. An absolute figure would overstate the saving against what a slicer
+   * reports; dividing cancels the error out.
    */
   const detachableSavingPercent = useMemo(() => {
     if (!hasDetachableFeet) return 0;
-    const { feet: _feet, feetPinDiameter: _pin, ...integralBase } = base;
-    const integral = estimatePrint({ ...params, base: integralBase }).volumeMm3;
+    const integral = estimatePrint({ ...params, base: omitDetachableFeet(base) }).volumeMm3;
     if (integral <= 0) return 0;
     return Math.round(((integral - estimatePrint(params).volumeMm3) / integral) * 100);
   }, [params, base, hasDetachableFeet]);
@@ -474,9 +477,15 @@ export function useBaseSection() {
     handlers: {
       toggleDetachableFeet,
       setPinDiameter,
-      detachableFeetDisabledReason: detachableFeetStatus.reason
-        ? t(detachableFeetStatus.reason)
-        : undefined,
+      // The floor gate is a parameter precondition, not a feature conflict, so
+      // it is not a constraint rule (the engine forbids a rule that disables
+      // its own source). Without it the toggle looks available and the worker
+      // quietly declines to build any feet.
+      detachableFeetDisabledReason: !detachableFeetFitFloor(params.wallThickness)
+        ? t('binDesigner.detachableFeetNeedsThickerWall')
+        : detachableFeetStatus.reason
+          ? t(detachableFeetStatus.reason)
+          : undefined,
       toggleMagnet,
       toggleScrew,
       toggleStackingLip,
@@ -485,9 +494,11 @@ export function useBaseSection() {
       toggleHalfSockets,
       setFootLatticeX,
       setFootLatticeY,
-      footLatticeLockReason: t(
-        feetSupersedeReason ?? footLatticeLockReason ?? 'binDesigner.footLattice.hint'
-      ),
+      // Deliberately NOT locked by the feet: the lattice is the only thing that
+      // seats a half-offset bin, detachable or not, so labelling it inert would
+      // hide the one control that fixes a bin perching on the pocket ridges.
+      // Half sockets and lightweight really are ignored and stay locked.
+      footLatticeLockReason: t(footLatticeLockReason ?? 'binDesigner.footLattice.hint'),
       toggleFlat,
       toggleLidBottom,
       setTrayAttachment,

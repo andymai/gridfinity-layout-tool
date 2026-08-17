@@ -17,7 +17,11 @@
 import { unwrap, fuseAll, mesh, translate, exportSTEP } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
-import { hasDetachableFeet, DETACHABLE_PIN_HOLE_DIAMETER_MM } from '@/shared/types/bin';
+import {
+  detachableFeetFitFloor,
+  hasDetachableFeet,
+  DETACHABLE_PIN_HOLE_DIAMETER_MM,
+} from '@/shared/types/bin';
 import type { MeshData } from '../../bridge/types';
 import { footCellCentre, resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import { buildDetachableFeet } from './detachableFeetBuilder';
@@ -36,7 +40,9 @@ const PLATE_GAP_MM = 4;
  * `laidOut` re-arranges them onto a plate instead of leaving them assembled.
  */
 function buildFeetSolids(params: BinParams, laidOut: boolean): Shape3D[] | null {
-  if (!hasDetachableFeet(params.base)) return null;
+  if (!hasDetachableFeet(params.base) || !detachableFeetFitFloor(params.wallThickness)) {
+    return null;
+  }
   const resolved = resolveDetachableFeet(params);
   if (resolved.placements.length === 0) return null;
 
@@ -46,6 +52,7 @@ function buildFeetSolids(params: BinParams, laidOut: boolean): Shape3D[] | null 
     pinDiameterMm: resolved.pinDiameterMm,
     pinHoleDiameterMm: DETACHABLE_PIN_HOLE_DIAMETER_MM,
     floorThicknessMm: params.wallThickness,
+    screw: resolved.screw,
     magnet: resolved.magnet
       ? {
           diameterMm: resolved.magnet.diameterMm,
@@ -75,24 +82,26 @@ function buildFeetSolids(params: BinParams, laidOut: boolean): Shape3D[] | null 
   });
 }
 
+/**
+ * The feet as solids, positioned under the bin. Caller owns and must delete
+ * them. For the STEP compound, which holds bin + companions as separate solids.
+ */
+export function buildAssembledFeetSolids(params: BinParams): Shape3D[] | null {
+  return buildFeetSolids(params, false);
+}
+
 /** Feet meshed where they sit under the bin, for the assembled preview. */
 export function generateDetachableFeetMesh(
   params: BinParams,
   onProgress?: ProgressFn
 ): MeshData | null {
-  const feet = buildFeetSolids(params, false);
+  const feet = buildAssembledFeetSolids(params);
   if (!feet) return null;
   onProgress?.('feet', 0.9);
   try {
     const compound = unwrap(fuseAll(feet as ValidSolid[], { optimisation: 'commonFace' }));
     try {
-      const indexed = toIndexedMeshData(mesh(compound, { tolerance: 0.01, angularTolerance: 5 }));
-      return {
-        vertices: indexed.vertices,
-        normals: indexed.normals,
-        indices: indexed.indices,
-        triangleCount: indexed.triangleCount,
-      } as MeshData;
+      return toIndexedMeshData(mesh(compound, { tolerance: 0.01, angularTolerance: 5 }));
     } finally {
       if (!feet.includes(compound)) compound.delete();
     }

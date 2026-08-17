@@ -25,9 +25,11 @@ import {
   LidMesh,
   StackPlateMesh,
   SlideTrayMesh,
+  DetachableFeetMesh,
   LabelPlateMeshes,
   LidGuideLine,
   LidExplodeSlider,
+  FeetDetachSlider,
   LID_OFFSET_DEFAULT,
   BinAxisLabels,
   AssembledBinDimensions,
@@ -61,6 +63,7 @@ import { describeBin, getStatusAnnouncement } from '../../utils/a11y';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { stackPitchMm } from '@/shared/utils/heightUnits';
 import { useTranslation } from '@/i18n';
+import { hasDetachableFeet } from '@/features/bin-designer/types/base';
 import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
 import { CameraController, usePresetTransition, SceneLighting } from './previewCanvasCamera';
@@ -125,6 +128,11 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
   // Lid explode slider (mm above the snapped position). Default = mid-explode
   // so both the lid and the bin's interior are visible when a lid is enabled.
   const [lidOffsetMm, setLidOffsetMm] = useState<number>(LID_OFFSET_DEFAULT);
+  // Feet get their own offset, starting attached: a lid opens so you can see
+  // inside, but feet are what the bin stands on. Sharing the lid's value also
+  // stranded them 30mm down on a bin with no lid, where the slider that set it
+  // is never rendered.
+  const [feetOffsetMm, setFeetOffsetMm] = useState<number>(0);
 
   // Preview color persisted in localStorage
   const [previewColor, setPreviewColor] = useState(() => {
@@ -452,6 +460,12 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
                 wireframe={wireframe}
                 xray={xray}
               />
+              <DetachableFeetMesh
+                color={previewColor}
+                offsetMm={feetOffsetMm}
+                wireframe={wireframe}
+                xray={xray}
+              />
               {/* Swappable label plates (socket mode): seated in their sockets
                 and again in a reference row beside the bin. Shares the explode
                 slider — it withdraws the seated ones, the row stays put. */}
@@ -563,6 +577,10 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
               its stacking lip is on (lid won't render/export without lip). */}
           {params.lid.enabled && params.base.stackingLip && (
             <LidExplodeSlider value={lidOffsetMm} onChange={setLidOffsetMm} />
+          )}
+
+          {hasDetachableFeet(params.base) && (
+            <FeetDetachSlider value={feetOffsetMm} onChange={setFeetOffsetMm} />
           )}
 
           {/* Control buttons */}

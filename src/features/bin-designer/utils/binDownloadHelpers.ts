@@ -82,6 +82,8 @@ export function formatPieceDisplayName(
       return `Lid Baseplate ${dims}`;
     case 'slide-tray':
       return `Sliding Tray ${dims}`;
+    case 'feet':
+      return `Feet ${dims}`;
     case 'divider-horizontal':
       return 'Divider Horizontal';
     case 'divider-vertical':
@@ -259,9 +261,11 @@ function pieceZone(label: string): ColorZone | null {
 
 /** Labels laid out in a row to the right of the bin in multi-object 3MF. */
 function isSideLaidOutPiece(label: string): boolean {
-  // The sliding tray is a separate print, so it is laid out beside the bin
-  // rather than left overlapping the cavity it rides in.
-  return label === 'lid' || label === 'lid-baseplate' || label === 'slide-tray';
+  // Every piece that is a separate PRINT is laid out beside the bin rather than
+  // left in the frame it was built in. The tray would otherwise overlap the
+  // cavity it rides in; the feet, whose export frame starts at the first foot's
+  // own origin, would sit inside the bin's floor band.
+  return label === 'lid' || label === 'lid-baseplate' || label === 'slide-tray' || label === 'feet';
 }
 
 /** Bounding box of a flat [x,y,z,x,y,z,...] STL vertex array. */

@@ -85,10 +85,9 @@ export async function handleGenerate(message: GenerateMessage): Promise<void> {
         console.warn('[BinGen] Slide-tray generation failed; skipping tray:', e);
       }
 
-      // Detachable feet: a companion PART, so the same secondary-feature
-      // contract as the lid and the tray. Resolved before the bin-only early
-      // return, or a bin with feet and no lid would silently lose them — the
-      // exact bug the tray comment above records.
+      // A companion PART, so the same secondary-feature contract as the lid and
+      // the tray. Resolved before the bin-only early return, or a bin with feet
+      // and no lid would silently lose them.
       let detachableFeetMesh: MeshData | null = null;
       try {
         detachableFeetMesh = generateDetachableFeetMesh(params, onProgress);

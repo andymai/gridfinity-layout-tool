@@ -482,10 +482,10 @@ describe('validateDesignerShare', () => {
 
     it('accepts only the offered pin diameters', () => {
       for (const [diameter, valid] of [
-        [4.9, true],
-        [5, true],
+        [2.9, true],
+        [3, true],
         [undefined, true],
-        [5.5, false],
+        [5, false],
         [0, false],
         ['5', false],
       ] as Array<[unknown, boolean]>) {

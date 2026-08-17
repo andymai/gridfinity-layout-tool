@@ -3896,8 +3896,12 @@
   "binDesigner.detachableFeet": "Patas desmontables",
   "binDesigner.detachableFeet.saving": "Usa un {percent} % menos de material que las patas integradas",
   "binDesigner.detachableFeet.pinSize": "Tamaño del pasador",
-  "binDesigner.detachableFeet.pinHint": "Prueba primero 4,9 mm si 5,0 mm no encaja",
+  "binDesigner.detachableFeet.pinHint": "Prueba primero el pasador pequeño si el grande no encaja",
   "binDesigner.detachableFeet.supersedes": "No se usa con patas desmontables",
   "binDesigner.detachableFeet.unplaceable": "No hay ninguna celda completa de la rejilla para una pata a este tamaño",
-  "binDesigner.detachableFeet.summary": "{count} patas, pasadores de ø{diameter} mm"
+  "binDesigner.detachableFeet.summary": "{count} patas, pasadores de ø{diameter} mm",
+  "binDesigner.preview.feetDetached": "Separadas",
+  "binDesigner.preview.feetAttached": "Colocadas",
+  "binDesigner.preview.feetDetachSlider": "Separar patas",
+  "binDesigner.detachableFeetNeedsThickerWall": "Con paredes tan finas queda muy poco suelo para sujetar un pasador"
 }
