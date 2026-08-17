@@ -83,6 +83,14 @@ function matchesDefault(params: BinParams, key: string): boolean {
   // the same reason the cross-group keys below are excluded outright.
   if (current[key] === undefined) return true;
 
+  // Identity before structure. Params start as a shallow copy of the defaults
+  // and the store updates them immutably with structural sharing, so a field
+  // nobody has touched is still the DEFAULT object itself, and an edit changes
+  // the identity of only the branch it touched. Without this the serialisation
+  // below ran over every field on every params change, including `meshAssets`,
+  // whose entries each hold a base64-deflated mesh.
+  if (current[key] === defaults[key]) return true;
+
   return JSON.stringify(canonical(current[key])) === JSON.stringify(canonical(defaults[key]));
 }
 

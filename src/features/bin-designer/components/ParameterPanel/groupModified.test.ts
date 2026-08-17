@@ -111,6 +111,32 @@ describe('modifiedGroups', () => {
     });
   });
 
+  // The identity fast path must agree with the structural compare, or an
+  // untouched field and a deep-equal copy of it would report differently.
+  it('agrees whether a field is the default object or a deep-equal copy of it', () => {
+    const shared = { ...DEFAULT_BIN_PARAMS };
+    const copied = {
+      ...DEFAULT_BIN_PARAMS,
+      base: structuredClone(DEFAULT_BIN_PARAMS.base),
+      compartments: structuredClone(DEFAULT_BIN_PARAMS.compartments),
+      lid: structuredClone(DEFAULT_BIN_PARAMS.lid),
+    };
+
+    expect(modifiedGroups(copied)).toEqual(modifiedGroups(shared));
+  });
+
+  it('still detects a change to a field it holds by reference elsewhere', () => {
+    // Guards the fast path against reporting unmodified for a branch that was
+    // replaced rather than mutated, which is how the store applies edits.
+    const edited = {
+      ...DEFAULT_BIN_PARAMS,
+      base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true },
+    };
+
+    expect(modifiedGroups(edited).base).toBe(true);
+    expect(modifiedGroups(edited).interior).toBe(false);
+  });
+
   it('marks several groups at once', () => {
     const result = modifiedGroups({
       ...DEFAULT_BIN_PARAMS,
