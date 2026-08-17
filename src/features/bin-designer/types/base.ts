@@ -261,8 +261,38 @@ export const DETACHABLE_PIN_DIAMETERS_MM = [4.9, 5] as const;
 /** Applied when a BaseConfig's `feetPinDiameter` is missing. */
 export const DEFAULT_DETACHABLE_PIN_DIAMETER_MM = 5;
 
-/** Diameter of the pin holes cut through the bin floor, in mm. */
+/** Diameter of the pin holes cut into the underside of the bin floor, in mm. */
 export const DETACHABLE_PIN_HOLE_DIAMETER_MM = 5;
+
+/**
+ * Floor left intact above a pin hole, in mm.
+ *
+ * The holes are BLIND, opened from the underside only. A hole that broke
+ * through would put a 5mm opening in the interior floor at each pin — twelve of
+ * them on a four-foot bin — landing exactly where the interior features live:
+ * a scoop's ramp reaches the front corners, dividers stand on the floor, and a
+ * floor pattern is cut from the same surface. None of that has to be reasoned
+ * about if the interior surface is simply never broken.
+ *
+ * Two layers at {@link DETACHABLE_PIN_ASSUMED_LAYER_MM}, which is what bridges
+ * cleanly over the hole below it, and it costs engagement depth: a pin reaches
+ * `wallThickness - this`, so a 1.2mm floor leaves 0.8mm of grip. That is the
+ * trade, and it is the right way round — a shallow joint that holds is
+ * recoverable with glue, a hole through the scoop is not.
+ */
+export const DETACHABLE_PIN_MEMBRANE_MM = 0.4;
+
+/**
+ * Shortest pin worth building, in mm. Below this the joint is decorative, so
+ * the feature reports itself unavailable rather than shipping feet that fall
+ * off — reachable on a bin whose wall is thinner than the membrane plus this.
+ */
+export const DETACHABLE_PIN_MIN_ENGAGEMENT_MM = 0.6;
+
+/** How deep a pin reaches into a floor of `floorThicknessMm`, in mm. */
+export function detachablePinEngagementMm(floorThicknessMm: number): number {
+  return floorThicknessMm - DETACHABLE_PIN_MEMBRANE_MM;
+}
 
 /**
  * How much the pin's diameter grows and shrinks again, per layer, in mm.

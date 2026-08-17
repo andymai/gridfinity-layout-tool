@@ -60,6 +60,7 @@ beforeAll(async () => {
 const PITCH = 42;
 const CLEARANCE = 0.5;
 const FLOOR = 1.2;
+const MEMBRANE = 0.4;
 const PIN = 5;
 const MAGNET_D = 6.5;
 const MAGNET_DEPTH = 2;
@@ -138,12 +139,15 @@ describe('detachable foot geometry', () => {
     }
   });
 
-  it('stops its pins flush with the floor they pass through', () => {
+  it('stops its pins short of breaking through the floor', () => {
     const { feet, pinHoles } = feetOf();
     try {
       const box = boundingBox(meshOf(feet[0]).vertices);
-      // Top of the pins, not of the foot: the foot's own top face is Z=0.
-      expect(box.maxZ).toBeCloseTo(FLOOR, 4);
+      // Top of the pins, not of the foot: the foot's own top face is Z=0. The
+      // pin reaches the engagement depth and stops, leaving the membrane that
+      // keeps the interior floor unbroken.
+      expect(box.maxZ).toBeCloseTo(FLOOR - MEMBRANE, 4);
+      expect(box.maxZ).toBeLessThan(FLOOR);
       expect(box.minZ).toBeCloseTo(-5, 4);
     } finally {
       feet.forEach((f) => f.delete());
@@ -154,7 +158,7 @@ describe('detachable foot geometry', () => {
   it('takes a thicker floor as a longer pin, so the fit never depends on wall thickness', () => {
     const thick = feetOf({ floorThicknessMm: 2.4 });
     try {
-      expect(boundingBox(meshOf(thick.feet[0]).vertices).maxZ).toBeCloseTo(2.4, 4);
+      expect(boundingBox(meshOf(thick.feet[0]).vertices).maxZ).toBeCloseTo(2.4 - MEMBRANE, 4);
     } finally {
       thick.feet.forEach((f) => f.delete());
       thick.pinHoles.delete();
@@ -195,13 +199,14 @@ describe('detachable foot geometry', () => {
     try {
       const tool = meshOf(pinHoles);
       const box = boundingBox(tool.vertices);
-      // The tool spans the floor with margin at both ends, so the holes go
-      // clean through rather than leaving a skin.
+      // Opens below the floor and stops short of its top face: the holes are
+      // blind, so the interior surface is never broken.
       expect(box.minZ).toBeLessThan(0);
-      expect(box.maxZ).toBeGreaterThan(FLOOR);
+      expect(box.maxZ).toBeCloseTo(FLOOR - MEMBRANE, 4);
+      expect(box.maxZ).toBeLessThan(FLOOR);
 
       for (const pin of footPinPositions(CORNER_L, ARM, PIN)) {
-        expect(isSolidThrough(tool, pin.x, pin.y, 0.1, FLOOR - 0.1)).toBe(true);
+        expect(isSolidThrough(tool, pin.x, pin.y, 0.1, FLOOR - MEMBRANE - 0.1)).toBe(true);
       }
       // A point a full pin diameter off any of them is not drilled.
       expect(isSolidThrough(tool, CORNER_L.x, CORNER_L.y, 0.1, FLOOR - 0.1)).toBe(false);
@@ -278,7 +283,7 @@ describe('a bin built with detachable feet', () => {
     expect(isSolidThrough(m, 0, 0, minZ - 1, minZ - 0.1)).toBe(false);
   });
 
-  it('carries a hole through its floor at every pin the plan places', () => {
+  it('leaves the interior floor unbroken above every pin', () => {
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       width: 3,
@@ -293,8 +298,11 @@ describe('a bin built with detachable feet', () => {
 
     for (const foot of resolved.placements) {
       for (const pin of footPinPositions(foot, resolved.armMm, resolved.pinDiameterMm)) {
-        // Nothing solid through the floor at a pin: the hole goes right through.
-        expect(isSolidThrough(m, pin.x, pin.y, minZ + 0.1, minZ + 1.1)).toBe(false);
+        // The recess is open at the underside...
+        expect(isSolidThrough(m, pin.x, pin.y, minZ + 0.05, minZ + 0.3)).toBe(false);
+        // ...and the membrane above it is solid, so nothing reaches the
+        // interior — where the scoop ramp, dividers and floor pattern live.
+        expect(isSolidThrough(m, pin.x, pin.y, minZ + 1.2 - 0.35, minZ + 1.2)).toBe(true);
       }
     }
   });
