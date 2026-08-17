@@ -94,10 +94,10 @@ describe('useBaseSection', () => {
     });
     const { result } = renderHook(() => useBaseSection());
 
-    expect(result.current.state.isSpacer).toBe(false);
+    expect(result.current.state.bodyType).toBe('standard');
 
     act(() => {
-      result.current.handlers.toggleSpacer();
+      result.current.handlers.setBodyType('spacer');
     });
 
     const base = useDesignerStore.getState().params.base;
@@ -114,10 +114,9 @@ describe('useBaseSection', () => {
       params: { ...DEFAULT_BIN_PARAMS, scoop: { enabled: true, radius: 'auto' } },
     });
     const { result } = renderHook(() => useBaseSection());
-    expect(result.current.handlers.spacerDisabledReason).toBeUndefined();
 
     act(() => {
-      result.current.handlers.toggleSpacer();
+      result.current.handlers.setBodyType('spacer');
     });
     expect(useDesignerStore.getState().params.base.spacer).toBe(true);
     expect(useDesignerStore.getState().params.scoop.enabled).toBe(false);
@@ -136,7 +135,7 @@ describe('useBaseSection', () => {
     const { result } = renderHook(() => useBaseSection());
 
     act(() => {
-      result.current.handlers.toggleSpacer();
+      result.current.handlers.setBodyType('standard');
     });
 
     const params = useDesignerStore.getState().params;
@@ -158,7 +157,7 @@ describe('useBaseSection', () => {
     const { result } = renderHook(() => useBaseSection());
 
     act(() => {
-      result.current.handlers.toggleFlat();
+      result.current.handlers.setBodyType('flat');
     });
 
     const params = useDesignerStore.getState().params;
@@ -178,24 +177,29 @@ describe('useBaseSection', () => {
     const { result } = renderHook(() => useBaseSection());
 
     act(() => {
-      result.current.handlers.toggleSpacer();
+      result.current.handlers.setBodyType('standard');
     });
 
     expect(useDesignerStore.getState().params.height).toBe(6);
   });
 
-  it('spacer is greyed out with a reason on a flat base', () => {
-    // The one genuine block: no feet for the spacer to open through.
+  it('reaches the spacer from a flat base, which used to be blocked', () => {
+    // The archetypes were mutually exclusive toggles, so a flat base reported
+    // "a spacer needs feet to open through" and refused. Selecting a body type
+    // clears the outgoing one first, so the pair is a switch rather than a
+    // conflict and the explanation has nothing left to explain.
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' } },
     });
     const { result } = renderHook(() => useBaseSection());
-    expect(result.current.handlers.spacerDisabledReason).toBeTruthy();
 
     act(() => {
-      result.current.handlers.toggleSpacer();
+      result.current.handlers.setBodyType('spacer');
     });
-    expect(useDesignerStore.getState().params.base.spacer).toBe(false);
+
+    const base = useDesignerStore.getState().params.base;
+    expect(base.spacer).toBe(true);
+    expect(base.style).toBe('standard');
   });
 
   it('lightweight coexists with magnet style (allow-all, no constraint clearing)', () => {
@@ -327,7 +331,7 @@ describe('useBaseSection', () => {
     const { result } = renderHook(() => useBaseSection());
 
     act(() => {
-      result.current.handlers.toggleFlat();
+      result.current.handlers.setBodyType('flat');
     });
 
     const base = useDesignerStore.getState().params.base;
@@ -360,25 +364,24 @@ describe('useBaseSection', () => {
   });
 
   describe('flat floor', () => {
-    it('derives isFlat from base style', () => {
+    it('derives the body type from base style', () => {
       const { result } = renderHook(() => useBaseSection());
 
-      // Default: standard style, not flat
-      expect(result.current.state.isFlat).toBe(false);
+      expect(result.current.state.bodyType).toBe('standard');
     });
 
-    it('toggleFlat sets style to flat', () => {
+    it('selecting the flat body sets style to flat', () => {
       const { result } = renderHook(() => useBaseSection());
 
       act(() => {
-        result.current.handlers.toggleFlat();
+        result.current.handlers.setBodyType('flat');
       });
 
       expect(useDesignerStore.getState().params.base.style).toBe('flat');
-      expect(result.current.state.isFlat).toBe(true);
+      expect(result.current.state.bodyType).toBe('flat');
     });
 
-    it('toggleFlat off reverts to standard', () => {
+    it('going back to standard reverts the style', () => {
       useDesignerStore.setState({
         params: {
           ...DEFAULT_BIN_PARAMS,
@@ -389,11 +392,11 @@ describe('useBaseSection', () => {
       const { result } = renderHook(() => useBaseSection());
 
       act(() => {
-        result.current.handlers.toggleFlat();
+        result.current.handlers.setBodyType('standard');
       });
 
       expect(useDesignerStore.getState().params.base.style).toBe('standard');
-      expect(result.current.state.isFlat).toBe(false);
+      expect(result.current.state.bodyType).toBe('standard');
     });
 
     it('flat disables magnet and screw', () => {
@@ -447,10 +450,19 @@ describe('useBaseSection', () => {
       expect(useDesignerStore.getState().params.base.style).toBe('flat');
     });
 
-    it('flatDisabledReason is undefined when not flat', () => {
-      const { result } = renderHook(() => useBaseSection());
+    it('drops the Mounting subsection on a body with nowhere to put hardware', () => {
+      const { result: standard } = renderHook(() => useBaseSection());
+      expect(standard.current.state.showMounting).toBe(true);
 
-      expect(result.current.handlers.flatDisabledReason).toBeUndefined();
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' } },
+      });
+      const { result: flat } = renderHook(() => useBaseSection());
+
+      // A flat base has no socket for a magnet or screw pocket, so the rows
+      // are absent rather than present-and-greyed.
+      expect(flat.current.state.showMounting).toBe(false);
+      expect(flat.current.state.showFeet).toBe(false);
     });
   });
 
@@ -540,7 +552,7 @@ describe('useBaseSection', () => {
   describe('lid-compatible bottom (#3036)', () => {
     it('toggleLidBottom switches the style and materialises the mating config', () => {
       const { result } = renderHook(() => useBaseSection());
-      act(() => result.current.handlers.toggleLidBottom());
+      act(() => result.current.handlers.setBodyType('tray'));
       const { base } = useDesignerStore.getState().params;
       expect(base.style).toBe('lid');
       // Absent by default so an ordinary bin's params hash is untouched, so
@@ -551,8 +563,8 @@ describe('useBaseSection', () => {
 
     it('toggling back off returns to the standard base and leaves no residue', () => {
       const { result } = renderHook(() => useBaseSection());
-      act(() => result.current.handlers.toggleLidBottom());
-      act(() => result.current.handlers.toggleLidBottom());
+      act(() => result.current.handlers.setBodyType('tray'));
+      act(() => result.current.handlers.setBodyType('standard'));
       const { base } = useDesignerStore.getState().params;
       expect(base.style).toBe('standard');
       // `params` is hashed wholesale, so a leftover `trayBottom` would make
@@ -565,7 +577,7 @@ describe('useBaseSection', () => {
         params: { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' } },
       });
       const { result } = renderHook(() => useBaseSection());
-      act(() => result.current.handlers.toggleLidBottom());
+      act(() => result.current.handlers.setBodyType('tray'));
       expect(useDesignerStore.getState().params.base.style).toBe('lid');
     });
 
@@ -577,12 +589,12 @@ describe('useBaseSection', () => {
         },
       });
       const { result } = renderHook(() => useBaseSection());
-      expect(result.current.handlers.lidBottomDisabledReason).toBeDefined();
+      expect(result.current.state.bodyType).not.toBe('tray');
     });
 
     it('edits the mating config without disturbing the rest of the base', () => {
       const { result } = renderHook(() => useBaseSection());
-      act(() => result.current.handlers.toggleLidBottom());
+      act(() => result.current.handlers.setBodyType('tray'));
       act(() => result.current.handlers.setTrayExtraHeight(12));
       act(() => result.current.handlers.setTrayAttachment('magnetic'));
       const { base } = useDesignerStore.getState().params;
@@ -593,7 +605,7 @@ describe('useBaseSection', () => {
 
     it('toggles a single click rail side, leaving the others alone', () => {
       const { result } = renderHook(() => useBaseSection());
-      act(() => result.current.handlers.toggleLidBottom());
+      act(() => result.current.handlers.setBodyType('tray'));
       act(() => result.current.handlers.toggleTrayRail('front'));
       const rails = useDesignerStore.getState().params.base.trayBottom?.clickRails;
       expect(rails?.front).toBe(false);
@@ -619,10 +631,10 @@ describe('useBaseSection — base-only bin residue', () => {
 
   it('leaves no tile key behind when the flat base auto-disables base-only mode', () => {
     const { result } = renderHook(() => useBaseSection());
-    act(() => result.current.handlers.toggleTile());
+    act(() => result.current.handlers.setBodyType('tile'));
     expect(useDesignerStore.getState().params.base.tile).toBe(true);
 
-    act(() => result.current.handlers.toggleFlat());
+    act(() => result.current.handlers.setBodyType('flat'));
     const base = useDesignerStore.getState().params.base;
     expect(base.style).toBe('flat');
     expect('tile' in base).toBe(false);
@@ -634,7 +646,7 @@ describe('useBaseSection — base-only bin residue', () => {
       extraWallHeightMm: 6,
     });
     const { result } = renderHook(() => useBaseSection());
-    act(() => result.current.handlers.toggleTile());
+    act(() => result.current.handlers.setBodyType('tile'));
     const params = useDesignerStore.getState().params;
     expect(params.base.tile).toBe(true);
     // Generation forces the collar to 0 there, so carrying the value would

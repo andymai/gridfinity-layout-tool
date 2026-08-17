@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BaseSection } from './BaseSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -13,51 +13,141 @@ describe('BaseSection', () => {
     });
   });
 
-  it('renders base toggles', () => {
+  it('heads each family of controls', () => {
     render(<BaseSection />);
+
+    expect(screen.getByText('Body type')).toBeInTheDocument();
+    expect(screen.getByText('Stacking')).toBeInTheDocument();
+    expect(screen.getByText('Mounting')).toBeInTheDocument();
+    expect(screen.getByText('Feet')).toBeInTheDocument();
+    expect(screen.getByText('Floor')).toBeInTheDocument();
+  });
+
+  it('renders the base controls under them', () => {
+    render(<BaseSection />);
+
     expect(screen.getByText('Magnet holes')).toBeInTheDocument();
     expect(screen.getByText('Screw holes')).toBeInTheDocument();
     expect(screen.getByText('Stacking lip')).toBeInTheDocument();
-    expect(screen.getByText('Flat base (no socket)')).toBeInTheDocument();
     expect(screen.getByText('Lightweight floor')).toBeInTheDocument();
     expect(screen.getByText('Drainage holes')).toBeInTheDocument();
   });
 
-  // The relief mode lives outside the Lightweight toggle so a bin blocked from
-  // the interior mode can still reach the underside one — but it is a sub-option
-  // of a feature most bins never enable, so it is folded away like the lattice.
-  describe('lightweight mode disclosure', () => {
-    it('is collapsed at the default', () => {
+  describe('body type', () => {
+    it('offers the archetypes as one exclusive choice', () => {
       render(<BaseSection />);
-      expect(screen.getByText('Inside')).toBeInTheDocument();
+
+      const group = screen.getByRole('group', { name: 'Body type' });
+      const cards = within(group).getAllByRole('button');
+      const chosen = cards.filter((c) => c.getAttribute('aria-pressed') === 'true');
+
+      expect(cards).toHaveLength(5);
+      expect(chosen).toHaveLength(1);
+    });
+
+    it('switches the archetype on click', async () => {
+      const user = userEvent.setup();
+      render(<BaseSection />);
+
+      await user.click(screen.getByText('Spacer'));
+
+      expect(useDesignerStore.getState().params.base.spacer).toBe(true);
+    });
+
+    it("shows only the chosen archetype's own options", async () => {
+      const user = userEvent.setup();
+      render(<BaseSection />);
+
+      // The tray's mating controls belong to the tray, not to a row trailing
+      // the whole section.
+      expect(screen.queryByLabelText('Attachment')).not.toBeInTheDocument();
+
+      await user.click(screen.getByText('Stacking tray'));
+
+      expect(screen.getByLabelText('Attachment')).toBeInTheDocument();
+    });
+  });
+
+  describe('subsections that do not apply', () => {
+    it('drops Mounting and Feet on a flat base', () => {
+      // A flat base has no socket to drill or stand a foot on. The rows are
+      // absent rather than present-and-greyed, and nothing is concealed: the
+      // constraint engine clears what it disables.
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' } },
+      });
+      render(<BaseSection />);
+
+      expect(screen.queryByText('Mounting')).not.toBeInTheDocument();
+      expect(screen.queryByText('Feet')).not.toBeInTheDocument();
+      expect(screen.queryByRole('switch', { name: 'Magnet holes' })).not.toBeInTheDocument();
+    });
+
+    it('drops Mounting on a spacer, which has no floor to hold hardware', () => {
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, spacer: true } },
+      });
+      render(<BaseSection />);
+
+      expect(screen.queryByText('Mounting')).not.toBeInTheDocument();
+      // A spacer still stands on feet, so that family stays.
+      expect(screen.getByText('Feet')).toBeInTheDocument();
+    });
+
+    it('keeps every family on an ordinary bin', () => {
+      render(<BaseSection />);
+
+      expect(screen.getByText('Mounting')).toBeInTheDocument();
+      expect(screen.getByText('Feet')).toBeInTheDocument();
+      expect(screen.getByText('Floor')).toBeInTheDocument();
+    });
+  });
+
+  describe('lightweight relief mode', () => {
+    it('is hidden while the feature is off', () => {
+      render(<BaseSection />);
+
       expect(screen.queryByLabelText('Lightweight mode')).not.toBeInTheDocument();
     });
 
-    it('force-opens on the underside mode', () => {
+    it('appears under the toggle once the feature is on', () => {
       useDesignerStore.setState({
-        params: {
-          ...DEFAULT_BIN_PARAMS,
-          base: { ...DEFAULT_BIN_PARAMS.base, lightweightMode: 'underside' },
-        },
+        params: { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, lightweight: true } },
       });
       render(<BaseSection />);
+
       expect(screen.getByLabelText('Lightweight mode')).toBeInTheDocument();
     });
 
-    // The reachability guarantee: the toggle is disabled by the scoop, and the
-    // control that lifts that block is still on screen and still operable.
-    it('stays reachable while the toggle it governs is disabled', async () => {
+    // The reachability guarantee, rebuilt: the mode used to sit outside the
+    // toggle purely so a scooped bin could reach the underside relief that IS
+    // allowed. Nesting it would have stranded that bin, so the blocked toggle
+    // offers the way through instead.
+    it('offers a way to the underside relief when the interior one is blocked', async () => {
       const user = userEvent.setup();
       useDesignerStore.setState({
         params: { ...DEFAULT_BIN_PARAMS, scoop: { enabled: true, radius: 'auto' } },
       });
       render(<BaseSection />);
+
       expect(screen.getByRole('switch', { name: 'Lightweight floor' })).toBeDisabled();
 
-      await user.click(screen.getByRole('button', { name: /Lightweight mode/ }));
-      await user.click(screen.getByRole('radio', { name: 'Underside' }));
+      await user.click(screen.getByRole('button', { name: 'Use underside relief' }));
 
-      expect(screen.getByRole('switch', { name: 'Lightweight floor' })).toBeEnabled();
+      const base = useDesignerStore.getState().params.base;
+      expect(base.lightweight).toBe(true);
+      expect(base.lightweightMode).toBe('underside');
+      // The scoop the interior relief would have ruled out survives, which is
+      // the whole point of reaching for the underside one.
+      expect(useDesignerStore.getState().params.scoop.enabled).toBe(true);
+    });
+
+    it('offers no such action when nothing is blocking the feature', () => {
+      render(<BaseSection />);
+
+      expect(
+        screen.queryByRole('button', { name: 'Use underside relief' })
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -68,6 +158,7 @@ describe('BaseSection', () => {
   describe('foot lattice disclosure', () => {
     it('is collapsed at the default, showing only the summary', () => {
       render(<BaseSection />);
+
       expect(screen.getByText('On grid / On grid')).toBeInTheDocument();
       expect(screen.queryByLabelText('Width axis')).not.toBeInTheDocument();
       expect(screen.queryByLabelText('Depth axis')).not.toBeInTheDocument();
@@ -76,7 +167,9 @@ describe('BaseSection', () => {
     it('opens on click', async () => {
       const user = userEvent.setup();
       render(<BaseSection />);
+
       await user.click(screen.getByRole('button', { name: /Foot lattice/ }));
+
       expect(screen.getByLabelText('Width axis')).toBeInTheDocument();
       expect(screen.getByLabelText('Depth axis')).toBeInTheDocument();
     });
@@ -89,14 +182,15 @@ describe('BaseSection', () => {
         },
       });
       render(<BaseSection />);
+
       expect(screen.getByLabelText('Width axis')).toBeInTheDocument();
       expect(screen.getByText('Half offset / On grid')).toBeInTheDocument();
     });
 
-    // A stored value the lock overrides is not a customization — the summary
-    // and the force-open both read the EFFECTIVE lattice, which is what the
-    // part actually gets built with.
-    it('stays collapsed when a stored lattice is overridden by half sockets', () => {
+    // Half sockets seat at either offset, so the lattice has nothing left to
+    // decide. It goes away entirely and the reason moves to the control that
+    // caused it, where the user can act on it.
+    it('disappears when half sockets make it inert, explaining itself at the cause', () => {
       useDesignerStore.setState({
         params: {
           ...DEFAULT_BIN_PARAMS,
@@ -104,8 +198,9 @@ describe('BaseSection', () => {
         },
       });
       render(<BaseSection />);
-      expect(screen.getByText('On grid / On grid')).toBeInTheDocument();
-      expect(screen.queryByLabelText('Width axis')).not.toBeInTheDocument();
+
+      expect(screen.queryByText(/Foot lattice/)).not.toBeInTheDocument();
+      expect(screen.getByText(/Half sockets already seat at either offset/)).toBeInTheDocument();
     });
   });
 
@@ -121,6 +216,7 @@ describe('BaseSection', () => {
       },
     });
     render(<BaseSection />);
+
     expect(screen.getByLabelText('Hole shape')).toBeInTheDocument();
   });
 
@@ -133,23 +229,7 @@ describe('BaseSection', () => {
     });
 
     render(<BaseSection />);
+
     expect(screen.getByRole('switch', { name: 'Drainage holes' })).toBeDisabled();
-  });
-
-  it('disables magnet and screw toggles when flat floor is active', () => {
-    useDesignerStore.setState({
-      params: {
-        ...DEFAULT_BIN_PARAMS,
-        base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' },
-      },
-    });
-
-    render(<BaseSection />);
-
-    const magnetToggle = screen.getByRole('switch', { name: 'Magnet holes' });
-    const screwToggle = screen.getByRole('switch', { name: 'Screw holes' });
-
-    expect(magnetToggle).toBeDisabled();
-    expect(screwToggle).toBeDisabled();
   });
 });

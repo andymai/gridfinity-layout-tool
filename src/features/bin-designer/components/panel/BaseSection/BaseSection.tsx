@@ -1,9 +1,18 @@
 /**
- * Base section: Magnet holes, screw holes, stacking lip, flat bottom,
- * lid-compatible bottom, floor pattern.
+ * Base section: the underside of the bin and how it mates with everything else.
  *
- * Uses smart defaults with "Customize" inline expansion for magnet/screw
- * radius and depth parameters that most users won't need to change.
+ * Organised as one exclusive choice followed by the families of settings that
+ * choice admits:
+ *   1. Body type: feet, floor and walls, or some of them (`BodyTypeCards`)
+ *   2. Stacking:  the lip, which is the base's mating partner one bin up
+ *   3. Mounting:  magnet and screw pockets
+ *   4. Feet:      how the feet are laid out under the bin
+ *   5. Floor:     what is removed from the floor
+ *
+ * Subsections 3-5 render only where the chosen body has them: a spacer has no
+ * floor to perforate, a flat base has no socket to drill or lighten. Nothing is
+ * hidden that is still in force. The constraint engine CLEARS what it disables,
+ * so a hidden row is always a row that is off.
  *
  * Disabled reasons are computed by the constraint engine via useBaseSection.
  */
@@ -11,7 +20,7 @@
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { Button, SegmentedControl, SliderInput } from '@/design-system';
 import { FeatureToggle } from '../FeatureToggle';
-import { AdvancedDisclosure } from '../shared';
+import { AdvancedDisclosure, Hint, SubHeader } from '../shared';
 import { PatternSelector } from '../WallsSection/PatternSelector';
 import {
   FLOOR_PATTERN_TYPES,
@@ -24,8 +33,8 @@ import {
   LIGHTWEIGHT_MODES,
   DETACHABLE_PIN_DIAMETERS_MM,
 } from '@/features/bin-designer/types';
-import { DEFAULT_LIGHTWEIGHT_MODE } from '@/features/bin-designer/types/base';
 import { useTranslation } from '@/i18n';
+import { BodyTypeCards } from './BodyTypeCards';
 import { useBaseSection } from './useBaseSection';
 
 /** Axis key suffixes for the foot-lattice translation keys. */
@@ -50,327 +59,336 @@ export function BaseSection() {
     },
   ];
 
-  return (
+  /* The tray body type's mating controls. They reuse the lid section's copy
+     deliberately: it is the same joint seen from the other side. */
+  const trayOptions = (
     <div className="space-y-3">
-      {/* Shares the assembled-height breakdown's noun — the same lip, named
-          once — rather than duplicating the string across every locale. */}
-      <FeatureToggle
-        label={t('assembledHeight.stackingLip')}
-        checked={state.base.stackingLip}
-        onChange={handlers.toggleStackingLip}
+      <Hint>{t('binDesigner.lidBottom.hint')}</Hint>
+
+      <SegmentedControl
+        aria-label={t('binDesigner.lid.attachment')}
+        activeStyle="accent"
+        fullWidth
+        size="sm"
+        value={state.trayBottom.attachment}
+        onChange={handlers.setTrayAttachment}
+        options={LID_ATTACHMENTS.map((mode) => ({
+          value: mode,
+          label: t(`binDesigner.lid.attachment.${mode}`),
+        }))}
       />
 
-      <FeatureToggle
-        label="Magnet holes"
-        checked={state.hasMagnet}
-        onChange={handlers.toggleMagnet}
-        disabledReason={handlers.magnetDisabledReason}
-        valueSummary={`\u00f8${state.base.magnetDiameter}mm \u00d7 ${state.base.magnetDepth}mm deep`}
-      >
-        <SliderInput
-          label="Magnet diameter"
-          value={state.base.magnetDiameter}
-          onChange={handlers.setMagnetDiameter}
-          min={DESIGNER_CONSTRAINTS.MIN_MAGNET_DIAMETER}
-          max={DESIGNER_CONSTRAINTS.MAX_MAGNET_DIAMETER}
-          step={DESIGNER_CONSTRAINTS.MAGNET_DIAMETER_STEP}
-          unit="mm"
-        />
-        <SliderInput
-          label="Magnet depth"
-          value={state.base.magnetDepth}
-          onChange={handlers.setMagnetHeight}
-          min={DESIGNER_CONSTRAINTS.MIN_MAGNET_HEIGHT}
-          max={DESIGNER_CONSTRAINTS.MAX_MAGNET_HEIGHT}
-          step={DESIGNER_CONSTRAINTS.MAGNET_HEIGHT_STEP}
-          unit="mm"
-        />
-      </FeatureToggle>
-
-      <FeatureToggle
-        label="Screw holes"
-        checked={state.hasScrew}
-        onChange={handlers.toggleScrew}
-        disabledReason={handlers.screwDisabledReason}
-        valueSummary={`\u00f8${state.base.screwDiameter}mm`}
-      >
-        <SliderInput
-          label="Screw diameter"
-          value={state.base.screwDiameter}
-          onChange={handlers.setScrewDiameter}
-          min={DESIGNER_CONSTRAINTS.MIN_SCREW_DIAMETER}
-          max={DESIGNER_CONSTRAINTS.MAX_SCREW_DIAMETER}
-          step={DESIGNER_CONSTRAINTS.SCREW_DIAMETER_STEP}
-          unit="mm"
-        />
-      </FeatureToggle>
-
-      <FeatureToggle
-        label={t('binDesigner.flatFloor')}
-        checked={state.isFlat}
-        onChange={handlers.toggleFlat}
-        disabledReason={handlers.flatDisabledReason}
+      <SliderInput
+        label={t('binDesigner.lidBottom.extraHeight')}
+        value={state.trayBottom.extraHeightMm}
+        onChange={handlers.setTrayExtraHeight}
+        min={LID_EXTRA_HEIGHT_MIN_MM}
+        max={LID_EXTRA_HEIGHT_MAX_MM}
+        step={0.5}
+        unit="mm"
       />
 
-      {/* Lid-compatible bottom (#3036). The attachment and rail controls reuse
-          the lid section's copy: it is the same joint from the other side. */}
-      <FeatureToggle
-        label={t('binDesigner.lidBottom')}
-        checked={state.isLidBottom}
-        onChange={handlers.toggleLidBottom}
-        disabledReason={handlers.lidBottomDisabledReason}
-      >
-        <div className="space-y-3">
-          <p className="text-xs text-content-tertiary">{t('binDesigner.lidBottom.hint')}</p>
-
-          <SegmentedControl
-            aria-label={t('binDesigner.lid.attachment')}
-            activeStyle="accent"
-            fullWidth
-            size="sm"
-            value={state.trayBottom.attachment}
-            onChange={handlers.setTrayAttachment}
-            options={LID_ATTACHMENTS.map((mode) => ({
-              value: mode,
-              label: t(`binDesigner.lid.attachment.${mode}`),
-            }))}
-          />
-
-          <SliderInput
-            label={t('binDesigner.lidBottom.extraHeight')}
-            value={state.trayBottom.extraHeightMm}
-            onChange={handlers.setTrayExtraHeight}
-            min={LID_EXTRA_HEIGHT_MIN_MM}
-            max={LID_EXTRA_HEIGHT_MAX_MM}
-            step={0.5}
-            unit="mm"
-          />
-
-          {state.trayBottom.attachment === 'clickRails' && (
-            <div>
-              <span className="mb-1 block text-xs font-medium text-content-secondary">
-                {t('binDesigner.lid.clickRails')}
-              </span>
-              <div className="flex gap-1">
-                {LID_RAIL_SIDES.map((side) => (
-                  <Button
-                    key={side}
-                    size="sm"
-                    variant={state.trayBottom.clickRails[side] ? 'primary' : 'secondary'}
-                    aria-pressed={state.trayBottom.clickRails[side]}
-                    onClick={() => handlers.toggleTrayRail(side)}
-                  >
-                    {t(`binDesigner.lid.side.${side}`)}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          )}
+      {state.trayBottom.attachment === 'clickRails' && (
+        <div>
+          <span className="mb-1 block text-xs font-medium text-content-secondary">
+            {t('binDesigner.lid.clickRails')}
+          </span>
+          <div className="flex gap-1">
+            {LID_RAIL_SIDES.map((side) => (
+              <Button
+                key={side}
+                size="sm"
+                variant={state.trayBottom.clickRails[side] ? 'primary' : 'secondary'}
+                aria-pressed={state.trayBottom.clickRails[side]}
+                onClick={() => handlers.toggleTrayRail(side)}
+              >
+                {t(`binDesigner.lid.side.${side}`)}
+              </Button>
+            ))}
+          </div>
         </div>
-      </FeatureToggle>
+      )}
+    </div>
+  );
 
-      {/* Heads the foot cluster: half sockets, the foot lattice and the
-          lightweight modes below all describe where INTEGRAL feet fall, which
-          this mode answers its own way. They are locked rather than cleared, so
-          the reason sits directly under the thing that caused it and a
-          lightweight setting survives a round trip through the toggle. */}
-      <FeatureToggle
-        label={t('binDesigner.detachableFeet')}
-        checked={state.hasDetachableFeet}
-        onChange={handlers.toggleDetachableFeet}
-        disabledReason={handlers.detachableFeetDisabledReason}
-        valueSummary={t('binDesigner.detachableFeet.summary', {
-          count: state.detachableFootCount,
-          diameter: state.pinDiameter,
-        })}
-        primaryControls={
-          <p className="text-[11px] leading-relaxed text-content-tertiary">
-            {state.detachableUnplaceable
-              ? t('binDesigner.detachableFeet.unplaceable')
-              : t('binDesigner.detachableFeet.saving', {
-                  percent: state.detachableSavingPercent,
-                })}
-          </p>
-        }
-      >
-        <SegmentedControl
-          aria-label={t('binDesigner.detachableFeet.pinSize')}
-          activeStyle="accent"
-          fullWidth
-          size="sm"
-          value={String(state.pinDiameter)}
-          onChange={(value) => handlers.setPinDiameter(Number(value))}
-          options={DETACHABLE_PIN_DIAMETERS_MM.map((diameter) => ({
-            value: String(diameter),
-            label: `\u00f8${diameter}mm`,
-          }))}
+  return (
+    <div className="space-y-5">
+      {/* ── Body type ─────────────────────────────────────────────────── */}
+      <section className="space-y-2">
+        <SubHeader>{t('binDesigner.base.bodyType')}</SubHeader>
+        <BodyTypeCards
+          value={state.bodyType}
+          onChange={handlers.setBodyType}
+          options={{
+            spacer: <Hint>{t('binDesigner.spacerHint')}</Hint>,
+            tile: <Hint>{t('binDesigner.tileHint')}</Hint>,
+            tray: trayOptions,
+          }}
         />
-        <p className="text-[11px] leading-relaxed text-content-tertiary">
-          {t('binDesigner.detachableFeet.pinHint')}
-        </p>
-      </FeatureToggle>
+      </section>
 
-      <FeatureToggle
-        label={t('binDesigner.halfSockets')}
-        checked={state.hasHalfSockets}
-        onChange={handlers.toggleHalfSockets}
-        disabledReason={handlers.halfSocketsDisabledReason}
-      />
+      {/* ── Stacking ──────────────────────────────────────────────────
+          The lip is the base's mating partner one bin up: it is what the NEXT
+          bin's feet drop into, which is why it is filed here rather than with
+          the walls it sits on. */}
+      <section className="space-y-2">
+        <SubHeader>{t('binDesigner.base.section.stacking')}</SubHeader>
+        {/* Shares the assembled-height breakdown's noun (the same lip, named
+            once) rather than duplicating the string across every locale. */}
+        <FeatureToggle
+          label={t('assembledHeight.stackingLip')}
+          checked={state.base.stackingLip}
+          onChange={handlers.toggleStackingLip}
+        />
+        <Hint>{t('binDesigner.base.stackingLip.hint')}</Hint>
+      </section>
 
-      {/* Foot lattice (#3467). A foot has to land inside one baseplate pocket,
-          so which layout seats depends on where the bin sits — per axis, since
-          half-bin mode can offset one axis and not the other.
+      {/* ── Mounting ──────────────────────────────────────────────────── */}
+      {state.showMounting && (
+        <section className="space-y-3">
+          <SubHeader>{t('binDesigner.base.section.mounting')}</SubHeader>
 
-          Folded away because it is a power-user setting that is at its default
-          on nearly every bin, and it was the heaviest block in this section.
-          `forceOpen` on a non-default value is what makes that safe: a wrong
-          lattice leaves the bin perched on the ridges between pockets, so the
-          one state that must never be hidden is the one that differs. The
-          summary reports the EFFECTIVE lattice, which is what gets built — a
-          stored value the lock overrides reads as the default it is being
-          honoured as, not as the customization it is not. */}
-      <AdvancedDisclosure
-        label={`${t('binDesigner.footLattice')}:`}
-        summary={footLatticeAxes
-          .map(({ value }) => t(`binDesigner.footLattice.${value}`))
-          .join(' / ')}
-        forceOpen={footLatticeAxes.some(({ value }) => value !== DEFAULT_FOOT_LATTICE)}
-      >
-        {footLatticeAxes.map(({ axis, value, onChange, locked }) => (
-          <div key={axis} className="flex items-center gap-2">
-            <span className="w-10 shrink-0 text-[11px] text-content-tertiary">
-              {t(`binDesigner.footLattice.axis.${axis}`)}
-            </span>
+          <FeatureToggle
+            label={t('binDesigner.base.magnetHoles')}
+            checked={state.hasMagnet}
+            onChange={handlers.toggleMagnet}
+            disabledReason={handlers.magnetDisabledReason}
+            valueSummary={t('binDesigner.base.magnetSummary', {
+              diameter: state.base.magnetDiameter,
+              depth: state.base.magnetDepth,
+            })}
+          >
+            <SliderInput
+              label={t('binDesigner.base.magnetDiameter')}
+              value={state.base.magnetDiameter}
+              onChange={handlers.setMagnetDiameter}
+              min={DESIGNER_CONSTRAINTS.MIN_MAGNET_DIAMETER}
+              max={DESIGNER_CONSTRAINTS.MAX_MAGNET_DIAMETER}
+              step={DESIGNER_CONSTRAINTS.MAGNET_DIAMETER_STEP}
+              unit="mm"
+            />
+            <SliderInput
+              label={t('binDesigner.base.magnetDepth')}
+              value={state.base.magnetDepth}
+              onChange={handlers.setMagnetHeight}
+              min={DESIGNER_CONSTRAINTS.MIN_MAGNET_HEIGHT}
+              max={DESIGNER_CONSTRAINTS.MAX_MAGNET_HEIGHT}
+              step={DESIGNER_CONSTRAINTS.MAGNET_HEIGHT_STEP}
+              unit="mm"
+            />
+          </FeatureToggle>
+
+          <FeatureToggle
+            label={t('binDesigner.base.screwHoles')}
+            checked={state.hasScrew}
+            onChange={handlers.toggleScrew}
+            disabledReason={handlers.screwDisabledReason}
+            valueSummary={`\u00f8${state.base.screwDiameter}mm`}
+          >
+            <SliderInput
+              label={t('binDesigner.base.screwDiameter')}
+              value={state.base.screwDiameter}
+              onChange={handlers.setScrewDiameter}
+              min={DESIGNER_CONSTRAINTS.MIN_SCREW_DIAMETER}
+              max={DESIGNER_CONSTRAINTS.MAX_SCREW_DIAMETER}
+              step={DESIGNER_CONSTRAINTS.SCREW_DIAMETER_STEP}
+              unit="mm"
+            />
+          </FeatureToggle>
+        </section>
+      )}
+
+      {/* ── Feet ──────────────────────────────────────────────────────── */}
+      {state.showFeet && (
+        <section className="space-y-3">
+          <SubHeader>{t('binDesigner.base.section.feet')}</SubHeader>
+
+          {/* Heads the foot cluster: half sockets, the foot lattice and the
+              lightweight modes below all describe where INTEGRAL feet fall,
+              which this mode answers its own way. They are locked rather than
+              cleared, so the reason sits directly under the thing that caused
+              it and a lightweight setting survives a round trip through the
+              toggle. */}
+          <FeatureToggle
+            label={t('binDesigner.detachableFeet')}
+            checked={state.hasDetachableFeet}
+            onChange={handlers.toggleDetachableFeet}
+            disabledReason={handlers.detachableFeetDisabledReason}
+            valueSummary={t('binDesigner.detachableFeet.summary', {
+              count: state.detachableFootCount,
+              diameter: state.pinDiameter,
+            })}
+            primaryControls={
+              <Hint>
+                {state.detachableUnplaceable
+                  ? t('binDesigner.detachableFeet.unplaceable')
+                  : t('binDesigner.detachableFeet.saving', {
+                      percent: state.detachableSavingPercent,
+                    })}
+              </Hint>
+            }
+          >
             <SegmentedControl
-              aria-label={t(`binDesigner.footLattice.axis.${axis}`)}
+              aria-label={t('binDesigner.detachableFeet.pinSize')}
               activeStyle="accent"
               fullWidth
               size="sm"
-              value={value}
-              onChange={onChange}
-              options={FOOT_LATTICES.map((lattice) => ({
-                value: lattice,
-                label: t(`binDesigner.footLattice.${lattice}`),
-                disabled: locked && lattice !== 'grid',
+              value={String(state.pinDiameter)}
+              onChange={(value) => handlers.setPinDiameter(Number(value))}
+              options={DETACHABLE_PIN_DIAMETERS_MM.map((diameter) => ({
+                value: String(diameter),
+                label: `\u00f8${diameter}mm`,
               }))}
             />
+            <Hint>{t('binDesigner.detachableFeet.pinHint')}</Hint>
+          </FeatureToggle>
+
+          <div>
+            <FeatureToggle
+              label={t('binDesigner.halfSockets')}
+              checked={state.hasHalfSockets}
+              onChange={handlers.toggleHalfSockets}
+              disabledReason={handlers.halfSocketsDisabledReason}
+            />
+            {/* The foot lattice is inert while this is on, and it is the
+                control that made it so, so the explanation lives here rather
+                than under a picker that is no longer rendered. */}
+            {state.halfSocketsInertHint && <Hint>{state.halfSocketsInertHint}</Hint>}
           </div>
-        ))}
-        <p className="text-[11px] leading-relaxed text-content-tertiary">
-          {handlers.footLatticeLockReason ?? t('binDesigner.footLattice.hint')}
-        </p>
-      </AdvancedDisclosure>
 
-      <FeatureToggle
-        label={t('binDesigner.lightweight')}
-        checked={state.hasLightweight}
-        onChange={handlers.toggleLightweight}
-        disabledReason={handlers.lightweightDisabledReason}
-      />
+          {/* Foot lattice (#3467). A foot has to land inside one baseplate
+              pocket, so which layout seats depends on where the bin sits, per
+              axis, since half-bin mode can offset one axis and not the other.
 
-      {/* Relief side (#3524). Deliberately OUTSIDE the toggle, unlike every
-          other sub-control in this panel: `FeatureToggle` renders its children
-          only while it is on, and the mode is precisely what decides whether it
-          CAN be turned on. A bin with a finger scoop is blocked from an interior
-          lite floor and allowed an underside one, so nesting the control would
-          leave that bin — the case the feature exists for — with no way to reach
-          it. The toggle's own disabled reason names the mode, so a blocked user
-          is pointed straight at the row below it.
+              Folded away because it is a power-user setting that is at its
+              default on nearly every bin, and it was the heaviest block in this
+              section. `forceOpen` on a non-default value is what makes that
+              safe: a wrong lattice leaves the bin perched on the ridges between
+              pockets, so the one state that must never be hidden is the one
+              that differs. The summary reports the EFFECTIVE lattice, which is
+              what gets built. A stored value the lock overrides reads as the
+              default it is being honoured as, not as the customization it is
+              not. */}
+          {state.showFootLattice && (
+            <AdvancedDisclosure
+              label={`${t('binDesigner.footLattice')}:`}
+              summary={footLatticeAxes
+                .map(({ value }) => t(`binDesigner.footLattice.${value}`))
+                .join(' / ')}
+              forceOpen={footLatticeAxes.some(({ value }) => value !== DEFAULT_FOOT_LATTICE)}
+            >
+              {footLatticeAxes.map(({ axis, value, onChange, locked }) => (
+                <div key={axis} className="flex items-center gap-2">
+                  <span className="w-10 shrink-0 text-[11px] text-content-tertiary">
+                    {t(`binDesigner.footLattice.axis.${axis}`)}
+                  </span>
+                  <SegmentedControl
+                    aria-label={t(`binDesigner.footLattice.axis.${axis}`)}
+                    activeStyle="accent"
+                    fullWidth
+                    size="sm"
+                    value={value}
+                    onChange={onChange}
+                    options={FOOT_LATTICES.map((lattice) => ({
+                      value: lattice,
+                      label: t(`binDesigner.footLattice.${lattice}`),
+                      disabled: locked && lattice !== 'grid',
+                    }))}
+                  />
+                </div>
+              ))}
+              <Hint>{handlers.footLatticeLockReason}</Hint>
+            </AdvancedDisclosure>
+          )}
+        </section>
+      )}
 
-          Folded away for the same reason the foot lattice is: it is a sub-option
-          of a feature most bins never turn on, and a full-width control plus its
-          hint made it the loudest thing in the section. `forceOpen` keeps the
-          non-default choice visible. */}
-      <AdvancedDisclosure
-        label={`${t('binDesigner.lightweightMode')}:`}
-        summary={t(`binDesigner.lightweightMode.${state.lightweightMode}`)}
-        forceOpen={state.lightweightMode !== DEFAULT_LIGHTWEIGHT_MODE}
-      >
-        <SegmentedControl
-          aria-label={t('binDesigner.lightweightMode')}
-          activeStyle="accent"
-          fullWidth
-          size="sm"
-          value={state.lightweightMode}
-          onChange={handlers.setLightweightMode}
-          options={LIGHTWEIGHT_MODES.map((mode) => ({
-            value: mode,
-            label: t(`binDesigner.lightweightMode.${mode}`),
-          }))}
-        />
-        <p className="text-[11px] leading-relaxed text-content-tertiary">
-          {t(`binDesigner.lightweightMode.${state.lightweightMode}.hint`)}
-        </p>
-      </AdvancedDisclosure>
+      {/* ── Floor ─────────────────────────────────────────────────────── */}
+      {state.showFloor && (
+        <section className="space-y-3">
+          <SubHeader>{t('binDesigner.base.section.floor')}</SubHeader>
 
-      {/* ── Spacer / riser (#2869) — a floorless frame that lifts a bin so bins
-          of different heights finish flush. Height counts in the stack exactly
-          like a bin of the same height, so a 2u spacer under a 2u bin reaches
-          the top of a 4u one. */}
-      <FeatureToggle
-        label={t('binDesigner.spacer')}
-        checked={state.isSpacer}
-        onChange={handlers.toggleSpacer}
-        disabledReason={handlers.spacerDisabledReason}
-        primaryControls={
-          <p className="text-[11px] leading-relaxed text-content-tertiary">
-            {t('binDesigner.spacerHint')}
-          </p>
-        }
-      />
+          <div>
+            <FeatureToggle
+              label={t('binDesigner.lightweight')}
+              checked={state.hasLightweight}
+              onChange={handlers.toggleLightweight}
+              disabledReason={handlers.lightweightDisabledReason}
+              valueSummary={t(`binDesigner.lightweightMode.${state.lightweightMode}`)}
+            >
+              {/* Relief side (#3524). Nested now that the toggle's blocked case
+                  has its own way out: the mode decides whether the feature CAN
+                  be turned on, so leaving it visible-but-inert was the old way
+                  of keeping a scooped bin (the case the feature exists for)
+                  from being stranded. The action below does that job instead. */}
+              <SegmentedControl
+                aria-label={t('binDesigner.lightweightMode')}
+                activeStyle="accent"
+                fullWidth
+                size="sm"
+                value={state.lightweightMode}
+                onChange={handlers.setLightweightMode}
+                options={LIGHTWEIGHT_MODES.map((mode) => ({
+                  value: mode,
+                  label: t(`binDesigner.lightweightMode.${mode}`),
+                }))}
+              />
+              <Hint>{t(`binDesigner.lightweightMode.${state.lightweightMode}.hint`)}</Hint>
+            </FeatureToggle>
 
-      {/* ── Base-only bin — the spacer's complement. The spacer keeps the walls
-          and drops the floor; this keeps the floor and drops the walls, leaving
-          the stacking lip as the only raised edge (or nothing above the slab,
-          with the lip cleared). Placed directly after the spacer so the pair
-          reads as the two halves it is. */}
-      <FeatureToggle
-        label={t('binDesigner.tile')}
-        checked={state.isTile}
-        onChange={handlers.toggleTile}
-        disabledReason={handlers.tileDisabledReason}
-        primaryControls={
-          <p className="text-[11px] leading-relaxed text-content-tertiary">
-            {t('binDesigner.tileHint')}
-          </p>
-        }
-      />
+            {/* The interior relief is blocked but the underside one is not, so
+                the reason above is not the whole story. Mirrors the lid's
+                compatibility "Fix" affordance rather than inventing a second
+                shape for the same idea. */}
+            {state.undersideReliefUnblocks && (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={handlers.enableUndersideRelief}
+                className="mt-1 rounded border border-stroke-subtle bg-surface-elevated px-1.5 py-0.5 text-[10px] font-medium text-content-secondary hover:bg-surface-hover"
+              >
+                {t('binDesigner.lightweight.useUnderside')}
+              </Button>
+            )}
+          </div>
 
-      {/* ── Floor pattern (#2816) — drainage / ventilation. The holes pass
-          through the floor slab AND the feet, staying inside each foot's flat
-          underside so the baseplate-mating taper is never cut. */}
-      <FeatureToggle
-        label={t('binDesigner.base.floorPattern')}
-        checked={state.floorPatternEnabled}
-        onChange={handlers.toggleFloorPattern}
-        disabledReason={handlers.floorPatternDisabledReason}
-        primaryControls={
-          <>
-            <PatternSelector
-              id="floor-pattern-selector"
-              labelKey="binDesigner.base.floorPattern.shape"
-              patterns={FLOOR_PATTERN_TYPES}
-              selectedPattern={state.floorPatternType}
-              onChange={handlers.setFloorPatternType}
-            />
-            <SliderInput
-              label={t('binDesigner.walls.pattern.scale')}
-              value={state.floorPatternScalePercent}
-              onChange={handlers.setFloorPatternScale}
-              min={0}
-              max={100}
-              step={5}
-              unit="%"
-              info={t('binDesigner.walls.pattern.scaleHint')}
-            />
-            <p className="text-[11px] leading-relaxed text-content-tertiary">
-              {state.floorPatternDoesNotFit
-                ? t('binDesigner.base.floorPattern.tooSmall')
-                : t('binDesigner.base.floorPattern.hint')}
-            </p>
-          </>
-        }
-      />
+          {/* Floor pattern (#2816): drainage / ventilation. The holes pass
+              through the floor slab AND the feet, staying inside each foot's
+              flat underside so the baseplate-mating taper is never cut. */}
+          <FeatureToggle
+            label={t('binDesigner.base.floorPattern')}
+            checked={state.floorPatternEnabled}
+            onChange={handlers.toggleFloorPattern}
+            disabledReason={handlers.floorPatternDisabledReason}
+            primaryControls={
+              <>
+                <PatternSelector
+                  id="floor-pattern-selector"
+                  labelKey="binDesigner.base.floorPattern.shape"
+                  patterns={FLOOR_PATTERN_TYPES}
+                  selectedPattern={state.floorPatternType}
+                  onChange={handlers.setFloorPatternType}
+                />
+                <SliderInput
+                  label={t('binDesigner.walls.pattern.scale')}
+                  value={state.floorPatternScalePercent}
+                  onChange={handlers.setFloorPatternScale}
+                  min={0}
+                  max={100}
+                  step={5}
+                  unit="%"
+                  info={t('binDesigner.walls.pattern.scaleHint')}
+                />
+                <Hint>
+                  {state.floorPatternDoesNotFit
+                    ? t('binDesigner.base.floorPattern.tooSmall')
+                    : t('binDesigner.base.floorPattern.hint')}
+                </Hint>
+              </>
+            }
+          />
+        </section>
+      )}
     </div>
   );
 }

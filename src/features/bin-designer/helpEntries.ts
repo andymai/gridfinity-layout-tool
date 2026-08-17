@@ -6,8 +6,9 @@
  * Each target.surface is one of:
  *   - 'binDesigner:shape'    — Shape group (dimensions, shape, walls)
  *   - 'binDesigner:interior' — Interior dividers, label tabs, scoop
- *   - 'binDesigner:base'     — Base attachments, multi-color, physical units
+ *   - 'binDesigner:base'     : Body type, stacking lip, mounting, feet, floor
  *   - 'binDesigner:lid'      — Lid group (its own top-level group)
+ *   - 'binDesigner:finishing': Multi-color and physical units
  *
  * The ParameterPanel listens for `help-jump:binDesigner:*` events and
  * expands the corresponding StickyGroupHeader before the dispatcher
@@ -75,7 +76,7 @@ export const helpEntries: FeatureHelpEntry[] = [
     keywordsKey: 'help.target.binDesigner.colors.keywords',
     category: 'colors',
     routes: ['designer'],
-    target: { surface: 'binDesigner:base', controlId: 'bd-colors' },
+    target: { surface: 'binDesigner:finishing', controlId: 'bd-colors' },
   },
   {
     id: 'feature/bin-designer/interior',
@@ -119,7 +120,7 @@ export const helpEntries: FeatureHelpEntry[] = [
     keywordsKey: 'help.target.binDesigner.physicalUnits.keywords',
     category: 'base',
     routes: ['designer'],
-    target: { surface: 'binDesigner:base', controlId: 'bd-physical-units' },
+    target: { surface: 'binDesigner:finishing', controlId: 'bd-physical-units' },
   },
   {
     id: 'feature/bin-designer/print-bed-size',
@@ -129,6 +130,6 @@ export const helpEntries: FeatureHelpEntry[] = [
     keywordsKey: 'help.target.binDesigner.printBedSize.keywords',
     category: 'base',
     routes: ['designer'],
-    target: { surface: 'binDesigner:base', controlId: 'bd-physical-units' },
+    target: { surface: 'binDesigner:finishing', controlId: 'bd-physical-units' },
   },
 ];

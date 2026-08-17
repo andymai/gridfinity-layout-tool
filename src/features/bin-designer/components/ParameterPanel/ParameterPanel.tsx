@@ -1,16 +1,19 @@
 /**
  * Parameter panel for the bin designer.
  *
- * Scrollable container composing collapsible sections for all bin parameters,
- * organized into three groups: Shape, Interior, and Base.
+ * Scrollable container composing collapsible sections for all bin parameters.
  *
- * Groups:
- * - Shape: Dimensions, Split Options (conditional), Walls
- * - Interior: Interior Dividers, Label Tabs, Finger Scoop
- * - Base: Base attachments, Physical Units
+ * After Shape, the groups read DOWN the part (the lid caps the top, the
+ * interior is inside, the base is underneath), so their order is the one the
+ * object has rather than the one the features were added in:
+ * - Shape:     Dimensions, Fit, Style, Split Options (conditional), Walls
+ * - Lid:       The companion part that caps the bin
+ * - Interior:  Interior Dividers, Label Tabs, Finger Scoop
+ * - Base:      Body type, stacking lip, mounting, feet, floor
+ * - Finishing: Multi-color, Physical Units
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Button } from '@/design-system';
 import { DimensionsSection } from '../panel/DimensionsSection';
@@ -36,6 +39,8 @@ import { useShapeGroupSummary } from './useShapeGroupSummary';
 import { useInteriorGroupSummary } from './useInteriorGroupSummary';
 import { useBaseGroupSummary } from './useBaseGroupSummary';
 import { useLidGroupSummary } from './useLidGroupSummary';
+import { useFinishingGroupSummary } from './useFinishingGroupSummary';
+import { modifiedGroups } from './groupModified';
 import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
@@ -62,6 +67,14 @@ function BinParameterPanel() {
   const interiorSummary = useInteriorGroupSummary();
   const baseSummary = useBaseGroupSummary();
   const lidSummary = useLidGroupSummary();
+  const finishingSummary = useFinishingGroupSummary();
+  // A dot on the groups holding an edit, so a collapsed panel still says where
+  // the work is. `modifiedLabel` is the accessible name, not a second flag.
+  const params = useDesignerStore((s) => s.params);
+  const modified = useMemo(() => modifiedGroups(params), [params]);
+  const modifiedLabel = t('binDesigner.group.modified');
+  const markIf = (isModified: boolean): string | undefined =>
+    isModified ? modifiedLabel : undefined;
   const { showLabelTabs, isCustomShape } = useDesignerStore(
     useShallow((s) => ({
       showLabelTabs: s.params.style === 'standard',
@@ -82,6 +95,7 @@ function BinParameterPanel() {
   const [interiorExpanded, setInteriorExpanded] = useState(true);
   const [baseExpanded, setBaseExpanded] = useState(true);
   const [lidExpanded, setLidExpanded] = useState(true);
+  const [finishingExpanded, setFinishingExpanded] = useState(true);
 
   useEffect(() => {
     const handlers: Record<string, () => void> = {
@@ -89,6 +103,7 @@ function BinParameterPanel() {
       [helpJumpEventName('binDesigner:interior')]: () => setInteriorExpanded(true),
       [helpJumpEventName('binDesigner:base')]: () => setBaseExpanded(true),
       [helpJumpEventName('binDesigner:lid')]: () => setLidExpanded(true),
+      [helpJumpEventName('binDesigner:finishing')]: () => setFinishingExpanded(true),
     };
     for (const [name, fn] of Object.entries(handlers)) {
       window.addEventListener(name, fn);
@@ -171,6 +186,7 @@ function BinParameterPanel() {
           expanded={shapeExpanded}
           onExpandedChange={setShapeExpanded}
           summary={shapeSummary}
+          modifiedLabel={markIf(modified.shape)}
         >
           <div className="divide-y divide-stroke-subtle/50">
             <PanelSection helpTarget="bd-dimensions">
@@ -199,12 +215,32 @@ function BinParameterPanel() {
           </div>
         </StickyGroupHeader>
 
+        {/* Lid group. The lid is a distinct companion part, so it gets its own
+            top-level group rather than being buried under Walls. It sits here,
+            between Shape and Interior, because the groups below Shape read down
+            the part: the lid caps the top, the interior is inside, the base is
+            underneath. */}
+        <StickyGroupHeader
+          title={t('binDesigner.group.lid')}
+          expanded={lidExpanded}
+          onExpandedChange={setLidExpanded}
+          summary={lidSummary}
+          modifiedLabel={markIf(modified.lid)}
+        >
+          <div className="divide-y divide-stroke-subtle/50">
+            <PanelSection helpTarget="bd-lid">
+              <LidSection />
+            </PanelSection>
+          </div>
+        </StickyGroupHeader>
+
         {/* Interior group */}
         <StickyGroupHeader
           title={t('binDesigner.group.interior')}
           expanded={interiorExpanded}
           onExpandedChange={setInteriorExpanded}
           summary={interiorSummary}
+          modifiedLabel={markIf(modified.interior)}
         >
           <div className="divide-y divide-stroke-subtle/50">
             <PanelSection helpTarget="bd-interior">
@@ -233,31 +269,32 @@ function BinParameterPanel() {
           expanded={baseExpanded}
           onExpandedChange={setBaseExpanded}
           summary={baseSummary}
+          modifiedLabel={markIf(modified.base)}
         >
           <div className="divide-y divide-stroke-subtle/50">
             <PanelSection helpTarget="bd-base">
               <BaseSection />
             </PanelSection>
+          </div>
+        </StickyGroupHeader>
+
+        {/* Finishing group: how the part is coloured and what the grid it is
+            built against measures. Neither describes the base it used to be
+            filed under; both are the last things you set, and physical units
+            are rarely touched at all. */}
+        <StickyGroupHeader
+          title={t('binDesigner.group.finishing')}
+          expanded={finishingExpanded}
+          onExpandedChange={setFinishingExpanded}
+          summary={finishingSummary}
+          modifiedLabel={markIf(modified.finishing)}
+        >
+          <div className="divide-y divide-stroke-subtle/50">
             <PanelSection helpTarget="bd-colors">
               <ColorsSection />
             </PanelSection>
             <PanelSection helpTarget="bd-physical-units">
               <PhysicalUnitsSection />
-            </PanelSection>
-          </div>
-        </StickyGroupHeader>
-
-        {/* Lid group — the lid is a distinct companion part, so it gets its own
-            top-level group rather than being buried under Walls. */}
-        <StickyGroupHeader
-          title={t('binDesigner.group.lid')}
-          expanded={lidExpanded}
-          onExpandedChange={setLidExpanded}
-          summary={lidSummary}
-        >
-          <div className="divide-y divide-stroke-subtle/50">
-            <PanelSection helpTarget="bd-lid">
-              <LidSection />
             </PanelSection>
           </div>
         </StickyGroupHeader>
