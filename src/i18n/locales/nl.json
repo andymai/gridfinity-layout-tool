@@ -3891,5 +3891,6 @@
   "binDesigner.slideTray.fitSample.tip2": "De reeks loopt van 0,15 mm tot 0,35 mm in stappen van 0,05 mm; de derde rail is de standaard 0,25 mm.",
   "binDesigner.slideTray.fitSample.tip3": "Print hem met hetzelfde filament en dezelfde nozzle als de bak.",
   "binDesigner.slideTray.fitSample.exportComplete": "Pasvormtest gedownload",
-  "binDesigner.slideTray.fitSample.exportFailed": "Kon de pasvormtest niet exporteren"
+  "binDesigner.slideTray.fitSample.exportFailed": "Kon de pasvormtest niet exporteren",
+  "binDesigner.spacerDisablesDetachableFeet": "Een afstandhouder heeft vaste voetjes nodig om bijeen te blijven"
 }

@@ -3891,5 +3891,6 @@
   "binDesigner.slideTray.fitSample.tip2": "Žebřík jde od 0,15 mm do 0,35 mm po 0,05 mm; třetí kolejnice je výchozích 0,25 mm.",
   "binDesigner.slideTray.fitSample.tip3": "Tiskněte se stejným filamentem a tryskou, jaké použijete pro přihrádku.",
   "binDesigner.slideTray.fitSample.exportComplete": "Zkouška uložení stažena",
-  "binDesigner.slideTray.fitSample.exportFailed": "Zkoušku uložení se nepodařilo exportovat"
+  "binDesigner.slideTray.fitSample.exportFailed": "Zkoušku uložení se nepodařilo exportovat",
+  "binDesigner.spacerDisablesDetachableFeet": "Distanční vložka potřebuje pevně spojené nožičky, aby držela pohromadě"
 }

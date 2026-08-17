@@ -3891,5 +3891,6 @@
   "binDesigner.slideTray.fitSample.tip2": "Stigen går fra 0,15 mm til 0,35 mm i trinn på 0,05 mm; tredje skinne er standard 0,25 mm.",
   "binDesigner.slideTray.fitSample.tip3": "Skriv den ut med samme filament og dyse som du skal bruke til boksen.",
   "binDesigner.slideTray.fitSample.exportComplete": "Passtest lastet ned",
-  "binDesigner.slideTray.fitSample.exportFailed": "Kunne ikke eksportere passtesten"
+  "binDesigner.slideTray.fitSample.exportFailed": "Kunne ikke eksportere passtesten",
+  "binDesigner.spacerDisablesDetachableFeet": "En avstandsholder trenger innebygde føtter for å henge sammen"
 }

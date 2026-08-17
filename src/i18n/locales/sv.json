@@ -3891,5 +3891,6 @@
   "binDesigner.slideTray.fitSample.tip2": "Stegen går från 0,15 mm till 0,35 mm i steg om 0,05 mm; tredje skenan är standardvärdet 0,25 mm.",
   "binDesigner.slideTray.fitSample.tip3": "Skriv ut det med samma filament och munstycke som du ska använda till lådan.",
   "binDesigner.slideTray.fitSample.exportComplete": "Passningstest nedladdat",
-  "binDesigner.slideTray.fitSample.exportFailed": "Kunde inte exportera passningstestet"
+  "binDesigner.slideTray.fitSample.exportFailed": "Kunde inte exportera passningstestet",
+  "binDesigner.spacerDisablesDetachableFeet": "En distans behöver inbyggda fötter för att hålla ihop"
 }

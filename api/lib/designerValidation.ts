@@ -75,6 +75,9 @@ const VALID_BASE_STYLES = [
 const VALID_FOOT_LATTICES = ['grid', 'half'] as const;
 // Mirrors `LIGHTWEIGHT_MODES` in the same file.
 const VALID_LIGHTWEIGHT_MODES = ['interior', 'underside'] as const;
+// Mirrors `FEET_MODES` and `DETACHABLE_PIN_DIAMETERS_MM` in the same file.
+const VALID_FEET_MODES = ['integral', 'detachable'] as const;
+const VALID_PIN_DIAMETERS = [4.9, 5] as const;
 const VALID_LABEL_TAB_SUPPORTS = ['bracket', 'solid', 'fillet'] as const;
 // Mirrors `LabelTabMode` in `src/features/bin-designer/types/index.ts`.
 const VALID_LABEL_TAB_MODES = ['text', 'socket'] as const;
@@ -268,6 +271,24 @@ function validateBase(base: unknown): string | null {
     )
   ) {
     return `base.lightweightMode must be one of: ${VALID_LIGHTWEIGHT_MODES.join(', ')}`;
+  }
+  // Feet mode: a closed set, and a consequential one — a detachable-feet bin
+  // has no socket under it at all, so an unknown value falling back to
+  // 'integral' would publish a different part than the one previewed.
+  if (
+    base.feet !== undefined &&
+    !VALID_FEET_MODES.includes(base.feet as (typeof VALID_FEET_MODES)[number])
+  ) {
+    return `base.feet must be one of: ${VALID_FEET_MODES.join(', ')}`;
+  }
+  // The pin diameter is an interference fit against a fixed hole, not a free
+  // dimension: values outside the offered pair either fall out or will not go
+  // on, so membership is checked rather than a range.
+  if (
+    base.feetPinDiameter !== undefined &&
+    !VALID_PIN_DIAMETERS.includes(base.feetPinDiameter as (typeof VALID_PIN_DIAMETERS)[number])
+  ) {
+    return `base.feetPinDiameter must be one of: ${VALID_PIN_DIAMETERS.join(', ')}`;
   }
   if (base.trayBottom !== undefined) {
     const trayErr = validateTrayBottom(base.trayBottom);

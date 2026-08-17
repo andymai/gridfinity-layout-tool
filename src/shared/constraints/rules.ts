@@ -249,6 +249,19 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
     disables: ['base.flat', 'base.lightweight'],
     reason: 'binDesigner.spacerDisablesBase',
   },
+  // The one pairing detachable feet are genuinely refused, rather than merely
+  // inert: a spacer's floor is punched through every cell, and the webbing
+  // between its shelled feet is all that ties it together. Take the feet off as
+  // well and a multi-cell spacer is several disconnected islands, not a solid.
+  // `hasDetachableFeet` refuses the same pairing for a crafted payload that
+  // never passes through this engine.
+  {
+    description: 'Spacer disables detachable feet (nothing left to hold it together)',
+    source: 'base.spacer',
+    when: (p) => p.base.spacer,
+    disables: ['base.detachableFeet'],
+    reason: 'binDesigner.spacerDisablesDetachableFeet',
+  },
   // Deliberately ONE-WAY from the interior features: a spacer is a mode switch, so
   // it must stay reachable from a fully-designed bin and clear the incompatible
   // set on the way in (the `style.solid` precedent). A reverse rule would grey the

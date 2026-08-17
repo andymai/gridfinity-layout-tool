@@ -3891,5 +3891,6 @@
   "binDesigner.slideTray.fitSample.tip2": "A escala vai de 0,15 mm a 0,35 mm em passos de 0,05 mm; o terceiro trilho é o padrão de 0,25 mm.",
   "binDesigner.slideTray.fitSample.tip3": "Imprima com o mesmo filamento e bico que usará no compartimento.",
   "binDesigner.slideTray.fitSample.exportComplete": "Teste de ajuste baixado",
-  "binDesigner.slideTray.fitSample.exportFailed": "Não foi possível exportar o teste de ajuste"
+  "binDesigner.slideTray.fitSample.exportFailed": "Não foi possível exportar o teste de ajuste",
+  "binDesigner.spacerDisablesDetachableFeet": "Um espaçador precisa de pés integrados para se manter inteiro"
 }

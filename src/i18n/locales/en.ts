@@ -2196,6 +2196,7 @@ const en: Record<string, string> = {
   'binDesigner.spacerDisablesStyle': 'A spacer is an open frame — there is no interior to shape',
   'binDesigner.spacerDisablesAttachment': 'A spacer has no floor to hold a magnet or screw',
   'binDesigner.spacerDisablesBase': 'The spacer already opens the base right through',
+  'binDesigner.spacerDisablesDetachableFeet': 'A spacer needs its feet built in to hold together',
   'binDesigner.flatFloorDisablesSpacer': 'A spacer needs feet to open through',
   'binDesigner.tileDisablesWalls': 'A base-only bin has no walls to hold this',
   'binDesigner.tileDisablesInterior': 'A base-only bin has no depth to hold interior features',

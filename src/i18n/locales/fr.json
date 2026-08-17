@@ -3891,5 +3891,6 @@
   "binDesigner.slideTray.fitSample.tip2": "L'échelle va de 0,15 mm à 0,35 mm par pas de 0,05 mm ; le troisième rail correspond au défaut de 0,25 mm.",
   "binDesigner.slideTray.fitSample.tip3": "Imprimez-le avec le filament et la buse que vous utiliserez pour le bac.",
   "binDesigner.slideTray.fitSample.exportComplete": "Test d'ajustement téléchargé",
-  "binDesigner.slideTray.fitSample.exportFailed": "Impossible d'exporter le test d'ajustement"
+  "binDesigner.slideTray.fitSample.exportFailed": "Impossible d'exporter le test d'ajustement",
+  "binDesigner.spacerDisablesDetachableFeet": "Une entretoise a besoin de pieds intégrés pour tenir ensemble"
 }

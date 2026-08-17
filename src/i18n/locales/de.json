@@ -3891,5 +3891,6 @@
   "binDesigner.slideTray.fitSample.tip2": "Die Leiter läuft von 0,15 mm bis 0,35 mm in 0,05-mm-Schritten; die dritte Schiene ist der Standard 0,25 mm.",
   "binDesigner.slideTray.fitSample.tip3": "Drucke ihn mit demselben Filament und derselben Düse wie die Box.",
   "binDesigner.slideTray.fitSample.exportComplete": "Passungstest heruntergeladen",
-  "binDesigner.slideTray.fitSample.exportFailed": "Passungstest konnte nicht exportiert werden"
+  "binDesigner.slideTray.fitSample.exportFailed": "Passungstest konnte nicht exportiert werden",
+  "binDesigner.spacerDisablesDetachableFeet": "Ein Abstandhalter braucht fest angebaute Füße, um zusammenzuhalten"
 }

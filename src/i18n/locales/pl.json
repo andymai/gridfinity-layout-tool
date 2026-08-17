@@ -3891,5 +3891,6 @@
   "binDesigner.slideTray.fitSample.tip2": "Skala biegnie od 0,15 mm do 0,35 mm co 0,05 mm; trzecia szyna to domyślne 0,25 mm.",
   "binDesigner.slideTray.fitSample.tip3": "Wydrukuj go tym samym filamentem i dyszą, których użyjesz do pojemnika.",
   "binDesigner.slideTray.fitSample.exportComplete": "Pobrano test dopasowania",
-  "binDesigner.slideTray.fitSample.exportFailed": "Nie udało się wyeksportować testu dopasowania"
+  "binDesigner.slideTray.fitSample.exportFailed": "Nie udało się wyeksportować testu dopasowania",
+  "binDesigner.spacerDisablesDetachableFeet": "Dystans wymaga wbudowanych nóżek, aby się nie rozpadł"
 }

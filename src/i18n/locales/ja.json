@@ -3891,5 +3891,6 @@
   "binDesigner.slideTray.fitSample.tip2": "0.15mm から 0.35mm まで 0.05mm 刻み。3本目が既定の 0.25mm です。",
   "binDesigner.slideTray.fitSample.tip3": "ビンに使うのと同じフィラメントとノズルで印刷してください。",
   "binDesigner.slideTray.fitSample.exportComplete": "フィットテストをダウンロードしました",
-  "binDesigner.slideTray.fitSample.exportFailed": "フィットテストを書き出せませんでした"
+  "binDesigner.slideTray.fitSample.exportFailed": "フィットテストを書き出せませんでした",
+  "binDesigner.spacerDisablesDetachableFeet": "スペーサーは一体型の脚がないと分離してしまいます"
 }

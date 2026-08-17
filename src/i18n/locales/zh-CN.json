@@ -3891,5 +3891,6 @@
   "binDesigner.slideTray.fitSample.tip2": "梯度从 0.15mm 到 0.35mm，步进 0.05mm；第三段为默认的 0.25mm。",
   "binDesigner.slideTray.fitSample.tip3": "请使用与箱体相同的耗材和喷嘴打印。",
   "binDesigner.slideTray.fitSample.exportComplete": "已下载配合测试件",
-  "binDesigner.slideTray.fitSample.exportFailed": "无法导出配合测试件"
+  "binDesigner.slideTray.fitSample.exportFailed": "无法导出配合测试件",
+  "binDesigner.spacerDisablesDetachableFeet": "垫片需要一体式底脚才能保持完整"
 }

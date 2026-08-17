@@ -3891,5 +3891,6 @@
   "binDesigner.slideTray.fitSample.tip2": "Шкала йде від 0,15 мм до 0,35 мм із кроком 0,05 мм; третя напрямна — типові 0,25 мм.",
   "binDesigner.slideTray.fitSample.tip3": "Друкуйте його тим самим філаментом і соплом, які використаєте для контейнера.",
   "binDesigner.slideTray.fitSample.exportComplete": "Тест припасування завантажено",
-  "binDesigner.slideTray.fitSample.exportFailed": "Не вдалося експортувати тест припасування"
+  "binDesigner.slideTray.fitSample.exportFailed": "Не вдалося експортувати тест припасування",
+  "binDesigner.spacerDisablesDetachableFeet": "Проставка потребує вбудованих ніжок, щоб триматися купи"
 }

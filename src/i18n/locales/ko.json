@@ -3891,5 +3891,6 @@
   "binDesigner.slideTray.fitSample.tip2": "0.15mm에서 0.35mm까지 0.05mm 간격이며, 세 번째 레일이 기본값 0.25mm입니다.",
   "binDesigner.slideTray.fitSample.tip3": "빈에 사용할 필라멘트와 노즐로 출력하세요.",
   "binDesigner.slideTray.fitSample.exportComplete": "맞춤 테스트를 내려받았습니다",
-  "binDesigner.slideTray.fitSample.exportFailed": "맞춤 테스트를 내보내지 못했습니다"
+  "binDesigner.slideTray.fitSample.exportFailed": "맞춤 테스트를 내보내지 못했습니다",
+  "binDesigner.spacerDisablesDetachableFeet": "스페이서는 일체형 발이 있어야 형태를 유지합니다"
 }

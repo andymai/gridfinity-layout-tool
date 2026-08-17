@@ -3891,5 +3891,6 @@
   "binDesigner.slideTray.fitSample.tip2": "La escala va de 0,15 mm a 0,35 mm en pasos de 0,05 mm; el tercer riel es el valor por defecto de 0,25 mm.",
   "binDesigner.slideTray.fitSample.tip3": "Imprímela con el mismo filamento y la misma boquilla que usarás para el cajón.",
   "binDesigner.slideTray.fitSample.exportComplete": "Prueba de ajuste descargada",
-  "binDesigner.slideTray.fitSample.exportFailed": "No se pudo exportar la prueba de ajuste"
+  "binDesigner.slideTray.fitSample.exportFailed": "No se pudo exportar la prueba de ajuste",
+  "binDesigner.spacerDisablesDetachableFeet": "Un separador necesita patas integradas para mantenerse unido"
 }

@@ -3891,5 +3891,6 @@
   "binDesigner.slideTray.fitSample.tip2": "La scala va da 0,15 mm a 0,35 mm a passi di 0,05 mm; la terza guida è il valore predefinito di 0,25 mm.",
   "binDesigner.slideTray.fitSample.tip3": "Stampala con lo stesso filamento e ugello che userai per il contenitore.",
   "binDesigner.slideTray.fitSample.exportComplete": "Prova di accoppiamento scaricata",
-  "binDesigner.slideTray.fitSample.exportFailed": "Impossibile esportare la prova di accoppiamento"
+  "binDesigner.slideTray.fitSample.exportFailed": "Impossibile esportare la prova di accoppiamento",
+  "binDesigner.spacerDisablesDetachableFeet": "Un distanziale ha bisogno di piedini integrati per restare unito"
 }

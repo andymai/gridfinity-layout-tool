@@ -724,3 +724,37 @@ describe('underside lightweight relief (#3524)', () => {
     expect(getFeatureStatus(params, 'base.lightweight').available).toBe(false);
   });
 });
+
+/**
+ * Detachable feet are refused exactly one pairing, and merely inert with the
+ * rest. The spacer case is the one that produces an invalid solid rather than a
+ * pointless setting, so it is the one the engine has to hold.
+ */
+describe('detachable feet', () => {
+  const detachable = { ...DEFAULT_BIN_PARAMS.base, feet: 'detachable' as const };
+
+  it('is available on an ordinary bin', () => {
+    expect(getFeatureStatus(makeParams({}), 'base.detachableFeet').available).toBe(true);
+  });
+
+  it('is refused on a spacer, whose feet are all that hold it together', () => {
+    const spacer = makeParams({ base: { ...DEFAULT_BIN_PARAMS.base, spacer: true } });
+    expect(getFeatureStatus(spacer, 'base.detachableFeet').available).toBe(false);
+  });
+
+  it('leaves the feet-shaping settings alone rather than blocking them', () => {
+    // They describe where integral feet fall, which this mode answers its own
+    // way, so they are superseded rather than contradictory. Blocking them here
+    // would clear a user's settings for nothing.
+    const params = makeParams({ base: detachable });
+    expect(getFeatureStatus(params, 'base.halfSockets').available).toBe(true);
+    expect(getFeatureStatus(params, 'base.lightweight').available).toBe(true);
+  });
+
+  it('reports itself as enabled only when the mode is actually selected', () => {
+    expect(getFeatureStatus(makeParams({ base: detachable }), 'base.detachableFeet').enabled).toBe(
+      true
+    );
+    expect(getFeatureStatus(makeParams({}), 'base.detachableFeet').enabled).toBe(false);
+  });
+});
