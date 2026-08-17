@@ -16,6 +16,17 @@
 
 import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
+import type { Cutout } from './cutout';
+
+/**
+ * Cap on {@link LidConfig.cutouts}.
+ *
+ * A lid's plate is one face, and past a couple of dozen shapes the boolean cost
+ * dominates the build for no design any lid needs. Mirrored server-side in
+ * `api/lib/designerValidationConstants.ts`; the client actions refuse past it so
+ * an honest oversized payload is rejected rather than silently truncated.
+ */
+export const MAX_LID_CUTOUTS = 24;
 
 /**
  * The slice of a design the lid resolvers below read. Declared structurally
@@ -103,6 +114,36 @@ export const LID_MAGNET_CEILING = 0.6;
  * sits to the wall it would cut into.
  */
 export const LID_MAGNET_LIP_CLEARANCE = 3.5;
+
+/** Radial plastic kept around a retention magnet inside its post/boss (mm).
+ *  1.0mm (2–3 perimeters at a 0.4mm nozzle) keeps the corner post slim: because
+ *  the magnet inset is `LID_MAGNET_LIP_CLEARANCE + bossRadius`, a thinner wall pulls the
+ *  post's cavity-facing edge inboard (~1mm per 0.5mm of wall) while the boss's
+ *  lip-side edge and the magnet mating stay put. */
+export const LID_MAGNET_BOSS_WALL = 1.0;
+
+/** Radial material kept around the magnet in its post/boss (mm). */
+export function retentionBossRadius(magnetDiameter: number): number {
+  return magnetDiameter / 2 + LID_MAGNET_BOSS_WALL;
+}
+
+/**
+ * Distance (mm) from the nominal footprint edge to the magnet centre.
+ *
+ * Set so the lid's boss (radius {@link retentionBossRadius}) sits fully INBOARD
+ * of the bin's stacking lip: `inset - bossRadius = LID_MAGNET_LIP_CLEARANCE`, so
+ * the boss can hang into the mouth without fouling the lip as the lid seats. The
+ * bin's corner gusset then reaches back OUT to the interior walls to anchor
+ * itself. Both parts use this same inset so their magnets stay coaxial.
+ *
+ * Here rather than in the worker's `retentionMagnetGeometry` for the same reason
+ * {@link LID_MAGNET_LIP_CLEARANCE} is: main-thread callers need the boss
+ * footprint. The lid cutout window is the one that forced the move — the editor
+ * draws each boss as a keep-out, and it cannot import the worker.
+ */
+export function retentionMagnetInset(magnetDiameter: number): number {
+  return LID_MAGNET_LIP_CLEARANCE + retentionBossRadius(magnetDiameter);
+}
 
 /**
  * Minimum solid floor kept below a tray recess (mm) so the recess can't break
@@ -671,6 +712,29 @@ export interface LidConfig {
    * Got: those were features, and this is the resolution of a defect.
    */
   readonly relieveInterior: boolean;
+  /**
+   * Shapes cut clean through the lid's plate — a dispensing slot, a vent, a
+   * pass-through for a cable.
+   *
+   * The same {@link Cutout} the bin's interior uses, so the pen tool, the
+   * pathfinder group ops, insertion clearance and the entry chamfer all apply
+   * unchanged. Two things differ, and both are properties of the HOST rather
+   * than of the shape:
+   *
+   * - `cutDepth` is ignored. A lid cutout always spans the full remaining plate
+   *   ({@link lidCutoutHostFace}), because `exportLid` flips the lid 180° to
+   *   print and a partial pocket in the top face would come out as a
+   *   downward-facing ceiling pocket — the overhang that rotation exists to
+   *   remove. Through is also the only depth the feature is for.
+   * - Coordinates are in the lid's own window frame, NOT the bin's in-cavity
+   *   frame. See {@link lidCutoutWindow}: the drawable area is the mating
+   *   cavity's footprint, which is neither the bin's interior nor the lid's
+   *   outer plate.
+   *
+   * Absent on every design published before the feature; `migrateParams`
+   * backfills `[]` so those regenerate byte-identically.
+   */
+  readonly cutouts: Cutout[];
 }
 
 /**
@@ -721,6 +785,7 @@ export const DEFAULT_LID_CONFIG: LidConfig = {
   // On, so a new design gets a lid that seats. `migrateParams` turns it off for
   // designs that predate it — see the field's own note.
   relieveInterior: true,
+  cutouts: [],
 } as const;
 
 /**

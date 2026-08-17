@@ -24,6 +24,7 @@ import {
   LID_EXTRA_HEIGHT,
   LID_MAGNET_SEAT_GAP,
   LID_MAGNET_LIP_CLEARANCE,
+  LID_MAGNET_BOSS_WALL,
   lidAnchorZ,
   lidWallBottomZ,
   lidRetentionInterfaceZ,
@@ -46,6 +47,7 @@ export {
   LID_EXTRA_HEIGHT,
   LID_MAGNET_SEAT_GAP,
   LID_MAGNET_LIP_CLEARANCE,
+  LID_MAGNET_BOSS_WALL,
   lidAnchorZ,
   lidWallBottomZ,
   lidRetentionInterfaceZ,
@@ -112,15 +114,9 @@ export const LID_COPLANAR_MARGIN = 0.1;
  * `retentionMagnetGeometry.ts`.
  * ──────────────────────────────────────────────────────────────────────── */
 
-/** Radial plastic kept around a retention magnet inside its post/boss (mm).
- *  1.0mm (2–3 perimeters at a 0.4mm nozzle) keeps the corner post slim: because
- *  the magnet inset is `LID_MAGNET_LIP_CLEARANCE + bossRadius`, a thinner wall pulls the
- *  post's cavity-facing edge inboard (~1mm per 0.5mm of wall) while the boss's
- *  lip-side edge and the magnet mating stay put. */
-export const LID_MAGNET_BOSS_WALL = 1.0;
-
-/* `LID_MAGNET_LIP_CLEARANCE` is re-exported from the shared types module above
- * — the panel and the grip-relief depth clamp need it on the main thread. */
+/* `LID_MAGNET_LIP_CLEARANCE` and `LID_MAGNET_BOSS_WALL` are re-exported from the
+ * shared types module above — the panel, the grip-relief depth clamp and the lid
+ * cutout window all need the boss footprint on the main thread. */
 
 /** Retaining floor kept below a bin-post magnet pocket (mm). */
 export const LID_MAGNET_POST_FLOOR = 0.6;

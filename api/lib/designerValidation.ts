@@ -483,6 +483,39 @@ function validateLid(lid: unknown): string | null {
     const gripErr = validateLidGrip(lid.grip, lid);
     if (gripErr) return gripErr;
   }
+  if (lid.cutouts !== undefined) {
+    const cutoutsErr = validateLidCutouts(lid.cutouts);
+    if (cutoutsErr) return cutoutsErr;
+  }
+  return null;
+}
+
+/**
+ * Through-cuts in the lid's plate. The same {@link validateCutouts} the interior
+ * array takes, plus the two limits the lid host imposes:
+ *
+ * - A length cap. Every shape is a boolean op against the plate, and unlike the
+ *   interior array (bounded in practice by the cavity it has to fit in) nothing
+ *   about a lid limits how many a payload can carry. Mirrors `MAX_LID_CUTOUTS`.
+ * - No `shape: 'mesh'`. A mesh imprint is subtracted after tessellation, in the
+ *   BIN's mesh frame, so no lid solid could describe one — and a STEP export
+ *   refuses imprinted parts for exactly that reason. `migrateParams` drops these
+ *   on load; refusing them here keeps a crafted payload from reaching a code path
+ *   that would silently ignore it.
+ */
+function validateLidCutouts(value: unknown): string | null {
+  if (!Array.isArray(value)) return 'lid.cutouts must be an array';
+  if (value.length > CONSTRAINTS.MAX_LID_CUTOUTS) {
+    return `lid.cutouts must have at most ${CONSTRAINTS.MAX_LID_CUTOUTS} entries`;
+  }
+  const err = validateCutouts(value);
+  if (err) return err.replace(/^cutouts/, 'lid.cutouts');
+  for (let i = 0; i < value.length; i++) {
+    const c: unknown = value[i];
+    if (isObject(c) && c.shape === 'mesh') {
+      return `lid.cutouts[${i}] cannot use shape 'mesh'`;
+    }
+  }
   return null;
 }
 

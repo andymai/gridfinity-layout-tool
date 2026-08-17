@@ -1064,6 +1064,7 @@ describe('migrateParams', () => {
       },
       // Explicitly stored, which is what a design created holds.
       relieveInterior: true,
+      cutouts: [],
     };
     const result = migrateParams({ lid });
     expect(result.lid).toEqual(lid);

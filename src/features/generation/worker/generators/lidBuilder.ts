@@ -11,6 +11,7 @@
  *   - `addClickRails`     — tapered snap rails on each wall    (lidClickRail)
  *   - `cutMagnetHoles`    — standard magnet pattern through floor (lidMagnets)
  *   - `buildStackGrid`    — Gridfinity lip profile on top      (lidStackGrid)
+ *   - `applyLidCutouts`   — through-cuts in the plate         (lidCutoutBuilder)
  *
  * Coordinate convention:
  *   Z = 0          : top of lid floor
@@ -37,6 +38,7 @@ import { buildStackGrid } from './lidStackGrid';
 import { cutMagnetHoles } from './lidMagnets';
 import { addLidRetentionMagnets } from './lidRetentionMagnets';
 import { cutTrayRecess } from './lidTray';
+import { applyLidCutouts } from './lidCutoutBuilder';
 import { applyLidText } from './lidTextBuilder';
 
 export { resolveLidInputs } from './lidInputs';
@@ -127,7 +129,16 @@ export function buildLid(params: BinParams, originToTag?: Map<number, number>): 
       body = cutTrayRecess(scope, body, inputs);
     }
 
-    // 6. Optional lid-top text. Runs AFTER the tray so tray-floor
+    // 6. Optional through-cuts in the plate. AFTER the tray for the same reason
+    //    text is — the recess owns the visible surface once it exists, so a hole
+    //    through a tray lid starts at the tray floor and clears only the material
+    //    left under it. BEFORE the text so a glyph is engraved into what survives
+    //    rather than into plate a hole is about to remove.
+    if (inputs.cutouts) {
+      body = applyLidCutouts(scope, body, inputs, originToTag);
+    }
+
+    // 7. Optional lid-top text. Runs AFTER the tray so tray-floor
     //    text cuts into the recessed surface, not the pre-recess plate.
     //    `inputs.text` is null for stackable/polygon lids.
     if (inputs.text) {

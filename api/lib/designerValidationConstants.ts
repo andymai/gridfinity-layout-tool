@@ -62,6 +62,10 @@ export const CONSTRAINTS = {
   MAX_INSERTS: 20,
   MAX_INSERT_DIMENSION: 200,
   MAX_INSERT_DEPTH: 50,
+  // Mirrors `MAX_LID_CUTOUTS` in `src/features/bin-designer/types/lid.ts`. Every
+  // lid cutout is a boolean op against the plate, and nothing about a lid bounds
+  // how many a payload can carry the way a cavity bounds the interior array.
+  MAX_LID_CUTOUTS: 24,
   MAX_PAYLOAD_BYTES: 100_000, // 100KB max for designer shares
   // Mesh imprint assets (STL import). These mirror the client caps in
   // `src/shared/generation/meshAsset.ts` — keep in sync. Designs carrying

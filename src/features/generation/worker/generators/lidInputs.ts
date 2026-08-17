@@ -8,6 +8,7 @@
 
 import type {
   BinParams,
+  Cutout,
   LidAttachment,
   LidCompatibilitySide,
   LidGripMode,
@@ -36,6 +37,8 @@ import type { PolygonLipGap } from '@/shared/utils/lipGapPlan';
 import type { WallSpanBlock } from '@/shared/utils/labelTabPlan';
 import { LID_FIT_CLEARANCE, LID_CORNER_RADIUS, lidAnchorZ, lidWallBottomZ } from './lidConstants';
 import { resolveOverhang, overhangExpansion, hasOverhang } from './overhang';
+import { lidCutoutHostFace, lidCutoutWindow } from '@/shared/utils/lidCutoutPlan';
+import type { LidCutoutWindow } from '@/shared/utils/lidCutoutPlan';
 
 /**
  * Resolved lid-top text: the trimmed string plus the effective
@@ -52,6 +55,23 @@ export interface LidTextInputs {
   readonly minFontSize: number;
   readonly maxFontSize: number;
   readonly fontSizeOverride?: number;
+}
+
+/**
+ * Resolved lid cutouts: the shapes, the window they are positioned in, and the
+ * plate they cut through.
+ *
+ * The window and the host face come from `lidCutoutPlan` rather than being
+ * re-derived here, because the editor draws its shapes against the same numbers
+ * and a second derivation is how a placement and its geometry drift apart.
+ */
+export interface LidCutoutInputs {
+  readonly shapes: readonly Cutout[];
+  readonly window: LidCutoutWindow;
+  /** Lid-local Z of the surface the cuts start from. */
+  readonly topZ: number;
+  /** Plate depth (mm) below {@link topZ} — every cut spans all of it. */
+  readonly thickness: number;
 }
 
 /** Geometric inputs derived from BinParams. */
@@ -243,6 +263,17 @@ export interface LidInputs {
    */
   readonly text: LidTextInputs | null;
   /**
+   * Through-cuts in the lid's plate, or null when there are none or a gate
+   * refuses them. Same gates as {@link text}, resolved by `lidCutoutsAllowed` —
+   * a hole and a glyph both want a flat top face, so a FULL stack grid rules out
+   * both and a polygon lid is excluded from both.
+   *
+   * Carries the shapes together with the window they are measured in, so the
+   * builder never re-derives either. `cutDepth` on each shape is deliberately
+   * ignored: a lid cutout always spans {@link LidCutoutInputs.thickness}.
+   */
+  readonly cutouts: LidCutoutInputs | null;
+  /**
    * Outer-perimeter shift (mm) caused by asymmetric overhang. The lid's
    * perimeter, mating shell, floor, click rails, and retention magnets
    * translate by this amount so they wrap the bin's overhang-shifted outer
@@ -316,6 +347,29 @@ export function resolveLidInputs(params: BinParams): LidInputs {
       maxFontSize: style.maxFontSize,
       ...(style.fontSizeOverride !== undefined ? { fontSizeOverride: style.fontSizeOverride } : {}),
     };
+  }
+
+  // Through-cuts in the plate. `lidCutoutWindow` returns null on exactly the
+  // gates that null out `text` above, so the two cannot disagree about whether
+  // the lid has a usable top face. Mesh-shaped entries are refused here as well
+  // as dropped in migration: an imprint is subtracted after tessellation, in the
+  // BIN's mesh frame, so no lid solid can describe one.
+  const lidCutoutSource = params.lid.cutouts.filter((c) => c.shape !== 'mesh');
+  const cutoutWindow = lidCutoutSource.length > 0 ? lidCutoutWindow(params) : null;
+  let cutouts: LidCutoutInputs | null = null;
+  if (cutoutWindow) {
+    const host = lidCutoutHostFace(params);
+    // A plate thinner than this is not a hole, it is a tear. `resolveLidPlateThickness`
+    // floors the plate at LID_TOP_THICKNESS_BASE and a tray at LID_TRAY_FLOOR, so
+    // this only trips on a crafted payload.
+    if (host.thickness > 0) {
+      cutouts = {
+        shapes: lidCutoutSource,
+        window: cutoutWindow,
+        topZ: host.topZ,
+        thickness: host.thickness,
+      };
+    }
   }
 
   // Floor plate takes the largest of: the user's knob, a stack-magnet pocket's
@@ -440,6 +494,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     wallBottomZ: lidWallBottomZ(heightUnitMm, LID_FIT_CLEARANCE, cavityExtra),
     cellMask,
     text,
+    cutouts,
     outerOffsetX,
     overhangAddW: addW,
     overhangAddD: addD,
