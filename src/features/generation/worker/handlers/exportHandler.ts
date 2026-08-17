@@ -29,6 +29,7 @@ import { exportDividers, exportDividerPiecesSeparately } from '../generators/div
 import { buildUniqueDividerPieces } from '../generators/dividerBuilder';
 import { pitchFromParams } from '../generators/gridPitch';
 import { exportLid, exportStackPlate } from '../generators/lidOrchestrator';
+import { exportDetachableFeet } from '../generators/detachableFeetOrchestrator';
 import { exportSlideTray } from '../generators/slideOrchestrator';
 import { exportSlideFitSample } from '../generators/slideFitSample';
 import type { FaceGroupData } from '@/shared/types/generation';
@@ -350,6 +351,13 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         if (plateExport) {
           pieces.push({ data: plateExport.data, label: 'lid-baseplate' });
         }
+      }
+
+      // Detachable feet ship as their own plate. Returns null unless the bin
+      // actually has them, so no gate here either.
+      const feetExport = await exportDetachableFeet(params, format, tolerance, angularTolerance);
+      if (feetExport) {
+        pieces.push({ data: feetExport.data, label: 'feet' });
       }
 
       // The sliding tray is the part that RIDES the rail the bin carries. It

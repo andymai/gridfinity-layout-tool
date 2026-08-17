@@ -1,0 +1,379 @@
+// @vitest-environment node
+/**
+ * A detachable foot is only useful if it drops into a baseplate pocket, and
+ * nothing about that is visible to a bounding-box, triangle-count or watertight
+ * assertion: a foot built from a SCALED profile is a perfectly valid solid of
+ * plausible size that simply perches on the pocket instead of entering it.
+ *
+ * So the central check here compares the foot's outer surface against a full
+ * integral foot's at every breakpoint of the socket profile. They must agree
+ * exactly, not closely — the foot is meant to BE a section of that profile, and
+ * any drift is the kind that shows up as a bin sitting 4.75mm proud rather than
+ * as anything a mesh check would flag.
+ *
+ * The rest pins down what the plan and the builder have to agree about: pins
+ * that stop flush with the floor they pass through, holes where the plan put
+ * them, and a magnet pocket that opens downward so the magnet can be inserted.
+ */
+
+import { describe, it, expect, beforeAll } from 'vitest';
+import type { Shape3D } from 'brepjs';
+import type { MeshData } from '@/features/generation/bridge/types';
+import { initTestKernel } from '@/test/initTestKernel';
+import {
+  footArmMm,
+  footPinPositions,
+  resolveDetachableFeet,
+  type FootPlacement,
+} from '@/shared/utils/detachableFeetPlan';
+import type { BinParams } from '@/shared/types/bin';
+import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import { boundingBox, isSolidThrough, meshTopologyStats } from './__kernel-tests__/meshAssertions';
+import { seatDepth } from './__kernel-tests__/binSeating';
+import type { FootLattice } from '@/shared/types/bin';
+
+import type { DetachableFeetGeometry, DetachableFeetOptions } from './detachableFeetBuilder';
+
+type BuildFeet = (opts: DetachableFeetOptions) => DetachableFeetGeometry;
+type BuildCell = (w: number, d: number) => Shape3D;
+
+let buildDetachableFeet: BuildFeet;
+let buildSingleCellSocket: BuildCell;
+let meshOf: (shape: Shape3D) => MeshData;
+
+beforeAll(async () => {
+  await initTestKernel();
+  buildDetachableFeet = (await import('./detachableFeetBuilder')).buildDetachableFeet;
+  buildSingleCellSocket = (await import('./socketBuilder')).buildSingleCellSocket;
+  const { mesh } = await import('brepjs');
+  const { toIndexedMeshData } = await import('./meshUtils');
+  meshOf = (shape) => {
+    const indexed = toIndexedMeshData(mesh(shape, { tolerance: 0.01, angularTolerance: 0.1 }));
+    return {
+      vertices: indexed.vertices,
+      indices: indexed.indices,
+      triangleCount: indexed.triangleCount,
+    } as MeshData;
+  };
+}, 60000);
+
+const PITCH = 42;
+const CLEARANCE = 0.5;
+const FLOOR = 1.2;
+const PIN = 5;
+const MAGNET_D = 6.5;
+const MAGNET_DEPTH = 2;
+const ARM = footArmMm({ magnetDiameterMm: MAGNET_D, magnetInsetFromEdgeMm: 8, pinDiameterMm: PIN });
+
+/**
+ * Z of every breakpoint in the socket profile, measured from the foot's top.
+ * The loft's sections land exactly here, so a vertex-level comparison at these
+ * depths is comparing the profile itself rather than the tessellation.
+ */
+const PROFILE_Z = [0, -0.25, -2.4, -4.2, -5];
+
+/** A single L foot on a cell centred at the origin, hugging its +X/+Y corner. */
+const CORNER_L: FootPlacement = {
+  shape: 'L',
+  x: PITCH / 2,
+  y: PITCH / 2,
+  dirX: 1,
+  dirY: 1,
+  interiorX: false,
+  interiorY: false,
+  cellW: PITCH,
+  cellD: PITCH,
+};
+
+function feetOf(over: Partial<DetachableFeetOptions> = {}): DetachableFeetGeometry {
+  return buildDetachableFeet({
+    placements: [CORNER_L],
+    armMm: ARM,
+    pinDiameterMm: PIN,
+    pinHoleDiameterMm: PIN,
+    floorThicknessMm: FLOOR,
+    forExport: true,
+    ...over,
+  });
+}
+
+/** Extreme coordinate on one axis among vertices sitting at `z`. */
+function extremeAt(m: MeshData, z: number, axis: 0 | 1): number {
+  let best = -Infinity;
+  for (let i = 0; i < m.vertices.length; i += 3) {
+    if (Math.abs(m.vertices[i + 2] - z) > 1e-4) continue;
+    best = Math.max(best, m.vertices[i + axis]);
+  }
+  return best;
+}
+
+describe('detachable foot geometry', () => {
+  it('reproduces the integral foot profile exactly on the faces it keeps', () => {
+    const { feet, pinHoles } = feetOf();
+    const full = buildSingleCellSocket(PITCH - CLEARANCE, PITCH - CLEARANCE);
+    try {
+      const footMesh = meshOf(feet[0]);
+      const fullMesh = meshOf(full);
+      for (const z of PROFILE_Z) {
+        // The outer faces this foot keeps are its +X and +Y ones.
+        expect(extremeAt(footMesh, z, 0)).toBeCloseTo(extremeAt(fullMesh, z, 0), 6);
+        expect(extremeAt(footMesh, z, 1)).toBeCloseTo(extremeAt(fullMesh, z, 1), 6);
+      }
+    } finally {
+      feet.forEach((f) => f.delete());
+      pinHoles.delete();
+      full.delete();
+    }
+  });
+
+  it('is one closed solid once its pins are on', () => {
+    const { feet, pinHoles } = feetOf();
+    try {
+      const stats = meshTopologyStats(meshOf(feet[0]));
+      expect(stats.boundaryEdges).toBe(0);
+      expect(stats.nonManifoldEdges).toBe(0);
+    } finally {
+      feet.forEach((f) => f.delete());
+      pinHoles.delete();
+    }
+  });
+
+  it('stops its pins flush with the floor they pass through', () => {
+    const { feet, pinHoles } = feetOf();
+    try {
+      const box = boundingBox(meshOf(feet[0]).vertices);
+      // Top of the pins, not of the foot: the foot's own top face is Z=0.
+      expect(box.maxZ).toBeCloseTo(FLOOR, 4);
+      expect(box.minZ).toBeCloseTo(-5, 4);
+    } finally {
+      feet.forEach((f) => f.delete());
+      pinHoles.delete();
+    }
+  });
+
+  it('takes a thicker floor as a longer pin, so the fit never depends on wall thickness', () => {
+    const thick = feetOf({ floorThicknessMm: 2.4 });
+    try {
+      expect(boundingBox(meshOf(thick.feet[0]).vertices).maxZ).toBeCloseTo(2.4, 4);
+    } finally {
+      thick.feet.forEach((f) => f.delete());
+      thick.pinHoles.delete();
+    }
+  });
+
+  it('opens its magnet pocket at the underside, where the magnet goes in', () => {
+    const withMagnet = feetOf({
+      magnet: { diameterMm: MAGNET_D, depthMm: MAGNET_DEPTH, positions: [[13, 13]] },
+    });
+    try {
+      const m = meshOf(withMagnet.feet[0]);
+      const { minZ } = boundingBox(m.vertices);
+      // Nothing solid in the pocket's band...
+      expect(isSolidThrough(m, 13, 13, minZ + 0.05, minZ + MAGNET_DEPTH - 0.05)).toBe(false);
+      // ...and solid again above it, so the pocket is blind rather than a hole.
+      expect(isSolidThrough(m, 13, 13, minZ + MAGNET_DEPTH + 0.1, minZ + 4)).toBe(true);
+    } finally {
+      withMagnet.feet.forEach((f) => f.delete());
+      withMagnet.pinHoles.delete();
+    }
+  });
+
+  it('leaves a plain foot solid where a magnet pocket would be', () => {
+    const { feet, pinHoles } = feetOf();
+    try {
+      const m = meshOf(feet[0]);
+      const { minZ } = boundingBox(m.vertices);
+      expect(isSolidThrough(m, 13, 13, minZ + 0.05, minZ + MAGNET_DEPTH)).toBe(true);
+    } finally {
+      feet.forEach((f) => f.delete());
+      pinHoles.delete();
+    }
+  });
+
+  it('punches its floor holes at the pin positions and nowhere else', () => {
+    const { feet, pinHoles } = feetOf();
+    try {
+      const tool = meshOf(pinHoles);
+      const box = boundingBox(tool.vertices);
+      // The tool spans the floor with margin at both ends, so the holes go
+      // clean through rather than leaving a skin.
+      expect(box.minZ).toBeLessThan(0);
+      expect(box.maxZ).toBeGreaterThan(FLOOR);
+
+      for (const pin of footPinPositions(CORNER_L, ARM, PIN)) {
+        expect(isSolidThrough(tool, pin.x, pin.y, 0.1, FLOOR - 0.1)).toBe(true);
+      }
+      // A point a full pin diameter off any of them is not drilled.
+      expect(isSolidThrough(tool, CORNER_L.x, CORNER_L.y, 0.1, FLOOR - 0.1)).toBe(false);
+    } finally {
+      feet.forEach((f) => f.delete());
+      pinHoles.delete();
+    }
+  });
+
+  it('builds one solid per placement', () => {
+    const bar: FootPlacement = {
+      shape: 'bar',
+      x: 0,
+      y: PITCH / 2,
+      dirX: 0,
+      dirY: 1,
+      interiorX: false,
+      interiorY: false,
+      cellW: PITCH,
+      cellD: PITCH,
+    };
+    const { feet, pinHoles } = feetOf({ placements: [CORNER_L, bar] });
+    try {
+      expect(feet).toHaveLength(2);
+      for (const f of feet) expect(meshTopologyStats(meshOf(f)).boundaryEdges).toBe(0);
+    } finally {
+      feet.forEach((f) => f.delete());
+      pinHoles.delete();
+    }
+  });
+});
+
+/**
+ * The body side, end to end. A detachable bin's printed part is the same body
+ * an integral bin has, minus the socket and plus the pin holes — so the checks
+ * are all DELTAS against the integral bin rather than absolute figures, which
+ * would only restate the arithmetic that produced them.
+ */
+describe('a bin built with detachable feet', () => {
+  let generateBin: (p: BinParams, cb: undefined, forExport: boolean) => MeshData;
+
+  beforeAll(async () => {
+    generateBin = (await import('./binOrchestrator')).generateBin;
+  }, 60000);
+
+  const bin = (feet: 'integral' | 'detachable', over: Partial<BinParams> = {}): MeshData =>
+    generateBin(
+      {
+        ...DEFAULT_BIN_PARAMS,
+        width: 3,
+        depth: 2,
+        height: 3,
+        ...over,
+        base: { ...DEFAULT_BIN_PARAMS.base, feet, ...(over.base ?? {}) },
+      },
+      undefined,
+      true
+    );
+
+  it('prints exactly one socket shorter than the same bin with integral feet', () => {
+    const integral = boundingBox(bin('integral').vertices);
+    const detachable = boundingBox(bin('detachable').vertices);
+    expect(integral.maxZ - integral.minZ - (detachable.maxZ - detachable.minZ)).toBeCloseTo(5, 3);
+    // Same footprint: the feet come off the bottom, not the sides.
+    expect(detachable.maxX - detachable.minX).toBeCloseTo(integral.maxX - integral.minX, 4);
+  });
+
+  it('has a flat underside where the integral bin has feet', () => {
+    const m = bin('detachable');
+    const { minZ } = boundingBox(m.vertices);
+    // Solid straight through the floor at a point that would be inside a foot.
+    expect(isSolidThrough(m, 0, 0, minZ + 0.05, minZ + 1.1)).toBe(true);
+    // ...and the socket band simply is not there: nothing below the floor.
+    expect(isSolidThrough(m, 0, 0, minZ - 1, minZ - 0.1)).toBe(false);
+  });
+
+  it('carries a hole through its floor at every pin the plan places', () => {
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      width: 3,
+      depth: 2,
+      height: 3,
+      base: { ...DEFAULT_BIN_PARAMS.base, feet: 'detachable' },
+    };
+    const m = bin('detachable');
+    const { minZ } = boundingBox(m.vertices);
+    const resolved = resolveDetachableFeet(params);
+    expect(resolved.placements.length).toBe(4);
+
+    for (const foot of resolved.placements) {
+      for (const pin of footPinPositions(foot, resolved.armMm, resolved.pinDiameterMm)) {
+        // Nothing solid through the floor at a pin: the hole goes right through.
+        expect(isSolidThrough(m, pin.x, pin.y, minZ + 0.1, minZ + 1.1)).toBe(false);
+      }
+    }
+  });
+});
+
+/**
+ * Whether a foot actually drops into a pocket, measured rather than argued.
+ *
+ * A foot that lands on the ridge between two pockets is a perfectly valid
+ * solid: watertight, right triangle count, right bounding box. The only way to
+ * see it is to mate the parts and let them fall, so this drops the FEET onto a
+ * generated plate and reports the depth they reach — ~5mm seated against ~0
+ * perched.
+ */
+describe('detachable feet seating in a baseplate', () => {
+  let generateFeet: (p: BinParams) => MeshData | null;
+  let plate: MeshData;
+
+  beforeAll(async () => {
+    generateFeet = (await import('./detachableFeetOrchestrator')).generateDetachableFeetMesh;
+    const generateBaseplate = (await import('./baseplateGenerator')).generateBaseplate;
+    plate = generateBaseplate(
+      {
+        width: 5,
+        depth: 5,
+        gridUnitMm: 42,
+        magnetHoles: false,
+        magnetDiameter: 6.5,
+        magnetDepth: 2.4,
+        paddingLeft: 0,
+        paddingRight: 0,
+        paddingFront: 0,
+        paddingBack: 0,
+        fractionalEdgeX: 'end',
+        fractionalEdgeY: 'end',
+        lightweight: false,
+      },
+      () => {},
+      false
+    );
+  }, 120000);
+
+  const feetFor = (lattice: FootLattice): MeshData => {
+    const m = generateFeet({
+      ...DEFAULT_BIN_PARAMS,
+      width: 3,
+      depth: 3,
+      height: 3,
+      base: {
+        ...DEFAULT_BIN_PARAMS.base,
+        feet: 'detachable',
+        footLatticeX: lattice,
+        footLatticeY: lattice,
+      },
+    });
+    if (!m) throw new Error('expected feet');
+    return m;
+  };
+
+  /** Pocket depth: feet that drop all the way reach this. */
+  const POCKET_DEPTH = 5;
+  const HALF_UNIT = 21;
+
+  it('seats an on-grid bin', () => {
+    expect(seatDepth(feetFor('grid'), plate, { dx: 0, dy: 0 }).mm).toBeGreaterThan(
+      POCKET_DEPTH - 1
+    );
+  });
+
+  it('perches when the bin is half-offset and the lattice was not told', () => {
+    // The discriminating case: same feet, moved half a unit, now straddling
+    // ridges. Without this the seated assertion above would also pass on feet
+    // that seat nowhere.
+    expect(seatDepth(feetFor('grid'), plate, { dx: HALF_UNIT, dy: HALF_UNIT }).mm).toBeLessThan(1);
+  });
+
+  it('seats a half-offset bin once the lattice shifts its anchors', () => {
+    expect(seatDepth(feetFor('half'), plate, { dx: HALF_UNIT, dy: HALF_UNIT }).mm).toBeGreaterThan(
+      POCKET_DEPTH - 1
+    );
+  });
+});

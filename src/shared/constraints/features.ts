@@ -31,6 +31,20 @@ export const FEATURE_MANIFESTS: Record<FeatureKey, FeatureManifest> = {
     apply: (p, enabled) => ({ base: { ...p.base, lightweight: enabled } }),
   },
 
+  'base.detachableFeet': {
+    key: 'base.detachableFeet',
+    label: 'Detachable Feet',
+    isEnabled: (p) => p.base.feet === 'detachable',
+    // Turning it off DELETES the keys rather than writing a default: `params`
+    // is hashed wholesale for the community fingerprint, so a bin that has
+    // never used the feature must not start carrying its fields.
+    apply: (p, enabled) => {
+      if (enabled) return { base: { ...p.base, feet: 'detachable' as const } };
+      const { feet: _feet, feetPinDiameter: _pin, ...rest } = p.base;
+      return { base: rest };
+    },
+  },
+
   'base.magnet': {
     key: 'base.magnet',
     label: 'Magnet Holes',

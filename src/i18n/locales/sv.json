@@ -3891,5 +3891,13 @@
   "binDesigner.slideTray.fitSample.tip2": "Stegen går från 0,15 mm till 0,35 mm i steg om 0,05 mm; tredje skenan är standardvärdet 0,25 mm.",
   "binDesigner.slideTray.fitSample.tip3": "Skriv ut det med samma filament och munstycke som du ska använda till lådan.",
   "binDesigner.slideTray.fitSample.exportComplete": "Passningstest nedladdat",
-  "binDesigner.slideTray.fitSample.exportFailed": "Kunde inte exportera passningstestet"
+  "binDesigner.slideTray.fitSample.exportFailed": "Kunde inte exportera passningstestet",
+  "binDesigner.spacerDisablesDetachableFeet": "En distans behöver inbyggda fötter för att hålla ihop",
+  "binDesigner.detachableFeet": "Avtagbara fötter",
+  "binDesigner.detachableFeet.saving": "Använder {percent} % mindre material än inbyggda fötter",
+  "binDesigner.detachableFeet.pinSize": "Stiftstorlek",
+  "binDesigner.detachableFeet.pinHint": "Prova 4,9 mm först om 5,0 mm inte passar",
+  "binDesigner.detachableFeet.supersedes": "Används inte med avtagbara fötter",
+  "binDesigner.detachableFeet.unplaceable": "Ingen hel rutnätscell att sätta en fot i vid den här storleken",
+  "binDesigner.detachableFeet.summary": "{count} fötter, ø{diameter} mm stift"
 }

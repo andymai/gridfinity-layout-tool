@@ -3891,5 +3891,13 @@
   "binDesigner.slideTray.fitSample.tip2": "L'échelle va de 0,15 mm à 0,35 mm par pas de 0,05 mm ; le troisième rail correspond au défaut de 0,25 mm.",
   "binDesigner.slideTray.fitSample.tip3": "Imprimez-le avec le filament et la buse que vous utiliserez pour le bac.",
   "binDesigner.slideTray.fitSample.exportComplete": "Test d'ajustement téléchargé",
-  "binDesigner.slideTray.fitSample.exportFailed": "Impossible d'exporter le test d'ajustement"
+  "binDesigner.slideTray.fitSample.exportFailed": "Impossible d'exporter le test d'ajustement",
+  "binDesigner.spacerDisablesDetachableFeet": "Une entretoise a besoin de pieds intégrés pour tenir ensemble",
+  "binDesigner.detachableFeet": "Pieds amovibles",
+  "binDesigner.detachableFeet.saving": "Utilise {percent} % de matière en moins que des pieds intégrés",
+  "binDesigner.detachableFeet.pinSize": "Taille des ergots",
+  "binDesigner.detachableFeet.pinHint": "Essayez 4,9 mm si 5,0 mm ne rentre pas",
+  "binDesigner.detachableFeet.supersedes": "Sans effet avec des pieds amovibles",
+  "binDesigner.detachableFeet.unplaceable": "Aucune cellule entière de la grille ne peut accueillir un pied à cette taille",
+  "binDesigner.detachableFeet.summary": "{count} pieds, ergots ø{diameter} mm"
 }

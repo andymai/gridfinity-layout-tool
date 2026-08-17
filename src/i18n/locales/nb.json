@@ -3891,5 +3891,13 @@
   "binDesigner.slideTray.fitSample.tip2": "Stigen går fra 0,15 mm til 0,35 mm i trinn på 0,05 mm; tredje skinne er standard 0,25 mm.",
   "binDesigner.slideTray.fitSample.tip3": "Skriv den ut med samme filament og dyse som du skal bruke til boksen.",
   "binDesigner.slideTray.fitSample.exportComplete": "Passtest lastet ned",
-  "binDesigner.slideTray.fitSample.exportFailed": "Kunne ikke eksportere passtesten"
+  "binDesigner.slideTray.fitSample.exportFailed": "Kunne ikke eksportere passtesten",
+  "binDesigner.spacerDisablesDetachableFeet": "En avstandsholder trenger innebygde føtter for å henge sammen",
+  "binDesigner.detachableFeet": "Avtakbare føtter",
+  "binDesigner.detachableFeet.saving": "Bruker {percent} % mindre materiale enn innebygde føtter",
+  "binDesigner.detachableFeet.pinSize": "Pinnestørrelse",
+  "binDesigner.detachableFeet.pinHint": "Prøv 4,9 mm først hvis 5,0 mm ikke sitter",
+  "binDesigner.detachableFeet.supersedes": "Brukes ikke med avtakbare føtter",
+  "binDesigner.detachableFeet.unplaceable": "Ingen hel rutenettcelle å sette en fot i ved denne størrelsen",
+  "binDesigner.detachableFeet.summary": "{count} føtter, ø{diameter} mm pinner"
 }

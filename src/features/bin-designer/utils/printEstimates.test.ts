@@ -828,4 +828,56 @@ describe('printEstimates', () => {
       expect(formatFilament(1.0)).toBe('1.0m');
     });
   });
+
+  /**
+   * Ground truth measured from the real generator: the BODY plus the FEET,
+   * because that is what the user prints. Recorded rather than derived — the
+   * per-foot constants this exercises were themselves measured, so checking
+   * them against arithmetic would only prove the arithmetic.
+   */
+  describe('detachable feet — measured ground truth (±5%)', () => {
+    const ASSEMBLY_MM3: ReadonlyArray<readonly [number, number, number]> = [
+      [1, 1, 8331],
+      [3, 2, 31348],
+      [2, 4, 39931],
+      [6, 3, 67852],
+      [1, 4, 22850],
+    ];
+
+    for (const [w, d, truth] of ASSEMBLY_MM3) {
+      it(`${w}x${d}x3u assembly ≈ ${truth}mm³`, () => {
+        const volume = estimatePrint({
+          ...DEFAULT_BIN_PARAMS,
+          width: w,
+          depth: d,
+          height: 3,
+          base: { ...DEFAULT_BIN_PARAMS.base, feet: 'detachable' },
+        }).volumeMm3;
+        expect(volume).toBeGreaterThan(truth * 0.95);
+        expect(volume).toBeLessThan(truth * 1.05);
+      });
+    }
+
+    it('always costs less than the same bin with integral feet', () => {
+      for (const [w, d] of ASSEMBLY_MM3) {
+        const base = { ...DEFAULT_BIN_PARAMS, width: w, depth: d, height: 3 };
+        const integral = estimatePrint(base).volumeMm3;
+        const detachable = estimatePrint({
+          ...base,
+          base: { ...DEFAULT_BIN_PARAMS.base, feet: 'detachable' },
+        }).volumeMm3;
+        expect(detachable).toBeLessThan(integral);
+      }
+    });
+
+    it('is inert on a base with no feet to detach', () => {
+      const flat = {
+        ...DEFAULT_BIN_PARAMS,
+        base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' as const },
+      };
+      expect(estimatePrint({ ...flat, base: { ...flat.base, feet: 'detachable' } }).volumeMm3).toBe(
+        estimatePrint(flat).volumeMm3
+      );
+    });
+  });
 });

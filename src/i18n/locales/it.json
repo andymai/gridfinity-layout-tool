@@ -3891,5 +3891,13 @@
   "binDesigner.slideTray.fitSample.tip2": "La scala va da 0,15 mm a 0,35 mm a passi di 0,05 mm; la terza guida è il valore predefinito di 0,25 mm.",
   "binDesigner.slideTray.fitSample.tip3": "Stampala con lo stesso filamento e ugello che userai per il contenitore.",
   "binDesigner.slideTray.fitSample.exportComplete": "Prova di accoppiamento scaricata",
-  "binDesigner.slideTray.fitSample.exportFailed": "Impossibile esportare la prova di accoppiamento"
+  "binDesigner.slideTray.fitSample.exportFailed": "Impossibile esportare la prova di accoppiamento",
+  "binDesigner.spacerDisablesDetachableFeet": "Un distanziale ha bisogno di piedini integrati per restare unito",
+  "binDesigner.detachableFeet": "Piedini staccabili",
+  "binDesigner.detachableFeet.saving": "Usa il {percent}% di materiale in meno rispetto ai piedini integrati",
+  "binDesigner.detachableFeet.pinSize": "Misura del perno",
+  "binDesigner.detachableFeet.pinHint": "Prova prima 4,9 mm se 5,0 mm non entra",
+  "binDesigner.detachableFeet.supersedes": "Non si usa con i piedini staccabili",
+  "binDesigner.detachableFeet.unplaceable": "Nessuna cella intera della griglia può ospitare un piedino a questa misura",
+  "binDesigner.detachableFeet.summary": "{count} piedini, perni ø{diameter} mm"
 }

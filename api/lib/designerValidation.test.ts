@@ -461,6 +461,40 @@ describe('validateDesignerShare', () => {
       const result = validateDesignerShare(payload, JSON.stringify(payload).length);
       expect(result.valid).toBe(false);
     });
+
+    it('accepts both feet modes, and absent', () => {
+      for (const feet of ['integral', 'detachable', undefined]) {
+        const payload = validPayload();
+        (payload.params.base as Record<string, unknown>).feet = feet;
+        const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+        expect(result.valid).toBe(true);
+      }
+    });
+
+    // A detachable-feet bin has no socket under it at all, so falling back to
+    // 'integral' would publish a different part than the one previewed.
+    it('rejects an unknown feet mode', () => {
+      const payload = validPayload();
+      (payload.params.base as Record<string, unknown>).feet = 'welded';
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(false);
+    });
+
+    it('accepts only the offered pin diameters', () => {
+      for (const [diameter, valid] of [
+        [4.9, true],
+        [5, true],
+        [undefined, true],
+        [5.5, false],
+        [0, false],
+        ['5', false],
+      ] as Array<[unknown, boolean]>) {
+        const payload = validPayload();
+        (payload.params.base as Record<string, unknown>).feetPinDiameter = diameter;
+        const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+        expect(result.valid).toBe(valid);
+      }
+    });
   });
 
   describe('compartments validation', () => {

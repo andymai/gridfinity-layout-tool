@@ -3891,5 +3891,13 @@
   "binDesigner.slideTray.fitSample.tip2": "Žebřík jde od 0,15 mm do 0,35 mm po 0,05 mm; třetí kolejnice je výchozích 0,25 mm.",
   "binDesigner.slideTray.fitSample.tip3": "Tiskněte se stejným filamentem a tryskou, jaké použijete pro přihrádku.",
   "binDesigner.slideTray.fitSample.exportComplete": "Zkouška uložení stažena",
-  "binDesigner.slideTray.fitSample.exportFailed": "Zkoušku uložení se nepodařilo exportovat"
+  "binDesigner.slideTray.fitSample.exportFailed": "Zkoušku uložení se nepodařilo exportovat",
+  "binDesigner.spacerDisablesDetachableFeet": "Distanční vložka potřebuje pevně spojené nožičky, aby držela pohromadě",
+  "binDesigner.detachableFeet": "Odnímatelné nožičky",
+  "binDesigner.detachableFeet.saving": "Spotřebuje o {percent} % méně materiálu než pevné nožičky",
+  "binDesigner.detachableFeet.pinSize": "Průměr kolíku",
+  "binDesigner.detachableFeet.pinHint": "Pokud 5,0 mm nedosedne, zkuste nejdřív 4,9 mm",
+  "binDesigner.detachableFeet.supersedes": "Nepoužívá se s odnímatelnými nožičkami",
+  "binDesigner.detachableFeet.unplaceable": "V této velikosti není celá buňka mřížky pro nožičku",
+  "binDesigner.detachableFeet.summary": "{count} nožiček, kolíky ø{diameter} mm"
 }

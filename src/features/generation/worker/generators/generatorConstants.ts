@@ -8,7 +8,7 @@
 import { GRIDFINITY, DESIGNER_CONSTRAINTS } from '@/shared/constants/bin';
 import { OVER_TILE_MIN_MARGIN_MM } from '@/core/constants';
 import { clamp } from '@/shared/utils/math';
-import { MAGNET_FLOOR } from '@/shared/printSettings/gridfinityGeometry';
+import { MAGNET_FLOOR, MAGNET_HOLE_OFFSET_MM } from '@/shared/printSettings/gridfinityGeometry';
 
 export { MAGNET_FLOOR };
 export { baseplateFloorDepth } from '@/shared/printSettings/baseplateHeight';
@@ -74,7 +74,7 @@ export const COPLANAR_MARGIN = 1;
 export const COPLANAR_OVERLAP = 0.01;
 
 /** Distance from cell center to magnet position (Gridfinity spec, mm) */
-export const HOLE_OFFSET = 13;
+export const HOLE_OFFSET = MAGNET_HOLE_OFFSET_MM;
 
 /** Inset at pocket bottom (same taper profile as bin socket at full cell size) */
 export const INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2; // 2.95mm

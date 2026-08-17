@@ -3891,5 +3891,13 @@
   "binDesigner.slideTray.fitSample.tip2": "Die Leiter läuft von 0,15 mm bis 0,35 mm in 0,05-mm-Schritten; die dritte Schiene ist der Standard 0,25 mm.",
   "binDesigner.slideTray.fitSample.tip3": "Drucke ihn mit demselben Filament und derselben Düse wie die Box.",
   "binDesigner.slideTray.fitSample.exportComplete": "Passungstest heruntergeladen",
-  "binDesigner.slideTray.fitSample.exportFailed": "Passungstest konnte nicht exportiert werden"
+  "binDesigner.slideTray.fitSample.exportFailed": "Passungstest konnte nicht exportiert werden",
+  "binDesigner.spacerDisablesDetachableFeet": "Ein Abstandhalter braucht fest angebaute Füße, um zusammenzuhalten",
+  "binDesigner.detachableFeet": "Abnehmbare Füße",
+  "binDesigner.detachableFeet.saving": "Verbraucht {percent} % weniger Material als feste Füße",
+  "binDesigner.detachableFeet.pinSize": "Stiftgröße",
+  "binDesigner.detachableFeet.pinHint": "Wenn 5,0 mm nicht sitzt, zuerst 4,9 mm versuchen",
+  "binDesigner.detachableFeet.supersedes": "Wird mit abnehmbaren Füßen nicht verwendet",
+  "binDesigner.detachableFeet.unplaceable": "Bei dieser Größe gibt es keine ganze Rasterzelle für einen Fuß",
+  "binDesigner.detachableFeet.summary": "{count} Füße, Stifte ø{diameter} mm"
 }

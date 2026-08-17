@@ -10,6 +10,7 @@ export type FeatureKey =
   | 'base.lid'
   | 'base.spacer'
   | 'base.tile'
+  | 'base.detachableFeet'
   | 'style.slotted'
   | 'style.solid'
   | 'compartments'

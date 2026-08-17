@@ -204,6 +204,93 @@ export const DEFAULT_LIGHTWEIGHT_MODE: LightweightMode = 'interior';
  */
 export const UNDERSIDE_RELIEF_BORDER_MM = 3;
 
+/**
+ * How a bin's Gridfinity feet are joined to it.
+ *
+ *  - `integral` — the feet are part of the bin solid and print with it. Every
+ *    design that predates the setting.
+ *  - `detachable` — the bin prints flat-bottomed with pin holes through its
+ *    floor, and the feet print as separate parts pressed on afterwards.
+ *
+ * The saving is the whole point: a foot is ~7285mm³ of the ~9488mm³ each cell
+ * contributes, and detaching them removes all of it rather than the 88% an
+ * interior lite floor reaches. What makes that possible is print ORIENTATION,
+ * not the geometry — the bin's floor becomes its first layer, so nothing has to
+ * bridge the 5mm of air an omitted foot would otherwise leave under it. Feet
+ * omitted IN PLACE are unprintable at any size the saving is worth having.
+ */
+export const FEET_MODES = ['integral', 'detachable'] as const;
+
+/** How the feet are joined. See {@link FEET_MODES}. */
+export type FeetMode = (typeof FEET_MODES)[number];
+
+/** Applied when a BaseConfig's `feet` is missing. */
+export const DEFAULT_FEET_MODE: FeetMode = 'integral';
+
+/**
+ * True when the bin is actually built with detachable feet.
+ *
+ * A spacer is excluded, and not only because the constraint engine forbids the
+ * pairing: a spacer's floor is punched through every cell, and the inter-cell
+ * webbing between its shelled feet is the ONLY thing tying it together. Remove
+ * the feet as well and a multi-cell spacer is several disconnected islands
+ * rather than a solid. A socketless base is excluded for the reason it always
+ * is — there are no feet there to detach. Both guards live here rather than at
+ * each call site so a crafted payload like `{ spacer: true, feet: 'detachable' }`
+ * cannot buy through one path what another path would refuse.
+ */
+export function hasDetachableFeet(base: {
+  readonly feet?: FeetMode;
+  readonly spacer: boolean;
+  readonly style: BaseStyle;
+}): boolean {
+  return base.feet === 'detachable' && !base.spacer && !isSocketlessBase(base.style);
+}
+
+/**
+ * Pin diameters offered for the press fit, in mm.
+ *
+ * The hole is always {@link DETACHABLE_PIN_HOLE_DIAMETER_MM}, so this is an
+ * interference choice rather than a dimension: which one holds depends on the
+ * printer and the filament. Two tested values rather than a free number,
+ * because everything outside roughly 4.8-5.1mm either falls out or will not go
+ * on, and a field that accepts those is a field that ships them.
+ */
+export const DETACHABLE_PIN_DIAMETERS_MM = [4.9, 5] as const;
+
+/** Applied when a BaseConfig's `feetPinDiameter` is missing. */
+export const DEFAULT_DETACHABLE_PIN_DIAMETER_MM = 5;
+
+/** Diameter of the pin holes cut through the bin floor, in mm. */
+export const DETACHABLE_PIN_HOLE_DIAMETER_MM = 5;
+
+/**
+ * How much the pin's diameter grows and shrinks again, per layer, in mm.
+ *
+ * The pin is not a cylinder: stepping its diameter up and back down every layer
+ * lets it pop home and stay there without glue. That makes the ridge pitch a
+ * function of the SLICER's layer height, which the worker deliberately does not
+ * see — so this assumes {@link DETACHABLE_PIN_ASSUMED_LAYER_MM} and the fit
+ * degrades on any other layer height rather than failing visibly. Stated here
+ * so the assumption is one constant rather than an unwritten one.
+ */
+export const DETACHABLE_PIN_RIDGE_STEP_MM = 0.2;
+
+/** The layer height {@link DETACHABLE_PIN_RIDGE_STEP_MM} is pitched for. */
+export const DETACHABLE_PIN_ASSUMED_LAYER_MM = 0.2;
+
+/**
+ * Largest gap allowed between adjacent feet, in mm.
+ *
+ * Not a sag limit: the bin's perimeter walls are 50mm-tall beams and carry the
+ * floor between them, so four feet hold up a large bin perfectly well. It
+ * bounds how far the loaded floor can bow DOWN before it touches whatever the
+ * bin stands on and the bin starts rocking on its own floor instead of its
+ * feet. A judgement call, not a derived figure — 140mm puts a 6x3 at corners
+ * plus one mid pair and leaves a 3x2 on corners alone.
+ */
+export const MAX_FOOT_SPAN_MM = 140;
+
 /** Bin wall/style variants — single source of truth for the `BinStyle` union. */
 export const BIN_STYLES = ['standard', 'slotted', 'solid'] as const;
 
@@ -246,6 +333,24 @@ export interface BaseConfig {
    * punched through by definition.
    */
   readonly lightweightMode?: LightweightMode;
+  /**
+   * Whether the feet print with the bin or as separate parts pressed on after.
+   * Missing/undefined = `'integral'`, so every design saved before the setting
+   * existed builds byte-identical geometry — and, because
+   * `communityParamsFingerprint` hashes `params` wholesale, an always-present
+   * field would shift the fingerprint of every already-published design (the
+   * same reason {@link lightweightMode} and {@link tile} are optional).
+   *
+   * Inert on a socketless base, and refused on a spacer — see
+   * {@link hasDetachableFeet}.
+   */
+  readonly feet?: FeetMode;
+  /**
+   * Press-fit pin diameter in mm, one of {@link DETACHABLE_PIN_DIAMETERS_MM}.
+   * Read only while {@link feet} is `'detachable'`; optional for the same
+   * fingerprint reason as {@link feet} itself.
+   */
+  readonly feetPinDiameter?: number;
   /**
    * Spacer / riser mode: a floorless frame that lifts a bin so bins of
    * different heights line up flush. Feet and stacking lip are unchanged, so its
