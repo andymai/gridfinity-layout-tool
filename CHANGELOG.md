@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.418.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.418.1...gridfinity-layout-tool-v4.418.2) (2026-08-17)
+
+
+### Bug Fixes
+
+* **generation:** one answer to whether a bin has detachable feet ([#3558](https://github.com/andymai/gridfinity-layout-tool/issues/3558)) ([8ea9b79](https://github.com/andymai/gridfinity-layout-tool/commit/8ea9b79e0a838688081872ab1f6edcf5512ea0a7))
+
 ## [4.418.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.418.0...gridfinity-layout-tool-v4.418.1) (2026-08-17)
 
 
