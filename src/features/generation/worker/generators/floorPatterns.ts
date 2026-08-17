@@ -29,6 +29,8 @@ import { scoopKeepOuts } from './dividerPatterns';
 import { interiorDividerSegments } from './compartmentBuilder';
 import { filledSocketCells } from './socketBuilder';
 import { magnetPositionsForCell } from './baseplateMagnets';
+import { footPinPositions, resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
+import { DETACHABLE_PIN_HOLE_DIAMETER_MM } from '@/shared/types/bin';
 import { forEachCell } from './cellDecomposition';
 import { FLOOR_PATTERN_BORDER, floorWindowInset } from './floorPatternWindow';
 import { CLEARANCE, COPLANAR_MARGIN } from './generatorConstants';
@@ -96,6 +98,31 @@ function inflate(box: WorldKeepOut, by: number): WorldKeepOut {
  * `halfSockets` the feet subdivide but the pockets stay on the standard grid so
  * they keep mating with the baseplate.
  */
+/**
+ * Pin-recess footprints in bin-centred mm, for a detachable-feet bin.
+ *
+ * The recesses are blind, and the membrane over them is the whole reason the
+ * interior floor stays unbroken — a drainage hole cut through one opens it into
+ * the cavity and leaves that foot nothing to grip. The pins sit well inside the
+ * pattern window (5.85mm and 14.78mm from a cell centre against a 16.30mm
+ * half-span), so this is not a case the window inset already covers.
+ */
+function pinKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut[] {
+  if (!dim.detachableFeet) return [];
+  const resolved = resolveDetachableFeet(params);
+  const radius = DETACHABLE_PIN_HOLE_DIAMETER_MM / 2;
+  return resolved.placements.flatMap((foot) =>
+    footPinPositions(foot, resolved.armMm, resolved.pinDiameterMm).map((pin) => ({
+      xMin: pin.x - radius,
+      xMax: pin.x + radius,
+      yMin: pin.y - radius,
+      yMax: pin.y + radius,
+      zMin: 0,
+      zMax: 0,
+    }))
+  );
+}
+
 function attachmentKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut[] {
   if (!dim.withMagnet && !dim.withScrew) return [];
   const radius = Math.max(
@@ -219,6 +246,7 @@ export function planFloorPattern(params: BinParams, dim: BinDimensions): FloorPa
   // allocations for a result that never varies by window.
   const worldKeepOuts = [
     ...attachmentKeepOuts(params, dim),
+    ...pinKeepOuts(params, dim),
     ...standingFeatureKeepOuts(params, dim),
   ].map((k) => inflate(k, border));
 

@@ -354,6 +354,9 @@ export const shellStage: PipelineStage = {
           pinDiameterMm: resolved.pinDiameterMm,
           pinHoleDiameterMm: DETACHABLE_PIN_HOLE_DIAMETER_MM,
           floorThicknessMm: params.wallThickness,
+          // Screws only: their bore also passes through the FLOOR, so the tool
+          // this returns has to carry it. Magnets stay in the feet.
+          screw: resolved.screw,
           forExport: true,
         });
         // The feet themselves are rebuilt by the parts generator; here only

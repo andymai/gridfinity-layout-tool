@@ -52,6 +52,7 @@ function buildFeetSolids(params: BinParams, laidOut: boolean): Shape3D[] | null 
     pinDiameterMm: resolved.pinDiameterMm,
     pinHoleDiameterMm: DETACHABLE_PIN_HOLE_DIAMETER_MM,
     floorThicknessMm: params.wallThickness,
+    screw: resolved.screw,
     magnet: resolved.magnet
       ? {
           diameterMm: resolved.magnet.diameterMm,

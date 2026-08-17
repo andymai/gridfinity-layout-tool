@@ -41,6 +41,7 @@ import {
   type FootLattice,
 } from '@/features/bin-designer/types';
 import { isFractional } from '@/core/constants';
+import { isPartialMask, isRegionFilled, type CellMask } from '@/shared/utils/cellMask';
 import {
   GRIDFINITY_SPEC,
   magnetInsetFromCellEdgeMm,
@@ -426,6 +427,18 @@ export interface ResolvedDetachableFeet {
   readonly placements: readonly FootPlacement[];
   readonly armMm: number;
   readonly pinDiameterMm: number;
+  /**
+   * Screw through-holes, or `undefined` when the base carries none.
+   *
+   * A screw passes through the foot AND the bin floor, so it fastens the two
+   * together as well as fastening the bin down — which is why a screwed bin
+   * does not depend on the press fit at all. Unlike the magnet pocket this is
+   * NOT blind: a screw that stopped in the floor would fasten nothing.
+   */
+  readonly screw?: {
+    readonly diameterMm: number;
+    readonly positions: ReadonlyArray<readonly [number, number]>;
+  };
   /** Magnet pocket dimensions and positions, or `undefined` for plain feet. */
   readonly magnet?: {
     readonly diameterMm: number;
@@ -443,6 +456,21 @@ export interface ResolvedDetachableFeet {
   };
 }
 
+/** True when the cell a foot sits in survives the mask. */
+function cellIsFilled(
+  foot: FootPlacement,
+  mask: CellMask | undefined,
+  pitchX: number,
+  pitchY: number,
+  size: { readonly width: number; readonly depth: number }
+): boolean {
+  if (mask === undefined) return true;
+  const centre = footCellCentre(foot);
+  const leftUnit = (centre.x + (size.width * pitchX) / 2 - pitchX / 2) / pitchX;
+  const bottomUnit = (centre.y + (size.depth * pitchY) / 2 - pitchY / 2) / pitchY;
+  return isRegionFilled(mask, leftUnit, bottomUnit, 1, 1);
+}
+
 /** The subset of `BinParams` the feet depend on. */
 export interface DetachableFeetParams {
   readonly width: number;
@@ -452,10 +480,13 @@ export interface DetachableFeetParams {
   readonly fractionalEdgeX: 'start' | 'end';
   readonly fractionalEdgeY: 'start' | 'end';
   readonly magnetAnchor?: 'edge' | 'center';
+  /** Custom-shape mask, when the bin is not a plain rectangle. */
+  readonly cellMask?: CellMask;
   readonly base: {
     readonly style: string;
     readonly magnetDiameter: number;
     readonly magnetDepth: number;
+    readonly screwDiameter: number;
     readonly feetPinDiameter?: number;
     readonly footLatticeX?: FootLattice;
     readonly footLatticeY?: FootLattice;
@@ -467,6 +498,7 @@ export function resolveDetachableFeet(params: DetachableFeetParams): ResolvedDet
   const pitchY = params.gridUnitMmY ?? params.gridUnitMm;
   const pinDiameterMm = params.base.feetPinDiameter ?? DEFAULT_DETACHABLE_PIN_DIAMETER_MM;
   const carriesMagnet = params.base.style === 'magnet' || params.base.style === 'magnet_and_screw';
+  const carriesScrew = params.base.style === 'screw' || params.base.style === 'magnet_and_screw';
 
   // The arm is sized against the SHORTER pitch: a foot deep enough for the
   // magnet on one axis is not automatically deep enough on the other, and a
@@ -484,7 +516,7 @@ export function resolveDetachableFeet(params: DetachableFeetParams): ResolvedDet
     magnetInsetFromEdgeMm,
   });
 
-  const placements = detachableFeetPlacements({
+  const placed = detachableFeetPlacements({
     widthUnits: params.width,
     depthUnits: params.depth,
     pitchX,
@@ -496,10 +528,24 @@ export function resolveDetachableFeet(params: DetachableFeetParams): ResolvedDet
     armMm,
   });
 
+  // A custom shape removes cells, and a foot on one of them hangs under nothing:
+  // its pin holes cut empty space, so it ships as a part that cannot attach
+  // while the shape's real corner has no support. The plan is expressed in
+  // whole cells, so dropping the ones the mask does not fill is exact.
+  const placements = isPartialMask(params.cellMask)
+    ? placed.filter((foot) => cellIsFilled(foot, params.cellMask, pitchX, pitchY, params))
+    : placed;
+
   return {
     placements,
     armMm,
     pinDiameterMm,
+    screw: carriesScrew
+      ? {
+          diameterMm: params.base.screwDiameter,
+          positions: standardMagnetCorners(placements, pitchX, pitchY, params.magnetAnchor),
+        }
+      : undefined,
     magnet: carriesMagnet
       ? {
           diameterMm: params.base.magnetDiameter,

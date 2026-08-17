@@ -414,3 +414,50 @@ describe('a floor too thin to hold a pin', () => {
     }
   });
 });
+
+/**
+ * A screw fastens the bin down THROUGH its foot, so unlike the magnet pocket
+ * its bore cannot be blind: it has to leave the foot and carry on through the
+ * floor, or it fastens nothing. The integral path cuts these in
+ * `buildBaseSocket`, which the detachable branch skips entirely — so without
+ * this the screw controls stay live and produce a bin with no screw holes.
+ */
+describe('screw bases with detachable feet', () => {
+  let generateBin: (p: BinParams, cb: undefined, forExport: boolean) => MeshData;
+
+  beforeAll(async () => {
+    generateBin = (await import('./binOrchestrator')).generateBin;
+  }, 60000);
+
+  const screwed: BinParams = {
+    ...DEFAULT_BIN_PARAMS,
+    width: 2,
+    depth: 2,
+    height: 3,
+    base: { ...DEFAULT_BIN_PARAMS.base, style: 'screw', feet: 'detachable' },
+  };
+
+  /** Corners with a hole clean through the floor. */
+  const boredCount = (params: BinParams): number => {
+    const m = generateBin(params, undefined, true);
+    const { minZ } = boundingBox(m.vertices);
+    const resolved = resolveDetachableFeet(screwed);
+    if (!resolved.screw) throw new Error('expected screw positions');
+    return resolved.screw.positions.filter(
+      ([x, y]) => !isSolidThrough(m, x, y, minZ + 0.05, minZ + 1.15)
+    ).length;
+  };
+
+  it('bores through the floor once per foot, and only where a foot sits', () => {
+    // A candidate corner with no foot under it must NOT be bored: the screw
+    // would pass through the bin and out into open air.
+    const resolved = resolveDetachableFeet(screwed);
+    expect(boredCount(screwed)).toBe(resolved.placements.length);
+    expect(resolved.screw?.positions.length).toBeGreaterThan(resolved.placements.length);
+  });
+
+  it('leaves every corner solid without screws', () => {
+    const plain = { ...screwed, base: { ...screwed.base, style: 'standard' as const } };
+    expect(boredCount(plain)).toBe(0);
+  });
+});

@@ -3,10 +3,12 @@ import {
   detachableFeetPlacements,
   footArmMm,
   footPinPositions,
+  resolveDetachableFeet,
   type DetachableFeetInput,
   type FootPlacement,
 } from './detachableFeetPlan';
 import { MAX_FOOT_SPAN_MM } from '@/features/bin-designer/types';
+import { buildFullMask, type CellMask } from '@/shared/utils/cellMask';
 
 const STOCK_MAGNET_MM = 6.5;
 const PIN_MM = 5;
@@ -248,5 +250,44 @@ describe('half-offset placement', () => {
     const asGrid = plan({ widthUnits: 2.5, depthUnits: 2, latticeX: 'grid' });
     const asHalf = plan({ widthUnits: 2.5, depthUnits: 2, latticeX: 'half' });
     expect(asHalf).toEqual(asGrid);
+  });
+
+  describe('custom shapes', () => {
+    /** Mask over a `w x d` bin; `keep` is asked per GRID UNIT, not per mask cell. */
+    const makeMask = (w: number, d: number, keep: (x: number, y: number) => boolean): CellMask => {
+      const mask = buildFullMask(w, d);
+      const per = mask.cols / w;
+      const cells = mask.cells.map((_, i) => {
+        const col = i % mask.cols;
+        const row = Math.floor(i / mask.cols);
+        return keep(Math.floor(col / per), Math.floor(row / per)) ? (1 as const) : (0 as const);
+      });
+      return { ...mask, cells };
+    };
+
+    const resolveFor = (mask: CellMask) =>
+      resolveDetachableFeet({
+        width: 3,
+        depth: 3,
+        gridUnitMm: 42,
+        fractionalEdgeX: 'end',
+        fractionalEdgeY: 'end',
+        cellMask: mask,
+        base: { style: 'standard', magnetDiameter: 6.5, magnetDepth: 2, screwDiameter: 3 },
+      });
+
+    it('drops a foot whose cell the mask removed', () => {
+      // A foot under a removed cell hangs under nothing: its pin holes cut
+      // empty space, so it ships as a part that cannot attach.
+      const full = resolveFor(makeMask(3, 3, () => true));
+      const notched = resolveFor(makeMask(3, 3, (x, y) => !(x === 0 && y === 0)));
+      expect(full.placements).toHaveLength(4);
+      expect(notched.placements).toHaveLength(3);
+      expect(notched.placements.some((f) => f.x < 0 && f.y < 0)).toBe(false);
+    });
+
+    it('leaves a fully-filled mask alone', () => {
+      expect(resolveFor(makeMask(3, 3, () => true)).placements).toHaveLength(4);
+    });
   });
 });

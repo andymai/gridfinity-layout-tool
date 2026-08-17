@@ -62,6 +62,14 @@ export interface DetachableFeetOptions {
    * broken.
    */
   readonly floorThicknessMm: number;
+  /**
+   * Screw through-holes, or `undefined` for plain feet. Drilled through the
+   * foot AND the bin floor above it, so the screw clamps the two together.
+   */
+  readonly screw?: {
+    readonly diameterMm: number;
+    readonly positions: ReadonlyArray<readonly [number, number]>;
+  };
   /** Magnet pocket, or `undefined` for plain feet. */
   readonly magnet?: {
     readonly diameterMm: number;
@@ -83,6 +91,26 @@ export interface DetachableFeetGeometry {
    * describes.
    */
   readonly pinHoles: Shape3D;
+}
+
+/**
+ * The standard corner positions a given foot's footprint actually contains.
+ *
+ * One under an `L`, two under a `bar`. Shared by the magnet pocket and the
+ * screw bore so the two can never disagree about which corners a foot owns.
+ */
+function coveredCorners(
+  positions: ReadonlyArray<readonly [number, number]>,
+  p: FootPlacement,
+  centre: { x: number; y: number }
+): Array<readonly [number, number]> {
+  return positions.filter(([mx, my]) => {
+    const inX = p.dirX === 0 || Math.sign(mx - centre.x) === p.dirX;
+    const inY = p.dirY === 0 || Math.sign(my - centre.y) === p.dirY;
+    return (
+      inX && inY && Math.abs(mx - centre.x) <= p.cellW / 2 && Math.abs(my - centre.y) <= p.cellD / 2
+    );
+  });
 }
 
 /**
@@ -242,13 +270,7 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
       // construction — four on a rectangular bin against four per cell today.
       const magnet = opts.magnet;
       if (magnet) {
-        const covered = magnet.positions.filter(([mx, my]) => {
-          const dx = Math.abs(mx - centre.x);
-          const dy = Math.abs(my - centre.y);
-          const inX = p.dirX === 0 || Math.sign(mx - centre.x) === p.dirX;
-          const inY = p.dirY === 0 || Math.sign(my - centre.y) === p.dirY;
-          return inX && inY && dx <= p.cellW / 2 && dy <= p.cellD / 2;
-        });
+        const covered = coveredCorners(magnet.positions, p, centre);
         // Open at the underside, exactly as an integral foot drills it: the
         // magnet is inserted from below, so a retaining floor under it would
         // seal it out rather than in.
@@ -263,6 +285,36 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
           const drilled = unwrap(cutAll(foot, drills));
           if (drilled !== foot) foot.delete();
           foot = drilled;
+        }
+      }
+
+      // Screws go clean through: foot, then floor. Drilled after the magnet
+      // pocket so a magnet_and_screw base gets the screw bore inside the
+      // pocket, exactly as an integral foot does.
+      const screw = opts.screw;
+      if (screw) {
+        const bores = coveredCorners(screw.positions, p, centre).map(([mx, my]) =>
+          translate(
+            scope.register(
+              cylinder(screw.diameterMm / 2, SOCKET_HEIGHT + floorThicknessMm + 2 * COPLANAR_MARGIN)
+            ),
+            [mx - centre.x, my - centre.y, -SOCKET_HEIGHT - COPLANAR_MARGIN]
+          )
+        );
+        if (bores.length > 0) {
+          const bored = unwrap(cutAll(foot, bores));
+          if (bored !== foot) foot.delete();
+          foot = bored;
+        }
+        for (const [mx, my] of coveredCorners(screw.positions, p, centre)) {
+          holes.push(
+            translate(
+              scope.register(
+                cylinder(screw.diameterMm / 2, floorThicknessMm + 2 * COPLANAR_MARGIN)
+              ),
+              [mx, my, -COPLANAR_MARGIN]
+            )
+          );
         }
       }
 
