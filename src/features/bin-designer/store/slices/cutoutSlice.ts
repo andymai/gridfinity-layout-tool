@@ -12,6 +12,7 @@ import type {
   Cutout,
   CutoutArrayConfig,
   CutoutColorScope,
+  CutoutTarget,
   CutoutToggleProperties,
   ReorderDirection,
   PathPoint,
@@ -119,7 +120,7 @@ function gcMeshAssets(state: Draft<DesignerState>): void {
 }
 
 /**
- * How many more cutouts the current target will accept.
+ * How many more cutouts a target will accept.
  *
  * Only the LID is capped: `MAX_LID_CUTOUTS` bounds the boolean work against a
  * single plate, where nothing else does (the bin's array is bounded in practice
@@ -128,10 +129,23 @@ function gcMeshAssets(state: Draft<DesignerState>): void {
  * `migrateLidCutouts` truncates one on load — so without this an honest design
  * would be silently cut down somewhere the user never sees (CLAUDE.md gotcha
  * #13b: a server cap that rejects needs a client cap that refuses).
+ *
+ * Exported because a batch has to size its work BEFORE it starts. `addCutout`
+ * refusing one at a time is enough to hold the cap, but not enough for a
+ * flatten, whose first step destroys the master's repeat config: it needs to
+ * know it can finish before it begins. One definition rather than a copy in the
+ * UI, since a cap and a second reading of it are exactly what drift apart.
  */
+export function remainingCutoutCapacity(
+  target: CutoutTarget,
+  lidCutouts: readonly Cutout[] | undefined
+): number {
+  if (target !== 'lid') return Infinity;
+  return Math.max(0, MAX_LID_CUTOUTS - (lidCutouts?.length ?? 0));
+}
+
 function remainingCapacity(state: Draft<DesignerState>): number {
-  if (state.ui.cutoutTarget !== 'lid') return Infinity;
-  return Math.max(0, MAX_LID_CUTOUTS - (state.params.lid.cutouts?.length ?? 0));
+  return remainingCutoutCapacity(state.ui.cutoutTarget, state.params.lid.cutouts);
 }
 
 type Set = (fn: (state: Draft<DesignerState>) => void) => void;
@@ -456,13 +470,24 @@ export function createCutoutSlice(rawSet: Set) {
     sendToBack: (ids: readonly string[]) => reorderCutouts(ids, 'back'),
 
     // CRUD
-    addCutout: (cutout: Cutout) => {
+    /**
+     * Add one cutout, reporting whether it landed.
+     *
+     * The boolean is what a batch caller needs: a loop over this stops adding
+     * silently once the lid is full, so an import that reports its REQUESTED
+     * count tells the user it stored shapes it dropped. Callers adding a single
+     * shape can ignore it — the refusal is already visible as nothing happening.
+     */
+    addCutout: (cutout: Cutout): boolean => {
+      let added = false;
       set((state) => {
         if (remainingCapacity(state) < 1) return;
         pushHistoryEntry(state);
         const owner = cutoutOwner(state);
         owner.cutouts = [...owner.cutouts, withTopZIndex(state, cutout)];
+        added = true;
       });
+      return added;
     },
 
     /**

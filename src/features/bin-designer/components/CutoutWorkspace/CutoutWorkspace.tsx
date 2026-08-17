@@ -15,7 +15,8 @@
 
 import { useCallback, useState, useMemo, useRef, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useDesignerStore } from '@/features/bin-designer/store';
+import { useDesignerStore, remainingCutoutCapacity } from '@/features/bin-designer/store';
+import { MAX_LID_CUTOUTS } from '@/features/bin-designer/types';
 import {
   binDimensions,
   cutoutInterior,
@@ -225,15 +226,22 @@ export function CutoutWorkspace() {
   const handleFlattenArray = useCallback(
     (id: string) => {
       const master = cutouts.find((c) => c.id === id);
-      if (master?.array) {
+      const capacity = remainingCutoutCapacity(cutoutTarget, params.lid.cutouts);
+      const outcome = applyFlattenArray(id, cutouts, updateCutout, addCutout, capacity);
+      if (outcome === 'no-room') {
+        addToast(t('toast.flattenNoRoom', { max: MAX_LID_CUTOUTS }), 'error');
+        return;
+      }
+      // Tracked after the fact: a declined flatten is not a flatten, and the
+      // repeat it would have baked is still on the design.
+      if (outcome === 'flattened' && master?.array) {
         trackEvent('cutout_repeat_flattened', {
           mode: master.array.mode,
           instances: arrayInstanceCount(master.array),
         });
       }
-      applyFlattenArray(id, cutouts, updateCutout, addCutout);
     },
-    [cutouts, updateCutout, addCutout]
+    [cutouts, updateCutout, addCutout, cutoutTarget, params.lid.cutouts, addToast, t]
   );
 
   const handleMergeIntoRepeat = useCallback(

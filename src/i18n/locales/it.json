@@ -3909,5 +3909,7 @@
   "binDesigner.lid.editCutoutsHint": "Disegna forme che attraversano completamente la piastra del coperchio: una fessura erogatrice, una presa d’aria, un passaggio per cavi. Restano lontane dalla parete di accoppiamento e dalle sedi dei magneti.",
   "binDesigner.lid.editCutoutsBlocked": "Disponibile su un coperchio con superficie piana e pianta rettangolare. Una griglia di impilamento completa copre la faccia superiore; una griglia solo a bordo la lascia utilizzabile.",
   "binDesigner.cutouts.throughDepthHint": "Taglia tutti i {depth} mm della piastra.",
-  "binDesigner.lid.editCutoutsFull": "Contiene già il numero massimo di forme che un coperchio accetta ({max}). Eliminane una per aggiungerne un’altra."
+  "binDesigner.lid.editCutoutsFull": "Contiene già il numero massimo di forme che un coperchio accetta ({max}). Eliminane una per aggiungerne un’altra.",
+  "toast.cutoutsClipped": "Aggiunte {added} forme su {requested}. Un coperchio ne contiene al massimo {max}.",
+  "toast.flattenNoRoom": "Spazio insufficiente per espandere questa ripetizione. Un coperchio ne contiene al massimo {max}."
 }

@@ -20,7 +20,7 @@ interface UseCutoutTransformStartersOptions {
   readonly cutouts: readonly Cutout[];
   readonly selection: ReadonlySet<string>;
   readonly setSelection: (sel: ReadonlySet<string>) => void;
-  readonly onAdd: (cutout: Cutout) => void;
+  readonly onAdd: (cutout: Cutout) => boolean;
   readonly setMode: (mode: InteractionMode) => void;
   readonly pastDeadZoneRef: React.RefObject<boolean>;
 }

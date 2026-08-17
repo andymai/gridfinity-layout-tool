@@ -3909,5 +3909,7 @@
   "binDesigner.lid.editCutoutsHint": "Tegn former som går helt gjennom lokkplaten: en dispenserspalte, en lufteåpning, en kabelgjennomføring. De holder avstand til koblingsveggen og magnetsoklene.",
   "binDesigner.lid.editCutoutsBlocked": "Tilgjengelig på et lokk med flat topp og rektangulært omriss. Et fullt stablingsrutenett dekker toppflaten; et rutenett med bare kant lar den være brukbar.",
   "binDesigner.cutouts.throughDepthHint": "Skjærer gjennom alle {depth} mm av platen.",
-  "binDesigner.lid.editCutoutsFull": "Inneholder allerede så mange former som et lokk kan ta ({max}). Slett én for å legge til en ny."
+  "binDesigner.lid.editCutoutsFull": "Inneholder allerede så mange former som et lokk kan ta ({max}). Slett én for å legge til en ny.",
+  "toast.cutoutsClipped": "La til {added} av {requested} former. Et lokk rommer maks {max}.",
+  "toast.flattenNoRoom": "Ikke nok plass til å løse opp denne gjentakelsen. Et lokk rommer maks {max}."
 }

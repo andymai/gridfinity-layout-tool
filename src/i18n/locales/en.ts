@@ -1339,6 +1339,8 @@ const en: Record<string, string> = {
   'toast.stlImport.empty': 'STL contains no printable geometry',
   'toast.stlImport.assetLimit': 'A design can hold up to {count} imported meshes',
   'toast.svgImport.success': 'Imported {count} shape(s) from SVG',
+  'toast.cutoutsClipped': 'Added {added} of {requested} shapes. A lid holds at most {max}.',
+  'toast.flattenNoRoom': 'Not enough room to flatten this repeat. A lid holds at most {max}.',
   'toast.svgImport.parseFailed': 'Could not read the SVG file',
   'toast.svgImport.noShapes': 'No supported shapes found in SVG',
   'toast.svgImport.shapeLimitExceeded': 'SVG contains too many shapes (max 500)',

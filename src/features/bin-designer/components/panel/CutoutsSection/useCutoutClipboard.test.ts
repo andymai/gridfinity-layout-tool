@@ -27,7 +27,7 @@ function cutout(overrides: Partial<Cutout> = {}): Cutout {
  * Drives the hook the way the editor does: `cutouts` and `selection` are owned
  * outside it, so a duplicate has to be reflected back before the next call.
  */
-function harness(initial: Cutout[]) {
+function harness(initial: Cutout[], capacity = Infinity) {
   let cutouts = initial;
   let selection = new Set(initial.map((c) => c.id));
   const added: Cutout[] = [];
@@ -41,8 +41,11 @@ function harness(initial: Cutout[]) {
           selection = new Set(sel);
         },
         onAdd: (c) => {
+          // Mirrors the store: a target at its cap refuses the write and says so.
+          if (added.length >= capacity) return false;
           added.push(c);
           cutouts = [...cutouts, c];
+          return true;
         },
         binWidth: 500,
         binDepth: 500,
@@ -52,6 +55,7 @@ function harness(initial: Cutout[]) {
 
   return {
     added,
+    selection: () => selection,
     duplicate: () => {
       act(() => rendered.result.current.duplicateSelected());
       rendered.rerender({ cutouts, selection });
@@ -135,5 +139,31 @@ describe('step and repeat', () => {
     // Both originals were selected the whole time, so this was never a
     // single-shape chain; the offset stays the plain nudge.
     expect(h.added).toHaveLength(4);
+  });
+});
+
+describe('a target at its cap', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('selects only the clones that were stored', () => {
+    // Three shapes duplicated with room for two: the third is refused, and
+    // selecting its id would leave the editor holding a shape that does not
+    // exist — which the step chain then measures its next offset against.
+    const h = harness([cutout({ id: 'a' }), cutout({ id: 'b' }), cutout({ id: 'c' })], 2);
+
+    h.duplicate();
+
+    expect(h.added).toHaveLength(2);
+    expect(h.selection().size).toBe(2);
+    expect([...h.selection()]).toEqual(h.added.map((c) => c.id));
+  });
+
+  it('selects nothing when there is no room at all', () => {
+    const h = harness([cutout()], 0);
+
+    h.duplicate();
+
+    expect(h.added).toHaveLength(0);
+    expect(h.selection().size).toBe(0);
   });
 });

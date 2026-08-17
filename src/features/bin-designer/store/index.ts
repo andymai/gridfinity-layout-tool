@@ -1,4 +1,5 @@
 export { useDesignerStore } from './designer';
+export { remainingCutoutCapacity } from './slices';
 export { useCutoutSelection } from './cutoutSelection';
 export {
   subscribeToRegistry,

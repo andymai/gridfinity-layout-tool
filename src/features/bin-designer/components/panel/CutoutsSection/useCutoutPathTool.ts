@@ -34,7 +34,7 @@ interface UseCutoutPathToolOptions {
   readonly mode: InteractionMode;
   readonly setMode: (mode: InteractionMode) => void;
   readonly cutouts: readonly Cutout[];
-  readonly onAdd: (cutout: Cutout) => void;
+  readonly onAdd: (cutout: Cutout) => boolean;
   readonly onUpdate: (id: string, updates: Partial<Cutout>) => void;
   readonly setSelection: (sel: ReadonlySet<string>) => void;
   readonly setPathDrawingPreview: (next: PathDrawingPreviewState | null) => void;

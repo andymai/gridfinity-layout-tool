@@ -101,20 +101,24 @@ export function clampedDelta(
 
 /**
  * Clone cutouts, add each to the layout, and select the new set.
- * Returns the cloned cutouts (with originalId) for further use.
+ *
+ * Returns only the clones that were actually stored (with originalId). A lid at
+ * its cap refuses the tail of the batch, and selecting ids that were never added
+ * leaves the editor holding a selection of shapes that do not exist — which the
+ * step-and-repeat chain then measures its next offset against.
  */
 export function addClonedCutouts(
   originals: readonly Cutout[],
-  onAdd: (cutout: Cutout) => void,
+  onAdd: (cutout: Cutout) => boolean,
   setSelection: (sel: ReadonlySet<string>) => void,
   offsetFn?: (original: Cutout) => { x: number; y: number }
 ): readonly ClonedCutout[] {
-  const clones = cloneCutoutsWithGroups(originals, offsetFn);
-  for (const { originalId: _, ...cutout } of clones) {
-    onAdd(cutout);
-  }
-  setSelection(new Set(clones.map((c) => c.id)));
-  return clones;
+  const landed = cloneCutoutsWithGroups(originals, offsetFn).filter((clone) => {
+    const { originalId: _, ...cutout } = clone;
+    return onAdd(cutout);
+  });
+  setSelection(new Set(landed.map((c) => c.id)));
+  return landed;
 }
 
 /** Width × depth of a click-to-placed cutout, per shape (mm). */
@@ -170,20 +174,32 @@ export function flattenCutoutArray(master: Cutout): {
 
 /**
  * Look up an array master by id and bake it into independent cutouts via the
- * store callbacks. No-op when the id isn't an array master. Shared by the
- * full-screen workspace and the sidebar editor so both flatten identically.
+ * store callbacks. Shared by the full-screen workspace and the sidebar editor so
+ * both flatten identically.
+ *
+ * Returns `'flattened'`, `'not-an-array'` when the id has no repeat, or
+ * `'no-room'` when `capacity` cannot take every instance.
+ *
+ * The capacity check has to happen HERE, before the first write. `masterPatch`
+ * strips the master's repeat config, so a run that fills the lid part way
+ * through leaves the design with neither the array nor the instances it stood
+ * for: at the cap it would lose the repeat and gain nothing. Declining whole is
+ * the only outcome the user can undo by not having done it.
  */
 export function applyFlattenArray(
   id: string,
   cutouts: readonly Cutout[],
   updateCutout: (id: string, patch: Partial<Cutout>) => void,
-  addCutout: (cutout: Cutout) => void
-): void {
+  addCutout: (cutout: Cutout) => boolean,
+  capacity: number
+): 'flattened' | 'not-an-array' | 'no-room' {
   const master = cutouts.find((c) => c.id === id);
-  if (!master?.array) return;
+  if (!master?.array) return 'not-an-array';
   const { masterPatch, added } = flattenCutoutArray(master);
+  if (added.length > capacity) return 'no-room';
   updateCutout(id, masterPatch);
   for (const cutout of added) addCutout(cutout);
+  return 'flattened';
 }
 
 /** Default cutout properties shared by click-to-place and draw-to-place. */

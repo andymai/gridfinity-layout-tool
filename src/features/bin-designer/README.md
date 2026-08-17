@@ -311,7 +311,11 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
   the bin footprint. Arrays are restricted to **ungrouped, non-path** cutouts;
   `flattenCutoutArray` / `applyFlattenArray` bake instances into independent
   cutouts. Array controls (`+/-` steppers) appear in both the full-screen
-  workspace and the sidebar editor (`CutoutArrayControls`).
+  workspace and the sidebar editor (`CutoutArrayControls`). **A flatten declines
+  whole or completes whole**: its first step strips the master's repeat config,
+  so a run that fills the lid part way through would leave the design with
+  neither the array nor the instances it stood for. `applyFlattenArray` takes
+  `remainingCutoutCapacity` and returns `'no-room'` before touching anything.
 
   **The UI calls this "Repeat"** (`binDesigner.cutouts.repeat.*`). The data field
   is `array`: renaming it would change every stored design and
