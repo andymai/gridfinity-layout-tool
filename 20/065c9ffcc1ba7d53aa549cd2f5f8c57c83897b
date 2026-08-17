@@ -1,0 +1,68 @@
+src/features/bin-designer/components/preview/FeetDetachSlider/FeetDetachSlider.test.tsx
+  s_03b5e7e0a9d55f::t_0f23e910f06f2f 1-23
+src/shell/layoutExport/planLayoutBinExport.test.ts
+  s_03b5e7e0a9d55f::t_5ad0a0bd21d13f 646-657,662,667
+  s_03b5e7e0a9d55f::t_59d67a33f21d80 644-645,658-661,663-666,668-669
+src/features/bin-designer/components/preview/DetachableFeetMesh/DetachableFeetMesh.test.tsx
+  s_03b5e7e0a9d55f::t_efdd2a3f182a9a 85,95,102-103,110
+src/i18n/locales/sv.json
+  s_03b5e7e0a9d55f::t_7369f8f9d4b5f1 3902-3905
+src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.tsx
+  s_03b5e7e0a9d55f::t_8cbb6ed9b5f590 66
+  s_03b5e7e0a9d55f::t_56afaddfb58995 32,131-137,470,587-592
+  s_03b5e7e0a9d55f::t_a583e77bd81afe 593-594
+src/i18n/locales/en.ts
+  s_03b5e7e0a9d55f::t_7369f8f9d4b5f1 2207-2209
+src/i18n/locales/ko.json
+  s_03b5e7e0a9d55f::t_7369f8f9d4b5f1 3902-3905
+src/i18n/locales/zh-CN.json
+  s_03b5e7e0a9d55f::t_7369f8f9d4b5f1 3902-3905
+src/i18n/locales/es.json
+  s_03b5e7e0a9d55f::t_7369f8f9d4b5f1 3902-3905
+src/i18n/locales/fr.json
+  s_03b5e7e0a9d55f::t_7369f8f9d4b5f1 3902-3905
+src/i18n/locales/it.json
+  s_03b5e7e0a9d55f::t_7369f8f9d4b5f1 3902-3905
+src/i18n/locales/ja.json
+  s_03b5e7e0a9d55f::t_7369f8f9d4b5f1 3902-3905
+src/i18n/locales/nl.json
+  s_03b5e7e0a9d55f::t_7369f8f9d4b5f1 3902-3905
+src/i18n/locales/pt-BR.json
+  s_03b5e7e0a9d55f::t_7369f8f9d4b5f1 3902-3905
+src/i18n/locales/cs.json
+  s_03b5e7e0a9d55f::t_7369f8f9d4b5f1 3902-3905
+src/features/bin-designer/components/preview/DetachableFeetMesh/DetachableFeetMesh.tsx
+  s_03b5e7e0a9d55f::t_efdd2a3f182a9a 30-31,38,72,77
+src/features/bin-designer/components/preview/FeetDetachSlider/FeetDetachSlider.tsx
+  s_03b5e7e0a9d55f::t_efdd2a3f182a9a 1-33
+src/i18n/locales/pl.json
+  s_03b5e7e0a9d55f::t_7369f8f9d4b5f1 3902-3905
+src/i18n/locales/uk.json
+  s_03b5e7e0a9d55f::t_7369f8f9d4b5f1 3902-3905
+src/i18n/locales/de.json
+  s_03b5e7e0a9d55f::t_7369f8f9d4b5f1 3902-3905
+src/features/bin-designer/components/preview/FeetDetachSlider/index.ts
+  s_03b5e7e0a9d55f::t_efdd2a3f182a9a 1
+src/features/bin-designer/components/preview/LidExplodeSlider/LidExplodeSlider.tsx
+  s_03b5e7e0a9d55f::t_efdd2a3f182a9a 41-47,50,130,191,201
+src/i18n/locales/nb.json
+  s_03b5e7e0a9d55f::t_7369f8f9d4b5f1 3902-3905
+src/features/bin-designer/components/preview/index.ts
+  s_03b5e7e0a9d55f::t_efdd2a3f182a9a 6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "20065c9ffcc1ba7d53aa549cd2f5f8c57c83897b",
+  "prompts": {},
+  "sessions": {
+    "s_03b5e7e0a9d55f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4687ee82-5ba8-4c81-b904-aed25616f64f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
