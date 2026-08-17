@@ -1586,3 +1586,69 @@ describe('cutoutSlice - lid target, repeat merge', () => {
     expect(useDesignerStore.getState().params.lid.cutouts).toBeUndefined();
   });
 });
+
+describe('cutoutSlice - lid array collapses to absent', () => {
+  beforeEach(() => {
+    useDesignerStore.setState(useDesignerStore.getInitialState());
+  });
+
+  const rect = (id: string): Cutout => ({
+    id,
+    shape: 'rectangle',
+    x: 0,
+    y: 0,
+    width: 10,
+    depth: 10,
+    cutDepth: 5,
+    rotation: 0,
+    cornerRadius: 0,
+    label: '',
+    groupId: null,
+  });
+
+  function lidCutouts(): readonly Cutout[] | undefined {
+    return useDesignerStore.getState().params.lid.cutouts;
+  }
+
+  beforeEach(() => {
+    useDesignerStore.getState().setCutoutEditorOpen(true, 'lid');
+  });
+
+  // `[]` and absent serialize differently, and the difference re-hashes the
+  // design — enough to break the moderation tombstone on an already-published
+  // one. Each path that can empty the array is checked separately because the
+  // invariant is only worth having if it holds on all of them.
+  it('after removing the last cutout', () => {
+    useDesignerStore.getState().addCutout(rect('a'));
+    expect(lidCutouts()).toHaveLength(1);
+    useDesignerStore.getState().removeCutout('a');
+    expect(lidCutouts()).toBeUndefined();
+  });
+
+  it('after clearing', () => {
+    useDesignerStore.getState().addCutout(rect('a'));
+    useDesignerStore.getState().clearCutouts();
+    expect(lidCutouts()).toBeUndefined();
+  });
+
+  it('after a batch removal empties it', () => {
+    useDesignerStore.getState().addCutout(rect('a'));
+    useDesignerStore.getState().addCutout(rect('b'));
+    useDesignerStore.getState().removeCutoutsBatch(['a', 'b']);
+    expect(lidCutouts()).toBeUndefined();
+  });
+
+  it('and when a producer merely reads the array without changing it', () => {
+    // `cutoutOwner` materializes `[]` to let the actions read and write
+    // unconditionally; a producer that then bails must not leave it behind.
+    useDesignerStore.getState().showAllCutouts();
+    expect(lidCutouts()).toBeUndefined();
+  });
+
+  it('but a non-empty array is left alone', () => {
+    useDesignerStore.getState().addCutout(rect('a'));
+    useDesignerStore.getState().addCutout(rect('b'));
+    useDesignerStore.getState().removeCutout('a');
+    expect(lidCutouts()?.map((c) => c.id)).toEqual(['b']);
+  });
+});

@@ -189,7 +189,31 @@ function nextTopZIndexIn(list: readonly Cutout[]): number {
   return list.reduce((m, c) => Math.max(m, c.zIndex ?? 0), -1) + 1;
 }
 
-export function createCutoutSlice(set: Set) {
+export function createCutoutSlice(rawSet: Set) {
+  /**
+   * Every producer in this slice, wrapped so an emptied lid array collapses back
+   * to absent.
+   *
+   * `LidConfig.cutouts` is absent rather than `[]` when there are none, because
+   * `communityParamsFingerprint` hashes the whole params object and keys the
+   * moderation tombstone — an always-present field re-hashes every design already
+   * published. Removing the last shape, clearing, or a batch delete would each
+   * leave `[]`, and so would `cutoutOwner` materializing the array for a producer
+   * that then bailed out.
+   *
+   * Enforced here rather than at the ~40 assignment sites for the same reason
+   * `lipHasSupport` is derived once: an action added later cannot reintroduce the
+   * empty array by forgetting about it.
+   */
+  const set: Set = (fn) =>
+    rawSet((state) => {
+      fn(state);
+      const lid = state.params.lid;
+      if (lid.cutouts !== undefined && lid.cutouts.length === 0) {
+        delete lid.cutouts;
+      }
+    });
+
   // Core actions
 
   /**
