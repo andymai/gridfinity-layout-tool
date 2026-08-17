@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.419.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.419.0...gridfinity-layout-tool-v4.419.1) (2026-08-17)
+
+
+### Bug Fixes
+
+* **bin-designer:** finish the detachable feet's remaining surfaces ([#3565](https://github.com/andymai/gridfinity-layout-tool/issues/3565)) ([9ff7678](https://github.com/andymai/gridfinity-layout-tool/commit/9ff76784b5bde901e66e21317e0fea2d539f216e))
+* **generation:** honour hidden cutouts in the bin's cavity builder ([#3568](https://github.com/andymai/gridfinity-layout-tool/issues/3568)) ([00d9812](https://github.com/andymai/gridfinity-layout-tool/commit/00d9812838a64291099d515e0056c5addeb756d3)), closes [#3561](https://github.com/andymai/gridfinity-layout-tool/issues/3561)
+
 ## [4.419.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.418.2...gridfinity-layout-tool-v4.419.0) (2026-08-17)
 
 
