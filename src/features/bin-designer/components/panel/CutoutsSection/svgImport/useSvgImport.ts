@@ -8,6 +8,7 @@
 import { useCallback, useRef, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { MAX_LID_CUTOUTS } from '@/features/bin-designer/types';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
 import { isOk } from '@/core/result';
@@ -84,12 +85,13 @@ export function useSvgImport(): UseSvgImportReturn {
         };
 
         // Wrap all additions in a single undo transaction
+        let added = 0;
         startTransaction();
         try {
           // Largest first so big outlines land underneath the detail they
           // enclose — `addCutout` stacks each new shape on top.
           for (const spec of byDescendingArea(specs)) {
-            addCutout(specToCutout(spec, hydrationOptions));
+            if (addCutout(specToCutout(spec, hydrationOptions))) added += 1;
           }
         } finally {
           commitTransaction();
@@ -102,12 +104,26 @@ export function useSvgImport(): UseSvgImportReturn {
         trackEvent('svg_import', {
           success: true,
           shape_count: specs.length,
+          added_count: added,
           has_rects: hasRects,
           has_circles: hasCircles,
           has_paths: hasPaths,
         });
 
-        addToast(t('toast.svgImport.success', { count: specs.length }), 'success');
+        // A lid at its cap refuses the tail of the batch, so reporting
+        // `specs.length` would claim shapes the design never stored.
+        if (added < specs.length) {
+          addToast(
+            t('toast.cutoutsClipped', {
+              added,
+              requested: specs.length,
+              max: MAX_LID_CUTOUTS,
+            }),
+            'error'
+          );
+          return;
+        }
+        addToast(t('toast.svgImport.success', { count: added }), 'success');
       };
 
       reader.onerror = () => {

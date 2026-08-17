@@ -4,6 +4,7 @@ import {
   defaultPlaceSize,
   resizeKeepingCenter,
   flattenCutoutArray,
+  applyFlattenArray,
   translateCutoutPreview,
 } from './cutoutHelpers';
 import type { Cutout } from '@/features/bin-designer/types';
@@ -108,6 +109,89 @@ describe('flattenCutoutArray', () => {
     expect(added.every((a) => a.array === undefined)).toBe(true);
     expect(new Set(added.map((a) => a.id)).size).toBe(2); // unique ids
     expect(added.every((a) => a.id !== 'm')).toBe(true);
+  });
+});
+
+describe('applyFlattenArray', () => {
+  const gridMaster = (cols: number): Cutout => ({
+    id: 'm',
+    shape: 'circle',
+    x: 0,
+    y: 0,
+    width: 8,
+    depth: 8,
+    cutDepth: 5,
+    rotation: 0,
+    cornerRadius: 0,
+    label: '',
+    groupId: null,
+    array: {
+      mode: 'grid',
+      cols,
+      rows: 1,
+      pitchX: 10,
+      pitchY: 10,
+      count: cols,
+      radius: 20,
+      startAngle: 0,
+      rotateToCenter: true,
+    },
+  });
+
+  /** Records what the flatten did, so a half-application is visible. */
+  function spy(capacity: number) {
+    const patched: Array<Partial<Cutout>> = [];
+    const added: Cutout[] = [];
+    return {
+      patched,
+      added,
+      updateCutout: (_id: string, patch: Partial<Cutout>) => void patched.push(patch),
+      addCutout: (c: Cutout) => {
+        if (added.length >= capacity) return false;
+        added.push(c);
+        return true;
+      },
+    };
+  }
+
+  it('bakes every instance when there is room', () => {
+    const s = spy(Infinity);
+    const master = gridMaster(3);
+
+    expect(applyFlattenArray('m', [master], s.updateCutout, s.addCutout, Infinity)).toBe(
+      'flattened'
+    );
+    expect(s.patched).toEqual([{ array: undefined }]);
+    expect(s.added).toHaveLength(2);
+  });
+
+  it('declines whole rather than stripping the repeat it cannot replace', () => {
+    // The master patch is destructive: run it with room for one of the two
+    // instances and the design keeps neither the array nor what it stood for.
+    const s = spy(1);
+    const master = gridMaster(3);
+
+    expect(applyFlattenArray('m', [master], s.updateCutout, s.addCutout, 1)).toBe('no-room');
+    expect(s.patched).toEqual([]);
+    expect(s.added).toEqual([]);
+  });
+
+  it('declines at the cap instead of losing the repeat for nothing', () => {
+    const s = spy(0);
+    const master = gridMaster(3);
+
+    expect(applyFlattenArray('m', [master], s.updateCutout, s.addCutout, 0)).toBe('no-room');
+    expect(s.patched).toEqual([]);
+  });
+
+  it('reports a shape that has no repeat', () => {
+    const s = spy(Infinity);
+    const plain = { ...gridMaster(3), array: undefined };
+
+    expect(applyFlattenArray('m', [plain], s.updateCutout, s.addCutout, Infinity)).toBe(
+      'not-an-array'
+    );
+    expect(s.patched).toEqual([]);
   });
 });
 

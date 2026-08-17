@@ -35,6 +35,7 @@ export function useScanImport(): UseScanImportReturn {
     (specs: readonly ParsedCutoutSpec[], cutDepth: number = DEFAULT_CUT_DEPTH): number => {
       const hydrationOptions = { cutDepth, idFactory: () => crypto.randomUUID() };
 
+      let added = 0;
       startTransaction();
       try {
         // Same stacking rule as the SVG path: a scan can trace an
@@ -45,21 +46,25 @@ export function useScanImport(): UseScanImportReturn {
           // chamfer (both applied at generation time, like parametric cutouts, and
           // adjustable via the Fit controls). The traced outline itself stays the
           // tool's exact silhouette.
-          if (cutout.shape === 'path') {
-            addCutout({
-              ...cutout,
-              clearance: SCAN_DEFAULT_CLEARANCE_MM,
-              chamferWidth: defaultEntryChamfer(Math.min(cutout.width, cutout.depth), cutDepth),
-            });
-          } else {
-            addCutout(cutout);
-          }
+          const stored =
+            cutout.shape === 'path'
+              ? addCutout({
+                  ...cutout,
+                  clearance: SCAN_DEFAULT_CLEARANCE_MM,
+                  chamferWidth: defaultEntryChamfer(Math.min(cutout.width, cutout.depth), cutDepth),
+                })
+              : addCutout(cutout);
+          if (stored) added += 1;
         }
       } finally {
         commitTransaction();
       }
 
-      return specs.length;
+      // The count STORED, not the count asked for. The scan entry point is
+      // hidden while the lid is the target, so nothing refuses today, but a
+      // caller that toasts this number must not be the thing that has to
+      // remember why it happened to be right.
+      return added;
     },
     [addCutout, startTransaction, commitTransaction]
   );

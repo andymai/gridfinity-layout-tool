@@ -64,7 +64,7 @@ interface UseCutoutPointerHandlersOptions {
   readonly rulerZoomRef: React.RefObject<number>;
   readonly pastDeadZoneRef: React.RefObject<boolean>;
   readonly commitPath: (points: readonly PathPoint[]) => void;
-  readonly onAdd: (cutout: Cutout) => void;
+  readonly onAdd: (cutout: Cutout) => boolean;
   readonly onUpdate: (id: string, updates: Partial<Cutout>) => void;
   readonly onUpdateBatch?: (updates: ReadonlyMap<string, Partial<Cutout>>) => void;
   readonly commitTransaction?: () => void;

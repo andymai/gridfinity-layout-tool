@@ -7,7 +7,9 @@
 
 import { useCallback, useState, useRef, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useDesignerStore } from '@/features/bin-designer/store';
+import { useDesignerStore, remainingCutoutCapacity } from '@/features/bin-designer/store';
+import { MAX_LID_CUTOUTS } from '@/features/bin-designer/types';
+import { useToastStore } from '@/core/store/toast';
 import {
   binDimensions,
   cutoutInterior,
@@ -56,6 +58,7 @@ export function CutoutEditor() {
     unlockCutouts,
     startTransaction,
     commitTransaction,
+    cutoutTarget,
   } = useDesignerStore(
     useShallow((s) => ({
       params: s.params,
@@ -78,6 +81,7 @@ export function CutoutEditor() {
       unlockCutouts: s.unlockCutouts,
       startTransaction: s.startTransaction,
       commitTransaction: s.commitTransaction,
+      cutoutTarget: s.ui.cutoutTarget,
     }))
   );
 
@@ -100,9 +104,17 @@ export function CutoutEditor() {
   const [gridSize, setGridSize] = useState(0.5);
   const [fitCue, setFitCue] = useState<FitCue>(null);
 
+  const t = useTranslation();
+  const addToast = useToastStore((s) => s.addToast);
+
   const handleFlattenArray = useCallback(
-    (id: string) => applyFlattenArray(id, cutouts, updateCutout, addCutout),
-    [cutouts, updateCutout, addCutout]
+    (id: string) => {
+      const capacity = remainingCutoutCapacity(cutoutTarget, params.lid.cutouts);
+      if (applyFlattenArray(id, cutouts, updateCutout, addCutout, capacity) === 'no-room') {
+        addToast(t('toast.flattenNoRoom', { max: MAX_LID_CUTOUTS }), 'error');
+      }
+    },
+    [cutouts, updateCutout, addCutout, cutoutTarget, params.lid.cutouts, addToast, t]
   );
 
   const {
@@ -169,7 +181,6 @@ export function CutoutEditor() {
     meshAssets: params.meshAssets,
   });
 
-  const t = useTranslation();
   const { triggerImport: triggerSvgImport } = useSvgImport();
   const stlImport = useStlImport();
   const scanEnabled = useFeatureFlag('scan_with_phone');

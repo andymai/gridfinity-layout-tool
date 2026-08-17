@@ -3909,5 +3909,7 @@
   "binDesigner.lid.editCutoutsHint": "Dibuja formas que atraviesen por completo la placa de la tapa: una ranura dispensadora, una ventilación, un paso de cable. Se mantienen alejadas de la pared de encaje y de los soportes de imán.",
   "binDesigner.lid.editCutoutsBlocked": "Disponible en una tapa con parte superior plana y contorno rectangular. Una rejilla de apilado completa cubre la cara superior; una rejilla de solo borde la deja utilizable.",
   "binDesigner.cutouts.throughDepthHint": "Corta los {depth} mm completos de la placa.",
-  "binDesigner.lid.editCutoutsFull": "Contiene el máximo de formas que admite una tapa ({max}). Elimina una para añadir otra."
+  "binDesigner.lid.editCutoutsFull": "Contiene el máximo de formas que admite una tapa ({max}). Elimina una para añadir otra.",
+  "toast.cutoutsClipped": "Se añadieron {added} de {requested} formas. Una tapa admite como máximo {max}.",
+  "toast.flattenNoRoom": "No hay espacio suficiente para expandir esta repetición. Una tapa admite como máximo {max}."
 }

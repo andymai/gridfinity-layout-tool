@@ -3909,5 +3909,7 @@
   "binDesigner.lid.editCutoutsHint": "Teken vormen die helemaal door de dekselplaat gaan: een uitgifteslot, een ventilatieopening, een kabeldoorvoer. Ze blijven weg van de koppelwand en de magneetsokkels.",
   "binDesigner.lid.editCutoutsBlocked": "Beschikbaar op een deksel met een platte bovenkant en een rechthoekige voetafdruk. Een volledig stapelraster bedekt het bovenvlak; een raster met alleen een rand laat het bruikbaar.",
   "binDesigner.cutouts.throughDepthHint": "Snijdt door alle {depth} mm van de plaat.",
-  "binDesigner.lid.editCutoutsFull": "Bevat al het maximale aantal vormen dat een deksel aankan ({max}). Verwijder er een om er een toe te voegen."
+  "binDesigner.lid.editCutoutsFull": "Bevat al het maximale aantal vormen dat een deksel aankan ({max}). Verwijder er een om er een toe te voegen.",
+  "toast.cutoutsClipped": "{added} van {requested} vormen toegevoegd. Een deksel bevat maximaal {max}.",
+  "toast.flattenNoRoom": "Niet genoeg ruimte om deze herhaling uit te klappen. Een deksel bevat maximaal {max}."
 }

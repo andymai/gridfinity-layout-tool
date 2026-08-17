@@ -223,7 +223,8 @@ export interface DesignerState {
   setCellMask: (mask: CellMask | undefined) => void;
 
   // Cutout actions
-  addCutout: (cutout: Cutout) => void;
+  /** Returns whether the cutout landed — false when the lid is at its cap. */
+  addCutout: (cutout: Cutout) => boolean;
   addMeshCutout: (cutout: Cutout, asset: MeshAsset) => void;
   removeCutout: (id: string) => void;
   updateCutout: (id: string, updates: Partial<Cutout>) => void;
