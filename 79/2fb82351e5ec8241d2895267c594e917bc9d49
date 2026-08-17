@@ -1,0 +1,44 @@
+src/shared/utils/detachableFeetPlan.ts
+  s_03b5e7e0a9d55f::t_cdf5c2464f778b 326-335
+  s_03b5e7e0a9d55f::t_010569b1627cad 76-86,315-316,379-396
+  s_03b5e7e0a9d55f::t_afdaefc85cd005 325
+src/features/generation/worker/generators/detachableFeet.kernel.test.ts
+  s_03b5e7e0a9d55f::t_20b1666a4d10e7 82-83,221-222
+src/features/bin-designer/utils/printEstimates.ts
+  s_03b5e7e0a9d55f::t_80ed7b8bad52cb 33-34,37-38
+  s_03b5e7e0a9d55f::t_bf6f12db709413 168-181
+src/shared/printSettings/index.ts
+  s_03b5e7e0a9d55f::t_80ed7b8bad52cb 126-127
+src/features/bin-designer/utils/printEstimates.test.ts
+  s_03b5e7e0a9d55f::t_398ed560769267 831-879
+  s_f8aaefb1c7f39c::t_3285df14713759 880-882
+src/shared/printSettings/standardBinVolume.ts
+  s_03b5e7e0a9d55f::t_cdf5c2464f778b 64-112
+src/features/generation/worker/generators/detachableFeetBuilder.ts
+  s_03b5e7e0a9d55f::t_e2402dfddba45e 139-153,169-170,172
+  s_f8aaefb1c7f39c::t_4ba49870eb16f1 173-177
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "792fb82351e5ec8241d2895267c594e917bc9d49",
+  "prompts": {},
+  "sessions": {
+    "s_03b5e7e0a9d55f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4687ee82-5ba8-4c81-b904-aed25616f64f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_f8aaefb1c7f39c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7ddb4d7c-3588-4b53-b2b5-6e3771a362fd",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
