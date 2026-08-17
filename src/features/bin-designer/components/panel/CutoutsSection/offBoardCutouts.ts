@@ -1,27 +1,54 @@
 /**
- * Off-board cutout detection + recovery.
+ * Detection + recovery for cutouts the generator will clip.
  *
- * Cutouts are stored in absolute interior-mm and are never auto-rescaled when
- * the bin is resized, so shrinking the footprint can strand a cutout past the
- * board edge. The mesh builder silently clips that overhang, so the editor
- * surfaces it instead: flag the strays and offer a one-click clamp back in.
+ * Cutouts are stored in absolute mm and are never auto-rescaled when the board
+ * changes, so shrinking the footprint can strand one past the edge. The builder
+ * silently clips whatever overhangs, so the editor surfaces it instead: flag the
+ * strays and offer a one-click move back in.
+ *
+ * A board comes in three shapes, and all three are the same question — is any
+ * part of this shape somewhere the cut will not reach:
+ *
+ * - a plain rectangle (the bin's interior),
+ * - a cell mask (a custom bin outline), where a bounding box is a fast accept
+ *   only, since an L-shaped cutout nested in an L-shaped bin has a box that
+ *   spans the notch (`maskFit`),
+ * - the lid's window (`lidWindowFit`), a ROUNDED rectangle with a keep-out disc
+ *   at each retention magnet. A hole over a boss opens its magnet pocket, which
+ *   is invisible to any check on the lid alone: the solid stays watertight, the
+ *   lid just stops holding the bin.
  *
  * A cutout is treated as its set of expanded array instances (just itself when
  * there is no array), so an array whose outer instances spill past the edge is
- * flagged even when the master fits. Footprints use the same `getCutoutBounds`
- * placement validation uses (true vertex bounds for paths), and a custom
- * (masked) footprint defers to the outline containment in `cutoutFitsInMask` —
- * a bounding box would flag an L-shaped cutout nested in an L-shaped bin.
+ * flagged even when the master fits.
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
 import type { CellMask } from '@/shared/utils/cellMask';
+import type { LidCutoutWindow } from '@/shared/utils/lidCutoutPlan';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
 import { translateCutout } from './cutoutHelpers';
 import { translatePathPoints } from './pathGeometry';
 import { getCutoutBounds, cutoutFitsInMask, type MaskCellSize } from './maskFit';
+import { cutoutFitsInLidWindow, lidWindowOffset } from './lidWindowFit';
 import type { Bounds } from './geometryCore';
+
+/**
+ * The area a cutout may occupy.
+ *
+ * `lidWindow` wins when present and carries its own spans, so `width`/`depth`
+ * are the plain-rectangle fallback rather than a second description of the same
+ * area that could disagree with it.
+ */
+export interface CutoutBoard {
+  readonly width: number;
+  readonly depth: number;
+  readonly mask?: CellMask;
+  readonly cellSize?: MaskCellSize;
+  readonly lidWindow?: LidCutoutWindow;
+  readonly meshAssets?: Readonly<Record<string, MeshAsset>>;
+}
 
 /**
  * Tolerance (mm) — mirrors the interaction clamps so a flush edge isn't flagged.
@@ -54,36 +81,27 @@ function unionBounds(boundsList: readonly Bounds[]): Bounds {
   return { minX, minY, maxX, maxY };
 }
 
-/** True when any instance of the cutout falls outside the (optionally masked) board. */
-export function isCutoutOffBoard(
-  cutout: Cutout,
-  binWidth: number,
-  binDepth: number,
-  mask?: CellMask,
-  cellSize?: MaskCellSize,
-  meshAssets?: Readonly<Record<string, MeshAsset>>
-): boolean {
-  const instances = expandCutoutArray(cutout);
-  // Custom (masked) footprint: an instance inside the bounding rectangle can
-  // still overhang the polygon, so defer to the containment check placements use.
-  if (mask && cellSize) {
-    return instances.some((inst) => !cutoutFitsInMask(inst, mask, cellSize, meshAssets));
+/** Whether one instance sits entirely inside the board. */
+function instanceFits(inst: Cutout, board: CutoutBoard): boolean {
+  if (board.lidWindow) {
+    return cutoutFitsInLidWindow(inst, board.lidWindow, board.meshAssets);
   }
-  return instances.some((inst) => boundsOutsideRect(getCutoutBounds(inst), binWidth, binDepth));
+  if (board.mask && board.cellSize) {
+    return cutoutFitsInMask(inst, board.mask, board.cellSize, board.meshAssets);
+  }
+  return !boundsOutsideRect(getCutoutBounds(inst), board.width, board.depth);
 }
 
-/** Ids of every cutout stranded past the current board footprint. */
-export function getOffBoardCutoutIds(
-  cutouts: readonly Cutout[],
-  binWidth: number,
-  binDepth: number,
-  mask?: CellMask,
-  cellSize?: MaskCellSize,
-  meshAssets?: Readonly<Record<string, MeshAsset>>
-): Set<string> {
+/** True when any instance of the cutout falls outside the board. */
+export function isCutoutOffBoard(cutout: Cutout, board: CutoutBoard): boolean {
+  return expandCutoutArray(cutout).some((inst) => !instanceFits(inst, board));
+}
+
+/** Ids of every cutout the generator would clip on the current board. */
+export function getOffBoardCutoutIds(cutouts: readonly Cutout[], board: CutoutBoard): Set<string> {
   const ids = new Set<string>();
   for (const c of cutouts) {
-    if (isCutoutOffBoard(c, binWidth, binDepth, mask, cellSize, meshAssets)) ids.add(c.id);
+    if (isCutoutOffBoard(c, board)) ids.add(c.id);
   }
   return ids;
 }
@@ -146,23 +164,20 @@ function maskOffset(
 
 /**
  * Translation that brings a stray cutout (and all its array instances) back
- * inside the board. Returns `null` when no move is needed or — for a masked
- * footprint — no valid placement exists (the cutout stays flagged for manual
+ * inside the board. Returns `null` when no move is needed or — for a masked or
+ * lid board — no valid placement exists (the cutout stays flagged for manual
  * repair). Path vertices move in lockstep with `x`/`y`.
  */
-export function clampCutoutToBoard(
-  cutout: Cutout,
-  binWidth: number,
-  binDepth: number,
-  mask?: CellMask,
-  cellSize?: MaskCellSize,
-  meshAssets?: Readonly<Record<string, MeshAsset>>
-): Partial<Cutout> | null {
+export function clampCutoutToBoard(cutout: Cutout, board: CutoutBoard): Partial<Cutout> | null {
   const instances = expandCutoutArray(cutout);
-  const offset =
-    mask && cellSize
-      ? maskOffset(instances, mask, cellSize, meshAssets)
-      : rectOffset(instances.map(getCutoutBounds), binWidth, binDepth);
+  let offset: { dx: number; dy: number } | null;
+  if (board.lidWindow) {
+    offset = lidWindowOffset(instances, board.lidWindow, board.meshAssets);
+  } else if (board.mask && board.cellSize) {
+    offset = maskOffset(instances, board.mask, board.cellSize, board.meshAssets);
+  } else {
+    offset = rectOffset(instances.map(getCutoutBounds), board.width, board.depth);
+  }
   if (!offset) return null;
   const { dx, dy } = offset;
   if (Math.abs(dx) < EPSILON && Math.abs(dy) < EPSILON) return null;
@@ -176,16 +191,12 @@ export function clampCutoutToBoard(
 /** Position updates for every off-board cutout that a clamp can move (empty when none). */
 export function clampOffBoardCutouts(
   cutouts: readonly Cutout[],
-  binWidth: number,
-  binDepth: number,
-  mask?: CellMask,
-  cellSize?: MaskCellSize,
-  meshAssets?: Readonly<Record<string, MeshAsset>>
+  board: CutoutBoard
 ): Map<string, Partial<Cutout>> {
   const updates = new Map<string, Partial<Cutout>>();
   for (const c of cutouts) {
-    if (!isCutoutOffBoard(c, binWidth, binDepth, mask, cellSize, meshAssets)) continue;
-    const moved = clampCutoutToBoard(c, binWidth, binDepth, mask, cellSize, meshAssets);
+    if (!isCutoutOffBoard(c, board)) continue;
+    const moved = clampCutoutToBoard(c, board);
     if (moved) updates.set(c.id, moved);
   }
   return updates;

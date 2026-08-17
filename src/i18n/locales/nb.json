@@ -509,7 +509,7 @@
   "binDesigner.cutoutEditor.lock": "Lås",
   "binDesigner.cutoutEditor.locked": "Låst",
   "binDesigner.cutoutEditor.multiSelectToolbar": "Valg-handlinger",
-  "binDesigner.cutoutEditor.offBoardWarning": "{count} utskjæring(er) utenfor brettet",
+  "binDesigner.cutoutEditor.offBoardWarning": "{count} utskjæring(er) blir beskåret",
   "binDesigner.cutoutEditor.quickstart.dismiss": "Forstått",
   "binDesigner.cutoutEditor.quickstart.precision": "Smarte hjelpelinjer — fest til rutenett, linjaler og andre utsnitt",
   "binDesigner.cutoutEditor.quickstart.repeat": "Velg 3 eller flere like utskjæringer for å gjøre dem til én matrise",

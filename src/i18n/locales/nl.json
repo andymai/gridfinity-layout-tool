@@ -509,7 +509,7 @@
   "binDesigner.cutoutEditor.lock": "Vergrendelen",
   "binDesigner.cutoutEditor.locked": "Vergrendeld",
   "binDesigner.cutoutEditor.multiSelectToolbar": "Selectie-acties",
-  "binDesigner.cutoutEditor.offBoardWarning": "{count} uitsparing(en) buiten het bord",
+  "binDesigner.cutoutEditor.offBoardWarning": "{count} uitsparing(en) worden bijgesneden",
   "binDesigner.cutoutEditor.quickstart.dismiss": "Begrepen",
   "binDesigner.cutoutEditor.quickstart.precision": "Slimme hulplijnen — snap naar raster, linialen en andere uitsnijdingen",
   "binDesigner.cutoutEditor.quickstart.repeat": "Selecteer 3 of meer gelijke uitsparingen om er één reeks van te maken",

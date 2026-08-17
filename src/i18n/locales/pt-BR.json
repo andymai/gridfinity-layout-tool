@@ -509,7 +509,7 @@
   "binDesigner.cutoutEditor.lock": "Bloquear",
   "binDesigner.cutoutEditor.locked": "Bloqueado",
   "binDesigner.cutoutEditor.multiSelectToolbar": "Ações de seleção",
-  "binDesigner.cutoutEditor.offBoardWarning": "{count} recorte(s) fora da placa",
+  "binDesigner.cutoutEditor.offBoardWarning": "{count} recorte(s) serão cortados",
   "binDesigner.cutoutEditor.quickstart.dismiss": "Entendi",
   "binDesigner.cutoutEditor.quickstart.precision": "Guias inteligentes — encaixe na grade, réguas e outros recortes",
   "binDesigner.cutoutEditor.quickstart.repeat": "Selecione 3 ou mais recortes iguais para transformá-los em uma matriz",

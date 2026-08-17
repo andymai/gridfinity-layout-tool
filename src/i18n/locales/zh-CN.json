@@ -509,7 +509,7 @@
   "binDesigner.cutoutEditor.lock": "锁定",
   "binDesigner.cutoutEditor.locked": "已锁定",
   "binDesigner.cutoutEditor.multiSelectToolbar": "选择操作",
-  "binDesigner.cutoutEditor.offBoardWarning": "{count} 个挖槽在画板之外",
+  "binDesigner.cutoutEditor.offBoardWarning": "{count} 个挖槽将被裁剪",
   "binDesigner.cutoutEditor.quickstart.dismiss": "知道了",
   "binDesigner.cutoutEditor.quickstart.precision": "智能参考线 — 对齐到网格、标尺和其他挖槽",
   "binDesigner.cutoutEditor.quickstart.repeat": "选择 3 个或更多相同的挖槽，即可合并为一个阵列",

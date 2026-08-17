@@ -509,7 +509,7 @@
   "binDesigner.cutoutEditor.lock": "Sperren",
   "binDesigner.cutoutEditor.locked": "Gesperrt",
   "binDesigner.cutoutEditor.multiSelectToolbar": "Auswahlaktionen",
-  "binDesigner.cutoutEditor.offBoardWarning": "{count} Aussparung(en) außerhalb der Platte",
+  "binDesigner.cutoutEditor.offBoardWarning": "{count} Aussparung(en) werden beschnitten",
   "binDesigner.cutoutEditor.quickstart.dismiss": "Verstanden",
   "binDesigner.cutoutEditor.quickstart.precision": "Intelligente Hilfslinien — am Raster, an Linealen und an anderen Ausschnitten einrasten",
   "binDesigner.cutoutEditor.quickstart.repeat": "Wähle 3 oder mehr gleiche Ausschnitte, um daraus eine Anordnung zu machen",

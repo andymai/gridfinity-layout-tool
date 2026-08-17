@@ -509,7 +509,7 @@
   "binDesigner.cutoutEditor.lock": "Uzamknout",
   "binDesigner.cutoutEditor.locked": "Uzamčeno",
   "binDesigner.cutoutEditor.multiSelectToolbar": "Akce výběru",
-  "binDesigner.cutoutEditor.offBoardWarning": "{count} výřezů mimo desku",
+  "binDesigner.cutoutEditor.offBoardWarning": "{count} výřezů bude oříznuto",
   "binDesigner.cutoutEditor.quickstart.dismiss": "Rozumím",
   "binDesigner.cutoutEditor.quickstart.precision": "Chytrá vodítka — přichytávání k mřížce, pravítka a další výřezy",
   "binDesigner.cutoutEditor.quickstart.repeat": "Vyberte 3 a více shodných výřezů a spojte je do jednoho opakování",

@@ -509,7 +509,7 @@
   "binDesigner.cutoutEditor.lock": "Blocca",
   "binDesigner.cutoutEditor.locked": "Bloccato",
   "binDesigner.cutoutEditor.multiSelectToolbar": "Azioni di selezione",
-  "binDesigner.cutoutEditor.offBoardWarning": "{count} ritagli fuori dal pannello",
+  "binDesigner.cutoutEditor.offBoardWarning": "{count} ritagli verranno tagliati",
   "binDesigner.cutoutEditor.quickstart.dismiss": "Capito",
   "binDesigner.cutoutEditor.quickstart.precision": "Guide intelligenti: aggancio alla griglia, ai righelli e agli altri ritagli",
   "binDesigner.cutoutEditor.quickstart.repeat": "Seleziona 3 o più intagli identici per trasformarli in una serie",

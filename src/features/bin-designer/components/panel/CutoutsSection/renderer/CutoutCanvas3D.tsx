@@ -16,6 +16,7 @@ import type {
   PathPoint,
 } from '@/features/bin-designer/types';
 import type { CellMask } from '@/shared/utils/cellMask';
+import type { LidCutoutWindow } from '@/shared/utils/lidCutoutPlan';
 import type { TaperBandSides } from '@/features/bin-designer/utils/binDimensions';
 import type { ResizeHandle, InteractionMode, PreviewMap } from '../useCutoutInteraction';
 import type { FitCue } from '../cutoutSectionVisibility';
@@ -69,6 +70,8 @@ export interface CutoutCanvas3DProps {
    * different frame from the bin's interior. Absent on the bin's own board.
    */
   readonly referenceOutline?: { readonly width: number; readonly depth: number } | null;
+  /** The lid's board, when that is what is being drawn on: rounded, with magnet keep-outs. */
+  readonly lidWindow?: LidCutoutWindow | null;
   readonly canvasWidth: number;
   readonly canvasHeight: number;
   readonly selection: ReadonlySet<string>;
@@ -130,6 +133,7 @@ export function CutoutCanvas3D({
   cellMask,
   taperBand,
   referenceOutline,
+  lidWindow,
   canvasWidth,
   canvasHeight,
   selection,
@@ -316,6 +320,7 @@ export function CutoutCanvas3D({
         cellMask={cellMask}
         taperBand={taperBand}
         referenceOutline={referenceOutline}
+        lidWindow={lidWindow}
         binColor={binColor}
         selection={selection}
         offBoardIds={offBoardIds}

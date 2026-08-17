@@ -27,7 +27,10 @@ interface BinSizeSectionProps {
   /**
    * Bin size that would fit every stray, or `null` when growing can't clear the
    * warning (past `MAX_DIMENSION`, a custom footprint, or a stray hanging past
-   * the origin edge). `null` hides the action rather than growing partway.
+   * the origin edge). `null` hides the action rather than growing partway, and
+   * says so. `undefined` means growing is not the mechanism on this board at all
+   * (the lid), where explaining that the bin can't grow far enough would be a
+   * false reason for a shape that is simply lying on a magnet boss.
    */
   readonly growTarget?: GrowTarget | null;
   /** Resize the bin to {@link growTarget}. */
