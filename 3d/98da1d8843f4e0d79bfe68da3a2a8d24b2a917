@@ -1,0 +1,45 @@
+src/shared/utils/detachableFeetPlan.test.ts
+  s_03b5e7e0a9d55f::t_f40e60c5277c39 13-19,55,64-73,75-79
+  s_03b5e7e0a9d55f::t_04c2f3f6d5ffeb 98-99
+  s_03b5e7e0a9d55f::t_5a9e66ac450882 9
+  s_03b5e7e0a9d55f::t_6c24a46135ff7e 1-8,10-12,20-54,56-63,74,80-97,100-206
+src/features/bin-designer/types/base.ts
+  s_03b5e7e0a9d55f::t_a443eea45f3281 336-353
+  s_03b5e7e0a9d55f::t_1328ddbe1527ce 286-288
+  s_03b5e7e0a9d55f::t_e15f0140a73804 255-257
+  s_03b5e7e0a9d55f::t_7544a9c534db6e 207-254,258-285,289-293
+src/features/generation/worker/generators/generatorConstants.ts
+  s_03b5e7e0a9d55f::t_cec5667281bb46 77
+  s_03b5e7e0a9d55f::t_36be6262789c62 11
+src/shared/utils/detachableFeetPlan.ts
+  s_03b5e7e0a9d55f::t_463488aad624d4 181
+  s_03b5e7e0a9d55f::t_cfdf89e9b8b873 169,175-176
+  s_03b5e7e0a9d55f::t_5a9e66ac450882 38
+  s_03b5e7e0a9d55f::t_5981439689229d 255-257
+  s_03b5e7e0a9d55f::t_2e40e2d92be0e9 1-37,39-77,86-106,114-116,119-121,123,125-128,130-132,136,139-163,165-166,170-171,173-174,177-180,182-202,204-233,237-254,258-299
+  s_03b5e7e0a9d55f::t_01a558fe3f6221 129,133-135,137-138
+  s_03b5e7e0a9d55f::t_71078ab8d705c0 203
+  s_03b5e7e0a9d55f::t_057edbfc0f3b08 78-85
+  s_03b5e7e0a9d55f::t_8651c53a95e6bb 234-236
+  s_03b5e7e0a9d55f::t_15afc4a149c30a 107-113,117-118,122,124
+  s_03b5e7e0a9d55f::t_59e5cfe55119b2 164,167-168,172
+src/shared/printSettings/gridfinityGeometry.ts
+  s_03b5e7e0a9d55f::t_b7459c24bbc455 82-89
+  s_03b5e7e0a9d55f::t_62a5bfb31ba1f4 81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "3d98da1d8843f4e0d79bfe68da3a2a8d24b2a917",
+  "prompts": {},
+  "sessions": {
+    "s_03b5e7e0a9d55f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4687ee82-5ba8-4c81-b904-aed25616f64f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
