@@ -25,6 +25,7 @@ import {
   LidMesh,
   StackPlateMesh,
   SlideTrayMesh,
+  DetachableFeetMesh,
   LabelPlateMeshes,
   LidGuideLine,
   LidExplodeSlider,
@@ -447,6 +448,15 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
                 mechanism is the point, and how far it stands proud of the rim
                 is only obvious when you can see it sitting there. */}
               <SlideTrayMesh
+                color={previewColor}
+                lidOffsetMm={lidOffsetMm}
+                wireframe={wireframe}
+                xray={xray}
+              />
+              {/* Detachable feet, assembled under the bin. Shown in place because
+                a flat-bottomed body on its own reads as a bin missing its base;
+                the explode slider drops them to show they come off. */}
+              <DetachableFeetMesh
                 color={previewColor}
                 lidOffsetMm={lidOffsetMm}
                 wireframe={wireframe}

@@ -655,7 +655,7 @@ describe('useBaseSection — base-only bin residue', () => {
       // that ends up back where it started must carry no trace of the visit.
       const { result } = renderHook(() => useBaseSection());
       act(() => result.current.handlers.toggleDetachableFeet());
-      act(() => result.current.handlers.setPinDiameter(4.9));
+      act(() => result.current.handlers.setPinDiameter(2.9));
       act(() => result.current.handlers.toggleDetachableFeet());
       const base = useDesignerStore.getState().params.base;
       expect('feet' in base).toBe(false);

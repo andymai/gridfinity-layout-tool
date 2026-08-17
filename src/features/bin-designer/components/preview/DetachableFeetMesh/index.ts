@@ -1,0 +1,1 @@
+export { DetachableFeetMesh } from './DetachableFeetMesh';

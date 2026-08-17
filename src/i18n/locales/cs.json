@@ -3896,7 +3896,7 @@
   "binDesigner.detachableFeet": "Odnímatelné nožičky",
   "binDesigner.detachableFeet.saving": "Spotřebuje o {percent} % méně materiálu než pevné nožičky",
   "binDesigner.detachableFeet.pinSize": "Průměr kolíku",
-  "binDesigner.detachableFeet.pinHint": "Pokud 5,0 mm nedosedne, zkuste nejdřív 4,9 mm",
+  "binDesigner.detachableFeet.pinHint": "Pokud větší kolík nedosedne, zkuste nejdřív menší",
   "binDesigner.detachableFeet.supersedes": "Nepoužívá se s odnímatelnými nožičkami",
   "binDesigner.detachableFeet.unplaceable": "V této velikosti není celá buňka mřížky pro nožičku",
   "binDesigner.detachableFeet.summary": "{count} nožiček, kolíky ø{diameter} mm"

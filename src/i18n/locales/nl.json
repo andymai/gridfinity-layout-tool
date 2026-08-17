@@ -3896,7 +3896,7 @@
   "binDesigner.detachableFeet": "Afneembare voetjes",
   "binDesigner.detachableFeet.saving": "Gebruikt {percent}% minder materiaal dan vaste voetjes",
   "binDesigner.detachableFeet.pinSize": "Pengrootte",
-  "binDesigner.detachableFeet.pinHint": "Probeer eerst 4,9 mm als 5,0 mm niet past",
+  "binDesigner.detachableFeet.pinHint": "Probeer eerst de kleinste pen als de grootste niet past",
   "binDesigner.detachableFeet.supersedes": "Wordt niet gebruikt bij afneembare voetjes",
   "binDesigner.detachableFeet.unplaceable": "Geen hele rastercel waar een voetje in past bij dit formaat",
   "binDesigner.detachableFeet.summary": "{count} voetjes, pennen van ø{diameter} mm"

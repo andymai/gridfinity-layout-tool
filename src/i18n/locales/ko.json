@@ -3896,7 +3896,7 @@
   "binDesigner.detachableFeet": "분리형 발",
   "binDesigner.detachableFeet.saving": "일체형 발보다 재료를 {percent}% 적게 사용합니다",
   "binDesigner.detachableFeet.pinSize": "핀 크기",
-  "binDesigner.detachableFeet.pinHint": "5.0mm가 들어가지 않으면 4.9mm를 먼저 시도하세요",
+  "binDesigner.detachableFeet.pinHint": "큰 핀이 들어가지 않으면 작은 핀을 먼저 시도하세요",
   "binDesigner.detachableFeet.supersedes": "분리형 발에서는 사용하지 않습니다",
   "binDesigner.detachableFeet.unplaceable": "이 크기에서는 발을 놓을 온전한 그리드 칸이 없습니다",
   "binDesigner.detachableFeet.summary": "발 {count}개, ø{diameter}mm 핀"

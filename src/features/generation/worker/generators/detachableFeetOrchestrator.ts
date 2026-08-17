@@ -75,6 +75,16 @@ function buildFeetSolids(params: BinParams, laidOut: boolean): Shape3D[] | null 
   });
 }
 
+/**
+ * The feet as solids, positioned under the bin.
+ *
+ * For the STEP compound, which holds bin + companions as separate solids in one
+ * assembly. Caller owns and must delete them.
+ */
+export function buildAssembledFeetSolids(params: BinParams): Shape3D[] | null {
+  return buildFeetSolids(params, false);
+}
+
 /** Feet meshed where they sit under the bin, for the assembled preview. */
 export function generateDetachableFeetMesh(
   params: BinParams,

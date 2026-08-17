@@ -77,7 +77,7 @@ const VALID_FOOT_LATTICES = ['grid', 'half'] as const;
 const VALID_LIGHTWEIGHT_MODES = ['interior', 'underside'] as const;
 // Mirrors `FEET_MODES` and `DETACHABLE_PIN_DIAMETERS_MM` in the same file.
 const VALID_FEET_MODES = ['integral', 'detachable'] as const;
-const VALID_PIN_DIAMETERS = [4.9, 5] as const;
+const VALID_PIN_DIAMETERS = [2.9, 3] as const;
 const VALID_LABEL_TAB_SUPPORTS = ['bracket', 'solid', 'fillet'] as const;
 // Mirrors `LabelTabMode` in `src/features/bin-designer/types/index.ts`.
 const VALID_LABEL_TAB_MODES = ['text', 'socket'] as const;

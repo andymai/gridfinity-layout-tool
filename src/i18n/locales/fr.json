@@ -3896,7 +3896,7 @@
   "binDesigner.detachableFeet": "Pieds amovibles",
   "binDesigner.detachableFeet.saving": "Utilise {percent} % de matière en moins que des pieds intégrés",
   "binDesigner.detachableFeet.pinSize": "Taille des ergots",
-  "binDesigner.detachableFeet.pinHint": "Essayez 4,9 mm si 5,0 mm ne rentre pas",
+  "binDesigner.detachableFeet.pinHint": "Essayez d'abord le petit ergot si le grand ne rentre pas",
   "binDesigner.detachableFeet.supersedes": "Sans effet avec des pieds amovibles",
   "binDesigner.detachableFeet.unplaceable": "Aucune cellule entière de la grille ne peut accueillir un pied à cette taille",
   "binDesigner.detachableFeet.summary": "{count} pieds, ergots ø{diameter} mm"

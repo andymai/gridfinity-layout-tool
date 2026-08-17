@@ -197,6 +197,15 @@ export function runGeneration(
         }
       : undefined;
 
+    const feet = meshData.detachableFeetMesh
+      ? {
+          vertices: maybeCopy(meshData.detachableFeetMesh.vertices),
+          normals: maybeCopy(meshData.detachableFeetMesh.normals),
+          indices: maybeCopy(meshData.detachableFeetMesh.indices),
+          triangleCount: meshData.detachableFeetMesh.triangleCount,
+        }
+      : undefined;
+
     // Plates are a variable-length set, unlike the fixed lid/stack/connector
     // companions — each carries its own buffers plus its seated pose.
     const labelPlates = meshData.labelPlates
@@ -265,6 +274,14 @@ export function runGeneration(
             connectorKeyTriangleCount: connectorKey.triangleCount,
           }
         : {}),
+      ...(feet
+        ? {
+            detachableFeetVertices: feet.vertices,
+            detachableFeetNormals: feet.normals,
+            detachableFeetIndices: feet.indices,
+            detachableFeetTriangleCount: feet.triangleCount,
+          }
+        : {}),
       ...(labelPlates ? { labelPlates } : {}),
       ...(meshData.labelTextOverflow ? { labelTextOverflow: meshData.labelTextOverflow } : {}),
     };
@@ -296,6 +313,9 @@ export function runGeneration(
         slideTray.indices.buffer,
         slideTray.edgeVertices.buffer
       );
+    }
+    if (feet) {
+      transfer.push(feet.vertices.buffer, feet.normals.buffer, feet.indices.buffer);
     }
     if (connectorKey) {
       transfer.push(

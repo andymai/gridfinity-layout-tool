@@ -36,6 +36,7 @@ export function meshDataByteSize(mesh: MeshData): number {
   let bytes = partBytes(mesh);
   if (mesh.coarseLOD) bytes += partBytes(mesh.coarseLOD);
   if (mesh.lidMesh) bytes += partBytes(mesh.lidMesh);
+  if (mesh.detachableFeetMesh) bytes += partBytes(mesh.detachableFeetMesh);
   if (mesh.stackPlateMesh) bytes += partBytes(mesh.stackPlateMesh);
   if (mesh.slideTrayMesh) bytes += partBytes(mesh.slideTrayMesh);
   if (mesh.connectorKeyMesh) bytes += partBytes(mesh.connectorKeyMesh);

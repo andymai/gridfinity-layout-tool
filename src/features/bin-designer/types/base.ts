@@ -252,17 +252,24 @@ export function hasDetachableFeet(base: {
  *
  * The hole is always {@link DETACHABLE_PIN_HOLE_DIAMETER_MM}, so this is an
  * interference choice rather than a dimension: which one holds depends on the
- * printer and the filament. Two tested values rather than a free number,
- * because everything outside roughly 4.8-5.1mm either falls out or will not go
- * on, and a field that accepts those is a field that ships them.
+ * printer and the filament. Two values rather than a free number, because
+ * either side of that pair the pin falls out or will not go on, and a field
+ * that accepts those is a field that ships them.
+ *
+ * Sized against the joint rather than convention. A pin is a LOCATING feature
+ * here: the holes are blind, so engagement is `wallThickness` minus the
+ * membrane — 0.8mm on a stock floor — and no diameter makes a joint that
+ * shallow hold by depth. What a wider pin does buy is a hole that eats the arm
+ * it sits in, and 3mm against a 12.45mm arm leaves 4.7mm of wall on each side
+ * while keeping most of the grip circumference.
  */
-export const DETACHABLE_PIN_DIAMETERS_MM = [4.9, 5] as const;
+export const DETACHABLE_PIN_DIAMETERS_MM = [2.9, 3] as const;
 
 /** Applied when a BaseConfig's `feetPinDiameter` is missing. */
-export const DEFAULT_DETACHABLE_PIN_DIAMETER_MM = 5;
+export const DEFAULT_DETACHABLE_PIN_DIAMETER_MM = 3;
 
 /** Diameter of the pin holes cut into the underside of the bin floor, in mm. */
-export const DETACHABLE_PIN_HOLE_DIAMETER_MM = 5;
+export const DETACHABLE_PIN_HOLE_DIAMETER_MM = 3;
 
 /**
  * Floor left intact above a pin hole, in mm.

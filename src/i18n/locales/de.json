@@ -3896,7 +3896,7 @@
   "binDesigner.detachableFeet": "Abnehmbare Füße",
   "binDesigner.detachableFeet.saving": "Verbraucht {percent} % weniger Material als feste Füße",
   "binDesigner.detachableFeet.pinSize": "Stiftgröße",
-  "binDesigner.detachableFeet.pinHint": "Wenn 5,0 mm nicht sitzt, zuerst 4,9 mm versuchen",
+  "binDesigner.detachableFeet.pinHint": "Wenn der größere Stift nicht sitzt, zuerst den kleineren versuchen",
   "binDesigner.detachableFeet.supersedes": "Wird mit abnehmbaren Füßen nicht verwendet",
   "binDesigner.detachableFeet.unplaceable": "Bei dieser Größe gibt es keine ganze Rasterzelle für einen Fuß",
   "binDesigner.detachableFeet.summary": "{count} Füße, Stifte ø{diameter} mm"

@@ -3896,7 +3896,7 @@
   "binDesigner.detachableFeet": "Odczepiane nóżki",
   "binDesigner.detachableFeet.saving": "Zużywa o {percent}% mniej materiału niż nóżki wbudowane",
   "binDesigner.detachableFeet.pinSize": "Rozmiar kołka",
-  "binDesigner.detachableFeet.pinHint": "Jeśli 5,0 mm nie wchodzi, spróbuj najpierw 4,9 mm",
+  "binDesigner.detachableFeet.pinHint": "Jeśli większy kołek nie wchodzi, spróbuj najpierw mniejszego",
   "binDesigner.detachableFeet.supersedes": "Nieużywane przy odczepianych nóżkach",
   "binDesigner.detachableFeet.unplaceable": "Przy tym rozmiarze nie ma całej komórki siatki na nóżkę",
   "binDesigner.detachableFeet.summary": "Nóżki: {count}, kołki ø{diameter} mm"

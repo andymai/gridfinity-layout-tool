@@ -3896,7 +3896,7 @@
   "binDesigner.detachableFeet": "Pés destacáveis",
   "binDesigner.detachableFeet.saving": "Usa {percent}% menos material do que pés integrados",
   "binDesigner.detachableFeet.pinSize": "Tamanho do pino",
-  "binDesigner.detachableFeet.pinHint": "Tente 4,9 mm primeiro se 5,0 mm não encaixar",
+  "binDesigner.detachableFeet.pinHint": "Tente o pino menor primeiro se o maior não encaixar",
   "binDesigner.detachableFeet.supersedes": "Não usado com pés destacáveis",
   "binDesigner.detachableFeet.unplaceable": "Não há célula inteira da grade para um pé neste tamanho",
   "binDesigner.detachableFeet.summary": "{count} pés, pinos de ø{diameter} mm"

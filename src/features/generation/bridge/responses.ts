@@ -163,6 +163,11 @@ export interface MeshResultResponse {
   readonly connectorKeyNormals?: Float32Array;
   readonly connectorKeyIndices?: Uint32Array;
   readonly connectorKeyTriangleCount?: number;
+  /** Detachable feet, assembled under the bin — present only when it has them. */
+  readonly detachableFeetVertices?: Float32Array;
+  readonly detachableFeetNormals?: Float32Array;
+  readonly detachableFeetIndices?: Uint32Array;
+  readonly detachableFeetTriangleCount?: number;
   /**
    * Swappable label plates with their seated poses (preview only). A set
    * rather than flat fields because the count varies with the design; the

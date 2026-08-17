@@ -29,7 +29,10 @@ import { exportDividers, exportDividerPiecesSeparately } from '../generators/div
 import { buildUniqueDividerPieces } from '../generators/dividerBuilder';
 import { pitchFromParams } from '../generators/gridPitch';
 import { exportLid, exportStackPlate } from '../generators/lidOrchestrator';
-import { exportDetachableFeet } from '../generators/detachableFeetOrchestrator';
+import {
+  buildAssembledFeetSolids,
+  exportDetachableFeet,
+} from '../generators/detachableFeetOrchestrator';
 import { exportSlideTray } from '../generators/slideOrchestrator';
 import { exportSlideFitSample } from '../generators/slideFitSample';
 import type { FaceGroupData } from '@/shared/types/generation';
@@ -37,7 +40,7 @@ import { buildLid, buildStackPlate } from '../generators/lidBuilder';
 import { lidAnchorZ } from '../generators/lidConstants';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { LID_FIT_CLEARANCE, resolveLidCavityExtraMm } from '@/shared/types/bin';
-import { shouldGenerateLid } from '@/shared/types/bin';
+import { hasDetachableFeet, shouldGenerateLid } from '@/shared/types/bin';
 import { runExport, reportProgress, classifyExportError } from './workerContext';
 
 export async function handleExport(message: ExportMessage): Promise<void> {
@@ -247,8 +250,13 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
       // Lid emits a separate solid alongside the bin; included as its own
       // labeled piece for STL/3MF and folded into the STEP compound below.
       const hasLid = shouldGenerateLid(params);
+      // Feet are a separate PART, so they belong in the same gate as dividers
+      // and the lid. Left out, a plain bin with detachable feet takes the
+      // bin-only early return below and its feet are silently dropped from the
+      // export — the same trap the preview handler's tray comment records.
+      const hasFeet = hasDetachableFeet(params.base);
 
-      if (!hasDividers && !hasLid) {
+      if (!hasDividers && !hasLid && !hasFeet) {
         reportProgress(requestId, 'merge', 1);
         return {
           pieces: [{ data: binResult.data, label: 'bin' }] as CombinedExportPiece[],
@@ -291,6 +299,10 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         // assembly, at the same lift as the lid. buildStackPlate returns null
         // unless the lid opted into separateStackPlate.
         let stackPlateSolid = hasLid ? buildStackPlate(params) : null;
+        // Separate solids inside the compound, never fused into the bin: a STEP
+        // assembly is exactly the right shape for parts that ship together and
+        // are pressed on afterwards.
+        const feetSolids = buildAssembledFeetSolids(params) ?? [];
         try {
           if (lidSolid) {
             const positioned = translate(lidSolid, [0, 0, lidZ]);
@@ -307,6 +319,7 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
             ...dividerSolids,
             ...(lidSolid ? [lidSolid] : []),
             ...(stackPlateSolid ? [stackPlateSolid] : []),
+            ...feetSolids,
           ]);
           const blob = unwrap(exportSTEP(assembly));
 
@@ -319,6 +332,7 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
           };
         } finally {
           for (const d of dividerSolids) d.delete();
+          for (const f of feetSolids) f.delete();
           lidSolid?.delete();
           stackPlateSolid?.delete();
         }
