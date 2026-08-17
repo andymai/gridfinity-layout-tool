@@ -2137,9 +2137,9 @@ const en: Record<string, string> = {
   'binDesigner.wallThickness.2.6': 'Maximum rigidity for large bins',
   'binDesigner.wallThickness.nozzleTip':
     'For best results, use a multiple of your nozzle size (e.g., 1.2mm = 3× 0.4mm nozzle)',
-  'binDesigner.flatFloor': 'Flat base (no socket)',
+  'binDesigner.flatFloor': 'Flat base',
   'binDesigner.flatFloorDisablesAttachment': 'Not available with flat base',
-  'binDesigner.lidBottom': 'Lid-compatible bottom',
+  'binDesigner.lidBottom': 'Lid base',
   'binDesigner.lid.section.grip': 'Lid grip',
   'binDesigner.lid.gripHint':
     'A well-fitting lid can be hard to get off again. This removes a little material where the lid meets the bin, so there is something to get a nail or a fingertip under.',
@@ -2169,15 +2169,15 @@ const en: Record<string, string> = {
     'Removes the stacking lip across the same span so a fingertip gets under the lid, and eases the click rails there. A bin stacked on top has nothing to locate against along that stretch.',
   'binDesigner.lid.section.tray': 'Organiser tray',
   'binDesigner.lid.matchingTrayHint':
-    'A lid keeps dust out; a tray keeps things from sliding. This starts a new design sized to this bin, with a lid-compatible bottom already set up.',
+    'A lid keeps dust out; a tray keeps things from sliding. This starts a new design sized to this bin, with a lid base already set up.',
   'binDesigner.lid.createMatchingTray': 'Create matching tray…',
   'binDesigner.lid.matchingTrayName': 'Organiser tray',
   'binDesigner.lidBottom.hint':
     'The underside becomes a lid instead of a Gridfinity base, so this bin sits on top of another one as an organiser tray. Match its width, depth and grid to the bin below.',
   'binDesigner.lidBottom.extraHeight': 'Clearance above the bin below',
-  'binDesigner.lidBaseDisablesAttachment': 'Not available with a lid-compatible bottom',
-  'binDesigner.lidBaseDisablesHalfSockets': 'A lid-compatible bottom has no sockets',
-  'binDesigner.lidBaseDisablesShelling': 'Nothing to shell through on a lid-compatible bottom',
+  'binDesigner.lidBaseDisablesAttachment': 'Not available on a lid base',
+  'binDesigner.lidBaseDisablesHalfSockets': 'A lid base has no sockets',
+  'binDesigner.lidBaseDisablesShelling': 'Nothing to shell through on a lid base',
   'binDesigner.halfSocketsDisablesLidBase': 'Not available with half sockets',
   'binDesigner.lightweightDisablesLidBase': 'Not available with a lightweight base',
   'binDesigner.spacerDisablesLidBase': 'Not available on a spacer',
@@ -2966,13 +2966,40 @@ const en: Record<string, string> = {
     'Hollows each foot from the inside, so the grid shape shows through the bin floor. Saves the most filament, but small or flat items can settle into the recesses.',
   'binDesigner.lightweightMode.underside.hint':
     'Hollows each foot from below and leaves the bin floor flat, so nothing can fall into it. Finger scoops and drainage holes still work.',
-  'binDesigner.spacer': 'Spacer (no floor)',
+  'binDesigner.spacer': 'Spacer',
   'binDesigner.spacerHint':
     'Turns the bin into an open riser you stack under another bin, so bins of different heights finish flush. Its height counts like a bin of the same size — a 2u spacer under a 2u bin reaches the top of a 4u one.',
   'binDesigner.tile': 'Base only',
   'binDesigner.tileHint':
     'Removes the walls and keeps the feet and the floor, so the bin is just its Gridfinity base. It still locks into a baseplate. Keep the stacking lip for a raised edge that still stacks and takes the colours, or clear it for a flat plate.',
   'binDesigner.base.floorPattern': 'Drainage holes',
+  'binDesigner.base.bodyType': 'Body type',
+  'binDesigner.base.bodyType.standard': 'Standard',
+  'binDesigner.base.bodyType.standard.description':
+    'Feet, floor and walls: the ordinary Gridfinity bin',
+  'binDesigner.base.bodyType.flat.description': 'Sits flat instead of locking into a baseplate',
+  'binDesigner.base.bodyType.spacer.description':
+    'An open riser with no floor, to bring a bin up flush',
+  'binDesigner.base.bodyType.tile.description':
+    'Just the Gridfinity base: feet and floor, no walls',
+  'binDesigner.base.bodyType.tray.description': 'Its underside is a lid, so it sits on another bin',
+  'binDesigner.base.section.stacking': 'Stacking',
+  'binDesigner.base.section.mounting': 'Mounting',
+  'binDesigner.base.section.feet': 'Feet',
+  'binDesigner.base.section.floor': 'Floor',
+  'binDesigner.base.stackingLip.hint': "Lets another bin's feet sit on top of this one",
+  'binDesigner.base.magnetHoles': 'Magnet holes',
+  'binDesigner.base.magnetDiameter': 'Magnet diameter',
+  'binDesigner.base.magnetDepth': 'Magnet depth',
+  'binDesigner.base.magnetSummary': 'ø{diameter}mm × {depth}mm deep',
+  'binDesigner.base.screwHoles': 'Screw holes',
+  'binDesigner.base.screwDiameter': 'Screw diameter',
+  'binDesigner.base.summary.magnets': '{diameter}mm magnets',
+  'binDesigner.base.summary.screws': 'M{diameter} screws',
+  'binDesigner.lightweight.useUnderside': 'Use underside relief',
+  'binDesigner.group.finishing': 'Finishing',
+  'binDesigner.group.modified': 'Changed from defaults',
+  'binDesigner.finishing.summary.units': '{grid}mm grid · {height}mm height',
   'binDesigner.base.floorPattern.shape': 'Hole shape',
   'binDesigner.base.floorPattern.hint':
     'Perforates the floor and the feet below it, so water and dust fall straight through',

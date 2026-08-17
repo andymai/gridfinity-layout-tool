@@ -9,7 +9,8 @@
  */
 
 import { useTranslation } from '@/i18n';
-import { Badge, Button } from '@/design-system';
+import { Badge } from '@/design-system';
+import { ModeCard } from '../shared';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { getDrawnCompartmentIds } from '@/features/bin-designer/utils/bentoDraw';
@@ -162,45 +163,21 @@ export function InteriorModeCard({ card, isExpanded, onSelect }: InteriorModeCar
   const config = MODE_CONFIG[card];
 
   return (
-    <div
-      className={`
-        w-full rounded-lg border p-3
-        transition-all duration-200 ease-in-out
-        ${
-          isExpanded
-            ? 'border-accent bg-accent/5'
-            : 'border-stroke-subtle bg-surface-elevated hover:bg-surface-hover'
-        }
-      `}
+    <ModeCard
+      icon={config.icon}
+      title={t(config.titleKey)}
+      description={t(config.descriptionKey)}
+      selected={isExpanded}
+      onSelect={onSelect}
+      badge={
+        card === 'bento' ? (
+          <Badge tone="info" title={t('binDesigner.bento.experimentalHint')}>
+            {t('common.experimental')}
+          </Badge>
+        ) : undefined
+      }
     >
-      {/* Header — only this element is the interactive button */}
-      <Button
-        type="button"
-        variant="ghost"
-        onClick={onSelect}
-        className="flex h-auto w-full cursor-pointer items-start justify-start gap-3 bg-transparent p-0 text-left font-normal hover:bg-transparent"
-      >
-        <div className="mt-0.5">{config.icon}</div>
-        <div className="flex-1 min-w-0">
-          {/* flex-wrap, not a nowrap row: the badge sits beside the title at
-              normal panel widths and drops to its own line on a narrow one,
-              rather than squeezing the heading into an ellipsis. */}
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-            <h4 className="text-sm font-medium text-content-primary">{t(config.titleKey)}</h4>
-            {card === 'bento' && (
-              <Badge tone="info" title={t('binDesigner.bento.experimentalHint')}>
-                {t('common.experimental')}
-              </Badge>
-            )}
-          </div>
-          <p className="text-xs text-content-secondary mt-0.5">{t(config.descriptionKey)}</p>
-        </div>
-      </Button>
-
-      {/* Content — rendered outside the button so interactive controls are valid HTML */}
-      {isExpanded && (
-        <div className="mt-3 pt-3 border-t border-stroke-subtle">{config.content}</div>
-      )}
-    </div>
+      {config.content}
+    </ModeCard>
   );
 }

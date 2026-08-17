@@ -36,7 +36,10 @@ import {
   DEFAULT_FOOT_LATTICE,
   DEFAULT_LIGHTWEIGHT_MODE,
   isEffectiveTile,
+  isSocketlessBase,
 } from '@/features/bin-designer/types/base';
+import { bodyTypeParams, deriveBodyType } from './bodyType';
+import type { BodyType } from './bodyType';
 
 /** Drop the `tile` key entirely — absent is the off state, never `false`. */
 function omitTile(base: BinParams['base']): BinParams['base'] {
@@ -83,8 +86,6 @@ export function useBaseSection() {
   const base = params.base;
   const hasMagnet = isMagnetStyle(base.style);
   const hasScrew = isScrewStyle(base.style);
-  const isFlat = base.style === 'flat';
-  const isLidBottom = base.style === 'lid';
   const trayBottom = base.trayBottom ?? DEFAULT_TRAY_BOTTOM;
   const hasHalfSockets = base.halfSockets;
   // The foot lattice is inert in two cases, and the picker shows what the part
@@ -106,6 +107,12 @@ export function useBaseSection() {
   const footLatticeLockReason =
     bothAxesLockReason ??
     (footLatticeLockedX || footLatticeLockedY ? 'binDesigner.footLattice.fractionalHint' : null);
+  // With both axes locked the control cannot act on anything, so it is dropped
+  // rather than shown greyed, and `footLatticeInertReason` takes its slot to say
+  // why. Nothing is concealed by dropping it: a locked axis reports the DEFAULT
+  // lattice below, so there is never a stored customisation behind this that is
+  // in force.
+  const footLatticeInert = footLatticeLockedX && footLatticeLockedY;
   const footLatticeX = footLatticeLockedX
     ? DEFAULT_FOOT_LATTICE
     : (base.footLatticeX ?? DEFAULT_FOOT_LATTICE);
@@ -147,12 +154,54 @@ export function useBaseSection() {
   const detachableFeetStatus = getFeatureStatus(params, 'base.detachableFeet');
   const magnetStatus = getFeatureStatus(params, 'base.magnet');
   const screwStatus = getFeatureStatus(params, 'base.screw');
-  const flatStatus = getFeatureStatus(params, 'base.flat');
   const halfSocketsStatus = getFeatureStatus(params, 'base.halfSockets');
   const lightweightStatus = getFeatureStatus(params, 'base.lightweight');
-  const spacerStatus = getFeatureStatus(params, 'base.spacer');
-  const tileStatus = getFeatureStatus(params, 'base.tile');
-  const lidBottomStatus = getFeatureStatus(params, 'base.lid');
+
+  const bodyType = deriveBodyType(base);
+
+  // ── Which subsections this body has ──────────────────────────────────────
+  // Asked of the constraint engine rather than answered by a body-type table:
+  // the engine is what decides these pairings, so a rule added later moves the
+  // UI with it and the two cannot drift. `available || enabled`, because a
+  // feature the engine has just cleared must still show the row that turns it
+  // back on, and a stale `enabled` without `available` would otherwise vanish
+  // mid-edit.
+  const applies = (status: { available: boolean; enabled: boolean }): boolean =>
+    status.available || status.enabled;
+
+  // A socketless base has no feet at all, which is geometry rather than a rule:
+  // there is nothing for a lattice or a half socket to describe.
+  const hasFeet = !isSocketlessBase(base.style);
+
+  const floorPatternStatusForApplies = getFeatureStatus(params, 'floorPattern');
+
+  const showMounting = applies(magnetStatus) || applies(screwStatus);
+  const showFeet =
+    hasFeet && (applies(detachableFeetStatus) || applies(halfSocketsStatus) || !footLatticeInert);
+  const showFloor = applies(lightweightStatus) || applies(floorPatternStatusForApplies);
+
+  /**
+   * Why a family is not on offer, kept next to the heading rather than removing
+   * the heading with it.
+   *
+   * The engine's own reason, never a restatement: the first feature in the
+   * family that has one speaks for all of them, because on every body that
+   * hides a family the same archetype is what disabled each of its features.
+   * Restating it here would be a second source of truth for pairings `rules.ts`
+   * already owns.
+   */
+  const familyReason = (...statuses: readonly { reason?: string }[]): string | undefined => {
+    const found = statuses.find((status) => status.reason !== undefined);
+    return found?.reason ? t(found.reason) : undefined;
+  };
+
+  const mountingUnavailable = showMounting ? undefined : familyReason(magnetStatus, screwStatus);
+  const feetUnavailable = showFeet
+    ? undefined
+    : familyReason(halfSocketsStatus, detachableFeetStatus);
+  const floorUnavailable = showFloor
+    ? undefined
+    : familyReason(lightweightStatus, floorPatternStatusForApplies);
 
   // Every base toggle commits through here. Only an effective spacer may stand
   // 1u tall, and several toggles can END one: leaving spacer mode, or
@@ -206,7 +255,6 @@ export function useBaseSection() {
 
   const magnetDisabledReason = magnetStatus.reason ? t(magnetStatus.reason) : undefined;
   const screwDisabledReason = screwStatus.reason ? t(screwStatus.reason) : undefined;
-  const flatDisabledReason = flatStatus.reason ? t(flatStatus.reason) : undefined;
   // The supersede reason wins over the engine's: with detachable feet on, "not
   // used with these feet" is the true and useful answer, and the engine has no
   // rule to give here because the pairing is inert rather than forbidden.
@@ -215,14 +263,29 @@ export function useBaseSection() {
     : halfSocketsStatus.reason
       ? t(halfSocketsStatus.reason)
       : undefined;
-  const lidBottomDisabledReason = lidBottomStatus.reason ? t(lidBottomStatus.reason) : undefined;
   const lightweightDisabledReason = feetSupersedeReason
     ? t(feetSupersedeReason)
     : lightweightStatus.reason
       ? t(lightweightStatus.reason)
       : undefined;
-  const spacerDisabledReason = spacerStatus.reason ? t(spacerStatus.reason) : undefined;
-  const tileDisabledReason = tileStatus.reason ? t(tileStatus.reason) : undefined;
+
+  /**
+   * Whether the underside relief would lift the block the toggle is reporting.
+   *
+   * Asked of the engine against a hypothetical `underside` selection rather
+   * than matched against a list of fixable reasons. The mode-split pairs
+   * (`scoop`, `cutouts`) already read `undersideReliefSelected` while the
+   * feature is OFF, and a list would have to be revisited every time one is
+   * added. Inserts stay mutual across both modes, so they correctly answer
+   * false here and no fix is offered for them.
+   */
+  const undersideReliefUnblocks =
+    !lightweightStatus.available &&
+    !feetSupersedeReason &&
+    getFeatureStatus(
+      { ...params, base: { ...params.base, lightweightMode: 'underside' } },
+      'base.lightweight'
+    ).available;
 
   const toggleMagnet = useCallback(() => {
     // Only block enabling — allow disabling so users can recover from invalid states
@@ -279,17 +342,38 @@ export function useBaseSection() {
     [params, commit]
   );
 
-  const toggleSpacer = useCallback(() => {
-    if (!base.spacer && !spacerStatus.available) return;
-    commit(resolveConstraints(params, { feature: 'base.spacer', enabled: !base.spacer }).params);
-  }, [params, base.spacer, spacerStatus.available, commit]);
+  /**
+   * Turn the lightweight floor on THROUGH the underside relief.
+   *
+   * Offered where the interior relief is blocked but the underside one is not,
+   * which is the case `setLightweightMode` cannot serve: it re-asserts the
+   * feature's current value, so on a bin where the toggle is the thing being
+   * blocked it would switch the mode and leave the feature off.
+   */
+  const enableUndersideRelief = useCallback(() => {
+    const withMode: BinParams = {
+      ...params,
+      base: { ...params.base, lightweightMode: 'underside' },
+    };
+    const { params: resolved } = resolveConstraints(withMode, {
+      feature: 'base.lightweight',
+      enabled: true,
+    });
+    commit(resolved);
+  }, [params, commit]);
 
-  const toggleTile = useCallback(() => {
-    const isTile = base.tile === true;
-    if (!isTile && !tileStatus.available) return;
-    // `commit` strips a `tile: false` residue on every path, this one included.
-    commit(resolveConstraints(params, { feature: 'base.tile', enabled: !isTile }).params);
-  }, [params, base.tile, tileStatus.available, commit]);
+  /**
+   * Switch the base's archetype.
+   *
+   * `commit` still runs: `bodyTypeParams` produces the resolved params, but the
+   * height floor and the `tile: false` strip are this hook's job on every path.
+   */
+  const setBodyType = useCallback(
+    (next: BodyType) => {
+      commit(bodyTypeParams(params, next));
+    },
+    [params, commit]
+  );
 
   const toggleHalfSockets = useCallback(() => {
     if (!hasHalfSockets && !halfSocketsStatus.available) return;
@@ -313,26 +397,6 @@ export function useBaseSection() {
     },
     [updateBase]
   );
-
-  const toggleLidBottom = useCallback(() => {
-    const { params: resolved } = resolveConstraints(params, {
-      feature: 'base.lid',
-      enabled: !isLidBottom,
-    });
-    // The mating config is materialised on the way in and STRIPPED on the way
-    // out. It is absent by default so an ordinary bin's params hash is
-    // unchanged (see `DEFAULT_BIN_PARAMS`) — leaving a residue behind would
-    // make a bin that once tried the tray bottom fingerprint differently from
-    // an identical one that never did, defeating the point of the omission.
-    const { trayBottom: _dropped, ...baseWithoutTray } = resolved.base;
-    commit({
-      ...resolved,
-      base:
-        resolved.base.style === 'lid'
-          ? { ...resolved.base, trayBottom: resolved.base.trayBottom ?? DEFAULT_TRAY_BOTTOM }
-          : baseWithoutTray,
-    });
-  }, [params, isLidBottom, commit]);
 
   const updateTrayBottom = useCallback(
     (patch: Partial<TrayBottomConfig>) => {
@@ -358,14 +422,6 @@ export function useBaseSection() {
       }),
     [updateTrayBottom, trayBottom]
   );
-
-  const toggleFlat = useCallback(() => {
-    const { params: resolved } = resolveConstraints(params, {
-      feature: 'base.flat',
-      enabled: !isFlat,
-    });
-    commit(resolved);
-  }, [params, isFlat, commit]);
 
   // ── Floor pattern ────────────────────────────────────────────────
   // Drainage / ventilation holes through the floor slab and the feet below it.
@@ -457,8 +513,7 @@ export function useBaseSection() {
       detachableSavingPercent,
       hasMagnet,
       hasScrew,
-      isFlat,
-      isLidBottom,
+      bodyType,
       trayBottom,
       hasHalfSockets,
       footLatticeX,
@@ -467,8 +522,29 @@ export function useBaseSection() {
       footLatticeLockedY,
       hasLightweight: base.lightweight,
       lightweightMode: base.lightweightMode ?? DEFAULT_LIGHTWEIGHT_MODE,
-      isSpacer: base.spacer,
-      isTile: base.tile === true,
+      undersideReliefUnblocks,
+      // Which families of controls this body actually has. A hidden one is
+      // never hiding a live setting: the engine clears what it disables.
+      showMounting,
+      showFeet,
+      showFloor,
+      // A family this body cannot have keeps its heading and says why, so a
+      // control never simply vanishes between one body type and the next.
+      mountingUnavailable,
+      feetUnavailable,
+      floorUnavailable,
+      showFootLattice: hasFeet && !footLatticeInert,
+      // Why the lattice is not on offer, rendered in the slot it would have
+      // occupied. Half sockets is the only cause with a control in this section
+      // (and it sits directly above, so the note still lands at its cause); a
+      // custom shape and a fractional axis are decided over in Shape, where
+      // there is nothing local to hang it off, so this note is the whole
+      // explanation the user gets and must not be limited to the half-socket
+      // case.
+      footLatticeInertReason:
+        hasFeet && footLatticeInert
+          ? t(footLatticeLockReason ?? 'binDesigner.footLattice.hint')
+          : undefined,
       floorPatternEnabled: floorPattern.enabled,
       floorPatternType: floorPattern.pattern,
       floorPatternScalePercent: Math.round((floorPattern.scale ?? DEFAULT_PATTERN_SCALE) * 100),
@@ -499,8 +575,8 @@ export function useBaseSection() {
       // hide the one control that fixes a bin perching on the pocket ridges.
       // Half sockets and lightweight really are ignored and stay locked.
       footLatticeLockReason: t(footLatticeLockReason ?? 'binDesigner.footLattice.hint'),
-      toggleFlat,
-      toggleLidBottom,
+      setBodyType,
+      enableUndersideRelief,
       setTrayAttachment,
       setTrayExtraHeight,
       toggleTrayRail,
@@ -513,14 +589,8 @@ export function useBaseSection() {
       floorPatternDisabledReason,
       magnetDisabledReason,
       screwDisabledReason,
-      flatDisabledReason,
-      lidBottomDisabledReason,
       halfSocketsDisabledReason,
       lightweightDisabledReason,
-      toggleSpacer,
-      spacerDisabledReason,
-      toggleTile,
-      tileDisabledReason,
     },
   };
 }
