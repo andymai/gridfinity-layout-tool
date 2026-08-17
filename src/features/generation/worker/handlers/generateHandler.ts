@@ -16,6 +16,7 @@ import { generateBaseplate } from '../generators/baseplateGenerator';
 import { generateMargin } from '../generators/baseplateMargin';
 import { generateLid, generateStackPlate } from '../generators/lidOrchestrator';
 import { generateSlideTray } from '../generators/slideOrchestrator';
+import { generateDetachableFeetMesh } from '../generators/detachableFeetOrchestrator';
 import { generateLabelPlates } from '../generators/labelPlateGenerator';
 import { planLabelTextOverflow } from '../generators/labelTextFit';
 import type { BinParams } from '@/shared/types/bin';
@@ -84,16 +85,34 @@ export async function handleGenerate(message: GenerateMessage): Promise<void> {
         console.warn('[BinGen] Slide-tray generation failed; skipping tray:', e);
       }
 
+      // Detachable feet: a companion PART, so the same secondary-feature
+      // contract as the lid and the tray. Resolved before the bin-only early
+      // return, or a bin with feet and no lid would silently lose them — the
+      // exact bug the tray comment above records.
+      let detachableFeetMesh: MeshData | null = null;
+      try {
+        detachableFeetMesh = generateDetachableFeetMesh(params, onProgress);
+      } catch (e) {
+        if (isAbortError(e)) throw e;
+
+        console.warn('[BinGen] Detachable feet failed; skipping feet:', e);
+      }
+
       if (!lidMesh) {
         // Lid generation failed (or is disabled) → bin-only. The baseplate is a
         // companion to the lid, so emitting it here would leave a lone
         // baseplate with no lid; skip it and degrade cleanly to bin-only.
-        return slideTrayMesh ? { ...binMesh, slideTrayMesh } : binMesh;
+        return {
+          ...binMesh,
+          ...(slideTrayMesh ? { slideTrayMesh } : {}),
+          ...(detachableFeetMesh ? { detachableFeetMesh } : {}),
+        };
       }
       let result: MeshData = {
         ...binMesh,
         lidMesh,
         ...(slideTrayMesh ? { slideTrayMesh } : {}),
+        ...(detachableFeetMesh ? { detachableFeetMesh } : {}),
       };
       // Separate stack-grid baseplate (glue-on companion). Same secondary-
       // feature contract as the lid: a build failure degrades to lid+bin, but

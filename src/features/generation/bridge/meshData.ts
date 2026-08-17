@@ -22,6 +22,12 @@ export interface MeshData {
   /** Optional sliding-tray mesh — the companion part that rides the bin's rail. */
   readonly slideTrayMesh?: SlideTrayMeshData;
   /**
+   * Optional detachable feet, meshed where they sit UNDER the bin rather than
+   * laid out for printing: the preview shows the assembly, because that is the
+   * object being designed. The export path arranges the same solids on a plate.
+   */
+  readonly detachableFeetMesh?: MeshData;
+  /**
    * Optional seated snap-clip connector mesh — the exact relieved part the
    * baseplate ships, so the preview can render it instead of an approximation.
    * Present only for split snap-clip baseplates.

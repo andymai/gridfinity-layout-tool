@@ -26,6 +26,8 @@ function plan(over: Partial<DetachableFeetInput>): FootPlacement[] {
     pitchY: 42,
     fractionalEdgeX: 'end',
     fractionalEdgeY: 'end',
+    latticeX: 'grid',
+    latticeY: 'grid',
     armMm: ARM,
     ...over,
   });
@@ -202,5 +204,39 @@ describe('footPinPositions', () => {
         expect(Math.abs(p.y)).toBeLessThan(halfD);
       }
     }
+  });
+});
+
+/**
+ * Where the bin SITS decides where its feet can go, per axis. Anchoring to the
+ * bin's own whole cells is right only when the bin is on-grid: half-bin mode
+ * places it half a unit off, and then every cell of it straddles two pockets.
+ */
+describe('half-offset placement', () => {
+  it('shifts the anchors half a unit inboard so each foot lands in one pocket', () => {
+    const halfWidthMm = (3 * 42) / 2;
+    const feet = plan({ widthUnits: 3, depthUnits: 3, latticeX: 'half' });
+    // On-grid the outer feet sit at the bin's edge; here they sit 0.5u inboard,
+    // which is the only X where a full-size foot fits inside a single pocket.
+    expect(Math.min(...feet.map((f) => f.x))).toBeCloseTo(-halfWidthMm + 21, 5);
+    expect(Math.max(...feet.map((f) => f.x))).toBeCloseTo(halfWidthMm - 21, 5);
+  });
+
+  it('is per axis, because half-bin mode offsets the axes independently', () => {
+    const feet = plan({ widthUnits: 3, depthUnits: 3, latticeX: 'half', latticeY: 'grid' });
+    expect(Math.min(...feet.map((f) => f.x))).toBeCloseTo(-63 + 21, 5);
+    expect(Math.min(...feet.map((f) => f.y))).toBeCloseTo(-63, 5);
+  });
+
+  it('reports no placement for a 1-wide bin that is half-offset', () => {
+    // It spans 0.5u..1.5u of the plate, so there is no whole pocket under it at
+    // all. Better to say so than to place a foot that perches on a ridge.
+    expect(plan({ widthUnits: 1, depthUnits: 4, latticeX: 'half' })).toEqual([]);
+  });
+
+  it('ignores the lattice on a fractional axis, which already carries a half cell', () => {
+    const asGrid = plan({ widthUnits: 2.5, depthUnits: 2, latticeX: 'grid' });
+    const asHalf = plan({ widthUnits: 2.5, depthUnits: 2, latticeX: 'half' });
+    expect(asHalf).toEqual(asGrid);
   });
 });

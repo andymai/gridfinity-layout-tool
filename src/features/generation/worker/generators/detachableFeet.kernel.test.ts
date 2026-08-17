@@ -29,6 +29,8 @@ import {
 import type { BinParams } from '@/shared/types/bin';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { boundingBox, isSolidThrough, meshTopologyStats } from './__kernel-tests__/meshAssertions';
+import { seatDepth } from './__kernel-tests__/binSeating';
+import type { FootLattice } from '@/shared/types/bin';
 
 import type { DetachableFeetGeometry, DetachableFeetOptions } from './detachableFeetBuilder';
 
@@ -291,5 +293,83 @@ describe('a bin built with detachable feet', () => {
         expect(isSolidThrough(m, pin.x, pin.y, minZ + 0.1, minZ + 1.1)).toBe(false);
       }
     }
+  });
+});
+
+/**
+ * Whether a foot actually drops into a pocket, measured rather than argued.
+ *
+ * A foot that lands on the ridge between two pockets is a perfectly valid
+ * solid: watertight, right triangle count, right bounding box. The only way to
+ * see it is to mate the parts and let them fall, so this drops the FEET onto a
+ * generated plate and reports the depth they reach — ~5mm seated against ~0
+ * perched.
+ */
+describe('detachable feet seating in a baseplate', () => {
+  let generateFeet: (p: BinParams) => MeshData | null;
+  let plate: MeshData;
+
+  beforeAll(async () => {
+    generateFeet = (await import('./detachableFeetOrchestrator')).generateDetachableFeetMesh;
+    const generateBaseplate = (await import('./baseplateGenerator')).generateBaseplate;
+    plate = generateBaseplate(
+      {
+        width: 5,
+        depth: 5,
+        gridUnitMm: 42,
+        magnetHoles: false,
+        magnetDiameter: 6.5,
+        magnetDepth: 2.4,
+        paddingLeft: 0,
+        paddingRight: 0,
+        paddingFront: 0,
+        paddingBack: 0,
+        fractionalEdgeX: 'end',
+        fractionalEdgeY: 'end',
+        lightweight: false,
+      },
+      () => {},
+      false
+    );
+  }, 120000);
+
+  const feetFor = (lattice: FootLattice): MeshData => {
+    const m = generateFeet({
+      ...DEFAULT_BIN_PARAMS,
+      width: 3,
+      depth: 3,
+      height: 3,
+      base: {
+        ...DEFAULT_BIN_PARAMS.base,
+        feet: 'detachable',
+        footLatticeX: lattice,
+        footLatticeY: lattice,
+      },
+    });
+    if (!m) throw new Error('expected feet');
+    return m;
+  };
+
+  /** Pocket depth: feet that drop all the way reach this. */
+  const POCKET_DEPTH = 5;
+  const HALF_UNIT = 21;
+
+  it('seats an on-grid bin', () => {
+    expect(seatDepth(feetFor('grid'), plate, { dx: 0, dy: 0 }).mm).toBeGreaterThan(
+      POCKET_DEPTH - 1
+    );
+  });
+
+  it('perches when the bin is half-offset and the lattice was not told', () => {
+    // The discriminating case: same feet, moved half a unit, now straddling
+    // ridges. Without this the seated assertion above would also pass on feet
+    // that seat nowhere.
+    expect(seatDepth(feetFor('grid'), plate, { dx: HALF_UNIT, dy: HALF_UNIT }).mm).toBeLessThan(1);
+  });
+
+  it('seats a half-offset bin once the lattice shifts its anchors', () => {
+    expect(seatDepth(feetFor('half'), plate, { dx: HALF_UNIT, dy: HALF_UNIT }).mm).toBeGreaterThan(
+      POCKET_DEPTH - 1
+    );
   });
 });

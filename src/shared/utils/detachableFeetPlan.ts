@@ -38,7 +38,9 @@
 import {
   DEFAULT_DETACHABLE_PIN_DIAMETER_MM,
   MAX_FOOT_SPAN_MM,
+  type FootLattice,
 } from '@/features/bin-designer/types';
+import { isFractional } from '@/core/constants';
 import { magnetInsetFromCellEdgeMm } from '@/shared/printSettings/gridfinityGeometry';
 
 /**
@@ -104,6 +106,19 @@ export interface DetachableFeetInput {
   /** Which end a fractional remainder sits on, per axis. */
   readonly fractionalEdgeX: 'start' | 'end';
   readonly fractionalEdgeY: 'start' | 'end';
+  /**
+   * Where this axis's feet fall relative to the PLATE's cells, per axis.
+   *
+   * Anchoring to the bin's own whole cells is not enough on its own: half-bin
+   * mode places a bin half a unit off-grid, and then every one of its cells
+   * straddles two pockets, so a foot on any of them lands on a ridge. `half`
+   * shifts the anchors half a unit so they line up with the pockets instead —
+   * the same question `footLatticeX/Y` answers for integral feet, and the same
+   * answer, except that no half-size foot is needed here: a full L simply sits
+   * half a unit inboard of the bin's edge.
+   */
+  readonly latticeX: FootLattice;
+  readonly latticeY: FootLattice;
   /** Arm reach of a foot along an edge (mm) — see {@link footArmMm}. */
   readonly armMm: number;
 }
@@ -148,10 +163,37 @@ function wholeCellCount(units: number): number {
   return Math.floor(units + 1e-9);
 }
 
-/** Centre of whole-cell `index` along an axis, in bin-centred mm. */
-function cellCentre(index: number, units: number, pitch: number, edge: 'start' | 'end'): number {
+/**
+ * Centre of anchorable cell `index` along an axis, in bin-centred mm.
+ *
+ * `anchorOffsetUnits` is the half-unit shift a `half` lattice applies, which
+ * moves the whole anchor grid off the bin's own cells and onto the plate's.
+ */
+function cellCentre(
+  index: number,
+  units: number,
+  pitch: number,
+  edge: 'start' | 'end',
+  anchorOffsetUnits: number
+): number {
   const originUnits = edge === 'start' ? units - Math.floor(units + 1e-9) : 0;
-  return (originUnits + index + 0.5) * pitch - (units * pitch) / 2;
+  return (originUnits + anchorOffsetUnits + index + 0.5) * pitch - (units * pitch) / 2;
+}
+
+/**
+ * The half-unit shift a lattice asks for, per axis.
+ *
+ * A fractional axis ignores `half` for the reason the integral lattice does:
+ * it already carries a half cell, and `fractionalEdge` decides which end it
+ * sits on, which covers both placements on its own.
+ */
+function anchorOffsetUnits(lattice: FootLattice, units: number): number {
+  return lattice === 'half' && !isFractional(units) ? 0.5 : 0;
+}
+
+/** Anchorable whole cells on an axis, after the lattice shift. */
+function anchorableCells(units: number, offset: number): number {
+  return wholeCellCount(units - 2 * offset);
 }
 
 /**
@@ -169,10 +211,11 @@ function axisStations(
   pitch: number,
   edge: 'start' | 'end',
   armMm: number,
-  spanSingleCell: boolean
+  spanSingleCell: boolean,
+  offset: number
 ): Station[] {
-  const count = wholeCellCount(units);
-  const centre = (i: number): number => cellCentre(i, units, pitch, edge);
+  const count = anchorableCells(units, offset);
+  const centre = (i: number): number => cellCentre(i, units, pitch, edge, offset);
 
   if (count <= 1 && spanSingleCell) {
     const c = centre(0);
@@ -225,18 +268,26 @@ function axisStations(
  */
 export function detachableFeetPlacements(input: DetachableFeetInput): FootPlacement[] {
   const { widthUnits, depthUnits, pitchX, pitchY, armMm } = input;
-  if (Math.floor(widthUnits + 1e-9) < 1 || Math.floor(depthUnits + 1e-9) < 1) return [];
+  const offsetX = anchorOffsetUnits(input.latticeX, widthUnits);
+  const offsetY = anchorOffsetUnits(input.latticeY, depthUnits);
+  const cellsX = anchorableCells(widthUnits, offsetX);
+  const cellsY = anchorableCells(depthUnits, offsetY);
+  // No pocket-aligned whole cell on an axis, so no full-size foot can land
+  // inside one pocket there. Reachable for a 1-wide bin under the `half`
+  // lattice, which genuinely has nowhere to put one; callers report the mode as
+  // unavailable rather than placing feet that would perch on a ridge.
+  if (cellsX < 1 || cellsY < 1) return [];
 
-  const singleX = Math.floor(widthUnits + 1e-9) <= 1;
-  const singleY = Math.floor(depthUnits + 1e-9) <= 1;
+  const singleX = cellsX <= 1;
+  const singleY = cellsY <= 1;
   // Both axes single (a 1x1) would collapse to one station pair and therefore
   // one foot, which holds nothing. Span X and keep Y's two ends, giving the
   // pair of U feet a narrow bin wants anyway.
   const spanX = singleX;
   const spanY = singleY && !singleX;
 
-  const xs = axisStations(widthUnits, pitchX, input.fractionalEdgeX, armMm, spanX);
-  const ys = axisStations(depthUnits, pitchY, input.fractionalEdgeY, armMm, spanY);
+  const xs = axisStations(widthUnits, pitchX, input.fractionalEdgeX, armMm, spanX, offsetX);
+  const ys = axisStations(depthUnits, pitchY, input.fractionalEdgeY, armMm, spanY, offsetY);
 
   const feet: FootPlacement[] = [];
   for (const sx of xs) {
@@ -256,6 +307,17 @@ export function detachableFeetPlacements(input: DetachableFeetInput): FootPlacem
     }
   }
   return feet;
+}
+
+/**
+ * The centre of the cell a foot sits in, in bin-centred mm.
+ *
+ * A foot's own local origin is its cell centre, not its anchor, so this is what
+ * turns an assembled placement back into a part at the origin — which is what
+ * laying the feet out on a print plate needs.
+ */
+export function footCellCentre(p: FootPlacement): { x: number; y: number } {
+  return { x: p.x - (p.dirX * p.cellW) / 2, y: p.y - (p.dirY * p.cellD) / 2 };
 }
 
 /**
@@ -321,8 +383,21 @@ export interface ResolvedDetachableFeet {
   readonly placements: readonly FootPlacement[];
   readonly armMm: number;
   readonly pinDiameterMm: number;
-  /** Magnet pocket dimensions, or `undefined` when the base carries none. */
-  readonly magnet?: { readonly diameterMm: number; readonly depthMm: number };
+  /** Magnet pocket dimensions and positions, or `undefined` for plain feet. */
+  readonly magnet?: {
+    readonly diameterMm: number;
+    readonly depthMm: number;
+    /**
+     * Every STANDARD corner position the feet could cover, in bin-centred mm.
+     * The builder keeps the ones a given foot's footprint actually contains.
+     *
+     * These are the spec positions, not somewhere convenient inside the foot:
+     * the whole point of a magnet in the foot is that it lands on the magnet in
+     * the baseplate pocket beneath it, so an offset derived from the foot's own
+     * dimensions would mate with nothing.
+     */
+    readonly positions: ReadonlyArray<readonly [number, number]>;
+  };
 }
 
 /** The subset of `BinParams` the feet depend on. */
@@ -339,6 +414,8 @@ export interface DetachableFeetParams {
     readonly magnetDiameter: number;
     readonly magnetDepth: number;
     readonly feetPinDiameter?: number;
+    readonly footLatticeX?: FootLattice;
+    readonly footLatticeY?: FootLattice;
   };
 }
 
@@ -364,20 +441,61 @@ export function resolveDetachableFeet(params: DetachableFeetParams): ResolvedDet
     magnetInsetFromEdgeMm,
   });
 
+  const placements = detachableFeetPlacements({
+    widthUnits: params.width,
+    depthUnits: params.depth,
+    pitchX,
+    pitchY,
+    fractionalEdgeX: params.fractionalEdgeX,
+    fractionalEdgeY: params.fractionalEdgeY,
+    latticeX: params.base.footLatticeX ?? 'grid',
+    latticeY: params.base.footLatticeY ?? 'grid',
+    armMm,
+  });
+
   return {
-    placements: detachableFeetPlacements({
-      widthUnits: params.width,
-      depthUnits: params.depth,
-      pitchX,
-      pitchY,
-      fractionalEdgeX: params.fractionalEdgeX,
-      fractionalEdgeY: params.fractionalEdgeY,
-      armMm,
-    }),
+    placements,
     armMm,
     pinDiameterMm,
     magnet: carriesMagnet
-      ? { diameterMm: params.base.magnetDiameter, depthMm: params.base.magnetDepth }
+      ? {
+          diameterMm: params.base.magnetDiameter,
+          depthMm: params.base.magnetDepth,
+          positions: standardMagnetCorners(placements, pitchX, pitchY, params.magnetAnchor),
+        }
       : undefined,
   };
+}
+
+/**
+ * The four spec magnet positions of every cell a foot sits in, deduplicated.
+ *
+ * Offsets come from the same inset the magnet placement resolves to, so a foot
+ * carrying one lines up with the pocket magnet under it. A candidate list, not
+ * a final one: the builder drops the corners a given foot does not cover.
+ */
+function standardMagnetCorners(
+  placements: readonly FootPlacement[],
+  pitchX: number,
+  pitchY: number,
+  anchor: 'edge' | 'center' = 'edge'
+): Array<readonly [number, number]> {
+  const offX = pitchX / 2 - magnetInsetFromCellEdgeMm(pitchX, anchor);
+  const offY = pitchY / 2 - magnetInsetFromCellEdgeMm(pitchY, anchor);
+  const seen = new Set<string>();
+  const out: Array<readonly [number, number]> = [];
+  for (const p of placements) {
+    const centre = footCellCentre(p);
+    for (const sx of [-1, 1]) {
+      for (const sy of [-1, 1]) {
+        const x = centre.x + sx * offX;
+        const y = centre.y + sy * offY;
+        const key = `${x.toFixed(4)},${y.toFixed(4)}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push([x, y]);
+      }
+    }
+  }
+  return out;
 }

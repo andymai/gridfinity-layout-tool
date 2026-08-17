@@ -35,7 +35,11 @@ import {
 import type { Shape3D, ValidSolid, Sketch, DisposalScope } from 'brepjs';
 import { CLEARANCE, SOCKET_HEIGHT, COPLANAR_MARGIN, COPLANAR_OVERLAP } from './generatorConstants';
 import { buildSingleCellSocket, buildSimplifiedCellSocket } from './socketBuilder';
-import { footPinPositions, type FootPlacement } from '@/shared/utils/detachableFeetPlan';
+import {
+  footCellCentre,
+  footPinPositions,
+  type FootPlacement,
+} from '@/shared/utils/detachableFeetPlan';
 import { DETACHABLE_PIN_RIDGE_STEP_MM } from '@/shared/types/bin';
 
 /** How far a clip box overshoots the cell it trims, so no face is coplanar. */
@@ -74,11 +78,6 @@ export interface DetachableFeetGeometry {
    * body is cached and the holes are not part of what the cache key describes.
    */
   readonly pinHoles: Shape3D;
-}
-
-/** Cell centre for a placement — the anchor backed off by its outward offsets. */
-function cellCentreOf(p: FootPlacement): { x: number; y: number } {
-  return { x: p.x - (p.dirX * p.cellW) / 2, y: p.y - (p.dirY * p.cellD) / 2 };
 }
 
 /**
@@ -184,7 +183,7 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
     const holes: Shape3D[] = [];
 
     for (const p of placements) {
-      const centre = cellCentreOf(p);
+      const centre = footCellCentre(p);
       const cellW = p.cellW - CLEARANCE;
       const cellD = p.cellD - CLEARANCE;
 
