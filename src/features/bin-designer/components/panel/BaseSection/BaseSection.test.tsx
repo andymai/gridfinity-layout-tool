@@ -62,7 +62,7 @@ describe('BaseSection', () => {
       // the whole section.
       expect(screen.queryByLabelText('Attachment')).not.toBeInTheDocument();
 
-      await user.click(screen.getByText('Stacking tray'));
+      await user.click(screen.getByText('Lid base'));
 
       expect(screen.getByLabelText('Attachment')).toBeInTheDocument();
     });

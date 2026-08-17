@@ -797,7 +797,7 @@
   "binDesigner.fitSample.tipsTitle": "Anleitung",
   "binDesigner.flatFloor": "Flache Basis",
   "binDesigner.flatFloorDisablesAttachment": "Nicht verfügbar mit flachem Boden",
-  "binDesigner.lidBottom": "Stapelschale",
+  "binDesigner.lidBottom": "Deckelbasis",
   "binDesigner.lid.section.tray": "Organizer-Tablett",
   "binDesigner.lid.matchingTrayHint": "Ein Deckel hält Staub fern, ein Tablett hält Dinge an ihrem Platz. Dies startet ein neues Design in der Größe dieses Bins, mit bereits eingerichtetem deckel-kompatiblem Boden.",
   "binDesigner.lid.createMatchingTray": "Passendes Tablett erstellen…",

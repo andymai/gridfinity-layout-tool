@@ -797,7 +797,7 @@
   "binDesigner.fitSample.tipsTitle": "Så här används det",
   "binDesigner.flatFloor": "Platt bas",
   "binDesigner.flatFloorDisablesAttachment": "Inte tillgängligt med plant golv",
-  "binDesigner.lidBottom": "Stapelbar bricka",
+  "binDesigner.lidBottom": "Lockbas",
   "binDesigner.lid.section.tray": "Organiseringsbricka",
   "binDesigner.lid.matchingTrayHint": "Ett lock håller damm ute; en bricka hindrar saker från att glida. Det här startar en ny design i det här fackets storlek, med lockkompatibel botten redan inställd.",
   "binDesigner.lid.createMatchingTray": "Skapa matchande bricka…",

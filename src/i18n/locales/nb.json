@@ -797,7 +797,7 @@
   "binDesigner.fitSample.tipsTitle": "Slik brukes det",
   "binDesigner.flatFloor": "Flat bunn",
   "binDesigner.flatFloorDisablesAttachment": "Ikke tilgjengelig med flat bunn",
-  "binDesigner.lidBottom": "Stablebrett",
+  "binDesigner.lidBottom": "Lokkbunn",
   "binDesigner.lid.section.tray": "Organiseringsskuff",
   "binDesigner.lid.matchingTrayHint": "Et lokk holder støv ute; en skuff hindrer ting i å skli. Dette starter et nytt design i denne binens størrelse, med lokk-kompatibel bunn allerede satt opp.",
   "binDesigner.lid.createMatchingTray": "Lag tilpasset skuff…",

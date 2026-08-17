@@ -78,7 +78,7 @@ export function BaseOnlyIcon(props: IconProps) {
 }
 
 /** Feet swapped for a lid's skirt, over the rim of the bin it caps. */
-export function StackingTrayIcon(props: IconProps) {
+export function LidBaseIcon(props: IconProps) {
   return (
     <Elevation {...props}>
       <path d="M3 2v11h18V2" />

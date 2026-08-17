@@ -2137,7 +2137,7 @@ const en: Record<string, string> = {
     'For best results, use a multiple of your nozzle size (e.g., 1.2mm = 3× 0.4mm nozzle)',
   'binDesigner.flatFloor': 'Flat base',
   'binDesigner.flatFloorDisablesAttachment': 'Not available with flat base',
-  'binDesigner.lidBottom': 'Stacking tray',
+  'binDesigner.lidBottom': 'Lid base',
   'binDesigner.lid.section.grip': 'Lid grip',
   'binDesigner.lid.gripHint':
     'A well-fitting lid can be hard to get off again. This removes a little material where the lid meets the bin, so there is something to get a nail or a fingertip under.',

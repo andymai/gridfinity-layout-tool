@@ -797,7 +797,7 @@
   "binDesigner.fitSample.tipsTitle": "Mode d’emploi",
   "binDesigner.flatFloor": "Base plate",
   "binDesigner.flatFloorDisablesAttachment": "Non disponible avec le fond plat",
-  "binDesigner.lidBottom": "Plateau empilable",
+  "binDesigner.lidBottom": "Base couvercle",
   "binDesigner.lid.section.tray": "Plateau organiseur",
   "binDesigner.lid.matchingTrayHint": "Un couvercle garde la poussière dehors ; un plateau empêche le contenu de glisser. Ceci crée un nouveau design à la taille de ce bac, avec un fond compatible couvercle déjà configuré.",
   "binDesigner.lid.createMatchingTray": "Créer un plateau assorti…",

@@ -797,7 +797,7 @@
   "binDesigner.fitSample.tipsTitle": "Cómo usarla",
   "binDesigner.flatFloor": "Base plana",
   "binDesigner.flatFloorDisablesAttachment": "No disponible con fondo plano",
-  "binDesigner.lidBottom": "Bandeja apilable",
+  "binDesigner.lidBottom": "Base de tapa",
   "binDesigner.lid.section.tray": "Bandeja organizadora",
   "binDesigner.lid.matchingTrayHint": "Una tapa mantiene fuera el polvo; una bandeja evita que las cosas se deslicen. Esto crea un diseño nuevo del tamaño de este bin, con el fondo compatible con tapa ya configurado.",
   "binDesigner.lid.createMatchingTray": "Crear bandeja a juego…",

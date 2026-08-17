@@ -797,7 +797,7 @@
   "binDesigner.fitSample.tipsTitle": "使い方",
   "binDesigner.flatFloor": "フラットベース",
   "binDesigner.flatFloorDisablesAttachment": "平らな床では利用できません",
-  "binDesigner.lidBottom": "スタッキングトレー",
+  "binDesigner.lidBottom": "ふたベース",
   "binDesigner.lid.section.tray": "整理トレイ",
   "binDesigner.lid.matchingTrayHint": "フタはホコリを防ぎ、トレイは中身のずれを防ぎます。このビンのサイズに合わせた新しいデザインを、フタ互換の底面を設定した状態で作成します。",
   "binDesigner.lid.createMatchingTray": "対応するトレイを作成…",

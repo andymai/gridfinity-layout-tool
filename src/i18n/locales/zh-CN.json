@@ -797,7 +797,7 @@
   "binDesigner.fitSample.tipsTitle": "使用方法",
   "binDesigner.flatFloor": "平底",
   "binDesigner.flatFloorDisablesAttachment": "平底座不可用",
-  "binDesigner.lidBottom": "叠放托盘",
+  "binDesigner.lidBottom": "盖式底座",
   "binDesigner.lid.section.tray": "整理托盘",
   "binDesigner.lid.matchingTrayHint": "盖子挡灰，托盘防滑。此操作将按该收纳盒的尺寸新建一个设计，并已配置好兼容盖子的底面。",
   "binDesigner.lid.createMatchingTray": "创建配套托盘…",
