@@ -26,7 +26,7 @@
  *    interior stations until no unsupported run of floor exceeds
  *    {@link MAX_FOOT_SPAN_MM},
  *  - an axis with a single whole cell gets ONE station that SPANS it, which is
- *    what turns a 1-wide bin's feet into the U shape: four separate corner feet
+ *    what turns a 1-wide bin's feet into bars: four separate corner feet
  *    on a 42mm-wide bin put both pin groups near its centreline, and it pivots.
  *
  * A foot is then the product of one station per axis, kept only where it
@@ -44,19 +44,25 @@ import { MAX_FOOT_SPAN_MM } from '@/features/bin-designer/types';
  */
 export const FOOT_EMBED_MARGIN_MM = 1.2;
 
-/** `L` hugs a cell corner; `U` spans one axis of a cell at one edge. */
-export type FootShape = 'L' | 'U';
+/**
+ * `L` hugs a cell corner; `bar` spans one axis of a cell at one edge.
+ *
+ * A bar's plan outline is a rounded rectangle, not a U: it runs the full cell,
+ * so it picks up the socket profile's taper on the edge it sits against and on
+ * both ends at once.
+ */
+export type FootShape = 'L' | 'bar';
 
 /**
  * One foot's placement, in bin-centred mm.
  *
  * `dirX`/`dirY` are the outward direction on each axis: `-1`/`+1` when the foot
  * reaches that edge, `0` when it spans that axis instead. Exactly one of them
- * is `0` on a `U`; neither is on an `L`.
+ * is `0` on a `bar`; neither is on an `L`.
  */
 export interface FootPlacement {
   readonly shape: FootShape;
-  /** Anchor point: the cell corner an `L` hugs, or the edge midpoint a `U` spans. */
+  /** Anchor point: the cell corner an `L` hugs, or the edge midpoint a `bar` spans. */
   readonly x: number;
   readonly y: number;
   readonly dirX: -1 | 0 | 1;
@@ -235,7 +241,7 @@ export function detachableFeetPlacements(input: DetachableFeetInput): FootPlacem
       // wall above to carry load into it.
       if (sx.interior && sy.interior) continue;
       feet.push({
-        shape: sx.dir === 0 || sy.dir === 0 ? 'U' : 'L',
+        shape: sx.dir === 0 || sy.dir === 0 ? 'bar' : 'L',
         x: sx.pos,
         y: sy.pos,
         dirX: sx.dir,
@@ -252,7 +258,7 @@ export function detachableFeetPlacements(input: DetachableFeetInput): FootPlacem
  * Pin positions for one foot, in bin-centred mm.
  *
  * Three pins on an `L` (one in the elbow, one out along each arm) and four on a
- * `U` (one at each end of the bar, on both sides of its width): three is the
+ * `bar` (one at each end, on both sides of its width): three is the
  * fewest that constrains a corner against rotation, and a bar needs two at each
  * end for the same reason. The bin's hole cutter and the foot builder both read
  * this, so the two cannot drift.
@@ -277,7 +283,7 @@ export function footPinPositions(
     ];
   }
 
-  // A U spans whichever axis has dir 0; its bar runs the full cell.
+  // A bar spans whichever axis has dir 0, running the full cell.
   const spansX = foot.dirX === 0;
   const halfSpan = (spansX ? foot.cellW : foot.cellD) / 2 - armMm / 2;
   const inset = spansX ? foot.y - foot.dirY * across : foot.x - foot.dirX * across;

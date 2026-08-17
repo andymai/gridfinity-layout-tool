@@ -92,26 +92,26 @@ describe('detachableFeetPlacements', () => {
     );
   });
 
-  it('spans a single-cell axis with U feet rather than crowding four L feet on it', () => {
+  it('spans a single-cell axis with a bar rather than crowding four L feet on it', () => {
     const feet = plan({ widthUnits: 1, depthUnits: 4 });
-    expect(feet.every((f) => f.shape === 'U')).toBe(true);
+    expect(feet.every((f) => f.shape === 'bar')).toBe(true);
     // Every foot spans X, and sits on the bin's centreline in X because of it.
     expect(feet.every((f) => f.dirX === 0)).toBe(true);
     expect(feet.every((f) => f.x === 0)).toBe(true);
   });
 
-  it('gives a 1x1 two U feet, not one', () => {
+  it('gives a 1x1 two bars, not one', () => {
     const feet = plan({ widthUnits: 1, depthUnits: 1 });
     expect(feet).toHaveLength(2);
-    expect(feet.every((f) => f.shape === 'U' && f.dirX === 0)).toBe(true);
+    expect(feet.every((f) => f.shape === 'bar' && f.dirX === 0)).toBe(true);
     expect(feet.map((f) => f.y).sort((a, b) => a - b)).toEqual([-21, 21]);
   });
 
-  it('adds a mid-span pair on a long bin, and they are U feet', () => {
+  it('adds a mid-span pair on a long bin, and they are bars', () => {
     const feet = plan({ widthUnits: 6, depthUnits: 3 });
     expect(feet).toHaveLength(6);
     expect(feet.filter((f) => f.shape === 'L')).toHaveLength(4);
-    const mids = feet.filter((f) => f.shape === 'U');
+    const mids = feet.filter((f) => f.shape === 'bar');
     expect(mids).toHaveLength(2);
     // The mid pair spans X and sits on the two Y edges.
     expect(mids.every((f) => f.dirX === 0 && f.dirY !== 0)).toBe(true);
@@ -182,7 +182,7 @@ describe('footPinPositions', () => {
     }
   });
 
-  it('puts four pins on a U, paired across the axis it spans', () => {
+  it('puts four pins on a bar, paired across the axis it spans', () => {
     const foot = plan({ widthUnits: 1, depthUnits: 1 })[0];
     const pins = footPinPositions(foot, ARM, STOCK_PIN_MM);
     expect(pins).toHaveLength(4);

@@ -23,6 +23,7 @@ export type {
   BaseStyle,
   FootLattice,
   LightweightMode,
+  FeetMode,
   BinStyle,
   CompartmentConfig,
   ScoopConfig,
@@ -182,6 +183,14 @@ export {
   // constraint engine and the print estimate cannot describe different feet.
   isUndersideRelief,
   UNDERSIDE_RELIEF_BORDER_MM,
+  // Detachable feet: the predicate the worker gates on, plus the pin dimensions
+  // the foot builder and the floor's hole cutter both have to agree about.
+  hasDetachableFeet,
+  DEFAULT_FEET_MODE,
+  DETACHABLE_PIN_DIAMETERS_MM,
+  DEFAULT_DETACHABLE_PIN_DIAMETER_MM,
+  DETACHABLE_PIN_HOLE_DIAMETER_MM,
+  DETACHABLE_PIN_RIDGE_STEP_MM,
 } from '@/features/bin-designer/types';
 
 /**
