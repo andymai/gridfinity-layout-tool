@@ -1,11 +1,15 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useScanImport } from './useScanImport';
+import type { Cutout } from '@/features/bin-designer/types';
 import type { ParsedCutoutSpec } from '../svgImport/types';
 
 // Mirrors the store contract: `addCutout` reports whether the cutout landed,
-// and the hook's returned count is what it actually stored.
-const mockAddCutout = vi.fn(() => true);
+// and the hook's returned count is what it actually stored. The parameter is
+// declared so the mock keeps its argument tuple — an implementation typed
+// `() => true` narrows `mock.calls` to `[]` and the assertions below stop
+// compiling.
+const mockAddCutout = vi.fn((_cutout: Cutout) => true);
 const mockStartTransaction = vi.fn();
 const mockCommitTransaction = vi.fn();
 
