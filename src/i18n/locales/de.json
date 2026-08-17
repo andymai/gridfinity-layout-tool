@@ -3902,5 +3902,6 @@
   "binDesigner.detachableFeet.summary": "{count} Füße, Stifte ø{diameter} mm",
   "binDesigner.preview.feetDetached": "Abgenommen",
   "binDesigner.preview.feetAttached": "Angebracht",
-  "binDesigner.preview.feetDetachSlider": "Füße abnehmen"
+  "binDesigner.preview.feetDetachSlider": "Füße abnehmen",
+  "binDesigner.detachableFeetNeedsThickerWall": "So dünne Wände lassen zu wenig Boden, um einen Stift zu halten"
 }

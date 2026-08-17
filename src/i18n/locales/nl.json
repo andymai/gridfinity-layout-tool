@@ -3902,5 +3902,6 @@
   "binDesigner.detachableFeet.summary": "{count} voetjes, pennen van ø{diameter} mm",
   "binDesigner.preview.feetDetached": "Los",
   "binDesigner.preview.feetAttached": "Vast",
-  "binDesigner.preview.feetDetachSlider": "Voetjes losmaken"
+  "binDesigner.preview.feetDetachSlider": "Voetjes losmaken",
+  "binDesigner.detachableFeetNeedsThickerWall": "Zulke dunne wanden laten te weinig bodem over om een pen vast te houden"
 }

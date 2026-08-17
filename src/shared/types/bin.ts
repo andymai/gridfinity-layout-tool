@@ -193,6 +193,7 @@ export {
   DETACHABLE_PIN_MEMBRANE_MM,
   DETACHABLE_PIN_MIN_ENGAGEMENT_MM,
   detachablePinEngagementMm,
+  detachableFeetFitFloor,
   DETACHABLE_PIN_RIDGE_STEP_MM,
 } from '@/features/bin-designer/types';
 

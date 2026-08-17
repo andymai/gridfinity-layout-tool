@@ -242,10 +242,25 @@ export const DEFAULT_FEET_MODE: FeetMode = 'integral';
  */
 export function hasDetachableFeet(base: {
   readonly feet?: FeetMode;
-  readonly spacer: boolean;
+  /** Optional only so narrow callers (a Z-frame source) need not carry it; a
+   *  real `BaseConfig` always has it, which is where the guard matters. */
+  readonly spacer?: boolean;
   readonly style: BaseStyle;
 }): boolean {
-  return base.feet === 'detachable' && !base.spacer && !isSocketlessBase(base.style);
+  return base.feet === 'detachable' && base.spacer !== true && !isSocketlessBase(base.style);
+}
+
+/**
+ * True when the floor is thick enough for a pin that holds.
+ *
+ * The holes are blind, so a pin gets `wallThickness` minus the membrane. Three
+ * of the selectable wall thicknesses (0.4, 0.6, 0.8) leave less than
+ * {@link DETACHABLE_PIN_MIN_ENGAGEMENT_MM}, and the builder refuses them — so
+ * without this gate the feature is a hard generation failure on a third of the
+ * wall options rather than an unavailable toggle.
+ */
+export function detachableFeetFitFloor(wallThicknessMm: number): boolean {
+  return detachablePinEngagementMm(wallThicknessMm) >= DETACHABLE_PIN_MIN_ENGAGEMENT_MM;
 }
 
 /**

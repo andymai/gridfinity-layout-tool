@@ -3902,5 +3902,6 @@
   "binDesigner.detachableFeet.summary": "{count} pieds, ergots ø{diameter} mm",
   "binDesigner.preview.feetDetached": "Détachés",
   "binDesigner.preview.feetAttached": "Fixés",
-  "binDesigner.preview.feetDetachSlider": "Détacher les pieds"
+  "binDesigner.preview.feetDetachSlider": "Détacher les pieds",
+  "binDesigner.detachableFeetNeedsThickerWall": "Des parois aussi fines laissent trop peu de fond pour tenir un ergot"
 }

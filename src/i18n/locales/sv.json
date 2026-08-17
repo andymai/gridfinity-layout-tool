@@ -3902,5 +3902,6 @@
   "binDesigner.detachableFeet.summary": "{count} fötter, ø{diameter} mm stift",
   "binDesigner.preview.feetDetached": "Lossade",
   "binDesigner.preview.feetAttached": "Fastsatta",
-  "binDesigner.preview.feetDetachSlider": "Lossa fötterna"
+  "binDesigner.preview.feetDetachSlider": "Lossa fötterna",
+  "binDesigner.detachableFeetNeedsThickerWall": "Så tunna väggar lämnar för lite golv för att hålla ett stift"
 }

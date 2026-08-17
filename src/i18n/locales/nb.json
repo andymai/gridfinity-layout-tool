@@ -3902,5 +3902,6 @@
   "binDesigner.detachableFeet.summary": "{count} føtter, ø{diameter} mm pinner",
   "binDesigner.preview.feetDetached": "Løsnet",
   "binDesigner.preview.feetAttached": "Festet",
-  "binDesigner.preview.feetDetachSlider": "Løsne føttene"
+  "binDesigner.preview.feetDetachSlider": "Løsne føttene",
+  "binDesigner.detachableFeetNeedsThickerWall": "Så tynne vegger gir for lite gulv til å holde en pinne"
 }

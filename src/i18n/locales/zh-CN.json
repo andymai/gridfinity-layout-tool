@@ -3902,5 +3902,6 @@
   "binDesigner.detachableFeet.summary": "{count} 个底脚，ø{diameter}mm 销钉",
   "binDesigner.preview.feetDetached": "已拆下",
   "binDesigner.preview.feetAttached": "已装上",
-  "binDesigner.preview.feetDetachSlider": "拆下底脚"
+  "binDesigner.preview.feetDetachSlider": "拆下底脚",
+  "binDesigner.detachableFeetNeedsThickerWall": "这么薄的壁面剩下的底板不足以固定销钉"
 }

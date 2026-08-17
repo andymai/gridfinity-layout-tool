@@ -3902,5 +3902,6 @@
   "binDesigner.detachableFeet.summary": "발 {count}개, ø{diameter}mm 핀",
   "binDesigner.preview.feetDetached": "분리됨",
   "binDesigner.preview.feetAttached": "장착됨",
-  "binDesigner.preview.feetDetachSlider": "발 분리"
+  "binDesigner.preview.feetDetachSlider": "발 분리",
+  "binDesigner.detachableFeetNeedsThickerWall": "이렇게 얇은 벽은 핀을 잡아줄 바닥이 부족합니다"
 }

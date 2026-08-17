@@ -366,11 +366,10 @@ export function footCellCentre(p: FootPlacement): { x: number; y: number } {
 /**
  * Pin positions for one foot, in bin-centred mm.
  *
- * Three pins on an `L` (one in the elbow, one out along each arm) and four on a
- * `bar` (one at each end, on both sides of its width): three is the
- * fewest that constrains a corner against rotation, and a bar needs two at each
- * end for the same reason. The bin's hole cutter and the foot builder both read
- * this, so the two cannot drift.
+ * Three on an `L` — one in the elbow and one out along each arm, the fewest
+ * that constrains a corner against rotation — and two along a `bar`'s run. The
+ * bin's hole cutter and the foot builder both read this, so the two cannot
+ * drift.
  */
 export function footPinPositions(
   foot: FootPlacement,

@@ -381,3 +381,36 @@ describe('detachable feet seating in a baseplate', () => {
     );
   });
 });
+
+/**
+ * A wall too thin for a pin used to fail the WHOLE generation: the builder
+ * throws, and the shell stage does not catch. Three of the selectable wall
+ * thicknesses are in that range, so this is the difference between an
+ * unavailable toggle and a dead preview.
+ */
+describe('a floor too thin to hold a pin', () => {
+  let generateBin: (p: BinParams, cb: undefined, forExport: boolean) => MeshData;
+
+  beforeAll(async () => {
+    generateBin = (await import('./binOrchestrator')).generateBin;
+  }, 60000);
+
+  it('builds an ordinary socketed bin instead of throwing', () => {
+    for (const wallThickness of [0.4, 0.6, 0.8]) {
+      const params: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 2,
+        depth: 2,
+        height: 3,
+        wallThickness,
+        base: { ...DEFAULT_BIN_PARAMS.base, feet: 'detachable' },
+      };
+      const mesh = generateBin(params, undefined, true);
+      expect(mesh.triangleCount).toBeGreaterThan(0);
+      // The socket is back, so the bin is a whole part rather than a body with
+      // holes and no feet to fill them.
+      const { minZ, maxZ } = boundingBox(mesh.vertices);
+      expect(maxZ - minZ).toBeGreaterThan(20);
+    }
+  });
+});

@@ -3902,5 +3902,6 @@
   "binDesigner.detachableFeet.summary": "脚{count}個、ø{diameter}mmピン",
   "binDesigner.preview.feetDetached": "取り外し",
   "binDesigner.preview.feetAttached": "取り付け",
-  "binDesigner.preview.feetDetachSlider": "脚を外す"
+  "binDesigner.preview.feetDetachSlider": "脚を外す",
+  "binDesigner.detachableFeetNeedsThickerWall": "これほど薄い壁ではピンを保持する床が足りません"
 }

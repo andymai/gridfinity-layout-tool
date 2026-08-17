@@ -5,7 +5,10 @@ import { useTranslation } from '@/i18n';
 import { resolveConstraints, getFeatureStatus } from '@/shared/constraints';
 import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import { estimatePrint } from '@/features/bin-designer/utils/printEstimates';
-import { DEFAULT_DETACHABLE_PIN_DIAMETER_MM } from '@/features/bin-designer/types/base';
+import {
+  DEFAULT_DETACHABLE_PIN_DIAMETER_MM,
+  detachableFeetFitFloor,
+} from '@/features/bin-designer/types/base';
 import type {
   BinParams,
   FloorPatternType,
@@ -470,9 +473,15 @@ export function useBaseSection() {
     handlers: {
       toggleDetachableFeet,
       setPinDiameter,
-      detachableFeetDisabledReason: detachableFeetStatus.reason
-        ? t(detachableFeetStatus.reason)
-        : undefined,
+      // The floor gate is a parameter precondition, not a feature conflict, so
+      // it is not a constraint rule (the engine forbids a rule that disables
+      // its own source). Without it the toggle looks available and the worker
+      // quietly declines to build any feet.
+      detachableFeetDisabledReason: !detachableFeetFitFloor(params.wallThickness)
+        ? t('binDesigner.detachableFeetNeedsThickerWall')
+        : detachableFeetStatus.reason
+          ? t(detachableFeetStatus.reason)
+          : undefined,
       toggleMagnet,
       toggleScrew,
       toggleStackingLip,

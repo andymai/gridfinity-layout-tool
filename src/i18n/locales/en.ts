@@ -2197,6 +2197,8 @@ const en: Record<string, string> = {
   'binDesigner.spacerDisablesAttachment': 'A spacer has no floor to hold a magnet or screw',
   'binDesigner.spacerDisablesBase': 'The spacer already opens the base right through',
   'binDesigner.spacerDisablesDetachableFeet': 'A spacer needs its feet built in to hold together',
+  'binDesigner.detachableFeetNeedsThickerWall':
+    'Walls this thin leave too little floor to hold a pin',
   'binDesigner.detachableFeet': 'Detachable feet',
   'binDesigner.detachableFeet.saving': 'Uses {percent}% less material than built-in feet',
   'binDesigner.detachableFeet.pinSize': 'Pin size',

@@ -3902,5 +3902,6 @@
   "binDesigner.detachableFeet.summary": "{count} piedini, perni ø{diameter} mm",
   "binDesigner.preview.feetDetached": "Staccati",
   "binDesigner.preview.feetAttached": "Attaccati",
-  "binDesigner.preview.feetDetachSlider": "Stacca i piedini"
+  "binDesigner.preview.feetDetachSlider": "Stacca i piedini",
+  "binDesigner.detachableFeetNeedsThickerWall": "Pareti così sottili lasciano troppo poco fondo per trattenere un perno"
 }

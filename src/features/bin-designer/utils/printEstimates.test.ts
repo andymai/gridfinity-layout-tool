@@ -880,4 +880,21 @@ describe('printEstimates', () => {
       );
     });
   });
+
+  it('does not stack the lightweight saving on top of the feet saving', () => {
+    // Both flags can be stored at once: the panel LOCKS lightweight rather than
+    // clearing it, and the generator makes it inert. Subtracting both drove the
+    // base term negative and reported a saving of 91% on a bin that saves 46%.
+    const base = { ...DEFAULT_BIN_PARAMS, width: 3, depth: 2, height: 6 };
+    const feetOnly = estimatePrint({
+      ...base,
+      base: { ...DEFAULT_BIN_PARAMS.base, feet: 'detachable' },
+    }).volumeMm3;
+    const both = estimatePrint({
+      ...base,
+      base: { ...DEFAULT_BIN_PARAMS.base, feet: 'detachable', lightweight: true },
+    }).volumeMm3;
+    expect(both).toBe(feetOnly);
+    expect(both).toBeGreaterThan(0);
+  });
 });
