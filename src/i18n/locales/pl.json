@@ -3892,5 +3892,12 @@
   "binDesigner.slideTray.fitSample.tip3": "Wydrukuj go tym samym filamentem i dyszą, których użyjesz do pojemnika.",
   "binDesigner.slideTray.fitSample.exportComplete": "Pobrano test dopasowania",
   "binDesigner.slideTray.fitSample.exportFailed": "Nie udało się wyeksportować testu dopasowania",
-  "binDesigner.spacerDisablesDetachableFeet": "Dystans wymaga wbudowanych nóżek, aby się nie rozpadł"
+  "binDesigner.spacerDisablesDetachableFeet": "Dystans wymaga wbudowanych nóżek, aby się nie rozpadł",
+  "binDesigner.detachableFeet": "Odczepiane nóżki",
+  "binDesigner.detachableFeet.saving": "Zużywa o {percent}% mniej materiału niż nóżki wbudowane",
+  "binDesigner.detachableFeet.pinSize": "Rozmiar kołka",
+  "binDesigner.detachableFeet.pinHint": "Jeśli 5,0 mm nie wchodzi, spróbuj najpierw 4,9 mm",
+  "binDesigner.detachableFeet.supersedes": "Nieużywane przy odczepianych nóżkach",
+  "binDesigner.detachableFeet.unplaceable": "Przy tym rozmiarze nie ma całej komórki siatki na nóżkę",
+  "binDesigner.detachableFeet.summary": "Nóżki: {count}, kołki ø{diameter} mm"
 }

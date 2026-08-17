@@ -3892,5 +3892,12 @@
   "binDesigner.slideTray.fitSample.tip3": "ビンに使うのと同じフィラメントとノズルで印刷してください。",
   "binDesigner.slideTray.fitSample.exportComplete": "フィットテストをダウンロードしました",
   "binDesigner.slideTray.fitSample.exportFailed": "フィットテストを書き出せませんでした",
-  "binDesigner.spacerDisablesDetachableFeet": "スペーサーは一体型の脚がないと分離してしまいます"
+  "binDesigner.spacerDisablesDetachableFeet": "スペーサーは一体型の脚がないと分離してしまいます",
+  "binDesigner.detachableFeet": "取り外し式の脚",
+  "binDesigner.detachableFeet.saving": "一体型の脚より材料を{percent}%節約します",
+  "binDesigner.detachableFeet.pinSize": "ピンの太さ",
+  "binDesigner.detachableFeet.pinHint": "5.0mmが入らない場合はまず4.9mmをお試しください",
+  "binDesigner.detachableFeet.supersedes": "取り外し式の脚では使用しません",
+  "binDesigner.detachableFeet.unplaceable": "このサイズでは脚を置けるグリッドのマス目がありません",
+  "binDesigner.detachableFeet.summary": "脚{count}個、ø{diameter}mmピン"
 }

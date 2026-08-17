@@ -642,4 +642,69 @@ describe('useBaseSection — base-only bin residue', () => {
     expect(params.extraWallHeightMm).toBeUndefined();
     expect(params.height).toBe(1);
   });
+
+  describe('detachable feet', () => {
+    it('toggling on selects the mode', () => {
+      const { result } = renderHook(() => useBaseSection());
+      act(() => result.current.handlers.toggleDetachableFeet());
+      expect(useDesignerStore.getState().params.base.feet).toBe('detachable');
+    });
+
+    it('toggling off DELETES the keys rather than defaulting them', () => {
+      // `params` is hashed wholesale for the community fingerprint, so a bin
+      // that ends up back where it started must carry no trace of the visit.
+      const { result } = renderHook(() => useBaseSection());
+      act(() => result.current.handlers.toggleDetachableFeet());
+      act(() => result.current.handlers.setPinDiameter(4.9));
+      act(() => result.current.handlers.toggleDetachableFeet());
+      const base = useDesignerStore.getState().params.base;
+      expect('feet' in base).toBe(false);
+      expect('feetPinDiameter' in base).toBe(false);
+    });
+
+    it('locks the settings it supersedes, without clearing them', () => {
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, lightweight: true } },
+      });
+      const { result } = renderHook(() => useBaseSection());
+      act(() => result.current.handlers.toggleDetachableFeet());
+
+      expect(result.current.handlers.lightweightDisabledReason).toBeDefined();
+      expect(result.current.handlers.halfSocketsDisabledReason).toBeDefined();
+      // Still stored, so turning the mode off brings it back.
+      expect(useDesignerStore.getState().params.base.lightweight).toBe(true);
+    });
+
+    it('reports a saving once the mode is on', () => {
+      const { result } = renderHook(() => useBaseSection());
+      expect(result.current.state.detachableSavingPercent).toBe(0);
+      act(() => result.current.handlers.toggleDetachableFeet());
+      expect(result.current.state.detachableSavingPercent).toBeGreaterThan(20);
+      expect(result.current.state.detachableFootCount).toBeGreaterThan(0);
+    });
+
+    it('says so when no whole cell can take a foot', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          width: 1,
+          depth: 4,
+          base: { ...DEFAULT_BIN_PARAMS.base, feet: 'detachable', footLatticeX: 'half' },
+        },
+      });
+      const { result } = renderHook(() => useBaseSection());
+      expect(result.current.state.detachableUnplaceable).toBe(true);
+      expect(result.current.state.detachableFootCount).toBe(0);
+    });
+
+    it('is refused on a spacer', () => {
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, spacer: true } },
+      });
+      const { result } = renderHook(() => useBaseSection());
+      expect(result.current.handlers.detachableFeetDisabledReason).toBeDefined();
+      act(() => result.current.handlers.toggleDetachableFeet());
+      expect(useDesignerStore.getState().params.base.feet).toBeUndefined();
+    });
+  });
 });

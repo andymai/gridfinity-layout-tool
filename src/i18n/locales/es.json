@@ -3892,5 +3892,12 @@
   "binDesigner.slideTray.fitSample.tip3": "Imprímela con el mismo filamento y la misma boquilla que usarás para el cajón.",
   "binDesigner.slideTray.fitSample.exportComplete": "Prueba de ajuste descargada",
   "binDesigner.slideTray.fitSample.exportFailed": "No se pudo exportar la prueba de ajuste",
-  "binDesigner.spacerDisablesDetachableFeet": "Un separador necesita patas integradas para mantenerse unido"
+  "binDesigner.spacerDisablesDetachableFeet": "Un separador necesita patas integradas para mantenerse unido",
+  "binDesigner.detachableFeet": "Patas desmontables",
+  "binDesigner.detachableFeet.saving": "Usa un {percent} % menos de material que las patas integradas",
+  "binDesigner.detachableFeet.pinSize": "Tamaño del pasador",
+  "binDesigner.detachableFeet.pinHint": "Prueba primero 4,9 mm si 5,0 mm no encaja",
+  "binDesigner.detachableFeet.supersedes": "No se usa con patas desmontables",
+  "binDesigner.detachableFeet.unplaceable": "No hay ninguna celda completa de la rejilla para una pata a este tamaño",
+  "binDesigner.detachableFeet.summary": "{count} patas, pasadores de ø{diameter} mm"
 }

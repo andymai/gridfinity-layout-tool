@@ -3892,5 +3892,12 @@
   "binDesigner.slideTray.fitSample.tip3": "Друкуйте його тим самим філаментом і соплом, які використаєте для контейнера.",
   "binDesigner.slideTray.fitSample.exportComplete": "Тест припасування завантажено",
   "binDesigner.slideTray.fitSample.exportFailed": "Не вдалося експортувати тест припасування",
-  "binDesigner.spacerDisablesDetachableFeet": "Проставка потребує вбудованих ніжок, щоб триматися купи"
+  "binDesigner.spacerDisablesDetachableFeet": "Проставка потребує вбудованих ніжок, щоб триматися купи",
+  "binDesigner.detachableFeet": "Знімні ніжки",
+  "binDesigner.detachableFeet.saving": "Витрачає на {percent}% менше матеріалу, ніж вбудовані ніжки",
+  "binDesigner.detachableFeet.pinSize": "Розмір штифта",
+  "binDesigner.detachableFeet.pinHint": "Якщо 5,0 мм не сідає, спробуйте спершу 4,9 мм",
+  "binDesigner.detachableFeet.supersedes": "Не використовується зі знімними ніжками",
+  "binDesigner.detachableFeet.unplaceable": "За цього розміру немає цілої комірки сітки для ніжки",
+  "binDesigner.detachableFeet.summary": "Ніжок: {count}, штифти ø{diameter} мм"
 }

@@ -3892,5 +3892,12 @@
   "binDesigner.slideTray.fitSample.tip3": "请使用与箱体相同的耗材和喷嘴打印。",
   "binDesigner.slideTray.fitSample.exportComplete": "已下载配合测试件",
   "binDesigner.slideTray.fitSample.exportFailed": "无法导出配合测试件",
-  "binDesigner.spacerDisablesDetachableFeet": "垫片需要一体式底脚才能保持完整"
+  "binDesigner.spacerDisablesDetachableFeet": "垫片需要一体式底脚才能保持完整",
+  "binDesigner.detachableFeet": "可拆卸底脚",
+  "binDesigner.detachableFeet.saving": "比一体式底脚少用 {percent}% 的材料",
+  "binDesigner.detachableFeet.pinSize": "销钉尺寸",
+  "binDesigner.detachableFeet.pinHint": "若 5.0mm 装不进，请先试 4.9mm",
+  "binDesigner.detachableFeet.supersedes": "可拆卸底脚不使用此项",
+  "binDesigner.detachableFeet.unplaceable": "此尺寸下没有可容纳底脚的完整网格单元",
+  "binDesigner.detachableFeet.summary": "{count} 个底脚，ø{diameter}mm 销钉"
 }

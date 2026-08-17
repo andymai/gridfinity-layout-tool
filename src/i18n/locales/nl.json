@@ -3892,5 +3892,12 @@
   "binDesigner.slideTray.fitSample.tip3": "Print hem met hetzelfde filament en dezelfde nozzle als de bak.",
   "binDesigner.slideTray.fitSample.exportComplete": "Pasvormtest gedownload",
   "binDesigner.slideTray.fitSample.exportFailed": "Kon de pasvormtest niet exporteren",
-  "binDesigner.spacerDisablesDetachableFeet": "Een afstandhouder heeft vaste voetjes nodig om bijeen te blijven"
+  "binDesigner.spacerDisablesDetachableFeet": "Een afstandhouder heeft vaste voetjes nodig om bijeen te blijven",
+  "binDesigner.detachableFeet": "Afneembare voetjes",
+  "binDesigner.detachableFeet.saving": "Gebruikt {percent}% minder materiaal dan vaste voetjes",
+  "binDesigner.detachableFeet.pinSize": "Pengrootte",
+  "binDesigner.detachableFeet.pinHint": "Probeer eerst 4,9 mm als 5,0 mm niet past",
+  "binDesigner.detachableFeet.supersedes": "Wordt niet gebruikt bij afneembare voetjes",
+  "binDesigner.detachableFeet.unplaceable": "Geen hele rastercel waar een voetje in past bij dit formaat",
+  "binDesigner.detachableFeet.summary": "{count} voetjes, pennen van ø{diameter} mm"
 }

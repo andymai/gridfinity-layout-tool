@@ -22,6 +22,7 @@ import {
   LID_EXTRA_HEIGHT_MIN_MM,
   LID_RAIL_SIDES,
   LIGHTWEIGHT_MODES,
+  DETACHABLE_PIN_DIAMETERS_MM,
 } from '@/features/bin-designer/types';
 import { DEFAULT_LIGHTWEIGHT_MODE } from '@/features/bin-designer/types/base';
 import { useTranslation } from '@/i18n';
@@ -166,6 +167,47 @@ export function BaseSection() {
             </div>
           )}
         </div>
+      </FeatureToggle>
+
+      {/* Heads the foot cluster: half sockets, the foot lattice and the
+          lightweight modes below all describe where INTEGRAL feet fall, which
+          this mode answers its own way. They are locked rather than cleared, so
+          the reason sits directly under the thing that caused it and a
+          lightweight setting survives a round trip through the toggle. */}
+      <FeatureToggle
+        label={t('binDesigner.detachableFeet')}
+        checked={state.hasDetachableFeet}
+        onChange={handlers.toggleDetachableFeet}
+        disabledReason={handlers.detachableFeetDisabledReason}
+        valueSummary={t('binDesigner.detachableFeet.summary', {
+          count: state.detachableFootCount,
+          diameter: state.pinDiameter,
+        })}
+        primaryControls={
+          <p className="text-[11px] leading-relaxed text-content-tertiary">
+            {state.detachableUnplaceable
+              ? t('binDesigner.detachableFeet.unplaceable')
+              : t('binDesigner.detachableFeet.saving', {
+                  percent: state.detachableSavingPercent,
+                })}
+          </p>
+        }
+      >
+        <SegmentedControl
+          aria-label={t('binDesigner.detachableFeet.pinSize')}
+          activeStyle="accent"
+          fullWidth
+          size="sm"
+          value={String(state.pinDiameter)}
+          onChange={(value) => handlers.setPinDiameter(Number(value))}
+          options={DETACHABLE_PIN_DIAMETERS_MM.map((diameter) => ({
+            value: String(diameter),
+            label: `\u00f8${diameter}mm`,
+          }))}
+        />
+        <p className="text-[11px] leading-relaxed text-content-tertiary">
+          {t('binDesigner.detachableFeet.pinHint')}
+        </p>
       </FeatureToggle>
 
       <FeatureToggle

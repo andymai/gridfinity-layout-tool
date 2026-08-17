@@ -3,6 +3,9 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
 import { resolveConstraints, getFeatureStatus } from '@/shared/constraints';
+import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
+import { estimatePrint } from '@/features/bin-designer/utils/printEstimates';
+import { DEFAULT_DETACHABLE_PIN_DIAMETER_MM } from '@/features/bin-designer/types/base';
 import type {
   BinParams,
   FloorPatternType,
@@ -40,6 +43,20 @@ function omitTile(base: BinParams['base']): BinParams['base'] {
 /** Strip a `lightweightMode` that just restates the default. */
 function omitDefaultLightweightMode(base: BinParams['base']): BinParams['base'] {
   const { lightweightMode: _mode, ...rest } = base;
+  return rest;
+}
+
+/**
+ * Strip the detachable-feet fields entirely.
+ *
+ * Omitting them from the constraint engine's patch is not enough: `mergeParams`
+ * deep-merges `base`, so a key it never mentions simply survives. The fields
+ * have to be absent rather than defaulted, because `params` is hashed wholesale
+ * for the community fingerprint and a bin that ends up back where it started
+ * must carry no trace of the visit.
+ */
+function omitDetachableFeet(base: BinParams['base']): BinParams['base'] {
+  const { feet: _feet, feetPinDiameter: _pin, ...rest } = base;
   return rest;
 }
 
@@ -92,7 +109,39 @@ export function useBaseSection() {
     ? DEFAULT_FOOT_LATTICE
     : (base.footLatticeY ?? DEFAULT_FOOT_LATTICE);
 
+  // ── Detachable feet ──────────────────────────────────────────────────────
+  // The three foot-shaping controls below are SUPERSEDED, not contradicted:
+  // they describe where integral feet fall, which this mode answers its own
+  // way. Locked with a reason rather than routed through the constraint engine,
+  // whose mode switches deliberately CLEAR what they disable — turning the
+  // toggle on would silently discard a lightweight setting that turning it off
+  // again would not bring back.
+  const hasDetachableFeet = base.feet === 'detachable';
+  const detachablePlan = hasDetachableFeet ? resolveDetachableFeet(params) : null;
+  // No pocket-aligned whole cell to stand a foot on. Reachable for a 1-wide bin
+  // under the `half` lattice, and the panel has to say so: the alternative is a
+  // bin that silently exports with no feet at all.
+  const detachableUnplaceable = detachablePlan !== null && detachablePlan.placements.length === 0;
+  const feetSupersedeReason = hasDetachableFeet ? 'binDesigner.detachableFeet.supersedes' : null;
+
+  /**
+   * What the feature is saving, as a ratio.
+   *
+   * A ratio and not a mass: the estimate reports SOLID volume converted at PLA
+   * density, i.e. as if the part were printed at 100% infill, and the feet are
+   * the one chunky region of a bin. An absolute figure would overstate the
+   * saving against what a slicer reports; dividing cancels the error out.
+   */
+  const detachableSavingPercent = useMemo(() => {
+    if (!hasDetachableFeet) return 0;
+    const { feet: _feet, feetPinDiameter: _pin, ...integralBase } = base;
+    const integral = estimatePrint({ ...params, base: integralBase }).volumeMm3;
+    if (integral <= 0) return 0;
+    return Math.round(((integral - estimatePrint(params).volumeMm3) / integral) * 100);
+  }, [params, base, hasDetachableFeet]);
+
   // Feature statuses and disabled reasons from constraint engine
+  const detachableFeetStatus = getFeatureStatus(params, 'base.detachableFeet');
   const magnetStatus = getFeatureStatus(params, 'base.magnet');
   const screwStatus = getFeatureStatus(params, 'base.screw');
   const flatStatus = getFeatureStatus(params, 'base.flat');
@@ -155,13 +204,20 @@ export function useBaseSection() {
   const magnetDisabledReason = magnetStatus.reason ? t(magnetStatus.reason) : undefined;
   const screwDisabledReason = screwStatus.reason ? t(screwStatus.reason) : undefined;
   const flatDisabledReason = flatStatus.reason ? t(flatStatus.reason) : undefined;
-  const halfSocketsDisabledReason = halfSocketsStatus.reason
-    ? t(halfSocketsStatus.reason)
-    : undefined;
+  // The supersede reason wins over the engine's: with detachable feet on, "not
+  // used with these feet" is the true and useful answer, and the engine has no
+  // rule to give here because the pairing is inert rather than forbidden.
+  const halfSocketsDisabledReason = feetSupersedeReason
+    ? t(feetSupersedeReason)
+    : halfSocketsStatus.reason
+      ? t(halfSocketsStatus.reason)
+      : undefined;
   const lidBottomDisabledReason = lidBottomStatus.reason ? t(lidBottomStatus.reason) : undefined;
-  const lightweightDisabledReason = lightweightStatus.reason
-    ? t(lightweightStatus.reason)
-    : undefined;
+  const lightweightDisabledReason = feetSupersedeReason
+    ? t(feetSupersedeReason)
+    : lightweightStatus.reason
+      ? t(lightweightStatus.reason)
+      : undefined;
   const spacerDisabledReason = spacerStatus.reason ? t(spacerStatus.reason) : undefined;
   const tileDisabledReason = tileStatus.reason ? t(tileStatus.reason) : undefined;
 
@@ -371,9 +427,31 @@ export function useBaseSection() {
     [updateBase]
   );
 
+  const toggleDetachableFeet = useCallback(() => {
+    if (!hasDetachableFeet && !detachableFeetStatus.available) return;
+    const enabled = !hasDetachableFeet;
+    const { params: resolved } = resolveConstraints(params, {
+      feature: 'base.detachableFeet',
+      enabled,
+    });
+    commit(enabled ? resolved : { ...resolved, base: omitDetachableFeet(resolved.base) });
+  }, [params, hasDetachableFeet, detachableFeetStatus.available, commit]);
+
+  const setPinDiameter = useCallback(
+    (diameter: number) => {
+      updateBase({ feetPinDiameter: diameter });
+    },
+    [updateBase]
+  );
+
   return {
     state: {
       base,
+      hasDetachableFeet,
+      pinDiameter: base.feetPinDiameter ?? DEFAULT_DETACHABLE_PIN_DIAMETER_MM,
+      detachableFootCount: detachablePlan?.placements.length ?? 0,
+      detachableUnplaceable,
+      detachableSavingPercent,
       hasMagnet,
       hasScrew,
       isFlat,
@@ -394,6 +472,11 @@ export function useBaseSection() {
       floorPatternDoesNotFit: floorPattern.enabled && floorPatternFit === 'none',
     },
     handlers: {
+      toggleDetachableFeet,
+      setPinDiameter,
+      detachableFeetDisabledReason: detachableFeetStatus.reason
+        ? t(detachableFeetStatus.reason)
+        : undefined,
       toggleMagnet,
       toggleScrew,
       toggleStackingLip,
@@ -402,7 +485,9 @@ export function useBaseSection() {
       toggleHalfSockets,
       setFootLatticeX,
       setFootLatticeY,
-      footLatticeLockReason: footLatticeLockReason ? t(footLatticeLockReason) : null,
+      footLatticeLockReason: t(
+        feetSupersedeReason ?? footLatticeLockReason ?? 'binDesigner.footLattice.hint'
+      ),
       toggleFlat,
       toggleLidBottom,
       setTrayAttachment,
