@@ -38,9 +38,16 @@ export const LID_OFFSET_DEFAULT = 30;
 interface LidExplodeSliderProps {
   value: number;
   onChange: (mm: number) => void;
+  /**
+   * Copy for the two ends and the control itself. Defaults to the lid's, so
+   * every existing call site is unchanged; the detachable feet pass their own
+   * because they move the other way — the top of this track means "apart", and
+   * for feet that reads as detached rather than open.
+   */
+  labels?: { readonly open: string; readonly closed: string; readonly aria: string };
 }
 
-export function LidExplodeSlider({ value, onChange }: LidExplodeSliderProps) {
+export function LidExplodeSlider({ value, onChange, labels }: LidExplodeSliderProps) {
   const t = useTranslation();
   const id = useId();
   const trackRef = useRef<HTMLDivElement>(null);
@@ -120,7 +127,7 @@ export function LidExplodeSlider({ value, onChange }: LidExplodeSliderProps) {
       onPointerLeave={() => setIsHovering(false)}
     >
       <span className="text-[11px] font-medium text-content-secondary">
-        {t('binDesigner.preview.lidOpen')}
+        {labels?.open ?? t('binDesigner.preview.lidOpen')}
       </span>
 
       {/* Interactive track area — wider than the visual track for easy clicking. */}
@@ -181,7 +188,7 @@ export function LidExplodeSlider({ value, onChange }: LidExplodeSliderProps) {
           max={LID_OFFSET_MAX}
           step={1}
           className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-          aria-label={t('binDesigner.preview.lidExplodeSlider')}
+          aria-label={labels?.aria ?? t('binDesigner.preview.lidExplodeSlider')}
           aria-orientation="vertical"
           aria-valuenow={value}
           aria-valuemin={LID_OFFSET_MIN}
@@ -191,7 +198,7 @@ export function LidExplodeSlider({ value, onChange }: LidExplodeSliderProps) {
       </div>
 
       <span className="text-[11px] font-medium text-content-secondary">
-        {t('binDesigner.preview.lidClosed')}
+        {labels?.closed ?? t('binDesigner.preview.lidClosed')}
       </span>
     </div>
   );

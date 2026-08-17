@@ -3899,5 +3899,8 @@
   "binDesigner.detachableFeet.pinHint": "Якщо більший штифт не сідає, спробуйте спершу менший",
   "binDesigner.detachableFeet.supersedes": "Не використовується зі знімними ніжками",
   "binDesigner.detachableFeet.unplaceable": "За цього розміру немає цілої комірки сітки для ніжки",
-  "binDesigner.detachableFeet.summary": "Ніжок: {count}, штифти ø{diameter} мм"
+  "binDesigner.detachableFeet.summary": "Ніжок: {count}, штифти ø{diameter} мм",
+  "binDesigner.preview.feetDetached": "Від’єднано",
+  "binDesigner.preview.feetAttached": "Приєднано",
+  "binDesigner.preview.feetDetachSlider": "Від’єднати ніжки"
 }

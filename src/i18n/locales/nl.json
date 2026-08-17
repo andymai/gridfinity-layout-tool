@@ -3899,5 +3899,8 @@
   "binDesigner.detachableFeet.pinHint": "Probeer eerst de kleinste pen als de grootste niet past",
   "binDesigner.detachableFeet.supersedes": "Wordt niet gebruikt bij afneembare voetjes",
   "binDesigner.detachableFeet.unplaceable": "Geen hele rastercel waar een voetje in past bij dit formaat",
-  "binDesigner.detachableFeet.summary": "{count} voetjes, pennen van ø{diameter} mm"
+  "binDesigner.detachableFeet.summary": "{count} voetjes, pennen van ø{diameter} mm",
+  "binDesigner.preview.feetDetached": "Los",
+  "binDesigner.preview.feetAttached": "Vast",
+  "binDesigner.preview.feetDetachSlider": "Voetjes losmaken"
 }

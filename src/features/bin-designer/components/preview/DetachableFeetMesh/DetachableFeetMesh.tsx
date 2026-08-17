@@ -27,18 +27,15 @@ const XRAY_OPACITY_FACTOR = 0.32;
 
 interface DetachableFeetMeshProps {
   color: string;
-  /**
-   * Distance the explode slider lifts the lid. The feet move the opposite way —
-   * down, away from the bin — because that is the direction they come off in.
-   */
-  lidOffsetMm: number;
+  /** How far the feet are dropped away from the bin, in mm. 0 = attached. */
+  offsetMm: number;
   wireframe?: boolean;
   xray?: boolean;
 }
 
 export function DetachableFeetMesh({
   color,
-  lidOffsetMm,
+  offsetMm,
   wireframe = false,
   xray = false,
 }: DetachableFeetMeshProps) {
@@ -72,12 +69,12 @@ export function DetachableFeetMesh({
 
   useEffect(() => {
     invalidate();
-  }, [geometry, lidOffsetMm, invalidate]);
+  }, [geometry, offsetMm, invalidate]);
 
   if (!geometry || !feetMesh) return null;
 
   return (
-    <group position={[0, 0, -lidOffsetMm]}>
+    <group position={[0, 0, -offsetMm]}>
       <mesh geometry={geometry}>
         <meshStandardMaterial {...matProps} />
       </mesh>

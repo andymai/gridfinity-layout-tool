@@ -3899,5 +3899,8 @@
   "binDesigner.detachableFeet.pinHint": "Tente o pino menor primeiro se o maior não encaixar",
   "binDesigner.detachableFeet.supersedes": "Não usado com pés destacáveis",
   "binDesigner.detachableFeet.unplaceable": "Não há célula inteira da grade para um pé neste tamanho",
-  "binDesigner.detachableFeet.summary": "{count} pés, pinos de ø{diameter} mm"
+  "binDesigner.detachableFeet.summary": "{count} pés, pinos de ø{diameter} mm",
+  "binDesigner.preview.feetDetached": "Soltos",
+  "binDesigner.preview.feetAttached": "Fixados",
+  "binDesigner.preview.feetDetachSlider": "Soltar os pés"
 }

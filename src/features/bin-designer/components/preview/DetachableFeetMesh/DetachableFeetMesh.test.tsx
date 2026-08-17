@@ -82,7 +82,7 @@ const groupZ = (container: HTMLElement): number =>
 describe('DetachableFeetMesh', () => {
   it('renders nothing when the bin has no detachable feet', () => {
     const { container } = render(
-      <DetachableFeetMesh color="#cccccc" lidOffsetMm={0} wireframe={false} />
+      <DetachableFeetMesh color="#cccccc" offsetMm={0} wireframe={false} />
     );
     expect(container.firstChild).toBeNull();
   });
@@ -92,22 +92,22 @@ describe('DetachableFeetMesh', () => {
     // here is how the preview and the export come to disagree.
     seedFeet();
     const { container } = render(
-      <DetachableFeetMesh color="#cccccc" lidOffsetMm={0} wireframe={false} />
+      <DetachableFeetMesh color="#cccccc" offsetMm={0} wireframe={false} />
     );
     expect(groupZ(container)).toBe(0);
   });
 
   it('drops away from the bin on the explode slider, not toward it', () => {
     seedFeet();
-    const closed = render(<DetachableFeetMesh color="#ccc" lidOffsetMm={0} wireframe={false} />);
-    const open = render(<DetachableFeetMesh color="#ccc" lidOffsetMm={15} wireframe={false} />);
+    const closed = render(<DetachableFeetMesh color="#ccc" offsetMm={0} wireframe={false} />);
+    const open = render(<DetachableFeetMesh color="#ccc" offsetMm={15} wireframe={false} />);
     expect(groupZ(open.container) - groupZ(closed.container)).toBeCloseTo(-15, 6);
   });
 
   it('uses the body colour', () => {
     seedFeet();
     const { container } = render(
-      <DetachableFeetMesh color="#abcdef" lidOffsetMm={0} wireframe={false} />
+      <DetachableFeetMesh color="#abcdef" offsetMm={0} wireframe={false} />
     );
     expect(container.querySelector('meshStandardMaterial')?.getAttribute('color')).toBe('#abcdef');
   });

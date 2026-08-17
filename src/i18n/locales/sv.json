@@ -3899,5 +3899,8 @@
   "binDesigner.detachableFeet.pinHint": "Prova det mindre stiftet först om det större inte passar",
   "binDesigner.detachableFeet.supersedes": "Används inte med avtagbara fötter",
   "binDesigner.detachableFeet.unplaceable": "Ingen hel rutnätscell att sätta en fot i vid den här storleken",
-  "binDesigner.detachableFeet.summary": "{count} fötter, ø{diameter} mm stift"
+  "binDesigner.detachableFeet.summary": "{count} fötter, ø{diameter} mm stift",
+  "binDesigner.preview.feetDetached": "Lossade",
+  "binDesigner.preview.feetAttached": "Fastsatta",
+  "binDesigner.preview.feetDetachSlider": "Lossa fötterna"
 }

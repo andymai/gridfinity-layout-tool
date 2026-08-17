@@ -1,0 +1,1 @@
+export { FeetDetachSlider } from './FeetDetachSlider';

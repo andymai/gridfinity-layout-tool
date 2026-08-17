@@ -29,6 +29,7 @@ import {
   LabelPlateMeshes,
   LidGuideLine,
   LidExplodeSlider,
+  FeetDetachSlider,
   LID_OFFSET_DEFAULT,
   BinAxisLabels,
   AssembledBinDimensions,
@@ -62,6 +63,7 @@ import { describeBin, getStatusAnnouncement } from '../../utils/a11y';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { stackPitchMm } from '@/shared/utils/heightUnits';
 import { useTranslation } from '@/i18n';
+import { hasDetachableFeet } from '@/features/bin-designer/types/base';
 import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
 import { CameraController, usePresetTransition, SceneLighting } from './previewCanvasCamera';
@@ -126,6 +128,13 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
   // Lid explode slider (mm above the snapped position). Default = mid-explode
   // so both the lid and the bin's interior are visible when a lid is enabled.
   const [lidOffsetMm, setLidOffsetMm] = useState<number>(LID_OFFSET_DEFAULT);
+  // Detached feet get their own offset, and it starts at ZERO rather than at the
+  // lid's default. The two sliders mean opposite things: a lid opens so you can
+  // see inside, which is why it starts lifted, while feet are the part the bin
+  // stands on and the useful default is attached. Sharing the lid's value also
+  // stranded them 30mm down on a bin with no lid, where the slider that set it
+  // is not even rendered.
+  const [feetOffsetMm, setFeetOffsetMm] = useState<number>(0);
 
   // Preview color persisted in localStorage
   const [previewColor, setPreviewColor] = useState(() => {
@@ -458,7 +467,7 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
                 the explode slider drops them to show they come off. */}
               <DetachableFeetMesh
                 color={previewColor}
-                lidOffsetMm={lidOffsetMm}
+                offsetMm={feetOffsetMm}
                 wireframe={wireframe}
                 xray={xray}
               />
@@ -573,6 +582,14 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
               its stacking lip is on (lid won't render/export without lip). */}
           {params.lid.enabled && params.base.stackingLip && (
             <LidExplodeSlider value={lidOffsetMm} onChange={setLidOffsetMm} />
+          )}
+
+          {/* Detach slider — drops the feet away from the bin so the joint is
+              visible. Its own control rather than a share of the lid's: the two
+              parts move in opposite directions and a bin can have feet without
+              having a lid at all. */}
+          {hasDetachableFeet(params.base) && (
+            <FeetDetachSlider value={feetOffsetMm} onChange={setFeetOffsetMm} />
           )}
 
           {/* Control buttons */}

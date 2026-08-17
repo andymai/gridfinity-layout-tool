@@ -3899,5 +3899,8 @@
   "binDesigner.detachableFeet.pinHint": "大きいピンが入らない場合は小さいピンをお試しください",
   "binDesigner.detachableFeet.supersedes": "取り外し式の脚では使用しません",
   "binDesigner.detachableFeet.unplaceable": "このサイズでは脚を置けるグリッドのマス目がありません",
-  "binDesigner.detachableFeet.summary": "脚{count}個、ø{diameter}mmピン"
+  "binDesigner.detachableFeet.summary": "脚{count}個、ø{diameter}mmピン",
+  "binDesigner.preview.feetDetached": "取り外し",
+  "binDesigner.preview.feetAttached": "取り付け",
+  "binDesigner.preview.feetDetachSlider": "脚を外す"
 }

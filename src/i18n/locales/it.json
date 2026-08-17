@@ -3899,5 +3899,8 @@
   "binDesigner.detachableFeet.pinHint": "Prova prima il perno piccolo se quello grande non entra",
   "binDesigner.detachableFeet.supersedes": "Non si usa con i piedini staccabili",
   "binDesigner.detachableFeet.unplaceable": "Nessuna cella intera della griglia può ospitare un piedino a questa misura",
-  "binDesigner.detachableFeet.summary": "{count} piedini, perni ø{diameter} mm"
+  "binDesigner.detachableFeet.summary": "{count} piedini, perni ø{diameter} mm",
+  "binDesigner.preview.feetDetached": "Staccati",
+  "binDesigner.preview.feetAttached": "Attaccati",
+  "binDesigner.preview.feetDetachSlider": "Stacca i piedini"
 }

@@ -3899,5 +3899,8 @@
   "binDesigner.detachableFeet.pinHint": "Prøv den minste pinnen først hvis den største ikke sitter",
   "binDesigner.detachableFeet.supersedes": "Brukes ikke med avtakbare føtter",
   "binDesigner.detachableFeet.unplaceable": "Ingen hel rutenettcelle å sette en fot i ved denne størrelsen",
-  "binDesigner.detachableFeet.summary": "{count} føtter, ø{diameter} mm pinner"
+  "binDesigner.detachableFeet.summary": "{count} føtter, ø{diameter} mm pinner",
+  "binDesigner.preview.feetDetached": "Løsnet",
+  "binDesigner.preview.feetAttached": "Festet",
+  "binDesigner.preview.feetDetachSlider": "Løsne føttene"
 }

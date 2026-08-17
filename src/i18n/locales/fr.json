@@ -3899,5 +3899,8 @@
   "binDesigner.detachableFeet.pinHint": "Essayez d'abord le petit ergot si le grand ne rentre pas",
   "binDesigner.detachableFeet.supersedes": "Sans effet avec des pieds amovibles",
   "binDesigner.detachableFeet.unplaceable": "Aucune cellule entière de la grille ne peut accueillir un pied à cette taille",
-  "binDesigner.detachableFeet.summary": "{count} pieds, ergots ø{diameter} mm"
+  "binDesigner.detachableFeet.summary": "{count} pieds, ergots ø{diameter} mm",
+  "binDesigner.preview.feetDetached": "Détachés",
+  "binDesigner.preview.feetAttached": "Fixés",
+  "binDesigner.preview.feetDetachSlider": "Détacher les pieds"
 }

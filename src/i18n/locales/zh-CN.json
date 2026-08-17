@@ -3899,5 +3899,8 @@
   "binDesigner.detachableFeet.pinHint": "若较大的销钉装不进，请先试较小的",
   "binDesigner.detachableFeet.supersedes": "可拆卸底脚不使用此项",
   "binDesigner.detachableFeet.unplaceable": "此尺寸下没有可容纳底脚的完整网格单元",
-  "binDesigner.detachableFeet.summary": "{count} 个底脚，ø{diameter}mm 销钉"
+  "binDesigner.detachableFeet.summary": "{count} 个底脚，ø{diameter}mm 销钉",
+  "binDesigner.preview.feetDetached": "已拆下",
+  "binDesigner.preview.feetAttached": "已装上",
+  "binDesigner.preview.feetDetachSlider": "拆下底脚"
 }

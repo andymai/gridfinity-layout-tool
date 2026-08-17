@@ -3,6 +3,7 @@ export { LidMesh } from './LidMesh';
 export { StackPlateMesh } from './StackPlateMesh';
 export { SlideTrayMesh } from './SlideTrayMesh';
 export { DetachableFeetMesh } from './DetachableFeetMesh';
+export { FeetDetachSlider } from './FeetDetachSlider';
 export { LabelPlateMeshes } from './LabelPlateMeshes';
 export { LidGuideLine } from './LidGuideLine';
 export {
