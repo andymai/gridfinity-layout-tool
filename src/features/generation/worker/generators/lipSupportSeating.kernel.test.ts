@@ -9,9 +9,9 @@
  * outer width. The bin then rests on the baseplate's pocket mouth instead of
  * dropping in.
  *
- * Two configurations were shipping like that before `dim.lipHasSupport`:
- *   - a 1u spacer at the default 7mm height unit (wall 2.0mm), which
- *     `scenarios/spacer.ts` has covered with `stackingLip: true` all along
+ * Two legal configurations fall below that wall, and are the reason
+ * `dim.lipHasSupport` exists:
+ *   - a 1u spacer at the default 7mm height unit (wall 2.0mm)
  *   - any 2u bin at a 3mm height unit (wall 1.0mm)
  *
  * Neither is visible to a bounding-box, triangle-count or watertight assertion:
@@ -109,8 +109,8 @@ function lipSeatCost(overrides: BinOverrides): number {
 
 describe('stacking lip support vs. the socket taper', () => {
   it('costs a 1u spacer nothing', () => {
-    // Wall 2.0mm, so the support overreaches by 0.7mm — which is what this used to
-    // sit proud by, and small enough that a fixed threshold called it seated.
+    // Wall 2.0mm, so the support overreaches by 0.7mm: small enough that a fixed
+    // seated/proud threshold reads the result as seated.
     expect(lipSeatCost({ height: 1, base: { spacer: true } })).toBeLessThan(SEAT_TOLERANCE_MM);
   }, 240_000);
 
@@ -121,9 +121,9 @@ describe('stacking lip support vs. the socket taper', () => {
   }, 240_000);
 
   it('costs an ordinary bin nothing either', () => {
-    // Control. A 14mm wall carries the support with room to spare, so this passed
-    // before the fix too — it is here to catch a change that dropped the support
-    // everywhere, and to prove the delta reads ~0 when nothing is wrong.
+    // Control: a 21mm wall carries the support with room to spare. Catches a
+    // change that dropped the support everywhere, and proves the delta reads ~0
+    // when nothing is wrong.
     expect(lipSeatCost({ height: 3 })).toBeLessThan(SEAT_TOLERANCE_MM);
   }, 240_000);
 

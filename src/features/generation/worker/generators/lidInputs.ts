@@ -264,13 +264,8 @@ export interface LidInputs {
   readonly text: LidTextInputs | null;
   /**
    * Through-cuts in the lid's plate, or null when there are none or a gate
-   * refuses them. Same gates as {@link text}, resolved by `lidCutoutsAllowed` —
-   * a hole and a glyph both want a flat top face, so a FULL stack grid rules out
-   * both and a polygon lid is excluded from both.
-   *
-   * Carries the shapes together with the window they are measured in, so the
-   * builder never re-derives either. `cutDepth` on each shape is deliberately
-   * ignored: a lid cutout always spans {@link LidCutoutInputs.thickness}.
+   * refuses them. Carries the shapes together with the window they are measured
+   * in, so the builder never re-derives either.
    */
   readonly cutouts: LidCutoutInputs | null;
   /**
@@ -296,6 +291,34 @@ export interface LidInputs {
    */
   readonly overhangAddW: number;
   readonly overhangAddD: number;
+}
+
+/**
+ * Through-cuts in the plate, or null when the design has none or a gate refuses
+ * them.
+ *
+ * `lidCutoutWindow` applies the same TOP-FACE gates that null out
+ * {@link LidInputs.text}, so the two cannot disagree about whether the lid has a
+ * usable face; it adds a stacking-lip requirement of its own. Mesh-shaped entries
+ * are refused here as well as dropped in migration: an imprint is subtracted
+ * after tessellation, in the BIN's mesh frame, so no lid solid can describe one.
+ */
+function resolveLidCutoutInputs(params: BinParams): LidCutoutInputs | null {
+  const shapes = (params.lid.cutouts ?? []).filter((c) => c.shape !== 'mesh');
+  if (shapes.length === 0) return null;
+
+  const window = lidCutoutWindow(params);
+  if (!window) return null;
+
+  // `resolveLidPlateThickness` floors a plain plate at LID_TOP_THICKNESS_BASE and
+  // leaves a tray at least LID_TRAY_FLOOR under its recess, so this cannot trip
+  // today. Kept because it guards a subtraction, and a future resolver change
+  // that inverted it would otherwise build an inside-out cutter.
+
+  const host = lidCutoutHostFace(params);
+  if (host.thickness <= 0) return null;
+
+  return { shapes, window, topZ: host.topZ, thickness: host.thickness };
 }
 
 export function resolveLidInputs(params: BinParams): LidInputs {
@@ -349,28 +372,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     };
   }
 
-  // Through-cuts in the plate. `lidCutoutWindow` returns null on exactly the
-  // gates that null out `text` above, so the two cannot disagree about whether
-  // the lid has a usable top face. Mesh-shaped entries are refused here as well
-  // as dropped in migration: an imprint is subtracted after tessellation, in the
-  // BIN's mesh frame, so no lid solid can describe one.
-  const lidCutoutSource = (params.lid.cutouts ?? []).filter((c) => c.shape !== 'mesh');
-  const cutoutWindow = lidCutoutSource.length > 0 ? lidCutoutWindow(params) : null;
-  let cutouts: LidCutoutInputs | null = null;
-  if (cutoutWindow) {
-    const host = lidCutoutHostFace(params);
-    // A plate thinner than this is not a hole, it is a tear. `resolveLidPlateThickness`
-    // floors the plate at LID_TOP_THICKNESS_BASE and a tray at LID_TRAY_FLOOR, so
-    // this only trips on a crafted payload.
-    if (host.thickness > 0) {
-      cutouts = {
-        shapes: lidCutoutSource,
-        window: cutoutWindow,
-        topZ: host.topZ,
-        thickness: host.thickness,
-      };
-    }
-  }
+  const cutouts = resolveLidCutoutInputs(params);
 
   // Floor plate takes the largest of: the user's knob, a stack-magnet pocket's
   // depth+ceiling, and a tray recess's depth+floor.

@@ -10,11 +10,11 @@
  *
  * The three facts it owns:
  *
- * 1. WHETHER the lid can take cutouts at all ({@link lidCutoutsAllowed}). This
- *    mirrors the gate on `inputs.text` exactly, because a hole and a glyph want
- *    the same thing — a flat face on the lid's top. A FULL stack grid leaves
- *    none; the lip-only variant does (its recessed floor is one clear face), and
- *    a polygon lid is excluded from both for the same auto-fit reason.
+ * 1. WHETHER the lid can take cutouts at all ({@link lidCutoutsAllowed}). It
+ *    takes the same TOP-FACE gates as `inputs.text`, because a hole and a glyph
+ *    want the same thing: a FULL stack grid leaves no flat face, the lip-only
+ *    variant does, and a polygon lid is excluded from both. It adds a
+ *    stacking-lip requirement that the text gate has no reason to carry.
  *
  * 2. WHERE ({@link lidCutoutWindow}). NOT the lid's outer plate: a hole out
  *    there would sit directly over the mating shell's wall and take the top off
@@ -37,6 +37,7 @@ import {
   retentionBossRadius,
   retentionMagnetInset,
 } from '@/shared/types/bin';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { overhangExpansion, resolveOverhang } from '@/shared/utils/overhang';
 import type { OverhangExpansion } from '@/shared/utils/overhang';
@@ -51,6 +52,18 @@ import { retentionMagnetPositions } from '@/shared/utils/retentionMagnetPlacemen
  * material keeps the top of the shell a wall the slicer can actually lay down.
  */
 export const LID_CUTOUT_WALL_MARGIN_MM = 0.8;
+
+/**
+ * Per-side inset of a lip-only stack top's recessed floor from the nominal grid.
+ *
+ * Mirrors `STACK_INSET_BOT` in the worker's `lidStackGrid`, derived from the same
+ * spec numbers rather than importing it (a shared module cannot reach the
+ * worker): the socket taper width less half the bin-to-plate clearance.
+ */
+const STACK_INSET_BOT =
+  GRIDFINITY_SPEC.SOCKET_SMALL_TAPER +
+  GRIDFINITY_SPEC.SOCKET_BIG_TAPER -
+  GRIDFINITY_SPEC.TOLERANCE / 2;
 
 /**
  * Extra radius (mm) added to a retention boss when it is subtracted from a
@@ -108,8 +121,9 @@ export interface LidCutoutHostFace {
 /**
  * Whether this design's lid can host cutouts.
  *
- * Mirrors the `inputs.text` gate in `resolveLidInputs`. Deliberately does NOT
- * consult `shouldGenerateLid`: `checkLidCompatibility` reaches the lid gate
+ * The top-face half mirrors the `inputs.text` gate in `resolveLidInputs`; the lip
+ * requirement is this gate's own, since a lid with nothing to grip is never
+ * built. Deliberately does NOT consult `shouldGenerateLid`: `checkLidCompatibility` reaches the lid gate
  * through several planners already, and taking that route from here is how the
  * interior-relief gate ended up recursing (CLAUDE.md gotcha #18).
  */
@@ -123,6 +137,20 @@ export function lidCutoutsAllowed(params: BinParams): boolean {
   // Polygon lids are excluded exactly as lid text is — the window would have to
   // follow the mask outline rather than a rounded rectangle.
   if (isPartialMask(params.cellMask)) return false;
+  // A base-only bin has no cavity to close, so `shouldGenerateLid` never emits a
+  // lid for one. Offering an editor for a part that is never built is worse than
+  // refusing. Only the plain flag is consulted, never `shouldGenerateLid` itself
+  // — see the note above about reaching the lid gate from here.
+  if (params.base.tile === true) return false;
+  // Stack magnet pockets are blind cups in this same plate, and a hole across one
+  // opens it laterally so the magnet falls out — watertight, and invisible to
+  // every structural check. Their placement lives in the worker's
+  // `magnetPositionsForCell`, which a shared plan cannot import, so the honest
+  // answer today is to refuse the combination rather than duplicate that math and
+  // let the two drift. Reachable only as `stackableTop + stackLipOnly +
+  // magnetHoles`; lift it by moving the placement into `shared/` as
+  // `retentionMagnetPositions` already was.
+  if (params.lid.magnetHoles && params.lid.stackableTop) return false;
   return true;
 }
 
@@ -158,7 +186,28 @@ export function lidCutoutWindow(params: BinParams): LidCutoutWindow | null {
   const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
   const fitClearance = resolveLidFootprintClearance(params);
   const cavityInset = LID_CORNER_RADIUS - fitClearance;
-  const inset = cavityInset + LID_CUTOUT_WALL_MARGIN_MM;
+
+  // A lip-only stack top is GRID-anchored, not perimeter-anchored: its recessed
+  // floor is cut from the nominal socket grid, so it does NOT move with overhang.
+  // Deriving the window from the shifted perimeter would put its far edge over
+  // the stacking lip ring — whose only attachment to the lid is the plate the cut
+  // removes. `resolveTextHostFace` carries the same branch for the same reason.
+  if (params.lid.stackableTop && params.lid.stackLipOnly) {
+    const totalW = params.width * params.gridUnitMm;
+    const totalD = params.depth * gridUnitMmY;
+    const gridInset = STACK_INSET_BOT + LID_CUTOUT_WALL_MARGIN_MM;
+    const spanW = totalW - 2 * gridInset;
+    const spanD = totalD - 2 * gridInset;
+    if (spanW <= 0 || spanD <= 0) return null;
+    return {
+      spanW,
+      spanD,
+      offsetX: 0,
+      offsetY: 0,
+      cornerRadius: 0,
+      keepouts: resolveKeepouts(params, spanW, spanD, ZERO_EXPANSION),
+    };
+  }
 
   // Overhang grows the bin's body and lip outward and shifts them when opposite
   // sides differ; the lid wraps that, so the window travels with it. Resolved
@@ -167,6 +216,17 @@ export function lidCutoutWindow(params: BinParams): LidCutoutWindow | null {
   // or a disabled config. The polygon suppression the worker applies alongside
   // is unnecessary: `lidCutoutsAllowed` has already refused a masked lid.
   const expansion = overhangExpansion(resolveOverhang(params.overhang));
+
+  // A tray recess narrows the usable face to the recess floor, which is the lid
+  // outline inset by the rim wall. The host face already drops to that floor, so
+  // without this the outer ring of the window sits UNDER the rim: a slot there
+  // cuts the plate out from beneath the wall and leaves it bridging a void, open
+  // only from underneath. `resolveTextHostFace` insets by `wallMm` for the same
+  // reason. Whichever of the two bounds is tighter wins, since a wide rim can be
+  // either side of the cavity face.
+  const tray = params.lid.tray;
+  const trayInset = tray.enabled && !params.lid.stackableTop ? tray.wallMm : 0;
+  const inset = Math.max(cavityInset, trayInset) + LID_CUTOUT_WALL_MARGIN_MM;
 
   const outerW = params.width * params.gridUnitMm - 2 * fitClearance + expansion.addW;
   const outerD = params.depth * gridUnitMmY - 2 * fitClearance + expansion.addD;
@@ -185,6 +245,9 @@ export function lidCutoutWindow(params: BinParams): LidCutoutWindow | null {
     keepouts: resolveKeepouts(params, spanW, spanD, expansion),
   };
 }
+
+/** Overhang is inert on a grid-anchored window; spelled out so the branch reads. */
+const ZERO_EXPANSION: OverhangExpansion = { addW: 0, addD: 0, offsetX: 0, offsetY: 0 };
 
 /**
  * Retention-magnet bosses, expressed in the window frame.
@@ -220,8 +283,6 @@ function resolveKeepouts(
   // rule here is how a keep-out set ends up describing bosses the lid does not
   // have (or missing ones it does).
   //
-  // `expansion` is threaded through rather than re-resolved, so the window and
-  // its keep-outs travel together under asymmetric overhang.
   const placements = retentionMagnetPositions(
     params.width,
     params.depth,
@@ -242,44 +303,4 @@ function resolveKeepouts(
     y: p.y - originY,
     r: bossR + LID_CUTOUT_BOSS_MARGIN_MM,
   }));
-}
-
-// Placement checks — shared by the editor's advisory and the validator, so a
-// shape the UI flags is the same shape the server refuses. The worker does not
-// consult them: it clips geometrically instead, which is exact for any outline
-// the pen tool can draw.
-
-/** Axis-aligned bounds a cutout occupies in the window frame. */
-export interface LidCutoutBounds {
-  readonly x: number;
-  readonly y: number;
-  readonly width: number;
-  readonly depth: number;
-}
-
-/** True when the bounds fall entirely inside the window's span. */
-export function lidCutoutInWindow(bounds: LidCutoutBounds, window: LidCutoutWindow): boolean {
-  return (
-    bounds.x >= 0 &&
-    bounds.y >= 0 &&
-    bounds.x + bounds.width <= window.spanW &&
-    bounds.y + bounds.depth <= window.spanD
-  );
-}
-
-/**
- * True when the bounds overlap a keepout. Tested against the bounding box rather
- * than the drawn outline: a shape whose box clears every boss certainly clears
- * the bosses, and one whose box overlaps is worth flagging even if its outline
- * happens to miss — the advisory errs toward warning, and the worker's clip is
- * what decides the geometry.
- */
-export function lidCutoutHitsKeepout(bounds: LidCutoutBounds, window: LidCutoutWindow): boolean {
-  return window.keepouts.some((k) => {
-    const nearestX = Math.max(bounds.x, Math.min(k.x, bounds.x + bounds.width));
-    const nearestY = Math.max(bounds.y, Math.min(k.y, bounds.y + bounds.depth));
-    const dx = k.x - nearestX;
-    const dy = k.y - nearestY;
-    return dx * dx + dy * dy < k.r * k.r;
-  });
 }

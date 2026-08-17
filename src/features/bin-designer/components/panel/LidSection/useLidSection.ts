@@ -58,6 +58,7 @@ import { resolveOverhang, overhangExpansion, hasOverhang } from '@/shared/utils/
 import { matchingTrayParams } from '@/features/bin-designer/utils/matchingTray';
 import { lidWallBottomZ } from '@/features/bin-designer/components/preview/LidMesh/lidAnchorZ';
 import { lidCutoutsAllowed } from '@/shared/utils/lidCutoutPlan';
+import { MAX_LID_CUTOUTS } from '@/features/bin-designer/types';
 import {
   checkLidCompatibility,
   computeDisabledRails,
@@ -728,6 +729,11 @@ export function useLidSection() {
       cutouts: {
         allowed: lidCutoutsAllowed(params),
         count: lid.cutouts?.length ?? 0,
+        // The store refuses past the cap and the server rejects an oversized
+        // payload, so the limit has to be legible BEFORE a shape silently fails
+        // to appear.
+        atCapacity: (lid.cutouts?.length ?? 0) >= MAX_LID_CUTOUTS,
+        max: MAX_LID_CUTOUTS,
       },
       // Grip relief. `gripDepth` carries the clamp's own account of
       // itself so the panel can say WHY a relief is shallower than its mode

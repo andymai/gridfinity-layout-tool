@@ -3908,5 +3908,6 @@
   "binDesigner.lid.editCutoutsCount": "Découper des trous dans le couvercle ({count})",
   "binDesigner.lid.editCutoutsHint": "Dessinez des formes qui traversent entièrement la plaque du couvercle : une fente distributrice, une aération, un passage de câble. Elles restent à l’écart de la paroi d’emboîtement et des embases d’aimant.",
   "binDesigner.lid.editCutoutsBlocked": "Disponible sur un couvercle à dessus plat et à empreinte rectangulaire. Une grille d’empilage complète couvre la face supérieure ; une grille à rebord seul la laisse utilisable.",
-  "binDesigner.cutouts.throughDepthHint": "Traverse les {depth} mm de la plaque."
+  "binDesigner.cutouts.throughDepthHint": "Traverse les {depth} mm de la plaque.",
+  "binDesigner.lid.editCutoutsFull": "Contient déjà le nombre maximal de formes qu’un couvercle accepte ({max}). Supprimez-en une pour en ajouter une autre."
 }

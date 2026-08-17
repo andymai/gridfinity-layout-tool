@@ -693,8 +693,7 @@ function migrateCutout(cutout: Cutout & LegacyCutoutFields): Cutout {
 }
 
 /**
- * Normalize `lid.cutouts`. Absent (every design published before the feature)
- * yields `[]`, so those regenerate byte-identically.
+ * Normalize `lid.cutouts`.
  *
  * Lid cutouts are the same {@link Cutout} the interior uses and take the same
  * per-shape migration, with two host-imposed differences:

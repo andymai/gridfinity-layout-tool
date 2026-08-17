@@ -3908,5 +3908,6 @@
   "binDesigner.lid.editCutoutsCount": "Gaten in het deksel snijden ({count})",
   "binDesigner.lid.editCutoutsHint": "Teken vormen die helemaal door de dekselplaat gaan: een uitgifteslot, een ventilatieopening, een kabeldoorvoer. Ze blijven weg van de koppelwand en de magneetsokkels.",
   "binDesigner.lid.editCutoutsBlocked": "Beschikbaar op een deksel met een platte bovenkant en een rechthoekige voetafdruk. Een volledig stapelraster bedekt het bovenvlak; een raster met alleen een rand laat het bruikbaar.",
-  "binDesigner.cutouts.throughDepthHint": "Snijdt door alle {depth} mm van de plaat."
+  "binDesigner.cutouts.throughDepthHint": "Snijdt door alle {depth} mm van de plaat.",
+  "binDesigner.lid.editCutoutsFull": "Bevat al het maximale aantal vormen dat een deksel aankan ({max}). Verwijder er een om er een toe te voegen."
 }

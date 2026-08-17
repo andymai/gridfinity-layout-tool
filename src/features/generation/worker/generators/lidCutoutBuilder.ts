@@ -8,25 +8,12 @@
  * group ops, insertion clearance and the entry chamfer all reach the lid without
  * a second implementation of any of them.
  *
- * Three things are decided HERE rather than by the shape, because all three are
- * properties of the host:
- *
- * 1. Depth. Every cut spans the full plate, so `cutout.cutDepth` is overridden
- *    rather than read. `exportLid` rotates the lid 180° about X to print, which
- *    turns a partial pocket in the top face into a downward-facing ceiling pocket
- *    — the overhang that rotation exists to remove. Through is also the only
- *    depth a slot or a vent wants.
- *
- * 2. The window. Tools are clipped to the mating cavity's footprint, not the
- *    plate's. A hole further out would sit over the mating shell's wall and take
- *    the top off it, and that wall is what grips the bin's lip — a lid that still
- *    measures and tessellates perfectly and no longer stays shut.
- *
- * 3. The bosses. A magnetic lid hangs a boss from the plate at each magnet, and
- *    a hole over one opens its magnet pocket. Each boss is subtracted from the
- *    tool, so a slot drawn across a corner loses the disc rather than the lid
- *    losing its retention. Invisible to any check on the lid alone: the solid
- *    stays watertight, it just stops holding the bin.
+ * `lidCutoutPlan` owns WHERE a hole may go and HOW DEEP; this builds it. The one
+ * rule that lives here, because it is about the tool rather than the plan: a
+ * magnetic lid's bosses are subtracted from every tool, so a slot drawn across a
+ * corner loses the disc rather than the lid losing its retention. That failure is
+ * invisible to any check on the lid alone — the solid stays watertight, it just
+ * stops holding the bin.
  */
 
 import { unwrap, cut, cutAll, intersect, translate, drawRoundedRectangle, cylinder } from 'brepjs';
@@ -48,19 +35,19 @@ import type { LidCutoutInputs, LidInputs } from './lidInputs';
  */
 const THROUGH_OVERSHOOT_MM = 0.1;
 
-/** Local Z span of a cut tool: the plate, plus one overshoot at each end. */
 function cutSpanMm(thickness: number): number {
   return thickness + 2 * THROUGH_OVERSHOOT_MM;
 }
 
 /**
- * Build one tool per logical cutout, in a local frame whose top face is at
- * `z = thickness` and whose origin is the window's front-left corner.
+ * Build one tool per logical cutout, in a local frame whose origin is the
+ * window's front-left corner. The top plane is {@link cutSpanMm}, not the plate
+ * thickness — see below.
  *
  * Grouping matches the bin's rules: members of a `groupId` build as one fused
  * (or subtracted) tool, and an `array` on an ungrouped cutout expands to its
- * instances. Ordering follows `zIndex` the same way, since `buildGroupedCutouts`
- * reads it to order boolean ops within a group.
+ * instances. `combineGroupSolids` sorts a group by `zIndex` for the subtract op,
+ * exactly as it does on the bin.
  */
 function buildTools(cutouts: LidCutoutInputs): Shape3D[] {
   const { shapes, window, thickness } = cutouts;
@@ -73,15 +60,25 @@ function buildTools(cutouts: LidCutoutInputs): Shape3D[] {
   //
   // One consequence worth stating: an entry chamfer flares to its full width at
   // the TOOL's top, which is now `THROUGH_OVERSHOOT_MM` above the real face, so a
-  // chamfered opening measures that much narrower than nominal at the surface.
-  // 0.1mm is under one layer, and the alternative is a coplanar cut face at the
+  // chamfered opening measures ~0.2mm narrower across than nominal at the surface.
+  // That is under one layer per side, and the alternative is a coplanar cut face at the
   // plate's top — which is how non-manifold output happens.
   const surfaceZ = cutSpanMm(thickness);
   const originX = -window.spanW / 2;
   const originY = -window.spanD / 2;
 
-  // `cutDepth` is the host's business, not the shape's — see the module note.
-  const through = (c: Cutout): Cutout => ({ ...c, cutDepth: surfaceZ });
+  // `cutDepth` and both scoop radii are the host's business, not the shape's. The
+  // radii are stripped rather than passed through because `resolveScoop` caps
+  // them against the effective depth, which here is the whole plate: a fillet on
+  // a through-cut rounds the tool's BOTTOM edge, so the hole would come out
+  // nominal at the top face and pinched at the underside. A scoop rounds a pocket
+  // into its floor, and a hole has no floor.
+  const through = (c: Cutout): Cutout => ({
+    ...c,
+    cutDepth: surfaceZ,
+    scoopRadiusW: 0,
+    scoopRadiusD: 0,
+  });
 
   const groups = new Map<string, Cutout[]>();
   const singles: Cutout[] = [];
@@ -147,12 +144,11 @@ function buildClipBoundary(scope: DisposalScope, cutouts: LidCutoutInputs): Shap
         axis: [0, 0, 1],
       })
     );
-    scope.register(boundary);
-    // Register the RESULT too, not just the input it replaces. Only the initial
-    // boundary is registered at construction, so without this the solid the last
-    // keepout produced is the one nobody owns — an OCCT handle leaked per
-    // generation on every magnetic lid, which is the shape of defect
-    // `disposalRegression` exists to catch.
+    // Each cut allocates a new solid; register it at creation so the scope owns
+    // every intermediate rather than only the first. Registering the INPUT here
+    // instead would leave the last one unowned — an OCCT handle leaked per
+    // generation on every magnetic lid, the shape of defect `disposalRegression`
+    // exists to catch.
     boundary = scope.register(unwrap(cut(boundary as ValidSolid, post)));
   }
   return boundary;

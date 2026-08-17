@@ -2018,6 +2018,8 @@ const en: Record<string, string> = {
   'binDesigner.lid.editCutoutsCount': 'Cut holes in the lid ({count})',
   'binDesigner.lid.editCutoutsHint':
     'Draw shapes that go clean through the lid plate: a dispensing slot, a vent, a cable pass-through. They stay clear of the mating wall and the magnet bosses.',
+  'binDesigner.lid.editCutoutsFull':
+    'Holding the most shapes a lid can take ({max}). Delete one to add another.',
   'binDesigner.lid.editCutoutsBlocked':
     'Available on a lid with a flat top and a rectangular footprint. A full stack grid covers the top face; a lip-only grid leaves it usable.',
   'binDesigner.lid.compat.compartmentDividers':

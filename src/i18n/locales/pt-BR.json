@@ -3908,5 +3908,6 @@
   "binDesigner.lid.editCutoutsCount": "Cortar furos na tampa ({count})",
   "binDesigner.lid.editCutoutsHint": "Desenhe formas que atravessam toda a placa da tampa: uma fenda dispensadora, uma ventilação, uma passagem de cabo. Elas ficam longe da parede de encaixe e das bases dos ímãs.",
   "binDesigner.lid.editCutoutsBlocked": "Disponível em uma tampa com topo plano e contorno retangular. Uma grade de empilhamento completa cobre a face superior; uma grade só de borda a deixa utilizável.",
-  "binDesigner.cutouts.throughDepthHint": "Corta todos os {depth} mm da placa."
+  "binDesigner.cutouts.throughDepthHint": "Corta todos os {depth} mm da placa.",
+  "binDesigner.lid.editCutoutsFull": "Já contém o máximo de formas que uma tampa aceita ({max}). Exclua uma para adicionar outra."
 }

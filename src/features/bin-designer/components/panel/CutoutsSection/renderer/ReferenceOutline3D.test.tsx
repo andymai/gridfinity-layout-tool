@@ -7,13 +7,13 @@ describe('ReferenceOutline3D', () => {
     expect(typeof ReferenceOutline3D).toBe('function');
   });
 
-  it('draws below the taper band', () => {
+  it('draws as scenery: above the background, below every shape', () => {
     // The outline marks where another PART is, not where this board ends, so it
-    // must never draw over a real constraint. Asserted on the constant rather than
-    // left to the comment: swapping the two would look fine until a lid cutout sat
-    // on a tapered bin.
-    expect(RENDER_ORDER.REFERENCE_OUTLINE).toBeLessThan(RENDER_ORDER.TAPER_BAND);
-    expect(RENDER_ORDER.REFERENCE_OUTLINE).toBeLessThan(RENDER_ORDER.SHAPES);
+    // must never be mistaken for a boundary the shapes are clipped to. It is not
+    // ordered against TAPER_BAND on purpose: the workspace passes `taperBand`
+    // only on the bin board and `referenceOutline` only on the lid, so the two
+    // never render together and any relation between them would be untestable.
     expect(RENDER_ORDER.REFERENCE_OUTLINE).toBeGreaterThan(RENDER_ORDER.BACKGROUND);
+    expect(RENDER_ORDER.REFERENCE_OUTLINE).toBeLessThan(RENDER_ORDER.SHAPES);
   });
 });

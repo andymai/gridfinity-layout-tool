@@ -80,10 +80,10 @@ interface SingleCutoutInspectorProps {
   readonly binDepth: number;
   readonly maxCutDepth: number;
   /**
-   * The host cuts clean through, so `cutDepth` and the scoop fillets are inert:
-   * a lid's plate has no floor for a pocket to stop at or a fillet to curve
-   * against. Their controls are hidden rather than disabled, because a disabled
-   * stepper still shows a number the geometry does not use.
+   * The host cuts clean through, so `cutDepth` and the scoop fillets are inert on
+   * a lid's plate: there is no floor for a pocket to stop at or a fillet to curve
+   * against. Hidden rather than disabled, because a disabled stepper still shows a
+   * number the geometry does not use.
    */
   readonly throughOnly?: boolean;
   readonly onUpdate: (id: string, updates: Partial<Cutout>) => void;
@@ -175,9 +175,6 @@ export function SingleCutoutInspector({
               unit="°"
               disabled={disabled}
             />
-            {/* A through-cutting host has no floor for the pocket to stop at, so
-                the stored depth is overridden at build time and the control would
-                report a number the part does not have. */}
             {throughOnly ? (
               <p className="text-xs text-content-tertiary">
                 {t('binDesigner.cutouts.throughDepthHint', {
@@ -222,7 +219,7 @@ export function SingleCutoutInspector({
               onUpdate={(patch) => onUpdate(cutout.id, patch)}
               disabled={disabled}
             />
-            {cutout.shape !== 'mesh' && (
+            {cutout.shape !== 'mesh' && !throughOnly && (
               <CutoutScoopControls
                 key={cutout.id}
                 cutout={cutout}
@@ -258,17 +255,24 @@ export function SingleCutoutInspector({
         </Collapsible>
       </div>
 
-      <div className="-mx-4 border-b border-stroke-subtle px-4 pt-2 pb-3">
-        <Collapsible title={t('binDesigner.cutouts.section.color')} size="sm">
-          <CutoutColorControls
-            key={cutout.id}
-            ids={[cutout.id]}
-            color={cutout.color}
-            colorScope={cutout.colorScope}
-            disabled={disabled}
-          />
-        </Collapsible>
-      </div>
+      {/* Both sections are bin-only. `applyLidCutouts` tags every hole with the
+          flat `FeatureTag.CUTOUT` rather than a per-cutout colour tag, and it has
+          no label path at all — so on a lid these would preview one thing and
+          print another, and the colour swatch would silently switch the design
+          into multi-colour mode for a zone nothing paints. */}
+      {!throughOnly && (
+        <div className="-mx-4 border-b border-stroke-subtle px-4 pt-2 pb-3">
+          <Collapsible title={t('binDesigner.cutouts.section.color')} size="sm">
+            <CutoutColorControls
+              key={cutout.id}
+              ids={[cutout.id]}
+              color={cutout.color}
+              colorScope={cutout.colorScope}
+              disabled={disabled}
+            />
+          </Collapsible>
+        </div>
+      )}
 
       {hasFitControls(cutout) && (
         <div className="-mx-4 border-b border-stroke-subtle px-4 pt-2 pb-3">
@@ -291,18 +295,20 @@ export function SingleCutoutInspector({
         </div>
       )}
 
-      <div className="-mx-4 border-b border-stroke-subtle px-4 pt-2 pb-3">
-        <Collapsible title={t('binDesigner.cutouts.section.label')} size="sm">
-          <CutoutEngraveLabelControls
-            key={`${cutout.id}-text`}
-            cutout={cutout}
-            binWidth={binWidth}
-            binDepth={binDepth}
-            disabled={disabled}
-            onUpdate={(patch) => onUpdate(cutout.id, patch)}
-          />
-        </Collapsible>
-      </div>
+      {!throughOnly && (
+        <div className="-mx-4 border-b border-stroke-subtle px-4 pt-2 pb-3">
+          <Collapsible title={t('binDesigner.cutouts.section.label')} size="sm">
+            <CutoutEngraveLabelControls
+              key={`${cutout.id}-text`}
+              cutout={cutout}
+              binWidth={binWidth}
+              binDepth={binDepth}
+              disabled={disabled}
+              onUpdate={(patch) => onUpdate(cutout.id, patch)}
+            />
+          </Collapsible>
+        </div>
+      )}
     </>
   );
 }

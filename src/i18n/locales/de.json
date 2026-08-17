@@ -3908,5 +3908,6 @@
   "binDesigner.lid.editCutoutsCount": "Löcher in den Deckel schneiden ({count})",
   "binDesigner.lid.editCutoutsHint": "Zeichne Formen, die vollständig durch die Deckelplatte gehen: einen Ausgabeschlitz, eine Lüftung, eine Kabeldurchführung. Sie halten Abstand zur Passwand und zu den Magnetsockeln.",
   "binDesigner.lid.editCutoutsBlocked": "Verfügbar bei einem Deckel mit flacher Oberseite und rechteckigem Grundriss. Ein vollständiges Stapelraster bedeckt die Oberfläche; ein Raster nur mit Rand lässt sie nutzbar.",
-  "binDesigner.cutouts.throughDepthHint": "Schneidet durch alle {depth} mm der Platte."
+  "binDesigner.cutouts.throughDepthHint": "Schneidet durch alle {depth} mm der Platte.",
+  "binDesigner.lid.editCutoutsFull": "Enthält bereits so viele Formen, wie ein Deckel aufnehmen kann ({max}). Lösche eine, um eine weitere hinzuzufügen."
 }

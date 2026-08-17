@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
-import type { Cutout, PathPoint } from '@/features/bin-designer/types';
+import type { Cutout, CutoutArrayConfig, PathPoint } from '@/features/bin-designer/types';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
 import { MAX_MESH_ASSETS_PER_DESIGN } from '@/shared/generation/meshAsset';
 import { MAX_LID_CUTOUTS } from '@/features/bin-designer/types';
@@ -1517,5 +1517,72 @@ describe('cutoutSlice - lid target', () => {
       useDesignerStore.getState().addCutout(rect(`c${i}`));
     }
     expect(useDesignerStore.getState().params.cutouts).toHaveLength(MAX_LID_CUTOUTS + 5);
+  });
+});
+
+describe('cutoutSlice - lid target, repeat merge', () => {
+  beforeEach(() => {
+    useDesignerStore.setState(useDesignerStore.getInitialState());
+  });
+
+  const rect = (id: string, x: number): Cutout => ({
+    id,
+    shape: 'rectangle',
+    x,
+    y: 0,
+    width: 10,
+    depth: 10,
+    cutDepth: 5,
+    rotation: 0,
+    cornerRadius: 0,
+    label: '',
+    groupId: null,
+  });
+
+  it('merges a repeat on the lid, not silently nothing', () => {
+    // Reads used to go straight to `params.cutouts`, so with the lid targeted the
+    // master was never found and the action returned false: no merge, no toast,
+    // and the suggestion stayed on screen.
+    useDesignerStore.getState().setCutoutEditorOpen(true, 'lid');
+    useDesignerStore.getState().addCutout(rect('m', 0));
+    useDesignerStore.getState().addCutout(rect('a', 20));
+
+    const config: CutoutArrayConfig = {
+      mode: 'grid',
+      cols: 2,
+      rows: 1,
+      pitchX: 20,
+      pitchY: 0,
+      count: 2,
+      radius: 0,
+      startAngle: 0,
+      rotateToCenter: false,
+    };
+    const merged = useDesignerStore.getState().mergeCutoutsIntoArray('m', config, ['a']);
+
+    expect(merged).toBe(true);
+    const lidCutouts = useDesignerStore.getState().params.lid.cutouts ?? [];
+    expect(lidCutouts.map((c) => c.id)).toEqual(['m']);
+    expect(lidCutouts[0].array).toEqual(config);
+  });
+
+  it('leaves lid.cutouts absent when a lid-targeted action bails early', () => {
+    // `cutoutOwner` materializes the array, so a guard that runs before it would
+    // otherwise strand `[]` on a design with no lid cutouts — enough to shift its
+    // content fingerprint for an action that did nothing.
+    useDesignerStore.getState().setCutoutEditorOpen(true, 'lid');
+    const config: CutoutArrayConfig = {
+      mode: 'grid',
+      cols: 2,
+      rows: 1,
+      pitchX: 20,
+      pitchY: 0,
+      count: 2,
+      radius: 0,
+      startAngle: 0,
+      rotateToCenter: false,
+    };
+    expect(useDesignerStore.getState().mergeCutoutsIntoArray('nope', config, [])).toBe(false);
+    expect(useDesignerStore.getState().params.lid.cutouts).toBeUndefined();
   });
 });

@@ -16,6 +16,10 @@ export type ComplexityReason = 'inserts' | 'cutouts' | 'non-default-compartments
 export function hasComplexGeometry(params: BinParams): boolean {
   if (params.inserts.length > 0) return true;
   if (params.cutouts.length > 0) return true;
+  // Lid cutouts are stored in absolute mm from their window's front-left corner,
+  // and the window scales with the bin's footprint — so a resize strands them
+  // exactly as it strands interior cutouts.
+  if ((params.lid.cutouts?.length ?? 0) > 0) return true;
 
   const uniqueCompartments = new Set(params.compartments.cells);
   return uniqueCompartments.size > 1;
@@ -31,7 +35,7 @@ export function getComplexityReasons(params: BinParams): ComplexityReason[] {
     reasons.push('inserts');
   }
 
-  if (params.cutouts.length > 0) {
+  if (params.cutouts.length > 0 || (params.lid.cutouts?.length ?? 0) > 0) {
     reasons.push('cutouts');
   }
 

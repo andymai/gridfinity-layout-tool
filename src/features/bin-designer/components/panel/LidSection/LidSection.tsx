@@ -375,9 +375,11 @@ export function LidSection() {
                 : t('binDesigner.lid.editCutouts')}
             </Button>
             <Hint>
-              {state.cutouts.allowed
-                ? t('binDesigner.lid.editCutoutsHint')
-                : t('binDesigner.lid.editCutoutsBlocked')}
+              {!state.cutouts.allowed
+                ? t('binDesigner.lid.editCutoutsBlocked')
+                : state.cutouts.atCapacity
+                  ? t('binDesigner.lid.editCutoutsFull', { max: state.cutouts.max })
+                  : t('binDesigner.lid.editCutoutsHint')}
             </Hint>
           </div>
 

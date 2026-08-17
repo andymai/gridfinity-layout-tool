@@ -36,11 +36,9 @@ export type SplitViewMode = 'assembled' | 'exploded';
 /**
  * Which part the cutout editor is drawing on.
  *
- * The two hosts differ in what a shape means, not just where it lands: a bin
- * cutout is a pocket of user-chosen depth in the interior floor, a lid cutout
- * always goes clean through the plate. They also live in different coordinate
- * frames — the bin's overhang-expanded interior versus the lid's mating-cavity
- * window — which is why they are separate arrays rather than one tagged list.
+ * The two hosts differ in what a shape MEANS, not just where it lands, and they
+ * are measured in different frames — which is why they are separate arrays rather
+ * than one tagged list. See `@/shared/utils/lidCutoutPlan`.
  */
 export type CutoutTarget = 'bin' | 'lid';
 

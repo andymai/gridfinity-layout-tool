@@ -11,9 +11,7 @@ import {
 import type { BinParams, LidConfig } from '@/shared/types/bin';
 import {
   LID_CUTOUT_WALL_MARGIN_MM,
-  lidCutoutHitsKeepout,
   lidCutoutHostFace,
-  lidCutoutInWindow,
   lidCutoutWindow,
   lidCutoutsAllowed,
 } from './lidCutoutPlan';
@@ -44,6 +42,21 @@ describe('lidCutoutsAllowed', () => {
     // The same split lid text makes: a full grid owns the top face, a lip-only
     // one leaves the recessed floor inside the lip as one clear face.
     expect(lidCutoutsAllowed(params({ stackableTop: true, stackLipOnly: false }))).toBe(false);
+    expect(lidCutoutsAllowed(params({ stackableTop: true, stackLipOnly: true }))).toBe(true);
+  });
+
+  it('refuses a base-only bin, which never gets a lid at all', () => {
+    // `shouldGenerateLid` refuses a tile (no cavity to close), so offering the
+    // editor for a part that is never built is worse than refusing.
+    const p = params({}, { base: { ...DEFAULT_BIN_PARAMS.base, tile: true } });
+    expect(lidCutoutsAllowed(p)).toBe(false);
+  });
+
+  it('refuses a lid carrying stack magnet pockets', () => {
+    // The pockets are blind cups in this same plate; a hole across one opens it
+    // laterally and the magnet falls out, watertight and unnoticed.
+    const p = params({ stackableTop: true, stackLipOnly: true, magnetHoles: true });
+    expect(lidCutoutsAllowed(p)).toBe(false);
     expect(lidCutoutsAllowed(params({ stackableTop: true, stackLipOnly: true }))).toBe(true);
   });
 
@@ -129,6 +142,41 @@ describe('lidCutoutWindow', () => {
     expect(w!.spanW).toBeCloseTo(lidCutoutWindow(params())!.spanW + 6, 5);
   });
 
+  it('narrows to the tray floor, not the cavity, on a wide-rimmed tray lid', () => {
+    // The host face drops to the recess floor, so a window still spanning the
+    // cavity would put its outer ring UNDER the rim: a slot there cuts the plate
+    // out from beneath the wall and leaves it bridging a void.
+    const wallMm = 8;
+    const tray = params({ tray: { enabled: true, depthMm: 4, wallMm }, stackableTop: false });
+    const plain = lidCutoutWindow(params())!;
+    const withTray = lidCutoutWindow(tray)!;
+    expect(withTray.spanW).toBeLessThan(plain.spanW);
+    // Bounded by the rim once it is wider than the cavity inset.
+    const fit = resolveLidFootprintClearance(tray);
+    const outerW = tray.width * tray.gridUnitMm - 2 * fit;
+    expect(withTray.spanW).toBeCloseTo(outerW - 2 * (wallMm + LID_CUTOUT_WALL_MARGIN_MM), 5);
+  });
+
+  it('leaves a narrow tray rim alone, since the cavity is the tighter bound', () => {
+    const tray = params({ tray: { enabled: true, depthMm: 4, wallMm: 2 }, stackableTop: false });
+    expect(lidCutoutWindow(tray)!.spanW).toBeCloseTo(lidCutoutWindow(params())!.spanW, 5);
+  });
+
+  it('anchors a lip-only stack top on the grid, so overhang does not shift it', () => {
+    // That floor is cut from the nominal socket grid and does not move with the
+    // perimeter. A perimeter-derived window would run over the stacking lip ring,
+    // whose only attachment to the lid is the plate the cut removes.
+    const lipOnly: Partial<LidConfig> = { stackableTop: true, stackLipOnly: true };
+    const plain = lidCutoutWindow(params(lipOnly))!;
+    const overhung = lidCutoutWindow(
+      params(lipOnly, {
+        overhang: { enabled: true, left: 0, right: 6, front: 0, back: 0, feet: false },
+      })
+    )!;
+    expect(overhung.offsetX).toBe(0);
+    expect(overhung.spanW).toBeCloseTo(plain.spanW, 5);
+  });
+
   it('carries no keepouts on a friction or click-rail lid', () => {
     expect(lidCutoutWindow(params({ attachment: 'clickRails' }))!.keepouts).toEqual([]);
     expect(lidCutoutWindow(params({ attachment: 'friction' }))!.keepouts).toEqual([]);
@@ -185,39 +233,5 @@ describe('lidCutoutWindow', () => {
       magnetic.width * magnetic.gridUnitMm - 2 * LID_CORNER_RADIUS - 2 * LID_CUTOUT_WALL_MARGIN_MM,
       5
     );
-  });
-});
-
-describe('placement checks', () => {
-  const window = lidCutoutWindow(params({ attachment: 'magnetic' }, { width: 2, depth: 2 }))!;
-
-  it('accepts bounds inside the span and rejects bounds over an edge', () => {
-    expect(lidCutoutInWindow({ x: 1, y: 1, width: 5, depth: 5 }, window)).toBe(true);
-    expect(lidCutoutInWindow({ x: -0.5, y: 1, width: 5, depth: 5 }, window)).toBe(false);
-    expect(lidCutoutInWindow({ x: window.spanW - 1, y: 1, width: 5, depth: 5 }, window)).toBe(
-      false
-    );
-  });
-
-  it('flags bounds that reach a boss and clears bounds that do not', () => {
-    const boss = window.keepouts[0];
-    expect(lidCutoutHitsKeepout({ x: boss.x - 1, y: boss.y - 1, width: 2, depth: 2 }, window)).toBe(
-      true
-    );
-    // Dead centre of a 1x1-ish window is clear of every corner boss.
-    expect(
-      lidCutoutHitsKeepout(
-        { x: window.spanW / 2 - 1, y: window.spanD / 2 - 1, width: 2, depth: 2 },
-        window
-      )
-    ).toBe(false);
-  });
-
-  it('measures the boss distance from the nearest point of the bounds, not the centre', () => {
-    // A long slot whose centre is far from a boss still hits it if an end reaches.
-    // Testing the centre would pass this and the lid would lose its magnet.
-    const boss = window.keepouts[0];
-    const slot = { x: boss.x - 0.5, y: boss.y - 0.5, width: window.spanW / 2, depth: 1 };
-    expect(lidCutoutHitsKeepout(slot, window)).toBe(true);
   });
 });

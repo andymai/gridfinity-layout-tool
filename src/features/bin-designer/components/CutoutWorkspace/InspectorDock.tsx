@@ -34,12 +34,7 @@ interface InspectorDockProps {
   readonly binWidth: number;
   readonly binDepth: number;
   readonly maxCutDepth: number;
-  /**
-   * The host cuts clean through, so `cutDepth` and the scoop fillets are
-   * inert: the lid's plate has no floor for a pocket to stop at or a fillet to
-   * curve against. Their controls are hidden rather than disabled, because a
-   * disabled stepper still shows a number the geometry does not use.
-   */
+  /** Forwarded to {@link InspectorContent}; see its own doc. */
   readonly throughOnly?: boolean;
   readonly onUpdate: (id: string, updates: Partial<Cutout>) => void;
   readonly onUpdateBatch?: (updates: ReadonlyMap<string, Partial<Cutout>>) => void;

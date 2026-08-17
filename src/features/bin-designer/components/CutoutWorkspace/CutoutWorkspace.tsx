@@ -246,9 +246,13 @@ export function CutoutWorkspace() {
   // rather than truncated, so the warning offers to move the board to
   // the cutouts as well as the cutouts to the board. `null` = growing can't
   // clear the warning, and the action is hidden rather than half-applied.
+  // Not offered on the lid: `computeGrowToFit` measures candidates against
+  // `cutoutInterior`, which is ~6.7mm per axis wider than the lid's window, so it
+  // would either hide a fix that would have worked or resize the bin and leave the
+  // warning standing.
   const growTarget = useMemo(
-    () => computeGrowToFit(params, cutouts, halfGridMode),
-    [params, cutouts, halfGridMode]
+    () => (isLid ? null : computeGrowToFit(params, cutouts, halfGridMode)),
+    [isLid, params, cutouts, halfGridMode]
   );
 
   const handleGrowToFit = useCallback(() => {
@@ -503,8 +507,12 @@ export function CutoutWorkspace() {
               onGridSizeChange={setGridSize}
               vertical
               onImportSvg={triggerSvgImport}
-              onImportStl={stlImport.triggerImport}
-              onScanWithPhone={scanEnabled ? () => setScanDialogOpen(true) : undefined}
+              // Both land via `addMeshCutout`, which is pinned to the BIN's array
+              // (a lid cutout can never be a mesh imprint). Offered on the lid
+              // board they would report success and add the shape to a part the
+              // canvas is not showing.
+              onImportStl={isLid ? undefined : stlImport.triggerImport}
+              onScanWithPhone={scanEnabled && !isLid ? () => setScanDialogOpen(true) : undefined}
             />
           </div>
         </div>
@@ -552,7 +560,9 @@ export function CutoutWorkspace() {
               {cutouts.length === 0 && mode.type === 'idle' && (
                 <CutoutEmptyState
                   variant="workspace"
-                  onScanWithPhone={scanEnabled ? () => setScanDialogOpen(true) : undefined}
+                  onScanWithPhone={
+                    scanEnabled && !isLid ? () => setScanDialogOpen(true) : undefined
+                  }
                 />
               )}
               <CutoutCanvas3D

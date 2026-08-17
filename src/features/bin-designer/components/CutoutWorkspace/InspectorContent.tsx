@@ -43,10 +43,10 @@ interface InspectorContentProps {
   readonly binDepth: number;
   readonly maxCutDepth: number;
   /**
-   * The host cuts clean through, so `cutDepth` and the scoop fillets are inert:
-   * a lid's plate has no floor for a pocket to stop at or a fillet to curve
-   * against. Their controls are hidden rather than disabled, because a disabled
-   * stepper still shows a number the geometry does not use.
+   * The host cuts clean through, so `cutDepth` and the scoop fillets are inert on
+   * a lid's plate: there is no floor for a pocket to stop at or a fillet to curve
+   * against. Hidden rather than disabled, because a disabled stepper still shows a
+   * number the geometry does not use.
    */
   readonly throughOnly?: boolean;
   readonly onUpdate: (id: string, updates: Partial<Cutout>) => void;
@@ -367,9 +367,6 @@ export function InspectorContent({
               unit="°"
               disabled={disabled}
             />
-            {/* Depth and the scoop fillets only mean something over a floor. On a
-                through-cutting host there is none, so they are hidden rather than
-                shown holding a value the geometry ignores. */}
             {!throughOnly && (
               <>
                 <CompactNumberInput

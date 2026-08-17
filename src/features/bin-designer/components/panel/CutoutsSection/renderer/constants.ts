@@ -5,14 +5,13 @@
 /** Render order layers (higher = drawn later = on top) */
 export const RENDER_ORDER = {
   BACKGROUND: 0,
-  /** Above the bin surface and its dot grid, below every cutout shape. */
-  TAPER_BAND: 1,
   /**
-   * The bin's interior, drawn under a LID board purely for alignment. Below the
-   * taper band so it can never obscure a real constraint — it is a reference,
-   * not a boundary anything is clipped to.
+   * The bin's interior, drawn under a LID board purely for alignment. Above the
+   * background so it is not lost in it, below every shape so it stays scenery.
    */
   REFERENCE_OUTLINE: 0.5,
+  /** Above the bin surface and its dot grid, below every cutout shape. */
+  TAPER_BAND: 1,
   SHAPES: 10,
   GROUP_FILL: 11,
   GROUP_STROKE: 12,

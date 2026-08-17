@@ -3908,5 +3908,6 @@
   "binDesigner.lid.editCutoutsCount": "フタに穴を開ける（{count}）",
   "binDesigner.lid.editCutoutsHint": "フタの板を貫通する形状を描きます。取り出し用スリット、通気孔、ケーブルの通し穴など。かん合壁とマグネット台座は避けて配置されます。",
   "binDesigner.lid.editCutoutsBlocked": "上面が平らで、外形が長方形のフタで使えます。フルのスタックグリッドは上面を覆いますが、リップのみのグリッドなら使えます。",
-  "binDesigner.cutouts.throughDepthHint": "板の{depth}mmを貫通して切り抜きます。"
+  "binDesigner.cutouts.throughDepthHint": "板の{depth}mmを貫通して切り抜きます。",
+  "binDesigner.lid.editCutoutsFull": "フタに配置できる図形の上限（{max}）に達しています。追加するには 1 つ削除してください。"
 }

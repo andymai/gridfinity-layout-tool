@@ -3908,5 +3908,6 @@
   "binDesigner.lid.editCutoutsCount": "Vyřezat otvory do víka ({count})",
   "binDesigner.lid.editCutoutsHint": "Nakreslete tvary, které procházejí celou deskou víka: dávkovací štěrbinu, ventilaci, průchodku pro kabel. Drží se dál od spojovací stěny a magnetových základen.",
   "binDesigner.lid.editCutoutsBlocked": "Dostupné u víka s plochým vrchem a pravoúhlým obrysem. Plná stohovací mřížka zakrývá horní plochu; mřížka jen s lemem ji ponechá použitelnou.",
-  "binDesigner.cutouts.throughDepthHint": "Prořezává celých {depth} mm desky."
+  "binDesigner.cutouts.throughDepthHint": "Prořezává celých {depth} mm desky.",
+  "binDesigner.lid.editCutoutsFull": "Už obsahuje maximální počet tvarů, který víko pojme ({max}). Jeden smažte, abyste mohli přidat další."
 }

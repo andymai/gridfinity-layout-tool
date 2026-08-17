@@ -3908,5 +3908,6 @@
   "binDesigner.lid.editCutoutsCount": "Wytnij otwory w pokrywie ({count})",
   "binDesigner.lid.editCutoutsHint": "Rysuj kształty przechodzące na wylot przez płytę pokrywy: szczelinę podajnika, wentylację, przepust na kabel. Zachowują odstęp od ścianki łączącej i gniazd magnesów.",
   "binDesigner.lid.editCutoutsBlocked": "Dostępne dla pokrywy z płaskim wierzchem i prostokątnym obrysem. Pełna siatka do sztaplowania zakrywa górną powierzchnię; siatka z samym rantem pozostawia ją użyteczną.",
-  "binDesigner.cutouts.throughDepthHint": "Przecina całe {depth} mm płyty."
+  "binDesigner.cutouts.throughDepthHint": "Przecina całe {depth} mm płyty.",
+  "binDesigner.lid.editCutoutsFull": "Zawiera już maksymalną liczbę kształtów, jaką przyjmuje pokrywa ({max}). Usuń jeden, aby dodać kolejny."
 }

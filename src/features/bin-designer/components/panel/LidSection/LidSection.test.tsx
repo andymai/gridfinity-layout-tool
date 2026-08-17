@@ -529,9 +529,9 @@ describe('LidSection', () => {
       });
       render(<LidSection />);
       expect(screen.queryByRole('textbox', { name: 'Lid text' })).not.toBeInTheDocument();
-      // Anchored on the text hint's own opening rather than on "full stack grid":
-      // the lid-cutout hint names the same condition, so the looser pattern now
-      // matches both and the assertion stopped identifying which reason showed.
+      // Anchored on this hint's own opening: the lid-cutout hint names the same
+      // condition, so `/full stack grid/` alone matches both and would not say
+      // which reason rendered.
       expect(screen.getByText(/^Not available with a full stack grid/i)).toBeInTheDocument();
     });
 

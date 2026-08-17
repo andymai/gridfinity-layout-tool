@@ -48,11 +48,10 @@ function makeParams(lid: Partial<LidConfig>, extra: Partial<BinParams> = {}): Bi
  * plate's own Z band.
  *
  * A MEASUREMENT, deliberately, not a boolean. `isSolidThrough` over the same band
- * reports "not solid" for a plate that is 88% intact — a hole 0.1mm deep leaves a
- * span that simply fails to reach the upper bound — so the first version of this
- * suite passed against cutouts that were scratches. Comparing the length against
- * the unholed lid is what distinguishes "the hole opened" from "something was
- * removed somewhere".
+ * reports "not solid" for a plate that is 88% intact: a hole 0.1mm deep leaves a
+ * span that simply fails to reach the upper bound, so a scratch and an opening are
+ * indistinguishable to it. Comparing the length against the unholed lid is what
+ * separates "the hole opened" from "something was removed somewhere".
  */
 function plateSolidMm(
   mesh: MeshData,

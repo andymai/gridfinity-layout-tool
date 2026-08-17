@@ -714,22 +714,10 @@ export interface LidConfig {
   readonly relieveInterior: boolean;
   /**
    * Shapes cut clean through the lid's plate — a dispensing slot, a vent, a
-   * pass-through for a cable.
-   *
-   * The same {@link Cutout} the bin's interior uses, so the pen tool, the
-   * pathfinder group ops, insertion clearance and the entry chamfer all apply
-   * unchanged. Two things differ, and both are properties of the HOST rather
-   * than of the shape:
-   *
-   * - `cutDepth` is ignored. A lid cutout always spans the full remaining plate
-   *   ({@link lidCutoutHostFace}), because `exportLid` flips the lid 180° to
-   *   print and a partial pocket in the top face would come out as a
-   *   downward-facing ceiling pocket — the overhang that rotation exists to
-   *   remove. Through is also the only depth the feature is for.
-   * - Coordinates are in the lid's own window frame, NOT the bin's in-cavity
-   *   frame. See {@link lidCutoutWindow}: the drawable area is the mating
-   *   cavity's footprint, which is neither the bin's interior nor the lid's
-   *   outer plate.
+   * pass-through for a cable. The same {@link Cutout} the interior uses, so the
+   * pen tool, the pathfinder group ops, clearance and the entry chamfer all apply
+   * unchanged; `lidCutoutBuilder` documents what the HOST overrides on each shape,
+   * and `lidCutoutPlan` owns the frame they are measured in.
    *
    * ABSENT rather than `[]` when there are none, and `migrateParams` collapses an
    * empty array back to absent. `communityParamsFingerprint` hashes the whole

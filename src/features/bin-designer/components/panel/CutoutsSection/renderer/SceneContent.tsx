@@ -239,10 +239,17 @@ export function SceneContent({
         binColor={binColor}
       />
 
-      {/* Where a full-depth cutout gets trimmed by the tapered wall */}
+      {/* Where another part sits under this board — alignment reference only */}
       {referenceOutline && (
-        <ReferenceOutline3D width={referenceOutline.width} depth={referenceOutline.depth} />
+        <ReferenceOutline3D
+          binWidth={binWidth}
+          binDepth={binDepth}
+          width={referenceOutline.width}
+          depth={referenceOutline.depth}
+        />
       )}
+
+      {/* Where a full-depth cutout gets trimmed by the tapered wall */}
       {taperBand && <TaperBand3D binWidth={binWidth} binDepth={binDepth} band={taperBand} />}
 
       {/* Interaction plane for background clicks and pointer tracking */}
