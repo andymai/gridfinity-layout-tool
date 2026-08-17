@@ -12,17 +12,28 @@ import { LidExplodeSlider } from '../LidExplodeSlider';
 interface FeetDetachSliderProps {
   value: number;
   onChange: (mm: number) => void;
+  /** True when the lid's slider is on screen too, so the two must not overlap. */
+  showsBesideLid?: boolean;
 }
 
-export function FeetDetachSlider({ value, onChange }: FeetDetachSliderProps) {
+export function FeetDetachSlider({
+  value,
+  onChange,
+  showsBesideLid = false,
+}: FeetDetachSliderProps) {
   const t = useTranslation();
   return (
     <LidExplodeSlider
       value={value}
       onChange={onChange}
+      // Inverted, and the labels follow: the feet drop DOWNWARD off the bin, so
+      // dragging down has to be what detaches them. With the lid's orientation
+      // the hand and the part moved opposite ways.
+      invert
+      slot={showsBesideLid ? 'second' : 'first'}
       labels={{
-        open: t('binDesigner.preview.feetDetached'),
-        closed: t('binDesigner.preview.feetAttached'),
+        open: t('binDesigner.preview.feetAttached'),
+        closed: t('binDesigner.preview.feetDetached'),
         aria: t('binDesigner.preview.feetDetachSlider'),
       }}
     />
