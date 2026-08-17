@@ -105,9 +105,9 @@ export interface BinDimensions {
    */
   readonly undersideRelief: boolean;
   /**
-   * The feet print as separate parts, so the body is flat-bottomed with pin
-   * holes through its floor. Distinct from {@link socketless}: attachment
-   * hardware is NOT suppressed here, it moves into the feet.
+   * The feet print as separate parts, so the body is flat-bottomed with blind
+   * pin holes in the underside of its floor. Distinct from {@link socketless}:
+   * attachment hardware is NOT suppressed here, it moves into the feet.
    */
   readonly detachableFeet: boolean;
   /**

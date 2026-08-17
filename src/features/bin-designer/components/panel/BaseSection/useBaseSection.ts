@@ -110,12 +110,11 @@ export function useBaseSection() {
     : (base.footLatticeY ?? DEFAULT_FOOT_LATTICE);
 
   // ── Detachable feet ──────────────────────────────────────────────────────
-  // The three foot-shaping controls below are SUPERSEDED, not contradicted:
-  // they describe where integral feet fall, which this mode answers its own
-  // way. Locked with a reason rather than routed through the constraint engine,
-  // whose mode switches deliberately CLEAR what they disable — turning the
-  // toggle on would silently discard a lightweight setting that turning it off
-  // again would not bring back.
+  // The foot-shaping controls are SUPERSEDED, not contradicted: they describe
+  // where integral feet fall, which this mode answers its own way. Locked with
+  // a reason rather than through the constraint engine, whose mode switches
+  // deliberately CLEAR what they disable — turning the toggle on would discard
+  // a lightweight setting that turning it off again would not bring back.
   const hasDetachableFeet = base.feet === 'detachable';
   const detachablePlan = hasDetachableFeet ? resolveDetachableFeet(params) : null;
   // No pocket-aligned whole cell to stand a foot on. Reachable for a 1-wide bin
@@ -125,17 +124,14 @@ export function useBaseSection() {
   const feetSupersedeReason = hasDetachableFeet ? 'binDesigner.detachableFeet.supersedes' : null;
 
   /**
-   * What the feature is saving, as a ratio.
-   *
-   * A ratio and not a mass: the estimate reports SOLID volume converted at PLA
-   * density, i.e. as if the part were printed at 100% infill, and the feet are
-   * the one chunky region of a bin. An absolute figure would overstate the
-   * saving against what a slicer reports; dividing cancels the error out.
+   * What the feature is saving, as a ratio rather than a mass: the estimate is
+   * SOLID volume, i.e. 100% infill, and the feet are the one chunky region of a
+   * bin. An absolute figure would overstate the saving against what a slicer
+   * reports; dividing cancels the error out.
    */
   const detachableSavingPercent = useMemo(() => {
     if (!hasDetachableFeet) return 0;
-    const { feet: _feet, feetPinDiameter: _pin, ...integralBase } = base;
-    const integral = estimatePrint({ ...params, base: integralBase }).volumeMm3;
+    const integral = estimatePrint({ ...params, base: omitDetachableFeet(base) }).volumeMm3;
     if (integral <= 0) return 0;
     return Math.round(((integral - estimatePrint(params).volumeMm3) / integral) * 100);
   }, [params, base, hasDetachableFeet]);

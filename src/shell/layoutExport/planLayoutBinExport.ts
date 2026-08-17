@@ -126,8 +126,8 @@ function binSplitPlan(params: BinParams, printBed: PrintBedSize): LayoutSplitPla
 function binCompanions(params: BinParams): string[] {
   const companions: string[] = [];
   if (shouldGenerateLid(params)) companions.push('lid');
-  // Feet are a separate printed part, so a bin that has them is NOT simple:
-  // the simple path exports one body through `exportBin` and would drop them.
+  // The simple path exports one body through `exportBin`, so a bin listing no
+  // companion here ships without its feet.
   if (hasDetachableFeet(params.base)) companions.push('feet');
   if (params.style === 'slotted' && (params.slotConfig.x.enabled || params.slotConfig.y.enabled)) {
     companions.push('dividers');

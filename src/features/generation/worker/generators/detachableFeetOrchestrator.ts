@@ -76,10 +76,8 @@ function buildFeetSolids(params: BinParams, laidOut: boolean): Shape3D[] | null 
 }
 
 /**
- * The feet as solids, positioned under the bin.
- *
- * For the STEP compound, which holds bin + companions as separate solids in one
- * assembly. Caller owns and must delete them.
+ * The feet as solids, positioned under the bin. Caller owns and must delete
+ * them. For the STEP compound, which holds bin + companions as separate solids.
  */
 export function buildAssembledFeetSolids(params: BinParams): Shape3D[] | null {
   return buildFeetSolids(params, false);
@@ -90,19 +88,13 @@ export function generateDetachableFeetMesh(
   params: BinParams,
   onProgress?: ProgressFn
 ): MeshData | null {
-  const feet = buildFeetSolids(params, false);
+  const feet = buildAssembledFeetSolids(params);
   if (!feet) return null;
   onProgress?.('feet', 0.9);
   try {
     const compound = unwrap(fuseAll(feet as ValidSolid[], { optimisation: 'commonFace' }));
     try {
-      const indexed = toIndexedMeshData(mesh(compound, { tolerance: 0.01, angularTolerance: 5 }));
-      return {
-        vertices: indexed.vertices,
-        normals: indexed.normals,
-        indices: indexed.indices,
-        triangleCount: indexed.triangleCount,
-      } as MeshData;
+      return toIndexedMeshData(mesh(compound, { tolerance: 0.01, angularTolerance: 5 }));
     } finally {
       if (!feet.includes(compound)) compound.delete();
     }

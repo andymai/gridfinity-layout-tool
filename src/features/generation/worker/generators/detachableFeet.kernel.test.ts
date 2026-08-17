@@ -12,8 +12,8 @@
  * as anything a mesh check would flag.
  *
  * The rest pins down what the plan and the builder have to agree about: pins
- * that stop flush with the floor they pass through, holes where the plan put
- * them, and a magnet pocket that opens downward so the magnet can be inserted.
+ * that stop short of breaking through the floor, holes where the plan put them,
+ * and a magnet pocket that opens downward so the magnet can be inserted.
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
@@ -252,19 +252,20 @@ describe('a bin built with detachable feet', () => {
     generateBin = (await import('./binOrchestrator')).generateBin;
   }, 60000);
 
+  const binParams = (
+    feet: 'integral' | 'detachable',
+    over: Partial<BinParams> = {}
+  ): BinParams => ({
+    ...DEFAULT_BIN_PARAMS,
+    width: 3,
+    depth: 2,
+    height: 3,
+    ...over,
+    base: { ...DEFAULT_BIN_PARAMS.base, feet, ...(over.base ?? {}) },
+  });
+
   const bin = (feet: 'integral' | 'detachable', over: Partial<BinParams> = {}): MeshData =>
-    generateBin(
-      {
-        ...DEFAULT_BIN_PARAMS,
-        width: 3,
-        depth: 2,
-        height: 3,
-        ...over,
-        base: { ...DEFAULT_BIN_PARAMS.base, feet, ...(over.base ?? {}) },
-      },
-      undefined,
-      true
-    );
+    generateBin(binParams(feet, over), undefined, true);
 
   it('prints exactly one socket shorter than the same bin with integral feet', () => {
     const integral = boundingBox(bin('integral').vertices);
@@ -284,16 +285,9 @@ describe('a bin built with detachable feet', () => {
   });
 
   it('leaves the interior floor unbroken above every pin', () => {
-    const params: BinParams = {
-      ...DEFAULT_BIN_PARAMS,
-      width: 3,
-      depth: 2,
-      height: 3,
-      base: { ...DEFAULT_BIN_PARAMS.base, feet: 'detachable' },
-    };
     const m = bin('detachable');
     const { minZ } = boundingBox(m.vertices);
-    const resolved = resolveDetachableFeet(params);
+    const resolved = resolveDetachableFeet(binParams('detachable'));
     expect(resolved.placements.length).toBe(4);
 
     for (const foot of resolved.placements) {
@@ -302,7 +296,9 @@ describe('a bin built with detachable feet', () => {
         expect(isSolidThrough(m, pin.x, pin.y, minZ + 0.05, minZ + 0.3)).toBe(false);
         // ...and the membrane above it is solid, so nothing reaches the
         // interior — where the scoop ramp, dividers and floor pattern live.
-        expect(isSolidThrough(m, pin.x, pin.y, minZ + 1.2 - 0.35, minZ + 1.2)).toBe(true);
+        expect(isSolidThrough(m, pin.x, pin.y, minZ + FLOOR - MEMBRANE + 0.05, minZ + FLOOR)).toBe(
+          true
+        );
       }
     }
   });

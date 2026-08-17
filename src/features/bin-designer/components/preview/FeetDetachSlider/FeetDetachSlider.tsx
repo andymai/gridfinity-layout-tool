@@ -3,10 +3,7 @@
  *
  * The lid's slider with its own copy rather than a second implementation: the
  * track, the drag handling and the keyboard behaviour are identical, and only
- * what the two ends MEAN differs. It is a separate control from the lid's
- * because the parts move in opposite directions and a bin can have feet
- * without having a lid at all — sharing one value stranded the feet 30mm down
- * on a lidless bin, where the slider that set it is never rendered.
+ * what the two ends MEAN differs.
  */
 
 import { useTranslation } from '@/i18n';

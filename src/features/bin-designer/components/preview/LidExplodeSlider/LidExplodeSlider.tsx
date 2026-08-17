@@ -39,10 +39,8 @@ interface LidExplodeSliderProps {
   value: number;
   onChange: (mm: number) => void;
   /**
-   * Copy for the two ends and the control itself. Defaults to the lid's, so
-   * every existing call site is unchanged; the detachable feet pass their own
-   * because they move the other way — the top of this track means "apart", and
-   * for feet that reads as detached rather than open.
+   * Copy for the two ends and the control itself, defaulting to the lid's. The
+   * top of the track always means "apart"; only the word for it changes.
    */
   labels?: { readonly open: string; readonly closed: string; readonly aria: string };
 }

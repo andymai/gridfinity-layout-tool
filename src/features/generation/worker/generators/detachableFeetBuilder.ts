@@ -57,10 +57,9 @@ export interface DetachableFeetOptions {
   readonly pinDiameterMm: number;
   readonly pinHoleDiameterMm: number;
   /**
-   * Bin floor thickness. The pin reaches
-   * {@link detachablePinEngagementMm} into it and no further, so the hole is
-   * blind and the interior surface is never broken — see
-   * {@link DETACHABLE_PIN_MEMBRANE_MM}.
+   * Bin floor thickness. The pin reaches {@link detachablePinEngagementMm} into
+   * it and no further, so the hole is blind and the interior surface is never
+   * broken.
    */
   readonly floorThicknessMm: number;
   /** Magnet pocket, or `undefined` for plain feet. */
@@ -78,10 +77,10 @@ export interface DetachableFeetGeometry {
   /** One solid per foot, positioned as assembled under the bin. */
   readonly feet: Shape3D[];
   /**
-   * Tool opening every pin hole in the UNDERSIDE of the bin floor. Blind, so the
-   * interior surface is untouched. The caller cuts it from the body and deletes
-   * it; it is deliberately not pre-applied, because the body is cached and the
-   * holes are not part of what the cache key describes.
+   * Tool opening every pin hole in the UNDERSIDE of the bin floor. The caller
+   * cuts it from the body and deletes it; it is deliberately not pre-applied,
+   * because the body is cached and the holes are not part of what the cache key
+   * describes.
    */
   readonly pinHoles: Shape3D;
 }
@@ -270,9 +269,8 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
       feet.push(translate(foot, [centre.x, centre.y, 0]));
 
       // Blind from the underside: the cutter starts below the floor and stops at
-      // the engagement depth, so the membrane above it is untouched. A through
-      // hole would open 5mm of the interior floor at every pin, where the scoop
-      // ramp, the dividers and the floor pattern all live.
+      // the engagement depth, leaving the membrane that keeps the interior floor
+      // — where the scoop ramp, dividers and floor pattern live — unbroken.
       for (const pin of pins) {
         holes.push(
           translate(

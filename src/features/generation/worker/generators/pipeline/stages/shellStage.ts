@@ -336,7 +336,7 @@ export const shellStage: PipelineStage = {
       floorOpenings.delete();
     }
 
-    // ── DETACHABLE FEET — flat-bottomed body, pin holes through its floor. ───
+    // ── DETACHABLE FEET — flat-bottomed body, blind pin holes in its floor. ──
     // The feet are a separate PART, not deferred geometry: `deferredSolid` is
     // fused into the body on the export path, which is exactly what must not
     // happen to something the user presses on afterwards. They are generated

@@ -250,10 +250,9 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
       // Lid emits a separate solid alongside the bin; included as its own
       // labeled piece for STL/3MF and folded into the STEP compound below.
       const hasLid = shouldGenerateLid(params);
-      // Feet are a separate PART, so they belong in the same gate as dividers
-      // and the lid. Left out, a plain bin with detachable feet takes the
-      // bin-only early return below and its feet are silently dropped from the
-      // export — the same trap the preview handler's tray comment records.
+      // Same gate as the dividers and the lid: left out, a plain bin with
+      // detachable feet takes the bin-only early return and its feet are
+      // silently dropped from the export.
       const hasFeet = hasDetachableFeet(params.base);
 
       if (!hasDividers && !hasLid && !hasFeet) {
@@ -299,9 +298,8 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         // assembly, at the same lift as the lid. buildStackPlate returns null
         // unless the lid opted into separateStackPlate.
         let stackPlateSolid = hasLid ? buildStackPlate(params) : null;
-        // Separate solids inside the compound, never fused into the bin: a STEP
-        // assembly is exactly the right shape for parts that ship together and
-        // are pressed on afterwards.
+        // Separate solids inside the compound, never fused into the bin — they
+        // are pressed on after printing.
         const feetSolids = buildAssembledFeetSolids(params) ?? [];
         try {
           if (lidSolid) {

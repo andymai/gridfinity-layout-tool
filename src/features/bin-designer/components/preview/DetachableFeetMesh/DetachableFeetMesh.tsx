@@ -1,21 +1,16 @@
 /**
- * Renders the detachable feet under the bin in the 3D preview.
- *
- * Shown assembled, where they end up, because that is the object being
- * designed: a flat-bottomed body on its own reads as a bin missing its base,
- * and the whole question the mode raises — does this still look like a
- * Gridfinity bin — is only answerable with the feet in place.
+ * Renders the detachable feet under the bin in the 3D preview, shown assembled
+ * because that is the object being designed — a flat-bottomed body on its own
+ * reads as a bin missing its base.
  *
  * The feet arrive already positioned in the bin's own build frame (the body's
  * floor sits at Z=0 and the feet hang below it), so nothing here re-derives a
- * seat plane. The explode slider drops them further, which is what makes it
- * legible that they are separate parts rather than part of the body.
+ * seat plane: that is how a preview and an export come to disagree.
  */
 
 import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
-import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useMeshGeometry } from '@/shared/components/preview/useMeshGeometry';
 
@@ -41,9 +36,7 @@ export function DetachableFeetMesh({
 }: DetachableFeetMeshProps) {
   const { invalidate } = useThree();
 
-  const feetMesh = useDesignerStore(
-    useShallow((s) => s.generation.mesh?.detachableFeetMesh ?? null)
-  );
+  const feetMesh = useDesignerStore((s) => s.generation.mesh?.detachableFeetMesh ?? null);
 
   const { geometry, edgesGeometry, hasPrecomputedNormals } = useMeshGeometry({
     vertices: feetMesh?.vertices ?? null,
@@ -71,7 +64,7 @@ export function DetachableFeetMesh({
     invalidate();
   }, [geometry, offsetMm, invalidate]);
 
-  if (!geometry || !feetMesh) return null;
+  if (!geometry) return null;
 
   return (
     <group position={[0, 0, -offsetMm]}>

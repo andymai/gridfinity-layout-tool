@@ -128,12 +128,10 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
   // Lid explode slider (mm above the snapped position). Default = mid-explode
   // so both the lid and the bin's interior are visible when a lid is enabled.
   const [lidOffsetMm, setLidOffsetMm] = useState<number>(LID_OFFSET_DEFAULT);
-  // Detached feet get their own offset, and it starts at ZERO rather than at the
-  // lid's default. The two sliders mean opposite things: a lid opens so you can
-  // see inside, which is why it starts lifted, while feet are the part the bin
-  // stands on and the useful default is attached. Sharing the lid's value also
+  // Feet get their own offset, starting attached: a lid opens so you can see
+  // inside, but feet are what the bin stands on. Sharing the lid's value also
   // stranded them 30mm down on a bin with no lid, where the slider that set it
-  // is not even rendered.
+  // is never rendered.
   const [feetOffsetMm, setFeetOffsetMm] = useState<number>(0);
 
   // Preview color persisted in localStorage
@@ -462,9 +460,6 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
                 wireframe={wireframe}
                 xray={xray}
               />
-              {/* Detachable feet, assembled under the bin. Shown in place because
-                a flat-bottomed body on its own reads as a bin missing its base;
-                the explode slider drops them to show they come off. */}
               <DetachableFeetMesh
                 color={previewColor}
                 offsetMm={feetOffsetMm}
@@ -584,10 +579,6 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
             <LidExplodeSlider value={lidOffsetMm} onChange={setLidOffsetMm} />
           )}
 
-          {/* Detach slider — drops the feet away from the bin so the joint is
-              visible. Its own control rather than a share of the lid's: the two
-              parts move in opposite directions and a bin can have feet without
-              having a lid at all. */}
           {hasDetachableFeet(params.base) && (
             <FeetDetachSlider value={feetOffsetMm} onChange={setFeetOffsetMm} />
           )}
