@@ -68,7 +68,7 @@ export async function regenerateThumbnail(
     const result = await bridge.generateImmediate(params);
     if (signal?.aborted) return null;
 
-    const { vertices, normals, indices, edgeVertices, lidMesh } = result.mesh;
+    const { vertices, normals, indices, edgeVertices, lidMesh, detachableFeetMesh } = result.mesh;
     if (vertices.length === 0) return null;
 
     // Build geometry. The worker emits an indexed mesh (deduplicated vertices
@@ -90,6 +90,36 @@ export async function regenerateThumbnail(
     if (edgeVertices.length > 0) {
       edgesGeometry = new THREE.BufferGeometry();
       edgesGeometry.setAttribute('position', new THREE.Float32BufferAttribute(edgeVertices, 3));
+    }
+
+    // Detachable feet, assembled under the bin. Without them the card shows a
+    // flat-bottomed box, which is not the object the design describes.
+    let feetGeometry: BufferGeometry | null = null;
+    let feetEdgesGeometry: BufferGeometry | null = null;
+    if (detachableFeetMesh && detachableFeetMesh.vertices.length > 0) {
+      feetGeometry = new THREE.BufferGeometry();
+      feetGeometry.setAttribute(
+        'position',
+        new THREE.Float32BufferAttribute(detachableFeetMesh.vertices, 3)
+      );
+      if (detachableFeetMesh.indices.length > 0) {
+        feetGeometry.setIndex(new THREE.BufferAttribute(detachableFeetMesh.indices, 1));
+      }
+      if (detachableFeetMesh.normals.length > 0) {
+        feetGeometry.setAttribute(
+          'normal',
+          new THREE.Float32BufferAttribute(detachableFeetMesh.normals, 3)
+        );
+      } else {
+        feetGeometry.computeVertexNormals();
+      }
+      if (detachableFeetMesh.edgeVertices.length > 0) {
+        feetEdgesGeometry = new THREE.BufferGeometry();
+        feetEdgesGeometry.setAttribute(
+          'position',
+          new THREE.Float32BufferAttribute(detachableFeetMesh.edgeVertices, 3)
+        );
+      }
     }
 
     // Lid mesh + edges (rendered at closed position when params.lid.enabled
@@ -127,6 +157,8 @@ export async function regenerateThumbnail(
       edgesGeometry?.dispose();
       lidGeometry?.dispose();
       lidEdgesGeometry?.dispose();
+      feetGeometry?.dispose();
+      feetEdgesGeometry?.dispose();
       return null;
     }
 
@@ -180,6 +212,22 @@ export async function regenerateThumbnail(
     // here — there's no exploded-view affordance in a thumbnail, so the lid
     // simply hides the cavity it sits over.
     let lidMaterial: MeshStandardMaterial | null = null;
+    // The feet arrive positioned in the bin's own frame, so the only transform
+    // they need is the scene-wide nudge the body and its edges already take —
+    // without it they render 0.1mm below the body they are attached to, and
+    // their edges lose the renderOrder that keeps them off the surface.
+    if (feetGeometry) {
+      const feetPart = new THREE.Mesh(feetGeometry, material);
+      feetPart.position.set(0, 0, 0.1);
+      scene.add(feetPart);
+      if (feetEdgesGeometry) {
+        const feetEdges = new THREE.LineSegments(feetEdgesGeometry, edgeMaterial);
+        feetEdges.position.set(0, 0, 0.1);
+        feetEdges.renderOrder = 1;
+        scene.add(feetEdges);
+      }
+    }
+
     if (lidGeometry && lidGroupZ !== null) {
       lidMaterial = new THREE.MeshStandardMaterial({
         color,
@@ -257,6 +305,8 @@ export async function regenerateThumbnail(
     edgesGeometry?.dispose();
     lidGeometry?.dispose();
     lidEdgesGeometry?.dispose();
+    feetGeometry?.dispose();
+    feetEdgesGeometry?.dispose();
     material.dispose();
     lidMaterial?.dispose();
     edgeMaterial.dispose();

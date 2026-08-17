@@ -43,9 +43,31 @@ interface LidExplodeSliderProps {
    * top of the track always means "apart"; only the word for it changes.
    */
   labels?: { readonly open: string; readonly closed: string; readonly aria: string };
+  /**
+   * Put the maximum at the BOTTOM of the track instead of the top.
+   *
+   * The drag has to move the part the way the part moves. A lid lifts, so its
+   * maximum belongs at the top; feet drop away downward, so dragging up to
+   * detach them sends them the opposite way to the hand. Flips the pointer
+   * mapping, the fill anchor and the thumb together — they all read from the
+   * same end or the control fights itself.
+   */
+  invert?: boolean;
+  /**
+   * Which slot on the right edge this occupies. Two sliders are shown together
+   * whenever a bin has both a lid and detachable feet, and they would otherwise
+   * sit exactly on top of each other.
+   */
+  slot?: 'first' | 'second';
 }
 
-export function LidExplodeSlider({ value, onChange, labels }: LidExplodeSliderProps) {
+export function LidExplodeSlider({
+  value,
+  onChange,
+  labels,
+  invert = false,
+  slot = 'first',
+}: LidExplodeSliderProps) {
   const t = useTranslation();
   const id = useId();
   const trackRef = useRef<HTMLDivElement>(null);
@@ -60,12 +82,14 @@ export function LidExplodeSlider({ value, onChange, labels }: LidExplodeSliderPr
     (clientY: number): number => {
       if (!trackRef.current) return value;
       const rect = trackRef.current.getBoundingClientRect();
-      // Invert Y: top of track = max (lid open), bottom = min (snapped).
-      const rawPercent = Math.max(0, Math.min(1, (rect.bottom - clientY) / rect.height));
+      // Top of track = max by default (a lid lifts); inverted, the bottom is,
+      // so a downward drag detaches the feet downward.
+      const fromEnd = invert ? clientY - rect.top : rect.bottom - clientY;
+      const rawPercent = Math.max(0, Math.min(1, fromEnd / rect.height));
       const raw = LID_OFFSET_MIN + rawPercent * range;
       return Math.max(LID_OFFSET_MIN, Math.min(LID_OFFSET_MAX, Math.round(raw)));
     },
-    [range, value]
+    [range, value, invert]
   );
 
   const handlePointerDown = useCallback(
@@ -120,7 +144,10 @@ export function LidExplodeSlider({ value, onChange, labels }: LidExplodeSliderPr
 
   return (
     <div
-      className="absolute right-2 top-1/2 z-10 flex -translate-y-1/2 flex-col items-center gap-1.5 rounded-lg bg-surface-elevated/80 px-2 py-2.5 shadow-sm backdrop-blur"
+      className={cn(
+        'absolute top-1/2 z-10 flex -translate-y-1/2 flex-col items-center gap-1.5 rounded-lg bg-surface-elevated/80 px-2 py-2.5 shadow-sm backdrop-blur',
+        slot === 'second' ? 'right-16' : 'right-2'
+      )}
       onPointerEnter={() => setIsHovering(true)}
       onPointerLeave={() => setIsHovering(false)}
     >
@@ -146,10 +173,13 @@ export function LidExplodeSlider({ value, onChange, labels }: LidExplodeSliderPr
           )}
         />
 
-        {/* Filled portion grows upward from the bottom (closed → open). */}
+        {/* Filled portion grows from whichever end holds the minimum. */}
         <div
           data-testid="slider-fill"
-          className="absolute bottom-0 left-1/2 w-1.5 -translate-x-1/2 rounded-full bg-accent"
+          className={cn(
+            'absolute left-1/2 w-1.5 -translate-x-1/2 rounded-full bg-accent',
+            invert ? 'top-0' : 'bottom-0'
+          )}
           style={{ height: `${percent}%` }}
         />
 
@@ -157,7 +187,7 @@ export function LidExplodeSlider({ value, onChange, labels }: LidExplodeSliderPr
         {isDragging && (
           <div
             className="animate-scale-in pointer-events-none absolute right-full z-10 mr-1.5 translate-y-1/2 rounded-md border border-stroke-subtle bg-surface-elevated px-2 py-0.5 text-xs font-semibold tabular-nums text-content shadow-md"
-            style={{ bottom: `${percent}%` }}
+            style={invert ? { top: `${percent}%` } : { bottom: `${percent}%` }}
           >
             {value}
           </div>
@@ -167,8 +197,11 @@ export function LidExplodeSlider({ value, onChange, labels }: LidExplodeSliderPr
         <SliderThumb
           active={thumbActive}
           dragging={isDragging}
-          className="left-1/2 -translate-x-1/2 translate-y-1/2"
-          style={{ bottom: `${percent}%` }}
+          className={cn(
+            'left-1/2 -translate-x-1/2',
+            invert ? '-translate-y-1/2' : 'translate-y-1/2'
+          )}
+          style={invert ? { top: `${percent}%` } : { bottom: `${percent}%` }}
         />
 
         {/* Hidden native input for keyboard navigation + ARIA. */}

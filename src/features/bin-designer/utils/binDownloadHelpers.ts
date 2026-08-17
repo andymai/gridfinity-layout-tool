@@ -256,6 +256,9 @@ function pieceZone(label: string): ColorZone | null {
   // The glue-on baseplate is part of the lid assembly, so it takes the lid color.
   if (label === 'lid' || label === 'lid-baseplate') return 'lid';
   if (label === 'divider-horizontal' || label === 'divider-vertical') return 'dividers';
+  // The feet are the bin's base, printed separately, so they take the Base
+  // colour rather than falling through to the default material.
+  if (label === 'feet') return 'base';
   return null;
 }
 

@@ -167,6 +167,7 @@ export interface MeshResultResponse {
   readonly detachableFeetVertices?: Float32Array;
   readonly detachableFeetNormals?: Float32Array;
   readonly detachableFeetIndices?: Uint32Array;
+  readonly detachableFeetEdgeVertices?: Float32Array;
   readonly detachableFeetTriangleCount?: number;
   /**
    * Swappable label plates with their seated poses (preview only). A set

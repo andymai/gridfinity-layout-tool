@@ -14,7 +14,15 @@
  *    orientation and needs no support.
  */
 
-import { unwrap, fuseAll, mesh, translate, exportSTEP } from 'brepjs';
+import {
+  unwrap,
+  fuseAll,
+  mesh,
+  meshEdges,
+  translate,
+  exportSTEP,
+  getKernelCapabilities,
+} from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { hasDetachableFeet, DETACHABLE_PIN_HOLE_DIAMETER_MM } from '@/shared/types/bin';
@@ -22,7 +30,9 @@ import type { MeshData } from '../../bridge/types';
 import { footCellCentre, resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import { buildDetachableFeet } from './detachableFeetBuilder';
 import type { ExportFormat } from '../../bridge/types';
-import { SOCKET_HEIGHT, toIndexedMeshData } from './generatorTypes';
+import { SOCKET_HEIGHT } from './generatorTypes';
+import { toIndexedMeshData, creaseEdges } from './utils';
+import { EDGE_ANGULAR_TOLERANCE_RAD } from '@/shared/constants/tessellation';
 import type { ProgressFn } from './generatorTypes';
 import { unwrapExportBlob } from './utils/exportUnwrap';
 import { exportSolidToStl } from './utils/stlMeshFallback';
@@ -97,7 +107,18 @@ export function generateDetachableFeetMesh(
   try {
     const compound = unwrap(fuseAll(feet as ValidSolid[], { optimisation: 'commonFace' }));
     try {
-      return toIndexedMeshData(mesh(compound, { tolerance: 0.01, angularTolerance: 5 }));
+      const shapeMesh = mesh(compound, { tolerance: 0.01, angularTolerance: 5 });
+      // Crease edges, exactly as the lid and the tray get them. Without these
+      // the feet are the one companion part rendering as a flat silhouette
+      // while everything around it is outlined.
+      const edgeLines =
+        getKernelCapabilities().tessellationModel === 'build-time'
+          ? creaseEdges(shapeMesh)
+          : meshEdges(compound, {
+              tolerance: 0.01,
+              angularTolerance: EDGE_ANGULAR_TOLERANCE_RAD,
+            }).lines;
+      return toIndexedMeshData(shapeMesh, edgeLines);
     } finally {
       if (!feet.includes(compound)) compound.delete();
     }

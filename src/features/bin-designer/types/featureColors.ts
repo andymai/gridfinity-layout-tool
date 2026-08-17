@@ -10,7 +10,7 @@
  */
 
 import { FeatureTag } from '@/shared/types/generation';
-import { isSocketlessBase } from './base';
+import { hasDetachableFeet, isSocketlessBase } from './base';
 import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
 import type { BaseStyle, WallTextSide } from './index';
 
@@ -561,8 +561,9 @@ export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone>
   const zones = new Set<ColorZone>(['body']);
   // The Base zone paints FeatureTag.SOCKET, which only the socket branch of
   // `shellStage` stamps. A socketless base has none, so offering the zone would
-  // show a control that changes nothing.
-  if (!isSocketlessBase(p.base.style)) zones.add('base');
+  // show a control that changes nothing — but detachable feet ARE the base,
+  // shipped as their own part, so the zone paints them instead.
+  if (!isSocketlessBase(p.base.style) || hasDetachableFeet(p.base)) zones.add('base');
   if (p.base.stackingLip) {
     const grid = p.featureColors?.lip ?? { corners: 1, bands: 1 };
     for (const cell of activeLipCells(grid)) zones.add(cell);
