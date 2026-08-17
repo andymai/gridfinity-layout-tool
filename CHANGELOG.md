@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.419.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.418.2...gridfinity-layout-tool-v4.419.0) (2026-08-17)
+
+
+### Features
+
+* **bin-designer:** cut holes in a generated lid ([#3544](https://github.com/andymai/gridfinity-layout-tool/issues/3544)) ([7b5ae40](https://github.com/andymai/gridfinity-layout-tool/commit/7b5ae40b80f067d7b60c222e729409b51244cba3))
+
 ## [4.418.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.418.1...gridfinity-layout-tool-v4.418.2) (2026-08-17)
 
 
