@@ -770,7 +770,7 @@ async function handleSetCoverAction(
   // 1200px original.
   let coverPhotoThumbUrl = '';
   if (photoUrl !== null) {
-    const printerIds = await redis.zrange(communityPrintsKey(id), 0, -1);
+    const printerIds = await redis.zrange(communityPrintsKey(id), 0, '-1');
     const prints = await readCommunityPrints(redis, id, printerIds);
     const owner = prints.find(
       (print) => print !== null && print.status === 'live' && print.photos.includes(photoUrl)

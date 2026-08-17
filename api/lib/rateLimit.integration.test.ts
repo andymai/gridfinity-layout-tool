@@ -110,7 +110,7 @@ describe.skipIf(!REDIS_TEST_URL)('rate limiter (real Redis)', () => {
     // Backdate every entry past the 60s window rather than waiting on wall time.
     const scope = createHash('sha256').update('ages-out').digest('hex').slice(0, 16);
     const key = rateLimitKey('auth.start', scope);
-    const entries = await probe.zrange(key, 0, -1);
+    const entries = await probe.zrange(key, 0, '-1');
     const stale = Math.floor(Date.now() / 1000) - 120;
     for (const entry of entries) await probe.zadd(key, stale, entry);
 
