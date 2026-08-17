@@ -6,7 +6,11 @@
  */
 
 import type { BinParams } from '@/shared/types/bin';
-import { isUndersideRelief, resolveTileFloorThickness } from '@/shared/types/bin';
+import {
+  hasDetachableFeet,
+  isUndersideRelief,
+  resolveTileFloorThickness,
+} from '@/shared/types/bin';
 import { hashMask, isPartialMask } from '@/shared/utils/cellMask';
 import {
   HEIGHT_UNIT,
@@ -61,6 +65,13 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // ends in a plain face where this grows a skirt in `trayBottomStage`.
   const isTrayBottom = params.base.style === 'lid';
   const socketless = isFlat || isTrayBottom;
+  // Detachable feet: the feet print as separate parts, so the BODY has no
+  // socket under it — but this is not `socketless`, which also suppresses
+  // attachment hardware. The magnets move into the feet rather than vanishing,
+  // and the body is otherwise bit-identical to an integral bin's, so only
+  // `baseOffsetZ` and the socket build change. `hasDetachableFeet` already
+  // refuses a spacer and a socketless base.
+  const detachableFeet = hasDetachableFeet(params.base);
   // User flag only. When the mask has mixed half-bin detail, the socket
   // builder does a per-cell dispatch using the mask — it splits only
   // those 1u cells that straddle a half-bin boundary into quarter
@@ -97,7 +108,10 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // flag is inert there. migrateParams backfills the field on legacy designs.
   // A spacer always shells (its feet ARE the structure once the floor is gone),
   // so it takes the same build path whether or not the user asked for lite.
-  const lightweight = (params.base.lightweight || isSpacer) && !socketless;
+  // Inert with detachable feet for the same reason it is inert on a socketless
+  // base: there is no in-place foot to shell. Superseded rather than
+  // contradictory, so the setting is left alone rather than cleared.
+  const lightweight = (params.base.lightweight || isSpacer) && !socketless && !detachableFeet;
   // Which side the shells open from. `isUndersideRelief` already refuses a
   // spacer and a socketless base, so a crafted `{ spacer: true, lightweightMode:
   // 'underside' }` cannot close the hole that makes a spacer a spacer.
@@ -176,7 +190,11 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   const withScrew =
     !noAttachment && (params.base.style === 'screw' || params.base.style === 'magnet_and_screw');
 
-  const baseOffsetZ = resolveBaseOffsetZ(params);
+  // Nothing under the body once the feet come off. The printed part is
+  // SOCKET_HEIGHT shorter than the assembly, which is why `assembledHeight`
+  // stays right without knowing about this mode: it counts
+  // `height * heightUnitMm`, and the feet put that 5mm back.
+  const baseOffsetZ = detachableFeet ? 0 : resolveBaseOffsetZ(params);
 
   const maxDimension = Math.max(params.width * gridUnitX, params.depth * gridUnitY);
 
@@ -348,6 +366,7 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
     isFlat,
     isTrayBottom,
     socketless,
+    detachableFeet,
     baseOffsetZ,
     halfSockets,
     socketCellPlan,

@@ -35,7 +35,11 @@
  * of the floor, where there is no wall to carry load into it.
  */
 
-import { MAX_FOOT_SPAN_MM } from '@/features/bin-designer/types';
+import {
+  DEFAULT_DETACHABLE_PIN_DIAMETER_MM,
+  MAX_FOOT_SPAN_MM,
+} from '@/features/bin-designer/types';
+import { magnetInsetFromCellEdgeMm } from '@/shared/printSettings/gridfinityGeometry';
 
 /**
  * Solid margin around anything embedded in a foot (mm) — a magnet pocket or a
@@ -302,4 +306,78 @@ export function footPinPositions(
         { x: outer, y: foot.y - halfSpan },
         { x: outer, y: foot.y + halfSpan },
       ];
+}
+
+/**
+ * Everything a consumer needs to place, build, count or cost the feet, resolved
+ * from the bin's own params.
+ *
+ * One entry point on purpose. The shell stage cuts the pin holes, the parts
+ * generator builds the feet, the estimate counts them and the panel reports the
+ * saving — four callers, and any of them resolving the arm or the pin size
+ * differently is a foot that does not match its own holes.
+ */
+export interface ResolvedDetachableFeet {
+  readonly placements: readonly FootPlacement[];
+  readonly armMm: number;
+  readonly pinDiameterMm: number;
+  /** Magnet pocket dimensions, or `undefined` when the base carries none. */
+  readonly magnet?: { readonly diameterMm: number; readonly depthMm: number };
+}
+
+/** The subset of `BinParams` the feet depend on. */
+export interface DetachableFeetParams {
+  readonly width: number;
+  readonly depth: number;
+  readonly gridUnitMm: number;
+  readonly gridUnitMmY?: number;
+  readonly fractionalEdgeX: 'start' | 'end';
+  readonly fractionalEdgeY: 'start' | 'end';
+  readonly magnetAnchor?: 'edge' | 'center';
+  readonly base: {
+    readonly style: string;
+    readonly magnetDiameter: number;
+    readonly magnetDepth: number;
+    readonly feetPinDiameter?: number;
+  };
+}
+
+export function resolveDetachableFeet(params: DetachableFeetParams): ResolvedDetachableFeet {
+  const pitchX = params.gridUnitMm;
+  const pitchY = params.gridUnitMmY ?? params.gridUnitMm;
+  const pinDiameterMm = params.base.feetPinDiameter ?? DEFAULT_DETACHABLE_PIN_DIAMETER_MM;
+  const carriesMagnet = params.base.style === 'magnet' || params.base.style === 'magnet_and_screw';
+
+  // The arm is sized against the SHORTER pitch: a foot deep enough for the
+  // magnet on one axis is not automatically deep enough on the other, and a
+  // single arm value serves both.
+  const magnetInsetFromEdgeMm = carriesMagnet
+    ? Math.min(
+        magnetInsetFromCellEdgeMm(pitchX, params.magnetAnchor ?? 'edge'),
+        magnetInsetFromCellEdgeMm(pitchY, params.magnetAnchor ?? 'edge')
+      )
+    : undefined;
+
+  const armMm = footArmMm({
+    pinDiameterMm,
+    magnetDiameterMm: carriesMagnet ? params.base.magnetDiameter : undefined,
+    magnetInsetFromEdgeMm,
+  });
+
+  return {
+    placements: detachableFeetPlacements({
+      widthUnits: params.width,
+      depthUnits: params.depth,
+      pitchX,
+      pitchY,
+      fractionalEdgeX: params.fractionalEdgeX,
+      fractionalEdgeY: params.fractionalEdgeY,
+      armMm,
+    }),
+    armMm,
+    pinDiameterMm,
+    magnet: carriesMagnet
+      ? { diameterMm: params.base.magnetDiameter, depthMm: params.base.magnetDepth }
+      : undefined,
+  };
 }

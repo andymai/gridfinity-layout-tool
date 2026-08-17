@@ -88,6 +88,30 @@ export const MAGNET_FLOOR = 0.5;
 export const MAGNET_HOLE_OFFSET_MM = 13;
 
 /**
+ * A magnet's inset from its cell's EDGE at spec pitch (mm), i.e. how much solid
+ * the placement keeps between a magnet and the outside of its foot.
+ */
+export const MAGNET_WALL_INSET_MM = 8;
+
+/**
+ * The inset from the cell edge the magnet placement actually resolves to.
+ *
+ * Mirrors the offset arithmetic in `magnetPositionsForCell`, which is the
+ * authority; `gridfinityGeometry.test.ts` asserts the two agree across pitches
+ * rather than leaving that to inspection. Anything sizing a part AROUND a
+ * magnet needs this and cannot reach the worker for it: the familiar 8mm holds
+ * only from spec pitch upward, and a smaller cell pulls the magnet toward its
+ * own edge instead.
+ */
+export function magnetInsetFromCellEdgeMm(
+  pitchMm: number,
+  anchor: 'edge' | 'center' = 'edge'
+): number {
+  const fromCentre = pitchMm / 2 - MAGNET_HOLE_OFFSET_MM;
+  return anchor === 'center' ? fromCentre : Math.min(fromCentre, MAGNET_WALL_INSET_MM);
+}
+
+/**
  * Number of perimeter walls per nozzle size, matching common slicer defaults.
  *
  * Most slicers default to 2 perimeters. For very small nozzles (0.2mm),

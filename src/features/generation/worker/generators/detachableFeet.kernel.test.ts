@@ -20,7 +20,14 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import type { Shape3D } from 'brepjs';
 import type { MeshData } from '@/features/generation/bridge/types';
 import { initTestKernel } from '@/test/initTestKernel';
-import { footArmMm, footPinPositions, type FootPlacement } from '@/shared/utils/detachableFeetPlan';
+import {
+  footArmMm,
+  footPinPositions,
+  resolveDetachableFeet,
+  type FootPlacement,
+} from '@/shared/utils/detachableFeetPlan';
+import type { BinParams } from '@/shared/types/bin';
+import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { boundingBox, isSolidThrough, meshTopologyStats } from './__kernel-tests__/meshAssertions';
 
 import type { DetachableFeetGeometry, DetachableFeetOptions } from './detachableFeetBuilder';
@@ -217,6 +224,72 @@ describe('detachable foot geometry', () => {
     } finally {
       feet.forEach((f) => f.delete());
       pinHoles.delete();
+    }
+  });
+});
+
+/**
+ * The body side, end to end. A detachable bin's printed part is the same body
+ * an integral bin has, minus the socket and plus the pin holes — so the checks
+ * are all DELTAS against the integral bin rather than absolute figures, which
+ * would only restate the arithmetic that produced them.
+ */
+describe('a bin built with detachable feet', () => {
+  let generateBin: (p: BinParams, cb: undefined, forExport: boolean) => MeshData;
+
+  beforeAll(async () => {
+    generateBin = (await import('./binOrchestrator')).generateBin;
+  }, 60000);
+
+  const bin = (feet: 'integral' | 'detachable', over: Partial<BinParams> = {}): MeshData =>
+    generateBin(
+      {
+        ...DEFAULT_BIN_PARAMS,
+        width: 3,
+        depth: 2,
+        height: 3,
+        ...over,
+        base: { ...DEFAULT_BIN_PARAMS.base, feet, ...(over.base ?? {}) },
+      },
+      undefined,
+      true
+    );
+
+  it('prints exactly one socket shorter than the same bin with integral feet', () => {
+    const integral = boundingBox(bin('integral').vertices);
+    const detachable = boundingBox(bin('detachable').vertices);
+    expect(integral.maxZ - integral.minZ - (detachable.maxZ - detachable.minZ)).toBeCloseTo(5, 3);
+    // Same footprint: the feet come off the bottom, not the sides.
+    expect(detachable.maxX - detachable.minX).toBeCloseTo(integral.maxX - integral.minX, 4);
+  });
+
+  it('has a flat underside where the integral bin has feet', () => {
+    const m = bin('detachable');
+    const { minZ } = boundingBox(m.vertices);
+    // Solid straight through the floor at a point that would be inside a foot.
+    expect(isSolidThrough(m, 0, 0, minZ + 0.05, minZ + 1.1)).toBe(true);
+    // ...and the socket band simply is not there: nothing below the floor.
+    expect(isSolidThrough(m, 0, 0, minZ - 1, minZ - 0.1)).toBe(false);
+  });
+
+  it('carries a hole through its floor at every pin the plan places', () => {
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      width: 3,
+      depth: 2,
+      height: 3,
+      base: { ...DEFAULT_BIN_PARAMS.base, feet: 'detachable' },
+    };
+    const m = bin('detachable');
+    const { minZ } = boundingBox(m.vertices);
+    const resolved = resolveDetachableFeet(params);
+    expect(resolved.placements.length).toBe(4);
+
+    for (const foot of resolved.placements) {
+      for (const pin of footPinPositions(foot, resolved.armMm, resolved.pinDiameterMm)) {
+        // Nothing solid through the floor at a pin: the hole goes right through.
+        expect(isSolidThrough(m, pin.x, pin.y, minZ + 0.1, minZ + 1.1)).toBe(false);
+      }
     }
   });
 });

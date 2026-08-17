@@ -35,6 +35,9 @@ import { getShellCache, setShellCache } from '../../shapeCache';
 import { LIP_OVERLAP } from '../../generatorConstants';
 import { FeatureTag } from '../../featureTags';
 import { collectOrigins } from '../collectOrigins';
+import { applyPinHoles, buildDetachableFeet } from '../../detachableFeetBuilder';
+import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
+import { DETACHABLE_PIN_HOLE_DIAMETER_MM } from '@/shared/types/bin';
 
 /**
  * Which way the lite cups open.
@@ -331,6 +334,34 @@ export const shellStage: PipelineStage = {
     // Cache hit already has the floor openings baked in — drop the unused tool.
     if (floorOpenings) {
       floorOpenings.delete();
+    }
+
+    // ── DETACHABLE FEET — flat-bottomed body, pin holes through its floor. ───
+    // The feet are a separate PART, not deferred geometry: `deferredSolid` is
+    // fused into the body on the export path, which is exactly what must not
+    // happen to something the user presses on afterwards. They are generated
+    // and combined alongside the bin the way a lid is.
+    //
+    // Cutting here rather than before `setShellCache` is deliberate: the cached
+    // body is shared with an integral bin of the same size (the two really are
+    // identical above the floor), and only this clone gets holed.
+    if (dim.detachableFeet) {
+      const resolved = resolveDetachableFeet(params);
+      if (resolved.placements.length > 0) {
+        const { feet, pinHoles } = buildDetachableFeet({
+          placements: resolved.placements,
+          armMm: resolved.armMm,
+          pinDiameterMm: resolved.pinDiameterMm,
+          pinHoleDiameterMm: DETACHABLE_PIN_HOLE_DIAMETER_MM,
+          floorThicknessMm: params.wallThickness,
+          forExport: true,
+        });
+        // The feet themselves are rebuilt by the parts generator; here only
+        // their holes matter, so release them rather than carry them along.
+        for (const f of feet) f.delete();
+        body = applyPinHoles(body, pinHoles);
+      }
+      return { ...ctx, solid: body, deferredSolid: null };
     }
 
     // No socket under a flat base or a tray bottom — the body IS the whole

@@ -105,6 +105,12 @@ export interface BinDimensions {
    */
   readonly undersideRelief: boolean;
   /**
+   * The feet print as separate parts, so the body is flat-bottomed with pin
+   * holes through its floor. Distinct from {@link socketless}: attachment
+   * hardware is NOT suppressed here, it moves into the feet.
+   */
+  readonly detachableFeet: boolean;
+  /**
    * True when there is no solid interior floor left — the question every
    * feature that stands ON the floor is actually asking, and the reason it is
    * separate from {@link lightweight}.
