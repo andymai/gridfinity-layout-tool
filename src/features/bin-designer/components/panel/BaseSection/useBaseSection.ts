@@ -505,10 +505,17 @@ export function useBaseSection() {
       showFeet,
       showFloor,
       showFootLattice: hasFeet && !footLatticeInert,
-      // Named where the lock was caused rather than under the control it made
-      // inert, which is no longer rendered at all.
-      halfSocketsInertHint:
-        hasHalfSockets && hasFeet ? t('binDesigner.footLattice.halfSocketsHint') : undefined,
+      // Why the lattice is not on offer, rendered in the slot it would have
+      // occupied. Half sockets is the only cause with a control in this section
+      // (and it sits directly above, so the note still lands at its cause); a
+      // custom shape and a fractional axis are decided over in Shape, where
+      // there is nothing local to hang it off, so this note is the whole
+      // explanation the user gets and must not be limited to the half-socket
+      // case.
+      footLatticeInertReason:
+        hasFeet && footLatticeInert
+          ? t(footLatticeLockReason ?? 'binDesigner.footLattice.hint')
+          : undefined,
       floorPatternEnabled: floorPattern.enabled,
       floorPatternType: floorPattern.pattern,
       floorPatternScalePercent: Math.round((floorPattern.scale ?? DEFAULT_PATTERN_SCALE) * 100),

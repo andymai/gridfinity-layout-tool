@@ -3,6 +3,10 @@ import { renderHook, act } from '@testing-library/react';
 import { useBaseSection } from './useBaseSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
+import { isMagnetStyle, isScrewStyle } from '@/features/bin-designer/types';
+import { hasDetachableFeet } from '@/features/bin-designer/types/base';
+import { BODY_TYPES } from './bodyType';
+import type { BinParams } from '@/features/bin-designer/types';
 
 describe('useBaseSection', () => {
   beforeEach(() => {
@@ -717,6 +721,164 @@ describe('useBaseSection — base-only bin residue', () => {
       expect(result.current.handlers.detachableFeetDisabledReason).toBeDefined();
       act(() => result.current.handlers.toggleDetachableFeet());
       expect(useDesignerStore.getState().params.base.feet).toBeUndefined();
+    });
+  });
+
+  // The one invariant the subsection hiding must not break. A family that is
+  // hidden while something inside it is still ON leaves a live setting the user
+  // can neither see nor switch off, which is strictly worse than the greyed row
+  // the hiding replaced.
+  describe('hiding never conceals a live setting', () => {
+    /** Every base feature on at once, so each switch has something to strand. */
+    const everythingOn: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      base: {
+        ...DEFAULT_BIN_PARAMS.base,
+        style: 'magnet_and_screw',
+        halfSockets: true,
+        lightweight: true,
+      },
+      floorPattern: { enabled: true, pattern: 'round', scale: 0.5 },
+    };
+
+    it.each(BODY_TYPES)('holds when switching to %s', (type) => {
+      useDesignerStore.setState({ params: everythingOn });
+      const { result } = renderHook(() => useBaseSection());
+
+      act(() => {
+        result.current.handlers.setBodyType(type);
+      });
+
+      const { params } = useDesignerStore.getState();
+      const { state } = result.current;
+
+      if (isMagnetStyle(params.base.style) || isScrewStyle(params.base.style)) {
+        expect(state.showMounting).toBe(true);
+      }
+      if (params.base.halfSockets || hasDetachableFeet(params.base)) {
+        expect(state.showFeet).toBe(true);
+      }
+      if (params.base.lightweight || params.floorPattern?.enabled) {
+        expect(state.showFloor).toBe(true);
+      }
+    });
+
+    it('never hides a foot lattice that is actually in force', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          base: { ...DEFAULT_BIN_PARAMS.base, footLatticeX: 'half', footLatticeY: 'half' },
+        },
+      });
+      const { result } = renderHook(() => useBaseSection());
+
+      // The effective lattice is what gets built. Whenever it differs from the
+      // default the control has to be on screen, because a wrong lattice leaves
+      // the bin perched on the ridges between baseplate pockets.
+      const effectiveIsCustom =
+        result.current.state.footLatticeX !== 'grid' ||
+        result.current.state.footLatticeY !== 'grid';
+      expect(effectiveIsCustom).toBe(true);
+      expect(result.current.state.showFootLattice).toBe(true);
+    });
+
+    it('reports the default lattice whenever it hides the control', () => {
+      // Half sockets make the lattice inert, so it is hidden. That is only safe
+      // because the stored `half` is overridden: nothing customised is in force.
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true, footLatticeX: 'half' },
+        },
+      });
+      const { result } = renderHook(() => useBaseSection());
+
+      expect(result.current.state.showFootLattice).toBe(false);
+      expect(result.current.state.footLatticeX).toBe('grid');
+      expect(result.current.state.footLatticeY).toBe('grid');
+    });
+  });
+
+  // `base` is hashed wholesale for the community fingerprint, so a key left
+  // behind by a visit to another body type would make a bin fingerprint
+  // differently from an identical one that never went there. The three keys the
+  // picker materialises (`trayBottom`, `tile`, `lightweightMode`) are the ones
+  // that can leak, and each is stripped on a different path.
+  describe('body type round trip', () => {
+    it.each(BODY_TYPES.filter((t) => t !== 'standard'))(
+      'leaves the base config byte-identical after standard to %s and back',
+      (type) => {
+        useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS } });
+        const before = JSON.stringify(useDesignerStore.getState().params.base);
+        const { result } = renderHook(() => useBaseSection());
+
+        act(() => {
+          result.current.handlers.setBodyType(type);
+        });
+        act(() => {
+          result.current.handlers.setBodyType('standard');
+        });
+
+        expect(JSON.stringify(useDesignerStore.getState().params.base)).toBe(before);
+      }
+    );
+
+    // What the round trip does NOT restore, recorded so the next change to this
+    // area can tell an intended loss from a new one. Both predate the picker and
+    // come from the constraint engine and the base-only commit path, which the
+    // four toggles routed through identically. The picker makes them easier to
+    // reach, not different.
+    it('does not restore what the engine cleared on the way in', () => {
+      useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS } });
+      const { result } = renderHook(() => useBaseSection());
+
+      act(() => {
+        result.current.handlers.setBodyType('spacer');
+      });
+      act(() => {
+        result.current.handlers.setBodyType('standard');
+      });
+
+      // A spacer has no interior, so the engine clears the divider slots; coming
+      // back does not put them there again.
+      expect(useDesignerStore.getState().params.slotConfig.x.enabled).toBe(false);
+    });
+
+    // Switching body type CLEARS whatever the new body cannot hold, and the
+    // subsection holding it is then hidden, so undo is the only way back. It is
+    // what makes the hiding recoverable rather than destructive.
+    it('is undoable, restoring both the archetype and what it cleared', () => {
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' } },
+      });
+      const { result } = renderHook(() => useBaseSection());
+
+      act(() => {
+        result.current.handlers.setBodyType('flat');
+      });
+      expect(useDesignerStore.getState().params.base.style).toBe('flat');
+
+      act(() => {
+        useDesignerStore.getState().undo();
+      });
+
+      expect(useDesignerStore.getState().params.base.style).toBe('magnet');
+    });
+
+    it('leaves a base-only bin at the height floor rather than its original height', () => {
+      useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS, height: 6 } });
+      const { result } = renderHook(() => useBaseSection());
+
+      act(() => {
+        result.current.handlers.setBodyType('tile');
+      });
+      act(() => {
+        result.current.handlers.setBodyType('standard');
+      });
+
+      // A base-only bin pins height to 1 because the wall is inert there, and
+      // leaving lifts to the minimum rather than to the 6u it came from.
+      expect(useDesignerStore.getState().params.height).toBe(DESIGNER_CONSTRAINTS.MIN_HEIGHT);
     });
   });
 });

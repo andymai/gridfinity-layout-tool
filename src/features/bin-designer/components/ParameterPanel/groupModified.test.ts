@@ -29,6 +29,25 @@ describe('modifiedGroups', () => {
     expect(modifiedGroups(withUndefined).shape).toBe(false);
   });
 
+  it.each(['featureColors', 'floorPattern', 'lid', 'base'] as const)(
+    'reads a legacy design omitting %s as unmodified, not changed',
+    (key) => {
+      // Persisted designs predate several fields and every read site falls back
+      // to the default, so an absent key is a design running on the default.
+      // Comparing it against the populated default marked a group changed over
+      // something its owner never touched.
+      const { [key]: _omitted, ...legacy } = DEFAULT_BIN_PARAMS;
+
+      expect(modifiedGroups(legacy as typeof DEFAULT_BIN_PARAMS)).toEqual({
+        shape: false,
+        lid: false,
+        interior: false,
+        base: false,
+        finishing: false,
+      });
+    }
+  );
+
   it('attributes a base change to Base alone', () => {
     const result = modifiedGroups({
       ...DEFAULT_BIN_PARAMS,

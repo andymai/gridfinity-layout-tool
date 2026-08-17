@@ -202,6 +202,19 @@ describe('BaseSection', () => {
       expect(screen.queryByText(/Foot lattice/)).not.toBeInTheDocument();
       expect(screen.getByText(/Half sockets already seat at either offset/)).toBeInTheDocument();
     });
+
+    // The other two causes are decided over in Shape, where there is no local
+    // control to hang the reason off. Without a note here the control would
+    // simply be missing, which is the confusing version of hiding it.
+    it('still explains itself when the cause is a fractional bin, not half sockets', () => {
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, width: 2.5, depth: 2.5 },
+      });
+      render(<BaseSection />);
+
+      expect(screen.queryByText(/Foot lattice/)).not.toBeInTheDocument();
+      expect(screen.getByText(/A fractional axis keeps the on-grid lattice/)).toBeInTheDocument();
+    });
   });
 
   it('reveals the hole picker only once drainage is on', () => {

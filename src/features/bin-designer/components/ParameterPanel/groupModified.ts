@@ -74,6 +74,15 @@ function canonical(value: unknown): unknown {
 function matchesDefault(params: BinParams, key: string): boolean {
   const defaults = DEFAULT_BIN_PARAMS as unknown as Record<string, unknown>;
   const current = params as unknown as Record<string, unknown>;
+
+  // A design that omits a key runs on the default, so absent IS unmodified.
+  // Legacy persisted designs omit `featureColors` and `floorPattern` (both have
+  // runtime fallbacks at every read site), and comparing an absent key against
+  // a populated default marked their group changed over a field the owner never
+  // touched. A dot that is sometimes wrong cannot be trusted anywhere, which is
+  // the same reason the cross-group keys below are excluded outright.
+  if (current[key] === undefined) return true;
+
   return JSON.stringify(canonical(current[key])) === JSON.stringify(canonical(defaults[key]));
 }
 

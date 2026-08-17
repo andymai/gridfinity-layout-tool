@@ -243,18 +243,17 @@ export function BaseSection() {
             <Hint>{t('binDesigner.detachableFeet.pinHint')}</Hint>
           </FeatureToggle>
 
-          <div>
-            <FeatureToggle
-              label={t('binDesigner.halfSockets')}
-              checked={state.hasHalfSockets}
-              onChange={handlers.toggleHalfSockets}
-              disabledReason={handlers.halfSocketsDisabledReason}
-            />
-            {/* The foot lattice is inert while this is on, and it is the
-                control that made it so, so the explanation lives here rather
-                than under a picker that is no longer rendered. */}
-            {state.halfSocketsInertHint && <Hint>{state.halfSocketsInertHint}</Hint>}
-          </div>
+          <FeatureToggle
+            label={t('binDesigner.halfSockets')}
+            checked={state.hasHalfSockets}
+            onChange={handlers.toggleHalfSockets}
+            disabledReason={handlers.halfSocketsDisabledReason}
+          />
+
+          {/* Why the lattice below is missing, in the slot it would occupy. The
+              control that caused it is usually the toggle directly above, so
+              this still reads as an explanation at its cause. */}
+          {state.footLatticeInertReason && <Hint>{state.footLatticeInertReason}</Hint>}
 
           {/* Foot lattice (#3467). A foot has to land inside one baseplate
               pocket, so which layout seats depends on where the bin sits, per

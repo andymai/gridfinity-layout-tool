@@ -78,7 +78,11 @@ export function StickyGroupHeader({
         </span>
         {modifiedLabel && (
           <>
+            {/* `title` as well as the sr-only text: a bare dot is unexplained
+                for anyone who can see it, and "changed" reads as "unsaved"
+                without the wording to correct it. */}
             <span
+              title={modifiedLabel}
               aria-hidden="true"
               data-testid="group-modified-dot"
               className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent"
