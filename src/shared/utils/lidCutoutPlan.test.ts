@@ -177,6 +177,40 @@ describe('lidCutoutWindow', () => {
     expect(overhung.spanW).toBeCloseTo(plain.spanW, 5);
   });
 
+  it("keeps a lip-only lid's boss keepouts on the bosses under overhang", () => {
+    // The window is grid-anchored there but the bosses are not — they hug the
+    // overhang-shifted lip. Using one frame for both draws the keep-outs beside
+    // the bosses, so a slot removes part of one and the lid stops holding.
+    const lipOnly: Partial<LidConfig> = {
+      stackableTop: true,
+      stackLipOnly: true,
+      attachment: 'magnetic',
+    };
+    const shift = 6;
+    const p = params(lipOnly, {
+      width: 2,
+      depth: 2,
+      overhang: { enabled: true, left: 0, right: shift, front: 0, back: 0, feet: false },
+    });
+    const w = lidCutoutWindow(p)!;
+    const plain = lidCutoutWindow(params(lipOnly, { width: 2, depth: 2 }))!;
+
+    // Window itself does not move.
+    expect(w.offsetX).toBe(0);
+    expect(w.spanW).toBeCloseTo(plain.spanW, 5);
+    // The bosses do — and asymmetrically, which is the point. A right-only
+    // overhang grows that edge, so the RIGHT magnets travel the full 6mm with it
+    // while the left ones stay on the un-grown edge. Anchoring the keep-outs to
+    // the grid instead left the right pair 6mm short of the bosses they guard.
+    const sortedX = (win: typeof w) => win.keepouts.map((k) => k.x).sort((a, b) => a - b);
+    const moved = sortedX(w);
+    const still = sortedX(plain);
+    expect(moved).toHaveLength(still.length);
+    const deltas = moved.map((x, i) => x - still[i]);
+    expect(Math.min(...deltas)).toBeCloseTo(0, 5);
+    expect(Math.max(...deltas)).toBeCloseTo(shift, 5);
+  });
+
   it('carries no keepouts on a friction or click-rail lid', () => {
     expect(lidCutoutWindow(params({ attachment: 'clickRails' }))!.keepouts).toEqual([]);
     expect(lidCutoutWindow(params({ attachment: 'friction' }))!.keepouts).toEqual([]);

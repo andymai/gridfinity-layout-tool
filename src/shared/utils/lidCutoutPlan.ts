@@ -205,7 +205,16 @@ export function lidCutoutWindow(params: BinParams): LidCutoutWindow | null {
       offsetX: 0,
       offsetY: 0,
       cornerRadius: 0,
-      keepouts: resolveKeepouts(params, spanW, spanD, ZERO_EXPANSION),
+      // The window is grid-anchored (centre 0,0) but the bosses are not — they
+      // hug the overhang-shifted lip, so they keep the real expansion.
+      keepouts: resolveKeepouts(
+        params,
+        spanW,
+        spanD,
+        overhangExpansion(resolveOverhang(params.overhang)),
+        0,
+        0
+      ),
     };
   }
 
@@ -242,12 +251,16 @@ export function lidCutoutWindow(params: BinParams): LidCutoutWindow | null {
     offsetX: expansion.offsetX,
     offsetY: expansion.offsetY,
     cornerRadius: Math.max(cavityInset - LID_CUTOUT_WALL_MARGIN_MM, 0),
-    keepouts: resolveKeepouts(params, spanW, spanD, expansion),
+    keepouts: resolveKeepouts(
+      params,
+      spanW,
+      spanD,
+      expansion,
+      expansion.offsetX,
+      expansion.offsetY
+    ),
   };
 }
-
-/** Overhang is inert on a grid-anchored window; spelled out so the branch reads. */
-const ZERO_EXPANSION: OverhangExpansion = { addW: 0, addD: 0, offsetX: 0, offsetY: 0 };
 
 /**
  * Retention-magnet bosses, expressed in the window frame.
@@ -267,7 +280,9 @@ function resolveKeepouts(
   params: BinParams,
   spanW: number,
   spanD: number,
-  expansion: OverhangExpansion
+  expansion: OverhangExpansion,
+  windowCentreX: number,
+  windowCentreY: number
 ): readonly LidCutoutKeepout[] {
   // Same geometric predicate `resolveLidFootprintClearance` uses: a magnetic
   // lid on a lip-less or polygon bin gets no bosses at all.
@@ -294,10 +309,13 @@ function resolveKeepouts(
     expansion
   );
 
-  // The window spans [offset - span/2, offset + span/2] in model space, so
-  // subtracting its left/front edge lands a centre in [0, span].
-  const originX = expansion.offsetX - spanW / 2;
-  const originY = expansion.offsetY - spanD / 2;
+  // Rebased onto the WINDOW's own origin, which is not always the bosses' frame:
+  // a lip-only stack top anchors its window on the nominal grid while the bosses
+  // still follow the overhang-shifted perimeter, so the two have to be supplied
+  // separately or an overhung magnetic lid gets its keep-outs drawn beside the
+  // bosses instead of on them.
+  const originX = windowCentreX - spanW / 2;
+  const originY = windowCentreY - spanD / 2;
   return placements.map((p) => ({
     x: p.x - originX,
     y: p.y - originY,
