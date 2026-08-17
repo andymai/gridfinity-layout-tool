@@ -17,7 +17,7 @@ import type {
   PathPoint,
   GroupOp,
 } from '../../types';
-import { DEFAULT_GROUP_OP, DEFAULT_CUTOUT_COLOR_SCOPE } from '../../types';
+import { DEFAULT_GROUP_OP, DEFAULT_CUTOUT_COLOR_SCOPE, MAX_LID_CUTOUTS } from '../../types';
 import { canArray } from '@/shared/utils/cutoutArray';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
 import { MAX_MESH_ASSETS_PER_DESIGN } from '@/shared/generation/meshAsset';
@@ -99,14 +99,33 @@ function expandIdsToGroups(
 function gcMeshAssets(state: Draft<DesignerState>): void {
   const assets = state.params.meshAssets;
   if (!assets) return;
+  // `state.params.cutouts`, deliberately NOT `cutoutOwner(state)`: mesh imprints
+  // exist only on the bin's interior array (an imprint is subtracted after
+  // tessellation, in the bin's mesh frame, so a lid can never hold one). Counting
+  // references through the retargeted array would find none while the lid is the
+  // target and drop every asset the BIN still uses.
   const referenced = new Set(
-    cutoutOwner(state)
-      .cutouts.map((c) => c.meshId)
-      .filter((id): id is string => id !== undefined)
+    state.params.cutouts.map((c) => c.meshId).filter((id): id is string => id !== undefined)
   );
   const kept = Object.entries(assets).filter(([id]) => referenced.has(id));
   if (kept.length === Object.keys(assets).length) return;
   state.params.meshAssets = kept.length > 0 ? Object.fromEntries(kept) : undefined;
+}
+
+/**
+ * How many more cutouts the current target will accept.
+ *
+ * Only the LID is capped: `MAX_LID_CUTOUTS` bounds the boolean work against a
+ * single plate, where nothing else does (the bin's array is bounded in practice
+ * by the cavity a shape has to fit in). The client refuses past it rather than
+ * letting the write through, because the server rejects an oversized payload and
+ * `migrateLidCutouts` truncates one on load — so without this an honest design
+ * would be silently cut down somewhere the user never sees (CLAUDE.md gotcha
+ * #13b: a server cap that rejects needs a client cap that refuses).
+ */
+function remainingCapacity(state: Draft<DesignerState>): number {
+  if (state.ui.cutoutTarget !== 'lid') return Infinity;
+  return Math.max(0, MAX_LID_CUTOUTS - (state.params.lid.cutouts?.length ?? 0));
 }
 
 type Set = (fn: (state: Draft<DesignerState>) => void) => void;
@@ -402,6 +421,7 @@ export function createCutoutSlice(set: Set) {
     // CRUD
     addCutout: (cutout: Cutout) => {
       set((state) => {
+        if (remainingCapacity(state) < 1) return;
         pushHistoryEntry(state);
         cutoutOwner(state).cutouts = [...cutoutOwner(state).cutouts, withTopZIndex(state, cutout)];
       });
@@ -422,7 +442,9 @@ export function createCutoutSlice(set: Set) {
         }
         pushHistoryEntry(state);
         state.params.meshAssets = { ...existing, [meshId]: asset };
-        cutoutOwner(state).cutouts = [...cutoutOwner(state).cutouts, withTopZIndex(state, cutout)];
+        // The bin's array regardless of the editor target: a lid cutout cannot be
+        // a mesh imprint, and `gcMeshAssets` counts references there.
+        state.params.cutouts = [...state.params.cutouts, withTopZIndex(state, cutout)];
       });
     },
 
@@ -489,7 +511,15 @@ export function createCutoutSlice(set: Set) {
             ...(translatedPath ? { path: translatedPath } : {}),
           };
         });
-        cutoutOwner(state).cutouts = [...cutoutOwner(state).cutouts, ...duplicated];
+        // Truncate rather than refuse the whole batch: duplicating six shapes with
+        // room for two should give two, not nothing. Groups survive because
+        // `groupMap` was built over the same ordered list.
+        const room = remainingCapacity(state);
+        if (room < 1) return;
+        cutoutOwner(state).cutouts = [
+          ...cutoutOwner(state).cutouts,
+          ...(room === Infinity ? duplicated : duplicated.slice(0, room)),
+        ];
       });
     },
 

@@ -148,7 +148,12 @@ function buildClipBoundary(scope: DisposalScope, cutouts: LidCutoutInputs): Shap
       })
     );
     scope.register(boundary);
-    boundary = unwrap(cut(boundary as ValidSolid, post));
+    // Register the RESULT too, not just the input it replaces. Only the initial
+    // boundary is registered at construction, so without this the solid the last
+    // keepout produced is the one nobody owns — an OCCT handle leaked per
+    // generation on every magnetic lid, which is the shape of defect
+    // `disposalRegression` exists to catch.
+    boundary = scope.register(unwrap(cut(boundary as ValidSolid, post)));
   }
   return boundary;
 }

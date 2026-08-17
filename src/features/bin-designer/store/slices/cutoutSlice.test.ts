@@ -3,6 +3,7 @@ import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import type { Cutout, PathPoint } from '@/features/bin-designer/types';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
 import { MAX_MESH_ASSETS_PER_DESIGN } from '@/shared/generation/meshAsset';
+import { MAX_LID_CUTOUTS } from '@/features/bin-designer/types';
 
 describe('cutoutSlice - consolidated actions', () => {
   beforeEach(() => {
@@ -1407,5 +1408,114 @@ describe('cutoutSlice - consolidated actions', () => {
 
       expect(useDesignerStore.getState().params.cutouts).toHaveLength(3);
     });
+  });
+});
+
+describe('cutoutSlice - lid target', () => {
+  beforeEach(() => {
+    useDesignerStore.setState(useDesignerStore.getInitialState());
+  });
+
+  const rect = (id: string): Cutout => ({
+    id,
+    shape: 'rectangle',
+    x: 0,
+    y: 0,
+    width: 10,
+    depth: 10,
+    cutDepth: 5,
+    rotation: 0,
+    cornerRadius: 0,
+    label: '',
+    groupId: null,
+  });
+
+  const asset: MeshAsset = {
+    name: 'wrench',
+    data: 'AAAA',
+    triangleCount: 12,
+    sizeMm: { x: 20, y: 10, z: 5 },
+    outlines: [
+      [
+        { x: 0, y: 0 },
+        { x: 20, y: 0 },
+        { x: 20, y: 10 },
+      ],
+    ],
+  };
+
+  function targetLid(): void {
+    useDesignerStore.getState().setCutoutEditorOpen(true, 'lid');
+  }
+
+  it('writes to the lid array, leaving the bin untouched', () => {
+    targetLid();
+    useDesignerStore.getState().addCutout(rect('a'));
+    const { params } = useDesignerStore.getState();
+    expect(params.lid.cutouts?.map((c) => c.id)).toEqual(['a']);
+    expect(params.cutouts).toHaveLength(0);
+  });
+
+  it('resets the target to the bin when the editor closes', () => {
+    // Every cutout action reads this, so a target left on the lid would send the
+    // sidebar's own controls to the wrong part.
+    targetLid();
+    useDesignerStore.getState().setCutoutEditorOpen(false);
+    expect(useDesignerStore.getState().ui.cutoutTarget).toBe('bin');
+  });
+
+  it('keeps the bin mesh assets while the lid is the target', () => {
+    // The GC counts references through `params.cutouts`, never the retargeted
+    // array: a lid cutout can never be a mesh imprint, so counting through the
+    // lid would find none and drop an asset the BIN still uses.
+    const meshCutout = { ...rect('mesh-1'), shape: 'mesh' as const, meshId: 'kept' };
+    useDesignerStore.getState().addMeshCutout(meshCutout, asset);
+    expect(Object.keys(useDesignerStore.getState().params.meshAssets ?? {})).toEqual(['kept']);
+
+    targetLid();
+    useDesignerStore.getState().addCutout(rect('lid-a'));
+    useDesignerStore.getState().removeCutout('lid-a');
+
+    expect(Object.keys(useDesignerStore.getState().params.meshAssets ?? {})).toEqual(['kept']);
+    expect(useDesignerStore.getState().params.cutouts.map((c) => c.id)).toEqual(['mesh-1']);
+  });
+
+  it('adds a mesh imprint to the bin even while the lid is the target', () => {
+    targetLid();
+    const meshCutout = { ...rect('mesh-1'), shape: 'mesh' as const, meshId: 'kept' };
+    useDesignerStore.getState().addMeshCutout(meshCutout, asset);
+    const { params } = useDesignerStore.getState();
+    expect(params.cutouts.map((c) => c.id)).toEqual(['mesh-1']);
+    expect(params.lid.cutouts ?? []).toHaveLength(0);
+  });
+
+  it('refuses to add past the lid cap', () => {
+    // The server rejects an oversized payload and migration truncates one on
+    // load, so a client that let the write through would lose shapes somewhere
+    // the user never sees.
+    targetLid();
+    for (let i = 0; i < MAX_LID_CUTOUTS + 5; i++) {
+      useDesignerStore.getState().addCutout(rect(`c${i}`));
+    }
+    expect(useDesignerStore.getState().params.lid.cutouts).toHaveLength(MAX_LID_CUTOUTS);
+  });
+
+  it('truncates a duplicate batch to the remaining room rather than dropping it', () => {
+    targetLid();
+    const ids: string[] = [];
+    for (let i = 0; i < MAX_LID_CUTOUTS - 2; i++) {
+      useDesignerStore.getState().addCutout(rect(`c${i}`));
+      ids.push(`c${i}`);
+    }
+    // Six asked for, two seats left: two is the useful answer, not zero.
+    useDesignerStore.getState().duplicateCutouts(ids.slice(0, 6));
+    expect(useDesignerStore.getState().params.lid.cutouts).toHaveLength(MAX_LID_CUTOUTS);
+  });
+
+  it('leaves the bin array uncapped', () => {
+    for (let i = 0; i < MAX_LID_CUTOUTS + 5; i++) {
+      useDesignerStore.getState().addCutout(rect(`c${i}`));
+    }
+    expect(useDesignerStore.getState().params.cutouts).toHaveLength(MAX_LID_CUTOUTS + 5);
   });
 });
