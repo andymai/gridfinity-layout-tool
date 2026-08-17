@@ -109,7 +109,7 @@
         "!dist/assets/zh-CN-*.js"
       ],
       "gzip": true,
-      "limit": "1945 kB"
+      "limit": "1960 kB"
     },
     {
       "name": "Fetched JSON assets (gzip)",
@@ -123,7 +123,7 @@
     "@liveblocks/client": "^3.23.1",
     "@liveblocks/node": "^3.23.1",
     "@liveblocks/react": "^3.23.1",
-    "@mediapipe/tasks-vision": "0.10.35",
+    "@mediapipe/tasks-vision": "1.0.1",
     "@react-three/drei": "^10.7.8",
     "@react-three/fiber": "^9.7.0",
     "@vercel/analytics": "^2.0.1",

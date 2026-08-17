@@ -13,22 +13,29 @@
  * never leaves the device — inference is fully local.
  */
 
-import type { InteractiveSegmenter } from '@mediapipe/tasks-vision';
+import type { InteractiveSegmenterLegacy } from '@mediapipe/tasks-vision';
 import type { Point } from './types';
 import type { SoftMask } from './softContour';
 
 const WASM_BASE_PATH = '/models/tasks-vision';
 const MODEL_PATH = '/models/interactive-segmenter/magic_touch.tflite';
 
-let segmenterPromise: Promise<InteractiveSegmenter> | null = null;
+let segmenterPromise: Promise<InteractiveSegmenterLegacy> | null = null;
 
-async function getSegmenter(): Promise<InteractiveSegmenter> {
+async function getSegmenter(): Promise<InteractiveSegmenterLegacy> {
   if (!segmenterPromise) {
     segmenterPromise = (async () => {
-      const { FilesetResolver, InteractiveSegmenter } = await import('@mediapipe/tasks-vision');
+      // `InteractiveSegmenterLegacy` is the Magic Touch task this model is: a
+      // single tap-prompted pass over one tflite file. The name
+      // `InteractiveSegmenter` was reused in tasks-vision 1.0 for a separate
+      // encoder/decoder architecture that takes stroke sequences and its own
+      // pair of models, so it is not a drop-in and not an upgrade path here.
+      const { FilesetResolver, InteractiveSegmenterLegacy } = await import(
+        '@mediapipe/tasks-vision'
+      );
       const fileset = await FilesetResolver.forVisionTasks(WASM_BASE_PATH);
       const create = (delegate: 'GPU' | 'CPU') =>
-        InteractiveSegmenter.createFromOptions(fileset, {
+        InteractiveSegmenterLegacy.createFromOptions(fileset, {
           baseOptions: { modelAssetPath: MODEL_PATH, delegate },
           // The confidence mask is a soft [0,1] field — its sub-pixel edge
           // location is what a marching-squares trace needs. Keep the category
