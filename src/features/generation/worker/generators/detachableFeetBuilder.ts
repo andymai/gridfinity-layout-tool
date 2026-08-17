@@ -136,10 +136,21 @@ function buildPin(scope: DisposalScope, diameterMm: number, heightMm: number): S
 /**
  * The region of a cell a foot occupies, as a solid to intersect the foot with.
  *
- * An `L` is the union of two slabs along its two outer faces; a `bar` is the
- * single slab along the one edge it sits against, running the cell's full
- * extent. Each slab overshoots on the axis it does not bound, so no face of the
- * clip is ever coplanar with a face of the foot.
+ * Exactly ONE constraint is applied, and which one follows from the placement:
+ *
+ *  - both axes at an edge — an `L`, the union of the two edge strips. The union
+ *    rather than their intersection (a corner square) is the whole point: the
+ *    arms reach along both edges and give the foot a moment arm.
+ *  - one axis at an edge — a bar running that cell's full width at that edge.
+ *    A mid-run station behaves exactly like a spanning one here: its cell is a
+ *    whole cell, and spanning it is what engages the pocket.
+ *  - neither axis at an edge — reachable only on a single-cell axis with a
+ *    mid-run station on the other, where the foot is a bar of arm width centred
+ *    on its cell. Constraining BOTH axes here would leave a 42mm square, i.e.
+ *    an entire foot, for a support that only has to bridge a run.
+ *
+ * Each strip overshoots on the axis it does not bound, so no face of the clip
+ * is ever coplanar with a face of the foot.
  */
 function buildClip(scope: DisposalScope, p: FootPlacement, armMm: number): Shape3D {
   const zFrom = -SOCKET_HEIGHT - COPLANAR_MARGIN;
@@ -155,13 +166,15 @@ function buildClip(scope: DisposalScope, p: FootPlacement, armMm: number): Shape
 
   const hw = p.cellW / 2;
   const hd = p.cellD / 2;
-  const alongX =
-    p.dirX === 0 ? null : slab(armMm, p.cellD + CLIP_MARGIN, p.dirX * (hw - armMm / 2), 0);
-  const alongY =
-    p.dirY === 0 ? null : slab(p.cellW + CLIP_MARGIN, armMm, 0, p.dirY * (hd - armMm / 2));
+  const edgeX = (): Shape3D => slab(armMm, p.cellD + CLIP_MARGIN, p.dirX * (hw - armMm / 2), 0);
+  const edgeY = (): Shape3D => slab(p.cellW + CLIP_MARGIN, armMm, 0, p.dirY * (hd - armMm / 2));
 
-  if (alongX && alongY) return unwrap(fuse(alongX, alongY));
-  return (alongX ?? alongY) as Shape3D;
+  if (p.dirX !== 0 && p.dirY !== 0) return unwrap(fuse(edgeX(), edgeY()));
+  if (p.dirX !== 0) return edgeX();
+  if (p.dirY !== 0) return edgeY();
+  if (p.interiorX) return slab(armMm, p.cellD + CLIP_MARGIN, 0, 0);
+  if (p.interiorY) return slab(p.cellW + CLIP_MARGIN, armMm, 0, 0);
+  throw new Error('Detachable feet: a placement that spans both axes has no clip');
 }
 
 /**

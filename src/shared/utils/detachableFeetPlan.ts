@@ -73,6 +73,17 @@ export interface FootPlacement {
   readonly y: number;
   readonly dirX: -1 | 0 | 1;
   readonly dirY: -1 | 0 | 1;
+  /**
+   * Why an axis's direction is `0`, which the direction alone cannot say.
+   *
+   * `false` means the foot SPANS that axis end to end — the single-cell case,
+   * where it reaches both edges at once. `true` means it sits mid-run, reaching
+   * neither, and is a bar of arm width centred on its cell. Both read `dir: 0`,
+   * and they are different solids: conflating them asks the builder to clip a
+   * foot against no edge at all.
+   */
+  readonly interiorX: boolean;
+  readonly interiorY: boolean;
   /** Full extent of the cell this foot sits in (mm), for the spanned axis. */
   readonly cellW: number;
   readonly cellD: number;
@@ -301,12 +312,25 @@ export function detachableFeetPlacements(input: DetachableFeetInput): FootPlacem
         y: sy.pos,
         dirX: sx.dir,
         dirY: sy.dir,
+        interiorX: sx.interior,
+        interiorY: sy.interior,
         cellW: pitchX,
         cellD: pitchY,
       });
     }
   }
   return feet;
+}
+
+/**
+ * Which of the three solids a placement produces.
+ *
+ * Not the same question as {@link FootShape}: a bar clipped against a cell edge
+ * and one centred mid-run are both bars, and are different volumes.
+ */
+export function footKind(p: FootPlacement): 'L' | 'barEdge' | 'barCentred' {
+  if (p.dirX !== 0 && p.dirY !== 0) return 'L';
+  return p.dirX === 0 && p.dirY === 0 ? 'barCentred' : 'barEdge';
 }
 
 /**
@@ -352,6 +376,24 @@ export function footPinPositions(
   // A bar spans whichever axis has dir 0, running the full cell.
   const spansX = foot.dirX === 0;
   const halfSpan = (spansX ? foot.cellW : foot.cellD) / 2 - armMm / 2;
+
+  // Mid-run on the OTHER axis too: the bar is centred rather than hugging an
+  // edge, so there is no inboard direction to offset a second row of pins
+  // toward. Two pins along its length, which is what a bar needs — the bin's
+  // own floor clamps it flat, so only in-plane rotation has to be constrained.
+  const midRun = spansX ? foot.interiorY : foot.interiorX;
+  if (midRun) {
+    return spansX
+      ? [
+          { x: foot.x - halfSpan, y: foot.y },
+          { x: foot.x + halfSpan, y: foot.y },
+        ]
+      : [
+          { x: foot.x, y: foot.y - halfSpan },
+          { x: foot.x, y: foot.y + halfSpan },
+        ];
+  }
+
   const inset = spansX ? foot.y - foot.dirY * across : foot.x - foot.dirX * across;
   const outer = spansX ? foot.y - foot.dirY * along : foot.x - foot.dirX * along;
 

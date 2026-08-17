@@ -79,6 +79,8 @@ const CORNER_L: FootPlacement = {
   y: PITCH / 2,
   dirX: 1,
   dirY: 1,
+  interiorX: false,
+  interiorY: false,
   cellW: PITCH,
   cellD: PITCH,
 };
@@ -216,6 +218,8 @@ describe('detachable foot geometry', () => {
       y: PITCH / 2,
       dirX: 0,
       dirY: 1,
+      interiorX: false,
+      interiorY: false,
       cellW: PITCH,
       cellD: PITCH,
     };

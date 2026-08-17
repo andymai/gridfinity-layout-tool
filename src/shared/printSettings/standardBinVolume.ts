@@ -61,6 +61,55 @@ const WALL_EFF = 1.165;
  */
 const BASE_VOL_PER_CELL_AREA = 5.3785;
 
+/**
+ * The FEET alone, per unit of cell footprint area (mm³/mm²) — the part of
+ * {@link BASE_VOL_PER_CELL_AREA} that detaching the feet removes.
+ *
+ * Measured, not apportioned: 7285mm³ per 42mm cell, which is what a bin loses
+ * when its socket goes and only its floor slab remains. The remainder
+ * (1.2487 mm³/mm², the floor) independently reproduces the pre-refit constant
+ * that had been fitted to a ground-truth set with no socket in it — which is a
+ * useful check that the split falls where it should.
+ */
+const FOOT_VOL_PER_CELL_AREA = 4.1298;
+
+/**
+ * Volume of one detachable foot, per unit of cell footprint area (mm³/mm²), by
+ * the solid it is.
+ *
+ * Measured at spec pitch: 2016 / 1143 / 1464 mm³ per 42mm cell. Per-area like
+ * every other term here, so it follows a custom pitch — approximately, in the
+ * way the base term already is, because a foot is a strip and scales closer to
+ * a cell's SIDE than to its area.
+ */
+const DETACHABLE_FOOT_VOL_PER_CELL_AREA = {
+  L: 1.1429,
+  barEdge: 0.648,
+  barCentred: 0.8299,
+} as const;
+
+/** Material the integral feet contribute, and so what detaching them removes. */
+export function integralFeetVolume(
+  widthUnits: number,
+  depthUnits: number,
+  gridUnitMm: number,
+  gridUnitMmY: number
+): number {
+  const cells = widthUnits * depthUnits;
+  if (cells <= 0) return 0;
+  return FOOT_VOL_PER_CELL_AREA * gridUnitMm * gridUnitMmY * cells;
+}
+
+/** Material the detachable feet add back, by what each one actually is. */
+export function detachableFeetVolume(
+  kinds: readonly ('L' | 'barEdge' | 'barCentred')[],
+  gridUnitMm: number,
+  gridUnitMmY: number
+): number {
+  const area = gridUnitMm * gridUnitMmY;
+  return kinds.reduce((sum, kind) => sum + DETACHABLE_FOOT_VOL_PER_CELL_AREA[kind] * area, 0);
+}
+
 /** Stacking-lip cross-sectional area (mm²) per unit of outer perimeter. */
 const LIP_AREA = 0.223;
 

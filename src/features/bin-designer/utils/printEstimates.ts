@@ -30,8 +30,12 @@ import {
   scalePrintTime,
   standardBinSolidComponents,
   lightweightBaseSaving,
+  integralFeetVolume,
+  detachableFeetVolume,
   type PrintSettings,
 } from '@/shared/printSettings';
+import { hasDetachableFeet } from '@/shared/types/bin';
+import { footKind, resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import {
   resolveScoopProfile,
   resolveScoopSide,
@@ -156,6 +160,20 @@ function computeBinVolume(params: BinParams): number {
       params.depth,
       isUndersideRelief(params.base),
       params.base.halfSockets,
+      params.gridUnitMm,
+      gridUnitMmY
+    );
+  }
+
+  // Detachable feet: the socket's feet leave the bin and come back as separate
+  // parts, so the base term loses its foot component and they are added back by
+  // what each one actually is. A bar clipped against a cell edge and one centred
+  // mid-run are both bars and are different volumes, which is why the count
+  // alone would not do.
+  if (hasDetachableFeet(params.base)) {
+    volume -= integralFeetVolume(params.width, params.depth, params.gridUnitMm, gridUnitMmY);
+    volume += detachableFeetVolume(
+      resolveDetachableFeet(params).placements.map(footKind),
       params.gridUnitMm,
       gridUnitMmY
     );
