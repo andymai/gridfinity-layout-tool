@@ -2476,7 +2476,7 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.fitTest.stepUnavailable':
     'STEP cannot carry imported mesh cutouts. Use STL or 3MF.',
   'binDesigner.cutouts.fitTest.warnSplit':
-    'Bigger than your print bed, so the card exports as {{count}} pieces in a ZIP.',
+    'Bigger than your print bed, so the card exports as {count} pieces in a ZIP.',
   'binDesigner.cutouts.fitTest.warnSeamThroughCutout':
     'The card is too big for your print bed and there is no clear gap to cut through, so a seam crosses a cutout. That cutout cannot be measured on this card.',
   'binDesigner.cutouts.group': 'Group',

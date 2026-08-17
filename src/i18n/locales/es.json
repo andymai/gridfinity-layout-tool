@@ -607,7 +607,7 @@
   "binDesigner.cutouts.fitTest.exportComplete": "Prueba de ajuste exportada",
   "binDesigner.cutouts.fitTest.exportFailed": "Error al exportar la prueba de ajuste",
   "binDesigner.cutouts.fitTest.stepUnavailable": "STEP no puede incluir recortes de malla importada. Usa STL o 3MF.",
-  "binDesigner.cutouts.fitTest.warnSplit": "Es más grande que tu cama de impresión, así que la tarjeta se exporta en {{count}} piezas dentro de un ZIP.",
+  "binDesigner.cutouts.fitTest.warnSplit": "Es más grande que tu cama de impresión, así que la tarjeta se exporta en {count} piezas dentro de un ZIP.",
   "binDesigner.cutouts.fitTest.warnSeamThroughCutout": "La tarjeta es demasiado grande para tu cama de impresión y no hay ningún hueco libre por donde cortar, así que una junta cruza un recorte. Ese recorte no se puede medir en esta tarjeta.",
   "binDesigner.cutouts.clearAllConfirmMessage": "Se eliminarán los {count} recortes. Puede deshacer esta acción.",
   "binDesigner.cutouts.clearAllConfirmTitle": "Borrar todos los recortes",

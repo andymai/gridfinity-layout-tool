@@ -607,7 +607,7 @@
   "binDesigner.cutouts.fitTest.exportComplete": "Test d'ajustement exporté",
   "binDesigner.cutouts.fitTest.exportFailed": "Échec de l'export du test d'ajustement",
   "binDesigner.cutouts.fitTest.stepUnavailable": "STEP ne peut pas contenir de découpes issues d'un maillage importé. Utilisez STL ou 3MF.",
-  "binDesigner.cutouts.fitTest.warnSplit": "Plus grande que votre plateau, la carte est donc exportée en {{count}} pièces dans un ZIP.",
+  "binDesigner.cutouts.fitTest.warnSplit": "Plus grande que votre plateau, la carte est donc exportée en {count} pièces dans un ZIP.",
   "binDesigner.cutouts.fitTest.warnSeamThroughCutout": "La carte est trop grande pour votre plateau et il n'y a aucun espace libre où couper : une jointure traverse donc une découpe. Cette découpe ne peut pas être mesurée sur cette carte.",
   "binDesigner.cutouts.clearAllConfirmMessage": "Les {count} découpes seront supprimées. Vous pouvez annuler cette action.",
   "binDesigner.cutouts.clearAllConfirmTitle": "Effacer toutes les découpes",

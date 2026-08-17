@@ -607,7 +607,7 @@
   "binDesigner.cutouts.fitTest.exportComplete": "フィットテストをエクスポートしました",
   "binDesigner.cutouts.fitTest.exportFailed": "フィットテストのエクスポートに失敗しました",
   "binDesigner.cutouts.fitTest.stepUnavailable": "STEPはインポートしたメッシュの切り抜きを保持できません。STLまたは3MFを使用してください。",
-  "binDesigner.cutouts.fitTest.warnSplit": "プリントベッドより大きいため、カードは{{count}}個のパーツとしてZIPで書き出されます。",
+  "binDesigner.cutouts.fitTest.warnSplit": "プリントベッドより大きいため、カードは{count}個のパーツとしてZIPで書き出されます。",
   "binDesigner.cutouts.fitTest.warnSeamThroughCutout": "カードがプリントベッドより大きく、切れる隙間がないため、継ぎ目が切り抜きを横切ります。その切り抜きはこのカードでは確認できません。",
   "binDesigner.cutouts.clearAllConfirmMessage": "{count}個の切り欠きをすべて削除します。この操作は元に戻せます。",
   "binDesigner.cutouts.clearAllConfirmTitle": "すべての切り欠きをクリア",

@@ -607,7 +607,7 @@
   "binDesigner.cutouts.fitTest.exportComplete": "Passtest exportiert",
   "binDesigner.cutouts.fitTest.exportFailed": "Passtest-Export fehlgeschlagen",
   "binDesigner.cutouts.fitTest.stepUnavailable": "STEP kann importierte Mesh-Aussparungen nicht enthalten. Nutze STL oder 3MF.",
-  "binDesigner.cutouts.fitTest.warnSplit": "Größer als dein Druckbett, daher wird die Karte als {{count}} Teile in einer ZIP-Datei exportiert.",
+  "binDesigner.cutouts.fitTest.warnSplit": "Größer als dein Druckbett, daher wird die Karte als {count} Teile in einer ZIP-Datei exportiert.",
   "binDesigner.cutouts.fitTest.warnSeamThroughCutout": "Die Karte ist zu groß für dein Druckbett und es gibt keine freie Lücke zum Schneiden, daher verläuft eine Naht durch eine Aussparung. Diese Aussparung lässt sich auf dieser Karte nicht prüfen.",
   "binDesigner.cutouts.clearAllConfirmMessage": "Alle {count} Ausschnitte werden entfernt. Sie können diese Aktion rückgängig machen.",
   "binDesigner.cutouts.clearAllConfirmTitle": "Alle Ausschnitte löschen",

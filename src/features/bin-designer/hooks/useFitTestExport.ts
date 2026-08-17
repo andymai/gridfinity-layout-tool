@@ -97,7 +97,10 @@ export function useFitTestExport(): UseFitTestExportReturn {
           const blob = new Blob([pieces[0].data], { type: FORMAT_MIME_TYPES[format] });
           triggerDownload(blob, `${baseName}${extension}`);
         } else {
-          triggerDownload(packagePiecesAsZip(pieces, baseName, extension), `${baseName}_split.zip`);
+          // Named exactly what the dialog shows. The pieces inside carry the
+          // split (`fit-test_A1.stl`), so nothing is lost by dropping a suffix
+          // the filename field never knew about.
+          triggerDownload(packagePiecesAsZip(pieces, baseName, extension), `${baseName}.zip`);
         }
 
         // The dialog warns about this from its own copy of the plan, but the

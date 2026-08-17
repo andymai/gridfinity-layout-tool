@@ -607,7 +607,7 @@
   "binDesigner.cutouts.fitTest.exportComplete": "Test uložení vyexportován",
   "binDesigner.cutouts.fitTest.exportFailed": "Export testu uložení selhal",
   "binDesigner.cutouts.fitTest.stepUnavailable": "STEP neunese výřezy z importované sítě. Použij STL nebo 3MF.",
-  "binDesigner.cutouts.fitTest.warnSplit": "Je větší než tvoje podložka, takže se karta vyexportuje jako {{count}} dílů v ZIP archivu.",
+  "binDesigner.cutouts.fitTest.warnSplit": "Je větší než tvoje podložka, takže se karta vyexportuje jako {count} dílů v ZIP archivu.",
   "binDesigner.cutouts.fitTest.warnSeamThroughCutout": "Karta je moc velká na tvoji podložku a není kde ji rozříznout, takže spára vede skrz výřez. Ten výřez na téhle kartě změřit nejde.",
   "binDesigner.cutouts.clearAllConfirmMessage": "Tímto odstraníš všech {count} výřezů. Tuto akci můžeš vrátit zpět.",
   "binDesigner.cutouts.clearAllConfirmTitle": "Vyčistit všechny výřezy",

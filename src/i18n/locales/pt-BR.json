@@ -607,7 +607,7 @@
   "binDesigner.cutouts.fitTest.exportComplete": "Teste de encaixe exportado",
   "binDesigner.cutouts.fitTest.exportFailed": "Falha ao exportar o teste de encaixe",
   "binDesigner.cutouts.fitTest.stepUnavailable": "STEP não consegue carregar recortes de malha importada. Use STL ou 3MF.",
-  "binDesigner.cutouts.fitTest.warnSplit": "Maior que sua mesa de impressão, então o cartão é exportado em {{count}} peças num ZIP.",
+  "binDesigner.cutouts.fitTest.warnSplit": "Maior que sua mesa de impressão, então o cartão é exportado em {count} peças num ZIP.",
   "binDesigner.cutouts.fitTest.warnSeamThroughCutout": "O cartão é grande demais para sua mesa de impressão e não há espaço livre para cortar, então uma emenda atravessa um recorte. Esse recorte não pode ser medido neste cartão.",
   "binDesigner.cutouts.clearAllConfirmMessage": "Todos os {count} recortes serão removidos. Você pode desfazer esta ação.",
   "binDesigner.cutouts.clearAllConfirmTitle": "Limpar todos os recortes",

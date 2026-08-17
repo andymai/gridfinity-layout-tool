@@ -444,3 +444,25 @@ describe('fit-test card — bin height independence', () => {
     expect(GRID).toBe(42);
   });
 });
+
+describe('fit-test card — a lipped bin at every wall thickness', () => {
+  // `splitBinBuilder` generates WITHOUT the stacking lip, because intersecting
+  // the FUSED bin+lip solid crashes at certain wall thicknesses (its comment
+  // names 1.6mm) on the topology at the lip-wall junction. The card intersects
+  // the fused solid, so the exemption has to be earned rather than assumed: its
+  // cut is a horizontal plane BELOW `wallTopZ`, which never passes through that
+  // junction. Every thickness the editor offers is covered here so a future
+  // change to the band cannot quietly reintroduce the crash.
+  it.each([0.8, 1.2, 1.6, 1.8, 2, 2.4, 2.6])('cuts a card from a %smm-wall bin', (wt) => {
+    const params = boardParams({
+      wallThickness: wt,
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true, stackingLip: true },
+    });
+    const theCard = card(params, { thicknessMm: 4 }).pieces[0];
+    expect(theCard, `no card at wt=${wt}`).toBeDefined();
+
+    const bb = boundingBox(theCard.vertices);
+    expect(bb.maxZ - bb.minZ, `wrong band at wt=${wt}`).toBeCloseTo(4, 2);
+    expect(meshVolume(asMeshData(theCard)), `empty card at wt=${wt}`).toBeGreaterThan(1000);
+  });
+});

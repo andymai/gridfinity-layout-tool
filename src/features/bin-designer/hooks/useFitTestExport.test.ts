@@ -112,7 +112,7 @@ describe('useFitTestExport', () => {
     await act(async () => {
       await result.current.downloadCard({ format: 'stl', thicknessMm: 4 });
     });
-    expect(vi.mocked(triggerDownload).mock.calls[0][1]).toBe('fit-test_split.zip');
+    expect(vi.mocked(triggerDownload).mock.calls[0][1]).toBe('fit-test.zip');
     expect(zipCalls[0].pieces).toHaveLength(2);
   });
 

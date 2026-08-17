@@ -607,7 +607,7 @@
   "binDesigner.cutouts.fitTest.exportComplete": "Test di accoppiamento esportato",
   "binDesigner.cutouts.fitTest.exportFailed": "Esportazione del test di accoppiamento non riuscita",
   "binDesigner.cutouts.fitTest.stepUnavailable": "STEP non può contenere intagli da mesh importate. Usa STL o 3MF.",
-  "binDesigner.cutouts.fitTest.warnSplit": "Più grande del tuo piano di stampa, quindi la scheda viene esportata in {{count}} pezzi in un file ZIP.",
+  "binDesigner.cutouts.fitTest.warnSplit": "Più grande del tuo piano di stampa, quindi la scheda viene esportata in {count} pezzi in un file ZIP.",
   "binDesigner.cutouts.fitTest.warnSeamThroughCutout": "La scheda è troppo grande per il tuo piano di stampa e non c'è spazio libero dove tagliare, quindi una giunzione attraversa un intaglio. Quell'intaglio non può essere verificato su questa scheda.",
   "binDesigner.cutouts.clearAllConfirmMessage": "Questo rimuoverà tutti i {count} ritagli. Puoi annullare l'azione.",
   "binDesigner.cutouts.clearAllConfirmTitle": "Cancella tutti i ritagli",

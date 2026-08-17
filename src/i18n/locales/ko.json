@@ -607,7 +607,7 @@
   "binDesigner.cutouts.fitTest.exportComplete": "맞춤 테스트를 내보냈습니다",
   "binDesigner.cutouts.fitTest.exportFailed": "맞춤 테스트 내보내기에 실패했습니다",
   "binDesigner.cutouts.fitTest.stepUnavailable": "STEP은 가져온 메시 컷아웃을 담을 수 없습니다. STL이나 3MF를 사용하세요.",
-  "binDesigner.cutouts.fitTest.warnSplit": "출력 베드보다 커서 카드가 {{count}}개 조각으로 ZIP에 담겨 내보내집니다.",
+  "binDesigner.cutouts.fitTest.warnSplit": "출력 베드보다 커서 카드가 {count}개 조각으로 ZIP에 담겨 내보내집니다.",
   "binDesigner.cutouts.fitTest.warnSeamThroughCutout": "카드가 출력 베드보다 크고 자를 빈 공간이 없어 이음매가 컷아웃을 가로지릅니다. 그 컷아웃은 이 카드로 확인할 수 없습니다.",
   "binDesigner.cutouts.clearAllConfirmMessage": "컷아웃 {count}개를 모두 제거합니다. 이 작업은 실행 취소할 수 있습니다.",
   "binDesigner.cutouts.clearAllConfirmTitle": "모든 컷아웃 지우기",

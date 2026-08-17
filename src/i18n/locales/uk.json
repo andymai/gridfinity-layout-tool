@@ -607,7 +607,7 @@
   "binDesigner.cutouts.fitTest.exportComplete": "Тест посадки експортовано",
   "binDesigner.cutouts.fitTest.exportFailed": "Не вдалося експортувати тест посадки",
   "binDesigner.cutouts.fitTest.stepUnavailable": "STEP не може містити вирізи з імпортованої сітки. Використайте STL або 3MF.",
-  "binDesigner.cutouts.fitTest.warnSplit": "Більша за ваш стіл друку, тож картка експортується як {{count}} частин у ZIP-архіві.",
+  "binDesigner.cutouts.fitTest.warnSplit": "Більша за ваш стіл друку, тож картка експортується як {count} частин у ZIP-архіві.",
   "binDesigner.cutouts.fitTest.warnSeamThroughCutout": "Картка завелика для вашого столу друку, і немає вільного проміжку для розрізу, тож шов проходить крізь виріз. Цей виріз неможливо перевірити на цій картці.",
   "binDesigner.cutouts.clearAllConfirmMessage": "Це видалить усі {count} вирізів. Дію можна скасувати.",
   "binDesigner.cutouts.clearAllConfirmTitle": "Очистити всі вирізи",

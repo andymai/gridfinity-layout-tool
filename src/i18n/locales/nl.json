@@ -607,7 +607,7 @@
   "binDesigner.cutouts.fitTest.exportComplete": "Pastest geëxporteerd",
   "binDesigner.cutouts.fitTest.exportFailed": "Exporteren van pastest mislukt",
   "binDesigner.cutouts.fitTest.stepUnavailable": "STEP kan geïmporteerde mesh-uitsparingen niet bevatten. Gebruik STL of 3MF.",
-  "binDesigner.cutouts.fitTest.warnSplit": "Groter dan je printbed, dus de kaart wordt als {{count}} delen in een ZIP geëxporteerd.",
+  "binDesigner.cutouts.fitTest.warnSplit": "Groter dan je printbed, dus de kaart wordt als {count} delen in een ZIP geëxporteerd.",
   "binDesigner.cutouts.fitTest.warnSeamThroughCutout": "De kaart is te groot voor je printbed en er is geen vrije ruimte om te snijden, dus een naad loopt door een uitsparing. Die uitsparing kun je op deze kaart niet nameten.",
   "binDesigner.cutouts.clearAllConfirmMessage": "Alle {count} uitsparingen worden verwijderd. U kunt deze actie ongedaan maken.",
   "binDesigner.cutouts.clearAllConfirmTitle": "Alle uitsparingen wissen",

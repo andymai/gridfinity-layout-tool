@@ -607,7 +607,7 @@
   "binDesigner.cutouts.fitTest.exportComplete": "贴合测试已导出",
   "binDesigner.cutouts.fitTest.exportFailed": "贴合测试导出失败",
   "binDesigner.cutouts.fitTest.stepUnavailable": "STEP 无法包含导入网格生成的开孔。请使用 STL 或 3MF。",
-  "binDesigner.cutouts.fitTest.warnSplit": "比你的热床大，因此卡片会拆成 {{count}} 块打包成 ZIP 导出。",
+  "binDesigner.cutouts.fitTest.warnSplit": "比你的热床大，因此卡片会拆成 {count} 块打包成 ZIP 导出。",
   "binDesigner.cutouts.fitTest.warnSeamThroughCutout": "卡片超出你的热床，而且没有可供切分的空白处，因此有一条接缝穿过了某个开孔。该开孔无法在这张卡片上测量。",
   "binDesigner.cutouts.clearAllConfirmMessage": "这会移除全部 {count} 个挖槽。你可以撤销此操作。",
   "binDesigner.cutouts.clearAllConfirmTitle": "清除所有挖槽",

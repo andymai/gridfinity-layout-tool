@@ -607,7 +607,7 @@
   "binDesigner.cutouts.fitTest.exportComplete": "Passformtest eksportert",
   "binDesigner.cutouts.fitTest.exportFailed": "Eksport av passformtest mislyktes",
   "binDesigner.cutouts.fitTest.stepUnavailable": "STEP kan ikke inneholde utskjæringer fra importert mesh. Bruk STL eller 3MF.",
-  "binDesigner.cutouts.fitTest.warnSplit": "Større enn skriverbordet ditt, så kortet eksporteres som {{count}} deler i en ZIP-fil.",
+  "binDesigner.cutouts.fitTest.warnSplit": "Større enn skriverbordet ditt, så kortet eksporteres som {count} deler i en ZIP-fil.",
   "binDesigner.cutouts.fitTest.warnSeamThroughCutout": "Kortet er for stort for skriverbordet ditt, og det finnes ingen ledig åpning å kutte i, så en skjøt går gjennom en utskjæring. Den utskjæringen kan ikke måles på dette kortet.",
   "binDesigner.cutouts.clearAllConfirmMessage": "Alle {count} utskjæringer fjernes. Du kan angre denne handlingen.",
   "binDesigner.cutouts.clearAllConfirmTitle": "Fjern alle utskjæringer",

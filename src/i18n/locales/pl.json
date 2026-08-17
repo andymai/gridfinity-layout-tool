@@ -607,7 +607,7 @@
   "binDesigner.cutouts.fitTest.exportComplete": "Test dopasowania wyeksportowany",
   "binDesigner.cutouts.fitTest.exportFailed": "Nie udało się wyeksportować testu dopasowania",
   "binDesigner.cutouts.fitTest.stepUnavailable": "STEP nie przenosi wycięć z zaimportowanej siatki. Użyj STL lub 3MF.",
-  "binDesigner.cutouts.fitTest.warnSplit": "Większa niż Twój stół roboczy, więc karta zostanie wyeksportowana jako {{count}} części w archiwum ZIP.",
+  "binDesigner.cutouts.fitTest.warnSplit": "Większa niż Twój stół roboczy, więc karta zostanie wyeksportowana jako {count} części w archiwum ZIP.",
   "binDesigner.cutouts.fitTest.warnSeamThroughCutout": "Karta jest za duża na Twój stół roboczy i nie ma wolnej przerwy na cięcie, więc szew przechodzi przez wycięcie. Tego wycięcia nie da się zmierzyć na tej karcie.",
   "binDesigner.cutouts.clearAllConfirmMessage": "To usunie wszystkie {count} wycięć. Możesz cofnąć tę akcję.",
   "binDesigner.cutouts.clearAllConfirmTitle": "Wyczyść wszystkie wycięcia",

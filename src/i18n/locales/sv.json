@@ -607,7 +607,7 @@
   "binDesigner.cutouts.fitTest.exportComplete": "Passformstest exporterat",
   "binDesigner.cutouts.fitTest.exportFailed": "Export av passformstest misslyckades",
   "binDesigner.cutouts.fitTest.stepUnavailable": "STEP kan inte innehålla urtag från importerad mesh. Använd STL eller 3MF.",
-  "binDesigner.cutouts.fitTest.warnSplit": "Större än din skrivarbädd, så kortet exporteras som {{count}} delar i en ZIP-fil.",
+  "binDesigner.cutouts.fitTest.warnSplit": "Större än din skrivarbädd, så kortet exporteras som {count} delar i en ZIP-fil.",
   "binDesigner.cutouts.fitTest.warnSeamThroughCutout": "Kortet är för stort för din skrivarbädd och det finns ingen fri lucka att kapa i, så en skarv går genom ett urtag. Det urtaget går inte att mäta på det här kortet.",
   "binDesigner.cutouts.clearAllConfirmMessage": "Detta tar bort alla {count} urtag. Du kan ångra denna åtgärd.",
   "binDesigner.cutouts.clearAllConfirmTitle": "Rensa alla urtag",
