@@ -212,13 +212,19 @@ export async function regenerateThumbnail(
     // here — there's no exploded-view affordance in a thumbnail, so the lid
     // simply hides the cavity it sits over.
     let lidMaterial: MeshStandardMaterial | null = null;
-    // The feet arrive already positioned in the bin's own frame, so they need
-    // no transform of their own.
+    // The feet arrive positioned in the bin's own frame, so the only transform
+    // they need is the scene-wide nudge the body and its edges already take —
+    // without it they render 0.1mm below the body they are attached to, and
+    // their edges lose the renderOrder that keeps them off the surface.
     if (feetGeometry) {
       const feetPart = new THREE.Mesh(feetGeometry, material);
+      feetPart.position.set(0, 0, 0.1);
       scene.add(feetPart);
       if (feetEdgesGeometry) {
-        scene.add(new THREE.LineSegments(feetEdgesGeometry, edgeMaterial));
+        const feetEdges = new THREE.LineSegments(feetEdgesGeometry, edgeMaterial);
+        feetEdges.position.set(0, 0, 0.1);
+        feetEdges.renderOrder = 1;
+        scene.add(feetEdges);
       }
     }
 

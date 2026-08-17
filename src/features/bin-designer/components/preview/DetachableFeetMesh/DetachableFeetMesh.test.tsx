@@ -111,4 +111,40 @@ describe('DetachableFeetMesh', () => {
     );
     expect(container.querySelector('meshStandardMaterial')?.getAttribute('color')).toBe('#abcdef');
   });
+
+  it('takes the Base zone colour in multi-colour mode, not the body colour', () => {
+    // The feet ARE the bin's base, shipped as their own part. If they fall
+    // through to the body colour the one control that should paint them does
+    // nothing — in the preview and in the exported 3MF alike.
+    seedFeet();
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        featureColors: {
+          ...DEFAULT_BIN_PARAMS.featureColors,
+          enabled: true,
+          base: '#ff0000',
+          body: '#00ff00',
+        },
+      },
+    });
+    const { container } = render(
+      <DetachableFeetMesh color="#00ff00" offsetMm={0} wireframe={false} />
+    );
+    expect(container.querySelector('meshStandardMaterial')?.getAttribute('color')).toBe('#ff0000');
+  });
+
+  it('falls back to the body colour when multi-colour is off', () => {
+    seedFeet();
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        featureColors: { ...DEFAULT_BIN_PARAMS.featureColors, enabled: false, base: '#ff0000' },
+      },
+    });
+    const { container } = render(
+      <DetachableFeetMesh color="#00ff00" offsetMm={0} wireframe={false} />
+    );
+    expect(container.querySelector('meshStandardMaterial')?.getAttribute('color')).toBe('#00ff00');
+  });
 });
