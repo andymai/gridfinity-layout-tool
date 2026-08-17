@@ -1339,6 +1339,8 @@ const en: Record<string, string> = {
   'toast.stlImport.empty': 'STL contains no printable geometry',
   'toast.stlImport.assetLimit': 'A design can hold up to {count} imported meshes',
   'toast.svgImport.success': 'Imported {count} shape(s) from SVG',
+  'toast.cutoutsClipped': 'Added {added} of {requested} shapes. A lid holds at most {max}.',
+  'toast.flattenNoRoom': 'Not enough room to flatten this repeat. A lid holds at most {max}.',
   'toast.svgImport.parseFailed': 'Could not read the SVG file',
   'toast.svgImport.noShapes': 'No supported shapes found in SVG',
   'toast.svgImport.shapeLimitExceeded': 'SVG contains too many shapes (max 500)',
@@ -2608,7 +2610,7 @@ const en: Record<string, string> = {
   'binDesigner.cutoutEditor.binFeatures': 'Bin features',
   'binDesigner.cutoutEditor.lipOffPausesLid':
     "The lid needs the stacking lip, so it won't be generated until you turn the lip back on.",
-  'binDesigner.cutoutEditor.offBoardWarning': '{count} cutout(s) outside the board',
+  'binDesigner.cutoutEditor.offBoardWarning': '{count} cutout(s) will be clipped',
   'binDesigner.cutoutEditor.bringBackIn': 'Bring back in',
   'binDesigner.cutoutEditor.growBinToFit': 'Grow bin to {width} × {depth}',
   'binDesigner.cutoutEditor.growBinUnavailable': "The bin can't grow far enough to fit these.",

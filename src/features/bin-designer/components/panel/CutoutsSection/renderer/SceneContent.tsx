@@ -14,6 +14,7 @@ import type {
   PathPoint,
 } from '@/features/bin-designer/types';
 import type { CellMask } from '@/shared/utils/cellMask';
+import type { LidCutoutWindow } from '@/shared/utils/lidCutoutPlan';
 import type { TaperBandSides } from '@/features/bin-designer/utils/binDimensions';
 import type { ResizeHandle, InteractionMode, PreviewMap } from '../useCutoutInteraction';
 import type { SegmentHoverInfo } from '../handlers';
@@ -23,6 +24,7 @@ import { TaperBand3D } from './TaperBand3D';
 import { ReferenceOutline3D } from './ReferenceOutline3D';
 import { CutoutShapeMesh } from './CutoutShapeMesh';
 import { OffBoardFrames3D } from './OffBoardFrames3D';
+import { KeepoutCircles3D } from './KeepoutCircles3D';
 import { CutoutLabel3D } from './CutoutLabel3D';
 import { CutoutHandles3D } from './CutoutHandles3D';
 import { RotationHandle3D } from './RotationHandle3D';
@@ -93,6 +95,7 @@ export interface SceneContentProps {
    * different frame from the bin's interior. Absent on the bin's own board.
    */
   readonly referenceOutline?: { readonly width: number; readonly depth: number } | null;
+  readonly lidWindow?: LidCutoutWindow | null;
   readonly binColor: string;
   readonly selection: ReadonlySet<string>;
   /** Cutouts stranded past the board edge — framed with a red warning outline. */
@@ -156,6 +159,7 @@ export function SceneContent({
   cellMask,
   taperBand,
   referenceOutline,
+  lidWindow,
   binColor,
   selection,
   offBoardIds = EMPTY_IDS,
@@ -248,6 +252,9 @@ export function SceneContent({
           depth={referenceOutline.depth}
         />
       )}
+
+      {/* The magnet bosses a lid cutout is clipped around — scenery, not a boundary */}
+      {lidWindow && <KeepoutCircles3D keepouts={lidWindow.keepouts} />}
 
       {/* Where a full-depth cutout gets trimmed by the tapered wall */}
       {taperBand && <TaperBand3D binWidth={binWidth} binDepth={binDepth} band={taperBand} />}
@@ -444,6 +451,7 @@ export function SceneContent({
         binWidth={binWidth}
         binDepth={binDepth}
         cellMask={cellMask}
+        lidWindow={lidWindow}
       />
 
       {/* Smart guides during drag */}

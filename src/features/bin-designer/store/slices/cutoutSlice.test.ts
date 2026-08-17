@@ -1512,6 +1512,19 @@ describe('cutoutSlice - lid target', () => {
     expect(useDesignerStore.getState().params.lid.cutouts).toHaveLength(MAX_LID_CUTOUTS);
   });
 
+  it('reports whether the cutout landed', () => {
+    // The boolean is what lets a batch caller count what it actually stored: a
+    // loop over `addCutout` otherwise stops adding silently, and an import that
+    // toasts its REQUESTED count claims shapes the design never took.
+    targetLid();
+    const results: boolean[] = [];
+    for (let i = 0; i < MAX_LID_CUTOUTS + 2; i++) {
+      results.push(useDesignerStore.getState().addCutout(rect(`c${i}`)));
+    }
+    expect(results.filter(Boolean)).toHaveLength(MAX_LID_CUTOUTS);
+    expect(results.slice(-2)).toEqual([false, false]);
+  });
+
   it('leaves the bin array uncapped', () => {
     for (let i = 0; i < MAX_LID_CUTOUTS + 5; i++) {
       useDesignerStore.getState().addCutout(rect(`c${i}`));

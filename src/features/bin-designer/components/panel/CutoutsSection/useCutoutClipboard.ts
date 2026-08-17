@@ -51,7 +51,7 @@ interface UseCutoutClipboardOptions {
   readonly cutouts: readonly Cutout[];
   readonly selection: ReadonlySet<string>;
   readonly setSelection: (sel: ReadonlySet<string>) => void;
-  readonly onAdd: (cutout: Cutout) => void;
+  readonly onAdd: (cutout: Cutout) => boolean;
   readonly binWidth: number;
   readonly binDepth: number;
   readonly cellMask?: CellMask;

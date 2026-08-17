@@ -29,27 +29,9 @@ import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import type { BinParams } from '@/shared/types/bin';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
+import { stlSolidVolume } from './__kernel-tests__/meshAssertions';
 import { exportBin } from './binExporter';
 import { setLastSolid } from './shapeCache';
-
-/** Enclosed solid volume (mm³) from a watertight, indexed-per-triangle STL. */
-function stlVolume(vertices: Float32Array): number {
-  let sixVol = 0;
-  for (let i = 0; i < vertices.length; i += 9) {
-    const ax = vertices[i],
-      ay = vertices[i + 1],
-      az = vertices[i + 2];
-    const bx = vertices[i + 3],
-      by = vertices[i + 4],
-      bz = vertices[i + 5];
-    const cx = vertices[i + 6],
-      cy = vertices[i + 7],
-      cz = vertices[i + 8];
-    // a · (b × c)
-    sixVol += ax * (by * cz - bz * cy) - ay * (bx * cz - bz * cx) + az * (bx * cy - by * cx);
-  }
-  return Math.abs(sixVol) / 6;
-}
 
 /** Export a bin to STL and measure its solid volume. Forces a fresh solid. */
 async function exportVolume(params: BinParams): Promise<number> {
@@ -57,7 +39,7 @@ async function exportVolume(params: BinParams): Promise<number> {
   const result = await exportBin(params, 'stl');
   const parsed = parseSTLBinary(result.data);
   if (!isOk(parsed)) throw new Error('STL parse failed');
-  return stlVolume(parsed.value.vertices);
+  return stlSolidVolume(parsed.value.vertices);
 }
 
 const BASE: BinParams = {

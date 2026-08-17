@@ -1,9 +1,15 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useScanImport } from './useScanImport';
+import type { Cutout } from '@/features/bin-designer/types';
 import type { ParsedCutoutSpec } from '../svgImport/types';
 
-const mockAddCutout = vi.fn();
+// Mirrors the store contract: `addCutout` reports whether the cutout landed,
+// and the hook's returned count is what it actually stored. The parameter is
+// declared so the mock keeps its argument tuple — an implementation typed
+// `() => true` narrows `mock.calls` to `[]` and the assertions below stop
+// compiling.
+const mockAddCutout = vi.fn((_cutout: Cutout) => true);
 const mockStartTransaction = vi.fn();
 const mockCommitTransaction = vi.fn();
 
@@ -34,7 +40,10 @@ function spec(partial: Partial<ParsedCutoutSpec> = {}): ParsedCutoutSpec {
 }
 
 describe('useScanImport', () => {
-  afterEach(() => vi.clearAllMocks());
+  afterEach(() => {
+    vi.clearAllMocks();
+    mockAddCutout.mockReturnValue(true);
+  });
 
   it('adds each spec as a cutout and returns the count', () => {
     const { result } = renderHook(() => useScanImport());
@@ -42,6 +51,18 @@ describe('useScanImport', () => {
 
     expect(count).toBe(2);
     expect(mockAddCutout).toHaveBeenCalledTimes(2);
+  });
+
+  it('counts what was stored, not what was asked for', () => {
+    // A refused write (the target is at its cap) must not be reported as added:
+    // the caller toasts this number.
+    mockAddCutout.mockImplementation(() => mockAddCutout.mock.calls.length <= 1);
+    const { result } = renderHook(() => useScanImport());
+
+    const count = result.current.addScanCutouts([spec(), spec({ x: 20 }), spec({ x: 40 })]);
+
+    expect(mockAddCutout).toHaveBeenCalledTimes(3);
+    expect(count).toBe(1);
   });
 
   it('wraps all additions in a single undo transaction', () => {

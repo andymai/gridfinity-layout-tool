@@ -110,7 +110,7 @@ export interface UseCutoutInteractionOptions {
   readonly cutouts: readonly Cutout[];
   readonly onUpdate: (id: string, updates: Partial<Cutout>) => void;
   readonly onRemove: (id: string) => void;
-  readonly onAdd: (cutout: Cutout) => void;
+  readonly onAdd: (cutout: Cutout) => boolean;
   readonly onGroup?: (cutoutIds: readonly string[]) => void;
   readonly onUngroup?: (cutoutIds: readonly string[]) => void;
   /** Ctrl+Shift+D: create a repeat from the selection, or merge a pattern. */
