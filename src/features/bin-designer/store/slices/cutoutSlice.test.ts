@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
-import type { Cutout, PathPoint } from '@/features/bin-designer/types';
+import type { Cutout, CutoutArrayConfig, PathPoint } from '@/features/bin-designer/types';
 import type { MeshAsset } from '@/shared/generation/meshAsset';
 import { MAX_MESH_ASSETS_PER_DESIGN } from '@/shared/generation/meshAsset';
+import { MAX_LID_CUTOUTS } from '@/features/bin-designer/types';
 
 describe('cutoutSlice - consolidated actions', () => {
   beforeEach(() => {
@@ -1407,5 +1408,247 @@ describe('cutoutSlice - consolidated actions', () => {
 
       expect(useDesignerStore.getState().params.cutouts).toHaveLength(3);
     });
+  });
+});
+
+describe('cutoutSlice - lid target', () => {
+  beforeEach(() => {
+    useDesignerStore.setState(useDesignerStore.getInitialState());
+  });
+
+  const rect = (id: string): Cutout => ({
+    id,
+    shape: 'rectangle',
+    x: 0,
+    y: 0,
+    width: 10,
+    depth: 10,
+    cutDepth: 5,
+    rotation: 0,
+    cornerRadius: 0,
+    label: '',
+    groupId: null,
+  });
+
+  const asset: MeshAsset = {
+    name: 'wrench',
+    data: 'AAAA',
+    triangleCount: 12,
+    sizeMm: { x: 20, y: 10, z: 5 },
+    outlines: [
+      [
+        { x: 0, y: 0 },
+        { x: 20, y: 0 },
+        { x: 20, y: 10 },
+      ],
+    ],
+  };
+
+  function targetLid(): void {
+    useDesignerStore.getState().setCutoutEditorOpen(true, 'lid');
+  }
+
+  it('writes to the lid array, leaving the bin untouched', () => {
+    targetLid();
+    useDesignerStore.getState().addCutout(rect('a'));
+    const { params } = useDesignerStore.getState();
+    expect(params.lid.cutouts?.map((c) => c.id)).toEqual(['a']);
+    expect(params.cutouts).toHaveLength(0);
+  });
+
+  it('resets the target to the bin when the editor closes', () => {
+    // Every cutout action reads this, so a target left on the lid would send the
+    // sidebar's own controls to the wrong part.
+    targetLid();
+    useDesignerStore.getState().setCutoutEditorOpen(false);
+    expect(useDesignerStore.getState().ui.cutoutTarget).toBe('bin');
+  });
+
+  it('keeps the bin mesh assets while the lid is the target', () => {
+    // The GC counts references through `params.cutouts`, never the retargeted
+    // array: a lid cutout can never be a mesh imprint, so counting through the
+    // lid would find none and drop an asset the BIN still uses.
+    const meshCutout = { ...rect('mesh-1'), shape: 'mesh' as const, meshId: 'kept' };
+    useDesignerStore.getState().addMeshCutout(meshCutout, asset);
+    expect(Object.keys(useDesignerStore.getState().params.meshAssets ?? {})).toEqual(['kept']);
+
+    targetLid();
+    useDesignerStore.getState().addCutout(rect('lid-a'));
+    useDesignerStore.getState().removeCutout('lid-a');
+
+    expect(Object.keys(useDesignerStore.getState().params.meshAssets ?? {})).toEqual(['kept']);
+    expect(useDesignerStore.getState().params.cutouts.map((c) => c.id)).toEqual(['mesh-1']);
+  });
+
+  it('adds a mesh imprint to the bin even while the lid is the target', () => {
+    targetLid();
+    const meshCutout = { ...rect('mesh-1'), shape: 'mesh' as const, meshId: 'kept' };
+    useDesignerStore.getState().addMeshCutout(meshCutout, asset);
+    const { params } = useDesignerStore.getState();
+    expect(params.cutouts.map((c) => c.id)).toEqual(['mesh-1']);
+    expect(params.lid.cutouts ?? []).toHaveLength(0);
+  });
+
+  it('refuses to add past the lid cap', () => {
+    // The server rejects an oversized payload and migration truncates one on
+    // load, so a client that let the write through would lose shapes somewhere
+    // the user never sees.
+    targetLid();
+    for (let i = 0; i < MAX_LID_CUTOUTS + 5; i++) {
+      useDesignerStore.getState().addCutout(rect(`c${i}`));
+    }
+    expect(useDesignerStore.getState().params.lid.cutouts).toHaveLength(MAX_LID_CUTOUTS);
+  });
+
+  it('truncates a duplicate batch to the remaining room rather than dropping it', () => {
+    targetLid();
+    const ids: string[] = [];
+    for (let i = 0; i < MAX_LID_CUTOUTS - 2; i++) {
+      useDesignerStore.getState().addCutout(rect(`c${i}`));
+      ids.push(`c${i}`);
+    }
+    // Six asked for, two seats left: two is the useful answer, not zero.
+    useDesignerStore.getState().duplicateCutouts(ids.slice(0, 6));
+    expect(useDesignerStore.getState().params.lid.cutouts).toHaveLength(MAX_LID_CUTOUTS);
+  });
+
+  it('leaves the bin array uncapped', () => {
+    for (let i = 0; i < MAX_LID_CUTOUTS + 5; i++) {
+      useDesignerStore.getState().addCutout(rect(`c${i}`));
+    }
+    expect(useDesignerStore.getState().params.cutouts).toHaveLength(MAX_LID_CUTOUTS + 5);
+  });
+});
+
+describe('cutoutSlice - lid target, repeat merge', () => {
+  beforeEach(() => {
+    useDesignerStore.setState(useDesignerStore.getInitialState());
+  });
+
+  const rect = (id: string, x: number): Cutout => ({
+    id,
+    shape: 'rectangle',
+    x,
+    y: 0,
+    width: 10,
+    depth: 10,
+    cutDepth: 5,
+    rotation: 0,
+    cornerRadius: 0,
+    label: '',
+    groupId: null,
+  });
+
+  it('merges a repeat on the lid, not silently nothing', () => {
+    // Reads used to go straight to `params.cutouts`, so with the lid targeted the
+    // master was never found and the action returned false: no merge, no toast,
+    // and the suggestion stayed on screen.
+    useDesignerStore.getState().setCutoutEditorOpen(true, 'lid');
+    useDesignerStore.getState().addCutout(rect('m', 0));
+    useDesignerStore.getState().addCutout(rect('a', 20));
+
+    const config: CutoutArrayConfig = {
+      mode: 'grid',
+      cols: 2,
+      rows: 1,
+      pitchX: 20,
+      pitchY: 0,
+      count: 2,
+      radius: 0,
+      startAngle: 0,
+      rotateToCenter: false,
+    };
+    const merged = useDesignerStore.getState().mergeCutoutsIntoArray('m', config, ['a']);
+
+    expect(merged).toBe(true);
+    const lidCutouts = useDesignerStore.getState().params.lid.cutouts ?? [];
+    expect(lidCutouts.map((c) => c.id)).toEqual(['m']);
+    expect(lidCutouts[0].array).toEqual(config);
+  });
+
+  it('leaves lid.cutouts absent when a lid-targeted action bails early', () => {
+    // `cutoutOwner` materializes the array, so a guard that runs before it would
+    // otherwise strand `[]` on a design with no lid cutouts — enough to shift its
+    // content fingerprint for an action that did nothing.
+    useDesignerStore.getState().setCutoutEditorOpen(true, 'lid');
+    const config: CutoutArrayConfig = {
+      mode: 'grid',
+      cols: 2,
+      rows: 1,
+      pitchX: 20,
+      pitchY: 0,
+      count: 2,
+      radius: 0,
+      startAngle: 0,
+      rotateToCenter: false,
+    };
+    expect(useDesignerStore.getState().mergeCutoutsIntoArray('nope', config, [])).toBe(false);
+    expect(useDesignerStore.getState().params.lid.cutouts).toBeUndefined();
+  });
+});
+
+describe('cutoutSlice - lid array collapses to absent', () => {
+  beforeEach(() => {
+    useDesignerStore.setState(useDesignerStore.getInitialState());
+  });
+
+  const rect = (id: string): Cutout => ({
+    id,
+    shape: 'rectangle',
+    x: 0,
+    y: 0,
+    width: 10,
+    depth: 10,
+    cutDepth: 5,
+    rotation: 0,
+    cornerRadius: 0,
+    label: '',
+    groupId: null,
+  });
+
+  function lidCutouts(): readonly Cutout[] | undefined {
+    return useDesignerStore.getState().params.lid.cutouts;
+  }
+
+  beforeEach(() => {
+    useDesignerStore.getState().setCutoutEditorOpen(true, 'lid');
+  });
+
+  // `[]` and absent serialize differently, and the difference re-hashes the
+  // design — enough to break the moderation tombstone on an already-published
+  // one. Each path that can empty the array is checked separately because the
+  // invariant is only worth having if it holds on all of them.
+  it('after removing the last cutout', () => {
+    useDesignerStore.getState().addCutout(rect('a'));
+    expect(lidCutouts()).toHaveLength(1);
+    useDesignerStore.getState().removeCutout('a');
+    expect(lidCutouts()).toBeUndefined();
+  });
+
+  it('after clearing', () => {
+    useDesignerStore.getState().addCutout(rect('a'));
+    useDesignerStore.getState().clearCutouts();
+    expect(lidCutouts()).toBeUndefined();
+  });
+
+  it('after a batch removal empties it', () => {
+    useDesignerStore.getState().addCutout(rect('a'));
+    useDesignerStore.getState().addCutout(rect('b'));
+    useDesignerStore.getState().removeCutoutsBatch(['a', 'b']);
+    expect(lidCutouts()).toBeUndefined();
+  });
+
+  it('and when a producer merely reads the array without changing it', () => {
+    // `cutoutOwner` materializes `[]` to let the actions read and write
+    // unconditionally; a producer that then bails must not leave it behind.
+    useDesignerStore.getState().showAllCutouts();
+    expect(lidCutouts()).toBeUndefined();
+  });
+
+  it('but a non-empty array is left alone', () => {
+    useDesignerStore.getState().addCutout(rect('a'));
+    useDesignerStore.getState().addCutout(rect('b'));
+    useDesignerStore.getState().removeCutout('a');
+    expect(lidCutouts()?.map((c) => c.id)).toEqual(['b']);
   });
 });

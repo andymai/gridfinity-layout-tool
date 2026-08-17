@@ -57,6 +57,8 @@ import { lipGapRailBlocks, lipGaps, polygonLipGaps } from '@/shared/utils/lipGap
 import { resolveOverhang, overhangExpansion, hasOverhang } from '@/shared/utils/overhang';
 import { matchingTrayParams } from '@/features/bin-designer/utils/matchingTray';
 import { lidWallBottomZ } from '@/features/bin-designer/components/preview/LidMesh/lidAnchorZ';
+import { lidCutoutsAllowed } from '@/shared/utils/lidCutoutPlan';
+import { MAX_LID_CUTOUTS } from '@/features/bin-designer/types';
 import {
   checkLidCompatibility,
   computeDisabledRails,
@@ -108,6 +110,7 @@ export function useLidSection() {
     newDesign,
     setParams,
     setDesignName,
+    setCutoutEditorOpen,
   } = useDesignerStore(
     useShallow((s) => ({
       lid: s.params.lid,
@@ -125,6 +128,7 @@ export function useLidSection() {
       newDesign: s.newDesign,
       setParams: s.setParams,
       setDesignName: s.setDesignName,
+      setCutoutEditorOpen: s.setCutoutEditorOpen,
     }))
   );
 
@@ -335,6 +339,13 @@ export function useLidSection() {
       grip: separateStackPlate ? clearRevealGrip(lid.grip) : lid.grip,
     });
   }, [lid.stackableTop, lid.separateStackPlate, lid.grip, updateLid]);
+
+  // Opens the shared cutout editor pointed at the lid. Every cutout action reads
+  // `ui.cutoutTarget` (see `cutoutOwner`), so this one call is what redirects the
+  // whole editor rather than a lid-specific copy of it.
+  const openLidCutoutEditor = useCallback(() => {
+    setCutoutEditorOpen(true, 'lid');
+  }, [setCutoutEditorOpen]);
 
   const toggleRelieveInterior = useCallback(() => {
     updateLid({ relieveInterior: !lid.relieveInterior });
@@ -712,6 +723,18 @@ export function useLidSection() {
       anyRail,
       clickRailCoverage: lid.clickRailCoverage,
       relieveInterior: lid.relieveInterior,
+      // Lid cutouts: whether the host can take them at all, and how many it has.
+      // `allowed` is the plan's own gate rather than a restatement of it, so the
+      // button cannot offer an editor the worker would refuse to cut.
+      cutouts: {
+        allowed: lidCutoutsAllowed(params),
+        count: lid.cutouts?.length ?? 0,
+        // The store refuses past the cap and the server rejects an oversized
+        // payload, so the limit has to be legible BEFORE a shape silently fails
+        // to appear.
+        atCapacity: (lid.cutouts?.length ?? 0) >= MAX_LID_CUTOUTS,
+        max: MAX_LID_CUTOUTS,
+      },
       // Grip relief. `gripDepth` carries the clamp's own account of
       // itself so the panel can say WHY a relief is shallower than its mode
       // asks for, rather than leaving the user to read it as a defect.
@@ -781,6 +804,7 @@ export function useLidSection() {
       toggleClickRailSide,
       setClickRailCoverage,
       toggleRelieveInterior,
+      openLidCutoutEditor,
       setGripMode,
       toggleGripSide,
       setGripCoverage,

@@ -529,7 +529,10 @@ describe('LidSection', () => {
       });
       render(<LidSection />);
       expect(screen.queryByRole('textbox', { name: 'Lid text' })).not.toBeInTheDocument();
-      expect(screen.getByText(/full stack grid/i)).toBeInTheDocument();
+      // Anchored on this hint's own opening: the lid-cutout hint names the same
+      // condition, so `/full stack grid/` alone matches both and would not say
+      // which reason rendered.
+      expect(screen.getByText(/^Not available with a full stack grid/i)).toBeInTheDocument();
     });
 
     it('allows text on a lip-only stack top and says where it lands (#2930)', () => {
@@ -779,5 +782,55 @@ describe('LidSection grip / stackable-top conflict (#3272)', () => {
       expect(useDesignerStore.getState().params.lid.grip.mode).toBe(mode);
       view.unmount();
     }
+  });
+});
+
+describe('LidSection lid cutouts', () => {
+  const cutout = {
+    id: 'c1',
+    shape: 'rectangle' as const,
+    x: 5,
+    y: 5,
+    width: 10,
+    depth: 5,
+    cutDepth: 1,
+    rotation: 0,
+    cornerRadius: 0,
+    label: '',
+    groupId: null,
+  };
+
+  it('opens the shared editor pointed at the lid, not the bin', () => {
+    // The whole retargeting rests on this: one flag redirects every cutout action
+    // (see `cutoutOwner`), so a button that forgot to pass 'lid' would silently
+    // edit the bin's interior instead.
+    resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } });
+    render(<LidSection />);
+    fireEvent.click(screen.getByRole('button', { name: /Cut holes in the lid/i }));
+    const { ui } = useDesignerStore.getState();
+    expect(ui.cutoutEditorOpen).toBe(true);
+    expect(ui.cutoutTarget).toBe('lid');
+  });
+
+  it('reports how many holes the lid already carries', () => {
+    resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, cutouts: [cutout] } });
+    render(<LidSection />);
+    expect(screen.getByRole('button', { name: 'Cut holes in the lid (1)' })).toBeInTheDocument();
+  });
+
+  it('disables the button when a full stack grid owns the top face', () => {
+    resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, stackableTop: true } });
+    render(<LidSection />);
+    expect(screen.getByRole('button', { name: /Cut holes in the lid/i })).toBeDisabled();
+  });
+
+  it('keeps the button live on a lip-only stack top', () => {
+    // A lip-only grid leaves the recessed floor inside the lip as one clear face,
+    // exactly as it does for lid text.
+    resetStore({
+      lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, stackableTop: true, stackLipOnly: true },
+    });
+    render(<LidSection />);
+    expect(screen.getByRole('button', { name: /Cut holes in the lid/i })).toBeEnabled();
   });
 });

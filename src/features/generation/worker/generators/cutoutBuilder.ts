@@ -648,8 +648,16 @@ function applyAdaptiveScoop(
  * follows the cutout's local axes. Per-edge toggles (`scoopEdges`) gate
  * individual walls — disabled edges return a null radius from the callback,
  * which OCCT treats as "skip this edge."
+ *
+ * Exported alongside {@link buildGroupedCutouts} and
+ * {@link buildArrayUngroupedCutouts} because the lid's plate reuses all three.
+ * What makes that safe is that the frame is entirely in the arguments: the tool
+ * is built spanning `[solidSurfaceZ - min(cutDepth, solidSurfaceZ), solidSurfaceZ]`
+ * with `x`/`y` measured from (`originX`, `originY`). Nothing here reads a bin
+ * dimension, so a caller with a different host face supplies its own plane and
+ * origin and gets a tool in that frame — see `lidCutoutBuilder`.
  */
-function buildUngroupedCutout(
+export function buildUngroupedCutout(
   cutout: BinParams['cutouts'][number],
   solidSurfaceZ: number,
   originX: number,
@@ -789,7 +797,7 @@ function applyCallbackFilletWithFallback(
 }
 
 /** Build and fuse grouped cutouts with a shared adaptive scoop fillet. */
-function buildGroupedCutouts(
+export function buildGroupedCutouts(
   groupMembers: BinParams['cutouts'],
   solidSurfaceZ: number,
   originX: number,
@@ -887,7 +895,7 @@ function buildGroupedCutouts(
  * Radial arrays with rotateToCenter get per-instance rotation composed with
  * the translate; all other modes bake the master rotation in up front.
  */
-function buildArrayUngroupedCutouts(
+export function buildArrayUngroupedCutouts(
   cutout: BinParams['cutouts'][number],
   solidSurfaceZ: number,
   originX: number,

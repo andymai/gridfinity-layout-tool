@@ -2014,6 +2014,14 @@ const en: Record<string, string> = {
     'The top of the cavity’s perimeter is trimmed so the click rails run unbroken. Dividers stop a few mm short of the rim and label shelves sit lower.',
   'binDesigner.lid.relieveInteriorOffHint':
     'The rails notch around each divider and label tab instead. Kept for designs made before this option, so they reprint identically.',
+  'binDesigner.lid.editCutouts': 'Cut holes in the lid',
+  'binDesigner.lid.editCutoutsCount': 'Cut holes in the lid ({count})',
+  'binDesigner.lid.editCutoutsHint':
+    'Draw shapes that go clean through the lid plate: a dispensing slot, a vent, a cable pass-through. They stay clear of the mating wall and the magnet bosses.',
+  'binDesigner.lid.editCutoutsFull':
+    'Holding the most shapes a lid can take ({max}). Delete one to add another.',
+  'binDesigner.lid.editCutoutsBlocked':
+    'Available on a lid with a flat top and a rectangular footprint. A full stack grid covers the top face; a lip-only grid leaves it usable.',
   'binDesigner.lid.compat.compartmentDividers':
     'Compartment dividers reach the top of the cavity, where the click rail drops in. The rail on {sides} is notched around each one so the lid can still seat.',
   'binDesigner.lid.compat.labelTabs':
@@ -2413,6 +2421,7 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.positionX': 'X Position',
   'binDesigner.cutouts.positionY': 'Y Position',
   'binDesigner.cutouts.cutDepth': 'Cut depth',
+  'binDesigner.cutouts.throughDepthHint': 'Cuts through all {depth}mm of the plate.',
   'binDesigner.cutouts.topOffset': 'Top Offset',
   'binDesigner.cutouts.cornerRadius': 'Corner radius',
   'binDesigner.cutouts.scoopRadius': 'Scoop radius',

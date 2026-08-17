@@ -129,6 +129,13 @@ export {
   LID_TOP_THICKNESS_STEP_MM,
   LID_MIN_RAIL_LENGTH,
   LID_MAGNET_LIP_CLEARANCE,
+  // The retention boss footprint. Shared because the lid cutout window draws
+  // each boss as a keep-out on the main thread, and the worker mates against
+  // the same numbers.
+  LID_MAGNET_BOSS_WALL,
+  retentionBossRadius,
+  retentionMagnetInset,
+  MAX_LID_CUTOUTS,
   LID_GRIP_MODES,
   LID_GRIP_SPAN_MIN_MM,
   LID_GRIP_SPAN_MAX_MM,

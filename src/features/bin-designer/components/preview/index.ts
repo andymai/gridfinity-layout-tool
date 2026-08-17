@@ -30,6 +30,7 @@ export { GhostSlotLines } from './GhostSlotLines/GhostSlotLines';
 export { GhostAuthoredDividers } from './GhostAuthoredDividers';
 export { GhostDividerPieces } from './GhostDividerPieces/GhostDividerPieces';
 export { GhostCutouts } from './GhostCutouts';
+export { GhostLidCutouts } from './GhostLidCutouts';
 export { GhostWallCutouts } from './GhostWallCutouts';
 export { GhostHandles } from './GhostHandles';
 export { OverhangHighlight } from './OverhangHighlight';

@@ -21,6 +21,7 @@ import {
   cutoutInterior,
   cutoutTaperBand,
 } from '@/features/bin-designer/utils/binDimensions';
+import { lidCutoutHostFace, lidCutoutWindow } from '@/shared/utils/lidCutoutPlan';
 import { useCutoutInteraction } from '../panel/CutoutsSection/useCutoutInteraction';
 import {
   getOffBoardCutoutIds,
@@ -81,6 +82,7 @@ export function CutoutWorkspace() {
     unlockCutouts,
     halfGridMode,
     setParams,
+    cutoutTarget,
   } = useDesignerStore(
     useShallow((s) => ({
       params: s.params,
@@ -106,26 +108,58 @@ export function CutoutWorkspace() {
       unlockCutouts: s.unlockCutouts,
       halfGridMode: s.ui.halfGridMode,
       setParams: s.setParams,
+      cutoutTarget: s.ui.cutoutTarget,
     }))
   );
 
-  const { cutouts } = params;
+  // Which part is being drawn on. The store actions already follow this (see
+  // `cutoutOwner`), so everything below is about the BOARD: which array to draw,
+  // how big it is, and what a depth means on it.
+  const isLid = cutoutTarget === 'lid';
+  const lidWindow = useMemo(() => (isLid ? lidCutoutWindow(params) : null), [isLid, params]);
+  const lidHost = useMemo(() => (isLid ? lidCutoutHostFace(params) : null), [isLid, params]);
+
+  // Memoized because `lid.cutouts` is absent rather than empty on a lid with no
+  // holes, and a fresh `[]` each render would invalidate every memo below it.
+  const cutouts = useMemo(
+    () => (isLid ? params.lid.cutouts : params.cutouts) ?? [],
+    [isLid, params.lid.cutouts, params.cutouts]
+  );
   // Cutouts live on the interior floor, which grows outward with overhang — use
   // the overhang-expanded interior so cutouts can be placed/centered over that
   // extra floor and land where the generator puts them. wallHeight is
   // unaffected (overhang is outward-only).
   const { wallHeight } = binDimensions(params);
-  const { innerW: binWidth, innerD: binDepth } = cutoutInterior(params);
-  const taperBand = cutoutTaperBand(params);
+  const interior = cutoutInterior(params);
+  // The lid's board is its mating-cavity window, which is neither the bin's
+  // interior nor the lid's outer plate. A null window means a gate refused the
+  // lid cutouts entirely; fall back to the interior so the canvas still has a
+  // finite extent rather than collapsing to zero mid-render.
+  const binWidth = lidWindow?.spanW ?? interior.innerW;
+  const binDepth = lidWindow?.spanD ?? interior.innerD;
+  // Both are bin-interior concepts. A lid cutout goes clean through a flat plate:
+  // there is no tapered wall to clip against, and a polygon lid never reaches the
+  // editor because `lidCutoutsAllowed` refuses one.
+  const taperBand = isLid ? null : cutoutTaperBand(params);
+  const boardMask = isLid ? undefined : params.cellMask;
+  // On the lid, put the bin's interior on screen as a dashed underlay. The two
+  // frames are deliberately separate (a shared origin would be one more
+  // relationship to keep true), so this is what makes "put the slot over the
+  // contents" something the user can see rather than compute. Both rectangles are
+  // centred on their own part, so no rebasing is needed.
+  const binInteriorReference = useMemo(
+    () => (isLid ? { width: interior.innerW, depth: interior.innerD } : null),
+    [isLid, interior.innerW, interior.innerD]
+  );
   // See CutoutEditor for rationale — separate X/Y cell sizes keep validator and
   // polygon rendering aligned for non-square bins. Memoized so the off-board
   // hooks below keep a stable dependency across renders.
   const maskCellSize = useMemo(
     () =>
-      params.cellMask
-        ? { cellMmX: binWidth / params.cellMask.cols, cellMmY: binDepth / params.cellMask.rows }
+      boardMask
+        ? { cellMmX: binWidth / boardMask.cols, cellMmY: binDepth / boardMask.rows }
         : undefined,
-    [params.cellMask, binWidth, binDepth]
+    [boardMask, binWidth, binDepth]
   );
 
   // Resizing the bin can strand cutouts past the new (smaller) footprint — they
@@ -133,15 +167,8 @@ export function CutoutWorkspace() {
   // can frame them and the inspector can offer a one-click clamp back in.
   const offBoardIds = useMemo(
     () =>
-      getOffBoardCutoutIds(
-        cutouts,
-        binWidth,
-        binDepth,
-        params.cellMask,
-        maskCellSize,
-        params.meshAssets
-      ),
-    [cutouts, binWidth, binDepth, params.cellMask, maskCellSize, params.meshAssets]
+      getOffBoardCutoutIds(cutouts, binWidth, binDepth, boardMask, maskCellSize, params.meshAssets),
+    [cutouts, binWidth, binDepth, boardMask, maskCellSize, params.meshAssets]
   );
 
   const t = useTranslation();
@@ -219,9 +246,13 @@ export function CutoutWorkspace() {
   // rather than truncated, so the warning offers to move the board to
   // the cutouts as well as the cutouts to the board. `null` = growing can't
   // clear the warning, and the action is hidden rather than half-applied.
+  // Not offered on the lid: `computeGrowToFit` measures candidates against
+  // `cutoutInterior`, which is ~6.7mm per axis wider than the lid's window, so it
+  // would either hide a fix that would have worked or resize the bin and leave the
+  // warning standing.
   const growTarget = useMemo(
-    () => computeGrowToFit(params, cutouts, halfGridMode),
-    [params, cutouts, halfGridMode]
+    () => (isLid ? null : computeGrowToFit(params, cutouts, halfGridMode)),
+    [isLid, params, cutouts, halfGridMode]
   );
 
   const handleGrowToFit = useCallback(() => {
@@ -235,20 +266,12 @@ export function CutoutWorkspace() {
       cutouts,
       binWidth,
       binDepth,
-      params.cellMask,
+      boardMask,
       maskCellSize,
       params.meshAssets
     );
     if (updates.size > 0) updateCutoutsBatch(updates);
-  }, [
-    cutouts,
-    binWidth,
-    binDepth,
-    params.cellMask,
-    maskCellSize,
-    params.meshAssets,
-    updateCutoutsBatch,
-  ]);
+  }, [cutouts, binWidth, binDepth, boardMask, maskCellSize, params.meshAssets, updateCutoutsBatch]);
 
   const {
     mode,
@@ -312,7 +335,7 @@ export function CutoutWorkspace() {
     binWidth,
     binDepth,
     gridSize,
-    cellMask: params.cellMask,
+    cellMask: boardMask,
     maskCellSize,
   });
 
@@ -484,8 +507,12 @@ export function CutoutWorkspace() {
               onGridSizeChange={setGridSize}
               vertical
               onImportSvg={triggerSvgImport}
-              onImportStl={stlImport.triggerImport}
-              onScanWithPhone={scanEnabled ? () => setScanDialogOpen(true) : undefined}
+              // Both land via `addMeshCutout`, which is pinned to the BIN's array
+              // (a lid cutout can never be a mesh imprint). Offered on the lid
+              // board they would report success and add the shape to a part the
+              // canvas is not showing.
+              onImportStl={isLid ? undefined : stlImport.triggerImport}
+              onScanWithPhone={scanEnabled && !isLid ? () => setScanDialogOpen(true) : undefined}
             />
           </div>
         </div>
@@ -533,15 +560,18 @@ export function CutoutWorkspace() {
               {cutouts.length === 0 && mode.type === 'idle' && (
                 <CutoutEmptyState
                   variant="workspace"
-                  onScanWithPhone={scanEnabled ? () => setScanDialogOpen(true) : undefined}
+                  onScanWithPhone={
+                    scanEnabled && !isLid ? () => setScanDialogOpen(true) : undefined
+                  }
                 />
               )}
               <CutoutCanvas3D
                 cutouts={cutouts}
                 binWidth={binWidth}
                 binDepth={binDepth}
-                cellMask={params.cellMask}
+                cellMask={boardMask}
                 taperBand={taperBand}
+                referenceOutline={binInteriorReference}
                 canvasWidth={canvasWidth}
                 canvasHeight={canvasHeight}
                 selection={selection}
@@ -601,7 +631,8 @@ export function CutoutWorkspace() {
           preview={preview}
           binWidth={binWidth}
           binDepth={binDepth}
-          maxCutDepth={wallHeight}
+          maxCutDepth={lidHost?.thickness ?? wallHeight}
+          throughOnly={isLid}
           onUpdate={updateCutout}
           onUpdateBatch={updateCutoutsBatch}
           disabled={isInteracting}

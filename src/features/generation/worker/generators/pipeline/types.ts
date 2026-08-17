@@ -157,6 +157,24 @@ export interface BinDimensions {
   readonly solid: boolean;
   readonly isSlotted: boolean;
   readonly hasLip: boolean;
+  /**
+   * Whether the stacking lip gets its angled 45° support — the wedge that blends
+   * the lip's inward jut down into the wall it sits on.
+   *
+   * `buildTopShapeLoft` builds that support hanging `LIP_TAPER_WIDTH` BELOW the
+   * lip's own base plane, and the lip fuses at `boxWallHeight - LIP_OVERLAP`, so
+   * on a wall shorter than `LIP_TAPER_WIDTH + LIP_OVERLAP` the support reaches
+   * past the wall bottom and lands inside the socket's upper taper, back-filling
+   * it to full width. The foot then stops seating in a baseplate (CLAUDE.md
+   * gotcha #10) — and the solid stays watertight and correctly sized, so no
+   * bounding-box or manifold check sees it.
+   *
+   * Derived once here because three consumers have to agree: the fuse path passes
+   * it to `buildTopShape`, the base-only path reads it instead of hardcoding
+   * `false`, and the draft's integrated builder must stand down when it is false
+   * (it mirrors the support and has no way to omit it).
+   */
+  readonly lipHasSupport: boolean;
   readonly interiorHeight: number;
   readonly maxDimension: number;
   readonly shellKey: string;

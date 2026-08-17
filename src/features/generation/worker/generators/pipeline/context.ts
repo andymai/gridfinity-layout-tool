@@ -19,6 +19,7 @@ import {
   LIP_HEIGHT,
   LIP_OVERLAP,
   LIP_SMALL_TAPER,
+  LIP_TAPER_WIDTH,
   MIN_BODY_WALL_MM,
 } from '../generatorConstants';
 import {
@@ -199,6 +200,11 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   const maxDimension = Math.max(params.width * gridUnitX, params.depth * gridUnitY);
 
   const hasLip = params.base.stackingLip;
+  // Material actually under the lip. A base-only bin's lip bears on its floor
+  // slab, not on a wall; every other base carries it on the collar-extended wall
+  // the box is extruded to. See `lipHasSupport` for what the number decides.
+  const wallUnderLipMm = isTile ? tileFloorHeight : wallHeight + collarHeight;
+  const lipHasSupport = hasLip && wallUnderLipMm >= LIP_TAPER_WIDTH + LIP_OVERLAP;
   // Safety: LIP_OVERLAP (0.1mm) < LIP_SMALL_TAPER (0.7mm) so interiorHeight
   // already clears the actual lip base at wallHeight - LIP_OVERLAP.
   // Floored at 0 for base-only, whose wallHeight is 0: the subtraction would
@@ -379,6 +385,7 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
     solid,
     isSlotted,
     hasLip,
+    lipHasSupport,
     interiorHeight,
     maxDimension,
     shellKey,

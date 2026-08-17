@@ -5,6 +5,11 @@
 /** Render order layers (higher = drawn later = on top) */
 export const RENDER_ORDER = {
   BACKGROUND: 0,
+  /**
+   * The bin's interior, drawn under a LID board purely for alignment. Above the
+   * background so it is not lost in it, below every shape so it stays scenery.
+   */
+  REFERENCE_OUTLINE: 0.5,
   /** Above the bin surface and its dot grid, below every cutout shape. */
   TAPER_BAND: 1,
   SHAPES: 10,
@@ -57,6 +62,12 @@ export const OFF_BOARD_COLOR = '#ef4444'; // --color-error
  * with the amber selection or the red off-board frame.
  */
 export const TAPER_BAND_COLOR = '#94a3b8';
+/**
+ * Reference outline — the same slate as the taper band, at a lower opacity. It
+ * marks where another PART is, not where this board ends, so it must read as
+ * background rather than as anything enclosing the shapes.
+ */
+export const REFERENCE_OUTLINE_COLOR = '#94a3b8';
 
 /** Handle sizes in screen pixels */
 export const CORNER_HANDLE_SIZE = 10;

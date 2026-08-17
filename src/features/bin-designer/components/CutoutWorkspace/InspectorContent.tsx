@@ -42,6 +42,13 @@ interface InspectorContentProps {
   readonly binWidth: number;
   readonly binDepth: number;
   readonly maxCutDepth: number;
+  /**
+   * The host cuts clean through, so `cutDepth` and the scoop fillets are inert on
+   * a lid's plate: there is no floor for a pocket to stop at or a fillet to curve
+   * against. Hidden rather than disabled, because a disabled stepper still shows a
+   * number the geometry does not use.
+   */
+  readonly throughOnly?: boolean;
   readonly onUpdate: (id: string, updates: Partial<Cutout>) => void;
   readonly onUpdateBatch?: (updates: ReadonlyMap<string, Partial<Cutout>>) => void;
   readonly disabled?: boolean;
@@ -108,6 +115,7 @@ export function InspectorContent({
   binWidth,
   binDepth,
   maxCutDepth,
+  throughOnly = false,
   onUpdate,
   onUpdateBatch,
   disabled = false,
@@ -277,6 +285,7 @@ export function InspectorContent({
           binWidth={binWidth}
           binDepth={binDepth}
           maxCutDepth={maxCutDepth}
+          throughOnly={throughOnly}
           onUpdate={onUpdate}
           onFitCue={onFitCue}
           onFlattenArray={onFlattenArray}
@@ -358,39 +367,43 @@ export function InspectorContent({
               unit="°"
               disabled={disabled}
             />
-            <CompactNumberInput
-              label={t('binDesigner.cutouts.cutDepth')}
-              value={sharedCutDepth ?? 5}
-              indeterminate={sharedCutDepth === null}
-              onChange={(cutDepth) => handleBatchUpdate('cutDepth', cutDepth)}
-              min={0.5}
-              max={maxCutDepth}
-              step={0.5}
-              unit="mm"
-              disabled={disabled}
-            />
-            <CompactNumberInput
-              label={t('binDesigner.cutouts.scoopW')}
-              value={sharedScoopRadiusW ?? 0}
-              indeterminate={sharedScoopRadiusW === null}
-              onChange={(scoopRadiusW) => handleScoopAxisBatch('scoopRadiusW', scoopRadiusW)}
-              min={0}
-              max={sharedCutDepth ?? maxCutDepth}
-              step={0.5}
-              unit="mm"
-              disabled={disabled}
-            />
-            <CompactNumberInput
-              label={t('binDesigner.cutouts.scoopD')}
-              value={sharedScoopRadiusD ?? 0}
-              indeterminate={sharedScoopRadiusD === null}
-              onChange={(scoopRadiusD) => handleScoopAxisBatch('scoopRadiusD', scoopRadiusD)}
-              min={0}
-              max={sharedCutDepth ?? maxCutDepth}
-              step={0.5}
-              unit="mm"
-              disabled={disabled}
-            />
+            {!throughOnly && (
+              <>
+                <CompactNumberInput
+                  label={t('binDesigner.cutouts.cutDepth')}
+                  value={sharedCutDepth ?? 5}
+                  indeterminate={sharedCutDepth === null}
+                  onChange={(cutDepth) => handleBatchUpdate('cutDepth', cutDepth)}
+                  min={0.5}
+                  max={maxCutDepth}
+                  step={0.5}
+                  unit="mm"
+                  disabled={disabled}
+                />
+                <CompactNumberInput
+                  label={t('binDesigner.cutouts.scoopW')}
+                  value={sharedScoopRadiusW ?? 0}
+                  indeterminate={sharedScoopRadiusW === null}
+                  onChange={(scoopRadiusW) => handleScoopAxisBatch('scoopRadiusW', scoopRadiusW)}
+                  min={0}
+                  max={sharedCutDepth ?? maxCutDepth}
+                  step={0.5}
+                  unit="mm"
+                  disabled={disabled}
+                />
+                <CompactNumberInput
+                  label={t('binDesigner.cutouts.scoopD')}
+                  value={sharedScoopRadiusD ?? 0}
+                  indeterminate={sharedScoopRadiusD === null}
+                  onChange={(scoopRadiusD) => handleScoopAxisBatch('scoopRadiusD', scoopRadiusD)}
+                  min={0}
+                  max={sharedCutDepth ?? maxCutDepth}
+                  step={0.5}
+                  unit="mm"
+                  disabled={disabled}
+                />
+              </>
+            )}
             {chamferCutouts.length > 0 && (
               <CompactNumberInput
                 label={t('binDesigner.cutouts.chamfer')}

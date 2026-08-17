@@ -34,6 +34,8 @@ interface InspectorDockProps {
   readonly binWidth: number;
   readonly binDepth: number;
   readonly maxCutDepth: number;
+  /** Forwarded to {@link InspectorContent}; see its own doc. */
+  readonly throughOnly?: boolean;
   readonly onUpdate: (id: string, updates: Partial<Cutout>) => void;
   readonly onUpdateBatch?: (updates: ReadonlyMap<string, Partial<Cutout>>) => void;
   readonly disabled?: boolean;

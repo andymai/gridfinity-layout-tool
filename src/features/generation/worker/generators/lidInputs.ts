@@ -8,6 +8,7 @@
 
 import type {
   BinParams,
+  Cutout,
   LidAttachment,
   LidCompatibilitySide,
   LidGripMode,
@@ -36,6 +37,8 @@ import type { PolygonLipGap } from '@/shared/utils/lipGapPlan';
 import type { WallSpanBlock } from '@/shared/utils/labelTabPlan';
 import { LID_FIT_CLEARANCE, LID_CORNER_RADIUS, lidAnchorZ, lidWallBottomZ } from './lidConstants';
 import { resolveOverhang, overhangExpansion, hasOverhang } from './overhang';
+import { lidCutoutHostFace, lidCutoutWindow } from '@/shared/utils/lidCutoutPlan';
+import type { LidCutoutWindow } from '@/shared/utils/lidCutoutPlan';
 
 /**
  * Resolved lid-top text: the trimmed string plus the effective
@@ -52,6 +55,23 @@ export interface LidTextInputs {
   readonly minFontSize: number;
   readonly maxFontSize: number;
   readonly fontSizeOverride?: number;
+}
+
+/**
+ * Resolved lid cutouts: the shapes, the window they are positioned in, and the
+ * plate they cut through.
+ *
+ * The window and the host face come from `lidCutoutPlan` rather than being
+ * re-derived here, because the editor draws its shapes against the same numbers
+ * and a second derivation is how a placement and its geometry drift apart.
+ */
+export interface LidCutoutInputs {
+  readonly shapes: readonly Cutout[];
+  readonly window: LidCutoutWindow;
+  /** Lid-local Z of the surface the cuts start from. */
+  readonly topZ: number;
+  /** Plate depth (mm) below {@link topZ} — every cut spans all of it. */
+  readonly thickness: number;
 }
 
 /** Geometric inputs derived from BinParams. */
@@ -243,6 +263,12 @@ export interface LidInputs {
    */
   readonly text: LidTextInputs | null;
   /**
+   * Through-cuts in the lid's plate, or null when there are none or a gate
+   * refuses them. Carries the shapes together with the window they are measured
+   * in, so the builder never re-derives either.
+   */
+  readonly cutouts: LidCutoutInputs | null;
+  /**
    * Outer-perimeter shift (mm) caused by asymmetric overhang. The lid's
    * perimeter, mating shell, floor, click rails, and retention magnets
    * translate by this amount so they wrap the bin's overhang-shifted outer
@@ -265,6 +291,34 @@ export interface LidInputs {
    */
   readonly overhangAddW: number;
   readonly overhangAddD: number;
+}
+
+/**
+ * Through-cuts in the plate, or null when the design has none or a gate refuses
+ * them.
+ *
+ * `lidCutoutWindow` applies the same TOP-FACE gates that null out
+ * {@link LidInputs.text}, so the two cannot disagree about whether the lid has a
+ * usable face; it adds a stacking-lip requirement of its own. Mesh-shaped entries
+ * are refused here as well as dropped in migration: an imprint is subtracted
+ * after tessellation, in the BIN's mesh frame, so no lid solid can describe one.
+ */
+function resolveLidCutoutInputs(params: BinParams): LidCutoutInputs | null {
+  const shapes = (params.lid.cutouts ?? []).filter((c) => c.shape !== 'mesh');
+  if (shapes.length === 0) return null;
+
+  const window = lidCutoutWindow(params);
+  if (!window) return null;
+
+  // `resolveLidPlateThickness` floors a plain plate at LID_TOP_THICKNESS_BASE and
+  // leaves a tray at least LID_TRAY_FLOOR under its recess, so this cannot trip
+  // today. Kept because it guards a subtraction, and a future resolver change
+  // that inverted it would otherwise build an inside-out cutter.
+
+  const host = lidCutoutHostFace(params);
+  if (host.thickness <= 0) return null;
+
+  return { shapes, window, topZ: host.topZ, thickness: host.thickness };
 }
 
 export function resolveLidInputs(params: BinParams): LidInputs {
@@ -317,6 +371,8 @@ export function resolveLidInputs(params: BinParams): LidInputs {
       ...(style.fontSizeOverride !== undefined ? { fontSizeOverride: style.fontSizeOverride } : {}),
     };
   }
+
+  const cutouts = resolveLidCutoutInputs(params);
 
   // Floor plate takes the largest of: the user's knob, a stack-magnet pocket's
   // depth+ceiling, and a tray recess's depth+floor.
@@ -440,6 +496,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     wallBottomZ: lidWallBottomZ(heightUnitMm, LID_FIT_CLEARANCE, cavityExtra),
     cellMask,
     text,
+    cutouts,
     outerOffsetX,
     overhangAddW: addW,
     overhangAddD: addD,

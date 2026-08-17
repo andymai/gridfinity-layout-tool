@@ -63,6 +63,12 @@ export interface CutoutCanvas3DProps {
   readonly cellMask?: CellMask;
   /** Per-side strip a full-depth cutout is trimmed out of; null when untapered. */
   readonly taperBand?: TaperBandSides | null;
+  /**
+   * Another part's footprint, drawn faintly under the board purely so the user can
+   * line shapes up with it. Set when the editor is on the LID, whose window is a
+   * different frame from the bin's interior. Absent on the bin's own board.
+   */
+  readonly referenceOutline?: { readonly width: number; readonly depth: number } | null;
   readonly canvasWidth: number;
   readonly canvasHeight: number;
   readonly selection: ReadonlySet<string>;
@@ -123,6 +129,7 @@ export function CutoutCanvas3D({
   binDepth,
   cellMask,
   taperBand,
+  referenceOutline,
   canvasWidth,
   canvasHeight,
   selection,
@@ -308,6 +315,7 @@ export function CutoutCanvas3D({
         binDepth={binDepth}
         cellMask={cellMask}
         taperBand={taperBand}
+        referenceOutline={referenceOutline}
         binColor={binColor}
         selection={selection}
         offBoardIds={offBoardIds}

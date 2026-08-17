@@ -3903,5 +3903,11 @@
   "binDesigner.preview.feetDetached": "분리됨",
   "binDesigner.preview.feetAttached": "장착됨",
   "binDesigner.preview.feetDetachSlider": "발 분리",
-  "binDesigner.detachableFeetNeedsThickerWall": "이렇게 얇은 벽은 핀을 잡아줄 바닥이 부족합니다"
+  "binDesigner.detachableFeetNeedsThickerWall": "이렇게 얇은 벽은 핀을 잡아줄 바닥이 부족합니다",
+  "binDesigner.lid.editCutouts": "뚜껑에 구멍 뚫기",
+  "binDesigner.lid.editCutoutsCount": "뚜껑에 구멍 뚫기({count})",
+  "binDesigner.lid.editCutoutsHint": "뚜껑 판을 완전히 관통하는 모양을 그립니다. 배출용 슬롯, 통풍구, 케이블 통과 구멍 등입니다. 결합 벽과 자석 보스는 피해서 배치됩니다.",
+  "binDesigner.lid.editCutoutsBlocked": "윗면이 평평하고 외형이 직사각형인 뚜껑에서 사용할 수 있습니다. 전체 적층 그리드는 윗면을 덮지만, 립만 있는 그리드는 사용할 수 있습니다.",
+  "binDesigner.cutouts.throughDepthHint": "판 {depth}mm를 모두 관통해 잘라냅니다.",
+  "binDesigner.lid.editCutoutsFull": "뚜껑에 넣을 수 있는 최대 도형 수({max})에 도달했습니다. 추가하려면 하나를 삭제하세요."
 }

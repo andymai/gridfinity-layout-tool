@@ -3903,5 +3903,11 @@
   "binDesigner.preview.feetDetached": "Separadas",
   "binDesigner.preview.feetAttached": "Colocadas",
   "binDesigner.preview.feetDetachSlider": "Separar patas",
-  "binDesigner.detachableFeetNeedsThickerWall": "Con paredes tan finas queda muy poco suelo para sujetar un pasador"
+  "binDesigner.detachableFeetNeedsThickerWall": "Con paredes tan finas queda muy poco suelo para sujetar un pasador",
+  "binDesigner.lid.editCutouts": "Cortar agujeros en la tapa",
+  "binDesigner.lid.editCutoutsCount": "Cortar agujeros en la tapa ({count})",
+  "binDesigner.lid.editCutoutsHint": "Dibuja formas que atraviesen por completo la placa de la tapa: una ranura dispensadora, una ventilación, un paso de cable. Se mantienen alejadas de la pared de encaje y de los soportes de imán.",
+  "binDesigner.lid.editCutoutsBlocked": "Disponible en una tapa con parte superior plana y contorno rectangular. Una rejilla de apilado completa cubre la cara superior; una rejilla de solo borde la deja utilizable.",
+  "binDesigner.cutouts.throughDepthHint": "Corta los {depth} mm completos de la placa.",
+  "binDesigner.lid.editCutoutsFull": "Contiene el máximo de formas que admite una tapa ({max}). Elimina una para añadir otra."
 }

@@ -16,6 +16,17 @@
 
 import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
+import type { Cutout } from './cutout';
+
+/**
+ * Cap on {@link LidConfig.cutouts}.
+ *
+ * A lid's plate is one face, and past a couple of dozen shapes the boolean cost
+ * dominates the build for no design any lid needs. Mirrored server-side in
+ * `api/lib/designerValidationConstants.ts`; the client actions refuse past it so
+ * an honest oversized payload is rejected rather than silently truncated.
+ */
+export const MAX_LID_CUTOUTS = 24;
 
 /**
  * The slice of a design the lid resolvers below read. Declared structurally
@@ -103,6 +114,36 @@ export const LID_MAGNET_CEILING = 0.6;
  * sits to the wall it would cut into.
  */
 export const LID_MAGNET_LIP_CLEARANCE = 3.5;
+
+/** Radial plastic kept around a retention magnet inside its post/boss (mm).
+ *  1.0mm (2–3 perimeters at a 0.4mm nozzle) keeps the corner post slim: because
+ *  the magnet inset is `LID_MAGNET_LIP_CLEARANCE + bossRadius`, a thinner wall pulls the
+ *  post's cavity-facing edge inboard (~1mm per 0.5mm of wall) while the boss's
+ *  lip-side edge and the magnet mating stay put. */
+export const LID_MAGNET_BOSS_WALL = 1.0;
+
+/** Radial material kept around the magnet in its post/boss (mm). */
+export function retentionBossRadius(magnetDiameter: number): number {
+  return magnetDiameter / 2 + LID_MAGNET_BOSS_WALL;
+}
+
+/**
+ * Distance (mm) from the nominal footprint edge to the magnet centre.
+ *
+ * Set so the lid's boss (radius {@link retentionBossRadius}) sits fully INBOARD
+ * of the bin's stacking lip: `inset - bossRadius = LID_MAGNET_LIP_CLEARANCE`, so
+ * the boss can hang into the mouth without fouling the lip as the lid seats. The
+ * bin's corner gusset then reaches back OUT to the interior walls to anchor
+ * itself. Both parts use this same inset so their magnets stay coaxial.
+ *
+ * Here rather than in the worker's `retentionMagnetGeometry` for the same reason
+ * {@link LID_MAGNET_LIP_CLEARANCE} is: main-thread callers need the boss
+ * footprint. The lid cutout window is the one that forced the move — the editor
+ * draws each boss as a keep-out, and it cannot import the worker.
+ */
+export function retentionMagnetInset(magnetDiameter: number): number {
+  return LID_MAGNET_LIP_CLEARANCE + retentionBossRadius(magnetDiameter);
+}
 
 /**
  * Minimum solid floor kept below a tray recess (mm) so the recess can't break
@@ -671,6 +712,21 @@ export interface LidConfig {
    * Got: those were features, and this is the resolution of a defect.
    */
   readonly relieveInterior: boolean;
+  /**
+   * Shapes cut clean through the lid's plate — a dispensing slot, a vent, a
+   * pass-through for a cable. The same {@link Cutout} the interior uses, so the
+   * pen tool, the pathfinder group ops, clearance and the entry chamfer all apply
+   * unchanged; `lidCutoutBuilder` documents what the HOST overrides on each shape,
+   * and `lidCutoutPlan` owns the frame they are measured in.
+   *
+   * ABSENT rather than `[]` when there are none, and `migrateParams` collapses an
+   * empty array back to absent. `communityParamsFingerprint` hashes the whole
+   * params object and keys both the duplicate guard and the moderation tombstone
+   * (CLAUDE.md gotcha #13a), so a field that is always present would re-hash every
+   * design already published and stop old takedowns matching a re-publish. Same
+   * reason `migrateSurfaceText` collapses empty text to `undefined`.
+   */
+  readonly cutouts?: Cutout[];
 }
 
 /**

@@ -50,6 +50,7 @@ import {
   LID_TRAY_WALL_MAX_MM,
   LID_TOP_THICKNESS_MIN_MM,
   LID_TOP_THICKNESS_MAX_MM,
+  MAX_LID_CUTOUTS,
   LID_GRIP_MODES,
   LID_GRIP_COVERAGE_MIN,
   LID_GRIP_COVERAGE_MAX,
@@ -692,6 +693,36 @@ function migrateCutout(cutout: Cutout & LegacyCutoutFields): Cutout {
 }
 
 /**
+ * Normalize `lid.cutouts`.
+ *
+ * Lid cutouts are the same {@link Cutout} the interior uses and take the same
+ * per-shape migration, with two host-imposed differences:
+ *
+ * - `shape: 'mesh'` is dropped. A mesh imprint is subtracted AFTER tessellation
+ *   and in the bin's mesh frame, so no lid solid could ever describe one — which
+ *   is also why STEP export refuses imprinted bins outright (CLAUDE.md gotcha
+ *   #20). Dropping is the honest outcome; the alternative is a second imprint
+ *   path that cannot be exported.
+ * - The array is capped at {@link MAX_LID_CUTOUTS}, so a crafted share cannot
+ *   hand the boolean engine an unbounded shape list. Truncation matches the
+ *   client action's refusal rather than silently keeping the tail.
+ *
+ * Returns `undefined` rather than `[]` for the absent/empty case, so a design with
+ * no lid cutouts serializes exactly as it did before the field existed.
+ */
+function migrateLidCutouts(raw: unknown): Cutout[] | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  const out = raw
+    .map((c) => migrateCutout(c as Cutout & LegacyCutoutFields))
+    .filter((c) => c.shape !== 'mesh')
+    .slice(0, MAX_LID_CUTOUTS);
+  // Absent, not empty: see the field's own note. An array that migrated down to
+  // nothing (all-mesh, say) must collapse too, or it would shift the fingerprint
+  // of a design that ends up carrying no lid cutouts at all.
+  return out.length > 0 ? out : undefined;
+}
+
+/**
  * Normalize a persisted `surfaceText` value. Clamps the string to
  * `TEXT_MAX_LENGTH` and collapses empty/junk objects to `undefined` so
  * pre-feature designs (and designs whose text was cleared) serialize
@@ -1134,6 +1165,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         tray: rawTray,
         grip: rawGrip,
         relieveInterior: rawRelieveInterior,
+        cutouts: rawLidCutouts,
         ...stored
       } = raw;
       // Rails migrate first — `attachment` derives from them for legacy
@@ -1170,6 +1202,9 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         // NOT left to the `DEFAULT_LID_CONFIG` spread above: that defaults it
         // on, which is right for a new design and wrong for every old one.
         relieveInterior: rawRelieveInterior === true,
+        // Spread `undefined` deliberately: the key is present-but-undefined here,
+        // which `stableStringify` and `JSON.stringify` both drop.
+        cutouts: migrateLidCutouts(rawLidCutouts),
       };
     })(),
     ...(params.splitConnectors !== undefined

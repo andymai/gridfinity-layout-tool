@@ -171,7 +171,11 @@ export const shellStage: PipelineStage = {
         !(params.cellMask && maskHasHoles(params.cellMask)) &&
         // Tapered bins take the fuse path on both kernels so the draft
         // preview matches the exact export — the integrated builder has no taper.
-        !dim.overhang.taper;
+        !dim.overhang.taper &&
+        // The integrated builder mirrors the angled support unconditionally, so a
+        // wall too short to carry one has to take the fuse path, where
+        // `buildTopShape` can be told to leave it off.
+        dim.lipHasSupport;
 
       let built = withScope((scope: DisposalScope) => {
         // Base-only bin: `boxWallHeight` is 0, and extruding a zero-length
@@ -212,7 +216,18 @@ export const shellStage: PipelineStage = {
           // flat annulus bearing on the slab — fully supported to print, and the
           // outer face stays flush exactly as a wall's would.
           const lipBase = scope.register(
-            buildTopShape(params.width, params.depth, false, pitch, params.cellMask, dim.overhang)
+            buildTopShape(
+              params.width,
+              params.depth,
+              // False here for every legal tile — the slab is at most
+              // `MAX_WALL_THICKNESS` thick, short of the support's reach — but read
+              // from the shared flag rather than hardcoded, so the rule lives in
+              // one place and a thicker slab would be allowed a support on merit.
+              dim.lipHasSupport,
+              pitch,
+              params.cellMask,
+              dim.overhang
+            )
           );
           // Same `-LIP_OVERLAP` drop the fuse path below uses: without it the
           // ring merely TOUCHES the slab, and a coplanar contact fuses into a
@@ -262,7 +277,19 @@ export const shellStage: PipelineStage = {
         if (dim.hasLip) {
           try {
             const lipBase = scope.register(
-              buildTopShape(params.width, params.depth, true, pitch, params.cellMask, dim.overhang)
+              buildTopShape(
+                params.width,
+                params.depth,
+                // NOT always true: on a wall shorter than the support's own reach
+                // the wedge lands inside the socket's upper taper and back-fills
+                // it, and the foot stops seating. `dim.lipHasSupport` owns that
+                // test — a 1u bin, a spacer at the default height unit, and any
+                // 2u bin at a 3mm height unit all fall below it.
+                dim.lipHasSupport,
+                pitch,
+                params.cellMask,
+                dim.overhang
+              )
             );
             const top = scope.register(translate(lipBase, [0, 0, boxWallHeight - LIP_OVERLAP]));
             collectOrigins(top, FeatureTag.LIP, originToTag);
