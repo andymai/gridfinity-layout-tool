@@ -509,7 +509,7 @@
   "binDesigner.cutoutEditor.lock": "Zablokuj",
   "binDesigner.cutoutEditor.locked": "Zablokowane",
   "binDesigner.cutoutEditor.multiSelectToolbar": "Akcje zaznaczenia",
-  "binDesigner.cutoutEditor.offBoardWarning": "{count} wycięcie(-a) poza płytą",
+  "binDesigner.cutoutEditor.offBoardWarning": "{count} wycięcie(-a) zostanie przycięte",
   "binDesigner.cutoutEditor.quickstart.dismiss": "Rozumiem",
   "binDesigner.cutoutEditor.quickstart.precision": "Inteligentne prowadnice — przyciąganie do siatki, linijek i innych wycięć",
   "binDesigner.cutoutEditor.quickstart.repeat": "Zaznacz 3 lub więcej identycznych wycięć, aby utworzyć z nich jeden szyk",

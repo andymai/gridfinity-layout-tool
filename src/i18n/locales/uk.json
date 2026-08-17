@@ -509,7 +509,7 @@
   "binDesigner.cutoutEditor.lock": "Заблокувати",
   "binDesigner.cutoutEditor.locked": "Заблоковано",
   "binDesigner.cutoutEditor.multiSelectToolbar": "Дії з вибором",
-  "binDesigner.cutoutEditor.offBoardWarning": "{count} вирізів за межами дошки",
+  "binDesigner.cutoutEditor.offBoardWarning": "{count} вирізів буде обрізано",
   "binDesigner.cutoutEditor.quickstart.dismiss": "Зрозуміло",
   "binDesigner.cutoutEditor.quickstart.precision": "Розумні напрямні — прив’язка до сітки, лінійок та інших вирізів",
   "binDesigner.cutoutEditor.quickstart.repeat": "Виберіть 3 або більше однакових вирізів, щоб об'єднати їх у масив",

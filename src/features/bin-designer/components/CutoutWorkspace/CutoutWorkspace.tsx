@@ -163,13 +163,26 @@ export function CutoutWorkspace() {
     [boardMask, binWidth, binDepth]
   );
 
-  // Resizing the bin can strand cutouts past the new (smaller) footprint — they
-  // are stored in absolute mm and never auto-rescaled. Flag them so the canvas
-  // can frame them and the inspector can offer a one-click clamp back in.
+  // What the generator will actually cut on. Resizing the bin can strand cutouts
+  // past the new (smaller) footprint (they are stored in absolute mm and never
+  // auto-rescaled); on the lid, the window is rounded and a retention magnet's
+  // boss is a hole the cut must leave intact. Both are the same question, so
+  // both feed one flagged set, one banner and one clamp.
+  const cutoutBoard = useMemo(
+    () => ({
+      width: binWidth,
+      depth: binDepth,
+      mask: boardMask,
+      cellSize: maskCellSize,
+      lidWindow: lidWindow ?? undefined,
+      meshAssets: params.meshAssets,
+    }),
+    [binWidth, binDepth, boardMask, maskCellSize, lidWindow, params.meshAssets]
+  );
+
   const offBoardIds = useMemo(
-    () =>
-      getOffBoardCutoutIds(cutouts, binWidth, binDepth, boardMask, maskCellSize, params.meshAssets),
-    [cutouts, binWidth, binDepth, boardMask, maskCellSize, params.meshAssets]
+    () => getOffBoardCutoutIds(cutouts, cutoutBoard),
+    [cutouts, cutoutBoard]
   );
 
   const t = useTranslation();
@@ -257,9 +270,13 @@ export function CutoutWorkspace() {
   // Not offered on the lid: `computeGrowToFit` measures candidates against
   // `cutoutInterior`, which is ~6.7mm per axis wider than the lid's window, so it
   // would either hide a fix that would have worked or resize the bin and leave the
-  // warning standing.
+  // warning standing. `undefined` rather than `null` there, because the two say
+  // different things to the banner: `null` is "growing was considered and cannot
+  // clear this", which prints "the bin can't grow far enough". Growing is not the
+  // mechanism at all on a lid — a shape sitting on a magnet boss is not short of
+  // room — so the line would be a false explanation.
   const growTarget = useMemo(
-    () => (isLid ? null : computeGrowToFit(params, cutouts, halfGridMode)),
+    () => (isLid ? undefined : computeGrowToFit(params, cutouts, halfGridMode)),
     [isLid, params, cutouts, halfGridMode]
   );
 
@@ -270,16 +287,9 @@ export function CutoutWorkspace() {
   }, [growTarget, setParams]);
 
   const handleClampOffBoard = useCallback(() => {
-    const updates = clampOffBoardCutouts(
-      cutouts,
-      binWidth,
-      binDepth,
-      boardMask,
-      maskCellSize,
-      params.meshAssets
-    );
+    const updates = clampOffBoardCutouts(cutouts, cutoutBoard);
     if (updates.size > 0) updateCutoutsBatch(updates);
-  }, [cutouts, binWidth, binDepth, boardMask, maskCellSize, params.meshAssets, updateCutoutsBatch]);
+  }, [cutouts, cutoutBoard, updateCutoutsBatch]);
 
   const {
     mode,
@@ -580,6 +590,7 @@ export function CutoutWorkspace() {
                 cellMask={boardMask}
                 taperBand={taperBand}
                 referenceOutline={binInteriorReference}
+                lidWindow={lidWindow}
                 canvasWidth={canvasWidth}
                 canvasHeight={canvasHeight}
                 selection={selection}

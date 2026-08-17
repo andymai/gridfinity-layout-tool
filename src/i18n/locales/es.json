@@ -509,7 +509,7 @@
   "binDesigner.cutoutEditor.lock": "Bloquear",
   "binDesigner.cutoutEditor.locked": "Bloqueado",
   "binDesigner.cutoutEditor.multiSelectToolbar": "Acciones de selección",
-  "binDesigner.cutoutEditor.offBoardWarning": "{count} recorte(s) fuera del tablero",
+  "binDesigner.cutoutEditor.offBoardWarning": "{count} recorte(s) se van a recortar",
   "binDesigner.cutoutEditor.quickstart.dismiss": "Entendido",
   "binDesigner.cutoutEditor.quickstart.precision": "Guías inteligentes — ajusta a la cuadrícula, reglas y otros recortes",
   "binDesigner.cutoutEditor.quickstart.repeat": "Selecciona 3 o más recortes iguales para convertirlos en una matriz",

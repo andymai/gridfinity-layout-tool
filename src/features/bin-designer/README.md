@@ -515,13 +515,24 @@ estimates), and the source file name.
     (true vertex bounds, rotation-aware for paths — the same primitive placement
     validation uses). A **masked** (custom-shape) bin defers to `cutoutFitsInMask`
     so an instance over an unfilled cell is caught, not just rectangle overhang.
-    `OffBoardFrames3D` frames each off-board _instance_ in red; the inspector's
-    one-click "Bring back in" translates the **master** (instances move with it):
-    for a plain bin it pulls the instances' union inside the rectangle (oversized
-    pins the min corner to the origin); for a masked bin it searches the nearest
-    cell-aligned placement where every instance fits the polygon, and leaves the
-    cutout flagged when none exists (translation can't fit an arbitrary concave
-    region — honest rather than a silent false-fix).
+    A **lid** board is a third shape (`lidWindowFit`): the window is a ROUNDED
+    rectangle, and a magnetic lid's retention bosses are keep-out discs the
+    worker subtracts from every hole (`buildClipBoundary`). Both live in one
+    region, because a shape tucked into a rounded corner and a shape lying over a
+    boss are the same defect (material the cut will not reach) and get the same
+    cue. `KeepoutCircles3D` draws the bosses as scenery so the constraint is
+    visible while you place a shape, not just after it is flagged.
+    `OffBoardFrames3D` frames each out-of-bounds _instance_ in red; the
+    inspector's one-click "Bring back in" translates the **master** (instances
+    move with it): for a plain bin it pulls the instances' union inside the
+    rectangle (oversized pins the min corner to the origin); for a masked bin it
+    searches the nearest cell-aligned placement where every instance fits the
+    polygon; for a lid it tries the span fit, the four minimal axis moves that
+    clear each boss, and inward nudges off a rounded corner. All three leave the
+    cutout flagged when nothing fits (translation can't fit an arbitrary concave
+    region — honest rather than a silent false-fix). The banner says what will
+    happen ("will be clipped") rather than why, since one message now covers
+    three causes.
 21. **A masked board is concave, so a bounding box can't decide containment** —
     an axis-aligned box proves a fit but never a miss once the board has a
     notch: an L-shaped cutout nested in an L-shaped bin has a box spanning the

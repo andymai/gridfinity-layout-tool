@@ -509,7 +509,7 @@
   "binDesigner.cutoutEditor.lock": "Lås",
   "binDesigner.cutoutEditor.locked": "Låst",
   "binDesigner.cutoutEditor.multiSelectToolbar": "Valhandlingar",
-  "binDesigner.cutoutEditor.offBoardWarning": "{count} urtag utanför brädan",
+  "binDesigner.cutoutEditor.offBoardWarning": "{count} urtag kommer att beskäras",
   "binDesigner.cutoutEditor.quickstart.dismiss": "Förstått",
   "binDesigner.cutoutEditor.quickstart.precision": "Smarta hjälplinjer — fäst mot rutnät, linjaler och andra urtag",
   "binDesigner.cutoutEditor.quickstart.repeat": "Markera 3 eller fler likadana urtag för att göra dem till en matris",

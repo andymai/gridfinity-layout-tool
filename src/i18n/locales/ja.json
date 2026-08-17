@@ -509,7 +509,7 @@
   "binDesigner.cutoutEditor.lock": "ロック",
   "binDesigner.cutoutEditor.locked": "ロック中",
   "binDesigner.cutoutEditor.multiSelectToolbar": "選択アクション",
-  "binDesigner.cutoutEditor.offBoardWarning": "{count}個の切り抜きがボードの外にあります",
+  "binDesigner.cutoutEditor.offBoardWarning": "{count}個の切り抜きが切り取られます",
   "binDesigner.cutoutEditor.quickstart.dismiss": "了解",
   "binDesigner.cutoutEditor.quickstart.precision": "スマートガイド — グリッド、ルーラー、他の切り欠きにスナップ",
   "binDesigner.cutoutEditor.quickstart.repeat": "同じ切り欠きを 3 つ以上選ぶと 1 つの配列にまとめられます",

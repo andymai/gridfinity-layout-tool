@@ -509,7 +509,7 @@
   "binDesigner.cutoutEditor.lock": "Verrouiller",
   "binDesigner.cutoutEditor.locked": "Verrouillé",
   "binDesigner.cutoutEditor.multiSelectToolbar": "Actions de sélection",
-  "binDesigner.cutoutEditor.offBoardWarning": "{count} découpe(s) hors du plateau",
+  "binDesigner.cutoutEditor.offBoardWarning": "{count} découpe(s) seront rognées",
   "binDesigner.cutoutEditor.quickstart.dismiss": "Compris",
   "binDesigner.cutoutEditor.quickstart.precision": "Repères intelligents — accrochage à la grille, aux règles et aux autres découpes",
   "binDesigner.cutoutEditor.quickstart.repeat": "Sélectionnez 3 découpes identiques ou plus pour en faire un réseau",
