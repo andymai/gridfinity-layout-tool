@@ -1,0 +1,36 @@
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_1a4ec6f9f798f5::t_71506502b11c27 1019-1029
+src/features/generation/worker/generators/__kernel-tests__/meshAssertions.ts
+  s_1a4ec6f9f798f5::t_7dad0f9dd7bf9e 117-143
+src/features/generation/worker/generators/binGenerator.scenario.paramDifferential.test.ts
+  s_1a4ec6f9f798f5::t_68f7e4b6ce2e14 32
+  s_1a4ec6f9f798f5::t_94897ca86507a6 42
+src/features/generation/worker/generators/binGenerator.scenario.hiddenCutouts.test.ts
+  s_1a4ec6f9f798f5::t_c42317dc39f5f2 1-27,31-40,51-60,62,68,71-74,87-100,102-115,117-124,126-136,138-140,147-148,151-152,157,159-160
+  s_1a4ec6f9f798f5::t_8820ccfd1373ff 75-86
+  s_1a4ec6f9f798f5::t_f8a3d617cd9d76 137,141-146,149-150,153-156,158
+  s_1a4ec6f9f798f5::t_67d16e4d46939f 61,63-67,69-70
+  s_1a4ec6f9f798f5::t_ec0f7d81171b00 41-50
+  s_1a4ec6f9f798f5::t_add17df7b75d01 28-30
+  s_1a4ec6f9f798f5::t_770c7ffadddeb5 101
+  s_1a4ec6f9f798f5::t_49925dc59fc2c0 116
+  s_1a4ec6f9f798f5::t_02a5f2222cd95e 125
+src/features/bin-designer/README.md
+  s_1a4ec6f9f798f5::t_da98f1f8a268c4 114
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "c8fa144088438a329b15a74db115b135ea083b96",
+  "prompts": {},
+  "sessions": {
+    "s_1a4ec6f9f798f5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d56bf9fe-577a-423a-9743-415ea1c0d870",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
