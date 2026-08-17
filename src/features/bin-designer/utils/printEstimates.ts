@@ -45,6 +45,7 @@ import {
 import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 import { countFilled, isPartialMask } from '@/shared/utils/cellMask';
 import { resolveWallPatternSides } from '@/shared/utils/wallPatternSides';
+import { cutoutDisplacementMm3 } from '@/shared/utils/fitTestPlan';
 import { FLOOR_PATTERN_BORDER, floorWindowSpan } from '@/shared/generation/floorPatternMetrics';
 import { stampPatternOpenArea } from '@/shared/generation/wallPatternMetrics';
 export interface PrintEstimate {
@@ -199,6 +200,12 @@ function computeBinVolume(params: BinParams): number {
     return volume - shell.walls;
   }
 
+  // A solid bin fills the cavity the shell model leaves empty. Without this
+  // term every solid bin was priced as the hollow one it is not — measured at
+  // 3.1x to 5.3x low across sizes, and completely unmoved by cutouts, so a
+  // shadow board reported the same figure however much was carved out of it.
+  volume += solidFillVolume(params, outerW, outerD, wallThickness);
+
   // Divider volumes (standard style only — slotted/solid don't use interior dividers)
   if (params.style === 'standard') {
     volume += computeDividerVolume(params, outerW, outerD, wallThickness);
@@ -235,6 +242,61 @@ function computeBinVolume(params: BinParams): number {
   // Volume cannot be negative (scoops on tiny bins)
   return Math.max(0, volume);
 }
+/**
+ * Fraction of the nominal cavity prism a solid fill actually occupies.
+ *
+ * The prism overstates: the interior corners are rounded and the stacking lip's
+ * taper eats the top of the fill. Fitted against generated geometry, never
+ * derived from the profile (gotcha #21) — `printEstimates.solidFill.scenario`
+ * regenerates 2x2x3u, 2x2x6u and 3x2x4u solid bins, with and without cutouts,
+ * and takes `meshVolume`. At this value the worst residual is 0.6%; the raw
+ * prism runs 2.4% high. Re-run that test before changing it.
+ */
+const SOLID_FILL_EFFICIENCY = 0.988;
+
+/**
+ * Material filling a solid bin's cavity, less whatever its cutouts carve back.
+ *
+ * The shell model this file is built on prices walls, base and lip — every bin
+ * is a hollow box to it. A solid bin is that box with the cavity filled, and
+ * nothing else here adds it, so before this term a solid bin was reported at
+ * 19-35% of its real volume and a shadow board's estimate never moved however
+ * many pockets were cut into it.
+ *
+ * The fill runs from the top of the floor slab to the fill surface, which
+ * `cutoutConfig.topOffset` lowers. Cutout displacement comes from the fit-test
+ * plan so the card and the bin it is compared against price a pocket the same
+ * way.
+ */
+function solidFillVolume(
+  params: BinParams,
+  outerW: number,
+  outerD: number,
+  wallThickness: number
+): number {
+  // `style` is kept in lockstep with `base.solid` by the constraint engine, but
+  // a crafted payload can carry one without the other; the generator fills on
+  // `base.solid`, so either flag is enough to price it as filled.
+  if (!params.base.solid && params.style !== 'solid') return 0;
+
+  const wallHeight = baseWallHeight(params.base, params.height * params.heightUnitMm);
+  const fillHeight = wallHeight - wallThickness - Math.max(0, params.cutoutConfig.topOffset);
+  if (fillHeight <= 0) return 0;
+
+  const innerW = Math.max(0, outerW - 2 * wallThickness);
+  const innerD = Math.max(0, outerD - 2 * wallThickness);
+  let fill = innerW * innerD * fillHeight * SOLID_FILL_EFFICIENCY;
+
+  // A partial mask carves whole cells out of the footprint, so the fill shrinks
+  // with the cell count rather than with the bounding box.
+  if (isPartialMask(params.cellMask)) {
+    const cells = params.width * params.depth;
+    if (cells > 0) fill *= countFilled(params.cellMask) / cells;
+  }
+
+  return Math.max(0, fill - cutoutDisplacementMm3(params, fillHeight));
+}
+
 /**
  * Height an interior divider actually reaches, in mm.
  *
