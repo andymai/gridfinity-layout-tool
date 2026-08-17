@@ -146,11 +146,9 @@ function buildPin(scope: DisposalScope, diameterMm: number, heightMm: number): S
 
   // Too short to carry a ridge: a plain cylinder rather than a degenerate loft.
   if (sections.length < 4) {
-    return translate(scope.register(cylinder(r, heightMm + COPLANAR_OVERLAP)), [
-      0,
-      0,
-      -COPLANAR_OVERLAP,
-    ]);
+    return scope.register(
+      translate(scope.register(cylinder(r, heightMm + COPLANAR_OVERLAP)), [0, 0, -COPLANAR_OVERLAP])
+    );
   }
 
   const start = section(sections[0][1], sections[0][0]);
@@ -190,11 +188,10 @@ function buildClip(scope: DisposalScope, p: FootPlacement, armMm: number): Shape
   const zHeight = SOCKET_HEIGHT + 2 * COPLANAR_MARGIN;
   const slab = (w: number, d: number, cx: number, cy: number): Shape3D =>
     scope.register(
-      translate((drawRectangle(w, d).sketchOnPlane('XY', zFrom) as Sketch).extrude(zHeight), [
-        cx,
-        cy,
-        0,
-      ])
+      translate(
+        scope.register((drawRectangle(w, d).sketchOnPlane('XY', zFrom) as Sketch).extrude(zHeight)),
+        [cx, cy, 0]
+      )
     );
 
   const hw = p.cellW / 2;
@@ -202,7 +199,7 @@ function buildClip(scope: DisposalScope, p: FootPlacement, armMm: number): Shape
   const edgeX = (): Shape3D => slab(armMm, p.cellD + CLIP_MARGIN, p.dirX * (hw - armMm / 2), 0);
   const edgeY = (): Shape3D => slab(p.cellW + CLIP_MARGIN, armMm, 0, p.dirY * (hd - armMm / 2));
 
-  if (p.dirX !== 0 && p.dirY !== 0) return unwrap(fuse(edgeX(), edgeY()));
+  if (p.dirX !== 0 && p.dirY !== 0) return scope.register(unwrap(fuse(edgeX(), edgeY())));
   if (p.dirX !== 0) return edgeX();
   if (p.dirY !== 0) return edgeY();
   if (p.interiorX) return slab(armMm, p.cellD + CLIP_MARGIN, 0, 0);
@@ -255,11 +252,13 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
       // slicer would silently reinterpret the result.
       const pins = footPinPositions(p, armMm, pinDiameterMm);
       for (const pin of pins) {
-        const solid = translate(scope.register(unwrap(clone(pinTemplate))), [
-          pin.x - centre.x,
-          pin.y - centre.y,
-          0,
-        ]);
+        const solid = scope.register(
+          translate(scope.register(unwrap(clone(pinTemplate))), [
+            pin.x - centre.x,
+            pin.y - centre.y,
+            0,
+          ])
+        );
         const pinned = unwrap(fuse(foot, solid));
         if (pinned !== foot) foot.delete();
         foot = pinned;
@@ -275,11 +274,13 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
         // magnet is inserted from below, so a retaining floor under it would
         // seal it out rather than in.
         const drills = covered.map(([mx, my]) =>
-          translate(scope.register(cylinder(magnet.diameterMm / 2, magnet.depthMm)), [
-            mx - centre.x,
-            my - centre.y,
-            -SOCKET_HEIGHT,
-          ])
+          scope.register(
+            translate(scope.register(cylinder(magnet.diameterMm / 2, magnet.depthMm)), [
+              mx - centre.x,
+              my - centre.y,
+              -SOCKET_HEIGHT,
+            ])
+          )
         );
         if (drills.length > 0) {
           const drilled = unwrap(cutAll(foot, drills));
@@ -294,11 +295,16 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
       const screw = opts.screw;
       if (screw) {
         const bores = coveredCorners(screw.positions, p, centre).map(([mx, my]) =>
-          translate(
-            scope.register(
-              cylinder(screw.diameterMm / 2, SOCKET_HEIGHT + floorThicknessMm + 2 * COPLANAR_MARGIN)
-            ),
-            [mx - centre.x, my - centre.y, -SOCKET_HEIGHT - COPLANAR_MARGIN]
+          scope.register(
+            translate(
+              scope.register(
+                cylinder(
+                  screw.diameterMm / 2,
+                  SOCKET_HEIGHT + floorThicknessMm + 2 * COPLANAR_MARGIN
+                )
+              ),
+              [mx - centre.x, my - centre.y, -SOCKET_HEIGHT - COPLANAR_MARGIN]
+            )
           )
         );
         if (bores.length > 0) {
@@ -318,7 +324,12 @@ export function buildDetachableFeet(opts: DetachableFeetOptions): DetachableFeet
         }
       }
 
-      feet.push(translate(foot, [centre.x, centre.y, 0]));
+      // `translate` returns a NEW shape, so the un-positioned intermediate is
+      // ours to free — it is not scope-registered (the chain of booleans above
+      // hands ownership along by hand) and would otherwise leak per foot.
+      const placed = translate(foot, [centre.x, centre.y, 0]);
+      if (placed !== foot) foot.delete();
+      feet.push(placed);
 
       // Blind from the underside: the cutter starts below the floor and stops at
       // the engagement depth, leaving the membrane that keeps the interior floor
