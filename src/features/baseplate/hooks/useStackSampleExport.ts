@@ -7,6 +7,7 @@
  * the same tower-baking soup as the full stack export — just pinned to 2 copies.
  */
 
+import { useEngineReady } from '@/shared/hooks/useEngineReady';
 import { useCallback, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
@@ -50,7 +51,7 @@ export function useStackSampleExport(): UseStackSampleExportReturn {
   );
 
   const [isExporting, setIsExporting] = useState(false);
-  const canExport = getActiveBridge() !== null && baseplateParams.stackPrint?.enabled === true;
+  const canExport = useEngineReady() && baseplateParams.stackPrint?.enabled === true;
 
   const downloadSample = useCallback(
     async (format: ExportFileFormat, baseName: string = STACK_SAMPLE_BASE_NAME) => {

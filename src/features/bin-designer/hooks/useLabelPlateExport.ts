@@ -8,17 +8,20 @@
  * for the pre-export 3D preview — no separate worker message needed.
  */
 
+import { exportWithResilience } from '../utils/exportWithResilience';
+import { useEngineReady } from '@/shared/hooks/useEngineReady';
 import { useCallback, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store/settings';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
-import { getActiveBridge } from '@/shared/generation/bridge';
+import { getActiveBridge, type ExportFormat } from '@/shared/generation/bridge';
 import { export3MF } from '@/shared/generation/export';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { isErr, getUserMessage } from '@/core/result';
 import { getErrorMessage } from '@/shared/utils/errors';
+import { trackToolConverted } from '@/shared/analytics/posthog';
 import {
   FORMAT_MIME_TYPES,
   FORMAT_EXTENSIONS,
@@ -58,7 +61,7 @@ export function useLabelPlateExport(): UseLabelPlateExportReturn {
   );
 
   const [isExporting, setIsExporting] = useState(false);
-  const canExport = getActiveBridge() !== null;
+  const canExport = useEngineReady();
 
   const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
 
@@ -104,8 +107,18 @@ export function useLabelPlateExport(): UseLabelPlateExportReturn {
       setIsExporting(true);
       try {
         const { specs, options } = buildRequest();
+        // Same retry + worker-restart path as the main export; the operation
+        // re-acquires the bridge so a restarted worker is picked up.
+        const runExport = async (fmt: ExportFormat) => {
+          const { result } = await exportWithResilience(() => {
+            const liveBridge = getActiveBridge();
+            if (!liveBridge) throw new Error('Bridge not available');
+            return liveBridge.exportLabelPlates(specs, options, fmt);
+          });
+          return result;
+        };
         if (format === '3mf') {
-          const stlResult = await bridge.exportLabelPlates(specs, options, 'stl');
+          const stlResult = await runExport('stl');
           const parseResult = parseSTLBinary(stlResult.data);
           if (isErr(parseResult)) throw new Error(getUserMessage(parseResult.error));
           const printSettings = useSettingsStore.getState().settings.printSettings;
@@ -128,10 +141,13 @@ export function useLabelPlateExport(): UseLabelPlateExportReturn {
           });
           triggerDownload(blob, `${baseName}${FORMAT_EXTENSIONS['3mf']}`);
         } else {
-          const result = await bridge.exportLabelPlates(specs, options, format);
+          const result = await runExport(format);
           const blob = new Blob([result.data], { type: FORMAT_MIME_TYPES[format] });
           triggerDownload(blob, `${baseName}${FORMAT_EXTENSIONS[format]}`);
         }
+        // Plates are printable files: count the conversion, as the bin and
+        // layout exports do.
+        trackToolConverted('designer', { format });
         return true;
       } catch (error: unknown) {
         useToastStore

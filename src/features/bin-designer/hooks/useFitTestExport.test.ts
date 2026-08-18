@@ -13,8 +13,35 @@ interface FakeBridge {
 }
 
 let activeBridge: FakeBridge | null = null;
+const readyListeners = new Set<(ready: boolean) => void>();
+function broadcastReady(ready: boolean): void {
+  for (const listener of readyListeners) listener(ready);
+}
 vi.mock('@/shared/generation/bridge', () => ({
   getActiveBridge: () => activeBridge,
+  // `useEngineReady` mirrors the bridge presence for these cases; `subscribe`
+  // fires synchronously with the current state, as the real manager does, and
+  // the captured listener lets a test broadcast a readiness transition.
+  bridgeManager: {
+    get engineReady() {
+      return activeBridge !== null;
+    },
+    subscribe: (listener: (ready: boolean) => void) => {
+      readyListeners.add(listener);
+      listener(activeBridge !== null);
+      return () => readyListeners.delete(listener);
+    },
+  },
+}));
+
+// Pass-through: retry/restart behaviour is the wrapper's own suite's job;
+// these cases assert the single-attempt contract around it.
+vi.mock('../utils/exportWithResilience', () => ({
+  exportWithResilience: async <T>(op: () => Promise<T>) => ({
+    result: await op(),
+    retryCount: 0,
+    restartCount: 0,
+  }),
 }));
 
 vi.mock('@/shared/generation/exportUtils', () => ({
@@ -66,12 +93,14 @@ describe('useFitTestExport', () => {
     };
   });
 
-  it('reports canExport from the active bridge presence', () => {
+  it('follows engine readiness reactively, not the render-time bridge', () => {
+    // A refresh nulls the bridge before the replacement boots; the button must
+    // come back when readiness is broadcast, with nothing else re-rendering.
     activeBridge = null;
-    const { result, rerender } = renderHook(() => useFitTestExport());
+    const { result } = renderHook(() => useFitTestExport());
     expect(result.current.canExport).toBe(false);
     activeBridge = { exportFitTest: vi.fn() };
-    rerender();
+    act(() => broadcastReady(true));
     expect(result.current.canExport).toBe(true);
   });
 

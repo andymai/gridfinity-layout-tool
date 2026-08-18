@@ -12,6 +12,8 @@
  * perfectly happily (gotcha #20).
  */
 
+import { exportWithResilience } from '../utils/exportWithResilience';
+import { useEngineReady } from '@/shared/hooks/useEngineReady';
 import { useCallback, useState } from 'react';
 import { useSettingsStore } from '@/core/store/settings';
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -23,6 +25,7 @@ import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { packagePiecesAsZip } from '@/shared/generation/zipExport';
 import { isErr, getUserMessage } from '@/core/result';
 import { getErrorMessage } from '@/shared/utils/errors';
+import { trackToolConverted } from '@/shared/analytics/posthog';
 import {
   FORMAT_MIME_TYPES,
   FORMAT_EXTENSIONS,
@@ -50,7 +53,7 @@ interface UseFitTestExportReturn {
 export function useFitTestExport(): UseFitTestExportReturn {
   const t = useTranslation();
   const [isExporting, setIsExporting] = useState(false);
-  const canExport = getActiveBridge() !== null;
+  const canExport = useEngineReady();
 
   const downloadCard = useCallback(
     async ({ format, thicknessMm, baseName = FIT_TEST_BASE_NAME, bed }: DownloadOptions) => {
@@ -63,10 +66,18 @@ export function useFitTestExport(): UseFitTestExportReturn {
         // STEP is refused worker-side for mesh imprints; the request carries the
         // format the user picked and the worker is the authority on that rule.
         const workerFormat = format === '3mf' ? 'stl' : format;
-        const result = await bridge.exportFitTest(params, workerFormat, {
-          thicknessMm,
-          stamp: { designName },
-          bed,
+        // Through the same retry + worker-restart path the main export uses:
+        // without it a wedged worker costs a toast per attempt and never
+        // respawns for a user whose only export surface is this button. The
+        // operation re-acquires the bridge so a restarted worker is picked up.
+        const { result } = await exportWithResilience(() => {
+          const liveBridge = getActiveBridge();
+          if (!liveBridge) throw new Error('Bridge not available');
+          return liveBridge.exportFitTest(params, workerFormat, {
+            thicknessMm,
+            stamp: { designName },
+            bed,
+          });
         });
 
         const pieces =
@@ -112,6 +123,13 @@ export function useFitTestExport(): UseFitTestExportReturn {
             .getState()
             .addToast(t('binDesigner.cutouts.fitTest.warnSeamThroughCutout'), 'info', 8000);
         }
+        // A fit-test card is a printable file, which is what the conversion
+        // funnel (and the feedback nudge's session gate) count.
+        trackToolConverted('designer', {
+          format,
+          split: pieces.length > 1,
+          piece_count: pieces.length,
+        });
         return true;
       } catch (error: unknown) {
         useToastStore

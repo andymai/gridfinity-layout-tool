@@ -8,6 +8,13 @@ import type { BaseplateTiling } from '../types/tiling';
 vi.mock('@/shared/generation/bridge', () => ({
   getActiveBridge: () => ({}),
   workerPoolManager: { get: () => null },
+  bridgeManager: {
+    engineReady: true,
+    subscribe: (listener: (ready: boolean) => void) => {
+      listener(true);
+      return () => {};
+    },
+  },
 }));
 
 const tiling = (bedOverages: BaseplateTiling['bedOverages']): BaseplateTiling => ({

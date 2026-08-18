@@ -9,6 +9,7 @@
  * just like real sockets, so the offset transfers on that same nozzle.
  */
 
+import { useEngineReady } from '@/shared/hooks/useEngineReady';
 import { useCallback, useState } from 'react';
 import { useSettingsStore } from '@/core/store/settings';
 import { useToastStore } from '@/core/store/toast';
@@ -36,7 +37,7 @@ interface UseLabelFitSampleExportReturn {
 export function useLabelFitSampleExport(): UseLabelFitSampleExportReturn {
   const t = useTranslation();
   const [isExporting, setIsExporting] = useState(false);
-  const canExport = getActiveBridge() !== null;
+  const canExport = useEngineReady();
 
   const downloadSample = useCallback(
     async (format: ExportFileFormat, baseName: string = LABEL_FIT_SAMPLE_BASE_NAME) => {

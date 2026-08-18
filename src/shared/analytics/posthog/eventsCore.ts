@@ -5,7 +5,8 @@
  * `trackBinCreated` is the hot path — every bin draw, paint stroke,
  * fill op, duplicate, or import lands here, and it cascades into the
  * milestone check that fires on each engagement threshold crossing
- * (5, 15, 30 bins).
+ * (1 and 5 bins; the deeper rungs live on the designer ladder,
+ * `DESIGNER_MILESTONE_THRESHOLDS`).
  */
 
 import type { Layout } from '@/core/types';
