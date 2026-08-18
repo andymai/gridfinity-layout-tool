@@ -1,0 +1,54 @@
+src/shell/Modals/DesignGalleryModal/communityDesignerBridge.ts
+  s_e8ab06c629db83::t_eb3956664679ed 166
+  s_e8ab06c629db83::t_8e6b106e91401a 154
+src/features/design-linking/hooks/useBinLinking.test.ts
+  s_e8ab06c629db83::t_7fd4790d5802ef 32
+src/features/bin-designer/store/customBinRegistry.test.ts
+  s_e8ab06c629db83::t_5b98e250de2a3a 13,261-268,270
+  s_e8ab06c629db83::t_65c537e414c182 9,224-260,269,271
+  s_e8ab06c629db83::t_6f4baa61f66a13 272
+src/features/bin-designer/index.ts
+  s_e8ab06c629db83::t_74c0029dc1d08f 21
+src/features/bin-designer/store/index.ts
+  s_e8ab06c629db83::t_96fc000be66fbc 9
+src/features/bin-designer/hooks/useCreateFromBin.ts
+  s_e8ab06c629db83::t_8e6b106e91401a 24
+  s_e8ab06c629db83::t_eb3956664679ed 226
+src/shared/utils/drawerCeiling.test.ts
+  s_e8ab06c629db83::t_5611d9b6ebb8c1 139-176
+src/features/bin-designer/store/customBinRegistry.ts
+  s_e8ab06c629db83::t_568461469f5fc8 227,236-255
+  s_e8ab06c629db83::t_66c665100fdcac 256-257
+src/features/design-linking/hooks/useBinResizedListener.ts
+  s_e8ab06c629db83::t_8e6b106e91401a 26
+  s_e8ab06c629db83::t_eb3956664679ed 149
+src/shared/utils/drawerCeiling.ts
+  s_e8ab06c629db83::t_5611d9b6ebb8c1 106-114
+src/shell/Modals/DesignGalleryModal/communityDesignerBridge.test.ts
+  s_e8ab06c629db83::t_8a30ba9c5b06d7 37,41,169-170
+src/features/bin-designer/hooks/useAutoSave.ts
+  s_e8ab06c629db83::t_8e6b106e91401a 18-22
+  s_e8ab06c629db83::t_eb3956664679ed 145
+src/features/bin-designer/hooks/useThumbnailRegeneration.ts
+  s_e8ab06c629db83::t_8e6b106e91401a 16-20
+  s_e8ab06c629db83::t_eb3956664679ed 87
+src/features/design-linking/hooks/useBinLinking.ts
+  s_e8ab06c629db83::t_8e6b106e91401a 21
+  s_e8ab06c629db83::t_eb3956664679ed 389
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "6f01707f391fc91eb33c9d41801b76fc77c96bd7",
+  "prompts": {},
+  "sessions": {
+    "s_e8ab06c629db83": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "474a1e6b-ec62-4a52-be8c-cc5262c82b90",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
