@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.424.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.423.0...gridfinity-layout-tool-v4.424.0) (2026-08-18)
+
+
+### Features
+
+* **layout:** check the printed layout against the measured drawer height ([#3579](https://github.com/andymai/gridfinity-layout-tool/issues/3579)) ([1cbff48](https://github.com/andymai/gridfinity-layout-tool/commit/1cbff48a2e98582c5cb0eaf67d19789521dbf3aa))
+
 ## [4.423.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.422.0...gridfinity-layout-tool-v4.423.0) (2026-08-18)
 
 
