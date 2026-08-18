@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.424.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.424.4...gridfinity-layout-tool-v4.424.5) (2026-08-18)
+
+
+### Bug Fixes
+
+* **bin-designer:** measure the fit-test card the way the builder cuts it ([#3589](https://github.com/andymai/gridfinity-layout-tool/issues/3589)) ([6f13895](https://github.com/andymai/gridfinity-layout-tool/commit/6f138956f52485cf9ca96b9e718a9fa237d5c62e))
+
 ## [4.424.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.424.3...gridfinity-layout-tool-v4.424.4) (2026-08-18)
 
 
