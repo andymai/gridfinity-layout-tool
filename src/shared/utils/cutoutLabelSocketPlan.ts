@@ -110,9 +110,32 @@ export function isCutoutEngraveMode(cutout: Pick<Cutout, 'labelMode' | 'engraveL
   return cutout.engraveLabel === true && !isCutoutSocketMode(cutout);
 }
 
-/** Socket orientation from the cutout's label angle: anything but 0 is vertical. */
+/**
+ * Socket orientation from the cutout's label angle.
+ *
+ * A plate has no head and no tail, so only its AXIS matters: 180 is the same
+ * run as 0, and 270 the same run as 90. The angle is therefore folded onto a
+ * half turn and bucketed to the nearer axis, which also gives a sensible answer
+ * for an angle the socket UI never writes: the field is shared with the
+ * engraved label, whose control accepts any whole degree, so a cutout switched
+ * from engrave to socket can arrive carrying one.
+ */
 export function isCutoutSocketVertical(cutout: Pick<Cutout, 'textAngle'>): boolean {
-  return (cutout.textAngle ?? 0) !== 0;
+  const halfTurn = (((cutout.textAngle ?? 0) % 180) + 180) % 180;
+  return halfTurn >= 45 && halfTurn < 135;
+}
+
+/**
+ * Whether this design's body is the solid slab a board socket is cut into.
+ *
+ * Mirrors `deriveDimensions`' own `solid`, gate for gate: `featuresStage` cuts
+ * cutouts (and these sockets) only on that branch, so a plan that answered for
+ * a hollow bin would have the panel, the preview and the plate export all
+ * describing pockets nothing ever cuts. `base.solid` is forced false for any
+ * style but `'solid'`, so reading it is not the same as reading the style.
+ */
+function hasSolidBody(params: BinParams): boolean {
+  return params.base.solid || params.base.tile === true;
 }
 
 /**
@@ -309,9 +332,10 @@ export function planCutoutSocketsForParams(
   // Stored designs reach this through `migrateParams`, which fills `cutouts`
   // and `cutoutConfig` from the defaults, so both are read plainly.
   const cutouts = params.cutouts;
-  if (cutouts.length === 0) return EMPTY_PLAN;
-  const surfaceZ = wallHeightMm - params.cutoutConfig.topOffset;
-  if (!(surfaceZ > 0)) return EMPTY_PLAN;
+  if (cutouts.length === 0 || !hasSolidBody(params)) return EMPTY_PLAN;
+  // A fill surface too shallow to hold a pocket is reported rather than
+  // returned empty: the cutouts asked for sockets and did not get them, which
+  // is exactly what the panel exists to say.
   return planCutoutLabelSockets({
     cutouts,
     innerW,

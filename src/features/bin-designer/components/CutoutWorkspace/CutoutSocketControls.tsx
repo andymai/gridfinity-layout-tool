@@ -16,6 +16,7 @@ import type { Cutout } from '@/features/bin-designer/types';
 import { isLabelPlateWidthU } from '@/shared/constants/labelPlates';
 import type { LabelPlateWidthU } from '@/shared/constants/labelPlates';
 import { MAX_CUTOUT_LABEL_SOCKETS } from '@/features/bin-designer/hooks/useCutoutSocketPlan';
+import { isCutoutSocketVertical } from '@/shared/utils/cutoutLabelSocketPlan';
 import type { CutoutSocketPlanView } from '@/features/bin-designer/hooks/useCutoutSocketPlan';
 
 interface CutoutSocketControlsProps {
@@ -59,7 +60,9 @@ export function CutoutSocketControls({
 
   const override = cutout.labelPlateWidthU;
   const pinned = isLabelPlateWidthU(override) && socket.fittingWidthsU.includes(override);
-  const vertical = (cutout.textAngle ?? 0) !== 0;
+  // Read through the planner's own predicate rather than re-deriving it: the
+  // toggle must show the orientation the pocket was actually cut at.
+  const vertical = isCutoutSocketVertical(cutout);
 
   const setWidth = (widthU: LabelPlateWidthU | null) => {
     onUpdate(widthU === null ? { labelPlateWidthU: undefined } : { labelPlateWidthU: widthU });

@@ -4,6 +4,7 @@ import {
   cutoutSocketAnchorAabb,
   isCutoutEngraveMode,
   isCutoutSocketMode,
+  isCutoutSocketVertical,
   planCutoutLabelSockets,
 } from './cutoutLabelSocketPlan';
 import type { Cutout } from '@/shared/types/bin';
@@ -59,6 +60,29 @@ describe('mode predicates', () => {
   // print the same words twice, and the engraving cannot be swapped out.
   it('never engraves a socket-mode cutout', () => {
     expect(isCutoutEngraveMode(cutout({ labelMode: 'socket', engraveLabel: true }))).toBe(false);
+  });
+});
+
+describe('isCutoutSocketVertical', () => {
+  // A plate has no head and no tail, so 180 is the same run as 0.
+  it('reads a half turn as the same axis', () => {
+    expect(isCutoutSocketVertical({ textAngle: 0 })).toBe(false);
+    expect(isCutoutSocketVertical({ textAngle: 180 })).toBe(false);
+    expect(isCutoutSocketVertical({ textAngle: 90 })).toBe(true);
+    expect(isCutoutSocketVertical({ textAngle: 270 })).toBe(true);
+  });
+
+  it('treats a missing angle as horizontal', () => {
+    expect(isCutoutSocketVertical({ textAngle: undefined })).toBe(false);
+  });
+
+  // The angle field is shared with the engraved label, whose control accepts
+  // any whole degree, so a cutout switched to socket mode can arrive with one.
+  it('buckets an arbitrary stored angle to the nearer axis', () => {
+    expect(isCutoutSocketVertical({ textAngle: 20 })).toBe(false);
+    expect(isCutoutSocketVertical({ textAngle: 100 })).toBe(true);
+    expect(isCutoutSocketVertical({ textAngle: 160 })).toBe(false);
+    expect(isCutoutSocketVertical({ textAngle: -90 })).toBe(true);
   });
 });
 

@@ -395,4 +395,27 @@ describe('planLabelPlates for a shadow board', () => {
   it('plans nothing for a board whose cutouts are all engraved', () => {
     expect(boardPlates([boardCutout({ labelMode: 'engrave', engraveLabel: true })])).toEqual([]);
   });
+
+  // `featuresStage` cuts cutouts only on the solid branch, so a hollow bin
+  // carrying leftover cutouts (style switched away from solid) has no pockets.
+  // Planning plates for it would offer parts with nothing to click into.
+  it('plans nothing for a bin whose body is not solid', () => {
+    const params = boardParams([boardCutout()]);
+    const hollow: BinParams = {
+      ...params,
+      style: 'standard',
+      base: { ...params.base, solid: false },
+    };
+
+    expect(
+      planLabelPlates({
+        params: hollow,
+        innerWmm: 123.1,
+        innerDmm: 81.1,
+        wallHeightMm: 28,
+        clearanceMm: CLEARANCE,
+        fallbackText: '',
+      })
+    ).toEqual([]);
+  });
 });
