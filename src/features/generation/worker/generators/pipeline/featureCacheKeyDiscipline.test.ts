@@ -78,6 +78,29 @@ const FIXTURES_PER_BUILDER = 2;
  * authoring-only bookkeeping — and skips it. A function receives the current
  * value, which is how arrays are moved without hard-coding a length.
  */
+/** Union-typed numbers inside an array element, which an increment invalidates. */
+const CONSTRAINED_ELEMENT_FIELDS = new Set(['rotation']);
+
+/**
+ * Move every dimension of an array's first element at once.
+ *
+ * `leafPaths` stops at arrays, so a path inside an element is never a candidate
+ * of its own and a per-field perturbation would only ever move the one field
+ * someone hard-coded. Moving all of them means a key that serializes a SUBSET
+ * of an element's fields is still caught the moment the build reads one it left
+ * out — at the cost of naming the array rather than the field.
+ */
+function bumpEveryNumber(list: unknown): unknown {
+  const items = list as Array<Record<string, unknown>>;
+  const first = items[0];
+  if (!first) return items;
+  const bumped: Record<string, unknown> = { ...first };
+  for (const [key, value] of Object.entries(first)) {
+    if (typeof value === 'number' && !CONSTRAINED_ELEMENT_FIELDS.has(key)) bumped[key] = value + 2;
+  }
+  return [bumped, ...items.slice(1)];
+}
+
 const PERTURBATIONS: Record<string, unknown> = {
   // Merging the last cell into the first group is the smallest edit that
   // repartitions the grid; a group-id permutation would normalize straight
@@ -87,20 +110,8 @@ const PERTURBATIONS: Record<string, unknown> = {
     if (list.length < 2) return list;
     return list.map((cell, i) => (i === list.length - 1 ? list[0] : cell));
   },
-  inserts: (inserts: unknown) => {
-    const list = inserts as Array<Record<string, unknown>>;
-    if (list.length === 0) return list;
-    return list.map((insert, i) =>
-      i === 0 ? { ...insert, cutDepth: (insert['cutDepth'] as number) + 2 } : insert
-    );
-  },
-  cutouts: (cutouts: unknown) => {
-    const list = cutouts as Array<Record<string, unknown>>;
-    if (list.length === 0) return list;
-    return list.map((cutout, i) =>
-      i === 0 ? { ...cutout, width: (cutout['width'] as number) + 2 } : cutout
-    );
-  },
+  inserts: bumpEveryNumber,
+  cutouts: bumpEveryNumber,
   fractionalEdgeX: 'start',
   fractionalEdgeY: 'start',
   style: 'slotted',
@@ -270,10 +281,17 @@ function fingerprintShapes(shapes: readonly Shape3D[] | null): string {
   return shapes
     .map((shape) => {
       const { vertices } = mesh(shape, { tolerance: 0.1, angularTolerance: 0.5 });
+      // FNV-1a over all four bytes of each quantized ordinate. Folding only the
+      // low byte in would collide on sub-0.256mm moves, and a collision here
+      // reads as "the geometry did not change" — the direction that hides a
+      // missing key rather than inventing one.
       let hash = 2166136261;
       for (let i = 0; i < vertices.length; i++) {
-        const q = Math.round(vertices[i] * 1000);
-        hash = Math.imul(hash ^ (q & 0xff), 16777619) ^ (q >>> 8);
+        let q = Math.round(vertices[i] * 1000);
+        for (let byte = 0; byte < 4; byte++) {
+          hash = Math.imul(hash ^ (q & 0xff), 16777619);
+          q >>>= 8;
+        }
       }
       return `${vertices.length}:${(hash >>> 0).toString(16)}`;
     })
