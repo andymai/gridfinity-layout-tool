@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.424.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.424.5...gridfinity-layout-tool-v4.424.6) (2026-08-18)
+
+
+### Bug Fixes
+
+* **bin-designer:** honest lid-cutout window corners, hidden ghosts, and the colour gate ([#3590](https://github.com/andymai/gridfinity-layout-tool/issues/3590)) ([fac59e0](https://github.com/andymai/gridfinity-layout-tool/commit/fac59e0b11ea3da131444bf97cdd0e4b78284565))
+
 ## [4.424.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.424.4...gridfinity-layout-tool-v4.424.5) (2026-08-18)
 
 
