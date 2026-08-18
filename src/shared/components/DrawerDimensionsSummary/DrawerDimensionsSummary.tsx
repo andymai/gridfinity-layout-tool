@@ -149,7 +149,8 @@ export function DrawerDimensionsSummary({
         <p className="text-center text-xxs text-content-tertiary">
           {t('drawerCeiling.measurePrompt')}
         </p>
-      ) : ceiling.fits ? (
+      ) : /* an empty layout has no stack to judge, so no fit claim */
+      ceiling.tallestMm === 0 ? null : ceiling.fits ? (
         <p className="text-center text-xxs text-content-tertiary tabular-nums">
           {t('drawerCeiling.fits', { slack: fmt(ceiling.slackMm) })}
         </p>

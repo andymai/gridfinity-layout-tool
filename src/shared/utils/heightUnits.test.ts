@@ -6,7 +6,6 @@ import {
   STACK_JUNCTION_MM,
   stackPitchMm,
   stackedTotalMm,
-  solveHeightUnitMm,
   solveUnitsUnderCeiling,
 } from './heightUnits';
 
@@ -76,28 +75,6 @@ describe('stackedTotalMm', () => {
 
   it('is zero for a non-positive count', () => {
     expect(stackedTotalMm(3, 7, 0)).toBe(0);
-  });
-});
-
-describe('solveHeightUnitMm', () => {
-  it('inverts stackedTotalMm', () => {
-    const u = solveHeightUnitMm(stackedTotalMm(2, 8.5, 4), 2, 4);
-    expect(u).toBeCloseTo(8.5, 5);
-  });
-
-  it('charges one junction for the stack and one shortfall per bin', () => {
-    // 4 bins × 2u into 75.6mm: the top junction comes off the target once, then
-    // each bin gets its shortfall back because its body outruns its pitch.
-    expect(solveHeightUnitMm(75.6, 2, 4)).toBeCloseTo(
-      (75.6 - STACK_JUNCTION_MM + 4 * SHORTFALL_MM) / 8,
-      5
-    );
-  });
-
-  it('returns null when the target is below the junction or inputs are degenerate', () => {
-    expect(solveHeightUnitMm(STACK_JUNCTION_MM - 4 * SHORTFALL_MM, 2, 4)).toBeNull();
-    expect(solveHeightUnitMm(75.6, 0, 4)).toBeNull();
-    expect(solveHeightUnitMm(75.6, 2, 0)).toBeNull();
   });
 });
 

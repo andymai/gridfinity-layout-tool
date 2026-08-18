@@ -12,6 +12,13 @@ interface HeightUnitSolverProps {
   heightUnitMm: number;
   /** Measured internal drawer height in mm, or undefined when unmeasured. */
   ceilingMm: number | undefined;
+  /**
+   * Solid material the baseplate puts UNDER a seated stack (its floor depth,
+   * 0 for the common no-magnet plate). The drawer-ceiling check charges every
+   * column this rise, so the solver must budget under the same number or the
+   * two adjacent panels contradict each other.
+   */
+  plateRiseMm?: number;
   variant?: 'desktop' | 'mobile';
 }
 
@@ -33,6 +40,7 @@ const STACK_COUNTS = [1, 2, 3] as const;
 export function HeightUnitSolver({
   heightUnitMm,
   ceilingMm,
+  plateRiseMm = 0,
   variant = 'desktop',
 }: HeightUnitSolverProps) {
   const t = useTranslation();
@@ -42,12 +50,13 @@ export function HeightUnitSolver({
       ceilingMm === undefined
         ? []
         : STACK_COUNTS.map((count) => {
-            const units = solveUnitsUnderCeiling(ceilingMm, heightUnitMm, count);
+            const budgetMm = ceilingMm - plateRiseMm;
+            const units = solveUnitsUnderCeiling(budgetMm, heightUnitMm, count);
             if (units === null) return { count, units: null, totalMm: 0, slackMm: 0 };
             const totalMm = stackedTotalMm(units, heightUnitMm, count);
-            return { count, units, totalMm, slackMm: ceilingMm - totalMm };
+            return { count, units, totalMm, slackMm: budgetMm - totalMm };
           }),
-    [ceilingMm, heightUnitMm]
+    [ceilingMm, heightUnitMm, plateRiseMm]
   );
 
   const labelClass = variant === 'mobile' ? 'text-sm' : 'text-xs';

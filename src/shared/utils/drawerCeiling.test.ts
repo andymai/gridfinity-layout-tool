@@ -124,6 +124,60 @@ describe('drawerCeilingFit', () => {
     expect(result?.fits).toBe(false);
   });
 
+  // A flat or tray base has no foot to drop into the pockets, so it rests on
+  // the plate's TOP FACE — the full printed height, not the drawer floor. On
+  // the default plate that is a 5mm difference, larger than the 4.3mm lip
+  // overshoot this whole check exists to catch.
+  it('stands a socketless linked design on the plate top, not the drawer floor', () => {
+    const linkedBin = bin({ id: binId('flat'), height: heightUnits(4) });
+    const linkedRise = (): LinkedDesignRise => ({ riseMm: 50, socketless: true });
+    const result = drawerCeilingFit({
+      bins: [linkedBin],
+      layers: LAYERS,
+      heightUnitMm: 7,
+      plate: PLAIN_PLATE,
+      ceilingMm: 54,
+      linkedRise,
+    });
+    // Plain plate: SOCKET_HEIGHT (5mm) tall, floor depth 0.
+    expect(result?.tallestMm).toBeCloseTo(55, 5);
+    expect(result?.fits).toBe(false);
+  });
+
+  // The junction credit needs the SUPPORTER's lip: a bin stacked on a lipless
+  // design rests on its flat top with nothing to settle into.
+  it('does not nest a bin stacked on a lipless linked design', () => {
+    const bottom = bin({ id: binId('bottom'), height: heightUnits(4), layerId: layerId('l1') });
+    const top = bin({ id: binId('top'), height: heightUnits(4), layerId: layerId('l2') });
+    const linkedRise = (b: Bin): LinkedDesignRise | undefined =>
+      b.id === bottom.id ? { riseMm: 28, socketless: false, hasLip: false } : undefined;
+    const result = drawerCeilingFit({
+      bins: [bottom, top],
+      layers: LAYERS,
+      heightUnitMm: 7,
+      plate: PLAIN_PLATE,
+      ceilingMm: 200,
+      linkedRise,
+    });
+    expect(result?.tallestMm).toBeCloseTo(28 + 4 * 7 + LIP_PROTRUSION_MM, 5);
+  });
+
+  it('still nests on a linked design that keeps its lip', () => {
+    const bottom = bin({ id: binId('bottom'), height: heightUnits(4), layerId: layerId('l1') });
+    const top = bin({ id: binId('top'), height: heightUnits(4), layerId: layerId('l2') });
+    const linkedRise = (b: Bin): LinkedDesignRise | undefined =>
+      b.id === bottom.id ? { riseMm: 28, socketless: false, hasLip: true } : undefined;
+    const result = drawerCeilingFit({
+      bins: [bottom, top],
+      layers: LAYERS,
+      heightUnitMm: 7,
+      plate: PLAIN_PLATE,
+      ceilingMm: 200,
+      linkedRise,
+    });
+    expect(result?.tallestMm).toBeCloseTo(28 - STACK_JUNCTION_MM + 4 * 7 + LIP_PROTRUSION_MM, 5);
+  });
+
   it('sorts overflowing bins tallest first', () => {
     const short = bin({ id: binId('short'), height: heightUnits(8), x: gridUnits(0) });
     const tall = bin({ id: binId('tall'), height: heightUnits(9), x: gridUnits(4) });

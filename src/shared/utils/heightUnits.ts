@@ -52,24 +52,6 @@ export function stackedTotalMm(heightUnits: number, heightUnitMm: number, count:
 }
 
 /**
- * Inverse of {@link stackedTotalMm}: the `heightUnitMm` that makes `count` bins
- * of `unitsPerBin` height units stack to exactly `targetTotalMm`. Returns null
- * when the inputs can't yield a positive unit value (e.g. target below the
- * junction, or non-positive count/units).
- */
-export function solveHeightUnitMm(
-  targetTotalMm: number,
-  unitsPerBin: number,
-  count: number
-): number | null {
-  if (count <= 0 || unitsPerBin <= 0) return null;
-  const bodyMm =
-    (targetTotalMm - STACK_JUNCTION_MM) / count - LIP_PROTRUSION_MM + STACK_JUNCTION_MM;
-  const perUnit = bodyMm / unitsPerBin;
-  return perUnit > 0 ? perUnit : null;
-}
-
-/**
  * The tallest WHOLE-unit bin height that lets `count` identical bins stack
  * under `ceilingMm`, at the layout's existing `heightUnitMm`.
  *

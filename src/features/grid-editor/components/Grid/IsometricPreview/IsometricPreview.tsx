@@ -349,7 +349,8 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
             <CeilingPlane
               ceilingMm={ceiling.ceilingMm}
               drawerWidth={drawer.width}
-              scaledDepth={drawer.depth * (gridUnitMmY / gridUnitMm)}
+              drawerDepth={drawer.depth}
+              depthScale={gridUnitMmY / gridUnitMm}
               gridUnitMm={gridUnitMm}
               fits={ceiling.fits}
             />

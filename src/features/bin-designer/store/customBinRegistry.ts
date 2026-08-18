@@ -80,6 +80,14 @@ export interface CustomBinRef {
    * below nor seats in a baseplate, so it stands on whatever is under it.
    */
   readonly socketless?: boolean;
+  /**
+   * Whether the design keeps its stacking lip. A bin stacked on a lipless
+   * design has nothing to settle into, so the junction credit is the
+   * SUPPORTER's to grant — the upper bin's socket alone earns nothing.
+   * Absent on entries saved before the field; the ceiling assumes a lip then,
+   * which errs toward reporting the column shorter (the pre-field behaviour).
+   */
+  readonly hasLip?: boolean;
   /** ISO timestamp of last update */
   readonly updatedAt: string;
 }
@@ -120,10 +128,11 @@ export function registryEdgeFields(params: {
  */
 export function registryHeightFields(
   params: AssembledHeightSource
-): Pick<CustomBinRef, 'assembledRiseMm' | 'socketless'> {
+): Pick<CustomBinRef, 'assembledRiseMm' | 'socketless' | 'hasLip'> {
   return {
     assembledRiseMm: assembledHeight(params).totalMm,
     socketless: isSocketlessBase(params.base.style),
+    hasLip: params.base.stackingLip,
   };
 }
 
@@ -151,6 +160,7 @@ function parseEntry(raw: unknown): CustomBinRef | null {
     kind,
     assembledRiseMm,
     socketless,
+    hasLip,
   } = raw as Record<string, unknown>;
   if (
     typeof id !== 'string' ||
@@ -184,6 +194,7 @@ function parseEntry(raw: unknown): CustomBinRef | null {
       ? { assembledRiseMm }
       : {}),
     ...(typeof socketless === 'boolean' ? { socketless } : {}),
+    ...(typeof hasLip === 'boolean' ? { hasLip } : {}),
     updatedAt,
   };
 }
@@ -252,6 +263,7 @@ function withCarriedGeometry(next: CustomBinRef, prev: CustomBinRef): CustomBinR
     ...(next.socketless === undefined && prev.socketless !== undefined
       ? { socketless: prev.socketless }
       : {}),
+    ...(next.hasLip === undefined && prev.hasLip !== undefined ? { hasLip: prev.hasLip } : {}),
   };
 }
 
