@@ -44,8 +44,14 @@ const PLATE_GAP_MM = 4;
  * Build the feet for a bin, or `null` when it has none.
  *
  * `laidOut` re-arranges them onto a plate instead of leaving them assembled.
+ * `forExport` picks the full 5-section socket profile; the preview gets the
+ * same simplified profile every other preview socket uses.
  */
-function buildFeetSolids(params: BinParams, laidOut: boolean): Shape3D[] | null {
+function buildFeetSolids(
+  params: BinParams,
+  laidOut: boolean,
+  forExport: boolean
+): Shape3D[] | null {
   if (!hasDetachableFeet(params.base)) return null;
   const resolved = resolveDetachableFeet(params);
   if (resolved.placements.length === 0) return null;
@@ -64,7 +70,7 @@ function buildFeetSolids(params: BinParams, laidOut: boolean): Shape3D[] | null 
           positions: resolved.magnet.positions,
         }
       : undefined,
-    forExport: true,
+    forExport,
   });
   // The holes belong to the body, which this path does not build.
   pinHoles?.delete();
@@ -93,7 +99,7 @@ function buildFeetSolids(params: BinParams, laidOut: boolean): Shape3D[] | null 
  * them. For the STEP compound, which holds bin + companions as separate solids.
  */
 export function buildAssembledFeetSolids(params: BinParams): Shape3D[] | null {
-  return buildFeetSolids(params, false);
+  return buildFeetSolids(params, false, true);
 }
 
 /** Feet meshed where they sit under the bin, for the assembled preview. */
@@ -101,7 +107,7 @@ export function generateDetachableFeetMesh(
   params: BinParams,
   onProgress?: ProgressFn
 ): MeshData | null {
-  const feet = buildAssembledFeetSolids(params);
+  const feet = buildFeetSolids(params, false, false);
   if (!feet) return null;
   onProgress?.('feet', 0.9);
   try {
@@ -146,7 +152,7 @@ export async function exportDetachableFeet(
   tolerance = 0.01,
   angularTolerance = 5
 ): Promise<DetachableFeetExportResult | null> {
-  const feet = buildFeetSolids(params, true);
+  const feet = buildFeetSolids(params, true, true);
   if (!feet) return null;
 
   const plate = unwrap(fuseAll(feet as ValidSolid[], { optimisation: 'commonFace' }));

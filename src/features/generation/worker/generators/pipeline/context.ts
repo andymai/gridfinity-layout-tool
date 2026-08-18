@@ -12,6 +12,7 @@ import {
   resolveTileFloorThickness,
 } from '@/shared/types/bin';
 import { hashMask, isPartialMask } from '@/shared/utils/cellMask';
+import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import {
   HEIGHT_UNIT,
   CLEARANCE,
@@ -71,8 +72,13 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
   // attachment hardware. The magnets move into the feet rather than vanishing,
   // and the body is otherwise bit-identical to an integral bin's, so only
   // `baseOffsetZ` and the socket build change. `hasDetachableFeet` already
-  // refuses a spacer and a socketless base.
-  const detachableFeet = hasDetachableFeet(params.base);
+  // refuses a spacer and a socketless base — but it answers "the user asked",
+  // not "feet exist": the plan places NOTHING when an axis has no
+  // pocket-aligned whole cell (a half-lattice 1xN, say). Both geometry
+  // consumers guard on the placements; without the same guard here the socket
+  // is skipped too, and the export is a flat-bottomed box with no feet part.
+  const detachableFeet =
+    hasDetachableFeet(params.base) && resolveDetachableFeet(params).placements.length > 0;
   // User flag only. When the mask has mixed half-bin detail, the socket
   // builder does a per-cell dispatch using the mask — it splits only
   // those 1u cells that straddle a half-bin boundary into quarter

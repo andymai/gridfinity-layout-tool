@@ -49,8 +49,8 @@ interface LidExplodeSliderProps {
    * The drag has to move the part the way the part moves. A lid lifts, so its
    * maximum belongs at the top; feet drop away downward, so dragging up to
    * detach them sends them the opposite way to the hand. Flips the pointer
-   * mapping, the fill anchor and the thumb together — they all read from the
-   * same end or the control fights itself.
+   * mapping, the fill anchor, the thumb and the arrow keys together — they all
+   * read from the same end or the control fights itself.
    */
   invert?: boolean;
   /**
@@ -120,24 +120,28 @@ export function LidExplodeSlider({
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
-      // ArrowUp/Right = increase (lift higher); ArrowDown/Left = decrease.
+      // ArrowUp/Right moves the THUMB up the track. Inverted, the maximum sits
+      // at the bottom, so up means decrease — the keyboard is the fourth end
+      // that has to read from the same end as the pointer, the fill and the
+      // thumb, or the hand and the part move opposite ways.
+      const step = invert ? -1 : 1;
       let next: number | undefined;
       if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
         e.preventDefault();
-        next = Math.min(LID_OFFSET_MAX, value + 1);
+        next = Math.min(LID_OFFSET_MAX, Math.max(LID_OFFSET_MIN, value + step));
       } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
         e.preventDefault();
-        next = Math.max(LID_OFFSET_MIN, value - 1);
+        next = Math.min(LID_OFFSET_MAX, Math.max(LID_OFFSET_MIN, value - step));
       } else if (e.key === 'Home') {
         e.preventDefault();
-        next = LID_OFFSET_MIN;
+        next = invert ? LID_OFFSET_MAX : LID_OFFSET_MIN;
       } else if (e.key === 'End') {
         e.preventDefault();
-        next = LID_OFFSET_MAX;
+        next = invert ? LID_OFFSET_MIN : LID_OFFSET_MAX;
       }
       if (next !== undefined && next !== value) onChange(next);
     },
-    [value, onChange]
+    [value, onChange, invert]
   );
 
   const thumbActive = isDragging || isHovering;

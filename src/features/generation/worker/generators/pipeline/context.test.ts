@@ -241,6 +241,38 @@ describe('createInitialContext', () => {
     });
   });
 
+  describe('detachableFeet flag in dimensions', () => {
+    it('is on for a placeable detachable-feet bin', () => {
+      const ctx = createInitialContext(
+        createTestParams({
+          base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false, feet: 'detachable' },
+        })
+      );
+      expect(ctx.dimensions.detachableFeet).toBe(true);
+    });
+
+    // The plan places nothing when an axis has no pocket-aligned whole cell
+    // (a half-lattice 1-wide bin spans 0.5u..1.5u of the plate). The flag must
+    // follow the PLAN, not the request: with it stuck on, the shell skips the
+    // socket, the feet part is null, and the export is a flat-bottomed box
+    // with no Gridfinity base at all.
+    it('falls back to an integral socket when the plan places no feet', () => {
+      const ctx = createInitialContext(
+        createTestParams({
+          width: 1,
+          depth: 4,
+          base: {
+            ...DEFAULT_BIN_PARAMS.base,
+            stackingLip: false,
+            feet: 'detachable',
+            footLatticeX: 'half',
+          },
+        })
+      );
+      expect(ctx.dimensions.detachableFeet).toBe(false);
+    });
+  });
+
   describe('halfSockets flag in dimensions', () => {
     it('stays off for an unset user toggle on a 1u-aligned L preset mask', () => {
       // 3×3 L-shape at 1u resolution — no half-bin detail.

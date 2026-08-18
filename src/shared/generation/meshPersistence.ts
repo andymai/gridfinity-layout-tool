@@ -42,6 +42,11 @@ const META_STORE = 'binMeshMeta';
  * one kernel's output, bump that kernel's {@link KERNEL_MESH_REVISION} entry
  * instead, so the other kernel's users keep their warm cache.
  *
+ * `v11`: detachable feet changed shape (blind 3mm pins, taper-floored arms)
+ * and the layout preview began reading `detachableFeetMesh` off the persisted
+ * entry — which pre-change entries cannot carry, and their bodies still have
+ * the old through-holes. Without a bump, a linked detachable design keeps
+ * rendering its pre-fix mesh until the LRU happens to evict it.
  * `v10`: the kernel id joined the key. Before this, occt-wasm and the
  * brepkit Labs kernel shared one namespace, so switching engines in Labs served
  * the previous engine's mesh for unchanged params.
@@ -55,7 +60,7 @@ const META_STORE = 'binMeshMeta';
  * without regenerating, so without this bump a linked design in the layout
  * planner would render its pre-fix bin until the entry was evicted.
  */
-const MESH_CACHE_VERSION = 'v10';
+const MESH_CACHE_VERSION = 'v11';
 
 /**
  * Per-kernel revision, bumped when only THAT kernel's output moves for

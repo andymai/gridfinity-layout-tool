@@ -49,6 +49,34 @@ describe('buildDesignGeometry', () => {
     geometry.dispose();
   });
 
+  // Feet arrive spanning [-SOCKET_HEIGHT, 0] with the body starting at 0; the
+  // preview contract is Z=0 bottom, so the merged assembly must be lifted a
+  // socket. Without the lift the feet poke through the layer plane and the rim
+  // still sits a socket below an integral neighbour's.
+  it('merges detachable feet and lifts the assembly back to a Z=0 bottom', () => {
+    const body: MeshData = {
+      ...makeMesh(true),
+      vertices: new Float32Array([0, 0, 0, 10, 0, 0, 10, 10, 0, 0, 10, 10]),
+    };
+    const feet: MeshData = {
+      ...makeMesh(true),
+      vertices: new Float32Array([0, 0, -5, 10, 0, -5, 10, 10, -5, 0, 10, 0]),
+    };
+    const geometry = buildDesignGeometry({ ...body, detachableFeetMesh: feet });
+    geometry.computeBoundingBox();
+    expect(geometry.boundingBox?.min.z).toBeCloseTo(0, 6);
+    // Body top (was 10) rides up with the lift.
+    expect(geometry.boundingBox?.max.z).toBeCloseTo(15, 6);
+    geometry.dispose();
+  });
+
+  it('leaves a feetless mesh in its own frame', () => {
+    const geometry = buildDesignGeometry(makeMesh(true));
+    geometry.computeBoundingBox();
+    expect(geometry.boundingBox?.min.z).toBeCloseTo(0, 6);
+    geometry.dispose();
+  });
+
   it('produces finite positions and normals', () => {
     const geometry = buildDesignGeometry(makeMesh(true));
     const positions = geometry.attributes.position.array as Float32Array;

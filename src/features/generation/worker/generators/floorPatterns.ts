@@ -92,13 +92,6 @@ function inflate(box: WorldKeepOut, by: number): WorldKeepOut {
 }
 
 /**
- * Magnet / screw pocket footprints in bin-centred mm.
- *
- * Taken from the FULL cell decomposition, matching `buildBaseSocket` — under
- * `halfSockets` the feet subdivide but the pockets stay on the standard grid so
- * they keep mating with the baseplate.
- */
-/**
  * Pin-recess footprints in bin-centred mm, for a detachable-feet bin.
  *
  * The recesses are blind, and the membrane over them is the whole reason the
@@ -123,6 +116,13 @@ function pinKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut[] {
   );
 }
 
+/**
+ * Magnet / screw pocket footprints in bin-centred mm.
+ *
+ * Taken from the FULL cell decomposition, matching `buildBaseSocket` — under
+ * `halfSockets` the feet subdivide but the pockets stay on the standard grid so
+ * they keep mating with the baseplate.
+ */
 function attachmentKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut[] {
   if (!dim.withMagnet && !dim.withScrew) return [];
   const radius = Math.max(
