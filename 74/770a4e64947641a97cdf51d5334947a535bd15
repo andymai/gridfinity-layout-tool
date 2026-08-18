@@ -1,0 +1,75 @@
+src/features/bin-designer/components/PreviewCanvas/previewCanvasCamera.tsx
+  s_5882a47eb73dff::t_3fc4c29a9e47ac 42
+src/i18n/locales/it.json
+  s_5882a47eb73dff::t_dd625ac986504e 821
+src/i18n/locales/en.ts
+  s_5882a47eb73dff::t_dd625ac986504e 2293
+src/shared/utils/detachableFeetPlan.ts
+  s_5882a47eb73dff::t_081559e5ccba9f 175-176,183-195,519-527
+  s_5882a47eb73dff::t_b98ada948f7b16 532-534
+src/i18n/locales/ja.json
+  s_5882a47eb73dff::t_dd625ac986504e 821
+src/features/generation/worker/generators/detachableFeetBuilder.ts
+  s_5882a47eb73dff::t_517326a4d983e0 287,312,330
+  s_5882a47eb73dff::t_0dbfc52692e674 104-105,107-112,116
+src/i18n/locales/de.json
+  s_5882a47eb73dff::t_dd625ac986504e 821
+src/i18n/locales/fr.json
+  s_5882a47eb73dff::t_dd625ac986504e 821
+src/i18n/locales/nb.json
+  s_5882a47eb73dff::t_dd625ac986504e 821
+src/features/bin-designer/utils/printEstimates.ts
+  s_5882a47eb73dff::t_6e833c22460d7c 781-790
+  s_5882a47eb73dff::t_71f62f9962c030 861-862,864-867
+  s_5882a47eb73dff::t_72c7633db8bee2 168-177,184,193,210,213,256,802-803,863
+src/i18n/locales/nl.json
+  s_5882a47eb73dff::t_dd625ac986504e 821
+src/i18n/locales/sv.json
+  s_5882a47eb73dff::t_dd625ac986504e 821
+src/i18n/locales/zh-CN.json
+  s_5882a47eb73dff::t_dd625ac986504e 821
+src/i18n/locales/ko.json
+  s_5882a47eb73dff::t_dd625ac986504e 821
+src/shared/utils/detachableFeetPlan.test.ts
+  s_5882a47eb73dff::t_7f0668878f898d 306-316
+  s_5882a47eb73dff::t_1a0c3e7e2e1bf0 293-305,317-318
+src/i18n/locales/pl.json
+  s_5882a47eb73dff::t_dd625ac986504e 821
+src/features/bin-designer/components/panel/BaseSection/BaseSection.tsx
+  s_5882a47eb73dff::t_7219ab38338598 238-244
+  s_5882a47eb73dff::t_96fb15dc77f83d 258-265
+  s_5882a47eb73dff::t_dd625ac986504e 266
+src/i18n/locales/cs.json
+  s_5882a47eb73dff::t_dd625ac986504e 821
+src/features/bin-designer/utils/printEstimates.test.ts
+  s_5882a47eb73dff::t_e68df6b4659968 23-63
+src/i18n/locales/es.json
+  s_5882a47eb73dff::t_dd625ac986504e 821
+src/shared/utils/cutoutRepeatDetect.ts
+  s_5882a47eb73dff::t_8fe64acd015f94 89-95
+  s_5882a47eb73dff::t_4e09e3693826c5 100-110,449
+  s_5882a47eb73dff::t_ff1d9b89c065d2 21
+  s_5882a47eb73dff::t_eaf2d82075ba3d 99
+src/i18n/locales/pt-BR.json
+  s_5882a47eb73dff::t_dd625ac986504e 821
+src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.tsx
+  s_5882a47eb73dff::t_3fc4c29a9e47ac 70-76,414-431
+src/i18n/locales/uk.json
+  s_5882a47eb73dff::t_dd625ac986504e 821
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "74770a4e64947641a97cdf51d5334947a535bd15",
+  "prompts": {},
+  "sessions": {
+    "s_5882a47eb73dff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "94616c51-2982-4556-af84-72f92ad7f519",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
