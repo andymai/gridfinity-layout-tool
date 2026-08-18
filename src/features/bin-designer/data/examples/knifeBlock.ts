@@ -45,22 +45,25 @@ export const KNIFE_BLOCK_EXAMPLES: ExampleDesign[] = [
     descriptionKey: 'binExamples.knifeBlockChefTrio.description',
     techniques: ['knifeSlots'],
     tier: 'showcase',
-    tags: ['kitchen', 'knife-block', 'drawer', '6x1'],
+    tags: ['kitchen', 'knife-block', 'drawer', '6x2'],
     complexity: 2,
     params: {
       ...DEFAULT_BIN_PARAMS,
       width: 6,
-      depth: 1,
+      depth: 2,
       height: 8,
       style: 'solid',
       base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      // 27mm pitch: knife handles are ~23mm wide, so anything tighter and the
+      // knives themselves cannot lie side by side — and the rest's saddle
+      // cradles would merge into one indistinct scallop.
       cutouts: [
-        slot('knife-chef', 'chef8', X_END, 5),
-        slot('knife-santoku', 'santoku7', X_END, 16),
-        slot('knife-paring', 'paring', X_END, 27),
+        slot('knife-chef', 'chef8', X_END, 11.65),
+        slot('knife-santoku', 'santoku7', X_END, 38.8),
+        slot('knife-paring', 'paring', X_END, 65.9),
       ],
       knifeRest: { enabled: true },
     },
-    metrics: { width: 6, depth: 1, height: 8, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
+    metrics: { width: 6, depth: 2, height: 8, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
 ];
