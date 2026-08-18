@@ -78,8 +78,17 @@ export interface LabelPlateMeshData {
   readonly seatX: number;
   readonly seatY: number;
   readonly seatZ: number;
-  /** Direction the plate withdraws from its socket (±Y). */
-  readonly slideY: 1 | -1;
+  /**
+   * Direction the plate withdraws from its socket (±Y), or 0 when it leaves
+   * along Z instead. A wall-hung shelf's plate slides out over the
+   * compartment; a board socket has no wall beside it, so its plate lifts
+   * straight out of the pocket.
+   */
+  readonly slideY: 1 | -1 | 0;
+  /** Set when the plate withdraws upward instead of sideways. */
+  readonly slideZ?: 1;
+  /** Yaw applied to the seated draw (deg). Present on 90° board sockets. */
+  readonly yawDeg?: number;
   /** Footprint width (mm), so the preview can lay the reference row out. */
   readonly widthMm: number;
 }

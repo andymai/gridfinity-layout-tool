@@ -4,6 +4,7 @@
  */
 
 import type { CutoutTextSide, CutoutTextAnchor, CutoutTextOffset, TextStyleOverride } from './text';
+import type { LabelPlateIconId, LabelPlateWidthU } from '@/shared/constants/labelPlates';
 
 /**
  * Shape of a top-down cutout into solid bin body.
@@ -216,6 +217,22 @@ export interface PathPoint {
   readonly symmetric: boolean;
 }
 
+/**
+ * How a cutout's label is realised on the board.
+ *
+ *  - `engrave`: the caption is cut (or raised) into the fill surface. The
+ *    original behaviour, and the default for any cutout without the field.
+ *  - `socket`:  a pocket is cut for a swappable plate carrying the caption,
+ *    so the label can be re-printed without re-printing the board.
+ *
+ * Mutually exclusive: socket mode moves the caption onto the plate, so nothing
+ * is engraved beside the cutout.
+ */
+export type CutoutLabelMode = 'engrave' | 'socket';
+
+/** Ordered mode list for UI rendering and exhaustiveness checks. */
+export const CUTOUT_LABEL_MODES: readonly CutoutLabelMode[] = ['engrave', 'socket'];
+
 /** Direction for z-order reordering of cutouts */
 export type ReorderDirection = 'forward' | 'backward' | 'front' | 'back';
 
@@ -375,6 +392,23 @@ export interface Cutout {
    * `color` is absent.
    */
   readonly colorScope?: CutoutColorScope;
+  /**
+   * Whether this cutout's label is engraved into the board or carried on a
+   * swappable plate. Absent = `'engrave'`, so designs predating sockets are
+   * built identically.
+   */
+  readonly labelMode?: CutoutLabelMode;
+  /**
+   * Pin the plate to a narrower standard width than the largest that fits.
+   * Ignored outside socket mode, and ignored when the pinned width does not
+   * fit. The plan never offers a plate its pocket would reject.
+   */
+  readonly labelPlateWidthU?: LabelPlateWidthU;
+  /**
+   * Hardware icon printed beside the caption on this cutout's plate. Ignored
+   * outside socket mode.
+   */
+  readonly labelIcon?: LabelPlateIconId;
   /**
    * Key into `BinParams.meshAssets` (required when shape === 'mesh', ignored
    * otherwise). Assets live in a design-level map so duplicates and array

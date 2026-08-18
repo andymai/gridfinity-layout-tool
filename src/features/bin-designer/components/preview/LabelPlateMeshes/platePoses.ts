@@ -20,18 +20,30 @@ export const ROW_GAP = 4;
  */
 export const MAX_SLIDE_MM = 18;
 
-export type Pose = readonly [number, number, number];
+export interface Pose {
+  readonly position: readonly [number, number, number];
+  /** Yaw about Z in degrees; 0 for every plate that reads left-to-right. */
+  readonly yawDeg: number;
+}
 
 /**
  * Where a plate sits given the shared explode offset.
  *
  * Withdrawal runs along the plate's own socket axis, so back- and
  * front-anchored shelves open in opposite directions rather than all sliding
- * the same way.
+ * the same way, and a board socket (which has no wall to slide along) lifts
+ * its plate straight up out of the pocket.
  */
 export function seatedPose(plate: LabelPlateMeshData, explodeMm: number): Pose {
   const slide = Math.min(Math.max(explodeMm, 0), MAX_SLIDE_MM);
-  return [plate.seatX, plate.seatY + plate.slideY * slide, plate.seatZ];
+  return {
+    position: [
+      plate.seatX,
+      plate.seatY + plate.slideY * slide,
+      plate.seatZ + (plate.slideZ ?? 0) * slide,
+    ],
+    yawDeg: plate.yawDeg ?? 0,
+  };
 }
 
 /**
@@ -50,7 +62,9 @@ export function referenceRowPoses(
   const poses: Pose[] = [];
   let offset = 0;
   for (const plate of plates) {
-    poses.push([-totalW / 2 + offset + plate.widthMm / 2, y, 0]);
+    // Always laid out flat, whatever yaw the plate takes when seated: the row
+    // shows what comes off the print bed, not how it is installed.
+    poses.push({ position: [-totalW / 2 + offset + plate.widthMm / 2, y, 0], yawDeg: 0 });
     offset += plate.widthMm + ROW_GAP;
   }
   return poses;

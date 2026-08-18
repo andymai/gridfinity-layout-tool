@@ -19,21 +19,33 @@ function plate(over: Partial<LabelPlateMeshData> = {}): LabelPlateMeshData {
 
 describe('seatedPose', () => {
   it('sits exactly at the socket when assembled', () => {
-    expect(seatedPose(plate(), 0)).toEqual([10, -20, 30]);
+    expect(seatedPose(plate(), 0)).toEqual({ position: [10, -20, 30], yawDeg: 0 });
   });
 
   // Back- and front-anchored shelves protrude opposite ways, so their plates
   // must withdraw opposite ways rather than all sliding together.
   it('withdraws along the plate’s own socket axis', () => {
-    expect(seatedPose(plate({ slideY: -1 }), 10)).toEqual([10, -30, 30]);
-    expect(seatedPose(plate({ slideY: 1 }), 10)).toEqual([10, -10, 30]);
+    expect(seatedPose(plate({ slideY: -1 }), 10).position).toEqual([10, -30, 30]);
+    expect(seatedPose(plate({ slideY: 1 }), 10).position).toEqual([10, -10, 30]);
   });
 
   it('never moves in X or Z', () => {
-    const [x, , z] = seatedPose(plate(), MAX_SLIDE_MM);
+    const [x, , z] = seatedPose(plate(), MAX_SLIDE_MM).position;
 
     expect(x).toBe(10);
     expect(z).toBe(30);
+  });
+
+  // A board socket sits in a flat surface with no wall to slide along, so its
+  // plate has to leave straight up or it would withdraw into solid material.
+  it('lifts a board socket’s plate out along Z', () => {
+    const board = plate({ slideY: 0, slideZ: 1 });
+
+    expect(seatedPose(board, 10).position).toEqual([10, -20, 40]);
+  });
+
+  it('carries a 90° socket’s yaw onto the seated draw', () => {
+    expect(seatedPose(plate({ yawDeg: 90 }), 0).yawDeg).toBe(90);
   });
 
   it('caps withdrawal so a large explode cannot fling plates off-screen', () => {
@@ -56,14 +68,14 @@ describe('referenceRowPoses', () => {
   it('centres a single plate on the bin', () => {
     const [pose] = referenceRowPoses([plate()], 84);
 
-    expect(pose[0]).toBe(0);
+    expect(pose.position[0]).toBe(0);
   });
 
   // Parked beyond the BACK face, so clearance scales with depth — a deep bin
   // must not have the row landing on top of it.
   it('parks the row clear of the bin’s back face', () => {
-    const shallow = referenceRowPoses([plate()], 84)[0][1];
-    const deep = referenceRowPoses([plate()], 168)[0][1];
+    const shallow = referenceRowPoses([plate()], 84)[0].position[1];
+    const deep = referenceRowPoses([plate()], 168)[0].position[1];
 
     expect(shallow).toBe(84 / 2 + REFERENCE_GAP);
     expect(deep).toBe(168 / 2 + REFERENCE_GAP);
@@ -73,7 +85,7 @@ describe('referenceRowPoses', () => {
   it('spaces plates by their own widths plus the gap', () => {
     const poses = referenceRowPoses([plate({ widthMm: 36 }), plate({ widthMm: 36 })], 84);
 
-    expect(poses[1][0] - poses[0][0]).toBe(36 + ROW_GAP);
+    expect(poses[1].position[0] - poses[0].position[0]).toBe(36 + ROW_GAP);
   });
 
   it('keeps the row centred with mixed plate widths', () => {
@@ -84,13 +96,19 @@ describe('referenceRowPoses', () => {
     const totalW = 36 + 78 + 36 + 2 * ROW_GAP;
 
     // Left edge of the first and right edge of the last straddle zero evenly.
-    expect(poses[0][0] - 36 / 2).toBeCloseTo(-totalW / 2, 6);
-    expect(poses[2][0] + 36 / 2).toBeCloseTo(totalW / 2, 6);
+    expect(poses[0].position[0] - 36 / 2).toBeCloseTo(-totalW / 2, 6);
+    expect(poses[2].position[0] + 36 / 2).toBeCloseTo(totalW / 2, 6);
+  });
+
+  it('lays a 90° socket’s plate out flat like every other', () => {
+    const [pose] = referenceRowPoses([plate({ yawDeg: 90 })], 84);
+
+    expect(pose.yawDeg).toBe(0);
   });
 
   it('lays the row flat on the floor plane', () => {
     for (const pose of referenceRowPoses([plate(), plate()], 84)) {
-      expect(pose[2]).toBe(0);
+      expect(pose.position[2]).toBe(0);
     }
   });
 });

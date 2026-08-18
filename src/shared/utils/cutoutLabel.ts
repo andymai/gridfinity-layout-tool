@@ -6,7 +6,7 @@
  * (`CutoutLabel3D`) so the on-screen label tracks the printed engraving.
  */
 
-import type { Cutout, CutoutTextAnchor } from '@/shared/types/bin';
+import type { Cutout, CutoutTextAnchor, CutoutTextOffset } from '@/shared/types/bin';
 
 export interface CutoutAabb {
   readonly minX: number;
@@ -127,6 +127,42 @@ function axisBand(zone: Zone, lo: number, hi: number, iLo: number, iHi: number) 
   }
 }
 
+/** Smallest box containing both inputs. */
+export function unionAabb(a: CutoutAabb, b: CutoutAabb): CutoutAabb {
+  return {
+    minX: Math.min(a.minX, b.minX),
+    maxX: Math.max(a.maxX, b.maxX),
+    minY: Math.min(a.minY, b.minY),
+    maxY: Math.max(a.maxY, b.maxY),
+  };
+}
+
+/**
+ * Band + center for an already-resolved anchor and footprint. Split out of
+ * {@link cutoutLabelPlacement} so a caller with a footprint that is not one
+ * cutout's own box (an array's full extent) measures the gap the same way.
+ */
+export function labelPlacementForAabb(
+  aabb: CutoutAabb,
+  anchor: CutoutTextAnchor,
+  offset: CutoutTextOffset | undefined,
+  innerW: number,
+  innerD: number,
+  originX: number,
+  originY: number
+): CutoutLabelPlacement | null {
+  const zones = ANCHOR_ZONES[anchor];
+  const x = axisBand(zones.h, aabb.minX, aabb.maxX, originX, originX + innerW);
+  const y = axisBand(zones.v, aabb.minY, aabb.maxY, originY, originY + innerD);
+  if (x.avail <= 0 || y.avail <= 0) return null;
+  return {
+    centerX: x.center + (offset?.x ?? 0),
+    centerY: y.center + (offset?.y ?? 0),
+    availW: x.avail,
+    availD: y.avail,
+  };
+}
+
 /**
  * Where a cutout's engraved label sits, and how much room it has, for the
  * resolved 9-point anchor (see {@link resolveCutoutTextAnchor}). The eight
@@ -153,18 +189,13 @@ export function cutoutLabelPlacement(
   originX = 0,
   originY = 0
 ): CutoutLabelPlacement | null {
-  const zones = ANCHOR_ZONES[resolveCutoutTextAnchor(cutout)];
-  const { minX, maxX, minY, maxY } = cutoutWorldAabb(cutout, originX, originY);
-
-  const x = axisBand(zones.h, minX, maxX, originX, originX + innerW);
-  const y = axisBand(zones.v, minY, maxY, originY, originY + innerD);
-  if (x.avail <= 0 || y.avail <= 0) return null;
-
-  const offset = cutout.textOffset;
-  return {
-    centerX: x.center + (offset?.x ?? 0),
-    centerY: y.center + (offset?.y ?? 0),
-    availW: x.avail,
-    availD: y.avail,
-  };
+  return labelPlacementForAabb(
+    cutoutWorldAabb(cutout, originX, originY),
+    resolveCutoutTextAnchor(cutout),
+    cutout.textOffset,
+    innerW,
+    innerD,
+    originX,
+    originY
+  );
 }

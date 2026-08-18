@@ -1,8 +1,9 @@
 /**
  * Cutout labels drawn on the 2D editor surface.
  *
- * Mirrors what the generation worker engraves or embosses on the bin top: one
- * label per cutout that has `engraveLabel` set and a non-empty label. Position
+ * Mirrors what the generation worker puts on the bin top, in whichever form
+ * the cutout asked for: engraved (or embossed) text, or the footprint of a
+ * swappable plate clicked into a socket. Position
  * and side come from the shared `cutoutLabelPlacement` helper so the on-screen
  * text tracks the printed label. Font size is auto-fit to the available band
  * (approximated — the worker measures exact glyph metrics via brepjs). Text
@@ -18,6 +19,14 @@ import type { ThreeEvent } from '@react-three/fiber';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { cutoutLabelPlacement } from '@/shared/utils/cutoutLabel';
+import { isCutoutEngraveMode, isCutoutSocketMode } from '@/shared/utils/cutoutLabelSocketPlan';
+import {
+  LABEL_PLATE_CORNER_RADIUS_MM,
+  LABEL_PLATE_HEIGHT_MM,
+  labelPlateWidthMm,
+} from '@/shared/constants/labelPlates';
+import { useCutoutSocketPlan } from '@/features/bin-designer/hooks/useCutoutSocketPlan';
+import { CutoutSocketFootprint } from './CutoutSocketFootprint';
 import type { PreviewMap } from '../useCutoutInteraction';
 import { cutoutLabelColors } from './cutoutLabelColor';
 import { fitLabelFontSize } from './cutoutLabelFit';
@@ -50,6 +59,7 @@ export function CutoutLabel3D({
   onLabelDragStart,
 }: CutoutLabel3DProps) {
   const textDefaults = useDesignerStore((s) => s.params.textDefaults);
+  const socketPlan = useCutoutSocketPlan();
 
   // The label floats over the darkened cutout fill, so derive its colors from
   // that fill's luminance — matching the darkening in `CutoutShapeMesh`. The
@@ -62,7 +72,35 @@ export function CutoutLabel3D({
   return (
     <>
       {cutouts.map((cutout) => {
-        if (cutout.hidden === true || cutout.engraveLabel !== true) return null;
+        if (cutout.hidden === true) return null;
+
+        if (isCutoutSocketMode(cutout)) {
+          const socket = socketPlan.byCutoutId.get(cutout.id);
+          if (!socket) return null;
+          const plateW = labelPlateWidthMm(socket.widthU);
+          return (
+            <CutoutSocketFootprint
+              key={`socket-${cutout.id}`}
+              // Plan centres are bin-centred; the editor's origin is the
+              // interior corner, so shift by half the box the plan measured.
+              centerX={socket.centerX + socketPlan.innerW / 2}
+              centerY={socket.centerY + socketPlan.innerD / 2}
+              widthMm={socket.vertical ? LABEL_PLATE_HEIGHT_MM : plateW}
+              depthMm={socket.vertical ? plateW : LABEL_PLATE_HEIGHT_MM}
+              cornerRadiusMm={LABEL_PLATE_CORNER_RADIUS_MM}
+              text={socket.text}
+              hasIcon={socket.icon !== undefined}
+              vertical={socket.vertical}
+              fill={labelOutline}
+              textColor={labelFill}
+              onPointerDown={
+                onLabelDragStart ? (mmX, mmY) => onLabelDragStart(cutout.id, mmX, mmY) : undefined
+              }
+            />
+          );
+        }
+
+        if (!isCutoutEngraveMode(cutout)) return null;
         const label = cutout.label.trim();
         if (label === '') return null;
 

@@ -25,6 +25,7 @@ import { integration } from './integration';
 import { edgeCases } from './edgeCases';
 import { solidMode } from './solidMode';
 import { wallCutouts } from './wallCutouts';
+import { cutoutLabelSockets } from './cutoutLabelSockets';
 import { cutoutOffset } from './cutoutOffset';
 import { groupedScoop } from './groupedScoop';
 import { lipWall } from './lipWall';
@@ -75,6 +76,7 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...edgeCases,
   ...solidMode,
   ...wallCutouts,
+  ...cutoutLabelSockets,
   ...cutoutOffset,
   ...groupedScoop,
   ...lipWall,

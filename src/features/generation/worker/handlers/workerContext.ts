@@ -220,6 +220,8 @@ export function runGeneration(
             seatY: plate.seatY,
             seatZ: plate.seatZ,
             slideY: plate.slideY,
+            ...(plate.slideZ !== undefined ? { slideZ: plate.slideZ } : {}),
+            ...(plate.yawDeg !== undefined ? { yawDeg: plate.yawDeg } : {}),
             widthMm: plate.widthMm,
           })),
           omittedCount: meshData.labelPlates.omittedCount,

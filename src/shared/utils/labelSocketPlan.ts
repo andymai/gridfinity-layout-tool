@@ -11,12 +11,7 @@
  * divider-deduction math in `labelTabBuilder.ts` in closed form.
  */
 
-import type {
-  CompartmentConfig,
-  LabelTabConfig,
-  LabelTabFit,
-  TabAnchorSide,
-} from '@/shared/types/bin';
+import type { BinParams, CompartmentConfig, LabelTabFit, TabAnchorSide } from '@/shared/types/bin';
 import {
   compartmentTabEligible,
   compartmentTabXSpan,
@@ -30,6 +25,27 @@ import {
   LABEL_PLATE_WIDTHS_U,
 } from '@/shared/constants/labelPlates';
 import type { LabelPlateIconId, LabelPlateWidthU } from '@/shared/constants/labelPlates';
+import { planCutoutSocketsForParams } from '@/shared/utils/cutoutLabelSocketPlan';
+
+/**
+ * One plate per socket a shadow board's cutouts get. The caption is the
+ * cutout's own label, so a plate always names the thing it sits beside.
+ */
+function planCutoutPlates(
+  params: BinParams,
+  innerWmm: number,
+  innerDmm: number,
+  wallHeightMm: number
+): LabelPlatePlanEntry[] {
+  const { sockets } = planCutoutSocketsForParams(params, innerWmm, innerDmm, wallHeightMm);
+  return sockets.map((socket) => ({
+    scope: 'cutout' as const,
+    cutoutId: socket.cutoutId,
+    widthU: socket.widthU,
+    text: socket.text,
+    ...(socket.icon !== undefined ? { icon: socket.icon } : {}),
+  }));
+}
 
 export interface LabelSocketCompartmentPlan {
   readonly compartmentId: number;
@@ -56,31 +72,43 @@ export interface LabelSocketPlan {
 }
 
 interface LabelPlatePlanBase {
-  /** Wall the socket this plate clicks into hangs from. */
-  readonly anchor: TabAnchorSide;
   readonly widthU: LabelPlateWidthU;
   readonly text: string;
-  /** Hardware icon beside the text, from `compartments.labelIcons`. */
+  /** Hardware icon beside the text. */
   readonly icon?: LabelPlateIconId;
+}
+
+/** A plate for a socket hanging off a compartment wall. */
+interface WallHungPlate extends LabelPlatePlanBase {
+  /** Wall the socket this plate clicks into hangs from. */
+  readonly anchor: TabAnchorSide;
 }
 
 /**
  * One printable plate derived from a socket-mode design, discriminated by what
- * it labels: a single compartment, one full-width row (`label.span`), or the
- * whole bin (the spanning-socket fallback, whose caption the caller supplies).
+ * it labels: a single compartment, one full-width row (`label.span`), the
+ * whole bin (the spanning-socket fallback, whose caption the caller supplies),
+ * or one cutout on a shadow board.
  */
 export type LabelPlatePlanEntry =
-  | (LabelPlatePlanBase & { readonly scope: 'compartment'; readonly compartmentId: number })
-  | (LabelPlatePlanBase & { readonly scope: 'row'; readonly row: number })
-  | (LabelPlatePlanBase & { readonly scope: 'bin' });
+  | (WallHungPlate & { readonly scope: 'compartment'; readonly compartmentId: number })
+  | (WallHungPlate & { readonly scope: 'row'; readonly row: number })
+  | (WallHungPlate & { readonly scope: 'bin' })
+  | (LabelPlatePlanBase & { readonly scope: 'cutout'; readonly cutoutId: string });
 
 export interface LabelPlatePlanInput {
-  readonly compartments: CompartmentConfig;
-  readonly label: LabelTabConfig;
+  /**
+   * The whole design, not its compartments and label config alone: a shadow
+   * board's plates come from its CUTOUTS, and a caller handed only the two
+   * cavity fields would omit them without ever failing to typecheck.
+   */
+  readonly params: BinParams;
   /** Bin interior width (mm). */
   readonly innerWmm: number;
   /** Bin interior depth (mm) — what the tab bodies have to fit inside. */
   readonly innerDmm: number;
+  /** Interior ceiling height (mm): the plane a board's fill surface hangs from. */
+  readonly wallHeightMm: number;
   readonly clearanceMm: number;
   /** Caption for the bin-spanning plate, which labels no single compartment. */
   readonly fallbackText: string;
@@ -99,7 +127,19 @@ export interface LabelPlatePlanInput {
  * click into and every cut socket gets a plate.
  */
 export function planLabelPlates(input: LabelPlatePlanInput): LabelPlatePlanEntry[] {
-  const { compartments, label, innerWmm, innerDmm, clearanceMm, fallbackText } = input;
+  const { params, innerWmm, innerDmm, wallHeightMm, clearanceMm, fallbackText } = input;
+  const { compartments, label } = params;
+
+  // A shadow board's sockets hang off no wall, so they are planned from the
+  // cutouts and the label-tab feature is not even available on one. The gate
+  // lives here rather than in each caller: four consumers derive their plate
+  // set from this function, and one of them checking `label.enabled` first is
+  // how a board exports sockets with no plates to fill them.
+  const cutoutPlates = planCutoutPlates(params, innerWmm, innerDmm, wallHeightMm);
+  if (cutoutPlates.length > 0) return cutoutPlates;
+
+  if (!label.enabled) return [];
+  if ((label.mode ?? 'text') !== 'socket') return [];
 
   const edges = label.edges ?? 'back';
   const anchors: TabAnchorSide[] = [];

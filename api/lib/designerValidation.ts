@@ -17,6 +17,8 @@ import { sanitizeString } from './validation.js';
 import {
   CONSTRAINTS,
   SLIDE_CONSTRAINTS,
+  VALID_LABEL_PLATE_ICONS,
+  VALID_LABEL_PLATE_WIDTHS,
   VALID_SLIDE_RAIL_MOUNTS,
 } from './designerValidationConstants.js';
 import {
@@ -117,6 +119,12 @@ const VALID_ROTATIONS = [0, 90, 180, 270] as const;
 const VALID_TEXT_FONTS = ['atkinson', 'jetbrains-mono', 'allerta-stencil'] as const;
 const VALID_TEXT_MODES = ['engrave', 'emboss', 'through-cut'] as const;
 const VALID_CUTOUT_COLOR_SCOPES = ['floor', 'floorAndWalls'] as const;
+
+/**
+ * Cross-boundary contract: MUST match `CUTOUT_LABEL_MODES` in
+ * `src/features/bin-designer/types/cutout.ts`.
+ */
+const VALID_CUTOUT_LABEL_MODES = ['engrave', 'socket'] as const;
 
 /**
  * Top-level keys allowed inside `params` after validation.
@@ -1121,6 +1129,24 @@ function validateCutouts(value: unknown): string | null {
     if (c.textStyle !== undefined) {
       const styleErr = validateTextStyleOverride(c.textStyle, `cutouts[${i}].textStyle`);
       if (styleErr) return styleErr;
+    }
+    // Socket fields drive geometry the client regenerates, but `labelIcon`
+    // also selects a silhouette by name, so it is checked against the same
+    // allowlist the compartment icons use rather than trusted as a string.
+    if (
+      c.labelMode !== undefined &&
+      !VALID_CUTOUT_LABEL_MODES.includes(c.labelMode as (typeof VALID_CUTOUT_LABEL_MODES)[number])
+    ) {
+      return `cutouts[${i}].labelMode must be one of: ${VALID_CUTOUT_LABEL_MODES.join(', ')}`;
+    }
+    if (
+      c.labelPlateWidthU !== undefined &&
+      !VALID_LABEL_PLATE_WIDTHS.includes(c.labelPlateWidthU as number)
+    ) {
+      return `cutouts[${i}].labelPlateWidthU must be one of: ${VALID_LABEL_PLATE_WIDTHS.join(', ')}`;
+    }
+    if (c.labelIcon !== undefined && !VALID_LABEL_PLATE_ICONS.includes(c.labelIcon as string)) {
+      return `cutouts[${i}].labelIcon is not a known plate icon`;
     }
   }
   return null;

@@ -4,7 +4,7 @@ import {
   validateCellMask,
   validateCompartments,
 } from './designerCompartmentValidation.js';
-import { CONSTRAINTS } from './designerValidationConstants.js';
+import { CONSTRAINTS, VALID_LABEL_PLATE_ICONS } from './designerValidationConstants.js';
 
 const DIVIDER_HEIGHT_ERROR = `compartments.dividerHeight must be 'auto' or a number 0-${CONSTRAINTS.MAX_LABEL_TAB_HEIGHT}`;
 
@@ -411,8 +411,20 @@ describe('validateCompartments', () => {
     it('rejects an unknown labelIcons entry', () => {
       for (const bad of ['hammer', 2, {}, '']) {
         expect(validateCompartments({ ...validCompartments(), labelIcons: [bad] })).toBe(
-          'compartments.labelIcons[0] must be null or one of: bolt, screw, woodScrew, nut, washer, nail'
+          `compartments.labelIcons[0] must be null or one of: ${VALID_LABEL_PLATE_ICONS.join(', ')}`
         );
+      }
+    });
+
+    // The allowlist is a mirror of the designer's catalogue, and a SUBSET of
+    // it does not fail safe: an icon the picker offers but this omits makes
+    // the whole design 400 on sync.
+    it('accepts every icon the designer can set', () => {
+      for (const icon of VALID_LABEL_PLATE_ICONS) {
+        expect(
+          validateCompartments({ ...validCompartments(), labelIcons: [icon] }),
+          icon
+        ).toBeNull();
       }
     });
   });

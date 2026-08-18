@@ -6,7 +6,7 @@ import { LabelIconPicker } from './LabelIconPicker';
 
 const setup = (value: Parameters<typeof LabelIconPicker>[0]['value'] = null) => {
   const onChange = vi.fn();
-  render(<LabelIconPicker value={value} onChange={onChange} compartmentNumber={1} />);
+  render(<LabelIconPicker value={value} onChange={onChange} ownerName="compartment 1" />);
   return { onChange, user: userEvent.setup() };
 };
 

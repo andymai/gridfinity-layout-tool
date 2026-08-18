@@ -93,8 +93,13 @@ export const CONSTRAINTS = {
 export const VALID_LABEL_PLATE_WIDTHS: readonly number[] = [1, 2, 3];
 
 /**
- * Mirrors `LABEL_PLATE_ICONS` in `src/shared/constants/labelPlates.ts` for
- * the per-compartment `labelIcons` entries without a circular import.
+ * Mirrors `LABEL_PLATE_ICONS` in `src/shared/constants/labelPlates.ts` without
+ * a circular import. The allowlist for a compartment's `labelIcons` entries
+ * and for a cutout's `labelIcon`.
+ *
+ * A short list here does not fail safe: an icon the designer offers and this
+ * omits makes the whole design 400 on sync, so every addition there needs one
+ * here. `designerValidation.test.ts` asserts the two agree.
  */
 export const VALID_LABEL_PLATE_ICONS: readonly string[] = [
   'bolt',
@@ -103,6 +108,32 @@ export const VALID_LABEL_PLATE_ICONS: readonly string[] = [
   'nut',
   'washer',
   'nail',
+  'hexSocketCap',
+  'setScrew',
+  'selfTapping',
+  'threadedRod',
+  'splitPin',
+  'lockWasher',
+  'wingNut',
+  'squareNut',
+  'threadedInsert',
+  'eyeBolt',
+  'thumbScrew',
+  'standoff',
+  'drillBit',
+  'hexKey',
+  'tap',
+  'countersink',
+  'utilityBlade',
+  'spring',
+  'oRing',
+  'bearing',
+  'magnet',
+  'zipTie',
+  'sawBlade',
+  'file',
+  'endMill',
+  'clip',
 ];
 
 /**

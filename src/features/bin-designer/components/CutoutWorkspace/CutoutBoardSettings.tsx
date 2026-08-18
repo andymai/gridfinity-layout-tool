@@ -6,6 +6,7 @@
 
 import { Button, Checkbox } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { CutoutPlateSettings } from './CutoutPlateSettings';
 import { getSegmentClass } from '@/shared/components/segmentedControlClasses';
 
 const GRID_SIZES = [0.25, 0.5, 1, 2, 5] as const;
@@ -94,6 +95,8 @@ export function CutoutBoardSettings({
           </div>
         </dl>
       </div>
+
+      <CutoutPlateSettings />
     </div>
   );
 }

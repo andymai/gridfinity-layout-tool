@@ -83,14 +83,14 @@ function computeLabelInfo(design: SavedDesign, nozzleSizeMm: number): DesignLabe
 
 function computePlateSet(design: SavedDesign, nozzleSizeMm: number): DesignPlateSet | null {
   const params = design.params;
-  if (!params?.label.enabled || (params.label.mode ?? 'text') !== 'socket') return null;
+  if (!params) return null;
   const clearanceMm = effectiveLabelSocketClearance(nozzleSizeMm, params.label.plateFitOffset);
   const dims = binDimensions(params);
   const planned = planLabelPlates({
-    compartments: params.compartments,
-    label: params.label,
+    params,
     innerWmm: dims.innerW,
     innerDmm: dims.innerD,
+    wallHeightMm: dims.wallHeight,
     clearanceMm,
     fallbackText: '',
   });

@@ -16,6 +16,7 @@ import { translate } from 'brepjs';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import type { PipelineContext, PipelineStage } from '../types';
 import { buildCutoutCuts } from '../../featureBuilder';
+import { buildCutoutLabelSocketTools } from '../../cutoutLabelSocketBuilder';
 import { runFeatureBuilders } from '../featureRunner';
 import { BIN_FEATURE_BUILDERS } from '../featureComposition';
 import { buildWallPatterns } from '../../wallPatternBuilder';
@@ -65,6 +66,11 @@ export const featuresStage: PipelineStage = {
         dim.wallHeight,
         interiorTaper
       );
+      // Swappable-label sockets are planned separately: they are bounded by
+      // the fill surface and their own clear-space test, not by the interior
+      // clip the cavity tools go through, whose box would shear the margin
+      // that keeps the pocket's mouth off a coincident face.
+      cutTools.push(...buildCutoutLabelSocketTools(params, dim.innerW, dim.innerD, dim.wallHeight));
       const { innerOffsetX, innerOffsetY } = dim;
       const shiftToInterior = (tool: (typeof cutTools)[number]): (typeof cutTools)[number] => {
         if (innerOffsetX === 0 && innerOffsetY === 0) return tool;

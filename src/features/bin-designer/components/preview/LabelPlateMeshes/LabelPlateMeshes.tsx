@@ -61,7 +61,14 @@ function PlateInstance({
   return (
     <>
       {poses.map((pose, i) => (
-        <mesh key={i} geometry={geometry} material={material} position={pose} renderOrder={2} />
+        <mesh
+          key={i}
+          geometry={geometry}
+          material={material}
+          position={pose.position}
+          rotation={[0, 0, (pose.yawDeg * Math.PI) / 180]}
+          renderOrder={2}
+        />
       ))}
     </>
   );
