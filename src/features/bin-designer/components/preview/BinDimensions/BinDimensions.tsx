@@ -15,7 +15,7 @@
 
 import { Line, Text } from '@react-three/drei';
 import { useMemo } from 'react';
-import type { AssembledSegment } from '@/features/bin-designer/utils/assembledHeight';
+import type { AssembledSegment } from '@/shared/printSettings/assembledHeight';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 
 interface BinDimensionsProps {

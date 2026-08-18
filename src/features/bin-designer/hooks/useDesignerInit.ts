@@ -19,7 +19,6 @@
 
 import { useEffect, useRef } from 'react';
 import { isOk } from '@/core/result';
-import type { DesignId } from '@/core/types';
 import {
   initializeDesigner,
   createNewDesign,
@@ -27,8 +26,13 @@ import {
 } from '@/features/bin-designer/storage/DesignerStorage';
 import { useDesignerStore } from '../store';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
-import { upsertRegistryEntry, registryEdgeFields } from '../store/customBinRegistry';
+import {
+  upsertRegistryEntry,
+  registryEdgeFields,
+  registryHeightFields,
+} from '../store/customBinRegistry';
 import { isBinDesign } from '../utils/designKind';
+import type { BinParams, SavedDesign } from '../types';
 
 /**
  * Check if URL has createFrom=bin params (handled by useCreateFromBin).
@@ -124,20 +128,7 @@ export function useDesignerInit(): void {
   }, [designIdFromUrl, currentDesignId, pendingBinLink, loadDesign, setCurrentDesignId]);
 }
 
-function syncToRegistry(design: {
-  id: DesignId;
-  name: string;
-  params: {
-    width: number;
-    depth: number;
-    height: number;
-    fractionalEdgeX?: 'start' | 'end';
-    fractionalEdgeY?: 'start' | 'end';
-    fractionalEdgeManualX?: boolean;
-    fractionalEdgeManualY?: boolean;
-  };
-  updatedAt: string;
-}): void {
+function syncToRegistry(design: SavedDesign & { params: BinParams }): void {
   upsertRegistryEntry({
     id: design.id,
     name: design.name,
@@ -145,6 +136,7 @@ function syncToRegistry(design: {
     depth: design.params.depth,
     height: design.params.height,
     ...registryEdgeFields(design.params),
+    ...registryHeightFields(design.params),
     updatedAt: design.updatedAt,
   });
 }

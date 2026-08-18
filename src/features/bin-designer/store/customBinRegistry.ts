@@ -13,6 +13,11 @@ import type { Result } from '@/core/result';
 import type { StorageError } from '@/core/result/errors';
 import { isOk } from '@/core/result';
 import { saveToLocalStorage, loadFromLocalStorage } from '@/core/storage/backends/localStorage';
+import {
+  assembledHeight,
+  type AssembledHeightSource,
+} from '@/shared/printSettings/assembledHeight';
+import { isSocketlessBase } from '../types/base';
 
 const REGISTRY_KEY = 'gridfinity-custom-bins-v1';
 
@@ -62,6 +67,19 @@ export interface CustomBinRef {
    * meshes — the planner/inspector use this to suppress resize affordances.
    */
   readonly kind?: ItemKind;
+  /**
+   * `assembledHeight(...).totalMm` without a plate: how far this design stands
+   * above whatever it lands on, lid and all. Carried for the same reason as the
+   * fractional edges — the layout's drawer-ceiling check runs in a selector and
+   * cannot await the full params out of IndexedDB. Absent on entries saved
+   * before it, which the ceiling measures as a plain bin.
+   */
+  readonly assembledRiseMm?: number;
+  /**
+   * Whether the base has no socket. Such a design neither nests into the bin
+   * below nor seats in a baseplate, so it stands on whatever is under it.
+   */
+  readonly socketless?: boolean;
   /** ISO timestamp of last update */
   readonly updatedAt: string;
 }
@@ -95,6 +113,21 @@ export function registryEdgeFields(params: {
 }
 
 /**
+ * Project the assembled-height fields a registry entry carries out of a full
+ * `BinParams`. Mirrors {@link registryEdgeFields}: every `upsertRegistryEntry`
+ * call site spreads it so a linked bin's drawer-ceiling contribution never
+ * drifts from the design it points at.
+ */
+export function registryHeightFields(
+  params: AssembledHeightSource
+): Pick<CustomBinRef, 'assembledRiseMm' | 'socketless'> {
+  return {
+    assembledRiseMm: assembledHeight(params).totalMm,
+    socketless: isSocketlessBase(params.base.style),
+  };
+}
+
+/**
  * Validate one raw localStorage entry and project it onto the `CustomBinRef`
  * shape. Returns `null` for anything that does not match so malformed or
  * legacy records are dropped rather than trusted. Building the object
@@ -116,6 +149,8 @@ function parseEntry(raw: unknown): CustomBinRef | null {
     fractionalEdgeManualY,
     halfSockets,
     kind,
+    assembledRiseMm,
+    socketless,
   } = raw as Record<string, unknown>;
   if (
     typeof id !== 'string' ||
@@ -143,6 +178,12 @@ function parseEntry(raw: unknown): CustomBinRef | null {
     ...(typeof fractionalEdgeManualY === 'boolean' ? { fractionalEdgeManualY } : {}),
     ...(typeof halfSockets === 'boolean' ? { halfSockets } : {}),
     ...(kind === 'bin' || kind === 'toolRack' || kind === 'importedMesh' ? { kind } : {}),
+    ...(typeof assembledRiseMm === 'number' &&
+    Number.isFinite(assembledRiseMm) &&
+    assembledRiseMm > 0
+      ? { assembledRiseMm }
+      : {}),
+    ...(typeof socketless === 'boolean' ? { socketless } : {}),
     updatedAt,
   };
 }

@@ -20,7 +20,7 @@ import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import { boundingBox } from './__kernel-tests__/meshAssertions';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
-import { assembledHeight } from '@/features/bin-designer/utils/assembledHeight';
+import { assembledHeight } from '@/shared/printSettings/assembledHeight';
 import {
   LID_FIT_CLEARANCE,
   lidAnchorZ,
