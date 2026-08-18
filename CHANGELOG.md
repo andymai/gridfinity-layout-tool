@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.424.9](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.424.8...gridfinity-layout-tool-v4.424.9) (2026-08-18)
+
+
+### Bug Fixes
+
+* **bin-designer:** reach the screw corners, follow the feet plan in estimates, guard socket merges ([#3597](https://github.com/andymai/gridfinity-layout-tool/issues/3597)) ([5e0be21](https://github.com/andymai/gridfinity-layout-tool/commit/5e0be212c1cc1f470bdcfb9132bc7f2718522f43))
+
 ## [4.424.8](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.424.7...gridfinity-layout-tool-v4.424.8) (2026-08-18)
 
 
