@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.423.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.422.0...gridfinity-layout-tool-v4.423.0) (2026-08-18)
+
+
+### Features
+
+* **bin-designer:** swappable label sockets for cutout bins ([#3577](https://github.com/andymai/gridfinity-layout-tool/issues/3577)) ([a6114b7](https://github.com/andymai/gridfinity-layout-tool/commit/a6114b78fee4a90c48bec07ee5d1bca36ad103ab))
+
 ## [4.422.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.421.0...gridfinity-layout-tool-v4.422.0) (2026-08-18)
 
 
