@@ -1,0 +1,69 @@
+src/features/baseplate/hooks/useBaseplateExport.test.ts
+  s_5882a47eb73dff::t_a83aeb5d4f949b 11-17
+src/features/bin-designer/hooks/useFitTestExport.test.ts
+  s_5882a47eb73dff::t_3c51e4f0a9ab87 23-24,30,32
+  s_5882a47eb73dff::t_c7dc4166d2fe81 22,25-29,31,33-44
+  s_5882a47eb73dff::t_04958ac3cc6aee 16-19
+  s_5882a47eb73dff::t_54dcf5112596d0 96-98,100,103
+src/features/baseplate/hooks/useConnectorSampleExport.test.ts
+  s_5882a47eb73dff::t_a83aeb5d4f949b 10-13,16-25
+  s_5882a47eb73dff::t_aa038a95dedb2b 57-61
+src/features/baseplate/hooks/useBaseplateExport.ts
+  s_5882a47eb73dff::t_e23c26ea9ec705 90-91
+  s_5882a47eb73dff::t_a0b473ab0becda 9
+src/features/bin-designer/hooks/useLabelPlateExport.ts
+  s_5882a47eb73dff::t_ffae126b12175b 11,110-111,113-119,121,144
+  s_5882a47eb73dff::t_79e63dfc07ec87 19
+  s_5882a47eb73dff::t_b5976b97c31ae7 24,148-150
+  s_5882a47eb73dff::t_14c6bac69aa33e 112
+  s_5882a47eb73dff::t_d9707f5b072b89 12,64
+src/features/baseplate/hooks/useConnectorSampleExport.ts
+  s_5882a47eb73dff::t_d9707f5b072b89 11,83
+src/shared/components/preview/FittedFloorLabel.test.tsx
+  s_5882a47eb73dff::t_7d11f53902ee98 140-146,150-151,153,155-179,181-182
+src/features/bin-designer/hooks/useLabelFitSampleExport.ts
+  s_5882a47eb73dff::t_d9707f5b072b89 12,40
+src/features/bin-designer/hooks/useExport.ts
+  s_5882a47eb73dff::t_e23c26ea9ec705 154-157
+src/features/bin-designer/hooks/useLabelFitSampleExport.test.ts
+  s_5882a47eb73dff::t_a83aeb5d4f949b 10-13,16-25
+  s_5882a47eb73dff::t_aa038a95dedb2b 57-61
+src/features/bin-designer/hooks/useSlideFitSampleExport.test.ts
+  s_5882a47eb73dff::t_a83aeb5d4f949b 12-15,18-27
+  s_5882a47eb73dff::t_aa038a95dedb2b 55-59
+src/features/supporters/components/SupportersPage/SupportersPage.tsx
+  s_5882a47eb73dff::t_1244626ce35b0c 22
+  s_5882a47eb73dff::t_560402bc7a9ea4 219-225,236-254,580
+  s_5882a47eb73dff::t_eede7163cbe947 217-218,226-235
+src/shared/components/preview/FittedFloorLabel.tsx
+  s_5882a47eb73dff::t_6ac3768fd3dd9b 45,47-50,90-98,101-112,120-123,125,128-130,134-137,146-158
+src/features/bin-designer/hooks/useFitTestExport.ts
+  s_5882a47eb73dff::t_ffae126b12175b 15,69-80
+  s_5882a47eb73dff::t_d9707f5b072b89 16,56
+  s_5882a47eb73dff::t_5d7ff21b028bec 126-132
+  s_5882a47eb73dff::t_b5976b97c31ae7 28
+src/shared/analytics/posthog/eventsCore.ts
+  s_5882a47eb73dff::t_64f15c6843ea14 8-9
+src/features/bin-designer/hooks/useSlideFitSampleExport.ts
+  s_5882a47eb73dff::t_d9707f5b072b89 11,40
+src/features/baseplate/hooks/useStackSampleExport.ts
+  s_5882a47eb73dff::t_d9707f5b072b89 10,54
+src/shared/hooks/useEngineReady.ts
+  s_5882a47eb73dff::t_e453a90e06a982 1-19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "0f99351de95adc39f40ac24c449df3f5ef3c417c",
+  "prompts": {},
+  "sessions": {
+    "s_5882a47eb73dff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "94616c51-2982-4556-af84-72f92ad7f519",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
