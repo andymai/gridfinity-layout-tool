@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.424.8](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.424.7...gridfinity-layout-tool-v4.424.8) (2026-08-18)
+
+
+### Bug Fixes
+
+* **bin-designer:** keep Bento colours honest through clears, duplicates and shifted walls ([#3595](https://github.com/andymai/gridfinity-layout-tool/issues/3595)) ([07c19c4](https://github.com/andymai/gridfinity-layout-tool/commit/07c19c471728ba9b400957c655e5f5af0faaaa6a))
+
 ## [4.424.7](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.424.6...gridfinity-layout-tool-v4.424.7) (2026-08-18)
 
 
