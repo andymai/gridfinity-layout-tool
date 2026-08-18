@@ -164,6 +164,7 @@ export function getCutoutOutline(
       break;
     }
     case 'slot':
+    case 'knifeSlot':
       rings = [
         roundedRectRing(
           cutout.x,

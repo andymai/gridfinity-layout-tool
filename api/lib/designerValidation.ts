@@ -178,6 +178,7 @@ const ALLOWED_PARAM_KEYS = new Set<string>([
   'textDefaults',
   'surfaceText',
   'meshAssets',
+  'knifeRest',
 ]);
 
 /**
@@ -787,6 +788,53 @@ function validateSurfaceText(value: unknown): string | null {
   if (value.style !== undefined) {
     const styleErr = validateTextStyleOverride(value.style, 'surfaceText.style');
     if (styleErr) return styleErr;
+  }
+  return null;
+}
+
+/** Mirrors the client `types/knifeBlock.ts` bounds. No text fields — nothing to moderate. */
+const VALID_KNIFE_REST_STYLES = ['companion', 'integrated'] as const;
+const ALLOWED_KNIFE_REST_KEYS = new Set<string>([
+  'enabled',
+  'style',
+  'gapMm',
+  'depthU',
+  'grooveDepthMm',
+  'color',
+]);
+
+function validateKnifeRest(value: unknown): string | null {
+  if (!isObject(value)) return 'knifeRest must be an object';
+  for (const key of Object.keys(value)) {
+    if (!ALLOWED_KNIFE_REST_KEYS.has(key)) return `knifeRest has unknown key: ${key}`;
+  }
+  if (!isBoolean(value.enabled)) return 'knifeRest.enabled must be boolean';
+  if (
+    value.style !== undefined &&
+    !(VALID_KNIFE_REST_STYLES as readonly string[]).includes(value.style as string)
+  ) {
+    return `knifeRest.style must be one of: ${VALID_KNIFE_REST_STYLES.join(', ')}`;
+  }
+  if (value.gapMm !== undefined && !(isNumber(value.gapMm) && inRange(value.gapMm, 0, 200))) {
+    return 'knifeRest.gapMm must be a number between 0 and 200';
+  }
+  if (
+    value.depthU !== undefined &&
+    !(isNumber(value.depthU) && inRange(value.depthU, 0.5, 4) && (value.depthU * 2) % 1 === 0)
+  ) {
+    return 'knifeRest.depthU must be between 0.5 and 4 in 0.5 steps';
+  }
+  if (
+    value.grooveDepthMm !== undefined &&
+    !(isNumber(value.grooveDepthMm) && inRange(value.grooveDepthMm, 0, 15))
+  ) {
+    return 'knifeRest.grooveDepthMm must be a number between 0 and 15';
+  }
+  if (
+    value.color !== undefined &&
+    !(typeof value.color === 'string' && HEX_COLOR_REGEX.test(value.color))
+  ) {
+    return 'knifeRest.color must be a hex color';
   }
   return null;
 }
@@ -1465,6 +1513,11 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
   if (params.surfaceText !== undefined) {
     const stErr = validateSurfaceText(params.surfaceText);
     if (stErr) return validationError('INVALID_PARAMS', stErr);
+  }
+
+  if (params.knifeRest !== undefined) {
+    const krErr = validateKnifeRest(params.knifeRest);
+    if (krErr) return validationError('INVALID_PARAMS', krErr);
   }
 
   // Inserts

@@ -163,6 +163,8 @@ export type {
   CutoutArrayMode,
   CutoutArrayConfig,
   CutoutLabelMode,
+  KnifeSpec,
+  KnifeSlotOpenEnd,
 } from './cutout';
 export {
   DEFAULT_GROUP_OP,
@@ -184,7 +186,31 @@ export {
   MAX_ARRAY_INSTANCES,
   MAX_ARRAY_COUNT,
   CUTOUT_LABEL_MODES,
+  DEFAULT_KNIFE_SPEC,
 } from './cutout';
+
+export type { KnifeRestStyle, KnifeRestConfig, KnifeSlotDimensions } from './knifeBlock';
+export {
+  KNIFE_SLOT_LENGTH_MARGIN,
+  KNIFE_SLOT_WIDTH_CLEARANCE,
+  KNIFE_SLOT_MIN_WIDTH,
+  KNIFE_SLOT_EDGE_FLOAT,
+  KNIFE_SLOT_DEFAULT_CHAMFER,
+  knifeSlotDimensions,
+  KNIFE_REST_DEFAULT_GAP_MM,
+  KNIFE_REST_GROOVE_DEPTH_MM,
+  KNIFE_REST_GROOVE_EXTRA_WIDTH_MM,
+  KNIFE_REST_HANDLE_DROP_MM,
+  KNIFE_REST_MAX_GAP_MM,
+  KNIFE_REST_MIN_DEPTH_U,
+  KNIFE_REST_MAX_DEPTH_U,
+  KNIFE_REST_MIN_GROOVE_DEPTH_MM,
+  KNIFE_REST_MAX_GROOVE_DEPTH_MM,
+  knifeRestStyle,
+  knifeRestGrooveWidthMm,
+  knifeRestSaddleZMm,
+  knifeRestBodyTopZMm,
+} from './knifeBlock';
 
 // Generation Types
 

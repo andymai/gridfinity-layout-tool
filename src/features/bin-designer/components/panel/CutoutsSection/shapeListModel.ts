@@ -126,6 +126,7 @@ const SHAPE_LABEL_KEYS: Record<CutoutShape, string> = {
   polygon: 'binDesigner.shapeList.derived.polygon',
   path: 'binDesigner.shapeList.derived.path',
   mesh: 'binDesigner.shapeList.derived.mesh',
+  knifeSlot: 'binDesigner.shapeList.derived.knifeSlot',
 };
 
 /**

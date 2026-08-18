@@ -138,6 +138,7 @@ function cutoutProfileDrawing(p: {
       return pen.close();
     }
     case 'slot':
+    case 'knifeSlot':
       return drawRoundedRectangle(p.w, p.d, Math.max(0.01, slotCornerRadius(p.w, p.d) - 0.01));
     case 'rectangle':
     default: {
@@ -283,7 +284,8 @@ function buildUnrotatedCutoutShape(cutout: {
       for (let i = 1; i < pts.length; i++) pen = pen.lineTo([pts[i].x, pts[i].y]);
       return sketch(pen.close(), 'XY').extrude(cutout.cutDepth);
     }
-    case 'slot': {
+    case 'slot':
+    case 'knifeSlot': {
       // Back the radius off the exact half-short-side by a hair: an exact
       // half-height radius makes drawRoundedRectangle emit a degenerate
       // zero-length straight segment on the short edges, which OCCT rejects.
@@ -1289,6 +1291,7 @@ function labelCenterInFootprint(cutout: Cutout, lx: number, ly: number): boolean
       return pointInPolyline(pts, lx, ly);
     }
     case 'slot':
+    case 'knifeSlot':
       return roundedRectContains(lx, ly, hw, hd, slotCornerRadius(cutout.width, cutout.depth));
     case 'path': {
       const outline = pathOutline(cutout);
