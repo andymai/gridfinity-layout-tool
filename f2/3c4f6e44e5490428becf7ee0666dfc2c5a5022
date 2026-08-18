@@ -1,0 +1,81 @@
+src/features/bin-designer/components/panel/CutoutsSection/CutoutShapeToolbar.tsx
+  s_6534366e4e760e::t_15ff123080c15e 253-280
+  s_6534366e4e760e::t_0b8708fa2d84f3 252
+api/lib/designerValidation.ts
+  s_6534366e4e760e::t_33bdbd27402e6f 1518-1522
+  s_6534366e4e760e::t_06a808b2f40445 181
+  s_6534366e4e760e::t_dc65fdc847aec8 795-841
+src/features/bin-designer/components/panel/CutoutsSection/renderer/DrawingPreview3D.tsx
+  s_6534366e4e760e::t_4dd1e9d81a1b66 53
+src/features/bin-designer/components/panel/CutoutsSection/booleanGeometry.ts
+  s_6534366e4e760e::t_709dee230fcebe 164
+src/features/bin-designer/types/knifeBlock.test.ts
+  s_6534366e4e760e::t_4f64210d8a1533 1-81
+src/features/bin-designer/constants/paramMigration.ts
+  s_6534366e4e760e::t_e697833fe9a00b 836-876
+  s_6534366e4e760e::t_c5dabe7ed97641 1370
+  s_6534366e4e760e::t_ef580d4d5e391f 1336
+  s_6534366e4e760e::t_04a05c615bf04e 27,30-38
+  s_6534366e4e760e::t_9ca85e83226675 1335
+  s_6534366e4e760e::t_258ef491ffd517 1369
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_6534366e4e760e::t_2dd4736e11d66e 1294
+  s_6534366e4e760e::t_89e2869c62788e 287-288
+  s_6534366e4e760e::t_88a51fee7f04b2 141
+src/features/bin-designer/types/index.ts
+  s_6534366e4e760e::t_444df35635691d 189
+  s_6534366e4e760e::t_d1e2a409422a95 166-167
+  s_6534366e4e760e::t_68d0b0e01fdf03 192-214
+src/features/bin-designer/components/panel/CutoutsSection/cutoutOutline.ts
+  s_6534366e4e760e::t_6d99c602acc1cb 167
+src/features/bin-designer/components/panel/CutoutsSection/renderer/CutoutShapeMesh.tsx
+  s_6534366e4e760e::t_c35269258186c1 161
+src/features/bin-designer/components/panel/CutoutsSection/knifeSlotPresets.ts
+  s_6534366e4e760e::t_008619cc539bce 2-5,9-98
+  s_6534366e4e760e::t_1db126cadd4e19 1
+  s_6534366e4e760e::t_f9b6e0364a7379 99-101
+  s_6534366e4e760e::t_7c51e0dcccc2fe 6-8
+src/features/bin-designer/components/panel/CutoutsSection/CutoutShapeBadge.tsx
+  s_6534366e4e760e::t_8ca65fa81fd1a2 22-23
+  s_6534366e4e760e::t_637872cffcad2b 60-67
+src/features/bin-designer/components/panel/CutoutsSection/handlers/keyboardHandler.ts
+  s_6534366e4e760e::t_28cd06f0be0a0e 284-292
+api/lib/designerValidation.test.ts
+  s_6534366e4e760e::t_54ffb007b3bce1 2049-2098
+src/features/bin-designer/types/cutout.ts
+  s_6534366e4e760e::t_08c6073dd6decf 127,130-161
+  s_6534366e4e760e::t_fa4a11be476ddc 23-26,28-29
+  s_6534366e4e760e::t_e955f4aaeacbae 460-466,468-480
+  s_6534366e4e760e::t_07bf4eebaea0af 162
+src/shared/utils/fitTestPlan.ts
+  s_6534366e4e760e::t_a78620a517ba69 514-515
+src/features/bin-designer/components/panel/CutoutsSection/cutoutHelpers.ts
+  s_6534366e4e760e::t_72e57abb96fca0 139-142
+  s_6534366e4e760e::t_0f3c51fb8fc27c 256-264
+  s_6534366e4e760e::t_7cc2cc8bdc5053 15
+  s_6534366e4e760e::t_ca16c53b001771 16
+src/features/bin-designer/components/panel/CutoutsSection/shapeListModel.ts
+  s_6534366e4e760e::t_eb4d62923d18f4 129
+src/features/bin-designer/types/knifeBlock.ts
+  s_6534366e4e760e::t_151bee178473ed 1-145
+src/features/bin-designer/types/binParams.ts
+  s_6534366e4e760e::t_9e737b114d1c51 16
+  s_6534366e4e760e::t_ace17456dca3ac 108-113
+  s_6534366e4e760e::t_f218f00d049340 107
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "f23c4f6e44e5490428becf7ee0666dfc2c5a5022",
+  "prompts": {},
+  "sessions": {
+    "s_6534366e4e760e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d7455028-0bd9-441e-aa9c-44e0e5502087",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
