@@ -9,4 +9,11 @@ describe('ExperimentalBadge', () => {
     render(<ExperimentalBadge />);
     expect(screen.getByText('settings.experimental')).toBeInTheDocument();
   });
+
+  // The same word in two tones reads as two different states; every
+  // Experimental badge in the app is info.
+  it('carries the shared info tone', () => {
+    render(<ExperimentalBadge />);
+    expect(screen.getByText('settings.experimental')).toHaveClass('bg-info-muted');
+  });
 });

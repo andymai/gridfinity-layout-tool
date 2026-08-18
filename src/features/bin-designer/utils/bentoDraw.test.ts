@@ -234,6 +234,22 @@ describe('bentoDraw', () => {
       expect(getDrawnCompartmentIds(dup.config).size).toBe(2);
     });
 
+    it('carries the colour and its scope like the other decorations', () => {
+      const { config, id } = draw(grid(), 0, 0, 2, 1);
+      const colored: CompartmentConfig = {
+        ...config,
+        compartmentColors: withValueAt(id, '#00ff00'),
+        compartmentColorScopes: withValueAt(id, 'floor'),
+      };
+      const dup = duplicateCompartment(colored, id, { col: 2, row: 1, w: 2, h: 1 });
+      if (!dup) throw new Error('unreachable');
+      expect(dup.config.compartmentColors?.[dup.id]).toBe('#00ff00');
+      expect(dup.config.compartmentColorScopes?.[dup.id]).toBe('floor');
+      // The source keeps its own.
+      const srcIds = [...getDrawnCompartmentIds(dup.config)].filter((i) => i !== dup.id);
+      expect(dup.config.compartmentColors?.[srcIds[0]]).toBe('#00ff00');
+    });
+
     it('rejects a size-mismatched or blocked target', () => {
       const { config, id } = draw(grid(), 0, 0, 2, 1);
       expect(duplicateCompartment(config, id, { col: 2, row: 1, w: 1, h: 1 })).toBeNull();
@@ -366,6 +382,20 @@ describe('bentoDraw', () => {
       expect(cleared.drawnUnitCells).toBeUndefined();
       expect(cleared.stash).toEqual([{ w: 1, h: 1, label: 'kept' }]);
       expect(cleared.cells).toEqual(grid().cells);
+    });
+
+    // Gotcha 6's grid-reset half: the rebuilt grid regenerates ids from
+    // scratch, so a kept colour entry paints an unrelated background cell.
+    it('drops colours with the compartments they painted', () => {
+      const { config, id } = draw(grid(), 0, 0, 2, 2);
+      const colored: CompartmentConfig = {
+        ...config,
+        compartmentColors: withValueAt(id, '#ff0000'),
+        compartmentColorScopes: withValueAt(id, 'floorAndWalls'),
+      };
+      const cleared = clearDrawnCompartments(colored);
+      expect(cleared.compartmentColors).toBeUndefined();
+      expect(cleared.compartmentColorScopes).toBeUndefined();
     });
   });
 

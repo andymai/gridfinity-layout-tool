@@ -347,6 +347,22 @@ export function duplicateCompartment(
     icons[newId] = icon;
     next = { ...next, labelIcons: icons };
   }
+  // Colour rides along like the other decorations — a duplicate that comes
+  // out unpainted makes the user re-pick the swatch per copy.
+  const color = next.compartmentColors?.[srcId];
+  if (color !== null && color !== undefined) {
+    const colors = (next.compartmentColors ?? []).slice();
+    while (colors.length <= newId) colors.push(null);
+    colors[newId] = color;
+    next = { ...next, compartmentColors: colors };
+    const scope = next.compartmentColorScopes?.[srcId];
+    if (scope !== null && scope !== undefined) {
+      const scopes = (next.compartmentColorScopes ?? []).slice();
+      while (scopes.length <= newId) scopes.push(null);
+      scopes[newId] = scope;
+      next = { ...next, compartmentColorScopes: scopes };
+    }
+  }
   if (target.w === 1 && target.h === 1) next = addDrawnUnitCell(next, newId);
   return { config: next, id: newId };
 }
@@ -472,7 +488,10 @@ export function resizeGridPreservingCompartments(
 
 /**
  * Clear every drawn compartment back to background grid. Labels, plate
- * decoration and divider overrides go with them; the stash is untouched.
+ * decoration, colours and divider overrides go with them; the stash is
+ * untouched. Every per-compartment array must be dropped here (gotcha 6's
+ * grid-reset half): the rebuilt grid regenerates ids from scratch, so a kept
+ * entry paints or captions an unrelated cell.
  */
 export function clearDrawnCompartments(config: CompartmentConfig): CompartmentConfig {
   const cells: number[] = [];
@@ -485,6 +504,8 @@ export function clearDrawnCompartments(config: CompartmentConfig): CompartmentCo
     labelIcons: _icons,
     dividerOverrides: _overrides,
     drawnUnitCells: _drawn,
+    compartmentColors: _colors,
+    compartmentColorScopes: _scopes,
     ...keep
   } = config;
   return { ...keep, cells };

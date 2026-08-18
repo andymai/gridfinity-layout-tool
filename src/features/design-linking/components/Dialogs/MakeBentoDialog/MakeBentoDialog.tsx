@@ -12,6 +12,7 @@
  * is offered with the two ways out instead of a warning bullet.
  */
 
+import { batch } from '@/core/cqrs';
 import { useCallback, useMemo, useState } from 'react';
 import {
   Dialog,
@@ -144,7 +145,12 @@ export function MakeBentoDialog({ open, onClose }: MakeBentoDialogProps) {
     setSelectedBins([...mergeableBins.map((b) => b.id), ...trapped]);
   };
   const stashTrapped = () => {
-    for (const id of trapped) moveBinToStaging(id);
+    // One undo entry for the whole stash, as the inspector and selection
+    // actions already do — per-bin entries leave Ctrl+Z restoring one bin
+    // while its companions stay stashed.
+    batch(() => {
+      for (const id of trapped) moveBinToStaging(id);
+    });
   };
 
   return (
