@@ -31,7 +31,11 @@ import { makeUniformLipCells, LIP_CELL_ZONES } from '../types/featureColors';
 import type { SlideConfig, SlideRailMount } from '../types/slide';
 import { DEFAULT_SLIDE_CONFIG, SLIDE_RAIL_MOUNTS } from '../types/slide';
 import type { BaseConfig, TrayBottomConfig } from '../types/base';
-import { DEFAULT_TRAY_BOTTOM } from '../types/base';
+import {
+  DEFAULT_TRAY_BOTTOM,
+  DEFAULT_DETACHABLE_PIN_DIAMETER_MM,
+  DETACHABLE_PIN_DIAMETERS_MM,
+} from '../types/base';
 import {
   DEFAULT_LID_CONFIG,
   LID_CLICK_RAIL_COVERAGE_OPTIONS,
@@ -987,6 +991,16 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
   // design that has no tray just as an always-present default would.
   if (mergedBase.tile !== true) {
     delete (mergedBase as { tile?: boolean }).tile;
+  }
+  // A stored pin diameter from the 5mm era meets pin holes now cut at a fixed
+  // 3mm, so the printed parts are unassemblable and the server validator
+  // rejects the design outright on re-publish. Snap anything off the current
+  // list to the default; absent stays absent, per the fingerprint note above.
+  if (
+    mergedBase.feetPinDiameter !== undefined &&
+    !(DETACHABLE_PIN_DIAMETERS_MM as readonly number[]).includes(mergedBase.feetPinDiameter)
+  ) {
+    mergedBase.feetPinDiameter = DEFAULT_DETACHABLE_PIN_DIAMETER_MM;
   }
   const baseConfig: BaseConfig =
     mergedBase.style === 'lid'

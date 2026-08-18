@@ -5,6 +5,7 @@ import type { DesignId } from '@/core/types';
 import type { MeshData } from '@/shared/types/generation';
 import type { LinkedDesignMesh } from '@/shared/hooks/useLinkedDesignMeshes';
 import { CREASE_ANGLE_RAD } from '@/shared/constants/tessellation';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 
 /** A ready-to-render design geometry, shared by every bin linked to the design. */
 export interface DesignGeometryEntry {
@@ -62,8 +63,17 @@ export function buildDesignGeometry(mesh: MeshData): THREE.BufferGeometry {
   // Detachable feet are part of the object, not a companion the layout can
   // leave out: without them a linked bin draws as a flat-bottomed box sitting a
   // socket lower than an identical neighbour. They arrive positioned in the
-  // bin's own frame, so concatenating is the whole transform.
+  // bin's own frame — feet spanning [-SOCKET_HEIGHT, 0], body starting at 0 —
+  // so after concatenating, the whole assembly must be LIFTED a socket to keep
+  // the preview contract (Z=0 bottom) that `LinkedBinMesh` positions by.
+  // Concatenating alone puts the feet through the layer plane while the rim
+  // still sits a socket below an integral neighbour's.
   const { vertices, indices } = mergeParts(mesh, mesh.detachableFeetMesh);
+  if (mesh.detachableFeetMesh && mesh.detachableFeetMesh.vertices.length > 0) {
+    for (let i = 2; i < vertices.length; i += 3) {
+      vertices[i] += GRIDFINITY_SPEC.SOCKET_HEIGHT;
+    }
+  }
 
   let geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));

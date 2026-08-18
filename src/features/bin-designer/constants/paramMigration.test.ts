@@ -652,6 +652,24 @@ describe('migrateParams', () => {
     expect(result.style).toBe('solid');
   });
 
+  it('snaps a 5mm-era pin diameter to the current default', () => {
+    // Pin holes are cut at a fixed 3mm now; a stored 5 makes unassemblable
+    // parts and fails server validation on re-publish.
+    const result = migrateParams({
+      base: { ...DEFAULT_BIN_PARAMS.base, feetPinDiameter: 5 },
+    });
+    expect(result.base.feetPinDiameter).toBe(3);
+  });
+
+  it('keeps a valid pin diameter and an absent one alone', () => {
+    const kept = migrateParams({
+      base: { ...DEFAULT_BIN_PARAMS.base, feetPinDiameter: 2.9 },
+    });
+    expect(kept.base.feetPinDiameter).toBe(2.9);
+    const absent = migrateParams({});
+    expect(absent.base.feetPinDiameter).toBe(DEFAULT_BIN_PARAMS.base.feetPinDiameter);
+  });
+
   it('should default walls.shape to u-shape when shape is missing', () => {
     const result = migrateParams({
       walls: {

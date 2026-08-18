@@ -213,14 +213,14 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
   // can recolor multiple zones in one session.
   const handleClosePicker = useCallback(() => setPickerOverlay(null), [setPickerOverlay]);
 
+  // A bin can carry both sliders, and the two share one anchor on the right
+  // edge — so the feet's takes the second slot whenever the lid's is on screen.
+  const showLidSlider = params.lid.enabled && params.base.stackingLip;
+
   // Reset the explode slider to its default whenever the lid transitions
   // off → on. Without this, a stale value (e.g. 80mm from a previous session)
   // persists across the slider's unmount/remount cycle — disabling the lid
   // hides the slider but doesn't clear the parent-owned `lidOffsetMm`.
-  // A bin can carry both, and the two sliders share one anchor on the right
-  // edge — so the feet's takes the second slot whenever the lid's is on screen.
-  const showLidSlider = params.lid.enabled && params.base.stackingLip;
-
   const wasLidEnabledRef = useRef(params.lid.enabled);
   useEffect(() => {
     if (params.lid.enabled && !wasLidEnabledRef.current) {

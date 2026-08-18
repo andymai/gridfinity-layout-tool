@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { FeetDetachSlider } from './FeetDetachSlider';
 
 describe('FeetDetachSlider', () => {
@@ -35,6 +35,23 @@ describe('FeetDetachSlider', () => {
     const fill = container.querySelector('[data-testid="slider-fill"]');
     expect(fill?.className).toContain('top-0');
     expect(fill?.className).not.toContain('bottom-0');
+  });
+
+  it('moves the feet the way the arrow points', () => {
+    // The keyboard is the fourth end of the inverted track: with the maximum
+    // at the bottom, ArrowUp must move the thumb (and the feet) UP — i.e.
+    // decrease — or the hand and the part go opposite ways again.
+    const onChange = vi.fn();
+    render(<FeetDetachSlider value={10} onChange={onChange} />);
+    const slider = screen.getByRole('slider');
+    fireEvent.keyDown(slider, { key: 'ArrowUp' });
+    expect(onChange).toHaveBeenLastCalledWith(9);
+    fireEvent.keyDown(slider, { key: 'ArrowDown' });
+    expect(onChange).toHaveBeenLastCalledWith(11);
+    fireEvent.keyDown(slider, { key: 'Home' });
+    expect(onChange).toHaveBeenLastCalledWith(80);
+    fireEvent.keyDown(slider, { key: 'End' });
+    expect(onChange).toHaveBeenLastCalledWith(0);
   });
 
   it('steps aside when the lid slider is on screen too', () => {
