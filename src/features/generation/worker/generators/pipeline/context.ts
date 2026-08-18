@@ -12,6 +12,7 @@ import {
   resolveTileFloorThickness,
 } from '@/shared/types/bin';
 import { hashMask, isPartialMask } from '@/shared/utils/cellMask';
+import { isFractional } from '@/core/constants';
 import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import {
   HEIGHT_UNIT,
@@ -359,7 +360,17 @@ export function deriveDimensions(params: BinParams, _forExport: boolean): BinDim
       // Shell-baked dividers get clipped where a spanning label shelf crosses
       // them, so that clip is part of the shell. Appended only when it
       // applies, keeping every other bin's v7 key byte-identical.
-      ...(spanningClipKey ? [`spanclip${spanningClipKey}`] : [])
+      ...(spanningClipKey ? [`spanclip${spanningClipKey}`] : []),
+      // A fractional axis reverses the cell run for a 'start' edge, moving
+      // every lite floor opening half a unit — and those openings are cut
+      // into the cached body. The socket key has always carried this; the
+      // shell key has to agree, or a second design on the other edge reuses
+      // a body whose openings land on the webbing. Appended only when a
+      // fractional axis exists, keeping whole-unit keys byte-identical.
+      ...((isFractional(params.width) || isFractional(params.depth)) &&
+      (params.fractionalEdgeX !== 'end' || params.fractionalEdgeY !== 'end')
+        ? [`frac:${params.fractionalEdgeX}:${params.fractionalEdgeY}`]
+        : [])
     )
   );
 

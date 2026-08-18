@@ -5,6 +5,7 @@
  * at the back edge of each compartment.
  */
 
+import { labelShelfKeepoutMm } from '@/shared/utils/lidInteriorRelief';
 import {
   box,
   draw,
@@ -1015,6 +1016,10 @@ export const labelTabsFeature: FeatureBuilder = {
         : 'text';
     return compactKey(
       buildCacheKey(
+        // `v12`: the shelf datum follows the lid — `labelShelfKeepoutMm`
+        // sinks it under an interior-relieving or sliding lid — so the key
+        // carries that keepout. Without it, toggling the lid served a shelf
+        // on the old plane and the relief ring cut through its wall weld.
         // `v11`: tab spans follow `dividerOverrides` instead of the nominal
         // grid line, so any shifted-divider design cuts a different shelf.
         // `v10`: tab text sizes against glyph ink and shares one size per
@@ -1028,9 +1033,11 @@ export const labelTabsFeature: FeatureBuilder = {
         // `v5`: extrudes the shelf COPLANAR_OVERLAP proud (geometry +
         // face tags changed), so older IndexedDB entries must be invalidated.
         // `v4`: added `edges` + `inset` to LabelTabConfig.
-        'v11',
+        'v12',
         socketKeyPart,
         dim.shellKey,
+        // The one lid-derived number the shelf geometry consumes.
+        quantize(labelShelfKeepoutMm(params)),
         stableSerialize(params.label),
         quantize(dim.innerW),
         quantize(dim.innerD),

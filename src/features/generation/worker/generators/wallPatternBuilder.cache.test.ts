@@ -94,6 +94,24 @@ describe('wallPatternBuilder cache split', () => {
     ).toBe(4);
   }, 60_000);
 
+  it('rebuilds the clipped pattern when a cutout corner radius changes', () => {
+    // The radius reshapes the clip solid's flared top; a key without it served
+    // the square-corner clip and left hex prisms standing in the flare
+    // (gotcha 5's jagged edges, one slider drag away).
+    const generateBin = getGenerateBin();
+
+    generateBin(HONEYCOMB_2x2x4);
+    resetAllShapeCacheStats();
+    generateBin({
+      ...HONEYCOMB_2x2x4,
+      walls: { ...HONEYCOMB_2x2x4.walls, cornerRadiusTop: 8 },
+    });
+
+    const clipped = getStats('feature-wallPatternClipped');
+    expect(clipped.hits, 'a radius edit must not reuse the square-corner clip').toBe(0);
+    expect(clipped.misses, 'a radius edit must rebuild the clipped result per wall').toBe(4);
+  }, 60_000);
+
   it('reuses the fully-clipped cache when nothing changes', () => {
     const generateBin = getGenerateBin();
 
