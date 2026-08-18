@@ -23,6 +23,7 @@ import {
   updateDesignParams,
   upsertRegistryEntry,
   registryEdgeFields,
+  registryHeightFields,
 } from '@/features/bin-designer';
 import { isErr } from '@/core/result';
 import { useTranslation } from '@/i18n';
@@ -145,6 +146,7 @@ export function useBinResizedListener(): void {
           depth: newDimensions.depth,
           height: newDimensions.height,
           ...registryEdgeFields(newParams),
+          ...registryHeightFields(newParams),
           updatedAt: updateResult.value.updatedAt,
         });
 

@@ -21,6 +21,7 @@ import { saveDesign, setActiveDesignId } from '@/features/bin-designer/storage/D
 import {
   upsertRegistryEntry,
   registryEdgeFields,
+  registryHeightFields,
 } from '@/features/bin-designer/store/customBinRegistry';
 import { useLayoutStore } from '@/core/store/layout';
 import { defaultsForNewDesign } from '@/features/bin-designer/store/helpers';
@@ -222,6 +223,7 @@ export function useCreateFromBin(): void {
           depth: binParams.depth,
           height: binParams.height,
           ...registryEdgeFields(binParams),
+          ...registryHeightFields(binParams),
           updatedAt: design.updatedAt,
         });
 

@@ -224,13 +224,35 @@ export function upsertRegistryEntry(ref: CustomBinRef): Result<void, StorageErro
   const refs = loadRegistry();
   const idx = refs.findIndex((r) => r.id === ref.id);
   if (idx >= 0) {
-    refs[idx] = ref;
+    refs[idx] = withCarriedGeometry(ref, refs[idx]);
   } else {
     refs.push(ref);
   }
   const result = saveRegistry(refs);
   notifySubscribers();
   return result;
+}
+
+/**
+ * Carry the geometry-derived fields forward when an update omits them.
+ *
+ * An upsert replaces the whole entry, and most writers only have a thumbnail or
+ * a new name to record — a rename must not silently erase the assembled height
+ * the drawer-ceiling check reads. Thirteen call sites write this registry, so
+ * the rule is enforced here rather than remembered at each: a writer holding
+ * `BinParams` spreads {@link registryHeightFields} and overwrites these with
+ * fresh values, and a writer that is not touching geometry cannot drop them.
+ */
+function withCarriedGeometry(next: CustomBinRef, prev: CustomBinRef): CustomBinRef {
+  return {
+    ...next,
+    ...(next.assembledRiseMm === undefined && prev.assembledRiseMm !== undefined
+      ? { assembledRiseMm: prev.assembledRiseMm }
+      : {}),
+    ...(next.socketless === undefined && prev.socketless !== undefined
+      ? { socketless: prev.socketless }
+      : {}),
+  };
 }
 
 /**

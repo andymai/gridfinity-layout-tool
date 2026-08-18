@@ -18,6 +18,7 @@ export {
   removeRegistryEntry,
   upsertRegistryEntry,
   registryEdgeFields,
+  registryHeightFields,
 } from './store';
 
 // --- Storage ---

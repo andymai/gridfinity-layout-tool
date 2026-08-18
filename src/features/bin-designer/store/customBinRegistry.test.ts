@@ -6,9 +6,11 @@ import {
   removeRegistryEntry,
   rebuildRegistry,
   registryEdgeFields,
+  registryHeightFields,
   type CustomBinRef,
 } from './customBinRegistry';
 import { designId } from '@/core/types';
+import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 
 function makeRef(id: string, name: string = 'Test Bin'): CustomBinRef {
   return {
@@ -217,6 +219,55 @@ describe('customBinRegistry', () => {
         fractionalEdgeManualX: true,
         fractionalEdgeManualY: false,
       });
+    });
+  });
+
+  describe('geometry metadata', () => {
+    // Thirteen call sites upsert this registry and most carry only a name or a
+    // thumbnail. An upsert replaces the whole entry, so before the carry-forward
+    // an autosave erased the assembled rise on the very next designer edit and
+    // every linked bin silently fell back to plain-bin height.
+    it('keeps the assembled rise when an update omits it', () => {
+      upsertRegistryEntry({ ...makeRef('d1'), assembledRiseMm: 64.3, socketless: false });
+      upsertRegistryEntry({ ...makeRef('d1', 'Renamed') });
+
+      const stored = loadRegistry()[0];
+      expect(stored?.name).toBe('Renamed');
+      expect(stored?.assembledRiseMm).toBe(64.3);
+      expect(stored?.socketless).toBe(false);
+    });
+
+    it('takes a fresh rise when the writer supplies one', () => {
+      upsertRegistryEntry({ ...makeRef('d1'), assembledRiseMm: 64.3 });
+      upsertRegistryEntry({ ...makeRef('d1'), assembledRiseMm: 92.1 });
+
+      expect(loadRegistry()[0]?.assembledRiseMm).toBe(92.1);
+    });
+
+    it('leaves a new entry without a rise alone', () => {
+      upsertRegistryEntry(makeRef('d1'));
+      expect(loadRegistry()[0]?.assembledRiseMm).toBeUndefined();
+    });
+
+    it('drops a stored rise that is not a usable number', () => {
+      localStorage.setItem(
+        'gridfinity-custom-bins-v1',
+        JSON.stringify([{ ...makeRef('d1'), assembledRiseMm: 'tall' }])
+      );
+      expect(loadRegistry()[0]?.assembledRiseMm).toBeUndefined();
+    });
+
+    it('projects the rise and the socket flag off full params', () => {
+      const socketed = registryHeightFields(DEFAULT_BIN_PARAMS);
+      expect(socketed.assembledRiseMm).toBeGreaterThan(0);
+      expect(socketed.socketless).toBe(false);
+
+      // A flat base has no foot, so it neither nests nor seats on a plate.
+      const flat = registryHeightFields({
+        ...DEFAULT_BIN_PARAMS,
+        base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' },
+      });
+      expect(flat.socketless).toBe(true);
     });
   });
 });

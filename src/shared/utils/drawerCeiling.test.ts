@@ -136,4 +136,42 @@ describe('drawerCeilingFit', () => {
     const result = fit([bin({ height: heightUnits(height) })], 55);
     expect(result?.fits).toBe(true);
   });
+
+  // Layers are a planning abstraction: a printed bin falls until something stops
+  // it. A layer-3 bin with an empty layer 2 beneath it rests on the layer-1 bin,
+  // not at layer 3's nominal z.
+  it('rests a bin on what is physically under it, not on its layer z', () => {
+    const bottom = bin({ id: binId('bottom'), height: heightUnits(4), layerId: layerId('l1') });
+    const top = bin({ id: binId('top'), height: heightUnits(4), layerId: layerId('l3') });
+    const result = drawerCeilingFit({
+      bins: [bottom, top],
+      layers: [...LAYERS, { id: layerId('l3'), name: 'Third', height: heightUnits(4) }],
+      heightUnitMm: 7,
+      plate: PLAIN_PLATE,
+      ceilingMm: 200,
+    });
+
+    const pitch = 4 * 7 + LIP_PROTRUSION_MM - STACK_JUNCTION_MM;
+    expect(result?.tallestMm).toBeCloseTo(2 * pitch + STACK_JUNCTION_MM, 5);
+    // Strictly below the three-layer nominal z, which is the point.
+    expect(result?.tallestMm).toBeLessThan(3 * 4 * 7);
+  });
+
+  it('takes the tallest supporter when a bin spans two below it', () => {
+    const short = bin({ id: binId('short'), x: gridUnits(0), height: heightUnits(2) });
+    const tall = bin({ id: binId('tall'), x: gridUnits(1), height: heightUnits(5) });
+    const over = bin({
+      id: binId('over'),
+      x: gridUnits(0),
+      width: gridUnits(2),
+      height: heightUnits(2),
+      layerId: layerId('l2'),
+    });
+    const result = fit([short, tall, over], 200);
+    const tallTop = 5 * 7 + LIP_PROTRUSION_MM;
+    expect(result?.tallestMm).toBeCloseTo(
+      tallTop - STACK_JUNCTION_MM + (2 * 7 + LIP_PROTRUSION_MM),
+      5
+    );
+  });
 });

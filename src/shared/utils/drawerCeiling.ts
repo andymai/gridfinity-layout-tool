@@ -103,6 +103,15 @@ function binRise(
  * rests on whatever is directly beneath it, which is the tallest already-placed
  * bin its footprint touches. Walking layers bottom-to-top means every supporter
  * is measured before anything that lands on it.
+ *
+ * Deliberately NOT the layer's z-start. Layers are a planning abstraction; a
+ * printed bin is loose in a drawer and falls until something stops it. So a bin
+ * on layer 3 with nothing under it on layer 2 rests on the layer-1 bin it
+ * overlaps, which is lower than its layer implies — the physical answer, and
+ * the one a lid cares about. The two only diverge downward: a bin is never
+ * shorter than its own layer (`useBinInspector` floors it there), and a bin
+ * taller than its layer blocks the cells above it, so nothing can be stranded
+ * in mid-air above one.
  */
 export function drawerCeilingFit(input: DrawerCeilingInput): DrawerCeilingFit | null {
   const { bins, layers, heightUnitMm, plate, ceilingMm, linkedRise } = input;

@@ -13,7 +13,11 @@ import type { SavedDesign } from '../types';
 import { THUMBNAIL_VERSION } from '../types';
 import { regenerateThumbnail } from '../utils/thumbnailRegenerator';
 import { updateDesignThumbnail } from '../storage/DesignerStorage';
-import { upsertRegistryEntry, registryEdgeFields } from '../store/customBinRegistry';
+import {
+  upsertRegistryEntry,
+  registryEdgeFields,
+  registryHeightFields,
+} from '../store/customBinRegistry';
 import { updateThumbnailCache } from './useDesignThumbnail';
 import { isOk } from '@/core/result';
 
@@ -80,6 +84,7 @@ export function useThumbnailRegeneration(
             depth: design.params.depth,
             height: design.params.height,
             ...registryEdgeFields(design.params),
+            ...registryHeightFields(design.params),
             updatedAt: result.value.updatedAt,
           });
 
