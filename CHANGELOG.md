@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.424.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.424.3...gridfinity-layout-tool-v4.424.4) (2026-08-18)
+
+
+### Bug Fixes
+
+* **bin-designer:** align label-socket planning frames and unblock the socket editor ([#3587](https://github.com/andymai/gridfinity-layout-tool/issues/3587)) ([f830ba9](https://github.com/andymai/gridfinity-layout-tool/commit/f830ba9668408137c2a44742125f52fac6f14a80))
+
 ## [4.424.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.424.2...gridfinity-layout-tool-v4.424.3) (2026-08-18)
 
 
